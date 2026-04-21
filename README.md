@@ -1,294 +1,185 @@
-# GRASP - The General-purpose Relativistic Atomic Structure Package
+# lande_g
 
-![Tests][tests-badge]
-[![][doxygen-badge]][doxygen-url]
-[![][manual-badge]][manual-pdf]
+`lande_g` 是一个基于 GRASP2018/RHFS 源码的研究型工作仓库，当前重点是梳理、验证并后续拆分 `Landé g_J` 因子的计算流程。
 
-The General-purpose Relativistic Atomic Structure Package (GRASP) is a set of Fortran 90
-programs for performing fully-relativistic electron structure calculations of
-atoms.
+这个仓库不是单纯的上游镜像。除了保留现有 Fortran 源码树外，还包含围绕 `src/appl/rhfs90` 的分析文档、`g_J` 计算说明以及独立程序 `gj90` 的开发蓝图。
 
-## Installation
+## 当前内容
 
-> **Please note:**
-> The installation instructions here are for the _development version_ on the
-> `master` branch.
->
-> To install the _latest published release_ (2018-12-03), go to the
-> ["Releases" page](https://github.com/compas/grasp/releases/tag/2018-12-03),
-> download the tarball from there and refer to the instructions in the README in
-> the tarball.
+- 保留了 GRASP 风格的源代码结构，便于直接复用现有数值核与构建流程
+- 分析了 `rhfs90` 中 `g_J` 的实现链路
+- 记录了 `g_J` 的理论背景、MCDHF/RCI 下的计算思路和使用要点
+- 给出了把 `g_J` 逻辑从 `rhfs90` 中拆分为独立程序 `gj90` 的设计方案
 
-To compile and install GRASP, first clone this Git repository:
+## 仓库定位
 
-```sh
-git clone https://github.com/compas/grasp.git
+如果你只是想使用上游通用版 GRASP，这个仓库并不是最简入口。  
+如果你关注以下问题，这个仓库更合适：
+
+- `rhfs90` 里 `g_J` 是如何计算出来的
+- `.c`、`.w`、`.m/.cm` 文件在 `g_J` 计算中的具体作用
+- 如何从 RHFS 的现有实现中抽出一个只计算 `g_J` 的程序
+- 如何在后续开发中验证 `gj90` 与 `rhfs90` 的数值一致性
+
+## 目录概览
+
+```text
+.
+├── README.md
+├── lande_g.md
+├── RHFS_gJ_report.md
+├── gj90_blueprint.md
+├── configure.sh
+├── grasptest/
+├── src/
+│   ├── appl/
+│   │   ├── rdensity/
+│   │   ├── rhfs90/
+│   │   ├── rhfszeeman95/
+│   │   └── ris4/
+│   ├── lib/
+│   └── tool/
+├── bin/
+└── lib/
 ```
 
-There are two ways to build GRASP: either via [CMake](https://cmake.org/) or via the
-`Makefile`s in the source tree. Either works and you end up with the GRASP binaries in the
-`bin/` directory.
+## 重点文件
 
-CMake is the recommended way to build GRASP. The `Makefile`-based workflow is still there to
-make smoother to transition from `Makefile`s to a modern build system.
+- `lande_g.md`
+  从理论角度说明 `Landé g_J` 的定义、MCDHF/RCI 中的实现思路、与 LS 近似公式的关系，以及在 GRASP 中的实际使用注意事项。
 
-### CMake-based build
+- `RHFS_gJ_report.md`
+  追踪 `src/appl/rhfs90` 中 `g_J` 的具体实现路径，包含入口程序、输入文件读取、径向积分、角向矩阵元与 ASF 投影过程。
 
-The first step with CMake is to create a separate out-of-source build directory. The
-`configure.sh` script can do that for you:
+- `gj90_blueprint.md`
+  给出独立程序 `gj90` 的设计目标、最小依赖链、建议复用模块以及分阶段开发计划。
+
+- `src/appl/rhfs90/`
+  当前 `g_J` 计算相关源码的核心目录，重点文件包括：
+  - `hfs92.f90`
+  - `hfsgg.f90`
+  - `gethfd.f90`
+  - `getmixblock.f90`
+  - `matelt.f90`
+  - `rinthf.f90`
+
+## 构建方法
+
+推荐使用 CMake 的 out-of-source 构建：
 
 ```sh
-cd grasp/ && ./configure.sh
+./configure.sh
+cd build
+make -j4 install
 ```
 
-This will create a `build/` directory with the default _Release_ build
-configuration. However, `configure.sh` is just a simple wrapper around a `cmake`
-call and if you need more control over the build, you can always invoke `cmake`
-yourself (see [CMake documentation](https://cmake.org/documentation/) for more
-information).
-
-To then compile GRASP, you need to go into the out-of-source build directory and
-simply call `make`:
+调试构建：
 
 ```sh
-cd build/ && make install
+./configure.sh --debug
+cd build-debug
+make -j4 install
 ```
 
-Remarks:
-
-* Running `make install` instructs CMake to actually _install_ the resulting binaries into
-  the conventional `bin/` directory at the root of the repository.
-
-  When you run just `make`, the resulting binaries will end up under the `build/` directory
-  (specifically in `build/bin/`). This is useful when developing and debugging, as it allows
-  you to compile many versions of the binaries from the same source tree with different
-  compilation options (e.g. build with debug symbols enabled) by using several out of source
-  build directories.
-
-* With CMake, GRASP also supports parallel builds, which can be enabled by passing the `-j`
-  option to `make` (e.g. `make -j4 install` to build with four processes).
-
-* The CMake-based build allows running the (non-comprehensive) test suite by calling `ctest`
-  in the `build/` directory. The configuration and source files for the tests are under
-  `test/`/
-
-### `Makefile`-based build
-
-The legacy `Makefile`-based build can be performed by simply calling the `make` in the top
-level directory:
+也保留了传统 `Makefile` 工作流：
 
 ```sh
 make
+make src/lib/libmod
+make src/appl/rhfs90
 ```
 
-In this case, the compilation of each of the libraries and programs happens in their
-respective directory under `src/` and the build artifacts are stored in the source tree.
-The resulting binaries and libraries will directly get installed under the `bin/` and `lib/`
-directories.
+说明：
 
-To build a specific library or binary you can pass the path to the source directory as the
-Make target:
+- CMake 构建产物会先进入 `build/` 或 `build-debug/`，执行 `make install` 后安装到仓库根目录下的 `bin/` 和 `lib/`
+- 传统 `Makefile` 会直接在源码树附近生成中间文件，并把程序安装到 `bin/`、`lib/`
+- 本仓库已有 `.gitignore`，默认忽略常见编译产物和构建目录
+
+## 编译配置
+
+不要直接修改顶层 `Makefile`。建议复制模板生成 `Make.user`：
 
 ```sh
-# build libmod
-make src/lib/libmod
-# build the rci_mpi binary
-make src/appl/rci90_mpi
+cp Make.user.gfortran Make.user
 ```
 
-Note that any necessary library dependencies will also get built automatically.
+或者：
 
-**WARNING:** the `Makefile`s do not know about the dependencies between the source files, so
-parallel builds (i.e. calling `make` with the `-j` option) does not work.
-
-#### Customizing the build
-
-By default the `Makefile` is designed to use `gfortran`. The variables affecting GRASP
-builds are defined and documented at the beginning of the `Makefile`.
-
-For the user it should never be necessary to modify the `Makefile` itself. Rather, a
-`Make.user` file can be create next to the main `Makefile` where the build variables can be
-overridden. E.g. to use the Intel Fortran compiler instead, you may want to create the
-following `Make.user` file:
-
-```make
-export FC = ifort
-export FC_FLAGS = -O3 -save -mkl=sequential
-export FC_LD =
-export FC_MPI = mpiifort
-export OMPI_FC=${FC}
-```
-where `-mkl=sequential` should be set depending on what version of ifort you have access to.
-
-Alternatively, to customize the GNU gfortran build to e.g. use a specific version of the compiler, you can create a `Make.user` file such as
-```make
-export FC = gfortran-9
-export FC_FLAGS = -O3 -fno-automatic
-export FC_LD =
-export FC_MPI= mpifort
-export OMPI_FC=${FC}
+```sh
+cp Make.user.ifort Make.user
 ```
 
-To set up a linker search path for the BLAS or LAPACK libraries you can
-set `FC_LD` as follows:
+然后按本机环境调整：
 
-```make
-export FC_LD = -L /path/to/blas
+- `FC`
+- `FC_MPI`
+- `FC_FLAGS`
+- `FC_LD`
+
+## 与 `g_J` 相关的输入文件
+
+围绕 `rhfs90` 的 `g_J` 计算，核心输入通常包括：
+
+- `name.c`
+  CSF 列表与耦合信息
+
+- `name.w`
+  径向轨道波函数
+
+- `name.m` 或 `name.cm`
+  ASF 混合系数与本征信息
+
+- `isodata`
+  同位素和径向网格相关输入
+
+这些文件的读取和作用分工在 `RHFS_gJ_report.md` 中有更详细的逐步说明。
+
+## 测试与示例
+
+示例和回归式脚本位于 `grasptest/`。常见用法：
+
+```sh
+grasptest/example1/script/script_ex1
+grasptest/case1/script/sh_case1
 ```
 
-The repository also contains the `Make.user.gfortran` and `Make.user.ifort` files, which can be used as templates for your own `Make.user` file.
+如果本地构建目录中包含 `test/`，也可以运行：
 
-## About GRASP
+```sh
+cd build
+ctest
+```
 
-This version of GRASP is a major revision of the previous GRASP2K package by [P.
-Jonsson, G. Gaigalas, J. Bieron, C. Froese Fischer, and I.P. Grant Computer
-Physics Communication, 184, 2197 - 2203 (2013)][grasp2k-2013] written in FORTRAN
-77 style with COMMON and using Cray pointers for memory management.  The present
-version is a FORTRAN95 translation using standard FORTRAN for memory management.
-In addition, COMMONS have been replaced with MODULES, with some COMMONS merged.
-Some algorithms have been changed to improve performance for large cases and
-efficiently.
+## 当前状态
 
-The previous package, was an extension and modification of GRASP92 by [Farid
-Parpia, Charlotte Froese Fischer, and Ian Grant. Computer Physics Communication,
-94, 249-271 (1996)][grasp92-1996].
+当前仓库已经完成：
 
-This version of GRASP has been published in:
+- `rhfs90` 中 `g_J` 计算链路的源码梳理
+- `g_J` 理论与程序实现之间的对应关系说明
+- 独立程序 `gj90` 的初步设计
 
-> C. Froese Fischer, G. Gaigalas, P. Jönsson, J. Bieroń,
-> "GRASP2018 — a Fortran 95 version of the General Relativistic Atomic Structure Package",
-> Computer Physics Communications, 237, 184-187 (2018),
+当前仓库尚未承诺：
+
+- `gj90` 已经实现并可直接生产使用
+- 所有文档都与上游 GRASP 各版本完全同步
+- 对所有原子体系都给出完整验证数据
+
+## 参考背景
+
+本仓库基于 GRASP2018 风格代码树展开工作。GRASP2018 相关论文：
+
+> C. Froese Fischer, G. Gaigalas, P. Jönsson, J. Bieroń,  
+> "GRASP2018 — a Fortran 95 version of the General Relativistic Atomic Structure Package",  
+> Computer Physics Communications, 237, 184-187 (2018),  
 > https://doi.org/10.1016/j.cpc.2018.10.032
 
-Development of this package was performed largely by:
-|                           | email                         |
-| ------------------------- | ------------------------------|
-| Charlotte Froese Fischer  | cff@cs.ubc.ca                 |
-| Gediminas Gaigalas        | Gediminas.Gaigalas@tfai.vu.lt |
-| Per Jönsson               | per.jonsson@mau.se            |
-| Jacek Bieron              | jacek.bieron@uj.edu.pl        |
+## 后续方向
 
-Supporters include:
-|                           | email                         |
-| ------------------------- | ------------------------------|
-| Jörgen Ekman              | jorgen.ekman@mah.se           |
-| Ian Grant                 | ian.grant@maths.ox.ac.uk      |
+- 从 `rhfs90` 中分离只计算 `g_J` 的数值核心
+- 建立 `gj90` 的最小可运行版本
+- 用现有 `rhfs90` 输出逐态核对 `g_J`、`delta g_J` 和 `total g_J`
+- 视需要再考虑 MPI 或多进程并行
 
-The GitHub repository is maintained by:
-|                           | email                         |
-| ------------------------- | ------------------------------|
-| Jon Grumer                | jon.grumer@physics.uu.se
+## 许可证
 
-Please contact the repository manager should you have any questions with regards
-to bugs or the general development procedure. Contact the leading developer for 
-specific questions related to a certain code.
-
-## Structure of the Package
-
-The package has the structure shown below where executables, after successful
-compilation, reside in the `bin` directory. Compiled libraries are in the `lib`
-directory. Scripts for example runs and case studies are in folders under
-`grasptest`. Source code is in the `src` directory and divided into applications
-in the `appl` directory, libraries in the `lib` directory and tools in the
-`tool` directory.
-
-```
-   |-bin
-   |-grasptest
-   |---case1
-   |-----script
-   |---case1_mpi
-   |-----script
-   |-----tmp_mpi
-   |---case2
-   |-----script
-   |---case2_mpi
-   |-----script
-   |-----tmp_mpi
-   |---case3
-   |-----script
-   |---example1
-   |-----script
-   |---example2
-   |-----script
-   |---example3
-   |-----script
-   |---example4
-   |-----script
-   |-------tmp_mpi
-   |---example5
-   |-----script
-   |-lib
-   |-src
-   |---appl
-   |-----HF
-   |-----jj2lsj90
-   |-----jjgen90
-   |-----rangular90
-   |-----rangular90_mpi
-   |-----rbiotransform90
-   |-----rbiotransform90_mpi
-   |-----ris4
-   |-----rci90
-   |-----rci90_mpi
-   |-----rcsfgenerate90
-   |-----rcsfinteract90
-   |-----rcsfzerofirst90
-   |-----rdensity
-   |-----rhfs90
-   |-----rhfszeeman95
-   |-----rmcdhf90
-   |-----rmcdhf90_mpi
-   |-----rmcdhf90_mem
-   |-----rmcdhf90_mem_mpi
-   |-----rnucleus90
-   |-----rtransition90
-   |-----rtransition90_phase
-   |-----rtransition90_mpi
-   |-----rwfnestimate90
-   |-----sms90
-   |---lib
-   |-----lib9290
-   |-----libdvd90
-   |-----libmcp90
-   |-----libmod
-   |-----librang90
-   |-----mpi90
-   |---tool
-```
-
-
-## Program Guide and Compilation
-
-The software is distributed with a practical guide to [GRASP2018 in PDF-format
-(click here to download)][manual-pdf]. The guide, which is under Creative
-Commons Attribution 4.0 International (CC BY 4.0) license, contains full
-information on how to compile and install the package.
-
-
-## Acknowledgements
-
-This work was supported by the Chemical Sciences, Geosciences and Biosciences
-Division, Office of Basic Energy Sciences, Office of Science, U.S. Department of
-Energy who made the Pacific Sierra translator available and the National
-Institute of Standards and Technology. Computer resources were made available by
-Compute Canada.  CFF had research support from the Canadian NSERC Discovery
-Grant 2017-03851.  JB acknowledges financial support of the European Regional
-Development Fund in the framework of the Polish Innovation Economy Operational
-Program (Contract No. POIG.02.01.00-12-023/08).
-
-
-## Copyright & license
-
-The code in this repository is distributed under the [MIT license](LICENSE).
-The accompanying guide  "A practical guide to GRASP2018" is licensed separately
-under [the CC-BY-4.0 (Creative Commons Attribution 4.0 International) license][cc-by].
-
-[manual-pdf]: https://github.com/compas/grasp2018/releases/download/2018-12-03/GRASP2018-manual.pdf
-[manual-badge]: https://img.shields.io/badge/manual-pdf-blue.svg
-[doxygen-url]: https://compas.github.io/grasp/
-[doxygen-badge]: https://img.shields.io/badge/documentation-doxygen-blue.svg
-[tests-badge]: https://github.com/compas/grasp/workflows/Tests/badge.svg
-[grasp92-1996]: https://doi.org/10.1016/0010-4655(95)00136-0
-[grasp2k-2013]: https://doi.org/10.1016/j.cpc.2013.02.016
-[cc-by]: https://creativecommons.org/licenses/by/4.0/legalcode
+仓库代码遵循 [MIT License](LICENSE)。
