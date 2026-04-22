@@ -37,8 +37,7 @@
 │   │   ├── rhfs90/
 │   │   ├── rhfszeeman95/
 │   │   └── ris4/
-│   ├── lib/
-│   └── tool/
+│   └── lib/
 ├── bin/
 └── lib/
 ```

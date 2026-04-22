@@ -146,9 +146,6 @@ add_subdirectory("src/appl/rdensity")
 add_subdirectory("src/appl/ris4")
 add_subdirectory("src/appl/rhfszeeman95")
 
-# Additional GRASP tools and programs
-add_subdirectory("src/tool")
-
 # MPI support is optional and disabled by default in this trimmed tree.
 option(GRASP_ENABLE_MPI "Build MPI-dependent libraries and programs" OFF)
 if(GRASP_ENABLE_MPI)
