@@ -100,6 +100,8 @@ set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 # Additional Fortran compiler flags.
 #
 # -fno-automatic: this was set in the original make_environment_gfortran_UBC file.
+# -fallow-argument-mismatch: needed for legacy BLAS/LAPACK-style calls that
+#   newer gfortran versions reject.
 #
 # Note: optimization should be enabled on the Release target automatically.
 #
@@ -108,6 +110,9 @@ set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 #     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgfortran")
 #
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-automatic")
+if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
+endif()
 
 message("Compiler flags etc. for this GRASP build:")
 message("* CMAKE_BUILD_TYPE:                ${CMAKE_BUILD_TYPE}")
@@ -135,23 +140,8 @@ add_subdirectory("src/lib/libmcp90")
 add_subdirectory("src/lib/librang90")
 
 # GRASP application programs
-add_subdirectory("src/appl/HF")
-add_subdirectory("src/appl/jj2lsj90")
-add_subdirectory("src/appl/jjgen90")
-add_subdirectory("src/appl/rangular90")
-add_subdirectory("src/appl/rbiotransform90")
-add_subdirectory("src/appl/rci90")
-add_subdirectory("src/appl/rcsfgenerate90")
-add_subdirectory("src/appl/rcsfinteract90")
-add_subdirectory("src/appl/rcsfzerofirst90")
 add_subdirectory("src/appl/rhfs90")
-add_subdirectory("src/appl/rmcdhf90")
-add_subdirectory("src/appl/rmcdhf90_mem")
-add_subdirectory("src/appl/rnucleus90")
-add_subdirectory("src/appl/rtransition90")
-add_subdirectory("src/appl/rtransition90_phase")
-add_subdirectory("src/appl/rwfnestimate90")
-add_subdirectory("src/appl/sms90")
+add_subdirectory("src/appl/gj90")
 add_subdirectory("src/appl/rdensity")
 add_subdirectory("src/appl/ris4")
 add_subdirectory("src/appl/rhfszeeman95")
@@ -159,28 +149,28 @@ add_subdirectory("src/appl/rhfszeeman95")
 # Additional GRASP tools and programs
 add_subdirectory("src/tool")
 
-# We only build MPI programs and libraries if we can actually find MPI on
-# the user's system.
-find_package(MPI)
-if(MPI_Fortran_FOUND)
-    message("* MPI_Fortran_LIBRARIES:          ${MPI_Fortran_LIBRARIES}")
-    message("* MPI_Fortran_INCLUDE_PATH:       ${MPI_Fortran_INCLUDE_PATH}")
-    message("* MPI_Fortran_COMPILE_FLAGS:      ${MPI_Fortran_COMPILE_FLAGS}")
-    message("* MPI_Fortran_LINK_FLAGS:         ${MPI_Fortran_LINK_FLAGS}")
+# MPI support is optional and disabled by default in this trimmed tree.
+option(GRASP_ENABLE_MPI "Build MPI-dependent libraries and programs" OFF)
+if(GRASP_ENABLE_MPI)
+    find_package(MPI)
+    if(MPI_Fortran_FOUND)
+        message("* MPI_Fortran_LIBRARIES:          ${MPI_Fortran_LIBRARIES}")
+        message("* MPI_Fortran_INCLUDE_PATH:       ${MPI_Fortran_INCLUDE_PATH}")
+        message("* MPI_Fortran_COMPILE_FLAGS:      ${MPI_Fortran_COMPILE_FLAGS}")
+        message("* MPI_Fortran_LINK_FLAGS:         ${MPI_Fortran_LINK_FLAGS}")
 
-    add_subdirectory("src/lib/mpi90")
-    add_subdirectory("src/appl/rangular90_mpi")
-    add_subdirectory("src/appl/rbiotransform90_mpi")
-    add_subdirectory("src/appl/rci90_mpi")
-    add_subdirectory("src/appl/rmcdhf90_mpi")
-    add_subdirectory("src/appl/rmcdhf90_mem_mpi")
-    add_subdirectory("src/appl/rtransition90_mpi")
+        add_subdirectory("src/lib/mpi90")
+    else()
+        message("MPI requested but MPI Fortran libraries were not found. Skipping MPI targets.")
+    endif()
 else()
-    message("MPI libraries not found. Not building MPI-dependent programs.")
-endif(MPI_Fortran_FOUND)
+    message("MPI support disabled. Not building src/lib/mpi90 or MPI-dependent programs.")
+endif()
 
 # Unit and integration tests
-add_subdirectory("test")
+if(EXISTS "${PROJECT_SOURCE_DIR}/test/CMakeLists.txt")
+    add_subdirectory("test")
+endif()
 
 # We use the CMakeLists.txt so that the user could easily add additional targets
 # to the GRASP build, such as additional (external) GRASP programs that need to
