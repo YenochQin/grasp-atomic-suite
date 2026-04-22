@@ -31,9 +31,10 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K, NCI, NCORE_NOT_USED
-      LOGICAL :: YES
+      INTEGER :: ARGC, IARG, K, NCI, NCORE_NOT_USED
+      LOGICAL :: YES, USE_ARGS
       REAL(DOUBLE), DIMENSION(:), POINTER :: GJC_DIAG, DGJC_DIAG
+      CHARACTER(LEN=24) :: ARG
       CHARACTER :: NAME*24
 !-----------------------------------------------
 !
@@ -42,8 +43,37 @@
       NAME = ' '
       NCI = 1
       NDEF = 0
+      USE_ARGS = .FALSE.
 !
       IF (MYID == 0) THEN
+         ARGC = COMMAND_ARGUMENT_COUNT()
+         IF (ARGC > 0) THEN
+            USE_ARGS = .TRUE.
+            DO IARG = 1, ARGC
+               ARG = ' '
+               CALL GET_COMMAND_ARGUMENT(IARG, ARG)
+               IF (IARG == 1 .AND. ARG(1:2) /= '--') THEN
+                  NAME = ARG
+               ELSE IF (TRIM(ARG) == '--ci') THEN
+                  NCI = 0
+               ELSE IF (TRIM(ARG) == '--nonci') THEN
+                  NCI = 1
+               ELSE IF (TRIM(ARG) == '--help' .OR. TRIM(ARG) == '-h') THEN
+                  WRITE (ISTDE, *) 'Usage: gj90_mpi [name] [--ci|--nonci]'
+                  WRITE (ISTDE, *) 'If no arguments are given, interactive mode is used.'
+                  NDEF = -1
+               ELSE IF (IARG /= 1 .OR. ARG(1:2) == '--') THEN
+                  WRITE (ISTDE, *) 'Unrecognized argument: ', TRIM(ARG)
+                  WRITE (ISTDE, *) 'Usage: gj90_mpi [name] [--ci|--nonci]'
+                  NDEF = -1
+               ENDIF
+            END DO
+            IF (NDEF == 0 .AND. LEN_TRIM(NAME) == 0) THEN
+               WRITE (ISTDE, *) 'Usage: gj90_mpi [name] [--ci|--nonci]'
+               NDEF = -1
+            ENDIF
+         ENDIF
+!
          WRITE (ISTDE, *)
          WRITE (ISTDE, *) 'GJ90_MPI'
          WRITE (ISTDE, *) 'This is the MPI Lande-factor program'
@@ -51,18 +81,20 @@
          WRITE (ISTDE, *) 'Output files: name.gj or name.cgj'
          WRITE (ISTDE, *) 'Running on ', NPROCS, ' MPI ranks'
 !
-         WRITE (ISTDE, *)
-         WRITE (ISTDE, *) 'Default settings?'
-         YES = GETYN()
-         WRITE (ISTDE, *)
-         IF (YES) THEN
-            NDEF = 0
-         ELSE
-            NDEF = 1
-            WRITE (ISTDE, *) 'GJ90_MPI currently supports default settings only.'
+         IF (.NOT.USE_ARGS .AND. NDEF == 0) THEN
+            WRITE (ISTDE, *)
+            WRITE (ISTDE, *) 'Default settings?'
+            YES = GETYN()
+            WRITE (ISTDE, *)
+            IF (YES) THEN
+               NDEF = 0
+            ELSE
+               NDEF = 1
+               WRITE (ISTDE, *) 'GJ90_MPI currently supports default settings only.'
+            ENDIF
          ENDIF
 !
-         IF (NDEF == 0) THEN
+         IF (NDEF == 0 .AND. .NOT.USE_ARGS) THEN
    10       CONTINUE
             WRITE (ISTDE, *) 'Name of state'
             READ (*, '(A)') NAME
