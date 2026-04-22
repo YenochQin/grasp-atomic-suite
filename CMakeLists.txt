@@ -139,13 +139,6 @@ add_subdirectory("src/lib/libdvd90")
 add_subdirectory("src/lib/libmcp90")
 add_subdirectory("src/lib/librang90")
 
-# GRASP application programs
-add_subdirectory("src/appl/gj90")
-# add_subdirectory("src/appl/rhfs90")
-# add_subdirectory("src/appl/rdensity")
-# add_subdirectory("src/appl/ris4")
-# add_subdirectory("src/appl/rhfszeeman95")
-
 # MPI support is optional and disabled by default in this trimmed tree.
 option(GRASP_ENABLE_MPI "Build MPI-dependent libraries and programs" OFF)
 if(GRASP_ENABLE_MPI)
@@ -163,6 +156,13 @@ if(GRASP_ENABLE_MPI)
 else()
     message("MPI support disabled. Not building src/lib/mpi90 or MPI-dependent programs.")
 endif()
+
+# GRASP application programs
+add_subdirectory("src/appl/gj90")
+# add_subdirectory("src/appl/rhfs90")
+# add_subdirectory("src/appl/rdensity")
+# add_subdirectory("src/appl/ris4")
+# add_subdirectory("src/appl/rhfszeeman95")
 
 # Unit and integration tests
 if(EXISTS "${PROJECT_SOURCE_DIR}/test/CMakeLists.txt")
