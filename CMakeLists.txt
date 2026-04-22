@@ -175,6 +175,26 @@ endif()
 #
 # We also set the GRASP variable that the user-defined targets can use to figure
 # out where the root of the GRASP source tree is.
+set(GJ90_REGRESSION_CASE "test")
+set(GJ90_REGRESSION_DATA_DIR "${PROJECT_SOURCE_DIR}/data")
+set(GJ90_REGRESSION_SCRIPT "${PROJECT_SOURCE_DIR}/tests/gj90_regression.sh")
+if(EXISTS "${GJ90_REGRESSION_SCRIPT}"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/isodata"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.c"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.m"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.w"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.gj")
+    add_test(
+        NAME gj90_regression_${GJ90_REGRESSION_CASE}
+        COMMAND
+            "${GJ90_REGRESSION_SCRIPT}"
+            "$<TARGET_FILE:gj90>"
+            "${GJ90_REGRESSION_DATA_DIR}"
+            "${GJ90_REGRESSION_CASE}"
+            "${PROJECT_BINARY_DIR}/tests/gj90_regression_${GJ90_REGRESSION_CASE}"
+    )
+endif()
+
 set(GRASP ${PROJECT_SOURCE_DIR})
 unset(GRASP_CMakeLists_user CACHE)
 find_file(GRASP_CMakeLists_user "CMakeLists.user" ${PROJECT_SOURCE_DIR})
