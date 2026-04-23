@@ -298,21 +298,23 @@
       CALL GDMAXMPI_ROOT(TIMBUF, 1)
       IF (MYID .EQ. 0) TIME_TOTAL = TIMBUF(1)
 !
-      IF (MYID /= 0) GO TO 900
-!
-      WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI kernel wall time (max rank): ', &
-         TIME_KERNEL, ' s'
-      WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI reduce wall time (max rank): ', &
-         TIME_REDUCE, ' s'
-      WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI total wall time  (max rank): ', &
-         TIME_TOTAL, ' s'
-      WRITE (6, *) 'HFSGG_MPI per-rank work summary:'
+      IF (MYID .EQ. 0) THEN
+         WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI kernel wall time (max rank): ', &
+            TIME_KERNEL, ' s'
+         WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI reduce wall time (max rank): ', &
+            TIME_REDUCE, ' s'
+         WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI total wall time  (max rank): ', &
+            TIME_TOTAL, ' s'
+         WRITE (6, *) 'HFSGG_MPI per-rank work summary:'
+      ENDIF
       WRITE (MSG, '(A,I4,A,I8,A,I10,A,I10,A,I10,A,I10,A,F10.3,A,F10.3,A)') &
          'rank=', MYID, ' ic=', IC_WORK, ' active=', TERM_ACTIVE, &
          ' onepcalls=', ONEP_CALLS, ' nzacc=', NONZERO_ACCUM, &
          ' zskip=', ZERO_SKIP, ' onep=', TIME_ONEPARTICLE, &
          's accum=', TIME_ACCUM, 's'
       CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
+!
+      IF (MYID /= 0) GO TO 900
 !
 !   These are the conversion factors to obtain the hyperfine
 !   constants in MHz
