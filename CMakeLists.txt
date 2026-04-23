@@ -139,11 +139,13 @@ add_subdirectory("src/lib/libdvd90")
 add_subdirectory("src/lib/libmcp90")
 add_subdirectory("src/lib/librang90")
 
-# MPI support is optional and disabled by default in this trimmed tree.
-option(GRASP_ENABLE_MPI "Build MPI-dependent libraries and programs" OFF)
+# MPI support is enabled by default so the standard README build flow also
+# produces the MPI-enabled programs when an MPI Fortran toolchain is available.
+option(GRASP_ENABLE_MPI "Build MPI-dependent libraries and programs" ON)
 if(GRASP_ENABLE_MPI)
-    find_package(MPI)
+    find_package(MPI QUIET)
     if(MPI_Fortran_FOUND)
+        message("* GRASP_ENABLE_MPI:               ON")
         message("* MPI_Fortran_LIBRARIES:          ${MPI_Fortran_LIBRARIES}")
         message("* MPI_Fortran_INCLUDE_PATH:       ${MPI_Fortran_INCLUDE_PATH}")
         message("* MPI_Fortran_COMPILE_FLAGS:      ${MPI_Fortran_COMPILE_FLAGS}")
@@ -151,9 +153,10 @@ if(GRASP_ENABLE_MPI)
 
         add_subdirectory("src/lib/mpi90")
     else()
-        message("MPI requested but MPI Fortran libraries were not found. Skipping MPI targets.")
+        message(WARNING "GRASP_ENABLE_MPI=ON but MPI Fortran libraries were not found. Continuing without MPI targets.")
     endif()
 else()
+    message("* GRASP_ENABLE_MPI:               OFF")
     message("MPI support disabled. Not building src/lib/mpi90 or MPI-dependent programs.")
 endif()
 

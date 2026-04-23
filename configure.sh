@@ -3,7 +3,9 @@ export GRASP="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 build_directory="build" # we default to build/
 
-cmake_args=""
+# Build MPI targets by default so the standard README flow also installs the
+# parallel executables when MPI is available on the system.
+cmake_args="-DGRASP_ENABLE_MPI=ON"
 for arg in $@; do
 	if [ "$arg" == "--debug" ]; then
 		echo "Creating a DEBUG build"
@@ -13,6 +15,10 @@ for arg in $@; do
 	if [ "$arg" == "--pic" ]; then
 		echo "Force-enable position-independent code (e.g. -fPIC)"
 		cmake_args="-DCMAKE_POSITION_INDEPENDENT_CODE=ON${cmake_args:+ $cmake_args}"
+	fi
+	if [ "$arg" == "--no-mpi" ]; then
+		echo "Disabling MPI targets"
+		cmake_args="-DGRASP_ENABLE_MPI=OFF${cmake_args:+ $cmake_args}"
 	fi
 done
 
