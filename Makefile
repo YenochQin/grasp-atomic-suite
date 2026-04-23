@@ -24,7 +24,9 @@ LIBRARIES = libmod lib9290 libdvd90 libmcp90 librang90 mpi90
 # 	rangular90_mpi rbiotransform90_mpi rci90_mpi rcsfinteract90 rhfs90    \
 # 	gj90 rmcdhf90_mpi  rtransition90  rwfnestimate90  rmcdhf90_mem  rmcdhf90_mem_mpi \
 # 	rdensity ris4 rhfszeeman95 rtransition90_phase
-APPLICATIONS = gj90
+# MPI applications are built by the CMake flow. Do not build serial application
+# targets by default now that the parallel programs are the primary executables.
+APPLICATIONS =
 
 LIBRARY_TARGETS = $(foreach library,$(LIBRARIES),src/lib/$(library))
 APPLICATION_TARGETS = $(foreach application,$(APPLICATIONS),src/appl/$(application))

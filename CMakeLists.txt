@@ -142,6 +142,7 @@ add_subdirectory("src/lib/librang90")
 # MPI support is enabled by default so the standard README build flow also
 # produces the MPI-enabled programs when an MPI Fortran toolchain is available.
 option(GRASP_ENABLE_MPI "Build MPI-dependent libraries and programs" ON)
+option(GRASP_BUILD_SERIAL_APPS "Build serial application targets alongside MPI programs" OFF)
 if(GRASP_ENABLE_MPI)
     find_package(MPI QUIET)
     if(MPI_Fortran_FOUND)
@@ -159,6 +160,7 @@ else()
     message("* GRASP_ENABLE_MPI:               OFF")
     message("MPI support disabled. Not building src/lib/mpi90 or MPI-dependent programs.")
 endif()
+message("* GRASP_BUILD_SERIAL_APPS:        ${GRASP_BUILD_SERIAL_APPS}")
 
 # GRASP application programs
 add_subdirectory("src/appl/gj90")
@@ -182,7 +184,8 @@ set(GJ90_REGRESSION_CASE "test")
 set(GJ90_REGRESSION_DATA_DIR "${PROJECT_SOURCE_DIR}/data")
 set(GJ90_REGRESSION_SCRIPT "${PROJECT_SOURCE_DIR}/tests/gj90_regression.sh")
 set(GJ90_MPI_REGRESSION_SCRIPT "${PROJECT_SOURCE_DIR}/tests/gj90_mpi_regression.sh")
-if(EXISTS "${GJ90_REGRESSION_SCRIPT}"
+if(TARGET gj90
+   AND EXISTS "${GJ90_REGRESSION_SCRIPT}"
    AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/isodata"
    AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.c"
    AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.m"
