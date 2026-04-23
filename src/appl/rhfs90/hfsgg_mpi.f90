@@ -57,11 +57,15 @@
          CONTR, CONTRGJ, CONTRDGJ, AUMHZ, BARNAU, DNMAU, GFAC, HFAC, FJ, &
          GJA1, AFA1, AFA2, BFA1, BFA2, BFA3, GJ, DGJ, TILDE1, &
          TILDE2, FACTOR1, FACTOR2, RAC1, RAC2, HFSELT1, HFSELT2, EVECIC1, EVECIR1,&
-         EVECIC2, EVECIR2, TIME_KERNEL, TIME_REDUCE, TIME_TOTAL
+         EVECIC2, EVECIR2, TIME_KERNEL, TIME_REDUCE, TIME_TOTAL, TIME_ONEPARTICLE,&
+         TIME_ACCUM
       REAL(DOUBLE), DIMENSION(1) :: TIMBUF
       INTEGER :: NCOUNT_KERNEL1, NCOUNT_KERNEL2, NCOUNT_REDUCE1, NCOUNT_REDUCE2,&
-         NCOUNT_TOTAL1, NCOUNT_TOTAL2, NCOUNT_RATE, NCOUNT_MAX
+         NCOUNT_TOTAL1, NCOUNT_TOTAL2, NCOUNT_RATE, NCOUNT_MAX, NCOUNT_ONEP1,&
+         NCOUNT_ONEP2, NCOUNT_ACC1, NCOUNT_ACC2
+      INTEGER :: IC_WORK, TERM_ACTIVE, NONZERO_ACCUM, ZERO_SKIP, ONEP_CALLS
       CHARACTER :: CNUM*11
+      CHARACTER(LEN=160) :: MSG
 !-----------------------------------------------
 !
 !
@@ -109,11 +113,19 @@
       IPT = 1
       CALL SYSTEM_CLOCK (NCOUNT_TOTAL1, NCOUNT_RATE, NCOUNT_MAX)
       CALL SYSTEM_CLOCK (NCOUNT_KERNEL1, NCOUNT_RATE, NCOUNT_MAX)
+      TIME_ONEPARTICLE = 0.0D00
+      TIME_ACCUM = 0.0D00
+      IC_WORK = 0
+      TERM_ACTIVE = 0
+      NONZERO_ACCUM = 0
+      ZERO_SKIP = 0
+      ONEP_CALLS = 0
 !
 !   Sweep through the Hamiltonian matrix to determine the
 !   diagonal and off-diagonal hyperfine constants
 !
       DO IC = MYID + 1, NCF, NPROCS
+         IC_WORK = IC_WORK + 1
          ITJPOC = ITJPO(IC)
 !
 !   Output IC on the screen to show how far the calculation has preceede
@@ -157,7 +169,13 @@
                IF (.NOT.(IDIFF==0 .AND. IR>=IC .OR. IDIFF==2 .OR. IDIFF==4&
                    .AND. KT==2)) CYCLE
 !
-                CALL ONEPARTICLEJJ(KT,IPT,IC,IR,IA,IB,TSHELL)
+               TERM_ACTIVE = TERM_ACTIVE + 1
+               ONEP_CALLS = ONEP_CALLS + 1
+               CALL SYSTEM_CLOCK (NCOUNT_ONEP1, NCOUNT_RATE, NCOUNT_MAX)
+               CALL ONEPARTICLEJJ(KT,IPT,IC,IR,IA,IB,TSHELL)
+               CALL SYSTEM_CLOCK (NCOUNT_ONEP2, NCOUNT_RATE, NCOUNT_MAX)
+               TIME_ONEPARTICLE = TIME_ONEPARTICLE + &
+                  DBLE(NCOUNT_ONEP2 - NCOUNT_ONEP1) / DBLE(NCOUNT_RATE)
 !GG               CALL TNSRJJ (KT, IPT, IC, IR, IA, IB, TSHELL)
 !
 !   Accumulate the contribution from the one-body operators;
@@ -200,7 +218,12 @@
 !   contributions from the matrix elements to obtain total contributions
 !
                IF (ABS(ELEMNT) <= CUTOFF .AND. ABS(ELEMNTGJ) <= CUTOFF .AND. &
-                   ABS(ELEMNTDGJ) <= CUTOFF) CYCLE
+                   ABS(ELEMNTDGJ) <= CUTOFF) THEN
+                  ZERO_SKIP = ZERO_SKIP + 1
+                  CYCLE
+               ENDIF
+               NONZERO_ACCUM = NONZERO_ACCUM + 1
+               CALL SYSTEM_CLOCK (NCOUNT_ACC1, NCOUNT_RATE, NCOUNT_MAX)
                DO K = 1, NVEC
                   LOC1 = (K - 1)*NCF
                   EVECIC1 = EVEC(IC + LOC1)
@@ -244,6 +267,9 @@
                      ENDIF
                   END DO
                END DO
+               CALL SYSTEM_CLOCK (NCOUNT_ACC2, NCOUNT_RATE, NCOUNT_MAX)
+               TIME_ACCUM = TIME_ACCUM + &
+                  DBLE(NCOUNT_ACC2 - NCOUNT_ACC1) / DBLE(NCOUNT_RATE)
 !
             END DO
 !
@@ -280,6 +306,13 @@
          TIME_REDUCE, ' s'
       WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI total wall time  (max rank): ', &
          TIME_TOTAL, ' s'
+      WRITE (6, *) 'HFSGG_MPI per-rank work summary:'
+      WRITE (MSG, '(A,I4,A,I8,A,I10,A,I10,A,I10,A,I10,A,F10.3,A,F10.3,A)') &
+         'rank=', MYID, ' ic=', IC_WORK, ' active=', TERM_ACTIVE, &
+         ' onepcalls=', ONEP_CALLS, ' nzacc=', NONZERO_ACCUM, &
+         ' zskip=', ZERO_SKIP, ' onep=', TIME_ONEPARTICLE, &
+         's accum=', TIME_ACCUM, 's'
+      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
 !
 !   These are the conversion factors to obtain the hyperfine
 !   constants in MHz
