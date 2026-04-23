@@ -19,7 +19,7 @@
       USE EIGV_C
       USE foparm_C
       USE jlabl_C,               LABJ=>JLBR, LABP=>JLBP
-      USE mpi_C,           ONLY: MYID, NPROCS
+      USE mpi_C,           ONLY: MYID, NPROCS, MPI_COMM_WORLD
       USE nsmdat_C,        ONLY: SQN, DMOMNM, QMOMB,                  &
                                  HFSI=>SQN, HFSD=>DMOMNM, HFSQ=>QMOMB
       USE orb_C
@@ -66,6 +66,7 @@
       INTEGER :: IC_WORK, TERM_ACTIVE, NONZERO_ACCUM, ZERO_SKIP, ONEP_CALLS
       CHARACTER :: CNUM*11
       CHARACTER(LEN=160) :: MSG
+      INTEGER :: IERR2
 !-----------------------------------------------
 !
 !
@@ -312,7 +313,9 @@
          ' onepcalls=', ONEP_CALLS, ' nzacc=', NONZERO_ACCUM, &
          ' zskip=', ZERO_SKIP, ' onep=', TIME_ONEPARTICLE, &
          's accum=', TIME_ACCUM, 's'
-      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
+      CALL MPI_BARRIER(MPI_COMM_WORLD, IERR2)
+      WRITE (0, '(A)') TRIM(MSG)
+      CALL MPI_BARRIER(MPI_COMM_WORLD, IERR2)
 !
       IF (MYID /= 0) GO TO 900
 !
