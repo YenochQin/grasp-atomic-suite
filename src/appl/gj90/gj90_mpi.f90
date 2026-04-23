@@ -31,14 +31,17 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ARGC, IARG, K, NCI, NCORE_NOT_USED
+      INTEGER :: ARGC, IARG, K, NCI, NCORE_NOT_USED, NCOUNT1
       LOGICAL :: YES, USE_ARGS
       REAL(DOUBLE), DIMENSION(:), POINTER :: GJC_DIAG, DGJC_DIAG
       CHARACTER(LEN=24) :: ARG
       CHARACTER :: NAME*24
 !-----------------------------------------------
 !
-      CALL STARTMPI(MYID, NPROCS, HOST, LENHOST)
+      CALL MPIX_STARTUP(MYID, NPROCS, HOST, LENHOST, NCOUNT1, &
+         'GJ90_MPI', 'This is the MPI Lande-factor program', &
+         'isodata, name.c, name.(c)m, name.w', &
+         'name.gj or name.cgj', .TRUE.)
 !
       NAME = ' '
       NCI = 1
@@ -73,13 +76,6 @@
                NDEF = -1
             ENDIF
          ENDIF
-!
-         WRITE (ISTDE, *)
-         WRITE (ISTDE, *) 'GJ90_MPI'
-         WRITE (ISTDE, *) 'This is the MPI Lande-factor program'
-         WRITE (ISTDE, *) 'Input files:  isodata, name.c, name.(c)m, name.w'
-         WRITE (ISTDE, *) 'Output files: name.gj or name.cgj'
-         WRITE (ISTDE, *) 'Running on ', NPROCS, ' MPI ranks'
 !
          IF (.NOT.USE_ARGS .AND. NDEF == 0) THEN
             WRITE (ISTDE, *)
@@ -141,11 +137,6 @@
       CALL DALLOC(GJC_DIAG, 'GJC_DIAG', 'GJ90_MPI')
       CALL DALLOC(DGJC_DIAG, 'DGJC_DIAG', 'GJ90_MPI')
 !
-      IF (MYID == 0) THEN
-         WRITE (ISTDE, *)
-         WRITE (ISTDE, *) 'GJ90_MPI: Execution complete.'
-      ENDIF
-!
-      CALL MPI_FINALIZE(IERR)
+      CALL MPIX_SHUTDOWN(MYID, NCOUNT1, 'GJ90_MPI')
       STOP
       END PROGRAM GJ90_MPI

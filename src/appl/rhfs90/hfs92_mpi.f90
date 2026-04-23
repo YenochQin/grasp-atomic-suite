@@ -8,6 +8,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE vast_kind_param, ONLY: DOUBLE
       USE default_C
       USE iounit_C
       USE mpi_C
@@ -29,13 +30,19 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ARGC, IARG, K, NCI, NCORE_NOT_USED, IOUTERR
+      INTEGER :: ARGC, IARG, K, NCI, NCORE_NOT_USED, NCOUNT1
+      INTEGER :: NSTAGE1, NSTAGE2, NCOUNT_RATE, NCOUNT_MAX
       LOGICAL :: YES, USE_ARGS
+      REAL(DOUBLE) :: TIME_SETCSLA, TIME_GETHFD, TIME_GETMIXBLOCK, TIME_HFSGG
+      REAL(DOUBLE), DIMENSION(1) :: TIMBUF
       CHARACTER(LEN=24) :: ARG
       CHARACTER :: NAME*24
 !-----------------------------------------------
 !
-      CALL STARTMPI(MYID, NPROCS, HOST, LENHOST)
+      CALL MPIX_STARTUP(MYID, NPROCS, HOST, LENHOST, NCOUNT1, &
+         'RHFS_MPI', 'This is the MPI hyperfine structure program', &
+         'isodata, name.c, name.(c)m, name.w', &
+         'name.(c)h, name.(c)hoffd', .TRUE.)
 !
       NAME = ' '
       NCI = 1
@@ -70,13 +77,6 @@
                NDEF = -1
             ENDIF
          ENDIF
-!
-         WRITE (ISTDE, *)
-         WRITE (ISTDE, *) 'RHFS_MPI'
-         WRITE (ISTDE, *) 'This is the MPI hyperfine structure program'
-         WRITE (ISTDE, *) 'Input files:  isodata, name.c, name.(c)m, name.w'
-         WRITE (ISTDE, *) 'Output files: name.(c)h, name.(c)hoffd'
-         WRITE (ISTDE, *) 'Running on ', NPROCS, ' MPI ranks'
 !
          IF (.NOT.USE_ARGS .AND. NDEF == 0) THEN
             WRITE (ISTDE, *)
@@ -121,30 +121,55 @@
       CALL MPI_BCAST(NAME, LEN(NAME), MPI_CHARACTER, 0, MPI_COMM_WORLD, IERR)
       CALL MPI_BCAST(NCI, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)
 !
-!   Keep the verbose startup/loading messages on the root rank only.
-!
-      IF (MYID /= 0) THEN
-         OPEN (UNIT=6, FILE='/dev/null', STATUS='OLD', ACTION='WRITE', &
-            IOSTAT=IOUTERR)
-      ENDIF
-!
       CALL SETDBG
       CALL SETMC
       CALL SETCON
       IF (MYID == 0) CALL SETSUM(NAME, NCI)
+      CALL SYSTEM_CLOCK(NSTAGE1, NCOUNT_RATE, NCOUNT_MAX)
       CALL SETCSLA(NAME, NCORE_NOT_USED)
+      CALL SYSTEM_CLOCK(NSTAGE2, NCOUNT_RATE, NCOUNT_MAX)
+      TIME_SETCSLA = DBLE(NSTAGE2 - NSTAGE1) / DBLE(NCOUNT_RATE)
+      TIMBUF(1) = TIME_SETCSLA
+      CALL GDMAXMPI_ROOT(TIMBUF, 1)
+      IF (MYID == 0) TIME_SETCSLA = TIMBUF(1)
+!
+      CALL SYSTEM_CLOCK(NSTAGE1, NCOUNT_RATE, NCOUNT_MAX)
       CALL GETHFD(NAME)
+      CALL SYSTEM_CLOCK(NSTAGE2, NCOUNT_RATE, NCOUNT_MAX)
+      TIME_GETHFD = DBLE(NSTAGE2 - NSTAGE1) / DBLE(NCOUNT_RATE)
+      TIMBUF(1) = TIME_GETHFD
+      CALL GDMAXMPI_ROOT(TIMBUF, 1)
+      IF (MYID == 0) TIME_GETHFD = TIMBUF(1)
+!
+      CALL SYSTEM_CLOCK(NSTAGE1, NCOUNT_RATE, NCOUNT_MAX)
       CALL GETMIXBLOCK(NAME, NCI)
+      CALL SYSTEM_CLOCK(NSTAGE2, NCOUNT_RATE, NCOUNT_MAX)
+      TIME_GETMIXBLOCK = DBLE(NSTAGE2 - NSTAGE1) / DBLE(NCOUNT_RATE)
+      TIMBUF(1) = TIME_GETMIXBLOCK
+      CALL GDMAXMPI_ROOT(TIMBUF, 1)
+      IF (MYID == 0) TIME_GETMIXBLOCK = TIMBUF(1)
       IF (MYID == 0) CALL STRSUM
       CALL FACTT
 !
+      CALL SYSTEM_CLOCK(NSTAGE1, NCOUNT_RATE, NCOUNT_MAX)
       CALL HFSGG_MPI
+      CALL SYSTEM_CLOCK(NSTAGE2, NCOUNT_RATE, NCOUNT_MAX)
+      TIME_HFSGG = DBLE(NSTAGE2 - NSTAGE1) / DBLE(NCOUNT_RATE)
+      TIMBUF(1) = TIME_HFSGG
+      CALL GDMAXMPI_ROOT(TIMBUF, 1)
+      IF (MYID == 0) TIME_HFSGG = TIMBUF(1)
 !
       IF (MYID == 0) THEN
-         WRITE (ISTDE, *)
-         WRITE (ISTDE, *) 'RHFS_MPI: Execution complete.'
+         WRITE (6, '(A, F10.3, A)') 'RHFS_MPI setcsla wall time  (max rank): ', &
+            TIME_SETCSLA, ' s'
+         WRITE (6, '(A, F10.3, A)') 'RHFS_MPI gethfd wall time   (max rank): ', &
+            TIME_GETHFD, ' s'
+         WRITE (6, '(A, F10.3, A)') 'RHFS_MPI getmix wall time   (max rank): ', &
+            TIME_GETMIXBLOCK, ' s'
+         WRITE (6, '(A, F10.3, A)') 'RHFS_MPI hfsgg wall time    (max rank): ', &
+            TIME_HFSGG, ' s'
       ENDIF
 !
-      CALL MPI_FINALIZE(IERR)
+      CALL MPIX_SHUTDOWN(MYID, NCOUNT1, 'RHFS_MPI')
       STOP
       END PROGRAM HFS92_MPI

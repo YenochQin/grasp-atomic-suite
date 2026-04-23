@@ -31,6 +31,39 @@
       end
 
 !***********************************************************************
+      subroutine mpix_startup (myid, nprocs, host, lenhost, ncount1, &
+                               progname, description, infiledesc, &
+                               outfiledesc, quiet_workers)
+! Shared-filesystem-safe MPI startup for the post-processing programs.
+! Unlike startmpi2, this variant does not change the working directory.
+!***********************************************************************
+      IMPLICIT NONE
+      include 'mpif.h'
+      INTEGER :: myid, nprocs, lenhost, ncount1
+      CHARACTER(LEN=*), INTENT(IN) :: host, progname, description
+      CHARACTER(LEN=*), INTENT(IN) :: infiledesc, outfiledesc
+      LOGICAL, INTENT(IN) :: quiet_workers
+      INTEGER :: ncount_rate, ncount_max, iouterr
+
+      CALL startmpi (myid, nprocs, host, lenhost)
+      CALL SYSTEM_CLOCK (ncount1, ncount_rate, ncount_max)
+
+      IF (myid .EQ. 0) THEN
+         WRITE (6, *)
+         WRITE (6, *) TRIM(progname)
+         WRITE (6, *) TRIM(description)
+         WRITE (6, *) 'Input files:  ' // TRIM(infiledesc)
+         WRITE (6, *) 'Output files: ' // TRIM(outfiledesc)
+         WRITE (6, *) 'Running on ', nprocs, ' MPI ranks'
+      ELSE IF (quiet_workers) THEN
+         OPEN (UNIT=6, FILE='/dev/null', STATUS='OLD', ACTION='WRITE', &
+              IOSTAT=iouterr)
+      ENDIF
+
+      return
+      end
+
+!***********************************************************************
       subroutine startmpi2 (myid, nprocs, host, lenhost, ncount1, &
                            startdir, permdir, tmpdir, progname)
 ! Calls startmpi to get mpi environment;
@@ -129,6 +162,38 @@
 !=======================================================================
 
       CALL SYSTEM_CLOCK (ncount1, ncount_rate, ncount_max)
+      return
+      end
+
+!***********************************************************************
+      subroutine mpix_shutdown (myid, ncount1, progname)
+! Shared-filesystem-safe MPI shutdown companion to mpix_startup.
+!***********************************************************************
+      IMPLICIT NONE
+      include 'mpif.h'
+      INTEGER, INTENT(IN) :: myid, ncount1
+      CHARACTER(LEN=*), INTENT(IN) :: progname
+      INTEGER :: ncount2, ncount_rate, ncount_max, nseconds, ierr
+      CHARACTER(LEN=8) :: chdate
+      CHARACTER(LEN=10) :: chtime
+      CHARACTER(LEN=5) :: chzone
+      INTEGER, DIMENSION(8) :: nYMDUHMSM
+
+      CALL SYSTEM_CLOCK (ncount2, ncount_rate, ncount_max)
+      ncount2 = ncount2 - ncount1
+      nseconds = ncount2 / ncount_rate
+      CALL DATE_AND_TIME (chdate, chtime, chzone, nYMDUHMSM)
+
+      IF (myid .EQ. 0) THEN
+         WRITE (6, *)
+         WRITE (6, *) TRIM(progname) // ': Execution complete.'
+         WRITE (6, *) 'Wall time: ', nseconds, ' seconds'
+         WRITE (6, *) 'Finish date: ', chdate, ' time: ', chtime, &
+                      ' zone: ', chzone
+      ENDIF
+
+      CALL MPI_Finalize (ierr)
+
       return
       end
 
@@ -344,6 +409,63 @@
       CALL MPI_Allreduce (x, y, n, MPI_DOUBLE_PRECISION, &
                                    MPI_SUM, MPI_COMM_WORLD, ierr)
       CALL dcopy (n, y, 1, x, 1)   ! copy y to x
+
+      RETURN
+      END
+
+!***********************************************************************
+      SUBROUTINE gdrsummpi_root (x, n)
+
+!     Sum x onto node-0 only; non-root ranks do not receive the result.
+!***********************************************************************
+      USE vast_kind_param, ONLY:  DOUBLE
+      USE mpi_C, ONLY: MYID
+      IMPLICIT NONE
+      INCLUDE 'mpif.h'
+
+      INTEGER, INTENT(IN)                          :: n
+      REAL(DOUBLE), DIMENSION(1:n), INTENT(INOUT) :: x
+
+      INTEGER                                      :: ierr
+      REAL(DOUBLE), DIMENSION(1:n)                 :: y
+
+      IF (MYID .EQ. 0) THEN
+         CALL dinit (n, 0.d0, y, 1)
+         CALL MPI_Reduce (x, y, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, &
+                          MPI_COMM_WORLD, ierr)
+         CALL dcopy (n, y, 1, x, 1)
+      ELSE
+         CALL MPI_Reduce (x, y, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, &
+                          MPI_COMM_WORLD, ierr)
+      ENDIF
+
+      RETURN
+      END
+
+!***********************************************************************
+      SUBROUTINE gdmaxmpi_root (x, n)
+
+!     Max x onto node-0 only; non-root ranks do not receive the result.
+!***********************************************************************
+      USE vast_kind_param, ONLY:  DOUBLE
+      USE mpi_C, ONLY: MYID
+      IMPLICIT NONE
+      INCLUDE 'mpif.h'
+
+      INTEGER, INTENT(IN)                          :: n
+      REAL(DOUBLE), DIMENSION(1:n), INTENT(INOUT) :: x
+
+      INTEGER                                      :: ierr
+      REAL(DOUBLE), DIMENSION(1:n)                 :: y
+
+      IF (MYID .EQ. 0) THEN
+         CALL MPI_Reduce (x, y, n, MPI_DOUBLE_PRECISION, MPI_MAX, 0, &
+                          MPI_COMM_WORLD, ierr)
+         CALL dcopy (n, y, 1, x, 1)
+      ELSE
+         CALL MPI_Reduce (x, y, n, MPI_DOUBLE_PRECISION, MPI_MAX, 0, &
+                          MPI_COMM_WORLD, ierr)
+      ENDIF
 
       RETURN
       END

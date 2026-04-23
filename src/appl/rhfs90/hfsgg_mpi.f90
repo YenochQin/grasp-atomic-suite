@@ -45,9 +45,8 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: FFMIN, FFMAX, FF, I, J, KT, IPT, IC, LCNUM, IR, ISPARC, ITJPOC&
-         , ITJPOR, IDIFF, IA, IB, K, KK, LOC1, LOC2, II, JJ, JJII, JB, JA, JJB&
-         , JJA, IFLAG
+      INTEGER :: FFMIN, FFMAX, FF, I, J, KT, IPT, IC, LCNUM, IR, ITJPOC, ITJPOR&
+         , IDIFF, IA, IB, K, KK, LOC1, LOC2, II, JJ, JJII, JB, JA, JJB, JJA, IFLAG
       REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL
       REAL(DOUBLE), DIMENSION(2,NNNW,NNNW) :: RINTME, AMELT
       REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: RINTGJ, RINTDGJ, GJMELT, DGJMELT
@@ -57,7 +56,11 @@
       REAL(DOUBLE) ::  APART, GJPART, DGJPART, ELEMNT,  ELEMNTGJ, ELEMNTDGJ,&
          CONTR, CONTRGJ, CONTRDGJ, AUMHZ, BARNAU, DNMAU, GFAC, HFAC, FJ, &
          GJA1, AFA1, AFA2, BFA1, BFA2, BFA3, GJ, DGJ, TILDE1, &
-         TILDE2, FACTOR1, FACTOR2, RAC1, RAC2, HFSELT1, HFSELT2
+         TILDE2, FACTOR1, FACTOR2, RAC1, RAC2, HFSELT1, HFSELT2, EVECIC1, EVECIR1,&
+         EVECIC2, EVECIR2, TIME_KERNEL, TIME_REDUCE, TIME_TOTAL
+      REAL(DOUBLE), DIMENSION(1) :: TIMBUF
+      INTEGER :: NCOUNT_KERNEL1, NCOUNT_KERNEL2, NCOUNT_REDUCE1, NCOUNT_REDUCE2,&
+         NCOUNT_TOTAL1, NCOUNT_TOTAL2, NCOUNT_RATE, NCOUNT_MAX
       CHARACTER :: CNUM*11
 !-----------------------------------------------
 !
@@ -104,11 +107,14 @@
 !   Set the parity of the one-body operators
 !
       IPT = 1
+      CALL SYSTEM_CLOCK (NCOUNT_TOTAL1, NCOUNT_RATE, NCOUNT_MAX)
+      CALL SYSTEM_CLOCK (NCOUNT_KERNEL1, NCOUNT_RATE, NCOUNT_MAX)
 !
 !   Sweep through the Hamiltonian matrix to determine the
 !   diagonal and off-diagonal hyperfine constants
 !
       DO IC = MYID + 1, NCF, NPROCS
+         ITJPOC = ITJPO(IC)
 !
 !   Output IC on the screen to show how far the calculation has preceede
 !
@@ -125,8 +131,6 @@
 !
             IF (LFORDR .AND. IC>ICCUT .AND. IC/=IR) CYCLE
 !
-            ISPARC = ISPAR(IC)
-            ITJPOC = ITJPO(IC)
             ITJPOR = ITJPO(IR)
             IDIFF = ITJPOC - ITJPOR
 !
@@ -195,21 +199,24 @@
 !   Multiply with the configuration expansion coefficients and add the
 !   contributions from the matrix elements to obtain total contributions
 !
+               IF (ABS(ELEMNT) <= CUTOFF .AND. ABS(ELEMNTGJ) <= CUTOFF .AND. &
+                   ABS(ELEMNTDGJ) <= CUTOFF) CYCLE
                DO K = 1, NVEC
+                  LOC1 = (K - 1)*NCF
+                  EVECIC1 = EVEC(IC + LOC1)
+                  EVECIR1 = EVEC(IR + LOC1)
                   DO KK = 1, NVEC
-                     LOC1 = (K - 1)*NCF
                      LOC2 = (KK - 1)*NCF
+                     EVECIC2 = EVEC(IC + LOC2)
+                     EVECIR2 = EVEC(IR + LOC2)
                      IF (IDIFF==0 .AND. IR/=IC) THEN
-                        CONTR = ELEMNT*(EVEC(IC + LOC1)*EVEC(IR + LOC2) + EVEC(&
-                           IR + LOC1)*EVEC(IC + LOC2))
-                        CONTRGJ = ELEMNTGJ*(EVEC(IC + LOC1)*EVEC(IR + LOC2) + &
-                           EVEC(IR + LOC1)*EVEC(IC + LOC2))
-                        CONTRDGJ = ELEMNTDGJ*(EVEC(IC + LOC1)*EVEC(IR + LOC2)&
-                            + EVEC(IR + LOC1)*EVEC(IC + LOC2))
+                        CONTR = ELEMNT*(EVECIC1*EVECIR2 + EVECIR1*EVECIC2)
+                        CONTRGJ = ELEMNTGJ*(EVECIC1*EVECIR2 + EVECIR1*EVECIC2)
+                        CONTRDGJ = ELEMNTDGJ*(EVECIC1*EVECIR2 + EVECIR1*EVECIC2)
                      ELSE
-                        CONTR = ELEMNT*EVEC(IC + LOC1)*EVEC(IR + LOC2)
-                        CONTRGJ = ELEMNTGJ*EVEC(IC + LOC1)*EVEC(IR + LOC2)
-                        CONTRDGJ = ELEMNTDGJ*EVEC(IC + LOC1)*EVEC(IR + LOC2)
+                        CONTR = ELEMNT*EVECIC1*EVECIR2
+                        CONTRGJ = ELEMNTGJ*EVECIC1*EVECIR2
+                        CONTRDGJ = ELEMNTDGJ*EVECIC1*EVECIR2
                      ENDIF
 !
 !   Magnetic dipole and the two operators of the g_j factor
@@ -243,11 +250,36 @@
          END DO
       END DO
 !
-      CALL GDSUMMPI(HFC(1,1), 5*NVEC*NVEC)
-      CALL GDSUMMPI(GJC(1), NVEC*NVEC)
-      CALL GDSUMMPI(DGJC(1), NVEC*NVEC)
+      CALL SYSTEM_CLOCK (NCOUNT_KERNEL2, NCOUNT_RATE, NCOUNT_MAX)
+      TIME_KERNEL = DBLE(NCOUNT_KERNEL2 - NCOUNT_KERNEL1) / DBLE(NCOUNT_RATE)
+!
+      CALL SYSTEM_CLOCK (NCOUNT_REDUCE1, NCOUNT_RATE, NCOUNT_MAX)
+      CALL GDRSUMMPI_ROOT(HFC(1,1), 5*NVEC*NVEC)
+      CALL GDRSUMMPI_ROOT(GJC(1), NVEC*NVEC)
+      CALL GDRSUMMPI_ROOT(DGJC(1), NVEC*NVEC)
+      CALL SYSTEM_CLOCK (NCOUNT_REDUCE2, NCOUNT_RATE, NCOUNT_MAX)
+      TIME_REDUCE = DBLE(NCOUNT_REDUCE2 - NCOUNT_REDUCE1) / DBLE(NCOUNT_RATE)
+      CALL SYSTEM_CLOCK (NCOUNT_TOTAL2, NCOUNT_RATE, NCOUNT_MAX)
+      TIME_TOTAL = DBLE(NCOUNT_TOTAL2 - NCOUNT_TOTAL1) / DBLE(NCOUNT_RATE)
+!
+      TIMBUF(1) = TIME_KERNEL
+      CALL GDMAXMPI_ROOT(TIMBUF, 1)
+      IF (MYID .EQ. 0) TIME_KERNEL = TIMBUF(1)
+      TIMBUF(1) = TIME_REDUCE
+      CALL GDMAXMPI_ROOT(TIMBUF, 1)
+      IF (MYID .EQ. 0) TIME_REDUCE = TIMBUF(1)
+      TIMBUF(1) = TIME_TOTAL
+      CALL GDMAXMPI_ROOT(TIMBUF, 1)
+      IF (MYID .EQ. 0) TIME_TOTAL = TIMBUF(1)
 !
       IF (MYID /= 0) GO TO 900
+!
+      WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI kernel wall time (max rank): ', &
+         TIME_KERNEL, ' s'
+      WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI reduce wall time (max rank): ', &
+         TIME_REDUCE, ' s'
+      WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI total wall time  (max rank): ', &
+         TIME_TOTAL, ' s'
 !
 !   These are the conversion factors to obtain the hyperfine
 !   constants in MHz

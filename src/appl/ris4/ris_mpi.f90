@@ -21,12 +21,15 @@
       USE factt_I
       USE ris_cal_mpi_I
       IMPLICIT NONE
-      INTEGER :: ARGC, IARG, K, NCI, NCORE_NOT_USED, IOUTERR
+      INTEGER :: ARGC, IARG, K, NCI, NCORE_NOT_USED, NCOUNT1
       LOGICAL :: YES, USE_ARGS
       CHARACTER(LEN=24) :: ARG
       CHARACTER :: NAME*24
 
-      CALL STARTMPI(MYID, NPROCS, HOST, LENHOST)
+      CALL MPIX_STARTUP(MYID, NPROCS, HOST, LENHOST, NCOUNT1, &
+         'RIS4_MPI', 'This is the MPI RIS program', &
+         'isodata, name.c, name.(c)m, name.w', &
+         'name.i or name.ci', .TRUE.)
 
       NAME = ' '
       NCI = 1
@@ -62,13 +65,6 @@
                NDEF = -1
             ENDIF
          ENDIF
-
-         WRITE (ISTDE, *)
-         WRITE (ISTDE, *) 'RIS4_MPI'
-         WRITE (ISTDE, *) 'This is the MPI RIS program'
-         WRITE (ISTDE, *) 'Input files:  isodata, name.c, name.(c)m, name.w'
-         WRITE (ISTDE, *) 'Output files: name.i or name.ci'
-         WRITE (ISTDE, *) 'Running on ', NPROCS, ' MPI ranks'
 
          IF (.NOT.USE_ARGS .AND. NDEF == 0) THEN
             WRITE (ISTDE, *)
@@ -111,11 +107,6 @@
       CALL MPI_BCAST(NAME, LEN(NAME), MPI_CHARACTER, 0, MPI_COMM_WORLD, IERR)
       CALL MPI_BCAST(NCI, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)
 
-      IF (MYID /= 0) THEN
-         OPEN (UNIT=6, FILE='/dev/null', STATUS='OLD', ACTION='WRITE', &
-            IOSTAT=IOUTERR)
-      ENDIF
-
       CALL SETDBG
       CALL SETMC
       CALL SETCON
@@ -126,10 +117,6 @@
       CALL FACTT
       CALL RIS_CAL_MPI(NAME)
 
-      IF (MYID == 0) THEN
-         WRITE (ISTDE, *)
-         WRITE (ISTDE, *) 'RIS4_MPI: Execution complete.'
-      ENDIF
-      CALL MPI_FINALIZE(IERR)
+      CALL MPIX_SHUTDOWN(MYID, NCOUNT1, 'RIS4_MPI')
       STOP
       END PROGRAM RIS_MPI
