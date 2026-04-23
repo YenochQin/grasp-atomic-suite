@@ -57,16 +57,15 @@
          CONTR, CONTRGJ, CONTRDGJ, AUMHZ, BARNAU, DNMAU, GFAC, HFAC, FJ, &
          GJA1, AFA1, AFA2, BFA1, BFA2, BFA3, GJ, DGJ, TILDE1, &
          TILDE2, FACTOR1, FACTOR2, RAC1, RAC2, HFSELT1, HFSELT2, EVECIC1, EVECIR1,&
-         EVECIC2, EVECIR2, TIME_KERNEL, TIME_REDUCE, TIME_TOTAL, TIME_ONEPARTICLE,&
-         TIME_ACCUM
+         EVECIC2, EVECIR2, TIME_KERNEL, TIME_REDUCE, TIME_PHASE, TIME_TOTAL, &
+         TIME_ONEPARTICLE, TIME_ACCUM, TIME_POST
       REAL(DOUBLE), DIMENSION(1) :: TIMBUF
       INTEGER :: NCOUNT_KERNEL1, NCOUNT_KERNEL2, NCOUNT_REDUCE1, NCOUNT_REDUCE2,&
          NCOUNT_TOTAL1, NCOUNT_TOTAL2, NCOUNT_RATE, NCOUNT_MAX, NCOUNT_ONEP1,&
-         NCOUNT_ONEP2, NCOUNT_ACC1, NCOUNT_ACC2
+         NCOUNT_ONEP2, NCOUNT_ACC1, NCOUNT_ACC2, NCOUNT_POST1, NCOUNT_POST2
       INTEGER :: IC_WORK, TERM_ACTIVE, NONZERO_ACCUM, ZERO_SKIP, ONEP_CALLS
       CHARACTER :: CNUM*11
       CHARACTER(LEN=160) :: MSG
-      INTEGER :: IERR2
 !-----------------------------------------------
 !
 !
@@ -287,7 +286,7 @@
       CALL SYSTEM_CLOCK (NCOUNT_REDUCE2, NCOUNT_RATE, NCOUNT_MAX)
       TIME_REDUCE = DBLE(NCOUNT_REDUCE2 - NCOUNT_REDUCE1) / DBLE(NCOUNT_RATE)
       CALL SYSTEM_CLOCK (NCOUNT_TOTAL2, NCOUNT_RATE, NCOUNT_MAX)
-      TIME_TOTAL = DBLE(NCOUNT_TOTAL2 - NCOUNT_TOTAL1) / DBLE(NCOUNT_RATE)
+      TIME_PHASE = DBLE(NCOUNT_TOTAL2 - NCOUNT_TOTAL1) / DBLE(NCOUNT_RATE)
 !
       TIMBUF(1) = TIME_KERNEL
       CALL GDMAXMPI_ROOT(TIMBUF, 1)
@@ -295,17 +294,17 @@
       TIMBUF(1) = TIME_REDUCE
       CALL GDMAXMPI_ROOT(TIMBUF, 1)
       IF (MYID .EQ. 0) TIME_REDUCE = TIMBUF(1)
-      TIMBUF(1) = TIME_TOTAL
+      TIMBUF(1) = TIME_PHASE
       CALL GDMAXMPI_ROOT(TIMBUF, 1)
-      IF (MYID .EQ. 0) TIME_TOTAL = TIMBUF(1)
+      IF (MYID .EQ. 0) TIME_PHASE = TIMBUF(1)
 !
       IF (MYID .EQ. 0) THEN
          WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI kernel wall time (max rank): ', &
             TIME_KERNEL, ' s'
          WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI reduce wall time (max rank): ', &
             TIME_REDUCE, ' s'
-         WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI total wall time  (max rank): ', &
-            TIME_TOTAL, ' s'
+         WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI distributed phase wall time (max rank): ', &
+            TIME_PHASE, ' s'
          WRITE (6, *) 'HFSGG_MPI per-rank work summary:'
       ENDIF
       WRITE (MSG, '(A,I4,A,I8,A,I10,A,I10,A,I10,A,I10,A,F10.3,A,F10.3,A)') &
@@ -313,11 +312,11 @@
          ' onepcalls=', ONEP_CALLS, ' nzacc=', NONZERO_ACCUM, &
          ' zskip=', ZERO_SKIP, ' onep=', TIME_ONEPARTICLE, &
          's accum=', TIME_ACCUM, 's'
-      CALL MPI_BARRIER(MPI_COMM_WORLD, IERR2)
-      WRITE (0, '(A)') TRIM(MSG)
-      CALL MPI_BARRIER(MPI_COMM_WORLD, IERR2)
+      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
 !
       IF (MYID /= 0) GO TO 900
+      CALL SYSTEM_CLOCK (NCOUNT_POST1, NCOUNT_RATE, NCOUNT_MAX)
+      WRITE (6, *) 'HFSGG_MPI entering serial post-processing/output on root...'
 !
 !   These are the conversion factors to obtain the hyperfine
 !   constants in MHz
@@ -506,8 +505,21 @@
             END DO
          END DO
       END DO
+      CALL SYSTEM_CLOCK (NCOUNT_POST2, NCOUNT_RATE, NCOUNT_MAX)
+      TIME_POST = DBLE(NCOUNT_POST2 - NCOUNT_POST1) / DBLE(NCOUNT_RATE)
+      WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI post-processing wall time: ', &
+         TIME_POST, ' s'
 !
   900 CONTINUE
+      CALL SYSTEM_CLOCK (NCOUNT_TOTAL2, NCOUNT_RATE, NCOUNT_MAX)
+      TIME_TOTAL = DBLE(NCOUNT_TOTAL2 - NCOUNT_TOTAL1) / DBLE(NCOUNT_RATE)
+      TIMBUF(1) = TIME_TOTAL
+      CALL GDMAXMPI_ROOT(TIMBUF, 1)
+      IF (MYID .EQ. 0) THEN
+         TIME_TOTAL = TIMBUF(1)
+         WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI full wall time (max rank): ', &
+            TIME_TOTAL, ' s'
+      ENDIF
       CALL DALLOC (HFC, 'HFC', 'HFS_MPI')
       CALL DALLOC (GJC, 'GJC', 'HFS_MPI')
       CALL DALLOC (DGJC, 'DGJC', 'HFS_MPI')
