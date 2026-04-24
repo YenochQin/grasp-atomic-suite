@@ -16,7 +16,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ONE
+      USE CONS_C,          ONLY: ZERO, ONE
       USE m_C,             ONLY: JLIST, JJQ1, JJQ2, NPEEL
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -38,6 +38,41 @@
       INTEGER :: IJ, ISKR, NPEELGG
       REAL(DOUBLE) :: S, SS, RE
 !-----------------------------------------------
+      IF(IRE == 0) THEN
+        RECC=ZERO
+        IAT=1
+        IF(NPEEL == 1 .AND. NS == -1)RETURN
+        IF(NS == -1) THEN
+           NPEELGG = NPEEL
+        ELSE
+           NPEELGG = NS
+        END IF
+        IAT=0
+        ISKR=NPEELGG-JA2
+        IF(ISKR > 1) THEN
+          CALL DIAGA3(JA2,NPEELGG,2*KA,0,IAT,RE)
+          IF(IAT == 0)RETURN
+          IAT=0
+        END IF
+        IF(JA2 /= NPEELGG) THEN
+          CALL DIAGA5(NPEELGG,JA2,2*KA,0,IAT,RE)
+          IF(IAT == 0)RETURN
+          IAT=0
+        ENDIF
+        CALL DIAGA4(JA1,JA2,K1,K2,2*KA,0,IAT,RE)
+        IF(IAT == 0)RETURN
+        IF(JA1 == 1.AND.JA2 == 2)RETURN
+        IAT=0
+        CALL DIAGA1(JA1,K1,0,IAT,RE)
+        IF(IAT == 0)RETURN
+        ISKR=JA2-JA1
+        IF(JA1 == 1)ISKR=JA2-1-JA1
+        IF(ISKR <= 1)RETURN
+        IAT=0
+        CALL DIAGA3(JA1,JA2,K1,0,IAT,RE)
+        RETURN
+      END IF
+
       IAT=1
       IJ=JLIST(JA1)
       S=DBLE(JJQ1(3,IJ))
