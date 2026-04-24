@@ -48,7 +48,7 @@
 !-----------------------------------------------
       INTEGER :: FFMIN, FFMAX, FF, I, J, KT, IPT, IC, LCNUM, IR, ITJPOC, ITJPOR&
          , IDIFF, IA, IB, K, KK, LOC1, LOC2, II, JJ, JJII, JB, JA, JJB, JJA, IFLAG, &
-         OCC_IC, OCC_IR, NDIFF, DIFF_POS, DIFF_NEG
+         OCC_IC, OCC_IR, NDIFF, DIFF_POS, DIFF_NEG, TERM_KIND
       REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL
       REAL(DOUBLE), DIMENSION(2,NNNW,NNNW) :: RINTME, AMELT, ELEMFAC
       REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: RINTGJ, RINTDGJ, GJMELT, DGJMELT, &
@@ -246,12 +246,16 @@
                TIME_ONEPARTICLE = TIME_ONEPARTICLE + &
                   DBLE(NCOUNT_ONEP2 - NCOUNT_ONEP1) / DBLE(NCOUNT_RATE)
 !GG               CALL TNSRJJ (KT, IPT, IC, IR, IA, IB, TSHELL)
+               TERM_KIND = 0
                IF (IA == 0) THEN
                   IA_ZERO_RET = IA_ZERO_RET + 1
+                  TERM_KIND = 0
                ELSE IF (IA == IB) THEN
                   IA_DIAG_RET = IA_DIAG_RET + 1
+                  TERM_KIND = 1
                ELSE
                   IA_OFFDIAG_RET = IA_OFFDIAG_RET + 1
+                  TERM_KIND = 2
                ENDIF
 !
 !   Accumulate the contribution from the one-body operators;
@@ -297,9 +301,9 @@
                      ZERO_SKIP_IA0 = ZERO_SKIP_IA0 + 1
                   ELSE
                      ZERO_SKIP_ELEM = ZERO_SKIP_ELEM + 1
-                     IF (IA == IB) THEN
+                     IF (TERM_KIND == 1) THEN
                         ZERO_SKIP_DIAG = ZERO_SKIP_DIAG + 1
-                     ELSE
+                     ELSE IF (TERM_KIND == 2) THEN
                         ZERO_SKIP_OFFDIAG = ZERO_SKIP_OFFDIAG + 1
                      ENDIF
                   ENDIF
