@@ -21,7 +21,6 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ittk_I
       USE ixjtik_I
       USE sixj_I
       IMPLICIT NONE
@@ -55,23 +54,19 @@
         IT1=JJC1(K1)-1
         IT1S=JJC2(K1)-1
       END IF
-      IF(IRE == 0) THEN
-        IAT = 0
-        IF (ITTK(KA,IB1,IA1) == 0) RETURN
-        IF (ITTK(KA,IT1,IT1S) == 0) RETURN
-        IF (ITTK(J1,IB1,IT1S) == 0) RETURN
-        IF (ITTK(J1,IT1,IA1) == 0) RETURN
-        IAT = 1
-        RETURN
+      IF(IRE /= 0) THEN
+        CALL SIXJ(KA,IB1,IA1,J1,IT1,IT1S,0,A1)
+        A1=A1*DSQRT(DBLE((IA1+1)*(IT1S+1)))
+        IFAZ=J1+IT1+IB1+KA
+        IF((IFAZ/4)*4 /= IFAZ)A1=-A1
+        RECC=A1
+        IAT=1
+        IF(JA1 /= 1)RETURN
+        IFAZ=IA1+IB1+2*J1-IT1-IT1S
+        IF((IFAZ/4)*4 /= IFAZ)RECC=-RECC
+      ELSE
+        IF(IXJTIK(KA,IB1,IA1,J1,IT1,IT1S) == 0)RETURN
+        IAT=1
       END IF
-      CALL SIXJ(KA,IB1,IA1,J1,IT1,IT1S,0,A1)
-      A1=A1*DSQRT(DBLE((IA1+1)*(IT1S+1)))
-      IFAZ=J1+IT1+IB1+KA
-      IF((IFAZ/4)*4 /= IFAZ)A1=-A1
-      RECC=A1
-      IAT=1
-      IF(JA1 /= 1)RETURN
-      IFAZ=IA1+IB1+2*J1-IT1-IT1S
-      IF((IFAZ/4)*4 /= IFAZ)RECC=-RECC
       RETURN
       END SUBROUTINE DIAGA1
