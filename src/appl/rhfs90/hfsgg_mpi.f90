@@ -36,7 +36,6 @@
       USE ispar_I
       USE itjpo_I
       USE itrig_I
-      USE ichkq1_I
       USE oneparticlejj_I
       USE gracah1_I
       IMPLICIT NONE
@@ -48,10 +47,12 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       INTEGER :: FFMIN, FFMAX, FF, I, J, KT, IPT, IC, LCNUM, IR, ITJPOC, ITJPOR&
-         , IDIFF, IA, IB, K, KK, LOC1, LOC2, II, JJ, JJII, JB, JA, JJB, JJA, IFLAG
+         , IDIFF, IA, IB, K, KK, LOC1, LOC2, II, JJ, JJII, JB, JA, JJB, JJA, IFLAG, &
+         OCC_IC, OCC_IR, NDIFF, DIFF_POS, DIFF_NEG
       REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL
-      REAL(DOUBLE), DIMENSION(2,NNNW,NNNW) :: RINTME, AMELT
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: RINTGJ, RINTDGJ, GJMELT, DGJMELT
+      REAL(DOUBLE), DIMENSION(2,NNNW,NNNW) :: RINTME, AMELT, ELEMFAC
+      REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: RINTGJ, RINTDGJ, GJMELT, DGJMELT, &
+         GJFAC, DGJFAC
 !     .. Local pointer arrays
       REAL(DOUBLE), DIMENSION(:,:), pointer :: HFC
       REAL(DOUBLE),  DIMENSION(:), pointer :: GJC, DGJC
@@ -67,7 +68,7 @@
          NCOUNT_ONEP2, NCOUNT_ACC1, NCOUNT_ACC2, NCOUNT_POST1, NCOUNT_POST2
       INTEGER :: IC_WORK, TERM_CANDIDATE, TERM_ACTIVE, NONZERO_ACCUM, ZERO_SKIP, &
          ONEP_CALLS, PRE_SKIP_TRIG, PRE_SKIP_PARITY, PRE_SKIP_OCC, IA_ZERO_RET, &
-         IA_DIAG_RET, IA_OFFDIAG_RET, ZERO_SKIP_IA0, ZERO_SKIP_ELEM
+         IA_DIAG_RET, IA_OFFDIAG_RET, ZERO_SKIP_IA0, ZERO_SKIP_ELEM, PRE_SKIP_PAIR
       CHARACTER :: CNUM*11
       CHARACTER(LEN=160) :: MSG
 !-----------------------------------------------
@@ -105,9 +106,12 @@
                ENDIF
                CALL MATELT (I, KT, J, APART, GJPART, DGJPART)
                AMELT(KT,I,J) = APART
+               ELEMFAC(KT,I,J) = APART*RINTME(KT,I,J)
                IF (KT /= 1) CYCLE
                GJMELT(I,J) = GJPART
                DGJMELT(I,J) = DGJPART
+               GJFAC(I,J) = GJPART*RINTGJ(I,J)
+               DGJFAC(I,J) = DGJPART*RINTDGJ(I,J)
             END DO
          END DO
       END DO
@@ -128,6 +132,7 @@
       PRE_SKIP_TRIG = 0
       PRE_SKIP_PARITY = 0
       PRE_SKIP_OCC = 0
+      PRE_SKIP_PAIR = 0
       IA_ZERO_RET = 0
       IA_DIAG_RET = 0
       IA_OFFDIAG_RET = 0
@@ -191,9 +196,38 @@
                   PRE_SKIP_PARITY = PRE_SKIP_PARITY + 1
                   CYCLE
                ENDIF
-               IF (ICHKQ1(IC, IR) == 0) THEN
+               NDIFF = 0
+               DIFF_POS = 0
+               DIFF_NEG = 0
+               DO I = 1, NW
+                  OCC_IC = IQA(I,IC)
+                  OCC_IR = IQA(I,IR)
+                  IF (OCC_IC == OCC_IR) CYCLE
+                  NDIFF = NDIFF + 1
+                  IF (NDIFF > 2) EXIT
+                  IF (IABS(OCC_IC - OCC_IR) > 1) THEN
+                     NDIFF = 3
+                     EXIT
+                  ENDIF
+                  IF (OCC_IC > OCC_IR) THEN
+                     DIFF_POS = I
+                  ELSE
+                     DIFF_NEG = I
+                  ENDIF
+               END DO
+               IF (NDIFF /= 0 .AND. NDIFF /= 2) THEN
                   PRE_SKIP_OCC = PRE_SKIP_OCC + 1
                   CYCLE
+               ENDIF
+               IF (NDIFF == 2) THEN
+                  IF (ABS(ELEMFAC(KT,DIFF_POS,DIFF_NEG)) <= CUTOFF) THEN
+                     IF (.NOT.(KT == 1 .AND. IDIFF == 0 .AND. &
+                         (ABS(GJFAC(DIFF_POS,DIFF_NEG)) > CUTOFF .OR. &
+                          ABS(DGJFAC(DIFF_POS,DIFF_NEG)) > CUTOFF))) THEN
+                        PRE_SKIP_PAIR = PRE_SKIP_PAIR + 1
+                        CYCLE
+                     ENDIF
+                  ENDIF
                ENDIF
                TERM_ACTIVE = TERM_ACTIVE + 1
                ONEP_CALLS = ONEP_CALLS + 1
@@ -218,30 +252,27 @@
                      IF (KT/=1 .OR. IDIFF/=0) THEN
                         DO IA = 1, NW
                            IF (ABS(TSHELL(IA)) <= CUTOFF) CYCLE
-                           ELEMNT = ELEMNT + AMELT(KT,IA,IA)*RINTME(KT,IA,IA)*&
-                              TSHELL(IA)
+                           IF (ABS(ELEMFAC(KT,IA,IA)) <= CUTOFF) CYCLE
+                           ELEMNT = ELEMNT + ELEMFAC(KT,IA,IA)*TSHELL(IA)
                            CYCLE
                         END DO
                      ELSE
                         DO IA = 1, NW
                            IF (ABS(TSHELL(IA)) <= CUTOFF) CYCLE
-                           ELEMNT = ELEMNT + AMELT(KT,IA,IA)*RINTME(KT,IA,IA)*&
-                              TSHELL(IA)
-                           ELEMNTGJ = ELEMNTGJ + GJMELT(IA,IA)*RINTGJ(IA,IA)*&
-                              TSHELL(IA)
-                           ELEMNTDGJ = ELEMNTDGJ + DGJMELT(IA,IA)*RINTDGJ(IA,IA&
-                              )*TSHELL(IA)
+                           IF (ABS(ELEMFAC(KT,IA,IA)) <= CUTOFF .AND. &
+                               ABS(GJFAC(IA,IA)) <= CUTOFF .AND. &
+                               ABS(DGJFAC(IA,IA)) <= CUTOFF) CYCLE
+                           ELEMNT = ELEMNT + ELEMFAC(KT,IA,IA)*TSHELL(IA)
+                           ELEMNTGJ = ELEMNTGJ + GJFAC(IA,IA)*TSHELL(IA)
+                           ELEMNTDGJ = ELEMNTDGJ + DGJFAC(IA,IA)*TSHELL(IA)
                         END DO
                      ENDIF
                   ELSE
                      IF (ABS(TSHELL(1)) > CUTOFF) THEN
-                        ELEMNT = ELEMNT + AMELT(KT,IA,IB)*RINTME(KT,IA,IB)*&
-                           TSHELL(1)
+                        ELEMNT = ELEMNT + ELEMFAC(KT,IA,IB)*TSHELL(1)
                         IF (KT==1 .AND. IDIFF==0) THEN
-                           ELEMNTGJ = ELEMNTGJ + GJMELT(IA,IB)*RINTGJ(IA,IB)*&
-                              TSHELL(1)
-                           ELEMNTDGJ = ELEMNTDGJ + DGJMELT(IA,IB)*RINTDGJ(IA,IB&
-                              )*TSHELL(1)
+                           ELEMNTGJ = ELEMNTGJ + GJFAC(IA,IB)*TSHELL(1)
+                           ELEMNTDGJ = ELEMNTDGJ + DGJFAC(IA,IB)*TSHELL(1)
                         ENDIF
                      ENDIF
                   ENDIF
@@ -352,9 +383,9 @@
          ' zskip=', ZERO_SKIP, ' onep=', TIME_ONEPARTICLE, &
          's accum=', TIME_ACCUM, 's'
       CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
-      WRITE (MSG, '(A,I4,A,I10,A,I10,A,I10,A,I10,A,I10,A,I10)') &
+      WRITE (MSG, '(A,I4,A,I10,A,I10,A,I10,A,I10,A,I10,A,I10,A,I10)') &
          'rank=', MYID, ' ptrig=', PRE_SKIP_TRIG, ' ppar=', PRE_SKIP_PARITY, &
-         ' pocc=', PRE_SKIP_OCC, ' ia0=', IA_ZERO_RET, &
+         ' pocc=', PRE_SKIP_OCC, ' ppair=', PRE_SKIP_PAIR, ' ia0=', IA_ZERO_RET, &
          ' diag=', IA_DIAG_RET, ' offd=', IA_OFFDIAG_RET
       CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
       WRITE (MSG, '(A,I4,A,I10,A,I10)') &
