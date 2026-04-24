@@ -89,6 +89,8 @@
 !
       GJC(:NVEC*NVEC) = 0.0D00
       DGJC(:NVEC*NVEC) = 0.0D00
+      GJFAC(:,:) = 0.0D00
+      DGJFAC(:,:) = 0.0D00
 
 !
 !   Calculate and save the radial integrals and angular
@@ -110,9 +112,13 @@
                IF (KT /= 1) CYCLE
                GJMELT(I,J) = GJPART
                DGJMELT(I,J) = DGJPART
-               GJFAC(I,J) = GJPART*RINTGJ(I,J)
-               DGJFAC(I,J) = DGJPART*RINTDGJ(I,J)
             END DO
+         END DO
+      END DO
+      DO I = 1, NW
+         DO J = 1, NW
+            GJFAC(I,J) = GJMELT(I,J)*RINTGJ(I,J)
+            DGJFAC(I,J) = DGJMELT(I,J)*RINTDGJ(I,J)
          END DO
       END DO
 !
