@@ -32,12 +32,10 @@
       USE rinthf_I
       USE rint_I
       USE matelt_I
-      USE convrt_I
       USE ispar_I
       USE itjpo_I
       USE itrig_I
       USE oneparticlejj_I
-      USE oneparticlejj2_stats_C
       USE gracah1_I
       IMPLICIT NONE
 !-----------------------------------------------
@@ -47,9 +45,9 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: FFMIN, FFMAX, FF, I, J, KT, IPT, IC, LCNUM, IR, ITJPOC, ITJPOR&
+      INTEGER :: FFMIN, FFMAX, FF, I, J, KT, IPT, IC, IR, ITJPOC, ITJPOR&
          , IDIFF, IA, IB, K, KK, LOC1, LOC2, II, JJ, JJII, JB, JA, JJB, JJA, IFLAG, &
-         OCC_IC, OCC_IR, NDIFF, DIFF_POS, DIFF_NEG, TERM_KIND
+         OCC_IC, OCC_IR, NDIFF, DIFF_POS, DIFF_NEG
       REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL
       REAL(DOUBLE), DIMENSION(2,NNNW,NNNW) :: RINTME, AMELT, ELEMFAC
       REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: RINTGJ, RINTDGJ, GJMELT, DGJMELT, &
@@ -61,18 +59,7 @@
          CONTR, CONTRGJ, CONTRDGJ, AUMHZ, BARNAU, DNMAU, GFAC, HFAC, FJ, &
          GJA1, AFA1, AFA2, BFA1, BFA2, BFA3, GJ, DGJ, TILDE1, &
          TILDE2, FACTOR1, FACTOR2, RAC1, RAC2, HFSELT1, HFSELT2, EVECIC1, EVECIR1,&
-         EVECIC2, EVECIR2, TIME_KERNEL, TIME_REDUCE, TIME_PHASE, TIME_TOTAL, &
-         TIME_ONEPARTICLE, TIME_ACCUM, TIME_POST
-      REAL(DOUBLE), DIMENSION(1) :: TIMBUF
-      INTEGER :: NCOUNT_KERNEL1, NCOUNT_KERNEL2, NCOUNT_REDUCE1, NCOUNT_REDUCE2,&
-         NCOUNT_TOTAL1, NCOUNT_TOTAL2, NCOUNT_RATE, NCOUNT_MAX, NCOUNT_ONEP1,&
-         NCOUNT_ONEP2, NCOUNT_ACC1, NCOUNT_ACC2, NCOUNT_POST1, NCOUNT_POST2
-      INTEGER :: IC_WORK, TERM_CANDIDATE, TERM_ACTIVE, NONZERO_ACCUM, ZERO_SKIP, &
-         ONEP_CALLS, PRE_SKIP_TRIG, PRE_SKIP_PARITY, PRE_SKIP_OCC, IA_ZERO_RET, &
-         IA_DIAG_RET, IA_OFFDIAG_RET, ZERO_SKIP_IA0, ZERO_SKIP_ELEM, &
-         ZERO_SKIP_DIAG, ZERO_SKIP_OFFDIAG, PRE_SKIP_PAIR
-      CHARACTER :: CNUM*11
-      CHARACTER(LEN=160) :: MSG
+         EVECIC2, EVECIR2
 !-----------------------------------------------
 !
 !
@@ -127,42 +114,12 @@
 !   Set the parity of the one-body operators
 !
       IPT = 1
-      CALL SYSTEM_CLOCK (NCOUNT_TOTAL1, NCOUNT_RATE, NCOUNT_MAX)
-      CALL SYSTEM_CLOCK (NCOUNT_KERNEL1, NCOUNT_RATE, NCOUNT_MAX)
-      TIME_ONEPARTICLE = 0.0D00
-      TIME_ACCUM = 0.0D00
-      IC_WORK = 0
-      TERM_CANDIDATE = 0
-      TERM_ACTIVE = 0
-      NONZERO_ACCUM = 0
-      ZERO_SKIP = 0
-      ONEP_CALLS = 0
-      PRE_SKIP_TRIG = 0
-      PRE_SKIP_PARITY = 0
-      PRE_SKIP_OCC = 0
-      PRE_SKIP_PAIR = 0
-      IA_ZERO_RET = 0
-      IA_DIAG_RET = 0
-      IA_OFFDIAG_RET = 0
-      ZERO_SKIP_IA0 = 0
-      ZERO_SKIP_ELEM = 0
-      ZERO_SKIP_DIAG = 0
-      ZERO_SKIP_OFFDIAG = 0
-      CALL RESET_ONEPARTICLEJJ2_STATS()
 !
 !   Sweep through the Hamiltonian matrix to determine the
 !   diagonal and off-diagonal hyperfine constants
 !
       DO IC = MYID + 1, NCF, NPROCS
-         IC_WORK = IC_WORK + 1
          ITJPOC = ITJPO(IC)
-!
-!   Output IC on the screen to show how far the calculation has preceede
-!
-         IF (MYID == 0 .AND. MOD(IC,100) == 1) THEN
-            CALL CONVRT (IC, CNUM, LCNUM)
-            WRITE (6, *) 'Column '//CNUM(1:LCNUM)//' complete on root;'
-         ENDIF
 !
          DO IR = 1, NCF
 !
@@ -198,13 +155,10 @@
                IF (.NOT.(IDIFF==0 .AND. IR>=IC .OR. IDIFF==2 .OR. IDIFF==4&
                    .AND. KT==2)) CYCLE
 !
-               TERM_CANDIDATE = TERM_CANDIDATE + 1
                IF (ITRIG(ITJPOC, ITJPOR, 2*KT + 1) == 0) THEN
-                  PRE_SKIP_TRIG = PRE_SKIP_TRIG + 1
                   CYCLE
                ENDIF
                IF (IPT /= 0 .AND. ISPAR(IC)*ISPAR(IR)*IPT /= 1) THEN
-                  PRE_SKIP_PARITY = PRE_SKIP_PARITY + 1
                   CYCLE
                ENDIF
                NDIFF = 0
@@ -227,7 +181,6 @@
                   ENDIF
                END DO
                IF (NDIFF /= 0 .AND. NDIFF /= 2) THEN
-                  PRE_SKIP_OCC = PRE_SKIP_OCC + 1
                   CYCLE
                ENDIF
                IF (NDIFF == 2) THEN
@@ -235,30 +188,12 @@
                      IF (.NOT.(KT == 1 .AND. IDIFF == 0 .AND. &
                          (ABS(GJFAC(DIFF_POS,DIFF_NEG)) > CUTOFF .OR. &
                           ABS(DGJFAC(DIFF_POS,DIFF_NEG)) > CUTOFF))) THEN
-                        PRE_SKIP_PAIR = PRE_SKIP_PAIR + 1
                         CYCLE
                      ENDIF
                   ENDIF
                ENDIF
-               TERM_ACTIVE = TERM_ACTIVE + 1
-               ONEP_CALLS = ONEP_CALLS + 1
-               CALL SYSTEM_CLOCK (NCOUNT_ONEP1, NCOUNT_RATE, NCOUNT_MAX)
                CALL ONEPARTICLEJJ(KT,IPT,IC,IR,IA,IB,TSHELL)
-               CALL SYSTEM_CLOCK (NCOUNT_ONEP2, NCOUNT_RATE, NCOUNT_MAX)
-               TIME_ONEPARTICLE = TIME_ONEPARTICLE + &
-                  DBLE(NCOUNT_ONEP2 - NCOUNT_ONEP1) / DBLE(NCOUNT_RATE)
 !GG               CALL TNSRJJ (KT, IPT, IC, IR, IA, IB, TSHELL)
-               TERM_KIND = 0
-               IF (IA == 0) THEN
-                  IA_ZERO_RET = IA_ZERO_RET + 1
-                  TERM_KIND = 0
-               ELSE IF (IA == IB) THEN
-                  IA_DIAG_RET = IA_DIAG_RET + 1
-                  TERM_KIND = 1
-               ELSE
-                  IA_OFFDIAG_RET = IA_OFFDIAG_RET + 1
-                  TERM_KIND = 2
-               ENDIF
 !
 !   Accumulate the contribution from the one-body operators;
 !
@@ -298,21 +233,8 @@
 !
                IF (ABS(ELEMNT) <= CUTOFF .AND. ABS(ELEMNTGJ) <= CUTOFF .AND. &
                    ABS(ELEMNTDGJ) <= CUTOFF) THEN
-                  ZERO_SKIP = ZERO_SKIP + 1
-                  IF (IA == 0) THEN
-                     ZERO_SKIP_IA0 = ZERO_SKIP_IA0 + 1
-                  ELSE
-                     ZERO_SKIP_ELEM = ZERO_SKIP_ELEM + 1
-                     IF (TERM_KIND == 1) THEN
-                        ZERO_SKIP_DIAG = ZERO_SKIP_DIAG + 1
-                     ELSE IF (TERM_KIND == 2) THEN
-                        ZERO_SKIP_OFFDIAG = ZERO_SKIP_OFFDIAG + 1
-                     ENDIF
-                  ENDIF
                   CYCLE
                ENDIF
-               NONZERO_ACCUM = NONZERO_ACCUM + 1
-               CALL SYSTEM_CLOCK (NCOUNT_ACC1, NCOUNT_RATE, NCOUNT_MAX)
                DO K = 1, NVEC
                   LOC1 = (K - 1)*NCF
                   EVECIC1 = EVEC(IC + LOC1)
@@ -356,85 +278,17 @@
                      ENDIF
                   END DO
                END DO
-               CALL SYSTEM_CLOCK (NCOUNT_ACC2, NCOUNT_RATE, NCOUNT_MAX)
-               TIME_ACCUM = TIME_ACCUM + &
-                  DBLE(NCOUNT_ACC2 - NCOUNT_ACC1) / DBLE(NCOUNT_RATE)
 !
             END DO
 !
          END DO
       END DO
 !
-      CALL SYSTEM_CLOCK (NCOUNT_KERNEL2, NCOUNT_RATE, NCOUNT_MAX)
-      TIME_KERNEL = DBLE(NCOUNT_KERNEL2 - NCOUNT_KERNEL1) / DBLE(NCOUNT_RATE)
-!
-      CALL SYSTEM_CLOCK (NCOUNT_REDUCE1, NCOUNT_RATE, NCOUNT_MAX)
       CALL GDRSUMMPI_ROOT(HFC(1,1), 5*NVEC*NVEC)
       CALL GDRSUMMPI_ROOT(GJC(1), NVEC*NVEC)
       CALL GDRSUMMPI_ROOT(DGJC(1), NVEC*NVEC)
-      CALL SYSTEM_CLOCK (NCOUNT_REDUCE2, NCOUNT_RATE, NCOUNT_MAX)
-      TIME_REDUCE = DBLE(NCOUNT_REDUCE2 - NCOUNT_REDUCE1) / DBLE(NCOUNT_RATE)
-      CALL SYSTEM_CLOCK (NCOUNT_TOTAL2, NCOUNT_RATE, NCOUNT_MAX)
-      TIME_PHASE = DBLE(NCOUNT_TOTAL2 - NCOUNT_TOTAL1) / DBLE(NCOUNT_RATE)
-!
-      TIMBUF(1) = TIME_KERNEL
-      CALL GDMAXMPI_ROOT(TIMBUF, 1)
-      IF (MYID .EQ. 0) TIME_KERNEL = TIMBUF(1)
-      TIMBUF(1) = TIME_REDUCE
-      CALL GDMAXMPI_ROOT(TIMBUF, 1)
-      IF (MYID .EQ. 0) TIME_REDUCE = TIMBUF(1)
-      TIMBUF(1) = TIME_PHASE
-      CALL GDMAXMPI_ROOT(TIMBUF, 1)
-      IF (MYID .EQ. 0) TIME_PHASE = TIMBUF(1)
-!
-      IF (MYID .EQ. 0) THEN
-         WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI kernel wall time (max rank): ', &
-            TIME_KERNEL, ' s'
-         WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI reduce wall time (max rank): ', &
-            TIME_REDUCE, ' s'
-         WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI distributed phase wall time (max rank): ', &
-            TIME_PHASE, ' s'
-         WRITE (6, *) 'HFSGG_MPI per-rank work summary:'
-      ENDIF
-      WRITE (MSG, '(A,I4,A,I8,A,I10,A,I10,A,I10,A,I10,A,I10,A,F10.3,A,F10.3,A)') &
-         'rank=', MYID, ' ic=', IC_WORK, ' cand=', TERM_CANDIDATE, &
-         ' active=', TERM_ACTIVE, &
-         ' onepcalls=', ONEP_CALLS, ' nzacc=', NONZERO_ACCUM, &
-         ' zskip=', ZERO_SKIP, ' onep=', TIME_ONEPARTICLE, &
-         's accum=', TIME_ACCUM, 's'
-      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
-      WRITE (MSG, '(A,I4,A,I10,A,I10,A,I10,A,I10,A,I10,A,I10,A,I10)') &
-         'rank=', MYID, ' ptrig=', PRE_SKIP_TRIG, ' ppar=', PRE_SKIP_PARITY, &
-         ' pocc=', PRE_SKIP_OCC, ' ppair=', PRE_SKIP_PAIR, ' ia0=', IA_ZERO_RET, &
-         ' diag=', IA_DIAG_RET, ' offd=', IA_OFFDIAG_RET
-      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
-      WRITE (MSG, '(A,I4,A,I10,A,I10,A,I10,A,I10)') &
-         'rank=', MYID, ' zia0=', ZERO_SKIP_IA0, &
-         ' zelem=', ZERO_SKIP_ELEM, ' zdiag=', ZERO_SKIP_DIAG, &
-         ' zoffd=', ZERO_SKIP_OFFDIAG
-      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
-      WRITE (MSG, '(A,I4,A,I10,A,I10,A,I10,A,I10,A,I10)') &
-         'rank=', MYID, ' op2=', OPJJ2_CALLS, ' fr00=', OPJJ2_FAIL_RECOP00, &
-         ' fr20=', OPJJ2_FAIL_RECOP2_PRE, ' fik1=', OPJJ2_FAIL_IK1, &
-         ' fik2=', OPJJ2_FAIL_IK2
-      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
-      WRITE (MSG, '(A,I4,A,I10,A,I10,A,I10,A,I10,A,I10)') &
-         'rank=', MYID, ' fc01=', OPJJ2_FAIL_C0T5S_1, &
-         ' fc02=', OPJJ2_FAIL_C0T5S_2, ' frj1=', OPJJ2_FAIL_RMEAJJ_1, &
-         ' frj2=', OPJJ2_FAIL_RMEAJJ_2, ' ok2=', OPJJ2_SUCCESS
-      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
-      WRITE (MSG, '(A,I4,A,I10,A,I10,A,I10)') &
-         'rank=', MYID, ' f203=', OPJJ2_FAIL_RECOP2_D3_POST, &
-         ' f205=', OPJJ2_FAIL_RECOP2_D5, ' f204=', OPJJ2_FAIL_RECOP2_D4
-      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
-      WRITE (MSG, '(A,I4,A,I10,A,I10)') &
-         'rank=', MYID, ' f201=', OPJJ2_FAIL_RECOP2_D1, &
-         ' f213=', OPJJ2_FAIL_RECOP2_D3_MID
-      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
 !
       IF (MYID /= 0) GO TO 900
-      CALL SYSTEM_CLOCK (NCOUNT_POST1, NCOUNT_RATE, NCOUNT_MAX)
-      WRITE (6, *) 'HFSGG_MPI entering serial post-processing/output on root...'
 !
 !   These are the conversion factors to obtain the hyperfine
 !   constants in MHz
@@ -623,21 +477,8 @@
             END DO
          END DO
       END DO
-      CALL SYSTEM_CLOCK (NCOUNT_POST2, NCOUNT_RATE, NCOUNT_MAX)
-      TIME_POST = DBLE(NCOUNT_POST2 - NCOUNT_POST1) / DBLE(NCOUNT_RATE)
-      WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI post-processing wall time: ', &
-         TIME_POST, ' s'
 !
   900 CONTINUE
-      CALL SYSTEM_CLOCK (NCOUNT_TOTAL2, NCOUNT_RATE, NCOUNT_MAX)
-      TIME_TOTAL = DBLE(NCOUNT_TOTAL2 - NCOUNT_TOTAL1) / DBLE(NCOUNT_RATE)
-      TIMBUF(1) = TIME_TOTAL
-      CALL GDMAXMPI_ROOT(TIMBUF, 1)
-      IF (MYID .EQ. 0) THEN
-         TIME_TOTAL = TIMBUF(1)
-         WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI full wall time (max rank): ', &
-            TIME_TOTAL, ' s'
-      ENDIF
       CALL DALLOC (HFC, 'HFC', 'HFS_MPI')
       CALL DALLOC (GJC, 'GJC', 'HFS_MPI')
       CALL DALLOC (DGJC, 'DGJC', 'HFS_MPI')
