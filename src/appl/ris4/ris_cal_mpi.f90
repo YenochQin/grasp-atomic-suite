@@ -206,9 +206,10 @@
       AVAIL_OB = AVAIL_OB_MPI .EQ. 1
       AVAIL_TB = AVAIL_TB_MPI .EQ. 1
       IF (MYID .EQ. 0) THEN
-         SERIAL_SAVE = (.NOT. YES2) .AND.                               &
-              ((.NOT. AVAIL_OB .AND. DOIT_OB .EQ. 1) .OR.               &
-               (.NOT. AVAIL_TB .AND. DOIT_TB .EQ. 1))
+         ! Saving angular coefficients still has to stay on the root
+         ! process because the serial file format is shared.
+         SERIAL_SAVE = ((.NOT. AVAIL_OB .AND. DOIT_OB .EQ. 1) .OR.      &
+                        (.NOT. AVAIL_TB .AND. DOIT_TB .EQ. 1))
          SERIAL_SAVE_MPI = MERGE(1, 0, SERIAL_SAVE)
       ENDIF
       CALL MPI_BCAST(SERIAL_SAVE_MPI, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)
@@ -220,13 +221,23 @@
             J = INDEX(NAME,' ')
             IF (AVAIL_OB) THEN
                OPEN(UNIT=50,FILE = NAME(1:J-1)//'.IOB',STATUS='OLD',FORM='UNFORMATTED')
-               CALL DENSREAD(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
+               IF (YES2) THEN
+                  CALL DENSREAD_SELTZ(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6, &
+                       DINT7,DINT1VEC,DENS1VEC,NRNUC)
+               ELSE
+                  CALL DENSREAD(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
+               ENDIF
                CLOSE(50)
             ELSE
                IF (DOIT_OB .EQ. 1) THEN
                   OPEN(UNIT=50,FILE = NAME(1:J-1)//'.IOB',STATUS='UNKNOWN',FORM='UNFORMATTED')
                ENDIF
-               CALL DENSNEW(DOIT_OB,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
+               IF (YES2) THEN
+                  CALL DENSNEW_SELTZ(DOIT_OB,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6, &
+                       DINT7,DINT1VEC,DENS1VEC,NRNUC)
+               ELSE
+                  CALL DENSNEW(DOIT_OB,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
+               ENDIF
             ENDIF
 
             IF (AVAIL_TB) THEN
@@ -246,28 +257,18 @@
 
       IF (AVAIL_OB) THEN
          J = INDEX(NAME,' ')
+         OPEN(UNIT=50,FILE = NAME(1:J-1)//'.IOB',STATUS='OLD',FORM='UNFORMATTED')
          IF (YES2) THEN
-            IF (MYID .EQ. 0) THEN
-               OPEN(UNIT=50,FILE = NAME(1:J-1)//'.IOB',STATUS='OLD',FORM='UNFORMATTED')
-               CALL DENSREAD_SELTZ(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6, &
-                    DINT7,DINT1VEC,DENS1VEC,NRNUC)
-               CLOSE(50)
-            ENDIF
+            CALL DENSREAD_SELTZ_MPI(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6, &
+                 DINT7,DINT1VEC,DENS1VEC,NRNUC)
          ELSE
-            OPEN(UNIT=50,FILE = NAME(1:J-1)//'.IOB',STATUS='OLD',FORM='UNFORMATTED')
             CALL DENSREAD_MPI(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
-            CLOSE(50)
          END IF
+         CLOSE(50)
       ELSE
          IF(YES2) THEN
-            IF (MYID .EQ. 0) THEN
-               IF (DOIT_OB .EQ. 1) THEN
-                  J = INDEX(NAME,' ')
-                  OPEN(UNIT=50,FILE = NAME(1:J-1)//'.IOB',STATUS='UNKNOWN',FORM='UNFORMATTED')
-               ENDIF
-               CALL DENSNEW_SELTZ(DOIT_OB,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6, &
-                    DINT7,DINT1VEC,DENS1VEC,NRNUC)
-            ENDIF
+            CALL DENSNEW_SELTZ_MPI(DOIT_OB,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6, &
+                 DINT7,DINT1VEC,DENS1VEC,NRNUC)
          ELSE
             CALL DENSNEW_MPI(DOIT_OB,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
          END IF
