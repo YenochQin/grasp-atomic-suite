@@ -18,6 +18,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      USE ittk_I
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -27,7 +28,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, IJ1, JJ, NPEELGG, KK, LK, LD, K2
+      INTEGER :: I, ISKR, IJ1, J, JI, JJ, NPEELGG, KK, LK, LD
 !-----------------------------------------------
       IAT=1
       IF(NPEEL == 1 .AND. NS == -1)RETURN
@@ -47,30 +48,36 @@
         PRINT*, "ERROR in RECOP00"
         STOP
       END IF
-      K2 = 2*KA
-      IF(IABS(LK - LD) > K2)RETURN
-      IF(LK + LD < K2)RETURN
-      IF(MOD(LK + LD + K2,2) /= 0)RETURN
+      IF(ITTK(LK,LD,2*KA) == 0)RETURN
+      IAT=1
       IF(NPEEL == 1)RETURN
       DO I=1,NPEEL
-        IF(JA1 == I .OR. JA2 == I) CYCLE
-        IJ1=JLIST(I)
-        IF(JJQ1(1,IJ1) /= JJQ2(1,IJ1))RETURN
-        IF(JJQ1(2,IJ1) /= JJQ2(2,IJ1))RETURN
-        IF(JJQ1(3,IJ1) /= JJQ2(3,IJ1))RETURN
+        IF(JA1 /= I) THEN
+          IF(JA2 /= I) THEN
+            IJ1=JLIST(I)
+            IF(JJQ1(1,IJ1) /= JJQ2(1,IJ1))IAT=0
+            IF(JJQ1(2,IJ1) /= JJQ2(2,IJ1))IAT=0
+            IF(JJQ1(3,IJ1) /= JJQ2(3,IJ1))IAT=0
+          ENDIF
+        ENDIF
       END DO
-      IAT=1
+      IF(IAT == 0)RETURN
       IF(NPEELGG <= 2)RETURN
       IF(JA1 <= 2)RETURN
-      DO JJ=1,JA1-2
-        IF(JJC1(JJ) /= JJC2(JJ))RETURN
+      DO J=3,JA1
+        JJ=J-2
+        IF(JJC1(JJ) /= JJC2(JJ))IAT=0
+        IF(IAT == 0)RETURN
       END DO
-      DO KK=JA2-1,NPEELGG-2
-        LK=JJC1(KK)-1
-        LD=JJC2(KK)-1
-        IF(IABS(LK - LD) > K2)RETURN
-        IF(LK + LD < K2)RETURN
-        IF(MOD(LK + LD + K2,2) /= 0)RETURN
-      END DO
+      ISKR=NPEELGG-JA2
+      IF(ISKR > 0) THEN
+        DO JI=1,ISKR
+          KK=JA2-2+JI
+          LK=JJC1(KK)-1
+          LD=JJC2(KK)-1
+          IF(ITTK(LK,LD,2*KA) == 0)IAT=0
+          IF(IAT == 0)RETURN
+        END DO
+      ENDIF
       RETURN
       END SUBROUTINE RECOP00
