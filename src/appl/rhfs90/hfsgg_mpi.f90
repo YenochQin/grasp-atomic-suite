@@ -37,6 +37,7 @@
       USE itjpo_I
       USE itrig_I
       USE oneparticlejj_I
+      USE oneparticlejj2_stats_C
       USE gracah1_I
       IMPLICIT NONE
 !-----------------------------------------------
@@ -147,6 +148,7 @@
       ZERO_SKIP_ELEM = 0
       ZERO_SKIP_DIAG = 0
       ZERO_SKIP_OFFDIAG = 0
+      CALL RESET_ONEPARTICLEJJ2_STATS()
 !
 !   Sweep through the Hamiltonian matrix to determine the
 !   diagonal and off-diagonal hyperfine constants
@@ -410,6 +412,16 @@
          'rank=', MYID, ' zia0=', ZERO_SKIP_IA0, &
          ' zelem=', ZERO_SKIP_ELEM, ' zdiag=', ZERO_SKIP_DIAG, &
          ' zoffd=', ZERO_SKIP_OFFDIAG
+      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
+      WRITE (MSG, '(A,I4,A,I10,A,I10,A,I10,A,I10,A,I10)') &
+         'rank=', MYID, ' op2=', OPJJ2_CALLS, ' fr00=', OPJJ2_FAIL_RECOP00, &
+         ' fr20=', OPJJ2_FAIL_RECOP2_PRE, ' fik1=', OPJJ2_FAIL_IK1, &
+         ' fik2=', OPJJ2_FAIL_IK2
+      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
+      WRITE (MSG, '(A,I4,A,I10,A,I10,A,I10,A,I10,A,I10)') &
+         'rank=', MYID, ' fc01=', OPJJ2_FAIL_C0T5S_1, &
+         ' fc02=', OPJJ2_FAIL_C0T5S_2, ' frj1=', OPJJ2_FAIL_RMEAJJ_1, &
+         ' frj2=', OPJJ2_FAIL_RMEAJJ_2, ' ok2=', OPJJ2_SUCCESS
       CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
 !
       IF (MYID /= 0) GO TO 900

@@ -1,5 +1,34 @@
 !*******************************************************************
 !                                                                  *
+      MODULE oneparticlejj2_stats_C
+!                                                                  *
+!*******************************************************************
+      INTEGER :: OPJJ2_CALLS = 0
+      INTEGER :: OPJJ2_FAIL_RECOP00 = 0
+      INTEGER :: OPJJ2_FAIL_RECOP2_PRE = 0
+      INTEGER :: OPJJ2_FAIL_IK1 = 0
+      INTEGER :: OPJJ2_FAIL_IK2 = 0
+      INTEGER :: OPJJ2_FAIL_C0T5S_1 = 0
+      INTEGER :: OPJJ2_FAIL_C0T5S_2 = 0
+      INTEGER :: OPJJ2_FAIL_RMEAJJ_1 = 0
+      INTEGER :: OPJJ2_FAIL_RMEAJJ_2 = 0
+      INTEGER :: OPJJ2_SUCCESS = 0
+      CONTAINS
+      SUBROUTINE RESET_ONEPARTICLEJJ2_STATS()
+      OPJJ2_CALLS = 0
+      OPJJ2_FAIL_RECOP00 = 0
+      OPJJ2_FAIL_RECOP2_PRE = 0
+      OPJJ2_FAIL_IK1 = 0
+      OPJJ2_FAIL_IK2 = 0
+      OPJJ2_FAIL_C0T5S_1 = 0
+      OPJJ2_FAIL_C0T5S_2 = 0
+      OPJJ2_FAIL_RMEAJJ_1 = 0
+      OPJJ2_FAIL_RMEAJJ_2 = 0
+      OPJJ2_SUCCESS = 0
+      END SUBROUTINE RESET_ONEPARTICLEJJ2_STATS
+      END MODULE oneparticlejj2_stats_C
+!*******************************************************************
+!                                                                  *
       SUBROUTINE ONEPARTICLEJJ2(NS,KA,JA,JB,COEFF)
 !                                                                  *
 !   --------------  SECTION METWO    SUBPROGRAM 03  -------------  *
@@ -23,6 +52,7 @@
       USE CONS_C,          ONLY: ZERO, TENTH, HALF, EPS
       USE m_C,             ONLY: NQ1, JLIST
       USE orb_C,           ONLY: NAK
+      USE oneparticlejj2_stats_C
       USE trk_C
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -48,32 +78,57 @@
 !
 !     THE CASE 12   + -
 !
+      OPJJ2_CALLS = OPJJ2_CALLS + 1
       COEFF=ZERO
       IA=MIN0(JA,JB)
       IB=MAX0(JA,JB)
       CALL RECOP00(NS,IA,IB,KA,IAT)
-      IF(IAT == 0)RETURN
+      IF(IAT == 0) THEN
+         OPJJ2_FAIL_RECOP00 = OPJJ2_FAIL_RECOP00 + 1
+         RETURN
+      ENDIF
       IJ=JLIST(IA)
       KS1=(IABS(NAK(IJ))*2)-1
       IJ=JLIST(IB)
       KS2=(IABS(NAK(IJ))*2)-1
       CALL RECOP2(NS,IA,IB,KS1,KS2,KA,0,IAT,REC)
-      IF(IAT == 0)RETURN
+      IF(IAT == 0) THEN
+         OPJJ2_FAIL_RECOP2_PRE = OPJJ2_FAIL_RECOP2_PRE + 1
+         RETURN
+      ENDIF
       CALL PERKO2(JA,JB,JA,JA,2)
       QM1=HALF
       QM2=-HALF
       IQMM1=QM1+QM1+TENTH*QM1
-      IF(IK1(4) /= (ID1(4)+IQMM1)) RETURN
+      IF(IK1(4) /= (ID1(4)+IQMM1)) THEN
+         OPJJ2_FAIL_IK1 = OPJJ2_FAIL_IK1 + 1
+         RETURN
+      ENDIF
       IQMM2=QM2+QM2+TENTH*QM2
-      IF(IK2(4) /= (ID2(4)+IQMM2)) RETURN
+      IF(IK2(4) /= (ID2(4)+IQMM2)) THEN
+         OPJJ2_FAIL_IK2 = OPJJ2_FAIL_IK2 + 1
+         RETURN
+      ENDIF
       CALL C0T5S(BD1(1),BD1(3),QM1,BK1(1),BK1(3),A2)
-      IF(DABS(A2) < EPS) RETURN
+      IF(DABS(A2) < EPS) THEN
+         OPJJ2_FAIL_C0T5S_1 = OPJJ2_FAIL_C0T5S_1 + 1
+         RETURN
+      ENDIF
       CALL C0T5S(BD2(1),BD2(3),QM2,BK2(1),BK2(3),A3)
-      IF(DABS(A3) < EPS) RETURN
+      IF(DABS(A3) < EPS) THEN
+         OPJJ2_FAIL_C0T5S_2 = OPJJ2_FAIL_C0T5S_2 + 1
+         RETURN
+      ENDIF
       CALL RMEAJJ(IK1(3),IK1(1),IK1(7),IK1(6),ID1(1),ID1(7),ID1(6),S1)
-      IF(DABS(S1) < EPS) RETURN
+      IF(DABS(S1) < EPS) THEN
+         OPJJ2_FAIL_RMEAJJ_1 = OPJJ2_FAIL_RMEAJJ_1 + 1
+         RETURN
+      ENDIF
       CALL RMEAJJ(IK2(3),IK2(1),IK2(7),IK2(6),ID2(1),ID2(7),ID2(6),S2)
-      IF(DABS(S2) < EPS) RETURN
+      IF(DABS(S2) < EPS) THEN
+         OPJJ2_FAIL_RMEAJJ_2 = OPJJ2_FAIL_RMEAJJ_2 + 1
+         RETURN
+      ENDIF
       A1=S1*S2*A2*A3
       CALL RECOP2(NS,IA,IB,KS1,KS2,KA,1,IAT,REC)
       COEFF=A1*REC/DSQRT(DBLE((2*KA+1)*(IK1(7)+1)*(IK2(7)+1)))
@@ -90,5 +145,6 @@
         IF(MOD(IFAZ,4) /= 0)COEFF=-COEFF
       ENDIF
       COEFF=-COEFF*SQRT(DBLE(ID1(3)+1))
+      OPJJ2_SUCCESS = OPJJ2_SUCCESS + 1
       RETURN
       END SUBROUTINE ONEPARTICLEJJ2
