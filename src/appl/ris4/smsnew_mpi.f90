@@ -24,7 +24,9 @@
       EXTERNAL :: CORD
       INTEGER, PARAMETER :: KEY = KEYORB
       CHARACTER*11 :: CNUM
-      REAL(DOUBLE) :: CONTRI, CONTRIK1, VCOEFF, RADIAL_K1, RADIAL_SMS
+      REAL(DOUBLE), DIMENSION(NVEC) :: EVPAIR
+      REAL(DOUBLE) :: CONTRI, CONTRIK1, VCOEFF, RADIAL_K1, RADIAL_SMS,  &
+         PAIR_SCALE, TERM_K1, TERM_SMS
       INTEGER :: J,K,LOC,IC,IR,ITJPOC,INCOR,LCNUM, IIA, IIB, IIC, IID
 
       INCOR = 1
@@ -39,6 +41,15 @@
          ITJPOC = ITJPO (IC)
          DO IR = IC,NCF
             IF (ITJPO(IR) .EQ. ITJPOC) THEN
+               IF (IR .EQ. IC) THEN
+                  PAIR_SCALE = 1.0D00
+               ELSE
+                  PAIR_SCALE = 2.0D00
+               ENDIF
+               DO J = 1,NVEC
+                  LOC = (J-1)*NCF
+                  EVPAIR(J) = PAIR_SCALE * EVEC(IC+LOC) * EVEC(IR+LOC)
+               END DO
                NVCOEF = 0
                CALL RKCO_GG (IC, IR, CORD, INCOR, 1)
                DO K = 1,NVCOEF
@@ -54,22 +65,15 @@
                            VINT2(IIB,IID) * VINT(IIA,IIC))/2.0D00
                         IF (RADIAL_K1 == 0.0D00 .AND.                     &
                             RADIAL_SMS == 0.0D00) CYCLE
+                        TERM_K1 = -VCOEFF * RADIAL_K1
+                        TERM_SMS = -VCOEFF * RADIAL_SMS
                         IF(DOIT.EQ.1) WRITE(51) IC,IR
                         IF(DOIT.EQ.1) THEN
                            WRITE(51) VCOEFF, ((IIA*KEY + IIC)*KEY+IIB)*KEY+IID
                         ENDIF
                         DO J = 1,NVEC
-                           LOC = (J-1)*NCF
-                           CONTRIK1 = - EVEC(IC+LOC)*EVEC(IR+LOC)        &
-                              * VCOEFF                                   &
-                              * RADIAL_K1
-                           CONTRI = - EVEC(IC+LOC)*EVEC(IR+LOC)          &
-                              * VCOEFF                                   &
-                              * RADIAL_SMS
-                           IF (IR.NE.IC) THEN
-                              CONTRI = 2.0D00 * CONTRI
-                              CONTRIK1 = 2.0D00 * CONTRIK1
-                           ENDIF
+                           CONTRIK1 = EVPAIR(J) * TERM_K1
+                           CONTRI = EVPAIR(J) * TERM_SMS
                            SMSC1(J) = SMSC1(J) + CONTRIK1
                            SMSC2(J) = SMSC2(J) + CONTRI
                         END DO
