@@ -88,6 +88,12 @@ cd build-debug
 make -j4 install
 ```
 
+清理构建产物：
+
+```sh
+./scripts/clean-build-artifacts.sh
+```
+
 也保留了传统 `Makefile` 工作流：
 
 ```sh
