@@ -68,7 +68,8 @@
          NCOUNT_ONEP2, NCOUNT_ACC1, NCOUNT_ACC2, NCOUNT_POST1, NCOUNT_POST2
       INTEGER :: IC_WORK, TERM_CANDIDATE, TERM_ACTIVE, NONZERO_ACCUM, ZERO_SKIP, &
          ONEP_CALLS, PRE_SKIP_TRIG, PRE_SKIP_PARITY, PRE_SKIP_OCC, IA_ZERO_RET, &
-         IA_DIAG_RET, IA_OFFDIAG_RET, ZERO_SKIP_IA0, ZERO_SKIP_ELEM, PRE_SKIP_PAIR
+         IA_DIAG_RET, IA_OFFDIAG_RET, ZERO_SKIP_IA0, ZERO_SKIP_ELEM, &
+         ZERO_SKIP_DIAG, ZERO_SKIP_OFFDIAG, PRE_SKIP_PAIR
       CHARACTER :: CNUM*11
       CHARACTER(LEN=160) :: MSG
 !-----------------------------------------------
@@ -144,6 +145,8 @@
       IA_OFFDIAG_RET = 0
       ZERO_SKIP_IA0 = 0
       ZERO_SKIP_ELEM = 0
+      ZERO_SKIP_DIAG = 0
+      ZERO_SKIP_OFFDIAG = 0
 !
 !   Sweep through the Hamiltonian matrix to determine the
 !   diagonal and off-diagonal hyperfine constants
@@ -294,6 +297,11 @@
                      ZERO_SKIP_IA0 = ZERO_SKIP_IA0 + 1
                   ELSE
                      ZERO_SKIP_ELEM = ZERO_SKIP_ELEM + 1
+                     IF (IA == IB) THEN
+                        ZERO_SKIP_DIAG = ZERO_SKIP_DIAG + 1
+                     ELSE
+                        ZERO_SKIP_OFFDIAG = ZERO_SKIP_OFFDIAG + 1
+                     ENDIF
                   ENDIF
                   CYCLE
                ENDIF
@@ -394,9 +402,10 @@
          ' pocc=', PRE_SKIP_OCC, ' ppair=', PRE_SKIP_PAIR, ' ia0=', IA_ZERO_RET, &
          ' diag=', IA_DIAG_RET, ' offd=', IA_OFFDIAG_RET
       CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
-      WRITE (MSG, '(A,I4,A,I10,A,I10)') &
+      WRITE (MSG, '(A,I4,A,I10,A,I10,A,I10,A,I10)') &
          'rank=', MYID, ' zia0=', ZERO_SKIP_IA0, &
-         ' zelem=', ZERO_SKIP_ELEM
+         ' zelem=', ZERO_SKIP_ELEM, ' zdiag=', ZERO_SKIP_DIAG, &
+         ' zoffd=', ZERO_SKIP_OFFDIAG
       CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
 !
       IF (MYID /= 0) GO TO 900
