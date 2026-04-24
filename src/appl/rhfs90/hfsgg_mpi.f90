@@ -58,12 +58,14 @@
          GJA1, AFA1, AFA2, BFA1, BFA2, BFA3, GJ, DGJ, TILDE1, &
          TILDE2, FACTOR1, FACTOR2, RAC1, RAC2, HFSELT1, HFSELT2, EVECIC1, EVECIR1,&
          EVECIC2, EVECIR2, TIME_KERNEL, TIME_REDUCE, TIME_PHASE, TIME_TOTAL, &
-         TIME_ONEPARTICLE, TIME_ACCUM, TIME_POST
-      REAL(DOUBLE), DIMENSION(1) :: TIMBUF
+         TIME_ONEPARTICLE, TIME_ELEMENT, TIME_ACCUM, TIME_MISC, TIME_POST
+      REAL(DOUBLE), DIMENSION(2) :: TIMBUF
       INTEGER :: NCOUNT_KERNEL1, NCOUNT_KERNEL2, NCOUNT_REDUCE1, NCOUNT_REDUCE2,&
          NCOUNT_TOTAL1, NCOUNT_TOTAL2, NCOUNT_RATE, NCOUNT_MAX, NCOUNT_ONEP1,&
-         NCOUNT_ONEP2, NCOUNT_ACC1, NCOUNT_ACC2, NCOUNT_POST1, NCOUNT_POST2
-      INTEGER :: IC_WORK, TERM_ACTIVE, NONZERO_ACCUM, ZERO_SKIP, ONEP_CALLS
+         NCOUNT_ONEP2, NCOUNT_ELEM1, NCOUNT_ELEM2, NCOUNT_ACC1, NCOUNT_ACC2, &
+         NCOUNT_POST1, NCOUNT_POST2
+      INTEGER :: IC_WORK, TERM_ACTIVE, NONZERO_ACCUM, ZERO_SKIP, ONEP_CALLS, &
+         IA_ZERO_RET, IA_DIAG_RET, IA_OFFDIAG_RET, ZERO_SKIP_IA0, ZERO_SKIP_ELEM
       CHARACTER :: CNUM*11
       CHARACTER(LEN=160) :: MSG
 !-----------------------------------------------
@@ -114,12 +116,18 @@
       CALL SYSTEM_CLOCK (NCOUNT_TOTAL1, NCOUNT_RATE, NCOUNT_MAX)
       CALL SYSTEM_CLOCK (NCOUNT_KERNEL1, NCOUNT_RATE, NCOUNT_MAX)
       TIME_ONEPARTICLE = 0.0D00
+      TIME_ELEMENT = 0.0D00
       TIME_ACCUM = 0.0D00
       IC_WORK = 0
       TERM_ACTIVE = 0
       NONZERO_ACCUM = 0
       ZERO_SKIP = 0
       ONEP_CALLS = 0
+      IA_ZERO_RET = 0
+      IA_DIAG_RET = 0
+      IA_OFFDIAG_RET = 0
+      ZERO_SKIP_IA0 = 0
+      ZERO_SKIP_ELEM = 0
 !
 !   Sweep through the Hamiltonian matrix to determine the
 !   diagonal and off-diagonal hyperfine constants
@@ -177,9 +185,17 @@
                TIME_ONEPARTICLE = TIME_ONEPARTICLE + &
                   DBLE(NCOUNT_ONEP2 - NCOUNT_ONEP1) / DBLE(NCOUNT_RATE)
 !GG               CALL TNSRJJ (KT, IPT, IC, IR, IA, IB, TSHELL)
+               IF (IA == 0) THEN
+                  IA_ZERO_RET = IA_ZERO_RET + 1
+               ELSE IF (IA == IB) THEN
+                  IA_DIAG_RET = IA_DIAG_RET + 1
+               ELSE
+                  IA_OFFDIAG_RET = IA_OFFDIAG_RET + 1
+               ENDIF
 !
 !   Accumulate the contribution from the one-body operators;
 !
+               CALL SYSTEM_CLOCK (NCOUNT_ELEM1, NCOUNT_RATE, NCOUNT_MAX)
                IF (IA /= 0) THEN
                   IF (IA == IB) THEN
                      IF (KT/=1 .OR. IDIFF/=0) THEN
@@ -213,6 +229,9 @@
                      ENDIF
                   ENDIF
                ENDIF
+               CALL SYSTEM_CLOCK (NCOUNT_ELEM2, NCOUNT_RATE, NCOUNT_MAX)
+               TIME_ELEMENT = TIME_ELEMENT + &
+                  DBLE(NCOUNT_ELEM2 - NCOUNT_ELEM1) / DBLE(NCOUNT_RATE)
 !
 !   Multiply with the configuration expansion coefficients and add the
 !   contributions from the matrix elements to obtain total contributions
@@ -220,6 +239,11 @@
                IF (ABS(ELEMNT) <= CUTOFF .AND. ABS(ELEMNTGJ) <= CUTOFF .AND. &
                    ABS(ELEMNTDGJ) <= CUTOFF) THEN
                   ZERO_SKIP = ZERO_SKIP + 1
+                  IF (IA == 0) THEN
+                     ZERO_SKIP_IA0 = ZERO_SKIP_IA0 + 1
+                  ELSE
+                     ZERO_SKIP_ELEM = ZERO_SKIP_ELEM + 1
+                  ENDIF
                   CYCLE
                ENDIF
                NONZERO_ACCUM = NONZERO_ACCUM + 1
@@ -291,20 +315,31 @@
       TIMBUF(1) = TIME_KERNEL
       CALL GDMAXMPI_ROOT(TIMBUF, 1)
       IF (MYID .EQ. 0) TIME_KERNEL = TIMBUF(1)
+      TIMBUF(1) = TIME_ELEMENT
+      CALL GDMAXMPI_ROOT(TIMBUF, 1)
+      IF (MYID .EQ. 0) TIME_ELEMENT = TIMBUF(1)
       TIMBUF(1) = TIME_REDUCE
       CALL GDMAXMPI_ROOT(TIMBUF, 1)
       IF (MYID .EQ. 0) TIME_REDUCE = TIMBUF(1)
       TIMBUF(1) = TIME_PHASE
       CALL GDMAXMPI_ROOT(TIMBUF, 1)
       IF (MYID .EQ. 0) TIME_PHASE = TIMBUF(1)
+      TIME_MISC = TIME_KERNEL - TIME_ONEPARTICLE - TIME_ELEMENT - TIME_ACCUM
+      TIMBUF(1) = TIME_MISC
+      CALL GDMAXMPI_ROOT(TIMBUF, 1)
+      IF (MYID .EQ. 0) TIME_MISC = TIMBUF(1)
 !
       IF (MYID .EQ. 0) THEN
          WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI kernel wall time (max rank): ', &
             TIME_KERNEL, ' s'
+         WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI shell->element wall time (max rank): ', &
+            TIME_ELEMENT, ' s'
          WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI reduce wall time (max rank): ', &
             TIME_REDUCE, ' s'
          WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI distributed phase wall time (max rank): ', &
             TIME_PHASE, ' s'
+         WRITE (6, '(A, F10.3, A)') 'HFSGG_MPI untracked kernel remainder (max rank): ', &
+            TIME_MISC, ' s'
          WRITE (6, *) 'HFSGG_MPI per-rank work summary:'
       ENDIF
       WRITE (MSG, '(A,I4,A,I8,A,I10,A,I10,A,I10,A,I10,A,F10.3,A,F10.3,A)') &
@@ -312,6 +347,12 @@
          ' onepcalls=', ONEP_CALLS, ' nzacc=', NONZERO_ACCUM, &
          ' zskip=', ZERO_SKIP, ' onep=', TIME_ONEPARTICLE, &
          's accum=', TIME_ACCUM, 's'
+      CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
+      WRITE (MSG, '(A,I4,A,I10,A,I10,A,I10,A,I10,A,I10,A,F10.3,A,F10.3,A)') &
+         'rank=', MYID, ' ia0=', IA_ZERO_RET, ' diag=', IA_DIAG_RET, &
+         ' offd=', IA_OFFDIAG_RET, ' zia0=', ZERO_SKIP_IA0, &
+         ' zelem=', ZERO_SKIP_ELEM, ' elem=', TIME_ELEMENT, &
+         's misc=', TIME_MISC, 's'
       CALL MPIX_PRINTMSG(MSG, MYID, NPROCS)
 !
       IF (MYID /= 0) GO TO 900
