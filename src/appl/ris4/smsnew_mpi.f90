@@ -24,8 +24,8 @@
       EXTERNAL :: CORD
       INTEGER, PARAMETER :: KEY = KEYORB
       CHARACTER*11 :: CNUM
-      REAL(DOUBLE) :: CONTRI, CONTRIK1, VCOEFF
-      INTEGER :: J,K,LOC,IC,IR,ITJPOC,INCOR,LCNUM
+      REAL(DOUBLE) :: CONTRI, CONTRIK1, VCOEFF, RADIAL_K1, RADIAL_SMS
+      INTEGER :: J,K,LOC,IC,IR,ITJPOC,INCOR,LCNUM, IIA, IIB, IIC, IID
 
       INCOR = 1
       CALL ALCBUF (1)
@@ -45,22 +45,27 @@
                   VCOEFF = COEFF(K)
                   IF (ABS (VCOEFF) .GT. CUTOFF) THEN
                      IF (LABEL(5,K) .EQ. 1) THEN
+                        IIA = LABEL(1,K)
+                        IIB = LABEL(2,K)
+                        IIC = LABEL(3,K)
+                        IID = LABEL(4,K)
+                        RADIAL_K1 = VINT(IIA,IIC) * VINT(IIB,IID)
+                        RADIAL_SMS = (VINT2(IIA,IIC) * VINT(IIB,IID) +   &
+                           VINT2(IIB,IID) * VINT(IIA,IIC))/2.0D00
+                        IF (RADIAL_K1 == 0.0D00 .AND.                     &
+                            RADIAL_SMS == 0.0D00) CYCLE
                         IF(DOIT.EQ.1) WRITE(51) IC,IR
                         IF(DOIT.EQ.1) THEN
-                           WRITE(51) VCOEFF, ((LABEL(1,K)*KEY + LABEL(3,K))*KEY+LABEL(2,K))*KEY+LABEL(4,K)
+                           WRITE(51) VCOEFF, ((IIA*KEY + IIC)*KEY+IIB)*KEY+IID
                         ENDIF
                         DO J = 1,NVEC
                            LOC = (J-1)*NCF
                            CONTRIK1 = - EVEC(IC+LOC)*EVEC(IR+LOC)        &
                               * VCOEFF                                   &
-                              * VINT (LABEL(1,K),LABEL(3,K))             &
-                              * VINT (LABEL(2,K),LABEL(4,K))
+                              * RADIAL_K1
                            CONTRI = - EVEC(IC+LOC)*EVEC(IR+LOC)          &
                               * VCOEFF                                   &
-                              * ( VINT2(LABEL(1,K),LABEL(3,K))           &
-                              * VINT (LABEL(2,K),LABEL(4,K))             &
-                              + VINT2(LABEL(2,K),LABEL(4,K))             &
-                              * VINT (LABEL(1,K),LABEL(3,K)) )/2.0D00
+                              * RADIAL_SMS
                            IF (IR.NE.IC) THEN
                               CONTRI = 2.0D00 * CONTRI
                               CONTRIK1 = 2.0D00 * CONTRIK1

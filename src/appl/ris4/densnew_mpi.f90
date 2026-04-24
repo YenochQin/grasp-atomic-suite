@@ -42,6 +42,7 @@
       REAL(DOUBLE) :: ELEMNT1, ELEMNT2, ELEMNT3, ELEMNT4, ELEMNT5,     &
                       ELEMNT6, ELEMNT7, CONTRI1, CONTRI2, CONTRI3,     &
                       CONTRI4, CONTRI5, CONTRI6, CONTRI7
+      LOGICAL :: HAS_CONTR
       CHARACTER :: CNUM*11, CK*2
       INTEGER, DIMENSION(NNNW) :: IA_S
       INTEGER :: KA, IOPAR, INCOR, IC, LCNUM, ITJPOC, IR, IA, IB, I, J
@@ -70,6 +71,7 @@
                ELEMNT5 = 0.0D00
                ELEMNT6 = 0.0D00
                ELEMNT7 = 0.0D00
+               HAS_CONTR = .FALSE.
 
                CALL ONESCALAR(IC,IR,IA,IB,TSHELL)
                IF (IA .NE. 0) THEN
@@ -87,6 +89,7 @@
                            ELEMNT5 = ELEMNT5 + DINT5(IA,IA)*TSHELL(IA)
                            ELEMNT6 = ELEMNT6 + DINT6(IA,IA)*TSHELL(IA)
                            ELEMNT7 = ELEMNT7 + DINT7(IA,IA)*TSHELL(IA)
+                           HAS_CONTR = .TRUE.
                         ENDIF
                      END DO
                      IF (DOIT.EQ.1) WRITE(50) IC,IR,NCONTR
@@ -111,10 +114,12 @@
                            ELEMNT5 = ELEMNT5 + DINT5(IA,IB)*TSHELL(1)
                            ELEMNT6 = ELEMNT6 + DINT6(IA,IB)*TSHELL(1)
                            ELEMNT7 = ELEMNT7 + DINT7(IA,IB)*TSHELL(1)
+                           HAS_CONTR = .TRUE.
                         ENDIF
                      ENDIF
                   ENDIF
                ENDIF
+               IF (.NOT. HAS_CONTR) CYCLE
                DO J = 1,NVEC
                   LOC = (J-1)*NCF
                   CONTRI1 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT1

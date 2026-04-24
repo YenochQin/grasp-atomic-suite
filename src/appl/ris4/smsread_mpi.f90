@@ -19,7 +19,7 @@
       IMPLICIT NONE
       REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: VINT, VINT2
       INTEGER, PARAMETER :: KEY = KEYORB
-      REAL(DOUBLE) :: CONTRI, CONTRIK1, COEFFSMS
+      REAL(DOUBLE) :: CONTRI, CONTRIK1, COEFFSMS, RADIAL_K1, RADIAL_SMS
       INTEGER :: IC, IR, J, IIA, IIB, IIC, IID, LOC, LAB, IOS
       LOGICAL :: OWNREC
 
@@ -36,15 +36,18 @@
             LAB = LAB/KEY
             IIC = MOD (LAB, KEY)
             IIA = LAB/KEY
+            RADIAL_K1 = VINT(IIA,IIC) * VINT(IIB,IID)
+            RADIAL_SMS = (VINT2(IIA,IIC) * VINT(IIB,IID)                 &
+               + VINT2(IIB,IID) * VINT(IIA,IIC))/2.0D00
+            IF (RADIAL_K1 == 0.0D00 .AND. RADIAL_SMS == 0.0D00) GOTO 16
             DO J = 1,NVEC
                LOC = (J-1)*NCF
                CONTRIK1 = - EVEC(IC+LOC)*EVEC(IR+LOC)                    &
                   * COEFFSMS                                             &
-                  * VINT (IIA,IIC)*VINT(IIB,IID)
+                  * RADIAL_K1
                CONTRI = - EVEC(IC+LOC)*EVEC(IR+LOC)                      &
                   * COEFFSMS                                             &
-                  * ( VINT2(IIA,IIC)*VINT(IIB,IID)                       &
-                  + VINT2(IIB,IID)*VINT(IIA,IIC))/2.0D00
+                  * RADIAL_SMS
                IF (IR.NE.IC) THEN
                   CONTRI = 2.0D00 * CONTRI
                   CONTRIK1 = 2.0D00 * CONTRIK1
