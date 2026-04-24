@@ -1,5 +1,3 @@
-!*******************************************************************
-!                                                                  *
       SUBROUTINE ONEPARTICLEJJ2(NS,KA,JA,JB,COEFF)
 !                                                                  *
 !   --------------  SECTION METWO    SUBPROGRAM 03  -------------  *

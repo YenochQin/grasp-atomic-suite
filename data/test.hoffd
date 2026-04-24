@@ -1,0 +1,347 @@
+Nuclear spin                         1.000000000000000D+00 au
+Nuclear magnetic dipole moment       1.000000000000000D+00 n.m.
+Nuclear electric quadrupole moment   1.000000000000000D+00 barns
+
+
+ Interaction constants:
+
+ Level1  J Parity  Level2  J Parity        A (MHz)             B (MHz)
+
+   1        1 +      1        0 +     -2.7210208084D+02    0.0000000000D+00
+   1        1 +      2        0 +     -1.0619879123D+01    0.0000000000D+00
+   1        1 +      1        1 +     -1.3597369101D+01   -3.2178694496D+02
+   1        2 +      1        0 +      0.0000000000D+00    3.0299102544D+02
+   1        2 +      2        0 +      0.0000000000D+00   -1.6529707896D+01
+   1        2 +      1        1 +      1.3261321122D+02    1.1395841810D+02
+   1        2 +      1        2 +      9.2980031148D+02   -3.0833676963D+02
+   1        2 +      2        2 +      1.8741163582D+02   -1.1354347440D+02
+   1        2 +      3        2 +     -1.3204119540D+02   -1.6835196235D+02
+   2        2 +      1        0 +      0.0000000000D+00   -8.4194671909D+01
+   2        2 +      2        0 +      0.0000000000D+00    4.3611166720D+02
+   2        2 +      1        1 +     -1.8184445690D+01    6.0023120392D+01
+   2        2 +      2        2 +      6.1440466833D+02    4.0642049104D+02
+   2        2 +      3        2 +     -1.5004071915D+02    6.2207591045D+01
+   3        2 +      1        0 +      0.0000000000D+00   -2.6448579704D+02
+   3        2 +      2        0 +      0.0000000000D+00   -1.6390765464D+02
+   3        2 +      1        1 +      2.9402995564D+02    1.5063624271D+02
+   3        2 +      3        2 +      4.6774594505D+02    6.3187644198D+02
+   1        3 +      1        1 +      0.0000000000D+00   -4.6450696051D+02
+   1        3 +      1        2 +      1.6574074609D+02   -4.6694719728D+01
+   1        3 +      2        2 +     -2.4705653451D+01    3.3522599733D+01
+   1        3 +      3        2 +      1.2457311884D+02    1.0599809956D+02
+   1        3 +      1        3 +      6.2830216552D+02   -3.3936135598D+02
+   1        4 +      1        2 +      0.0000000000D+00   -3.0605860484D+01
+   1        4 +      2        2 +      0.0000000000D+00   -2.4668556258D+02
+   1        4 +      3        2 +      0.0000000000D+00   -6.8630806912D+02
+   1        4 +      1        3 +      9.1387688825D+01   -4.4825985269D+01
+   1        4 +      1        4 +      4.6473419414D+02   -4.5800485501D+02
+   1        4 +      2        4 +      6.7222552779D+01    3.3896307513D+01
+   2        4 +      1        2 +      0.0000000000D+00   -3.9131925881D+01
+   2        4 +      2        2 +      0.0000000000D+00    4.6901684057D+02
+   2        4 +      3        2 +      0.0000000000D+00   -1.8461402587D+02
+   2        4 +      1        3 +      8.1635988518D+01   -3.9385130613D+00
+   2        4 +      2        4 +      6.6342544990D+02   -1.8448857677D+03
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        1 +      1        0 +      1       -5.8484641163D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        1 +      2        0 +      1       -2.2825985666D-09
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        1 +      1        1 +      0       -1.1813221327D-07
+   1        1 +      1        1 +      1        6.3199244114D-08
+   1        1 +      1        1 +      2       -1.4293103814D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        2 +      1        0 +      1        1.1889924701D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        2 +      2        0 +      1       -6.4865611753D-09
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        2 +      1        1 +      1       -5.5550757849D-08
+   1        2 +      1        1 +      2        1.0546286071D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        2 +      1        2 +      1       -4.6494567896D-07
+   1        2 +      1        2 +      2       -1.0030962673D-07
+   1        2 +      1        2 +      3        2.7091216722D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        2 +      2        2 +      1       -1.0054973089D-07
+   1        2 +      2        2 +      2       -1.3383788155D-08
+   1        2 +      2        2 +      3        5.2652590491D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        2 +      3        2 +      1        3.7815740413D-08
+   1        2 +      3        2 +      2        4.2456319456D-08
+   1        2 +      3        2 +      3       -4.6532688360D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   2        2 +      1        0 +      1       -3.3039536658D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   2        2 +      2        0 +      1        1.7113823344D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   2        2 +      1        1 +      1       -5.9176775038D-08
+   2        2 +      1        1 +      2        1.5409753018D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   2        2 +      1        2 +      1       -1.0054973089D-07
+   2        2 +      1        2 +      2       -1.3383788155D-08
+   2        2 +      1        2 +      3        5.2652590491D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   2        2 +      2        2 +      1       -2.2608929141D-07
+   2        2 +      2        2 +      2       -1.4742692957D-07
+   2        2 +      2        2 +      3        2.0220036030D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   2        2 +      3        2 +      1        7.6683592356D-08
+   2        2 +      3        2 +      2        1.4530952875D-08
+   2        2 +      3        2 +      3       -4.3243648778D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   3        2 +      1        0 +      1       -1.0378908770D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   3        2 +      2        0 +      1       -6.4320376113D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   3        2 +      1        1 +      1       -3.3078567821D-08
+   3        2 +      1        1 +      2        1.9354338613D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   3        2 +      1        2 +      1        3.7815740413D-08
+   3        2 +      1        2 +      2        4.2456319456D-08
+   3        2 +      1        2 +      3       -4.6532688360D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   3        2 +      2        2 +      1        7.6683592356D-08
+   3        2 +      2        2 +      2        1.4530952875D-08
+   3        2 +      2        2 +      3       -4.3243648778D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   3        2 +      3        2 +      1       -1.2923811518D-07
+   3        2 +      3        2 +      2       -1.5511958387D-07
+   3        2 +      3        2 +      3        1.6618746641D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        3 +      1        1 +      2       -1.2940672123D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        3 +      1        2 +      2        1.2491319398D-07
+   1        3 +      1        2 +      3        9.4328224478D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        3 +      2        2 +      2       -3.6061652483D-08
+   1        3 +      2        2 +      3       -3.6372660227D-09
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        3 +      3        2 +      2        1.2380227568D-09
+   1        3 +      3        2 +      3        1.2626652739D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        3 +      1        3 +      2       -4.1291124443D-07
+   1        3 +      1        3 +      3       -5.6808374542D-08
+   1        3 +      1        3 +      4        2.7357942711D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        4 +      1        2 +      3       -6.3040954145D-09
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        4 +      2        2 +      3       -5.0811488366D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        4 +      3        2 +      3       -1.4136349977D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        4 +      1        3 +      3        9.7719254177D-08
+   1        4 +      1        3 +      4        6.4718069650D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        4 +      1        4 +      3       -3.8734141333D-07
+   1        4 +      1        4 +      4       -2.2775540303D-08
+   1        4 +      1        4 +      5        2.6512452328D-07
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   1        4 +      2        4 +      3       -4.8553587010D-08
+   1        4 +      2        4 +      4       -1.3758451817D-08
+   1        4 +      2        4 +      5        4.2154652311D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   2        4 +      1        2 +      3       -8.0602665831D-09
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   2        4 +      2        2 +      3        9.6606560548D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   2        4 +      3        2 +      3       -3.8026195491D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   2        4 +      1        3 +      3        6.6714825330D-08
+   2        4 +      1        3 +      4        7.1869042584D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   2        4 +      1        4 +      3       -4.8553587010D-08
+   2        4 +      1        4 +      4       -1.3758451817D-08
+   2        4 +      1        4 +      5        4.2154652311D-08
+
+
+ Matrix elements:
+
+ Level1  J Parity  Level2  J Parity    F     Matrix element (a.u.)
+
+   2        4 +      2        4 +      3       -6.4183902903D-07
+   2        4 +      2        4 +      4        9.1939601153D-08
+   2        4 +      2        4 +      5        3.3321970844D-07

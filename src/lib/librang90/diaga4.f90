@@ -21,6 +21,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      USE ittk_I
       USE nine_I
       IMPLICIT NONE
 !-----------------------------------------------
@@ -56,11 +57,18 @@
         IT2=JJC1(N2)-1
         IT2S=JJC2(N2)-1
       END IF
-      IF(IRE /= 0) THEN
-        CALL NINE(IT2S,K1,IT2,IB2,K2,IA2,J2S,KA,J2,0,IAT,A2)
-        RECC=A2*DSQRT(DBLE((IT2+1)*(KA+1)*(IA2+1)*(J2S+1)))
-      ELSE
-        CALL NINE(IT2S,K1,IT2,IB2,K2,IA2,J2S,KA,J2,1,IAT,A2)
+      IF(IRE == 0) THEN
+        IAT = 0
+        IF (ITTK(IT2S,K1,IT2) == 0) RETURN
+        IF (ITTK(IB2,K2,IA2) == 0) RETURN
+        IF (ITTK(J2S,KA,J2) == 0) RETURN
+        IF (ITTK(IT2S,IB2,J2S) == 0) RETURN
+        IF (ITTK(K1,K2,KA) == 0) RETURN
+        IF (ITTK(IT2,IA2,J2) == 0) RETURN
+        IAT = 1
+        RETURN
       END IF
+      CALL NINE(IT2S,K1,IT2,IB2,K2,IA2,J2S,KA,J2,0,IAT,A2)
+      RECC=A2*DSQRT(DBLE((IT2+1)*(KA+1)*(IA2+1)*(J2S+1)))
       RETURN
       END SUBROUTINE DIAGA4

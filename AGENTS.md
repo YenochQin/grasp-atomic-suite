@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Core source lives under `src/`. Application programs are in `src/appl/<program>/`, shared libraries are in `src/lib/<library>/`, and extra utilities are in `src/tool/`. Build outputs are installed to `bin/` and `lib/`. Example and regression-style runs live under `grasptest/<case-or-example>/script/`, with program-specific notes in files such as `src/appl/rdensity/README.md` and `src/appl/ris4/README.md`.
+Core source lives under `src/`. Application programs are in `src/appl/<program>/`, and shared libraries are in `src/lib/<library>/`. Build outputs are installed to `bin/` and `lib/`. Example and regression-style runs live under `grasptest/<case-or-example>/script/`, with program-specific notes in files such as `src/appl/rdensity/README.md` and `src/appl/ris4/README.md`.
 
 ## Build, Test, and Development Commands
 Prefer the out-of-source CMake flow:

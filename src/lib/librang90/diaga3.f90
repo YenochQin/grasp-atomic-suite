@@ -38,9 +38,32 @@
       REAL(DOUBLE) :: AA, A3
 !-----------------------------------------------
       REC = ZERO
-      AA=ONE
       I=JA1+1
       IF(JA1 == 1)I=I+1
+      IF(IRE == 0) THEN
+        IF(I >= JA2) THEN
+          REC=ONE
+          IAT=1
+          RETURN
+        END IF
+        DO
+          LL1=JLIST(I)
+          JI=JJQ1(3,LL1)-1
+          KK2=I-2
+          ITI=JJC1(KK2)-1
+          ITIS=JJC2(KK2)-1
+          KK1=I-1
+          ITI1=JJC1(KK1)-1
+          ITI1S=JJC2(KK1)-1
+          IF(IXJTIK(KA,ITIS,ITI,JI,ITI1,ITI1S) == 0)RETURN
+          I=I+1
+          IF(I == JA2) EXIT
+        END DO
+        REC=ONE
+        IAT=1
+        RETURN
+      END IF
+      AA=ONE
       IF(I >= JA2) THEN
         REC=AA
         IAT=1

@@ -20,3 +20,7 @@ build-*/
 # Ignore output log files
 *.out
 *.err
+
+
+# mac file system
+.DS_Store/

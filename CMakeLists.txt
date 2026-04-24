@@ -139,21 +139,14 @@ add_subdirectory("src/lib/libdvd90")
 add_subdirectory("src/lib/libmcp90")
 add_subdirectory("src/lib/librang90")
 
-# GRASP application programs
-add_subdirectory("src/appl/rhfs90")
-add_subdirectory("src/appl/gj90")
-add_subdirectory("src/appl/rdensity")
-add_subdirectory("src/appl/ris4")
-add_subdirectory("src/appl/rhfszeeman95")
-
-# Additional GRASP tools and programs
-add_subdirectory("src/tool")
-
-# MPI support is optional and disabled by default in this trimmed tree.
-option(GRASP_ENABLE_MPI "Build MPI-dependent libraries and programs" OFF)
+# MPI support is enabled by default so the standard README build flow also
+# produces the MPI-enabled programs when an MPI Fortran toolchain is available.
+option(GRASP_ENABLE_MPI "Build MPI-dependent libraries and programs" ON)
+option(GRASP_BUILD_SERIAL_APPS "Build serial application targets alongside MPI programs" OFF)
 if(GRASP_ENABLE_MPI)
-    find_package(MPI)
+    find_package(MPI QUIET)
     if(MPI_Fortran_FOUND)
+        message("* GRASP_ENABLE_MPI:               ON")
         message("* MPI_Fortran_LIBRARIES:          ${MPI_Fortran_LIBRARIES}")
         message("* MPI_Fortran_INCLUDE_PATH:       ${MPI_Fortran_INCLUDE_PATH}")
         message("* MPI_Fortran_COMPILE_FLAGS:      ${MPI_Fortran_COMPILE_FLAGS}")
@@ -161,11 +154,20 @@ if(GRASP_ENABLE_MPI)
 
         add_subdirectory("src/lib/mpi90")
     else()
-        message("MPI requested but MPI Fortran libraries were not found. Skipping MPI targets.")
+        message(WARNING "GRASP_ENABLE_MPI=ON but MPI Fortran libraries were not found. Continuing without MPI targets.")
     endif()
 else()
+    message("* GRASP_ENABLE_MPI:               OFF")
     message("MPI support disabled. Not building src/lib/mpi90 or MPI-dependent programs.")
 endif()
+message("* GRASP_BUILD_SERIAL_APPS:        ${GRASP_BUILD_SERIAL_APPS}")
+
+# GRASP application programs
+add_subdirectory("src/appl/gj90")
+add_subdirectory("src/appl/rhfs90")
+# add_subdirectory("src/appl/rdensity")
+add_subdirectory("src/appl/ris4")
+# add_subdirectory("src/appl/rhfszeeman95")
 
 # Unit and integration tests
 if(EXISTS "${PROJECT_SOURCE_DIR}/test/CMakeLists.txt")
@@ -178,6 +180,50 @@ endif()
 #
 # We also set the GRASP variable that the user-defined targets can use to figure
 # out where the root of the GRASP source tree is.
+set(GJ90_REGRESSION_CASE "test")
+set(GJ90_REGRESSION_DATA_DIR "${PROJECT_SOURCE_DIR}/data")
+set(GJ90_REGRESSION_SCRIPT "${PROJECT_SOURCE_DIR}/tests/gj90_regression.sh")
+set(GJ90_MPI_REGRESSION_SCRIPT "${PROJECT_SOURCE_DIR}/tests/gj90_mpi_regression.sh")
+if(TARGET gj90
+   AND EXISTS "${GJ90_REGRESSION_SCRIPT}"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/isodata"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.c"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.m"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.w"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.gj")
+    add_test(
+        NAME gj90_regression_${GJ90_REGRESSION_CASE}
+        COMMAND
+            "${GJ90_REGRESSION_SCRIPT}"
+            "$<TARGET_FILE:gj90>"
+            "${GJ90_REGRESSION_DATA_DIR}"
+            "${GJ90_REGRESSION_CASE}"
+            "${PROJECT_BINARY_DIR}/tests/gj90_regression_${GJ90_REGRESSION_CASE}"
+    )
+endif()
+if(TARGET gj90_mpi
+   AND EXISTS "${GJ90_MPI_REGRESSION_SCRIPT}"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/isodata"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.c"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.m"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.w"
+   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.gj"
+   AND MPIEXEC_EXECUTABLE
+   AND MPIEXEC_NUMPROC_FLAG)
+    add_test(
+        NAME gj90_mpi_regression_${GJ90_REGRESSION_CASE}
+        COMMAND
+            "${GJ90_MPI_REGRESSION_SCRIPT}"
+            "${MPIEXEC_EXECUTABLE}"
+            "${MPIEXEC_NUMPROC_FLAG}"
+            "2"
+            "$<TARGET_FILE:gj90_mpi>"
+            "${GJ90_REGRESSION_DATA_DIR}"
+            "${GJ90_REGRESSION_CASE}"
+            "${PROJECT_BINARY_DIR}/tests/gj90_mpi_regression_${GJ90_REGRESSION_CASE}"
+    )
+endif()
+
 set(GRASP ${PROJECT_SOURCE_DIR})
 unset(GRASP_CMakeLists_user CACHE)
 find_file(GRASP_CMakeLists_user "CMakeLists.user" ${PROJECT_SOURCE_DIR})

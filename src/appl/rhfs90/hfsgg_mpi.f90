@@ -1,26 +1,12 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE HFSGG
+      SUBROUTINE HFSGG_MPI
 !                                                                      *
-!   This routine controls the main sequence of routine calls for the   *
-!   calculation  of the  hyperfine structure parameters.               *
-!                                                                      *
-!   Call(s) to: [LIB92]: ALLOC, CONVRT, DALLOC, DRACAH, ISPAR, ITJPO,  *
-!                        TNSRJJ.                                       *
-!               [HFS92]: MATELT, RINT, RINTHF.                         *
-!                                                                      *
-!   Written by Per Jonsson and Farid A. Parpia                         *
-!                                                                      *
-!   Modified by Per Jonsson to evaluate g_j factors                    *
-!                                                                      *
-!                                         Last revision: 22 Oct 1999   *
-!   Modified by Gediminas Gaigalas for new spin-angular integration.   *
-!                                         Last revision:    Nov 2017   *
+!   MPI version of HFSGG. Each rank processes a strided subset of the  *
+!   outer IC loop and the accumulated hyperfine constants are reduced   *
+!   over all MPI ranks before the root rank writes the output files.    *
 !                                                                      *
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  18:35:13   1/ 6/07
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  11/01/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -33,6 +19,7 @@
       USE EIGV_C
       USE foparm_C
       USE jlabl_C,               LABJ=>JLBR, LABP=>JLBP
+      USE mpi_C,           ONLY: MYID, NPROCS, MPI_COMM_WORLD
       USE nsmdat_C,        ONLY: SQN, DMOMNM, QMOMB,                  &
                                  HFSI=>SQN, HFSD=>DMOMNM, HFSQ=>QMOMB
       USE orb_C
@@ -45,9 +32,9 @@
       USE rinthf_I
       USE rint_I
       USE matelt_I
-      USE convrt_I
       USE ispar_I
       USE itjpo_I
+      USE itrig_I
       USE oneparticlejj_I
       USE gracah1_I
       IMPLICIT NONE
@@ -58,11 +45,13 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: FFMIN, FFMAX, FF, I, J, KT, IPT, IC, LCNUM, IR, ITJPOC, ITJPOR&
-         , IDIFF, IA, IB, K, KK, LOC1, LOC2, II, JJ, JJII, JB, JA, JJB, JJA, IFLAG
+      INTEGER :: FFMIN, FFMAX, FF, I, J, KT, IPT, IC, IR, ITJPOC, ITJPOR&
+         , IDIFF, IA, IB, K, KK, LOC1, LOC2, II, JJ, JJII, JB, JA, JJB, JJA, IFLAG, &
+         OCC_IC, OCC_IR, NDIFF, DIFF_POS, DIFF_NEG
       REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL
-      REAL(DOUBLE), DIMENSION(2,NNNW,NNNW) :: RINTME, AMELT
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: RINTGJ, RINTDGJ, GJMELT, DGJMELT
+      REAL(DOUBLE), DIMENSION(2,NNNW,NNNW) :: RINTME, AMELT, ELEMFAC
+      REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: RINTGJ, RINTDGJ, GJMELT, DGJMELT, &
+         GJFAC, DGJFAC
 !     .. Local pointer arrays
       REAL(DOUBLE), DIMENSION(:,:), pointer :: HFC
       REAL(DOUBLE),  DIMENSION(:), pointer :: GJC, DGJC
@@ -71,7 +60,6 @@
          GJA1, AFA1, AFA2, BFA1, BFA2, BFA3, GJ, DGJ, TILDE1, &
          TILDE2, FACTOR1, FACTOR2, RAC1, RAC2, HFSELT1, HFSELT2, EVECIC1, EVECIR1,&
          EVECIC2, EVECIR2
-      CHARACTER :: CNUM*11
 !-----------------------------------------------
 !
 !
@@ -80,9 +68,9 @@
 !
 !   Allocate storage for local arrays
 !
-      CALL ALLOC (HFC, 5, NVEC*NVEC, 'HFC', 'HFS')
-      CALL ALLOC (GJC, NVEC*NVEC, 'GJC', 'HFS')
-      CALL ALLOC (DGJC, NVEC*NVEC, 'DGLC', 'HFS')
+      CALL ALLOC (HFC, 5, NVEC*NVEC, 'HFC', 'HFS_MPI')
+      CALL ALLOC (GJC, NVEC*NVEC, 'GJC', 'HFS_MPI')
+      CALL ALLOC (DGJC, NVEC*NVEC, 'DGLC', 'HFS_MPI')
 !
 !   Initialise
 !
@@ -90,6 +78,8 @@
 !
       GJC(:NVEC*NVEC) = 0.0D00
       DGJC(:NVEC*NVEC) = 0.0D00
+      GJFAC(:,:) = 0.0D00
+      DGJFAC(:,:) = 0.0D00
 
 !
 !   Calculate and save the radial integrals and angular
@@ -107,10 +97,17 @@
                ENDIF
                CALL MATELT (I, KT, J, APART, GJPART, DGJPART)
                AMELT(KT,I,J) = APART
+               ELEMFAC(KT,I,J) = APART*RINTME(KT,I,J)
                IF (KT /= 1) CYCLE
                GJMELT(I,J) = GJPART
                DGJMELT(I,J) = DGJPART
             END DO
+         END DO
+      END DO
+      DO I = 1, NW
+         DO J = 1, NW
+            GJFAC(I,J) = GJMELT(I,J)*RINTGJ(I,J)
+            DGJFAC(I,J) = DGJMELT(I,J)*RINTDGJ(I,J)
          END DO
       END DO
 !
@@ -121,15 +118,8 @@
 !   Sweep through the Hamiltonian matrix to determine the
 !   diagonal and off-diagonal hyperfine constants
 !
-      DO IC = 1, NCF
+      DO IC = MYID + 1, NCF, NPROCS
          ITJPOC = ITJPO(IC)
-!
-!   Output IC on the screen to show how far the calculation has preceede
-!
-         IF (MOD(IC,100) == 0) THEN
-            CALL CONVRT (IC, CNUM, LCNUM)
-            WRITE (6, *) 'Column '//CNUM(1:LCNUM)//' complete;'
-         ENDIF
 !
          DO IR = 1, NCF
 !
@@ -165,7 +155,44 @@
                IF (.NOT.(IDIFF==0 .AND. IR>=IC .OR. IDIFF==2 .OR. IDIFF==4&
                    .AND. KT==2)) CYCLE
 !
-                CALL ONEPARTICLEJJ(KT,IPT,IC,IR,IA,IB,TSHELL)
+               IF (ITRIG(ITJPOC, ITJPOR, 2*KT + 1) == 0) THEN
+                  CYCLE
+               ENDIF
+               IF (IPT /= 0 .AND. ISPAR(IC)*ISPAR(IR)*IPT /= 1) THEN
+                  CYCLE
+               ENDIF
+               NDIFF = 0
+               DIFF_POS = 0
+               DIFF_NEG = 0
+               DO I = 1, NW
+                  OCC_IC = IQA(I,IC)
+                  OCC_IR = IQA(I,IR)
+                  IF (OCC_IC == OCC_IR) CYCLE
+                  NDIFF = NDIFF + 1
+                  IF (NDIFF > 2) EXIT
+                  IF (IABS(OCC_IC - OCC_IR) > 1) THEN
+                     NDIFF = 3
+                     EXIT
+                  ENDIF
+                  IF (OCC_IC > OCC_IR) THEN
+                     DIFF_POS = I
+                  ELSE
+                     DIFF_NEG = I
+                  ENDIF
+               END DO
+               IF (NDIFF /= 0 .AND. NDIFF /= 2) THEN
+                  CYCLE
+               ENDIF
+               IF (NDIFF == 2) THEN
+                  IF (ABS(ELEMFAC(KT,DIFF_POS,DIFF_NEG)) <= CUTOFF) THEN
+                     IF (.NOT.(KT == 1 .AND. IDIFF == 0 .AND. &
+                         (ABS(GJFAC(DIFF_POS,DIFF_NEG)) > CUTOFF .OR. &
+                          ABS(DGJFAC(DIFF_POS,DIFF_NEG)) > CUTOFF))) THEN
+                        CYCLE
+                     ENDIF
+                  ENDIF
+               ENDIF
+               CALL ONEPARTICLEJJ(KT,IPT,IC,IR,IA,IB,TSHELL)
 !GG               CALL TNSRJJ (KT, IPT, IC, IR, IA, IB, TSHELL)
 !
 !   Accumulate the contribution from the one-body operators;
@@ -175,30 +202,27 @@
                      IF (KT/=1 .OR. IDIFF/=0) THEN
                         DO IA = 1, NW
                            IF (ABS(TSHELL(IA)) <= CUTOFF) CYCLE
-                           ELEMNT = ELEMNT + AMELT(KT,IA,IA)*RINTME(KT,IA,IA)*&
-                              TSHELL(IA)
+                           IF (ABS(ELEMFAC(KT,IA,IA)) <= CUTOFF) CYCLE
+                           ELEMNT = ELEMNT + ELEMFAC(KT,IA,IA)*TSHELL(IA)
                            CYCLE
                         END DO
                      ELSE
                         DO IA = 1, NW
                            IF (ABS(TSHELL(IA)) <= CUTOFF) CYCLE
-                           ELEMNT = ELEMNT + AMELT(KT,IA,IA)*RINTME(KT,IA,IA)*&
-                              TSHELL(IA)
-                           ELEMNTGJ = ELEMNTGJ + GJMELT(IA,IA)*RINTGJ(IA,IA)*&
-                              TSHELL(IA)
-                           ELEMNTDGJ = ELEMNTDGJ + DGJMELT(IA,IA)*RINTDGJ(IA,IA&
-                              )*TSHELL(IA)
+                           IF (ABS(ELEMFAC(KT,IA,IA)) <= CUTOFF .AND. &
+                               ABS(GJFAC(IA,IA)) <= CUTOFF .AND. &
+                               ABS(DGJFAC(IA,IA)) <= CUTOFF) CYCLE
+                           ELEMNT = ELEMNT + ELEMFAC(KT,IA,IA)*TSHELL(IA)
+                           ELEMNTGJ = ELEMNTGJ + GJFAC(IA,IA)*TSHELL(IA)
+                           ELEMNTDGJ = ELEMNTDGJ + DGJFAC(IA,IA)*TSHELL(IA)
                         END DO
                      ENDIF
                   ELSE
                      IF (ABS(TSHELL(1)) > CUTOFF) THEN
-                        ELEMNT = ELEMNT + AMELT(KT,IA,IB)*RINTME(KT,IA,IB)*&
-                           TSHELL(1)
+                        ELEMNT = ELEMNT + ELEMFAC(KT,IA,IB)*TSHELL(1)
                         IF (KT==1 .AND. IDIFF==0) THEN
-                           ELEMNTGJ = ELEMNTGJ + GJMELT(IA,IB)*RINTGJ(IA,IB)*&
-                              TSHELL(1)
-                           ELEMNTDGJ = ELEMNTDGJ + DGJMELT(IA,IB)*RINTDGJ(IA,IB&
-                              )*TSHELL(1)
+                           ELEMNTGJ = ELEMNTGJ + GJFAC(IA,IB)*TSHELL(1)
+                           ELEMNTDGJ = ELEMNTDGJ + DGJFAC(IA,IB)*TSHELL(1)
                         ENDIF
                      ENDIF
                   ENDIF
@@ -208,7 +232,9 @@
 !   contributions from the matrix elements to obtain total contributions
 !
                IF (ABS(ELEMNT) <= CUTOFF .AND. ABS(ELEMNTGJ) <= CUTOFF .AND. &
-                   ABS(ELEMNTDGJ) <= CUTOFF) CYCLE
+                   ABS(ELEMNTDGJ) <= CUTOFF) THEN
+                  CYCLE
+               ENDIF
                DO K = 1, NVEC
                   LOC1 = (K - 1)*NCF
                   EVECIC1 = EVEC(IC + LOC1)
@@ -257,6 +283,12 @@
 !
          END DO
       END DO
+!
+      CALL GDRSUMMPI_ROOT(HFC(1,1), 5*NVEC*NVEC)
+      CALL GDRSUMMPI_ROOT(GJC(1), NVEC*NVEC)
+      CALL GDRSUMMPI_ROOT(DGJC(1), NVEC*NVEC)
+!
+      IF (MYID /= 0) GO TO 900
 !
 !   These are the conversion factors to obtain the hyperfine
 !   constants in MHz
@@ -446,7 +478,10 @@
          END DO
       END DO
 !
-      CALL DALLOC (HFC, 'HFC', 'HFS')
+  900 CONTINUE
+      CALL DALLOC (HFC, 'HFC', 'HFS_MPI')
+      CALL DALLOC (GJC, 'GJC', 'HFS_MPI')
+      CALL DALLOC (DGJC, 'DGJC', 'HFS_MPI')
       RETURN
 !
   302 FORMAT(/,/,' Interaction constants:'/,/,&
@@ -461,4 +496,4 @@
   305 FORMAT(1X,1I3,5X,2A4,2X,1I3,5X,2A4,1X,A4,4X,1P,1D20.10)
       RETURN
 !
-      END SUBROUTINE HFSGG
+      END SUBROUTINE HFSGG_MPI

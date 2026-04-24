@@ -1,55 +1,131 @@
-add_executable(ris4
-    ris_C.f90
-    teilst_C.f90
-    angdata_I.f90
-    densread_I.f90
-    densread_seltz_I.f90
-    densnew_I.f90
-    densnew_seltz_I.f90
-    edensityfit_I.f90
-    getmixblock_I.f90
-    getsmd_I.f90
-    polint_I.f90
-    ris_cal_I.f90
-    rintdens_I.f90
-    rintdensvec_I.f90
-    rinti_nms_I.f90
-    rint_sms2_I.f90
-    rint_sms3_I.f90
-    setdbg_I.f90
-    setsum_I.f90
-    strsum_I.f90
-    smsread_I.f90
-    smsnew_I.f90
-    sigma_1_I.f90
-    sigma_2_I.f90
-    vinti_I.f90
-    engout_I.f90
-    ris.f90
-    angdata.f90
-    densread.f90
-    densread_seltz.f90
-    densnew.f90
-    densnew_seltz.f90
-    edensityfit.f90
-    getmixblock.f90
-    getsmd.f90
-    polint.f90
-    ris_cal.f90
-    rintdens.f90
-    rintdensvec.f90
-    rinti_nms.f90
-    rint_sms2.f90
-    rint_sms3.f90
-    setdbg.f90
-    setsum.f90
-    strsum.f90
-    smsread.f90
-    smsnew.f90
-    sigma_1.f90
-    sigma_2.f90
-    vinti.f90
-    engout.f90
-)
-target_link_libraries_Fortran(ris4 PUBLIC mod 9290 rang90 mcp90 mod 9290)
-install(TARGETS ris4 DESTINATION bin/)
+if(GRASP_BUILD_SERIAL_APPS)
+    add_executable(ris4
+        ris_C.f90
+        teilst_C.f90
+        angdata_I.f90
+        densread_I.f90
+        densread_seltz_I.f90
+        densnew_I.f90
+        densnew_seltz_I.f90
+        edensityfit_I.f90
+        getmixblock_I.f90
+        getsmd_I.f90
+        polint_I.f90
+        ris_cal_I.f90
+        rintdens_I.f90
+        rintdensvec_I.f90
+        rinti_nms_I.f90
+        rint_sms2_I.f90
+        rint_sms3_I.f90
+        setdbg_I.f90
+        setsum_I.f90
+        strsum_I.f90
+        smsread_I.f90
+        smsnew_I.f90
+        sigma_1_I.f90
+        sigma_2_I.f90
+        vinti_I.f90
+        engout_I.f90
+        ris.f90
+        angdata.f90
+        densread.f90
+        densread_seltz.f90
+        densnew.f90
+        densnew_seltz.f90
+        edensityfit.f90
+        getmixblock.f90
+        getsmd.f90
+        polint.f90
+        ris_cal.f90
+        rintdens.f90
+        rintdensvec.f90
+        rinti_nms.f90
+        rint_sms2.f90
+        rint_sms3.f90
+        setdbg.f90
+        setsum.f90
+        strsum.f90
+        smsread.f90
+        smsnew.f90
+        sigma_1.f90
+        sigma_2.f90
+        vinti.f90
+        engout.f90
+    )
+    target_link_libraries_Fortran(ris4 PUBLIC mod 9290 rang90 mcp90 mod 9290)
+    install(TARGETS ris4 DESTINATION bin/)
+endif()
+
+if(TARGET mpiu90)
+    add_executable(ris4_mpi
+        ris_C.f90
+        teilst_C.f90
+        angdata_I.f90
+        densread_I.f90
+        densread_mpi_I.f90
+        densread_seltz_I.f90
+        densread_seltz_mpi_I.f90
+        densnew_I.f90
+        densnew_mpi_I.f90
+        densnew_seltz_I.f90
+        densnew_seltz_mpi_I.f90
+        edensityfit_I.f90
+        getmixblock_I.f90
+        getsmd_I.f90
+        polint_I.f90
+        ris_cal_mpi_I.f90
+        rintdens_I.f90
+        rintdensvec_I.f90
+        rinti_nms_I.f90
+        rint_sms2_I.f90
+        rint_sms3_I.f90
+        setdbg_I.f90
+        setsum_I.f90
+        smsnew_I.f90
+        smsread_I.f90
+        smsread_mpi_I.f90
+        smsnew_mpi_I.f90
+        sigma_1_I.f90
+        sigma_2_I.f90
+        vinti_I.f90
+        engout_I.f90
+        angdata.f90
+        densread.f90
+        densread_mpi.f90
+        densread_seltz.f90
+        densread_seltz_mpi.f90
+        densnew.f90
+        densnew_mpi.f90
+        densnew_seltz.f90
+        densnew_seltz_mpi.f90
+        edensityfit.f90
+        getmixblock.f90
+        getsmd.f90
+        polint.f90
+        ris_cal_mpi.f90
+        rintdens.f90
+        rintdensvec.f90
+        rinti_nms.f90
+        rint_sms2.f90
+        rint_sms3.f90
+        setdbg.f90
+        setsum.f90
+        smsnew.f90
+        smsread.f90
+        smsread_mpi.f90
+        smsnew_mpi.f90
+        sigma_1.f90
+        sigma_2.f90
+        vinti.f90
+        engout.f90
+        ris_mpi.f90
+    )
+    target_link_libraries_Fortran(ris4_mpi PUBLIC mpiu90 mod 9290 rang90 mcp90 mod 9290)
+    target_include_directories(ris4_mpi PRIVATE ${MPI_Fortran_INCLUDE_PATH})
+    target_link_libraries(ris4_mpi PRIVATE ${MPI_Fortran_LIBRARIES})
+    set_target_properties(ris4_mpi PROPERTIES
+      COMPILE_FLAGS "${MPI_Fortran_COMPILE_FLAGS}"
+      LINK_FLAGS "${MPI_Fortran_LINK_FLAGS}"
+    )
+    install(TARGETS ris4_mpi DESTINATION bin/)
+endif()
