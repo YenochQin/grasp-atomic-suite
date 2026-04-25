@@ -3,11 +3,11 @@
 #
 #    mkdir build/ && cd build/ && cmake ..
 #
-# And then under the build/ directory simply call
+# And then build and install with
 #
-#    make
+#    cmake --build build/ --target install
 #
-# which will compile and install all the libraries to lib/
+# which will compile and install binaries and libraries to bin/ and lib/
 #
 
 # This minimum CMake requirement can probably be loosened. But GRASP has not
@@ -100,7 +100,7 @@ set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 # Additional Fortran compiler flags.
 #
 # -fno-automatic: this was set in the original make_environment_gfortran_UBC file.
-# -fallow-argument-mismatch: needed for legacy BLAS/LAPACK-style calls that
+# -fallow-argument-mismatch: needed for older BLAS/LAPACK-style calls that
 #   newer gfortran versions reject.
 #
 # Note: optimization should be enabled on the Release target automatically.

@@ -10,8 +10,8 @@
 !   we recommend to uncomment version "USE mpi" below
 !   and comment out version 'mpif.h'
 !   depending on your environment
-!   it may be necessary to add $(MPI_INC) = -I/path  in Makefile
-!   grasp/src/lib/mpi90/Makefile
+!   it may be necessary to add the MPI include path through CMake
+!   target include settings or the compiler wrapper configuration.
 !   with 'path' pointing to module 'mpi.mod'
 !cjb
 !   otherwise uncomment 'mpif.h' and comment out "USE mpi"

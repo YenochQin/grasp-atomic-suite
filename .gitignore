@@ -1,4 +1,4 @@
-# Ignore artifacts from Make builds
+# Ignore compiler and installed build artifacts
 *.o
 *.mod
 /bin/*
@@ -6,9 +6,8 @@
 /lib/*
 !/lib/.gitkeep
 
-# Ignore user build configuration files
+# Ignore user CMake configuration files
 CMakeLists.user
-Make.user
 
 # Ignore generated CMake files
 build/

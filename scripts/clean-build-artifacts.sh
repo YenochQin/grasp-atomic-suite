@@ -11,8 +11,7 @@ usage() {
   cat <<'EOF'
 Usage: ./scripts/clean-build-artifacts.sh [--dry-run]
 
-Clean build outputs for both workflows:
-  - run `make cleanall` when available
+Clean CMake build outputs:
   - remove top-level `build/` and `build-debug/`
   - remove non-hidden files under `bin/` and `lib/`
 
@@ -77,15 +76,6 @@ while [ $# -gt 0 ]; do
 done
 
 printf 'Repository root: %s\n' "$REPO_ROOT"
-
-if [ -f "$REPO_ROOT/Makefile" ]; then
-  if [ "$DRY_RUN" -eq 0 ]; then
-    printf '+ make -C %s cleanall\n' "$REPO_ROOT"
-    make -C "$REPO_ROOT" cleanall || printf 'Warning: `make cleanall` failed; continuing with directory cleanup.\n' >&2
-  else
-    printf '+ make -C %s cleanall\n' "$REPO_ROOT"
-  fi
-fi
 
 clean_dir_contents "$REPO_ROOT/bin"
 clean_dir_contents "$REPO_ROOT/lib"

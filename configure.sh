@@ -49,16 +49,15 @@ cat <<-EOF
 
  Build directory ${build_directory}/ created.
 
- To compile GRASP you need to cd into ${build_directory}/ and run make:
+ To compile GRASP, run:
 
-    cd ${build_directory}/
-    make install
+    cmake --build ${build_directory}/ --target install
 
  which installs the GRASP binaries to the bin/ directory.
 
- Note that you also probably want to enable parallel build by passing -j to make:
+ Note that you also probably want to enable parallel build by passing -j:
 
-    make -jN install
+    cmake --build ${build_directory}/ --target install -jN
 
  where N is the number of cores you have available.
 
