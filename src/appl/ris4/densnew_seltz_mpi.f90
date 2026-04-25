@@ -29,6 +29,7 @@
       USE prnt_C,           ONLY : NVEC
       USE alcbuf_I
       USE convrt_I
+      USE ispar_I
       USE itjpo_I
       USE onescalar_I
       IMPLICIT NONE
@@ -44,11 +45,13 @@
       REAL(DOUBLE), DIMENSION(NRNUC) :: CONTRI1VEC, ELEMNT1VEC
       REAL(DOUBLE) :: ELEMNT1, ELEMNT2, ELEMNT3, ELEMNT4, ELEMNT5,     &
                       ELEMNT6, ELEMNT7, CONTRI1, CONTRI2, CONTRI3,     &
-                      CONTRI4, CONTRI5, CONTRI6, CONTRI7
+                      CONTRI4, CONTRI5, CONTRI6, CONTRI7, EVPAIR,      &
+                      PAIR_SCALE
+      LOGICAL :: HAS_CONTR
       CHARACTER :: CNUM*11, CK*2
       INTEGER, DIMENSION(NNNW) :: IA_S
       INTEGER :: KA, IOPAR, INCOR, IC, LCNUM, ITJPOC, IR, IA, IB, I, J
-      INTEGER :: L, LOC, NCONTR, LAB
+      INTEGER :: L, LOC, NCONTR, LAB, OCC_IC, OCC_IR, NDIFF
 
       DENS1VEC(:,:) = 0.0D00
       KA = 0
@@ -66,6 +69,22 @@
          ITJPOC = ITJPO (IC)
          DO IR = IC,NCF
             IF (ITJPO(IR) .EQ. ITJPOC) THEN
+               IF (ISPAR(IC) .NE. ISPAR(IR)) CYCLE
+               NDIFF = 0
+               DO I = 1,NW
+                  OCC_IC = IQA(I,IC)
+                  OCC_IR = IQA(I,IR)
+                  IF (OCC_IC .EQ. OCC_IR) CYCLE
+                  IF (IABS(OCC_IC - OCC_IR) .GT. 1) THEN
+                     NDIFF = 3
+                     EXIT
+                  ENDIF
+                  NDIFF = NDIFF + 1
+                  IF (NDIFF .GT. 2) EXIT
+               END DO
+               IF (NDIFF .NE. 0 .AND. NDIFF .NE. 2) CYCLE
+               IF (NDIFF .EQ. 0 .AND. IC .NE. IR) CYCLE
+
                ELEMNT1 = 0.0D00
                ELEMNT2 = 0.0D00
                ELEMNT3 = 0.0D00
@@ -74,6 +93,7 @@
                ELEMNT6 = 0.0D00
                ELEMNT7 = 0.0D00
                ELEMNT1VEC(:) = 0.0D00
+               HAS_CONTR = .FALSE.
 
                CALL ONESCALAR(IC,IR,IA,IB,TSHELL)
                IF (IA .NE. 0) THEN
@@ -94,6 +114,7 @@
                            ELEMNT5 = ELEMNT5 + DINT5(IA,IA)*TSHELL(IA)
                            ELEMNT6 = ELEMNT6 + DINT6(IA,IA)*TSHELL(IA)
                            ELEMNT7 = ELEMNT7 + DINT7(IA,IA)*TSHELL(IA)
+                           HAS_CONTR = .TRUE.
                         ENDIF
                      END DO
                   ELSE
@@ -109,30 +130,36 @@
                            ELEMNT5 = ELEMNT5 + DINT5(IA,IB)*TSHELL(1)
                            ELEMNT6 = ELEMNT6 + DINT6(IA,IB)*TSHELL(1)
                            ELEMNT7 = ELEMNT7 + DINT7(IA,IB)*TSHELL(1)
+                           HAS_CONTR = .TRUE.
                         ENDIF
                      ENDIF
                   ENDIF
                ENDIF
+               IF (.NOT. HAS_CONTR) CYCLE
+               IF (ABS(ELEMNT1) .LE. CUTOFF .AND. &
+                   ABS(ELEMNT2) .LE. CUTOFF .AND. &
+                   ABS(ELEMNT3) .LE. CUTOFF .AND. &
+                   ABS(ELEMNT4) .LE. CUTOFF .AND. &
+                   ABS(ELEMNT5) .LE. CUTOFF .AND. &
+                   ABS(ELEMNT6) .LE. CUTOFF .AND. &
+                   ABS(ELEMNT7) .LE. CUTOFF .AND. &
+                   ALL(ABS(ELEMNT1VEC(:)) .LE. CUTOFF)) CYCLE
+               IF (IR .EQ. IC) THEN
+                  PAIR_SCALE = 1.0D00
+               ELSE
+                  PAIR_SCALE = 2.0D00
+               ENDIF
                DO J = 1,NVEC
                   LOC = (J-1)*NCF
-                  CONTRI1 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT1
-                  CONTRI1VEC(:) = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT1VEC(:)
-                  CONTRI2 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT2
-                  CONTRI3 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT3
-                  CONTRI4 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT4
-                  CONTRI5 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT5
-                  CONTRI6 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT6
-                  CONTRI7 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT7
-                  IF (IR.NE.IC) THEN
-                     CONTRI1 = 2.0D00 * CONTRI1
-                     CONTRI1VEC(:) = 2.0D00 * CONTRI1VEC(:)
-                     CONTRI2 = 2.0D00 * CONTRI2
-                     CONTRI3 = 2.0D00 * CONTRI3
-                     CONTRI4 = 2.0D00 * CONTRI4
-                     CONTRI5 = 2.0D00 * CONTRI5
-                     CONTRI6 = 2.0D00 * CONTRI6
-                     CONTRI7 = 2.0D00 * CONTRI7
-                  ENDIF
+                  EVPAIR = PAIR_SCALE * EVEC(IC+LOC)*EVEC(IR+LOC)
+                  CONTRI1 = EVPAIR*ELEMNT1
+                  CONTRI1VEC(:) = EVPAIR*ELEMNT1VEC(:)
+                  CONTRI2 = EVPAIR*ELEMNT2
+                  CONTRI3 = EVPAIR*ELEMNT3
+                  CONTRI4 = EVPAIR*ELEMNT4
+                  CONTRI5 = EVPAIR*ELEMNT5
+                  CONTRI6 = EVPAIR*ELEMNT6
+                  CONTRI7 = EVPAIR*ELEMNT7
                   DENS1(J) = DENS1(J) + CONTRI1
                   DO L = 2,NRNUC
                      DENS1VEC(J,L) = DENS1VEC(J,L) + CONTRI1VEC(L)
