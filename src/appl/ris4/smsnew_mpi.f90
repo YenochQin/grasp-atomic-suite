@@ -17,6 +17,7 @@
       USE ris_C
       USE mpi_C,            ONLY: MYID, NPROCS
       USE alcbuf_I
+      USE ispar_I
       USE itjpo_I
       IMPLICIT NONE
       REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: VINT, VINT2
@@ -28,6 +29,7 @@
       REAL(DOUBLE) :: CONTRI, CONTRIK1, VCOEFF, RADIAL_K1, RADIAL_SMS,  &
          PAIR_SCALE, TERM_K1, TERM_SMS
       INTEGER :: J,K,LOC,IC,IR,ITJPOC,INCOR,LCNUM, IIA, IIB, IIC, IID
+      INTEGER :: I, OCC_IC, OCC_IR, NDIFF
 
       INCOR = 1
       CALL ALCBUF (1)
@@ -41,6 +43,24 @@
          ITJPOC = ITJPO (IC)
          DO IR = IC,NCF
             IF (ITJPO(IR) .EQ. ITJPOC) THEN
+               IF (ISPAR(IC) .NE. ISPAR(IR)) CYCLE
+               NDIFF = 0
+               DO I = 1,NW
+                  OCC_IC = IQA(I,IC)
+                  OCC_IR = IQA(I,IR)
+                  IF (OCC_IC .EQ. OCC_IR) CYCLE
+                  IF (IABS(OCC_IC - OCC_IR) .GT. 2) THEN
+                     NDIFF = 5
+                     EXIT
+                  ENDIF
+                  NDIFF = NDIFF + IABS(OCC_IC - OCC_IR)
+                  IF (NDIFF .GT. 4) EXIT
+               END DO
+               IF (NDIFF .GT. 4 .OR. MOD(NDIFF,2) .NE. 0) CYCLE
+
+               NVCOEF = 0
+               CALL RKCO_GG (IC, IR, CORD, INCOR, 1)
+               IF (NVCOEF .EQ. 0) CYCLE
                IF (IR .EQ. IC) THEN
                   PAIR_SCALE = 1.0D00
                ELSE
@@ -50,8 +70,6 @@
                   LOC = (J-1)*NCF
                   EVPAIR(J) = PAIR_SCALE * EVEC(IC+LOC) * EVEC(IR+LOC)
                END DO
-               NVCOEF = 0
-               CALL RKCO_GG (IC, IR, CORD, INCOR, 1)
                DO K = 1,NVCOEF
                   VCOEFF = COEFF(K)
                   IF (ABS (VCOEFF) .GT. CUTOFF) THEN
