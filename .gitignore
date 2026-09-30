@@ -24,3 +24,8 @@ build-*/
 # mac file system
 .DS_Store
 */.DS_Store
+
+# Orbital optimization tests keep large calculation datasets outside the repo.
+/test/data/
+__pycache__/
+*.py[cod]

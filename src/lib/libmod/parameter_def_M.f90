@@ -19,11 +19,9 @@
 !    NNNWM2: = NNNW-2
 !------------------------------------------------------------------
 
-         integer, parameter :: KEYORB = 215
-         integer, parameter :: NNNP   = 590
-         integer, parameter :: NNN1   = 600
-         integer, parameter :: NNNW   = 127
-         integer, parameter :: NNNWM1 = 126
-         integer, parameter :: NNNWM2 = 125
+!    Compatibility interface: all limits are defined in suite_parameters.
+!    Keep existing USE parameter_def callers without duplicate definitions.
+      use suite_parameters, only: KEYORB, NNNP, NNN1, NNNW, NNNWM1, NNNWM2
+      implicit none
       end module parameter_def
 !======================================================================

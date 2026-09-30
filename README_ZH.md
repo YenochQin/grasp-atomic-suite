@@ -2,7 +2,7 @@
 
 中文 | [English](README.md)
 
-`grasp-atomic-suite` 是一个面向相对论原子结构与原子性质计算的 Fortran 研究开发仓库。它基于 GRASP92/GRASP2018 风格代码树，当前重点维护 `rhfs90`、`ris4`、`gj90` 及其 MPI 相关组件，用于超精细结构、同位素位移和 Landé `g_J` 因子的计算、验证与性能优化。
+`grasp-atomic-suite` 是一个面向相对论原子结构与原子性质计算的 Fortran 研究开发仓库。它已合入 `rmcdhf_test` 的轨道优化程序，并与 `rhfs90`、`ris4`、`gj90` 共享 GRASP 数值库，用于轨道优化、超精细结构、同位素位移和 Landé `g_J` 因子的计算、验证与性能优化。
 
 本仓库不是上游 GRASP 的最小镜像。它保留了传统 GRASP 数值库和应用组织方式，同时加入了 CMake 构建、MPI 目标、`gj90` 独立程序、回归数据和面向 `g_J`/MPI 优化的开发文档。
 
@@ -16,6 +16,7 @@
 │   ├── appl/
 │   │   ├── gj90/             # Landé g_J 独立计算程序
 │   │   ├── rhfs90/           # 相对论超精细结构程序
+│   │   ├── rmcdhf90*/        # 四个 rmcdhf_orbopt 轨道优化版本
 │   │   └── ris4/             # 相对论同位素位移程序
 │   └── lib/
 │       ├── libmod/           # 全局参数、公共块和共享状态模块
@@ -26,6 +27,8 @@
 │       └── mpi90/            # MPI 文件、路径和并行辅助例程
 ├── docs/                     # 理论说明、实现追踪和优化报告
 ├── data/                     # gj90/RHFS 验证用示例输入与输出
+├── test/                     # 轨道优化和公共库测试
+├── scripts/                  # 网格修改及构建清理工具
 ├── bin/                      # 安装后的可执行文件
 └── lib/                      # 安装后的静态库和 Fortran module
 ```
@@ -37,6 +40,7 @@
 | `gj90` | `src/appl/gj90` | `gj90`, `gj90_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、`name.c`、`name.m/name.cm`、`name.w`，输出 `name.gj/name.cgj`。 |
 | `rhfs90` | `src/appl/rhfs90` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，输出 `name.i/name.ci` 及中间角向数据。 |
+| 轨道优化 | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`、`rmcdhf_orbopt_mpi`、`rmcdhf_orbopt_mem`、`rmcdhf_orbopt_mem_mpi` | 串行/MPI 与常规/内存 MCP 版本；输出仍使用 `rwfn.out`、`rmix.out`、`rmcdhf.sum`、`rmcdhf.log`。 |
 
 默认 CMake 配置会尝试构建 MPI 版本。如果系统没有 MPI Fortran 工具链，会跳过 MPI 目标。串行应用目标默认关闭，需要在 CMake 配置时显式开启。
 
@@ -49,7 +53,16 @@
 cmake --build build --target install -j4
 ```
 
-`configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后通常会得到 `bin/gj90_mpi`、`bin/rhfs_mpi`、`bin/ris4_mpi` 以及对应库文件。
+`configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后会得到 `bin/gj90_mpi`、`bin/rhfs_mpi`、`bin/ris4_mpi`、两个轨道优化 MPI 程序以及对应库文件。
+
+同时构建全部四个轨道优化版本和性质计算程序：
+
+```sh
+cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON
+cmake --build build-all --parallel 4
+ctest --test-dir build-all --output-on-failure
+cmake --install build-all
+```
 
 调试构建：
 
@@ -83,7 +96,7 @@ CMake 会自动查找 BLAS/LAPACK，并在使用 GNU Fortran 时为较旧的 For
 
 ## 输入与输出
 
-这些应用沿用 GRASP 风格的状态名输入。运行时输入 `name` 后，程序会在当前目录查找相关文件。
+性质计算程序沿用 GRASP 风格的状态名输入。运行时输入 `name` 后，程序会在当前目录查找相关文件。轨道优化程序沿用 RMCDHF 的交互输入，使用 `rcsf.inp`、`rwfn.inp` 和 MCP 数据。`rnucleus`、`rwfnestimate`、`rangular_mpi` 等准备工具仍来自外部原版 GRASP。
 
 常用输入文件：
 
@@ -120,11 +133,34 @@ data/test.w
 data/test.gj
 ```
 
-这些文件可用于核对 `gj90` 的 `g_J` 输出。当前 `tests/` 目录为空；如果后续加入 CTest 脚本，可在构建目录中运行：
+这些文件可用于核对 `gj90` 的 `g_J` 输出。CTest 已接入公共库积分、MPI 稀疏缓冲区、轨道事务/轮次逻辑和网格修改脚本测试：
 
 ```sh
-ctest
+ctest --test-dir build-all --output-on-failure
 ```
+
+轨道回归脚本见 [test/rmcdhf_orbopt](test/rmcdhf_orbopt/README.md)。大型计算输入和结果留在仓库外。SLURM 模板需要设置 `GRASP_WORKSPACE`（父工作区目录），使用外部输入的模板还需设置 `GRASP_TEST_DATA_ROOT`；提交前按本机调整 module 名称和资源参数。
+
+## 径向网格与仓库迁移
+
+所有公共容量和数值默认值集中在
+[`suite_parameters_M.f90`](src/lib/libmod/suite_parameters_M.f90)。
+`NNN1=NNNP+10` 及轨道容量偏移量自动派生。轨道优化与性质计算的有限核
+默认实际点数统一为 `N=NNNP`，当前为 2990；点核仍保留独立默认值。
+输入轨道会被插值到当前计算网格。交互修改 H 后会重新计算默认 ACCY，
+用户随后显式输入的数值阈值仍优先。
+
+网格批量修改工具见 [scripts/patch_grasp_grid.py](scripts/README.md)：
+本仓库使用 `--layout atomic-suite`，完整原版 GRASP 使用默认布局
+`grasp2018`。默认仅预览；修改后必须全量重编译，并验证物理量的网格收敛。
+源码目录残留的 `.mod` 文件会覆盖新模块，CMake 会拒绝这种混合构建；
+需先将旧生成文件移出源码目录。
+
+参数列表、调用顺序和验证见 [docs/common_parameters.md](docs/common_parameters.md)。
+本仓库的脚本布局现在只修改一个集中配置文件。
+
+迁移来源、公共库取舍和验证说明见 [docs/rmcdhf_migration.md](docs/rmcdhf_migration.md)。
+后续轨道优化开发在本仓库进行；原 `rmcdhf_test` 工作目录保留作为参考。
 
 ## 开发文档
 

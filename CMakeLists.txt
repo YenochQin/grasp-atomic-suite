@@ -23,6 +23,16 @@ project(grasp)
 enable_language(Fortran)
 enable_testing()
 
+# GNU Fortran also searches beside the source file for modules. Old in-source
+# .mod files can silently override a freshly built parameter_def/grid capacity.
+file(GLOB_RECURSE GRASP_IN_SOURCE_MODULES "${PROJECT_SOURCE_DIR}/src/*.mod")
+if(GRASP_IN_SOURCE_MODULES)
+    message(FATAL_ERROR
+        "Legacy .mod files exist under src/. Move these generated files out of "
+        "the source tree before configuring an out-of-source build; they can "
+        "override the new radial-grid capacity.")
+endif()
+
 # "Release" will be the default build type, which gives us optimization flags etc.
 # The other relevant option would be "Debug", which disables optimizations and
 # enables debugging symbols. The debug build can be enabled when setting up the
@@ -168,6 +178,17 @@ add_subdirectory("src/appl/rhfs90")
 # add_subdirectory("src/appl/rdensity")
 add_subdirectory("src/appl/ris4")
 # add_subdirectory("src/appl/rhfszeeman95")
+
+# Orbital optimization uses the same numerical libraries as property programs.
+# Keep serial/MPI selection consistent across the complete suite.
+if(GRASP_BUILD_SERIAL_APPS)
+    add_subdirectory("src/appl/rmcdhf90")
+    add_subdirectory("src/appl/rmcdhf90_mem")
+endif()
+if(TARGET mpiu90)
+    add_subdirectory("src/appl/rmcdhf90_mpi")
+    add_subdirectory("src/appl/rmcdhf90_mem_mpi")
+endif()
 
 # Unit and integration tests
 if(EXISTS "${PROJECT_SOURCE_DIR}/test/CMakeLists.txt")

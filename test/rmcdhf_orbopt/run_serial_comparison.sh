@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Re-run one prepared MPI case with serial rangular/rmcdhf_orbopt and compare results.
+set -euo pipefail
+
+if [[ $# -ne 2 ]]; then
+    echo "usage: $0 <completed-mpi-case-dir> <serial-output-dir>" >&2
+    exit 2
+fi
+
+mpi_case=$1
+output_dir=$2
+repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+storage_root=$(realpath -m "$repo_root/../data/rmcdhf_test_data")
+results_root=$storage_root/results
+mkdir -p "$results_root"
+if [[ $mpi_case != /* ]]; then
+    mpi_case=$results_root/$mpi_case
+fi
+if [[ $output_dir != /* ]]; then
+    output_dir=$results_root/$output_dir
+fi
+mpi_case=$(realpath -m "$mpi_case")
+output_dir=$(realpath -m "$output_dir")
+for path in "$mpi_case" "$output_dir"; do
+    case "$path" in
+        "$results_root"/*) ;;
+        *)
+            echo "test data path must be below $results_root: $path" >&2
+            exit 2
+            ;;
+    esac
+done
+binary_dir=${GRASP_SERIAL_BINDIR:-$repo_root/build-debug/bin}
+
+if [[ -e $output_dir ]]; then
+    echo "output directory already exists: $output_dir" >&2
+    exit 2
+fi
+for executable in rangular rmcdhf_orbopt; do
+    if [[ ! -x $binary_dir/$executable ]]; then
+        echo "missing executable: $binary_dir/$executable" >&2
+        exit 2
+    fi
+done
+for input in isodata rcsf.inp rwfn.inp rangular.stdin rmcdhf.stdin rmcdhf.sum; do
+    if [[ ! -f $mpi_case/$input ]]; then
+        echo "missing prepared-case file: $mpi_case/$input" >&2
+        exit 2
+    fi
+done
+
+mkdir -p "$output_dir"
+output_dir=$(cd "$output_dir" && pwd)
+for input in isodata rcsf.inp rwfn.inp rangular.stdin rmcdhf.stdin; do
+    cp "$mpi_case/$input" "$output_dir/$input"
+done
+
+cd "$output_dir"
+export OMP_NUM_THREADS=${GRASP_OMP_THREADS:-1}
+export OPENBLAS_NUM_THREADS=${GRASP_OMP_THREADS:-1}
+"$binary_dir/rangular" < rangular.stdin > rangular.stdout 2>&1
+"$binary_dir/rmcdhf_orbopt" < rmcdhf.stdin > rmcdhf.stdout 2>&1
+python3 "$repo_root/test/rmcdhf_orbopt/compare_sum.py" \
+    "$output_dir/rmcdhf.sum" "$mpi_case/rmcdhf.sum" \
+    > "$output_dir/serial_mpi_comparison.csv"
+echo "serial comparison complete: $output_dir"

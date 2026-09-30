@@ -1,4 +1,6 @@
 add_library(mod STATIC
+    suite_parameters_M.f90
+    radial_grid_defaults_M.f90
     parameter_def_M.f90
     vast_kind_param_M.f90
     memory_man.f90
