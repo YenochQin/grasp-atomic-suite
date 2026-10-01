@@ -4,7 +4,90 @@
 脚本不自动运行编译或提交代码。
 脚本只使用 Python 标准库；本工作区仍使用 `graspkit-tools/.venv`。
 
-在 `grasp-atomic-suite/` 下预览外部原版 GRASP 的示例配置：
+## 修改文件开头的配置（推荐）
+
+无需通过命令传入数值。在脚本开头的“用户配置”中填写待修改的源码根目录、
+核模型参数和运行模式。例如：
+
+```python
+GRASP_SOURCE = "/path/to/GRASP2018-grid2990"  # 包含 src/ 的目录
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"  # preview / apply / check
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 2990,
+    "h": 0.05,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": None,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+`None` 表示不修改对应数值，不表示写入 0。以上数值是用法示例，并非适合任何
+体系的推荐网格。`GRASP_SOURCE` 默认为 `None`，必须先填入；相对路径以脚本
+所在目录为基准，绝对路径和 `~/` 也可以使用。
+
+在服务器上，不带任何参数执行（Bash/fish 均相同）：
+
+```sh
+python3 /path/to/grasp-atomic-suite/scripts/patch_grasp_grid.py
+```
+
+先设置 `RUN_MODE="preview"` 查看修改；再改成 `"apply"`，执行同一条命令写入；
+最后改成 `"check"`，再次执行检查。检查一致时退出 0，仍有待修改文件时退出 1，
+配置错误或源码布局不匹配时退出 2。脚本不启动编译。
+
+配置模式下，`BACKUP_DIRECTORY=None` 会将原始文件和校验和保存到
+`GRASP_SOURCE/grid-backups/<唯一时间戳>/`，屏幕会打印备份位置。
+也可指定一个尚不存在的备份目录。预览和检查不会创建备份；重复应用相同配置
+不会创建新备份。恢复时把 `RESTORE_DIRECTORY` 填成打印出的备份目录，
+先用 `RUN_MODE="preview"` 查看，再改成 `"apply"` 执行。
+恢复模式自动忽略数值配置和 `BACKUP_DIRECTORY`；恢复完成后把
+`RESTORE_DIRECTORY` 改回 `None`。恢复后也需要重新编译。
+
+## 多份 GRASP 与 README 的 CMake 编译流程
+
+为每组参数准备一个独立的干净源码副本，例如 `grasp-grid1990/`、
+`grasp-grid2990/`。不要复制旧 `build/`、`build-debug/` 缓存或源码内残留的
+`.mod/.o` 文件；CMake 缓存记录原目录的绝对路径。原有计算数据单独保存。
+
+可以在每份源码根目录保存一个本脚本副本，设置 `GRASP_SOURCE="."`，
+这样每份目录自带对应参数。相对路径与当前 shell 工作目录无关。
+原版布局只需脚本本身，不需要整个 suite 或第三方 Python 包。
+
+修改并检查完毕后，按原版 GRASP README 的 CMake 流程手动构建。
+先按服务器环境加载 Fortran/MPI/BLAS/LAPACK，再执行：
+
+```sh
+cd /path/to/GRASP2018-grid2990
+./configure.sh
+cd build
+make -j4 install
+```
+
+这里的 `make` 在 CMake 生成的 `build/` 目录中执行。
+`configure.sh` 要求 `build/` 尚不存在；以后同一份源码再次改参数，可使用：
+
+```sh
+cd /path/to/GRASP2018-grid2990/build
+make clean
+make -j4 install
+```
+
+全量构建并安装所有实际使用的程序，包括 MPI；配置输出应确认找到 MPI。
+每份目录的程序安装到自己的 `bin/`，计算时用对应程序的绝对路径，
+例如 `/path/to/GRASP2018-grid2990/bin/rmcdhf_mpi`，避免混用不同配置。
+
+## 原有命令行用法
+
+命令行接口仍保留。**只要提供命令行参数，就完全使用命令行请求，不合入文件
+开头的配置**；例如 `--apply` 仍需同时传入路径/参数。以下是兼容用法：
 
 ```bash
 ../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
@@ -76,17 +159,10 @@ g_J 复用 RHFS 的网格入口。不会因某个应用缺失而悄悄跳过它�
 不在作用范围内。旧 RCI `.res` 恢复时仍读取文件内的网格；要测试新网格应
 在新的计算目录启动新计算。交互输入也能覆盖新源码默认值。
 
-修改后需要全量重编译并安装所有实际使用的程序，确保 CMake 找到 MPI：
+本仓库修改时将 `SOURCE_LAYOUT` 设为 `"atomic-suite"`，`GRASP_SOURCE` 指向
+本仓库根目录；编译时需开启所有实际使用的串行/MPI 目标。
 
-```bash
-cmake --build ../grasp/build --clean-first --parallel 4
-cmake --install ../grasp/build
-```
-
-本仓库则使用 `cmake --build build --clean-first --parallel 4` 和
-`cmake --install build`；需在配置时开启所有实际使用的串行/MPI 目标。
-
-这里假设 `build/` 已正确配置；编译器和 MPI 初始化沿用 GRASP 的构建说明。
+编译器和 MPI 初始化沿用 GRASP 的构建说明。
 确认 PATH 或绝对路径指向新安装的可执行文件，然后检查各阶段 `.sum`
 中实际使用的 `RNT/H/HP/N/ACCY`。补丁通过检查仅证明源码配置一致，
 不证明实际二进制已更新，也不证明物理量已达到网格收敛。

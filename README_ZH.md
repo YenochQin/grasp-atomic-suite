@@ -151,8 +151,10 @@ ctest --test-dir build-all --output-on-failure
 用户随后显式输入的数值阈值仍优先。
 
 网格批量修改工具见 [scripts/patch_grasp_grid.py](scripts/README.md)：
-本仓库使用 `--layout atomic-suite`，完整原版 GRASP 使用默认布局
-`grasp2018`。默认仅预览；修改后必须全量重编译，并验证物理量的网格收敛。
+修改文件开头的路径、数值和运行模式后，不带参数执行即可；原有命令行接口仍保留。
+本仓库设置 `SOURCE_LAYOUT="atomic-suite"`，完整原版设置 `"grasp2018"`。
+可为不同参数保留独立源码副本，按原版 README 的 CMake 流程手动编译。
+默认仅预览；修改后必须全量重编译，并验证物理量的网格收敛。
 源码目录残留的 `.mod` 文件会覆盖新模块，CMake 会拒绝这种混合构建；
 需先将旧生成文件移出源码目录。
 

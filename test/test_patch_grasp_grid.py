@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import importlib.util
+from contextlib import redirect_stderr, redirect_stdout
+import io
 from pathlib import Path
 import re
 import sys
@@ -99,6 +101,123 @@ class PatchGridTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name) / "grasp"
         fixture(self.root)
+
+    def test_header_only_preview_apply_check_and_restore(self) -> None:
+        originals = {p: p.read_bytes() for p in self.root.rglob("*.f90")}
+        backup = Path(self.temporary.name) / "header-backup"
+        parameters = {
+            "nnnp": 1990,
+            "n": 1179,
+            "h": 0.025,
+            "rnt_scale": 2e-6,
+            "hp": 0.0,
+            "accy": None,
+        }
+        with (
+            patch.multiple(
+                grid,
+                GRASP_SOURCE=str(self.root),
+                SOURCE_LAYOUT="grasp2018",
+                GRID_PARAMETERS=parameters,
+                RUN_MODE="preview",
+                PRINT_DIFF=False,
+                BACKUP_DIRECTORY=str(backup),
+                RESTORE_DIRECTORY=None,
+            ),
+            redirect_stdout(io.StringIO()),
+        ):
+            self.assertEqual(grid.main([]), 0)
+            self.assertFalse(backup.exists())
+            for path, data in originals.items():
+                self.assertEqual(path.read_bytes(), data)
+            with patch.object(grid, "RUN_MODE", "check"):
+                self.assertEqual(grid.main([]), 1)
+            with patch.object(grid, "RUN_MODE", "apply"):
+                self.assertEqual(grid.main([]), 0)
+                # The already-existing backup must not break repeated application.
+                self.assertEqual(grid.main([]), 0)
+            self.assertTrue((backup / "manifest.json").is_file())
+            self.assertEqual(grid.plan(self.root, grid.Settings(**parameters)), [])
+            with patch.object(grid, "RUN_MODE", "check"):
+                self.assertEqual(grid.main([]), 0)
+            with patch.object(grid, "RESTORE_DIRECTORY", str(backup)):
+                self.assertEqual(grid.main([]), 0)  # Preview restoration.
+                self.assertEqual(grid.plan(self.root, grid.Settings(**parameters)), [])
+                with patch.object(grid, "RUN_MODE", "apply"):
+                    self.assertEqual(grid.main([]), 0)
+            for path, data in originals.items():
+                self.assertEqual(path.read_bytes(), data)
+
+    def test_copied_script_relative_root_and_persistent_automatic_backup(self) -> None:
+        root = Path(self.temporary.name) / "copied-suite"
+        fixture(root, "atomic-suite")
+        with (
+            patch.multiple(
+                grid,
+                __file__=str(root / "patch_grasp_grid.py"),
+                GRASP_SOURCE=".",
+                SOURCE_LAYOUT="atomic-suite",
+                RUN_MODE="apply",
+                PRINT_DIFF=False,
+                GRID_PARAMETERS={"nnnp": 1990, "h": 0.025, "accy": 0},
+                BACKUP_DIRECTORY=None,
+                RESTORE_DIRECTORY=None,
+            ),
+            redirect_stdout(io.StringIO()),
+        ):
+            self.assertEqual(grid.main([]), 0)
+            backups = list((root / "grid-backups").glob("*/manifest.json"))
+            self.assertEqual(len(backups), 1)
+            restored_root, changes = grid.restore_plan(backups[0].parent, root)
+            self.assertEqual(restored_root, root.resolve())
+            self.assertEqual([c.relative for c in changes], [grid.SUITE_CONFIG_FILE])
+
+    def test_invalid_header_does_not_write_source(self) -> None:
+        original = (self.root / grid.CAPACITY_FILES[0]).read_bytes()
+        with (
+            patch.multiple(
+                grid,
+                GRASP_SOURCE=str(self.root),
+                SOURCE_LAYOUT="grasp2018",
+                RUN_MODE="apply",
+                PRINT_DIFF=False,
+                GRID_PARAMETERS={"nnnp": 1990},
+                BACKUP_DIRECTORY=None,
+                RESTORE_DIRECTORY=None,
+            ),
+            redirect_stderr(io.StringIO()),
+            redirect_stdout(io.StringIO()),
+        ):
+            invalid = (
+                {"GRASP_SOURCE": None},
+                {"RUN_MODE": "unknown"},
+                {"SOURCE_LAYOUT": "unknown"},
+                {"GRID_PARAMETERS": {"nnnp": 1990, "n": 2000}},
+                {"GRID_PARAMETERS": {"nnnp": 1990.5}},
+                {"GRID_PARAMETERS": {"typo": 1990}},
+                {"GRID_PARAMETERS": {"nnnp": None}},
+                {"PRINT_DIFF": "False"},
+            )
+            for values in invalid:
+                with self.subTest(values=values), patch.multiple(grid, **values):
+                    with self.assertRaises(SystemExit) as error:
+                        grid.main([])
+                    self.assertEqual(error.exception.code, 2)
+                    self.assertEqual(
+                        (self.root / grid.CAPACITY_FILES[0]).read_bytes(), original
+                    )
+            self.assertFalse((self.root / "grid-backups").exists())
+
+    def test_explicit_cli_keeps_its_values_independent_of_header(self) -> None:
+        with (
+            patch.multiple(
+                grid, GRASP_SOURCE="/unused/path", GRID_PARAMETERS={"nnnp": 10}
+            ),
+            patch.object(grid, "plan", wraps=grid.plan) as planner,
+            redirect_stdout(io.StringIO()),
+        ):
+            self.assertEqual(grid.main(["--grasp", str(self.root), "--h", "0.025"]), 0)
+            self.assertEqual(planner.call_args.args[1], grid.Settings(h=0.025))
 
     def test_suite_layout_patches_all_present_programs_and_restores(self) -> None:
         root = Path(self.temporary.name) / "suite"

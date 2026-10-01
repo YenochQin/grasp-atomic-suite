@@ -151,9 +151,12 @@ All orbital and property programs now default to `N=NNNP` for finite nuclei
 Input orbitals are interpolated onto the current calculation grid.
 The shared initializer updates the default ACCY after interactive H changes,
 while preserving subsequent explicit tolerance overrides.
-Use [scripts/patch_grasp_grid.py](scripts/README.md) with `--layout atomic-suite`
-for this tree or the default `grasp2018` layout for the full upstream tree.
-Preview is the default; changes require a full rebuild and numerical convergence checks.
+Edit the configuration at the top of [scripts/patch_grasp_grid.py](scripts/README.md)
+and run it without arguments. Select `SOURCE_LAYOUT="atomic-suite"` for this tree
+or `"grasp2018"` for the full upstream tree; the original CLI remains available.
+Preview is the default. Keep a separate source copy for each parameter set and
+build it manually using the upstream README CMake workflow. Changes require a
+full rebuild and numerical convergence checks.
 
 See [docs/common_parameters.md](docs/common_parameters.md) for the parameter table,
 initialization order, and validation. The suite layout now edits one central file.

@@ -28,9 +28,13 @@ Enable `-DGRASP_BUILD_SERIAL_APPS=ON` to build all four orbital programs
 alongside serial and MPI property programs. In this workspace, run Python
 scripts/tests with `../graspkit-tools/.venv/bin/python`; do not create another
 environment or run `uv sync` here. On cluster hosts initialize the compiler,
-MPI, and BLAS modules before configuration. Use `scripts/patch_grasp_grid.py`
-with `--layout atomic-suite --grasp .` to preview grid changes for this partial tree;
-the default `grasp2018` layout requires the full upstream tree.
+MPI, and BLAS modules before configuration. Edit the header of
+`scripts/patch_grasp_grid.py` and run without arguments for file-based grid settings;
+set `SOURCE_LAYOUT="atomic-suite"` and `GRASP_SOURCE` to this repository for the
+partial tree. Explicit CLI requests remain independent of the header;
+`--layout atomic-suite --grasp .` is still supported. The default `grasp2018`
+layout requires the full upstream tree. Keep compilation manual using the
+upstream README CMake workflow, with separate source copies per parameter set.
 
 ## Coding Style & Naming Conventions
 Match the existing Fortran style in the file you are editing. The tree contains both older fixed-format-style indentation and newer free-form modules, so preserve local formatting instead of normalizing whole files. Keep filenames lowercase and aligned with existing suffix conventions such as `*_I.f90` for interface/helper units and `*_C.f90` for shared code modules. Program directories and targets use lowercase names like `rhfs90`, `rdensity`, and `ris4`.
