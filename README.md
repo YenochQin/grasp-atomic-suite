@@ -160,6 +160,8 @@ full rebuild and numerical convergence checks.
 
 See [docs/common_parameters.md](docs/common_parameters.md) for the parameter table,
 initialization order, and validation. The suite layout now edits one central file.
+For candidate values, their rationale, test datasets, and convergence criteria,
+see [GRASP grid parameter tuning](docs/grasp_grid_parameter_tuning.md) (Chinese).
 
 See [docs/rmcdhf_migration.md](docs/rmcdhf_migration.md) for provenance, shared-library decisions, and validation. New orbital development belongs here; the original `rmcdhf_test` checkout is retained for reference.
 

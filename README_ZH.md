@@ -160,6 +160,8 @@ ctest --test-dir build-all --output-on-failure
 
 参数列表、调用顺序和验证见 [docs/common_parameters.md](docs/common_parameters.md)。
 本仓库的脚本布局现在只修改一个集中配置文件。
+参数调整的具体数值、原因、测试数据及验收标准见
+[径向网格参数调整与验证规程](docs/grasp_grid_parameter_tuning.md)。
 
 迁移来源、公共库取舍和验证说明见 [docs/rmcdhf_migration.md](docs/rmcdhf_migration.md)。
 后续轨道优化开发在本仓库进行；原 `rmcdhf_test` 工作目录保留作为参考。
