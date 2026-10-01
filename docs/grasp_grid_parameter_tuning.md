@@ -165,6 +165,8 @@ ACCY；要匹配示例记录，须显式填写 `accy=1.5625e-8`。
 物理修正。除被测试项外，不在同一轮改变其他参数。
 第一轮可选小模型；通过后，再在最终活性空间复验。
 
+每组完整的 Python 变量设置见第 13 节，可直接替换脚本顶部用户配置区。
+
 ### 5.1 容量控制与 H 收敛
 
 此表均采用有限核、`rnt_scale=2e-6、HP=0、ACCY=1e-10`。
@@ -513,3 +515,613 @@ run_id,quantity,state_or_transition_id,value,unit,reference_run,delta_abs,delta_
 - suite 配置：[公共参数说明](common_parameters.md)。
 - 回归与历史限制：[轨道测试说明](../test/rmcdhf_orbopt/README.md)、
   [历史测试结果](../test/rmcdhf_orbopt/RESULTS.md)。
+
+
+## 13. 可直接复制的 Python 配置
+
+### 13.1 复制规则与索引
+
+以下每个 Python 块都是脚本顶部用户配置的**完整替换内容**，不是新的配置文件。
+只选一组，替换 `GRASP_SOURCE` 到 `RESTORE_DIRECTORY` 的配置区，不修改下面的实现。
+不要把多组代码依次粘进同一个脚本，否则后面的赋值会覆盖前面的配置。
+
+每组均假定脚本已经复制到对应 GRASP 根目录，因此 `GRASP_SOURCE="."`。
+如果脚本仍放在 suite 的 `scripts/` 中，就把该值替换为目标源码的绝对路径。
+每份参数使用独立、干净的源码副本和独立计算结果目录。
+
+这些块默认 `RUN_MODE="preview"`。运行后改成 `"apply"`，再次运行写入；
+然后改成 `"check"` 运行检查。不要重新粘贴块导致模式又回到 preview 而误以为已写入。
+各组 `RESTORE_DIRECTORY=None`，避免继承上一组的恢复设置。
+完成修改后，按第 9 节手动编译；复制参数本身不会更新二进制。
+
+| 测试 | 配置块所在小节 | 对照关系 |
+| --- | --- | --- |
+| 手册对照 | 13.2 M-U | 单独匹配手册输入，不混入 D 系列 |
+| 容量 | 13.3 C0、C1 | C0 ↔ C1 |
+| 分辨率 | 13.3 D0–D4 | D0 → D1 → D2 → D3，按需 D4 |
+| 外端范围 | 13.4 L0–L2 | L0 → L1 → L2 |
+| 近核尺度 | 13.5 O0–O2 | O0 → O1 → O2 |
+| 数值阈值 | 13.6 A0–A2 | A0 → A1 → A2 |
+| 点核分辨率 | 13.7 P0–P2 | P0 → P1 → P2 |
+| 初始化 | 13.8 I-EST、I-REF | 同网格，不同初始化来源 |
+| 串行/MPI | 13.8 R 系列 | 同网格、同模型，不同程序或进程数 |
+| suite 使用 | 13.9 | 相同数值，切换源码布局 |
+
+C1 与 D0 相同；D2、L0、O0、A0 和下面 I/R 的示例数值相同。
+为方便分别复制，L0/O0/A0 仍各自列出完整代码。对于同一体系和相同运行条件，
+可以复用同一已验证基准结果，但必须记录对应关系，不把它计为多个独立结果。
+
+### 13.2 手册 U I 参数对照
+
+此组用于对照第 4 节的手册参数记录，不加入 D 系列的控制变量比较。固定 U I、Z=92、A=238 和同一物理模型；这里显式匹配手册记录的 RNT 与 ACCY。
+
+#### M-U：手册参数对照
+
+检查实际 RNT=2.17e-8、N=1990、H=0.015，以及手册对应的态和输入条件。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 1990,
+    "n": 1990,
+    "h": 0.015,
+    "rnt_scale": 1.9964e-6,
+    "hp": 0.0,
+    "accy": 1.5625e-8,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+### 13.3 容量与步长测试
+
+C0 与 C1 只改变容量；C1 同时作为 D0。D1→D2→D3 改变分辨率；D4 仅在需要时执行。
+
+#### C0：590 点容量控制组
+
+对照 C1，检查相同实际网格下的能量、轨道与性质是否一致。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 590,
+    "n": 590,
+    "h": 0.05,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### C1 / D0：扩容但保持实际网格
+
+与 C0 比较容量影响；随后作为 D1 的粗网格对照。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 590,
+    "h": 0.05,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### D1：H=0.025
+
+对照 D0，保存目标能级、精细结构、轨道与所需性质。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 1179,
+    "h": 0.025,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### D2：H=0.015
+
+对照 D1，并作为下面范围、近核、ACCY 示例的基准。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 1965,
+    "h": 0.015,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### D3：H=0.010
+
+对照 D2，检查最后加密的变化是否低于误差预算。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 2946,
+    "h": 0.010,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### D4：按需进一步加密
+
+对照 D3；必须使用匹配的新容量重新编译全部程序。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 3990,
+    "n": 3928,
+    "h": 0.0075,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+### 13.4 外端范围测试
+
+比较 L0→L1→L2。H、RNT、HP 和 ACCY 保持相同，只延长外端。重点看最弥散轨道的 MTP、相同物理半径处的尾部概率，以及目标物理量。
+
+#### L0：范围基准（数值等同 D2）
+
+作为 L1/L2 的对照，不改变 D2 的初始轨道与模型。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 1965,
+    "h": 0.015,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### L1：约两倍外端
+
+与 L0 比较，记录轨道尾部及性质变化。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 2012,
+    "h": 0.015,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### L2：约四倍外端
+
+与 L1 和 L0 比较，验证截断变化是否进一步减小。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 2058,
+    "h": 0.015,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+### 13.5 近核尺度测试
+
+比较 O0→O1→O2。减小 rnt_scale，同时补偿 N。各组仍使用同一有限核分布；重点看核附近密度、内层轨道、超精细常数和场移因子。
+
+#### O0：近核基准（数值等同 D2）
+
+作为 O1/O2 的对照。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 1965,
+    "h": 0.015,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### O1：RNT 系数减半
+
+与 O0 比较；外端约增加 1.2%，记录其余量是否稳定。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 2012,
+    "h": 0.015,
+    "rnt_scale": 1e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### O2：RNT 系数减为四分之一
+
+与 O1 比较；外端约增加 0.9%，核敏感量必须一起检查。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 2058,
+    "h": 0.015,
+    "rnt_scale": 5e-7,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+### 13.6 ACCY 测试
+
+下面固定 D2 网格作示例，比较 A0→A1→A2。若最终候选是其他网格，要在三组中同时替换 nnnp/n/h/rnt_scale，保证它们除 accy 外完全相同。
+
+#### A0：ACCY=1e-10（数值等同 D2）
+
+记录严格收敛状态、迭代次数、目标物理量。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 1965,
+    "h": 0.015,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### A1：ACCY=1e-11
+
+对照 A0，检查求解变化是否小于分配给它的误差预算。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 1965,
+    "h": 0.015,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-11,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### A2：ACCY=1e-12
+
+对照 A1；若不收敛，不以此组作参考，也不直接放宽节点判据。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 1965,
+    "h": 0.015,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-12,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+### 13.7 点核测试
+
+仅在 isodata 选择点核模型时使用。有限核键 n/h/rnt_scale 均为 None；明确固定点核 RNT 系数为 exp(-65/16) 的双精度近似值。比较 P0→P1→P2，保持相同核模型和目标态，不能与有限核 D 系列直接作为网格误差比较。
+
+#### P0：点核基准
+
+检查点核基准的能量、节点和轨道积分。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": None,
+    "h": None,
+    "rnt_scale": None,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": 220,
+    "point_h": 0.0625,
+    "point_rnt_scale": 0.017205950425851383,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### P1：点核步长减半
+
+对照 P0；实际点核范围相同。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": None,
+    "h": None,
+    "rnt_scale": None,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": 439,
+    "point_h": 0.03125,
+    "point_rnt_scale": 0.017205950425851383,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### P2：点核再次加密
+
+对照 P1；另行验证 ACCY，不把核模型差当作网格误差。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": None,
+    "h": None,
+    "rnt_scale": None,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": 877,
+    "point_h": 0.015625,
+    "point_rnt_scale": 0.017205950425851383,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+### 13.8 初始化与并行一致性测试
+
+这两类测试不改变网格，所以同一套配置用于所有对照计算；需要改变的是运行输入或程序/进程数。
+
+#### I-EST / I-REF：初始化路径的共用配置
+
+I-EST 在本组网格重新生成估计；I-REF 读入参考轨道并插值后重新优化。两组仅改变初始化来源，保持相同物理模型、变分轨道和求解设置，比较最终物理态和物理量。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 1965,
+    "h": 0.015,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+#### R-SERIAL / R-MPI1 / R-MPI2 / R-MPI4：并行测试的共用配置
+
+R-SERIAL 使用串行程序；其余使用相同包的 MPI 程序，分别设 1/2/4 进程。使用相同输入与网格，不在 Python 参数中添加 MPI 进程字段。
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 1965,
+    "h": 0.015,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+### 13.9 在 grasp-atomic-suite 中使用同一组数值
+
+上面各块只需将 `SOURCE_LAYOUT="grasp2018"` 改为 `"atomic-suite"`，并让
+`GRASP_SOURCE` 指向那份 suite 根目录。下面是 suite 的 D2 完整示例：
+
+```python
+GRASP_SOURCE = "."
+SOURCE_LAYOUT = "atomic-suite"
+RUN_MODE = "preview"
+PRINT_DIFF = True
+GRID_PARAMETERS = {
+    "nnnp": 2990,
+    "n": 1965,
+    "h": 0.015,
+    "rnt_scale": 2e-6,
+    "hp": 0.0,
+    "accy": 1e-10,
+    "point_n": None,
+    "point_h": None,
+    "point_rnt_scale": None,
+}
+BACKUP_DIRECTORY = None
+RESTORE_DIRECTORY = None
+```
+
+suite 需要使用 `rmcdhf_orbopt*` 等对应程序，并使原版准备/RCI 程序具有匹配
+容量和网格。程序选择在作业脚本中设置，不是给 GRID_PARAMETERS 添加字段。
+如果采用第 8 节提到的集群模板，还要检查它是否重新加载了另一份 GRASP module。
+
+节点阈值诊断是另一项试验：Python 脚本没有 THRESH/NODE_THRESHOLD 配置键。
+若单独改变 suite 的 NODE_THRESHOLD，只能改公共 Fortran 文件并重编译；
+在该诊断期间保持所选 GRID_PARAMETERS 完全相同。HP 非零网格也不在本轮
+已定义试验矩阵中，不能把 HP 从 0 改成任意正值后直接复用 L/O 表中的范围。
+
+### 13.10 复制后逐项确认
+
+1. 文件只保留一个用户配置块，源码路径和布局正确。
+2. C/D/L/O/A 系列用同一有限核 isodata；P 系列用点核 isodata。
+3. 各组值与第 5 节的矩阵一致，固定 ACCY 的组没有被交互输入覆盖。
+4. 实际应用、检查通过并全量编译安装；计算调用该组程序的绝对路径。
+5. 保存实际 RNT/H/HP/N/ACCY、目标态、收敛状态与第 6 节的观测数据。
+6. 依据第 7 节的误差预算验收。以上配置是测试候选，不是已验证的生产默认值。
