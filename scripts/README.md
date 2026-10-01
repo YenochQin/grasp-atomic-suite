@@ -56,6 +56,11 @@ python3 /path/to/grasp-atomic-suite/scripts/patch_grasp_grid.py
 
 ## 多份 GRASP 与 README 的 CMake 编译流程
 
+网格验证以未经修改的原版为基底：本工作区参考原版容量是 `NNNP=590、NNN1=600`。
+保留一份 B0 直接编译运行，不应用补丁；各修改组从同一份干净原版复制。
+当前已调整到 2990 的副本和 suite 均不能代替原版基线。具体比较顺序见
+[验证规程第 5 节](../docs/grasp_grid_parameter_tuning.md#5-实际执行的参数试验矩阵)。
+
 为每组参数准备一个独立的干净源码副本，例如 `grasp-grid1990/`、
 `grasp-grid2990/`。不要复制旧 `build/`、`build-debug/` 缓存或源码内残留的
 `.mod/.o` 文件；CMake 缓存记录原目录的绝对路径。原有计算数据单独保存。
