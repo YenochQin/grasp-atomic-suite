@@ -35,10 +35,12 @@ Enable `-DGRASP_BUILD_SERIAL_APPS=ON` to build all four orbital programs
 alongside serial and MPI property programs. In this workspace, run Python
 scripts/tests with `../graspkit-tools/.venv/bin/python`; do not create another
 environment or run `uv sync` here. On cluster hosts initialize the compiler,
-MPI, and BLAS modules before configuration. Edit the header of
-`scripts/patch_grasp_grid.py` and run without arguments for file-based grid settings;
+MPI, and BLAS modules before configuration. Copy `scripts/config.example.toml`
+to `scripts/config.toml` and run `scripts/patch_grasp_grid.py` without arguments;
 set `SOURCE_LAYOUT="atomic-suite"` and `GRASP_SOURCE` to this repository for the
-partial tree. Explicit CLI requests remain independent of the header;
+partial tree (`GRASP_SOURCE=".."` when the config stays in `scripts/`). Omit optional
+TOML keys to preserve values; local `config.toml` is ignored by Git.
+Explicit CLI requests remain independent of the TOML file;
 `--layout atomic-suite --grasp .` is still supported. The default `grasp2018`
 layout requires the full upstream tree. Keep compilation manual using the
 upstream README CMake workflow, with separate source copies per parameter set.

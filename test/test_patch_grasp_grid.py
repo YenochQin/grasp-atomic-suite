@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 from contextlib import redirect_stderr, redirect_stdout
 import io
+import json
 from pathlib import Path
 import re
 import shutil
@@ -117,10 +118,49 @@ class PatchGridTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name) / "grasp"
         fixture(self.root)
+        self.script_directory = Path(self.temporary.name) / "scripts"
+        self.script_directory.mkdir()
+        script_location = patch.object(
+            grid, "__file__", str(self.script_directory / SCRIPT.name)
+        )
+        script_location.start()
+        self.addCleanup(script_location.stop)
 
-    def test_header_only_preview_apply_check_and_restore(self) -> None:
+    def write_config(self, directory: Path | None = None, **overrides: object) -> Path:
+        config = {
+            "GRASP_SOURCE": str(self.root),
+            "SOURCE_LAYOUT": "grasp2018",
+            "RUN_MODE": "preview",
+            "PRINT_DIFF": False,
+            "GRID_PARAMETERS": {
+                "nnnp": 3990,
+                "n": 2946,
+                "h": 0.010,
+                "rnt_scale": 2e-6,
+                "hp": 0.0,
+                "accy": 1e-10,
+            },
+            **overrides,
+        }
+        lines = []
+        for name, value in config.items():
+            if value is not None and not isinstance(value, dict):
+                lines.append(f"{name} = {json.dumps(value)}\n")
+        for name, value in config.items():
+            if isinstance(value, dict):
+                lines.append(f"\n[{name}]\n")
+                lines.extend(
+                    f"{key} = {json.dumps(item)}\n"
+                    for key, item in value.items()
+                    if item is not None
+                )
+        path = (directory or self.script_directory) / "config.toml"
+        path.write_text("".join(lines))
+        return path
+
+    def test_toml_preview_apply_check_and_restore(self) -> None:
         originals = {p: p.read_bytes() for p in self.root.rglob("*.f90")}
-        backup = Path(self.temporary.name) / "header-backup"
+        backup = Path(self.temporary.name) / "config-backup"
         parameters = {
             "nnnp": 1990,
             "n": 1179,
@@ -129,56 +169,48 @@ class PatchGridTests(unittest.TestCase):
             "hp": 0.0,
             "accy": None,
         }
-        with (
-            patch.multiple(
-                grid,
-                GRASP_SOURCE=str(self.root),
-                SOURCE_LAYOUT="grasp2018",
-                GRID_PARAMETERS=parameters,
-                RUN_MODE="preview",
-                PRINT_DIFF=False,
-                BACKUP_DIRECTORY=str(backup),
-                RESTORE_DIRECTORY=None,
-            ),
-            redirect_stdout(io.StringIO()),
-        ):
+        config = {"GRID_PARAMETERS": parameters, "BACKUP_DIRECTORY": str(backup)}
+        self.write_config(**config)
+        with redirect_stdout(io.StringIO()):
             self.assertEqual(grid.main([]), 0)
             self.assertFalse(backup.exists())
             for path, data in originals.items():
                 self.assertEqual(path.read_bytes(), data)
-            with patch.object(grid, "RUN_MODE", "check"):
-                self.assertEqual(grid.main([]), 1)
-            with patch.object(grid, "RUN_MODE", "apply"):
-                self.assertEqual(grid.main([]), 0)
-                # The already-existing backup must not break repeated application.
-                self.assertEqual(grid.main([]), 0)
+            self.write_config(**config, RUN_MODE="check")
+            self.assertEqual(grid.main([]), 1)
+            self.write_config(**config, RUN_MODE="apply")
+            self.assertEqual(grid.main([]), 0)
+            # The already-existing backup must not break repeated application.
+            self.assertEqual(grid.main([]), 0)
             self.assertTrue((backup / "manifest.json").is_file())
             self.assertEqual(grid.plan(self.root, grid.Settings(**parameters)), [])
-            with patch.object(grid, "RUN_MODE", "check"):
-                self.assertEqual(grid.main([]), 0)
-            with patch.object(grid, "RESTORE_DIRECTORY", str(backup)):
-                self.assertEqual(grid.main([]), 0)  # Preview restoration.
-                self.assertEqual(grid.plan(self.root, grid.Settings(**parameters)), [])
-                with patch.object(grid, "RUN_MODE", "apply"):
-                    self.assertEqual(grid.main([]), 0)
+            self.write_config(**config, RUN_MODE="check")
+            self.assertEqual(grid.main([]), 0)
+            self.write_config(**config, RESTORE_DIRECTORY=str(backup))
+            self.assertEqual(grid.main([]), 0)  # Preview restoration.
+            self.assertEqual(grid.plan(self.root, grid.Settings(**parameters)), [])
+            self.write_config(
+                **config,
+                GRASP_SOURCE=None,
+                RESTORE_DIRECTORY=str(backup),
+                RUN_MODE="apply",
+            )
+            self.assertEqual(grid.main([]), 0)
             for path, data in originals.items():
                 self.assertEqual(path.read_bytes(), data)
 
     def test_copied_script_relative_root_and_persistent_automatic_backup(self) -> None:
         root = Path(self.temporary.name) / "copied-suite"
         fixture(root, "atomic-suite")
+        self.write_config(
+            root,
+            GRASP_SOURCE=".",
+            SOURCE_LAYOUT="atomic-suite",
+            RUN_MODE="apply",
+            GRID_PARAMETERS={"nnnp": 1990, "h": 0.025, "accy": 0},
+        )
         with (
-            patch.multiple(
-                grid,
-                __file__=str(root / "patch_grasp_grid.py"),
-                GRASP_SOURCE=".",
-                SOURCE_LAYOUT="atomic-suite",
-                RUN_MODE="apply",
-                PRINT_DIFF=False,
-                GRID_PARAMETERS={"nnnp": 1990, "h": 0.025, "accy": 0},
-                BACKUP_DIRECTORY=None,
-                RESTORE_DIRECTORY=None,
-            ),
+            patch.object(grid, "__file__", str(root / SCRIPT.name)),
             redirect_stdout(io.StringIO()),
         ):
             self.assertEqual(grid.main([]), 0)
@@ -188,19 +220,9 @@ class PatchGridTests(unittest.TestCase):
             self.assertEqual(restored_root, root.resolve())
             self.assertEqual([c.relative for c in changes], [grid.SUITE_CONFIG_FILE])
 
-    def test_invalid_header_does_not_write_source(self) -> None:
+    def test_invalid_toml_configuration_does_not_write_source(self) -> None:
         original = (self.root / grid.CAPACITY_FILES[0]).read_bytes()
         with (
-            patch.multiple(
-                grid,
-                GRASP_SOURCE=str(self.root),
-                SOURCE_LAYOUT="grasp2018",
-                RUN_MODE="apply",
-                PRINT_DIFF=False,
-                GRID_PARAMETERS={"nnnp": 1990},
-                BACKUP_DIRECTORY=None,
-                RESTORE_DIRECTORY=None,
-            ),
             redirect_stderr(io.StringIO()),
             redirect_stdout(io.StringIO()),
         ):
@@ -213,9 +235,24 @@ class PatchGridTests(unittest.TestCase):
                 {"GRID_PARAMETERS": {"typo": 1990}},
                 {"GRID_PARAMETERS": {"nnnp": None}},
                 {"PRINT_DIFF": "False"},
+                {"GRID_PARAMETERS": {"nnnp": True}},
+                {"GRID_PARAMETERS": {"h": "0.025"}},
+                {"GRID_PARAMETERS": "not a table"},
+                {"GRID_PARAMETERS": {"point_n": 220.0}},
+                {"GRASP_SOURCE": ""},
+                {"BACKUP_DIRECTORY": False},
+                {"RESTORE_DIRECTORY": ""},
+                {"TYPO": 1},
             )
             for values in invalid:
-                with self.subTest(values=values), patch.multiple(grid, **values):
+                with self.subTest(values=values):
+                    self.write_config(
+                        **{
+                            "RUN_MODE": "apply",
+                            "GRID_PARAMETERS": {"nnnp": 1990},
+                            **values,
+                        }
+                    )
                     with self.assertRaises(SystemExit) as error:
                         grid.main([])
                     self.assertEqual(error.exception.code, 2)
@@ -224,16 +261,80 @@ class PatchGridTests(unittest.TestCase):
                     )
             self.assertFalse((self.root / "grid-backups").exists())
 
-    def test_explicit_cli_keeps_its_values_independent_of_header(self) -> None:
+    def test_missing_or_malformed_toml_fails_without_writes(self) -> None:
+        originals = {p: p.read_bytes() for p in self.root.rglob("*.f90")}
+        config = self.script_directory / "config.toml"
+        with redirect_stderr(io.StringIO()), redirect_stdout(io.StringIO()):
+            for content in (
+                None,
+                'RUN_MODE = "apply"\n[GRID_PARAMETERS\n',
+                "PRINT_DIFF = True\n",
+            ):
+                with self.subTest(content=content):
+                    if content is not None:
+                        config.write_text(content)
+                    with self.assertRaises(SystemExit) as error:
+                        grid.main([])
+                    self.assertEqual(error.exception.code, 2)
+                    for path, original in originals.items():
+                        self.assertEqual(path.read_bytes(), original)
+
+    def test_copied_script_loads_config_from_another_working_directory(self) -> None:
+        copied = self.root / SCRIPT.name
+        shutil.copyfile(SCRIPT, copied)
+        shutil.copyfile(
+            SCRIPT.with_name("config.example.toml"), self.root / "config.toml"
+        )
+        original = (self.root / grid.CAPACITY_FILES[0]).read_bytes()
+        result = subprocess.run(
+            [sys.executable, str(copied)],
+            cwd=self.script_directory,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(f"Source: {self.root.resolve()}", result.stdout)
+        self.assertIn(
+            f"Configuration: {self.root.resolve() / 'config.toml'}", result.stdout
+        )
+        self.assertEqual((self.root / grid.CAPACITY_FILES[0]).read_bytes(), original)
+        self.assertIn("NNNP = 3990", result.stdout)
+        self.assertIn("N = 2946", result.stdout)
+        self.assertIn("H = 1D-2", result.stdout)
+        self.assertIn("ACCY = 1D-10", result.stdout)
+
+    def test_toml_defaults_and_omitted_parameters_preserve_values(self) -> None:
+        (self.script_directory / "config.toml").write_text(
+            'GRASP_SOURCE = "../grasp"\n[GRID_PARAMETERS]\nh = 0.025\n'
+        )
+        original = (self.root / grid.CAPACITY_FILES[0]).read_bytes()
         with (
-            patch.multiple(
-                grid, GRASP_SOURCE="/unused/path", GRID_PARAMETERS={"nnnp": 10}
-            ),
             patch.object(grid, "plan", wraps=grid.plan) as planner,
             redirect_stdout(io.StringIO()),
         ):
-            self.assertEqual(grid.main(["--grasp", str(self.root), "--h", "0.025"]), 0)
-            self.assertEqual(planner.call_args.args[1], grid.Settings(h=0.025))
+            self.assertEqual(grid.main([]), 0)
+            self.assertEqual(
+                planner.call_args.args,
+                (self.root.resolve(), grid.Settings(h=0.025), "grasp2018"),
+            )
+        self.assertEqual((self.root / grid.CAPACITY_FILES[0]).read_bytes(), original)
+        self.assertFalse((self.root / "grid-backups").exists())
+
+    def test_explicit_cli_keeps_its_values_independent_of_toml(self) -> None:
+        config = self.script_directory / "config.toml"
+        with (
+            patch.object(grid, "plan", wraps=grid.plan) as planner,
+            redirect_stdout(io.StringIO()),
+        ):
+            # Explicit CLI works both without a config and with an invalid one.
+            for content in (None, "invalid TOML"):
+                if content is not None:
+                    config.write_text(content)
+                self.assertEqual(
+                    grid.main(["--grasp", str(self.root), "--h", "0.025"]), 0
+                )
+                self.assertEqual(planner.call_args.args[1], grid.Settings(h=0.025))
 
     def test_suite_layout_patches_all_present_programs_and_restores(self) -> None:
         root = Path(self.temporary.name) / "suite"

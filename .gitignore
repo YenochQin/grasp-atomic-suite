@@ -9,6 +9,9 @@
 # Ignore user CMake configuration files
 CMakeLists.user
 
+# Local radial-grid patch settings (beside patch_grasp_grid.py)
+config.toml
+
 # Ignore generated CMake files
 build/
 build-*/

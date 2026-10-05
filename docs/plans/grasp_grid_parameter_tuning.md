@@ -30,9 +30,9 @@
 4. **迭代与数值阈值**：`ACCY` 被数值程序及轨道自洽判断使用；不是物理量误差的保证。
 
 因此，“容量改为 2990”与“网格已经足够精细”是两项不同结论。
-**不要直接采用脚本预填的 `nnnp=2990, n=2990, h=0.05` 作为通用起点。**
+**不要直接采用 `nnnp=2990, n=2990, h=0.05` 作为通用起点。**
 该组合已在原版 `DCBSRW` 的最小径向诊断中产生 NaN/Inf，详见第 3.1 节。
-执行前完整替换用户配置区，选择第 13 节对应的测试组。
+执行前将第 13 节对应测试组完整复制到脚本同目录的 `config.toml`。
 suite 当前有限核默认仍为 `N=NNNP=2990,H=0.05`，这是既定统一配置策略，
 本次文档修订不更改程序默认值；使用 suite 测试副本时同样先显式应用候选配置。
 
@@ -59,7 +59,7 @@ suite 当前有限核默认仍为 `N=NNNP=2990,H=0.05`，这是既定统一配�
 | `point_rnt_scale` | `exp(-65/16)`，约 0.01720595 | P 系列显式填写 `0.017205950425851383` | 明确保持点核尺度，并同步 RCI 公共初始化 | 各阶段实际核模型与 RNT，见第 5.5 节 |
 
 `rnt_scale` 是 **RNT 的系数**：`RNT=rnt_scale/Z`，不是直接输入的实际 RNT。
-`None` 表示脚本不修改对应数值；0 是数值本身，两者不能互换。
+在 `config.toml` 中省略参数表示不修改对应数值；0 是数值本身，两者不能互换。
 原版 `accy` 显式设置必须为正数；suite 可用 `accy=0` 恢复自适应 `H**6`。
 
 在多数原版入口中，`n/h/rnt_scale` 设置有限核分支，`point_*` 设置点核分支。
@@ -191,18 +191,17 @@ ACCY 通过改变径向解间接影响节点，不能称作节点振幅筛选阈
 
 通过脚本近似对应这组网格：
 
-```python
-GRID_PARAMETERS = {
-    "nnnp": 1990,
-    "n": 1990,
-    "h": 0.015,
-    "rnt_scale": 2e-6,
-    "hp": 0.0,
-    "accy": None,
-    "point_n": None,
-    "point_h": None,
-    "point_rnt_scale": None,
-}
+```toml
+[GRID_PARAMETERS]
+nnnp = 1990
+n = 1990
+h = 0.015
+rnt_scale = 2e-6
+hp = 0.0
+# accy 省略：保留原值
+# point_n 省略：保留原值
+# point_h 省略：保留原值
+# point_rnt_scale 省略：保留原值
 ```
 
 若严格重现手册的四舍五入 RNT，系数应为 `92*2.17e-8=1.9964e-6`。
@@ -217,7 +216,7 @@ ACCY；要匹配示例记录，须显式填写 `accy=1.5625e-8`。
 物理修正。除被测试项外，不在同一轮改变其他参数。
 第一轮可选小模型；通过后，再在最终活性空间复验。
 
-每组完整的 Python 变量设置见第 13 节，可直接替换脚本顶部用户配置区。
+每组完整的 TOML 配置见第 13 节，可直接复制到脚本同目录的 `config.toml`。
 
 ### 5.0 B0：未经修改的原版基线
 
@@ -580,31 +579,29 @@ results/<体系>/<活性空间>/<试验编号>/
 复制时不带入旧 `build/`、编译产物或源码内 `.mod/.o`；CMake 缓存含绝对路径。
 不要从当前已调整到 2990 的源码、suite 或上一个已打补丁的测试组继续复制。
 若手头只有调整后的副本，先从确认的原版提交或原始发布包取得干净源码。
-修改组的每份根目录保存一个 `patch_grasp_grid.py` 副本，便于参数与程序对应。
+修改组的每份根目录保存 `patch_grasp_grid.py` 和 `config.toml`，便于参数与程序对应。
 B0 跳过补丁步骤，直接按下面相同的 CMake 流程编译。
 下面是 D2 的完整文件配置：
-它是待验证的候选，不是已经认证的生产设置；完整覆盖脚本原有预填值，
-尤其不要保留 `N=2990,H=0.05`。
+将下列内容保存为脚本同目录的 `config.toml`；候选值仍需验证，
+不能将 `N=2990,H=0.05` 作为通用起点。
 
-```python
+```toml
 # D2：第 9 节操作示例
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 1965,  # 原版 590 → 1965，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 1965  # 原版 590 → 1965，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 在 fish 中执行，不传数值参数：
@@ -614,7 +611,7 @@ cd /path/to/grasp-D2
 python3 patch_grasp_grid.py
 ```
 
-查看预览后，将文件中的 `RUN_MODE` 改成 `"apply"`，执行同一命令；
+查看预览后，将 `config.toml` 中的 `RUN_MODE` 改成 `"apply"`，执行同一命令；
 再改成 `"check"`，执行同一命令，确认 `Files requiring changes: 0`。
 备份自动保存在该份源码的 `grid-backups/<时间戳>/`；同时保留此次配置和预览输出。
 
@@ -710,23 +707,27 @@ run_id,orbital_id,varied,scnsty,mtp_or_mf,r_mtp_a0,n_minus_mtp,norm,mean_r_a0,r_
   [历史测试结果](../../test/rmcdhf_orbopt/RESULTS.md)。
 
 
-## 13. 可直接复制的 Python 配置
+## 13. 可直接复制的 TOML 配置
 
 ### 13.1 复制规则与索引
 
-以下每个 Python 块都是脚本顶部用户配置的**完整替换内容**，不是新的配置文件。
+以下每个 TOML 块都是脚本同目录 `config.toml` 的**完整替换内容**。
 第 13.3 节 B0 的 `ORIGINAL_BASELINE` 是原版参数记录，单独标明，不属于补丁配置。
-只选一组，替换 `GRASP_SOURCE` 到 `RESTORE_DIRECTORY` 的配置区，不修改下面的实现。
-不要把多组代码依次粘进同一个脚本，否则后面的赋值会覆盖前面的配置。
+只选一组，完整替换 `config.toml`，无需修改 Python 脚本。
+不要把多组配置追加到同一文件；TOML 不允许重复定义字段或表。
+布尔值写 `true/false`；TOML 没有 `None`，省略参数表示不修改。
+`BACKUP_DIRECTORY` 和 `RESTORE_DIRECTORY` 如需设置，必须放在 `[GRID_PARAMETERS]` 之前。
 
-每组均假定脚本已经复制到对应 GRASP 根目录，因此 `GRASP_SOURCE="."`。
+每组均假定脚本和配置已经复制到对应 GRASP 根目录，因此 `GRASP_SOURCE="."`。
 如果脚本仍放在 suite 的 `scripts/` 中，就把该值替换为目标源码的绝对路径。
 原版各组均从同一份未经修改、容量为 590 的 GRASP 复制，使用独立计算结果目录。
 只有第 13.9 节的 suite 示例从 suite 源码复制，不能替代原版 B0。
 
 这些块默认 `RUN_MODE="preview"`。运行后改成 `"apply"`，再次运行写入；
 然后改成 `"check"` 运行检查。不要重新粘贴块导致模式又回到 preview 而误以为已写入。
-各组 `RESTORE_DIRECTORY=None`，避免继承上一组的恢复设置。
+各组省略 `RESTORE_DIRECTORY`，避免继承上一组的恢复设置。
+本地 `config.toml` 已被 Git 忽略；跟踪的模板见
+[scripts/config.example.toml](../../scripts/config.example.toml)。
 完成修改后，按第 9 节手动编译；复制参数本身不会更新二进制。
 L/O/I/R 的完整块以 D2/ACCY=1e-10 为示例。最终候选或已验证阈值不同，
 须在同一对照系列中同步替换对应网格和 ACCY；不能把未验收的 1e-10 自动带入生产。
@@ -776,7 +777,7 @@ P 系列统一容量 990；
 | P2 | 990 → 1000 | 点核 877 | 0.015625 | `exp(-65/16)` | `1e-10` | 同步改变 n/h 与 point_n/point_h，覆盖 RCI 公共分支 |
 | M-U | 1990 → 2000 | 1990 | 0.015 | `1.9964e-6` | `1.5625e-8` | 单独对照手册 U I 记录 |
 
-各组 HP 均为 0。有限核各块的 `point_* = None` 保留原版点核规则，
+各组 HP 均为 0。有限核各块省略 `point_*`，保留原版点核规则，
 点核各块则同时设置 `n/h/rnt_scale` 为对应点核值，以同步原版 RCI，
 只能在点核专用源码副本上使用。每个配置块中的注释标明相对于原版的修改；
 未改变数值也显式写出，方便核对该副本最终应使用的设置。
@@ -796,25 +797,23 @@ C1 与 D0 相同；D2、L0、O0、A0 和下面 I/R 的示例数值相同。
 
 检查实际 RNT=2.17e-8、N=1990、H=0.015，以及手册对应的态和输入条件。
 
-```python
+```toml
 # M-U：手册参数对照
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 1990,  # 原版 590 → 1990，扩容；NNN1 自动为 2000
-    "n": 1990,  # 原版 590 → 1990，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 1.9964e-6,  # 原值 2e-6 → 1.9964e-06；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1.5625e-8,  # 原版默认 H**6 → 固定 1.5625e-08
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 1990  # 原版 590 → 1990，扩容；NNN1 自动为 2000
+n = 1990  # 原版 590 → 1990，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 1.9964e-6  # 原值 2e-6 → 1.9964e-06；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1.5625e-8  # 原版默认 H**6 → 固定 1.5625e-08
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 ### 13.3 容量与步长测试
@@ -826,148 +825,138 @@ D1→D2→D3 改变分辨率；需要 D4 严格归因时先用 D3-C3990 对照�
 #### B0：未经修改的原版，590 点容量
 
 **不用 `patch_grasp_grid.py` 写入这一组。** 直接编译干净原版，用其默认值运行。
-以下仅供记录和核对输出，不复制到脚本配置区：
+以下仅供记录和核对输出，不复制到 `config.toml`：
 
-```python
-ORIGINAL_BASELINE = {
-    "nnnp": 590,
-    "nnn1": 600,
-    "n": 590,
-    "h": 0.05,
-    "rnt_scale": 2e-6,
-    "hp": 0.0,
-    "accy": 1.5625e-8,  # 原版默认 H**6
-}
+```toml
+# 仅记录原版基线，不作为 patch_grasp_grid.py 的输入
+[ORIGINAL_BASELINE]
+nnnp = 590
+nnn1 = 600
+n = 590
+h = 0.05
+rnt_scale = 2e-6
+hp = 0.0
+accy = 1.5625e-8  # 原版默认 H**6
 ```
 
 将补丁参数填回这些数值再执行 apply，仍不等于保留原版源码：
 脚本还会恢复 `rwfnrelabel` 的初始化、调整 RMCDHF 的 ACCY 更新位置等。
-`None` 只表示保留对应参数，不能用来把一次 apply 当作未经修改的原版。
+省略参数只表示保留对应值，不能用来把一次 apply 当作未经修改的原版。
 
 #### C0：590 点容量控制组
 
 这是从 B0 复制并打补丁的控制组。先记录相对于 B0 的变化，再对照 C1，
 检查相同实际网格和 ACCY 下的能量、轨道与性质是否一致。
 
-```python
+```toml
 # C0：590 点容量控制组
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 590,  # 原版 590，保留容量；NNN1 自动为 600
-    "n": 590,  # 原版 590，保留实际点数
-    "h": 0.05,  # 原值 0.05，保留步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 590  # 原版 590，保留容量；NNN1 自动为 600
+n = 590  # 原版 590，保留实际点数
+h = 0.05  # 原值 0.05，保留步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### C1 / D0：扩容但保持实际网格
 
 与 C0 比较容量影响；随后作为 D1 的粗网格对照。
 
-```python
+```toml
 # C1 / D0：扩容但保持实际网格
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 590,  # 原版 590，保留实际点数
-    "h": 0.05,  # 原值 0.05，保留步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 590  # 原版 590，保留实际点数
+h = 0.05  # 原值 0.05，保留步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### D1：H=0.025
 
 对照 D0，保存目标能级、精细结构、轨道与所需性质。
 
-```python
+```toml
 # D1：H=0.025
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 1179,  # 原版 590 → 1179，实际点数
-    "h": 0.025,  # 原值 0.05 → 0.025，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 1179  # 原版 590 → 1179，实际点数
+h = 0.025  # 原值 0.05 → 0.025，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### D2：H=0.015
 
 对照 D1，并作为下面范围、近核、ACCY 示例的基准。
 
-```python
+```toml
 # D2：H=0.015
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 1965,  # 原版 590 → 1965，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 1965  # 原版 590 → 1965，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### D3：H=0.010
 
 对照 D2，检查最后加密的变化是否低于误差预算。
 
-```python
+```toml
 # D3：H=0.010
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 2946,  # 原版 590 → 2946，实际点数
-    "h": 0.010,  # 原值 0.05 → 0.01，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 2946  # 原版 590 → 2946，实际点数
+h = 0.010  # 原值 0.05 → 0.01，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### D3-C3990：D4 前的同网格容量对照（按需）
@@ -975,25 +964,23 @@ RESTORE_DIRECTORY = None
 对照 D3，只改变容量；其余参数和输入保持相同。
 若交叉检查已选定更严格 ACCY，这里与 D3/D4 同步采用该值。
 
-```python
+```toml
 # D3-C3990：D4 前的同网格容量对照
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 3990,  # 原版 590 → 3990，扩容；NNN1 自动为 4000
-    "n": 2946,  # 同 D3，只比较容量
-    "h": 0.010,  # 同 D3
-    "rnt_scale": 2e-6,  # 原值保留；RNT=此值/Z
-    "hp": 0.0,  # 保持指数网格
-    "accy": 1e-10,  # 与 D3/D4 同步采用已验证阈值
-    "point_n": None,  # 保留点核默认规则
-    "point_h": None,
-    "point_rnt_scale": None,
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 3990  # 原版 590 → 3990，扩容；NNN1 自动为 4000
+n = 2946  # 同 D3，只比较容量
+h = 0.010  # 同 D3
+rnt_scale = 2e-6  # 原值保留；RNT=此值/Z
+hp = 0.0  # 保持指数网格
+accy = 1e-10  # 与 D3/D4 同步采用已验证阈值
+# point_n 省略：保留点核默认规则
+# point_h 省略：保留原值
+# point_rnt_scale 省略：保留原值
 ```
 
 #### D4：按需进一步加密
@@ -1001,25 +988,23 @@ RESTORE_DIRECTORY = None
 对照 D3；严格归因时还对照同容量的 D3-C3990。
 必须使用匹配的新容量重新编译全部程序，并同步采用已验证 ACCY。
 
-```python
+```toml
 # D4：按需进一步加密
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 3990,  # 原版 590 → 3990，扩容；NNN1 自动为 4000
-    "n": 3928,  # 原版 590 → 3928，实际点数
-    "h": 0.0075,  # 原值 0.05 → 0.0075，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 3990  # 原版 590 → 3990，扩容；NNN1 自动为 4000
+n = 3928  # 原版 590 → 3928，实际点数
+h = 0.0075  # 原值 0.05 → 0.0075，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 ### 13.4 外端范围测试
@@ -1030,75 +1015,69 @@ RESTORE_DIRECTORY = None
 
 作为 L1/L2 的对照，不改变 D2 的初始轨道与模型。
 
-```python
+```toml
 # L0：范围基准（数值等同 D2）
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 1965,  # 原版 590 → 1965，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 1965  # 原版 590 → 1965，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### L1：约两倍外端
 
 与 L0 比较，记录轨道尾部及性质变化。
 
-```python
+```toml
 # L1：约两倍外端
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 2012,  # 原版 590 → 2012，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 2012  # 原版 590 → 2012，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### L2：约四倍外端
 
 与 L1 和 L0 比较，验证截断变化是否进一步减小。
 
-```python
+```toml
 # L2：约四倍外端
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 2058,  # 原版 590 → 2058，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 2058  # 原版 590 → 2058，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 ### 13.5 原点尺度与网格位置测试
@@ -1109,75 +1088,69 @@ RESTORE_DIRECTORY = None
 
 作为 O1/O2 的对照。
 
-```python
+```toml
 # O0：近核基准（数值等同 D2）
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 1965,  # 原版 590 → 1965，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 1965  # 原版 590 → 1965，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### O1：RNT 系数减半
 
 与 O0 比较；外端约增加 1.2%，记录其余量是否稳定。
 
-```python
+```toml
 # O1：RNT 系数减半
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 2012,  # 原版 590 → 2012，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 1e-6,  # 原值 2e-6 → 1e-06；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 2012  # 原版 590 → 2012，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 1e-6  # 原值 2e-6 → 1e-06；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### O2：RNT 系数减为四分之一
 
 与 O1 比较；本组外端相对 O0 约增加 0.9%，核敏感量必须一起检查。
 
-```python
+```toml
 # O2：RNT 系数减为四分之一
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 2058,  # 原版 590 → 2058，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 5e-7,  # 原值 2e-6 → 5e-07；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 2058  # 原版 590 → 2058，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 5e-7  # 原值 2e-6 → 5e-07；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 ### 13.6 ACCY 测试
@@ -1190,150 +1163,138 @@ RESTORE_DIRECTORY = None
 
 记录全部变分轨道残差、最后数轮目标量变化及第 7 节外部验收状态。
 
-```python
+```toml
 # A0：ACCY=1e-10（数值等同 D2）
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 1965,  # 原版 590 → 1965，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 1965  # 原版 590 → 1965，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### A1：ACCY=1e-11
 
 对照 A0，检查求解变化是否小于分配给它的误差预算。
 
-```python
+```toml
 # A1：ACCY=1e-11
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 1965,  # 原版 590 → 1965，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-11,  # 原版默认 H**6 → 固定 1e-11
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 1965  # 原版 590 → 1965，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-11  # 原版默认 H**6 → 固定 1e-11
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### A2：ACCY=1e-12
 
 对照 A1；按需运行。若残差不达标，不以此组作参考，也不直接放宽节点判据。
 
-```python
+```toml
 # A2：ACCY=1e-12
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 1965,  # 原版 590 → 1965，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-12,  # 原版默认 H**6 → 固定 1e-12
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 1965  # 原版 590 → 1965，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-12  # 原版默认 H**6 → 固定 1e-12
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### A-F0：D3 细网格，ACCY=1e-10（数值等同 D3）
 
 同条件 D3 结果可复用。与 A0 比较网格差，和 A-F1 比较阈值差。
 
-```python
+```toml
 # A-F0：D3 细网格，ACCY=1e-10
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990；NNN1 自动为 3000
-    "n": 2946,  # 原版 590 → 2946，与 D3 相同
-    "h": 0.010,  # 原值 0.05 → 0.010，与 D3 相同
-    "rnt_scale": 2e-6,  # 原值保留；RNT=此值/Z
-    "hp": 0.0,  # 保持指数网格
-    "accy": 1e-10,  # 原版 H**6 → 固定 1e-10
-    "point_n": None,  # 保留点核默认规则
-    "point_h": None,
-    "point_rnt_scale": None,
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990；NNN1 自动为 3000
+n = 2946  # 原版 590 → 2946，与 D3 相同
+h = 0.010  # 原值 0.05 → 0.010，与 D3 相同
+rnt_scale = 2e-6  # 原值保留；RNT=此值/Z
+hp = 0.0  # 保持指数网格
+accy = 1e-10  # 原版 H**6 → 固定 1e-10
+# point_n 省略：保留点核默认规则
+# point_h 省略：保留原值
+# point_rnt_scale 省略：保留原值
 ```
 
 #### A-F1：D3 细网格，ACCY=1e-11
 
 与 A-F0 比较阈值差，与 A1 比较相同收紧阈值下的网格差。
 
-```python
+```toml
 # A-F1：D3 细网格，ACCY=1e-11
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990；NNN1 自动为 3000
-    "n": 2946,  # 与 A-F0 相同
-    "h": 0.010,  # 与 A-F0 相同
-    "rnt_scale": 2e-6,  # 原值保留；RNT=此值/Z
-    "hp": 0.0,  # 保持指数网格
-    "accy": 1e-11,  # 相对 A-F0 只收紧 ACCY
-    "point_n": None,  # 保留点核默认规则
-    "point_h": None,
-    "point_rnt_scale": None,
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990；NNN1 自动为 3000
+n = 2946  # 与 A-F0 相同
+h = 0.010  # 与 A-F0 相同
+rnt_scale = 2e-6  # 原值保留；RNT=此值/Z
+hp = 0.0  # 保持指数网格
+accy = 1e-11  # 相对 A-F0 只收紧 ACCY
+# point_n 省略：保留点核默认规则
+# point_h 省略：保留原值
+# point_rnt_scale 省略：保留原值
 ```
 
 #### A-F2：D3 细网格，ACCY=1e-12（按需）
 
 与 A-F1、A2 对照。能量停滞、残差不合格时不能将此组视为更精确参考。
 
-```python
+```toml
 # A-F2：D3 细网格，ACCY=1e-12
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990；NNN1 自动为 3000
-    "n": 2946,  # 与 A-F1 相同
-    "h": 0.010,  # 与 A-F1 相同
-    "rnt_scale": 2e-6,  # 原值保留；RNT=此值/Z
-    "hp": 0.0,  # 保持指数网格
-    "accy": 1e-12,  # 相对 A-F1 只收紧 ACCY
-    "point_n": None,  # 保留点核默认规则
-    "point_h": None,
-    "point_rnt_scale": None,
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990；NNN1 自动为 3000
+n = 2946  # 与 A-F1 相同
+h = 0.010  # 与 A-F1 相同
+rnt_scale = 2e-6  # 原值保留；RNT=此值/Z
+hp = 0.0  # 保持指数网格
+accy = 1e-12  # 相对 A-F1 只收紧 ACCY
+# point_n 省略：保留点核默认规则
+# point_h 省略：保留原值
+# point_rnt_scale 省略：保留原值
 ```
 
 ### 13.7 点核测试
@@ -1350,75 +1311,69 @@ exp(-65/16) 的双精度近似值。比较 P0→P1→P2，保持相同核模型�
 
 点核 N/H 保留原版值，但显式扩容并固定 ACCY。检查能量、节点和轨道积分。
 
-```python
+```toml
 # P0：点核修改组的粗网格控制
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 990,  # 原版 590 → 990，扩容；NNN1 自动为 1000
-    "n": 220,  # 同 point_n；覆盖原版 RCI 公共分支，仅用于点核副本
-    "h": 0.0625,  # 同 point_h；覆盖原版 RCI 公共分支
-    "rnt_scale": 0.017205950425851383,  # 同 point_rnt_scale；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版点核默认 H**6 → 固定 1e-10
-    "point_n": 220,  # 原版实际点数 220，保留
-    "point_h": 0.0625,  # 原版步长 0.0625，保留
-    "point_rnt_scale": 0.017205950425851383,  # 原版 exp(-65/16) 的数值表示；RNT=此值/Z
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 990  # 原版 590 → 990，扩容；NNN1 自动为 1000
+n = 220  # 同 point_n；覆盖原版 RCI 公共分支，仅用于点核副本
+h = 0.0625  # 同 point_h；覆盖原版 RCI 公共分支
+rnt_scale = 0.017205950425851383  # 同 point_rnt_scale；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版点核默认 H**6 → 固定 1e-10
+point_n = 220  # 原版实际点数 220，保留
+point_h = 0.0625  # 原版步长 0.0625，保留
+point_rnt_scale = 0.017205950425851383  # 原版 exp(-65/16) 的数值表示；RNT=此值/Z
 ```
 
 #### P1：点核步长减半
 
 对照 P0；实际点核范围相同。
 
-```python
+```toml
 # P1：点核步长减半
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 990,  # 原版 590 → 990，扩容；NNN1 自动为 1000
-    "n": 439,  # 同 point_n；覆盖原版 RCI 公共分支，仅用于点核副本
-    "h": 0.03125,  # 同 point_h；覆盖原版 RCI 公共分支
-    "rnt_scale": 0.017205950425851383,  # 同 point_rnt_scale；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版点核默认 H**6 → 固定 1e-10
-    "point_n": 439,  # 原版实际点数 220 → 439
-    "point_h": 0.03125,  # 原版步长 0.0625 → 0.03125
-    "point_rnt_scale": 0.017205950425851383,  # 原版 exp(-65/16) 的数值表示；RNT=此值/Z
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 990  # 原版 590 → 990，扩容；NNN1 自动为 1000
+n = 439  # 同 point_n；覆盖原版 RCI 公共分支，仅用于点核副本
+h = 0.03125  # 同 point_h；覆盖原版 RCI 公共分支
+rnt_scale = 0.017205950425851383  # 同 point_rnt_scale；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版点核默认 H**6 → 固定 1e-10
+point_n = 439  # 原版实际点数 220 → 439
+point_h = 0.03125  # 原版步长 0.0625 → 0.03125
+point_rnt_scale = 0.017205950425851383  # 原版 exp(-65/16) 的数值表示；RNT=此值/Z
 ```
 
 #### P2：点核再次加密
 
 对照 P1；另行验证 ACCY，不把核模型差当作网格误差。
 
-```python
+```toml
 # P2：点核再次加密
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 990,  # 原版 590 → 990，扩容；NNN1 自动为 1000
-    "n": 877,  # 同 point_n；覆盖原版 RCI 公共分支，仅用于点核副本
-    "h": 0.015625,  # 同 point_h；覆盖原版 RCI 公共分支
-    "rnt_scale": 0.017205950425851383,  # 同 point_rnt_scale；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版点核默认 H**6 → 固定 1e-10
-    "point_n": 877,  # 原版实际点数 220 → 877
-    "point_h": 0.015625,  # 原版步长 0.0625 → 0.015625
-    "point_rnt_scale": 0.017205950425851383,  # 原版 exp(-65/16) 的数值表示；RNT=此值/Z
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 990  # 原版 590 → 990，扩容；NNN1 自动为 1000
+n = 877  # 同 point_n；覆盖原版 RCI 公共分支，仅用于点核副本
+h = 0.015625  # 同 point_h；覆盖原版 RCI 公共分支
+rnt_scale = 0.017205950425851383  # 同 point_rnt_scale；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版点核默认 H**6 → 固定 1e-10
+point_n = 877  # 原版实际点数 220 → 877
+point_h = 0.015625  # 原版步长 0.0625 → 0.015625
+point_rnt_scale = 0.017205950425851383  # 原版 exp(-65/16) 的数值表示；RNT=此值/Z
 ```
 
 ### 13.8 初始化与并行一致性测试
@@ -1432,50 +1387,46 @@ I-EST 在本组网格重新生成估计；I-REF 读入参考轨道并插值后�
 I-REF 输入逐轨道的 MF/MA 必须满足目标容量和插值范围，保存源网格和校验和；
 保持同一冻结轨道策略，不能假定较细参考轨道可直接读入所有粗网格副本。
 
-```python
+```toml
 # I-EST / I-REF：初始化路径的共用配置
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 1965,  # 原版 590 → 1965，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 1965  # 原版 590 → 1965，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 #### R-SERIAL / R-MPI1 / R-MPI2 / R-MPI4：并行测试的共用配置
 
-R-SERIAL 使用串行程序；其余使用相同包的 MPI 程序，分别设 1/2/4 进程。使用相同输入与网格，不在 Python 参数中添加 MPI 进程字段。
+R-SERIAL 使用串行程序；其余使用相同包的 MPI 程序，分别设 1/2/4 进程。使用相同输入与网格，不在 `[GRID_PARAMETERS]` 中添加 MPI 进程字段。
 
-```python
+```toml
 # R-SERIAL / R-MPI1 / R-MPI2 / R-MPI4：并行测试的共用配置
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 原版 590 → 2990，扩容；NNN1 自动为 3000
-    "n": 1965,  # 原版 590 → 1965，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # 原版默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # 原版 590 → 2990，扩容；NNN1 自动为 3000
+n = 1965  # 原版 590 → 1965，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # 原版默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 ### 13.9 在 grasp-atomic-suite 中使用同一组数值
@@ -1485,25 +1436,23 @@ RESTORE_DIRECTORY = None
 每份 suite 副本从同一 suite 版本复制，不能把原版 590 点基底的说明照搬为
 suite 的默认值。下面是 suite 的 D2 完整示例：
 
-```python
+```toml
 # SUITE-D2：suite 中采用 D2 网格
 GRASP_SOURCE = "."
 SOURCE_LAYOUT = "atomic-suite"
 RUN_MODE = "preview"
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # suite 当前默认 2990，保留容量；NNN1 自动为 3000
-    "n": 1965,  # suite 当前默认 2990 → 1965，实际点数
-    "h": 0.015,  # 原值 0.05 → 0.015，减小步长
-    "rnt_scale": 2e-6,  # 原值 2e-6，保留；RNT=此值/Z
-    "hp": 0.0,  # 原值 0，保持指数网格
-    "accy": 1e-10,  # suite 当前默认 H**6 → 固定 1e-10
-    "point_n": None,  # 保留原版 MIN(220,NNNP) 规则
-    "point_h": None,  # 保留点核默认 H=0.0625
-    "point_rnt_scale": None,  # 保留点核默认 exp(-65/16)
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+
+[GRID_PARAMETERS]
+nnnp = 2990  # suite 当前默认 2990，保留容量；NNN1 自动为 3000
+n = 1965  # suite 当前默认 2990 → 1965，实际点数
+h = 0.015  # 原值 0.05 → 0.015，减小步长
+rnt_scale = 2e-6  # 原值 2e-6，保留；RNT=此值/Z
+hp = 0.0  # 原值 0，保持指数网格
+accy = 1e-10  # suite 当前默认 H**6 → 固定 1e-10
+# point_n 省略：保留原版 MIN(220,NNNP) 规则
+# point_h 省略：保留点核默认 H=0.0625
+# point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
 suite 需要使用 `rmcdhf_orbopt*` 等对应程序，并使原版准备/RCI 程序具有匹配
@@ -1517,7 +1466,7 @@ suite 需要使用 `rmcdhf_orbopt*` 等对应程序，并使原版准备/RCI 程
 
 ### 13.10 复制后逐项确认
 
-1. 文件只保留一个用户配置块，源码路径和布局正确。
+1. `config.toml` 只保留一个测试组和一个 `[GRID_PARAMETERS]` 表，源码路径和布局正确。
 2. 保留并运行未经修改的 B0；原版修改组从同一份 590 点源码复制。
    B0/C/D/L/O/A 系列用同一有限核 isodata；P 系列用点核 isodata。
 3. 完整覆盖预填配置；各值与第 5 节一致。P 系列 n/h/rnt_scale 与 point_* 匹配。

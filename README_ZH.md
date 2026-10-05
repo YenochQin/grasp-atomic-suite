@@ -156,8 +156,11 @@ ctest --test-dir build-all --output-on-failure
 用户随后显式输入的数值阈值仍优先。
 
 网格批量修改工具见 [scripts/patch_grasp_grid.py](scripts/README.md)：
-修改文件开头的路径、数值和运行模式后，不带参数执行即可；原有命令行接口仍保留。
-本仓库设置 `SOURCE_LAYOUT="atomic-suite"`，完整原版设置 `"grasp2018"`。
+复制 [scripts/config.example.toml](scripts/config.example.toml) 为同目录的 `config.toml`，
+修改配置中的路径、数值和运行模式后，不带参数执行即可；原有命令行接口仍保留。
+本地 `config.toml` 已被 Git 忽略，省略可选参数表示不修改。
+配置留在 `scripts/` 时，本仓库设置 `GRASP_SOURCE=".."`、
+`SOURCE_LAYOUT="atomic-suite"`，完整原版设置 `"grasp2018"` 和对应源码路径。
 可为不同参数保留独立源码副本，按原版 README 的 CMake 流程手动编译。
 默认仅预览；修改后必须全量重编译，并验证物理量的网格收敛。
 源码目录残留的 `.mod` 文件会覆盖新模块，CMake 会拒绝这种混合构建；

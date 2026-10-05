@@ -3,7 +3,7 @@
 
 This patches known source locations, not calculation files or installed binaries.
 Unrecognized layouts fail before any source file is written.
-Run without arguments to use the editable configuration at the top of this file.
+Run without arguments to read config.toml beside this script (Python >= 3.11).
 Explicit command-line requests remain independent of that configuration.
 """
 
@@ -22,37 +22,7 @@ from pathlib import Path
 import re
 import sys
 import tempfile
-
-
-# ==================== 用户配置：不带命令行参数时读取 ====================
-# 填写待修改的那份 GRASP 源码根目录（包含 src/），不是 bin/ 或 build/。
-# 可以将本脚本复制到每份 GRASP 中，并设置 GRASP_SOURCE = "."。
-# 相对路径以本脚本所在目录为基准；也支持绝对路径和 ~/。
-GRASP_SOURCE = None  # 必填，例如 "/path/to/GRASP2018-grid2990"
-SOURCE_LAYOUT = "grasp2018"  # 原版：grasp2018；本仓库：atomic-suite
-RUN_MODE = "preview"  # preview：预览；apply：写入；check：检查
-PRINT_DIFF = True
-
-# None 表示不修改该参数。下面数值仅为用法示例，需自行验证网格收敛。
-GRID_PARAMETERS = {
-    "nnnp": 2990,  # 编译容量；NNN1 自动设为 NNNP+10，同步重复声明
-    "n": 2990,  # 有限核默认实际点数，不能超过 nnnp
-    "h": 0.05,  # 有限核 H
-    "rnt_scale": 2e-6,  # 有限核 RNT = 此值/Z，不是绝对半径
-    "hp": 0.0,  # 两种核模型共用的 HP
-    "accy": None,  # 保留原有精度公式/数值；原版显式数值必须 > 0
-    "point_n": None,  # 点核默认实际点数
-    "point_h": None,  # 点核 H
-    "point_rnt_scale": None,  # 点核 RNT = 此值/Z
-}
-
-# None：应用时自动保存到 GRASP_SOURCE/grid-backups/<唯一时间戳>/。
-# 也可填写一个尚不存在的目录。预览和检查不会创建备份目录。
-BACKUP_DIRECTORY = None
-# 恢复时填写之前的备份目录；此时忽略 GRID_PARAMETERS/BACKUP_DIRECTORY。
-# RUN_MODE="preview" 预览恢复，RUN_MODE="apply" 执行恢复。
-RESTORE_DIRECTORY = None
-# ==================== 以下为实现，无需修改 ====================
+import tomllib
 
 
 GRID_FILES = (
@@ -641,49 +611,90 @@ def restore_plan(backup: Path, root: Path | None) -> tuple[Path, list[Change]]:
 
 
 def configured_arguments() -> list[str]:
-    """Translate the editable header into the same validated CLI request."""
-    if RUN_MODE not in ("preview", "apply", "check"):
+    """Translate the sibling TOML file into the same validated CLI request."""
+    configuration = Path(__file__).resolve().with_name("config.toml")
+    try:
+        with configuration.open("rb") as source:
+            config = tomllib.load(source)
+    except FileNotFoundError as error:
+        raise ValueError(
+            f"missing configuration: {configuration}; copy config.example.toml "
+            "to config.toml beside this script and set GRASP_SOURCE"
+        ) from error
+    except tomllib.TOMLDecodeError as error:
+        raise ValueError(f"invalid TOML in {configuration}: {error}") from error
+    unknown = config.keys() - {
+        "GRASP_SOURCE",
+        "SOURCE_LAYOUT",
+        "RUN_MODE",
+        "PRINT_DIFF",
+        "GRID_PARAMETERS",
+        "BACKUP_DIRECTORY",
+        "RESTORE_DIRECTORY",
+    }
+    if unknown:
+        raise ValueError(f"unknown config.toml keys: {', '.join(sorted(unknown))}")
+    mode = config.get("RUN_MODE", "preview")
+    layout = config.get("SOURCE_LAYOUT", "grasp2018")
+    print_diff = config.get("PRINT_DIFF", True)
+    if mode not in ("preview", "apply", "check"):
         raise ValueError("RUN_MODE must be preview, apply, or check")
-    if not isinstance(PRINT_DIFF, bool):
-        raise ValueError("PRINT_DIFF must be True or False")
+    if layout not in ("grasp2018", "atomic-suite"):
+        raise ValueError("SOURCE_LAYOUT must be grasp2018 or atomic-suite")
+    if not isinstance(print_diff, bool):
+        raise ValueError("PRINT_DIFF must be true or false")
 
-    def config_path(value: str | Path) -> Path:
+    def config_path(name: str) -> Path | None:
+        value = config.get(name)
+        if value is None:
+            return None
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"{name} must be a nonempty path string")
         path = Path(value).expanduser()
         if not path.is_absolute():
-            path = Path(__file__).resolve().parent / path
+            path = configuration.parent / path
         return path.resolve()
 
-    arguments = ["--layout", SOURCE_LAYOUT]
-    root = config_path(GRASP_SOURCE) if GRASP_SOURCE is not None else None
+    arguments = ["--layout", layout]
+    root = config_path("GRASP_SOURCE")
+    restore = config_path("RESTORE_DIRECTORY")
     if root is not None:
         arguments.extend(("--grasp", str(root)))
-    if RESTORE_DIRECTORY is not None:
-        arguments.extend(("--restore", str(config_path(RESTORE_DIRECTORY))))
+    if restore is not None:
+        arguments.extend(("--restore", str(restore)))
     else:
         if root is None:
             raise ValueError(
-                "set GRASP_SOURCE in the script header to your GRASP source directory"
+                "set GRASP_SOURCE in config.toml to your GRASP source directory"
             )
-        unknown = GRID_PARAMETERS.keys() - Settings.__dataclass_fields__.keys()
+        parameters = config.get("GRID_PARAMETERS", {})
+        if not isinstance(parameters, dict):
+            raise ValueError("GRID_PARAMETERS must be a TOML table: [GRID_PARAMETERS]")
+        unknown = parameters.keys() - Settings.__dataclass_fields__.keys()
         if unknown:
             raise ValueError(
                 f"unknown GRID_PARAMETERS keys: {', '.join(sorted(unknown))}"
             )
-        for name, value in GRID_PARAMETERS.items():
-            if value is not None:
-                arguments.extend((f"--{name.replace('_', '-')}", str(value)))
-        if RUN_MODE == "apply":
+        for name, value in parameters.items():
+            types = (int,) if name in ("nnnp", "n", "point_n") else (int, float)
+            if type(value) not in types:
+                raise ValueError(
+                    f"GRID_PARAMETERS.{name} must be {'an integer' if types == (int,) else 'a number'}; omit it to preserve the current value"
+                )
+            arguments.extend((f"--{name.replace('_', '-')}", str(value)))
+        configured_backup = config_path("BACKUP_DIRECTORY")
+        if mode == "apply":
             backup = (
-                config_path(BACKUP_DIRECTORY)
-                if BACKUP_DIRECTORY is not None
+                configured_backup
+                if configured_backup is not None
                 else root
                 / "grid-backups"
                 / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
             )
             arguments.extend(("--backup-dir", str(backup)))
-    if RUN_MODE != "preview":
-        arguments.append(f"--{RUN_MODE}")
-    if PRINT_DIFF:
+    if mode != "preview":
+        arguments.append(f"--{mode}")
+    if print_diff:
         arguments.append("--diff")
     return arguments
 
@@ -759,7 +770,7 @@ def main(argv: list[str] | None = None) -> int:
     if file_config:
         try:
             arguments = configured_arguments()
-        except (ValueError, TypeError) as error:
+        except (ValueError, TypeError, OSError) as error:
             parser.error(str(error))
     args = parser.parse_args(arguments)
     settings = Settings(
@@ -772,7 +783,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     if not args.restore and not requested:
         parser.error(
-            "provide at least one grid parameter, or --restore (None preserves a parameter)"
+            "provide at least one grid parameter, or --restore (omitted parameters stay unchanged)"
         )
     if args.backup_dir and not args.apply:
         parser.error("--backup-dir requires --apply")
@@ -789,7 +800,7 @@ def main(argv: list[str] | None = None) -> int:
             root = root.resolve()
             changes = plan(root, settings, args.layout)
         if file_config:
-            print("Configuration: editable script header")
+            print(f"Configuration: {Path(__file__).resolve().with_name('config.toml')}")
         print(f"Source: {root}\nFiles requiring changes: {len(changes)}")
         for change in changes:
             print(f"  {change.relative}")
@@ -820,7 +831,7 @@ def main(argv: list[str] | None = None) -> int:
                 "Check only; no files written."
                 if args.check
                 else (
-                    'Preview only; set RUN_MODE="apply" in the script header to write.'
+                    'Preview only; set RUN_MODE="apply" in config.toml to write.'
                     if file_config
                     else "Preview only; add --apply to write."
                 )

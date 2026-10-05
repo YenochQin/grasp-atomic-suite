@@ -2,42 +2,47 @@
 
 `patch_grasp_grid.py` 可以操作完整原版源码树，或修改本仓库的集中参数文件。
 脚本不自动运行编译或提交代码。
-脚本只使用 Python 标准库；本工作区仍使用 `graspkit-tools/.venv`。
+脚本只使用 Python >= 3.11 标准库；本工作区仍使用 `graspkit-tools/.venv`。
 
 参数原值、候选值、调整原因、测试数据与验收标准见
 [GRASP 径向网格参数调整与验证规程](../docs/plans/grasp_grid_parameter_tuning.md)。
 
-## 修改文件开头的配置（推荐）
+## 修改脚本旁的 config.toml（推荐）
 
-无需通过命令传入数值。在脚本开头的“用户配置”中填写待修改的源码根目录、
-网格参数和运行模式。下面采用验证规程的 D2 候选组：
+将 [config.example.toml](config.example.toml) 复制为同目录的 `config.toml`，
+填写源码路径、网格参数和运行模式，无需修改 Python 脚本。
+`config.toml` 已加入 `.gitignore`，本地参数变化不会产生 Git 修改记录；
+示例文件保留在版本控制中，供其他副本复制。下面采用 D3-C3990 容量对照组：
 
-```python
-GRASP_SOURCE = "/path/to/GRASP2018-D2"  # 包含 src/ 的目录
+```toml
+GRASP_SOURCE = "/path/to/GRASP2018-D3-C3990"  # 包含 src/ 的目录
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"  # preview / apply / check
-PRINT_DIFF = True
-GRID_PARAMETERS = {
-    "nnnp": 2990,
-    "n": 1965,
-    "h": 0.015,
-    "rnt_scale": 2e-6,
-    "hp": 0.0,
-    "accy": 1e-10,
-    "point_n": None,
-    "point_h": None,
-    "point_rnt_scale": None,
-}
-BACKUP_DIRECTORY = None
-RESTORE_DIRECTORY = None
+PRINT_DIFF = true
+# 可选路径必须放在 [GRID_PARAMETERS] 之前：
+# BACKUP_DIRECTORY = "/path/to/new-backup"
+# RESTORE_DIRECTORY = "/path/to/saved-backup"
+
+[GRID_PARAMETERS]
+nnnp = 3990
+n = 2946
+h = 0.010
+rnt_scale = 2e-6
+hp = 0.0
+accy = 1e-10
 ```
 
-`None` 表示不修改对应数值，不表示写入 0。D2 是待验证候选，不是通用生产推荐。
-当前脚本原有预填值仍是 `n=2990,h=0.05`；使用前完整替换配置区。
-该组合已在原版径向初始化诊断中产生非有限值，不能当作通用起点，证据见
-[规程第 3.1 节](../docs/plans/grasp_grid_parameter_tuning.md#31-hp0指数网格)。
-`GRASP_SOURCE` 默认为 `None`，必须先填入；相对路径以脚本
-所在目录为基准，绝对路径和 `~/` 也可以使用。
+TOML 布尔值使用小写 `true/false`，参数写在 `[GRID_PARAMETERS]` 表中。
+TOML 没有 `None`：省略 `point_n/point_h/point_rnt_scale` 等参数表示不修改；
+省略备份和恢复路径表示使用默认备份、正常修改模式。不能直接粘贴旧 Python 字典。
+配置不预填任何网格值；正常修改时必须填写 `GRASP_SOURCE` 和至少一个网格参数。
+未写 `SOURCE_LAYOUT/RUN_MODE/PRINT_DIFF` 时分别默认为 `grasp2018/preview/true`。
+候选组仍需验证网格收敛，不能直接作为通用生产推荐。
+相对路径以 `config.toml` 所在目录为基准，绝对路径和 `~/` 也可以使用。
+配置和脚本都留在本仓库的 `scripts/` 时，本仓库源码应填写
+`GRASP_SOURCE=".."`、`SOURCE_LAYOUT="atomic-suite"`；`"."` 代表 `scripts/` 自身。
+无参数运行时，配置缺失、TOML 语法错误、未知字段或数值类型错误都会报错，
+不会回退到脚本内的旧配置。
 
 在服务器上，不带任何参数执行（Bash/fish 均相同）：
 
@@ -45,17 +50,17 @@ RESTORE_DIRECTORY = None
 python3 /path/to/grasp-atomic-suite/scripts/patch_grasp_grid.py
 ```
 
-先设置 `RUN_MODE="preview"` 查看修改；再改成 `"apply"`，执行同一条命令写入；
+在 `config.toml` 中先设置 `RUN_MODE="preview"` 查看修改；再改成 `"apply"`，执行同一条命令写入；
 最后改成 `"check"`，再次执行检查。检查一致时退出 0，仍有待修改文件时退出 1，
 配置错误或源码布局不匹配时退出 2。脚本不启动编译。
 
-配置模式下，`BACKUP_DIRECTORY=None` 会将原始文件和校验和保存到
+配置模式下，省略 `BACKUP_DIRECTORY` 会将原始文件和校验和保存到
 `GRASP_SOURCE/grid-backups/<唯一时间戳>/`，屏幕会打印备份位置。
 也可指定一个尚不存在的备份目录。预览和检查不会创建备份；重复应用相同配置
 不会创建新备份。恢复时把 `RESTORE_DIRECTORY` 填成打印出的备份目录，
-先用 `RUN_MODE="preview"` 查看，再改成 `"apply"` 执行。
-恢复模式自动忽略数值配置和 `BACKUP_DIRECTORY`；恢复完成后把
-`RESTORE_DIRECTORY` 改回 `None`。恢复后也需要重新编译。
+放在 `[GRID_PARAMETERS]` 之前，先用 `RUN_MODE="preview"` 查看，再改成 `"apply"` 执行。
+恢复模式自动忽略数值配置和 `BACKUP_DIRECTORY`；恢复完成后
+删除或注释 `RESTORE_DIRECTORY`。恢复后也需要重新编译。
 
 ## 多份 GRASP 与 README 的 CMake 编译流程
 
@@ -69,9 +74,9 @@ python3 /path/to/grasp-atomic-suite/scripts/patch_grasp_grid.py
 不要复制旧 `build/`、`build-debug/` 缓存或源码内残留的
 `.mod/.o` 文件；CMake 缓存记录原目录的绝对路径。原有计算数据单独保存。
 
-可以在每份源码根目录保存一个本脚本副本，设置 `GRASP_SOURCE="."`，
+可以在每份源码根目录保存本脚本和 `config.toml`，设置 `GRASP_SOURCE="."`，
 这样每份目录自带对应参数。相对路径与当前 shell 工作目录无关。
-原版布局只需脚本本身，不需要整个 suite 或第三方 Python 包。
+原版布局只需脚本和配置文件，不需要整个 suite 或第三方 Python 包。
 
 修改并检查完毕后，按原版 GRASP README 的 CMake 流程手动构建。
 先按服务器环境加载 Fortran/MPI/BLAS/LAPACK，再执行：
@@ -98,8 +103,8 @@ make -j4 install
 
 ## 原有命令行用法
 
-命令行接口仍保留。**只要提供命令行参数，就完全使用命令行请求，不合入文件
-开头的配置**；例如 `--apply` 仍需同时传入路径/参数。以下是兼容用法：
+命令行接口仍保留。**只要提供命令行参数，就完全使用命令行请求，不读取
+脚本旁的 `config.toml`**；例如 `--apply` 仍需同时传入路径/参数。以下是兼容用法：
 
 ```bash
 ../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
