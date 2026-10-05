@@ -283,19 +283,48 @@ def patch_grid(text: str, relative: str, settings: Settings, capacity: int) -> s
 
 
 def initialize_relabel(text: str, reference: str) -> str:
-    """Reactivate the old commented grid block using rwfnestimate's defaults."""
-    if any(assignment(line, "RNT") for line in text.splitlines()):
-        return text
-    start = re.search(r"^!\s*IF\s*\(NPARM\b.*$", text, re.MULTILINE | re.IGNORECASE)
-    end = re.search(r"^!\s*HP\s*=.*$", text, re.MULTILINE | re.IGNORECASE)
-    block = re.search(
-        r"^[ \t]*IF \(NPARM == 0\) THEN\n.*?^[ \t]*HP\s*=[^\n]*",
-        reference,
-        re.MULTILINE | re.DOTALL,
+    """Restore grid defaults and import the shared nuclear-model selector."""
+    if not any(assignment(line, "RNT") for line in text.splitlines()):
+        start = re.search(r"^!\s*IF\s*\(NPARM\b.*$", text, re.MULTILINE | re.IGNORECASE)
+        end = re.search(r"^!\s*HP\s*=.*$", text, re.MULTILINE | re.IGNORECASE)
+        block = re.search(
+            r"^[ \t]*IF \(NPARM == 0\) THEN\n.*?^[ \t]*HP\s*=[^\n]*",
+            reference,
+            re.MULTILINE | re.DOTALL,
+        )
+        if not start or not end or not block or end.start() < start.start():
+            raise ValueError("unrecognized rwfnrelabel initialization block")
+        text = text[: start.start()] + block[0].lstrip("\n") + text[end.end() :]
+
+    # SETISO loads NPARM in npar_C. A local INTEGER would compile but would
+    # leave the nucleus branch controlled by an uninitialized, unrelated value.
+    # Check even an already-active block to repair trees made by older patchers.
+    routine = re.search(
+        r"^[ \t]*SUBROUTINE\s+GETHFD\s*\([^\n)]*\)[^\n]*\n"
+        r"(?P<preamble>.*?)^(?P<indent>[ \t]*)IMPLICIT\b",
+        text,
+        re.MULTILINE | re.DOTALL | re.IGNORECASE,
     )
-    if not start or not end or not block or end.start() < start.start():
-        raise ValueError("unrecognized rwfnrelabel initialization block")
-    return text[: start.start()] + block[0].lstrip("\n") + text[end.end() :]
+    if not routine:
+        raise ValueError("unrecognized rwfnrelabel GETHFD declarations")
+    for line in routine["preamble"].splitlines():
+        imported = re.fullmatch(
+            r"USE\s+npar_C\s*(?:,\s*ONLY\s*:\s*(.*))?",
+            active(line),
+            re.IGNORECASE,
+        )
+        if imported and (
+            imported[1] is None
+            or "NPARM" in [name.strip().upper() for name in imported[1].split(",")]
+        ):
+            return text
+    position = routine.start("indent")
+    return (
+        text[:position]
+        + routine["indent"]
+        + "USE npar_C, ONLY: NPARM\n"
+        + text[position:]
+    )
 
 
 def source_path(root: Path, relative: str) -> Path:

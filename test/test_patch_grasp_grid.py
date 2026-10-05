@@ -1,4 +1,4 @@
-"""Offline source-patch checks; no Fortran build or calculation is launched."""
+"""Offline patch checks, with a Fortran compile check when gfortran is available."""
 
 from __future__ import annotations
 
@@ -7,6 +7,8 @@ from contextlib import redirect_stderr, redirect_stdout
 import io
 from pathlib import Path
 import re
+import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -88,6 +90,20 @@ def fixture(root: Path, layout: str = "grasp2018") -> None:
         if "/rmcdhf90" in relative:
             text += "      IF (NDEF /= 0) THEN\n         WRITE (*,*) 'Revise the default ACCY = ', ACCY\n         READ *, ACCY\n      ENDIF\n"
         text += "      CALL SETQIC\n! NNNP = 590 is a historical comment\n"
+        if relative.endswith("rwfnrelabel.f90"):
+            # Match upstream's host IMPLICIT NONE and contained GETHFD scope.
+            text = (
+                "      PROGRAM RWFNRELABEL\n"
+                "      USE parameter_def\n"
+                "      IMPLICIT NONE\n"
+                "      CONTAINS\n"
+                "      SUBROUTINE GETHFD(NAME)\n"
+                "      IMPLICIT DOUBLEPRECISION (A-H,O-Z)\n"
+                "      INTEGER N\n"
+                "      CHARACTER*24 NAME\n"
+                + text
+                + "      END SUBROUTINE\n      END PROGRAM\n"
+            )
         path.write_text(text)
     for relative in grid.RESTART_FILES:
         path = root / relative
@@ -344,6 +360,66 @@ class PatchGridTests(unittest.TestCase):
         grid.write_changes(root, restoration)
         for relative, data in before.items():
             self.assertEqual((root / relative).read_bytes(), data)
+
+    def test_relabel_imports_shared_nuclear_model_and_repairs_old_patch(self) -> None:
+        relative = "src/tool/rwfnrelabel.f90"
+        path = self.root / relative
+        settings = grid.Settings(
+            nnnp=2990, n=1179, h=0.025, rnt_scale=2e-6, hp=0.0, accy=1e-10
+        )
+        changes = grid.plan(self.root, settings)
+        output = next(c.after.decode() for c in changes if c.relative == relative)
+        preamble = output.split("SUBROUTINE GETHFD(NAME)", 1)[1].split("IMPLICIT", 1)[0]
+        self.assertIn("USE npar_C, ONLY: NPARM", preamble)
+        grid.write_changes(self.root, changes)
+        self.assertEqual(grid.plan(self.root, settings), [])
+        # The previous patcher already activated the block but omitted the USE.
+        path.write_text(output.replace("      USE npar_C, ONLY: NPARM\n", ""))
+        repair = grid.plan(self.root, settings)
+        self.assertEqual([c.relative for c in repair], [relative])
+        self.assertEqual(repair[0].after.decode(), output)
+
+    def test_relabel_keeps_existing_nuclear_model_import(self) -> None:
+        path = self.root / "src/tool/rwfnrelabel.f90"
+        path.write_text(
+            path.read_text().replace(
+                "      IMPLICIT DOUBLEPRECISION",
+                "      USE npar_C\n      IMPLICIT DOUBLEPRECISION",
+            )
+        )
+        changes = grid.plan(self.root, grid.Settings(h=0.025))
+        output = next(
+            c.after.decode() for c in changes if c.relative.endswith("rwfnrelabel.f90")
+        )
+        self.assertEqual(output.lower().count("use npar_c"), 1)
+
+    @unittest.skipUnless(shutil.which("gfortran"), "gfortran is not available")
+    def test_d1_relabel_compiles_with_implicit_none_host(self) -> None:
+        changes = grid.plan(
+            self.root,
+            grid.Settings(
+                nnnp=2990, n=1179, h=0.025, rnt_scale=2e-6, hp=0.0, accy=1e-10
+            ),
+        )
+        output = next(
+            c.after for c in changes if c.relative.endswith("rwfnrelabel.f90")
+        )
+        build = Path(self.temporary.name) / "compile"
+        build.mkdir()
+        # Real module ownership: NPARM is shared state, not a local declaration.
+        (build / "modules.f90").write_text(
+            "module parameter_def\ninteger, parameter :: NNNP = 2990\nend module\n"
+            "module npar_C\ninteger :: NPARM\nend module\n"
+        )
+        (build / "rwfnrelabel.f90").write_bytes(output)
+        result = subprocess.run(
+            ["gfortran", "-c", "modules.f90", "rwfnrelabel.f90"],
+            cwd=build,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_unknown_capacity_blocks_all_writes(self) -> None:
         path = self.root / "src/lib/new_grid.f90"

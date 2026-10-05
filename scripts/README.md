@@ -170,9 +170,22 @@ g_J 复用 RHFS 的网格入口。不会因某个应用缺失而悄悄跳过它�
 
 原版布局覆盖 17 个径向应用入口、`rwfnrotate/rwfnrelabel` 和
 `rwfnestimate` 中重复的容量声明。它还恢复 `rwfnrelabel` 被注释的网格
-初始化，并在 RMCDHF 的运行时 ACCY 提示前重新计算默认 ACCY，保留用户
-随后显式输入 ACCY 的能力。指定 `--accy` 时也更新 RCI 恢复路径的数值阈值。
+初始化并在其 `GETHFD` 中导入 `npar_C` 的 `NPARM`，在 RMCDHF 的运行时
+ACCY 提示前重新计算默认 ACCY，保留用户随后显式输入 ACCY 的能力。
+指定 `--accy` 时也更新 RCI 恢复路径的数值阈值。
 不指定 `--rnt-scale` 时，`rwfnrotate` 原有未除以 Z 的 RNT 默认值仍保留。
+
+旧版脚本遗漏了上述模块导入，可能在编译 `rwfnrelabel.f90` 时出现
+`Symbol 'nparm' has no IMPLICIT type`。保留当前参数，使用更新后的脚本再次
+预览、应用和检查即可修复已经打过补丁的源码，无需先恢复原版。
+手动修复时，在 `SUBROUTINE GETHFD(NAME)` 内的 `IMPLICIT` 语句之前添加：
+
+```fortran
+      USE npar_C, ONLY: NPARM
+```
+
+不要改成局部 `INTEGER NPARM`：必须读取 `SETISO` 加载的共享核模型状态。
+随后在现有 `build/` 中重新执行 `make -j4 install`。
 
 独立的非相对论 HF、旧 MCHF 绘图/转换工具 `wfnplot/rwfnmchfmcdf`
 不在作用范围内。旧 RCI `.res` 恢复时仍读取文件内的网格；要测试新网格应
@@ -195,3 +208,6 @@ suite 的 `GRASP_COUNT_ACCY` 覆盖全局 ACCY，交互输入和旧 `.res` 也�
 ```bash
 ../graspkit-tools/.venv/bin/python test/test_patch_grasp_grid.py
 ```
+
+检测到 `gfortran` 时，还会编译最小 D1 `rwfnrelabel` 用例，检查模块导入；
+没有该编译器则跳过此项。测试不执行原子物理计算。

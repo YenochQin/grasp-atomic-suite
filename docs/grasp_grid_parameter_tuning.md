@@ -497,7 +497,13 @@ cd grasp-atomic-suite
 ```
 
 这些离线测试检查配置入口、重复定义、范围冲突、备份、幂等和恢复，不进行
-原子物理计算。CMake/CTest 通过也不等于目标体系已达到网格收敛。
+原子物理计算；检测到 `gfortran` 时还会编译最小 D1 `rwfnrelabel` 用例。
+旧脚本可能恢复网格初始化却遗漏 `USE npar_C, ONLY: NPARM`，造成
+`rwfnrelabel.f90` 的 `NPARM has no IMPLICIT type` 编译错误。
+使用更新后的脚本按原参数再次 preview/apply/check 可直接修复已打补丁的源码；
+手动修复须在 `GETHFD` 的 `IMPLICIT` 前添加该 `USE`，然后重新编译安装。
+不能用局部 `INTEGER NPARM` 代替共享核模型状态。
+CMake/CTest 通过也不等于目标体系已达到网格收敛。
 源码审计的“全局”范围是脚本识别的入口和容量定义，不包括所有运行时覆盖。
 须分别核对源码修改、构建安装、实际可执行文件及运行输出、物理验收四层证据。
 
