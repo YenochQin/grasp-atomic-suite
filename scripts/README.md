@@ -5,7 +5,7 @@
 脚本只使用 Python 标准库；本工作区仍使用 `graspkit-tools/.venv`。
 
 参数原值、候选值、调整原因、测试数据与验收标准见
-[GRASP 径向网格参数调整与验证规程](../docs/grasp_grid_parameter_tuning.md)。
+[GRASP 径向网格参数调整与验证规程](../docs/plans/grasp_grid_parameter_tuning.md)。
 
 ## 修改文件开头的配置（推荐）
 
@@ -35,7 +35,7 @@ RESTORE_DIRECTORY = None
 `None` 表示不修改对应数值，不表示写入 0。D2 是待验证候选，不是通用生产推荐。
 当前脚本原有预填值仍是 `n=2990,h=0.05`；使用前完整替换配置区。
 该组合已在原版径向初始化诊断中产生非有限值，不能当作通用起点，证据见
-[规程第 3.1 节](../docs/grasp_grid_parameter_tuning.md#31-hp0指数网格)。
+[规程第 3.1 节](../docs/plans/grasp_grid_parameter_tuning.md#31-hp0指数网格)。
 `GRASP_SOURCE` 默认为 `None`，必须先填入；相对路径以脚本
 所在目录为基准，绝对路径和 `~/` 也可以使用。
 
@@ -62,7 +62,7 @@ python3 /path/to/grasp-atomic-suite/scripts/patch_grasp_grid.py
 网格验证以未经修改的原版为基底：本工作区参考原版容量是 `NNNP=590、NNN1=600`。
 保留一份 B0 直接编译运行，不应用补丁；各修改组从同一份干净原版复制。
 当前已调整到 2990 的副本和 suite 均不能代替原版基线。具体比较顺序见
-[验证规程第 5 节](../docs/grasp_grid_parameter_tuning.md#5-实际执行的参数试验矩阵)。
+[验证规程第 5 节](../docs/plans/grasp_grid_parameter_tuning.md#5-实际执行的参数试验矩阵)。
 
 为每组参数准备独立的干净源码副本，例如 `grasp-C0/`、`grasp-D2/`；
 用试验编号区分相同容量下不同 N/H/ACCY 的配置。
@@ -134,7 +134,7 @@ g_J 复用 RHFS 的网格入口。不会因某个应用缺失而悄悄跳过它�
 点核分支使用 `--point-h/--point-n/--point-rnt-scale`；
 原版串行/MPI RCI 的点核分支被注释，故点核全流程须在专用源码副本中将
 这两套 N/H/RNT 系数都设成对应点核值。直接复制
-[P0/P1/P2 配置](../docs/grasp_grid_parameter_tuning.md#137-点核测试)，
+[P0/P1/P2 配置](../docs/plans/grasp_grid_parameter_tuning.md#137-点核测试)，
 并确认 isodata 选择点核；这些副本不能再用于有限核计算。
 `--hp` 位于公共赋值处，因此同时影响两种核模型。
 `--accy` 可指定独立的数值阈值，否则保留原有公式或固定值（原版为 `H**6`）。

@@ -1,7 +1,12 @@
 # 公共参数集中管理
 
+> 文档状态：已实施、现行配置说明。
+> 核查日期：2026-10-05；源码基准：`8b298a6`。
+> 公共参数和共享网格初始化已接入六个入口；工程测试与物理收敛是不同证据。当前使用入口见本文及[网格实验方案](../plans/grasp_grid_parameter_tuning.md)。
+> 全部文档状态见[分类索引](../README.md)。
+
 所有串行、MPI、内存版本及 RHFS/RIS/g_J 使用同一套公共默认值。
-修改入口只有 [`suite_parameters_M.f90`](../src/lib/libmod/suite_parameters_M.f90)。
+修改入口只有 [`suite_parameters_M.f90`](../../src/lib/libmod/suite_parameters_M.f90)。
 运行时变量继续保存在 `grid_C`、`def_C`、`coun_C`，由共享模块
 `radial_grid_defaults` 初始化。`parameter_def` 只转导旧参数名，没有第二份定义。
 
@@ -32,10 +37,10 @@
 本次文档修订保留既定 Fortran 默认值；在独立测试副本上先显式选择并应用
 规程中的试验配置，例如 D2 的 `NNNP=2990,N=1965,H=0.015,ACCY=1e-10`，
 再检查各阶段有限性与物理收敛。该例是候选，不是已认证生产参数；
-诊断范围与复现过程见[深度审查报告](grasp_grid_methodology_review.md)。
+诊断范围与复现过程见[深度审查报告](../reviews/grasp_grid_methodology_review.md)。
 
 原值与候选值、控制变量试验、测试数据和误差预算见
-[径向网格参数调整与验证规程](grasp_grid_parameter_tuning.md)。
+[径向网格参数调整与验证规程](../plans/grasp_grid_parameter_tuning.md)。
 
 物理常数继续由现有 `SETCON` 统一设置；特定轨道算法的实验开关继续由
 `orbopt_control` 管理，不混入公共网格参数。
@@ -79,7 +84,7 @@ suite 普通 MPI 严格模式不同。统一按规程检查变分轨道残差、
 
 追加 `--apply` 才会写入；脚本只修改中央文件，并审计全源码中重复的容量定义、
 脱离公共初始化的径向默认赋值和缺失的入口。应用/检查/备份/恢复的具体说明见
-[scripts/README.md](../scripts/README.md)。完整原版 GRASP 的默认布局保持原有补丁行为。
+[scripts/README.md](../../scripts/README.md)。完整原版 GRASP 的默认布局保持原有补丁行为。
 
 修改后在已开启所需串行/MPI 目标的构建目录全量编译、测试并安装：
 

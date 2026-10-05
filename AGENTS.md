@@ -3,6 +3,13 @@
 ## Project Structure & Module Organization
 Core source lives under `src/`. Application programs are in `src/appl/<program>/`, and shared libraries are in `src/lib/<library>/`. Build outputs are installed to `bin/` and `lib/`. Development notes and numerical reports live under `docs/`, and sample validation data lives under `data/`.
 
+Use [docs/README.md](docs/README.md) as the documentation status index. Current
+implementation guides belong in `docs/implemented/`, pending experiments in
+`docs/plans/`, completed reviews in `docs/reviews/`, theory drafts in
+`docs/reference/`, and superseded plans or historical reports in `docs/archive/`.
+State the source revision and distinguish implemented code from completed
+physical validation; update relative links and the index when moving documents.
+
 The `rmcdhf90*` programs migrated from `rmcdhf_test` build as
 `rmcdhf_orbopt`, `rmcdhf_orbopt_mem`, and their `_mpi` variants. They share
 `libmod`, `lib9290`, `libdvd90`, and `mpi90` with the property programs; do not

@@ -25,7 +25,12 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 │       ├── libmcp90/         # MCP support routines
 │       ├── librang90/        # angular algebra, Racah/tensor matrix elements
 │       └── mpi90/            # MPI file, path, and parallel helper routines
-├── docs/                     # theory notes, implementation traces, optimization reports
+├── docs/                     # status index and classified documentation
+│   ├── implemented/          # current implementation guides and code traces
+│   ├── plans/                # experiments and validation still to run
+│   ├── reviews/              # completed reviews and evidence
+│   ├── reference/            # theory background drafts
+│   └── archive/              # superseded plans and historical reports
 ├── data/                     # sample inputs and reference outputs for gj90/RHFS checks
 ├── test/                     # orbital optimization and shared-library tests
 ├── scripts/                  # grid patcher and build cleanup helpers
@@ -158,20 +163,23 @@ Preview is the default. Keep a separate source copy for each parameter set and
 build it manually using the upstream README CMake workflow. Changes require a
 full rebuild and numerical convergence checks.
 
-See [docs/common_parameters.md](docs/common_parameters.md) for the parameter table,
+See [shared parameter guide](docs/implemented/common_parameters.md) for the parameter table,
 initialization order, and validation. The suite layout now edits one central file.
 For candidate values, their rationale, test datasets, and convergence criteria,
-see [GRASP grid parameter tuning](docs/grasp_grid_parameter_tuning.md) (Chinese).
+see [GRASP grid parameter tuning](docs/plans/grasp_grid_parameter_tuning.md) (Chinese).
 
-See [docs/rmcdhf_migration.md](docs/rmcdhf_migration.md) for provenance, shared-library decisions, and validation. New orbital development belongs here; the original `rmcdhf_test` checkout is retained for reference.
+See the [historical migration record](docs/archive/rmcdhf_migration.md) for provenance and shared-library decisions. Its early grid defaults and test counts have been superseded by the shared parameter guide. New orbital development belongs here; the original `rmcdhf_test` checkout is retained for reference.
 
 ## Development Notes
 
-- `docs/lande_g.md`: theory background for Landé `g_J`, MCDHF/RCI evaluation, and LS-coupling checks.
-- `docs/RHFS_gJ_report.md`: implementation trace for `g_J` in `rhfs90`, including input loading, radial integrals, angular matrix elements, and ASF projection.
-- `docs/gj90_blueprint.md`: standalone `gj90` design, minimal dependency chain, and compute-kernel extraction plan.
-- `docs/RHFS_MPI_hfsgg_optimization.md`: scope, diagnosis, and results for `HFSGG_MPI` optimization.
-- `docs/1.0.1-dev.1_optimization_summary.md`, `docs/1.1.1-dev.1_optimization_summary.md`: staged optimization summaries.
+The [documentation index and status audit](docs/README.md) covers every document,
+its implementation evidence, superseded claims, and remaining validation work.
+
+- [Implemented guides](docs/implemented/common_parameters.md): shared parameters and the [RHFS g_J code trace](docs/implemented/RHFS_gJ_report.md).
+- [Experiment plan](docs/plans/grasp_grid_parameter_tuning.md): grid configurations and physical convergence checks still to run.
+- [Completed grid review](docs/reviews/grasp_grid_methodology_review.md): source findings and diagnostic evidence.
+- [Theory reference](docs/reference/lande_g.md): Landé-factor background draft; operator conventions need independent verification.
+- [Historical archive](docs/README.md#逐份文档结论): gj90 blueprint, migration snapshot, and RHFS/RIS optimization reports. Retained code is distinguished from removed experiments and old performance measurements.
 
 ## Contributor Notes
 

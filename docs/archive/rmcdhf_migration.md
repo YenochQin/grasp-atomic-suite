@@ -1,7 +1,12 @@
 # rmcdhf_test 合入 grasp-atomic-suite
 
+> 文档状态：已实施迁移的历史记录、旧默认值已被替代。
+> 核查日期：2026-10-05；源码基准：`8b298a6`。
+> 四个 orbopt 目标和共享库已落地；正文中性质程序 590 点默认值、多入口补丁及旧测试数量属于迁移阶段。当前默认 N=NNNP 与集中脚本布局见[公共参数](../implemented/common_parameters.md)和[脚本说明](../../scripts/README.md)。
+> 全部文档状态见[分类索引](../README.md)。
+
 本文记录初次迁移的取舍。后续已将公共参数集中管理，所有有限核程序默认
-点数统一为 `NNNP`；当前设计与验证以 [common_parameters.md](common_parameters.md)
+点数统一为 `NNNP`；当前设计与验证以 [common_parameters.md](../implemented/common_parameters.md)
 为准。下文的 590 点默认值和脚本布局描述属于迁移当时的状态。
 
 轨道优化开发现在由 `grasp-atomic-suite` 维护，与性质计算程序共用一套数值库。
@@ -50,7 +55,7 @@ RHFS/RIS 入口以及全局容量；g_J 自动使用同一 RHFS 入口。
 默认 `grasp2018` 布局继续支持完整原版 GRASP。
 两种布局都要求完整的已知入口，并扫描所有 Fortran 源文件；缺少文件或未知初始化
 会使计划失败。默认预览，应用时备份，恢复时检查校验和及后续修改。
-详见 [脚本说明](../scripts/README.md)。
+详见 [脚本说明](../../scripts/README.md)。
 
 ## 本次验证
 

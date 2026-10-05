@@ -1,5 +1,10 @@
 # RHFS_MPI `HFSGG_MPI` 本次优化说明
 
+> 文档状态：历史第一阶段报告、部分描述已被后续实现覆盖。
+> 核查日期：2026-10-05；源码基准：`8b298a6`。
+> 外层筛选仍在，但文中计数器/细计时已在 3d067e7 删除，占据数筛选现用内联 IQA 扫描；后续已有零贡献筛选。正文耗时和瓶颈结论仅对应当时样例，不代表当前版本。
+> 全部文档状态见[分类索引](../README.md)。
+
 ## 1. 优化范围
 
 本次优化只涉及 `src/appl/rhfs90/hfsgg_mpi.f90` 中 `HFSGG_MPI` 的分布式主计算阶段，不改动物理公式、矩阵元定义和最终输出格式。
@@ -60,8 +65,8 @@ profiling 结果表明：
 
 对应代码位置：
 
-- [hfsgg_mpi.f90](/Users/yiqin/Documents/ProjectFiles/grasp-atomic-suite/src/appl/rhfs90/hfsgg_mpi.f90:38)
-- [hfsgg_mpi.f90](/Users/yiqin/Documents/ProjectFiles/grasp-atomic-suite/src/appl/rhfs90/hfsgg_mpi.f90:39)
+- [hfsgg_mpi.f90](../../src/appl/rhfs90/hfsgg_mpi.f90)
+- [hfsgg_mpi.f90](../../src/appl/rhfs90/hfsgg_mpi.f90)
 
 在调用 `ONEPARTICLEJJ` 之前，先做三类前置判断：
 
@@ -71,7 +76,7 @@ profiling 结果表明：
 
 对应代码位置：
 
-- [hfsgg_mpi.f90](/Users/yiqin/Documents/ProjectFiles/grasp-atomic-suite/src/appl/rhfs90/hfsgg_mpi.f90:185)
+- [hfsgg_mpi.f90](../../src/appl/rhfs90/hfsgg_mpi.f90)
 
 这样做的目的，是避免大量本来会在 `ONEPARTICLEJJ` 内部立刻返回空结果的调用。
 
@@ -84,7 +89,7 @@ profiling 结果表明：
 - 保留对筛选路径有诊断价值的计数器
 - 去掉高频细粒度计时
 
-当前保留的关键计数包括：
+该阶段保留的关键计数包括（后来已在 `3d067e7` 删除）：
 
 - `cand`
 - `active`
@@ -177,6 +182,10 @@ profiling 结果表明：
 
 ## 7. 后续优化建议
 
+本节是第一阶段建议；后续 `a2ec419` 已加入预计算和零元素筛选。
+当前保留项见[分支总结](1.0.1-dev.1_optimization_summary.md)及当前源码，
+不要把下面建议全部当成未实施任务。
+
 如果继续做下一轮优化，优先级建议如下：
 
 1. 研究能否在 `ONEPARTICLEJJ` 返回后、进入 `TSHELL -> ELEMNT` 累加前，再加入一个更便宜的零贡献判断。
@@ -193,4 +202,4 @@ profiling 结果表明：
 - `ONEPARTICLEJJ` 相关时间降低约 `75%`
 - `IA = 0` 类型的空调用基本被消除
 
-因此，本次优化已经明确证明：在当前 `RHFS_MPI` 的 `HFSGG_MPI` 路径中，最有效的提速手段是减少无效工作项，而不是优先优化 MPI 归约阶段。
+因此，这次测量表明：在该样例的 `RHFS_MPI` 的 `HFSGG_MPI` 路径中，减少无效工作项带来了主要提速；这一结果不代替当前版本的重新测量。

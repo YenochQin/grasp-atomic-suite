@@ -1,5 +1,10 @@
 # GRASP 径向网格参数调整与验证规程
 
+> 文档状态：现行实验方案、物理验收待执行。
+> 核查日期：2026-10-05；源码基准：`8b298a6`。
+> 网格修改脚本已实现，配置和修改计划已检查；D/L/O/ACCY 对应的生产体系物理收敛计算仍待执行。不能将本文归为已通过的数值结果。
+> 全部文档状态见[分类索引](../README.md)。
+
 适用对象：使用 `scripts/patch_grasp_grid.py` 修改完整原版 GRASP，保留多份
 独立源码目录，按原版 README 的 CMake 流程手动编译。另说明
 `grasp-atomic-suite` 集中参数模式的差别。
@@ -10,7 +15,7 @@
 `fc81312614e3c1aff18090723a7d4e79260a49f1` 的 `src/` 与该上游提交一致。
 服务器版本不同时，应先查看其源码和运行输出，不假定默认值完全相同。
 
-本次修订落实了[深度审查报告](grasp_grid_methodology_review.md)中的源码核查、
+本次修订落实了[深度审查报告](../reviews/grasp_grid_methodology_review.md)中的源码核查、
 最小径向例程诊断和实验设计建议；证据和复现细节保留在报告中。
 
 本文给出可以执行的**参数试验方案**，不是已经完成的物理收敛报告。
@@ -68,13 +73,13 @@ suite 当前有限核默认仍为 `N=NNNP=2990,H=0.05`，这是既定统一配�
 `NODE_THRESHOLD=0.05`。网格试验先保持它不变，避免更换判据掩盖异常节点。
 若单独诊断，可比较 0.025、0.05、0.10，并检查真实轨道形状；阈值变大只会
 让较小振荡被忽略，不能据此判定轨道正确。该机制见
-[COUNT 源码](../src/lib/lib9290/count.f90)。
+[COUNT 源码](../../src/lib/lib9290/count.f90)。
 
 ## 3. 用实际公式解释为什么要这样改
 
 ### 3.1 HP=0：指数网格
 
-根据 [RADGRD](../src/lib/lib9290/radgrd.f90)，采用原子单位：
+根据 [RADGRD](../../src/lib/lib9290/radgrd.f90)，采用原子单位：
 
 ```text
 R(1) = 0
@@ -148,7 +153,7 @@ log(1 + R/RNT) + (H/HP)*R = (i-1)*H
 ### 3.3 H 与 ACCY 的耦合
 
 参考原版 `src/appl/rmcdhf90/getscd.f90` 的默认公式为 `ACCY=H**6`；
-suite 将同一公式集中在 [radial_grid_defaults](../src/lib/libmod/radial_grid_defaults_M.f90)。
+suite 将同一公式集中在 [radial_grid_defaults](../../src/lib/libmod/radial_grid_defaults_M.f90)。
 例如：
 
 | H | 自适应 ACCY |
@@ -182,7 +187,7 @@ ACCY 通过改变径向解间接影响节点，不能称作节点振幅筛选阈
 这说明扩容与减小 H 要配合进行；不是所有重元素都应复制同一数值。
 本节沿用此前文档记录的 U I 参数；本次审查未成功重新读取该节 PDF，
 没有将这些具体运行记录作为本次独立复核结果。执行手册复现前须核对原页，
-访问与证据范围见[审查报告第 13 节](grasp_grid_methodology_review.md#13-外部资料访问说明)。
+访问与证据范围见[审查报告第 13 节](../reviews/grasp_grid_methodology_review.md#13-外部资料访问说明)。
 
 通过脚本近似对应这组网格：
 
@@ -322,7 +327,7 @@ D4 同时改变容量，须再次检查上述边界；需要严格归因时，�
 2. 从已收敛参考轨道插值到该网格后重新优化。
 
 若最终结果不同，应先排查局部极值、根选择和未充分收敛。
-轨道加载会通过 [LODRWF](../src/lib/lib9290/lodrwf.f90) / INTRPQ 插值到当前
+轨道加载会通过 [LODRWF](../../src/lib/lib9290/lodrwf.f90) / INTRPQ 插值到当前
 网格，并不自动证明插值后的状态仍是正确解。
 使用 I-REF 前逐轨道检查输入文件的有效点数 MF/MA 不超过目标编译容量，
 且需要插值的范围被目标网格覆盖；细网格文件不能直接假定可读入 590 容量 B0。
@@ -682,7 +687,7 @@ run_id,orbital_id,varied,scnsty,mtp_or_mf,r_mtp_a0,n_minus_mtp,norm,mean_r_a0,r_
   检查、重复应用和逐字节恢复通过；这些验证未修改参考原版源码。
 - 已有：suite 10 个应用的构建、11 项 MPI 构建 CTest、10 项串行 CTest，以及
   小型 Ni g_J 样例的历史一致性验证。历史记录见
-  [公共参数说明](common_parameters.md)与[迁移说明](rmcdhf_migration.md)。
+  [公共参数说明](../implemented/common_parameters.md)与[迁移说明](../archive/rmcdhf_migration.md)。
 - 审查新增证据：网格几何复算、原版容量/RCI/SCF/截尾路径源码核查，
   以及第 3.1 节的原版径向例程非有限值复现；它们不属于完整原子收敛结果。
 - **尚未完成**：本文 D/L/O/ACCY 矩阵对应的 Ni/Cl/U/生产体系物理计算、
@@ -695,14 +700,14 @@ run_id,orbital_id,varied,scnsty,mtp_or_mf,r_mtp_a0,n_minus_mtp,norm,mean_r_a0,r_
 - 核查基准：上游提交 `9006157730a82ac839f2b4ff4e938bcba63a539e` 的
   `parameter_def_M.f90/getscd.f90/radgrd.f90/scf.f90/count.f90/lodrwf.f90`，
   以及 `in.f90/setpot.f90/dcbsrw.f90/getcid.f90/intrpq.f90`。
-  逐项源码链接、诊断驱动和推断边界见[深度审查报告](grasp_grid_methodology_review.md)。
+  逐项源码链接、诊断驱动和推断边界见[深度审查报告](../reviews/grasp_grid_methodology_review.md)。
 - 原版手册：[Jönsson 等，GRASP Manual for Users，Atoms 2023, 11, 68](https://www.diva-portal.org/smash/get/diva2:1771324/FULLTEXT01.pdf)，
   §1.4、§13.4、§13.5。手册给出扩容和具体实例，没有为本文验收阈值作保证。
 - 构建：[compas/grasp README](https://github.com/compas/grasp/blob/master/README.md#cmake-based-build)。
-- 接口与备份：[脚本操作说明](../scripts/README.md)。
-- suite 配置：[公共参数说明](common_parameters.md)。
-- 回归与历史限制：[轨道测试说明](../test/rmcdhf_orbopt/README.md)、
-  [历史测试结果](../test/rmcdhf_orbopt/RESULTS.md)。
+- 接口与备份：[脚本操作说明](../../scripts/README.md)。
+- suite 配置：[公共参数说明](../implemented/common_parameters.md)。
+- 回归与历史限制：[轨道测试说明](../../test/rmcdhf_orbopt/README.md)、
+  [历史测试结果](../../test/rmcdhf_orbopt/RESULTS.md)。
 
 
 ## 13. 可直接复制的 Python 配置

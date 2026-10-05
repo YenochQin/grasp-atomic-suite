@@ -1,5 +1,10 @@
 # `gj90` 开发蓝图
 
+> 文档状态：历史蓝图、主体已实现，后续建议未全部实现。
+> 核查日期：2026-10-05；源码基准：`8b298a6`。
+> 串行入口、仅对角累加、专用输出及 MPI CSF 分工已存在；阶段 D 的 OpenMP/线程工作区重构未见实现。本文件保留设计背景，当前运行方式以[仓库 README](../../README_ZH.md)为准。
+> 全部文档状态见[分类索引](../README.md)。
+
 ## 1. 目标
 
 目标是在现有 `rhfs90` 基础上，把每个 ASF 的 `g_J` 计算从超精细程序中分离出来，形成一个独立的新程序，暂命名为 `gj90`。新程序只负责：
@@ -64,7 +69,7 @@ gj90
 - `src/lib/lib9290/setcsla.f90`
 - `src/lib/lib9290/setrwfa.f90`
 - `src/lib/lib9290/lodrwf.f90`
-- `src/lib/lib9290/getmixblock.f90` 的 `rhfs90` 版本
+- `src/appl/rhfs90/getmixblock.f90`（已更正为当前实际源码路径）
 - `src/appl/rhfs90/matelt.f90`
 - `src/appl/rhfs90/rinthf.f90`
 - `src/lib/lib9290/rint.f90`

@@ -25,7 +25,12 @@
 │       ├── libmcp90/         # MCP 相关支持例程
 │       ├── librang90/        # 角向代数、Racah/张量矩阵元例程
 │       └── mpi90/            # MPI 文件、路径和并行辅助例程
-├── docs/                     # 理论说明、实现追踪和优化报告
+├── docs/                     # 状态索引与分类文档
+│   ├── implemented/          # 已实施功能的现行说明与代码追踪
+│   ├── plans/                # 待执行的实验和验证方案
+│   ├── reviews/              # 已完成审查与证据记录
+│   ├── reference/            # 理论背景参考稿
+│   └── archive/              # 被替代的蓝图和历史报告
 ├── data/                     # gj90/RHFS 验证用示例输入与输出
 ├── test/                     # 轨道优化和公共库测试
 ├── scripts/                  # 网格修改及构建清理工具
@@ -158,21 +163,25 @@ ctest --test-dir build-all --output-on-failure
 源码目录残留的 `.mod` 文件会覆盖新模块，CMake 会拒绝这种混合构建；
 需先将旧生成文件移出源码目录。
 
-参数列表、调用顺序和验证见 [docs/common_parameters.md](docs/common_parameters.md)。
+参数列表、调用顺序和验证见[公共参数说明](docs/implemented/common_parameters.md)。
 本仓库的脚本布局现在只修改一个集中配置文件。
 参数调整的具体数值、原因、测试数据及验收标准见
-[径向网格参数调整与验证规程](docs/grasp_grid_parameter_tuning.md)。
+[径向网格参数调整与验证规程](docs/plans/grasp_grid_parameter_tuning.md)。
 
-迁移来源、公共库取舍和验证说明见 [docs/rmcdhf_migration.md](docs/rmcdhf_migration.md)。
+迁移来源、公共库取舍和当时验证见[历史迁移记录](docs/archive/rmcdhf_migration.md)，
+其中早期网格默认值和测试数量已被公共参数说明替代。
 后续轨道优化开发在本仓库进行；原 `rmcdhf_test` 工作目录保留作为参考。
 
 ## 开发文档
 
-- `docs/lande_g.md`：Landé `g_J` 的理论定义、MCDHF/RCI 计算思路和 LS 近似对照。
-- `docs/RHFS_gJ_report.md`：追踪 `rhfs90` 中 `g_J` 相关的输入读取、径向积分、角向矩阵元和 ASF 投影过程。
-- `docs/gj90_blueprint.md`：`gj90` 的独立化设计、最小依赖链和核心计算拆分方案。
-- `docs/RHFS_MPI_hfsgg_optimization.md`：`HFSGG_MPI` 优化范围、问题定位和效果说明。
-- `docs/1.0.1-dev.1_optimization_summary.md`、`docs/1.1.1-dev.1_optimization_summary.md`：阶段性优化总结。
+[文档索引与实施状态审计](docs/README.md)逐份列出已实施功能、过时描述、
+核查依据和待验证事项。
+
+- 已实施说明：[公共参数](docs/implemented/common_parameters.md)与[RHFS g_J 流程](docs/implemented/RHFS_gJ_report.md)。
+- 待执行实验：[径向网格方案](docs/plans/grasp_grid_parameter_tuning.md)，物理收敛计算仍需运行。
+- 已完成审查：[网格方法审查](docs/reviews/grasp_grid_methodology_review.md)，保留源码和诊断证据。
+- 理论参考：[Landé 因子背景稿](docs/reference/lande_g.md)，算符规范尚需独立核对。
+- 历史归档：[逐份目录](docs/README.md#逐份文档结论)，包括 gj90 蓝图、迁移快照、RHFS/RIS 阶段报告；分别标明保留代码、已删除尝试和旧测量。
 
 ## 开发注意事项
 

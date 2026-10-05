@@ -1,5 +1,10 @@
 # GRASP 网格实验深度审查：合理性、代码行为与验证边界
 
+> 文档状态：已完成审查、保留证据与验证边界。
+> 核查日期：2026-10-05；源码基准：`8b298a6`。
+> 文档建议已落实到[实验方案](../plans/grasp_grid_parameter_tuning.md)。被审查旧配置和最小例程诊断是历史证据，不等于当前 P 配置或完整原子计算的结果。
+> 全部文档状态见[分类索引](../README.md)。
+
 审查日期：2026-10-04 至 2026-10-05。被审查方案为 `grasp_grid_parameter_tuning.md`，suite
 版本 `f42452bac7e1e0d7f01b074c8a65468c329ed959`；原版源码版本
 `fc81312614e3c1aff18090723a7d4e79260a49f1`。该本地提交在上游
@@ -9,7 +14,7 @@
 原版径向例程最小诊断；没有运行完整原子物理收敛计算。
 
 实施状态（2026-10-05）：审查建议已纳入
-[参数调整与验证规程](grasp_grid_parameter_tuning.md)，包括首次容量对照、
+[参数调整与验证规程](../plans/grasp_grid_parameter_tuning.md)，包括首次容量对照、
 P 系列 RCI 同步配置、最后两档 H×ACCY 检查、残差与有效尾部验收。
 下文“原方案/当前配置”描述的是被审查提交 `f42452b` 的状态；
 脚本和 Fortran 实现保持不变，物理收敛计算仍待执行。
@@ -314,7 +319,7 @@ Breit/QED 等项。比较最终数值能量、轨道及积分；只比较 `DCBSR
 所以测试通过与点核流程问题并不矛盾：测试覆盖的是补丁机制和已编码的规则，
 没有覆盖所有计算入口之间应满足的物理一致性。
 
-[补丁实现](../scripts/patch_grasp_grid.py)会同步已识别的容量定义、
+[补丁实现](../../scripts/patch_grasp_grid.py)会同步已识别的容量定义、
 修改已列出的网格初始化，并扫描 `.f90` 文件中的容量赋值和 RNT 初始化。
 它不是对所有控制流和运行状态的形式证明。其证据应分层记录：
 
@@ -332,15 +337,15 @@ Breit/QED 等项。比较最终数值能量、轨道及积分；只比较 `DCBSR
 - suite 普通 MPI 版本读取 `GRASP_COUNT_ACCY` 后，在 `GETSCDmpi` 返回后直接
   覆盖共享 ACCY；该变量并非只影响 COUNT。它可能使初始化阶段与后续 SCF 使用
   不同阈值，其他程序也未必读取同一环境变量。
-  依据 [orbopt_control](../src/appl/rmcdhf90_mpi/orbopt_control.f90) 与
-  [rscfmpivu](../src/appl/rmcdhf90_mpi/rscfmpivu.f90)。
+  依据 [orbopt_control](../../src/appl/rmcdhf90_mpi/orbopt_control.f90) 与
+  [rscfmpivu](../../src/appl/rmcdhf90_mpi/rscfmpivu.f90)。
 - suite 的 `GRASP_STRICT_SCF` 和轨道优化开关属于另一个算法维度。
-  [普通 MPI SCF](../src/appl/rmcdhf90_mpi/scfmpi.f90) 的严格模式需要连续满足
+  [普通 MPI SCF](../../src/appl/rmcdhf90_mpi/scfmpi.f90) 的严格模式需要连续满足
   轨道及能量条件；不能把此语义套在未经修改的原版或所有串行/mem 程序上。
 
-[compare_sum.py](../test/rmcdhf_orbopt/compare_sum.py)解析 CSF 数量、N 和能量，
+[compare_sum.py](../../test/rmcdhf_orbopt/compare_sum.py)解析 CSF 数量、N 和能量，
 不核对 H/RNT/HP/ACCY，也不检查全部变分轨道 SCNSTY。
-[compare_rwfn.py](../test/rmcdhf_orbopt/compare_rwfn.py)的梯形积分和同网格前缀
+[compare_rwfn.py](../../test/rmcdhf_orbopt/compare_rwfn.py)的梯形积分和同网格前缀
 限制也不能完成本文跨网格的高精度验收。原规程已部分说明这些限制，应该保留，
 并增加原版 `.sum` 末尾 Self Consistency/MTP 的明确提取与判定步骤。
 固定轨道不能和本轮变分轨道混用同一个 SCNSTY 验收集合。
