@@ -10,20 +10,20 @@
 ## 修改文件开头的配置（推荐）
 
 无需通过命令传入数值。在脚本开头的“用户配置”中填写待修改的源码根目录、
-核模型参数和运行模式。例如：
+网格参数和运行模式。下面采用验证规程的 D2 候选组：
 
 ```python
-GRASP_SOURCE = "/path/to/GRASP2018-grid2990"  # 包含 src/ 的目录
+GRASP_SOURCE = "/path/to/GRASP2018-D2"  # 包含 src/ 的目录
 SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"  # preview / apply / check
 PRINT_DIFF = True
 GRID_PARAMETERS = {
     "nnnp": 2990,
-    "n": 2990,
-    "h": 0.05,
+    "n": 1965,
+    "h": 0.015,
     "rnt_scale": 2e-6,
     "hp": 0.0,
-    "accy": None,
+    "accy": 1e-10,
     "point_n": None,
     "point_h": None,
     "point_rnt_scale": None,
@@ -32,8 +32,11 @@ BACKUP_DIRECTORY = None
 RESTORE_DIRECTORY = None
 ```
 
-`None` 表示不修改对应数值，不表示写入 0。以上数值是用法示例，并非适合任何
-体系的推荐网格。`GRASP_SOURCE` 默认为 `None`，必须先填入；相对路径以脚本
+`None` 表示不修改对应数值，不表示写入 0。D2 是待验证候选，不是通用生产推荐。
+当前脚本原有预填值仍是 `n=2990,h=0.05`；使用前完整替换配置区。
+该组合已在原版径向初始化诊断中产生非有限值，不能当作通用起点，证据见
+[规程第 3.1 节](../docs/grasp_grid_parameter_tuning.md#31-hp0指数网格)。
+`GRASP_SOURCE` 默认为 `None`，必须先填入；相对路径以脚本
 所在目录为基准，绝对路径和 `~/` 也可以使用。
 
 在服务器上，不带任何参数执行（Bash/fish 均相同）：
@@ -61,8 +64,9 @@ python3 /path/to/grasp-atomic-suite/scripts/patch_grasp_grid.py
 当前已调整到 2990 的副本和 suite 均不能代替原版基线。具体比较顺序见
 [验证规程第 5 节](../docs/grasp_grid_parameter_tuning.md#5-实际执行的参数试验矩阵)。
 
-为每组参数准备一个独立的干净源码副本，例如 `grasp-grid1990/`、
-`grasp-grid2990/`。不要复制旧 `build/`、`build-debug/` 缓存或源码内残留的
+为每组参数准备独立的干净源码副本，例如 `grasp-C0/`、`grasp-D2/`；
+用试验编号区分相同容量下不同 N/H/ACCY 的配置。
+不要复制旧 `build/`、`build-debug/` 缓存或源码内残留的
 `.mod/.o` 文件；CMake 缓存记录原目录的绝对路径。原有计算数据单独保存。
 
 可以在每份源码根目录保存一个本脚本副本，设置 `GRASP_SOURCE="."`，
@@ -73,7 +77,7 @@ python3 /path/to/grasp-atomic-suite/scripts/patch_grasp_grid.py
 先按服务器环境加载 Fortran/MPI/BLAS/LAPACK，再执行：
 
 ```sh
-cd /path/to/GRASP2018-grid2990
+cd /path/to/GRASP2018-D2
 ./configure.sh
 cd build
 make -j4 install
@@ -83,14 +87,14 @@ make -j4 install
 `configure.sh` 要求 `build/` 尚不存在；以后同一份源码再次改参数，可使用：
 
 ```sh
-cd /path/to/GRASP2018-grid2990/build
+cd /path/to/GRASP2018-D2/build
 make clean
 make -j4 install
 ```
 
 全量构建并安装所有实际使用的程序，包括 MPI；配置输出应确认找到 MPI。
 每份目录的程序安装到自己的 `bin/`，计算时用对应程序的绝对路径，
-例如 `/path/to/GRASP2018-grid2990/bin/rmcdhf_mpi`，避免混用不同配置。
+例如 `/path/to/GRASP2018-D2/bin/rmcdhf_mpi`，避免混用不同配置。
 
 ## 原有命令行用法
 
@@ -107,7 +111,8 @@ make -j4 install
 
 ```bash
 ../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
-  --layout atomic-suite --grasp . --nnnp 2990 --n 1990 --h 0.025 --diff
+  --layout atomic-suite --grasp . --nnnp 2990 --n 1965 --h 0.015 \
+  --rnt-scale 2e-6 --hp 0 --accy 1e-10 --diff
 ```
 
 这个布局只修改 `src/lib/libmod/suite_parameters_M.f90`，要求共享初始化模块、
@@ -120,11 +125,17 @@ g_J 复用 RHFS 的网格入口。不会因某个应用缺失而悄悄跳过它�
 脚本会拒绝重复容量声明，并依据公共模块的使用情况区分径向参数和局部同名变量。
 
 这是用法示例，不是已验证适合任何元素的推荐网格。
-`--nnnp` 设置编译容量，`--n` 设置有限核模型实际点数。
+`--nnnp` 设置编译容量；原版 IN 的尾部边界和 SETPOT 的回退连接点也使用该值，
+不能预设容量只影响存储。首次 C0/C1 容量对照须检查实际边界行为。
+`--n` 通常设置有限核模型实际点数，也控制原版 RCI 的公共初始化。
 `--rnt-scale 2e-6` 表示 `RNT=2e-6/Z`，不是绝对半径。
 未指定的数值保留；有限核的 `N=NNNP` 默认会跟随新的容量。
-`--h/--n/--rnt-scale` 只改变有限核分支。
-点核分支需要显式使用 `--point-h/--point-n/--point-rnt-scale`；
+`--h/--n/--rnt-scale` 修改有限核分支或只有一套默认值的公共初始化。
+点核分支使用 `--point-h/--point-n/--point-rnt-scale`；
+原版串行/MPI RCI 的点核分支被注释，故点核全流程须在专用源码副本中将
+这两套 N/H/RNT 系数都设成对应点核值。直接复制
+[P0/P1/P2 配置](../docs/grasp_grid_parameter_tuning.md#137-点核测试)，
+并确认 isodata 选择点核；这些副本不能再用于有限核计算。
 `--hp` 位于公共赋值处，因此同时影响两种核模型。
 `--accy` 可指定独立的数值阈值，否则保留原有公式或固定值（原版为 `H**6`）。
 本仓库布局还允许 `--accy 0` 恢复自适应 `H**6`；完整原版布局仍要求正数。
@@ -174,6 +185,10 @@ g_J 复用 RHFS 的网格入口。不会因某个应用缺失而悄悄跳过它�
 确认 PATH 或绝对路径指向新安装的可执行文件，然后检查各阶段 `.sum`
 中实际使用的 `RNT/H/HP/N/ACCY`。补丁通过检查仅证明源码配置一致，
 不证明实际二进制已更新，也不证明物理量已达到网格收敛。
+原版成功退出或 CONVG 还可能仅代表能量停滞，须另检查全部变分轨道 SCNSTY、
+有限性、MTP/有效尾部以及最后两档网格的 ACCY 交叉变化。
+suite 的 `GRASP_COUNT_ACCY` 覆盖全局 ACCY，交互输入和旧 `.res` 也可能覆盖
+源代码默认值；清除这些覆盖或记录各阶段实际取值。
 
 离线验证脚本：
 
