@@ -199,7 +199,7 @@ class PatchGridTests(unittest.TestCase):
             for path, data in originals.items():
                 self.assertEqual(path.read_bytes(), data)
 
-    def test_copied_script_relative_root_and_persistent_automatic_backup(self) -> None:
+    def test_copied_script_relative_root_without_automatic_backup(self) -> None:
         root = Path(self.temporary.name) / "copied-suite"
         fixture(root, "atomic-suite")
         self.write_config(
@@ -211,14 +211,49 @@ class PatchGridTests(unittest.TestCase):
         )
         with (
             patch.object(grid, "__file__", str(root / SCRIPT.name)),
+            patch.object(grid.tempfile, "tempdir", str(self.temporary.name)),
             redirect_stdout(io.StringIO()),
         ):
+            files_before = set(Path(self.temporary.name).rglob("*"))
             self.assertEqual(grid.main([]), 0)
-            backups = list((root / "grid-backups").glob("*/manifest.json"))
-            self.assertEqual(len(backups), 1)
-            restored_root, changes = grid.restore_plan(backups[0].parent, root)
-            self.assertEqual(restored_root, root.resolve())
-            self.assertEqual([c.relative for c in changes], [grid.SUITE_CONFIG_FILE])
+            self.assertEqual(set(Path(self.temporary.name).rglob("*")), files_before)
+            self.assertEqual(
+                grid.plan(
+                    root, grid.Settings(nnnp=1990, h=0.025, accy=0.0), "atomic-suite"
+                ),
+                [],
+            )
+
+    def test_cli_apply_without_backup_can_switch_grid_parameters(self) -> None:
+        files_before = set(Path(self.temporary.name).rglob("*"))
+        with (
+            patch.object(grid.tempfile, "tempdir", str(self.temporary.name)),
+            redirect_stdout(io.StringIO()),
+        ):
+            for capacity, count, step in ((1990, 1179, 0.025), (590, 590, 0.05)):
+                self.assertEqual(
+                    grid.main(
+                        [
+                            "--grasp",
+                            str(self.root),
+                            "--nnnp",
+                            str(capacity),
+                            "--n",
+                            str(count),
+                            "--h",
+                            str(step),
+                            "--apply",
+                        ]
+                    ),
+                    0,
+                )
+                self.assertEqual(
+                    grid.plan(self.root, grid.Settings(nnnp=capacity, n=count, h=step)),
+                    [],
+                )
+                self.assertEqual(
+                    set(Path(self.temporary.name).rglob("*")), files_before
+                )
 
     def test_invalid_toml_configuration_does_not_write_source(self) -> None:
         original = (self.root / grid.CAPACITY_FILES[0]).read_bytes()

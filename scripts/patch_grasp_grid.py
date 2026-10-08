@@ -5,6 +5,7 @@ This patches known source locations, not calculation files or installed binaries
 Unrecognized layouts fail before any source file is written.
 Run without arguments to read config.toml beside this script (Python >= 3.11).
 Explicit command-line requests remain independent of that configuration.
+Backups are created only when a backup directory is explicitly requested.
 """
 
 from __future__ import annotations
@@ -555,15 +556,15 @@ def write_changes(root: Path, changes: list[Change]) -> None:
         raise
 
 
-def apply(root: Path, changes: list[Change], backup: Path | None) -> Path:
+def apply(root: Path, changes: list[Change], backup: Path | None) -> Path | None:
     root = root.resolve()
     if backup is None:
-        backup = Path(tempfile.mkdtemp(prefix="grasp-grid-backup-"))
-    else:
-        backup = backup.resolve()
-        if backup.is_relative_to(root / "src"):
-            raise ValueError("backup directory must be outside the source directory")
-        backup.mkdir(parents=True, exist_ok=False)
+        write_changes(root, changes)
+        return None
+    backup = backup.resolve()
+    if backup.is_relative_to(root / "src"):
+        raise ValueError("backup directory must be outside the source directory")
+    backup.mkdir(parents=True, exist_ok=False)
     entries = []
     for change in changes:
         saved = backup / change.relative
@@ -683,15 +684,8 @@ def configured_arguments() -> list[str]:
                 )
             arguments.extend((f"--{name.replace('_', '-')}", str(value)))
         configured_backup = config_path("BACKUP_DIRECTORY")
-        if mode == "apply":
-            backup = (
-                configured_backup
-                if configured_backup is not None
-                else root
-                / "grid-backups"
-                / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
-            )
-            arguments.extend(("--backup-dir", str(backup)))
+        if mode == "apply" and configured_backup is not None:
+            arguments.extend(("--backup-dir", str(configured_backup)))
     if mode != "preview":
         arguments.append(f"--{mode}")
     if print_diff:
@@ -758,7 +752,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--backup-dir",
         type=Path,
-        help="new backup directory for --apply; default is a temporary directory",
+        help="optional new backup directory for --apply; no backup by default",
     )
     parser.add_argument(
         "--restore",

@@ -8,7 +8,7 @@ RUN_MODE = "preview"  # preview / apply / check
 PRINT_DIFF = true
 
 # 可选路径应放在 [GRID_PARAMETERS] 之前；省略即采用默认行为。
-# BACKUP_DIRECTORY = "/path/to/new-backup"  # 省略：源码/grid-backups/<时间戳>/
+# BACKUP_DIRECTORY = "/path/to/new-backup"  # 省略：不生成备份
 # RESTORE_DIRECTORY = "/path/to/saved-backup"  # 省略：正常修改；设置后进入恢复
 
 [GRID_PARAMETERS]

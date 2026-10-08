@@ -3,6 +3,7 @@
 > 文档状态：现行实验方案、物理验收待执行。
 > 核查日期：2026-10-05；源码基准：`8b298a6`。
 > 网格修改脚本已实现，配置和修改计划已检查；D/L/O/ACCY 对应的生产体系物理收敛计算仍待执行。不能将本文归为已通过的数值结果。
+> 2026-10-08 操作说明更新：脚本默认不备份；仅显式指定备份目录时保存。原物理核查基准不变。
 > 全部文档状态见[分类索引](../README.md)。
 
 适用对象：使用 `scripts/patch_grasp_grid.py` 修改完整原版 GRASP，保留多份
@@ -613,7 +614,8 @@ python3 patch_grasp_grid.py
 
 查看预览后，将 `config.toml` 中的 `RUN_MODE` 改成 `"apply"`，执行同一命令；
 再改成 `"check"`，执行同一命令，确认 `Files requiring changes: 0`。
-备份自动保存在该份源码的 `grid-backups/<时间戳>/`；同时保留此次配置和预览输出。
+每组从原版复制独立源码，脚本默认不生成备份；保留原版副本、此次配置和预览输出。
+如需额外备份，可在 `[GRID_PARAMETERS]` 之前显式设置 `BACKUP_DIRECTORY`。
 
 然后加载服务器 Fortran/MPI/BLAS/LAPACK 环境，按
 [原版 README 的 CMake 流程](https://github.com/compas/grasp/blob/master/README.md#cmake-based-build)：

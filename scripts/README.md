@@ -34,7 +34,7 @@ accy = 1e-10
 
 TOML 布尔值使用小写 `true/false`，参数写在 `[GRID_PARAMETERS]` 表中。
 TOML 没有 `None`：省略 `point_n/point_h/point_rnt_scale` 等参数表示不修改；
-省略备份和恢复路径表示使用默认备份、正常修改模式。不能直接粘贴旧 Python 字典。
+省略备份和恢复路径表示不生成备份、使用正常修改模式。不能直接粘贴旧 Python 字典。
 配置不预填任何网格值；正常修改时必须填写 `GRASP_SOURCE` 和至少一个网格参数。
 未写 `SOURCE_LAYOUT/RUN_MODE/PRINT_DIFF` 时分别默认为 `grasp2018/preview/true`。
 候选组仍需验证网格收敛，不能直接作为通用生产推荐。
@@ -54,10 +54,10 @@ python3 /path/to/grasp-atomic-suite/scripts/patch_grasp_grid.py
 最后改成 `"check"`，再次执行检查。检查一致时退出 0，仍有待修改文件时退出 1，
 配置错误或源码布局不匹配时退出 2。脚本不启动编译。
 
-配置模式下，省略 `BACKUP_DIRECTORY` 会将原始文件和校验和保存到
-`GRASP_SOURCE/grid-backups/<唯一时间戳>/`，屏幕会打印备份位置。
-也可指定一个尚不存在的备份目录。预览和检查不会创建备份；重复应用相同配置
-不会创建新备份。恢复时把 `RESTORE_DIRECTORY` 填成打印出的备份目录，
+每组参数从原版复制独立源码时，默认不生成 `grid-backups` 或临时备份。
+如需精确撤销一次修改，显式设置 `BACKUP_DIRECTORY` 为一个尚不存在的目录，
+脚本才会保存原始文件和校验和，并打印备份位置。预览、检查及无变化的重复应用
+不会创建备份。已有备份仍可使用：把 `RESTORE_DIRECTORY` 填成对应备份目录，
 放在 `[GRID_PARAMETERS]` 之前，先用 `RUN_MODE="preview"` 查看，再改成 `"apply"` 执行。
 恢复模式自动忽略数值配置和 `BACKUP_DIRECTORY`；恢复完成后
 删除或注释 `RESTORE_DIRECTORY`。恢复后也需要重新编译。
@@ -146,9 +146,8 @@ g_J 复用 RHFS 的网格入口。不会因某个应用缺失而悄悄跳过它�
 本仓库布局还允许 `--accy 0` 恢复自适应 `H**6`；完整原版布局仍要求正数。
 
 在相同命令后追加 `--apply` 写入；可用 `--backup-dir /path/to/new-directory`
-指定一个尚不存在的备份目录，否则备份保存到系统临时目录。
-需要长期保存恢复能力时，应明确指定持久化的备份目录。
-每次应用保存所有被修改文件的原始字节和校验和。
+指定一个尚不存在的备份目录；省略时不生成备份。
+显式启用备份后，应用前保存所有被修改文件的原始字节和校验和。
 
 ```bash
 ../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
@@ -171,7 +170,7 @@ g_J 复用 RHFS 的网格入口。不会因某个应用缺失而悄悄跳过它�
 完整修改计划在写入前生成；所选布局结构不匹配、缺少文件、未处理的径向
 容量定义或未知网格初始化会使整个计划失败。
 写入使用逐文件原子替换，正常异常会回滚已完成的文件；掉电或强制终止
-时可利用备份人工恢复。脚本不支持并发编辑同一个源码树。
+时需从保留的原版副本或显式创建的备份恢复。脚本不支持并发编辑同一个源码树。
 
 原版布局覆盖 17 个径向应用入口、`rwfnrotate/rwfnrelabel` 和
 `rwfnestimate` 中重复的容量声明。它还恢复 `rwfnrelabel` 被注释的网格
