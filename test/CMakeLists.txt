@@ -48,6 +48,13 @@ target_link_libraries_Fortran(test.rmcdhf_pair_transaction_logic PUBLIC mod)
 add_test(NAME rmcdhf_pair_transaction_logic
     COMMAND test.rmcdhf_pair_transaction_logic)
 
+add_executable(test.rdensity_natural_orbitals
+    ../src/appl/rdensity/natural_orbitals.f90
+    rdensity/natural_orbitals_test.f90)
+setup_fortran_modules(test.rdensity_natural_orbitals)
+target_link_libraries_Fortran(test.rdensity_natural_orbitals PUBLIC mod 9290)
+add_test(NAME rdensity_natural_orbitals COMMAND test.rdensity_natural_orbitals)
+
 # Prefer the shared workspace environment; standalone installations can select
 # their interpreter with -DPython3_EXECUTABLE=...
 if(WIN32)
@@ -60,6 +67,23 @@ if(EXISTS "${GRASP_GRID_TEST_PYTHON}" AND NOT Python3_EXECUTABLE)
 endif()
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
+    if(TARGET rdensity)
+        add_test(NAME rdensity_serial_regression
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/rdensity/regression.py
+            --serial $<TARGET_FILE:rdensity> --data ${PROJECT_SOURCE_DIR}/data)
+        set_tests_properties(rdensity_serial_regression PROPERTIES TIMEOUT 180)
+        if(TARGET rdensity_mpi AND MPIEXEC_EXECUTABLE)
+            foreach(ranks 1 2 4)
+                add_test(NAME rdensity_mpi_${ranks}
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/rdensity/regression.py
+                    --serial $<TARGET_FILE:rdensity> --mpi $<TARGET_FILE:rdensity_mpi>
+                    --mpiexec ${MPIEXEC_EXECUTABLE} --numproc-flag=${MPIEXEC_NUMPROC_FLAG}
+                    --ranks ${ranks} --data ${PROJECT_SOURCE_DIR}/data)
+                set_tests_properties(rdensity_mpi_${ranks} PROPERTIES
+                    TIMEOUT 180 PROCESSORS ${ranks})
+            endforeach()
+        endif()
+    endif()
     add_test(NAME rmcdhf_orbopt_round_state_logic
         COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/test_round_state_logic.py)

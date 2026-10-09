@@ -2,7 +2,7 @@
 
 [中文](README_ZH.md) | English
 
-`grasp-atomic-suite` is a Fortran research and development repository for relativistic atomic-structure and atomic-property calculations. It combines the orbital optimization programs migrated from `rmcdhf_test` with `rhfs90`, `ris4`, `gj90`, and their MPI support for hyperfine-structure, isotope-shift, and Landé `g_J` calculations.
+`grasp-atomic-suite` is a Fortran research and development repository for relativistic atomic-structure and atomic-property calculations. It combines the orbital optimization programs migrated from `rmcdhf_test` with `rhfs90`, `ris4`, `rdensity`, `gj90`, and their MPI support for hyperfine-structure, isotope-shift, and Landé `g_J` calculations.
 
 This repository is not a minimal upstream GRASP mirror. It keeps the traditional GRASP numerical libraries and application layout, while adding CMake builds, MPI targets, an extracted `gj90` program, regression data, and development notes for `g_J` and MPI optimization work.
 
@@ -15,6 +15,7 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 ├── src/
 │   ├── appl/
 │   │   ├── gj90/             # standalone Landé g_J calculator
+│   │   ├── rdensity/         # serial/MPI radial density and natural orbitals
 │   │   ├── rhfs90/           # relativistic hyperfine-structure program
 │   │   ├── rmcdhf90*/        # four rmcdhf_orbopt orbital optimization variants
 │   │   └── ris4/             # relativistic isotope-shift program
@@ -44,6 +45,7 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 | --- | --- | --- | --- |
 | `gj90` | `src/appl/gj90` | `gj90`, `gj90_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, `name.c`, `name.m/name.cm`, and `name.w`, then writes `name.gj/name.cgj`. |
 | `rhfs90` | `src/appl/rhfs90` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
+| `rdensity` | `src/appl/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/rdensity_mpi.md). |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing `name.i/name.ci` and angular intermediate data. |
 | Orbital optimization | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`, `rmcdhf_orbopt_mpi`, `rmcdhf_orbopt_mem`, `rmcdhf_orbopt_mem_mpi` | Serial/MPI variants with conventional or in-memory MCP storage. Existing `rwfn.out`, `rmix.out`, `rmcdhf.sum`, and `rmcdhf.log` conventions are retained. |
 
@@ -115,6 +117,7 @@ Common output files:
 
 - `gj90`: `name.gj` or `name.cgj`.
 - `rhfs90`: `name.h/name.ch` and `name.hoffd/name.choffd`.
+- `rdensity`: `name.nw` and `name.d/name.cd`.
 - `ris4`: `name.i/name.ci`, and possibly angular intermediate files such as `name.IOB` and `name.ITB`.
 
 `gj90_mpi` also supports command-line arguments:

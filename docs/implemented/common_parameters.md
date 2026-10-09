@@ -2,10 +2,10 @@
 
 > 文档状态：已实施、现行配置说明。
 > 核查日期：2026-10-05；源码基准：`8b298a6`。
-> 公共参数和共享网格初始化已接入六个入口；工程测试与物理收敛是不同证据。当前使用入口见本文及[网格实验方案](../plans/grasp_grid_parameter_tuning.md)。
+> 公共参数和共享网格初始化已接入七个入口（2026-10-09 增加 RDENSITY）；工程测试与物理收敛是不同证据。当前使用入口见本文及[网格实验方案](../plans/grasp_grid_parameter_tuning.md)。
 > 全部文档状态见[分类索引](../README.md)。
 
-所有串行、MPI、内存版本及 RHFS/RIS/g_J 使用同一套公共默认值。
+所有串行、MPI、内存版本及 RHFS/RIS/RDENSITY/g_J 使用同一套公共默认值。
 修改入口只有 [`suite_parameters_M.f90`](../../src/lib/libmod/suite_parameters_M.f90)。
 运行时变量继续保存在 `grid_C`、`def_C`、`coun_C`，由共享模块
 `radial_grid_defaults` 初始化。`parameter_def` 只转导旧参数名，没有第二份定义。
@@ -48,8 +48,8 @@
 ## 初始化与覆盖顺序
 
 1. 读取核参数，获得 NPARM 和 Z。
-2. 六个入口统一调用 `SET_RADIAL_DEFAULTS(NPARM,Z)`，设置 RNT/H/HP/N/ACCY。
-   g_J 与 RHFS 复用同一入口；这六处覆盖全部 10 个程序。
+2. 七个入口统一调用 `SET_RADIAL_DEFAULTS(NPARM,Z)`，设置 RNT/H/HP/N/ACCY。
+   g_J 与 RHFS 复用同一入口；这七处覆盖全部 12 个程序。
 3. 保留程序已有的交互输入，允许修改网格或光速。
 4. 用最终 H 调用 `UPDATE_RADIAL_ACCURACY`。默认 ACCY 为 `H**6`，固定配置时
    保持 `DEFAULT_ACCY`。RMCDHF 在提示用户是否修改 ACCY 前执行此步骤。

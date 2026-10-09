@@ -63,6 +63,7 @@ SUITE_GRID_FILES = (
     "src/appl/rmcdhf90_mem_mpi/getscdmpi.f90",
     "src/appl/rhfs90/gethfd.f90",  # also compiled into gj90 and gj90_mpi
     "src/appl/ris4/getsmd.f90",
+    "src/appl/rdensity/getsmd.f90",
 )
 SUITE_CONFIG_FILE = "src/lib/libmod/suite_parameters_M.f90"
 SUITE_DEFAULTS_FILE = "src/lib/libmod/radial_grid_defaults_M.f90"

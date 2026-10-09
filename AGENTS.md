@@ -17,7 +17,7 @@ introduce a second copy of these libraries. Preserve suite MPI helpers.
 Shared capacities and numerical defaults live only in
 `src/lib/libmod/suite_parameters_M.f90`; `parameter_def_M.f90` re-exports legacy
 names and must not redefine them. `radial_grid_defaults_M.f90` initializes and
-validates the legacy runtime state for all six entry points. All finite-nucleus
+validates the legacy runtime state for all seven entry points, including RDENSITY. All finite-nucleus
 programs default to `N=NNNP` (2990); point-nucleus defaults remain separate.
 Update ACCY after interactive grid input and before explicit ACCY overrides.
 

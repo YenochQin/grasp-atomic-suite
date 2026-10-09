@@ -29,6 +29,7 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 已实施 | [rdensity_mpi.md](implemented/rdensity_mpi.md) | 2026-10-09 新增串行/MPI 自然轨道程序；CSF 分工、矩阵归约、解析小模型及 Ni 对照测试。大规模性能与物理收敛仍待验证。 |
 | 已实施 | [common_parameters.md](implemented/common_parameters.md) | 参数集中管理和六个入口已接入。当前默认值有效；历史构建/测试记录不等于物理收敛。 |
 | 已实施 | [RHFS_gJ_report.md](implemented/RHFS_gJ_report.md) | 串行 RHFS 的加载、矩阵元、ASF 投影及输出链仍存在。仅覆盖该路径，不是 gj90/MPI 完整说明。 |
 | 待执行 | [grasp_grid_parameter_tuning.md](plans/grasp_grid_parameter_tuning.md) | 修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
@@ -47,7 +48,7 @@ docs/
 - [suite_parameters_M.f90](../src/lib/libmod/suite_parameters_M.f90) 是公共参数定义；
   [parameter_def_M.f90](../src/lib/libmod/parameter_def_M.f90) 只转导容量名。
 - [radial_grid_defaults_M.f90](../src/lib/libmod/radial_grid_defaults_M.f90) 被四个
-  RMCDHF、RHFS 和 RIS 网格入口调用；g_J 复用 RHFS 的入口。
+  RMCDHF、RHFS、RIS 和 RDENSITY 网格入口调用；g_J 复用 RHFS 的入口。
 - 当前全部有限核默认 `N=NNNP=2990`。迁移记录里的性质程序
   `N=MIN(590,NNNP)` 仅适用于早期状态；当前脚本的 suite 布局只修改集中参数文件。
 - [test/CMakeLists.txt](../test/CMakeLists.txt) 已加入共享容量与默认值逻辑检查。

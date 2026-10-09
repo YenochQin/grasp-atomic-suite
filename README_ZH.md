@@ -15,6 +15,7 @@
 ├── src/
 │   ├── appl/
 │   │   ├── gj90/             # Landé g_J 独立计算程序
+│   │   ├── rdensity/         # 串行/MPI 径向电子密度与自然轨道
 │   │   ├── rhfs90/           # 相对论超精细结构程序
 │   │   ├── rmcdhf90*/        # 四个 rmcdhf_orbopt 轨道优化版本
 │   │   └── ris4/             # 相对论同位素位移程序
@@ -44,6 +45,7 @@
 | --- | --- | --- | --- |
 | `gj90` | `src/appl/gj90` | `gj90`, `gj90_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、`name.c`、`name.m/name.cm`、`name.w`，输出 `name.gj/name.cgj`。 |
 | `rhfs90` | `src/appl/rhfs90` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
+| `rdensity` | `src/appl/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/rdensity_mpi.md)。 |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，输出 `name.i/name.ci` 及中间角向数据。 |
 | 轨道优化 | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`、`rmcdhf_orbopt_mpi`、`rmcdhf_orbopt_mem`、`rmcdhf_orbopt_mem_mpi` | 串行/MPI 与常规/内存 MCP 版本；输出仍使用 `rwfn.out`、`rmix.out`、`rmcdhf.sum`、`rmcdhf.log`。 |
 
