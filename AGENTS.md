@@ -34,28 +34,32 @@ Use `./configure.sh --debug` for a debug build in `build-debug/`. Use `./scripts
 Enable `-DGRASP_BUILD_SERIAL_APPS=ON` to build all four orbital programs
 alongside serial and MPI property programs. In this workspace, run Python
 scripts/tests with `../graspkit-tools/.venv/bin/python`; do not create another
-environment or run `uv sync` here. On cluster hosts initialize the compiler,
-MPI, and BLAS modules before configuration. Copy `scripts/config.example.toml`
-to `scripts/config.toml` and run `scripts/patch_grasp_grid.py` without arguments;
-set `SOURCE_LAYOUT="atomic-suite"` and `GRASP_SOURCE` to this repository for the
-partial tree (`GRASP_SOURCE=".."` when the config stays in `scripts/`). Omit optional
-TOML keys to preserve values; local `config.toml` is ignored by Git.
-Explicit CLI requests remain independent of the TOML file;
-`--layout atomic-suite --grasp .` is still supported. The default `grasp2018`
-layout requires the full upstream tree. Keep compilation manual using the
-upstream README CMake workflow, with separate source copies per parameter set.
+environment or run `uv sync`/`uv run` here. On cluster hosts initialize the
+compiler, MPI, and BLAS modules before configuration.
+
+For grid or capacity changes, use [common parameters](docs/implemented/common_parameters.md)
+for the current contract and [scripts/README.md](scripts/README.md) for patch-tool
+configuration, preview/apply, and restore commands. This partial tree needs the
+`atomic-suite` layout; `grasp2018` requires a full upstream tree. Preserve omitted
+settings and keep local config ignored. Use separate source copies per parameter
+set; compilation is a separate step from applying the patch.
 
 ## Coding Style & Naming Conventions
 Match the existing Fortran style in the file you are editing. The tree contains both older fixed-format-style indentation and newer free-form modules, so preserve local formatting instead of normalizing whole files. Keep filenames lowercase and aligned with existing suffix conventions such as `*_I.f90` for interface/helper units and `*_C.f90` for shared code modules. Program directories and targets use lowercase names like `rhfs90`, `rdensity`, and `ris4`.
 
 ## Testing Guidelines
-CI uses the CMake workflow. If your checkout includes CTest tests, run:
+CI uses the CMake workflow. Run tests covering the affected programs, using a
+CTest name filter when appropriate:
 
 ```sh
-cd build && ctest
+ctest --test-dir build --output-on-failure
 ```
 
-For functional verification, keep new tests close to the affected program or under `tests/`, and document required input data in that directory.
+Broaden validation for shared parameters, libraries, numerical routines, or build
+changes. Follow the common-parameter guide when changing array capacities or grid
+defaults; a passing build does not establish physical convergence. For documentation
+changes, check the relevant references and examples. Keep functional tests close to
+the affected program or under `tests/`, and document required inputs.
 
 ## Commit & Pull Request Guidelines
 Recent history favors short, imperative commit subjects, optionally with an issue reference, for example `Update README.md` or `Bug fix in librang (#112)`. Keep commits scoped to one change. Pull requests should explain the scientific or numerical impact, list the build/test commands you ran, link related issues, and include sample output or input-file changes when behavior or results change.
