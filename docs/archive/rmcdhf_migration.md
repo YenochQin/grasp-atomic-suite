@@ -2,11 +2,11 @@
 
 > 文档状态：已实施迁移的历史记录、旧默认值已被替代。
 > 核查日期：2026-10-05；源码基准：`8b298a6`。
-> 四个 orbopt 目标和共享库已落地；正文中性质程序 590 点默认值、多入口补丁及旧测试数量属于迁移阶段。当前默认 N=NNNP 与集中脚本布局见[公共参数](../implemented/common_parameters.md)和[脚本说明](../../scripts/README.md)。
+> 四个 orbopt 目标和共享库已落地；正文中性质程序 590 点默认值、多入口补丁及旧测试数量属于迁移阶段。当前恢复后的原版参数及脚本布局见[公共参数](../implemented/common_parameters.md)和[脚本说明](../../scripts/README.md)。
 > 全部文档状态见[分类索引](../README.md)。
 
-本文记录初次迁移的取舍。后续已将公共参数集中管理，所有有限核程序默认
-点数统一为 `NNNP`；当前设计与验证以 [common_parameters.md](../implemented/common_parameters.md)
+本文记录初次迁移的取舍。后续曾将公共参数集中管理；2026-10-13 保留 `parameter_def` 转导层，恢复原版
+参数值与入口初始化，有限核默认 `N=NNNP=590`；当前设计与验证以 [common_parameters.md](../implemented/common_parameters.md)
 为准。下文的 590 点默认值和脚本布局描述属于迁移当时的状态。
 
 轨道优化开发现在由 `grasp-atomic-suite` 维护，与性质计算程序共用一套数值库。

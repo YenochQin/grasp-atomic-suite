@@ -14,12 +14,16 @@ The `rmcdhf90*` programs migrated from `rmcdhf_test` build as
 `rmcdhf_orbopt`, `rmcdhf_orbopt_mem`, and their `_mpi` variants. They share
 `libmod`, `lib9290`, `libdvd90`, and `mpi90` with the property programs; do not
 introduce a second copy of these libraries. Preserve suite MPI helpers.
-Shared capacities and numerical defaults live only in
-`src/lib/libmod/suite_parameters_M.f90`; `parameter_def_M.f90` re-exports legacy
-names and must not redefine them. `radial_grid_defaults_M.f90` initializes and
-validates the legacy runtime state for all seven entry points, including RDENSITY. All finite-nucleus
-programs default to `N=NNNP` (2990); point-nucleus defaults remain separate.
-Update ACCY after interactive grid input and before explicit ACCY overrides.
+Keep `src/lib/libmod/parameter_def_M.f90` as the legacy re-export interface.
+Define shared capacities only in `suite_parameters_M.f90`, using upstream defaults:
+`KEYORB=215`, `NNNP=590`, `NNN1=NNNP+10`, `NNNW=127`, `NNNWM1=NNNW-1`, and
+`NNNWM2=NNNW-2`. The grid patcher edits this configuration module for capacity
+changes; existing applications continue to `USE parameter_def`.
+Each of the eight grid entry points keeps its upstream point/finite-nucleus
+settings and ACCY initialization order, including RDENSITY and the independent
+`rmcdhf_mem_strict_mpi` solver. Finite nuclei default to `N=NNNP=590`.
+Upstream RMCDHF computes ACCY before interactive grid input; explicitly supply
+ACCY when changing H in restart inputs. Grid experiments belong in separate copies.
 
 ## Build, Test, and Development Commands
 Prefer the out-of-source CMake flow:

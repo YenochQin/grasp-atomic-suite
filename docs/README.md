@@ -1,6 +1,6 @@
 # 文档索引与实施状态审计
 
-核查日期：2026-10-05。源码及原文基准：`8b298a6`。
+最初审计日期：2026-10-05，基准 `8b298a6`；2026-10-13 更新参数恢复及严格内存 MPI 条目。
 核查覆盖原 `docs/` 的全部 10 份文档，并对照当前源码、CMake、测试文件及相关
 Git 提交；本次没有重跑性能基准或完整原子物理计算。
 
@@ -29,8 +29,9 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 已实施 | [rmcdhf_mem_strict_mpi.md](implemented/rmcdhf_mem_strict_mpi.md) | 2026-10-13 新增独立内存 MPI 严格停止目标；编译、判据单元测试通过。完整 Linux MPI 重启与生产物理验证待执行。 |
 | 已实施 | [rdensity_mpi.md](implemented/rdensity_mpi.md) | 2026-10-09 新增串行/MPI 自然轨道程序；CSF 分工、矩阵归约、解析小模型及 Ni 对照测试。大规模性能与物理收敛仍待验证。 |
-| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 参数集中管理和六个入口已接入。当前默认值有效；历史构建/测试记录不等于物理收敛。 |
+| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值和八个入口初始化；NNNP=590、NNN1=600。 |
 | 已实施 | [RHFS_gJ_report.md](implemented/RHFS_gJ_report.md) | 串行 RHFS 的加载、矩阵元、ASF 投影及输出链仍存在。仅覆盖该路径，不是 gj90/MPI 完整说明。 |
 | 待执行 | [grasp_grid_parameter_tuning.md](plans/grasp_grid_parameter_tuning.md) | 修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
 | 已完成审查 | [grasp_grid_methodology_review.md](reviews/grasp_grid_methodology_review.md) | 源码审查和最小例程诊断已完成，文档建议已落实。旧 P 配置等问题描述有指定历史版本。 |
@@ -39,23 +40,21 @@ docs/
 | 历史阶段报告 | [RHFS_MPI_hfsgg_optimization.md](archive/RHFS_MPI_hfsgg_optimization.md) | 前置筛选仍在；诊断计数、直接 ICHKQ1 调用和“当前瓶颈”描述已被后续代码覆盖。 |
 | 历史分支总结 | [1.0.1-dev.1_optimization_summary.md](archive/1.0.1-dev.1_optimization_summary.md) | HFSGG 与 DIAGA3/4 保留。RECOP2 独立快速预检查未保留，已修正原文误记；旧计时未复测。 |
 | 历史分支总结 | [1.1.1-dev.1_optimization_summary.md](archive/1.1.1-dev.1_optimization_summary.md) | RIS 主要优化仍存在；历史耗时、测试名称和测试覆盖不代表当前数值验收。 |
-| 历史迁移记录 | [rmcdhf_migration.md](archive/rmcdhf_migration.md) | 四个 orbopt 目标和共享库已落地；性质程序 590 点默认、多入口补丁及旧测试数量已被集中管理替代。 |
+| 历史迁移记录 | [rmcdhf_migration.md](archive/rmcdhf_migration.md) | 四个 orbopt 目标和共享库已落地；容量经转导层公开，默认值和网格初始化恢复原版，以现行参数说明为准。 |
 
 ## 核查依据与具体过时项
 
 ### 参数与仓库迁移
 
-- [suite_parameters_M.f90](../src/lib/libmod/suite_parameters_M.f90) 是公共参数定义；
-  [parameter_def_M.f90](../src/lib/libmod/parameter_def_M.f90) 只转导容量名。
-- [radial_grid_defaults_M.f90](../src/lib/libmod/radial_grid_defaults_M.f90) 被四个
-  RMCDHF、RHFS、RIS 和 RDENSITY 网格入口调用；g_J 复用 RHFS 的入口。
-- 当前全部有限核默认 `N=NNNP=2990`。迁移记录里的性质程序
-  `N=MIN(590,NNNP)` 仅适用于早期状态；当前脚本的 suite 布局只修改集中参数文件。
-- [test/CMakeLists.txt](../test/CMakeLists.txt) 已加入共享容量与默认值逻辑检查。
-  迁移记录的 6/5 项、12 个离线用例和公共参数说明的 16 个用例都是历史数量，
-  当前登记与实际覆盖须查看 CMake 和测试源码，不能从旧报告推断。
-- 默认 `N=2990,H=0.05` 的数值风险与候选组见网格实验方案；代码已经统一，
-  不代表这一默认组合已通过物理验证。
+- [suite_parameters_M.f90](../src/lib/libmod/suite_parameters_M.f90) 定义容量，
+  [parameter_def_M.f90](../src/lib/libmod/parameter_def_M.f90) 转导原有常量名；
+  当前 `NNNP=590`、`NNN1=600`。网格初始化仍在各入口。
+- 八个入口保留各自的原版点核/有限核默认值与 ACCY 初始化时序；
+  当前有限核默认 `N=NNNP=590`。suite 脚本布局按需修改集中容量配置和这些入口，保持转导接口。
+- [test/CMakeLists.txt](../test/CMakeLists.txt) 保留共享容量检查和网格脚本回归；
+  历史测试数量不能代替当前实际验证。严格内存 MPI 的 Linux 重启测试另见其说明。
+- 历史 `N=2990,H=0.05` 的风险审查与候选网格实验仍有参考价值，
+  但该组合已不是仓库默认值，参数恢复本身也不代表生产体系收敛。
 
 ### RHFS 与独立 gj90
 

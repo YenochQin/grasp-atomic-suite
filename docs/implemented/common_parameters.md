@@ -1,111 +1,99 @@
-# 公共参数集中管理
+# 参数转导层与原版默认值
 
-> 文档状态：已实施、现行配置说明。
-> 核查日期：2026-10-05；源码基准：`8b298a6`。
-> 公共参数和共享网格初始化已接入七个入口（2026-10-09 增加 RDENSITY）；工程测试与物理收敛是不同证据。当前使用入口见本文及[网格实验方案](../plans/grasp_grid_parameter_tuning.md)。
-> 全部文档状态见[分类索引](../README.md)。
+> 文档状态：现行实现；2026-10-13 保留参数转导层，使用原版默认值与网格初始化。
+> 参考源码：工作区 GRASP `488e875d1a7ec631baf4ad33682798bc795b7435`。
+> 容量由集中配置定义，经 parameter_def 转导；历史实验数值不代表当前默认值。
 
-所有串行、MPI、内存版本及 RHFS/RIS/RDENSITY/g_J 使用同一套公共默认值。
-修改入口只有 [`suite_parameters_M.f90`](../../src/lib/libmod/suite_parameters_M.f90)。
-运行时变量继续保存在 `grid_C`、`def_C`、`coun_C`，由共享模块
-`radial_grid_defaults` 初始化。`parameter_def` 只转导旧参数名，没有第二份定义。
+## 参数归属
 
-## 可调整参数
+[`suite_parameters_M.f90`](../../src/lib/libmod/suite_parameters_M.f90) 是容量常量的唯一来源；
+[`parameter_def_M.f90`](../../src/lib/libmod/parameter_def_M.f90) 用 `USE suite_parameters, ONLY: ...`
+转导六个原有名称。共享库和各串行/MPI 程序继续 `USE parameter_def`，
+修改配置不需要逐个修改调用方。配置模块默认值与参考原版相同。
+网格的 `radial_grid_defaults` 集中初始化模块不使用，各入口保留原版初始化。
 
-| 参数 | 当前默认值 | 含义 |
+| 常量 | 默认值 | 含义 |
 | --- | --- | --- |
-| `NNNP` | 2990 | 径向数组编译容量；旧求解路径也用于尾部边界与连接点回退 |
-| `NNNW` | 127 | 轨道数组编译容量 |
-| `KEYORB` | 215 | 原有整数打包参数，需保持打包范围约束 |
-| `FINITE_N` | `NNNP` | 全部有限核程序的默认实际点数 |
-| `FINITE_RNT_SCALE` | `2D-6` | 有限核 `RNT=FINITE_RNT_SCALE/Z` |
-| `FINITE_H` | `0.05D0` | 有限核默认指数步长 |
-| `POINT_N` | `MIN(220,NNNP)` | 点核默认实际点数 |
-| `POINT_RNT_SCALE` | `EXP(-65D0/16D0)` | 点核 `RNT=POINT_RNT_SCALE/Z` |
-| `POINT_H` | `0.0625D0` | 点核默认步长 |
-| `DEFAULT_HP` | `0D0` | 两种核模型的公共网格参数 |
-| `DEFAULT_ACCY` | `0D0` | 0 表示自适应 `H**6`；正值表示固定默认阈值 |
-| `NODE_THRESHOLD` | `0.05D0` | 四个轨道程序的默认节点振荡筛选阈值 THRESH |
+| `KEYORB` | 215 | 轨道整数打包参数 |
+| `NNNP` | 590 | 径向数组编译容量；部分旧径向路径也将它用于尾部边界 |
+| `NNN1` | 600 | 带额外空间的径向数组容量 |
+| `NNNW` | 127 | 轨道容量 |
+| `NNNWM1` | 126 | `NNNW-1` |
+| `NNNWM2` | 125 | `NNNW-2` |
 
-`NNN1=NNNP+10`、`NNNWM1=NNNW-1`、`NNNWM2=NNNW-2` 自动派生，不能分别修改。
-原来性质程序的有限核 590 点默认值已按用户要求统一为 `NNNP`。
-数值默认值集中后仍需通过物理量的网格收敛判断合适的 H/N/RNT；统一配置本身
-不等于已经达到计算精度目标。
+在 `suite_parameters_M.f90` 修改基础常量。`NNN1=NNNP+10`、`NNNWM1=NNNW-1`、
+`NNNWM2=NNNW-2` 自动派生；无需修改转导模块。修改后须全量重编译。`NNNP` 和运行时点数 `N` 不是同一变量。
 
-当前 `N=2990,H=0.05` 不宜直接作为通用网格起点：审查已在原版
-`DCBSRW` 最小径向诊断中复现非有限值，不能以远端最终清零排除中间溢出。
-本次文档修订保留既定 Fortran 默认值；在独立测试副本上先显式选择并应用
-规程中的试验配置，例如 D2 的 `NNNP=2990,N=1965,H=0.015,ACCY=1e-10`，
-再检查各阶段有限性与物理收敛。该例是候选，不是已认证生产参数；
-诊断范围与复现过程见[深度审查报告](../reviews/grasp_grid_methodology_review.md)。
+## 各入口的原版默认值
 
-原值与候选值、控制变量试验、测试数据和误差预算见
-[径向网格参数调整与验证规程](../plans/grasp_grid_parameter_tuning.md)。
+五个 RMCDHF 入口（含独立严格内存 MPI）及 RHFS、RIS、RDENSITY 各自初始化网格；
+g_J 继续复用 RHFS。运行时变量仍保存在原有 `grid_C`、`def_C` 和 `coun_C`。
 
-物理常数继续由现有 `SETCON` 统一设置；特定轨道算法的实验开关继续由
-`orbopt_control` 管理，不混入公共网格参数。
+| 核模型 | RNT | H | N | HP |
+| --- | --- | --- | --- | --- |
+| 有限核 | `2D-6/Z` | `0.05` | `NNNP`（默认 590） | 0 |
+| 点核 | `EXP(-65D0/16D0)/Z` | `0.0625` | `MIN(220,NNNP)` | 0 |
 
-## 初始化与覆盖顺序
+RMCDHF 的 `THRESH=0.05D0`、`METHOD=3`、`ODAMP=0` 保持原版。
+普通 orbopt MPI 原有的 `PED` 初始化和算法开关保留。
 
-1. 读取核参数，获得 NPARM 和 Z。
-2. 七个入口统一调用 `SET_RADIAL_DEFAULTS(NPARM,Z)`，设置 RNT/H/HP/N/ACCY。
-   g_J 与 RHFS 复用同一入口；这七处覆盖全部 12 个程序。
-3. 保留程序已有的交互输入，允许修改网格或光速。
-4. 用最终 H 调用 `UPDATE_RADIAL_ACCURACY`。默认 ACCY 为 `H**6`，固定配置时
-   保持 `DEFAULT_ACCY`。RMCDHF 在提示用户是否修改 ACCY 前执行此步骤。
-5. 用户随后显式输入 ACCY。MPI 版本保留原有广播顺序。
-6. `VALIDATE_RADIAL_GRID` 检查容量、有限正数和 HP 非负性，然后生成网格。
-   验证不会覆盖用户已输入的 ACCY。
-7. 轨道文件读取通过 `INTRPQ` 插值到当前计算网格，不将初始化参数替换成
-   文件中轨道的原网格。`rmcdhf_orbopt_mpi` 原有的 `GRASP_COUNT_ACCY` 和
-   `GRASP_COUNT_THRESH` 环境覆盖仍在后续原位置应用。
+ACCY 初始化时序也恢复原版：
 
-`GRASP_COUNT_ACCY` 实际覆盖全局 ACCY，不只影响节点计数；前面的轨道
-初始化/插值可能已经使用不同阈值。网格试验应清除覆盖，或记录各阶段取值。
-`GRASP_STRICT_SCF` 只按所用变体的实际实现解释；原版的收敛退出逻辑与
-suite 普通 MPI 严格模式不同。统一按规程检查变分轨道残差、目标量和有效尾部。
-容量审计、全量编译、实际执行路径和物理验收是不同层次的证据。
+- RMCDHF 在可选网格交互之前赋值 `ACCY=H**6`；交互修改 H 后不会自动重算。
+  用户可在随后的 ACCY 提示中显式设置。续算应明确输入原 ACCY。
+- RHFS/RIS/RDENSITY 在网格交互之后赋值 `ACCY=H**6`。
+- 已移除集中初始化附带的 `UPDATE_RADIAL_ACCURACY` 和 `VALIDATE_RADIAL_GRID` 调用。
+  输入设置必须满足原版的网格容量和数值约束。
 
-## 修改方法
+输入 `.w` 经插值到本次运行网格，不会自动将 N/H/RNT 改成文件网格。
+独立 [`rmcdhf_mem_strict_mpi`](rmcdhf_mem_strict_mpi.md) 使用原版参数初始化，
+仅其停止策略及诊断输出另有改动。`GRASP_COUNT_ACCY` 等原有 orbopt 实验覆盖
+仍按对应程序实现处理；严格内存版本不读取这些实验开关。
 
-直接修改中央 Fortran 文件即可。也可以使用原有脚本预览：
+## 网格实验与重编译
+
+在独立源码副本上使用 [网格脚本](../../scripts/README.md)。`atomic-suite` 布局
+修改 `suite_parameters_M.f90` 和需要变更的八个入口。
+仅使用 `--nnnp` 时只改中央配置的 NNNP，NNN1 自动派生，转导模块及入口保持原样；
+`--n` 单独选择实际点数，其他网格参数仍修改各入口。脚本检查六项定义与完整转导接口。
+
+容量修改示例（只预览，不写入）：
 
 ```sh
 ../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
-  --layout atomic-suite --grasp . --nnnp 2990 --n 1965 --h 0.015 \
-  --rnt-scale 2e-6 --hp 0 --accy 1e-10 --diff
+  --layout atomic-suite --grasp . --nnnp 1990 --diff
 ```
 
-未显式指定 `--n` 时，`FINITE_N=NNNP` 会自动跟随容量。显式 `--n` 会为所有
-有限核程序设置相同的独立实际点数，必须不超过容量。
-`--point-n/--point-h/--point-rnt-scale` 调整点核默认值。
-`--accy 1e-10` 设置固定阈值，`--accy 0` 恢复自适应阈值。
-示例是接口用法，不是对某个元素的推荐数值。
+追加 `--apply` 才会写入；示例值用于说明接口，当前配置仍为 590。
 
-追加 `--apply` 才会写入；脚本只修改中央文件，并审计全源码中重复的容量定义、
-脱离公共初始化的径向默认赋值和缺失的入口。应用/检查/备份/恢复的具体说明见
-[scripts/README.md](../../scripts/README.md)。完整原版 GRASP 的默认布局保持原有补丁行为。
+不传数值项表示保留；`--accy 0` 在 suite 布局中写回 `H**6` 公式。
 
-修改后在已开启所需串行/MPI 目标的构建目录全量编译、测试并安装：
+脚本显式修改 H（含点核 H）或 ACCY 时，会在 RMCDHF 的 ACCY 提示前同步阈值，
+用户随后仍可显式覆盖；这是主动应用网格补丁的行为，未经补丁的源码保留原版时序。
+仅修改容量不会额外更改 ACCY 时序。
+
+恢复本次容量后，请使用新的构建目录全量编译；旧 build/bin 或已安装 bin 不会自动更新：
 
 ```sh
-cmake --build build-all --clean-first --parallel 4
-ctest --test-dir build-all --output-on-failure
-cmake --install build-all
+cmake -S . -B build-upstream-parameters -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON
+cmake --build build-upstream-parameters --parallel 4
+ctest --test-dir build-upstream-parameters --output-on-failure
 ```
 
-确认调用路径指向本次安装的程序，并查看输出记录中的实际网格参数。
-源码树中的旧 `.mod` 会导致混合容量；CMake 的检查及共享数组容量测试继续启用。
+使用 `build-upstream-parameters/bin/` 下的本次产物，或自行安装后核实可执行文件路径。
+Linux 服务器需在服务器上重新编译。`shared_grid_capacity` 检查共享数组编译容量一致；
+网格脚本回归覆盖原版布局和 suite 八入口布局的预览、应用、重复应用、备份与恢复。
+工程测试不能代替生产模型的收敛验证；候选网格仍按
+[网格实验方案](../plans/grasp_grid_parameter_tuning.md) 验收。
 
-## 集中参数改造时的工程验证（历史记录）
+## 参数恢复与转导验证（2026-10-13）
 
-- 10 个应用成功编译；串行与 MPI 使用同一配置模块。
-- MPI 构建通过 11 项 CTest，纯串行构建通过 10 项。
-- 网格脚本通过 16 个离线用例，包括重复声明、局部同名变量、固定/自适应
-  ACCY 切换、容量缩小时实际点数冲突以及恢复。
-- 真实源码副本中仅修改中央文件，随后编译验证 `NNNP=1990`、`NNN1=2000`、
-  数组长度、有限核 N/H、点核 N/H/RNT、固定 ACCY 和显式用户覆盖全部生效；
-  应用/检查/恢复通过。
-- `data/test` 的串行和双进程 MPI g_J 输出与调整前逐字节一致。
-  该结论只覆盖这组输入，不代表所有体系增加 N 都不影响结果。
-- 大型 RMCDHF 原子计算和集群作业仍需使用外部输入另行做物理验证。
+- 六个参数默认值与参考原版相同，通过转导模块公开；八个入口除普通 MPI 原有 PED 初始化及空白外与原版一致。
+- 串行/MPI 清理后全量重编译成功；运行时共享容量检查输出 `590 600`。
+- 12 项 CTest 通过，包括严格停止逻辑、RDENSITY 串行及 1/2/4 进程回归；
+  完整测试在允许本地 MPI socket 通信的环境运行。
+- 网格脚本 30 个离线用例通过，含真实八入口源码副本的应用与逐字节恢复，
+  以及在临时副本中仅修改配置后编译验证 590/600、1990/2000 的转导和共享数组容量；
+  原版容量的 `--nnnp 590 --check` 返回无待修改文件。
+- 2 项严格内存 MPI 重启测试在 macOS 明确跳过：原版内存检测依赖 Linux `/proc/meminfo`。
+  生产 AS6 未运行，也未提交集群作业。

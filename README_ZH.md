@@ -48,6 +48,7 @@
 | `rdensity` | `src/appl/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/rdensity_mpi.md)。 |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，输出 `name.i/name.ci` 及中间角向数据。 |
 | 轨道优化 | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`、`rmcdhf_orbopt_mpi`、`rmcdhf_orbopt_mem`、`rmcdhf_orbopt_mem_mpi` | 串行/MPI 与常规/内存 MCP 版本；输出仍使用 `rwfn.out`、`rmix.out`、`rmcdhf.sum`、`rmcdhf.log`。 |
+| 严格内存 SCF | `src/appl/rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | 从原版独立复制的内存 MPI 程序；EOL 要求轨道与能量连续两轮同时达标，并保存逐轮波函数和收敛 CSV。详见[重启与验证说明](docs/implemented/rmcdhf_mem_strict_mpi.md)。 |
 
 默认 CMake 配置会尝试构建 MPI 版本。如果系统没有 MPI Fortran 工具链，会跳过 MPI 目标。串行应用目标默认关闭，需要在 CMake 配置时显式开启。
 
@@ -150,12 +151,12 @@ ctest --test-dir build-all --output-on-failure
 
 ## 径向网格与仓库迁移
 
-所有公共容量和数值默认值集中在
-[`suite_parameters_M.f90`](src/lib/libmod/suite_parameters_M.f90)。
-`NNN1=NNNP+10` 及轨道容量偏移量自动派生。轨道优化与性质计算的有限核
-默认实际点数统一为 `N=NNNP`，当前为 2990；点核仍保留独立默认值。
-输入轨道会被插值到当前计算网格。交互修改 H 后会重新计算默认 ACCY，
-用户随后显式输入的数值阈值仍优先。
+公共容量集中定义在 [`suite_parameters_M.f90`](src/lib/libmod/suite_parameters_M.f90)，
+经 [`parameter_def_M.f90`](src/lib/libmod/parameter_def_M.f90) 转导，默认值与原版一致：
+`NNNP=590`、`NNN1=600`、`NNNW=127`、`NNNWM1=126`、`NNNWM2=125`、`KEYORB=215`。
+各入口保留原版网格初始化：有限核默认 `N=NNNP=590`，点核默认 `N=MIN(220,NNNP)`。
+输入轨道会插值到当前计算网格。原版 RMCDHF 在网格交互之前计算 `ACCY=H**6`；
+交互改变 H 时应随后明确设置 ACCY。
 
 网格批量修改工具见 [scripts/patch_grasp_grid.py](scripts/README.md)：
 复制 [scripts/config.example.toml](scripts/config.example.toml) 为同目录的 `config.toml`，
@@ -169,7 +170,7 @@ ctest --test-dir build-all --output-on-failure
 需先将旧生成文件移出源码目录。
 
 参数列表、调用顺序和验证见[公共参数说明](docs/implemented/common_parameters.md)。
-本仓库的脚本布局现在只修改一个集中配置文件。
+本仓库的脚本布局按需修改集中容量配置和八个独立网格入口，保留转导接口。
 参数调整的具体数值、原因、测试数据及验收标准见
 [径向网格参数调整与验证规程](docs/plans/grasp_grid_parameter_tuning.md)。
 

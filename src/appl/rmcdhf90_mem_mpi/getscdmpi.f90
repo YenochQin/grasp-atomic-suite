@@ -19,9 +19,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE radial_grid_defaults, ONLY: SET_RADIAL_DEFAULTS, &
-         UPDATE_RADIAL_ACCURACY, VALIDATE_RADIAL_GRID
-      USE suite_parameters, ONLY: NODE_THRESHOLD
       USE vast_kind_param,  ONLY: DOUBLE
       USE parameter_def,    ONLY: NNNW, NNNP
       USE COUN_C
@@ -85,10 +82,22 @@
 !
       C = CVAC
 ! DEFAULT IS SET ABOVE IN SETISO (from isodata), JG (Lund, 2013)
-      CALL SET_RADIAL_DEFAULTS(NPARM, Z)
+      IF (NPARM == 0) THEN
+         RNT = EXP((-65.D0/16.D0))/Z
+         H = 0.5D0**4
+         N = MIN(220,NNNP)
+      ELSE
+!         default comes here
+!CFF     ... RNT should be Z-dependent
+         RNT = 2.0D-06/Z
+         H = 5.D-2
+         N = NNNP
+      ENDIF
+      HP = 0.D0
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
+      ACCY = H**6
       IF (NDEF /= 0) THEN
 
                         IF (myid .EQ. 0) THEN
@@ -134,7 +143,6 @@
 !b
 !b read ACCY on input
 !b
-         CALL UPDATE_RADIAL_ACCURACY
          WRITE (istde,*) 'Revise the default ACCY = ', ACCY
          YES = GETYN ()
             IF (YES) THEN
@@ -162,7 +170,6 @@
 !
 !   Set up the coefficients for the numerical procedures
 !
-      CALL VALIDATE_RADIAL_GRID
       CALL SETQIC
 !
 !   Generate the radial grid and all associated arrays
@@ -179,7 +186,7 @@
 !
 !   Set some defaults
 !
-      THRESH = NODE_THRESHOLD
+      THRESH = 0.05D0
 
 !      IORDER(I) = I    ! Completely determined in GETOLDMPI
       METHOD(:NW) = 3

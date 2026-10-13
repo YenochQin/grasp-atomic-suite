@@ -20,14 +20,11 @@ add_executable(test.shared_grid_capacity shared_grid_capacity.f90)
 target_link_libraries_Fortran(test.shared_grid_capacity PUBLIC mod)
 add_test(NAME shared_grid_capacity COMMAND test.shared_grid_capacity)
 
-add_executable(test.radial_defaults_logic radial_defaults_logic.f90)
-target_link_libraries_Fortran(test.radial_defaults_logic PUBLIC mod)
-add_test(NAME radial_defaults_logic COMMAND test.radial_defaults_logic)
-foreach(invalid_case invalid_charge invalid_n invalid_h invalid_accy)
-    add_test(NAME radial_defaults_${invalid_case}
-        COMMAND test.radial_defaults_logic ${invalid_case})
-    set_tests_properties(radial_defaults_${invalid_case} PROPERTIES WILL_FAIL TRUE)
-endforeach()
+add_executable(test.strict_scf_logic
+    ../src/appl/rmcdhf90_mem_strict_mpi/strict_scf.f90
+    strict_scf_logic.f90)
+target_link_libraries_Fortran(test.strict_scf_logic PUBLIC mod)
+add_test(NAME strict_scf_logic COMMAND test.strict_scf_logic)
 
 if(TARGET mpiu90)
     # Calls the production sparse kernels with rank-local column buffers.
@@ -67,6 +64,24 @@ if(EXISTS "${GRASP_GRID_TEST_PYTHON}" AND NOT Python3_EXECUTABLE)
 endif()
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
+    set(GRASP_PREPARATION_BINDIR "" CACHE PATH
+        "External GRASP directory containing rwfnestimate and rangular_mpi for strict restart tests")
+    if(TARGET rmcdhf_mem_strict_mpi AND MPIEXEC_EXECUTABLE
+       AND EXISTS "${GRASP_PREPARATION_BINDIR}/rwfnestimate"
+       AND EXISTS "${GRASP_PREPARATION_BINDIR}/rangular_mpi")
+        foreach(ranks 1 2)
+            add_test(NAME strict_mem_restart_mpi_${ranks}
+                COMMAND ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/strict_mem_restart.py
+                --strict $<TARGET_FILE:rmcdhf_mem_strict_mpi>
+                --baseline $<TARGET_FILE:rmcdhf_orbopt_mem_mpi>
+                --tools ${GRASP_PREPARATION_BINDIR}
+                --mpiexec ${MPIEXEC_EXECUTABLE}
+                --numproc-flag=${MPIEXEC_NUMPROC_FLAG} --ranks ${ranks})
+            set_tests_properties(strict_mem_restart_mpi_${ranks} PROPERTIES
+                TIMEOUT 180 PROCESSORS ${ranks} SKIP_RETURN_CODE 77)
+        endforeach()
+    endif()
     if(TARGET rdensity)
         add_test(NAME rdensity_serial_regression
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/rdensity/regression.py

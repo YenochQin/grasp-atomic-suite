@@ -16,8 +16,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE radial_grid_defaults, ONLY: SET_RADIAL_DEFAULTS, &
-         UPDATE_RADIAL_ACCURACY, VALIDATE_RADIAL_GRID
       USE vast_kind_param, ONLY: DOUBLE
       USE parameter_def,   ONLY: NNNW
       USE decide_C
@@ -95,7 +93,17 @@
 !
 !   Determine the parameters controlling the radial grid
 !
-      CALL SET_RADIAL_DEFAULTS(NPARM, Z)
+      IF (NPARM == 0) THEN
+         RNT = EXP((-65.0D00/16.0D00))/Z
+         H = 0.5D00**4
+         N = MIN(220,NNNP)
+      ELSE
+!CFF     .. should be Z-dependent
+         RNT = 2.0D-06/Z
+         H = 5.0D-02
+         N = NNNP
+      ENDIF
+      HP = 0.0D00
       IF (NDEF /= 0) THEN
          WRITE (6, *) 'The default radial grid parameters'
          WRITE (6, *) ' for this case are:'
@@ -119,11 +127,10 @@
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
-      CALL UPDATE_RADIAL_ACCURACY
+      ACCY = H**6
 !
 !   Set up the coefficients for the numerical procedures
 !
-      CALL VALIDATE_RADIAL_GRID
       CALL SETQIC
 !
 !   Generate the radial grid and all associated arrays

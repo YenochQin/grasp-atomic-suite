@@ -48,6 +48,7 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 | `rdensity` | `src/appl/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/rdensity_mpi.md). |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing `name.i/name.ci` and angular intermediate data. |
 | Orbital optimization | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`, `rmcdhf_orbopt_mpi`, `rmcdhf_orbopt_mem`, `rmcdhf_orbopt_mem_mpi` | Serial/MPI variants with conventional or in-memory MCP storage. Existing `rwfn.out`, `rmix.out`, `rmcdhf.sum`, and `rmcdhf.log` conventions are retained. |
+| Strict memory SCF | `src/appl/rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | Independent upstream-derived memory MPI solver: orbital AND energy convergence for two consecutive EOL cycles, plus radial snapshots and a convergence CSV. See [restart and validation guide](docs/implemented/rmcdhf_mem_strict_mpi.md). |
 
 The default CMake configuration attempts to build MPI versions. If no MPI Fortran toolchain is found, MPI targets are skipped. Serial application targets are disabled by default and must be enabled explicitly at CMake configuration time.
 
@@ -151,14 +152,14 @@ Orbital regression runners live in [test/rmcdhf_orbopt](test/rmcdhf_orbopt/READM
 
 ## Radial Grid And Migration
 
-All shared limits and numerical defaults live in
-[`suite_parameters_M.f90`](src/lib/libmod/suite_parameters_M.f90).
-`NNN1=NNNP+10` and the orbital limit offsets are derived automatically.
-All orbital and property programs now default to `N=NNNP` for finite nuclei
-(currently 2990); point nuclei keep their separate defaults.
-Input orbitals are interpolated onto the current calculation grid.
-The shared initializer updates the default ACCY after interactive H changes,
-while preserving subsequent explicit tolerance overrides.
+Shared limits live in [`suite_parameters_M.f90`](src/lib/libmod/suite_parameters_M.f90)
+and are re-exported by [`parameter_def_M.f90`](src/lib/libmod/parameter_def_M.f90).
+The default values match upstream GRASP:
+`NNNP=590`, `NNN1=600`, `NNNW=127`, `NNNWM1=126`, `NNNWM2=125`, and `KEYORB=215`.
+Each grid entry point retains upstream defaults: finite nuclei use `N=NNNP=590`,
+while point nuclei use `N=MIN(220,NNNP)`. Input orbitals are interpolated onto the
+current calculation grid. Upstream RMCDHF initializes `ACCY=H**6` before optional
+interactive grid changes; explicitly supply ACCY if you change H.
 Copy [scripts/config.example.toml](scripts/config.example.toml) to `scripts/config.toml`,
 edit the local settings, and run [scripts/patch_grasp_grid.py](scripts/README.md)
 without arguments. Select `SOURCE_LAYOUT="atomic-suite"` and `GRASP_SOURCE=".."` for this tree
@@ -169,7 +170,8 @@ build it manually using the upstream README CMake workflow. Changes require a
 full rebuild and numerical convergence checks.
 
 See [shared parameter guide](docs/implemented/common_parameters.md) for the parameter table,
-initialization order, and validation. The suite layout now edits one central file.
+initialization order, and validation. The suite layout edits the central capacity configuration
+and the eight individual grid entry points as needed; `parameter_def` remains a re-export interface.
 For candidate values, their rationale, test datasets, and convergence criteria,
 see [GRASP grid parameter tuning](docs/plans/grasp_grid_parameter_tuning.md) (Chinese).
 

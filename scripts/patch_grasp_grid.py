@@ -61,12 +61,13 @@ SUITE_GRID_FILES = (
     "src/appl/rmcdhf90_mpi/getscdmpi.f90",
     "src/appl/rmcdhf90_mem/getscd.f90",
     "src/appl/rmcdhf90_mem_mpi/getscdmpi.f90",
+    "src/appl/rmcdhf90_mem_strict_mpi/getscdmpi.f90",
     "src/appl/rhfs90/gethfd.f90",  # also compiled into gj90 and gj90_mpi
     "src/appl/ris4/getsmd.f90",
     "src/appl/rdensity/getsmd.f90",
 )
 SUITE_CONFIG_FILE = "src/lib/libmod/suite_parameters_M.f90"
-SUITE_DEFAULTS_FILE = "src/lib/libmod/radial_grid_defaults_M.f90"
+SUITE_PARAMETER_NAMES = ("KEYORB", "NNNP", "NNN1", "NNNW", "NNNWM1", "NNNWM2")
 CAPACITY_RE = re.compile(r"\b(NNNP|NNN1)\s*=\s*([^)!\n]+)", re.IGNORECASE)
 
 
@@ -143,7 +144,12 @@ def patch_capacity(text: str, capacity: int) -> str:
             nonlocal hits
             hits += 1
             name = match[1].upper()
-            return f"{name} = {capacity if name == 'NNNP' else capacity + 10}"
+            if name == "NNN1" and re.sub(r"\s+", "", match[2]).upper() == "NNNP+10":
+                return match[0]
+            value = capacity if name == "NNNP" else capacity + 10
+            if match[2].strip() == str(value):
+                return match[0]
+            return f"{name} = {value}"
 
         lines[i] = CAPACITY_RE.sub(replace, line)
     if not hits:
@@ -151,7 +157,14 @@ def patch_capacity(text: str, capacity: int) -> str:
     return "".join(lines)
 
 
-def patch_grid(text: str, relative: str, settings: Settings, capacity: int) -> str:
+def patch_grid(
+    text: str,
+    relative: str,
+    settings: Settings,
+    capacity: int,
+    *,
+    sync_accy: bool = True,
+) -> str:
     lines = text.splitlines(keepends=True)
     starts = [i for i, line in enumerate(lines) if assignment(line, "RNT")]
     expected = 1 if "/rci90" in relative else 2
@@ -235,10 +248,11 @@ def patch_grid(text: str, relative: str, settings: Settings, capacity: int) -> s
             raise ValueError("unrecognized additional RMCDHF ACCY assignment")
     i = accy_lines[0]
     if settings.accy is not None:
-        lines[i] = set_assignment(lines[i], "ACCY", real_literal(settings.accy))
+        expression = "H**6" if settings.accy == 0 else real_literal(settings.accy)
+        lines[i] = set_assignment(lines[i], "ACCY", expression)
     # RMCDHF computes ACCY before optional grid input. Recompute before its
     # ACCY prompt, so the user can still override ACCY afterwards.
-    if "/rmcdhf90" in relative:
+    if "/rmcdhf90" in relative and sync_accy:
         prompts = [
             i for i, line in enumerate(lines) if "Revise the default ACCY" in line
         ]
@@ -309,144 +323,22 @@ def source_path(root: Path, relative: str) -> Path:
     return path
 
 
-def plan_suite(root: Path, settings: Settings) -> list[Change]:
-    """Edit one configuration file and audit every consumer before writing."""
-    path = source_path(root, SUITE_CONFIG_FILE)
-    before = path.read_bytes()
-    text = before.decode("utf-8")
-    if "\r" in text:
-        raise ValueError("this patcher expects LF source files")
-    names = (
-        "NNNP",
-        "NNN1",
-        "NNNWM1",
-        "NNNWM2",
-        "FINITE_N",
-        "POINT_N",
-        "FINITE_H",
-        "POINT_H",
-        "FINITE_RNT_SCALE",
-        "POINT_RNT_SCALE",
-        "DEFAULT_HP",
-        "DEFAULT_ACCY",
-    )
-    expressions: dict[str, str] = {}
-    for name in names:
-        matches = [
-            match
-            for line in text.splitlines()
-            if (
-                match := re.search(
-                    rf"\b{name}\s*=\s*(.+)$", active(line), re.IGNORECASE
-                )
-            )
-        ]
-        if len(matches) != 1:
+def validate_suite_exports(config: str, wrapper: str) -> None:
+    """Require one definition per shared limit and the legacy re-export API."""
+    config_code = "\n".join(active(line) for line in config.splitlines())
+    wrapper_code = "\n".join(active(line) for line in wrapper.splitlines())
+    imported: set[str] = set()
+    for match in re.finditer(
+        r"^USE\s+suite_parameters\s*,\s*ONLY\s*:\s*([^\n]+)$",
+        wrapper_code,
+        re.IGNORECASE | re.MULTILINE,
+    ):
+        imported.update(name.strip().upper() for name in match[1].split(","))
+    if not set(SUITE_PARAMETER_NAMES).issubset(imported):
+        raise ValueError("parameter_def must re-export all six suite_parameters limits")
+    for name in SUITE_PARAMETER_NAMES:
+        if len(re.findall(rf"\b{name}\s*=", config_code, re.IGNORECASE)) != 1:
             raise ValueError(f"expected one central definition of {name}")
-        expressions[name] = matches[0][1].strip()
-    for name, expression in {
-        "NNN1": "NNNP+10",
-        "NNNWM1": "NNNW-1",
-        "NNNWM2": "NNNW-2",
-    }.items():
-        if re.sub(r"\s+", "", expressions[name]).upper() != expression:
-            raise ValueError(f"{name} must remain derived as {expression}")
-    capacity = settings.nnnp if settings.nnnp is not None else int(expressions["NNNP"])
-    validate(settings, capacity, allow_adaptive_accy=True)
-    requested = {
-        "NNNP": settings.nnnp,
-        "FINITE_N": settings.n,
-        "POINT_N": settings.point_n,
-        "FINITE_H": settings.h,
-        "POINT_H": settings.point_h,
-        "FINITE_RNT_SCALE": settings.rnt_scale,
-        "POINT_RNT_SCALE": settings.point_rnt_scale,
-        "DEFAULT_HP": settings.hp,
-        "DEFAULT_ACCY": settings.accy,
-    }
-    for name, value in requested.items():
-        if value is None:
-            continue
-        expression = (
-            str(int(value))
-            if name in ("NNNP", "FINITE_N", "POINT_N")
-            else real_literal(value)
-        )
-        pattern = re.compile(rf"(\b{name}\s*=\s*)([^!\n]+)", re.IGNORECASE)
-        lines = text.splitlines(keepends=True)
-        for i, line in enumerate(lines):
-            if re.search(rf"\b{name}\s*=", active(line), re.IGNORECASE):
-                lines[i] = pattern.sub(
-                    lambda m: m[1] + expression + (" " if "!" in line else ""), line
-                )
-        text = "".join(lines)
-        expressions[name] = expression
-
-    def point_count(expression: str) -> int:
-        compact = re.sub(r"\s+", "", expression).upper()
-        if compact == "NNNP":
-            return capacity
-        if compact.isdigit():
-            return int(compact)
-        if match := re.fullmatch(r"MIN\((\d+),NNNP\)", compact):
-            return min(int(match[1]), capacity)
-        raise ValueError(f"unsupported central point count: {expression}")
-
-    def real_value(expression: str) -> float:
-        compact = re.sub(r"\s+", "", expression).upper()
-        if compact == "EXP(-65.0D0/16.0D0)":
-            return math.exp(-65 / 16)
-        return float(compact.replace("D", "E"))
-
-    validate(
-        Settings(
-            n=point_count(expressions["FINITE_N"]),
-            point_n=point_count(expressions["POINT_N"]),
-            h=real_value(expressions["FINITE_H"]),
-            point_h=real_value(expressions["POINT_H"]),
-            rnt_scale=real_value(expressions["FINITE_RNT_SCALE"]),
-            point_rnt_scale=real_value(expressions["POINT_RNT_SCALE"]),
-            hp=real_value(expressions["DEFAULT_HP"]),
-            accy=real_value(expressions["DEFAULT_ACCY"]),
-        ),
-        capacity,
-        allow_adaptive_accy=True,
-    )
-    source_path(root, SUITE_DEFAULTS_FILE)
-    for relative in SUITE_GRID_FILES:
-        consumer = source_path(root, relative).read_text(encoding="utf-8")
-        calls = [
-            line
-            for line in consumer.splitlines()
-            if re.fullmatch(
-                r"CALL\s+SET_RADIAL_DEFAULTS\s*\(\s*NPARM\s*,\s*Z\s*\)",
-                active(line),
-                re.IGNORECASE,
-            )
-        ]
-        if len(calls) != 1:
-            raise ValueError(f"{relative}: expected one shared radial initializer")
-    for source in sorted((root / "src").rglob("*.f90")):
-        relative = source.relative_to(root).as_posix()
-        content = (
-            text
-            if relative == SUITE_CONFIG_FILE
-            else source_path(root, relative).read_text(encoding="utf-8")
-        )
-        code = "\n".join(active(line) for line in content.splitlines())
-        uses_grid = re.search(r"\bUSE\s+GRID_C\b", code, re.IGNORECASE) is not None
-        uses_accuracy = re.search(r"\bUSE\s+DEF_C\b", code, re.IGNORECASE) is not None
-        for number, line in enumerate(content.splitlines(), 1):
-            if relative != SUITE_CONFIG_FILE and CAPACITY_RE.search(active(line)):
-                raise ValueError(f"duplicate capacity: {relative}:{number}")
-            if relative != SUITE_DEFAULTS_FILE and (
-                assignment(line, "RNT")
-                or (uses_grid and any(assignment(line, name) for name in ("H", "HP")))
-                or (uses_accuracy and assignment(line, "ACCY"))
-            ):
-                raise ValueError(f"unrecognized grid initializer: {relative}:{number}")
-    after = text.encode("utf-8")
-    return [Change(SUITE_CONFIG_FILE, before, after)] if before != after else []
 
 
 def plan(root: Path, settings: Settings, layout: str = "grasp2018") -> list[Change]:
@@ -457,10 +349,16 @@ def plan(root: Path, settings: Settings, layout: str = "grasp2018") -> list[Chan
             RESTART_FILES,
         )
     elif layout == "atomic-suite":
-        return plan_suite(root, settings)
+        capacity_files, grid_files, restart_files = (
+            (SUITE_CONFIG_FILE,),
+            SUITE_GRID_FILES,
+            (),
+        )
     else:
         raise ValueError(f"unsupported layout: {layout}")
     required = (*capacity_files, *grid_files, *restart_files)
+    if layout == "atomic-suite":
+        required += (CAPACITY_FILES[0],)
     originals = {
         relative: source_path(root, relative).read_bytes() for relative in required
     }
@@ -469,21 +367,37 @@ def plan(root: Path, settings: Settings, layout: str = "grasp2018") -> list[Chan
         raise ValueError(
             "this patcher expects LF source files; convert line endings first"
         )
+    if layout == "atomic-suite":
+        validate_suite_exports(texts[SUITE_CONFIG_FILE], texts[CAPACITY_FILES[0]])
     capacity_match = re.search(
-        r"\bNNNP\s*=\s*(\d+)", texts[CAPACITY_FILES[0]], re.IGNORECASE
+        r"\bNNNP\s*=\s*(\d+)", texts[capacity_files[0]], re.IGNORECASE
     )
     if not capacity_match:
         raise ValueError("cannot read global NNNP")
     capacity = settings.nnnp if settings.nnnp is not None else int(capacity_match[1])
-    validate(settings, capacity)
-    for relative in capacity_files:
-        texts[relative] = patch_capacity(texts[relative], capacity)
+    validate(settings, capacity, allow_adaptive_accy=layout == "atomic-suite")
+    if settings.nnnp is not None:
+        for relative in capacity_files:
+            texts[relative] = patch_capacity(texts[relative], capacity)
     relabel = "src/tool/rwfnrelabel.f90"
     if relabel in texts:
         texts[relabel] = initialize_relabel(texts[relabel], texts[GRID_FILES[0]])
     for relative in grid_files:
         try:
-            texts[relative] = patch_grid(texts[relative], relative, settings, capacity)
+            # The restored suite retains upstream ACCY timing unless H or
+            # ACCY is explicitly patched. Capacity-only changes leave it alone.
+            texts[relative] = patch_grid(
+                texts[relative],
+                relative,
+                settings,
+                capacity,
+                sync_accy=(
+                    layout == "grasp2018"
+                    or settings.h is not None
+                    or settings.point_h is not None
+                    or settings.accy is not None
+                ),
+            )
         except ValueError as error:
             raise ValueError(f"{relative}: {error}") from error
     if settings.accy is not None:
@@ -502,8 +416,21 @@ def plan(root: Path, settings: Settings, layout: str = "grasp2018") -> list[Chan
         text = texts.get(relative)
         if text is None:
             text = source_path(root, relative).read_text(encoding="utf-8")
+        code_lines = "\n".join(active(line) for line in text.splitlines())
+        uses_grid = (
+            re.search(r"\bUSE\s+GRID_C\b", code_lines, re.IGNORECASE) is not None
+        )
+        uses_accuracy = (
+            re.search(r"\bUSE\s+DEF_C\b", code_lines, re.IGNORECASE) is not None
+        )
         for number, line in enumerate(text.splitlines(), 1):
             code = active(line)
+            if (
+                layout == "atomic-suite"
+                and relative not in capacity_files
+                and CAPACITY_RE.search(code)
+            ):
+                raise ValueError(f"duplicate capacity: {relative}:{number}")
             for match in CAPACITY_RE.finditer(code):
                 expression = match[2].replace(" ", "").upper()
                 wanted = capacity if match[1].upper() == "NNNP" else capacity + 10
@@ -512,7 +439,19 @@ def plan(root: Path, settings: Settings, layout: str = "grasp2018") -> list[Chan
                 ):
                     raise ValueError(f"unmatched capacity: {relative}:{number}: {code}")
             if (
-                assignment(line, "RNT")
+                (
+                    assignment(line, "RNT")
+                    or (
+                        layout == "atomic-suite"
+                        and (
+                            (
+                                uses_grid
+                                and any(assignment(line, name) for name in ("H", "HP"))
+                            )
+                            or (uses_accuracy and assignment(line, "ACCY"))
+                        )
+                    )
+                )
                 and relative not in grid_files
                 and relative != "src/tool/rwfnmchfmcdf.f90"
             ):
