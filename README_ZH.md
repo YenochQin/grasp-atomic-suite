@@ -49,6 +49,7 @@
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，输出 `name.i/name.ci` 及中间角向数据。 |
 | 轨道优化 | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`、`rmcdhf_orbopt_mpi`、`rmcdhf_orbopt_mem`、`rmcdhf_orbopt_mem_mpi` | 串行/MPI 与常规/内存 MCP 版本；输出仍使用 `rwfn.out`、`rmix.out`、`rmcdhf.sum`、`rmcdhf.log`。 |
 | 严格内存 SCF | `src/appl/rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | 从原版独立复制的内存 MPI 程序；EOL 要求轨道与能量连续两轮同时达标，并保存逐轮波函数和收敛 CSV。详见[重启与验证说明](docs/implemented/rmcdhf_mem_strict_mpi.md)。 |
+| P0 分阶段诊断 | `src/appl/rmcdhf90_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | 从原版独立复制，记录匹配、阻尼和正交化前后的系数与径向值；保留原停止判据。详见[诊断说明](docs/implemented/rmcdhf_mem_diag_mpi.md)。 |
 
 默认 CMake 配置会尝试构建 MPI 版本。如果系统没有 MPI Fortran 工具链，会跳过 MPI 目标。串行应用目标默认关闭，需要在 CMake 配置时显式开启。
 
@@ -170,7 +171,7 @@ ctest --test-dir build-all --output-on-failure
 需先将旧生成文件移出源码目录。
 
 参数列表、调用顺序和验证见[公共参数说明](docs/implemented/common_parameters.md)。
-本仓库的脚本布局按需修改集中容量配置和八个独立网格入口，保留转导接口。
+本仓库的脚本布局按需修改集中容量配置和九个独立网格入口，保留转导接口。
 参数调整的具体数值、原因、测试数据及验收标准见
 [径向网格参数调整与验证规程](docs/plans/grasp_grid_parameter_tuning.md)。
 

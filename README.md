@@ -49,6 +49,7 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing `name.i/name.ci` and angular intermediate data. |
 | Orbital optimization | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`, `rmcdhf_orbopt_mpi`, `rmcdhf_orbopt_mem`, `rmcdhf_orbopt_mem_mpi` | Serial/MPI variants with conventional or in-memory MCP storage. Existing `rwfn.out`, `rmix.out`, `rmcdhf.sum`, and `rmcdhf.log` conventions are retained. |
 | Strict memory SCF | `src/appl/rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | Independent upstream-derived memory MPI solver: orbital AND energy convergence for two consecutive EOL cycles, plus radial snapshots and a convergence CSV. See [restart and validation guide](docs/implemented/rmcdhf_mem_strict_mpi.md). |
+| P0 diagnostics | `src/appl/rmcdhf90_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | Independent upstream copy with read-only traces across solution matching, damping and orthogonalization. Original stopping criteria are retained. See [diagnostic guide](docs/implemented/rmcdhf_mem_diag_mpi.md). |
 
 The default CMake configuration attempts to build MPI versions. If no MPI Fortran toolchain is found, MPI targets are skipped. Serial application targets are disabled by default and must be enabled explicitly at CMake configuration time.
 
@@ -171,7 +172,7 @@ full rebuild and numerical convergence checks.
 
 See [shared parameter guide](docs/implemented/common_parameters.md) for the parameter table,
 initialization order, and validation. The suite layout edits the central capacity configuration
-and the eight individual grid entry points as needed; `parameter_def` remains a re-export interface.
+and the nine individual grid entry points as needed; `parameter_def` remains a re-export interface.
 For candidate values, their rationale, test datasets, and convergence criteria,
 see [GRASP grid parameter tuning](docs/plans/grasp_grid_parameter_tuning.md) (Chinese).
 

@@ -184,6 +184,7 @@ if(TARGET mpiu90)
     add_subdirectory("src/appl/rmcdhf90_mpi")
     add_subdirectory("src/appl/rmcdhf90_mem_mpi")
     add_subdirectory("src/appl/rmcdhf90_mem_strict_mpi")
+    add_subdirectory("src/appl/rmcdhf90_mem_diag_mpi")
 endif()
 
 # Unit and integration tests

@@ -27,6 +27,12 @@ target_link_libraries_Fortran(test.strict_scf_logic PUBLIC mod)
 add_test(NAME strict_scf_logic COMMAND test.strict_scf_logic)
 
 if(TARGET mpiu90)
+    add_executable(test.p0_trace_projection
+        ../src/appl/rmcdhf90_mem_diag_mpi/p0_trace.f90
+        ../src/appl/rmcdhf90_mem_diag_mpi/orthy_I.f90
+        ../src/appl/rmcdhf90_mem_diag_mpi/orthy.f90
+        p0_trace_projection.f90)
+    target_link_libraries_Fortran(test.p0_trace_projection PUBLIC mpiu90 mod 9290)
     # Calls the production sparse kernels with rank-local column buffers.
     # The test supplies a checked reduction seam, so no MPI job is launched.
     add_executable(test.mpi90_local_sparse mpi90_local_sparse.f90)
@@ -64,8 +70,28 @@ if(EXISTS "${GRASP_GRID_TEST_PYTHON}" AND NOT Python3_EXECUTABLE)
 endif()
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
+    if(TARGET test.p0_trace_projection)
+        add_test(NAME p0_trace_projection
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/test_p0_trace.py
+            $<TARGET_FILE:test.p0_trace_projection>)
+    endif()
     set(GRASP_PREPARATION_BINDIR "" CACHE PATH
-        "External GRASP directory containing rwfnestimate and rangular_mpi for strict restart tests")
+        "External GRASP directory containing rwfnestimate and rangular_mpi for MCDHF regression tests")
+    if(TARGET rmcdhf_mem_diag_mpi AND MPIEXEC_EXECUTABLE
+       AND EXISTS "${GRASP_PREPARATION_BINDIR}/rwfnestimate"
+       AND EXISTS "${GRASP_PREPARATION_BINDIR}/rangular_mpi")
+        foreach(ranks 1 2)
+            add_test(NAME p0_trace_mpi_${ranks}
+                COMMAND ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/p0_trace_mpi.py
+                --solver $<TARGET_FILE:rmcdhf_mem_diag_mpi>
+                --tools ${GRASP_PREPARATION_BINDIR}
+                --mpiexec ${MPIEXEC_EXECUTABLE}
+                --numproc-flag=${MPIEXEC_NUMPROC_FLAG} --ranks ${ranks})
+            set_tests_properties(p0_trace_mpi_${ranks} PROPERTIES
+                TIMEOUT 180 PROCESSORS ${ranks} SKIP_RETURN_CODE 77)
+        endforeach()
+    endif()
     if(TARGET rmcdhf_mem_strict_mpi AND MPIEXEC_EXECUTABLE
        AND EXISTS "${GRASP_PREPARATION_BINDIR}/rwfnestimate"
        AND EXISTS "${GRASP_PREPARATION_BINDIR}/rangular_mpi")

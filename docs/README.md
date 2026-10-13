@@ -30,8 +30,9 @@ docs/
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
 | 已实施 | [rmcdhf_mem_strict_mpi.md](implemented/rmcdhf_mem_strict_mpi.md) | 2026-10-13 新增独立内存 MPI 严格停止目标；编译、判据单元测试通过。完整 Linux MPI 重启与生产物理验证待执行。 |
+| 已实施 | [rmcdhf_mem_diag_mpi.md](implemented/rmcdhf_mem_diag_mpi.md) | 2026-10-13 从原版独立复制的 P0 诊断目标；保留原停止判据，投影边界及 Linux 1/2-rank 输出不变性回归通过。Ni 失稳根因尚待诊断重放。 |
 | 已实施 | [rdensity_mpi.md](implemented/rdensity_mpi.md) | 2026-10-09 新增串行/MPI 自然轨道程序；CSF 分工、矩阵归约、解析小模型及 Ni 对照测试。大规模性能与物理收敛仍待验证。 |
-| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值和八个入口初始化；NNNP=590、NNN1=600。 |
+| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值；新增 P0 诊断目标后登记九个入口，NNNP=590、NNN1=600。 |
 | 已实施 | [RHFS_gJ_report.md](implemented/RHFS_gJ_report.md) | 串行 RHFS 的加载、矩阵元、ASF 投影及输出链仍存在。仅覆盖该路径，不是 gj90/MPI 完整说明。 |
 | 待执行 | [grasp_grid_parameter_tuning.md](plans/grasp_grid_parameter_tuning.md) | 修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
 | 已完成审查 | [grasp_grid_methodology_review.md](reviews/grasp_grid_methodology_review.md) | 源码审查和最小例程诊断已完成，文档建议已落实。旧 P 配置等问题描述有指定历史版本。 |
@@ -49,7 +50,7 @@ docs/
 - [suite_parameters_M.f90](../src/lib/libmod/suite_parameters_M.f90) 定义容量，
   [parameter_def_M.f90](../src/lib/libmod/parameter_def_M.f90) 转导原有常量名；
   当前 `NNNP=590`、`NNN1=600`。网格初始化仍在各入口。
-- 八个入口保留各自的原版点核/有限核默认值与 ACCY 初始化时序；
+- 九个入口（含 P0 诊断目标）保留各自的原版点核/有限核默认值与 ACCY 初始化时序；
   当前有限核默认 `N=NNNP=590`。suite 脚本布局按需修改集中容量配置和这些入口，保持转导接口。
 - [test/CMakeLists.txt](../test/CMakeLists.txt) 保留共享容量检查和网格脚本回归；
   历史测试数量不能代替当前实际验证。严格内存 MPI 的 Linux 重启测试另见其说明。

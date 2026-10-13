@@ -26,7 +26,7 @@
 
 ## 各入口的原版默认值
 
-五个 RMCDHF 入口（含独立严格内存 MPI）及 RHFS、RIS、RDENSITY 各自初始化网格；
+六个 RMCDHF 入口（含独立严格内存 MPI 和 P0 诊断版本）及 RHFS、RIS、RDENSITY 各自初始化网格；
 g_J 继续复用 RHFS。运行时变量仍保存在原有 `grid_C`、`def_C` 和 `coun_C`。
 
 | 核模型 | RNT | H | N | HP |
@@ -53,7 +53,7 @@ ACCY 初始化时序也恢复原版：
 ## 网格实验与重编译
 
 在独立源码副本上使用 [网格脚本](../../scripts/README.md)。`atomic-suite` 布局
-修改 `suite_parameters_M.f90` 和需要变更的八个入口。
+修改 `suite_parameters_M.f90` 和需要变更的九个入口。
 仅使用 `--nnnp` 时只改中央配置的 NNNP，NNN1 自动派生，转导模块及入口保持原样；
 `--n` 单独选择实际点数，其他网格参数仍修改各入口。脚本检查六项定义与完整转导接口。
 
@@ -82,7 +82,7 @@ ctest --test-dir build-upstream-parameters --output-on-failure
 
 使用 `build-upstream-parameters/bin/` 下的本次产物，或自行安装后核实可执行文件路径。
 Linux 服务器需在服务器上重新编译。`shared_grid_capacity` 检查共享数组编译容量一致；
-网格脚本回归覆盖原版布局和 suite 八入口布局的预览、应用、重复应用、备份与恢复。
+网格脚本回归覆盖原版布局和 suite 九入口布局的预览、应用、重复应用、备份与恢复。
 工程测试不能代替生产模型的收敛验证；候选网格仍按
 [网格实验方案](../plans/grasp_grid_parameter_tuning.md) 验收。
 
