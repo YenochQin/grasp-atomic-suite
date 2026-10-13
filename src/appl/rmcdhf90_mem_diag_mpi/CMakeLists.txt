@@ -1,5 +1,8 @@
 add_executable(rmcdhf_mem_diag_mpi
     p0_trace.f90
+    start_trace.f90
+    start_diag.f90
+    start_diag_I.f90
     rmcdhf_mem_C.f90
     read02_mem.f90
     read02_mem_I.f90

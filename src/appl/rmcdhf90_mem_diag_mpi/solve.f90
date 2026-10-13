@@ -49,7 +49,7 @@
       USE dcbsrw_I
       USE setpot_I
       USE setxz_I
-      USE start_I
+      USE start_diag_I
       USE out_I
       USE in_I
       USE setxuv_I
@@ -166,10 +166,13 @@
 !
       CALL SETXZ (J)
       ICASE = 1
-      CALL START (J, ICASE, P0, PH, Q0, QH)
+      CALL START_DIAG (J, ICASE, P0, PH, Q0, QH)
+      CALL p0_trace_trial('homogeneous_start', J, P0, PH, QH, 6)
       CALL OUT (J, JP, PH, QH)
+      CALL p0_trace_trial('homogeneous_out', J, P0, PH, QH, JP)
       QJPOH = QH(JP)
       CALL IN (J, JP, PH, QH, MTPH)
+      CALL p0_trace_trial('homogeneous_in', J, P0, PH, QH, MTPH)
       QJPIH = QH(JP)
 !
 !   Set up right-hand side for inhomogeneous equations; integrate
@@ -178,10 +181,13 @@
 !
       CALL SETXUV (J)
       ICASE = 2
-      CALL START (J, ICASE, P0, P, Q0, Q)
+      CALL START_DIAG (J, ICASE, P0, P, Q0, Q)
+      CALL p0_trace_trial('inhomogeneous_start', J, P0, P, Q, 6)
       CALL OUT (J, JP, P, Q)
+      CALL p0_trace_trial('inhomogeneous_out', J, P0, P, Q, JP)
       QJPOI = Q(JP)
       CALL IN (J, JP, P, Q, MTPI)
+      CALL p0_trace_trial('inhomogeneous_in', J, P0, P, Q, MTPI)
       QJPII = Q(JP)
 !
 !   Determine energy adjustment for methods 1 and 2
@@ -217,10 +223,13 @@
          P0V = 0.0D00
          CALL SETXV (J)
          ICASE = 3
-         CALL START (J, ICASE, P0V, PV, Q0V, QV)
+         CALL START_DIAG (J, ICASE, P0V, PV, Q0V, QV)
+         CALL p0_trace_trial('variational_start', J, P0V, PV, QV, 6)
          CALL OUT (J, JP, PV, QV)
+         CALL p0_trace_trial('variational_out', J, P0V, PV, QV, JP)
          QJPOV = QV(JP)
          CALL IN (J, JP, PV, QV, MTPV)
+         CALL p0_trace_trial('variational_in', J, P0V, PV, QV, MTPV)
          QJPIV = QV(JP)
 !
 !   Generate continuous solutions

@@ -50,6 +50,7 @@
        USE iounit_C
        USE mpi_C
        USE p0_trace, ONLY: p0_trace_open, p0_trace_close
+       USE start_trace, ONLY: start_trace_open, start_trace_close
 !GG po to isimti
        USE TATB_C
 !-----------------------------------------------
@@ -151,9 +152,11 @@
       CALL GETSCDmpi (EOL, idblk, file1, file2 )
       IF (myid == 0) THEN
          CALL p0_trace_open(permdir(1:lenperm), myid)
+         CALL start_trace_open(permdir(1:lenperm), myid)
       ELSE
 !        The suite MPI helper supplies permdir only on rank zero.
          CALL p0_trace_open(tmpdir(1:lentmp), myid)
+         CALL start_trace_open(tmpdir(1:lentmp), myid)
       ENDIF
 !     &            permdir(1:lenperm) // '/isodata',
 !     &            permdir(1:lenperm) // '/rwfn.inp')
@@ -181,6 +184,7 @@
 !=======================================================================
 
       CALL p0_trace_close()
+      CALL start_trace_close()
       CALL stopmpi2 (myid, nprocs, host, lenhost, ncount1, 'RMCDHF_MEM_DIAG_MPI')
 
       END PROGRAM RSCFmemDiagMPI

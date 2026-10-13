@@ -11,10 +11,18 @@
       PUBLIC :: p0_trace_open, p0_trace_close, p0_trace_cycle
       PUBLIC :: p0_trace_update, p0_trace_iteration
       PUBLIC :: p0_trace_stored, p0_trace_trial
+      PUBLIC :: p0_trace_context
       LOGICAL :: enabled = .FALSE.
       INTEGER :: trace_unit = 0, rank_id = 0, cycle_id = 0
       INTEGER :: update_id = 0, active_orbital = 0, inner_iteration = 0
       CONTAINS
+
+      SUBROUTINE p0_trace_context(cycle, update, iteration)
+      INTEGER, INTENT(OUT) :: cycle, update, iteration
+      cycle = cycle_id
+      update = update_id
+      iteration = inner_iteration
+      END SUBROUTINE p0_trace_context
 
       SUBROUTINE p0_trace_open(directory, rank)
       CHARACTER(LEN=*), INTENT(IN) :: directory

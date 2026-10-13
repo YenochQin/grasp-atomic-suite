@@ -3,15 +3,16 @@ from __future__ import annotations
 
 import argparse
 import csv
+import math
 import os
 import subprocess
 import tempfile
 from pathlib import Path
 
 
-def run(command: list[str], answers: str, cwd: Path, label: str, trace: str = "0") -> str:
+def run(command: list[str], answers: str, cwd: Path, label: str, trace: str = "0", start_trace: str = "0") -> str:
     env = os.environ | {
-        "GRASP_P0_TRACE": trace, "MPI_TMP": str(cwd),
+        "GRASP_P0_TRACE": trace, "GRASP_START_TRACE": start_trace, "MPI_TMP": str(cwd),
         "OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1",
     }
     result = subprocess.run(command, input=answers, text=True, cwd=cwd, env=env,
@@ -46,9 +47,12 @@ def exercise(args: argparse.Namespace, root: Path) -> None:
         (root / "rwfn.inp").write_bytes(seed)
         for path in root.glob("rmcdhf.p0.rank*.csv"):
             path.unlink()
-        output = run([*launcher, str(args.solver)], answers, root, f"trace-{mode}", mode)
+        for path in root.glob("rmcdhf.start*.rank*.csv"):
+            path.unlink()
+        output = run([*launcher, str(args.solver)], answers, root, f"trace-{mode}", mode, mode)
         assert "RMCDHF_MEM_DIAG_MPI: Execution complete." in output
         assert "[P0_TRACE]" not in output, output
+        assert "[START_TRACE]" not in output, output
         for name in ("rwfn.out", "rmix.out"):
             data = (root / name).read_bytes()
             assert data
@@ -68,11 +72,36 @@ def exercise(args: argparse.Namespace, root: Path) -> None:
                 "matched_solution", "solve_return", "normalized_solution", "before_damp",
                 "damp_mixed", "damp_normalized", "after_damp", "orth_begin",
                 "orth_normalized", "orth_end", "cycle_end",
+                "homogeneous_start", "homogeneous_out", "homogeneous_in",
+                "inhomogeneous_start", "inhomogeneous_out", "inhomogeneous_in",
             } <= stages, stages
             assert all(None not in row for row in rows)
             assert rows[0]["cycle"] == "0" and rows[0]["stage"] == "initial"
             assert rows[-1]["stage"] == "cycle_end"
             assert {row["cycle"] for row in rows} == {"0", "1", "2"}
+            rank = rows[0]["rank"]
+            with (root / f"rmcdhf.start.rank{rank}.csv").open() as stream:
+                start_rows = list(csv.DictReader(stream))
+            with (root / f"rmcdhf.start_terms.rank{rank}.csv").open() as stream:
+                terms = list(csv.DictReader(stream))
+            assert start_rows and terms and all(None not in row for row in start_rows + terms)
+            assert {row["itype"] for row in start_rows} == {"1", "2"}
+            stage_by_type = {"1": "homogeneous_start", "2": "inhomogeneous_start"}
+            for row in start_rows:
+                if row["stage"] != "final" or row["point"] == "1":
+                    continue
+                boundary = next(item for item in rows if item["stage"] == stage_by_type[row["itype"]]
+                                and all(item[k] == row[k] for k in ("cycle", "update", "orbital"))
+                                and item["inner_iteration"] == row["solve_iteration"])
+                scale = float(row["r"]) ** float(row["gamma"])
+                for component in ("p", "q"):
+                    assert math.isclose(float(boundary[component + row["point"]]),
+                                        float(row[component + "_scaled"]) * scale,
+                                        rel_tol=1e-13, abs_tol=1e-300)
+        for kind in ("start", "start_terms"):
+            assert {p.name for p in root.glob(f"rmcdhf.{kind}.rank*.csv")} == {
+                f"rmcdhf.{kind}.rank{rank}.csv" for rank in expected_ranks
+            }
     print(f"{args.ranks} MPI rank(s): trace off/root/all produce byte-identical rwfn.out and rmix.out")
 
 

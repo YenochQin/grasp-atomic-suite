@@ -30,6 +30,45 @@ Ni 松弛测试中，`3d/4d` 的原点展开系数 P0 在能量变化很小、�
 - `orthy.f90`：投影对象、参考轨道、投影结果及正交化归一化。
 
 其余复制的 Fortran 文件保持与上述上游提交相同。
+后续 START 诊断在下节说明；共享库的 START 不变。
+
+## START 内部诊断（2026-10-13 增补）
+
+Ni 作业 769 的记录显示，近原点样本在匹配前已增长。为区分起始解和匹配过程，
+从上述上游版本的 `src/lib/lib9290/start.f90`、`start_I.f90` 先复制并逐字节验证，
+再在本目标中命名为 `start_diag.f90`、`start_diag_I.f90`。仅替换例程名并增加只读记录；
+36 次迭代上限、误差判据、失败回退和全部数值表达式保持原样。没有修改共享库。
+复制的原始 `start.f90` SHA256 为
+`048e39e6bdc7fdab8e4bcbcaa0fb827437c3dcc4f8c48aeba583746e320a41e6`。
+
+`GRASP_START_TRACE=0|1|all` 分别关闭、记录 rank 0、记录所有 rank。
+求解器默认关闭此项，下一步诊断作业脚本默认设为 `1`；它独立于 `GRASP_P0_TRACE`。
+两种诊断共用 `(cycle, update, solve_iteration)` 上下文，分别输出：
+
+- `rmcdhf.start.rank<rank>.csv`：每次 START 的初始值、每轮内部迭代以及最终采用值，
+  每阶段有网格点 1–6 的六行。包含 `itype`（1 齐次、2 非齐次、3 变分）、
+  `XP/XQ/YP`、`RSEP/RSEQ`、`RDP/RDQ`、网格和核参数、当前存储的 P/Q、
+  缩放后的迭代变量及误差、是否满足 ACCY、是否执行回退。
+- `rmcdhf.start_terms.rank<rank>.csv`：每次调用的 CNC6C 系数，以及非齐次调用中
+  NDA/DA 对应的参考轨道、系数和参考 P0。`kind=cnc` 的 `index/peer` 为矩阵行/列
+  （1–6 / 2–6），`peer_p0` 占位为 0；`kind=coupling` 的 `peer` 为轨道编号。
+
+`p_scaled/q_scaled` 始终是 START 末尾乘以 `R**gamma` **之前**的变量，不能直接与
+物理径向函数比较；点 1 是原点展开的辅助值。`stored_p/stored_q` 是调用时的存储函数。
+`delta_scaled` 是内部变量的最大更新量，`delta_physical` 是程序实际比较 ACCY 的误差。
+初始行尚未迭代，误差占位为 0、`meets_accy=F`；`final` 行保留回退前的误差，
+`fallback=T` 时 P/Q 已恢复程序原有的初始值。只应按对应的 `itype` 解释非齐次项。
+
+现有 P0 CSV 增加 `homogeneous/inhomogeneous/variational` 的 `start/out/in` 边界。
+`*_start` 只记录已初始化的前六点，`p7/q7` 填 0。原有列与阶段仍保留。
+START 输出每条记录刷新，失败前的数据可读取；I/O 失败打印 `[START_TRACE]`，
+关闭该 rank 的 START 记录，求解算法继续按原有流程执行。
+
+更新作业前必须重新编译 `rmcdhf_mem_diag_mpi`。脚本用二进制中的
+`GRASP_START_TRACE_V1` 标识拒绝旧版本，在启动 rangular 或清理 scratch 之前报错，
+并在求解失败时归档 P0、START、START 系数三类 CSV。
+本次仍从正常 baseline 的相同初值开始，不使用 769 的失败 checkpoint，
+不改变阻尼、优化轨道、目标能级或停止判据；它用于定位失稳，不是收敛修复。
 
 ## 输出及开关
 
@@ -113,9 +152,9 @@ export GRASP_P0_TRACE=1
 cmake -S . -B build-p0-diag -DGRASP_ENABLE_MPI=ON \
   -DGRASP_PREPARATION_BINDIR=/path/to/grasp/bin
 cmake --build build-p0-diag --target rmcdhf_mem_diag_mpi \
-  test.p0_trace_projection test.shared_grid_capacity --parallel 4
+  test.p0_trace_projection test.start_trace_parity test.shared_grid_capacity --parallel 4
 ctest --test-dir build-p0-diag \
-  -R 'p0_trace|shared_grid_capacity|grasp_grid_patcher' --output-on-failure
+  -R 'p0_trace|start_trace|shared_grid_capacity|grasp_grid_patcher' --output-on-failure
 ```
 
 `p0_trace_projection` 调用实际 ORTHY 和诊断模块，用可精确计算的二维内积
@@ -125,7 +164,17 @@ ctest --test-dir build-p0-diag \
 MPI 测试需要 Linux `/proc/meminfo`、准备程序及可用的本地 MPI 通信环境。
 这些测试不是 Ni 生产失稳的复现，也不证明原求解器的物理正确性。
 
+`start_trace_parity` 将诊断副本与共享库中未改动的 START 逐值比较，覆盖两种 kappa
+符号、点核/有限核、三类方程和达到 36 次迭代后的回退；同时验证 CSV、rank 开关
+与 I/O 失败行为。MPI 测试还将最终缩放变量还原到 P/Q，与求解器的 START 后边界
+逐值核对，并检查两类记录关闭/开启时 `rwfn.out` 和 `rmix.out` 逐字节一致。
+
 2026-10-13 本地 Debug 构建通过，五项针对性 CTest 通过：共享容量、网格补丁器、
 投影追踪及 1/2-rank MPI 对照。MPI 需要允许本地 socket 通信；首次沙箱运行因
 该限制失败，在允许本地 MPI 通信的环境完成验证。另有原版 Fortran 接口兼容性
 警告，未改写这些继承代码。未提交或运行 Ni 生产作业。
+
+同日 START 增补本地构建通过，`start_trace_parity`、`p0_trace_projection` 和
+`p0_trace_mpi_1/2` 四项针对性测试通过。MPI 在允许本地 socket 的环境运行；
+仍未进行新的 Ni 生产计算。作业脚本另外通过模拟测试：工作目录和文件名输入、
+AS1/AS2 两种初始化、失败归档、旧二进制拒绝、rank 开关与缺失记录检查。

@@ -27,6 +27,13 @@ target_link_libraries_Fortran(test.strict_scf_logic PUBLIC mod)
 add_test(NAME strict_scf_logic COMMAND test.strict_scf_logic)
 
 if(TARGET mpiu90)
+    add_executable(test.start_trace_parity
+        ../src/appl/rmcdhf90_mem_diag_mpi/p0_trace.f90
+        ../src/appl/rmcdhf90_mem_diag_mpi/start_trace.f90
+        ../src/appl/rmcdhf90_mem_diag_mpi/start_diag_I.f90
+        ../src/appl/rmcdhf90_mem_diag_mpi/start_diag.f90
+        start_trace_parity.f90)
+    target_link_libraries_Fortran(test.start_trace_parity PUBLIC mod 9290)
     add_executable(test.p0_trace_projection
         ../src/appl/rmcdhf90_mem_diag_mpi/p0_trace.f90
         ../src/appl/rmcdhf90_mem_diag_mpi/orthy_I.f90
@@ -70,6 +77,11 @@ if(EXISTS "${GRASP_GRID_TEST_PYTHON}" AND NOT Python3_EXECUTABLE)
 endif()
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
+    if(TARGET test.start_trace_parity)
+        add_test(NAME start_trace_parity
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/test_start_trace.py
+            $<TARGET_FILE:test.start_trace_parity>)
+    endif()
     if(TARGET test.p0_trace_projection)
         add_test(NAME p0_trace_projection
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/test_p0_trace.py
