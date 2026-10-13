@@ -10,13 +10,8 @@
 # which will compile and install binaries and libraries to bin/ and lib/
 #
 
-# This minimum CMake requirement can probably be loosened. But GRASP has not
-# been tested with CMake versions older than 3.6.3.
-#
-# This particular minimum version is necessary as it is the lowest one which
-# ships with a FindBLAS module that is able to detect OpenBLAS loaded with
-# Environment Modules.
-cmake_minimum_required(VERSION 3.6)
+# Require the supported server baseline and its CMake policy defaults.
+cmake_minimum_required(VERSION 3.31)
 
 project(grasp)
 

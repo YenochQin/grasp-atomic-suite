@@ -95,7 +95,7 @@ cmake --build build-serial --target install -j4
 
 ## 依赖与配置
 
-构建需要 Fortran 编译器、CMake、BLAS 和 LAPACK。MPI 目标还需要 MPI Fortran 编译环境，例如 `mpifort`。
+构建需要 Fortran 编译器、CMake 3.31 或更新版本、BLAS 和 LAPACK。MPI 目标还需要 MPI Fortran 编译环境，例如 `mpifort`。
 
 CMake 会自动查找 BLAS/LAPACK，并在使用 GNU Fortran 时为较旧的 Fortran 源码增加兼容选项：
 

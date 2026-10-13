@@ -95,7 +95,7 @@ Remove an existing build directory before reconfiguring, or run:
 
 ## Dependencies And Configuration
 
-The build requires a Fortran compiler, CMake, BLAS, and LAPACK. MPI targets additionally require an MPI Fortran environment such as `mpifort`.
+The build requires a Fortran compiler, CMake 3.31 or newer, BLAS, and LAPACK. MPI targets additionally require an MPI Fortran environment such as `mpifort`.
 
 CMake finds BLAS/LAPACK and adds compatibility flags for older Fortran sources when using GNU Fortran:
 
