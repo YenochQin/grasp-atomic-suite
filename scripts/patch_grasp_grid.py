@@ -6,6 +6,7 @@ Unrecognized layouts fail before any source file is written.
 Run without arguments to read config.toml beside this script (Python >= 3.11).
 Explicit command-line requests remain independent of that configuration.
 Backups are created only when a backup directory is explicitly requested.
+Capacity-only mode edits NNNP/NNN1 and finite-nucleus N without grid repairs.
 """
 
 from __future__ import annotations
@@ -342,7 +343,22 @@ def validate_suite_exports(config: str, wrapper: str) -> None:
             raise ValueError(f"expected one central definition of {name}")
 
 
-def plan(root: Path, settings: Settings, layout: str = "grasp2018") -> list[Change]:
+def plan(
+    root: Path,
+    settings: Settings,
+    layout: str = "grasp2018",
+    *,
+    capacity_only: bool = False,
+) -> list[Change]:
+    if capacity_only:
+        if settings.nnnp is None or settings.n is None:
+            raise ValueError("--capacity-only requires both --nnnp and --n")
+        if any(
+            value is not None
+            for name, value in vars(settings).items()
+            if name not in ("nnnp", "n")
+        ):
+            raise ValueError("--capacity-only permits only nnnp and n parameters")
     if layout == "grasp2018":
         capacity_files, grid_files, restart_files = (
             CAPACITY_FILES,
@@ -381,10 +397,22 @@ def plan(root: Path, settings: Settings, layout: str = "grasp2018") -> list[Chan
         for relative in capacity_files:
             texts[relative] = patch_capacity(texts[relative], capacity)
     relabel = "src/tool/rwfnrelabel.f90"
-    if relabel in texts:
+    if relabel in texts and not capacity_only:
         texts[relabel] = initialize_relabel(texts[relabel], texts[GRID_FILES[0]])
     for relative in grid_files:
         try:
+            if capacity_only and relative == relabel:
+                lines = texts[relative].splitlines()
+                if not any(assignment(line, "RNT") for line in lines):
+                    # Upstream leaves this initializer commented out. Keep it
+                    # byte-for-byte, including the absence of the NPARM import.
+                    if any(
+                        assignment(line, name)
+                        for line in lines
+                        for name in ("N", "H", "HP")
+                    ):
+                        raise ValueError("incomplete rwfnrelabel grid initializer")
+                    continue
             # The restored suite retains upstream ACCY timing unless H or
             # ACCY is explicitly patched. Capacity-only changes leave it alone.
             texts[relative] = patch_grid(
@@ -393,10 +421,13 @@ def plan(root: Path, settings: Settings, layout: str = "grasp2018") -> list[Chan
                 settings,
                 capacity,
                 sync_accy=(
-                    layout == "grasp2018"
-                    or settings.h is not None
-                    or settings.point_h is not None
-                    or settings.accy is not None
+                    not capacity_only
+                    and (
+                        layout == "grasp2018"
+                        or settings.h is not None
+                        or settings.point_h is not None
+                        or settings.accy is not None
+                    )
                 ),
             )
         except ValueError as error:
@@ -570,6 +601,7 @@ def configured_arguments() -> list[str]:
         "SOURCE_LAYOUT",
         "RUN_MODE",
         "PRINT_DIFF",
+        "CAPACITY_ONLY",
         "GRID_PARAMETERS",
         "BACKUP_DIRECTORY",
         "RESTORE_DIRECTORY",
@@ -579,12 +611,15 @@ def configured_arguments() -> list[str]:
     mode = config.get("RUN_MODE", "preview")
     layout = config.get("SOURCE_LAYOUT", "grasp2018")
     print_diff = config.get("PRINT_DIFF", True)
+    capacity_only = config.get("CAPACITY_ONLY", False)
     if mode not in ("preview", "apply", "check"):
         raise ValueError("RUN_MODE must be preview, apply, or check")
     if layout not in ("grasp2018", "atomic-suite"):
         raise ValueError("SOURCE_LAYOUT must be grasp2018 or atomic-suite")
     if not isinstance(print_diff, bool):
         raise ValueError("PRINT_DIFF must be true or false")
+    if not isinstance(capacity_only, bool):
+        raise TypeError("CAPACITY_ONLY must be true or false")
 
     def config_path(name: str) -> Path | None:
         value = config.get(name)
@@ -605,6 +640,8 @@ def configured_arguments() -> list[str]:
     if restore is not None:
         arguments.extend(("--restore", str(restore)))
     else:
+        if capacity_only:
+            arguments.append("--capacity-only")
         if root is None:
             raise ValueError(
                 "set GRASP_SOURCE in config.toml to your GRASP source directory"
@@ -653,6 +690,12 @@ def main(argv: list[str] | None = None) -> int:
         help="compiled capacity; also sets every duplicate NNN1 to NNNP+10",
     )
     parser.add_argument("--n", type=int, help="finite-nucleus runtime point count")
+    parser.add_argument(
+        "--capacity-only",
+        action="store_true",
+        help="edit only capacities and finite-nucleus N; requires --nnnp and --n, "
+        "rejects other grid parameters, and preserves existing initialization",
+    )
     parser.add_argument(
         "--h", type=float, help="finite-nucleus exponential-coordinate step"
     )
@@ -712,9 +755,11 @@ def main(argv: list[str] | None = None) -> int:
         **{name: getattr(args, name) for name in Settings.__dataclass_fields__}
     )
     requested = any(value is not None for value in vars(settings).values())
-    if args.restore and (requested or args.backup_dir or args.check):
+    if args.restore and (
+        requested or args.backup_dir or args.check or args.capacity_only
+    ):
         parser.error(
-            "--restore cannot be combined with parameter, backup-dir, or check options"
+            "--restore cannot be combined with parameter, capacity-only, backup-dir, or check options"
         )
     if not args.restore and not requested:
         parser.error(
@@ -733,7 +778,9 @@ def main(argv: list[str] | None = None) -> int:
                 else Path(__file__).resolve().parents[2] / "grasp"
             )
             root = root.resolve()
-            changes = plan(root, settings, args.layout)
+            changes = plan(
+                root, settings, args.layout, capacity_only=args.capacity_only
+            )
         if file_config:
             print(f"Configuration: {Path(__file__).resolve().with_name('config.toml')}")
         print(f"Source: {root}\nFiles requiring changes: {len(changes)}")
@@ -772,6 +819,12 @@ def main(argv: list[str] | None = None) -> int:
                 )
             )
         if not args.restore:
+            if args.capacity_only:
+                print(
+                    "Capacity-only: edit NNNP/NNN1 and finite-nucleus N; "
+                    "preserve existing grid initialization and ACCY timing. "
+                    "Earlier patches are not reverted."
+                )
             print(
                 f"Scope: {args.layout} radial applications. Unspecified numerical values stay unchanged."
             )

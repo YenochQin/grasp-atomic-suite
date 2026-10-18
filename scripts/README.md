@@ -62,6 +62,49 @@ python3 /path/to/grasp-atomic-suite/scripts/patch_grasp_grid.py
 恢复模式自动忽略数值配置和 `BACKUP_DIRECTORY`；恢复完成后
 删除或注释 `RESTORE_DIRECTORY`。恢复后也需要重新编译。
 
+## 只扩容量，保留 590 个默认网格点
+
+2026-10-15 新增 `CAPACITY_ONLY`，基于脚本修订前版本 `7da0ce4` 的接口扩展。
+它默认关闭，原有调网格模式保持兼容。使用
+[容量专用模板](config.capacity-only.example.toml)，或将配置写成：
+
+```toml
+GRASP_SOURCE = "/path/to/grasp-NNNP-1990"
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"
+PRINT_DIFF = true
+CAPACITY_ONLY = true
+
+[GRID_PARAMETERS]
+nnnp = 1990
+n = 590
+```
+
+该模式要求同时提供 `nnnp` 和 `n`，拒绝 `h/rnt_scale/hp/accy/point_*` 等其他数值项，
+即使填写的是原版默认值也会报错。在脚本同目录保存为 `config.toml`，不带参数运行；
+预览后改为 `RUN_MODE="apply"` 写入，随后用 `"check"` 检查。命令行等价预览：
+
+```bash
+../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
+  --grasp /path/to/grasp-NNNP-1990 --layout grasp2018 \
+  --capacity-only --nnnp 1990 --n 590 --diff
+```
+
+补丁只修改容量声明 `NNNP/NNN1` 和现有活动初始化中的有限核默认 `N`（包括 RCI 公共初始化）。
+因此 `NNNP=1990`、`NNN1=2000`、有限核默认 `N=590`；原版点核默认 `MIN(220,NNNP)` 仍为 220。
+`RNT/H/HP/ACCY` 原有赋值与位置保持不动，包括 `rwfnrotate` 的历史 `RNT=2e-6`；
+不激活 `rwfnrelabel` 被注释的网格初始化，不补充 NPARM 导入，不追加 RMCDHF ACCY 重算。
+该模式也支持 `atomic-suite`，容量仍通过中央配置和转导接口生效。
+
+必须从干净原版副本开始，才能保留原版初始化。此模式保留输入源码现状，
+不会删除旧补丁已经插入的初始化或 ACCY 重算；有旧补丁时应先用其备份恢复，
+或重新准备干净副本。TOML 恢复模式忽略 `CAPACITY_ONLY`，仍按备份逐字节恢复。
+
+这里保证的是补丁修改范围，并非数值结果等价：原版 IN 尾部边界和 SETPOT 回退连接点
+也使用 `NNNP`，容量从 590 改为 1990 可能影响这些路径。脚本保留这些算法源码，
+没有将它们改为按 `N` 计算。交互输入和旧 `.res` 仍能覆盖默认网格。
+完成补丁检查后仍须全量重编译；数值等价性需要另做计算对照。
+
 ## 多份 GRASP 与 README 的 CMake 编译流程
 
 网格验证以未经修改的原版为基底：本工作区参考原版容量是 `NNNP=590、NNN1=600`。
@@ -178,7 +221,7 @@ make -j4 install
 时需从保留的原版副本或显式创建的备份恢复。脚本不支持并发编辑同一个源码树。
 
 原版布局覆盖 17 个径向应用入口、`rwfnrotate/rwfnrelabel` 和
-`rwfnestimate` 中重复的容量声明。它还恢复 `rwfnrelabel` 被注释的网格
+`rwfnestimate` 中重复的容量声明。默认调网格模式（未开启 `CAPACITY_ONLY`）还恢复 `rwfnrelabel` 被注释的网格
 初始化并在其 `GETHFD` 中导入 `npar_C` 的 `NPARM`，在 RMCDHF 的运行时
 ACCY 提示前重新计算默认 ACCY，保留用户随后显式输入 ACCY 的能力。
 指定 `--accy` 时也更新 RCI 恢复路径的数值阈值。
@@ -186,7 +229,7 @@ ACCY 提示前重新计算默认 ACCY，保留用户随后显式输入 ACCY 的�
 
 旧版脚本遗漏了上述模块导入，可能在编译 `rwfnrelabel.f90` 时出现
 `Symbol 'nparm' has no IMPLICIT type`。保留当前参数，使用更新后的脚本再次
-预览、应用和检查即可修复已经打过补丁的源码，无需先恢复原版。
+预览、应用和检查即可修复已经打过补丁的源码，无需先恢复原版；此修复不在 `CAPACITY_ONLY` 模式执行。
 手动修复时，在 `SUBROUTINE GETHFD(NAME)` 内的 `IMPLICIT` 语句之前添加：
 
 ```fortran

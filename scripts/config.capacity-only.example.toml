@@ -1,0 +1,16 @@
+# 只扩容量，保留原版有限核的 590 个默认网格点。
+# 复制为脚本同目录的 config.toml，并指向一份干净的原版源码副本。
+# 本模式保留输入源码现状，不撤销旧补丁，也不保证容量相关数值边界不变。
+GRASP_SOURCE = "/path/to/grasp-NNNP-1990"
+SOURCE_LAYOUT = "grasp2018"
+RUN_MODE = "preview"  # preview / apply / check
+PRINT_DIFF = true
+CAPACITY_ONLY = true
+
+# BACKUP_DIRECTORY = "/path/to/new-backup"
+# RESTORE_DIRECTORY = "/path/to/saved-backup"
+
+[GRID_PARAMETERS]
+nnnp = 1990  # NNN1 同步为 2000
+n = 590  # 固定有限核默认点数，避免随 NNNP 增大
+# 本模式必须提供 nnnp 和 n，且不允许任何其他 GRID_PARAMETERS 项。

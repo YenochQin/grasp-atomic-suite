@@ -1,4 +1,5 @@
 # D3-C3990：D4 前的同网格容量对照
+# 仅扩大容量并保留原版初始化时，使用 config.capacity-only.example.toml。
 # 复制为与 patch_grasp_grid.py 同目录的 config.toml 后使用。
 # 将脚本和配置一起复制到目标 GRASP 根目录时，GRASP_SOURCE="."。
 # 若留在本仓库 scripts/，请填写目标源码绝对路径；本仓库源码用 ".."。

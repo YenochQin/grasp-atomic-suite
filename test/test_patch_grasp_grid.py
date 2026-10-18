@@ -247,6 +247,7 @@ class PatchGridTests(unittest.TestCase):
                 {"GRID_PARAMETERS": {"typo": 1990}},
                 {"GRID_PARAMETERS": {"nnnp": None}},
                 {"PRINT_DIFF": "False"},
+                {"CAPACITY_ONLY": "true"},
                 {"GRID_PARAMETERS": {"nnnp": True}},
                 {"GRID_PARAMETERS": {"h": "0.025"}},
                 {"GRID_PARAMETERS": "not a table"},
@@ -347,6 +348,141 @@ class PatchGridTests(unittest.TestCase):
                     grid.main(["--grasp", str(self.root), "--h", "0.025"]), 0
                 )
                 self.assertEqual(planner.call_args.args[1], grid.Settings(h=0.025))
+
+    def test_capacity_only_preserves_every_other_source_line(self) -> None:
+        for layout in ("grasp2018", "atomic-suite"):
+            with self.subTest(layout=layout):
+                root = Path(self.temporary.name) / layout
+                fixture(root, layout)
+                if layout == "grasp2018":
+                    rotate = root / "src/tool/rwfnrotate.f90"
+                    rotate.write_text(
+                        rotate.read_text().replace("RNT = 2.D-6/Z", "RNT = 2.D-6")
+                    )
+                originals = {
+                    p.relative_to(root).as_posix(): p.read_bytes()
+                    for p in root.rglob("*.f90")
+                }
+                settings = grid.Settings(nnnp=1990, n=590)
+                changes = grid.plan(root, settings, layout, capacity_only=True)
+                expected = {}
+                capacity_files = (
+                    grid.CAPACITY_FILES
+                    if layout == "grasp2018"
+                    else (grid.SUITE_CONFIG_FILE,)
+                )
+                grid_files = (
+                    grid.GRID_FILES if layout == "grasp2018" else grid.SUITE_GRID_FILES
+                )
+                for relative, before in originals.items():
+                    after = before
+                    if relative in capacity_files:
+                        after = after.replace(b"NNNP = 590", b"NNNP = 1990")
+                        after = after.replace(b"NNN1 = 600", b"NNN1 = 2000")
+                    elif relative in grid_files and not relative.endswith(
+                        "rwfnrelabel.f90"
+                    ):
+                        after = after.replace(
+                            b"\n         N = NNNP\n", b"\n         N = 590\n"
+                        )
+                        after = after.replace(
+                            b"\n      N = NNNP\n", b"\n      N = 590\n"
+                        )
+                    expected[relative] = after
+                self.assertEqual(
+                    {c.relative: c.after for c in changes},
+                    {p: data for p, data in expected.items() if data != originals[p]},
+                )
+                backup = grid.apply(
+                    root, changes, Path(self.temporary.name) / f"{layout}-backup"
+                )
+                self.assertEqual(
+                    grid.plan(root, settings, layout, capacity_only=True), []
+                )
+                self.assertEqual(
+                    {p: (root / p).read_bytes() for p in originals}, expected
+                )
+                restored_root, restoration = grid.restore_plan(backup, root)
+                grid.write_changes(restored_root, restoration)
+                self.assertEqual(
+                    {p: (root / p).read_bytes() for p in originals}, originals
+                )
+
+    def test_capacity_only_toml_and_cli_apply_and_check(self) -> None:
+        parameters = {"nnnp": 1990, "n": 590}
+        originals = {p: p.read_bytes() for p in self.root.rglob("*.f90")}
+        backup = Path(self.temporary.name) / "capacity-only-backup"
+        config = {
+            "CAPACITY_ONLY": True,
+            "GRID_PARAMETERS": parameters,
+            "BACKUP_DIRECTORY": str(backup),
+        }
+        with redirect_stdout(io.StringIO()):
+            self.write_config(**config)
+            self.assertEqual(grid.main([]), 0)
+            self.assertEqual({p: p.read_bytes() for p in originals}, originals)
+            self.write_config(**config, RUN_MODE="check")
+            self.assertEqual(grid.main([]), 1)
+            self.write_config(**config, RUN_MODE="apply")
+            self.assertEqual(grid.main([]), 0)
+            self.assertEqual(grid.main([]), 0)
+            self.write_config(**config, RUN_MODE="check")
+            self.assertEqual(grid.main([]), 0)
+            self.assertEqual(
+                grid.main(
+                    [
+                        "--grasp",
+                        str(self.root),
+                        "--capacity-only",
+                        "--nnnp",
+                        "1990",
+                        "--n",
+                        "590",
+                        "--apply",
+                    ]
+                ),
+                0,
+            )
+            # Restoring from TOML ignores patch settings, including this mode.
+            self.write_config(**config, RUN_MODE="apply", RESTORE_DIRECTORY=str(backup))
+            self.assertEqual(grid.main([]), 0)
+            self.assertEqual({p: p.read_bytes() for p in originals}, originals)
+
+    def test_capacity_only_rejects_missing_or_extra_parameters_without_writes(
+        self,
+    ) -> None:
+        originals = {p: p.read_bytes() for p in self.root.rglob("*.f90")}
+        invalid = [{"nnnp": 1990}, {"n": 590}]
+        invalid.extend(
+            {"nnnp": 1990, "n": 590, name: 1}
+            for name in grid.Settings.__dataclass_fields__
+            if name not in ("nnnp", "n")
+        )
+        with redirect_stderr(io.StringIO()), redirect_stdout(io.StringIO()):
+            for parameters in invalid:
+                with self.subTest(parameters=parameters):
+                    self.write_config(
+                        CAPACITY_ONLY=True, GRID_PARAMETERS=parameters, RUN_MODE="apply"
+                    )
+                    with self.assertRaises(SystemExit) as error:
+                        grid.main([])
+                    self.assertEqual(error.exception.code, 2)
+                    self.assertEqual({p: p.read_bytes() for p in originals}, originals)
+
+    def test_capacity_only_preserves_preexisting_relabel_and_accy_patches(self) -> None:
+        grid.write_changes(
+            self.root, grid.plan(self.root, grid.Settings(nnnp=1990, n=590))
+        )
+        self.assertEqual(
+            grid.plan(self.root, grid.Settings(nnnp=1990, n=590), capacity_only=True),
+            [],
+        )
+
+    def test_capacity_only_rejects_partial_relabel_initializer(self) -> None:
+        relabel = self.root / "src/tool/rwfnrelabel.f90"
+        relabel.write_text(relabel.read_text() + "      N = NNNP\n")
+        with self.assertRaisesRegex(ValueError, "incomplete rwfnrelabel"):
+            grid.plan(self.root, grid.Settings(nnnp=1990, n=590), capacity_only=True)
 
     def test_suite_layout_patches_all_present_programs_and_restores(self) -> None:
         root = Path(self.temporary.name) / "suite"
