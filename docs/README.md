@@ -98,8 +98,9 @@ docs/
 `test/rmcdhf_orbopt/` 中的测试说明和实验结果保留在测试旁，
 分类索引仅链接[测试入口](../test/rmcdhf_orbopt/README.md)、
 [历史结果](../test/rmcdhf_orbopt/RESULTS.md)及
-[stage guard 实施记录](../test/rmcdhf_orbopt/STAGE_GUARD_IMPLEMENTATION.md)，
-没有把大型外部计算记录迁入 `docs/`。
+[已退役的 stage guard 历史记录](archive/orbopt_stage_guard_retired.md)，
+2026-10-19 移除 Python 阶段验收流程及其专属入口，实施记录已归档；
+Fortran 求解器、构建目标和直接回归流程保留。没有迁入大型外部计算数据。
 
 ## 后续维护规则
 

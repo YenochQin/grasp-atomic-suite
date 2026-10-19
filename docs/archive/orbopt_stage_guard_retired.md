@@ -1,5 +1,16 @@
 # RMCDHF orbital-optimisation production gates
 
+> **Retired 2026-10-19.** The three companion Python programs
+> `run_orbopt_stage.py`, `orbopt_stage_guard.py`, and `audit_stage_result.py`,
+> their Tools tests, the audit/replay helpers, acceptance fixture, and dedicated
+> SLURM job have been removed. `run_data_case.sh` retains direct Fortran
+> regression execution and the executable's own checks; it no longer provides
+> Python stage acceptance, immutable snapshots, or restart publication.
+> Source snapshots before removal: suite `afc3319`, Tools `3569c59`.
+> Everything below is the historical implementation/evidence record, including
+> obsolete commands and paths, rather than instructions for the current tree.
+> For the remaining runner, see [the test guide](../../test/rmcdhf_orbopt/README.md).
+
 Implemented 2026-09-14.  This note separates what the archived jobs can prove
 from the checks enforced for new active-space runs.
 
