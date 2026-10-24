@@ -111,6 +111,8 @@ ZZ=ZZ_{\mathrm{Coul}}-r(V_1+V_2).
 `r,b1,b2` 使用 `a0`，`k1` 使用 `Eh a0^4`，`k2` 使用 `Eh a0^6`。
 输入强度已包含模型所需系数，内核不再乘 `e²α/2`。
 E2 极化率与截断参数必须来自同一约定。
+参数确定、跃迁方向与单位换算见[参数准备参考](../reference/nuclear_polarization_parameters.md)，
+其中区分论文固定 50 keV 的 E2 修正极化率、实验跃迁能及截断拟合的适用条件。
 
 调用顺序是 `RADGRD → NUCPOT → NPOL_INIT[_MPI] → SETRWF*`。
 核电荷、Fermi 参数、`NNUC`、网格、`ACCY` 时序不改变。
