@@ -174,13 +174,17 @@ add_subdirectory("src/appl/rdensity")
 add_subdirectory("src/appl/ris4")
 # add_subdirectory("src/appl/rhfszeeman95")
 
-# Orbital optimization uses the same numerical libraries as property programs.
-# Keep serial/MPI selection consistent across the complete suite.
+# Fresh GRASP rmcdhf copies use the existing shared numerical libraries.
+# The rmcdhf90* directories retain the separate, older orbopt implementations.
 if(GRASP_BUILD_SERIAL_APPS)
+    add_subdirectory("src/appl/rmcdhf")
+    add_subdirectory("src/appl/rmcdhf_mem")
     add_subdirectory("src/appl/rmcdhf90")
     add_subdirectory("src/appl/rmcdhf90_mem")
 endif()
 if(TARGET mpiu90)
+    add_subdirectory("src/appl/rmcdhf_mpi")
+    add_subdirectory("src/appl/rmcdhf_mem_mpi")
     add_subdirectory("src/appl/rmcdhf90_mpi")
     add_subdirectory("src/appl/rmcdhf90_mem_mpi")
     add_subdirectory("src/appl/rmcdhf90_mem_strict_mpi")

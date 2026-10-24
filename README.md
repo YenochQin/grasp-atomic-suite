@@ -17,6 +17,7 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 │   │   ├── gj90/             # standalone Landé g_J calculator
 │   │   ├── rdensity/         # serial/MPI radial density and natural orbitals
 │   │   ├── rhfs90/           # relativistic hyperfine-structure program
+│   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # fresh GRASP copies with optional NP
 │   │   ├── rmcdhf90*/        # four rmcdhf_orbopt orbital optimization variants
 │   │   └── ris4/             # relativistic isotope-shift program
 │   └── lib/
@@ -47,7 +48,8 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 | `rhfs90` | `src/appl/rhfs90` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
 | `rdensity` | `src/appl/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/rdensity_mpi.md). |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing `name.i/name.ci` and angular intermediate data. |
-| Orbital optimization | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`, `rmcdhf_orbopt_mpi`, `rmcdhf_orbopt_mem`, `rmcdhf_orbopt_mem_mpi` | Serial/MPI variants with conventional or in-memory MCP storage. Existing `rwfn.out`, `rmix.out`, `rmcdhf.sum`, and `rmcdhf.log` conventions are retained. |
+| GRASP RMCDHF + optional NP | `src/appl/rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | `rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | Fresh copies from the workspace GRASP source, retaining its solver flow. Only these four read `npol.inp`; see [NP interface and provenance](docs/implemented/rmcdhf_nuclear_polarization.md). |
+| Existing orbital optimization | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`, `rmcdhf_orbopt_mpi`, `rmcdhf_orbopt_mem`, `rmcdhf_orbopt_mem_mpi` | Separate orbopt implementations; no NP input. Serial/MPI variants with conventional or in-memory MCP storage. Existing `rwfn.out`, `rmix.out`, `rmcdhf.sum`, and `rmcdhf.log` conventions are retained. |
 | Strict memory SCF | `src/appl/rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | Independent upstream-derived memory MPI solver: orbital AND energy convergence for two consecutive EOL cycles, plus radial snapshots and a convergence CSV. See [restart and validation guide](docs/implemented/rmcdhf_mem_strict_mpi.md). |
 | P0 diagnostics | `src/appl/rmcdhf90_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | Independent upstream copy with read-only traces across solution matching, damping and orthogonalization. Original stopping criteria are retained. See [diagnostic guide](docs/implemented/rmcdhf_mem_diag_mpi.md). |
 
@@ -62,9 +64,9 @@ The recommended build flow is out-of-source CMake:
 cmake --build build --target install -j4
 ```
 
-`configure.sh` passes `-DGRASP_ENABLE_MPI=ON` by default. If MPI Fortran is available, installation produces `bin/gj90_mpi`, `bin/rhfs_mpi`, `bin/ris4_mpi`, both `rmcdhf_orbopt*_mpi` programs, and the associated libraries.
+`configure.sh` passes `-DGRASP_ENABLE_MPI=ON` by default. If MPI Fortran is available, installation produces `bin/gj90_mpi`, `bin/rhfs_mpi`, `bin/ris4_mpi`, `rmcdhf_mpi`, `rmcdhf_mem_mpi`, both existing `rmcdhf_orbopt*_mpi` programs, and the associated libraries.
 
-To build all four orbital programs and all property programs together:
+To build the four fresh RMCDHF programs, the existing orbopt programs, and all property programs together:
 
 ```sh
 cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON
@@ -172,7 +174,7 @@ full rebuild and numerical convergence checks.
 
 See [shared parameter guide](docs/implemented/common_parameters.md) for the parameter table,
 initialization order, and validation. The suite layout edits the central capacity configuration
-and the nine individual grid entry points as needed; `parameter_def` remains a re-export interface.
+and the thirteen individual grid entry points as needed; `parameter_def` remains a re-export interface.
 For candidate values, their rationale, test datasets, and convergence criteria,
 see [GRASP grid parameter tuning](docs/plans/grasp_grid_parameter_tuning.md) (Chinese).
 

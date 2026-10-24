@@ -144,3 +144,6 @@ if(Python3_Interpreter_FOUND)
         COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/test_patch_grasp_grid.py")
 endif()
+
+# Independent synthetic NP tests; no GRASP preparation tools or atomic data.
+add_subdirectory(npol)

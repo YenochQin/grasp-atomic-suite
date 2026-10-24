@@ -1,4 +1,5 @@
 add_library(mod STATIC
+    npol_C.f90
     suite_parameters_M.f90
     parameter_def_M.f90
     vast_kind_param_M.f90
@@ -107,3 +108,9 @@ add_library(mod STATIC
 )
 setup_fortran_modules(mod)
 install(TARGETS mod DESTINATION lib/)
+
+# Check NP production routines as well as their test callers in Debug builds.
+if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    set_source_files_properties(npol_C.f90 PROPERTIES
+        COMPILE_OPTIONS "$<$<CONFIG:Debug>:-fcheck=all;-fbacktrace>")
+endif()

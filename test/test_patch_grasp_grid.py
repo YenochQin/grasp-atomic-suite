@@ -65,7 +65,7 @@ def fixture(root: Path, layout: str = "grasp2018") -> None:
         if relative.endswith("rwfnrelabel.f90"):
             block = "\n".join("!" + line for line in block.splitlines()) + "\n"
         text = block + "      ACCY = H**6\n"
-        if "/rmcdhf90" in relative:
+        if "/rmcdhf" in relative:
             text += "      IF (NDEF /= 0) THEN\n         WRITE (*,*) 'Revise the default ACCY = ', ACCY\n         READ *, ACCY\n      ENDIF\n"
         text += "      CALL SETQIC\n! NNNP = 590 is a historical comment\n"
         if relative.endswith("rwfnrelabel.f90"):
@@ -535,7 +535,7 @@ class PatchGridTests(unittest.TestCase):
         self.assertEqual(len(changes), 1 + len(grid.SUITE_GRID_FILES))
         self.assertNotIn(grid.CAPACITY_FILES[0], {c.relative for c in changes})
         for change in changes:
-            if "/rmcdhf90" in change.relative:
+            if "/rmcdhf" in change.relative:
                 self.assertEqual(change.after.count(b"ACCY = 1D-10"), 2)
         backup = grid.apply(root, changes, Path(self.temporary.name) / "real-backup")
         self.assertEqual(grid.plan(root, settings, "atomic-suite"), [])

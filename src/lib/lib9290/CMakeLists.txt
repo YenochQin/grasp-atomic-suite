@@ -1,4 +1,7 @@
 add_library(9290 STATIC
+    npol_input.f90
+    npol_kernel.f90
+    npol_init.f90
     alcbuf.f90
     alcbuf_I.f90
     arctan.f90
@@ -153,3 +156,9 @@ target_link_libraries_Fortran(9290 PRIVATE mod)
 target_link_libraries(9290 PRIVATE ${BLAS_LIBRARIES} ${BLAS_LINKER_FLAGS})
 target_link_libraries(9290 PRIVATE ${LAPACK_LIBRARIES} ${LAPACK_LINKER_FLAGS})
 install(TARGETS 9290 DESTINATION lib/)
+
+# Check NP production routines as well as their test callers in Debug builds.
+if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    set_source_files_properties(npol_input.f90 npol_kernel.f90 npol_init.f90 PROPERTIES
+        COMPILE_OPTIONS "$<$<CONFIG:Debug>:-fcheck=all;-fbacktrace>")
+endif()

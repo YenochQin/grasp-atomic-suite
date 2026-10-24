@@ -14,7 +14,7 @@ Git 提交；本次没有重跑性能基准或完整原子物理计算。
 docs/
 ├── README.md       # 全部文档的状态、核查依据和待补事项
 ├── implemented/    # 已实施功能的现行说明与代码流程
-├── plans/          # 仍需执行的实验/验证方案
+├── plans/          # 待执行的代码实施与实验/验证方案
 ├── reviews/        # 已完成的审查与证据记录
 ├── reference/      # 理论背景和参考草稿
 └── archive/        # 已被替代的蓝图、迁移快照和阶段性报告
@@ -22,7 +22,7 @@ docs/
 
 当前运行与构建先看[仓库 README](../README_ZH.md)和
 [脚本说明](../scripts/README.md)；参数管理看 `implemented/`，
-实施网格实验看 `plans/`，追溯变更和旧测量看 `archive/`。
+代码实施计划和网格实验看 `plans/`，追溯变更和旧测量看 `archive/`。
 归档文档保留设计与实验历史，不能直接当成当前配置指南。
 
 ## 逐份文档结论
@@ -32,8 +32,10 @@ docs/
 | 已实施 | [rmcdhf_mem_strict_mpi.md](implemented/rmcdhf_mem_strict_mpi.md) | 2026-10-13 新增独立内存 MPI 严格停止目标；编译、判据单元测试通过。完整 Linux MPI 重启与生产物理验证待执行。 |
 | 已实施 | [rmcdhf_mem_diag_mpi.md](implemented/rmcdhf_mem_diag_mpi.md) | 2026-10-13 从原版独立复制的 P0/START 诊断目标；记录起始解、内部迭代和耦合系数，保留原算法及停止判据。START 逐值对照、投影边界及 Linux 1/2-rank 输出不变性回归通过；Ni 失稳根因尚待诊断重放。 |
 | 已实施 | [rdensity_mpi.md](implemented/rdensity_mpi.md) | 2026-10-09 新增串行/MPI 自然轨道程序；CSF 分工、矩阵归约、解析小模型及 Ni 对照测试。大规模性能与物理收敛仍待验证。 |
-| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值；新增 P0 诊断目标后登记九个入口，NNNP=590、NNN1=600。 |
+| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值；2026-10-24 新增四个原版 RMCDHF 入口后共十三个入口，NNNP=590、NNN1=600。 |
 | 已实施 | [RHFS_gJ_report.md](implemented/RHFS_gJ_report.md) | 串行 RHFS 的加载、矩阵元、ASF 投影及输出链仍存在。仅覆盖该路径，不是 gj90/MPI 完整说明。 |
+| 已实施 | [rmcdhf_nuclear_polarization.md](implemented/rmcdhf_nuclear_polarization.md) | 2026-10-24 从 grasp 新复制四个原版 rmcdhf 目标并接入局域 E1/E2 NP；已有 orbopt 保持原状：独立输入、共享势、root I/O 与集体失败协议；串行/MPI 代码测试 9/9、14/14 通过，物理计算验证未执行。 |
+| 已完成代码计划 | [rmcdhf_nuclear_polarization_implementation.md](plans/rmcdhf_nuclear_polarization_implementation.md) | 保留实施设计、完成清单与结果；现行输入契约见已实施说明。 |
 | 待执行 | [grasp_grid_parameter_tuning.md](plans/grasp_grid_parameter_tuning.md) | 修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
 | 已完成审查 | [grasp_grid_methodology_review.md](reviews/grasp_grid_methodology_review.md) | 源码审查和最小例程诊断已完成，文档建议已落实。旧 P 配置等问题描述有指定历史版本。 |
 | 理论参考 | [lande_g.md](reference/lande_g.md) | 概念、ASF 与 LS 近似的参考草稿，不能划为功能实施计划。算符规范与系数尚未完整独立核对。 |
@@ -50,7 +52,7 @@ docs/
 - [suite_parameters_M.f90](../src/lib/libmod/suite_parameters_M.f90) 定义容量，
   [parameter_def_M.f90](../src/lib/libmod/parameter_def_M.f90) 转导原有常量名；
   当前 `NNNP=590`、`NNN1=600`。网格初始化仍在各入口。
-- 九个入口（含 P0 诊断目标）保留各自的原版点核/有限核默认值与 ACCY 初始化时序；
+- 十三个入口（含新复制的四个原版 RMCDHF 及 P0 诊断目标）保留各自的原版点核/有限核默认值与 ACCY 初始化时序；
   当前有限核默认 `N=NNNP=590`。suite 脚本布局按需修改集中容量配置和这些入口，保持转导接口。
 - [test/CMakeLists.txt](../test/CMakeLists.txt) 保留共享容量检查和网格脚本回归；
   历史测试数量不能代替当前实际验证。严格内存 MPI 的 Linux 重启测试另见其说明。

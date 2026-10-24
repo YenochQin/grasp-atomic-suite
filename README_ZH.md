@@ -17,6 +17,7 @@
 │   │   ├── gj90/             # Landé g_J 独立计算程序
 │   │   ├── rdensity/         # 串行/MPI 径向电子密度与自然轨道
 │   │   ├── rhfs90/           # 相对论超精细结构程序
+│   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # 从 grasp 新复制，支持可选 NP
 │   │   ├── rmcdhf90*/        # 四个 rmcdhf_orbopt 轨道优化版本
 │   │   └── ris4/             # 相对论同位素位移程序
 │   └── lib/
@@ -47,7 +48,8 @@
 | `rhfs90` | `src/appl/rhfs90` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
 | `rdensity` | `src/appl/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/rdensity_mpi.md)。 |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，输出 `name.i/name.ci` 及中间角向数据。 |
-| 轨道优化 | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`、`rmcdhf_orbopt_mpi`、`rmcdhf_orbopt_mem`、`rmcdhf_orbopt_mem_mpi` | 串行/MPI 与常规/内存 MCP 版本；输出仍使用 `rwfn.out`、`rmix.out`、`rmcdhf.sum`、`rmcdhf.log`。 |
+| 原版 RMCDHF + 可选 NP | `src/appl/rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | 从工作区 grasp 新复制，保留原版求解流程；仅这四个读取 `npol.inp`。详见[NP 接口与来源](docs/implemented/rmcdhf_nuclear_polarization.md)。 |
+| 既有轨道优化 | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`、`rmcdhf_orbopt_mpi`、`rmcdhf_orbopt_mem`、`rmcdhf_orbopt_mem_mpi` | 独立保留的 orbopt 实现，不接入 NP；串行/MPI 与常规/内存 MCP 版本，输出仍使用 `rwfn.out`、`rmix.out`、`rmcdhf.sum`、`rmcdhf.log`。 |
 | 严格内存 SCF | `src/appl/rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | 从原版独立复制的内存 MPI 程序；EOL 要求轨道与能量连续两轮同时达标，并保存逐轮波函数和收敛 CSV。详见[重启与验证说明](docs/implemented/rmcdhf_mem_strict_mpi.md)。 |
 | P0 分阶段诊断 | `src/appl/rmcdhf90_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | 从原版独立复制，记录匹配、阻尼和正交化前后的系数与径向值；保留原停止判据。详见[诊断说明](docs/implemented/rmcdhf_mem_diag_mpi.md)。 |
 
@@ -62,9 +64,9 @@
 cmake --build build --target install -j4
 ```
 
-`configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后会得到 `bin/gj90_mpi`、`bin/rhfs_mpi`、`bin/ris4_mpi`、两个轨道优化 MPI 程序以及对应库文件。
+`configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后会得到 `bin/gj90_mpi`、`bin/rhfs_mpi`、`bin/ris4_mpi`、新复制的 `rmcdhf_mpi`、`rmcdhf_mem_mpi`、原有两个 orbopt MPI 程序以及对应库文件。
 
-同时构建全部四个轨道优化版本和性质计算程序：
+同时构建新复制的四个原版 RMCDHF、原有 orbopt 系列和性质计算程序：
 
 ```sh
 cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON
@@ -171,7 +173,7 @@ ctest --test-dir build-all --output-on-failure
 需先将旧生成文件移出源码目录。
 
 参数列表、调用顺序和验证见[公共参数说明](docs/implemented/common_parameters.md)。
-本仓库的脚本布局按需修改集中容量配置和九个独立网格入口，保留转导接口。
+本仓库的脚本布局按需修改集中容量配置和十三个独立网格入口，保留转导接口。
 参数调整的具体数值、原因、测试数据及验收标准见
 [径向网格参数调整与验证规程](docs/plans/grasp_grid_parameter_tuning.md)。
 

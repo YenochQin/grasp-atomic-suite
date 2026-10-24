@@ -1,4 +1,5 @@
 add_library(mpiu90 STATIC
+    npol_init_mpi.f90
     mpi_C.f90
     mpiu.f90
     cpath.f90
@@ -33,3 +34,9 @@ set_target_properties(mpiu90 PROPERTIES
   LINK_FLAGS "${MPI_Fortran_LINK_FLAGS}"
 )
 install(TARGETS mpiu90 DESTINATION lib/)
+
+# Check NP production routines as well as their test callers in Debug builds.
+if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    set_source_files_properties(npol_init_mpi.f90 PROPERTIES
+        COMPILE_OPTIONS "$<$<CONFIG:Debug>:-fcheck=all;-fbacktrace>")
+endif()

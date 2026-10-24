@@ -58,6 +58,10 @@ CAPACITY_FILES = (
 )
 RESTART_FILES = ("src/appl/rci90/lodres.f90", "src/appl/rci90_mpi/lodres.f90")
 SUITE_GRID_FILES = (
+    "src/appl/rmcdhf/getscd.f90",
+    "src/appl/rmcdhf_mpi/getscdmpi.f90",
+    "src/appl/rmcdhf_mem/getscd.f90",
+    "src/appl/rmcdhf_mem_mpi/getscdmpi.f90",
     "src/appl/rmcdhf90/getscd.f90",
     "src/appl/rmcdhf90_mpi/getscdmpi.f90",
     "src/appl/rmcdhf90_mem/getscd.f90",
@@ -239,7 +243,7 @@ def patch_grid(
         lines[i] = set_assignment(lines[i], "HP", real_literal(settings.hp))
 
     accy_lines = [i for i, line in enumerate(lines) if assignment(line, "ACCY")]
-    expected_accy = (1, 2) if "/rmcdhf90" in relative else (1,)
+    expected_accy = (1, 2) if "/rmcdhf" in relative else (1,)
     if len(accy_lines) not in expected_accy:
         raise ValueError("unexpected default ACCY assignments")
     if len(accy_lines) == 2:
@@ -254,7 +258,7 @@ def patch_grid(
         lines[i] = set_assignment(lines[i], "ACCY", expression)
     # RMCDHF computes ACCY before optional grid input. Recompute before its
     # ACCY prompt, so the user can still override ACCY afterwards.
-    if "/rmcdhf90" in relative and sync_accy:
+    if "/rmcdhf" in relative and sync_accy:
         prompts = [
             i for i, line in enumerate(lines) if "Revise the default ACCY" in line
         ]
