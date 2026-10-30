@@ -163,9 +163,10 @@ make -j4 install
   --rnt-scale 2e-6 --hp 0 --accy 1e-10 --diff
 ```
 
-这个布局修改 `src/lib/libmod/suite_parameters_M.f90` 及需要变更的十三个入口（含新复制的四个原版 rmcdhf）：
+这个布局修改 `src/lib/libmod/suite_parameters_M.f90` 及需要变更的十七个网格入口（含四个 GRASPG 和四个新复制的原版 rmcdhf）：
 十个轨道程序（四个新原版、四个既有 orbopt、独立严格内存 MPI 和 P0 诊断版本）、
-RHFS、RIS 和 RDENSITY；g_J 复用 RHFS。
+RHFS、RIS 和 RDENSITY，以及 GRASPG 的波函数估计、SCF 和两个 RCI 入口；g_J 复用 RHFS。
+显式 ACCY 修改还覆盖 GRASPG 的两个 RCI 续算入口；`--accy 0` 恢复 `H**6`。
 所有入口都必须存在，不会因某个应用缺失而悄悄跳过。
 默认 `--layout grasp2018` 仍要求完整原版源码树，两种布局都会扫描整个 `src/`
 拒绝未识别的网格初始化或未同步的容量定义。

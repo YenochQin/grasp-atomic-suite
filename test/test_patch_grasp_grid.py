@@ -44,7 +44,7 @@ def fixture(root: Path, layout: str = "grasp2018") -> None:
     suite = layout == "atomic-suite"
     capacity_files = () if suite else grid.CAPACITY_FILES
     grid_files = grid.SUITE_GRID_FILES if suite else grid.GRID_FILES
-    restart_files = () if suite else grid.RESTART_FILES
+    restart_files = grid.SUITE_RESTART_FILES if suite else grid.RESTART_FILES
     if suite:
         for relative in (grid.SUITE_CONFIG_FILE, grid.CAPACITY_FILES[0]):
             path = root / relative
@@ -500,7 +500,8 @@ class PatchGridTests(unittest.TestCase):
         for entry in grid.SUITE_GRID_FILES:
             self.assertIn(b"N = 1179", output[entry])
             self.assertIn(b"H = 2.5D-2", output[entry])
-            self.assertIn(b"N = MIN(220,NNNP)", output[entry])
+            if "/rci90" not in entry:
+                self.assertIn(b"N = MIN(220,NNNP)", output[entry])
         backup = grid.apply(root, changes, Path(self.temporary.name) / "suite-backup")
         self.assertEqual(grid.plan(root, settings, "atomic-suite"), [])
         restored_root, restoration = grid.restore_plan(backup, root)
@@ -524,6 +525,7 @@ class PatchGridTests(unittest.TestCase):
             grid.SUITE_CONFIG_FILE,
             grid.CAPACITY_FILES[0],
             *grid.SUITE_GRID_FILES,
+            *grid.SUITE_RESTART_FILES,
         ):
             path = root / relative
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -532,7 +534,9 @@ class PatchGridTests(unittest.TestCase):
         self.assertEqual(grid.plan(root, grid.Settings(), "atomic-suite"), [])
         settings = grid.Settings(nnnp=1990, n=1179, h=0.025, accy=1e-10)
         changes = grid.plan(root, settings, "atomic-suite")
-        self.assertEqual(len(changes), 1 + len(grid.SUITE_GRID_FILES))
+        self.assertEqual(
+            len(changes), 1 + len(grid.SUITE_GRID_FILES) + len(grid.SUITE_RESTART_FILES)
+        )
         self.assertNotIn(grid.CAPACITY_FILES[0], {c.relative for c in changes})
         for change in changes:
             if "/rmcdhf" in change.relative:
@@ -645,7 +649,10 @@ class PatchGridTests(unittest.TestCase):
         fixture(root, "atomic-suite")
         fixed = grid.plan(root, grid.Settings(accy=1e-10), "atomic-suite")
         grid.write_changes(root, fixed)
-        self.assertEqual({c.relative for c in fixed}, set(grid.SUITE_GRID_FILES))
+        self.assertEqual(
+            {c.relative for c in fixed},
+            set(grid.SUITE_GRID_FILES + grid.SUITE_RESTART_FILES),
+        )
         self.assertTrue(all(b"ACCY = 1D-10" in c.after for c in fixed))
         reset = grid.plan(root, grid.Settings(accy=0), "atomic-suite")
         self.assertTrue(all(b"ACCY = H**6" in c.after for c in reset))

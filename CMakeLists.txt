@@ -191,6 +191,27 @@ if(TARGET mpiu90)
     add_subdirectory("src/appl/rmcdhf90_mem_diag_mpi")
 endif()
 
+# CSFG extension: share suite libraries and keep specialized kernels separate.
+option(GRASP_BUILD_CSFG "Build GRASPG configuration-state-function generator programs" ON)
+if(GRASP_BUILD_CSFG)
+    add_subdirectory("src/lib/libmod_csfg")
+    add_subdirectory("src/lib/lib9290_csfg")
+    add_subdirectory("src/lib/librang90_csfg")
+    foreach(app jj2lsj90_csfg rwfnestimate90_csfg rmixaccumulate_csfg
+                rcsfggenerate90_csfg rcsfginteract90_csfg rcsfgzerofirst90_csfg)
+        add_subdirectory("src/appl/${app}")
+    endforeach()
+    add_subdirectory("src/tool/graspg")
+    if(TARGET mpiu90)
+        add_subdirectory("src/lib/libdvd90mpi")
+        add_subdirectory("src/lib/libme_csfg")
+        foreach(app rangular90_csfg_mpi rci90_csfg_mpi
+                    rci90_block_csfg_mpi rmcdhf90_csfg_mpi)
+            add_subdirectory("src/appl/${app}")
+        endforeach()
+    endif()
+endif()
+
 # Unit and integration tests
 if(EXISTS "${PROJECT_SOURCE_DIR}/test/CMakeLists.txt")
     add_subdirectory("test")

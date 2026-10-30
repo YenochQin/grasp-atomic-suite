@@ -147,3 +147,7 @@ endif()
 
 # Independent synthetic NP tests; no GRASP preparation tools or atomic data.
 add_subdirectory(npol)
+
+if(TARGET mod_csfg)
+    add_subdirectory(graspg)
+endif()

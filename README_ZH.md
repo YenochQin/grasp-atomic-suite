@@ -157,7 +157,8 @@ ctest --test-dir build-all --output-on-failure
 公共容量集中定义在 [`suite_parameters_M.f90`](src/lib/libmod/suite_parameters_M.f90)，
 经 [`parameter_def_M.f90`](src/lib/libmod/parameter_def_M.f90) 转导，默认值与原版一致：
 `NNNP=590`、`NNN1=600`、`NNNW=127`、`NNNWM1=126`、`NNNWM2=125`、`KEYORB=215`。
-各入口保留原版网格初始化：有限核默认 `N=NNNP=590`，点核默认 `N=MIN(220,NNNP)`。
+各入口保留自身的原版网格初始化：有限核默认 `N=NNNP=590`；提供点核分支的程序使用
+`N=MIN(220,NNNP)`。两个 CSFG RCI 程序沿用公共网格初始化，没有独立点核分支。
 输入轨道会插值到当前计算网格。原版 RMCDHF 在网格交互之前计算 `ACCY=H**6`；
 交互改变 H 时应随后明确设置 ACCY。
 
@@ -173,7 +174,8 @@ ctest --test-dir build-all --output-on-failure
 需先将旧生成文件移出源码目录。
 
 参数列表、调用顺序和验证见[公共参数说明](docs/implemented/common_parameters.md)。
-本仓库的脚本布局按需修改集中容量配置和十三个独立网格入口，保留转导接口。
+本仓库的脚本布局按需修改集中容量配置和十七个独立网格入口；显式 ACCY 修改还覆盖
+两个 CSFG RCI 续算入口，保留转导接口。
 参数调整的具体数值、原因、测试数据及验收标准见
 [径向网格参数调整与验证规程](docs/plans/grasp_grid_parameter_tuning.md)。
 
@@ -202,3 +204,22 @@ ctest --test-dir build-all --output-on-failure
 ## 许可证
 
 本仓库采用 [MIT License](LICENSE)。
+
+## GRASPG / CSFG 扩展
+
+默认启用 `GRASP_BUILD_CSFG=ON`，构建 12 个串行 Fortran 工具、4 个 MPI 计算程序（需要 MPI），
+并安装 `rsave_csfg`。这些目标使用本仓库基础库；公共容量统一在 `suite_parameters_M.f90`，
+CSFG 专有容量与初值在 `csfg_parameters_M.f90`。程序清单、迁移分析、构建和验证范围见
+[GRASPG 集成说明](docs/implemented/graspg_integration.md)。
+
+`-DGRASP_BUILD_CSFG=OFF` 可关闭整个扩展；`-DGRASP_ENABLE_MPI=OFF` 保留串行 CSFG 工具。
+
+### 来源与文献引用
+
+CSFG 实现源自上游 [compas/graspg](https://github.com/compas/graspg)。本仓库对其进行迁移、
+集成和适配；GRASPG 实现与 CSFG 方法归功于原作者。使用这些程序开展研究时，
+请引用 GRASPG 软件论文、CSFG 方法论文以及其基础 GRASP2018 程序包：
+
+1. Ran Si, Yanting Li, Kai Wang, Chongyang Chen, Gediminas Gaigalas, Michel Godefroid, and Per Jönsson. “Graspg – An extension to Grasp2018 based on configuration state function generators.” *Computer Physics Communications* **312**, 109604 (2025). [DOI: 10.1016/j.cpc.2025.109604](https://doi.org/10.1016/j.cpc.2025.109604).
+2. Yanting Li et al. “Reducing the computational load – atomic multiconfiguration calculations based on configuration state function generators.” *Computer Physics Communications* **283**, 108562 (2023). [DOI: 10.1016/j.cpc.2022.108562](https://doi.org/10.1016/j.cpc.2022.108562).
+3. C. Froese Fischer, G. Gaigalas, P. Jönsson, and J. Bieroń. “GRASP2018—A Fortran 95 version of the General Relativistic Atomic Structure Package.” *Computer Physics Communications* **237**, 184–187 (2019). [DOI: 10.1016/j.cpc.2018.10.032](https://doi.org/10.1016/j.cpc.2018.10.032).

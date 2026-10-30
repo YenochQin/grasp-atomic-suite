@@ -29,10 +29,11 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 已实施 | [graspg_integration.md](implemented/graspg_integration.md) | 2026-10-30 GRASPG 计算源码、16 个程序、共享参数与串行/MPI CMake；工程回归通过，真实原子 SCF/RCI 验证未执行。 |
 | 已实施 | [rmcdhf_mem_strict_mpi.md](implemented/rmcdhf_mem_strict_mpi.md) | 2026-10-13 新增独立内存 MPI 严格停止目标；编译、判据单元测试通过。完整 Linux MPI 重启与生产物理验证待执行。 |
 | 已实施 | [rmcdhf_mem_diag_mpi.md](implemented/rmcdhf_mem_diag_mpi.md) | 2026-10-13 从原版独立复制的 P0/START 诊断目标；记录起始解、内部迭代和耦合系数，保留原算法及停止判据。START 逐值对照、投影边界及 Linux 1/2-rank 输出不变性回归通过；Ni 失稳根因尚待诊断重放。 |
 | 已实施 | [rdensity_mpi.md](implemented/rdensity_mpi.md) | 2026-10-09 新增串行/MPI 自然轨道程序；CSF 分工、矩阵归约、解析小模型及 Ni 对照测试。大规模性能与物理收敛仍待验证。 |
-| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值；2026-10-24 新增四个原版 RMCDHF 入口后共十三个入口，NNNP=590、NNN1=600。 |
+| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值；2026-10-30 加入 GRASPG 后共十七个网格入口和两个 RCI 续算入口，NNNP=590、NNN1=600。 |
 | 已实施 | [RHFS_gJ_report.md](implemented/RHFS_gJ_report.md) | 串行 RHFS 的加载、矩阵元、ASF 投影及输出链仍存在。仅覆盖该路径，不是 gj90/MPI 完整说明。 |
 | 已实施 | [rmcdhf_nuclear_polarization.md](implemented/rmcdhf_nuclear_polarization.md) | 2026-10-24 从 grasp 新复制四个原版 rmcdhf 目标并接入局域 E1/E2 NP；已有 orbopt 保持原状：独立输入、共享势、root I/O 与集体失败协议；串行/MPI 代码测试 9/9、14/14 通过，物理计算验证未执行。 |
 | 已完成代码计划 | [rmcdhf_nuclear_polarization_implementation.md](plans/rmcdhf_nuclear_polarization_implementation.md) | 保留实施设计、完成清单与结果；现行输入契约见已实施说明。 |
@@ -53,7 +54,7 @@ docs/
 - [suite_parameters_M.f90](../src/lib/libmod/suite_parameters_M.f90) 定义容量，
   [parameter_def_M.f90](../src/lib/libmod/parameter_def_M.f90) 转导原有常量名；
   当前 `NNNP=590`、`NNN1=600`。网格初始化仍在各入口。
-- 十三个入口（含新复制的四个原版 RMCDHF 及 P0 诊断目标）保留各自的原版点核/有限核默认值与 ACCY 初始化时序；
+- 十七个入口（含四个 GRASPG、新复制的四个原版 RMCDHF 及 P0 诊断目标）保留各自的原版点核/有限核默认值与 ACCY 初始化时序；
   当前有限核默认 `N=NNNP=590`。suite 脚本布局按需修改集中容量配置和这些入口，保持转导接口。
 - [test/CMakeLists.txt](../test/CMakeLists.txt) 保留共享容量检查和网格脚本回归；
   历史测试数量不能代替当前实际验证。严格内存 MPI 的 Linux 重启测试另见其说明。

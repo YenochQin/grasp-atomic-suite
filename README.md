@@ -159,9 +159,10 @@ Shared limits live in [`suite_parameters_M.f90`](src/lib/libmod/suite_parameters
 and are re-exported by [`parameter_def_M.f90`](src/lib/libmod/parameter_def_M.f90).
 The default values match upstream GRASP:
 `NNNP=590`, `NNN1=600`, `NNNW=127`, `NNNWM1=126`, `NNNWM2=125`, and `KEYORB=215`.
-Each grid entry point retains upstream defaults: finite nuclei use `N=NNNP=590`,
-while point nuclei use `N=MIN(220,NNNP)`. Input orbitals are interpolated onto the
-current calculation grid. Upstream RMCDHF initializes `ACCY=H**6` before optional
+Each grid entry point retains its upstream defaults: finite nuclei use `N=NNNP=590`.
+Programs with a point-nucleus branch use `N=MIN(220,NNNP)`; the two CSFG RCI
+programs retain their common grid initialization without a separate point branch.
+Input orbitals are interpolated onto the current calculation grid. Upstream RMCDHF initializes `ACCY=H**6` before optional
 interactive grid changes; explicitly supply ACCY if you change H.
 Copy [scripts/config.example.toml](scripts/config.example.toml) to `scripts/config.toml`,
 edit the local settings, and run [scripts/patch_grasp_grid.py](scripts/README.md)
@@ -174,7 +175,8 @@ full rebuild and numerical convergence checks.
 
 See [shared parameter guide](docs/implemented/common_parameters.md) for the parameter table,
 initialization order, and validation. The suite layout edits the central capacity configuration
-and the thirteen individual grid entry points as needed; `parameter_def` remains a re-export interface.
+and the seventeen individual grid entry points as needed. Explicit ACCY changes also cover
+the two CSFG RCI restart paths; `parameter_def` remains a re-export interface.
 For candidate values, their rationale, test datasets, and convergence criteria,
 see [GRASP grid parameter tuning](docs/plans/grasp_grid_parameter_tuning.md) (Chinese).
 
@@ -201,3 +203,24 @@ its implementation evidence, superseded claims, and remaining validation work.
 ## License
 
 This repository is distributed under the [MIT License](LICENSE).
+
+## GRASPG / CSFG extension
+
+`GRASP_BUILD_CSFG=ON` (default) adds 12 serial Fortran utilities, four MPI calculation
+programs when MPI is available, and the installed `rsave_csfg` script. They reuse
+this suite's base libraries and shared capacities. Set `GRASP_BUILD_CSFG=OFF` to
+exclude the extension, or `GRASP_ENABLE_MPI=OFF` to retain its serial utilities only.
+See the [integration and parameter guide](docs/implemented/graspg_integration.md)
+for executable names, source provenance, configuration, and validation limits.
+
+### Attribution and citation
+
+The CSFG implementation is derived from [compas/graspg](https://github.com/compas/graspg).
+This repository integrates and adapts that upstream code; the GRASPG implementation
+and CSFG methods are credited to their original authors. Research using these
+programs should cite the GRASPG software paper, the CSFG method paper, and the
+underlying GRASP2018 package:
+
+1. Ran Si, Yanting Li, Kai Wang, Chongyang Chen, Gediminas Gaigalas, Michel Godefroid, and Per Jönsson. “Graspg – An extension to Grasp2018 based on configuration state function generators.” *Computer Physics Communications* **312**, 109604 (2025). [DOI: 10.1016/j.cpc.2025.109604](https://doi.org/10.1016/j.cpc.2025.109604).
+2. Yanting Li et al. “Reducing the computational load – atomic multiconfiguration calculations based on configuration state function generators.” *Computer Physics Communications* **283**, 108562 (2023). [DOI: 10.1016/j.cpc.2022.108562](https://doi.org/10.1016/j.cpc.2022.108562).
+3. C. Froese Fischer, G. Gaigalas, P. Jönsson, and J. Bieroń. “GRASP2018—A Fortran 95 version of the General Relativistic Atomic Structure Package.” *Computer Physics Communications* **237**, 184–187 (2019). [DOI: 10.1016/j.cpc.2018.10.032](https://doi.org/10.1016/j.cpc.2018.10.032).

@@ -2,7 +2,7 @@
 
 > 文档状态：现行实现；2026-10-13 保留参数转导层，使用原版默认值与网格初始化。
 > 参考源码：工作区 GRASP `488e875d1a7ec631baf4ad33682798bc795b7435`。
-> 2026-10-24 新复制四个原版 RMCDHF 应用，现有十三个网格入口；来源见 [NP 实现说明](rmcdhf_nuclear_polarization.md)。
+> 2026-10-30 加入 GRASPG 后共十七个网格入口与两个 RCI 续算 ACCY 入口；见 [GRASPG 迁移说明](graspg_integration.md)。
 > 容量由集中配置定义，经 parameter_def 转导；历史实验数值不代表当前默认值。
 
 ## 参数归属
@@ -51,10 +51,12 @@ ACCY 初始化时序也恢复原版：
 仅其停止策略及诊断输出另有改动。`GRASP_COUNT_ACCY` 等原有 orbopt 实验覆盖
 仍按对应程序实现处理；严格内存版本不读取这些实验开关。
 
+GRASPG 的波函数估计、SCF 和两个 RCI 程序也使用这些共享容量。两个 RCI 程序沿用其原始公共网格初始化（没有启用独立点核分支）；波函数估计和 SCF 保留各自的点核/有限核分支。GRASPG 专有容量与初值见 [CSFG 参数说明](graspg_integration.md#graspg-专有容量与默认值)。
+
 ## 网格实验与重编译
 
 在独立源码副本上使用 [网格脚本](../../scripts/README.md)。`atomic-suite` 布局
-修改 `suite_parameters_M.f90` 和需要变更的十三个入口。
+修改 `suite_parameters_M.f90` 和需要变更的十七个入口；显式 ACCY 修改也覆盖两个 GRASPG RCI 续算入口。
 仅使用 `--nnnp` 时只改中央配置的 NNNP，NNN1 自动派生，转导模块及入口保持原样；
 `--n` 单独选择实际点数，其他网格参数仍修改各入口。脚本检查六项定义与完整转导接口。
 
@@ -83,7 +85,7 @@ ctest --test-dir build-upstream-parameters --output-on-failure
 
 使用 `build-upstream-parameters/bin/` 下的本次产物，或自行安装后核实可执行文件路径。
 Linux 服务器需在服务器上重新编译。`shared_grid_capacity` 检查共享数组编译容量一致；
-网格脚本回归覆盖原版布局和 suite 十三入口布局的预览、应用、重复应用、备份与恢复。
+网格脚本回归覆盖原版布局和 suite 十七入口布局的预览、应用、重复应用、备份与恢复。
 工程测试不能代替生产模型的收敛验证；候选网格仍按
 [网格实验方案](../plans/grasp_grid_parameter_tuning.md) 验收。
 

@@ -1,0 +1,84 @@
+# Source list follows the GRASPG Makefile (e157d9f).
+add_executable(rcsfginteract_csfg
+    debug_C.f90
+    hblock_C.f90
+    orb_C.f90
+    rang_Int_C.f90
+    terms_C.f90
+    dracah_I.f90
+    diaga1.f90
+    diaga1_I.f90
+    diaga2.f90
+    diaga2_I.f90
+    diaga3.f90
+    diaga3_I.f90
+    diaga4.f90
+    diaga4_I.f90
+    clrx_I.f90
+    iq.f90
+    iq_I.f90
+    ichkq1.f90
+    ichkq2.f90
+    ichop.f90
+    ichop_I.f90
+    ispar.f90
+    itjpo.f90
+    jcup.f90
+    jqs.f90
+    parsjl.f90
+    perko1.f90
+    prsrcn.f90
+    prsrsl.f90
+    setqna.f90
+    onescalar1INT.f90
+    onescalar1INT_I.f90
+    onescalar2INT.f90
+    onescalar2INT_I.f90
+    onescalarINT.f90
+    onescalarINT_I.f90
+    el1INT.f90
+    el1INT_I.f90
+    el2INT.f90
+    el2INT_I.f90
+    el31INT.f90
+    el31INT_I.f90
+    el32INT.f90
+    el32INT_I.f90
+    el33INT.f90
+    el33INT_I.f90
+    el3INT.f90
+    el3INT_I.f90
+    el41INT.f90
+    el41INT_I.f90
+    el4INT.f90
+    el4INT_I.f90
+    el51INT.f90
+    el51INT_I.f90
+    el52INT.f90
+    el52INT_I.f90
+    el53INT.f90
+    el53INT_I.f90
+    el5INT.f90
+    el5INT_I.f90
+    Interact_csf.f90
+    Interact_csf_I.f90
+    getinf.f90
+    getinf_I.f90
+    lodcsl_CSF.f90
+    lodcsl_CSF_I.f90
+    lodcsl_MR.f90
+    lodcsl_MR_I.f90
+    set_CSF_list.f90
+    set_CSF_list_I.f90
+    set_CSF_number.f90
+    set_CSF_number_I.f90
+    set_CSF_number_full.f90
+    set_CSF_number_full_I.f90
+    testfiles.f90
+    testfiles_I.f90
+    RCSFinteract.f90
+)
+setup_fortran_modules(rcsfginteract_csfg)
+target_include_directories(rcsfginteract_csfg PRIVATE "${Fortran_MODULE_DIRECTORY_root}/rcsfginteract_csfg")
+target_link_libraries_Fortran(rcsfginteract_csfg PRIVATE mod_csfg rang90 9290 mod)
+install(TARGETS rcsfginteract_csfg DESTINATION bin/)

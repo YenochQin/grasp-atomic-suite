@@ -58,6 +58,10 @@ CAPACITY_FILES = (
 )
 RESTART_FILES = ("src/appl/rci90/lodres.f90", "src/appl/rci90_mpi/lodres.f90")
 SUITE_GRID_FILES = (
+    "src/appl/rwfnestimate90_csfg/getinfo.f90",
+    "src/appl/rmcdhf90_csfg_mpi/getscdmpi.f90",
+    "src/appl/rci90_csfg_mpi/getcid.f90",
+    "src/appl/rci90_block_csfg_mpi/getcid.f90",
     "src/appl/rmcdhf/getscd.f90",
     "src/appl/rmcdhf_mpi/getscdmpi.f90",
     "src/appl/rmcdhf_mem/getscd.f90",
@@ -71,6 +75,10 @@ SUITE_GRID_FILES = (
     "src/appl/rhfs90/gethfd.f90",  # also compiled into gj90 and gj90_mpi
     "src/appl/ris4/getsmd.f90",
     "src/appl/rdensity/getsmd.f90",
+)
+SUITE_RESTART_FILES = (
+    "src/appl/rci90_csfg_mpi/lodres.f90",
+    "src/appl/rci90_block_csfg_mpi/lodres.f90",
 )
 SUITE_CONFIG_FILE = "src/lib/libmod/suite_parameters_M.f90"
 SUITE_PARAMETER_NAMES = ("KEYORB", "NNNP", "NNN1", "NNNW", "NNNWM1", "NNNWM2")
@@ -373,7 +381,7 @@ def plan(
         capacity_files, grid_files, restart_files = (
             (SUITE_CONFIG_FILE,),
             SUITE_GRID_FILES,
-            (),
+            SUITE_RESTART_FILES,
         )
     else:
         raise ValueError(f"unsupported layout: {layout}")
@@ -443,7 +451,8 @@ def plan(
             if len(indices) != 1:
                 raise ValueError(f"{relative}: expected one restart ACCY assignment")
             i = indices[0]
-            lines[i] = set_assignment(lines[i], "ACCY", real_literal(settings.accy))
+            expression = "H**6" if settings.accy == 0 else real_literal(settings.accy)
+            lines[i] = set_assignment(lines[i], "ACCY", expression)
             texts[relative] = "".join(lines)
     # Inspect the entire tree, not just files we intend to edit. Unknown radial
     # capacity/default locations may be an upstream version we do not support.
@@ -489,6 +498,7 @@ def plan(
                     )
                 )
                 and relative not in grid_files
+                and not (relative in restart_files and assignment(line, "ACCY"))
                 and relative != "src/tool/rwfnmchfmcdf.f90"
             ):
                 raise ValueError(f"unrecognized grid initializer: {relative}:{number}")
