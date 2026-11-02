@@ -29,6 +29,7 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 已实施 | [jj2lsj_openmp.md](implemented/jj2lsj_openmp.md) | 2026-11-02 `jj2lsj_omp` 普通 CSF 的 OpenMP LS 行转换，保留默认提前停止与串行 `.lsj.T`；数值/文件回归及 Debug、无 OpenMP 构建通过，生产规模性能未测。 |
 | 已实施 | [graspg_integration.md](implemented/graspg_integration.md) | 2026-10-30 GRASPG 计算源码、16 个程序、共享参数与串行/MPI CMake；工程回归通过，真实原子 SCF/RCI 验证未执行。 |
 | 已实施 | [rmcdhf_mem_strict_mpi.md](implemented/rmcdhf_mem_strict_mpi.md) | 2026-10-13 新增独立内存 MPI 严格停止目标；编译、判据单元测试通过。完整 Linux MPI 重启与生产物理验证待执行。 |
 | 已实施 | [rmcdhf_mem_diag_mpi.md](implemented/rmcdhf_mem_diag_mpi.md) | 2026-10-13 从原版独立复制的 P0/START 诊断目标；记录起始解、内部迭代和耦合系数，保留原算法及停止判据。START 逐值对照、投影边界及 Linux 1/2-rank 输出不变性回归通过；Ni 失稳根因尚待诊断重放。 |

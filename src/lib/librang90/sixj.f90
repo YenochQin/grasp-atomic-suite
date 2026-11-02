@@ -48,6 +48,9 @@
 !-----------------------------------------------
       DATA RACA/ 15625*1.D-20/
       DATA UNDEF/ 1.D-20/
+!     The jj2lsj OpenMP object build gives each thread its own lazy cache.
+!     Ordinary suite libraries compile this sentinel as a comment.
+!$OMP THREADPRIVATE(RACA)
       SI = ZERO
       IF (ITIK /= 0) THEN
 !

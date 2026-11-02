@@ -44,6 +44,7 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 
 | Program | Source directory | CMake targets | Purpose |
 | --- | --- | --- | --- |
+| `jj2lsj_omp` | `src/appl/jj2lsj90` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/jj2lsj_openmp.md). Separate from `jj2lsj_csfg`. |
 | `gj90` | `src/appl/gj90` | `gj90`, `gj90_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, `name.c`, `name.m/name.cm`, and `name.w`, then writes `name.gj/name.cgj`. |
 | `rhfs90` | `src/appl/rhfs90` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
 | `rdensity` | `src/appl/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/rdensity_mpi.md). |
@@ -53,7 +54,7 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 | Strict memory SCF | `src/appl/rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | Independent upstream-derived memory MPI solver: orbital AND energy convergence for two consecutive EOL cycles, plus radial snapshots and a convergence CSV. See [restart and validation guide](docs/implemented/rmcdhf_mem_strict_mpi.md). |
 | P0 diagnostics | `src/appl/rmcdhf90_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | Independent upstream copy with read-only traces across solution matching, damping and orthogonalization. Original stopping criteria are retained. See [diagnostic guide](docs/implemented/rmcdhf_mem_diag_mpi.md). |
 
-The default CMake configuration attempts to build MPI versions. If no MPI Fortran toolchain is found, MPI targets are skipped. Serial application targets are disabled by default and must be enabled explicitly at CMake configuration time.
+The default CMake configuration attempts to build MPI versions. If no MPI Fortran toolchain is found, MPI targets are skipped. Serial orbital/property targets must be enabled explicitly. `jj2lsj_omp` is always built; `GRASP_JJ2LSJ_OPENMP=ON` enables OpenMP when available, and `OMP_NUM_THREADS` selects the thread count. Transformation-file modes retain the serial backend.
 
 ## Build
 

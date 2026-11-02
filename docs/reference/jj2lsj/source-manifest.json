@@ -1,0 +1,75 @@
+{
+  "import_date": "2026-11-02",
+  "suite_base_revision": "a4661441492e38beb99293182cb9257326d2dcef",
+  "upstream_repository": "https://github.com/compas/grasp",
+  "source_description": "Workspace grasp/src/appl/jj2lsj90 snapshot; source headers dated January 2025. No standalone source Git revision was available.",
+  "license": "MIT; original author notices retained; see repository LICENSE.",
+  "hash_scope": "Original files before integration changes, not current destination hashes.",
+  "files": [
+    {
+      "source": "src/appl/jj2lsj90/getmixblock.f90",
+      "destination": "src/appl/jj2lsj90/getmixblock.f90",
+      "sha256": "598d19627d1801eb2b8f78c62ea0ee6db570befef8e8b41eee76339f6fc7da8b"
+    },
+    {
+      "source": "src/appl/jj2lsj90/getmixblock_I.f90",
+      "destination": "src/appl/jj2lsj90/getmixblock_I.f90",
+      "sha256": "394a6cfb33b7e46fe0b86b144bab5fd649fb0507d04bd8d67d48f949b7c94d8c"
+    },
+    {
+      "source": "src/appl/jj2lsj90/idigit.f90",
+      "destination": "src/appl/jj2lsj90/idigit.f90",
+      "sha256": "6b163898b4b7c6e72b475bf821b736e2d845e0372f86369293710d590b52b78c"
+    },
+    {
+      "source": "src/appl/jj2lsj90/idigit_I.f90",
+      "destination": "src/appl/jj2lsj90/idigit_I.f90",
+      "sha256": "012da4ec90af3e042a2a10bfa6fd89b443c078ffd0fc03960688e989615e7f95"
+    },
+    {
+      "source": "src/appl/jj2lsj90/jj2lsj2K.f90",
+      "destination": "src/appl/jj2lsj90/jj2lsj2K.f90",
+      "sha256": "d0bd6812db5cbe58bc2d21b5c56f40fce67f66041a460b5f91ed09444798bf86"
+    },
+    {
+      "source": "src/appl/jj2lsj90/jj2lsj_code.f90",
+      "destination": "src/appl/jj2lsj90/jj2lsj_code.f90",
+      "sha256": "31a7818d5377174ec9aa1148a29d8abc9515e729e8f3cd3223477f11e5a20475"
+    },
+    {
+      "source": "src/appl/jj2lsj90/jj2lsj_data_1_C.f90",
+      "destination": "src/appl/jj2lsj90/jj2lsj_data_1_C.f90",
+      "sha256": "b7dac8e104a4688ab66ecf8d3595427854a0c074ca8baf9aed45c2f7bd5ad4cf"
+    },
+    {
+      "source": "src/appl/jj2lsj90/jj2lsj_data_2_C.f90",
+      "destination": "src/appl/jj2lsj90/jj2lsj_data_2_C.f90",
+      "sha256": "a9d903a30714f96813b9cd7215e976ad5c5960b87b839879edbced954b1d3942"
+    },
+    {
+      "source": "src/appl/jj2lsj90/jj2lsj_data_3_C.f90",
+      "destination": "src/appl/jj2lsj90/jj2lsj_data_3_C.f90",
+      "sha256": "c97471d28310a104fdad9070b377eefada0aecef1c4d77ba36f8a1a9bc1256de"
+    },
+    {
+      "source": "src/appl/jj2lsj90/lval.f90",
+      "destination": "src/appl/jj2lsj90/lval.f90",
+      "sha256": "e3d79971de60de44f0e544d7039abdb764ccf067455a2a3d87f8fcb9f7884f8e"
+    },
+    {
+      "source": "src/appl/jj2lsj90/lval_I.f90",
+      "destination": "src/appl/jj2lsj90/lval_I.f90",
+      "sha256": "4149bbc3fec2b6ab6b31fe5bff19c246e8f0a33c62d5d02d9420769f0a07b7e5"
+    },
+    {
+      "source": "src/appl/jj2lsj90/packLS.f90",
+      "destination": "src/appl/jj2lsj90/packLS.f90",
+      "sha256": "3d7a1cf299ee0b280541a9c1970f60459c2a4001d82e8da2d2b728b661e65f0f"
+    },
+    {
+      "source": "src/appl/jj2lsj90/packLS_I.f90",
+      "destination": "src/appl/jj2lsj90/packLS_I.f90",
+      "sha256": "7598f01cc630c3d8a74d53b53dbc8e1fe34d60c31b9e209c4f9ea539e0ebcf47"
+    }
+  ]
+}

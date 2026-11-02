@@ -1,2 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+# Reference labels preserve the exact GRASP formatted output.
+/test/jj2lsj/*.expected.lbl whitespace=-blank-at-eol

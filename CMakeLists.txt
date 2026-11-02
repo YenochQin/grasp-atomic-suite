@@ -172,6 +172,7 @@ add_subdirectory("src/appl/gj90")
 add_subdirectory("src/appl/rhfs90")
 add_subdirectory("src/appl/rdensity")
 add_subdirectory("src/appl/ris4")
+add_subdirectory("src/appl/jj2lsj90")
 # add_subdirectory("src/appl/rhfszeeman95")
 
 # Fresh GRASP rmcdhf copies use the existing shared numerical libraries.

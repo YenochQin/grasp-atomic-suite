@@ -44,6 +44,7 @@
 
 | 程序 | 源码目录 | CMake 目标 | 说明 |
 | --- | --- | --- | --- |
+| `jj2lsj_omp` | `src/appl/jj2lsj90` | `jj2lsj_omp` | 普通 CSF 的 OpenMP jj–LS 转换，按 LS 行并行并保留原截断顺序；见[构建、运行和验证说明](docs/implemented/jj2lsj_openmp.md)。与 `jj2lsj_csfg` 分开。 |
 | `gj90` | `src/appl/gj90` | `gj90`, `gj90_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、`name.c`、`name.m/name.cm`、`name.w`，输出 `name.gj/name.cgj`。 |
 | `rhfs90` | `src/appl/rhfs90` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
 | `rdensity` | `src/appl/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/rdensity_mpi.md)。 |
@@ -53,7 +54,7 @@
 | 严格内存 SCF | `src/appl/rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | 从原版独立复制的内存 MPI 程序；EOL 要求轨道与能量连续两轮同时达标，并保存逐轮波函数和收敛 CSV。详见[重启与验证说明](docs/implemented/rmcdhf_mem_strict_mpi.md)。 |
 | P0 分阶段诊断 | `src/appl/rmcdhf90_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | 从原版独立复制，记录匹配、阻尼和正交化前后的系数与径向值；保留原停止判据。详见[诊断说明](docs/implemented/rmcdhf_mem_diag_mpi.md)。 |
 
-默认 CMake 配置会尝试构建 MPI 版本。如果系统没有 MPI Fortran 工具链，会跳过 MPI 目标。串行应用目标默认关闭，需要在 CMake 配置时显式开启。
+默认 CMake 配置会尝试构建 MPI 版本。如果系统没有 MPI Fortran 工具链，会跳过 MPI 目标。串行轨道与性质程序需要显式开启。`jj2lsj_omp` 默认构建，`GRASP_JJ2LSJ_OPENMP=ON` 在可用时启用 OpenMP，线程数由 `OMP_NUM_THREADS` 控制；变换文件读写模式保留串行路径。
 
 ## 构建
 
