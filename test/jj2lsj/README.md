@@ -50,3 +50,15 @@ Use `-DGRASP_JJ2LSJ_OPENMP=OFF` in a separate build to test the serial-only
 configuration. Debug validation uses `-DCMAKE_Fortran_FLAGS_DEBUG='-g -fcheck=all -fbacktrace'`.
 These tests establish numerical and file-format compatibility for the fixtures;
 they are not a production performance benchmark or an atomic-accuracy study.
+
+
+The postprocessing regression also checks optional `JJ2LSJ_PROFILE=1`, exact
+reported output sizes, serial versus parallel ASF ranking, and unchanged unique
+labels. `test.jj2lsj_ranking` compares against an independent insertion-sort
+oracle, including signed zeros, equal squares, nonexact sums and an 84,000-row
+zero plateau. Nonfinite coefficients must fail explicitly. These tests preserve
+the original LS-order norm accumulation and all original eigenvector entries.
+
+`JJ2LSJ_POST_SERIAL=1` disables only ranking concurrency; `JJ2LSJ_SERIAL=1`
+disables both conversion and ranking concurrency. Both use the new stable sort.
+The original executable is needed to compare against the old sorting algorithm.

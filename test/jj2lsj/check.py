@@ -6,6 +6,7 @@ are numerical test data, not calculated atomic eigenstates.
 from __future__ import annotations
 
 import argparse
+import csv
 from fractions import Fraction
 import math
 import os
@@ -93,9 +94,11 @@ def input_text(mode: str, unique: bool = False) -> str:
 
 
 def run(executable: Path, work: Path, mode: str, threads: int,
-        force_serial: bool = False, unique: bool = False) -> str:
+        force_serial: bool = False, unique: bool = False,
+        profile: bool = False, post_serial: bool = False) -> str:
     env = dict(os.environ, OMP_NUM_THREADS=str(threads), OMP_DYNAMIC="FALSE",
-               OPENBLAS_NUM_THREADS="1", JJ2LSJ_SERIAL="1" if force_serial else "0")
+               OPENBLAS_NUM_THREADS="1", JJ2LSJ_PROFILE="1" if profile else "0",
+               JJ2LSJ_POST_SERIAL="1" if post_serial else "0", JJ2LSJ_SERIAL="1" if force_serial else "0")
     result = subprocess.run([str(executable)], input=input_text(mode, unique),
                             text=True, capture_output=True, cwd=work, env=env,
                             timeout=30, check=False)
@@ -192,13 +195,40 @@ def main() -> None:
         for threads in (1, 4):
             work = root / f"unique-{threads}"
             prepare(work, "even")
-            run(executable, work, "default", threads, unique=True)
+            run(executable, work, "default", threads, unique=True, profile=True)
             labels = [(work / f"test.uni.lsj.{suffix}").read_bytes() for suffix in ("lbl", "sum")]
             assert all(labels)
+            with (work / "jj2lsj_omp.profile.csv").open() as handle:
+                unique_profile = list(csv.DictReader(handle))
+            assert {"unique_read", "unique_assign_summary", "unique_write", "unique_total"} <= {
+                row["phase"] for row in unique_profile}
             if threads == 1:
                 scalar_labels = labels
             else:
                 assert labels == scalar_labels
+        # Same block with many ASFs: ordered output despite parallel ranking,
+        # and profiling must not change any scientific output bytes.
+        for single_post in (True, False):
+            work = root / f"profile-{single_post}"
+            prepare(work, "even", identity=True)
+            run(executable, work, "full", 4, profile=True, post_serial=single_post)
+            outputs = {p.name:p.read_bytes() for p in work.glob("test.lsj.*")}
+            if single_post:
+                post_reference = outputs
+            else:
+                assert outputs == post_reference
+            with (work / "jj2lsj_omp.profile.csv").open() as handle:
+                rows = list(csv.DictReader(handle))
+            assert rows[-1]["phase"] == "total"
+            for phase, suffix in [("label_bytes", ".lsj.lbl"), ("csf_bytes", ".lsj.c"), ("vector_bytes", ".lsj.j")]:
+                measured = next(int(r["items"]) for r in rows if r["phase"] == phase)
+                assert measured == (work / ("test" + suffix)).stat().st_size
+            assert all(float(r["seconds"]) >= 0 for r in rows)
+            assert {"csf_read_parse", "jcoup", "mix_read", "ls_rank_wall", "label_format", "label_write"} <= {
+                r["phase"] for r in rows}
+            workers = [int(r["items"]) for r in rows if r["phase"] == "ls_rank_wall"]
+            assert max(workers) == (1 if single_post or not args.openmp else 4)
+        assert not (root / "even-full-scalar/jj2lsj_omp.profile.csv").exists()
     print(f"{comparisons} signed-double/file comparisons; orthonormality, truncation, T replay and unique labels passed")
 
 

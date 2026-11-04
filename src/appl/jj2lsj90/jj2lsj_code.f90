@@ -18,6 +18,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       USE vast_kind_param, ONLY:  DOUBLE
+      USE jj2lsj_profile
+      USE jj2lsj_postprocess
       implicit none
 !-----------------------------------------------
 !   R o u t i n e s
@@ -1476,6 +1478,7 @@ CONTAINS
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
+      real(DOUBLE) :: phase_start
       integer            :: NELECDUM, NCFTOTDUM, NWDUM, NBLOCKDUM
       integer            :: JBDUM, NCFINBLKDUM, NEVINBLKDUM, IATJPDUM
       integer            :: I, II, ISUM, K, NCI, ierr, JB
@@ -1497,9 +1500,13 @@ CONTAINS
       ENDIF
 !
 !   Open, check, load data from, and close, the  .csl  file
+      phase_start=profile_time()
       CALL SETCSLA(NAME,NCORE)
+      call profile_emit('csf_read_parse',phase_start,items=NCF)
+      phase_start=profile_time()
       allocate(Jcoup(1:NW,1:NCF))
       CALL GETXJ
+      call profile_emit('jcoup',phase_start,items=NCF)
       WRITE (ISTDE,*)
       WRITE (ISTDE,*) 'Mixing coefficients from a CI calc.?'
       YES = GETYN ()
@@ -1519,7 +1526,9 @@ CONTAINS
 !GG-2017 end
 !
 !   Get the eigenvectors
+      phase_start=profile_time()
       CALL GETMIXBLOCK (NAME, NCI)
+      call profile_emit('mix_read',phase_start,items=NVEC)
       WRITE (ISTDE,*) 'Default settings?  (y/n) '
       YES = GETYN ()
       IF (YES) THEN
@@ -1937,11 +1946,15 @@ CONTAINS
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !GG NIST
-      integer :: i, j, jj, ii, string_l,IBLKNUM,ioutC,ioutj,UNIQUE,ioutT
+      integer :: i, j, jj, string_l,IBLKNUM,ioutC,ioutj,UNIQUE,ioutT
       integer :: level, nocsf_min, lev, string_length
       integer :: nocsf_max, sum_nocsf_min, Before_J
 !GG NIST
       integer :: NCFMIN, NCFMAX, NCF_LS_jj_MAX
+      type(ls_ranking), allocatable :: rankings(:)
+      integer :: post_lev, post_workers
+      real(DOUBLE) :: rank_start
+      real(DOUBLE) :: phase_start, format_start, format_seconds
       real(DOUBLE) :: THRESH, wa, wb,Ssms,g_j,g_JLS, sumthrsh
       character(len=4)   :: string_CNUM
       character(len=164)  :: string_CSF_ONE
@@ -1969,6 +1982,7 @@ CONTAINS
             NCFMAX = NCFMIN + NCFINBLK(IBLKNUM) - 1
          end if
          if(number_of_levels(IBLKNUM) == 0) GO TO 1
+         phase_start=profile_time()
          ithresh = 0
          do  i = NCFMIN, NCFMAX
             sumthrsh = ZERO
@@ -1979,11 +1993,17 @@ CONTAINS
             end do
             if(dabs(sumthrsh) >= dabs(EPSNEW)) ithresh(i) = 1
          end do
+         call profile_emit('screen',phase_start,IBLKNUM,items=count(ithresh(NCFMIN:NCFMAX)==1))
+         phase_start=profile_time()
          write(*,*)'The program generates a list of CSFs in LS-coupling'
          call setLS(ithresh,NCFMIN,NCFMAX)
+         call profile_emit('ls_basis',phase_start,IBLKNUM,items=asf_set_LS%csf_set_LS%nocsf)
+         phase_start=profile_time()
 !
 !     output to *.lsj.c
          if(ioutC == 1) call prCSFLSall (56,asf_set_LS%csf_set_LS,Before_J)
+         call profile_emit('csf_write',phase_start,IBLKNUM)
+         phase_start=profile_time()
          allocate(asf_set_LS%asf(1:NVEC))
          do i = 1, NVEC
             allocate(asf_set_LS%asf(i)%eigenvector(1:asf_set_LS%csf_set_LS%nocsf))
@@ -2003,8 +2023,10 @@ CONTAINS
          allocate (iw(NCF_LS_jj_MAX))
          allocate (leading_LS(NCF_LS_jj_MAX))
          NCF_i8 = NCF
+         call profile_emit('workspace',phase_start,IBLKNUM)
          do  lev = 1, number_of_levels(IBLKNUM)
             level = levels(IBLKNUM,lev)
+            phase_start=profile_time()
             weights = ZERO;    iw = 0;    wb = ZERO
             do  i = NCFMIN, NCFMAX
                if(ithresh(i) == 1) then
@@ -2022,6 +2044,7 @@ CONTAINS
                   end do
                end if
             end do
+            call profile_emit('jj_rank',phase_start,IBLKNUM,level)
             if(lev == 1) then
                print *, " "
                WRITE(*,'(A,A)') " .  .  .  .  .  .  .  .  .  .  .  .  .  .  .",&
@@ -2043,12 +2066,31 @@ CONTAINS
             if(lev == 1) then
                write(*,*)                                              &
                 'The program generates a list of transformation matrix'
+               phase_start=profile_time()
                call asf2ls                                             &
                (iw(1),ithresh,number_of_levels(IBLKNUM),IBLKNUM,levels,&
                NCFMIN,NCFMAX,ioutT)
+               call profile_emit('transform',phase_start,IBLKNUM)
+               allocate(rankings(number_of_levels(IBLKNUM)))
+               post_workers=post_worker_count(number_of_levels(IBLKNUM))
+               phase_start=profile_time()
+!$omp parallel do default(none) schedule(static) num_threads(post_workers) if(post_workers>1) &
+!$omp shared(rankings,number_of_levels,IBLKNUM,levels,asf_set_LS) private(post_lev,rank_start)
+               do post_lev=1,number_of_levels(IBLKNUM)
+                  rank_start=profile_time()
+                  call rank_ls(asf_set_LS%asf(levels(IBLKNUM,post_lev))%eigenvector,rankings(post_lev))
+                  rankings(post_lev)%seconds=profile_time()-rank_start
+               end do
+!$omp end parallel do
+               call profile_emit('ls_rank_wall',phase_start,IBLKNUM,items=post_workers)
+               do post_lev=1,number_of_levels(IBLKNUM)
+                  call profile_emit('ls_rank_asf',phase_start,IBLKNUM,levels(IBLKNUM,post_lev), &
+                       asf_set_LS%csf_set_LS%nocsf,elapsed=rankings(post_lev)%seconds)
+               end do
             end if
 !
 !     output to the screen jj- coupling
+            phase_start=profile_time()
             print *, "Weights of major contributors to ASF in jj-coupling:"
             print *, " "
             print *, " Level  J Parity      CSF contributions"
@@ -2093,38 +2135,18 @@ CONTAINS
             print *, " "
             print *, " Level  J Parity      CSF contributions"
             print *, " "
+            call profile_emit('jj_stdout',phase_start,IBLKNUM,level)
+            phase_start=profile_time()
             sum_nocsf_min = 0
             weights = ZERO;  weights2 = ZERO;  iw = 0;  wb = ZERO
-            do  i = 1,asf_set_LS%csf_set_LS%nocsf
-               wa = asf_set_LS%asf(level)%eigenvector(i)
-               wb = wb + wa*wa
-!GG NIST
-               if(i == 1) then
-                  weights(1)  = wa
-                  weights2(1) = wa*wa
-                  iw(1)       = 1
-               else
-                  do  j = 1,i
-                     if(j == i) then
-                       weights(i)  = wa
-                       weights2(i) = wa*wa
-                       iw(i)       = i
-                     else
-                       if (wa*wa > weights2(j)) then
-                         do ii = i,j,-1
-                           weights2(ii+1) = weights2(ii)
-                           weights(ii+1)  = weights(ii)
-                           iw(ii+1)       = iw(ii)
-                         end do
-                         weights(j)  = wa
-                         weights2(j) = wa*wa
-                         iw(j)       = i
-                         exit
-                       end if
-                     end if
-                  end do
-               end if
+            wb=rankings(lev)%norm
+            do i=1,asf_set_LS%csf_set_LS%nocsf
+               iw(i)=rankings(lev)%order(i)
+               weights(i)=asf_set_LS%asf(level)%eigenvector(iw(i))
+               weights2(i)=weights(i)*weights(i)
             end do
+            call profile_emit('ls_rank_gather',phase_start,IBLKNUM,level,asf_set_LS%csf_set_LS%nocsf)
+            phase_start=profile_time()
             if(IMINCOMPOFF == 1) THEN
                if (level > 1 .and. (wb*100.+dabs(MINCOMP)) <= 100.) THEN
                   WRITE (*,"(A,F5.0,A)")   &
@@ -2156,6 +2178,8 @@ CONTAINS
             if (nocsf_min <= 0) then
                stop "JJ2LSJ(): program stop C."
             end if
+            call profile_emit('candidate_select',phase_start,IBLKNUM,level,nocsf_min)
+            phase_start=profile_time()
             call convrt_double(asf_set_LS%csf_set_LS%csf(iw(1))%totalJ,string_CNUM,string_l)
             print 16, asf_set_LS%asf(level)%level_No,string_CNUM(1:string_l), &
                    asf_set_LS%csf_set_LS%csf(iw(1))%parity,                   &
@@ -2175,13 +2199,18 @@ CONTAINS
             end do
 !
 !     output to *.lsj.lbl
+            call profile_emit('ls_stdout',phase_start,IBLKNUM,level)
+            phase_start=profile_time()
+            format_seconds=0.0_DOUBLE
             IF(Before_J == 0) THEN
                Before_J = 1
             ELSE IF(lev == 1 .and. Before_J == 1) THEN
                write(57,'(A1)') ' '
             END IF
             DO j = 1,nocsf_min
+               format_start=profile_time()
                CALL packlsCSF(asf_set_LS%csf_set_LS,iw(j),string_CSF_ONE)
+               format_seconds=format_seconds+(profile_time()-format_start)
                IF(J == 1) THEN
                   write(57,'(I3,1X,A4,5X,A1,8X,F16.9,5X,F7.3,A)')        &
                   asf_set_LS%asf(level)%level_No,string_CNUM(1:string_l),&
@@ -2193,6 +2222,10 @@ CONTAINS
                write(57,'(7X,F12.8,3X,F11.8,3X,A)') weights(j),weights2(j),string_CSF_ONE(1:string_length)
             END DO
 !     output  *.lsj.j and
+            call profile_emit('label_format',phase_start,IBLKNUM,level,nocsf_min,elapsed=format_seconds)
+            call profile_emit('label_write',phase_start,IBLKNUM,level, &
+                              elapsed=profile_time()-phase_start-format_seconds)
+            phase_start=profile_time()
             IF(ioutj == 1) THEN
                IF(lev == 1) THEN
                   WRITE (58, '(//A8,I4,2X,A8,I4)' ) '  2*J = ',       &
@@ -2205,25 +2238,36 @@ CONTAINS
                write(58,'(7F11.8)')                                       &
                  (asf_set_LS%asf(level)%eigenvector(i), i=1,asf_set_LS%csf_set_LS%nocsf)
             END IF
+            call profile_emit('vector_write',phase_start,IBLKNUM,level)
          END DO
+         phase_start=profile_time()
          call dallocASFLS(asf_set_LS)
          deallocate(weights)
          deallocate(weights2)
          deallocate(iw)
          deallocate(leading_LS)
+         deallocate(rankings)
+         call profile_emit('release',phase_start,IBLKNUM)
     1    CONTINUE
       END DO
       deallocate(ithresh)
+      if(ioutC == 1) call profile_file_size('csf_bytes',56)
       close(56)
 !GG-2017
       IF (UNIQUE .EQ. 1) THEN
+         phase_start=profile_time()
          CALL uniquelsj
+         call profile_emit('unique_total',phase_start)
+         call profile_file_size('unique_summary_bytes',72)
+         call profile_file_size('unique_label_bytes',73)
          close(72)
          close(73)
       end if
 !GG-2017
+      call profile_file_size('label_bytes',57)
       close(57)
       IF(ioutj == 1) write(58,'(A)') '**'
+      if(ioutj == 1) call profile_file_size('vector_bytes',58)
       close(58)
       deallocate(Jcoup)
    16 format(1x,i4,1x,2a4,2x,100(3x,f8.5," of",i7,3x,f8.5," of",i7,3x,f8.5,&
@@ -3303,6 +3347,7 @@ CONTAINS
       CHARACTER    :: RECORD*53
       CHARACTER    :: FORM*11
       CHARACTER    :: Str*7
+      REAL(DOUBLE) :: phase_start
       REAL(DOUBLE) :: MAX_COMP
       INTEGER      :: IOS, IERR, INUM, NUM_Lev, I1,I2,I3,I4
       INTEGER      :: IPR, IPRF, NUM_OPT, Lev_OPT, New_J
@@ -3330,6 +3375,7 @@ CONTAINS
 !
       New_J = 0
       DO WHILE (New_J < 1)
+        phase_start=profile_time()
         NUM_Lev = 0
         New_J = 1
         DO
@@ -3369,6 +3415,8 @@ CONTAINS
         END DO
    1    CONTINUE
 !
+        call profile_emit('unique_read',phase_start,items=NUM_Lev)
+        phase_start=profile_time()
         NUM_OPT = 0
         ICOUNT = 1
         IPRGG = 1
@@ -3468,6 +3516,8 @@ CONTAINS
                     "--------------------------------------------------"
         write(72,'(A)')""
 !
+        call profile_emit('unique_assign_summary',phase_start,items=NUM_Lev)
+        phase_start=profile_time()
         DO I1 = 1, NUM_Lev
           write(73,'(A3,A5,5X,A1,8X,F16.9,5X,F7.3,A)')                 &
           Str_No(I1),Str_J(I1),Str_P(I1),Energy(I1),PRO(I1),"%"
@@ -3477,6 +3527,7 @@ CONTAINS
           END DO
         END DO
         if(New_J < 1) write(73,'(A)') " "
+        call profile_emit('unique_write',phase_start,items=NUM_Lev)
 !
       end do
       END SUBROUTINE uniquelsj

@@ -25,6 +25,7 @@ add_library(jj2lsj_thread_kernels OBJECT ${jj2lsj_kernels})
 target_link_libraries_Fortran(jj2lsj_thread_kernels PRIVATE rang90 9290 mod)
 
 add_library(jj2lsj_conversion STATIC
+    jj2lsj_profile.f90 jj2lsj_postprocess.f90
     getmixblock.f90 getmixblock_I.f90
     idigit.f90 idigit_I.f90 lval.f90 lval_I.f90 packLS.f90 packLS_I.f90
     jj2lsj_data_1_C.f90 jj2lsj_data_2_C.f90 jj2lsj_data_3_C.f90

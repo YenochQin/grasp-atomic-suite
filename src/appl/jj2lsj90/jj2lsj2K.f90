@@ -30,6 +30,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE jj2lsj_profile
       USE jj2lsj_code
       IMPLICIT NONE
 !-----------------------------------------------
@@ -37,6 +38,7 @@
 !-----------------------------------------------
       integer           :: ncount1
 !-----------------------------------------------
+      call profile_start()
       call starttime (ncount1, 'jj2lsj_omp')
       print *, " "
       print *, "jj2lsj_omp: Transformation of ASFs from a jj-coupled CSF basis"
@@ -57,6 +59,7 @@
       CALL setiso('isodata')
       CALL jj2lsj
 !
+      call profile_finish()
       call stoptime (ncount1, 'jj2lsj_omp')
       stop
       end program jj2lsj_omp
