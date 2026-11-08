@@ -29,6 +29,7 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 初步分析完成，诊断待实施 | [rmcdhf_mpi_single_node_diagnostics_2026-11-09.md](plans/rmcdhf_mpi_single_node_diagnostics_2026-11-09.md) | 普通/memory MPI 在大规模 CSF 下全程反复 D 状态；记录单节点条件、SETLAG 冻结侧冗余和 Davidson 候选。根因未确定，自动采样、服务器对照及 MPI/OpenMP 优化均未实施。 |
 | 严格构建通过，完整验收未通过 | [f2018_strict_interfaces_npol_2026-11-09.md](reviews/f2018_strict_interfaces_npol_2026-11-09.md) | 内部接口/NP 路径/SOLVE 意图修复；Check/Release 各 64/68 通过、4 跳过；同 O0/O2 一轮全输出一致，额外 MPI Davidson 早收敛问题待修。 |
 | 设施初始验证记录 | [f2018_acceptance_facilities_2026-11-09.md](reviews/f2018_acceptance_facilities_2026-11-09.md) | profiles、强制清单、模块/安装隔离与 DDOT 14/14；保留初始 audit 50/63 及严格编译失败证据，后续状态见上一项。 |
 | 已移除参数放行 | [argument_interfaces_2026-11-08.md](reviews/argument_interfaces_2026-11-08.md) | gfortran 15/F2018 全量构建不再使用 fallow-argument-mismatch；MPI/BLAS 显式接口、类型和有界数组区段修复；当前 CTest 36/47，11 项为既有失败；orbopt 已退役。 |
