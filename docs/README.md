@@ -29,6 +29,8 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 已实施 | [standard_grasp_integration.md](implemented/standard_grasp_integration.md) | 2026-11-08 导入普通 rangular、rwfnestimate、rbiotransform、rci、rtransition 五类程序共十个目标，复用 suite 共享库/参数；移除初猜程序局部容量定义，补丁器覆盖 25 个网格/4 个续算入口。完整 F2018 与原子物理验收尚未完成。 |
+| 已完成接入检查 | [standard_grasp_integration_validation_2026-11-08.md](reviews/standard_grasp_integration_validation_2026-11-08.md) | GNU 15.3.0 全量及 serial-only 构建通过；35 项补丁器测试通过；CTest 28/39 通过，11 项 NP/strict 失败在未修改基线复现。记录既有并行模块输出冲突；不宣称全绿或物理验收。 |
 | 已实施 | [jj2lsj_postprocessing.md](implemented/jj2lsj_postprocessing.md) | 2026-11-04 分阶段计时、稳定归并排序及 ASF 排序并行；唯一标签和输出按序执行，跨 block 流水线经计时评估暂缓。 |
 | 已实施 | [jj2lsj_openmp.md](implemented/jj2lsj_openmp.md) | 2026-11-02 `jj2lsj_omp` 普通 CSF 的 OpenMP LS 行转换，保留默认提前停止与串行 `.lsj.T`；数值/文件回归及 Debug、无 OpenMP 构建通过；Gd I 真实输入兼容性通过，已有单次性能观测。 |
 | 已实施 | [graspg_integration.md](implemented/graspg_integration.md) | 2026-10-30 GRASPG 计算源码、16 个程序、共享参数与串行/MPI CMake；工程回归通过，真实原子 SCF/RCI 验证未执行。 |
@@ -40,6 +42,7 @@ docs/
 | 已实施 | [rmcdhf_nuclear_polarization.md](implemented/rmcdhf_nuclear_polarization.md) | 2026-10-24 从 grasp 新复制四个原版 rmcdhf 目标并接入局域 E1/E2 NP；已有 orbopt 保持原状：独立输入、共享势、root I/O 与集体失败协议；串行/MPI 代码测试 9/9、14/14 通过，物理计算验证未执行。 |
 | 已完成代码计划 | [rmcdhf_nuclear_polarization_implementation.md](plans/rmcdhf_nuclear_polarization_implementation.md) | 保留实施设计、完成清单与结果；现行输入契约见已实施说明。 |
 | 待执行 | [grasp_grid_parameter_tuning.md](plans/grasp_grid_parameter_tuning.md) | 修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
+| 准备阶段部分实施 | [f2018_migration_gfortran15_2026-11-08.md](plans/f2018_migration_gfortran15_2026-11-08.md) | 以 suite `179ca9e` 为基线规划 gfortran 15 的 F2018 迁移。五类普通程序的导入与共享参数接入已先行完成；P0–P9 的完整严格构建及数值验收仍待执行，不将导入工作视为标准迁移完成。 |
 | 阶段性实施 | [jj2lsj_postprocessing_parallelization_2026-11-03.md](plans/jj2lsj_postprocessing_parallelization_2026-11-03.md) | 后处理按 ASF 并行、唯一标签依赖与跨 block 异步流水线讨论；计时与稳定排序已实施，保留 ASF 后处理和跨 block 流水线的后续设计。 |
 | 已完成验证 | [jj2lsj_postprocessing_validation_2026-11-04.md](reviews/jj2lsj_postprocessing_validation_2026-11-04.md) | AS4 稳定排序及整理约 9.60→0.045 s，总耗时单次约减少 2.1%；AS4/AS1 输出一致，标签异步化经计时评估暂缓。 |
 | 已完成验证 | [jj2lsj_gd_i_validation_2026-11-02.md](reviews/jj2lsj_gd_i_validation_2026-11-02.md) | 六套 Gd I 输入的 18 个输出文件一致；两个代表案例的 994,894 个 LS 系数在 4/8 线程下与串行逐位一致，包含真实提前停止路径。 |
@@ -59,7 +62,7 @@ docs/
 - [suite_parameters_M.f90](../src/lib/libmod/suite_parameters_M.f90) 定义容量，
   [parameter_def_M.f90](../src/lib/libmod/parameter_def_M.f90) 转导原有常量名；
   当前 `NNNP=590`、`NNN1=600`。网格初始化仍在各入口。
-- 十七个入口（含四个 GRASPG、新复制的四个原版 RMCDHF 及 P0 诊断目标）保留各自的原版点核/有限核默认值与 ACCY 初始化时序；
+- 二十五个入口（含普通 GRASP 计算链、四个 GRASPG、新复制的四个原版 RMCDHF 及 P0 诊断目标）保留各自的原版点核/有限核默认值与 ACCY 初始化时序；
   当前有限核默认 `N=NNNP=590`。suite 脚本布局按需修改集中容量配置和这些入口，保持转导接口。
 - [test/CMakeLists.txt](../test/CMakeLists.txt) 保留共享容量检查和网格脚本回归；
   历史测试数量不能代替当前实际验证。严格内存 MPI 的 Linux 重启测试另见其说明。

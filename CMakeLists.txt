@@ -175,15 +175,22 @@ add_subdirectory("src/appl/ris4")
 add_subdirectory("src/appl/jj2lsj90")
 # add_subdirectory("src/appl/rhfszeeman95")
 
-# Fresh GRASP rmcdhf copies use the existing shared numerical libraries.
+# Ordinary GRASP programs and fresh rmcdhf copies use the suite numerical libraries.
 # The rmcdhf90* directories retain the separate, older orbopt implementations.
 if(GRASP_BUILD_SERIAL_APPS)
+    foreach(app rangular90 rwfnestimate90 rci90 rbiotransform90
+                rtransition90 rtransition90_phase)
+        add_subdirectory("src/appl/${app}")
+    endforeach()
     add_subdirectory("src/appl/rmcdhf")
     add_subdirectory("src/appl/rmcdhf_mem")
     add_subdirectory("src/appl/rmcdhf90")
     add_subdirectory("src/appl/rmcdhf90_mem")
 endif()
 if(TARGET mpiu90)
+    foreach(app rangular90_mpi rci90_mpi rbiotransform90_mpi rtransition90_mpi)
+        add_subdirectory("src/appl/${app}")
+    endforeach()
     add_subdirectory("src/appl/rmcdhf_mpi")
     add_subdirectory("src/appl/rmcdhf_mem_mpi")
     add_subdirectory("src/appl/rmcdhf90_mpi")

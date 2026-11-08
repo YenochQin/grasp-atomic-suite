@@ -26,9 +26,20 @@ Upstream RMCDHF computes ACCY before interactive grid input; explicitly supply
 ACCY when changing H in restart inputs. Grid experiments belong in separate copies.
 
 ## Build, Test, and Development Commands
+
+Use **GNU Fortran 15** for builds and validation. Set Open MPI's `OMPI_FC`
+explicitly to `/usr/bin/gfortran-15`. Initialize any compiler, MPI, and BLAS
+modules first, then export both compiler variables below. Verify that
+`/usr/bin/gfortran-15 -dumpversion` reports major version 15 and
+`mpifort --showme:command` reports `/usr/bin/gfortran-15`.
+For direct CMake configuration, pass `-DCMAKE_Fortran_COMPILER=/usr/bin/gfortran-15`;
+use a fresh build directory if an existing cache selected another compiler.
+
 Prefer the out-of-source CMake flow:
 
 ```sh
+export FC=/usr/bin/gfortran-15
+export OMPI_FC=/usr/bin/gfortran-15
 ./configure.sh
 cmake --build build --target install -j4
 ```
@@ -38,8 +49,7 @@ Use `./configure.sh --debug` for a debug build in `build-debug/`. Use `./scripts
 Enable `-DGRASP_BUILD_SERIAL_APPS=ON` to build all four orbital programs
 alongside serial and MPI property programs. In this workspace, run Python
 scripts/tests with `../graspkit-tools/.venv/bin/python`; do not create another
-environment or run `uv sync`/`uv run` here. On cluster hosts initialize the
-compiler, MPI, and BLAS modules before configuration.
+environment or run `uv sync`/`uv run` here.
 
 For grid or capacity changes, use [common parameters](docs/implemented/common_parameters.md)
 for the current contract and [scripts/README.md](scripts/README.md) for patch-tool
@@ -69,4 +79,4 @@ the affected program or under `tests/`, and document required inputs.
 Recent history favors short, imperative commit subjects, optionally with an issue reference, for example `Update README.md` or `Bug fix in librang (#112)`. Keep commits scoped to one change. Pull requests should explain the scientific or numerical impact, list the build/test commands you ran, link related issues, and include sample output or input-file changes when behavior or results change.
 
 ## Configuration Tips
-Use CMake cache variables, compiler environment variables, or `CMakeLists.user` for local build customization. Do not commit machine-local compiler paths or generated build directories.
+Use CMake cache variables, compiler environment variables, or `CMakeLists.user` for local build customization. The required `/usr/bin/gfortran-15` path above is the repository toolchain contract; keep other machine-local settings and generated build directories out of commits.

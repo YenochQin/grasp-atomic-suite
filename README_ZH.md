@@ -44,6 +44,7 @@
 
 | 程序 | 源码目录 | CMake 目标 | 说明 |
 | --- | --- | --- | --- |
+| 普通 GRASP 计算链 | `src/appl/rangular90*`、`rwfnestimate90`、`rci90*`、`rbiotransform90*`、`rtransition90*` | `rangular{,_mpi}`、`rwfnestimate`、`rci{,_mpi}`、`rbiotransform{,_mpi}`、`rtransition{,_phase,_mpi}` | 十个目标复用 suite 共享库与集中容量参数；见[来源、构建与验证范围](docs/implemented/standard_grasp_integration.md)。 |
 | `jj2lsj_omp` | `src/appl/jj2lsj90` | `jj2lsj_omp` | 普通 CSF 的 OpenMP jj–LS 转换，按 LS 行并行并保留原截断顺序；见[构建、运行和验证说明](docs/implemented/jj2lsj_openmp.md)。与 `jj2lsj_csfg` 分开。 |
 | `gj90` | `src/appl/gj90` | `gj90`, `gj90_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、`name.c`、`name.m/name.cm`、`name.w`，输出 `name.gj/name.cgj`。 |
 | `rhfs90` | `src/appl/rhfs90` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
@@ -108,7 +109,7 @@ CMake 会自动查找 BLAS/LAPACK，并在使用 GNU Fortran 时为较旧的 For
 
 ## 输入与输出
 
-性质计算程序沿用 GRASP 风格的状态名输入。运行时输入 `name` 后，程序会在当前目录查找相关文件。轨道优化程序沿用 RMCDHF 的交互输入，使用 `rcsf.inp`、`rwfn.inp` 和 MCP 数据。`rnucleus`、`rwfnestimate`、`rangular_mpi` 等准备工具仍来自外部原版 GRASP。
+性质计算程序沿用 GRASP 风格的状态名输入。运行时输入 `name` 后，程序会在当前目录查找相关文件。轨道优化程序沿用 RMCDHF 的交互输入，使用 `rcsf.inp`、`rwfn.inp` 和 MCP 数据。`rwfnestimate`、`rangular` 和 `rangular_mpi` 已在本仓库构建；`rnucleus`、普通 `rcsfgenerate` 仍来自外部 GRASP，或使用已核对的输入文件。
 
 常用输入文件：
 

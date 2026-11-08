@@ -88,32 +88,37 @@ if(Python3_Interpreter_FOUND)
             $<TARGET_FILE:test.p0_trace_projection>)
     endif()
     set(GRASP_PREPARATION_BINDIR "" CACHE PATH
-        "External GRASP directory containing rwfnestimate and rangular_mpi for MCDHF regression tests")
-    if(TARGET rmcdhf_mem_diag_mpi AND MPIEXEC_EXECUTABLE
-       AND EXISTS "${GRASP_PREPARATION_BINDIR}/rwfnestimate"
-       AND EXISTS "${GRASP_PREPARATION_BINDIR}/rangular_mpi")
+        "Optional external GRASP preparation directory; otherwise use this build's rwfnestimate and rangular_mpi")
+    set(_grasp_preparation_bindir "")
+    if(GRASP_PREPARATION_BINDIR)
+        if(EXISTS "${GRASP_PREPARATION_BINDIR}/rwfnestimate"
+           AND EXISTS "${GRASP_PREPARATION_BINDIR}/rangular_mpi")
+            set(_grasp_preparation_bindir "${GRASP_PREPARATION_BINDIR}")
+        endif()
+    elseif(TARGET rwfnestimate AND TARGET rangular_mpi)
+        set(_grasp_preparation_bindir "$<TARGET_FILE_DIR:rwfnestimate>")
+    endif()
+    if(TARGET rmcdhf_mem_diag_mpi AND MPIEXEC_EXECUTABLE AND _grasp_preparation_bindir)
         foreach(ranks 1 2)
             add_test(NAME p0_trace_mpi_${ranks}
                 COMMAND ${Python3_EXECUTABLE}
                 ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/p0_trace_mpi.py
                 --solver $<TARGET_FILE:rmcdhf_mem_diag_mpi>
-                --tools ${GRASP_PREPARATION_BINDIR}
+                --tools ${_grasp_preparation_bindir}
                 --mpiexec ${MPIEXEC_EXECUTABLE}
                 --numproc-flag=${MPIEXEC_NUMPROC_FLAG} --ranks ${ranks})
             set_tests_properties(p0_trace_mpi_${ranks} PROPERTIES
                 TIMEOUT 180 PROCESSORS ${ranks} SKIP_RETURN_CODE 77)
         endforeach()
     endif()
-    if(TARGET rmcdhf_mem_strict_mpi AND MPIEXEC_EXECUTABLE
-       AND EXISTS "${GRASP_PREPARATION_BINDIR}/rwfnestimate"
-       AND EXISTS "${GRASP_PREPARATION_BINDIR}/rangular_mpi")
+    if(TARGET rmcdhf_mem_strict_mpi AND MPIEXEC_EXECUTABLE AND _grasp_preparation_bindir)
         foreach(ranks 1 2)
             add_test(NAME strict_mem_restart_mpi_${ranks}
                 COMMAND ${Python3_EXECUTABLE}
                 ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/strict_mem_restart.py
                 --strict $<TARGET_FILE:rmcdhf_mem_strict_mpi>
                 --baseline $<TARGET_FILE:rmcdhf_orbopt_mem_mpi>
-                --tools ${GRASP_PREPARATION_BINDIR}
+                --tools ${_grasp_preparation_bindir}
                 --mpiexec ${MPIEXEC_EXECUTABLE}
                 --numproc-flag=${MPIEXEC_NUMPROC_FLAG} --ranks ${ranks})
             set_tests_properties(strict_mem_restart_mpi_${ranks} PROPERTIES
@@ -148,6 +153,7 @@ endif()
 # Independent synthetic NP tests; no GRASP preparation tools or atomic data.
 add_subdirectory(npol)
 add_subdirectory(jj2lsj)
+add_subdirectory(standard_grasp)
 
 if(TARGET mod_csfg)
     add_subdirectory(graspg)

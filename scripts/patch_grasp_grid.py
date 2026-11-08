@@ -58,6 +58,14 @@ CAPACITY_FILES = (
 )
 RESTART_FILES = ("src/appl/rci90/lodres.f90", "src/appl/rci90_mpi/lodres.f90")
 SUITE_GRID_FILES = (
+    "src/appl/rwfnestimate90/getinfo.f90",
+    "src/appl/rci90/getcid.f90",
+    "src/appl/rci90_mpi/getcid.f90",
+    "src/appl/rbiotransform90/radpar.f90",
+    "src/appl/rbiotransform90_mpi/radparmpi.f90",
+    "src/appl/rtransition90/getosd.f90",
+    "src/appl/rtransition90_phase/getosd.f90",
+    "src/appl/rtransition90_mpi/getosdmpi.f90",
     "src/appl/rwfnestimate90_csfg/getinfo.f90",
     "src/appl/rmcdhf90_csfg_mpi/getscdmpi.f90",
     "src/appl/rci90_csfg_mpi/getcid.f90",
@@ -77,6 +85,8 @@ SUITE_GRID_FILES = (
     "src/appl/rdensity/getsmd.f90",
 )
 SUITE_RESTART_FILES = (
+    "src/appl/rci90/lodres.f90",
+    "src/appl/rci90_mpi/lodres.f90",
     "src/appl/rci90_csfg_mpi/lodres.f90",
     "src/appl/rci90_block_csfg_mpi/lodres.f90",
 )

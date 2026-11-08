@@ -44,6 +44,7 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 
 | Program | Source directory | CMake targets | Purpose |
 | --- | --- | --- | --- |
+| Ordinary GRASP calculation chain | `src/appl/rangular90*`, `rwfnestimate90`, `rci90*`, `rbiotransform90*`, `rtransition90*` | `rangular{,_mpi}`, `rwfnestimate`, `rci{,_mpi}`, `rbiotransform{,_mpi}`, `rtransition{,_phase,_mpi}` | Ten targets reuse the suite libraries and central capacities; see [provenance, builds and validation scope](docs/implemented/standard_grasp_integration.md). |
 | `jj2lsj_omp` | `src/appl/jj2lsj90` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/jj2lsj_openmp.md). Separate from `jj2lsj_csfg`. |
 | `gj90` | `src/appl/gj90` | `gj90`, `gj90_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, `name.c`, `name.m/name.cm`, and `name.w`, then writes `name.gj/name.cgj`. |
 | `rhfs90` | `src/appl/rhfs90` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
@@ -108,7 +109,7 @@ CMake finds BLAS/LAPACK and adds compatibility flags for older Fortran sources w
 
 ## Inputs And Outputs
 
-The property applications use GRASP-style state-name input. After you enter `name`, the program looks for matching files in the current working directory. Orbital programs use the upstream RMCDHF interactive input and files such as `rcsf.inp`, `rwfn.inp`, and MCP data. Preparation tools such as `rnucleus`, `rwfnestimate`, and `rangular_mpi` still come from an external GRASP installation.
+The property applications use GRASP-style state-name input. After you enter `name`, the program looks for matching files in the current working directory. Orbital programs use the upstream RMCDHF interactive input and files such as `rcsf.inp`, `rwfn.inp`, and MCP data. This repository now builds `rwfnestimate`, `rangular`, and `rangular_mpi`. `rnucleus` and ordinary `rcsfgenerate` remain external preparation tools; verified input files may also be supplied directly.
 
 Common input files:
 
