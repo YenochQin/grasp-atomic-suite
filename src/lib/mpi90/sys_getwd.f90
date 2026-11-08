@@ -16,15 +16,16 @@
 !   M o d u l e s
 !-----------------------------------------------
       use mpi_C
+      use suite_system, only: working_directory
 
       implicit none
       character(len=*), intent(out):: dir
       integer, intent(out):: lcwd
 
-      INTEGER getcwd, status, len_trim
+      INTEGER status
 
 
-      status = getcwd(dir)
+      status = working_directory(dir)
       lcwd = len_trim(dir)
 
       if (status.ne.0) then

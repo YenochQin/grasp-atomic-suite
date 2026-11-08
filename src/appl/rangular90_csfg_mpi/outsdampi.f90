@@ -8,6 +8,7 @@
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
       USE mpi_C
+      USE vast_kind_param, ONLY: LONG
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -22,7 +23,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER*8 :: NNONZ_A, NNONZ_S, N8
+      INTEGER(LONG) :: NNONZ_A, NNONZ_S, N8
 !-----------------------------------------------
 !
       NNONZ_S = NNONZ

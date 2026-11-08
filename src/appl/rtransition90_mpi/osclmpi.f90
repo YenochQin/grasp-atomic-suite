@@ -42,6 +42,8 @@
       USE csfm_I
       USE printa_I
       USE printals_I
+
+      USE suite_system, ONLY: EXIT => terminate_process
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

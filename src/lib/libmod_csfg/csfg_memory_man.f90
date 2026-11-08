@@ -669,7 +669,7 @@ MODULE csfg_memory_man
           Write(6, '(T10,A,I15)') 'Number of elements requested: ',n
         STOP
         END IF
-        nold = MIN(SIZE(p),n)
+        nold = MIN(SIZE(p,KIND=LONG),n)
         pnew(1:nold) = p(1:nold)
         DEALLOCATE(p)
         p => pnew
@@ -852,7 +852,7 @@ MODULE csfg_memory_man
           Write(6, '(T10,A,I15)') 'Number of elements requested: ',n
         STOP
         END IF
-        nold = MIN(SIZE(p),n)
+        nold = MIN(SIZE(p,KIND=LONG),n)
         pnew(1:nold) = p(1:nold)
         DEALLOCATE(p)
         p => pnew

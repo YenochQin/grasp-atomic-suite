@@ -8,12 +8,13 @@ program coefficients
     use blk_C, only: NBLOCK, NCFINBLK
     use factt_I
     use setiso_I
+    use vast_kind_param, only: LONG
     implicit none
     integer :: counts(Blocks_number)
     integer, allocatable :: levels(:,:)
     integer :: block, first, last, lev, level, i, outc, outj, unique, outt
     integer, allocatable :: mask(:)
-    integer*8 :: stride
+    integer(LONG) :: stride
     real(DOUBLE) :: threshold, weight
 
     call factt

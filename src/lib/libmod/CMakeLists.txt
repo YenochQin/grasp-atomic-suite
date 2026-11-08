@@ -3,6 +3,8 @@ add_library(mod STATIC
     suite_parameters_M.f90
     parameter_def_M.f90
     vast_kind_param_M.f90
+    linear_algebra_interfaces.f90
+    storage_bytes.f90
     memory_man.f90
     AME_C.f90
     bcore_C.f90

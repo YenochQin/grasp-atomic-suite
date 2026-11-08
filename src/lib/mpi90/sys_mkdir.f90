@@ -23,6 +23,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
+      use suite_system, only: make_directory
       implicit none
       character(len=*), intent(in):: dir
       integer, intent(in):: lendir
@@ -40,7 +41,7 @@
 !     print*, dir(1:lendir)
 !     print*, dir(1:lendir)
 !
-      ierr = system ('mkdir -p -m 775 ' // dir(1:lendir))
+      call make_directory (dir(1:lendir), ierr)
 !cjb  use EXECUTE_COMMAND_LINE if function 'system' is not supported
 !     call execute_command_line ('mkdir -p -m 775 ' // dir(1:lendir), &
 !                         exitstat=ierr, cmdmsg=mkdir_error_message)

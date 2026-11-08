@@ -39,6 +39,8 @@
       USE factt_I
       USE oscl_I
       USE mpi_C
+
+      USE suite_system, ONLY: EXIT => terminate_process
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

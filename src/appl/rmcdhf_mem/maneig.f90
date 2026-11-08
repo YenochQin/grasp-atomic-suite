@@ -55,6 +55,7 @@
       USE gdvd_I
       USE itjpo_I
       USE ispar_I
+      USE suite_linear_algebra, ONLY: dcopy, dscal
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -123,8 +124,8 @@
       nend = ncf * nvex
          DO j = 1, nevblk(jblock)
             work( nend + iccmin(j+ncminpat) ) = eval(ncminpat+j)
-            CALL dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1)    ,    1, &
-                          work( ncf*(iccmin(j+ncminpat)-1) + 1 ), 1)
+            CALL dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1:nevecpat + ncf*(j-1)+(ncf))    ,    1, &
+                          work( ncf*(iccmin(j+ncminpat)-1) + 1 :( ncf*(iccmin(j+ncminpat)-1) + 1 )+((ncf)-1)), 1)
          ENDDO
       ENDIF
 
@@ -175,8 +176,8 @@
       NEND = NCF*NVEX
       DO J = 1, NEVBLK(JBLOCK)
          EVAL(NCMINPAT+J) = WORK(NEND + ICCMIN(J + NCMINPAT))
-         CALL DCOPY (NCF, WORK(NCF*(ICCMIN(J + NCMINPAT) - 1) + 1), 1, EVEC(&
-            NEVECPAT+NCF*(J-1)+1), 1)
+         CALL DCOPY (NCF, WORK(NCF*(ICCMIN(J + NCMINPAT) - 1) + 1:NCF*(ICCMIN(J + NCMINPAT) - 1)+(NCF)), 1, &
+      & EVEC( NEVECPAT+NCF*(J-1)+1:NEVECPAT+NCF*(J-1)+(NCF)), 1)
       END DO
 !     print *, ncminpat,(eval(ncminpat+j),j=1,nevblk(jblock)),
 !    1 'zou,from maneig'
@@ -210,7 +211,7 @@
 !
          IF (EVEC(IA+IOFSET) >= 0.D0) CYCLE
          DNFAC = -1.D0
-         CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)
+         CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)
 !===============================================================
 
       END DO

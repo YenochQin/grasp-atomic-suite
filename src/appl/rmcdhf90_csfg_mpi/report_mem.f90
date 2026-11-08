@@ -3,11 +3,12 @@
 ! Written by Chongyang Chen, Fudan University, Shanghai, Aug 2024
 !
 ! Report the memory (RAM) used. 
-! This subroutine relies strictly on FORTRAN 2003 feature SIZEOF
+! Intrinsic-array payload sizes use standard Fortran storage inquiries.
 ! 
 !======================================================================
       SUBROUTINE REPORT_MEM(ICALL, STRFRM)
       USE vast_kind_param
+      USE suite_storage, ONLY: storage_bytes
 
       use symexpand_mod
       use symmatrix_mod
@@ -56,29 +57,29 @@
       IF (ICALL == 1) THEN
         SUMM = 0.D0 
         ! MAP1(:,:)
-        TMPMEM = F1GB*SIZEOF(MAP1) 
+        TMPMEM = F1GB*storage_bytes(MAP1)
         WRITE(*, *) 'Mem (GB) needed by MAP1     =', TMPMEM
         SUMM   = SUMM   + TMPMEM
 
         ! NTYPE
-        TMPMEM = F1GB*SIZEOF(NTYPE)
+        TMPMEM = F1GB*storage_bytes(NTYPE)
         WRITE(*, *) 'Mem (GB) needed by NTPYE    =', TMPMEM
         SUMM   = SUMM   + TMPMEM
 
         ! ICGPDET, ICGPEND, IRGPDET
-        TMPMEM = F1GB*(SIZEOF(ICGPDET)+SIZEOF(ICGPEND)+SIZEOF(IRGPDET))
+        TMPMEM = F1GB*(storage_bytes(ICGPDET)+storage_bytes(ICGPEND)+storage_bytes(IRGPDET))
         WRITE(*, *) 'Mem (GB) for part 1 arrays from mcp files: &
                      ICGPDET, ICGPEND,  IRGPDET', TMPMEM
         TOTMEM = TOTMEM + TMPMEM
 
         ! IQA, this array could be deallocated before entering SCF.
         ! Of course, some modifications needed. 2024/08/18
-        TMPMEM = F1GB*SIZEOF(IQA)
+        TMPMEM = F1GB*storage_bytes(IQA)
         WRITE(*, *) 'Mem (GB) needed by IQA_CSFG =', TMPMEM
         SUMM   = SUMM   + TMPMEM
 
         ! IQA_CSF
-        TMPMEM = F1GB*SIZEOF(IQA_CSF)
+        TMPMEM = F1GB*storage_bytes(IQA_CSF)
         WRITE(*, *) 'Mem (GB) needed by IQA_CSF  =', TMPMEM
         SUMM   = SUMM   + TMPMEM
 
@@ -88,33 +89,33 @@
       ELSEIF(ICALL == 2) THEN
         SUMM   = 0.D0 
 
-        TMPMEM = F1GB*SIZEOF(LABTH)
+        TMPMEM = F1GB*storage_bytes(LABTH)
         WRITE(*, *) 'Mem (GB) needed by LABTH    =', TMPMEM
         SUMM   = SUMM   + TMPMEM
         
-        TMPMEM = F1GB*SIZEOF(TCOEFH)
+        TMPMEM = F1GB*storage_bytes(TCOEFH)
         WRITE(*, *) 'Mem (GB) needed by TCOEFH   =', TMPMEM
         SUMM   = SUMM   + TMPMEM
 
-        TMPMEM = F1GB*SIZEOF(NVHP  )
+        TMPMEM = F1GB*storage_bytes(NVHP  )
         WRITE(*, *) 'Mem (GB) needed by NVHP     =', TMPMEM
         SUMM   = SUMM   + TMPMEM
 
-        TMPMEM = F1GB*SIZEOF(LABVKH)
+        TMPMEM = F1GB*storage_bytes(LABVKH)
         WRITE(*, *) 'Mem (GB) needed by LABVKH   =', TMPMEM
         SUMM   = SUMM   + TMPMEM
 
-        TMPMEM = F1GB*SIZEOF(VCOEFH)
+        TMPMEM = F1GB*storage_bytes(VCOEFH)
         WRITE(*, *) 'Mem (GB) needed by VCOEFH   =', TMPMEM
         SUMM   = SUMM   + TMPMEM
 
         WRITE(*, *) "LABTH, TCOEFH,  NVHP, LABVKH, VCOEFH    :", SUMM
 
-        TMPMEM = F1GB*SIZEOF(ICOLIDX)
+        TMPMEM = F1GB*storage_bytes(ICOLIDX)
         WRITE(*, *) 'Mem (GB) needed by ICOLIDX              :', TMPMEM
         SUMM   = SUMM   + TMPMEM
 
-        TMPMEM = F1GB*SIZEOF(EVEC)
+        TMPMEM = F1GB*storage_bytes(EVEC)
         WRITE(*, *) 'Mem (GB) needed by EVEC                 :', TMPMEM
         SUMM   = SUMM   + TMPMEM
 
@@ -124,20 +125,20 @@
       ELSEIF (ICALL == 3) THEN
         SUMM   = 0.D0
         
-        TMPMEM = F1GB*(SIZEOF(NDA) + SIZEOF(DA) + SIZEOF(NXA) +        &
-                       SIZEOF(XA)  + SIZEOF(NYA)+ SIZEOF(YA))
+        TMPMEM = F1GB*(storage_bytes(NDA) + storage_bytes(DA) + storage_bytes(NXA) +        &
+                       storage_bytes(XA)  + storage_bytes(NYA)+ storage_bytes(YA))
         WRITE(*, *) "NDA, DA, NXA, XA, NYA, YA  (Maintained) :", TMPMEM
         SUMM   = SUMM   + TMPMEM
 
         WRITE(*, *) "NXAopt,XAopt,NYAopt,YAopt (Deallocated) :", &
-                     REAL(F1GB*(SIZEOF(NXAOPT) + SIZEOF(XAOPT)+ &
-                                SIZEOF(NYAOPT) + SIZEOF(YAOPT)))
+                     REAL(F1GB*(storage_bytes(NXAOPT) + storage_bytes(XAOPT)+ &
+                                storage_bytes(NYAOPT) + storage_bytes(YAOPT)))
         WRITE(*, *) "NXAWRK, XAWRK,NYAWRK,YAWRK (Maintained) :", &
-                     REAL(F1GB*(SIZEOF(NXAWRK) + SIZEOF(XAWRK))) 
+                     REAL(F1GB*(storage_bytes(NXAWRK) + storage_bytes(XAWRK)))
 
-        TMPMEM = F1GB*(SIZEOF(NDAOPT) + SIZEOF(DAOPT) + SIZEOF(NXAWRK)+&
-                       SIZEOF(XAWRK)  + SIZEOF(NYAOPT)+ SIZEOF(YAOPT) +&
-                       SIZEOF(TMPXYA))
+        TMPMEM = F1GB*(storage_bytes(NDAOPT) + storage_bytes(DAOPT) + storage_bytes(NXAWRK)+&
+                       storage_bytes(XAWRK)  + storage_bytes(NYAOPT)+ storage_bytes(YAOPT) +&
+                       storage_bytes(TMPXYA))
         WRITE(*, *) "NDAOPT,DAOPT, NXAWRK,XAWRK, NYAWRK,YAWRK:", TMPMEM
         SUMM   = SUMM + TMPMEM
 

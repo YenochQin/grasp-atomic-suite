@@ -4,6 +4,7 @@ program npol_mpi_driver
     use npol_mpi
     use npol_test_support
     use parameter_def, only: NNNP
+    use suite_system, only: change_directory
     implicit none
     real(double) :: r(NNNP), zz(NNNP), coul(NNNP), reference(3), z
     integer :: rank, ierr, n, status, ios
@@ -17,7 +18,7 @@ program npol_mpi_driver
     call get_command_argument(2, directory)
     ! Every worker has its own directory with no input or output file. Passing
     ! an existing invalid input to workers also detects accidental worker I/O.
-    call chdir(trim(directory)//'/rank'//achar(iachar('0')+rank), ios)
+    ios = change_directory(trim(directory)//'/rank'//achar(iachar('0')+rank))
     call require(ios == 0, 'rank cwd')
     root_path = 'worker-must-not-read.inp'
     if (rank == 0) root_path = trim(directory)//'/input/npol.inp'

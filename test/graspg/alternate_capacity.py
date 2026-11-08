@@ -37,7 +37,7 @@ def main() -> None:
         for name in ["capacity", "interface_capacity"]:
             binary = work / name
             result = subprocess.run(
-                [compiler, *copies, str(suite / "test/graspg" / f"{name}.f90"), "-o", str(binary)],
+                [compiler, "-std=f2018", *copies, str(suite / "test/graspg" / f"{name}.f90"), "-o", str(binary)],
                 cwd=work, capture_output=True, text=True, timeout=60, check=False,
             )
             assert result.returncode == 0, result.stderr

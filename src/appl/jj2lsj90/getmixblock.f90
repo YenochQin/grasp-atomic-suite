@@ -33,6 +33,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       USE openfl_I
+      USE vast_kind_param, ONLY: LONG
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -45,7 +46,7 @@
       INTEGER :: K, IERR, IOS, NCFTOT, NVECTOT, NVECSIZ, NBLOCK, I, NVECPAT, &
          NCFPAT, NEAVSUM, JB, NB, NCFBLK, NEVBLK, IATJP, IASPA, J
       REAL(DOUBLE) :: EAVSUM
-      integer*8 NVECSIZPAT, NCFTOT_i8, NVECSIZ_i8
+      INTEGER(LONG) NVECSIZPAT, NCFTOT_i8, NVECSIZ_i8
       CHARACTER(LEN=3)   :: STATUS
       CHARACTER(LEN=6)   :: G92MIX
       CHARACTER(LEN=11)  :: FORM

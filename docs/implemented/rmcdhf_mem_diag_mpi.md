@@ -6,7 +6,7 @@
 Fortran 文件和 CMake 文件，再修改 Suite 内的副本。上游源码未修改。
 
 目标 [`rmcdhf_mem_diag_mpi`](../../src/appl/rmcdhf90_mem_diag_mpi/CMakeLists.txt)
-独立于 `rmcdhf_orbopt*` 和 `rmcdhf_mem_strict_mpi`。它保留原版的径向求解、
+独立于原版 `rmcdhf*` 和 `rmcdhf_mem_strict_mpi`（旧 orbopt 已移除）。它保留原版的径向求解、
 阻尼、正交化、节点约束及停止判据；包括原版“轨道或能量条件通过即可结束”的行为。
 本目标没有加入严格收敛、P0 裁剪、自动重试或节点保护。
 共享库使用 Suite 的 `libmod`、`lib9290`、`libdvd90`、`mpi90`，不再复制。
@@ -42,7 +42,7 @@ Ni 作业 769 的记录显示，近原点样本在匹配前已增长。为区分
 `048e39e6bdc7fdab8e4bcbcaa0fb827437c3dcc4f8c48aeba583746e320a41e6`。
 
 `GRASP_START_TRACE=0|1|all` 分别关闭、记录 rank 0、记录所有 rank。
-求解器默认关闭此项，下一步诊断作业脚本默认设为 `1`；它独立于 `GRASP_P0_TRACE`。
+求解器默认关闭此项，可显式设为 `1`；它独立于 `GRASP_P0_TRACE`。旧 orbopt 作业脚本已退役。
 两种诊断共用 `(cycle, update, solve_iteration)` 上下文，分别输出：
 
 - `rmcdhf.start.rank<rank>.csv`：每次 START 的初始值、每轮内部迭代以及最终采用值，
@@ -64,7 +64,7 @@ Ni 作业 769 的记录显示，近原点样本在匹配前已增长。为区分
 START 输出每条记录刷新，失败前的数据可读取；I/O 失败打印 `[START_TRACE]`，
 关闭该 rank 的 START 记录，求解算法继续按原有流程执行。
 
-更新作业前必须重新编译 `rmcdhf_mem_diag_mpi`。脚本用二进制中的
+更新作业前必须重新编译 `rmcdhf_mem_diag_mpi`。原历史脚本用二进制中的
 `GRASP_START_TRACE_V1` 标识拒绝旧版本，在启动 rangular 或清理 scratch 之前报错，
 并在求解失败时归档 P0、START、START 系数三类 CSV。
 本次仍从正常 baseline 的相同初值开始，不使用 769 的失败 checkpoint，
@@ -118,7 +118,7 @@ CSV 中包含：
 `normalized_solution`、`damp_mixed`、`damp_normalized`、`orth_*` 查找首次异常增长。
 必须同时看第一批径向值、匹配分母和归一化因子，不能单独用一个 P0 阈值判定物理错误。
 
-## 构建与现有作业脚本
+## 构建与运行
 
 在服务器的 Suite 仓库中构建：
 
@@ -134,16 +134,14 @@ Debug 用于工程诊断；与既有生产结果对照时，应同时记录并�
 新程序的网格入口已登记到 `atomic-suite` 网格补丁布局。
 
 保持原 CSF、核参数、初始波函数、目标能级、更新顺序、阻尼和 MPI 进程数，
-通过现有作业脚本的 `GRASP_RMCDHF_MPI` 覆盖选择新程序：
+旧 orbopt 作业驱动已移除。准备好独立工作目录中的输入、MCP 和 stdin 后，直接选择诊断可执行文件：
 
 ```sh
-export GRASP_RMCDHF_MPI=/path/to/grasp-atomic-suite/build-p0-diag/bin/rmcdhf_mem_diag_mpi
 export GRASP_P0_TRACE=1
-# 然后按原作业脚本的参数提交到独立目录。
+mpiexec -n 2 /path/to/grasp-atomic-suite/build-p0-diag/bin/rmcdhf_mem_diag_mpi < prepared.stdin
 ```
 
-这不是提交授权。对于当前保存结果的脚本，原生诊断 CSV 不匹配带 AS 前缀的归档规则，
-通常会保留在作业 `.work/rmcdhf.p0.rank0.csv`，请和求解器 stdout 一并取回。
+诊断 CSV 的位置由当前 `disks`/rank 工作目录决定，请与求解器 stdout 一并保存。
 失败的 Ni checkpoint 不应覆盖正常 baseline；诊断重放应从原先验证过的相同输入开始。
 
 ## 验证

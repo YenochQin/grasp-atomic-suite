@@ -47,7 +47,7 @@
          JG=LG(J)
          IF(JG == 0)RETURN
          JJ=JP
-    2    IF(INN-MT(JJ))3,1,3
+    2    IF (INN == MT(JJ)) GO TO 1
     3    JJ=JJ+1
          IF(JJ > JG)RETURN
          GO TO 2
@@ -57,7 +57,7 @@
           JP=1
           JG=6
           JJ=JP
-    6     IF(INN-MT9(JJ))4,5,4
+    6     IF (INN == MT9(JJ)) GO TO 5
     4     JJ=JJ+1
           IF(JJ > JG)RETURN
           GO TO 6
@@ -71,7 +71,7 @@
         JP=LP3(IL)
         JG=LG3(IL)
         JJ=JP
-   22   IF(INN-MT11(JJ))23,21,23
+   22   IF (INN == MT11(JJ)) GO TO 21
    23   JJ=JJ+1
         IF(JJ > JG)RETURN
         GO TO 22

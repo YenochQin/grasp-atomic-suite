@@ -1,16 +1,29 @@
 # Fortran 2018 迁移实施计划：gfortran 15 验证基线
 
-日期：2026-11-08。状态：**完整 F2018 迁移待实施；普通程序导入与共享参数准备已部分完成**。
-目标仓库：`grasp-atomic-suite`；代码基线：`179ca9ecfd96d54a5617d811b888299a611c13b3`。
+日期：2026-11-08。状态：**首轮 F2018 编译/链接兼容性修复已实施；严格接口和完整数值验收未完成**。
+目标仓库：`grasp-atomic-suite`；计划创建基线：`179ca9ecfd96d54a5617d811b888299a611c13b3`；
+本轮修复基线：`d1260ba404833d20d709b34d9f26b05c32a3b615`。
 本计划中的新增文件、构建选项、测试标签和命令入口，除明确注明“现有”者外，均为拟议交付物。
 
-本次只编写计划并更新文档索引，没有修改计算源码、构建配置或测试实现，没有运行原子计算。
-已确认本机 `gfortran-15` 为 **15.3.0**，并完成独立语言特性探针的编译运行和 `mpi_f08` 探针的编译链接；这不构成 suite 构建或数值验收。
+五类普通程序已导入并接入共享参数，见[导入记录](../implemented/standard_grasp_integration.md)。
+随后按首轮编译诊断完成共享库、平台服务及应用标准语法的分批修复，见
+[现行实现](../implemented/f2018_compatibility.md)和[本轮验证](../reviews/f2018_gfortran15_batches_2026-11-08.md)。
 
-上述段落记录初次计划编写。随后按用户的新指示先行导入了 `rangular/rwfnestimate/rbiotransform/rci/rtransition`
-五类程序及其变体，并接入现有共享参数；见[实施记录](../implemented/standard_grasp_integration.md)。
-第 2 节中的相应“待导入”条目描述原计划，其中这五类的导入部分现已完成；`rhfszeeman95/rsms` 未导入。
-这不代表 P2 的全部数值比较已完成，也不代表已启动完整 F2018 语法/接口重构。
+| 计划项 | 当前状态 | 已有证据 / 尚缺内容 |
+| --- | --- | --- |
+| P0 基线 | 部分完成 | 保存 d1260ba 的 GNU 15 legacy 构建、已知 11 个失败和本轮输入/结果；实际多根与全参数夹具尚未齐备 |
+| P1 构建策略 | 部分完成 | 当前配置全量 F2018 编译/链接通过；已移除参数放行，仍保留静态存储；拟议 profiles/完整强制验收设施尚未完成 |
+| P2 普通链导入 | 五类程序完成 | 十个目标已接入；rhfszeeman95/rsms 未导入，完整属性/RCI 数值对照待补 |
+| P3-A 共享标准清理 | 本轮完成 | NMTEJJ 两实现各 22,701 项精确对照、CSFG kind/reallocation、QUAD 通过 |
+| P3-B 平台适配 | 本轮 Linux 范围完成 | POSIX C 互操作；目录/状态/缓冲/退出测试通过，原 sys_* 接口保留 |
+| P3-C 应用标准语法 | 本轮构建范围完成 | INT8、旧 kind、DO、声明/FORMAT、SIZEOF 等阻断已清理；四个串行 solver 一轮 SCF 共 28 个文件与旧版一致 |
+| P3-D 参数接口 | 已完成本轮范围 | 已移除 fallow-argument-mismatch；接入 MPI 官方模块、LP64 BLAS/LAPACK 接口，修复有界数组区段、DDOT 返回类型和句柄 kind，新增接口测试通过 |
+| P3/P6/P8 余项 | 待实施 | 内部手写 INTENT 接口、mpi_f08、大计数和静态存储策略仍需独立验收 |
+| P4–P9 完整数值及发布验收 | 未完成 | 当前 CTest 36/47；orbopt 专用测试已退役，新增接口测试通过，余下 11 项与旧基线同名；真实多根、完整 RCI/跃迁、性能和生产物理验证未完成 |
+
+以上“本轮完成”只对应明确子任务，不等于整个 P3 或完整 F2018 迁移完成。
+
+**范围更新（2026-11-08）**：按用户决定移除四个 `rmcdhf_orbopt*` 程序及其专用测试/运行器；以下历史四版本对照记录不再表示当前支持范围。现行求解器、测试迁移和来源边界见[退役说明](../implemented/orbopt_retirement.md)。
 
 ## 1. 目标、范围和不可混淆的基线
 
@@ -32,15 +45,14 @@
 
 | 程序族 | 当前状态 / 实施位置 | 迁移约束 |
 | --- | --- | --- |
-| 原版 RMCDHF + 可选 NP | 现有 `src/appl/rmcdhf{,_mem,_mpi,_mem_mpi}`，对应同名目标 | 仅这四个保留 NP 输入；不与 orbopt 相互替代 |
-| orbopt | 现有 `src/appl/rmcdhf90*` 四目录，目标 `rmcdhf_orbopt*` | 保留事务、节点保护、root tracking 等现有分支；各自建立基准 |
+| 原版 RMCDHF + 可选 NP | 现有 `src/appl/rmcdhf{,_mem,_mpi,_mem_mpi}`，对应同名目标 | 仅这四个保留 NP 输入；旧 orbopt 已移除，保留本系列的独立算法 |
 | strict / diag | 现有 `rmcdhf90_mem_strict_mpi`、`rmcdhf90_mem_diag_mpi` | strict 的连续两轮判据和 diag 的输出开关分别回归 |
 | 属性计算 | 现有 `rhfs90`、`ris4`、`gj90`、`rdensity`，均有串行/MPI 目标 | 输出单位、核矩约定、对角/非对角元、CI/非 CI 输入均要覆盖 |
 | 普通 CSF 后处理 | 现有 `jj2lsj90`，目标 `jj2lsj_omp` | 现有 1/2/4/8 线程逐位一致契约不放宽；无 OpenMP 构建保留 |
 | CSFG | 现有 `*csfg*`、`libdvd90mpi`、`src/tool/graspg` | 同一 CSF 展开后的物理空间才可与普通路径比较；不能用基础 `dvd90` 无条件替换专用版本 |
-| 普通轨道准备/角系数 | **待导入** `rwfnestimate90`、`rangular90`、`rangular90_mpi` | 新目标 `rwfnestimate`、`rangular`、`rangular_mpi`；不是 CSFG 工具的别名 |
-| 普通 RCI | **待导入** `rci90`、`rci90_mpi` | 新目标 `rci`、`rci_mpi`，涵盖 Coulomb、Breit、质量/QED 等现有开关 |
-| 普通跃迁链 | **待导入** `rbiotransform90{,_mpi}`、`rtransition90{,_phase,_mpi}` | 保持相位、初末态映射、长度/速度形式及双正交变换语义 |
+| 普通轨道准备/角系数 | **已导入** `rwfnestimate90`、`rangular90`、`rangular90_mpi` | 目标 `rwfnestimate`、`rangular`、`rangular_mpi`；不是 CSFG 工具的别名 |
+| 普通 RCI | **已导入** `rci90`、`rci90_mpi` | 目标 `rci`、`rci_mpi`，涵盖 Coulomb、Breit、质量/QED 等现有开关 |
+| 普通跃迁链 | **已导入** `rbiotransform90{,_mpi}`、`rtransition90{,_phase,_mpi}` | 保持相位、初末态映射、长度/速度形式及双正交变换语义 |
 | 其余原分析中的属性程序 | **待导入** `rhfszeeman95`、`sms90` | 目标 `rhfszeeman95`、`rsms`；与已有 RHFS/RIS 明确功能边界，不悄然删除旧路径 |
 
 `rnucleus/rcsfgenerate` 可暂作固定版本的测试输入准备依赖，不把所有 CSF 生成工具的重构扩大为本次主线。已纳入 suite 默认构建的 CSFG 工具必须通过共享库回归，不能以关闭 `GRASP_BUILD_CSFG` 隐藏破坏。
@@ -121,7 +133,7 @@ P1 的验证器先对照 required-targets / required-tests 清单，再运行 CT
 
 每个 case manifest 固定：源提交、程序变体、编译配置、输入 SHA-256、核模型/核矩、单位、CSF 内容及顺序、网格 `N/NNNP/NNNW/RNT/H/HP/ACCY`、轨道初值/冻结集合/更新顺序、EOL 权重、目标根、截断、Breit/QED/NP 及其他开关、进程/线程数、文件协议和验收阈值。
 
-拟新增 `test/f2018/cases/`、`test/f2018/check.py`、`test/f2018/manifest.schema.json`、`test/f2018/README.md`。小型合成输入可以版本控制；真实输入/大输出存于忽略提交的 `test/data/f2018/` 或外部数据目录，只登记 hash、来源和获取要求。报告放 `docs/reviews/`，不提交机器路径、环境或完整大规模计算结果。
+已建立 `test/f2018/` 的专项回归、固定一轮旧新对照脚本和 README；统一 `cases/`、`check.py` 与 `manifest.schema.json` 仍待实现。小型合成输入可以版本控制；真实输入/大输出存于忽略提交的 `test/data/f2018/` 或外部数据目录，只登记 hash、来源和获取要求。报告放 `docs/reviews/`，不提交机器路径、环境或完整大规模计算结果。
 
 ### 4.2 比较规则
 
@@ -141,11 +153,11 @@ P1 的验证器先对照 required-targets / required-tests 清单，再运行 CT
 | [rdensity_natural_orbitals](../../test/rdensity/natural_orbitals_test.f90) | 解析占据数、旋转/对角化及正交性相关最大误差 `<= 1e-12` |
 | [rdensity regression](../../test/rdensity/regression.py) | 数值差 `<= 2e-10 * max(1,abs(a),abs(b))`，同时保留排序/格式/相位检查 |
 | [NP support](../../test/npol/support.f90) | `abs(actual-expected) <= 64*epsilon(actual)*max(1,abs(expected))`，人工软件常数不视为核素参数 |
-| [strict restart](../../test/rmcdhf_orbopt/strict_mem_restart.py) | 现有单轨道样例能量差 `<1e-10 Hartree`，P/Q 最大逐点差 `<1e-9`，公共网格点精确一致 |
+| [strict restart](../../test/rmcdhf/strict_mem_restart.py) | 现有单轨道样例能量差 `<1e-10 Hartree`，P/Q 最大逐点差 `<1e-9`，公共网格点精确一致 |
 | [jj2lsj regression](../../test/jj2lsj/check.py) | 系数原始数据、标签和相应科学输出按已有测试逐字节一致，含转换文件回放 |
 | [strict_scf_logic](../../test/strict_scf_logic.f90) | 状态转换、首轮、连续次数与停止原因精确一致 |
 
-已有严格 SCF 语义保持为：EOL 轨道条件 `max(SCNSTY) <= ACCY`，能量条件 `abs((E_new-E_old)/E_new) < 0.001*ACCY`，连续两轮同时满足；首轮无有效能量比较，不能继承重启前计数。EAL 使用其既有轨道条件。普通/orbopt 程序保持各自停止规则，不能借迁移将其统一为 strict。[严格程序说明](../implemented/rmcdhf_mem_strict_mpi.md)
+已有严格 SCF 语义保持为：EOL 轨道条件 `max(SCNSTY) <= ACCY`，能量条件 `abs((E_new-E_old)/E_new) < 0.001*ACCY`，连续两轮同时满足；首轮无有效能量比较，不能继承重启前计数。EAL 使用其既有轨道条件。原版程序保持自身停止规则，不能借迁移将其统一为 strict。[严格程序说明](../implemented/rmcdhf_mem_strict_mpi.md)
 
 ### 4.4 新增小型回归的拟定门槛
 
@@ -254,6 +266,10 @@ P7 的串行开发可在 P4/P5 后进行，MPI 退出门槛必须等待 P6。阶
 
 ### P3：共享库、接口与标准清理
 
+**执行状态（2026-11-08）**：标准编译/链接子批次 A/B/C 已按顶部状态表实施。
+当前 36/47 CTest 结果和保留 solver 的固定一轮 SCF 对照是局部软件验收，不满足下述完整 P3 的所有退出条件。
+本轮已移除参数放行并完成显式数值/MPI 接口修复，详见[接口验证](../reviews/argument_interfaces_2026-11-08.md)；内部接口、mpi_f08、大计数及已知运行失败继续单独追踪，保持原门槛。
+
 **修改范围**：`libmod`、`lib9290`、`librang90`、`libmcp90`、`libdvd90`，以及必要的 `*_csfg`/`libdvd90mpi` 接口边界；新增明确的 kind、BLAS/LAPACK 和平台适配模块，仍归现有库所有。
 
 **工作**：
@@ -277,11 +293,11 @@ P7 的串行开发可在 P4/P5 后进行，MPI 退出门槛必须等待 P6。阶
 
 ### P5：RMCDHF 状态与串行行为迁移
 
-**修改范围**：原版/NP 与 orbopt 串行、mem 变体的 `SCF/MATRIX/MANEIG/IMPROV/SOLVE/ORTH*` 等；strict/diag 的纯逻辑和诊断组件；共享 workspace 的必要接口。
+**修改范围**：原版/NP 的串行、mem 变体的 `SCF/MATRIX/MANEIG/IMPROV/SOLVE/ORTH*` 等；strict/diag 的纯逻辑和诊断组件；共享 workspace 的必要接口。
 
 **工作**：保持每种 solver 的 EOL/EAL、阻尼、轨道更新、冻结轨道、正交化、失败回退及状态寿命；逐模块移除隐式静态依赖。测试同时覆盖固定轮数与正常收敛，追加进程内重复初始化/执行，暴露错误的持久 FIRST 标志和未释放描述符。
 
-NP off/zero/on 在四个原版目标中分别验证，不能传播到 orbopt；on 的软件测试保持固定人工参数，不据此验证实际核极化模型。strict/diag 不合并到原版主路径。
+NP off/zero/on 在四个原版目标中分别验证，on 的软件测试保持固定人工参数，不据此验证实际核极化模型。strict/diag 不合并到原版主路径。
 
 **依赖**：P4，P3 的缺陷修正基准 B1。**数值退出**：F02/F03/F07；固定轮次轨迹与收敛运行分别验收，轨道形状、归一化、根身份和结束状态必须全部满足第 4 节；strict 首轮/连续两轮逻辑精确一致，diag 开关不改变科学输出。MPI-only solver 的端到端验收尚留 P6，不能提前标绿。
 
@@ -353,6 +369,8 @@ NP off/zero/on 在四个原版目标中分别验证，不能传播到 orbopt；o
 
 ## 8. 本次计划编写的验证记录
 
+本节保留最初仅编写计划时的记录；后续实施状态与结果以文首表格及其链接为准。
+
 已做：读取 suite 当前源码/构建/测试和现行文档；确认基线提交与原干净状态；检查 GNU 15.3.0 版本；在临时目录用该编译器及拟议 Check 选项编译运行含 `iso_fortran_env`、`implicit none(type, external)`、assumed-rank / `select rank` 的探针，确认 real64/int64 存储各为 64 位；通过指定 GNU 15 后端编译链接 `mpi_f08` 类型/广播探针。
 
-未做：suite 的 GCC 15 全量构建、MPI 探针运行、任何原子计算/数值基准、迁移实现、环境安装或提交。探针不覆盖所有 F2018 特性，也不能证明当前 MPI 栈适合正式验证。P0–P9 均仍为待执行状态。
+初次计划编写时尚未做：suite 的 GCC 15 全量构建、MPI 探针运行、任何原子计算/数值基准、迁移实现、环境安装或提交。探针不覆盖所有 F2018 特性；当时 P0–P9 均待执行，后续结果见文首现行状态表。

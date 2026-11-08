@@ -1,4 +1,5 @@
 add_library(9290 STATIC
+    suite_system.f90
     npol_input.f90
     npol_kernel.f90
     npol_init.f90

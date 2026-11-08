@@ -1,4 +1,5 @@
       SUBROUTINE TESTFILES(FDNAME)
+      USE suite_system, ONLY: ACCESS => path_access
       IMPLICIT NONE
 
 !-----------------------------------------------

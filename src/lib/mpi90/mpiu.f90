@@ -1,6 +1,6 @@
 ! Collection of FORTRAN subroutines for general purpose MPI operations.
 ! Mostly IMPLICIT NONE
-! Only INCLUDE 'mpif.h'
+! MPI calls use the implementation's explicit module interfaces.
 !***********************************************************************
       subroutine startmpi (myid, nprocs, host, lenhost)
 ! This subroutine starts MPI to get the process id (myid), the number
@@ -11,14 +11,14 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
+      USE mpi
       IMPLICIT NONE
-      INTEGER, INTENT(IN)   :: myid,  nprocs, lenhost
-      CHARACTER(LEN=*), INTENT(IN) :: host
+      INTEGER, INTENT(OUT)  :: myid,  nprocs, lenhost
+      CHARACTER(LEN=*), INTENT(OUT) :: host
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      include 'mpif.h'
       integer ierr
 
       call MPI_Init (ierr)
@@ -37,10 +37,11 @@
 ! Shared-filesystem-safe MPI startup for the post-processing programs.
 ! Unlike startmpi2, this variant does not change the working directory.
 !***********************************************************************
+      USE mpi
       IMPLICIT NONE
-      include 'mpif.h'
       INTEGER :: myid, nprocs, lenhost, ncount1
-      CHARACTER(LEN=*), INTENT(IN) :: host, progname, description
+      CHARACTER(LEN=*), INTENT(OUT) :: host
+      CHARACTER(LEN=*), INTENT(IN) :: progname, description
       CHARACTER(LEN=*), INTENT(IN) :: infiledesc, outfiledesc
       LOGICAL, INTENT(IN) :: quiet_workers
       INTEGER :: ncount_rate, ncount_max, iouterr
@@ -78,9 +79,10 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       IMPLICIT NONE
-      INTEGER, INTENT(IN)   :: myid,  nprocs, lenhost
+      INTEGER, INTENT(OUT)  :: myid,  nprocs, lenhost
       INTEGER, INTENT(OUT)  :: ncount1
-      CHARACTER(LEN=*), INTENT(IN) :: host, progname
+      CHARACTER(LEN=*), INTENT(OUT) :: host
+      CHARACTER(LEN=*), INTENT(IN) :: progname
       CHARACTER(LEN=*), INTENT(OUT) :: startdir, permdir, tmpdir
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -169,8 +171,8 @@
       subroutine mpix_shutdown (myid, ncount1, progname)
 ! Shared-filesystem-safe MPI shutdown companion to mpix_startup.
 !***********************************************************************
+      USE mpi
       IMPLICIT NONE
-      include 'mpif.h'
       INTEGER, INTENT(IN) :: myid, ncount1
       CHARACTER(LEN=*), INTENT(IN) :: progname
       INTEGER :: ncount2, ncount_rate, ncount_max, nseconds, ierr
@@ -211,8 +213,8 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
+      USE mpi
       IMPLICIT NONE
-      include 'mpif.h'
       INTEGER, INTENT(IN)  ::  myid
       CHARACTER(LEN=*), INTENT(IN) :: WHAT
 !-----------------------------------------------
@@ -240,8 +242,8 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
+      USE mpi
       IMPLICIT NONE
-      include 'mpif.h'
       INTEGER, INTENT(IN)  ::  myid,nprocs,lenhost
       integer              ::  ncount1
       character*(*), INTENT(IN) ::  host, progname
@@ -306,8 +308,8 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
+      USE mpi
       IMPLICIT NONE
-      include 'mpif.h'
       INTEGER, INTENT(IN)  ::  myid, nprocs
       CHARACTER(LEN=*), INTENT(OUT) :: msg
 
@@ -343,8 +345,8 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
+      USE mpi
       IMPLICIT NONE
-      include 'mpif.h'
       INTEGER, INTENT(IN) :: myid
       CHARACTER(LEN=*), INTENT(IN) :: what
 !-----------------------------------------------
@@ -373,8 +375,8 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
+      USE mpi
       IMPLICIT NONE
-      include 'mpif.h'
       INTEGER, INTENT(IN) :: n
       INTEGER, INTENT(out) :: newtype, ierr
 !-----------------------------------------------
@@ -396,8 +398,9 @@
 !     Sum x over all nodes and in y, then copy y to  x
 !***********************************************************************
       USE vast_kind_param, ONLY:  DOUBLE
+      USE mpi
+      USE suite_linear_algebra, ONLY: dcopy
       IMPLICIT NONE
-      INCLUDE 'mpif.h'
 
       INTEGER, INTENT(IN)                         :: n
       REAL(DOUBLE), DIMENSION(1:n), INTENT(INOUT) ::   x
@@ -420,8 +423,9 @@
 !***********************************************************************
       USE vast_kind_param, ONLY:  DOUBLE
       USE mpi_C, ONLY: MYID
+      USE mpi
+      USE suite_linear_algebra, ONLY: dcopy
       IMPLICIT NONE
-      INCLUDE 'mpif.h'
 
       INTEGER, INTENT(IN)                          :: n
       REAL(DOUBLE), DIMENSION(1:n), INTENT(INOUT) :: x
@@ -449,8 +453,9 @@
 !***********************************************************************
       USE vast_kind_param, ONLY:  DOUBLE
       USE mpi_C, ONLY: MYID
+      USE mpi
+      USE suite_linear_algebra, ONLY: dcopy
       IMPLICIT NONE
-      INCLUDE 'mpif.h'
 
       INTEGER, INTENT(IN)                          :: n
       REAL(DOUBLE), DIMENSION(1:n), INTENT(INOUT) :: x
@@ -474,8 +479,8 @@
       SUBROUTINE gisummpi (ix, n)
 !     Sum x over all nodes and in iy, then copy iy to  ix
 !***********************************************************************
+      USE mpi
       IMPLICIT NONE
-      INCLUDE 'mpif.h'
 
       INTEGER, INTENT(IN)                         :: n
       INTEGER, DIMENSION(1:n), INTENT(INOUT) ::  ix

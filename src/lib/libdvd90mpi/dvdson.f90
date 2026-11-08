@@ -108,6 +108,7 @@
       USE dvdrvr_I
       !USE dscal_I
       !USE dcopy_I
+      USE suite_linear_algebra, ONLY: dcopy, dscal
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -636,6 +637,7 @@
       USE adds_I
       USE multbc_I
 
+      USE suite_linear_algebra, ONLY: daxpy, dcopy, dscal, dspevx
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -759,7 +761,7 @@
       CALL DCOPY (IFIND, EIGVAL, 1, OLDVAL, 1)
       CALL DCOPY ((KPASS*(KPASS + 1))/2, S, 1, TEMPS, 1)
       CALL DSPEVX ('Vectors also', 'In a range', 'Upper triangular', KPASS, &
-         TEMPS, -1., -1., 1, IFIND, TOL, NFOUND, EIGVAL, SVEC, KPASS, SCRA1, &
+         TEMPS, -1.D0, -1.D0, 1, IFIND, TOL, NFOUND, EIGVAL, SVEC, KPASS, SCRA1, &
          ISCRA2, INCV, INFO)
       IERR = -ABS(INFO)
       IF (IERR /= 0) GO TO 60
@@ -911,6 +913,7 @@
       USE mgs_nrm_I
       !USE dscal_I
       USE adds_I
+      USE suite_linear_algebra, ONLY: dcopy, dscal
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1012,6 +1015,7 @@
 !-----------------------------------------------
       !USE dgemv_I
       !USE dcopy_I
+      USE suite_linear_algebra, ONLY: dcopy, dgemv
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1062,6 +1066,7 @@
 !-----------------------------------------------
       !USE dgemv_I
       !USE dcopy_I
+      USE suite_linear_algebra, ONLY: dcopy
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1132,6 +1137,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      USE suite_linear_algebra, ONLY: daxpy
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1397,6 +1403,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       !USE idamax_I
+      USE suite_linear_algebra, ONLY: idamax
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1422,7 +1429,6 @@
       INTEGER :: NNCE, I, IVAL, ICNT, ICUR, L, INDX, ITEMP
       REAL(DOUBLE) :: TMAX, TEMP
       LOGICAL :: DONE, IFLAG_CONVERGE
-      integer :: idamax
 !-----------------------------------------------
 !-----------------------------------------------------------------------
 !
@@ -1563,6 +1569,7 @@
       !use dgemv_I
       !use ddot_I
       !use dscal_I
+      USE suite_linear_algebra, ONLY: dscal
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1659,8 +1666,8 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE) :: x(n), y(n), ddot
       INTEGER :: n
+      REAL(DOUBLE) :: x(n), y(n), ddot
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

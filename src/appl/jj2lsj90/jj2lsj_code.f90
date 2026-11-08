@@ -256,13 +256,14 @@ CONTAINS
       USE ORB_C, ONLY: NCF
       USE itjpo_I
       USE ispar_I
+      USE vast_kind_param, ONLY: LONG
       IMPLICIT NONE
       integer, intent(in) :: ls, iw1, NCFMIN, NCFMAX
       integer, intent(in) :: ithresh(:), selected(:)
       real(DOUBLE), intent(out) :: values(:)
       logical, intent(out) :: active
       integer :: jj, lev, parity
-      integer*8 :: offset, ncf_long
+      INTEGER(LONG) :: offset, ncf_long
       real(DOUBLE) :: coefficient
 
       values = 0.0_DOUBLE
@@ -316,6 +317,7 @@ CONTAINS
 !      USE idigit_I
 !      USE ittk_I
 !      USE ixjtik_I
+      USE vast_kind_param, ONLY: LONG
       IMPLICIT NONE
       SAVE  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -334,7 +336,7 @@ CONTAINS
       real(DOUBLE) :: wa_transformation
       real(DOUBLE), dimension(Vectors_number) :: wa
       real(DOUBLE), dimension(Vectors_number) :: wb
-      integer*8 LOC_i8, NCF_i8
+      INTEGER(LONG) LOC_i8, NCF_i8
 !-----------------------------------------------
       wb = zero
       NCF_i8 = NCF
@@ -1940,6 +1942,7 @@ CONTAINS
 !-----------------------------------------------
       USE itjpo_I
       USE ispar_I
+      USE vast_kind_param, ONLY: LONG
       IMPLICIT NONE
       SAVE  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -1966,7 +1969,7 @@ CONTAINS
       real(DOUBLE), dimension(:), pointer  :: weights, weights2
       integer, dimension(:), pointer  :: ithresh
       character(LEN=164), dimension(1:Vectors_number) :: string_CSF
-      integer*8 LOC_i8, NCF_i8
+      INTEGER(LONG) LOC_i8, NCF_i8
 !-----------------------------------------------
       Ssms = ZERO;   g_j = ZERO;   g_JLS = ZERO;    Before_J = 0
       call inscreen(THRESH,levels,number_of_levels,ioutC,ioutj,UNIQUE, &
@@ -3322,6 +3325,7 @@ CONTAINS
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      USE iso_fortran_env, ONLY: INT32
       IMPLICIT NONE
       SAVE  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -3351,7 +3355,7 @@ CONTAINS
       REAL(DOUBLE) :: MAX_COMP
       INTEGER      :: IOS, IERR, INUM, NUM_Lev, I1,I2,I3,I4
       INTEGER      :: IPR, IPRF, NUM_OPT, Lev_OPT, New_J
-      INTEGER*4    :: last, length
+      INTEGER(INT32)    :: last, length
 !-----------------------------------------------
       allocate(COUPLING(Vec_No,Lev_No))
       allocate(COMP(Vec_No,Lev_No))

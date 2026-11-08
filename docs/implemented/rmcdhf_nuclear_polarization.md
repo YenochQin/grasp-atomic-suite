@@ -19,14 +19,14 @@
 | `rmcdhf_mpi` | `rmcdhf_mpi/getscdmpi.f90` | `permdir/npol.inp`，仅 rank 0 读取 |
 | `rmcdhf_mem_mpi` | `rmcdhf_mem_mpi/getscdmpi.f90` | `permdir/npol.inp`，仅 rank 0 读取 |
 
-已有 `rmcdhf_orbopt*`、独立 strict/diagnostic 求解器、性质程序和外部 RCI 不读取该配置。
+独立 strict/diagnostic 求解器、性质程序和外部 RCI 不读取该配置。
 公共 `NUCPOT` 不读取文件；库被链接不等于应用启用了 NP。
 `isodata`、交互 stdin 顺序、`rwfn.out` 和 `rmix.out` 格式保持原状。
 
 ## 原版来源与保留边界
 
 原版四个应用复制到 `src/appl/rmcdhf/`、`rmcdhf_mem/`、`rmcdhf_mpi/`、
-`rmcdhf_mem_mpi/`；原有 `src/appl/rmcdhf90*` 继续构建 `rmcdhf_orbopt*`。
+`rmcdhf_mem_mpi/`；旧 `rmcdhf_orbopt*` 四个目标及其实现已于 2026-11-08 移除。
 此前误加到 orbopt 的 16 个文件改动已撤回，并逐字节核对为 suite 基准版本。
 NP 的生产消费者测试现在编译新复制的原版应用例程。
 
@@ -34,6 +34,9 @@ NP 的生产消费者测试现在编译新复制的原版应用例程。
 SHA-256，其中 480 个为 Fortran 源码。源 `grasp/` 当前没有独立 Git 元数据，不能把
 父工作区的 Git SHA 当成其上游版本，因此以本次实际读取的文件快照作为可核查基线。
 `npol_code_upstream_copy` 剥离明确列举的 NP 接入修改后，核对全部 492 个文件。
+2026-11-08 起，校验先逆向恢复[明确登记的 F2018 兼容转换](../reference/rmcdhf_f2018_compatibility.json)，
+再剥离 NP hook 并核对原始 hash；原始来源清单不变。标准转换不修改 NP 或求解算法，
+当前实现与验证见 [F2018 兼容性说明](f2018_compatibility.md)。以下复制边界描述原导入快照。
 修改仅在每个变体的 `GETSCD*`、接口、主调用点及 `DACON` 的显式接口导入中。
 `SCF/SCFMPI`、`IMPROV*`、`SOLVE`、正交化、节点判据和矩阵例程保留复制源内容，
 不引入 orbopt 的额外控制与轨道更新流程。
@@ -181,7 +184,7 @@ ctest --test-dir build-npol-upstream-mpi -L '^npol_code$' --output-on-failure
 
 既有回归选择了 `lib9290_quad`、`shared_grid_capacity`、`strict_scf_logic`、
 `rmcdhf_pair_transaction_logic`、`rdensity_natural_orbitals`、
-`rmcdhf_orbopt_round_state_logic`、`grasp_grid_patcher`；MPI 配置另含
+`grasp_grid_patcher`；MPI 配置另含
 `mpi90_local_sparse`、`start_trace_parity`、`p0_trace_projection`。
 未运行全量 CTest，未运行依赖原子数据的回归。
 

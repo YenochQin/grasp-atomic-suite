@@ -10,8 +10,9 @@ implementation guides belong in `docs/implemented/`, pending experiments in
 State the source revision and distinguish implemented code from completed
 physical validation; update relative links and the index when moving documents.
 
-The `rmcdhf90*` programs migrated from `rmcdhf_test` build as
-`rmcdhf_orbopt`, `rmcdhf_orbopt_mem`, and their `_mpi` variants. They share
+The supported original RMCDHF programs are in `rmcdhf{,_mem,_mpi,_mem_mpi}`.
+Keep the separate strict, diagnostic, and CSFG solvers. The four
+`rmcdhf_orbopt*` targets and their source directories are retired. Retained programs share
 `libmod`, `lib9290`, `libdvd90`, and `mpi90` with the property programs; do not
 introduce a second copy of these libraries. Preserve suite MPI helpers.
 Keep `src/lib/libmod/parameter_def_M.f90` as the legacy re-export interface.
@@ -19,7 +20,7 @@ Define shared capacities only in `suite_parameters_M.f90`, using upstream defaul
 `KEYORB=215`, `NNNP=590`, `NNN1=NNNP+10`, `NNNW=127`, `NNNWM1=NNNW-1`, and
 `NNNWM2=NNNW-2`. The grid patcher edits this configuration module for capacity
 changes; existing applications continue to `USE parameter_def`.
-Each of the eight grid entry points keeps its upstream point/finite-nucleus
+Each grid entry point registered in the patcher keeps its upstream point/finite-nucleus
 settings and ACCY initialization order, including RDENSITY and the independent
 `rmcdhf_mem_strict_mpi` solver. Finite nuclei default to `N=NNNP=590`.
 Upstream RMCDHF computes ACCY before interactive grid input; explicitly supply
@@ -46,7 +47,7 @@ cmake --build build --target install -j4
 
 Use `./configure.sh --debug` for a debug build in `build-debug/`. Use `./scripts/clean-build-artifacts.sh` to remove CMake build directories and installed build outputs.
 
-Enable `-DGRASP_BUILD_SERIAL_APPS=ON` to build all four orbital programs
+Enable `-DGRASP_BUILD_SERIAL_APPS=ON` to build the original serial RMCDHF programs
 alongside serial and MPI property programs. In this workspace, run Python
 scripts/tests with `../graspkit-tools/.venv/bin/python`; do not create another
 environment or run `uv sync`/`uv run` here.

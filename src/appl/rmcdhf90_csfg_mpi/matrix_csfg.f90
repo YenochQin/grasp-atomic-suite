@@ -51,6 +51,7 @@
 !-----------------------------------------------
       USE setham_pot_I
       use maneig_csfg_I
+      USE suite_linear_algebra, ONLY: dcopy, dscal
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -64,7 +65,6 @@
          JOTHER, IA, JOFSET, IATTMP, IASTMP, NELMNTGG
       REAL(DOUBLE), DIMENSION(:), POINTER :: CMVL
       REAL(DOUBLE) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa
-      INTEGER, EXTERNAL :: ddot
       LOGICAL :: FIRST
       CHARACTER :: MCPLAB*3
       INTEGER, DIMENSION(20) :: NCONTR_tot, NCONTR_tot2
@@ -282,7 +282,7 @@
 
             !...Renormalize and invert as necessary
                IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC
-               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)
+               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)
 
             !...Schmidt orthogonalise
   234          CONTINUE
@@ -294,7 +294,7 @@
                IF (OVRLAP /= 0.D0) THEN          ! So SURE ???
                   OMCDAJ = 1.D0
                   CDAMPJ = -OVRLAP
-                  CALL DCOPY (NCF, EVEC(JOFSET+1), 1, CMVL(IOFSET + 1), 1)
+                  CALL DCOPY (NCF, EVEC(JOFSET+1:JOFSET+(NCF)), 1, CMVL(IOFSET + 1:IOFSET+(NCF)), 1)
                   GO TO 123
                ELSE
                   GO TO 234

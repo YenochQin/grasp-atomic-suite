@@ -40,7 +40,7 @@ def main() -> None:
         for fixture in ["shared_grid_capacity.f90", "standard_grasp/interface_capacity.f90"]:
             binary = work / Path(fixture).stem
             result = subprocess.run(
-                [compiler, "-fcheck=all", *copies, str(suite / "test" / fixture), "-o", str(binary)],
+                [compiler, "-std=f2018", "-fcheck=all", *copies, str(suite / "test" / fixture), "-o", str(binary)],
                 cwd=work, capture_output=True, text=True, timeout=60, check=False,
             )
             assert result.returncode == 0, result.stderr

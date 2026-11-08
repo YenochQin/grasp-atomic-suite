@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
+      USE vast_kind_param,  ONLY: DOUBLE, LONG
       USE parameter_def,    ONLY: KEYORB
       USE memory_man
       USE orb_C
@@ -250,7 +250,7 @@
             ERROR STOP
          ENDIF
          READ (30) NELMNTGG
-         NELMNT = INT8(NELMNTGG)
+         NELMNT = INT(NELMNTGG,KIND=LONG)
          CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')
          READ (30) (IENDCDUM,I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)
 
@@ -382,7 +382,7 @@
                ERROR STOP
             ENDIF
             READ (30) NELMNTGG
-            NELMNT = INT8(NELMNTGG)
+            NELMNT = INT(NELMNTGG,KIND=LONG)
             CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')
             READ (30) (IENDCDUM,I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)
 

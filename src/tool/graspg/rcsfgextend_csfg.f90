@@ -12,6 +12,7 @@
 !                                                                      *
 program rcsfextend_csfg
       use csfg_parameters, only: CSFG_MAX_SPLIT_LAYERS
+USE suite_system, ONLY: SYSTEM => run_shell
 implicit none
 integer :: i, j, k, m, n, nlayer, norb, norblayer, nsymmetrymatch, norbcomp, ncsf, nwrite, ncount
 integer :: jr, jl, pos, ncsflist(CSFG_MAX_SPLIT_LAYERS), nmin, nmax
@@ -87,8 +88,8 @@ read(36,'(a)') string1
 norb = (len_trim(orbitalstring)+1)/5
 
 ! Get individual orbital strings non-relativistic / relativistic notation
-read(unit=orbitalstring,fmt='(300(x,a3,x))') orb(1:300)
-read(unit=orbitalstring,fmt='(300(x,a4))') orbrel(1:300)
+read(unit=orbitalstring,fmt='(300(1x,a3,1x))') orb(1:300)
+read(unit=orbitalstring,fmt='(300(1x,a4))') orbrel(1:300)
 
 ! nonsym, flagsym
 if (yinf) then
@@ -105,7 +106,7 @@ symorbset_Enmin=orbitalstring(nonsym*5+1:len_trim(orbitalstring))//' '
 !write(*,*)"Orbitals set: "
 !write(*,'(A)')trim(orbitalstring)
 write(*,'(A)')"Labelling symmetries:"
-write(*,'(300(x,a3,x))')orb(1 : nonsym)
+write(*,'(300(1x,a3,1x))')orb(1 : nonsym)
 !write(*,'(300(x,a4))')orbrel(1 : nonsym)
 !write(*,*)"Non-relativistic symmetry-ordered symmetries:"
 !write(*,'(300(x,a3,x))')orb(nonsym+1 : norb)

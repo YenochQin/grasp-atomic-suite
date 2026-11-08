@@ -43,9 +43,11 @@
                             'n'/
 !-----------------------------------------------
 
-      do 10 i=1,25
-         do 10 j=0,min(i-1,10)
-   10       org(i,j) = 0
+      do i=1,25
+         do j=0,min(i-1,10)
+            org(i,j) = 0
+         end do
+      end do
       skal = 20
    60 write(*,200) 'Highest principal quantum number, n? (1..25)'
       read(193,*,err=60) nmax
@@ -56,16 +58,18 @@
                                               orb(min(10,nmax-1)),')'
       read(193,1000) X
       lmax = -1
-      do 71 i=0,min(10,nmax-1)
-   71    if (X.EQ.orb(i)) lmax=i
+      do i=0,min(10,nmax-1)
+         if (X.EQ.orb(i)) lmax=i
+      end do
       if (lmax.EQ.-1) goto 70
       write(logfil,*) lmax,' Highest orbital angular momentum.'
       write(*,200) 'Are all these nl-subshells active? (n/*)'
       read(193,1000) X
       all   = .NOT.(X.EQ.'n' .OR. X.EQ.'N')
       write(logfil,*) all,' all subshells active.'
-      do 72 i=1,25
-   72    lim(i) = 0
+      do i=1,25
+         lim(i) = 0
+      end do
       if (nmax.GE.2) then
         write(*,200) 'Limitations on population of n-subshells? (y/*)'
          read(193,1000) X
@@ -135,10 +139,12 @@
 	    if (cormax.GT.nenter) goto 92
             if (cormax.GE.1) then
                write(logfil,*) 'Core n=',cormax
-	       do 93 i=1,cormax
-                  do 93 j= 0,min(3,i-1)
+	       do i=1,cormax
+                  do j= 0,min(3,i-1)
 		     if (clos_c) closed(i,j) = .TRUE.
-   93                org(i,j) = 2+4*j
+                     org(i,j) = 2+4*j
+                  end do
+               end do
 	       if (cormax.EQ.3) then
 		  org(3,2) = 0
                   if (clos_c) closed(3,2) = .FALSE.

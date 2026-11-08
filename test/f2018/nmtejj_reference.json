@@ -1,0 +1,10 @@
+{
+  "source_revision": "d1260ba404833d20d709b34d9f26b05c32a3b615",
+  "compiler": "GNU Fortran 15.3.0 (legacy libraries)",
+  "rows": 22701,
+  "stdout_sha256": "cc6cca5e636f71bc2e9aecd1c34639796ae043f33d2bacad48ac891aeadd5ad3",
+  "source_sha256": {
+    "src/lib/librang90/nmtejj.f90": "1cfc9563d0e55bd4dbefa4970525f77fdcde2be19833e6ac5ad901dc28f2c157",
+    "src/lib/librang90_csfg/nmtejj.f90": "1cfc9563d0e55bd4dbefa4970525f77fdcde2be19833e6ac5ad901dc28f2c157"
+  }
+}

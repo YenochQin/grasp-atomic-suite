@@ -7,7 +7,7 @@
       USE vast_kind_param,ONLY: DOUBLE
       INTEGER, INTENT(IN) :: nmax, ncf, myid, nprocs, niv, imcdf
       REAL(DOUBLE), INTENT(IN) :: EAV
-      REAL(DOUBLE), DIMENSION(*), INTENT(IN):: Basis
+      REAL(DOUBLE), DIMENSION(*), INTENT(INOUT):: Basis
       END SUBROUTINE
       END INTERFACE
       END MODULE

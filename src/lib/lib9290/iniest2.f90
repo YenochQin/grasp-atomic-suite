@@ -20,6 +20,7 @@
 !-----------------------------------------------
       USE vast_kind_param, ONLY:  DOUBLE
       USE memory_man
+      USE suite_linear_algebra, ONLY: DCOPY, DSPEVX
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -65,7 +66,7 @@
       CALL ALLOC (ifail, ns, 'IFAIL', 'INIEST2')
 
       CALL DSPEVX ('Vectors also', 'In a range', 'Upper triangular', NS, AP, &
-         -1., -1., 1, NIV, 0.D0, NFOUND, EIGVAL, VEC, NS, WORK, IWORK, IFAIL, &
+         -1.D0, -1.D0, 1, NIV, 0.D0, NFOUND, EIGVAL, VEC, NS, WORK, IWORK, IFAIL, &
          INFO)
       IERR = -ABS(INFO)
 
@@ -76,7 +77,7 @@
 !  scatter the vectors
 
       DO J = 1, NIV
-         CALL DCOPY (NS, VEC(NS*(J-1)+1), 1, BASIS(NCF*(J-1)+1), 1)
+         CALL DCOPY (NS, VEC(NS*(J-1)+1:NS*(J-1)+(NS)), 1, BASIS(NCF*(J-1)+1), 1)
       END DO
 
       CALL DCOPY (NIV, EIGVAL, 1, BASIS(NIV*NCF+1), 1)

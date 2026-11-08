@@ -71,6 +71,7 @@
       USE iniestdm_I
       USE itjpo_I
       USE ispar_I
+      USE suite_linear_algebra, ONLY: dcopy, dspevx, dswap
       IMPLICIT NONE
 !-----------------------------------------------
 !  E x t e r n a l   F u n c t i o n s
@@ -235,7 +236,7 @@
                EVAL(I) = W(LOC - NVECMN + 1)
                IOFSET = NCF*(I - 1)
                LOC = NCF*(LOC - NVECMN)
-               CALL DCOPY (NCF, Z(LOC + 1), 1, EVEC(IOFSET+1), 1)
+               CALL DCOPY (NCF, Z(LOC + 1:LOC+(NCF)), 1, EVEC(IOFSET+1:IOFSET+(NCF)), 1)
             END DO
             CALL DALLOC (W, 'W', 'MANEIG')
             CALL DALLOC (Z, 'Z', 'MANEIG')
@@ -486,8 +487,8 @@
 
 !   Put the eigenpairs in order, overwriting as necessary
 
-            CALL DCOPY (NVEX, WORK(NEND+1), 1, EVAL, 1)
-            CALL DCOPY (NCF*NVEX, WORK(1), 1, EVEC, 1)
+            CALL DCOPY (NVEX, WORK(NEND+1:NEND+(NVEX)), 1, EVAL, 1)
+            CALL DCOPY (NCF*NVEX, WORK(1:NCF*NVEX), 1, EVEC, 1)
             CALL DALLOC (WORK, 'WORK', 'MANEIG')
 
 !   Rearrange and reallocate storage for the eigenpairs
@@ -502,12 +503,12 @@
                   IOFSET = IVEC(I)
                   LOC = IWORK(I)
                   IF (IOFSET == LOC) CYCLE
-                  CALL DSWAP (1, EVAL(IOFSET), 1, EVAL(I), 1)
+                  CALL DSWAP (1, EVAL(IOFSET:(IOFSET)+((1)-1)), 1, EVAL(I:(I)+((1)-1)), 1)
                   IWORK(I) = IWORK(IOFSET)
                   IWORK(IOFSET) = LOC
                   IOFSET = NCF*(IOFSET - 1)
                   LOC = NCF*(I - 1)
-                  CALL DSWAP (NCF, EVEC(IOFSET+1), 1, EVEC(LOC+1), 1)
+                  CALL DSWAP (NCF, EVEC(IOFSET+1:IOFSET+(NCF)), 1, EVEC(LOC+1:LOC+(NCF)), 1)
                END DO
                CALL DALLOC (IWORK, 'IWORK', 'MANEIG')
                CALL RALLOC (EVAL,  NVEC, 'EVAL', 'MANEIG')

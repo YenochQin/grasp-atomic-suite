@@ -24,7 +24,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
+      USE vast_kind_param, ONLY: DOUBLE, LONG
       USE memory_man
       USE damp_C
       USE def_C,           ONLY: iccmin, ncmin, ncmax
@@ -44,6 +44,7 @@
 !-----------------------------------------------
       USE setham_I
       USE maneig_I
+      USE suite_linear_algebra, ONLY: dcopy, ddot, dscal
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -57,7 +58,6 @@
          JOTHER, IA, JOFSET, IATTMP, IASTMP, NELMNTGG
       REAL(DOUBLE), DIMENSION(:), POINTER :: CMVL
       REAL(DOUBLE) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa
-      INTEGER, EXTERNAL :: ddot
       LOGICAL :: FIRST
       CHARACTER :: MCPLAB*3
 
@@ -124,7 +124,7 @@
          IF (JBLOCKT/=JBLOCK .OR. NCF/=NCFBLK(JBLOCK)) ERROR STOP &
             'matrx: jblockt .NE. jblock .OR. ncf1 .NE. ncf2'
          READ (30) NELMNTGG
-         NELMNT = INT8(NELMNTGG)
+         NELMNT = INT(NELMNTGG,KIND=LONG)
          CALL ALLOC (IROW, NELMNT, 'IROW', 'MATRIX')
          CALL ALLOC (EMT, NELMNT, 'EMT', 'MATRIX')
 !cjb          ALLOC (IENDC, NCF + 1,...)  ->  ALLOC (IENDC, 0, NCF,...)
@@ -247,18 +247,18 @@
 
             !...Renormalize and invert as necessary
                IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC
-               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)
+               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)
 
             !...Schmidt orthogonalise
   234          CONTINUE
                JOTHER = JOTHER - 1
                IF (JOTHER < 1) CYCLE
                JOFSET = (JOTHER - 1)*NCF + NEVECPAT
-               OVRLAP = DDOT(NCF,EVEC(IOFSET+1),1,EVEC(JOFSET+1),1)
+               OVRLAP = DDOT(NCF,EVEC(IOFSET+1:IOFSET+(NCF)),1,EVEC(JOFSET+1:JOFSET+(NCF)),1)
                IF (OVRLAP /= 0.D0) THEN          ! So SURE ???
                   OMCDAJ = 1.D0
                   CDAMPJ = -OVRLAP
-                  CALL DCOPY (NCF, EVEC(JOFSET+1), 1, CMVL(IOFSET + 1), 1)
+                  CALL DCOPY (NCF, EVEC(JOFSET+1:JOFSET+(NCF)), 1, CMVL(IOFSET + 1:IOFSET+(NCF)), 1)
                   GO TO 123
                ELSE
                   GO TO 234

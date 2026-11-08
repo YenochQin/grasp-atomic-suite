@@ -20,6 +20,7 @@
       !USE dspevx_I
       !USE vec_I
       !USE dcopy_I
+      USE suite_linear_algebra, ONLY: dcopy, dspevx
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -117,7 +118,7 @@
   102    CONTINUE
       END DO
       CALL DSPEVX ('Vectors also', 'In a range', 'Lower triangular', NS, AP, &
-         -1., -1., 1, NIV, 0.D0, NFOUND, EIGVAL, VEC, NS, WORK, IWORK, IFAIL, &
+         -1.D0, -1.D0, 1, NIV, 0.D0, NFOUND, EIGVAL, VEC, NS, WORK, IWORK, IFAIL, &
          INFO)
       IERR = -ABS(INFO)
       IF (IERR /= 0) WRITE (6, *) 'iniest ierr =', IERR

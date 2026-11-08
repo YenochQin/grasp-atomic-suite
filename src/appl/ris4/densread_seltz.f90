@@ -29,6 +29,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       IMPLICIT NONE
+      INTEGER :: NCOUNT, NRNUC
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -51,7 +52,6 @@
       REAL(DOUBLE) :: CONTRI1, CONTRI2, CONTRI3, CONTRI4, CONTRI5
       REAL(DOUBLE) :: CONTRI6, CONTRI7
       INTEGER :: ICOLD, IROLD, IOS, IA, IB, IC, IR, I, J, L, LOC, LAB
-      INTEGER :: NCOUNT, NRNUC
 !-----------------------------------------------
 !
 ! DINT1 contain the density

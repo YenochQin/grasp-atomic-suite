@@ -79,6 +79,7 @@
       USE dvdrvr_I
       !USE dscal_I
       !USE dcopy_I
+      USE suite_linear_algebra, ONLY: dcopy, dscal
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -504,6 +505,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       !USE ddot_I
+      USE suite_linear_algebra, ONLY: ddot
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -515,7 +517,6 @@
       REAL(DOUBLE)  :: BASIS(N*LIM)
       REAL(DOUBLE)  :: AB(N*LIM)
       REAL(DOUBLE) , INTENT(OUT) :: S(LIM*(LIM + 1)/2)
-      real(kind(0.0d0)) :: ddot
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -599,6 +600,7 @@
       USE mgs_nrm_I
       USE adds_I
       USE multbc_I
+      USE suite_linear_algebra, ONLY: daxpy, dcopy, ddot, dscal, dspevx
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -632,7 +634,6 @@
       REAL(DOUBLE)  :: SVEC(LIM*LIM)
       REAL(DOUBLE)  :: SCRA1(8*LIM)
       REAL(DOUBLE)  :: OLDVAL(NUME + 1)
-      real(kind(0.0d0)) :: ddot
       real::slamch
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -722,7 +723,7 @@
       CALL DCOPY (IFIND, EIGVAL, 1, OLDVAL, 1)
       CALL DCOPY ((KPASS*(KPASS + 1))/2, S, 1, TEMPS, 1)
       CALL DSPEVX ('Vectors also', 'In a range', 'Upper triangular', KPASS, &
-         TEMPS, -1., -1., 1, IFIND, TOL, NFOUND, EIGVAL, SVEC, KPASS, SCRA1, &
+         TEMPS, -1.D0, -1.D0, 1, IFIND, TOL, NFOUND, EIGVAL, SVEC, KPASS, SCRA1, &
          ISCRA2, INCV, INFO)
       IERR = -ABS(INFO)
       IF (IERR /= 0) GO TO 60
@@ -872,6 +873,7 @@
       USE mgs_nrm_I
       !USE dscal_I
       USE adds_I
+      USE suite_linear_algebra, ONLY: dcopy, dscal
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -973,6 +975,7 @@
 !-----------------------------------------------
       !USE dgemv_I
       !USE dcopy_I
+      USE suite_linear_algebra, ONLY: dcopy, dgemv
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1033,6 +1036,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      USE suite_linear_algebra, ONLY: daxpy, ddot, dgemv
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1054,7 +1058,6 @@
       REAL(DOUBLE)  :: BASIS(N*LIM)
       REAL(DOUBLE) , INTENT(INOUT) :: SCRA1(LIM)
       REAL(DOUBLE) , INTENT(OUT) :: EPSIL(LIM)
-       real(kind(0.0d0)) :: ddot
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -1290,6 +1293,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       !USE idamax_I
+      USE suite_linear_algebra, ONLY: idamax
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1314,7 +1318,6 @@
       INTEGER :: NNCE, I, IVAL, ICNT, ICUR, L, INDX, ITEMP
       REAL(DOUBLE) :: TMAX, TEMP
       LOGICAL :: DONE
-      integer :: idamax
 !-----------------------------------------------
 !-----------------------------------------------------------------------
 !
@@ -1435,6 +1438,7 @@
       !use dgemv_I
       !use ddot_I
       !use dscal_I
+      USE suite_linear_algebra, ONLY: ddot, dgemv, dscal
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1444,7 +1448,6 @@
       integer  :: new
       real(double)  :: scra(new)
       real(double)  :: b((kp + new)*n)
-      real(kind(0.0d0)) :: ddot
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

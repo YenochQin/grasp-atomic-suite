@@ -19,6 +19,7 @@
       USE lagcon_I
       USE dacon_I
       USE POTE_C
+      USE suite_linear_algebra, ONLY: dcopy
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

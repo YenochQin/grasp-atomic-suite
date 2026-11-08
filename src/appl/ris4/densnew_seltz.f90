@@ -52,6 +52,7 @@
       USE itjpo_I
       USE onescalar_I
       IMPLICIT NONE
+      Integer :: L, LOC, NCONTR, LAB, NRNUC
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -80,7 +81,6 @@
       CHARACTER :: CNUM*11, CK*2
       INTEGER, DIMENSION(NNNW) :: IA_S
       INTEGER :: KA, IOPAR, INCOR, IC, LCNUM, ITJPOC, IR, IA, IB, I, II, J
-      Integer :: L, LOC, NCONTR, LAB, NRNUC
 !-----------------------------------------------
 !
 ! DOIT: IF DOIT=1 angular coefficients will be stored after creation

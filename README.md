@@ -2,7 +2,7 @@
 
 [中文](README_ZH.md) | English
 
-`grasp-atomic-suite` is a Fortran research and development repository for relativistic atomic-structure and atomic-property calculations. It combines the orbital optimization programs migrated from `rmcdhf_test` with `rhfs90`, `ris4`, `rdensity`, `gj90`, and their MPI support for hyperfine-structure, isotope-shift, and Landé `g_J` calculations.
+`grasp-atomic-suite` is a Fortran research and development repository for relativistic atomic-structure and atomic-property calculations. It combines original RMCDHF and independent strict/diagnostic solvers with `rhfs90`, `ris4`, `rdensity`, `gj90`, and their MPI support for hyperfine-structure, isotope-shift, and Landé `g_J` calculations.
 
 This repository is not a minimal upstream GRASP mirror. It keeps the traditional GRASP numerical libraries and application layout, while adding CMake builds, MPI targets, an extracted `gj90` program, regression data, and development notes for `g_J` and MPI optimization work.
 
@@ -18,7 +18,7 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 │   │   ├── rdensity/         # serial/MPI radial density and natural orbitals
 │   │   ├── rhfs90/           # relativistic hyperfine-structure program
 │   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # fresh GRASP copies with optional NP
-│   │   ├── rmcdhf90*/        # four rmcdhf_orbopt orbital optimization variants
+│   │   ├── rmcdhf90_mem_{strict,diag}_mpi/ # independent strict/diagnostic variants
 │   │   └── ris4/             # relativistic isotope-shift program
 │   └── lib/
 │       ├── libmod/           # global parameters, common state, shared modules
@@ -51,7 +51,6 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 | `rdensity` | `src/appl/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/rdensity_mpi.md). |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing `name.i/name.ci` and angular intermediate data. |
 | GRASP RMCDHF + optional NP | `src/appl/rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | `rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | Fresh copies from the workspace GRASP source, retaining its solver flow. Only these four read `npol.inp`; see [NP interface and provenance](docs/implemented/rmcdhf_nuclear_polarization.md). |
-| Existing orbital optimization | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`, `rmcdhf_orbopt_mpi`, `rmcdhf_orbopt_mem`, `rmcdhf_orbopt_mem_mpi` | Separate orbopt implementations; no NP input. Serial/MPI variants with conventional or in-memory MCP storage. Existing `rwfn.out`, `rmix.out`, `rmcdhf.sum`, and `rmcdhf.log` conventions are retained. |
 | Strict memory SCF | `src/appl/rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | Independent upstream-derived memory MPI solver: orbital AND energy convergence for two consecutive EOL cycles, plus radial snapshots and a convergence CSV. See [restart and validation guide](docs/implemented/rmcdhf_mem_strict_mpi.md). |
 | P0 diagnostics | `src/appl/rmcdhf90_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | Independent upstream copy with read-only traces across solution matching, damping and orthogonalization. Original stopping criteria are retained. See [diagnostic guide](docs/implemented/rmcdhf_mem_diag_mpi.md). |
 
@@ -66,9 +65,9 @@ The recommended build flow is out-of-source CMake:
 cmake --build build --target install -j4
 ```
 
-`configure.sh` passes `-DGRASP_ENABLE_MPI=ON` by default. If MPI Fortran is available, installation produces `bin/gj90_mpi`, `bin/rhfs_mpi`, `bin/ris4_mpi`, `rmcdhf_mpi`, `rmcdhf_mem_mpi`, both existing `rmcdhf_orbopt*_mpi` programs, and the associated libraries.
+`configure.sh` passes `-DGRASP_ENABLE_MPI=ON` by default. If MPI Fortran is available, installation produces `bin/gj90_mpi`, `bin/rhfs_mpi`, `bin/ris4_mpi`, `rmcdhf_mpi`, `rmcdhf_mem_mpi`, and the associated libraries.
 
-To build the four fresh RMCDHF programs, the existing orbopt programs, and all property programs together:
+To build the four fresh RMCDHF programs, the independent strict/diagnostic variants, and all property programs together:
 
 ```sh
 cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON
@@ -102,10 +101,16 @@ Remove an existing build directory before reconfiguring, or run:
 
 The build requires a Fortran compiler, CMake 3.31 or newer, BLAS, and LAPACK. MPI targets additionally require an MPI Fortran environment such as `mpifort`.
 
-CMake finds BLAS/LAPACK and adds compatibility flags for older Fortran sources when using GNU Fortran:
+CMake finds BLAS/LAPACK and currently uses these standard and compatibility flags with GNU Fortran:
 
+- `-std=f2018`
 - `-fno-automatic`
-- `-fallow-argument-mismatch`
+
+The current configuration builds and links with gfortran 15.3.0 in F2018 mode; see
+[compatibility repairs and validation](docs/implemented/f2018_compatibility.md).
+`-fallow-argument-mismatch` has been removed after MPI/numerical-library interface
+and array-argument repairs; see the [interface validation](docs/reviews/argument_interfaces_2026-11-08.md).
+Static storage remains. Current CTest results are 36/47, with 11 existing failures.
 
 ## Inputs And Outputs
 
@@ -153,7 +158,7 @@ These files can be used to compare `gj90` Landé-factor output. CTest covers sha
 ctest --test-dir build-all --output-on-failure
 ```
 
-Orbital regression runners live in [test/rmcdhf_orbopt](test/rmcdhf_orbopt/README.md). Large calculation inputs/results remain outside the repository. SLURM templates require `GRASP_WORKSPACE` (the parent workspace); external input templates additionally require `GRASP_TEST_DATA_ROOT`. Set cluster module names and resource requests for your host before submitting jobs.
+Orbital regression runners live in [test/rmcdhf](test/rmcdhf/README.md). Large calculation inputs/results remain outside the repository. The retired orbopt runners and SLURM templates are no longer provided; see [retirement details](docs/implemented/orbopt_retirement.md).
 
 ## Radial Grid And Migration
 

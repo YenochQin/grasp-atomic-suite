@@ -35,7 +35,7 @@
 
       IMPLICIT NONE
       INTEGER       :: nfile, ncore, jblock
-      INTEGER(BYTE) :: MPIX_INT1
+      INTEGER :: MPIX_INT1
 
 !-----------------------------------------------------------------------
 

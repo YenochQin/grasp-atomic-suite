@@ -5,6 +5,9 @@ program rmixaccumulate_csfg
 
   Use rcsfsymexpand_I
 
+  USE suite_system, ONLY: SYSTEM => run_shell
+
+      USE suite_system, ONLY: EXIT => terminate_process
   implicit none
 ! CYC
 
@@ -460,7 +463,7 @@ program rmixaccumulate_csfg
 
 !   Number of orbitals
     norb = (len_trim(header(4))+1)/5
-    read(unit=header(4),fmt='(300(x,a4))') orbrel(1:300)
+    read(unit=header(4),fmt='(300(1x,a4))') orbrel(1:300)
 
 !    Find out and write the orbitals for this layer in relativistic notation
 

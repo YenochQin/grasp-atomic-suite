@@ -9,7 +9,7 @@
 > Source snapshots before removal: suite `afc3319`, Tools `3569c59`.
 > Everything below is the historical implementation/evidence record, including
 > obsolete commands and paths, rather than instructions for the current tree.
-> For the remaining runner, see [the test guide](../../test/rmcdhf_orbopt/README.md).
+> For the remaining runner, see [the test guide](orbopt/README.md).
 
 Implemented 2026-09-14.  This note separates what the archived jobs can prove
 from the checks enforced for new active-space runs.

@@ -105,8 +105,7 @@ set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 # Additional Fortran compiler flags.
 #
 # -fno-automatic: this was set in the original make_environment_gfortran_UBC file.
-# -fallow-argument-mismatch: needed for older BLAS/LAPACK-style calls that
-#   newer gfortran versions reject.
+# -std=f2018: check the selected language standard during migration.
 #
 # Note: optimization should be enabled on the Release target automatically.
 #
@@ -116,7 +115,7 @@ set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 #
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-automatic")
 if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -std=f2018")
 endif()
 
 message("Compiler flags etc. for this GRASP build:")
@@ -176,7 +175,7 @@ add_subdirectory("src/appl/jj2lsj90")
 # add_subdirectory("src/appl/rhfszeeman95")
 
 # Ordinary GRASP programs and fresh rmcdhf copies use the suite numerical libraries.
-# The rmcdhf90* directories retain the separate, older orbopt implementations.
+# The retired rmcdhf_orbopt targets are not part of this source tree.
 if(GRASP_BUILD_SERIAL_APPS)
     foreach(app rangular90 rwfnestimate90 rci90 rbiotransform90
                 rtransition90 rtransition90_phase)
@@ -184,8 +183,6 @@ if(GRASP_BUILD_SERIAL_APPS)
     endforeach()
     add_subdirectory("src/appl/rmcdhf")
     add_subdirectory("src/appl/rmcdhf_mem")
-    add_subdirectory("src/appl/rmcdhf90")
-    add_subdirectory("src/appl/rmcdhf90_mem")
 endif()
 if(TARGET mpiu90)
     foreach(app rangular90_mpi rci90_mpi rbiotransform90_mpi rtransition90_mpi)
@@ -193,8 +190,6 @@ if(TARGET mpiu90)
     endforeach()
     add_subdirectory("src/appl/rmcdhf_mpi")
     add_subdirectory("src/appl/rmcdhf_mem_mpi")
-    add_subdirectory("src/appl/rmcdhf90_mpi")
-    add_subdirectory("src/appl/rmcdhf90_mem_mpi")
     add_subdirectory("src/appl/rmcdhf90_mem_strict_mpi")
     add_subdirectory("src/appl/rmcdhf90_mem_diag_mpi")
 endif()

@@ -6,6 +6,7 @@ import importlib.util
 from contextlib import redirect_stderr, redirect_stdout
 import io
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -16,6 +17,7 @@ from unittest.mock import patch
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "patch_grasp_grid.py"
+FORTRAN_COMPILER = os.environ.get("FC", "gfortran")
 SPEC = importlib.util.spec_from_file_location("patch_grasp_grid", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 grid = importlib.util.module_from_spec(SPEC)
@@ -569,7 +571,7 @@ class PatchGridTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "one central definition of NNN1"):
             grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
 
-    @unittest.skipUnless(shutil.which("gfortran"), "gfortran is not available")
+    @unittest.skipUnless(shutil.which(FORTRAN_COMPILER), "Fortran compiler is not available")
     def test_suite_capacity_edit_reaches_reexports_and_shared_arrays(self) -> None:
         root = Path(self.temporary.name) / "suite"
         fixture(root, "atomic-suite")
@@ -597,7 +599,7 @@ class PatchGridTests(unittest.TestCase):
                 build.mkdir()
                 result = subprocess.run(
                     [
-                        "gfortran",
+                        FORTRAN_COMPILER,
                         "-o",
                         str(build / "capacity"),
                         *(str(root / "src/lib/libmod" / name) for name in module_names),
@@ -742,7 +744,7 @@ class PatchGridTests(unittest.TestCase):
         )
         self.assertEqual(output.lower().count("use npar_c"), 1)
 
-    @unittest.skipUnless(shutil.which("gfortran"), "gfortran is not available")
+    @unittest.skipUnless(shutil.which(FORTRAN_COMPILER), "Fortran compiler is not available")
     def test_d1_relabel_compiles_with_implicit_none_host(self) -> None:
         changes = grid.plan(
             self.root,
@@ -762,7 +764,7 @@ class PatchGridTests(unittest.TestCase):
         )
         (build / "rwfnrelabel.f90").write_bytes(output)
         result = subprocess.run(
-            ["gfortran", "-c", "modules.f90", "rwfnrelabel.f90"],
+            [FORTRAN_COMPILER, "-c", "modules.f90", "rwfnrelabel.f90"],
             cwd=build,
             capture_output=True,
             text=True,

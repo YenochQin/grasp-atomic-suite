@@ -28,6 +28,7 @@
       USE memory_man
       use mpi_C
 
+      USE suite_linear_algebra, ONLY: dcopy, dspevx
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -85,7 +86,7 @@
       ABSTOL = 2*dLAMCH('S')
 
       CALL DSPEVX ('Vectors also', 'In a range', 'Upper triangular', NS, AP, &
-      -1., -1., 1, NIV, ABSTOL, NFOUND, EIGVAL, VEC, NS, WORK, IWORK, IFAIL, &
+      -1.D0, -1.D0, 1, NIV, ABSTOL, NFOUND, EIGVAL, VEC, NS, WORK, IWORK, IFAIL, &
          INFO)
       IERR = -ABS(INFO)
 
@@ -96,7 +97,7 @@
 !  scatter the vectors
 
       DO J = 1, NIV
-         CALL DCOPY (NS, VEC(NS*(J-1)+1), 1, BASIS(NCF*(J-1)+1), 1)
+         CALL DCOPY (NS, VEC(NS*(J-1)+1:NS*(J-1)+(NS)), 1, BASIS(NCF*(J-1)+1), 1)
       END DO
 
       CALL DCOPY (NIV, EIGVAL, 1, BASIS(NIV*NCF+1), 1)

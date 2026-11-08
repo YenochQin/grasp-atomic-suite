@@ -2,12 +2,12 @@ program rcsfblocksplit_csfg
 
 ! Written by Per Jonsson, Malmo University, June 2024
 
+USE suite_system, ONLY: SYSTEM => run_shell
 implicit none
 
 integer :: npos,i,j,k,l,ios,nblock,nblockodd,nblockeven
 integer :: nelec,ncftot,nw,nvectot,nvecsize
 integer :: nb,nevblk(100),iatjp,iaspa,ivec(100)
-integer :: system
 integer, allocatable :: ncfblk(:)
 
 double precision :: eav,eval(100)

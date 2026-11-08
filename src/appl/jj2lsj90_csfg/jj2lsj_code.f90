@@ -210,6 +210,7 @@ CONTAINS
 !      USE idigit_I
 !      USE ittk_I
 !      USE ixjtik_I
+      USE vast_kind_param, ONLY: LONG
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -227,7 +228,7 @@ CONTAINS
       real(DOUBLE) :: wa_transformation
       real(DOUBLE), dimension(Vectors_number) :: wa
       real(DOUBLE), dimension(Vectors_number) :: wb
-      integer*8 LOC_i8, NCF_i8
+      INTEGER(LONG) LOC_i8, NCF_i8
 !-----------------------------------------------
       wb = zero
       NCF_i8 = NCF
@@ -1830,6 +1831,7 @@ CONTAINS
 !-----------------------------------------------
       USE itjpo_I
       USE ispar_I
+      USE vast_kind_param, ONLY: LONG
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -1851,7 +1853,7 @@ CONTAINS
       real(DOUBLE), dimension(:), pointer  :: weights, weights2
       integer, dimension(:), pointer  :: ithresh
       character(LEN=164), dimension(1:Vectors_number) :: string_CSF
-      integer*8 LOC_i8, NCF_i8
+      INTEGER(LONG) LOC_i8, NCF_i8
 !CYC-2024
       integer :: NCFMAXtmp
 
@@ -3201,6 +3203,7 @@ CONTAINS
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      USE iso_fortran_env, ONLY: INT32
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -3228,7 +3231,7 @@ CONTAINS
       REAL(DOUBLE) :: MAX_COMP
       INTEGER      :: IOS, IERR, INUM, NUM_Lev, I1,I2,I3,I4
       INTEGER      :: IPR, IPRF, NUM_OPT, Lev_OPT, New_J
-      INTEGER*4    :: last, length
+      INTEGER(INT32)    :: last, length
 !-----------------------------------------------
       allocate(COUPLING(Vec_No,Lev_No))
       allocate(COMP(Vec_No,Lev_No))

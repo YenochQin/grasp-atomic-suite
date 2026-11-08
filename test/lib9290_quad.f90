@@ -11,13 +11,11 @@ contains
         use grid_C
         use tatb_C
         use quad_I
+        use vast_kind_param, only: dp => DOUBLE
 
-        real*8 :: real64_kind_
-        integer, parameter :: real64 = kind(real64_kind_)
-        integer, parameter :: dp = real64
 
         integer :: i
-        real(real64) :: result
+        real(dp) :: result
 
         ! Integrate exp(-2x) from 0 to infinity. Expected result is 1/2.
         do i = 1, NNN1

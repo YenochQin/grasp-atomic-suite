@@ -23,6 +23,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       USE dspevx_I
+      USE suite_linear_algebra, ONLY: dcopy, dspevx
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -69,7 +70,7 @@
 !  scatter the vectors
 
       DO J = 1, NIV
-            CALL dcopy (ns, vec(ns*(j-1)+1),1, basis(ncf*(j-1)+1), 1)
+            CALL dcopy (ns, vec(ns*(j-1)+1:ns*(j-1)+(ns)),1, basis(ncf*(j-1)+1), 1)
       ENDDO
 
       CALL dcopy (NIV, EIGVAL, 1, BASIS(NIV*ncf+1), 1)

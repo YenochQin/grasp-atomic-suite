@@ -13,6 +13,7 @@ program rcsfgsplit_csfg
 !   Output files: <name?>.g (in CSFG-format)                           *
 ! 
       use csfg_parameters, only: CSFG_MAX_SPLIT_LAYERS
+USE suite_system, ONLY: SYSTEM => run_shell
 implicit none
 integer :: i, j, k, m, n, nlayer, norb, norblayer, nsymmetrymatch, norbcomp, ncsf, nwrite, ncount
 integer :: jr, jl, pos, ncsflist(CSFG_MAX_SPLIT_LAYERS)
@@ -32,7 +33,6 @@ character*2    :: char_rl1, char_rl2
 character*1500 :: symorbset_Enmax,symorbset_Enn,stringnonsym
 character*300  :: line1  ! The first line of CSF
 integer        :: iwrite, ierr
-integer        :: system
 
 !string11_nrorb='spdfghiklmn'
 !write(*,*)"p =", index(string11_nrorb, 'p')
@@ -91,8 +91,8 @@ norb = (len_trim(orbitalstring)+1)/5
 
 ! Get individual orbital strings non-relativistic / relativistic notation
 
-read(unit=orbitalstring,fmt='(300(x,a3,x))') orb(1:300)
-read(unit=orbitalstring,fmt='(300(x,a4))') orbrel(1:300)
+read(unit=orbitalstring,fmt='(300(1x,a3,1x))') orb(1:300)
+read(unit=orbitalstring,fmt='(300(1x,a4))') orbrel(1:300)
 
 ! nonsym, flagsym
 ! CYC 2024/08/01 : ! Always use rlabel.inp
@@ -130,7 +130,7 @@ symorbset_Enmax=orbitalstring(nonsym*5+1:len_trim(orbitalstring))//' '
 !write(*,*)"Orbitals set: "
 !write(*,'(A)')trim(orbitalstring)
 write(*,*)"Labelling symmetries:"
-write(*,'(300(x,a3,x))')orb(1 : nonsym)
+write(*,'(300(1x,a3,1x))')orb(1 : nonsym)
 !write(*,'(300(x,a4))')orbrel(1 : nonsym)
 !write(*,*)"Non-relativistic symmetry-ordered symmetries:"
 !write(*,'(300(x,a3,x))')orb(nonsym+1 : norb)
@@ -216,7 +216,7 @@ do k = 1,nlayer
 
 !  Find out and write the orbitals for this layer in relativistic notation
 
-   read(unit=orbitalstring,fmt='(300(x,a4))') orbrel(1:300)
+   read(unit=orbitalstring,fmt='(300(1x,a4))') orbrel(1:300)
    orbitalstring = ''
    ncount = 0
    do i = 1,norb

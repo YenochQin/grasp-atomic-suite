@@ -137,7 +137,7 @@
 !
   300 FORMAT (I5,2X,D12.5,I5,2X,D12.5, 2(1X,1I2,1A2),1P,D15.6,1X,D15.6, &
       1X,1A,1X,D15.6)
-  301 FORMAT (4X,'i',3X,'Coeff.(i)',5X,'f',2X,'Coeff.(f)'2X,            &
+  301 FORMAT (4X,'i',3X,'Coeff.(i)',5X,'f',2X,'Coeff.(f)',2X,            &
       'Orb(i)',1X,'Orb(f)',2X,'MCT coeff.',4X,'Radial Factor',          &
       5X,'Contribution')
   302 FORMAT ('Upper level ',I3,A4,A4,10X,' Lower level',I3,A4,A4)

@@ -103,7 +103,7 @@
 !
       RETURN
 !
-  300 FORMAT(/,/,' Exchange potential contributions from off-diagonal' &
+  300 FORMAT(/,/,' Exchange potential contributions from off-diagonal', &
           ' I(ab), COEF divided by C for ',1I2,1A2,' orbital :'/,/)
   301 FORMAT(1X,1P,D21.14,'* I (',1I2,1A2,',',1I2,1A2, ') ','* P (',1I2,1A2,')')
   302 FORMAT(/,/,31X,'(P)',19X,'(Q)',41X,'(P)',19X,'(Q)'/,&
@@ -112,7 +112,7 @@
          ' --------- r --------- ------ X  (r) -------',&
          ' ------ X  (r) -------')
   303 FORMAT(1P,6(1X,1D21.14))
-  304 FORMAT(/,/,2X, 'End build Direct, Exchange (V-Coef and T-Coef)' &
+  304 FORMAT(/,/,2X, 'End build Direct, Exchange (V-Coef and T-Coef)', &
        ' Potential for', 2x, 1I2, 1A2/,/'=============')
 !
       END SUBROUTINE DACON

@@ -390,13 +390,13 @@
 307   FORMAT (//' Level  J Parity  Electron density in atomic units' &
            //24X,'Dens. (a.u.)')
 317   FORMAT (//' Level  J Parity  Field shift electronic factors and av&
-           erage point discrepancy in fit' &
+           &erage point discrepancy in fit' &
            //24X, &
            'F0 (GHz/fm^2)',6X,' F2 (GHz/fm^4)', &
-           6X,' F4 (GHz/fm^6)',6X,' F6 (GHz/fm^8)' &
+           6X,' F4 (GHz/fm^6)',6X,' F6 (GHz/fm^8)', &
            6X,' Disc. (per mille)')
 327   FORMAT (//' Level  J Parity  Field shift electronic factors (corre&
-           cted for varying density inside nucleus)' &
+           &cted for varying density inside nucleus)' &
            //24X, &
            'F0VED0 (GHz/fm^2)   F0VED1 (GHz/fm^4)')
 308   FORMAT (//' Level  J Parity  Normal mass shift parameter')

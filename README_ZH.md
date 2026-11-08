@@ -2,7 +2,7 @@
 
 中文 | [English](README.md)
 
-`grasp-atomic-suite` 是一个面向相对论原子结构与原子性质计算的 Fortran 研究开发仓库。它已合入 `rmcdhf_test` 的轨道优化程序，并与 `rhfs90`、`ris4`、`gj90` 共享 GRASP 数值库，用于轨道优化、超精细结构、同位素位移和 Landé `g_J` 因子的计算、验证与性能优化。
+`grasp-atomic-suite` 是一个面向相对论原子结构与原子性质计算的 Fortran 研究开发仓库。它保留原版 RMCDHF 和独立 strict/diag 求解器，并与 `rhfs90`、`ris4`、`gj90` 共享 GRASP 数值库，用于轨道优化、超精细结构、同位素位移和 Landé `g_J` 因子的计算、验证与性能优化。
 
 本仓库不是上游 GRASP 的最小镜像。它保留了传统 GRASP 数值库和应用组织方式，同时加入了 CMake 构建、MPI 目标、`gj90` 独立程序、回归数据和面向 `g_J`/MPI 优化的开发文档。
 
@@ -18,7 +18,7 @@
 │   │   ├── rdensity/         # 串行/MPI 径向电子密度与自然轨道
 │   │   ├── rhfs90/           # 相对论超精细结构程序
 │   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # 从 grasp 新复制，支持可选 NP
-│   │   ├── rmcdhf90*/        # 四个 rmcdhf_orbopt 轨道优化版本
+│   │   ├── rmcdhf90_mem_{strict,diag}_mpi/ # 独立严格停止/诊断版本
 │   │   └── ris4/             # 相对论同位素位移程序
 │   └── lib/
 │       ├── libmod/           # 全局参数、公共块和共享状态模块
@@ -51,7 +51,6 @@
 | `rdensity` | `src/appl/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/rdensity_mpi.md)。 |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，输出 `name.i/name.ci` 及中间角向数据。 |
 | 原版 RMCDHF + 可选 NP | `src/appl/rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | 从工作区 grasp 新复制，保留原版求解流程；仅这四个读取 `npol.inp`。详见[NP 接口与来源](docs/implemented/rmcdhf_nuclear_polarization.md)。 |
-| 既有轨道优化 | `src/appl/rmcdhf90*` | `rmcdhf_orbopt`、`rmcdhf_orbopt_mpi`、`rmcdhf_orbopt_mem`、`rmcdhf_orbopt_mem_mpi` | 独立保留的 orbopt 实现，不接入 NP；串行/MPI 与常规/内存 MCP 版本，输出仍使用 `rwfn.out`、`rmix.out`、`rmcdhf.sum`、`rmcdhf.log`。 |
 | 严格内存 SCF | `src/appl/rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | 从原版独立复制的内存 MPI 程序；EOL 要求轨道与能量连续两轮同时达标，并保存逐轮波函数和收敛 CSV。详见[重启与验证说明](docs/implemented/rmcdhf_mem_strict_mpi.md)。 |
 | P0 分阶段诊断 | `src/appl/rmcdhf90_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | 从原版独立复制，记录匹配、阻尼和正交化前后的系数与径向值；保留原停止判据。详见[诊断说明](docs/implemented/rmcdhf_mem_diag_mpi.md)。 |
 
@@ -66,9 +65,9 @@
 cmake --build build --target install -j4
 ```
 
-`configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后会得到 `bin/gj90_mpi`、`bin/rhfs_mpi`、`bin/ris4_mpi`、新复制的 `rmcdhf_mpi`、`rmcdhf_mem_mpi`、原有两个 orbopt MPI 程序以及对应库文件。
+`configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后会得到 `bin/gj90_mpi`、`bin/rhfs_mpi`、`bin/ris4_mpi`、新复制的 `rmcdhf_mpi`、`rmcdhf_mem_mpi`以及对应库文件。
 
-同时构建新复制的四个原版 RMCDHF、原有 orbopt 系列和性质计算程序：
+同时构建新复制的四个原版 RMCDHF、独立 strict/diag 版本和性质计算程序：
 
 ```sh
 cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON
@@ -102,10 +101,16 @@ cmake --build build-serial --target install -j4
 
 构建需要 Fortran 编译器、CMake 3.31 或更新版本、BLAS 和 LAPACK。MPI 目标还需要 MPI Fortran 编译环境，例如 `mpifort`。
 
-CMake 会自动查找 BLAS/LAPACK，并在使用 GNU Fortran 时为较旧的 Fortran 源码增加兼容选项：
+CMake 会自动查找 BLAS/LAPACK，GNU Fortran 当前使用以下标准与兼容选项：
 
+- `-std=f2018`
 - `-fno-automatic`
-- `-fallow-argument-mismatch`
+
+当前配置已通过 gfortran 15.3.0 的全量 F2018 编译/链接，见
+[兼容性修复与验证](docs/implemented/f2018_compatibility.md)。
+`-fallow-argument-mismatch` 已移除，MPI/数值库的接口及数组实参已修正，见
+[接口验证记录](docs/reviews/argument_interfaces_2026-11-08.md)。静态存储策略仍保留；
+当前 CTest 为 36/47，剩余 11 项为既有失败。
 
 ## 输入与输出
 
@@ -152,7 +157,7 @@ data/test.gj
 ctest --test-dir build-all --output-on-failure
 ```
 
-轨道回归脚本见 [test/rmcdhf_orbopt](test/rmcdhf_orbopt/README.md)。大型计算输入和结果留在仓库外。SLURM 模板需要设置 `GRASP_WORKSPACE`（父工作区目录），使用外部输入的模板还需设置 `GRASP_TEST_DATA_ROOT`；提交前按本机调整 module 名称和资源参数。
+轨道回归脚本见 [test/rmcdhf](test/rmcdhf/README.md)。大型计算输入和结果留在仓库外。旧 orbopt 运行器和 SLURM 模板已移除，见[退役说明](docs/implemented/orbopt_retirement.md)。
 
 ## 径向网格与仓库迁移
 

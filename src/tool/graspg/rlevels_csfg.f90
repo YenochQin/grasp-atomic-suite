@@ -54,7 +54,7 @@
 !CYC:
       INTEGER Lev_POS_MCM(ndim)
 !
-      INTEGER i, j, iargc, ios, ncountState, nFile, mFile
+      INTEGER i, j, ios, ncountState, nFile, mFile
       INTEGER nelec, ncftot, nw, nvectot, nvecsiz, nblock, jblock
       INTEGER nb, ncfblk, nevblk, iiatjp, iiaspa
       INTEGER K, Iprint, IMaxCount
@@ -76,7 +76,7 @@
                      ' 19 ', '39/2', ' 20 ', '41/2', ' 21 ', '43/2', &
                      ' 22 '/
 !
-      mFile = iargc()
+      mFile = command_argument_count()
       string_PRN = ''
       Iprint = 0
       ZERO = 0.0D00
@@ -108,7 +108,7 @@
          mFile = i
       ELSEIF (mFile .GT. 0 .AND. mFile .LE. maxFile) THEN
          DO i = 1, mFile
-            CALL getarg (i, strInFile(i))
+            CALL get_command_argument (i, strInFile(i))
          ENDDO
       ELSE
          WRITE (0,*) 'More than ', maxFile, ' files entered,',         &

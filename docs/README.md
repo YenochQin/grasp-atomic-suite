@@ -29,6 +29,11 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 已移除参数放行 | [argument_interfaces_2026-11-08.md](reviews/argument_interfaces_2026-11-08.md) | gfortran 15/F2018 全量构建不再使用 fallow-argument-mismatch；MPI/BLAS 显式接口、类型和有界数组区段修复；当前 CTest 36/47，11 项为既有失败；orbopt 已退役。 |
+| 已移除旧程序 | [orbopt_retirement.md](implemented/orbopt_retirement.md) | 2026-11-08 删除四个 rmcdhf_orbopt 目标/源码和专用驱动，保留原版、strict/diag、CSFG；共有测试迁到 test/rmcdhf，suite 网格入口调整为 21 个。 |
+| 已实施兼容性子批次 | [f2018_compatibility.md](implemented/f2018_compatibility.md) | GNU 15.3.0 下共享库、平台服务及应用标准语法已恢复全量 F2018 编译/链接；保留静态存储和参数放行，严格接口迁移未完成。 |
+| 已完成本轮验证 | [f2018_gfortran15_batches_2026-11-08.md](reviews/f2018_gfortran15_batches_2026-11-08.md) | 全量构建通过；五项新增回归通过；四个 solver 一轮 SCF 共 28 文件与旧版本一致；CTest 33/44，11 个失败与旧基线相同，无新增失败。 |
+| 已完成首轮编译诊断 | [f2018_gfortran15_compile_probe_2026-11-08.md](reviews/f2018_gfortran15_compile_probe_2026-11-08.md) | GNU 构建已加 `-std=f2018`，全新全量构建失败；15 个文件直接报错。补充生产源码诊断为 59 个文件失败，移除参数放行后为 143 个；列出共享库、平台函数、kind/语法与 MPI/BLAS 接口优先项，未修改计算实现或运行数值测试。 |
 | 已实施 | [standard_grasp_integration.md](implemented/standard_grasp_integration.md) | 2026-11-08 导入普通 rangular、rwfnestimate、rbiotransform、rci、rtransition 五类程序共十个目标，复用 suite 共享库/参数；移除初猜程序局部容量定义，补丁器覆盖 25 个网格/4 个续算入口。完整 F2018 与原子物理验收尚未完成。 |
 | 已完成接入检查 | [standard_grasp_integration_validation_2026-11-08.md](reviews/standard_grasp_integration_validation_2026-11-08.md) | GNU 15.3.0 全量及 serial-only 构建通过；35 项补丁器测试通过；CTest 28/39 通过，11 项 NP/strict 失败在未修改基线复现。记录既有并行模块输出冲突；不宣称全绿或物理验收。 |
 | 已实施 | [jj2lsj_postprocessing.md](implemented/jj2lsj_postprocessing.md) | 2026-11-04 分阶段计时、稳定归并排序及 ASF 排序并行；唯一标签和输出按序执行，跨 block 流水线经计时评估暂缓。 |
@@ -37,12 +42,12 @@ docs/
 | 已实施 | [rmcdhf_mem_strict_mpi.md](implemented/rmcdhf_mem_strict_mpi.md) | 2026-10-13 新增独立内存 MPI 严格停止目标；编译、判据单元测试通过。完整 Linux MPI 重启与生产物理验证待执行。 |
 | 已实施 | [rmcdhf_mem_diag_mpi.md](implemented/rmcdhf_mem_diag_mpi.md) | 2026-10-13 从原版独立复制的 P0/START 诊断目标；记录起始解、内部迭代和耦合系数，保留原算法及停止判据。START 逐值对照、投影边界及 Linux 1/2-rank 输出不变性回归通过；Ni 失稳根因尚待诊断重放。 |
 | 已实施 | [rdensity_mpi.md](implemented/rdensity_mpi.md) | 2026-10-09 新增串行/MPI 自然轨道程序；CSF 分工、矩阵归约、解析小模型及 Ni 对照测试。大规模性能与物理收敛仍待验证。 |
-| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值；2026-10-30 加入 GRASPG 后共十七个网格入口和两个 RCI 续算入口，NNNP=590、NNN1=600。 |
+| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值；2026-11-08 退役 orbopt 后现有 21 个网格入口、4 个 RCI 续算入口，NNNP=590、NNN1=600。 |
 | 已实施 | [RHFS_gJ_report.md](implemented/RHFS_gJ_report.md) | 串行 RHFS 的加载、矩阵元、ASF 投影及输出链仍存在。仅覆盖该路径，不是 gj90/MPI 完整说明。 |
 | 已实施 | [rmcdhf_nuclear_polarization.md](implemented/rmcdhf_nuclear_polarization.md) | 2026-10-24 从 grasp 新复制四个原版 rmcdhf 目标并接入局域 E1/E2 NP；已有 orbopt 保持原状：独立输入、共享势、root I/O 与集体失败协议；串行/MPI 代码测试 9/9、14/14 通过，物理计算验证未执行。 |
 | 已完成代码计划 | [rmcdhf_nuclear_polarization_implementation.md](plans/rmcdhf_nuclear_polarization_implementation.md) | 保留实施设计、完成清单与结果；现行输入契约见已实施说明。 |
 | 待执行 | [grasp_grid_parameter_tuning.md](plans/grasp_grid_parameter_tuning.md) | 修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
-| 准备阶段部分实施 | [f2018_migration_gfortran15_2026-11-08.md](plans/f2018_migration_gfortran15_2026-11-08.md) | 以 suite `179ca9e` 为基线规划 gfortran 15 的 F2018 迁移。五类普通程序的导入与共享参数接入已先行完成；P0–P9 的完整严格构建及数值验收仍待执行，不将导入工作视为标准迁移完成。 |
+| 标准兼容子批次已实施 | [f2018_migration_gfortran15_2026-11-08.md](plans/f2018_migration_gfortran15_2026-11-08.md) | 普通程序导入和 P3 标准编译/链接子批次已完成；逐项记录基线、平台适配、精确回归和余下接口/状态/物理验收，完整迁移尚未完成。 |
 | 阶段性实施 | [jj2lsj_postprocessing_parallelization_2026-11-03.md](plans/jj2lsj_postprocessing_parallelization_2026-11-03.md) | 后处理按 ASF 并行、唯一标签依赖与跨 block 异步流水线讨论；计时与稳定排序已实施，保留 ASF 后处理和跨 block 流水线的后续设计。 |
 | 已完成验证 | [jj2lsj_postprocessing_validation_2026-11-04.md](reviews/jj2lsj_postprocessing_validation_2026-11-04.md) | AS4 稳定排序及整理约 9.60→0.045 s，总耗时单次约减少 2.1%；AS4/AS1 输出一致，标签异步化经计时评估暂缓。 |
 | 已完成验证 | [jj2lsj_gd_i_validation_2026-11-02.md](reviews/jj2lsj_gd_i_validation_2026-11-02.md) | 六套 Gd I 输入的 18 个输出文件一致；两个代表案例的 994,894 个 LS 系数在 4/8 线程下与串行逐位一致，包含真实提前停止路径。 |
@@ -107,12 +112,12 @@ docs/
    对照结果，不能只以 g_J 或公共库 CTest 通过代替。
 4. 理论参考稿的完整算符、单位及约化矩阵元约定仍需第一手文献核对。
 
-`test/rmcdhf_orbopt/` 中的测试说明和实验结果保留在测试旁，
-分类索引仅链接[测试入口](../test/rmcdhf_orbopt/README.md)、
-[历史结果](../test/rmcdhf_orbopt/RESULTS.md)及
+保留求解器的共有检查见[测试入口](../test/rmcdhf/README.md)；旧 orbopt 驱动说明和
+[历史结果](archive/orbopt/RESULTS.md)已归档。另保留
 [已退役的 stage guard 历史记录](archive/orbopt_stage_guard_retired.md)，
 2026-10-19 移除 Python 阶段验收流程及其专属入口，实施记录已归档；
-Fortran 求解器、构建目标和直接回归流程保留。没有迁入大型外部计算数据。
+上述记录描述当时状态；2026-11-08 又移除了四个 orbopt 求解器及其专用测试驱动。
+没有迁入大型外部计算数据。
 
 ## 后续维护规则
 

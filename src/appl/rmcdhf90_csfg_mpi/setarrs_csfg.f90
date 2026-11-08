@@ -20,6 +20,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      USE vast_kind_param, ONLY: LONG
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -32,7 +33,7 @@
 !-----------------------------------------------
       NCF = NCFBLKTr(JBLOCK)
 
-      NELMNT = INT8(NZBLK(JBLOCK))
+      NELMNT = INT(NZBLK(JBLOCK),KIND=LONG)
       CALL ALLOC (IROW, NELMNT, 'IROW', 'MATRIX_CSFG')
       IROW(:) = 0
       CALL ALLOC (EMT, NELMNT, 'EMT', 'MATRIX_CSFG')

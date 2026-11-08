@@ -24,13 +24,14 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       USE dspevx_I
+      USE suite_linear_algebra, ONLY: dcopy, dspevx
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
        INTEGER, INTENT(IN) :: nmax, ncf, myid, nprocs, niv, imcdf
        REAL(DOUBLE), INTENT(IN) :: EAV
-       REAL(DOUBLE), DIMENSION(*), INTENT(IN):: Basis
+       REAL(DOUBLE), DIMENSION(*), INTENT(INOUT):: Basis
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -106,7 +107,7 @@
       CALL DINIT (ncf*NIV, 0.D0, BASIS, 1)
 !       ...scatter the vectors
       DO J = 1, NIV
-         CALL dcopy (ns, vec(ns*(j-1)+1),1, basis(ncf*(j-1)+1), 1)
+         CALL dcopy (ns, vec(ns*(j-1)+1:ns*(j-1)+(ns)),1, basis(ncf*(j-1)+1), 1)
       ENDDO
       CALL dcopy (NIV, EIGVAL,1,BASIS(NIV*ncf+1),1)
 

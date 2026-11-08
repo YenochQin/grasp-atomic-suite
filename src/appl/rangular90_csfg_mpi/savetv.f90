@@ -24,13 +24,14 @@
 
       USE labpack_I
 
+      USE vast_kind_param, ONLY: DOUBLE
       IMPLICIT NONE
 !----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       INTEGER    :: IFLAG, ICW, IRW, IUNITF, MTYPE
       INTEGER    :: IAA, IBB
-      REAL*8     :: TSHELL1
+      REAL(DOUBLE)     :: TSHELL1
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------

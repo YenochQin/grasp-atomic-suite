@@ -10,12 +10,13 @@
       SUBROUTINE PRINTLABELV(IFLAG, ICW, IRW, NTXX, MTYPE, IA, IB, TSHELL1)
       USE symmatrix_mod, ONLY: MAP
       USE buffer_C,      ONLY: NVCOEF, LABEL, COEFF
+      USE vast_kind_param, ONLY: DOUBLE
       IMPLICIT NONE
 !----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       INTEGER    :: IFLAG, ICW, IRW, NTXX, IA, IB, MTYPE
-      REAL*8     :: TSHELL1
+      REAL(DOUBLE)     :: TSHELL1
 
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

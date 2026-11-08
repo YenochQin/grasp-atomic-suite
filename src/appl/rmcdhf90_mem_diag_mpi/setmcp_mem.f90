@@ -48,7 +48,7 @@
             STOP
           ENDIF
           READ (30) NELMNTGG
-          NELMNT = INT8(NELMNTGG)
+          NELMNT = INT(NELMNTGG,KIND=LONG)
           IF(JBLOCK == 1) THEN
             CALL ALLOC (IMIN1_30,NBLOCK,'IMIN1_30','setmcp_mem')
             CALL ALLOC (IMIN2_30,NBLOCK,'IMIN2_30','setmcp_mem')
@@ -281,7 +281,7 @@
 
          if(NFILE == 30) then
             READ (30) NELMNTGG
-            NELMNT = INT8(NELMNTGG)
+            NELMNT = INT(NELMNTGG,KIND=LONG)
             READ (30) (IENDC_30(I),I=                                  &
                      IMIN1_30(JBLOCK)+MYID+1,IMAX1_30(JBLOCK),NPROCS), &
                      (IROW_30(I),I=IMIN2_30(JBLOCK)+1,IMAX2_30(JBLOCK))

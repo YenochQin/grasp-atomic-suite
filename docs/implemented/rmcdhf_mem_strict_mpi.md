@@ -6,7 +6,7 @@
 
 新目标是 `rmcdhf_mem_strict_mpi`，源码在
 [`src/appl/rmcdhf90_mem_strict_mpi`](../../src/appl/rmcdhf90_mem_strict_mpi)。
-它独立于现有四个 `rmcdhf_orbopt*` 目标和原版 GRASP，不需要
+它独立于原版 `rmcdhf*` 系列；旧 orbopt 目标已移除。该程序不需要
 `GRASP_STRICT_SCF` 环境变量，严格判据始终启用。
 
 复制保留原版内存 MCP、径向求解、阻尼、正交化和节点计数算法。
@@ -107,7 +107,7 @@ Linux 端到端测试需要外部 GRASP 准备工具，运行：
 ```sh
 cmake -S . -B build-strict -DGRASP_ENABLE_MPI=ON \
   -DGRASP_PREPARATION_BINDIR=/path/to/grasp/bin
-cmake --build build-strict --target rmcdhf_mem_strict_mpi rmcdhf_orbopt_mem_mpi \
+cmake --build build-strict --target rmcdhf_mem_strict_mpi rmcdhf_mem_mpi \
   test.strict_scf_logic --parallel 4
 ctest --test-dir build-strict -R 'strict_scf_logic|strict_mem_restart_mpi' --output-on-failure
 ```

@@ -1,4 +1,4 @@
-"""Verify the imported GRASP snapshot after removing only the reviewed NP hooks.
+"""Verify the snapshot after reversing reviewed F2018 edits and NP hooks.
 
 This check is independent of the external grasp checkout and never executes SCF.
 It protects SOLVE/IMPROV/SCF/orthogonalization and the other imported routines from
@@ -9,12 +9,19 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 import sys
 
 
-def original_bytes(path: Path) -> bytes:
+def original_bytes(path: Path, edits: list[dict[str, str | int]] | None = None) -> bytes:
     text = path.read_text()
+    for edit in reversed(edits or []):
+        before, after, count = edit["before"], edit["after"], edit["count"]
+        assert isinstance(before, str) and isinstance(after, str) and isinstance(count, int)
+        pattern = "(?m)^" + re.escape(after)
+        assert len(re.findall(pattern, text)) == count, f"Reviewed F2018 edit missing or ambiguous: {path}"
+        text = re.sub(pattern, lambda _: before, text)
     if path.name in ("getscd.f90", "getscdmpi.f90", "getscd_I.f90", "getscdmpi_I.f90"):
         text = text.replace("ISOFILE, RWFFILE, NPFILE)", "ISOFILE, RWFFILE)")
         text = text.replace("      CHARACTER (LEN = *), INTENT(IN) :: NPFILE\n", "")
@@ -47,13 +54,15 @@ def original_bytes(path: Path) -> bytes:
     elif path.name == "dacon.f90":
         text = text.replace("      USE dpbdt_I\n", "")
     else:
-        return path.read_bytes()
+        return text.encode() if edits else path.read_bytes()
     return text.encode()
 
 
 def main(root: Path) -> None:
     manifest = json.loads((root / "docs/reference/rmcdhf_upstream_snapshot.json").read_text())
     expected = manifest["files"]
+    compatibility = json.loads((root / "docs/reference/rmcdhf_f2018_compatibility.json").read_text())["files"]
+    assert set(compatibility).issubset(expected), "F2018 edits must refer to imported files"
     actual = {
         str(path.relative_to(root))
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")
@@ -62,9 +71,10 @@ def main(root: Path) -> None:
     }
     assert actual == set(expected), (actual - set(expected), set(expected) - actual)
     for relative, record in expected.items():
-        digest = hashlib.sha256(original_bytes(root / relative)).hexdigest()
+        edits = compatibility.get(relative, {}).get("edits", [])
+        digest = hashlib.sha256(original_bytes(root / relative, edits)).hexdigest()
         assert digest == record["sha256"], f"Unreviewed deviation from GRASP source: {relative}"
-    print(f"PASS: {len(expected)} imported files match the GRASP snapshot after removing the NP hooks")
+    print(f"PASS: {len(expected)} imported files match after reversing reviewed F2018 edits and NP hooks")
 
 
 if __name__ == "__main__":

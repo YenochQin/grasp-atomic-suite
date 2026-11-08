@@ -326,7 +326,7 @@
                        MPI_COMM_WORLD, IERR)
       CALL MPI_Reduce (NTPV  , NATPV, 1, MPI_INTEGER, MPI_SUM, 0,   &
                        MPI_COMM_WORLD, IERR)
-      CALL MPI_Reduce (int8(NCRPV), NSPANVK, 1, MPI_INTEGER8,       &
+      CALL MPI_Reduce (INT(NCRPV,KIND=LONG), NSPANVK, 1, MPI_INTEGER8,       &
                        MPI_SUM, 0, MPI_COMM_WORLD, IERR)
       IF (MYID == 0) THEN
         PRINT *

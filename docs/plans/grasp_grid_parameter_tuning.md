@@ -1,5 +1,8 @@
 # GRASP 径向网格参数调整与验证规程
 
+> 2026-11-08 范围更新：旧 orbopt 程序和专用运行器已移除；相关历史实验分支不再是现行操作流程。当前命令和共有检查指向保留的原版/strict/diag 程序，物理参数与模型收敛仍需按实验条件独立验证。
+
+
 > 文档状态：现行实验方案、物理验收待执行。
 > 核查日期：2026-10-05；源码基准：`8b298a6`。
 > 网格修改脚本已实现，配置和修改计划已检查；D/L/O/ACCY 对应的生产体系物理收敛计算仍待执行。不能将本文归为已通过的数值结果。
@@ -154,7 +157,7 @@ log(1 + R/RNT) + (H/HP)*R = (i-1)*H
 ### 3.3 H 与 ACCY 的耦合
 
 参考原版 `src/appl/rmcdhf90/getscd.f90` 的默认公式为 `ACCY=H**6`；
-suite 已恢复相同的[入口初始化](../../src/appl/rmcdhf90/getscd.f90)：在交互网格输入之前计算 ACCY；
+suite 已恢复相同的入口初始化（历史源码 `src/appl/rmcdhf90/getscd.f90`，d1260ba）：在交互网格输入之前计算 ACCY；
 交互修改 H 时须显式设置 ACCY，主动应用脚本修改 H/ACCY 时则会插入提示前同步。
 例如：
 
@@ -518,7 +521,7 @@ CMake/CTest 通过也不等于目标体系已达到网格收敛。
 对于相同物理态、相同 CSF 和可由工具解析的 RMCDHF 输出，可在服务器运行：
 
 ```fish
-python3 /path/to/grasp-atomic-suite/test/rmcdhf_orbopt/compare_sum.py \
+python3 /path/to/grasp-atomic-suite/test/rmcdhf/compare_sum.py \
     /path/to/results/D3/rmcdhf.sum \
     /path/to/results/D2/rmcdhf.sum \
     --allow-radial-grid-difference \
@@ -534,7 +537,7 @@ python3 /path/to/grasp-atomic-suite/test/rmcdhf_orbopt/compare_sum.py \
 `compare_fine_structure.py` 可比较特定 J/宇称块的 level-1 间隔：
 
 ```fish
-python3 /path/to/grasp-atomic-suite/test/rmcdhf_orbopt/compare_fine_structure.py \
+python3 /path/to/grasp-atomic-suite/test/rmcdhf/compare_fine_structure.py \
     D2=/path/to/results/D2/rmcdhf.sum \
     D3=/path/to/results/D3/rmcdhf.sum \
     --j-values 2,3,4 --parity +
@@ -550,19 +553,13 @@ python3 /path/to/grasp-atomic-suite/test/rmcdhf_orbopt/compare_fine_structure.py
 跨网格收敛需受控插值和积分工具；当前仓库没有覆盖本文全部指标的一键验收程序。
 不能把该脚本的低阶归一化偏差直接与本节的 `1e-8` 内部积分目标比较。
 
-`run_data_case.sh` 和 SLURM 模板用于现有 orbopt 回归，部分脚本会加载指定的
-GRASP module，并从 PATH 找 `rwfnestimate/rangular_mpi`。
-它们不能无修改地当成任意原版 GRASP 副本的一键网格测试器。
-使用时必须核对 module、所有程序绝对路径、外部输入和初始轨道；只设置
-`GRASP_BINDIR` 不保证准备程序也来自同一份原版。
-原版 `rmcdhf_mpi` 与 suite `rmcdhf_orbopt_mpi` 也不能直接混用名称。
+旧 `run_data_case.sh` 和 orbopt SLURM 模板已退役。本计划不再提供该系列的一键运行器。
+当前使用原版 `rmcdhf*` 及独立 strict/diag 版本，并核对同次构建的准备、RCI、性质程序
+的绝对路径、外部输入和初始轨道。仅设置某一个 bindir 不能替代整条计算链的来源检查。
 
-suite 普通 MPI 版的 `GRASP_STRICT_SCF` 严格模式与原版停止逻辑不同，
-其他变体不能假定具有相同实现；记录开关，并统一使用第 7 节外部验收。
-suite 的 `GRASP_COUNT_ACCY` 在 GETSCD 后覆盖的是**全局 ACCY**，
-不只影响 COUNT，之前的初始化/插值可能已使用另一阈值。
-网格试验先清除该覆盖及 `GRASP_COUNT_THRESH`，或明确记录并核查各阶段；
-比较优化算法时也固定所有 `GRASP_*` 实验开关。
+严格停止由独立 `rmcdhf_mem_strict_mpi` 提供；旧 orbopt 的 `GRASP_STRICT_SCF`、
+`GRASP_COUNT_ACCY`、`GRASP_COUNT_THRESH` 已不属于现行输入接口。
+原版运行应显式提供 ACCY，并使用第 7 节外部验收，不将不同 solver 的停止规则混用。
 
 ## 9. fish 下每份源码的操作流程
 
@@ -644,7 +641,7 @@ MPI 没有被 CMake 找到时不能宣称 MPI 版本已经更新。
 的程序来源及实际设置，不能只核对最后一个程序。
 
 suite 模式将 `SOURCE_LAYOUT` 改为 `"atomic-suite"`，指向 suite 根目录，
-脚本只调整公共文件；轨道命令是 `rmcdhf_orbopt*`，构建需启用实际使用的
+脚本只调整公共文件；当前轨道命令为保留的 `rmcdhf*`，构建需启用实际使用的
 串行/MPI 目标。网格数值和物理验证规则与原版相同。
 suite 不包含完整原版准备/RCI/性质程序时，配套使用同参数、已核查的外部
 GRASP 副本，并记录路径；只调整 suite 不能自动更新这些外部程序。
@@ -706,8 +703,8 @@ run_id,orbital_id,varied,scnsty,mtp_or_mf,r_mtp_a0,n_minus_mtp,norm,mean_r_a0,r_
 - 构建：[compas/grasp README](https://github.com/compas/grasp/blob/master/README.md#cmake-based-build)。
 - 接口与备份：[脚本操作说明](../../scripts/README.md)。
 - suite 配置：[公共参数说明](../implemented/common_parameters.md)。
-- 回归与历史限制：[轨道测试说明](../../test/rmcdhf_orbopt/README.md)、
-  [历史测试结果](../../test/rmcdhf_orbopt/RESULTS.md)。
+- 回归与历史限制：[轨道测试说明](../archive/orbopt/README.md)、
+  [历史测试结果](../archive/orbopt/RESULTS.md)。
 
 
 ## 13. 可直接复制的 TOML 配置
@@ -1458,9 +1455,9 @@ accy = 1e-10  # suite 当前默认 H**6 → 固定 1e-10
 # point_rnt_scale 省略：保留点核默认 exp(-65/16)
 ```
 
-suite 需要使用 `rmcdhf_orbopt*` 等对应程序，并使原版准备/RCI 程序具有匹配
+suite 使用当前保留的 `rmcdhf*` 程序，并使同次构建的准备/RCI 程序具有匹配
 容量和网格。程序选择在作业脚本中设置，不是给 GRID_PARAMETERS 添加字段。
-如果采用第 8 节提到的集群模板，还要检查它是否重新加载了另一份 GRASP module。
+如果采用自行维护的集群脚本，还要检查它是否重新加载了另一份 GRASP module。
 
 节点阈值诊断是另一项试验：Python 脚本没有 THRESH/NODE_THRESHOLD 配置键。
 若单独改变 suite 的 NODE_THRESHOLD，只能改公共 Fortran 文件并重编译；

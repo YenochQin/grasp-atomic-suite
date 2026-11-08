@@ -1,0 +1,374 @@
+{
+  "schema_version": 1,
+  "base_revision": "d1260ba404833d20d709b34d9f26b05c32a3b615",
+  "files": {
+    "src/appl/rmcdhf/maneig.f90": {
+      "base_sha256": "0ab34a65979982746d35b2f5c2f84131bf8099bb6c0972a01b5eb3f40a2f9a70",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "      USE gdvd_I\n      USE itjpo_I\n      USE ispar_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "      USE gdvd_I\n      USE itjpo_I\n      USE ispar_I\n      USE suite_linear_algebra, ONLY: dcopy, dscal\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        },
+        {
+          "before": "      nend = ncf * nvex\n         DO j = 1, nevblk(jblock)\n            work( nend + iccmin(j+ncminpat) ) = eval(ncminpat+j)\n            CALL dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1)    ,    1, &\n                          work( ncf*(iccmin(j+ncminpat)-1) + 1 ), 1)\n         ENDDO\n      ENDIF\n\n",
+          "after": "      nend = ncf * nvex\n         DO j = 1, nevblk(jblock)\n            work( nend + iccmin(j+ncminpat) ) = eval(ncminpat+j)\n            CALL dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1:nevecpat + ncf*(j-1)+(ncf))    ,    1, &\n                          work( ncf*(iccmin(j+ncminpat)-1) + 1 :( ncf*(iccmin(j+ncminpat)-1) + 1 )+((ncf)-1)), 1)\n         ENDDO\n      ENDIF\n\n",
+          "count": 1
+        },
+        {
+          "before": "      NEND = NCF*NVEX\n      DO J = 1, NEVBLK(JBLOCK)\n         EVAL(NCMINPAT+J) = WORK(NEND + ICCMIN(J + NCMINPAT))\n         CALL DCOPY (NCF, WORK(NCF*(ICCMIN(J + NCMINPAT) - 1) + 1), 1, EVEC(&\n            NEVECPAT+NCF*(J-1)+1), 1)\n      END DO\n!     print *, ncminpat,(eval(ncminpat+j),j=1,nevblk(jblock)),\n!    1 'zou,from maneig'\n",
+          "after": "      NEND = NCF*NVEX\n      DO J = 1, NEVBLK(JBLOCK)\n         EVAL(NCMINPAT+J) = WORK(NEND + ICCMIN(J + NCMINPAT))\n         CALL DCOPY (NCF, WORK(NCF*(ICCMIN(J + NCMINPAT) - 1) + 1:NCF*(ICCMIN(J + NCMINPAT) - 1)+(NCF)), 1, &\n      & EVEC( NEVECPAT+NCF*(J-1)+1:NEVECPAT+NCF*(J-1)+(NCF)), 1)\n      END DO\n!     print *, ncminpat,(eval(ncminpat+j),j=1,nevblk(jblock)),\n!    1 'zou,from maneig'\n",
+          "count": 1
+        },
+        {
+          "before": "!\n         IF (EVEC(IA+IOFSET) >= 0.D0) CYCLE\n         DNFAC = -1.D0\n         CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)\n!===============================================================\n\n      END DO\n",
+          "after": "!\n         IF (EVEC(IA+IOFSET) >= 0.D0) CYCLE\n         DNFAC = -1.D0\n         CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)\n!===============================================================\n\n      END DO\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf/matrix.f90": {
+      "base_sha256": "1ebfc99b6dcb60c511aefb22e55e08edfc06438067ee5c53c874072a86da0f71",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n!   M o d u l e s\n!-----------------------------------------------\n      USE vast_kind_param, ONLY: DOUBLE\n      USE memory_man\n      USE damp_C\n      USE def_C,           ONLY: iccmin, ncmin, ncmax\n",
+          "after": "!-----------------------------------------------\n!   M o d u l e s\n!-----------------------------------------------\n      USE vast_kind_param, ONLY: DOUBLE, LONG\n      USE memory_man\n      USE damp_C\n      USE def_C,           ONLY: iccmin, ncmin, ncmax\n",
+          "count": 1
+        },
+        {
+          "before": "!-----------------------------------------------\n      USE setham_I\n      USE maneig_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n      USE setham_I\n      USE maneig_I\n      USE suite_linear_algebra, ONLY: dcopy, ddot, dscal\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        },
+        {
+          "before": "         JOTHER, IA, JOFSET, IATTMP, IASTMP, NELMNTGG\n      REAL(DOUBLE), DIMENSION(:), POINTER :: CMVL\n      REAL(DOUBLE) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa\n      INTEGER, EXTERNAL :: ddot\n      LOGICAL :: FIRST\n      CHARACTER :: MCPLAB*3\n\n",
+          "after": "         JOTHER, IA, JOFSET, IATTMP, IASTMP, NELMNTGG\n      REAL(DOUBLE), DIMENSION(:), POINTER :: CMVL\n      REAL(DOUBLE) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa\n      LOGICAL :: FIRST\n      CHARACTER :: MCPLAB*3\n\n",
+          "count": 1
+        },
+        {
+          "before": "         IF (JBLOCKT/=JBLOCK .OR. NCF/=NCFBLK(JBLOCK)) ERROR STOP &\n            'matrx: jblockt .NE. jblock .OR. ncf1 .NE. ncf2'\n         READ (30) NELMNTGG\n         NELMNT = INT8(NELMNTGG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'MATRIX')\n         CALL ALLOC (EMT, NELMNT, 'EMT', 'MATRIX')\n!cjb          ALLOC (IENDC, NCF + 1,...)  ->  ALLOC (IENDC, 0, NCF,...)\n",
+          "after": "         IF (JBLOCKT/=JBLOCK .OR. NCF/=NCFBLK(JBLOCK)) ERROR STOP &\n            'matrx: jblockt .NE. jblock .OR. ncf1 .NE. ncf2'\n         READ (30) NELMNTGG\n         NELMNT = INT(NELMNTGG,KIND=LONG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'MATRIX')\n         CALL ALLOC (EMT, NELMNT, 'EMT', 'MATRIX')\n!cjb          ALLOC (IENDC, NCF + 1,...)  ->  ALLOC (IENDC, 0, NCF,...)\n",
+          "count": 1
+        },
+        {
+          "before": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1),1,EVEC(JOFSET+1),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1), 1, CMVL(IOFSET + 1), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
+          "after": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1:IOFSET+(NCF)),1,EVEC(JOFSET+1:JOFSET+(NCF)),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1:JOFSET+(NCF)), 1, CMVL(IOFSET + 1:IOFSET+(NCF)), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf/setcof.f90": {
+      "base_sha256": "ddc01214cd02842416626b2408bc4468ea71e510ed3a282dc441901d559695dc",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n!   M o d u l e s\n!-----------------------------------------------\n      USE vast_kind_param,  ONLY: DOUBLE\n      USE parameter_def,    ONLY: KEYORB\n      USE memory_man\n      USE orb_C\n",
+          "after": "!-----------------------------------------------\n!   M o d u l e s\n!-----------------------------------------------\n      USE vast_kind_param,  ONLY: DOUBLE, LONG\n      USE parameter_def,    ONLY: KEYORB\n      USE memory_man\n      USE orb_C\n",
+          "count": 1
+        },
+        {
+          "before": "            ERROR STOP\n         ENDIF\n         READ (30) NELMNTGG\n         NELMNT = INT8(NELMNTGG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n         READ (30) (IENDCDUM,I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)\n\n",
+          "after": "            ERROR STOP\n         ENDIF\n         READ (30) NELMNTGG\n         NELMNT = INT(NELMNTGG,KIND=LONG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n         READ (30) (IENDCDUM,I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)\n\n",
+          "count": 1
+        },
+        {
+          "before": "               ERROR STOP\n            ENDIF\n            READ (30) NELMNTGG\n            NELMNT = INT8(NELMNTGG)\n            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n            READ (30) (IENDCDUM,I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)\n\n",
+          "after": "               ERROR STOP\n            ENDIF\n            READ (30) NELMNTGG\n            NELMNT = INT(NELMNTGG,KIND=LONG)\n            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n            READ (30) (IENDCDUM,I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)\n\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem/maneig.f90": {
+      "base_sha256": "0ab34a65979982746d35b2f5c2f84131bf8099bb6c0972a01b5eb3f40a2f9a70",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "      USE gdvd_I\n      USE itjpo_I\n      USE ispar_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "      USE gdvd_I\n      USE itjpo_I\n      USE ispar_I\n      USE suite_linear_algebra, ONLY: dcopy, dscal\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        },
+        {
+          "before": "      nend = ncf * nvex\n         DO j = 1, nevblk(jblock)\n            work( nend + iccmin(j+ncminpat) ) = eval(ncminpat+j)\n            CALL dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1)    ,    1, &\n                          work( ncf*(iccmin(j+ncminpat)-1) + 1 ), 1)\n         ENDDO\n      ENDIF\n\n",
+          "after": "      nend = ncf * nvex\n         DO j = 1, nevblk(jblock)\n            work( nend + iccmin(j+ncminpat) ) = eval(ncminpat+j)\n            CALL dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1:nevecpat + ncf*(j-1)+(ncf))    ,    1, &\n                          work( ncf*(iccmin(j+ncminpat)-1) + 1 :( ncf*(iccmin(j+ncminpat)-1) + 1 )+((ncf)-1)), 1)\n         ENDDO\n      ENDIF\n\n",
+          "count": 1
+        },
+        {
+          "before": "      NEND = NCF*NVEX\n      DO J = 1, NEVBLK(JBLOCK)\n         EVAL(NCMINPAT+J) = WORK(NEND + ICCMIN(J + NCMINPAT))\n         CALL DCOPY (NCF, WORK(NCF*(ICCMIN(J + NCMINPAT) - 1) + 1), 1, EVEC(&\n            NEVECPAT+NCF*(J-1)+1), 1)\n      END DO\n!     print *, ncminpat,(eval(ncminpat+j),j=1,nevblk(jblock)),\n!    1 'zou,from maneig'\n",
+          "after": "      NEND = NCF*NVEX\n      DO J = 1, NEVBLK(JBLOCK)\n         EVAL(NCMINPAT+J) = WORK(NEND + ICCMIN(J + NCMINPAT))\n         CALL DCOPY (NCF, WORK(NCF*(ICCMIN(J + NCMINPAT) - 1) + 1:NCF*(ICCMIN(J + NCMINPAT) - 1)+(NCF)), 1, &\n      & EVEC( NEVECPAT+NCF*(J-1)+1:NEVECPAT+NCF*(J-1)+(NCF)), 1)\n      END DO\n!     print *, ncminpat,(eval(ncminpat+j),j=1,nevblk(jblock)),\n!    1 'zou,from maneig'\n",
+          "count": 1
+        },
+        {
+          "before": "!\n         IF (EVEC(IA+IOFSET) >= 0.D0) CYCLE\n         DNFAC = -1.D0\n         CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)\n!===============================================================\n\n      END DO\n",
+          "after": "!\n         IF (EVEC(IA+IOFSET) >= 0.D0) CYCLE\n         DNFAC = -1.D0\n         CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)\n!===============================================================\n\n      END DO\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem/matrix.f90": {
+      "base_sha256": "2f9cddffc03343792ea447fdea72730551920351f30facf1ea5d86b7f8d6ca77",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "      USE setham_I\n      USE maneig_I\n      USE read1_mem_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "      USE setham_I\n      USE maneig_I\n      USE read1_mem_I\n      USE suite_linear_algebra, ONLY: dcopy, ddot, dscal\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        },
+        {
+          "before": "         JOTHER, IA, JOFSET, IATTMP, IASTMP, NELMNTGG\n      REAL(DOUBLE), DIMENSION(:), POINTER :: CMVL\n      REAL(DOUBLE) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa\n      INTEGER, EXTERNAL :: ddot\n      LOGICAL :: FIRST\n      CHARACTER :: MCPLAB*3\n      INTEGER(LONG), DIMENSION(20) :: NCONTR_tot, NCONTR_tot2\n",
+          "after": "         JOTHER, IA, JOFSET, IATTMP, IASTMP, NELMNTGG\n      REAL(DOUBLE), DIMENSION(:), POINTER :: CMVL\n      REAL(DOUBLE) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa\n      LOGICAL :: FIRST\n      CHARACTER :: MCPLAB*3\n      INTEGER(LONG), DIMENSION(20) :: NCONTR_tot, NCONTR_tot2\n",
+          "count": 1
+        },
+        {
+          "before": "!=======================================================================\n\n         NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n         NELMNT = INT8(NELMNTGG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'MATRIX')\n         CALL ALLOC (EMT, NELMNT, 'EMT', 'MATRIX')\n!cjb          ALLOC (IENDC, NCF + 1,...)  ->  ALLOC (IENDC, 0, NCF,...)\n",
+          "after": "!=======================================================================\n\n         NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n         NELMNT = INT(NELMNTGG,KIND=LONG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'MATRIX')\n         CALL ALLOC (EMT, NELMNT, 'EMT', 'MATRIX')\n!cjb          ALLOC (IENDC, NCF + 1,...)  ->  ALLOC (IENDC, 0, NCF,...)\n",
+          "count": 1
+        },
+        {
+          "before": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1),1,EVEC(JOFSET+1),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1), 1, CMVL(IOFSET + 1), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
+          "after": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1:IOFSET+(NCF)),1,EVEC(JOFSET+1:JOFSET+(NCF)),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1:JOFSET+(NCF)), 1, CMVL(IOFSET + 1:IOFSET+(NCF)), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem/setcof.f90": {
+      "base_sha256": "417c753ac5b34ec6e27158e3f7a3aff8f68ef9a3be703109764ba8d0049845b7",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "\n         !*** Read in IROW from file mcp.30 ***\n         NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n         NELMNT = INT8(NELMNTGG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n         CALL read02_mem(JBLOCK)\n\n",
+          "after": "\n         !*** Read in IROW from file mcp.30 ***\n         NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n         NELMNT = INT(NELMNTGG,KIND=LONG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n         CALL read02_mem(JBLOCK)\n\n",
+          "count": 1
+        },
+        {
+          "before": "         DO JBLOCK = 1, NBLOCK\n!           ...Read in IROW from file mcp.30\n            NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n            NELMNT = INT8(NELMNTGG)\n            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n            CALL read02_mem(JBLOCK)\n\n",
+          "after": "         DO JBLOCK = 1, NBLOCK\n!           ...Read in IROW from file mcp.30\n            NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n            NELMNT = INT(NELMNTGG,KIND=LONG)\n            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n            CALL read02_mem(JBLOCK)\n\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem/setmcp_mem.f90": {
+      "base_sha256": "0bcafd54363e422c148c540768a1ead886ab77cedca2f0003c7e79ffafc0e896",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "            STOP\n          ENDIF\n          READ (30) NELMNTGG\n          NELMNT = INT8(NELMNTGG)\n          IF(JBLOCK == 1) THEN\n            CALL ALLOC (IMIN1_30,NBLOCK,'IMIN1_30','setmcp_mem')\n            CALL ALLOC (IMIN2_30,NBLOCK,'IMIN2_30','setmcp_mem')\n",
+          "after": "            STOP\n          ENDIF\n          READ (30) NELMNTGG\n          NELMNT = INT(NELMNTGG,KIND=LONG)\n          IF(JBLOCK == 1) THEN\n            CALL ALLOC (IMIN1_30,NBLOCK,'IMIN1_30','setmcp_mem')\n            CALL ALLOC (IMIN2_30,NBLOCK,'IMIN2_30','setmcp_mem')\n",
+          "count": 1
+        },
+        {
+          "before": "\n         if(NFILE == 30) then\n            READ (30) NELMNTGG\n            NELMNT = INT8(NELMNTGG)\n            READ (30) (IENDC_30(I),I=                                  &\n                     IMIN1_30(JBLOCK)+MYID+1,IMAX1_30(JBLOCK),NPROCS), &\n                     (IROW_30(I),I=IMIN2_30(JBLOCK)+1,IMAX2_30(JBLOCK))\n",
+          "after": "\n         if(NFILE == 30) then\n            READ (30) NELMNTGG\n            NELMNT = INT(NELMNTGG,KIND=LONG)\n            READ (30) (IENDC_30(I),I=                                  &\n                     IMIN1_30(JBLOCK)+MYID+1,IMAX1_30(JBLOCK),NPROCS), &\n                     (IROW_30(I),I=IMIN2_30(JBLOCK)+1,IMAX2_30(JBLOCK))\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/cofpotmpi.f90": {
+      "base_sha256": "62f1726d044239bb8474183269a5ff312412d2ede2754fadd7bb878403a5a336",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "      USE lagcon_I\n      USE dacon_I\n      USE POTE_C\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "      USE lagcon_I\n      USE dacon_I\n      USE POTE_C\n      USE suite_linear_algebra, ONLY: dcopy\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/lodcslmpiGG.f90": {
+      "base_sha256": "cfdfd79a6124b715ca784e6d94f00ab8fd4f7c492fa211ed31b1ac87e2917d37",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER(BYTE) :: MPIX_INT1\n!-----------------------------------------------------------------------\n!\n      IF (myid == 0) THEN\n",
+          "after": "!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER :: MPIX_INT1\n!-----------------------------------------------------------------------\n!\n      IF (myid == 0) THEN\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/maneigmpi.f90": {
+      "base_sha256": "7e555bc2edebbd5504e25c5638d03c35c86d16049a4e99d5cc7ba34953a3b868",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "      USE gdvd_I\n      USE itjpo_I\n      USE ispar_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "      USE gdvd_I\n      USE itjpo_I\n      USE ispar_I\n      USE suite_linear_algebra, ONLY: dcopy, dscal\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        },
+        {
+          "before": "      nend = ncf * nvex\n         DO j = 1, nevblk(jblock)\n            work( nend + iccmin(j+ncminpat) ) = eval(ncminpat+j)\n            CALL dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1),    1,    &\n                          work( ncf*(iccmin(j+ncminpat)-1) + 1 ), 1)\n         ENDDO\n      ENDIF\n\n",
+          "after": "      nend = ncf * nvex\n         DO j = 1, nevblk(jblock)\n            work( nend + iccmin(j+ncminpat) ) = eval(ncminpat+j)\n            CALL dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1:nevecpat + ncf*(j-1)+(ncf)),    1,    &\n                          work( ncf*(iccmin(j+ncminpat)-1) + 1 :( ncf*(iccmin(j+ncminpat)-1) + 1 )+((ncf)-1)), 1)\n         ENDDO\n      ENDIF\n\n",
+          "count": 1
+        },
+        {
+          "before": "      NEND = NCF*NVEX\n      DO J = 1, NEVBLK(JBLOCK)\n         EVAL(NCMINPAT+J) = WORK(NEND + ICCMIN(J + NCMINPAT))\n         CALL DCOPY (NCF, WORK(NCF*(ICCMIN(J + NCMINPAT) - 1) + 1), 1, EVEC(&\n            NEVECPAT+NCF*(J-1)+1), 1)\n      END DO\n!     print *, ncminpat,(eval(ncminpat+j),j=1,nevblk(jblock)),\n!    1 'zou,from maneig'\n",
+          "after": "      NEND = NCF*NVEX\n      DO J = 1, NEVBLK(JBLOCK)\n         EVAL(NCMINPAT+J) = WORK(NEND + ICCMIN(J + NCMINPAT))\n         CALL DCOPY (NCF, WORK(NCF*(ICCMIN(J + NCMINPAT) - 1) + 1:NCF*(ICCMIN(J + NCMINPAT) - 1)+(NCF)), 1, &\n      & EVEC( NEVECPAT+NCF*(J-1)+1:NEVECPAT+NCF*(J-1)+(NCF)), 1)\n      END DO\n!     print *, ncminpat,(eval(ncminpat+j),j=1,nevblk(jblock)),\n!    1 'zou,from maneig'\n",
+          "count": 1
+        },
+        {
+          "before": "!\n         IF (EVEC(IA+IOFSET) >= 0.D0) CYCLE\n         DNFAC = -1.D0\n         CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)\n!===============================================================\n\n      END DO\n",
+          "after": "!\n         IF (EVEC(IA+IOFSET) >= 0.D0) CYCLE\n         DNFAC = -1.D0\n         CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)\n!===============================================================\n\n      END DO\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/matrixmpi.f90": {
+      "base_sha256": "5b25cfdf2c2ab7454d3cadb13cf1075e8679e8c2f8df769efe0b131035cb11c4",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n!   M o d u l e s\n!-----------------------------------------------\n      USE vast_kind_param, ONLY:  DOUBLE\n      USE memory_man\n      USE damp_C\n      USE def_C, ONLY: iccmin, ncmin, ncmax\n",
+          "after": "!-----------------------------------------------\n!   M o d u l e s\n!-----------------------------------------------\n      USE vast_kind_param, ONLY:  DOUBLE, LONG\n      USE memory_man\n      USE damp_C\n      USE def_C, ONLY: iccmin, ncmin, ncmax\n",
+          "count": 1
+        },
+        {
+          "before": "!-----------------------------------------------\n      USE setham_I\n      USE maneigmpi_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n      USE setham_I\n      USE maneigmpi_I\n      USE suite_linear_algebra, ONLY: dcopy, ddot, dscal\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        },
+        {
+          "before": "         JOTHER, IA, JOFSET, IATTMP, IASTMP, NELMNTGG\n      REAL(DOUBLE), DIMENSION(:), POINTER :: CMVL\n      REAL(DOUBLE) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa\n      INTEGER, EXTERNAL :: ddot\n      LOGICAL :: FIRST\n      CHARACTER :: MCPLAB*3\n\n",
+          "after": "         JOTHER, IA, JOFSET, IATTMP, IASTMP, NELMNTGG\n      REAL(DOUBLE), DIMENSION(:), POINTER :: CMVL\n      REAL(DOUBLE) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa\n      LOGICAL :: FIRST\n      CHARACTER :: MCPLAB*3\n\n",
+          "count": 1
+        },
+        {
+          "before": "         IF (JBLOCKT/=JBLOCK .OR. NCF/=NCFBLK(JBLOCK)) ERROR STOP &\n            'MATRIXMPI: jblockt .NE. jblock .OR. ncf1 .NE. ncf2'\n         READ (30) NELMNTGG\n         NELMNT = INT8(NELMNTGG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'MATRIXmpi')\n         CALL ALLOC (EMT, NELMNT, 'EMT', 'MATRIXmpi')\n        CALL ALLOC (IENDC, NCF + 1, 'IENDC', 'MATRIXMPI' )\n",
+          "after": "         IF (JBLOCKT/=JBLOCK .OR. NCF/=NCFBLK(JBLOCK)) ERROR STOP &\n            'MATRIXMPI: jblockt .NE. jblock .OR. ncf1 .NE. ncf2'\n         READ (30) NELMNTGG\n         NELMNT = INT(NELMNTGG,KIND=LONG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'MATRIXmpi')\n         CALL ALLOC (EMT, NELMNT, 'EMT', 'MATRIXmpi')\n        CALL ALLOC (IENDC, NCF + 1, 'IENDC', 'MATRIXMPI' )\n",
+          "count": 1
+        },
+        {
+          "before": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1),1,EVEC(JOFSET+1),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1), 1, CMVL(IOFSET + 1), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
+          "after": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1:IOFSET+(NCF)),1,EVEC(JOFSET+1:JOFSET+(NCF)),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1:JOFSET+(NCF)), 1, CMVL(IOFSET + 1:IOFSET+(NCF)), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/setcof.f90": {
+      "base_sha256": "a583ec8a936d01b52bc7018be41b69a221d1f9c059045ab23700cb77dc73b590",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n!   M o d u l e s\n!-----------------------------------------------\n      USE vast_kind_param,  ONLY: DOUBLE\n      USE parameter_def,    ONLY: KEYORB\n      USE memory_man\n      USE orb_C\n",
+          "after": "!-----------------------------------------------\n!   M o d u l e s\n!-----------------------------------------------\n      USE vast_kind_param,  ONLY: DOUBLE, LONG\n      USE parameter_def,    ONLY: KEYORB\n      USE memory_man\n      USE orb_C\n",
+          "count": 1
+        },
+        {
+          "before": "            ERROR STOP\n         ENDIF\n         READ (30) NELMNTGG\n         NELMNT = INT8(NELMNTGG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n         READ (30) (IENDCDUM,I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)\n\n",
+          "after": "            ERROR STOP\n         ENDIF\n         READ (30) NELMNTGG\n         NELMNT = INT(NELMNTGG,KIND=LONG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n         READ (30) (IENDCDUM,I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)\n\n",
+          "count": 1
+        },
+        {
+          "before": "               ERROR STOP\n            ENDIF\n            READ (30) NELMNTGG\n            NELMNT = INT8(NELMNTGG)\n            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n            READ (30) (IENDCDUM,I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)\n\n",
+          "after": "               ERROR STOP\n            ENDIF\n            READ (30) NELMNTGG\n            NELMNT = INT(NELMNTGG,KIND=LONG)\n            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n            READ (30) (IENDCDUM,I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)\n\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/cofpotmpi.f90": {
+      "base_sha256": "62f1726d044239bb8474183269a5ff312412d2ede2754fadd7bb878403a5a336",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "      USE lagcon_I\n      USE dacon_I\n      USE POTE_C\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "      USE lagcon_I\n      USE dacon_I\n      USE POTE_C\n      USE suite_linear_algebra, ONLY: dcopy\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/lodcslmpiGG.f90": {
+      "base_sha256": "cfdfd79a6124b715ca784e6d94f00ab8fd4f7c492fa211ed31b1ac87e2917d37",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER(BYTE) :: MPIX_INT1\n!-----------------------------------------------------------------------\n!\n      IF (myid == 0) THEN\n",
+          "after": "!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER :: MPIX_INT1\n!-----------------------------------------------------------------------\n!\n      IF (myid == 0) THEN\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/maneigmpi.f90": {
+      "base_sha256": "7e555bc2edebbd5504e25c5638d03c35c86d16049a4e99d5cc7ba34953a3b868",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "      USE gdvd_I\n      USE itjpo_I\n      USE ispar_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "      USE gdvd_I\n      USE itjpo_I\n      USE ispar_I\n      USE suite_linear_algebra, ONLY: dcopy, dscal\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        },
+        {
+          "before": "      nend = ncf * nvex\n         DO j = 1, nevblk(jblock)\n            work( nend + iccmin(j+ncminpat) ) = eval(ncminpat+j)\n            CALL dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1),    1,    &\n                          work( ncf*(iccmin(j+ncminpat)-1) + 1 ), 1)\n         ENDDO\n      ENDIF\n\n",
+          "after": "      nend = ncf * nvex\n         DO j = 1, nevblk(jblock)\n            work( nend + iccmin(j+ncminpat) ) = eval(ncminpat+j)\n            CALL dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1:nevecpat + ncf*(j-1)+(ncf)),    1,    &\n                          work( ncf*(iccmin(j+ncminpat)-1) + 1 :( ncf*(iccmin(j+ncminpat)-1) + 1 )+((ncf)-1)), 1)\n         ENDDO\n      ENDIF\n\n",
+          "count": 1
+        },
+        {
+          "before": "      NEND = NCF*NVEX\n      DO J = 1, NEVBLK(JBLOCK)\n         EVAL(NCMINPAT+J) = WORK(NEND + ICCMIN(J + NCMINPAT))\n         CALL DCOPY (NCF, WORK(NCF*(ICCMIN(J + NCMINPAT) - 1) + 1), 1, EVEC(&\n            NEVECPAT+NCF*(J-1)+1), 1)\n      END DO\n!     print *, ncminpat,(eval(ncminpat+j),j=1,nevblk(jblock)),\n!    1 'zou,from maneig'\n",
+          "after": "      NEND = NCF*NVEX\n      DO J = 1, NEVBLK(JBLOCK)\n         EVAL(NCMINPAT+J) = WORK(NEND + ICCMIN(J + NCMINPAT))\n         CALL DCOPY (NCF, WORK(NCF*(ICCMIN(J + NCMINPAT) - 1) + 1:NCF*(ICCMIN(J + NCMINPAT) - 1)+(NCF)), 1, &\n      & EVEC( NEVECPAT+NCF*(J-1)+1:NEVECPAT+NCF*(J-1)+(NCF)), 1)\n      END DO\n!     print *, ncminpat,(eval(ncminpat+j),j=1,nevblk(jblock)),\n!    1 'zou,from maneig'\n",
+          "count": 1
+        },
+        {
+          "before": "!\n         IF (EVEC(IA+IOFSET) >= 0.D0) CYCLE\n         DNFAC = -1.D0\n         CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)\n!===============================================================\n\n      END DO\n",
+          "after": "!\n         IF (EVEC(IA+IOFSET) >= 0.D0) CYCLE\n         DNFAC = -1.D0\n         CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)\n!===============================================================\n\n      END DO\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/matrixmpi.f90": {
+      "base_sha256": "01ab21bf998f13d0780e2833254ebc87ade7069cacbace57d9aa52adc718bd9f",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "      USE setham_I\n      USE maneigmpi_I\n      USE read1_mem_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "      USE setham_I\n      USE maneigmpi_I\n      USE read1_mem_I\n      USE suite_linear_algebra, ONLY: dcopy, ddot, dscal\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        },
+        {
+          "before": "         JOTHER, IA, JOFSET, IATTMP, IASTMP, NELMNTGG\n      REAL(DOUBLE), DIMENSION(:), POINTER :: CMVL\n      REAL(DOUBLE) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa\n      INTEGER, EXTERNAL :: ddot\n      LOGICAL :: FIRST\n      CHARACTER :: MCPLAB*3\n      INTEGER(LONG), DIMENSION(20) :: NCONTR_tot, NCONTR_tot2\n",
+          "after": "         JOTHER, IA, JOFSET, IATTMP, IASTMP, NELMNTGG\n      REAL(DOUBLE), DIMENSION(:), POINTER :: CMVL\n      REAL(DOUBLE) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa\n      LOGICAL :: FIRST\n      CHARACTER :: MCPLAB*3\n      INTEGER(LONG), DIMENSION(20) :: NCONTR_tot, NCONTR_tot2\n",
+          "count": 1
+        },
+        {
+          "before": "!=======================================================================\n\n         NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n         NELMNT = INT8(NELMNTGG)\n         NCF = IMAX1_30(JBLOCK) - IMIN1_30(JBLOCK)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'MATRIXmpi')\n         CALL ALLOC (EMT, NELMNT, 'EMT', 'MATRIXmpi')\n",
+          "after": "!=======================================================================\n\n         NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n         NELMNT = INT(NELMNTGG,KIND=LONG)\n         NCF = IMAX1_30(JBLOCK) - IMIN1_30(JBLOCK)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'MATRIXmpi')\n         CALL ALLOC (EMT, NELMNT, 'EMT', 'MATRIXmpi')\n",
+          "count": 1
+        },
+        {
+          "before": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1),1,EVEC(JOFSET+1),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1), 1, CMVL(IOFSET + 1), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
+          "after": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1:IOFSET+(NCF)),1,EVEC(JOFSET+1:JOFSET+(NCF)),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1:JOFSET+(NCF)), 1, CMVL(IOFSET + 1:IOFSET+(NCF)), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/setcof.f90": {
+      "base_sha256": "b03e6c6f3e994adadbf7bb6e9825f458af0efe7356bb49b9da879152bb7d7e7f",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "\n         !*** Read in IROW from file mcp.30 ***\n         NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n         NELMNT = INT8(NELMNTGG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n         CALL read02_mem(JBLOCK)\n\n",
+          "after": "\n         !*** Read in IROW from file mcp.30 ***\n         NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n         NELMNT = INT(NELMNTGG,KIND=LONG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n         CALL read02_mem(JBLOCK)\n\n",
+          "count": 1
+        },
+        {
+          "before": "         DO JBLOCK = 1, NBLOCK\n!           ...Read in IROW from file mcp.30\n            NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n            NELMNT = INT8(NELMNTGG)\n            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n            CALL read02_mem(JBLOCK)\n\n",
+          "after": "         DO JBLOCK = 1, NBLOCK\n!           ...Read in IROW from file mcp.30\n            NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n            NELMNT = INT(NELMNTGG,KIND=LONG)\n            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n            CALL read02_mem(JBLOCK)\n\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/setmcp_mem.f90": {
+      "base_sha256": "5b4d75af5233bd212084649792b491fd84ee12e9a0a06926340c1eeb388cd521",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "edits": [
+        {
+          "before": "            STOP\n          ENDIF\n          READ (30) NELMNTGG\n          NELMNT = INT8(NELMNTGG)\n          IF(JBLOCK == 1) THEN\n            CALL ALLOC (IMIN1_30,NBLOCK,'IMIN1_30','setmcp_mem')\n            CALL ALLOC (IMIN2_30,NBLOCK,'IMIN2_30','setmcp_mem')\n",
+          "after": "            STOP\n          ENDIF\n          READ (30) NELMNTGG\n          NELMNT = INT(NELMNTGG,KIND=LONG)\n          IF(JBLOCK == 1) THEN\n            CALL ALLOC (IMIN1_30,NBLOCK,'IMIN1_30','setmcp_mem')\n            CALL ALLOC (IMIN2_30,NBLOCK,'IMIN2_30','setmcp_mem')\n",
+          "count": 1
+        },
+        {
+          "before": "\n         if(NFILE == 30) then\n            READ (30) NELMNTGG\n            NELMNT = INT8(NELMNTGG)\n            READ (30) (IENDC_30(I),I=                                  &\n                     IMIN1_30(JBLOCK)+MYID+1,IMAX1_30(JBLOCK),NPROCS), &\n                     (IROW_30(I),I=IMIN2_30(JBLOCK)+1,IMAX2_30(JBLOCK))\n",
+          "after": "\n         if(NFILE == 30) then\n            READ (30) NELMNTGG\n            NELMNT = INT(NELMNTGG,KIND=LONG)\n            READ (30) (IENDC_30(I),I=                                  &\n                     IMIN1_30(JBLOCK)+MYID+1,IMAX1_30(JBLOCK),NPROCS), &\n                     (IROW_30(I),I=IMIN2_30(JBLOCK)+1,IMAX2_30(JBLOCK))\n",
+          "count": 1
+        }
+      ]
+    }
+  }
+}

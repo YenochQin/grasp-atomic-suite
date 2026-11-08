@@ -49,15 +49,6 @@ if(TARGET mpiu90)
         ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1")
 endif()
 
-# Pure grouping and retry-policy coverage for the production pair records.
-add_executable(test.rmcdhf_pair_transaction_logic
-    ../src/appl/rmcdhf90_mpi/orbopt_pair_types.f90
-    rmcdhf_orbopt/pair_transaction_logic.f90
-)
-target_link_libraries_Fortran(test.rmcdhf_pair_transaction_logic PUBLIC mod)
-add_test(NAME rmcdhf_pair_transaction_logic
-    COMMAND test.rmcdhf_pair_transaction_logic)
-
 add_executable(test.rdensity_natural_orbitals
     ../src/appl/rdensity/natural_orbitals.f90
     rdensity/natural_orbitals_test.f90)
@@ -79,12 +70,12 @@ find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
     if(TARGET test.start_trace_parity)
         add_test(NAME start_trace_parity
-            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/test_start_trace.py
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf/test_start_trace.py
             $<TARGET_FILE:test.start_trace_parity>)
     endif()
     if(TARGET test.p0_trace_projection)
         add_test(NAME p0_trace_projection
-            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/test_p0_trace.py
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf/test_p0_trace.py
             $<TARGET_FILE:test.p0_trace_projection>)
     endif()
     set(GRASP_PREPARATION_BINDIR "" CACHE PATH
@@ -102,7 +93,7 @@ if(Python3_Interpreter_FOUND)
         foreach(ranks 1 2)
             add_test(NAME p0_trace_mpi_${ranks}
                 COMMAND ${Python3_EXECUTABLE}
-                ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/p0_trace_mpi.py
+                ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf/p0_trace_mpi.py
                 --solver $<TARGET_FILE:rmcdhf_mem_diag_mpi>
                 --tools ${_grasp_preparation_bindir}
                 --mpiexec ${MPIEXEC_EXECUTABLE}
@@ -115,9 +106,9 @@ if(Python3_Interpreter_FOUND)
         foreach(ranks 1 2)
             add_test(NAME strict_mem_restart_mpi_${ranks}
                 COMMAND ${Python3_EXECUTABLE}
-                ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/strict_mem_restart.py
+                ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf/strict_mem_restart.py
                 --strict $<TARGET_FILE:rmcdhf_mem_strict_mpi>
-                --baseline $<TARGET_FILE:rmcdhf_orbopt_mem_mpi>
+                --baseline $<TARGET_FILE:rmcdhf_mem_mpi>
                 --tools ${_grasp_preparation_bindir}
                 --mpiexec ${MPIEXEC_EXECUTABLE}
                 --numproc-flag=${MPIEXEC_NUMPROC_FLAG} --ranks ${ranks})
@@ -142,18 +133,17 @@ if(Python3_Interpreter_FOUND)
             endforeach()
         endif()
     endif()
-    add_test(NAME rmcdhf_orbopt_round_state_logic
-        COMMAND ${Python3_EXECUTABLE}
-        ${CMAKE_CURRENT_SOURCE_DIR}/rmcdhf_orbopt/test_round_state_logic.py)
     add_test(NAME grasp_grid_patcher
         COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/test_patch_grasp_grid.py")
+    set_tests_properties(grasp_grid_patcher PROPERTIES ENVIRONMENT "FC=${CMAKE_Fortran_COMPILER}")
 endif()
 
 # Independent synthetic NP tests; no GRASP preparation tools or atomic data.
 add_subdirectory(npol)
 add_subdirectory(jj2lsj)
 add_subdirectory(standard_grasp)
+add_subdirectory(f2018)
 
 if(TARGET mod_csfg)
     add_subdirectory(graspg)

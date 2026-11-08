@@ -232,7 +232,7 @@
 
          !*** Read in IROW from file mcp.30 ***
          NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)
-         NELMNT = INT8(NELMNTGG)
+         NELMNT = INT(NELMNTGG,KIND=LONG)
          CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')
          CALL read02_mem(JBLOCK)
 
@@ -349,7 +349,7 @@
          DO JBLOCK = 1, NBLOCK
 !           ...Read in IROW from file mcp.30
             NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)
-            NELMNT = INT8(NELMNTGG)
+            NELMNT = INT(NELMNTGG,KIND=LONG)
             CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')
             CALL read02_mem(JBLOCK)
 
