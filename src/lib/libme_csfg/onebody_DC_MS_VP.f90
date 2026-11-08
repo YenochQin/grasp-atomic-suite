@@ -17,6 +17,9 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      USE iabint_I, ONLY: iabint
+      USE keint_I, ONLY: keint
+      USE vpint_I, ONLY: vpint
       IMPLICIT NONE
 !----------------------------------------------
 !   D u m m y   A r g u m e n t s

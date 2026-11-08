@@ -48,6 +48,10 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
+      USE mpiu_I, ONLY: stopmpi
+      USE sys_chdir_I, ONLY: sys_chdir
+      USE sys_getwd_I, ONLY: sys_getwd
+      USE sys_mkdir_I, ONLY: sys_mkdir
       implicit none
       character(len=*), intent(out):: startdir, permdir, tmpdir
 !-----------------------------------------------

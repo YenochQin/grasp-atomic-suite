@@ -15,5 +15,5 @@ add_library(dvd90 STATIC
     iniest_I.f90
 )
 setup_fortran_modules(dvd90)
-target_link_libraries_Fortran(dvd90 PRIVATE mod)
+target_link_libraries_Fortran(dvd90 PRIVATE 9290 mod)
 install(TARGETS dvd90 DESTINATION lib/)

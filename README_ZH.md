@@ -58,12 +58,17 @@
 
 ## 构建
 
-推荐使用 out-of-source CMake 流程：
+推荐使用 out-of-source CMake 流程（GNU Fortran 15）：
 
 ```sh
+export FC="$(command -v gfortran-15)"
+export OMPI_FC="$FC"
 ./configure.sh
-cmake --build build --target install -j4
+cmake --build build --parallel 4
 ```
+
+默认安装前缀为 `<build>/install`；可用 `--prefix PATH` 或 `-DCMAKE_INSTALL_PREFIX=PATH` 指定独立位置。
+普通构建不安装，也不覆盖源码 `bin/`。严格验收入口见 [F2018 测试说明](test/f2018/README.md)。
 
 `configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后会得到 `bin/gj90_mpi`、`bin/rhfs_mpi`、`bin/ris4_mpi`、新复制的 `rmcdhf_mpi`、`rmcdhf_mem_mpi`以及对应库文件。
 
@@ -101,7 +106,7 @@ cmake --build build-serial --target install -j4
 
 构建需要 Fortran 编译器、CMake 3.31 或更新版本、BLAS 和 LAPACK。MPI 目标还需要 MPI Fortran 编译环境，例如 `mpifort`。
 
-CMake 会自动查找 BLAS/LAPACK，GNU Fortran 当前使用以下标准与兼容选项：
+CMake 会自动查找 BLAS/LAPACK，默认 `f2018-audit` profile 使用以下标准与兼容选项：
 
 - `-std=f2018`
 - `-fno-automatic`
@@ -109,8 +114,10 @@ CMake 会自动查找 BLAS/LAPACK，GNU Fortran 当前使用以下标准与兼�
 当前配置已通过 gfortran 15.3.0 的全量 F2018 编译/链接，见
 [兼容性修复与验证](docs/implemented/f2018_compatibility.md)。
 `-fallow-argument-mismatch` 已移除，MPI/数值库的接口及数组实参已修正，见
-[接口验证记录](docs/reviews/argument_interfaces_2026-11-08.md)。静态存储策略仍保留；
-当前 CTest 为 36/47，剩余 11 项为既有失败。
+[接口验证记录](docs/reviews/argument_interfaces_2026-11-08.md)。audit/legacy 仍保留静态存储；
+36/47 是 2026-11-08 Linux 的历史结果。2026-11-09 macOS 严格 Check/Release 全量构建通过，
+各 64/68 测试通过、4 项 Linux 专用测试跳过，完整验收仍失败。同 O0/O2 的 rmcdhf 一轮
+全输出一致；额外 MPI Davidson 早收敛探针尚未解决，见[本轮验证](docs/reviews/f2018_strict_interfaces_npol_2026-11-09.md)。
 
 ## 输入与输出
 

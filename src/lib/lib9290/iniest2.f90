@@ -19,6 +19,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       USE vast_kind_param, ONLY:  DOUBLE
+      USE dinit_I
       USE memory_man
       USE suite_linear_algebra, ONLY: DCOPY, DSPEVX
       IMPLICIT NONE

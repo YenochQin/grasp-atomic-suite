@@ -24,6 +24,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       USE lodcsh_I
+      USE lodcsh_csfg_I, ONLY: lodcsh_csfg
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

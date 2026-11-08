@@ -35,6 +35,7 @@
       USE openfl_I
       USE lodres_I
       USE getcid_I
+      USE mpiu_I, ONLY: stopmpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

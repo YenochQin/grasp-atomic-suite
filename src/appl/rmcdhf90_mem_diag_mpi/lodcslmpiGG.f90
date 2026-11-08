@@ -30,6 +30,7 @@
       USE ORB_C,           ONLY: NCF, IQA
       USE syma_C,          ONLY: JPGG, nblk0
       use mpi_C
+      USE lodcsh2gg_I, ONLY: lodcsh2gg
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

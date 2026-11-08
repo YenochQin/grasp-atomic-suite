@@ -25,6 +25,8 @@
 !-----------------------------------------------
       USE dspevx_I
       USE suite_linear_algebra, ONLY: dcopy, dspevx
+      USE dinit_I, ONLY: dinit
+      USE suite_linear_algebra, ONLY: slamch
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -38,7 +40,6 @@
       REAL(DOUBLE), DIMENSION(:), pointer :: ap, eigval, vec, work
       INTEGER, DIMENSION(:), pointer :: iwork, ifail
       REAL(DOUBLE) :: ABSTOL
-      REAL :: SLAMCH
 !-----------------------------------------------------------------------
       NS = MIN (nmax, ncf)
 

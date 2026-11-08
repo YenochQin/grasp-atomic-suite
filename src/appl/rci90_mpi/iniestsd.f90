@@ -25,6 +25,9 @@
 !-----------------------------------------------
       USE dspevx_I
       USE suite_linear_algebra, ONLY: dcopy, dspevx
+      USE dinit_I, ONLY: dinit
+      USE mpiu_I, ONLY: gdsummpi
+      USE suite_linear_algebra, ONLY: slamch
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -40,7 +43,6 @@
       INTEGER :: in, ns, ncfdum, iccutdum, myiddum, nprocsdum, info, &
                  ierr, j, joff, nelc, ir, nfound
       REAL(DOUBLE) :: elsto, ABSTOL
-      REAL :: SLAMCH
 !-----------------------------------------------------------------------
       NS = min (nmax, ncf)
 

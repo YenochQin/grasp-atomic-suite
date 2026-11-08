@@ -9,6 +9,7 @@ add_executable(rci
     cxk_I.f90
     bessel.f90
     bessel_I.f90
+    dmerge_dnicmv_I.f90
     dnicmv.f90
     dnicmv_I.f90
     engout.f90

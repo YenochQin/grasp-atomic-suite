@@ -53,6 +53,7 @@
       USE MCP_C,     ONLY: KMAX, DIAG, LFORDR
       USE ORB_C,     ONLY: NCF, IQA
       USE STAT_C,    ONLY: JQSA, JCUPA
+      USE onescalar_I, ONLY: onescalar
       IMPLICIT NONE
       EXTERNAL CORD
 !-----------------------------------------------

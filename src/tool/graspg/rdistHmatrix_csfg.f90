@@ -201,7 +201,7 @@ END MODULE
   
   STOP "Normal Exit ..."
 
-end program rdistHmatrix_csfg
+contains
 
 SUBROUTINE TESTFILES(FDNAME, IFLAG)
   USE suite_system, ONLY: ACCESS => path_access
@@ -217,7 +217,7 @@ SUBROUTINE TESTFILES(FDNAME, IFLAG)
   IFLAG = ISTATE
   
   RETURN
-END
+END SUBROUTINE
 
 SUBROUTINE READRES(FRST, NSPROCS, NTPROCS, MYIDT, MYIDS, IMCDF)
   use csfg_parameters, only: CSFG_MAX_BLOCKS
@@ -307,4 +307,6 @@ SUBROUTINE READRES(FRST, NSPROCS, NTPROCS, MYIDT, MYIDS, IMCDF)
   IF (FRST) WRITE (20) ncfdum, iccutdum, MYIDT, NTPROCS  ! myiddum ==> MYIDT; nprocsdum==>NTPROCS
   
   RETURN
-END
+END SUBROUTINE
+
+end program rdistHmatrix_csfg

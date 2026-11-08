@@ -59,7 +59,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      EXTERNAL OUTSDAdummy
+      PROCEDURE(outsdampi) :: OUTSDAdummy
       INTEGER, INTENT(IN) :: IOUTT
       INTEGER, INTENT(IN) :: NELMNTCC
       INTEGER , INTENT(IN) :: NB

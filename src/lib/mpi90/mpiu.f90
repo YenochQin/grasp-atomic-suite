@@ -38,6 +38,7 @@
 ! Unlike startmpi2, this variant does not change the working directory.
 !***********************************************************************
       USE mpi
+      USE mpiu_I, ONLY: startmpi
       IMPLICIT NONE
       INTEGER :: myid, nprocs, lenhost, ncount1
       CHARACTER(LEN=*), INTENT(OUT) :: host
@@ -78,6 +79,9 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
+      USE cpath_I, ONLY: cpath
+      USE mpiu_I, ONLY: mpix_printmsg
+      USE mpiu_I, ONLY: startmpi
       IMPLICIT NONE
       INTEGER, INTENT(OUT)  :: myid,  nprocs, lenhost
       INTEGER, INTENT(OUT)  :: ncount1
@@ -243,6 +247,8 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       USE mpi
+      USE mpiu_I, ONLY: mpix_printmsg
+      USE mpiu_I, ONLY: stopmpi
       IMPLICIT NONE
       INTEGER, INTENT(IN)  ::  myid,nprocs,lenhost
       integer              ::  ncount1
@@ -311,7 +317,7 @@
       USE mpi
       IMPLICIT NONE
       INTEGER, INTENT(IN)  ::  myid, nprocs
-      CHARACTER(LEN=*), INTENT(OUT) :: msg
+      CHARACTER(LEN=*), INTENT(INOUT) :: msg
 
 !-----------------------------------------------
 !   L o c a l  V a r i a b l e s
@@ -400,6 +406,7 @@
       USE vast_kind_param, ONLY:  DOUBLE
       USE mpi
       USE suite_linear_algebra, ONLY: dcopy
+      USE dinit_I, ONLY: dinit
       IMPLICIT NONE
 
       INTEGER, INTENT(IN)                         :: n
@@ -425,6 +432,7 @@
       USE mpi_C, ONLY: MYID
       USE mpi
       USE suite_linear_algebra, ONLY: dcopy
+      USE dinit_I, ONLY: dinit
       IMPLICIT NONE
 
       INTEGER, INTENT(IN)                          :: n
@@ -480,6 +488,7 @@
 !     Sum x over all nodes and in iy, then copy iy to  ix
 !***********************************************************************
       USE mpi
+      USE icopy_I, ONLY: icopy
       IMPLICIT NONE
 
       INTEGER, INTENT(IN)                         :: n

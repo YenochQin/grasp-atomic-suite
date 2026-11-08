@@ -31,12 +31,12 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE outsdampi_I
+      USE outsdampi_I, ONLY: outsdampi
       IMPLICIT NONE
+      PROCEDURE(outsdampi) :: OUTSDAdummy
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      EXTERNAL OUTSDAdummy
       INTEGER, INTENT(IN) :: NNONZ
       INTEGER , INTENT(IN) :: NB
       INTEGER , INTENT(IN) :: MYID

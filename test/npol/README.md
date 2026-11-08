@@ -1,17 +1,18 @@
 # Nuclear-polarization code tests
 
 The application consumers come from the fresh GRASP copies in `src/appl/rmcdhf*`,
-not the existing orbopt sources in `src/appl/rmcdhf90*`.
+not the separate strict/diagnostic/CSFG solvers. The orbopt sources are retired.
 
 All data are synthetic software fixtures. These tests never start an atomic SCF
 solver, use preparation tools, load atomic datasets, or submit jobs.
 
 Select only these tests with `ctest --test-dir <build> -L '^npol_code$' --output-on-failure`.
-There are 9 tests in a serial configuration and 14 with MPI and Python available.
+There are 10 tests in a serial configuration and 15 with MPI and Python available.
 CMake prefers the existing Tools Python environment; no packages are installed.
 
 | Test | Evidence |
 | --- | --- |
+| `npol_code_paths` | Exact summary path length/content for bare/empty/root/long/spaced/Windows-style paths, direct actual arguments, allocatable assignment and repeated calls under static and automatic profiles |
 | `npol_code_input` | Absent/disabled/single/dual-channel input; missing/unknown fields, versions, units, types, invalid charge/mass, missing strengths versus zero, NaN/Inf, cutoffs, string limits, I/O failure, malformed/trailing groups |
 | `npol_code_kernel` | Independent closed values at origin and cutoff, arbitrary radius, switches, zero strength, extreme powers, subnormals, rejected overflow |
 | `npol_code_compose` | Sign, repeated composition, fresh Coulomb capture, reinitialization, reset, failed initialization rollback |

@@ -28,6 +28,7 @@
       USE testfiles_I
 
       USE suite_system, ONLY: SYSTEM => run_shell
+      USE set_csf_numberf_I, ONLY: set_csf_numberf
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -45,7 +46,7 @@
 !
       print *,                                                          &
       "Give the full name of the list that contains &
-            the zero-order space"
+           &the zero-order space"
       read(*,'(a)') FILNAM
       FORM = 'FORMATTED'
       STATUS = 'OLD'

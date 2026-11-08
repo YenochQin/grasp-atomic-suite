@@ -78,6 +78,12 @@
 
       USE setmcp_csfg_I
       USE rcsfsymexpand_I
+      USE cslhmpi_csfg_I, ONLY: cslhmpi_csfg
+      USE mpiu_I, ONLY: startmpi2
+      USE mpiu_I, ONLY: stopmpi2
+      USE setdbgmpi_I, ONLY: setdbgmpi
+      USE setmcpmpi_I, ONLY: setmcpmpi
+      USE mcpmpi_I, ONLY: mcpmpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

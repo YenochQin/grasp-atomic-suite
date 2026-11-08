@@ -401,6 +401,7 @@ CONTAINS
 !-----------------------------------------------
       USE vast_kind_param, ONLY: DOUBLE
       USE CONS_C,          ONLY: ZERO, ONE
+      USE nine_I, ONLY: nine
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -792,6 +793,7 @@ CONTAINS
 !     NIST                                     last update: May 2011   *
 !                                                                      *
 !***********************************************************************
+      USE convrt_double_I, ONLY: convrt_double
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -844,6 +846,7 @@ CONTAINS
 !     Modified by G. Gaigalas                                   2024   *
 !                                                                      *
 !***********************************************************************
+      USE convrt_double_I, ONLY: convrt_double
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1357,6 +1360,10 @@ CONTAINS
       USE def_C,           ONLY: Z, NELEC
 !CYC-2024/08/04
       USE rcsfsymexpand_I
+      USE getmixblock_I, ONLY: getmixblock
+      USE getyn_I, ONLY: getyn
+      USE openfl_I, ONLY: openfl
+      USE setcsla_I, ONLY: setcsla
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1372,7 +1379,7 @@ CONTAINS
       integer            :: JBDUM, NCFINBLKDUM, NEVINBLKDUM, IATJPDUM
       integer            :: I, II, ISUM, K, NCI, ierr, JB
       integer            :: IBlock, number_of_levels_tmp
-      logical            :: yes, fail, GETYN
+      logical            :: yes, fail
       CHARACTER(LEN=6)   :: G92MIX
       character(len=24)  :: NAME
       character(len=256) :: record, util_csl_file
@@ -1832,6 +1839,7 @@ CONTAINS
       USE itjpo_I
       USE ispar_I
       USE vast_kind_param, ONLY: LONG
+      USE convrt_double_I, ONLY: convrt_double
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -1877,9 +1885,9 @@ CONTAINS
          ! Ensure the CSFs are same from name.g and name.c files
          IF (NCFINBLK(IBLKNUM) /=  TotCSFs_perblock(3,IBLKNUM)) THEN
            WRITE(*,*)"Error: IBLKNUM, NCFINBLK(IBLKNUM),     &
-                      TotCSFs_perblock(3,IBLKNUM) =", &
+                      &TotCSFs_perblock(3,IBLKNUM) =", &
                       IBLKNUM, NCFINBLK(IBLKNUM),     &
-                      TotCSFs_perblock(3,IBLKNUM)
+                      &TotCSFs_perblock(3,IBLKNUM)
            STOP "Error! NCFINBLK /=  TotCSFs_perblock(3,IBLKNUM) ..." 
          ENDIF
          NCFMAXtmp = NCFMIN + scfDF1(IBLKNUM) - 1
@@ -2184,6 +2192,7 @@ CONTAINS
 !     NIST                                     last update: Dec 2015   *
 !                                                                      *
 !***********************************************************************
+      USE packls_I, ONLY: packls
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -2277,6 +2286,7 @@ CONTAINS
       USE itjpo_I
       USE IQ_I
       USE JQS_I
+      USE convrt_double_I, ONLY: convrt_double
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -2360,6 +2370,7 @@ CONTAINS
 !     NIST                                     last update: May 2011   *
 !                                                                      *
 !***********************************************************************
+      USE convrt_double_I, ONLY: convrt_double
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -3076,6 +3087,8 @@ CONTAINS
       USE ixjtik_I
       USE IQ_I
       USE JQS_I
+      USE nine_I, ONLY: nine
+      USE sixj_I, ONLY: sixj
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

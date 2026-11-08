@@ -32,6 +32,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       USE slater_I
+      USE triangrk_I, ONLY: triangrk
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -41,7 +42,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: GEN,TRIANGRK
+      LOGICAL :: GEN
       INTEGER :: key, i, k, ia, ib, ic, id
 !-----------------------------------------------------------------------
 

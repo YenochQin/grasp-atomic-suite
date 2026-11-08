@@ -35,6 +35,7 @@ add_executable(rci_mpi
     brint5_I.f90
     brint6.f90
     brint6_I.f90
+    ../rci90/dmerge_dnicmv_I.f90
     dnicmv.f90
     dnicmv_I.f90
     engout.f90

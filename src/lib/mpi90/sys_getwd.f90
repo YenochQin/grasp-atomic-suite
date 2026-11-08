@@ -18,6 +18,7 @@
       use mpi_C
       use suite_system, only: working_directory
 
+      USE mpiu_I, ONLY: stopmpi
       implicit none
       character(len=*), intent(out):: dir
       integer, intent(out):: lcwd

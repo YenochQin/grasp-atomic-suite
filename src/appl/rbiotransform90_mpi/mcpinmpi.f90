@@ -54,6 +54,8 @@
 !      USE cord_I
 !      USE qqsort_I
 !      USE itjpo_I
+      USE citrag_I, ONLY: citrag
+      USE getmix_I, ONLY: getmix
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -63,6 +63,27 @@
       Use symmatrix_restart_C, ONLY : ncsfDF1_core 
       Use csfg_tv_C
 
+      USE findtype_I, ONLY: findtype
+      USE spinangular11_I, ONLY: spinangular11
+      USE spinangular12_I, ONLY: spinangular12
+      USE spinangular13_I, ONLY: spinangular13
+      USE spinangular14_I, ONLY: spinangular14
+      USE spinangular15_I, ONLY: spinangular15
+      USE spinangular1_I, ONLY: spinangular1
+      USE spinangular22_I, ONLY: spinangular22
+      USE spinangular23_I, ONLY: spinangular23
+      USE spinangular24_I, ONLY: spinangular24
+      USE spinangular25_I, ONLY: spinangular25
+      USE spinangular2_I, ONLY: spinangular2
+      USE spinangular33_I, ONLY: spinangular33
+      USE spinangular34_I, ONLY: spinangular34
+      USE spinangular35_I, ONLY: spinangular35
+      USE spinangular3_I, ONLY: spinangular3
+      USE spinangular44_I, ONLY: spinangular44
+      USE spinangular45_I, ONLY: spinangular45
+      USE spinangular4_I, ONLY: spinangular4
+      USE spinangular55_I, ONLY: spinangular55
+      USE spinangular5_I, ONLY: spinangular5
       IMPLICIT NONE
       EXTERNAL CORD
 !-----------------------------------------------

@@ -38,6 +38,8 @@
       USE strsum_I
       USE factt_I
       USE oscl_I
+      USE starttime_I, ONLY: starttime
+      USE stoptime_I, ONLY: stoptime
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

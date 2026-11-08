@@ -84,6 +84,12 @@
       USE matrix_I
 !CYC-2023/11
       USE rcsfsymexpand_I
+      USE cslhmpi_csfg_I, ONLY: cslhmpi_csfg
+      USE genintbreit1wrap_I, ONLY: genintbreit1wrap
+      USE genintbreit2wrap_I, ONLY: genintbreit2wrap
+      USE genintrkwrap_I, ONLY: genintrkwrap
+      USE mpiu_I, ONLY: startmpi2
+      USE mpiu_I, ONLY: stopmpi2
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

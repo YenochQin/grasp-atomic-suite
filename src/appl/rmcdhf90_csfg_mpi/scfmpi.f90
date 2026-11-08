@@ -70,6 +70,10 @@
       USE orbout_I
       USE endsum_I
       USE setham_pot_I
+      USE genintrkwrap_csfg_I, ONLY: genintrkwrap_csfg
+      USE matrix_csfg_I, ONLY: matrix_csfg
+      USE nxanyampi_I, ONLY: nxanyampi
+      USE vector_xya_I, ONLY: vector_xya
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -260,7 +264,7 @@
                        MPI_COMM_WORLD, IERR)
       if (myid == 0) print *
       if (myid == 0) print *, "Sping-angular coefficients involving &
-                              HMatrix (CSFG, not spanned):"
+                              &HMatrix (CSFG, not spanned):"
       if (myid == 0) print *, "Number of T(ab)                =", NDHGPT
       if (myid == 0) print *, "Number of two-body CSFG-pairs  =", NDHGPV
       if (myid == 0) print *, "Number of obtained Slater (VK) =", NDHVK

@@ -48,6 +48,7 @@
       USE setham_I
       USE maneig_I
       USE read1_mem_I
+      USE read03_mem_I
       USE suite_linear_algebra, ONLY: dcopy, ddot, dscal
       IMPLICIT NONE
 !-----------------------------------------------

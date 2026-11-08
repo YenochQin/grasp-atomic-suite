@@ -124,7 +124,7 @@
          NELMNT = INT(NELMNTGG,KIND=LONG)
          CALL ALLOC (IROW, NELMNT, 'IROW', 'MATRIXmpi')
          CALL ALLOC (EMT, NELMNT, 'EMT', 'MATRIXmpi')
-        CALL ALLOC (IENDC, NCF + 1, 'IENDC', 'MATRIXMPI' )
+        CALL ALLOC (IENDC, 0, NCF, 'IENDC', 'MATRIXMPI' )
 
 !                                                ! may not be necessary if iendc is ALWAYS used
 !GG         IENDC(:NCF) = 0                        ! the way it is assigned here.

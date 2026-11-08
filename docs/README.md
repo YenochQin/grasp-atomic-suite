@@ -29,9 +29,11 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 严格构建通过，完整验收未通过 | [f2018_strict_interfaces_npol_2026-11-09.md](reviews/f2018_strict_interfaces_npol_2026-11-09.md) | 内部接口/NP 路径/SOLVE 意图修复；Check/Release 各 64/68 通过、4 跳过；同 O0/O2 一轮全输出一致，额外 MPI Davidson 早收敛问题待修。 |
+| 设施初始验证记录 | [f2018_acceptance_facilities_2026-11-09.md](reviews/f2018_acceptance_facilities_2026-11-09.md) | profiles、强制清单、模块/安装隔离与 DDOT 14/14；保留初始 audit 50/63 及严格编译失败证据，后续状态见上一项。 |
 | 已移除参数放行 | [argument_interfaces_2026-11-08.md](reviews/argument_interfaces_2026-11-08.md) | gfortran 15/F2018 全量构建不再使用 fallow-argument-mismatch；MPI/BLAS 显式接口、类型和有界数组区段修复；当前 CTest 36/47，11 项为既有失败；orbopt 已退役。 |
 | 已移除旧程序 | [orbopt_retirement.md](implemented/orbopt_retirement.md) | 2026-11-08 删除四个 rmcdhf_orbopt 目标/源码和专用驱动，保留原版、strict/diag、CSFG；共有测试迁到 test/rmcdhf，suite 网格入口调整为 21 个。 |
-| 已实施兼容性子批次 | [f2018_compatibility.md](implemented/f2018_compatibility.md) | GNU 15.3.0 下共享库、平台服务及应用标准语法已恢复全量 F2018 编译/链接；保留静态存储和参数放行，严格接口迁移未完成。 |
+| 已实施兼容性子批次 | [f2018_compatibility.md](implemented/f2018_compatibility.md) | 首轮标准语法及后续显式接口、NP 路径修复；严格 Check/Release 全量编译/链接通过，完整数值及静态状态验收未完成。 |
 | 已完成本轮验证 | [f2018_gfortran15_batches_2026-11-08.md](reviews/f2018_gfortran15_batches_2026-11-08.md) | 全量构建通过；五项新增回归通过；四个 solver 一轮 SCF 共 28 文件与旧版本一致；CTest 33/44，11 个失败与旧基线相同，无新增失败。 |
 | 已完成首轮编译诊断 | [f2018_gfortran15_compile_probe_2026-11-08.md](reviews/f2018_gfortran15_compile_probe_2026-11-08.md) | GNU 构建已加 `-std=f2018`，全新全量构建失败；15 个文件直接报错。补充生产源码诊断为 59 个文件失败，移除参数放行后为 143 个；列出共享库、平台函数、kind/语法与 MPI/BLAS 接口优先项，未修改计算实现或运行数值测试。 |
 | 已实施 | [standard_grasp_integration.md](implemented/standard_grasp_integration.md) | 2026-11-08 导入普通 rangular、rwfnestimate、rbiotransform、rci、rtransition 五类程序共十个目标，复用 suite 共享库/参数；移除初猜程序局部容量定义，补丁器覆盖 25 个网格/4 个续算入口。完整 F2018 与原子物理验收尚未完成。 |
@@ -47,7 +49,7 @@ docs/
 | 已实施 | [rmcdhf_nuclear_polarization.md](implemented/rmcdhf_nuclear_polarization.md) | 2026-10-24 从 grasp 新复制四个原版 rmcdhf 目标并接入局域 E1/E2 NP；已有 orbopt 保持原状：独立输入、共享势、root I/O 与集体失败协议；串行/MPI 代码测试 9/9、14/14 通过，物理计算验证未执行。 |
 | 已完成代码计划 | [rmcdhf_nuclear_polarization_implementation.md](plans/rmcdhf_nuclear_polarization_implementation.md) | 保留实施设计、完成清单与结果；现行输入契约见已实施说明。 |
 | 待执行 | [grasp_grid_parameter_tuning.md](plans/grasp_grid_parameter_tuning.md) | 修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
-| 标准兼容子批次已实施 | [f2018_migration_gfortran15_2026-11-08.md](plans/f2018_migration_gfortran15_2026-11-08.md) | 普通程序导入和 P3 标准编译/链接子批次已完成；逐项记录基线、平台适配、精确回归和余下接口/状态/物理验收，完整迁移尚未完成。 |
+| 严格构建完成，迁移验收未完成 | [f2018_migration_gfortran15_2026-11-08.md](plans/f2018_migration_gfortran15_2026-11-08.md) | 更新内部接口/NP 修复、64/68 回归及 O0/O2 对照；Linux 端到端、MPI 早收敛、警告/状态审计和物理验收仍待完成。 |
 | 阶段性实施 | [jj2lsj_postprocessing_parallelization_2026-11-03.md](plans/jj2lsj_postprocessing_parallelization_2026-11-03.md) | 后处理按 ASF 并行、唯一标签依赖与跨 block 异步流水线讨论；计时与稳定排序已实施，保留 ASF 后处理和跨 block 流水线的后续设计。 |
 | 已完成验证 | [jj2lsj_postprocessing_validation_2026-11-04.md](reviews/jj2lsj_postprocessing_validation_2026-11-04.md) | AS4 稳定排序及整理约 9.60→0.045 s，总耗时单次约减少 2.1%；AS4/AS1 输出一致，标签异步化经计时评估暂缓。 |
 | 已完成验证 | [jj2lsj_gd_i_validation_2026-11-02.md](reviews/jj2lsj_gd_i_validation_2026-11-02.md) | 六套 Gd I 输入的 18 个输出文件一致；两个代表案例的 994,894 个 LS 系数在 4/8 线程下与串行逐位一致，包含真实提前停止路径。 |

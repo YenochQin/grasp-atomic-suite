@@ -19,7 +19,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       USE dinit_I
-!      USE dmerge_I
+      USE dmerge_I
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -49,7 +49,7 @@
          NELC = IEND - IBEG + 1
          DO IV = 1, M
             DIAG = C(ICOL,IV) + EMT(IEND)*B(ICOL,IV)
-            CALL DMERGE (NELC-1, B(:N,IV), C(:N,IV), IROW(IBEG), EMT(IBEG), B(&
+            CALL DMERGE (NELC-1, B(:N,IV), C(:N,IV), IROW(IBEG:IEND-1), EMT(IBEG:IEND-1), B(&
                ICOL,IV), DL)
             C(ICOL,IV) = DIAG + DL
          END DO

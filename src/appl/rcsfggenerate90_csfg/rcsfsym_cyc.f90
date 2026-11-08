@@ -28,6 +28,7 @@
       subroutine rcsfsym_cyc
 !
 !
+      use generator_I, only: removeblank
       implicit none
       character*1500 :: string(5),stringorb
       character*1500 :: stringnonsym  ! cyc

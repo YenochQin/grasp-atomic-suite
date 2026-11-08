@@ -66,6 +66,8 @@
       USE setmix_I
       USE factt_I
       USE scfmpi_I
+      USE mpiu_I, ONLY: startmpi2
+      USE mpiu_I, ONLY: stopmpi2
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

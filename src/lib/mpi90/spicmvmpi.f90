@@ -35,6 +35,8 @@
 !-----------------------------------------------
       USE dinit_I
 !      USE dmerge_I
+      USE dmerge_I, ONLY: dmerge
+      USE mpiu_I, ONLY: gdsummpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -66,7 +68,7 @@
          DO IV = 1, M
             DIAG =  C(ICOL,IV) + EMT(iend)*B(icol,IV)
             CALL DMERGE (NELC-1,B(:N,IV),C(:N,IV),               &
-                         IROW(IBEG),EMT(IBEG),B(ICOL,IV),DL)
+                         IROW(IBEG:IEND-1),EMT(IBEG:IEND-1),B(ICOL,IV),DL)
             C(ICOL,IV) = DIAG + DL
          ENDDO
          ibeg = iend + 1

@@ -42,6 +42,10 @@
 !-----------------------------------------------
       USE setisompi_I
       USE setrwfmpi_I
+      USE getyn_I, ONLY: getyn
+      USE nucpot_I, ONLY: nucpot
+      USE radgrd_I, ONLY: radgrd
+      USE setqic_I, ONLY: setqic
       IMPLICIT NONE
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -51,7 +55,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-       LOGICAL :: getyn, yes
+       LOGICAL :: yes
        INTEGER :: i, jblock, ntmp, np10, j
 !-----------------------------------------------------------------------
 !

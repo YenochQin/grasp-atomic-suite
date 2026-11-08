@@ -32,6 +32,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       USE jj2lsj_code
+      USE factt_I, ONLY: factt
+      USE setiso_I, ONLY: setiso
+      USE starttime_I, ONLY: starttime
+      USE stoptime_I, ONLY: stoptime
+      USE setcon_I, ONLY: setcon
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -63,6 +68,7 @@
       print *, " "
 !
 !  Set up the table of logarithms of factorials
+      call setcon
       call factt
 !
       CALL setiso('isodata')

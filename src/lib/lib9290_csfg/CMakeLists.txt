@@ -1,5 +1,8 @@
 # Source list follows the GRASPG Makefile (e157d9f).
 add_library(9290_csfg STATIC
+    printlabelv_I.f90
+    findtype_I.f90
+    fictious_csf_I.f90
     indexsym.f90
     indexsym_I.f90
     analabv.f90

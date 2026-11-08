@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "scope": "Current supported targets; not P9/F00-F10 certification",
+  "groups": [
+    {
+      "name": "common",
+      "requires": [],
+      "targets": [
+        "mod",
+        "9290",
+        "dvd90",
+        "mcp90",
+        "rang90",
+        "jj2lsj_omp"
+      ],
+      "tests": [
+        "lib9290_quad",
+        "shared_grid_capacity",
+        "strict_scf_logic",
+        "rdensity_natural_orbitals",
+        "grasp_grid_patcher",
+        "npol_code_kernel",
+        "npol_code_compose",
+        "npol_code_bounds",
+        "npol_code_input",
+        "npol_code_output",
+        "npol_code_entrypoints",
+        "npol_code_upstream_copy",
+        "npol_code_consumers_rmcdhf",
+        "npol_code_consumers_rmcdhf_mem",
+        "jj2lsj_parallel_regression",
+        "jj2lsj_stable_ranking",
+        "jj2lsj_nonfinite_ranking",
+        "standard_grasp_alternate_capacity",
+        "f2018_linear_algebra_contracts",
+        "f2018_storage_bytes",
+        "f2018_nmtejj_parity",
+        "f2018_acceptance_driver",
+        "f2018_first_sweep_driver",
+        "f2018_ci_damping_rmcdhf",
+        "f2018_ci_damping_rmcdhf_mem",
+        "npol_code_paths",
+        "f2018_davidson_contracts"
+      ]
+    },
+    {
+      "name": "serial",
+      "requires": [
+        "serial"
+      ],
+      "targets": [
+        "gj90",
+        "rhfs",
+        "rdensity",
+        "ris4",
+        "rwfnestimate",
+        "rangular",
+        "rci",
+        "rbiotransform",
+        "rtransition",
+        "rtransition_phase",
+        "rmcdhf",
+        "rmcdhf_mem"
+      ],
+      "tests": [
+        "rdensity_serial_regression"
+      ]
+    },
+    {
+      "name": "mpi",
+      "requires": [
+        "mpi"
+      ],
+      "targets": [
+        "mpiu90",
+        "gj90_mpi",
+        "rhfs_mpi",
+        "rdensity_mpi",
+        "ris4_mpi",
+        "rangular_mpi",
+        "rci_mpi",
+        "rbiotransform_mpi",
+        "rtransition_mpi",
+        "rmcdhf_mpi",
+        "rmcdhf_mem_mpi",
+        "rmcdhf_mem_strict_mpi",
+        "rmcdhf_mem_diag_mpi"
+      ],
+      "tests": [
+        "mpi90_local_sparse",
+        "start_trace_parity",
+        "p0_trace_projection",
+        "npol_code_consumers_rmcdhf_mpi",
+        "npol_code_consumers_rmcdhf_mem_mpi",
+        "npol_code_mpi_broadcast_1",
+        "npol_code_mpi_broadcast_2",
+        "npol_code_mpi_error_2",
+        "f2018_mpi_contracts_1",
+        "f2018_mpi_contracts_2",
+        "f2018_mpi_contracts_4",
+        "f2018_interface_rejections",
+        "f2018_system_paths"
+      ]
+    },
+    {
+      "name": "serial_mpi",
+      "requires": [
+        "serial",
+        "mpi"
+      ],
+      "targets": [],
+      "tests": [
+        "p0_trace_mpi_1",
+        "p0_trace_mpi_2",
+        "strict_mem_restart_mpi_1",
+        "strict_mem_restart_mpi_2",
+        "rdensity_mpi_1",
+        "rdensity_mpi_2",
+        "rdensity_mpi_4"
+      ]
+    },
+    {
+      "name": "csfg",
+      "requires": [
+        "csfg"
+      ],
+      "targets": [
+        "mod_csfg",
+        "9290_csfg",
+        "rang90_csfg",
+        "jj2lsj_csfg",
+        "rwfnestimate_csfg",
+        "rmixaccumulate_csfg",
+        "rcsfggenerate_csfg",
+        "rcsfginteract_csfg",
+        "rcsfgzerofirst_csfg",
+        "rcsfgexpand_csfg",
+        "rcsfgextend_csfg",
+        "rcsfgsplit_csfg",
+        "rdistHmatrix_csfg",
+        "rcsfgblocksplit_csfg",
+        "rlevels_csfg"
+      ],
+      "tests": [
+        "csfg_capacity",
+        "csfg_file_formats",
+        "csfg_alternate_capacity",
+        "f2018_csfg_reallocation",
+        "f2018_nmtejj_csfg_parity"
+      ]
+    },
+    {
+      "name": "csfg_mpi",
+      "requires": [
+        "csfg",
+        "mpi"
+      ],
+      "targets": [
+        "dvd90mpi",
+        "me_csfg",
+        "rangular_csfg_mpi",
+        "rci_csfg_mpi",
+        "rci_block_csfg_mpi",
+        "rmcdhf_csfg_mpi"
+      ],
+      "tests": []
+    },
+    {
+      "name": "ci_rmcdhf_mpi",
+      "requires": [
+        "mpi"
+      ],
+      "targets": [],
+      "tests": [
+        "f2018_ci_damping_rmcdhf_mpi_1",
+        "f2018_ci_damping_rmcdhf_mpi_2",
+        "f2018_ci_damping_rmcdhf_mpi_4"
+      ]
+    },
+    {
+      "name": "ci_rmcdhf_mem_mpi",
+      "requires": [
+        "mpi"
+      ],
+      "targets": [],
+      "tests": [
+        "f2018_ci_damping_rmcdhf_mem_mpi_1",
+        "f2018_ci_damping_rmcdhf_mem_mpi_2",
+        "f2018_ci_damping_rmcdhf_mem_mpi_4"
+      ]
+    },
+    {
+      "name": "ci_rmcdhf_mem_strict_mpi",
+      "requires": [
+        "mpi"
+      ],
+      "targets": [],
+      "tests": [
+        "f2018_ci_damping_rmcdhf_mem_strict_mpi_1",
+        "f2018_ci_damping_rmcdhf_mem_strict_mpi_2",
+        "f2018_ci_damping_rmcdhf_mem_strict_mpi_4"
+      ]
+    },
+    {
+      "name": "ci_rmcdhf_mem_diag_mpi",
+      "requires": [
+        "mpi"
+      ],
+      "targets": [],
+      "tests": [
+        "f2018_ci_damping_rmcdhf_mem_diag_mpi_1",
+        "f2018_ci_damping_rmcdhf_mem_diag_mpi_2",
+        "f2018_ci_damping_rmcdhf_mem_diag_mpi_4"
+      ]
+    },
+    {
+      "name": "csfg_davidson",
+      "requires": [
+        "csfg",
+        "mpi"
+      ],
+      "targets": [
+        "dvd90mpi"
+      ],
+      "tests": [
+        "f2018_davidson_mpi_1",
+        "f2018_davidson_mpi_2",
+        "f2018_davidson_mpi_4"
+      ]
+    }
+  ]
+}

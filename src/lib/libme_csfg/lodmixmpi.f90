@@ -29,6 +29,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
 !CYC      USE lodstate_CSFG_I
+      USE lodstate_csfg_I, ONLY: lodstate_csfg
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

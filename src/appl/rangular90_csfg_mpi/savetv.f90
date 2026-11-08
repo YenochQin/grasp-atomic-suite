@@ -25,6 +25,8 @@
       USE labpack_I
 
       USE vast_kind_param, ONLY: DOUBLE
+      USE sortdiagv_I, ONLY: sortdiagv
+      USE sortoffdv_I, ONLY: sortoffdv
       IMPLICIT NONE
 !----------------------------------------------
 !   D u m m y   A r g u m e n t s

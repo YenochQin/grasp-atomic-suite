@@ -5,7 +5,23 @@ module suite_linear_algebra
     implicit none
     private
     public :: dcopy, ddot, daxpy, dscal, dnrm2, dgemv, dgemm, dspevx, dswap, idamax
+    public :: slamch, dlamch, lsame, xerbla
     interface
+        logical function lsame(ca, cb)
+            character(1), intent(in) :: ca, cb
+        end function
+        subroutine xerbla(srname, info)
+            character(*), intent(in) :: srname
+            integer, intent(in) :: info
+        end subroutine
+        real function slamch(cmach)
+            character(1), intent(in) :: cmach
+        end function
+        function dlamch(cmach) result(value)
+            import double
+            character(1), intent(in) :: cmach
+            real(double) :: value
+        end function
         subroutine dswap(n, x, incx, y, incy)
             import double
             integer, intent(in) :: n, incx, incy

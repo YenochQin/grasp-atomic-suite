@@ -60,9 +60,9 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       INTEGER  :: J
-      INTEGER  :: INV
-      INTEGER  :: JP
-      INTEGER  :: NNP
+      INTEGER, INTENT(INOUT) :: INV
+      INTEGER, INTENT(OUT) :: JP
+      INTEGER, INTENT(OUT) :: NNP
       LOGICAL  :: FAIL
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

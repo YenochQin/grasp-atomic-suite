@@ -31,6 +31,7 @@
       USE ORB_C,           ONLY: NCF, IQA
       USE STAT_C,          ONLY: JQSA, JCUPA
 
+      USE lodcsh2_I, ONLY: lodcsh2
       IMPLICIT NONE
       INTEGER       :: nfile, ncore, jblock
       INTEGER :: MPIX_INT1

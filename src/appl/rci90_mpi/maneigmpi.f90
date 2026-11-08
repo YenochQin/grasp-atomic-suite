@@ -89,12 +89,14 @@
       USE ispar_I
       USE spicmvmpi_I
       USE suite_linear_algebra, ONLY: dcopy, dspevx, dswap
+      USE iniestmpi_I, ONLY: iniestmpi
+      USE mpiu_I, ONLY: gdsummpi
+      USE mpiu_I, ONLY: stopmpi
+      USE suite_linear_algebra, ONLY: dlamch
       IMPLICIT NONE
 !-----------------------------------------------
 !  E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      REAL(DOUBLE) :: DLAMCH
-      EXTERNAL     :: DLAMCH
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

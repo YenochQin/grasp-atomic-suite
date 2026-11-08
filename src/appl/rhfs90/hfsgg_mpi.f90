@@ -37,6 +37,7 @@
       USE itrig_I
       USE oneparticlejj_I
       USE gracah1_I
+      USE mpiu_I, ONLY: gdrsummpi_root
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -284,9 +285,9 @@
          END DO
       END DO
 !
-      CALL GDRSUMMPI_ROOT(HFC(1,1), 5*NVEC*NVEC)
-      CALL GDRSUMMPI_ROOT(GJC(1), NVEC*NVEC)
-      CALL GDRSUMMPI_ROOT(DGJC(1), NVEC*NVEC)
+      CALL GDRSUMMPI_ROOT(HFC(:,:), 5*NVEC*NVEC)
+      CALL GDRSUMMPI_ROOT(GJC(:), NVEC*NVEC)
+      CALL GDRSUMMPI_ROOT(DGJC(:), NVEC*NVEC)
 !
       IF (MYID /= 0) GO TO 900
 !

@@ -35,6 +35,8 @@
       USE testfiles_I
       
       USE suite_system, ONLY: SYSTEM => run_shell
+      USE starttime_I, ONLY: starttime
+      USE stoptime_I, ONLY: stoptime
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

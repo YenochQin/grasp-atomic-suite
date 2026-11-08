@@ -68,6 +68,11 @@
       USE strsum_I
       USE factt_I
       USE matrix_I
+      USE genintbreit1_I, ONLY: genintbreit1
+      USE genintbreit2_I, ONLY: genintbreit2
+      USE genintrk_I, ONLY: genintrk
+      USE starttime_I, ONLY: starttime
+      USE stoptime_I, ONLY: stoptime
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

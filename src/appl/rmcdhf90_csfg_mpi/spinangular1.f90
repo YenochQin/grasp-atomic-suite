@@ -54,6 +54,11 @@
       Use symmatrix_mod, KMAXTmp=>KMAX 
       Use csfg_tv_C
 
+      USE iabint_I, ONLY: iabint
+      USE transfer_csfg_I, ONLY: transfer_csfg
+      USE read_tv_I, ONLY: read_tv
+      USE setcof_nxy_csfg_I, ONLY: setcof_nxy_csfg
+      USE twobody_dc_I, ONLY: twobody_dc
       IMPLICIT NONE
       EXTERNAL CORD
 !-----------------------------------------------

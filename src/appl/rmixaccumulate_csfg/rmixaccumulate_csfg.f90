@@ -421,9 +421,9 @@ program rmixaccumulate_csfg
     read(78,'(a)') string1
     write(*,*) trim(string1)
 991 write(*,*) 'Give set of active orbitals, as defined by the highest principal&
-                 quantum number'
+                 &quantum number'
     write(*,*) 'per l-symmetry, in a comma delimited list in s,p,d etc order,&
-                  e.g. 5s,4p,3d'
+                  &e.g. 5s,4p,3d'
     read(*,'(a)') orbitalstring
 
 ! Number of orbitals in orbital set
@@ -612,10 +612,10 @@ program rmixaccumulate_csfg
   ierr = system ('rm -f rcsfg.inp rlabel.inp')
 
   stop "Normal Exit"
-end program rmixaccumulate_csfg
+contains
 
 SUBROUTINE HPSORT(N,RA,IND)
-  integer N,IND(N),L,IR,I,J
+  integer N,IND(N),L,IR,I,J,IRRA
   double precision RA(N), RRA
 
   L=N/2+1
@@ -664,4 +664,5 @@ SUBROUTINE HPSORT(N,RA,IND)
   RA(I)=RRA
   IND(I)=IRRA
   goto 10
-END
+END SUBROUTINE HPSORT
+end program rmixaccumulate_csfg

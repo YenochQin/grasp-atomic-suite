@@ -1,5 +1,28 @@
 # Source list follows the GRASPG Makefile (e157d9f).
 add_library(me_csfg STATIC
+    matrixblock33_I.f90
+    matrixblock24_I.f90
+    matrixblock5_I.f90
+    matrixblock4_I.f90
+    matrixblock25_I.f90
+    matrixblock35_I.f90
+    matrixblock34_I.f90
+    matrixblock22_I.f90
+    matrixblock3_I.f90
+    matrixblock2_I.f90
+    matrixblock23_I.f90
+    matrixblock44_I.f90
+    matrixblock45_I.f90
+    matrixblock55_I.f90
+    matrixblock12_I.f90
+    matrixblock13_I.f90
+    matrixblock11_I.f90
+    matrixblock14_I.f90
+    matrixblock15_I.f90
+    transfer_cyc_I.f90
+    twobody_dc_sms_I.f90
+    onebody_dc_ms_vp_I.f90
+    breit_d_I.f90
     ncharg.f90
     ncharg_I.f90
     funk.f90
@@ -47,6 +70,7 @@ add_library(me_csfg STATIC
     brint5_I.f90
     brint6.f90
     brint6_I.f90
+    ../../appl/rci90/dmerge_dnicmv_I.f90
     dnicmv.f90
     dnicmv_I.f90
     dspevx_I.f90

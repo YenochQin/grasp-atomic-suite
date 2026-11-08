@@ -13,6 +13,7 @@ add_executable(rcsfgzerofirst_csfg
     set_CSF_ZFlist.f90
     set_CSF_number.f90
     removeblank.f90
+    set_CSF_numberF_I.f90
     set_CSF_numberF.f90
     RCSFzerofirst.f90
 )

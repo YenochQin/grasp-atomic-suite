@@ -93,6 +93,10 @@
       USE setmcp_csfg_I
       USE rcsfsymexpand_I
 
+      USE mpiu_I, ONLY: startmpi2
+      USE mpiu_I, ONLY: stopmpi2
+      USE csfg_expand_findtype_I, ONLY: csfg_expand_findtype
+      USE csfg_iqa_I, ONLY: csfg_iqa
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

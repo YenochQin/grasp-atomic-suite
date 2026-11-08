@@ -41,6 +41,10 @@
       USE mpi_C
 
       USE suite_system, ONLY: EXIT => terminate_process
+      USE mpiu_I, ONLY: startmpi2
+      USE mpiu_I, ONLY: stopmpi2
+      USE setiso_I, ONLY: setiso
+      USE sys_chdir_I, ONLY: sys_chdir
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

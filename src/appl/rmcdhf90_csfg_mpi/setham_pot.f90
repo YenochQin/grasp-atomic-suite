@@ -68,6 +68,8 @@
       USE alcbuf_I
       USE convrt_I
       USE ichop_I
+      USE calddrs_I, ONLY: calddrs
+      USE setham_cyc_I, ONLY: setham_cyc
       IMPLICIT NONE
       EXTERNAL CORD
 !----------------------------------------------
@@ -367,7 +369,7 @@
         WRITE(*,*)"NPAIRtmp(1), NPAIRS(1,NB) =",NPAIRtmp(1),NPAIRS(1,NB)
         WRITE(*,*)"NPAIRtmp(2), NPAIRS(2,NB) =",NPAIRtmp(1),NPAIRS(2,NB)
         STOP "NPAIRtmp(1) /= NPAIRS(1,NB) &
-              .OR. NPAIRtmp(2) /= NPAIRS(2,NB) "
+              &.OR. NPAIRtmp(2) /= NPAIRS(2,NB) "
       ENDIF
 
 ! Release LABEL,COEFF?

@@ -35,6 +35,7 @@
       USE strsum_I
       USE factt_I
       USE ris_cal_I
+      USE getsmd_I, ONLY: getsmd
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

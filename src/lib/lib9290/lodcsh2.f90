@@ -55,7 +55,7 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       INTEGER, INTENT(IN) :: NFILE
-      INTEGER  :: NCORE
+      INTEGER, INTENT(IN) :: NCORE
       INTEGER, INTENT(IN) :: JB
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

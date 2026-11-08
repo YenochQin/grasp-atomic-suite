@@ -19,6 +19,7 @@
 ! Last modification, Chongyang Chen, Fudan university,  May 2023
  
 subroutine rcsfexcitation
+      use starttime_I
 implicit none
 integer            :: i,k,j,nmax,lmax,mr,n(25),l(25),occ(25),nr,lr,occr,nl(0:25)
 integer            :: jmin,jmax,nexc,occupied,ncore,nstart(0:6),lstart(0:6)

@@ -1,5 +1,6 @@
 # Source list follows the GRASPG Makefile (e157d9f).
 add_executable(rcsfggenerate_csfg
+    generator_I.f90
     starttime.f90
     starttime_I.f90
     stoptime.f90

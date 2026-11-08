@@ -41,7 +41,8 @@ contains
 
     function npol_summary_path(path) result(summary)
         character(*), intent(in) :: path
-        character(:), allocatable :: summary
+        ! Keep the exact result length even in the legacy static-local profile.
+        character(len=scan(path, '/'//achar(92), back=.true.)+len('npol.summary')) :: summary
         integer :: slash
         slash = scan(path, '/'//achar(92), back=.true.)
         summary = path(:slash)//'npol.summary'

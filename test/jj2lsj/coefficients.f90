@@ -7,6 +7,7 @@ program coefficients
     use eigv_C, only: EVEC
     use blk_C, only: NBLOCK, NCFINBLK
     use factt_I
+    use setcon_I
     use setiso_I
     use vast_kind_param, only: LONG
     implicit none
@@ -17,6 +18,7 @@ program coefficients
     integer(LONG) :: stride
     real(DOUBLE) :: threshold, weight
 
+    call setcon
     call factt
     call setiso('isodata')
     allocate(levels(Blocks_number,Vectors_number))

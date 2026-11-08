@@ -60,6 +60,7 @@
       USE genrwf_I
       USE orthsc_I
       USE wrtrwf_I
+      USE setcsh_csfg_I, ONLY: setcsh_csfg
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

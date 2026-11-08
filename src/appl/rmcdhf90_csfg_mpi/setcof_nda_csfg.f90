@@ -28,6 +28,7 @@
       Use csfg_tv_C
       Use symmatrix_mod,   ONLY: IRTOT, ICTOT, LTRANSPOSE
       Use csfg_scf_C
+      USE locate_I, ONLY: locate
       IMPLICIT NONE
 !----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -49,7 +50,7 @@
       IF (IA == IB .OR. IA.GT.IB) THEN
         WRITE (*,*)'IOFFC, IOFFR, IA, IB =', ICOFF, IROFF, IA, IB
         STOP 'Error, unexpected IA == IB .OR. &
-              IA.GT.IB in savep_tlabcr.f90!'
+              &IA.GT.IB in savep_tlabcr.f90!'
       ENDIF
        
       IF (LSKIPPOT(IA) .AND. LSKIPPOT(IB)) RETURN

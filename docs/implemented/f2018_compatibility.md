@@ -1,5 +1,11 @@
 # F2018 标准兼容性首轮修复
 
+2026-11-09 更新：严格内部接口、NP 摘要路径及回归暴露的问题已修复，见
+[本轮验证](../reviews/f2018_strict_interfaces_npol_2026-11-09.md)。
+默认 `f2018-audit` 保留静态存储；`f2018-check/release` 不保留，两者全量构建通过，
+各 64/68 回归通过、4 项 Linux 专用测试跳过，完整验收仍失败。同 O0/O2 的 rmcdhf
+一轮全输出一致；额外 MPI Davidson 早收敛探针仍失败。下面首轮结果属于 2026-11-08 的 Linux 基线。
+
 日期：2026-11-08。修改前基线：`d1260ba404833d20d709b34d9f26b05c32a3b615`。
 状态：当前 CMake 配置的全量目标已通过 GNU 15.3.0 的 F2018 编译和链接。
 当前仅保留 `-fno-automatic`；后续接口批次已移除 `-fallow-argument-mismatch`，见
@@ -50,8 +56,9 @@ NP 模型与物理常数未修改。后续接口批次单独修正了 DDOT 返�
 ## 来源校验
 
 原 [RMCDHF 来源清单](../reference/rmcdhf_upstream_snapshot.json) 保持不变。
-新增 [兼容性变更清单](../reference/rmcdhf_f2018_compatibility.json) 记录十个受保护文件中的
-精确替换、次数和基线哈希；当前还包含经接口批次验证的 BLAS 声明、数组区段与 MPI handle 修复。
+[兼容性变更清单](../reference/rmcdhf_f2018_compatibility.json) 记录受保护文件中的
+精确替换、次数和基线哈希；已扩展至 BLAS 声明、数组区段、MPI handle、内部接口和
+SOLVE 参数意图修复，逆向恢复后仍核对全部 492 个原始文件。
 [check_upstream.py](../../test/npol/check_upstream.py) 先按行首精确匹配逆向恢复这些修改，
 再剥离原有 NP hook，最后仍核对原始 hash。没有通过删除来源测试或覆盖历史 hash 放行。
 
@@ -74,7 +81,8 @@ cmake --build build-gf15-f2018-batch --parallel 1
 ctest --test-dir build-gf15-f2018-batch --output-on-failure
 ```
 
-继续使用单任务全量构建，避免既有 gj90 模块输出目录竞争；此构建系统问题尚未修复。
+2026-11-09 已隔离全部目标的模块输出目录，GNU 15.3 下全量 `--parallel 4` 构建通过；
+上面的单任务命令保留为首轮复现入口。默认安装位置现为 `<build>/install`，支持显式前缀。
 MPI 测试需允许本机进程通信。CMake 中独立编译的容量测试也启用 F2018，网格测试的
 Fortran 编译器由配置中的 `CMAKE_Fortran_COMPILER` 传入。
 

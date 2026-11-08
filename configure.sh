@@ -1,66 +1,46 @@
 #!/usr/bin/env bash
-export GRASP="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-build_directory="build" # we default to build/
-
-# Build MPI targets by default so the standard README flow also installs the
-# parallel executables when MPI is available on the system.
-cmake_args="-DGRASP_ENABLE_MPI=ON"
-for arg in $@; do
-	if [ "$arg" == "--debug" ]; then
-		echo "Creating a DEBUG build"
-		build_directory="build-debug"
-		cmake_args="-DCMAKE_BUILD_TYPE=Debug${cmake_args:+ $cmake_args}"
-	fi
-	if [ "$arg" == "--pic" ]; then
-		echo "Force-enable position-independent code (e.g. -fPIC)"
-		cmake_args="-DCMAKE_POSITION_INDEPENDENT_CODE=ON${cmake_args:+ $cmake_args}"
-	fi
-	if [ "$arg" == "--no-mpi" ]; then
-		echo "Disabling MPI targets"
-		cmake_args="-DGRASP_ENABLE_MPI=OFF${cmake_args:+ $cmake_args}"
-	fi
+set -euo pipefail
+export GRASP="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+build_directory="build"
+cmake_args=(-DGRASP_ENABLE_MPI=ON)
+while (($#)); do
+    case "$1" in
+        --debug) build_directory="build-debug"; cmake_args+=(-DCMAKE_BUILD_TYPE=Debug); shift ;;
+        --pic) cmake_args+=(-DCMAKE_POSITION_INDEPENDENT_CODE=ON); shift ;;
+        --no-mpi) cmake_args+=(-DGRASP_ENABLE_MPI=OFF); shift ;;
+        --serial) cmake_args+=(-DGRASP_BUILD_SERIAL_APPS=ON); shift ;;
+        --no-csfg) cmake_args+=(-DGRASP_BUILD_CSFG=OFF); shift ;;
+        --no-openmp) cmake_args+=(-DGRASP_JJ2LSJ_OPENMP=OFF); shift ;;
+        --profile|--prefix|--build-dir)
+            if (($# < 2)); then echo "Missing value for $1" >&2; exit 2; fi
+            case "$1" in
+                --profile) cmake_args+=("-DGRASP_FORTRAN_PROFILE=$2");;
+                --prefix) cmake_args+=("-DCMAKE_INSTALL_PREFIX=$2");;
+                --build-dir) build_directory="$2";;
+            esac
+            shift 2 ;;
+        -D*) cmake_args+=("$1"); shift ;;
+        *) echo "Unknown option: $1" >&2; exit 2 ;;
+    esac
 done
-
-# We create an empty CMakeLists.user file, so that the user would not have to
-# re-create it later.
-touch "${GRASP}/CMakeLists.user" || exit
-
-# Determine and check the build directory
-build_abspath="${GRASP}/${build_directory}"
-echo "Build directory: ${build_abspath}"
-if [ -e "${build_abspath}" ]; then
-	>&2 echo "ERROR: Build directory already exists."
-	exit 1
+if [[ -n ${FC:-} ]]; then
+    cmake_args+=("-DCMAKE_Fortran_COMPILER=$FC")
+    export OMPI_FC="${OMPI_FC:-$FC}"
 fi
-
-# We run the default setup for CMake's out-of-tree builds
-#
-#     mkdir build/
-#     cd build/
-#     cmake ..
-#
-mkdir "${build_abspath}" && cd "${build_abspath}" \
-	&& cmake ${cmake_args} "${GRASP}" \
-	|| exit
-
-# Note: we need to use spaces, not tabs, to indent in the heredoc.
-cat <<-EOF
-
- Build directory ${build_directory}/ created.
-
- To compile GRASP, run:
-
-    cmake --build ${build_directory}/ --target install
-
- which installs the GRASP binaries to the bin/ directory.
-
- Note that you also probably want to enable parallel build by passing -j:
-
-    cmake --build ${build_directory}/ --target install -jN
-
- where N is the number of cores you have available.
-
- Note: remove the build/ directory and rerun ./configure.sh to completely redo the configure step.
-
+if [[ "$build_directory" = /* ]]; then
+    build_abspath="$build_directory"
+else
+    build_abspath="$GRASP/$build_directory"
+fi
+if [[ -e "$build_abspath" ]]; then
+    echo "ERROR: Build directory already exists: $build_abspath" >&2
+    exit 1
+fi
+cmake -S "$GRASP" -B "$build_abspath" "${cmake_args[@]}"
+cat <<EOF
+Configured: $build_abspath
+Build: cmake --build "$build_abspath" --parallel 4
+Strict validation: <shared-python> "$GRASP/test/f2018/check.py" "$build_abspath"
+For a legacy/audit profile, add --audit; that result is not strict acceptance.
+Install only after validation: cmake --install "$build_abspath"
 EOF

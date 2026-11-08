@@ -29,6 +29,7 @@
 !-----------------------------------------------
       USE dinit_I
 !      USE dmerge_dnicmv_I
+      USE dmerge_dnicmv_I, ONLY: dmerge_dnicmv
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

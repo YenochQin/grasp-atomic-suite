@@ -52,6 +52,8 @@
       USE setham_pot_I
       use maneig_csfg_I
       USE suite_linear_algebra, ONLY: dcopy, dscal
+      USE setarrs_csfg_I, ONLY: setarrs_csfg
+      USE dvd_mpi_I, ONLY: ddotmpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -290,7 +292,7 @@
                IF (JOTHER < 1) CYCLE
                JOFSET = (JOTHER - 1)*NCF + NEVECPAT
 !CYC               OVRLAP = DDOT(NCF,EVEC(IOFSET+1),1,EVEC(JOFSET+1),1)
-               CALL DDOTMPI(NCF,EVEC(IOFSET+1),EVEC(JOFSET+1),OVRLAP)
+               CALL DDOTMPI(NCF,EVEC(IOFSET+1:IOFSET+NCF),EVEC(JOFSET+1:JOFSET+NCF),OVRLAP)
                IF (OVRLAP /= 0.D0) THEN          ! So SURE ???
                   OMCDAJ = 1.D0
                   CDAMPJ = -OVRLAP

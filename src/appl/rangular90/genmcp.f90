@@ -65,6 +65,8 @@
 !      USE settmp_I
       USE settmpgg_I
       USE stoptime_I
+      USE lodcsh2_I, ONLY: lodcsh2
+      USE mcp_I, ONLY: mcp
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

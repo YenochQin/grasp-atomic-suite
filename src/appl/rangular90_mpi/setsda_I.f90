@@ -4,7 +4,8 @@
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
       SUBROUTINE setsda (OUTSDA, NNONZ, LPRINT, NB, MYID, NPROCS, FHEAD)
-      EXTERNAL OUTSDA
+      USE outsdampi_I, ONLY: output_callback => outsdampi
+      PROCEDURE(output_callback) :: OUTSDA
       INTEGER, INTENT(IN) :: NNONZ
       LOGICAL             :: LPRINT
       INTEGER, INTENT(IN) :: NB

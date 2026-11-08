@@ -58,6 +58,12 @@
       USE factt_I
       USE settmp_I
       USE lodcslmpi_I
+      USE cslhmpi_I, ONLY: cslhmpi
+      USE mpiu_I, ONLY: startmpi2
+      USE mpiu_I, ONLY: stopmpi2
+      USE setdbgmpi_I, ONLY: setdbgmpi
+      USE setmcpmpi_I, ONLY: setmcpmpi
+      USE mcpmpi_I, ONLY: mcpmpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

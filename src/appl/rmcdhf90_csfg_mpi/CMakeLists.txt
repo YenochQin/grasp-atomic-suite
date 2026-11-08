@@ -1,5 +1,35 @@
 # Source list follows the GRASPG Makefile (e157d9f).
 add_executable(rmcdhf_csfg_mpi
+    spinangular22_I.f90
+    spinangular23_I.f90
+    spinangular35_I.f90
+    spinangular34_I.f90
+    spinangular24_I.f90
+    spinangular25_I.f90
+    spinangular33_I.f90
+    spinangular1_I.f90
+    spinangular55_I.f90
+    spinangular2_I.f90
+    spinangular3_I.f90
+    spinangular4_I.f90
+    spinangular44_I.f90
+    spinangular45_I.f90
+    spinangular5_I.f90
+    spinangular14_I.f90
+    spinangular15_I.f90
+    spinangular11_I.f90
+    spinangular12_I.f90
+    spinangular13_I.f90
+    transfer_csfg_I.f90
+    twobody_dc_I.f90
+    setham_cyc_I.f90
+    setcof_nxy_csfg_I.f90
+    setcof_nda_csfg_I.f90
+    setarrs_csfg_I.f90
+    read_tv_I.f90
+    vector_xya_I.f90
+    csfg_iqa_I.f90
+    csfg_expand_findtype_I.f90
     report_mem.f90
     csfg_iqa.f90
     dsubrs.f90

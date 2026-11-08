@@ -136,32 +136,32 @@
             if (nenter.GE.6) write(*,200) &
             '     6: Rn ([Xe] + 4f(16)5d(10)6s(2)6p(6) = 86 electrons)'
             read(193,*,err=92) cormax
-	    if (cormax.GT.nenter) goto 92
+            if (cormax.GT.nenter) goto 92
             if (cormax.GE.1) then
                write(logfil,*) 'Core n=',cormax
-	       do i=1,cormax
+               do i=1,cormax
                   do j= 0,min(3,i-1)
-		     if (clos_c) closed(i,j) = .TRUE.
+                     if (clos_c) closed(i,j) = .TRUE.
                      org(i,j) = 2+4*j
                   end do
                end do
-	       if (cormax.EQ.3) then
-		  org(3,2) = 0
+               if (cormax.EQ.3) then
+                  org(3,2) = 0
                   if (clos_c) closed(3,2) = .FALSE.
                elseif (cormax.EQ.4) then
                   org(4,2) = 0
                   org(4,3) = 0
                   if (clos_c) then
-		     closed(4,2) = .FALSE.
+                     closed(4,2) = .FALSE.
                      closed(4,3) = .FALSE.
-		  endif
+                  endif
                elseif (cormax.EQ.5) then
                   org(4,3) = 0
                   org(5,2) = 0
                   org(5,3) = 0
                   if (clos_c) then
                      closed(4,3) = .FALSE.
-		     closed(5,2) = .FALSE.
+                     closed(5,2) = .FALSE.
                      closed(5,3) = .FALSE.
                   endif
                elseif (cormax.EQ.6) then

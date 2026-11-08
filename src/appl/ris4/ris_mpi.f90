@@ -20,6 +20,8 @@
       USE getsmd_I
       USE factt_I
       USE ris_cal_mpi_I
+      USE mpiu_I, ONLY: mpix_shutdown
+      USE mpiu_I, ONLY: mpix_startup
       IMPLICIT NONE
       INTEGER :: ARGC, IARG, K, NCI, NCORE_NOT_USED, NCOUNT1
       LOGICAL :: YES, USE_ARGS

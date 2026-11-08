@@ -35,7 +35,7 @@
         CHAR2 = 'BR'  ! BREIT INTERACTION
       ENDIF
       WRITE(STREAM,'(A2,2x,A6,I3,2X,A4,I8,2X,A8,I8,2X,A4,I8,   &
-                     2X,A8,I8,2X,A14,I3)')   &
+                    &2X,A8,I8,2X,A14,I3)')   &
             CHAR2,                                    &
             'MTYPE=', MTYPE,                          &
             'ICW=', ICW, 'ICW*3+5=', ICW*3+5,         &

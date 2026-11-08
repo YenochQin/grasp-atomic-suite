@@ -32,6 +32,7 @@
 !-----------------------------------------------
       USE rint_I
 !      USE count_I
+      USE count_I, ONLY: count
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

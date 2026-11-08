@@ -55,6 +55,8 @@
       USE ORB_C,     ONLY: NCF, IQA
       USE STAT_C,    ONLY: JQSA, JCUPA
       USE sacoef_C
+      USE onescalar_I, ONLY: onescalar
+      USE settmpgg_I, ONLY: settmpgg
       IMPLICIT NONE
       EXTERNAL CORD
 !-----------------------------------------------

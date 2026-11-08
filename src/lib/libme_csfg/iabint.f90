@@ -6,7 +6,7 @@
 !      A list of previously computed integrals is maintained. If the   *
 !   required  integral is not already  available it is computed  and   *
 !   stored in the list.                                                *
-!      Note that indices IA and IB may be interchanged on output.      *
+!      Canonical ordering uses local copies; input indices are kept.  *
 !                                                                      *
 !   Call(s) to: [LIB92]: ALLOC, RALLOC, RINTI                          *
 !                                                                      *
@@ -31,7 +31,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(INOUT) :: ia0, ib0
+      INTEGER, INTENT(IN) :: ia0, ib0
       REAL(DOUBLE), INTENT(out) :: tegral
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

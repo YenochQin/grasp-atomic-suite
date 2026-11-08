@@ -1,6 +1,6 @@
 program linear_algebra_contracts
     use vast_kind_param, only: double
-    use suite_linear_algebra, only: dcopy, ddot, dspevx
+    use suite_linear_algebra, only: dcopy, ddot, dspevx, slamch, dlamch
     implicit none
     real(double), target :: backing(8)
     real(double), pointer :: view(:)
@@ -8,6 +8,8 @@ program linear_algebra_contracts
     integer :: found, info, iwork(10), ifail(2), i
 
     if (storage_size(0) /= 32 .or. storage_size(0.0_double) /= 64) error stop 'LP64 contract'
+    if (slamch('S') /= tiny(0.0)) error stop 'SLAMCH return ABI'
+    if (dlamch('S') /= tiny(0.0_double)) error stop 'DLAMCH return ABI'
     x = [1.25_double,2.0_double,3.0_double]
     y = [-2.0_double,4.0_double,1.25_double]
     if (ddot(3,x,1,y,1) /= 9.25_double) error stop 'DDOT return ABI'

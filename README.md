@@ -58,12 +58,18 @@ The default CMake configuration attempts to build MPI versions. If no MPI Fortra
 
 ## Build
 
-The recommended build flow is out-of-source CMake:
+The recommended build flow is out-of-source CMake with GNU Fortran 15:
 
 ```sh
+export FC="$(command -v gfortran-15)"
+export OMPI_FC="$FC"
 ./configure.sh
-cmake --build build --target install -j4
+cmake --build build --parallel 4
 ```
+
+The default install prefix is `<build>/install`; use `--prefix PATH` or
+`-DCMAKE_INSTALL_PREFIX=PATH` for another destination. A normal build does not
+install or overwrite source `bin/`. See the [strict validation runner](test/f2018/README.md).
 
 `configure.sh` passes `-DGRASP_ENABLE_MPI=ON` by default. If MPI Fortran is available, installation produces `bin/gj90_mpi`, `bin/rhfs_mpi`, `bin/ris4_mpi`, `rmcdhf_mpi`, `rmcdhf_mem_mpi`, and the associated libraries.
 
@@ -101,7 +107,7 @@ Remove an existing build directory before reconfiguring, or run:
 
 The build requires a Fortran compiler, CMake 3.31 or newer, BLAS, and LAPACK. MPI targets additionally require an MPI Fortran environment such as `mpifort`.
 
-CMake finds BLAS/LAPACK and currently uses these standard and compatibility flags with GNU Fortran:
+CMake finds BLAS/LAPACK. The default `f2018-audit` profile uses:
 
 - `-std=f2018`
 - `-fno-automatic`
@@ -110,7 +116,12 @@ The current configuration builds and links with gfortran 15.3.0 in F2018 mode; s
 [compatibility repairs and validation](docs/implemented/f2018_compatibility.md).
 `-fallow-argument-mismatch` has been removed after MPI/numerical-library interface
 and array-argument repairs; see the [interface validation](docs/reviews/argument_interfaces_2026-11-08.md).
-Static storage remains. Current CTest results are 36/47, with 11 existing failures.
+Static storage remains in audit/legacy profiles. The 36/47 result is the historical
+2026-11-08 Linux run. On 2026-11-09 macOS, strict Check/Release builds pass;
+each has 64 passing tests and 4 Linux-only skips out of 68. Full acceptance
+therefore still fails. Matched O0/O2 RMCDHF first-sweep comparisons pass; an
+additional MPI Davidson early-convergence probe remains unresolved.
+See the [current validation](docs/reviews/f2018_strict_interfaces_npol_2026-11-09.md).
 
 ## Inputs And Outputs
 

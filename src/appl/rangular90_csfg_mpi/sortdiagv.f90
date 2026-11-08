@@ -8,6 +8,7 @@
 
       USE vast_kind_param, ONLY: DOUBLE, BYTE
 
+      USE exchange_data_I, ONLY: exchange_data
       IMPLICIT NONE
 !----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -16,6 +16,8 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       USE genintrk_csfg_I
+      USE mpiu_I, ONLY: gdsummpi
+      USE mpiu_I, ONLY: gisummpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

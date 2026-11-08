@@ -82,6 +82,26 @@
       USE rkintc_I
       USE vint_I
       USE vpint_I
+      USE findtype_I, ONLY: findtype
+      USE matrixblock11_I, ONLY: matrixblock11
+      USE matrixblock12_I, ONLY: matrixblock12
+      USE matrixblock13_I, ONLY: matrixblock13
+      USE matrixblock14_I, ONLY: matrixblock14
+      USE matrixblock15_I, ONLY: matrixblock15
+      USE matrixblock22_I, ONLY: matrixblock22
+      USE matrixblock23_I, ONLY: matrixblock23
+      USE matrixblock24_I, ONLY: matrixblock24
+      USE matrixblock25_I, ONLY: matrixblock25
+      USE matrixblock2_I, ONLY: matrixblock2
+      USE matrixblock33_I, ONLY: matrixblock33
+      USE matrixblock34_I, ONLY: matrixblock34
+      USE matrixblock35_I, ONLY: matrixblock35
+      USE matrixblock3_I, ONLY: matrixblock3
+      USE matrixblock44_I, ONLY: matrixblock44
+      USE matrixblock45_I, ONLY: matrixblock45
+      USE matrixblock4_I, ONLY: matrixblock4
+      USE matrixblock55_I, ONLY: matrixblock55
+      USE matrixblock5_I, ONLY: matrixblock5
       IMPLICIT NONE
       EXTERNAL BREID,CORD
 !----------------------------------------------

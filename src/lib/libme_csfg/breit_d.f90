@@ -20,6 +20,12 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      USE brint1_I, ONLY: brint1
+      USE brint2_I, ONLY: brint2
+      USE brint3_I, ONLY: brint3
+      USE brint4_I, ONLY: brint4
+      USE brint5_I, ONLY: brint5
+      USE brint6_I, ONLY: brint6
       IMPLICIT NONE
       EXTERNAL BREID, CORD
 !----------------------------------------------

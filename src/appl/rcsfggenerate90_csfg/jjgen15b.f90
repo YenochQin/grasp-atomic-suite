@@ -30,6 +30,8 @@
       use open79_I
       use matbin_I
       use copy7t9_I
+      use generator_I, only: rcsfsym, rcsfblock, rcsfsym_cyc
+      use stoptime_I
       implicit none
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

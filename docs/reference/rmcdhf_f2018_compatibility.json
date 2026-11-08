@@ -108,7 +108,7 @@
     },
     "src/appl/rmcdhf_mem/matrix.f90": {
       "base_sha256": "2f9cddffc03343792ea447fdea72730551920351f30facf1ea5d86b7f8d6ca77",
-      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles. 2026-11-09: import the existing read03_mem interface for the checked production branch test.",
       "edits": [
         {
           "before": "      USE setham_I\n      USE maneig_I\n      USE read1_mem_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
@@ -129,12 +129,17 @@
           "before": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1),1,EVEC(JOFSET+1),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1), 1, CMVL(IOFSET + 1), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
           "after": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1:IOFSET+(NCF)),1,EVEC(JOFSET+1:JOFSET+(NCF)),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1:JOFSET+(NCF)), 1, CMVL(IOFSET + 1:IOFSET+(NCF)), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
           "count": 1
+        },
+        {
+          "before": "      USE read1_mem_I\n",
+          "after": "      USE read1_mem_I\n      USE read03_mem_I\n",
+          "count": 1
         }
       ]
     },
     "src/appl/rmcdhf_mem/setcof.f90": {
       "base_sha256": "417c753ac5b34ec6e27158e3f7a3aff8f68ef9a3be703109764ba8d0049845b7",
-      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
       "edits": [
         {
           "before": "\n         !*** Read in IROW from file mcp.30 ***\n         NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n         NELMNT = INT8(NELMNTGG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n         CALL read02_mem(JBLOCK)\n\n",
@@ -144,6 +149,11 @@
         {
           "before": "         DO JBLOCK = 1, NBLOCK\n!           ...Read in IROW from file mcp.30\n            NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n            NELMNT = INT8(NELMNTGG)\n            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n            CALL read02_mem(JBLOCK)\n\n",
           "after": "         DO JBLOCK = 1, NBLOCK\n!           ...Read in IROW from file mcp.30\n            NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n            NELMNT = INT(NELMNTGG,KIND=LONG)\n            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n            CALL read02_mem(JBLOCK)\n\n",
+          "count": 1
+        },
+        {
+          "before": "      USE gco_I\n      USE read1_mem_I\n      USE read3_mem_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "      USE gco_I\n      USE read1_mem_I\n      USE read3_mem_I\n      USE read02_mem_I, ONLY: read02_mem\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
           "count": 1
         }
       ]
@@ -177,11 +187,16 @@
     },
     "src/appl/rmcdhf_mpi/lodcslmpiGG.f90": {
       "base_sha256": "cfdfd79a6124b715ca784e6d94f00ab8fd4f7c492fa211ed31b1ac87e2917d37",
-      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
       "edits": [
         {
           "before": "!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER(BYTE) :: MPIX_INT1\n!-----------------------------------------------------------------------\n!\n      IF (myid == 0) THEN\n",
           "after": "!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER :: MPIX_INT1\n!-----------------------------------------------------------------------\n!\n      IF (myid == 0) THEN\n",
+          "count": 1
+        },
+        {
+          "before": "      USE ORB_C,           ONLY: NCF, IQA\n      USE syma_C,          ONLY: JPGG, nblk0\n      use mpi_C\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "      USE ORB_C,           ONLY: NCF, IQA\n      USE syma_C,          ONLY: JPGG, nblk0\n      use mpi_C\n      USE lodcsh2gg_I, ONLY: lodcsh2gg\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
           "count": 1
         }
       ]
@@ -214,7 +229,7 @@
     },
     "src/appl/rmcdhf_mpi/matrixmpi.f90": {
       "base_sha256": "5b25cfdf2c2ab7454d3cadb13cf1075e8679e8c2f8df769efe0b131035cb11c4",
-      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles. 2026-11-09: checked MATRIX fixture exposed IENDC(0:NCF) with a 1-based allocation; allocate the explicitly used bounds.",
       "edits": [
         {
           "before": "!-----------------------------------------------\n!   M o d u l e s\n!-----------------------------------------------\n      USE vast_kind_param, ONLY:  DOUBLE\n      USE memory_man\n      USE damp_C\n      USE def_C, ONLY: iccmin, ncmin, ncmax\n",
@@ -239,6 +254,11 @@
         {
           "before": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1),1,EVEC(JOFSET+1),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1), 1, CMVL(IOFSET + 1), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
           "after": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1:IOFSET+(NCF)),1,EVEC(JOFSET+1:JOFSET+(NCF)),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1:JOFSET+(NCF)), 1, CMVL(IOFSET + 1:IOFSET+(NCF)), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
+          "count": 1
+        },
+        {
+          "before": "        CALL ALLOC (IENDC, NCF + 1, 'IENDC', 'MATRIXMPI' )\n",
+          "after": "        CALL ALLOC (IENDC, 0, NCF, 'IENDC', 'MATRIXMPI' )\n",
           "count": 1
         }
       ]
@@ -277,11 +297,16 @@
     },
     "src/appl/rmcdhf_mem_mpi/lodcslmpiGG.f90": {
       "base_sha256": "cfdfd79a6124b715ca784e6d94f00ab8fd4f7c492fa211ed31b1ac87e2917d37",
-      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
       "edits": [
         {
           "before": "!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER(BYTE) :: MPIX_INT1\n!-----------------------------------------------------------------------\n!\n      IF (myid == 0) THEN\n",
           "after": "!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER :: MPIX_INT1\n!-----------------------------------------------------------------------\n!\n      IF (myid == 0) THEN\n",
+          "count": 1
+        },
+        {
+          "before": "      USE ORB_C,           ONLY: NCF, IQA\n      USE syma_C,          ONLY: JPGG, nblk0\n      use mpi_C\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "      USE ORB_C,           ONLY: NCF, IQA\n      USE syma_C,          ONLY: JPGG, nblk0\n      use mpi_C\n      USE lodcsh2gg_I, ONLY: lodcsh2gg\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
           "count": 1
         }
       ]
@@ -314,7 +339,7 @@
     },
     "src/appl/rmcdhf_mem_mpi/matrixmpi.f90": {
       "base_sha256": "01ab21bf998f13d0780e2833254ebc87ade7069cacbace57d9aa52adc718bd9f",
-      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles. 2026-11-09: import the existing read03_mem interface for the checked production branch test. 2026-11-09: checked MATRIX fixture exposed IENDC(0:NCF) with a 1-based allocation; allocate the explicitly used bounds.",
       "edits": [
         {
           "before": "      USE setham_I\n      USE maneigmpi_I\n      USE read1_mem_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
@@ -335,12 +360,22 @@
           "before": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1),1,EVEC(JOFSET+1),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1), 1, CMVL(IOFSET + 1), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
           "after": "\n            !...Renormalize and invert as necessary\n               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC\n               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)\n\n            !...Schmidt orthogonalise\n  234          CONTINUE\n               JOTHER = JOTHER - 1\n               IF (JOTHER < 1) CYCLE\n               JOFSET = (JOTHER - 1)*NCF + NEVECPAT\n               OVRLAP = DDOT(NCF,EVEC(IOFSET+1:IOFSET+(NCF)),1,EVEC(JOFSET+1:JOFSET+(NCF)),1)\n               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???\n                  OMCDAJ = 1.D0\n                  CDAMPJ = -OVRLAP\n                  CALL DCOPY (NCF, EVEC(JOFSET+1:JOFSET+(NCF)), 1, CMVL(IOFSET + 1:IOFSET+(NCF)), 1)\n                  GO TO 123\n               ELSE\n                  GO TO 234\n",
           "count": 1
+        },
+        {
+          "before": "      USE read1_mem_I\n",
+          "after": "      USE read1_mem_I\n      USE read03_mem_I\n",
+          "count": 1
+        },
+        {
+          "before": "         CALL ALLOC (IENDC, NCF + 1, 'IENDC', 'MATRIXMPI' )\n",
+          "after": "         CALL ALLOC (IENDC, 0, NCF, 'IENDC', 'MATRIXMPI' )\n",
+          "count": 1
         }
       ]
     },
     "src/appl/rmcdhf_mem_mpi/setcof.f90": {
       "base_sha256": "b03e6c6f3e994adadbf7bb6e9825f458af0efe7356bb49b9da879152bb7d7e7f",
-      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles.",
+      "reason": "Reviewed standard kind conversions, canonical BLAS interfaces and bounded array arguments, DDOT return-type correction, and default-integer MPI datatype handles. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
       "edits": [
         {
           "before": "\n         !*** Read in IROW from file mcp.30 ***\n         NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n         NELMNT = INT8(NELMNTGG)\n         CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n         CALL read02_mem(JBLOCK)\n\n",
@@ -350,6 +385,11 @@
         {
           "before": "         DO JBLOCK = 1, NBLOCK\n!           ...Read in IROW from file mcp.30\n            NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n            NELMNT = INT8(NELMNTGG)\n            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n            CALL read02_mem(JBLOCK)\n\n",
           "after": "         DO JBLOCK = 1, NBLOCK\n!           ...Read in IROW from file mcp.30\n            NELMNTGG = IMAX2_30(JBLOCK) - IMIN2_30(JBLOCK)\n            NELMNT = INT(NELMNTGG,KIND=LONG)\n            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')\n            CALL read02_mem(JBLOCK)\n\n",
+          "count": 1
+        },
+        {
+          "before": "      USE gco_I\n      USE read1_mem_I\n      USE read3_mem_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "      USE gco_I\n      USE read1_mem_I\n      USE read3_mem_I\n      USE read02_mem_I, ONLY: read02_mem\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
           "count": 1
         }
       ]
@@ -366,6 +406,336 @@
         {
           "before": "\n         if(NFILE == 30) then\n            READ (30) NELMNTGG\n            NELMNT = INT8(NELMNTGG)\n            READ (30) (IENDC_30(I),I=                                  &\n                     IMIN1_30(JBLOCK)+MYID+1,IMAX1_30(JBLOCK),NPROCS), &\n                     (IROW_30(I),I=IMIN2_30(JBLOCK)+1,IMAX2_30(JBLOCK))\n",
           "after": "\n         if(NFILE == 30) then\n            READ (30) NELMNTGG\n            NELMNT = INT(NELMNTGG,KIND=LONG)\n            READ (30) (IENDC_30(I),I=                                  &\n                     IMIN1_30(JBLOCK)+MYID+1,IMAX1_30(JBLOCK),NPROCS), &\n                     (IROW_30(I),I=IMIN2_30(JBLOCK)+1,IMAX2_30(JBLOCK))\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf/dampor.f90": {
+      "base_sha256": "7424614a23e279d044f348b46629243a5d4a02cacfb7809dcc4da44a7e4cdae8",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      USE count_I, ONLY: count\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf/orthor.f90": {
+      "base_sha256": "a2cc9a4ca138c959916d6563f4a61b6a48659206f0c969a587fb6243809ad77f",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      USE count_I, ONLY: count\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf/prwf.f90": {
+      "base_sha256": "7abe02b1c9fd1d8b2b23e3d01982f1526cf22b3e32e8c1850c037ff2362281db",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!   I n t e r f a c e   B l o c k s\n!-----------------------------------------------\n!      USE draw_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!   I n t e r f a c e   B l o c k s\n!-----------------------------------------------\n!      USE draw_I\n      USE draw_I, ONLY: draw\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem/dampor.f90": {
+      "base_sha256": "7424614a23e279d044f348b46629243a5d4a02cacfb7809dcc4da44a7e4cdae8",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      USE count_I, ONLY: count\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem/orthor.f90": {
+      "base_sha256": "a2cc9a4ca138c959916d6563f4a61b6a48659206f0c969a587fb6243809ad77f",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      USE count_I, ONLY: count\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem/prwf.f90": {
+      "base_sha256": "7abe02b1c9fd1d8b2b23e3d01982f1526cf22b3e32e8c1850c037ff2362281db",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!   I n t e r f a c e   B l o c k s\n!-----------------------------------------------\n!      USE draw_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!   I n t e r f a c e   B l o c k s\n!-----------------------------------------------\n!      USE draw_I\n      USE draw_I, ONLY: draw\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/dampor.f90": {
+      "base_sha256": "5a25b72f39bfa1fb2bce31ab387a408653af4f02422ed8962a19d934c794fdfa",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      USE count_I, ONLY: count\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/lodcsh2GG.f90": {
+      "base_sha256": "f1f7f989e7ba0a96c655db5b9a02428afba91ed0b9ca248249097a1e1163e4eb",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!   D u m m y   A r g u m e n t s\n!-----------------------------------------------\n      INTEGER, INTENT(IN) :: NFILE\n      INTEGER  :: NCORE\n      INTEGER, INTENT(IN) :: JB\n!-----------------------------------------------\n!   L o c a l   P a r a m e t e r s\n",
+          "after": "!   D u m m y   A r g u m e n t s\n!-----------------------------------------------\n      INTEGER, INTENT(IN) :: NFILE\n      INTEGER, INTENT(IN) :: NCORE\n      INTEGER, INTENT(IN) :: JB\n!-----------------------------------------------\n!   L o c a l   P a r a m e t e r s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/lodcsh2GG_I.f90": {
+      "base_sha256": "2f681dc27958e1501d376dc27bd911ccc7ec8ccf6202e8607d05b6192d6a5bf5",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!                     Gediminas Gaigalas  10/05/17\n      SUBROUTINE lodcsh2GG(NFILE, NCORE, JB)\n      INTEGER, INTENT(IN) :: NFILE\n      INTEGER, INTENT(OUT) :: NCORE\n      INTEGER, INTENT(IN) :: JB\n      END SUBROUTINE\n      END INTERFACE\n",
+          "after": "!                     Gediminas Gaigalas  10/05/17\n      SUBROUTINE lodcsh2GG(NFILE, NCORE, JB)\n      INTEGER, INTENT(IN) :: NFILE\n      INTEGER, INTENT(IN) :: NCORE\n      INTEGER, INTENT(IN) :: JB\n      END SUBROUTINE\n      END INTERFACE\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/orthor.f90": {
+      "base_sha256": "a2cc9a4ca138c959916d6563f4a61b6a48659206f0c969a587fb6243809ad77f",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      USE count_I, ONLY: count\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/prwf.f90": {
+      "base_sha256": "7abe02b1c9fd1d8b2b23e3d01982f1526cf22b3e32e8c1850c037ff2362281db",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!   I n t e r f a c e   B l o c k s\n!-----------------------------------------------\n!      USE draw_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!   I n t e r f a c e   B l o c k s\n!-----------------------------------------------\n!      USE draw_I\n      USE draw_I, ONLY: draw\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/rscfmpivu.f90": {
+      "base_sha256": "590e8ac8181390a2505423214f9cdc3c2fb503540972d601672f5199c036f9ce",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "      USE factt_I\n      USE scfmpi_I\n      USE npol_mpi, ONLY: NPOL_ABORT_MPI\n      IMPLICIT NONE\n!-----------------------------------------------\n!   L o c a l   P a r a m e t e r s\n",
+          "after": "      USE factt_I\n      USE scfmpi_I\n      USE npol_mpi, ONLY: NPOL_ABORT_MPI\n      USE mpiu_I, ONLY: startmpi2\n      USE mpiu_I, ONLY: stopmpi2\n      IMPLICIT NONE\n!-----------------------------------------------\n!   L o c a l   P a r a m e t e r s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/setcslmpi.f90": {
+      "base_sha256": "5c9e2fcad17c805420da8d363637b0ec9ea831246a85211309c8f63933fd57fd",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n      USE openfl_I\n      USE lodcslmpiGG_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n      USE openfl_I\n      USE lodcslmpiGG_I\n      USE lodcsh_I, ONLY: lodcsh\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/setdbgmpi.f90": {
+      "base_sha256": "03cb8cf945c53a3dc62b6d61841bc7b949adbfbc1e3b1789c3dda9b9872f5e6b",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n!   I n t e r f a c e   B l o c k s\n!-----------------------------------------------\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n!   I n t e r f a c e   B l o c k s\n!-----------------------------------------------\n      USE setdbg_I, ONLY: setdbg\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/dampor.f90": {
+      "base_sha256": "5a25b72f39bfa1fb2bce31ab387a408653af4f02422ed8962a19d934c794fdfa",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      USE count_I, ONLY: count\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/lodcsh2GG.f90": {
+      "base_sha256": "c1d8b2ea529223e816429cb7fa1254276b977153aa83743bdfbc897d9b35abe0",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!   D u m m y   A r g u m e n t s\n!-----------------------------------------------\n      INTEGER, INTENT(IN) :: NFILE\n      INTEGER  :: NCORE\n      INTEGER, INTENT(IN) :: JB\n!-----------------------------------------------\n!   L o c a l   P a r a m e t e r s\n",
+          "after": "!   D u m m y   A r g u m e n t s\n!-----------------------------------------------\n      INTEGER, INTENT(IN) :: NFILE\n      INTEGER, INTENT(IN) :: NCORE\n      INTEGER, INTENT(IN) :: JB\n!-----------------------------------------------\n!   L o c a l   P a r a m e t e r s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/lodcsh2GG_I.f90": {
+      "base_sha256": "2f681dc27958e1501d376dc27bd911ccc7ec8ccf6202e8607d05b6192d6a5bf5",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!                     Gediminas Gaigalas  10/05/17\n      SUBROUTINE lodcsh2GG(NFILE, NCORE, JB)\n      INTEGER, INTENT(IN) :: NFILE\n      INTEGER, INTENT(OUT) :: NCORE\n      INTEGER, INTENT(IN) :: JB\n      END SUBROUTINE\n      END INTERFACE\n",
+          "after": "!                     Gediminas Gaigalas  10/05/17\n      SUBROUTINE lodcsh2GG(NFILE, NCORE, JB)\n      INTEGER, INTENT(IN) :: NFILE\n      INTEGER, INTENT(IN) :: NCORE\n      INTEGER, INTENT(IN) :: JB\n      END SUBROUTINE\n      END INTERFACE\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/orthor.f90": {
+      "base_sha256": "a2cc9a4ca138c959916d6563f4a61b6a48659206f0c969a587fb6243809ad77f",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n      USE rint_I\n!      USE count_I\n      USE count_I, ONLY: count\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/prwf.f90": {
+      "base_sha256": "7abe02b1c9fd1d8b2b23e3d01982f1526cf22b3e32e8c1850c037ff2362281db",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!   I n t e r f a c e   B l o c k s\n!-----------------------------------------------\n!      USE draw_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!   I n t e r f a c e   B l o c k s\n!-----------------------------------------------\n!      USE draw_I\n      USE draw_I, ONLY: draw\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/rscfmpivu.f90": {
+      "base_sha256": "0fa1e27ccada267fa6895efa6996ee4f472fec35a294f49f888970c9b0badc54",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "      USE factt_I\n      USE scfmpi_I\n      USE npol_mpi, ONLY: NPOL_ABORT_MPI\n      IMPLICIT NONE\n!-----------------------------------------------\n!   L o c a l   P a r a m e t e r s\n",
+          "after": "      USE factt_I\n      USE scfmpi_I\n      USE npol_mpi, ONLY: NPOL_ABORT_MPI\n      USE mpiu_I, ONLY: startmpi2\n      USE mpiu_I, ONLY: stopmpi2\n      IMPLICIT NONE\n!-----------------------------------------------\n!   L o c a l   P a r a m e t e r s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/setcslmpi.f90": {
+      "base_sha256": "23c1e942c7d80544e7787ef85b5d76e920794b046cbfcb302eebd9009d589cfc",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n      USE openfl_I\n      USE lodcslmpiGG_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n      USE openfl_I\n      USE lodcslmpiGG_I\n      USE lodcsh_I, ONLY: lodcsh\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/setdbgmpi.f90": {
+      "base_sha256": "03cb8cf945c53a3dc62b6d61841bc7b949adbfbc1e3b1789c3dda9b9872f5e6b",
+      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n!   I n t e r f a c e   B l o c k s\n!-----------------------------------------------\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "after": "!-----------------------------------------------\n!   I n t e r f a c e   B l o c k s\n!-----------------------------------------------\n      USE setdbg_I, ONLY: setdbg\n      IMPLICIT NONE\n!-----------------------------------------------\n!   D u m m y   A r g u m e n t s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf/solve_I.f90": {
+      "base_sha256": "c2e2a96271a0bd240cd1c29b809c4f94705d4ecbbb2e509a6e55306805f26a9e",
+      "reason": " SOLVE retains the caller inversion count on uninverted branches (INOUT); join point and node count are outputs, matching SETPOT/COUNT. Same-O2 first-sweep comparison detects the incorrect OUT INV contract.",
+      "edits": [
+        {
+          "before": "      SUBROUTINE solve (J, FAIL, INV, JP, NNP)\n      INTEGER, INTENT(IN) :: J\n      LOGICAL, INTENT(OUT) :: FAIL\n      INTEGER, INTENT(OUT) :: INV\n      INTEGER, INTENT(IN) :: JP\n      INTEGER, INTENT(IN) :: NNP\n      END SUBROUTINE\n      END INTERFACE\n      END MODULE\n",
+          "after": "      SUBROUTINE solve (J, FAIL, INV, JP, NNP)\n      INTEGER, INTENT(IN) :: J\n      LOGICAL, INTENT(OUT) :: FAIL\n      INTEGER, INTENT(INOUT) :: INV\n      INTEGER, INTENT(OUT) :: JP\n      INTEGER, INTENT(OUT) :: NNP\n      END SUBROUTINE\n      END INTERFACE\n      END MODULE\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf/solve.f90": {
+      "base_sha256": "2d0ea3e544f0ba914701da089b5d043bd674bfc274bc6f3afb64e0ea6ce2c85f",
+      "reason": " SOLVE retains the caller inversion count on uninverted branches (INOUT); join point and node count are outputs, matching SETPOT/COUNT. Same-O2 first-sweep comparison detects the incorrect OUT INV contract.",
+      "edits": [
+        {
+          "before": "!   D u m m y   A r g u m e n t s\n!-----------------------------------------------\n      INTEGER  :: J\n      INTEGER  :: INV\n      INTEGER  :: JP\n      INTEGER  :: NNP\n      LOGICAL  :: FAIL\n!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n",
+          "after": "!   D u m m y   A r g u m e n t s\n!-----------------------------------------------\n      INTEGER  :: J\n      INTEGER, INTENT(INOUT) :: INV\n      INTEGER, INTENT(OUT) :: JP\n      INTEGER, INTENT(OUT) :: NNP\n      LOGICAL  :: FAIL\n!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem/solve_I.f90": {
+      "base_sha256": "c2e2a96271a0bd240cd1c29b809c4f94705d4ecbbb2e509a6e55306805f26a9e",
+      "reason": " SOLVE retains the caller inversion count on uninverted branches (INOUT); join point and node count are outputs, matching SETPOT/COUNT. Same-O2 first-sweep comparison detects the incorrect OUT INV contract.",
+      "edits": [
+        {
+          "before": "      SUBROUTINE solve (J, FAIL, INV, JP, NNP)\n      INTEGER, INTENT(IN) :: J\n      LOGICAL, INTENT(OUT) :: FAIL\n      INTEGER, INTENT(OUT) :: INV\n      INTEGER, INTENT(IN) :: JP\n      INTEGER, INTENT(IN) :: NNP\n      END SUBROUTINE\n      END INTERFACE\n      END MODULE\n",
+          "after": "      SUBROUTINE solve (J, FAIL, INV, JP, NNP)\n      INTEGER, INTENT(IN) :: J\n      LOGICAL, INTENT(OUT) :: FAIL\n      INTEGER, INTENT(INOUT) :: INV\n      INTEGER, INTENT(OUT) :: JP\n      INTEGER, INTENT(OUT) :: NNP\n      END SUBROUTINE\n      END INTERFACE\n      END MODULE\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem/solve.f90": {
+      "base_sha256": "2d0ea3e544f0ba914701da089b5d043bd674bfc274bc6f3afb64e0ea6ce2c85f",
+      "reason": " SOLVE retains the caller inversion count on uninverted branches (INOUT); join point and node count are outputs, matching SETPOT/COUNT. Same-O2 first-sweep comparison detects the incorrect OUT INV contract.",
+      "edits": [
+        {
+          "before": "!   D u m m y   A r g u m e n t s\n!-----------------------------------------------\n      INTEGER  :: J\n      INTEGER  :: INV\n      INTEGER  :: JP\n      INTEGER  :: NNP\n      LOGICAL  :: FAIL\n!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n",
+          "after": "!   D u m m y   A r g u m e n t s\n!-----------------------------------------------\n      INTEGER  :: J\n      INTEGER, INTENT(INOUT) :: INV\n      INTEGER, INTENT(OUT) :: JP\n      INTEGER, INTENT(OUT) :: NNP\n      LOGICAL  :: FAIL\n!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/solve_I.f90": {
+      "base_sha256": "c2e2a96271a0bd240cd1c29b809c4f94705d4ecbbb2e509a6e55306805f26a9e",
+      "reason": " SOLVE retains the caller inversion count on uninverted branches (INOUT); join point and node count are outputs, matching SETPOT/COUNT. Same-O2 first-sweep comparison detects the incorrect OUT INV contract.",
+      "edits": [
+        {
+          "before": "      SUBROUTINE solve (J, FAIL, INV, JP, NNP)\n      INTEGER, INTENT(IN) :: J\n      LOGICAL, INTENT(OUT) :: FAIL\n      INTEGER, INTENT(OUT) :: INV\n      INTEGER, INTENT(IN) :: JP\n      INTEGER, INTENT(IN) :: NNP\n      END SUBROUTINE\n      END INTERFACE\n      END MODULE\n",
+          "after": "      SUBROUTINE solve (J, FAIL, INV, JP, NNP)\n      INTEGER, INTENT(IN) :: J\n      LOGICAL, INTENT(OUT) :: FAIL\n      INTEGER, INTENT(INOUT) :: INV\n      INTEGER, INTENT(OUT) :: JP\n      INTEGER, INTENT(OUT) :: NNP\n      END SUBROUTINE\n      END INTERFACE\n      END MODULE\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/solve.f90": {
+      "base_sha256": "c115cf9602bd20e4772abb8f656e21bfc7f443a270ac28cdb448cc1ddfd29a73",
+      "reason": " SOLVE retains the caller inversion count on uninverted branches (INOUT); join point and node count are outputs, matching SETPOT/COUNT. Same-O2 first-sweep comparison detects the incorrect OUT INV contract.",
+      "edits": [
+        {
+          "before": "!   D u m m y   A r g u m e n t s\n!-----------------------------------------------\n      INTEGER  :: J\n      INTEGER  :: INV\n      INTEGER  :: JP\n      INTEGER  :: NNP\n      LOGICAL  :: FAIL\n!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n",
+          "after": "!   D u m m y   A r g u m e n t s\n!-----------------------------------------------\n      INTEGER  :: J\n      INTEGER, INTENT(INOUT) :: INV\n      INTEGER, INTENT(OUT) :: JP\n      INTEGER, INTENT(OUT) :: NNP\n      LOGICAL  :: FAIL\n!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/solve_I.f90": {
+      "base_sha256": "c2e2a96271a0bd240cd1c29b809c4f94705d4ecbbb2e509a6e55306805f26a9e",
+      "reason": " SOLVE retains the caller inversion count on uninverted branches (INOUT); join point and node count are outputs, matching SETPOT/COUNT. Same-O2 first-sweep comparison detects the incorrect OUT INV contract.",
+      "edits": [
+        {
+          "before": "      SUBROUTINE solve (J, FAIL, INV, JP, NNP)\n      INTEGER, INTENT(IN) :: J\n      LOGICAL, INTENT(OUT) :: FAIL\n      INTEGER, INTENT(OUT) :: INV\n      INTEGER, INTENT(IN) :: JP\n      INTEGER, INTENT(IN) :: NNP\n      END SUBROUTINE\n      END INTERFACE\n      END MODULE\n",
+          "after": "      SUBROUTINE solve (J, FAIL, INV, JP, NNP)\n      INTEGER, INTENT(IN) :: J\n      LOGICAL, INTENT(OUT) :: FAIL\n      INTEGER, INTENT(INOUT) :: INV\n      INTEGER, INTENT(OUT) :: JP\n      INTEGER, INTENT(OUT) :: NNP\n      END SUBROUTINE\n      END INTERFACE\n      END MODULE\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/solve.f90": {
+      "base_sha256": "c115cf9602bd20e4772abb8f656e21bfc7f443a270ac28cdb448cc1ddfd29a73",
+      "reason": " SOLVE retains the caller inversion count on uninverted branches (INOUT); join point and node count are outputs, matching SETPOT/COUNT. Same-O2 first-sweep comparison detects the incorrect OUT INV contract.",
+      "edits": [
+        {
+          "before": "!   D u m m y   A r g u m e n t s\n!-----------------------------------------------\n      INTEGER  :: J\n      INTEGER  :: INV\n      INTEGER  :: JP\n      INTEGER  :: NNP\n      LOGICAL  :: FAIL\n!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n",
+          "after": "!   D u m m y   A r g u m e n t s\n!-----------------------------------------------\n      INTEGER  :: J\n      INTEGER, INTENT(INOUT) :: INV\n      INTEGER, INTENT(OUT) :: JP\n      INTEGER, INTENT(OUT) :: NNP\n      LOGICAL  :: FAIL\n!-----------------------------------------------\n!   L o c a l   V a r i a b l e s\n",
           "count": 1
         }
       ]

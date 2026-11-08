@@ -37,6 +37,7 @@
 !      USE sixj_I
 !      USE cxk_I
 !      USE talk_I
+      USE perko2_I, ONLY: perko2
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

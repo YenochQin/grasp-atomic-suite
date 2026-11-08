@@ -27,6 +27,8 @@
       USE setmc_I
       USE setout_gj_I
       USE factt_I
+      USE mpiu_I, ONLY: mpix_shutdown
+      USE mpiu_I, ONLY: mpix_startup
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

@@ -16,7 +16,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      !USE dinit_I
+      USE dinit_I
       !USE dspevx_I
       !USE vec_I
       !USE dcopy_I
@@ -150,4 +150,13 @@
       deallocate(jsh) !CALL DALLOC (IQJSH)
 
       RETURN
+      CONTAINS
+      SUBROUTINE mem_fail(unit, count, variable, status)
+!     The legacy external MEM_FAIL had no implementation in this suite.
+      INTEGER, INTENT(IN) :: unit, count, status
+      CHARACTER(*), INTENT(IN) :: variable
+      WRITE(unit, '(A,A,A,I0,A,I0)') 'Unable to allocate ', variable, &
+         ': elements=', count, ', status=', status
+      ERROR STOP 'INIEST allocation failed'
+      END SUBROUTINE mem_fail
       END SUBROUTINE INIEST

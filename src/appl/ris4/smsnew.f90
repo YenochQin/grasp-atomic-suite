@@ -35,6 +35,8 @@
 !-----------------------------------------------
       USE alcbuf_I
       USE itjpo_I
+      USE convrt_I, ONLY: convrt
+      USE rkco_gg_I, ONLY: rkco_gg
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

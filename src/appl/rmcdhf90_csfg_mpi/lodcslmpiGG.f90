@@ -32,6 +32,7 @@
       use mpi_C
 
       use csfg_memory_man
+      USE lodcsh2gg_I, ONLY: lodcsh2gg
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -5,7 +5,7 @@
 !                     Gediminas Gaigalas  10/05/17
       SUBROUTINE lodcsh2GG(NFILE, NCORE, JB)
       INTEGER, INTENT(IN) :: NFILE
-      INTEGER, INTENT(OUT) :: NCORE
+      INTEGER, INTENT(IN) :: NCORE
       INTEGER, INTENT(IN) :: JB
       END SUBROUTINE
       END INTERFACE

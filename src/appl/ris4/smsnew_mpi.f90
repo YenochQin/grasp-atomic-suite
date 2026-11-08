@@ -19,6 +19,8 @@
       USE alcbuf_I
       USE ispar_I
       USE itjpo_I
+      USE convrt_I, ONLY: convrt
+      USE rkco_gg_I, ONLY: rkco_gg
       IMPLICIT NONE
       REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: VINT, VINT2
       INTEGER, INTENT(IN) :: DOIT

@@ -40,7 +40,9 @@
       USE el3_I
       USE el4_I
       USE el5_I
+      USE cord_I, ONLY: cord_callback => cord
       IMPLICIT NONE
+      PROCEDURE(cord_callback) :: CORD
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

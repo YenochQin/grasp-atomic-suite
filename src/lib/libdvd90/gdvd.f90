@@ -19,12 +19,13 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      !USE op_I
+      USE gdvd_I, ONLY: dvd_operator
       USE dvdson_I
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
+      PROCEDURE(dvd_operator) :: OP
       INTEGER  :: N
       INTEGER  :: LIM
       INTEGER  :: ILOW

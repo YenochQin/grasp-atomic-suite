@@ -57,6 +57,10 @@
       USE smsread_I
       USE smsnew_I
       USE edensityfit_I
+      USE densnew_seltz_I, ONLY: densnew_seltz
+      USE densread_seltz_I, ONLY: densread_seltz
+      USE starttime_I, ONLY: starttime
+      USE stoptime_I, ONLY: stoptime
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

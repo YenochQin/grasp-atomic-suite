@@ -479,7 +479,7 @@
               WRITE(*,*)"NTYPE(6, ICSFG) .NE. NTYPE(4, ICSFG)+1 ...", &
                          NTYPE(6, ICSFG), NTYPE(4, ICSFG)+1
               STOP " NTYPE(6, ICSFG) .NE. NTYPE(4, ICSFG)+1 ...  &
-                     csfg_expand_findtype ..." 
+                     &csfg_expand_findtype ..."
             ENDIF
             NTYPE(2, ICSFG) = (NTYPE(6, ICSFG) - NTYPE(5, ICSFG) + 2) *&
                               (NTYPE(6, ICSFG) - NTYPE(5, ICSFG) + 1) /2

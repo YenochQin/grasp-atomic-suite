@@ -20,7 +20,7 @@ enable_testing()
 
 # GNU Fortran also searches beside the source file for modules. Old in-source
 # .mod files can silently override a freshly built parameter_def/grid capacity.
-file(GLOB_RECURSE GRASP_IN_SOURCE_MODULES "${PROJECT_SOURCE_DIR}/src/*.mod")
+file(GLOB_RECURSE GRASP_IN_SOURCE_MODULES "${PROJECT_SOURCE_DIR}/src/*.mod" "${PROJECT_SOURCE_DIR}/src/*.smod")
 if(GRASP_IN_SOURCE_MODULES)
     message(FATAL_ERROR
         "Legacy .mod files exist under src/. Move these generated files out of "
@@ -42,9 +42,18 @@ if(NOT CMAKE_BUILD_TYPE)
     )
 endif(NOT CMAKE_BUILD_TYPE)
 
+include(cmake/FortranProfiles.cmake)
+
 # Find the LAPACK and BLAS libraries
+# FindBLAS/FindLAPACK use intentionally implicit, argument-free link probes.
+# Keep those probes separate from the strict policy on every suite target.
+set(_grasp_target_fortran_flags "${CMAKE_Fortran_FLAGS}")
+string(REPLACE "-Werror=implicit-interface" "" CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
+string(REPLACE "-Werror=implicit-procedure" "" CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
+set(CMAKE_Fortran_FLAGS "${_grasp_target_fortran_flags}")
+unset(_grasp_target_fortran_flags)
 
 # We need special functions to handle linking Fortran modules between libraries
 # etc. The Fortran_MODULE_DIRECTORY_root variable is the directory where all the
@@ -100,7 +109,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib/")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib/")
 # To install the binaries into the standard <repo>/bin/ directory, you need to
 # call `make install`.
-set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" CACHE PATH "Install prefix" FORCE)
+endif()
 
 # Additional Fortran compiler flags.
 #
@@ -113,10 +124,7 @@ set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 #
 #     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgfortran")
 #
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-automatic")
-if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -std=f2018")
-endif()
+# Compiler policy is owned by cmake/FortranProfiles.cmake.
 
 message("Compiler flags etc. for this GRASP build:")
 message("* CMAKE_BUILD_TYPE:                ${CMAKE_BUILD_TYPE}")
@@ -148,7 +156,11 @@ add_subdirectory("src/lib/librang90")
 option(GRASP_ENABLE_MPI "Build MPI-dependent libraries and programs" ON)
 option(GRASP_BUILD_SERIAL_APPS "Build serial application targets alongside MPI programs" OFF)
 if(GRASP_ENABLE_MPI)
-    find_package(MPI QUIET)
+    if(GRASP_STRICT_ACCEPTANCE)
+        find_package(MPI REQUIRED COMPONENTS Fortran)
+    else()
+        find_package(MPI QUIET COMPONENTS Fortran)
+    endif()
     if(MPI_Fortran_FOUND)
         message("* GRASP_ENABLE_MPI:               ON")
         message("* MPI_Fortran_LIBRARIES:          ${MPI_Fortran_LIBRARIES}")
@@ -164,6 +176,7 @@ else()
     message("* GRASP_ENABLE_MPI:               OFF")
     message("MPI support disabled. Not building src/lib/mpi90 or MPI-dependent programs.")
 endif()
+
 message("* GRASP_BUILD_SERIAL_APPS:        ${GRASP_BUILD_SERIAL_APPS}")
 
 # GRASP application programs
@@ -276,3 +289,5 @@ find_file(GRASP_CMakeLists_user "CMakeLists.user" ${PROJECT_SOURCE_DIR})
 if(NOT "${GRASP_CMakeLists_user}" STREQUAL "GRASP_CMakeLists_user-NOTFOUND")
     include(${GRASP_CMakeLists_user})
 endif()
+
+include(cmake/FortranAcceptance.cmake)

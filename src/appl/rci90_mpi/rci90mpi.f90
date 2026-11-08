@@ -69,6 +69,11 @@
       USE strsum_I
       USE factt_I
       USE matrix_I
+      USE genintbreit1wrap_I, ONLY: genintbreit1wrap
+      USE genintbreit2wrap_I, ONLY: genintbreit2wrap
+      USE genintrkwrap_I, ONLY: genintrkwrap
+      USE mpiu_I, ONLY: startmpi2
+      USE mpiu_I, ONLY: stopmpi2
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

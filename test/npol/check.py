@@ -125,6 +125,12 @@ def output(binary: str, root: Path) -> None:
     summary.mkdir()
     run([binary, "init", str(path)], root, failure="cannot open summary")
     summary.rmdir()
+    nested = root / "input directory with spaces"
+    nested.mkdir()
+    (nested / "npol.inp").write_text(config())
+    run([binary, "init", str(nested / "npol.inp")], root)
+    assert (nested / "npol.summary").read_text().endswith("composed = T\n")
+    assert not summary.exists()
     if Path("/dev/full").exists():
         summary.symlink_to("/dev/full")
         run([binary, "init", str(path)], root, failure="cannot write/close summary")
@@ -162,8 +168,11 @@ def entrypoints(root: Path) -> None:
         setham = (directory / "setham.f90").read_text().lower()
         assert "npol" not in setham and re.search(r"rinti\s*\([^\n]*,\s*0\s*\)", setham)
     assert "npol" not in (root / "src/lib/lib9290/nucpot.f90").read_text().lower()
-    for variant in ("rmcdhf90", "rmcdhf90_mem", "rmcdhf90_mpi", "rmcdhf90_mem_mpi",
-                    "rmcdhf90_mem_strict_mpi", "rmcdhf90_mem_diag_mpi"):
+    # The four old orbopt source directories were retired; the two retained
+    # independent solvers still must not acquire the original-solvers' NP hook.
+    for variant in ("rmcdhf90", "rmcdhf90_mem", "rmcdhf90_mpi", "rmcdhf90_mem_mpi"):
+        assert not (root / "src/appl" / variant).exists(), variant
+    for variant in ("rmcdhf90_mem_strict_mpi", "rmcdhf90_mem_diag_mpi"):
         stem = "getscdmpi" if variant.endswith("_mpi") else "getscd"
         text = (root / "src/appl" / variant / f"{stem}.f90").read_text().lower()
         assert "npol_init" not in text and "npfile" not in text, variant

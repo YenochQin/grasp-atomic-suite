@@ -69,7 +69,7 @@
         ! ICGPDET, ICGPEND, IRGPDET
         TMPMEM = F1GB*(storage_bytes(ICGPDET)+storage_bytes(ICGPEND)+storage_bytes(IRGPDET))
         WRITE(*, *) 'Mem (GB) for part 1 arrays from mcp files: &
-                     ICGPDET, ICGPEND,  IRGPDET', TMPMEM
+                     &ICGPDET, ICGPEND,  IRGPDET', TMPMEM
         TOTMEM = TOTMEM + TMPMEM
 
         ! IQA, this array could be deallocated before entering SCF.

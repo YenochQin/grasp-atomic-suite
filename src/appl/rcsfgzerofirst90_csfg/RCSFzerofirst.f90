@@ -27,6 +27,10 @@
       USE set_CSF_ZFlist_I
       USE lodcsl_Zero_I
       USE lodcsl_Part_I
+      USE lodcsl_full_I, ONLY: lodcsl_full
+      USE removeblank_I, ONLY: removeblank
+      USE starttime_I, ONLY: starttime
+      USE stoptime_I, ONLY: stoptime
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -61,7 +65,7 @@
       CALL SET_CSF_ZFlist
       open(301,file='icut',form='formatted',status='unknown')
       WRITE (6, *) "         Block       Zero-order Space        &
-                   Full space    CHECK"
+                  &Full space    CHECK"
       REWIND(20)
       REWIND(21)
       DO I = 1, 5

@@ -63,6 +63,7 @@
       USE wghtd5_I
       USE qed_I
       USE mpi_C
+      USE mpiu_I, ONLY: stopmpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

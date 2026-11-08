@@ -44,6 +44,7 @@
 !-----------------------------------------------
       USE getyn_I
       USE setqic_I
+      USE mpiu_I, ONLY: stopmpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

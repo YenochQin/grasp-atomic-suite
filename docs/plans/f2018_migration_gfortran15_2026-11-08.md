@@ -1,9 +1,10 @@
 # Fortran 2018 迁移实施计划：gfortran 15 验证基线
 
-日期：2026-11-08。状态：**首轮 F2018 编译/链接兼容性修复已实施；严格接口和完整数值验收未完成**。
+日期：2026-11-08；实施状态更新：2026-11-09。状态：**严格接口及 NP 路径修复已实施；Check/Release 全量构建通过，各 64/68 回归通过、4 项 Linux 专用测试跳过；完整验收仍未通过**。
 目标仓库：`grasp-atomic-suite`；计划创建基线：`179ca9ecfd96d54a5617d811b888299a611c13b3`；
 本轮修复基线：`d1260ba404833d20d709b34d9f26b05c32a3b615`。
-本计划中的新增文件、构建选项、测试标签和命令入口，除明确注明“现有”者外，均为拟议交付物。
+本轮设施实施基线：`56769d91eae1e00889144e162458aceba0bdfe2a`；结果对应其上的工作树。
+已落地交付物以下文和[严格接口与 NP 验证](../reviews/f2018_strict_interfaces_npol_2026-11-09.md)为准；[设施初始记录](../reviews/f2018_acceptance_facilities_2026-11-09.md)保留为此前证据。未注明已实现者仍为计划。
 
 五类普通程序已导入并接入共享参数，见[导入记录](../implemented/standard_grasp_integration.md)。
 随后按首轮编译诊断完成共享库、平台服务及应用标准语法的分批修复，见
@@ -11,15 +12,15 @@
 
 | 计划项 | 当前状态 | 已有证据 / 尚缺内容 |
 | --- | --- | --- |
-| P0 基线 | 部分完成 | 保存 d1260ba 的 GNU 15 legacy 构建、已知 11 个失败和本轮输入/结果；实际多根与全参数夹具尚未齐备 |
-| P1 构建策略 | 部分完成 | 当前配置全量 F2018 编译/链接通过；已移除参数放行，仍保留静态存储；拟议 profiles/完整强制验收设施尚未完成 |
+| P0 基线 | 部分完成 | 保留原 Linux 记录；新增 56769d9/GNU 15.3 的独立 O0/O2 串行归档及同优化级别 rmcdhf 一轮对照，记录输入/二进制 hash；实际多根与统一 case manifest 尚缺 |
+| P1 构建策略 | 设施已实施，退出验收未通过 | 四种 profiles、逐条编译命令检查、required 清单、fail-closed 验收、模块隔离与独立安装前缀已落地；严格 Check/Release 全开目标各 3,237 条编译命令核对及构建通过；四项 Linux skip 阻止验收，完整矩阵/警告基线待补 |
 | P2 普通链导入 | 五类程序完成 | 十个目标已接入；rhfszeeman95/rsms 未导入，完整属性/RCI 数值对照待补 |
 | P3-A 共享标准清理 | 本轮完成 | NMTEJJ 两实现各 22,701 项精确对照、CSFG kind/reallocation、QUAD 通过 |
 | P3-B 平台适配 | 本轮 Linux 范围完成 | POSIX C 互操作；目录/状态/缓冲/退出测试通过，原 sys_* 接口保留 |
-| P3-C 应用标准语法 | 本轮构建范围完成 | INT8、旧 kind、DO、声明/FORMAT、SIZEOF 等阻断已清理；四个串行 solver 一轮 SCF 共 28 个文件与旧版一致 |
-| P3-D 参数接口 | 已完成本轮范围 | 已移除 fallow-argument-mismatch；接入 MPI 官方模块、LP64 BLAS/LAPACK 接口，修复有界数组区段、DDOT 返回类型和句柄 kind，新增接口测试通过 |
+| P3-C 应用标准语法 | 已实施范围保持 | INT8、旧 kind、DO、声明/FORMAT、SIZEOF 等阻断已清理；28 文件为退役前历史结果；本轮 macOS 的 rmcdhf 七文件及全部科学文本/诊断一致，memory 完整运行受 /proc/meminfo 限制 |
+| P3-D 参数接口 | 已实施范围扩展 | DINIT/MEM_FAIL、内部过程/回调及 SOLVE 意图修复；两严格配置 DDOT 14/14、常规 Davidson 4/4、NP 15/15；修复 NP 空路径、MGS 上界与 jj2lsj 初始化。额外 MPI Davidson 早收敛探针仍失败 |
 | P3/P6/P8 余项 | 待实施 | 内部手写 INTENT 接口、mpi_f08、大计数和静态存储策略仍需独立验收 |
-| P4–P9 完整数值及发布验收 | 未完成 | 当前 CTest 36/47；orbopt 专用测试已退役，新增接口测试通过，余下 11 项与旧基线同名；真实多根、完整 RCI/跃迁、性能和生产物理验证未完成 |
+| P4–P9 完整数值及发布验收 | 未完成 | 本轮 macOS Check/Release 各 64 通过/4 跳过，共 68；同 O0/O2 一轮全输出一致。完整验收未通过；旧 Linux 36/47 和此前 audit 50/63 作为历史保留；真实多根、完整 RCI/跃迁、性能和物理验证未完成 |
 
 以上“本轮完成”只对应明确子任务，不等于整个 P3 或完整 F2018 迁移完成。
 
@@ -65,15 +66,16 @@
 
 P0 保存编译器版本、二进制 hash、实际命令、libgfortran、MPI 版本/构建编译器、MPI 包装器后端、BLAS/LAPACK 实现与整数 ABI、CMake、CPU 架构、线程数和源提交。
 
-本机只读检查发现：`mpifort` 默认后端为 `gfortran`，Open MPI 5.0.11 的记录指向不带版本号的编译器；`mpi_f08` 可用但其 subarray 支持报告为 `no`。本次用 `OMPI_FC=gfortran-15` 编译链接最小探针成功，**仅证明这个探针可以构建**，没有验证 MPI 运行、非连续切片、异步缓冲区或大计数。
+初始只读检查发现：`mpifort` 默认后端为 `gfortran`，Open MPI 5.0.11 的记录指向不带版本号的编译器；`mpi_f08` 可用但其 subarray 支持报告为 `no`。当时 `OMPI_FC=gfortran-15` 的最小探针仅证明可编译链接；2026-11-09 已增加 1/2/4-rank 实际 MPI payload 和生产分支回归。非连续切片、异步缓冲区、大计数和完整绑定兼容性仍未验收。
 
 正式基准优先使用以 GCC 15 配套构建的 MPI。若复用系统 MPI，必须有供应方兼容依据及 P0 绑定/运行探针；单独覆盖 `OMPI_FC` 不能代替该证明。保存普通 `use mpi` 与 `use mpi_f08`、datatype、collective、1/2-rank 小程序结果。大计数和非连续缓冲区另做能力检查。
 
 构建/测试在独立目录，严禁复用 GCC 16 的 `.mod/.smod/.o`。所有 Python 检查使用工作区 Tools 共享环境，不创建 suite 自己的 venv。
 
-### 3.2 拟议构建配置
+### 3.2 已实现的构建配置与待通过门槛
 
-在 P1 增加 `cmake/FortranProfiles.cmake` 和 `GRASP_FORTRAN_PROFILE`（**目前不存在**）：
+P1 已增加 [FortranProfiles.cmake](../../cmake/FortranProfiles.cmake) 和 `GRASP_FORTRAN_PROFILE`。
+默认 `f2018-audit`；`legacy/audit` 保留静态存储，严格 profiles 不保留。GNU 15.x 版本检查已启用：
 
 | 配置 | 用途 | 编译/运行要求 |
 | --- | --- | --- |
@@ -92,12 +94,14 @@ P0 保存编译器版本、二进制 hash、实际命令、libgfortran、MPI 版
 
 所有非线程专项测试固定 `OMP_NUM_THREADS=1`、`OPENBLAS_NUM_THREADS=1`，禁用数学库动态线程。MPI 测试最少 1/2/4 ranks；线程专项使用 1/2/4/8 threads，避免嵌套线程造成不受控差异。
 
-### 3.3 未来执行命令模板
+### 3.3 已实现的执行入口
 
-以下从 suite 根目录执行；**`GRASP_FORTRAN_PROFILE` 和验证脚本必须先由 P1 实现**。`GF15`、`MPI15_FC`、`MPI15_EXEC` 由已验证的本地工具链提供，不在版本库中写入机器绝对路径。
+以下从 suite 根目录执行。`GF15`、`MPI15_FC`、`MPI15_EXEC` 由已验证的本地工具链提供，
+显式设置 `FC/OMPI_FC`；macOS 可解析本机已安装的版本化编译器，不复用其他版本的构建目录。
 
 ```sh
 set -eu
+export FC="$GF15" OMPI_FC="$GF15"
 test "$("$GF15" -dumpversion | cut -d. -f1)" = 15
 cmake -S . -B build-gf15-check \
   -DCMAKE_Fortran_COMPILER="$GF15" \
@@ -108,14 +112,15 @@ cmake -S . -B build-gf15-check \
   -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON \
   -DGRASP_BUILD_CSFG=ON -DGRASP_JJ2LSJ_OPENMP=ON \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
-cmake --build build-gf15-check --parallel 4
-ctest --test-dir build-gf15-check --show-only=json-v1
-ctest --test-dir build-gf15-check --output-on-failure
+../graspkit-tools/.venv/bin/python test/f2018/check.py build-gf15-check --jobs 4
 ```
 
-P1 的验证器先对照 required-targets / required-tests 清单，再运行 CTest：MPI 找不到、测试未注册、skip=77、0 tests 或夹具缺失均不能计为通过。当前 CMake 会在缺 MPI 时继续配置，该行为必须在正式验证配置中升级为明确失败。
+[验证器](../../test/f2018/check.py) 对照 [required.json](../../test/f2018/required.json) 的目标/测试清单及全部实际编译命令，再构建并运行 CTest。
+严格配置找不到必需 MPI/Python/OpenMP 时配置失败；未注册、skip=77、0 tests、失败或夹具缺失不能通过。
+`--audit` 允许诊断 legacy/audit 配置，不颁发严格验收结论；`--inventory-only` 仅核对注册/命令。
+当前清单只覆盖已实现程序和测试，尚不等于完整 F00–F10。
 
-`f2018-release` 使用另一个全新 build 目录，运行相同数值测试。不执行 install，直到 P9 验收后才交付独立安装目录；当前 CMake 强制源码目录为安装前缀的问题也在 P1 修复。
+`f2018-release` 使用另一个全新 build 目录，运行相同数值测试。不执行 install，直到 P9 验收后才交付独立安装目录；安装前缀已可独立设置，默认 `<build>/install`；gj90 的构建后源码目录复制已移除。
 
 版本依据：[GNU 15.2 诊断选项](https://gcc.gnu.org/onlinedocs/gcc-15.2.0/gfortran/Error-and-Warning-Options.html)、[GNU 15.3 存储与运行时检查](https://gcc.gnu.org/onlinedocs/gcc-15.3.0/gfortran/Code-Gen-Options.html)。这些选项不能证明编译器覆盖全部 F2018，验收对象是本项目实际使用的语言子集。
 
@@ -133,7 +138,7 @@ P1 的验证器先对照 required-targets / required-tests 清单，再运行 CT
 
 每个 case manifest 固定：源提交、程序变体、编译配置、输入 SHA-256、核模型/核矩、单位、CSF 内容及顺序、网格 `N/NNNP/NNNW/RNT/H/HP/ACCY`、轨道初值/冻结集合/更新顺序、EOL 权重、目标根、截断、Breit/QED/NP 及其他开关、进程/线程数、文件协议和验收阈值。
 
-已建立 `test/f2018/` 的专项回归、固定一轮旧新对照脚本和 README；统一 `cases/`、`check.py` 与 `manifest.schema.json` 仍待实现。小型合成输入可以版本控制；真实输入/大输出存于忽略提交的 `test/data/f2018/` 或外部数据目录，只登记 hash、来源和获取要求。报告放 `docs/reviews/`，不提交机器路径、环境或完整大规模计算结果。
+已建立 `test/f2018/` 的专项回归、固定一轮旧新对照脚本、强制验收 `check.py` 和 README；统一科学算例 `cases/` 与 `manifest.schema.json` 仍待实现。小型合成输入可以版本控制；真实输入/大输出存于忽略提交的 `test/data/f2018/` 或外部数据目录，只登记 hash、来源和获取要求。报告放 `docs/reviews/`，不提交机器路径、环境或完整大规模计算结果。
 
 ### 4.2 比较规则
 
@@ -196,14 +201,14 @@ MPI 1/2/4-rank 与 Check/Release 比较采用同一 N 类预算，不按 rank �
 
 | ID | 算例/现有入口 | 主要覆盖 | 状态 |
 | --- | --- | --- | --- |
-| F00 | 工具链、kind/BLAS/MPI/文件记录小探针 | GCC 15、LP64、接口、环境识别 | 本次仅完成部分语言/链接探针，完整门槛待建 |
-| F01 | QUAD、角动量解析值/恒等式、2×2/小块本征问题 | 底层算法、相位、残差 | QUAD 已有，其余补齐 |
-| F02 | 现有 synthetic Z=10 有限核 `1s^2` | 初猜、角系数、单轮 SCF、strict/restart、MPI | 脚本已有，本次未运行 |
-| F03 | 小型双组态、多根、含近简并块的固定轨道模型 | RCI、根匹配、CI 阻尼触发和 DDOT 修复 | 待新增；需证明确实进入目标分支 |
+| F00 | 工具链、kind/BLAS/MPI/文件记录小探针 | GCC 15、LP64、接口、环境识别 | 已有严格编译命令核对、BLAS ABI 与 1/2/4-rank MPI payload；完整门槛待补 |
+| F01 | QUAD、角动量解析值/恒等式、2×2/小块本征问题 | 底层算法、相位、残差 | QUAD、NMTEJJ、2×2 LAPACK 与 6×6 Davidson 常规契约通过；MPI 极早收敛额外探针仍失败，完整恒等式覆盖待补 |
+| F02 | 现有 synthetic Z=10 有限核 `1s^2` | 初猜、角系数、单轮 SCF、strict/restart、MPI | 原版 rmcdhf 同 O0/O2 一轮全输出一致；memory 及四项 Linux MPI 端到端测试未通过本机验收 |
+| F03 | 小型双组态、多根、含近简并块的固定轨道模型 | RCI、根匹配、CI 阻尼触发和 DDOT 修复 | 已有双根生产 MATRIX 逻辑夹具触发 DDOT 分支及反例；实际 SCF/RCI/近简并模型仍待新增 |
 | F04 | 小型点核/有限核及导入轨道/TF/氢样初猜 | 轨道估计、节点、网格、相位 | 待新增；点核参数选在有良定义解的范围 |
 | F05 | `data/test.*` 加可核对核矩的属性小模型 | g、A/B、非对角元、CI/非 CI、RIS 读写 | 现有数据先核对来源与精度；不能因文件存在视为已验收 |
 | F06 | 两套轨道的简单允许/禁戒及弱跃迁 | 双正交、phase、两种规范、频率因子 | 待新增 |
-| F07 | NP 人工核函数 + 原版四目标 NP off/zero/on | 开关、势/消费者、集体失败 | 单元/消费者测试已有，完整小 SCF 回归待补 |
+| F07 | NP 人工核函数 + 原版四目标 NP off/zero/on | 开关、势/消费者、集体失败 | audit/Check/Release 各 15 项单元/消费者/路径/MPI 回归通过，完整小 SCF 回归待补 |
 | F08 | 同一小 CSF 空间的 CSFG 展开比较 | CSFG angular/SCF/两种 RCI/文件映射 | 文件测试已有，真实计算链回归待补 |
 | F09 | 参数边界、长路径、空块/空rank、计数分块 | 容量、MPI 生命周期、I/O 错误 | 组合已有测试与新增边界夹具 |
 | F10 | Zn I 奇宇称小 MR 多根真实输入 | 实际 SCF/RCI、混合态身份、属性链 | 固定来源及完整输入后建立；本次未运行，不能从旧“跑完”记录直接认证 |
@@ -248,7 +253,9 @@ P7 的串行开发可在 P4/P5 后进行，MPI 退出门槛必须等待 P6。阶
 
 ### P1：构建配置和强制验收设施
 
-**修改范围**：顶层及测试 CMake、拟议 profiles 模块、`configure.sh` 必要透传、验收脚本/CI；不改科学算法。
+**执行状态（2026-11-09）**：profiles、required 清单、测试标签、fail-closed 入口、模块输出/搜索顺序隔离、安装前缀及 configure 透传已实施。DINIT/mem_fail 等编译阻断已修复，严格 Check/Release 全量并行构建通过；各 68 项测试为 64 通过、4 项 Linux 专用测试跳过，强制验收仍失败。完整配置矩阵、警告基线、F00–F10 和本阶段数值退出条件尚未完成。
+
+**修改范围**：顶层及测试 CMake、profiles 模块、`configure.sh` 必要透传、验收脚本/CI；不改科学算法。
 
 **工作**：落地第 3 节配置；清理全局选项向各目标泄漏；保留 `jj2lsj` 存储例外；隔离 `.mod`；支持独立安装前缀；为必需 MPI、Python、测试/目标集合设置 fail-closed 检查。增加 `f2018_unit`、`f2018_serial`、`f2018_mpi`、`f2018_properties`、`f2018_io`、`f2018_real_case` 测试标签及稳定 required-tests 清单。
 
@@ -266,16 +273,15 @@ P7 的串行开发可在 P4/P5 后进行，MPI 退出门槛必须等待 P6。阶
 
 ### P3：共享库、接口与标准清理
 
-**执行状态（2026-11-08）**：标准编译/链接子批次 A/B/C 已按顶部状态表实施。
-当前 36/47 CTest 结果和保留 solver 的固定一轮 SCF 对照是局部软件验收，不满足下述完整 P3 的所有退出条件。
-本轮已移除参数放行并完成显式数值/MPI 接口修复，详见[接口验证](../reviews/argument_interfaces_2026-11-08.md)；内部接口、mpi_f08、大计数及已知运行失败继续单独追踪，保持原门槛。
+**执行状态（更新 2026-11-09）**：A/B/C 及 DDOT 分支修复保留；本轮补齐内部显式接口/回调，修复 NP 摘要路径、MGS 空尾段实参、jj2lsj 常数初始化和 SOLVE 的 INV/JP/NNP 意图。严格 Check/Release 全量构建及常规回归已运行，各 64/68 通过、4 跳过；原版 rmcdhf 同 O0/O2 一轮的七个二进制及全部科学文本/诊断一致。
+详见[本轮验证](../reviews/f2018_strict_interfaces_npol_2026-11-09.md)。额外 CSFG MPI Davidson 极早收敛探针仍异常退出；手写 INTENT 漂移、可能未初始化/边界告警、mpi_f08、大计数及静态状态语义仍待审计，不满足完整 P3 的退出条件。旧 Linux 36/47 和此前 macOS audit 50/63 保留为历史。
 
 **修改范围**：`libmod`、`lib9290`、`librang90`、`libmcp90`、`libdvd90`，以及必要的 `*_csfg`/`libdvd90mpi` 接口边界；新增明确的 kind、BLAS/LAPACK 和平台适配模块，仍归现有库所有。
 
 **工作**：
 
 1. 清理算术 IF、`INT8/INTEGER*8` 等扩展、声明顺序、FORMAT、续行和 Tab；保留运算/分支次序。现有标准 kind 不因风格而改精度，确认 `DOUBLE` 的 storage/precision/range。
-2. 建立 LP64 BLAS/LAPACK 显式接口，审计返回类型、intent、数组关联、工作区长度和字符参数。`DDOT` 的整数返回声明在 suite 多个 RMCDHF/CSFG 变体仍存在，按 F 类单独修复，以 `DOT_PRODUCT`/可精确计算向量为 oracle，并证明进入 CI 阻尼分支。
+2. 建立 LP64 BLAS/LAPACK 显式接口，审计返回类型、intent、数组关联、工作区长度和字符参数。`DDOT` 的整数返回声明已修正；六个直接消费 DDOT 的 RMCDHF 变体已有生产分支夹具及旧声明反例。CSFG 的独立 DDOTMPI 路径和真实多根 SCF/RCI 仍需验收；以独立 oracle 为准，不复现旧 ABI 错误。
 3. 将内部例程分批转为 module procedures 或由单一来源维护接口；保留过渡调用接口，杜绝 `_I` 与实现签名漂移。
 4. 对转换目标审计跨调用状态，显式 SAVE 真正需要保存的局部状态，再移除目标的 `-fno-automatic`。尚未重构的全局模块状态可保留，但必须登记；此阶段不宣称可重入。
 5. 处理 `SYSTEM/CHDIR/GETCWD` 的 GNU 扩展：在平台边界采用标准 C 互操作等实现并保留 suite 路径/错误协议。`EXECUTE_COMMAND_LINE('cd ...')` 不能改变父进程工作目录，不能当作 `CHDIR` 的替代。路径需正确引用；mkdir 的退出状态必须区分命令启动失败与命令返回失败。

@@ -26,6 +26,7 @@
 !-----------------------------------------------
 !      USE setcsll_I
       USE lodcsh_I
+      USE setcsll_I, ONLY: setcsll
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -44,7 +45,7 @@
 !-----------------------------------------------------------------------
 
       CALL ALLOC (NCFBLK, 0,  NBLKIN, 'NCFBLK', 'SETCSL' )
-      CALL SETCSLL (21, NAME, NBLKIN, NBLOCK, NCFBLK(1), NCFTOT, IDBLK)
+      CALL SETCSLL (21, NAME, NBLKIN, NBLOCK, NCFBLK(1:), NCFTOT, IDBLK)
       CALL RALLOC (NCFBLK, 0, NBLOCK, 'NCFBLK', 'SETCSL' )
 
       REWIND (21)

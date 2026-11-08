@@ -1,5 +1,6 @@
 !***********************************************************************
       SUBROUTINE RCSFBLOCK
+      use generator_I, only: indexa
 !***********************************************************************
 ! Purpose:
 !  Read in a CSF file 'rcsf.inp' and then:
@@ -236,7 +237,7 @@
             DO j = i+1, n
                jpos = indx(j)
                IF(a(jpos) .LT. aimx) THEN
-	               aimx = a(jpos)
+                       aimx = a(jpos)
                   jhere = j
                ENDIF
             ENDDO

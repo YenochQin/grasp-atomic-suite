@@ -509,6 +509,7 @@ CONTAINS
 !-----------------------------------------------
       USE vast_kind_param, ONLY: DOUBLE
       USE CONS_C,          ONLY: ZERO, ONE
+      USE nine_I, ONLY: nine
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -902,6 +903,7 @@ CONTAINS
 !     NIST                                     last update: May 2011   *
 !                                                                      *
 !***********************************************************************
+      USE convrt_double_I, ONLY: convrt_double
       IMPLICIT NONE
       SAVE  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -955,6 +957,7 @@ CONTAINS
 !     Modified by G. Gaigalas                                   2024   *
 !                                                                      *
 !***********************************************************************
+      USE convrt_double_I, ONLY: convrt_double
       IMPLICIT NONE
       SAVE  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -1468,6 +1471,10 @@ CONTAINS
       USE BLK_C,           ONLY: NEVINBLK, NCFINBLK, NBLOCK, TWO_J
       USE m_C,             ONLY: NCORE
       USE def_C,           ONLY: Z, NELEC
+      USE getmixblock_I, ONLY: getmixblock
+      USE getyn_I, ONLY: getyn
+      USE openfl_I, ONLY: openfl
+      USE setcsla_I, ONLY: setcsla
       IMPLICIT NONE
       SAVE  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -1485,7 +1492,7 @@ CONTAINS
       integer            :: JBDUM, NCFINBLKDUM, NEVINBLKDUM, IATJPDUM
       integer            :: I, II, ISUM, K, NCI, ierr, JB
       integer            :: IBlock, number_of_levels_tmp
-      logical            :: yes, fail, GETYN
+      logical            :: yes, fail
       CHARACTER(LEN=6)   :: G92MIX
       character(len=24)  :: NAME
       character(len=256) :: record, util_csl_file
@@ -1943,6 +1950,7 @@ CONTAINS
       USE itjpo_I
       USE ispar_I
       USE vast_kind_param, ONLY: LONG
+      USE convrt_double_I, ONLY: convrt_double
       IMPLICIT NONE
       SAVE  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -2296,6 +2304,7 @@ CONTAINS
 !     NIST                                     last update: Dec 2015   *
 !                                                                      *
 !***********************************************************************
+      USE packls_I, ONLY: packls
       IMPLICIT NONE
       SAVE  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -2390,6 +2399,7 @@ CONTAINS
       USE itjpo_I
       USE IQ_I
       USE JQS_I
+      USE convrt_double_I, ONLY: convrt_double
       IMPLICIT NONE
       SAVE  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -2474,6 +2484,7 @@ CONTAINS
 !     NIST                                     last update: May 2011   *
 !                                                                      *
 !***********************************************************************
+      USE convrt_double_I, ONLY: convrt_double
       IMPLICIT NONE
       SAVE  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -3196,6 +3207,8 @@ CONTAINS
       USE ixjtik_I
       USE IQ_I
       USE JQS_I
+      USE nine_I, ONLY: nine
+      USE sixj_I, ONLY: sixj
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

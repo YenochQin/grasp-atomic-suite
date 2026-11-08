@@ -25,6 +25,7 @@
 
       Use csfg_tv_C
 
+      USE setcof_cyc_I, ONLY: setcof_cyc
       IMPLICIT NONE
       LOGICAL, INTENT(IN) :: EOL
       INTEGER :: I, J

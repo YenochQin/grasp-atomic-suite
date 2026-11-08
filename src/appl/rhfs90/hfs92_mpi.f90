@@ -26,6 +26,9 @@
       USE strsum_I
       USE factt_I
       USE hfsgg_mpi_I
+      USE mpiu_I, ONLY: gdmaxmpi_root
+      USE mpiu_I, ONLY: mpix_shutdown
+      USE mpiu_I, ONLY: mpix_startup
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

@@ -9,6 +9,7 @@ add_library(dvd90mpi STATIC
     newvec_I.f90
     ../libdvd90/ovflow_I.f90
     tstsel_I.f90
+    dvd_mpi_I.f90
     dvdson.f90
     ../libdvd90/gdvd.f90
     ../libdvd90/gdvd_I.f90

@@ -31,6 +31,13 @@
       USE itjj2_I
       USE ixjtik_I
       USE izas1_I
+      USE awp1jjg_I, ONLY: awp1jjg
+      USE c0t5s_I, ONLY: c0t5s
+      USE mes_I, ONLY: mes
+      USE rmeajj_I, ONLY: rmeajj
+      USE rumtjj_I, ONLY: rumtjj
+      USE sixj_I, ONLY: sixj
+      USE wj1_I, ONLY: wj1
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

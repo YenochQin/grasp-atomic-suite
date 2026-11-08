@@ -595,6 +595,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      USE suite_linear_algebra, ONLY: slamch
+      USE ovflow_I
       USE tstsel_I
       USE newvec_I
       USE mgs_nrm_I
@@ -634,7 +636,6 @@
       REAL(DOUBLE)  :: SVEC(LIM*LIM)
       REAL(DOUBLE)  :: SCRA1(8*LIM)
       REAL(DOUBLE)  :: OLDVAL(NUME + 1)
-      real::slamch
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -868,7 +869,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      !USE dinit_I
+      USE dinit_I
       !USE dcopy_I
       USE mgs_nrm_I
       !USE dscal_I
@@ -1202,8 +1203,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      !USE multbc_I
-      !USE dinit_I
+      USE multbc_I
+      USE dinit_I
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1490,8 +1491,11 @@
             dnm = sqrt(dnm)
             call dscal (n, 1/dnm, b(kcur), 1)
 !
+            ! No trailing vectors: avoid forming B one element past its end.
+            if (k < new) then
             call dgemv ('T', n, new - k, 1.D0, b(jcur), n, b(kcur), 1, 0.D0, &
                scra, 1)
+            end if
             do j = k + 1, new
 !              call daxpy(N,-scra(j-k),B(kcur),1,B(jcur),1)
                do mm = 0, n - 1

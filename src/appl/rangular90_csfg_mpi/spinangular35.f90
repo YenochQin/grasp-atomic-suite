@@ -55,6 +55,9 @@
       Use symmatrix_mod, KMAXTmp=>KMAX
       Use csfg_tv_C
 
+      USE fictious_csf_I, ONLY: fictious_csf
+      USE savetv_I, ONLY: savetv
+      USE transfer_csfg_I, ONLY: transfer_csfg
       IMPLICIT NONE
       EXTERNAL CORD
 !-----------------------------------------------

@@ -37,6 +37,7 @@
 !-----------------------------------------------
       USE openfl_I
       USE lodcslmpiGG_I
+      USE lodcsh_I, ONLY: lodcsh
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

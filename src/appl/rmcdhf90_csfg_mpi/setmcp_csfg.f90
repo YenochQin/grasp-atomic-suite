@@ -219,7 +219,7 @@
           IF (NB /= IBLK .OR. NCFNB /= NCFBLKmcp(NB) .OR. &
               NCFTrmcp /= TotCSFs_perblock(3, NB)) THEN
             WRITE(ISTDE, *)"IBLK, NB, NCFNB, NCFBLKmcp(NB), NCFTrmcp, &
-                            TotCSFs_perblock(3, NB) =", &  
+                            &TotCSFs_perblock(3, NB) =", &
                             IBLK, NB, NCFNB, NCFBLKmcp(NB), NCFTrmcp, &
                             TotCSFs_perblock(3, NB)
             STOP "ERROR! NB /= IBLK .OR. NCFNB /= NCFBLKmcp(NB) ..."

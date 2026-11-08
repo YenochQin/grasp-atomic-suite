@@ -97,12 +97,14 @@
       USE ispar_I
       USE spicmvmpi_I
       USE suite_linear_algebra, ONLY: dcopy, dspevx, dswap
+      USE mgs_nrm_I, ONLY: mgs_nrm
+      USE mpiu_I, ONLY: gdsummpi
+      USE mpiu_I, ONLY: stopmpi
+      USE suite_linear_algebra, ONLY: dlamch
       IMPLICIT NONE
 !-----------------------------------------------
 !  E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      REAL(DOUBLE) :: DLAMCH
-      EXTERNAL     :: DLAMCH
 !      EXTERNAL     :: DNICMV,SPICMVsym,SPODMV
       EXTERNAL     :: SPICMVsym
 !-----------------------------------------------
@@ -356,7 +358,7 @@
                          // " large-scale: NCF is too large,"   &
                          // " or too many levels to be resolved."
               STOP "Error, Overflow occurs 1, &
-                    out of the ability of the present version!"
+                    &out of the ability of the present version!"
             ENDIF
 
             ! Additional size for other work-arrays, CHECK needed
@@ -680,7 +682,7 @@
                          // " large-scale: NCF is too large,"   &
                          // " or too many levels to be resolved."
               STOP "Error, Overflow occurs 2, &
-                    out of the ability of the present version!"
+                    &out of the ability of the present version!"
             ENDIF
             ILOW = 1
             IHIGH = NVEX

@@ -28,6 +28,15 @@ program npol_unit_driver
     coul = 7
     zz = coul
     select case (trim(mode))
+    case ('paths')
+        call check_path('', 'npol.summary')
+        call check_path('npol.inp', 'npol.summary')
+        call check_path('/npol.inp', '/npol.summary')
+        call check_path('with space/npol.inp', 'with space/npol.summary')
+        call check_path('a'//achar(92)//'b'//achar(92)//'npol.inp', &
+                        'a'//achar(92)//'b'//achar(92)//'npol.summary')
+        call check_path(repeat('a',300)//'/npol.inp', repeat('a',300)//'/npol.summary')
+        call check_path('x.inp', 'npol.summary')
     case ('input')
         call npol_read_config(trim(path), cfg, status, message)
         if (status == 0) call npol_validate_config(cfg, 2.0_double, status, message)
@@ -184,4 +193,18 @@ program npol_unit_driver
         error stop 'unknown test mode'
     end select
     print '(A)', 'PASS '//trim(mode)
+contains
+    subroutine check_path(input, expected)
+        character(*), intent(in) :: input, expected
+        character(:), allocatable :: actual
+        actual = npol_summary_path(input)
+        call require(len(actual) == len(expected), 'summary path length')
+        call require(actual == expected, 'summary path value')
+        call check_argument(npol_summary_path(input), expected)
+    end subroutine
+    subroutine check_argument(actual, expected)
+        character(*), intent(in) :: actual, expected
+        call require(len(actual) == len(expected), 'summary argument length')
+        call require(actual == expected, 'summary argument value')
+    end subroutine
 end program npol_unit_driver

@@ -1,10 +1,3 @@
-function(copy_target_to_repo_bin target_name)
-    add_custom_command(TARGET ${target_name} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_SOURCE_DIR}/bin"
-        COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${target_name}>" "${PROJECT_SOURCE_DIR}/bin/"
-    )
-endfunction()
-
 if(GRASP_BUILD_SERIAL_APPS)
     add_executable(gj90
         compute_gj_only_I.f90
@@ -24,7 +17,6 @@ if(GRASP_BUILD_SERIAL_APPS)
         gj90.f90
     )
     target_link_libraries_Fortran(gj90 PUBLIC rang90 mcp90 9290 mod)
-    copy_target_to_repo_bin(gj90)
     install(TARGETS gj90 DESTINATION bin/)
 endif()
 
@@ -53,6 +45,5 @@ if(TARGET mpiu90)
       COMPILE_FLAGS "${MPI_Fortran_COMPILE_FLAGS}"
       LINK_FLAGS "${MPI_Fortran_LINK_FLAGS}"
     )
-    copy_target_to_repo_bin(gj90_mpi)
     install(TARGETS gj90_mpi DESTINATION bin/)
 endif()

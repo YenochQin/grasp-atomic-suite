@@ -69,6 +69,8 @@
       USE rkintc_I
       USE vint_I
       USE vpint_I
+      USE onescalar_I, ONLY: onescalar
+      USE rkco_gg_I, ONLY: rkco_gg
       IMPLICIT NONE
       EXTERNAL BREID,CORD
 !----------------------------------------------

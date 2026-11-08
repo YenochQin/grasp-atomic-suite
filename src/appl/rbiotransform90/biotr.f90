@@ -58,6 +58,8 @@
       USE biotr1_I
       USE radfile_I
       USE genmcp_I
+      USE starttime_I, ONLY: starttime
+      USE stoptime_I, ONLY: stoptime
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

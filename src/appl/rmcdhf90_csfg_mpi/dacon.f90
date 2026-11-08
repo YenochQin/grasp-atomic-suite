@@ -32,6 +32,7 @@
       USE csfg_scf_C
       USE tatb_C
       USE wave_C
+      USE dpbdt_I, ONLY: dpbdt
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

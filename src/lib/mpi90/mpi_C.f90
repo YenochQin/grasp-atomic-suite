@@ -7,6 +7,7 @@
 ! remain the public convention of this legacy module; choice buffers are
 ! described by the MPI module rather than unchecked external declarations.
       USE mpi
+      USE mpiu_I, ONLY: startmpi, mpix_bytes
       IMPLICIT NONE
 
       character*(MPI_MAX_PROCESSOR_NAME) host
@@ -14,15 +15,6 @@
       INTEGER ierr, ierrtotal
       INTEGER istat(MPI_STATUS_SIZE)
 
-      INTERFACE
-         SUBROUTINE startmpi(myid, nprocs, host, lenhost)
-            INTEGER, INTENT(OUT) :: myid, nprocs, lenhost
-            CHARACTER(*), INTENT(OUT) :: host
-         END SUBROUTINE startmpi
-         SUBROUTINE mpix_bytes(n, newtype, ierr)
-            INTEGER, INTENT(IN) :: n
-            INTEGER, INTENT(OUT) :: newtype, ierr
-         END SUBROUTINE mpix_bytes
-      END INTERFACE
+
 
       END MODULE mpi_C

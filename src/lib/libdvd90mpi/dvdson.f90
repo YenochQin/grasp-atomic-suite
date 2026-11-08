@@ -540,6 +540,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       !USE ddot_I
+      USE dvd_mpi_I, ONLY: ddotmpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -631,6 +632,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      USE suite_linear_algebra, ONLY: slamch
+      USE ovflow_I
       USE tstsel_I
       USE newvec_I
       USE mgs_nrm_I
@@ -638,6 +641,7 @@
       USE multbc_I
 
       USE suite_linear_algebra, ONLY: daxpy, dcopy, dscal, dspevx
+      USE dvd_mpi_I, ONLY: ddotmpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -672,7 +676,6 @@
       REAL(DOUBLE), INTENT(INOUT)  :: SCRA1(8*LIM)
       REAL(DOUBLE), INTENT(INOUT)  :: OLDVAL(NUME + 1)
       real(kind(0.0d0)) :: ddot
-      real::slamch
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -908,7 +911,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      !USE dinit_I
+      USE dinit_I
       !USE dcopy_I
       USE mgs_nrm_I
       !USE dscal_I
@@ -1067,6 +1070,7 @@
       !USE dgemv_I
       !USE dcopy_I
       USE suite_linear_algebra, ONLY: dcopy
+      USE dvd_mpi_I, ONLY: dgemvmpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1138,6 +1142,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       USE suite_linear_algebra, ONLY: daxpy
+      USE dvd_mpi_I, ONLY: ddotmpi, dgemvmpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1310,8 +1315,9 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      !USE multbc_I
-      !USE dinit_I
+      USE multbc_I
+      USE dinit_I
+      USE dvd_mpi_I, ONLY: multbc_col
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1570,14 +1576,15 @@
       !use ddot_I
       !use dscal_I
       USE suite_linear_algebra, ONLY: dscal
-      implicit none
+      USE dvd_mpi_I, ONLY: ddotmpi, dgemvmpi
+      IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, INTENT(IN)  :: n
       integer, intent(in) :: kp
       integer, INTENT(IN)  :: new
-      real(double), INTENT(IN)  :: scra(new)
+      real(double), INTENT(INOUT) :: scra(new)
       real(double), INTENT(INOUT)  :: b((kp + new)*n)
       real(kind(0.0d0)) :: ddot
 !-----------------------------------------------
@@ -1628,8 +1635,11 @@
 !
             !call dgemv ('T', n, new - k, 1.D0, b(jcur), n, b(kcur), 1, 0.D0, &
             !   scra, 1)
+            ! No trailing vectors: avoid forming B one element past its end.
+            if (k < new) then
             CALL DGEMVMPI ('T', n, new - k, 1.D0, b(jcur), n, b(kcur), &
                                 1, 0.D0, scra, 1)
+            end if
             do j = k + 1, new
 !              call daxpy(N,-scra(j-k),B(kcur),1,B(jcur),1)
                do mm = 0, n - 1
@@ -1800,6 +1810,8 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
+      USE dinit_I, ONLY: dinit
+      USE suite_linear_algebra, ONLY: lsame, xerbla
       IMPLICIT NONE
 !     .. Scalar Arguments ..
       REAL(DOUBLE) :: ALPHA, BETA
@@ -1821,10 +1833,7 @@
       DOUBLE PRECISION   TEMP
       INTEGER            I, INFO, IX, IY, J, JX, JY, KX, KY, LENX, LENY
 !     .. External Functions ..
-      LOGICAL            LSAME
-      EXTERNAL           LSAME
 !     .. External Subroutines ..
-      EXTERNAL           XERBLA
 !     .. Intrinsic Functions ..
       INTRINSIC          MAX
 !     ..
@@ -2014,6 +2023,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
+      USE dinit_I, ONLY: dinit
       IMPLICIT NONE
       REAL(DOUBLE) :: dx(1),dy(1),da
       INTEGER      :: n,incx,incy

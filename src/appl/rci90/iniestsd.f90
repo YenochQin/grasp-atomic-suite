@@ -25,6 +25,7 @@
 !-----------------------------------------------
       USE dspevx_I
       USE suite_linear_algebra, ONLY: dcopy, dspevx
+      USE dinit_I, ONLY: dinit
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

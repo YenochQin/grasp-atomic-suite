@@ -5,7 +5,7 @@
 !                     Gediminas Gaigalas  10/05/17
       SUBROUTINE IABINT (IA,IB,TEGRAL)
       USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER, INTENT(INOUT) :: ia, ib
+      INTEGER, INTENT(IN) :: ia, ib
      REAL(DOUBLE), INTENT(out) :: tegral
       END SUBROUTINE
       END INTERFACE

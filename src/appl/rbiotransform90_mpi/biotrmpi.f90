@@ -58,6 +58,13 @@
       USE gets_I
       USE biotr1_I
       USE radfile_I
+      USE factt_I, ONLY: factt
+      USE mcpin_I, ONLY: mcpin
+      USE mpiu_I, ONLY: startmpi2
+      USE mpiu_I, ONLY: stopmpi2
+      USE setcsla_I, ONLY: setcsla
+      USE sys_chdir_I, ONLY: sys_chdir
+      USE mcpout_I, ONLY: mcpout
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

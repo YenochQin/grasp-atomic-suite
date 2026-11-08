@@ -2,7 +2,8 @@
       INTERFACE
       SUBROUTINE SETSDA_CSFG (OUTSDAdummy, IOUTT, NELMNTCC, LPRINT30, &
                                           NB, MYID, NPROCS, FHEAD)
-      EXTERNAL OUTSDAdummy
+      USE outsdampi_I
+      PROCEDURE(outsdampi) :: OUTSDAdummy
       INTEGER, INTENT(IN) :: IOUTT, NELMNTCC
       LOGICAL             :: LPRINT30
       INTEGER, INTENT(IN) :: NB

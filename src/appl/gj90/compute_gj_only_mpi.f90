@@ -28,6 +28,7 @@
       USE oneparticlejj_I
       USE rint_I
       USE rinthf_I
+      USE mpiu_I, ONLY: gdsummpi
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

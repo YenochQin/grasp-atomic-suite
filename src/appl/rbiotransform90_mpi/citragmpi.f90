@@ -53,6 +53,7 @@
       USE tiinig_I
       USE ti1tv_I
       USE vecsum_I
+      USE copvec_I, ONLY: copvec
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

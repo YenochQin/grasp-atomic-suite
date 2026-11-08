@@ -42,6 +42,7 @@
 !-----------------------------------------------
       USE setvec_I
       USE wrtmat_I
+      USE copvec_I, ONLY: copvec
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

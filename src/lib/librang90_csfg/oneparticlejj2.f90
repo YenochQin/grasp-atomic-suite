@@ -32,6 +32,7 @@
       USE c0t5s_I
       USE rmeajj_I
       USE wj1_I
+      USE perko2_I, ONLY: perko2
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

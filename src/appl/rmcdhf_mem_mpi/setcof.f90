@@ -44,6 +44,7 @@
       USE gco_I
       USE read1_mem_I
       USE read3_mem_I
+      USE read02_mem_I, ONLY: read02_mem
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

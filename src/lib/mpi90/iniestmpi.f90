@@ -29,6 +29,9 @@
       use mpi_C
 
       USE suite_linear_algebra, ONLY: dcopy, dspevx
+      USE dinit_I, ONLY: dinit
+      USE mpiu_I, ONLY: gdsummpi
+      USE suite_linear_algebra, ONLY: dlamch
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -49,7 +52,6 @@
       real(double), dimension(:), pointer :: ap, eigval,vec, work
       real(double) :: ABSTOL
 
-      REAL(KIND(0.0D0)) :: dlamch
 !     real dLAMCH
 !     external dLAMCH
 

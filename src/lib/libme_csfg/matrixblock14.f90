@@ -27,6 +27,11 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      USE analabv_I, ONLY: analabv
+      USE rkco_gg_I, ONLY: rkco_gg
+      USE breit_d_I, ONLY: breit_d
+      USE transfer_cyc_I, ONLY: transfer_cyc
+      USE twobody_dc_sms_I, ONLY: twobody_dc_sms
       IMPLICIT NONE
       EXTERNAL BREID,CORD
 !----------------------------------------------

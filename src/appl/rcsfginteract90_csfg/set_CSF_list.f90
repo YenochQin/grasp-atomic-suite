@@ -21,6 +21,8 @@
       USE openfl_I
       USE prsrsl_I
       USE convrt_I
+      USE set_csf_number_I, ONLY: set_csf_number
+      USE set_csf_number_full_I, ONLY: set_csf_number_full
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

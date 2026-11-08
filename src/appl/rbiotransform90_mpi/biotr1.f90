@@ -80,6 +80,16 @@
 !      USE scalve_I
 !      USE setvec_I
 !      USE pamtmt_I
+      USE copvec_I, ONLY: copvec
+      USE gets_I, ONLY: gets
+      USE invmat_I, ONLY: invmat
+      USE matml4_I, ONLY: matml4
+      USE pamtmt_I, ONLY: pamtmt
+      USE scalve_I, ONLY: scalve
+      USE setvec_I, ONLY: setvec
+      USE trpmat_I, ONLY: trpmat
+      USE ulla_I, ONLY: ulla
+      USE wrtmat_I, ONLY: wrtmat
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
