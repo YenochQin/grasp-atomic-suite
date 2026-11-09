@@ -1,4 +1,9 @@
 # Collect the actual configured tree, including tests, after every subdirectory.
+option(GRASP_CAPTURE_WARNINGS "Record per-compilation GNU Fortran diagnostics" ${GRASP_STRICT_ACCEPTANCE})
+if(GRASP_CAPTURE_WARNINGS)
+    # The test subdirectory's discovery variables are scoped to that directory.
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+endif()
 function(grasp_acceptance_directory directory)
     get_property(targets DIRECTORY "${directory}" PROPERTY BUILDSYSTEM_TARGETS)
     foreach(target IN LISTS targets)
@@ -11,6 +16,17 @@ function(grasp_acceptance_directory directory)
             endif()
             target_include_directories(${target} BEFORE PRIVATE "${modules}")
             file(MAKE_DIRECTORY "${modules}")
+            if(GRASP_CAPTURE_WARNINGS)
+                get_target_property(existing_launcher ${target} Fortran_COMPILER_LAUNCHER)
+                set(warning_launcher "${Python3_EXECUTABLE}"
+                    "${PROJECT_SOURCE_DIR}/test/f2018/warning_inventory.py" capture
+                    --source "${PROJECT_SOURCE_DIR}" --build "${PROJECT_BINARY_DIR}"
+                    --compiler "${CMAKE_Fortran_COMPILER}" --)
+                if(existing_launcher)
+                    list(APPEND warning_launcher ${existing_launcher})
+                endif()
+                set_property(TARGET ${target} PROPERTY Fortran_COMPILER_LAUNCHER "${warning_launcher}")
+            endif()
             set_property(GLOBAL APPEND PROPERTY GRASP_ACCEPTANCE_TARGETS ${target})
         endif()
     endforeach()

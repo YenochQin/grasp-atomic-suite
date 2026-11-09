@@ -49,7 +49,7 @@ if(Python3_Interpreter_FOUND)
             ${CMAKE_CURRENT_SOURCE_DIR}/check_level_weights.py $<TARGET_FILE:${target}>)
         set_tests_properties(f2018_weights_${variant} PROPERTIES TIMEOUT 60)
     endforeach()
-    foreach(driver acceptance first_sweep)
+    foreach(driver acceptance first_sweep matrix_warnings)
         add_test(NAME f2018_${driver}_driver COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/test_${driver}.py)
     endforeach()

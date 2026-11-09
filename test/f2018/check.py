@@ -64,7 +64,7 @@ def check_commands(commands: list[dict], profile: str, compiler: Path) -> None:
         else:
             required.add("-O2")
         forbidden = [arg for arg in args if (
-            arg in {"-fno-automatic", "-fallow-argument-mismatch", "-fall-intrinsics", "-ffast-math", "-Ofast"}
+            arg in {"-fno-automatic", "-fallow-argument-mismatch", "-fall-intrinsics", "-ffast-math", "-Ofast", "-w"}
             or arg.startswith(("-fdefault-integer-", "-fdefault-real-", "-fdefault-double-", "-Wno-", "-fno-check"))
             or (arg.startswith("-std=") and arg != "-std=f2018")
             or (re.fullmatch(r"-O[0-9sgz]", arg) and arg not in required)
@@ -74,6 +74,20 @@ def check_commands(commands: list[dict], profile: str, compiler: Path) -> None:
         )]
         if required - set(args) or forbidden:
             raise ValueError(f"Invalid strict command for {entry['file']}: missing={required-set(args)}, forbidden={forbidden}")
+
+
+def check_feature_commands(commands: list[dict], features: dict) -> None:
+    openmp_targets = {"jj2lsj_conversion", "jj2lsj_thread_kernels", "jj2lsj_omp",
+                      "test.jj2lsj_coefficients", "test.jj2lsj_ranking"}
+    for entry in commands:
+        if Path(entry["file"]).suffix.lower() not in {".f90", ".f", ".for", ".f95"}:
+            continue
+        args = entry.get("arguments") or shlex.split(entry["command"])
+        targets = set(re.findall(r"CMakeFiles/([^/]+)\.dir/", " ".join(args)))
+        if "-fopenmp" in args and not features["openmp"]:
+            raise ValueError(f"OpenMP flag leaked into a disabled configuration: {entry['file']}")
+        if targets & openmp_targets and features["openmp"] and "-fopenmp" not in args:
+            raise ValueError(f"Missing OpenMP flag for {entry['file']}")
 
 
 def check_junit(path: Path, expected: set[str]) -> dict[str, str]:
@@ -109,6 +123,7 @@ def main() -> int:
     parser.add_argument("--audit", action="store_true", help="Allow legacy/audit profiles; never claim strict acceptance")
     parser.add_argument("--inventory-only", action="store_true", help="Check registration and commands without running tests")
     parser.add_argument("--jobs", type=int, default=4)
+    parser.add_argument("--warning-baseline", type=Path, help="Reviewed GNU 15 per-file warning budget")
     args = parser.parse_args()
     build = args.build.resolve()
     targets = set((build / "f2018-targets.txt").read_text().splitlines())
@@ -160,6 +175,7 @@ def main() -> int:
         check_roster({k for k, v in features.items() if v}, targets, tests)
         commands = json.loads((build / "compile_commands.json").read_text())
         check_commands(commands, profile, compiler)
+        check_feature_commands(commands, features)
         compiled_targets = set()
         for entry in commands:
             command = " ".join(entry.get("arguments", [])) or entry.get("command", "")
@@ -172,6 +188,13 @@ def main() -> int:
             summary["status"] = "inventory_only"
         else:
             run_logged(["cmake", "--build", str(build), "--parallel", str(args.jobs)], audit / "build.log", env)
+            if profile in STRICT and not args.audit:
+                from warning_inventory import BASELINE, compare, inventory, write_json
+                observation = inventory(build)
+                write_json(build / "audit/warnings.json", observation)
+                baseline_path = args.warning_baseline or BASELINE
+                summary["warning_baseline_sha256"] = hashlib.sha256(baseline_path.read_bytes()).hexdigest()
+                summary["warning_gate"] = compare(observation, json.loads(baseline_path.read_text()))
             junit = audit / "ctest.xml"
             junit.unlink(missing_ok=True)
             # Parse results even when CTest returns failure, preserving skip information.

@@ -3,7 +3,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from check import check_commands, check_junit, check_roster, requirements
+from check import check_commands, check_feature_commands, check_junit, check_roster, requirements
 
 
 class AcceptanceTests(unittest.TestCase):
@@ -32,13 +32,24 @@ class AcceptanceTests(unittest.TestCase):
         check_commands([good], "f2018-check", compiler)
         for bad_flag in ("-fallow-argument-mismatch", "-fno-automatic", "-std=legacy", "-O3",
                          "-ffast-math", "-fdefault-integer-8", "-ffp-contract=fast", "-Wno-implicit-interface",
-                         "-fcheck=none", "-ffpe-trap=none"):
+                         "-fcheck=none", "-ffpe-trap=none", "-w"):
             with self.subTest(flag=bad_flag), self.assertRaises(ValueError):
                 check_commands([good, {**good, "arguments": [*good["arguments"], bad_flag]}], "f2018-check", compiler)
         with self.assertRaises(ValueError):
             check_commands([{**good, "arguments": [str(compiler), "-std=f2018"]}], "f2018-check", compiler)
         with self.assertRaises(ValueError):
             check_commands([{**good, "arguments": ["/compiler/gfortran-16", *flags]}], "f2018-check", compiler)
+
+    def test_openmp_commands_match_the_feature(self) -> None:
+        command = {"file": "convert.f90", "arguments": ["gfortran-15", "-fopenmp", "-c", "convert.f90",
+                   "-o", "CMakeFiles/jj2lsj_conversion.dir/convert.f90.o"]}
+        check_feature_commands([command], {"openmp": True})
+        with self.assertRaises(ValueError):
+            check_feature_commands([command], {"openmp": False})
+        serial = {**command, "arguments": [arg for arg in command["arguments"] if arg != "-fopenmp"]}
+        check_feature_commands([serial], {"openmp": False})
+        with self.assertRaises(ValueError):
+            check_feature_commands([serial], {"openmp": True})
 
     def test_skips_failures_missing_and_duplicate_results_fail(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

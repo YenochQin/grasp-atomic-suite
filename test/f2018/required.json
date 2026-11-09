@@ -37,6 +37,7 @@
         "f2018_nmtejj_parity",
         "f2018_acceptance_driver",
         "f2018_first_sweep_driver",
+        "f2018_matrix_warnings_driver",
         "f2018_ci_damping_rmcdhf",
         "f2018_ci_damping_rmcdhf_mem",
         "npol_code_paths",
