@@ -23,7 +23,6 @@
 !-----------------------------------------------
       USE vast_kind_param, ONLY:  DOUBLE
       USE parameter_def,   ONLY:  NNNP
-      USE debug_C
       USE def_C
       USE grid_C
       USE npot_C
@@ -53,7 +52,7 @@
 
 ! Debug printout: header
 !
-      IF (LDBPR(31) .OR. LDBPR(32)) THEN
+      IF (LDBPDACON(1) .OR. LDBPDACON(2)) THEN
         WRITE (99, 300) NP(J), NH(J)
         IabP = 0.D0
         IabQ = 0.D0
@@ -75,7 +74,7 @@
 ! CYC-DEBUG
          ! Debug printout: composition
          IF (MFI > MFMAX) MFMAX = MFI
-         IF (LDBPR(31)) WRITE (99, 301) COEFF, NP(J), NH(J), NP(IORB), &
+         IF (LDBPDACON(1)) WRITE (99, 301) COEFF, NP(J), NH(J), NP(IORB), &
             NH(IORB), NP(IORB), NH(IORB)
 !
          DO I = 2, MFI
@@ -85,7 +84,7 @@
             ZBCI = ZZ(I)/C
             XP(I) = XP(I) + COEFF*(TA(I)*RPORII+FK*PFI-(TWOC*R(I)+ZBCI)*QFI)
             XQ(I) = XQ(I) + COEFF*(TB(I)*RPORII-FK*QFI+ZBCI*PFI)
-            IF (LDBPR(32)) THEN
+            IF (LDBPDACON(2)) THEN
               IabP(I) = IabP(I) + COEFF*(TA(I)*RPORII+FK*PFI-(TWOC*R(I)+ZBCI)*QFI)
               IabQ(I) = IabQ(I) + COEFF*(TB(I)*RPORII-FK*QFI+ZBCI*PFI)
             ENDIF
@@ -94,7 +93,7 @@
       END DO
 
 ! CYC-DEBUG
-      IF (LDBPR(32)) THEN
+      IF (LDBPDACON(2)) THEN
         WRITE (99, 302)
         DO I = 1, MFMAX
           WRITE (99, 303) R(I), IabP(I), IabQ(I), R(I), XP(I), XQ(I)

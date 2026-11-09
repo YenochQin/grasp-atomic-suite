@@ -38,11 +38,10 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       INTEGER :: NRSTLO, NRSTHI, K, LLO, LHI, LLR, IROW, LOCNXT, ILIROK, ILDIAG&
-         , ILOTHR, IBEST
+         , ILOTHR, IBEST, NORDER
       REAL(DOUBLE), DIMENSION(MXORD) :: DX, X, EST
       REAL(DOUBLE), DIMENSION((MXORD*(MXORD + 1))/2) :: POLY
       REAL(DOUBLE) :: DIFF, DIFFT, DEBEB, DEBE
-      LOGICAL :: SET
       LOGICAL, DIMENSION(2*MXORD + 2) :: USED
 !-----------------------------------------------
 !
@@ -56,6 +55,9 @@
 !
 !   Determine the nearest two XARR entries bounding XVAL
 !
+      IF (NARR < 1) ERROR STOP 'INTERP: empty table'
+      NORDER = MIN(MXORD,NARR)
+      NRSTLO = 1
       IF (XVAL < XARR(1)) THEN
          NRSTLO = 1
          NRSTHI = 1
@@ -75,6 +77,10 @@
             NRSTHI = K
          ENDIF
       ENDIF
+      IF (XVAL == XARR(NRSTHI)) THEN
+         YVAL = YARR(NRSTHI)
+         RETURN
+      ENDIF
 !
 !   Clear relevant piece of use-indicator array
 !
@@ -85,22 +91,23 @@
 !
 !   Determine next-nearest XARR entry
 !
-      DO IROW = 1, MXORD
+      DO IROW = 1, NORDER
          LLO = MAX(NRSTLO - IROW + 1,1)
          LHI = MIN(NRSTHI + IROW - 1,NARR)
-         SET = .FALSE.
-         DO K = LLO, LHI
+! Start from an actual unused sample, never from an undefined index.
+         LOCNXT = LLO
+         DO WHILE (LOCNXT <= LHI)
+            IF (.NOT.USED(LOCNXT-LLR)) EXIT
+            LOCNXT = LOCNXT + 1
+         END DO
+         IF (LOCNXT > LHI) ERROR STOP 'INTERP: exhausted stencil'
+         DIFF = XARR(LOCNXT) - XVAL
+         DO K = LOCNXT + 1, LHI
             IF (USED(K-LLR)) CYCLE
-            IF (.NOT.SET) THEN
-               DIFF = XARR(K) - XVAL
+            DIFFT = XARR(K) - XVAL
+            IF (ABS(DIFFT) < ABS(DIFF)) THEN
+               DIFF = DIFFT
                LOCNXT = K
-               SET = .TRUE.
-            ELSE
-               DIFFT = XARR(K) - XVAL
-               IF (ABS(DIFFT) < ABS(DIFF)) THEN
-                  DIFF = DIFFT
-                  LOCNXT = K
-               ENDIF
             ENDIF
          END DO
          USED(LOCNXT-LLR) = .TRUE.
@@ -109,16 +116,13 @@
 !
 !   Fill table for this row
 !
-         DO K = 1, IROW
+         POLY(ILOC(IROW,1)) = YARR(LOCNXT)
+         DO K = 2, IROW
             ILIROK = ILOC(IROW,K)
-            IF (K == 1) THEN
-               POLY(ILIROK) = YARR(LOCNXT)
-            ELSE
-               ILDIAG = ILOC(K - 1,K - 1)
-               ILOTHR = ILOC(IROW,K - 1)
-               POLY(ILIROK) = (POLY(ILDIAG)*DX(IROW)-POLY(ILOTHR)*DX(K-1))/(X(&
-                  IROW)-X(K-1))
-            ENDIF
+            ILDIAG = ILOC(K - 1,K - 1)
+            ILOTHR = ILOC(IROW,K - 1)
+            POLY(ILIROK) = (POLY(ILDIAG)*DX(IROW)-POLY(ILOTHR)*DX(K-1))/(X(&
+               IROW)-X(K-1))
          END DO
 !
 !   Pick off the diagonal element
@@ -131,11 +135,16 @@
 !   Now the estimate vector is filled in, so obtain the
 !   best estimate
 !
-      DEBEB = ABS((EST(2)-EST(1))/EST(2))
+      IF (NORDER == 1) THEN
+         YVAL = EST(1)
+         WRITE (*,'(A)') 'INTERP: One-point extrapolation; accuracy cannot be estimated.'
+         RETURN
+      ENDIF
+      DEBEB = RELATIVE_CHANGE(EST(2),EST(1))
 
       IBEST = 2
-      DO IROW = 3, MXORD
-         DEBE = ABS((EST(IROW)-EST(IROW-1))/EST(IROW))
+      DO IROW = 3, NORDER
+         DEBE = RELATIVE_CHANGE(EST(IROW),EST(IROW-1))
 
 !ps 13/12/2017
 !ps If NARR is small, the EST array sometimes contains the NaN values.
@@ -165,6 +174,18 @@
       RETURN
       CONTAINS
 
+! Keep the original relative criterion for nonzero estimates. Identical
+! zero estimates have zero change; a new zero after a nonzero estimate has
+! no finite relative accuracy estimate, so it must not silently pass.
+      REAL(DOUBLE) FUNCTION RELATIVE_CHANGE(CURRENT, PREVIOUS) RESULT(CHANGE)
+      REAL(DOUBLE), INTENT(IN) :: CURRENT, PREVIOUS
+      IF (CURRENT == 0.D0) THEN
+         CHANGE = HUGE(1.D0)
+         IF (PREVIOUS == 0.D0) CHANGE = 0.D0
+      ELSE
+         CHANGE = ABS((CURRENT-PREVIOUS)/CURRENT)
+      ENDIF
+      END FUNCTION RELATIVE_CHANGE
 
       INTEGER FUNCTION ILOC (IND1, IND2)
       INTEGER, INTENT(IN) :: IND1

@@ -95,7 +95,7 @@
       INTEGER  :: MAXITER
       INTEGER, INTENT(IN) :: IWRSZ
       INTEGER, INTENT(IN) :: IIWSZ
-      INTEGER  :: NLOOPS
+      INTEGER, INTENT(INOUT) :: NLOOPS
 !      INTEGER, INTENT(INOUT) :: IERR
       INTEGER  :: IERR
       REAL(DOUBLE)  :: CRITE
@@ -510,13 +510,13 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: N
+      INTEGER, INTENT(IN) :: N
       INTEGER , INTENT(IN) :: LIM
       INTEGER , INTENT(IN) :: KPASS
       INTEGER , INTENT(IN) :: NNCV
       REAL(DOUBLE)  :: BASIS(N*LIM)
       REAL(DOUBLE)  :: AB(N*LIM)
-      REAL(DOUBLE) , INTENT(OUT) :: S(LIM*(LIM + 1)/2)
+      REAL(DOUBLE), INTENT(INOUT) :: S(LIM*(LIM + 1)/2)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -608,13 +608,13 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       INTEGER, INTENT(INOUT) :: IRC
-      INTEGER  :: N
-      INTEGER  :: LIM
+      INTEGER, INTENT(IN) :: N
+      INTEGER, INTENT(IN) :: LIM
       INTEGER  :: MBLOCK
       INTEGER, INTENT(IN) :: NOC
-      INTEGER  :: NUME
+      INTEGER, INTENT(IN) :: NUME
       INTEGER, INTENT(IN) :: NIV
-      INTEGER  :: NEIG
+      INTEGER, INTENT(IN) :: NEIG
       INTEGER, INTENT(IN) :: MAXITER
       INTEGER, INTENT(INOUT) :: NLOOPS
       INTEGER, INTENT(INOUT) :: IERR
@@ -625,17 +625,17 @@
       INTEGER, INTENT(OUT) :: IREV(*)
       INTEGER  :: ISELEC(NEIG)
       INTEGER  :: ISCRA2(5*LIM)
-      INTEGER  :: INCV(LIM)
-      INTEGER  :: ICV(NUME + 1)
-      REAL(DOUBLE)  :: EIGVAL(LIM)
+      INTEGER, INTENT(INOUT) :: INCV(LIM)
+      INTEGER, INTENT(INOUT) :: ICV(NUME + 1)
+      REAL(DOUBLE), INTENT(INOUT) :: EIGVAL(LIM)
       REAL(DOUBLE)  :: BASIS(N*LIM)
       REAL(DOUBLE)  :: ORTHOBASIS(N*LIM + NOC*N)
       REAL(DOUBLE)  :: AB(N*LIM)
       REAL(DOUBLE)  :: S(LIM*(LIM + 1)/2)
       REAL(DOUBLE)  :: TEMPS(LIM*(LIM + 1)/2)
       REAL(DOUBLE)  :: SVEC(LIM*LIM)
-      REAL(DOUBLE)  :: SCRA1(8*LIM)
-      REAL(DOUBLE)  :: OLDVAL(NUME + 1)
+      REAL(DOUBLE), INTENT(INOUT) :: SCRA1(8*LIM)
+      REAL(DOUBLE), INTENT(INOUT) :: OLDVAL(NUME + 1)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -880,11 +880,11 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       INTEGER, INTENT(INOUT) :: IRC
-      INTEGER  :: N
+      INTEGER, INTENT(IN) :: N
       INTEGER, INTENT(IN) :: NOC
-      INTEGER  :: NIV
+      INTEGER, INTENT(INOUT) :: NIV
       INTEGER, INTENT(IN) :: NUME
-      INTEGER  :: LIM
+      INTEGER, INTENT(IN) :: LIM
       LOGICAL, INTENT(IN) :: HIEND
       INTEGER, INTENT(OUT) :: IREV(*)
       REAL(DOUBLE)  :: SCRA1(*)
@@ -981,9 +981,9 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: N
-      INTEGER  :: K
-      INTEGER  :: M
+      INTEGER, INTENT(IN) :: N
+      INTEGER, INTENT(IN) :: K
+      INTEGER, INTENT(IN) :: M
       REAL(DOUBLE)  :: C(K*M)
       REAL(DOUBLE)  :: TEMP(M)
       REAL(DOUBLE)  :: B(N*K)
@@ -1042,16 +1042,16 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: N
+      INTEGER, INTENT(IN) :: N
       INTEGER , INTENT(IN) :: NUME
       INTEGER , INTENT(IN) :: LIM
       INTEGER , INTENT(IN) :: MBLOCK
-      INTEGER  :: KPASS
+      INTEGER, INTENT(IN) :: KPASS
       INTEGER , INTENT(INOUT) :: NNCV
       REAL(DOUBLE) , INTENT(IN) :: CRITR
       LOGICAL , INTENT(OUT) :: DONE
       INTEGER , INTENT(INOUT) :: INCV(NUME)
-      INTEGER , INTENT(OUT) :: ICV(NUME)
+      INTEGER, INTENT(INOUT) :: ICV(NUME)
       REAL(DOUBLE)  :: SVEC(LIM*NUME)
       REAL(DOUBLE) , INTENT(IN) :: EIGVAL(LIM)
       REAL(DOUBLE) , INTENT(IN) :: OLDVAL(NUME)
@@ -1209,14 +1209,14 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: N
-      INTEGER  :: NUME
-      INTEGER  :: KPASS
+      INTEGER, INTENT(IN) :: N
+      INTEGER, INTENT(IN) :: NUME
+      INTEGER, INTENT(INOUT) :: KPASS
 !CFF   ... add dimensionto SCRA1
       REAL(DOUBLE)  :: SCRA1(NUME)
       REAL(DOUBLE)  :: BASIS(N*KPASS)
       REAL(DOUBLE)  :: AB(N*KPASS)
-      REAL(DOUBLE)  :: S((KPASS*(KPASS + 1))/2)
+      REAL(DOUBLE), INTENT(OUT) :: S((KPASS*(KPASS + 1))/2)
       REAL(DOUBLE)  :: SVEC(KPASS*NUME)
       REAL(DOUBLE) , INTENT(IN) :: EIGVAL(KPASS)
 !-----------------------------------------------
@@ -1306,12 +1306,12 @@
       REAL(DOUBLE) , INTENT(IN) :: CRITE
       REAL(DOUBLE) , INTENT(IN) :: CRITC
       INTEGER , INTENT(IN) :: ISELEC(NEIG)
-      INTEGER , INTENT(OUT) :: ICV(NUME)
+      INTEGER, INTENT(INOUT) :: ICV(NUME)
       INTEGER , INTENT(INOUT) :: IND(NEIG)
       INTEGER , INTENT(OUT) :: INCV(NEIG)
       REAL(DOUBLE) , INTENT(IN) :: SVEC(KPASS*NUME)
       REAL(DOUBLE) , INTENT(IN) :: EIGVAL(NUME)
-      REAL(DOUBLE)  :: ROWLAST(NEIG)
+      REAL(DOUBLE), INTENT(INOUT) :: ROWLAST(NEIG)
       REAL(DOUBLE) , INTENT(IN) :: OLDVAL(NUME)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -1444,11 +1444,11 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: n
+      integer, INTENT(IN) :: n
       integer , intent(in) :: kp
-      integer  :: new
-      real(double)  :: scra(new)
-      real(double)  :: b((kp + new)*n)
+      integer, INTENT(IN) :: new
+      real(double), INTENT(INOUT) :: scra(new)
+      real(double), INTENT(INOUT) :: b((kp + new)*n)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

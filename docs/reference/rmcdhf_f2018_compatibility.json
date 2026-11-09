@@ -739,6 +739,132 @@
           "count": 1
         }
       ]
+    },
+    "src/appl/rmcdhf_mem/setham.f90": {
+      "base_sha256": "399497f35c43e477ac9b66f6823b42695c0989a80ba6f897b1b3084a089231e7",
+      "reason": "Remove uninitialized IOS checks after cached read1_mem calls (no file I/O or status return); regression coverage: Linux strict restart and same-optimization serial first-sweep comparisons.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n      INTEGER :: NCFPAT, IA, IR, ITMP, IDIAG, KM, K, K0, IB, NKJIA, NKJIB, KMIN&\n         , KMAX, NDIM, JBLOCKT, NCFT, NCOEFF, IOS, LAB, NCONTR, ICLMNDUM, I, &\n         LOC, NFILE, ID, IC\n      INTEGER(LONG) :: LOD      !  INTEGER*8 version of LOC\n",
+          "after": "!-----------------------------------------------\n      INTEGER :: NCFPAT, IA, IR, ITMP, IDIAG, KM, K, K0, IB, NKJIA, NKJIB, KMIN&\n         , KMAX, NDIM, JBLOCKT, NCFT, NCOEFF, LAB, NCONTR, ICLMNDUM, I, &\n         LOC, NFILE, ID, IC\n      INTEGER(LONG) :: LOD      !  INTEGER*8 version of LOC\n",
+          "count": 1
+        },
+        {
+          "before": "\n      NCONTR_tot2(1) = NCONTR_tot2(1) + 1\n      CALL read1_mem(31,NCONTR_tot2(1),LAB, NCONTR)\n      IF (IOS /= 0) STOP 'IOS .NE. 0 when reading LAB, NCONTR'\n      DO WHILE(LAB/=0 .OR. NCONTR/=0)\n\n",
+          "after": "\n      NCONTR_tot2(1) = NCONTR_tot2(1) + 1\n      ! Cached labels are memory accesses; there is no IOSTAT result.\n      CALL read1_mem(31,NCONTR_tot2(1),LAB, NCONTR)\n      DO WHILE(LAB/=0 .OR. NCONTR/=0)\n\n",
+          "count": 1
+        },
+        {
+          "before": "         NCONTR_tot2(1) = NCONTR_tot2(1) + 1\n         CALL read1_mem(31,NCONTR_tot2(1),LAB, NCONTR)\n         IF (IOS == 0) CYCLE\n         STOP 'IOS .NE. 0 when reading LAB, NCONTR'\n      END DO\n\n",
+          "after": "         NCONTR_tot2(1) = NCONTR_tot2(1) + 1\n         CALL read1_mem(31,NCONTR_tot2(1),LAB, NCONTR)\n      END DO\n\n",
+          "count": 1
+        },
+        {
+          "before": "         NCONTR_tot2(NFILE-30) = NCONTR_tot2(NFILE-30) + 1\n         CALL read1_mem(NFILE,NCONTR_tot2(NFILE-30),LAB, NCONTR)\n         IF (IOS /= 0) STOP 'IOS .NE. 0 when reading LAB, NCONTR 2'\n         DO WHILE(LAB/=0 .OR. NCONTR/=0)\n\n",
+          "after": "         NCONTR_tot2(NFILE-30) = NCONTR_tot2(NFILE-30) + 1\n         CALL read1_mem(NFILE,NCONTR_tot2(NFILE-30),LAB, NCONTR)\n         DO WHILE(LAB/=0 .OR. NCONTR/=0)\n\n",
+          "count": 1
+        },
+        {
+          "before": "            NCONTR_tot2(NFILE-30) = NCONTR_tot2(NFILE-30) + 1\n            CALL read1_mem(NFILE,NCONTR_tot2(NFILE-30),LAB, NCONTR)\n            IF (IOS == 0) CYCLE\n            STOP 'IOS .NE. 0 when reading LAB, NCONTR 2'\n         END DO\n      END DO\n",
+          "after": "            NCONTR_tot2(NFILE-30) = NCONTR_tot2(NFILE-30) + 1\n            CALL read1_mem(NFILE,NCONTR_tot2(NFILE-30),LAB, NCONTR)\n         END DO\n      END DO\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/setham.f90": {
+      "base_sha256": "afdfc2f97b9ff6133a9c8ddfc1cf439597bc24928c6f600129da0d3ae7e09e9d",
+      "reason": "Remove uninitialized IOS checks after cached read1_mem calls (no file I/O or status return); regression coverage: Linux strict restart and same-optimization serial first-sweep comparisons.",
+      "edits": [
+        {
+          "before": "!-----------------------------------------------\n      INTEGER :: NCFPAT, IA, IR, ITMP, IDIAG, KM, K, K0, IB, NKJIA, NKJIB, KMIN&\n         , KMAX, NDIM, JBLOCKT, NCFT, NCOEFF, IOS, LAB, NCONTR, ICLMNDUM, I, &\n         LOC, NFILE, ID, IC\n      INTEGER(LONG) :: LOD      !  INTEGER*8 version of LOC\n",
+          "after": "!-----------------------------------------------\n      INTEGER :: NCFPAT, IA, IR, ITMP, IDIAG, KM, K, K0, IB, NKJIA, NKJIB, KMIN&\n         , KMAX, NDIM, JBLOCKT, NCFT, NCOEFF, LAB, NCONTR, ICLMNDUM, I, &\n         LOC, NFILE, ID, IC\n      INTEGER(LONG) :: LOD      !  INTEGER*8 version of LOC\n",
+          "count": 1
+        },
+        {
+          "before": "\n      NCONTR_tot2(1) = NCONTR_tot2(1) + 1\n      CALL read1_mem(31,NCONTR_tot2(1),LAB, NCONTR)\n      IF (IOS /= 0) STOP 'IOS .NE. 0 when reading LAB, NCONTR'\n      DO WHILE(LAB/=0 .OR. NCONTR/=0)\n\n",
+          "after": "\n      NCONTR_tot2(1) = NCONTR_tot2(1) + 1\n      ! Cached labels are memory accesses; there is no IOSTAT result.\n      CALL read1_mem(31,NCONTR_tot2(1),LAB, NCONTR)\n      DO WHILE(LAB/=0 .OR. NCONTR/=0)\n\n",
+          "count": 1
+        },
+        {
+          "before": "         NCONTR_tot2(1) = NCONTR_tot2(1) + 1\n         CALL read1_mem(31,NCONTR_tot2(1),LAB, NCONTR)\n         IF (IOS == 0) CYCLE\n         STOP 'IOS .NE. 0 when reading LAB, NCONTR'\n      END DO\n\n",
+          "after": "         NCONTR_tot2(1) = NCONTR_tot2(1) + 1\n         CALL read1_mem(31,NCONTR_tot2(1),LAB, NCONTR)\n      END DO\n\n",
+          "count": 1
+        },
+        {
+          "before": "         NCONTR_tot2(NFILE-30) = NCONTR_tot2(NFILE-30) + 1\n         CALL read1_mem(NFILE,NCONTR_tot2(NFILE-30),LAB, NCONTR)\n         IF (IOS /= 0) STOP 'IOS .NE. 0 when reading LAB, NCONTR 2'\n         DO WHILE(LAB/=0 .OR. NCONTR/=0)\n\n",
+          "after": "         NCONTR_tot2(NFILE-30) = NCONTR_tot2(NFILE-30) + 1\n         CALL read1_mem(NFILE,NCONTR_tot2(NFILE-30),LAB, NCONTR)\n         DO WHILE(LAB/=0 .OR. NCONTR/=0)\n\n",
+          "count": 1
+        },
+        {
+          "before": "            NCONTR_tot2(NFILE-30) = NCONTR_tot2(NFILE-30) + 1\n            CALL read1_mem(NFILE,NCONTR_tot2(NFILE-30),LAB, NCONTR)\n            IF (IOS == 0) CYCLE\n            STOP 'IOS .NE. 0 when reading LAB, NCONTR 2'\n         END DO\n      END DO\n",
+          "after": "            NCONTR_tot2(NFILE-30) = NCONTR_tot2(NFILE-30) + 1\n            CALL read1_mem(NFILE,NCONTR_tot2(NFILE-30),LAB, NCONTR)\n         END DO\n      END DO\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf/getaldwt.f90": {
+      "base_sha256": "416deaa77ad0ecbe60fc8ca245b33b924c127022558b17a0e78e971db61cae6f",
+      "reason": " GETALDWT reads exactly the declared NCF weights, replacing the uninitialized local NCMIN; production input regression covers equal/standard/custom/retry cases.",
+      "edits": [
+        {
+          "before": "!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER :: I, N159, NCMIN\n      REAL(DOUBLE) :: SUMWGT, FTJPOI\n!-----------------------------------------------\n\n! Select a method to assign level weights for ncmin > 1 case\n\n      WRITE (ISTDE, *) 'level weights (1 equal;  5 standard;  9 user)'\n",
+          "after": "!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER :: I, N159\n      REAL(DOUBLE) :: SUMWGT, FTJPOI\n!-----------------------------------------------\n\n! Select a method to assign level weights for NCF > 1 case\n\n      WRITE (ISTDE, *) 'level weights (1 equal;  5 standard;  9 user)'\n",
+          "count": 1
+        },
+        {
+          "before": "         WRITE (ISTDE, *) 'Enter the (relative) weights of the', NCF, &\n            ' levels :'\n         READ (ISTDI, *) (WT(I),I=1,NCMIN)\n\n         SUMWGT = 0.D0\n",
+          "after": "         WRITE (ISTDE, *) 'Enter the (relative) weights of the', NCF, &\n            ' levels :'\n         READ (ISTDI, *) (WT(I),I=1,NCF)\n\n         SUMWGT = 0.D0\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem/getaldwt.f90": {
+      "base_sha256": "bbf2d71a9116600bc272fac6f1dcbfd73b127b44ef8802bc8eb099708ce0b124",
+      "reason": " GETALDWT reads exactly the declared NCF weights, replacing the uninitialized local NCMIN; production input regression covers equal/standard/custom/retry cases.",
+      "edits": [
+        {
+          "before": "!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER :: I, N159, NCMIN\n      REAL(DOUBLE) :: SUMWGT, FTJPOI\n!-----------------------------------------------\n\n! Select a method to assign level weights for ncmin > 1 case\n\n      WRITE (ISTDE, *) 'level weights (1 equal;  5 standard;  9 user)'\n",
+          "after": "!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER :: I, N159\n      REAL(DOUBLE) :: SUMWGT, FTJPOI\n!-----------------------------------------------\n\n! Select a method to assign level weights for NCF > 1 case\n\n      WRITE (ISTDE, *) 'level weights (1 equal;  5 standard;  9 user)'\n",
+          "count": 1
+        },
+        {
+          "before": "         WRITE (ISTDE, *) 'Enter the (relative) weights of the', NCF, &\n            ' levels :'\n         READ (ISTDI, *) (WT(I),I=1,NCMIN)\n\n         SUMWGT = 0.D0\n",
+          "after": "         WRITE (ISTDE, *) 'Enter the (relative) weights of the', NCF, &\n            ' levels :'\n         READ (ISTDI, *) (WT(I),I=1,NCF)\n\n         SUMWGT = 0.D0\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mpi/getaldwt.f90": {
+      "base_sha256": "253e8c12638c92ed81e4c617ee75232722d8894b281bc8fcf33a0dced6dd4f18",
+      "reason": " GETALDWT reads exactly the declared NCF weights, replacing the uninitialized local NCMIN; production input regression covers equal/standard/custom/retry cases.",
+      "edits": [
+        {
+          "before": "!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER :: I, N159, NCMIN\n      REAL(DOUBLE) :: SUMWGT, FTJPOI\n!-----------------------------------------------\n\n! Select a method to assign level weights for ncmin > 1 case\n\n      WRITE (ISTDE, *) 'level weights (1 equal;  5 standard;  9 user)'\n",
+          "after": "!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER :: I, N159\n      REAL(DOUBLE) :: SUMWGT, FTJPOI\n!-----------------------------------------------\n\n! Select a method to assign level weights for NCF > 1 case\n\n      WRITE (ISTDE, *) 'level weights (1 equal;  5 standard;  9 user)'\n",
+          "count": 1
+        },
+        {
+          "before": "         WRITE (ISTDE, *) 'Enter the (relative) weights of the', NCF, &\n            ' levels :'\n         READ (ISTDI, *) (WT(I),I=1,NCMIN)\n\n         SUMWGT = 0.D0\n",
+          "after": "         WRITE (ISTDE, *) 'Enter the (relative) weights of the', NCF, &\n            ' levels :'\n         READ (ISTDI, *) (WT(I),I=1,NCF)\n\n         SUMWGT = 0.D0\n",
+          "count": 1
+        }
+      ]
+    },
+    "src/appl/rmcdhf_mem_mpi/getaldwt.f90": {
+      "base_sha256": "cb3a3d9d548e1ec789264370b1b9314d9a2731c282afd66d32ef7561ba6b38f0",
+      "reason": " GETALDWT reads exactly the declared NCF weights, replacing the uninitialized local NCMIN; production input regression covers equal/standard/custom/retry cases.",
+      "edits": [
+        {
+          "before": "!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER :: I, N159, NCMIN\n      REAL(DOUBLE) :: SUMWGT, FTJPOI\n!-----------------------------------------------\n\n! Select a method to assign level weights for ncmin > 1 case\n\n      WRITE (ISTDE, *) 'level weights (1 equal;  5 standard;  9 user)'\n",
+          "after": "!   L o c a l   V a r i a b l e s\n!-----------------------------------------------\n      INTEGER :: I, N159\n      REAL(DOUBLE) :: SUMWGT, FTJPOI\n!-----------------------------------------------\n\n! Select a method to assign level weights for NCF > 1 case\n\n      WRITE (ISTDE, *) 'level weights (1 equal;  5 standard;  9 user)'\n",
+          "count": 1
+        },
+        {
+          "before": "         WRITE (ISTDE, *) 'Enter the (relative) weights of the', NCF, &\n            ' levels :'\n         READ (ISTDI, *) (WT(I),I=1,NCMIN)\n\n         SUMWGT = 0.D0\n",
+          "after": "         WRITE (ISTDE, *) 'Enter the (relative) weights of the', NCF, &\n            ' levels :'\n         READ (ISTDI, *) (WT(I),I=1,NCF)\n\n         SUMWGT = 0.D0\n",
+          "count": 1
+        }
+      ]
     }
   }
 }

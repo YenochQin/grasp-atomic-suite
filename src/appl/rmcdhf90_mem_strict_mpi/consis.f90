@@ -3,6 +3,9 @@
       SUBROUTINE CONSIS(J)
 !                                                                      *
 !   This routine computes the weighted self-consistency of orbital J   *
+!   Strict caller supplies normalized P/Q, before damping; PF/QF are
+!   the normalized previous orbital. The weighting and maximum norm
+!   are unchanged from the original consistency formula.
 !                                                                      *
 !   Written by Farid A Parpia, at OXFORD    Last update: 08 Dec 1992   *
 !                                                                      *

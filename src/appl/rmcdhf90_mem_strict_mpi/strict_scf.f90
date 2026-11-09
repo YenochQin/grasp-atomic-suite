@@ -1,6 +1,7 @@
 ! Stopping policy for the independent rmcdhf_mem_strict_mpi executable.
-! SCNSTY is the legacy occupation-weighted update measure, not an
-! Euler-equation residual or a difference between saved normalized orbitals.
+! SCNSTY is the occupation-weighted change of the normalized, undamped
+! proposal. It is not an Euler-equation residual or the smaller saved
+! step after damping. IMPROV must normalize before calling CONSIS.
       MODULE STRICT_SCF
       USE vast_kind_param, ONLY: DOUBLE
       USE, INTRINSIC :: IEEE_ARITHMETIC, ONLY: IEEE_IS_FINITE

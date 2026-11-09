@@ -40,7 +40,18 @@
         "f2018_ci_damping_rmcdhf",
         "f2018_ci_damping_rmcdhf_mem",
         "npol_code_paths",
-        "f2018_davidson_contracts"
+        "f2018_davidson_contracts",
+        "f2018_davidson_early",
+        "f2018_interp_contracts",
+        "f2018_rk_count_rci90",
+        "f2018_rk_count_rci90_mpi",
+        "f2018_weights_rmcdhf",
+        "f2018_weights_rmcdhf_mem",
+        "f2018_weights_rmcdhf_mpi",
+        "f2018_weights_rmcdhf_mem_mpi",
+        "f2018_weights_rmcdhf90_mem_strict_mpi",
+        "f2018_weights_rmcdhf90_mem_diag_mpi",
+        "f2018_weights_rmcdhf90_csfg_mpi"
       ]
     },
     {
@@ -99,7 +110,9 @@
         "f2018_mpi_contracts_2",
         "f2018_mpi_contracts_4",
         "f2018_interface_rejections",
-        "f2018_system_paths"
+        "f2018_system_paths",
+        "f2018_sparse_empty_rank",
+        "f2018_strict_orbital_consistency"
       ]
     },
     {
@@ -146,7 +159,9 @@
         "csfg_file_formats",
         "csfg_alternate_capacity",
         "f2018_csfg_reallocation",
-        "f2018_nmtejj_csfg_parity"
+        "f2018_nmtejj_csfg_parity",
+        "f2018_rk_count_csfg",
+        "f2018_csfg_dacon"
       ]
     },
     {
@@ -163,7 +178,14 @@
         "rci_block_csfg_mpi",
         "rmcdhf_csfg_mpi"
       ],
-      "tests": []
+      "tests": [
+        "f2018_csfg_debug_mpi_1",
+        "f2018_csfg_debug_mpi_2",
+        "f2018_csfg_debug_mpi_4",
+        "f2018_dgemvmpi_1",
+        "f2018_dgemvmpi_2",
+        "f2018_dgemvmpi_4"
+      ]
     },
     {
       "name": "ci_rmcdhf_mpi",
@@ -225,7 +247,10 @@
       "tests": [
         "f2018_davidson_mpi_1",
         "f2018_davidson_mpi_2",
-        "f2018_davidson_mpi_4"
+        "f2018_davidson_mpi_4",
+        "f2018_davidson_early_mpi_1",
+        "f2018_davidson_early_mpi_2",
+        "f2018_davidson_early_mpi_4"
       ]
     }
   ]

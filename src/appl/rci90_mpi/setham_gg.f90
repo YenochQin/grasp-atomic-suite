@@ -100,7 +100,7 @@
 !cjb
       INTEGER :: ipi, ipj, inc1, inc2, kt, ipt, incor, ncoec, nctec, &
                  i, j, nmcbp, ncore, ic, nelc, irstart, ir, ia, ib,  &
-                 itype, nctei, iia
+                 itype, iia
        REAL(DOUBLE) :: elemnt, precoeff, tcoeff, vcoeff, contr
 !-----------------------------------------------------------------------
       nelmnt = nelmntt
@@ -458,7 +458,7 @@
       CUTOFFtmp = CUTOFF
       NCOEItmp = NCOEI
       NCOECtmp = NCOEC
-      NCTEItmp = NCTEI
+      NCTEItmp = RK_LOCAL_COUNT(SIZE(VALTEIRK), MYID, NPROCS)
       NCTECtmp = NCTEC
       NTPItmp = NTPI
       NMCBPtmp = NMCBP

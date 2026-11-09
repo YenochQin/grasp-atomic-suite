@@ -2,6 +2,17 @@ add_executable(test.f2018_davidson davidson_contracts.F90)
 target_link_libraries_Fortran(test.f2018_davidson PRIVATE dvd90 9290 mod)
 target_link_libraries(test.f2018_davidson PRIVATE ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
 add_test(NAME f2018_davidson_contracts COMMAND test.f2018_davidson)
+add_test(NAME f2018_davidson_early COMMAND test.f2018_davidson early)
+set_tests_properties(f2018_davidson_contracts f2018_davidson_early PROPERTIES TIMEOUT 30)
+foreach(variant rci90 rci90_mpi)
+    set(app "${PROJECT_SOURCE_DIR}/src/appl/${variant}")
+    set(target test.f2018_rk_count_${variant})
+    add_executable(${target} rk_count.F90 "${app}/genintrk.f90" "${app}/genintrk_I.f90"
+        "${app}/triangrk.f90" "${app}/triangrk_I.f90")
+    target_link_libraries_Fortran(${target} PRIVATE 9290 mod)
+    add_test(NAME f2018_rk_count_${variant} COMMAND ${target})
+    set_tests_properties(f2018_rk_count_${variant} PROPERTIES TIMEOUT 30)
+endforeach()
 add_executable(test.f2018_nmtejj nmtejj_probe.f90)
 add_executable(test.f2018_linear_algebra linear_algebra_contracts.f90)
 target_link_libraries_Fortran(test.f2018_linear_algebra PRIVATE mod)
@@ -18,6 +29,26 @@ if(Python3_Interpreter_FOUND)
 endif()
 
 if(Python3_Interpreter_FOUND)
+    add_executable(test.f2018_interp interp_contracts.f90
+        "${PROJECT_SOURCE_DIR}/src/lib/lib9290/interp.f90"
+        "${PROJECT_SOURCE_DIR}/src/lib/lib9290/interp_I.f90")
+    target_link_libraries_Fortran(test.f2018_interp PRIVATE mod)
+    target_compile_options(test.f2018_interp PRIVATE -finit-integer=999999 -fcheck=all)
+    add_test(NAME f2018_interp_contracts COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/check_interp.py $<TARGET_FILE:test.f2018_interp>)
+    set_tests_properties(f2018_interp_contracts PROPERTIES TIMEOUT 60)
+    foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi rmcdhf90_mem_strict_mpi rmcdhf90_mem_diag_mpi rmcdhf90_csfg_mpi)
+        set(target test.f2018_weights_${variant})
+        set(app "${PROJECT_SOURCE_DIR}/src/appl/${variant}")
+        add_executable(${target} level_weights.f90 "${app}/getaldwt.f90" "${app}/getaldwt_I.f90")
+        target_link_libraries_Fortran(${target} PRIVATE 9290 mod)
+        # Diagnostic poison exposes the former uninitialized read extent;
+        # no production target receives default-initialization options.
+        target_compile_options(${target} PRIVATE -finit-integer=-999999 -fcheck=all)
+        add_test(NAME f2018_weights_${variant} COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/check_level_weights.py $<TARGET_FILE:${target}>)
+        set_tests_properties(f2018_weights_${variant} PROPERTIES TIMEOUT 60)
+    endforeach()
     foreach(driver acceptance first_sweep)
         add_test(NAME f2018_${driver}_driver COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/test_${driver}.py)
@@ -69,6 +100,28 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi rmcdhf_mem_strict_mp
 endforeach()
 
 if(TARGET mpiu90 AND Python3_Interpreter_FOUND)
+    set(strict_app "${PROJECT_SOURCE_DIR}/src/appl/rmcdhf90_mem_strict_mpi")
+    add_executable(test.f2018_strict_orbital_consistency strict_orbital_consistency.f90)
+    foreach(source improvmpi consis dampor)
+        target_sources(test.f2018_strict_orbital_consistency PRIVATE "${strict_app}/${source}.f90")
+    endforeach()
+    foreach(interface improvmpi cofpotmpi defcor solve consis dampck dampor orthy setlagmpi)
+        target_sources(test.f2018_strict_orbital_consistency PRIVATE "${strict_app}/${interface}_I.f90")
+    endforeach()
+    target_link_libraries_Fortran(test.f2018_strict_orbital_consistency PRIVATE mpiu90 9290 mod)
+    add_test(NAME f2018_strict_orbital_consistency COMMAND test.f2018_strict_orbital_consistency)
+    set_tests_properties(f2018_strict_orbital_consistency PROPERTIES TIMEOUT 30)
+    set(angular_app "${PROJECT_SOURCE_DIR}/src/appl/rangular90_mpi")
+    add_executable(test.f2018_sparse_empty_rank sparse_empty_rank.f90
+        "${angular_app}/setsda.f90" "${angular_app}/setsda_I.f90" "${angular_app}/outsdampi_I.f90")
+    target_link_libraries_Fortran(test.f2018_sparse_empty_rank PRIVATE 9290 mod)
+    # Poison uninitialized local integers only in this diagnostic fixture.
+    # A zero default would hide SETSDA's former empty-rank IC access.
+    target_compile_options(test.f2018_sparse_empty_rank PRIVATE -finit-integer=-999999 -fcheck=all)
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sparse-empty-rank")
+    add_test(NAME f2018_sparse_empty_rank COMMAND test.f2018_sparse_empty_rank)
+    set_tests_properties(f2018_sparse_empty_rank PROPERTIES TIMEOUT 30
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sparse-empty-rank")
     add_executable(test.f2018_mpi_contracts mpi_contracts.f90)
     target_link_libraries_Fortran(test.f2018_mpi_contracts PRIVATE mpiu90 mod)
     foreach(ranks 1 2 4)
@@ -93,6 +146,18 @@ if(TARGET mpiu90 AND Python3_Interpreter_FOUND)
 endif()
 
 if(TARGET mod_csfg)
+    set(app "${PROJECT_SOURCE_DIR}/src/lib/libme_csfg")
+    add_executable(test.f2018_rk_count_csfg rk_count.F90 "${app}/genintrk.f90" "${app}/genintrk_I.f90"
+        "${app}/triangrk.f90" "${app}/triangrk_I.f90")
+    target_compile_definitions(test.f2018_rk_count_csfg PRIVATE RK_CSFG)
+    target_link_libraries_Fortran(test.f2018_rk_count_csfg PRIVATE mod_csfg 9290 mod)
+    add_test(NAME f2018_rk_count_csfg COMMAND test.f2018_rk_count_csfg)
+    set_tests_properties(f2018_rk_count_csfg PROPERTIES TIMEOUT 30)
+    set(app "${PROJECT_SOURCE_DIR}/src/appl/rmcdhf90_csfg_mpi")
+    add_executable(test.f2018_csfg_dacon csfg_dacon.f90 "${app}/dacon.f90" "${app}/dacon_I.f90")
+    target_link_libraries_Fortran(test.f2018_csfg_dacon PRIVATE mod_csfg 9290 mod)
+    add_test(NAME f2018_csfg_dacon COMMAND test.f2018_csfg_dacon)
+    set_tests_properties(f2018_csfg_dacon PROPERTIES TIMEOUT 30)
     add_executable(test.f2018_csfg_reallocation csfg_reallocation.f90)
     target_link_libraries_Fortran(test.f2018_csfg_reallocation PRIVATE mod_csfg mod)
     add_test(NAME f2018_csfg_reallocation COMMAND test.f2018_csfg_reallocation)
@@ -107,6 +172,25 @@ if(TARGET mod_csfg)
 endif()
 
 if(TARGET dvd90mpi)
+    add_executable(test.f2018_dgemvmpi dgemvmpi_contracts.f90)
+    target_link_libraries_Fortran(test.f2018_dgemvmpi PRIVATE dvd90mpi mpiu90 9290 mod)
+    target_link_libraries(test.f2018_dgemvmpi PRIVATE ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
+    foreach(ranks 1 2 4)
+        add_test(NAME f2018_dgemvmpi_${ranks}
+            COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ranks}
+            ${MPIEXEC_PREFLAGS} $<TARGET_FILE:test.f2018_dgemvmpi> ${MPIEXEC_POSTFLAGS})
+        set_tests_properties(f2018_dgemvmpi_${ranks} PROPERTIES TIMEOUT 60 PROCESSORS ${ranks})
+    endforeach()
+    set(app "${PROJECT_SOURCE_DIR}/src/appl/rmcdhf90_csfg_mpi")
+    add_executable(test.f2018_csfg_debug_mpi csfg_debug_mpi.f90 "${app}/setdbgmpi.f90"
+        "${app}/setdbgmpi_I.f90" "${app}/setdbg_I.f90")
+    target_link_libraries_Fortran(test.f2018_csfg_debug_mpi PRIVATE mod_csfg mpiu90 9290 mod)
+    foreach(ranks 1 2 4)
+        add_test(NAME f2018_csfg_debug_mpi_${ranks}
+            COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ranks}
+            ${MPIEXEC_PREFLAGS} $<TARGET_FILE:test.f2018_csfg_debug_mpi> ${MPIEXEC_POSTFLAGS})
+        set_tests_properties(f2018_csfg_debug_mpi_${ranks} PROPERTIES TIMEOUT 60 PROCESSORS ${ranks})
+    endforeach()
     add_executable(test.f2018_davidson_mpi davidson_contracts.F90)
     target_compile_definitions(test.f2018_davidson_mpi PRIVATE DAVIDSON_MPI)
     target_link_libraries_Fortran(test.f2018_davidson_mpi PRIVATE dvd90mpi mpiu90 9290 mod)
@@ -116,5 +200,9 @@ if(TARGET dvd90mpi)
             COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ranks}
             ${MPIEXEC_PREFLAGS} $<TARGET_FILE:test.f2018_davidson_mpi> ${MPIEXEC_POSTFLAGS})
         set_tests_properties(f2018_davidson_mpi_${ranks} PROPERTIES TIMEOUT 60 PROCESSORS ${ranks})
+        add_test(NAME f2018_davidson_early_mpi_${ranks}
+            COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ranks}
+            ${MPIEXEC_PREFLAGS} $<TARGET_FILE:test.f2018_davidson_mpi> early ${MPIEXEC_POSTFLAGS})
+        set_tests_properties(f2018_davidson_early_mpi_${ranks} PROPERTIES TIMEOUT 60 PROCESSORS ${ranks})
     endforeach()
 endif()

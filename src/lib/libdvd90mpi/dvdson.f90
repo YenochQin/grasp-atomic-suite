@@ -124,7 +124,7 @@
       INTEGER  :: MAXITER
       INTEGER, INTENT(IN) :: IWRSZ
       INTEGER, INTENT(IN) :: IIWSZ
-      INTEGER  :: NLOOPS
+      INTEGER, INTENT(INOUT) :: NLOOPS
 !      INTEGER, INTENT(INOUT) :: IERR
       INTEGER  :: IERR
       REAL(DOUBLE)  :: CRITE
@@ -551,7 +551,7 @@
       INTEGER , INTENT(IN) :: NNCV
       REAL(DOUBLE)  :: BASIS(N*LIM)
       REAL(DOUBLE)  :: AB(N*LIM)
-      REAL(DOUBLE) , INTENT(OUT) :: S(LIM*(LIM + 1)/2)
+      REAL(DOUBLE), INTENT(INOUT) :: S(LIM*(LIM + 1)/2)
       real(kind(0.0d0)) :: ddot
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -665,7 +665,7 @@
       INTEGER  :: ISELEC(NEIG)
       INTEGER  :: ISCRA2(5*LIM)
       INTEGER, INTENT(INOUT)  :: INCV(LIM)
-      INTEGER, INTENT(OUT)  :: ICV(NUME + 1)
+      INTEGER, INTENT(INOUT) :: ICV(NUME + 1)
       REAL(DOUBLE), INTENT(INOUT)  :: EIGVAL(LIM)
       REAL(DOUBLE)  :: BASIS(N*LIM)
       REAL(DOUBLE)  :: ORTHOBASIS(N*LIM + NOC*N)
@@ -1157,7 +1157,7 @@
       REAL(DOUBLE) , INTENT(IN) :: CRITR
       LOGICAL , INTENT(OUT) :: DONE
       INTEGER , INTENT(INOUT) :: INCV(NUME)
-      INTEGER , INTENT(OUT) :: ICV(NUME)
+      INTEGER, INTENT(INOUT) :: ICV(NUME)
       REAL(DOUBLE)  :: SVEC(LIM*NUME)
       REAL(DOUBLE) , INTENT(IN) :: EIGVAL(LIM)
       REAL(DOUBLE) , INTENT(IN) :: OLDVAL(NUME)
@@ -1236,7 +1236,11 @@
 !        IF (MYID == 0) WRITE (6, '(A11,F22.16,I3,A10,F19.16)') &
 !           ' EIGVAL(i) ', EIGVAL(INDX), INDX, ' Res.Norm ', SCRA1(INDX)
 
-         IF (SCRA1(INDX) < CRITR .AND. NLOOPS > 2) THEN
+!        A directly evaluated residual is valid even in the first loops.
+!        Unlike an unchanged Ritz value/coefficient, it does not need the
+!        three-loop guard in TSTSEL. Passing a converged (possibly zero)
+!        residual to preconditioning/MGS can cause division by zero.
+         IF (SCRA1(INDX) < CRITR) THEN
 !           ..Converged,do not add. Go for next non converged one
             ICVC = ICVC + 1
             ICV(INDX) = 1
@@ -1323,13 +1327,13 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       INTEGER, INTENT(IN)    :: N
-      INTEGER  :: NUME
-      INTEGER  :: KPASS
+      INTEGER, INTENT(IN) :: NUME
+      INTEGER, INTENT(INOUT) :: KPASS
 !CFF   ... add dimensionto SCRA1
       REAL(DOUBLE)  :: SCRA1(NUME)
       REAL(DOUBLE)  :: BASIS(N*KPASS)
       REAL(DOUBLE)  :: AB(N*KPASS)
-      REAL(DOUBLE)  :: S((KPASS*(KPASS + 1))/2)
+      REAL(DOUBLE), INTENT(OUT) :: S((KPASS*(KPASS + 1))/2)
       REAL(DOUBLE)  :: SVEC(KPASS*NUME)
       REAL(DOUBLE) , INTENT(IN) :: EIGVAL(KPASS)
 !-----------------------------------------------
@@ -1422,7 +1426,7 @@
       REAL(DOUBLE) , INTENT(IN) :: CRITE
       REAL(DOUBLE) , INTENT(IN) :: CRITC
       INTEGER , INTENT(IN) :: ISELEC(NEIG)
-      INTEGER , INTENT(OUT) :: ICV(NUME)
+      INTEGER, INTENT(INOUT) :: ICV(NUME)
       INTEGER , INTENT(INOUT) :: IND(NEIG)
       INTEGER , INTENT(OUT) :: INCV(NEIG)
       REAL(DOUBLE) , INTENT(IN) :: SVEC(KPASS*NUME)
@@ -1831,7 +1835,7 @@
       PARAMETER        ( ONE = 1.0D+0, ZERO = 0.0D+0 )
 !     .. Local Scalars ..
       DOUBLE PRECISION   TEMP
-      INTEGER            I, INFO, IX, IY, J, JX, JY, KX, KY, LENX, LENY
+      INTEGER            I, INFO, J
 !     .. External Functions ..
 !     .. External Subroutines ..
 !     .. Intrinsic Functions ..
@@ -1872,67 +1876,12 @@
           ( ( ALPHA.EQ.ZERO ).AND.( BETA.EQ.ONE ) ) )                &
          RETURN
 !
-!     Set  LENX  and  LENY, the lengths of the vectors x and y, and set
-!     up the start points in  X  and  Y.
+! Unit increments were checked above. Only those paths are supported.
 !
-      IF( LSAME( TRANS, 'N' ) )THEN
-         LENX = N
-         LENY = M
-      ELSE
-         LENX = M
-         LENY = N
-      END IF
-      IF( INCX.GT.0 )THEN
-         KX = 1
-      ELSE
-         KX = 1 - ( LENX - 1 )*INCX
-      END IF
-      IF( INCY.GT.0 )THEN
-         KY = 1
-      ELSE
-         KY = 1 - ( LENY - 1 )*INCY
-      END IF
-!
-!     Start the operations. In this version the elements of A are
-!     accessed sequentially with one pass through A.
-!
-!     First form  y := beta*y.
-!
-!cychen      IF( BETA.NE.ONE )THEN
-!cychen         IF( INCY.EQ.1 )THEN
-!cychen            IF( BETA.EQ.ZERO )THEN
-!cychen               DO 10, I = 1, LENY
-!cychen                  Y( I ) = ZERO
-!cychen   10          CONTINUE
-!cychen            ELSE
-!cychen               DO 20, I = 1, LENY
-!cychen                  Y( I ) = BETA*Y( I )
-!cychen   20          CONTINUE
-!cychen            END IF
-!cychen         ELSE
-!cychen            IY = KY
-!cychen            IF( BETA.EQ.ZERO )THEN
-!cychen               DO 30, I = 1, LENY
-!cychen                  Y( IY ) = ZERO
-!cychen                  IY      = IY   + INCY
-!cychen   30          CONTINUE
-!cychen            ELSE
-!cychen               DO 40, I = 1, LENY
-!cychen                  Y( IY ) = BETA*Y( IY )
-!cychen                  IY      = IY           + INCY
-!cychen   40          CONTINUE
-!cychen            END IF
-!cychen         END IF
-!cychen      END IF
-!cychen      IF( ALPHA.EQ.ZERO )
-!cychen     $   RETURN
-
       IF( LSAME( TRANS, 'N' ) )THEN
 !
 !        Form  y := alpha*A*x + y.
 !
-!         JX = KX
-         IF( INCY.EQ.1 )THEN
             CALL DINIT(M, 0.d0, tm, 1)
             nbar = M / nprocs
             DO 60, J = 1, N
@@ -1950,25 +1899,10 @@
                enddo
             enddo
 
-         ELSE
-            DO 80, J = 1, N
-               IF( X( JX ).NE.ZERO )THEN
-                  TEMP = ALPHA*X( JX )
-                  IY   = KY
-                  DO 70, I = 1, M
-                     Y( IY ) = Y( IY ) + TEMP*A( I, J )
-                     IY      = IY      + INCY
-   70             CONTINUE
-               END IF
-               JX = JX + INCX
-   80       CONTINUE
-         END IF
       ELSE
 !
 !        Form  y := alpha*A'*x + y.
 !
-         JY = KY
-         IF( INCX.EQ.1 )THEN
             nbar = M / nprocs
             DO 100, J = 1, N
                TEMP = ZERO
@@ -1982,18 +1916,6 @@
                enddo
                Y( J ) = tn
   100       CONTINUE
-         ELSE
-            DO 120, J = 1, N
-               TEMP = ZERO
-               IX   = KX
-               DO 110, I = 1, M
-                  TEMP = TEMP + A( I, J )*X( IX )
-                  IX   = IX   + INCX
-  110          CONTINUE
-               Y( JY ) = Y( JY ) + ALPHA*TEMP
-               JY      = JY      + INCY
-  120       CONTINUE
-         END IF
       END IF
 !
       RETURN

@@ -18,6 +18,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       USE DEBUG_C
+      USE csfg_scf_C, ONLY: LDBPDACON
       USE MPI_C
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -37,6 +38,7 @@
       CALL MPI_Bcast (ldbpa, 5, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
       CALL MPI_Bcast (ldbpg, 5, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
       CALL MPI_Bcast (ldbpr,30, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+      CALL MPI_Bcast (LDBPDACON,SIZE(LDBPDACON),MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
 
       RETURN
       END SUBROUTINE SETDBGmpi

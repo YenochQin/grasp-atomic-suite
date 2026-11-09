@@ -18,6 +18,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       USE DEBUG_C
+      USE csfg_scf_C, ONLY: LDBPDACON
       USE default_C
       USE iounit_C
 !-----------------------------------------------
@@ -50,6 +51,7 @@
       LDBPG = .FALSE.
 
       LDBPR = .FALSE.
+      LDBPDACON = .FALSE.
 !
       IF (NDEF == 0) RETURN
 

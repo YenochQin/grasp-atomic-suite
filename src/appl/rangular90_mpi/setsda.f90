@@ -85,7 +85,8 @@
       END DO
 !xhh - changed to suits MPI environment as well
 !      IENDC(NCF) = IEND
-      IENDC(IC) = IEND
+!     ICLAST is zero on an empty rank; IC has no value in that case.
+      IENDC(ICLAST) = IEND
 !
 !   Sorting complete; rewrite to mcpXXX.30 file
 !

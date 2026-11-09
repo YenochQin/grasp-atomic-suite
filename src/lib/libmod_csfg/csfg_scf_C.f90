@@ -12,6 +12,10 @@
       REAL(DOUBLE), DIMENSION(:), pointer :: da, xa, ya
       INTEGER, DIMENSION(:), pointer :: nda, nxa, nya
 
+! CSFG-only DACON coefficient/radial diagnostics. The shared LDBPR has
+! 30 entries; these two optional flags must not index it at 31/32.
+      LOGICAL :: LDBPDACON(2) = .FALSE.
+
 ! CYC: save da, xa, ya, and nda, nxa, nya for the .not. LFIX(J), then
 ! reload them within IMPROVmpi :: COFPOTmpi :: SETCOF_CYC
       INTEGER :: NDIMX

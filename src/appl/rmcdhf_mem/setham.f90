@@ -50,7 +50,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       INTEGER :: NCFPAT, IA, IR, ITMP, IDIAG, KM, K, K0, IB, NKJIA, NKJIB, KMIN&
-         , KMAX, NDIM, JBLOCKT, NCFT, NCOEFF, IOS, LAB, NCONTR, ICLMNDUM, I, &
+         , KMAX, NDIM, JBLOCKT, NCFT, NCOEFF, LAB, NCONTR, ICLMNDUM, I, &
          LOC, NFILE, ID, IC
       INTEGER(LONG) :: LOD      !  INTEGER*8 version of LOC
       REAL(DOUBLE) :: DIAA, COEF, F0AA, FKAA, F0AB, GKAB, TEGRAL
@@ -226,8 +226,8 @@
 !=======================================================================
 
       NCONTR_tot2(1) = NCONTR_tot2(1) + 1
+      ! Cached labels are memory accesses; there is no IOSTAT result.
       CALL read1_mem(31,NCONTR_tot2(1),LAB, NCONTR)
-      IF (IOS /= 0) STOP 'IOS .NE. 0 when reading LAB, NCONTR'
       DO WHILE(LAB/=0 .OR. NCONTR/=0)
 
          !*** decode the label of I(ab)
@@ -263,8 +263,6 @@
 
          NCONTR_tot2(1) = NCONTR_tot2(1) + 1
          CALL read1_mem(31,NCONTR_tot2(1),LAB, NCONTR)
-         IF (IOS == 0) CYCLE
-         STOP 'IOS .NE. 0 when reading LAB, NCONTR'
       END DO
 
       DO NFILE = 32, 32 + KMAXF
@@ -276,7 +274,6 @@
 
          NCONTR_tot2(NFILE-30) = NCONTR_tot2(NFILE-30) + 1
          CALL read1_mem(NFILE,NCONTR_tot2(NFILE-30),LAB, NCONTR)
-         IF (IOS /= 0) STOP 'IOS .NE. 0 when reading LAB, NCONTR 2'
          DO WHILE(LAB/=0 .OR. NCONTR/=0)
 
             !                         k
@@ -317,8 +314,6 @@
 
             NCONTR_tot2(NFILE-30) = NCONTR_tot2(NFILE-30) + 1
             CALL read1_mem(NFILE,NCONTR_tot2(NFILE-30),LAB, NCONTR)
-            IF (IOS == 0) CYCLE
-            STOP 'IOS .NE. 0 when reading LAB, NCONTR 2'
          END DO
       END DO
 

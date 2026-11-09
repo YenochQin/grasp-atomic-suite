@@ -30,11 +30,11 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, N159, NCMIN
+      INTEGER :: I, N159
       REAL(DOUBLE) :: SUMWGT, FTJPOI
 !-----------------------------------------------
 
-! Select a method to assign level weights for ncmin > 1 case
+! Select a method to assign level weights for NCF > 1 case
 
       WRITE (ISTDE, *) 'level weights (1 equal;  5 standard;  9 user)'
 
@@ -68,7 +68,7 @@
   123    CONTINUE
          WRITE (ISTDE, *) 'Enter the (relative) weights of the', NCF, &
             ' levels :'
-         READ (ISTDI, *) (WT(I),I=1,NCMIN)
+         READ (ISTDI, *) (WT(I),I=1,NCF)
 
          SUMWGT = 0.D0
          DO I = 1, NCF

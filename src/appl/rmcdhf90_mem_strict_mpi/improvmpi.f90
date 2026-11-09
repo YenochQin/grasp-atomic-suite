@@ -234,16 +234,18 @@
 
       CALL QUAD (DNORM)
 
-!   Determine self-consistency [multiplied by SQRT(UCF(J))]
-
-      CALL CONSIS (J)
-!
 !   Normalize
 !
       DNFAC = 1.D0/DSQRT(DNORM)
       P0 = P0*DNFAC
       P(:MTP0) = P(:MTP0)*DNFAC
       Q(:MTP0) = Q(:MTP0)*DNFAC
+!
+!   Compare the normalized proposal with the normalized stored orbital.
+!   The pre-normalization amplitude of the proposal must not create a fixed
+!   SCNSTY floor. Keep this BEFORE damping, which could hide a real change.
+!
+      CALL CONSIS (J)
 !
 !   Check if different method should be used or if improvement
 !   count should be reduced
