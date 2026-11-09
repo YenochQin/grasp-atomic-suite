@@ -30,7 +30,12 @@ docs/
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
 | 初步分析完成，诊断待实施 | [rmcdhf_mpi_single_node_diagnostics_2026-11-09.md](plans/rmcdhf_mpi_single_node_diagnostics_2026-11-09.md) | 普通/memory MPI 在大规模 CSF 下全程反复 D 状态；记录单节点条件、SETLAG 冻结侧冗余和 Davidson 候选。根因未确定，自动采样、服务器对照及 MPI/OpenMP 优化均未实施。 |
-| 严格构建通过，完整验收未通过 | [f2018_strict_interfaces_npol_2026-11-09.md](reviews/f2018_strict_interfaces_npol_2026-11-09.md) | 内部接口/NP 路径/SOLVE 意图修复；Check/Release 各 64/68 通过、4 跳过；同 O0/O2 一轮全输出一致，额外 MPI Davidson 早收敛问题待修。 |
+| 优先警告修复第一批通过 | [f2018_warning_repairs_2026-11-09.md](reviews/f2018_warning_repairs_2026-11-09.md) | GETALDWT、RCI 计数、Davidson、DACON、INTERP 及不可达步长分支；正确性复核 515→475，INTENT 9→0；32 配置、1,960 次 CTest 全通过，全开 93/93。 |
+| 首次矩阵/基线设施证据 | [f2018_matrix_warning_baseline_2026-11-09.md](reviews/f2018_matrix_warning_baseline_2026-11-09.md) | 保留初次 32 配置、1,560 次 CTest 通过与 3,040 文件/515 条正确性诊断记录；当前基线及修复见上一项。 |
+| 已更新，剩余正确性复核待完成 | [gfortran15-warning-baseline.md](reference/f2018/gfortran15-warning-baseline.md) | 当前 3,046 文件、4,804 条诊断，475 条正确性复核项；含无警告文件、配置次数和 source hash，不把登记视为已解决。 |
+| strict 修复阶段验收通过 | [strict_scnsty_normalization_2026-11-09.md](reviews/strict_scnsty_normalization_2026-11-09.md) | SCNSTY 改为归一化后、阻尼前比较；公式/阈值/两轮条件不变，1/2-rank 均 11 轮收敛；保留当时 74/74 和旧新数值证据。 |
+| Linux 初始修复证据 | [f2018_linux_davidson_restart_2026-11-09.md](reviews/f2018_linux_davidson_restart_2026-11-09.md) | 保留 Davidson、空 rank、memory IOS 修复及 71/73、strict 旧平台重现证据；后续 strict 时序修复及验收见上一项。 |
+| 此前严格接口验证 | [f2018_strict_interfaces_npol_2026-11-09.md](reviews/f2018_strict_interfaces_npol_2026-11-09.md) | 内部接口/NP 路径/SOLVE 意图修复；保留 macOS Check/Release 各 64/68、4 skip 及一轮全输出一致记录；后续 Linux 状态见上一项。 |
 | 设施初始验证记录 | [f2018_acceptance_facilities_2026-11-09.md](reviews/f2018_acceptance_facilities_2026-11-09.md) | profiles、强制清单、模块/安装隔离与 DDOT 14/14；保留初始 audit 50/63 及严格编译失败证据，后续状态见上一项。 |
 | 已移除参数放行 | [argument_interfaces_2026-11-08.md](reviews/argument_interfaces_2026-11-08.md) | gfortran 15/F2018 全量构建不再使用 fallow-argument-mismatch；MPI/BLAS 显式接口、类型和有界数组区段修复；当前 CTest 36/47，11 项为既有失败；orbopt 已退役。 |
 | 已移除旧程序 | [orbopt_retirement.md](implemented/orbopt_retirement.md) | 2026-11-08 删除四个 rmcdhf_orbopt 目标/源码和专用驱动，保留原版、strict/diag、CSFG；共有测试迁到 test/rmcdhf，suite 网格入口调整为 21 个。 |
@@ -42,7 +47,7 @@ docs/
 | 已实施 | [jj2lsj_postprocessing.md](implemented/jj2lsj_postprocessing.md) | 2026-11-04 分阶段计时、稳定归并排序及 ASF 排序并行；唯一标签和输出按序执行，跨 block 流水线经计时评估暂缓。 |
 | 已实施 | [jj2lsj_openmp.md](implemented/jj2lsj_openmp.md) | 2026-11-02 `jj2lsj_omp` 普通 CSF 的 OpenMP LS 行转换，保留默认提前停止与串行 `.lsj.T`；数值/文件回归及 Debug、无 OpenMP 构建通过；Gd I 真实输入兼容性通过，已有单次性能观测。 |
 | 已实施 | [graspg_integration.md](implemented/graspg_integration.md) | 2026-10-30 GRASPG 计算源码、16 个程序、共享参数与串行/MPI CMake；工程回归通过，真实原子 SCF/RCI 验证未执行。 |
-| 已实施 | [rmcdhf_mem_strict_mpi.md](implemented/rmcdhf_mem_strict_mpi.md) | 2026-10-13 新增独立内存 MPI 严格停止目标；编译、判据单元测试通过。完整 Linux MPI 重启与生产物理验证待执行。 |
+| 已实施，小型严格重启通过 | [rmcdhf_mem_strict_mpi.md](implemented/rmcdhf_mem_strict_mpi.md) | strict 比较时序修复后，O0/O2、1/2-rank 均在 11 轮满足原两轮判据；单轮/重启读写及解析反例通过。生产物理验证未完成。 |
 | 已实施 | [rmcdhf_mem_diag_mpi.md](implemented/rmcdhf_mem_diag_mpi.md) | 2026-10-13 从原版独立复制的 P0/START 诊断目标；记录起始解、内部迭代和耦合系数，保留原算法及停止判据。START 逐值对照、投影边界及 Linux 1/2-rank 输出不变性回归通过；Ni 失稳根因尚待诊断重放。 |
 | 已实施 | [rdensity_mpi.md](implemented/rdensity_mpi.md) | 2026-10-09 新增串行/MPI 自然轨道程序；CSF 分工、矩阵归约、解析小模型及 Ni 对照测试。大规模性能与物理收敛仍待验证。 |
 | 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值；2026-11-08 退役 orbopt 后现有 21 个网格入口、4 个 RCI 续算入口，NNNP=590、NNN1=600。 |
@@ -50,7 +55,7 @@ docs/
 | 已实施 | [rmcdhf_nuclear_polarization.md](implemented/rmcdhf_nuclear_polarization.md) | 2026-10-24 从 grasp 新复制四个原版 rmcdhf 目标并接入局域 E1/E2 NP；已有 orbopt 保持原状：独立输入、共享势、root I/O 与集体失败协议；串行/MPI 代码测试 9/9、14/14 通过，物理计算验证未执行。 |
 | 已完成代码计划 | [rmcdhf_nuclear_polarization_implementation.md](plans/rmcdhf_nuclear_polarization_implementation.md) | 保留实施设计、完成清单与结果；现行输入契约见已实施说明。 |
 | 待执行 | [grasp_grid_parameter_tuning.md](plans/grasp_grid_parameter_tuning.md) | 修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
-| 严格构建完成，迁移验收未完成 | [f2018_migration_gfortran15_2026-11-08.md](plans/f2018_migration_gfortran15_2026-11-08.md) | 更新内部接口/NP 修复、64/68 回归及 O0/O2 对照；Linux 端到端、MPI 早收敛、警告/状态审计和物理验收仍待完成。 |
+| 优先修复已推进，完整迁移未完成 | [f2018_migration_gfortran15_2026-11-08.md](plans/f2018_migration_gfortran15_2026-11-08.md) | 当前 32 配置、1,960 次 CTest 通过；正确性复核诊断减少 40，基线显式收紧。剩余警告、状态/接口、真实多根与物理验收待完成。 |
 | 阶段性实施 | [jj2lsj_postprocessing_parallelization_2026-11-03.md](plans/jj2lsj_postprocessing_parallelization_2026-11-03.md) | 后处理按 ASF 并行、唯一标签依赖与跨 block 异步流水线讨论；计时与稳定排序已实施，保留 ASF 后处理和跨 block 流水线的后续设计。 |
 | 已完成验证 | [jj2lsj_postprocessing_validation_2026-11-04.md](reviews/jj2lsj_postprocessing_validation_2026-11-04.md) | AS4 稳定排序及整理约 9.60→0.045 s，总耗时单次约减少 2.1%；AS4/AS1 输出一致，标签异步化经计时评估暂缓。 |
 | 已完成验证 | [jj2lsj_gd_i_validation_2026-11-02.md](reviews/jj2lsj_gd_i_validation_2026-11-02.md) | 六套 Gd I 输入的 18 个输出文件一致；两个代表案例的 994,894 个 LS 系数在 4/8 线程下与串行逐位一致，包含真实提前停止路径。 |

@@ -50,11 +50,46 @@ DINIT, INIEST/INIEST2, SPICMV2 and GDVD. They check stride/guard values, diagona
 initial estimates, sparse multiplication, and the lowest eigenpair of a fully
 coupled 6-by-6 tridiagonal matrix against its analytic eigenvalue and residual
 (1e-12). These protect the callback interfaces and the MGS zero-column boundary.
-They do not cover the known early-convergence failure of the MPI solver on a
-matrix whose starting vector spans an isolated 2-by-2 block; the current report
-records that failed additional probe separately. The BLAS contract also checks
+`f2018_davidson_early` and `f2018_davidson_early_mpi_1/2/4` additionally exercise
+an isolated 2-by-2 block with analytic lowest eigenvalue 1. A directly converged
+residual must be accepted before preconditioning/MGS, even in the first loops;
+the energy/coefficient three-loop guards remain unchanged. Both cases check
+finite values, eigenvalues, explicit residuals and normalization at 1e-12.
+`f2018_sparse_empty_rank` calls the production RANGULAR_MPI SETSDA with occupied
+and empty partitions and checks its MCP records. Only this diagnostic test
+compilation poisons local integers (`-finit-integer=-999999`) to catch the former
+uninitialized empty-rank index deterministically. The BLAS contract also checks
 SLAMCH/DLAMCH return types. NP path cases live in `test/npol`, including the
 legacy static-storage configuration that originally returned an empty path.
+
+`f2018_strict_orbital_consistency` compiles the real strict IMPROV/CONSIS/DAMPOR
+with a controlled radial proposal and real QUAD/RINT. An analytic unit-normalized
+orbital tests scale factors 2 and 1/4, a real P/Q shape change, and a small change
+below the unchanged ACCY. The shape case remains unconverged even when damping
+makes the saved step smaller than ACCY. This catches both comparing before
+normalization and comparing after damping. Strict SCNSTY now compares normalized,
+undamped proposals; its formula, threshold and two-pass stopping gate are unchanged.
+
+The first prioritized warning-repair batch additionally registers:
+
+- `f2018_weights_*`: seven production GETALDWT variants, with equal, standard,
+  custom and retry inputs. A test-only integer poison exposes the former undefined
+  read extent; no production default initialization is added.
+- `f2018_rk_count_*`: three production GENINTRK bodies with a counted SLATER seam,
+  simulated rank layouts 1–4, empty partitions, repeated calls and integer-boundary
+  arithmetic. These are cache-partition checks, not full RCI or large-count MPI tests.
+- `f2018_csfg_dacon` and `f2018_csfg_debug_mpi_1/2/4`: the actual DACON update has
+  the same analytic values for all diagnostic modes, and its two CSFG-owned flags
+  are broadcast correctly without indexing beyond the shared 30-entry array.
+- `f2018_interp_contracts`: finite polynomial values, first node, short/zero tables,
+  singleton extrapolation with an explicit unavailable-accuracy message, exact
+  singleton lookup, empty-table rejection, and 71 regular points. ACCY is unchanged.
+- `f2018_dgemvmpi_1/2/4`: actual N/T/C products, guards, an empty rank/dimension,
+  and rejection of unsupported strides before data access/communication.
+
+The existing Davidson tests also check preservation of earlier projected columns
+and another root's convergence flag. A removed unreachable branch is distinguished
+from a demonstrated numerical bug in the [repair report](../../docs/reviews/f2018_warning_repairs_2026-11-09.md).
 
 ## Acceptance profiles and mandatory runner (2026-11-09)
 
@@ -75,16 +110,22 @@ Use `--profile f2018-release -DCMAKE_BUILD_TYPE=Release` in a fresh directory
 for the O2 gate. Default `f2018-audit` retains static storage and F2018 syntax;
 `legacy` retains static storage with legacy syntax. Those two diagnostic
 profiles require `check.py --audit` and never establish strict acceptance.
-The check/release all-target builds now pass on GNU 15.3/macOS. Each CTest run
-has 64 passes and 4 Linux-only skips out of 68, so mandatory acceptance still
-**fails**. Do not weaken flags or skip handling to obtain a green result.
+The strict normalization stage passed both all-target profiles with 74/74
+tests; its two restart cases converge in 11 cycles with unchanged inputs,
+assertions and thresholds. That record, the earlier Linux 71/73 and macOS 64/68
+results remain historical evidence. The matrix/warning stage added one Python
+infrastructure test; the repair batch adds 18 regression entries, giving 93 tests
+in the full configuration. All 32 configurations now pass, totaling 1,960 CTest executions with no failures
+or skips and no warning-budget increases. Current registered-scope acceptance
+is not full P0–P9 certification.
 
 `check.py` refreshes configuration, verifies `required.json`, compiler identity,
-all compile commands and target coverage, builds all targets, and checks every
-CTest result. Missing tests, failures, and skips fail the run. `--inventory-only`
-does not run a build or tests and reports that limited status. Logs and source,
-compiler, executable-input identities are retained under the build directory;
-see [the current validation report](../../docs/reviews/f2018_strict_interfaces_npol_2026-11-09.md).
+all compile commands and target coverage, builds all targets, verifies the
+per-file warning budget, and checks every CTest result. Missing warning records,
+new/increased warnings, missing tests, failures, and skips fail the run. `--inventory-only`
+does not run a build or tests and reports that limited status. Logs, source,
+compiler and object identities are retained under the build directory;
+see [the current validation report](../../docs/reviews/f2018_warning_repairs_2026-11-09.md).
 The required list covers current programs/tests, not the still-missing F00–F10
 suite. Labels are `f2018_unit`, `f2018_serial`, `f2018_mpi`,
 `f2018_properties`, and `f2018_io`; no real-case test is registered yet.
@@ -93,6 +134,83 @@ suite. Labels are `f2018_unit`, `f2018_serial`, `f2018_mpi`,
 `--prefix PATH`, and quoted `-D...` arguments. Targets write modules separately;
 `gj90` no longer copies into source `bin/` during a build. Default installation
 is `<build>/install`, or the explicit prefix. Validation does not install.
+
+## Complete configuration matrix and warning baseline
+
+`matrix.py` enumerates both strict profiles and every combination of
+`GRASP_BUILD_SERIAL_APPS`, `GRASP_ENABLE_MPI`, `GRASP_BUILD_CSFG`, and
+`GRASP_JJ2LSJ_OPENMP`: **32 independent builds**. Serial/MPI both disabled still
+builds the shared libraries, jj2lsj and their applicable tests. A partial
+`--case` selection never reports full-matrix acceptance.
+
+```sh
+export FC=/usr/bin/gfortran-15 OMPI_FC=/usr/bin/gfortran-15
+../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix \
+  --parallel-configs 2 --jobs 3
+```
+
+This configures, builds and tests every case, checks enabled/disabled target
+groups, checks actual OpenMP flags, and enforces the warning baseline. Each
+case retains its CTest XML and acceptance summary; `matrix-validate.json`
+reports the full result. MPI execution requires local process communication.
+The run is a correctness regression, not a performance benchmark.
+
+Strict profiles default to `GRASP_CAPTURE_WARNINGS=ON`. A compiler launcher
+records GNU JSON diagnostics separately for every object, including zero-warning
+compilations, and preserves any existing compiler launcher. Records contain the
+command and source/object hashes. Parallel log interleaving cannot attach a
+warning to the wrong file. `check.py` rejects missing/stale records; after enabling
+capture on an older build, use a fresh directory or rebuild with `--clean-first`.
+The launcher adds only diagnostic-format flags, preserving numerical options.
+
+The portable [JSON baseline](../../docs/reference/f2018/gfortran15-warning-baseline.json)
+has a [per-file index](../../docs/reference/f2018/gfortran15-warning-baseline.md).
+Diagnostic identity includes target, source, position, warning option and message;
+counts are separate for each configuration. A new diagnostic cannot be offset by
+removing another, or by removing it from another target. Source/target coverage and
+the exact compiler version are checked too. `-w` and `-Wno-*` cannot hide warnings
+in strict acceptance.
+
+`correctness-review` flags potential uninitialized values, bounds, narrowing,
+truncation, interface mismatch and implicit static-storage risks. These are
+**unresolved review items**, not a list of proven bugs or accepted exceptions.
+A warning-regression pass says there is no increase relative to the recorded
+baseline; it does not satisfy P3's separate correctness-warning clearance gate.
+An uninitialized value is read before a defined value has been established by
+assignment, input, initialization or a procedure result; a Fortran declaration
+alone does not guarantee zero. `-Wmaybe-uninitialized` can also mean that the
+compiler cannot prove the assignment path or that a branch is unreachable.
+Diagnostic counts are not counts of variables or confirmed bugs: one issue can
+appear at several positions or in several targets. Verify the dataflow and valid
+inputs, and repair the actual contract rather than initializing everything to zero.
+Linker diagnostics and compiler calls made inside disposable Python test fixtures
+remain in their logs and are outside this CMake Fortran compilation baseline.
+
+To explicitly establish a replacement candidate, first collect all builds without
+claiming test acceptance. The recorder requires all 32 cases and refuses to
+overwrite an existing baseline:
+
+```sh
+../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix \
+  --stage build --parallel-configs 2 --jobs 3
+../graspkit-tools/.venv/bin/python test/f2018/warning_inventory.py record \
+  build-gf15-matrix --output build-gf15-matrix/candidate-warnings.json
+../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix \
+  --baseline build-gf15-matrix/candidate-warnings.json
+```
+
+Review source/diagnostic differences before intentionally replacing the checked-in
+baseline, including reductions after fixes; no validation command updates it
+automatically. Rebuild the Markdown index with `warning_inventory.py report`.
+`--audit` still permits diagnostic legacy/audit runs and never certifies strict
+acceptance. The infrastructure regression `f2018_matrix_warnings_driver` checks
+the full Cartesian matrix and negative parser, coverage, hash, version and budget
+cases without running atomic calculations.
+
+```sh
+../graspkit-tools/.venv/bin/python test/f2018/warning_inventory.py report \
+  --output docs/reference/f2018/gfortran15-warning-baseline.md
+```
 
 ## Production CI damping branch
 

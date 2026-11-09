@@ -1,5 +1,9 @@
 # F2018 严格接口、NP 路径修复与 GNU 15 验证
 
+后续状态：本报告保留 macOS 上的历史结果；修复已提交为 `b8d6faf`。
+Linux 后续修复与 71/73 验收、strict 未收敛基线见
+[Linux 验证报告](f2018_linux_davidson_restart_2026-11-09.md)。
+
 日期：2026-11-09。源码基线：`56769d91eae1e00889144e162458aceba0bdfe2a`，
 结果对应其上的未提交工作树。本报告接续[验收设施报告](f2018_acceptance_facilities_2026-11-09.md)，
 更新[迁移计划](../plans/f2018_migration_gfortran15_2026-11-08.md)的实施状态。

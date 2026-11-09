@@ -1,15 +1,23 @@
 # 独立内存 MPI 严格收敛程序
 
-> 状态：已实现、编译及停止判据回归通过；完整 Linux MPI 重启测试与生产体系物理收敛尚待验证。
+> 状态（2026-11-09 更新）：strict 一致性比较时序已修复；Linux Check/Release 的
+> 1/2-rank 重启均在 11 轮满足原严格判据。后续警告修复矩阵通过，全开配置各 93/93；生产体系物理收敛未验证。
 > 日期：2026-10-13。复制基准：工作区原版 GRASP 提交
 > `488e875d1a7ec631baf4ad33682798bc795b7435` 的 `src/appl/rmcdhf90_mem_mpi`。
+
+最新 [SCNSTY 验证](../reviews/strict_scnsty_normalization_2026-11-09.md)确认：
+synthetic Z=10 `1s^2` 原 `6.17e-6` 平台来自未归一化的新解与已归一化旧轨道的幅度差。
+仅 strict 将 CONSIS 移至已有归一化之后、阻尼之前；公式、ACCY、能量门槛、连续两轮
+要求和测试输入不变。此前 memory IOS 与 100 轮平台证据见
+[历史 Linux 报告](../reviews/f2018_linux_davidson_restart_2026-11-09.md)。
 
 新目标是 `rmcdhf_mem_strict_mpi`，源码在
 [`src/appl/rmcdhf90_mem_strict_mpi`](../../src/appl/rmcdhf90_mem_strict_mpi)。
 它独立于原版 `rmcdhf*` 系列；旧 orbopt 目标已移除。该程序不需要
 `GRASP_STRICT_SCF` 环境变量，严格判据始终启用。
 
-复制保留原版内存 MCP、径向求解、阻尼、正交化和节点计数算法。
+复制保留原版内存 MCP、径向求解、阻尼公式、正交化和节点计数算法；
+strict 的一致性比较时序修复会改变 SCNSTY 及由它控制的阻尼开关。
 适配包括独立目标/程序名、停止策略和输出诊断；网格初始化与参数默认值恢复原版，容量通过 suite 的 parameter_def 转导层提供。
 没有引入普通 orbopt MPI 版本的 pair transaction、节点保护或 root tracking。
 `libmod`、`lib9290`、`libdvd90`、`mpi90` 使用 suite 的现有共享库，未另建副本。
@@ -37,8 +45,10 @@ EAL 没有这类对角化能量，只要求连续两轮轨道条件通过。
 初次诊断建议保持原 ACCY，只改变停止逻辑。例如 `H=0.05` 时，原自适应
 `ACCY=H**6=1.5625e-8`，相对能量阈值是 `1.5625e-11`。
 
-`SCNSTY` 是上游的 `sqrt(UCF) * max(abs(delta P)+abs(delta Q))`，取自归一化、
-正交化之前的更新。它不是保存的两个归一化轨道之差，也不是独立的变分方程残差。
+`SCNSTY` 保留 `sqrt(UCF) * max(abs(delta P)+abs(delta Q))` 公式；strict 的差值现取自
+归一化后的未阻尼建议轨道与旧归一化轨道，发生在阻尼和正交化之前。
+它不是阻尼后的保存步长，也不是独立的变分方程残差。2026-11-09 之前的 strict
+比较混用了归一化前后的尺度；旧报告中的 SCNSTY 与当前值不能直接按相同语义解读。
 低占据轨道仍需检查相邻快照的相位对齐重叠、径向分布、有效节点及目标物理量。
 关联轨道的节点不必服从谱学节点数；不要为使节点数相同而将其改设为谱学轨道。
 
@@ -89,6 +99,7 @@ CSV 的 `T/F` 表示逻辑值；首轮或无法形成能量比较时，`relative
 从本仓库根目录，在已初始化编译器、BLAS/LAPACK 和 MPI 的环境下运行：
 
 ```sh
+export FC=/usr/bin/gfortran-15 OMPI_FC=/usr/bin/gfortran-15
 cmake -S . -B build-strict -DGRASP_ENABLE_MPI=ON
 cmake --build build-strict --target rmcdhf_mem_strict_mpi test.strict_scf_logic --parallel 4
 ctest --test-dir build-strict -R 'strict_scf_logic|grasp_grid_patcher' --output-on-failure
@@ -102,21 +113,22 @@ ctest --test-dir build-strict -R 'strict_scf_logic|grasp_grid_patcher' --output-
 重启计数清零、NaN、零能量、冻结轨道和 EAL；测试调用实际生产模块。
 网格补丁器已登记新入口，继续审计集中容量定义、转导接口与各入口初始化。
 
-Linux 端到端测试需要外部 GRASP 准备工具，运行：
+Linux 端到端测试默认使用同一 suite 构建的准备工具，运行：
 
 ```sh
-cmake -S . -B build-strict -DGRASP_ENABLE_MPI=ON \
-  -DGRASP_PREPARATION_BINDIR=/path/to/grasp/bin
+export FC=/usr/bin/gfortran-15 OMPI_FC=/usr/bin/gfortran-15
+cmake -S . -B build-strict -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON
 cmake --build build-strict --target rmcdhf_mem_strict_mpi rmcdhf_mem_mpi \
-  test.strict_scf_logic --parallel 4
+  rwfnestimate rangular_mpi test.strict_scf_logic --parallel 4
 ctest --test-dir build-strict -R 'strict_scf_logic|strict_mem_restart_mpi' --output-on-failure
 ```
 
 注册的 1/2-rank 合成两电子用例检查：轮数上限不会误报收敛、与同库内存基线的
 首轮径向更新一致、`.w` 重启读入一致、快照完整，以及最终两轮同时满足判据。
-这是小体系工程回归，不替代生产模型的收敛测试。
+这是小体系工程回归，不替代生产模型的收敛测试。2026-11-09 修复后的 Linux O0/O2
+实测单轮、读写和最终两轮判据均通过，1/2 ranks 均于 11 轮收敛，详见文首报告。
 
-本次 macOS 编译成功，停止策略和网格补丁器测试通过。端到端测试遇到继承自
+此前 macOS 编译成功，停止策略和网格补丁器测试通过。端到端测试遇到继承自
 上游的 `systemmem.f90`/`systemfreemem.f90` 依赖 `/proc/meminfo`，无法在 macOS
 执行；无该文件时测试明确返回 skip。内存检测算法保持原版，没有用其他求解器
 代替并宣称已完成 MPI 验证。

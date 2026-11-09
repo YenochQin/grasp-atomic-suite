@@ -1,10 +1,16 @@
 # Fortran 2018 迁移实施计划：gfortran 15 验证基线
 
-日期：2026-11-08；实施状态更新：2026-11-09。状态：**严格接口及 NP 路径修复已实施；Check/Release 全量构建通过，各 64/68 回归通过、4 项 Linux 专用测试跳过；完整验收仍未通过**。
+日期：2026-11-08；实施状态更新：2026-11-09。状态：**优先警告修复第一批完成；Linux Check/Release 的 32/32 配置通过，累计 1,960 次 CTest 全通过、零失败/跳过，全开各 93/93。正确性复核诊断 515→475，已报告的 INTENT 不一致 9→0；完整 P0–P9/F00–F10 迁移未完成**。
 目标仓库：`grasp-atomic-suite`；计划创建基线：`179ca9ecfd96d54a5617d811b888299a611c13b3`；
 本轮修复基线：`d1260ba404833d20d709b34d9f26b05c32a3b615`。
-本轮设施实施基线：`56769d91eae1e00889144e162458aceba0bdfe2a`；结果对应其上的工作树。
-已落地交付物以下文和[严格接口与 NP 验证](../reviews/f2018_strict_interfaces_npol_2026-11-09.md)为准；[设施初始记录](../reviews/f2018_acceptance_facilities_2026-11-09.md)保留为此前证据。未注明已实现者仍为计划。
+此前设施实施基线：`56769d91eae1e00889144e162458aceba0bdfe2a`，严格接口修复已提交为 `b8d6faf`。
+本轮 Linux 基线：`f395146`；结果对应其上的工作树，见[Linux 修复与验收](../reviews/f2018_linux_davidson_restart_2026-11-09.md)。
+其后的 [strict SCNSTY 时序修复与 74/74 验收](../reviews/strict_scnsty_normalization_2026-11-09.md)保留为阶段证据。
+矩阵与初始基线见[设施报告](../reviews/f2018_matrix_warning_baseline_2026-11-09.md)；
+最新结果为[优先警告修复第一批](../reviews/f2018_warning_repairs_2026-11-09.md)。旧 71/73、100 轮平台及初始基线继续保留。
+累计修复/回归已提交为 `80992a9`，矩阵与警告基线设施为 `f26e1bc`；
+各报告仍保留实际验证时的基线与逐文件 hash，不将提交动作视为新增数值验证。
+[严格接口与 NP 验证](../reviews/f2018_strict_interfaces_npol_2026-11-09.md)和[设施初始记录](../reviews/f2018_acceptance_facilities_2026-11-09.md)保留此前证据。未注明已实现者仍为计划。
 
 五类普通程序已导入并接入共享参数，见[导入记录](../implemented/standard_grasp_integration.md)。
 随后按首轮编译诊断完成共享库、平台服务及应用标准语法的分批修复，见
@@ -12,15 +18,17 @@
 
 | 计划项 | 当前状态 | 已有证据 / 尚缺内容 |
 | --- | --- | --- |
-| P0 基线 | 部分完成 | 保留原 Linux 记录；新增 56769d9/GNU 15.3 的独立 O0/O2 串行归档及同优化级别 rmcdhf 一轮对照，记录输入/二进制 hash；实际多根与统一 case manifest 尚缺 |
-| P1 构建策略 | 设施已实施，退出验收未通过 | 四种 profiles、逐条编译命令检查、required 清单、fail-closed 验收、模块隔离与独立安装前缀已落地；严格 Check/Release 全开目标各 3,237 条编译命令核对及构建通过；四项 Linux skip 阻止验收，完整矩阵/警告基线待补 |
+| P0 基线 | 部分完成 | f395146/Linux/GNU 15.3 独立 legacy O0/O2 归档及普通/memory 一轮完整对照保留；strict 旧平台 104 文件对照与修复后的解析回归/11 轮轨迹均归档。实际多根与统一 manifest 尚缺 |
+| P1 构建策略 | 严格矩阵与警告基线已实施并验证 | 本批更新后 32 配置、57,880 条编译记录、1,960 次 CTest 全通过；3,046 文件基线与防新增检查通过。正确性警告清零和其余数值退出条件仍未完成 |
 | P2 普通链导入 | 五类程序完成 | 十个目标已接入；rhfszeeman95/rsms 未导入，完整属性/RCI 数值对照待补 |
 | P3-A 共享标准清理 | 本轮完成 | NMTEJJ 两实现各 22,701 项精确对照、CSFG kind/reallocation、QUAD 通过 |
 | P3-B 平台适配 | 本轮 Linux 范围完成 | POSIX C 互操作；目录/状态/缓冲/退出测试通过，原 sys_* 接口保留 |
-| P3-C 应用标准语法 | 已实施范围保持 | INT8、旧 kind、DO、声明/FORMAT、SIZEOF 等阻断已清理；28 文件为退役前历史结果；本轮 macOS 的 rmcdhf 七文件及全部科学文本/诊断一致，memory 完整运行受 /proc/meminfo 限制 |
-| P3-D 参数接口 | 已实施范围扩展 | DINIT/MEM_FAIL、内部过程/回调及 SOLVE 意图修复；两严格配置 DDOT 14/14、常规 Davidson 4/4、NP 15/15；修复 NP 空路径、MGS 上界与 jj2lsj 初始化。额外 MPI Davidson 早收敛探针仍失败 |
-| P3/P6/P8 余项 | 待实施 | 内部手写 INTENT 接口、mpi_f08、大计数和静态存储策略仍需独立验收 |
-| P4–P9 完整数值及发布验收 | 未完成 | 本轮 macOS Check/Release 各 64 通过/4 跳过，共 68；同 O0/O2 一轮全输出一致。完整验收未通过；旧 Linux 36/47 和此前 audit 50/63 作为历史保留；真实多根、完整 RCI/跃迁、性能和物理验证未完成 |
+| P3-C 应用标准语法 | 已实施范围扩展 | 原标准清理保留；Linux 修复四个 memory SETHAM 的未初始化 IOS 判断、RANGULAR_MPI 空 rank 索引；普通及 memory 串行一轮完整对照通过，未宣称全部静态状态已审计 |
+| P3-D 参数接口 | 已实施范围扩展 | 原接口修复保留；本轮直接残差早收敛缺陷修复，两严格配置 Davidson 常规/早收敛 8/8、DDOT 14/14、NP 15/15；SCF 停止策略保持 |
+| P3 优先警告第一批 | 已修复并回归 | GETALDWT 输入长度、RCI 统计计数、Davidson 接口/状态、CSFG DACON 调试边界、INTERP 边界及不可达步长分支；新增 18 项回归。报告的未初始化 198→174、INTENT 9→0、边界 43→36 |
+| P3/P6/P8 余项 | 已有警告清单，修复/验收待完成 | 180 文件仍有 475 条正确性复核诊断；剩余未初始化/边界、转换/截断/隐式静态存储、手写接口单一来源、mpi_f08 和大计数仍需独立审计与验收 |
+| P5 strict 重启子项 | 本轮通过 | 一致性比较移至已有归一化后、阻尼前；原公式/阈值/两轮条件不变，O0/O2、1/2 ranks 均 11 轮收敛；新增解析生产路径回归，原始失败输入和断言不变 |
+| P4–P9 完整数值及发布验收 | 未完成 | 当前支持范围 32 配置通过，全开各 93/93。真实多根、完整 RCI/跃迁、剩余警告清理、状态/接口及物理验证未完成；历史 75/75、74/74、71/73 等保留 |
 
 以上“本轮完成”只对应明确子任务，不等于整个 P3 或完整 F2018 迁移完成。
 
@@ -92,6 +100,19 @@ P1 已增加 [FortranProfiles.cmake](../../cmake/FortranProfiles.cmake) 和 `GRA
 
 不全局使用 `-Werror` 强制清理所有无关历史告警；标准扩展、隐式过程/接口、rank/type mismatch、越界、截断和未定义行为相关诊断必须清零。剩余一般告警登记到逐文件清单，禁止静默增加。
 
+2026-11-09 已建立[逐文件索引](../reference/f2018/gfortran15-warning-baseline.md)及
+[机器基线](../reference/f2018/gfortran15-warning-baseline.json)：本批更新后 3,046 个源文件，4,804 条
+按目标/文件/位置/选项/消息区分的诊断。严格验收现在检查完整编译记录、源码/object hash、
+编译器版本和配置独立的诊断次数预算；新增或增量失败，不能用其他诊断减少抵消。
+基线仍含 475 条 `correctness-review` 诊断，**登记和防新增通过不替代上段要求的清零**。
+`correctness_warnings_clear=false` 保留该状态；未逐条认定这些诊断都是真缺陷。
+
+统计中的“未初始化”表示变量/数组元素在读取时可能没有确定值；声明不保证零值。
+`-Wmaybe-uninitialized` 也可能源于编译器无法证明赋值路径或分支不可达，必须逐项复核。
+当前剩余 174 条属于该类诊断，并非 174 个变量或已确认缺陷；同一问题可能在不同目标或位置
+产生多条记录。初始化或改写必须符合实际数据契约，不能统一补零来消除告警，参见
+[GETALDWT 反例及诊断解释](../reviews/f2018_warning_repairs_2026-11-09.md#告警差分与剩余范围)。
+
 正式 `f2018-check/release` 不允许 `-std=legacy`、`-fallow-argument-mismatch`、`-fall-intrinsics` 或全局默认整数/实数扩宽。不依靠 `CMAKE_Fortran_STANDARD` 自动设置标准；检查 `compile_commands.json` 中每个实际编译命令。
 
 `-fno-automatic` 只在 `legacy` 或尚未迁移的隔离目标保留。逐过程确认需要保存的状态，显式保留它们后再移除选项；不能仅为消除与 SAVE 相关的诊断而改变状态寿命。`jj2lsj` 已有 `-frecursive` 及并发调用闭包，P1 不能用新的全局配置覆盖这一设计。
@@ -129,6 +150,27 @@ cmake -S . -B build-gf15-check \
 `f2018-release` 使用另一个全新 build 目录，运行相同数值测试。不执行 install，直到 P9 验收后才交付独立安装目录；安装前缀已可独立设置，默认 `<build>/install`；gj90 的构建后源码目录复制已移除。
 
 版本依据：[GNU 15.2 诊断选项](https://gcc.gnu.org/onlinedocs/gcc-15.2.0/gfortran/Error-and-Warning-Options.html)、[GNU 15.3 存储与运行时检查](https://gcc.gnu.org/onlinedocs/gcc-15.3.0/gfortran/Code-Gen-Options.html)。这些选项不能证明编译器覆盖全部 F2018，验收对象是本项目实际使用的语言子集。
+
+### 3.4 已验证的配置矩阵与警告入口
+
+Check/Release 分别覆盖 `GRASP_BUILD_SERIAL_APPS`、`GRASP_ENABLE_MPI`、
+`GRASP_BUILD_CSFG`、`GRASP_JJ2LSJ_OPENMP` 的全部 16 种组合，共 32 个独立目录。
+s=m=0 仍编译共享库、jj2lsj 和适用测试。使用默认容量和构建内准备工具；
+任意其他用户 CMake 参数组合、外部准备工具及其他平台不在本轮矩阵声明内。
+
+```sh
+export FC=/usr/bin/gfortran-15 OMPI_FC=/usr/bin/gfortran-15
+../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix-20261109 \
+  --parallel-configs 2 --jobs 3
+```
+
+最新结果为 32/32 通过、累计 1,960 次 CTest 全通过、零失败/skip；全开配置各 93/93，
+所有实际 OpenMP 编译选项与开关一致。`matrix-validate.json` 的
+`full_matrix_acceptance=true` 仅指当前目标/测试与固定警告预算。
+基线采集和负向验证见[矩阵报告](../reviews/f2018_matrix_warning_baseline_2026-11-09.md)，
+本次显式更新及诊断差分见[修复报告](../reviews/f2018_warning_repairs_2026-11-09.md)
+和[测试入口](../../test/f2018/README.md#complete-configuration-matrix-and-warning-baseline)。
+旧的未采集 object 需新目录或 clean rebuild，不以增量日志的“没有 warning”代替完整记录。
 
 ## 4. 基准、夹具和数值验收协议
 
@@ -170,6 +212,8 @@ cmake -S . -B build-gf15-check \
 
 已有严格 SCF 语义保持为：EOL 轨道条件 `max(SCNSTY) <= ACCY`，能量条件 `abs((E_new-E_old)/E_new) < 0.001*ACCY`，连续两轮同时满足；首轮无有效能量比较，不能继承重启前计数。EAL 使用其既有轨道条件。原版程序保持自身停止规则，不能借迁移将其统一为 strict。[严格程序说明](../implemented/rmcdhf_mem_strict_mpi.md)
 
+2026-11-09 F 类修复：strict 的 SCNSTY 仍使用 `sqrt(UCF)*max(abs(delta P)+abs(delta Q))`，但比较双方均已归一化，新建议轨道尚未阻尼。此前混用未归一化新解/已归一化旧轨道导致假平台；只修正 strict 的调用时序，详见[独立证据](../reviews/strict_scnsty_normalization_2026-11-09.md)。该指标不等于径向方程残差。
+
 ### 4.4 新增小型回归的拟定门槛
 
 下表数值是**拟采用的软件回归门槛，不是本次实测结果，也不是物理精度承诺**。适用于 P0 构造的紧凑、条件良好的算例。P0 在未修改算法的 B0 上检查可测量性、输出分辨率及稳定性，并把值冻结到 manifest；不满足的历史模型先诊断/更换合适夹具，不自动放宽。生产体系需要另行固定更适合其数值尺度的预算，不能套用下表宣称物理准确。
@@ -208,15 +252,15 @@ MPI 1/2/4-rank 与 Check/Release 比较采用同一 N 类预算，不按 rank �
 | ID | 算例/现有入口 | 主要覆盖 | 状态 |
 | --- | --- | --- | --- |
 | F00 | 工具链、kind/BLAS/MPI/文件记录小探针 | GCC 15、LP64、接口、环境识别 | 已有严格编译命令核对、BLAS ABI 与 1/2/4-rank MPI payload；完整门槛待补 |
-| F01 | QUAD、角动量解析值/恒等式、2×2/小块本征问题 | 底层算法、相位、残差 | QUAD、NMTEJJ、2×2 LAPACK 与 6×6 Davidson 常规契约通过；MPI 极早收敛额外探针仍失败，完整恒等式覆盖待补 |
-| F02 | 现有 synthetic Z=10 有限核 `1s^2` | 初猜、角系数、单轮 SCF、strict/restart、MPI | 原版 rmcdhf 同 O0/O2 一轮全输出一致；memory 及四项 Linux MPI 端到端测试未通过本机验收 |
+| F01 | QUAD、角动量解析值/恒等式、2×2/小块本征问题 | 底层算法、相位、残差 | 原回归保留；追加 Davidson 部分更新/状态保留、MPI 矩阵乘及非法步长拒绝，1/2/4 ranks 通过；完整恒等式覆盖待补 |
+| F02 | 现有 synthetic Z=10 有限核 `1s^2` | 初猜、角系数、单轮 SCF、strict/restart、MPI | 普通/memory 串行同 O0/O2 一轮完整输出一致；P0 及 strict 重启 1/2-rank 通过；strict 时序修复后 O0/O2 均 11 轮满足原阈值，单 rank O0/O2 15 文件一致；不代表真实多根覆盖 |
 | F03 | 小型双组态、多根、含近简并块的固定轨道模型 | RCI、根匹配、CI 阻尼触发和 DDOT 修复 | 已有双根生产 MATRIX 逻辑夹具触发 DDOT 分支及反例；实际 SCF/RCI/近简并模型仍待新增 |
-| F04 | 小型点核/有限核及导入轨道/TF/氢样初猜 | 轨道估计、节点、网格、相位 | 待新增；点核参数选在有良定义解的范围 |
+| F04 | 小型点核/有限核及导入轨道/TF/氢样初猜 | 轨道估计、节点、网格、相位 | 追加共享 INTERP 首点/短表/零值/单点/空表回归和 71 点旧新逐字节对照；完整轨道估计及输入链仍待新增 |
 | F05 | `data/test.*` 加可核对核矩的属性小模型 | g、A/B、非对角元、CI/非 CI、RIS 读写 | 现有数据先核对来源与精度；不能因文件存在视为已验收 |
 | F06 | 两套轨道的简单允许/禁戒及弱跃迁 | 双正交、phase、两种规范、频率因子 | 待新增 |
 | F07 | NP 人工核函数 + 原版四目标 NP off/zero/on | 开关、势/消费者、集体失败 | audit/Check/Release 各 15 项单元/消费者/路径/MPI 回归通过，完整小 SCF 回归待补 |
 | F08 | 同一小 CSF 空间的 CSFG 展开比较 | CSFG angular/SCF/两种 RCI/文件映射 | 文件测试已有，真实计算链回归待补 |
-| F09 | 参数边界、长路径、空块/空rank、计数分块 | 容量、MPI 生命周期、I/O 错误 | 组合已有测试与新增边界夹具 |
+| F09 | 参数边界、长路径、空块/空rank、计数分块 | 容量、MPI 生命周期、I/O 错误 | 空 rank/路径/容量回归保留；追加权重读取范围、CSFG 调试边界及广播、Rk 局部分工计数和整数边界；实际大计数/分块仍待补 |
 | F10 | Zn I 奇宇称小 MR 多根真实输入 | 实际 SCF/RCI、混合态身份、属性链 | 固定来源及完整输入后建立；本次未运行，不能从旧“跑完”记录直接认证 |
 
 F00–F09 构成可在本地执行的提交/夜间分层门槛，F10 为发布前真实输入回归。大型 active-space 性能和物理收敛研究另列；历史 Ni/Cl 报告或其他输出仅是待核对资料，不能直接充当新工具链正确性 oracle。
@@ -259,7 +303,7 @@ P7 的串行开发可在 P4/P5 后进行，MPI 退出门槛必须等待 P6。阶
 
 ### P1：构建配置和强制验收设施
 
-**执行状态（2026-11-09）**：profiles、required 清单、测试标签、fail-closed 入口、模块输出/搜索顺序隔离、安装前缀及 configure 透传已实施。DINIT/mem_fail 等编译阻断已修复，严格 Check/Release 全量并行构建通过；各 68 项测试为 64 通过、4 项 Linux 专用测试跳过，强制验收仍失败。完整配置矩阵、警告基线、F00–F10 和本阶段数值退出条件尚未完成。
+**执行状态（2026-11-09）**：profiles、required 清单、fail-closed、模块/安装隔离和 JSON 警告采集保留。本批修复后重新验证全部 32 配置，1,960 次 CTest 全通过，全开各 93/93；基线显式收紧到 475 条正确性复核诊断。P1 的矩阵/基线设施完成；正确性告警清零、F00–F10 和全部数值退出条件未完成。详见[设施报告](../reviews/f2018_matrix_warning_baseline_2026-11-09.md)及[本批修复](../reviews/f2018_warning_repairs_2026-11-09.md)。历史结果保留。
 
 **修改范围**：顶层及测试 CMake、profiles 模块、`configure.sh` 必要透传、验收脚本/CI；不改科学算法。
 
@@ -279,8 +323,8 @@ P7 的串行开发可在 P4/P5 后进行，MPI 退出门槛必须等待 P6。阶
 
 ### P3：共享库、接口与标准清理
 
-**执行状态（更新 2026-11-09）**：A/B/C 及 DDOT 分支修复保留；本轮补齐内部显式接口/回调，修复 NP 摘要路径、MGS 空尾段实参、jj2lsj 常数初始化和 SOLVE 的 INV/JP/NNP 意图。严格 Check/Release 全量构建及常规回归已运行，各 64/68 通过、4 跳过；原版 rmcdhf 同 O0/O2 一轮的七个二进制及全部科学文本/诊断一致。
-详见[本轮验证](../reviews/f2018_strict_interfaces_npol_2026-11-09.md)。额外 CSFG MPI Davidson 极早收敛探针仍异常退出；手写 INTENT 漂移、可能未初始化/边界告警、mpi_f08、大计数及静态状态语义仍待审计，不满足完整 P3 的退出条件。旧 Linux 36/47 和此前 macOS audit 50/63 保留为历史。
+**执行状态（更新 2026-11-09）**：既有修复保留；本批修复七套 GETALDWT、四套 RCI 未定义统计、Davidson 接口/状态、DACON 调试边界和 INTERP 边界；DGEMVMPI 的 JX 诊断确认为不可达步长分支并清理。32 配置全通过，全开各 93/93；普通/memory 一轮完整旧新对照重新通过，INTERP 正常分支 71 点同 O0/O2 输出逐字节一致。
+详见[本批报告](../reviews/f2018_warning_repairs_2026-11-09.md)及[当前警告清单](../reference/f2018/gfortran15-warning-baseline.md)。诊断数减少不等于相同数量的真实缺陷；仍有 180 文件、475 条正确性复核项，包括 174 条未初始化和 36 条边界诊断。其他手写接口、mpi_f08、大计数及状态语义待审计，不满足完整 P3 的退出条件。
 
 **修改范围**：`libmod`、`lib9290`、`librang90`、`libmcp90`、`libdvd90`，以及必要的 `*_csfg`/`libdvd90mpi` 接口边界；新增明确的 kind、BLAS/LAPACK 和平台适配模块，仍归现有库所有。
 
@@ -304,6 +348,8 @@ P7 的串行开发可在 P4/P5 后进行，MPI 退出门槛必须等待 P6。阶
 **依赖**：P3。**数值退出**：F01/F03/F04；角系数、轨道、矩阵、CI 残差、激发能及根/子空间分别符合第 4.4 节，旧写新读/新写旧读通过；不能只比较最终总能量。原 MCP/波函数/混合系数记录协议保持。
 
 ### P5：RMCDHF 状态与串行行为迁移
+
+**执行状态（2026-11-09）**：memory IOS 修复及一轮/P0 对照保留。strict 平台已定位为归一化前后尺度混用；CONSIS 移至已有归一化后、阻尼前，未改公式/阈值/两轮条件或失败夹具。原 1/2-rank 重启在 O0/O2 均 11 轮收敛，新增生产调用路径解析回归通过，见[strict 报告](../reviews/strict_scnsty_normalization_2026-11-09.md)。P5 的真实多根、NP 全 SCF、重复初始化及完整状态审计仍未完成。
 
 **修改范围**：原版/NP 的串行、mem 变体的 `SCF/MATRIX/MANEIG/IMPROV/SOLVE/ORTH*` 等；strict/diag 的纯逻辑和诊断组件；共享 workspace 的必要接口。
 

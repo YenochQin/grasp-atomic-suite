@@ -1,10 +1,15 @@
 # F2018 标准兼容性首轮修复
 
-2026-11-09 更新：严格内部接口、NP 摘要路径及回归暴露的问题已修复，见
-[本轮验证](../reviews/f2018_strict_interfaces_npol_2026-11-09.md)。
+2026-11-09 更新：严格内部接口/NP、MPI Davidson 早收敛、普通 RANGULAR_MPI 空 rank
+及四个 memory SETHAM 的 IOS 修复后，完成 strict 时序修复、32 配置矩阵及警告基线；
+最新为[优先警告修复第一批](../reviews/f2018_warning_repairs_2026-11-09.md)。
 默认 `f2018-audit` 保留静态存储；`f2018-check/release` 不保留，两者全量构建通过，
-各 64/68 回归通过、4 项 Linux 专用测试跳过，完整验收仍失败。同 O0/O2 的 rmcdhf
-一轮全输出一致；额外 MPI Davidson 早收敛探针仍失败。下面首轮结果属于 2026-11-08 的 Linux 基线。
+Linux 32/32 配置、累计 1,960 次 CTest 全通过；全开各 93/93。
+3,046 文件基线及防新增检查通过；正确性复核 515→475，报告的 INTENT 不一致 9→0，完整 P0–P9 未完成。
+strict 比较改为归一化后、阻尼前，原公式/阈值保持；1/2-rank 重启均 11 轮收敛。
+同 O0/O2 的普通及 memory 一轮对照证据和此前 71/73 见
+[Linux 历史报告](../reviews/f2018_linux_davidson_restart_2026-11-09.md)。此前 macOS 64/68 见
+[上一轮报告](../reviews/f2018_strict_interfaces_npol_2026-11-09.md)。下面首轮结果属于 2026-11-08 的 Linux 基线。
 
 日期：2026-11-08。修改前基线：`d1260ba404833d20d709b34d9f26b05c32a3b615`。
 状态：当前 CMake 配置的全量目标已通过 GNU 15.3.0 的 F2018 编译和链接。
@@ -21,8 +26,9 @@
 | C，计算程序标准语法 | 44 处 INT8 转为标准 INT；旧 kind 声明、维度声明顺序、已删除 DO、FORMAT、命令行 intrinsic 与内存统计转换 | 原计算次序、表达式、输入/记录格式和 solver 差异；不改变 SCF/RCI 算法 |
 | D，验证与来源保护 | 新增五个单元/回归检查、固定一轮 SCF 对照脚本，以及可逆的来源适配清单 | 原始源码哈希和既有数值门槛不放宽 |
 
-`suite_parameters` 的六个容量值、网格初始化时序、EOL 权重、阻尼、停止规则、
-NP 模型与物理常数未修改。后续接口批次单独修正了 DDOT 返回类型、MPI handle 和数组实参；
+首轮语法批次未修改 `suite_parameters` 容量、网格初始化时序、EOL 权重、阻尼、停止规则、
+NP 模型与物理常数。后续接口批次单独修正了 DDOT 返回类型、MPI handle 和数组实参；
+本轮 strict SCNSTY 的归一化时序属于独立 F 类语义修复，保留原数值阈值。
 大计数与其余内部接口问题仍需后续验收，不将这些问题混同于首轮语法等价变更。
 
 ## 平台服务接口
@@ -58,7 +64,8 @@ NP 模型与物理常数未修改。后续接口批次单独修正了 DDOT 返�
 原 [RMCDHF 来源清单](../reference/rmcdhf_upstream_snapshot.json) 保持不变。
 [兼容性变更清单](../reference/rmcdhf_f2018_compatibility.json) 记录受保护文件中的
 精确替换、次数和基线哈希；已扩展至 BLAS 声明、数组区段、MPI handle、内部接口和
-SOLVE 参数意图修复，逆向恢复后仍核对全部 492 个原始文件。
+SOLVE 参数意图、memory SETHAM 无效 IOS 判断移除，以及 GETALDWT 的输入长度修复，
+逆向恢复后仍核对全部 492 个原始文件。
 [check_upstream.py](../../test/npol/check_upstream.py) 先按行首精确匹配逆向恢复这些修改，
 再剥离原有 NP hook，最后仍核对原始 hash。没有通过删除来源测试或覆盖历史 hash 放行。
 
@@ -89,3 +96,14 @@ Fortran 编译器由配置中的 `CMAKE_Fortran_COMPILER` 传入。
 固定一轮 SCF 的旧新对照入口见 [test/f2018/README.md](../../test/f2018/README.md)。
 参考二进制必须来自独立保存的基线，同编译器和数学库配置；不要用当前源码重新构建后
 覆盖旧基线。完整迁移阶段及后续验收仍以 [plan](../plans/f2018_migration_gfortran15_2026-11-08.md) 为准。
+
+严格构建现在默认使用逐编译单元的 GNU JSON 诊断采集；已有无采集记录的构建需
+新目录或 clean rebuild。`check.py` 核对源码/object/命令、编译器版本和配置独立的
+固定诊断预算，新增/增量/缺记录均失败；不能以其他警告减少抵消。
+见[逐文件索引](../reference/f2018/gfortran15-warning-baseline.md)。基线通过表示无超额，
+`correctness_warnings_clear=false` 保留风险未清零状态，不将已登记警告视为安全豁免。
+
+本批修复包括权重读取长度、预计算 Rk 积分统计、Davidson 接口与部分状态保留、
+CSFG DACON 自有调试开关、INTERP 首点/短表/零值边界，以及被入口拒绝的 DGEMVMPI
+非单位步长死代码。普通/memory 一轮对照和 INTERP 正常分支 71 点旧新输出保持一致。
+边界缺陷用独立 oracle 验证；单点外推明确提示无法估计精度，不扩大 ACCY。
