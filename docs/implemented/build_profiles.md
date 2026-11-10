@@ -1,6 +1,6 @@
 # 普通 GRASP 构建范围与编译选项
 
-更新：2026-11-10。按当前工作范围，CSFG 隔离为可选扩展；生产选项和诊断选项分开。
+更新：2026-11-11，基于 `3f902c2` 的工作树增量。按当前工作范围，CSFG 隔离为可选扩展；生产选项和诊断选项分开。
 本页取代旧迁移计划中保留 legacy/隐式静态存储的构建建议。
 
 ## 范围
@@ -48,9 +48,20 @@ cmake --build build-rangular-production \
 旧目录中缓存的 profile/警告采集设置不会被当作新配置的默认值；尤其旧 Release 曾启用的
 `GRASP_CAPTURE_WARNINGS=ON` 不属于当前生产配置。优先用独立目录。
 
-普通验证矩阵覆盖 serial、MPI、OpenMP 三个开关的 8 种组合及三种 profile，共 24 种配置；
-CSFG 始终关闭。警告预算只用于 Check/Audit，生产结果明确标记未采集警告，不能以生产构建
+普通验证矩阵独立覆盖 serial、MPI、jj2lsj OpenMP 和 rangular OpenMP。
+serial 开启时，每种 profile 有 MPI 与两个 OpenMP 开关的 8 种组合；serial 关闭时
+rangular 目标不存在，只保留 MPI 与 jj2lsj OpenMP 的 4 种组合。三种 profile 共 36 种配置；
+CSFG 始终关闭。24 个 Check/Audit 组合均须有各自的警告预算，回归测试检查基线覆盖。
+生产结果明确标记未采集警告，不能以生产构建
 没有诊断输出宣称告警已清零。矩阵工具仍需实际运行全部组合后才能报告完整矩阵验收。
+
+独立开关补齐保留了已有 18 个预算，新增 6 个配置由本机 GNU 15.3.0 实际编译采集，
+记录在基线的 `independent_openmp_budget_update`。GNU 15.3 在 macOS arm64 上将
+`rci90/qed.f90` 和 `rci90_mpi/qed.f90` 中既有的 K 未初始化警告定位到使用处，
+Linux 基线定位在声明处；新增 Audit 预算为同一警告保留这两种确切身份，各限一次。
+源文件哈希未变，其他诊断没有超过已有身份的最大预算。新增配置同时保留原 Linux
+对应目标的预算，包括本机未发出的 BIOTR1 告警，避免用单平台采集结果清除既有风险；
+这些 QED 和 BIOTR1 风险仍待单独复核。
 
 ## 本次 flag 对照
 
@@ -69,4 +80,21 @@ CSFG 始终关闭。警告预算只用于 Check/Audit，生产结果明确标记
 不同 ISA/编译器默认值仍需重新验证数值与性能；没有据此启用本机专属指令或激进浮点选项。
 
 当前选定配置的回归：普通 Check/Audit/生产 Release 各 44 项，关闭 OpenMP 的 Check 42 项，
-普通 MPI 生产配置 78 项，均通过。尚未运行完整 24 组合矩阵。
+普通 MPI 生产配置 78 项，均通过。这些是独立开关补齐前的记录，未运行完整 36 组合矩阵。
+
+## 独立开关的本机验证（2026-11-11）
+
+使用 macOS arm64、GNU Fortran 15.3.0、OpenBLAS 和共享 Python 环境，实际编译补齐的
+6 个配置，最终基线的警告检查全部通过。CTest 结果如下，两个诊断 profile 分别运行：
+
+| jj2lsj OpenMP | rangular OpenMP | MPI | Check | Audit |
+| --- | --- | --- | --- | --- |
+| ON | OFF | OFF | 42 通过，无跳过 | 42 通过，无跳过 |
+| ON | OFF | ON | 72 通过，4 跳过 | 72 通过，4 跳过 |
+| OFF | ON | ON | 74 通过，4 跳过 | 74 通过，4 跳过 |
+
+合计 376 次通过、16 次跳过，没有执行失败。每个 MPI 配置的跳过项相同：
+`p0_trace_mpi_1/2`、`strict_mem_restart_mpi_1/2`，其上游 memory solver 需要 Linux
+`/proc/meminfo`。严格验收仍将跳过判为未通过；没有更改测试或放宽此规则。
+这四项须在 Linux 补跑，不能把本机结果称为完整 MPI 或 36 配置矩阵验收。
+可追溯汇总为忽略目录 `build-review-openmp-independent/local-validation-summary.json`。

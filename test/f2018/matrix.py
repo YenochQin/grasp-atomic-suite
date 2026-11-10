@@ -28,8 +28,9 @@ def cases() -> list[dict]:
     return [{"id": case_id(profile, features), "profile": profile, "features": features}
             for profile in ("f2018-check", "f2018-audit", "f2018-release")
             for serial, mpi, openmp in product((True, False), repeat=3)
+            for angular_openmp in ((True, False) if serial else (False,))
             for features in [{"serial": serial, "mpi": mpi, "csfg": False, "openmp": openmp,
-                              "rangular_openmp": serial and openmp}]]
+                              "rangular_openmp": angular_openmp}]]
 
 
 def configure_command(case: dict, build: Path, compiler: Path, mpi_compiler: Path, mpiexec: Path) -> list[str]:

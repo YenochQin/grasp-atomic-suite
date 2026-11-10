@@ -33,7 +33,7 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
-| 现行构建策略 | [build_profiles.md](implemented/build_profiles.md) | CSFG 默认隔离；生产默认 -O2 与目标所需 OpenMP；标准/接口/运行时诊断放 Check/Audit，移除 legacy/隐式 SAVE 及冗余抵消 flags；记录三轮数值与耗时对照。 |
+| 现行构建策略 | [build_profiles.md](implemented/build_profiles.md) | CSFG 默认隔离；生产默认 -O2 与目标所需 OpenMP；标准/接口/运行时诊断放 Check/Audit；独立 OpenMP 开关组成 36 个有效配置，24 个诊断配置均有警告预算；记录三轮数值与耗时对照。 |
 | 首版已实施并回归 | [rangular_openmp.md](implemented/rangular_openmp.md) | 独立 rangular_omp、线程私有角动量工作区、有界结果块与有序提交；1/2/4/8 线程及回退路径字节一致，23,459-CSF 单次 8 线程约 2.76×；排序/输出仍串行，非全套 GRASP 或物理验收。 |
 | 已实施，运行器回归通过 | [rangular_version_comparison.md](implemented/rangular_version_comparison.md) | 指定原版/新版可执行文件，独立目录运行文本及可选描述符路径；保存日志、墙钟、阶段计时与 MCP 对照；7 项维护测试通过，支持差异/超时/提前退出检测。 |
 | 已实施，输入/输出回归通过 | [rangular_descriptor_input.md](implemented/rangular_descriptor_input.md) | suite 预处理二进制、Fortran reader、文本数组对照和串行阶段计时；14 项专项测试、原生 rCSFs 171 CSF 对照及小型 MCP 一致性通过；生产性能、完整科学结果与 OpenMP 未验证。 |
@@ -44,7 +44,7 @@ docs/
 | 初步分析完成，诊断待实施 | [rmcdhf_mpi_single_node_diagnostics_2026-11-09.md](plans/rmcdhf_mpi_single_node_diagnostics_2026-11-09.md) | 普通/memory MPI 在大规模 CSF 下全程反复 D 状态；记录单节点条件、SETLAG 冻结侧冗余和 Davidson 候选。根因未确定，自动采样、服务器对照及 MPI/OpenMP 优化均未实施。 |
 | 优先警告修复第一批通过 | [f2018_warning_repairs_2026-11-09.md](reviews/f2018_warning_repairs_2026-11-09.md) | GETALDWT、RCI 计数、Davidson、DACON、INTERP 及不可达步长分支；正确性复核 515→475，INTENT 9→0；32 配置、1,960 次 CTest 全通过，全开 93/93。 |
 | 首次矩阵/基线设施证据 | [f2018_matrix_warning_baseline_2026-11-09.md](reviews/f2018_matrix_warning_baseline_2026-11-09.md) | 保留初次 32 配置、1,560 次 CTest 通过与 3,040 文件/515 条正确性诊断记录；当前基线及修复见上一项。 |
-| 已更新，剩余正确性复核待完成 | [gfortran15-warning-baseline.md](reference/f2018/gfortran15-warning-baseline.md) | 当前 3,046 文件、4,804 条诊断，475 条正确性复核项；含无警告文件、配置次数和 source hash，不把登记视为已解决。 |
+| 已更新，剩余正确性复核待完成 | [gfortran15-warning-baseline.md](reference/f2018/gfortran15-warning-baseline.md) | 普通 Check/Audit 的 24 个配置、2,142 文件、2,480 条诊断身份，其中 358 条正确性复核身份；包含两条既有 QED 警告在本机的不同定位，不代表新增或已解决的缺陷数。 |
 | strict 修复阶段验收通过 | [strict_scnsty_normalization_2026-11-09.md](reviews/strict_scnsty_normalization_2026-11-09.md) | SCNSTY 改为归一化后、阻尼前比较；公式/阈值/两轮条件不变，1/2-rank 均 11 轮收敛；保留当时 74/74 和旧新数值证据。 |
 | Linux 初始修复证据 | [f2018_linux_davidson_restart_2026-11-09.md](reviews/f2018_linux_davidson_restart_2026-11-09.md) | 保留 Davidson、空 rank、memory IOS 修复及 71/73、strict 旧平台重现证据；后续 strict 时序修复及验收见上一项。 |
 | 此前严格接口验证 | [f2018_strict_interfaces_npol_2026-11-09.md](reviews/f2018_strict_interfaces_npol_2026-11-09.md) | 内部接口/NP 路径/SOLVE 意图修复；保留 macOS Check/Release 各 64/68、4 skip 及一轮全输出一致记录；后续 Linux 状态见上一项。 |

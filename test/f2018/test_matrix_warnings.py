@@ -7,25 +7,43 @@ import unittest
 from unittest.mock import patch
 
 from matrix import cases, configure_command
-from warning_inventory import (category, command_parts, compare, digest, inventory,
+from warning_inventory import (BASELINE, category, command_parts, compare, digest, inventory,
                                make_baseline, parse_diagnostics, record_path, write_json)
 
 
 class MatrixWarningTests(unittest.TestCase):
     def test_cartesian_matrix_and_explicit_switches(self) -> None:
         configurations = cases()
-        self.assertEqual(len(configurations), 24)
-        self.assertEqual(len({case["id"] for case in configurations}), 24)
+        self.assertEqual(len(configurations), 36)
+        self.assertEqual(len({case["id"] for case in configurations}), 36)
         self.assertTrue(all(not case["features"]["csfg"] for case in configurations))
         for profile in ("f2018-check", "f2018-audit", "f2018-release"):
             self.assertEqual(len({tuple(case["features"].values()) for case in configurations
-                                  if case["profile"] == profile}), 8)
+                                  if case["profile"] == profile}), 12)
+            for mpi in (False, True):
+                enabled = [case["features"] for case in configurations
+                           if case["profile"] == profile and case["features"]["mpi"] == mpi]
+                self.assertEqual({(f["openmp"], f["rangular_openmp"])
+                                  for f in enabled if f["serial"]},
+                                 {(False, False), (False, True), (True, False), (True, True)})
+                self.assertTrue(all(not f["rangular_openmp"] for f in enabled if not f["serial"]))
         for case in configurations:
             command = configure_command(case, Path("/build space"), Path("/compiler/gfortran-15"),
                                         Path("/mpi/fort"), Path("/mpi/exec"))
             for axis, flag in (("serial", "GRASP_BUILD_SERIAL_APPS"), ("mpi", "GRASP_ENABLE_MPI"),
-                               ("csfg", "GRASP_BUILD_CSFG"), ("openmp", "GRASP_JJ2LSJ_OPENMP")):
+                               ("csfg", "GRASP_BUILD_CSFG"), ("openmp", "GRASP_JJ2LSJ_OPENMP"),
+                               ("rangular_openmp", "GRASP_RANGULAR_OPENMP")):
                 self.assertIn(f"-D{flag}={'ON' if case['features'][axis] else 'OFF'}", command)
+
+    def test_reviewed_baseline_covers_every_diagnostic_configuration(self) -> None:
+        baseline = json.loads(BASELINE.read_text())
+        diagnostic_cases = {case["id"]: case for case in cases()
+                            if case["profile"] != "f2018-release"}
+        self.assertEqual(set(baseline["cases"]), set(diagnostic_cases))
+        for case_id, case in diagnostic_cases.items():
+            with self.subTest(case=case_id):
+                self.assertEqual(baseline["cases"][case_id]["profile"], case["profile"])
+                self.assertEqual(baseline["cases"][case_id]["features"], case["features"])
 
     def test_parser_never_silently_discards_output(self) -> None:
         self.assertEqual(parse_diagnostics("[]\n[]\n"), [])

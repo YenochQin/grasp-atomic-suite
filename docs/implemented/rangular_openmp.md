@@ -175,10 +175,31 @@ SETSDA 在此路径始终保留所有对角项；小-j term 编码来自原表�
 
 警告预算更新记录在 [baseline JSON](../reference/f2018/gfortran15-warning-baseline.json) 的
 `rangular_openmp_budget_update`。独立 angular 开关用 `-a1/-a0` 区分非默认组合；
-旧四轴含 CSFG 的矩阵停止作为本轮工作范围；当前普通矩阵包含三种 profile，各 8 个组合。
-生产 profile 不进行警告预算认证；当前 18 条预算覆盖普通 Check/Audit 默认组合及两个独立 angular 组合，
-CSFG 与旧 Release 诊断预算保留在 Git 历史中，
-**本轮没有重新跑完整矩阵**。
+旧四轴含 CSFG 的矩阵停止作为本轮工作范围。2026-11-11 基于 `3f902c2` 补齐独立开关后，
+当前普通矩阵包含三种 profile，各 12 个有效组合（共 36 个）；serial 关闭时不重复枚举无目标的 angular 开关。
+生产 profile 不进行警告预算认证；24 条预算覆盖全部普通 Check/Audit 组合，
+包括只开启 jj2lsj OpenMP、只开启 rangular OpenMP 的 MPI/非 MPI 配置。
+回归测试同时检查独立开关枚举和已提交预算覆盖，避免可构建的配置在验收时找不到基线。
+CSFG 与旧 Release 诊断预算保留在 Git 历史中，**没有据此宣称完整 36 组合矩阵验收**。
 
 当前范围不含跨 block 并行、并行排序、MPI 输出重分片或全库显式 context 重构。
 任务缓冲预算不替代旧 MCP 整数容量和 block 累积数组限制；高并发、内存耗尽及所有罕见态还需各自验收。
+
+## 7. 独立开关修复的本机 CSF 对照（2026-11-11）
+
+基于 `3f902c2` 的验收矩阵/预算增量，在 macOS arm64、GNU 15.3.0 上使用用户提供的
+14,551-CSF 文本样本，四个 block 分别为 1,212、3,298、4,765、5,276 个 CSF。
+目的为验证独立开关构建的程序在不同线程数下保持完整 MCP 输出；预期为逐字节一致。
+
+使用 Check 配置、完整相互作用、数学库单线程。串行控制程序来自 jj2lsj OpenMP 开启、
+rangular OpenMP 关闭的配置；候选来自相反的开关组合。两个配置均启用普通 MPI 构建，
+此次运行的是普通串行/线程程序。输入和程序均冻结为独立副本，重新生成串行基准，
+按 1/2/4/8 线程运行候选，比较零容差数值结果及完整文件 SHA-256。
+
+四种线程设置均正常结束，10 个 MCP 文件全部与串行基准逐字节一致，符合预期。
+证据保存在忽略目录 `build-review-openmp-independent/zn-csf-frozen/`：
+`summary.json` 记录输入/程序身份、线程设置和每次运行，`comparison-threads-*.json`
+记录全部 MCP 文件哈希，各运行目录保留输入、输出、日志及阶段计时。
+运行期间有其他编译/测试活动，因此耗时不作为扩展性结论。
+本次未验证完整 SCF/RCI 或物理收敛；完整 MPI 验收仍需在 Linux 补跑
+[构建策略](build_profiles.md)所列的四项平台专属测试。

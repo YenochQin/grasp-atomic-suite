@@ -141,8 +141,13 @@ is `<build>/install`, or the explicit prefix. Validation does not install.
 ## Complete configuration matrix and warning baseline
 
 `matrix.py` enumerates Check, Audit and production Release over
-`GRASP_BUILD_SERIAL_APPS`, `GRASP_ENABLE_MPI`, and `GRASP_JJ2LSJ_OPENMP`, with
-the angular switch following the applicable serial/OpenMP combination: **24 ordinary builds**.
+`GRASP_BUILD_SERIAL_APPS`, `GRASP_ENABLE_MPI`, `GRASP_JJ2LSJ_OPENMP`, and the
+independent `GRASP_RANGULAR_OPENMP` switch: **36 ordinary builds**. Each profile
+has eight serial-enabled combinations (MPI and both OpenMP switches independent)
+and four serial-disabled combinations (MPI and jj2lsj OpenMP independent).
+The angular target requires serial applications, so its actual feature is always
+off in the serial-disabled cases. Existing case IDs are unchanged; `-a0`/`-a1`
+identify angular settings that differ from the jj2lsj-based default.
 `GRASP_BUILD_CSFG=OFF` in every active matrix case. Serial/MPI both disabled still
 builds the shared libraries, jj2lsj and their applicable tests. A partial
 `--case` selection never reports full-matrix acceptance.
@@ -192,7 +197,7 @@ Linker diagnostics and compiler calls made inside disposable Python test fixture
 remain in their logs and are outside this CMake Fortran compilation baseline.
 
 To explicitly establish a replacement candidate, first collect all builds without
-claiming test acceptance. The recorder requires all 16 ordinary diagnostic cases and refuses to
+claiming test acceptance. The recorder requires all 24 ordinary diagnostic cases and refuses to
 overwrite an existing baseline:
 
 ```fish
@@ -209,8 +214,9 @@ baseline, including reductions after fixes; no validation command updates it
 automatically. Rebuild the Markdown index with `warning_inventory.py report`.
 The former `--audit` compatibility mode is removed; production validation never certifies strict
 acceptance. The infrastructure regression `f2018_matrix_warnings_driver` checks
-the full Cartesian matrix and negative parser, coverage, hash, version and budget
-cases without running atomic calculations.
+the independent OpenMP combinations, checked-in baseline coverage for every
+diagnostic case, and negative parser, coverage, hash, version and budget cases
+without running atomic calculations.
 
 ```fish
 ../graspkit-tools/.venv/bin/python test/f2018/warning_inventory.py report \

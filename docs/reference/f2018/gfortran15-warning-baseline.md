@@ -1,6 +1,6 @@
 # GNU Fortran 15 逐文件警告基线
 
-编译器：15.3.0；配置数：18。
+编译器：15.3.0；配置数：24。
 
 机器可读清单见 [gfortran15-warning-baseline.json](gfortran15-warning-baseline.json)。
 该表由 `test/f2018/warning_inventory.py report` 生成，包含无警告源文件。
@@ -340,7 +340,7 @@
 | [src/appl/rci90/mohr_I.f90](../../../src/appl/rci90/mohr_I.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/appl/rci90/ncharg.f90](../../../src/appl/rci90/ncharg.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/appl/rci90/ncharg_I.f90](../../../src/appl/rci90/ncharg_I.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
-| [src/appl/rci90/qed.f90](../../../src/appl/rci90/qed.f90) | 3 | 1 | 0 | 2 | 2 | 3 |
+| [src/appl/rci90/qed.f90](../../../src/appl/rci90/qed.f90) | 4 | 2 | 0 | 2 | 2 | 4 |
 | [src/appl/rci90/qed_I.f90](../../../src/appl/rci90/qed_I.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/appl/rci90/qed_slfen.f90](../../../src/appl/rci90/qed_slfen.f90) | 2 | 0 | 0 | 2 | 2 | 2 |
 | [src/appl/rci90/qed_slfen_I.f90](../../../src/appl/rci90/qed_slfen_I.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -479,7 +479,7 @@
 | [src/appl/rci90_mpi/mohr_I.f90](../../../src/appl/rci90_mpi/mohr_I.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/appl/rci90_mpi/ncharg.f90](../../../src/appl/rci90_mpi/ncharg.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/appl/rci90_mpi/ncharg_I.f90](../../../src/appl/rci90_mpi/ncharg_I.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
-| [src/appl/rci90_mpi/qed.f90](../../../src/appl/rci90_mpi/qed.f90) | 3 | 1 | 0 | 2 | 2 | 3 |
+| [src/appl/rci90_mpi/qed.f90](../../../src/appl/rci90_mpi/qed.f90) | 4 | 2 | 0 | 2 | 2 | 4 |
 | [src/appl/rci90_mpi/qed_I.f90](../../../src/appl/rci90_mpi/qed_I.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/appl/rci90_mpi/qed_slfen.f90](../../../src/appl/rci90_mpi/qed_slfen.f90) | 2 | 0 | 0 | 2 | 2 | 2 |
 | [src/appl/rci90_mpi/qed_slfen_I.f90](../../../src/appl/rci90_mpi/qed_slfen_I.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
