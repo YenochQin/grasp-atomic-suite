@@ -5,4 +5,5 @@
 !                     Gediminas Gaigalas  10/05/17
       USE parameter_def,   ONLY:  NNNW
       INTEGER, DIMENSION(NNNW) :: JLIS, JC1S, JC2S
+!$OMP THREADPRIVATE(JLIS, JC1S, JC2S)
       END MODULE dumx_C

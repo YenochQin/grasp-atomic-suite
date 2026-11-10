@@ -45,6 +45,9 @@
       REAL(DOUBLE), DIMENSION(0:4,0:4,0:4,0:4,0:4,0:4) :: RACA
       REAL(DOUBLE) :: UNDEF, A
       LOGICAL :: SAVE
+!     Persistent memoization is intentional (DATA already implies SAVE).
+!     State remains per-thread when this source is compiled with OpenMP.
+      SAVE :: RACA
 !-----------------------------------------------
       DATA RACA/ 15625*1.D-20/
       DATA UNDEF/ 1.D-20/

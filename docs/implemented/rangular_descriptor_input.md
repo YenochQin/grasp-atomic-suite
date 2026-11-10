@@ -4,7 +4,8 @@
 描述符契约核对 rCSFs `6e4fcff1439fb1b56d4891908c5bd58722ddf64a`，实际兼容性检查使用已安装的原生 rCSFs 3.0.0。
 
 状态：普通串行 `rangular` 已接入；原文本入口保留。预处理、原文本/新输入数组对照、小型 MCP 回归和阶段计时已实施。
-没有增加 OpenMP，也没有改造 MPI/CSFG/RMCDHF/RCI 的输入入口。
+后续增加了独立的 [rangular_omp](rangular_openmp.md)；本文仍描述两种输入的公共契约。
+MPI/CSFG/RMCDHF/RCI 的输入入口未改造。
 这些结果验证软件和输入表示，不建立生产规模性能、活性空间收敛或物理精度。
 
 ## 1. 代码归属与运行路径
@@ -43,8 +44,9 @@ suite 的编译和 rangular 运行不依赖 Python、PyArrow 或 Rust。维护�
 
 以下构建命令从 suite 根目录执行，使用独立目录，不安装或覆盖现有程序：
 
-```bash
-export FC=/usr/bin/gfortran-15 OMPI_FC=/usr/bin/gfortran-15
+```fish
+set -gx FC /usr/bin/gfortran-15
+set -gx OMPI_FC /usr/bin/gfortran-15
 cmake -S . -B build-descriptor-check \
   -DCMAKE_Fortran_COMPILER=/usr/bin/gfortran-15 \
   -DCMAKE_BUILD_TYPE=Debug -DGRASP_FORTRAN_PROFILE=f2018-check \
@@ -55,7 +57,7 @@ cmake --build build-descriptor-check --target rangular csf_descriptor_verify -j4
 
 从已有、与 header 绑定的完整 V2 描述符生成输入；路径只是使用示例：
 
-```bash
+```fish
 ../graspkit-tools/.venv/bin/python scripts/prepare_csf_descriptors.py \
   /path/to/descriptors.parquet /path/to/csfs.bin \
   --header /path/to/source_header.toml
@@ -72,7 +74,7 @@ header SHA-256 和预处理墙钟时间。输出文件必须尚不存在；转�
 
 在独立计算工作目录中运行编译后的程序，使用其绝对路径。例如：
 
-```bash
+```fish
 /path/to/suite/build-descriptor-check/bin/rangular \
   --csf-descriptors /path/to/csfs.bin --timings timings.csv
 ```
@@ -170,7 +172,7 @@ header digest 标识预处理使用的 header；Fortran 不再打开 TOML，也�
 
 维护回归入口：
 
-```bash
+```fish
 ../graspkit-tools/.venv/bin/python test/test_csf_descriptors.py \
   --rangular build-descriptor-check/bin/rangular \
   --verifier build-descriptor-check/bin/csf_descriptor_verify -v
@@ -209,4 +211,4 @@ Release 全开构建通过；95 项测试中初次 39 项 MPI 测试被沙箱 so
 详见[警告预算](../reference/f2018/gfortran15-warning-baseline.json)中的 `descriptor_input_budget_update`。
 
 未验证：百万级数据的性能/峰值内存、强制内存不足磁盘回退的计时路径、全量态空间、
-MPI/CSFG 描述符入口，以及基于新输入的完整 SCF/RCI 科学结果。完整物理验收与 OpenMP 留待后续任务。
+MPI/CSFG 描述符入口，以及基于新输入的完整 SCF/RCI 科学结果。后续 OpenMP 的独立状态见文首链接。

@@ -2,7 +2,7 @@ module rangular_profile
    use iso_fortran_env, only: int64, real64
    implicit none
    private
-   public :: open_stage_profile, close_stage_profile, stage_clock, record_stage
+   public :: open_stage_profile, close_stage_profile, stage_clock, record_stage, record_seconds_stage
    integer, save :: profile_unit = 0
    logical, save :: profile_enabled = .false.
 contains
@@ -53,4 +53,15 @@ contains
       if (profile_enabled) close(profile_unit)
       profile_enabled = .false.
    end subroutine close_stage_profile
+
+   subroutine record_seconds_stage(stage_name, block_index, elapsed_seconds, record_count, storage)
+      character(len=*), intent(in) :: stage_name, storage
+      integer, intent(in) :: block_index
+      real(real64), intent(in) :: elapsed_seconds
+      integer(int64), intent(in) :: record_count
+      if (.not. profile_enabled) return
+      write(profile_unit,'(A,",",I0,",",I0,",",ES24.16E3,",",I0,",",A)') &
+         stage_name,block_index,-1,elapsed_seconds,record_count,trim(storage)
+      flush(profile_unit)
+   end subroutine record_seconds_stage
 end module rangular_profile

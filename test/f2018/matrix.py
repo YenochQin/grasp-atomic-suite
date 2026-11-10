@@ -1,4 +1,4 @@
-"""Build and validate both strict profiles over all four Boolean feature axes.
+"""Build ordinary-GRASP production and validation profiles; CSFG is isolated.
 
 Use --stage build to collect a fresh matrix before explicitly creating/reviewing
 a warning baseline. The default stage runs the complete CTest suite and checks
@@ -26,17 +26,20 @@ OPTIONS = {"serial": "GRASP_BUILD_SERIAL_APPS", "mpi": "GRASP_ENABLE_MPI",
 
 def cases() -> list[dict]:
     return [{"id": case_id(profile, features), "profile": profile, "features": features}
-            for profile in ("f2018-check", "f2018-release")
-            for flags in product((True, False), repeat=4)
-            for features in [dict(zip(AXES, flags))]]
+            for profile in ("f2018-check", "f2018-audit", "f2018-release")
+            for serial, mpi, openmp in product((True, False), repeat=3)
+            for features in [{"serial": serial, "mpi": mpi, "csfg": False, "openmp": openmp,
+                              "rangular_openmp": serial and openmp}]]
 
 
 def configure_command(case: dict, build: Path, compiler: Path, mpi_compiler: Path, mpiexec: Path) -> list[str]:
     args = ["cmake", "-S", str(SOURCE), "-B", str(build),
             f"-DCMAKE_Fortran_COMPILER={compiler}", f"-DPython3_EXECUTABLE={sys.executable}",
-            f"-DGRASP_FORTRAN_PROFILE={case['profile']}", "-DGRASP_CAPTURE_WARNINGS=ON",
+            f"-DGRASP_FORTRAN_PROFILE={case['profile']}",
+            "-DGRASP_CAPTURE_WARNINGS=" + ("OFF" if case["profile"] == "f2018-release" else "ON"),
             "-DCMAKE_BUILD_TYPE=" + ("Debug" if case["profile"] == "f2018-check" else "Release")]
-    args += [f"-D{OPTIONS[axis]}={'ON' if enabled else 'OFF'}" for axis, enabled in case["features"].items()]
+    args += [f"-D{OPTIONS[axis]}={'ON' if case['features'][axis] else 'OFF'}" for axis in AXES]
+    args += [f"-DGRASP_RANGULAR_OPENMP={'ON' if case['features']['rangular_openmp'] else 'OFF'}"]
     if case["features"]["mpi"]:
         args += [f"-DMPI_Fortran_COMPILER={mpi_compiler}", f"-DMPIEXEC_EXECUTABLE={mpiexec}"]
     return args
@@ -64,20 +67,25 @@ def run_case(case: dict, args: argparse.Namespace, baseline: dict | None) -> dic
         run_logged(command, audit / "matrix-check.log", env)
         if args.stage == "build":
             run_logged(["cmake", "--build", str(build), "--parallel", str(args.jobs)], audit / "matrix-build.log", env)
-        observation = inventory(build)
-        write_json(audit / "warnings.json", observation)
-        result.update(compilation_count=observation["compilation_count"],
-                      source_file_count=len(observation["files"]),
-                      warning_count=sum(observation["counts"].values()),
-                      category_counts=observation["category_counts"])
+        observation = None
+        if case["profile"] != "f2018-release":
+            observation = inventory(build)
+            write_json(audit / "warnings.json", observation)
+            result.update(compilation_count=observation["compilation_count"],
+                          source_file_count=len(observation["files"]),
+                          warning_count=sum(observation["counts"].values()),
+                          category_counts=observation["category_counts"])
+        else:
+            result["warning_gate"] = "not_collected_in_production"
         summary = json.loads((audit / "acceptance/summary.json").read_text())
         result["test_count"] = summary["test_count"]
         result["acceptance_summary_sha256"] = digest(audit / "acceptance/summary.json")
         if args.stage == "validate":
-            if not summary["strict_acceptance"]:
-                raise ValueError("Configuration did not pass strict build/test acceptance")
-            result["warnings"] = compare(observation, baseline)
-            result.update(status="passed", strict_acceptance=True)
+            if not summary.get("scope_acceptance"):
+                raise ValueError("Configuration did not pass its build/test acceptance")
+            if observation is not None:
+                result["warnings"] = compare(observation, baseline)
+            result.update(status="passed", scope_acceptance=True, strict_acceptance=summary["strict_acceptance"])
         else:
             result["status"] = "built_not_tested"
     except (ValueError, KeyError, OSError, RuntimeError, subprocess.CalledProcessError) as error:

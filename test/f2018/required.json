@@ -3,6 +3,12 @@
   "scope": "Current supported targets; not P9/F00-F10 certification",
   "groups": [
     {
+      "name": "rangular_openmp",
+      "requires": ["serial", "rangular_openmp"],
+      "targets": ["rangular_omp", "rangular_thread_state", "rangular_thread_kernels"],
+      "tests": ["rangular_openmp_regression", "rangular_openmp_closure"]
+    },
+    {
       "name": "common",
       "requires": [],
       "targets": [
@@ -51,8 +57,7 @@
         "f2018_weights_rmcdhf_mpi",
         "f2018_weights_rmcdhf_mem_mpi",
         "f2018_weights_rmcdhf90_mem_strict_mpi",
-        "f2018_weights_rmcdhf90_mem_diag_mpi",
-        "f2018_weights_rmcdhf90_csfg_mpi"
+        "f2018_weights_rmcdhf90_mem_diag_mpi"
       ]
     },
     {
@@ -162,6 +167,7 @@
         "csfg_capacity",
         "csfg_file_formats",
         "csfg_alternate_capacity",
+        "f2018_weights_rmcdhf90_csfg_mpi",
         "f2018_csfg_reallocation",
         "f2018_nmtejj_csfg_parity",
         "f2018_rk_count_csfg",

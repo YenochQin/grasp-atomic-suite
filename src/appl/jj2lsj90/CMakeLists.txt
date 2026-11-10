@@ -4,12 +4,8 @@ if(GRASP_JJ2LSJ_OPENMP)
     find_package(OpenMP COMPONENTS Fortran)
 endif()
 
-# Scope automatic storage to this application and its concurrent callees.
-# The legacy serial controller explicitly saves its local workspace.
-string(REPLACE "-fno-automatic" "" CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
-if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
-    add_compile_options(-frecursive)
-endif()
+# Persistent controller state is explicit; OpenMP supplies reentrant locals to
+# the concurrent build. Do not restore global implicit SAVE compatibility flags.
 
 # Recompile only the concurrent call closure, from the shared source files.
 # Direct objects resolve these symbols before the legacy static archives. No

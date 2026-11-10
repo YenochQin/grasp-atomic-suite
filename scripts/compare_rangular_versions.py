@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run serial reference/candidate rangular binaries and compare their full MCP output."""
+"""Compare ordinary rangular outputs with a serial reference and optional OpenMP candidate."""
 
 from __future__ import annotations
 
@@ -67,14 +67,19 @@ def run_logged(
     timeout_seconds: float | None,
     *,
     input_csf: Path | None = None,
+    openmp_threads: int | None = None,
 ) -> dict[str, Any]:
     directory.mkdir()
     if input_csf is not None:
         shutil.copyfile(input_csf, directory / "rcsf.inp")
+    thread_environment = THREAD_ENVIRONMENT | (
+        {"OMP_NUM_THREADS": str(openmp_threads)} if openmp_threads else {}
+    )
     execution: dict[str, Any] = {
         "command": command,
         "directory": str(directory),
         "status": "running",
+        "thread_environment": thread_environment,
     }
     save_json(directory / "execution.json", execution)
     print(f"Running {directory.name}", flush=True)
@@ -92,7 +97,7 @@ def run_logged(
                 stdin=stdin,
                 stdout=stdout,
                 stderr=stderr,
-                env=os.environ | THREAD_ENVIRONMENT,
+                env=os.environ | thread_environment,
                 start_new_session=os.name == "posix",
             )
             execution["returncode"] = process.wait(timeout=timeout_seconds)
@@ -209,6 +214,7 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
         "platform": {"system": platform.system(), "machine": platform.machine()},
         "thread_environment": THREAD_ENVIRONMENT,
         "repetitions": arguments.repeat,
+        "candidate_threads": arguments.candidate_threads,
         "atol": arguments.atol,
         "rtol": arguments.rtol,
         "keyorb": arguments.keyorb,
@@ -291,6 +297,8 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                     command += ["--csf-descriptors", str(snapshots / "csfs.bin")]
                 if mode != "reference_text":
                     command += ["--timings", "timings.csv"]
+                    if arguments.candidate_threads is not None:
+                        command += ["--threads", str(arguments.candidate_threads)]
                 execution = run_logged(
                     command,
                     directory,
@@ -299,6 +307,9 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                     input_csf=None
                     if mode == "candidate_descriptors"
                     else snapshots / "rcsf.inp",
+                    openmp_threads=arguments.candidate_threads
+                    if mode != "reference_text"
+                    else None,
                 )
                 if (
                     file_identity(executable)["sha256"]
@@ -322,7 +333,7 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                     path.name.startswith("mcp0") for path in dataset.paths
                 ):
                     raise ValueError(
-                        "this runner accepts ordinary serial rangular only"
+                        "this runner requires ordinary unsharded mcp.* output (no MPI/CSFG)"
                     )
                 if dataset.header.nw >= arguments.keyorb:
                     raise ValueError("orbital count must be smaller than --keyorb")
@@ -460,6 +471,11 @@ def main() -> int:
         help="default: csf_descriptor_verify beside --candidate",
     )
     parser.add_argument("--repeat", type=positive_integer, default=1)
+    parser.add_argument(
+        "--candidate-threads",
+        type=positive_integer,
+        help="OpenMP threads for rangular_omp; reference and mathematical libraries stay single-threaded",
+    )
     parser.add_argument(
         "--timeout",
         type=positive_seconds,

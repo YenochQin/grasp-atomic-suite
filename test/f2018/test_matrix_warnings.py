@@ -14,11 +14,12 @@ from warning_inventory import (category, command_parts, compare, digest, invento
 class MatrixWarningTests(unittest.TestCase):
     def test_cartesian_matrix_and_explicit_switches(self) -> None:
         configurations = cases()
-        self.assertEqual(len(configurations), 32)
-        self.assertEqual(len({case["id"] for case in configurations}), 32)
-        for profile in ("f2018-check", "f2018-release"):
+        self.assertEqual(len(configurations), 24)
+        self.assertEqual(len({case["id"] for case in configurations}), 24)
+        self.assertTrue(all(not case["features"]["csfg"] for case in configurations))
+        for profile in ("f2018-check", "f2018-audit", "f2018-release"):
             self.assertEqual(len({tuple(case["features"].values()) for case in configurations
-                                  if case["profile"] == profile}), 16)
+                                  if case["profile"] == profile}), 8)
         for case in configurations:
             command = configure_command(case, Path("/build space"), Path("/compiler/gfortran-15"),
                                         Path("/mpi/fort"), Path("/mpi/exec"))
@@ -100,11 +101,11 @@ class MatrixWarningTests(unittest.TestCase):
             obj.parent.mkdir(parents=True)
             obj.write_bytes(b"object")
             flags = ["-std=f2018", "-pedantic-errors", "-Wall", "-Wextra", "-Werror=implicit-interface",
-                     "-Werror=implicit-procedure", "-fno-fast-math", "-ffp-contract=off", "-O2"]
+                     "-Werror=implicit-procedure", "-O2"]
             command = ["/compiler/gfortran-15", *flags, "-o", str(obj), "-c", str(path)]
             filename, object_name, normalized = command_parts(command, build, source, build)
             self.assertIn("<build>/CMakeFiles/demo.dir/unit.f90.o", normalized)
-            write_json(build / "f2018-features.json", {"profile": "f2018-release", "serial": 0,
+            write_json(build / "f2018-features.json", {"profile": "f2018-audit", "serial": 0,
                        "mpi": 0, "csfg": 0, "openmp": 0})
             (build / "CMakeCache.txt").write_text(f"CMAKE_HOME_DIRECTORY:INTERNAL={source}\n"
                 "CMAKE_Fortran_COMPILER:FILEPATH=/compiler/gfortran-15\n")

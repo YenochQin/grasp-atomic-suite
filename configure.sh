@@ -10,7 +10,7 @@ while (($#)); do
         --no-mpi) cmake_args+=(-DGRASP_ENABLE_MPI=OFF); shift ;;
         --serial) cmake_args+=(-DGRASP_BUILD_SERIAL_APPS=ON); shift ;;
         --no-csfg) cmake_args+=(-DGRASP_BUILD_CSFG=OFF); shift ;;
-        --no-openmp) cmake_args+=(-DGRASP_JJ2LSJ_OPENMP=OFF); shift ;;
+        --no-openmp) cmake_args+=(-DGRASP_JJ2LSJ_OPENMP=OFF -DGRASP_RANGULAR_OPENMP=OFF); shift ;;
         --profile|--prefix|--build-dir)
             if (($# < 2)); then echo "Missing value for $1" >&2; exit 2; fi
             case "$1" in
@@ -40,7 +40,7 @@ cmake -S "$GRASP" -B "$build_abspath" "${cmake_args[@]}"
 cat <<EOF
 Configured: $build_abspath
 Build: cmake --build "$build_abspath" --parallel 4
-Strict validation: <shared-python> "$GRASP/test/f2018/check.py" "$build_abspath"
-For a legacy/audit profile, add --audit; that result is not strict acceptance.
+Build/test validation: <shared-python> "$GRASP/test/f2018/check.py" "$build_abspath"
+Production: f2018-release. Validation: f2018-check (Debug) or f2018-audit (Release).
 Install only after validation: cmake --install "$build_abspath"
 EOF

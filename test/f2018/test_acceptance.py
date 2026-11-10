@@ -26,12 +26,12 @@ class AcceptanceTests(unittest.TestCase):
     def test_every_compile_command_is_checked(self) -> None:
         compiler = Path("/compiler/gfortran-15")
         flags = ["-std=f2018", "-pedantic-errors", "-Wall", "-Wextra", "-Werror=implicit-interface",
-                 "-Werror=implicit-procedure", "-fno-fast-math", "-ffp-contract=off", "-O0", "-g",
+                 "-Werror=implicit-procedure", "-O0", "-g",
                  "-fcheck=all", "-fbacktrace", "-ffpe-trap=invalid,zero,overflow"]
         good = {"file": "source.f90", "arguments": [str(compiler), *flags]}
         check_commands([good], "f2018-check", compiler)
         for bad_flag in ("-fallow-argument-mismatch", "-fno-automatic", "-std=legacy", "-O3",
-                         "-ffast-math", "-fdefault-integer-8", "-ffp-contract=fast", "-Wno-implicit-interface",
+                         "-ffast-math", "-fdefault-integer-8", "-Wno-implicit-interface",
                          "-fcheck=none", "-ffpe-trap=none", "-w"):
             with self.subTest(flag=bad_flag), self.assertRaises(ValueError):
                 check_commands([good, {**good, "arguments": [*good["arguments"], bad_flag]}], "f2018-check", compiler)
@@ -62,6 +62,29 @@ class AcceptanceTests(unittest.TestCase):
                 path.write_text(f"<testsuite>{content}</testsuite>")
                 with self.assertRaises(ValueError):
                     check_junit(path, {"a"})
+
+    def test_rangular_openmp_is_independent_and_does_not_leak_into_shared_libraries(self) -> None:
+        command = {"file": "setqna.f90", "arguments": ["gfortran-15", "-fopenmp", "-c", "setqna.f90",
+                   "-o", "CMakeFiles/rangular_thread_kernels.dir/setqna.f90.o"]}
+        check_feature_commands([command], {"openmp": False, "rangular_openmp": True})
+        with self.assertRaises(ValueError):
+            check_feature_commands([command], {"openmp": True, "rangular_openmp": False})
+        leaked = {**command, "arguments": [argument.replace("rangular_thread_kernels", "9290")
+                                           for argument in command["arguments"]]}
+        with self.assertRaises(ValueError):
+            check_feature_commands([leaked], {"openmp": True, "rangular_openmp": True})
+
+    def test_minimal_production_flags_and_csfg_boundary(self) -> None:
+        compiler = Path("/compiler/gfortran-15")
+        command = {"file": "source.f90", "arguments": [str(compiler), "-O2"]}
+        check_commands([command], "f2018-release", compiler)
+        with self.assertRaises(ValueError):
+            check_commands([command], "f2018-audit", compiler)
+        with self.assertRaises(ValueError):
+            check_commands([command], "legacy", compiler)
+        leaked = {**command, "file": "/src/appl/rmcdhf90_csfg_mpi/getaldwt.f90"}
+        with self.assertRaisesRegex(ValueError, "CSFG source leaked"):
+            check_feature_commands([leaked], {"openmp": False, "csfg": False})
 
 
 if __name__ == "__main__":

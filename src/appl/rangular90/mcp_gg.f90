@@ -33,6 +33,7 @@
       USE vast_kind_param, ONLY:  DOUBLE
       USE iso_fortran_env, ONLY: int64
       USE rangular_profile, ONLY: stage_clock, record_stage
+      USE rangular_parallel, ONLY: parallel_pairs_available, begin_pair_block, end_pair_block, load_parallel_pair
       USE parameter_def,   ONLY:  NNNW, KEYORB
       USE memory_man
 !-----------------------------------------------
@@ -138,6 +139,7 @@
 !   Allocate storage for the arrays in BUFFER
 !
       CALL ALCBUF (1)
+      IF (parallel_pairs_available) CALL begin_pair_block(NB)
       CALL record_stage('coefficient_buffer_allocation', NB, stage_start_count)
       stage_start_count = stage_clock()
 !
@@ -162,8 +164,9 @@
                npos = npos + 1
                LINCR = .FALSE.
             ENDIF
+            IF (parallel_pairs_available) CALL load_parallel_pair(JA,JB,IA,IB,TSHELL(1))
             IF (JB .NE. JA) THEN
-               CALL ONESCALAR(JA,JB,IA,IB,TSHELL)
+               IF (.NOT. parallel_pairs_available) CALL ONESCALAR(JA,JB,IA,IB,TSHELL)
                IF (IA .NE. 0 .AND. IA .NE. IB .AND.       &
                       ABS (TSHELL(1)) .GT. CUTOFF) THEN
                   npos = npos + 1
@@ -223,8 +226,10 @@
 !   are the density pairs. NVCOEF is initialized here but changed
 !   in /rkco/cor[d] via COMMON.
 !
-            NVCOEF = 0
-            CALL RKCO_GG (JA, JB, CORD, 0, 1)
+            IF (.NOT. parallel_pairs_available) THEN
+               NVCOEF = 0
+               CALL RKCO_GG (JA, JB, CORD, 0, 1)
+            END IF
             DO 2 I = 1, NVCOEF
                VCOEFF = COEFF(I)
                IF (ABS (VCOEFF) .GT. CUTOFF) THEN
@@ -328,6 +333,7 @@
     5 CONTINUE
       CALL record_stage('pair_generation_and_buffering', NB, stage_start_count, &
                         int(LLISTT,int64) + SUM(int(LLISTV,int64)), storage='memory_or_spill')
+      IF (parallel_pairs_available) CALL end_pair_block(NB)
       stage_start_count = stage_clock()
 !
 !   Deallocate storage that is no longer required

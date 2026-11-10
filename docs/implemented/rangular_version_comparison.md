@@ -1,14 +1,14 @@
 # 原版与新版 rangular 对照运行脚本
 
 日期：2026-11-10。入口：[compare_rangular_versions.py](../../scripts/compare_rangular_versions.py)。
-范围：**普通串行 rangular**。脚本接受两个已构建可执行文件，不自动编译，不运行 MPI 或提交 SLURM。
+范围：**普通 rangular 的串行原版与串行/OpenMP 候选**。脚本接受两个已构建可执行文件，不自动编译，不运行 MPI 或提交 SLURM。
 新版是已接入 `--csf-descriptors` / `--timings` 的 suite 版本。
 
 ## 1. 最小用法：原版文本与新版文本
 
 从 suite 根目录执行；把示例中的可执行文件和数据路径替换为实际路径：
 
-```bash
+```fish
 ../graspkit-tools/.venv/bin/python scripts/compare_rangular_versions.py \
   --reference /path/to/original/rangular \
   --candidate /path/to/new/rangular \
@@ -28,7 +28,7 @@
 
 已有 rCSFs V2 Parquet 和匹配 header 时：
 
-```bash
+```fish
 ../graspkit-tools/.venv/bin/python scripts/compare_rangular_versions.py \
   --reference /path/to/original/rangular \
   --candidate /path/to/new/rangular \
@@ -49,6 +49,10 @@ Parquet 预处理只执行一次，额外需要 PyArrow；其耗时单列，不�
 二进制运行时不放置 `rcsf.inp`，结束后才将已验证的文本快照加入该目录，供 MCP 对比建立基组身份。
 这个动作在 `execution.json` 中标为 `text_provenance_added_after_execution`。
 交换格式及支持态范围见[描述符输入说明](rangular_descriptor_input.md)。
+
+使用 [rangular_omp](rangular_openmp.md) 时，将 `--candidate` 指向它并增加 `--candidate-threads 8`。
+该选项同时设置候选的 OpenMP 环境和 `--threads` 参数；原版及数学库仍单线程。
+省略此选项时，运行器保持原有单线程默认，不能仅设置父 shell 的 OMP_NUM_THREADS 就认定候选已多线程运行。
 
 ## 3. 一阶相互作用、超时与判据
 
@@ -99,7 +103,8 @@ n
 `reference_over_candidate_wall_ratio`，含义为原版墙钟中位数除以对应新版中位数。
 新版阶段时间保存在各次 CSV 及 `stage_wall_seconds`，整体区间包含子阶段，不能再次求和。
 
-固定 OpenMP/OpenBLAS/MKL/BLIS/Accelerate/NumExpr 的线程环境为 1，保证这里比较串行任务；
+默认将 OpenMP/OpenBLAS/MKL/BLIS/Accelerate/NumExpr 的线程环境设为 1；
+`--candidate-threads` 仅覆盖候选的 OpenMP 线程数，实际每次环境记录在 execution JSON 中。
 不修改绑定、CPU 频率或系统缓存。输入复制和验证可能预热页缓存，因此这些结果不是冷缓存测试。
 建议使用相同工具链、优化等级、容量及科学设置；尤其不要把旧 Debug 与新 Release 的比值当成改造收益。
 大量 MCP 文件的校验可能耗时，但不会计入可执行程序墙钟。
@@ -123,7 +128,7 @@ n
 
 复现维护测试：
 
-```bash
+```fish
 ../graspkit-tools/.venv/bin/python test/test_compare_rangular_versions.py \
   --rangular build-descriptor-check/bin/rangular \
   --verifier build-descriptor-check/bin/csf_descriptor_verify -v

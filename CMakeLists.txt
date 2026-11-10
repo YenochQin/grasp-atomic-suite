@@ -115,8 +115,8 @@ endif()
 
 # Additional Fortran compiler flags.
 #
-# -fno-automatic: this was set in the original make_environment_gfortran_UBC file.
-# -std=f2018: check the selected language standard during migration.
+# Production optimization and validation diagnostics are configured separately.
+# No implicit SAVE or legacy syntax/argument compatibility switches are used.
 #
 # Note: optimization should be enabled on the Release target automatically.
 #
@@ -185,6 +185,7 @@ add_subdirectory("src/appl/rhfs90")
 add_subdirectory("src/appl/rdensity")
 add_subdirectory("src/appl/ris4")
 add_subdirectory("src/appl/jj2lsj90")
+option(GRASP_RANGULAR_OPENMP "Build the audited rangular_omp pair engine" ${GRASP_JJ2LSJ_OPENMP})
 # add_subdirectory("src/appl/rhfszeeman95")
 
 # Ordinary GRASP programs and fresh rmcdhf copies use the suite numerical libraries.
@@ -207,25 +208,10 @@ if(TARGET mpiu90)
     add_subdirectory("src/appl/rmcdhf90_mem_diag_mpi")
 endif()
 
-# CSFG extension: share suite libraries and keep specialized kernels separate.
-option(GRASP_BUILD_CSFG "Build GRASPG configuration-state-function generator programs" ON)
+# CSFG stays behind a single opt-in boundary, outside the active ordinary build.
+option(GRASP_BUILD_CSFG "Build the isolated GRASPG/CSFG extension" OFF)
 if(GRASP_BUILD_CSFG)
-    add_subdirectory("src/lib/libmod_csfg")
-    add_subdirectory("src/lib/lib9290_csfg")
-    add_subdirectory("src/lib/librang90_csfg")
-    foreach(app jj2lsj90_csfg rwfnestimate90_csfg rmixaccumulate_csfg
-                rcsfggenerate90_csfg rcsfginteract90_csfg rcsfgzerofirst90_csfg)
-        add_subdirectory("src/appl/${app}")
-    endforeach()
-    add_subdirectory("src/tool/graspg")
-    if(TARGET mpiu90)
-        add_subdirectory("src/lib/libdvd90mpi")
-        add_subdirectory("src/lib/libme_csfg")
-        foreach(app rangular90_csfg_mpi rci90_csfg_mpi
-                    rci90_block_csfg_mpi rmcdhf90_csfg_mpi)
-            add_subdirectory("src/appl/${app}")
-        endforeach()
-    endif()
+    include(cmake/CSFGExtension.cmake)
 endif()
 
 # Unit and integration tests

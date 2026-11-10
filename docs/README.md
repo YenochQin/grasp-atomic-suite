@@ -33,9 +33,11 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 现行构建策略 | [build_profiles.md](implemented/build_profiles.md) | CSFG 默认隔离；生产默认 -O2 与目标所需 OpenMP；标准/接口/运行时诊断放 Check/Audit，移除 legacy/隐式 SAVE 及冗余抵消 flags；记录三轮数值与耗时对照。 |
+| 首版已实施并回归 | [rangular_openmp.md](implemented/rangular_openmp.md) | 独立 rangular_omp、线程私有角动量工作区、有界结果块与有序提交；1/2/4/8 线程及回退路径字节一致，23,459-CSF 单次 8 线程约 2.76×；排序/输出仍串行，非全套 GRASP 或物理验收。 |
 | 已实施，运行器回归通过 | [rangular_version_comparison.md](implemented/rangular_version_comparison.md) | 指定原版/新版可执行文件，独立目录运行文本及可选描述符路径；保存日志、墙钟、阶段计时与 MCP 对照；7 项维护测试通过，支持差异/超时/提前退出检测。 |
 | 已实施，输入/输出回归通过 | [rangular_descriptor_input.md](implemented/rangular_descriptor_input.md) | suite 预处理二进制、Fortran reader、文本数组对照和串行阶段计时；14 项专项测试、原生 rCSFs 171 CSF 对照及小型 MCP 一致性通过；生产性能、完整科学结果与 OpenMP 未验证。 |
-| 输入子项已实施，OpenMP 待执行 | [rangular_descriptor_openmp_2026-11-10.md](plans/rangular_descriptor_openmp_2026-11-10.md) | 保留描述符/单节点并行设计与验证边界；输入适配和串行计时见现行实现，线程工作区与调度尚未实施。 |
+| 首版输入和 OpenMP 已实施 | [rangular_descriptor_openmp_2026-11-10.md](plans/rangular_descriptor_openmp_2026-11-10.md) | 保留设计历史；输入、线程私有工作区、动态任务与有序提交已有首版，显式 context 和排序并行仍待后续工作。 |
 | 已实施，解析器回归通过 | [mcp_compare.md](implemented/mcp_compare.md) | 2026-11-10，普通 rangular 串行/MPI MCP 解析、结构校验、按 CSF 对比较和 JSON 导出；合成回归与现有文件读回通过，不代表候选 rangular 或物理计算验收。 |
 | 现行流程，静态核查完成 | [rangular_flow_and_state.md](implemented/rangular_flow_and_state.md) | 2026-11-10，基准 d181bf4；普通串行 rangular 的 block/CSF 对遍历、角系数缓冲与排序、共享工作区和文件状态。未实施 OpenMP，未运行性能或物理验证。 |
 | 现行流程，静态核查完成 | [rmcdhf_flow_and_state.md](implemented/rmcdhf_flow_and_state.md) | 2026-11-10，基准 d181bf4；普通串行 rmcdhf 的矩阵/混合系数、径向积分、轨道改善、停止条件及共享状态；区分 strict 行为并标出 EAL 定义路径待复核。未实施 OpenMP，未运行性能或物理验证。 |

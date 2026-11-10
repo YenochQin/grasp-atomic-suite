@@ -33,8 +33,13 @@ def write_json(path: Path, value: dict) -> None:
 
 
 def case_id(profile: str, features: dict) -> str:
-    return profile.removeprefix("f2018-") + "-" + "-".join(
+    result = profile.removeprefix("f2018-") + "-" + "-".join(
         f"{axis[0]}{int(bool(features[axis]))}" for axis in AXES)
+    default_angular = bool(features["serial"] and features["openmp"])
+    actual_angular = bool(features.get("rangular_openmp", default_angular))
+    if actual_angular != default_angular:
+        result += f"-a{int(actual_angular)}"
+    return result
 
 
 def command_parts(args: list[str], cwd: Path, source: Path, build: Path) -> tuple[str, str, list[str]]:
@@ -118,6 +123,8 @@ def inventory(build: Path) -> dict:
     build = build.resolve()
     features = json.loads((build / "f2018-features.json").read_text())
     profile = features.pop("profile")
+    if profile == "f2018-release":
+        raise ValueError("Production builds do not establish a warning baseline; use f2018-audit")
     cache = dict(re.findall(r"^([^/#][^:\n]*):[^=\n]+=(.*)$", (build / "CMakeCache.txt").read_text(), re.M))
     source = Path(cache["CMAKE_HOME_DIRECTORY"]).resolve()
     compiler = cache["CMAKE_Fortran_COMPILER"]
@@ -239,7 +246,7 @@ def render_report(baseline: dict, output: Path) -> None:
              f"编译器：{baseline['compiler_version']}；配置数：{len(baseline['cases'])}。", "",
              "机器可读清单见 [gfortran15-warning-baseline.json](gfortran15-warning-baseline.json)。",
              "该表由 `test/f2018/warning_inventory.py report` 生成，包含无警告源文件。",
-             "唯一诊断按目标/文件/行/列/选项/消息区分；O0/O2 次数为各自 16 个配置中的最大实际发出次数，",
+             "唯一诊断按目标/文件/行/列/选项/消息区分；O0/O2 次数为已登记 Check/Audit 配置中的预算最大次数，",
              "包含同一源文件编入多个目标的重复。正确性复核项尚未逐条解决，登记不是豁免。", "",
              "“未初始化”指变量或数组元素被读取时尚未获得确定值；Fortran 声明本身不保证零值。",
              "`-Wmaybe-uninitialized` 也可能表示编译器无法证明赋值路径或分支不可达，须结合代码和有效输入复核。",
@@ -250,7 +257,7 @@ def render_report(baseline: dict, output: Path) -> None:
     for name, items in sorted(by_file.items()):
         categories = Counter(item["category"] for item in items.values())
         maxima = [max((sum(case["counts"].get(key, 0) for key in items) for case in baseline["cases"].values()
-                       if case["profile"] == profile), default=0) for profile in ("f2018-check", "f2018-release")]
+                       if case["profile"] == profile), default=0) for profile in ("f2018-check", "f2018-audit")]
         link = Path(os.path.relpath(source / name, output.resolve().parent)).as_posix()
         lines.append(f"| [{name}]({link}) | {len(items)} | {categories['correctness-review']} | "
                      f"{categories['obsolescent-standard']} | {categories['general']} | {maxima[0]} | {maxima[1]} |")
@@ -283,7 +290,8 @@ def main() -> int:
             return capture(args.source, args.build, args.compiler, command)
         if args.action == "record":
             from matrix import cases
-            observations = [inventory(args.matrix_root / case["id"]) for case in cases()]
+            observations = [inventory(args.matrix_root / case["id"]) for case in cases()
+                            if case["profile"] != "f2018-release"]
             if args.output.exists():
                 raise ValueError("Refusing to overwrite a baseline; write a separate candidate and review its diff")
             baseline = make_baseline(observations)

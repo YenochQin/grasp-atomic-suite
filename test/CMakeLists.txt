@@ -158,6 +158,17 @@ if(Python3_Interpreter_FOUND)
         set_tests_properties(rangular_version_comparison PROPERTIES TIMEOUT 180
             LABELS "f2018_io;f2018_serial"
             ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1")
+        if(TARGET rangular_omp)
+            add_test(NAME rangular_openmp_regression
+                COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rangular/test_openmp.py"
+                --serial $<TARGET_FILE:rangular> --parallel $<TARGET_FILE:rangular_omp>)
+            set_tests_properties(rangular_openmp_regression PROPERTIES TIMEOUT 180 PROCESSORS 8
+                LABELS "f2018_io;f2018_serial")
+            add_test(NAME rangular_openmp_closure
+                COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rangular/audit_thread_closure.py"
+                "${PROJECT_BINARY_DIR}")
+            set_tests_properties(rangular_openmp_closure PROPERTIES TIMEOUT 30)
+        endif()
     endif()
 endif()
 

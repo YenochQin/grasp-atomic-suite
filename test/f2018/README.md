@@ -26,9 +26,9 @@ wavefunction/mixing/MCP outputs for the two retained original serial RMCDHF vari
 math library, options and thread counts; the script does not certify the supplied
 binary directories' provenance automatically.
 
-```sh
-export FC=/usr/bin/gfortran-15
-export OMPI_FC=/usr/bin/gfortran-15
+```fish
+set -gx FC /usr/bin/gfortran-15
+set -gx OMPI_FC /usr/bin/gfortran-15
 ../graspkit-tools/.venv/bin/python test/f2018/compare_first_sweep.py \
   --reference-bindir build-gf15-standard-import/bin \
   --candidate-bindir build-gf15-f2018-batch/bin \
@@ -98,30 +98,33 @@ uses `/usr/bin/gfortran-15`, while a local macOS installation may use a differen
 path. Set both `FC` and `OMPI_FC` to that exact executable. All profiles require
 GNU 15; keep builds from other compilers separate.
 
-```sh
-export FC="$(command -v gfortran-15)"
-export OMPI_FC="$FC"
+```fish
+set -gx FC (command -v gfortran-15)
+set -gx OMPI_FC $FC
 ./configure.sh --debug --profile f2018-check --serial \
   --build-dir build-gf15-check
 ../graspkit-tools/.venv/bin/python test/f2018/check.py build-gf15-check
 ```
 
-Use `--profile f2018-release -DCMAKE_BUILD_TYPE=Release` in a fresh directory
-for the O2 gate. Default `f2018-audit` retains static storage and F2018 syntax;
-`legacy` retains static storage with legacy syntax. Those two diagnostic
-profiles require `check.py --audit` and never establish strict acceptance.
+Current production defaults to `f2018-release` with O2 and target OpenMP only.
+Use `f2018-check`/Debug for standard/interface/runtime diagnostics and
+`f2018-audit`/Release for optimized standard/interface/warning diagnostics.
+All use automatic local storage; the legacy profile, implicit-SAVE switches and
+the former `check.py --audit` compatibility mode are retired. CSFG is isolated
+and off by default. See [current build policy](../../docs/implemented/build_profiles.md).
 The strict normalization stage passed both all-target profiles with 74/74
 tests; its two restart cases converge in 11 cycles with unchanged inputs,
 assertions and thresholds. That record, the earlier Linux 71/73 and macOS 64/68
 results remain historical evidence. The matrix/warning stage added one Python
 infrastructure test; the repair batch adds 18 regression entries, giving 93 tests
-in the full configuration. All 32 configurations now pass, totaling 1,960 CTest executions with no failures
+in the historical full configuration. That 32-configuration run passed, totaling 1,960 CTest executions with no failures
 or skips and no warning-budget increases. Current registered-scope acceptance
 is not full P0–P9 certification.
 
 `check.py` refreshes configuration, verifies `required.json`, compiler identity,
 all compile commands and target coverage, builds all targets, verifies the
-per-file warning budget, and checks every CTest result. Missing warning records,
+per-file warning budget in Check/Audit, and checks every CTest result. Production
+reports warning collection as not performed rather than declaring warnings clear. Missing diagnostic warning records,
 new/increased warnings, missing tests, failures, and skips fail the run. `--inventory-only`
 does not run a build or tests and reports that limited status. Logs, source,
 compiler and object identities are retained under the build directory;
@@ -137,25 +140,27 @@ is `<build>/install`, or the explicit prefix. Validation does not install.
 
 ## Complete configuration matrix and warning baseline
 
-`matrix.py` enumerates both strict profiles and every combination of
-`GRASP_BUILD_SERIAL_APPS`, `GRASP_ENABLE_MPI`, `GRASP_BUILD_CSFG`, and
-`GRASP_JJ2LSJ_OPENMP`: **32 independent builds**. Serial/MPI both disabled still
+`matrix.py` enumerates Check, Audit and production Release over
+`GRASP_BUILD_SERIAL_APPS`, `GRASP_ENABLE_MPI`, and `GRASP_JJ2LSJ_OPENMP`, with
+the angular switch following the applicable serial/OpenMP combination: **24 ordinary builds**.
+`GRASP_BUILD_CSFG=OFF` in every active matrix case. Serial/MPI both disabled still
 builds the shared libraries, jj2lsj and their applicable tests. A partial
 `--case` selection never reports full-matrix acceptance.
 
-```sh
-export FC=/usr/bin/gfortran-15 OMPI_FC=/usr/bin/gfortran-15
+```fish
+set -gx FC /usr/bin/gfortran-15
+set -gx OMPI_FC /usr/bin/gfortran-15
 ../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix \
   --parallel-configs 2 --jobs 3
 ```
 
 This configures, builds and tests every case, checks enabled/disabled target
-groups, checks actual OpenMP flags, and enforces the warning baseline. Each
+groups, checks actual OpenMP flags and CSFG exclusion, and enforces the warning baseline for Check/Audit. Each
 case retains its CTest XML and acceptance summary; `matrix-validate.json`
 reports the full result. MPI execution requires local process communication.
 The run is a correctness regression, not a performance benchmark.
 
-Strict profiles default to `GRASP_CAPTURE_WARNINGS=ON`. A compiler launcher
+Diagnostic profiles default to `GRASP_CAPTURE_WARNINGS=ON`; production uses OFF. A diagnostic compiler launcher
 records GNU JSON diagnostics separately for every object, including zero-warning
 compilations, and preserves any existing compiler launcher. Records contain the
 command and source/object hashes. Parallel log interleaving cannot attach a
@@ -187,10 +192,10 @@ Linker diagnostics and compiler calls made inside disposable Python test fixture
 remain in their logs and are outside this CMake Fortran compilation baseline.
 
 To explicitly establish a replacement candidate, first collect all builds without
-claiming test acceptance. The recorder requires all 32 cases and refuses to
+claiming test acceptance. The recorder requires all 16 ordinary diagnostic cases and refuses to
 overwrite an existing baseline:
 
-```sh
+```fish
 ../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix \
   --stage build --parallel-configs 2 --jobs 3
 ../graspkit-tools/.venv/bin/python test/f2018/warning_inventory.py record \
@@ -202,12 +207,12 @@ overwrite an existing baseline:
 Review source/diagnostic differences before intentionally replacing the checked-in
 baseline, including reductions after fixes; no validation command updates it
 automatically. Rebuild the Markdown index with `warning_inventory.py report`.
-`--audit` still permits diagnostic legacy/audit runs and never certifies strict
+The former `--audit` compatibility mode is removed; production validation never certifies strict
 acceptance. The infrastructure regression `f2018_matrix_warnings_driver` checks
 the full Cartesian matrix and negative parser, coverage, hash, version and budget
 cases without running atomic calculations.
 
-```sh
+```fish
 ../graspkit-tools/.venv/bin/python test/f2018/warning_inventory.py report \
   --output docs/reference/f2018/gfortran15-warning-baseline.md
 ```

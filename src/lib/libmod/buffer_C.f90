@@ -6,4 +6,6 @@
       INTEGER :: NBDIM, NVCOEF
       INTEGER, DIMENSION(:,:), pointer :: label
       REAL(DOUBLE), DIMENSION(:), pointer :: coeff
+!     Active only in the audited rangular OpenMP object build.
+!$OMP THREADPRIVATE(NBDIM, NVCOEF, LABEL, COEFF)
       END MODULE buffer_C

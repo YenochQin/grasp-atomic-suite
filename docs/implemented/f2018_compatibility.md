@@ -1,5 +1,8 @@
 # F2018 标准兼容性首轮修复
 
+2026-11-10 构建范围已收敛为普通 GRASP，CSFG 隔离；旧兼容 flags 已移除。
+当前命令和 profile 以[构建策略](build_profiles.md)为准，以下数值记录保留原验证范围。
+
 2026-11-09 更新：严格内部接口/NP、MPI Davidson 早收敛、普通 RANGULAR_MPI 空 rank
 及四个 memory SETHAM 的 IOS 修复后，完成 strict 时序修复、32 配置矩阵及警告基线；
 最新为[优先警告修复第一批](../reviews/f2018_warning_repairs_2026-11-09.md)。

@@ -45,6 +45,10 @@
 !
 !   Initialise the arrays that control the debug printout
 !
+      DEBUG = .FALSE.
+      IBUG1 = 0
+      IBUG2 = 0
+      IBUG3 = 0
       DO I = 1, 5
          LDBPA(I) = .FALSE.
          LDBPG(I) = .FALSE.

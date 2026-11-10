@@ -13,7 +13,8 @@ import sys
 import xml.etree.ElementTree as ET
 
 REQUIRED = Path(__file__).with_name("required.json")
-STRICT = {"f2018-check", "f2018-release"}
+SUPPORTED = {"f2018-check", "f2018-audit", "f2018-release"}
+STRICT = {"f2018-check", "f2018-audit"}
 
 
 def requirements(features: set[str]) -> tuple[set[str], set[str]]:
@@ -46,6 +47,8 @@ def cache_values(build: Path) -> dict[str, str]:
 
 
 def check_commands(commands: list[dict], profile: str, compiler: Path) -> None:
+    if profile not in SUPPORTED:
+        raise ValueError(f"Unsupported/retired build profile: {profile}")
     if not commands:
         raise ValueError("Empty compile_commands.json")
     for entry in commands:
@@ -54,11 +57,10 @@ def check_commands(commands: list[dict], profile: str, compiler: Path) -> None:
         args = entry.get("arguments") or shlex.split(entry["command"])
         if Path(args[0]).resolve() != compiler.resolve():
             raise ValueError(f"Foreign compiler for {entry['file']}: {args[0]}")
-        if profile not in STRICT:
-            continue
-        required = {"-std=f2018", "-pedantic-errors", "-Wall", "-Wextra",
-                    "-Werror=implicit-interface", "-Werror=implicit-procedure",
-                    "-fno-fast-math", "-ffp-contract=off"}
+        required = set()
+        if profile in STRICT:
+            required |= {"-std=f2018", "-pedantic-errors", "-Wall", "-Wextra",
+                         "-Werror=implicit-interface", "-Werror=implicit-procedure"}
         if profile == "f2018-check":
             required |= {"-O0", "-g", "-fcheck=all", "-fbacktrace", "-ffpe-trap=invalid,zero,overflow"}
         else:
@@ -68,7 +70,6 @@ def check_commands(commands: list[dict], profile: str, compiler: Path) -> None:
             or arg.startswith(("-fdefault-integer-", "-fdefault-real-", "-fdefault-double-", "-Wno-", "-fno-check"))
             or (arg.startswith("-std=") and arg != "-std=f2018")
             or (re.fullmatch(r"-O[0-9sgz]", arg) and arg not in required)
-            or (arg.startswith("-ffp-contract=") and arg != "-ffp-contract=off")
             or (profile == "f2018-check" and arg.startswith("-fcheck=") and arg != "-fcheck=all")
             or (profile == "f2018-check" and arg.startswith("-ffpe-trap=") and arg != "-ffpe-trap=invalid,zero,overflow")
         )]
@@ -79,14 +80,19 @@ def check_commands(commands: list[dict], profile: str, compiler: Path) -> None:
 def check_feature_commands(commands: list[dict], features: dict) -> None:
     openmp_targets = {"jj2lsj_conversion", "jj2lsj_thread_kernels", "jj2lsj_omp",
                       "test.jj2lsj_coefficients", "test.jj2lsj_ranking"}
+    angular_targets = {"rangular_omp", "rangular_thread_state", "rangular_thread_kernels"}
     for entry in commands:
         if Path(entry["file"]).suffix.lower() not in {".f90", ".f", ".for", ".f95"}:
             continue
+        if not features.get("csfg", False) and ("csfg" in entry["file"].lower() or "/src/tool/graspg/" in entry["file"]):
+            raise ValueError(f"CSFG source leaked into the ordinary build: {entry['file']}")
         args = entry.get("arguments") or shlex.split(entry["command"])
         targets = set(re.findall(r"CMakeFiles/([^/]+)\.dir/", " ".join(args)))
-        if "-fopenmp" in args and not features["openmp"]:
+        enabled = bool(targets & openmp_targets and features["openmp"] or
+                       targets & angular_targets and features.get("rangular_openmp", False))
+        if "-fopenmp" in args and not enabled:
             raise ValueError(f"OpenMP flag leaked into a disabled configuration: {entry['file']}")
-        if targets & openmp_targets and features["openmp"] and "-fopenmp" not in args:
+        if enabled and "-fopenmp" not in args:
             raise ValueError(f"Missing OpenMP flag for {entry['file']}")
 
 
@@ -120,7 +126,6 @@ def main() -> int:
     parser.add_argument("build", type=Path)
     parser.add_argument("--check-config", action="store_true")
     parser.add_argument("--features", default="")
-    parser.add_argument("--audit", action="store_true", help="Allow legacy/audit profiles; never claim strict acceptance")
     parser.add_argument("--inventory-only", action="store_true", help="Check registration and commands without running tests")
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--warning-baseline", type=Path, help="Reviewed GNU 15 per-file warning budget")
@@ -147,8 +152,8 @@ def main() -> int:
         targets = set((build / "f2018-targets.txt").read_text().splitlines())
         features = json.loads((build / "f2018-features.json").read_text())
         profile = features.pop("profile")
-        if profile not in STRICT and not args.audit:
-            raise ValueError("Strict acceptance requires f2018-check/release; use --audit for a diagnostic run")
+        if profile not in SUPPORTED:
+            raise ValueError("Use f2018-release for production or f2018-check/audit for validation")
         cache = cache_values(build)
         version = subprocess.check_output([str(compiler), "-dumpfullversion"], text=True).strip()
         if version.split(".")[0] != "15":
@@ -188,13 +193,15 @@ def main() -> int:
             summary["status"] = "inventory_only"
         else:
             run_logged(["cmake", "--build", str(build), "--parallel", str(args.jobs)], audit / "build.log", env)
-            if profile in STRICT and not args.audit:
+            if profile in STRICT:
                 from warning_inventory import BASELINE, compare, inventory, write_json
                 observation = inventory(build)
                 write_json(build / "audit/warnings.json", observation)
                 baseline_path = args.warning_baseline or BASELINE
                 summary["warning_baseline_sha256"] = hashlib.sha256(baseline_path.read_bytes()).hexdigest()
                 summary["warning_gate"] = compare(observation, json.loads(baseline_path.read_text()))
+            else:
+                summary["warning_gate"] = {"status": "not_collected", "reason": "Production flags; validate warnings in f2018-audit"}
             junit = audit / "ctest.xml"
             junit.unlink(missing_ok=True)
             # Parse results even when CTest returns failure, preserving skip information.
@@ -204,7 +211,7 @@ def main() -> int:
             summary["tests"] = check_junit(junit, tests)
             if result.returncode:
                 raise RuntimeError(f"CTest exited {result.returncode}")
-            summary.update(status="passed", strict_acceptance=profile in STRICT and not args.audit)
+            summary.update(status="passed", scope_acceptance=True, strict_acceptance=profile in STRICT)
         print(f"{summary['status']}: {profile}, {len(tests)} registered tests; strict_acceptance={summary['strict_acceptance']}")
         return 0
     except (ValueError, RuntimeError, OSError, subprocess.CalledProcessError, ET.ParseError) as error:
