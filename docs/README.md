@@ -25,10 +25,16 @@ docs/
 代码实施计划和网格实验看 `plans/`，追溯变更和旧测量看 `archive/`。
 归档文档保留设计与实验历史，不能直接当成当前配置指南。
 
+普通串行计算链可按 [rangular 流程与共享状态](implemented/rangular_flow_and_state.md)
+→ [rmcdhf 流程与共享状态](implemented/rmcdhf_flow_and_state.md) 阅读，分别对应
+角系数生成及径向轨道/混合系数的 SCF 迭代；两份文档均区分现行行为与待验证的 OpenMP 候选。
+
 ## 逐份文档结论
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 现行流程，静态核查完成 | [rangular_flow_and_state.md](implemented/rangular_flow_and_state.md) | 2026-11-10，基准 d181bf4；普通串行 rangular 的 block/CSF 对遍历、角系数缓冲与排序、共享工作区和文件状态。未实施 OpenMP，未运行性能或物理验证。 |
+| 现行流程，静态核查完成 | [rmcdhf_flow_and_state.md](implemented/rmcdhf_flow_and_state.md) | 2026-11-10，基准 d181bf4；普通串行 rmcdhf 的矩阵/混合系数、径向积分、轨道改善、停止条件及共享状态；区分 strict 行为并标出 EAL 定义路径待复核。未实施 OpenMP，未运行性能或物理验证。 |
 | 初步分析完成，诊断待实施 | [rmcdhf_mpi_single_node_diagnostics_2026-11-09.md](plans/rmcdhf_mpi_single_node_diagnostics_2026-11-09.md) | 普通/memory MPI 在大规模 CSF 下全程反复 D 状态；记录单节点条件、SETLAG 冻结侧冗余和 Davidson 候选。根因未确定，自动采样、服务器对照及 MPI/OpenMP 优化均未实施。 |
 | 优先警告修复第一批通过 | [f2018_warning_repairs_2026-11-09.md](reviews/f2018_warning_repairs_2026-11-09.md) | GETALDWT、RCI 计数、Davidson、DACON、INTERP 及不可达步长分支；正确性复核 515→475，INTENT 9→0；32 配置、1,960 次 CTest 全通过，全开 93/93。 |
 | 首次矩阵/基线设施证据 | [f2018_matrix_warning_baseline_2026-11-09.md](reviews/f2018_matrix_warning_baseline_2026-11-09.md) | 保留初次 32 配置、1,560 次 CTest 通过与 3,040 文件/515 条正确性诊断记录；当前基线及修复见上一项。 |
