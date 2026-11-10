@@ -1,5 +1,9 @@
 # Repository Guidelines
 
+## Shell commands
+
+All shell commands shown to the user, including replies, documentation, and copyable examples, must use fish shell syntax. Label shell code blocks as `fish`; do not output Bash commands or Bash-specific syntax. Use fish-compatible variable assignments, environment variables, control flow, and virtual-environment activation.
+
 ## Project Structure & Module Organization
 Core source lives under `src/`. Application programs are in `src/appl/<program>/`, and shared libraries are in `src/lib/<library>/`. Build outputs are installed to `bin/` and `lib/`. Development notes and numerical reports live under `docs/`, and sample validation data lives under `data/`.
 
@@ -30,7 +34,7 @@ ACCY when changing H in restart inputs. Grid experiments belong in separate copi
 
 Use **GNU Fortran 15** for builds and validation. Set Open MPI's `OMPI_FC`
 explicitly to `/usr/bin/gfortran-15`. Initialize any compiler, MPI, and BLAS
-modules first, then export both compiler variables below. Verify that
+modules first, then set both exported compiler variables as shown below. Verify that
 `/usr/bin/gfortran-15 -dumpversion` reports major version 15 and
 `mpifort --showme:command` reports `/usr/bin/gfortran-15`.
 For direct CMake configuration, pass `-DCMAKE_Fortran_COMPILER=/usr/bin/gfortran-15`;
@@ -38,9 +42,9 @@ use a fresh build directory if an existing cache selected another compiler.
 
 Prefer the out-of-source CMake flow:
 
-```sh
-export FC=/usr/bin/gfortran-15
-export OMPI_FC=/usr/bin/gfortran-15
+```fish
+set -gx FC /usr/bin/gfortran-15
+set -gx OMPI_FC /usr/bin/gfortran-15
 ./configure.sh
 cmake --build build --target install -j4
 ```
@@ -66,7 +70,7 @@ Match the existing Fortran style in the file you are editing. The tree contains 
 CI uses the CMake workflow. Run tests covering the affected programs, using a
 CTest name filter when appropriate:
 
-```sh
+```fish
 ctest --test-dir build --output-on-failure
 ```
 
