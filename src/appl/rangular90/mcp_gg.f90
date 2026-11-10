@@ -31,6 +31,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       USE vast_kind_param, ONLY:  DOUBLE
+      USE iso_fortran_env, ONLY: int64
+      USE rangular_profile, ONLY: stage_clock, record_stage
       USE parameter_def,   ONLY:  NNNW, KEYORB
       USE memory_man
 !-----------------------------------------------
@@ -92,12 +94,14 @@
       REAL(DOUBLE) :: VCOEFF
       LOGICAL :: F0INT, LINCR
       INTEGER :: IREZ, IGGMAX, IGGMAX_K, MARKT, NEWSIZ, JJ
+      INTEGER(int64) :: stage_start_count
 !-----------------------------------------------
 !
 !   Allocate storage to the array that stores the lengths
 !   of the lists of V coefficients of each multipolarity
 !
 ! GG begin
+      stage_start_count = stage_clock()
       IREZ = 1
       IGGMAX = NGGMAX
       IGGMAX_K = IGGMAX/(2+KMAX)
@@ -134,6 +138,8 @@
 !   Allocate storage for the arrays in BUFFER
 !
       CALL ALCBUF (1)
+      CALL record_stage('coefficient_buffer_allocation', NB, stage_start_count)
+      stage_start_count = stage_clock()
 !
 !   Write header to  .dbg  file if appropriate
 !
@@ -320,6 +326,9 @@
          ENDIF
       end if
     5 CONTINUE
+      CALL record_stage('pair_generation_and_buffering', NB, stage_start_count, &
+                        int(LLISTT,int64) + SUM(int(LLISTV,int64)), storage='memory_or_spill')
+      stage_start_count = stage_clock()
 !
 !   Deallocate storage that is no longer required
 !
@@ -327,6 +336,7 @@
       CALL DALLOC (jqsa, 'JQSA', 'MCP')
       CALL DALLOC (jcupa, 'JCUPA', 'MCP')
       CALL ALCBUF (3)
+      CALL record_stage('csf_and_pair_buffer_release', NB, stage_start_count)
 !
 !   Write out a report for this run
 !
@@ -340,30 +350,38 @@
 !
 !   Set up sparse structure definition arrays in file 30
 !
+      stage_start_count = stage_clock()
       REWIND (30)
       CALL SETSDA (outsda, npos, LDBPA(4), nb, myid, nprocs, fhead)
       CLOSE (30, STATUS = 'DELETE')
+      CALL record_stage('sparse_structure_and_output', NB, stage_start_count, int(npos,int64), storage='disk')
 !
 !   Sort MCP coefficients into integral-based lists
 !
 ! 1) the T coefficient
+      stage_start_count = stage_clock()
       IF(MARKT .EQ. 0) THEN
          CALL SORTMEM(31,IGGMAX_K,(LLISTT), ntgi, LDBPA(2), nb, fhead)
+         CALL record_stage('sort_and_output', NB, stage_start_count, int(LLISTT,int64), 31, 'memory')
       ELSE
          REWIND (31)
          CALL SORT (31, (LLISTT), ntgi, LDBPA(2), nb, fhead)
          CLOSE (31, STATUS = 'DELETE')
+         CALL record_stage('sort_and_output', NB, stage_start_count, int(LLISTT,int64), 31, 'disk')
       END IF
       IF (NDEF .NE. 0 .AND. myid .EQ. 0)                   &
                        WRITE (24,*) ntgi, ' I(ab) integrals;'
 ! 2) the V coefficient
       DO k = 0, KMAX
+        stage_start_count = stage_clock()
         IF(MARK(K+1) .EQ. 0) THEN
          CALL SORTMEM(k+32,IGGMAX_K,(LLISTV(k)),ntgi,LDBPA(3),nb,fhead)
+         CALL record_stage('sort_and_output', NB, stage_start_count, int(LLISTV(k),int64), k+32, 'memory')
         ELSE
           REWIND (k+32)
           CALL SORT (k+32, (LLISTV(k)), ntgi, LDBPA(3), nb, fhead)
           CLOSE (k+32, STATUS = 'DELETE')
+          CALL record_stage('sort_and_output', NB, stage_start_count, int(LLISTV(k),int64), k+32, 'disk')
         END IF
           IF (NDEF .NE. 0 .AND. myid .EQ. 0)               &
             WRITE (24,*) ' k = ', k, ': ', ntgi, ' Slater integrals;'

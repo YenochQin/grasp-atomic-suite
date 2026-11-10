@@ -1,4 +1,19 @@
-# 批量修改 GRASP2018 / grasp-atomic-suite 径向网格
+# GRASP 辅助脚本
+
+原版/新版 `rangular` 的一键运行、计时和 MCP 对照见
+[版本对照脚本](../docs/implemented/rangular_version_comparison.md)，入口为
+[compare_rangular_versions.py](compare_rangular_versions.py)。可同时比较新版文本和描述符输入，保留日志及 JSON 报告。
+
+rCSFs 描述符预处理及原文本数组验证见
+[rangular 描述符输入](../docs/implemented/rangular_descriptor_input.md)，入口为
+[prepare_csf_descriptors.py](prepare_csf_descriptors.py) 和
+[verify_csf_descriptors.py](verify_csf_descriptors.py)。预处理需要 NumPy/PyArrow；Fortran 构建与运行不链接 rCSFs。
+
+角系数文件的解析、统计和原版/候选程序对比见
+[MCP 解析与比较工具](../docs/implemented/mcp_compare.md)，入口为
+[mcp_compare.py](mcp_compare.py)。支持普通串行与 MPI 输出，不运行原子计算。
+
+## 批量修改 GRASP2018 / grasp-atomic-suite 径向网格
 
 `patch_grasp_grid.py` 可以操作完整原版源码树，或修改本仓库的集中容量配置与各入口网格默认值。
 脚本不自动运行编译或提交代码。

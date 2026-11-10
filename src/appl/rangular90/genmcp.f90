@@ -40,6 +40,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       USE parameter_def,   ONLY:  NNNW
+      USE iso_fortran_env, ONLY: int64
+      USE rangular_input, ONLY: angular_input_options, parse_angular_options, load_angular_header, &
+                                load_angular_block, close_angular_input
+      USE rangular_profile, ONLY: stage_clock, record_stage, close_stage_profile
       USE memory_man
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
@@ -80,12 +84,19 @@
       CHARACTER(LEN=128) :: STARTDIR*128, PERMDIR*128, TMPDIR*128
       CHARACTER(LEN=8), DIMENSION(NBLK0):: IDBLK
       INTEGER :: MYID,NPROCS
+      TYPE(angular_input_options) :: input_options
+      INTEGER(int64) :: program_start_count, stage_start_count
+      CHARACTER(len=16) :: input_format_name
 !-----------------------------------------------------------------------
 !
+      CALL parse_angular_options(input_options)
+      input_format_name = 'text'
+      IF (input_options%use_descriptors) input_format_name = 'descriptors'
+      program_start_count = stage_clock()
       write(*,*)
       write(*,*) 'RANGULAR'
       write(*,*) 'This program performs angular integration '
-      write(*,*) 'Input file:  rcsf.inp'
+      write(*,*) 'Input file: ', input_options%input_filename
       write(*,*) 'Outputfiles: mcp.30, mcp.31, ....'
       write(*,*) 'rangular.log                     '
       write(*,*)
@@ -126,11 +137,15 @@
       CALL SETDBG (DEBUG, 'genmcp.dbg')
       CALL SETMC
 !      IF (NDEF/=0 .AND. MYID==0) CALL SETSUM ('genmcp.sum')
-      CALL CSLH ('rcsf.inp', NCORE, NBLK0, IDBLK)
+      stage_start_count = stage_clock()
+      CALL load_angular_header(input_options, NCORE, NBLK0, IDBLK)
+      CALL record_stage('input_header', 0, stage_start_count, int(NCF,int64), storage=input_format_name)
       RESTRT = .FALSE.
+      stage_start_count = stage_clock()
       CALL SETMCP2 (MYID, NPROCS, NCORE, IDBLK, 'mcp')
       IF (NDEF/=0 .AND. MYID==0) CALL STRSUM
       CALL FACTT
+      CALL record_stage('setup_including_interaction_input', 0, stage_start_count)
 !=======================================================================
 !     For each block, generate and sort the data
 !=======================================================================
@@ -141,17 +156,24 @@
             WRITE (6, *) 'Block ', NB, ',  ncf = ', NCF
          ENDIF
             !*** Load current CSL block. Memories de-allocated in mcp ***
+         stage_start_count = stage_clock()
          CALL ALLOC (iqa, NNNW, NCF, 'IQA', 'GENMCP')
          CALL ALLOC (jqsa, NNNW,3,NCF, 'JQSA', 'GENMCP')
          CALL ALLOC (jcupa, NNNW, NCF, 'JCUPA', 'GENMCP')
+         CALL record_stage('csf_allocation', NB, stage_start_count)
 !
-         CALL LODCSH2 (21, NCORE, NB)
+         stage_start_count = stage_clock()
+         CALL load_angular_block(input_options, NCORE, NB)
+         CALL record_stage('csf_load', NB, stage_start_count, int(NCF,int64), storage=input_format_name)
          !*** Open tmp.xx files for block nb ***
 !GG         CALL SETTMP (NB, KMAX, 'tmp')
          CALL SETTMPGG (nb, 30, 'tmp')
          !*** Generation of MCP coefficients ***
          CALL MCP (NB, RESTRT, MYID, NPROCS, 'mcp')
       END DO
+      CALL close_angular_input(input_options)
+      CALL record_stage('program_total_including_interaction_input', 0, program_start_count)
+      CALL close_stage_profile()
       CLOSE(24)                                  ! Summary file
       CLOSE(739)                                  ! rangular.log
       IF (DEBUG) CLOSE(99)                       ! Debug file

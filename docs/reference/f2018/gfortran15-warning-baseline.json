@@ -41,15 +41,18 @@
     "src/appl/jj2lsj90_csfg/packLS_I.f90": "7598f01cc630c3d8a74d53b53dbc8e1fe34d60c31b9e209c4f9ea539e0ebcf47",
     "src/appl/rangular90/allocCheck.f90": "016faae11102319183ae0be7336e1d790678bee8491ef9e708d424a374ea4ab5",
     "src/appl/rangular90/allocCheck_I.f90": "5e3b5be5bad4456095994e604bb4c00efcbe46c363afac88ad09c435ad9b9e2f",
+    "src/appl/rangular90/csf_descriptor_verify.f90": "b584230c1c795b97879a10d2de910ef283994bef7c6415a9270271e029ffacdb",
     "src/appl/rangular90/fndbeg.f90": "b7d7d60af73d3fc5b8037cd9ede4f4fa86f2df389d4b2e1671ef3d406ad0a7eb",
     "src/appl/rangular90/fndbeg_I.f90": "b81c0ae7841f82df1e8465a62c7c997e0dc8becf12b0b3a8aaa61baa7c34781f",
-    "src/appl/rangular90/genmcp.f90": "b9fb7ace0cc64d20b2c673d1a16eec50be1b638a0a86021d04212e5599c0b663",
+    "src/appl/rangular90/genmcp.f90": "b152262d40eb2729939b6afaa35e9f8298104fb2aa0cd9c10a411e4fa60d3551",
     "src/appl/rangular90/getinf.f90": "523af8b8fa24686ddb6e00f9f2659e55fcbdf8801324bcb9a8f2c2f8ececed63",
     "src/appl/rangular90/getinf_I.f90": "7bfec09374acbbe71b8a3c51b669ef3021a91a13281011fab4de68f29f5ea707",
-    "src/appl/rangular90/mcp_gg.f90": "deec50e97d823b69a3077c691bbcb16c89406b9dc8dfe0f4aec94ee56661d99e",
+    "src/appl/rangular90/mcp_gg.f90": "7ce9739673853e6fd2ae03d288e000982b653a32ad96d3e22587c057a9b342dc",
     "src/appl/rangular90/mcp_gg_I.f90": "d3248689acba81c58a8d233f94b0bb89e45ff7c509d209a77a8b45f20a158b44",
     "src/appl/rangular90/outsda.f90": "7a1a03d5816c21ee1bc240dfaec4c5ea5867cde19187c367bb25c8c075aa1a06",
     "src/appl/rangular90/outsda_I.f90": "2aea974ed474e3f8f978a488caf53d44209aa7a8800a39c68f08c56f8d35ef13",
+    "src/appl/rangular90/rangular_input.f90": "de9612c26309f9ef32f1ae93a320aafc0e0d11620b88b3577561870d7567e984",
+    "src/appl/rangular90/rangular_profile.f90": "f27e56bd9cb57f0b0d24ef219adc1ca19e100281891f7c44759b038e084eca55",
     "src/appl/rangular90/setdbg.f90": "c4b6513f6d07ff3cf6c8d6a2ad7ee76830dc64dc02a3aa86668aeb8e67875e3e",
     "src/appl/rangular90/setdbg_I.f90": "72e1d24f621734bef44870d178208ff9993996c3b0bee59a98c0c2a506cac632",
     "src/appl/rangular90/setmcp.f90": "5f74e2dbda974ac606dfc2cbea6e6683db49e0c7f7ea2581bc796bab20bff744",
@@ -2150,6 +2153,7 @@
     "src/lib/lib9290/count_I.f90": "06dafc65fca9eff418416427a16bda1e4c0437ca246fc316c6f43b566a0bee48",
     "src/lib/lib9290/cre.f90": "b0fa7f843a3d02046020c9380ed39d1c83545fc72c7245eb7f2545182d8b911c",
     "src/lib/lib9290/cre_I.f90": "f17dddab8dbc7a0c57a7b92a70dc6ab2efa1d9b5afc73a63b868c933fcff0dc2",
+    "src/lib/lib9290/csf_descriptor_input.f90": "c3ec2bcf73e63863382971a1891c0eb291c9408c4a4d4c81cbc27aadf15161d3",
     "src/lib/lib9290/cslh.f90": "cf6fdafb5a2523fd932b668ff28800dba4634e793ca7eb226e4fc273e5d51eb3",
     "src/lib/lib9290/cslh_I.f90": "24fc4fec2e06df72c6ff7d570089b115235d26f1524bfeee083e8788d4883a17",
     "src/lib/lib9290/dcbsrw.f90": "6bb9030298913c31565cd95f38c65bc054ed817ea4312e5a252a4715a3a0f9ae",
@@ -4354,6 +4358,15 @@
       "column": 25,
       "option": "-Wunused-dummy-argument",
       "message": "Unused dummy argument 'j' at (1)",
+      "category": "general"
+    },
+    "0706b5f7b8d5a0f22c41": {
+      "file": "src/appl/rangular90/genmcp.f90",
+      "target": "rangular",
+      "line": 84,
+      "column": 43,
+      "option": "-Wunused-variable",
+      "message": "Unused variable 'permdir' declared at (1)",
       "category": "general"
     },
     "07316e780e3c45b55e9d": {
@@ -12159,15 +12172,6 @@
       "message": "Equality comparison for REAL(8) at (1)",
       "category": "general"
     },
-    "358a82d1b28500da5262": {
-      "file": "src/appl/rangular90/genmcp.f90",
-      "target": "rangular",
-      "line": 80,
-      "column": 56,
-      "option": "-Wunused-variable",
-      "message": "Unused variable 'tmpdir' declared at (1)",
-      "category": "general"
-    },
     "35ba3d767edcd1ea680f": {
       "file": "src/appl/ris4/edensityfit.f90",
       "target": "ris4",
@@ -12454,15 +12458,6 @@
       "column": 18,
       "option": "-Wunused-variable",
       "message": "Unused variable 'ndiff1' declared at (1)",
-      "category": "general"
-    },
-    "36fa66f4d42cd0c813a7": {
-      "file": "src/appl/rangular90/genmcp.f90",
-      "target": "rangular",
-      "line": 80,
-      "column": 29,
-      "option": "-Wunused-variable",
-      "message": "Unused variable 'startdir' declared at (1)",
       "category": "general"
     },
     "37229d045d6e3ddaf08b": {
@@ -14886,15 +14881,6 @@
       "message": "Unused parameter 'double' which has been explicitly imported at (1)",
       "category": "general"
     },
-    "44e0678c9fa979819b8b": {
-      "file": "src/appl/rangular90/mcp_gg.f90",
-      "target": "rangular",
-      "line": 222,
-      "column": 30,
-      "option": "",
-      "message": "Fortran 2018 obsolescent feature: Labeled DO statement at (1)",
-      "category": "obsolescent-standard"
-    },
     "44e468a3ffd91a4d5adc": {
       "file": "src/appl/rcsfginteract90_csfg/el52INT.f90",
       "target": "rcsfginteract_csfg",
@@ -14966,6 +14952,15 @@
       "option": "-Wconversion",
       "message": "Possible change of value in conversion from REAL(8) to INTEGER(4) at (1)",
       "category": "correctness-review"
+    },
+    "45501f38b940e28e1e15": {
+      "file": "src/appl/rangular90/genmcp.f90",
+      "target": "rangular",
+      "line": 84,
+      "column": 29,
+      "option": "-Wunused-variable",
+      "message": "Unused variable 'startdir' declared at (1)",
+      "category": "general"
     },
     "455af727b5f12fc9c1c4": {
       "file": "src/appl/rwfnestimate90/frmhyd.f90",
@@ -15155,6 +15150,15 @@
       "option": "-Wunused-variable",
       "message": "Unused variable 'ic' declared at (1)",
       "category": "general"
+    },
+    "46c147319f05ea88fa17": {
+      "file": "src/appl/rangular90/mcp_gg.f90",
+      "target": "rangular",
+      "line": 228,
+      "column": 30,
+      "option": "",
+      "message": "Fortran 2018 obsolescent feature: Labeled DO statement at (1)",
+      "category": "obsolescent-standard"
     },
     "46c5e516c83a5cce656f": {
       "file": "src/appl/rangular90_csfg_mpi/spinangular44.f90",
@@ -21636,6 +21640,15 @@
       "message": "Limit of 255 continuations exceeded in statement at (1)",
       "category": "general"
     },
+    "6c2e784641a3522f0d9d": {
+      "file": "src/appl/rangular90/mcp_gg.f90",
+      "target": "rangular",
+      "line": 153,
+      "column": 29,
+      "option": "",
+      "message": "Fortran 2018 obsolescent feature: Labeled DO statement at (1)",
+      "category": "obsolescent-standard"
+    },
     "6c3838a2dd4c3364d161": {
       "file": "src/appl/rmixaccumulate_csfg/rmixaccumulate_csfg.f90",
       "target": "rmixaccumulate_csfg",
@@ -22876,6 +22889,15 @@
       "column": 20,
       "option": "-Wunused-variable",
       "message": "Unused variable 'k' declared at (1)",
+      "category": "general"
+    },
+    "734e23e9145c72013b61": {
+      "file": "src/appl/rangular90/genmcp.f90",
+      "target": "rangular",
+      "line": 84,
+      "column": 56,
+      "option": "-Wunused-variable",
+      "message": "Unused variable 'tmpdir' declared at (1)",
       "category": "general"
     },
     "7373e61f753df1fb8e44": {
@@ -26442,15 +26464,6 @@
       "message": "Array reference at (1) out of bounds (0 < 1) in loop beginning at (2)",
       "category": "correctness-review"
     },
-    "88b1f1ccbb7e7ef4f1dd": {
-      "file": "src/appl/rangular90/mcp_gg.f90",
-      "target": "rangular",
-      "line": 147,
-      "column": 29,
-      "option": "",
-      "message": "Fortran 2018 obsolescent feature: Labeled DO statement at (1)",
-      "category": "obsolescent-standard"
-    },
     "88c13af1d396c9c334d7": {
       "file": "src/appl/rmcdhf90_csfg_mpi/spinangular24.f90",
       "target": "rmcdhf_csfg_mpi",
@@ -26756,6 +26769,15 @@
       "option": "-Wmaybe-uninitialized",
       "message": "'loc2' may be used uninitialized",
       "category": "correctness-review"
+    },
+    "8a7ae10e88ccfe1479b7": {
+      "file": "src/appl/rangular90/mcp_gg.f90",
+      "target": "rangular",
+      "line": 151,
+      "column": 35,
+      "option": "",
+      "message": "Fortran 2018 obsolescent feature: Labeled DO statement at (1)",
+      "category": "obsolescent-standard"
     },
     "8a80037e2e83ba229024": {
       "file": "src/lib/librang90/wap1.f90",
@@ -36368,15 +36390,6 @@
       "option": "-Wunused-variable",
       "message": "Unused variable 'cirot' declared at (1)",
       "category": "general"
-    },
-    "c46b370182125d1a8e2a": {
-      "file": "src/appl/rangular90/mcp_gg.f90",
-      "target": "rangular",
-      "line": 145,
-      "column": 35,
-      "option": "",
-      "message": "Fortran 2018 obsolescent feature: Labeled DO statement at (1)",
-      "category": "obsolescent-standard"
     },
     "c471916d2912aa8fe3f9": {
       "file": "src/lib/libme_csfg/matrixblock14.f90",
@@ -46277,15 +46290,6 @@
       "option": "",
       "message": "Limit of 255 continuations exceeded in statement at (1)",
       "category": "general"
-    },
-    "fff07712ad264c8dde3e": {
-      "file": "src/appl/rangular90/genmcp.f90",
-      "target": "rangular",
-      "line": 80,
-      "column": 43,
-      "option": "-Wunused-variable",
-      "message": "Unused variable 'permdir' declared at (1)",
-      "category": "general"
     }
   },
   "cases": {
@@ -46297,9 +46301,9 @@
         "csfg": 0,
         "openmp": 0
       },
-      "compilation_count": 562,
+      "compilation_count": 563,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "jj2lsj_conversion": 14,
         "jj2lsj_omp": 1,
@@ -46417,6 +46421,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -47223,9 +47228,9 @@
         "csfg": 0,
         "openmp": 1
       },
-      "compilation_count": 562,
+      "compilation_count": 563,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "jj2lsj_conversion": 14,
         "jj2lsj_omp": 1,
@@ -47343,6 +47348,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -48148,9 +48154,9 @@
         "csfg": 1,
         "openmp": 0
       },
-      "compilation_count": 1004,
+      "compilation_count": 1005,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 37,
         "dvd90": 14,
         "jj2lsj_conversion": 14,
@@ -48492,6 +48498,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -50123,9 +50130,9 @@
         "csfg": 1,
         "openmp": 1
       },
-      "compilation_count": 1004,
+      "compilation_count": 1005,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 37,
         "dvd90": 14,
         "jj2lsj_conversion": 14,
@@ -50467,6 +50474,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -52097,9 +52105,9 @@
         "csfg": 0,
         "openmp": 0
       },
-      "compilation_count": 1598,
+      "compilation_count": 1599,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "gj90_mpi": 15,
         "jj2lsj_conversion": 14,
@@ -53159,6 +53167,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -55022,9 +55031,9 @@
         "csfg": 0,
         "openmp": 1
       },
-      "compilation_count": 1598,
+      "compilation_count": 1599,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "gj90_mpi": 15,
         "jj2lsj_conversion": 14,
@@ -56084,6 +56093,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -57946,9 +57956,9 @@
         "csfg": 1,
         "openmp": 0
       },
-      "compilation_count": 2531,
+      "compilation_count": 2532,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 41,
         "dvd90": 14,
         "dvd90mpi": 15,
@@ -59531,6 +59541,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -64198,9 +64209,9 @@
         "csfg": 1,
         "openmp": 1
       },
-      "compilation_count": 2531,
+      "compilation_count": 2532,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 41,
         "dvd90": 14,
         "dvd90mpi": 15,
@@ -65783,6 +65794,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -70449,9 +70461,9 @@
         "csfg": 0,
         "openmp": 0
       },
-      "compilation_count": 1332,
+      "compilation_count": 1336,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "gj90": 15,
         "jj2lsj_conversion": 14,
@@ -70464,7 +70476,7 @@
         "npol_test_support": 1,
         "npol_unit_driver": 1,
         "rang90": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rbiotransform": 83,
         "rci": 134,
         "rdensity": 10,
@@ -70496,7 +70508,8 @@
         "test.lib9290_quad": 1,
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -70521,6 +70534,7 @@
         "src/appl/jj2lsj90/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -70530,6 +70544,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -71311,6 +71327,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -71995,14 +72012,14 @@
         "3473d950ccf3913ee096": 1,
         "34e93292ea94cc32eb80": 1,
         "3530b906911c50fdab4e": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35f18bad8016b19cdd14": 1,
         "363123e9c3935b530cbd": 1,
         "368a7a2fabe6172db0aa": 1,
         "368e63538b835a1f54b8": 1,
         "36db37768fd482b47a9a": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "373e24e01daab687222a": 1,
         "3741a2ba9aea570bb345": 1,
         "37becbe0906985d5ff15": 1,
@@ -72052,7 +72069,7 @@
         "4495bd02ef91ae5db6ec": 1,
         "449669eb164d70eed41f": 1,
         "44b2f32ca62b49752783": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "450de85bfc616d335a37": 1,
         "452701f408dd5c733207": 1,
         "455af727b5f12fc9c1c4": 1,
@@ -72383,7 +72400,7 @@
         "8840978ec62b4f1e168f": 1,
         "886dcdf5b307a648e95d": 1,
         "888e6139ed9ecece16d8": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88dd679601824e8f5db1": 1,
         "89167c369b0f3f0c7886": 1,
         "892f4329aebbadb4a00f": 1,
@@ -72644,7 +72661,7 @@
         "c4051b60dbeddc3f6de4": 1,
         "c428cad0fe2d69f1ec79": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c4d297a74b17363cd8b9": 1,
         "c59f79f37da41b21ade3": 1,
         "c63336b9b4a62f89b839": 1,
@@ -72906,7 +72923,7 @@
         "ff50151a5ec93bd98c91": 1,
         "ffdba427914e86751012": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "check-s1-m0-c0-o1": {
@@ -72917,9 +72934,9 @@
         "csfg": 0,
         "openmp": 1
       },
-      "compilation_count": 1332,
+      "compilation_count": 1336,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "gj90": 15,
         "jj2lsj_conversion": 14,
@@ -72932,7 +72949,7 @@
         "npol_test_support": 1,
         "npol_unit_driver": 1,
         "rang90": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rbiotransform": 83,
         "rci": 134,
         "rdensity": 10,
@@ -72964,7 +72981,8 @@
         "test.lib9290_quad": 1,
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -72989,6 +73007,7 @@
         "src/appl/jj2lsj90/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -72998,6 +73017,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -73779,6 +73800,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -74462,14 +74484,14 @@
         "3473d950ccf3913ee096": 1,
         "34e93292ea94cc32eb80": 1,
         "3530b906911c50fdab4e": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35f18bad8016b19cdd14": 1,
         "363123e9c3935b530cbd": 1,
         "368a7a2fabe6172db0aa": 1,
         "368e63538b835a1f54b8": 1,
         "36db37768fd482b47a9a": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "373e24e01daab687222a": 1,
         "3741a2ba9aea570bb345": 1,
         "37becbe0906985d5ff15": 1,
@@ -74519,7 +74541,7 @@
         "4495bd02ef91ae5db6ec": 1,
         "449669eb164d70eed41f": 1,
         "44b2f32ca62b49752783": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "450de85bfc616d335a37": 1,
         "452701f408dd5c733207": 1,
         "455af727b5f12fc9c1c4": 1,
@@ -74850,7 +74872,7 @@
         "8840978ec62b4f1e168f": 1,
         "886dcdf5b307a648e95d": 1,
         "888e6139ed9ecece16d8": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88dd679601824e8f5db1": 1,
         "89167c369b0f3f0c7886": 1,
         "892f4329aebbadb4a00f": 1,
@@ -75111,7 +75133,7 @@
         "c4051b60dbeddc3f6de4": 1,
         "c428cad0fe2d69f1ec79": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c4d297a74b17363cd8b9": 1,
         "c59f79f37da41b21ade3": 1,
         "c63336b9b4a62f89b839": 1,
@@ -75373,7 +75395,7 @@
         "ff50151a5ec93bd98c91": 1,
         "ffdba427914e86751012": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "check-s1-m0-c1-o0": {
@@ -75384,9 +75406,9 @@
         "csfg": 1,
         "openmp": 0
       },
-      "compilation_count": 1774,
+      "compilation_count": 1778,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 37,
         "dvd90": 14,
         "gj90": 15,
@@ -75403,7 +75425,7 @@
         "npol_unit_driver": 1,
         "rang90": 178,
         "rang90_csfg": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rbiotransform": 83,
         "rci": 134,
         "rcsfgblocksplit_csfg": 1,
@@ -75451,7 +75473,8 @@
         "test.lib9290_quad": 1,
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -75489,6 +75512,7 @@
         "src/appl/jj2lsj90_csfg/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -75498,6 +75522,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -76470,6 +76496,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -77511,7 +77538,7 @@
         "35021323cf128e7bdba5": 1,
         "3530b906911c50fdab4e": 1,
         "3576767026a09ae4791f": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35efd7b74a41aaba87e8": 1,
         "35f18bad8016b19cdd14": 1,
@@ -77521,7 +77548,7 @@
         "368e63538b835a1f54b8": 1,
         "36d71514678042ced961": 1,
         "36db37768fd482b47a9a": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "37229d045d6e3ddaf08b": 1,
         "373e24e01daab687222a": 1,
         "3741a2ba9aea570bb345": 1,
@@ -77611,7 +77638,7 @@
         "449669eb164d70eed41f": 1,
         "44b2f32ca62b49752783": 1,
         "44d1d10638ac3987b9a2": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "44e468a3ffd91a4d5adc": 1,
         "450de85bfc616d335a37": 1,
         "451553d06948ce2431be": 1,
@@ -78102,7 +78129,7 @@
         "887f1df07a7c5d3f7129": 1,
         "888e6139ed9ecece16d8": 1,
         "88a181ef2a1835ee5144": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88dd679601824e8f5db1": 1,
         "89167c369b0f3f0c7886": 1,
         "892f4329aebbadb4a00f": 1,
@@ -78492,7 +78519,7 @@
         "c4051b60dbeddc3f6de4": 1,
         "c428cad0fe2d69f1ec79": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c4cca18f14b7ff2062d4": 1,
         "c4d297a74b17363cd8b9": 1,
         "c52eda8764ef528891ae": 1,
@@ -78890,7 +78917,7 @@
         "ffdba427914e86751012": 1,
         "ffe2fae1baa44ba1a197": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "check-s1-m0-c1-o1": {
@@ -78901,9 +78928,9 @@
         "csfg": 1,
         "openmp": 1
       },
-      "compilation_count": 1774,
+      "compilation_count": 1778,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 37,
         "dvd90": 14,
         "gj90": 15,
@@ -78920,7 +78947,7 @@
         "npol_unit_driver": 1,
         "rang90": 178,
         "rang90_csfg": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rbiotransform": 83,
         "rci": 134,
         "rcsfgblocksplit_csfg": 1,
@@ -78968,7 +78995,8 @@
         "test.lib9290_quad": 1,
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -79006,6 +79034,7 @@
         "src/appl/jj2lsj90_csfg/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -79015,6 +79044,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -79987,6 +80018,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -81027,7 +81059,7 @@
         "35021323cf128e7bdba5": 1,
         "3530b906911c50fdab4e": 1,
         "3576767026a09ae4791f": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35efd7b74a41aaba87e8": 1,
         "35f18bad8016b19cdd14": 1,
@@ -81037,7 +81069,7 @@
         "368e63538b835a1f54b8": 1,
         "36d71514678042ced961": 1,
         "36db37768fd482b47a9a": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "37229d045d6e3ddaf08b": 1,
         "373e24e01daab687222a": 1,
         "3741a2ba9aea570bb345": 1,
@@ -81127,7 +81159,7 @@
         "449669eb164d70eed41f": 1,
         "44b2f32ca62b49752783": 1,
         "44d1d10638ac3987b9a2": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "44e468a3ffd91a4d5adc": 1,
         "450de85bfc616d335a37": 1,
         "451553d06948ce2431be": 1,
@@ -81618,7 +81650,7 @@
         "887f1df07a7c5d3f7129": 1,
         "888e6139ed9ecece16d8": 1,
         "88a181ef2a1835ee5144": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88dd679601824e8f5db1": 1,
         "89167c369b0f3f0c7886": 1,
         "892f4329aebbadb4a00f": 1,
@@ -82008,7 +82040,7 @@
         "c4051b60dbeddc3f6de4": 1,
         "c428cad0fe2d69f1ec79": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c4cca18f14b7ff2062d4": 1,
         "c4d297a74b17363cd8b9": 1,
         "c52eda8764ef528891ae": 1,
@@ -82406,7 +82438,7 @@
         "ffdba427914e86751012": 1,
         "ffe2fae1baa44ba1a197": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "check-s1-m1-c0-o0": {
@@ -82417,9 +82449,9 @@
         "csfg": 0,
         "openmp": 0
       },
-      "compilation_count": 2368,
+      "compilation_count": 2372,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "gj90": 15,
         "gj90_mpi": 15,
@@ -82437,7 +82469,7 @@
         "npol_test_support": 1,
         "npol_unit_driver": 1,
         "rang90": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rangular_mpi": 27,
         "rbiotransform": 83,
         "rbiotransform_mpi": 83,
@@ -82491,7 +82523,8 @@
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
         "test.start_trace_parity": 5,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -82519,6 +82552,7 @@
         "src/appl/jj2lsj90/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -82528,6 +82562,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -84147,6 +84183,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -85087,7 +85124,7 @@
         "3539bfd9b14aa9aef6f0": 1,
         "35601fb666867adca8e4": 1,
         "3586cb1f47ad3f92cc58": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35e8e05bb1d5f771ee74": 1,
         "35f18bad8016b19cdd14": 1,
@@ -85098,7 +85135,7 @@
         "36db37768fd482b47a9a": 1,
         "36e57793b468bff5687a": 1,
         "36e6ffdb5d415d701cb0": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "373e24e01daab687222a": 1,
         "3741a2ba9aea570bb345": 1,
         "3764977c39f15a04a6c6": 1,
@@ -85210,7 +85247,7 @@
         "4495bd02ef91ae5db6ec": 1,
         "449669eb164d70eed41f": 1,
         "44b2f32ca62b49752783": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "44ef6f3652a03384978f": 1,
         "450de85bfc616d335a37": 1,
         "452701f408dd5c733207": 1,
@@ -85816,7 +85853,7 @@
         "8840978ec62b4f1e168f": 1,
         "886dcdf5b307a648e95d": 1,
         "888e6139ed9ecece16d8": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88dd679601824e8f5db1": 1,
         "89167c369b0f3f0c7886": 1,
         "891a84e404dd5f94feb2": 1,
@@ -86325,7 +86362,7 @@
         "c428cad0fe2d69f1ec79": 1,
         "c44b88eea42380510ac9": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c49122ab6a9e110cdaec": 1,
         "c4d297a74b17363cd8b9": 1,
         "c56188ab899d6c0ca9fe": 1,
@@ -86799,7 +86836,7 @@
         "ff50151a5ec93bd98c91": 1,
         "ffdba427914e86751012": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "check-s1-m1-c0-o1": {
@@ -86810,9 +86847,9 @@
         "csfg": 0,
         "openmp": 1
       },
-      "compilation_count": 2368,
+      "compilation_count": 2372,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "gj90": 15,
         "gj90_mpi": 15,
@@ -86830,7 +86867,7 @@
         "npol_test_support": 1,
         "npol_unit_driver": 1,
         "rang90": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rangular_mpi": 27,
         "rbiotransform": 83,
         "rbiotransform_mpi": 83,
@@ -86884,7 +86921,8 @@
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
         "test.start_trace_parity": 5,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -86912,6 +86950,7 @@
         "src/appl/jj2lsj90/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -86921,6 +86960,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -88540,6 +88581,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -89479,7 +89521,7 @@
         "3539bfd9b14aa9aef6f0": 1,
         "35601fb666867adca8e4": 1,
         "3586cb1f47ad3f92cc58": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35e8e05bb1d5f771ee74": 1,
         "35f18bad8016b19cdd14": 1,
@@ -89490,7 +89532,7 @@
         "36db37768fd482b47a9a": 1,
         "36e57793b468bff5687a": 1,
         "36e6ffdb5d415d701cb0": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "373e24e01daab687222a": 1,
         "3741a2ba9aea570bb345": 1,
         "3764977c39f15a04a6c6": 1,
@@ -89602,7 +89644,7 @@
         "4495bd02ef91ae5db6ec": 1,
         "449669eb164d70eed41f": 1,
         "44b2f32ca62b49752783": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "44ef6f3652a03384978f": 1,
         "450de85bfc616d335a37": 1,
         "452701f408dd5c733207": 1,
@@ -90208,7 +90250,7 @@
         "8840978ec62b4f1e168f": 1,
         "886dcdf5b307a648e95d": 1,
         "888e6139ed9ecece16d8": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88dd679601824e8f5db1": 1,
         "89167c369b0f3f0c7886": 1,
         "891a84e404dd5f94feb2": 1,
@@ -90717,7 +90759,7 @@
         "c428cad0fe2d69f1ec79": 1,
         "c44b88eea42380510ac9": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c49122ab6a9e110cdaec": 1,
         "c4d297a74b17363cd8b9": 1,
         "c56188ab899d6c0ca9fe": 1,
@@ -91191,7 +91233,7 @@
         "ff50151a5ec93bd98c91": 1,
         "ffdba427914e86751012": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "check-s1-m1-c1-o0": {
@@ -91202,9 +91244,9 @@
         "csfg": 1,
         "openmp": 0
       },
-      "compilation_count": 3301,
+      "compilation_count": 3305,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 41,
         "dvd90": 14,
         "dvd90mpi": 15,
@@ -91228,7 +91270,7 @@
         "npol_unit_driver": 1,
         "rang90": 178,
         "rang90_csfg": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rangular_csfg_mpi": 76,
         "rangular_mpi": 27,
         "rbiotransform": 83,
@@ -91305,7 +91347,8 @@
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
         "test.start_trace_parity": 5,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -91346,6 +91389,7 @@
         "src/appl/jj2lsj90_csfg/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -91355,6 +91399,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -93455,6 +93501,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -95321,7 +95368,7 @@
         "35601fb666867adca8e4": 1,
         "3576767026a09ae4791f": 1,
         "3586cb1f47ad3f92cc58": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35dd72c481a4715781ca": 1,
         "35e8e05bb1d5f771ee74": 1,
@@ -95353,7 +95400,7 @@
         "36ecb1effd2a6b7144b8": 1,
         "36f5ce29f9ccbbfa4ab5": 1,
         "36f7c5dbe0c86206570b": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "37229d045d6e3ddaf08b": 1,
         "3722ef5c40e8883ab7a2": 1,
         "373e24e01daab687222a": 1,
@@ -95612,7 +95659,7 @@
         "44b2bb50c945de937277": 1,
         "44b2f32ca62b49752783": 1,
         "44d1d10638ac3987b9a2": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "44e468a3ffd91a4d5adc": 1,
         "44ef6f3652a03384978f": 1,
         "450de85bfc616d335a37": 1,
@@ -96833,7 +96880,7 @@
         "887f1df07a7c5d3f7129": 1,
         "888e6139ed9ecece16d8": 1,
         "88a181ef2a1835ee5144": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88c13af1d396c9c334d7": 1,
         "88dd679601824e8f5db1": 1,
         "88e4a0842e591790ecbc": 1,
@@ -97873,7 +97920,7 @@
         "c44b88eea42380510ac9": 1,
         "c4652353acdc42aae3dc": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c471916d2912aa8fe3f9": 1,
         "c47bc0f3bfcdca98d807": 1,
         "c4805a851ee6f1426f35": 1,
@@ -98911,7 +98958,7 @@
         "ffdf32c92f00e4eec584": 1,
         "ffe2fae1baa44ba1a197": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "check-s1-m1-c1-o1": {
@@ -98922,9 +98969,9 @@
         "csfg": 1,
         "openmp": 1
       },
-      "compilation_count": 3301,
+      "compilation_count": 3305,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 41,
         "dvd90": 14,
         "dvd90mpi": 15,
@@ -98948,7 +98995,7 @@
         "npol_unit_driver": 1,
         "rang90": 178,
         "rang90_csfg": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rangular_csfg_mpi": 76,
         "rangular_mpi": 27,
         "rbiotransform": 83,
@@ -99025,7 +99072,8 @@
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
         "test.start_trace_parity": 5,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -99066,6 +99114,7 @@
         "src/appl/jj2lsj90_csfg/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -99075,6 +99124,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -101175,6 +101226,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -103040,7 +103092,7 @@
         "35601fb666867adca8e4": 1,
         "3576767026a09ae4791f": 1,
         "3586cb1f47ad3f92cc58": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35dd72c481a4715781ca": 1,
         "35e8e05bb1d5f771ee74": 1,
@@ -103072,7 +103124,7 @@
         "36ecb1effd2a6b7144b8": 1,
         "36f5ce29f9ccbbfa4ab5": 1,
         "36f7c5dbe0c86206570b": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "37229d045d6e3ddaf08b": 1,
         "3722ef5c40e8883ab7a2": 1,
         "373e24e01daab687222a": 1,
@@ -103331,7 +103383,7 @@
         "44b2bb50c945de937277": 1,
         "44b2f32ca62b49752783": 1,
         "44d1d10638ac3987b9a2": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "44e468a3ffd91a4d5adc": 1,
         "44ef6f3652a03384978f": 1,
         "450de85bfc616d335a37": 1,
@@ -104552,7 +104604,7 @@
         "887f1df07a7c5d3f7129": 1,
         "888e6139ed9ecece16d8": 1,
         "88a181ef2a1835ee5144": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88c13af1d396c9c334d7": 1,
         "88dd679601824e8f5db1": 1,
         "88e4a0842e591790ecbc": 1,
@@ -105592,7 +105644,7 @@
         "c44b88eea42380510ac9": 1,
         "c4652353acdc42aae3dc": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c471916d2912aa8fe3f9": 1,
         "c47bc0f3bfcdca98d807": 1,
         "c4805a851ee6f1426f35": 1,
@@ -106630,7 +106682,7 @@
         "ffdf32c92f00e4eec584": 1,
         "ffe2fae1baa44ba1a197": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "release-s0-m0-c0-o0": {
@@ -106641,9 +106693,9 @@
         "csfg": 0,
         "openmp": 0
       },
-      "compilation_count": 562,
+      "compilation_count": 563,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "jj2lsj_conversion": 14,
         "jj2lsj_omp": 1,
@@ -106761,6 +106813,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -107617,9 +107670,9 @@
         "csfg": 0,
         "openmp": 1
       },
-      "compilation_count": 562,
+      "compilation_count": 563,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "jj2lsj_conversion": 14,
         "jj2lsj_omp": 1,
@@ -107737,6 +107790,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -108592,9 +108646,9 @@
         "csfg": 1,
         "openmp": 0
       },
-      "compilation_count": 1004,
+      "compilation_count": 1005,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 37,
         "dvd90": 14,
         "jj2lsj_conversion": 14,
@@ -108936,6 +108990,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -110677,9 +110732,9 @@
         "csfg": 1,
         "openmp": 1
       },
-      "compilation_count": 1004,
+      "compilation_count": 1005,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 37,
         "dvd90": 14,
         "jj2lsj_conversion": 14,
@@ -111021,6 +111076,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -112761,9 +112817,9 @@
         "csfg": 0,
         "openmp": 0
       },
-      "compilation_count": 1598,
+      "compilation_count": 1599,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "gj90_mpi": 15,
         "jj2lsj_conversion": 14,
@@ -113823,6 +113879,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -115794,9 +115851,9 @@
         "csfg": 0,
         "openmp": 1
       },
-      "compilation_count": 1598,
+      "compilation_count": 1599,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "gj90_mpi": 15,
         "jj2lsj_conversion": 14,
@@ -116856,6 +116913,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -118826,9 +118884,9 @@
         "csfg": 1,
         "openmp": 0
       },
-      "compilation_count": 2531,
+      "compilation_count": 2532,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 41,
         "dvd90": 14,
         "dvd90mpi": 15,
@@ -120411,6 +120469,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -125281,9 +125340,9 @@
         "csfg": 1,
         "openmp": 1
       },
-      "compilation_count": 2531,
+      "compilation_count": 2532,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 41,
         "dvd90": 14,
         "dvd90mpi": 15,
@@ -126866,6 +126925,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -131735,9 +131795,9 @@
         "csfg": 0,
         "openmp": 0
       },
-      "compilation_count": 1332,
+      "compilation_count": 1336,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "gj90": 15,
         "jj2lsj_conversion": 14,
@@ -131750,7 +131810,7 @@
         "npol_test_support": 1,
         "npol_unit_driver": 1,
         "rang90": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rbiotransform": 83,
         "rci": 134,
         "rdensity": 10,
@@ -131782,7 +131842,8 @@
         "test.lib9290_quad": 1,
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -131807,6 +131868,7 @@
         "src/appl/jj2lsj90/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -131816,6 +131878,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -132597,6 +132661,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -133300,14 +133365,14 @@
         "34e93292ea94cc32eb80": 1,
         "352332a91f01b54e8cec": 1,
         "3530b906911c50fdab4e": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35f18bad8016b19cdd14": 1,
         "363123e9c3935b530cbd": 1,
         "368a7a2fabe6172db0aa": 1,
         "368e63538b835a1f54b8": 1,
         "36db37768fd482b47a9a": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "373e24e01daab687222a": 1,
         "3741a2ba9aea570bb345": 1,
         "37becbe0906985d5ff15": 1,
@@ -133359,7 +133424,7 @@
         "4495bd02ef91ae5db6ec": 1,
         "449669eb164d70eed41f": 1,
         "44b2f32ca62b49752783": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "450de85bfc616d335a37": 1,
         "452701f408dd5c733207": 1,
         "455af727b5f12fc9c1c4": 1,
@@ -133715,7 +133780,7 @@
         "8840978ec62b4f1e168f": 1,
         "886dcdf5b307a648e95d": 1,
         "888e6139ed9ecece16d8": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88dd679601824e8f5db1": 1,
         "89167c369b0f3f0c7886": 1,
         "892f4329aebbadb4a00f": 1,
@@ -133997,7 +134062,7 @@
         "c428cad0fe2d69f1ec79": 1,
         "c42bcbc6992c73561cad": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c4d297a74b17363cd8b9": 1,
         "c59f79f37da41b21ade3": 1,
         "c63336b9b4a62f89b839": 1,
@@ -134285,7 +134350,7 @@
         "ff50151a5ec93bd98c91": 1,
         "ffdba427914e86751012": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "release-s1-m0-c0-o1": {
@@ -134296,9 +134361,9 @@
         "csfg": 0,
         "openmp": 1
       },
-      "compilation_count": 1332,
+      "compilation_count": 1336,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "gj90": 15,
         "jj2lsj_conversion": 14,
@@ -134311,7 +134376,7 @@
         "npol_test_support": 1,
         "npol_unit_driver": 1,
         "rang90": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rbiotransform": 83,
         "rci": 134,
         "rdensity": 10,
@@ -134343,7 +134408,8 @@
         "test.lib9290_quad": 1,
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -134368,6 +134434,7 @@
         "src/appl/jj2lsj90/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -134377,6 +134444,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -135158,6 +135227,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -135860,14 +135930,14 @@
         "34e93292ea94cc32eb80": 1,
         "352332a91f01b54e8cec": 1,
         "3530b906911c50fdab4e": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35f18bad8016b19cdd14": 1,
         "363123e9c3935b530cbd": 1,
         "368a7a2fabe6172db0aa": 1,
         "368e63538b835a1f54b8": 1,
         "36db37768fd482b47a9a": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "373e24e01daab687222a": 1,
         "3741a2ba9aea570bb345": 1,
         "37becbe0906985d5ff15": 1,
@@ -135919,7 +135989,7 @@
         "4495bd02ef91ae5db6ec": 1,
         "449669eb164d70eed41f": 1,
         "44b2f32ca62b49752783": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "450de85bfc616d335a37": 1,
         "452701f408dd5c733207": 1,
         "455af727b5f12fc9c1c4": 1,
@@ -136275,7 +136345,7 @@
         "8840978ec62b4f1e168f": 1,
         "886dcdf5b307a648e95d": 1,
         "888e6139ed9ecece16d8": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88dd679601824e8f5db1": 1,
         "89167c369b0f3f0c7886": 1,
         "892f4329aebbadb4a00f": 1,
@@ -136557,7 +136627,7 @@
         "c428cad0fe2d69f1ec79": 1,
         "c42bcbc6992c73561cad": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c4d297a74b17363cd8b9": 1,
         "c59f79f37da41b21ade3": 1,
         "c63336b9b4a62f89b839": 1,
@@ -136845,7 +136915,7 @@
         "ff50151a5ec93bd98c91": 1,
         "ffdba427914e86751012": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "release-s1-m0-c1-o0": {
@@ -136856,9 +136926,9 @@
         "csfg": 1,
         "openmp": 0
       },
-      "compilation_count": 1774,
+      "compilation_count": 1778,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 37,
         "dvd90": 14,
         "gj90": 15,
@@ -136875,7 +136945,7 @@
         "npol_unit_driver": 1,
         "rang90": 178,
         "rang90_csfg": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rbiotransform": 83,
         "rci": 134,
         "rcsfgblocksplit_csfg": 1,
@@ -136923,7 +136993,8 @@
         "test.lib9290_quad": 1,
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -136961,6 +137032,7 @@
         "src/appl/jj2lsj90_csfg/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -136970,6 +137042,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -137942,6 +138016,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -139010,7 +139085,7 @@
         "3530b906911c50fdab4e": 1,
         "3576767026a09ae4791f": 1,
         "35794e922f3858d6f78e": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35be96c78eafbadd5246": 1,
         "35efd7b74a41aaba87e8": 1,
@@ -139021,7 +139096,7 @@
         "368e63538b835a1f54b8": 1,
         "36d71514678042ced961": 1,
         "36db37768fd482b47a9a": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "37229d045d6e3ddaf08b": 1,
         "373e24e01daab687222a": 1,
         "3741a2ba9aea570bb345": 1,
@@ -139118,7 +139193,7 @@
         "449669eb164d70eed41f": 1,
         "44b2f32ca62b49752783": 1,
         "44d1d10638ac3987b9a2": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "44e468a3ffd91a4d5adc": 1,
         "450de85bfc616d335a37": 1,
         "451553d06948ce2431be": 1,
@@ -139652,7 +139727,7 @@
         "887f1df07a7c5d3f7129": 1,
         "888e6139ed9ecece16d8": 1,
         "88a181ef2a1835ee5144": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88dd679601824e8f5db1": 1,
         "89167c369b0f3f0c7886": 1,
         "892f4329aebbadb4a00f": 1,
@@ -140078,7 +140153,7 @@
         "c428cad0fe2d69f1ec79": 1,
         "c42bcbc6992c73561cad": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c4cca18f14b7ff2062d4": 1,
         "c4d297a74b17363cd8b9": 1,
         "c52eda8764ef528891ae": 1,
@@ -140515,7 +140590,7 @@
         "ffdba427914e86751012": 1,
         "ffe2fae1baa44ba1a197": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "release-s1-m0-c1-o1": {
@@ -140526,9 +140601,9 @@
         "csfg": 1,
         "openmp": 1
       },
-      "compilation_count": 1774,
+      "compilation_count": 1778,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 37,
         "dvd90": 14,
         "gj90": 15,
@@ -140545,7 +140620,7 @@
         "npol_unit_driver": 1,
         "rang90": 178,
         "rang90_csfg": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rbiotransform": 83,
         "rci": 134,
         "rcsfgblocksplit_csfg": 1,
@@ -140593,7 +140668,8 @@
         "test.lib9290_quad": 1,
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -140631,6 +140707,7 @@
         "src/appl/jj2lsj90_csfg/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -140640,6 +140717,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -141612,6 +141691,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -142679,7 +142759,7 @@
         "3530b906911c50fdab4e": 1,
         "3576767026a09ae4791f": 1,
         "35794e922f3858d6f78e": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35be96c78eafbadd5246": 1,
         "35efd7b74a41aaba87e8": 1,
@@ -142690,7 +142770,7 @@
         "368e63538b835a1f54b8": 1,
         "36d71514678042ced961": 1,
         "36db37768fd482b47a9a": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "37229d045d6e3ddaf08b": 1,
         "373e24e01daab687222a": 1,
         "3741a2ba9aea570bb345": 1,
@@ -142787,7 +142867,7 @@
         "449669eb164d70eed41f": 1,
         "44b2f32ca62b49752783": 1,
         "44d1d10638ac3987b9a2": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "44e468a3ffd91a4d5adc": 1,
         "450de85bfc616d335a37": 1,
         "451553d06948ce2431be": 1,
@@ -143321,7 +143401,7 @@
         "887f1df07a7c5d3f7129": 1,
         "888e6139ed9ecece16d8": 1,
         "88a181ef2a1835ee5144": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88dd679601824e8f5db1": 1,
         "89167c369b0f3f0c7886": 1,
         "892f4329aebbadb4a00f": 1,
@@ -143747,7 +143827,7 @@
         "c428cad0fe2d69f1ec79": 1,
         "c42bcbc6992c73561cad": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c4cca18f14b7ff2062d4": 1,
         "c4d297a74b17363cd8b9": 1,
         "c52eda8764ef528891ae": 1,
@@ -144184,7 +144264,7 @@
         "ffdba427914e86751012": 1,
         "ffe2fae1baa44ba1a197": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "release-s1-m1-c0-o0": {
@@ -144195,9 +144275,9 @@
         "csfg": 0,
         "openmp": 0
       },
-      "compilation_count": 2368,
+      "compilation_count": 2372,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "gj90": 15,
         "gj90_mpi": 15,
@@ -144215,7 +144295,7 @@
         "npol_test_support": 1,
         "npol_unit_driver": 1,
         "rang90": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rangular_mpi": 27,
         "rbiotransform": 83,
         "rbiotransform_mpi": 83,
@@ -144269,7 +144349,8 @@
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
         "test.start_trace_parity": 5,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -144297,6 +144378,7 @@
         "src/appl/jj2lsj90/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -144306,6 +144388,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -145925,6 +146009,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -146895,7 +146980,7 @@
         "3539bfd9b14aa9aef6f0": 1,
         "35601fb666867adca8e4": 1,
         "3586cb1f47ad3f92cc58": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35e8e05bb1d5f771ee74": 1,
         "35f18bad8016b19cdd14": 1,
@@ -146906,7 +146991,7 @@
         "36db37768fd482b47a9a": 1,
         "36e57793b468bff5687a": 1,
         "36e6ffdb5d415d701cb0": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "373e24e01daab687222a": 1,
         "3741a2ba9aea570bb345": 1,
         "3764977c39f15a04a6c6": 1,
@@ -147023,7 +147108,7 @@
         "4495bd02ef91ae5db6ec": 1,
         "449669eb164d70eed41f": 1,
         "44b2f32ca62b49752783": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "44ef6f3652a03384978f": 1,
         "450de85bfc616d335a37": 1,
         "452701f408dd5c733207": 1,
@@ -147666,7 +147751,7 @@
         "886dcdf5b307a648e95d": 1,
         "887f0dbeb5e596dd0240": 1,
         "888e6139ed9ecece16d8": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88dd679601824e8f5db1": 1,
         "89167c369b0f3f0c7886": 1,
         "891a84e404dd5f94feb2": 1,
@@ -148210,7 +148295,7 @@
         "c42bcbc6992c73561cad": 1,
         "c44b88eea42380510ac9": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c49122ab6a9e110cdaec": 1,
         "c4d297a74b17363cd8b9": 1,
         "c56188ab899d6c0ca9fe": 1,
@@ -148728,7 +148813,7 @@
         "ff50151a5ec93bd98c91": 1,
         "ffdba427914e86751012": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "release-s1-m1-c0-o1": {
@@ -148739,9 +148824,9 @@
         "csfg": 0,
         "openmp": 1
       },
-      "compilation_count": 2368,
+      "compilation_count": 2372,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "dvd90": 14,
         "gj90": 15,
         "gj90_mpi": 15,
@@ -148759,7 +148844,7 @@
         "npol_test_support": 1,
         "npol_unit_driver": 1,
         "rang90": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rangular_mpi": 27,
         "rbiotransform": 83,
         "rbiotransform_mpi": 83,
@@ -148813,7 +148898,8 @@
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
         "test.start_trace_parity": 5,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -148841,6 +148927,7 @@
         "src/appl/jj2lsj90/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -148850,6 +148937,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -150469,6 +150558,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -151438,7 +151528,7 @@
         "3539bfd9b14aa9aef6f0": 1,
         "35601fb666867adca8e4": 1,
         "3586cb1f47ad3f92cc58": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35e8e05bb1d5f771ee74": 1,
         "35f18bad8016b19cdd14": 1,
@@ -151449,7 +151539,7 @@
         "36db37768fd482b47a9a": 1,
         "36e57793b468bff5687a": 1,
         "36e6ffdb5d415d701cb0": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "373e24e01daab687222a": 1,
         "3741a2ba9aea570bb345": 1,
         "3764977c39f15a04a6c6": 1,
@@ -151566,7 +151656,7 @@
         "4495bd02ef91ae5db6ec": 1,
         "449669eb164d70eed41f": 1,
         "44b2f32ca62b49752783": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "44ef6f3652a03384978f": 1,
         "450de85bfc616d335a37": 1,
         "452701f408dd5c733207": 1,
@@ -152209,7 +152299,7 @@
         "886dcdf5b307a648e95d": 1,
         "887f0dbeb5e596dd0240": 1,
         "888e6139ed9ecece16d8": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88dd679601824e8f5db1": 1,
         "89167c369b0f3f0c7886": 1,
         "891a84e404dd5f94feb2": 1,
@@ -152753,7 +152843,7 @@
         "c42bcbc6992c73561cad": 1,
         "c44b88eea42380510ac9": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c49122ab6a9e110cdaec": 1,
         "c4d297a74b17363cd8b9": 1,
         "c56188ab899d6c0ca9fe": 1,
@@ -153271,7 +153361,7 @@
         "ff50151a5ec93bd98c91": 1,
         "ffdba427914e86751012": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "release-s1-m1-c1-o0": {
@@ -153282,9 +153372,9 @@
         "csfg": 1,
         "openmp": 0
       },
-      "compilation_count": 3301,
+      "compilation_count": 3305,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 41,
         "dvd90": 14,
         "dvd90mpi": 15,
@@ -153308,7 +153398,7 @@
         "npol_unit_driver": 1,
         "rang90": 178,
         "rang90_csfg": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rangular_csfg_mpi": 76,
         "rangular_mpi": 27,
         "rbiotransform": 83,
@@ -153385,7 +153475,8 @@
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
         "test.start_trace_parity": 5,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -153426,6 +153517,7 @@
         "src/appl/jj2lsj90_csfg/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -153435,6 +153527,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -155535,6 +155629,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -157447,7 +157542,7 @@
         "3576767026a09ae4791f": 1,
         "35794e922f3858d6f78e": 1,
         "3586cb1f47ad3f92cc58": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35be96c78eafbadd5246": 1,
         "35dd72c481a4715781ca": 1,
@@ -157480,7 +157575,7 @@
         "36ecb1effd2a6b7144b8": 1,
         "36f5ce29f9ccbbfa4ab5": 1,
         "36f7c5dbe0c86206570b": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "37229d045d6e3ddaf08b": 1,
         "3722ef5c40e8883ab7a2": 1,
         "373e24e01daab687222a": 1,
@@ -157750,7 +157845,7 @@
         "44b2bb50c945de937277": 1,
         "44b2f32ca62b49752783": 1,
         "44d1d10638ac3987b9a2": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "44e468a3ffd91a4d5adc": 1,
         "44ef6f3652a03384978f": 1,
         "450de85bfc616d335a37": 1,
@@ -159034,7 +159129,7 @@
         "887f1df07a7c5d3f7129": 1,
         "888e6139ed9ecece16d8": 1,
         "88a181ef2a1835ee5144": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88c13af1d396c9c334d7": 1,
         "88dd679601824e8f5db1": 1,
         "88e4a0842e591790ecbc": 1,
@@ -160137,7 +160232,7 @@
         "c44b88eea42380510ac9": 1,
         "c4652353acdc42aae3dc": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c471916d2912aa8fe3f9": 1,
         "c47bc0f3bfcdca98d807": 1,
         "c4805a851ee6f1426f35": 1,
@@ -161237,7 +161332,7 @@
         "ffdf32c92f00e4eec584": 1,
         "ffe2fae1baa44ba1a197": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     },
     "release-s1-m1-c1-o1": {
@@ -161248,9 +161343,9 @@
         "csfg": 1,
         "openmp": 1
       },
-      "compilation_count": 3301,
+      "compilation_count": 3305,
       "target_compilation_counts": {
-        "9290": 152,
+        "9290": 153,
         "9290_csfg": 41,
         "dvd90": 14,
         "dvd90mpi": 15,
@@ -161274,7 +161369,7 @@
         "npol_unit_driver": 1,
         "rang90": 178,
         "rang90_csfg": 178,
-        "rangular": 29,
+        "rangular": 31,
         "rangular_csfg_mpi": 76,
         "rangular_mpi": 27,
         "rbiotransform": 83,
@@ -161351,7 +161446,8 @@
         "test.rdensity_natural_orbitals": 2,
         "test.shared_grid_capacity": 1,
         "test.start_trace_parity": 5,
-        "test.strict_scf_logic": 2
+        "test.strict_scf_logic": 2,
+        "csf_descriptor_verify": 1
       },
       "files": [
         "src/appl/gj90/compute_gj_only.f90",
@@ -161392,6 +161488,7 @@
         "src/appl/jj2lsj90_csfg/packLS_I.f90",
         "src/appl/rangular90/allocCheck.f90",
         "src/appl/rangular90/allocCheck_I.f90",
+        "src/appl/rangular90/csf_descriptor_verify.f90",
         "src/appl/rangular90/fndbeg.f90",
         "src/appl/rangular90/fndbeg_I.f90",
         "src/appl/rangular90/genmcp.f90",
@@ -161401,6 +161498,8 @@
         "src/appl/rangular90/mcp_gg_I.f90",
         "src/appl/rangular90/outsda.f90",
         "src/appl/rangular90/outsda_I.f90",
+        "src/appl/rangular90/rangular_input.f90",
+        "src/appl/rangular90/rangular_profile.f90",
         "src/appl/rangular90/setdbg.f90",
         "src/appl/rangular90/setdbg_I.f90",
         "src/appl/rangular90/setmcp.f90",
@@ -163501,6 +163600,7 @@
         "src/lib/lib9290/count_I.f90",
         "src/lib/lib9290/cre.f90",
         "src/lib/lib9290/cre_I.f90",
+        "src/lib/lib9290/csf_descriptor_input.f90",
         "src/lib/lib9290/cslh.f90",
         "src/lib/lib9290/cslh_I.f90",
         "src/lib/lib9290/dcbsrw.f90",
@@ -165412,7 +165512,7 @@
         "3576767026a09ae4791f": 1,
         "35794e922f3858d6f78e": 1,
         "3586cb1f47ad3f92cc58": 1,
-        "358a82d1b28500da5262": 1,
+        "734e23e9145c72013b61": 1,
         "35ba3d767edcd1ea680f": 1,
         "35be96c78eafbadd5246": 1,
         "35dd72c481a4715781ca": 1,
@@ -165445,7 +165545,7 @@
         "36ecb1effd2a6b7144b8": 1,
         "36f5ce29f9ccbbfa4ab5": 1,
         "36f7c5dbe0c86206570b": 1,
-        "36fa66f4d42cd0c813a7": 1,
+        "45501f38b940e28e1e15": 1,
         "37229d045d6e3ddaf08b": 1,
         "3722ef5c40e8883ab7a2": 1,
         "373e24e01daab687222a": 1,
@@ -165715,7 +165815,7 @@
         "44b2bb50c945de937277": 1,
         "44b2f32ca62b49752783": 1,
         "44d1d10638ac3987b9a2": 1,
-        "44e0678c9fa979819b8b": 1,
+        "46c147319f05ea88fa17": 1,
         "44e468a3ffd91a4d5adc": 1,
         "44ef6f3652a03384978f": 1,
         "450de85bfc616d335a37": 1,
@@ -166999,7 +167099,7 @@
         "887f1df07a7c5d3f7129": 1,
         "888e6139ed9ecece16d8": 1,
         "88a181ef2a1835ee5144": 1,
-        "88b1f1ccbb7e7ef4f1dd": 1,
+        "6c2e784641a3522f0d9d": 1,
         "88c13af1d396c9c334d7": 1,
         "88dd679601824e8f5db1": 1,
         "88e4a0842e591790ecbc": 1,
@@ -168102,7 +168202,7 @@
         "c44b88eea42380510ac9": 1,
         "c4652353acdc42aae3dc": 1,
         "c4665313b380d50fb6c4": 1,
-        "c46b370182125d1a8e2a": 1,
+        "8a7ae10e88ccfe1479b7": 1,
         "c471916d2912aa8fe3f9": 1,
         "c47bc0f3bfcdca98d807": 1,
         "c4805a851ee6f1426f35": 1,
@@ -169202,10 +169302,20 @@
         "ffdf32c92f00e4eec584": 1,
         "ffe2fae1baa44ba1a197": 1,
         "ffec49525b948f09589b": 1,
-        "fff07712ad264c8dde3e": 1
+        "0706b5f7b8d5a0f22c41": 1
       }
     }
   },
   "source_revision": "f3951467ab3146123b84ca2c3f48870d0c12a6ad",
-  "source_state": "Working tree; exact compiled source identities are in source_files"
+  "source_state": "Working tree; exact compiled source identities are in source_files",
+  "descriptor_input_budget_update": {
+    "date": "2026-11-10",
+    "source_base": "e229657d8a32b851da9c130928545bcb3ac209f1",
+    "measured_cases": [
+      "check-s1-m0-c0-o0",
+      "release-s1-m1-c1-o1"
+    ],
+    "new_source_warnings": 0,
+    "scope": "Four new source files; six unchanged warning messages relocated. Other feature cases use the deterministic CMake source/target delta; their full matrices were not rerun."
+  }
 }

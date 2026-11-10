@@ -141,6 +141,24 @@ if(Python3_Interpreter_FOUND)
         COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/test_patch_grasp_grid.py")
     set_tests_properties(grasp_grid_patcher PROPERTIES ENVIRONMENT "FC=${CMAKE_Fortran_COMPILER}")
+    add_test(NAME mcp_compare
+        COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/test_mcp_compare.py")
+    set_tests_properties(mcp_compare PROPERTIES TIMEOUT 120 SKIP_RETURN_CODE 77)
+    if(TARGET csf_descriptor_verify)
+        add_test(NAME csf_descriptor_input
+            COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_csf_descriptors.py"
+            --rangular $<TARGET_FILE:rangular> --verifier $<TARGET_FILE:csf_descriptor_verify>)
+        set_tests_properties(csf_descriptor_input PROPERTIES TIMEOUT 180
+            LABELS "f2018_io;f2018_serial"
+            ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1")
+        add_test(NAME rangular_version_comparison
+            COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_compare_rangular_versions.py"
+            --rangular $<TARGET_FILE:rangular> --verifier $<TARGET_FILE:csf_descriptor_verify>)
+        set_tests_properties(rangular_version_comparison PROPERTIES TIMEOUT 180
+            LABELS "f2018_io;f2018_serial"
+            ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1")
+    endif()
 endif()
 
 # Independent synthetic NP tests; no GRASP preparation tools or atomic data.

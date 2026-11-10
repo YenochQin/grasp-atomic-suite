@@ -1,4 +1,5 @@
 add_library(9290 STATIC
+    csf_descriptor_input.f90
     suite_system.f90
     npol_input.f90
     npol_kernel.f90

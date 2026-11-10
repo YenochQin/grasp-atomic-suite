@@ -67,6 +67,7 @@
         "ris4",
         "rwfnestimate",
         "rangular",
+        "csf_descriptor_verify",
         "rci",
         "rbiotransform",
         "rtransition",
@@ -75,7 +76,9 @@
         "rmcdhf_mem"
       ],
       "tests": [
-        "rdensity_serial_regression"
+        "rdensity_serial_regression",
+        "csf_descriptor_input",
+        "rangular_version_comparison"
       ]
     },
     {
