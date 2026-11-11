@@ -8,7 +8,7 @@
 另有独立的 [rangular_omp](rangular_openmp.md) 目标，定向隔离并发调用闭包，按序复用下文的 MCP 提交/排序路径。
 
 初次核查状态：依据源码完成串行主路径的静态梳理；当时没有修改计算实现，也没有运行新的物理计算或性能测试。
-本文覆盖普通目标 `rangular`，入口为 `src/appl/rangular90/genmcp.f90` 中的
+本文覆盖普通目标 `rangular`，入口为 `src/appl/rangular/genmcp.f90` 中的
 `PROGRAM GENMCP`。不把 MPI、CSFG 程序视为同一实现；共享库只追踪到解释主要计算和状态依赖所需的层次，并非所有深层例程的线程安全审计。
 
 ## 1. 程序计算什么
@@ -20,7 +20,7 @@ CSF 对，将贡献按径向积分标签整理到 `mcp.*` 文件。
 这里生成的是角系数，不是给定径向波函数后的完整哈密顿矩阵。
 后续 [rmcdhf](rmcdhf_flow_and_state.md) 用当前径向轨道计算积分，再将积分乘以这些系数装配矩阵；部分对角贡献由 `SETHAM` 单独计算。
 
-[构建定义](../../src/appl/rangular90/CMakeLists.txt)链接 `rang90`、`mcp90`、
+[构建定义](../../src/appl/rangular/CMakeLists.txt)链接 `rang90`、`mcp90`、
 `9290`、`mod`。入口固定 `MYID=0`、`NPROCS=1`；含有按 rank 步进的代码不表示此目标正在并行执行。
 `*_I.f90` 是接口单元，不能按文件数当作独立计算步骤。
 
@@ -54,13 +54,13 @@ graph TD
     E -->|无| L([关闭文件并结束])
 ```
 
-对应入口：[genmcp.f90](../../src/appl/rangular90/genmcp.f90)。
+对应入口：[genmcp.f90](../../src/appl/rangular/genmcp.f90)。
 `RESTRT` 在入口设为 `.FALSE.`；`MCP` 的重启分支当前先报告
 “Not ready for RESTART”并停止，后面的 `FNDBEG` 不能视为已可用的续算路径。
 
 ### 单个 CSF 对的计算
 
-[MCP](../../src/appl/rangular90/mcp_gg.f90) 按 `JA=1…NCF`、`JB=1…JA`
+[MCP](../../src/appl/rangular/mcp_gg.f90) 按 `JA=1…NCF`、`JB=1…JA`
 遍历三角区域。当前交互路径的 `GETINF` 将 `DIAG=.FALSE.`，对角近似的提问已注释；
 代码中仍保留 `DIAG` 筛选分支。若选择一阶相互作用限制，则 `LFORDR=.TRUE.`，
 当 `JB>ICCUT(NB)` 时仅保留 `JA=JB`。
@@ -98,16 +98,16 @@ graph TD
 
 | 例程 | 计算职责、输入与产物 | 关键调用或依赖 |
 | --- | --- | --- |
-| [GENMCP](../../src/appl/rangular90/genmcp.f90) | 设置串行上下文，读 CSF 头部，逐 block 调度、分配和清理。 | `CSLH → SETMCP2 → FACTT → LODCSH2 → MCP`。 |
-| [SETMCP2](../../src/appl/rangular90/setmcp2.f90)、[SETMCP](../../src/appl/rangular90/setmcp.f90)、[GETINF](../../src/appl/rangular90/getinf.f90) | 建立 MCP 文件，确定 `KMAX`、交互筛选设置和文件头。 | `mcp_C`、`iccu_C`、轨道及 block 元数据。 |
-| [MCP](../../src/appl/rangular90/mcp_gg.f90) | CSF 对 → T/V 系数、积分标签、稀疏位置及计数；管理缓冲和磁盘回退。 | `ONESCALAR`、`RKCO_GG`、`ALCBUF`、`ALLOCCHECK`、`SETSDA`、排序。 |
+| [GENMCP](../../src/appl/rangular/genmcp.f90) | 设置串行上下文，读 CSF 头部，逐 block 调度、分配和清理。 | `CSLH → SETMCP2 → FACTT → LODCSH2 → MCP`。 |
+| [SETMCP2](../../src/appl/rangular/setmcp2.f90)、[SETMCP](../../src/appl/rangular/setmcp.f90)、[GETINF](../../src/appl/rangular/getinf.f90) | 建立 MCP 文件，确定 `KMAX`、交互筛选设置和文件头。 | `mcp_C`、`iccu_C`、轨道及 block 元数据。 |
+| [MCP](../../src/appl/rangular/mcp_gg.f90) | CSF 对 → T/V 系数、积分标签、稀疏位置及计数；管理缓冲和磁盘回退。 | `ONESCALAR`、`RKCO_GG`、`ALCBUF`、`ALLOCCHECK`、`SETSDA`、排序。 |
 | [ONESCALAR](../../src/lib/librang90/onescalar.f90) | 对称性与选择定则筛选；输出一电子轨道标签和 `VSHELL` 系数。 | `SETQNA`、`ONESCALAR1/2`；读取 CSF，改写角动量工作区。 |
 | [RKCO_GG](../../src/lib/librang90/rkco_gg.f90) | 两电子角系数生成入口；按占据结构和耦合情况进入不同分支。 | `SETQNA`、`EL1…EL5`、`CORD` 回调；不能只搜 `CALL CORD` 来确定调用图。 |
 | [SETQNA](../../src/lib/lib9290/setqna.f90) | 从两个 CSF 提取占据数、壳层和耦合链，写入当前对的共享工作区。 | `m_C` 中 `NQ1/2`、`JJQ1/2`、`JLIST/KLIST`、`JJC1/2` 等。 |
 | [CORD](../../src/lib/lib9290/cord.f90)、[SPEAK](../../src/lib/lib9290/speak.f90) | 组织生成的角系数及标签；`SPEAK` 追加到当前对的缓冲。 | `NVCOEF` 增长，必要时 `ALCBUF(2)` 扩容。 |
 | [ALCBUF](../../src/lib/lib9290/alcbuf.f90) | 当前对缓冲的分配、扩容、释放。 | `buffer_C` 的指针和容量；与 block 累积缓冲不同。 |
-| [SETSDA](../../src/appl/rangular90/setsda.f90)、[OUTSDA](../../src/appl/rangular90/outsda.f90) | 临时 CSF 对记录 → 稀疏结构和统计；将结构追加到 `mcp.30`。 | 局部 `IENDC/IROW`、顺序文件读取、统计回调。 |
-| [SORTMEM](../../src/appl/rangular90/sortmem.f90)、[SORT](../../src/appl/rangular90/sort.f90) | 将 block 的系数按积分标签整理，追加到最终 MCP 文件。 | 分别使用 `sacoef_C` 内存缓冲或磁盘记录；固定输出单元。 |
+| [SETSDA](../../src/appl/rangular/setsda.f90)、[OUTSDA](../../src/appl/rangular/outsda.f90) | 临时 CSF 对记录 → 稀疏结构和统计；将结构追加到 `mcp.30`。 | 局部 `IENDC/IROW`、顺序文件读取、统计回调。 |
+| [SORTMEM](../../src/appl/rangular/sortmem.f90)、[SORT](../../src/appl/rangular/sort.f90) | 将 block 的系数按积分标签整理，追加到最终 MCP 文件。 | 分别使用 `sacoef_C` 内存缓冲或磁盘记录；固定输出单元。 |
 | [FACTT](../../src/lib/lib9290/factt.f90)、[SIXJ](../../src/lib/librang90/sixj.f90) | 提供角动量计算所需的表及 6-j 符号。 | 初始化表与按需更新的缓存应区别处理。 |
 
 ## 4. 共享状态及生命周期

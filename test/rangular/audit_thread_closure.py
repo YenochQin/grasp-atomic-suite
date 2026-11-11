@@ -60,7 +60,7 @@ def audit(source_root: Path, build: Path) -> dict[str, int]:
             )
         )
     manifest = (
-        source_root / "src/appl/rangular90/openmp/concurrent_sources.cmake"
+        source_root / "src/appl/rangular/openmp/concurrent_sources.cmake"
     ).read_text()
     listed = {
         source_root / relative

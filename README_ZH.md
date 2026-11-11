@@ -2,9 +2,11 @@
 
 中文 | [English](README.md)
 
-`grasp-atomic-suite` 是一个面向相对论原子结构与原子性质计算的 Fortran 研究开发仓库。它保留原版 RMCDHF 和独立 strict/diag 求解器，并与 `rhfs90`、`ris4`、`gj90` 共享 GRASP 数值库，用于轨道优化、超精细结构、同位素位移和 Landé `g_J` 因子的计算、验证与性能优化。
+`grasp-atomic-suite` 是一个面向相对论原子结构与原子性质计算的 Fortran 研究开发仓库。它保留原版 RMCDHF 和独立 strict/diag 求解器，并与 `rhfs`、`ris4`、`gj` 共享 GRASP 数值库，用于轨道优化、超精细结构、同位素位移和 Landé `g_J` 因子的计算、验证与性能优化。
 
-本仓库不是上游 GRASP 的最小镜像。它保留了传统 GRASP 数值库和应用组织方式，同时加入了 CMake 构建、MPI 目标、`gj90` 独立程序、回归数据和面向 `g_J`/MPI 优化的开发文档。
+本仓库不是上游 GRASP 的最小镜像。它保留了传统 GRASP 数值库和应用组织方式，同时加入了 CMake 构建、MPI 目标、`gj` 独立程序、回归数据和面向 `g_J`/MPI 优化的开发文档。
+
+普通应用目录现已去掉旧 `90` 标记，Landé 因子程序命令为 `gj` 和 `gj_mpi`；对应关系和重新构建方式见[程序命名说明](docs/implemented/program_naming.md)。
 
 ## 代码结构
 
@@ -14,11 +16,11 @@
 ├── CMakeLists.txt            # CMake 总构建文件
 ├── src/
 │   ├── appl/
-│   │   ├── gj90/             # Landé g_J 独立计算程序
+│   │   ├── gj/               # Landé g_J 独立计算程序
 │   │   ├── rdensity/         # 串行/MPI 径向电子密度与自然轨道
-│   │   ├── rhfs90/           # 相对论超精细结构程序
+│   │   ├── rhfs/             # 相对论超精细结构程序
 │   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # 从 grasp 新复制，支持可选 NP
-│   │   ├── rmcdhf90_mem_{strict,diag}_mpi/ # 独立严格停止/诊断版本
+│   │   ├── rmcdhf_mem_{strict,diag}_mpi/ # 独立严格停止/诊断版本
 │   │   └── ris4/             # 相对论同位素位移程序
 │   └── lib/
 │       ├── libmod/           # 全局参数、公共块和共享状态模块
@@ -33,7 +35,7 @@
 │   ├── reviews/              # 已完成审查与证据记录
 │   ├── reference/            # 理论背景参考稿
 │   └── archive/              # 被替代的蓝图和历史报告
-├── data/                     # gj90/RHFS 验证用示例输入与输出
+├── data/                     # gj/RHFS 验证用示例输入与输出
 ├── test/                     # 轨道优化和公共库测试
 ├── scripts/                  # 网格修改及构建清理工具
 ├── bin/                      # 安装后的可执行文件
@@ -44,15 +46,15 @@
 
 | 程序 | 源码目录 | CMake 目标 | 说明 |
 | --- | --- | --- | --- |
-| 普通 GRASP 计算链 | `src/appl/rangular90*`、`rwfnestimate90`、`rci90*`、`rbiotransform90*`、`rtransition90*` | `rangular{,_mpi}`、`rwfnestimate`、`rci{,_mpi}`、`rbiotransform{,_mpi}`、`rtransition{,_phase,_mpi}` | 十个目标复用 suite 共享库与集中容量参数；见[来源、构建与验证范围](docs/implemented/standard_grasp_integration.md)。 |
-| `jj2lsj_omp` | `src/appl/jj2lsj90` | `jj2lsj_omp` | 普通 CSF 的 OpenMP jj–LS 转换，按 LS 行并行并保留原截断顺序；见[构建、运行和验证说明](docs/implemented/jj2lsj_openmp.md)。与 `jj2lsj_csfg` 分开。 |
-| `gj90` | `src/appl/gj90` | `gj90`, `gj90_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、`name.c`、`name.m/name.cm`、`name.w`，输出 `name.gj/name.cgj`。 |
-| `rhfs90` | `src/appl/rhfs90` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
+| 普通 GRASP 计算链 | `src/appl/rangular*`、`rwfnestimate`、`rci*`、`rbiotransform*`、`rtransition*` | `rangular{,_mpi}`、`rwfnestimate`、`rci{,_mpi}`、`rbiotransform{,_mpi}`、`rtransition{,_phase,_mpi}` | 十个目标复用 suite 共享库与集中容量参数；见[来源、构建与验证范围](docs/implemented/standard_grasp_integration.md)。 |
+| `jj2lsj_omp` | `src/appl/jj2lsj` | `jj2lsj_omp` | 普通 CSF 的 OpenMP jj–LS 转换，按 LS 行并行并保留原截断顺序；见[构建、运行和验证说明](docs/implemented/jj2lsj_openmp.md)。与 `jj2lsj_csfg` 分开。 |
+| `gj` | `src/appl/gj` | `gj`, `gj_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、`name.c`、`name.m/name.cm`、`name.w`，输出 `name.gj/name.cgj`。 |
+| `rhfs` | `src/appl/rhfs` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
 | `rdensity` | `src/appl/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/rdensity_mpi.md)。 |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，输出 `name.i/name.ci` 及中间角向数据。 |
 | 原版 RMCDHF + 可选 NP | `src/appl/rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | 从工作区 grasp 新复制，保留原版求解流程；仅这四个读取 `npol.inp`。详见[NP 接口与来源](docs/implemented/rmcdhf_nuclear_polarization.md)。 |
-| 严格内存 SCF | `src/appl/rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | 从原版独立复制的内存 MPI 程序；EOL 要求轨道与能量连续两轮同时达标，并保存逐轮波函数和收敛 CSV。详见[重启与验证说明](docs/implemented/rmcdhf_mem_strict_mpi.md)。 |
-| P0 分阶段诊断 | `src/appl/rmcdhf90_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | 从原版独立复制，记录匹配、阻尼和正交化前后的系数与径向值；保留原停止判据。详见[诊断说明](docs/implemented/rmcdhf_mem_diag_mpi.md)。 |
+| 严格内存 SCF | `src/appl/rmcdhf_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | 从原版独立复制的内存 MPI 程序；EOL 要求轨道与能量连续两轮同时达标，并保存逐轮波函数和收敛 CSV。详见[重启与验证说明](docs/implemented/rmcdhf_mem_strict_mpi.md)。 |
+| P0 分阶段诊断 | `src/appl/rmcdhf_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | 从原版独立复制，记录匹配、阻尼和正交化前后的系数与径向值；保留原停止判据。详见[诊断说明](docs/implemented/rmcdhf_mem_diag_mpi.md)。 |
 
 默认 CMake 配置会尝试构建 MPI 版本。如果系统没有 MPI Fortran 工具链，会跳过 MPI 目标。串行轨道与性质程序需要显式开启。`jj2lsj_omp` 默认构建，`GRASP_JJ2LSJ_OPENMP=ON` 在可用时启用 OpenMP，线程数由 `OMP_NUM_THREADS` 控制；变换文件读写模式保留串行路径。
 
@@ -70,7 +72,7 @@ cmake --build build --parallel 4
 默认安装前缀为 `<build>/install`；可用 `--prefix PATH` 或 `-DCMAKE_INSTALL_PREFIX=PATH` 指定独立位置。
 普通构建不安装，也不覆盖源码 `bin/`。严格验收入口见 [F2018 测试说明](test/f2018/README.md)。
 
-`configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后会得到 `bin/gj90_mpi`、`bin/rhfs_mpi`、`bin/ris4_mpi`、新复制的 `rmcdhf_mpi`、`rmcdhf_mem_mpi`以及对应库文件。
+`configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后会得到 `bin/gj_mpi`、`bin/rhfs_mpi`、`bin/ris4_mpi`、新复制的 `rmcdhf_mpi`、`rmcdhf_mem_mpi`以及对应库文件。
 
 同时构建新复制的四个原版 RMCDHF、独立 strict/diag 版本和性质计算程序：
 
@@ -133,15 +135,15 @@ CMake 会自动查找 BLAS/LAPACK，默认 `f2018-audit` profile 使用以下标
 
 常用输出文件：
 
-- `gj90`：`name.gj` 或 `name.cgj`。
-- `rhfs90`：`name.h/name.ch` 和 `name.hoffd/name.choffd`。
+- `gj`：`name.gj` 或 `name.cgj`。
+- `rhfs`：`name.h/name.ch` 和 `name.hoffd/name.choffd`。
 - `ris4`：`name.i/name.ci`，并可能生成 `name.IOB`、`name.ITB` 等角向中间文件。
 
-`gj90_mpi` 支持命令行方式：
+`gj_mpi` 支持命令行方式：
 
 ```sh
-mpiexec -n 2 ./bin/gj90_mpi test --nonci
-mpiexec -n 2 ./bin/gj90_mpi test --ci
+mpiexec -n 2 ./bin/gj_mpi test --nonci
+mpiexec -n 2 ./bin/gj_mpi test --ci
 ```
 
 不带参数时，程序回到交互式输入流程。
@@ -158,7 +160,7 @@ data/test.w
 data/test.gj
 ```
 
-这些文件可用于核对 `gj90` 的 `g_J` 输出。CTest 已接入公共库积分、MPI 稀疏缓冲区、轨道事务/轮次逻辑和网格修改脚本测试：
+这些文件可用于核对 `gj` 的 `g_J` 输出。CTest 已接入公共库积分、MPI 稀疏缓冲区、轨道事务/轮次逻辑和网格修改脚本测试：
 
 ```sh
 ctest --test-dir build-all --output-on-failure
@@ -206,7 +208,7 @@ ctest --test-dir build-all --output-on-failure
 - 待执行实验：[径向网格方案](docs/plans/grasp_grid_parameter_tuning.md)，物理收敛计算仍需运行。
 - 已完成审查：[网格方法审查](docs/reviews/grasp_grid_methodology_review.md)，保留源码和诊断证据。
 - 理论参考：[Landé 因子背景稿](docs/reference/lande_g.md)，算符规范尚需独立核对。
-- 历史归档：[逐份目录](docs/README.md#逐份文档结论)，包括 gj90 蓝图、迁移快照、RHFS/RIS 阶段报告；分别标明保留代码、已删除尝试和旧测量。
+- 历史归档：[逐份目录](docs/README.md#逐份文档结论)，包括 gj 蓝图、迁移快照、RHFS/RIS 阶段报告；分别标明保留代码、已删除尝试和旧测量。
 
 ## 开发注意事项
 

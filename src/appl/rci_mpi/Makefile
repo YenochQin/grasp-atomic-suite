@@ -137,7 +137,7 @@ OBJS= \
 	genmat2_I.o \
 	matrix.o \
 	matrix_I.o \
-	rci90mpi.o
+	rci_mpi.o
 
 $(EXE): $(OBJS)
 	$(FC_MPI) -o $@ $? $(FC_MPILD) $(LIBS) $(LAPACK_LIBS)

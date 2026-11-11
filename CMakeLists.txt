@@ -180,32 +180,32 @@ endif()
 message("* GRASP_BUILD_SERIAL_APPS:        ${GRASP_BUILD_SERIAL_APPS}")
 
 # GRASP application programs
-add_subdirectory("src/appl/gj90")
-add_subdirectory("src/appl/rhfs90")
+add_subdirectory("src/appl/gj")
+add_subdirectory("src/appl/rhfs")
 add_subdirectory("src/appl/rdensity")
 add_subdirectory("src/appl/ris4")
-add_subdirectory("src/appl/jj2lsj90")
+add_subdirectory("src/appl/jj2lsj")
 option(GRASP_RANGULAR_OPENMP "Build the audited rangular_omp pair engine" ${GRASP_JJ2LSJ_OPENMP})
 # add_subdirectory("src/appl/rhfszeeman95")
 
 # Ordinary GRASP programs and fresh rmcdhf copies use the suite numerical libraries.
 # The retired rmcdhf_orbopt targets are not part of this source tree.
 if(GRASP_BUILD_SERIAL_APPS)
-    foreach(app rangular90 rwfnestimate90 rci90 rbiotransform90
-                rtransition90 rtransition90_phase)
+    foreach(app rangular rwfnestimate rci rbiotransform
+                rtransition rtransition_phase)
         add_subdirectory("src/appl/${app}")
     endforeach()
     add_subdirectory("src/appl/rmcdhf")
     add_subdirectory("src/appl/rmcdhf_mem")
 endif()
 if(TARGET mpiu90)
-    foreach(app rangular90_mpi rci90_mpi rbiotransform90_mpi rtransition90_mpi)
+    foreach(app rangular_mpi rci_mpi rbiotransform_mpi rtransition_mpi)
         add_subdirectory("src/appl/${app}")
     endforeach()
     add_subdirectory("src/appl/rmcdhf_mpi")
     add_subdirectory("src/appl/rmcdhf_mem_mpi")
-    add_subdirectory("src/appl/rmcdhf90_mem_strict_mpi")
-    add_subdirectory("src/appl/rmcdhf90_mem_diag_mpi")
+    add_subdirectory("src/appl/rmcdhf_mem_strict_mpi")
+    add_subdirectory("src/appl/rmcdhf_mem_diag_mpi")
 endif()
 
 # CSFG stays behind a single opt-in boundary, outside the active ordinary build.
@@ -225,47 +225,47 @@ endif()
 #
 # We also set the GRASP variable that the user-defined targets can use to figure
 # out where the root of the GRASP source tree is.
-set(GJ90_REGRESSION_CASE "test")
-set(GJ90_REGRESSION_DATA_DIR "${PROJECT_SOURCE_DIR}/data")
-set(GJ90_REGRESSION_SCRIPT "${PROJECT_SOURCE_DIR}/tests/gj90_regression.sh")
-set(GJ90_MPI_REGRESSION_SCRIPT "${PROJECT_SOURCE_DIR}/tests/gj90_mpi_regression.sh")
-if(TARGET gj90
-   AND EXISTS "${GJ90_REGRESSION_SCRIPT}"
-   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/isodata"
-   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.c"
-   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.m"
-   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.w"
-   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.gj")
+set(GJ_REGRESSION_CASE "test")
+set(GJ_REGRESSION_DATA_DIR "${PROJECT_SOURCE_DIR}/data")
+set(GJ_REGRESSION_SCRIPT "${PROJECT_SOURCE_DIR}/tests/gj_regression.sh")
+set(GJ_MPI_REGRESSION_SCRIPT "${PROJECT_SOURCE_DIR}/tests/gj_mpi_regression.sh")
+if(TARGET gj
+   AND EXISTS "${GJ_REGRESSION_SCRIPT}"
+   AND EXISTS "${GJ_REGRESSION_DATA_DIR}/isodata"
+   AND EXISTS "${GJ_REGRESSION_DATA_DIR}/${GJ_REGRESSION_CASE}.c"
+   AND EXISTS "${GJ_REGRESSION_DATA_DIR}/${GJ_REGRESSION_CASE}.m"
+   AND EXISTS "${GJ_REGRESSION_DATA_DIR}/${GJ_REGRESSION_CASE}.w"
+   AND EXISTS "${GJ_REGRESSION_DATA_DIR}/${GJ_REGRESSION_CASE}.gj")
     add_test(
-        NAME gj90_regression_${GJ90_REGRESSION_CASE}
+        NAME gj_regression_${GJ_REGRESSION_CASE}
         COMMAND
-            "${GJ90_REGRESSION_SCRIPT}"
-            "$<TARGET_FILE:gj90>"
-            "${GJ90_REGRESSION_DATA_DIR}"
-            "${GJ90_REGRESSION_CASE}"
-            "${PROJECT_BINARY_DIR}/tests/gj90_regression_${GJ90_REGRESSION_CASE}"
+            "${GJ_REGRESSION_SCRIPT}"
+            "$<TARGET_FILE:gj>"
+            "${GJ_REGRESSION_DATA_DIR}"
+            "${GJ_REGRESSION_CASE}"
+            "${PROJECT_BINARY_DIR}/tests/gj_regression_${GJ_REGRESSION_CASE}"
     )
 endif()
-if(TARGET gj90_mpi
-   AND EXISTS "${GJ90_MPI_REGRESSION_SCRIPT}"
-   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/isodata"
-   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.c"
-   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.m"
-   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.w"
-   AND EXISTS "${GJ90_REGRESSION_DATA_DIR}/${GJ90_REGRESSION_CASE}.gj"
+if(TARGET gj_mpi
+   AND EXISTS "${GJ_MPI_REGRESSION_SCRIPT}"
+   AND EXISTS "${GJ_REGRESSION_DATA_DIR}/isodata"
+   AND EXISTS "${GJ_REGRESSION_DATA_DIR}/${GJ_REGRESSION_CASE}.c"
+   AND EXISTS "${GJ_REGRESSION_DATA_DIR}/${GJ_REGRESSION_CASE}.m"
+   AND EXISTS "${GJ_REGRESSION_DATA_DIR}/${GJ_REGRESSION_CASE}.w"
+   AND EXISTS "${GJ_REGRESSION_DATA_DIR}/${GJ_REGRESSION_CASE}.gj"
    AND MPIEXEC_EXECUTABLE
    AND MPIEXEC_NUMPROC_FLAG)
     add_test(
-        NAME gj90_mpi_regression_${GJ90_REGRESSION_CASE}
+        NAME gj_mpi_regression_${GJ_REGRESSION_CASE}
         COMMAND
-            "${GJ90_MPI_REGRESSION_SCRIPT}"
+            "${GJ_MPI_REGRESSION_SCRIPT}"
             "${MPIEXEC_EXECUTABLE}"
             "${MPIEXEC_NUMPROC_FLAG}"
             "2"
-            "$<TARGET_FILE:gj90_mpi>"
-            "${GJ90_REGRESSION_DATA_DIR}"
-            "${GJ90_REGRESSION_CASE}"
-            "${PROJECT_BINARY_DIR}/tests/gj90_mpi_regression_${GJ90_REGRESSION_CASE}"
+            "$<TARGET_FILE:gj_mpi>"
+            "${GJ_REGRESSION_DATA_DIR}"
+            "${GJ_REGRESSION_CASE}"
+            "${PROJECT_BINARY_DIR}/tests/gj_mpi_regression_${GJ_REGRESSION_CASE}"
     )
 endif()
 

@@ -5,7 +5,7 @@
 中的 `src/appl/rmcdhf90_mem_mpi`。2026-10-13 先复制并逐字节核对 130 个
 Fortran 文件和 CMake 文件，再修改 Suite 内的副本。上游源码未修改。
 
-目标 [`rmcdhf_mem_diag_mpi`](../../src/appl/rmcdhf90_mem_diag_mpi/CMakeLists.txt)
+目标 [`rmcdhf_mem_diag_mpi`](../../src/appl/rmcdhf_mem_diag_mpi/CMakeLists.txt)
 独立于原版 `rmcdhf*` 和 `rmcdhf_mem_strict_mpi`（旧 orbopt 已移除）。它保留原版的径向求解、
 阻尼、正交化、节点约束及停止判据；包括原版“轨道或能量条件通过即可结束”的行为。
 本目标没有加入严格收敛、P0 裁剪、自动重试或节点保护。

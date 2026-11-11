@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      PROGRAM GJ90_MPI
+      PROGRAM GJ_MPI
 !                                                                      *
 !   Entry routine for the MPI Landé-factor program.                    *
 !                                                                      *
@@ -41,7 +41,7 @@
 !-----------------------------------------------
 !
       CALL MPIX_STARTUP(MYID, NPROCS, HOST, LENHOST, NCOUNT1, &
-         'GJ90_MPI', 'This is the MPI Lande-factor program', &
+         'GJ_MPI', 'This is the MPI Lande-factor program', &
          'isodata, name.c, name.(c)m, name.w', &
          'name.gj or name.cgj', .TRUE.)
 !
@@ -64,17 +64,17 @@
                ELSE IF (TRIM(ARG) == '--nonci') THEN
                   NCI = 1
                ELSE IF (TRIM(ARG) == '--help' .OR. TRIM(ARG) == '-h') THEN
-                  WRITE (ISTDE, *) 'Usage: gj90_mpi [name] [--ci|--nonci]'
+                  WRITE (ISTDE, *) 'Usage: gj_mpi [name] [--ci|--nonci]'
                   WRITE (ISTDE, *) 'If no arguments are given, interactive mode is used.'
                   NDEF = -1
                ELSE IF (IARG /= 1 .OR. ARG(1:2) == '--') THEN
                   WRITE (ISTDE, *) 'Unrecognized argument: ', TRIM(ARG)
-                  WRITE (ISTDE, *) 'Usage: gj90_mpi [name] [--ci|--nonci]'
+                  WRITE (ISTDE, *) 'Usage: gj_mpi [name] [--ci|--nonci]'
                   NDEF = -1
                ENDIF
             END DO
             IF (NDEF == 0 .AND. LEN_TRIM(NAME) == 0) THEN
-               WRITE (ISTDE, *) 'Usage: gj90_mpi [name] [--ci|--nonci]'
+               WRITE (ISTDE, *) 'Usage: gj_mpi [name] [--ci|--nonci]'
                NDEF = -1
             ENDIF
          ENDIF
@@ -88,7 +88,7 @@
                NDEF = 0
             ELSE
                NDEF = 1
-               WRITE (ISTDE, *) 'GJ90_MPI currently supports default settings only.'
+               WRITE (ISTDE, *) 'GJ_MPI currently supports default settings only.'
             ENDIF
          ENDIF
 !
@@ -130,15 +130,15 @@
       CALL GETMIXBLOCK(NAME, NCI)
       CALL FACTT
 !
-      CALL ALLOC(GJC_DIAG, NVEC, 'GJC_DIAG', 'GJ90_MPI')
-      CALL ALLOC(DGJC_DIAG, NVEC, 'DGJC_DIAG', 'GJ90_MPI')
+      CALL ALLOC(GJC_DIAG, NVEC, 'GJC_DIAG', 'GJ_MPI')
+      CALL ALLOC(DGJC_DIAG, NVEC, 'DGJC_DIAG', 'GJ_MPI')
 !
       CALL COMPUTE_GJ_ONLY_MPI(GJC_DIAG, DGJC_DIAG)
       IF (MYID == 0) CALL SETOUT_GJ(NAME, NCI, GJC_DIAG, DGJC_DIAG)
 !
-      CALL DALLOC(GJC_DIAG, 'GJC_DIAG', 'GJ90_MPI')
-      CALL DALLOC(DGJC_DIAG, 'DGJC_DIAG', 'GJ90_MPI')
+      CALL DALLOC(GJC_DIAG, 'GJC_DIAG', 'GJ_MPI')
+      CALL DALLOC(DGJC_DIAG, 'DGJC_DIAG', 'GJ_MPI')
 !
-      CALL MPIX_SHUTDOWN(MYID, NCOUNT1, 'GJ90_MPI')
+      CALL MPIX_SHUTDOWN(MYID, NCOUNT1, 'GJ_MPI')
       STOP
-      END PROGRAM GJ90_MPI
+      END PROGRAM GJ_MPI

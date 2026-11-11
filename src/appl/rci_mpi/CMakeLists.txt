@@ -35,7 +35,7 @@ add_executable(rci_mpi
     brint5_I.f90
     brint6.f90
     brint6_I.f90
-    ../rci90/dmerge_dnicmv_I.f90
+    ../rci/dmerge_dnicmv_I.f90
     dnicmv.f90
     dnicmv_I.f90
     engout.f90
@@ -134,7 +134,7 @@ add_executable(rci_mpi
     genmat2_I.f90
     matrix.f90
     matrix_I.f90
-    rci90mpi.f90
+    rci_mpi.f90
 )
 target_link_libraries_Fortran(rci_mpi PUBLIC mpiu90 rang90 9290 dvd90 mod)
 install(TARGETS rci_mpi DESTINATION bin/)

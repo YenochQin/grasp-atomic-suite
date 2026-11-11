@@ -35,6 +35,10 @@
 !                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
       USE parameter_def,   ONLY:  NNNW
+      USE iso_fortran_env, ONLY: int64
+      USE rangular_mpi_input, ONLY: mpi_angular_input_options, parse_mpi_angular_options, &
+           open_mpi_angular_profile, load_mpi_angular_header, load_mpi_angular_block, close_mpi_angular_input
+      USE rangular_profile, ONLY: stage_clock, record_stage, close_stage_profile
       USE memory_man
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
@@ -57,8 +61,6 @@
       USE strsum_I
       USE factt_I
       USE settmp_I
-      USE lodcslmpi_I
-      USE cslhmpi_I, ONLY: cslhmpi
       USE mpiu_I, ONLY: startmpi2
       USE mpiu_I, ONLY: stopmpi2
       USE setdbgmpi_I, ONLY: setdbgmpi
@@ -74,11 +76,15 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       LOGICAL ::  DEBUG, RESTRT, YES
-      CHARACTER(LEN=128) :: STARTDIR, PERMDIR, TMPDIR, FILE_RCSL
+      CHARACTER(LEN=128) :: STARTDIR, PERMDIR, TMPDIR
       CHARACTER(LEN=8), DIMENSION(NBLK0):: IDBLK
       CHARACTER(LEN=3) :: IDSTRING
       INTEGER :: LENPERM, LENTMP
+      TYPE(mpi_angular_input_options) :: input_options
+      INTEGER(int64) :: program_start_count, stage_start_count
+      CHARACTER(len=16) :: input_format_name
 !-----------------------------------------------
+      CALL parse_mpi_angular_options(input_options)
       OPEN(UNIT=739,FILE='rangular.log',STATUS='UNKNOWN')
       startdir = ' '
       permdir = ' '
@@ -91,6 +97,10 @@
       WRITE (idstring, '(I3.3)') myid
       lenperm = LEN_TRIM (permdir)
       lentmp = LEN_TRIM (tmpdir)
+      CALL open_mpi_angular_profile(input_options)
+      input_format_name = 'text'
+      IF (input_options%use_descriptors) input_format_name = 'descriptors'
+      program_start_count = stage_clock()
 !=======================================================================
 !  Get NDEF on node-0 and then send to all nodes
 !=======================================================================
@@ -125,14 +135,17 @@
 
       CALL setdbgmpi (DEBUG, permdir(1:lenperm) // '/genmcp.dbg')
       CALL SETMC
-      if(myid == 0) file_rcsl = permdir(1:lenperm)//'/rcsf.inp'
-      CALL cslhmpi (file_rcsl, ncore, nblk0, idblk)
+      stage_start_count = stage_clock()
+      CALL load_mpi_angular_header(input_options,permdir,ncore,nblk0,idblk)
+      CALL record_stage('input_header_and_broadcast',0,stage_start_count,storage=input_format_name)
+      stage_start_count = stage_clock()
       RESTRT = .FALSE.
 !cjb  myid, nprocs = NOT args
 !cjb  CALL setmcpmpi (myid, nprocs, ncore, idblk, 'mcp' // idstring)
       CALL setmcpmpi (ncore, idblk, 'mcp' // idstring)
       IF (NDEF/=0 .AND. MYID==0) CALL STRSUM
       CALL FACTT
+      CALL record_stage('mcp_setup_including_interaction_input',0,stage_start_count)
 
 !=======================================================================
 !     For each block, generate and sort the data
@@ -145,11 +158,15 @@
             WRITE (6, *) 'Block ', NB, ',  ncf = ', NCF
          ENDIF
             !*** Load current CSL block. Memories de-allocated in mcp ***
+         stage_start_count = stage_clock()
          CALL ALLOC (iqa, NNNW, NCF, 'IQA', 'GENMCP')
          CALL ALLOC (jqsa, NNNW,3,NCF, 'JQSA', 'GENMCP')
          CALL ALLOC (jcupa, NNNW, NCF, 'JCUPA', 'GENMCP')
+         CALL record_stage('csf_allocation',nb,stage_start_count,int(ncf,int64))
 !
-         CALL LODCSLmpi (21, NCORE, NB)
+         stage_start_count = stage_clock()
+         CALL load_mpi_angular_block(input_options,ncore,nb)
+         CALL record_stage('csf_load_and_broadcast',nb,stage_start_count,int(ncf,int64),storage=input_format_name)
          !*** Open tmp.xx files for block nb ***
          CALL SETTMP (NB, KMAX, 'tmp' // idstring)
          !*** Generation of MCP coefficients ***
@@ -157,9 +174,12 @@
 !cjb     CALL MCPmpi (NB, RESTRT, MYID, NPROCS, 'mcp' // idstring)
          CALL MCPmpi (NB, RESTRT, 'mcp' // idstring)
       END DO
+      CALL close_mpi_angular_input(input_options)
       CLOSE(24)                                  ! Summary file
       CLOSE(739)                                 ! rangular.log
       IF (DEBUG) CLOSE(99)                       ! Debug file
+      CALL record_stage('program_before_finalize_including_interaction_input',0,program_start_count)
+      CALL close_stage_profile()
 !=======================================================================
 !  Execution finished; Statistics output
 !=======================================================================

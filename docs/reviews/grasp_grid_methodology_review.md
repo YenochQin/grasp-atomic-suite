@@ -207,7 +207,7 @@ ACCY=1e-12 对应能量相对阈值 1e-15，已接近双精度舍入尺度；不
 `RNT=2e-6/Z,H=.05,N=NNNP`。因此只改 `point_n/point_h/point_rnt_scale` 的 P0/P1/P2
 不能保证 RCI 跟随点核专用网格；当前配置保留有限核键为 None 时，RCI 使用扩容后
 的 N=990 和原有限核默认 H/RNT。核势模型是否点核和使用哪组径向网格是两回事。
-[RCI GETCID，第 227–237 行](https://github.com/compas/grasp/blob/9006157730a82ac839f2b4ff4e938bcba63a539e/src/appl/rci90/getcid.f90#L227)
+[RCI GETCID，第 227–237 行](https://github.com/compas/grasp/blob/9006157730a82ac839f2b4ff4e938bcba63a539e/src/appl/rci/getcid.f90#L227)
 
 **建议：** 第一轮有限核生产研究可完全跳过 P 系列。若执行点核基准，先明确限制在
 RMCDHF 径向求解，或另外让每个后处理入口的实际 N/H/RNT 与该点核组一致。当前

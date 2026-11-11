@@ -415,7 +415,7 @@ NP off/zero/on 在四个原版目标中分别验证，on 的软件测试保持�
 
 1. [NP 来源校验](../../test/npol/check_upstream.py) 当前通过去除有限 NP hook 后对照原始源码 hash。语言迁移会合法改变被保护文件，不能简单关掉测试或覆盖历史 hash。保留原始 manifest，另增逐文件迁移记录/补丁及算法回归，重新定义“允许变化且不混入 orbopt”的验证；有意错误回退仍应触发失败。
 2. [CSFG 来源清单](../reference/graspg/source-manifest.json) 表示导入前源代码，不改写为当前文件 hash。另记录迁移后的提交/变更映射；原来未启用的源文件不自动进入计算路径。
-3. [jj2lsj 构建](../../src/appl/jj2lsj90/CMakeLists.txt) 会重编译部分共享例程形成线程调用闭包；模块化后需核对符号解析和工作区所有权，不能引入第二份全局状态或让 legacy 静态对象替代线程安全对象。
+3. [jj2lsj 构建](../../src/appl/jj2lsj/CMakeLists.txt) 会重编译部分共享例程形成线程调用闭包；模块化后需核对符号解析和工作区所有权，不能引入第二份全局状态或让 legacy 静态对象替代线程安全对象。
 4. [网格补丁器](../../scripts/patch_grasp_grid.py) 和其源模式识别必须随入口/声明变化更新；保持 preview/apply/restore 和省略参数即保留原值的契约。所有容量实验在隔离副本进行。
 5. 文件比较覆盖 `.w/.m/.cm/MCP` 及 CSFG 专有记录。普通与 CSFG 输入格式不同，只有明确定义的映射可互转，不能按文件后缀认定兼容。
 

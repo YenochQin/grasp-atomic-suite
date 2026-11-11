@@ -50,14 +50,14 @@
         "f2018_davidson_contracts",
         "f2018_davidson_early",
         "f2018_interp_contracts",
-        "f2018_rk_count_rci90",
-        "f2018_rk_count_rci90_mpi",
+        "f2018_rk_count_rci",
+        "f2018_rk_count_rci_mpi",
         "f2018_weights_rmcdhf",
         "f2018_weights_rmcdhf_mem",
         "f2018_weights_rmcdhf_mpi",
         "f2018_weights_rmcdhf_mem_mpi",
-        "f2018_weights_rmcdhf90_mem_strict_mpi",
-        "f2018_weights_rmcdhf90_mem_diag_mpi"
+        "f2018_weights_rmcdhf_mem_strict_mpi",
+        "f2018_weights_rmcdhf_mem_diag_mpi"
       ]
     },
     {
@@ -66,7 +66,7 @@
         "serial"
       ],
       "targets": [
-        "gj90",
+        "gj",
         "rhfs",
         "rdensity",
         "ris4",
@@ -93,7 +93,7 @@
       ],
       "targets": [
         "mpiu90",
-        "gj90_mpi",
+        "gj_mpi",
         "rhfs_mpi",
         "rdensity_mpi",
         "ris4_mpi",
@@ -107,6 +107,7 @@
         "rmcdhf_mem_diag_mpi"
       ],
       "tests": [
+        "rangular_mpi_descriptors",
         "mpi90_local_sparse",
         "start_trace_parity",
         "p0_trace_projection",

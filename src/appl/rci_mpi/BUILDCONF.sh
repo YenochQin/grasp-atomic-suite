@@ -83,7 +83,7 @@ genmat.f90 genmat_I.f90
 genmat2.f90 genmat2_I.f90
 matrix.f90 matrix_I.f90
 
-rci90mpi.f90
+rci_mpi.f90
 "
 generate-makefile > ${MAKEFILE}
 generate-cmakelists > ${CMAKELISTSTXT}

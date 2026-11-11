@@ -21,23 +21,23 @@ target_link_libraries_Fortran(test.shared_grid_capacity PUBLIC mod)
 add_test(NAME shared_grid_capacity COMMAND test.shared_grid_capacity)
 
 add_executable(test.strict_scf_logic
-    ../src/appl/rmcdhf90_mem_strict_mpi/strict_scf.f90
+    ../src/appl/rmcdhf_mem_strict_mpi/strict_scf.f90
     strict_scf_logic.f90)
 target_link_libraries_Fortran(test.strict_scf_logic PUBLIC mod)
 add_test(NAME strict_scf_logic COMMAND test.strict_scf_logic)
 
 if(TARGET mpiu90)
     add_executable(test.start_trace_parity
-        ../src/appl/rmcdhf90_mem_diag_mpi/p0_trace.f90
-        ../src/appl/rmcdhf90_mem_diag_mpi/start_trace.f90
-        ../src/appl/rmcdhf90_mem_diag_mpi/start_diag_I.f90
-        ../src/appl/rmcdhf90_mem_diag_mpi/start_diag.f90
+        ../src/appl/rmcdhf_mem_diag_mpi/p0_trace.f90
+        ../src/appl/rmcdhf_mem_diag_mpi/start_trace.f90
+        ../src/appl/rmcdhf_mem_diag_mpi/start_diag_I.f90
+        ../src/appl/rmcdhf_mem_diag_mpi/start_diag.f90
         start_trace_parity.f90)
     target_link_libraries_Fortran(test.start_trace_parity PUBLIC mod 9290)
     add_executable(test.p0_trace_projection
-        ../src/appl/rmcdhf90_mem_diag_mpi/p0_trace.f90
-        ../src/appl/rmcdhf90_mem_diag_mpi/orthy_I.f90
-        ../src/appl/rmcdhf90_mem_diag_mpi/orthy.f90
+        ../src/appl/rmcdhf_mem_diag_mpi/p0_trace.f90
+        ../src/appl/rmcdhf_mem_diag_mpi/orthy_I.f90
+        ../src/appl/rmcdhf_mem_diag_mpi/orthy.f90
         p0_trace_projection.f90)
     target_link_libraries_Fortran(test.p0_trace_projection PUBLIC mpiu90 mod 9290)
     # Calls the production sparse kernels with rank-local column buffers.
@@ -145,6 +145,14 @@ if(Python3_Interpreter_FOUND)
         COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/test_mcp_compare.py")
     set_tests_properties(mcp_compare PROPERTIES TIMEOUT 120 SKIP_RETURN_CODE 77)
+    if(TARGET rangular_mpi AND MPIEXEC_EXECUTABLE)
+        add_test(NAME rangular_mpi_descriptors
+            COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rangular/test_mpi_descriptors.py"
+            --rangular $<TARGET_FILE:rangular_mpi> --mpiexec "${MPIEXEC_EXECUTABLE}"
+            --numproc-flag=${MPIEXEC_NUMPROC_FLAG})
+        set_tests_properties(rangular_mpi_descriptors PROPERTIES TIMEOUT 180 PROCESSORS 4
+            LABELS "f2018_io;f2018_mpi")
+    endif()
     if(TARGET csf_descriptor_verify)
         add_test(NAME csf_descriptor_input
             COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_csf_descriptors.py"

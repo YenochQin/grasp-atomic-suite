@@ -4,6 +4,11 @@
 [版本对照脚本](../docs/implemented/rangular_version_comparison.md)，入口为
 [compare_rangular_versions.py](compare_rangular_versions.py)。可同时比较新版文本和描述符输入，保留日志及 JSON 报告。
 
+普通 MPI 版的文本/描述符输入对照使用
+[compare_rangular_mpi_inputs.py](compare_rangular_mpi_inputs.py)：同一可执行文件交替重复运行、
+逐 rank 阶段计时、数组验证及完整 MCP 哈希对照，使用说明见
+[MPI 描述符输入](../docs/implemented/rangular_mpi_descriptor_input.md)。
+
 rCSFs 描述符预处理及原文本数组验证见
 [rangular 描述符输入](../docs/implemented/rangular_descriptor_input.md)，入口为
 [prepare_csf_descriptors.py](prepare_csf_descriptors.py) 和

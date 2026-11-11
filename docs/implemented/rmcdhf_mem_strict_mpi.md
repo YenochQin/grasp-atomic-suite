@@ -12,7 +12,7 @@ synthetic Z=10 `1s^2` 原 `6.17e-6` 平台来自未归一化的新解与已归�
 [历史 Linux 报告](../reviews/f2018_linux_davidson_restart_2026-11-09.md)。
 
 新目标是 `rmcdhf_mem_strict_mpi`，源码在
-[`src/appl/rmcdhf90_mem_strict_mpi`](../../src/appl/rmcdhf90_mem_strict_mpi)。
+[`src/appl/rmcdhf_mem_strict_mpi`](../../src/appl/rmcdhf_mem_strict_mpi)。
 它独立于原版 `rmcdhf*` 系列；旧 orbopt 目标已移除。该程序不需要
 `GRASP_STRICT_SCF` 环境变量，严格判据始终启用。
 
@@ -39,8 +39,8 @@ EAL 没有这类对角化能量，只要求连续两轮轨道条件通过。
 只有 `SCF termination: STRICT_CONVERGED` 表示程序的严格条件通过。
 最大轮数退出仍沿用上游的正常程序收尾，不能只按进程退出码判定收敛。
 
-实现见 [`strict_scf.f90`](../../src/appl/rmcdhf90_mem_strict_mpi/strict_scf.f90)
-及 [`scfmpi.f90`](../../src/appl/rmcdhf90_mem_strict_mpi/scfmpi.f90)。
+实现见 [`strict_scf.f90`](../../src/appl/rmcdhf_mem_strict_mpi/strict_scf.f90)
+及 [`scfmpi.f90`](../../src/appl/rmcdhf_mem_strict_mpi/scfmpi.f90)。
 `ACCY` 仍是共享数值阈值，并非新增的独立能量容差；它还影响积分、插值等过程。
 初次诊断建议保持原 ACCY，只改变停止逻辑。例如 `H=0.05` 时，原自适应
 `ACCY=H**6=1.5625e-8`，相对能量阈值是 `1.5625e-11`。

@@ -1,4 +1,6 @@
 add_executable(rangular_mpi
+    rangular_mpi_input.f90
+    ../rangular/rangular_profile.f90
     fndbeg.f90
     fndbeg_I.f90
     getinf.f90

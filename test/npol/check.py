@@ -172,7 +172,7 @@ def entrypoints(root: Path) -> None:
     # independent solvers still must not acquire the original-solvers' NP hook.
     for variant in ("rmcdhf90", "rmcdhf90_mem", "rmcdhf90_mpi", "rmcdhf90_mem_mpi"):
         assert not (root / "src/appl" / variant).exists(), variant
-    for variant in ("rmcdhf90_mem_strict_mpi", "rmcdhf90_mem_diag_mpi"):
+    for variant in ("rmcdhf_mem_strict_mpi", "rmcdhf_mem_diag_mpi"):
         stem = "getscdmpi" if variant.endswith("_mpi") else "getscd"
         text = (root / "src/appl" / variant / f"{stem}.f90").read_text().lower()
         assert "npol_init" not in text and "npfile" not in text, variant

@@ -23,7 +23,7 @@
 !***********************************************************************
 !***********************************************************************
 !                                                                      *
-      PROGRAM RCI90mpi
+      PROGRAM RCI_MPI
 !                                                                      *
 !   Entry routine for RCI92. Controls the entire computation.          *
 !                                                                      *
@@ -230,4 +230,4 @@
                            ncount1, 'RCI_MPI')
 
       STOP
-      END PROGRAM RCI90mpi
+      END PROGRAM RCI_MPI

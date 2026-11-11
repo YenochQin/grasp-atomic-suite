@@ -46,7 +46,7 @@ GNU 15.3.0、单 rank，BLAS/OpenMP 均单线程。若是幅度问题，归一�
 
 ## 修复范围与不变条件
 
-只在[严格 IMPROV](../../src/appl/rmcdhf90_mem_strict_mpi/improvmpi.f90)中，
+只在[严格 IMPROV](../../src/appl/rmcdhf_mem_strict_mpi/improvmpi.f90)中，
 将已有 `CALL CONSIS(J)` 移至已有 P0/P/Q 归一化之后、DAMPOR 之前。
 `CONSIS` 的 `sqrt(UCF)*max(abs(delta P)+abs(delta Q))` 公式和原网格区间不改。
 相应更新 CONSIS/STRICT_SCF 注释，明确它测量归一化的**未阻尼建议轨道**变化。

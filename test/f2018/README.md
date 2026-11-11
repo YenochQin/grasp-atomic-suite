@@ -135,7 +135,7 @@ suite. Labels are `f2018_unit`, `f2018_serial`, `f2018_mpi`,
 
 `configure.sh` also accepts `--no-mpi`, `--no-csfg`, `--no-openmp`,
 `--prefix PATH`, and quoted `-D...` arguments. Targets write modules separately;
-`gj90` no longer copies into source `bin/` during a build. Default installation
+`gj` no longer copies into source `bin/` during a build. Default installation
 is `<build>/install`, or the explicit prefix. Validation does not install.
 
 ## Complete configuration matrix and warning baseline

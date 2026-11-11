@@ -50,7 +50,7 @@ RCI-AS4 的已有记录如下：
 
 ## 当前源码的工作顺序
 
-以下行号对应上述基线的 [jj2lsj_code.f90](../../src/appl/jj2lsj90/jj2lsj_code.f90)，
+以下行号对应上述基线的 [jj2lsj_code.f90](../../src/appl/jj2lsj/jj2lsj_code.f90)，
 后续定位应以例程名和逻辑为准。
 
 1. `jj2lsj` 按同一 block 全部所选能级的 jj 系数构造 `ithresh`，再调用 `setLS` 建立 LS 基（1963–1983 行）。

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      PROGRAM GJ90
+      PROGRAM GJ
 !                                                                      *
 !   Entry routine for the serial Landé-factor program.                 *
 !                                                                      *
@@ -37,7 +37,7 @@
 !-----------------------------------------------
 !
       WRITE (ISTDE, *)
-      WRITE (ISTDE, *) 'GJ90'
+      WRITE (ISTDE, *) 'GJ'
       WRITE (ISTDE, *) 'This is the serial Lande-factor program'
       WRITE (ISTDE, *) 'Input files:  isodata, name.c, name.(c)m, name.w'
       WRITE (ISTDE, *) 'Output files: name.gj or name.cgj'
@@ -78,16 +78,16 @@
       CALL GETMIXBLOCK(NAME, NCI)
       CALL FACTT
 !
-      CALL ALLOC(GJC_DIAG, NVEC, 'GJC_DIAG', 'GJ90')
-      CALL ALLOC(DGJC_DIAG, NVEC, 'DGJC_DIAG', 'GJ90')
+      CALL ALLOC(GJC_DIAG, NVEC, 'GJC_DIAG', 'GJ')
+      CALL ALLOC(DGJC_DIAG, NVEC, 'DGJC_DIAG', 'GJ')
 !
       CALL COMPUTE_GJ_ONLY(GJC_DIAG, DGJC_DIAG)
       CALL SETOUT_GJ(NAME, NCI, GJC_DIAG, DGJC_DIAG)
 !
-      CALL DALLOC(GJC_DIAG, 'GJC_DIAG', 'GJ90')
-      CALL DALLOC(DGJC_DIAG, 'DGJC_DIAG', 'GJ90')
+      CALL DALLOC(GJC_DIAG, 'GJC_DIAG', 'GJ')
+      CALL DALLOC(DGJC_DIAG, 'DGJC_DIAG', 'GJ')
 !
       WRITE (ISTDE, *)
-      WRITE (ISTDE, *) 'GJ90: Execution complete.'
+      WRITE (ISTDE, *) 'GJ: Execution complete.'
       STOP
-      END PROGRAM GJ90
+      END PROGRAM GJ
