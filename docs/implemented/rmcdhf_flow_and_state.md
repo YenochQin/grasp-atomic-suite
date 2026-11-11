@@ -254,6 +254,7 @@ IMPROV
 ## 7. 与其他文档的关系
 
 - [rangular 计算流程与共享状态](rangular_flow_and_state.md)：角系数、稀疏结构的生成端。
+- [RMCDHF 内存版与普通版对比](../reviews/rmcdhf_mem_comparison_2026-11-11.md)：对应主循环相同，但 MCP 存储、乘子筛选、MPI 乘子公式和径向边界处理存在差异。
 - [核极化接入](rmcdhf_nuclear_polarization.md)：`npol.inp`、核势及当前输入输出约定。
 - [已否决变体的移除](rejected_rmcdhf_variants.md)：普通求解器不继承被否决分支的停止策略或比较时序。
 - [单节点 MPI 诊断计划](../plans/rmcdhf_mpi_single_node_diagnostics_2026-11-09.md)：实际性能现象及待执行诊断，与本次静态流程梳理互补。
