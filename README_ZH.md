@@ -2,7 +2,7 @@
 
 中文 | [English](README.md)
 
-`grasp-atomic-suite` 是一个面向相对论原子结构与原子性质计算的 Fortran 研究开发仓库。它保留原版 RMCDHF 和独立 strict/diag 求解器，并与 `rhfs`、`ris4`、`gj` 共享 GRASP 数值库，用于轨道优化、超精细结构、同位素位移和 Landé `g_J` 因子的计算、验证与性能优化。
+`grasp-atomic-suite` 是一个面向相对论原子结构与原子性质计算的 Fortran 研究开发仓库。它保留原版 RMCDHF，并与 `rhfs`、`ris4`、`gj` 共享 GRASP 数值库，用于轨道优化、超精细结构、同位素位移和 Landé `g_J` 因子的计算、验证与性能优化。
 
 本仓库不是上游 GRASP 的最小镜像。它保留了传统 GRASP 数值库和应用组织方式，同时加入了 CMake 构建、MPI 目标、`gj` 独立程序、回归数据和面向 `g_J`/MPI 优化的开发文档。
 
@@ -20,7 +20,6 @@
 │   │   ├── rdensity/         # 串行/MPI 径向电子密度与自然轨道
 │   │   ├── rhfs/             # 相对论超精细结构程序
 │   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # 从 grasp 新复制，支持可选 NP
-│   │   ├── rmcdhf_mem_{strict,diag}_mpi/ # 独立严格停止/诊断版本
 │   │   └── ris4/             # 相对论同位素位移程序
 │   └── lib/
 │       ├── libmod/           # 全局参数、公共块和共享状态模块
@@ -53,8 +52,8 @@
 | `rdensity` | `src/appl/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/rdensity_mpi.md)。 |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，输出 `name.i/name.ci` 及中间角向数据。 |
 | 原版 RMCDHF + 可选 NP | `src/appl/rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | 从工作区 grasp 新复制，保留原版求解流程；仅这四个读取 `npol.inp`。详见[NP 接口与来源](docs/implemented/rmcdhf_nuclear_polarization.md)。 |
-| 严格内存 SCF | `src/appl/rmcdhf_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | 从原版独立复制的内存 MPI 程序；EOL 要求轨道与能量连续两轮同时达标，并保存逐轮波函数和收敛 CSV。详见[重启与验证说明](docs/implemented/rmcdhf_mem_strict_mpi.md)。 |
-| P0 分阶段诊断 | `src/appl/rmcdhf_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | 从原版独立复制，记录匹配、阻尼和正交化前后的系数与径向值；保留原停止判据。详见[诊断说明](docs/implemented/rmcdhf_mem_diag_mpi.md)。 |
+
+已否决的 strict/diag 独立求解器及专用测试、运行入口均已[移除](docs/implemented/rejected_rmcdhf_variants.md)。
 
 默认 CMake 配置会尝试构建 MPI 版本。如果系统没有 MPI Fortran 工具链，会跳过 MPI 目标。串行轨道与性质程序需要显式开启。`jj2lsj_omp` 默认构建，`GRASP_JJ2LSJ_OPENMP=ON` 在可用时启用 OpenMP，线程数由 `OMP_NUM_THREADS` 控制；变换文件读写模式保留串行路径。
 
@@ -74,7 +73,7 @@ cmake --build build --parallel 4
 
 `configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后会得到 `bin/gj_mpi`、`bin/rhfs_mpi`、`bin/ris4_mpi`、新复制的 `rmcdhf_mpi`、`rmcdhf_mem_mpi`以及对应库文件。
 
-同时构建新复制的四个原版 RMCDHF、独立 strict/diag 版本和性质计算程序：
+同时构建四个原版 RMCDHF 和性质计算程序：
 
 ```sh
 cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON

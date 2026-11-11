@@ -19,8 +19,9 @@
 | `rtransition90` | `rtransition` | `rtransition` |
 | `rtransition90_mpi` | `rtransition_mpi` | `rtransition_mpi` |
 | `rtransition90_phase` | `rtransition_phase` | `rtransition_phase` |
-| `rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` |
-| `rmcdhf90_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` |
+
+重命名阶段曾包含 strict/diag 两个独立求解器，后已按用户确认的否决决定[移除](rejected_rmcdhf_variants.md)。
+上表为移除后仍保留的 13 个普通程序目录。
 
 同时将入口文件 `gj90.f90`、`gj90_mpi.f90`、普通 `rci90mpi.f90` 改为
 `gj.f90`、`gj_mpi.f90`、`rci_mpi.f90`，并同步程序标识、GJ 帮助信息和 CMake 目标。
@@ -57,8 +58,8 @@ cmake --build build-f2018-programs -j4
 
 ## 验证记录
 
-GNU Fortran 15.3.0、Open MPI 5.0.11 下，以上普通版配置在新目录中完整构建通过，
-79 项 CTest 全部通过，F2018 目标/测试清单检查通过。
+重命名提交 `212bcc6` 时，GNU Fortran 15.3.0、Open MPI 5.0.11 下的普通版配置在新目录中完整构建通过，
+当时的 79 项 CTest 全部通过，F2018 目标/测试清单检查通过。后续退役后的验证见移除说明。
 网格补丁回归同时覆盖上游和 suite 两种布局；现行源码文档链接已核对。
 命名调整中的 Fortran 内容变化仅涉及三个入口文件的程序标识/GJ 名称与提示，
 其余移动的 Fortran 源文件与移动前内容一致。

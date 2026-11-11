@@ -96,5 +96,6 @@ Linux 基线定位在声明处；新增 Audit 预算为同一警告保留这两�
 合计 376 次通过、16 次跳过，没有执行失败。每个 MPI 配置的跳过项相同：
 `p0_trace_mpi_1/2`、`strict_mem_restart_mpi_1/2`，其上游 memory solver 需要 Linux
 `/proc/meminfo`。严格验收仍将跳过判为未通过；没有更改测试或放宽此规则。
-这四项须在 Linux 补跑，不能把本机结果称为完整 MPI 或 36 配置矩阵验收。
+上述四项属于随后已否决并移除的 strict/diag 变体，现不再注册；该段仅保留当时的验证结果，
+不能用它证明当前配置验收。现行范围见[移除说明](rejected_rmcdhf_variants.md)。
 可追溯汇总为忽略目录 `build-review-openmp-independent/local-validation-summary.json`。

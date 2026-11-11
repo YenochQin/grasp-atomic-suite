@@ -33,7 +33,8 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
-| 已统一普通程序命名 | [program_naming.md](implemented/program_naming.md) | 15 个普通应用目录去掉 90；GJ 可执行文件改为 gj/gj_mpi，CMake、网格工具、验收和源码链接同步；新目录普通版构建及 79 项回归通过；CSFG、共享库及上游来源路径保留。 |
+| 已移除被否决变体 | [rejected_rmcdhf_variants.md](implemented/rejected_rmcdhf_variants.md) | 删除 strict/diag 两个独立求解器、专用测试、构建/安装入口及当前二进制；普通四种 RMCDHF 和共享库保持原流程。 |
+| 已统一普通程序命名 | [program_naming.md](implemented/program_naming.md) | 13 个保留的普通应用目录去掉 90；GJ 可执行文件改为 gj/gj_mpi，CMake、网格工具、验收和源码链接同步；重命名阶段的构建与验证记录见说明；CSFG、共享库及上游来源路径保留。 |
 | 现行构建策略 | [build_profiles.md](implemented/build_profiles.md) | CSFG 默认隔离；生产默认 -O2 与目标所需 OpenMP；标准/接口/运行时诊断放 Check/Audit；独立 OpenMP 开关组成 36 个有效配置，24 个诊断配置均有警告预算；记录三轮数值与耗时对照。 |
 | 首版已实施并回归 | [rangular_openmp.md](implemented/rangular_openmp.md) | 独立 rangular_omp、线程私有角动量工作区、有界结果块与有序提交；1/2/4/8 线程及回退路径字节一致；保留 23,459-CSF 历史测量，并链接 14,551-CSF 三轮 MPI/OpenMP 对照；排序/输出仍串行，非全套 GRASP 或物理验收。 |
 | 已完成单机性能与输出对照 | [rangular_mpi_openmp_benchmark_2026-11-11.md](reviews/rangular_mpi_openmp_benchmark_2026-11-11.md) | 基于 c5f36d2，M4 上 14,551 CSFs、33 次 Release 运行；8 并发 MPI 4.06 秒、OpenMP 10.56 秒；描述符主要加快输入，整程收益较小；串行/线程字节一致，MPI 零容差等价。 |
@@ -45,17 +46,16 @@ docs/
 | 首版输入和 OpenMP 已实施 | [rangular_descriptor_openmp_2026-11-10.md](plans/rangular_descriptor_openmp_2026-11-10.md) | 保留设计历史；输入、线程私有工作区、动态任务与有序提交已有首版，显式 context 和排序并行仍待后续工作。 |
 | 已实施，解析器回归通过 | [mcp_compare.md](implemented/mcp_compare.md) | 2026-11-10，普通 rangular 串行/MPI MCP 解析、结构校验、按 CSF 对比较和 JSON 导出；合成回归与现有文件读回通过，不代表候选 rangular 或物理计算验收。 |
 | 现行流程，静态核查完成 | [rangular_flow_and_state.md](implemented/rangular_flow_and_state.md) | 2026-11-10，基准 d181bf4；普通串行 rangular 的 block/CSF 对遍历、角系数缓冲与排序、共享工作区和文件状态。未实施 OpenMP，未运行性能或物理验证。 |
-| 现行流程，静态核查完成 | [rmcdhf_flow_and_state.md](implemented/rmcdhf_flow_and_state.md) | 2026-11-10，基准 d181bf4；普通串行 rmcdhf 的矩阵/混合系数、径向积分、轨道改善、停止条件及共享状态；区分 strict 行为并标出 EAL 定义路径待复核。未实施 OpenMP，未运行性能或物理验证。 |
+| 现行流程，静态核查完成 | [rmcdhf_flow_and_state.md](implemented/rmcdhf_flow_and_state.md) | 2026-11-10，基准 d181bf4；普通串行 rmcdhf 的矩阵/混合系数、径向积分、轨道改善、停止条件及共享状态；标出 EAL 定义路径待复核。未实施 OpenMP，未运行性能或物理验证。 |
 | 初步分析完成，诊断待实施 | [rmcdhf_mpi_single_node_diagnostics_2026-11-09.md](plans/rmcdhf_mpi_single_node_diagnostics_2026-11-09.md) | 普通/memory MPI 在大规模 CSF 下全程反复 D 状态；记录单节点条件、SETLAG 冻结侧冗余和 Davidson 候选。根因未确定，自动采样、服务器对照及 MPI/OpenMP 优化均未实施。 |
 | 优先警告修复第一批通过 | [f2018_warning_repairs_2026-11-09.md](reviews/f2018_warning_repairs_2026-11-09.md) | GETALDWT、RCI 计数、Davidson、DACON、INTERP 及不可达步长分支；正确性复核 515→475，INTENT 9→0；32 配置、1,960 次 CTest 全通过，全开 93/93。 |
 | 首次矩阵/基线设施证据 | [f2018_matrix_warning_baseline_2026-11-09.md](reviews/f2018_matrix_warning_baseline_2026-11-09.md) | 保留初次 32 配置、1,560 次 CTest 通过与 3,040 文件/515 条正确性诊断记录；当前基线及修复见上一项。 |
-| 已更新，剩余正确性复核待完成 | [gfortran15-warning-baseline.md](reference/f2018/gfortran15-warning-baseline.md) | 普通 Check/Audit 的 24 个配置、2,142 文件、2,480 条诊断身份，其中 358 条正确性复核身份；包含两条既有 QED 警告在本机的不同定位，不代表新增或已解决的缺陷数。 |
-| strict 修复阶段验收通过 | [strict_scnsty_normalization_2026-11-09.md](reviews/strict_scnsty_normalization_2026-11-09.md) | SCNSTY 改为归一化后、阻尼前比较；公式/阈值/两轮条件不变，1/2-rank 均 11 轮收敛；保留当时 74/74 和旧新数值证据。 |
-| Linux 初始修复证据 | [f2018_linux_davidson_restart_2026-11-09.md](reviews/f2018_linux_davidson_restart_2026-11-09.md) | 保留 Davidson、空 rank、memory IOS 修复及 71/73、strict 旧平台重现证据；后续 strict 时序修复及验收见上一项。 |
+| 已更新，剩余正确性复核待完成 | [gfortran15-warning-baseline.md](reference/f2018/gfortran15-warning-baseline.md) | 普通 Check/Audit 的 24 个配置、1,874 文件、2,200 条诊断身份，其中 337 条正确性复核身份；包含两条既有 QED 警告在本机的不同定位，不代表新增或已解决的缺陷数。 |
+| Linux 初始修复证据 | [f2018_linux_davidson_restart_2026-11-09.md](reviews/f2018_linux_davidson_restart_2026-11-09.md) | 保留 Davidson、空 rank、memory IOS 修复及 71/73、strict 旧平台重现证据；strict/diag 已移除，相关测试属于历史证据。 |
 | 此前严格接口验证 | [f2018_strict_interfaces_npol_2026-11-09.md](reviews/f2018_strict_interfaces_npol_2026-11-09.md) | 内部接口/NP 路径/SOLVE 意图修复；保留 macOS Check/Release 各 64/68、4 skip 及一轮全输出一致记录；后续 Linux 状态见上一项。 |
 | 设施初始验证记录 | [f2018_acceptance_facilities_2026-11-09.md](reviews/f2018_acceptance_facilities_2026-11-09.md) | profiles、强制清单、模块/安装隔离与 DDOT 14/14；保留初始 audit 50/63 及严格编译失败证据，后续状态见上一项。 |
 | 已移除参数放行 | [argument_interfaces_2026-11-08.md](reviews/argument_interfaces_2026-11-08.md) | gfortran 15/F2018 全量构建不再使用 fallow-argument-mismatch；MPI/BLAS 显式接口、类型和有界数组区段修复；当前 CTest 36/47，11 项为既有失败；orbopt 已退役。 |
-| 已移除旧程序 | [orbopt_retirement.md](implemented/orbopt_retirement.md) | 2026-11-08 删除四个 rmcdhf_orbopt 目标/源码和专用驱动，保留原版、strict/diag、CSFG；共有测试迁到 test/rmcdhf，suite 网格入口调整为 21 个。 |
+| 已移除旧程序 | [orbopt_retirement.md](implemented/orbopt_retirement.md) | 2026-11-08 删除四个 rmcdhf_orbopt 目标/源码和专用驱动，记录 2026-11-08 的 orbopt 退役；strict/diag 后续也已移除，现行网格入口为 19 个。 |
 | 已实施兼容性子批次 | [f2018_compatibility.md](implemented/f2018_compatibility.md) | 首轮标准语法及后续显式接口、NP 路径修复；严格 Check/Release 全量编译/链接通过，完整数值及静态状态验收未完成。 |
 | 已完成本轮验证 | [f2018_gfortran15_batches_2026-11-08.md](reviews/f2018_gfortran15_batches_2026-11-08.md) | 全量构建通过；五项新增回归通过；四个 solver 一轮 SCF 共 28 文件与旧版本一致；CTest 33/44，11 个失败与旧基线相同，无新增失败。 |
 | 已完成首轮编译诊断 | [f2018_gfortran15_compile_probe_2026-11-08.md](reviews/f2018_gfortran15_compile_probe_2026-11-08.md) | GNU 构建已加 `-std=f2018`，全新全量构建失败；15 个文件直接报错。补充生产源码诊断为 59 个文件失败，移除参数放行后为 143 个；列出共享库、平台函数、kind/语法与 MPI/BLAS 接口优先项，未修改计算实现或运行数值测试。 |
@@ -64,10 +64,8 @@ docs/
 | 已实施 | [jj2lsj_postprocessing.md](implemented/jj2lsj_postprocessing.md) | 2026-11-04 分阶段计时、稳定归并排序及 ASF 排序并行；唯一标签和输出按序执行，跨 block 流水线经计时评估暂缓。 |
 | 已实施 | [jj2lsj_openmp.md](implemented/jj2lsj_openmp.md) | 2026-11-02 `jj2lsj_omp` 普通 CSF 的 OpenMP LS 行转换，保留默认提前停止与串行 `.lsj.T`；数值/文件回归及 Debug、无 OpenMP 构建通过；Gd I 真实输入兼容性通过，已有单次性能观测。 |
 | 已实施 | [graspg_integration.md](implemented/graspg_integration.md) | 2026-10-30 GRASPG 计算源码、16 个程序、共享参数与串行/MPI CMake；工程回归通过，真实原子 SCF/RCI 验证未执行。 |
-| 已实施，小型严格重启通过 | [rmcdhf_mem_strict_mpi.md](implemented/rmcdhf_mem_strict_mpi.md) | strict 比较时序修复后，O0/O2、1/2-rank 均在 11 轮满足原两轮判据；单轮/重启读写及解析反例通过。生产物理验证未完成。 |
-| 已实施 | [rmcdhf_mem_diag_mpi.md](implemented/rmcdhf_mem_diag_mpi.md) | 2026-10-13 从原版独立复制的 P0/START 诊断目标；记录起始解、内部迭代和耦合系数，保留原算法及停止判据。START 逐值对照、投影边界及 Linux 1/2-rank 输出不变性回归通过；Ni 失稳根因尚待诊断重放。 |
 | 已实施 | [rdensity_mpi.md](implemented/rdensity_mpi.md) | 2026-10-09 新增串行/MPI 自然轨道程序；CSF 分工、矩阵归约、解析小模型及 Ni 对照测试。大规模性能与物理收敛仍待验证。 |
-| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值；2026-11-08 退役 orbopt 后现有 21 个网格入口、4 个 RCI 续算入口，NNNP=590、NNN1=600。 |
+| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值；2026-11-11 退役 strict/diag 后现有 19 个网格入口、4 个 RCI 续算入口，NNNP=590、NNN1=600。 |
 | 已实施 | [RHFS_gJ_report.md](implemented/RHFS_gJ_report.md) | 串行 RHFS 的加载、矩阵元、ASF 投影及输出链仍存在。仅覆盖该路径，不是 gj/MPI 完整说明。 |
 | 已实施 | [rmcdhf_nuclear_polarization.md](implemented/rmcdhf_nuclear_polarization.md) | 2026-10-24 从 grasp 新复制四个原版 rmcdhf 目标并接入局域 E1/E2 NP；已有 orbopt 保持原状：独立输入、共享势、root I/O 与集体失败协议；串行/MPI 代码测试 9/9、14/14 通过，物理计算验证未执行。 |
 | 已完成代码计划 | [rmcdhf_nuclear_polarization_implementation.md](plans/rmcdhf_nuclear_polarization_implementation.md) | 保留实施设计、完成清单与结果；现行输入契约见已实施说明。 |

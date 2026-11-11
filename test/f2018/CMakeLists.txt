@@ -37,7 +37,7 @@ if(Python3_Interpreter_FOUND)
     add_test(NAME f2018_interp_contracts COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/check_interp.py $<TARGET_FILE:test.f2018_interp>)
     set_tests_properties(f2018_interp_contracts PROPERTIES TIMEOUT 60)
-    foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi rmcdhf_mem_strict_mpi rmcdhf_mem_diag_mpi rmcdhf90_csfg_mpi)
+    foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi rmcdhf90_csfg_mpi)
         if(variant MATCHES "csfg" AND NOT GRASP_BUILD_CSFG)
             continue()
         endif()
@@ -60,7 +60,7 @@ endif()
 
 # Exercise the actual MATRIX entry points with controlled assembly/eigensolver
 # seams. Each executable has its own production modules and saved FIRST state.
-foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi rmcdhf_mem_strict_mpi rmcdhf_mem_diag_mpi)
+foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
     if(variant MATCHES "_mpi$" AND NOT TARGET mpiu90)
         continue()
     endif()
@@ -100,17 +100,6 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi rmcdhf_mem_strict_mp
 endforeach()
 
 if(TARGET mpiu90 AND Python3_Interpreter_FOUND)
-    set(strict_app "${PROJECT_SOURCE_DIR}/src/appl/rmcdhf_mem_strict_mpi")
-    add_executable(test.f2018_strict_orbital_consistency strict_orbital_consistency.f90)
-    foreach(source improvmpi consis dampor)
-        target_sources(test.f2018_strict_orbital_consistency PRIVATE "${strict_app}/${source}.f90")
-    endforeach()
-    foreach(interface improvmpi cofpotmpi defcor solve consis dampck dampor orthy setlagmpi)
-        target_sources(test.f2018_strict_orbital_consistency PRIVATE "${strict_app}/${interface}_I.f90")
-    endforeach()
-    target_link_libraries_Fortran(test.f2018_strict_orbital_consistency PRIVATE mpiu90 9290 mod)
-    add_test(NAME f2018_strict_orbital_consistency COMMAND test.f2018_strict_orbital_consistency)
-    set_tests_properties(f2018_strict_orbital_consistency PROPERTIES TIMEOUT 30)
     set(angular_app "${PROJECT_SOURCE_DIR}/src/appl/rangular_mpi")
     add_executable(test.f2018_sparse_empty_rank sparse_empty_rank.f90
         "${angular_app}/setsda.f90" "${angular_app}/setsda_I.f90" "${angular_app}/outsdampi_I.f90")

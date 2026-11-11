@@ -2,7 +2,7 @@
 
 [中文](README_ZH.md) | English
 
-`grasp-atomic-suite` is a Fortran research and development repository for relativistic atomic-structure and atomic-property calculations. It combines original RMCDHF and independent strict/diagnostic solvers with `rhfs`, `ris4`, `rdensity`, `gj`, and their MPI support for hyperfine-structure, isotope-shift, and Landé `g_J` calculations.
+`grasp-atomic-suite` is a Fortran research and development repository for relativistic atomic-structure and atomic-property calculations. It combines original RMCDHF programs with `rhfs`, `ris4`, `rdensity`, `gj`, and their MPI support for hyperfine-structure, isotope-shift, and Landé `g_J` calculations.
 
 This repository is not a minimal upstream GRASP mirror. It keeps the traditional GRASP numerical libraries and application layout, while adding CMake builds, MPI targets, an extracted `gj` program, regression data, and development notes for `g_J` and MPI optimization work.
 
@@ -20,7 +20,6 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 │   │   ├── rdensity/         # serial/MPI radial density and natural orbitals
 │   │   ├── rhfs/             # relativistic hyperfine-structure program
 │   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # fresh GRASP copies with optional NP
-│   │   ├── rmcdhf_mem_{strict,diag}_mpi/ # independent strict/diagnostic variants
 │   │   └── ris4/             # relativistic isotope-shift program
 │   └── lib/
 │       ├── libmod/           # global parameters, common state, shared modules
@@ -53,8 +52,8 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 | `rdensity` | `src/appl/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/rdensity_mpi.md). |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing `name.i/name.ci` and angular intermediate data. |
 | GRASP RMCDHF + optional NP | `src/appl/rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | `rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | Fresh copies from the workspace GRASP source, retaining its solver flow. Only these four read `npol.inp`; see [NP interface and provenance](docs/implemented/rmcdhf_nuclear_polarization.md). |
-| Strict memory SCF | `src/appl/rmcdhf_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | Independent upstream-derived memory MPI solver: orbital AND energy convergence for two consecutive EOL cycles, plus radial snapshots and a convergence CSV. See [restart and validation guide](docs/implemented/rmcdhf_mem_strict_mpi.md). |
-| P0 diagnostics | `src/appl/rmcdhf_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | Independent upstream copy with read-only traces across solution matching, damping and orthogonalization. Original stopping criteria are retained. See [diagnostic guide](docs/implemented/rmcdhf_mem_diag_mpi.md). |
+
+The rejected strict/diagnostic RMCDHF variants have been [removed](docs/implemented/rejected_rmcdhf_variants.md), together with their dedicated tests and runtime entry points.
 
 The default CMake configuration attempts to build MPI versions. If no MPI Fortran toolchain is found, MPI targets are skipped. Serial orbital/property targets must be enabled explicitly. `jj2lsj_omp` is always built; `GRASP_JJ2LSJ_OPENMP=ON` enables OpenMP when available, and `OMP_NUM_THREADS` selects the thread count. Transformation-file modes retain the serial backend.
 
@@ -75,7 +74,7 @@ install or overwrite source `bin/`. See the [strict validation runner](test/f201
 
 `configure.sh` passes `-DGRASP_ENABLE_MPI=ON` by default. If MPI Fortran is available, installation produces `bin/gj_mpi`, `bin/rhfs_mpi`, `bin/ris4_mpi`, `rmcdhf_mpi`, `rmcdhf_mem_mpi`, and the associated libraries.
 
-To build the four fresh RMCDHF programs, the independent strict/diagnostic variants, and all property programs together:
+To build the four original RMCDHF programs and all property programs together:
 
 ```sh
 cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON

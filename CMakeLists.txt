@@ -204,8 +204,6 @@ if(TARGET mpiu90)
     endforeach()
     add_subdirectory("src/appl/rmcdhf_mpi")
     add_subdirectory("src/appl/rmcdhf_mem_mpi")
-    add_subdirectory("src/appl/rmcdhf_mem_strict_mpi")
-    add_subdirectory("src/appl/rmcdhf_mem_diag_mpi")
 endif()
 
 # CSFG stays behind a single opt-in boundary, outside the active ordinary build.

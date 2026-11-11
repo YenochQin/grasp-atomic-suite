@@ -5,7 +5,8 @@
 
 本页记录 d1260ba 导入快照；以下与上游逐字节相同的说明适用于导入时。
 2026-11-11 普通程序目录已[去掉 90 命名](program_naming.md)；下表保留导入时的来源目录身份。
-后续标准兼容性改动见 [F2018 修复说明](f2018_compatibility.md)；旧 orbopt 已[退役](orbopt_retirement.md)，当前 suite 为 21 个网格入口。
+后续标准兼容性改动见 [F2018 修复说明](f2018_compatibility.md)；旧 orbopt 已[退役](orbopt_retirement.md)，
+strict/diag 后续也已[移除](rejected_rmcdhf_variants.md)，当前 suite 为 19 个网格入口。
 
 ## 来源与范围
 

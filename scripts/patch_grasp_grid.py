@@ -74,8 +74,6 @@ SUITE_GRID_FILES = (
     "src/appl/rmcdhf_mpi/getscdmpi.f90",
     "src/appl/rmcdhf_mem/getscd.f90",
     "src/appl/rmcdhf_mem_mpi/getscdmpi.f90",
-    "src/appl/rmcdhf_mem_strict_mpi/getscdmpi.f90",
-    "src/appl/rmcdhf_mem_diag_mpi/getscdmpi.f90",
     "src/appl/rhfs/gethfd.f90",  # also compiled into gj and gj_mpi
     "src/appl/ris4/getsmd.f90",
     "src/appl/rdensity/getsmd.f90",

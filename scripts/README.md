@@ -183,8 +183,8 @@ make -j4 install
   --rnt-scale 2e-6 --hp 0 --accy 1e-10 --diff
 ```
 
-这个布局修改 `src/lib/libmod/suite_parameters_M.f90` 及需要变更的二十一个网格入口：
-六个轨道程序（四个原版、独立严格内存 MPI 和 P0 诊断版本）、
+这个布局修改 `src/lib/libmod/suite_parameters_M.f90` 及需要变更的十九个网格入口：
+四个原版轨道程序、
 RHFS、RIS 和 RDENSITY，以及 GRASPG 的波函数估计、SCF 和两个 RCI 入口；g_J 复用 RHFS。
 普通 GRASP 另外包含 `rwfnestimate`、两个 RCI、两个双正交变换和三个跃迁程序的八个入口。
 显式 ACCY 修改还覆盖普通/GRASPG 共四个 RCI 续算入口；`--accy 0` 恢复 `H**6`。

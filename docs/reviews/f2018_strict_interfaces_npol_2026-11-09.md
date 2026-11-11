@@ -1,5 +1,7 @@
 # F2018 严格接口、NP 路径修复与 GNU 15 验证
 
+> 2026-11-11 状态更新：文中 strict/diag 独立求解器已按用户决定[移除](../implemented/rejected_rmcdhf_variants.md)；相关目标、命令和测试数量仅作对应版本的历史记录。
+
 后续状态：本报告保留 macOS 上的历史结果；修复已提交为 `b8d6faf`。
 Linux 后续修复与 71/73 验收、strict 未收敛基线见
 [Linux 验证报告](f2018_linux_davidson_restart_2026-11-09.md)。

@@ -9,9 +9,12 @@
 | `rmcdhf_orbopt_mpi` | `src/appl/rmcdhf90_mpi` |
 | `rmcdhf_orbopt_mem_mpi` | `src/appl/rmcdhf90_mem_mpi` |
 
-当前保留原版 `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi`，以及独立
+2026-11-08 当时保留原版 `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi`，以及独立
 `rmcdhf_mem_strict_mpi`、`rmcdhf_mem_diag_mpi` 和 `rmcdhf_csfg_mpi`。
 共享数值库、统一参数文件和保留求解器的计算流程不因退役操作改变。
+
+2026-11-11 后续纠正：strict/diag 同属已否决工作，现已[移除源码和全部现行入口](rejected_rmcdhf_variants.md)。
+以下配套清理是 2026-11-08 的历史步骤，当前网格入口数为 19，测试清单不再包含 strict/diag。
 
 ## 配套清理
 
@@ -20,7 +23,7 @@
   strict 重启测试的对照目标改为原版 `rmcdhf_mem_mpi`，未放宽其收敛断言。
 - 删除 `rmcdhf_pair_transaction_logic`、`rmcdhf_orbopt_round_state_logic` 两个已无对应实现的测试。
 - F2018 固定一轮差分脚本只覆盖保留的两个串行原版 solver；此前包含 orbopt 的四版本记录保留为历史证据。
-- `atomic-suite` 网格布局删去四个旧入口，当前为 **21 个网格入口、4 个 RCI 续算入口**。
+- `atomic-suite` 网格布局删去四个旧入口，当时为 **21 个网格入口、4 个 RCI 续算入口**。
   `grasp2018` 布局及来源清单里的上游 `rmcdhf90*` 路径保持原义，不作全局替换。
 - 清理 suite 的 `bin/` 和当前接口修复 build 中同名旧可执行文件。
   历史 build 基线保留用于复现，不代表现行可构建目标。
