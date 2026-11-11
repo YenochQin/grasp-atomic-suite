@@ -71,6 +71,7 @@
         "rdensity",
         "ris4",
         "rwfnestimate",
+        "suite_tomlf",
         "rangular",
         "csf_descriptor_verify",
         "rci",
@@ -82,6 +83,9 @@
       ],
       "tests": [
         "rdensity_serial_regression",
+        "rwfnestimate_Ni_high_l",
+        "rwfnestimate_Zn_high_l",
+        "rwfnestimate_header_input",
         "csf_descriptor_input",
         "rangular_version_comparison"
       ]

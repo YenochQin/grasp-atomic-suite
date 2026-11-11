@@ -45,6 +45,7 @@
       USE DEFAULT_C
       USE CONS_C
       USE IOUNIT_C
+      USE rwfnestimate_input, ONLY: radial_input_options, parse_radial_options, load_radial_header
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -53,7 +54,6 @@
       USE setmc_I
       USE setcon_I
       USE setsum_I
-      USE setcsh_I
       USE screenpar_I
       USE getinf_I
       USE strsum_I
@@ -66,14 +66,17 @@
 !-----------------------------------------------
       INTEGER :: NCORE
       LOGICAL :: YES
+      TYPE(radial_input_options) :: input_options
 !-----------------------------------------------
 
 !   Startup message
 !
+      CALL parse_radial_options(input_options)
       WRITE (ISTDE, *) 'RWFNESTIMATE'
       WRITE (ISTDE, *) 'This program estimates radial wave functions'
       WRITE (ISTDE, *) 'for orbitals'
-      WRITE (ISTDE, *) 'Input files: isodata, rcsf.inp, optional rwfn file'
+      WRITE (ISTDE, *) 'Input files: isodata, selected CSF text/header, optional rwfn file'
+      WRITE (ISTDE, *) 'Selected input: ', input_options%filename
       WRITE (ISTDE, *) 'Output file: rwfn.inp'
 
 
@@ -104,9 +107,9 @@
 !
       IF (NDEF /= 0) CALL SETSUM
 !
-!   Open, check, load data from, and close the  .csl  file
+!   Load orbital metadata from the selected CSF text or rCSFs header.
 !
-      CALL SETCSH (21, 'rcsf.inp', NCORE)
+      CALL load_radial_header(input_options, NCORE)
 !
 !   Hydrogenic screen parameters for all orbitals
 !

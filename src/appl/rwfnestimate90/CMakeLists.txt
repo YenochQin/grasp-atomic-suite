@@ -1,4 +1,7 @@
+add_subdirectory(${PROJECT_SOURCE_DIR}/vendor/toml-f
+    ${PROJECT_BINARY_DIR}/vendor/toml-f)
 add_executable(rwfnestimate
+    rwfnestimate_input.f90
     tail.f90
     tail_I.f90
     sbstep.f90
@@ -33,5 +36,5 @@ add_executable(rwfnestimate
     getinf_I.f90
     erwf.f90
 )
-target_link_libraries_Fortran(rwfnestimate PUBLIC rang90 9290 mod)
+target_link_libraries_Fortran(rwfnestimate PUBLIC rang90 9290 mod suite_tomlf)
 install(TARGETS rwfnestimate DESTINATION bin/)

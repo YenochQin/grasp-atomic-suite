@@ -33,6 +33,8 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 已实施，GNU 15 专项回归通过 | [rwfnestimate_header_input.md](implemented/rwfnestimate_header_input.md) | 普通 rwfnestimate 原生读取 rCSFs header.toml 的轨道表和含 core 总电子数；保留文本入口和 header 字节；Ni/Zn 及 TOML Release/Check 专项各 3/3，原生描述符配对哈希不变。 |
+| 根因已复现并修复，物理优化待验证 | [rwfnestimate_nan_header_2026-11-12.md](reviews/rwfnestimate_nan_header_2026-11-12.md) | Ni/Zn 首次 h/i 的搜索上界变负，导致 SETPOT/TAIL 警告及 NaN 误报成功；记录数值链、suite 迁移、上游恢复；全量 77 通过、4 项 Linux 专用测试跳过，含临时路径问题复核。 |
 | 现行构建策略 | [build_profiles.md](implemented/build_profiles.md) | CSFG 默认隔离；生产默认 -O2 与目标所需 OpenMP；标准/接口/运行时诊断放 Check/Audit；独立 OpenMP 开关组成 36 个有效配置，24 个诊断配置均有警告预算；记录三轮数值与耗时对照。 |
 | 首版已实施并回归 | [rangular_openmp.md](implemented/rangular_openmp.md) | 独立 rangular_omp、线程私有角动量工作区、有界结果块与有序提交；1/2/4/8 线程及回退路径字节一致；保留 23,459-CSF 历史测量，并链接 14,551-CSF 三轮 MPI/OpenMP 对照；排序/输出仍串行，非全套 GRASP 或物理验收。 |
 | 已完成单机性能与输出对照 | [rangular_mpi_openmp_benchmark_2026-11-11.md](reviews/rangular_mpi_openmp_benchmark_2026-11-11.md) | 基于 c5f36d2，M4 上 14,551 CSFs、33 次 Release 运行；8 并发 MPI 4.06 秒、OpenMP 10.56 秒；描述符主要加快输入，整程收益较小；串行/线程字节一致，MPI 零容差等价。 |

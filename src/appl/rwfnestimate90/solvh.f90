@@ -23,6 +23,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       USE vast_kind_param, ONLY:  DOUBLE
+      USE, INTRINSIC :: IEEE_ARITHMETIC, ONLY: IEEE_IS_FINITE
       USE DEF_C
       USE GRID_C
       USE ORB_C
@@ -133,6 +134,15 @@
          E(IORB) = 0.5D00*(EMIN + EMAX)
       ENDIF
 !
+!   E is the positive binding energy. An invalid trial energy cannot
+!   produce the decaying bound-state tail used by TAIL.
+!
+      IF (.NOT.IEEE_IS_FINITE(E(IORB)) .OR. &
+          E(IORB)<=0.0D00 .OR. E(IORB)>=2.0D00*CSQ) THEN
+         FAIL = .TRUE.
+         RETURN
+      ENDIF
+!
 !   Set up arrays TF and TG; find join point
 !
       CALL SETPOT (IORB, JP)
@@ -191,18 +201,37 @@
       TA(2:N) = (PF(2:N,IORB)**2+QF(2:N,IORB)**2)*RP(2:N)
       MTP = N
       CALL QUAD (DNORM)
+      IF (.NOT.IEEE_IS_FINITE(DNORM) .OR. DNORM<=0.0D00) THEN
+         FAIL = .TRUE.
+         RETURN
+      ENDIF
 !
 !   Determine correction to eigenvalue from magic formula
 !   correct slope at origin
 !
       QFJPI = QFJPI*RATIO
       DMSMCH = QFJPI - QFJPO
-      IF (ABS(DMSMCH/QFJPO) > EPSLON) THEN
+      IF (.NOT.IEEE_IS_FINITE(DMSMCH) .OR. &
+          .NOT.IEEE_IS_FINITE(QFJPO)) THEN
+         FAIL = .TRUE.
+         RETURN
+      ENDIF
+      IF (ABS(DMSMCH) > EPSLON*ABS(QFJPO)) THEN
          DELE = C*PF(JP,IORB)*DMSMCH/DNORM
+         IF (.NOT.IEEE_IS_FINITE(DELE)) THEN
+            FAIL = .TRUE.
+            RETURN
+         ENDIF
+!
+!   A large correction (notably for the first h/i orbitals) can make
+!   the old multiplicative upper bound negative. Keep the current
+!   trial inside the updated interval; the next iteration bisects it
+!   if the proposed correction falls outside the bounds.
+!
          IF (DELE < 0.0D00) THEN
-            EMAX = EMAX*(1.0D00 - 0.2E00*ABS(DELE/E(IORB)))
+            EMAX = MAX(E(IORB), EMAX*(1.0D00 - 0.2E00*ABS(DELE/E(IORB))))
          ELSE
-            EMIN = EMIN*(1.0D00 + 0.2E00*ABS(DELE/E(IORB)))
+            EMIN = MIN(E(IORB), EMIN*(1.0D00 + 0.2E00*ABS(DELE/E(IORB))))
          ENDIF
          PZ(IORB) = PZ(IORB)/SQRT(DNORM)
          GO TO 1

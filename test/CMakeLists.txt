@@ -176,6 +176,7 @@ endif()
 add_subdirectory(npol)
 add_subdirectory(jj2lsj)
 add_subdirectory(standard_grasp)
+add_subdirectory(rwfnestimate)
 add_subdirectory(f2018)
 
 if(TARGET mod_csfg)
