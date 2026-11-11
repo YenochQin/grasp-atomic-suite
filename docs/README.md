@@ -34,9 +34,10 @@ docs/
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
 | 现行构建策略 | [build_profiles.md](implemented/build_profiles.md) | CSFG 默认隔离；生产默认 -O2 与目标所需 OpenMP；标准/接口/运行时诊断放 Check/Audit；独立 OpenMP 开关组成 36 个有效配置，24 个诊断配置均有警告预算；记录三轮数值与耗时对照。 |
-| 首版已实施并回归 | [rangular_openmp.md](implemented/rangular_openmp.md) | 独立 rangular_omp、线程私有角动量工作区、有界结果块与有序提交；1/2/4/8 线程及回退路径字节一致，23,459-CSF 单次 8 线程约 2.76×；排序/输出仍串行，非全套 GRASP 或物理验收。 |
+| 首版已实施并回归 | [rangular_openmp.md](implemented/rangular_openmp.md) | 独立 rangular_omp、线程私有角动量工作区、有界结果块与有序提交；1/2/4/8 线程及回退路径字节一致；保留 23,459-CSF 历史测量，并链接 14,551-CSF 三轮 MPI/OpenMP 对照；排序/输出仍串行，非全套 GRASP 或物理验收。 |
+| 已完成单机性能与输出对照 | [rangular_mpi_openmp_benchmark_2026-11-11.md](reviews/rangular_mpi_openmp_benchmark_2026-11-11.md) | 基于 c5f36d2，M4 上 14,551 CSFs、33 次 Release 运行；8 并发 MPI 4.06 秒、OpenMP 10.56 秒；描述符主要加快输入，整程收益较小；串行/线程字节一致，MPI 零容差等价。 |
 | 已实施，运行器回归通过 | [rangular_version_comparison.md](implemented/rangular_version_comparison.md) | 指定原版/新版可执行文件，独立目录运行文本及可选描述符路径；保存日志、墙钟、阶段计时与 MCP 对照；7 项维护测试通过，支持差异/超时/提前退出检测。 |
-| 已实施，输入/输出回归通过 | [rangular_descriptor_input.md](implemented/rangular_descriptor_input.md) | suite 预处理二进制、Fortran reader、文本数组对照和串行阶段计时；14 项专项测试、原生 rCSFs 171 CSF 对照及小型 MCP 一致性通过；生产性能、完整科学结果与 OpenMP 未验证。 |
+| 已实施，输入/输出回归通过 | [rangular_descriptor_input.md](implemented/rangular_descriptor_input.md) | suite 预处理二进制、Fortran reader、文本数组对照和串行阶段计时；14 项专项测试、原生 rCSFs 171 CSF 对照及小型 MCP 一致性通过；另有 14,551-CSF 串行/OpenMP 输入计时，完整科学结果及其他规模性能待验证。 |
 | 首版输入和 OpenMP 已实施 | [rangular_descriptor_openmp_2026-11-10.md](plans/rangular_descriptor_openmp_2026-11-10.md) | 保留设计历史；输入、线程私有工作区、动态任务与有序提交已有首版，显式 context 和排序并行仍待后续工作。 |
 | 已实施，解析器回归通过 | [mcp_compare.md](implemented/mcp_compare.md) | 2026-11-10，普通 rangular 串行/MPI MCP 解析、结构校验、按 CSF 对比较和 JSON 导出；合成回归与现有文件读回通过，不代表候选 rangular 或物理计算验收。 |
 | 现行流程，静态核查完成 | [rangular_flow_and_state.md](implemented/rangular_flow_and_state.md) | 2026-11-10，基准 d181bf4；普通串行 rangular 的 block/CSF 对遍历、角系数缓冲与排序、共享工作区和文件状态。未实施 OpenMP，未运行性能或物理验证。 |

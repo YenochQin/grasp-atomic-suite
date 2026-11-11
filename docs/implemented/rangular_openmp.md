@@ -5,6 +5,10 @@
 23,459-CSF 单机对照通过，未完成全部态空间、所有平台或完整 SCF/RCI 物理验收。
 当前生产 flags 已精简，CSFG 已隔离；现行配置以[构建策略](build_profiles.md)为准。
 
+基于 `c5f36d2` 的 [2026-11-11 本机性能对照](../reviews/rangular_mpi_openmp_benchmark_2026-11-11.md)
+补充 14,551-CSF 样本的三轮 MPI/OpenMP 及文本/描述符测量：33 次运行全部通过输出验证，
+8 并发整程中位数为 MPI 4.06 秒、OpenMP 10.56 秒，适用范围和转换成本见该报告。
+
 ## 1. 入口与范围
 
 `rangular_omp` 并行生成普通 Coulomb 角系数，支持原文本输入、描述符输入、完整相互作用及一阶限制。
