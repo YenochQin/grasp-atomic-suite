@@ -4,9 +4,19 @@
   "groups": [
     {
       "name": "rangular_openmp",
-      "requires": ["serial", "rangular_openmp"],
-      "targets": ["rangular_omp", "rangular_thread_state", "rangular_thread_kernels"],
-      "tests": ["rangular_openmp_regression", "rangular_openmp_closure"]
+      "requires": [
+        "serial",
+        "rangular_openmp"
+      ],
+      "targets": [
+        "rangular_omp",
+        "rangular_thread_state",
+        "rangular_thread_kernels"
+      ],
+      "tests": [
+        "rangular_openmp_regression",
+        "rangular_openmp_closure"
+      ]
     },
     {
       "name": "common",
@@ -22,7 +32,6 @@
       "tests": [
         "lib9290_quad",
         "shared_grid_capacity",
-        "strict_scf_logic",
         "rdensity_natural_orbitals",
         "grasp_grid_patcher",
         "npol_code_kernel",
@@ -50,14 +59,12 @@
         "f2018_davidson_contracts",
         "f2018_davidson_early",
         "f2018_interp_contracts",
-        "f2018_rk_count_rci90",
-        "f2018_rk_count_rci90_mpi",
+        "f2018_rk_count_rci",
+        "f2018_rk_count_rci_mpi",
         "f2018_weights_rmcdhf",
         "f2018_weights_rmcdhf_mem",
         "f2018_weights_rmcdhf_mpi",
-        "f2018_weights_rmcdhf_mem_mpi",
-        "f2018_weights_rmcdhf90_mem_strict_mpi",
-        "f2018_weights_rmcdhf90_mem_diag_mpi"
+        "f2018_weights_rmcdhf_mem_mpi"
       ]
     },
     {
@@ -66,7 +73,7 @@
         "serial"
       ],
       "targets": [
-        "gj90",
+        "gj",
         "rhfs",
         "rdensity",
         "ris4",
@@ -97,7 +104,7 @@
       ],
       "targets": [
         "mpiu90",
-        "gj90_mpi",
+        "gj_mpi",
         "rhfs_mpi",
         "rdensity_mpi",
         "ris4_mpi",
@@ -106,14 +113,11 @@
         "rbiotransform_mpi",
         "rtransition_mpi",
         "rmcdhf_mpi",
-        "rmcdhf_mem_mpi",
-        "rmcdhf_mem_strict_mpi",
-        "rmcdhf_mem_diag_mpi"
+        "rmcdhf_mem_mpi"
       ],
       "tests": [
+        "rangular_mpi_descriptors",
         "mpi90_local_sparse",
-        "start_trace_parity",
-        "p0_trace_projection",
         "npol_code_consumers_rmcdhf_mpi",
         "npol_code_consumers_rmcdhf_mem_mpi",
         "npol_code_mpi_broadcast_1",
@@ -124,8 +128,7 @@
         "f2018_mpi_contracts_4",
         "f2018_interface_rejections",
         "f2018_system_paths",
-        "f2018_sparse_empty_rank",
-        "f2018_strict_orbital_consistency"
+        "f2018_sparse_empty_rank"
       ]
     },
     {
@@ -136,10 +139,6 @@
       ],
       "targets": [],
       "tests": [
-        "p0_trace_mpi_1",
-        "p0_trace_mpi_2",
-        "strict_mem_restart_mpi_1",
-        "strict_mem_restart_mpi_2",
         "rdensity_mpi_1",
         "rdensity_mpi_2",
         "rdensity_mpi_4"
@@ -223,30 +222,6 @@
         "f2018_ci_damping_rmcdhf_mem_mpi_1",
         "f2018_ci_damping_rmcdhf_mem_mpi_2",
         "f2018_ci_damping_rmcdhf_mem_mpi_4"
-      ]
-    },
-    {
-      "name": "ci_rmcdhf_mem_strict_mpi",
-      "requires": [
-        "mpi"
-      ],
-      "targets": [],
-      "tests": [
-        "f2018_ci_damping_rmcdhf_mem_strict_mpi_1",
-        "f2018_ci_damping_rmcdhf_mem_strict_mpi_2",
-        "f2018_ci_damping_rmcdhf_mem_strict_mpi_4"
-      ]
-    },
-    {
-      "name": "ci_rmcdhf_mem_diag_mpi",
-      "requires": [
-        "mpi"
-      ],
-      "targets": [],
-      "tests": [
-        "f2018_ci_damping_rmcdhf_mem_diag_mpi_1",
-        "f2018_ci_damping_rmcdhf_mem_diag_mpi_2",
-        "f2018_ci_damping_rmcdhf_mem_diag_mpi_4"
       ]
     },
     {

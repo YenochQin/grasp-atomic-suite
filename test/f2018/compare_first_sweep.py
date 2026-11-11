@@ -17,7 +17,6 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "rmcdhf"))
-from strict_mem_restart import inputs
 from compare_rwfn import detect_endian, read_record, read_rwfn
 
 ISODATA = (
@@ -43,6 +42,14 @@ METADATA = (
     r"\s*Time \(Hr/Min/Sec\): \d{2}/\d{2}/\d{2}\.\d+\s*",
     r"\s*Zone: [+-]\d{4}\s*",
 )
+
+
+def solver_inputs(iteration_limit: int) -> str:
+    # Explicit finite-nucleus grid; one EOL level has no weight-menu prompt.
+    return (
+        "n\nn\ny\nn\ny\n2d-7\n0.05\n0\n590\ny\n1.5625d-8\n"
+        f"1\n1s\n\n{iteration_limit}\nn\n1\n"
+    )
 
 
 def sha256(data: bytes) -> str:
@@ -138,7 +145,7 @@ def exercise(bindir: Path, solver: str, work: Path) -> dict:
     (work / "isodata").write_text(ISODATA)
     (work / "rcsf.inp").write_text(CSF)
     runs = {}
-    for binary, stdin in (("rwfnestimate", "y\n2\n*\n"), ("rangular", "y\n"), (solver, inputs(1))):
+    for binary, stdin in (("rwfnestimate", "y\n2\n*\n"), ("rangular", "y\n"), (solver, solver_inputs(1))):
         runs[binary] = run(bindir / binary, stdin, work)
     check_binary_files(work)
     texts = {}
@@ -174,7 +181,7 @@ def main() -> int:
     output.mkdir(parents=True, exist_ok=False)
     report: dict = {"status": "running", "solvers": args.solvers, "full_serial_scope": set(args.solvers)=={"rmcdhf","rmcdhf_mem"},
                     "threads": THREADS, "inputs": {"isodata": sha256(ISODATA.encode()), "rcsf.inp": sha256(CSF.encode()),
-                    "scf_stdin": sha256(inputs(1).encode())}, "results": {}}
+                    "scf_stdin": sha256(solver_inputs(1).encode())}, "results": {}}
     try:
         report["executables"] = {
             side: {name: sha256((bindir/name).read_bytes()) for name in ["rwfnestimate", "rangular", *args.solvers]}

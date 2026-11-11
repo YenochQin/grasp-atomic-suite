@@ -1,7 +1,9 @@
 # F2018 Linux 验收、Davidson 早收敛与 memory 路径修复
 
+> 2026-11-11 状态更新：文中 strict/diag 独立求解器已按用户决定[移除](../implemented/rejected_rmcdhf_variants.md)；相关目标、命令和测试数量仅作对应版本的历史记录。
+
 后续更新：本文保留本轮 71/73 与原始平台证据。随后已完成 strict 归一化时序修复，
-Check/Release 当前清单各 74/74 通过，见[后续报告](strict_scnsty_normalization_2026-11-09.md)。
+Check/Release 当前清单各 74/74 通过，见[后续报告（已移除）](../implemented/rejected_rmcdhf_variants.md)。
 
 日期：2026-11-09。源码基线：`f395146`（包含严格接口修复 `b8d6faf`）；
 结果对应本轮工作树。接续[此前 macOS 验证](f2018_strict_interfaces_npol_2026-11-09.md)，

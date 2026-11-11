@@ -65,8 +65,8 @@ profiling 结果表明：
 
 对应代码位置：
 
-- [hfsgg_mpi.f90](../../src/appl/rhfs90/hfsgg_mpi.f90)
-- [hfsgg_mpi.f90](../../src/appl/rhfs90/hfsgg_mpi.f90)
+- [hfsgg_mpi.f90](../../src/appl/rhfs/hfsgg_mpi.f90)
+- [hfsgg_mpi.f90](../../src/appl/rhfs/hfsgg_mpi.f90)
 
 在调用 `ONEPARTICLEJJ` 之前，先做三类前置判断：
 
@@ -76,7 +76,7 @@ profiling 结果表明：
 
 对应代码位置：
 
-- [hfsgg_mpi.f90](../../src/appl/rhfs90/hfsgg_mpi.f90)
+- [hfsgg_mpi.f90](../../src/appl/rhfs/hfsgg_mpi.f90)
 
 这样做的目的，是避免大量本来会在 `ONEPARTICLEJJ` 内部立刻返回空结果的调用。
 

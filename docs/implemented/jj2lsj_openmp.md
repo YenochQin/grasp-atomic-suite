@@ -5,7 +5,7 @@ suite 修改前基线：`a4661441492e38beb99293182cb9257326d2dcef`。
 
 ## 来源与适用范围
 
-普通 GRASP `jj2lsj90` 源码来自工作区的 `grasp` 快照，文件头最新标注 January 2025；
+普通 GRASP `jj2lsj` 源码来自工作区的 `grasp` 快照，文件头最新标注 January 2025；
 没有可确认的独立上游提交号，因此用[来源文件 SHA-256 清单](../reference/jj2lsj/source-manifest.json)
 锁定导入前的内容。保留原作者与 MIT 许可；此清单不是集成后源码的哈希。
 
@@ -44,7 +44,7 @@ OMP_NUM_THREADS=8 /path/to/grasp-atomic-suite/bin/jj2lsj_omp < jj2lsj.inp > jj2l
 
 ## 并行与数值契约
 
-实现位于 [jj2lsj_code.f90](../../src/appl/jj2lsj90/jj2lsj_code.f90)：
+实现位于 [jj2lsj_code.f90](../../src/appl/jj2lsj/jj2lsj_code.f90)：
 
 - `asf2ls_serial` 保留原来的变换循环，作为单线程及变换文件路径。
 - `transform_ls_row` 完整计算一行 LS-CSF 的所有所选能级系数。每行保持原来的
@@ -59,7 +59,7 @@ OMP_NUM_THREADS=8 /path/to/grasp-atomic-suite/bin/jj2lsj_omp < jj2lsj.inp > jj2l
 - 输入、`setLS` 基生成、排序、标签输出和 `uniquelsj` 都仍为串行。
   同一 block 的全部所选能级共同决定 `ithresh`，不按能级拆成独立转换。
 
-为了隔离历史静态变量，[应用 CMake](../../src/appl/jj2lsj90/CMakeLists.txt) 仅在自身目录
+为了隔离历史静态变量，[应用 CMake](../../src/appl/jj2lsj/CMakeLists.txt) 仅在自身目录
 去掉 `-fno-automatic`，GNU 构建加 `-frecursive`。串行控制例程用显式 `SAVE`
 保留原工作区行为；变换函数和每行工作区可重入。
 
@@ -74,7 +74,7 @@ OpenMP 专用对象中的惰性缓存由各线程独占，普通 suite 构建将
 `FACTT` 在启动线程前初始化的阶乘表，以及输入数组、常量表，只读共享。
 
 导入时同时处理三处局部生命周期/边界问题：释放 LS-CSF 的 `w` 数组；显式初始化
-唯一标签循环的 `New_J`；在 [packLS.f90](../../src/appl/jj2lsj90/packLS.f90) 中使用有边界保护的
+唯一标签循环的 `New_J`；在 [packLS.f90](../../src/appl/jj2lsj/packLS.f90) 中使用有边界保护的
 前一个占据数，避免 Fortran 非短路逻辑表达式访问 `Q(0)`。
 后者由 `-fcheck=all` 检查发现；修复后的参考输出保持不变。
 

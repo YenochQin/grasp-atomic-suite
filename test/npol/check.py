@@ -168,14 +168,10 @@ def entrypoints(root: Path) -> None:
         setham = (directory / "setham.f90").read_text().lower()
         assert "npol" not in setham and re.search(r"rinti\s*\([^\n]*,\s*0\s*\)", setham)
     assert "npol" not in (root / "src/lib/lib9290/nucpot.f90").read_text().lower()
-    # The four old orbopt source directories were retired; the two retained
-    # independent solvers still must not acquire the original-solvers' NP hook.
-    for variant in ("rmcdhf90", "rmcdhf90_mem", "rmcdhf90_mpi", "rmcdhf90_mem_mpi"):
+    # Rejected solver variants remain absent from the supported source tree.
+    for variant in ("rmcdhf90", "rmcdhf90_mem", "rmcdhf90_mpi", "rmcdhf90_mem_mpi",
+                    "rmcdhf_mem_strict_mpi", "rmcdhf_mem_diag_mpi"):
         assert not (root / "src/appl" / variant).exists(), variant
-    for variant in ("rmcdhf90_mem_strict_mpi", "rmcdhf90_mem_diag_mpi"):
-        stem = "getscdmpi" if variant.endswith("_mpi") else "getscd"
-        text = (root / "src/appl" / variant / f"{stem}.f90").read_text().lower()
-        assert "npol_init" not in text and "npfile" not in text, variant
 
 
 def mpi_cases(command: list[str], root: Path, failure: bool) -> None:

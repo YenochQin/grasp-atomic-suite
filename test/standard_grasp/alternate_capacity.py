@@ -18,11 +18,11 @@ def main() -> None:
         "lib/libmod/grid_C.f90",
         "lib/libmod/pote_C.f90",
         "lib/libmod/tatb_C.f90",
-        "appl/rwfnestimate90/tail_I.f90",
-        "appl/rwfnestimate90/solvh_I.f90",
-        "appl/rwfnestimate90/frmtfp_I.f90",
-        "appl/rwfnestimate90/frmrwf_I.f90",
-        "appl/rwfnestimate90/summry_I.f90",
+        "appl/rwfnestimate/tail_I.f90",
+        "appl/rwfnestimate/solvh_I.f90",
+        "appl/rwfnestimate/frmtfp_I.f90",
+        "appl/rwfnestimate/frmrwf_I.f90",
+        "appl/rwfnestimate/summry_I.f90",
     ]
     with tempfile.TemporaryDirectory(prefix="standard-grasp-capacity-") as temporary:
         work = Path(temporary)

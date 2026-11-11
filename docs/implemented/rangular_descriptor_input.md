@@ -5,12 +5,13 @@
 
 状态：普通串行 `rangular` 已接入；原文本入口保留。预处理、原文本/新输入数组对照、小型 MCP 回归和阶段计时已实施。
 后续增加了独立的 [rangular_omp](rangular_openmp.md)；本文仍描述两种输入的公共契约。
-MPI/CSFG/RMCDHF/RCI 的输入入口未改造。
+2026-11-11 已增加普通 [rangular_mpi 描述符入口](rangular_mpi_descriptor_input.md)，由 rank 0 解码并广播。
+CSFG/RMCDHF/RCI 的输入入口未改造。
 这些结果验证软件和输入表示，不建立生产规模性能、活性空间收敛或物理精度。
 
 后续基于 `c5f36d2` 的 [2026-11-11 本机性能对照](../reviews/rangular_mpi_openmp_benchmark_2026-11-11.md)
 已完成 14,551-CSF 样本的串行/OpenMP 文本与描述符测量：串行输入阶段中位数约快 26.3 倍，
-整程收益较小；该报告单独列出转换成本和样本限制，不扩大本文的 MPI 输入支持范围。
+整程收益较小；该报告单独列出转换成本和样本限制。MPI 的后续实现与测量见上一段链接。
 
 ## 1. 代码归属与运行路径
 
@@ -18,10 +19,10 @@ MPI/CSFG/RMCDHF/RCI 的输入入口未改造。
 | --- | --- |
 | [prepare_csf_descriptors.py](../../scripts/prepare_csf_descriptors.py) | 分批读取 Parquet 与 header TOML，校验版本/类型/绑定/分块/基本范围，输出版本化二进制。 |
 | [csf_descriptor_input.f90](../../src/lib/lib9290/csf_descriptor_input.f90) | 解码交换格式；复用 `terms_C` 校验物理态；补全 J/K、组织数组；提供头部及逐 block 加载接口。 |
-| [rangular_input.f90](../../src/appl/rangular90/rangular_input.f90) | 选择原 `CSLH/LODCSH2` 或描述符路径；连接现有程序状态。 |
-| [csf_descriptor_verify.f90](../../src/appl/rangular90/csf_descriptor_verify.f90) | 独立调用两条加载路径，逐项比较元数据及全部三个 byte 数组。 |
+| [rangular_input.f90](../../src/appl/rangular/rangular_input.f90) | 选择原 `CSLH/LODCSH2` 或描述符路径；连接现有程序状态。 |
+| [csf_descriptor_verify.f90](../../src/appl/rangular/csf_descriptor_verify.f90) | 独立调用两条加载路径，逐项比较元数据及全部三个 byte 数组。 |
 | [verify_csf_descriptors.py](../../scripts/verify_csf_descriptors.py) | 运行原生验证器并要求成功标记，防止旧文本 reader 的 `STOP` 返回零时被误判通过。 |
-| [rangular_profile.f90](../../src/appl/rangular90/rangular_profile.f90) | 可选的 SYSTEM_CLOCK 墙钟计时，按阶段写 CSV。 |
+| [rangular_profile.f90](../../src/appl/rangular/rangular_profile.f90) | 可选的 SYSTEM_CLOCK 墙钟计时，按阶段写 CSV。 |
 
 新增变量采用 `principal_numbers`、`relativistic_kappas`、`subshell_quantum_numbers`、
 `coupled_two_j`、`block_index` 等含义明确的名称。原模块名通过 `USE ... ONLY: 新名称 => 原名称`
@@ -215,4 +216,4 @@ Release 全开构建通过；95 项测试中初次 39 项 MPI 测试被沙箱 so
 详见[警告预算](../reference/f2018/gfortran15-warning-baseline.json)中的 `descriptor_input_budget_update`。
 
 未验证：百万级数据的性能/峰值内存、强制内存不足磁盘回退的计时路径、全量态空间、
-MPI/CSFG 描述符入口，以及基于新输入的完整 SCF/RCI 科学结果。后续 OpenMP 的独立状态见文首链接。
+CSFG 描述符入口，以及基于新输入的完整 SCF/RCI 科学结果。后续 OpenMP/MPI 的独立状态见文首链接。

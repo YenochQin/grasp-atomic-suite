@@ -57,7 +57,7 @@ CSFG 始终关闭。24 个 Check/Audit 组合均须有各自的警告预算，�
 
 独立开关补齐保留了已有 18 个预算，新增 6 个配置由本机 GNU 15.3.0 实际编译采集，
 记录在基线的 `independent_openmp_budget_update`。GNU 15.3 在 macOS arm64 上将
-`rci90/qed.f90` 和 `rci90_mpi/qed.f90` 中既有的 K 未初始化警告定位到使用处，
+`rci/qed.f90` 和 `rci_mpi/qed.f90` 中既有的 K 未初始化警告定位到使用处，
 Linux 基线定位在声明处；新增 Audit 预算为同一警告保留这两种确切身份，各限一次。
 源文件哈希未变，其他诊断没有超过已有身份的最大预算。新增配置同时保留原 Linux
 对应目标的预算，包括本机未发出的 BIOTR1 告警，避免用单平台采集结果清除既有风险；
@@ -96,5 +96,6 @@ Linux 基线定位在声明处；新增 Audit 预算为同一警告保留这两�
 合计 376 次通过、16 次跳过，没有执行失败。每个 MPI 配置的跳过项相同：
 `p0_trace_mpi_1/2`、`strict_mem_restart_mpi_1/2`，其上游 memory solver 需要 Linux
 `/proc/meminfo`。严格验收仍将跳过判为未通过；没有更改测试或放宽此规则。
-这四项须在 Linux 补跑，不能把本机结果称为完整 MPI 或 36 配置矩阵验收。
+上述四项属于随后已否决并移除的 strict/diag 变体，现不再注册；该段仅保留当时的验证结果，
+不能用它证明当前配置验收。现行范围见[移除说明](rejected_rmcdhf_variants.md)。
 可追溯汇总为忽略目录 `build-review-openmp-independent/local-validation-summary.json`。

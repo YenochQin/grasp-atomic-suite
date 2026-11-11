@@ -2,7 +2,7 @@
 
 > 文档状态：现行实现；2026-10-13 保留参数转导层，使用原版默认值与网格初始化。
 > 参考源码：工作区 GRASP `488e875d1a7ec631baf4ad33682798bc795b7435`。
-> 2026-11-08 加入普通 GRASP 计算链后共二十一个网格入口与四个 RCI 续算 ACCY 入口；见 [普通程序接入说明](standard_grasp_integration.md)。
+> 2026-11-11 移除已否决的 strict/diag 后，共十九个网格入口与四个 RCI 续算 ACCY 入口；见[退役范围](rejected_rmcdhf_variants.md)。
 > 容量由集中配置定义，经 parameter_def 转导；历史实验数值不代表当前默认值。
 
 ## 参数归属
@@ -47,8 +47,7 @@ ACCY 初始化时序也恢复原版：
   输入设置必须满足原版的网格容量和数值约束。
 
 输入 `.w` 经插值到本次运行网格，不会自动将 N/H/RNT 改成文件网格。
-独立 [`rmcdhf_mem_strict_mpi`](rmcdhf_mem_strict_mpi.md) 使用原版参数初始化，
-仅其停止策略及诊断输出另有改动。严格内存版本不读取旧 orbopt 的实验开关；现行入口只覆盖保留程序。
+已否决的 strict/diag 独立求解器已[移除](rejected_rmcdhf_variants.md)；现行入口只覆盖保留程序。
 
 GRASPG 的波函数估计、SCF 和两个 RCI 程序也使用这些共享容量。两个 RCI 程序沿用其原始公共网格初始化（没有启用独立点核分支）；波函数估计和 SCF 保留各自的点核/有限核分支。GRASPG 专有容量与初值见 [CSFG 参数说明](graspg_integration.md#graspg-专有容量与默认值)。
 
@@ -57,7 +56,7 @@ GRASPG 的波函数估计、SCF 和两个 RCI 程序也使用这些共享容量�
 ## 网格实验与重编译
 
 在独立源码副本上使用 [网格脚本](../../scripts/README.md)。`atomic-suite` 布局
-修改 `suite_parameters_M.f90` 和需要变更的二十一个入口；显式 ACCY 修改也覆盖普通/GRASPG 共四个 RCI 续算入口。
+修改 `suite_parameters_M.f90` 和需要变更的十九个入口；显式 ACCY 修改也覆盖普通/GRASPG 共四个 RCI 续算入口。
 仅使用 `--nnnp` 时只改中央配置的 NNNP，NNN1 自动派生，转导模块及入口保持原样；
 `--n` 单独选择实际点数，其他网格参数仍修改各入口。脚本检查六项定义与完整转导接口。
 

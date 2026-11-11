@@ -77,7 +77,7 @@ set -gx OPENBLAS_NUM_THREADS 1
 ## 3. 状态与构建边界
 
 并发闭包从 `ONESCALAR`、`RKCO_GG` 和实际 `CORD` 回调展开，共 97 个过程，
-清单为 [concurrent_sources.cmake](../../src/appl/rangular90/openmp/concurrent_sources.cmake)。
+清单为 [concurrent_sources.cmake](../../src/appl/rangular/openmp/concurrent_sources.cmake)。
 [机械审计](../../test/rangular/audit_thread_closure.py)检查调用覆盖、模块依赖和实际编译命令；它不是形式化线程安全证明。
 
 | 数据 | 所有权 |
@@ -106,7 +106,7 @@ RACA 的持久缓存语义用源码 SAVE 明确表达，在 OpenMP 对象中保�
 
 ## 4. 任务、内存及输出
 
-[并行控制器](../../src/appl/rangular90/openmp/rangular_parallel.f90)按当前 JA 列切分 JB 范围，
+[并行控制器](../../src/appl/rangular/openmp/rangular_parallel.f90)按当前 JA 列切分 JB 范围，
 每批最多四倍线程数个任务，使用 `schedule(dynamic,1)` 分配。选定一阶限制时，先处理参考区间，再处理对角项。
 任务数和结果缓冲不随全部三角区域预分配，不建立 NCF² 大小的任务表。
 
@@ -115,7 +115,7 @@ ONESCALAR 早退时只依赖其已定义的第一轨道标签；拒绝的对不�
 一个结果块满后，将其已有和后续贡献转写独立 `newunit` scratch stream；用 int64 字节位置读回，正常结束时删除。
 只复制 LABEL 的五个有效 Coulomb 字段，未使用的第六槽不进入结果队列。
 
-barrier 后，初始线程按原 JA/JB 次序取得结果，交回原 [MCP](../../src/appl/rangular90/mcp_gg.f90) 处理。
+barrier 后，初始线程按原 JA/JB 次序取得结果，交回原 [MCP](../../src/appl/rangular/mcp_gg.f90) 处理。
 因此位置编号、重复贡献、浮点计算顺序及原排序输入顺序都保持，工作领取顺序不决定文件顺序。
 没有跨线程浮点 reduction，也没有用一个大 critical 区锁住整个角系数计算。
 

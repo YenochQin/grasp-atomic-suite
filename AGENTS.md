@@ -14,9 +14,11 @@ implementation guides belong in `docs/implemented/`, pending experiments in
 State the source revision and distinguish implemented code from completed
 physical validation; update relative links and the index when moving documents.
 
-The supported original RMCDHF programs are in `rmcdhf{,_mem,_mpi,_mem_mpi}`.
-Keep the separate strict, diagnostic, and CSFG solvers. The four
-`rmcdhf_orbopt*` targets and their source directories are retired. Retained programs share
+The supported ordinary RMCDHF programs are `rmcdhf{,_mem,_mpi,_mem_mpi}`;
+CSFG remains behind its separate opt-in boundary. The rejected `rmcdhf_orbopt*`,
+`rmcdhf_mem_strict_mpi`, and `rmcdhf_mem_diag_mpi` programs are retired; historical
+documents are not authorization to restore them. See [retirement scope](docs/implemented/rejected_rmcdhf_variants.md).
+Retained programs share
 `libmod`, `lib9290`, `libdvd90`, and `mpi90` with the property programs; do not
 introduce a second copy of these libraries. Preserve suite MPI helpers.
 Keep `src/lib/libmod/parameter_def_M.f90` as the legacy re-export interface.
@@ -25,8 +27,7 @@ Define shared capacities only in `suite_parameters_M.f90`, using upstream defaul
 `NNNWM2=NNNW-2`. The grid patcher edits this configuration module for capacity
 changes; existing applications continue to `USE parameter_def`.
 Each grid entry point registered in the patcher keeps its upstream point/finite-nucleus
-settings and ACCY initialization order, including RDENSITY and the independent
-`rmcdhf_mem_strict_mpi` solver. Finite nuclei default to `N=NNNP=590`.
+settings and ACCY initialization order, including RDENSITY. Finite nuclei default to `N=NNNP=590`.
 Upstream RMCDHF computes ACCY before interactive grid input; explicitly supply
 ACCY when changing H in restart inputs. Grid experiments belong in separate copies.
 
@@ -64,7 +65,7 @@ settings and keep local config ignored. Use separate source copies per parameter
 set; compilation is a separate step from applying the patch.
 
 ## Coding Style & Naming Conventions
-Match the existing Fortran style in the file you are editing. The tree contains both older fixed-format-style indentation and newer free-form modules, so preserve local formatting instead of normalizing whole files. Keep filenames lowercase and aligned with existing suffix conventions such as `*_I.f90` for interface/helper units and `*_C.f90` for shared code modules. Program directories and targets use lowercase names like `rhfs90`, `rdensity`, and `ris4`.
+Match the existing Fortran style in the file you are editing. The tree contains both older fixed-format-style indentation and newer free-form modules, so preserve local formatting instead of normalizing whole files. Keep filenames lowercase and aligned with existing suffix conventions such as `*_I.f90` for interface/helper units and `*_C.f90` for shared code modules. Ordinary program directories and targets use lowercase functional names like `rangular`, `rhfs`, and `gj`; use the build profile to identify the Fortran standard. For renamed paths and executable names, see [program naming](docs/implemented/program_naming.md).
 
 ## Testing Guidelines
 CI uses the CMake workflow. Run tests covering the affected programs, using a

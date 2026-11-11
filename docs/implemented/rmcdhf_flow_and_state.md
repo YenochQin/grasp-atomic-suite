@@ -4,7 +4,8 @@
 
 状态：依据源码完成普通串行主路径的静态梳理；没有修改计算实现，也没有运行新的物理计算或性能测试。
 范围是 `src/appl/rmcdhf/` 的 `rmcdhf` 目标及其主要共享库依赖。
-`rmcdhf_mem`、MPI、strict、diag 和 CSFG 目标各有独立实现，不能直接套用本文的控制流或停止判据。
+`rmcdhf_mem`、MPI 和 CSFG 目标各有独立实现，不能直接套用本文的控制流或停止判据。
+strict/diag 独立变体已按用户决定[移除](rejected_rmcdhf_variants.md)。
 本文是计算与状态导航，不是所有深层例程的完整线程安全证明。
 
 ## 1. 程序计算什么
@@ -95,7 +96,7 @@ graph TD
 IF (ABS((WTAEV - WTAEV0)/WTAEV) < 0.001*ACCY) CONVG = .TRUE.
 ```
 
-因此能量条件可以单独触发停止；它不是“轨道和能量同时满足且连续两轮”的 strict 判据。
+因此能量条件可以单独触发停止，不要求轨道条件同时通过。
 `WTAEV0` 在进入循环前置零，之后逐轮更新。达到 `NSCF` 上限仍会进入收尾并保留输出，
 但会报告 `Maximum iterations in SCF Exceeded`，不能归为已收敛。
 
@@ -191,7 +192,7 @@ IMPROV
 | [COFPOT](../../src/appl/rmcdhf/cofpot.f90) | 汇总当前轨道方程所需势与附加项。 | `SETCOF → YPOT → XPOT → LAGCON → DACON`。 |
 | [YPOT](../../src/appl/rmcdhf/ypot.f90)、[XPOT](../../src/appl/rmcdhf/xpot.f90) | 系数与径向积分核 → 直接势 `YP`、交换项 `XP/XQ`。 | `YZK`、当前径向轨道；调试分支还有输出。 |
 | [LAGCON](../../src/appl/rmcdhf/lagcon.f90)、[DACON](../../src/appl/rmcdhf/dacon.f90)、[DEFCOR](../../src/appl/rmcdhf/defcor.f90) | 约束项、导数项与延迟修正。 | `lagr_C`、`pote_C`、`def_C` 的工作数组。 |
-| [IMPROV](../../src/appl/rmcdhf/improv.f90)、[CONSIS](../../src/appl/rmcdhf/consis.f90) | 求候选轨道、计算自洽差异、阻尼与更新。 | 普通版 `CONSIS` 在归一化前；不能套用 strict 版修复后的顺序。 |
+| [IMPROV](../../src/appl/rmcdhf/improv.f90)、[CONSIS](../../src/appl/rmcdhf/consis.f90) | 求候选轨道、计算自洽差异、阻尼与更新。 | 普通版 `CONSIS` 在归一化前执行。 |
 | [SOLVE](../../src/appl/rmcdhf/solve.f90)、[OUT](../../src/appl/rmcdhf/out.f90)、[IN](../../src/appl/rmcdhf/in.f90)、[NEWE](../../src/appl/rmcdhf/newe.f90) | 径向方程积分、边界匹配、节点控制和能量迭代。 | `int_C/pote_C/def_C/scf_C`；当前轨道能量 `E(J)`。 |
 
 ## 5. 共享状态及生命周期
@@ -253,7 +254,8 @@ IMPROV
 ## 7. 与其他文档的关系
 
 - [rangular 计算流程与共享状态](rangular_flow_and_state.md)：角系数、稀疏结构的生成端。
+- [RMCDHF 内存版与普通版对比](../reviews/rmcdhf_mem_comparison_2026-11-11.md)：对应主循环相同，但 MCP 存储、乘子筛选、MPI 乘子公式和径向边界处理存在差异。
 - [核极化接入](rmcdhf_nuclear_polarization.md)：`npol.inp`、核势及当前输入输出约定。
-- [strict 求解器](rmcdhf_mem_strict_mpi.md)及[归一化时序修复记录](../reviews/strict_scnsty_normalization_2026-11-09.md)：独立版本的判据和验证，不应套用于本文普通版本。
+- [已否决变体的移除](rejected_rmcdhf_variants.md)：普通求解器不继承被否决分支的停止策略或比较时序。
 - [单节点 MPI 诊断计划](../plans/rmcdhf_mpi_single_node_diagnostics_2026-11-09.md)：实际性能现象及待执行诊断，与本次静态流程梳理互补。
 - [F2018 迁移计划](../plans/f2018_migration_gfortran15_2026-11-08.md)：标准符合性、接口与状态审计背景；串行正确性和线程安全需分别验证。

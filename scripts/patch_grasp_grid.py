@@ -58,14 +58,14 @@ CAPACITY_FILES = (
 )
 RESTART_FILES = ("src/appl/rci90/lodres.f90", "src/appl/rci90_mpi/lodres.f90")
 SUITE_GRID_FILES = (
-    "src/appl/rwfnestimate90/getinfo.f90",
-    "src/appl/rci90/getcid.f90",
-    "src/appl/rci90_mpi/getcid.f90",
-    "src/appl/rbiotransform90/radpar.f90",
-    "src/appl/rbiotransform90_mpi/radparmpi.f90",
-    "src/appl/rtransition90/getosd.f90",
-    "src/appl/rtransition90_phase/getosd.f90",
-    "src/appl/rtransition90_mpi/getosdmpi.f90",
+    "src/appl/rwfnestimate/getinfo.f90",
+    "src/appl/rci/getcid.f90",
+    "src/appl/rci_mpi/getcid.f90",
+    "src/appl/rbiotransform/radpar.f90",
+    "src/appl/rbiotransform_mpi/radparmpi.f90",
+    "src/appl/rtransition/getosd.f90",
+    "src/appl/rtransition_phase/getosd.f90",
+    "src/appl/rtransition_mpi/getosdmpi.f90",
     "src/appl/rwfnestimate90_csfg/getinfo.f90",
     "src/appl/rmcdhf90_csfg_mpi/getscdmpi.f90",
     "src/appl/rci90_csfg_mpi/getcid.f90",
@@ -74,15 +74,13 @@ SUITE_GRID_FILES = (
     "src/appl/rmcdhf_mpi/getscdmpi.f90",
     "src/appl/rmcdhf_mem/getscd.f90",
     "src/appl/rmcdhf_mem_mpi/getscdmpi.f90",
-    "src/appl/rmcdhf90_mem_strict_mpi/getscdmpi.f90",
-    "src/appl/rmcdhf90_mem_diag_mpi/getscdmpi.f90",
-    "src/appl/rhfs90/gethfd.f90",  # also compiled into gj90 and gj90_mpi
+    "src/appl/rhfs/gethfd.f90",  # also compiled into gj and gj_mpi
     "src/appl/ris4/getsmd.f90",
     "src/appl/rdensity/getsmd.f90",
 )
 SUITE_RESTART_FILES = (
-    "src/appl/rci90/lodres.f90",
-    "src/appl/rci90_mpi/lodres.f90",
+    "src/appl/rci/lodres.f90",
+    "src/appl/rci_mpi/lodres.f90",
     "src/appl/rci90_csfg_mpi/lodres.f90",
     "src/appl/rci90_block_csfg_mpi/lodres.f90",
 )
@@ -187,7 +185,7 @@ def patch_grid(
 ) -> str:
     lines = text.splitlines(keepends=True)
     starts = [i for i, line in enumerate(lines) if assignment(line, "RNT")]
-    expected = 1 if "/rci90" in relative else 2
+    expected = 1 if "/rci" in relative else 2
     if len(starts) != expected:
         raise ValueError(
             f"expected {expected} default RNT assignments, found {len(starts)}"

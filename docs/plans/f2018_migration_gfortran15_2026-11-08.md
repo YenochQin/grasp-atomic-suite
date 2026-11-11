@@ -1,5 +1,7 @@
 # Fortran 2018 迁移实施计划：gfortran 15 验证基线
 
+> 2026-11-11 状态更新：文中 strict/diag 独立求解器已按用户决定[移除](../implemented/rejected_rmcdhf_variants.md)；相关目标、命令和测试数量仅作对应版本的历史记录。
+
 **2026-11-10 范围更新**：CSFG 隔离，当前只推进普通程序；生产与诊断配置分离，移除 legacy/
 隐式 SAVE 兼容 flags。现行构建与验证矩阵见[构建策略](../implemented/build_profiles.md)。
 下文旧 profile、含 CSFG 的 32 配置及其验收数字保留为历史计划/证据，不再作为当前构建命令指南。
@@ -9,7 +11,7 @@
 本轮修复基线：`d1260ba404833d20d709b34d9f26b05c32a3b615`。
 此前设施实施基线：`56769d91eae1e00889144e162458aceba0bdfe2a`，严格接口修复已提交为 `b8d6faf`。
 本轮 Linux 基线：`f395146`；结果对应其上的工作树，见[Linux 修复与验收](../reviews/f2018_linux_davidson_restart_2026-11-09.md)。
-其后的 [strict SCNSTY 时序修复与 74/74 验收](../reviews/strict_scnsty_normalization_2026-11-09.md)保留为阶段证据。
+其后的 [strict SCNSTY 时序修复与 74/74 验收（已移除）](../implemented/rejected_rmcdhf_variants.md)保留为阶段证据。
 矩阵与初始基线见[设施报告](../reviews/f2018_matrix_warning_baseline_2026-11-09.md)；
 最新结果为[优先警告修复第一批](../reviews/f2018_warning_repairs_2026-11-09.md)。旧 71/73、100 轮平台及初始基线继续保留。
 累计修复/回归已提交为 `80992a9`，矩阵与警告基线设施为 `f26e1bc`；
@@ -210,13 +212,13 @@ export FC=/usr/bin/gfortran-15 OMPI_FC=/usr/bin/gfortran-15
 | [rdensity_natural_orbitals](../../test/rdensity/natural_orbitals_test.f90) | 解析占据数、旋转/对角化及正交性相关最大误差 `<= 1e-12` |
 | [rdensity regression](../../test/rdensity/regression.py) | 数值差 `<= 2e-10 * max(1,abs(a),abs(b))`，同时保留排序/格式/相位检查 |
 | [NP support](../../test/npol/support.f90) | `abs(actual-expected) <= 64*epsilon(actual)*max(1,abs(expected))`，人工软件常数不视为核素参数 |
-| [strict restart](../../test/rmcdhf/strict_mem_restart.py) | 现有单轨道样例能量差 `<1e-10 Hartree`，P/Q 最大逐点差 `<1e-9`，公共网格点精确一致 |
+| [strict restart（已移除）](../implemented/rejected_rmcdhf_variants.md) | 现有单轨道样例能量差 `<1e-10 Hartree`，P/Q 最大逐点差 `<1e-9`，公共网格点精确一致 |
 | [jj2lsj regression](../../test/jj2lsj/check.py) | 系数原始数据、标签和相应科学输出按已有测试逐字节一致，含转换文件回放 |
-| [strict_scf_logic](../../test/strict_scf_logic.f90) | 状态转换、首轮、连续次数与停止原因精确一致 |
+| [strict_scf_logic（已移除）](../implemented/rejected_rmcdhf_variants.md) | 状态转换、首轮、连续次数与停止原因精确一致 |
 
-已有严格 SCF 语义保持为：EOL 轨道条件 `max(SCNSTY) <= ACCY`，能量条件 `abs((E_new-E_old)/E_new) < 0.001*ACCY`，连续两轮同时满足；首轮无有效能量比较，不能继承重启前计数。EAL 使用其既有轨道条件。原版程序保持自身停止规则，不能借迁移将其统一为 strict。[严格程序说明](../implemented/rmcdhf_mem_strict_mpi.md)
+已有严格 SCF 语义保持为：EOL 轨道条件 `max(SCNSTY) <= ACCY`，能量条件 `abs((E_new-E_old)/E_new) < 0.001*ACCY`，连续两轮同时满足；首轮无有效能量比较，不能继承重启前计数。EAL 使用其既有轨道条件。原版程序保持自身停止规则，不能借迁移将其统一为 strict。[严格程序说明（已移除）](../implemented/rejected_rmcdhf_variants.md)
 
-2026-11-09 F 类修复：strict 的 SCNSTY 仍使用 `sqrt(UCF)*max(abs(delta P)+abs(delta Q))`，但比较双方均已归一化，新建议轨道尚未阻尼。此前混用未归一化新解/已归一化旧轨道导致假平台；只修正 strict 的调用时序，详见[独立证据](../reviews/strict_scnsty_normalization_2026-11-09.md)。该指标不等于径向方程残差。
+2026-11-09 F 类修复：strict 的 SCNSTY 仍使用 `sqrt(UCF)*max(abs(delta P)+abs(delta Q))`，但比较双方均已归一化，新建议轨道尚未阻尼。此前混用未归一化新解/已归一化旧轨道导致假平台；只修正 strict 的调用时序，详见[独立证据（已移除）](../implemented/rejected_rmcdhf_variants.md)。该指标不等于径向方程残差。
 
 ### 4.4 新增小型回归的拟定门槛
 
@@ -353,7 +355,7 @@ P7 的串行开发可在 P4/P5 后进行，MPI 退出门槛必须等待 P6。阶
 
 ### P5：RMCDHF 状态与串行行为迁移
 
-**执行状态（2026-11-09）**：memory IOS 修复及一轮/P0 对照保留。strict 平台已定位为归一化前后尺度混用；CONSIS 移至已有归一化后、阻尼前，未改公式/阈值/两轮条件或失败夹具。原 1/2-rank 重启在 O0/O2 均 11 轮收敛，新增生产调用路径解析回归通过，见[strict 报告](../reviews/strict_scnsty_normalization_2026-11-09.md)。P5 的真实多根、NP 全 SCF、重复初始化及完整状态审计仍未完成。
+**执行状态（2026-11-09）**：memory IOS 修复及一轮/P0 对照保留。strict 平台已定位为归一化前后尺度混用；CONSIS 移至已有归一化后、阻尼前，未改公式/阈值/两轮条件或失败夹具。原 1/2-rank 重启在 O0/O2 均 11 轮收敛，新增生产调用路径解析回归通过，见[strict 报告（已移除）](../implemented/rejected_rmcdhf_variants.md)。P5 的真实多根、NP 全 SCF、重复初始化及完整状态审计仍未完成。
 
 **修改范围**：原版/NP 的串行、mem 变体的 `SCF/MATRIX/MANEIG/IMPROV/SOLVE/ORTH*` 等；strict/diag 的纯逻辑和诊断组件；共享 workspace 的必要接口。
 
@@ -415,7 +417,7 @@ NP off/zero/on 在四个原版目标中分别验证，on 的软件测试保持�
 
 1. [NP 来源校验](../../test/npol/check_upstream.py) 当前通过去除有限 NP hook 后对照原始源码 hash。语言迁移会合法改变被保护文件，不能简单关掉测试或覆盖历史 hash。保留原始 manifest，另增逐文件迁移记录/补丁及算法回归，重新定义“允许变化且不混入 orbopt”的验证；有意错误回退仍应触发失败。
 2. [CSFG 来源清单](../reference/graspg/source-manifest.json) 表示导入前源代码，不改写为当前文件 hash。另记录迁移后的提交/变更映射；原来未启用的源文件不自动进入计算路径。
-3. [jj2lsj 构建](../../src/appl/jj2lsj90/CMakeLists.txt) 会重编译部分共享例程形成线程调用闭包；模块化后需核对符号解析和工作区所有权，不能引入第二份全局状态或让 legacy 静态对象替代线程安全对象。
+3. [jj2lsj 构建](../../src/appl/jj2lsj/CMakeLists.txt) 会重编译部分共享例程形成线程调用闭包；模块化后需核对符号解析和工作区所有权，不能引入第二份全局状态或让 legacy 静态对象替代线程安全对象。
 4. [网格补丁器](../../scripts/patch_grasp_grid.py) 和其源模式识别必须随入口/声明变化更新；保持 preview/apply/restore 和省略参数即保留原值的契约。所有容量实验在隔离副本进行。
 5. 文件比较覆盖 `.w/.m/.cm/MCP` 及 CSFG 专有记录。普通与 CSFG 输入格式不同，只有明确定义的映射可互转，不能按文件后缀认定兼容。
 

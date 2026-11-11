@@ -27,7 +27,7 @@ OMP_NUM_THREADS=8 OMP_DYNAMIC=FALSE JJ2LSJ_PROFILE=1 \
 
 ## 计时内容及解释
 
-计时模块为 [jj2lsj_profile.f90](../../src/appl/jj2lsj90/jj2lsj_profile.f90)，使用 `SYSTEM_CLOCK`。
+计时模块为 [jj2lsj_profile.f90](../../src/appl/jj2lsj/jj2lsj_profile.f90)，使用 `SYSTEM_CLOCK`。
 CSV 列为 `phase,block,level,items,seconds`；`block`、`level` 为 0 表示不适用。
 能级编号为输入 mixing 数据中的全局编号。`total` 包括交互等待，应使用固定问答文件做性能对照。
 
@@ -63,7 +63,7 @@ CSV 列为 `phase,block,level,items,seconds`；`block`、`level` 为 0 表示不
 
 ## 数值和线程契约
 
-[jj2lsj_postprocess.f90](../../src/appl/jj2lsj90/jj2lsj_postprocess.f90) 对 LS 索引进行迭代归并排序：
+[jj2lsj_postprocess.f90](../../src/appl/jj2lsj/jj2lsj_postprocess.f90) 对 LS 索引进行迭代归并排序：
 
 - 按系数平方降序排列，只有右项严格大于左项时才先取右项，保留相等权重的原始 LS 顺序。
 - 正负系数和正负零均从原向量按索引读取，不对原向量进行重排或筛选。

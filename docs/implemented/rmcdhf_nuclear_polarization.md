@@ -19,7 +19,7 @@
 | `rmcdhf_mpi` | `rmcdhf_mpi/getscdmpi.f90` | `permdir/npol.inp`，仅 rank 0 读取 |
 | `rmcdhf_mem_mpi` | `rmcdhf_mem_mpi/getscdmpi.f90` | `permdir/npol.inp`，仅 rank 0 读取 |
 
-独立 strict/diagnostic 求解器、性质程序和外部 RCI 不读取该配置。
+性质程序、CSFG 和外部 RCI 不读取该配置；strict/diagnostic 独立求解器已[移除](rejected_rmcdhf_variants.md)。
 公共 `NUCPOT` 不读取文件；库被链接不等于应用启用了 NP。
 `isodata`、交互 stdin 顺序、`rwfn.out` 和 `rmix.out` 格式保持原状。
 

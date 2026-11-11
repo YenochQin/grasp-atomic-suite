@@ -130,7 +130,7 @@ Shell      e           p0        gamma        <r>      MTP  SRC
 
 ## 修复与仓库边界
 
-[SOLVH](../../src/appl/rwfnestimate90/solvh.f90) 保留 TF 势、节点目标、精度阈值和
+[SOLVH](../../src/appl/rwfnestimate/solvh.f90) 保留 TF 势、节点目标、精度阈值和
 迭代上限，修改搜索边界更新：
 
 ```fortran
@@ -157,7 +157,7 @@ h/i 节点检查，SETPOT/TAIL 警告均消失。Z=28、Ne=4 的旧对照轨道�
 当时最终 CTest 为 10/10；曾出现一次 `rmcdhf_mpi` 退出阶段段错误，新旧初猜文件逐字节
 一致，旧版对照和完整重跑均通过。该偶发退出问题未由本次修复解决。
 
-迁移后使用 GNU Fortran **15.3.0**、本机 Open MPI **5.0.11**，在独立 Release/Check
+初次迁移提交 `1edcfd6` 使用 GNU Fortran **15.3.0**、本机 Open MPI **5.0.11**，在独立 Release/Check
 目录验证。Check 开启数组运行时检查以及 invalid/zero/overflow 浮点异常 trap。
 结果如下（不包括 CSFG 扩展）：
 
@@ -194,6 +194,20 @@ ctest --test-dir build-rwfn-header-check -R rwfnestimate --output-on-failure
 `Testing/Temporary/LastTest.log`。高 l 回归脚本的 `--workdir` 参数可指定长期保存的位置。
 本轮构建、全量/专项 CTest 和原生接口对照记录另保存在本地
 `build-rwfn-header-release/validation/`，这些运行产物不纳入 Git。
+
+### 2026-11-12 远程同步复核
+
+合并本地 `1edcfd6` 与远程 `e82abc0`（含 `212bcc6` 的目录重命名和
+`db39505` 的 strict/diag 退役）。初猜程序及 TOML 读取模块迁至
+`src/appl/rwfnestimate/`，实现内容与本地提交逐字节一致；文档索引、源码链接和
+测试清单保留双方更新。前述 81 项记录对应初次迁移版本，已退役的测试不属于当前清单。
+
+使用同一 GNU Fortran 15.3.0/Open MPI 5.0.11 工具链，在全新
+`build-sync-20261112/` 中完成普通版 Release 全量编译，启用串行、MPI 和两个
+OpenMP 目标，CSFG 关闭。F2018 目标/测试清单检查通过；设置
+`TMPDIR=/private/tmp` 后，全量 CTest **66/66 通过，无失败或跳过**，包括 Ni/Zn、
+TOML 输入和远程新增的 MPI 描述符回归。构建及测试日志保存在该构建目录的
+`validation/` 和 `Testing/Temporary/LastTest.log`，不纳入 Git。
 
 上述结论针对初猜生成和输入一致性。下一步科学验证应使用用户的真实 Ni/Zn CSF 模型，
 比较后续 MCDHF 优化收敛、网格敏感性和最终能量；本记录不宣称这些物理检查已完成。

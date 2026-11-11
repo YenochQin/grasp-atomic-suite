@@ -1,6 +1,7 @@
 # rwfnestimate 的 header.toml 输入与 TF 初猜保护
 
-状态：已实施；2026-11-12，基于 suite `c47f4d4` 的本次改动。
+状态：已实施；2026-11-12，初次实现提交为 `1edcfd6`，基于 suite `c47f4d4`。
+同步远程更新后沿用[普通程序命名](program_naming.md)，源码位于 `src/appl/rwfnestimate/`。
 适用目标为普通串行 `rwfnestimate`；独立的 `rwfnestimate_csfg` 不在本次范围内。
 数值复现、实际测试状态和物理验证边界见
 [故障与迁移记录](../reviews/rwfnestimate_nan_header_2026-11-12.md)。
@@ -63,7 +64,7 @@ core/peel 轨道顺序保持不变，`SCREENPAR` 继续根据原来的 core 定�
 
 这是原生 TOML 解析，支持注释、多行数组、字符串转义、字面字符串、inline table
 等合法语法。`block_info` 和 `conversion_stats` 不参与径向初猜；不扫描 CSF 数据行。
-输入入口见 [rwfnestimate_input.f90](../../src/appl/rwfnestimate90/rwfnestimate_input.f90)。
+输入入口见 [rwfnestimate_input.f90](../../src/appl/rwfnestimate/rwfnestimate_input.f90)。
 
 ## 描述符和 header 的哈希关联
 

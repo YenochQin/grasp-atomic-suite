@@ -62,13 +62,8 @@ uninitialized empty-rank index deterministically. The BLAS contract also checks
 SLAMCH/DLAMCH return types. NP path cases live in `test/npol`, including the
 legacy static-storage configuration that originally returned an empty path.
 
-`f2018_strict_orbital_consistency` compiles the real strict IMPROV/CONSIS/DAMPOR
-with a controlled radial proposal and real QUAD/RINT. An analytic unit-normalized
-orbital tests scale factors 2 and 1/4, a real P/Q shape change, and a small change
-below the unchanged ACCY. The shape case remains unconverged even when damping
-makes the saved step smaller than ACCY. This catches both comparing before
-normalization and comparing after damping. Strict SCNSTY now compares normalized,
-undamped proposals; its formula, threshold and two-pass stopping gate are unchanged.
+The rejected strict/diagnostic solvers and their exclusive tests have been removed;
+see [retirement scope](../../docs/implemented/rejected_rmcdhf_variants.md).
 
 The first prioritized warning-repair batch additionally registers:
 
@@ -112,7 +107,7 @@ Use `f2018-check`/Debug for standard/interface/runtime diagnostics and
 All use automatic local storage; the legacy profile, implicit-SAVE switches and
 the former `check.py --audit` compatibility mode are retired. CSFG is isolated
 and off by default. See [current build policy](../../docs/implemented/build_profiles.md).
-The strict normalization stage passed both all-target profiles with 74/74
+Before those solvers were retired, the strict normalization stage passed both all-target profiles with 74/74
 tests; its two restart cases converge in 11 cycles with unchanged inputs,
 assertions and thresholds. That record, the earlier Linux 71/73 and macOS 64/68
 results remain historical evidence. The matrix/warning stage added one Python
@@ -135,7 +130,7 @@ suite. Labels are `f2018_unit`, `f2018_serial`, `f2018_mpi`,
 
 `configure.sh` also accepts `--no-mpi`, `--no-csfg`, `--no-openmp`,
 `--prefix PATH`, and quoted `-D...` arguments. Targets write modules separately;
-`gj90` no longer copies into source `bin/` during a build. Default installation
+`gj` no longer copies into source `bin/` during a build. Default installation
 is `<build>/install`, or the explicit prefix. Validation does not install.
 
 ## Complete configuration matrix and warning baseline

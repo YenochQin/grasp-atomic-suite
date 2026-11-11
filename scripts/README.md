@@ -4,6 +4,11 @@
 [版本对照脚本](../docs/implemented/rangular_version_comparison.md)，入口为
 [compare_rangular_versions.py](compare_rangular_versions.py)。可同时比较新版文本和描述符输入，保留日志及 JSON 报告。
 
+普通 MPI 版的文本/描述符输入对照使用
+[compare_rangular_mpi_inputs.py](compare_rangular_mpi_inputs.py)：同一可执行文件交替重复运行、
+逐 rank 阶段计时、数组验证及完整 MCP 哈希对照，使用说明见
+[MPI 描述符输入](../docs/implemented/rangular_mpi_descriptor_input.md)。
+
 rCSFs 描述符预处理及原文本数组验证见
 [rangular 描述符输入](../docs/implemented/rangular_descriptor_input.md)，入口为
 [prepare_csf_descriptors.py](prepare_csf_descriptors.py) 和
@@ -178,8 +183,8 @@ make -j4 install
   --rnt-scale 2e-6 --hp 0 --accy 1e-10 --diff
 ```
 
-这个布局修改 `src/lib/libmod/suite_parameters_M.f90` 及需要变更的二十一个网格入口：
-六个轨道程序（四个原版、独立严格内存 MPI 和 P0 诊断版本）、
+这个布局修改 `src/lib/libmod/suite_parameters_M.f90` 及需要变更的十九个网格入口：
+四个原版轨道程序、
 RHFS、RIS 和 RDENSITY，以及 GRASPG 的波函数估计、SCF 和两个 RCI 入口；g_J 复用 RHFS。
 普通 GRASP 另外包含 `rwfnestimate`、两个 RCI、两个双正交变换和三个跃迁程序的八个入口。
 显式 ACCY 修改还覆盖普通/GRASPG 共四个 RCI 续算入口；`--accy 0` 恢复 `H**6`。

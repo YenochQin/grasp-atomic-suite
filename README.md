@@ -2,9 +2,11 @@
 
 [中文](README_ZH.md) | English
 
-`grasp-atomic-suite` is a Fortran research and development repository for relativistic atomic-structure and atomic-property calculations. It combines original RMCDHF and independent strict/diagnostic solvers with `rhfs90`, `ris4`, `rdensity`, `gj90`, and their MPI support for hyperfine-structure, isotope-shift, and Landé `g_J` calculations.
+`grasp-atomic-suite` is a Fortran research and development repository for relativistic atomic-structure and atomic-property calculations. It combines original RMCDHF programs with `rhfs`, `ris4`, `rdensity`, `gj`, and their MPI support for hyperfine-structure, isotope-shift, and Landé `g_J` calculations.
 
-This repository is not a minimal upstream GRASP mirror. It keeps the traditional GRASP numerical libraries and application layout, while adding CMake builds, MPI targets, an extracted `gj90` program, regression data, and development notes for `g_J` and MPI optimization work.
+This repository is not a minimal upstream GRASP mirror. It keeps the traditional GRASP numerical libraries and application layout, while adding CMake builds, MPI targets, an extracted `gj` program, regression data, and development notes for `g_J` and MPI optimization work.
+
+Ordinary application directories now omit the old `90` suffix; the Landé-factor commands are `gj` and `gj_mpi`. See the [name mapping and rebuild instructions](docs/implemented/program_naming.md).
 
 ## Source Layout
 
@@ -14,11 +16,10 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 ├── CMakeLists.txt            # top-level CMake build
 ├── src/
 │   ├── appl/
-│   │   ├── gj90/             # standalone Landé g_J calculator
+│   │   ├── gj/               # standalone Landé g_J calculator
 │   │   ├── rdensity/         # serial/MPI radial density and natural orbitals
-│   │   ├── rhfs90/           # relativistic hyperfine-structure program
+│   │   ├── rhfs/             # relativistic hyperfine-structure program
 │   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # fresh GRASP copies with optional NP
-│   │   ├── rmcdhf90_mem_{strict,diag}_mpi/ # independent strict/diagnostic variants
 │   │   └── ris4/             # relativistic isotope-shift program
 │   └── lib/
 │       ├── libmod/           # global parameters, common state, shared modules
@@ -33,7 +34,7 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 │   ├── reviews/              # completed reviews and evidence
 │   ├── reference/            # theory background drafts
 │   └── archive/              # superseded plans and historical reports
-├── data/                     # sample inputs and reference outputs for gj90/RHFS checks
+├── data/                     # sample inputs and reference outputs for gj/RHFS checks
 ├── test/                     # orbital optimization and shared-library tests
 ├── scripts/                  # grid patcher and build cleanup helpers
 ├── bin/                      # installed executables
@@ -44,15 +45,15 @@ This repository is not a minimal upstream GRASP mirror. It keeps the traditional
 
 | Program | Source directory | CMake targets | Purpose |
 | --- | --- | --- | --- |
-| Ordinary GRASP calculation chain | `src/appl/rangular90*`, `rwfnestimate90`, `rci90*`, `rbiotransform90*`, `rtransition90*` | `rangular{,_mpi}`, `rwfnestimate`, `rci{,_mpi}`, `rbiotransform{,_mpi}`, `rtransition{,_phase,_mpi}` | Ten targets reuse the suite libraries and central capacities; see [provenance, builds and validation scope](docs/implemented/standard_grasp_integration.md). |
-| `jj2lsj_omp` | `src/appl/jj2lsj90` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/jj2lsj_openmp.md). Separate from `jj2lsj_csfg`. |
-| `gj90` | `src/appl/gj90` | `gj90`, `gj90_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, `name.c`, `name.m/name.cm`, and `name.w`, then writes `name.gj/name.cgj`. |
-| `rhfs90` | `src/appl/rhfs90` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
+| Ordinary GRASP calculation chain | `src/appl/rangular*`, `rwfnestimate`, `rci*`, `rbiotransform*`, `rtransition*` | `rangular{,_mpi}`, `rwfnestimate`, `rci{,_mpi}`, `rbiotransform{,_mpi}`, `rtransition{,_phase,_mpi}` | Ten targets reuse the suite libraries and central capacities; see [provenance, builds and validation scope](docs/implemented/standard_grasp_integration.md). |
+| `jj2lsj_omp` | `src/appl/jj2lsj` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/jj2lsj_openmp.md). Separate from `jj2lsj_csfg`. |
+| `gj` | `src/appl/gj` | `gj`, `gj_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, `name.c`, `name.m/name.cm`, and `name.w`, then writes `name.gj/name.cgj`. |
+| `rhfs` | `src/appl/rhfs` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
 | `rdensity` | `src/appl/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/rdensity_mpi.md). |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing `name.i/name.ci` and angular intermediate data. |
 | GRASP RMCDHF + optional NP | `src/appl/rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | `rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | Fresh copies from the workspace GRASP source, retaining its solver flow. Only these four read `npol.inp`; see [NP interface and provenance](docs/implemented/rmcdhf_nuclear_polarization.md). |
-| Strict memory SCF | `src/appl/rmcdhf90_mem_strict_mpi` | `rmcdhf_mem_strict_mpi` | Independent upstream-derived memory MPI solver: orbital AND energy convergence for two consecutive EOL cycles, plus radial snapshots and a convergence CSV. See [restart and validation guide](docs/implemented/rmcdhf_mem_strict_mpi.md). |
-| P0 diagnostics | `src/appl/rmcdhf90_mem_diag_mpi` | `rmcdhf_mem_diag_mpi` | Independent upstream copy with read-only traces across solution matching, damping and orthogonalization. Original stopping criteria are retained. See [diagnostic guide](docs/implemented/rmcdhf_mem_diag_mpi.md). |
+
+The rejected strict/diagnostic RMCDHF variants have been [removed](docs/implemented/rejected_rmcdhf_variants.md), together with their dedicated tests and runtime entry points.
 
 The default CMake configuration attempts to build MPI versions. If no MPI Fortran toolchain is found, MPI targets are skipped. Serial orbital/property targets must be enabled explicitly. `jj2lsj_omp` is always built; `GRASP_JJ2LSJ_OPENMP=ON` enables OpenMP when available, and `OMP_NUM_THREADS` selects the thread count. Transformation-file modes retain the serial backend.
 
@@ -71,9 +72,9 @@ The default install prefix is `<build>/install`; use `--prefix PATH` or
 `-DCMAKE_INSTALL_PREFIX=PATH` for another destination. A normal build does not
 install or overwrite source `bin/`. See the [strict validation runner](test/f2018/README.md).
 
-`configure.sh` passes `-DGRASP_ENABLE_MPI=ON` by default. If MPI Fortran is available, installation produces `bin/gj90_mpi`, `bin/rhfs_mpi`, `bin/ris4_mpi`, `rmcdhf_mpi`, `rmcdhf_mem_mpi`, and the associated libraries.
+`configure.sh` passes `-DGRASP_ENABLE_MPI=ON` by default. If MPI Fortran is available, installation produces `bin/gj_mpi`, `bin/rhfs_mpi`, `bin/ris4_mpi`, `rmcdhf_mpi`, `rmcdhf_mem_mpi`, and the associated libraries.
 
-To build the four fresh RMCDHF programs, the independent strict/diagnostic variants, and all property programs together:
+To build the four original RMCDHF programs and all property programs together:
 
 ```sh
 cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON
@@ -137,16 +138,16 @@ Common input files:
 
 Common output files:
 
-- `gj90`: `name.gj` or `name.cgj`.
-- `rhfs90`: `name.h/name.ch` and `name.hoffd/name.choffd`.
+- `gj`: `name.gj` or `name.cgj`.
+- `rhfs`: `name.h/name.ch` and `name.hoffd/name.choffd`.
 - `rdensity`: `name.nw` and `name.d/name.cd`.
 - `ris4`: `name.i/name.ci`, and possibly angular intermediate files such as `name.IOB` and `name.ITB`.
 
-`gj90_mpi` also supports command-line arguments:
+`gj_mpi` also supports command-line arguments:
 
 ```sh
-mpiexec -n 2 ./bin/gj90_mpi test --nonci
-mpiexec -n 2 ./bin/gj90_mpi test --ci
+mpiexec -n 2 ./bin/gj_mpi test --nonci
+mpiexec -n 2 ./bin/gj_mpi test --ci
 ```
 
 Without arguments, it falls back to the interactive input flow.
@@ -163,7 +164,7 @@ data/test.w
 data/test.gj
 ```
 
-These files can be used to compare `gj90` Landé-factor output. CTest covers shared-library integration, sparse MPI buffers, orbital transaction/round logic, and the grid patcher:
+These files can be used to compare `gj` Landé-factor output. CTest covers shared-library integration, sparse MPI buffers, orbital transaction/round logic, and the grid patcher:
 
 ```sh
 ctest --test-dir build-all --output-on-failure
@@ -209,7 +210,7 @@ its implementation evidence, superseded claims, and remaining validation work.
 - [Experiment plan](docs/plans/grasp_grid_parameter_tuning.md): grid configurations and physical convergence checks still to run.
 - [Completed grid review](docs/reviews/grasp_grid_methodology_review.md): source findings and diagnostic evidence.
 - [Theory reference](docs/reference/lande_g.md): Landé-factor background draft; operator conventions need independent verification.
-- [Historical archive](docs/README.md#逐份文档结论): gj90 blueprint, migration snapshot, and RHFS/RIS optimization reports. Retained code is distinguished from removed experiments and old performance measurements.
+- [Historical archive](docs/README.md#逐份文档结论): gj blueprint, migration snapshot, and RHFS/RIS optimization reports. Retained code is distinguished from removed experiments and old performance measurements.
 
 ## Contributor Notes
 

@@ -137,7 +137,7 @@ CSFG `ACCESS` 的读权限检查也不能仅用文件存在性检查替代。
    普通/CSFG jj2lsj 与生成工具的 kind/循环改动分别回归，保留已有线程逐位一致契约。
 7. **RIS、跃迁和 CSFG 求解器的声明/FORMAT**：先声明维度整数再使用；补 FORMAT 逗号与明确的 `1X`。
    这类改动应保持数值运算顺序和对外文本协议。优先核对 [RIS Seltzer 密度](../../src/appl/ris4/densread_seltz.f90)、
-   [跃迁 csfm](../../src/appl/rtransition90/csfm.f90)、[MPI Davidson](../../src/lib/libdvd90mpi/dvdson.f90)。
+   [跃迁 csfm](../../src/appl/rtransition/csfm.f90)、[MPI Davidson](../../src/lib/libdvd90mpi/dvdson.f90)。
 
 ### 数值安全门槛：接口问题必须在恢复生产使用前处理
 
@@ -146,7 +146,7 @@ CSFG `ACCESS` 的读权限检查也不能仅用文件存在性检查替代。
 - MPI 路径逐步迁移到显式 `mpi_f08` 接口，核对 communicator/datatype/request/status、count 与缓冲区。
   本机现有 binding 对非连续数组的支持有限，需显式验证或 pack/unpack。
 - BLAS/LAPACK 建立统一显式接口，核对数组形状、连续性、返回类型和 LP64/ILP64。
-  [RCI iniestdm](../../src/appl/rci90/iniestdm.f90) 的 DCOPY 调用，以及各 RMCDHF 的矩阵过程是重点。
+  [RCI iniestdm](../../src/appl/rci/iniestdm.f90) 的 DCOPY 调用，以及各 RMCDHF 的矩阵过程是重点。
 - 当前仍有 **11 个 RMCDHF/CSFG 变体文件**声明 `INTEGER, EXTERNAL :: ddot`，与双精度 DDOT 返回契约不符；
   这类错误不会因加 `-std=f2018` 自动被完整发现。需要触发 CI 阻尼分支的独立测试和正确的接口。
 - [lodcslmpi](../../src/lib/mpi90/lodcslmpi.f90) 等仍用 `INTEGER(BYTE)` 保存 MPI datatype handle，

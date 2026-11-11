@@ -1,5 +1,7 @@
 # 普通 GRASP 导入验证记录
 
+> 2026-11-11 状态更新：文中 strict/diag 独立求解器已按用户决定[移除](../implemented/rejected_rmcdhf_variants.md)；相关目标、命令和测试数量仅作对应版本的历史记录。
+
 日期：2026-11-08。suite 修改前基线：`179ca9ecfd96d54a5617d811b888299a611c13b3`。
 变更范围见[实施说明](../implemented/standard_grasp_integration.md)。
 本记录区分本次接入验证、既有失败与未执行的物理验收。

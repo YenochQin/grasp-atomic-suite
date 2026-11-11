@@ -54,12 +54,12 @@
 以普通串行文本的 14.93 秒为基准，OpenMP 8 线程加速约 1.41 倍，MPI 8 进程约 3.68 倍。
 OpenMP 1、2 线程均慢于普通串行，不能只用 OpenMP 自身的 1 线程时间描述相对原程序的收益。
 
-[OpenMP 控制器](../../src/appl/rangular90/openmp/rangular_parallel.f90)按批计算 CSF 对、缓存结果并按原顺序提交，
-包含结果复制和批次同步；[原 MCP 控制路径](../../src/appl/rangular90/mcp_gg.f90)仍串行整理稀疏结构及排序输出。
+[OpenMP 控制器](../../src/appl/rangular/openmp/rangular_parallel.f90)按批计算 CSF 对、缓存结果并按原顺序提交，
+包含结果复制和批次同步；[原 MCP 控制路径](../../src/appl/rangular/mcp_gg.f90)仍串行整理稀疏结构及排序输出。
 8 线程文本输入的阶段中位数为：成对生成及缓冲 7.63 秒、排序及输出 2.34 秒、稀疏结构及输出 0.31 秒。
 其中并行批次 6.40 秒是成对生成阶段的子区间，不能再次相加。
 
-[MPI 控制路径](../../src/appl/rangular90_mpi/mcpmpi_gg.f90)按列循环分配给各 rank，各自执行计算、临时 I/O、排序和输出。
+[MPI 控制路径](../../src/appl/rangular_mpi/mcpmpi_gg.f90)按列循环分配给各 rank，各自执行计算、临时 I/O、排序和输出。
 它还承担 launcher、数组广播及分片 I/O 成本。上述实现差异解释了可能的开销与扩展性限制，
 本次没有通过低层性能分析逐项量化它们对两者耗时差的贡献。
 
@@ -77,7 +77,7 @@ OpenMP 生成普通 `mcp.*`，MPI 生成 rank 分片；本实验比较各自原�
 | OpenMP 8 线程 | 0.221926 秒 | 0.014258 秒 | 10.558890 秒 | 10.266803 秒 |
 
 串行输入阶段约快 26.3 倍，但文本输入原本只占串行整程约 1.5%。
-[两种加载入口](../../src/appl/rangular90/rangular_input.f90)最终提供相同的 IQA/JQSA/JCUPA 数组，
+[两种加载入口](../../src/appl/rangular/rangular_input.f90)最终提供相同的 IQA/JQSA/JCUPA 数组，
 不减少角系数所需的 CSF 对或改变计算内核。两种程序的整程中位数均改善约 3%，
 但各自文本/描述符的三次测量范围重叠；不能把全部中位数差归因于输入优化，或承诺稳定的 3% 加速。
 

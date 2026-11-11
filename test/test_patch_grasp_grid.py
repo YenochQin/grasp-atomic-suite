@@ -63,7 +63,7 @@ def fixture(root: Path, layout: str = "grasp2018") -> None:
     for relative in grid_files:
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        block = FINITE if "/rci90" in relative else POINT_AND_FINITE
+        block = FINITE if "/rci" in relative else POINT_AND_FINITE
         if relative.endswith("rwfnrelabel.f90"):
             block = "\n".join("!" + line for line in block.splitlines()) + "\n"
         text = block + "      ACCY = H**6\n"
@@ -502,7 +502,7 @@ class PatchGridTests(unittest.TestCase):
         for entry in grid.SUITE_GRID_FILES:
             self.assertIn(b"N = 1179", output[entry])
             self.assertIn(b"H = 2.5D-2", output[entry])
-            if "/rci90" not in entry:
+            if "/rci" not in entry:
                 self.assertIn(b"N = MIN(220,NNNP)", output[entry])
         backup = grid.apply(root, changes, Path(self.temporary.name) / "suite-backup")
         self.assertEqual(grid.plan(root, settings, "atomic-suite"), [])
@@ -681,7 +681,7 @@ class PatchGridTests(unittest.TestCase):
             self.assertIn("N = 1179", output[relative])
             self.assertIn("H = 2.5D-2", output[relative])
             self.assertIn("! NNNP = 590 is a historical comment", output[relative])
-            if "/rci90" not in relative:
+            if "/rci" not in relative:
                 self.assertIn("N = MIN(220,NNNP)", output[relative])
                 self.assertIn("H = 0.0625D0", output[relative])
         self.assertTrue(

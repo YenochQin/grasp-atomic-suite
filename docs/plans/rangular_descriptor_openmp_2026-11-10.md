@@ -103,7 +103,7 @@ Fortran 用 stream unformatted 输入读取约定字节。交换文件至少定�
 接入必须同时提供 [CSLH](../../src/lib/lib9290/cslh.f90) 的 header/block 元数据入口与
 `LODCSH2` 的逐 block 数据入口；仅替换后者，前者仍会扫描文本。
 完整 header 中的 block lengths 必须保留，不能只按相同 J/宇称重新分组。
-尤其一阶相互作用的 [GETINF](../../src/appl/rangular90/getinf.f90) 使用前 `1…ICCUT` 个 CSF 定义参考区间，
+尤其一阶相互作用的 [GETINF](../../src/appl/rangular/getinf.f90) 使用前 `1…ICCUT` 个 CSF 定义参考区间，
 所以输入适配不能擅自排序、去重或改变 MR 所在序号。
 
 Parquet 有列块、row groups 和文件 metadata，不能按连续 Int8 文件直接读取；结构依据见
@@ -116,10 +116,10 @@ Parquet 有列块、row groups 和文件 metadata，不能按连续 Int8 文件�
 
 | 事实 | 对设计/比较的含义 |
 | --- | --- |
-| 串行 [MCP](../../src/appl/rangular90/mcp_gg.f90) 100–111 行分配 block 系数数组，168–211 行展示 T 的扩容及磁盘回退，349–367 行选择 SORTMEM/SORT | 串行已有内存优先路径；仍写稀疏结构 `tmp.30`，最终 MCP 也必须输出，不能称为完全无 I/O。 |
-| MPI [MCPMPI](../../src/appl/rangular90_mpi/mcpmpi_gg.f90) 149、197、206 行直接写 T、V 与结构临时记录，随后使用 SORT | MPI 与串行不仅分工不同，系数存储策略也不同。OpenMP 版若保留串行策略，收益须拆分为 I/O 与并行贡献。 |
+| 串行 [MCP](../../src/appl/rangular/mcp_gg.f90) 100–111 行分配 block 系数数组，168–211 行展示 T 的扩容及磁盘回退，349–367 行选择 SORTMEM/SORT | 串行已有内存优先路径；仍写稀疏结构 `tmp.30`，最终 MCP 也必须输出，不能称为完全无 I/O。 |
+| MPI [MCPMPI](../../src/appl/rangular_mpi/mcpmpi_gg.f90) 149、197、206 行直接写 T、V 与结构临时记录，随后使用 SORT | MPI 与串行不仅分工不同，系数存储策略也不同。OpenMP 版若保留串行策略，收益须拆分为 I/O 与并行贡献。 |
 | MPI 124–126 行按 `JA=1+rank,NCF,nprocs` 轮转列，列内遍历 `JB=1…JA` | 已不是连续等长列分段，不能仅凭三角区域认定必然严重失衡；选择定则、开放壳层结构和贡献数量仍会造成不同列代价差异。 |
-| [GENMCPMPI](../../src/appl/rangular90_mpi/genmcpmpi.f90) 148–152 行各 rank 分配三组 CSF 数组；[LODCSLMPI](../../src/lib/mpi90/lodcslmpi.f90) 由 rank 0 加载后广播 | OpenMP 可共享一份当前 block CSF 输入；这不会自动消除角系数输出、排序和线程局部工作区的内存。 |
+| [GENMCPMPI](../../src/appl/rangular_mpi/genmcpmpi.f90) 148–152 行各 rank 分配三组 CSF 数组；[LODCSLMPI](../../src/lib/mpi90/lodcslmpi.f90) 由 rank 0 加载后广播 | OpenMP 可共享一份当前 block CSF 输入；这不会自动消除角系数输出、排序和线程局部工作区的内存。 |
 
 单份三组输入数组按当前分配形状约为 `5*NNNW*NCF` 字节（byte 为 8 位时），不含其他工作区。
 MPI 有 rank 级副本；OpenMP 的候选内存模型是：
@@ -197,7 +197,7 @@ MPI 有 rank 级副本；OpenMP 的候选内存模型是：
 
 当前 [FortranProfiles](../../cmake/FortranProfiles.cmake) 的 legacy/audit 保留静态存储；
 strict profiles 不保留，也仍不证明模块状态已可重入。
-可参考 [jj2lsj CMake](../../src/appl/jj2lsj90/CMakeLists.txt) 对并发闭包定向编译的组织方式，
+可参考 [jj2lsj CMake](../../src/appl/jj2lsj/CMakeLists.txt) 对并发闭包定向编译的组织方式，
 但其闭包比 rangular 小，既有结果不能作为这里的验收证据。
 共享库保持唯一源码所有权和全局状态定义，避免同一可执行程序出现两套模块实例；新增/关闭 OpenMP 都要构建回归。
 
