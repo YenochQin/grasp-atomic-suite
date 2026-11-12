@@ -3,8 +3,124 @@ set -euo pipefail
 export GRASP="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 build_directory="build"
 cmake_args=(-DGRASP_ENABLE_MPI=ON)
+
+# Quote command arguments for the fish commands displayed to the user.
+fish_quote() {
+    local value=$1
+    value=${value//\\/\\\\}
+    value=${value//\'/\\\'}
+    printf "'%s'" "$value"
+}
+
+cache_value() {
+    sed -n "s/^${1}:[^=]*=//p" "$build_abspath/CMakeCache.txt"
+}
+
+show_next_steps() {
+    local build_arg source_arg python_executable install_prefix rangular_openmp=OFF
+    build_arg=$(fish_quote "$build_abspath")
+    source_arg=$(fish_quote "$GRASP")
+    python_executable=$(cache_value Python3_EXECUTABLE)
+    if [[ -z "$python_executable" ]]; then
+        python_executable=$(cache_value _Python3_EXECUTABLE)
+    fi
+    install_prefix=$(cache_value CMAKE_INSTALL_PREFIX)
+    if [[ -f "$build_abspath/f2018-targets.txt" ]] &&
+       grep -qx rangular_omp "$build_abspath/f2018-targets.txt"; then
+        rangular_openmp=ON
+    fi
+    cat <<EOF
+
+Build configuration
+  Source:          $GRASP
+  Build directory: $build_abspath
+  Profile:         $(cache_value GRASP_FORTRAN_PROFILE) ($(cache_value CMAKE_BUILD_TYPE))
+  Fortran:         $(cache_value CMAKE_Fortran_COMPILER)
+  Serial applications (--serial): $(cache_value GRASP_BUILD_SERIAL_APPS)
+  MPI applications:               $(cache_value GRASP_ENABLE_MPI)
+  OpenMP: jj2lsj=$(cache_value GRASP_JJ2LSJ_OPENMP), rangular=$rangular_openmp
+  CSFG extension:                 $(cache_value GRASP_BUILD_CSFG)
+
+Output locations
+  Executable programs: $build_abspath/bin
+  Libraries:           $build_abspath/lib
+  Optional install:    $install_prefix
+EOF
+    if [[ ! -f "$build_abspath/f2018-targets.txt" ]] ||
+       ! grep -qx rwfnestimate "$build_abspath/f2018-targets.txt"; then
+        cat <<EOF
+
+To also include rwfnestimate and the ordinary serial MCDHF/RCI programs,
+enable the serial applications before building (fish):
+  cmake -S $source_arg -B $build_arg -DGRASP_BUILD_SERIAL_APPS=ON
+EOF
+    fi
+    cat <<EOF
+
+Next commands (fish; usable from any working directory)
+
+1. Compile all programs enabled above:
+   cmake --build $build_arg --parallel 4
+
+2. Validate the build and run all registered tests:
+   $(fish_quote "$python_executable") $(fish_quote "$GRASP/test/f2018/check.py") $build_arg --jobs 4
+   This also performs an incremental build and checks compiler flags and targets.
+   Result:   $build_abspath/audit/acceptance/summary.json
+   Test log: $build_abspath/audit/acceptance/ctest.log
+
+   To rerun only the tests after building:
+   ctest --test-dir $build_arg --output-on-failure
+
+3. Point generated Tools jobs to the built programs:
+   set -gx SUITE_BINDIR $(fish_quote "$build_abspath/bin")
+   For Tools, server_settings.suite_bindir can point to this same directory.
+
+4. Optional: after validation passes, install to $install_prefix:
+   cmake --install $build_arg
+   Installed programs: $install_prefix/bin
+   To use the installed programs with Tools:
+   set -gx SUITE_BINDIR $(fish_quote "$install_prefix/bin")
+EOF
+}
+
+show_help() {
+    local python_option=""
+    if [[ -x "$GRASP/../graspkit-tools/.venv/bin/python" ]]; then
+        local shared_python
+        shared_python="$(cd "$GRASP/../graspkit-tools/.venv/bin" && pwd)/python"
+        python_option=" -DPython3_EXECUTABLE=$(fish_quote "$shared_python")"
+    fi
+    cat <<EOF
+Configure grasp-atomic-suite. Compilation is a separate step.
+
+Usage: ./configure.sh [options] [-DNAME=VALUE ...]
+  --serial          Include rwfnestimate and ordinary serial MCDHF/RCI programs
+  --no-mpi          Disable MPI programs (enabled by default)
+  --no-openmp       Disable both jj2lsj and rangular OpenMP support
+  --no-csfg         Disable the optional CSFG extension (already off by default)
+  --debug           Use a Debug build; default directory becomes build-debug
+  --profile NAME    f2018-release (production), f2018-check or f2018-audit
+  --build-dir PATH  New build directory (default: build)
+  --prefix PATH     Optional installation prefix (default: <build>/install)
+  --pic             Enable position-independent code
+  -h, --help        Show this help
+
+All ordinary programs, with MPI and both OpenMP targets (fish):
+  set -gx FC /usr/bin/gfortran-15
+  set -gx OMPI_FC /usr/bin/gfortran-15
+  ./configure.sh --serial --no-csfg --build-dir build$python_option
+
+GNU Fortran 15, CMake >= 3.31, BLAS/LAPACK and Python are required.
+MPI programs also require a compatible MPI Fortran environment.
+Load the compiler/MPI environment before configuring.
+Use --debug with --profile f2018-check. Release/audit use Release builds.
+The completion message reports the selected options and exact next commands.
+EOF
+}
+
 while (($#)); do
     case "$1" in
+        -h|--help) show_help; exit 0 ;;
         --debug) build_directory="build-debug"; cmake_args+=(-DCMAKE_BUILD_TYPE=Debug); shift ;;
         --pic) cmake_args+=(-DCMAKE_POSITION_INDEPENDENT_CODE=ON); shift ;;
         --no-mpi) cmake_args+=(-DGRASP_ENABLE_MPI=OFF); shift ;;
@@ -12,7 +128,7 @@ while (($#)); do
         --no-csfg) cmake_args+=(-DGRASP_BUILD_CSFG=OFF); shift ;;
         --no-openmp) cmake_args+=(-DGRASP_JJ2LSJ_OPENMP=OFF -DGRASP_RANGULAR_OPENMP=OFF); shift ;;
         --profile|--prefix|--build-dir)
-            if (($# < 2)); then echo "Missing value for $1" >&2; exit 2; fi
+            if (($# < 2)) || [[ -z "$2" ]]; then echo "Missing value for $1; see ./configure.sh --help" >&2; exit 2; fi
             case "$1" in
                 --profile) cmake_args+=("-DGRASP_FORTRAN_PROFILE=$2");;
                 --prefix) cmake_args+=("-DCMAKE_INSTALL_PREFIX=$2");;
@@ -20,7 +136,7 @@ while (($#)); do
             esac
             shift 2 ;;
         -D*) cmake_args+=("$1"); shift ;;
-        *) echo "Unknown option: $1" >&2; exit 2 ;;
+        *) echo "Unknown option: $1; see ./configure.sh --help" >&2; exit 2 ;;
     esac
 done
 if [[ -n ${FC:-} ]]; then
@@ -34,13 +150,15 @@ else
 fi
 if [[ -e "$build_abspath" ]]; then
     echo "ERROR: Build directory already exists: $build_abspath" >&2
+    echo "Use --build-dir with a new directory for a separate configuration." >&2
+    if [[ -f "$build_abspath/CMakeCache.txt" ]] &&
+       [[ $(cache_value CMAKE_HOME_DIRECTORY) == "$GRASP" ]]; then
+        echo "To continue the existing configuration, use the commands below. New configure.sh options were not applied." >&2
+        show_next_steps
+    fi
     exit 1
 fi
 cmake -S "$GRASP" -B "$build_abspath" "${cmake_args[@]}"
-cat <<EOF
-Configured: $build_abspath
-Build: cmake --build "$build_abspath" --parallel 4
-Build/test validation: <shared-python> "$GRASP/test/f2018/check.py" "$build_abspath"
-Production: f2018-release. Validation: f2018-check (Debug) or f2018-audit (Release).
-Install only after validation: cmake --install "$build_abspath"
-EOF
+build_abspath=$(cd "$build_abspath" && pwd)
+echo "Configuration complete. Continue with the build and validation commands below."
+show_next_steps
