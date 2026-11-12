@@ -1,6 +1,6 @@
 # 普通 GRASP 构建范围与编译选项
 
-更新：2026-11-11，基于 `3f902c2` 的工作树增量。按当前工作范围，CSFG 隔离为可选扩展；生产选项和诊断选项分开。
+更新：2026-11-12，基于 `46d1d54` 的工作树增量。按当前工作范围，CSFG 隔离为可选扩展；生产选项和诊断选项分开。
 本页取代旧迁移计划中保留 legacy/隐式静态存储的构建建议。
 
 ## 范围
@@ -31,6 +31,14 @@
 CMake 的范围核查与测试设施需要 Python；生成的 Fortran 数值程序不链接 Python 或 Rust。
 
 ## 使用
+
+`./configure.sh` 默认配置全部保留的非 CSFG 程序：普通串行目标（包括
+`rwfnestimate`）、MPI 目标及两个 OpenMP 目标。随后执行
+`cmake --build build --parallel 4`，可执行文件统一输出到 `build/bin`。
+同一源码与编译器的已有 `build` 会更新配置，因此旧缓存中的串行关闭状态也会被纠正。
+若需要精简范围，显式传入 `--no-serial`、`--no-mpi` 或 `--no-openmp`，每次重配均需保留
+这些选项。`--serial` 继续兼容；直接调用 CMake 时仍需设置
+`-DGRASP_BUILD_SERIAL_APPS=ON`。
 
 生产 OpenMP 构建，使用新目录：
 

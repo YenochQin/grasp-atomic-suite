@@ -128,7 +128,9 @@ The required list covers current programs/tests, not the still-missing F00–F10
 suite. Labels are `f2018_unit`, `f2018_serial`, `f2018_mpi`,
 `f2018_properties`, and `f2018_io`; no real-case test is registered yet.
 
-`configure.sh` also accepts `--no-mpi`, `--no-csfg`, `--no-openmp`,
+`configure.sh` defaults to all ordinary serial, MPI and OpenMP applications,
+with CSFG disabled. It updates compatible existing build caches; repeat opt-out
+options when reconfiguring a reduced build. It accepts `--no-serial`, `--no-mpi`, `--no-csfg`, `--no-openmp`,
 `--prefix PATH`, and quoted `-D...` arguments. Targets write modules separately;
 `gj` no longer copies into source `bin/` during a build. Default installation
 is `<build>/install`, or the explicit prefix. Validation does not install.
