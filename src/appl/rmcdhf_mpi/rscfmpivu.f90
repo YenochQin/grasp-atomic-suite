@@ -66,7 +66,6 @@
       USE setmix_I
       USE factt_I
       USE scfmpi_I
-      USE npol_mpi, ONLY: NPOL_ABORT_MPI
       USE mpiu_I, ONLY: startmpi2
       USE mpiu_I, ONLY: stopmpi2
       IMPLICIT NONE
@@ -81,7 +80,6 @@
       LOGICAL :: EOL, YES
       CHARACTER, DIMENSION(NBLK0) :: IDBLK*8
 !      CHARACTER (LEN = *) :: host
-      CHARACTER(:), ALLOCATABLE :: npfile
       CHARACTER (LEN = 3) :: idstring
       CHARACTER (LEN = 128) :: startdir,permdir,tmpdir,file_rcsl,file1,file2
 !-----------------------------------------------
@@ -151,13 +149,7 @@
 
       if(myid == 0) file1 = permdir(1:lenperm) // '/isodata'
       if(myid == 0) file2 = permdir(1:lenperm) // '/rwfn.inp'
-      npfile = ''
-      IF (myid == 0) THEN
-         IF (lenperm == LEN(permdir)) CALL NPOL_ABORT_MPI(MPI_COMM_WORLD, &
-              'npol: permanent input directory reaches the legacy path limit')
-         npfile = TRIM(permdir) // '/npol.inp'
-      END IF
-      CALL GETSCDmpi (EOL, idblk, file1, file2, npfile)
+      CALL GETSCDmpi (EOL, idblk, file1, file2 )
 !     &            permdir(1:lenperm) // '/isodata',
 !     &            permdir(1:lenperm) // '/rwfn.inp')
       file1 = '  '

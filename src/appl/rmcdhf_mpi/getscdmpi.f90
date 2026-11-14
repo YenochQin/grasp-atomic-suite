@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GETSCDmpi(EOL, IDBLK, ISOFILE, RWFFILE, NPFILE)
+      SUBROUTINE GETSCDmpi(EOL, IDBLK, ISOFILE, RWFFILE)
 !                                                                      *
 !   Interactively determines the data governing the SCF problem.       *
 !                                                                      *
@@ -27,15 +27,13 @@
       USE default_C
       USE fixd_C, ONLY: lfix
       USE iounit_C
-      USE grid_C, ONLY: h, hp, n, rnt, r
+      USE grid_C, ONLY: h, hp, n, rnt
       USE invt_C, ONLY: noinvt
       USE mcpb_C
       USE mpi_C
       USE node_C, ONLY: nnodep
       USE npar_C
-      USE npot_C, ONLY: ZZ
-      USE npol_C, ONLY: NPOL_MESSAGE_LEN
-      USE npol_mpi, ONLY: NPOL_INIT_MPI, NPOL_ABORT_MPI
+      !USE npot_C
       USE ORB_C , ONLY: nak, nh, np, nw, PED
       USE orthct_C
       USE scf_C, ONLY: scnsty, method
@@ -60,7 +58,6 @@
       LOGICAL, INTENT(OUT) :: EOL
       CHARACTER  :: ISOFILE*(*)
       CHARACTER  :: RWFFILE*(*)
-      CHARACTER(*), INTENT(IN) :: NPFILE
       CHARACTER  :: IDBLK(*)*8
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -69,8 +66,6 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NP_STATUS
-      CHARACTER(NPOL_MESSAGE_LEN) :: NP_MESSAGE
       INTEGER :: IQADUM
       INTEGER , DIMENSION(NNNW) :: INDX
       INTEGER :: I, J, IEND, IBEG, LENTH, NSUBS, LOC
@@ -184,8 +179,6 @@
 !   Generate $- r \times V_ (r)$
 !
       CALL NUCPOT
-      CALL NPOL_INIT_MPI(NPFILE, Z, N, R, ZZ, MPI_COMM_WORLD, NP_STATUS, NP_MESSAGE)
-      IF (NP_STATUS /= 0) CALL NPOL_ABORT_MPI(MPI_COMM_WORLD, NP_MESSAGE)
 !
 !   Load the subshell radial wavefunction estimates
 !

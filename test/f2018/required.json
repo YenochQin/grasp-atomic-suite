@@ -118,7 +118,6 @@
       "tests": [
         "rangular_mpi_descriptors",
         "mpi90_local_sparse",
-        "npol_code_consumers_rmcdhf_mpi",
         "npol_code_consumers_rmcdhf_mem_mpi",
         "npol_code_mpi_broadcast_1",
         "npol_code_mpi_broadcast_2",

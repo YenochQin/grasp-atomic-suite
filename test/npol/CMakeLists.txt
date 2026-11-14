@@ -35,7 +35,7 @@ npol_test(npol_code_entrypoints "${Python3_EXECUTABLE}" "${check}" entrypoints
 npol_test(npol_code_upstream_copy "${Python3_EXECUTABLE}"
     "${CMAKE_CURRENT_SOURCE_DIR}/check_upstream.py" "${PROJECT_SOURCE_DIR}")
 
-foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
+foreach(variant rmcdhf rmcdhf_mem rmcdhf_mem_mpi)
     if(variant MATCHES "_mpi$" AND NOT TARGET mpiu90)
         continue()
     endif()

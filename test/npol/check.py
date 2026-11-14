@@ -153,13 +153,23 @@ def entrypoints(root: Path) -> None:
         # Ignore comments when checking code ordering and call counts.
         code = "\n".join(line.split("!", 1)[0] for line in text.splitlines())
         calls = re.findall(r"call\s+(\w+)", code)
-        assert calls.count(hook) == 1
-        assert calls.index("nucpot") < calls.index(hook) < calls.index("setrwfmpi" if mpi else "setrwfa")
+        enabled = variant != "rmcdhf_mpi"
+        if enabled:
+            assert calls.count(hook) == 1
+            assert calls.index("nucpot") < calls.index(hook) < calls.index("setrwfmpi" if mpi else "setrwfa")
+        else:
+            assert calls[calls.index("nucpot") + 1] == "setrwfmpi"
         for filename in (f"{stem}.f90", f"{stem}_I.f90"):
             declaration = (directory / filename).read_text().lower()
-            assert re.search(r"subroutine\s+" + stem + r"\s*\(eol, idblk, isofile, rwffile, npfile\)", declaration)
+            arguments = "eol, idblk, isofile, rwffile" + (", npfile" if enabled else "")
+            assert re.search(r"subroutine\s+" + stem + r"\s*\(" + arguments + r"\)", declaration)
+            if not enabled:
+                assert "npol" not in declaration and "npfile" not in declaration
         main = (directory / ("rscfmpivu.f90" if mpi else "rscfvu.f90")).read_text().lower()
-        if mpi:
+        if not enabled:
+            assert "npol" not in main and "npfile" not in main
+            assert re.search(r"call getscdmpi\s*\(eol, idblk, file1, file2\s*\)", main)
+        elif mpi:
             assert "npfile = ''" in main and "npfile = trim(permdir) // '/npol.inp'" in main
             assert re.search(r"call getscdmpi\s*\(eol, idblk, file1, file2, npfile\)", main)
         else:

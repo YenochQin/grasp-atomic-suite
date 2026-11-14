@@ -7,7 +7,7 @@ All data are synthetic software fixtures. These tests never start an atomic SCF
 solver, use preparation tools, load atomic datasets, or submit jobs.
 
 Select only these tests with `ctest --test-dir <build> -L '^npol_code$' --output-on-failure`.
-There are 10 tests in a serial configuration and 15 with MPI and Python available.
+There are 10 tests in a serial configuration and 14 with MPI and Python available.
 CMake prefers the existing Tools Python environment; no packages are installed.
 
 | Test | Evidence |
@@ -17,14 +17,14 @@ CMake prefers the existing Tools Python environment; no packages are installed.
 | `npol_code_kernel` | Independent closed values at origin and cutoff, arbitrary radius, switches, zero strength, extreme powers, subnormals, rejected overflow |
 | `npol_code_compose` | Sign, repeated composition, fresh Coulomb capture, reinitialization, reset, failed initialization rollback |
 | `npol_code_bounds` | N=1/NNNP, invalid lengths, short arrays, tail sentinels, bad radii, nonfinite and overflowing composition |
-| `npol_code_consumers_<variant>` | Actual production YPOT/DACON/RINTI from each of the four variants; deterministic test-only derivative and weighted-quadrature stubs; diagonal/off-diagonal differences and kinetic invariance |
+| `npol_code_consumers_<variant>` | Actual production YPOT/DACON/RINTI from the three NP-enabled variants (`rmcdhf`, `rmcdhf_mem`, `rmcdhf_mem_mpi`); deterministic test-only derivative and weighted-quadrature stubs; diagonal/off-diagonal differences and kinetic invariance |
 | `npol_code_upstream_copy` | SHA-256 of all 492 imported GRASP files after removing the reviewed NP-only changes; independent of the external source tree |
-| `npol_code_entrypoints` | Four call/interface signatures and hook order; no implicit loading in NUCPOT or unsupported solvers; dynamic production initialization driver |
+| `npol_code_entrypoints` | Three NP call/interface signatures and hook order; ordinary `rmcdhf_mpi` has its original four-argument interface, no NP references and direct NUCPOT-to-SETRWFMPI ordering; no implicit loading in NUCPOT; dynamic production initialization driver |
 | `npol_code_mpi_broadcast_1/2` | Real MPI, distinct rank working directories, root-only input, every configuration field, full arrays, disabled/missing/zero behavior, root-only summary |
 | `npol_code_mpi_error_2` | Root parse/build/output failure, worker invalid/inconsistent length, charge mismatch, composition failure; all ranks reach an error barrier, then nonzero abort |
 | `npol_code_output` | Metadata read-back, replacement of longer output, disabled no-output, open/write failure, no published state on failure |
 
-The two MPI consumer tests run at two ranks and sum actual production YPOT
+The memory MPI consumer test runs at two ranks and sums actual production YPOT
 contributions to verify that only one full external potential remains. DACON and
 RINTI must still see the unscaled potential on every rank.
 

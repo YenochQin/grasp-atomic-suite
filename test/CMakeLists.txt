@@ -75,6 +75,10 @@ if(Python3_Interpreter_FOUND)
         COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/test_mcp_compare.py")
     set_tests_properties(mcp_compare PROPERTIES TIMEOUT 120 SKIP_RETURN_CODE 77)
+    add_test(NAME rmcdhf_mpi_sampler
+        COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/test_sample_rmcdhf_mpi.py")
+    set_tests_properties(rmcdhf_mpi_sampler PROPERTIES TIMEOUT 30)
     if(TARGET rangular_mpi AND MPIEXEC_EXECUTABLE)
         add_test(NAME rangular_mpi_descriptors
             COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rangular/test_mpi_descriptors.py"

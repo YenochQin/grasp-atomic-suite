@@ -1,5 +1,20 @@
 # rmcdhf 局域核极化势：现行接口与代码验证
 
+2026-11-15 更新（suite `3f82922` 之上的工作树）：按用户要求移除普通 `rmcdhf_mpi`
+的 NP 初始化调用、输入路径及接口参数，恢复 `NUCPOT → SETRWFMPI`。
+该程序不再读取 `npol.inp`，即使文件开启 NP 也不生效；不会创建或改写 `npol.summary`。
+其他三个支持程序和共享 NP 库保留。此项是功能范围变更，不代表核极化效应已完成物理评估。
+下文 2026-10-24 验证记录保留当时四个程序的历史范围。
+
+本次移除验证：macOS/GNU Fortran 15.3.0、Open MPI、OpenBLAS，独立
+`f2018-check` 构建与链接通过。使用本机 Homebrew GNU 15，仓库约定的 Linux
+`/usr/bin/gfortran-15` 在本机不存在；不作为该 Linux 路径环境的验证。
+`GETSCDmpi` 实现和接口与上游逐字节相同，492 文件来源检查通过，重建可执行文件中无 NPOL 符号。
+选定 19 项 CTest 全部通过：NP 14 项、普通 MPI CI 阻尼 1/2/4 ranks、验收驱动及外部采样器。
+其中 12 项首次通过，7 项 MPI 测试先受沙箱 socket 限制，在允许本地通信后重跑通过。
+构建仍有历史代码告警，日志位于本地忽略目录 `build-rmcdhf-no-npol-check/` 的
+`build.log`、`validation.log`、`validation-mpi.log`。未安装到仓库 `bin/`，未进行原子计算或性能实测。
+
 > 状态：代码已实施；2026-10-24 在 Linux/GNU Fortran 下完成下述代码测试。
 > suite 基准：`7f9bf2d25ad1a2c6074c61c798cc686899677da4`；实现版本为首次引入本文的 Git 提交。
 > RMCDHF 来源：2026-10-24 从工作区 `grasp/src/appl/rmcdhf90*` 新复制，逐文件 SHA-256 见文中清单。
@@ -10,16 +25,15 @@
 
 ## 支持范围
 
-仅以下四个目标显式读取 NP 配置：
+仅以下三个目标显式读取 NP 配置：
 
 | 目标 | 源码入口 | 输入位置 |
 | --- | --- | --- |
 | `rmcdhf` | `rmcdhf/getscd.f90` | 当前输入目录的 `npol.inp` |
 | `rmcdhf_mem` | `rmcdhf_mem/getscd.f90` | 当前输入目录的 `npol.inp` |
-| `rmcdhf_mpi` | `rmcdhf_mpi/getscdmpi.f90` | `permdir/npol.inp`，仅 rank 0 读取 |
 | `rmcdhf_mem_mpi` | `rmcdhf_mem_mpi/getscdmpi.f90` | `permdir/npol.inp`，仅 rank 0 读取 |
 
-性质程序、CSFG 和外部 RCI 不读取该配置；strict/diagnostic 独立求解器已[移除](rejected_rmcdhf_variants.md)。
+普通 `rmcdhf_mpi`、性质程序、CSFG 和外部 RCI 不读取该配置；strict/diagnostic 独立求解器已[移除](rejected_rmcdhf_variants.md)。
 公共 `NUCPOT` 不读取文件；库被链接不等于应用启用了 NP。
 `isodata`、交互 stdin 顺序、`rwfn.out` 和 `rmix.out` 格式保持原状。
 

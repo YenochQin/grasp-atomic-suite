@@ -51,7 +51,7 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 | `rhfs` | `src/appl/rhfs` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
 | `rdensity` | `src/appl/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/rdensity_mpi.md). |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing `name.i/name.ci` and angular intermediate data. |
-| GRASP RMCDHF + optional NP | `src/appl/rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | `rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | Fresh copies from the workspace GRASP source, retaining its solver flow. Only these four read `npol.inp`; see [NP interface and provenance](docs/implemented/rmcdhf_nuclear_polarization.md). |
+| GRASP RMCDHF | `src/appl/rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | `rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | Copies from the workspace GRASP source, retaining its solver flow. Ordinary `rmcdhf_mpi` has no NP initialization; the other three optionally read `npol.inp`. See [NP interface and provenance](docs/implemented/rmcdhf_nuclear_polarization.md). |
 
 The rejected strict/diagnostic RMCDHF variants have been [removed](docs/implemented/rejected_rmcdhf_variants.md), together with their dedicated tests and runtime entry points.
 

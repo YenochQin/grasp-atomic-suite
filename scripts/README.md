@@ -1,5 +1,9 @@
 # GRASP 辅助脚本
 
+大规模 RMCDHF MPI 停顿采样使用 [sample_rmcdhf_mpi.py](sample_rmcdhf_mpi.py)，
+只读附着到指定 Linux PID 树，记录线程状态、等待位置、I/O、缺页和系统压力。
+用法、原版流程对照及验证边界见 [RMCDHF MPI 诊断](../docs/implemented/rmcdhf_mpi_diagnostics.md)。
+
 原版/新版 `rangular` 的一键运行、计时和 MCP 对照见
 [版本对照脚本](../docs/implemented/rangular_version_comparison.md)，入口为
 [compare_rangular_versions.py](compare_rangular_versions.py)。可同时比较新版文本和描述符输入，保留日志及 JSON 报告。

@@ -621,11 +621,11 @@
     },
     "src/appl/rmcdhf_mpi/rscfmpivu.f90": {
       "base_sha256": "0fa1e27ccada267fa6895efa6996ee4f472fec35a294f49f888970c9b0badc54",
-      "reason": "Explicit interfaces and corrected dummy intents checked against production implementations; no mathematical expressions or stopping rules changed. Strict internal interface completion: imported procedure declarations and read-only NCORE intent.",
+      "reason": "Explicit MPI helper interfaces; no mathematical expressions or stopping rules changed. Match context updated after removing the ordinary MPI NP hook on 2026-11-15; historical base hash retained.",
       "edits": [
         {
-          "before": "      USE factt_I\n      USE scfmpi_I\n      USE npol_mpi, ONLY: NPOL_ABORT_MPI\n      IMPLICIT NONE\n!-----------------------------------------------\n!   L o c a l   P a r a m e t e r s\n",
-          "after": "      USE factt_I\n      USE scfmpi_I\n      USE npol_mpi, ONLY: NPOL_ABORT_MPI\n      USE mpiu_I, ONLY: startmpi2\n      USE mpiu_I, ONLY: stopmpi2\n      IMPLICIT NONE\n!-----------------------------------------------\n!   L o c a l   P a r a m e t e r s\n",
+          "before": "      USE factt_I\n      USE scfmpi_I\n      IMPLICIT NONE\n!-----------------------------------------------\n!   L o c a l   P a r a m e t e r s\n",
+          "after": "      USE factt_I\n      USE scfmpi_I\n      USE mpiu_I, ONLY: startmpi2\n      USE mpiu_I, ONLY: stopmpi2\n      IMPLICIT NONE\n!-----------------------------------------------\n!   L o c a l   P a r a m e t e r s\n",
           "count": 1
         }
       ]
