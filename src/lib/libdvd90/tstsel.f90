@@ -100,7 +100,7 @@ contains
 !        IF (MYID == 0) WRITE (6, *) 'converged by crite'
          tstsel = .true.
          return
-      endif
+      end if
 !
 ! Find the maximum element of the last NNCV coefficients of unconverged
 ! eigenvectors. For those unconverged coefficients, put their indices
@@ -126,7 +126,7 @@ contains
             icnt = icnt + 1
             ind(icnt) = iselec(i)
             rowlast(icnt) = tmax
-         endif
+         end if
 !Rasa      ENDIF
       end do
 
@@ -135,7 +135,7 @@ contains
          done = .true.
       !IF (NNCV.EQ.0) print*, 'converged by critc', kpass
 !        WRITE (6, *) 'converged by critc', KPASS, MYID
-      endif
+      end if
 !
 ! Sort the ROWLAST elements interchanging their indices as well
 !

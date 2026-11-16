@@ -62,12 +62,12 @@
          if (beta*(radial_grid(i)-rjp) > qem) then
             mtp = i
          else
-            go to 1
-         endif
+            goto 1
+         end if
       else
          write (*, 300)
          mtp = nm4
-      endif
+      end if
 !
 !   Compute offset for exponential function
 !
@@ -96,7 +96,7 @@
          else
             cm = cm*(gam2 - (dnu - em)**2)
             emfact = emfact*em
-         endif
+         end if
          ovltrm = cm*(t**(dnu - em)/emfact)
          pterm = ovltrm*(fkmzbb + em)*beta
          qterm = ovltrm*(fkmzbb - em)*bigebc
@@ -111,7 +111,7 @@
             else
                cm = cm*(gam2 - (dnu - em)**2)
                emfact = emfact*em
-            endif
+            end if
             ovltrm = cm*(t**(dnu - em)/emfact)
             pterm = ovltrm*(fkmzbb + em)*beta
             qterm = ovltrm*(fkmzbb - em)*bigebc
@@ -123,7 +123,7 @@
          q(i) = sumq*exptrm
          if (p(i) /= 0.0_real64) cycle
          loc = i + 1
-         go to 4
+         goto 4
       end do
       loc = radial_point_count + 1
 !
@@ -133,7 +133,7 @@
 !
       return
 !
-  300 format('TAIL: Grid may be of insufficient extent')
+  300 format("TAIL: Grid may be of insufficient extent")
       return
 !
       end subroutine tail

@@ -12,4 +12,4 @@
       real(real64) :: slf_en(*)
       end subroutine setham
       end interface
-      end module
+      end module setham_i

@@ -27,7 +27,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ixjtik_i
+      use ixjtik_i, only: ixjtik
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -47,7 +47,7 @@ contains
 !     CHESKED TRIANGULAR CONDITIONS
 !
          if (ixjtik(j,k,l,m,n,6) == 0) return
-      endif
+      end if
       i1 = (j + k + l)/2
       as = dble(i1)
       a = dble(l)
@@ -117,7 +117,7 @@ contains
             si = si*dsqrt((as - c - two)*(as - c - one)*(as - c)*(as - b + &
                three)*(as - b + two)*(as - b + one)/((c + four)*(c + three)*(c&
                 + two)*(c + one)*c*(c - one)*(c - two)))
-         endif
+         end if
       else if (n - j == 6) then
 !  3
          if (k - m == 6) then
@@ -184,7 +184,7 @@ contains
             si = si*dsqrt((as - a + three)*(as - a + two)*(as - a + one)*(as + &
                four)*(as + three)*(as + two)/((c + four)*(c + three)*(c + two)*&
                (c + one)*c*(c - one)*(c - two)))
-         endif
+         end if
       else if (j - n == 4) then
 ! -2
          if (k - m == 6) then
@@ -247,7 +247,7 @@ contains
             si = si*dsqrt((as - c - one)*(as - c)*(as - b + two)*(as - b + one)&
                /((c + four)*(c + three)*(c + two)*(c + one)*c*(c - one)*(c - &
                two)))
-         endif
+         end if
       else if (n - j == 4) then
 !  2
          if (k - m == 6) then
@@ -311,7 +311,7 @@ contains
             si = si*dsqrt((as - a + two)*(as - a + one)*(as + three)*(as + two)&
                /((c + four)*(c + three)*(c + two)*(c + one)*c*(c - one)*(c - &
                two)))
-         endif
+         end if
       else if (j - n == 2) then
 ! - 1
          if (k - m == 6) then
@@ -375,7 +375,7 @@ contains
                 - three)*(b - two)*(b - one)*b*(b + one)*(b + two)*(b + three)*&
                (c + four)*(c + three)*(c + two)*(c + one)*c*(c - one)*(c - two)&
                ))
-         endif
+         end if
       else if (n - j == 2) then
 ! - 1
          if (k - m == 6) then
@@ -441,7 +441,7 @@ contains
                two)/((b + three + two)*(b + four)*(b + three)*(b + two)*(b + &
                one)*b*(b - one)*(c + four)*(c + three)*(c + two)*(c + one)*c*(c&
                 - one)*(c - two)))
-         endif
+         end if
       else if (j - n == 0) then
 !  0
          if (k - m == 6) then
@@ -508,8 +508,8 @@ contains
             si = si/dsqrt((b + four)*(b + three)*(b + two)*(b + one)*b*(b - one&
                )*(b - two)*(c + four)*(c + three)*(c + two)*(c + one)*c*(c - &
                one)*(c - two))
-         endif
-      endif
+         end if
+      end if
       return
       end subroutine sixj3
 end module sixj3_i

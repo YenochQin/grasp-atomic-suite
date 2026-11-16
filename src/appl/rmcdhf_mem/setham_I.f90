@@ -8,6 +8,6 @@
       integer, intent(in) :: myid
       integer, intent(in) :: nprocs
       integer(int64) :: ncontr_tot(20), ncontr_tot2(20)
-      end subroutine
+      end subroutine setham
       end interface
-      end module
+      end module setham_i

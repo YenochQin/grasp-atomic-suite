@@ -26,10 +26,10 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use diaga1_i
-      use diaga3_i
-      use diaga4_i
-      use diaga5_i
+      use diaga1_i, only: diaga1
+      use diaga3_i, only: diaga3
+      use diaga4_i, only: diaga4
+      use diaga5_i, only: diaga5
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -69,7 +69,7 @@ contains
         if(iat == 0)return
         recc=re*recc
         iat=0
-      endif
+      end if
       call diaga4(ja1,ja2,k1,k2,2*ka,ire,iat,re)
       if(iat == 0)return
       recc=re*recc

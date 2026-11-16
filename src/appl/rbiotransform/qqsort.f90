@@ -28,7 +28,7 @@
       use parameter_def,   only: orbital_index_radix
       use memory_man
       use orb_c
-      use default_c
+      use default_c, only: double, inpci, ndef, ndump
       use mcpdata_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -63,11 +63,11 @@
 !   Allocate storage for all required arrays these arrays are then deallocated
 !   in mcp
 !
-      call alloc (jann,   ncoeff, 'JANN',   'QQSORT')
-      call alloc (jbnn,   ncoeff, 'JBNN',   'QQSORT')
-      call alloc (intgrl, ncoeff, 'INTGRL', 'QQSORT')
-      call alloc (cnn,    ncoeff, 'CNN',    'QQSORT')
-      call alloc (intptr, ncoeff, 'INTPTR', 'QQSORT')
+      call alloc (jann,   ncoeff, "JANN",   "QQSORT")
+      call alloc (jbnn,   ncoeff, "JBNN",   "QQSORT")
+      call alloc (intgrl, ncoeff, "INTGRL", "QQSORT")
+      call alloc (cnn,    ncoeff, "CNN",    "QQSORT")
+      call alloc (intptr, ncoeff, "INTPTR", "QQSORT")
 !
 !   Read arrays into memory from NFILE
 !
@@ -106,16 +106,16 @@
                jbnn(1) = jb
                intgrl(1) = int
                cnn(1) = cn
-               go to 4
-            endif
-         endif
+               goto 4
+            end if
+         end if
          i = l
          j = l + l
     3    continue
          if (j <= ir) then
             if (j < ir) then
                if (intgrl(j) < intgrl(j+1)) j = j + 1
-            endif
+            end if
             if (int < intgrl(j)) then
                jann(i) = jann(j)
                jbnn(i) = jbnn(j)
@@ -125,15 +125,15 @@
                j = j + j
             else
                j = ir + 1
-            endif
-            go to 3
-         endif
+            end if
+            goto 3
+         end if
          jann(i) = ja
          jbnn(i) = jb
          intgrl(i) = int
          cnn(i) = cn
-         go to 2
-      endif
+         goto 2
+      end if
 !
 
 !   Sorting complete; close the file
@@ -181,12 +181,12 @@
          do i = 1, ncoeff
             write (nf) cnn(i), jann(i), jbnn(i)
          end do
-      endif
-      call dalloc (jann,   'JANN',   'QQSORT')
-      call dalloc (jbnn,   'JBNN',   'QQSORT')
-      call dalloc (intgrl, 'INTGRL', 'QQSORT')
-      call dalloc (cnn,    'CNN',    'QQSORT')
-      call dalloc (intptr, 'INTPTR', 'QQSORT')
+      end if
+      call dalloc (jann,   "JANN",   "QQSORT")
+      call dalloc (jbnn,   "JBNN",   "QQSORT")
+      call dalloc (intgrl, "INTGRL", "QQSORT")
+      call dalloc (cnn,    "CNN",    "QQSORT")
+      call dalloc (intptr, "INTPTR", "QQSORT")
 !
 !  Has all data been processed? If so close
 !  the file
@@ -213,8 +213,8 @@
 !
       return
 !
-  301 format(' T_[',1i2,',',1i2,']',' (',1i2,1a2,',',1i2,1a2,') = ',1p,d19.12)
-  302 format(' (',1i2,1a2,',',1i2,1a2,')',i6)
+  301 format(" T_[",1i2,",",1i2,"]"," (",1i2,1a2,",",1i2,1a2,") = ",1p,d19.12)
+  302 format(" (",1i2,1a2,",",1i2,1a2,")",i6)
       return
 !
       end subroutine qqsort

@@ -47,10 +47,10 @@ contains
 !cjb  use EXECUTE_COMMAND_LINE if function 'system' is not supported
 !     call execute_command_line ('mkdir -p -m 775 ' // dir(1:lendir), &
 !                         exitstat=ierr, cmdmsg=mkdir_error_message)
-      if (ierr.ne.0) then
-        print*, ' sys_mkdir error message = ', trim(mkdir_error_message)
+      if (ierr/=0) then
+        print*, " sys_mkdir error message = ", trim(mkdir_error_message)
 !               ' myid = ', myid
-      endif
+      end if
       return
       end subroutine sys_mkdir
 end module sys_mkdir_i

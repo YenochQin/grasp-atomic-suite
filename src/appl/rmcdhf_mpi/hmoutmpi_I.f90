@@ -8,6 +8,6 @@
       integer :: nprocs
 !VAST...Dummy argument NPROCS is not referenced in this routine.
       integer, intent(in) :: ncf
-      end subroutine
+      end subroutine hmoutmpi
       end interface
-      end module
+      end module hmoutmpi_i

@@ -9,6 +9,6 @@
       logical, intent(in)  :: lprint
       integer, intent(in)  :: nb
       character (len = *), intent(in) :: fhead
-      end subroutine
+      end subroutine sort
       end interface
-      end module
+      end module sort_i

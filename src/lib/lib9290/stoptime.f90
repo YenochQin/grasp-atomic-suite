@@ -39,28 +39,28 @@ contains
 !      write (6, *) '       ', progname, ': Execution Finished ...'
 !      write (6, *) '===================================================='
       write (6, *)
-      write (6, *) 'Wall time:'
+      write (6, *) "Wall time:"
 
       call system_clock (ncount2, ncount_rate, ncount_max)
       ncount2 = ncount2 - ncount1
       nseconds = ncount2/ncount_rate
-      write (str2nds, '(I8)') nseconds
-      msg = str2nds//' seconds'
+      write (str2nds, "(I8)") nseconds
+      msg = str2nds//" seconds"
       write (6, *) msg(1:len_trim(msg))
 
       write (6, *)
-      write (6, *) 'Finish Date and Time:'
+      write (6, *) "Finish Date and Time:"
 
       call date_and_time (chdate, chtime, chzone, nymduhmsm)
 
-      print*, '  Date (Yr/Mon/Day): ',                     &
-              chdate(1:4),'/',chdate(5:6),'/',chdate(7:8)
-      print*, '  Time (Hr/Min/Sec): ',                     &
-              chtime(1:2),'/',chtime(3:4),'/',chtime(5:10)
-      print*, '  Zone: ',chzone
+      print*, "  Date (Yr/Mon/Day): ",                     &
+              chdate(1:4),"/",chdate(5:6),"/",chdate(7:8)
+      print*, "  Time (Hr/Min/Sec): ",                     &
+              chtime(1:2),"/",chtime(3:4),"/",chtime(5:10)
+      print*, "  Zone: ",chzone
 
       write (6, *)
-      write (6, *) progname//': Execution complete.'
+      write (6, *) progname//": Execution complete."
 
       return
       end subroutine stoptime

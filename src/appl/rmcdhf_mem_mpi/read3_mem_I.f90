@@ -8,6 +8,6 @@
       integer(int64), intent(in) :: ncontr_tot
       integer, intent(in)       :: nfile
       integer, intent(out)      :: ncontr
-      end subroutine
+      end subroutine read3_mem
       end interface
-      end module
+      end module read3_mem_i

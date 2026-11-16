@@ -37,24 +37,24 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use setmc_i
-      use setcon_i
-      use setiso_i
-      use radpar_i
-      use radgrd_i
-      use setqic_i
-      use fname_i
-      use setcslb_i
-      use tcsl_i
-      use kapdata_i
-      use lodrwfi_i
-      use lodrwff_i
-      use brkt_i
-      use gets_i
-      use biotr1_i
-      use radfile_i
-      use genmcp_i
+      use getyn_i, only: getyn
+      use setmc_i, only: setmc
+      use setcon_i, only: setcon
+      use setiso_i, only: setiso
+      use radpar_i, only: radpar
+      use radgrd_i, only: radgrd
+      use setqic_i, only: setqic
+      use fname_i, only: fname
+      use setcslb_i, only: setcslb
+      use tcsl_i, only: tcsl
+      use kapdata_i, only: kapdata
+      use lodrwfi_i, only: lodrwfi
+      use lodrwff_i, only: lodrwff
+      use brkt_i, only: brkt
+      use gets_i, only: gets
+      use biotr1_i, only: biotr1
+      use radfile_i, only: radfile
+      use genmcp_i, only: genmcp
       use starttime_i, only: starttime
       use stoptime_i, only: stoptime
       implicit none (type, external)
@@ -78,28 +78,28 @@
       character(len=128) :: isofile
 !-----------------------------------------------
 !
-      isofile = 'isodata'
+      isofile = "isodata"
 !   Debug flags
 !
       ntestg = 0
       ntestl = 0
       ntest = max0(ntestl,ntestg)
 !
-      call starttime (ncount1, 'BIOTRANSFORM')
+      call starttime (ncount1, "BIOTRANSFORM")
       write(*,*)
-      write(*,*) 'RBIOTRANSFORM'
-      write(*,*) 'This program transforms the initial and final wave'
-      write(*,*) 'functions so that standard tensor albegra can be'
-      write(*,*) 'used in evaluation of the transition parameters'
-      write(*,*) 'Input files:  isodata, name1.c, name1.w, name1.(c)m'
-      write(*,*) '              name2.c, name2.w, name2.(c)m         '
-      print*,'              name1.TB, name2.TB (optional angular files)'
-      write(*,*) 'Output files: name1.bw, name1.(c)bm, '
-      write(*,*) '              name2.bw, name2.c(bm)'
-      write(*,*) '              name1.TB, name2.TB (angular files)'
+      write(*,*) "RBIOTRANSFORM"
+      write(*,*) "This program transforms the initial and final wave"
+      write(*,*) "functions so that standard tensor albegra can be"
+      write(*,*) "used in evaluation of the transition parameters"
+      write(*,*) "Input files:  isodata, name1.c, name1.w, name1.(c)m"
+      write(*,*) "              name2.c, name2.w, name2.(c)m         "
+      print*,"              name1.TB, name2.TB (optional angular files)"
+      write(*,*) "Output files: name1.bw, name1.(c)bm, "
+      write(*,*) "              name2.bw, name2.c(bm)"
+      write(*,*) "              name1.TB, name2.TB (angular files)"
       write(*,*)
 
-      write (6, *) 'Default settings?'
+      write (6, *) "Default settings?"
       yes = getyn()
       write (6, *)
       if (yes) then
@@ -107,23 +107,23 @@
          ndump = 1
       else
          ndef = 1
-         write (6, *) 'Dump angular data on file?'
+         write (6, *) "Dump angular data on file?"
          yes = getyn()
          write (6, *)
          if (yes) then
             ndump = 1
          else
             ndump = 0
-         endif
-      endif
-      write (6, *) 'Input from a CI calculation?'
+         end if
+      end if
+      write (6, *) "Input from a CI calculation?"
       yes = getyn()
       write (6, *)
       if (yes) then
          inpci = 0
       else
          inpci = 1
-      endif
+      end if
 !
 !   Perform machine- and installation-dependent setup
 !
@@ -188,9 +188,9 @@
 !   Calculate the radial overlap matrices
 !
       write (*, *)
-      write (*, *) ' ******************************************'
-      write (*, *) '  Overlap matrix before orbital rotations'
-      write (*, *) ' *****************************************'
+      write (*, *) " ******************************************"
+      write (*, *) "  Overlap matrix before orbital rotations"
+      write (*, *) " *****************************************"
       write (*, *)
 
       call brkt
@@ -210,9 +210,9 @@
          nshlff, ninshlf, max_radial_points, kamax, work, lwork1, ntestg, &
          cishl, cici, cfshl, cfci)
       write (*, *)
-      write (*, *) ' ****************************************'
-      write (*, *) '  Overlap matrix after orbital rotations'
-      write (*, *) ' ****************************************'
+      write (*, *) " ****************************************"
+      write (*, *) "  Overlap matrix after orbital rotations"
+      write (*, *) " ****************************************"
       write (*, *)
 
       call brkt
@@ -229,7 +229,7 @@
       call genmcp (name(1), 1, ntestg, inpci)
 !***** added by Yu Zou, Feb.18,2000 ***********
       do k = 1, kamax
-         close(unit=80 + k, status='DELETE')
+         close(unit=80 + k, status="DELETE")
       end do
 !***** added by Yu Zou, Feb.18,2000 ***********
 !
@@ -241,9 +241,9 @@
       call genmcp (name(2), 2, ntestg, inpci)
 
       do k = 1, kamax
-         close(unit=80 + k, status='DELETE')
+         close(unit=80 + k, status="DELETE")
       end do
-      call stoptime (ncount1, 'BIOTRANSFORM')
+      call stoptime (ncount1, "BIOTRANSFORM")
 
       stop
       end program biotr

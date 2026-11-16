@@ -39,7 +39,7 @@
       use memory_man
       use def_c
       use eigv_c
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use hmat_c
       use mpi_s
       use orb_c
@@ -47,11 +47,11 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use spicmv2_i
-      use iniest2_i
+      use spicmv2_i, only: spicmv2
+      use iniest2_i, only: iniest2
       use gdvd_i
-      use itjpo_i
-      use ispar_i
+      use itjpo_i, only: itjpo
+      use ispar_i, only: ispar
       use suite_linear_algebra, only: dcopy, dscal
       implicit none (type, external)
 !-----------------------------------------------
@@ -85,10 +85,10 @@
 !   Trivial case
 !=======================================================================
       if (csf_count == 1) then
-         shifted_eigenvalues(ncminpat+1) = 0._real64
-         csf_mixing_coefficients(nevecpat+1) = 1._real64
-         go to 123                               ! Don't like big ELSE
-      endif
+         shifted_eigenvalues(ncminpat+1) = 0.0_real64
+         csf_mixing_coefficients(nevecpat+1) = 1.0_real64
+         goto 123                               ! Don't like big ELSE
+      end if
 !
 !=======================================================================
 !   Non-trivial case - Use Davidson eigensolver
@@ -101,7 +101,7 @@
       nvect = ncmaxblk(jblock)
       lim = min(csf_count,2*nvect + 40)
       lwork = 2*csf_count*lim + lim*lim*2 + 11*lim + nvect
-      call alloc (work, lwork, 'WORK', 'MANEIG')
+      call alloc (work, lwork, "WORK", "MANEIG")
 
       !...At most 14 ? restriction removed xhh 98-05-19
       !nvex = MIN (nvect,ncfblk(jblock),14)
@@ -114,7 +114,7 @@
 !   Initial estimates for eigenvectors
 !
 !CFF
-      if (dvdfirst .or. (csf_count .le. n1000) ) then
+      if (dvdfirst .or. (csf_count <= n1000) ) then
          call iniest2 (n1000, csf_count, niv, work, hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices)
       else
 !CFF        .. use current estimates
@@ -124,14 +124,14 @@
             call dcopy (csf_count, csf_mixing_coefficients( nevecpat + csf_count*(j-1) + 1:nevecpat + csf_count*(j-1)+ &
                & (csf_count))    ,    1, &
                           work( csf_count*(iccmin(j+ncminpat)-1) + 1 :( csf_count*(iccmin(j+ncminpat)-1) + 1 )+((csf_count)-1)), 1)
-         enddo
-      endif
+         end do
+      end if
 
 ! iniest2 looks for eigenvectors of n1000*n1000 matrix so there
 ! is no need to call dvdson if block size <= n1000
 
       if (csf_count > n1000) then
-          write (*, *) 'Calling dvdson!!!', maxitr
+          write (*, *) "Calling dvdson!!!", maxitr
 
          ! Call Davidson eigensolver
 
@@ -149,25 +149,25 @@
 !
 !   Store the diagonals in a separate array and make it global
 !
-         call alloc (diag, csf_count, 'DIAG', 'MANEIG')
+         call alloc (diag, csf_count, "DIAG", "MANEIG")
 
          do ic = mpi_rank + 1, csf_count, mpi_process_count
             diag(ic) = hamiltonian_values(stored_segment_end_offsets(ic))
          end do
 
-         call alloc (iwork, liwork, 'IWORK', 'MANEIG')
-         call alloc (jwork, lim, 'JWORK', 'MANEIG')
+         call alloc (iwork, liwork, "IWORK", "MANEIG")
+         call alloc (jwork, lim, "JWORK", "MANEIG")
          call gdvd (spicmv2, csf_count, lim, diag, ilow, ihigh, jwork, niv, mblock, &
             crite, critc, critr, ortho, maxitr, work, lwork, iwork, liwork, &
             hiend, nloops, nmv, ierr)
 
-         call dalloc (diag, 'DIAG', 'MANEIG')
-         call dalloc (iwork, 'IWORK', 'MANEIG')
-         call dalloc (jwork, 'JWORK', 'MANEIG')
+         call dalloc (diag, "DIAG", "MANEIG")
+         call dalloc (iwork, "IWORK", "MANEIG")
+         call dalloc (jwork, "JWORK", "MANEIG")
 
          write (*, 301) nloops, nmv
          if (ierr /= 0) write (*, 302) ierr
-      endif
+      end if
 !
 !   Pick up the eigen pairs and store in EVAL and EVEC
 !
@@ -183,7 +183,7 @@
 !
 !   Deallocate storage
 !
-      call dalloc (work, 'WORK', 'MANEIG')
+      call dalloc (work, "WORK", "MANEIG")
 
   123 continue
       do jstate = 1, eigenvector_counts_by_block(jblock)
@@ -192,7 +192,7 @@
 !
          iofset = nevecpat + csf_count*(jstate - 1)
 
-         amax = 0._real64
+         amax = 0.0_real64
          do i = 1, csf_count
             wa = abs(csf_mixing_coefficients(i+iofset))
             if (wa <= amax) cycle
@@ -208,19 +208,19 @@
 !   Redefine eigenvectors so that the dominant component
 !   is positive
 !
-         if (csf_mixing_coefficients(ia+iofset) >= 0._real64) cycle
-         dnfac = -1._real64
+         if (csf_mixing_coefficients(ia+iofset) >= 0.0_real64) cycle
+         dnfac = -1.0_real64
          call dscal (csf_count, dnfac, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1)
 !===============================================================
 
       end do
 
-  301 format('DVDSON: ',1i3,' loops; ',1i3,' matrix-vector multiplies.')
-  302 format(' Returned from DVDSON with IERR = ',1i4)
-  303 format(/,' ***** WARNING *****'/,/,&
-         ' The angular momentum and parity of level ',1i2,' have changed:'/,&
-         ' Last iteration: (2J+1) = ',1i2,', parity = ',1i2,';'/,&
-         ' this iteration: (2J+1) = ',1i2,', parity = ',1i2,'.')
+  301 format("DVDSON: ",1i3," loops; ",1i3," matrix-vector multiplies.")
+  302 format(" Returned from DVDSON with IERR = ",1i4)
+  303 format(/," ***** WARNING *****"/,/,&
+         " The angular momentum and parity of level ",1i2," have changed:"/,&
+         " Last iteration: (2J+1) = ",1i2,", parity = ",1i2,";"/,&
+         " this iteration: (2J+1) = ",1i2,", parity = ",1i2,".")
 
       return
       end subroutine maneig

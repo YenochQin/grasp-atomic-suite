@@ -13,6 +13,6 @@
       integer, intent(in) :: id
       integer, intent(in) :: k
       integer, intent(in) :: iw
-      end function
+      end function skint
       end interface
-      end module
+      end module skint_i

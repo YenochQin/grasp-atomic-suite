@@ -6,6 +6,6 @@
       logical function triangbreit2 (ia,ib,ic,id,l)
       implicit none (type, external)
       integer, intent(in) :: ia,ib,ic,id,l
-      end function
+      end function triangbreit2
       end interface
-      end module
+      end module triangbreit2_i

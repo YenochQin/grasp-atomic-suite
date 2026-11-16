@@ -6,6 +6,6 @@
       logical, intent(in) :: lprint
       integer, intent(in) :: nnonz
       integer, intent(in) :: ncf
-      end subroutine
+      end subroutine outsdampi
       end interface
-      end module
+      end module outsdampi_i

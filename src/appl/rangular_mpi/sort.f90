@@ -26,11 +26,11 @@
       use parameter_def,   only: orbital_index_radix
       use memory_man
       use orb_c,           only: orbital_principal_n, csf_count, orbital_symmetry_labels
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i
+      use convrt_i, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -60,31 +60,31 @@
       call convrt (ncoeff, cnum, lcnum)
       if (nfile > 31) then
          call convrt (nfile - 32, ck, lck)
-         write (6, *) 'Sorting '//cnum(1:lcnum)//' V(k='//ck(1:lck)//&
-            ') coefficients ...', nfile
+         write (6, *) "Sorting "//cnum(1:lcnum)//" V(k="//ck(1:lck)//&
+            ") coefficients ...", nfile
       else
-         write (6, *) 'Sorting '//cnum(1:lcnum)//' T coefficients ...', nfile
-      endif
+         write (6, *) "Sorting "//cnum(1:lcnum)//" T coefficients ...", nfile
+      end if
 !
       call convrt (nfile, ck, lck)
       if (lck > 2) then
-         write (stderr_unit, *) 'sort: nfile > 99; check fullname'
+         write (stderr_unit, *) "sort: nfile > 99; check fullname"
          stop
-      endif
+      end if
 !
-      fullname = fhead//'.'//ck(1:2)
-      open(29,file=fullname,status='OLD',form='UNFORMATTED', &
-         iostat=ierr, position='APPEND')
+      fullname = fhead//"."//ck(1:2)
+      open(29,file=fullname,status="OLD",form="UNFORMATTED", &
+         iostat=ierr, position="APPEND")
       if (ierr /= 0) then
-         write (stderr_unit, *) ' Error when opening the file ', fullname
+         write (stderr_unit, *) " Error when opening the file ", fullname
          stop
-      endif
+      end if
 !
       read (nfile) mcplab, mb
       if (nb /= mb) then
-         write (stderr_unit, *) 'sort: nb = ', nb, '.NE. mb (=', mb, ')'
+         write (stderr_unit, *) "sort: nb = ", nb, ".NE. mb (=", mb, ")"
          stop
-      endif
+      end if
 !
 !   Sort the list
 !
@@ -92,18 +92,18 @@
 !
 !   Allocate storage for all required arrays
 !
-         call alloc (coeff, ncoeff, 'COEFF', 'SORT')
-         call alloc (iclmn, ncoeff, 'ICLMN', 'SORT')
-         call alloc (index, ncoeff, 'INDEX', 'SORT')
-         call alloc (label, ncoeff, 'LABEL', 'SORT')
-         if (nfile == 33) call alloc (nswap, ncoeff,'NSWAP', 'SORT'  )
+         call alloc (coeff, ncoeff, "COEFF", "SORT")
+         call alloc (iclmn, ncoeff, "ICLMN", "SORT")
+         call alloc (index, ncoeff, "INDEX", "SORT")
+         call alloc (label, ncoeff, "LABEL", "SORT")
+         if (nfile == 33) call alloc (nswap, ncoeff,"NSWAP", "SORT"  )
 !
 !   Read arrays into memory from NFILE
 !
          do i = 1, ncoeff
             read (nfile) iclmn(i), index(i), label(i), coeff(i)
          end do
-      endif
+      end if
 !
 !   Sort LABEL into ascending order using the heapsort algorithm;
 !   move the associated members of COEFF and INDEX in the same
@@ -139,16 +139,16 @@
                index(1) = ind
                label(1) = lab
                nswap(1) = nsw
-               go to 456
-            endif
-         endif
+               goto 456
+            end if
+         end if
          i = l
          j = l + l
   345    continue
          if (j <= ir) then
             if (j < ir) then
                if (label(j) < label(j+1)) j = j + 1
-            endif
+            end if
             if (lab < label(j)) then
                coeff(i) = coeff(j)
                iclmn(i) = iclmn(j)
@@ -159,15 +159,15 @@
                j = j + j
             else
                j = ir + 1
-            endif
-            go to 345
-         endif
+            end if
+            goto 345
+         end if
          coeff(i) = cof
          iclmn(i) = icl
          index(i) = ind
          label(i) = lab
          nswap(i) = nsw
-         go to 234
+         goto 234
 
       else if (nfile/=33 .and. ncoeff>1) then
 !
@@ -199,16 +199,16 @@
                iclmn(1) = icl
                index(1) = ind
                label(1) = lab
-               go to 456
-            endif
-         endif
+               goto 456
+            end if
+         end if
          i = l
          j = l + l
    93    continue
          if (j <= ir) then
             if (j < ir) then
                if (label(j) < label(j+1)) j = j + 1
-            endif
+            end if
             if (lab < label(j)) then
                coeff(i) = coeff(j)
                iclmn(i) = iclmn(j)
@@ -218,21 +218,21 @@
                j = j + j
             else
                j = ir + 1
-            endif
-            go to 93
-         endif
+            end if
+            goto 93
+         end if
          coeff(i) = cof
          iclmn(i) = icl
          index(i) = ind
          label(i) = lab
-         go to 92
+         goto 92
 
-      endif
+      end if
 !
 !   Sorting complete; rewrite the file header
 !
   456 continue
-      write (29) 'MCP', nb, csf_count, ncoeff
+      write (29) "MCP", nb, csf_count, ncoeff
 !GG      WRITE (9999,*) 'MCP', NB, NCF, NCOEFF, NFILE
 !
 !   Write the sorted list to mcp.xx
@@ -259,7 +259,7 @@
                last = label(i)
                ibeg = iend + 1
                iend = ibeg
-            endif
+            end if
          end do
 !
          if (ibeg <= ncoeff) then
@@ -270,13 +270,13 @@
 !GG            WRITE (9999,'(2I12,E25.15)') ICLMN(J),INDEX(J),COEFF(J)
           end do
 
-         endif
+         end if
 !
       else
 !
          ntgral = 0
 !
-      endif
+      end if
 !
 !     write the terminator record for this block
 !
@@ -327,33 +327,33 @@
                   do j = ibeg, iend
                      write (99, 305)k,iclmn(j),index(j),coeff(j)
                   end do
-               endif
+               end if
                last = label(i)
                ibeg = iend + 1
                iend = ibeg
-               if (iend == ncoeff) go to 567
+               if (iend == ncoeff) goto 567
             end do
-         endif
+         end if
          write (99, 303) ntgral
-      endif
+      end if
 !
 !   Deallocate storage
 !
       if (ncoeff > 0) then
-         call dalloc (coeff,'COEFF', 'SORT')
-         call dalloc (iclmn, 'ICLMN', 'SORT')
-         call dalloc (index, 'INDEX', 'SORT')
-         call dalloc (label, 'LABEL', 'SORT')
-         if (nfile == 33) call dalloc (nswap, 'NSWAP', 'SORT')
-      endif
+         call dalloc (coeff,"COEFF", "SORT")
+         call dalloc (iclmn, "ICLMN", "SORT")
+         call dalloc (index, "INDEX", "SORT")
+         call dalloc (label, "LABEL", "SORT")
+         if (nfile == 33) call dalloc (nswap, "NSWAP", "SORT")
+      end if
 
-  300 format(/,'From SORT:')
-  301 format(' I(',1i2,1a2,',',1i2,1a2,'):')
-  302 format('  T_[',1i2,',',1i4,'] = ',1p,d19.12)
-  303 format('  Number of integrals is ',1i4)
-  304 format(' R^[(',1i2,')] (',1i2,1a2,',',1i2,1a2,';',1i2,1a2,',',1i2,1a2,&
-         '):')
-  305 format('  V^[(',1i2,')]_[',1i8,',',1i8,'] = ',1p,d19.12)
+  300 format(/,"From SORT:")
+  301 format(" I(",1i2,1a2,",",1i2,1a2,"):")
+  302 format("  T_[",1i2,",",1i4,"] = ",1p,d19.12)
+  303 format("  Number of integrals is ",1i4)
+  304 format(" R^[(",1i2,")] (",1i2,1a2,",",1i2,1a2,";",1i2,1a2,",",1i2,1a2,&
+         "):")
+  305 format("  V^[(",1i2,")]_[",1i8,",",1i8,"] = ",1p,d19.12)
 
       return
       end subroutine sort

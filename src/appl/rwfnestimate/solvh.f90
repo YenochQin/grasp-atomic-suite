@@ -3,7 +3,6 @@
 !***********************************************************************
 !                                                                      *
       subroutine solvh(iorb, fail)
-      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !   This routine solves the homogeneous Dirac radial equation.         *
 !                                                                      *
@@ -33,12 +32,12 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setpot_i
-      use start_i
-      use sbstep_i
-      use tail_i
+      use setpot_i, only: setpot
+      use start_i, only: start
+      use sbstep_i, only: sbstep
+      use tail_i, only: tail
       use count_i
-      use quad_i
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -60,7 +59,7 @@
 !   A solution is deemed continuous when the relative mismatch in the
 !   small component is within EPSLON
 !
-      epslon = accy*0.1e00_real32
+      epslon = accy*0.1e00_real64
 !
 !   Establish the number of nodes in the large component
 !
@@ -71,7 +70,7 @@
          nliorb = nakabs - 1
       else
          nliorb = nakabs
-      endif
+      end if
       nnp = npiorb - nliorb - 1
 !
 !   Establish the bounds on, and an estimate of, the eigenvalue
@@ -89,7 +88,7 @@
          emin = (1.0_real64 - ebym)*csq
       else
          emin = 0.25_real64*csq/dble(npiorb*npiorb)
-      endif
+      end if
 !
       zalpha = nuclear_charge*alpha
 !
@@ -99,7 +98,7 @@
          orbital_energy_parameters(iorb) = (1.0_real64 - ebym)*csq
       else
          orbital_energy_parameters(iorb) = csq
-      endif
+      end if
 !
       if (zalpha < fkabs) then
          gamma = sqrt(fkap2 - zalpha*zalpha)
@@ -107,7 +106,7 @@
          emax = (1.0_real64 - ebym)*csq
       else
          emax = csq + csq
-      endif
+      end if
 !
       dele = 0.0_real64
 !
@@ -123,7 +122,7 @@
       if (kount > mxk) then
          fail = .true.
          return
-      endif
+      end if
 !
 !   Generate estimate of eigenvalue for this iteration
 !
@@ -132,7 +131,7 @@
          orbital_energy_parameters(iorb) = eest
       else
          orbital_energy_parameters(iorb) = 0.5_real64*(emin + emax)
-      endif
+      end if
 !
 !   E is the positive binding energy. An invalid trial energy cannot
 !   produce the decaying bound-state tail used by TAIL.
@@ -141,7 +140,7 @@
           orbital_energy_parameters(iorb)<=0.0_real64 .or. orbital_energy_parameters(iorb)>=2.0_real64*csq) then
          fail = .true.
          return
-      endif
+      end if
 !
 !   Set up arrays TF and TG; find join point
 !
@@ -187,12 +186,12 @@
       if (npc > nnp) then
          emin = orbital_energy_parameters(iorb)
          dele = 0.5_real64*(emax - emin)
-         go to 1
+         goto 1
       else if (npc < nnp) then
          emax = orbital_energy_parameters(iorb)
          dele = -0.5_real64*(emax - emin)
-         go to 1
-      endif
+         goto 1
+      end if
 !
 !   Correct number of nodes
 !
@@ -206,7 +205,7 @@
       if (.not.ieee_is_finite(dnorm) .or. dnorm<=0.0_real64) then
          fail = .true.
          return
-      endif
+      end if
 !
 !   Determine correction to eigenvalue from magic formula
 !   correct slope at origin
@@ -217,13 +216,13 @@
           .not.ieee_is_finite(qfjpo)) then
          fail = .true.
          return
-      endif
+      end if
       if (abs(dmsmch) > epslon*abs(qfjpo)) then
          dele = speed_of_light_au*radial_large_components(jp,iorb)*dmsmch/dnorm
          if (.not.ieee_is_finite(dele)) then
             fail = .true.
             return
-         endif
+         end if
 !
 !   A large correction (notably for the first h/i orbitals) can make
 !   the old multiplicative upper bound negative. Keep the current
@@ -231,13 +230,13 @@
 !   if the proposed correction falls outside the bounds.
 !
          if (dele < 0.0_real64) then
-            emax = max(orbital_energy_parameters(iorb), emax*(1.0_real64 - 0.2e00_real32*abs(dele/orbital_energy_parameters(iorb))))
+            emax = max(orbital_energy_parameters(iorb), emax*(1.0_real64 - 0.2e00_real64*abs(dele/orbital_energy_parameters(iorb))))
          else
-            emin = min(orbital_energy_parameters(iorb), emin*(1.0_real64 + 0.2e00_real32*abs(dele/orbital_energy_parameters(iorb))))
-         endif
+            emin = min(orbital_energy_parameters(iorb), emin*(1.0_real64 + 0.2e00_real64*abs(dele/orbital_energy_parameters(iorb))))
+         end if
          orbital_origin_parameters(iorb) = orbital_origin_parameters(iorb)/sqrt(dnorm)
-         go to 1
-      endif
+         goto 1
+      end if
 !
 !   Normalize
 !
@@ -254,10 +253,10 @@
       if (abs(radial_large_components(i,iorb)) < epslon) then
          radial_large_components(i,iorb) = 0.0_real64
          radial_small_components(i,iorb) = 0.0_real64
-         go to 5
+         goto 5
       else
          orbital_last_grid_index(iorb) = i
-      endif
+      end if
 !
       return
       end subroutine solvh

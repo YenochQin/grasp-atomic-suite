@@ -25,7 +25,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dinit_i
+      use dinit_i, only: dinit
 !      USE dmerge_dnicmv_I
       use dmerge_dnicmv_i, only: dmerge_dnicmv
       use mpiu_i, only: gdsummpi
@@ -99,7 +99,7 @@
       real(real64) :: dsum
 !-----------------------------------------------
 
-      dsum = 0._real64
+      dsum = 0.0_real64
       dsum = dot_product(da,db(:n))
       dc(:n) = dc(:n) + dconst*da
       dl = dsum

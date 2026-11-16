@@ -42,27 +42,27 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-       use default_c
-       use core_c
-       use iounit_c
+       use default_c, only: double, inpci, ndef, ndump
+       use core_c, only: closed_core_subshell_count
+       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
        use mpi_c
 !GG po to isimti
-       use tatb_c
+       use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use setdbgmpi_i
-      use setmc_i
-      use setcon_i
-      use setsum_i
-      use setmcp_i
-      use setcslmpi_i
-      use getscdmpi_i
-      use strsum_i
-      use setmix_i
-      use factt_i
-      use scfmpi_i
+      use getyn_i, only: getyn
+      use setdbgmpi_i, only: setdbgmpi
+      use setmc_i, only: setmc
+      use setcon_i, only: setcon
+      use setsum_i, only: setsum
+      use setmcp_i, only: setmcp
+      use setcslmpi_i, only: setcslmpi
+      use getscdmpi_i, only: getscdmpi
+      use strsum_i, only: strsum
+      use setmix_i, only: setmix
+      use factt_i, only: factt
+      use scfmpi_i, only: scfmpi
       use mpiu_i, only: startmpi2
       use mpiu_i, only: stopmpi2
       implicit none (type, external)
@@ -81,17 +81,17 @@
       character (len = 128) :: startdir,permdir,tmpdir,file_rcsl,file1,file2
 !-----------------------------------------------
 !
-      open(unit=734,file='rmcdhf.log',status='UNKNOWN')
+      open(unit=734,file="rmcdhf.log",status="UNKNOWN")
 
 !=======================================================================
 !  Start mpi --- get processor info: myid, nprocs, host name; and print
 !=======================================================================
-      startdir = '  '  ;    file_rcsl = '  '
-      permdir = '  '   ;    file1     = '  '
-      tmpdir = '  '    ;    file2     = '  '
+      startdir = "  "  ;    file_rcsl = "  "
+      permdir = "  "   ;    file1     = "  "
+      tmpdir = "  "    ;    file2     = "  "
       call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1,       &
-                      startdir, permdir, tmpdir, 'RMCDHF_MPI')
-      write (idstring, '(I3.3)') mpi_rank
+                      startdir, permdir, tmpdir, "RMCDHF_MPI")
+      write (idstring, "(I3.3)") mpi_rank
       lenperm = len_trim (permdir)
       lentmp = len_trim (tmpdir)
 
@@ -101,7 +101,7 @@
 
       if (mpi_rank == 0) then
          write (stderr_unit,*)
-         write (stderr_unit, '(A)') 'Default settings?  (y/n) '
+         write (stderr_unit, "(A)") "Default settings?  (y/n) "
          yes = getyn()
          if (yes) then
             ndef = 0
@@ -109,8 +109,8 @@
 !cjb        WRITE(734,'(A)') 'y            ! Default settings'
          else
             ndef = 1
-         endif
-      endif
+         end if
+      end if
      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
 
 !=======================================================================
@@ -128,33 +128,33 @@
 !    SETMIX - mixing coefficients file setup
 !    FACTT - table of logarithms of factorials setup
 !=======================================================================
-      call setdbgmpi (permdir(1:lenperm) // '/rscf92.dbg')
+      call setdbgmpi (permdir(1:lenperm) // "/rscf92.dbg")
       call setmc
       call setcon
 
-      if (mpi_rank .eq. 0) call setsum (permdir(1:lenperm) // '/rmcdhf.sum')
+      if (mpi_rank == 0) call setsum (permdir(1:lenperm) // "/rmcdhf.sum")
 
-      call setmcp (closed_core_subshell_count, nblk0, idblk, 'mcp' // idstring)
-      if(mpi_rank == 0) file_rcsl = permdir(1:lenperm)//'/rcsf.inp'
+      call setmcp (closed_core_subshell_count, nblk0, idblk, "mcp" // idstring)
+      if(mpi_rank == 0) file_rcsl = permdir(1:lenperm)//"/rcsf.inp"
       call setcslmpi (file_rcsl, ncore1, idblk)
-      if (closed_core_subshell_count /= ncore1) error stop 'rscfmpivu: ncore'
+      if (closed_core_subshell_count /= ncore1) error stop "rscfmpivu: ncore"
 
 !=======================================================================
 !  Gather all remaining information and perform some setup. This
 !  part (routine) asks for user-inputs.
 !=======================================================================
 
-      if(mpi_rank == 0) file1 = permdir(1:lenperm) // '/isodata'
-      if(mpi_rank == 0) file2 = permdir(1:lenperm) // '/rwfn.inp'
+      if(mpi_rank == 0) file1 = permdir(1:lenperm) // "/isodata"
+      if(mpi_rank == 0) file2 = permdir(1:lenperm) // "/rwfn.inp"
       call getscdmpi (eol, idblk, file1, file2 )
 !     &            permdir(1:lenperm) // '/isodata',
 !     &            permdir(1:lenperm) // '/rwfn.inp')
-      file1 = '  '
-      if(mpi_rank == 0) file1 = permdir(1:lenperm) // '/rmix.out'
-      if (mpi_rank .eq. 0) then
+      file1 = "  "
+      if(mpi_rank == 0) file1 = permdir(1:lenperm) // "/rmix.out"
+      if (mpi_rank == 0) then
          call strsum
          if (eol) call setmix (file1)
-      endif
+      end if
 
       call factt
 
@@ -163,8 +163,8 @@
 !  the  .sum  file
 !=======================================================================
 
-      file1 = '  '
-      if(mpi_rank == 0) file1 = permdir(1:lenperm) // '/rwfn.out'
+      file1 = "  "
+      if(mpi_rank == 0) file1 = permdir(1:lenperm) // "/rwfn.out"
 
       call scfmpi (eol, file1)
 
@@ -172,6 +172,6 @@
 !  Execution finished; Statistics output
 !=======================================================================
 
-      call stopmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1, 'RMCDHF_MPI')
+      call stopmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1, "RMCDHF_MPI")
 
       end program rscfmpivu

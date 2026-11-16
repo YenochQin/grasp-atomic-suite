@@ -31,10 +31,10 @@
          idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
             iro = matrix_partner_indices(list)
-            write (99,*) 'H(',iro,ico,')= ', hamiltonian_values(list)
-         enddo
+            write (99,*) "H(",iro,ico,")= ", hamiltonian_values(list)
+         end do
          ibeg = idiag + 1
-      enddo
+      end do
 !
       return
       end subroutine hmoutmpi

@@ -81,14 +81,14 @@ contains
          if (is(1)==is(3) .and. is(2)/=is(4) .or. is(1)/=is(3) .and. is(2)==is(&
             4)) ibrd = 2
          if (is(1)==is(3) .and. is(2)==is(4)) ibrd = 3
-      endif
+      end if
 !
 !   3.0  Form limits for exchange terms
 !
       if (is(1)==is(2) .or. is(3)==is(4)) then
          ibre = -1
          return
-      endif
+      end if
       iac = 1
       if (kaps(1)*kaps(4) < 0) iac = -1
       iad = 1
@@ -102,7 +102,7 @@ contains
       if (mod(ne1 - ne1a,2) /= 0) then
          ibre = -1
          return
-      endif
+      end if
 !
       ne2 = abs(ks(1)+ks(4))/2
       if (iac == (-1)) ne2 = ne2 + 1

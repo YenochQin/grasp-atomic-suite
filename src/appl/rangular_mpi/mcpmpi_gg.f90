@@ -36,12 +36,12 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use outsdampi_i
-      use fndbeg_i
-      use alcbuf_i
-      use rkco_gg_i
-      use setsda_i
-      use sort_i
+      use outsdampi_i, only: outsdampi
+      use fndbeg_i, only: fndbeg
+      use alcbuf_i, only: alcbuf
+      use rkco_gg_i, only: rkco_gg
+      use setsda_i, only: setsda
+      use sort_i, only: sort
 !-----------------------------------------------
 !   C O M M O N  B L O C K S
 !-----------------------------------------------
@@ -92,7 +92,7 @@
 !   of the lists of V coefficients of each multipolarity
 !
       stage_start_count = stage_clock()
-      call alloc(llistv, 0, max_coulomb_multipole_rank, 'LLISTV', 'MCPMPI')
+      call alloc(llistv, 0, max_coulomb_multipole_rank, "LLISTV", "MCPMPI")
 !
 !   If this is a restart, determine the pair of CSFs with which
 !   the computation should begin.
@@ -100,7 +100,7 @@
 !   T coefficients and V coefficients of each multipolarity.
 !
       if (restrt) then
-         print *, 'Not ready for RESTART'
+         print *, "Not ready for RESTART"
          stop
          call fndbeg (jastrt, jbstrt, npos, llistt, llistv)
       else
@@ -109,8 +109,8 @@
          llistt = 0
          do k = 0, max_coulomb_multipole_rank
             llistv(k) = 0
-         enddo
-      endif
+         end do
+      end if
 !
 !   Allocate storage for the arrays in BUFFER
 !
@@ -123,12 +123,12 @@
 !   JA and JB respectively refer to the initial and final states
 !   in the list of NCF configurations
 !
-      call record_stage('coefficient_buffer_allocation',nb,stage_start_count)
+      call record_stage("coefficient_buffer_allocation",nb,stage_start_count)
       stage_start_count = stage_clock()
       do 5 ja = jastrt, csf_count, mpi_process_count
          jbstrt = 1
          do 4 jb = jbstrt, ja
-            if (diagonal_only .or. (use_first_order_restriction .and. (jb .gt. iccut(nb))) ) then
+            if (diagonal_only .or. (use_first_order_restriction .and. (jb > iccut(nb))) ) then
                if (jb /= ja) cycle
             end if
 !
@@ -140,7 +140,7 @@
             else
                npos = npos + 1
                lincr = .false.
-            endif
+            end if
             if (jb /= ja) then
 !   Compute T coefficients
                call onescalar(ja,jb,ia,ib,tshell)
@@ -151,8 +151,8 @@
                   llistt = llistt + 1
                   lab = min (ia,ib) * key + max (ia,ib)
                   write (31) ja, npos, lab, tshell(1)
-               endif
-            endif
+               end if
+            end if
 !
 !   Call the MCP package to generate V coefficients; ac and bd
 !   are the density pairs. NVCOEF is initialized here but changed
@@ -169,7 +169,7 @@
                   ic = angular_coefficient_labels(3,i)
                   id = angular_coefficient_labels(4,i)
                   k  = angular_coefficient_labels(5,i)
-                  f0int=(k.eq.0).and.(ia.eq.ic).and.(ib.eq.id)
+                  f0int=(k==0).and.(ia==ic).and.(ib==id)
                   if (.not. f0int) then
 ! Swap index to make sure IA <= IC, IB <= ID and record the number
 ! of swaps
@@ -179,60 +179,60 @@
                         ic = ia
                         ia = iswap
                         nswap = nswap + 1
-                     endif
+                     end if
                      if (ib > id) then
                         iswap = id
                         id = ib
                         ib = iswap
                         nswap = nswap + 1
-                     endif
+                     end if
                      if (lincr) then
                         npos = npos + 1
                         lincr = .false.
-                     endif
+                     end if
                      llistv(k) = llistv(k) + 1
                      lac = ia * key + ic
                      lbd = ib * key + id
-                     if (lac .lt. lbd) then
+                     if (lac < lbd) then
                         lab = lac * keysq + lbd
                      else
                         lab = lbd * keysq + lac
-                     endif
+                     end if
                      write (32+k) ja, npos, lab, vcoeff
-                  endif
-               endif
+                  end if
+               end if
     2       continue
 !
 !   All angular coefficients for this pair of CSFs have been
 !   generated; update file 30
 !
-            if ((jb .eq. ja) .or. (.not. lincr))   &
+            if ((jb == ja) .or. (.not. lincr))   &
                write (30) ja, jb, npos
     4    continue
-         if (mod(ja-1,100) == 0) print '(A4,I7,A9,I10,A9,I3,A8,I3)',  &
-            'Row ',ja,' nnonz = ',npos,' block = ',nb,' myid = ',mpi_rank
+         if (mod(ja-1,100) == 0) print "(A4,I7,A9,I10,A9,I3,A8,I3)",  &
+            "Row ",ja," nnonz = ",npos," block = ",nb," myid = ",mpi_rank
     5 continue
-      call record_stage('pair_generation_and_buffering',nb,stage_start_count, &
-                        int(llistt,int64)+sum(int(llistv,int64)),storage='disk')
+      call record_stage("pair_generation_and_buffering",nb,stage_start_count, &
+                        int(llistt,int64)+sum(int(llistv,int64)),storage="disk")
       stage_start_count = stage_clock()
 !
 !   Deallocate storage that is no longer required
 !
-      call dalloc (csf_subshell_occupations, 'IQA', 'MCPMPI')
-      call dalloc (csf_subshell_quantum_codes, 'JQSA', 'MCPMPI')
-      call dalloc (csf_coupling_quantum_codes, 'JCUPA', 'MCPMPI')
+      call dalloc (csf_subshell_occupations, "IQA", "MCPMPI")
+      call dalloc (csf_subshell_quantum_codes, "JQSA", "MCPMPI")
+      call dalloc (csf_coupling_quantum_codes, "JCUPA", "MCPMPI")
       call alcbuf (3)
-      call record_stage('csf_and_pair_buffer_release',nb,stage_start_count)
+      call record_stage("csf_and_pair_buffer_release",nb,stage_start_count)
 !
 !   Write out a report for this run
 !
-      if (ndef .ne. 0 .and. mpi_rank .eq. 0) then
+      if (ndef /= 0 .and. mpi_rank == 0) then
          write (24,*)
-         write (24,*) llistt, ' T coefficients generated;'
+         write (24,*) llistt, " T coefficients generated;"
          do k = 0, max_coulomb_multipole_rank
-            write (24,*) llistv(k),' V(k=',k,') coefficients generated;'
-         enddo
-      endif
+            write (24,*) llistv(k)," V(k=",k,") coefficients generated;"
+         end do
+      end if
 !
 !   Set up sparse structure definition arrays in file 30
 !
@@ -240,8 +240,8 @@
       stage_start_count = stage_clock()
       rewind (30)
       call setsda (outsdampi, npos, ldbpa(4), nb, mpi_rank, mpi_process_count, fhead)
-      close (30, status = 'DELETE')
-      call record_stage('sparse_structure_and_output',nb,stage_start_count,int(npos,int64),storage='disk')
+      close (30, status = "DELETE")
+      call record_stage("sparse_structure_and_output",nb,stage_start_count,int(npos,int64),storage="disk")
 !
 !   Sort MCP coefficients into integral-based lists
 !
@@ -249,21 +249,21 @@
       stage_start_count = stage_clock()
       rewind (31)
       call sort (31, (llistt), ntgi, ldbpa(2), nb, fhead)
-      if (ndef .ne. 0 .and. mpi_rank .eq. 0)      &
-         write (24,*) ntgi, ' I(ab) integrals;'
-      close (31, status = 'DELETE')
-      call record_stage('sort_and_output',nb,stage_start_count,int(llistt,int64),31,'disk')
+      if (ndef /= 0 .and. mpi_rank == 0)      &
+         write (24,*) ntgi, " I(ab) integrals;"
+      close (31, status = "DELETE")
+      call record_stage("sort_and_output",nb,stage_start_count,int(llistt,int64),31,"disk")
 !   2) the V coefficient
       do k = 0, max_coulomb_multipole_rank
          stage_start_count = stage_clock()
          rewind (k+32)
          call sort (k+32, (llistv(k)), ntgi, ldbpa(3), nb, fhead)
-         if (ndef .ne. 0 .and. mpi_rank .eq. 0)       &
-            write (24,*) ' k = ', k, ': ', ntgi, ' Slater integrals;'
-         close (k+32, status = 'DELETE')
-         call record_stage('sort_and_output',nb,stage_start_count,int(llistv(k),int64),k+32,'disk')
-      enddo
-       call dalloc(llistv, 'LLISTV', 'MCPMPI')
-  300 format (/'From MCPMPI:')
+         if (ndef /= 0 .and. mpi_rank == 0)       &
+            write (24,*) " k = ", k, ": ", ntgi, " Slater integrals;"
+         close (k+32, status = "DELETE")
+         call record_stage("sort_and_output",nb,stage_start_count,int(llistv(k),int64),k+32,"disk")
+      end do
+       call dalloc(llistv, "LLISTV", "MCPMPI")
+  300 format (/"From MCPMPI:")
       return
       end subroutine mcpmpi

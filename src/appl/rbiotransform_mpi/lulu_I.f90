@@ -8,6 +8,6 @@
       real(real64), intent(in) :: a(ndim, ndim)
       real(real64), intent(out) :: l(*)
       real(real64), intent(inout) :: u(*)
-      end subroutine
+      end subroutine lulu
       end interface
-      end module
+      end module lulu_i

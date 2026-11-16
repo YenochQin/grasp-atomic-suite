@@ -6,6 +6,6 @@
       character (len = 24), intent(in) :: name(2)
       integer, intent(in) :: ncorer
       integer, intent(in) :: ncore
-      end subroutine
+      end subroutine merg12
       end interface
-      end module
+      end module merg12_i

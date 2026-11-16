@@ -43,7 +43,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use cgamma_i
+      use cgamma_i, only: cgamma
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -73,7 +73,7 @@ contains
          write (*, 300)
          write (*, 301) n
          stop
-      endif
+      end if
 !
 !   Ensure that the angular quantum number is physical
 !
@@ -89,7 +89,7 @@ contains
          write (*, 300)
          write (*, 303) kappa, n
          stop
-      endif
+      end if
 !
 !   Ensure that the charge is physical
 !
@@ -101,7 +101,7 @@ contains
          write (*, 300)
          write (*, 305) z, speed_of_light_au
          stop
-      endif
+      end if
 !
 !   Atomic units
 !
@@ -160,7 +160,7 @@ contains
       else
          iordr1 = nr - 1
          iordr2 = nr
-      endif
+      end if
 !
       fac = 1.0_real64
       facn = 1.0_real64
@@ -184,8 +184,8 @@ contains
          bn = bn*b
          fac = fac + 1.0_real64
          facn = facn*fac
-         go to 2
-      endif
+         goto 2
+      end if
 !
 !   Now tabulate the function over the entire grid
 !
@@ -205,8 +205,8 @@ contains
          if (k <= iordr2) then
             f2 = f2 + tb(k)*rhon
             rhon = rhon*rho
-            go to 3
-         endif
+            goto 3
+         end if
          f1 = fnr*f1
          f2 = bignmk*f2
          ovlfac = exp((-0.5_real64*rho))*rho**gamma
@@ -223,11 +223,11 @@ contains
     5 continue
       mtp = mtp - 1
 !      IF (ABS(RG(MTP)) < CUTOFF) THEN
-      if ((abs(rg(mtp)) < cutoff).or.(abs(radial_grid(mtp)) > 1.e50_real64)) then ! JE: APPLY BOX (R<1.D+50)
+      if ((abs(rg(mtp)) < cutoff).or.(abs(radial_grid(mtp)) > 1.0e50_real64)) then ! JE: APPLY BOX (R<1.D+50)
          rg(mtp) = 0.0_real64
          rf(mtp) = 0.0_real64
-         go to 5
-      endif
+         goto 5
+      end if
 !
       if (mtp == ntp) write (*, 306) ntp, rg(ntp), cutoff
 !
@@ -237,16 +237,16 @@ contains
 !
       return
 !
-  300 format('DCBSRW:')
-  301 format(' Principal quantum number is ',1i3)
-  302 format(' Angular quantum number is 0')
-  303 format(' Angular quantum number (',1i3,') is out of range for',&
-         ' principal quantum number (',1i3,')')
-  304 format(' Nuclear charge (',3p,1d16.7,') is too small')
-  305 format(' Nuclear charge (',3p,1d16.7,') exceeds C (',1d16.7,')')
-  306 format(/,/,/,' ***** Warning in SUBROUTINE DCBSRW *****'/,/,&
-         ' Radial grid of insufficient extent:'/,' P(',1i4,') = ',1p,1d10.3,&
-         ', Exceeds cutoff (',1d10.3,')')
+  300 format("DCBSRW:")
+  301 format(" Principal quantum number is ",1i3)
+  302 format(" Angular quantum number is 0")
+  303 format(" Angular quantum number (",1i3,") is out of range for",&
+         " principal quantum number (",1i3,")")
+  304 format(" Nuclear charge (",3p,1d16.7,") is too small")
+  305 format(" Nuclear charge (",3p,1d16.7,") exceeds C (",1d16.7,")")
+  306 format(/,/,/," ***** Warning in SUBROUTINE DCBSRW *****"/,/,&
+         " Radial grid of insufficient extent:"/," P(",1i4,") = ",1p,1d10.3,&
+         ", Exceeds cutoff (",1d10.3,")")
       return
 !
       end subroutine dcbsrw

@@ -20,32 +20,32 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
-      use corre_c
-      use damp_c
+      use corre_c, only: double, lcorre, max_orbitals
+      use damp_c, only: double, max_orbitals, mixing_damping_factors, orbital_damping_factors
       use def_c
       use grid_c
       use int_c
       use mpi_c
       use orb_c
-      use orthct_c
+      use orthct_c, only: orthst
       use scf_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use cofpotmpi_i
-      use defcor_i
-      use solve_i
-      use orthsc_i
+      use cofpotmpi_i, only: cofpotmpi
+      use defcor_i, only: defcor
+      use solve_i, only: solve
+      use orthsc_i, only: orthsc
 !GG      USE matrixmpi_I
 !GG      USE newcompi_I
-      use setlagmpi_i
-      use quad_i
-      use consis_i
-      use dampck_i
-      use dampor_i
-      use orthy_i
+      use setlagmpi_i, only: setlagmpi
+      use quad_i, only: quad
+      use consis_i, only: consis
+      use dampck_i, only: dampck
+      use dampor_i, only: dampor
+      use orthy_i, only: orthy
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -75,7 +75,7 @@
 !   C Froese Fischer's IPR and ED1 parameter
 !
       data ipr/ 0/
-      data ed1/ 0._real64/
+      data ed1/ 0.0_real64/
       data first/ .false./
 !
 !
@@ -138,24 +138,24 @@
 !         call dalloc(pnda_buffer)
 !      ENDIF
 !AK      Consolidate NDA and DA from all nodes
-      if (mpi_process_count.gt.1) then
-         call alloc(ndcof_buffer,mpi_process_count,'ndcof_buffer','IMPROVmpi')
+      if (mpi_process_count>1) then
+         call alloc(ndcof_buffer,mpi_process_count,"ndcof_buffer","IMPROVmpi")
          call mpi_gather(ndcof, 1, i_mpi, ndcof_buffer,            &
               1, i_mpi, 0, mpi_comm_world, mpi_error_code)
          call mpi_bcast (ndcof_buffer, mpi_process_count, i_mpi, 0,           &
                                mpi_comm_world, mpi_error_code)
          ndcof_max = 0
          do i = 1, mpi_process_count
-            if (ndcof_buffer(i).gt.ndcof_max) ndcof_max=ndcof_buffer(i)
-         enddo
-         if (ndcof_max.gt.0) then
+            if (ndcof_buffer(i)>ndcof_max) ndcof_max=ndcof_buffer(i)
+         end do
+         if (ndcof_max>0) then
             ntot = ndcof_max*mpi_process_count
-            call alloc(nda_buffer,ntot,'nda_buffer','IMPROVmpi')
+            call alloc(nda_buffer,ntot,"nda_buffer","IMPROVmpi")
             call mpi_gather(nda, ndcof_max, i_mpi, nda_buffer,     &
                  ndcof_max, i_mpi, 0, mpi_comm_world, mpi_error_code)
             call mpi_bcast (nda_buffer, ntot, i_mpi, 0,            &
                                mpi_comm_world, mpi_error_code)
-            call alloc(da_buffer, ntot, 'da_buffer','IMPROVmpi')
+            call alloc(da_buffer, ntot, "da_buffer","IMPROVmpi")
             call mpi_gather(da, ndcof_max, mpi_double_precision,   &
               da_buffer, ndcof_max, mpi_double_precision, 0,       &
               mpi_comm_world, mpi_error_code)
@@ -168,36 +168,36 @@
                   ifound = 0
                   ind_buf = (iproc - 1)*ndcof_max + jproc
                   do k = 1, i_last
-                     if (nda_buffer(ind_buf) .eq. nda(k)) then
+                     if (nda_buffer(ind_buf) == nda(k)) then
                         da(k) = da(k) + da_buffer(ind_buf)
                         ifound = k
                         exit
-                     endif
-                  enddo
-                  if (ifound.eq.0) then
+                     end if
+                  end do
+                  if (ifound==0) then
                      i_last = i_last + 1
-                     do while (i_last .gt. nddim)
-                        if (nddim .gt. 0) then
+                     do while (i_last > nddim)
+                        if (nddim > 0) then
                            nddim = 2*nddim
 !GG                           CALL alcsca (PNTNDA, PNTRDA, NDDIM, 2)
-                           call ralloc(nda,nddim,'NDA','IMPROVmpi')
+                           call ralloc(nda,nddim,"NDA","IMPROVmpi")
                         else
                           nddim = 64
 !GG                           CALL alcsca (PNTNDA, PNTRDA, NDDIM, 1)
-                           call alloc(nda,nddim,'NDA','IMPROVmpi')
-                        endif
-                     enddo
+                           call alloc(nda,nddim,"NDA","IMPROVmpi")
+                        end if
+                     end do
                      nda(i_last) = nda_buffer(ind_buf)
                      da(i_last) = da_buffer(ind_buf)
-                  endif
-               enddo
-            enddo
+                  end if
+               end do
+            end do
             ndcof = ndcof_max
-            call dalloc(nda_buffer,'nda_buffer','IMPROVmpi')
-            call dalloc(da_buffer,'da_buffer','IMPROVMPI')
-         endif
-         call dalloc(ndcof_buffer,'ndcof_buffer','IMPROVmpi')
-      endif
+            call dalloc(nda_buffer,"nda_buffer","IMPROVmpi")
+            call dalloc(da_buffer,"da_buffer","IMPROVMPI")
+         end if
+         call dalloc(ndcof_buffer,"ndcof_buffer","IMPROVmpi")
+      end if
 
       call solve (j, fail, inv, jp, nnp)
 !
@@ -216,17 +216,17 @@
 !               CALL NEWCOMPI (WTAEV)
 !            ENDIF
             call setlagmpi (eol)
-            go to 1
+            goto 1
          else
             if (mpi_rank == 0) write (*, 301)
             !CALL TIMER (0)
             error stop
-         endif
-      endif
+         end if
+      end if
 !
 !   Compute norm of radial function
 !
-      ta(1) = 0._real64
+      ta(1) = 0.0_real64
       ta(2:mtp0) = (p(2:mtp0)**2+q(2:mtp0)**2)*radial_grid_derivative(2:mtp0)
       mtp = mtp0
 
@@ -238,7 +238,7 @@
 !
 !   Normalize
 !
-      dnfac = 1._real64/dsqrt(dnorm)
+      dnfac = 1.0_real64/dsqrt(dnorm)
       p0 = p0*dnfac
       p(:mtp0) = p(:mtp0)*dnfac
       q(:mtp0) = q(:mtp0)*dnfac
@@ -246,16 +246,16 @@
 !   Check if different method should be used or if improvement
 !   count should be reduced
 !
-      del1 = dabs(1._real64 - ed2/orbital_energy_parameters(j))
+      del1 = dabs(1.0_real64 - ed2/orbital_energy_parameters(j))
       if (method(j) == 1) then
-         del2 = dmax1(dabs(1._real64 - dsqrt(dnorm)),dabs(dnfac - 1._real64))
+         del2 = dmax1(dabs(1.0_real64 - dsqrt(dnorm)),dabs(dnfac - 1.0_real64))
          if (del1<p005 .and. del2>p2) then
             method(j) = 2
-            go to 1
-         endif
+            goto 1
+         end if
       else
          if (del1<p0001 .and. nsic>1) nsic = nsic - 1
-      endif
+      end if
 !
 !   Damp the orbital --- if not converged
 !
@@ -263,8 +263,8 @@
          call dampck (ipr, j, ed1, ed2)
          odampj = dabs(orbital_damping_factors(j))
       else
-         odampj = 0._real64                           ! take the whole new orbital
-      endif
+         odampj = 0.0_real64                           ! take the whole new orbital
+      end if
       call dampor (j, inv, odampj)
 
 !   Orthogonalize all orbitals of the same kappa in the order
@@ -276,7 +276,7 @@
          !CALL orthor (J, inv)
          nwww = orbital_count
          call orthy (nwww, j, lsort)
-      endif
+      end if
 !
 !   Print details of iteration
 !
@@ -288,10 +288,10 @@
                         sqrt(dnorm)-1, odampj, jp, orbital_last_grid_index(j), inv, nnp
       dampmx = dmax1(dampmx,dabs(odampj))
 
-  300 format(/,' Failure; equation for orbital ',1i2,1a2,&
-         ' could not be solved using method ',1i1)
-  301 format(/,/,' ****** Error in SUBROUTINE IMPROV ******'/,&
-         ' Convergence not obtained'/)
+  300 format(/," Failure; equation for orbital ",1i2,1a2,&
+         " could not be solved using method ",1i1)
+  301 format(/,/," ****** Error in SUBROUTINE IMPROV ******"/,&
+         " Convergence not obtained"/)
   302 format (1x,1i2,1a2,1p,1d16.7,1x,1i2,d11.3,1d10.2,1d10.2,&
               0p,f6.3,1x,1i5,1x,1i5,1x,1i2,1x,1i2)
       return

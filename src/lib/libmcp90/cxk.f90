@@ -26,6 +26,6 @@ contains
       real(real64) , intent(inout) :: s(12)
 !-----------------------------------------------
 !
-      stop 'CXK: Error '
-      end
+      stop "CXK: Error "
+      end subroutine cxk
 end module cxk_i

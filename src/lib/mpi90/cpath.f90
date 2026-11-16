@@ -90,13 +90,13 @@ contains
 !=======================================================================
 
 !=======================================================================
-      if (mpi_rank .eq. 0) then
-         inquire(file='disks',exist=ydisks)
+      if (mpi_rank == 0) then
+         inquire(file="disks",exist=ydisks)
          if(ydisks) then
 !=======================================================================
 ! step 02 read disks file and MPI_Send
 !=======================================================================
-            open (unit=1001, file='disks', status='old')
+            open (unit=1001, file="disks", status="old")
             !...paths for serial i/o, node-0 only
             read (1001,*) permdir  ! paths for serial i/o, node-0 only
             read (1001,*) tmpdir   ! temporary for local disk of node-0
@@ -105,7 +105,7 @@ contains
                read (1001,*) disk
                call mpi_send (disk, lendisk0, mpi_character, i, i, &
                               mpi_comm_world, ierr2m)
-            enddo
+            end do
             disk = tmpdir           ! local disk of node-0
             close (1001)
          else
@@ -120,40 +120,40 @@ contains
 !=======================================================================
             if(.not.getenv_allocating("MPI_TMP", mpi_tmp)) then
                 ! error041 failed to get env variable MPI_TMP
-                print *, ' warning041 cpath failed at getenv MPI_TMP, myid = ', mpi_rank
-                print *, ' warning041 cpath will now default to /scratch/USER '
+                print *, " warning041 cpath failed at getenv MPI_TMP, myid = ", mpi_rank
+                print *, " warning041 cpath will now default to /scratch/USER "
 
                 if(.not.getenv_allocating("USER", env_user)) then
                     ! error061 failed to get env variable USER = MPI_ABORT
-                    print *, ' error061 cpath failed at getenv USER, myid = ', mpi_rank
-                    print *, ' error061 cpath fatal error, calling MPI_ABORT'
+                    print *, " error061 cpath failed at getenv USER, myid = ", mpi_rank
+                    print *, " error061 cpath fatal error, calling MPI_ABORT"
                     call mpi_abort(mpi_comm_world, mpi_error_code, ierr2m)
-                endif
+                end if
 
-                mpi_tmp = '/scratch/'//env_user ! Defaults to /scratch/$USER
-            endif
+                mpi_tmp = "/scratch/"//env_user ! Defaults to /scratch/$USER
+            end if
 !=======================================================================
 ! step 08 MPI_Send/MPI_Recv tmpdir
 !=======================================================================
             if(len(mpi_tmp) > lendisk0) then
-                print *, ' error062 cpath MPI_TMP too long, myid = ', mpi_rank
-                print *, ' error062 cpath fatal error, calling MPI_ABORT'
+                print *, " error062 cpath MPI_TMP too long, myid = ", mpi_rank
+                print *, " error062 cpath fatal error, calling MPI_ABORT"
                 call mpi_abort(mpi_comm_world, mpi_error_code, ierr2m)
-            endif
+            end if
 
             tmpdir = mpi_tmp
             disk = mpi_tmp
             do i = 1, mpi_process_count - 1
                call mpi_send (disk, lendisk0, mpi_character, i, i, &
                               mpi_comm_world, ierr2m)
-            enddo
+            end do
          end if
       else  ! node0 has sent
          !...slaves receive their local dirs
-         if (mpi_process_count .gt. 1) then
+         if (mpi_process_count > 1) then
            call mpi_recv (disk, lendisk0, mpi_character, 0, mpi_rank, &
                           mpi_comm_world, mpi_status_buffer, ierr2m)
-         endif
+         end if
       end if  ! node0 has sent & slaves have received
       lendisk = len_trim (disk)
 !
@@ -175,8 +175,8 @@ contains
 !
       call sys_chdir (disk, lendisk, mpi_error_code)
 !     print *, ' in cpath myid = ', myid, ' disk = ', disk
-      if (mpi_error_code.ne.0) call sys_mkdir (disk, lendisk, mpi_error_code)
-      if (mpi_error_code.ne.0) then
+      if (mpi_error_code/=0) call sys_mkdir (disk, lendisk, mpi_error_code)
+      if (mpi_error_code/=0) then
 ! error141 failed to mkdir tmpdir
 ! step14 try mkdir twice more
         do itry = 1, 2
@@ -185,7 +185,7 @@ contains
             asleep = 2
             asleep = asleep * int(sqrt(real(3*iteery)))
             asleep = asleep / int(sqrt(real(5*iteery)))
-          enddo
+          end do
 ! get more sleep -- different sleep times (1-9 sec) depending on myid
 !         asleep = int(1 + 4 * itry * real(myid) / real(nprocs))
 !         ierr2m = system ('sleep ' // achar(asleep+48))
@@ -197,27 +197,27 @@ contains
 !                ' myid = ', myid
 
           call sys_mkdir (disk, lendisk, mpi_error_code)
-          if (mpi_error_code.eq.0) exit
-        enddo
+          if (mpi_error_code==0) exit
+        end do
 !      if (ierr.ne.0) call exit(1)
-        if (mpi_error_code .ne. 0) then
+        if (mpi_error_code /= 0) then
 !
 ! error141 failed to mkdir tmpdir
-        print *, ' error141 cpath failed at sys_mkdir(disk), myid = ',&
+        print *, " error141 cpath failed at sys_mkdir(disk), myid = ",&
                                                              mpi_rank
 !        stop
 !        stop
 !        CALL stopmpi (' error in cpath ', myid)
          goto 999
-        endif
-      endif
+        end if
+      end if
 !
 !=======================================================================
 ! step 16 cd tmpdir
 !=======================================================================
 !
       call sys_chdir (disk, lendisk, mpi_error_code)
-      if (mpi_error_code .ne. 0) then
+      if (mpi_error_code /= 0) then
 ! error161 failed to chdir tmpdir
 ! step16 try chdir twice more
         do itry = 1, 2
@@ -226,7 +226,7 @@ contains
             asleep = 2
             asleep = asleep * int(sqrt(real(3*iteery)))
             asleep = asleep / int(sqrt(real(5*iteery)))
-          enddo
+          end do
 
 ! get more sleep -- different sleep times (1-9 sec) depending on myid
           asleep = int(1 + 4 * itry * real(mpi_rank) / real(mpi_process_count))
@@ -238,20 +238,20 @@ contains
 !       print *, ' step16 cpath sleeps ', achar(asleep+48), ' seconds,',&
 !                ' myid = ', myid
           call sys_chdir (disk, lendisk, mpi_error_code)
-          if (mpi_error_code.eq.0) exit
-        enddo
+          if (mpi_error_code==0) exit
+        end do
 !      if (ierr.ne.0) call exit(1)
-        if (mpi_error_code .ne. 0) then
+        if (mpi_error_code /= 0) then
 !
 ! error161 failed to chdir tmpdir
-       print *, ' error161 cpath failed at sys_chdir(disk); myid = ',&
+       print *, " error161 cpath failed at sys_chdir(disk); myid = ",&
                                                             mpi_rank
 !         stop
 !         stop
 !         CALL stopmpi (' error in cpath ', myid)
           goto 999
-        endif
-      endif
+        end if
+      end if
 ! chdir ok
 !     print *, ' in cpath myid = ', myid, ' local disk = ', disk
 
@@ -260,28 +260,28 @@ contains
 !  go to sub-dir defined by myid. Create if did not exist
 !=======================================================================
 !
-      write (idstring,'(I3.3)') mpi_rank
+      write (idstring,"(I3.3)") mpi_rank
       call sys_chdir (idstring, lenidstring, mpi_error_code)
-      if (mpi_error_code .ne. 0) then
+      if (mpi_error_code /= 0) then
          call sys_mkdir (idstring, lenidstring, mpi_error_code)
-        if (mpi_error_code .ne. 0) then
+        if (mpi_error_code /= 0) then
 !
 ! error181 failed to mkdir tmpdir/myid
-          print *, ' error181 cpath failed to make sub-dir ' // idstring
+          print *, " error181 cpath failed to make sub-dir " // idstring
 !         stop
 !         stop
           goto 999
-        endif
+        end if
         call sys_chdir (idstring, lenidstring, mpi_error_code)
-        if (mpi_error_code .ne. 0) then
+        if (mpi_error_code /= 0) then
 !
 ! error183 failed to chdir tmpdir/myid
-         print *, ' error183 cpath failed to go to sub-dir ' // idstring
+         print *, " error183 cpath failed to go to sub-dir " // idstring
 !         stop
 !         stop
           goto 999
-        endif
-      endif
+        end if
+      end if
   999 continue
 
 !=======================================================================
@@ -307,16 +307,16 @@ contains
 !     CALL MPI_Bcast (ierr_all_nodes,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 !
 ! error201 non zero ierr
-      if (ierr_all_nodes .ne. 0) then
-        print *, ' error201 cpath ierr = ', mpi_error_code, ' myid = ', mpi_rank
+      if (ierr_all_nodes /= 0) then
+        print *, " error201 cpath ierr = ", mpi_error_code, " myid = ", mpi_rank
 !
-        if (mpi_rank .eq. 0) then
-          print *, ' error201 cpath terminated at 999, myid = ', mpi_rank
-        endif
+        if (mpi_rank == 0) then
+          print *, " error201 cpath terminated at 999, myid = ", mpi_rank
+        end if
 !       stop
 !       stop
-        call stopmpi (' error in cpath ', mpi_rank)
-      endif
+        call stopmpi (" error in cpath ", mpi_rank)
+      end if
 
 !=======================================================================
 ! step 2222 all nodes succeeded
@@ -361,18 +361,18 @@ contains
             ! getenv fail.
             getenv_allocating = .false.
             return
-        endif
+        end if
         ! Will allocate or re-allocate value, unless it already has the correct length.
         if(allocated(value)) then
             if(len(value) /= length) deallocate(value)
-        endif
+        end if
         if(.not.allocated(value)) allocate(character(length) :: value)
         ! Can't pass a length 0 string to get_environment_variable.
         if(length > 0) then
             call get_environment_variable(variable_name, value, length, status)
-        endif
+        end if
         getenv_allocating = .true.
-    end
+    end function getenv_allocating
 
-end
+end subroutine cpath
 end module cpath_i

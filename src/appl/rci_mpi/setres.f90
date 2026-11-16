@@ -14,19 +14,19 @@
 !   M o d u l e s
 !-----------------------------------------------
       use memory_man
-      use default_c
+      use default_c, only: double, inpci, ndef, ndump
       use where_c
-      use hblock_c
-      use iccu_c
-      use iounit_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use iccu_c, only: iccut, iccutblk
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use openfl_i
-      use lodres_i
-      use getcid_i
+      use getyn_i, only: getyn
+      use openfl_i, only: openfl
+      use lodres_i, only: lodres
+      use getcid_i, only: getcid
       use mpiu_i, only: stopmpi
       implicit none (type, external)
 !-----------------------------------------------
@@ -38,9 +38,9 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      character(len=11), parameter :: form = 'UNFORMATTED'
-      character(len=7), parameter :: status = 'UNKNOWN'
-      character(len=6), parameter :: restitle = 'R92RES'
+      character(len=11), parameter :: form = "UNFORMATTED"
+      character(len=7), parameter :: status = "UNKNOWN"
+      character(len=6), parameter :: restitle = "R92RES"
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -51,18 +51,18 @@
 !
 ! Compose the "rciXXX.res" file names (for each node)
 !
-      write (idstring, '(I3.3)') mpi_rank
-      defnam = 'rci' // idstring // '.res'
+      write (idstring, "(I3.3)") mpi_rank
+      defnam = "rci" // idstring // ".res"
 !
 ! Ask if this is a restart
 !
-      if (mpi_rank .eq. 0) then
+      if (mpi_rank == 0) then
          if (ndef /= 0) then
-            write (stderr_unit, *) 'Restarting RCI90 ?'
+            write (stderr_unit, *) "Restarting RCI90 ?"
             restrt = getyn()
          else
             restrt = .false.
-         endif
+         end if
 !         IF (RESTRT) THEN
 !           WRITE(734,'(a)') 'y            ! Restarting RCI90 ?'
 !         ELSE
@@ -77,30 +77,30 @@
 !         ...Restart, make sure file exist
          inquire(file=defnam, exist=found)
          if (.not. found) then
-            call stopmpi ('setres: .res not exist', mpi_rank)
-         endif
-      endif
+            call stopmpi ("setres: .res not exist", mpi_rank)
+         end if
+      end if
 !
 ! Open the .res file
 !
       call openfl (imcdf, defnam, form, status, mpi_error_code)
-      if (mpi_error_code .ne. 0) then
-         call stopmpi ('setres: Error openning .res file', mpi_rank)
-      endif
+      if (mpi_error_code /= 0) then
+         call stopmpi ("setres: Error openning .res file", mpi_rank)
+      end if
 !
 ! If restart, load the contents. Otherwise generate them via getcid
 !
 ! But first of all, iccutblk() is needed in both cases
 !
-      call alloc (iccutblk, symmetry_block_count, 'ICCUTBLK', 'SETRES')
+      call alloc (iccutblk, symmetry_block_count, "ICCUTBLK", "SETRES")
 
       if (restrt) then
 !        ...Check the signature of the file
          read (imcdf, iostat=ios) r92res
          if (ios/=0 .or. r92res/=restitle) then
             close(imcdf)
-            call stopmpi ('setres: Not RCI92 .res file', mpi_rank)
-         endif
+            call stopmpi ("setres: Not RCI92 .res file", mpi_rank)
+         end if
 
 !         ...Read and check restart information
          call lodres
@@ -112,7 +112,7 @@
          write (imcdf) restitle
          call getcid (isofile, rwffile, idblk)
 
-      endif
+      end if
 
       return
       end subroutine setres

@@ -5,6 +5,6 @@
       implicit none (type, external)
       character (len = 128), intent(in) :: name
       integer :: ncore,igg
-      end subroutine
+      end subroutine setcslb
       end interface
-      end module
+      end module setcslb_i

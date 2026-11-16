@@ -39,9 +39,9 @@ contains
 
 !-----------------------------------------------------------------------
 
-      if (mpi_rank .eq. 0) then
+      if (mpi_rank == 0) then
          call lodcsh2 ((nfile), (ncore), (jblock))
-      endif
+      end if
 
 ! Construct mpi data type for Integer*1 and then broadcast.
 

@@ -19,22 +19,22 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use default_c
-      use iounit_c
+      use default_c, only: double, inpci, ndef, ndump
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use debug_c,         only: cutoff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use setdbg_i
-      use setmc_i
-      use setcon_i
-      use setsum_i
-      use setcsla_i
-      use getmixblock_i
-      use strsum_i
-      use factt_i
-      use ris_cal_i
+      use getyn_i, only: getyn
+      use setdbg_i, only: setdbg
+      use setmc_i, only: setmc
+      use setcon_i, only: setcon
+      use setsum_i, only: setsum
+      use setcsla_i, only: setcsla
+      use getmixblock_i, only: getmixblock
+      use strsum_i, only: strsum
+      use factt_i, only: factt
+      use ris_cal_i, only: ris_cal
       use getsmd_i, only: getsmd
       implicit none (type, external)
 !-----------------------------------------------
@@ -51,35 +51,35 @@
       cutoff = 1.0e-10_real64
 !
       write (stderr_unit, *)
-      write (stderr_unit, *) 'RIS: Execution begins ...'
+      write (stderr_unit, *) "RIS: Execution begins ..."
 !      CALL STARTTIME (ncount1, 'RIS')
 
       write (stderr_unit, *)
-      write (stderr_unit, *) 'Default settings?'
+      write (stderr_unit, *) "Default settings?"
       yes = getyn ()
       write (stderr_unit, *)
       if (yes) then
          ndef = 0
       else
          ndef = 1
-      endif
+      end if
 
-    9 write (stderr_unit, *) 'Name of state'
-      read(*,'(A)') name
-      k=index(name,' ')
-      if (k.eq.1) then
-         write (stderr_unit, *) 'Names may not start with a blank'
+    9 write (stderr_unit, *) "Name of state"
+      read(*,"(A)") name
+      k=index(name," ")
+      if (k==1) then
+         write (stderr_unit, *) "Names may not start with a blank"
          goto 9
-      endif
+      end if
       print *
 
-      write (stderr_unit, *) 'Mixing coefficients from a CI calc.?'
+      write (stderr_unit, *) "Mixing coefficients from a CI calc.?"
       yes = getyn ()
       if (yes) then
          nci = 0
       else
          nci = 1
-      endif
+      end if
       write (stderr_unit, *)
 
 !
@@ -144,7 +144,7 @@
 !
       write (stderr_unit, *)
 !      CALL STOPTIME (ncount1, 'RIS')
-      write (stderr_unit, *) 'RIS: Execution complete.'
+      write (stderr_unit, *) "RIS: Execution complete."
 !
       stop
       end  program ris

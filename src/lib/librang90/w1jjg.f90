@@ -18,19 +18,19 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, tenth, half, two, eps
-      use ribojj_c
-      use ribojj9_c
-      use ribojj11_c
+      use ribojj_c, only: imgnjj, imgtjj, impnjj, imptjj
+      use ribojj9_c, only: imgnjj9, imgtjj9, impnjj9, imptjj9
+      use ribojj11_c, only: imgnjj11, imgtjj11, impnjj11, imptjj11
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use mes_i
-      use rumtjj_i
-      use ixjtik_i
-      use ittk_i
-      use a1jj_i
-      use sixj_i
-      use izas1_i
+      use mes_i, only: mes
+      use rumtjj_i, only: rumtjj
+      use ixjtik_i, only: ixjtik
+      use ittk_i, only: ittk
+      use a1jj_i, only: a1jj
+      use sixj_i, only: sixj
+      use izas1_i, only: izas1
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -75,7 +75,7 @@ contains
         if(itp1 /= itp)return
         itg1=imgnjj11(itk)
         itg=imgnjj11(itd)
-      endif
+      end if
       if(itg1 /= itg)return
       ibt(2)=id(2)
       ibt(3)=id(3)
@@ -96,10 +96,10 @@ contains
                 d1=d1*w
                 call sixj(ik(3),ik(3),kk1,id(6),ik(6),ibt(6),0,si1)
                 enqp=enqp+d1*si1
-              endif
-            endif
-          endif
-        endif
+              end if
+            end if
+          end if
+        end if
       end do
       ww=enqp*dsqrt(dble((kk1+1)))
       ie=kk1+ik(6)+id(6)

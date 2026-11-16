@@ -8,6 +8,6 @@
       integer :: kstart
       character (len = 24) :: name
       integer, intent(in) :: kamax
-      end subroutine
+      end subroutine qqsort
       end interface
-      end module
+      end module qqsort_i

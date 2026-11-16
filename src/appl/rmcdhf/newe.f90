@@ -22,7 +22,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use outbnd_i
+      use outbnd_i, only: outbnd
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -56,7 +56,7 @@
          fail = .false.
       else
          fail = .true.
-      endif
+      end if
 !
 !   Inversion counter
 !
@@ -83,8 +83,8 @@
             if (outbnd(etry)) etry = eps - deleps
             if (outbnd(etry)) then
                deleps = 0.5_real64*deleps
-               go to 1
-            endif
+               goto 1
+            end if
          else if (mx == 0) then
             etry = eps
             inv = 1
@@ -103,7 +103,7 @@
                emax = emax*dnpn25
             else
                emax = eps*dnpn25
-            endif
+            end if
             etry = emax
             if (outbnd(etry)) etry = 0.5_real64*(epsmax + epsmin)
          else if (mx > 0) then
@@ -113,12 +113,12 @@
                emin = emin*dnpn25
             else
                emin = eps*dnpn25
-            endif
+            end if
             etry = emin
             if (outbnd(etry)) etry = 0.5_real64*(epsmax + epsmin)
-         endif
+         end if
          orbital_energy_parameters(j) = etry
-      endif
+      end if
 !
       return
       end subroutine newe

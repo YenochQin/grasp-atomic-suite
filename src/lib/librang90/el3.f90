@@ -28,9 +28,9 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use el31_i
-      use el32_i
-      use el33_i
+      use el31_i, only: el31
+      use el32_i, only: el32
+      use el33_i, only: el33
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -40,7 +40,7 @@ contains
       if(npeel <= 1)return
       if(jb == jd) then
         if(ja == jb.or.jc == jb) then
-          if(ja == jc)go to 10
+          if(ja == jc)goto 10
           if(jc /= jb) then
             call el32(jja,jjb,jc,ja,ja,jb,jc,jd,icolbrei)
           else
@@ -52,7 +52,7 @@ contains
         return
       else if(ja == jc) then
         if(jb == ja.or.jd == ja) then
-          if(jb == jd)go to 10
+          if(jb == jd)goto 10
           if(jd /= ja) then
             call el32(jja,jjb,jd,jb,ja,jb,jc,jd,icolbrei)
           else
@@ -64,7 +64,7 @@ contains
         return
       else if(ja == jd) then
         if(jb == ja.or.jc == ja) then
-          if(jb == jc)go to 10
+          if(jb == jc)goto 10
           if(jc /= jd) then
              call el32(jja,jjb,jc,jb,ja,jb,jc,jd,icolbrei)
           else
@@ -76,7 +76,7 @@ contains
         return
       else if(jb == jc) then
         if(ja == jb.or.jd == jb) then
-          if(ja == jd)go to 10
+          if(ja == jd)goto 10
           if(jd /= jb) then
             call el32(jja,jjb,jd,ja,ja,jb,jc,jd,icolbrei)
           else
@@ -88,7 +88,7 @@ contains
         return
       end if
    10 write(99,100)
-  100 format(5x,'ERRO IN EL3  PMGG RAGG')
+  100 format(5x,"ERRO IN EL3  PMGG RAGG")
       stop
       end subroutine el3
 end module el3_i

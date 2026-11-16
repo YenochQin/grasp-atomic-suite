@@ -21,11 +21,11 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use lodcsh_i
+      use lodcsh_i, only: lodcsh
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -47,31 +47,31 @@ contains
 
       inquire(file=name, exist=found)
       if (.not.found) then
-         write (stderr_unit, *) name(1:length), ' does not exist'
+         write (stderr_unit, *) name(1:length), " does not exist"
          stop
-      endif
+      end if
 
       inquire(unit=nfile, opened=found)
       if (found) then
-         write (stderr_unit, *) 'Unit ', nfile, ' has been used elsewhere'
+         write (stderr_unit, *) "Unit ", nfile, " has been used elsewhere"
          stop
-      endif
+      end if
 
-      open(nfile, file=name, status='OLD', iostat=ios, position='asis')
+      open(nfile, file=name, status="OLD", iostat=ios, position="asis")
       if (ios /= 0) then
-         write (stderr_unit, *) 'Error when opening ', name
+         write (stderr_unit, *) "Error when opening ", name
          stop
-      endif
+      end if
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      read (nfile, '(1A15)', iostat=ios) record
+      read (nfile, "(1A15)", iostat=ios) record
 
-      if (ios/=0 .or. record(1:15)/='Core subshells:') then
-         write (stderr_unit, *) 'Not a Configuration Symmetry List File;'
+      if (ios/=0 .or. record(1:15)/="Core subshells:") then
+         write (stderr_unit, *) "Not a Configuration Symmetry List File;"
          close(nfile)
          stop
-      endif
+      end if
 !
 !   Load data from the  .csl  file
 !

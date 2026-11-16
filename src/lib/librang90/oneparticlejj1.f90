@@ -30,10 +30,10 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use recop00_i
-      use recop1_i
-      use recop2_i
-      use wj1_i
+      use recop00_i, only: recop00
+      use recop1_i, only: recop1
+      use recop2_i, only: recop2
+      use wj1_i, only: wj1
       use perko2_i, only: perko2
       implicit none (type, external)
 !-----------------------------------------------

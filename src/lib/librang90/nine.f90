@@ -29,9 +29,9 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ittk_i
-      use nine0_i
-      use sixj_i
+      use ittk_i, only: ittk
+      use nine0_i, only: nine0
+      use sixj_i, only: sixj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -56,7 +56,7 @@ contains
          if (ittk(j3,l3,k3) == 0) return
          in = 1
          return
-      endif
+      end if
       if (j1*j2*j3*l1*l2*l3*k1*k2*k3 == 0) then
          in = 1
          call nine0 (j1, j2, j3, l1, l2, l3, k1, k2, k3, aa)
@@ -85,7 +85,7 @@ contains
             if (mod(ix,2) /= 0) x = -x
             aa = x + aa
          end do
-      endif
+      end if
       return
       end subroutine nine
 end module nine_i

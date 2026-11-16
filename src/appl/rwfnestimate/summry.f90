@@ -24,7 +24,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rint_i
+      use rint_i, only: rint
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -58,7 +58,7 @@
 !         '  SRC'/)
 !  301 FORMAT(1X,I2,A2,5D12.4,I5,2X,A3)
 !-Format for <r>
-  300 format('Shell',6x,'e',11x,'p0',8x,'gamma',8x,'<r>',6x,'MTP','  SRC'/)
+  300 format("Shell",6x,"e",11x,"p0",8x,"gamma",8x,"<r>",6x,"MTP","  SRC"/)
   301 format(1x,i2,a2,4d12.4,i5,2x,a3)
       return
 !  302 FORMAT ('      Source: ',A)

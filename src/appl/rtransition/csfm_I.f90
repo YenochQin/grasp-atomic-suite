@@ -6,6 +6,6 @@
         implicit none (type, external)
         real(real64), intent(out) :: asfa, asfb
         integer, intent(in) :: lev1, lev2
-      end subroutine
+      end subroutine csfm
       end interface
-      end module
+      end module csfm_i

@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use clrx_i
+      use clrx_i, only: clrx
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -47,7 +47,7 @@
          kap2 = -orbital_kappa(i2)
       else
          kap2 = orbital_kappa(i2)
-      endif
+      end if
 !
 !   Determine the l quantum numbers
 !
@@ -55,13 +55,13 @@
          l1 = kap1
       else
          l1 = (-kap1) - 1
-      endif
+      end if
 !
       if (kap2 > 0) then
          l2 = kap2
       else
          l2 = (-kap2) - 1
-      endif
+      end if
 !
       if (mod(l1 + k + l2,2) == 0) then
 !
@@ -73,7 +73,7 @@
             fase = 1.0_real64
          else
             fase = -1.0_real64
-         endif
+         end if
 !
 !   The other factor is \sqrt (2 j_2 + 1); since j = | \kappa | - 1/2,
 !   we have 2 j_2 + 1 = 2 | \kappa |; the factor \sqrt (2 j_2 + 1)
@@ -95,7 +95,7 @@
 !
             apart = clrx(kap1,k,kap2)*ovlfac
 !
-         endif
+         end if
 !
       else
 !
@@ -103,7 +103,7 @@
          gjpart = 0.0_real64
          dgjpart = 0.0_real64
 !
-      endif
+      end if
 !
       return
       end subroutine matelt

@@ -3,6 +3,6 @@
       interface
       subroutine strsum
       implicit none (type, external)
-      end subroutine
+      end subroutine strsum
       end interface
-      end module
+      end module strsum_i

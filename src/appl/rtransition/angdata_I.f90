@@ -7,6 +7,6 @@
       logical, intent(out) :: avail
       integer :: jkp
       integer, intent(in) :: nfile2
-      end subroutine
+      end subroutine angdata
       end interface
-      end module
+      end module angdata_i

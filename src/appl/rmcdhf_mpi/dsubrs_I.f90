@@ -8,6 +8,6 @@
       integer, intent(in) :: i
       integer, intent(in) :: j
       integer :: jblock
-      end function
+      end function dsubrs
       end interface
-      end module
+      end module dsubrs_i

@@ -43,7 +43,7 @@
          idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
             iro = matrix_partner_indices(list)
-            write (96, *) 'H(', iro, ico, ')= ', hamiltonian_values(list)
+            write (96, *) "H(", iro, ico, ")= ", hamiltonian_values(list)
          end do
          !ibeg = idiag + 1
       end do
@@ -54,7 +54,7 @@
          idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
             iro = matrix_partner_indices(list)
-            write (97, *) 'H(', iro, ico, ')= ', hamiltonian_values(list)
+            write (97, *) "H(", iro, ico, ")= ", hamiltonian_values(list)
          end do
          !ibeg = idiag + 1
       end do
@@ -65,7 +65,7 @@
          idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
             iro = matrix_partner_indices(list)
-            write (98, *) 'H(', iro, ico, ')= ', hamiltonian_values(list)
+            write (98, *) "H(", iro, ico, ")= ", hamiltonian_values(list)
          end do
          !ibeg = idiag + 1
       end do
@@ -76,7 +76,7 @@
          idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
             iro = matrix_partner_indices(list)
-            write (99, *) 'H(', iro, ico, ')= ', hamiltonian_values(list)
+            write (99, *) "H(", iro, ico, ")= ", hamiltonian_values(list)
          end do
          !ibeg = idiag + 1
       end do

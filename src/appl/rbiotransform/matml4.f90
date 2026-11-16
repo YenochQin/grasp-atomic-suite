@@ -24,8 +24,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use wrtmat_i
-      use setvec_i
+      use wrtmat_i, only: wrtmat
+      use setvec_i, only: setvec
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -50,13 +50,13 @@
       ntest = 0
       if (ntest /= 0) then
          write (6, *)
-         write (6, *) ' A AND B MATRIX FROM MATML4 '
+         write (6, *) " A AND B MATRIX FROM MATML4 "
          write (6, *)
          call wrtmat (a, narow, nacol, narow, nacol)
          call wrtmat (b, nbrow, nbcol, nbrow, nbcol)
-         write (6, *) ' NCROW NCCOL NAROW NACOL NBROW NBCOL '
-         write (6, '(6I6)') ncrow, nccol, narow, nacol, nbrow, nbcol
-      endif
+         write (6, *) " NCROW NCCOL NAROW NACOL NBROW NBCOL "
+         write (6, "(6I6)") ncrow, nccol, narow, nacol, nbrow, nbcol
+      end if
 !
       call setvec (c, 0.0_real64, ncrow*nccol)
 !
@@ -67,7 +67,7 @@
                c(:ncrow,j) = c(:ncrow,j) + a(:ncrow,k)*bkj
             end do
          end do
-      endif
+      end if
 !
 !
       if (itrnsp == 1) then
@@ -78,7 +78,7 @@
                c(:ncrow,j) = c(:ncrow,j) + a(k,:ncrow)*bkj
             end do
          end do
-      endif
+      end if
 !
       if (itrnsp == 2) then
 !... C = A*B(T)
@@ -88,15 +88,15 @@
                c(:ncrow,j) = c(:ncrow,j) + a(:ncrow,k)*bjk
             end do
          end do
-      endif
+      end if
 !
 !
       if (ntest /= 0) then
          write (6, *)
-         write (6, *) ' C MATRIX FROM MATML4 '
+         write (6, *) " C MATRIX FROM MATML4 "
          write (6, *)
          call wrtmat (c, ncrow, nccol, ncrow, nccol)
-      endif
+      end if
 !
       return
       end subroutine matml4

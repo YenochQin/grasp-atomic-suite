@@ -6,6 +6,6 @@
       implicit none (type, external)
       integer, intent(in) :: j
       integer, intent(in) :: k
-      end function
+      end function vinti
       end interface
-      end module
+      end module vinti_i

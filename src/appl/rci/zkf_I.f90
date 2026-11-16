@@ -7,6 +7,6 @@
       integer :: i
 !VAST...Dummy argument I is not referenced in this routine.
       integer :: j
-      end subroutine
+      end subroutine zkf
       end interface
-      end module
+      end module zkf_i

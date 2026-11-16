@@ -6,6 +6,6 @@
       implicit none (type, external)
       integer, intent(in) :: index(max_orbitals)
       integer, intent(in) :: nsubs
-      end subroutine
+      end subroutine frmtfp
       end interface
-      end module
+      end module frmtfp_i

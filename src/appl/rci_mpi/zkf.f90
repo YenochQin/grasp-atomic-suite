@@ -21,7 +21,7 @@
       use parameter_def,   only: radial_workspace_capacity
       use cnc_c, only: cnc5c
       use grid_c, only: radial_point_count, radial_grid, radial_grid_derivative
-      use ncc_c
+      use ncc_c, only: c1, c2, c3, c4, double
       use tatb_c, zk=>tb
       implicit none (type, external)
 !-----------------------------------------------
@@ -40,7 +40,7 @@
 !
       if (k > 0) then
          rttk(2:radial_point_count) = radial_grid(2:radial_point_count)**k
-      endif
+      end if
 !
 !   MTP is fed in through  COMMON/TATB/
 !
@@ -59,7 +59,7 @@
          temp(2:mtp) = rhop(2:mtp)
       else
          temp(2:mtp) = rttk(2:mtp)*rhop(2:mtp)
-      endif
+      end if
 !
 !   Set an additional four points to zero
 !
@@ -101,7 +101,7 @@
 !
          zk(mtpp4:radial_point_count) = zklim/rttk(mtpp4:radial_point_count)
 !
-      endif
+      end if
 !
       return
       end subroutine zkf

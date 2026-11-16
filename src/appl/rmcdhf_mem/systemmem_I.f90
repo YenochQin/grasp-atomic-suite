@@ -5,6 +5,6 @@
       use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
 !...This routine performs I/O.
-      end function
+      end function systemmem
       end interface
-      end module
+      end module systemmem_i

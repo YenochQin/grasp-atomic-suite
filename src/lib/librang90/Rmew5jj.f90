@@ -18,7 +18,7 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero
-      use ribojj_c
+      use ribojj_c, only: imgnjj, imgtjj, impnjj, imptjj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -50,21 +50,21 @@ contains
       if(k1 == 0 .and. k2 == 0) then
         if(j1 /= j2) return
         coef=-dsqrt(dble(i00(j1-5)))
-      elseif(k1 == 1 .and. k2 == 0) then
+      else if(k1 == 1 .and. k2 == 0) then
         if(j1 /= j2) return
         if(j1 == 6) then
            coef=-dsqrt(dble(48))
-        elseif(j1 == 9) then
+        else if(j1 == 9) then
            coef=-dsqrt(dble(20))
-        elseif(j1 == 10) then
+        else if(j1 == 10) then
            coef=-dsqrt(dble(10))
-        elseif(j1 == 11) then
+        else if(j1 == 11) then
            coef=-dsqrt(dble(18))
-        endif
-      elseif(k1 == 0 .and. k2 == 1) then
+        end if
+      else if(k1 == 0 .and. k2 == 1) then
         if(j1 /= j2) return
         coef=-dsqrt(dble(i01(j1-5))/dble(7))
-      elseif(k1 == 1 .and. k2 == 2) then
+      else if(k1 == 1 .and. k2 == 2) then
         if(j1 < 9) then
            ji1=j1-5
            ji2=j2-5
@@ -72,7 +72,7 @@ contains
               coef=dsqrt(dble(i12p(ji1,ji2))/dble(7))
            else
               coef=-dsqrt(-dble(i12p(ji1,ji2))/dble(7))
-           endif
+           end if
         else
            ji1=j1-8
            ji2=j2-8
@@ -80,9 +80,9 @@ contains
               coef=dsqrt(dble(i12a(ji1,ji2))/dble(49))
            else
               coef=-dsqrt(-dble(i12a(ji1,ji2))/dble(49))
-           endif
-        endif
-      elseif(k1 == 0 .and. k2 == 3) then
+           end if
+        end if
+      else if(k1 == 0 .and. k2 == 3) then
         if(j1 < 9) then
            ji1=j1-5
            ji2=j2-5
@@ -90,7 +90,7 @@ contains
               coef=dsqrt(dble(i03p(ji1,ji2))/dble(21))
            else
               coef=-dsqrt(-dble(i03p(ji1,ji2))/dble(21))
-           endif
+           end if
         else
            ji1=j1-8
            ji2=j2-8
@@ -98,9 +98,9 @@ contains
               coef=dsqrt(dble(i03a(ji1,ji2))/dble(7))
            else
               coef=-dsqrt(-dble(i03a(ji1,ji2))/dble(7))
-           endif
-        endif
-      elseif(k1 == 1 .and. k2 == 4) then
+           end if
+        end if
+      else if(k1 == 1 .and. k2 == 4) then
         if(j1 < 9) then
            ji1=j1-5
            ji2=j2-5
@@ -108,7 +108,7 @@ contains
               coef=dsqrt(dble(i14p(ji1,ji2))/dble(35))
            else
               coef=-dsqrt(-dble(i14p(ji1,ji2))/dble(35))
-           endif
+           end if
         else
            ji1=j1-8
            ji2=j2-8
@@ -116,9 +116,9 @@ contains
               coef=dsqrt(dble(i14a(ji1,ji2))/dble(49))
            else
               coef=-dsqrt(-dble(i14a(ji1,ji2))/dble(49))
-           endif
-        endif
-      elseif(k1 == 0 .and. k2 == 5) then
+           end if
+        end if
+      else if(k1 == 0 .and. k2 == 5) then
         if(j1 < 9) then
            ji1=j1-5
            ji2=j2-5
@@ -126,7 +126,7 @@ contains
               coef=dsqrt(dble(i05p(ji1,ji2))/dble(21))
            else
               coef=-dsqrt(-dble(i05p(ji1,ji2))/dble(21))
-           endif
+           end if
         else
            ji1=j1-8
            ji2=j2-8
@@ -134,13 +134,13 @@ contains
               coef=dsqrt(dble(i05a(ji1,ji2))/dble(7))
            else
               coef=-dsqrt(-dble(i05a(ji1,ji2))/dble(7))
-           endif
-        endif
+           end if
+        end if
       else
-         write(0,'(A,4I5)') ' J1 J2 = ',j1,j2
-         write(0,'(A)') ' ERROR IN SUB. RMEW5JJ '
+         write(0,"(A,4I5)") " J1 J2 = ",j1,j2
+         write(0,"(A)") " ERROR IN SUB. RMEW5JJ "
          stop
-      endif
+      end if
       return
       end subroutine rmew5jj
 end module rmew5jj_i

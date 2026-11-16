@@ -44,7 +44,7 @@
          dp(:2) = 0.0_real64
          dq(:2) = 0.0_real64
          first = .false.
-      endif
+      end if
 !
 !   Intermediate points
 !

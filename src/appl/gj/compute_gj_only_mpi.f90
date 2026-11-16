@@ -22,12 +22,12 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i
-      use itjpo_i
-      use matelt_i
-      use oneparticlejj_i
-      use rint_i
-      use rinthf_i
+      use convrt_i, only: convrt
+      use itjpo_i, only: itjpo
+      use matelt_i, only: matelt
+      use oneparticlejj_i, only: oneparticlejj
+      use rint_i, only: rint
+      use rinthf_i, only: rinthf
       use mpiu_i, only: gdsummpi
       implicit none (type, external)
 !-----------------------------------------------
@@ -74,8 +74,8 @@
       do ic = mpi_rank + 1, csf_count, mpi_process_count
          if (mpi_rank == 0 .and. mod(ic,100) == 1) then
             call convrt(ic, cnum, lcnum)
-            write (stderr_unit, *) 'Column '//cnum(1:lcnum)//' complete on root;'
-         endif
+            write (stderr_unit, *) "Column "//cnum(1:lcnum)//" complete on root;"
+         end if
 !
          do ir = 1, csf_count
             if (lfordr .and. ic>iccut .and. ic/=ir) cycle
@@ -101,7 +101,7 @@
                if (abs(tshell(1)) <= cutoff) cycle
                elemntgj = elemntgj + gjmelt(ia,ib)*rintgj(ia,ib)*tshell(1)
                elemntdgj = elemntdgj + dgjmelt(ia,ib)*rintdgj(ia,ib)*tshell(1)
-            endif
+            end if
 !
             if (abs(elemntgj) <= cutoff .and. abs(elemntdgj) <= cutoff) cycle
 !
@@ -117,7 +117,7 @@
                else
                   contrgj = elemntgj*csf_mixing_coefficients(ic + loc)*csf_mixing_coefficients(ir + loc)
                   contrdgj = elemntdgj*csf_mixing_coefficients(ic + loc)*csf_mixing_coefficients(ir + loc)
-               endif
+               end if
                gjc_diag(k) = gjc_diag(k) + contrgj
                dgjc_diag(k) = dgjc_diag(k) + contrdgj
             end do

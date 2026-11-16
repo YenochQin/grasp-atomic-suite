@@ -22,8 +22,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dcbsrw_i
-      use quad_i
+      use dcbsrw_i, only: dcbsrw
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

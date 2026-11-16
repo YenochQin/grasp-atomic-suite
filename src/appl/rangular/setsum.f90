@@ -15,11 +15,11 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -34,14 +34,14 @@
       character(len=3)  :: status
 !-----------------------------------------------
 
-      form = 'FORMATTED'
-      status = 'NEW'
+      form = "FORMATTED"
+      status = "NEW"
 !
-      write (stderr_unit, *) 'File ', fullname, ' will be created as the', &
-         ' GENMCP SUMmary File;'
-      write (stderr_unit, *) 'enter another file name if this is not ', &
-         'acceptable; null otherwise:'
-      read (*, '(A)') filnam
+      write (stderr_unit, *) "File ", fullname, " will be created as the", &
+         " GENMCP SUMmary File;"
+      write (stderr_unit, *) "enter another file name if this is not ", &
+         "acceptable; null otherwise:"
+      read (*, "(A)") filnam
 !
       if (len_trim(filnam) == 0) filnam = fullname
 !
@@ -49,12 +49,12 @@
       call openfl (24, filnam, form, status, ierr)
       if (ierr /= 0) then
     2    continue
-         write (stderr_unit, *) 'Enter a name for the GENMCP SUMmary', &
-            ' File that is to be created:'
-         read (*, '(A)') filnam
-         if (len_trim(filnam) == 0) go to 2
-         go to 1
-      endif
+         write (stderr_unit, *) "Enter a name for the GENMCP SUMmary", &
+            " File that is to be created:"
+         read (*, "(A)") filnam
+         if (len_trim(filnam) == 0) goto 2
+         goto 1
+      end if
 !
       return
       end subroutine setsum

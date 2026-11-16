@@ -18,19 +18,19 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use def_c
-      use default_c
+      use default_c, only: double, inpci, ndef, ndump
       use grid_c, only: radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use setiso_i
-      use setqic_i
-      use radgrd_i
-      use nucpot_i
+      use getyn_i, only: getyn
+      use setiso_i, only: setiso
+      use setqic_i, only: setqic
+      use radgrd_i, only: radgrd
+      use nucpot_i, only: nucpot
       implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -45,7 +45,7 @@
 !
 !   Open, check, load data from, and close the  .iso  file
 !
-      call setiso ('isodata')
+      call setiso ("isodata")
 !
 !   Set defaults
 !
@@ -60,50 +60,50 @@
          radial_grid_scale = 2.0e-6_real64/nuclear_charge
          transformed_grid_step = 5.0e-2_real64
          radial_point_count = max_radial_points
-      endif
+      end if
       asymptotic_grid_step = 0.0_real64
 !
       if (ndef /= 0) then
-         write (stderr_unit, *) 'Change the default speed of light ', &
-            'or radial grid parameters?'
+         write (stderr_unit, *) "Change the default speed of light ", &
+            "or radial grid parameters?"
 !
          yes = getyn()
          if (yes) then
 !
 !   Modify the speed of light
 !
-            write (stderr_unit, *) 'The physical speed of light in ', &
-               'atomic units is', vacuum_speed_of_light_au, ';'
-            write (stderr_unit, *) 'revise this value?'
+            write (stderr_unit, *) "The physical speed of light in ", &
+               "atomic units is", vacuum_speed_of_light_au, ";"
+            write (stderr_unit, *) "revise this value?"
             yes = getyn()
             if (yes) then
-               write (stderr_unit, *) 'Enter the revised value:'
+               write (stderr_unit, *) "Enter the revised value:"
                read (5, *) speed_of_light_au
-            endif
+            end if
 !
 !   Modify the parameters controlling the radial grid
 !
-            write (stderr_unit, *) 'The default radial grid parameters ', &
-               'for this case are:'
-            write (stderr_unit, *) ' RNT = ', radial_grid_scale, ';'
-            write (stderr_unit, *) ' H = ', transformed_grid_step, ';'
-            write (stderr_unit, *) ' HP = ', asymptotic_grid_step, ';'
-            write (stderr_unit, *) ' N = ', radial_point_count, ';'
-            write (stderr_unit, *) 'revise these values?'
+            write (stderr_unit, *) "The default radial grid parameters ", &
+               "for this case are:"
+            write (stderr_unit, *) " RNT = ", radial_grid_scale, ";"
+            write (stderr_unit, *) " H = ", transformed_grid_step, ";"
+            write (stderr_unit, *) " HP = ", asymptotic_grid_step, ";"
+            write (stderr_unit, *) " N = ", radial_point_count, ";"
+            write (stderr_unit, *) "revise these values?"
             yes = getyn()
             if (yes) then
-               write (stderr_unit, *) 'Enter RNT:'
+               write (stderr_unit, *) "Enter RNT:"
                read (5, *) radial_grid_scale
-               write (stderr_unit, *) 'Enter H:'
+               write (stderr_unit, *) "Enter H:"
                read (5, *) transformed_grid_step
-               write (stderr_unit, *) 'Enter HP:'
+               write (stderr_unit, *) "Enter HP:"
                read (5, *) asymptotic_grid_step
-               write (stderr_unit, *) 'Enter N:'
+               write (stderr_unit, *) "Enter N:"
                read (5, *) radial_point_count
-            endif
+            end if
 !
-         endif
-      endif
+         end if
+      end if
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !

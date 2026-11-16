@@ -5,6 +5,6 @@
       use parameter_def, only: radial_workspace_capacity, max_orbitals
       implicit none (type, external)
       integer, intent(in) :: nunit
-      end subroutine
+      end subroutine summry
       end interface
-      end module
+      end module summry_i

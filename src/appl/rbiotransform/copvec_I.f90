@@ -7,6 +7,6 @@
       integer, intent(in) :: ndim
       real(real64), intent(in) :: from(ndim)
       real(real64), intent(out) :: to(ndim)
-      end subroutine
+      end subroutine copvec
       end interface
-      end module
+      end module copvec_i

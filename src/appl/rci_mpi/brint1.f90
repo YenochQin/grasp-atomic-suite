@@ -15,7 +15,7 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use bilst_c
       use orb_c,           only: orbital_count
-      use kkstartbreit_c
+      use kkstartbreit_c, only: kmax, kstartbreit1, kstartbreit2
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -38,34 +38,34 @@
       ju = kstartbreit1(k+1) - 1
 !
       if (index < indtp1(jl).or.index > indtp1(ju)) then
-        write(*,*) 'Something wrong in brint1'
+        write(*,*) "Something wrong in brint1"
         stop
-      endif
+      end if
 !
 !   The index is within the range of the indices stored; search
 !   for it in the list of indices
 !
-    1 if (ju-jl .gt. 1) then
+    1 if (ju-jl > 1) then
          jm = (ju+jl)/2
          if (indtp1(jm) > index) then
             ju = jm
          else
             jl = jm
-         endif
+         end if
          goto 1
-      endif
+      end if
 !
 !   The range is bracketed to the extent possible
 !
-      if (index .eq. indtp1(ju)) then
+      if (index == indtp1(ju)) then
          loc = ju
-      elseif (index .eq. indtp1(jl)) then
+      else if (index == indtp1(jl)) then
          loc = jl
       else
          write(*,*) k,ia,ib,ic,id,index
-         write(*,*) 'Brint1 Integral not found'
+         write(*,*) "Brint1 Integral not found"
          stop
-      endif
+      end if
 !
 !   Return the value of the integral
 !   from storage

@@ -5,6 +5,6 @@
       implicit none (type, external)
       logical :: eol
       integer, intent(in) :: j
-      end subroutine
+      end subroutine setcof
       end interface
-      end module
+      end module setcof_i

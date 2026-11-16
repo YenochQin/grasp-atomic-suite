@@ -10,6 +10,6 @@
       real(real64), intent(out) :: q(max_radial_points)
       integer, intent(in) :: jp
       integer, intent(out) :: mtp
-      end subroutine
+      end subroutine tail
       end interface
-      end module
+      end module tail_i

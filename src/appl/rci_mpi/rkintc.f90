@@ -14,7 +14,7 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use cteilsrk_c
       use orb_c
-      use kkstart_c
+      use kkstart_c, only: double, kmax, kstart
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -43,12 +43,12 @@
          iswap = ic
          ic = ia
          ia = iswap
-      endif
+      end if
       if (ib > id) then
          iswap = id
          id = ib
          ib = iswap
-      endif
+      end if
       if (ia > ib) then
          iswap = ib
          ib = ia
@@ -56,16 +56,16 @@
          iswap = id
          id = ic
          ic = iswap
-      endif
+      end if
 
       index = ((ia*key + ib)*key + ic)*key + id
 !
       jl = kstart(k)
       ju = kstart(k+1) - 1
       if (index<indteirk(jl) .or. index>indteirk(ju)) then
-         write (*, *) 'Something wrong in rkintc'
+         write (*, *) "Something wrong in rkintc"
          stop
-      endif
+      end if
 !
 !   The index is within the range of the indices stored; search
 !   for it in the list of indices
@@ -77,9 +77,9 @@
             ju = jm
          else
             jl = jm
-         endif
-         go to 1
-      endif
+         end if
+         goto 1
+      end if
 !
 !   The range is bracketed to the extent possible
 !
@@ -89,9 +89,9 @@
          loc = jl
       else
          write (*, *) k, ia, ib, ic, id, index
-         write (*, *) 'Rkintc Integral not found'
+         write (*, *) "Rkintc Integral not found"
          stop
-      endif
+      end if
 !
 !   Return the value of the integral
 !   from storage

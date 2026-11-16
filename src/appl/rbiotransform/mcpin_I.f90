@@ -9,6 +9,6 @@
       integer, intent(in) :: ik
       integer, intent(in) :: ntestg
       integer, intent(in) :: inpci
-      end subroutine
+      end subroutine mcpin
       end interface
-      end module
+      end module mcpin_i

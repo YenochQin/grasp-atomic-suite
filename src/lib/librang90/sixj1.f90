@@ -28,7 +28,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ixjtik_i
+      use ixjtik_i, only: ixjtik
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -48,7 +48,7 @@ contains
 !     CHESKED TRIANGULAR CONDITIONS
 !
          if (ixjtik(i,j,k,l,m,2) == 0) return
-      endif
+      end if
       ifa = (i + j + k)/2
       as = dble(ifa)
       aka = one
@@ -70,7 +70,7 @@ contains
 !              M > I,  L < J.
             si = aka*dsqrt((as - c - one)*(as - c)*(as - b + one)*(as - b + two&
                )/((b - one)*b*(b + one)*(c + one)*(c + two)*(c + three)))
-         endif
+         end if
       else if (i == m) then
          if (j < l) then
 !              M = L,  L > J.
@@ -84,7 +84,7 @@ contains
 !              M = I,  L < J.
             si = aka*dsqrt((as + one)*(as - c)*(as - b + one)*(as - a)*two/((b&
                 - one)*b*(b + one)*c*(c + one)*(c + two)))
-         endif
+         end if
       else
          if (j < l) then
 !              M < I,   L > J.
@@ -98,8 +98,8 @@ contains
 !              M < I,   L < J.
             si = aka*dsqrt(as*(as + one)*(as - a - one)*(as - a)/((b - one)*b*(&
                b + one)*(c - one)*c*(c + one)))
-         endif
-      endif
+         end if
+      end if
       return
       end subroutine sixj1
 end module sixj1_i

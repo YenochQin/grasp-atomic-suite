@@ -31,9 +31,9 @@ contains
         if (itjpo > 127) itjpo = 256 - itjpo
         itjpo = iabs (itjpo)
       else
-         write (stderr_unit, *) 'ITJPO: Argument ICSF is out of range.'
+         write (stderr_unit, *) "ITJPO: Argument ICSF is out of range."
          stop
-      endif
+      end if
 !
       return
       end function itjpo

@@ -6,6 +6,6 @@
       integer :: iopar
       integer, intent(in) :: jkp
       character (len = 24) :: name(2)
-      end subroutine
+      end subroutine mctin
       end interface
-      end module
+      end module mctin_i

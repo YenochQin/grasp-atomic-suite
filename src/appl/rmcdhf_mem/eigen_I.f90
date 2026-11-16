@@ -5,6 +5,6 @@
       use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
       integer, intent(in) :: j
-      end function
+      end function eigen
       end interface
-      end module
+      end module eigen_i

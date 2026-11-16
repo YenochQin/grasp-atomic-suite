@@ -11,6 +11,6 @@
       integer :: np
       integer :: kappa
       real(real64) :: z
-      end function
+      end function hovlap
       end interface
-      end module
+      end module hovlap_i

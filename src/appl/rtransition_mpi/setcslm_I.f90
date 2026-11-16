@@ -3,6 +3,6 @@
       interface
       subroutine setcslm
       implicit none (type, external)
-      end subroutine
+      end subroutine setcslm
       end interface
-      end module
+      end module setcslm_i

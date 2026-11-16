@@ -29,29 +29,29 @@
       use def_c, only: speed_of_light_au, nsolv
       use grid_c, only: radial_grid_derivative
       use int_c, only: p, q, p0, q0, mtp0
-      use invt_c
-      use node_c
+      use invt_c, only: double, max_orbitals, noinvt
+      use node_c, only: max_orbitals, nnodep
       use orb_c
       use scf_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use estim_i
-      use eigen_i
-      use dcbsrw_i
-      use setpot_i
-      use setxz_i
-      use start_i
-      use out_i
-      use in_i
-      use setxuv_i
-      use quad_i
-      use setxv_i
-      use prwf_i
+      use estim_i, only: estim
+      use eigen_i, only: eigen
+      use dcbsrw_i, only: dcbsrw
+      use setpot_i, only: setpot
+      use setxz_i, only: setxz
+      use start_i, only: start
+      use out_i, only: out
+      use in_i, only: in
+      use setxuv_i, only: setxuv
+      use quad_i, only: quad
+      use setxv_i, only: setxv
+      use prwf_i, only: prwf
       use count_i
-      use newe_i
+      use newe_i, only: newe
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -105,9 +105,9 @@
                call dcbsrw (orbital_principal_n(j), nakj, zinf, orbital_energy_parameters(j), p0, p, q, mtp0)
                write (*, 302) orbital_principal_n(j), orbital_symmetry_labels(j), zinf
                return
-            endif
-         endif
-      endif
+            end if
+         end if
+      end if
 !
 !   Check on upper bound
 !
@@ -119,9 +119,9 @@
             if (orbital_energy_parameters(j) > twocsq) then
                write (*, 303) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_energy_parameters(j)
                orbital_energy_parameters(j) = twocsq
-            endif
-         endif
-      endif
+            end if
+         end if
+      end if
 !
 !   Iteration loop begins here
 !
@@ -144,8 +144,8 @@
                , jp, mtp, nnp, nnodep(j), sgn
             fail = .true.
             return
-         endif
-      endif
+         end if
+      end if
 !
 !   Set up arrays TF and TG; find join point
 !
@@ -184,7 +184,7 @@
          call quad (dnorm)
 !        DELEPS = 137.036*P(JP)*(QJPII-QJPOI)/DNORM
          deleps = speed_of_light_au*p(jp)*(qjpii - qjpoi)/dnorm
-      endif
+      end if
 !
 !   Generate the continuous solution
 !
@@ -251,7 +251,7 @@
                if (pati > pmx) then
                   pmx = pati
                   loc1 = i
-               endif
+               end if
                abpi = abs(pati)
                if (abpi <= apm) cycle
                apm = abpi
@@ -263,10 +263,10 @@
                   loc = loc1
                else
                   loc = loc2
-               endif
+               end if
             else
                loc = loc2
-            endif
+            end if
             test1 = p(loc) + root1*pv(loc)
             test2 = p(loc) + root2*pv(loc)
             if (test1>0.0_real64 .and. test2<0.0_real64) then
@@ -278,17 +278,17 @@
                   dele = root1
                else
                   dele = root2
-               endif
+               end if
             else if (test1<0.0_real64 .and. test2<0.0_real64) then
                if (test1 > test2) then
                   dele = root1
                else
                   dele = root2
-               endif
-            endif
+               end if
+            end if
          else
             dele = -bb/(aa + aa)
-         endif
+         end if
 !
 !   Generate new solution
 !
@@ -298,7 +298,7 @@
          q(2:mtp0) = q(2:mtp0) + dele*qv(2:mtp0)
       else
          mtp0 = mtpc
-      endif
+      end if
 !
 !   Debug printout
 !
@@ -323,33 +323,33 @@
             p0 = -p0
             p(2:mtp0) = -p(2:mtp0)
             q(2:mtp0) = -q(2:mtp0)
-         endif
+         end if
       else
          mx = nnp - nnodep(j)
          nprime = nnp + orbital_l(j) + 1
          call newe (j, sgn, nprime, mx, deleps, fail, inv)
-         if (fail) go to 1
-      endif
+         if (fail) goto 1
+      end if
 !
 !   Solution found
 !
       return
 !
-  300 format(/,/,' Debug printout active; orbital: ',1i2,1a2)
-  301 format(' E(',1i2,1a2,') = ',1p,d11.4,'; adjusted to EPSMIN')
-  302 format(' Returned hydrogenic function for ',1i2,1a2,' with',&
-         ' effective charge ',f7.3)
-  303 format(' E(',1i2,1a2,') = ',1p,d11.4,'; adjusted to TWOCSQ')
-  304 format(' Warning: difficulty with node-counting procedure'/,&
-         ' lower bound on energy (',1p,d11.4,') exceeds upper',' bound (',1d&
-         11.4,'; E(',1i2,1a2,') = ',1d11.4)
-  305 format(' Method ',1i1,' unable to solve for ',1i2,1a2,' orbital')
-  306 format(' Iteration number: ',1i2,', limit: ',1i2,/,&
-         ' Present estimate of P0; ',1d21.14,/,' Present estimate of E(J): ',1d&
-         21.14,', DELEPS: ',1d21.14,/,' Lower bound on energy: ',1d21.14,&
-         ', upper bound: ',1d21.14,/,' Join point: ',1i4,&
-         ', Maximum tabulation point:',1i4,/,' Number of nodes counted: ',1i2,&
-         ', Correct number: ',1i2,/,' Sign of P at first oscillation: ',f3.0)
+  300 format(/,/," Debug printout active; orbital: ",1i2,1a2)
+  301 format(" E(",1i2,1a2,") = ",1p,d11.4,"; adjusted to EPSMIN")
+  302 format(" Returned hydrogenic function for ",1i2,1a2," with",&
+         " effective charge ",f7.3)
+  303 format(" E(",1i2,1a2,") = ",1p,d11.4,"; adjusted to TWOCSQ")
+  304 format(" Warning: difficulty with node-counting procedure"/,&
+         " lower bound on energy (",1p,d11.4,") exceeds upper"," bound (",1d&
+         11.4,"; E(",1i2,1a2,") = ",1d11.4)
+  305 format(" Method ",1i1," unable to solve for ",1i2,1a2," orbital")
+  306 format(" Iteration number: ",1i2,", limit: ",1i2,/,&
+         " Present estimate of P0; ",1d21.14,/," Present estimate of E(J): ",1d&
+         21.14,", DELEPS: ",1d21.14,/," Lower bound on energy: ",1d21.14,&
+         ", upper bound: ",1d21.14,/," Join point: ",1i4,&
+         ", Maximum tabulation point:",1i4,/," Number of nodes counted: ",1i2,&
+         ", Correct number: ",1i2,/," Sign of P at first oscillation: ",f3.0)
       return
 !
       end subroutine solve

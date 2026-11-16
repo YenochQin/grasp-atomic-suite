@@ -19,16 +19,16 @@
       use parameter_def,   only: max_orbitals, max_radial_points
       use def_c
       use eigv_c
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use orb_c, only: orbital_count, csf_count, orbital_principal_n, orbital_kappa
       use prnt_c
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use iq_i
-      use ratden_i
-      use fzalf_i
+      use iq_i, only: iq
+      use ratden_i, only: ratden
+      use fzalf_i, only: fzalf
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -103,7 +103,7 @@
 !
             slfint(j) = 0.0_real64
 !
-         endif
+         end if
 !
       end do
 !
@@ -117,7 +117,6 @@
 !***********************************************************************
 !                                                                      *
       real(real64) function ratden (p, q, mtpo, np, kappa, z)
-      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !   This subprogram computes the overlap of the orbital tabulated in   *
 !   the arrays  P  and  Q  with maximum tabulation point  MTPO  with   *
@@ -141,8 +140,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dcbsrw_i
-      use quad_i
+      use dcbsrw_i, only: dcbsrw
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -170,7 +169,7 @@
 !
       mtp = min(mtph,mtpo)
       do i = 2, mtp
-         if (radial_grid_derivative(i) > 0.0219_real32) cycle
+         if (radial_grid_derivative(i) > 0.0219_real64) cycle
          k = i
       end do
       mtp = k

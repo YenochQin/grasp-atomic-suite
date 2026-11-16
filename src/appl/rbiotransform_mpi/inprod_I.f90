@@ -7,6 +7,6 @@
       real(real64), intent(in) :: a(*)
       real(real64), intent(in) :: b(*)
       integer, intent(in) :: ndim
-      end function
+      end function inprod
       end interface
-      end module
+      end module inprod_i

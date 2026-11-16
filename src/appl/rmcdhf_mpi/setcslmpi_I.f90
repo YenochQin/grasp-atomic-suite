@@ -7,6 +7,6 @@
       integer :: ncore
       character (len = 8) :: idblk(*)
 !VAST...Dummy argument IDBLK is not referenced in this routine.
-      end subroutine
+      end subroutine setcslmpi
       end interface
-      end module
+      end module setcslmpi_i

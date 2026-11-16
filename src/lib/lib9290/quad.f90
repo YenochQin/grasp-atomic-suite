@@ -34,7 +34,7 @@ contains
       use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use grid_c
-      use ncc_c
+      use ncc_c, only: c1, c2, c3, c4, double
       use tatb_c, only: ta, mtp
       implicit none (type, external)
 !-----------------------------------------------
@@ -55,13 +55,13 @@ contains
       do i = 2, mtpm1
 !
          tai = ta(i)
-         if (abs(tai) <= 0._real64) cycle
+         if (abs(tai) <= 0.0_real64) cycle
 !
          ip1 = i + 1
          taip1 = ta(ip1)
          quott = taip1/tai
 !
-         if (quott <= 0._real64) cycle
+         if (quott <= 0.0_real64) cycle
 !
 !   Exponent from fit
 !
@@ -75,11 +75,11 @@ contains
 !   Analytical integration and error estimate for interval r(1:i)
 !
          fri = ri*fri
-         result = fri/(sigma + 1._real64)
+         result = fri/(sigma + 1.0_real64)
 !
 !   Set the tail to zero
 !
-         ta(mtp+1:3+mtp) = 0._real64
+         ta(mtp+1:3+mtp) = 0.0_real64
 !
 !   Newton-Cotes quadature for the remainder
 !
@@ -94,19 +94,19 @@ contains
 !              RATIO = ABS (ESTDER/RESULT)
 !              IF (RATIO .GT. ACCY) PRINT (*,300) RATIO
 !
-         go to 4
+         goto 4
 !
       end do
 !
 !   No value which will permit computation of exponent
 !
-      result = 0._real64
+      result = 0.0_real64
 !
     4 continue
       return
 !
-  300 format(/,'QUAD: Estimated accuracy is ',1p,d10.3,/,&
-         ' Decrease RNT or improve input data conditioning to',' ameliorate.'/)
+  300 format(/,"QUAD: Estimated accuracy is ",1p,d10.3,/,&
+         " Decrease RNT or improve input data conditioning to"," ameliorate."/)
       return
 !
       end subroutine quad

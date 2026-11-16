@@ -26,7 +26,7 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use def_c
-      use arctan_i
+      use arctan_i, only: arctan
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -72,7 +72,7 @@ contains
 !
          first = .false.
 !
-      endif
+      end if
 !
 !   Cases where the argument is real
 !
@@ -99,12 +99,12 @@ contains
                   clngi = pi
                else
                   clngi = 0.0_real64
-               endif
+               end if
                facneg = log(argum)
                argur = -argr
                negarg = .true.
 !
-            endif
+            end if
 !
 !   Cases where the argument is real and positive
 !
@@ -114,7 +114,7 @@ contains
             argur = argr
             negarg = .false.
 !
-         endif
+         end if
 !
 !   Use Abramowitz and Stegun formula 6.1.15 to ensure that
 !   the argument in Stirling's formula is greater than 10
@@ -124,8 +124,8 @@ contains
          if (argur < 10.0_real64) then
             ovlfac = ovlfac*argur
             argur = argur + 1.0_real64
-            go to 2
-         endif
+            goto 2
+         end if
 !
 !   Now use Stirling's formula to compute Log (Gamma (ARGUM))
 !
@@ -165,8 +165,8 @@ contains
             ovlfr = termr
             ovlfi = termi
             argur = argur + 1.0_real64
-            go to 4
-         endif
+            goto 4
+         end if
 !
 !   Now use Stirling's formula to compute Log (Gamma (ARGUM))
 !
@@ -195,7 +195,7 @@ contains
          clngr = clngr - 0.5_real64*log(ovlfr*ovlfr + ovlfi*ovlfi)
          clngi = clngi - arctan(ovlfi,ovlfr)
 !
-      endif
+      end if
 !
 !   Now exponentiate the complex Log Gamma function to get
 !   the complex Gamma function
@@ -205,16 +205,16 @@ contains
       else
          write (*, 301) clngr
          stop
-      endif
+      end if
       resr = fac*cos(clngi)
       resi = fac*sin(clngi)
 !
       return
 !
-  300 format('CGAMMA: Argument (',1p,1d19.12,',',1d19.12,')',&
-         ' too close to a pole.')
-  301 format('CGAMMA: Argument to exponential function',' (',1p,1d19.12,&
-         ') out of range.')
+  300 format("CGAMMA: Argument (",1p,1d19.12,",",1d19.12,")",&
+         " too close to a pole.")
+  301 format("CGAMMA: Argument to exponential function"," (",1p,1d19.12,&
+         ") out of range.")
       return
 !
       end subroutine cgamma

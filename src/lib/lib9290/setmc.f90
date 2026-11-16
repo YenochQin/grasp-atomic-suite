@@ -36,21 +36,21 @@ contains
 !
 !   TENMAX - Maximum size of exponent of 10
 !
-      tenmax = dlamch('L')
+      tenmax = dlamch("L")
 !
 !   EXPMAX - Maximum size of exponent of e
 !
-      dnum = dlamch('O')
+      dnum = dlamch("O")
       expmax = log(dnum)
 !
 !   EXPMIN - Minimum size of exponent of e
 !
-      dnum = dlamch('U')
+      dnum = dlamch("U")
       expmin = log(dnum)
 !
 !   PRECIS - Machine precision
 !
-      precis = dlamch('E')
+      precis = dlamch("E")
 !
 !   Debug printout
 !
@@ -58,10 +58,10 @@ contains
 !
       return
 !
-  300 format(/,'From SUBROUTINE SETMC:'/,' TENMAX (maximum exponent of 10): ',&
-         f5.0,/,' EXPMAX (maximum exponent of e): ',1p,1d19.12,/,&
-         ' EXPMIN (minimum exponent of e): ',1d19.12,/,&
-         ' PRECIS (machine precision): ',1d19.12)
+  300 format(/,"From SUBROUTINE SETMC:"/," TENMAX (maximum exponent of 10): ",&
+         f5.0,/," EXPMAX (maximum exponent of e): ",1p,1d19.12,/,&
+         " EXPMIN (minimum exponent of e): ",1d19.12,/,&
+         " PRECIS (machine precision): ",1d19.12)
       return
 !
       end subroutine setmc

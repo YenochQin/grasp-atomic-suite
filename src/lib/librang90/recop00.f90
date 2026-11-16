@@ -23,7 +23,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ittk_i
+      use ittk_i, only: ittk
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -63,8 +63,8 @@ contains
             if(jjq1(1,ij1) /= jjq2(1,ij1))iat=0
             if(jjq1(2,ij1) /= jjq2(2,ij1))iat=0
             if(jjq1(3,ij1) /= jjq2(3,ij1))iat=0
-          endif
-        endif
+          end if
+        end if
       end do
       if(iat == 0)return
       if(npeelgg <= 2)return
@@ -83,7 +83,7 @@ contains
           if(ittk(lk,ld,2*ka) == 0)iat=0
           if(iat == 0)return
         end do
-      endif
+      end if
       return
       end subroutine recop00
 end module recop00_i

@@ -25,10 +25,10 @@
       logical :: found
 !-----------------------------------------------
 !
-      j = index(name,' ')
-      inquire(file=name(1:j-1)//'.TB', exist=found)
+      j = index(name," ")
+      inquire(file=name(1:j-1)//".TB", exist=found)
       if (.not.found) then
-         write (6, *) ' Angular file not available'
+         write (6, *) " Angular file not available"
          avail = .false.
          return
       else
@@ -36,18 +36,18 @@
 !  Open the file and check if it is appropriate for the present case
 !
          nf = 200
-         open(unit=nf, file=name(1:j-1)//'.TB', status='OLD', form=&
-            'UNFORMATTED', position='asis')
+         open(unit=nf, file=name(1:j-1)//".TB", status="OLD", form=&
+            "UNFORMATTED", position="asis")
          rewind (nf)
          read (nf) ncfd, nwd, kamaxd
          if (.not.(ncfd==csf_count .and. nwd==orbital_count .and. kamaxd==kamax)) then
-            write (6, *) ' Angular file not appropriate'
+            write (6, *) " Angular file not appropriate"
             avail = .false.
             return
          else
-            write (6, *) ' Angular data read from file'
+            write (6, *) " Angular data read from file"
             avail = .true.
-         endif
-      endif
+         end if
+      end if
       return
       end subroutine angdata

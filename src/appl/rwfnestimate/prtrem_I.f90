@@ -5,6 +5,6 @@
       use parameter_def, only: max_orbitals
       implicit none (type, external)
       logical, intent(out) :: all
-      end subroutine
+      end subroutine prtrem
       end interface
-      end module
+      end module prtrem_i

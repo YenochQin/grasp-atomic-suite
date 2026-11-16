@@ -3,6 +3,6 @@
       interface
       subroutine wrtrwf
       implicit none (type, external)
-      end subroutine
+      end subroutine wrtrwf
       end interface
-      end module
+      end module wrtrwf_i

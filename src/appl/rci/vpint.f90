@@ -23,7 +23,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-     use vpintf_i
+     use vpintf_i, only: vpintf
      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -47,7 +47,7 @@
          iswap = ib
          ib = ia
          ia = iswap
-      endif
+      end if
 !
 !   Compute the composite (packed) index
 !
@@ -64,7 +64,7 @@
             found = .false.
             loc = nvpi
 !
-         elseif (index < indoei(1)) then
+         else if (index < indoei(1)) then
 !
 !   The index is less than the smallest stored
 !
@@ -79,26 +79,26 @@
             ju = nvpi
             jl = 1
 !
-    1       if (ju-jl .gt. 1) then
+    1       if (ju-jl > 1) then
 !
                jm = (ju+jl)/2
-               if (indoei(jm) .gt. index) then
+               if (indoei(jm) > index) then
                   ju = jm
                else
                   jl = jm
-               endif
+               end if
                goto 1
 !
             else
 !
 !   The range is bracketed to the extent possible
 !
-               if (index .eq. indoei(ju)) then
+               if (index == indoei(ju)) then
 !
                   found = .true.
                   loc = ju
 !
-               elseif (index .eq. indoei(jl)) then
+               else if (index == indoei(jl)) then
 !
                   found = .true.
                   loc = jl
@@ -108,11 +108,11 @@
                   found = .false.
                   loc = jl
 !
-               endif
+               end if
 !
-            endif
+            end if
 !
-         endif
+         end if
 !
          if (found) then
 !
@@ -134,12 +134,12 @@
 !   Increase array length by half the present length if the latter
 !   is inadequate to store another pair
 !
-            if (nvpi .gt. ndvpa) then
+            if (nvpi > ndvpa) then
                newsiz = ndvpa+ndvpa/2
-               call ralloc (indoei,newsiz,'INDOEI', 'VPINT')
-               call ralloc (valoei,newsiz,'VALOEI', 'VPINT')
+               call ralloc (indoei,newsiz,"INDOEI", "VPINT")
+               call ralloc (valoei,newsiz,"VALOEI", "VPINT")
                ndvpa = newsiz
-            endif
+            end if
 !
             do 2 i = nvpi,loc+2,-1
                indoei(i) = indoei(i-1)
@@ -151,7 +151,7 @@
             indoei(loc+1) = index
             valoei(loc+1) = tegral
 !
-         endif
+         end if
 !
       else
 !
@@ -163,8 +163,8 @@
 !   NDVPA stores the array dimension
 !
          ndvpa = 2
-         call alloc (indoei,ndvpa,'INDOEI', 'VPINT')
-         call alloc (valoei,ndvpa,'VALOEI', 'VPINT')
+         call alloc (indoei,ndvpa,"INDOEI", "VPINT")
+         call alloc (valoei,ndvpa,"VALOEI", "VPINT")
 !
 !   Compute the integral's value
 !
@@ -179,7 +179,7 @@
          indoei(1) = index
          valoei(1) = tegral
 !
-      endif
+      end if
 !
       return
       end subroutine vpint

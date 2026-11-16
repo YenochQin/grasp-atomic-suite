@@ -19,12 +19,12 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix, max_radial_points
       use memory_man
-      use orba_c
-      use core_c
+      use orba_c, only: double, iorder, max_orbitals
+      use core_c, only: closed_core_subshell_count
       use def_c
-      use fixd_c
+      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
       use grid_c, only: radial_point_count, radial_derivative_over_radius
-      use lagr_c
+      use lagr_c, only: double, ecv, iecc, nec
       use orb_c
       use mpi_c
       use pote_c, only: yp, xp, xq
@@ -34,12 +34,12 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setcof_i
-      use ypot_i
-      use xpot_i
-      use dacon_i
-      use quad_i
-      use rinti_i
+      use setcof_i, only: setcof
+      use ypot_i, only: ypot
+      use xpot_i, only: xpot
+      use dacon_i, only: dacon
+      use quad_i, only: quad
+      use rinti_i, only: rinti
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -126,28 +126,28 @@
             lip1 = max (closed_core_subshell_count, liraw) + 1
             nakli = orbital_kappa(li)
             fixli = is_orbital_fixed(li)
-            fulli = abs ( ucf(li)-dble (orbital_two_j(li)+1) ) .lt. eps
+            fulli = abs ( ucf(li)-dble (orbital_two_j(li)+1) ) < eps
             do ljraw = lip1, orbital_count
                lj = iorder(ljraw)
                fixlj = is_orbital_fixed(lj)
-               fullj = abs ( ucf(lj)-dble (orbital_two_j(lj)+1) ) .lt. eps
-               if ( (orbital_kappa(lj) .eq. nakli) .and.            &
+               fullj = abs ( ucf(lj)-dble (orbital_two_j(lj)+1) ) < eps
+               if ( (orbital_kappa(lj) == nakli) .and.            &
                      (.not. (fixli .and. fixlj)) .and.    &
                      (.not. (fulli .and. fullj)) ) then
                   nec = nec + 1
                   !*** Encode index at 2nd round ***
                   if (itwice == 2) iecc(nec) = li + key * lj
-               endif
-            enddo
-         enddo
+               end if
+            end do
+         end do
 
 
             if (itwice==1 .and. nec>0) then
-               call alloc (ecv, nec, 'ECV', 'SETLAGmpi')
-               call alloc (iecc, nec, 'IECC', 'SETLAGmpi')
+               call alloc (ecv, nec, "ECV", "SETLAGmpi")
+               call alloc (iecc, nec, "IECC", "SETLAGmpi")
             else
                exit
-            endif
+            end if
          end do                                  !itwice
 
 !=======================================================================
@@ -167,10 +167,10 @@
                   write (*, 305) orbital_principal_n(l2), orbital_symmetry_labels(l2), orbital_principal_n(l1), &
                      & orbital_symmetry_labels(l1)
                end do
-            endif
-         endif
+            end if
+         end if
          first = .false.
-      endif
+      end if
 
 !FF+GG  12/07/05
 !     Lagrange multipliers need to be computed also on the first call
@@ -197,7 +197,7 @@
             xpj(:radial_point_count) = xp(:radial_point_count)
             xqj(:radial_point_count) = xq(:radial_point_count)
             jlast = j
-         endif
+         end if
 !
          if (m /= mlast) then
             ucfm = ucf(m)
@@ -209,12 +209,12 @@
             xpm(:radial_point_count) = xp(:radial_point_count)
             xqm(:radial_point_count) = xq(:radial_point_count)
             mlast = m
-         endif
+         end if
 !
          mtp = max(orbital_last_grid_index(j),orbital_last_grid_index(m))
 !
          if (is_orbital_fixed(m)) then
-            ta(1) = 0._real64
+            ta(1) = 0.0_real64
             do i = 2, mtp
                ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,m)*xqj(i) &
                   & -radial_small_components(i,m)*xpj(i))*speed_of_light_au+(radial_large_components(i,m)*radial_large_components(i&
@@ -233,7 +233,7 @@
 ! end dbg
 
          else if (is_orbital_fixed(j)) then
-            ta(1) = 0._real64
+            ta(1) = 0.0_real64
             do i = 2, mtp
                ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,j)*xqm(i) &
                   & -radial_small_components(i,j)*xpm(i))*speed_of_light_au+(radial_large_components(i,j)*radial_large_components(i&
@@ -263,8 +263,8 @@
          else
             qdif = abs((ucfj - ucfm)/max(ucfj,ucfm))
             if (qdif > p001) then
-               obqdif = 1._real64/ucfj - 1._real64/ucfm
-               ta(1) = 0._real64
+               obqdif = 1.0_real64/ucfj - 1.0_real64/ucfm
+               ta(1) = 0.0_real64
                do i = 2, mtp
                   ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,m)*xqj(i) &
                      & -radial_small_components(i,m)*xpj(i)-radial_large_components(i,j)*xqm(i&
@@ -285,8 +285,8 @@
 
 
             else
-               obqsum = 1._real64/ucfj + 1._real64/ucfm
-               ta(1) = 0._real64
+               obqsum = 1.0_real64/ucfj + 1.0_real64/ucfm
+               ta(1) = 0.0_real64
                do i = 2, mtp
                   ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,m)*xqj(i) &
                      & -radial_small_components(i,m)*xpj(i)+radial_large_components(i,j)*xqm(i&
@@ -297,7 +297,7 @@
 
                call quad (result)
                rijm = rinti(m,j,1)               !/ nprocs
-               ecv(li) = (result - 2._real64*rijm / mpi_process_count)/obqsum
+               ecv(li) = (result - 2.0_real64*rijm / mpi_process_count)/obqsum
 !start dbg
 !           WRITE (81,*)'4, RESULT, RIUJM, OBQSUM, ECV, TA'
 !           WRITE (81,*)RESULT, RIUJM, OBQSUM, ECV
@@ -306,8 +306,8 @@
 !           ENDDO
 !end dbg
 
-            endif
-         endif
+            end if
+         end if
 !=======================================================================
 !  Collect contributions from all nodes.
 !  Another alternative is to modify mcpmpi to let every node
@@ -328,10 +328,10 @@
 !db      close(82)
 
 
-  302 format(/,'Lagrange multipliers are not required')
-  304 format(/,'Include Lagrange multipliers between:'/)
+  302 format(/,"Lagrange multipliers are not required")
+  304 format(/,"Include Lagrange multipliers between:"/)
   305 format(13x,2(2x,1i2,1a2))
-  306 format(/,'Lagrange multipliers:'/)
+  306 format(/,"Lagrange multipliers:"/)
   307 format(13x,2(2x,1i2,1a2),2x,1p,d16.9)
 
       return

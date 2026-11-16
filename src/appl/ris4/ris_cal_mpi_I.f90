@@ -4,6 +4,6 @@
       subroutine ris_cal_mpi (name)
       implicit none (type, external)
       character(len=24), intent(in) :: name
-      end subroutine
+      end subroutine ris_cal_mpi
       end interface
-      end module
+      end module ris_cal_mpi_i

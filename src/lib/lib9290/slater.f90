@@ -29,8 +29,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use yzk_i
-      use quad_i
+      use yzk_i, only: yzk
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -59,7 +59,7 @@ contains
          mtp = min(orbital_last_grid_index(ia),orbital_last_grid_index(ic))
       else
          mtp = min(min(mtp,orbital_last_grid_index(ia)),orbital_last_grid_index(ic))
-      endif
+      end if
 !
       ta(1) = 0.0_real64
       do i = 2, mtp
@@ -78,8 +78,8 @@ contains
 !
       return
 !
-  300 format(/,'  (',1i1,')',/,' R   (',1i2,1a2,',',1i2,1a2,';',1i2,1a2,',',1i2&
-         ,1a2,') ','= ',1p,d19.12)
+  300 format(/,"  (",1i1,")",/," R   (",1i2,1a2,",",1i2,1a2,";",1i2,1a2,",",1i2&
+         ,1a2,") ","= ",1p,d19.12)
       return
 !
       end function slater

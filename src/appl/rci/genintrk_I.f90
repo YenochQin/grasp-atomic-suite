@@ -5,6 +5,6 @@
         implicit none (type, external)
         integer, intent(in) :: myid, nprocs
         integer, intent(out) :: n, j2max
-      end subroutine
+      end subroutine genintrk
       end interface
-      end module
+      end module genintrk_i

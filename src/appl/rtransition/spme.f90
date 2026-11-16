@@ -21,13 +21,13 @@
       use grid_c
       use orb_c
       use osc_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use clrx_i
-      use quad_i
+      use clrx_i, only: clrx
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -161,7 +161,7 @@
                if (ldbpr(14)) then
                   write (99, 308) peres
                   write (99, 306) cip
-               endif
+               end if
                tamar = cip*peres
                if (ldbpr(14)) write (99, 307) tamar
 !
@@ -172,7 +172,7 @@
                if (ldbpr(14)) then
                   write (99, 309) enoch
                   write (99, 306) cip
-               endif
+               end if
                seth = cip*enoch
                if (ldbpr(14)) write (99, 307) seth
 !
@@ -183,7 +183,7 @@
                if (ldbpr(14)) then
                   write (99, 310) shem
                   write (99, 306) fl
-               endif
+               end if
                darius = fl*shem
                if (ldbpr(14)) write (99, 307) darius
 !
@@ -211,11 +211,11 @@
                   write (99, 319) esau
                   write (99, 320) tarom, esther, tekel
                   write (99, 321) gimel, aaron
-               endif
+               end if
 !
-            endif
+            end if
 !
-         endif
+         end if
 !
          if (ldbpr(12)) write (99, 301) i, j, hcoul, hgauge, hbab
 !
@@ -238,41 +238,41 @@
             if (ldbpr(14)) write (99, 322) value
             hmag = -value*(fl + flp)*(dfki + dfkj)*form/sqrt(fl*flp)
 !
-         endif
+         end if
 !
          if (ldbpr(12)) write (99, 302) hmag
 !
-      endif
+      end if
 !
       return
 !
-  300 format(/,1x,20x,'Local form of gauge dependent integral for',' orbitals',&
-         i3,' and',i3,/,/,100(1x,7(i3,2x,1p,d11.3,2x),/))
-  301 format(/,1x,'Orbital pair (',i2,',',i2,') integrals:','Coul. gauge ',1p,d&
-         13.3,3x,'Gauge contribution',d13.3,3x,'Bab.gauge',d13.3)
-  302 format(/,1x,'Magnetic single particle matrix element ',1p,d13.3)
-  303 format(/,1x,30('+'),'   SPME called for orbitals ',i4,'   and',i4,3x,30(&
-         '+'))
+  300 format(/,1x,20x,"Local form of gauge dependent integral for"," orbitals",&
+         i3," and",i3,/,/,100(1x,7(i3,2x,1p,d11.3,2x),/))
+  301 format(/,1x,"Orbital pair (",i2,",",i2,") integrals:","Coul. gauge ",1p,d&
+         13.3,3x,"Gauge contribution",d13.3,3x,"Bab.gauge",d13.3)
+  302 format(/,1x,"Magnetic single particle matrix element ",1p,d13.3)
+  303 format(/,1x,30("+"),"   SPME called for orbitals ",i4,"   and",i4,3x,30(&
+         "+"))
   304 format(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)
-  305 format(/,' Integral J(L)  =  ',1p,d28.12)
-  306 format(' Factor multiplying this ',1p,d20.12)
-  307 format(' Resultant contribution  ',1p,d20.12,/)
-  308 format(' I + (L+1) integral  = ',1p,d24.12)
-  309 format(' I + (L-1) integral  = ',1p,d24.12)
-  310 format(' I - (L-1) integral  = ',1p,d24.12)
-  311 format(' I - (L+1) integral  = ',1p,d24.12)
-  312 format(' These last four add up to ',1p,d20.12,&
-         '    compared to the first which is ',d20.12)
-  313 format(' These all add up to ',1p,d20.12,' which should equal ',d20.12)
-  314 format(/,18x,'Integral',11x,'Coefficient',8x,'Contribution')
-  315 format(' I + (L+1)',1p,3d20.10)
-  316 format(' I + (L-1)',1p,3d20.10)
-  317 format(' I - (L-1)',1p,3d20.10)
-  318 format(' I - (L+1)',1p,3d20.10)
-  319 format(54x,16('-'),/,50x,1p,d20.10)
-  320 format(' J (L)',4x,1p,3d20.10)
-  321 format(54x,16('-'),/,' Correct figure',1p,d20.10,15x,d20.10)
-  322 format(' I + (L)  integral',1p,d20.10)
+  305 format(/," Integral J(L)  =  ",1p,d28.12)
+  306 format(" Factor multiplying this ",1p,d20.12)
+  307 format(" Resultant contribution  ",1p,d20.12,/)
+  308 format(" I + (L+1) integral  = ",1p,d24.12)
+  309 format(" I + (L-1) integral  = ",1p,d24.12)
+  310 format(" I - (L-1) integral  = ",1p,d24.12)
+  311 format(" I - (L+1) integral  = ",1p,d24.12)
+  312 format(" These last four add up to ",1p,d20.12,&
+         "    compared to the first which is ",d20.12)
+  313 format(" These all add up to ",1p,d20.12," which should equal ",d20.12)
+  314 format(/,18x,"Integral",11x,"Coefficient",8x,"Contribution")
+  315 format(" I + (L+1)",1p,3d20.10)
+  316 format(" I + (L-1)",1p,3d20.10)
+  317 format(" I - (L-1)",1p,3d20.10)
+  318 format(" I - (L+1)",1p,3d20.10)
+  319 format(54x,16("-"),/,50x,1p,d20.10)
+  320 format(" J (L)",4x,1p,3d20.10)
+  321 format(54x,16("-"),/," Correct figure",1p,d20.10,15x,d20.10)
+  322 format(" I + (L)  integral",1p,d20.10)
       return
 !
       end subroutine spme

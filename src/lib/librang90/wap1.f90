@@ -33,16 +33,16 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use mes_i
-      use wap1jjg_i
-      use izas1_i
-      use itjj3_i
-      use rumtjj_i
-      use ixjtik_i
-      use c0t5s_i
-      use rmeajj_i
-      use wj1_i
-      use sixj_i
+      use mes_i, only: mes
+      use wap1jjg_i, only: wap1jjg
+      use izas1_i, only: izas1
+      use itjj3_i, only: itjj3
+      use rumtjj_i, only: rumtjj
+      use ixjtik_i, only: ixjtik
+      use c0t5s_i, only: c0t5s
+      use rmeajj_i, only: rmeajj
+      use wj1_i, only: wj1
+      use sixj_i, only: sixj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -67,11 +67,11 @@ contains
           if(id(1) < 300) call mes(55)
           call wap1jjg(k1,bk2,qm1,qm2,qm3,ik,bk,id,bd,wa)
           return
-        endif
-      elseif(id(3) > 9) then
+        end if
+      else if(id(3) > 9) then
         call wap1jjg(k1,bk2,qm1,qm2,qm3,ik,bk,id,bd,wa)
         return
-      endif
+      end if
       if(izas1(id(7),bd(3),ik(7),bk(3)) == 0)return
       enqp=zero
       kk1=k1*2

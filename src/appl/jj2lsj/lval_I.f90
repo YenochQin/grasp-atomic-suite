@@ -4,6 +4,6 @@
       integer function lval (symbol)
       implicit none (type, external)
       character (len = 1), intent(in) :: symbol
-      end function
+      end function lval
       end interface
-      end module
+      end module lval_i

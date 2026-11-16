@@ -6,7 +6,7 @@ contains
 integer function itjpo(index)
     implicit none (type, external)
     integer,intent(in) :: index
-    if(index<1.or.index>3) error stop 'Unexpected level index'
+    if(index<1.or.index>3) error stop "Unexpected level index"
     itjpo=2*index-1
-end function
+end function itjpo
 end module itjpo_i

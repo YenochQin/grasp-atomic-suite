@@ -4,6 +4,6 @@
       subroutine lodcslmpigg (nfile, ncore, jblock)
       implicit none (type, external)
       integer :: nfile, ncore, jblock
-      end subroutine
+      end subroutine lodcslmpigg
       end interface
-      end module
+      end module lodcslmpigg_i

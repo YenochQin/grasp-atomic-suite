@@ -25,7 +25,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use lodcsl_i
+      use lodcsl_i, only: lodcsl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -45,18 +45,18 @@
 !
 !   The  .csl  file is FORMATTED; it must exist
 !
-      j = index(name,' ')
-      open(unit=21, file=name(1:j-1)//'.c', form='FORMATTED', status='OLD', &
-         position='asis')
+      j = index(name," ")
+      open(unit=21, file=name(1:j-1)//".c", form="FORMATTED", status="OLD", &
+         position="asis")
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      read (21, '(1A15)', iostat=ios) record
-      if (ios/=0 .or. record(1:15)/='Core subshells:') then
-         write (6, *) 'Not a Configuration Symmetry List File;'
+      read (21, "(1A15)", iostat=ios) record
+      if (ios/=0 .or. record(1:15)/="Core subshells:") then
+         write (6, *) "Not a Configuration Symmetry List File;"
          close(21)
          stop
-      endif
+      end if
 !
 !   Load data from the  .csl  file
 !

@@ -21,13 +21,13 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjj2_i
-      use ixjtik_i
-      use izas1_i
-      use rumtjj_i
-      use a1jj_i
-      use w1jjg_i
-      use sixj_i
+      use itjj2_i, only: itjj2
+      use ixjtik_i, only: ixjtik
+      use izas1_i, only: izas1
+      use rumtjj_i, only: rumtjj
+      use a1jj_i, only: a1jj
+      use w1jjg_i, only: w1jjg
+      use sixj_i, only: sixj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -70,10 +70,10 @@ contains
                 d1=d1*w
                 call sixj(ik(3),kk1,kk2,id(6),ik(6),ibt(6),0,si1)
                 enqp=enqp+d1*si1
-              endif
-            endif
-          endif
-        endif
+              end if
+            end if
+          end if
+        end if
       end do
       aw=enqp*dsqrt(dble((kk2+1)))
       ie=kk2+ik(6)+id(6)

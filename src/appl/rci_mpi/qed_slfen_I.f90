@@ -6,6 +6,6 @@
       use parameter_def,   only: max_orbitals
       implicit none (type, external)
       real(real64), intent(out) :: slfint(max_orbitals)
-      end subroutine
+      end subroutine qed_slfen
       end interface
-      end module
+      end module qed_slfen_i

@@ -54,7 +54,7 @@
             nrows = nb2
          else
             nrows = nb2 + 1
-         endif
+         end if
          do ii = 1, nrows
             ii1 = ii
             ii2 = ii1 + nrows
@@ -62,7 +62,7 @@
                write (99, 301) radial_grid(ii1), p(ii1), q(ii1), radial_grid(ii2), p(ii2), q(ii2)
             else if (ii1 <= mtp0) then
                write (99, 301) radial_grid(ii1), p(ii1), q(ii1)
-            endif
+            end if
          end do
          call draw (p, 1.0_real64, q, cbz, mtp0)
 !
@@ -78,7 +78,7 @@
                nrows = nb2
             else
                nrows = nb2 + 1
-            endif
+            end if
             do ii = 1, nrows
                ii1 = ii
                ii2 = ii1 + nrows
@@ -88,20 +88,20 @@
                      k), radial_small_components(ii2,k)
                else if (ii1 <= mfk) then
                   write (99, 301) radial_grid(ii1), radial_large_components(ii1,k), radial_small_components(ii1,k)
-               endif
+               end if
             end do
             call draw (radial_large_components(:max_radial_points,k), 1.0_real64, &
                & radial_small_components(:max_radial_points,k), cbz, orbital_last_grid_index(k))
 !
          end do
 !
-      endif
+      end if
 !
       return
 !
-  300 format('1',1i2,1a2,' orbital:'/,2(&
-         ' --------- r --------- ------- P (r) -------',&
-         ' ------- Q (r) -------'))
+  300 format("1",1i2,1a2," orbital:"/,2(&
+         " --------- r --------- ------- P (r) -------",&
+         " ------- Q (r) -------"))
   301 format(1p,6(1x,1d21.14))
       return
 !

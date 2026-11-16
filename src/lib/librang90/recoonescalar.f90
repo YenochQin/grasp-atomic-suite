@@ -41,8 +41,8 @@ contains
       end if
       ij1=jlist(ja1)
       ij2=jlist(ja2)
-      if(ja1 == 1.and.ja2 == 2) go to 1
-      if(ka /= 0)go to 5
+      if(ja1 == 1.and.ja2 == 2) goto 1
+      if(ka /= 0)goto 5
 !
 !  CASES WHEN :          KA = 0
 !                  OR    JA1 = JA2
@@ -72,7 +72,7 @@ contains
           ia1=ja1-1
           ia2=ja2-1
           if(ja1 == 1)ia1=ja1
-          if(i >= ia1.and.i < ia2)go to 7
+          if(i >= ia1.and.i < ia2)goto 7
           if(jjc1(i) /= jjc2(i))iat=0
         end if
     7   if(i == ja1) cycle

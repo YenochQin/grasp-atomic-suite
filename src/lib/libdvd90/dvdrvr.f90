@@ -39,12 +39,12 @@ contains
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use suite_linear_algebra, only: slamch
-      use ovflow_i
-      use tstsel_i
-      use newvec_i
-      use mgs_nrm_i
-      use adds_i
-      use multbc_i
+      use ovflow_i, only: ovflow
+      use tstsel_i, only: tstsel
+      use newvec_i, only: newvec
+      use mgs_nrm_i, only: mgs_nrm
+      use adds_i, only: adds
+      use multbc_i, only: multbc
       use suite_linear_algebra, only: daxpy, dcopy, ddot, dscal, dspevx
       implicit none (type, external)
 !-----------------------------------------------
@@ -139,19 +139,19 @@ contains
 !     Reverse Communication
       if (irc == 1) then
 !          ..Came from preconditioning
-         go to 100
+         goto 100
       else if (irc == 3) then
 !          ..came from matrix vector multiply
-         go to 200
-      endif
+         goto 200
+      end if
 !-----------------------------------------------------------------------
 
       i = 1
       if (nume > 0) then
-         eigval(:nume) = 1.e30_real64
+         eigval(:nume) = 1.0e30_real64
          icv(:nume) = 0
          i = nume + 1
-      endif
+      end if
       first = .true.
       kpass = niv
       nncv = kpass
@@ -163,14 +163,14 @@ contains
 
    10 continue
       ifind = min(kpass,rest)
-      tol = slamch('S')
+      tol = slamch("S")
       call dcopy (ifind, eigval, 1, oldval, 1)
       call dcopy ((kpass*(kpass + 1))/2, s, 1, temps, 1)
-      call dspevx ('Vectors also', 'In a range', 'Upper triangular', kpass, &
-         temps, -1._real64, -1._real64, 1, ifind, tol, nfound, eigval, svec, kpass, scra1, &
+      call dspevx ("Vectors also", "In a range", "Upper triangular", kpass, &
+         temps, -1.0_real64, -1.0_real64, 1, ifind, tol, nfound, eigval, svec, kpass, scra1, &
          iscra2, incv, info)
       ierr = -abs(info)
-      if (ierr /= 0) go to 60
+      if (ierr /= 0) goto 60
 !
 ! TeST for convergence on the absolute difference of eigenvalues between
 ! successive steps. Also SELect the unconverged eigenpairs and sort them
@@ -178,7 +178,7 @@ contains
 !
       done = tstsel(kpass,nume,neig,iselec,svec,eigval,icv,crite,critc,scra1,&
          iscra2,oldval,nncv,incv)
-      if (done .or. kpass>=n) go to 30
+      if (done .or. kpass>=n) goto 30
 !
 ! Maximum size for expanding basis. Truncate basis, D, and S, Svec
 ! Consider the basis vectors found in TSTSEL for the newvec. KPASS=NUME
@@ -193,7 +193,7 @@ contains
 
          call ovflow (n, rest, kpass, scra1, basis, ab, s, svec, eigval)
 !             CALL OVFLOW(N,NUME,KPASS,SCRA1,BASIS,AB,S,SVEC,EIGVAL)
-      endif
+      end if
 !
 ! Compute and add the new residuals. NNCV is set to the number of new
 ! vectors that have not converged. If none, DONE=true, exit.
@@ -201,7 +201,7 @@ contains
       call newvec (n, nume, lim, mblock, kpass, critr, nncv, incv, svec, eigval&
          , oldval, ab, basis, icv, scra1, scra1(lim+1), done)
 
-      if (done) go to 30
+      if (done) goto 30
 !-----------------------------------------------------------------------
 ! Preconditioning the NNCV (residuals-deps x) stored in AB(kpass+1).
 !          ..Robust Preconditioning (Eigenvalue shift).
@@ -211,7 +211,7 @@ contains
       end do
 !
 !          ..Change sign of eigenvalues if HIEND.
-      if (hiend) call dscal (nume, -1._real64, eigval, 1)
+      if (hiend) call dscal (nume, -1.0_real64, eigval, 1)
 
 ! Use of Reverse Communication.
 !
@@ -222,7 +222,7 @@ contains
       if (irc == 1) return
 !          ..Continue from preconditioning
   100 continue
-      if (hiend) call dscal (nume, -1._real64, eigval, 1)
+      if (hiend) call dscal (nume, -1.0_real64, eigval, 1)
 !
 !          ..Shift the eigenvalues back to what they were.
       do i = 1, nncv
@@ -249,7 +249,7 @@ contains
 
 !          ..Continue from matrix-vector multiply
   200 continue
-      if (hiend) call dscal (n*nncv, -1._real64, ab(newstart), 1)
+      if (hiend) call dscal (n*nncv, -1.0_real64, ab(newstart), 1)
 !
 ! Add new column in S, from the NNCV new vectors.
 !
@@ -258,7 +258,7 @@ contains
       kpass = kpass + nncv
       nloops = nloops + 1
 
-      if (nloops <= maxiter) go to 10
+      if (nloops <= maxiter) goto 10
       ierr = ierr + 2048
       nloops = nloops - 1
       kpass = kpass - nncv

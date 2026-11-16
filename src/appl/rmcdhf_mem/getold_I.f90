@@ -4,6 +4,6 @@
       subroutine getold (idblk)
       implicit none (type, external)
       character (len = 8) :: idblk(*)
-      end subroutine
+      end subroutine getold
       end interface
-      end module
+      end module getold_i

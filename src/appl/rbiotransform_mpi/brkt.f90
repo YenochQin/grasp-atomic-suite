@@ -13,14 +13,14 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use grid_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use biorb_c
       use wave_c, only:  mfii, pfii, qfii, mfff, pfff, qfff
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use quad_i
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -53,8 +53,8 @@
             call quad (result)
 
             braket(i,j) = result
-            if (mpi_rank .eq. 0)                                          &
-            write (*,9) '<',npii(i),nhii(i),'|',npff(j),nhff(j),'> =',&
+            if (mpi_rank == 0)                                          &
+            write (*,9) "<",npii(i),nhii(i),"|",npff(j),nhff(j),"> =",&
                braket(i,j)
          end do
       end do

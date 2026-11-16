@@ -44,7 +44,7 @@ contains
         ab=dble(isuma)
         a=dsqrt(ab)
         if((ik(4)/2)*2 /= ik(4))a=-a
-      endif
+      end if
       return
       end subroutine a1jj
 end module a1jj_i

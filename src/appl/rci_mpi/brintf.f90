@@ -13,12 +13,12 @@
 !   M o d u l e s
 !-----------------------------------------------
       use parameter_def,   only: orbital_index_radix
-      use stor_c
+      use stor_c, only: double, keep
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use bessel_i
-      use brra_i
+      use bessel_i, only: bessel
+      use brra_i, only: brra
       use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
 !-----------------------------------------------
@@ -41,7 +41,7 @@
       integer :: icod, icod1, icod2, icod3, icod4
 !-----------------------------------------------
 !
-      go to (1,4,3,6,2,5) itype
+      goto (1,4,3,6,2,5) itype
 !
 !   Type 1 and 5 integrals require j(k), n(k) Bessel fuctions
 !   Type 5 integrals only require w = wab Bessel functions
@@ -51,7 +51,7 @@
          , k)
     2 continue
       call bessel (ia, ib, 1, 1, k)
-      go to 6
+      goto 6
 !
 !   Type 3 integrals require j(k), n(k) Bessel functions for either
 !   w = wab or w = cd whichever is non-zero.
@@ -59,7 +59,7 @@
     3 continue
       if (ia /= ib) call bessel (ia, ib, 1, 1, k)
       if (ic /= id) call bessel (ic, id, 1, 2, k)
-      go to 6
+      goto 6
 !
 !   Type 2 and 6 integrals require j(k), n(k) and j(k+2), n(k+2)
 !   Bessel fuctions
@@ -75,12 +75,12 @@
          icod3 = icod + key2*(k - 1)
          icod4 = icod + key2*(k + 1)
          if (icod1==keep(1,2) .and. icod2==keep(2,2) .and. icod3==keep(1,1)&
-             .and. icod4==keep(2,1)) go to 6
+             .and. icod4==keep(2,1)) goto 6
          if (icod1==keep(1,1) .and. icod2==keep(2,1) .and. icod3==keep(1,2)&
-             .and. icod4==keep(2,2)) go to 6
+             .and. icod4==keep(2,2)) goto 6
          call bessel (ic, id, 1, 2, k - 1)
          call bessel (ic, id, 2, 2, k + 1)
-      endif
+      end if
 !
     5 continue
       call bessel (ia, ib, 1, 1, k - 1)

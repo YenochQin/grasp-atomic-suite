@@ -8,6 +8,6 @@
 !VAST...Dummy argument NDEF is not referenced in this routine.
       integer, intent(in) :: ncmin
       real(real64), intent(inout) :: wt(ncmin)
-      end subroutine
+      end subroutine getoldwt
       end interface
-      end module
+      end module getoldwt_i

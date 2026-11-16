@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use interp_i
+      use interp_i, only: interp
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -85,7 +85,7 @@
             write (*, 300)
             write (*, 301) n, kappa
             stop
-         endif
+         end if
       else if (n == 2) then
          select case (kappa)
          case (-1)
@@ -103,15 +103,15 @@
          write (*, 300)
          write (*, 302) n
          stop
-      endif
+      end if
 !
       fzalfa = value
 !
       return
 !
-  300 format('MOHR:')
-  301 format(' Principal quantum number, ',i12,', kappa, ',1i3,'.')
-  302 format(' Principal quantum number, ',1i2,', Should be either 1 or 2.')
+  300 format("MOHR:")
+  301 format(" Principal quantum number, ",i12,", kappa, ",1i3,".")
+  302 format(" Principal quantum number, ",1i2,", Should be either 1 or 2.")
       return
 !
       end subroutine mohr

@@ -33,17 +33,17 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use reco_i
-      use reco2_i
-      use itrexg_i
-      use itrig_i
-      use ixjtik_i
-      use snrc_i
-      use coulom_i
-      use gg1122_i
-      use sixj_i
-      use cxk_i
-      use talk_i
+      use reco_i, only: reco
+      use reco2_i, only: reco2
+      use itrexg_i, only: itrexg
+      use itrig_i, only: itrig
+      use ixjtik_i, only: ixjtik
+      use snrc_i, only: snrc
+      use coulom_i, only: coulom
+      use gg1122_i, only: gg1122
+      use sixj_i, only: sixj
+      use cxk_i, only: cxk
+      use talk_i, only: talk
       use perko2_i, only: perko2
       use speak_i, only: speak
       implicit none (type, external)
@@ -206,7 +206,7 @@ contains
           end if
         end if
       end do
-      if (icolbrei .eq. 2) then
+      if (icolbrei == 2) then
         do n = 1,nd2
           nu=nd1+2*(n-1)
           call talk(jja,jjb,nu,is(1),is(3),is(2),is(4),1,cond(1,n))

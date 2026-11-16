@@ -20,13 +20,13 @@
       use def_c,           only: nuclear_charge, speed_of_light_au
       use debug_c
       use grid_c
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use sbdat_c,         only: kamax, nshlff, nshlpff
       use wave_c,          only: pfff, qfff, pzff, mfff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use intrpqf_i
+      use intrpqf_i, only: intrpqf
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -56,13 +56,13 @@
 !
 !   Write entry message
 !
-      write (6, *) 'Loading Radial WaveFunction File for final state...'
+      write (6, *) "Loading Radial WaveFunction File for final state..."
 !
 !   Open the radial wave function file
 !
-      j = index(name,' ')
-      open(unit=21,file=name(1:j-1)//'.w',form='UNFORMATTED',         &
-                                  status='OLD',position='asis')
+      j = index(name," ")
+      open(unit=21,file=name(1:j-1)//".w",form="UNFORMATTED",         &
+                                  status="OLD",position="asis")
 !
 !   Save NAK, NP and NH
 !
@@ -72,8 +72,8 @@
 !
 !   Allocate storage to orbital arrays
 !
-      call alloc (pfff, max_radial_points,nwff, 'PFFF', 'LODRWFF')
-      call alloc (qfff, max_radial_points,nwff, 'QFFF', 'LODRWF')
+      call alloc (pfff, max_radial_points,nwff, "PFFF", "LODRWFF")
+      call alloc (qfff, max_radial_points,nwff, "QFFF", "LODRWF")
 !
       con = nuclear_charge/speed_of_light_au
       con = con*con
@@ -88,12 +88,12 @@
          if (fkk >= con) then
             gama(j) = sqrt(fkk - con)
          else
-            write (6, *) 'LODRWF: Imaginary gamma parameter'
-            write (6, *) ' for ', np(j), nh(j), ' orbital; the'
-            write (6, *) ' point model for the nucleus'
-            write (6, *) ' is inappropriate for Z > ', speed_of_light_au, '.'
+            write (6, *) "LODRWF: Imaginary gamma parameter"
+            write (6, *) " for ", np(j), nh(j), " orbital; the"
+            write (6, *) " point model for the nucleus"
+            write (6, *) " is inappropriate for Z > ", speed_of_light_au, "."
             stop
-         endif
+         end if
 !
       end do
 !
@@ -101,23 +101,23 @@
 !
       nwin = 0
       read (21, iostat=ios) g92rwf
-      if (ios/=0 .or. g92rwf/='G92RWF') then
-         write (6, *) 'This is not a Radial WaveFunction File;'
+      if (ios/=0 .or. g92rwf/="G92RWF") then
+         write (6, *) "This is not a Radial WaveFunction File;"
          close(21)
-      endif
+      end if
 
       if (ntest >= 100) then
-         write (*, *) '******************'
-         write (*, *) ' Entering lodrwff'
-         write (*, *) '******************'
-      endif
+         write (*, *) "******************"
+         write (*, *) " Entering lodrwff"
+         write (*, *) "******************"
+      end if
 
     3 continue
       read (21, iostat=ios) npy, naky, ey, my
       if (ios == 0) then
-         call alloc (pa, my, 'PA', 'LODRWFFF')
-         call alloc (qa, my, 'QA', 'LODRWFFF')
-         call alloc (ra, my, 'RA', 'LODRWFFF')
+         call alloc (pa, my, "PA", "LODRWFFF")
+         call alloc (qa, my, "QA", "LODRWFFF")
+         call alloc (ra, my, "RA", "LODRWFFF")
          read (21) pzy, (pa(i),i=1,my), (qa(i),i=1,my)
          read (21) (ra(i),i=1,my)
 !
@@ -140,45 +140,45 @@
                if (ntest >= 100) write (*, 301) npff(jjj), nhff(jjj), eff(jjj)&
                   , dnorm
                if (ntest > 1000) then
-                  write (*, *) 'PF              QF             RA'
+                  write (*, *) "PF              QF             RA"
                   do kkk = 1, mfff(jjj)
                      write (*, *) pfff(kkk,jjj), qfff(kkk,jjj), ra(kkk)
                   end do
-               endif
+               end if
                nwin = nwin + 1
             end do
          end do
-         call dalloc (pa, 'PA', 'LODRWFF')
-         call dalloc (qa, 'QA', 'LODRWFF')
-         call dalloc (ra, 'RA', 'LODRWFF')
+         call dalloc (pa, "PA", "LODRWFF")
+         call dalloc (qa, "QA", "LODRWFF")
+         call dalloc (ra, "RA", "LODRWFF")
 
-         go to 3
-      endif
-      if (ldbpr(3)) write (99, *) ' orbitals renormalised;'
+         goto 3
+      end if
+      if (ldbpr(3)) write (99, *) " orbitals renormalised;"
 !
 !   Stop with an error message if all orbitals are not known
 !
       if (nwin < nwff) then
-         write (6, *) 'LODRWF: All required orbitals not'
-         write (6, *) ' found.'
+         write (6, *) "LODRWF: All required orbitals not"
+         write (6, *) " found."
          ierr = 1
-         go to 5
-      endif
+         goto 5
+      end if
 !
-      write (6, *) ' ... load complete;'
+      write (6, *) " ... load complete;"
 !
     5 continue
       close(21)
       if (ntest >= 100) then
-         write (*, *) 'Sorted order should be the same as from kapdat'
+         write (*, *) "Sorted order should be the same as from kapdat"
          do j = 1, nwff
             write (*, 301) npff(j), nhff(j), eff(j), dnorm
          end do
          write (*, *)
-         write (*, *) '*****************'
-         write (*, *) ' Leaving lodrwff'
-         write (*, *) '*****************'
-      endif
+         write (*, *) "*****************"
+         write (*, *) " Leaving lodrwff"
+         write (*, *) "*****************"
+      end if
 
       return
 !

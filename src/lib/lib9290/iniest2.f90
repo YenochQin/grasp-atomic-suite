@@ -21,7 +21,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use dinit_i
+      use dinit_i, only: dinit
       use memory_man
       use suite_linear_algebra, only: dcopy, dspevx
       implicit none (type, external)
@@ -46,8 +46,8 @@ contains
 !-----------------------------------------------
 
       ns = min(nmax,ncf)
-      call alloc (ap, (ns*(ns + 1))/2, 'AP', 'INIEST2')
-      call dinit ((ns*(ns + 1))/2, 0._real64, ap, 1)
+      call alloc (ap, (ns*(ns + 1))/2, "AP", "INIEST2")
+      call dinit ((ns*(ns + 1))/2, 0.0_real64, ap, 1)
 
 !  Expand the sparse form to normal form for upper-right sub-matrix
 
@@ -62,20 +62,20 @@ contains
 
 !  Merge ap from all nodes and then send to all nodes
 
-      call alloc(eigval, ns, 'EIGVAL', 'INIEST2')
-      call alloc (vec, ns*niv, 'VEC', 'INIEST2')
-      call alloc (work, 8*ns, 'WORK', 'INIEST2')
-      call alloc (iwork, 8*ns, 'IWORK', 'INIEST2')
-      call alloc (ifail, ns, 'IFAIL', 'INIEST2')
+      call alloc(eigval, ns, "EIGVAL", "INIEST2")
+      call alloc (vec, ns*niv, "VEC", "INIEST2")
+      call alloc (work, 8*ns, "WORK", "INIEST2")
+      call alloc (iwork, 8*ns, "IWORK", "INIEST2")
+      call alloc (ifail, ns, "IFAIL", "INIEST2")
 
-      call dspevx ('Vectors also', 'In a range', 'Upper triangular', ns, ap, &
-         -1._real64, -1._real64, 1, niv, 0._real64, nfound, eigval, vec, ns, work, iwork, ifail, &
+      call dspevx ("Vectors also", "In a range", "Upper triangular", ns, ap, &
+         -1.0_real64, -1.0_real64, 1, niv, 0.0_real64, nfound, eigval, vec, ns, work, iwork, ifail, &
          info)
       ierr = -abs(info)
 
 !  Build the Basis.
 
-      call dinit (ncf*niv, 0._real64, basis, 1)
+      call dinit (ncf*niv, 0.0_real64, basis, 1)
 
 !  scatter the vectors
 
@@ -91,12 +91,12 @@ contains
       !deallocate(work)
       !deallocate(iwork)
       !deallocate(ifail)
-       call dalloc (ap, 'AP', 'INIEST2')
-       call dalloc (eigval, 'EIGVAL', 'INIEST2')
-       call dalloc (vec, 'VEC', 'INIEST2')
-       call dalloc (work, 'WORK', 'INIEST2')
-       call dalloc (iwork, 'IWORK', 'INIEST2')
-       call dalloc (ifail, 'IFAIL', 'INIEST2')
+       call dalloc (ap, "AP", "INIEST2")
+       call dalloc (eigval, "EIGVAL", "INIEST2")
+       call dalloc (vec, "VEC", "INIEST2")
+       call dalloc (work, "WORK", "INIEST2")
+       call dalloc (iwork, "IWORK", "INIEST2")
+       call dalloc (ifail, "IFAIL", "INIEST2")
 
       return
       end subroutine iniest2

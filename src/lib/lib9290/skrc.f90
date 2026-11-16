@@ -52,7 +52,7 @@ contains
          kd1 = max(kd1a,kd1b)/2
          kd2 = min(kd2a,kd2b)/2
          kd2 = (kd2 - kd1)/2 + 1
-      endif
+      end if
 !
 !   Exchange terms --- KE1 = minimum k , KE2 = number of terms
 !

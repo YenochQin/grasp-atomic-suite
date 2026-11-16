@@ -7,6 +7,6 @@
       integer, intent(in) :: j
       integer, intent(inout) :: inv
       real(real64), intent(in) :: odampj
-      end subroutine
+      end subroutine dampor
       end interface
-      end module
+      end module dampor_i

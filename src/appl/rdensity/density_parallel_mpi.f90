@@ -12,13 +12,13 @@ module density_parallel
 contains
     subroutine parallel_start
         call mpix_startup(rank, workers, processor_name, processor_name_length, start_count, &
-            'RDENSITY_MPI', 'MPI density and natural orbitals', &
-            'isodata, name.c, name.w, name.(c)m', 'name.nw, name.(c)d', .true.)
-    end subroutine
+            "RDENSITY_MPI", "MPI density and natural orbitals", &
+            "isodata, name.c, name.w, name.(c)m", "name.nw, name.(c)d", .true.)
+    end subroutine parallel_start
 
     subroutine parallel_finish
-        call mpix_shutdown(rank, start_count, 'RDENSITY_MPI')
-    end subroutine
+        call mpix_shutdown(rank, start_count, "RDENSITY_MPI")
+    end subroutine parallel_finish
 
     subroutine broadcast_options(name, nci, ndef, ordering, status)
         character(*), intent(inout) :: name
@@ -29,19 +29,19 @@ contains
         call mpi_bcast(ndef, 1, mpi_integer, 0, mpi_comm_world, ierr)
         call mpi_bcast(ordering, 1, mpi_integer, 0, mpi_comm_world, ierr)
         call mpi_bcast(status, 1, mpi_integer, 0, mpi_comm_world, ierr)
-    end subroutine
+    end subroutine broadcast_options
 
     subroutine sum_density(matrix)
         real(real64), contiguous, intent(inout) :: matrix(:,:)
         ! Reduce one state's NW*NW block at a time, using the suite helper.
         call gdrsummpi_root(matrix, size(matrix))
-    end subroutine
+    end subroutine sum_density
 
     subroutine density_fail(message)
         character(*), intent(in) :: message
         integer :: ierr
-        write(*,*) 'RDENSITY rank ', rank, ': ', message
+        write(*,*) "RDENSITY rank ", rank, ": ", message
         call mpi_abort(mpi_comm_world, 1, ierr)
         error stop 1
-    end subroutine
+    end subroutine density_fail
 end module density_parallel

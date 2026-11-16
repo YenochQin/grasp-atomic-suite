@@ -4,6 +4,6 @@
       subroutine mrgcsl (name)
       implicit none (type, external)
       character (len = 128) :: name(2)
-      end subroutine
+      end subroutine mrgcsl
       end interface
-      end module
+      end module mrgcsl_i

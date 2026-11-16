@@ -29,7 +29,7 @@
          & hartree_to_wavenumber_cm,     &
                                  speed_of_light_cm_per_s, b1=>electron_mass_u
       use eigv_c
-      use foparm_c
+      use foparm_c, only: iccut
       use jlabl_c,               labj=>jlbr, labp=>jlbp
       use nsmdat_c,        only: sqn, dmomnm, qmomb,                  &
                                  hfsi=>sqn, hfsd=>dmomnm, hfsq=>qmomb
@@ -40,14 +40,14 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rinthf_i
-      use rint_i
-      use matelt_i
-      use convrt_i
-      use ispar_i
-      use itjpo_i
-      use oneparticlejj_i
-      use gracah1_i
+      use rinthf_i, only: rinthf
+      use rint_i, only: rint
+      use matelt_i, only: matelt
+      use convrt_i, only: convrt
+      use ispar_i, only: ispar
+      use itjpo_i, only: itjpo
+      use oneparticlejj_i, only: oneparticlejj
+      use gracah1_i, only: gracah1
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -79,9 +79,9 @@
 !
 !   Allocate storage for local arrays
 !
-      call alloc (hfc, 5, nvec*nvec, 'HFC', 'HFS')
-      call alloc (gjc, nvec*nvec, 'GJC', 'HFS')
-      call alloc (dgjc, nvec*nvec, 'DGLC', 'HFS')
+      call alloc (hfc, 5, nvec*nvec, "HFC", "HFS")
+      call alloc (gjc, nvec*nvec, "GJC", "HFS")
+      call alloc (dgjc, nvec*nvec, "DGLC", "HFS")
 !
 !   Initialise
 !
@@ -103,7 +103,7 @@
                else
                   rintme(kt,i,j) = rint(i,j,-3)
                   rintdgj(i,j) = rint(i,j,0)
-               endif
+               end if
                call matelt (i, kt, j, apart, gjpart, dgjpart)
                amelt(kt,i,j) = apart
                if (kt /= 1) cycle
@@ -127,8 +127,8 @@
 !
          if (mod(ic,100) == 0) then
             call convrt (ic, cnum, lcnum)
-            write (6, *) 'Column '//cnum(1:lcnum)//' complete;'
-         endif
+            write (6, *) "Column "//cnum(1:lcnum)//" complete;"
+         end if
 !
          do ir = 1, csf_count
 !
@@ -188,7 +188,7 @@
                            elemntdgj = elemntdgj + dgjmelt(ia,ia)*rintdgj(ia,ia&
                               )*tshell(ia)
                         end do
-                     endif
+                     end if
                   else
                      if (abs(tshell(1)) > cutoff) then
                         elemnt = elemnt + amelt(kt,ia,ib)*rintme(kt,ia,ib)*&
@@ -198,10 +198,10 @@
                               tshell(1)
                            elemntdgj = elemntdgj + dgjmelt(ia,ib)*rintdgj(ia,ib&
                               )*tshell(1)
-                        endif
-                     endif
-                  endif
-               endif
+                        end if
+                     end if
+                  end if
+               end if
 !
 !   Multiply with the configuration expansion coefficients and add the
 !   contributions from the matrix elements to obtain total contributions
@@ -224,7 +224,7 @@
                         contr = elemnt*evecic1*evecir2
                         contrgj = elemntgj*evecic1*evecir2
                         contrdgj = elemntdgj*evecic1*evecir2
-                     endif
+                     end if
 !
 !   Magnetic dipole and the two operators of the g_j factor
 !
@@ -235,7 +235,7 @@
                            dgjc(nvec*(k-1)+kk) = dgjc(nvec*(k-1)+kk) + contrdgj
                         else if (itjpoc - itjpor == 2) then
                            hfc(2,nvec*(k-1)+kk) = hfc(2,nvec*(k-1)+kk) + contr
-                        endif
+                        end if
 !
 !   Electric quadrupole
 !
@@ -248,7 +248,7 @@
                         case (4)
                            hfc(5,nvec*(k-1)+kk) = hfc(5,nvec*(k-1)+kk) + contr
                         end select
-                     endif
+                     end if
                   end do
                end do
 !
@@ -287,10 +287,10 @@
             afa1 = gfac*gja1
 
             if (jj == 2) then
-               afa2 = 0._real64
+               afa2 = 0.0_real64
             else
                afa2 = gfac*sqrt(1.0_real64/(fj*(2.0_real64*fj - 1.0_real64)))
-            endif
+            end if
             bfa1 = hfac*sqrt((fj*(2.0_real64*fj - 1.0_real64))/((fj + 1.0_real64)*(2.0_real64*&
                fj + 3.0_real64)))
             if (jj == 2) then
@@ -298,13 +298,13 @@
             else
                bfa2 = 0.25_real64*hfac*sqrt((fj*(fj - 1.0_real64))/((fj + 1.0_real64)*(&
                   2.0_real64*fj - 1.0_real64)))
-            endif
+            end if
             if (jj == 4) then
                bfa3 = 0.0_real64
             else
                bfa3 = 0.125_real64*hfac*sqrt((fj*(fj - 1.0_real64)*(2.0_real64*fj - 1.0_real64&
                   ))/(2.0_real64*fj - 3.0_real64))
-            endif
+            end if
 !
 !   Diagonal (J,J) A and B factors
 !
@@ -326,8 +326,8 @@
                      write (29, 403) ivec(i), labj(jj), labp((iaspar(i)+3)/2), &
                         afa1*hfc(1,nvec*(i-1)+ii), bfa1*hfc(3,nvec*(i-1)+ii), &
                         gj, dgj, gj + dgj
-                  endif
-               endif
+                  end if
+               end if
 !
 !   Off diagonal (J,J-1) A and B factors
 !
@@ -352,12 +352,12 @@
 !
       tilde1 = sqrt((hfsi + 1.0_real64)/hfsi)*hfsd*0.5_real64*b1/(proton_mass_u*vacuum_speed_of_light_au)
       if (hfsi > 0.6_real64) then
-         tilde2 = sqrt((hfsi + 1.0_real64)*(2.0_real64*hfsi + 3._real64)/((2.0_real64*hfsi - &
+         tilde2 = sqrt((hfsi + 1.0_real64)*(2.0_real64*hfsi + 3.0_real64)/((2.0_real64*hfsi - &
             1.0_real64)*hfsi))
          tilde2 = tilde2*hfsq*0.5_real64*barnau
       else
          tilde2 = 0.0_real64
-      endif
+      end if
 !
 !     II = 2*I
 !
@@ -389,7 +389,7 @@
                   factor1 = -1.0_real64
                else
                   factor1 = 1.0_real64
-               endif
+               end if
                factor2 = factor1*sqrt((dble(jjb) + 1.0_real64)*(dble(ii) + 1.0_real64))
 !
 !   Determine the Racah W coefficients.
@@ -410,7 +410,7 @@
                      write (24, 305) ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
                         /2), ivec(ja), labj(jja+1), labp((iaspar(ja)+3)/2), &
                         labj(ff+1), hfselt1 + hfselt2
-                  endif
+                  end if
 !
 !   Obtain and output matrix elements for J,J-1
 !
@@ -423,7 +423,7 @@
                      write (24, 305) ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
                         /2), ivec(ja), labj(jja+1), labp((iaspar(ja)+3)/2), &
                         labj(ff+1), hfselt1 + hfselt2
-                  endif
+                  end if
 !
 !   Obtain and output matrix elements for J,J-2
 !
@@ -436,26 +436,26 @@
                      write (24, 305) ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
                         /2), ivec(ja), labj(jja+1), labp((iaspar(ja)+3)/2), &
                         labj(ff+1), hfselt1 + hfselt2
-                  endif
+                  end if
                else
                   hfselt1 = 0.0_real64
                   hfselt2 = 0.0_real64
-               endif
+               end if
             end do
          end do
       end do
 !
-      call dalloc (hfc, 'HFC', 'HFS')
+      call dalloc (hfc, "HFC", "HFS")
       return
 !
-  302 format(/,/,' Interaction constants:'/,/,&
-         ' Level1  J Parity  Level2  J Parity',8x,'A (MHz)',13x,'B (MHz)'/)
-  402 format(/,/,' Interaction constants:'/,/,' Level1  J Parity ',8x,'A (MHz)'&
-         ,13x,'B (MHz)',13x,'g_J',14x,'delta g_J',11x,'total g_J'/)
+  302 format(/,/," Interaction constants:"/,/,&
+         " Level1  J Parity  Level2  J Parity",8x,"A (MHz)",13x,"B (MHz)"/)
+  402 format(/,/," Interaction constants:"/,/," Level1  J Parity ",8x,"A (MHz)"&
+         ,13x,"B (MHz)",13x,"g_J",14x,"delta g_J",11x,"total g_J"/)
   303 format(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)
   403 format(1x,1i3,5x,2a4,1p,5d20.10)
-  304 format(/,/,' Matrix elements:'/,/,&
-         ' Level1  J Parity  Level2  J Parity    F ',4x,'Matrix element (a.u.)'&
+  304 format(/,/," Matrix elements:"/,/,&
+         " Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"&
          /)
   305 format(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)
       return

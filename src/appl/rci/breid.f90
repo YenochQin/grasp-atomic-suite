@@ -13,7 +13,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use bcore_c
+      use bcore_c, only: double, icore, max_orbitals
       use cons_c
       use debug_c
       use m_c
@@ -21,11 +21,11 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use snrc_i
-      use clrx_i
-      use talk_i
-      use itrig_i
-      use cxk_i
+      use snrc_i, only: snrc
+      use clrx_i, only: clrx
+      use talk_i, only: talk
+      use itrig_i, only: itrig
+      use cxk_i, only: cxk
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -56,7 +56,7 @@
          ia1 = klist(ja1)
       else
          ia1 = jlist(ja1)
-      endif
+      end if
       ib1 = klist(jb1)
 !
       isg = 1
@@ -64,8 +64,8 @@
          if (icore(ia1)/=0 .and. icore(ib1)/=0) then
             if (ja > 1) return
             isg = -1
-         endif
-      endif
+         end if
+      end if
 !
       js(1) = ia1
       js(2) = ib1
@@ -102,7 +102,7 @@
             call talk (ja, jb, nu, ia1, ia1, ia1, ia1, itype, coef)
          end do
          return
-      endif
+      end if
 !
 !   Calculate exchange interactions
 !
@@ -110,7 +110,7 @@
       if (ne2 > numax) then
          write (*, 304)
          stop
-      endif
+      end if
 !
       cone(:,:ne2) = zero
 !
@@ -131,7 +131,7 @@
                call cxk (s, js, kaps, nu, k, ibre, 2)
                if (ibug2 /= 0) write (99, 303) prod, (s(mu),mu=1,3)
                cone(:3,n) = cone(:3,n) + prod*s(:3)
-            endif
+            end if
 !
             k = nu - 1
             kk = k + k + 1
@@ -142,8 +142,8 @@
                if (ibug2 /= 0) write (99, 303) prod, (s(mu),mu=1,3)
                cone(:3,n) = cone(:3,n) + prod*s(:3)
 !
-            endif
-         endif
+            end if
+         end if
          if (n == ne2) exit
          k = nu + 1
          kk = k + k + 1
@@ -172,11 +172,11 @@
       end do
       return
 !
-  300 format('BREID: orbitals ',2i3)
-  301 format(2x,'ND1 ND2 NE1 NE2 IBRD IBRE ',6i5)
-  302 format(2x,'aaaa contribution: NU,GAM,COEF',i5,2(3x,1p,d15.8))
-  303 format(2x,'PROD = ',1p,d15.8,/,' S',7d15.8)
-  304 format('BREID: Dimension error for NUMAX.')
+  300 format("BREID: orbitals ",2i3)
+  301 format(2x,"ND1 ND2 NE1 NE2 IBRD IBRE ",6i5)
+  302 format(2x,"aaaa contribution: NU,GAM,COEF",i5,2(3x,1p,d15.8))
+  303 format(2x,"PROD = ",1p,d15.8,/," S",7d15.8)
+  304 format("BREID: Dimension error for NUMAX.")
       return
 !
       end subroutine breid

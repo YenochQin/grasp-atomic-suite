@@ -8,6 +8,6 @@
       integer, intent(in) :: ik
       integer, intent(in) :: iw
       integer, intent(in) :: k
-      end subroutine
+      end subroutine bessel
       end interface
-      end module
+      end module bessel_i

@@ -4,6 +4,6 @@
       subroutine defcor (j)
       implicit none (type, external)
       integer, intent(in) :: j
-      end subroutine
+      end subroutine defcor
       end interface
-      end module
+      end module defcor_i

@@ -3,6 +3,6 @@
       interface
       subroutine getald
       implicit none (type, external)
-      end subroutine
+      end subroutine getald
       end interface
-      end module
+      end module getald_i

@@ -31,14 +31,14 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itrig_i
-      use ichkq1_i
-      use ichop_i
-      use ispar_i
-      use itjpo_i
-      use setqna_i
-      use oneparticlejj1_i
-      use oneparticlejj2_i
+      use itrig_i, only: itrig
+      use ichkq1_i, only: ichkq1
+      use ichop_i, only: ichop
+      use ispar_i, only: ispar
+      use itjpo_i, only: itjpo
+      use setqna_i, only: setqna
+      use oneparticlejj1_i, only: oneparticlejj1
+      use oneparticlejj2_i, only: oneparticlejj2
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -58,9 +58,9 @@ contains
 !-----------------------------------------------
       ia1 = 0
       kk = ka+ka+1
-      if(itrig(itjpo(ja),itjpo(jb),kk).eq.0)return
-      if((iopar.ne.0).and.(ispar(ja)*ispar(jb)*iopar.ne.1))return
-      if(ichkq1(ja,jb).eq.0)return
+      if(itrig(itjpo(ja),itjpo(jb),kk)==0)return
+      if((iopar/=0).and.(ispar(ja)*ispar(jb)*iopar/=1))return
+      if(ichkq1(ja,jb)==0)return
 !
       call setqna (ja,jb)
 !
@@ -72,20 +72,20 @@ contains
       idq = 0
       ja1 = 0
       ja2 = 0
-      if (npeel .ne. 0) then
+      if (npeel /= 0) then
         do jw = 1,npeel
           ij = jlist(jw)
           ndq = nq1(ij)-nq2(ij)
-          if (abs (ndq) .gt. 1) return
-          if (ndq .gt. 0) then
+          if (abs (ndq) > 1) return
+          if (ndq > 0) then
             ja1 = jw
             idq = idq+1
-          elseif (ndq .lt. 0) then
+          else if (ndq < 0) then
             ja2 = jw
             idq = idq+1
-          endif
+          end if
         end do
-        if (idq .gt. 2) return
+        if (idq > 2) return
 !
 !   Evaluate the array VSHELL
 !
@@ -93,16 +93,16 @@ contains
 !   if IDQ = 0, then loop over all shells by index ISH
 !   if IDQ = 2, then one orbital fixed on each side
         ns = npeel
-      endif
-      if (idq .eq. 2) goto 19
+      end if
+      if (idq == 2) goto 19
 !
 !   Loop over shells when IDQ = 0
       ish = 0
-      if (npeel .eq. 0) goto 9
+      if (npeel == 0) goto 9
       do i = 1,npeel
          jlis(i) = jlist(i)
       end do
-      if (npeel .eq. 1) goto 9
+      if (npeel == 1) goto 9
       npeelm = npeel-1
       do i = 1,npeelm
          jc1s(i) = jjc1(i)
@@ -111,29 +111,29 @@ contains
 !
 !   If ISH .GT. NW, then loop is over and return
     9 ish = ish+1
-      if (ish .gt. orbital_count) return
-      if (ichop (ish,ja) .eq. -1) goto 9
-      if (ichop (ish,ja) .eq. 0) goto 16
+      if (ish > orbital_count) return
+      if (ichop (ish,ja) == -1) goto 9
+      if (ichop (ish,ja) == 0) goto 16
 !
 !   Case one --- the ISH-th shell is in the core or in the peel and
 !   closed for both sides
       i = 1
-      if (npeel.eq.0) goto 15
+      if (npeel==0) goto 15
       do i = 1,npeel
         ij = jlist(i)
-        if (ish .lt. ij) goto 11
+        if (ish < ij) goto 11
       end do
       i = npeel+1
       goto 13
    11 im = npeel-i+1
       do ii = 1,im
          jlist(npeel+2-ii) = jlist(npeel+1-ii)
-         if (npeel.eq.ii) goto 13
+         if (npeel==ii) goto 13
          jjc1(npeel+1-ii) = jjc1(npeel-ii)
          jjc2(npeel+1-ii) = jjc2(npeel-ii)
       end do
    13 continue
-      if (i .lt. 3) goto 14
+      if (i < 3) goto 14
       jjc1(i-1) = jjc1(i-2)
       jjc2(i-1) = jjc2(i-2)
       goto 15
@@ -151,7 +151,7 @@ contains
    16 ns = npeel
       do jw = 1,npeel
         nx = ish-jlist(jw)
-        if (nx.eq.0) goto 18
+        if (nx==0) goto 18
       end do
    18 ja1 = jw
       ja2 = jw
@@ -166,13 +166,13 @@ contains
       ks2 = 2*abs (orbital_kappa(ia2))
 !
 !   Check triangular condition for the active shells
-      if (itrig (ks1,ks2,kk).eq.1) goto 99
-      if (idq .eq. 2) return
+      if (itrig (ks1,ks2,kk)==1) goto 99
+      if (idq == 2) return
       goto 100
 !
 !   Set tables of quantum numbers of non-interacting spectator shells
    99 continue
-      if (idq .eq. 0) then
+      if (idq == 0) then
 !GG
 !GG   Cia orginalioje programoje yra klaida
 !GG
@@ -182,7 +182,7 @@ contains
 !GG        ELSE
 !GG          TCOEFF = 0.0D 00
 !GG        END IF
-      else if (idq .eq. 2) then
+      else if (idq == 2) then
 !
 !   IDQ = 2 Case
 !
@@ -201,11 +201,11 @@ contains
 !
 !   Loop over all shells when IDQ = 0
 100   continue
-      if (npeel .eq. 0) goto 9
+      if (npeel == 0) goto 9
       do i = 1,npeel
          jlist(i) = jlis(i)
       end do
-      if (npeel .eq. 1) goto 9
+      if (npeel == 1) goto 9
       npeelm = npeel-1
       do  i = 1,npeelm
          jjc1(i)  = jc1s(i)

@@ -14,8 +14,8 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use l1_c
-      use l2_c
+      use l1_c, only: double, jbq1, jbq2, jtq1, jtq2, max_orbitals
+      use l2_c, only: double, j2s, j3s, mtriad
       use m_c,      only: jjc1, jjc2, jjq1, jjq2, jlist
       use couple_c, only: mja, nja, j1, j2, j3, mangm
       implicit none (type, external)
@@ -40,18 +40,18 @@ contains
       if (ns > 0) then
          j1(:ns) = jbq1(3,jlist(:ns))
          ii = ns
-      endif
+      end if
       if (ns /= 1) then
          ns1 = ns - 1
          if (ns1 > 0) then
             j1(ii+1:ns1+ii) = jjc1(:ns1)
             ii = ns1 + ii
-         endif
+         end if
          if (ns1 > 0) then
             j1(ii+1:ns1+ii) = jjc2(:ns1)
             ii = ns1 + ii
-         endif
-      endif
+         end if
+      end if
       do i = 1, 2
          ii = ii + 1
          ij = is(i,1)
@@ -121,7 +121,7 @@ contains
 !
             if (ij1 > 1) j2(ij1+2,2) = j2(2,3)
             if (ij1 == 1) j2(4,1) = j2(2,3)
-         endif
+         end if
 !
          ij1 = js(1,2)
          ij2 = js(2,2)
@@ -133,7 +133,7 @@ contains
 !
             if (ij1 > 1) j3(ij1+2,2) = j3(2,3)
             if (ij1 == 1) j3(4,1) = j3(2,3)
-         endif
+         end if
 !
 !   All arrays now set. Put up flag KJ23.
 !
@@ -146,7 +146,7 @@ contains
          j2s(:ns2,:) = j2(:ns2,:)
          j3s(:ns2,:) = j3(:ns2,:)
          return
-      endif
+      end if
 !
 !   6.0  Reset J2, J3 from buffers if KJ23 has been set
 !

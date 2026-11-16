@@ -41,18 +41,18 @@
 !-----------------------------------------------------------------------
       ns = min (nmax, ncf)
 
-      call alloc (ap, (ns*(ns+1))/2, 'AP', 'INIESTSD')
-      call dinit ((ns*(ns+1))/2, 0._real64, ap, 1)
+      call alloc (ap, (ns*(ns+1))/2, "AP", "INIESTSD")
+      call dinit ((ns*(ns+1))/2, 0.0_real64, ap, 1)
 
 !**** separate upper left block of size NS*NS
 
-      call alloc (hmx, ncf, 'HMX', 'INIESTSD')
-      call alloc (irow, ncf, 'IROW', 'INIESTSD')
+      call alloc (hmx, ncf, "HMX", "INIESTSD")
+      call alloc (irow, ncf, "IROW", "INIESTSD")
       read (imcdf) ncfdum, iccutdum, myiddum, nprocsdum
-      if (myid .eq. 0) print *, 'iniestsd ...........'
-      if (ncf .ne. ncfdum .or.  myid .ne. myiddum                       &
-                    .or. nprocsdum .ne. nprocs)                         &
-         stop 'iniestsd: ncf read wrong'
+      if (myid == 0) print *, "iniestsd ..........."
+      if (ncf /= ncfdum .or.  myid /= myiddum                       &
+                    .or. nprocsdum /= nprocs)                         &
+         stop "iniestsd: ncf read wrong"
 
 !          if UPLO = 'U', AP(i + (j-1)*j/2) = A(i,j) for 1<=i<=j;
 !          if UPLO = 'L', AP(i + (j-1)*(2*n-j)/2) = A(i,j) for j<=i<=n.
@@ -64,8 +64,8 @@
          hmx(nelc) = hmx(nelc) - eav ! Shift the diagonal
          do ir = 1, nelc
             ap(irow(ir) + joff) = hmx(ir)
-         enddo
-      enddo
+         end do
+      end do
 
 ! Let each node have a complete copy of ap
 
@@ -84,17 +84,17 @@
       !   READ (imcdf)
       !ENDDO
 
-      call dalloc (hmx,'HMX', 'INIESTSD')
-      call dalloc (irow, 'HMX', 'INIESTSD')
+      call dalloc (hmx,"HMX", "INIESTSD")
+      call dalloc (irow, "HMX", "INIESTSD")
 
-      call alloc (eigval,ns,'EIGVAL','INIESTSD')
-      call alloc (vec,ns*niv,'VEC','INIESTSD')
-      call alloc (work,8*ns,'WORK','INIESTSD')
-      call alloc (iwork,5*ns,'IWORK','INIESTSD' )
-      call alloc (ifail,ns, 'IFAIL','INIESTSD' )
+      call alloc (eigval,ns,"EIGVAL","INIESTSD")
+      call alloc (vec,ns*niv,"VEC","INIESTSD")
+      call alloc (work,8*ns,"WORK","INIESTSD")
+      call alloc (iwork,5*ns,"IWORK","INIESTSD" )
+      call alloc (ifail,ns, "IFAIL","INIESTSD" )
 
-      call dspevx ('Vectors also','In a range','Upper triangular',     &
-                ns,ap,-1.0_real64,-1.0_real64,1,niv,0._real64,                        &
+      call dspevx ("Vectors also","In a range","Upper triangular",     &
+                ns,ap,-1.0_real64,-1.0_real64,1,niv,0.0_real64,                        &
                 nfound,eigval,vec,ns,work,iwork,ifail,info)
       ierr = -abs (info)
 
@@ -102,19 +102,19 @@
 
 !       ..Build the Basis.
 
-      call dinit (ncf*niv, 0._real64, basis, 1)
+      call dinit (ncf*niv, 0.0_real64, basis, 1)
 !       ...scatter the vectors
       do j = 1, niv
          call dcopy (ns, vec(ns*(j-1)+1:ns*(j-1)+(ns)),1, basis(ncf*(j-1)+1), 1)
-      enddo
+      end do
       call dcopy (niv, eigval,1,basis(niv*ncf+1),1)
 
-      call dalloc (ap, 'AP', 'INIESTSD')
-      call dalloc (eigval,'EIGVAL', 'INIESTSD')
-      call dalloc (vec, 'VEC', 'INIESTSD')
-      call dalloc (work, 'WORK', 'INIESTSD')
-      call dalloc (iwork, 'IWORK', 'INIESTSD')
-      call dalloc (ifail, 'IFAIL', 'INIESTSD')
+      call dalloc (ap, "AP", "INIESTSD")
+      call dalloc (eigval,"EIGVAL", "INIESTSD")
+      call dalloc (vec, "VEC", "INIESTSD")
+      call dalloc (work, "WORK", "INIESTSD")
+      call dalloc (iwork, "IWORK", "INIESTSD")
+      call dalloc (ifail, "IFAIL", "INIESTSD")
 
       return
       end subroutine iniestsd

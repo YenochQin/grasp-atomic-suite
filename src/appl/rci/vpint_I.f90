@@ -10,4 +10,4 @@
       real(real64), intent(out) :: tegral
       end subroutine vpint
       end interface
-      end module
+      end module vpint_i

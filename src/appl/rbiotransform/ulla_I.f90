@@ -9,6 +9,6 @@
       real(real64), intent(out) :: u(ndim, ndim)
       real(real64), intent(out) :: l(ndim, ndim)
       real(real64), intent(inout) :: scr(*)
-      end subroutine
+      end subroutine ulla
       end interface
-      end module
+      end module ulla_i

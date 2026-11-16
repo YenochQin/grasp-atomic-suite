@@ -6,6 +6,6 @@
       integer, intent(in) :: nb
       integer, intent(in) :: kmax
       character (len = *), intent(in) :: filehead
-      end subroutine
+      end subroutine settmp
       end interface
-      end module
+      end module settmp_i

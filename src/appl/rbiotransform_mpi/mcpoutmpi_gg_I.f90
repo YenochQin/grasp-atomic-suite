@@ -8,6 +8,6 @@
       integer, intent(in) :: ik
       integer, intent(in) :: ntestg
       integer :: inpci
-      end subroutine
+      end subroutine mcpout
       end interface
-      end module
+      end module mcpout_i

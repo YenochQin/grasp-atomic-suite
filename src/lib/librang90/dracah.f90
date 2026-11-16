@@ -21,7 +21,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use facts_c
+      use facts_c, only: double, gam, mfact
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -42,11 +42,11 @@ contains
       j2 = k + l + m
       j3 = i + k + n
       j4 = j + l + n
-      if (2*max(max(i,j),m) - j1>0 .or. mod(j1,2)/=0) go to 2
-      if (2*max(max(k,l),m) - j2>0 .or. mod(j2,2)/=0) go to 2
-      if (2*max(max(i,k),n) - j3>0 .or. mod(j3,2)/=0) go to 2
-      if (2*max(max(j,l),n) - j4>0 .or. mod(j4,2)/=0) go to 2
-      go to 1
+      if (2*max(max(i,j),m) - j1>0 .or. mod(j1,2)/=0) goto 2
+      if (2*max(max(k,l),m) - j2>0 .or. mod(j2,2)/=0) goto 2
+      if (2*max(max(i,k),n) - j3>0 .or. mod(j3,2)/=0) goto 2
+      if (2*max(max(j,l),n) - j4>0 .or. mod(j4,2)/=0) goto 2
+      goto 1
     2 continue
       rac = 0.0_real64
       return
@@ -75,7 +75,7 @@ contains
          end do
 !
          numin = numin - 1
-      endif
+      end if
       rac = rac*(-1.0_real64)**(j5 + numin + 1)*exp((gam(numin+1)-gam(numin-j1)-gam&
          (numin-j2)-gam(numin-j3)-gam(numin-j4)-gam(j5+2-numin)-gam(j6+2-numin)&
          -gam(j7+2-numin))+(gam(j1+1-i)+gam(j1+1-j)+gam(j1+1-m)-gam(j1+2)+gam(&

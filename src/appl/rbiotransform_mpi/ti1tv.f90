@@ -37,13 +37,13 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
       use mcpdata_c
-      use sbdat1_c
-      use orbord_c
+      use sbdat1_c, only: double, max_orbitals, nlmax, nshlp, nshlpp
+      use orbord_c, only: nordff, nordii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setvec_i
-      use wrtmat_i
+      use setvec_i, only: setvec
+      use wrtmat_i, only: wrtmat
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -64,7 +64,7 @@
       ntest = max(ntestl,ntestg)
       ntest = 000
 !
-      if(ntest.ge.10) write(6,*) ' Entering TI1TV'
+      if(ntest>=10) write(6,*) " Entering TI1TV"
 
       call setvec(ciout,0.0_real64,nciv*ncsf)
       if (ncoeff == 0) return
@@ -86,12 +86,12 @@
         ira = nshlpp(l,ia)
         irb = nshlpp(l,ib)
 
-        if (ir.eq.irb.and.ira.lt.irb) then
-          if (k.eq.1) then
+        if (ir==irb.and.ira<irb) then
+          if (k==1) then
             ifirst = 1
           else
             ifirst = intptr(k-1) + 1
-          endif
+          end if
           nfound = intptr(k) - ifirst + 1
 
    15     do ielmnt = 1, nfound
@@ -117,21 +117,21 @@
             do ivec =1, nciv
               ciout(ileft,ivec) =                                      &
               ciout(ileft,ivec) + x*ciin(iright,ivec)
-            enddo
-          enddo
-        endif
-      enddo
+            end do
+          end do
+        end if
+      end do
 !
-      if(ntest.ge.100) then
+      if(ntest>=100) then
         write(6,*)
-        write(6,*) ' Input and output vectors from TI1TV I,L',i,l
+        write(6,*) " Input and output vectors from TI1TV I,L",i,l
         call wrtmat(ciin,ncsf,nciv,ncsf,nciv)
         write(6,*)
         call wrtmat(ciout,ncsf,nciv,ncsf,nciv)
         write(6,*)
       end if
 !
-      if(ntest.ge.10) write(6,*) ' LEAVING TI1TV'
+      if(ntest>=10) write(6,*) " LEAVING TI1TV"
 
       return
-      end
+      end subroutine ti1tv

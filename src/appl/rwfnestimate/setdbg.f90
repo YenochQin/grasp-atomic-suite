@@ -16,13 +16,13 @@
 !   M o d u l e s
 !-----------------------------------------------
       use debug_c
-      use default_c
-      use iounit_c
+      use default_c, only: double, inpci, ndef, ndump
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use openfl_i
+      use getyn_i, only: getyn
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -43,21 +43,21 @@
 !
       if (ndef == 0) return
 
-      write (stderr_unit, *) 'Generate debug printout?'
+      write (stderr_unit, *) "Generate debug printout?"
       yes = getyn()
       if (yes) then
 !
 !   The  .dbg  file is formatted; open it on unit 99
 !
-         defnam = 'erwf.dbg'
-         form = 'FORMATTED'
-         status = 'NEW'
+         defnam = "erwf.dbg"
+         form = "FORMATTED"
+         status = "NEW"
 !
-         write (stderr_unit, *) 'File  erwf.dbg  will be created as the ', &
-            'ERWF DeBuG Printout File; '
-         write (stderr_unit, *) 'enter another file name if this is not ', &
-            'acceptable; null otherwise:'
-         read (*, '(A)') filnam
+         write (stderr_unit, *) "File  erwf.dbg  will be created as the ", &
+            "ERWF DeBuG Printout File; "
+         write (stderr_unit, *) "enter another file name if this is not ", &
+            "acceptable; null otherwise:"
+         read (*, "(A)") filnam
 !
          if (len_trim(filnam) == 0) filnam = defnam
 !
@@ -65,41 +65,41 @@
          call openfl (99, filnam, form, status, ierr)
          if (ierr /= 0) then
     5       continue
-            write (stderr_unit, *) 'Enter a name for the ERWF DeBuG Printout ', &
-               'file that is to be created:'
-            read (*, '(A)') filnam
-            if (len_trim(filnam) == 0) go to 5
-            go to 4
-         endif
+            write (stderr_unit, *) "Enter a name for the ERWF DeBuG Printout ", &
+               "file that is to be created:"
+            read (*, "(A)") filnam
+            if (len_trim(filnam) == 0) goto 5
+            goto 4
+         end if
 !
 !   Set options for general printout
 !
-         write (stderr_unit, *) ' Print out the machine constants used?'
+         write (stderr_unit, *) " Print out the machine constants used?"
          yes = getyn()
          if (yes) ldbpg(1) = .true.
-         write (stderr_unit, *) ' Print out the physical constants used?'
+         write (stderr_unit, *) " Print out the physical constants used?"
          yes = getyn()
          if (yes) ldbpg(2) = .true.
 !
 !   Set options for radial modules
 !
-         write (stderr_unit, *) ' Printout from RADGRD?'
+         write (stderr_unit, *) " Printout from RADGRD?"
          yes = getyn()
          if (yes) ldbpr(1) = .true.
-         write (stderr_unit, *) ' Printout from NUCPOT?'
+         write (stderr_unit, *) " Printout from NUCPOT?"
          yes = getyn()
          if (yes) ldbpr(2) = .true.
-         write (stderr_unit, *) ' Printout from TFPOT?'
+         write (stderr_unit, *) " Printout from TFPOT?"
          yes = getyn()
          if (yes) ldbpr(26) = .true.
 !
 !   Set options for angular modules
 !
-         write (stderr_unit, *) ' Printout from LODCSL?'
+         write (stderr_unit, *) " Printout from LODCSL?"
          yes = getyn()
          if (yes) ldbpa(1) = .true.
 !
-      endif
+      end if
 !
       return
       end subroutine setdbg

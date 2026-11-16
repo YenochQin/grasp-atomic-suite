@@ -11,7 +11,7 @@ program test_ranking
     integer :: n, case_no, i, j, k
     character(len=16) :: argument
     call get_command_argument(1,argument)
-    if (trim(argument)=='nonfinite') then
+    if (trim(argument)=="nonfinite") then
         call rank_ls([ieee_value(0.0_real64,ieee_quiet_nan)],ranked)
         stop 0
     end if
@@ -54,11 +54,11 @@ program test_ranking
             old_weights(j)=wa; old_squares(j)=wa*wa; old_order(j)=i
         end do
         call rank_ls(values,ranked)
-        if (any(ranked%order/=old_order(:n))) error stop 'unstable or incorrect ordering'
-        if (transfer(ranked%norm,0_int64)/=transfer(old_norm,0_int64)) error stop 'norm order changed'
+        if (any(ranked%order/=old_order(:n))) error stop "unstable or incorrect ordering"
+        if (transfer(ranked%norm,0_int64)/=transfer(old_norm,0_int64)) error stop "norm order changed"
         do i=1,n
             if (transfer(values(ranked%order(i)),0_int64)/=transfer(old_weights(i),0_int64)) &
-                error stop 'coefficient bits changed'
+                error stop "coefficient bits changed"
         end do
         deallocate(values,old_weights,old_squares,old_order)
     end do
@@ -67,9 +67,9 @@ program test_ranking
     values=0.0_real64
     values(2)=-0.5_real64; values(84000)=0.5_real64
     call rank_ls(values,ranked)
-    if (any(ranked%order(:3)/=[2,84000,1])) error stop 'large tie ordering'
+    if (any(ranked%order(:3)/=[2,84000,1])) error stop "large tie ordering"
     do i=4,84000
-        if (ranked%order(i)/=i-1) error stop 'zero plateau order'
+        if (ranked%order(i)/=i-1) error stop "zero plateau order"
     end do
-    print *, 'Stable ranking and original-order norms passed'
-end program
+    print *, "Stable ranking and original-order norms passed"
+end program test_ranking

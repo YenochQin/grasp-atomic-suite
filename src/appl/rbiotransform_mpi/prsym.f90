@@ -29,6 +29,6 @@
          write (6, 1010) i, (a(j),j=jstart,jstop)
       end do
       return
- 1010 format('0',2x,i3,5(1x,e14.7),/,(' ',5x,5(1x,e14.7)))
+ 1010 format("0",2x,i3,5(1x,e14.7),/,(" ",5x,5(1x,e14.7)))
       return
       end subroutine prsym

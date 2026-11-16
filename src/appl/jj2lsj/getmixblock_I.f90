@@ -5,6 +5,6 @@
       implicit none (type, external)
       character (len = 24), intent(in) :: name
       integer, intent(in) :: nci
-      end subroutine
+      end subroutine getmixblock
       end interface
-      end module
+      end module getmixblock_i

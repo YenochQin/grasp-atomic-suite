@@ -10,6 +10,6 @@
       character (len = 24) :: name
 !...Dummy argument NAME is not referenced in this routine.
       integer, intent(in) :: kamax
-      end subroutine
+      end subroutine qqsort
       end interface
-      end module
+      end module qqsort_i

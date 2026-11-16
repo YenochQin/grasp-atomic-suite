@@ -27,7 +27,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rintff_i
+      use rintff_i, only: rintff
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -77,7 +77,7 @@
       if (rama > rn) then
          write (*, 300) rn, rama
          stop
-      endif
+      end if
 !
 !   Determine end of grid
 !
@@ -87,8 +87,8 @@
       if (radial_grid(i) <= rama) then
          mfj = i
       else
-         go to 1
-      endif
+         goto 1
+      end if
       mfff(j) = mfj
 !
 !   Overall initialization for interpolation
@@ -114,10 +114,10 @@
          k = nrstlo + 1
          if (ra(k) < xbar) then
             nrstlo = k
-            go to 2
+            goto 2
          else
             nrsthi = k
-         endif
+         end if
 !
 !   Clear relevant piece of use-indicator array
 !
@@ -143,8 +143,8 @@
                if (abs(difft) < abs(diff)) then
                   diff = difft
                   locnxt = k
-               endif
-            endif
+               end if
+            end if
          end do
          used(locnxt) = .true.
          x(irow) = ra(locnxt)
@@ -167,7 +167,7 @@
                   factor
                polyq(ilirok) = (polyq(ildiag)*dxirow-polyq(ilothr)*dxkmn1)*&
                   factor
-            endif
+            end if
          end do
 !
 !   Check for convergence
@@ -177,11 +177,11 @@
          qestt = polyq(ildiag)
          if (pestt==0.0_real64 .or. qestt==0.0_real64) then
             if (irow < mxord) then
-               go to 4
+               goto 4
             else
                pfff(i,j) = pestt
                qfff(i,j) = qestt
-            endif
+            end if
          else
             dpbp = abs((pestt - pestl)/pestt)
             dqbq = abs((qestt - qestl)/qestt)
@@ -192,14 +192,14 @@
                pestl = pestt
                qestl = qestt
                if (irow < mxord) then
-                  go to 4
+                  goto 4
                else
                   pfff(i,j) = pestt
                   qfff(i,j) = qestt
                   kount = kount + 1
-               endif
-            endif
-         endif
+               end if
+            end if
+         end if
 !
       end do
 !
@@ -221,11 +221,11 @@
 !
       return
 !
-  300 format(/,'INTRPQ: Grid of insufficient extent:'/,&
-         ' Present grid has R(N) = ',1p,1d19.12,' Bohr radii'/,&
-         '          Require R(N) = ',1d19.12,' Bohr radii')
-  301 format(/,'INTRPQ: Interpolation procedure not converged to',1p,1d19.12,&
-         ' for ',1i3,' of ',1i3,' tabulation points')
+  300 format(/,"INTRPQ: Grid of insufficient extent:"/,&
+         " Present grid has R(N) = ",1p,1d19.12," Bohr radii"/,&
+         "          Require R(N) = ",1d19.12," Bohr radii")
+  301 format(/,"INTRPQ: Interpolation procedure not converged to",1p,1d19.12,&
+         " for ",1i3," of ",1i3," tabulation points")
       return
       contains
 

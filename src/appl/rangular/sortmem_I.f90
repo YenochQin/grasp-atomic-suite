@@ -9,6 +9,6 @@
       logical, intent(in)  :: lprint
       integer, intent(in)  :: nb,iggmax_k
       character (len = *), intent(in) :: fhead
-      end subroutine
+      end subroutine sortmem
       end interface
-      end module
+      end module sortmem_i

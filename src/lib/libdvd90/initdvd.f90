@@ -22,11 +22,11 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dinit_i
+      use dinit_i, only: dinit
       !USE dcopy_I
-      use mgs_nrm_i
+      use mgs_nrm_i, only: mgs_nrm
       !USE dscal_I
-      use adds_i
+      use adds_i, only: adds
       use suite_linear_algebra, only: dcopy, dscal
       implicit none (type, external)
 !-----------------------------------------------
@@ -55,15 +55,15 @@ contains
 !
 !-----------------------------------------------------------------------
 !       ..Reverse Communication
-      if (irc == 2) go to 100
+      if (irc == 2) goto 100
 !-----------------------------------------------------------------------
 !
 ! If no initial estimates pick one
 !
       if (niv == 0) then
-         call dinit (n, 1._real64/sqrt(dble(n)), basis, 1)
+         call dinit (n, 1.0_real64/sqrt(dble(n)), basis, 1)
          niv = 1
-      endif
+      end if
 !
 ! Compute AB. Also fill basis with orthonormalized ABs until enough NIVs.
 !
@@ -85,14 +85,14 @@ contains
          call mgs_nrm (n, noc + iend, new, scra1, orthobasis)
          ist = iend + 1
          iend = iend + new
-         go to 10
-      endif
+         goto 10
+      end if
       niv = iend
       !xhh print*, 'niv=',niv, 'nume=', nume
 !
 ! Scale if HIEND for highest eigepairs
 !
-      if (hiend) call dscal (n*niv, -1._real64, ab, 1)
+      if (hiend) call dscal (n*niv, -1.0_real64, ab, 1)
 !
 ! Also find the small matrix S = B^TAB.
 !

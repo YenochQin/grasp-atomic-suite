@@ -7,6 +7,6 @@
       implicit none (type, external)
       integer, intent(in) :: i
       integer, intent(in) :: j
-      end function
+      end function rint_sms3
       end interface
-      end module
+      end module rint_sms3_i

@@ -8,6 +8,6 @@
       integer, intent(inout) :: index
       integer, intent(out) :: llistt
      integer, pointer :: llistv(:)
-      end subroutine
+      end subroutine fndbeg
       end interface
-      end module
+      end module fndbeg_i

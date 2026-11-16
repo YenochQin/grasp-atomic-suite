@@ -6,6 +6,6 @@
       subroutine wghtd5(iatjpo, iaspar)
       implicit none (type, external)
       integer, intent(in)  :: iatjpo, iaspar
-      end subroutine
+      end subroutine wghtd5
       end interface
-      end module
+      end module wghtd5_i

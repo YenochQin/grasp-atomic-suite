@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -31,20 +31,20 @@
 !
 !   File  rdensity.sum  is FORMATTED
 !
-      k = index(name,' ')
+      k = index(name," ")
       if (nci == 0) then
-         filnam = name(1:k-1)//'.ci'
+         filnam = name(1:k-1)//".ci"
       else
-         filnam = name(1:k-1)//'.i'
-      endif
-      form = 'FORMATTED'
-      status = 'NEW'
+         filnam = name(1:k-1)//".i"
+      end if
+      form = "FORMATTED"
+      status = "NEW"
 !
       call openfl (24, filnam, form, status, ierr)
       if (ierr /= 0) then
-         write (6, *) 'Error when opening', filnam
+         write (6, *) "Error when opening", filnam
          stop
-      endif
+      end if
 !
       return
       end subroutine setsum

@@ -8,6 +8,6 @@
       integer, intent(in) :: q(*)
       character (len = 3), intent(in) :: couple(*)
       character (len = 164), intent(out) :: str
-      end subroutine
+      end subroutine packls
       end interface
-      end module
+      end module packls_i

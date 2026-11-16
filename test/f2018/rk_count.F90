@@ -21,27 +21,27 @@ program rk_count
             do rank=0,ranks-1
                 calls=0
                 call genintrk(rank,ranks,count_total,jmax)
-                if(.not.all(ieee_is_finite(valteirk))) error stop 'Nonfinite integral cache'
-                if(calls/=rk_local_count(count_total,rank,ranks)) error stop 'Local Slater evaluation count'
-                if(count(abs(valteirk)>0.0_real64)/=calls) error stop 'Local integral cache ownership'
+                if(.not.all(ieee_is_finite(valteirk))) error stop "Nonfinite integral cache"
+                if(calls/=rk_local_count(count_total,rank,ranks)) error stop "Local Slater evaluation count"
+                if(count(abs(valteirk)>0.0_real64)/=calls) error stop "Local integral cache ownership"
                 do i=1,count_total
                     if(mod(i,ranks)==rank) then
-                        if(abs(valteirk(i)-1.0_real64)>0) error stop 'Owned integral'
+                        if(abs(valteirk(i)-1.0_real64)>0) error stop "Owned integral"
                     else
-                        if(abs(valteirk(i))>0) error stop 'Unowned integral'
+                        if(abs(valteirk(i))>0) error stop "Unowned integral"
                     end if
                 end do
                 total_calls=total_calls+calls
                 deallocate(indteirk,valteirk)
             end do
-            if(total_calls/=count_total) error stop 'Replicated cache counted more than once'
+            if(total_calls/=count_total) error stop "Replicated cache counted more than once"
         end do
     end do
     large_total=0
     do rank=0,3
         large_total=large_total+int(rk_local_count(huge(0),rank,4),int64)
-        if(rk_local_count(0,rank,4)/=0) error stop 'Empty integral cache'
+        if(rk_local_count(0,rank,4)/=0) error stop "Empty integral cache"
     end do
-    if(large_total/=int(huge(0),int64)) error stop 'Count arithmetic overflow'
-    print *, 'PASS production integral partition, empty ranks, repeated calls and count boundary'
-end program
+    if(large_total/=int(huge(0),int64)) error stop "Count arithmetic overflow"
+    print *, "PASS production integral partition, empty ranks, repeated calls and count boundary"
+end program rk_count

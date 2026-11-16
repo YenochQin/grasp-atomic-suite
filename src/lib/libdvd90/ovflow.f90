@@ -23,8 +23,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use multbc_i
-      use dinit_i
+      use multbc_i, only: multbc
+      use dinit_i, only: dinit
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -63,8 +63,8 @@ contains
 ! calculation of the new upper S=diag(l1,...,l_NUME) and
 ! its matrix Svec of eigenvectors (e1,...,e_NUME)
 !
-      call dinit ((nume*(nume + 1))/2, 0._real64, s, 1)
-      call dinit (nume*nume, 0._real64, svec, 1)
+      call dinit ((nume*(nume + 1))/2, 0.0_real64, s, 1)
+      call dinit (nume*nume, 0.0_real64, svec, 1)
       ind = 0
       icur = 0
       do i = 1, nume

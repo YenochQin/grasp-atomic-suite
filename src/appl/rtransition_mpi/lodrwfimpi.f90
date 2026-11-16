@@ -15,7 +15,7 @@
       use parameter_def,   only: max_radial_points
       use memory_man
       use def_c
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use biorb_c
       use wave_c
 !-----------------------------------------------
@@ -43,19 +43,19 @@
 !
 !   Open the radial wave function file
 !
-      j = index(name,' ')
-      open(unit=69, file=name(1:j-1)//'.bw', form='UNFORMATTED', status='OLD', &
-         position='asis')
+      j = index(name," ")
+      open(unit=69, file=name(1:j-1)//".bw", form="UNFORMATTED", status="OLD", &
+         position="asis")
 !
 !   Allocate storage to orbital arrays
 !
-      call alloc (pfii, max_radial_points, nwii, 'PFII', 'LODRWFI')
-      call alloc (qfii, max_radial_points, nwii, 'QFII', 'LODRWFI')
+      call alloc (pfii, max_radial_points, nwii, "PFII", "LODRWFI")
+      call alloc (qfii, max_radial_points, nwii, "QFII", "LODRWFI")
 !
       con = nuclear_charge/speed_of_light_au
       con = con*con
 !
-      write (*, *) 'NWII', nwii
+      write (*, *) "NWII", nwii
       do j = 1, nwii
          write (*, *) nakii(j), npii(j), nhii(j)
          pfii(:max_radial_points,j) = 0.0_real64
@@ -71,13 +71,13 @@
             if (fkk >= con) then
                gamaii(j) = sqrt(fkk - con)
             else
-               write (6, *) 'LODRWF: Imaginary gamma parameter'
-               write (6, *) ' for ', npii(j), nhii(j), ' orbital; the'
-               write (6, *) ' point model for the nucleus'
-               write (6, *) ' is inappropriate for Z > ', speed_of_light_au, '.'
+               write (6, *) "LODRWF: Imaginary gamma parameter"
+               write (6, *) " for ", npii(j), nhii(j), " orbital; the"
+               write (6, *) " point model for the nucleus"
+               write (6, *) " is inappropriate for Z > ", speed_of_light_au, "."
                stop
-            endif
-         endif
+            end if
+         end if
 !
       end do
 !
@@ -85,17 +85,17 @@
 !
       nwin = 0
       read (69, iostat=ios) g92rwf
-      if (ios/=0 .or. g92rwf/='G92RWF') then
-         write (6, *) 'This is not a Radial WaveFunction File;'
+      if (ios/=0 .or. g92rwf/="G92RWF") then
+         write (6, *) "This is not a Radial WaveFunction File;"
          close(69)
-      endif
+      end if
 
     3 continue
       read (69, iostat=ios) npyii, nakyii, eyii, myii
       if (ios == 0) then
-         call alloc (pa, myii, 'PA', 'LODRWFI')
-         call alloc (qa, myii, 'QA', 'LODRWFI')
-         call alloc (ra, myii, 'RA', 'LODRWFI')
+         call alloc (pa, myii, "PA", "LODRWFI")
+         call alloc (qa, myii, "QA", "LODRWFI")
+         call alloc (ra, myii, "RA", "LODRWFI")
          read (69) pzy, (pa(i),i=1,myii), (qa(i),i=1,myii)
          read (69) (ra(i),i=1,myii)
 
@@ -111,19 +111,19 @@
             end do
             nwin = nwin + 1
          end do
-         call dalloc (pa, 'PA', 'LODRWFI')
-         call dalloc (qa, 'QA', 'LODRWFI')
-         call dalloc (ra, 'RA', 'LODRWFI')
-         go to 3
-      endif
+         call dalloc (pa, "PA", "LODRWFI")
+         call dalloc (qa, "QA", "LODRWFI")
+         call dalloc (ra, "RA", "LODRWFI")
+         goto 3
+      end if
 !
 !   Stop with an error message if all orbitals are not known
 !
       if (nwin < nwii) then
-         write (6, *) 'LODRWF: All required orbitals not'
-         write (6, *) ' found.'
+         write (6, *) "LODRWF: All required orbitals not"
+         write (6, *) " found."
          stop
-      endif
+      end if
 !
 !      WRITE (6, *) ' ... load complete;'
 !

@@ -26,10 +26,10 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use diaga1_i
-      use diaga2_i
-      use diaga3_i
-      use diaga4_i
+      use diaga1_i, only: diaga1
+      use diaga2_i, only: diaga2
+      use diaga3_i, only: diaga3
+      use diaga4_i, only: diaga4
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

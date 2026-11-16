@@ -71,7 +71,7 @@
                write (24, 302) i, labj(jtot(j)), labp(ip), eau, ecm, eev
                write (29, 302) i, labj(jtot(j)), labp(ip), eau, ecm, eev
             end do
-         endif
+         end if
 !
 !   Energies relative to level 1
 !
@@ -89,15 +89,15 @@
                write (24, 302) i, labj(jtot(j)), labp(ip), eau, ecm, eev
                write (29, 302) i, labj(jtot(j)), labp(ip), eau, ecm, eev
             end do
-         endif
+         end if
 !
-      endif
+      end if
 !
-  300 format(/,'Eigenenergies:')
-  301 format(/,'Level  J Parity',7x,'Hartrees',14x,'Kaysers',16x,'eV'/)
+  300 format(/,"Eigenenergies:")
+  301 format(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)
   302 format(1i3,2x,2a4,1p,3d22.14)
-  303 format(/,'Energy of each level relative to immediately lower',' level:')
-  304 format(/,'Energy of each level relative to lowest level:')
+  303 format(/,"Energy of each level relative to immediately lower"," level:")
+  304 format(/,"Energy of each level relative to lowest level:")
       return
 !
       end subroutine engouth

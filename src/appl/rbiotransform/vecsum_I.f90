@@ -10,6 +10,6 @@
       real(real64), intent(out) :: c(ndim)
       real(real64), intent(in) :: faca
       real(real64), intent(in) :: facb
-      end subroutine
+      end subroutine vecsum
       end interface
-      end module
+      end module vecsum_i

@@ -13,7 +13,7 @@ program standard_interface_capacity
     real(real64) :: p(NNNP), q(NNNP)
     integer :: indices(NNNW), mtp
 
-    if (NNNP /= 790 .or. NNN1 /= 800 .or. NNNW /= 149) error stop 'wrong test configuration'
+    if (NNNP /= 790 .or. NNN1 /= 800 .or. NNNW /= 149) error stop "wrong test configuration"
     radial => probe_tail
     estimate => probe_estimate
     imported => probe_import
@@ -21,8 +21,8 @@ program standard_interface_capacity
     indices = 0
     call radial(1, p, q, 1, mtp)
     call estimate(indices, NNNW)
-    call imported(indices, NNNW, 'fixture')
-    if (mtp /= NNNP .or. q(NNNP) /= 1) error stop 'radial interface mismatch'
+    call imported(indices, NNNW, "fixture")
+    if (mtp /= NNNP .or. q(NNNP) /= 1) error stop "radial interface mismatch"
 contains
     subroutine probe_tail(iorb, p, q, jp, mtp)
         integer, intent(in) :: iorb, jp
@@ -36,12 +36,12 @@ contains
 
     subroutine probe_estimate(index, nsubs)
         integer, intent(in) :: index(NNNW), nsubs
-        if (nsubs /= size(index)) error stop 'estimate interface mismatch'
+        if (nsubs /= size(index)) error stop "estimate interface mismatch"
     end subroutine probe_estimate
 
     subroutine probe_import(index, nsubs, filnam)
         integer, intent(in) :: index(NNNW), nsubs
         character(*), intent(in) :: filnam
-        if (nsubs /= size(index) .or. filnam /= 'fixture') error stop 'import interface mismatch'
+        if (nsubs /= size(index) .or. filnam /= "fixture") error stop "import interface mismatch"
     end subroutine probe_import
 end program standard_interface_capacity

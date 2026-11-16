@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -34,20 +34,20 @@
       character :: filnam*256, form*11, status*3
 !-----------------------------------------------
 !
-      k = index(name,' ')
+      k = index(name," ")
       if (nci == 0) then
-         filnam = name(1:k-1)//'.cgj'
+         filnam = name(1:k-1)//".cgj"
       else
-         filnam = name(1:k-1)//'.gj'
-      endif
+         filnam = name(1:k-1)//".gj"
+      end if
 !
-      form = 'FORMATTED'
-      status = 'NEW'
+      form = "FORMATTED"
+      status = "NEW"
       call openfl(29, filnam, form, status, ierr)
       if (ierr /= 0) then
-         write (6, *) 'Error when opening', filnam
+         write (6, *) "Error when opening", filnam
          stop
-      endif
+      end if
 !
       write (29, 302) hfsi
       write (29, 303) hfsd
@@ -69,10 +69,10 @@
       close(29)
       return
 !
-  302 format('Nuclear spin                        ',1p,d22.15,' au')
-  303 format('Nuclear magnetic dipole moment      ',1p,d22.15,' n.m.')
-  304 format('Nuclear electric quadrupole moment  ',1p,d22.15,' barns')
-  402 format(/,/,' Interaction constants:'/,/,' Level1  J Parity ',10x,'g_J', &
-         14x,'delta g_J',11x,'total g_J'/)
+  302 format("Nuclear spin                        ",1p,d22.15," au")
+  303 format("Nuclear magnetic dipole moment      ",1p,d22.15," n.m.")
+  304 format("Nuclear electric quadrupole moment  ",1p,d22.15," barns")
+  402 format(/,/," Interaction constants:"/,/," Level1  J Parity ",10x,"g_J", &
+         14x,"delta g_J",11x,"total g_J"/)
   403 format(1x,1i3,5x,2a4,1p,3d20.10)
       end subroutine setout_gj

@@ -36,10 +36,10 @@
 
       triangbreit2 = .false.
 
-      if ((mod(l+la+lb,2).eq.0).and.(abs(ja-jb).le.2*l).and.           &
-         (abs(ja+jb).ge.2*l)) then
-         if ((mod(l+lc+ld,2).eq.0).and.(abs(jc-jd).le.2*l).and.        &
-            (abs(jc+jd).ge.2*l)) then
+      if ((mod(l+la+lb,2)==0).and.(abs(ja-jb)<=2*l).and.           &
+         (abs(ja+jb)>=2*l)) then
+         if ((mod(l+lc+ld,2)==0).and.(abs(jc-jd)<=2*l).and.        &
+            (abs(jc+jd)>=2*l)) then
             triangbreit2 = .true.
             return
          end if

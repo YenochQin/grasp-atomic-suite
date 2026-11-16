@@ -5,6 +5,6 @@
       implicit none (type, external)
       logical :: eol
 !...This routine performs I/O.
-      end subroutine
+      end subroutine setlag
       end interface
-      end module
+      end module setlag_i

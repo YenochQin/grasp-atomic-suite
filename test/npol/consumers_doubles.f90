@@ -10,7 +10,7 @@ subroutine DPBDT(j)
     integer :: j
     TA(:N) = 0
     TB(:N) = 0
-end subroutine
+end subroutine DPBDT
 end module dpbdt_i
 
 module quad_i
@@ -29,5 +29,5 @@ subroutine QUAD(result)
     do i = 2, MTP
         result = result+real(i,real64)*TA(i)
     end do
-end subroutine
+end subroutine QUAD
 end module quad_i

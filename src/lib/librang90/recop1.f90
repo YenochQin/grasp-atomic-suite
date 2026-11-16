@@ -26,9 +26,9 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use diaga1_i
-      use diaga3_i
-      use diaga5_i
+      use diaga1_i, only: diaga1
+      use diaga3_i, only: diaga3
+      use diaga5_i, only: diaga5
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

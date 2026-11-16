@@ -18,17 +18,17 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use eigv_c
-      use iccu_c
+      use iccu_c, only: iccut, iccutblk
       use orb_c
       use where_c
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use hmat_c
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use posfile_i
-      use setham_i
+      use posfile_i, only: posfile
+      use setham_i, only: setham
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -49,8 +49,8 @@
 !-----------------------------------------------
 !
       stored_matrix_element_count = 0                      ! Counting continues in setham
-      hamiltonian_energy_shift    = 0._real64
-      elsto  = 0._real64
+      hamiltonian_energy_shift    = 0.0_real64
+      elsto  = 0.0_real64
 
 ! See how much had been done (Hamiltonian matrix)
 ! irestart is set;
@@ -67,9 +67,9 @@
          if (csf_count/=ncfdum .or. iccut(1)/=iccutdum .or. myid/=myiddum .or. &
             nprocs/= nprocsdum) then
             write (stderr_unit, *) csf_count, ncfdum, iccut(1), iccutdum, myid, myiddum, &
-               nprocs, nprocsdum, 'check'
-            stop 'genmat:1'
-         endif
+               nprocs, nprocsdum, "check"
+            stop "genmat:1"
+         end if
 
          do i = myid + 1, csf_count, nprocs
             read (imcdf, iostat=ios2) nelc, stoel, (dum,ir=2,nelc), eav0, (&
@@ -82,12 +82,12 @@
                elsto = stoel
             else
                exit
-            endif
+            end if
          end do
          ipos = 7 + orbital_count + orbital_count + iread + 1
       else
          ipos = 7 + orbital_count + orbital_count
-      endif
+      end if
 
 ! Find the maximum number of rows
 
@@ -98,9 +98,9 @@
 ! A more suitable report on all nodes can be done here, but this will
 ! set a synchronization point.
 
-      write (stderr_unit, *) iread, ' (total ', nrows, ') rows read from .res'
-      if (myid == 0) write (24, *) iread, ' (total ', nrows, &
-         ') rows read from .res'
+      write (stderr_unit, *) iread, " (total ", nrows, ") rows read from .res"
+      if (myid == 0) write (24, *) iread, " (total ", nrows, &
+         ") rows read from .res"
 
 ! Position the file for the next record from setham
 
@@ -121,7 +121,7 @@
       else
          nelmnttmp = stored_matrix_element_count
          ncftmp = csf_count
-      endif
+      end if
 
       return
       end subroutine genmat

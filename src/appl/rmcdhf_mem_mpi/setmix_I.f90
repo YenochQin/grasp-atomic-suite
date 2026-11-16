@@ -4,6 +4,6 @@
       subroutine setmix (name)
       implicit none (type, external)
       character (len = *), intent(in) :: name
-      end subroutine
+      end subroutine setmix
       end interface
-      end module
+      end module setmix_i

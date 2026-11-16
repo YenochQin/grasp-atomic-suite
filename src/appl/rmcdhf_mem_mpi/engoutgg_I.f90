@@ -8,6 +8,6 @@
       real(real64), intent(in) :: e(nn)
       integer, intent(in) :: ilev(nn)
       integer, intent(in) :: mode
-      end subroutine
+      end subroutine engoutgg
       end interface
-      end module
+      end module engoutgg_i

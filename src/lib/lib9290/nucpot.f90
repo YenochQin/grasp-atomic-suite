@@ -21,12 +21,12 @@ contains
       use debug_c
       use def_c,           only: nuclear_charge, pi
       use grid_c
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use npot_c,          only: negative_radius_times_potential, first_grid_index_beyond_fermi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use es_i
+      use es_i, only: es
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -80,12 +80,12 @@ contains
                if (.not.set) then
                   first_grid_index_beyond_fermi_c = i
                   set = .true.
-               endif
+               end if
                call es ((-rmcba), s2rcba, s3rcba)
                negative_radius_times_potential(i) = nuclear_charge*(1.0_real64 + thabc2*(rbc*s2rcba + tabc*s3rcba)/en)
-            endif
+            end if
          end do
-      endif
+      end if
 !
       if (ldbpr(2)) then
          write (99, 300)
@@ -94,7 +94,7 @@ contains
             nrows = nb3
          else
             nrows = nb3 + 1
-         endif
+         end if
          do ii = 1, nrows
             ii1 = ii
             ii2 = ii1 + nrows
@@ -108,14 +108,14 @@ contains
                   & negative_radius_times_potential(ii2)
             else
                write (99, 301) radial_grid(ii1), negative_radius_times_potential(ii1)
-            endif
+            end if
          end do
-      endif
+      end if
 !
       return
 !
-  300 format(/,'From SUBROUTINE NUCPOT:'/,3(&
-         ' -------- r -------- ----- -r*V(r) -----'))
+  300 format(/,"From SUBROUTINE NUCPOT:"/,3(&
+         " -------- r -------- ----- -r*V(r) -----"))
   301 format(1p,6(1x,1d19.12))
       return
 !

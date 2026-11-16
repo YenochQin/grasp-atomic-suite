@@ -5,6 +5,6 @@
       real(real64) function systemfreemem ()
       use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
-      end function
+      end function systemfreemem
       end interface
-      end module
+      end module systemfreemem_i

@@ -13,15 +13,15 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use grid_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use orb_c
       use biorb_c
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use quad_i
-      use wrtmat_i
+      use quad_i, only: quad
+      use wrtmat_i, only: wrtmat
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -46,7 +46,7 @@
 !   Tabulate the integrand as required for SUBROUTINE QUAD; the
 !   value at the first tabulation point is arbitrary
 !
-            ta(1) = 0._real64
+            ta(1) = 0.0_real64
             do l = 2, mtp
                ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*radial_grid_derivative(l)
             end do
@@ -60,9 +60,9 @@
 !
 !   Print out
 !
-      write (*, *) '********************'
-      write (*, *) ' S matrix from GETS'
-      write (*, *) '********************'
+      write (*, *) "********************"
+      write (*, *) " S matrix from GETS"
+      write (*, *) "********************"
 
       call wrtmat (s, nshli, nshlf, nshli, nshlf)
 !

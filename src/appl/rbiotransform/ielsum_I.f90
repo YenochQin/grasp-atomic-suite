@@ -5,6 +5,6 @@
       implicit none (type, external)
       integer, intent(in) :: ivec(*)
       integer, intent(in) :: nelmnt
-      end function
+      end function ielsum
       end interface
-      end module
+      end module ielsum_i

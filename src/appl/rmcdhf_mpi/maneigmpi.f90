@@ -39,7 +39,7 @@
       use memory_man
       use def_c
       use eigv_c
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use hmat_c
       use mpi_c
       use orb_c
@@ -48,11 +48,11 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use spicmvmpi_i
-      use iniestmpi_i
+      use spicmvmpi_i, only: spicmvmpi
+      use iniestmpi_i, only: iniestmpi
       use gdvd_i
-      use itjpo_i
-      use ispar_i
+      use itjpo_i, only: itjpo
+      use ispar_i, only: ispar
       use suite_linear_algebra, only: dcopy, dscal
       implicit none (type, external)
 !-----------------------------------------------
@@ -86,10 +86,10 @@
 !   Trivial case
 !=======================================================================
       if (csf_count == 1) then
-         shifted_eigenvalues(ncminpat+1) = 0._real64
-         csf_mixing_coefficients(nevecpat+1) = 1._real64
-         go to 123                               ! Don't like big ELSE
-      endif
+         shifted_eigenvalues(ncminpat+1) = 0.0_real64
+         csf_mixing_coefficients(nevecpat+1) = 1.0_real64
+         goto 123                               ! Don't like big ELSE
+      end if
 !
 !=======================================================================
 !   Non-trivial case - Use Davidson eigensolver
@@ -105,7 +105,7 @@
 !GG      lim   = MIN (ncf, 2*nvect + 40)
 !      LIM = MIN(NCF,2*NVECT + 20)
       lwork = 2*csf_count*lim + lim*lim*2 + 11*lim + nvect
-      call alloc (work, lwork, 'WORK', 'MANEIGmpi')
+      call alloc (work, lwork, "WORK", "MANEIGmpi")
 
       !...At most 14 ? restriction removed xhh 98-05-19
       !nvex = MIN (nvect,ncfblk(jblock),14)
@@ -118,7 +118,7 @@
 !   Initial estimates for eigenvectors
 !
 !CFF
-      if (dvdfirst .or. (csf_count .le. n1000) ) then
+      if (dvdfirst .or. (csf_count <= n1000) ) then
 !GG         CALL INIESTmpi (N1000, NCF, NIV, WORK, EMT, IENDC, IROW)
          call iniestmpi (n1000, csf_count, niv, work, hamiltonian_values, stored_segment_end_offsets(0:csf_count), &
             & matrix_partner_indices)
@@ -130,14 +130,14 @@
             call dcopy (csf_count, csf_mixing_coefficients( nevecpat + csf_count*(j-1) + 1:nevecpat + csf_count*(j-1)+ &
                & (csf_count)),    1,    &
                           work( csf_count*(iccmin(j+ncminpat)-1) + 1 :( csf_count*(iccmin(j+ncminpat)-1) + 1 )+((csf_count)-1)), 1)
-         enddo
-      endif
+         end do
+      end if
 
 ! iniest looks for eigenvectors of n1000*n1000 matrix so there
 ! is no need to call dvdson if block size <= n1000
 
       if (csf_count > n1000) then
-         if (mpi_rank == 0) write (*,*) 'Calling dvdson!!!', maxitr,nvect
+         if (mpi_rank == 0) write (*,*) "Calling dvdson!!!", maxitr,nvect
 
          ! Call Davidson eigensolver
 
@@ -155,12 +155,12 @@
 !
 !   Store the diagonals in a separate array and make it global
 !
-         call alloc (diag, csf_count, 'DIAG', 'MANEIGmpi')
-         call alloc (atmp, csf_count, 'ATMP', 'MANEIGmpi')
+         call alloc (diag, csf_count, "DIAG", "MANEIGmpi")
+         call alloc (atmp, csf_count, "ATMP", "MANEIGmpi")
          do i = 1, csf_count
-            atmp(i) = 0._real64
-            diag(i) = 0._real64    ! this one may not be necessary
-         enddo
+            atmp(i) = 0.0_real64
+            diag(i) = 0.0_real64    ! this one may not be necessary
+         end do
 
          do ic = mpi_rank + 1, csf_count, mpi_process_count
 !GG            DIAG(IC) = EMT(IENDC(IC))
@@ -168,26 +168,26 @@
          end do
          call mpi_allreduce (atmp, diag, csf_count, mpi_double_precision,  &
                              mpi_sum, mpi_comm_world, mpi_error_code)
-         call dalloc(atmp,'ATMP', 'MANEIGmpi')
+         call dalloc(atmp,"ATMP", "MANEIGmpi")
 
-         call alloc (iwork, liwork, 'IWORK', 'MANEIGmpi')
-         call alloc (jwork, lim, 'JWORK', 'MANEIGmpi')
-         if (csf_count.gt.1000) then
+         call alloc (iwork, liwork, "IWORK", "MANEIGmpi")
+         call alloc (jwork, lim, "JWORK", "MANEIGmpi")
+         if (csf_count>1000) then
             call gdvd (spicmvmpi,csf_count,lim,diag,ilow,ihigh,jwork,niv,mblock, &
             crite, critc, critr, ortho, maxitr, work, lwork, iwork, liwork, &
             hiend, nloops, nmv, mpi_error_code)
          end if
-         call dalloc (diag, 'DIAG', 'MANEIGmpi')
-         call dalloc (iwork, 'IWORK', 'MANEIGmpi')
-         call dalloc (jwork, 'JWORK', 'MANEIGmpi')
+         call dalloc (diag, "DIAG", "MANEIGmpi")
+         call dalloc (iwork, "IWORK", "MANEIGmpi")
+         call dalloc (jwork, "JWORK", "MANEIGmpi")
 
-         if (mpi_rank .eq. 0) then
+         if (mpi_rank == 0) then
             write (*,301) nloops, nmv
-            if (mpi_error_code .ne. 0) then
+            if (mpi_error_code /= 0) then
                write (*,302) mpi_error_code
-            endif
-         endif
-      endif
+            end if
+         end if
+      end if
 !
 !   Pick up the eigen pairs and store in EVAL and EVEC
 !
@@ -203,7 +203,7 @@
 !
 !   Deallocate storage
 !
-      call dalloc (work, 'WORK', 'MANEIGmpi')
+      call dalloc (work, "WORK", "MANEIGmpi")
 
   123 continue
       do jstate = 1, eigenvector_counts_by_block(jblock)
@@ -212,7 +212,7 @@
 !
          iofset = nevecpat + csf_count*(jstate - 1)
 
-         amax = 0._real64
+         amax = 0.0_real64
          do i = 1, csf_count
             wa = abs(csf_mixing_coefficients(i+iofset))
             if (wa <= amax) cycle
@@ -228,19 +228,19 @@
 !   Redefine eigenvectors so that the dominant component
 !   is positive
 !
-         if (csf_mixing_coefficients(ia+iofset) >= 0._real64) cycle
-         dnfac = -1._real64
+         if (csf_mixing_coefficients(ia+iofset) >= 0.0_real64) cycle
+         dnfac = -1.0_real64
          call dscal (csf_count, dnfac, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1)
 !===============================================================
 
       end do
 
-  301 format('DVDSON: ',1i3,' loops; ',1i3,' matrix-vector multiplies.')
-  302 format(' Returned from DVDSON with IERR = ',1i4)
-  303 format(/,' ***** WARNING *****'/,/,&
-         ' The angular momentum and parity of level ',1i2,' have changed:'/,&
-         ' Last iteration: (2J+1) = ',1i2,', parity = ',1i2,';'/,&
-         ' this iteration: (2J+1) = ',1i2,', parity = ',1i2,'.')
+  301 format("DVDSON: ",1i3," loops; ",1i3," matrix-vector multiplies.")
+  302 format(" Returned from DVDSON with IERR = ",1i4)
+  303 format(/," ***** WARNING *****"/,/,&
+         " The angular momentum and parity of level ",1i2," have changed:"/,&
+         " Last iteration: (2J+1) = ",1i2,", parity = ",1i2,";"/,&
+         " this iteration: (2J+1) = ",1i2,", parity = ",1i2,".")
 
       return
       end subroutine maneigmpi

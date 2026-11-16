@@ -3,6 +3,6 @@
       interface
       subroutine testmix
       implicit none (type, external)
-      end subroutine
+      end subroutine testmix
       end interface
-      end module
+      end module testmix_i

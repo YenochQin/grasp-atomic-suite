@@ -4,6 +4,6 @@
       subroutine csfwgt (lstdio)
       implicit none (type, external)
       logical, intent(in) :: lstdio
-      end subroutine
+      end subroutine csfwgt
       end interface
-      end module
+      end module csfwgt_i

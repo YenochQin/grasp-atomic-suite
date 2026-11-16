@@ -39,8 +39,8 @@
       rewind (50)
    16 read (50,iostat = ios) ic,ir,ncount
 
-      if (ios .eq. 0) then
-         ownrec = mod(ic-1, mpi_process_count) .eq. mpi_rank
+      if (ios == 0) then
+         ownrec = mod(ic-1, mpi_process_count) == mpi_rank
          elemnt1 = 0.0_real64
          elemnt2 = 0.0_real64
          elemnt3 = 0.0_real64
@@ -65,22 +65,22 @@
             elemnt5 = elemnt5 + dint5(ia,ib)*tshell_r(i)
             elemnt6 = elemnt6 + dint6(ia,ib)*tshell_r(i)
             elemnt7 = elemnt7 + dint7(ia,ib)*tshell_r(i)
-         enddo
+         end do
 
          if (ownrec) then
-            if (abs(elemnt1) .le. cutoff .and. &
-                abs(elemnt2) .le. cutoff .and. &
-                abs(elemnt3) .le. cutoff .and. &
-                abs(elemnt4) .le. cutoff .and. &
-                abs(elemnt5) .le. cutoff .and. &
-                abs(elemnt6) .le. cutoff .and. &
-                abs(elemnt7) .le. cutoff .and. &
-                all(abs(elemnt1vec(:)) .le. cutoff)) goto 16
-            if (ir .eq. ic) then
+            if (abs(elemnt1) <= cutoff .and. &
+                abs(elemnt2) <= cutoff .and. &
+                abs(elemnt3) <= cutoff .and. &
+                abs(elemnt4) <= cutoff .and. &
+                abs(elemnt5) <= cutoff .and. &
+                abs(elemnt6) <= cutoff .and. &
+                abs(elemnt7) <= cutoff .and. &
+                all(abs(elemnt1vec(:)) <= cutoff)) goto 16
+            if (ir == ic) then
                pair_scale = 1.0_real64
             else
                pair_scale = 2.0_real64
-            endif
+            end if
             do j = 1,nvec
                loc = (j-1)*csf_count
                evpair = pair_scale * csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)
@@ -103,10 +103,10 @@
                dens6(j) = dens6(j) + contri6
                dens7(j) = dens7(j) + contri7
             end do
-         endif
+         end if
 
          goto 16
-      endif
+      end if
 
       return
       end subroutine densread_seltz_mpi

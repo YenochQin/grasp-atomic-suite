@@ -33,20 +33,20 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use reco_i
-      use reco2_i
-      use perko2_i
-      use itrig_i
-      use itrexg_i
-      use ixjtik_i
-      use snrc_i
-      use speak_i
-      use coulom_i
-      use ww1_i
-      use sixj_i
-      use cxk_i
-      use talk_i
-      use gg1122_i
+      use reco_i, only: reco
+      use reco2_i, only: reco2
+      use perko2_i, only: perko2
+      use itrig_i, only: itrig
+      use itrexg_i, only: itrexg
+      use ixjtik_i, only: ixjtik
+      use snrc_i, only: snrc
+      use speak_i, only: speak
+      use coulom_i, only: coulom
+      use ww1_i, only: ww1
+      use sixj_i, only: sixj
+      use cxk_i, only: cxk
+      use talk_i, only: talk
+      use gg1122_i, only: gg1122
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -67,7 +67,7 @@ contains
       real(real64)   :: pmgg(30),ragg(30)
       real(real64) :: cone(7, 20)
 !-----------------------------------------------
-      if(ja /= jb)go to 9
+      if(ja /= jb)goto 9
 !
 !     THE CASE 1111   + + - -
 !
@@ -167,7 +167,7 @@ contains
       do i4=ip1,ig1,2
         kra=(i4-1)/2
         kra1=kra+1
-        if(kra1 > 30)go to 10
+        if(kra1 > 30)goto 10
         ragg(kra1)=zero
         pmgg(kra1)=zero
         call reco2(ja,jb,kra*2,0,iat,recc)
@@ -210,7 +210,7 @@ contains
       do i1=ip1,ig1,2
         kra=(i1-1)/2
         kra1=kra+1
-        if(kra1 > 30)go to 10
+        if(kra1 > 30)goto 10
         if (icolbrei == 1) then
           call coulom(l1,l2,l1,l2,id1(5),id2(5),id1(5),id2(5),kra,aa)
           if(dabs(aa) < eps) cycle
@@ -240,7 +240,7 @@ contains
       ig2=ip2+ikk-1
       do i2=ip2,ig2,2
         kra=(i2-1)/2
-        if(kra > 30)go to 10
+        if(kra > 30)goto 10
         if (icolbrei == 1) then
           call coulom(l1,l2,l2,l1,id1(5),id2(5),id2(5),id1(5),kra,a1)
           if(dabs(a1) < eps) cycle
@@ -249,7 +249,7 @@ contains
         do i3=ip3,ig3,2
           j12=(i3-1)/2
           kra1=j12+1
-          if(kra1 > 30)go to 10
+          if(kra1 > 30)goto 10
           aa=pmgg(kra1)
           if(dabs(aa) < eps) cycle
           aa=aa*ragg(kra1)
@@ -324,7 +324,7 @@ contains
       end if
       return
    10 write(99,100)
-  100 format(5x,'ERRO IN EL1  PMGG RAGG')
+  100 format(5x,"ERRO IN EL1  PMGG RAGG")
       stop
       end subroutine el1
 end module el1_i

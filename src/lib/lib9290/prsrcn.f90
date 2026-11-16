@@ -33,7 +33,7 @@ contains
          iocci,nkji
       character(len=2) :: symi
       character(len=5) :: form
-      character(len=1), parameter :: cnum(3) = (/'1', '2', '3'/)
+      character(len=1), parameter :: cnum(3) = ["1", "2", "3"]
       character :: reci
 !-----------------------------------------------
 !
@@ -47,80 +47,80 @@ contains
       i = 1
     2 continue
       reci = record(i:i)
-      if (reci == '(') then
+      if (reci == "(") then
          iend = i - 1
     3    continue
          reci = record(iend:iend)
-         if (reci == ' ') then
+         if (reci == " ") then
             iend = iend - 1
-            go to 3
-         else if (reci == '-') then
-            read (record(iend-1:iend), '(1A2)') symi
+            goto 3
+         else if (reci == "-") then
+            read (record(iend-1:iend), "(1A2)") symi
             iend = iend - 2
          else
-            symi(2:2) = ' '
-            read (reci, '(1A1)') symi(1:1)
+            symi(2:2) = " "
+            read (reci, "(1A1)") symi(1:1)
             iend = iend - 1
-         endif
+         end if
          lenth = iend - istart + 1
-         form = '(1I'//cnum(lenth)//')'
+         form = "(1I"//cnum(lenth)//")"
          read (record(istart:iend), fmt=form, iostat=ios) npi
          if (ios /= 0) then
-            write (6, *) 'PRSRCN: Principal quantum number ', record(istart:&
+            write (6, *) "PRSRCN: Principal quantum number ", record(istart:&
                iend)
-            write (6, *) ' could not be decoded.'
+            write (6, *) " could not be decoded."
             ierr = 1
-            go to 6
-         endif
+            goto 6
+         end if
          do j = ncore + 1, orbital_count
             if (orbital_principal_n(j)/=npi .or. orbital_symmetry_labels(j)/=symi) cycle
             ishell = j
-            go to 5
+            goto 5
          end do
-         write (6, *) 'PRSRCL: Not a peel subshell.'
+         write (6, *) "PRSRCL: Not a peel subshell."
          ierr = 2
-         go to 6
+         goto 6
     5    continue
          iostrt = i + 1
-      else if (reci == ')') then
+      else if (reci == ")") then
          ioend = i - 1
          lenth = ioend - iostrt + 1
-         form = '(1I'//cnum(lenth)//')'
+         form = "(1I"//cnum(lenth)//")"
          read (record(iostrt:ioend), fmt=form, iostat=ios) iocci
          if (ios /= 0) then
-            write (6, *) 'PRSRCN: Occupation number ', record(iostrt:ioend)
-            write (6, *) ' could not be decoded.'
+            write (6, *) "PRSRCN: Occupation number ", record(iostrt:ioend)
+            write (6, *) " could not be decoded."
             ierr = 3
-            go to 6
-         endif
+            goto 6
+         end if
          nkji = orbital_two_j(ishell)
          if (nkji <= 7) then
             if (iocci<0 .or. iocci>orbital_two_j(ishell)+1) then
-               write (6, *) 'PRSRCN: Occupation specified'
-               write (6, *) ' incorrectly for ', orbital_principal_n(ishell), orbital_symmetry_labels(ishell)
-               write (6, *) ' subshell.'
+               write (6, *) "PRSRCN: Occupation specified"
+               write (6, *) " incorrectly for ", orbital_principal_n(ishell), orbital_symmetry_labels(ishell)
+               write (6, *) " subshell."
                ierr = 4
-               go to 6
-            endif
+               goto 6
+            end if
          else
             if (iocci<0 .or. iocci>2) then
-               write (6, *) 'PRSRCN: Occupation specified'
-               write (6, *) ' incorrectly for ', orbital_principal_n(ishell), orbital_symmetry_labels(ishell)
-               write (6, *) ' subshell.'
+               write (6, *) "PRSRCN: Occupation specified"
+               write (6, *) " incorrectly for ", orbital_principal_n(ishell), orbital_symmetry_labels(ishell)
+               write (6, *) " subshell."
                ierr = 5
-               go to 6
-            endif
-         endif
+               goto 6
+            end if
+         end if
          ioccs(ishell) = iocci
          istart = 0
       else
          if (istart == 0) istart = i
-      endif
+      end if
 !
       if (i < 256) then
          i = i + 1
-         go to 2
-      endif
+         goto 2
+      end if
 !
       ierr = 0
 !

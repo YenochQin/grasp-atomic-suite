@@ -10,6 +10,6 @@
       real(real64), intent(in) :: ciin(ncsf, nciv)
       real(real64), intent(in) :: t(nshl)
       real(real64), intent(out) :: ciout(ncsf, nciv)
-      end subroutine
+      end subroutine ti1tv
       end interface
-      end module
+      end module ti1tv_i

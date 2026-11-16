@@ -4,6 +4,6 @@
       subroutine gethfd (name)
       implicit none (type, external)
       character (len = 24), intent(in) :: name
-      end subroutine
+      end subroutine gethfd
       end interface
-      end module
+      end module gethfd_i

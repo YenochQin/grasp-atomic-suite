@@ -5,32 +5,32 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use corre_c
-      use damp_c
+      use corre_c, only: double, lcorre, max_orbitals
+      use damp_c, only: double, max_orbitals, mixing_damping_factors, orbital_damping_factors
       use def_c
       use grid_c
       use int_c
       use mpi_s
       use orb_c
-      use orthct_c
+      use orthct_c, only: orthst
       use scf_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use cofpot_i
-      use defcor_i
-      use solve_i
-      use orthsc_i
-      use matrix_i
-      use newco_i
-      use setlag_i
-      use quad_i
-      use consis_i
-      use dampck_i
-      use dampor_i
-      use orthy_i
+      use cofpot_i, only: cofpot
+      use defcor_i, only: defcor
+      use solve_i, only: solve
+      use orthsc_i, only: orthsc
+      use matrix_i, only: matrix
+      use newco_i, only: newco
+      use setlag_i, only: setlag
+      use quad_i, only: quad
+      use consis_i, only: consis
+      use dampck_i, only: dampck
+      use dampor_i, only: dampor
+      use orthy_i, only: orthy
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -56,7 +56,7 @@
 !   C Froese Fischer's IPR and ED1 parameter
 !
       data ipr/ 0/
-      data ed1/ 0._real64/
+      data ed1/ 0.0_real64/
       data first/ .false./
 !
 !
@@ -104,17 +104,17 @@
 !               CALL NEWCO (WTAEV)
 !            ENDIF
             call setlag (eol)
-            go to 1
+            goto 1
          else
             if (mpi_rank == 0) write (*, 301)
             !CALL TIMER (0)
             stop
-         endif
-      endif
+         end if
+      end if
 !
 !   Compute norm of radial function
 !
-      ta(1) = 0._real64
+      ta(1) = 0.0_real64
       ta(2:mtp0) = (p(2:mtp0)**2+q(2:mtp0)**2)*radial_grid_derivative(2:mtp0)
       mtp = mtp0
 
@@ -126,7 +126,7 @@
 !
 !   Normalize
 !
-      dnfac = 1._real64/sqrt(dnorm)
+      dnfac = 1.0_real64/sqrt(dnorm)
       p0 = p0*dnfac
       p(:mtp0) = p(:mtp0)*dnfac
       q(:mtp0) = q(:mtp0)*dnfac
@@ -134,16 +134,16 @@
 !   Check if different method should be used or if improvement
 !   count should be reduced
 !
-      del1 = abs(1._real64 - ed2/orbital_energy_parameters(j))
+      del1 = abs(1.0_real64 - ed2/orbital_energy_parameters(j))
       if (method(j) == 1) then
-         del2 = max(abs(1._real64 - sqrt(dnorm)),abs(dnfac - 1._real64))
+         del2 = max(abs(1.0_real64 - sqrt(dnorm)),abs(dnfac - 1.0_real64))
          if (del1<p005 .and. del2>p2) then
             method(j) = 2
-            go to 1
-         endif
+            goto 1
+         end if
       else
          if (del1<p0001 .and. nsic>1) nsic = nsic - 1
-      endif
+      end if
 !
 !   Damp the orbital --- if not converged
 !
@@ -151,8 +151,8 @@
          call dampck (ipr, j, ed1, ed2)
          odampj = abs(orbital_damping_factors(j))
       else
-         odampj = 0._real64                           ! take the whole new orbital
-      endif
+         odampj = 0.0_real64                           ! take the whole new orbital
+      end if
       call dampor (j, inv, odampj)
 
 !   Orthogonalize all orbitals of the same kappa in the order
@@ -164,7 +164,7 @@
          !CALL orthor (J, inv)
          nwww = orbital_count
          call orthy (nwww, j, lsort)
-      endif
+      end if
 !
 !   Print details of iteration
 !
@@ -176,10 +176,10 @@
                         sqrt(dnorm)-1,odampj,jp,orbital_last_grid_index(j),inv,nnp
       dampmx = max(dampmx,abs(odampj))
 
-  300 format(/,' Failure; equation for orbital ',1i2,1a2,&
-         ' could not be solved using method ',1i1)
-  301 format(/,/,' ****** Error in SUBROUTINE IMPROV ******'/,&
-         ' Convergence not obtained'/)
+  300 format(/," Failure; equation for orbital ",1i2,1a2,&
+         " could not be solved using method ",1i1)
+  301 format(/,/," ****** Error in SUBROUTINE IMPROV ******"/,&
+         " Convergence not obtained"/)
   302 format (1x,1i2,1a2,1p,1d16.7,1x,1i2,d11.3,1d10.2,1d10.2,&
               0p,f6.3,1x,1i5,1x,1i5,1x,1i2,1x,1i2)
       return

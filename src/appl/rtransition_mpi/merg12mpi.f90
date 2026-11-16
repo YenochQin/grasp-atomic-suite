@@ -19,12 +19,12 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use iq_i
-      use iqr_i
-      use ispar_i
-      use isparr_i
-      use itjpo_i
-      use itjpor_i
+      use iq_i, only: iq
+      use iqr_i, only: iqr
+      use ispar_i, only: ispar
+      use isparr_i, only: isparr
+      use itjpo_i, only: itjpo
+      use itjpor_i, only: itjpor
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -49,28 +49,28 @@
 ! NCFF(I): the end position of the Ith block for the final states in the globle CSF list
 
 !
-      open(unit=21, file='SLASK', form='FORMATTED', status='UNKNOWN', position=&
-         'asis')
+      open(unit=21, file="SLASK", form="FORMATTED", status="UNKNOWN", position=&
+         "asis")
 !
 !   The same number of electrons must appear in both lists
 !
       if (nelecr /= electron_count) then
-         write (6, *) 'The number of electrons is not equal in the'
-         write (6, *) ' first and second GRASP92 Configuration'
-         write (6, *) ' symmetry list files.'
+         write (6, *) "The number of electrons is not equal in the"
+         write (6, *) " first and second GRASP92 Configuration"
+         write (6, *) " symmetry list files."
          stop
-      endif
+      end if
 !
 !   THe core orbitals must be the same
 !
       if (ncore /= ncorer) then
-         write (6, *) 'The number of core orbitals must be the same'
+         write (6, *) "The number of core orbitals must be the same"
          stop
-      endif
+      end if
 
       do i = 1, ncore
          if (orbital_principal_n(i)==npr(i) .and. orbital_kappa(i)==nakr(i)) cycle
-         write (6, *) 'The core orbitals must be the same'
+         write (6, *) "The core orbitals must be the same"
          stop
       end do
 
@@ -100,12 +100,12 @@
       icomp = icon1(1)
       do i = 2, j
          if (icon1(i) < icomp) then
-            write (*, *) ' In merg12: ordering of the initial and final'
-            write (*, *) ' state orbitals is inconsistent. STOP'
+            write (*, *) " In merg12: ordering of the initial and final"
+            write (*, *) " state orbitals is inconsistent. STOP"
             stop
          else
             icomp = icon1(i)
-         endif
+         end if
       end do
 !
 !   Determine a common orbital set for the initial and final state.
@@ -141,7 +141,7 @@
             if (newnp(i)/=orbital_principal_n(j) .or. newnak(i)/=orbital_kappa(j)) cycle
             ipi1 = j
          end do
-         write (*, *) 'i,ipi1', i, ipi1
+         write (*, *) "i,ipi1", i, ipi1
 
          do j = 1, nwr
             ipi2 = 0
@@ -149,7 +149,7 @@
                if (newnp(j)/=orbital_principal_n(k) .or. newnak(j)/=orbital_kappa(k)) cycle
                ipi2 = k
             end do
-            write (*, *) 'j,ipi2', j, ipi2
+            write (*, *) "j,ipi2", j, ipi2
             if (ipi2 == 0) cycle
             if (ipi1 >= ipi2) cycle
             new1 = newnp(i)
@@ -181,7 +181,7 @@
             orbital_l(i) = (orbital_two_j(i)+1)/2
          else
             orbital_l(i) = (orbital_two_j(i)-1)/2
-         endif
+         end if
       end do
 !
 !   Determine the common core subshells; write out the list;
@@ -190,40 +190,40 @@
 !   one additional line forms the remainder of the header of
 !   the  .csl file
 !
-      write (21, '(A)') 'Core subshells:'
+      write (21, "(A)") "Core subshells:"
       write (21, 301) (orbital_principal_n(i),orbital_symmetry_labels(i),i=1,ncore)
-      write (21, '(A)') 'Peel subshells:'
+      write (21, "(A)") "Peel subshells:"
       write (21, 301) (orbital_principal_n(i),orbital_symmetry_labels(i),i=ncore + 1,orbital_count)
-      write (21, '(A)') 'CSF(s):'
+      write (21, "(A)") "CSF(s):"
 !
 !   Now write out all CSFs in the initial and final state list
 !
-      j = index(name(1),' ')
-      open(unit=23, file=name(1)(1:j-1)//'.c', form='FORMATTED', status='OLD', &
-         position='asis')
+      j = index(name(1)," ")
+      open(unit=23, file=name(1)(1:j-1)//".c", form="FORMATTED", status="OLD", &
+         position="asis")
 
       do i = 1, 5
-         read (23, '(A)') line
+         read (23, "(A)") line
       end do
 
       nblocki = 0
       nline = 0
     5 continue
-      read (23, '(A)', end=98) line
-      if (line(1:2) == ' *') then
+      read (23, "(A)", end=98) line
+      if (line(1:2) == " *") then
          nblocki = nblocki + 1
          ncfi(nblocki) = nline/3
       else
          nline = nline + 1
-      endif
+      end if
       k = 500
    10 continue
-      if (line(k:k) == ' ') then
+      if (line(k:k) == " ") then
          k = k - 1
-         if (k > 1) go to 10
-      endif
-      write (21, '(A)') line(1:k)
-      go to 5
+         if (k > 1) goto 10
+      end if
+      write (21, "(A)") line(1:k)
+      goto 5
    98 continue
       nblocki = nblocki + 1
       ncfi(nblocki) = nline/3
@@ -232,32 +232,32 @@
 ! zou
 !     if(NAME(2).EQ.NAME(1)) return
 ! zou
-      j = index(name(2),' ')
-      open(unit=23, file=name(2)(1:j-1)//'.c', form='FORMATTED', status='OLD', &
-         position='asis')
+      j = index(name(2)," ")
+      open(unit=23, file=name(2)(1:j-1)//".c", form="FORMATTED", status="OLD", &
+         position="asis")
 
       do i = 1, 5
-         read (23, '(A)') line
+         read (23, "(A)") line
       end do
 
       nblockf = 0
       nline = 0
    15 continue
-      read (23, '(A)', end=99) line
-      if (line(1:2) == ' *') then
+      read (23, "(A)", end=99) line
+      if (line(1:2) == " *") then
          nblockf = nblockf + 1
          ncff(nblockf) = nline/3
       else
          nline = nline + 1
-      endif
+      end if
       k = 500
    20 continue
-      if (line(k:k) == ' ') then
+      if (line(k:k) == " ") then
          k = k - 1
-         if (k > 1) go to 20
-      endif
-      write (21, '(A)') line(1:k)
-      go to 15
+         if (k > 1) goto 20
+      end if
+      write (21, "(A)") line(1:k)
+      goto 15
    99 continue
       nblockf = nblockf + 1
       ncff(nblockf) = nline/3

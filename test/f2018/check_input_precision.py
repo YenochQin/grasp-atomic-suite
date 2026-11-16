@@ -46,7 +46,9 @@ def main() -> None:
             print(variant + ": working-precision EPS verified")
 
         text = source("src/lib/mpi90/cpath.f90")
-        helper = re.search(r"^\s*function getenv_allocating\([^\n]+\n.*?^\s*end\s*$", text, re.M | re.S)
+        helper = re.search(
+            r"^\s*function getenv_allocating\([^\n]+\n.*?^\s*end"
+            r"(?:[ \t]+function(?:[ \t]+getenv_allocating)?)?[ \t]*$", text, re.M | re.S)
         assert helper
         # The contained helper is private to CPATH; compile its exact source
         # body, without changing production visibility or introducing a copy.

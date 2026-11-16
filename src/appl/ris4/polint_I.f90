@@ -7,6 +7,6 @@
       real(real64), intent(in) :: xa(3)
       real(real64), intent(in) :: ya(3)
       real(real64), intent(out) :: dens
-      end subroutine
+      end subroutine polint
       end interface
-      end module
+      end module polint_i

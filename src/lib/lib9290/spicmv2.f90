@@ -20,8 +20,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dinit_i
-      use dmerge_i
+      use dinit_i, only: dinit
+      use dmerge_i, only: dmerge
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -41,7 +41,7 @@ contains
 !   Initialise the result matrix; note that this is specific to the
 !   data structure of DVDSON --- no overdimensioning
 !
-      call dinit (n*m, 0._real64, c, 1)
+      call dinit (n*m, 0.0_real64, c, 1)
 
       ibeg = 1
       do icol = 1, n

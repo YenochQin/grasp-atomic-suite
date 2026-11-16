@@ -18,14 +18,14 @@
 !   M o d u l e s
 !-----------------------------------------------
       use grid_c
-      use npar_c
-      use ncdist_c
-      use tatb_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
+      use ncdist_c, only: double, max_radial_points, zdist
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use vac2_i
-      use vac4_i
+      use vac2_i, only: vac2
+      use vac4_i, only: vac4
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

@@ -3,6 +3,6 @@
       interface
       subroutine vacpol
       implicit none (type, external)
-      end subroutine
+      end subroutine vacpol
       end interface
-      end module
+      end module vacpol_i

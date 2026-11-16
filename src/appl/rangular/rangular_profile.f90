@@ -10,10 +10,10 @@ contains
       character(len=*), intent(in) :: filename
       integer :: open_status
       if (len_trim(filename) == 0) return
-      open(newunit=profile_unit, file=filename, status='new', action='write', iostat=open_status)
-      if (open_status /= 0) error stop 'Cannot create timings file (it must not already exist)'
+      open(newunit=profile_unit, file=filename, status="new", action="write", iostat=open_status)
+      if (open_status /= 0) error stop "Cannot create timings file (it must not already exist)"
       profile_enabled = .true.
-      write(profile_unit, '(A)') 'stage,block,channel,wall_seconds,records,storage'
+      write(profile_unit, "(A)") "stage,block,channel,wall_seconds,records,storage"
    end subroutine open_stage_profile
 
    function stage_clock() result(clock_count)
@@ -34,14 +34,14 @@ contains
       character(len=24) :: reported_storage
       if (.not. profile_enabled) return
       call system_clock(count=finish_count, count_rate=clock_rate, count_max=maximum_count)
-      if (clock_rate <= 0) error stop 'Monotonic wall clock unavailable'
+      if (clock_rate <= 0) error stop "Monotonic wall clock unavailable"
       elapsed_count = finish_count - start_count
       if (finish_count < start_count) elapsed_count = (maximum_count-start_count) + finish_count + 1_int64
       reported_records = -1_int64
       if (present(record_count)) reported_records = record_count
       reported_channel = -1
       if (present(channel)) reported_channel = channel
-      reported_storage = 'unspecified'
+      reported_storage = "unspecified"
       if (present(storage)) reported_storage = storage
       write(profile_unit, '(A,",",I0,",",I0,",",ES24.16E3,",",I0,",",A)') &
          stage_name, block_index, reported_channel, real(elapsed_count,real64)/real(clock_rate,real64), &

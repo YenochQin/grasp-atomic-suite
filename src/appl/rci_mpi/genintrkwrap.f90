@@ -12,7 +12,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use genintrk_i
+      use genintrk_i, only: genintrk
       use mpiu_i, only: gdsummpi
       use mpiu_i, only: gisummpi
       implicit none (type, external)

@@ -43,9 +43,9 @@ contains
             intrin = .true.
          else
             intrin = .false.
-         endif
+         end if
          first = .false.
-      endif
+      end if
 !
 !   Use the intrinsic function if it passes the above test; otherwise
 !   add 2*PI to the negative values returned by the intrinsic function
@@ -57,8 +57,8 @@ contains
             arctan = atan2(arg1,arg2)
          else
             arctan = pi + pi + atan2(arg1,arg2)
-         endif
-      endif
+         end if
+      end if
 !
       return
       end function arctan

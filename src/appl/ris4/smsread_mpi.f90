@@ -15,7 +15,7 @@
       use buffer_c
       use debug_c,          only: cutoff
       use mpi_c,            only: mpi_rank, mpi_process_count
-      use alcbuf_i
+      use alcbuf_i, only: alcbuf
       implicit none (type, external)
       real(real64), intent(in) :: vint(max_orbitals, max_orbitals), vint2(max_orbitals, max_orbitals)
       integer, parameter :: key = orbital_index_radix
@@ -28,9 +28,9 @@
       call alcbuf (1)
       rewind(51)
    16 read (51,iostat = ios) ic,ir
-      if (ios .eq. 0) then
+      if (ios == 0) then
          read(51) coeffsms,lab
-         ownrec = mod(ic-1, mpi_process_count) .eq. mpi_rank
+         ownrec = mod(ic-1, mpi_process_count) == mpi_rank
          if (ownrec) then
             iid = mod (lab, key)
             lab = lab/key
@@ -44,11 +44,11 @@
             if (radial_k1 == 0.0_real64 .and. radial_sms == 0.0_real64) goto 16
             term_k1 = -coeffsms * radial_k1
             term_sms = -coeffsms * radial_sms
-            if (ir .eq. ic) then
+            if (ir == ic) then
                pair_scale = 1.0_real64
             else
                pair_scale = 2.0_real64
-            endif
+            end if
             do j = 1,nvec
                loc = (j-1)*csf_count
                evpair(j) = pair_scale * csf_mixing_coefficients(ic+loc) * csf_mixing_coefficients(ir+loc)
@@ -58,10 +58,10 @@
                contri = evpair(j) * term_sms
                smsc1(j) = smsc1(j) + contrik1
                smsc2(j) = smsc2(j) + contri
-            enddo
-         endif
+            end do
+         end if
          goto 16
-      endif
+      end if
       call alcbuf (3)
       return
       end subroutine smsread_mpi

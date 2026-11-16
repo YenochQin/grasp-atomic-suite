@@ -29,7 +29,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use el41_i
+      use el41_i, only: el41
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -46,6 +46,6 @@ contains
         stop
       end if
       return
-  100 format(5x,'ERRO IN EL4 ')
+  100 format(5x,"ERRO IN EL4 ")
       end subroutine el4
 end module el4_i

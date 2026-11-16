@@ -23,7 +23,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use iq_i
+      use iq_i, only: iq
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -49,7 +49,7 @@ contains
          ichop = 1
       else
          ichop = 0
-      endif
+      end if
 !        ELSE
 !           PRINT *, 'ICHOP: Argument ICSF is out of range.'
 !           STOP

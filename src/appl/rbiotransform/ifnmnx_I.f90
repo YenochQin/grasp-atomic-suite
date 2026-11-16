@@ -7,6 +7,6 @@
       integer, intent(in) :: ivec(nel)
       integer, intent(in) :: imxmn
 !...This routine performs I/O.
-      end function
+      end function ifnmnx
       end interface
-      end module
+      end module ifnmnx_i

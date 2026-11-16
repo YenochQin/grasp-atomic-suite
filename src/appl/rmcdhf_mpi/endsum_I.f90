@@ -4,6 +4,6 @@
       subroutine endsum
       implicit none (type, external)
 !...This routine performs I/O.
-      end subroutine
+      end subroutine endsum
       end interface
-      end module
+      end module endsum_i

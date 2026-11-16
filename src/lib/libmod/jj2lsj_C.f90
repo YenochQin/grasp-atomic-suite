@@ -47,19 +47,19 @@
 ! Define all possible antisymetric subshell terms in LS-coupling
 !
    type(subshell_term_ls), parameter ::   &
-      term_ls_s(1:2) =(/                                       &
+      term_ls_s(1:2) =[                                       &
       subshell_term_ls(0, 0, 0, 0, 1),                    &
-      subshell_term_ls(0, 0, 1, 0, 0)  /)
+      subshell_term_ls(0, 0, 1, 0, 0)  ]
    type(subshell_term_ls), parameter ::   &
-      term_ls_p(1:6) =(/                                       &
+      term_ls_p(1:6) =[                                       &
       subshell_term_ls(1, 0, 0, 0, 3),                    &
       subshell_term_ls(1, 0, 2, 2, 1),                    &
       subshell_term_ls(1, 0, 0, 4, 1),                    &
       subshell_term_ls(1, 0, 3, 0, 0),                    &
       subshell_term_ls(1, 0, 1, 2, 2),                    &
-      subshell_term_ls(1, 0, 1, 4, 0)  /)
+      subshell_term_ls(1, 0, 1, 4, 0)  ]
    type(subshell_term_ls), parameter ::  &
-      term_ls_d(1:32) =(/                                       &
+      term_ls_d(1:32) =[                                       &
       subshell_term_ls(2, 0, 0, 0, 5),                    &
       subshell_term_ls(2, 0, 0, 0, 1),                    &
       subshell_term_ls(2, 0, 2, 2, 3),                    &
@@ -91,9 +91,9 @@
       subshell_term_ls(2, 0, 3, 8, 0),                    &
       subshell_term_ls(2, 0, 1, 8, 0),                    &
       subshell_term_ls(2, 0, 1,10, 2),                    &
-      subshell_term_ls(2, 0, 1,12, 0)  /)
+      subshell_term_ls(2, 0, 1,12, 0)  ]
    type(subshell_term_ls), parameter :: &
-      term_ls_f(1:238) =(/                                       &
+      term_ls_f(1:238) =[                                       &
       subshell_term_ls(3, 0, 0, 0, 7),                    &
       subshell_term_ls(3, 0, 2, 2, 5),                    &
       subshell_term_ls(3, 0, 0, 4, 5),                    &
@@ -331,12 +331,12 @@
       subshell_term_ls(3, 2, 1,18, 0),                    &
       subshell_term_ls(3, 1, 3,20, 0),                    &
       subshell_term_ls(3, 2, 1,20, 0),                    &
-      subshell_term_ls(3, 0, 1,24, 0)  /)
+      subshell_term_ls(3, 0, 1,24, 0)  ]
    type(subshell_term_ls), parameter ::   &
-      term_ls_g1(1:1) =(/                                      &
-      subshell_term_ls(4, 0, 8, 8, 1)  /)
+      term_ls_g1(1:1) =[                                      &
+      subshell_term_ls(4, 0, 8, 8, 1)  ]
    type(subshell_term_ls), parameter ::   &
-      term_ls_g2(1:9) =(/                                      &
+      term_ls_g2(1:9) =[                                      &
       subshell_term_ls(4, 0, 9, 0, 0),                    &
       subshell_term_ls(4, 0, 7, 2, 2),                    &
       subshell_term_ls(4, 0, 7, 4, 0),                    &
@@ -345,12 +345,12 @@
       subshell_term_ls(4, 0, 7,10, 2),                    &
       subshell_term_ls(4, 0, 7,12, 0),                    &
       subshell_term_ls(4, 0, 7,14, 2),                    &
-      subshell_term_ls(4, 0, 7,16, 0)  /)
+      subshell_term_ls(4, 0, 7,16, 0)  ]
    type(subshell_term_ls), parameter ::   &
-      term_ls_h1(1:1) =(/                                      &
-      subshell_term_ls(5, 0,10,10, 1)  /)
+      term_ls_h1(1:1) =[                                      &
+      subshell_term_ls(5, 0,10,10, 1)  ]
    type(subshell_term_ls), parameter ::  &
-      term_ls_h2(1:11) =(/                                      &
+      term_ls_h2(1:11) =[                                      &
       subshell_term_ls(5, 0,11, 0, 0),                    &
       subshell_term_ls(5, 0, 9, 2, 2),                    &
       subshell_term_ls(5, 0, 9, 4, 0),                    &
@@ -361,12 +361,12 @@
       subshell_term_ls(5, 0, 9,14, 2),                    &
       subshell_term_ls(5, 0, 9,16, 0),                    &
       subshell_term_ls(5, 0, 9,18, 2),                    &
-      subshell_term_ls(5, 0, 9,20, 0)  /)
+      subshell_term_ls(5, 0, 9,20, 0)  ]
    type(subshell_term_ls), parameter ::   &
-      term_ls_i1(1:1) =(/                                      &
-      subshell_term_ls(6, 0,12,12, 1)  /)
+      term_ls_i1(1:1) =[                                      &
+      subshell_term_ls(6, 0,12,12, 1)  ]
    type(subshell_term_ls), parameter ::  &
-      term_ls_i2(1:13) =(/                                      &
+      term_ls_i2(1:13) =[                                      &
       subshell_term_ls(6, 0,13, 0, 0),                    &
       subshell_term_ls(6, 0,11, 2, 2),                    &
       subshell_term_ls(6, 0,11, 4, 0),                    &
@@ -379,12 +379,12 @@
       subshell_term_ls(6, 0,11,18, 2),                    &
       subshell_term_ls(6, 0,11,20, 0),                    &
       subshell_term_ls(6, 0,11,22, 2),                    &
-      subshell_term_ls(6, 0,11,24, 0)  /)
+      subshell_term_ls(6, 0,11,24, 0)  ]
    type(subshell_term_ls), parameter ::   &
-      term_ls_k1(1:1) =(/                                      &
-      subshell_term_ls(7, 0,14,14, 1)  /)
+      term_ls_k1(1:1) =[                                      &
+      subshell_term_ls(7, 0,14,14, 1)  ]
    type(subshell_term_ls), parameter ::  &
-      term_ls_k2(1:15) =(/                                      &
+      term_ls_k2(1:15) =[                                      &
       subshell_term_ls(7, 0,15, 0, 0),                    &
       subshell_term_ls(7, 0,13, 2, 2),                    &
       subshell_term_ls(7, 0,13, 4, 0),                    &
@@ -399,12 +399,12 @@
       subshell_term_ls(7, 0,13,22, 2),                    &
       subshell_term_ls(7, 0,13,24, 0),                    &
       subshell_term_ls(7, 0,13,26, 2),                    &
-      subshell_term_ls(7, 0,13,28, 0) /)
+      subshell_term_ls(7, 0,13,28, 0) ]
    type(subshell_term_ls), parameter ::   &
-      term_ls_l1(1:1) =(/                                      &
-      subshell_term_ls(8, 0,16,16, 1)  /)
+      term_ls_l1(1:1) =[                                      &
+      subshell_term_ls(8, 0,16,16, 1)  ]
    type(subshell_term_ls), parameter ::  &
-      term_ls_l2(1:17) =(/                                      &
+      term_ls_l2(1:17) =[                                      &
       subshell_term_ls(8, 0,17, 0, 0),                    &
       subshell_term_ls(8, 0,15, 2, 2),                    &
       subshell_term_ls(8, 0,15, 4, 0),                    &
@@ -421,12 +421,12 @@
       subshell_term_ls(8, 0,15,26, 2),                    &
       subshell_term_ls(8, 0,15,28, 0),                    &
       subshell_term_ls(8, 0,15,30, 2),                    &
-      subshell_term_ls(8, 0,15,32, 0) /)
+      subshell_term_ls(8, 0,15,32, 0) ]
    type(subshell_term_ls), parameter ::   &
-      term_ls_m1(1:1) =(/                                      &
-      subshell_term_ls(9, 0,18,18, 1)  /)
+      term_ls_m1(1:1) =[                                      &
+      subshell_term_ls(9, 0,18,18, 1)  ]
    type(subshell_term_ls), parameter ::  &
-      term_ls_m2(1:19) =(/                                      &
+      term_ls_m2(1:19) =[                                      &
       subshell_term_ls(9, 0,19, 0, 0),                    &
       subshell_term_ls(9, 0,17, 2, 2),                    &
       subshell_term_ls(9, 0,17, 4, 0),                    &
@@ -445,5 +445,5 @@
       subshell_term_ls(9, 0,17,30, 2),                    &
       subshell_term_ls(9, 0,17,32, 0),                    &
       subshell_term_ls(9, 0,17,34, 2),                    &
-      subshell_term_ls(9, 0,17,36, 0) /)
+      subshell_term_ls(9, 0,17,36, 0) ]
       end module jj2lsj_c

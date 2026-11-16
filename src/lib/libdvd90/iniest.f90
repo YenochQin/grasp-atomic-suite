@@ -18,7 +18,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dinit_i
+      use dinit_i, only: dinit
       !USE dspevx_I
       !USE vec_I
       !USE dcopy_I
@@ -62,39 +62,39 @@ contains
         !print*, 'NS=',NS,' NIV=',NIV
       !CALL ALLOC (IQAP, NS*(NS + 1)/2, 8)
       allocate (ap(ns*(ns + 1)/2),stat=ierr)
-      if (ierr.ne.0) call mem_fail(6,ns*(ns + 1)/2,'iniest::ap',ierr);
+      if (ierr/=0) call mem_fail(6,ns*(ns + 1)/2,"iniest::ap",ierr)
       iqap=>ap
 
-      call dinit (ns*(ns + 1)/2, 0._real64, ap, 1)
+      call dinit (ns*(ns + 1)/2, 0.0_real64, ap, 1)
 
       !CALL ALLOC (IQEIG, NS, 8)
       allocate (eigval(ns),stat=ierr)
-      if (ierr.ne.0) call mem_fail(6,ns,'iniest::eigval',ierr);
+      if (ierr/=0) call mem_fail(6,ns,"iniest::eigval",ierr)
       iqeig=>eigval
 
       !CALL ALLOC (IQVEC, NS*NIV, 8)
       allocate (vec(ns*niv),stat=ierr)
-      if (ierr.ne.0) call mem_fail(6,ns*niv,'iniest::vec',ierr);
+      if (ierr/=0) call mem_fail(6,ns*niv,"iniest::vec",ierr)
       iqvec=>vec
 
       !CALL ALLOC (IQWORK, 8*NS, 8)
       allocate (work(8*ns),stat=ierr)
-      if (ierr.ne.0) call mem_fail(6,8*ns,'iniest::work',ierr);
+      if (ierr/=0) call mem_fail(6,8*ns,"iniest::work",ierr)
       iqwork=>work
 
       !CALL ALLOC (IQIWORK, 5*NS, 4)
       allocate (iwork(5*ns),stat=ierr)
-      if (ierr.ne.0) call mem_fail(6,5*ns,'iniest::iwork',ierr);
+      if (ierr/=0) call mem_fail(6,5*ns,"iniest::iwork",ierr)
       iqiwork=>iwork
 
       !CALL ALLOC (IQIF, NS, 4)
       allocate (ifail(ns),stat=ierr)
-      if (ierr.ne.0) call mem_fail(6,ns,'iniest::IFAIL',ierr);
+      if (ierr/=0) call mem_fail(6,ns,"iniest::IFAIL",ierr)
       iqif=>ifail
 
       !CALL ALLOC (IQJSH, NS, 4)
       allocate (jsh(ns),stat=ierr)
-      if (ierr.ne.0) call mem_fail(6,ns,'iniest::jsh',ierr);
+      if (ierr/=0) call mem_fail(6,ns,"iniest::jsh",ierr)
       iqjsh=>jsh
 
       icount = 0
@@ -112,18 +112,18 @@ contains
 !           print*, 'ic = ',icount, ' i=', irow(istart)-ish
          istart = istart + 1
 ! check the block structure for zero elements
-         if (istart > jcol(j)) go to 102
+         if (istart > jcol(j)) goto 102
          ish = ish + count(iblock(irow(istart-1):irow(istart))/=jblock)
-         if (istart > jcol(j)) go to 102
-         if (irow(istart) - ish <= ns) go to 100
+         if (istart > jcol(j)) goto 102
+         if (irow(istart) - ish <= ns) goto 100
 !           goto 100
   102    continue
       end do
-      call dspevx ('Vectors also', 'In a range', 'Lower triangular', ns, ap, &
-         -1._real64, -1._real64, 1, niv, 0._real64, nfound, eigval, vec, ns, work, iwork, ifail, &
+      call dspevx ("Vectors also", "In a range", "Lower triangular", ns, ap, &
+         -1.0_real64, -1.0_real64, 1, niv, 0.0_real64, nfound, eigval, vec, ns, work, iwork, ifail, &
          info)
       ierr = -abs(info)
-      if (ierr /= 0) write (6, *) 'iniest ierr =', ierr
+      if (ierr /= 0) write (6, *) "iniest ierr =", ierr
 !           print '(D14.7,X,I2)', (eigval(i),i, i=1,NIV)
 
 !******************************************************************
@@ -132,7 +132,7 @@ contains
 !
 !       ..Build the Basis.
 !
-      call dinit (n*niv, 0._real64, basis, 1)
+      call dinit (n*niv, 0.0_real64, basis, 1)
       istart = 0
       do j = 1, niv
 !scatter the vectors
@@ -157,9 +157,9 @@ contains
 !     The legacy external MEM_FAIL had no implementation in this suite.
       integer, intent(in) :: unit, count, status
       character(*), intent(in) :: variable
-      write(unit, '(A,A,A,I0,A,I0)') 'Unable to allocate ', variable, &
-         ': elements=', count, ', status=', status
-      error stop 'INIEST allocation failed'
+      write(unit, "(A,A,A,I0,A,I0)") "Unable to allocate ", variable, &
+         ": elements=", count, ", status=", status
+      error stop "INIEST allocation failed"
       end subroutine mem_fail
       end subroutine iniest
 end module iniest_i

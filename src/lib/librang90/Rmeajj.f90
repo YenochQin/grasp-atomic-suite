@@ -18,12 +18,12 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero
-      use ribojj_c
+      use ribojj_c, only: imgnjj, imgtjj, impnjj, imptjj
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rmeajj11_i
-      use rmeajj9_i
+      use rmeajj11_i, only: rmeajj11
+      use rmeajj9_i, only: rmeajj9
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -59,50 +59,50 @@ contains
           else
             jt=its
             jts=it
-          endif
-        endif
-      endif
+          end if
+        end if
+      end if
       if(ll == 1) then
         coef=-2
-      elseif(ll == 3)then
+      else if(ll == 3)then
         i1=jt-2
         i2=jts-3
         coef=-dsqrt(dble(ids3(i1,i2))/dble(idv3(i1,i2)))
-      elseif(ll == 5)then
+      else if(ll == 5)then
         i1=jt-5
         i2=jts-8
         if(ids5(i1,i2) >= 0) then
           coef=dsqrt(dble(ids5(i1,i2))/dble(idv5(i1,i2)))
         else
           coef=-dsqrt(-dble(ids5(i1,i2))/dble(idv5(i1,i2)))
-        endif
-      elseif(ll == 7)then
+        end if
+      else if(ll == 7)then
         i1=jt-11
         i2=jts-17
         if(ids7(i1,i2) >= 0) then
           coef=dsqrt(dble(ids7(i1,i2))/dble(idv7(i1,i2)))
         else
           coef=-dsqrt(-dble(ids7(i1,i2))/dble(idv7(i1,i2)))
-        endif
-      elseif(ll == 9) then
+        end if
+      else if(ll == 9) then
         if(it > 300) then
           if(its < 300) then
-            write(6,'(A)') ' ERROR IN  RMEAJJ '
+            write(6,"(A)") " ERROR IN  RMEAJJ "
             stop
-          endif
+          end if
           if(ll == j1s) then
             call rmeajj11(it,its,ll,coef)
           else
             call rmeajj11(its,it,ll,coef)
             ie1=lq-lqs+j-j1s+ll-1
             if((ie1/4)*4 /= ie1)coef=-coef
-          endif
+          end if
         else
           call rmeajj9(it,lq,j,its,lqs,j1s,coef)
           if(it > its) then
             if(mod(lq+j-lqs-j1s+ll-1,4) /= 0) coef=-coef
-          endif
-          write(0,'(A)') ' KLAIDA RMEAJJ SUB. '
+          end if
+          write(0,"(A)") " KLAIDA RMEAJJ SUB. "
           stop
         end if
       else
@@ -113,12 +113,12 @@ contains
           ie1=lq-lqs+j-j1s+ll-1
           if((ie1/4)*4 /= ie1)coef=-coef
         end if
-      endif
+      end if
       if(ll < 9) then
         if(it > its) then
           if(mod(lq+j-lqs-j1s+ll-1,4) /= 0) coef=-coef
-        endif
-      endif
+        end if
+      end if
       return
       end subroutine rmeajj
 end module rmeajj_i

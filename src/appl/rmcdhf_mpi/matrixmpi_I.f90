@@ -4,6 +4,6 @@
       subroutine matrixmpi (dvdfirst)
       implicit none (type, external)
       logical, intent(in) ::  dvdfirst
-      end subroutine
+      end subroutine matrixmpi
       end interface
-      end module
+      end module matrixmpi_i

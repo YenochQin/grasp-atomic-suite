@@ -14,6 +14,6 @@
       integer, intent(in) :: ntestg
       real(real64) :: ciout(ncsf, nciv)
       real(real64) :: scr(ncsf, nciv)
-      end subroutine
+      end subroutine citrag
       end interface
-      end module
+      end module citrag_i

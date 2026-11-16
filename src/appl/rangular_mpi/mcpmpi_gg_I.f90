@@ -9,6 +9,6 @@
 !     INTEGER  :: NPROCS
       logical, intent(in) :: restrt
       character(len=*), intent(in) :: fhead
-      end subroutine
+      end subroutine mcpmpi
       end interface
-      end module
+      end module mcpmpi_i

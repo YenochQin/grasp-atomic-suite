@@ -4,6 +4,6 @@
       subroutine ypot (j)
       implicit none (type, external)
       integer, intent(in) :: j
-      end subroutine
+      end subroutine ypot
       end interface
-      end module
+      end module ypot_i

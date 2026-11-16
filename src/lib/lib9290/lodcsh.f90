@@ -28,13 +28,13 @@ contains
       use parameter_def,   only: max_orbitals
       use def_c
       use orb_c
-      use terms_c
-      use iounit_c
+      use terms_c, only: itab, jtab, nrows, ntab
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use prsrsl_i
-      use prsrcn_i
+      use prsrsl_i, only: prsrsl
+      use prsrcn_i, only: prsrcn
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -51,7 +51,7 @@ contains
 !
 !   Entry message
 !
-      write (6, *) 'Loading CSF file ... Header only'
+      write (6, *) "Loading CSF file ... Header only"
 !
 !   Get the list of subshells
 !
@@ -78,13 +78,13 @@ contains
          nakj = orbital_kappa(j)
          do i = 1, ncore
             if (orbital_principal_n(i)/=npj .or. orbital_kappa(i)/=nakj) cycle
-            write (stderr_unit, *) 'lodcsh: The lists of core and', &
-               ' peel subshells must form disjoint sets.'
+            write (stderr_unit, *) "lodcsh: The lists of core and", &
+               " peel subshells must form disjoint sets."
             stop
          end do
       end do
 
-      write (6, *) 'There are/is ', orbital_count, ' relativistic subshells;'
+      write (6, *) "There are/is ", orbital_count, " relativistic subshells;"
 !
 !   Skip the header for the list of CSFs
 !
@@ -94,7 +94,7 @@ contains
 !   in the non-block mcp program( near the end of lodcsh). In the block
 !   version, that will be used as a check to the value obtained below.
 !
-      read (nfile, '(A)', iostat=ios) str
+      read (nfile, "(A)", iostat=ios) str
       call prsrcn (str, ncore, iocc, ierr)
       backspace (nfile)                          ! return to the first CSF item
 !             Number of electrons in the peel shells

@@ -41,7 +41,7 @@
       if (mpi_rank == 0) then
 !GG         CALL lodcsh2 ((nfile), (ncore), (jblock))
          call lodcsh2gg ((nfile), (ncore), (jblock))
-      endif
+      end if
 
 ! Construct mpi data type for Integer*1 and then broadcast.
 !cjb mpix_bytes

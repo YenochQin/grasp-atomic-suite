@@ -8,4 +8,4 @@
       real(real64), intent(out) :: apart
       end subroutine sigma_1
       end interface
-      end module
+      end module sigma_1_i

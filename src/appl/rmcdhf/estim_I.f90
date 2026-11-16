@@ -4,6 +4,6 @@
       subroutine estim (j)
       implicit none (type, external)
       integer, intent(in) :: j
-      end subroutine
+      end subroutine estim
       end interface
-      end module
+      end module estim_i

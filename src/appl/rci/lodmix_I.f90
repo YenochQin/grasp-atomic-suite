@@ -4,6 +4,6 @@
       subroutine lodmix (idblk)
       implicit none (type, external)
       character(len=8), intent(in):: idblk(*)
-      end subroutine
+      end subroutine lodmix
       end interface
-      end module
+      end module lodmix_i

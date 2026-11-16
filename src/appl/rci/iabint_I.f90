@@ -6,6 +6,6 @@
       implicit none (type, external)
       integer, intent(inout) :: ia, ib
       real(real64), intent(out) :: tegral
-      end subroutine
+      end subroutine iabint
       end interface
-      end module
+      end module iabint_i

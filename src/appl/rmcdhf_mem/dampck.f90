@@ -13,7 +13,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use damp_c
+      use damp_c, only: double, max_orbitals, mixing_damping_factors, orbital_damping_factors
       use orb_c
       implicit none (type, external)
 !-----------------------------------------------
@@ -42,8 +42,8 @@
 !           Print *, 'Increasing ODAMP', odamp(j)
          else
             orbital_damping_factors(j) = 0.50_real64*orbital_damping_factors(j)
-         endif
-      endif
+         end if
+      end if
 !
 !     Save the relative difference for the next update of this orbital
       ped(j) = ed2

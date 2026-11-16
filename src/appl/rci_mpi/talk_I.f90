@@ -13,6 +13,6 @@
       integer, intent(in) :: id
       integer, intent(in) :: itype
       real(real64), intent(in) :: coef
-      end subroutine
+      end subroutine talk
       end interface
-      end module
+      end module talk_i

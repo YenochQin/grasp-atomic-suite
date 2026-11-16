@@ -7,6 +7,6 @@
       integer, intent(in)        :: irestart
       integer(int64), intent(out) :: nelmnt_a
       real(real64), intent(in)   :: elsto
-      end subroutine
+      end subroutine genmat2
       end interface
-      end module
+      end module genmat2_i

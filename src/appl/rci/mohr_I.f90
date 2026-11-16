@@ -9,6 +9,6 @@
       integer, intent(in) :: kappa
       real(real64) :: z
       real(real64), intent(out) :: fzalfa
-      end subroutine
+      end subroutine mohr
       end interface
-      end module
+      end module mohr_i

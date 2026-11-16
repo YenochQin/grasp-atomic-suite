@@ -20,12 +20,12 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use mtjj_c
-      use mtjj2_c
+      use mtjj_c, only: mt
+      use mtjj2_c, only: mt11, mt9
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use jthn_i
+      use jthn_i, only: jthn
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -49,10 +49,10 @@ contains
           stop
 !GG          CALL RUMT67(KNT,NR,LQ,LS,L)
 !GG          RETURN
-        endif
+        end if
       else
         kt=mt11(knt)
-      endif
+      end if
       lq=jthn(kt,3,100)
       lv=jthn(kt,2,100)
       l=jthn(kt,1,100)

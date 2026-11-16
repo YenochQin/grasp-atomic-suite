@@ -8,6 +8,6 @@
       integer, intent(in) :: j
       logical :: lsort
       real(real64), intent(inout) :: dampmx
-      end subroutine
+      end subroutine improv
       end interface
-      end module
+      end module improv_i

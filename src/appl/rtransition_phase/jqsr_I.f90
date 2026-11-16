@@ -6,6 +6,6 @@
       integer, intent(in) :: iwhich
       integer, intent(in) :: isubsh
       integer, intent(in) :: icsf
-      end function
+      end function jqsr
       end interface
-      end module
+      end module jqsr_i

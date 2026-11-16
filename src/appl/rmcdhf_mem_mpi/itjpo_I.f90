@@ -8,6 +8,6 @@
 !VAST.../IOUNIT/ ISTDE(IN)
 !VAST...Calls: JCUPA
 !...This routine performs I/O.
-      end function
+      end function itjpo
       end interface
-      end module
+      end module itjpo_i

@@ -23,8 +23,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use bndinv_i
-      use wrtmat_i
+      use bndinv_i, only: bndinv
+      use wrtmat_i, only: wrtmat
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -46,22 +46,22 @@
             a(1,1) = 1.0_real64/a(1,1)
          else
             itest = 1
-         endif
+         end if
       else
          determ = 0.0_real64
          epsil = 0.0_real64
          call bndinv (a, b, ndim, determ, epsil, itest, matdim)
-      endif
+      end if
 !
       if (itest /= 0) then
-         write (6, '(A,I3)') ' INVERSION PROBLEM NUMBER..', itest
+         write (6, "(A,I3)") " INVERSION PROBLEM NUMBER..", itest
          stop
-      endif
+      end if
       ntest = 0
       if (ntest /= 0) then
-         write (6, *) ' INVERTED MATRIX '
+         write (6, *) " INVERTED MATRIX "
          call wrtmat (a, ndim, ndim, matdim, matdim)
-      endif
+      end if
 !
       return
       end subroutine invmat

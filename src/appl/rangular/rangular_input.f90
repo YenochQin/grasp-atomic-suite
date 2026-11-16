@@ -18,11 +18,11 @@ contains
       character(len=*), intent(in) :: filename
       character(len=:), allocatable :: basename
       integer :: separator_position
-      separator_position = scan(filename, '/\', back=.true.)
+      separator_position = scan(filename, "/\", back=.true.)
       basename = filename(separator_position+1:)
-      if (basename == 'rangular.log' .or. basename == 'genmcp.dbg' .or. &
-          index(basename, 'mcp.') == 1 .or. index(basename, 'tmp.') == 1) &
-         error stop 'Input/timings filename uses a reserved rangular output name'
+      if (basename == "rangular.log" .or. basename == "genmcp.dbg" .or. &
+          index(basename, "mcp.") == 1 .or. index(basename, "tmp.") == 1) &
+         error stop "Input/timings filename uses a reserved rangular output name"
    end subroutine reject_output_filename
 
    ! Read directly into the caller-owned string, with its complete argument length.
@@ -31,10 +31,10 @@ contains
       character(len=:), allocatable, intent(out) :: text
       integer :: text_length, argument_status
       call get_command_argument(argument_index, length=text_length, status=argument_status)
-      if (argument_status /= 0 .or. text_length == 0) error stop 'Missing command argument'
+      if (argument_status /= 0 .or. text_length == 0) error stop "Missing command argument"
       allocate(character(len=text_length) :: text)
       call get_command_argument(argument_index, value=text, status=argument_status)
-      if (argument_status /= 0) error stop 'Cannot read command argument'
+      if (argument_status /= 0) error stop "Cannot read command argument"
    end subroutine read_argument_text
 
    subroutine parse_angular_options(options)
@@ -44,49 +44,49 @@ contains
       integer :: reuse_memory_mib
       logical :: input_selected, timings_selected, reuse_selected, reuse_stats_selected
       character(len=:), allocatable :: option_name, reuse_filename
-      options%input_filename = 'rcsf.inp'
-      options%timings_filename = ''
+      options%input_filename = "rcsf.inp"
+      options%timings_filename = ""
       input_selected = .false.
       timings_selected = .false.
       reuse_selected = .false.
       reuse_stats_selected = .false.
       reuse_memory_mib = 0
-      reuse_filename = ''
+      reuse_filename = ""
       argument_index = 1
       do while (argument_index <= command_argument_count())
          call read_argument_text(argument_index, option_name)
          select case (option_name)
-         case ('--csf-text', '--csf-descriptors')
-            if (input_selected) error stop 'Select exactly one CSF input option'
+         case ("--csf-text", "--csf-descriptors")
+            if (input_selected) error stop "Select exactly one CSF input option"
             call read_argument_text(argument_index+1, options%input_filename)
-            options%use_descriptors = option_name == '--csf-descriptors'
+            options%use_descriptors = option_name == "--csf-descriptors"
             input_selected = .true.
-         case ('--timings')
-            if (timings_selected) error stop 'Duplicate --timings option'
+         case ("--timings")
+            if (timings_selected) error stop "Duplicate --timings option"
             call read_argument_text(argument_index+1, options%timings_filename)
             timings_selected = .true.
-         case ('--reuse-stats')
-            if (reuse_stats_selected) error stop 'Duplicate --reuse-stats option'
+         case ("--reuse-stats")
+            if (reuse_stats_selected) error stop "Duplicate --reuse-stats option"
             call read_argument_text(argument_index+1, reuse_filename)
             reuse_stats_selected = .true.
-         case ('--reuse-cache-mib')
+         case ("--reuse-cache-mib")
             block
                character(len=:), allocatable :: argument_value
                call read_argument_text(argument_index+1, argument_value)
                read(argument_value, *, iostat=integer_status) option_value
             end block
-            if (integer_status /= 0) error stop '--reuse-cache-mib requires an integer'
-            if (reuse_selected) error stop 'Duplicate --reuse-cache-mib option'
-            if (option_value < 0 .or. option_value > 4096) error stop '--reuse-cache-mib must be in 0..4096'
+            if (integer_status /= 0) error stop "--reuse-cache-mib requires an integer"
+            if (reuse_selected) error stop "Duplicate --reuse-cache-mib option"
+            if (option_value < 0 .or. option_value > 4096) error stop "--reuse-cache-mib must be in 0..4096"
             reuse_memory_mib = option_value
             reuse_selected = .true.
-         case ('--help')
-            print '(A)', 'rangular [--csf-text FILE | --csf-descriptors FILE] [--timings NEW_FILE.csv]'
-            print '(A)', 'Default: original rcsf.inp text input; interactive scientific settings are unchanged.'
-            print '(A)', 'Serial only: --reuse-cache-mib N [--reuse-stats NEW_FILE.csv]; default 0 (off).'
+         case ("--help")
+            print "(A)", "rangular [--csf-text FILE | --csf-descriptors FILE] [--timings NEW_FILE.csv]"
+            print "(A)", "Default: original rcsf.inp text input; interactive scientific settings are unchanged."
+            print "(A)", "Serial only: --reuse-cache-mib N [--reuse-stats NEW_FILE.csv]; default 0 (off)."
             stop
          case default
-            error stop 'Unknown rangular option; use --help'
+            error stop "Unknown rangular option; use --help"
          end select
          argument_index = argument_index + 2
       end do
@@ -95,7 +95,7 @@ contains
       call reject_output_filename(reuse_filename)
       if (len(reuse_filename) > 0) then
          if (reuse_filename == options%input_filename .or. reuse_filename == options%timings_filename) &
-            error stop 'Reuse statistics must use a separate filename'
+            error stop "Reuse statistics must use a separate filename"
       end if
       call configure_angular_reuse(reuse_memory_mib,reuse_filename)
       call open_stage_profile(options%timings_filename)

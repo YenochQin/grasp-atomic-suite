@@ -9,7 +9,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -21,9 +21,9 @@
       integer :: k, ierr
 !-----------------------------------------------------------------------
 
-      k = index(name,' ')
+      k = index(name," ")
 
-      call openfl (24, name(1:k-1)//'.csum', 'FORMATTED', 'UNKNOWN', ierr)
+      call openfl (24, name(1:k-1)//".csum", "FORMATTED", "UNKNOWN", ierr)
 
       return
       end subroutine setsum

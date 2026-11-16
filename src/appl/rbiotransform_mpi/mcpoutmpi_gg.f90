@@ -27,26 +27,26 @@
       use memory_man
 !      USE def_C
 !      USE EIGV_C
-      use foparm_c
-      use mcp_c
+      use foparm_c, only: iccut
+      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
       use prnt_c
       use syma_c
-      use stat_c
+      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
       use blk_c
       use orb_c,           only: csf_count, orbital_count,orbital_kappa, csf_subshell_occupations
-      use jqjc_c
-      use orbord_c
+      use jqjc_c, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
+      use orbord_c, only: nordff, nordii
       use mcpdata_c
       use sbdat_c,         only: kamax,nlmax,nakinvii,nakinvff
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use onescalar_i
-      use cord_i
-      use itjpo_i
-      use angdata_i
-      use qqsort_i
+      use onescalar_i, only: onescalar
+      use cord_i, only: cord
+      use itjpo_i, only: itjpo
+      use angdata_i, only: angdata
+      use qqsort_i, only: qqsort
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -85,7 +85,7 @@
 !     POINTER (pciout, ciout(1))
 !
 
-      write (6, *) 'NBLOCK,(NCFBLK(i),i=1,NBLOCK)'
+      write (6, *) "NBLOCK,(NCFBLK(i),i=1,NBLOCK)"
       write (6, *) nblock, (ncfblk(i),i=1,nblock)
 
       ntestl = 0
@@ -102,21 +102,21 @@
 !   If not available calculate the data
 !
       call angdata (name, avail, kamax)
-      write (6, *) 'AVAIL=', avail
+      write (6, *) "AVAIL=", avail
       if (avail) return
 
       if (ik == 1) then
          nakinv(:max_orbitals) = nakinvii(:max_orbitals)
       else
          nakinv(:max_orbitals) = nakinvff(:max_orbitals)
-      endif
+      end if
 
 
 
-      write (6, *) ' open sorted ang. file .TB(NF)', nf
-      j = index(name,' ')
-      open(unit=nf, file=name(1:j-1)//'.TB', status='UNKNOWN', form=&
-         'UNFORMATTED', position='asis')
+      write (6, *) " open sorted ang. file .TB(NF)", nf
+      j = index(name," ")
+      open(unit=nf, file=name(1:j-1)//".TB", status="UNKNOWN", form=&
+         "UNFORMATTED", position="asis")
 
       ncf0 = 1
       do iblk = 1, nblock
@@ -124,8 +124,8 @@
 !   Open scratchfiles to dump the T coefficients for each kappa
 !
          do k = 1, kamax
-            open(unit=80 + k, status='UNKNOWN', form='UNFORMATTED', position=&
-               'asis')
+            open(unit=80 + k, status="UNKNOWN", form="UNFORMATTED", position=&
+               "asis")
          end do
 !
 !   Initialize the counters for the total number of T coefficients
@@ -137,10 +137,10 @@
 !
          do ja = mpi_rank+ncf0,ncfblk(iblk),mpi_process_count
             if (mod(ja,100)==0 .and. ik==1) then
-               write (*, *) ' JA1 =', ja, ja - ncf0 + 1
+               write (*, *) " JA1 =", ja, ja - ncf0 + 1
             else if (mod(ja,100)==0 .and. ik==2) then
-               write (*, *) ' JA2 =', ja, ja - ncf0 + 1
-            endif
+               write (*, *) " JA2 =", ja, ja - ncf0 + 1
+            end if
 !
             do jb = ncf0, ncfblk(iblk)
 !
@@ -158,10 +158,10 @@
                         if (itjpo(ja) /= itjqj2(ibb)) cycle
                         comp = .true.
                      end do
-                  endif
+                  end if
                else
                   comp = .true.
-               endif
+               end if
 
 
                if (.not.comp) cycle
@@ -200,12 +200,12 @@
                         jan = jb - ncf0 + 1
                         jbn = ja - ncf0 + 1
                      else
-                        write (*, *) 'SOMETHING WRONG'
+                        write (*, *) "SOMETHING WRONG"
                         stop
-                     endif
+                     end if
                      write (80 + nakinv(ia)) jan, jbn, lab, tshell(1)
-                  endif
-               endif
+                  end if
+               end if
 !
             end do
          end do
@@ -220,13 +220,13 @@
             else
                if (l == 1) write (nf) csf_count, orbital_count, kamax
                write (nf) llistt(l), llistt(l)
-            endif
+            end if
          end do
 !
 !  Close the angular files
 !
          do l = 1, kamax
-            close(l + 80, status='DELETE')
+            close(l + 80, status="DELETE")
          end do
 !
          ncf0 = ncfblk(iblk) + 1
@@ -235,8 +235,8 @@
 !   Deallocate storage that is no longer required. This was
 !   allocated in lodcsl.
 !
-      call dalloc (csf_subshell_occupations, 'IQA', 'MCPOUT')
-      call dalloc (csf_subshell_quantum_codes, 'JQSA', 'MCPOUT')
-      call dalloc (csf_coupling_quantum_codes, 'JCUPA', 'MCPOUT')
+      call dalloc (csf_subshell_occupations, "IQA", "MCPOUT")
+      call dalloc (csf_subshell_quantum_codes, "JQSA", "MCPOUT")
+      call dalloc (csf_coupling_quantum_codes, "JCUPA", "MCPOUT")
       return
       end subroutine mcpout

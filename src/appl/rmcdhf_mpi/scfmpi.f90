@@ -1,7 +1,6 @@
 !***********************************************************************
 !                                                                      *
       subroutine scfmpi(eol, rwffile2)
-      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !   This  subroutine  performs  the SCF iterations. The procedure is   *
 !   essentially algorithm 5.1 of C Froese Fischer, Comput Phys Rep 3   *
@@ -24,37 +23,37 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
-      use blkidx_c
-      use default_c
+      use blkidx_c, only: double, idxblk
+      use default_c, only: double, inpci, ndef, ndump
       use def_c
       use debug_c
       use eigv_c
-      use fixd_c
-      use hblock_c
-      use iounit_c
-      use lagr_c
-      use mcpa_c
+      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use lagr_c, only: double, ecv, iecc, nec
+      use mcpa_c, only: double, max_mcp_file_multipole_rank
       use mpi_c
       use pos_c
-      use peav_c
+      use peav_c, only: double, eavblk
       use orb_c
-      use orba_c
+      use orba_c, only: double, iorder, max_orbitals
       use scf_c
       use syma_c
-      use stat_c
-      use orthct_c
+      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
+      use orthct_c, only: orthst
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use matrixmpi_i
-      use newcompi_i
-      use setlagmpi_i
-      use improvmpi_i
-      use maxarr_i
-      use prwf_i
-      use orthsc_i
-      use orbout_i
-      use endsum_i
+      use matrixmpi_i, only: matrixmpi
+      use newcompi_i, only: newcompi
+      use setlagmpi_i, only: setlagmpi
+      use improvmpi_i, only: improvmpi
+      use maxarr_i, only: maxarr
+      use prwf_i, only: prwf
+      use orthsc_i, only: orthsc
+      use orbout_i, only: orbout
+      use endsum_i, only: endsum
       implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -89,23 +88,23 @@
       if (ndef == 0) then
          lsort = .false.
       else
-         if (mpi_rank .eq. 0) then
+         if (mpi_rank == 0) then
   123       continue
-            write (stderr_unit, *) 'Orthonomalization order? '
-            write (stderr_unit, *) '     1 -- Update order'
-            write (stderr_unit, *) '     2 -- Self consistency connected'
+            write (stderr_unit, *) "Orthonomalization order? "
+            write (stderr_unit, *) "     1 -- Update order"
+            write (stderr_unit, *) "     2 -- Self consistency connected"
             read (stdin_unit, *) j
             if (j == 1) then
                lsort = .false.
             else if (j == 2) then
                lsort = .true.
             else
-               write (stderr_unit, *) 'Input is wrong, redo...'
-               go to 123
-            endif
-         endif
+               write (stderr_unit, *) "Input is wrong, redo..."
+               goto 123
+            end if
+         end if
          call mpi_bcast (lsort, 1, l_mpi, 0, mpi_comm_world, mpi_error_code)
-      endif
+      end if
 
 !=======================================================================
 !   Deallocate storage that will no longer be used
@@ -117,10 +116,10 @@
 !   Allocate and fill in auxiliary arrays
 !=======================================================================
 
-      call alloc (csf_offsets_by_block, symmetry_block_count, 'NCFPAST', 'SCFmpi')
-      call alloc (eigenvalue_offsets_by_block, symmetry_block_count, 'NCMINPAST', 'SCFmpi')
-      call alloc (mixing_offsets_by_block, symmetry_block_count, 'NEVECPAST', 'SCFmpi')
-      call alloc (eavblk, symmetry_block_count, 'EAVBLK', 'SCFmpi')
+      call alloc (csf_offsets_by_block, symmetry_block_count, "NCFPAST", "SCFmpi")
+      call alloc (eigenvalue_offsets_by_block, symmetry_block_count, "NCMINPAST", "SCFmpi")
+      call alloc (mixing_offsets_by_block, symmetry_block_count, "NEVECPAST", "SCFmpi")
+      call alloc (eavblk, symmetry_block_count, "EAVBLK", "SCFmpi")
 
       csf_offsets_by_block(1) = 0
       eigenvalue_offsets_by_block(1) = 0
@@ -136,11 +135,11 @@
          & eigenvector_counts_by_block(symmetry_block_count)*csf_counts_by_block(symmetry_block_count)
 
       if (eol) then
-         call alloc (shifted_eigenvalues, ncmin, 'EVAL', 'SCFmpi')
-         call alloc (csf_mixing_coefficients, mixing_coefficient_storage_size, 'EVEC', 'SCFmpi')
-         call alloc (iatjpo, ncmin, 'IATJPO', 'SCFmpi')
-         call alloc (iaspar, ncmin, 'IASPAR', 'SCFmpi')
-      endif
+         call alloc (shifted_eigenvalues, ncmin, "EVAL", "SCFmpi")
+         call alloc (csf_mixing_coefficients, mixing_coefficient_storage_size, "EVEC", "SCFmpi")
+         call alloc (iatjpo, ncmin, "IATJPO", "SCFmpi")
+         call alloc (iaspar, ncmin, "IASPAR", "SCFmpi")
+      end if
 
 !=======================================================================
 !
@@ -152,12 +151,12 @@
 !      NYDIM = 0
 !      NYDIM = 0
 !AK    Must initialize DA,XA,YA,... here since MPI routines rely on their existence in all processes
-      call alloc (nda, nddim, 'NDA','SCFmpi')
-      call alloc (da, nddim, 'DA','SCFmpi')
-      call alloc (nxa, nxdim, 'NXA','SCFmpi')
-      call alloc (xa, nxdim, 'XA','SCFmpi')
-      call alloc (nya, nydim, 'NYA','SCFmpi')
-      call alloc (ya, nydim, 'YA','SCFmpi')
+      call alloc (nda, nddim, "NDA","SCFmpi")
+      call alloc (da, nddim, "DA","SCFmpi")
+      call alloc (nxa, nxdim, "NXA","SCFmpi")
+      call alloc (xa, nxdim, "XA","SCFmpi")
+      call alloc (nya, nydim, "NYA","SCFmpi")
+      call alloc (ya, nydim, "YA","SCFmpi")
 
 !     This call should only be made AFTER the call to newco
 !     CALL setlag (EOL)
@@ -169,7 +168,7 @@
       if (eol) then
          call matrixmpi (dvdfirst)
          call newcompi (wtaev)
-      endif
+      end if
       wtaev0 = 0.0
       dvdfirst = .false.
       do nit = 1, nscf
@@ -198,13 +197,13 @@
             call maxarr (k)
             if (k == 0) then
                convg = .true.
-               go to 3
+               goto 3
             else
                if (scnsty(k) <= accy) then
                   convg = .true.
-                  go to 3
-               endif
-            endif
+                  goto 3
+               end if
+            end if
             call improvmpi (eol, k, lsort, dampmx)
          end do
 
@@ -217,8 +216,8 @@
                convg = .true.
             else
                convg = .false.
-            endif
-         endif
+            end if
+         end if
 
     3    continue
          if (ldbpr(24) .and. mpi_rank==0) call prwf (0)
@@ -235,7 +234,7 @@
          if (eol) then
             call matrixmpi(dvdfirst)
             call newcompi (wtaev)
-         endif
+         end if
 !        Make this a relative convergence test
 !        IF(ABS(WTAEV-WTAEV0).LT.1.0D-9.and.
 !    &   DAMPMX.LT.1.0D-4) CONVG=.true.
@@ -245,16 +244,16 @@
 !cjb unified convergence criteria in RMCDHF and RMCDHF_MPI
 !cjb     IF(DABS(WTAEV-WTAEV0).LT.1.0D-8.and.              &
 !cjb                   DAMPMX.LT.1.0D-2) CONVG=.true.
-         if (abs((wtaev - wtaev0)/wtaev) < 0.001_real32*accy) convg = .true.
+         if (abs((wtaev - wtaev0)/wtaev) < 0.001_real64*accy) convg = .true.
          wtaev0 = wtaev
          if (.not.convg) cycle
          if (ldbpr(25) .and. .not.ldbpr(24) .and. mpi_rank==0) call prwf (0)
             !IF (EOL) CALL matrixmpi (dvdfirst)
-         go to 5
+         goto 5
 
       end do
 
-      if (mpi_rank==0) write (stderr_unit,*)' Maximum iterations in SCF Exceeded.'
+      if (mpi_rank==0) write (stderr_unit,*)" Maximum iterations in SCF Exceeded."
 
     5 continue
       do i = 31, 32 + max_mcp_file_multipole_rank
@@ -264,59 +263,59 @@
       if (mpi_rank == 0) then
          !CLOSE (23)     ! The .rwf file
          close(25)                               ! The .mix file
-      endif
+      end if
 !
 !   Complete the summary - moved from rscf92 for easier alloc/dalloc
 !
-      if (mpi_rank .eq. 0) call endsum
+      if (mpi_rank == 0) call endsum
 !
 !   Deallocate storage
 !
-      call dalloc (wt, 'WT', 'SCFmpi')                       !Either getold or getald
+      call dalloc (wt, "WT", "SCFmpi")                       !Either getold or getald
 
       if (nec > 0) then
-         call dalloc (iecc, 'IECC', 'SCFmpi')
-         call dalloc (ecv, 'ECV', 'SCFmpi')
-         call dalloc (csf_subshell_occupations, 'IQA', 'SCFmpi')
-      endif
+         call dalloc (iecc, "IECC", "SCFmpi")
+         call dalloc (ecv, "ECV", "SCFmpi")
+         call dalloc (csf_subshell_occupations, "IQA", "SCFmpi")
+      end if
 
       if (nddim > 0) then
-         call dalloc (da, 'DA', 'SCFmpi')
-         call dalloc (nda, 'NDA', 'SCFmpi')
+         call dalloc (da, "DA", "SCFmpi")
+         call dalloc (nda, "NDA", "SCFmpi")
          nddim = 0
-      endif
+      end if
 
       if (nxdim > 0) then
-         call dalloc (xa, 'XA', 'SCFmpi')
-         call dalloc (nxa, 'NXA', 'SCFmpi')
+         call dalloc (xa, "XA", "SCFmpi")
+         call dalloc (nxa, "NXA", "SCFmpi")
          nxdim = 0
-      endif
+      end if
 
       if (nydim > 0) then
-         call dalloc (ya, 'YA', 'SCFmpi')
-         call dalloc (nya, 'NYA', 'SCFmpi')
+         call dalloc (ya, "YA", "SCFmpi")
+         call dalloc (nya, "NYA", "SCFmpi")
          nydim = 0
-      endif
+      end if
 
       if (eol) then
-         call dalloc (shifted_eigenvalues, 'EVAL', 'SCFmpi')
-         call dalloc (csf_mixing_coefficients, 'EvEC', 'SCFmpi')
-         call dalloc (iatjpo, 'IATJPO', 'SCFmpi')
-         call dalloc (iaspar, 'IASPAR', 'SCFmpi')
-         call dalloc (ncmaxblk, 'NCMAXBLK', 'SCFmpi') ! getold.f
-         call dalloc (eavblk, 'EAVBLK', 'SCFmpi')     ! getold.f
-         call dalloc (idxblk, 'IDXBLK', 'SCFmpi')     ! Allocated in getold.f
-         call dalloc (iccmin, 'ICCMIN', 'SCFmpi')       ! Allocated in items.f<-getold.f
-      endif
+         call dalloc (shifted_eigenvalues, "EVAL", "SCFmpi")
+         call dalloc (csf_mixing_coefficients, "EvEC", "SCFmpi")
+         call dalloc (iatjpo, "IATJPO", "SCFmpi")
+         call dalloc (iaspar, "IASPAR", "SCFmpi")
+         call dalloc (ncmaxblk, "NCMAXBLK", "SCFmpi") ! getold.f
+         call dalloc (eavblk, "EAVBLK", "SCFmpi")     ! getold.f
+         call dalloc (idxblk, "IDXBLK", "SCFmpi")     ! Allocated in getold.f
+         call dalloc (iccmin, "ICCMIN", "SCFmpi")       ! Allocated in items.f<-getold.f
+      end if
 !
-      call dalloc (csf_offsets_by_block, 'NCFPAST', 'SCFmpi')
-      call dalloc (eigenvalue_offsets_by_block, 'NCMINPAST', 'SCFmpi')
-      call dalloc (mixing_offsets_by_block, 'NEVECPAST', 'SCFmpi')
+      call dalloc (csf_offsets_by_block, "NCFPAST", "SCFmpi")
+      call dalloc (eigenvalue_offsets_by_block, "NCMINPAST", "SCFmpi")
+      call dalloc (mixing_offsets_by_block, "NEVECPAST", "SCFmpi")
 
-  301 format(/,' Iteration number ',1i3,/,' --------------------')
-  302 format(41x,'Self-            Damping'/,&
-         'Subshell    Energy    Method   P0    ',&
-         'consistency  Norm-1  factor  JP',' MTP INV NNP'/)
+  301 format(/," Iteration number ",1i3,/," --------------------")
+  302 format(41x,"Self-            Damping"/,&
+         "Subshell    Energy    Method   P0    ",&
+         "consistency  Norm-1  factor  JP"," MTP INV NNP"/)
 
       return
       end subroutine scfmpi

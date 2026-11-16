@@ -19,11 +19,11 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use cnc_c
+      use cnc_c, only: cnc5c, cnc6c, double
       use grid_c
       use lic13_c, a13=>a
-      use ncc_c
-      use sbc_c
+      use ncc_c, only: c1, c2, c3, c4, double
+      use sbc_c, only: c, double
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -165,7 +165,7 @@ contains
 !
          first = .false.
 !
-      endif
+      end if
 !
 !   Sienkiewicz-Baylis coefficients for SBSTEP
 !

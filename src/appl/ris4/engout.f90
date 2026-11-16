@@ -18,7 +18,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use def_c, only: hartree_to_wavenumber_cm, hartree_to_ev
-      use jlabl_c
+      use jlabl_c, only: jlbl, jlbp, jlbr
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -67,7 +67,7 @@
                write (24, 302) i, jlbr(jtot(j)), jlbp(ip), eau, ecm, eev
 !               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
             end do
-         endif
+         end if
 !
 !   Energies relative to level 1
 !
@@ -83,17 +83,17 @@
                write (24, 302) i, jlbr(jtot(j)), jlbp(ip), eau, ecm, eev
 !               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
             end do
-         endif
+         end if
 !
-      endif
+      end if
 !
       return
 !
-  300 format(/,'Eigenenergies:')
-  301 format(/,'Level  J Parity',7x,'Hartrees',14x,'Kaysers',16x,'eV'/)
+  300 format(/,"Eigenenergies:")
+  301 format(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)
   302 format(1i3,2x,2a4,1p,3d22.14)
-  303 format(/,'Energy of each level relative to immediately lower',' level:')
-  304 format(/,'Energy of each level relative to lowest level:')
+  303 format(/,"Energy of each level relative to immediately lower"," level:")
+  304 format(/,"Energy of each level relative to lowest level:")
       return
 !
       end subroutine engout

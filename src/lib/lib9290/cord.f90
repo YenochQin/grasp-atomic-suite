@@ -27,8 +27,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use speak_i
-      use clrx_i
+      use speak_i, only: speak
+      use clrx_i, only: clrx
       implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -59,7 +59,7 @@ contains
          ia1 = klist(ja1)
       else
          ia1 = jlist(ja1)
-      endif
+      end if
       ib1 = klist(jb1)
 !
 !   Force IA1 to be greater than IB1
@@ -68,7 +68,7 @@ contains
          ns = ia1
          ia1 = ib1
          ib1 = ns
-      endif
+      end if
 !
       kap1 = orbital_kappa(ia1)
       j1 = iabs(kap1)
@@ -109,7 +109,7 @@ contains
             call speak (ja, jb, ia1, ib1, ib1, ia1, nu, x)
          end do
 !
-      endif
+      end if
 !
       return
       end subroutine cord

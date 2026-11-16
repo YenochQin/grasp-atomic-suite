@@ -3,6 +3,6 @@
       interface
       subroutine connect
       implicit none (type, external)
-      end subroutine
+      end subroutine connect
       end interface
-      end module
+      end module connect_i

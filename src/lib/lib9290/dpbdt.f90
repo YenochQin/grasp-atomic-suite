@@ -24,7 +24,7 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use grid_c
-      use lic13_c
+      use lic13_c, only: a, double
       use tatb_c, only: ta, tb
       use wave_c
       implicit none (type, external)
@@ -53,8 +53,8 @@ contains
 !   First, points 1 to 6
 !
       do i = 1,6
-         hdpbdt = 0._real64
-         hdqbdt = 0._real64
+         hdpbdt = 0.0_real64
+         hdqbdt = 0.0_real64
 !cjb replace loop by SUM
 !        DO 1 K = 1,13
 !            AIK = A(I,K)

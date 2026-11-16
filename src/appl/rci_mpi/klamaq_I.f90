@@ -8,6 +8,6 @@
       integer, intent(in) :: kappa
       real(real64), intent(in) :: z
       real(real64), intent(out) :: fzalfa
-      end subroutine
+      end subroutine klamaq
       end interface
-      end module
+      end module klamaq_i

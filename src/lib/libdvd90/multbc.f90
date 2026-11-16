@@ -41,7 +41,7 @@ contains
 !-----------------------------------------------
 !-----------------------------------------------------------------------
       do irow = 1, n
-         call dgemv ('Transp', k, m, 1._real64, c, k, b(irow), n, 0._real64, temp, 1)
+         call dgemv ("Transp", k, m, 1.0_real64, c, k, b(irow), n, 0.0_real64, temp, 1)
          call dcopy (m, temp, 1, b(irow), n)
       end do
 

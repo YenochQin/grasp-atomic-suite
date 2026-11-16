@@ -19,21 +19,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use default_c
+      use default_c, only: double, inpci, ndef, ndump
       use debug_c, only: ldbpr, cutoff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use setmc_i
-      use setcon_i
-      use fname_i
-      use mrgcsl_i
-      use setcslm_i
-      use getosd_i
-      use strsum_i
-      use factt_i
-      use oscl_i
+      use getyn_i, only: getyn
+      use setmc_i, only: setmc
+      use setcon_i, only: setcon
+      use fname_i, only: fname
+      use mrgcsl_i, only: mrgcsl
+      use setcslm_i, only: setcslm
+      use getosd_i, only: getosd
+      use strsum_i, only: strsum
+      use factt_i, only: factt
+      use oscl_i, only: oscl
       use starttime_i, only: starttime
       use stoptime_i, only: stoptime
       implicit none (type, external)
@@ -46,27 +46,27 @@
       character(len=128) :: isofile
 !-----------------------------------------------
 !
-      isofile = 'isodata'
+      isofile = "isodata"
       ntest = 1001
-      call starttime (ncount1, 'RTRANSITION')
+      call starttime (ncount1, "RTRANSITION")
       write(*,*)
-      write(*,*) 'RTRANSITION'
-      write(*,*) 'This program computes transition parameters from'
-      write(*,*) 'transformed wave functions'
-      write(*,*) 'Input files:  isodata, name1.c, name1.bw, name1.(c)bm'
-      write(*,*) '              name2.c, name2.bw, name2.(c)bm         '
-      write(*,*) '              optional, name1.lsj.lbl, name2.lsj.lbl'
-      write(*,*) '              name1.name2.KT (optional angular files)'
-      write(*,*) 'Output files: name1.name2.(c)t                       '
-      write(*,*) '              optional, name1.name2.(c)t.lsj         '
-      write(*,*) '              name1.name2.KT (angular files)         '
-      write(*,*) 'Here K is parity and rank of transition: -1,+1 etc   '
+      write(*,*) "RTRANSITION"
+      write(*,*) "This program computes transition parameters from"
+      write(*,*) "transformed wave functions"
+      write(*,*) "Input files:  isodata, name1.c, name1.bw, name1.(c)bm"
+      write(*,*) "              name2.c, name2.bw, name2.(c)bm         "
+      write(*,*) "              optional, name1.lsj.lbl, name2.lsj.lbl"
+      write(*,*) "              name1.name2.KT (optional angular files)"
+      write(*,*) "Output files: name1.name2.(c)t                       "
+      write(*,*) "              optional, name1.name2.(c)t.lsj         "
+      write(*,*) "              name1.name2.KT (angular files)         "
+      write(*,*) "Here K is parity and rank of transition: -1,+1 etc   "
 
 
 
 
       write (6, *)
-      write (6, *) ' Default settings?'
+      write (6, *) " Default settings?"
       yes = getyn()
       write (6, *)
       if (yes) then
@@ -74,23 +74,23 @@
          ndump = 1
       else
          ndef = 1
-         write (6, *) ' Dump angular data to file?'
+         write (6, *) " Dump angular data to file?"
          yes = getyn()
          if (yes) then
             ndump = 1
          else
             ndump = 0
-         endif
-      endif
+         end if
+      end if
       write (6, *)
-      write (6, *) ' Input from a CI calculation?'
+      write (6, *) " Input from a CI calculation?"
       yes = getyn()
       write (6, *)
       if (yes) then
          inpci = 0
       else
          inpci = 1
-      endif
+      end if
 !Rasa -- start
       ldbpr = .false.
 !      WRITE (6, *) ' Generate debug output?'
@@ -151,7 +151,7 @@
 !
 !   Print completion message
 !
-      call stoptime (ncount1, 'RTRANSITION')
+      call stoptime (ncount1, "RTRANSITION")
 !
       stop
       end program bioscl

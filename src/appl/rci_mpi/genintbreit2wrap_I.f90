@@ -7,6 +7,6 @@
       implicit none (type, external)
       integer, intent(in) :: myid, nprocs
       integer             :: j2max
-      end subroutine
+      end subroutine genintbreit2wrap
       end interface
-      end module
+      end module genintbreit2wrap_i

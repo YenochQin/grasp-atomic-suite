@@ -47,8 +47,8 @@
       use def_c
       use grid_c
       use orb_c
-      use stor_c
-      use wfac_c
+      use stor_c, only: double, keep
+      use wfac_c, only: double, wfact
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -116,7 +116,7 @@
          bessn(ik,iw,:radial_point_count) = 0.0_real64
          return
 !
-      endif
+      end if
 !
       nn = k
 !
@@ -143,7 +143,7 @@
             cycle  l5
          end do
          jchan = j
-         go to 6
+         goto 6
       end do l5
 !
 !   If here then calculated whole array using four-term power
@@ -164,7 +164,7 @@
             dfnm = dfnm*dble(i)
          end do
          dfn = dfnm*dble(2*nn + 1)
-      endif
+      end if
       dfnm = 1.0_real64/dfnm
 !
       irem = mod(nn,4)
@@ -212,7 +212,7 @@
          else
             sn = ssn*dcos(wa)
             cn = scn*dsin(wa)
-         endif
+         end if
          obwa = 1.0_real64/wa
          b = obwa
          s1 = b*sn
@@ -232,8 +232,8 @@
       end do
       return
 !
-  303 format(93x,i2,a2,2x,i2,a2,2x,i2,2x,'New',6x,'(',i2,',',i2,')')
-  302 format(93x,i2,a2,2x,i2,a2,2x,i2,2x,'(',i2,',',i2,')',2x,'(',i2,',',i2,')'&
+  303 format(93x,i2,a2,2x,i2,a2,2x,i2,2x,"New",6x,"(",i2,",",i2,")")
+  302 format(93x,i2,a2,2x,i2,a2,2x,i2,2x,"(",i2,",",i2,")",2x,"(",i2,",",i2,")"&
          )
       return
 !

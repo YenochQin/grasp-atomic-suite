@@ -21,7 +21,7 @@
       use grid_c
       use int_c, only: tf, tg
       use orb_c
-      use sbc_c
+      use sbc_c, only: c, double
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -73,7 +73,7 @@
          return
       else if (idiff < 0) then
          out = .false.
-      endif
+      end if
 !
 !   Overall initializations
 !
@@ -171,9 +171,9 @@
             ppj = (-fac*pj) - tbh*tf(jp1)*qj
             qpj = fac*qj - tbh*tg(jp1)*pj
 !
-            go to 1
+            goto 1
 !
-         endif
+         end if
       else
 !
 !   Initializations for inward integration
@@ -263,10 +263,10 @@
             ppj = (-fac*pj) - tbh*tf(jm1)*qj
             qpj = fac*qj - tbh*tg(jm1)*pj
 !
-            go to 2
+            goto 2
 !
-         endif
-      endif
+         end if
+      end if
 !
       return
       end subroutine sbstep

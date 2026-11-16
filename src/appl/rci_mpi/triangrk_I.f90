@@ -6,6 +6,6 @@
       integer, intent(in) :: la
       integer, intent(in) :: k
       integer, intent(in) :: lb
-      end function
+      end function triangrk
       end interface
-      end module
+      end module triangrk_i

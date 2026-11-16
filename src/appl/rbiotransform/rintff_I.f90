@@ -7,6 +7,6 @@
       integer, intent(in) :: i
       integer, intent(in) :: j
       integer, intent(in) :: k
-      end function
+      end function rintff
       end interface
-      end module
+      end module rintff_i

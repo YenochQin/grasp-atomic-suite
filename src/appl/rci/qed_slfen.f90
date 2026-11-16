@@ -18,16 +18,16 @@
       use parameter_def,   only: max_orbitals, max_radial_points
       use def_c
       use eigv_c
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use orb_c, only: orbital_count, orbital_principal_n, orbital_kappa
       use prnt_c
       use wave_c
-      use qedcut_c
+      use qedcut_c, only: nqedcut, nqedmax
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ratden_i
-      use fzalf_i
+      use ratden_i, only: ratden
+      use fzalf_i, only: fzalf
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -48,7 +48,7 @@
 !
       maxiter = 20
 !Per
-      if (nqedcut.eq.1) then
+      if (nqedcut==1) then
          npjmax = nqedmax
       else
          npjmax = 8
@@ -88,7 +88,7 @@
 !
             slfint(j) = 0.0_real64
 !
-         endif
+         end if
 !
       end do
 !

@@ -72,13 +72,13 @@
       rewind (50)
    16 read (50,iostat = ios) ic,ir,ncount
 
-      if (ios .eq. 0) then
+      if (ios == 0) then
 !*      print*, 'ic', IC,IR,NCOUNT
 !
 !   Read successful; decode the labels of I(ab)
 !
 !      Initialise
-        if ((ic.ne.icold).or.(ir.ne.irold)) then
+        if ((ic/=icold).or.(ir/=irold)) then
 !*            ISPARC = ISPAR (IC)
 !*            ITJPOC = ITJPO (IC)
 !*            ITJPOR = ITJPO (IR)
@@ -95,7 +95,7 @@
           elemnt7 = 0.0_real64
           elemnt1vec(:) = 0.0_real64                               ! JE ADD
 !*        ENDDO
-        endif
+        end if
         do i= 1,ncount
            read(50) tshell_r(i),lab
            ia = lab/key
@@ -112,7 +112,7 @@
            elemnt5 = elemnt5 + dint5(ia,ib)*tshell_r(i)
            elemnt6 = elemnt6 + dint6(ia,ib)*tshell_r(i)
            elemnt7 = elemnt7 + dint7(ia,ib)*tshell_r(i)
-        enddo
+        end do
 !
 !   Return to the start of the loop
 !
@@ -131,7 +131,7 @@
             contri5 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt5
             contri6 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt6
             contri7 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt7
-            if (ir.ne.ic) then
+            if (ir/=ic) then
                contri1 = 2.0_real64 * contri1
                contri1vec(:) = 2.0_real64 * contri1vec(:)                        ! JE ADD
                contri2 = 2.0_real64 * contri2
@@ -140,7 +140,7 @@
                contri5 = 2.0_real64 * contri5
                contri6 = 2.0_real64 * contri6
                contri7 = 2.0_real64 * contri7
-            endif
+            end if
             dens1(j) = dens1(j) + contri1
             do 23 l = 2,nrnuc                                                  ! JE ADD
                dens1vec(j,l) = dens1vec(j,l) + contri1vec(l)                  ! JE ADD
@@ -155,6 +155,6 @@
 !*   21 CONTINUE
 
       goto 16
-      endif
+      end if
       return
       end subroutine densread_seltz

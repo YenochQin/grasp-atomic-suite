@@ -9,6 +9,6 @@
                                           dint3(max_orbitals, max_orbitals), dint4(max_orbitals, max_orbitals), &
                                              dint5(max_orbitals, max_orbitals), dint6(max_orbitals, max_orbitals),  &
                                           dint7(max_orbitals, max_orbitals)
-      end subroutine
+      end subroutine densread_mpi
       end interface
-      end module
+      end module densread_mpi_i

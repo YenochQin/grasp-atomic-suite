@@ -8,6 +8,6 @@
       implicit none (type, external)
       real(real64), intent(in) :: vint(max_orbitals, max_orbitals), vint2(max_orbitals, max_orbitals)
       integer, intent(in) :: doit
-      end subroutine
+      end subroutine smsnew
       end interface
-      end module
+      end module smsnew_i

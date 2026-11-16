@@ -19,11 +19,11 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
       use memory_man
-      use keilst_c
+      use keilst_c, only: double, frstki, indkei, ndkea, nkei, valkei
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rinti_i
+      use rinti_i, only: rinti
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -39,11 +39,11 @@
 !
 !   Ensure that the indices are in `canonical' order
 !
-      if (ia .gt. ib) then
+      if (ia > ib) then
          iswap = ib
          ib = ia
          ia = iswap
-      endif
+      end if
 !
 !   Compute the composite (packed) index
 !
@@ -53,14 +53,14 @@
 !
 !   This branch is executed on all entries except the first
 !
-         if (index .gt. indkei(nkei)) then
+         if (index > indkei(nkei)) then
 !
 !   The index is greater than the largest stored
 !
             found = .false.
             loc = nkei
 !
-         elseif (index .lt. indkei(1)) then
+         else if (index < indkei(1)) then
 !
 !   The index is less than the smallest stored
 !
@@ -75,26 +75,26 @@
             ju = nkei
             jl = 1
 !
-    1       if (ju-jl .gt. 1) then
+    1       if (ju-jl > 1) then
 !
                jm = (ju+jl)/2
-               if (indkei(jm) .gt. index) then
+               if (indkei(jm) > index) then
                   ju = jm
                else
                   jl = jm
-               endif
+               end if
                goto 1
 !
             else
 !
 !   The range is bracketed to the extent possible
 !
-               if (index .eq. indkei(ju)) then
+               if (index == indkei(ju)) then
 !
                   found = .true.
                   loc = ju
 !
-               elseif (index .eq. indkei(jl)) then
+               else if (index == indkei(jl)) then
 !
                   found = .true.
                   loc = jl
@@ -104,11 +104,11 @@
                   found = .false.
                   loc = jl
 !
-               endif
+               end if
 !
-            endif
+            end if
 !
-         endif
+         end if
 !
          if (found) then
 !
@@ -130,12 +130,12 @@
 !   Increase array length by half the present length if the latter
 !   is inadequate to store another pair
 !
-            if (nkei .gt. ndkea) then
+            if (nkei > ndkea) then
                newsiz = ndkea+ndkea/2
-               call ralloc (indkei,newsiz,'INDKEI', 'KEINT')
-               call ralloc (valkei,newsiz,'VALKEI', 'KEINT')
+               call ralloc (indkei,newsiz,"INDKEI", "KEINT")
+               call ralloc (valkei,newsiz,"VALKEI", "KEINT")
                ndkea = newsiz
-            endif
+            end if
 !
             do 2 i = nkei,loc+2,-1
                indkei(i) = indkei(i-1)
@@ -147,7 +147,7 @@
             indkei(loc+1) = index
             valkei(loc+1) = tegral
 !
-         endif
+         end if
 !
       else
 !
@@ -159,8 +159,8 @@
 !   NDCOEA stores the array dimension
 !
          ndkea = 2
-         call alloc (indkei,ndkea,'INDKEI','KEINT' )
-         call alloc (valkei,ndkea,'VALKEI','KEINT')
+         call alloc (indkei,ndkea,"INDKEI","KEINT" )
+         call alloc (valkei,ndkea,"VALKEI","KEINT")
 !
 !   Compute the integral's value
 !
@@ -175,7 +175,7 @@
          indkei(1) = index
          valkei(1) = tegral
 !
-      endif
+      end if
 !
       return
       end subroutine keint

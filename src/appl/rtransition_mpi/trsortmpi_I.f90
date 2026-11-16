@@ -10,6 +10,6 @@
       integer :: jkp
       integer, intent(in) :: iblki
       integer, intent(in) :: iblkf
-      end subroutine
+      end subroutine trsort
       end interface
-      end module
+      end module trsort_i

@@ -9,6 +9,6 @@
       integer, intent(in) :: imode
       integer, pointer :: jja(:), jjb(:), lab(:), nptr(:)
       real(real64), pointer :: hb1(:), hb2(:), hc1(:), hc2(:), hm1(:), hm2(:)
-      end subroutine
+      end subroutine alcnsa
       end interface
-      end module
+      end module alcnsa_i

@@ -105,6 +105,100 @@ def main(root: Path) -> None:
         assert record["before_suite_sha256"] == prior_fortran[name]["after_suite_sha256"], \
             f"Declaration snapshot has a different predecessor: {name}"
     reviewed_fortran = prior_fortran | declarations["files"]
+    numeric_path = root / "docs/reference/rmcdhf_numeric_kind_snapshot.json"
+    numeric = json.loads(numeric_path.read_text())
+    assert numeric["schema_version"] == 1, "Unknown numeric-kind snapshot schema"
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_declarations_snapshot.json").read_bytes()).hexdigest() == \
+        numeric["previous_manifest_sha256"], "Declaration snapshot changed; review numeric-kind provenance"
+    numeric_scope = {f"src/appl/{name}/{routine}.f90" for name, routine in (
+        ("rmcdhf", "scf"), ("rmcdhf_mem", "scf"),
+        ("rmcdhf_mpi", "scfmpi"), ("rmcdhf_mem_mpi", "scfmpi"))}
+    assert set(numeric["files"]) == numeric_scope, "Numeric-kind snapshot coverage changed"
+    for name, record in numeric["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], \
+            f"Numeric-kind snapshot has a different predecessor: {name}"
+    reviewed_fortran |= numeric["files"]
+    spacing = json.loads((root / "docs/reference/rmcdhf_spacing_snapshot.json").read_text())
+    assert spacing["schema_version"] == 1, "Unknown spacing snapshot schema"
+    assert hashlib.sha256(numeric_path.read_bytes()).hexdigest() == spacing["previous_manifest_sha256"], \
+        "Numeric-kind snapshot changed; review spacing provenance"
+    assert set(spacing["files"]).issubset(reviewed_fortran), "Spacing snapshot contains unrelated files"
+    for name, record in spacing["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], \
+            f"Spacing snapshot has a different predecessor: {name}"
+    reviewed_fortran |= spacing["files"]
+    quote_end = json.loads((root / "docs/reference/rmcdhf_quote_end_snapshot.json").read_text())
+    assert quote_end["schema_version"] == 1, "Unknown quote/end snapshot schema"
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_spacing_snapshot.json").read_bytes()).hexdigest() == \
+        quote_end["previous_manifest_sha256"], "Spacing snapshot changed; review quote/end provenance"
+    assert set(quote_end["files"]).issubset(reviewed_fortran), "Quote/end snapshot contains unrelated files"
+    for name, record in quote_end["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], \
+            f"Quote/end snapshot has a different predecessor: {name}"
+    reviewed_fortran |= quote_end["files"]
+    decimal = json.loads((root / "docs/reference/rmcdhf_decimal_snapshot.json").read_text())
+    assert decimal["schema_version"] == 1, "Unknown decimal snapshot schema"
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_quote_end_snapshot.json").read_bytes()).hexdigest() == \
+        decimal["previous_manifest_sha256"], "Quote/end snapshot changed; review decimal provenance"
+    assert set(decimal["files"]).issubset(reviewed_fortran), "Decimal snapshot contains unrelated files"
+    for name, record in decimal["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], \
+            f"Decimal snapshot has a different predecessor: {name}"
+    reviewed_fortran |= decimal["files"]
+    parser_style = json.loads((root / "docs/reference/rmcdhf_parser_style_snapshot.json").read_text())
+    assert parser_style["schema_version"] == 1, "Unknown parser-style snapshot schema"
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_decimal_snapshot.json").read_bytes()).hexdigest() == \
+        parser_style["previous_manifest_sha256"], "Decimal snapshot changed; review parser-style provenance"
+    assert set(parser_style["files"]).issubset(reviewed_fortran), "Parser-style snapshot contains unrelated files"
+    for name, record in parser_style["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], \
+            f"Parser-style snapshot has a different predecessor: {name}"
+    reviewed_fortran |= parser_style["files"]
+    operator_style = json.loads((root / "docs/reference/rmcdhf_operator_style_snapshot.json").read_text())
+    assert operator_style["schema_version"] == 1, "Unknown operator-style snapshot schema"
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_parser_style_snapshot.json").read_bytes()).hexdigest() == \
+        operator_style["previous_manifest_sha256"], "Parser-style snapshot changed; review operator-style provenance"
+    assert set(operator_style["files"]).issubset(reviewed_fortran), "Operator-style snapshot contains unrelated files"
+    for name, record in operator_style["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], \
+            f"Operator-style snapshot has a different predecessor: {name}"
+    reviewed_fortran |= operator_style["files"]
+    use_only = json.loads((root / "docs/reference/rmcdhf_use_only_snapshot.json").read_text())
+    assert use_only["schema_version"] == 1, "Unknown USE ONLY snapshot schema"
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_operator_style_snapshot.json").read_bytes()).hexdigest() == \
+        use_only["previous_manifest_sha256"], "Operator-style snapshot changed; review USE ONLY provenance"
+    assert set(use_only["files"]).issubset(reviewed_fortran), "USE ONLY snapshot contains unrelated files"
+    for name, record in use_only["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], \
+            f"USE ONLY snapshot has a different predecessor: {name}"
+    reviewed_fortran |= use_only["files"]
+    use_state = json.loads((root / "docs/reference/rmcdhf_use_only_state_snapshot.json").read_text())
+    assert use_state["schema_version"] == 1, "Unknown state USE ONLY snapshot schema"
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_snapshot.json").read_bytes()).hexdigest() == \
+        use_state["previous_manifest_sha256"], "USE ONLY snapshot changed; review state import provenance"
+    assert set(use_state["files"]).issubset(reviewed_fortran), "State USE ONLY snapshot contains unrelated files"
+    for name, record in use_state["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], \
+            f"State USE ONLY snapshot has a different predecessor: {name}"
+    reviewed_fortran |= use_state["files"]
+    use_state2 = json.loads((root / "docs/reference/rmcdhf_use_only_state2_snapshot.json").read_text())
+    assert use_state2["schema_version"] == 1, "Unknown state2 USE ONLY snapshot schema"
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_state_snapshot.json").read_bytes()).hexdigest() == \
+        use_state2["previous_manifest_sha256"], "State USE ONLY snapshot changed; review state2 import provenance"
+    assert set(use_state2["files"]).issubset(reviewed_fortran), "State2 USE ONLY snapshot contains unrelated files"
+    for name, record in use_state2["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], \
+            f"State2 USE ONLY snapshot has a different predecessor: {name}"
+    reviewed_fortran |= use_state2["files"]
+    use_state3 = json.loads((root / "docs/reference/rmcdhf_use_only_state3_snapshot.json").read_text())
+    assert use_state3["schema_version"] == 1, "Unknown state3 USE ONLY snapshot schema"
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_state2_snapshot.json").read_bytes()).hexdigest() == \
+        use_state3["previous_manifest_sha256"], "State2 USE ONLY snapshot changed; review state3 import provenance"
+    assert set(use_state3["files"]).issubset(reviewed_fortran), "State3 USE ONLY snapshot contains unrelated files"
+    for name, record in use_state3["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], \
+            f"State3 USE ONLY snapshot has a different predecessor: {name}"
+    reviewed_fortran |= use_state3["files"]
     actual = {
         str(path.relative_to(root))
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")

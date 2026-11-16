@@ -29,7 +29,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ittk_i
+      use ittk_i, only: ittk
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -47,21 +47,21 @@ contains
       a=zero
       iiq=two*q+tenth
       iic=two*c+tenth
-      if(ittk(iiq,iic,2).eq.0)return
-      if(dabs(qm+sm-cm).gt.eps)return
-      if((q+tenth).lt.dabs(qm))return
-      if((c+tenth).lt.dabs(cm))return
+      if(ittk(iiq,iic,2)==0)return
+      if(dabs(qm+sm-cm)>eps)return
+      if((q+tenth)<dabs(qm))return
+      if((c+tenth)<dabs(cm))return
       ie=0
-      if(dabs(sm-one).lt.eps)ie=1
-      if(dabs(sm+one).lt.eps)ie=2
-      if(ie.eq.0)return
-      if(dabs(q+one-c).lt.eps) then
+      if(dabs(sm-one)<eps)ie=1
+      if(dabs(sm+one)<eps)ie=2
+      if(ie==0)return
+      if(dabs(q+one-c)<eps) then
         a=dsqrt((c+gc(ie)*cm-one)*(c+gc(ie)*cm)/ &
         ((two*c-one)*two*c))
-      else if(dabs(q-c).lt.eps) then
+      else if(dabs(q-c)<eps) then
         a=-gc(ie)*dsqrt((c+gc(ie)*cm)*(c-gc(ie)*cm+one)/ &
         ((c+one)*two*c))
-      else if(dabs(q-one-c).gt.eps) then
+      else if(dabs(q-one-c)>eps) then
         return
       else
         a=dsqrt((c-gc(ie)*cm+one)*(c-gc(ie)*cm+two)/ &

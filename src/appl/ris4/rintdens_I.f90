@@ -6,6 +6,6 @@
       implicit none (type, external)
       integer :: i
       integer :: j
-      end function
+      end function rintdens
       end interface
-      end module
+      end module rintdens_i

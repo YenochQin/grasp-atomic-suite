@@ -4,6 +4,6 @@
       subroutine setxz (j)
       implicit none (type, external)
       integer :: j
-      end subroutine
+      end subroutine setxz
       end interface
-      end module
+      end module setxz_i

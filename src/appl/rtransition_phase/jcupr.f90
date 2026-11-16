@@ -30,13 +30,13 @@
          if (icsf>=1 .and. icsf<=ncfr) then
             jcupr = jcupar(loc,icsf)
          else
-            write (6, *) 'JCUPR: Argument ICSF is out of range.'
+            write (6, *) "JCUPR: Argument ICSF is out of range."
             stop
-         endif
+         end if
       else
-         write (6, *) 'JCUPR: Argument LOC is out of range.'
+         write (6, *) "JCUPR: Argument LOC is out of range."
          stop
-      endif
+      end if
 !
       return
       end function jcupr

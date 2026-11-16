@@ -21,8 +21,8 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use mtjj_c
-      use mtjj2_c
+      use mtjj_c, only: mt
+      use mtjj2_c, only: mt11, mt9
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -52,20 +52,20 @@ contains
          jg=lg(j)
          if(jg == 0)return
          jj=jp
-    2    if (inn == mt(jj)) go to 1
+    2    if (inn == mt(jj)) goto 1
     3    jj=jj+1
          if(jj > jg)return
-         go to 2
+         goto 2
     1    nmtejj=jj
-      elseif(j == 9) then
+      else if(j == 9) then
         if(max0(nk,nd) < 3) then
           jp=1
           jg=6
           jj=jp
-    6     if (inn == mt9(jj)) go to 5
+    6     if (inn == mt9(jj)) goto 5
     4     jj=jj+1
           if(jj > jg)return
-          go to 6
+          goto 6
     5     nmtejj=jj+300
         else
           print*, "ERROR in FUNCTION NMTEJJ"
@@ -76,12 +76,12 @@ contains
         jp=lp3(il)
         jg=lg3(il)
         jj=jp
-   22   if (inn == mt11(jj)) go to 21
+   22   if (inn == mt11(jj)) goto 21
    23   jj=jj+1
         if(jj > jg)return
-        go to 22
+        goto 22
    21   nmtejj=jj
-      endif
+      end if
       return
       end function nmtejj
 end module nmtejj_i

@@ -5,6 +5,6 @@
       implicit none (type, external)
       character(len=*):: isofile
       character (len = 24) :: name(2)
-      end subroutine
+      end subroutine getosd
       end interface
-      end module
+      end module getosd_i

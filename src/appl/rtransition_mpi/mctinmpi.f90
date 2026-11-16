@@ -18,16 +18,16 @@
       use debug_c
       use decide_c
       use def_c
-      use foparm_c
-      use offd_c
+      use foparm_c, only: iccut
+      use offd_c, only: noffd1, noffd2
       use orb_c
       use osc_c
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use alcnsa_i
-      use alcnta_i
+      use alcnsa_i, only: alcnsa
+      use alcnta_i, only: alcnta
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -73,8 +73,8 @@
     4    continue
          if (ncsf + k > ntdim) then
             call alcnta (isldr, isldr1, xsldr, ntdim, 2)
-            go to 4
-         endif
+            goto 4
+         end if
          nptr(m) = k
          read (nfile2) (isldr(j + k),isldr1(j + k),xsldr(j + k),j=1,ncsf)
 !          write(*,*) (ISLDR(J+K),XSLDR(J+K),J = 1,NCSF)
@@ -94,8 +94,8 @@
 !
       return
 !
-  301 format(/,/,/,1x,i8,' MCT coefficients generated for rank ',i2,&
-         ' and parity ',i2,/,/)
+  301 format(/,/,/,1x,i8," MCT coefficients generated for rank ",i2,&
+         " and parity ",i2,/,/)
       return
 !
       end subroutine mctin

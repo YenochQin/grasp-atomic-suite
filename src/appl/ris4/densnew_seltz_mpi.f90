@@ -15,10 +15,10 @@
       use decide_c
       use def_c
       use eigv_c
-      use foparm_c
+      use foparm_c, only: iccut
       use grid_c
-      use jlabl_c
-      use npar_c
+      use jlabl_c, only: jlbl, jlbp, jlbr
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use orb_c
       use prnt_c
       use teilst_c
@@ -27,11 +27,11 @@
       use syma_c
       use mpi_c,            only: mpi_rank, mpi_process_count
       use prnt_c,           only : nvec
-      use alcbuf_i
-      use convrt_i
-      use ispar_i
-      use itjpo_i
-      use onescalar_i
+      use alcbuf_i, only: alcbuf
+      use convrt_i, only: convrt
+      use ispar_i, only: ispar
+      use itjpo_i, only: itjpo
+      use onescalar_i, only: onescalar
       implicit none (type, external)
       integer, intent(in) :: doit, nrnuc
       real(real64), intent(in) :: dint1(max_orbitals, max_orbitals), dint2(max_orbitals, max_orbitals), &
@@ -61,29 +61,29 @@
       call alcbuf (1)
 
       do ic = mpi_rank + 1, csf_count, mpi_process_count
-         if (mpi_rank == 0 .and. mod(ic,100) .eq. 1) then
+         if (mpi_rank == 0 .and. mod(ic,100) == 1) then
             call convrt (ic,cnum,lcnum)
-            print *, 'Column '//cnum(1:lcnum)//' complete on root;'
-         endif
+            print *, "Column "//cnum(1:lcnum)//" complete on root;"
+         end if
 
          itjpoc = itjpo (ic)
          do ir = ic,csf_count
-            if (itjpo(ir) .eq. itjpoc) then
-               if (ispar(ic) .ne. ispar(ir)) cycle
+            if (itjpo(ir) == itjpoc) then
+               if (ispar(ic) /= ispar(ir)) cycle
                ndiff = 0
                do i = 1,orbital_count
                   occ_ic = csf_subshell_occupations(i,ic)
                   occ_ir = csf_subshell_occupations(i,ir)
-                  if (occ_ic .eq. occ_ir) cycle
-                  if (iabs(occ_ic - occ_ir) .gt. 1) then
+                  if (occ_ic == occ_ir) cycle
+                  if (iabs(occ_ic - occ_ir) > 1) then
                      ndiff = 3
                      exit
-                  endif
+                  end if
                   ndiff = ndiff + 1
-                  if (ndiff .gt. 2) exit
+                  if (ndiff > 2) exit
                end do
-               if (ndiff .ne. 0 .and. ndiff .ne. 2) cycle
-               if (ndiff .eq. 0 .and. ic .ne. ir) cycle
+               if (ndiff /= 0 .and. ndiff /= 2) cycle
+               if (ndiff == 0 .and. ic /= ir) cycle
 
                elemnt1 = 0.0_real64
                elemnt2 = 0.0_real64
@@ -96,11 +96,11 @@
                has_contr = .false.
 
                call onescalar(ic,ir,ia,ib,tshell)
-               if (ia .ne. 0) then
-                  if (ia .eq. ib) then
+               if (ia /= 0) then
+                  if (ia == ib) then
                      ncontr = 0
                      do ia = 1,orbital_count
-                        if (abs (tshell(ia)) .gt. cutoff) then
+                        if (abs (tshell(ia)) > cutoff) then
                            ncontr = ncontr + 1
                            tshell_s(ncontr) = tshell(ia)
                            ia_s(ncontr) = ia
@@ -115,11 +115,11 @@
                            elemnt6 = elemnt6 + dint6(ia,ia)*tshell(ia)
                            elemnt7 = elemnt7 + dint7(ia,ia)*tshell(ia)
                            has_contr = .true.
-                        endif
+                        end if
                      end do
                   else
-                     if (abs (tshell(1)) .gt. cutoff) then
-                        if (orbital_kappa(ia).eq.orbital_kappa(ib)) then
+                     if (abs (tshell(1)) > cutoff) then
+                        if (orbital_kappa(ia)==orbital_kappa(ib)) then
                            elemnt1 = elemnt1 + dint1(ia,ib)*tshell(1)
                            do l = 2,nrnuc
                               elemnt1vec(l)=elemnt1vec(l)+dint1vec(ia,ib,l)*tshell(1)
@@ -131,24 +131,24 @@
                            elemnt6 = elemnt6 + dint6(ia,ib)*tshell(1)
                            elemnt7 = elemnt7 + dint7(ia,ib)*tshell(1)
                            has_contr = .true.
-                        endif
-                     endif
-                  endif
-               endif
+                        end if
+                     end if
+                  end if
+               end if
                if (.not. has_contr) cycle
-               if (abs(elemnt1) .le. cutoff .and. &
-                   abs(elemnt2) .le. cutoff .and. &
-                   abs(elemnt3) .le. cutoff .and. &
-                   abs(elemnt4) .le. cutoff .and. &
-                   abs(elemnt5) .le. cutoff .and. &
-                   abs(elemnt6) .le. cutoff .and. &
-                   abs(elemnt7) .le. cutoff .and. &
-                   all(abs(elemnt1vec(:)) .le. cutoff)) cycle
-               if (ir .eq. ic) then
+               if (abs(elemnt1) <= cutoff .and. &
+                   abs(elemnt2) <= cutoff .and. &
+                   abs(elemnt3) <= cutoff .and. &
+                   abs(elemnt4) <= cutoff .and. &
+                   abs(elemnt5) <= cutoff .and. &
+                   abs(elemnt6) <= cutoff .and. &
+                   abs(elemnt7) <= cutoff .and. &
+                   all(abs(elemnt1vec(:)) <= cutoff)) cycle
+               if (ir == ic) then
                   pair_scale = 1.0_real64
                else
                   pair_scale = 2.0_real64
-               endif
+               end if
                do j = 1,nvec
                   loc = (j-1)*csf_count
                   evpair = pair_scale * csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)
@@ -171,7 +171,7 @@
                   dens6(j) = dens6(j) + contri6
                   dens7(j) = dens7(j) + contri7
                end do
-            endif
+            end if
          end do
       end do
 

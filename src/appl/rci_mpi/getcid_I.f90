@@ -5,6 +5,6 @@
       implicit none (type, external)
       character(len=*):: isofile, rwffile
       character(len=8) ::  idblk(*)
-      end subroutine
+      end subroutine getcid
       end interface
-      end module
+      end module getcid_i

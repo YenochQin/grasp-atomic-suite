@@ -11,6 +11,6 @@
       integer, intent(in) :: myid
       integer, intent(in) :: nprocs
       character (len = *), intent(in) :: fhead
-      end subroutine
+      end subroutine setsda
       end interface
-      end module
+      end module setsda_i

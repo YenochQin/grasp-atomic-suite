@@ -7,6 +7,6 @@
       character (len = 8) :: idblk(*)
       character (len = *) :: isofile
       character (len = *) :: rwffile
-      end subroutine
+      end subroutine getscdmpi
       end interface
-      end module
+      end module getscdmpi_i

@@ -57,7 +57,7 @@ contains
 !
 !   Determine the nearest two XARR entries bounding XVAL
 !
-      if (narr < 1) error stop 'INTERP: empty table'
+      if (narr < 1) error stop "INTERP: empty table"
       norder = min(mxord,narr)
       nrstlo = 1
       if (xval < xarr(1)) then
@@ -74,15 +74,15 @@ contains
          k = k + 1
          if (xarr(k) < xval) then
             nrstlo = k
-            go to 1
+            goto 1
          else
             nrsthi = k
-         endif
-      endif
+         end if
+      end if
       if (xval == xarr(nrsthi)) then
          yval = yarr(nrsthi)
          return
-      endif
+      end if
 !
 !   Clear relevant piece of use-indicator array
 !
@@ -102,7 +102,7 @@ contains
             if (.not.used(locnxt-llr)) exit
             locnxt = locnxt + 1
          end do
-         if (locnxt > lhi) error stop 'INTERP: exhausted stencil'
+         if (locnxt > lhi) error stop "INTERP: exhausted stencil"
          diff = xarr(locnxt) - xval
          do k = locnxt + 1, lhi
             if (used(k-llr)) cycle
@@ -110,7 +110,7 @@ contains
             if (abs(difft) < abs(diff)) then
                diff = difft
                locnxt = k
-            endif
+            end if
          end do
          used(locnxt-llr) = .true.
          x(irow) = xarr(locnxt)
@@ -139,9 +139,9 @@ contains
 !
       if (norder == 1) then
          yval = est(1)
-         write (*,'(A)') 'INTERP: One-point extrapolation; accuracy cannot be estimated.'
+         write (*,"(A)") "INTERP: One-point extrapolation; accuracy cannot be estimated."
          return
-      endif
+      end if
       debeb = relative_change(est(2),est(1))
 
       ibest = 2
@@ -170,9 +170,9 @@ contains
 !
       return
 !
-  300 format('INTERP: Extrapolating, not interpolating.')
-  301 format('INTERP: Accuracy of interpolation (',1p,1d10.3,') is',&
-         ' below input criterion (',1d10.3,').')
+  300 format("INTERP: Extrapolating, not interpolating.")
+  301 format("INTERP: Accuracy of interpolation (",1p,1d10.3,") is",&
+         " below input criterion (",1d10.3,").")
       return
       contains
 
@@ -181,12 +181,12 @@ contains
 ! no finite relative accuracy estimate, so it must not silently pass.
       real(real64) function relative_change(current, previous) result(change)
       real(real64), intent(in) :: current, previous
-      if (current == 0._real64) then
-         change = huge(1._real64)
-         if (previous == 0._real64) change = 0._real64
+      if (current == 0.0_real64) then
+         change = huge(1.0_real64)
+         if (previous == 0.0_real64) change = 0.0_real64
       else
          change = abs((current-previous)/current)
-      endif
+      end if
       end function relative_change
 
       integer function iloc (ind1, ind2)

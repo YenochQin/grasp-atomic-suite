@@ -27,9 +27,9 @@
       character(len=*) , intent(in) :: dbgfile
 !-----------------------------------------------
 !
-      if (mpi_rank .eq. 0) then
+      if (mpi_rank == 0) then
          call setdbg (dbgfile)
-      endif
+      end if
 
       call mpi_bcast (ldbpa, 5, mpi_logical, 0, mpi_comm_world, mpi_error_code)
       call mpi_bcast (ldbpg, 5, mpi_logical, 0, mpi_comm_world, mpi_error_code)

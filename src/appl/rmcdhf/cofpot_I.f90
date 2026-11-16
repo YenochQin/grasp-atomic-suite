@@ -6,6 +6,6 @@
       logical :: eol
       integer :: j
       integer :: npts
-      end subroutine
+      end subroutine cofpot
       end interface
-      end module
+      end module cofpot_i

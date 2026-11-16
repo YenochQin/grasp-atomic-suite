@@ -20,12 +20,12 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use mpi_c
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
-      use lodrwfmpi_i
+      use openfl_i, only: openfl
+      use lodrwfmpi_i, only: lodrwfmpi
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -37,38 +37,38 @@ contains
       integer :: ios, ierror
       character (len = 6) :: g92rwf
 !-----------------------------------------------
-      if (mpi_rank .eq. 0) then
-         call openfl (23, name, 'UNFORMATTED', 'OLD', ierror)
-         if (ierror .eq. 1) then
-            write (stderr_unit,*) 'Error opening', name(1:len_trim (name))
+      if (mpi_rank == 0) then
+         call openfl (23, name, "UNFORMATTED", "OLD", ierror)
+         if (ierror == 1) then
+            write (stderr_unit,*) "Error opening", name(1:len_trim (name))
             stop
-         endif
+         end if
 
 !   Check the file; if not as expected, stop.
 
          read (23,iostat = ios) g92rwf
-         if ((ios .ne. 0) .or. (g92rwf .ne. 'G92RWF')) then
-            write (stderr_unit,*) 'This is not a Radial WaveFunction File;'
+         if ((ios /= 0) .or. (g92rwf /= "G92RWF")) then
+            write (stderr_unit,*) "This is not a Radial WaveFunction File;"
             close (23)
             stop
-         endif
-      endif
+         end if
+      end if
 
 !   Attempt to load the radial wavefunctions
 
       call lodrwfmpi (ierror)
 
-      if (ierror .ne. 0) then
-         if (mpi_rank .eq. 0) then
-            write (stderr_unit,*) 'Radial wavefunctions defined in CSL file' &
-                          , ' not found in Radial WaveFunction File'
+      if (ierror /= 0) then
+         if (mpi_rank == 0) then
+            write (stderr_unit,*) "Radial wavefunctions defined in CSL file" &
+                          , " not found in Radial WaveFunction File"
             close (23)
-         endif
+         end if
          stop
-      endif
+      end if
 
-      if (mpi_rank .eq. 0) close (23)
+      if (mpi_rank == 0) close (23)
 
       return
-      end
+      end subroutine setrwfmpi
 end module setrwfmpi_i

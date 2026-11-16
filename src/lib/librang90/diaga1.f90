@@ -26,8 +26,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ixjtik_i
-      use sixj_i
+      use ixjtik_i, only: ixjtik
+      use sixj_i, only: sixj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

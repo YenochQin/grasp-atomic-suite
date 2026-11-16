@@ -12,6 +12,6 @@
       real(real64), intent(out) :: elsto
       integer, intent(out) :: irestart
       real(real64) :: slf_en(*)
-      end subroutine
+      end subroutine genmat
       end interface
-      end module
+      end module genmat_i

@@ -77,8 +77,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use initdvd_i
-      use dvdrvr_i
+      use initdvd_i, only: initdvd
+      use dvdrvr_i, only: dvdrvr
       !USE dscal_I
       !USE dcopy_I
       use suite_linear_algebra, only: dcopy, dscal
@@ -310,11 +310,11 @@ contains
       if (irc==1 .or. irc==3) then
 !          ..(=1)preconditioning. Go into DVDRVR
 !          ..(=3)or Matrix vector in DVDRVR
-         go to 200
+         goto 200
       else if (irc == 2) then
 !          ..matrix vector for setting up.
-         go to 100
-      endif
+         goto 100
+      end if
 !-----------------------------------------------------------------------
 !
 ! Checking user input errors, and setting up the problem to solve.
@@ -344,7 +344,7 @@ contains
             end do
 !           ..Check if a very large index is asked for
             if (ihigh > n) ierr = ierr + 8
-         endif
+         end if
       else
 !          ..Look for a range between ILOW and IHIGH
 !          ..Invalid range. IHIGH>N
@@ -360,8 +360,8 @@ contains
             do i = 1, neig
                iselec(i) = ilow + i - 1
             end do
-         endif
-      endif
+         end if
+      end if
 
       if (ierr /= 0) return
 
@@ -377,8 +377,8 @@ contains
          if (neig > 0) then
             iselec(:neig) = n - iselec(:neig) + 1
             i = neig + 1
-         endif
-      endif
+         end if
+      end if
 !       ..duplications in ISELEC
       if (neig > nume) ierr = ierr + 64
 !       ..Not enough Basis space. Increase LIM or decrease NUME
@@ -392,14 +392,14 @@ contains
 
       if (niv > lim) then
 !        ..Check number of initial estimates NIV is lower than LIM.
-         write (6, *) 'WARNING: Too many initial estimates.?'
-         write (6, *) 'The routine needs at most:', lim
+         write (6, *) "WARNING: Too many initial estimates.?"
+         write (6, *) "The routine needs at most:", lim
          ierr = ierr + 4096
       else if (niv < nume) then
 !        ..check if enough initial estimates.
-         write (6, *) 'WARNING: Not enough initial estimates'
-         write (6, *) nume - niv, ' Lanczos vectors will be added'
-      endif
+         write (6, *) "WARNING: Not enough initial estimates"
+         write (6, *) nume - niv, " Lanczos vectors will be added"
+      end if
 
       if (ierr /= 0) return
 !
@@ -434,7 +434,7 @@ contains
          irev(2) = ibasis + (irev(2)-1)*n
          irev(3) = iab + (irev(3)-1)*n
          return
-      endif
+      end if
 !       ----------------------------------------------------------------
 !
 ! Call main driver routine.
@@ -463,10 +463,10 @@ contains
          irev(2) = ibasis + (irev(2)-1)*n
          irev(3) = iab + (irev(3)-1)*n
          return
-      endif
+      end if
 !       ----------------------------------------------------------------
 
-      if (hiend) call dscal (nume, -1._real64, work(ieigval), 1)
+      if (hiend) call dscal (nume, -1.0_real64, work(ieigval), 1)
 !
 ! -Copy the eigenvalues after the eigenvectors
 ! -Next, copy the difference of eigenvalues between the last two steps

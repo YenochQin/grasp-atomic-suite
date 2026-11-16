@@ -28,124 +28,124 @@ program npol_unit_driver
     coul = 7
     zz = coul
     select case (trim(mode))
-    case ('paths')
-        call check_path('', 'npol.summary')
-        call check_path('npol.inp', 'npol.summary')
-        call check_path('/npol.inp', '/npol.summary')
-        call check_path('with space/npol.inp', 'with space/npol.summary')
-        call check_path('a'//achar(92)//'b'//achar(92)//'npol.inp', &
-                        'a'//achar(92)//'b'//achar(92)//'npol.summary')
-        call check_path(repeat('a',300)//'/npol.inp', repeat('a',300)//'/npol.summary')
-        call check_path('x.inp', 'npol.summary')
-    case ('input')
+    case ("paths")
+        call check_path("", "npol.summary")
+        call check_path("npol.inp", "npol.summary")
+        call check_path("/npol.inp", "/npol.summary")
+        call check_path("with space/npol.inp", "with space/npol.summary")
+        call check_path("a"//achar(92)//"b"//achar(92)//"npol.inp", &
+                        "a"//achar(92)//"b"//achar(92)//"npol.summary")
+        call check_path(repeat("a",300)//"/npol.inp", repeat("a",300)//"/npol.summary")
+        call check_path("x.inp", "npol.summary")
+    case ("input")
         call npol_read_config(trim(path), cfg, status, message)
         if (status == 0) call npol_validate_config(cfg, 2.0_real64, status, message)
         if (status /= 0) then
-            write(*,'(A)') trim(message)
+            write(*,"(A)") trim(message)
             stop 1
         end if
-    case ('init')
+    case ("init")
         call npol_init(trim(path), 2.0_real64, 3, r, zz, status, message)
         if (status /= 0) then
-            call require(all(zz == coul), 'failed init preserves Coulomb and tails')
-            call require(.not.npol_ready .and. .not.npol_settings%enabled, 'failed init stays disabled')
-            call require(all(vnp_total == 0), 'failed init has no partial NP array')
-            write(*,'(A)') trim(message)
+            call require(all(zz == coul), "failed init preserves Coulomb and tails")
+            call require(.not.npol_ready .and. .not.npol_settings%enabled, "failed init stays disabled")
+            call require(all(vnp_total == 0), "failed init has no partial NP array")
+            write(*,"(A)") trim(message)
             stop 1
         end if
-        call require(npol_ready .and. npol_n == 3, 'initialization committed')
-        call require(all(zz_coul(:3) == coul(:3)), 'baseline captured')
-        call require(all(zz(:3) == coul(:3)-r(:3)*vnp_total(:3)), 'initialization composition')
-        call require(all(zz(4:) == coul(4:)), 'init preserves tail')
-        if (.not.npol_settings%enabled) call require(all(zz == coul), 'disabled exact copy')
-    case ('kernel')
+        call require(npol_ready .and. npol_n == 3, "initialization committed")
+        call require(all(zz_coul(:3) == coul(:3)), "baseline captured")
+        call require(all(zz(:3) == coul(:3)-r(:3)*vnp_total(:3)), "initialization composition")
+        call require(all(zz(4:) == coul(4:)), "init preserves tail")
+        if (.not.npol_settings%enabled) call require(all(zz == coul), "disabled exact copy")
+    case ("kernel")
         call npol_build_grid(cfg, 3, r, a, b, v, status, message)
         call require(status == 0, message)
-        call near(a(1), -1.0_real64, 'E1 origin')
-        call near(b(1), -2.0_real64, 'E2 origin')
-        call near(a(2), -0.5_real64, 'E1 r=b')
-        call near(b(2), -1.0_real64, 'E2 r=b')
-        call near(a(3), -16.0_real64/272, 'E1 r>b')
-        call near(b(3), -128.0_real64/4160, 'E2 r>b')
-        call require(all(v(:3) == a(:3)+b(:3)), 'channel sum')
+        call near(a(1), -1.0_real64, "E1 origin")
+        call near(b(1), -2.0_real64, "E2 origin")
+        call near(a(2), -0.5_real64, "E1 r=b")
+        call near(b(2), -1.0_real64, "E2 r=b")
+        call near(a(3), -16.0_real64/272, "E1 r>b")
+        call near(b(3), -128.0_real64/4160, "E2 r>b")
+        call require(all(v(:3) == a(:3)+b(:3)), "channel sum")
         cfg%use_e1 = .false.
         cfg%k1 = nan
         cfg%b1 = nan
         call npol_build_grid(cfg, 3, r, a, b, v, status, message)
-        call require(status == 0 .and. all(a(:3) == 0), 'unused E1 short circuit')
+        call require(status == 0 .and. all(a(:3) == 0), "unused E1 short circuit")
         cfg = fixture()
         cfg%use_e2 = .false.
         cfg%k2 = nan
         cfg%b2 = nan
         call npol_build_grid(cfg, 3, r, a, b, v, status, message)
-        call require(status == 0 .and. all(b(:3) == 0), 'unused E2 short circuit')
+        call require(status == 0 .and. all(b(:3) == 0), "unused E2 short circuit")
         cfg%k1 = 0
         cfg%b1 = tiny(1.0_real64)
         call npol_build_grid(cfg, 3, r, a, b, v, status, message)
-        call require(status == 0 .and. all(v(:3) == 0), 'explicit zero, no denominator underflow')
+        call require(status == 0 .and. all(v(:3) == 0), "explicit zero, no denominator underflow")
         cfg%enabled = .false.
         cfg%b1 = nan
         call npol_build_grid(cfg, 3, r, a, b, v, status, message)
-        call require(status == 0 .and. all(v(:3) == 0), 'disabled ignores channel values')
+        call require(status == 0 .and. all(v(:3) == 0), "disabled ignores channel values")
         cfg = fixture()
         cfg%use_e2 = .false.
         cfg%b1 = 1.0e75_real64
         cfg%k1 = 1.0e300_real64
         r(:3) = 1.0e80_real64
         call npol_build_grid(cfg, 3, r, a, b, v, status, message)
-        call require(status == 0, 'large powers do not overflow')
-        call near(v(1)/1.0e-20_real64, -1.0_real64, 'scaled quotient')
+        call require(status == 0, "large powers do not overflow")
+        call near(v(1)/1.0e-20_real64, -1.0_real64, "scaled quotient")
         cfg%b1 = 1.0e80_real64
         cfg%k1 = 1
         r(1) = 0
         call npol_build_grid(cfg, 1, r, a, b, v, status, message)
-        call require(status == 0 .and. v(1) < 0, 'representable subnormal potential')
+        call require(status == 0 .and. v(1) < 0, "representable subnormal potential")
         cfg%b1 = tiny(1.0_real64)
         saved = v
         call npol_build_grid(cfg, 1, r, a, b, v, status, message)
-        call require(status /= 0 .and. all(v == saved), 'overflow fails transactionally')
-    case ('compose')
-        call write_fixture('npol.inp')
-        call npol_init('npol.inp', 2.0_real64, 3, r, zz, status, message)
+        call require(status /= 0 .and. all(v == saved), "overflow fails transactionally")
+    case ("compose")
+        call write_fixture("npol.inp")
+        call npol_init("npol.inp", 2.0_real64, 3, r, zz, status, message)
         call require(status == 0, message)
         saved = zz
         do i = 1, 2
             call npol_compose(3, r, zz_coul, vnp_total, zz, status, message)
-            call require(status == 0 .and. all(zz == saved), 'recomposition is idempotent')
+            call require(status == 0 .and. all(zz == saved), "recomposition is idempotent")
         end do
-        call near(zz(2), 10.0_real64, 'minus r*V sign')
-        open(newunit=u, file='npol.inp', status='replace')
-        write(u,'(A)') '&npol schema_version=1, enabled=.false. /'
+        call near(zz(2), 10.0_real64, "minus r*V sign")
+        open(newunit=u, file="npol.inp", status="replace")
+        write(u,"(A)") "&npol schema_version=1, enabled=.false. /"
         close(u)
         zz = coul
-        call npol_init('npol.inp', 2.0_real64, 3, r, zz, status, message)
-        call require(status == 0 .and. all(zz == coul), 'enabled to disabled, fresh Coulomb')
-        call require(all(vnp_total == 0), 'disabled clears previous NP')
+        call npol_init("npol.inp", 2.0_real64, 3, r, zz, status, message)
+        call require(status == 0 .and. all(zz == coul), "enabled to disabled, fresh Coulomb")
+        call require(all(vnp_total == 0), "disabled clears previous NP")
         call npol_reset()
-        call require(npol_n == 0 .and. .not.npol_ready, 'reset state')
-        call require(all(zz_coul == 0), 'reset baseline')
-        call write_fixture('npol.inp')
+        call require(npol_n == 0 .and. .not.npol_ready, "reset state")
+        call require(all(zz_coul == 0), "reset baseline")
+        call write_fixture("npol.inp")
         r(:2) = [0.0_real64, 1.0_real64]
         zz = 11
-        call npol_init('npol.inp', 2.0_real64, 2, r, zz, status, message)
-        call require(status == 0 .and. npol_n == 2, 'new grid length')
-        call require(all(zz_coul(:2) == 11) .and. all(zz_coul(3:) == 0), 'new baseline, no stale tail')
-        call near(zz(2), 11.0_real64+16.0_real64/17+128.0_real64/65, 'new grid potential')
-        open(newunit=u, file='npol.inp', status='replace')
-        write(u,'(A)') '&npol schema_version=99 /'
+        call npol_init("npol.inp", 2.0_real64, 2, r, zz, status, message)
+        call require(status == 0 .and. npol_n == 2, "new grid length")
+        call require(all(zz_coul(:2) == 11) .and. all(zz_coul(3:) == 0), "new baseline, no stale tail")
+        call near(zz(2), 11.0_real64+16.0_real64/17+128.0_real64/65, "new grid potential")
+        open(newunit=u, file="npol.inp", status="replace")
+        write(u,"(A)") "&npol schema_version=99 /"
         close(u)
         zz = coul
-        call npol_init('npol.inp', 2.0_real64, 3, r, zz, status, message)
-        call require(status /= 0 .and. all(zz == coul), 'reinit failure preserves fresh Coulomb')
-        call require(.not.npol_settings%enabled .and. .not.npol_ready, 'reinit failure clears published state')
-    case ('bounds')
+        call npol_init("npol.inp", 2.0_real64, 3, r, zz, status, message)
+        call require(status /= 0 .and. all(zz == coul), "reinit failure preserves fresh Coulomb")
+        call require(.not.npol_settings%enabled .and. .not.npol_ready, "reinit failure clears published state")
+    case ("bounds")
         do n = 1, NNNP, NNNP-1
             call npol_build_grid(cfg, n, r, a, b, v, status, message)
             call require(status == 0, message)
-            call require(all(a(n+1:) == 123), 'kernel leaves inactive tail')
+            call require(all(a(n+1:) == 123), "kernel leaves inactive tail")
             call npol_compose(n, r, coul, v, zz, status, message)
             call require(status == 0, message)
-            call require(all(zz(n+1:) == 7), 'compose leaves inactive tail')
+            call require(all(zz(n+1:) == 7), "compose leaves inactive tail")
         end do
         do i = 1, 3
             select case(i)
@@ -157,9 +157,9 @@ program npol_unit_driver
                 n = NNNP+1
             end select
             call npol_build_grid(cfg, n, r, a, b, v, status, message)
-            call require(status /= 0, 'invalid N rejected by kernel')
+            call require(status /= 0, "invalid N rejected by kernel")
             call npol_compose(n, r, coul, v, zz, status, message)
-            call require(status /= 0, 'invalid N rejected by compose')
+            call require(status /= 0, "invalid N rejected by compose")
         end do
         do i = 1, 3
             select case(i)
@@ -171,40 +171,40 @@ program npol_unit_driver
                 r(2) = inf
             end select
             call npol_build_grid(cfg, 3, r, a, b, v, status, message)
-            call require(status /= 0, 'invalid radius rejected')
+            call require(status /= 0, "invalid radius rejected")
         end do
         r(2) = 2
         call npol_build_grid(cfg, 3, r, a(:2), b, v, status, message)
-        call require(status /= 0, 'short output rejected')
+        call require(status /= 0, "short output rejected")
         call npol_compose(3, r(:2), coul, v, zz, status, message)
-        call require(status /= 0, 'short input rejected')
+        call require(status /= 0, "short input rejected")
         v(2) = -huge(1.0_real64)
         saved = zz
         call npol_compose(3, r, coul, v, zz, status, message)
-        call require(status /= 0 .and. all(zz == saved), 'product overflow is transactional')
+        call require(status /= 0 .and. all(zz == saved), "product overflow is transactional")
         r(2) = 1
         coul(2) = huge(1.0_real64)
         call npol_compose(3, r, coul, v, zz, status, message)
-        call require(status /= 0 .and. all(zz == saved), 'sum overflow is transactional')
+        call require(status /= 0 .and. all(zz == saved), "sum overflow is transactional")
         v(2) = nan
         call npol_compose(3, r, coul, v, zz, status, message)
-        call require(status /= 0, 'nonfinite potential rejected')
+        call require(status /= 0, "nonfinite potential rejected")
     case default
-        error stop 'unknown test mode'
+        error stop "unknown test mode"
     end select
-    print '(A)', 'PASS '//trim(mode)
+    print "(A)", "PASS "//trim(mode)
 contains
     subroutine check_path(input, expected)
         character(*), intent(in) :: input, expected
         character(:), allocatable :: actual
         actual = npol_summary_path(input)
-        call require(len(actual) == len(expected), 'summary path length')
-        call require(actual == expected, 'summary path value')
+        call require(len(actual) == len(expected), "summary path length")
+        call require(actual == expected, "summary path value")
         call check_argument(npol_summary_path(input), expected)
-    end subroutine
+    end subroutine check_path
     subroutine check_argument(actual, expected)
         character(*), intent(in) :: actual, expected
-        call require(len(actual) == len(expected), 'summary argument length')
-        call require(actual == expected, 'summary argument value')
-    end subroutine
+        call require(len(actual) == len(expected), "summary argument length")
+        call require(actual == expected, "summary argument value")
+    end subroutine check_argument
 end program npol_unit_driver

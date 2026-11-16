@@ -13,6 +13,6 @@
       integer :: mode
 !VAST...Dummy argument MODE is not referenced in this routine.
       integer, intent(in) :: k
-      end subroutine
+      end subroutine engout1
       end interface
-      end module
+      end module engout1_i

@@ -20,7 +20,7 @@
       use sbdat_c,         only: nlmax,ninii,ninff,nshlii,nshlff,      &
                                  ikappa,nakinvii,nakinvff,nlmax,       &
                                  nshlpii,nshlpff,nshlppii,nshlppff,kamax
-      use orbord_c
+      use orbord_c, only: nordff, nordii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -75,7 +75,7 @@
             ital = nakii(k)
          else
             ital = nakff(k-nwii)
-         endif
+         end if
          i = k - 1
          klar = .false.
    12    continue
@@ -85,9 +85,9 @@
                i = i - 1
             else
                klar = .true.
-            endif
-            go to 12
-         endif
+            end if
+            goto 12
+         end if
          isort(i+1) = ital
       end do
 !
@@ -107,16 +107,16 @@
 !  range [1,KAMAX]
 !
       if (ntest >= 10) then
-         write (*, *) '******************'
-         write (*, *) ' Entering kapdata'
-         write (*, *) '******************'
+         write (*, *) "******************"
+         write (*, *) " Entering kapdata"
+         write (*, *) "******************"
          write (*, *)
-         write (*, *) 'There are', nwii, 'orbitals in the initial state'
-         write (*, *) 'with the following n and kappa quantum numbers'
-      endif
+         write (*, *) "There are", nwii, "orbitals in the initial state"
+         write (*, *) "with the following n and kappa quantum numbers"
+      end if
 
       do j = 1, nwii
-         if (ntest >= 10) write (*, *) 'orbital number', j, 'n and kappa', npii&
+         if (ntest >= 10) write (*, *) "orbital number", j, "n and kappa", npii&
             (j), nakii(j)
          if (j <= ncore1) then
             do i = 1, kamax
@@ -135,15 +135,15 @@
                nshlpii(i,nshlii(i)) = j
                nshlppii(i,j) = nshlii(i)
             end do
-         endif
+         end if
       end do
 
       if (ntest >= 10) then
-         write (*, *) 'There are', nwff, 'orbitals in the final state'
-         write (*, *) 'with the following n and kappa quantum numbers'
-      endif
+         write (*, *) "There are", nwff, "orbitals in the final state"
+         write (*, *) "with the following n and kappa quantum numbers"
+      end if
       do j = 1, nwff
-         if (ntest >= 10) write (*, *) 'orbital number', j, 'n and kappa=', &
+         if (ntest >= 10) write (*, *) "orbital number", j, "n and kappa=", &
             npff(j), nakff(j)
          if (j <= ncore2) then
             do i = 1, kamax
@@ -162,40 +162,40 @@
                nshlpff(i,nshlff(i)) = j
                nshlppff(i,j) = nshlff(i)
             end do
-         endif
+         end if
       end do
 
       if (ntest >= 10) then
-         write (*, *) 'Total number of different kappa', kamax
+         write (*, *) "Total number of different kappa", kamax
          do i = 1, kamax
-            write (*, *) 'L=', i, 'corresponds to kappa=', ikappa(i)
-            write (*, *) 'nr of init.  orb. with this kappa=', nshlii(i)
-            write (*, *) 'nr of final. orb. with this kappa=', nshlff(i)
+            write (*, *) "L=", i, "corresponds to kappa=", ikappa(i)
+            write (*, *) "nr of init.  orb. with this kappa=", nshlii(i)
+            write (*, *) "nr of final. orb. with this kappa=", nshlff(i)
          end do
          do i = 1, kamax
-            write (*, *) 'Position in initial state list'
+            write (*, *) "Position in initial state list"
             do j = 1, nshlii(i)
-               write (*, *) 'L=', i, 'orb. nr', j, ',position', nshlpii(i,j)
+               write (*, *) "L=", i, "orb. nr", j, ",position", nshlpii(i,j)
             end do
-            write (*, *) 'Position in final   state list'
+            write (*, *) "Position in final   state list"
             do j = 1, nshlff(i)
-               write (*, *) 'L=', i, 'orb. nr', j, ',position', nshlpff(i,j)
+               write (*, *) "L=", i, "orb. nr", j, ",position", nshlpff(i,j)
             end do
-            write (*, *) 'Relative positions for initial state orbitals'
+            write (*, *) "Relative positions for initial state orbitals"
             do j = 1, nwii
                if (nshlppii(i,j) == 0) cycle
-               write (*, *) 'Orbital', j, 'is nr', nshlppii(i,j), 'with kappa'&
+               write (*, *) "Orbital", j, "is nr", nshlppii(i,j), "with kappa"&
                   , ikappa(i)
             end do
-            write (*, *) 'Relative positions for final state orbitals'
+            write (*, *) "Relative positions for final state orbitals"
             do j = 1, nwff
                if (nshlppff(i,j) == 0) cycle
-               write (*, *) 'Orbital', j, 'is nr', nshlppff(i,j), 'with kappa'&
+               write (*, *) "Orbital", j, "is nr", nshlppff(i,j), "with kappa"&
                   , ikappa(i)
             end do
          end do
 
-      endif
+      end if
 !
 !  Check if the orbital ordering is normal or reversed.
 !
@@ -226,10 +226,10 @@
       end do
 
       if (nordii /= nordff) then
-         write (*, *) ' Orbital order of the initial and final states'
-         write (*, *) ' should be the same. STOP'
+         write (*, *) " Orbital order of the initial and final states"
+         write (*, *) " should be the same. STOP"
          stop
-      endif
+      end if
 !
 !   If not normal order check if reversed order
 !
@@ -249,23 +249,23 @@
                nref = npff(nshlpff(i,j))
             end do
          end do
-      endif
+      end if
 
       if (nordii==2 .or. nordff==2) then
-         write (*, *) ' The orbital order is neither normal or reversed'
-         write (*, *) ' STOP'
+         write (*, *) " The orbital order is neither normal or reversed"
+         write (*, *) " STOP"
          stop
-      endif
+      end if
 
 !w      write(*,*) 'Give nordii'
 !w      read(*,*) nordii
 !w      nordff = nordii
 
       if (nordii == 0) then
-         write (*, *) ' Normal orbital ordering'
+         write (*, *) " Normal orbital ordering"
       else
-         write (*, *) ' Reverse orbital ordering'
-      endif
+         write (*, *) " Reverse orbital ordering"
+      end if
 
 !      WRITE (*, *) '*****************'
 !      WRITE (*, *) ' Leaving kapdata'

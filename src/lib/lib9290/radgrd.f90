@@ -101,12 +101,12 @@ contains
                radial_derivative_over_radius(radial_index) = inverse_grid_equation_derivative/radius_estimate
             else
                previous_radius_estimate = radius_estimate
-               go to 2
-            endif
+               goto 2
+            end if
 !
          end do
 !
-      endif
+      end if
 !
 !   Debug printout
 !
@@ -117,7 +117,7 @@ contains
             debug_row_count = half_grid_point_count
          else
             debug_row_count = half_grid_point_count + 1
-         endif
+         end if
          do debug_row_index = 1, debug_row_count
             left_grid_index = debug_row_index
             right_grid_index = left_grid_index + debug_row_count
@@ -129,14 +129,14 @@ contains
             else if (left_grid_index <= radial_point_count) then
                write (99, 301) radial_grid(left_grid_index), radial_grid_derivative(left_grid_index), &
                   & radial_derivative_over_radius(left_grid_index)
-            endif
+            end if
          end do
-      endif
+      end if
 !
       return
 !
-  300 format(/,'From SUBROUTINE RADGRD:'/,2(&
-         ' -------- r -------- -------- r'' -------',' ------- r''/r ------'))
+  300 format(/,"From SUBROUTINE RADGRD:"/,2(&
+         " -------- r -------- -------- r' -------"," ------- r'/r ------"))
   301 format(1p,6(1x,1d19.12))
       return
 !

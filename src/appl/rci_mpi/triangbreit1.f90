@@ -38,10 +38,10 @@
       triangbreit1 = .false.
 
       do l = k-1,k+1
-         if ((mod(k+la+lb,2).eq.1).and.(abs(ja-jb).le.2*l).and.     &
-            (abs(ja+jb).ge.2*l)) then
-            if ((mod(k+lc+ld,2).eq.1).and.(abs(jc-jd).le.2*l).and.  &
-               (abs(jc+jd).ge.2*l)) then
+         if ((mod(k+la+lb,2)==1).and.(abs(ja-jb)<=2*l).and.     &
+            (abs(ja+jb)>=2*l)) then
+            if ((mod(k+lc+ld,2)==1).and.(abs(jc-jd)<=2*l).and.  &
+               (abs(jc+jd)>=2*l)) then
                triangbreit1 = .true.
                return
             end if

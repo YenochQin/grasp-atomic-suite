@@ -8,6 +8,6 @@
       integer, intent(inout) :: inv
       integer, intent(out) :: jp
       integer, intent(out) :: nnp
-      end subroutine
+      end subroutine solve
       end interface
-      end module
+      end module solve_i

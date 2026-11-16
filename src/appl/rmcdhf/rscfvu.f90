@@ -42,27 +42,27 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-       use default_c
-       use core_c
-       use iounit_c
+       use default_c, only: double, inpci, ndef, ndump
+       use core_c, only: closed_core_subshell_count
+       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
        use mpi_s
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use starttime_i
-      use setdbg_i
-      use setmc_i
-      use setcon_i
-      use setsum_i
-      use setmcp_i
-      use setcsl_i
-      use getscd_i
-      use strsum_i
-      use setmix_i
-      use factt_i
-      use scf_i
-      use stoptime_i
+      use getyn_i, only: getyn
+      use starttime_i, only: starttime
+      use setdbg_i, only: setdbg
+      use setmc_i, only: setmc
+      use setcon_i, only: setcon
+      use setsum_i, only: setsum
+      use setmcp_i, only: setmcp
+      use setcsl_i, only: setcsl
+      use getscd_i, only: getscd
+      use strsum_i, only: strsum
+      use setmix_i, only: setmix
+      use factt_i, only: factt
+      use scf_i, only: scf
+      use stoptime_i, only: stoptime
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -83,33 +83,33 @@
       mpi_process_count = 1
 
       write(*,*)
-      write(*,*) 'RMCDHF'
-      write(*,*) 'This program determines the radial orbitals   '
-      write(*,*) 'and the expansion coefficients of the CSFs         '
-      write(*,*) 'in a self-onsistent field proceedure               '
-      write(*,*) 'Input file:  isodata, rcsf.inp, rwfn.inp, mcp.30, ...'
+      write(*,*) "RMCDHF"
+      write(*,*) "This program determines the radial orbitals   "
+      write(*,*) "and the expansion coefficients of the CSFs         "
+      write(*,*) "in a self-onsistent field proceedure               "
+      write(*,*) "Input file:  isodata, rcsf.inp, rwfn.inp, mcp.30, ..."
       write(*,*)                                                       &
-               'Outputfiles: rwfn.out, rmix.out, rmcdhf.sum, rmcdhf.log'
+               "Outputfiles: rwfn.out, rmix.out, rmcdhf.sum, rmcdhf.log"
       write(*,*)
 
-      call starttime (ncount1, 'RMCDHF')
+      call starttime (ncount1, "RMCDHF")
 
-     open(unit=734,file='rmcdhf.log',status='UNKNOWN')
+     open(unit=734,file="rmcdhf.log",status="UNKNOWN")
 
 !=======================================================================
 !  Get NDEF
 !=======================================================================
 
       if (mpi_rank == 0) then
-         write (stderr_unit, '(A)', advance='NO') 'Default settings?  (y/n) '
+         write (stderr_unit, "(A)", advance="NO") "Default settings?  (y/n) "
          yes = getyn()
          if (yes) then
             ndef = 0
-            write(734,'(A)') 'y            ! Default settings'
+            write(734,"(A)") "y            ! Default settings"
          else
             ndef = 1
-         endif
-      endif
+         end if
+      end if
 
 !=======================================================================
 !
@@ -126,27 +126,27 @@
 !    FACTT - table of logarithms of factorials setup
 !=======================================================================
 
-      call setdbg ('rscf92.dbg')
+      call setdbg ("rscf92.dbg")
       call setmc
       call setcon
 
-      call setsum ('rmcdhf.sum')
+      call setsum ("rmcdhf.sum")
 
-      call setmcp (closed_core_subshell_count, nblk0, idblk, 'mcp')
-      call setcsl ('rcsf.inp', ncore1, idblk)
-      if (closed_core_subshell_count /= ncore1) error stop 'rscfvu: ncore'
+      call setmcp (closed_core_subshell_count, nblk0, idblk, "mcp")
+      call setcsl ("rcsf.inp", ncore1, idblk)
+      if (closed_core_subshell_count /= ncore1) error stop "rscfvu: ncore"
 
 !=======================================================================
 !  Gather all remaining information and perform some setup. This
 !  part (routine) asks for user-inputs.
 !=======================================================================
 
-      call getscd (eol, idblk, 'isodata', 'rwfn.inp', 'npol.inp')
+      call getscd (eol, idblk, "isodata", "rwfn.inp", "npol.inp")
 
       if (mpi_rank == 0) then
          call strsum
-         if (eol) call setmix ('rmix.out')
-      endif
+         if (eol) call setmix ("rmix.out")
+      end if
 
       call factt
 
@@ -155,14 +155,14 @@
 !  the  .sum  file
 !=======================================================================
 
-      call scf (eol, 'rwfn.out')
+      call scf (eol, "rwfn.out")
       close (734)
 
 !=======================================================================
 !  Execution finished; Statistics output
 !=======================================================================
 
-      call stoptime (ncount1, 'RMCDHF')
+      call stoptime (ncount1, "RMCDHF")
 
       stop
       end program rscfvu

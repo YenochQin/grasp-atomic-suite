@@ -34,9 +34,9 @@
          if (isparr > 127) isparr = isparr - 256
          isparr = sign(1,isparr)
       else
-         write (6, *) 'ISPARR: Argument ICSF is out of range.'
+         write (6, *) "ISPARR: Argument ICSF is out of range."
          stop
-      endif
+      end if
 !
       return
       end function isparr

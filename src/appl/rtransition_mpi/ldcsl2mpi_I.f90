@@ -7,6 +7,6 @@
       implicit none (type, external)
       integer, intent(out) :: ncore
       character (len = 128), intent(in) :: name
-      end subroutine
+      end subroutine ldcsl2
       end interface
-      end module
+      end module ldcsl2_i

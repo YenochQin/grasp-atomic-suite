@@ -23,21 +23,21 @@
       use decide_c
       use def_c, only: nelecr, electron_count, nuclear_charge, emn, speed_of_light_au, accy
       use grid_c
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use npot_c, only: negative_radius_times_potential, first_grid_index_beyond_fermi_c
       use orb_c
       use wave_c
-      use wfac_c
+      use wfac_c, only: double, wfact
       use where_c
-      use hblock_c
-      use iccu_c
-      use iounit_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use iccu_c, only: iccut, iccutblk
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use setqic_i
+      use getyn_i, only: getyn
+      use setqic_i, only: setqic
       use mpiu_i, only: stopmpi
       implicit none (type, external)
 !-----------------------------------------------
@@ -59,7 +59,7 @@
       read (imcdf) nelecr, ncfres, nwres, nblockres
 
       if (nelecr/=electron_count .or. ncfres/=csf_count .or. nwres/=orbital_count .or. nblockres/=symmetry_block_count&
-         ) call stopmpi ('lodres: NELEC/NCF/NW does not match',mpi_rank)
+         ) call stopmpi ("lodres: NELEC/NCF/NW does not match",mpi_rank)
 !
 !   Read the nuclear parameters
 !
@@ -67,7 +67,7 @@
       read (imcdf) nuclear_model_parameter_count, (nuclear_model_parameters(i),i=1,nuclear_model_parameter_count)
       read (imcdf) radial_point_count, (negative_radius_times_potential(i),i=1,radial_point_count), first_grid_index_beyond_fermi_c
 
-      if (radial_point_count > max_radial_points) call stopmpi ('lodres: N greater than NNNP',mpi_rank)
+      if (radial_point_count > max_radial_points) call stopmpi ("lodres: N greater than NNNP",mpi_rank)
 !
 !   Read the physical effects specifications
 !   iccutblk() is now an array of length nblock.
@@ -93,8 +93,8 @@
 !
 !   Allocate storage for the radial wavefunction arrays
 !
-      call alloc (radial_large_components, max_radial_points,orbital_count, 'PF', 'LODMIX')
-      call alloc (radial_small_components, max_radial_points,orbital_count, 'QF', 'LODMIX')
+      call alloc (radial_large_components, max_radial_points,orbital_count, "PF", "LODMIX")
+      call alloc (radial_small_components, max_radial_points,orbital_count, "QF", "LODMIX")
 !
 !   Read the orbital wavefunctions and the associated arrays
 !
@@ -108,14 +108,14 @@
 !   Determine if the self-energy contribution is to be estimated
 !
       if (mpi_rank == 0) then
-         write (stderr_unit, *) 'Estimate contributions from the self-energy?'
+         write (stderr_unit, *) "Estimate contributions from the self-energy?"
          lse = getyn()
          if (lse) then
-           write(734,'(a)') 'y            ! Estimate contributions from the self-energy?'
+           write(734,"(a)") "y            ! Estimate contributions from the self-energy?"
          else
-           write(734,'(a)') 'n            ! Estimate contributions from the self-energy?'
+           write(734,"(a)") "n            ! Estimate contributions from the self-energy?"
          end if
-      endif
+      end if
       call mpi_bcast (lse, 1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
       return
       end subroutine lodres

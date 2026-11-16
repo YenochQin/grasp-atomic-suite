@@ -9,6 +9,6 @@
       integer, intent(in)       :: nfile
       integer, intent(out)      :: lab
       integer, intent(out)      :: ncontr
-      end subroutine
+      end subroutine read1_mem
       end interface
-      end module
+      end module read1_mem_i

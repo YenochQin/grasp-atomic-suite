@@ -6,6 +6,6 @@
       implicit none (type, external)
       integer, intent(in) :: nblock
       integer, intent(in) :: nfile
-      end subroutine
+      end subroutine setmcp_mem
       end interface
-      end module
+      end module setmcp_mem_i

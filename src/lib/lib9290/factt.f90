@@ -18,7 +18,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use facts_c
+      use facts_c, only: double, gam, mfact
       implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

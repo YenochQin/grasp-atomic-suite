@@ -9,12 +9,12 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i
-      use openfl_i
+      use convrt_i, only: convrt
+      use openfl_i, only: openfl
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -33,13 +33,13 @@
 !
       lng = len_trim(filehead)
       call convrt (k, ck, lck)
-      call openfl (k, filehead(1:lng)//'.'//ck(1:2), 'UNFORMATTED', &
-            'UNKNOWN', ierr)
+      call openfl (k, filehead(1:lng)//"."//ck(1:2), "UNFORMATTED", &
+            "UNKNOWN", ierr)
       if (ierr /= 0) then
          close(k)
-         write (stderr_unit, *) 'Error when opening the tmp files'
+         write (stderr_unit, *) "Error when opening the tmp files"
          stop
       end if
-      write (k) 'MCP', nb
+      write (k) "MCP", nb
       return
       end subroutine settmpgg

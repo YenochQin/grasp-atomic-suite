@@ -45,8 +45,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use inprod_i
-      use prsym_i
+      use inprod_i, only: inprod
+      use prsym_i, only: prsym
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -79,11 +79,11 @@
 !
       ntest = 0
       if (ntest /= 0) then
-         write (6, *) ' L MATRIX '
+         write (6, *) " L MATRIX "
          call prsym (l, ndim)
-         write (6, *) ' U MATRIX ( TRANSPOSED ) '
+         write (6, *) " U MATRIX ( TRANSPOSED ) "
          call prsym (u, ndim)
-      endif
+      end if
 !
       return
       end subroutine lulu

@@ -21,14 +21,14 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
       use memory_man
-      use default_c
+      use default_c, only: double, inpci, ndef, ndump
       use orb_c
       use osc_c, only: nkp, kp
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use alclla_i
-      use alcnma_i
+      use alclla_i, only: alclla
+      use alcnma_i, only: alcnma
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -65,25 +65,25 @@
 !     POINTER (PIPTR,IPTR(1))
 !
 !
-      s((-9)) = '-9'
-      s((-8)) = '-8'
-      s((-7)) = '-7'
-      s((-6)) = '-6'
-      s((-5)) = '-5'
-      s((-4)) = '-4'
-      s((-3)) = '-3'
-      s((-2)) = '-2'
-      s((-1)) = '-1'
-      s(0) = '+0'
-      s(1) = '+1'
-      s(2) = '+2'
-      s(3) = '+3'
-      s(4) = '+4'
-      s(5) = '+5'
-      s(6) = '+6'
-      s(7) = '+7'
-      s(8) = '+8'
-      s(9) = '+9'
+      s((-9)) = "-9"
+      s((-8)) = "-8"
+      s((-7)) = "-7"
+      s((-6)) = "-6"
+      s((-5)) = "-5"
+      s((-4)) = "-4"
+      s((-3)) = "-3"
+      s((-2)) = "-2"
+      s((-1)) = "-1"
+      s(0) = "+0"
+      s(1) = "+1"
+      s(2) = "+2"
+      s(3) = "+3"
+      s(4) = "+4"
+      s(5) = "+5"
+      s(6) = "+6"
+      s(7) = "+7"
+      s(8) = "+8"
+      s(9) = "+9"
 !
 !   Position file at beginning of list of integrals
 !
@@ -98,8 +98,8 @@
 !   Initial allocation of storage to local arrays
 !
       nlabel = 1
-      call alloc (jlabl, nlabel, 'JLABL', 'TRSORT')
-      call alloc (xl, nlabel, 'XL', 'TRSORT')
+      call alloc (jlabl, nlabel, "JLABL", "TRSORT")
+      call alloc (xl, nlabel, "XL", "TRSORT")
 !
       call alclla (ibeg, ilab, ilast, ileft, iptcsf, iright, lblint, &
           lldim, 1)
@@ -110,12 +110,12 @@
     1 continue
       read (nfile, end=12) ir, is, ni
       if (ni > nlabel) then
-         call ralloc (jlabl, ni, 'JLABL', 'TRSORT')
-         call ralloc (xl, ni, 'XL', 'TRSORT')
+         call ralloc (jlabl, ni, "JLABL", "TRSORT")
+         call ralloc (xl, ni, "XL", "TRSORT")
          nlabel = ni
-      endif
+      end if
       read (nfile, end=99, err=99) (jlabl(i),xl(i),i=1,ni)
-      if (ir==0 .or. is==0 .or. ni==0) go to 1
+      if (ir==0 .or. is==0 .or. ni==0) goto 1
 !
       if (first) then
 !
@@ -129,8 +129,8 @@
          icount = 0
     3    continue
          icount = icount + 1
-         if (icount > ni) go to 1
-         if (jlabl(icount) == 0) go to 3
+         if (icount > ni) goto 1
+         if (jlabl(icount) == 0) goto 3
          ilab(1) = jlabl(icount)
 !
          iright(1) = 0
@@ -148,7 +148,7 @@
 !
          icount = 0
 !
-      endif
+      end if
 !
 !   Sort integral list using tree sort
 !
@@ -156,9 +156,9 @@
 !
     4 continue
       icount = icount + 1
-      if (icount > ni) go to 1
+      if (icount > ni) goto 1
       jlab = jlabl(icount)
-      if (jlab == 0) go to 4
+      if (jlab == 0) goto 4
       x = xl(icount)
 !
       m = m + 1
@@ -168,21 +168,21 @@
 !   Search for place in tree
 !
     5 continue
-      if (jlab - ilab(i) > 0) go to 8
-      if (jlab - ilab(i) == 0) go to 10
+      if (jlab - ilab(i) > 0) goto 8
+      if (jlab - ilab(i) == 0) goto 10
       k = iright(i)
-      if (k /= 0) go to 7
+      if (k /= 0) goto 7
       j = j + 1
       if (j > lldim) call alclla (ibeg, ilab, ilast, ileft, iptcsf, &
                     iright, lblint, lldim, 2)
       iright(i) = j
-      go to 9
+      goto 9
     7 continue
       i = k
-      go to 5
+      goto 5
     8 continue
       k = ileft(i)
-      if (k /= 0) go to 7
+      if (k /= 0) goto 7
       j = j + 1
       if (j > lldim) call alclla (ibeg, ilab, ilast, ileft, iptcsf, &
                           iright, lblint, lldim, 2)
@@ -197,7 +197,7 @@
       ibeg(j) = m
       ilab(j) = jlab
       iptr(m) = 0
-      go to 4
+      goto 4
    10 continue
       k = ibeg(i)
       l = k
@@ -208,7 +208,7 @@
       end do
       iptr(l) = m
       iptr(m) = 0
-      go to 4
+      goto 4
 !
 !   The end of the CSF-based file has been reached
 !
@@ -235,7 +235,7 @@
 !   Insert in sorted list
 !
    14    continue
-         if (ilab(i) == 0) go to 16
+         if (ilab(i) == 0) goto 16
          l = l + 1
          lblint(l) = ilab(i)
          k = ibeg(i)
@@ -256,15 +256,15 @@
 !   Next smallest element is on left of last element
 !
          k = ileft(i)
-         if (k == 0) go to 16
+         if (k == 0) goto 16
          i = k
-         go to 13
+         goto 13
 !
 !   If no element on left, next smallest is previous element
 !
    16    continue
          i = ilast(i)
-         if (i /= 0) go to 14
+         if (i /= 0) goto 14
 !
 !   List is unpacked. Invert CSF/coefficient pointer list to give
 !   position list for CSF/coefficients as they are read in
@@ -281,7 +281,7 @@
          rewind (nfile)
    18    continue
          read (nfile, end=20) ir, is, ni
-         if (ir==0 .or. is==0 .or. ni==0) go to 18
+         if (ir==0 .or. is==0 .or. ni==0) goto 18
          read (nfile) (jlabl(i),xl(i),i=1,ni)
          do i = 1, ni
             if (jlabl(i) == 0) cycle
@@ -292,11 +292,11 @@
 !           ISLDR(K) = IR*NCA+IS
             xsldr(k) = xl(i)
          end do
-         go to 18
+         goto 18
 !
 !   The integral-based list is completely known
 !
-      endif
+      end if
    20 continue
       rewind (nfile)
 !
@@ -304,12 +304,12 @@
 !  some data to later be able to identify the file
 !
       if (iblki==1 .and. iblkf==1) then
-         j1 = index(name(1),' ')
-         j2 = index(name(2),' ')
-         open(unit=nfile2,file=name(1)(1:j1-1)//'.'//name(2)(1:j2-1)//'.'//s(&
-            kp(jkp))//'T', status='UNKNOWN', form='UNFORMATTED', position=&
-            'asis')
-      endif
+         j1 = index(name(1)," ")
+         j2 = index(name(2)," ")
+         open(unit=nfile2,file=name(1)(1:j1-1)//"."//name(2)(1:j2-1)//"."//s(&
+            kp(jkp))//"T", status="UNKNOWN", form="UNFORMATTED", position=&
+            "asis")
+      end if
       write (nfile2) iblki, iblkf, orbital_count, nkp
       write (nfile2) nint
       if (nmcp /= 0) then
@@ -324,7 +324,7 @@
                ib = mod(lblint(i),key)
                write (99, 302) orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
                   & orbital_symmetry_labels(ib)
-            endif
+            end if
             write (nfile2) (isldr(m),isldr1(m),xsldr(m),m=mlr,mup)
             if (lprint) then
                do m = mlr, mup
@@ -334,16 +334,16 @@
                   ir = isldr(m)
                   write (99, 303) ir, is, xsldr(m)
                end do
-            endif
+            end if
             mlr = mup + 1
          end do
 !
-      endif
+      end if
 !
 !   Deallocate storage for local arrays
 !
-      call dalloc (jlabl, 'JLABJ', 'TRSORT')
-      call dalloc (xl, 'XL', 'TRSORT')
+      call dalloc (jlabl, "JLABJ", "TRSORT")
+      call dalloc (xl, "XL", "TRSORT")
       call alclla (ibeg, ilab, ilast, ileft, iptcsf, iright, lblint, &
                     lldim, 3)
       call alcnma (iptr, isldr, isldr1, xsldr, nmdim, 3)
@@ -353,11 +353,11 @@
 !   Error handling
 !
    99 continue
-      write (6, *) 'TRSORT: Error reading CSF-based file.'
+      write (6, *) "TRSORT: Error reading CSF-based file."
       stop
 !
-  301 format(/,/,'  k'/,' d  (rs)  Coefficients:'/,'  ab'/,/,/,&
-         '    a     b          r         s  Coefficient'/)
+  301 format(/,/,"  k"/," d  (rs)  Coefficients:"/,"  ab"/,/,/,&
+         "    a     b          r         s  Coefficient"/)
   302 format(2(2x,i2,a2))
   303 format(14x,1i6,2x,1i6,2x,1p,1d22.15)
       return

@@ -21,7 +21,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use alcbuf_i
+      use alcbuf_i, only: alcbuf
       use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
 !-----------------------------------------------
@@ -44,7 +44,7 @@
       rewind(51)
   16  read (51,iostat = ios) ic,ir
 !C      WRITE(*,*) IC,IR
-      if (ios .eq. 0) then
+      if (ios == 0) then
 !cc        DO J = 1,NVEC
           read(51) coeffsms,lab
           iid = mod (lab, key)
@@ -62,16 +62,16 @@
                * coeffsms                                              &
                * ( vint2(iia,iic)*vint(iib,iid)                        &
                + vint2(iib,iid)*vint(iia,iic))/2.0_real64
-          if (ir.ne.ic) then
+          if (ir/=ic) then
             contri = 2.0_real64 * contri
             contrik1 = 2.0_real64 * contrik1
-          endif
+          end if
           smsc1(j) = smsc1(j) + contrik1
           smsc2(j) = smsc2(j) + contri
-        enddo
+        end do
 
       goto 16
-      endif
+      end if
       call alcbuf (3)
       return
       end subroutine smsread

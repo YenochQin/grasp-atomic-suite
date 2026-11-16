@@ -7,6 +7,6 @@
       character(len=3)  ::  idstring
       character (len = 128), intent(inout) :: fullname(2)
       character(len=128) :: startdir,tmpdir
-      end subroutine
+      end subroutine oscl
       end interface
-      end module
+      end module oscl_i

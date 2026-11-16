@@ -13,7 +13,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use def_c
-      use cuto_c
+      use cuto_c, only: cutoff, double
       use jlabl_c, labj=>jlbr, labp=> jlbp
       use osc_c
       use syma_c
@@ -87,12 +87,12 @@
             isigna = -1
          else
             isigna = 1
-         endif
+         end if
          if (asfb < 0) then
             isignb = -1
          else
             isignb = 1
-         endif
+         end if
 
          acsq = asfa**2
          absq = asfb**2
@@ -113,7 +113,7 @@
             ab = ab*einstein_a_au_to_si
             bc = bc*einstein_b_au_to_si
             bb = bb*einstein_b_au_to_si
-         endif
+         end if
 !
 !   Accumulate total of A coefficients
 !
@@ -123,25 +123,25 @@
 !   Print information if both AC and AB are greater than CUTOFF
 !
          if (abs(ac)>=cutoff .and. abs(ab)>=cutoff) then
-            if (eng .lt. -1.0e-9_real64) then
+            if (eng < -1.0e-9_real64) then
                if (lsame) then
-                  f1 = 'f '
-                  f2 = 'f '
+                  f1 = "f "
+                  f2 = "f "
                else
-                  f1 = 'f2'
-                  f2 = 'f1'
+                  f1 = "f2"
+                  f2 = "f1"
                end if
 !
                write (24, 300) f1,ivecff(j),jlabj,jparj,f2,ivecii(i),jlabi,jpari, &
                -eng, -ac, -oscc, -sa !, ASFA
                write (24, 301) -ab, -oscb, -sb !, ASFB
-            else if (eng .gt. 1.e-9_real64) then
+            else if (eng > 1.0e-9_real64) then
                if (lsame) then
-                  f1 = 'f '
-                  f2 = 'f '
+                  f1 = "f "
+                  f2 = "f "
                else
-                  f1 = 'f1'
-                  f2 = 'f2'
+                  f1 = "f1"
+                  f2 = "f2"
                end if
                write (24,300) f1,ivecii(i),jlabi,jpari,f2,ivecff(j), &
                      jlabj,jparj,eng,ac*iatjpoff(j)/iatjpoii(i),     &
@@ -149,7 +149,7 @@
                write (24,301) ab*iatjpoff(j)/iatjpoii(i),oscb,sb
             end if
             lines = lines + 3
-         endif
+         end if
 !
       else
 !
@@ -161,7 +161,7 @@
             isigna = -1
          else
             isigna = 1
-         endif
+         end if
          ams = asfa**2
          am = ams*faau
          bm = ams*fbau
@@ -173,7 +173,7 @@
          if (.not.ltc(7)) then
             am = am*einstein_a_au_to_si
             bm = am*einstein_b_au_to_si
-         endif
+         end if
 !
 !   Accumulate total of A coefficients
 !
@@ -183,43 +183,43 @@
 !   Print information if AM is greater than CUTOFF
 !
          if (abs(am) >= cutoff) then
-            if (eng .le. -1.0e-9_real64) then
+            if (eng <= -1.0e-9_real64) then
                if (lsame) then
-                  f1 = 'f '
-                  f2 = 'f '
+                  f1 = "f "
+                  f2 = "f "
                else
-                  f1 = 'f2'
-                  f2 = 'f1'
+                  f1 = "f2"
+                  f2 = "f1"
                end if
                write (24,302) f1,ivecff(j),jlabj,jparj,f2,ivecii(i),&
                      jlabi,jpari,-eng,-am,-oscm,-sa
-            else if (eng .gt. 1.e-9_real64) then
+            else if (eng > 1.0e-9_real64) then
                if (lsame) then
-                  f1 = 'f '
-                  f2 = 'f '
+                  f1 = "f "
+                  f2 = "f "
                else
-                  f1 = 'f1'
-                  f2 = 'f2'
+                  f1 = "f1"
+                  f2 = "f2"
                end if
                write (24,302) f1,ivecii(i),jlabi,jpari,f2,ivecff(j),&
                      jlabj,jparj,eng,am*iatjpoff(j)/iatjpoii(i),    &
                      oscm,sa
             end if
             lines = lines+2
-         endif
+         end if
 !
-      endif
+      end if
 !
       return
 !
 !cjb  format for highly charged ions         F11.2 -> F13.2
 ! 300 FORMAT(1X,A2,I3,1X,2A4,A2,I3,1X,2A4,0P,F11.2,' C',1P,  &
-  300 format(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2,' C',1p,  &
+  300 format(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," C",1p,  &
            3d13.5)
-  301 format(42x,' B',1p,3d13.5)
+  301 format(42x," B",1p,3d13.5)
 !cjb  format for highly charged ions         F11.2 -> F13.2
 ! 302 FORMAT(1X,A2,I3,1X,2A4,A2,I3,1X,2A4,0P,F11.2,' M',1P,  &
-  302 format(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2,' M',1p,  &
+  302 format(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," M",1p,  &
            3d13.5)
       return
 !

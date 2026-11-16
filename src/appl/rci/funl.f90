@@ -44,7 +44,7 @@
 !
       if (k>=0 .and. k<=1) then
          if (x <= 2.0_real64) then
-            if (x == 0.0_real64) go to 6
+            if (x == 0.0_real64) goto 6
 !
 !   Use rational approximation for X < 2
 !
@@ -62,20 +62,20 @@
             sumg = xn*(sumg + xn*sumh)
             if (k /= 0) then
                sum = sum + sumg
-               go to 7
-            endif
+               goto 7
+            end if
             sum = sum + x*sumg
-            go to 7
-         endif
+            goto 7
+         end if
 !
          sum = a + b/x
          if (k /= 0) sum = sum + (sum + b/x)/x
          sum = sum/x
          xm = -x
          sum = sum*exp(xm)
-         go to 7
+         goto 7
     6    continue
-         if (k == 1) go to 98
+         if (k == 1) goto 98
          sum = f(1,1)
     7    continue
          funl = sum
@@ -86,13 +86,13 @@
    98    continue
          write (*, 302)
          stop
-      endif
+      end if
       write (*, 301)
       stop
 !
-  301 format(/,'FUNL: K must be either 0 or 1')
-  302 format(/,'FUNL: Attempt to calculate function for'/,&
-         ' zero argument and K value of 1')
+  301 format(/,"FUNL: K must be either 0 or 1")
+  302 format(/,"FUNL: Attempt to calculate function for"/,&
+         " zero argument and K value of 1")
       return
 !
       end function funl

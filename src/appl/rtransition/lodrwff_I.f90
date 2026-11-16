@@ -4,6 +4,6 @@
       subroutine lodrwff (name)
       implicit none (type, external)
       character (len = 24), intent(in) :: name
-      end subroutine
+      end subroutine lodrwff
       end interface
-      end module
+      end module lodrwff_i

@@ -6,6 +6,6 @@
       implicit none (type, external)
       integer, intent(in) :: j2max
       real(real64), intent(out) :: atwinv
-      end subroutine
+      end subroutine auxblk
       end interface
-      end module
+      end module auxblk_i

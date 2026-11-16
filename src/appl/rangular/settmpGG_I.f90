@@ -6,6 +6,6 @@
       integer, intent(in) :: nb
       integer, intent(in) :: k
       character (len = *), intent(in) :: filehead
-      end subroutine
+      end subroutine settmpgg
       end interface
-      end module
+      end module settmpgg_i

@@ -24,7 +24,7 @@
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
       use orb_c
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -50,20 +50,20 @@
 !-----------------------------------------------
 
       if (myid == 0) write (6, *) &
-         'Analysing sparse matrix array definition file ...', 30
+         "Analysing sparse matrix array definition file ...", 30
 
       read (30) mcplab, mb
       if (nb /= mb) then
-         write (stderr_unit, *) 'setsda: nb = ', nb, '.NE. mb (=', mb, ')'
+         write (stderr_unit, *) "setsda: nb = ", nb, ".NE. mb (=", mb, ")"
          stop
-      endif
+      end if
 !
 !cjb           PRINT *, ' setsda.f90 FHEAD '
 !cjb           PRINT *, ' setsda.f90 FHEAD = ', FHEAD
 !   Allocate storage for IENDC(0:NCF)
 !
-      call alloc (iendc, 0,  csf_count,'IENDC','SETSDA'  )
-      call alloc (irow, nnonz, 'IROW', 'SETSDA' )
+      call alloc (iendc, 0,  csf_count,"IENDC","SETSDA"  )
+      call alloc (irow, nnonz, "IROW", "SETSDA" )
 !
 !   Analyse data on file 30; set up IENDC and IROW
 ! In multiprocessor environment, iendc of each node will have the
@@ -77,7 +77,7 @@
          if (ic /= iclast) then
             iendc(iclast) = iend
             iclast = ic
-         endif
+         end if
          iend = npos
       end do
 !xhh - changed to suits MPI environment as well
@@ -90,15 +90,15 @@
 !cjb           PRINT *, ' before FHEAD '
 !cjb           PRINT *, ' FHEAD = ', FHEAD
 !cjb           PRINT *, ' before OPEN '
-      open(29, file=fhead//'.30', status='OLD', form='UNFORMATTED', iostat=ierr&
-         , position='APPEND')
+      open(29, file=fhead//".30", status="OLD", form="UNFORMATTED", iostat=ierr&
+         , position="APPEND")
 !cjb           PRINT *, ' after OPEN '
       if (ierr /= 0) then
-         write (stderr_unit, *) ' Error when opening the file mcp.30'
+         write (stderr_unit, *) " Error when opening the file mcp.30"
          stop
-      endif
+      end if
 
-      write (29) 'MCP', nb, csf_count
+      write (29) "MCP", nb, csf_count
       write (29) nnonz
       write (29) (iendc(i),i=myid + 1,csf_count,nprocs), (irow(i),i=1,nnonz)
       close(29)
@@ -106,8 +106,8 @@
 !
 !   Deallocate storage
 !
-      call dalloc (iendc, 'IENDC', 'SETSDA')
-      call dalloc (irow, 'IROW', 'SETSDA')
+      call dalloc (iendc, "IENDC", "SETSDA")
+      call dalloc (irow, "IROW", "SETSDA")
 !
       call write_coefficient_callback (lprint, nnonz, csf_count)
       return

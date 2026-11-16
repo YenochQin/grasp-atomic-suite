@@ -13,8 +13,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
-      use lodcsl_i
+      use openfl_i, only: openfl
+      use lodcsl_i, only: lodcsl
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -27,9 +27,9 @@
 !
 !   The  .csl  file is FORMATTED; it must exist
 !
-      defnam = 'rcsl.inp'
-      form = 'FORMATTED'
-      status = 'OLD'
+      defnam = "rcsl.inp"
+      form = "FORMATTED"
+      status = "OLD"
 !
 !   Look for  grasp92.csl
 !
@@ -38,23 +38,23 @@
       if (found) then
          filnam = defnam
       else
-         write (6, *) 'rcsl.inp does not exist'
+         write (6, *) "rcsl.inp does not exist"
          stop
-      endif
+      end if
 !
       call openfl (21, filnam, form, status, ierr)
       if (ierr == 1) then
-         write (6, *) 'Error when opening rcsl.inp'
+         write (6, *) "Error when opening rcsl.inp"
          stop
-      endif
+      end if
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      read (21, '(1A15)', iostat=ios) record
-      if (ios/=0 .or. record(1:15)/='Core subshells:') then
-         write (6, *) 'Not a Configuration Symmetry List File;'
+      read (21, "(1A15)", iostat=ios) record
+      if (ios/=0 .or. record(1:15)/="Core subshells:") then
+         write (6, *) "Not a Configuration Symmetry List File;"
          close(21)
-      endif
+      end if
 !
 !   Load data from the  .csl  file
 !

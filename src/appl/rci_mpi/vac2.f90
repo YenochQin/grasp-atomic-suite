@@ -20,14 +20,14 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use grid_c
-      use npar_c
-      use ncdist_c
-      use tatb_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
+      use ncdist_c, only: double, max_radial_points, zdist
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use funk_i
-      use quad_i
+      use funk_i, only: funk
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -58,10 +58,10 @@
 !
       if (dabs(tbi) >= epsi) then
          tb(i) = tbi
-         if (i < radial_point_count) go to 1
+         if (i < radial_point_count) goto 1
       else
          tb(i:radial_point_count) = 0.0_real64
-      endif
+      end if
 !
 !   Potential for a finite nucleus: equation (4)
 !
@@ -97,11 +97,11 @@
          if (dabs(x) >= epsi) then
             if (dabs((x - tb(k))/x) > 1.0e-5_real64) then
                tb(k) = x
-               if (k < radial_point_count) go to 3
-            endif
-         endif
+               if (k < radial_point_count) goto 3
+            end if
+         end if
 !
-      endif
+      end if
 !
       return
       end subroutine vac2

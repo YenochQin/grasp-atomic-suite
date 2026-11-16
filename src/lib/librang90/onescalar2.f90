@@ -33,10 +33,10 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use recoonescalar_i
-      use perko2_i
-      use reco2_i
-      use gg12_i
+      use recoonescalar_i, only: recoonescalar
+      use perko2_i, only: perko2
+      use reco2_i, only: reco2
+      use gg12_i, only: gg12
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

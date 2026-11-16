@@ -34,18 +34,18 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use reco_i
-      use reco2_i
-      use perko2_i
-      use coulom_i
-      use snrc_i
-      use ixjtik_i
-      use itrexg_i
-      use gg1112_i
-      use sixj_i
-      use speak_i
-      use cxk_i
-      use talk_i
+      use reco_i, only: reco
+      use reco2_i, only: reco2
+      use perko2_i, only: perko2
+      use coulom_i, only: coulom
+      use snrc_i, only: snrc
+      use ixjtik_i, only: ixjtik
+      use itrexg_i, only: itrexg
+      use gg1112_i, only: gg1112
+      use sixj_i, only: sixj
+      use speak_i, only: speak
+      use cxk_i, only: cxk
+      use talk_i, only: talk
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

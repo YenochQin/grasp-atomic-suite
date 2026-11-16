@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i
+      use convrt_i, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -42,7 +42,7 @@
          end do
       end do
 !
-  300 format(' H (',a,',',a,') = ',1p,1d19.12)
+  300 format(" H (",a,",",a,") = ",1p,1d19.12)
       return
 !
       end subroutine hmout

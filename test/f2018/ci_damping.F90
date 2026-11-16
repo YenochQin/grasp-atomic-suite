@@ -14,9 +14,9 @@ contains
             evec(3:6) = [1.0_real64, 0.0_real64, 0.0_real64, 1.0_real64]
         else
             evec(3:6) = [0.6_real64, 0.8_real64, -0.8_real64, 0.6_real64]
-        endif
-    end subroutine
-end module
+        end if
+end subroutine eigenpairs
+end module ci_fixture
 
 program ci_damping
     use ci_fixture
@@ -67,49 +67,49 @@ program ci_damping
     imin1_30=0; imax1_30=2; imin2_30=0; imax2_30=local_size
 #else
     do unit=30,33
-        open(unit,status='scratch',form='unformatted')
+        open(unit,status="scratch",form="unformatted")
         records=3
         if(unit==30) records=6
         do i=1,records
             write(unit) 0
-        enddo
+        end do
         if(unit==30) then
-            write(unit) 'MCP',1,2
+            write(unit) "MCP",1,2
             write(unit) local_size
             write(unit) [(i,i=1,local_size)], [(i,i=1,local_size)]
-        endif
-    enddo
+        end if
+    end do
 #endif
     if(myid==0) then
-        open(25,status='scratch',form='unformatted')
-        write(25) 'G92MIX'
+        open(25,status="scratch",form="unformatted")
+        write(25) "G92MIX"
         write(25) 2,2,1,2,8,1
-    endif
+    end if
     call matrix_step(.true.)
     ! With fcheck=all, the production allocation/zeroing must include IENDC(0).
     if(maxval(abs(evec(3:6)-[1.0_real64,0.0_real64,0.0_real64,1.0_real64]))>tol) &
-        error stop 'FIRST must bypass damping'
+        error stop "FIRST must bypass damping"
     call matrix_step(.false.)
-    if(.not.all(ieee_is_finite(evec))) error stop 'nonfinite damped roots'
+    if(.not.all(ieee_is_finite(evec))) error stop "nonfinite damped roots"
     if(maxval(abs(evec(3:6)-[0.6_real64,0.8_real64,0.8_real64,-0.6_real64]))>tol) &
-        error stop 'DDOT damping branch differs from analytic roots'
-    if(abs(dot_product(evec(3:4),evec(5:6)))>tol) error stop 'orthogonality'
+        error stop "DDOT damping branch differs from analytic roots"
+    if(abs(dot_product(evec(3:4),evec(5:6)))>tol) error stop "orthogonality"
     if(abs(sum(evec(3:4)**2)-1.0_real64)>tol.or.abs(sum(evec(5:6)**2)-1.0_real64)>tol) &
-        error stop 'normalization'
-    if(any(evec(1:2)/=99.0_real64).or.any(evec(7:8)/=99.0_real64)) error stop 'block offset guards'
+        error stop "normalization"
+    if(any(evec(1:2)/=99.0_real64).or.any(evec(7:8)/=99.0_real64)) error stop "block offset guards"
     cdamp=0.0_real64
     call matrix_step(.false.)
     if(maxval(abs(evec(3:6)-[0.6_real64,0.8_real64,-0.8_real64,0.6_real64]))>tol) &
-        error stop 'zero damping control'
-    if(solves/=3) error stop 'fixture did not execute three production calls'
+        error stop "zero damping control"
+    if(solves/=3) error stop "fixture did not execute three production calls"
     if(myid==0) then
         close(25)
-        print *, 'PASS: production FIRST / nonzero multi-root DDOT / zero damping'
-    endif
+        print *, "PASS: production FIRST / nonzero multi-root DDOT / zero damping"
+    end if
 #ifndef CI_MEM
     do unit=30,33
         close(unit)
-    enddo
+    end do
 #endif
 #ifdef CI_MPI
     call MPI_Finalize(ierr)
@@ -122,8 +122,8 @@ contains
 #else
         call matrix(first)
 #endif
-    end subroutine
-end program
+end subroutine matrix_step
+end program ci_damping
 
 #ifdef CI_MPI
 subroutine maneigmpi(dvdfirst,lprint,jblock,ncfpat,ncminpat,nevecpat,ncftot)
@@ -136,9 +136,13 @@ subroutine maneig(dvdfirst,lprint,jblock,ncfpat,ncminpat,nevecpat,ncftot)
     logical::lprint
     integer,intent(in)::jblock,ncfpat,ncminpat,nevecpat
     integer::ncftot
-    if(jblock/=1.or.nevecpat/=2.or.ncftot/=2) error stop 'eigensolver seam arguments'
+    if(jblock/=1.or.nevecpat/=2.or.ncftot/=2) error stop "eigensolver seam arguments"
     call eigenpairs()
-end subroutine
+#ifdef CI_MPI
+end subroutine maneigmpi
+#else
+end subroutine maneig
+#endif
 
 #ifdef CI_MEM
 subroutine setham(jblock,myid,nprocs,ncontr_tot,ncontr_tot2)
@@ -152,9 +156,9 @@ subroutine setham(jblock,myid,nprocs)
 #ifdef CI_MEM
     integer(int64)::ncontr_tot(20),ncontr_tot2(20)
 #endif
-    if(jblock/=1) error stop 'Hamiltonian seam block'
+    if(jblock/=1) error stop "Hamiltonian seam block"
     emt=0.0_real64
-end subroutine
+end subroutine setham
 
 #ifdef CI_MEM
 subroutine read03_mem(jblock)
@@ -167,20 +171,20 @@ subroutine read03_mem(jblock)
     implicit none (type, external)
     integer,intent(in)::jblock
     integer::i,k
-    if(jblock/=1) error stop 'memory seam block'
+    if(jblock/=1) error stop "memory seam block"
     k=0
     do i=myid+1,2,nprocs
         k=k+1
         iendc(i)=k
         irow(k)=i
-    enddo
-end subroutine
+    end do
+end subroutine read03_mem
 subroutine read1_mem(nfile,ncontr_tot2,lab,ncontr)
     use, intrinsic :: iso_fortran_env, only: int64
     implicit none (type, external)
     integer,intent(in)::nfile
     integer(int64),intent(in)::ncontr_tot2
     integer,intent(out)::lab,ncontr
-    error stop 'unexpected empty block seam'
-end subroutine
+    error stop "unexpected empty block seam"
+end subroutine read1_mem
 #endif

@@ -22,8 +22,8 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use jlabl_c, labj=>jlbr, labp=>jlbp
-      use blkidx_c
-      use peav_c
+      use blkidx_c, only: double, idxblk
+      use peav_c, only: double, eavblk
       use syma_c,          only: jpgg
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -89,7 +89,7 @@
                write (24, 302) i, labj(jtot), labp(ip), eau, ecm, eev
 !GG               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
             end do
-         endif
+         end if
 !
 !   Energies relative to level 1
 !
@@ -112,17 +112,17 @@
                write (24, 302) i, labj(jtot), labp(ip), eau, ecm, eev
 !GG               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
             end do
-         endif
+         end if
 !
-      endif
+      end if
 !
       return
 !
-  300 format(/,'Eigenenergies:')
-  301 format(/,'Level  J Parity',7x,'Hartrees',14x,'Kaysers',16x,'eV'/)
+  300 format(/,"Eigenenergies:")
+  301 format(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)
   302 format(1i3,4x,2a4,1p,3d21.12)
-  303 format(/,'Energy of each level relative to immediately lower',' level:')
-  304 format(/,'Energy of each level relative to lowest level:')
+  303 format(/,"Energy of each level relative to immediately lower"," level:")
+  304 format(/,"Energy of each level relative to lowest level:")
       return
 !
       end subroutine engoutgg

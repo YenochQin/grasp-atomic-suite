@@ -19,6 +19,6 @@
       real(real64), intent(out) :: dens1vec(nvec, nrnuc)
       real(real64), intent(in) :: dint1vec(max_orbitals, max_orbitals, nrnuc)
       integer, intent(in) :: doit
-      end subroutine
+      end subroutine densnew_seltz
       end interface
-      end module
+      end module densnew_seltz_i

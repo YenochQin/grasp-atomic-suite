@@ -19,7 +19,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i
+      use convrt_i, only: convrt
       use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
       implicit none (type, external)
 !-----------------------------------------------
@@ -56,7 +56,7 @@ contains
          njxmax = 2*(orbital_count - ncore)
       else
          njxmax = orbital_count - ncore
-      endif
+      end if
 !
 !   Initialise NJX
 !
@@ -75,62 +75,62 @@ contains
       iloop = max(1,loc)
       do i = 1, iloop
          reci = record(i:i)
-         if (reci/=' ' .and. reci/=',' .and. reci/=';') then
+         if (reci/=" " .and. reci/="," .and. reci/=";") then
             if (istart == 0) then
                istart = i
                ifrac = 0
             else
-               if (reci == '/') then
+               if (reci == "/") then
                  ifrac = i
-               endif
-            endif
+               end if
+            end if
          else
             if (istart /= 0) then
 !XHH~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                njx = njx + 1
                if (njx > njxmax) then
-                  write (6, *) 'PARSJL: Too many angular momentum', &
-                     ' quantum numbers specified;'
+                  write (6, *) "PARSJL: Too many angular momentum", &
+                     " quantum numbers specified;"
                   ierr = 1
-                  go to 3
-               endif
+                  goto 3
+               end if
                iend = i - 1
                if (ifrac == 0) then
                   call convrt (iend - istart + 1, cteger, lteger)
-                  form = '(1I'//cteger(1:lteger)//')'
+                  form = "(1I"//cteger(1:lteger)//")"
                   read (record(istart:iend), fmt=form) j
                   if (j < 0) then
-                     write (6, *) 'PARSJL: Negative angular momentum', &
-                        ' quantum number found;'
+                     write (6, *) "PARSJL: Negative angular momentum", &
+                        " quantum number found;"
                      ierr = 2
-                     go to 3
-                  endif
+                     goto 3
+                  end if
                   jx(njx) = 2*j
                else
                   call convrt (iend - ifrac, cteger, lteger)
-                  form = '(1I'//cteger(1:lteger)//')'
+                  form = "(1I"//cteger(1:lteger)//")"
                   read (record(ifrac+1:iend), fmt=form) j
                   if (j /= 2) then
-                     write (6, *) 'PARSJL: The denominator of a', &
-                        ' fractional quantum number must be 2;'
+                     write (6, *) "PARSJL: The denominator of a", &
+                        " fractional quantum number must be 2;"
                      ierr = 3
-                     go to 3
-                  endif
+                     goto 3
+                  end if
                   call convrt (ifrac - istart, cteger, lteger)
-                  form = '(1I'//cteger(1:lteger)//')'
+                  form = "(1I"//cteger(1:lteger)//")"
                   read (record(istart:ifrac-1), fmt=form) j
                   if (j < 0) then
-                     write (6, *) 'PARSJL: Negative angular momentum', &
-                        ' quantum number found;'
+                     write (6, *) "PARSJL: Negative angular momentum", &
+                        " quantum number found;"
                      ierr = 4
-                     go to 3
-                  endif
+                     goto 3
+                  end if
                   jx(njx) = j
-               endif
+               end if
                istart = 0
 !XHH~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            endif
-         endif
+            end if
+         end if
       end do
 !
       if (loc >= 1) then
@@ -145,46 +145,46 @@ contains
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
          njx = njx + 1
          if (njx > njxmax) then
-            write (6, *) 'PARSJL: Too many angular momentum', &
-               ' quantum numbers specified;'
+            write (6, *) "PARSJL: Too many angular momentum", &
+               " quantum numbers specified;"
             ierr = 1
-            go to 3
-         endif
+            goto 3
+         end if
          iend = i - 1
          if (ifrac == 0) then
             call convrt (iend - istart + 1, cteger, lteger)
-            form = '(1I'//cteger(1:lteger)//')'
+            form = "(1I"//cteger(1:lteger)//")"
             read (record(istart:iend), fmt=form) j
             if (j < 0) then
-               write (6, *) 'PARSJL: Negative angular momentum', &
-                  ' quantum number found;'
+               write (6, *) "PARSJL: Negative angular momentum", &
+                  " quantum number found;"
                ierr = 2
-               go to 3
-            endif
+               goto 3
+            end if
             jx(njx) = 2*j
          else
             call convrt (iend - ifrac, cteger, lteger)
-            form = '(1I'//cteger(1:lteger)//')'
+            form = "(1I"//cteger(1:lteger)//")"
             read (record(ifrac+1:iend), fmt=form) j
             if (j /= 2) then
-               write (6, *) 'PARSJL: The denominator of a', &
-                  ' fractional quantum number must be 2;'
+               write (6, *) "PARSJL: The denominator of a", &
+                  " fractional quantum number must be 2;"
                ierr = 3
-               go to 3
-            endif
+               goto 3
+            end if
             call convrt (ifrac - istart, cteger, lteger)
-            form = '(1I'//cteger(1:lteger)//')'
+            form = "(1I"//cteger(1:lteger)//")"
             read (record(istart:ifrac-1), fmt=form) j
             if (j < 0) then
-               write (6, *) 'PARSJL: Negative angular momentum', &
-                  ' quantum number found;'
+               write (6, *) "PARSJL: Negative angular momentum", &
+                  " quantum number found;"
                ierr = 4
-               go to 3
-            endif
+               goto 3
+            end if
             jx(njx) = j
-         endif
+         end if
          istart = 0
-      endif
+      end if
 !XHH~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 !
       ierr = 0

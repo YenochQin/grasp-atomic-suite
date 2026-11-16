@@ -5,6 +5,6 @@
       use parameter_def, only: max_orbitals
       implicit none (type, external)
       integer, intent(in) :: ncore
-      end subroutine
+      end subroutine screenpar
       end interface
-      end module
+      end module screenpar_i

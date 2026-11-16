@@ -9,6 +9,6 @@
       integer, intent(in) :: jp
       real(real64), intent(inout) :: p(max_radial_points)
       real(real64), intent(inout) :: q(max_radial_points)
-      end subroutine
+      end subroutine out
       end interface
-      end module
+      end module out_i

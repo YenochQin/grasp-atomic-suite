@@ -7,6 +7,6 @@
       use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
       integer , intent(in) :: ia, ib
-      end function
+      end function vpintf
       end interface
-      end module
+      end module vpintf_i

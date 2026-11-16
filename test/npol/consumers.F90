@@ -64,48 +64,48 @@ program npol_consumers
     call snapshot()
     ! Absent configuration goes through the real initialization seam.
 #ifdef NPOL_MPI
-    call npol_init_mpi('missing.inp', 2.0_real64, N, R, ZZ, MPI_COMM_WORLD, status, message)
+    call npol_init_mpi("missing.inp", 2.0_real64, N, R, ZZ, MPI_COMM_WORLD, status, message)
 #else
-    call npol_init('missing.inp', 2.0_real64, N, R, ZZ, status, message)
+    call npol_init("missing.inp", 2.0_real64, N, R, ZZ, status, message)
 #endif
-    call require(status == 0 .and. all(ZZ == coul), 'disabled preserves full ZZ exactly')
+    call require(status == 0 .and. all(ZZ == coul), "disabled preserves full ZZ exactly")
     call YPOT(1)
-    call require(all(YP(:N) == base_yp(:N)), 'disabled YPOT unchanged')
+    call require(all(YP(:N) == base_yp(:N)), "disabled YPOT unchanged")
     XP = 0
     XQ = 0
     call DACON()
-    call require(all(XP == base_xp) .and. all(XQ == base_xq), 'disabled DACON unchanged')
+    call require(all(XP == base_xp) .and. all(XQ == base_xq), "disabled DACON unchanged")
     do j = 1, 2
         do mode = 0, 1
             actual = RINTI(1,j,mode)
-            call require(actual == initial(j,mode+1), 'disabled RINTI unchanged')
+            call require(actual == initial(j,mode+1), "disabled RINTI unchanged")
         end do
     end do
-    if (rank == 0) call write_fixture('npol.inp')
+    if (rank == 0) call write_fixture("npol.inp")
 #ifdef NPOL_MPI
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
-    call npol_init_mpi('npol.inp', 2.0_real64, N, R, ZZ, MPI_COMM_WORLD, status, message)
+    call npol_init_mpi("npol.inp", 2.0_real64, N, R, ZZ, MPI_COMM_WORLD, status, message)
 #else
-    call npol_init('npol.inp', 2.0_real64, N, R, ZZ, status, message)
+    call npol_init("npol.inp", 2.0_real64, N, R, ZZ, status, message)
 #endif
     call require(status == 0, message)
     call YPOT(1)
-    call require(all(YP(:N) == ZZ(:N)/ranks), 'production YPOT contribution')
+    call require(all(YP(:N) == ZZ(:N)/ranks), "production YPOT contribution")
 #ifdef NPOL_MPI
     call MPI_Allreduce(YP, reduced, N, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, ierr)
 #else
     reduced(:N) = YP(:N)
 #endif
     do i = 1, N
-        call near(reduced(i), ZZ(i), 'reduced YPOT contains one full external potential')
+        call near(reduced(i), ZZ(i), "reduced YPOT contains one full external potential")
     end do
     XP = 0
     XQ = 0
     call DACON()
     do i = 2, N
         delta = ZZ(i)-coul(i)
-        call near(XP(i)-base_xp(i), -q*delta*QF(i,2)/C, 'production DACON XP sign and scale')
-        call near(XQ(i)-base_xq(i), q*delta*PF(i,2)/C, 'production DACON XQ sign and scale')
+        call near(XP(i)-base_xp(i), -q*delta*QF(i,2)/C, "production DACON XP sign and scale")
+        call near(XQ(i)-base_xq(i), q*delta*PF(i,2)/C, "production DACON XQ sign and scale")
     end do
     do j = 1, 2
         expected = 0
@@ -114,9 +114,9 @@ program npol_consumers
             expected = expected-term
         end do
         actual = RINTI(1,j,0)
-        call near(actual-initial(j,1), expected, 'production RINTI MODE=0 diagonal/offdiagonal')
+        call near(actual-initial(j,1), expected, "production RINTI MODE=0 diagonal/offdiagonal")
         actual = RINTI(1,j,1)
-        call require(actual == initial(j,2), 'production RINTI MODE=1 unchanged')
+        call require(actual == initial(j,2), "production RINTI MODE=1 unchanged")
     end do
     ! Isolate only a non-diagonal matrix element using a signed external
     ! perturbation: diagonal weighted overlaps cancel exactly.
@@ -129,13 +129,13 @@ program npol_consumers
     ZZ(2) = coul(2)+3
     ZZ(3) = coul(3)-2
     actual = RINTI(1,1,0)
-    call near(actual-initial(1,1), 0.0_real64, 'isolated fixture diagonal cancels')
+    call near(actual-initial(1,1), 0.0_real64, "isolated fixture diagonal cancels")
     actual = RINTI(1,2,0)
-    call near(actual-initial(2,1), -6.0_real64, 'isolated offdiagonal external integral')
+    call near(actual-initial(2,1), -6.0_real64, "isolated offdiagonal external integral")
 #ifdef NPOL_MPI
     call MPI_Finalize(ierr)
 #endif
-    print '(A)', 'PASS production consumers'
+    print "(A)", "PASS production consumers"
 contains
     subroutine snapshot()
         integer :: jj, mm
@@ -151,7 +151,7 @@ contains
                 initial(jj,mm+1) = RINTI(1,jj,mm)
             end do
         end do
-    end subroutine
-end program
+    end subroutine snapshot
+end program npol_consumers
 
 ! Deterministic test-only derivative/quadrature seams. Never linked into apps.

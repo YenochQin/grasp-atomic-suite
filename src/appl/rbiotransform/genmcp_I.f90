@@ -7,6 +7,6 @@
       integer :: ic
       integer :: ntestg
       integer :: inpci
-      end subroutine
+      end subroutine genmcp
       end interface
-      end module
+      end module genmcp_i

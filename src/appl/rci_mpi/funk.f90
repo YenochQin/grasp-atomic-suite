@@ -70,17 +70,17 @@
       data np/ 8, 8, 9, 10/
 !
       if (x /= 0.0_real64) then
-         if (n<0 .or. n==2 .or. n==4 .or. n>5) go to 98
+         if (n<0 .or. n==2 .or. n==4 .or. n>5) goto 98
          if (n - 3 <= 0) then
             if (n - 3 /= 0) then
                k = n + 1
                xn = 1.0_real64
-               go to 4
-            endif
+               goto 4
+            end if
             k = n
             xn = 1.0_real64/x**2
-            go to 4
-         endif
+            goto 4
+         end if
          k = n - 1
          xn = 1.0_real64/x**4
     4    continue
@@ -97,17 +97,17 @@
             x2 = x*x
             bsum = b(1,k) + x2*(b(2,k)+x2)
             csum = c(1,k) + x2*(c(2,k)+x2*c(3,k))
-            go to (6,8,7,8) k
+            goto (6,8,7,8) k
     6       continue
             bsum = bsum*x
-            go to 8
+            goto 8
     7       continue
             bsum = bsum*x2
     8       continue
             sum = sum + bsum*dlog(x)/csum
             funk = sum
             return
-         endif
+         end if
 !
 !   Calculate function for X > 1
 !
@@ -123,8 +123,8 @@
          sum = dsum*exp(xm)/(esum*dsqrt(x**3))
          funk = sum
          return
-      endif
-      if (n /= 0) go to 99
+      end if
+      if (n /= 0) goto 99
       funk = p(1,1)
       return
 !
@@ -137,9 +137,9 @@
       write (*, 301)
       stop
 !
-  301 format(/,' Attempt to calculate FUNK (0,N) for N > 0')
-  302 format(/,' Attempt to calculate FUNK (X,N) for N other than',&
-         ' 0, 1, 3 and 5.')
+  301 format(/," Attempt to calculate FUNK (0,N) for N > 0")
+  302 format(/," Attempt to calculate FUNK (X,N) for N other than",&
+         " 0, 1, 3 and 5.")
       return
 !
       end function funk

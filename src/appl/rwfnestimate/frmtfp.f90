@@ -27,7 +27,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use solvh_i
+      use solvh_i, only: solvh
       implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -70,15 +70,15 @@
          else
             set(loc) = .true.
                !SOURCE(LOC) = 'Thomas-Fermi estimate'
-            source(loc) = 'T-F'
-         endif
+            source(loc) = "T-F"
+         end if
 !
       end do
 !
       return
 !
-  300 format(/,'TFWAVE: Unable to compute radial'/,/,' wavefunction for ',i2,a2&
-         ,' subshell;')
+  300 format(/,"TFWAVE: Unable to compute radial"/,/," wavefunction for ",i2,a2&
+         ," subshell;")
       return
 !
       end subroutine frmtfp

@@ -6,6 +6,6 @@
       character (len = 24) :: name(2)
       integer :: inpci
       integer, intent(in) :: init
-      end subroutine
+      end subroutine readmix
       end interface
-      end module
+      end module readmix_i

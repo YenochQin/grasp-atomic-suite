@@ -7,7 +7,7 @@ program interp_contracts
     integer :: i,n
     character(16) :: scenario
     call get_command_argument(1,scenario)
-    if(scenario=='legacy') then
+    if(scenario=="legacy") then
         call legacy_parity()
         stop
     end if
@@ -17,28 +17,28 @@ program interp_contracts
     end do
     y=3+2*x+x*x
     select case(trim(scenario))
-    case('regular')
+    case("regular")
         point=4.25_real64;expected=29.5625_real64
-    case('left')
+    case("left")
         point=1;expected=6
-    case('short')
+    case("short")
         n=2;y=2*x+1;point=1.5_real64;expected=4
-    case('zero')
+    case("zero")
         y=x-1.5_real64;point=1.5_real64;expected=0
-    case('single','single_node')
+    case("single","single_node")
         n=1;y=3;point=2;expected=3
-        if(scenario=='single_node') point=1
-    case('empty')
+        if(scenario=="single_node") point=1
+    case("empty")
         n=0;point=0;expected=0
     case default
-        error stop 'Unknown interpolation fixture'
+        error stop "Unknown interpolation fixture"
     end select
     call interp(x(:n),y(:n),n,point,value,1e-12_real64)
-    if(scenario=='empty') error stop 'Empty interpolation table accepted'
-    if(.not.ieee_is_finite(value)) error stop 'Nonfinite interpolation'
-    if(abs(value-expected)>1e-12_real64) error stop 'Interpolation analytic oracle'
-    print '(A,Z16.16)', 'VALUE_BITS ',transfer(value,0_int64)
-    print *, 'PASS interpolation ',trim(scenario)
+    if(scenario=="empty") error stop "Empty interpolation table accepted"
+    if(.not.ieee_is_finite(value)) error stop "Nonfinite interpolation"
+    if(abs(value-expected)>1e-12_real64) error stop "Interpolation analytic oracle"
+    print "(A,Z16.16)", "VALUE_BITS ",transfer(value,0_int64)
+    print *, "PASS interpolation ",trim(scenario)
 contains
     subroutine legacy_parity()
         real(real64) :: nodes(40),values(40),points(0:40),point,result,expected
@@ -59,11 +59,11 @@ contains
                 point=points(i)
                 call interp(nodes(:n),values(:n),n,point,result,1e-12_real64)
                 expected=2+point+point**3/7
-                if(.not.ieee_is_finite(result)) error stop 'Nonfinite regular interpolation'
-                if(abs(result-expected)>1e-12_real64) error stop 'Regular interpolation polynomial'
-                print '(2I4,1X,Z16.16)',n,i,transfer(result,0_int64)
+                if(.not.ieee_is_finite(result)) error stop "Nonfinite regular interpolation"
+                if(abs(result-expected)>1e-12_real64) error stop "Regular interpolation polynomial"
+                print "(2I4,1X,Z16.16)",n,i,transfer(result,0_int64)
             end do
         end do
-        print *, 'PASS interpolation legacy'
-    end subroutine
-end program
+        print *, "PASS interpolation legacy"
+    end subroutine legacy_parity
+end program interp_contracts

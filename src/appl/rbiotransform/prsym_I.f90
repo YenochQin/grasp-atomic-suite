@@ -7,6 +7,6 @@
       real(real64), intent(in) :: a(1)
       integer, intent(in) :: matdim
 !...This routine performs I/O.
-      end subroutine
+      end subroutine prsym
       end interface
-      end module
+      end module prsym_i

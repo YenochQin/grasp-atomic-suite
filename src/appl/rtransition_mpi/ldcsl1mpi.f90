@@ -19,13 +19,13 @@
       use def_c
       use biorb_c
       use orb_c
-      use stat_c
+      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use iq_i
-      use lodcsl_i
-      use openfl_i
+      use iq_i, only: iq
+      use lodcsl_i, only: lodcsl
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -40,17 +40,17 @@
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      j = index(name,' ')
-      open (unit = 21,file=name(1:j-1)//'.c',form='FORMATTED',          &
-     &     status='OLD')
+      j = index(name," ")
+      open (unit = 21,file=name(1:j-1)//".c",form="FORMATTED",          &
+     &     status="OLD")
 
-      read (21,'(1A15)',iostat = ios) record
-      if ((ios .ne. 0) .or.                                             &
-     &    (record(1:15) .ne. 'Core subshells:')) then
-         print *, 'Not a Configuration Symmetry List File;'
+      read (21,"(1A15)",iostat = ios) record
+      if ((ios /= 0) .or.                                             &
+     &    (record(1:15) /= "Core subshells:")) then
+         print *, "Not a Configuration Symmetry List File;"
          close (21)
          stop
-      endif
+      end if
 !
 !   Load data from the  .csl  file
 !
@@ -82,9 +82,9 @@
       ncfr = csf_count
       nwr = orbital_count
 !
-      call alloc (iqar, max_orbitals, csf_count, 'IQAR', 'LDCSL1' )
-      call alloc (jqsar,max_orbitals,3,csf_count, 'JQSAR', 'LDCSL1')
-      call alloc (jcupar,max_orbitals, csf_count, 'JCUPAR', 'LDCSL1')
+      call alloc (iqar, max_orbitals, csf_count, "IQAR", "LDCSL1" )
+      call alloc (jqsar,max_orbitals,3,csf_count, "JQSAR", "LDCSL1")
+      call alloc (jcupar,max_orbitals, csf_count, "JCUPAR", "LDCSL1")
 !
       do 6 i = 1,csf_count
          do 5 j = 1,max_orbitals
@@ -111,11 +111,11 @@
 !
 !   Deallocate storage so that LODCSL can restart correctly
 !
-      call dalloc (csf_subshell_occupations, 'IQA', 'LDCSL1')
-      call dalloc (csf_subshell_quantum_codes, 'JQSA', 'LDCSL1')
-      call dalloc (csf_coupling_quantum_codes, 'JCUPA', 'LDCSL1')
+      call dalloc (csf_subshell_occupations, "IQA", "LDCSL1")
+      call dalloc (csf_subshell_quantum_codes, "JQSA", "LDCSL1")
+      call dalloc (csf_coupling_quantum_codes, "JCUPA", "LDCSL1")
 !
       close (21)
 
       return
-      end
+      end subroutine ldcsl1

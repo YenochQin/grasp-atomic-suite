@@ -45,7 +45,7 @@
       if (a < 0.0_real32) then
          shield = -speed_of_light_au
          return
-      endif
+      end if
       a = 1/sqrt(a)
 !
       aa = 1 + a*a
@@ -55,7 +55,7 @@
       if (t < 0.0_real32) then
          shield = -speed_of_light_au
          return
-      endif
+      end if
       beta = bb + sqrt(t)
       beta = beta/aa
       shield = nuclear_charge - beta*speed_of_light_au

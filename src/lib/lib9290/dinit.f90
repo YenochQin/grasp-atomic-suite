@@ -49,7 +49,7 @@ contains
 !
          x(xaddr:(n-1)*incx+xaddr:incx) = a
 !
-      endif
+      end if
 !
       return
 !

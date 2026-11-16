@@ -21,10 +21,10 @@
       use eigv_c
       use jlabl_c, labj=>jlbr, labp=>jlbp
       use syma_c,          only: jpgg
-      use iounit_c
-      use hblock_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use pos_c
-      use blkidx_c
+      use blkidx_c, only: double, idxblk
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -49,7 +49,7 @@
          write (stdout_unit, 300)
       else
          write (24, 300)
-      endif
+      end if
 
       do iv = 1, ncmin
 !         loop over eigenvectors
@@ -93,7 +93,7 @@
 
          l20: do i = nelt + 1, ncf
             w = csf_mixing_coefficients(nevecoff + i)
-            if (w==0._real64 .or. abs(w)<=abs(coeff(nelt))) cycle  l20
+            if (w==0.0_real64 .or. abs(w)<=abs(coeff(nelt))) cycle  l20
 !               we have a non-zero value larger than the largest so far
             do j = 1, nelt
                if (abs(w) <= abs(coeff(j))) cycle
@@ -117,11 +117,11 @@
             write (24, 320) jblock, icf, labj(ivtjpo), labp(ip), (coeff(i),i=1,&
                nelt)
             write (24, 330) (iconf(i),i=1,nelt)
-         endif
+         end if
       end do
 
-  300 format(/,'Weights of major contributors to ASF:'/,/,&
-         'Block Level J Parity      CSF contributions'/)
+  300 format(/,"Weights of major contributors to ASF:"/,/,&
+         "Block Level J Parity      CSF contributions"/)
   310 format(1x,a14,80a)
   320 format(i3,1x,i5,2x,2a4,5(3x,f8.4))
   330 format(19x,5(3x,i8))

@@ -39,11 +39,11 @@
 !   Read the initial state mixing file
 !
          read (68) ib, ncfii, nvecii, iatjp, iaspa
-         call alloc (evalii, nvecii, 'EVALII', 'READMIX')
-         call alloc (evecii, ncfii*nvecii, 'EVECII', 'READMIX')
-         call alloc (ivecii, nvecii,'IVECII', 'READMIX' )
-         call alloc (iatjpoii, nvecii, 'IATJPOII', 'READMIX')
-         call alloc (iasparii, nvecii, 'ISPARII', 'READMIX')
+         call alloc (evalii, nvecii, "EVALII", "READMIX")
+         call alloc (evecii, ncfii*nvecii, "EVECII", "READMIX")
+         call alloc (ivecii, nvecii,"IVECII", "READMIX" )
+         call alloc (iatjpoii, nvecii, "IATJPOII", "READMIX")
+         call alloc (iasparii, nvecii, "ISPARII", "READMIX")
          read (68) (ivecii(i),i=1,nvecii)
          iatjpoii(:nvecii) = iatjp
          iasparii(:nvecii) = iaspa
@@ -59,11 +59,11 @@
 !
 
          read (78) ib, ncfff, nvecff, iatjp, iaspa
-         call alloc (evalff, nvecff, 'EVALFF', 'READMIX')
-         call alloc (evecff, ncfff*nvecff, 'EVECFF', 'READMIX')
-         call alloc (ivecff, nvecff,'IVECFF', 'READMIX' )
-         call alloc (iatjpoff, nvecff, 'IATJPOFF', 'READMIX')
-         call alloc (iasparff, nvecff, 'ISPARFF', 'READMIX')
+         call alloc (evalff, nvecff, "EVALFF", "READMIX")
+         call alloc (evecff, ncfff*nvecff, "EVECFF", "READMIX")
+         call alloc (ivecff, nvecff,"IVECFF", "READMIX" )
+         call alloc (iatjpoff, nvecff, "IATJPOFF", "READMIX")
+         call alloc (iasparff, nvecff, "ISPARFF", "READMIX")
          read (78) (ivecff(i),i=1,nvecff)
          iatjpoff(:nvecff) = iatjp
          iasparff(:nvecff) = iaspa
@@ -74,7 +74,7 @@
 !   Close the initial state mixing  file
 !
 !      CLOSE(78)
-      endif
+      end if
 
       return
       end subroutine readmix

@@ -7,6 +7,6 @@
       implicit none (type, external)
       integer :: ncorer
       character(len=24) :: name
-      end subroutine
+      end subroutine ldcsl1
       end interface
-      end module
+      end module ldcsl1_i

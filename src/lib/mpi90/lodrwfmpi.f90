@@ -30,15 +30,15 @@ contains
       use debug_c
       use def_c, only: speed_of_light_au, nuclear_charge
       use grid_c
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use orb_c
       use wave_c, only: orbital_origin_parameters, radial_large_components, radial_small_components
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use intrpq_i
-      use orthsc_i
+      use intrpq_i, only: intrpq
+      use orthsc_i, only: orthsc
       use mpiu_i, only: stopmpi
       implicit none (type, external)
 !-----------------------------------------------
@@ -58,8 +58,8 @@ contains
 !
 !   Allocate storage to orbital arrays
 !
-      call alloc(radial_large_components, max_radial_points, orbital_count, 'PF', 'LODRWFMPI')
-      call alloc(radial_small_components, max_radial_points, orbital_count, 'QF', 'LODRWFMPI')
+      call alloc(radial_large_components, max_radial_points, orbital_count, "PF", "LODRWFMPI")
+      call alloc(radial_small_components, max_radial_points, orbital_count, "QF", "LODRWFMPI")
 
 !   Setup: (1) Orbital arrays to zero
 !          (2) Array E to -1 (no orbitals estimated)
@@ -71,51 +71,51 @@ contains
       do j = 1, orbital_count
 
          do i = 1, radial_point_count
-            radial_large_components(i,j) = 0._real64
-            radial_small_components(i,j) = 0._real64
-         enddo
+            radial_large_components(i,j) = 0.0_real64
+            radial_small_components(i,j) = 0.0_real64
+         end do
 
-         orbital_energy_parameters(j) = -1._real64
+         orbital_energy_parameters(j) = -1.0_real64
          k = abs (orbital_kappa(j))
-         if (nuclear_model_parameter_count .gt. 0) then
+         if (nuclear_model_parameter_count > 0) then
             orbital_origin_exponents(j) = dble (k)
-         elseif (nuclear_model_parameter_count .eq. 0) then
+         else if (nuclear_model_parameter_count == 0) then
             fkk = dble (k*k)
-            if (fkk .ge. con) then
+            if (fkk >= con) then
                orbital_origin_exponents(j) = sqrt (fkk-con)
             else
                !WRITE (istde,*) 'LODRWF: Imaginary gamma parameter'
                !WRITE (istde,*) ' for ',NP(J),NH(J),' orbital; the'
                !WRITE (istde,*) ' point model for the nucleus'
                !WRITE (istde,*) ' is inappropriate for Z > ',C,'.'
-               call stopmpi ('lodrwfmpi: Inappropriate gamma', mpi_rank)
-            endif
-         endif
-      enddo
+               call stopmpi ("lodrwfmpi: Inappropriate gamma", mpi_rank)
+            end if
+         end if
+      end do
 !
 !   Read orbital information from Read Orbitals File; write summary
 !   to  .dbg  file if option set
 !
-      if (ldbpr(3) .and. mpi_rank .eq. 0) write (99,300)
+      if (ldbpr(3) .and. mpi_rank == 0) write (99,300)
       nwin = 0
     3 continue
 
-      if (mpi_rank .eq. 0) read (23,iostat = ios) npy,naky,ey,my
+      if (mpi_rank == 0) read (23,iostat = ios) npy,naky,ey,my
       call mpi_bcast (ios,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (npy,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (naky,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (my,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (ey,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
 
-      if (ios .eq. 0) then
-         call alloc (pa,my, 'PA', 'LODRWFMPI')
-         call alloc (qa,my, 'QA', 'LODRWFMPI')
-         call alloc (ra,my, 'RA', 'LODRWFMPI')
+      if (ios == 0) then
+         call alloc (pa,my, "PA", "LODRWFMPI")
+         call alloc (qa,my, "QA", "LODRWFMPI")
+         call alloc (ra,my, "RA", "LODRWFMPI")
 
-         if (mpi_rank .eq. 0) then
+         if (mpi_rank == 0) then
             read (23) pzy,(pa(i),i = 1,my),(qa(i),i =1 ,my)
             read (23) (ra(i),i = 1,my)
-         endif
+         end if
 
          call mpi_bcast (pzy,1,mpi_double_precision,0, &
                                mpi_comm_world,mpi_error_code)
@@ -131,37 +131,37 @@ contains
                orbital_origin_parameters(j) = pzy
                orbital_energy_parameters(j) = ey
                call intrpq (pa, qa, my, ra, j, dnorm)
-               if (ldbpr(3) .and. mpi_rank .eq. 0) &
+               if (ldbpr(3) .and. mpi_rank == 0) &
                      write (99,301) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_energy_parameters(j), dnorm
                nwin = nwin + 1
-         enddo
+         end do
 
-         call dalloc (pa, 'PA', 'LODRWFMPI')
-         call dalloc (qa, 'QA', 'LODRWFMPI')
-         call dalloc (ra, 'RA', 'LODRWFMPI')
+         call dalloc (pa, "PA", "LODRWFMPI")
+         call dalloc (qa, "QA", "LODRWFMPI")
+         call dalloc (ra, "RA", "LODRWFMPI")
 
          goto 3
-      endif
-      if (ldbpr(3) .and. mpi_rank .eq. 0) &
-            write (99,*) ' orbitals renormalised;'
+      end if
+      if (ldbpr(3) .and. mpi_rank == 0) &
+            write (99,*) " orbitals renormalised;"
 !
 !   Return with an error code if all orbitals are not known
 !
-      if (nwin .lt. orbital_count) then
+      if (nwin < orbital_count) then
          ierror = 1
          return
-      endif
+      end if
 !
 !   Schmidt orthogonalise the orbitals
 !
       call orthsc
 
-      if (ldbpr(3) .and. mpi_rank .eq. 0) &
-            write (99,*) 'orbitals orthogonalised and renormalised;'
+      if (ldbpr(3) .and. mpi_rank == 0) &
+            write (99,*) "orbitals orthogonalised and renormalised;"
       ierror = 0
 
-  300 format (/'From SUBROUTINE LODRWFmpi:' &
-              /' Orbital',8x,'Eigenvalue',19x,'Norm')
+  300 format (/"From SUBROUTINE LODRWFmpi:" &
+              /" Orbital",8x,"Eigenvalue",19x,"Norm")
   301 format (2x,i2,a2,4x,1p,1d22.15,4x,1d22.15)
 
       return

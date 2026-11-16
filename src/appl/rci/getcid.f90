@@ -19,20 +19,20 @@
       use parameter_def,   only: max_radial_points
       use decide_c
       use def_c,           only: vacuum_speed_of_light_au, speed_of_light_au, nuclear_charge, accy, electron_count, emn
-      use default_c
+      use default_c, only: double, inpci, ndef, ndump
       use grid_c
-      use hblock_c
-      use iccu_c
-      use iounit_c
-      use npar_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use iccu_c, only: iccut, iccutblk
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use npot_c,          only: negative_radius_times_potential, first_grid_index_beyond_fermi_c
       use nsmdat_c
       use orb_c
       use wave_c
-      use wfac_c
-      use blim_c
+      use wfac_c, only: double, wfact
+      use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
       use where_c
-      use qedcut_c
+      use qedcut_c, only: nqedcut, nqedmax
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -65,31 +65,31 @@
 ! The speed of light, if non-default then spread from node-0
 ! Quantities to be obtained: C
 !
-      if (ndef .ne. 0) then
-         write (stderr_unit,*) 'Revise the physical speed of light (',vacuum_speed_of_light_au,   &
-                           ' in a.u.) ?'
+      if (ndef /= 0) then
+         write (stderr_unit,*) "Revise the physical speed of light (",vacuum_speed_of_light_au,   &
+                           " in a.u.) ?"
          yes = getyn ()
          if (yes) then
-            write (stderr_unit,*) 'Enter the revised value:'
+            write (stderr_unit,*) "Enter the revised value:"
             read *,speed_of_light_au
          else
             speed_of_light_au = vacuum_speed_of_light_au
-         endif
+         end if
       else
          speed_of_light_au = vacuum_speed_of_light_au
-      endif
+      end if
 !
 ! Treat some CSF's as perturbation ? Broadcasting is used only in
 ! non-default mode, as the above case for speed of light.
 ! Quantities to be obtained: LFORDR
 !
-      if (ndef .ne. 0) then
-         write (stderr_unit,*) 'Treat contributions of some CSFs',            &
-                           ' as first-order perturbations?'
+      if (ndef /= 0) then
+         write (stderr_unit,*) "Treat contributions of some CSFs",            &
+                           " as first-order perturbations?"
          lfordr = getyn ()
       else
          lfordr = .false.
-      endif
+      end if
 
 ! Get iccutblk() from the user-input
 
@@ -97,32 +97,32 @@
          !...Default first
          do i = 1, symmetry_block_count
            iccutblk(i) = csf_counts_by_block(i)
-         enddo
+         end do
       else
 
       ! Let master do the i/o, then broadcast
-            write (stderr_unit,*) 'There are ', symmetry_block_count, 'blocks. They are:'
-            write (stderr_unit,*) '  block     J Parity     No of CSFs'
+            write (stderr_unit,*) "There are ", symmetry_block_count, "blocks. They are:"
+            write (stderr_unit,*) "  block     J Parity     No of CSFs"
             do i = 1, symmetry_block_count
                write (stderr_unit,*) i, idblk(i)(1:5), csf_counts_by_block(i)
-            enddo
+            end do
 
             write (stderr_unit,*)
-            write (stderr_unit,*) 'Enter iccut for each block'
+            write (stderr_unit,*) "Enter iccut for each block"
             do jblock = 1, symmetry_block_count
-               write (stderr_unit,*) 'Block ', jblock, '   ncf = ',           &
+               write (stderr_unit,*) "Block ", jblock, "   ncf = ",           &
                               csf_counts_by_block(jblock)                            &
-                      , ' id = ', idblk(jblock)(1:5)
+                      , " id = ", idblk(jblock)(1:5)
   123          read (stdin_unit,*) ntmp
-               if (ntmp .ge. 0 .and. ntmp .le. csf_counts_by_block(jblock)) then
+               if (ntmp >= 0 .and. ntmp <= csf_counts_by_block(jblock)) then
                   iccutblk(jblock) = ntmp
                else
-                  write (stderr_unit,*) 'ICCUT out of range, re-enter:'
+                  write (stderr_unit,*) "ICCUT out of range, re-enter:"
                   goto 123
-               endif
-               write(734,*) ntmp,'! ICCUT for block',jblock
-            enddo
-      endif
+               end if
+               write(734,*) ntmp,"! ICCUT for block",jblock
+            end do
+      end if
 
 !*****************************************************************
 !
@@ -155,71 +155,71 @@
 ! Include transverse ?
 ! Quantities to be obtained: LTRANS, WFACT
 !
-      write (stderr_unit,*) 'Include contribution of H (Transverse)?'
+      write (stderr_unit,*) "Include contribution of H (Transverse)?"
       ltrans = getyn ()
-      write (stderr_unit,*) 'Modify all transverse photon frequencies?'
+      write (stderr_unit,*) "Modify all transverse photon frequencies?"
       yes = getyn ()
       if (yes) then
-         write (stderr_unit,*) 'Enter the scale factor:'
+         write (stderr_unit,*) "Enter the scale factor:"
          read *, wfact
       else
          wfact = 1.0_real64
-      endif
+      end if
 !
 ! Other interactions ? One logical for each case. Done altogether
 !
-      write (stderr_unit,*) 'Include H (Vacuum Polarisation)?'
+      write (stderr_unit,*) "Include H (Vacuum Polarisation)?"
       lvp = getyn ()
 
-      write (stderr_unit,*) 'Include H (Normal Mass Shift)?'
+      write (stderr_unit,*) "Include H (Normal Mass Shift)?"
       lnms = getyn ()
 
-      write (stderr_unit,*) 'Include H (Specific Mass Shift)?'
+      write (stderr_unit,*) "Include H (Specific Mass Shift)?"
       lsms = getyn ()
 
-      write (stderr_unit,*) 'Estimate self-energy?'
+      write (stderr_unit,*) "Estimate self-energy?"
       lse = getyn ()
       if (lse.eqv..true.) then
          nqedcut = 1
          write (stderr_unit,*)                                             &
-      'Largest n quantum number for including self-energy for orbital'
-         write (stderr_unit,*) 'n should be less or equal 8'
+      "Largest n quantum number for including self-energy for orbital"
+         write (stderr_unit,*) "n should be less or equal 8"
          read *, nqedmax
       else
          nqedcut = 0
       end if
 
       if (ltrans) then
-        write(734,'(a)') 'y            ! Contribution of H Transverse?'
+        write(734,"(a)") "y            ! Contribution of H Transverse?"
       else
-        write(734,'(a)') 'n            ! Contribution of H Transverse?'
+        write(734,"(a)") "n            ! Contribution of H Transverse?"
       end if
       if (yes) then
-        write(734,'(a)') 'y            ! Modify photon frequencies?'
-        write(734,*) wfact,'! Scale factor'
+        write(734,"(a)") "y            ! Modify photon frequencies?"
+        write(734,*) wfact,"! Scale factor"
       else
-        write(734,'(a)') 'n            ! Modify photon frequencies?'
+        write(734,"(a)") "n            ! Modify photon frequencies?"
       end if
       if (lvp) then
-        write(734,'(a)') 'y            ! Vacuum polarization?'
+        write(734,"(a)") "y            ! Vacuum polarization?"
       else
-        write(734,'(a)') 'n            ! Vacuum polarization?'
+        write(734,"(a)") "n            ! Vacuum polarization?"
       end if
       if (lnms) then
-        write(734,'(a)') 'y            ! Normal mass shift?'
+        write(734,"(a)") "y            ! Normal mass shift?"
       else
-        write(734,'(a)') 'n            ! Normal mass shift?'
+        write(734,"(a)") "n            ! Normal mass shift?"
       end if
       if (lsms) then
-        write(734,'(a)') 'y            ! Specific mass shift?'
+        write(734,"(a)") "y            ! Specific mass shift?"
       else
-        write(734,'(a)') 'n            ! Specific mass shift?'
+        write(734,"(a)") "n            ! Specific mass shift?"
       end if
       if (lse) then
-        write(734,'(a)') 'y            ! Self energy?'
-        write(734,*) nqedmax, '! Max n for including self energy'
+        write(734,"(a)") "y            ! Self energy?"
+        write(734,*) nqedmax, "! Max n for including self energy"
       else
-        write(734,'(a)') 'n            ! Self energy?'
+        write(734,"(a)") "n            ! Self energy?"
       end if
 !
 ! Parameters controlling the radial grid
@@ -234,10 +234,10 @@
 !     ELSE
 !CFF     .. should be Z-dependent
          radial_grid_scale = 2.0e-6_real64/nuclear_charge
-         transformed_grid_step = 5.e-2_real64
+         transformed_grid_step = 5.0e-2_real64
          radial_point_count = max_radial_points
 !     ENDIF
-      asymptotic_grid_step = 0._real64
+      asymptotic_grid_step = 0.0_real64
 !     IF ( NDEF.NE.0) THEN
 !        WRITE (istde,*) 'The default radial grid parameters',         &
 !                       ' for this case are:'
@@ -319,7 +319,7 @@
             & orbital_last_grid_index(j)
          write (imcdf) (radial_large_components(i,j), i = 1, orbital_last_grid_index(j)), (radial_small_components(i,j) &
             & , i = 1, orbital_last_grid_index(j))
-      enddo
+      end do
 !
       return
-      end
+      end subroutine getcid

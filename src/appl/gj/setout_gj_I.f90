@@ -8,6 +8,6 @@
       character(len=24), intent(in) :: name
       integer, intent(in) :: nci
       real(real64), intent(in) :: gjc_diag(nvec), dgjc_diag(nvec)
-      end subroutine
+      end subroutine setout_gj
       end interface
-      end module
+      end module setout_gj_i

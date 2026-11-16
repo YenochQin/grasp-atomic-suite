@@ -30,11 +30,11 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use recop00_i
-      use recop2_i
-      use c0t5s_i
-      use rmeajj_i
-      use wj1_i
+      use recop00_i, only: recop00
+      use recop2_i, only: recop2
+      use c0t5s_i, only: c0t5s
+      use rmeajj_i, only: rmeajj
+      use wj1_i, only: wj1
       use perko2_i, only: perko2
       implicit none (type, external)
 !-----------------------------------------------
@@ -89,10 +89,10 @@ contains
       end do
       ifaz=ifaz+1
       if(mod(ifaz,2) /= 0)coeff=-coeff
-      if(ia.ne.ja) then
+      if(ia/=ja) then
         ifaz = ik1(3)+ik2(3)-2*ka+2
         if(mod(ifaz,4) /= 0)coeff=-coeff
-      endif
+      end if
       coeff=-coeff*sqrt(dble(id1(3)+1))
       return
       end subroutine oneparticlejj2

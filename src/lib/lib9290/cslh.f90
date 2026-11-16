@@ -21,15 +21,15 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use memory_man
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use def_c
       use orb_c, ncftot=>csf_count
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setcsll_i
-      use lodcsh_i
+      use setcsll_i, only: setcsll
+      use lodcsh_i, only: lodcsh
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -48,10 +48,10 @@ contains
 
 ! node-0 does exactly the same as the serial code does
 
-      call alloc (csf_counts_by_block, nblkin + 1, 'NCFBLK', 'CSLH')
+      call alloc (csf_counts_by_block, nblkin + 1, "NCFBLK", "CSLH")
 
       call setcsll (21, name, nblkin, symmetry_block_count, csf_counts_by_block, ncftot, idblk)
-      call ralloc (csf_counts_by_block, symmetry_block_count + 1, 'NCFBLK', 'CSLH')
+      call ralloc (csf_counts_by_block, symmetry_block_count + 1, "NCFBLK", "CSLH")
       rewind (21)
       read (21, *)
       !..Load header of <name> file

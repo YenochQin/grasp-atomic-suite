@@ -6,6 +6,6 @@
       character (len = 24), intent(in) :: name(2)
       integer, intent(in) :: inpci
       integer :: ilbl
-      end subroutine
+      end subroutine strsum
       end interface
-      end module
+      end module strsum_i

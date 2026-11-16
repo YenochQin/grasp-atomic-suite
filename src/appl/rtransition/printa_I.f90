@@ -12,6 +12,6 @@
       real(real64), intent(in) :: omega
       real(real64), intent(in) :: factor
       integer, intent(inout) :: lines
-      end subroutine
+      end subroutine printa
       end interface
-      end module
+      end module printa_i

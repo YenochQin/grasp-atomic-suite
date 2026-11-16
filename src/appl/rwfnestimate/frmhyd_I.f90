@@ -7,6 +7,6 @@
       integer, intent(in) :: index(max_orbitals)
       integer, intent(in) :: nsubs, nradial
       logical, intent(in) :: modify
-      end subroutine
+      end subroutine frmhyd
       end interface
-      end module
+      end module frmhyd_i

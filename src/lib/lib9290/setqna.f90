@@ -24,10 +24,10 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use iq_i
-      use jqs_i
-      use ichop_i
-      use jcup_i
+      use iq_i, only: iq
+      use jqs_i, only: jqs
+      use ichop_i, only: ichop
+      use jcup_i, only: jcup
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -67,7 +67,7 @@ contains
          else
             npeel = npeel + 1
             jlist(npeel) = j
-         endif
+         end if
       end do
 !
 !   Return if not more than one shell is open
@@ -91,8 +91,8 @@ contains
             jcnt = jcnt + 1
          else
             jjc1(1) = jqs(3,jw1,ja)
-         endif
-      endif
+         end if
+      end if
 !
       do j = 3, npeel
          jw = jlist(j)
@@ -104,9 +104,9 @@ contains
                jcnt = jcnt + 1
             else
                jjc1(j-1) = jqs(3,jw,ja)
-            endif
+            end if
             jcntop = jcntop + 1
-         endif
+         end if
       end do
 !
 !   ... and repeat for right hand side
@@ -125,8 +125,8 @@ contains
             jcnt = jcnt + 1
          else
             jjc2(1) = jqs(3,jw1,jb)
-         endif
-      endif
+         end if
+      end if
 !
       do j = 3, npeel
          jw = jlist(j)
@@ -138,9 +138,9 @@ contains
                jcnt = jcnt + 1
             else
                jjc2(j-1) = jqs(3,jw,jb)
-            endif
+            end if
             jcntop = jcntop + 1
-         endif
+         end if
       end do
 !
       return

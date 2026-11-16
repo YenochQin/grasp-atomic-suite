@@ -3,6 +3,6 @@
       interface
       subroutine tfpot
       implicit none (type, external)
-      end subroutine
+      end subroutine tfpot
       end interface
-      end module
+      end module tfpot_i

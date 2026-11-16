@@ -9,6 +9,6 @@
       integer  :: i, j, inum_ii, inum_ff
       real(real64), intent(in) :: asfa, asfb
       real(real64), intent(in) :: omega, factor
-      end subroutine
+      end subroutine printals
       end interface
-      end module
+      end module printals_i

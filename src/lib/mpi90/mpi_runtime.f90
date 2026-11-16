@@ -28,10 +28,10 @@ contains
       call mpi_comm_rank (mpi_comm_world, myid, ierr)
       call mpi_comm_size (mpi_comm_world, nprocs, ierr)
       call mpi_get_processor_name (host, lenhost, ierr)
-      if (ierr .ne. mpi_success) print *, ' ierr=', ierr, ' id=', myid
+      if (ierr /= mpi_success) print *, " ierr=", ierr, " id=", myid
 
       return
-      end
+      end subroutine startmpi
       subroutine mpix_bytes (n, newtype, ierr)
 
 !  Constructs new mpi data type newType of n-bytes long
@@ -55,7 +55,7 @@ contains
       ierr = ierr + ier0
 
       return
-      end
+      end subroutine mpix_bytes
       subroutine stopmpi (what, myid)
 
 ! This subroutine stops MPI, but before doing so it issues an error
@@ -78,10 +78,10 @@ contains
 !-----------------------------------------------
       integer :: ierr
 
-      print *, 'mpi stopped by node-', myid, ' from ', what
+      print *, "mpi stopped by node-", myid, " from ", what
       call mpi_barrier (mpi_comm_world,ierr)
       call mpi_finalize (ierr)
 
       stop
-      end
+      end subroutine stopmpi
 end module mpi_runtime_i

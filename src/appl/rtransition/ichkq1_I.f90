@@ -5,6 +5,6 @@
       implicit none (type, external)
       integer :: ja
       integer :: jb
-      end function
+      end function ichkq1
       end interface
-      end module
+      end module ichkq1_i

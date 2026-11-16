@@ -15,14 +15,14 @@
 !   M o d u l e s
 !-----------------------------------------------
       use memory_man
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use def_c
       use orb_c, only: ncftot=>csf_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
 !      USE setcsll_I
-      use lodcsh_i
+      use lodcsh_i, only: lodcsh
       use setcsll_i, only: setcsll
       implicit none (type, external)
 !-----------------------------------------------
@@ -41,9 +41,9 @@
 !     POINTER (ncfblk, ncfblk(0:*))
 !-----------------------------------------------------------------------
 
-      call alloc (csf_counts_by_block, 0,  nblkin, 'NCFBLK', 'SETCSL' )
+      call alloc (csf_counts_by_block, 0,  nblkin, "NCFBLK", "SETCSL" )
       call setcsll (21, name, nblkin, symmetry_block_count, csf_counts_by_block(1:), ncftot, idblk)
-      call ralloc (csf_counts_by_block, 0, symmetry_block_count, 'NCFBLK', 'SETCSL' )
+      call ralloc (csf_counts_by_block, 0, symmetry_block_count, "NCFBLK", "SETCSL" )
 
       rewind (21)
       read (21, *)

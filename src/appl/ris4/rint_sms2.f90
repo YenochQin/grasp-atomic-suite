@@ -22,15 +22,15 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use grid_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use wave_c
       use def_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use sigma_1_i
-      use sigma_2_i
-      use quad_i
+      use sigma_1_i, only: sigma_1
+      use sigma_2_i, only: sigma_2
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

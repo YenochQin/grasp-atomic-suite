@@ -23,24 +23,24 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
       use memory_man
-      use damp_c
+      use damp_c, only: double, max_orbitals, mixing_damping_factors, orbital_damping_factors
       use def_c,           only: iccmin, ncmin, ncmax
       use debug_c
       use eigv_c
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use hmat_c
-      use iounit_c
-      use mcpa_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use mcpa_c, only: double, max_mcp_file_multipole_rank
       use mpi_s
       use orb_c
       use pos_c
-      use peav_c
+      use peav_c, only: double, eavblk
       use syma_c,          only: jpgg
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setham_i
-      use maneig_i
+      use setham_i, only: setham
+      use maneig_i, only: maneig
       use suite_linear_algebra, only: dcopy, ddot, dscal
       implicit none (type, external)
 !-----------------------------------------------
@@ -72,9 +72,9 @@
 !   Save previous estimate of eigenvectors
 
       if (.not.first) then
-         call alloc (cmvl, mixing_coefficient_storage_size, 'CMVL', 'MATRIX')
+         call alloc (cmvl, mixing_coefficient_storage_size, "CMVL", "MATRIX")
          call dcopy (mixing_coefficient_storage_size, csf_mixing_coefficients, 1, cmvl, 1)
-      endif
+      end if
 
 !=======================================================================
 !   Position the files - MCP files (unit NFILE) for reading
@@ -87,7 +87,7 @@
             read (nfile)
             read (nfile)
             read (nfile)
-         endif
+         end if
          read (nfile)
          read (nfile)
          read (nfile)
@@ -101,7 +101,7 @@
          read (25) nelec, total_csf_count, orbital_count, ntmp, ntmp, symmetry_block_count
          backspace (25)
          write (25) nelec, total_csf_count, orbital_count, ncmin, mixing_coefficient_storage_size, symmetry_block_count
-      endif
+      end if
 
 !=======================================================================
 !   Do the job block by block
@@ -119,20 +119,20 @@
 
          read (30) mcplab, jblockt, csf_count
          if (jblockt/=jblock .or. csf_count/=csf_counts_by_block(jblock)) error stop &
-            'matrx: jblockt .NE. jblock .OR. ncf1 .NE. ncf2'
+            "matrx: jblockt .NE. jblock .OR. ncf1 .NE. ncf2"
          read (30) nelmntgg
          stored_matrix_element_count = int(nelmntgg,kind=int64)
-         call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'MATRIX')
-         call alloc (hamiltonian_values, stored_matrix_element_count, 'EMT', 'MATRIX')
+         call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "MATRIX")
+         call alloc (hamiltonian_values, stored_matrix_element_count, "EMT", "MATRIX")
 !cjb          ALLOC (IENDC, NCF + 1,...)  ->  ALLOC (IENDC, 0, NCF,...)
 !cjb     CALL ALLOC (IENDC, NCF + 1, 'IENDC', 'MATRIX' )
-         call alloc (stored_segment_end_offsets, 0, csf_count, 'IENDC', 'MATRIX' )
+         call alloc (stored_segment_end_offsets, 0, csf_count, "IENDC", "MATRIX" )
 
 !        ! may not be necessary if iendc is ALWAYS used
          stored_segment_end_offsets(0:csf_count) = 0                        ! the way it is assigned here.
 
       !...EMT will be accumulated in setham
-         hamiltonian_values(:stored_matrix_element_count) = 0._real64
+         hamiltonian_values(:stored_matrix_element_count) = 0.0_real64
 
          read (30) (stored_segment_end_offsets(i),i=mpi_rank + 1,csf_count,mpi_process_count), &
             & (matrix_partner_indices(i),i=1,stored_matrix_element_count)
@@ -148,8 +148,8 @@
          if (eigenvector_counts_by_block(jblock) == 0) then
             do nfile = 31, 32 + max_mcp_file_multipole_rank
                read (nfile) mcplab, jblockt, ncft, ncoeff
-               if (jblockt /= jblock) error stop 'matrx: jblockt .NE. jblock'
-               if (ncft /= csf_count) error stop 'matrx: ncft .NE. ncf'
+               if (jblockt /= jblock) error stop "matrx: jblockt .NE. jblock"
+               if (ncft /= csf_count) error stop "matrx: ncft .NE. ncf"
 
                read (nfile) lab, ncontr
                do while(lab/=0 .or. ncontr/=0)
@@ -158,12 +158,12 @@
                end do
             end do
 
-            call dalloc (stored_segment_end_offsets, 'IENDC', 'MATRIX')
-            call dalloc (matrix_partner_indices, 'IROW', 'MATRIX')
+            call dalloc (stored_segment_end_offsets, "IENDC", "MATRIX")
+            call dalloc (matrix_partner_indices, "IROW", "MATRIX")
 
             cycle
 
-         endif
+         end if
 
 !=======================================================================
 !   Generate the Hamiltonian matrix - average energy is removed here
@@ -173,7 +173,7 @@
 !
 !   Determine average energy
 !
-         hamiltonian_energy_shift = 0._real64
+         hamiltonian_energy_shift = 0.0_real64
          do ir = mpi_rank + 1, csf_count, mpi_process_count
             hamiltonian_energy_shift = hamiltonian_energy_shift + hamiltonian_values(stored_segment_end_offsets(ir))
          end do
@@ -220,13 +220,13 @@
 
             ! cdamp has the original non-block feature
                cdampj = mixing_damping_factors(j + ncminpat)
-               if (cdampj == 0._real64) cycle         ! So SURE ???
+               if (cdampj == 0.0_real64) cycle         ! So SURE ???
 
-               omcdaj = 1._real64 - cdampj
+               omcdaj = 1.0_real64 - cdampj
 
            !...Damp eigenvector and determine the new dominant component
   123          continue
-               amax = 0._real64
+               amax = 0.0_real64
                do i = 1, csf_count
                   evecij = omcdaj*csf_mixing_coefficients(i+iofset) + cdampj*cmvl(i + iofset)
                   csf_mixing_coefficients(i+iofset) = evecij
@@ -237,14 +237,14 @@
                end do
 
             !...compute the normalization factor
-               sum = 0._real64
+               sum = 0.0_real64
                do i = 1, csf_count
                   sum = sum + csf_mixing_coefficients(i+iofset)**2
                end do
-               dnfac = 1._real64/sqrt(sum)
+               dnfac = 1.0_real64/sqrt(sum)
 
             !...Renormalize and invert as necessary
-               if (csf_mixing_coefficients(ia+iofset) < 0._real64) dnfac = -dnfac
+               if (csf_mixing_coefficients(ia+iofset) < 0.0_real64) dnfac = -dnfac
                call dscal (csf_count, dnfac, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1)
 
             !...Schmidt orthogonalise
@@ -254,17 +254,17 @@
                jofset = (jother - 1)*csf_count + nevecpat
                ovrlap = ddot(csf_count,csf_mixing_coefficients(iofset+1:iofset+(csf_count)),1, &
                   & csf_mixing_coefficients(jofset+1:jofset+(csf_count)),1)
-               if (ovrlap /= 0._real64) then          ! So SURE ???
-                  omcdaj = 1._real64
+               if (ovrlap /= 0.0_real64) then          ! So SURE ???
+                  omcdaj = 1.0_real64
                   cdampj = -ovrlap
                   call dcopy (csf_count, csf_mixing_coefficients(jofset+1:jofset+(csf_count)), 1, cmvl(iofset + &
                      & 1:iofset+(csf_count)), 1)
-                  go to 123
+                  goto 123
                else
-                  go to 234
-               endif
+                  goto 234
+               end if
             end do
-         endif
+         end if
 
 !   Write out the eigenpair information: ASF symmetries, eigenvalues,
 !   and eigenvectors to GRASP92 mixing coefficients File
@@ -286,7 +286,7 @@
             end if
 !GG            IATTMP = IATJPO(NCMINPAT + 1)
 !GG            IASTMP = IASPAR(NCMINPAT + 1)
-         endif
+         end if
 
          if (mpi_rank == 0) then
             write (25) jblock, csf_count, eigenvector_counts_by_block(jblock), iattmp, iastmp
@@ -294,11 +294,11 @@
             write (25) hamiltonian_energy_shift, (shifted_eigenvalues(i + ncminpat),i=1,eigenvector_counts_by_block(jblock))
             write (25) ((csf_mixing_coefficients(i+(j-1)*csf_count+nevecpat),i=1,csf_count),j=1,eigenvector_counts_by_block(jblock)&
                )
-         endif
+         end if
 
-         call dalloc (hamiltonian_values, 'EMT', 'MATRIX')
-         call dalloc (stored_segment_end_offsets, 'IENDC', 'MATRIX')
-         call dalloc (matrix_partner_indices, 'IROW', 'MATRIX')
+         call dalloc (hamiltonian_values, "EMT", "MATRIX")
+         call dalloc (stored_segment_end_offsets, "IENDC", "MATRIX")
+         call dalloc (matrix_partner_indices, "IROW", "MATRIX")
 
 !----------------------
       end do
@@ -307,12 +307,12 @@
 !   Deallocate the temporary storage
 !
       if (.not.first) then
-         call dalloc (cmvl, 'CMVL', 'MATRIX')
+         call dalloc (cmvl, "CMVL", "MATRIX")
       else
          first = .false.
-      endif
+      end if
 
-  302 format(' Average energy = ',1p,d18.10,' Hartrees')
+  302 format(" Average energy = ",1p,d18.10," Hartrees")
 
       return
       end subroutine matrix

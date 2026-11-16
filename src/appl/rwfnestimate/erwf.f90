@@ -40,24 +40,24 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use default_c
+      use default_c, only: double, inpci, ndef, ndump
       use cons_c
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use rwfnestimate_input, only: radial_input_options, parse_radial_options, load_radial_header
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use setdbg_i
-      use setmc_i
-      use setcon_i
-      use setsum_i
-      use screenpar_i
-      use getinf_i
-      use strsum_i
-      use genrwf_i
-      use orthsc_i
-      use wrtrwf_i
+      use getyn_i, only: getyn
+      use setdbg_i, only: setdbg
+      use setmc_i, only: setmc
+      use setcon_i, only: setcon
+      use setsum_i, only: setsum
+      use screenpar_i, only: screenpar
+      use getinf_i, only: getinf
+      use strsum_i, only: strsum
+      use genrwf_i, only: genrwf
+      use orthsc_i, only: orthsc
+      use wrtrwf_i, only: wrtrwf
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -70,22 +70,22 @@
 !   Startup message
 !
       call parse_radial_options(input_options)
-      write (stderr_unit, *) 'RWFNESTIMATE'
-      write (stderr_unit, *) 'This program estimates radial wave functions'
-      write (stderr_unit, *) 'for orbitals'
-      write (stderr_unit, *) 'Input files: isodata, selected CSF text/header, optional rwfn file'
-      write (stderr_unit, *) 'Selected input: ', input_options%filename
-      write (stderr_unit, *) 'Output file: rwfn.inp'
+      write (stderr_unit, *) "RWFNESTIMATE"
+      write (stderr_unit, *) "This program estimates radial wave functions"
+      write (stderr_unit, *) "for orbitals"
+      write (stderr_unit, *) "Input files: isodata, selected CSF text/header, optional rwfn file"
+      write (stderr_unit, *) "Selected input: ", input_options%filename
+      write (stderr_unit, *) "Output file: rwfn.inp"
 
 
 !
-      write (stderr_unit, *) 'Default settings ?'
+      write (stderr_unit, *) "Default settings ?"
       yes = getyn()
       if (yes) then
          ndef = 0
       else
          ndef = 1
-      endif
+      end if
 
 !
 !   Determine if there is to be any debug printout; this will be
@@ -135,7 +135,7 @@
 !
 !   Print completion message
 !
-      write (stderr_unit, *) 'RWFNESTIMATE: Execution complete.'
+      write (stderr_unit, *) "RWFNESTIMATE: Execution complete."
 !
       stop
       end program erwf

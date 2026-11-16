@@ -25,18 +25,18 @@
       use parameter_def,    only: max_radial_points
       use def_c
       use grid_c
-      use ovl_c
+      use ovl_c, only: double, novl
       use orb_c
-      use orba_c
-      use invt_c
+      use orba_c, only: double, iorder, max_orbitals
+      use invt_c, only: double, max_orbitals, noinvt
       use scf_c
-      use iounit_c
-      use fixd_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rint_i
+      use rint_i, only: rint
 !      USE count_I
       use count_i, only: count
       implicit none (type, external)
@@ -109,8 +109,8 @@
             if (sgn < 0.0_real64) then
                inv = inv + 1
                factor = -factor
-            endif
-         endif
+            end if
+         end if
 !
 !   Perform normalization and/or inversion
 !
@@ -126,15 +126,15 @@
          if (abs(radial_large_components(mtp,j)) < eps) then
             radial_large_components(mtp,j) = 0.0_real64
             radial_small_components(mtp,j) = 0.0_real64
-            go to 3
+            goto 3
          else
             orbital_last_grid_index(j) = mtp
-         endif
+         end if
 !
 !XHH two lines moved forward and added an ENDIF
 !         ENDIF
 !    4 CONTINUE
-      endif
+      end if
 !
       return
       end subroutine orthor

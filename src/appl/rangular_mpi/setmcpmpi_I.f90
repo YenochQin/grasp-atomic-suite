@@ -10,6 +10,6 @@
       character (len = 8), intent(in) :: idblk(*)
       character (len = *), intent(in) :: filehead
 !...This routine performs I/O.
-      end subroutine
+      end subroutine setmcpmpi
       end interface
-      end module
+      end module setmcpmpi_i

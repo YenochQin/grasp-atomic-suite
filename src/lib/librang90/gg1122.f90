@@ -33,8 +33,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use mes_i
-      use wj1_i
+      use mes_i, only: mes
+      use wj1_i, only: wj1
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -52,11 +52,11 @@ contains
       if(ik1(3) > 9) then
         if(ik1(4) > 2) call mes(35)
         if(id1(4) > 2) call mes(35)
-      endif
+      end if
       if(ik2(3) > 9) then
         if(ik2(4) > 2) call mes(35)
         if(id2(4) > 2) call mes(35)
-      endif
+      end if
       iqmm1=qm1+qm1+tenth*qm1
       iqmm2=qm2+qm2+tenth*qm2
       iqmm12=iqmm1+iqmm2

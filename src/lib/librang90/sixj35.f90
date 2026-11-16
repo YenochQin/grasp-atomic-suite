@@ -27,7 +27,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ixjtik_i
+      use ixjtik_i, only: ixjtik
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -47,7 +47,7 @@ contains
 !     CHESKED TRIANGULAR CONDITIONS
 !
          if (ixjtik(j,k,l,m,n,3) == 0) return
-      endif
+      end if
       i1 = (j + k + l)/2
       as = dble(i1)
       a = dble(l)
@@ -77,7 +77,7 @@ contains
             si = aka*dsqrt(three*(as + one)*(as - a)*(as - c - one)*(as - c)*(&
                as - b + one)*(as - b + two)/(c*(c + one)*(c + two)*(c + three)*&
                (b - two)*(b - one)*b*(b + one)))
-         endif
+         end if
       else if (n - j == 3) then
 !  3
          if (k - m == 3) then
@@ -100,7 +100,7 @@ contains
             si = aka*dsqrt(three*(as + two)*(as + three)*(as - a + one)*(as - a&
                 + two)*(as - b)*(as - c + one)/(c*(c + one)*(c + two)*(c + &
                three)*(b + one)*(b + two)*(b + three)*(b + four)))
-         endif
+         end if
 ! -1
       else if (j - n == 1) then
          if (k - m == 3) then
@@ -123,7 +123,7 @@ contains
             si = aka*((as - b + two)*(as - c + one) - two*(as - a + one)*(as + &
                one))*dsqrt((as - c)*(as - b + one)/(c*(c + one)*(c + two)*(c + &
                three)*(b - one)*b*(b + one)*(b + two)))
-         endif
+         end if
 ! 1
       else if (n - j == 1) then
          if (k - m == 3) then
@@ -146,8 +146,8 @@ contains
             si = -aka*(two*(as - b)*(as - c) - (as + three)*(as - a))*dsqrt((as&
                 + two)*(as - a + one)/(b*(b + one)*(b + two)*(b + three)*c*(c&
                 + one)*(c + two)*(c + three)))
-         endif
-      endif
+         end if
+      end if
       return
       end subroutine sixj35
 end module sixj35_i

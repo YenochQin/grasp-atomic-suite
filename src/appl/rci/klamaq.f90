@@ -60,7 +60,7 @@
 !
          first = .false.
 !
-      endif
+      end if
 !
 !   Ensure that the principal quantum number is in range
 !
@@ -68,7 +68,7 @@
          write (*, 300)
          write (*, 301) n
          stop
-      endif
+      end if
 !
 !   Determine the azimuthal quantum number
 !
@@ -80,7 +80,7 @@
          stop
       else
          l = (-kappa) - 1
-      endif
+      end if
 !
 !   Ensure that the azimuthal quantum number is in range
 !
@@ -88,7 +88,7 @@
          write (*, 300)
          write (*, 303) kappa, n
          stop
-      endif
+      end if
 !
 !   Find the appropriate entry in the table
 !
@@ -109,18 +109,18 @@
             factor = log(zalfa)
             factor = -(factor + factor)
             term = term + factor + c401
-         endif
-      endif
+         end if
+      end if
 !
       fzalfa = ovlfac*term
 !
       return
 !
-  300 format('KLAMAQ:')
-  301 format(' Principal quantum number, ',1i2,&
-         ', should be in the range  1--8.')
-  302 format(' Kappa is  0 .')
-  303 format(' Kappa, ',1i3,', is out of range for n, ',1i2,'.')
+  300 format("KLAMAQ:")
+  301 format(" Principal quantum number, ",1i2,&
+         ", should be in the range  1--8.")
+  302 format(" Kappa is  0 .")
+  303 format(" Kappa, ",1i3,", is out of range for n, ",1i2,".")
       return
 !
       end subroutine klamaq

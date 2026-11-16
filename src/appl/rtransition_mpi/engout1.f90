@@ -54,12 +54,12 @@
 !
       return
 !
-  299 format('Eigenenergies for the initial state list')
-  300 format('Eigenenergies for the final state list')
-  301 format('Level  J Parity',10x,'Hartrees',18x,'Kaysers')
+  299 format("Eigenenergies for the initial state list")
+  300 format("Eigenenergies for the final state list")
+  301 format("Level  J Parity",10x,"Hartrees",18x,"Kaysers")
   302 format(1i3,4x,2a4,1p,2d25.15)
-  303 format('Energy of each level relative to immediately lower',' level:')
-  304 format('Energy of each level relative to lowest level:')
+  303 format("Energy of each level relative to immediately lower"," level:")
+  304 format("Energy of each level relative to lowest level:")
       return
 !
       end subroutine engout1

@@ -15,17 +15,17 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_radial_points
-      use damp_c
+      use damp_c, only: double, max_orbitals, mixing_damping_factors, orbital_damping_factors
       use def_c
       use grid_c
       use int_c
-      use invt_c
+      use invt_c, only: double, max_orbitals, noinvt
       use scf_c
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rint_i
+      use rint_i, only: rint
 !      USE count_I
       use count_i, only: count
       implicit none (type, external)
@@ -94,8 +94,8 @@
             if (sgn < 0.0_real64) then
                inv = inv + 1
                dnfac = -dnfac
-            endif
-         endif
+            end if
+         end if
 !
          orbital_origin_parameters(j) = orbital_origin_parameters(j)*dnfac
          radial_large_components(:mtp,j) = dnfac*radial_large_components(:mtp,j)
@@ -109,10 +109,10 @@
          if (abs(radial_large_components(mfj,j)) < eps) then
             radial_large_components(mfj,j) = 0.0_real64
             radial_small_components(mfj,j) = 0.0_real64
-            go to 3
+            goto 3
          else
             orbital_last_grid_index(j) = mfj
-         endif
+         end if
 !
       else
 !
@@ -134,7 +134,7 @@
 !
          orbital_last_grid_index(j) = mtp
 !
-      endif
+      end if
 !
       return
       end subroutine dampor

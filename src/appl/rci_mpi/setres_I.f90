@@ -6,6 +6,6 @@
       character (len = *) :: isofile
       character (len = *) :: rwffile
       character (len = 8) :: idblk(*)
-      end subroutine
+      end subroutine setres
       end interface
-      end module
+      end module setres_i

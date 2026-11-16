@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -30,28 +30,28 @@
 !
 !   File  hfs92.sum  is FORMATTED
 !
-      k = index(name,' ')
+      k = index(name," ")
       if (nci == 0) then
-         filnam1 = name(1:k-1)//'.ch'
-         filnam2 = name(1:k-1)//'.choffd'
+         filnam1 = name(1:k-1)//".ch"
+         filnam2 = name(1:k-1)//".choffd"
       else
-         filnam1 = name(1:k-1)//'.h'
-         filnam2 = name(1:k-1)//'.hoffd'
-      endif
-      form = 'FORMATTED'
-      status = 'NEW'
+         filnam1 = name(1:k-1)//".h"
+         filnam2 = name(1:k-1)//".hoffd"
+      end if
+      form = "FORMATTED"
+      status = "NEW"
 !
       call openfl (29, filnam1, form, status, ierr)
       if (ierr /= 0) then
-         write (6, *) 'Error when opening', filnam1
+         write (6, *) "Error when opening", filnam1
          stop
-      endif
+      end if
 !
       call openfl (24, filnam2, form, status, ierr)
       if (ierr /= 0) then
-         write (6, *) 'Error when opening', filnam2
+         write (6, *) "Error when opening", filnam2
          stop
-      endif
+      end if
 !
       return
       end subroutine setsum

@@ -40,7 +40,7 @@ contains
       use cnc_c,           only: cnc5c
       use def_c,           only: accy
       use grid_c
-      use ncc_c
+      use ncc_c, only: c1, c2, c3, c4, double
       use orb_c
       use tatb_c,          only: zk=>ta, yk=>tb, mtp
       use wave_c,          only: orbital_last_grid_index , radial_large_components, radial_small_components
@@ -81,19 +81,19 @@ contains
       if (.not.kcalc(k)) then
          kcalc(k) = .true.
          if (k > klimit) then
-            write (6, *) ' increase klimit in yzk.f '
+            write (6, *) " increase klimit in yzk.f "
             stop
-         endif
+         end if
          if (k > 0) then
             rttk(2:radial_point_count,k) = radial_grid(2:radial_point_count)**k
-            rttkm(2:radial_point_count,k) = 1._real64/rttk(2:radial_point_count,k)
+            rttkm(2:radial_point_count,k) = 1.0_real64/rttk(2:radial_point_count,k)
             rttk1(2:radial_point_count,k) = rttk(2:radial_point_count,k)*radial_grid(2:radial_point_count)
-            rttkm1(2:radial_point_count,k) = 1._real64/rttk1(2:radial_point_count,k)
-            rm(2:radial_point_count) = 1._real64/radial_grid(2:radial_point_count)
+            rttkm1(2:radial_point_count,k) = 1.0_real64/rttk1(2:radial_point_count,k)
+            rm(2:radial_point_count) = 1.0_real64/radial_grid(2:radial_point_count)
          else
-            rm(2:radial_point_count) = 1._real64/radial_grid(2:radial_point_count)
-         endif
-      endif
+            rm(2:radial_point_count) = 1.0_real64/radial_grid(2:radial_point_count)
+         end if
+      end if
 !
 !   Determine maximum tabulation point as location beyond which
 !   RHOP  (see comment statements below) would be zero; determine
@@ -119,7 +119,7 @@ contains
          temp(2:mtp) = rhop(2:mtp)
       else
          temp(2:mtp) = rttk(2:mtp,k)*rhop(2:mtp)
-      endif
+      end if
 !
 !   Set an additional four points to zero
 !
@@ -161,7 +161,7 @@ contains
             zklim = 1.0_real64
          else
             zklim = 0.0_real64
-         endif
+         end if
 !
          do kk = mtpp3, mtp, -1
             dif = zk(kk) - zklim
@@ -174,7 +174,7 @@ contains
 !
          zklim = zk(mtpp3)
 !
-      endif
+      end if
 !
 !   Tabulate  ZK  for entire internal grid
 !
@@ -188,7 +188,7 @@ contains
 !
          zk(mtpp4:radial_point_count) = zklim*rttkm(mtpp4:radial_point_count,k)
 !
-      endif
+      end if
 !
 !   Start array WK / R**(K+1)
 !
@@ -203,7 +203,7 @@ contains
          temp(2:mtp) = rhop(2:mtp)*rm(2:mtp)
       else
          temp(2:mtp) = rhop(2:mtp)*rttkm1(2:mtp,k)
-      endif
+      end if
 !
 !   Compute remainder of WK / R**(K+1): march in to the origin
 !
@@ -219,7 +219,7 @@ contains
          wk(2:mtp) = wk(2:mtp)*radial_grid(2:mtp)
       else
          wk(2:mtp) = wk(2:mtp)*rttk1(2:mtp,k)
-      endif
+      end if
 !
 !   Assemble solution
 !

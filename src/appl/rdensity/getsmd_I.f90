@@ -4,6 +4,6 @@
       subroutine getsmd (name)
       implicit none (type, external)
       character (len = 24), intent(in) :: name
-      end subroutine
+      end subroutine getsmd
       end interface
-      end module
+      end module getsmd_i

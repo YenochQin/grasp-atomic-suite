@@ -15,10 +15,10 @@
       use biorb_c
       use decide_c
       use def_c
-      use foparm_c
+      use foparm_c, only: iccut
       use grid_c
       use eigv_c
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use orb_c
       use prnt_c
       use syma_c
@@ -39,27 +39,27 @@
 !-----------------------------------------------
 
 
-      i = index(name(1),' ')
-      j = index(name(2),' ')
+      i = index(name(1)," ")
+      j = index(name(2)," ")
       if(ilbl == 0) then
          if (inpci == 0) then
-            open(unit=24,file=name(1)(1:i-1)//'.'//name(2)(1:j-1)//'.ct',form=&
-            'FORMATTED', status='UNKNOWN',position='asis')
+            open(unit=24,file=name(1)(1:i-1)//"."//name(2)(1:j-1)//".ct",form=&
+            "FORMATTED", status="UNKNOWN",position="asis")
          else
-            open(unit=24,file=name(1)(1:i-1)//'.'//name(2)(1:j-1)//'.t',form=&
-            'FORMATTED',status='UNKNOWN',position='asis')
-         endif
+            open(unit=24,file=name(1)(1:i-1)//"."//name(2)(1:j-1)//".t",form=&
+            "FORMATTED",status="UNKNOWN",position="asis")
+         end if
       else if(ilbl == 1) then
-         if(iopen_status1.eq.0 .and. iopen_status2 .eq.0) then
+         if(iopen_status1==0 .and. iopen_status2 ==0) then
             if (inpci == 0) then
                open(unit=32,                                           &
-                   file=name(1)(1:i-1)//'.'//name(2)(1:j-1)//'.ct.lsj',&
-                   form='FORMATTED',status='UNKNOWN')
+                   file=name(1)(1:i-1)//"."//name(2)(1:j-1)//".ct.lsj",&
+                   form="FORMATTED",status="UNKNOWN")
             else
                open(unit=32,                                           &
-                   file=name(1)(1:i-1)//'.'//name(2)(1:j-1)//'.t.lsj', &
-                   form='FORMATTED',status='UNKNOWN')
-            endif
+                   file=name(1)(1:i-1)//"."//name(2)(1:j-1)//".t.lsj", &
+                   form="FORMATTED",status="UNKNOWN")
+            end if
          end if
       end if
 !
@@ -165,26 +165,26 @@
 !
       return
 !
-  300 format ('The atomic number is ',1f14.10,';')
-  301 format ('  c =',1p,1d19.12,' Bohr radii,'            &
-             /'  a =',   1d19.12,' Bohr radii;')
-  305 format ('Speed of light = ',1pd19.12,' atomic units.')
-  306 format ( 'Radial grid: R(I) = RNT*(exp((I-1)*H)-1),',&
-               ' I = 1, ..., N;'                           &
-             //' RNT  = ',1p,d19.12,' Bohr radii;'         &
-              /' H    = ',   d19.12,' Bohr radii;'         &
-              /' N    = ',1i4,';')
-  307 format ( 'Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,',&
-               ' I = 1, ..., N;'                           &
-             //' RNT  = ',1p,d19.12,' Bohr radii;'         &
-              /' H    = ',   d19.12,' Bohr radii;'         &
-              /' HP   = ',   d19.12,' Bohr radii;'         &
-              /' N    = ',1i4,';')
-  308 format ( ' R(1) = ',1p,1d19.12,' Bohr radii;'        &
-              /' R(2) = ',   1d19.12,' Bohr radii;'        &
-              /' R(N) = ',   1d19.12,' Bohr radii.')
-  309 format (' Subshell',11x,'e',20x,'p0',18x,            &
-              'gamma',19x,'P(2)',18x,'Q(2)',10x,'MTP')
+  300 format ("The atomic number is ",1f14.10,";")
+  301 format ("  c =",1p,1d19.12," Bohr radii,"            &
+             /"  a =",   1d19.12," Bohr radii;")
+  305 format ("Speed of light = ",1pd19.12," atomic units.")
+  306 format ( "Radial grid: R(I) = RNT*(exp((I-1)*H)-1),",&
+               " I = 1, ..., N;"                           &
+             //" RNT  = ",1p,d19.12," Bohr radii;"         &
+              /" H    = ",   d19.12," Bohr radii;"         &
+              /" N    = ",1i4,";")
+  307 format ( "Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,",&
+               " I = 1, ..., N;"                           &
+             //" RNT  = ",1p,d19.12," Bohr radii;"         &
+              /" H    = ",   d19.12," Bohr radii;"         &
+              /" HP   = ",   d19.12," Bohr radii;"         &
+              /" N    = ",1i4,";")
+  308 format ( " R(1) = ",1p,1d19.12," Bohr radii;"        &
+              /" R(2) = ",   1d19.12," Bohr radii;"        &
+              /" R(N) = ",   1d19.12," Bohr radii.")
+  309 format (" Subshell",11x,"e",20x,"p0",18x,            &
+              "gamma",19x,"P(2)",18x,"Q(2)",10x,"MTP")
   310 format (3x,1i2,1a2,1x,1p,5(3x,1d19.12),3x,1i3)
 
       return

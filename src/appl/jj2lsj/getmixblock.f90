@@ -26,12 +26,12 @@
       use orb_c
       use prnt_c
       use syma_c
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use blk_c,            only: nevinblk, ncfinblk, two_j
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -53,35 +53,35 @@
 !
 !   The  .mix  file is UNFORMATTED; it must exist
 !
-      k = index(name,' ')
+      k = index(name," ")
       if (nci == 0) then
-         filnam = name(1:k-1)//'.cm'
+         filnam = name(1:k-1)//".cm"
       else
-         filnam = name(1:k-1)//'.m'
-      endif
-      form = 'UNFORMATTED'
-      status = 'OLD'
+         filnam = name(1:k-1)//".m"
+      end if
+      form = "UNFORMATTED"
+      status = "OLD"
 !
       call openfl (25, filnam, form, status, ierr)
       if (ierr == 1) then
-         write (stderr_unit, *) 'Error when opening', filnam
+         write (stderr_unit, *) "Error when opening", filnam
          stop
-      endif
+      end if
 !
 !   Check the header of the file; if not as expected, try again
 !
       read (25, iostat=ios) g92mix
-      if (ios/=0 .or. g92mix/='G92MIX') then
-         write (stderr_unit, *) 'Not a GRASP92 MIXing Coefficients File;'
+      if (ios/=0 .or. g92mix/="G92MIX") then
+         write (stderr_unit, *) "Not a GRASP92 MIXing Coefficients File;"
          close(25)
          stop
-      endif
+      end if
 
       read (25) electron_count, ncftot, orbital_count, nvectot, nvecsiz, nblock
-      write (*, *) '   nelec  = ', electron_count
-      write (*, *) '   ncftot = ', ncftot
-      write (*, *) '   nw     = ', orbital_count
-      write (*, *) '   nblock = ', nblock
+      write (*, *) "   nelec  = ", electron_count
+      write (*, *) "   ncftot = ", ncftot
+      write (*, *) "   nw     = ", orbital_count
+      write (*, *) "   nblock = ", nblock
       write (*, *)
       ncftot_i8 = ncftot
 
@@ -103,7 +103,7 @@
 !***********************************************************************
 ! Initialize mixing coefficients to zero; others are fine
 !***********************************************************************
-      csf_mixing_coefficients(:nvectot*ncftot_i8) = 0._real64
+      csf_mixing_coefficients(:nvectot*ncftot_i8) = 0.0_real64
 
 !***********************************************************************
 ! Initialize counters and sum registers
@@ -120,17 +120,17 @@
       ncfpat = 0
       nvecsizpat = 0
       neavsum = 0
-      eavsum = 0._real64
+      eavsum = 0.0_real64
 
-      write (*, *) '  block     ncf     nev    2j+1  parity'
+      write (*, *) "  block     ncf     nev    2j+1  parity"
       do jb = 1, nblock
 
          read (25) nb, ncfblk, nevblk, iatjp, iaspa
-         write (*, '(5I8)') nb, ncfblk, nevblk, iatjp, iaspa
+         write (*, "(5I8)") nb, ncfblk, nevblk, iatjp, iaspa
          nevinblk(jb) = nevblk
          ncfinblk(jb) = ncfblk
          two_j(jb) = iatjp - 1
-         if (jb /= nb) stop 'jb .NE. nb'
+         if (jb /= nb) stop "jb .NE. nb"
 
          if (nevblk > 0) then
 
@@ -150,7 +150,7 @@
 
             read (25) ((csf_mixing_coefficients(nvecsizpat+ncfpat+i+(j-1)*ncftot_i8),i=1,ncfblk),j=1,&
                nevblk)
-         endif
+         end if
 !
          nvecpat = nvecpat + nevblk
          ncfpat = ncfpat + ncfblk
@@ -165,7 +165,7 @@
       hamiltonian_energy_shift = eavsum/neavsum
 
       if (ncftot /= neavsum) write (6, *) &
-         'Not all blocks are diagonalized --- Average E ', 'not correct'
+         "Not all blocks are diagonalized --- Average E ", "not correct"
 
 !     ...Substrct the overal average energy
       shifted_eigenvalues(:nvectot) = shifted_eigenvalues(:nvectot) - hamiltonian_energy_shift

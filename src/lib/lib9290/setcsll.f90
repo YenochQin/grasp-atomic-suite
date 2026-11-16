@@ -14,7 +14,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -39,26 +39,26 @@ contains
 
       inquire(file=name, exist=found)
       if (.not.found) then
-         write (6, *) name(1:len_trim(name)), ' does not exist'
+         write (6, *) name(1:len_trim(name)), " does not exist"
          stop
-      endif
+      end if
 
 ! Open it
 
-      call openfl (nunit, name, 'FORMATTED', 'OLD', ierr)
+      call openfl (nunit, name, "FORMATTED", "OLD", ierr)
       if (ierr == 1) then
-         write (6, *) 'Error when opening ', name(1:len_trim(name))
+         write (6, *) "Error when opening ", name(1:len_trim(name))
          stop
-      endif
+      end if
 
 ! Check the first record of the file; if not as expected, stop
 
-      read (nunit, '(1A15)', iostat=ios) str
-      if (ios/=0 .or. str/='Core subshells:') then
-         write (6, *) 'Not a Configuration Symmetry List File;'
+      read (nunit, "(1A15)", iostat=ios) str
+      if (ios/=0 .or. str/="Core subshells:") then
+         write (6, *) "Not a Configuration Symmetry List File;"
          close(nunit)
          stop
-      endif
+      end if
 
 ! Skip next 4 records
 
@@ -73,16 +73,16 @@ contains
 
       ios = 0
       do while(ios == 0)
-         read (nunit, '(1A2)', iostat=ios) ch
-         if (ch==' *' .or. ios/=0) then
+         read (nunit, "(1A2)", iostat=ios) ch
+         if (ch==" *" .or. ios/=0) then
             !.. a new block has been found
             nblock = nblock + 1
-            write (6, *) 'Block ', nblock, ',  ncf = ', ncsf
+            write (6, *) "Block ", nblock, ",  ncf = ", ncsf
             if (nblock > nblkin) then
-               write (6, *) 'setcsll: Too many blocks(', nblock, ')'
-               write (6, *) 'Maximum allowed is ', nblkin
+               write (6, *) "setcsll: Too many blocks(", nblock, ")"
+               write (6, *) "Maximum allowed is ", nblkin
                stop
-            endif
+            end if
             i = len_trim(line3)
             idblk(nblock) = line3(i-4:i)
             ncfblk(nblock) = ncsf
@@ -90,9 +90,9 @@ contains
             if (ios == 0) cycle
          else
             read (nunit, *)
-            read (nunit, '(A)') line3
+            read (nunit, "(A)") line3
             ncsf = ncsf + 1
-         endif
+         end if
       end do
 
 ! Obtain ncftot

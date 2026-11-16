@@ -36,9 +36,9 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use mes_i
-      use c0t5s_i
-      use rmeajj_i
+      use mes_i, only: mes
+      use c0t5s_i, only: c0t5s
+      use rmeajj_i, only: rmeajj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -57,19 +57,19 @@ contains
       if(ik1(3) > 9) then
         if(ik1(4) > 2) call mes(30)
         if(id1(4) > 2) call mes(30)
-      endif
+      end if
       if(ik2(3) > 9) then
         if(ik2(4) > 2) call mes(30)
         if(id2(4) > 2) call mes(30)
-      endif
+      end if
       if(ik3(3) > 9) then
         if(ik3(4) > 2) call mes(30)
         if(id3(4) > 2) call mes(30)
-      endif
+      end if
       if(ik4(3) > 9) then
         if(ik4(4) > 2) call mes(30)
         if(id4(4) > 2) call mes(30)
-      endif
+      end if
       iqmm1=qm1+qm1+tenth*qm1
       if(ik1(4) /= (id1(4)+iqmm1))return
       iqmm2=qm2+qm2+tenth*qm2

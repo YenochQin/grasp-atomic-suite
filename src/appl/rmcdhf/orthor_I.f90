@@ -5,6 +5,6 @@
       implicit none (type, external)
       integer, intent(in) :: j
       integer, intent(inout) :: inv
-      end subroutine
+      end subroutine orthor
       end interface
-      end module
+      end module orthor_i

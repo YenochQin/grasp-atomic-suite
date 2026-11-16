@@ -11,7 +11,7 @@ module gdvd_i
       integer, intent(in) :: n, m
       real(real64), intent(in) :: b(n,m)
       real(real64), intent(inout) :: c(n,m)
-      end subroutine
+      end subroutine dvd_operator
       end interface
 contains
 
@@ -33,7 +33,7 @@ contains
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
 
-      use dvdson_i
+      use dvdson_i, only: dvdson
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -80,10 +80,10 @@ contains
 ! Initial estimates
 !
       if (niv == 0) then
-         write (6, *) 'GDVD Error : No initial estimate!!!'
+         write (6, *) "GDVD Error : No initial estimate!!!"
          ierr = -1000
          return
-      endif
+      end if
 
       !ttt=etime_(tarray)
       nmv = 0
@@ -119,7 +119,7 @@ contains
 ! If needed it should be saved e.g: call dcopy(N,work(iw2),1,curx,1)
 
 !            write(*,11) nloops,value,rnorm
-   11       format('It ',i4,'  Dl',d10.3,' Res:',d10.3)
+   11       format("It ",i4,"  Dl",d10.3," Res:",d10.3)
 !
 !-------------
 ! (M-lI)      .. Compute temporarily (M-valueI) (M preconditioner)
@@ -133,7 +133,7 @@ contains
                   work(iw2+icur+j-1) = work(iw1+icur+j-1)/diag(j)
                else
                   work(iw2+icur+j-1) = work(iw1+icur+j-1)*1.0e6_real64
-               endif
+               end if
             end do
 !*-------------
 !* e.g: For No preconditioner: Lanczos
@@ -145,7 +145,7 @@ contains
             icur = icur + n
          end do
 
-         go to 99
+         goto 99
 
 !*********
       else if (irc==2 .or. irc==3) then
@@ -153,8 +153,8 @@ contains
          call matrix_vector_callback (n, nb, work(iw1), work(iw2))
          nmv = nmv + nb
 
-         go to 99
-      endif
+         goto 99
+      end if
 ! * * * * End of Reverse Communication * * * * * * * * * * * * * * * * *
 
       return

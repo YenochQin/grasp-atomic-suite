@@ -9,6 +9,6 @@
       real(real64), intent(out) :: hcoul
       real(real64), intent(out) :: hbab
       real(real64), intent(out) :: hmag
-      end subroutine
+      end subroutine spme
       end interface
-      end module
+      end module spme_i

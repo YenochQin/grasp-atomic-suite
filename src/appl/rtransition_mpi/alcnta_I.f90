@@ -9,6 +9,6 @@
       integer, intent(inout) :: ntdim
       integer, intent(in) :: imode
 !...This routine performs I/O.
-      end subroutine
+      end subroutine alcnta
       end interface
-      end module
+      end module alcnta_i

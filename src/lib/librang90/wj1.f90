@@ -33,11 +33,11 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use mes_i
-      use w1jjg_i
-      use cle0sm_i
-      use c1e1sm_i
-      use rwjj_i
+      use mes_i, only: mes
+      use w1jjg_i, only: w1jjg
+      use cle0sm_i, only: cle0sm
+      use c1e1sm_i, only: c1e1sm
+      use rwjj_i, only: rwjj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -65,13 +65,13 @@ contains
         else
           print*, "ERROR in  WJ1"
           stop
-        endif
-      elseif(id(3) > 9) then
+        end if
+      else if(id(3) > 9) then
         iqm2=qm2+qm2+qm2*eps
         if((id(4)+iqm2) > 2) call mes(2)
         call w1jjg(k2,qm1,qm2,ik,bk,id,bd,wj)
         return
-      endif
+      end if
       qq=qm1+qm2
       if(dabs(qq) >= eps) then
         if(((k2/2)*2) /= k2)return

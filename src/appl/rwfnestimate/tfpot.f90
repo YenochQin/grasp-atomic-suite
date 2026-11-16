@@ -25,7 +25,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use draw_i
+      use draw_i, only: draw
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -62,7 +62,7 @@
             nrows = nb3
          else
             nrows = nb3 + 1
-         endif
+         end if
          do ii = 1, nrows
             ii1 = ii
             ii2 = ii1 + nrows
@@ -74,15 +74,15 @@
                write (99, 301) radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2)
             else
                write (99, 301) radial_grid(ii1), yp(ii1)
-            endif
+            end if
          end do
          call draw (yp, 1.0_real64, yp, 1.0_real64, radial_point_count)
-      endif
+      end if
 !
       return
 !
-  300 format(/,/,/,' Thomas-Fermi potential'/,/,3(&
-         ' --------- r --------- ------ -r*V(r) ------'))
+  300 format(/,/,/," Thomas-Fermi potential"/,/,3(&
+         " --------- r --------- ------ -r*V(r) ------"))
   301 format(1p,6(1x,1d21.14))
       return
 !

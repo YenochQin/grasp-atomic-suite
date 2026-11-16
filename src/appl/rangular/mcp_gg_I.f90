@@ -8,6 +8,6 @@
       integer  :: mpi_process_count
       logical, intent(in) :: is_restart
       character(len=*), intent(in) :: output_file_prefix
-      end subroutine
+      end subroutine mcp
       end interface
-      end module
+      end module mcp_i

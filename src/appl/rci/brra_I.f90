@@ -10,6 +10,6 @@
       integer, intent(in) :: ib
       integer, intent(in) :: id
       integer :: k
-      end function
+      end function brra
       end interface
-      end module
+      end module brra_i

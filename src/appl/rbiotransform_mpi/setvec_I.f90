@@ -7,6 +7,6 @@
       integer, intent(in) :: ndim
       real(real64), intent(out) :: vector(ndim)
       real(real64), intent(in) :: value
-      end subroutine
+      end subroutine setvec
       end interface
-      end module
+      end module setvec_i

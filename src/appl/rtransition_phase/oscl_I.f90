@@ -4,6 +4,6 @@
       subroutine oscl (name)
       implicit none (type, external)
       character (len = 24), intent(inout) :: name(2)
-      end subroutine
+      end subroutine oscl
       end interface
-      end module
+      end module oscl_i

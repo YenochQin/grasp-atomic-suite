@@ -10,6 +10,6 @@
       real(real64), intent(out) :: apart
       real(real64), intent(out) :: gjpart
       real(real64), intent(out) :: dgjpart
-      end subroutine
+      end subroutine matelt
       end interface
-      end module
+      end module matelt_i

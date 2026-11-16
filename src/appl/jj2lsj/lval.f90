@@ -23,13 +23,13 @@
       integer           :: locate
       character(len=26) :: set
 !
-      data set/ 'spdfghiklmnoqSPDFGHIKLMNOQ'/
+      data set/ "spdfghiklmnoqSPDFGHIKLMNOQ"/
 !-----------------------------------------------
       locate = index(set,symbol)
       if (locate <= 13) then
          lval = locate - 1
       else
          lval = locate - 14
-      endif
+      end if
       return
       end function lval

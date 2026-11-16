@@ -31,8 +31,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dpbdt_i
-      use quad_i
+      use dpbdt_i, only: dpbdt
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -55,7 +55,7 @@ contains
       if (orbital_kappa(j) /= orbital_kappa(k)) then
          write (*, 300) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_principal_n(k), orbital_symmetry_labels(k)
          stop
-      endif
+      end if
 !
       mtp = max(orbital_last_grid_index(j),orbital_last_grid_index(k))
 !
@@ -64,7 +64,7 @@ contains
 !   Piece involving derivatives
 !
       call dpbdt (k)
-      ta(1) = 0._real64
+      ta(1) = 0.0_real64
       do i = 2, mtp
          ta(i) = radial_small_components(i,j)*ta(i) - radial_large_components(i,j)*tb(i)
       end do
@@ -73,14 +73,14 @@ contains
 !
 !   Pieces not involving derivatives
 !
-      ta(1) = 0._real64
+      ta(1) = 0.0_real64
       do i = 2, mtp
          ta(i) = radial_grid_derivative(i)*radial_small_components(i,j)*radial_small_components(i,k)
       end do
       call quad (piece2)
-      piece2 = -2._real64*speed_of_light_au*speed_of_light_au*piece2
+      piece2 = -2.0_real64*speed_of_light_au*speed_of_light_au*piece2
 !
-      ta(1) = 0._real64
+      ta(1) = 0.0_real64
       do i = 2, mtp
          ta(i) = radial_derivative_over_radius(i)*(radial_large_components(i,j)*radial_small_components(i,k) + &
             & radial_small_components(i,j)*radial_large_components(i,k))
@@ -92,7 +92,7 @@ contains
 !
       if (mode == 0) then
 !
-         ta(1) = 0._real64
+         ta(1) = 0.0_real64
          do i = 2, mtp
             ta(i) = radial_derivative_over_radius(i)*negative_radius_times_potential(i)*(radial_large_components(i,j)* &
                & radial_large_components(i,k) + radial_small_components(i,j)*radial_small_components(i,k))
@@ -101,8 +101,8 @@ contains
          piece4 = -piece4
 !
       else
-         piece4 = 0._real64
-      endif
+         piece4 = 0.0_real64
+      end if
 !
       rinti = piece1 + piece2 + piece3 + piece4
 !
@@ -117,9 +117,9 @@ contains
 !
       return
 !
-  300 format('RINTI: Attempt to calculate I(',1i2,1a2,',',1i2,1a2,')')
-  301 format(/,' I (',1i2,1a2,',',1i2,1a2,') = ',1p,d19.12,/)
-  302 format(/,' K (',1i2,1a2,',',1i2,1a2,') = ',1p,d19.12,/)
+  300 format("RINTI: Attempt to calculate I(",1i2,1a2,",",1i2,1a2,")")
+  301 format(/," I (",1i2,1a2,",",1i2,1a2,") = ",1p,d19.12,/)
+  302 format(/," K (",1i2,1a2,",",1i2,1a2,") = ",1p,d19.12,/)
       return
 !
       end function rinti

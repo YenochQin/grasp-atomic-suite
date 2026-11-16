@@ -39,9 +39,9 @@
 !
 !   Allocate storage for arrays
 !
-         call alloc (isldr, ntdim, 'ISLDR', 'ALCNTA' )
-         call alloc (isldr1, ntdim,'ISLDR1', 'ALCNTA' )
-         call alloc (xsldr, ntdim, 'XSLDR', 'ALCNTA' )
+         call alloc (isldr, ntdim, "ISLDR", "ALCNTA" )
+         call alloc (isldr1, ntdim,"ISLDR1", "ALCNTA" )
+         call alloc (xsldr, ntdim, "XSLDR", "ALCNTA" )
 !
       case (2)
 !
@@ -49,9 +49,9 @@
 !
          newsiz = 2*ntdim
 !
-         call ralloc (isldr, newsiz, 'ISLDR', 'ALCNTA' )
-         call ralloc (isldr1, newsiz, 'ISLDR1', 'ALCNTA' )
-         call ralloc (xsldr, newsiz, 'XSLDR', 'ALCNTA' )
+         call ralloc (isldr, newsiz, "ISLDR", "ALCNTA" )
+         call ralloc (isldr1, newsiz, "ISLDR1", "ALCNTA" )
+         call ralloc (xsldr, newsiz, "XSLDR", "ALCNTA" )
 !
          ntdim = newsiz
 !
@@ -59,13 +59,13 @@
 !
 !   Deallocate the storage for the arrays
 !
-         call dalloc (isldr, 'ISLDR', 'ALCNTA' )
-         call dalloc (isldr1, 'ISLDR1', 'ALCNTA' )
-         call dalloc (xsldr,  'XSLDR', 'ALCNTA' )
+         call dalloc (isldr, "ISLDR", "ALCNTA" )
+         call dalloc (isldr1, "ISLDR1", "ALCNTA" )
+         call dalloc (xsldr,  "XSLDR", "ALCNTA" )
 !
       case default
 !
-         write (6, *) 'ALCNTA: Invalid argument IMODE = ', imode
+         write (6, *) "ALCNTA: Invalid argument IMODE = ", imode
          stop
 !
       end select

@@ -13,7 +13,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use fixd_c
+      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
       use orb_c
       use scf_c
       implicit none (type, external)
@@ -30,7 +30,7 @@
 !
 !
       j = 0
-      dlrgst = 0._real64
+      dlrgst = 0.0_real64
       do i = 1, orbital_count
          if (is_orbital_fixed(i)) cycle
          if (scnsty(i) <= dlrgst) cycle

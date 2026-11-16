@@ -3,6 +3,6 @@
       interface
       subroutine getinf
       implicit none (type, external)
-      end subroutine
+      end subroutine getinf
       end interface
-      end module
+      end module getinf_i

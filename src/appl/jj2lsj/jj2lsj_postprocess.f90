@@ -9,7 +9,7 @@ module jj2lsj_postprocess
         integer, allocatable :: order(:)
         real(real64) :: norm = 0.0_real64
         real(real64) :: seconds = 0.0_real64
-    end type
+    end type ls_ranking
 contains
     integer function post_worker_count(levels) result(workers)
 !$      use omp_lib, only: omp_get_max_threads
@@ -20,15 +20,15 @@ contains
         ! Keep the conversion team's size between active regions: its SIXJ
         ! threadprivate caches must not depend on a changing team size.
 !$      if (levels>1) workers=omp_get_max_threads()
-        call get_environment_variable('JJ2LSJ_SERIAL',setting,status=status)
+        call get_environment_variable("JJ2LSJ_SERIAL",setting,status=status)
         if (status==0) then
-            if (trim(setting)=='1') workers=1
+            if (trim(setting)=="1") workers=1
         end if
-        call get_environment_variable('JJ2LSJ_POST_SERIAL',setting,status=status)
+        call get_environment_variable("JJ2LSJ_POST_SERIAL",setting,status=status)
         if (status==0) then
-            if (trim(setting)=='1') workers=1
+            if (trim(setting)=="1") workers=1
         end if
-    end function
+    end function post_worker_count
 
     recursive subroutine rank_ls(values, ranking)
         real(real64), intent(in) :: values(:)
@@ -41,7 +41,7 @@ contains
         allocate(ranking%order(n),squares(n),scratch(n))
         ranking%norm=0.0_real64
         do i=1,n
-            if (.not. ieee_is_finite(values(i))) error stop 'jj2lsj: nonfinite LS coefficient'
+            if (.not. ieee_is_finite(values(i))) error stop "jj2lsj: nonfinite LS coefficient"
             squares(i)=values(i)*values(i)
             ! Match the legacy accumulation in original LS order.
             ranking%norm=ranking%norm+squares(i)
@@ -73,5 +73,5 @@ contains
             if (width>n/2) exit
             width=width*2
         end do
-    end subroutine
-end module
+    end subroutine rank_ls
+end module jj2lsj_postprocess

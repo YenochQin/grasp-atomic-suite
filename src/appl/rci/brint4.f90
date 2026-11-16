@@ -26,7 +26,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use brintf_i
+      use brintf_i, only: brintf
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -50,14 +50,14 @@
 !
 !   This branch is executed on all entries except the first
 !
-         if (index .gt. indtp4(ntpi(4))) then
+         if (index > indtp4(ntpi(4))) then
 !
 !   The index is greater than the largest stored
 !
             found = .false.
             loc = ntpi(4)
 !
-         elseif (index .lt. indtp4(1)) then
+         else if (index < indtp4(1)) then
 !
 !   The index is less than the smallest stored
 !
@@ -71,25 +71,25 @@
 !
             ju = ntpi(4)
             jl = 1
-    1       if (ju-jl .gt. 1) then
+    1       if (ju-jl > 1) then
                jm = (ju+jl)/2
-               if (indtp4(jm) .gt. index) then
+               if (indtp4(jm) > index) then
                   ju = jm
                else
                   jl = jm
-               endif
+               end if
                goto 1
 !
             else
 !
 !   The range is bracketed to the extent possible
 !
-               if (index .eq. indtp4(ju)) then
+               if (index == indtp4(ju)) then
 !
                   found = .true.
                   loc = ju
 !
-               elseif (index .eq. indtp4(jl)) then
+               else if (index == indtp4(jl)) then
 !
                   found = .true.
                   loc = jl
@@ -99,11 +99,11 @@
                   found = .false.
                   loc = jl
 !
-               endif
+               end if
 !
-            endif
+            end if
 !
-         endif
+         end if
 !
          if (found) then
 !
@@ -126,12 +126,12 @@
 !   is inadequate to store another pair
 !
 !
-            if (ntpi(4) .gt. ndtpa(4)) then
+            if (ntpi(4) > ndtpa(4)) then
                newsiz = ndtpa(4)+ndtpa(4)/2
-               call ralloc (indtp4,newsiz,'INDTP4', 'BRINT4')
-               call ralloc (valtp4,newsiz,'VALTP4', 'BRINT4')
+               call ralloc (indtp4,newsiz,"INDTP4", "BRINT4")
+               call ralloc (valtp4,newsiz,"VALTP4", "BRINT4")
                ndtpa(4)= newsiz
-            endif
+            end if
             do 4 i = ntpi(4),loc+2,-1
                indtp4(i) = indtp4(i-1)
                valtp4(i) = valtp4(i-1)
@@ -142,7 +142,7 @@
             indtp4(loc+1) = index
             valtp4(loc+1) = tegral
 !
-         endif
+         end if
 !
       else
 !
@@ -165,12 +165,12 @@
 !
 !   Store the integral and its value
 !
-         call alloc (indtp4,ndtpa(4),'INDTP4', 'BRINT4')
-         call alloc (valtp4,ndtpa(4),'VALTP4', 'BRINT4')
+         call alloc (indtp4,ndtpa(4),"INDTP4", "BRINT4")
+         call alloc (valtp4,ndtpa(4),"VALTP4", "BRINT4")
          indtp4(1) = index
          valtp4(1) = tegral
 !
-      endif
+      end if
 !
       return
-      end
+      end subroutine brint4

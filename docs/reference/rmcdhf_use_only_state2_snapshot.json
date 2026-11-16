@@ -1,0 +1,439 @@
+{
+  "schema_version": 1,
+  "previous_manifest_sha256": "fb3e17d60fda5d3c3a631567e3467defb195441c258ce053494a625f7a19cfee",
+  "description": "Explicit ONLY lists retain all exported variables of small state modules; no public symbol pruning.",
+  "files": {
+    "src/appl/rmcdhf_mem/setdbg.f90": {
+      "before_suite_sha256": "0245871003c38c5bcb2a4ed19e7efc5ea807b6eecd2832e753bb1e1f8dd877c6",
+      "after_suite_sha256": "9affaaeb85434f54b756518b127372f60ca9b407bf5323da53f9453613e9431f"
+    },
+    "src/appl/rmcdhf_mem/improv.f90": {
+      "before_suite_sha256": "5faf19165a3ef0ba1d51ed34ae50e77f4304352b76b843cb4cf9e046f1c49632",
+      "after_suite_sha256": "2db3bb4b4d45880978a088d28596894c0bbbe0363319c889d67bbaa4867852a3"
+    },
+    "src/appl/rmcdhf_mem/setcsl.f90": {
+      "before_suite_sha256": "b122d10fc5cf3bf8cf5c91ea7a41f3c62c7e5837663688e23b2f116512a0ecdc",
+      "after_suite_sha256": "ac818e7bce21a25df8d912863c54f5bfd2b0f3cca56016317eebb25b50e3dcb8"
+    },
+    "src/appl/rmcdhf_mem/setlag.f90": {
+      "before_suite_sha256": "d44691ae80e14f7710f18e1cf5e237891b8e34d6b7546ee7670e425e5555e444",
+      "after_suite_sha256": "f6d1563e8e8e94b92a593f8c2c84651fa7354389ef4d328526ff0f750734f699"
+    },
+    "src/appl/rmcdhf_mem/prtrsl.f90": {
+      "before_suite_sha256": "ca14ba549741bb45785d6d607af9857f7692b2abecfd8b481e167e4e0069c13f",
+      "after_suite_sha256": "e58092be14712a6f69937ec4811eb27ff0788e0b530509ae16acf932fb21f72b"
+    },
+    "src/appl/rmcdhf_mem/maxarr.f90": {
+      "before_suite_sha256": "87c1973c8c06d2fd45970484331ff0fac9f83406a12e0ce1d9f818ca083894f3",
+      "after_suite_sha256": "332a10687a8e9b7a53e606aaff65f0baa82b0fda7d873afffcb3ac36c90e2ef9"
+    },
+    "src/appl/rmcdhf_mem/setmix.f90": {
+      "before_suite_sha256": "62a91c7651ac9e19b14a44a9bd4a8abbe4c50d6505efacd7d94b83ace347996d",
+      "after_suite_sha256": "e7342b71afa7cb8498192634a2f41d67acc7b5b3afe9d50fa26fc1050a5fbd13"
+    },
+    "src/appl/rmcdhf_mem/orthor.f90": {
+      "before_suite_sha256": "c5264080faa9224669d34976eeaacbf6b89fb1f19f8f59635c79748a39bdcaca",
+      "after_suite_sha256": "8f0483a9bf1ffffb3a0e740a9d13eb8a08fd7599dfda17cd7f817ad6c2e9b918"
+    },
+    "src/appl/rmcdhf_mem/setcof.f90": {
+      "before_suite_sha256": "0368f6f79a81c443e6ba66d13a7dd541e06a314a5b571a42079173a46e5aaf4f",
+      "after_suite_sha256": "aa9dd459e297b0682360fa90f87de071fe646d93dccb883d98b4bd35aeb20a18"
+    },
+    "src/appl/rmcdhf_mem/dampor.f90": {
+      "before_suite_sha256": "9db43a85797284974c92e72db5176cd1d67ff7332ad6cb7d5e2e8466a039386f",
+      "after_suite_sha256": "21b0f12351b583d7329e999baa303a2c2ac70a6160993d358aa6e3272589b54e"
+    },
+    "src/appl/rmcdhf_mem/engoutgg.f90": {
+      "before_suite_sha256": "24812879755e095dc9ab690fdd0993a689906afbf3f3250028520f7babd4f92f",
+      "after_suite_sha256": "061349c608f928dc3b99512f5b2bb0d2d2ac082af7a265db70d6ba51b2003c8c"
+    },
+    "src/appl/rmcdhf_mem/strsum.f90": {
+      "before_suite_sha256": "ad8b74e5db661f0910cd860fc7d09b7c642f1f7dbe1f0a8be721afa42cd1d630",
+      "after_suite_sha256": "d374cde85477419e134b19213e4e01462b306de589d12492d70d2ee1c38870e7"
+    },
+    "src/appl/rmcdhf_mem/scf.f90": {
+      "before_suite_sha256": "82546415da353de11848d051d0cd8e456467c774000d88453c7e408461a9a302",
+      "after_suite_sha256": "0fa46193f614b8a0d31e9c2b4165b08e5043253a85a0c75d55b7b181e85034de"
+    },
+    "src/appl/rmcdhf_mem/newco.f90": {
+      "before_suite_sha256": "155b8e6364f607023b695aa84510839d953825e3576403fb18df593d8ae0aa86",
+      "after_suite_sha256": "d9a5c9c439479a131f6c2b396d71cf3b8bcb33f900827ef0be5d3cc601964b67"
+    },
+    "src/appl/rmcdhf_mem/getold.f90": {
+      "before_suite_sha256": "1cf79b0465106b86a3b78fe27078d762953c7b49babb0731366c8bb98ef56583",
+      "after_suite_sha256": "78273800a5d67968ac49bb0e9091ba9a1f6adb47b5612de2ab9c481ddcf43232"
+    },
+    "src/appl/rmcdhf_mem/getald.f90": {
+      "before_suite_sha256": "9e25648165a66e1b1b207af37dddfd45452df4180897c9268ecb0a0d9a415fb8",
+      "after_suite_sha256": "90b03885689244973ff7ca12992de78c950a5fd678adee77dd7cff446bfe5518"
+    },
+    "src/appl/rmcdhf_mem/dampck.f90": {
+      "before_suite_sha256": "83a562c8f50b6b14e2da407d6b24e23aa146ca00017ac80bf51887733d54e07b",
+      "after_suite_sha256": "c231de06a1ec015f56e558e69a0c771f21ce8063052feec7dbd861ff1aa88a84"
+    },
+    "src/appl/rmcdhf_mem/setmcp.f90": {
+      "before_suite_sha256": "9f14dcb8f04c7bcac04af702d6c5487b5480869fe3b01e81d990834c9f9c1124",
+      "after_suite_sha256": "350f751991556927d2b36157052b81b0f2521493ddfcc150179ca1bd2504ee1e"
+    },
+    "src/appl/rmcdhf_mem/lagcon.f90": {
+      "before_suite_sha256": "8071ce29ea4c26c0962f1264f54509c79b9e919b934e92d4982da9ffaf1fad43",
+      "after_suite_sha256": "ab77a1e37f7ae58c079f1289b36b657049f6b88cb45d3329cde5c8d811e53b79"
+    },
+    "src/appl/rmcdhf_mem/csfwgt.f90": {
+      "before_suite_sha256": "0b1ed533615aa317c72ece74d5b08bc6becab23376d45bed9b1b054133e8dd5a",
+      "after_suite_sha256": "5800bb55ce46f3a439e609aaa78dcc5c4cfcedd7b4d6e7ae1db6b080c94277fa"
+    },
+    "src/appl/rmcdhf_mem/solve.f90": {
+      "before_suite_sha256": "a45effa54f09eec6344d38a86b3a6c975fcae78e172b61411221530bda275a2a",
+      "after_suite_sha256": "3b8c5028cae9db2a9a60c832d1e88e34a55d355950238900b849de67cc308628"
+    },
+    "src/appl/rmcdhf_mem/setham.f90": {
+      "before_suite_sha256": "6b6c1d8b398739e159dbbcd76f1421c84efaf1480e1a21bf675308cba6c13fe3",
+      "after_suite_sha256": "442273a49436054a9d06d9de6a2359dc8551b4ae4c03cfb6dde22d2c8b921e7b"
+    },
+    "src/appl/rmcdhf_mem/dsubrs.f90": {
+      "before_suite_sha256": "fbafb87dd002c96447080e728c7667214dec37bd7709cb7647d8a3bb8fdbedea",
+      "after_suite_sha256": "70094aaa3dfbf0dbb3e08cd7443ffaeff991eb7369b2a48f3cbfd14a9184d203"
+    },
+    "src/appl/rmcdhf_mem/getscd.f90": {
+      "before_suite_sha256": "18b427f253fcb14c3a6a44951e0461f0a77a2830795a3b5c214c438b578f7e8f",
+      "after_suite_sha256": "6faafd2dc8f8fd5fdaec4ab7fa9669933b27515a8068a4c3b954c3841770d3cd"
+    },
+    "src/appl/rmcdhf_mem/rscfvu.f90": {
+      "before_suite_sha256": "0ea172875e0d4041f199980d47f4bf0c4624bb5c61707d2c5fe0045e36a24d17",
+      "after_suite_sha256": "00f6db0dfad49ac747c23922363754218f881798f46c0357cfd14a18840b3f44"
+    },
+    "src/appl/rmcdhf_mem/matrix.f90": {
+      "before_suite_sha256": "764e327bb8ba0bc3b54a6ddda58216d06804de5a37bf8949845ad4e266eaf006",
+      "after_suite_sha256": "92a8c8f36189c00fe57220ddf5b0e48dfb4cc9eb522c1197b56d9f6654e4515d"
+    },
+    "src/appl/rmcdhf_mem/maneig.f90": {
+      "before_suite_sha256": "7a715e7ca264a92e399d0231a903c5c14b7a411ade14a448292c0d7cc168189f",
+      "after_suite_sha256": "85e0a90b26d9a7ab5a4e215d0581ec56cbc067c98465ead9a7b1f1cfd9452434"
+    },
+    "src/appl/rmcdhf/setdbg.f90": {
+      "before_suite_sha256": "0245871003c38c5bcb2a4ed19e7efc5ea807b6eecd2832e753bb1e1f8dd877c6",
+      "after_suite_sha256": "9affaaeb85434f54b756518b127372f60ca9b407bf5323da53f9453613e9431f"
+    },
+    "src/appl/rmcdhf/improv.f90": {
+      "before_suite_sha256": "253f26a175ea93200f5d6deae5920aa5444b08ecfb499eb1a42645763cc0c4e7",
+      "after_suite_sha256": "cfd7266adbd26ab51cf8f6a1acb75e0aa36679268a63ad62ae2f02d1c4016fa4"
+    },
+    "src/appl/rmcdhf/setcsl.f90": {
+      "before_suite_sha256": "8603ff8c7d3ec8cb8f517f651c4c2cc72a5f6f8b084cf670792e19c3eafaaac4",
+      "after_suite_sha256": "1c27d0f782a2fe3ac6f7af0a5eb54478153889f0f4dff2b4a6052a11b5ed9e2d"
+    },
+    "src/appl/rmcdhf/setlag.f90": {
+      "before_suite_sha256": "de0f8c285f96af87cd437cdeab89d6eaf2f6fce26cc482c60fc657951dc4b837",
+      "after_suite_sha256": "fdea6ecf3b23dd757b017cf695bba88f8a6830c8ca655209236a680aac2cb008"
+    },
+    "src/appl/rmcdhf/prtrsl.f90": {
+      "before_suite_sha256": "ca14ba549741bb45785d6d607af9857f7692b2abecfd8b481e167e4e0069c13f",
+      "after_suite_sha256": "e58092be14712a6f69937ec4811eb27ff0788e0b530509ae16acf932fb21f72b"
+    },
+    "src/appl/rmcdhf/maxarr.f90": {
+      "before_suite_sha256": "87c1973c8c06d2fd45970484331ff0fac9f83406a12e0ce1d9f818ca083894f3",
+      "after_suite_sha256": "332a10687a8e9b7a53e606aaff65f0baa82b0fda7d873afffcb3ac36c90e2ef9"
+    },
+    "src/appl/rmcdhf/setmix.f90": {
+      "before_suite_sha256": "d92870d12b762b5872e9dd690db808b1d07c4a6d089f179e8566667432d65771",
+      "after_suite_sha256": "1d2fdf68ea6d17784de3154c0ae21334af8330652b0d7a0fada6c4bdb5073fbd"
+    },
+    "src/appl/rmcdhf/orthor.f90": {
+      "before_suite_sha256": "c5264080faa9224669d34976eeaacbf6b89fb1f19f8f59635c79748a39bdcaca",
+      "after_suite_sha256": "8f0483a9bf1ffffb3a0e740a9d13eb8a08fd7599dfda17cd7f817ad6c2e9b918"
+    },
+    "src/appl/rmcdhf/setcof.f90": {
+      "before_suite_sha256": "51c4ba4fefeaf1527ecdc497c54461acf2d1e4e90882546d55c47ecf2f2c9c54",
+      "after_suite_sha256": "aea426c164b7f119496d6044447e4b82ccc710fc448a734c82bfbe5ccb22ccb8"
+    },
+    "src/appl/rmcdhf/dampor.f90": {
+      "before_suite_sha256": "9db43a85797284974c92e72db5176cd1d67ff7332ad6cb7d5e2e8466a039386f",
+      "after_suite_sha256": "21b0f12351b583d7329e999baa303a2c2ac70a6160993d358aa6e3272589b54e"
+    },
+    "src/appl/rmcdhf/engoutgg.f90": {
+      "before_suite_sha256": "24812879755e095dc9ab690fdd0993a689906afbf3f3250028520f7babd4f92f",
+      "after_suite_sha256": "061349c608f928dc3b99512f5b2bb0d2d2ac082af7a265db70d6ba51b2003c8c"
+    },
+    "src/appl/rmcdhf/strsum.f90": {
+      "before_suite_sha256": "ad8b74e5db661f0910cd860fc7d09b7c642f1f7dbe1f0a8be721afa42cd1d630",
+      "after_suite_sha256": "d374cde85477419e134b19213e4e01462b306de589d12492d70d2ee1c38870e7"
+    },
+    "src/appl/rmcdhf/scf.f90": {
+      "before_suite_sha256": "82546415da353de11848d051d0cd8e456467c774000d88453c7e408461a9a302",
+      "after_suite_sha256": "0fa46193f614b8a0d31e9c2b4165b08e5043253a85a0c75d55b7b181e85034de"
+    },
+    "src/appl/rmcdhf/newco.f90": {
+      "before_suite_sha256": "155b8e6364f607023b695aa84510839d953825e3576403fb18df593d8ae0aa86",
+      "after_suite_sha256": "d9a5c9c439479a131f6c2b396d71cf3b8bcb33f900827ef0be5d3cc601964b67"
+    },
+    "src/appl/rmcdhf/getold.f90": {
+      "before_suite_sha256": "b9a8b46a8fcad94d655c5bdbe501801b83f1b7bb43dc8d709a338cd7c244188b",
+      "after_suite_sha256": "6fb48e215738eee94c3fdf0f2a8d7bc82cbb190d6748c1aba5f3aa38bdb30a39"
+    },
+    "src/appl/rmcdhf/getald.f90": {
+      "before_suite_sha256": "9e25648165a66e1b1b207af37dddfd45452df4180897c9268ecb0a0d9a415fb8",
+      "after_suite_sha256": "90b03885689244973ff7ca12992de78c950a5fd678adee77dd7cff446bfe5518"
+    },
+    "src/appl/rmcdhf/dampck.f90": {
+      "before_suite_sha256": "83a562c8f50b6b14e2da407d6b24e23aa146ca00017ac80bf51887733d54e07b",
+      "after_suite_sha256": "c231de06a1ec015f56e558e69a0c771f21ce8063052feec7dbd861ff1aa88a84"
+    },
+    "src/appl/rmcdhf/setmcp.f90": {
+      "before_suite_sha256": "472d833f07d22ffbbe7b1b29e663d3ac3318d78bfc8d4d02fdeb1f780106f5bb",
+      "after_suite_sha256": "e59ba65781122e0ad4d00101590e65446e545db33a2b1a32a36c2b6fdf90afff"
+    },
+    "src/appl/rmcdhf/lagcon.f90": {
+      "before_suite_sha256": "8071ce29ea4c26c0962f1264f54509c79b9e919b934e92d4982da9ffaf1fad43",
+      "after_suite_sha256": "ab77a1e37f7ae58c079f1289b36b657049f6b88cb45d3329cde5c8d811e53b79"
+    },
+    "src/appl/rmcdhf/csfwgt.f90": {
+      "before_suite_sha256": "0b1ed533615aa317c72ece74d5b08bc6becab23376d45bed9b1b054133e8dd5a",
+      "after_suite_sha256": "5800bb55ce46f3a439e609aaa78dcc5c4cfcedd7b4d6e7ae1db6b080c94277fa"
+    },
+    "src/appl/rmcdhf/solve.f90": {
+      "before_suite_sha256": "a45effa54f09eec6344d38a86b3a6c975fcae78e172b61411221530bda275a2a",
+      "after_suite_sha256": "3b8c5028cae9db2a9a60c832d1e88e34a55d355950238900b849de67cc308628"
+    },
+    "src/appl/rmcdhf/setham.f90": {
+      "before_suite_sha256": "8ed81d012732f57aa56d0ed8df1250faf42e6ab162ec1df51ba3113a3ccdf549",
+      "after_suite_sha256": "f307679064e3cae8e8355483dfd1f2ee425280c30817111786f645f9ef838b26"
+    },
+    "src/appl/rmcdhf/dsubrs.f90": {
+      "before_suite_sha256": "fbafb87dd002c96447080e728c7667214dec37bd7709cb7647d8a3bb8fdbedea",
+      "after_suite_sha256": "70094aaa3dfbf0dbb3e08cd7443ffaeff991eb7369b2a48f3cbfd14a9184d203"
+    },
+    "src/appl/rmcdhf/getscd.f90": {
+      "before_suite_sha256": "18b427f253fcb14c3a6a44951e0461f0a77a2830795a3b5c214c438b578f7e8f",
+      "after_suite_sha256": "6faafd2dc8f8fd5fdaec4ab7fa9669933b27515a8068a4c3b954c3841770d3cd"
+    },
+    "src/appl/rmcdhf/rscfvu.f90": {
+      "before_suite_sha256": "880f27006ba8adc12389cd04d02c8031e278230c71d01658794d4dcb5f27c635",
+      "after_suite_sha256": "a262982faff3c60207875c98895a48602164cb9e671614df79b9e0adb438399a"
+    },
+    "src/appl/rmcdhf/matrix.f90": {
+      "before_suite_sha256": "b171eea7ab6d4f1fb2e5b6ab2aff82c52d6f4f1bc54f6e53abb2a4da0155eb19",
+      "after_suite_sha256": "9462a7bdf62955f52f59dbb1b35f548c58038962ed35c3551347bb5b2103cd73"
+    },
+    "src/appl/rmcdhf/maneig.f90": {
+      "before_suite_sha256": "7a715e7ca264a92e399d0231a903c5c14b7a411ade14a448292c0d7cc168189f",
+      "after_suite_sha256": "85e0a90b26d9a7ab5a4e215d0581ec56cbc067c98465ead9a7b1f1cfd9452434"
+    },
+    "src/appl/rmcdhf_mem_mpi/matrixmpi.f90": {
+      "before_suite_sha256": "d9e20305aee7070bb4d0a359f29114a1cb7de9f320ecba7bbe0c9f58ec372df8",
+      "after_suite_sha256": "4601db2355d17c6ba7f01ae98f559a2441cbdfd935ce91eddfd33ea4fc233bca"
+    },
+    "src/appl/rmcdhf_mem_mpi/improvmpi.f90": {
+      "before_suite_sha256": "b317562a3ec54bb58bcb0082c548e9f73247a5ee9d98c2fd2ab57f7a7a2708f2",
+      "after_suite_sha256": "d110f162cee1553728f440d06b958a5a9aaa11fc617911380c2ad9bf6584ad2a"
+    },
+    "src/appl/rmcdhf_mem_mpi/rscfmpivu.f90": {
+      "before_suite_sha256": "e8ea183984b2bb3cc43c9b1ca8aa268c372166704a98be6fd4d12e1497aa5f2a",
+      "after_suite_sha256": "fd7dce3bbf0ffc4d18f597569ca31c833ee219db2ce2d9d57e0cc90a2f13faea"
+    },
+    "src/appl/rmcdhf_mem_mpi/setdbg.f90": {
+      "before_suite_sha256": "885620180f3d052ab1e0562e31fd3720ad016e77b0094ac9d2c4930618e480fd",
+      "after_suite_sha256": "6cc69b5f87b1927e93f55b2d2b47f7d7f2cc066694a204167028a5e06c0c8ab9"
+    },
+    "src/appl/rmcdhf_mem_mpi/prtrsl.f90": {
+      "before_suite_sha256": "ca14ba549741bb45785d6d607af9857f7692b2abecfd8b481e167e4e0069c13f",
+      "after_suite_sha256": "e58092be14712a6f69937ec4811eb27ff0788e0b530509ae16acf932fb21f72b"
+    },
+    "src/appl/rmcdhf_mem_mpi/maxarr.f90": {
+      "before_suite_sha256": "87c1973c8c06d2fd45970484331ff0fac9f83406a12e0ce1d9f818ca083894f3",
+      "after_suite_sha256": "332a10687a8e9b7a53e606aaff65f0baa82b0fda7d873afffcb3ac36c90e2ef9"
+    },
+    "src/appl/rmcdhf_mem_mpi/setmix.f90": {
+      "before_suite_sha256": "62a91c7651ac9e19b14a44a9bd4a8abbe4c50d6505efacd7d94b83ace347996d",
+      "after_suite_sha256": "e7342b71afa7cb8498192634a2f41d67acc7b5b3afe9d50fa26fc1050a5fbd13"
+    },
+    "src/appl/rmcdhf_mem_mpi/orthor.f90": {
+      "before_suite_sha256": "c5264080faa9224669d34976eeaacbf6b89fb1f19f8f59635c79748a39bdcaca",
+      "after_suite_sha256": "8f0483a9bf1ffffb3a0e740a9d13eb8a08fd7599dfda17cd7f817ad6c2e9b918"
+    },
+    "src/appl/rmcdhf_mem_mpi/getaldmpi.f90": {
+      "before_suite_sha256": "e99ed31b9c28f64f36551b0b256f73b2e330a432e8a78222d1d53a46def7e15c",
+      "after_suite_sha256": "a040297eeb48b096cdba60466cdf5883e6998476a5718001d42ce1330a80e338"
+    },
+    "src/appl/rmcdhf_mem_mpi/setcof.f90": {
+      "before_suite_sha256": "e01df11a1903cec5a62edf208cfadbdee5396bcd0c01548ac2fe32c8a28c1d77",
+      "after_suite_sha256": "228559c541ae1d8c3a00fe5fa4d46cc44dd80ba4bb5354e3d76f1da0e6e9ba39"
+    },
+    "src/appl/rmcdhf_mem_mpi/dampor.f90": {
+      "before_suite_sha256": "4f88be4e2ecce14b8f67142d632f4476700d1c1b7e68948212b35147607fd9a2",
+      "after_suite_sha256": "7c186ede51eab094748823eafdf59150150c1d6d6bd33916a369491efe82e0b7"
+    },
+    "src/appl/rmcdhf_mem_mpi/engoutgg.f90": {
+      "before_suite_sha256": "24812879755e095dc9ab690fdd0993a689906afbf3f3250028520f7babd4f92f",
+      "after_suite_sha256": "061349c608f928dc3b99512f5b2bb0d2d2ac082af7a265db70d6ba51b2003c8c"
+    },
+    "src/appl/rmcdhf_mem_mpi/strsum.f90": {
+      "before_suite_sha256": "a9fdfef80c4f210d5437eaf4197623262dbac5ced51ecf91d96bf0db7036c87b",
+      "after_suite_sha256": "e8732dab466c1d8768fb418357ce6714721c6c11332b22d77d78285759af1240"
+    },
+    "src/appl/rmcdhf_mem_mpi/setcslmpi.f90": {
+      "before_suite_sha256": "28d64f046f6f80b16510b502041e15c080580de920748ec98e32fcff1d2383eb",
+      "after_suite_sha256": "605aede793b1d406f77ba033f9d521b93adf29fb606256de3922299f48163d4c"
+    },
+    "src/appl/rmcdhf_mem_mpi/dampck.f90": {
+      "before_suite_sha256": "1d376fe412d7b94387bc3ac0b4c4bc8aed0b631ce3904df10e0960199cc4b9cd",
+      "after_suite_sha256": "93b5b2f45cfb10749900aef84f100fe5d2ad6258ec450f0fd5ffdd49b018c24f"
+    },
+    "src/appl/rmcdhf_mem_mpi/newcompi.f90": {
+      "before_suite_sha256": "7eb2e75d24ec3c8b705c68699533dc583748a0bdeada0129919af58bf1285255",
+      "after_suite_sha256": "e21f3f2980f0293d821264180071dd2f8ae6b3348dd6ad496ffae7dbf0dab98e"
+    },
+    "src/appl/rmcdhf_mem_mpi/setmcp.f90": {
+      "before_suite_sha256": "69ba3cbdf75cdaba1d11fdeaafa7f0d8229c6c01d2a56d02c643cbd59bf2e530",
+      "after_suite_sha256": "69a0af31bae9f3db011f1f51485f3e2e5daf98cb51ef342f676ec6280ef66ca6"
+    },
+    "src/appl/rmcdhf_mem_mpi/lagcon.f90": {
+      "before_suite_sha256": "e42dbd87e22ef150fb36bcf7a303de8a187dc838eee839170d57940ffb527afb",
+      "after_suite_sha256": "bda0edf5cfac6d3827c0252d084796852e7cb7a3fd7f4a5f926c80c42091a60b"
+    },
+    "src/appl/rmcdhf_mem_mpi/csfwgt.f90": {
+      "before_suite_sha256": "917fbdc6f03755c6355fe0eff4b439959f90577ccdd2a587b12c2bf7eeff432b",
+      "after_suite_sha256": "f8a1f5fc0ff2291b959d1ae917bb95538cd37ffc5cb67dbbc410273699728409"
+    },
+    "src/appl/rmcdhf_mem_mpi/solve.f90": {
+      "before_suite_sha256": "023c46a8038818c404409ff32fc4232273685b0812dda395c32ad2ab88ca5f48",
+      "after_suite_sha256": "e1abeadf99a4de798fd1f64676d378fc0b970609b695d97ac647ca3493cd5d09"
+    },
+    "src/appl/rmcdhf_mem_mpi/setham.f90": {
+      "before_suite_sha256": "a4b9ee4bf562381808a44658ddbfdb80fce4f7ef690ca4f29aeb2ac89d599397",
+      "after_suite_sha256": "f8016313d978fa2f3dd000d88d71a0536ab3871ca17d46cf7a9f389fdf21fbb2"
+    },
+    "src/appl/rmcdhf_mem_mpi/getscdmpi.f90": {
+      "before_suite_sha256": "ecf785ac4671ab64a8d90a0161b941d59f88de88112073df862cabceeddde28d",
+      "after_suite_sha256": "2ca3b6ead6be6b8fe73db818318228985b900c3a04ba23f21047f04069a3db60"
+    },
+    "src/appl/rmcdhf_mem_mpi/maneigmpi.f90": {
+      "before_suite_sha256": "df7b8fd6b4122bd7e555830e8f609816e561b5287397388bf3fbe4cf7d63f58c",
+      "after_suite_sha256": "82cd7a5d7bce87e3c2710321f26ee4a7f520621cdc22b0fae85ca293e8d72b07"
+    },
+    "src/appl/rmcdhf_mem_mpi/dsubrs.f90": {
+      "before_suite_sha256": "fbafb87dd002c96447080e728c7667214dec37bd7709cb7647d8a3bb8fdbedea",
+      "after_suite_sha256": "70094aaa3dfbf0dbb3e08cd7443ffaeff991eb7369b2a48f3cbfd14a9184d203"
+    },
+    "src/appl/rmcdhf_mem_mpi/setlagmpi.f90": {
+      "before_suite_sha256": "e12671eb5a353900cf0b262217a686e92d51c70807e846076b4f831e5682c369",
+      "after_suite_sha256": "0bf6b0229930cefe4d587cd6c82f127d07aca952cfee0c61ac0b6985944831da"
+    },
+    "src/appl/rmcdhf_mem_mpi/scfmpi.f90": {
+      "before_suite_sha256": "37fffee96d9b8cf9ec34f0cf48163e35ce52fb30ffba38f7841cb6011255a5a3",
+      "after_suite_sha256": "1d833874ea18677679b050849d5ecfdeaab6446306a91c5b5434ee2c8b2d71d0"
+    },
+    "src/appl/rmcdhf_mem_mpi/getoldmpi.f90": {
+      "before_suite_sha256": "d911b6f090a548a6a15407ce07c6b90e936934371700ccf40d26178a4fbcd168",
+      "after_suite_sha256": "a96c18f26a381c92177534464280237f7441ba2b5980f5e42450df71f37ac1c1"
+    },
+    "src/appl/rmcdhf_mpi/matrixmpi.f90": {
+      "before_suite_sha256": "bab7b12ba3c46a5cd91e0e09e417619d345c6ac6e768b5b36ca532110e92638c",
+      "after_suite_sha256": "a24ea591c56bcadae4375ae4d3c2c3f0a3083b257781d46d00235f011aa225c1"
+    },
+    "src/appl/rmcdhf_mpi/improvmpi.f90": {
+      "before_suite_sha256": "245f443061ac6fa834703075bf5341ce9c4e017e6cbcfd5c0d6cd8fb23c454ed",
+      "after_suite_sha256": "8d267acebef6d02ec8fb12d507e34ac65c66e560ba9690958b0a9c608c60423c"
+    },
+    "src/appl/rmcdhf_mpi/rscfmpivu.f90": {
+      "before_suite_sha256": "d148588cde604ef9fcd2dcdecaaa03f1703d3ac2362d905a1c282f8297993cbe",
+      "after_suite_sha256": "99e671b51ce10f5d6ab9e1062ad54e9d5c2549fec9865590c9f21d8a055a2f21"
+    },
+    "src/appl/rmcdhf_mpi/setdbg.f90": {
+      "before_suite_sha256": "885620180f3d052ab1e0562e31fd3720ad016e77b0094ac9d2c4930618e480fd",
+      "after_suite_sha256": "6cc69b5f87b1927e93f55b2d2b47f7d7f2cc066694a204167028a5e06c0c8ab9"
+    },
+    "src/appl/rmcdhf_mpi/prtrsl.f90": {
+      "before_suite_sha256": "ca14ba549741bb45785d6d607af9857f7692b2abecfd8b481e167e4e0069c13f",
+      "after_suite_sha256": "e58092be14712a6f69937ec4811eb27ff0788e0b530509ae16acf932fb21f72b"
+    },
+    "src/appl/rmcdhf_mpi/maxarr.f90": {
+      "before_suite_sha256": "87c1973c8c06d2fd45970484331ff0fac9f83406a12e0ce1d9f818ca083894f3",
+      "after_suite_sha256": "332a10687a8e9b7a53e606aaff65f0baa82b0fda7d873afffcb3ac36c90e2ef9"
+    },
+    "src/appl/rmcdhf_mpi/setmix.f90": {
+      "before_suite_sha256": "d92870d12b762b5872e9dd690db808b1d07c4a6d089f179e8566667432d65771",
+      "after_suite_sha256": "1d2fdf68ea6d17784de3154c0ae21334af8330652b0d7a0fada6c4bdb5073fbd"
+    },
+    "src/appl/rmcdhf_mpi/orthor.f90": {
+      "before_suite_sha256": "c5264080faa9224669d34976eeaacbf6b89fb1f19f8f59635c79748a39bdcaca",
+      "after_suite_sha256": "8f0483a9bf1ffffb3a0e740a9d13eb8a08fd7599dfda17cd7f817ad6c2e9b918"
+    },
+    "src/appl/rmcdhf_mpi/getaldmpi.f90": {
+      "before_suite_sha256": "e99ed31b9c28f64f36551b0b256f73b2e330a432e8a78222d1d53a46def7e15c",
+      "after_suite_sha256": "a040297eeb48b096cdba60466cdf5883e6998476a5718001d42ce1330a80e338"
+    },
+    "src/appl/rmcdhf_mpi/setcof.f90": {
+      "before_suite_sha256": "9dc43a0cbbbfac58fb10e38efec2e8ab909a42143b039a035f0d19292edd3da4",
+      "after_suite_sha256": "434c4158abe186461768576dc4fb412bfb253a091babc3dcb1173efb4b39f3f8"
+    },
+    "src/appl/rmcdhf_mpi/dampor.f90": {
+      "before_suite_sha256": "4f88be4e2ecce14b8f67142d632f4476700d1c1b7e68948212b35147607fd9a2",
+      "after_suite_sha256": "7c186ede51eab094748823eafdf59150150c1d6d6bd33916a369491efe82e0b7"
+    },
+    "src/appl/rmcdhf_mpi/engoutgg.f90": {
+      "before_suite_sha256": "24812879755e095dc9ab690fdd0993a689906afbf3f3250028520f7babd4f92f",
+      "after_suite_sha256": "061349c608f928dc3b99512f5b2bb0d2d2ac082af7a265db70d6ba51b2003c8c"
+    },
+    "src/appl/rmcdhf_mpi/strsum.f90": {
+      "before_suite_sha256": "a9fdfef80c4f210d5437eaf4197623262dbac5ced51ecf91d96bf0db7036c87b",
+      "after_suite_sha256": "e8732dab466c1d8768fb418357ce6714721c6c11332b22d77d78285759af1240"
+    },
+    "src/appl/rmcdhf_mpi/setcslmpi.f90": {
+      "before_suite_sha256": "9c30b598cd343eec92161627372da2be80edc22650a56af7e354065aa4788271",
+      "after_suite_sha256": "b5a3a9b713eb8e97450202ec35ce9fb8b55d0efac76ae342d3309b19efbafad9"
+    },
+    "src/appl/rmcdhf_mpi/dampck.f90": {
+      "before_suite_sha256": "1d376fe412d7b94387bc3ac0b4c4bc8aed0b631ce3904df10e0960199cc4b9cd",
+      "after_suite_sha256": "93b5b2f45cfb10749900aef84f100fe5d2ad6258ec450f0fd5ffdd49b018c24f"
+    },
+    "src/appl/rmcdhf_mpi/newcompi.f90": {
+      "before_suite_sha256": "7eb2e75d24ec3c8b705c68699533dc583748a0bdeada0129919af58bf1285255",
+      "after_suite_sha256": "e21f3f2980f0293d821264180071dd2f8ae6b3348dd6ad496ffae7dbf0dab98e"
+    },
+    "src/appl/rmcdhf_mpi/setmcp.f90": {
+      "before_suite_sha256": "f769ddd1af5c8e66c6f540c900d50129f7c424f1133e1be39bd8acdc2446a846",
+      "after_suite_sha256": "d2e5b57a24934861b2d62a6da5182b80ce3d5adef805f73090902ef393a19fc8"
+    },
+    "src/appl/rmcdhf_mpi/lagcon.f90": {
+      "before_suite_sha256": "e42dbd87e22ef150fb36bcf7a303de8a187dc838eee839170d57940ffb527afb",
+      "after_suite_sha256": "bda0edf5cfac6d3827c0252d084796852e7cb7a3fd7f4a5f926c80c42091a60b"
+    },
+    "src/appl/rmcdhf_mpi/csfwgt.f90": {
+      "before_suite_sha256": "917fbdc6f03755c6355fe0eff4b439959f90577ccdd2a587b12c2bf7eeff432b",
+      "after_suite_sha256": "f8a1f5fc0ff2291b959d1ae917bb95538cd37ffc5cb67dbbc410273699728409"
+    },
+    "src/appl/rmcdhf_mpi/solve.f90": {
+      "before_suite_sha256": "023c46a8038818c404409ff32fc4232273685b0812dda395c32ad2ab88ca5f48",
+      "after_suite_sha256": "e1abeadf99a4de798fd1f64676d378fc0b970609b695d97ac647ca3493cd5d09"
+    },
+    "src/appl/rmcdhf_mpi/setham.f90": {
+      "before_suite_sha256": "31deb3763b3fffb7b4f4903d0d8b274a6413da843d79e37ed6d11b123a95573b",
+      "after_suite_sha256": "d9fe3cfaa263239fab1c6247d7aabf4575ff0f85e019ace71ffdc20f48115e23"
+    },
+    "src/appl/rmcdhf_mpi/getscdmpi.f90": {
+      "before_suite_sha256": "d653429c419ba1fc124601f933d0e68e7093877e0a6ffbf2ab7c9d84ba75bb9a",
+      "after_suite_sha256": "115fd2fbe7b4a9beb096a9629a25e07c7faa6da3654a08e27b05a051fb625e1d"
+    },
+    "src/appl/rmcdhf_mpi/maneigmpi.f90": {
+      "before_suite_sha256": "df7b8fd6b4122bd7e555830e8f609816e561b5287397388bf3fbe4cf7d63f58c",
+      "after_suite_sha256": "82cd7a5d7bce87e3c2710321f26ee4a7f520621cdc22b0fae85ca293e8d72b07"
+    },
+    "src/appl/rmcdhf_mpi/dsubrs.f90": {
+      "before_suite_sha256": "fbafb87dd002c96447080e728c7667214dec37bd7709cb7647d8a3bb8fdbedea",
+      "after_suite_sha256": "70094aaa3dfbf0dbb3e08cd7443ffaeff991eb7369b2a48f3cbfd14a9184d203"
+    },
+    "src/appl/rmcdhf_mpi/setlagmpi.f90": {
+      "before_suite_sha256": "bf1ad4c9a9ba5e46f8257c9a5a4a8b2d4f132a2ec6ca867f274e8e72feb6ac51",
+      "after_suite_sha256": "49ea27b2ac0522143c39f4aadadd27bd1d90144042b9277021de51989307a655"
+    },
+    "src/appl/rmcdhf_mpi/scfmpi.f90": {
+      "before_suite_sha256": "37fffee96d9b8cf9ec34f0cf48163e35ce52fb30ffba38f7841cb6011255a5a3",
+      "after_suite_sha256": "1d833874ea18677679b050849d5ecfdeaab6446306a91c5b5434ee2c8b2d71d0"
+    },
+    "src/appl/rmcdhf_mpi/getoldmpi.f90": {
+      "before_suite_sha256": "805ee9006c2d210a01c9dd88c96a7fa70383ec972ea3a918d55a689aac01c4cf",
+      "after_suite_sha256": "8df1ddfc0e85a3b655fe72a0722757c4b7ea6a7a92fdfd8a762fd1e26faed56c"
+    }
+  }
+}

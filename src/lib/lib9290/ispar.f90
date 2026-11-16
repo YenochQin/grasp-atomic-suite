@@ -34,10 +34,10 @@ contains
          if (ispar > 127) ispar = ispar - 256
          ispar = sign(1,ispar)
       else
-         write (stderr_unit, *) 'ISPAR: Argument ICSF is out of range.'
-         write (stderr_unit, *) 'ICSF =',icsf,' NCF =',csf_count
+         write (stderr_unit, *) "ISPAR: Argument ICSF is out of range."
+         write (stderr_unit, *) "ICSF =",icsf," NCF =",csf_count
          stop
-      endif
+      end if
 !
       return
       end function ispar

@@ -6,6 +6,6 @@
       implicit none (type, external)
       integer, intent(in) :: iorb
       logical, intent(out) :: fail
-      end subroutine
+      end subroutine solvh
       end interface
-      end module
+      end module solvh_i

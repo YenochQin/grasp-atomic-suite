@@ -40,32 +40,32 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use default_c
-      use blim_c
+      use default_c, only: double, inpci, ndef, ndump
+      use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
       use where_c
       use cons_c
       use def_c
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use blk_c
-      use iccu_c
-      use iounit_c
-      use terms_c
+      use iccu_c, only: iccut, iccutblk
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use terms_c, only: itab, jtab, nrows, ntab
       use mpi_c
       use decide_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use cslhmpi_i
-      use setdbg_i
-      use setmc_i
-      use setcon_i
-      use setsum_i
-      use setres_i
-      use setmixmpi_i
-      use strsum_i
-      use factt_i
-      use matrix_i
+      use getyn_i, only: getyn
+      use cslhmpi_i, only: cslhmpi
+      use setdbg_i, only: setdbg
+      use setmc_i, only: setmc
+      use setcon_i, only: setcon
+      use setsum_i, only: setsum
+      use setres_i, only: setres
+      use setmixmpi_i, only: setmixmpi
+      use strsum_i, only: strsum
+      use factt_i, only: factt
+      use matrix_i, only: matrix
       use genintbreit1wrap_i, only: genintbreit1wrap
       use genintbreit2wrap_i, only: genintbreit2wrap
       use genintrkwrap_i, only: genintrkwrap
@@ -96,8 +96,8 @@
 !=======================================================================
 
       call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1,       &
-                           startdir, permdir, tmpdir, 'RCI_MPI')
-      write (idstring, '(I3.3)') mpi_rank
+                           startdir, permdir, tmpdir, "RCI_MPI")
+      write (idstring, "(I3.3)") mpi_rank
 
       lenperm = len_trim (permdir)
       lentmp = len_trim (tmpdir)
@@ -106,9 +106,9 @@
 !  Get NDEF on node-0 and then send to all nodes
 !=======================================================================
 
-      if (mpi_rank .eq. 0) then
+      if (mpi_rank == 0) then
          write (stderr_unit,*)
-         write (stderr_unit, *) 'Default settings? '
+         write (stderr_unit, *) "Default settings? "
          yes = getyn()
          if (yes) then
             ndef = 0
@@ -118,8 +118,8 @@
             ndef = 1
 !cjb fort.734
 !cjb        write(734,'(A)') 'n            ! Default settings'
-         endif
-      endif
+         end if
+      end if
       call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
 !     CALL MPI_Bcast (imethod,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 
@@ -130,33 +130,33 @@
 !=======================================================================
 
       lenname = 0     ! Otherwise it might cause trouble for myid!=0
-      if (mpi_rank .eq. 0) then
+      if (mpi_rank == 0) then
          do
-            write (stderr_unit,*) 'Name of state: '
-            read (*,'(A)') name
-            k = index (name,' ')
-            if (k .gt. 1) exit
-            write (stderr_unit,*) 'Name may not start with a blank. redo...'
-         enddo
+            write (stderr_unit,*) "Name of state: "
+            read (*,"(A)") name
+            k = index (name," ")
+            if (k > 1) exit
+            write (stderr_unit,*) "Name may not start with a blank. redo..."
+         end do
          namesave = name
 
-         if (mpi_rank .eq. 0) then
-            open(unit=734,file=trim(name)//'.clog',status='unknown')
-            write(734,'(a)') 'y            ! Default settings'
-            write(734,'(a)') trim(name)
-         endif
+         if (mpi_rank == 0) then
+            open(unit=734,file=trim(name)//".clog",status="unknown")
+            write(734,"(a)") "y            ! Default settings"
+            write(734,"(a)") trim(name)
+         end if
 
          !...Form the full name of the files used on node-0
 
          lenname = len_trim (name)
-         isofile = permdir(1:lenperm) // '/isodata '
-         name    = permdir(1:lenperm) // '/' // name(1:lenname) // ' '
+         isofile = permdir(1:lenperm) // "/isodata "
+         name    = permdir(1:lenperm) // "/" // name(1:lenname) // " "
          lenname = lenperm + lenname + 1
 !CFF     .. already open
 !        open(unit=734,file=trim(name)//'.clog',status='unknown')
 !        write(734,'(a)') 'y            ! Default settings'
 !        write(734,'(a)') trim(namesave)
-      endif
+      end if
 
 !=======================================================================
    99 continue
@@ -184,11 +184,11 @@
       call setdbg
       call setmc
       call setcon
-      if (mpi_rank .eq. 0)  call setsum (name)
-      call cslhmpi (name(1:lenname) // '.c', ncore, nblk0, idblk)
-      call setres (isofile, name(1:lenname) // '.w', idblk)
+      if (mpi_rank == 0)  call setsum (name)
+      call cslhmpi (name(1:lenname) // ".c", ncore, nblk0, idblk)
+      call setres (isofile, name(1:lenname) // ".w", idblk)
       call setmixmpi (name, idblk)
-      if (mpi_rank .eq. 0)  call strsum
+      if (mpi_rank == 0)  call strsum
       call factt
 
 !=======================================================================
@@ -211,20 +211,20 @@
 !=======================================================================
 !   Proceed with the CI calculation
 !=======================================================================
-      write (6, *) 'Calling MATRIX...'
+      write (6, *) "Calling MATRIX..."
 
       call matrix (ncore, j2max)
 
       if (iprerun == 1) then
          iprerun = 2
-         go to 99
-      endif
+         goto 99
+      end if
 !=======================================================================
 !  Execution finished; Statistics output
 !=======================================================================
 
       call stopmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length,          &
-                           ncount1, 'RCI_MPI')
+                           ncount1, "RCI_MPI")
 
       stop
       end program rci_mpi

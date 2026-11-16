@@ -23,7 +23,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use polint_i
+      use polint_i, only: polint
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

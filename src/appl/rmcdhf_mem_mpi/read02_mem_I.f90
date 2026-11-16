@@ -5,6 +5,6 @@
       subroutine read02_mem(jblock)
       implicit none (type, external)
       integer, intent(in)       :: jblock
-      end subroutine
+      end subroutine read02_mem
       end interface
-      end module
+      end module read02_mem_i

@@ -8,4 +8,4 @@
       real(real64) :: basis(*), hmx(*)
       end subroutine  iniestdm
       end interface
-      end module
+      end module iniestdm_i

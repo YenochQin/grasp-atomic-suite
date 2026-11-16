@@ -4,6 +4,6 @@
       subroutine setdbg (dbgfile)
       implicit none (type, external)
       character (len = *), intent(in) :: dbgfile
-      end subroutine
+      end subroutine setdbg
       end interface
-      end module
+      end module setdbg_i

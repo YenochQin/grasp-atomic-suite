@@ -5,6 +5,6 @@
       implicit none (type, external)
       integer, intent(in) :: itype
       integer :: i
-      end function
+      end function indtpi
       end interface
-      end module
+      end module indtpi_i

@@ -26,7 +26,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use brintf_i
+      use brintf_i, only: brintf
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -50,14 +50,14 @@
 !
 !   This branch is executed on all entries except the first
 !
-         if (index .gt. indtp3(ntpi(3))) then
+         if (index > indtp3(ntpi(3))) then
 !
 !   The index is greater than the largest stored
 !
             found = .false.
             loc = ntpi(3)
 !
-         elseif (index .lt. indtp3(1)) then
+         else if (index < indtp3(1)) then
 !
 !   The index is less than the smallest stored
 !
@@ -71,25 +71,25 @@
 !
             ju = ntpi(3)
             jl = 1
-    1       if (ju-jl .gt. 1) then
+    1       if (ju-jl > 1) then
                jm = (ju+jl)/2
-               if (indtp3(jm) .gt. index) then
+               if (indtp3(jm) > index) then
                   ju = jm
                else
                   jl = jm
-               endif
+               end if
                goto 1
 !
             else
 !
 !   The range is bracketed to the extent possible
 !
-               if (index .eq. indtp3(ju)) then
+               if (index == indtp3(ju)) then
 !
                   found = .true.
                   loc = ju
 !
-               elseif (index .eq. indtp3(jl)) then
+               else if (index == indtp3(jl)) then
 !
                   found = .true.
                   loc = jl
@@ -99,11 +99,11 @@
                   found = .false.
                   loc = jl
 !
-               endif
+               end if
 !
-            endif
+            end if
 !
-         endif
+         end if
 !
          if (found) then
 !
@@ -126,12 +126,12 @@
 !   is inadequate to store another pair
 !
 !
-            if (ntpi(3) .gt. ndtpa(3)) then
+            if (ntpi(3) > ndtpa(3)) then
                newsiz = ndtpa(3)+ndtpa(3)/2
-               call ralloc (indtp3,newsiz,'INDTP3', 'BRINT3')
-               call ralloc (valtp3,newsiz,'VALTP3', 'BRINT3')
+               call ralloc (indtp3,newsiz,"INDTP3", "BRINT3")
+               call ralloc (valtp3,newsiz,"VALTP3", "BRINT3")
                ndtpa(3)= newsiz
-            endif
+            end if
             do 4 i = ntpi(3),loc+2,-1
                indtp3(i) = indtp3(i-1)
                valtp3(i) = valtp3(i-1)
@@ -142,7 +142,7 @@
             indtp3(loc+1) = index
             valtp3(loc+1) = tegral
 !
-         endif
+         end if
 !
       else
 !
@@ -165,12 +165,12 @@
 !
 !   Store the integral and its value
 !
-         call alloc (indtp3,ndtpa(3),'INDTP3', 'BRINT3')
-         call alloc (valtp3,ndtpa(3),'VALTP3', 'BRINT3')
+         call alloc (indtp3,ndtpa(3),"INDTP3", "BRINT3")
+         call alloc (valtp3,ndtpa(3),"VALTP3", "BRINT3")
          indtp3(1) = index
          valtp3(1) = tegral
 !
-      endif
+      end if
 !
       return
-      end
+      end subroutine brint3

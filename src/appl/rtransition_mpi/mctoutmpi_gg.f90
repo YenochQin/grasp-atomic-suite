@@ -19,18 +19,18 @@
       use blk_c
       use debug_c,         only: ldbpa
       use decide_c
-      use foparm_c
+      use foparm_c, only: iccut
       use orb_c
-      use offd_c
+      use offd_c, only: noffd1, noffd2
       use osc_c
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use angdata_i
-      use itjpo_i
-      use oneparticlejj_i
-      use trsort_i
+      use angdata_i, only: angdata
+      use itjpo_i, only: itjpo
+      use oneparticlejj_i, only: oneparticlejj
+      use trsort_i, only: trsort
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -83,7 +83,7 @@
 !        OPEN (NFILE,STATUS = 'new', FORM = 'UNFORMATTED')
 !        Sometimes, when there has been an error, status need to be "unknown"
 !CFF
-            open(nfile,status='unknown',form='UNFORMATTED')
+            open(nfile,status="unknown",form="UNFORMATTED")
             nmct = 0
 !
 !
@@ -95,20 +95,20 @@
 !   Allocate storage to buffer arrays
 !
             nlabel = 32
-            call alloc (label, nlabel, 'LABEL', 'MCTOUT')
-            call alloc (coeff, nlabel, 'COEFF', 'MCTOUT')
+            call alloc (label, nlabel, "LABEL", "MCTOUT")
+            call alloc (coeff, nlabel, "COEFF", "MCTOUT")
 
             if (iblki == 1) then
                ncfi0 = 1
             else
                ncfi0 = ncfi(iblki-1) + 1
-            endif
+            end if
 !
             if (iblkf == 1) then
                ncff0 = ncfi(nblocki) + 1
             else
                ncff0 = ncfi(nblocki) + ncff(iblkf-1) + 1
-            endif
+            end if
             do ic = mpi_rank+ncfi0, ncfi(iblki), mpi_process_count
                do ir = ncff0, ncfi(nblocki) + ncff(iblkf)
 !
@@ -123,10 +123,10 @@
 !
                   if (kp(jkp)==1 .and. noffd1==1) then
                      if (itjpo(ic) == itjpo(ir)) cycle
-                  endif
+                  end if
                   if (kp(jkp)==2 .and. noffd2==1) then
                      if (itjpo(ic) == itjpo(ir)) cycle
-                  endif
+                  end if
 !          if(ispar(ic)*ispar(ir)*iopar.ne.1.
 !    &        or.itrig(itjpo(ic),itjpo(ir),2*lk+1).ne.1) go to 13
 !          if(ichkq1(IC,IR).eq.0) go to 13
@@ -138,10 +138,10 @@
                            ncr = ncr + 1
                            if (ncr > nlabel) then
                               newsiz = 2*nlabel
-                              call ralloc (label,  newsiz, 'LABEL', 'MCTOUT')
-                              call ralloc (coeff,  newsiz, 'COEFF', 'MCTOUT')
+                              call ralloc (label,  newsiz, "LABEL", "MCTOUT")
+                              call ralloc (coeff,  newsiz, "COEFF", "MCTOUT")
                               nlabel = newsiz
-                           endif
+                           end if
                            label(ncr) = ia*orbital_index_radix + ia
                            coeff(ncr) = tshell(ia)
                         end do
@@ -150,15 +150,15 @@
                            ncr = ncr + 1
                            if (ncr > nlabel) then
                               newsiz = 2*nlabel
-                              call ralloc (label,  newsiz, 'LABEL', 'MCTOUT')
-                              call ralloc (coeff,  newsiz, 'COEFF', 'MCTOUT')
+                              call ralloc (label,  newsiz, "LABEL", "MCTOUT")
+                              call ralloc (coeff,  newsiz, "COEFF", "MCTOUT")
                               nlabel = newsiz
-                           endif
+                           end if
                            label(ncr) = ia*orbital_index_radix + ib
                            coeff(ncr) = tshell(1)
-                        endif
-                     endif
-                  endif
+                        end if
+                     end if
+                  end if
                   if (ncr <= 0) cycle
 
                   write (nfile) ic - ncfi0 + 1, ir - ncff0 + 1, ncr
@@ -171,15 +171,15 @@
 !
 !   Deallocate storage for buffer arrays
 !
-            call dalloc (label,  'LABEL', 'MCTOUT')
-            call dalloc (coeff,  'COEFF', 'MCTOUT')
+            call dalloc (label,  "LABEL", "MCTOUT")
+            call dalloc (coeff,  "COEFF", "MCTOUT")
 !
 !            WRITE (*, 301) NMCT, LK, IOPAR
 !
 !   Sort the MCT coefficients by integral labels
 !
             call trsort (name, nfile, nfile2, ldbpa(2), jkp, iblki, iblkf)
-            close(nfile, status='delete')
+            close(nfile, status="delete")
 ! end of the loops for blocks
          end do
       end do
@@ -189,8 +189,8 @@
       rewind (nfile2)
       return
 !
-  301 format(/,/,/,1x,i8,' MCT coefficients generated for rank ',i2,&
-         ' and parity ',i2,/,/)
+  301 format(/,/,/,1x,i8," MCT coefficients generated for rank ",i2,&
+         " and parity ",i2,/,/)
       return
 !
       end subroutine mctout

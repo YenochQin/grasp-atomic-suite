@@ -10,6 +10,6 @@
       real(real64), intent(in) :: da(n)
       real(real64), intent(in) :: dconst
       real(real64), intent(out) :: dl
-      end subroutine
+      end subroutine dmerge_dnicmv
       end interface
-      end module
+      end module dmerge_dnicmv_i

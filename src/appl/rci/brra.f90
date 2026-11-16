@@ -27,8 +27,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rkint_i
-      use skint_i
+      use rkint_i, only: rkint
+      use skint_i, only: skint
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -56,13 +56,13 @@
          rbd(i) = radial_large_components(i,ib)*radial_small_components(i,id)
       end do
 !
-      go to (21,22,23,24,25,26) itype
+      goto (21,22,23,24,25,26) itype
 !
 !   ITYPE = 1
 !
    21 continue
-      if (ia==ib .and. ic==id) go to 9
-      if (ia==id .and. ic==ib) go to 10
+      if (ia==ib .and. ic==id) goto 9
+      if (ia==id .and. ic==ib) goto 10
       brra = (rkint(rac,ia,ic,rbd,ib,id,k,1) + rkint(rac,ia,ic,rbd,ib,id,k,2)&
           + rkint(rbd,ib,id,rac,ia,ic,k,1) + rkint(rbd,ib,id,rac,ia,ic,k,2))*&
          half
@@ -71,8 +71,8 @@
 !   ITYPE = 2
 !
    22 continue
-      if (ia==ib .and. ic==id) go to 26
-      if (ia==id .and. ic==ib) go to 26
+      if (ia==ib .and. ic==id) goto 26
+      if (ia==id .and. ic==ib) goto 26
       brra = (skint(rac,ia,ic,rbd,ib,id,k,1) + skint(rac,ia,ic,rbd,ib,id,k,2))*&
          half
       return
@@ -88,7 +88,7 @@
             ) + rkint(rac,ia,ic,rbd,ib,id,k,2) + rkint(rbd,ib,id,rac,ia,ic,k,2)&
             )*half
          return
-      endif
+      end if
       do i = 1, mxrac
          rac(i) = rac(i) + radial_large_components(i,ic)*radial_small_components(i,ia)
       end do
@@ -106,7 +106,7 @@
 !   ITYPE = 5
 !
    25 continue
-      if (ia==id .and. ic==ib) go to 10
+      if (ia==id .and. ic==ib) goto 10
     9 continue
       brra = two*rkint(rac,ia,ic,rbd,ib,id,k,1)
       return

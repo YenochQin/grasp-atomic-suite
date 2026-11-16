@@ -5,6 +5,6 @@
       implicit none (type, external)
       character (len = 128), intent(in) :: name
       integer, intent(in) :: ntestg
-      end subroutine
+      end subroutine lodrwff
       end interface
-      end module
+      end module lodrwff_i

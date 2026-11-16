@@ -10,6 +10,6 @@
       integer, intent(in) :: ic
       integer, intent(in) :: id
       integer, intent(in) :: k
-      end function
+      end function brintf
       end interface
-      end module
+      end module brintf_i

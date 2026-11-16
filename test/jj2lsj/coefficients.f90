@@ -20,13 +20,13 @@ program coefficients
 
     call setcon
     call factt
-    call setiso('isodata')
+    call setiso("isodata")
     allocate(levels(Blocks_number,Vectors_number))
     call inscreen(threshold,levels,counts,outc,outj,unique,outt)
     allocate(mask(NCF))
     stride = NCF
     last = 0
-    open(80,file='coefficients.raw',status='replace',access='stream',form='unformatted')
+    open(80,file="coefficients.raw",status="replace",access="stream",form="unformatted")
     do block = 1,NBLOCK
         first = last+1
         last = first+NCFINBLK(block)-1
@@ -54,5 +54,5 @@ program coefficients
         call dallocASFLS(asf_set_LS)
     end do
     close(80)
-    print *, 'Coefficient dump complete'
+    print *, "Coefficient dump complete"
 end program coefficients

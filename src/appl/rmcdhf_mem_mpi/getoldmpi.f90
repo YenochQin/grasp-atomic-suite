@@ -8,15 +8,15 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_orbitals
       use memory_man
-      use blkidx_c
+      use blkidx_c, only: double, idxblk
       use damp_c, only: mixing_damping_factors, orbital_damping_factors
       use def_c, rwtdum=>wt
-      use default_c
+      use default_c, only: double, inpci, ndef, ndump
       use fixd_c, only: is_orbital_fixed, fixed_orbital_count
-      use hblock_c
-      use iounit_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use invt_c, only: noinvt
-      use orthct_c
+      use orthct_c, only: orthst
       use orb_c
       use orba_c, only: iorder
       use corre_c, only: lcorre
@@ -25,10 +25,10 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use lodstate_i
-      use getoldwt_i
-      use prtrsl_i
-      use getrsl_i
+      use lodstate_i, only: lodstate
+      use getoldwt_i, only: getoldwt
+      use prtrsl_i, only: prtrsl
+      use getrsl_i, only: getrsl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -50,8 +50,8 @@
 !    nevblk(), ncmaxblk()
 !    ncmin, iccmin(1:ncmin) -- via items (memories allocated there)
 
-      call alloc (ncmaxblk, symmetry_block_count, 'NCMAXBLK', 'GETOLDmpi')
-      call alloc (eigenvector_counts_by_block, symmetry_block_count, 'NEVBLK', 'GETOLDmpi' )
+      call alloc (ncmaxblk, symmetry_block_count, "NCMAXBLK", "GETOLDmpi")
+      call alloc (eigenvector_counts_by_block, symmetry_block_count, "NEVBLK", "GETOLDmpi" )
 
 !cjb  ncmaxblk & nevblk initialised in lodstate
 !     NEVBLK = 0
@@ -75,17 +75,17 @@
       if (ncmin /= 0) then
          if (mpi_rank /=  0) then   ! lodstate allocated it from node-0
 !GG            CALL alloc (pccmin, ncmin, 'PCCMIN', 'GETOLD')
-            call alloc (iccmin, ncmin, 'ICCMIN', 'GETOLDmpi')
-         endif
+            call alloc (iccmin, ncmin, "ICCMIN", "GETOLDmpi")
+         end if
 
          call mpi_bcast (iccmin(1), ncmin, mpi_integer, 0,         &
                          mpi_comm_world, mpi_error_code)
-      endif
+      end if
 
 !
 !   Allocate the storage for and set the weights
 !
-      call alloc (weight, ncmin, 'WEIGHT', 'GETOLDmpi')
+      call alloc (weight, ncmin, "WEIGHT", "GETOLDmpi")
 
       if (mpi_rank == 0) then
          call getoldwt (ndef, ncmin, weight)
@@ -95,14 +95,14 @@
 !
 !   Eigenvector damping
 !
-      call alloc (mixing_damping_factors, ncmin, 'CDAMP', 'GETOLDmpi')
+      call alloc (mixing_damping_factors, ncmin, "CDAMP", "GETOLDmpi")
 !
-      mixing_damping_factors(:ncmin) = 0._real64
+      mixing_damping_factors(:ncmin) = 0.0_real64
 !
 !   Print the list of all subshells
 !
       if (mpi_rank == 0) then
-         write (stderr_unit, *) 'Radial functions'
+         write (stderr_unit, *) "Radial functions"
          call prtrsl
       end if
 !
@@ -115,7 +115,7 @@
       is_orbital_fixed(:orbital_count) = .true.
 
       if (mpi_rank == 0) then
-         write (stderr_unit, *) 'Enter orbitals to be varied (Updating order)'
+         write (stderr_unit, *) "Enter orbitals to be varied (Updating order)"
          call getrsl (indx, nsubs)
       end if
       call mpi_bcast (nsubs, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
@@ -124,12 +124,12 @@
 
       is_orbital_fixed(indx(:nsubs)) = .false.
 !XHH      give a big value, rather than zero to scnsty()
-      scnsty(indx(:nsubs)) = 1.e20_real64
+      scnsty(indx(:nsubs)) = 1.0e20_real64
       fixed_orbital_count = orbital_count - nsubs
       if (fixed_orbital_count == orbital_count) then
          if(mpi_rank == 0)                                                 &
-         write (stderr_unit,*)'All subshell radial wavefunctions are fixed;',&
-                        ' performing CI calculations with RCI.'
+         write (stderr_unit,*)"All subshell radial wavefunctions are fixed;",&
+                        " performing CI calculations with RCI."
       end if
 
 !   Determine orbital updating order
@@ -147,11 +147,11 @@
       lcorre(:orbital_count) = .true.
 
       if (mpi_rank == 0) then
-         write (stderr_unit, *) 'Which of these are spectroscopic orbitals?'
+         write (stderr_unit, *) "Which of these are spectroscopic orbitals?"
          call getrsl (indx, nsubs)
       end if
       call mpi_bcast (nsubs, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
-      if (nsubs .gt. 0) then
+      if (nsubs > 0) then
          call mpi_bcast (indx(1), nsubs, mpi_integer, 0,            &
                          mpi_comm_world, mpi_error_code)
 !GG      IF (NSUBS > 0) THEN
@@ -160,10 +160,10 @@
             if (is_orbital_fixed(loc)) cycle
             method(loc) = 1
             noinvt(loc) = .false.
-            orbital_damping_factors(loc) = 0._real64
+            orbital_damping_factors(loc) = 0.0_real64
             lcorre(loc) = .false.
          end do
-      endif
+      end if
 
 ! Set NSIC. It will be non-zero if all orbitals to be varied are
 ! spectroscopic orbitals
@@ -182,12 +182,12 @@
 !   Make the allocation for the auxiliary vector required
 !   by SUBROUTINE NEWCO
 !
-      call alloc (rwtdum, ncmin, 'RWTDUM', 'GETOLDmpi')
+      call alloc (rwtdum, ncmin, "RWTDUM", "GETOLDmpi")
 !
 !   Place the block numbers of the all ncmin eigenstate(wanted)
 !   in array idxblk
 !
-      call alloc (idxblk, ncmin, 'IDXBLK', 'GETOLDmpi')
+      call alloc (idxblk, ncmin, "IDXBLK", "GETOLDmpi")
       noffset = 0
       do jblock = 1, symmetry_block_count
          do j = 1, eigenvector_counts_by_block(jblock)
@@ -195,7 +195,7 @@
          end do
          noffset = noffset + eigenvector_counts_by_block(jblock)
       end do
-      if (noffset /= ncmin) stop 'getold: ncmin trouble'
+      if (noffset /= ncmin) stop "getold: ncmin trouble"
 
       return
       end subroutine getoldmpi

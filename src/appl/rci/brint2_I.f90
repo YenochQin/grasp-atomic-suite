@@ -8,6 +8,6 @@
       implicit none (type, external)
       integer, intent(in) :: ia, ib, ic, id, k
       real(real64), intent(out) :: tegral
-      end subroutine
+      end subroutine brint2
       end interface
-      end module
+      end module brint2_i

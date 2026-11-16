@@ -6,6 +6,6 @@
       integer :: myid
       integer :: nprocs
       integer :: j2max
-      end subroutine
+      end subroutine genintrkwrap
       end interface
-      end module
+      end module genintrkwrap_i

@@ -7,6 +7,6 @@
       integer :: ncore
       integer, intent(in) :: nblkin
       character (len = 8) :: idblk(*)
-      end subroutine
+      end subroutine setcsl
       end interface
-      end module
+      end module setcsl_i

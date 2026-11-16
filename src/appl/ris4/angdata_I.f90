@@ -2,11 +2,12 @@
       implicit none (type, external)
       interface
 !...Translated by Gediminas Gaigalas 11/18/19
-      subroutine angdata (name,avail,whichone)
+      subroutine angdata (name,avail,whichone,status)
       implicit none (type, external)
       character (len = 24), intent(in) :: name
       logical, intent(out) :: avail
       integer, intent(in)  :: whichone
-      end subroutine
+      integer, intent(out) :: status
+      end subroutine angdata
       end interface
-      end module
+      end module angdata_i

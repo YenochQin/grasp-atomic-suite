@@ -5,6 +5,6 @@
       implicit none (type, external)
       integer, intent(in) :: j
       integer, intent(in) :: nprocs
-      end subroutine
+      end subroutine lagcon
       end interface
-      end module
+      end module lagcon_i

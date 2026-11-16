@@ -4,6 +4,6 @@
       subroutine tcsl (n)
       implicit none (type, external)
       integer, intent(in) :: n
-      end subroutine
+      end subroutine tcsl
       end interface
-      end module
+      end module tcsl_i

@@ -4,7 +4,6 @@
 !     ------------------------------------------------------------------
 !
       subroutine bndinv(a, el, n, determ, epsil, itest, nsize)
-      use, intrinsic :: iso_fortran_env, only: real32
 !
 !       DOUBLE PRECISION MATRIX INVERSION SUBROUTINE
 !       FROM "DLYTAP".
@@ -33,7 +32,7 @@
       integer :: isl2, k000fx, indsnl, i, j, n1, m, k, j1, i1, ks
       real(real64) :: d, c, s, deterp, f, e, epsilp, rat
 !-----------------------------------------------
-      if (n < 2) go to 140
+      if (n < 2) goto 140
       isl2 = 0
       k000fx = 2
       if (isl2 == 0) indsnl = 2
@@ -92,9 +91,9 @@
          e = a(i,i)
       end do
       epsilp = epsil
-      if (epsilp <= 0) epsilp = 1.0e-8_real32
+      if (epsilp <= 0) epsilp = 1.0e-8_real64
       rat = e/f
-      if (abs(rat) < epsilp) go to 130
+      if (abs(rat) < epsilp) goto 130
 !
 !       INVERT TRIANGULAR MATRIX
       j = n
@@ -108,7 +107,7 @@
             if (isl2 == 1) then
                k000fx = 1
                isl2 = 0
-            endif
+            end if
             select case (k000fx)
             case default
                a(i,j) = 1.0_real64/a(i,i)
@@ -152,8 +151,8 @@
 !
   130 continue
       itest = 1
-      go to 126
+      goto 126
   140 continue
       itest = -1
-      go to 126
+      goto 126
       end subroutine bndinv

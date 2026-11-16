@@ -36,21 +36,21 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use eile_i
-      use reco_i
-      use rec3_i
-      use perko2_i
-      use itrexg_i
-      use itrig_i
-      use ixjtik_i
-      use jfaze_i
-      use snrc_i
-      use gg1233_i
-      use coulom_i
-      use speak_i
-      use cxk_i
-      use talk_i
-      use sixj_i
+      use eile_i, only: eile
+      use reco_i, only: reco
+      use rec3_i, only: rec3
+      use perko2_i, only: perko2
+      use itrexg_i, only: itrexg
+      use itrig_i, only: itrig
+      use ixjtik_i, only: ixjtik
+      use jfaze_i, only: jfaze
+      use snrc_i, only: snrc
+      use gg1233_i, only: gg1233
+      use coulom_i, only: coulom
+      use speak_i, only: speak
+      use cxk_i, only: cxk
+      use talk_i, only: talk
+      use sixj_i, only: sixj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -131,7 +131,7 @@ contains
       do i4=ip1,ig1,2
         kra=(i4-1)/2
         kra1=kra+1
-        if(kra1 > 30)go to 10
+        if(kra1 > 30)goto 10
         ragg(kra1)=zero
         pmgg(kra1)=zero
         call rec3(jb,ja,jc,j(2),j(1),kra*2,0,iat,recc)
@@ -166,7 +166,7 @@ contains
         nn=nq1(inn)+nn
       end do
       if((nn/2)*2 == nn)ifazp=-ifazp
-      if(irez == 2)go to 5
+      if(irez == 2)goto 5
 ! * * *                      * * *                      * * *
 !     CASES 2313   + + - -        TRANSFORM TO  2133   + - + -
 !           3231                                2133
@@ -175,7 +175,7 @@ contains
       do i1=ip1,ig1,2
         kra=(i1-1)/2
         kra1=kra+1
-        if(kra1 > 30)go to 10
+        if(kra1 > 30)goto 10
         if (icolbrei == 1) then
           call coulom(l2,l3,l1,l3,id2(5),id3(5),id1(5),id3(5),kra,a1)
           if(dabs(a1) < eps) cycle
@@ -199,7 +199,7 @@ contains
           end if
         end if
       end do
-      if(irez == 2) go to 7
+      if(irez == 2) goto 7
 ! * * *                      * * *                      * * *
 !     CASES 3213   + + - -        TRANSFORM TO  2133   + - + -
 !           2331                                2133
@@ -209,7 +209,7 @@ contains
       ig2=ip2+ikk-1
       do i2=ip2,ig2,2
         kra=(i2-1)/2
-        if(kra > 30)go to 10
+        if(kra > 30)goto 10
         if (icolbrei == 1) then
           call coulom(l3,l2,l1,l3,id3(5),id2(5),id1(5),id3(5),kra,a1)
           if(dabs(a1) < eps) cycle
@@ -218,7 +218,7 @@ contains
         do i3=ip1,ig1,2
           j12=(i3-1)/2
           kra1=j12+1
-          if(kra1 > 30)go to 10
+          if(kra1 > 30)goto 10
           aa=pmgg(kra1)
           if(dabs(aa) < eps) cycle
           aa=aa*ragg(kra1)
@@ -298,11 +298,11 @@ contains
           call talk(jjja,jjjb,nup1,is(2),is(3),is(4),is(1),2,cone(12,n))
         end do
       end if
-      if(irez == 2)go to 6
+      if(irez == 2)goto 6
     7 continue
       return
    10 write(99,100)
-  100 format(5x,'ERRO IN EL33  PMGG RAGG')
+  100 format(5x,"ERRO IN EL33  PMGG RAGG")
       stop
       end subroutine el33
 end module el33_i

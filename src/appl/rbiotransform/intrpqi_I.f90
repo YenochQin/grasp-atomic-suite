@@ -10,6 +10,6 @@
       integer, intent(in) :: ma
       integer, intent(in) :: j
       real(real64), intent(out) :: dnorm
-      end subroutine
+      end subroutine intrpqi
       end interface
-      end module
+      end module intrpqi_i

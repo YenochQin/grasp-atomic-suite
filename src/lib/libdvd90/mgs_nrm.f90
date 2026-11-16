@@ -51,7 +51,7 @@ contains
          kcur = 1
          do k = 1, kp
             jcur = newstart
-            call dgemv ('T', n, new, 1._real64, b(jcur), n, b(kcur), 1, 0._real64, scra, &
+            call dgemv ("T", n, new, 1.0_real64, b(jcur), n, b(kcur), 1, 0.0_real64, scra, &
                1)
             do j = 1, new
 !           call daxpy(N,-scra(j),B(kcur),1,B(jcur),1)
@@ -75,7 +75,7 @@ contains
 !
             ! No trailing vectors: avoid forming B one element past its end.
             if (k < new) then
-            call dgemv ('T', n, new - k, 1._real64, b(jcur), n, b(kcur), 1, 0._real64, &
+            call dgemv ("T", n, new - k, 1.0_real64, b(jcur), n, b(kcur), 1, 0.0_real64, &
                scra, 1)
             end if
             do j = k + 1, new

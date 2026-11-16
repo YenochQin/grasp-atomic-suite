@@ -12,6 +12,6 @@
       real(real64), intent(in) :: const
       real(real64), intent(inout) :: ciout(ncsf, nciv)
       integer, intent(in) :: ntestg
-      end subroutine
+      end subroutine tiinig
       end interface
-      end module
+      end module tiinig_i

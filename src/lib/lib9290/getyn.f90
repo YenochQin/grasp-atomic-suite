@@ -26,15 +26,15 @@ contains
       character (len = 1) :: rspns
 !-----------------------------------------------
     1 continue
-      read (stdin_unit, '(A)') rspns
-      if (rspns == 'y' .or. rspns == 'Y') then
+      read (stdin_unit, "(A)") rspns
+      if (rspns == "y" .or. rspns == "Y") then
          getyn = .true.
-      else if (rspns == 'n' .or. rspns == 'N') then
+      else if (rspns == "n" .or. rspns == "N") then
          getyn = .false.
       else
-         write (stderr_unit, *) 'Expecting <y><cr> or <n><cr> ...'
-         go to 1
-      endif
+         write (stderr_unit, *) "Expecting <y><cr> or <n><cr> ..."
+         goto 1
+      end if
 !
       return
       end function getyn

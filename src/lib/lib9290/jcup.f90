@@ -33,13 +33,13 @@ contains
          if (icsf>=1 .and. icsf<=csf_count) then
             jcup = csf_coupling_quantum_codes(loc,icsf)
          else
-            write (stderr_unit, *) 'JCUP: Argument ICSF is out of range.'
+            write (stderr_unit, *) "JCUP: Argument ICSF is out of range."
             stop
-         endif
+         end if
       else
-         write (stderr_unit, *) 'JCUP: Argument LOC is out of range.'
+         write (stderr_unit, *) "JCUP: Argument LOC is out of range."
          stop
-      endif
+      end if
 !
       return
       end function jcup

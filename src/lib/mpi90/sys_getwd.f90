@@ -31,10 +31,10 @@ contains
       status = working_directory(dir)
       lcwd = len_trim(dir)
 
-      if (status.ne.0) then
+      if (status/=0) then
 !        print*, 'couldn''t get the current directory, exiting...'
 !cjb myid =
-         call stopmpi ('sys_getwd: status.ne.0; myid = ', mpi_rank)
+         call stopmpi ("sys_getwd: status.ne.0; myid = ", mpi_rank)
 
       end if
       return

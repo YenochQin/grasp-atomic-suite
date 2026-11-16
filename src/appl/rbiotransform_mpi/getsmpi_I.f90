@@ -7,6 +7,6 @@
       integer, intent(in) :: nshli
       integer, intent(in) :: nshlf
       real(real64), intent(out) :: s(nshli, nshlf)
-      end subroutine
+      end subroutine gets
       end interface
-      end module
+      end module gets_i

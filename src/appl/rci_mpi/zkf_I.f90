@@ -6,6 +6,6 @@
       integer, intent(in) :: k
       integer :: i
       integer :: j
-      end subroutine
+      end subroutine zkf
       end interface
-      end module
+      end module zkf_i

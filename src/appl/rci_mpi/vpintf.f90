@@ -17,14 +17,14 @@
      use parameter_def,   only: orbital_index_radix
      use debug_c
      use grid_c
-     use ncdist_c
+     use ncdist_c, only: double, max_radial_points, zdist
      use orb_c
      use tatb_c, only: mtp, ta, tb
      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-     use quad_i
+     use quad_i, only: quad
      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -55,6 +55,6 @@
 !
       return
 !
-  300 format (/'VPINTF: V (',1i2,1a2,',',1i2,1a2,') = ',1pd19.12)
+  300 format (/"VPINTF: V (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)
 !
       end function vpintf

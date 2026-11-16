@@ -9,7 +9,7 @@
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use mcp_c
+      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
       use orb_c
       implicit none (type, external)
 !-----------------------------------------------
@@ -35,13 +35,13 @@
 !
       rewind (30)
       read (30) mcplab, srtlab
-      if (srtlab == '  SORTED') then
+      if (srtlab == "  SORTED") then
          jastrt = csf_count + 1
          jbstrt = csf_count + 1
          llistt = 0
          llistv(:max_coulomb_multipole_rank) = 0
-         go to 8
-      endif
+         goto 8
+      end if
 !
       read (30)
       read (30)
@@ -58,7 +58,7 @@
          jastrt = icread
          jbstrt = irread
          index = indx
-         go to 2
+         goto 2
 !
       else
 !
@@ -86,7 +86,7 @@
                read (k, iostat=ios) indx, label, coeff
                if (ios==0 .and. indx<=index) then
                   nrec = nrec + 1
-                  go to 4
+                  goto 4
                else
                   rewind (k)
                   do i = 1, nrec
@@ -96,8 +96,8 @@
                      llistv(k-32) = nrec - 3
                   else
                      llistt = nrec - 3
-                  endif
-               endif
+                  end if
+               end if
             end do
 !
 !  Now, reposition the sms file. This file should contain the
@@ -112,11 +112,11 @@
             if (jbstrt > csf_count) then
                jastrt = jastrt + 1
                jbstrt = jastrt
-            endif
+            end if
 !
-         endif
+         end if
 !
-      endif
+      end if
 !
     8 continue
       return

@@ -29,7 +29,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rint_i
+      use rint_i, only: rint
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -122,18 +122,18 @@ contains
 !          print *, '        L  = ',        L
 !          print *, ' PF(MTP,L) = ', PF(MTP,L)
 !cjb Subscript out of range for array pf
-           if ( mtp .ge. 1 ) then
+           if ( mtp >= 1 ) then
 !cjb
             if (abs(radial_large_components(mtp,l)) < eps) then
                radial_large_components(mtp,l) = 0.0_real64
                radial_small_components(mtp,l) = 0.0_real64
-               go to 7
+               goto 7
             else
                orbital_last_grid_index(l) = mtp
-            endif
+            end if
 !cjb endif
-           endif
-         endif
+           end if
+         end if
          if (.not.(ldbpr(3) .and. kount>0)) cycle
 
 !XHH Moved ahead
@@ -166,7 +166,7 @@ contains
 !
       return
 !
-  301 format(1p,5(2x,1d10.3,' = <',1i2,1a2,'|',1i2,1a2,'>'))
+  301 format(1p,5(2x,1d10.3," = <",1i2,1a2,"|",1i2,1a2,">"))
       return
 !
       end subroutine orthsc

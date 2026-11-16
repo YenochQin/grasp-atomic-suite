@@ -10,6 +10,6 @@
       integer, intent(in) :: nrow
       integer, intent(in) :: ncol
 !...This routine performs I/O.
-      end subroutine
+      end subroutine wrtmat
       end interface
-      end module
+      end module wrtmat_i

@@ -14,7 +14,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use damp_c
+      use damp_c, only: double, max_orbitals, mixing_damping_factors, orbital_damping_factors
       use orb_c
       implicit none (type, external)
 !-----------------------------------------------
@@ -44,15 +44,15 @@
                orbital_damping_factors(j) = 0.75_real64*orbital_damping_factors(j)
             else
                orbital_damping_factors(j) = 0.25_real64+0.75_real64*orbital_damping_factors(j)
-            endif
-         endif
-      endif
+            end if
+         end if
+      end if
 !
       if (ipr == j) then
          ed1 = ed2
       else
          ed1 = ed2-orbital_energy_parameters(j)
-      endif
+      end if
 !
       ipr = j
       return

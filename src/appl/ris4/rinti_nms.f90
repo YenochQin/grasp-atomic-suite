@@ -24,13 +24,13 @@
       use grid_c
       use wave_c
       use orb_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use debug_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dpbdt_i
-      use quad_i
+      use dpbdt_i, only: dpbdt
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -58,25 +58,25 @@
 !
 !   Stop if orbitals J and K have different kappa values
 !
-      if (kap1 .ne. kap2) then
+      if (kap1 /= kap2) then
          write (*,300) orbital_principal_n(j),orbital_symmetry_labels(j),orbital_principal_n(k),orbital_symmetry_labels(k)
          stop
-      endif
+      end if
 !
 !   Determine the l quantum numbers
 !
-      if (kap1 .gt. 0) then
+      if (kap1 > 0) then
          l1 =  kap1
       else
          l1 = -kap1-1
-      endif
+      end if
 !
-      if (kap2 .gt. 0) then
+      if (kap2 > 0) then
          l2 =  kap2
       else
          l2 = -kap2-1
-      endif
-      if (l1 .ne. l2) return
+      end if
+      if (l1 /= l2) return
 !
 !   Determine the j quantum numbers and l_2 tilda
 !
@@ -124,14 +124,14 @@
 !
 !   Pieces not involving derivatives
 !
-      ta(1) = 0._real64
+      ta(1) = 0.0_real64
       do 3 i = 2,mtp
          ta(i) = (radial_small_components(i,j)*pb(i)+radial_small_components(i,k)*pa(i))/radial_grid(i)
     3 continue
       call quad (piece3)
       piece3 = -2.0_real32*nuclear_charge*piece3/(speed_of_light_au*transformed_grid_step)
 !
-      if (kap2 .ne. 1) then
+      if (kap2 /= 1) then
         ta(1) = 0.0_real64
         do 4 i = 2,mtp
            ta(i) = radial_grid_derivative(i)                                               &
@@ -156,9 +156,9 @@
 !
 !C*      RETURN
 !
-  300 format ('RINTI_NMS: Attempt to calculate I(',                    &
-               1i2,1a2,',',1i2,1a2,')')
-  302 format (/' K (',1i2,1a2,',',1i2,1a2,') = ',1pd19.12)
+  300 format ("RINTI_NMS: Attempt to calculate I(",                    &
+               1i2,1a2,",",1i2,1a2,")")
+  302 format (/" K (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)
 !
       return
       end subroutine rinti_nms

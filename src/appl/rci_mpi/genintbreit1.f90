@@ -25,12 +25,12 @@
       use memory_man
       use bilst_c
       use orb_c, only: orbital_two_j, orbital_count
-      use kkstartbreit_c
+      use kkstartbreit_c, only: kmax, kstartbreit1, kstartbreit2
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use brintf_i
-      use triangbreit1_i
+      use brintf_i, only: brintf
+      use triangbreit1_i, only: triangbreit1
       use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
 !-----------------------------------------------
@@ -52,12 +52,12 @@
 !
       j2max = orbital_two_j(1)
       do i = 2, orbital_count
-         if (orbital_two_j(i) .gt. j2max) j2max = orbital_two_j(i)
-      enddo
+         if (orbital_two_j(i) > j2max) j2max = orbital_two_j(i)
+      end do
 
-      if (j2max .gt. kmax) then
-         stop 'genintbreit1: KMAX too small'
-      endif
+      if (j2max > kmax) then
+         stop "genintbreit1: KMAX too small"
+      end if
 !
 !   Make the breit integrals. Note that there are no symmetry relations that
 !   can be utilized. See paper by Grasnt.
@@ -73,37 +73,37 @@
                   do id = 1, orbital_count
                      if (triangbreit1(ia,ib,ic,id,k)) then
                         nb = nb + 1
-                        if (gen .and.(mod(nb,nprocs) .eq. myid)) then
+                        if (gen .and.(mod(nb,nprocs) == myid)) then
                            indtp1(nb) = ((ia*key+ib)*key+ic)*key+id
                            valtp1(nb) = brintf (1,ia,ib,ic,id,k)
-                        endif
-                     endif
-                  enddo
-               enddo
-            enddo
-         enddo
+                        end if
+                     end if
+                  end do
+               end do
+            end do
+         end do
          kstartbreit1(k+1) = nb + 1
-      enddo
+      end do
 !
 !     Allocate memory for integral book keeping
 !
       if (.not. gen) then
-         call alloc (indtp1,nb,'INDT1','genintbreit1')
-         call alloc (valtp1,nb,'VALT1','genintbreit1')
+         call alloc (indtp1,nb,"INDT1","genintbreit1")
+         call alloc (valtp1,nb,"VALT1","genintbreit1")
 
 ! Initialization is necessary in the mpi version
 
          do i = 1, nb
             indtp1(i) = 0
-            valtp1(i) = 0._real64
-         enddo
+            valtp1(i) = 0.0_real64
+         end do
 
-         if (myid .eq. 0)                                         &
-            print *, 'Computing',nb,' Breit integrals of type 1'
+         if (myid == 0)                                         &
+            print *, "Computing",nb," Breit integrals of type 1"
 
          gen = .true.
          goto 999
-      endif
+      end if
 
       return
       end subroutine genintbreit1

@@ -14,6 +14,6 @@
                                                         dint7(max_orbitals, max_orbitals)
       real(real64), intent(out) :: dens1vec(nvec, nrnuc)
       real(real64), intent(in) :: dint1vec(max_orbitals, max_orbitals, nrnuc)
-      end subroutine
+      end subroutine densnew_seltz_mpi
       end interface
-      end module
+      end module densnew_seltz_mpi_i

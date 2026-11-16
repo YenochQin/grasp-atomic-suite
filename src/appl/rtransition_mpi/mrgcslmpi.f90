@@ -13,9 +13,9 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ldcsl1_i
-      use ldcsl2_i
-      use merg12_i
+      use ldcsl1_i, only: ldcsl1
+      use ldcsl2_i, only: ldcsl2
+      use merg12_i, only: merg12
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

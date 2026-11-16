@@ -14,14 +14,14 @@ contains
         integer, intent(out) :: status
         character(*), intent(out) :: message
         status = 1
-        message = 'npol: N must be in 1:NNNP and fit the supplied arrays'
+        message = "npol: N must be in 1:NNNP and fit the supplied arrays"
         if (n < 1 .or. n > max_radial_points .or. n > size(r)) return
-        message = 'npol: radial grid must be finite and nonnegative'
+        message = "npol: radial grid must be finite and nonnegative"
         if (.not.all(ieee_is_finite(r(:n)))) return
         if (any(r(:n) < 0)) return
         status = 0
-        message = ''
-    end subroutine
+        message = ""
+    end subroutine npol_check_grid
 
     subroutine npol_build_grid(cfg, n, r, e1, e2, total, status, message)
         use, intrinsic :: iso_fortran_env, only: real64
@@ -36,7 +36,7 @@ contains
         call npol_check_grid(n, r, status, message)
         if (status /= 0) return
         status = 1
-        message = 'npol: output arrays shorter than N'
+        message = "npol: output arrays shorter than N"
         if (min(size(e1), size(e2), size(total)) < n) return
         call npol_validate_config(cfg, real(cfg%isotope_z,real64), status, message)
         if (status /= 0) return
@@ -58,13 +58,13 @@ contains
             v(i) = a(i) + b(i)
         end do
         if (status /= 0) then
-            message = 'npol: potential is not representable as a finite value'
+            message = "npol: potential is not representable as a finite value"
             return
         end if
         e1(:n) = a(:n)
         e2(:n) = b(:n)
         total(:n) = v(:n)
-    end subroutine
+    end subroutine npol_build_grid
 
     ! Evaluate K/(r**p+b**p) without forming potentially overflowing powers.
     ! Binary mantissas/exponents preserve subnormal results when representable.
@@ -90,7 +90,7 @@ contains
         if (e < minexponent(v)-digits(v)) return
         v = -scale(fraction(m), e)
         if (.not.ieee_is_finite(v)) status = 1
-    end subroutine
+    end subroutine channel
 
     subroutine npol_compose(n, r, coul, v, total, status, message)
         use, intrinsic :: iso_fortran_env, only: real64
@@ -104,12 +104,12 @@ contains
         call npol_check_grid(n, r, status, message)
         if (status /= 0) return
         status = 1
-        message = 'npol: composition arrays shorter than N'
+        message = "npol: composition arrays shorter than N"
         if (min(size(coul), size(v), size(total)) < n) return
-        message = 'npol: nonfinite Coulomb or NP input'
+        message = "npol: nonfinite Coulomb or NP input"
         if (.not.all(ieee_is_finite(coul(:n))) .or. .not.all(ieee_is_finite(v(:n)))) return
         candidate(:n) = coul(:n)
-        message = 'npol: composed potential is not finite'
+        message = "npol: composed potential is not finite"
         do i = 1, n
             if (v(i) == 0 .or. r(i) == 0) cycle
             if (r(i) > 1) then
@@ -125,6 +125,6 @@ contains
         end do
         total(:n) = candidate(:n)
         status = 0
-        message = ''
-    end subroutine
+        message = ""
+    end subroutine npol_compose
 end module npol_kernel

@@ -27,7 +27,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use def_c
       use grid_c
       use int_c,           only: tf, tg
@@ -78,9 +78,9 @@ contains
 !   Trap for inappropriate grid
 !
       if (jp == 0) then
-         write (stderr_unit, *) 'SETPOT: Join set to NNNP/2 = ', max_radial_points/2
+         write (stderr_unit, *) "SETPOT: Join set to NNNP/2 = ", max_radial_points/2
          jp = max_radial_points/2
-      endif
+      end if
 !
       return
       end subroutine setpot

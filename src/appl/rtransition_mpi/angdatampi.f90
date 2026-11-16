@@ -33,54 +33,54 @@
       character :: s(-9:9)*2
 !-----------------------------------------------
 
-      s((-9)) = '-9'
-      s((-8)) = '-8'
-      s((-7)) = '-7'
-      s((-6)) = '-6'
-      s((-5)) = '-5'
-      s((-4)) = '-4'
-      s((-3)) = '-3'
-      s((-2)) = '-2'
-      s((-1)) = '-1'
-      s(0) = '+0'
-      s(1) = '+1'
-      s(2) = '+2'
-      s(3) = '+3'
-      s(4) = '+4'
-      s(5) = '+5'
-      s(6) = '+6'
-      s(7) = '+7'
-      s(8) = '+8'
-      s(9) = '+9'
+      s((-9)) = "-9"
+      s((-8)) = "-8"
+      s((-7)) = "-7"
+      s((-6)) = "-6"
+      s((-5)) = "-5"
+      s((-4)) = "-4"
+      s((-3)) = "-3"
+      s((-2)) = "-2"
+      s((-1)) = "-1"
+      s(0) = "+0"
+      s(1) = "+1"
+      s(2) = "+2"
+      s(3) = "+3"
+      s(4) = "+4"
+      s(5) = "+5"
+      s(6) = "+6"
+      s(7) = "+7"
+      s(8) = "+8"
+      s(9) = "+9"
 
-      j1 = index(name(1),' ')
-      j2 = index(name(2),' ')
-      inquire(file=name(1)(1:j1-1)//'.'//name(2)(1:j2-1)//'.'//s(kp(jkp))//'T'&
+      j1 = index(name(1)," ")
+      j2 = index(name(2)," ")
+      inquire(file=name(1)(1:j1-1)//"."//name(2)(1:j2-1)//"."//s(kp(jkp))//"T"&
          , exist=found)
       if (.not.found) then
          write (6, *)
-         write (6, *) ' Angular file not available'
+         write (6, *) " Angular file not available"
          avail = .false.
          return
       else
 !
 !  Open the file and check if it is appropriate for the present case
 !
-         open(unit=nfile2, file=name(1)(1:j1-1)//'.'//name(2)(1:j2-1)//'.'//s(&
-            kp(jkp))//'T', status='OLD', form='UNFORMATTED', position='asis')
+         open(unit=nfile2, file=name(1)(1:j1-1)//"."//name(2)(1:j2-1)//"."//s(&
+            kp(jkp))//"T", status="OLD", form="UNFORMATTED", position="asis")
          rewind (nfile2)
          read (nfile2) iblki,iblkf,nwd,nkpd,nprocsd,myidd
          if (.not.(nwd==orbital_count .and. nkpd==nkp                          &
-             .and.nprocsd.eq.mpi_process_count.and.myidd.eq.mpi_rank)) then
-            write (6, *) ' Angular file not appropriate'
+             .and.nprocsd==mpi_process_count.and.myidd==mpi_rank)) then
+            write (6, *) " Angular file not appropriate"
             avail = .false.
-            close(nfile2, status='DELETE')
+            close(nfile2, status="DELETE")
             return
          else
             rewind (nfile2)
-            write (6, *) ' Angular data read from file'
+            write (6, *) " Angular data read from file"
             avail = .true.
-         endif
-      endif
+         end if
+      end if
       return
       end subroutine angdata

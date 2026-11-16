@@ -40,21 +40,21 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use eile_i
-      use reco_i
-      use rec3_i
-      use perko2_i
-      use snrc_i
-      use jfaze_i
-      use ixjtik_i
-      use itrexg_i
-      use itrig_i
-      use coulom_i
-      use gg1233_i
-      use sixj_i
-      use speak_i
-      use cxk_i
-      use talk_i
+      use eile_i, only: eile
+      use reco_i, only: reco
+      use rec3_i, only: rec3
+      use perko2_i, only: perko2
+      use snrc_i, only: snrc
+      use jfaze_i, only: jfaze
+      use ixjtik_i, only: ixjtik
+      use itrexg_i, only: itrexg
+      use itrig_i, only: itrig
+      use coulom_i, only: coulom
+      use gg1233_i, only: gg1233
+      use sixj_i, only: sixj
+      use speak_i, only: speak
+      use cxk_i, only: cxk
+      use talk_i, only: talk
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -276,7 +276,7 @@ contains
       end if
       return
    10 write(99,100)
-  100 format(5x,'ERRO IN EL41  PMGG RAGG')
+  100 format(5x,"ERRO IN EL41  PMGG RAGG")
       stop
       end subroutine el41
 end module el41_i

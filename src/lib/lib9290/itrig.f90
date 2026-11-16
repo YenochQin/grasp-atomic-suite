@@ -33,7 +33,7 @@ contains
          itrig = 1
       else
          itrig = 0
-      endif
+      end if
 !
       return
       end function itrig

@@ -6,6 +6,6 @@
       integer, intent(in) :: nw
       integer, intent(in) :: jp
       logical, intent(in) :: lsort
-      end subroutine
+      end subroutine orthy
       end interface
-      end module
+      end module orthy_i

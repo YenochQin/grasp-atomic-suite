@@ -47,6 +47,22 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 当前静态诊断接续入口 | [static_diagnostics_remaining_2026-11-17.md](plans/static_diagnostics_remaining_2026-11-17.md) | 提交前复查默认 6,172 条、扩展 13,604 条；USE ONLY 剩余 2,116 条（637 份文件），附位置/哈希清单，区分规范、CSF 风险和工具限制。 |
+| USE ONLY 第一批：接口模块 | [use_only_interfaces_2026-11-17.md](reviews/use_only_interfaces_2026-11-17.md) | 普通四种 RMCDHF 的 142 份文件补齐 524 条 ONLY，编译器导出表确认单过程接口范围；剩余 4,365 条按依赖与重导出继续分批。 |
+| USE ONLY 第二批：其他应用接口 | [use_only_app_interfaces_2026-11-17.md](reviews/use_only_app_interfaces_2026-11-17.md) | 其他 15 个应用目录的 275 份文件补齐 906 条 ONLY，247 个模块名的导出过程核对一致；剩余 3,459 条。 |
+| USE ONLY 第三批：共享库过程接口 | [use_only_library_interfaces_2026-11-17.md](reviews/use_only_library_interfaces_2026-11-17.md) | 5 个共享库的 115 份文件补齐 396 条 ONLY，核对 133 个模块名，保留模块头部重导出；剩余 3,063 条。 |
+| USE ONLY 第四批：小型状态模块 | [use_only_small_state_2026-11-17.md](reviews/use_only_small_state_2026-11-17.md) | 220 份文件补齐 284 条 ONLY，保留 13 个状态模块全部公开变量；剩余 2,779 条。 |
+| USE ONLY 第五批：状态模块与别名 | [use_only_state_aliases_2026-11-17.md](reviews/use_only_state_aliases_2026-11-17.md) | 216 份文件补齐 383 条 ONLY，保留 15 个模块原有状态、精度别名和容量常量；剩余 2,396 条。 |
+| USE ONLY 第六批：状态表与工作数组 | [use_only_state_tables_2026-11-17.md](reviews/use_only_state_tables_2026-11-17.md) | 188 份文件补齐 280 条 ONLY，保留 35 个模块的完整公开数据实体；剩余 2,116 条。 |
+| 输出格式内联，待实施 | [inline_output_formats_2026-11-17.md](plans/inline_output_formats_2026-11-17.md) | 将数字标签 FORMAT 输出全部改为使用处显式格式字符串；当前统计 909 处 WRITE、781 个 FORMAT 定义，要求保持数值精度及输出字节不变。本轮仅记录。 |
+| 风格第一批：空格与行尾 | [style_spacing_2026-11-17.md](reviews/style_spacing_2026-11-17.md) | 623 份文件消除 4,514 条关键字空格/行尾提示，708 个 Release 对象字节一致；有解析错误的文件跳过。 |
+| 风格第二批：引号与 END 命名 | [style_quotes_end_2026-11-17.md](reviews/style_quotes_end_2026-11-17.md) | 1,287 份文件消除 14,980 条提示，字符串内容保持不变；解析问题及未提供安全修复的提示保留。 |
+| 风格第三批：小数写法 | [style_decimal_2026-11-17.md](reviews/style_decimal_2026-11-17.md) | 153 份文件消除 656 条提示，保留指数和 kind；49 对常量的编译后位模式一致，解析问题文件中的 16 条提示保留。 |
+| 风格第四批：解析问题文件 | [style_parser_files_2026-11-17.md](reviews/style_parser_files_2026-11-17.md) | 剩余引号、END 命名、小数提示归零；检查完整文件及 27 个预处理上下文，原始扫描的 20 条解析提示仍保留。 |
+| 风格第五批：运算符、数组与空格 | [style_operators_arrays_2026-11-17.md](reviews/style_operators_arrays_2026-11-17.md) | 207 份文件统一 1,259 处关系运算符、55 处数组构造及 186 处关键字空格，相关规则归零；精度及表达式顺序不变。 |
+| S1–S4 后工具全量复查 | [fortls_fortitude_rescan_2026-11-17.md](reviews/fortls_fortitude_rescan_2026-11-17.md) | 当前 1,731 份文本；Fortitude 默认 31,061 条，C181 剩 10 条；fortls 100 个上下文最终 50 条、3 条 Error 已复现为解析误报。与同工具扫描 HEAD 比较，未发现本批新增已确认功能缺陷；CSF 输入风险仍归描述符迁移任务。 |
+| S3/S4 已实施，平台限制明确 | [static_numeric_interfaces_2026-11-17.md](reviews/static_numeric_interfaces_2026-11-17.md) | 20 处常量改用 real64；BNDINV 接口边界、JJ2LSJ 指针默认值和 MPI 输出失败诊断。Release/Check 软件回归通过，1,956 个加强类型检查上下文通过；普通 SCF 6 轮结果一致，Ni/Zn 初始轨道有末位差异，memory 完整 SCF 对照受 macOS 平台限制。 |
+| S1/S2 首批已实施，过程级回归 | [static_input_fixes_2026-11-17.md](reviews/static_input_fixes_2026-11-17.md) | RIS4 不完整缓存安全降级与 MPI root 失败传播；JJ2LSJ 完整唯一标签过程拒绝损坏输入，正常输出与基线逐字节一致。S3/S4 见独立记录，完整 RIS4 物理结果对照未新增。 |
 | 共享库过程已模块化 | [library_module_migration_2026-11-16.md](reviews/library_module_migration_2026-11-16.md) | 188 份独立接口中的 200 个过程迁入模块，保留公开 API；记录原接口属性差异、MPI 依赖拆分、测试替身和串行/MPI/OpenMP 行为回归。 |
 | 剩余非风格项已分级，未实施 | [remaining_nonstyle_static_analysis_2026-11-16.md](reviews/remaining_nonstyle_static_analysis_2026-11-16.md) | 基准 9d6ee31；复核剩余输入、精度、接口与解析诊断。35 个受控输入场景定位 CSF 错误接受/零退出码、RIS4 截断缓存问题；1,107 个加强隐式类型检查的编译上下文区分声明顺序与漏声明。给出 P1–P3 建议，未修改代码。 |
 | 三类优先问题已修复并回归 | [priority_input_safety_fixes_2026-11-16.md](reviews/priority_input_safety_fixes_2026-11-16.md) | MCP 状态即时检查、单 rank 故障 MPI_Abort、相关 CSF 记录检查、CPATH 分配保护及四个 EPS 的 DOUBLE 声明。Release/Check 最终各 77 项通过，非 MPI 专项 5 项通过；EPS 当前未用于执行判断，未启用阈值筛选。纯风格未改，历史告警预算缺口保留。 |

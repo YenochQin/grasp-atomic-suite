@@ -46,8 +46,8 @@ subroutine edensityfit(xvec,yvec,z,par,nrnuc,f,rho,res)
       integer :: i, inuc, nmin, nmax, nr
 !-----------------------------------------------
 !
-      au2fm = 1._real64/femtometer_to_bohr                ! Bohr radius in fm
-      const = 1.e-9_real64*speed_of_light_cm_per_s*hartree_to_wavenumber_cm*au2fm      ! To get electronic factors in GHz
+      au2fm = 1.0_real64/femtometer_to_bohr                ! Bohr radius in fm
+      const = 1.0e-9_real64*speed_of_light_cm_per_s*hartree_to_wavenumber_cm*au2fm      ! To get electronic factors in GHz
 
 !     COPY ARRAYS
       x(:) = xvec(:)
@@ -78,7 +78,7 @@ subroutine edensityfit(xvec,yvec,z,par,nrnuc,f,rho,res)
       m(2,1) = 1.0_real64
       m(2,2) = x(nmin+2)**2.0_real64
       m(2,3) = x(nmin+2)**4.0_real64
-      m(3,1) = 1._real64
+      m(3,1) = 1.0_real64
       m(3,2) = x(nmin+4)**2.0_real64
       m(3,3) = x(nmin+4)**4.0_real64
       mdet = m(1,1)*m(2,2)*m(3,3)-m(1,1)*m(2,3)*m(3,2)-                &
@@ -193,14 +193,14 @@ subroutine edensityfit(xvec,yvec,z,par,nrnuc,f,rho,res)
 
       !DR2(1) = 1.0d0
       !PARF2(1) =  SQRT(1.d0+PARF(1)**2.d0)
-      dr2(2) = 10._real64/7._real64*parf(1)**2._real64 + 30._real64/7._real64*(pi*parf(2))**2._real64
-      dr2(3) = 5._real64/3._real64*parf(1)**4._real64 + &
-           110._real64/9._real64*(pi*parf(2)*parf(1))**2._real64 + &
-           239._real64/9._real64*(pi*parf(2))**4._real64
-      dr2(4) = 20._real64/11._real64*parf(1)**6._real64 + &
-           780._real64/33._real64*(pi*parf(2))**2._real64*parf(1)**4._real64 + &
-           4100._real64/33._real64*(pi*parf(2))**4._real64*parf(1)**2._real64 + &
-           8180._real64/33._real64*(pi*parf(2))**6._real64
+      dr2(2) = 10.0_real64/7.0_real64*parf(1)**2.0_real64 + 30.0_real64/7.0_real64*(pi*parf(2))**2.0_real64
+      dr2(3) = 5.0_real64/3.0_real64*parf(1)**4.0_real64 + &
+           110.0_real64/9.0_real64*(pi*parf(2)*parf(1))**2.0_real64 + &
+           239.0_real64/9.0_real64*(pi*parf(2))**4.0_real64
+      dr2(4) = 20.0_real64/11.0_real64*parf(1)**6.0_real64 + &
+           780.0_real64/33.0_real64*(pi*parf(2))**2.0_real64*parf(1)**4.0_real64 + &
+           4100.0_real64/33.0_real64*(pi*parf(2))**4.0_real64*parf(1)**2.0_real64 + &
+           8180.0_real64/33.0_real64*(pi*parf(2))**6.0_real64
 
       fdsum = f(1)
       do i=2,4
@@ -208,14 +208,14 @@ subroutine edensityfit(xvec,yvec,z,par,nrnuc,f,rho,res)
       end do
       f(5) = fdsum              ! IS ENERGY IN GHZ / FM^2
 
-      dr2(2) = 25._real64/21._real64
-      dr2(3) = 25._real64/9._real64*parf(1)**2._real64 + &
-           275._real64/27._real64*(pi*parf(2))**2._real64
-      dr2(4) = 50._real64/11._real64*parf(1)**4._real64 +  &
-           1300._real64/33._real64*(pi*parf(2)*parf(1))**2._real64 + &
-           10250._real64/99._real64*(pi*parf(2))**4._real64
+      dr2(2) = 25.0_real64/21.0_real64
+      dr2(3) = 25.0_real64/9.0_real64*parf(1)**2.0_real64 + &
+           275.0_real64/27.0_real64*(pi*parf(2))**2.0_real64
+      dr2(4) = 50.0_real64/11.0_real64*parf(1)**4.0_real64 +  &
+           1300.0_real64/33.0_real64*(pi*parf(2)*parf(1))**2.0_real64 + &
+           10250.0_real64/99.0_real64*(pi*parf(2))**4.0_real64
 
-      fdsum = 0._real64
+      fdsum = 0.0_real64
       do i=2,4
          fdsum = fdsum + f(i)*dr2(i)
       end do

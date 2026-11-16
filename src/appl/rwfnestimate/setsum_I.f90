@@ -3,6 +3,6 @@
       interface
       subroutine setsum
       implicit none (type, external)
-      end subroutine
+      end subroutine setsum
       end interface
-      end module
+      end module setsum_i

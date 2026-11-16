@@ -9,20 +9,20 @@
       use decide_c
       use def_c
       use grid_c
-      use ncdist_c
-      use tatb_c
-      use coeils_c
+      use ncdist_c, only: double, max_radial_points, zdist
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
+      use coeils_c, only: double, frstco, indoei, ncoei, ndcoea, valoei
       use vpilst_c,indoei=>indvpi, valoei=>valvpi
       use bilst_c
-      use keilst_c
-      use vinlst_c
+      use keilst_c, only: double, frstki, indkei, ndkea, nkei, valkei
+      use vinlst_c, only: double, frstvi, indtei, ndvin, nvinti, valtei
       use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ncharg_i
-      use vacpol_i
+      use ncharg_i, only: ncharg
+      use vacpol_i, only: vacpol
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -66,14 +66,14 @@
          end select
 
          if (i < orbital_count) then
-            write (stderr_unit, *) 'In setham. The number of orbitals is too'
-            write (stderr_unit, *) 'large for the brint routine'
+            write (stderr_unit, *) "In setham. The number of orbitals is too"
+            write (stderr_unit, *) "large for the brint routine"
             stop
-         endif
+         end if
 
          first = .true.
          ntpi = 0
-      endif
+      end if
 !
 !   Initialisations for the vacuum polarisation corrections
 !
@@ -83,25 +83,25 @@
          zdist(2:radial_point_count) = tb(2:radial_point_count)*radial_grid_derivative(2:radial_point_count)
          frstvp = .true.
          nvpi = 0
-      endif
+      end if
 !
 !   Initialisations for nuclear translational energy corrections
 !
-      if (emn > 0._real64) then
-         atwinv = 1._real64/emn
+      if (emn > 0.0_real64) then
+         atwinv = 1.0_real64/emn
          if (lnms) then
             frstki = .true.
             nkei = 0
-         endif
+         end if
          if (lsms) then
             frstvi = .true.
             nvinti = 0
-         endif
+         end if
       else
          ! atwinv will not be used
          lnms = .false.
          lsms = .false.
-      endif
+      end if
 
       return
       end subroutine auxblk

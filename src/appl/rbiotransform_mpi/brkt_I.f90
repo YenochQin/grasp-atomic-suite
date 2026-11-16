@@ -3,6 +3,6 @@
       interface
       subroutine brkt
       implicit none (type, external)
-      end subroutine
+      end subroutine brkt
       end interface
-      end module
+      end module brkt_i

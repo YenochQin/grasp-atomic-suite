@@ -23,15 +23,15 @@ contains
 !-----------------------------------------------
       use memory_man
       use mpi_c
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use def_c, only: emn,ioncty,electron_count,nuclear_charge
       use orb_c, ncftot=>csf_count
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setcsll_i
-      use lodcsh_i
+      use setcsll_i, only: setcsll
+      use lodcsh_i, only: lodcsh
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -48,16 +48,16 @@ contains
 !
 
 !     node-0 does exactly the same as the serial code does
-      if (mpi_rank .eq. 0) then
-        call alloc   (csf_counts_by_block, nblkin+1, 'ncfblk', 'cslhmpi')
+      if (mpi_rank == 0) then
+        call alloc   (csf_counts_by_block, nblkin+1, "ncfblk", "cslhmpi")
         call setcsll (21, name, nblkin, symmetry_block_count, csf_counts_by_block, ncftot, &
                        idblk)
-        call ralloc  (csf_counts_by_block, symmetry_block_count+1, 'ncfblk', 'cslhmpi')
+        call ralloc  (csf_counts_by_block, symmetry_block_count+1, "ncfblk", "cslhmpi")
          rewind (21)
          read   (21,*)
          !..Load header of <name> file
          call lodcsh (21, ncore)
-      endif
+      end if
 
 ! Broadcast results to other nodes. ncfblk should be allocated
 ! on these nodes (with myid .ne. 0)
@@ -66,8 +66,8 @@ contains
       call mpi_bcast (ncftot, 1, mpi_integer,0,mpi_comm_world,mpi_error_code)
 
       if (mpi_rank /= 0) then
-         call alloc (csf_counts_by_block, 1+symmetry_block_count, 'ncfblk', 'cslhmpi')
-      endif
+         call alloc (csf_counts_by_block, 1+symmetry_block_count, "ncfblk", "cslhmpi")
+      end if
 
       call mpi_bcast (csf_counts_by_block, 1+symmetry_block_count, mpi_integer,0, &
                                               mpi_comm_world,mpi_error_code)

@@ -18,12 +18,12 @@
 !-----------------------------------------------
       use debug_c
       use default_c, only: ndef
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use openfl_i
+      use getyn_i, only: getyn
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -49,57 +49,57 @@
       do i = 1, 5
          ldbpa(i) = .false.
          ldbpg(i) = .false.
-      enddo
+      end do
 !
       return        ! Skip these questions and return immediatel
 !
-      if (ndef .eq. 0) then
+      if (ndef == 0) then
          return
-      endif
+      end if
 
-      write (stderr_unit,*) 'Generate debug printout?'
+      write (stderr_unit,*) "Generate debug printout?"
       debug = getyn ()
       if (debug) then
 !
 !   The  .dbg  file is formatted; open it on unit 99
 !
-         form = 'FORMATTED'
-         status = 'NEW'
+         form = "FORMATTED"
+         status = "NEW"
 !
-         write (stderr_unit,*) 'File ', fullname,' will be created as the'    &
-     &,                 ' GENMCP DeBuG Printout File; '
-         write (stderr_unit,*) ' enter another file name if this is not '     &
-     &,                 'acceptable; null otherwise:'
-         read (*,'(A)') filnam
+         write (stderr_unit,*) "File ", fullname," will be created as the"    &
+     &,                 " GENMCP DeBuG Printout File; "
+         write (stderr_unit,*) " enter another file name if this is not "     &
+     &,                 "acceptable; null otherwise:"
+         read (*,"(A)") filnam
 !
-         if (len_trim (filnam) .eq. 0) filnam = fullname
+         if (len_trim (filnam) == 0) filnam = fullname
 !
     4    call openfl (99, filnam, form, status, ierr)
-         if (ierr .ne. 0) then
-    5       write (stderr_unit,*) 'Enter a name for the GENMCP DeBuG Printout'&
-     &,                    ' file that is to be created:'
-            read (*,'(A)') filnam
-            if (len_trim (filnam) .eq. 0) goto 5
+         if (ierr /= 0) then
+    5       write (stderr_unit,*) "Enter a name for the GENMCP DeBuG Printout"&
+     &,                    " file that is to be created:"
+            read (*,"(A)") filnam
+            if (len_trim (filnam) == 0) goto 5
             goto 4
-         endif
+         end if
 !
 !   Set options for general printout
 !
-         write (stderr_unit,*) ' Print out the machine constants used?'
+         write (stderr_unit,*) " Print out the machine constants used?"
          ldbpg(1) = getyn ()
 !
 !   Set options for angular modules
 !
-         write (stderr_unit,*) ' Printout from LODCSL? (Not used)'
+         write (stderr_unit,*) " Printout from LODCSL? (Not used)"
          ldbpa(1) = getyn ()
-         write (stderr_unit,*) ' Print out T coefficients?'
+         write (stderr_unit,*) " Print out T coefficients?"
          ldbpa(2) = getyn ()
-         write (stderr_unit,*) ' Print out Coulomb V coefficients?'
+         write (stderr_unit,*) " Print out Coulomb V coefficients?"
          ldbpa(3) = getyn ()
-         write (stderr_unit,*) ' Print out sparse matrix definition arrays?'
+         write (stderr_unit,*) " Print out sparse matrix definition arrays?"
          ldbpa(4) = getyn ()
 
-      endif
+      end if
 !
       return
       end subroutine setdbg

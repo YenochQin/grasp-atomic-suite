@@ -7,4 +7,4 @@
       character(len=*) :: fullname
       end subroutine setdbgmpi
       end interface
-      end module
+      end module setdbgmpi_i

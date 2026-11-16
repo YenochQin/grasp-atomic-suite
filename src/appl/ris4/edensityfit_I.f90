@@ -13,6 +13,6 @@
       real(real64) :: par(2)
       real(real64) :: z, drms, rho, res
       integer      :: nrnuc, nparfit
-      end subroutine
+      end subroutine edensityfit
       end interface
-      end module
+      end module edensityfit_i

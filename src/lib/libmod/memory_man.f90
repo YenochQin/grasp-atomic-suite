@@ -44,15 +44,15 @@ module memory_man
 !    write(777,*) "0i first, last, var, sub",first, last, var,"  ", sub
      nullify(array_pointer)
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(lower_bound:upper_bound),stat=allocation_status)
         if (allocation_status/= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,2I15)') 'Number of elements requested: ',lower_bound, upper_bound
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,2I15)") "Number of elements requested: ",lower_bound, upper_bound
         stop
         end if
      end if
@@ -68,15 +68,15 @@ module memory_man
 !    write(777,*) "1i n, var, sub",n, var,"  ", sub
      nullify(array_pointer)
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(element_count),stat=allocation_status)
         if (allocation_status/= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15)') 'Number of elements requested: ',element_count
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15)") "Number of elements requested: ",element_count
         stop
         end if
      end if
@@ -92,15 +92,15 @@ module memory_man
 !    write(777,*) "2i n1, n2, var, sub",n1, n2, var,"  ", sub
      nullify(array_pointer)
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(first_dimension_size,second_dimension_size),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15,I15)') 'Number of elements requested: ',first_dimension_size,second_dimension_size
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15,I15)") "Number of elements requested: ",first_dimension_size,second_dimension_size
         stop
         end if
      end if
@@ -117,15 +117,15 @@ module memory_man
 !    write(777,*) "3i n1, n2, n3, var, sub",n1, n2, n3, var,"  ", sub
      nullify(array_pointer)
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(first_dimension_size,second_dimension_size,third_dimension_size),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,3I15)') 'Number of elements requested: ',first_dimension_size,second_dimension_size,third_dimension_size
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,3I15)") "Number of elements requested: ",first_dimension_size,second_dimension_size,third_dimension_size
         stop
         end if
      end if
@@ -141,15 +141,15 @@ module memory_man
 !    write(777,*) "1iL n, var, sub",n, var,"  ", sub
      nullify(array_pointer)
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(element_count),stat=allocation_status)
         if (allocation_status/= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15)') 'Number of elements requested: ',element_count
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15)") "Number of elements requested: ",element_count
         stop
         end if
      end if
@@ -165,15 +165,15 @@ module memory_man
 !    write(777,*) "1r n, var, sub",n, var,"  ", sub
      nullify(array_pointer)
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(element_count),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15)') 'Number of elements requested: ',element_count
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15)") "Number of elements requested: ",element_count
         stop
         end if
      end if
@@ -189,15 +189,15 @@ module memory_man
 !    write(777,*) "2r n1, n2, var, sub",n1, n2, var,"  ", sub
      nullify(array_pointer)
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(first_dimension_size,second_dimension_size),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15,I15)') 'Number of elements requested: ',first_dimension_size, second_dimension_size
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15,I15)") "Number of elements requested: ",first_dimension_size, second_dimension_size
         stop
         end if
      end if
@@ -213,15 +213,15 @@ module memory_man
 !    write(777,*) "1rL n, var, sub",n, var,"  ", sub
      nullify(array_pointer)
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(element_count),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15)') 'Number of elements requested: ',element_count
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15)") "Number of elements requested: ",element_count
         stop
         end if
      end if
@@ -237,15 +237,15 @@ module memory_man
 !    write(777,*) "0b first, last, var, sub",first, last, var,"  ", sub
      nullify(array_pointer)
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(lower_bound:upper_bound),stat=allocation_status)
         if (allocation_status/= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,2I15)') 'Number of elements requested: ',lower_bound, upper_bound
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,2I15)") "Number of elements requested: ",lower_bound, upper_bound
         stop
         end if
      end if
@@ -261,15 +261,15 @@ module memory_man
 !    write(777,*) "1b n, var, sub",n, var, "  ", sub
      nullify(array_pointer)
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(element_count),stat=allocation_status)
         if (allocation_status/= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15)') 'Number of elements requested: ',element_count
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15)") "Number of elements requested: ",element_count
         stop
         end if
      end if
@@ -285,15 +285,15 @@ module memory_man
 !     write(777,*) "2b n1, n2, var, sub",n1, n2, var, "  ", sub
      nullify(array_pointer)
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(first_dimension_size,second_dimension_size),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15,I15)') 'Number of elements requested: ',first_dimension_size,second_dimension_size
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15,I15)") "Number of elements requested: ",first_dimension_size,second_dimension_size
         stop
         end if
      end if
@@ -310,15 +310,15 @@ module memory_man
 !    write(777,*) "3b n1, n2, n3, var, sub",n1, n2, n3, var, "  ", sub
      nullify(array_pointer)
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(first_dimension_size,second_dimension_size,third_dimension_size),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,3I15)') 'Number of elements requested: ',first_dimension_size,second_dimension_size,third_dimension_size
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,3I15)") "Number of elements requested: ",first_dimension_size,second_dimension_size,third_dimension_size
         stop
         end if
      end if
@@ -334,15 +334,15 @@ module memory_man
 
 !    write(777,*) "1c n, var, sub",n, var, "  ", sub
      if (associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " already allocated"
         stop
      else
         allocate(array_pointer(element_count),stat=allocation_status)
         if (allocation_status/= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15)') 'Number of elements requested: ',element_count
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15)") "Number of elements requested: ",element_count
         stop
         end if
      end if
@@ -356,8 +356,8 @@ module memory_man
      if (associated(array_pointer)) then
         deallocate (array_pointer)
      else
-        write(6,'(T10,A,A,A,A,A)') ' DALLOC:  Variable ',trim(variable_label), &
-                   ' in subroutine ', trim(caller_label),  ' not allocated'
+        write(6,"(T10,A,A,A,A,A)") " DALLOC:  Variable ",trim(variable_label), &
+                   " in subroutine ", trim(caller_label),  " not allocated"
      end if
    end subroutine dalloc_1i
 
@@ -369,8 +369,8 @@ module memory_man
      if (associated(array_pointer)) then
         deallocate (array_pointer)
      else
-        write(6,'(T10,A,A,A,A,A)') ' DALLOC:  Variable ',trim(variable_label), &
-                   ' in subroutine ', trim(caller_label),  ' not allocated'
+        write(6,"(T10,A,A,A,A,A)") " DALLOC:  Variable ",trim(variable_label), &
+                   " in subroutine ", trim(caller_label),  " not allocated"
      end if
    end subroutine dalloc_2i
 
@@ -382,8 +382,8 @@ module memory_man
      if (associated(array_pointer)) then
         deallocate (array_pointer)
      else
-        write(6,'(T10,A,A,A,A,A)') ' DALLOC:  Variable ',trim(variable_label), &
-                   ' in subroutine ', trim(caller_label),  ' not allocated'
+        write(6,"(T10,A,A,A,A,A)") " DALLOC:  Variable ",trim(variable_label), &
+                   " in subroutine ", trim(caller_label),  " not allocated"
      end if
    end subroutine dalloc_3i
 
@@ -395,8 +395,8 @@ module memory_man
      if (associated(array_pointer)) then
         deallocate (array_pointer)
      else
-        write(6,'(T10,A,A,A,A,A)') ' DALLOC:  Variable ',trim(variable_label), &
-                   ' in subroutine ', trim(caller_label),  ' not allocated'
+        write(6,"(T10,A,A,A,A,A)") " DALLOC:  Variable ",trim(variable_label), &
+                   " in subroutine ", trim(caller_label),  " not allocated"
      end if
    end subroutine dalloc_1r
 
@@ -408,8 +408,8 @@ module memory_man
      if (associated(array_pointer)) then
         deallocate (array_pointer)
      else
-        write(6,'(T10,A,A,A,A,A)') ' DALLOC:  Variable ',trim(variable_label), &
-                   ' in subroutine ', trim(caller_label),  ' not allocated'
+        write(6,"(T10,A,A,A,A,A)") " DALLOC:  Variable ",trim(variable_label), &
+                   " in subroutine ", trim(caller_label),  " not allocated"
      end if
    end subroutine dalloc_2r
 
@@ -421,8 +421,8 @@ module memory_man
      if (associated(array_pointer)) then
         deallocate (array_pointer)
      else
-        write(6,'(T10,A,A,A,A,A)') ' DALLOC:  Variable ',trim(variable_label), &
-                   ' in subroutine ', trim(caller_label),  ' not allocated'
+        write(6,"(T10,A,A,A,A,A)") " DALLOC:  Variable ",trim(variable_label), &
+                   " in subroutine ", trim(caller_label),  " not allocated"
      end if
    end subroutine dalloc_1b
 
@@ -434,8 +434,8 @@ module memory_man
      if (associated(array_pointer)) then
         deallocate (array_pointer)
      else
-        write(6,'(T10,A,A,A,A,A)') ' DALLOC:  Variable ',trim(variable_label), &
-                   ' in subroutine ', trim(caller_label),  ' not allocated'
+        write(6,"(T10,A,A,A,A,A)") " DALLOC:  Variable ",trim(variable_label), &
+                   " in subroutine ", trim(caller_label),  " not allocated"
      end if
    end subroutine dalloc_2b
 
@@ -447,8 +447,8 @@ module memory_man
      if (associated(array_pointer)) then
         deallocate (array_pointer)
      else
-        write(6,'(T10,A,A,A,A,A)') ' DALLOC:  Variable ',trim(variable_label), &
-                   ' in subroutine ', trim(caller_label),  ' not allocated'
+        write(6,"(T10,A,A,A,A,A)") " DALLOC:  Variable ",trim(variable_label), &
+                   " in subroutine ", trim(caller_label),  " not allocated"
      end if
    end subroutine dalloc_3b
 
@@ -460,8 +460,8 @@ module memory_man
      if (associated(array_pointer)) then
         deallocate (array_pointer)
      else
-        write(6,'(T10,A,A,A,A,A)') ' DALLOC:  Variable ',trim(variable_label), &
-                   ' in subroutine ', trim(caller_label),  ' not allocated'
+        write(6,"(T10,A,A,A,A,A)") " DALLOC:  Variable ",trim(variable_label), &
+                   " in subroutine ", trim(caller_label),  " not allocated"
      end if
    end subroutine dalloc_1c
 
@@ -474,16 +474,16 @@ module memory_man
      integer :: allocation_status, nold
 !    write(777,*) "ralloc_0i first, last, var, sub",first, last,var, "  ", sub
      if (.not.  associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' not already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " not already allocated"
         stop
      else
         allocate(pnew(lower_bound:upper_bound),stat=allocation_status)
         if (allocation_status/= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to reallocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15)') 'Elements requested for range: ', &
-                            lower_bound, ' to ', upper_bound
+          write(6,"(T10,A,A,A,A)") "Unable to reallocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15)") "Elements requested for range: ", &
+                            lower_bound, " to ", upper_bound
         stop
         end if
         nold = min(size(array_pointer), upper_bound+1) - 1
@@ -502,15 +502,15 @@ module memory_man
      integer :: allocation_status, nold
 !    write(777,*) "ralloc_1i n, var, sub",n, var, "  ", sub
      if (.not.  associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' not already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " not already allocated"
         stop
      else
         allocate(pnew(element_count),stat=allocation_status)
         if (allocation_status/= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to reallocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15)') 'Number of elements requested: ',element_count
+          write(6,"(T10,A,A,A,A)") "Unable to reallocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15)") "Number of elements requested: ",element_count
         stop
         end if
         nold = min(size(array_pointer),element_count)
@@ -529,15 +529,15 @@ module memory_man
 
 !    write(777,*) "ralloc_2i n1, n2, var, sub",n1, n2, var, "  ", sub
      if (.not. associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' not already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " not already allocated"
         stop
      else
         allocate(pnew(first_dimension_size,second_dimension_size),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15,I15)') 'Number of elements requested: ',first_dimension_size,second_dimension_size
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15,I15)") "Number of elements requested: ",first_dimension_size,second_dimension_size
         stop
         end if
         n1_old = min(size(array_pointer, dim=1),first_dimension_size)
@@ -558,15 +558,15 @@ module memory_man
 
 !    write(777,*) "ralloc_3i var, sub",var, "  ", sub
      if (.not. associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' not already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " not already allocated"
         stop
      else
         allocate(pnew(first_dimension_size,second_dimension_size,third_dimension_size),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15,I15)') 'Number of elements requested: ',first_dimension_size,second_dimension_size, &
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15,I15)") "Number of elements requested: ",first_dimension_size,second_dimension_size, &
              & third_dimension_size
         stop
         end if
@@ -588,15 +588,15 @@ module memory_man
 
 !    write(777,*) "ralloc_1r n, var, sub",n, var, "  ", sub
      if (.not. associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' not already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " not already allocated"
         stop
      else
         allocate(pnew(element_count),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15)') 'Number of elements requested: ',element_count
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15)") "Number of elements requested: ",element_count
         stop
         end if
         nold = min(size(array_pointer),element_count)
@@ -615,15 +615,15 @@ module memory_man
 
 !    write(777,*) "ralloc_2r n1, n2, var, sub",n1, n2, var, "  ", sub
      if (.not. associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' not already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " not already allocated"
         stop
      else
         allocate(pnew(first_dimension_size,second_dimension_size),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15,I15)') 'Number of elements requested: ',first_dimension_size, second_dimension_size
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15,I15)") "Number of elements requested: ",first_dimension_size, second_dimension_size
         stop
         end if
         n1_old = min(size(array_pointer, dim=1),first_dimension_size)
@@ -642,16 +642,16 @@ module memory_man
      integer :: allocation_status, nold
 !    write(777,*) "ralloc_0b var, sub",var, "  ", sub
      if (.not.  associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' not already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " not already allocated"
         stop
      else
         allocate(pnew(lower_bound:upper_bound),stat=allocation_status)
         if (allocation_status/= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to reallocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15)') 'Elements requested for range: ', &
-                            lower_bound, ' to ', upper_bound
+          write(6,"(T10,A,A,A,A)") "Unable to reallocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15)") "Elements requested for range: ", &
+                            lower_bound, " to ", upper_bound
         stop
         end if
         nold = min(size(array_pointer), upper_bound+1) - 1
@@ -669,15 +669,15 @@ module memory_man
      integer :: allocation_status, nold
 !    write(777,*) "ralloc_1b var, sub",var, "  ", sub
      if (.not.  associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' not already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " not already allocated"
         stop
      else
         allocate(pnew(element_count),stat=allocation_status)
         if (allocation_status/= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to reallocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15)') 'Number of elements requested: ',element_count
+          write(6,"(T10,A,A,A,A)") "Unable to reallocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15)") "Number of elements requested: ",element_count
         stop
         end if
         nold = min(size(array_pointer),element_count)
@@ -696,15 +696,15 @@ module memory_man
 
 !    write(777,*) "ralloc_2b var, sub",var, "  ", sub
      if (.not. associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' not already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " not already allocated"
         stop
      else
         allocate(pnew(first_dimension_size,second_dimension_size),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15,I15)') 'Number of elements requested: ',first_dimension_size,second_dimension_size
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15,I15)") "Number of elements requested: ",first_dimension_size,second_dimension_size
         stop
         end if
         n1_old = min(size(array_pointer, dim=1),first_dimension_size)
@@ -726,15 +726,15 @@ module memory_man
 
 !    write(777,*) "ralloc_3b var, sub",var, "  ", sub
      if (.not. associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' not already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " not already allocated"
         stop
      else
         allocate(pnew(first_dimension_size,second_dimension_size,third_dimension_size),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15,I15)') 'Number of elements requested: ',first_dimension_size,second_dimension_size, &
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15,I15)") "Number of elements requested: ",first_dimension_size,second_dimension_size, &
              & third_dimension_size
         stop
         end if
@@ -759,15 +759,15 @@ module memory_man
 
 !    write(777,*) "ralloc_1c var, sub",var, "  ", sub
      if (.not. associated(array_pointer)) then
-        write(6,'(T10,A,A,A,A,A)') 'Variable ',trim(variable_label),' in subroutine ', &
-                                trim(caller_label),  ' not already allocated'
+        write(6,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
+                                trim(caller_label),  " not already allocated"
         stop
      else
         allocate(pnew(element_count),stat=allocation_status)
         if (allocation_status /= 0) then
-          write(6,'(T10,A,A,A,A)') 'Unable to allocate ',trim(variable_label), &
-                        ' in subroutine ', trim(caller_label)
-          write(6, '(T10,A,I15)') 'Number of elements requested: ',element_count
+          write(6,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
+                        " in subroutine ", trim(caller_label)
+          write(6, "(T10,A,I15)") "Number of elements requested: ",element_count
         stop
         end if
         nold = min(size(array_pointer),element_count)

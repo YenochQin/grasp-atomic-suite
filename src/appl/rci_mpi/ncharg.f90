@@ -16,13 +16,13 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use def_c,           only: pi,  nuclear_charge, precis
       use grid_c
-      use npar_c
-      use ncdist_c
-      use tatb_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
+      use ncdist_c, only: double, max_radial_points, zdist
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use es_i
+      use es_i, only: es
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -60,7 +60,7 @@
                if (1.0_real64/extrm <= precis) then
                   form1 = .false.
                   form2 = .true.
-               endif
+               end if
             else if (form2) then
                zdisti = znorm*dexp((-(radial_grid(i)-c)/a))
                if (dabs(zdisti) > 0.0_real64) then
@@ -68,10 +68,10 @@
                else
                   mtp = i
                   exit
-               endif
-            endif
+               end if
+            end if
          end do
-      endif
+      end if
 !
       return
 !

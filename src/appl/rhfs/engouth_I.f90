@@ -11,6 +11,6 @@
       integer, intent(in) :: ipar(nn)
       integer, intent(in) :: ilev(nn)
       integer, intent(in) :: mode
-      end subroutine
+      end subroutine engouth
       end interface
-      end module
+      end module engouth_i

@@ -28,8 +28,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use zkf_i
-      use quad_i
+      use zkf_i, only: zkf
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -99,7 +99,7 @@
          call quad (valu)
          skint = skint - valu*w*w/dble((2*k + 3)*(2*k - 1))
 !
-      endif
+      end if
 !
       if (ldbpr(11)) write (99, 300) k, orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ic), &
          & orbital_symmetry_labels(ic), orbital_principal_n(ib)&
@@ -107,8 +107,8 @@
 !
       return
 !
-  300 format('  (',1i2,')'/,'S     (',1i2,1a2,',',1i2,1a2,'|',1i2,1a2,',',1i2,&
-         1a2,';',1i2,') = ',1p,d19.12)
+  300 format("  (",1i2,")"/,"S     (",1i2,1a2,",",1i2,1a2,"|",1i2,1a2,",",1i2,&
+         1a2,";",1i2,") = ",1p,d19.12)
       return
 !
       end function skint

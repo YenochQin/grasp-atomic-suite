@@ -4,6 +4,6 @@
       subroutine lodmixmpi (idblk)
       implicit none (type, external)
       character(len=8), intent(in):: idblk(*)
-      end subroutine
+      end subroutine lodmixmpi
       end interface
-      end module
+      end module lodmixmpi_i

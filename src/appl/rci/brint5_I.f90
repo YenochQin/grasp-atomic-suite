@@ -6,6 +6,6 @@
       implicit none (type, external)
       integer, intent(in) :: ia, ib, ic, id, nu
       real(real64), intent(out) :: tegral
-      end subroutine
+      end subroutine brint5
       end interface
-      end module
+      end module brint5_i

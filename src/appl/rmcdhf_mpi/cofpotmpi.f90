@@ -4,17 +4,17 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use pote_c
+      use pote_c, only: double, max_radial_points, xp, xq, yp
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setcof_i
-      use ypot_i
-      use xpot_i
-      use lagcon_i
-      use dacon_i
-      use pote_c
+      use setcof_i, only: setcof
+      use ypot_i, only: ypot
+      use xpot_i, only: xpot
+      use lagcon_i, only: lagcon
+      use dacon_i, only: dacon
+      use pote_c, only: double, max_radial_points, xp, xq, yp
       use suite_linear_algebra, only: dcopy
       implicit none (type, external)
 !-----------------------------------------------

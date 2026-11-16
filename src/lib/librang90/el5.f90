@@ -30,9 +30,9 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use el51_i
-      use el52_i
-      use el53_i
+      use el51_i, only: el51
+      use el52_i, only: el52
+      use el53_i, only: el53
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -57,6 +57,6 @@ contains
         stop
       end if
       return
-  100 format(5x,'ERRO IN EL5 ')
+  100 format(5x,"ERRO IN EL5 ")
       end subroutine el5
 end module el5_i

@@ -21,8 +21,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rumtjj_i
-      use c0t5s_i
+      use rumtjj_i, only: rumtjj
+      use c0t5s_i, only: c0t5s
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -4,6 +4,6 @@
       integer function idigit (cst)
       implicit none (type, external)
       character (len = 1), intent(in) :: cst
-      end function
+      end function idigit
       end interface
-      end module
+      end module idigit_i

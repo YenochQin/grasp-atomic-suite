@@ -2,3 +2,6 @@
 * text=auto
 # Reference labels preserve the exact GRASP formatted output.
 /test/jj2lsj/*.expected.lbl whitespace=-blank-at-eol
+# Byte-exact JJ2LSJ reference outputs intentionally retain blank records and spaces.
+test/jj2lsj/unique_expected/*.lbl whitespace=-blank-at-eol,-blank-at-eof
+test/jj2lsj/unique_expected/*.summary whitespace=-blank-at-eol,-blank-at-eof

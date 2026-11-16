@@ -18,38 +18,38 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_orbitals
-      use coun_c
+      use coun_c, only: count_context, count_trace_rank, double, thresh
       use damp_c, only: orbital_damping_factors, mixing_damping_factors
       use def_c
-      use default_c
+      use default_c, only: double, inpci, ndef, ndump
       use fixd_c, only: is_orbital_fixed
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use grid_c, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale, radial_grid
       use invt_c, only: noinvt
-      use mcpb_c
+      use mcpb_c, only: diag, double, lfordr
       use mpi_s
       use node_c, only: nnodep
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use npot_c, only: negative_radius_times_potential
       use npol_c, only: npol_message_len
       use npol_initialization, only: npol_init
       use orb_c , only: orbital_kappa, orbital_symmetry_labels, orbital_principal_n, orbital_count, ped
-      use orthct_c
+      use orthct_c, only: orthst
       use scf_c, only: scnsty, method
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use setiso_i
-      use setqic_i
-      use radgrd_i
-      use nucpot_i
-      use setrwfa_i
-      use getald_i
-      use getold_i
-      use convrt_i
-      use getrsl_i
+      use getyn_i, only: getyn
+      use setiso_i, only: setiso
+      use setqic_i, only: setqic
+      use radgrd_i, only: radgrd
+      use nucpot_i, only: nucpot
+      use setrwfa_i, only: setrwfa
+      use getald_i, only: getald
+      use getold_i, only: getold
+      use convrt_i, only: convrt
+      use getrsl_i, only: getrsl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -62,7 +62,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      character(len=6), parameter :: myname = 'GETSCD'
+      character(len=6), parameter :: myname = "GETSCD"
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -84,73 +84,73 @@
 !
       speed_of_light_au = vacuum_speed_of_light_au
       if (nuclear_model_parameter_count == 0) then
-         radial_grid_scale = exp((-65._real64/16._real64))/nuclear_charge
+         radial_grid_scale = exp((-65.0_real64/16.0_real64))/nuclear_charge
          transformed_grid_step = 0.5_real64**4
          radial_point_count = min(220,max_radial_points)
       else
 !         default comes here
 !CFF     .. should be Z-dependent
          radial_grid_scale = 2.0e-6_real64/nuclear_charge
-         transformed_grid_step = 5.e-2_real64
+         transformed_grid_step = 5.0e-2_real64
          radial_point_count = max_radial_points
-      endif
-      asymptotic_grid_step = 0._real64
+      end if
+      asymptotic_grid_step = 0.0_real64
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
       accy = transformed_grid_step**6
       if (ndef /= 0) then
 
-         write (stderr_unit,'(A)',advance='NO')'Change the default speed of',&
-            ' light or radial grid parameters?  (y/n) '
+         write (stderr_unit,"(A)",advance="NO")"Change the default speed of",&
+            " light or radial grid parameters?  (y/n) "
          yes = getyn()
          if (yes) then
-            write (stderr_unit,*) 'Speed of light = ',vacuum_speed_of_light_au,';', ' revise ?'
+            write (stderr_unit,*) "Speed of light = ",vacuum_speed_of_light_au,";", " revise ?"
             yes = getyn()
             if (yes) then
-               write (stderr_unit, *) 'Enter the revised value:'
+               write (stderr_unit, *) "Enter the revised value:"
                read (5, *) speed_of_light_au
-            endif
+            end if
 !
 !   Determine the parameters controlling the radial grid
 !
-            write (stderr_unit, *) 'The default radial grid parameters for ',&
-               'this case are:'
-            write (stderr_unit, *) ' RNT = ', radial_grid_scale
-            write (stderr_unit, *) ' H = ', transformed_grid_step
-            write (stderr_unit, *) ' HP = ', asymptotic_grid_step
-            write (stderr_unit, *) ' N = ', radial_point_count
-            write (stderr_unit, *) ' revise these values?'
+            write (stderr_unit, *) "The default radial grid parameters for ",&
+               "this case are:"
+            write (stderr_unit, *) " RNT = ", radial_grid_scale
+            write (stderr_unit, *) " H = ", transformed_grid_step
+            write (stderr_unit, *) " HP = ", asymptotic_grid_step
+            write (stderr_unit, *) " N = ", radial_point_count
+            write (stderr_unit, *) " revise these values?"
             yes = getyn()
             if (yes) then
-               write (stderr_unit, *) 'Enter RNT:'
+               write (stderr_unit, *) "Enter RNT:"
                read (5, *) radial_grid_scale
-               write (stderr_unit, *) 'Enter H:'
+               write (stderr_unit, *) "Enter H:"
                read (5, *) transformed_grid_step
-               write (stderr_unit, *) 'Enter HP:'
+               write (stderr_unit, *) "Enter HP:"
                read (5, *) asymptotic_grid_step
-               write (stderr_unit, *) 'Enter N:'
+               write (stderr_unit, *) "Enter N:"
                read (5, *) radial_point_count
 !b Revised grid
-               write (stderr_unit,*) 'Revised RNT = ', radial_grid_scale
-               write (stderr_unit,*) 'Revised H   = ', transformed_grid_step
-               write (stderr_unit,*) 'Revised HP  = ', asymptotic_grid_step
-               write (stderr_unit,*) 'Revised N   = ', radial_point_count
-            endif
-         endif
+               write (stderr_unit,*) "Revised RNT = ", radial_grid_scale
+               write (stderr_unit,*) "Revised H   = ", transformed_grid_step
+               write (stderr_unit,*) "Revised HP  = ", asymptotic_grid_step
+               write (stderr_unit,*) "Revised N   = ", radial_point_count
+            end if
+         end if
 !
 !b
 !b read ACCY on input
 !b
-         write (stderr_unit,*) 'Revise the default ACCY = ', accy
+         write (stderr_unit,*) "Revise the default ACCY = ", accy
          yes = getyn ()
             if (yes) then
-               write (stderr_unit,*) 'Enter ACCY:'
+               write (stderr_unit,*) "Enter ACCY:"
                read *, accy
 !b Revised ACCY
-               write (stderr_unit,*) 'Revised ACCY = ', accy
-         endif
-      endif
+               write (stderr_unit,*) "Revised ACCY = ", accy
+         end if
+      end if
 !
 !   Set up the coefficients for the numerical procedures
 !
@@ -166,7 +166,7 @@
       call npol_init(npfile, nuclear_charge, radial_point_count, radial_grid, negative_radius_times_potential, &
          & np_status, np_message)
       if (np_status /= 0) then
-         write(stderr_unit,'(A)') trim(np_message)
+         write(stderr_unit,"(A)") trim(np_message)
          error stop 1
       end if
 !
@@ -188,7 +188,7 @@
 
       where (orbital_kappa(:orbital_count) < 0)
          nnodep(:orbital_count) = orbital_principal_n(:orbital_count) + orbital_kappa(:orbital_count)
-      elsewhere
+      else where
          nnodep(:orbital_count) = orbital_principal_n(:orbital_count) - orbital_kappa(:orbital_count) - 1
       end where
 
@@ -208,24 +208,24 @@
          else
             call getald                          ! (E)AL type calculation,
                               ! H(DC) will not be diagonalised
-         endif
-      endif
+         end if
+      end if
 
-      write (stderr_unit, *) 'Enter the maximum number of SCF cycles:'
+      write (stderr_unit, *) "Enter the maximum number of SCF cycles:"
       read (*, *) nscf
 
-      if (ndef.eq.0) then
-         write(734,*) nscf,'! Number of SCF cycles'
+      if (ndef==0) then
+         write(734,*) nscf,"! Number of SCF cycles"
       end if
 !
 !   Allow the user to modify other defaults
 !
       if (ndef /= 0) then
-         write (stderr_unit, '(A)', advance='NO') 'Modify other defaults?  (y/n) '
+         write (stderr_unit, "(A)", advance="NO") "Modify other defaults?  (y/n) "
          yes = getyn()
       else
          yes = .false.
-      endif
+      end if
 
       if (.not.yes) return
 !=======================================================================
@@ -239,21 +239,21 @@
 !
 !   THRESH
 !
-         write (stderr_unit,*)'An oscillation in the large-component of the ',&
-            'radial wavefunction is diregarded'
-         write (stderr_unit, *) 'for the purposes of node counting if its ', &
-            'amplitude is less than 1/20 the'
-         write (stderr_unit, *) 'maximum amplitude.   Revise this?'
+         write (stderr_unit,*)"An oscillation in the large-component of the ",&
+            "radial wavefunction is diregarded"
+         write (stderr_unit, *) "for the purposes of node counting if its ", &
+            "amplitude is less than 1/20 the"
+         write (stderr_unit, *) "maximum amplitude.   Revise this?"
          yes = getyn()
          if (yes) then
     3       continue
-            write (stderr_unit, *) 'Enter the new threshold value:'
+            write (stderr_unit, *) "Enter the new threshold value:"
             read (*, *) thresh
-            if (thresh <= 0._real64) then
-               write (stderr_unit, *) myname, ': This must exceed 0;'
-               go to 3
-            endif
-         endif
+            if (thresh <= 0.0_real64) then
+               write (stderr_unit, *) myname, ": This must exceed 0;"
+               goto 3
+            end if
+         end if
          yes = .false.
 !
 !   METHOD
@@ -265,10 +265,10 @@
 
             do j = 1, orbital_count
                if (.not.(method(j)==i .and. .not.is_orbital_fixed(j))) cycle
-               write (stderr_unit, *) 'Method ', i, ' is used for ', &
-                  'integrating the radial differential ', &
-                  'equation for subshells'
-               go to 9
+               write (stderr_unit, *) "Method ", i, " is used for ", &
+                  "integrating the radial differential ", &
+                  "equation for subshells"
+               goto 9
             end do
 
             cycle
@@ -279,7 +279,7 @@
                if (method(j)==i .and. .not.is_orbital_fixed(j)) then
                   ibeg = iend + 1
                   iend = ibeg
-                  record(ibeg:iend) = ' '
+                  record(ibeg:iend) = " "
                   call convrt (orbital_principal_n(j), cnum, lenth)
                   ibeg = iend + 1
                   iend = ibeg + lenth - 1
@@ -291,8 +291,8 @@
                   else
                      iend = ibeg + 1
                      record(ibeg:iend) = orbital_symmetry_labels(j)(1:2)
-                  endif
-               endif
+                  end if
+               end if
                if (iend <= 76) cycle
                write (stderr_unit, *) record(1:iend)
                iend = 0
@@ -305,12 +305,12 @@
 ! is an output from getrsl.
 ! METHOD(1:4) is the only output. indx() and nsubs are discarded
 
-         write (stderr_unit, *) 'Select a different integration method for ', &
-            'any subshell radial wavefunction?'
+         write (stderr_unit, *) "Select a different integration method for ", &
+            "any subshell radial wavefunction?"
          yes = getyn()
          if (yes) then
             do i = 1, 4
-               write (stderr_unit, *) 'Method ', i, ':'
+               write (stderr_unit, *) "Method ", i, ":"
                call getrsl (indx, nsubs)
                do j = 1, nsubs
                   loc = indx(j)
@@ -318,30 +318,30 @@
                   method(loc) = i
                end do
             end do
-         endif
+         end if
 !
 !   NOINVT
 !
-         write (stderr_unit, *) 'The first oscillation of the large component'
+         write (stderr_unit, *) "The first oscillation of the large component"
 
          do i = 1, orbital_count
             if (.not.(noinvt(i) .and. .not.is_orbital_fixed(i))) cycle
-            write (stderr_unit, *) 'of the following radial wavefunctions ', &
-               'will be required to be positive'
-            go to 15
+            write (stderr_unit, *) "of the following radial wavefunctions ", &
+               "will be required to be positive"
+            goto 15
          end do
 
-         write (stderr_unit, *) 'of all radial wavefunctions will be required ', &
-            'to be positive.   Revise this?'
+         write (stderr_unit, *) "of all radial wavefunctions will be required ", &
+            "to be positive.   Revise this?"
          yes = getyn()
-         go to 17
+         goto 17
    15    continue
          iend = 0
          do i = 1, orbital_count
             if (noinvt(i) .and. .not.is_orbital_fixed(i)) then
                ibeg = iend + 1
                iend = ibeg
-               record(ibeg:iend) = ' '
+               record(ibeg:iend) = " "
                call convrt (orbital_principal_n(i), cnum, lenth)
                ibeg = iend + 1
                iend = ibeg + lenth - 1
@@ -353,55 +353,55 @@
                else
                   iend = ibeg + 1
                   record(ibeg:iend) = orbital_symmetry_labels(i)(1:2)
-               endif
-            endif
+               end if
+            end if
             if (iend <= 76) cycle
             write (stderr_unit, *) record(1:iend)
             iend = 0
          end do
          if (iend > 0) write (stderr_unit, *) record(1:iend)
-         write (stderr_unit, *) 'Revise this?'
+         write (stderr_unit, *) "Revise this?"
          yes = getyn()
    17    continue
          if (yes) then
-            write (stderr_unit, *) 'Suppressing enforcement of positive first ', &
-               'oscillation:'
+            write (stderr_unit, *) "Suppressing enforcement of positive first ", &
+               "oscillation:"
             call getrsl (indx, nsubs)
             do i = 1, nsubs
                loc = indx(i)
                if (is_orbital_fixed(loc)) cycle
                noinvt(loc) = .true.
             end do
-         endif
+         end if
 !
 !   ODAMP
 !
          do i = 1, orbital_count
-            if (.not.(orbital_damping_factors(i)/=0._real64 .and. .not.is_orbital_fixed(i))) cycle
-            write (stderr_unit, *) 'Subshell accelerating parameters have ', &
-               'been set.   Revise these?'
+            if (.not.(orbital_damping_factors(i)/=0.0_real64 .and. .not.is_orbital_fixed(i))) cycle
+            write (stderr_unit, *) "Subshell accelerating parameters have ", &
+               "been set.   Revise these?"
             yes = getyn()
-            go to 20
+            goto 20
          end do
-         write (stderr_unit, *) 'Set accelerating parameters for subshell ', &
-            'radial wavefunctions?'
+         write (stderr_unit, *) "Set accelerating parameters for subshell ", &
+            "radial wavefunctions?"
          yes = getyn()
    20    continue
          if (yes) then
-            write (stderr_unit, *) 'Different accelerating parameters for ', &
-               'different subshell radial wavefunction?'
+            write (stderr_unit, *) "Different accelerating parameters for ", &
+               "different subshell radial wavefunction?"
             yes = getyn()
             if (yes) then
    21          continue
-               write (stderr_unit, *) 'Enter an accelerating parameter'
-               write (stderr_unit, *) ' (0< ODAMP < 1 allows ODAMP to be ', &
-                  'reduced as convergence is approached;'
-               write (stderr_unit, *) ' -1 < ODAMP < 0 implies |ODAMP| is ', &
-                  'held constant):'
+               write (stderr_unit, *) "Enter an accelerating parameter"
+               write (stderr_unit, *) " (0< ODAMP < 1 allows ODAMP to be ", &
+                  "reduced as convergence is approached;"
+               write (stderr_unit, *) " -1 < ODAMP < 0 implies |ODAMP| is ", &
+                  "held constant):"
                read (*, *) odampu
-               if (abs(odampu)==0._real64 .or. abs(odampu)>=1._real64) then
-                  write (stderr_unit, *) myname, ': Value out of range ...'
-                  go to 21
+               if (abs(odampu)==0.0_real64 .or. abs(odampu)>=1.0_real64) then
+                  write (stderr_unit, *) myname, ": Value out of range ..."
+                  goto 21
                else
                   call getrsl (indx, nsubs)
                   do i = 1, nsubs
@@ -409,95 +409,95 @@
                      if (is_orbital_fixed(loc)) cycle
                      orbital_damping_factors(loc) = odampu
                   end do
-               endif
+               end if
             else
    23          continue
-               write (stderr_unit, *) 'Enter the accelerating parameter'
-               write (stderr_unit, *) ' (0< ODAMP < 1 allows ODAMP to be ', &
-                  'reduced as convergence is approached;'
-               write (stderr_unit, *) ' -1 < ODAMP < 0 implies |ODAMP| is ', &
-                  'held constant):'
+               write (stderr_unit, *) "Enter the accelerating parameter"
+               write (stderr_unit, *) " (0< ODAMP < 1 allows ODAMP to be ", &
+                  "reduced as convergence is approached;"
+               write (stderr_unit, *) " -1 < ODAMP < 0 implies |ODAMP| is ", &
+                  "held constant):"
                read (*, *) odampu
-               if (abs(odampu)==0._real64 .or. abs(odampu)>=1._real64) then
-                  write (stderr_unit, *) myname, ': Value out of range ...'
-                  go to 23
+               if (abs(odampu)==0.0_real64 .or. abs(odampu)>=1.0_real64) then
+                  write (stderr_unit, *) myname, ": Value out of range ..."
+                  goto 23
                else
                   where (.not.is_orbital_fixed(:orbital_count))
                      orbital_damping_factors(:orbital_count) = odampu
                   end where
-               endif
-            endif
-         endif
+               end if
+            end if
+         end if
 !
 !   CDAMP
 !
-         write (stderr_unit, *) 'Set accelerating parameters for the ', &
-            'eigenvectors?'
+         write (stderr_unit, *) "Set accelerating parameters for the ", &
+            "eigenvectors?"
          yes = getyn()
          if (yes) then
-            write (stderr_unit, *) 'Different accelerating parameters ', &
-               'for each eigenvector?'
+            write (stderr_unit, *) "Different accelerating parameters ", &
+               "for each eigenvector?"
             yes = getyn()
             if (yes) then
-               write (stderr_unit, *) 'Enter an accelerating parameter for'
+               write (stderr_unit, *) "Enter an accelerating parameter for"
                call convrt (ncmin, record, lenth)
-               write (stderr_unit, *) ' each of the '//record(1:lenth)//' levels :'
+               write (stderr_unit, *) " each of the "//record(1:lenth)//" levels :"
                read (*, *) (mixing_damping_factors(i),i=1,ncmin)
             else
-               write (stderr_unit, *) 'Enter the accelerating parameter:'
+               write (stderr_unit, *) "Enter the accelerating parameter:"
                read (*, *) cdampu
                mixing_damping_factors(:ncmin) = cdampu
-            endif
-         endif
+            end if
+         end if
 !
 !   NSIC
 !
-         write (stderr_unit, *) 'Following the improvement of each of the ', &
-            'subshell radial wavefunctions in turn, '
-         write (stderr_unit, *) 'the ', nsic, ' least self-consistent', &
-            ' functions will be improved at the'
-         write (stderr_unit, *) 'end of the first SCF cycle. Revise this ', &
-            'setting?'
+         write (stderr_unit, *) "Following the improvement of each of the ", &
+            "subshell radial wavefunctions in turn, "
+         write (stderr_unit, *) "the ", nsic, " least self-consistent", &
+            " functions will be improved at the"
+         write (stderr_unit, *) "end of the first SCF cycle. Revise this ", &
+            "setting?"
          yes = getyn()
          if (yes) then
-            write (stderr_unit, *) 'Enter the number of additional ', 'improvements:'
+            write (stderr_unit, *) "Enter the number of additional ", "improvements:"
             read (*, *) nsic
-         endif
+         end if
 !
 !   NSOLV
 !
-         write (stderr_unit, *) 'The maximum number of cycles in attempting ', &
-            'to solve each radial equation is '
-         write (stderr_unit, *) nsolv, ' times the principal quantum', &
-            ' number of the radial'
-         write (stderr_unit, *) 'wave-function to be estimated.   ', &
-            'Revise this setting?'
+         write (stderr_unit, *) "The maximum number of cycles in attempting ", &
+            "to solve each radial equation is "
+         write (stderr_unit, *) nsolv, " times the principal quantum", &
+            " number of the radial"
+         write (stderr_unit, *) "wave-function to be estimated.   ", &
+            "Revise this setting?"
          yes = getyn()
          if (yes) then
-            write (stderr_unit, *) 'Enter the factor that multiplies the ', &
-               'principal quantum number:'
+            write (stderr_unit, *) "Enter the factor that multiplies the ", &
+               "principal quantum number:"
             read (*, *) nsolv
-         endif
+         end if
 !
 !   Orthogonalisation
 !
          if (orthst) then
-            write (stderr_unit, *) 'Subshell radial wavefunctions will be ', &
-               'Schmidt orthogonalised immediately'
-            write (stderr_unit, *) 'following their estimation to all ', &
-               'functions with poorer self-consistency.'
-            write (stderr_unit, *) ' Revise this?'
+            write (stderr_unit, *) "Subshell radial wavefunctions will be ", &
+               "Schmidt orthogonalised immediately"
+            write (stderr_unit, *) "following their estimation to all ", &
+               "functions with poorer self-consistency."
+            write (stderr_unit, *) " Revise this?"
             yes = getyn()
             if (yes) orthst = .false.
          else
-            write (stderr_unit, *) 'Subshell radial wavefunctions will be ', &
-               'Schmidt orthogonalised at the end of'
-            write (stderr_unit, *) 'each SCF cycle.   Revise this?'
+            write (stderr_unit, *) "Subshell radial wavefunctions will be ", &
+               "Schmidt orthogonalised at the end of"
+            write (stderr_unit, *) "each SCF cycle.   Revise this?"
             yes = getyn()
             if (yes) orthst = .true.
-         endif
+         end if
                   !-------------------------------------------
-      endif                                      ! end of the _big_ IF
+      end if                                      ! end of the _big_ IF
                   !-------------------------------------------
       return
       end subroutine getscd

@@ -8,6 +8,6 @@
       integer :: ncore
       character (len = 8) :: idblk(*)
       character (len = *) :: filehead
-      end subroutine
+      end subroutine setmcp2
       end interface
-      end module
+      end module setmcp2_i

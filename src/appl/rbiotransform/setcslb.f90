@@ -14,8 +14,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
-      use lodcslbio_i
+      use openfl_i, only: openfl
+      use lodcslbio_i, only: lodcslbio
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -32,25 +32,25 @@
 !
 !   The  .csl  file is FORMATTED; it must exist
 !
-      k = index(name,' ')
-      filnam = name(1:k-1)//'.c'
-      form = 'FORMATTED'
-      status = 'OLD'
+      k = index(name," ")
+      filnam = name(1:k-1)//".c"
+      form = "FORMATTED"
+      status = "OLD"
 
 !
       call openfl (21, filnam, form, status, ierr)
       if (ierr == 1) then
-         write (6, *) 'Error when opening', filnam
+         write (6, *) "Error when opening", filnam
          stop
-      endif
+      end if
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      read (21, '(1A15)', iostat=ios) record
-      if (ios/=0 .or. record(1:15)/='Core subshells:') then
-         write (6, *) 'Not a Configuration Symmetry List File;'
+      read (21, "(1A15)", iostat=ios) record
+      if (ios/=0 .or. record(1:15)/="Core subshells:") then
+         write (6, *) "Not a Configuration Symmetry List File;"
          close(21)
-      endif
+      end if
 !
 !   Load data from the  .csl  file
 !

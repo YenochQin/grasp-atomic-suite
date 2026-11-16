@@ -14,13 +14,13 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals
       use grid_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use biorb_c
       use wave_c, only: mfii, pfii, qfii, mfff, pfff, qfff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use quad_i
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -42,7 +42,7 @@
 !   Tabulate the integrand as required for SUBROUTINE QUAD; the
 !   value at the first tabulation point is arbitrary
 !
-            ta(1) = 0._real64
+            ta(1) = 0.0_real64
             do l = 2, mtp
                ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*radial_grid_derivative(l)
             end do

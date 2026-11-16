@@ -37,13 +37,13 @@
       use corre_c, only: lcorre
       use fixd_c, only: is_orbital_fixed
       use invt_c, only: noinvt
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use scf_c, only: scnsty
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rint_i
+      use rint_i, only: rint
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -107,7 +107,7 @@
 
          else if (.not.lcorre(ki)) then
             knon = knon + 1
-         endif
+         end if
       end do
       kfixed = j
 
@@ -166,7 +166,7 @@
             kindx(i) = ki
          end do
 
-      endif
+      end if
 
 ! Finished sorting.
 ! Schmidt orthogonalize all orbitals of the same kappa
@@ -199,9 +199,9 @@
 
          orbital_last_grid_index(l) = mtp
          dnorm = rint(l,l,0)
-         factor = 1._real64/sqrt(dnorm)
+         factor = 1.0_real64/sqrt(dnorm)
 
-         if (orbital_origin_parameters(l) < 0._real64) factor = -factor
+         if (orbital_origin_parameters(l) < 0.0_real64) factor = -factor
 
          orbital_origin_parameters(l) = factor*orbital_origin_parameters(l)
          radial_large_components(2:mtp,l) = factor*radial_large_components(2:mtp,l)
@@ -213,12 +213,12 @@
    20    continue
          mtp = mtp - 1
          if (abs(radial_large_components(mtp,l)) < eps) then
-            radial_large_components(mtp,l) = 0._real64
-            radial_small_components(mtp,l) = 0._real64
-            go to 20
+            radial_large_components(mtp,l) = 0.0_real64
+            radial_small_components(mtp,l) = 0.0_real64
+            goto 20
          else
             orbital_last_grid_index(l) = mtp
-         endif
+         end if
 
       end do
 

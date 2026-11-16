@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "previous_manifest_sha256": "2cee2d239077ae4d8d965aa755cd70c11346894b08c78bc5a557aa61466c4514",
+  "description": "SCF convergence multiplier evaluated directly in real64; baseline 3e02e0f.",
+  "files": {
+    "src/appl/rmcdhf/scf.f90": {
+      "before_suite_sha256": "3fb95655985175289b76f8d909c4e2e0d7fae8be78611c96fb896e8f0a4d2d08",
+      "after_suite_sha256": "db7c454df151c19d1ba5e02f85a7b8d18676ab67b52359e642c0a34a613e6c5e"
+    },
+    "src/appl/rmcdhf_mem/scf.f90": {
+      "before_suite_sha256": "3fb95655985175289b76f8d909c4e2e0d7fae8be78611c96fb896e8f0a4d2d08",
+      "after_suite_sha256": "db7c454df151c19d1ba5e02f85a7b8d18676ab67b52359e642c0a34a613e6c5e"
+    },
+    "src/appl/rmcdhf_mpi/scfmpi.f90": {
+      "before_suite_sha256": "bd90d4df8a249fc7979b90c4faa3cf671c3bec783f499da9ec4b92a20c92cf19",
+      "after_suite_sha256": "409c2503ed11391cd6f5acd5079b0bd2321fb13625f82a7efb90e21521f1c69b"
+    },
+    "src/appl/rmcdhf_mem_mpi/scfmpi.f90": {
+      "before_suite_sha256": "bd90d4df8a249fc7979b90c4faa3cf671c3bec783f499da9ec4b92a20c92cf19",
+      "after_suite_sha256": "409c2503ed11391cd6f5acd5079b0bd2321fb13625f82a7efb90e21521f1c69b"
+    }
+  }
+}

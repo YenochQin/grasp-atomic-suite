@@ -30,7 +30,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rint_i
+      use rint_i, only: rint
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -78,7 +78,7 @@ contains
          write (*, 300) rn, rama
          print*, "N =",radial_point_count,"MA =",ma
          stop
-      endif
+      end if
 !
 !   Determine end of grid
 !
@@ -88,8 +88,8 @@ contains
       if (radial_grid(i) <= rama) then
          mfj = i
       else
-         go to 1
-      endif
+         goto 1
+      end if
       orbital_last_grid_index(j) = mfj
 !
 !   Overall initialization for interpolation
@@ -115,10 +115,10 @@ contains
          k = nrstlo + 1
          if (ra(k) < xbar) then
             nrstlo = k
-            go to 2
+            goto 2
          else
             nrsthi = k
-         endif
+         end if
 !
 !   Clear relevant piece of use-indicator array
 !
@@ -144,8 +144,8 @@ contains
                if (abs(difft) < abs(diff)) then
                   diff = difft
                   locnxt = k
-               endif
-            endif
+               end if
+            end if
          end do
          used(locnxt) = .true.
          x(irow) = ra(locnxt)
@@ -168,7 +168,7 @@ contains
                   factor
                polyq(ilirok) = (polyq(ildiag)*dxirow-polyq(ilothr)*dxkmn1)*&
                   factor
-            endif
+            end if
          end do
 !
 !   Check for convergence
@@ -178,11 +178,11 @@ contains
          qestt = polyq(ildiag)
          if (pestt==0.0_real64 .or. qestt==0.0_real64) then
             if (irow < mxord) then
-               go to 4
+               goto 4
             else
                radial_large_components(i,j) = pestt
                radial_small_components(i,j) = qestt
-            endif
+            end if
          else
             dpbp = abs((pestt - pestl)/pestt)
             dqbq = abs((qestt - qestl)/qestt)
@@ -193,14 +193,14 @@ contains
                pestl = pestt
                qestl = qestt
                if (irow < mxord) then
-                  go to 4
+                  goto 4
                else
                   radial_large_components(i,j) = pestt
                   radial_small_components(i,j) = qestt
                   kount = kount + 1
-               endif
-            endif
-         endif
+               end if
+            end if
+         end if
 !
       end do
 !
@@ -222,11 +222,11 @@ contains
 !
       return
 !
-  300 format(/,'INTRPQ: Grid of insufficient extent:'/,&
-         ' Present grid has R(N) = ',1p,1d19.12,' Bohr radii'/,&
-         '          Require R(N) = ',1d19.12,' Bohr radii')
-  301 format(/,'INTRPQ: Interpolation procedure not converged to',1p,1d19.12,&
-         ' for ',1i3,' of ',1i3,' tabulation points')
+  300 format(/,"INTRPQ: Grid of insufficient extent:"/,&
+         " Present grid has R(N) = ",1p,1d19.12," Bohr radii"/,&
+         "          Require R(N) = ",1d19.12," Bohr radii")
+  301 format(/,"INTRPQ: Interpolation procedure not converged to",1p,1d19.12,&
+         " for ",1i3," of ",1i3," tabulation points")
       return
       contains
 

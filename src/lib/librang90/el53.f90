@@ -45,19 +45,19 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use reco_i
-      use reco4_i
-      use perko2_i
-      use snrc_i
-      use gg1234_i
-      use itrexg_i
-      use ixjtik_i
-      use coulom_i
-      use sixj_i
-      use speak_i
-      use itrig_i
-      use cxk_i
-      use talk_i
+      use reco_i, only: reco
+      use reco4_i, only: reco4
+      use perko2_i, only: perko2
+      use snrc_i, only: snrc
+      use gg1234_i, only: gg1234
+      use itrexg_i, only: itrexg
+      use ixjtik_i, only: ixjtik
+      use coulom_i, only: coulom
+      use sixj_i, only: sixj
+      use speak_i, only: speak
+      use itrig_i, only: itrig
+      use cxk_i, only: cxk
+      use talk_i, only: talk
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -163,7 +163,7 @@ contains
       do i4=ip1,ig1,2
         kra=(i4-1)/2
         kra1=kra+1
-        if(kra1 > 30)go to 10
+        if(kra1 > 30)goto 10
         pmgg(kra1)=zero
         call reco4(ja,jb,jc,jd,j(1),j(2),j(3),j(4),kra*2,0,iat,recc)
         if(iat == 0) cycle
@@ -213,7 +213,7 @@ contains
         if(dabs(a1) < eps) cycle
         end if
         kra1=kra+1
-        if(kra1 > 30)go to 10
+        if(kra1 > 30)goto 10
         aa=pmgg(kra1)
         if(dabs(aa) < eps) cycle
         aa=aa*rag
@@ -318,7 +318,7 @@ contains
           if(irez == 2)ifaz=j(2)+j(3)+2*j12
           if((ifaz/2)*2 /= ifaz) cycle
           kra1=j12+1
-          if(kra1 > 30)go to 10
+          if(kra1 > 30)goto 10
           aa=pmgg(kra1)
           if(dabs(aa) < eps) cycle
           aa=aa*rag
@@ -402,7 +402,7 @@ contains
       end if
       return
    10 write(99,100)kra1
-  100 format(5x,'ERRO IN EL53  PMGG RAGG KRA1=',i100)
+  100 format(5x,"ERRO IN EL53  PMGG RAGG KRA1=",i100)
       stop
       end subroutine el53
 end module el53_i

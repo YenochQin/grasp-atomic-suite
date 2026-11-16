@@ -34,10 +34,10 @@
       allocate(pi(3*n),stat=error)
       if (error /= 0) then
          irez = 0
-         call dalloc (pr,'PR','allocCheck')
+         call dalloc (pr,"PR","allocCheck")
          return
       end if
-      call dalloc (pr,'PR','allocCheck')
-      call dalloc (pi,'PI','allocCheck')
+      call dalloc (pr,"PR","allocCheck")
+      call dalloc (pi,"PI","allocCheck")
       return
       end subroutine alloccheck

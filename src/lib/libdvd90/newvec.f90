@@ -105,10 +105,10 @@ contains
 !        ..Compute d = AB*Svec_indx
 !        ..Daxpy d'= d - eigval b  gives the residual
 
-         call dgemv ('N', n, kpass, 1._real64, basis, n, svec((indx-1)*kpass+1) &
-            , 1, 0._real64, basis(icur), 1)
-         call dgemv ('N', n, kpass, 1._real64, ab, n, svec((indx-1)*kpass+1), 1, &
-            0._real64, ab(icur), 1)
+         call dgemv ("N", n, kpass, 1.0_real64, basis, n, svec((indx-1)*kpass+1) &
+            , 1, 0.0_real64, basis(icur), 1)
+         call dgemv ("N", n, kpass, 1.0_real64, ab, n, svec((indx-1)*kpass+1), 1, &
+            0.0_real64, ab(icur), 1)
          call daxpy (n, (-eigval(indx)),basis(icur), 1, ab(icur), 1)
 !
 !        ..Compute the norm of the residual
@@ -145,7 +145,7 @@ contains
                gaplow = abs(eigval(indx)-eigval(indx-1))
                gapup = abs(eigval(indx+1)-eigval(indx))
                gap = min(gaplow,gapup)
-            endif
+            end if
             dl = abs(oldval(indx)-eigval(indx))
             res = scra1(indx)
 
@@ -155,9 +155,9 @@ contains
             else
 !                EPSIL(indx) = min( res, gaplow)
                rhseps = min(dl,sqrt(dl))
-            endif
+            end if
 
-            epsil(indx) = 0._real64
+            epsil(indx) = 0.0_real64
             call daxpy (n, (-rhseps), basis(icur), 1, ab(icur), 1)
 
 !          -------------- END OF ROBUST MODIFICATIONS -----------------
@@ -167,7 +167,7 @@ contains
             if (nadded + kpass == limadd) exit
 !           ..More to be added in the block
             icur = icur + n
-         endif
+         end if
       end do
 
       nncv = nadded

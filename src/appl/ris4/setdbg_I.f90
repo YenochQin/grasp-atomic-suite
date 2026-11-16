@@ -3,6 +3,6 @@
       interface
       subroutine setdbg
       implicit none (type, external)
-      end subroutine
+      end subroutine setdbg
       end interface
-      end module
+      end module setdbg_i

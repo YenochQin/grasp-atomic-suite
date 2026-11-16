@@ -29,10 +29,10 @@
       use, intrinsic :: iso_fortran_env, only: real64
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use lulu_i
-      use setvec_i
-      use wrtmat_i
-      use invmat_i
+      use lulu_i, only: lulu
+      use setvec_i, only: setvec
+      use wrtmat_i, only: wrtmat
+      use invmat_i, only: invmat
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -66,26 +66,26 @@
          end do
       end do
       if (ntest >= 10) then
-         write (6, *) ' MATRIX TO BE INVERTED '
+         write (6, *) " MATRIX TO BE INVERTED "
          call wrtmat (t, norb, norb, norb, norb)
-      endif
+      end if
 !.Invert U
       call invmat (t, work(klu), norb, norb)
       if (ntest >= 10) then
-         write (6, *) ' INVERTED MATRIX '
+         write (6, *) " INVERTED MATRIX "
          call wrtmat (t, norb, norb, norb, norb)
-      endif
+      end if
 !.Subtract L
       do i = 1, norb
          t(i,:i-1) = -work(kll+i*(i-1)/2:i-2+kll+i*(i-1)/2)
       end do
 !
       if (ntest /= 0) then
-         write (6, *) ' INPUT X MATRIX '
+         write (6, *) " INPUT X MATRIX "
          call wrtmat (x, norb, norb, norb, norb)
-         write (6, *) ' T MATRIX '
+         write (6, *) " T MATRIX "
          call wrtmat (t, norb, norb, norb, norb)
-      endif
+      end if
 !
       return
       end subroutine pamtmt

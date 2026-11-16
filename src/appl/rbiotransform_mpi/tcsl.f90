@@ -46,7 +46,7 @@
          nklff(:orbital_count) = orbital_l(:orbital_count)
          nkjff(:orbital_count) = orbital_two_j(:orbital_count)
          nhff(:orbital_count) = orbital_symmetry_labels(:orbital_count)
-      endif
+      end if
 
       return
       end subroutine tcsl

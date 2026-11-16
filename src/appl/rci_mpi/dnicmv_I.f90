@@ -8,6 +8,6 @@
       integer, intent(in) :: m
       real(real64), intent(in) :: b(n, m)
       real(real64), intent(inout) :: c(n, m)
-      end subroutine
+      end subroutine dnicmv
       end interface
-      end module
+      end module dnicmv_i

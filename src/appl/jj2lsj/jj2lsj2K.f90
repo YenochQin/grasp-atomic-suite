@@ -44,7 +44,7 @@
       integer           :: ncount1
 !-----------------------------------------------
       call profile_start()
-      call starttime (ncount1, 'jj2lsj_omp')
+      call starttime (ncount1, "jj2lsj_omp")
       print *, " "
       print *, "jj2lsj_omp: Transformation of ASFs from a jj-coupled CSF basis"
       print *, "        into an LS-coupled CSF basis  (Fortran 95 version)"
@@ -62,10 +62,10 @@
       call setcon
       call factt
 !
-      call setiso('isodata')
+      call setiso("isodata")
       call jj2lsj
 !
       call profile_finish()
-      call stoptime (ncount1, 'jj2lsj_omp')
+      call stoptime (ncount1, "jj2lsj_omp")
       stop
       end program jj2lsj_omp

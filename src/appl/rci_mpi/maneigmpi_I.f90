@@ -7,6 +7,6 @@
       integer, intent(out) :: iatjpo
       integer, intent(out) :: iaspar
       integer(int64)        :: nelmnt_a
-      end subroutine
+      end subroutine maneig
       end interface
-      end module
+      end module maneig_i

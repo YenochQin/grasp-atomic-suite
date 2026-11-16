@@ -5,6 +5,6 @@
       implicit none (type, external)
       integer, intent(in) :: isubsh
       integer, intent(in) :: icsf
-      end function
+      end function iqr
       end interface
-      end module
+      end module iqr_i

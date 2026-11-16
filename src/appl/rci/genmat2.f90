@@ -46,13 +46,13 @@
             write (24, 306) ntpitmp
             write (24, 307) nmcbptmp
             write (24, 308) ncoretmp
-         endif
+         end if
          if (lvp) write (24, 309) nvpitmp
          if (lnms) write (24, 310) nkeitmp
          if (lsms) write (24, 311) nvintitmp
       else
-         write (24, *) 'Restart mode --- no report on radial integrals'
-      endif                                      !(irestart .NE. 0) ! non-restart mode
+         write (24, *) "Restart mode --- no report on radial integrals"
+      end if                                      !(irestart .NE. 0) ! non-restart mode
 
 
 !-----------------------------------------------------------------------
@@ -75,21 +75,21 @@
       write (24, 300) hamiltonian_energy_shift
       write (24, *) hamiltonian_energy_shift, elsto, ncftmp
 
-  300 format('Average energy = ',1p,d19.12,' Hartrees.')
-  301 format('CUTOFF set to ',1p,d17.10)
-  302 format('Dirac-Coulomb one-e radial integrals:',1i8)
-  303 format('One-e angular integrals that exceed CUTOFF: ',1i8)
-  304 format('Coulomb two-e radial integrals: ',1i8)
-  305 format('Two-e angular integrals that exceed CUTOFF: ',1i8)
-  306 format('Transverse two-e radial integrals: '/,6i8)
-  307 format('MCBP coefficients that exceed CUTOFF: ',1i8)
-  308 format('Core coefficients that exceed CUTOFF: ',1i8)
-  309 format('Vacuum polarisation integrals: ',1i8)
-  310 format('Kinetic energy integrals: ',1i8)
-  311 format('Vinti integrals: ',1i8)
-  312 format('Elements that exceed CUTOFF in the lower',&
-         ' triangle of the H matrix: ',1i8)
-  313 format('Density of the H(amiltonian) matrix: ',1p,d22.15)
+  300 format("Average energy = ",1p,d19.12," Hartrees.")
+  301 format("CUTOFF set to ",1p,d17.10)
+  302 format("Dirac-Coulomb one-e radial integrals:",1i8)
+  303 format("One-e angular integrals that exceed CUTOFF: ",1i8)
+  304 format("Coulomb two-e radial integrals: ",1i8)
+  305 format("Two-e angular integrals that exceed CUTOFF: ",1i8)
+  306 format("Transverse two-e radial integrals: "/,6i8)
+  307 format("MCBP coefficients that exceed CUTOFF: ",1i8)
+  308 format("Core coefficients that exceed CUTOFF: ",1i8)
+  309 format("Vacuum polarisation integrals: ",1i8)
+  310 format("Kinetic energy integrals: ",1i8)
+  311 format("Vinti integrals: ",1i8)
+  312 format("Elements that exceed CUTOFF in the lower",&
+         " triangle of the H matrix: ",1i8)
+  313 format("Density of the H(amiltonian) matrix: ",1p,d22.15)
 
       return
       end subroutine genmat2

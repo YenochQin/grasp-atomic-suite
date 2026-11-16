@@ -21,14 +21,14 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use eigv_c
       use where_c
-      use fposition_c
+      use fposition_c, only: nposition
       use mpi_c,           only:  mpi_rank, mpi_process_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dinit_i
-      use posfile_i
-      use dmerge_i
+      use dinit_i, only: dinit
+      use posfile_i, only: posfile
+      use dmerge_i, only: dmerge
       use mpiu_i, only: gdsummpi
       implicit none (type, external)
 !-----------------------------------------------
@@ -53,20 +53,20 @@
 !     !...It is set in matrix and used in maneig, spodmv
 !
 !-----------------------------------------------------------------------
-      write (6, *) 'Calling spodmv...'
+      write (6, *) "Calling spodmv..."
       ncf = n
 
 !   Initialise the result matrix; note that this is specific to the
 !   data structure of DVDSON
 
-      call dinit (n*m, 0._real64, c, 1)
+      call dinit (n*m, 0.0_real64, c, 1)
 
       !...moved from maneig before "CALL GDVD (SPODMV..."
       call posfile (0, imcdf, nposition)
 
       read (imcdf) ncfdum, iccutdum, myiddum, nprocsdum
       if (ncf/=ncfdum .or. mpi_rank/=myiddum .or. nprocsdum/=mpi_process_count) stop &
-         'spodmv: ncf read wrong'
+         "spodmv: ncf read wrong"
 
 
       do icol = mpi_rank + 1, n, mpi_process_count

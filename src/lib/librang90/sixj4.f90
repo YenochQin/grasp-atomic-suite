@@ -28,10 +28,10 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ixjtik_i
-      use dracah_i
-      use sixj2_i
-      use sixj3_i
+      use ixjtik_i, only: ixjtik
+      use dracah_i, only: dracah
+      use sixj2_i, only: sixj2
+      use sixj3_i, only: sixj3
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -50,7 +50,7 @@ contains
 !     CHESKED TRIANGULAR CONDITIONS
 !
          if (ixjtik(jc,je,jd,jb,jf,8) == 0) return
-      endif
+      end if
       if (ixjtik(jc,je,jd,jb,jf,6) == 0) then
          call dracah (jc, je, jf, jb, jd, 8, si)
          if (mod(jc + je + jf + jb,4) /= 0) si = -si
@@ -74,14 +74,14 @@ contains
             s2 = zero
          else
             call sixj2 (jc, je, jd, jb, jf, 0, s2)
-         endif
+         end if
          if (dabs(x3) < eps) then
             s3 = zero
          else
             call sixj3 (jc, je, jd, jb, jf, 0, s3)
-         endif
+         end if
          si = (x3*s3 - x2*s2)/x1
-      endif
+      end if
       return
       end subroutine sixj4
 end module sixj4_i

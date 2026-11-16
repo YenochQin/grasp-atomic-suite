@@ -4,6 +4,6 @@
       subroutine consis (j)
       implicit none (type, external)
       integer, intent(in) :: j
-      end subroutine
+      end subroutine consis
       end interface
-      end module
+      end module consis_i

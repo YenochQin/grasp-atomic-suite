@@ -5,6 +5,6 @@
       use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
       real(real64), intent(out) :: sum
-      end subroutine
+      end subroutine newcompi
       end interface
-      end module
+      end module newcompi_i

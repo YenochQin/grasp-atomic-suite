@@ -18,11 +18,11 @@
 !-----------------------------------------------
       use memory_man
       use def_c
-      use fixd_c
+      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
       use orb_c
-      use orthct_c
+      use orthct_c, only: orthst
       use scf_c
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -30,8 +30,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getaldwt_i
-      use iq_i
+      use getaldwt_i, only: getaldwt
+      use iq_i, only: iq
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -41,17 +41,17 @@
       logical :: getyn, yes
 !-----------------------------------------------
 !
-      write (stderr_unit, *) '(E)AL type calculation; H(DC) will not be ', &
-         'diagonalised;'
-      write (stderr_unit, *) 'getald ...'
-      write (stderr_unit, *) 'ncf=', csf_count
+      write (stderr_unit, *) "(E)AL type calculation; H(DC) will not be ", &
+         "diagonalised;"
+      write (stderr_unit, *) "getald ..."
+      write (stderr_unit, *) "ncf=", csf_count
 
-      call alloc (wt, csf_count, 'WT', 'GETALD')
+      call alloc (wt, csf_count, "WT", "GETALD")
 
       call getaldwt (csf_count, wt)
 
       do j = 1, orbital_count
-         sum = 0._real64
+         sum = 0.0_real64
          do i = 1, csf_count
             sum = sum + wt(i)*dble(iq(j,i))
          end do

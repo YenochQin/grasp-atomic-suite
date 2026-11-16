@@ -7,6 +7,6 @@
       real(real64), intent(in) :: x
       integer, intent(in) :: n
 !...This routine performs I/O.
-      end function
+      end function funk
       end interface
-      end module
+      end module funk_i

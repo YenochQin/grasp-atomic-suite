@@ -16,13 +16,13 @@
 !-----------------------------------------------
       use memory_man
       use def_c
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use blk_c, only: idxblk
       use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use lodstate_i
+      use lodstate_i, only: lodstate
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -39,8 +39,8 @@
 !    ncmin, iccmin(1:ncmin) -- via items (memories allocated there)
 ! Thus we let node-0 do it and then broadcast here
 
-      call alloc (ncmaxblk, symmetry_block_count, 'NCMAXBLK', 'LODMIX')
-      call alloc (eigenvector_counts_by_block, symmetry_block_count, 'NEVBLK', 'LODMIX')
+      call alloc (ncmaxblk, symmetry_block_count, "NCMAXBLK", "LODMIX")
+      call alloc (eigenvector_counts_by_block, symmetry_block_count, "NEVBLK", "LODMIX")
 
 !      print *, ' LODMIX: change lodstate arg-list - see rscf2/getold.f90 '
 !      stop
@@ -52,19 +52,19 @@
 !    idxblk() is the block number of an eigenstate
 !    nvecsiz  is the total size of the eigenvector array
 !
-      call alloc (idxblk, ncmin, 'IDXBLK', 'LODMIX')
+      call alloc (idxblk, ncmin, "IDXBLK", "LODMIX")
       ncftot = 0
       noffset = 0
       nvecsiz = 0
       do jb = 1, symmetry_block_count
          do j = 1, eigenvector_counts_by_block(jb)
             idxblk(j + noffset) = jb
-         enddo
+         end do
          ncftot = ncftot + csf_counts_by_block(jb)
          noffset = noffset + eigenvector_counts_by_block(jb)
          nvecsiz = nvecsiz + csf_counts_by_block(jb) * eigenvector_counts_by_block(jb)
-      enddo
-      if (noffset .ne. ncmin) stop 'lodmix: ncmin trouble'
+      end do
+      if (noffset /= ncmin) stop "lodmix: ncmin trouble"
 !
 !   Write header data to the  .mix  file
 !

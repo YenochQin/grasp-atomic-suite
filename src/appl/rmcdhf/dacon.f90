@@ -17,13 +17,13 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use grid_c
-      use npot_c
+      use npot_c, only: double, first_grid_index_beyond_fermi_c, max_radial_points, negative_radius_times_potential
       use orb_c
-      use pote_c
+      use pote_c, only: double, max_radial_points, xp, xq, yp
       use scf_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use wave_c
-      use dpbdt_i
+      use dpbdt_i, only: dpbdt
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

@@ -24,7 +24,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use reco3_i
+      use reco3_i, only: reco3
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -45,7 +45,7 @@ contains
           ifaz=k1+k2-k3
           if((ifaz/4)*4 /= ifaz)recc=-recc
         else
-          go to 10
+          goto 10
         end if
       else if((ja3 < ja1).and.(ja3 < ja2)) then
         if(ja1-ja2 < 0) then
@@ -56,7 +56,7 @@ contains
           ifaz=k1+k2+k3
           if((ifaz/4)*4 /= ifaz)recc=-recc
         else
-          go to 10
+          goto 10
         end if
       else
         if(ja1-ja2 < 0)then
@@ -67,12 +67,12 @@ contains
           call reco3(ja2,ja3,ja1,k2,k3,k1,ire,iat,recc)
           if((k1/2)*2 /= k1)recc=-recc
         else
-          go to 10
+          goto 10
         end if
       end if
       return
    10 write(99,100)
-  100 format(5x,'ERRO IN REC')
+  100 format(5x,"ERRO IN REC")
       stop
       end subroutine rec3
 end module rec3_i

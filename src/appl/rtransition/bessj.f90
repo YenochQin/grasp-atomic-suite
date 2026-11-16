@@ -40,7 +40,7 @@
       if (kk /= 0) then
          iw = 2
          nn = l
-      endif
+      end if
     1 continue
       iend = 2*nn + 1
       iprod = 1
@@ -58,7 +58,7 @@
          do i = 1, 4
             xbess1 = xbess1*wa/dble(i*(2*(nn + i) + 1))
             s1 = s1 + xbess1
-            if (abs(xbess1) < abs(s1)*epsi) go to 4
+            if (abs(xbess1) < abs(s1)*epsi) goto 4
          end do
          jchan = j
          exit
@@ -110,7 +110,7 @@
             else
                sn = ssn*cos(wa)
                cn = scn*sin(wa)
-            endif
+            end if
             i = -1
             s1 = 0.0_real64
             i = i + 1
@@ -120,7 +120,7 @@
                   b = 1.0_real64/wa
                else
                   b = b*dble((nn + i)*(nn - i + 1))/dble(2*i)/wa
-               endif
+               end if
                s1 = s1 + b*sn
                skeep = sn
                sn = cn
@@ -128,7 +128,7 @@
             end do
             bj(j,iw) = s1
          end do
-      endif
+      end if
       if (nn>=l + 1 .or. kk==1) then
 !
 !   Print out Bessel functions if (debug) option set
@@ -138,7 +138,7 @@
                jjj = l - 2 + jj
                write (99, 300) jjj, (bj(ii,jj),ii=1,radial_point_count)
             end do
-         endif
+         end if
 !
 !   All done
 !
@@ -152,10 +152,10 @@
       else
          nn = nn + 1
          iw = iw + 1
-         go to 1
-      endif
+         goto 1
+      end if
 !
-  300 format(/,' Bessel function of order ',i3,/(1p,7d18.10))
+  300 format(/," Bessel function of order ",i3,/(1p,7d18.10))
       return
 !
       end subroutine bessj

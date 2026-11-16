@@ -17,7 +17,7 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use terms_c
+      use terms_c, only: itab, jtab, nrows, ntab
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -45,7 +45,7 @@ contains
          if (nqs(i)<=0 .or. nqs(i)>ks(i)) then
             write (*, 300) nqs(i), is(i), ks(i)
             stop
-         endif
+         end if
 !
          kq1 = nqs(i) - 1
          kq2 = ks(i) - kq1
@@ -54,7 +54,7 @@ contains
             irows(i) = (ks(i)*(ks(i)-2))/8 + kq(i)
          else
             irows(i) = 1
-         endif
+         end if
 !
          if (irows(i) <= nrows) cycle
          write (*, 301)
@@ -64,8 +64,8 @@ contains
 !
       return
 !
-  300 format('LTAB: ',1i3,' Electrons in shell ',1i3,' with 2j+1 = ',1i3)
-  301 format('LTAB: Extend COMMON block TERMS')
+  300 format("LTAB: ",1i3," Electrons in shell ",1i3," with 2j+1 = ",1i3)
+  301 format("LTAB: Extend COMMON block TERMS")
       return
 !
       end subroutine ltab

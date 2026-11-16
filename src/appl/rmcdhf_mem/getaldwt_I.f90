@@ -6,6 +6,6 @@
       implicit none (type, external)
       integer, intent(in) :: ncf
       real(real64), intent(inout) :: wt(ncf)
-      end subroutine
+      end subroutine getaldwt
       end interface
-      end module
+      end module getaldwt_i

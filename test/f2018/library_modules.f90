@@ -10,8 +10,8 @@ program library_modules
 
     count_nodes => count
     pack_shell => pack
-    if (.not. associated(count_nodes, count)) error stop 'COUNT procedure association'
+    if (.not. associated(count_nodes, count)) error stop "COUNT procedure association"
     shells = 0_int8
     call pack_shell(iunpkd=3, isubsh=2, ipackd=shells)
-    if (any(shells /= [0_int8, 3_int8, 0_int8])) error stop 'PACK keyword/procedure contract'
+    if (any(shells /= [0_int8, 3_int8, 0_int8])) error stop "PACK keyword/procedure contract"
 end program library_modules

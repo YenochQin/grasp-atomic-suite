@@ -40,30 +40,30 @@ contains
 !   Allocation
 !
          angular_buffer_capacity = 10
-         call alloc (angular_coefficient_labels, 6,angular_buffer_capacity, 'LABEL', 'ALCBUF')
-         call alloc (angular_coefficients, angular_buffer_capacity, 'COEFF', 'ALCBUF')
+         call alloc (angular_coefficient_labels, 6,angular_buffer_capacity, "LABEL", "ALCBUF")
+         call alloc (angular_coefficients, angular_buffer_capacity, "COEFF", "ALCBUF")
 !
       case (2)
 !
 !   Reallocation to double storage
 !
          newsiz = angular_buffer_capacity + angular_buffer_capacity
-         call ralloc(angular_coefficient_labels,6,newsiz, 'LABEL', 'ALCBUF')
-         call ralloc(angular_coefficients,newsiz, 'COEFF', 'ALCBUF')
+         call ralloc(angular_coefficient_labels,6,newsiz, "LABEL", "ALCBUF")
+         call ralloc(angular_coefficients,newsiz, "COEFF", "ALCBUF")
          angular_buffer_capacity = newsiz
 !
       case (3)
 !
 !   Deallocation
 !
-          call dalloc(angular_coefficient_labels, 'LABEL', 'ALCBUF')
-          call dalloc(angular_coefficients, 'COEFF', 'ALCBUF')
+          call dalloc(angular_coefficient_labels, "LABEL", "ALCBUF")
+          call dalloc(angular_coefficients, "COEFF", "ALCBUF")
 !
       case default
 !
 !   Argument error
 !
-         write (6, *) 'ALCBUF: Invalid argument MODE = ', mode
+         write (6, *) "ALCBUF: Invalid argument MODE = ", mode
          stop
 !
       end select

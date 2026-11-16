@@ -35,7 +35,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dinit_i
+      use dinit_i, only: dinit
 !      USE dmerge_I
       use dmerge_i, only: dmerge
       use mpiu_i, only: gdsummpi
@@ -72,9 +72,9 @@ contains
             call dmerge (nelc-1,b(:n,iv),c(:n,iv),               &
                          matrix_partner_indices(ibeg:iend-1),hamiltonian_values(ibeg:iend-1),b(icol,iv),dl)
             c(icol,iv) = diag + dl
-         enddo
+         end do
          ibeg = iend + 1
-      enddo
+      end do
 
       call gdsummpi (c, n*m)
 

@@ -39,7 +39,7 @@
 !
       else if (faca==0.0_real64 .and. facb==0.0_real64) then
          c(:ndim) = 0.0_real64
-      endif
+      end if
 !
       return
       end subroutine vecsum

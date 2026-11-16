@@ -87,109 +87,109 @@ contains
       else
         jt=its-25
         jts=it-45
-      endif
+      end if
       if(jts == 1) then
         if(jt == 7) coef=-dsqrt(dble(60))
-      elseif(jts == 2) then
+      else if(jts == 2) then
         if(jt == 8) coef=-dsqrt(dble(12))
         if(jt == 9) coef=-dsqrt(dble(8))
-      elseif(jts == 3)then
+      else if(jts == 3)then
         coef=-dsqrt(dble(ids3(jt))/dble(33))
-      elseif(jts == 4)then
+      else if(jts == 4)then
         if(ids4(jt) >= 0) then
            coef=dsqrt(dble(ids4(jt))/dble(3003))
         else
            coef=-dsqrt(-dble(ids4(jt))/dble(3003))
-        endif
-      elseif(jts == 5)then
+        end if
+      else if(jts == 5)then
         if(ids5(jt) >= 0) then
            coef=dsqrt(dble(ids5(jt))/dble(715))
         else
            coef=-dsqrt(-dble(ids5(jt))/dble(715))
-        endif
-      elseif(jts == 6)then
+        end if
+      else if(jts == 6)then
         if(ids6(jt) >= 0) then
            coef=dsqrt(dble(ids6(jt))/dble(143))
         else
            coef=-dsqrt(-dble(ids6(jt))/dble(143))
-        endif
-      elseif(jts == 7)then
+        end if
+      else if(jts == 7)then
         if(ids7(jt) >= 0) then
            coef=dsqrt(dble(ids7(jt))/dble(idv7(jt)))
         else
            coef=-dsqrt(-dble(ids7(jt))/dble(idv7(jt)))
-        endif
-      elseif(jts == 8)then
+        end if
+      else if(jts == 8)then
         if(ids8(jt) >= 0) then
            coef=dsqrt(dble(ids8(jt))/dble(idv8(jt)))
         else
            coef=-dsqrt(-dble(ids8(jt))/dble(idv8(jt)))
-        endif
-      elseif(jts == 9)then
+        end if
+      else if(jts == 9)then
         if(ids9(jt) >= 0) then
            coef=dsqrt(dble(ids9(jt))/dble(325))
         else
            coef=-dsqrt(-dble(ids9(jt))/dble(325))
-        endif
-      elseif(jts == 10)then
+        end if
+      else if(jts == 10)then
         if(ids10(jt) >= 0) then
            coef=dsqrt(dble(ids10(jt))/dble(165))
         else
            coef=-dsqrt(-dble(ids10(jt))/dble(165))
-        endif
-      elseif(jts == 11)then
+        end if
+      else if(jts == 11)then
         if(ids11(jt) >= 0) then
            coef=dsqrt(dble(ids11(jt))/dble(idv11(jt)))
         else
            coef=-dsqrt(-dble(ids11(jt))/dble(idv11(jt)))
-        endif
-      elseif(jts == 12)then
+        end if
+      else if(jts == 12)then
         if(ids12(jt) >= 0) then
            coef=dsqrt(dble(ids12(jt))/dble(idv12(jt)))
         else
            coef=-dsqrt(-dble(ids12(jt))/dble(idv12(jt)))
-        endif
-      elseif(jts == 13)then
+        end if
+      else if(jts == 13)then
         if(ids13(jt) >= 0) then
            coef=dsqrt(dble(ids13(jt))/dble(idv13(jt)))
         else
            coef=-dsqrt(-dble(ids13(jt))/dble(idv13(jt)))
-        endif
-      elseif(jts == 14)then
+        end if
+      else if(jts == 14)then
         if(ids14(jt) >= 0) then
            coef=dsqrt(dble(ids14(jt))/dble(715))
         else
            coef=-dsqrt(-dble(ids14(jt))/dble(715))
-        endif
-      elseif(jts == 15)then
+        end if
+      else if(jts == 15)then
         if(ids15(jt) >= 0) then
            coef=dsqrt(dble(ids15(jt))/dble(idv15(jt)))
         else
            coef=-dsqrt(-dble(ids15(jt))/dble(idv15(jt)))
-        endif
-      elseif(jts == 16)then
+        end if
+      else if(jts == 16)then
         if(ids16(jt) >= 0) then
            coef=dsqrt(dble(ids16(jt))/dble(idv16(jt)))
         else
            coef=-dsqrt(-dble(ids16(jt))/dble(idv16(jt)))
-        endif
-      elseif(jts == 17)then
+        end if
+      else if(jts == 17)then
         if(ids17(jt) >= 0) then
            coef=dsqrt(dble(ids17(jt))/dble(idv17(jt)))
         else
            coef=-dsqrt(-dble(ids17(jt))/dble(idv17(jt)))
-        endif
-      elseif(jts == 18)then
+        end if
+      else if(jts == 18)then
         if(ids18(jt) >= 0) then
            coef=dsqrt(dble(ids18(jt))/dble(idv18(jt)))
         else
            coef=-dsqrt(-dble(ids18(jt))/dble(idv18(jt)))
-        endif
+        end if
       else
-        write(0,'(A,4I5)') ' IT ITS JT JTS= ',it,its,jt,jts
-        write(0,'(A)') ' ERROR IN SUB. RMEAJJ9 '
+        write(0,"(A,4I5)") " IT ITS JT JTS= ",it,its,jt,jts
+        write(0,"(A)") " ERROR IN SUB. RMEAJJ9 "
         stop
-      endif
+      end if
       return
       end subroutine rmeajj9
 end module rmeajj9_i

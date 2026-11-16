@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use genintbreit2_i
+      use genintbreit2_i, only: genintbreit2
       use mpiu_i, only: gdsummpi
       use mpiu_i, only: gisummpi
       implicit none (type, external)

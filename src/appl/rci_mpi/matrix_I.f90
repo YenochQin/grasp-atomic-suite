@@ -4,6 +4,6 @@
       subroutine matrix (ncore, j2max)
       implicit none (type, external)
       integer,  intent(in):: ncore, j2max
-      end subroutine
+      end subroutine matrix
       end interface
-      end module
+      end module matrix_i

@@ -33,9 +33,9 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjj2_i
-      use ixjtik_i
-      use izas1_i
+      use itjj2_i, only: itjj2
+      use ixjtik_i, only: ixjtik
+      use izas1_i, only: izas1
       use awp1jjg_i, only: awp1jjg
       use c0t5s_i, only: c0t5s
       use mes_i, only: mes
@@ -70,11 +70,11 @@ contains
         else
           print*, "ERROR in AWP1"
           stop
-        endif
-      elseif(id(3) > 9) then
+        end if
+      else if(id(3) > 9) then
         call awp1jjg(k1,bk2,qm1,qm2,qm3,ik,bk,id,bd,aw)
         return
-      endif
+      end if
       if(izas1(id(7),bd(3),ik(7),bk(3)) == 0)return
       enqp=zero
       iq2=qm2*two+qm2*tenth

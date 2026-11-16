@@ -4,6 +4,6 @@
       subroutine prwf (j)
       implicit none (type, external)
       integer, intent(in) :: j
-      end subroutine
+      end subroutine prwf
       end interface
-      end module
+      end module prwf_i

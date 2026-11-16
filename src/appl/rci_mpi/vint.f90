@@ -22,7 +22,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use vinti_i
+      use vinti_i, only: vinti
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -48,14 +48,14 @@
 !
 !   This branch is executed on all entries except the first
 !
-         if (index .gt. indtei(nvinti)) then
+         if (index > indtei(nvinti)) then
 !
 !   The index is greater than the largest stored
 !
             found = .false.
             loc = nvinti
 !
-         elseif (index .lt. indtei(1)) then
+         else if (index < indtei(1)) then
 !
 !   The index is less than the smallest stored
 !
@@ -70,26 +70,26 @@
             ju = nvinti
             jl = 1
 !
-    1       if (ju-jl .gt. 1) then
+    1       if (ju-jl > 1) then
 !
                jm = (ju+jl)/2
-               if (indtei(jm) .gt. index) then
+               if (indtei(jm) > index) then
                   ju = jm
                else
                   jl = jm
-               endif
+               end if
                goto 1
 !
             else
 !
 !   The range is bracketed to the extent possible
 !
-               if (index .eq. indtei(ju)) then
+               if (index == indtei(ju)) then
 !
                   found = .true.
                   loc = ju
 !
-               elseif (index .eq. indtei(jl)) then
+               else if (index == indtei(jl)) then
 !
                   found = .true.
                   loc = jl
@@ -99,11 +99,11 @@
                   found = .false.
                   loc = jl
 !
-               endif
+               end if
 !
-            endif
+            end if
 !
-         endif
+         end if
 !
          if (found) then
 !
@@ -125,12 +125,12 @@
 !   Increase array length by half the present length if the latter
 !   is inadequate to store another pair
 !
-            if (nvinti .gt. ndvin) then
+            if (nvinti > ndvin) then
                newsiz = ndvin+ndvin/2
-               call ralloc (indtei,newsiz, 'INDTEI', 'VINT')
-               call ralloc (valtei,newsiz, 'VALTEI', 'VINT')
+               call ralloc (indtei,newsiz, "INDTEI", "VINT")
+               call ralloc (valtei,newsiz, "VALTEI", "VINT")
                ndvin = newsiz
-            endif
+            end if
 !
             do 2 i = nvinti,loc+2,-1
                indtei(i) = indtei(i-1)
@@ -142,7 +142,7 @@
             indtei(loc+1) = index
             valtei(loc+1) = tegral
 !
-         endif
+         end if
 !
       else
 !
@@ -154,8 +154,8 @@
 !   NDVIN stores the array dimension
 !
          ndvin = 2
-         call alloc (indtei,ndvin, 'INDTEI', 'VINT')
-         call alloc (valtei,ndvin, 'VALTEI', 'VINT')
+         call alloc (indtei,ndvin, "INDTEI", "VINT")
+         call alloc (valtei,ndvin, "VALTEI", "VINT")
 !
 !   Compute the integral's value
 !
@@ -170,7 +170,7 @@
          indtei(1) = index
          valtei(1) = tegral
 !
-      endif
+      end if
 !
       return
       end subroutine vint

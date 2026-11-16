@@ -8,6 +8,6 @@
       real(real64), intent(inout) :: a(matdim, matdim)
       real(real64) :: b(matdim, matdim)
       integer, intent(in) :: ndim
-      end subroutine
+      end subroutine invmat
       end interface
-      end module
+      end module invmat_i

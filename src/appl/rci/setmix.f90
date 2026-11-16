@@ -18,8 +18,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
-      use lodmix_i
+      use openfl_i, only: openfl
+      use lodmix_i, only: lodmix
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -29,19 +29,19 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      character(len=11), parameter :: form = 'UNFORMATTED'
-      character(len=7), parameter :: status = 'UNKNOWN'
+      character(len=11), parameter :: form = "UNFORMATTED"
+      character(len=7), parameter :: status = "UNKNOWN"
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: k, ierr
 !-----------------------------------------------
 
-      k = index(name,' ')
-      call openfl (25, name(1:k-1)//'.cm', form, status, ierr)
-      if (ierr /= 0) stop 'setmix: Error when opening .cm file'
+      k = index(name," ")
+      call openfl (25, name(1:k-1)//".cm", form, status, ierr)
+      if (ierr /= 0) stop "setmix: Error when opening .cm file"
 
-      write (25) 'G92MIX'
+      write (25) "G92MIX"
 
       call lodmix (idblk)
 

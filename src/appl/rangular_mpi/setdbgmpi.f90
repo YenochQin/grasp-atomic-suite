@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setdbg_i
+      use setdbg_i, only: setdbg
       use debug_c
       implicit none (type, external)
 !-----------------------------------------------
@@ -27,7 +27,7 @@
 !
      if (mpi_rank == 0) then
          call setdbg (debug, fullname)
-      endif
+      end if
       call mpi_bcast (debug,1,mpi_logical,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (ldbpa,5,mpi_logical,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (ldbpg,5,mpi_logical,0,mpi_comm_world,mpi_error_code)

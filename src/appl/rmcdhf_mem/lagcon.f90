@@ -19,8 +19,8 @@
       use parameter_def,    only: orbital_index_radix
       use def_c
       use grid_c
-      use lagr_c
-      use pote_c
+      use lagr_c, only: double, ecv, iecc, nec
+      use pote_c, only: double, max_radial_points, xp, xq, yp
       use scf_c
       use wave_c
       implicit none (type, external)
@@ -63,7 +63,7 @@
             m = l1
          else
             cycle
-         endif
+         end if
 !
          wa = ecv(k)*wb
          if (abs(wa) < eps) cycle

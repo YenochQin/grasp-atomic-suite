@@ -30,9 +30,9 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use recoonescalar_i
-      use perko2_i
-      use wj1_i
+      use recoonescalar_i, only: recoonescalar
+      use perko2_i, only: perko2
+      use wj1_i, only: wj1
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

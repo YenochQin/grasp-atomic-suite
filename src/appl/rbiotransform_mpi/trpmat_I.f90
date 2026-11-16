@@ -8,6 +8,6 @@
       integer, intent(in) :: ncol
       real(real64), intent(in) :: xin(nrow, ncol)
       real(real64), intent(out) :: xout(ncol, nrow)
-      end subroutine
+      end subroutine trpmat
       end interface
-      end module
+      end module trpmat_i

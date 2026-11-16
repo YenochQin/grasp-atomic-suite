@@ -9,6 +9,6 @@
       integer, pointer :: ibeg(:), ilab(:), ilast(:), ileft(:), &
                                         iptcs(:), irigh(:), lblin(:)
 !...This routine performs I/O.
-      end subroutine
+      end subroutine alclla
       end interface
-      end module
+      end module alclla_i

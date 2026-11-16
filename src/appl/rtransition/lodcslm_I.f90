@@ -4,6 +4,6 @@
       subroutine lodcslm (ncore)
       implicit none (type, external)
       integer, intent(out) :: ncore
-      end subroutine
+      end subroutine lodcslm
       end interface
-      end module
+      end module lodcslm_i

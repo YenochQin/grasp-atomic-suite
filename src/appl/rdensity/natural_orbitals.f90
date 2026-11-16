@@ -15,7 +15,7 @@ module natural_orbitals
             real(real64), intent(inout) :: a(lda,*), work(*)
             real(real64), intent(out) :: w(*)
             integer, intent(out) :: info
-        end subroutine
+        end subroutine dsyev
     end interface
 contains
     recursive subroutine diagonalize_density(matrix, ordering, occupation, rotation, error)
@@ -29,31 +29,31 @@ contains
         logical, allocatable :: used(:)
         integer :: n, info, i, j, slot, lwork
 
-        error = ''
+        error = ""
         n = size(matrix,1)
         if (n < 1 .or. size(matrix,2) /= n .or. &
                 size(occupation) /= n .or. any(shape(rotation) /= [n,n])) then
-            error = 'Invalid density block dimensions'
+            error = "Invalid density block dimensions"
             return
-        endif
+        end if
         if (.not.all(ieee_is_finite(matrix))) then
-            error = 'Non-finite density matrix'
+            error = "Non-finite density matrix"
             return
-        endif
+        end if
         allocate(values(n), vectors(n,n), order(n), used(n))
         vectors = matrix
-        call dsyev('V', 'U', n, vectors, n, values, query, -1, info)
+        call dsyev("V", "U", n, vectors, n, values, query, -1, info)
         if (info /= 0) then
-            error = 'DSYEV workspace query failed'
+            error = "DSYEV workspace query failed"
             return
-        endif
+        end if
         lwork = max(1, ceiling(query(1)))
         allocate(work(lwork))
-        call dsyev('V', 'U', n, vectors, n, values, work, lwork, info)
+        call dsyev("V", "U", n, vectors, n, values, work, lwork, info)
         if (info /= 0) then
-            error = 'DSYEV failed to diagonalize density matrix'
+            error = "DSYEV failed to diagonalize density matrix"
             return
-        endif
+        end if
         order = 0
         used = .false.
         select case(ordering)
@@ -61,11 +61,11 @@ contains
             do i = 1,n
                 slot = maxloc(abs(vectors(:,i)), dim=1)
                 if (order(slot) /= 0) then
-                    error = 'Two eigenvectors have the same dominant component; use --order=2'
+                    error = "Two eigenvectors have the same dominant component; use --order=2"
                     return
-                endif
+                end if
                 order(slot) = i
-            enddo
+            end do
         case(2)
             ! Preserve pure orbitals first, then fill every other slot in
             ! descending occupation order. Unlike upstream, no slot can be
@@ -75,25 +75,25 @@ contains
                 if (abs(vectors(slot,i)) < 1.0_real64-1.0e-12_real64) cycle
                 order(slot) = i
                 used(i) = .true.
-            enddo
+            end do
             j = n
             do slot = 1,n
                 if (order(slot) /= 0) cycle
                 do while (used(j))
                     j = j-1
-                enddo
+                end do
                 order(slot) = j
                 used(j) = .true.
-            enddo
+            end do
         case default
-            error = 'Orbital ordering must be 1 or 2'
+            error = "Orbital ordering must be 1 or 2"
             return
         end select
         do i = 1,n
             occupation(i) = values(order(i))
             rotation(:,i) = vectors(:,order(i))
-        enddo
-    end subroutine
+        end do
+    end subroutine diagonalize_density
 
     recursive subroutine transform_radial_block(rotation, p, q, pz)
         real(real64), intent(inout) :: rotation(:,:), p(:,:), q(:,:), pz(:)
@@ -109,6 +109,6 @@ contains
             q(:,i) = -q(:,i)
             pz(i) = -pz(i)
             rotation(:,i) = -rotation(:,i)
-        enddo
-    end subroutine
+        end do
+    end subroutine transform_radial_block
 end module natural_orbitals

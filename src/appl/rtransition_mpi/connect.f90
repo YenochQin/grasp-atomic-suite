@@ -27,8 +27,8 @@
 !
 !     Initialize
 !
-      nnii(:orbital_count) = 0._real64
-      nnff(:orbital_count) = 0._real64
+      nnii(:orbital_count) = 0.0_real64
+      nnff(:orbital_count) = 0.0_real64
 !
 !   Loop over the orbitals in the merged list
 !

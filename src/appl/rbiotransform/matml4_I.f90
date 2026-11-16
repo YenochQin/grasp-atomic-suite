@@ -15,6 +15,6 @@
       integer, intent(in) :: nbcol
       real(real64), intent(in) :: b(nbrow, nbcol)
       integer, intent(in) :: itrnsp
-      end subroutine
+      end subroutine matml4
       end interface
-      end module
+      end module matml4_i

@@ -55,7 +55,7 @@
          epsmin = (1.0_real64 - ebym)*csq
       else
          epsmin = 0.25_real64*csq/dble(npj*npj)
-      endif
+      end if
       emin = epsmin
 !
 !   Set the upper bound
@@ -67,7 +67,7 @@
          epsmax = (1.0_real64 - ebym)*csq
       else
          epsmax = csq + csq
-      endif
+      end if
       emax = epsmax
 !
       return

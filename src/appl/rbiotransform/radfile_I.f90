@@ -4,6 +4,6 @@
       subroutine radfile (name)
       implicit none (type, external)
       character (len = 24), intent(in) :: name(2)
-      end subroutine
+      end subroutine radfile
       end interface
-      end module
+      end module radfile_i

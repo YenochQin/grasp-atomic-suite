@@ -20,11 +20,11 @@
       use grid_c
       use orb_c
       use wave_c, only: orbital_origin_parameters, radial_large_components, radial_small_components, orbital_last_grid_index
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -36,7 +36,7 @@
 !
 !
 
-      filnam = 'rwfn.inp'
+      filnam = "rwfn.inp"
 
       do newunit = 23, 99                        ! 23 is a historical value
          inquire(unit=newunit, opened=imopened)
@@ -45,21 +45,21 @@
       end do
 
       if (newunit == 100) then
-         write (stderr_unit, *) 'All unit numbers from 23 to 99 are BUSY!'
+         write (stderr_unit, *) "All unit numbers from 23 to 99 are BUSY!"
          stop
-      endif
+      end if
 
-      call openfl (newunit, filnam, 'UNFORMATTED', 'NEW', ierr)
+      call openfl (newunit, filnam, "UNFORMATTED", "NEW", ierr)
       if (ierr == 1) then
          write (stderr_unit, *) 'Error when opening "', filnam(1:len_trim(filnam)), &
             '"'
 
          stop
-      endif
+      end if
 !
 !   Write the file header
 !
-      write (newunit) 'G92RWF'
+      write (newunit) "G92RWF"
 !
 !   Write out the radial wavefunctions
 !
@@ -75,8 +75,8 @@
 !
 !   Deallocate the storage for the radial wavefunctions
 !
-      call dalloc (radial_large_components, 'PF', 'WRTRWF')
-      call dalloc (radial_small_components, 'QF', 'WQRTRWF')
+      call dalloc (radial_large_components, "PF", "WRTRWF")
+      call dalloc (radial_small_components, "QF", "WQRTRWF")
 !
       return
       end subroutine wrtrwf

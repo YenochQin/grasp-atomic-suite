@@ -21,14 +21,14 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, eps
-      use ribojj_c
+      use ribojj_c, only: imgnjj, imgtjj, impnjj, imptjj
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rumtjj_i
-      use ixjtik_i
-      use rmeajj_i
-      use sixj_i
+      use rumtjj_i, only: rumtjj
+      use ixjtik_i, only: ixjtik
+      use rmeajj_i, only: rmeajj
+      use sixj_i, only: sixj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -63,10 +63,10 @@ contains
                 call sixj(ll,ll,kk2,l2j2,l2j1,l2ji,0,si1)
                 call sixj(1,1,kk1,l2q2,l2q1,l2qi,0,si2)
                 s=s+si1*si2*coef1*coef2
-              endif
-            endif
-          endif
-        endif
+              end if
+            end if
+          end if
+        end if
       end do
       suw=s*dsqrt(dble((kk1+1)*(kk2+1)))
       if(mod(l2q1+l2j1+l2q2+l2j2+kk1+kk2,4) /= 0)suw=-suw

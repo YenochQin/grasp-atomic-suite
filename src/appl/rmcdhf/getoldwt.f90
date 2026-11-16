@@ -14,7 +14,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -32,13 +32,13 @@
 ! Standard weights: ncmin=1, OL calculation
 
       if (ncmin == 1) then
-         wt(1) = -1._real64
+         wt(1) = -1.0_real64
          return
-      endif
+      end if
 
 ! Select a method to assign level weights for ncmin > 1 case
 
-      write (stderr_unit, *) 'level weights (1 equal;  5 standard;  9 user)'
+      write (stderr_unit, *) "level weights (1 equal;  5 standard;  9 user)"
 
       ! Let user try 10 times to get the correct input. 10 is BIG
       ! enough since the idea here is to allow user mistakes and
@@ -47,11 +47,11 @@
       do i = 1, 10
          read (stdin_unit, *) n159
          if (n159==1 .or. n159==5 .or. n159==9) exit
-         write (stderr_unit, *) 'Input not correct, do it again. tried=', i
+         write (stderr_unit, *) "Input not correct, do it again. tried=", i
       end do
 
-      if (ndef.eq.0) then
-        write(734,*) n159,'! level weights'
+      if (ndef==0) then
+        write(734,*) n159,"! level weights"
       end if
 
       if (i > 10) error stop
@@ -60,35 +60,35 @@
 
       select case (n159)                         ! Equal weight
       case (1)
-         wt = -2._real64
+         wt = -2.0_real64
       case (5)                                   ! Standard weight
-         wt = -1._real64
+         wt = -1.0_real64
       case (9)                                   ! User-input weight
 
   123    continue
-         write (stderr_unit, *) 'Enter the (relative) weights of the', ncmin, &
-            ' levels :'
+         write (stderr_unit, *) "Enter the (relative) weights of the", ncmin, &
+            " levels :"
          read (stdin_unit, *) (wt(i),i=1,ncmin)
 
-         sumwgt = 0._real64
+         sumwgt = 0.0_real64
          do i = 1, ncmin
-            if (wt(i) <= 0._real64) then
-               write (stderr_unit, *) 'Weights must exceed 0;'
-               go to 123
+            if (wt(i) <= 0.0_real64) then
+               write (stderr_unit, *) "Weights must exceed 0;"
+               goto 123
             else
                sumwgt = sumwgt + wt(i)
-            endif
+            end if
          end do
 
          if (ndef == 0) then
             write(734,*) (wt(i), i = 1, ncmin)
          end if
 
-         sumwgt = 1._real64/sumwgt
+         sumwgt = 1.0_real64/sumwgt
          wt = sumwgt*wt
 
       case default
-         write (stderr_unit, *) 'Impossible ! Because it was guarded'
+         write (stderr_unit, *) "Impossible ! Because it was guarded"
          error stop
       end select
 

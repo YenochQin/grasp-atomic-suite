@@ -67,13 +67,13 @@ subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
       rewind (50)
    16 read (50,iostat = ios) ic,ir,ncount
 
-      if (ios .eq. 0) then
+      if (ios == 0) then
 !*      print*, 'ic', IC,IR,NCOUNT
 !
 !   Read successful; decode the labels of I(ab)
 !
 !      Initialise
-        if ((ic.ne.icold).or.(ir.ne.irold)) then
+        if ((ic/=icold).or.(ir/=irold)) then
 !*            ISPARC = ISPAR (IC)
 !*            ITJPOC = ITJPO (IC)
 !*            ITJPOR = ITJPO (IR)
@@ -89,7 +89,7 @@ subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
           elemnt6 = 0.0_real64
           elemnt7 = 0.0_real64
 !*        ENDDO
-        endif
+        end if
         do i= 1,ncount
            read(50) tshell_r(i),lab
            ia = lab/key
@@ -102,7 +102,7 @@ subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
            elemnt5 = elemnt5 + dint5(ia,ib)*tshell_r(i)
            elemnt6 = elemnt6 + dint6(ia,ib)*tshell_r(i)
            elemnt7 = elemnt7 + dint7(ia,ib)*tshell_r(i)
-        enddo
+        end do
 !
 !   Return to the start of the loop
 !
@@ -120,7 +120,7 @@ subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
             contri5 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt5
             contri6 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt6
             contri7 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt7
-            if (ir.ne.ic) then
+            if (ir/=ic) then
                contri1 = 2.0_real64 * contri1
                contri2 = 2.0_real64 * contri2
                contri3 = 2.0_real64 * contri3
@@ -128,7 +128,7 @@ subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
                contri5 = 2.0_real64 * contri5
                contri6 = 2.0_real64 * contri6
                contri7 = 2.0_real64 * contri7
-            endif
+            end if
             dens1(j) = dens1(j) + contri1
             dens2(j) = dens2(j) + contri2
             dens3(j) = dens3(j) + contri3
@@ -140,6 +140,6 @@ subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !*   21 CONTINUE
 
       goto 16
-      endif
+      end if
       return
       end subroutine densread

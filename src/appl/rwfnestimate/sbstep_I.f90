@@ -11,6 +11,6 @@
       integer, intent(in) :: nend
       real(real64), intent(inout) :: p(max_radial_points)
       real(real64), intent(inout) :: q(max_radial_points)
-      end subroutine
+      end subroutine sbstep
       end interface
-      end module
+      end module sbstep_i

@@ -14,14 +14,14 @@
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
       use def_c
-      use iccu_c
-      use mcp_c
+      use iccu_c, only: iccut, iccutblk
+      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
       use orb_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setmcp_i
-      use getinf_i
+      use setmcp_i, only: setmcp
+      use getinf_i, only: getinf
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

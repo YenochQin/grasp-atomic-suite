@@ -24,12 +24,12 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
-      use lodiso_i
+      use openfl_i, only: openfl
+      use lodiso_i, only: lodiso
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -38,10 +38,10 @@ contains
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      character(len=3), parameter  :: status = 'OLD'
-      character(len=6), parameter  :: myname = 'SETISO'
-      character(len=9), parameter  :: form = 'FORMATTED'
-      character(len=14), parameter :: signature = 'Atomic number:'
+      character(len=3), parameter  :: status = "OLD"
+      character(len=6), parameter  :: myname = "SETISO"
+      character(len=9), parameter  :: form = "FORMATTED"
+      character(len=14), parameter :: signature = "Atomic number:"
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -54,24 +54,24 @@ contains
       if (.not.found) then
          lenf = len_trim(fname)
          write (stderr_unit,*)                                              &
-                     myname,'- file: ',fname(1:lenf),' does not exist'
+                     myname,"- file: ",fname(1:lenf)," does not exist"
          stop
-      endif
+      end if
 !
       call openfl (22, fname, form, status, ierr)
       if (ierr /= 0) then
-         write (stderr_unit, *) 'Error opening isodata file: ', fname(1:lenf)
+         write (stderr_unit, *) "Error opening isodata file: ", fname(1:lenf)
          stop
-      endif
+      end if
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      read (22, '(A)', iostat=ios) str
+      read (22, "(A)", iostat=ios) str
       if (ios/=0 .or. str/=signature) then
-         write (stderr_unit, *) 'Not an ISOtope Data File;'
+         write (stderr_unit, *) "Not an ISOtope Data File;"
          close(22)
          stop
-      endif
+      end if
 !
 !   Load data from the .iso file and then close it.
 !

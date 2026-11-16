@@ -40,31 +40,31 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use default_c
-      use blim_c
+      use default_c, only: double, inpci, ndef, ndump
+      use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
       use where_c
       use cons_c
       use def_c
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use blk_c
-      use iccu_c
-      use iounit_c
-      use terms_c
+      use iccu_c, only: iccut, iccutblk
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use terms_c, only: itab, jtab, nrows, ntab
       use decide_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use setdbg_i
-      use setmc_i
-      use setcon_i
-      use setsum_i
-      use setcsl_i
-      use setres_i
-      use setmix_i
-      use strsum_i
-      use factt_i
-      use matrix_i
+      use getyn_i, only: getyn
+      use setdbg_i, only: setdbg
+      use setmc_i, only: setmc
+      use setcon_i, only: setcon
+      use setsum_i, only: setsum
+      use setcsl_i, only: setcsl
+      use setres_i, only: setres
+      use setmix_i, only: setmix
+      use strsum_i, only: strsum
+      use factt_i, only: factt
+      use matrix_i, only: matrix
       use genintbreit1_i, only: genintbreit1
       use genintbreit2_i, only: genintbreit2
       use genintrk_i, only: genintrk
@@ -95,51 +95,51 @@
       nprocs = 1
 
       write(*,*)
-      write(*,*) 'RCI'
-      write(*,*) 'This is the configuration interaction program '
-      write(*,*) 'Input file:  isodata, name.c, name.w'
-      write(*,*) 'Outputfiles: name.cm, name.csum, name.clog '
-      write(*,*) '             rci.res (can be used for restart)'
+      write(*,*) "RCI"
+      write(*,*) "This is the configuration interaction program "
+      write(*,*) "Input file:  isodata, name.c, name.w"
+      write(*,*) "Outputfiles: name.cm, name.csum, name.clog "
+      write(*,*) "             rci.res (can be used for restart)"
       write(*,*)
 
 
 !
 ! Start timing
 !
-      call starttime (ncount1, 'RCI')
+      call starttime (ncount1, "RCI")
 !
 ! Get NDEF
 !
 !      WRITE (ISTDE, *) 'RCI2: Execution begins ...'
 !      WRITE (ISTDE, *)
-      write (stderr_unit, '(A)') 'Default settings? '
+      write (stderr_unit, "(A)") "Default settings? "
       yes = getyn()
       if (yes) then
          ndef = 0
       else
          ndef = 1
-      endif
+      end if
 !
 ! Get name of the state (used in files like <name>.c, <name>.s)
 !
       do while(.true.)
-         write (stderr_unit, '(A)') 'Name of state: '
-         read (*, '(A)') name
-         k = index(name,' ')
+         write (stderr_unit, "(A)") "Name of state: "
+         read (*, "(A)") name
+         k = index(name," ")
          if (k > 1) exit
-         write (stderr_unit, *) 'Name may not start with a blank. redo...'
+         write (stderr_unit, *) "Name may not start with a blank. redo..."
       end do
 
 ! Now the name of the state is known, open the log file
 
-      open(unit=734, file=trim(name)//'.clog',status='unknown')
-      write(734,'(a)') 'y            ! Default settings'
-      write(734,'(a)') trim(name)
+      open(unit=734, file=trim(name)//".clog",status="unknown")
+      write(734,"(a)") "y            ! Default settings"
+      write(734,"(a)") trim(name)
 
 !         ...Form the full name of the files used on node-0
 
       lenname = len_trim(name)
-      isofile = 'isodata'
+      isofile = "isodata"
 !      WRITE (6, *) 'isofile = ', ISOFILE(1:LEN_TRIM(ISOFILE))
 !      WRITE (6, *) 'name = ', NAME(1:LEN_TRIM(NAME))
 
@@ -168,12 +168,12 @@
       call setsum (name)
 
 !      WRITE (6, *) 'Calling setcsl...'
-      call setcsl (name(1:lenname)//'.c', ncore, nblk0, idblk)
+      call setcsl (name(1:lenname)//".c", ncore, nblk0, idblk)
 !
 ! Set up the  .res  file; determine if this is a restart.
 !
 !      WRITE (6, *) 'Calling SETRES...'
-      call setres (isofile, name(1:lenname)//'.w', idblk)
+      call setres (isofile, name(1:lenname)//".w", idblk)
 !
 !   Open the  .mix  file; determine the eigenpairs required
 !
@@ -182,47 +182,47 @@
 !
 !   Append a summary of the inputs to the  .sum  file
 !
-      write (6, *) 'Calling STRSUM...'
+      write (6, *) "Calling STRSUM..."
       call strsum
 !
 !   Set up the table of logarithms of factorials
 !
-      write (6, *) 'Calling FACTT...'
+      write (6, *) "Calling FACTT..."
       call factt
 !
 !   Calculate all the needed Rk integrals
 !
-      write (6, *) 'Calling GENINTRK...'
+      write (6, *) "Calling GENINTRK..."
       call genintrk (myid, nprocs, ndum, j2max)
 !
 !   If transverse interaction comput Breit integrals of type 1 and 2
 !
       if (ltrans) then
-         print *, 'Calling GENINTBREIT1...'
+         print *, "Calling GENINTBREIT1..."
          call genintbreit1 (myid, nprocs, ndum, j2max)
-         print *, 'Calling GENINTBREIT2...'
+         print *, "Calling GENINTBREIT2..."
          call genintbreit2 (myid, nprocs, ndum, j2max)
       end if
 !
 !   Proceed with the CI calculation
 !
-      write (6, *) 'Calling MATRIX...'
+      write (6, *) "Calling MATRIX..."
 
       call matrix (ncore, j2max)
 
       if (iprerun == 1) then
          iprerun = 2
-         go to 99
-      endif
+         goto 99
+      end if
 
       if (myid == 0) then
          write (6, *)
          write (6, *)
-         write (6, *) 'Finish time, Statistics'
+         write (6, *) "Finish time, Statistics"
          write (6, *)
-      endif
+      end if
       close(734)
-      call stoptime (ncount1, 'RCI')
+      call stoptime (ncount1, "RCI")
 !      CALL SYSTEM_CLOCK (NCOUNT2, NCOUNT_RATE, NCOUNT_MAX)
 !      NCOUNT2 = NCOUNT2 - NCOUNT1
 !      NSECONDS = NCOUNT2/NCOUNT_RATE

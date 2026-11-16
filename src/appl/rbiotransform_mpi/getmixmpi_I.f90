@@ -6,6 +6,6 @@
       character (len = 128), intent(in) :: name
       integer, intent(in) :: inpci
       integer, intent(in) :: iblk
-      end subroutine
+      end subroutine getmix
       end interface
-      end module
+      end module getmix_i

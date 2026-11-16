@@ -19,21 +19,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use default_c
+      use default_c, only: double, inpci, ndef, ndump
       use debug_c, only: ldbpr, cutoff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use setmc_i
-      use setcon_i
-      use fname_i
-      use mrgcsl_i
-      use setcslm_i
-      use getosd_i
-      use strsum_i
-      use factt_i
-      use oscl_i
+      use getyn_i, only: getyn
+      use setmc_i, only: setmc
+      use setcon_i, only: setcon
+      use fname_i, only: fname
+      use mrgcsl_i, only: mrgcsl
+      use setcslm_i, only: setcslm
+      use getosd_i, only: getosd
+      use strsum_i, only: strsum
+      use factt_i, only: factt
+      use oscl_i, only: oscl
       use mpi_c
 
       use suite_system, only: exit => terminate_process
@@ -57,20 +57,20 @@
 !  Start mpi --- get processor info: myid, nprocs, host name; and print
 !=======================================================================
       call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1,           &
-                      startdir, permdir, tmpdir, 'RTRANSITION_MPI')
-      write (idstring, '(I3.3)') mpi_rank
-      print*, tmpdir , ' = tmpdir'
+                      startdir, permdir, tmpdir, "RTRANSITION_MPI")
+      write (idstring, "(I3.3)") mpi_rank
+      print*, tmpdir , " = tmpdir"
 
       lenperm = len_trim (permdir)
       lentmp = len_trim (tmpdir)
 
 !=======================================================================
-      isofile = trim(startdir)//'/isodata'
+      isofile = trim(startdir)//"/isodata"
       ntest = 1001
 
-      if (mpi_rank .eq. 0) then
+      if (mpi_rank == 0) then
          write (6, *)
-         write (6, *) ' Default settings?'
+         write (6, *) " Default settings?"
          yes = getyn()
          write (6, *)
          if (yes) then
@@ -78,24 +78,24 @@
             ndump = 1
          else
             ndef = 1
-            write (6, *) ' Dump angular data to file?'
+            write (6, *) " Dump angular data to file?"
             yes = getyn()
             if (yes) then
                ndump = 1
             else
                ndump = 0
-             endif
-         endif
+             end if
+         end if
          write (6, *)
-         write (6, *) ' Input from a CI calculation?'
+         write (6, *) " Input from a CI calculation?"
          yes = getyn()
          write (6, *)
          if (yes) then
             inpci = 0
          else
             inpci = 1
-         endif
-      endif   !myid=0
+         end if
+      end if   !myid=0
       call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (ndump,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (inpci,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
@@ -121,16 +121,16 @@
 !
 !   Obtain the names of the initial and final state files
 !
-      if (mpi_rank .eq. 0) call fname(name)
+      if (mpi_rank == 0) call fname(name)
       call mpi_bcast (name,48,mpi_character,0,mpi_comm_world,mpi_error_code)
-      fullname(1) = trim(startdir) // '/' // trim(name(1))
-      fullname(2) = trim(startdir) // '/' // trim(name(2))
+      fullname(1) = trim(startdir) // "/" // trim(name(1))
+      fullname(2) = trim(startdir) // "/" // trim(name(2))
 !
 !   Open, check, load data from, and close, the initial and final state
 !   .csl  files. These files are then merged to one file.
 !
 !cjb print FULLNAME1= FULLNAME2=
-      if (mpi_rank .eq. 0) then
+      if (mpi_rank == 0) then
         print*,"FULLNAME1=",fullname(1)
         print*,"FULLNAME2=",fullname(2)
       end if
@@ -163,18 +163,18 @@
       if (mpi_rank == 0) then
           iii = len_trim(startdir)
           call sys_chdir(trim(startdir),iii,mpi_error_code)
-          if (mpi_error_code.ne.0) then
+          if (mpi_error_code/=0) then
               print *, "error changing dir!"
               call exit(1)
-          endif
+          end if
           call strsum(name,inpci,ilbl)
           iii = len_trim(tmpdir)
-          call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,mpi_error_code)
-          if (mpi_error_code.ne.0) then
+          call sys_chdir(trim(tmpdir)//"/"//idstring,iii+4,mpi_error_code)
+          if (mpi_error_code/=0) then
               print *, "Error changing dir!"
               call exit(1)
-          endif
-      endif  !myid = 0
+          end if
+      end if  !myid = 0
 !
 !   Set up the table of logarithms of factorials
 !
@@ -186,16 +186,16 @@
 !
 !   Print completion message
 !
-      if (mpi_rank .eq. 0) then
+      if (mpi_rank == 0) then
           print *
-          print *, 'RTRANSITION_MPI: Execution complete.'
-      endif
+          print *, "RTRANSITION_MPI: Execution complete."
+      end if
 !=======================================================================
 !  Execution finished; Statistics output
 !=======================================================================
 
       call stopmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length,                     &
-                           ncount1, 'RTRANSITION_MPI')
+                           ncount1, "RTRANSITION_MPI")
 !=======================================================================
 !
       stop

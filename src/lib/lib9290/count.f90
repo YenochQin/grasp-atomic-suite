@@ -42,8 +42,8 @@ contains
       logical, save :: trace_count = .false., trace_init = .false.
       real(real64) :: ext, emx, abfri, test, threse, ablcl
       if (.not. trace_init) then
-         call get_environment_variable('GRASP_TRACE_COUNT', trace_env, status=trace_status)
-         trace_count = trace_status == 0 .and. (trace_env(1:1) == '1' .or. trace_env(1:1) == 'y')
+         call get_environment_variable("GRASP_TRACE_COUNT", trace_env, status=trace_status)
+         trace_count = trace_status == 0 .and. (trace_env(1:1) == "1" .or. trace_env(1:1) == "y")
          trace_init = .true.
       end if
 !-----------------------------------------------
@@ -63,11 +63,11 @@ contains
             next = next + 1
             lcext(next) = 0
             ext = 0.0_real64
-         endif
+         end if
          if (abfri > ext) then
             ext = abfri
             lcext(next) = i
-         endif
+         end if
          if (abfri <= emx) cycle
          emx = abfri
       end do
@@ -84,15 +84,15 @@ contains
             ablcl = 0.0_real64
          else
             ablcl = abs(fr(lcext(loc)))
-         endif
+         end if
          if (ablcl < threse) then
             next = next - 1
             nstps = next - loc
             lcext(loc:nstps+loc) = lcext(loc+1:nstps+1+loc)
             loc = loc - 1
-         endif
-         go to 4
-      endif
+         end if
+         goto 4
+      end if
 !
 !   Count changes of sign using the remaining oscillations
 !
@@ -108,12 +108,12 @@ contains
 !
       sgn = sign(1.0_real64,fr(lcext(1)))
       if (trace_count .and. mtpfr > 300 .and. count_trace_rank == 0) then
-         write (734,'(A,I0,A,I0,A,ES16.8,A,ES16.8,A,I0)') 'COUNT_TRACE orbital=', &
-              count_context, ' mtp=', mtpfr, ' emx=', emx, ' thre=', threse, ' nodes=', nncff
-         write (734,'(A,I0)') 'COUNT_EXTREMA orbital=', count_context
+         write (734,"(A,I0,A,I0,A,ES16.8,A,ES16.8,A,I0)") "COUNT_TRACE orbital=", &
+              count_context, " mtp=", mtpfr, " emx=", emx, " thre=", threse, " nodes=", nncff
+         write (734,"(A,I0)") "COUNT_EXTREMA orbital=", count_context
          do i = 1, next
-            if (lcext(i) > 0) write (734,'(I0,A,I0,A,ES16.8,A,ES16.8)') &
-                 i, ',', lcext(i), ',', radial_grid(lcext(i)), ',', abs(fr(lcext(i)))
+            if (lcext(i) > 0) write (734,"(I0,A,I0,A,ES16.8,A,ES16.8)") &
+                 i, ",", lcext(i), ",", radial_grid(lcext(i)), ",", abs(fr(lcext(i)))
          end do
       end if
 !

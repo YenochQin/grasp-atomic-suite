@@ -5,6 +5,6 @@
       implicit none (type, external)
       integer, intent(in) :: k, i, j
 !
-      end subroutine
+      end subroutine zkf
       end interface
-      end module
+      end module zkf_i

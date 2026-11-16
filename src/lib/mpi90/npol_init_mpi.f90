@@ -29,7 +29,7 @@ contains
         call npol_check_grid(n, r, status, detail)
         if (size(zz) < n) then
             status = 1
-            detail = 'npol: Coulomb array shorter than N'
+            detail = "npol: Coulomb array shorter than N"
         end if
         call sync_status(comm, rank, status, detail)
         message = detail
@@ -38,7 +38,7 @@ contains
         call mpi_bcast(root_n, 1, mpi_integer, 0, comm, ierr)
         if (root_n /= n) then
             status = 1
-            detail = 'npol: inconsistent active grid length across ranks'
+            detail = "npol: inconsistent active grid length across ranks"
         end if
         call sync_status(comm, rank, status, detail)
         message = detail
@@ -77,7 +77,7 @@ contains
         ! its rank-local contribution for the existing COFPOT reduction.
         zz(:n) = candidate(:n)
         call npol_publish(cfg, n, a(:n), b(:n), v(:n))
-    end subroutine
+    end subroutine npol_init_mpi
 
     subroutine sync_status(comm, rank, status, message)
         integer, intent(in) :: comm, rank
@@ -89,12 +89,12 @@ contains
         call mpi_allreduce(failed_rank, first_rank, 1, mpi_integer, mpi_min, comm, ierr)
         status = 0
         if (first_rank == huge(0)) then
-            message = ''
+            message = ""
             return
         end if
         status = 1
         call mpi_bcast(message, len(message), mpi_character, first_rank, comm, ierr)
-    end subroutine
+    end subroutine sync_status
 
     subroutine broadcast_config(cfg, comm)
         type(npol_config), intent(inout) :: cfg
@@ -113,14 +113,14 @@ contains
         call mpi_bcast(cfg%units, len(cfg%units), mpi_character, 0, comm, ierr)
         call mpi_bcast(cfg%model_id, len(cfg%model_id), mpi_character, 0, comm, ierr)
         call mpi_bcast(cfg%parameter_source, len(cfg%parameter_source), mpi_character, 0, comm, ierr)
-    end subroutine
+    end subroutine broadcast_config
 
     subroutine npol_abort_mpi(comm, message)
         integer, intent(in) :: comm
         character(*), intent(in) :: message
         integer :: rank, ierr
         call mpi_comm_rank(comm, rank, ierr)
-        if (rank == 0) write(*,'(A)') trim(message)
+        if (rank == 0) write(*,"(A)") trim(message)
         call mpi_abort(comm, 1, ierr)
-    end subroutine
+    end subroutine npol_abort_mpi
 end module npol_mpi

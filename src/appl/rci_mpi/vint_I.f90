@@ -8,4 +8,4 @@
       real(real64), intent(out) :: tegral
       end subroutine vint
       end interface
-      end module
+      end module vint_i

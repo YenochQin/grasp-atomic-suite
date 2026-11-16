@@ -36,7 +36,7 @@ subroutine polint(xa,ya,dens)
       m(2,1) = 1.0_real64
       m(2,2) = xa(2)**2.0_real64
       m(2,3) = xa(2)**4.0_real64
-      m(3,1) = 1._real64
+      m(3,1) = 1.0_real64
       m(3,2) = xa(3)**2.0_real64
       m(3,3) = xa(3)**4.0_real64
       mdet = m(1,1)*m(2,2)*m(3,3)-m(1,1)*m(2,3)*m(3,2)- &

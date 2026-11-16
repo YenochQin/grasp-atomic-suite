@@ -20,12 +20,12 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix
       use memory_man
-      use orba_c
-      use core_c
+      use orba_c, only: double, iorder, max_orbitals
+      use core_c, only: closed_core_subshell_count
       use def_c
-      use fixd_c
+      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
       use grid_c, only: radial_point_count, radial_derivative_over_radius
-      use lagr_c
+      use lagr_c, only: double, ecv, iecc, nec
       use orb_c
       use mpi_s
       use pote_c, only: yp, xp, xq
@@ -35,12 +35,12 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setcof_i
-      use ypot_i
-      use xpot_i
-      use dacon_i
-      use quad_i
-      use rinti_i
+      use setcof_i, only: setcof
+      use ypot_i, only: ypot
+      use xpot_i, only: xpot
+      use dacon_i, only: dacon
+      use quad_i, only: quad
+      use rinti_i, only: rinti
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -88,30 +88,30 @@
                lj = iorder(ljraw)
             naklj = orbital_kappa(lj)
             vlj = .not. is_orbital_fixed(lj)
-               fullj = abs ( ucf(lj)-dble (orbital_two_j(lj)+1) ) .lt. eps
+               fullj = abs ( ucf(lj)-dble (orbital_two_j(lj)+1) ) < eps
             do liraw = 1, ljraw-1
                li = iorder(liraw)
                vli = .not. is_orbital_fixed(li)
-               fulli = abs ( ucf(li)-dble (orbital_two_j(li)+1) ) .lt. eps
-               if  (orbital_kappa(li) .eq. naklj) then
+               fulli = abs ( ucf(li)-dble (orbital_two_j(li)+1) ) < eps
+               if  (orbital_kappa(li) == naklj) then
                   if  (vli  .or. vlj ) then       ! at least one orbital varied
 !                                                   but not both (varied and full)
-                     if (.not. ((vli .and. vlj) .and. (fulli .and. fullj))) then 
+                     if (.not. ((vli .and. vlj) .and. (fulli .and. fullj))) then
                   nec = nec + 1
                   !*** Encode index at 2nd round ***
                   if (itwice == 2) iecc(nec) = li + key * lj
-               endif
-                  endif
-               endif
-            enddo
-         enddo
+               end if
+                  end if
+               end if
+            end do
+         end do
 
             if (itwice==1 .and. nec>0) then
-               call alloc (ecv, nec, 'ECV', 'SETLAG')
-               call alloc (iecc, nec, 'IECC', 'SETLAG')
+               call alloc (ecv, nec, "ECV", "SETLAG")
+               call alloc (iecc, nec, "IECC", "SETLAG")
             else
                exit
-            endif
+            end if
          end do                                  !itwice
 
 !=======================================================================
@@ -131,10 +131,10 @@
                   write (*, 305) orbital_principal_n(l2), orbital_symmetry_labels(l2), orbital_principal_n(l1), &
                      & orbital_symmetry_labels(l1)
                end do
-            endif
-         endif
+            end if
+         end if
          first = .false.
-      endif
+      end if
 
 !     Lagrange multipliers need to be computed also on the first call
 !     RETURN
@@ -160,7 +160,7 @@
             xpj(:radial_point_count) = xp(:radial_point_count)
             xqj(:radial_point_count) = xq(:radial_point_count)
             jlast = j
-         endif
+         end if
 !
          if (m /= mlast) then
             ucfm = ucf(m)
@@ -172,12 +172,12 @@
             xpm(:radial_point_count) = xp(:radial_point_count)
             xqm(:radial_point_count) = xq(:radial_point_count)
             mlast = m
-         endif
+         end if
 !
          mtp = max(orbital_last_grid_index(j),orbital_last_grid_index(m))
 !
          if (is_orbital_fixed(m)) then
-            ta(1) = 0._real64
+            ta(1) = 0.0_real64
             do i = 2, mtp
                ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,m)*xqj(i) &
                   & -radial_small_components(i,m)*xpj(i))*speed_of_light_au+       &
@@ -199,7 +199,7 @@
 ! end dbg
 
          else if (is_orbital_fixed(j)) then
-            ta(1) = 0._real64
+            ta(1) = 0.0_real64
             do i = 2, mtp
                ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,j)*xqm(i) &
                   & -radial_small_components(i,j)*xpm(i))*speed_of_light_au+      &
@@ -226,12 +226,12 @@
 !end dbg
 
          else
-            
+
             qdif = abs((ucfj - ucfm)/max(ucfj,ucfm))
-            
+
             if (qdif > p001) then
-               obqdif = 1._real64/ucfj - 1._real64/ucfm
-               ta(1) = 0._real64
+               obqdif = 1.0_real64/ucfj - 1.0_real64/ucfm
+               ta(1) = 0.0_real64
                do i = 2, mtp
                   ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,m)*xqj(i) &
                      & -radial_small_components(i,m)*xpj(i)          &
@@ -253,10 +253,10 @@
 !end dbg
 
             else
- 
-               obqsum = 1._real64/ucfj + 1._real64/ucfm
 
-               ta(1) = 0._real64
+               obqsum = 1.0_real64/ucfj + 1.0_real64/ucfm
+
+               ta(1) = 0.0_real64
                do i = 2, mtp
                   ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,m)*xqj(i) &
                      & -radial_small_components(i,m)*xpj(i)         &
@@ -267,7 +267,7 @@
                end do
 
                call quad (result)
-               rijm = rinti(m,j,1)               
+               rijm = rinti(m,j,1)
                ecv(li) = (result - 2.0_real32*rijm)/obqsum
 
 
@@ -279,18 +279,18 @@
 !           ENDDO
 !end dbg
 
-            endif
-         endif
+            end if
+         end if
 
          write (*, 307) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_principal_n(m), &
             & orbital_symmetry_labels(m), ecv(li)
 
       end do
 
-  302 format(/,'Lagrange multipliers are not required')
-  304 format(/,'Include Lagrange multipliers between:'/)
+  302 format(/,"Lagrange multipliers are not required")
+  304 format(/,"Include Lagrange multipliers between:"/)
   305 format(13x,2(2x,1i2,1a2))
-  306 format(/,'Lagrange multipliers:'/)
+  306 format(/,"Lagrange multipliers:"/)
   307 format(13x,2(2x,1i2,1a2),2x,1p,d16.9)
 
       return

@@ -4,6 +4,6 @@
       subroutine setxuv (j)
       implicit none (type, external)
       integer :: j
-      end subroutine
+      end subroutine setxuv
       end interface
-      end module
+      end module setxuv_i

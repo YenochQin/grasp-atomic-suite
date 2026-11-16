@@ -19,11 +19,11 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
       use memory_man
-      use coeils_c
+      use coeils_c, only: double, frstco, indoei, ncoei, ndcoea, valoei
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rinti_i
+      use rinti_i, only: rinti
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -39,11 +39,11 @@
 !
 !   Ensure that the indices are in `canonical' order
 !
-      if (ia .gt. ib) then
+      if (ia > ib) then
          iswap = ib
          ib = ia
          ia = iswap
-      endif
+      end if
 !
 !   Compute the composite (packed) index
 !
@@ -53,14 +53,14 @@
 !
 !   This branch is executed on all entries except the first
 !
-         if (index .gt. indoei(ncoei)) then
+         if (index > indoei(ncoei)) then
 !
 !   The index is greater than the largest stored
 !
             found = .false.
             loc = ncoei
 !
-         elseif (index .lt. indoei(1)) then
+         else if (index < indoei(1)) then
 !
 !   The index is less than the smallest stored
 !
@@ -75,26 +75,26 @@
             ju = ncoei
             jl = 1
 !
-    1       if (ju-jl .gt. 1) then
+    1       if (ju-jl > 1) then
 !
                jm = (ju+jl)/2
-               if (indoei(jm) .gt. index) then
+               if (indoei(jm) > index) then
                   ju = jm
                else
                   jl = jm
-               endif
+               end if
                goto 1
 !
             else
 !
 !   The range is bracketed to the extent possible
 !
-               if (index .eq. indoei(ju)) then
+               if (index == indoei(ju)) then
 !
                   found = .true.
                   loc = ju
 !
-               elseif (index .eq. indoei(jl)) then
+               else if (index == indoei(jl)) then
 !
                   found = .true.
                   loc = jl
@@ -104,11 +104,11 @@
                   found = .false.
                   loc = jl
 !
-               endif
+               end if
 !
-            endif
+            end if
 !
-         endif
+         end if
 !
          if (found) then
 !
@@ -130,12 +130,12 @@
 !   Increase array length by half the present length if the latter
 !   is inadequate to store another pair
 !
-            if (ncoei .gt. ndcoea) then
+            if (ncoei > ndcoea) then
                newsiz = ndcoea+ndcoea/2
-               call ralloc (indoei,newsiz,'INDOEI','IABINT' )
-               call ralloc (valoei,newsiz,'VALOEI','IABINT')
+               call ralloc (indoei,newsiz,"INDOEI","IABINT" )
+               call ralloc (valoei,newsiz,"VALOEI","IABINT")
                ndcoea = newsiz
-            endif
+            end if
 !
             do 2 i = ncoei,loc+2,-1
                indoei(i) = indoei(i-1)
@@ -147,7 +147,7 @@
             indoei(loc+1) = index
             valoei(loc+1) = tegral
 !
-         endif
+         end if
 !
       else
 !
@@ -159,8 +159,8 @@
 !   NDCOEA stores the array dimension
 !
          ndcoea = 2
-         call alloc (indoei,ndcoea,'INDOEI','IABINT' )
-         call alloc (valoei,ndcoea,'VALOEI','IABINT')
+         call alloc (indoei,ndcoea,"INDOEI","IABINT" )
+         call alloc (valoei,ndcoea,"VALOEI","IABINT")
 !
 !   Compute the integral's value
 !
@@ -175,7 +175,7 @@
          indoei(1) = index
          valoei(1) = tegral
 !
-      endif
+      end if
 !
       return
       end subroutine iabint

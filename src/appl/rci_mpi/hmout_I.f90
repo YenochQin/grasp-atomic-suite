@@ -4,6 +4,6 @@
       subroutine hmout (imcdf)
       implicit none (type, external)
       integer, intent(in) :: imcdf
-      end subroutine
+      end subroutine hmout
       end interface
-      end module
+      end module hmout_i

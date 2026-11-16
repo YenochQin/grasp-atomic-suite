@@ -26,7 +26,7 @@
          write (6, 1010) i, (a(i,j),j=1,ncol)
       end do
 
- 1010 format('0',i5,2x,4(1x,e14.7),/,(' ',7x,4(1x,e14.7)))
+ 1010 format("0",i5,2x,4(1x,e14.7),/,(" ",7x,4(1x,e14.7)))
 
       return
       end subroutine wrtmat

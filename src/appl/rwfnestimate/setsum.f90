@@ -3,7 +3,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine setsum
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !                                                                      *
 !   Open the  .sum  file on stream 24.                                 *
 !                                                                      *
@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -30,15 +30,15 @@
 !
 !   File  erwf.sum  is FORMATTED
 !
-      defnam = 'erwf.sum'
-      form = 'FORMATTED'
-      status = 'NEW'
+      defnam = "erwf.sum"
+      form = "FORMATTED"
+      status = "NEW"
 !
-      write (stderr_unit, *) 'File  erwf.sum  will be created as the ', &
-         'ERWF SUMmary File; '
-      write (stderr_unit, *) 'enter another file name if this is not ', &
-         'acceptable; null otherwise:'
-      read (*, '(A)') filnam
+      write (stderr_unit, *) "File  erwf.sum  will be created as the ", &
+         "ERWF SUMmary File; "
+      write (stderr_unit, *) "enter another file name if this is not ", &
+         "acceptable; null otherwise:"
+      read (*, "(A)") filnam
 !
       if (len_trim(filnam) == 0) filnam = defnam
 !
@@ -46,12 +46,12 @@
       call openfl (24, filnam, form, status, ierr)
       if (ierr /= 0) then
     2    continue
-         write (stderr_unit, *) 'Enter a name for the ERWF SUMmary File ', &
-            'that is to be created:'
-         read (*, '(A)') filnam
-         if (len_trim(filnam) == 0) go to 2
-         go to 1
-      endif
+         write (stderr_unit, *) "Enter a name for the ERWF SUMmary File ", &
+            "that is to be created:"
+         read (*, "(A)") filnam
+         if (len_trim(filnam) == 0) goto 2
+         goto 1
+      end if
 !
       return
       end subroutine setsum

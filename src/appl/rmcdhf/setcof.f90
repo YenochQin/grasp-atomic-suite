@@ -22,10 +22,10 @@
       use memory_man
       use input_io, only: fail_input_io
       use orb_c
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use hmat_c
-      use iounit_c
-      use mcpa_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use mcpa_c, only: double, max_mcp_file_multipole_rank
       use mpi_s
       use pos_c
       use scf_c
@@ -33,9 +33,9 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dsubrs_i
-      use fco_i
-      use gco_i
+      use dsubrs_i, only: dsubrs
+      use fco_i, only: fco
+      use gco_i, only: gco
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -46,7 +46,7 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       integer, parameter :: key = orbital_index_radix
-      character(len=6), parameter :: myname = 'SETCOF'
+      character(len=6), parameter :: myname = "SETCOF"
       real(real64), parameter :: eps = 1.0e-10_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -94,9 +94,9 @@
 !=======================================================================
 
       ndim = 1
-      call alloc (coeff, ndim, 'COEFF', 'SETCOF' )
-      call alloc (iclmn, ndim, 'ICLMN', 'SETCOF')
-      call alloc (indx, ndim, 'INDX', 'SETCOF')
+      call alloc (coeff, ndim, "COEFF", "SETCOF" )
+      call alloc (iclmn, ndim, "ICLMN", "SETCOF")
+      call alloc (indx, ndim, "INDX", "SETCOF")
 
       ndcof = 0
       nxcof = 0
@@ -119,11 +119,11 @@
             kmax = nkjj - 1
          else
             kmax = 0
-         endif
+         end if
          do k = 0, kmax, 2
 
             !<<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
-            sumr = 0._real64
+            sumr = 0.0_real64
             do nb = 1, symmetry_block_count
                do ir = mpi_rank + 1, csf_counts_by_block(nb), mpi_process_count
                   sumr = sumr + dsubrs(eol,ir,ir,nb)*fco(k,ir + csf_offsets_by_block(nb),j,&
@@ -133,34 +133,34 @@
             !>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
             if (ib == j) then
-               ykab = 2._real64*sumr/ucfj
+               ykab = 2.0_real64*sumr/ucfj
             else
                ykab = sumr/ucfj
-            endif
+            end if
 
            !*** The following IF has to be removed since YKAB
            !*** is incomplete in multiprocessor case
             !IF (ABS (YKAB) .GT. EPS) THEN
             nycof = nycof + 1
-            if (nycof .gt. nydim ) then
-               if (nydim .gt. 0) then
+            if (nycof > nydim ) then
+               if (nydim > 0) then
                  nydim = 2*nydim
 !cjb RALLOC ALLOC NYA, YA, (NYDIM NYCOF)
-                 call ralloc(nya, nydim, 'NYA', 'SETCOF')
-                 call ralloc(ya, nydim, 'YA', 'SETCOF')
+                 call ralloc(nya, nydim, "NYA", "SETCOF")
+                 call ralloc(ya, nydim, "YA", "SETCOF")
 !                 CALL RALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
 !                 CALL RALLOC(YA, NYCOF, 'YA', 'SETCOF')
                else
 !cjb similar here
                  nydim = 64
-                 call alloc(nya, nydim, 'NYA', 'SETCOF')
-                 call alloc(ya, nydim, 'YA', 'SETCOF')
+                 call alloc(nya, nydim, "NYA", "SETCOF")
+                 call alloc(ya, nydim, "YA", "SETCOF")
 !                 CALL ALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
 !                 CALL ALLOC(YA, NYCOF, 'YA', 'SETCOF')
 !                 NYDIM = NYCOF
 !cjb
-               endif
-            endif
+               end if
+            end if
             ya(nycof) = ykab
             nya(nycof) = k + ilabel
             !ENDIF
@@ -183,13 +183,13 @@
             kmin = abs((nkjj - nkjib)/2)
          else
             kmin = abs((nkjj - nkjib)/2) + 1
-         endif
+         end if
          kmax = (nkjj + nkjib)/2
 
          do k = kmin, kmax, 2
 
             !<<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
-            sumr = 0._real64
+            sumr = 0.0_real64
             do nb = 1, symmetry_block_count
                do ir = mpi_rank + 1, csf_counts_by_block(nb), mpi_process_count
                   sumr = sumr + dsubrs(eol,ir,ir,nb)*gco(k,ir + csf_offsets_by_block(nb),j,&
@@ -208,20 +208,20 @@
                if (nxdim > 0) then
                  nxdim = 2*nxdim
 !cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
-                 call ralloc (xa, nxdim, 'XA', 'SETCOF')
-                 call ralloc (nxa, nxdim, 'NXA', 'SETCOF')
+                 call ralloc (xa, nxdim, "XA", "SETCOF")
+                 call ralloc (nxa, nxdim, "NXA", "SETCOF")
 !                  CALL RALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL RALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
                else
                   nxdim = 64
-                 call alloc (xa, nxdim, 'XA', 'SETCOF')
-                 call alloc (nxa, nxdim, 'NXA', 'SETCOF')
+                 call alloc (xa, nxdim, "XA", "SETCOF")
+                 call alloc (nxa, nxdim, "NXA", "SETCOF")
 !                  CALL ALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL ALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
 !                  NXDIM = NXCOF
 !cjb
-               endif
-            endif
+               end if
+            end if
             xa(nxcof) = xkab
             nxa(nxcof) = k + ilabel
             !ENDIF
@@ -236,21 +236,21 @@
 
       do nfile = 30, 32 + max_mcp_file_multipole_rank
          rewind (nfile, iostat=ios)
-         if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof rewind')
+         if (ios /= 0) call fail_input_io(ios, nfile, "MCP setcof rewind")
          if (nfile /= 30) then
             do i = 1, 3
                read (nfile, iostat=ios)
-               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof skip header or payload')
+               if (ios /= 0) call fail_input_io(ios, nfile, "MCP setcof skip header or payload")
                cycle
             end do
          else
             do i = 1, 3
                read (nfile, iostat=ios)
-               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof skip header or payload')
+               if (ios /= 0) call fail_input_io(ios, nfile, "MCP setcof skip header or payload")
                read (nfile, iostat=ios)
-               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof skip header or payload')
+               if (ios /= 0) call fail_input_io(ios, nfile, "MCP setcof skip header or payload")
             end do
-         endif
+         end if
       end do
 
 !=======================================================================
@@ -262,40 +262,40 @@
 
          !*** Read in IROW from file mcp.30 ***
          read (30, iostat=ios) mcplab, jblockt, csf_count
-         if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof block or channel header')
+         if (ios /= 0) call fail_input_io(ios, 30, "MCP setcof block or channel header")
          if (jblockt /= jblock) then
-            write (stderr_unit, *) myname, '1: jblockt .NE. jblock'
-            call fail_input_io(0, 30, 'MCP setcof inconsistent block header')
-         endif
+            write (stderr_unit, *) myname, "1: jblockt .NE. jblock"
+            call fail_input_io(0, 30, "MCP setcof inconsistent block header")
+         end if
          read (30, iostat=ios) nelmntgg
-         if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof sparse element count')
+         if (ios /= 0) call fail_input_io(ios, 30, "MCP setcof sparse element count")
          stored_matrix_element_count = int(nelmntgg,kind=int64)
-         call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'SETCOF')
+         call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "SETCOF")
          read (30, iostat=ios) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), (matrix_partner_indices(i),i=1, &
             & stored_matrix_element_count)
-         if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof sparse indices')
+         if (ios /= 0) call fail_input_io(ios, 30, "MCP setcof sparse indices")
 
          !*** Block info file mcp.31 ***
          read (31, iostat=ios) mcplab, jblockt, csf_count, ncoeff
-         if (ios /= 0) call fail_input_io(ios, 31, 'MCP setcof block or channel header')
+         if (ios /= 0) call fail_input_io(ios, 31, "MCP setcof block or channel header")
          if (jblockt /= jblock) then
-            write (stderr_unit, *) myname, '2: jblockt .NE. jblock'
-            call fail_input_io(0, 31, 'MCP setcof inconsistent block header')
-         endif
+            write (stderr_unit, *) myname, "2: jblockt .NE. jblock"
+            call fail_input_io(0, 31, "MCP setcof inconsistent block header")
+         end if
 
          !*** Loop over labels having non-zero coefficients
          !*** it exits when no more labels for the block
 
          l123: do while(.true.)
             read (31, iostat=ios) lab, ncontr
-            if (ios /= 0) call fail_input_io(ios, 31, 'MCP setcof label/count')
+            if (ios /= 0) call fail_input_io(ios, 31, "MCP setcof label/count")
 
             ! 0, 0 marks the end of a block. This is the normal exit
 
             if (lab==0 .and. ncontr==0) then
-               call dalloc (matrix_partner_indices, 'IROW', 'SETCOF')
+               call dalloc (matrix_partner_indices, "IROW", "SETCOF")
                exit                              ! Actually to next block
-            endif
+            end if
 
             !*** Decode the labels of I(ab) ***
             ia = mod(lab,key)
@@ -306,30 +306,30 @@
 
             if (ia/=j .and. ib/=j) then
                read (31, iostat=ios)                         ! No contributions from this integral; skip
-               if (ios /= 0) call fail_input_io(ios, 31, 'MCP setcof skip header or payload')
+               if (ios /= 0) call fail_input_io(ios, 31, "MCP setcof skip header or payload")
                cycle                             ! to next label
-            endif
+            end if
 
             if (ncontr > ndim) then
-               call dalloc (coeff, 'COEFF', 'SETCOF')
-               call dalloc (iclmn, 'ICLMN', 'SETCOF')
-               call dalloc (indx, 'INDX', 'SETCOF')
+               call dalloc (coeff, "COEFF", "SETCOF")
+               call dalloc (iclmn, "ICLMN", "SETCOF")
+               call dalloc (indx, "INDX", "SETCOF")
                ndim = ncontr
-               call alloc (coeff, ndim, 'COEFF', 'SETCOF' )
-               call alloc (iclmn, ndim, 'ICLMN', 'SETCOF')
-               call alloc (indx, ndim, 'INDX', 'SETCOF')
-            endif
+               call alloc (coeff, ndim, "COEFF", "SETCOF" )
+               call alloc (iclmn, ndim, "ICLMN", "SETCOF")
+               call alloc (indx, ndim, "INDX", "SETCOF")
+            end if
 
             ! Read the column index, the sparse matrix index, and the
             ! coefficient for all contributions from this integral
 
             read (31, iostat=ios) (iclmn(i),indx(i),coeff(i),i=1,ncontr)
-            if (ios /= 0) call fail_input_io(ios, 31, 'MCP setcof coefficient payload')
+            if (ios /= 0) call fail_input_io(ios, 31, "MCP setcof coefficient payload")
 
             ! Add up all the contributions from this integral;
             ! off-diagonal contributions have double the weight
 
-            sum = 0._real64
+            sum = 0.0_real64
             do i = 1, ncontr
                ir = matrix_partner_indices(indx(i))
                ic = iclmn(i)
@@ -351,7 +351,7 @@
                ithis = ib
             else
                ithis = ia
-            endif
+            end if
 
             !*** Check it against the previously recorded ***
             if (jblock > 1) then
@@ -360,26 +360,26 @@
                   da(i) = da(i) + sum
                   cycle  l123
                end do
-            endif
+            end if
 
             !*** Not found in the record, add an item ***
             ndcof = ndcof + 1
             if (ndcof > nddim) then
                if (nddim > 0) then
                   nddim = 2*nddim
-                  call ralloc (da, nddim, 'DA', 'SETCOF')
-                  call ralloc (nda, nddim, 'NDA', 'SETCOF')
+                  call ralloc (da, nddim, "DA", "SETCOF")
+                  call ralloc (nda, nddim, "NDA", "SETCOF")
 !                  CALL RALLOC (DA, NDCOF, 'DA', 'SETCOF')
 !                  CALL RALLOC (NDA, NDCOF, 'NDA', 'SETCOF')
                else
                   nddim = 64
-                 call alloc (da, nddim, 'DA', 'SETCOF')
-                  call alloc (nda, nddim, 'NDA', 'SETCOF')
+                 call alloc (da, nddim, "DA", "SETCOF")
+                  call alloc (nda, nddim, "NDA", "SETCOF")
 !                  CALL ALLOC (DA, NDCOF, 'DA', 'SETCOF')
 !                  CALL ALLOC (NDA, NDCOF, 'NDA', 'SETCOF')
 !                  NDDIM = NDCOF
-               endif
-            endif
+               end if
+            end if
             da(ndcof) = sum                      ! print*, DA(NDCOF), ndcof, myid, 'myid'
             nda(ndcof) = ithis
 
@@ -396,10 +396,10 @@
 !         ...Re-position file mcp.30
 
          rewind (30, iostat=ios)
-         if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof rewind')
+         if (ios /= 0) call fail_input_io(ios, 30, "MCP setcof rewind")
          do i = 1, 6
             read (30, iostat=ios)
-            if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof skip header or payload')
+            if (ios /= 0) call fail_input_io(ios, 30, "MCP setcof skip header or payload")
          end do
 
 !=======================================================================
@@ -409,25 +409,25 @@
          do jblock = 1, symmetry_block_count
 !           ...Read in IROW from file mcp.30
             read (30, iostat=ios) mcplab, jblockt, csf_count
-            if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof block or channel header')
+            if (ios /= 0) call fail_input_io(ios, 30, "MCP setcof block or channel header")
             if (jblockt /= jblock) then
-               write (stderr_unit, *) myname, ':3 jblockt .NE. jblock'
-               call fail_input_io(0, 30, 'MCP setcof inconsistent block header')
-            endif
+               write (stderr_unit, *) myname, ":3 jblockt .NE. jblock"
+               call fail_input_io(0, 30, "MCP setcof inconsistent block header")
+            end if
             read (30, iostat=ios) nelmntgg
-            if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof sparse element count')
+            if (ios /= 0) call fail_input_io(ios, 30, "MCP setcof sparse element count")
             stored_matrix_element_count = int(nelmntgg,kind=int64)
-            call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'SETCOF')
+            call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "SETCOF")
             read (30, iostat=ios) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), (matrix_partner_indices(i),i=1, &
                & stored_matrix_element_count)
-            if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof sparse indices')
+            if (ios /= 0) call fail_input_io(ios, 30, "MCP setcof sparse indices")
 
             read (nfile, iostat=ios) mcplab, jblockt, csf_count, ncoeff
-            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof block or channel header')
+            if (ios /= 0) call fail_input_io(ios, nfile, "MCP setcof block or channel header")
             if (jblockt /= jblock) then
-               write (stderr_unit, *) myname, ':4 jblockt .NE. jblock'
-               call fail_input_io(0, nfile, 'MCP setcof inconsistent block header')
-            endif
+               write (stderr_unit, *) myname, ":4 jblockt .NE. jblock"
+               call fail_input_io(0, nfile, "MCP setcof inconsistent block header")
+            end if
 
             k = nfile - 32                       ! multipolarity of the integral
 
@@ -437,12 +437,12 @@
 
   999       continue
             read (nfile, iostat=ios) lab, ncontr
-            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof label/count')
+            if (ios /= 0) call fail_input_io(ios, nfile, "MCP setcof label/count")
 !
             if (lab==0 .and. ncontr==0) then
-               call dalloc (matrix_partner_indices, 'IROW', 'SETCOF')
+               call dalloc (matrix_partner_indices, "IROW", "SETCOF")
                cycle
-            endif
+            end if
             !***                       k
             !*** Decode the labels of R (abcd)
             indexs(4) = mod(lab,key)
@@ -458,30 +458,30 @@
 
             if (irank == 0) then
                read (nfile, iostat=ios)
-               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof skip header or payload')
-               go to 999
-            endif
+               if (ios /= 0) call fail_input_io(ios, nfile, "MCP setcof skip header or payload")
+               goto 999
+            end if
 
             !*** At least one subshell index matches; allocate storage
             !*** for reading in the rest of this block
             if (ncontr > ndim) then
-               call dalloc (coeff, 'COEFF', 'SETCOF')
-               call dalloc (iclmn, 'ICLMN', 'SETCOF')
-               call dalloc (indx, 'INDX', 'SETCOF')
+               call dalloc (coeff, "COEFF", "SETCOF")
+               call dalloc (iclmn, "ICLMN", "SETCOF")
+               call dalloc (indx, "INDX", "SETCOF")
                ndim = ncontr
-               call alloc (coeff, ndim, 'COEFF', 'SETCOF')
-               call alloc (iclmn, ndim, 'ICLMN', 'SETCOF')
-               call alloc (indx, ndim, 'INDX', 'SETCOF')
-            endif
+               call alloc (coeff, ndim, "COEFF", "SETCOF")
+               call alloc (iclmn, ndim, "ICLMN", "SETCOF")
+               call alloc (indx, ndim, "INDX", "SETCOF")
+            end if
 
             !*** Read column index, sparse matrix index, and
             !*** coefficient for all contributions from this integral
             read (nfile, iostat=ios) (iclmn(i),indx(i),coeff(i),i=1,ncontr)
-            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof coefficient payload')
+            if (ios /= 0) call fail_input_io(ios, nfile, "MCP setcof coefficient payload")
 
             !*** Add up all the contributions from this integral;
             !*** off-diagonal contributions have double the weight
-            sum = 0._real64
+            sum = 0.0_real64
             do i = 1, ncontr
                ir = matrix_partner_indices(indx(i))
                ic = iclmn(i)
@@ -516,16 +516,16 @@
                   exit
                end do
 
-               if (ithis == (-911)) error stop 'ithis .EQ. -911'
+               if (ithis == (-911)) error stop "ithis .EQ. -911"
 
                !*** Check ithis against the previously recorded ***
                if (jblock > 1) then
                   do i = 1, nxcof
                      if (nxa(i) /= ithis) cycle
                      xa(i) = xa(i) + sum
-                     go to 999
+                     goto 999
                   end do
-               endif
+               end if
 
                !*** Not found in records, add an item ***
                nxcof = nxcof + 1
@@ -533,20 +533,20 @@
                   if (nxdim > 0) then
                     nxdim = 2*nxdim
 !cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
-                    call ralloc (xa, nxdim, 'XA', 'SETCOF')
-                    call ralloc (nxa, nxdim, 'NXA', 'SETCOF')
+                    call ralloc (xa, nxdim, "XA", "SETCOF")
+                    call ralloc (nxa, nxdim, "NXA", "SETCOF")
 !                  CALL RALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL RALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
                  else
                     nxdim = 64
-                    call alloc (xa, nxdim, 'XA', 'SETCOF')
-                    call alloc (nxa, nxdim, 'NXA', 'SETCOF')
+                    call alloc (xa, nxdim, "XA", "SETCOF")
+                    call alloc (nxa, nxdim, "NXA", "SETCOF")
 !                  CALL ALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL ALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
 !                  NXDIM = NXCOF
 !cjb
-                  endif
-               endif
+                  end if
+               end if
                xa(nxcof) = sum
                nxa(nxcof) = ithis
 
@@ -566,7 +566,7 @@
                   else if (ifound == 1) then
                      loc2 = iind
                      exit
-                  endif
+                  end if
                end do
 
                if (loc2 - loc1 == 2) then
@@ -587,9 +587,9 @@
                      do i = 1, nycof
                         if (nya(i) /= ithis) cycle
                         ya(i) = ya(i) + sum + sum
-                        go to 999
+                        goto 999
                      end do
-                  endif
+                  end if
 
                   !*** Not found, add an item ***
                   nycof = nycof + 1
@@ -597,20 +597,20 @@
                      if (nydim > 0) then
                        nydim = 2*nydim
 !cjb RALLOC ALLOC NYA, YA, (NYDIM NYCOF)
-                       call ralloc(nya, nydim, 'NYA', 'SETCOF')
-                       call ralloc(ya, nydim, 'YA', 'SETCOF')
+                       call ralloc(nya, nydim, "NYA", "SETCOF")
+                       call ralloc(ya, nydim, "YA", "SETCOF")
 !                 CALL RALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
 !                 CALL RALLOC(YA, NYCOF, 'YA', 'SETCOF')
                      else
                        nydim = 64
-                       call alloc(nya, nydim, 'NYA', 'SETCOF')
-                       call alloc(ya, nydim, 'YA', 'SETCOF')
+                       call alloc(nya, nydim, "NYA", "SETCOF")
+                       call alloc(ya, nydim, "YA", "SETCOF")
 !                 CALL ALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
 !                 CALL ALLOC(YA, NYCOF, 'YA', 'SETCOF')
 !                 NYDIM = NYCOF
 !cjb
-                     endif
-                  endif
+                     end if
+                  end if
                   ya(nycof) = sum + sum
                   nya(nycof) = ithis
 
@@ -635,9 +635,9 @@
                      do i = 1, nxcof
                         if (nxa(i) /= ithis) cycle
                         xa(i) = xa(i) + sum + sum
-                        go to 999
+                        goto 999
                      end do
-                  endif
+                  end if
 
                   !*** Not found, add an item ***
                   nxcof = nxcof + 1
@@ -645,24 +645,24 @@
                      if (nxdim > 0) then
                        nxdim = 2*nxdim
 !cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
-                       call ralloc (xa, nxdim, 'XA', 'SETCOF')
-                       call ralloc (nxa, nxdim, 'NXA', 'SETCOF')
+                       call ralloc (xa, nxdim, "XA", "SETCOF")
+                       call ralloc (nxa, nxdim, "NXA", "SETCOF")
 !                  CALL RALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL RALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
                      else
                        nxdim = 64
-                       call alloc (xa, nxdim, 'XA', 'SETCOF')
-                       call alloc (nxa, nxdim, 'NXA', 'SETCOF')
+                       call alloc (xa, nxdim, "XA", "SETCOF")
+                       call alloc (nxa, nxdim, "NXA", "SETCOF")
 !                  CALL ALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL ALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
 !                  NXDIM = NXCOF
 !cjb
-                     endif
-                  endif
+                     end if
+                  end if
                   xa(nxcof) = sum + sum
                   nxa(nxcof) = ithis
 
-               endif
+               end if
 
             case (3)
 
@@ -685,35 +685,35 @@
                   ithis2 = ((iorb*key + iyo2)*key + iyo1)*key + k
                end do
 
-               if (ithis==(-911) .or. ithis2==(-911)) error stop 'ithis2'
+               if (ithis==(-911) .or. ithis2==(-911)) error stop "ithis2"
 
                !*** Check the previously recorded for YA
                if (jblock > 1) then
                   do i = 1, nycof
                      if (nya(i) /= ithis) cycle
                      ya(i) = ya(i) + sum + sum
-                     go to 456
+                     goto 456
                   end do
-               endif
+               end if
 
                ! Not found, add an item ***
                nycof = nycof + 1
                if (nycof > nydim) then
                   if (nydim > 0) then
                     nydim = 2*nydim
-                    call ralloc (nya, nydim, 'NYA', 'SETCOF')
-                    call ralloc (ya, nydim, 'YA', 'SETCOF')
+                    call ralloc (nya, nydim, "NYA", "SETCOF")
+                    call ralloc (ya, nydim, "YA", "SETCOF")
 !                     CALL RALLOC (NYA, NYCOF, 'NYA', 'SETCOF')
 !                     CALL RALLOC (YA, NYCOF, 'YA', 'SETCOF')
                   else
                     nydim = 64
-                     call alloc (nya, nydim, 'NYA', 'SETCOF')
-                     call alloc (ya, nydim, 'YA', 'SETCOF')
+                     call alloc (nya, nydim, "NYA", "SETCOF")
+                     call alloc (ya, nydim, "YA", "SETCOF")
 !                     CALL ALLOC (NYA, NYCOF, 'NYA', 'SETCOF')
 !                     CALL ALLOC (YA, NYCOF, 'YA', 'SETCOF')
 !                     NYDIM = NYCOF
-                  endif
-               endif
+                  end if
+               end if
                ya(nycof) = sum + sum
                nya(nycof) = ithis
 
@@ -724,9 +724,9 @@
                   do i = 1, nxcof
                      if (nxa(i) /= ithis2) cycle
                      xa(i) = xa(i) + sum
-                     go to 999
+                     goto 999
                   end do
-               endif
+               end if
 
                ! Not found, add an item ***
                nxcof = nxcof + 1
@@ -734,19 +734,19 @@
                   if (nxdim > 0) then
                     nxdim = 2*nxdim
 !cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
-                   call ralloc (xa, nxdim, 'XA', 'SETCOF')
-                   call ralloc (nxa, nxdim, 'NXA', 'SETCOF')
+                   call ralloc (xa, nxdim, "XA", "SETCOF")
+                   call ralloc (nxa, nxdim, "NXA", "SETCOF")
 !                  CALL RALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL RALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
                  else
-                   call alloc (xa, nxdim, 'XA', 'SETCOF')
-                   call alloc (nxa, nxdim, 'NXA', 'SETCOF')
+                   call alloc (xa, nxdim, "XA", "SETCOF")
+                   call alloc (nxa, nxdim, "NXA", "SETCOF")
 !                  CALL ALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL ALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
 !                  NXDIM = NXCOF
 !cjb
-                  endif
-               endif
+                  end if
+               end if
                xa(nxcof) = sum
                nxa(nxcof) = ithis2
 
@@ -765,10 +765,10 @@
                if (jblock > 1) then
                   do i = 1, nycof
                      if (nya(i) /= ithis) cycle
-                     ya(i) = ya(i) + 4._real64*sum
-                     go to 999
+                     ya(i) = ya(i) + 4.0_real64*sum
+                     goto 999
                   end do
-               endif
+               end if
 
                ! Not found, add an item ***
                nycof = nycof + 1
@@ -776,36 +776,36 @@
                   if (nydim > 0) then
                     nydim = 2*nydim
 !cjb RALLOC ALLOC NYA, YA, (NYDIM NYCOF)
-                    call ralloc(nya, nydim, 'NYA', 'SETCOF')
-                    call ralloc(ya, nydim, 'YA', 'SETCOF')
+                    call ralloc(nya, nydim, "NYA", "SETCOF")
+                    call ralloc(ya, nydim, "YA", "SETCOF")
 !                 CALL RALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
 !                 CALL RALLOC(YA, NYCOF, 'YA', 'SETCOF')
                  else
 !cjb similar here
                    nydim = 64
-                   call alloc(nya, nydim, 'NYA', 'SETCOF')
-                   call alloc(ya, nydim, 'YA', 'SETCOF')
+                   call alloc(nya, nydim, "NYA", "SETCOF")
+                   call alloc(ya, nydim, "YA", "SETCOF")
 !                 CALL ALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
 !                 CALL ALLOC(YA, NYCOF, 'YA', 'SETCOF')
 !                 NYDIM = NYCOF
 !cjb
-                  endif
-               endif
-               ya(nycof) = 4._real64*sum
+                  end if
+               end if
+               ya(nycof) = 4.0_real64*sum
                nya(nycof) = ithis
 
             end select
 
-            go to 999
+            goto 999
          end do                                  ! loop for V-Coefficients
       end do
 
 !=======================================================================
 !   Deallocate storage for arrays local to this routine
 !=======================================================================
-      call dalloc (coeff, 'COEFF', 'SETCOF')
-      call dalloc (iclmn, 'ICLMN', 'SETCOF')
-      call dalloc (indx, 'INDX', 'SETCOF')
+      call dalloc (coeff, "COEFF", "SETCOF")
+      call dalloc (iclmn, "ICLMN", "SETCOF")
+      call dalloc (indx, "INDX", "SETCOF")
 
       return
       end subroutine setcof

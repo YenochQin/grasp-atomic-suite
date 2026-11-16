@@ -31,10 +31,10 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
       use decide_c
       use def_c
       use eigv_c
-      use foparm_c
+      use foparm_c, only: iccut
       use grid_c
-      use jlabl_c
-      use npar_c
+      use jlabl_c, only: jlbl, jlbp, jlbr
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use orb_c
       use blk_c
       use prnt_c
@@ -46,11 +46,11 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use alcbuf_i
-      use convrt_i
-      use getyn_i
-      use itjpo_i
-      use onescalar_i
+      use alcbuf_i, only: alcbuf
+      use convrt_i, only: convrt
+      use getyn_i, only: getyn
+      use itjpo_i, only: itjpo
+      use onescalar_i, only: onescalar
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -109,8 +109,8 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !   Output IC on the screen to show how far the calculation has preceede
 !
         call convrt (ic,cnum,lcnum)
-        if (mod(ic,100).eq.0) then
-          print *, 'Column '//cnum(1:lcnum)//' complete;'
+        if (mod(ic,100)==0) then
+          print *, "Column "//cnum(1:lcnum)//" complete;"
         end if
 !
         itjpoc = itjpo (ic)
@@ -119,7 +119,7 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !
 !   Matrix elements are diagonal in J
 !
-          if (itjpo(ir) .eq. itjpoc) then
+          if (itjpo(ir) == itjpoc) then
 !
 !   Initialise the accumulator
 !
@@ -135,11 +135,11 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !
            call onescalar(ic,ir,ia,ib,tshell)
 !GG            CALL TNSRJJ (KA,IOPAR,IC,IR,IA,IB,TSHELL)
-            if (ia .ne. 0) then
-              if (ia .eq. ib) then
+            if (ia /= 0) then
+              if (ia == ib) then
                     ncontr = 0
                 do 8 ia = 1,orbital_count
-                  if (abs (tshell(ia)) .gt. cutoff) then
+                  if (abs (tshell(ia)) > cutoff) then
                     ncontr = ncontr + 1
                     tshell_s(ncontr) = tshell(ia)
                     ia_s(ncontr) = ia
@@ -150,19 +150,19 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
                     elemnt5 = elemnt5 + dint5(ia,ia)*tshell(ia)
                     elemnt6 = elemnt6 + dint6(ia,ia)*tshell(ia)
                     elemnt7 = elemnt7 + dint7(ia,ia)*tshell(ia)
-                  endif
+                  end if
     8           continue
-                if (doit.eq.1) write(50) ic,ir,ncontr
+                if (doit==1) write(50) ic,ir,ncontr
                 do i = 1,ncontr
                   lab = ia_s(i)*(key + 1)
-                  if (doit.eq.1) write(50) tshell_s(i),lab
+                  if (doit==1) write(50) tshell_s(i),lab
                 end do
               else
-                if (abs (tshell(1)) .gt. cutoff) then
-                  if (orbital_kappa(ia).eq.orbital_kappa(ib)) then
-                    if (doit.eq.1) write(50) ic,ir,1
+                if (abs (tshell(1)) > cutoff) then
+                  if (orbital_kappa(ia)==orbital_kappa(ib)) then
+                    if (doit==1) write(50) ic,ir,1
                     lab = ia*key + ib
-                    if (doit.eq.1) write(50) tshell(1),lab
+                    if (doit==1) write(50) tshell(1),lab
                     elemnt1 = elemnt1 + dint1(ia,ib)*tshell(1)
                     elemnt2 = elemnt2 + dint2(ia,ib)*tshell(1)
                     elemnt3 = elemnt3 + dint3(ia,ib)*tshell(1)
@@ -170,10 +170,10 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
                     elemnt5 = elemnt5 + dint5(ia,ib)*tshell(1)
                     elemnt6 = elemnt6 + dint6(ia,ib)*tshell(1)
                     elemnt7 = elemnt7 + dint7(ia,ib)*tshell(1)
-                  endif
-                endif
-              endif
-            endif
+                  end if
+                end if
+              end if
+            end if
             do 9 j = 1,nvec
               loc = (j-1)*csf_count
               contri1 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt1
@@ -183,7 +183,7 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
               contri5 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt5
               contri6 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt6
               contri7 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt7
-              if (ir.ne.ic) then
+              if (ir/=ic) then
                 contri1 = 2.0_real64 * contri1
                 contri2 = 2.0_real64 * contri2
                 contri3 = 2.0_real64 * contri3
@@ -191,7 +191,7 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
                 contri5 = 2.0_real64 * contri5
                 contri6 = 2.0_real64 * contri6
                 contri7 = 2.0_real64 * contri7
-              endif
+              end if
               dens1(j) = dens1(j) + contri1
               dens2(j) = dens2(j) + contri2
               dens3(j) = dens3(j) + contri3
@@ -200,14 +200,14 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
               dens6(j) = dens6(j) + contri6
               dens7(j) = dens7(j) + contri7
     9       continue
-          endif
+          end if
    12   continue
    13 continue
 
-       if (doit.eq.1) write(50) -1
+       if (doit==1) write(50) -1
 !
 ! Empty the buffer and close file
-      if (doit.eq.1) close(50)
+      if (doit==1) close(50)
 !
 !   Deallocate storage for the arrays in BUFFER
       call alcbuf (3)

@@ -29,10 +29,10 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
-      use cnc_c
+      use cnc_c, only: cnc5c, cnc6c, double
       use def_c,           only: speed_of_light_au, nuclear_charge, accy
       use grid_c
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use orb_c
       use pote_c,          only: yp, xp, xq
       use scf_c,           only: ndcof, nda, da
@@ -82,7 +82,7 @@ contains
                small_component_values(1) = -origin_slope_parameter*zonc/(giorb - fkiorb)
             else
                small_component_values(1) = origin_slope_parameter*(giorb + fkiorb)/zonc
-            endif
+            end if
          else
             if (kiorb < 0) then
                large_component_values(1) = origin_slope_parameter
@@ -90,8 +90,8 @@ contains
             else
                large_component_values(1) = 0.0_real64
                small_component_values(1) = origin_slope_parameter*(giorb + fkiorb)/zonc
-            endif
-         endif
+            end if
+         end if
          if (radial_equation_type == 1) then
             rsep = 0.0_real64
             rseq = 0.0_real64
@@ -107,7 +107,7 @@ contains
                      q1 = -pzero*zonc/(giorb - fkiorb)
                   else
                      q1 = pzero*(giorb + fkiorb)/zonc
-                  endif
+                  end if
                   sump = zonc*q1
                   sumq = -zonc*p1
                else
@@ -117,10 +117,10 @@ contains
                   else
                      p1 = 0.0_real64
                      q1 = pzero*(giorb + fkiorb)/zonc
-                  endif
+                  end if
                   sump = 0.0_real64
                   sumq = 0.0_real64
-               endif
+               end if
                factor = da(i)
                rsep1 = rsep1 + factor*(sump + omgmk*p1)
                rseq1 = rseq1 + factor*(sumq + omgpk*q1)
@@ -133,7 +133,7 @@ contains
                rsep(i) = factor*xp(i)
                rseq(i) = factor*xq(i)
             end do
-         endif
+         end if
       else if (radial_equation_type == 3) then
          large_component_values(1) = 0.0_real64
          small_component_values(1) = 0.0_real64
@@ -144,7 +144,7 @@ contains
             rsep(i) = -factor*radial_small_components(i,orbital_index)
             rseq(i) = factor*radial_large_components(i,orbital_index)
          end do
-      endif
+      end if
       small_component_origin_coefficient = small_component_values(1)
 !
 !   Set up  RDP  and  RDQ
@@ -202,9 +202,9 @@ contains
       difmax = difmax*factor
       if (difmax > accy) then
          if (niter < mxiter) then
-            go to 7
-         endif
-      endif
+            goto 7
+         end if
+      end if
 !     ELSE
 !        DIFMAX = DIFMAX*FACTOR
 !        IF (DIFMAX .GT. ACCY) THEN
@@ -215,7 +215,7 @@ contains
       if (difmax > accy) then
          large_component_values(2:6) = p1
          small_component_values(2:6) = q1
-      endif
+      end if
 !zou
 !
 !   All done
@@ -233,9 +233,9 @@ contains
 !
       return
 !
-  300 format('START: ',1i2,1a2,' subshell: accuracy ',1p,1d8.1,/,&
-         ' attained after ',1i2,' iterations; this fails the'/,&
-         ' accuracy criterion ',d8.1,'.')
+  300 format("START: ",1i2,1a2," subshell: accuracy ",1p,1d8.1,/,&
+         " attained after ",1i2," iterations; this fails the"/,&
+         " accuracy criterion ",d8.1,".")
       return
 !
       end subroutine start

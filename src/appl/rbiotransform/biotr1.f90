@@ -65,8 +65,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ifnmnx_i
-      use ielsum_i
+      use ifnmnx_i, only: ifnmnx
+      use ielsum_i, only: ielsum
 !      USE gets_I
 !      USE wrtmat_I
 !      USE copvec_I
@@ -120,11 +120,11 @@
       ntest = max(ntestl,ntestg)
       if (ntest >= 1) then
          write (6, *)
-         write (6, *) '                   *************************'
-         write (6, *) '                   *   Entering BIOTR1     *'
-         write (6, *) '                   *************************'
+         write (6, *) "                   *************************"
+         write (6, *) "                   *   Entering BIOTR1     *"
+         write (6, *) "                   *************************"
          write (6, *)
-      endif
+      end if
 !
 !. Scratch should at least be of length
 !
@@ -136,75 +136,75 @@
       nlimx = ifnmnx(nli,mxl,1)
       nlfmx = ifnmnx(nlf,mxl,1)
       nlifmx = max(nlimx,nlfmx)
-      if (ntest >= 10) write (6, *) ' NLIMX,NLFMX NLIFMX ', nlimx, nlfmx, &
+      if (ntest >= 10) write (6, *) " NLIMX,NLFMX NLIFMX ", nlimx, nlfmx, &
          nlifmx
 !
 !. Total numner of shells
 !
       nlti = ielsum(nli,mxl)
       nltf = ielsum(nlf,mxl)
-      if (ntest >= 10) write (6, *) ' NLTI NLTF', nlti, nltf
+      if (ntest >= 10) write (6, *) " NLTI NLTF", nlti, nltf
 !
 ! Scratch space for orbital rotations
       kfree = 1
 !
       klpi = kfree
       kfree = kfree + nlimx*ngrid
-      write (6, *) ' In biotrn: KLPI    = ', klpi
-      write (6, *) '            KFREE   = ', kfree
+      write (6, *) " In biotrn: KLPI    = ", klpi
+      write (6, *) "            KFREE   = ", kfree
 !
       klpf = kfree
       kfree = kfree + nlfmx*ngrid
-      write (6, *) ' In biotrn: KLPF    = ', klpf
-      write (6, *) '            KFREE   = ', kfree
+      write (6, *) " In biotrn: KLPF    = ", klpf
+      write (6, *) "            KFREE   = ", kfree
 !
       klpif = kfree
       kfree = kfree + nlifmx*ngrid
-      write (6, *) ' In biotrn: KLPIF   = ', klpif
-      write (6, *) '            KFREE   = ', kfree
+      write (6, *) " In biotrn: KLPIF   = ", klpif
+      write (6, *) "            KFREE   = ", kfree
 !
 !. Total overlap matrix
 !
       klstot = kfree
       kfree = kfree + nlti*nltf
-      write (6, *) ' In biotrn: KLSTOT  = ', klstot
-      write (6, *) '            KFREE   = ', kfree
+      write (6, *) " In biotrn: KLSTOT  = ", klstot
+      write (6, *) "            KFREE   = ", kfree
 !
       klsif = kfree
       kfree = kfree + nlifmx**2
-      write (6, *) ' In biotrn: KLSIF   = ', klsif
-      write (6, *) '            KFREE   = ', kfree
+      write (6, *) " In biotrn: KLSIF   = ", klsif
+      write (6, *) "            KFREE   = ", kfree
 !
       klsifi = kfree
       kfree = kfree + nlifmx**2
-      write (6, *) ' In biotrn: KLSIFI  = ', klsifi
-      write (6, *) '            KFREE   = ', kfree
+      write (6, *) " In biotrn: KLSIFI  = ", klsifi
+      write (6, *) "            KFREE   = ", kfree
 !
       klci = kfree
       kfree = kfree + nlifmx**2
-      write (6, *) ' In biotrn: KLCI    = ', klci
-      write (6, *) '            KFREE   = ', kfree
+      write (6, *) " In biotrn: KLCI    = ", klci
+      write (6, *) "            KFREE   = ", kfree
 !
       klcf = kfree
       kfree = kfree + nlifmx**2
-      write (6, *) ' In biotrn: KLCF    = ', klcf
-      write (6, *) '            KFREE   = ', kfree
+      write (6, *) " In biotrn: KLCF    = ", klcf
+      write (6, *) "            KFREE   = ", kfree
 !
       klscr = kfree
       kfree = kfree + nlifmx**2 + nlifmx*(nlifmx + 1)
-      write (6, *) ' In biotrn: KLSCR   = ', klscr
-      write (6, *) '            KFREE   = ', kfree
-      write (6, *) '         =>  FREE =     ', kfree
+      write (6, *) " In biotrn: KLSCR   = ", klscr
+      write (6, *) "            KFREE   = ", kfree
+      write (6, *) "         =>  FREE =     ", kfree
 !
 !. Check length of scratch
 !
       if (lscr <= kfree - 1) then
-       write (6,*)' BIOTR1 in trouble ! '
-       write (6,*)' Increase dimension of scratch before call to BIOTR1'
-       write (6,*)' Current and required length (LSCR,KFREE-1)', lscr, &
+       write (6,*)" BIOTR1 in trouble ! "
+       write (6,*)" Increase dimension of scratch before call to BIOTR1"
+       write (6,*)" Current and required length (LSCR,KFREE-1)", lscr, &
             kfree - 1
-       stop 'Increase LWORK before call to BIOTR1'
-       endif
+       stop "Increase LWORK before call to BIOTR1"
+       end if
 !
 !. Obtain overlap matrix
 !
@@ -212,9 +212,9 @@
 
       do l = 1, mxl
          if (ntest >= 5) then
-            write (6, *) '   L = ', l
-            write (6, *) '       Orbital rotation...'
-         endif
+            write (6, *) "   L = ", l
+            write (6, *) "       Orbital rotation..."
+         end if
 !
 !. Offsets for given L in shell matrices
 !
@@ -224,13 +224,13 @@
          else
             iioff = iioff + nli(l-1)**2
             ifoff = ifoff + nlf(l-1)**2
-         endif
+         end if
          if (ntest >= 1) then
            write (6, *)
            write (6, *) &
-           ' BIOTRN : Information on transformations of shells with L =',l
+           " BIOTRN : Information on transformations of shells with L =",l
            write (6, *)
-         endif
+         end if
 !
 ! =========================================================
 ! 1 : Obtain Biorthogonal forms of initial and final shells
@@ -273,7 +273,7 @@
          else
             ili = ili + nli(l-1)
             ilf = ilf + nlf(l-1)
-         endif
+         end if
 
 !
 ! 1.2 obtain biorthogonal of the first min(ni,nf) shells
@@ -294,9 +294,9 @@
             end do
          end do
          if (ntest >= 15) then
-            write (6, *) ' Overlap matrix '
+            write (6, *) " Overlap matrix "
             call wrtmat (scr(klsif), nifmn, nifmn, nifmn, nifmn)
-         endif
+         end if
 !
 ! Obtain upper triangular CI and CF so CI(T) S CF = 1
 ! or CF CI(T) = S-1, which corresponds to an UL decomposition
@@ -330,7 +330,7 @@
                nmn = ni
                klcmx = klcf
                klcmn = klci
-            endif
+            end if
             ndiff = nmx - nmn
 !
 ! Y = -S-1 * X
@@ -354,12 +354,12 @@
                         1)*nlti+iii+ili-1)
                   end do
                end do
-            endif
+            end if
 !
             if (ni > nf) then
                call trpmat (scr(klsifi), nmn, nmn, scr(klscr))
                call copvec (scr(klscr), scr(klsifi), nmn**2)
-            endif
+            end if
             call matml4 (scr(klscr), scr(klsifi), scr(klsif), nmn, ndiff, nmn, &
                nmn, nmn, ndiff, 0)
             call scalve (scr(klscr), -1.0_real64, nmn*ndiff)
@@ -376,11 +376,11 @@
                   call copvec (scr(klsif+(j-nmn-1)*nmn), scr(klscr+(j-1)*nmx), &
                      nmn)
                   scr(klscr-1+(j-1)*nmx+j) = 1.0_real64
-               endif
+               end if
             end do
 !
             call copvec (scr(klscr), scr(klcmx), nmx**2)
-         endif
+         end if
 !ww Pertest
 !         ENDIF
 !
@@ -395,12 +395,12 @@
          call copvec (pi(1,ili), scr(klpi), ni*ngrid)
          call copvec (pf(1,ilf), scr(klpf), nf*ngrid)
 !
-         write (*, *) 'Transformation matrices initial'
+         write (*, *) "Transformation matrices initial"
          call wrtmat (scr(klci), ni, ni, ni, ni)
          call matml4 (scr(klpif), scr(klpi), scr(klci), ngrid, ni, ngrid, ni, &
             ni, ni, 0)
          call copvec (scr(klpif), pi(1,ili), ni*ngrid)
-         write (*, *) 'Transformation matrices final'
+         write (*, *) "Transformation matrices final"
          call wrtmat (scr(klcf), nf, nf, nf, nf)
          call matml4 (scr(klpif), scr(klpf), scr(klcf), ngrid, nf, ngrid, nf, &
             nf, nf, 0)
@@ -419,7 +419,7 @@
          call copvec (scr(klpif), qf(1,ilf), nf*ngrid)
 !
          if (ntest >= 1) then
-            write (6, *) ' Test of overlap of biorthonormal functions'
+            write (6, *) " Test of overlap of biorthonormal functions"
 ! F columns I rows
             do jjj = 1, nf
                do iii = 1, ni
@@ -432,18 +432,18 @@
             call matml4 (scr(klsif), scr(klscr), scr(klcf), ni, nf, ni, nf, nf&
                , nf, 0)
             write (6, *) &
-              ' new overlap matrix ( should be 1 on diag, 0 elsewhere )'
+              " new overlap matrix ( should be 1 on diag, 0 elsewhere )"
             call wrtmat (scr(klsif), ni, nf, ni, nf)
-         endif
+         end if
 
          if (ntest >= 1) then
             write (6, *)
-            write (6, *) ' Orbital Rotation matrix for I state'
+            write (6, *) " Orbital Rotation matrix for I state"
             call wrtmat (cishl(iioff), ni, ni, ni, ni)
-            write (6, *) ' Orbital Rotation matrix for F state'
+            write (6, *) " Orbital Rotation matrix for F state"
             call wrtmat (cfshl(ifoff), nf, nf, nf, nf)
             write (6, *)
-         endif
+         end if
 !
 !. Matrix for counterrotation of CI coefficients, initial state
 !
@@ -468,9 +468,9 @@
          call copvec (scr(kltf), cfci(ifoff), nf*nf)
          if (ntest < 1) cycle
          write (6, *)
-         write (6, *) ' CI-Rotation matrix for I state'
+         write (6, *) " CI-Rotation matrix for I state"
          call wrtmat (cici(iioff), ni, ni, ni, ni)
-         write (6, *) ' CI-Rotation matrix for F state'
+         write (6, *) " CI-Rotation matrix for F state"
          call wrtmat (cfci(ifoff), nf, nf, nf, nf)
          write (6, *)
 

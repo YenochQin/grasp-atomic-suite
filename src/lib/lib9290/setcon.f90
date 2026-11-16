@@ -119,16 +119,16 @@ contains
 !
       return
 !
-  300 format(/,'From SUBROUTINE SETCON:'/,' AINFCM (Bohr radius in cm): ',0p,1d&
-         16.9,','/,' ALFAI (Inverse of the fine-structure constant): ',3p,1d&
-         16.9,','/,' CCMPS (Speed of light in cm/s): ',1p,1d15.8,','/,&
-         ' EESU (Electron charge in esu): ',1p,1d15.8,','/,&
-         ' EMEG (Electron mass in g): ',1p,1d14.7,','/,&
-         ' EMEAMU (Electron mass in u): ',1p,1d16.9,','/,&
-         ' EMPAMU (Proton mass in u): ',1p,1d16.9,','/,&
-         ' HBARES (Rationalized Planck constant in erg s): ',1p,1d15.8,','/,&
-         ' RINFEV (Rydberg in eV): ',2p,1d15.8,','/,&
-         ' RINFK (Rydberg in Kaysers): ',6p,1d17.10,'.')
+  300 format(/,"From SUBROUTINE SETCON:"/," AINFCM (Bohr radius in cm): ",0p,1d&
+         16.9,","/," ALFAI (Inverse of the fine-structure constant): ",3p,1d&
+         16.9,","/," CCMPS (Speed of light in cm/s): ",1p,1d15.8,","/,&
+         " EESU (Electron charge in esu): ",1p,1d15.8,","/,&
+         " EMEG (Electron mass in g): ",1p,1d14.7,","/,&
+         " EMEAMU (Electron mass in u): ",1p,1d16.9,","/,&
+         " EMPAMU (Proton mass in u): ",1p,1d16.9,","/,&
+         " HBARES (Rationalized Planck constant in erg s): ",1p,1d15.8,","/,&
+         " RINFEV (Rydberg in eV): ",2p,1d15.8,","/,&
+         " RINFK (Rydberg in Kaysers): ",6p,1d17.10,".")
       return
 !
       end subroutine setcon

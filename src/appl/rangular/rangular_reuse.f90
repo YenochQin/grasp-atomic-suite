@@ -38,12 +38,12 @@ contains
       byte_limit = int(memory_mib,int64)*1048576_int64
       reuse_requested = memory_mib > 0
       if (len_trim(filename) == 0) return
-      if (.not. reuse_requested) error stop '--reuse-stats requires --reuse-cache-mib > 0'
-      open(newunit=report_unit, file=filename, status='new', action='write', iostat=status)
-      if (status /= 0) error stop 'Cannot create reuse statistics file (it must not already exist)'
+      if (.not. reuse_requested) error stop "--reuse-stats requires --reuse-cache-mib > 0"
+      open(newunit=report_unit, file=filename, status="new", action="write", iostat=status)
+      if (status /= 0) error stop "Cannot create reuse statistics file (it must not already exist)"
       report_open = .true.
-      write(report_unit,'(A)') 'block,pairs,hits,misses,bypasses,not_stored,entries,probes,' // &
-         'cache_reserved_bytes,cache_used_bytes,cache_limit_bytes'
+      write(report_unit,"(A)") "block,pairs,hits,misses,bypasses,not_stored,entries,probes," // &
+         "cache_reserved_bytes,cache_used_bytes,cache_limit_bytes"
    end subroutine configure_angular_reuse
 
    ! All arithmetic stays below 2**48; no signed integer overflow is required.
@@ -279,8 +279,8 @@ contains
       integer, intent(in) :: block_index
       integer(int64) :: used_bytes
       used_bytes = fixed_bytes + entry_bytes*entry_count + 8_int64*key_count + 28_int64*term_count
-      print '(A,I0,A,I0,A,I0,A,I0)', 'Angular reuse block ',block_index,': hits=',hits, &
-         ', pairs=',pairs,', cache reserved bytes=',reserved_bytes
+      print "(A,I0,A,I0,A,I0,A,I0)", "Angular reuse block ",block_index,": hits=",hits, &
+         ", pairs=",pairs,", cache reserved bytes=",reserved_bytes
       if (report_open) then
          write(report_unit,'(I0,10(",",I0))') block_index,pairs,hits,misses,bypasses,not_stored, &
             entry_count,probes,reserved_bytes,used_bytes,byte_limit

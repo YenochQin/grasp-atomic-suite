@@ -25,7 +25,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use spme_i
+      use spme_i, only: spme
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -64,7 +64,7 @@
           write (*,302) ivecff(lev2), jlabj, jparj, ivecii(lev1),    &
        jlabi, jpari
           write (*,301)
-      endif
+      end if
 ! Rasa -- end
       do m = 1,ninteg
         ja = lab(m)
@@ -72,8 +72,8 @@
         ja = ja/key
         nclr = nptr(m)+1
         ncup = nptr(m+1)
-        if (nclr .gt. ncup) goto 4
-        if (mod(orbital_l(ja)+orbital_l(jb)+kk+lk,2) .ne. 0) goto 4
+        if (nclr > ncup) goto 4
+        if (mod(orbital_l(ja)+orbital_l(jb)+kk+lk,2) /= 0) goto 4
         call spme (ja,jb,hcoul1,hbab1,hmag1)
 !
         do j = nclr,ncup
@@ -85,11 +85,11 @@
 !
 !  Check on consistency
 !
-          if (ia.gt.ncfii) then
+          if (ia>ncfii) then
             goto 131
-          elseif (ib.gt.ncfff) then
+          else if (ib>ncfff) then
             goto 131
-          endif
+          end if
 !
 !  Observ that IA and IB refer to the merged list
 !  whereas EVECII and EVECFF refers to the initial and
@@ -99,8 +99,8 @@
                  evecff(ib+(lev2-1)*ncfff)
 !     :           EVECFF(IB-NCFII+(LEV2-1)*NCFFF)
           coeff = xsldr(j)
-          if (abs(couvx) .gt. eps) then
-            if (kk .eq. 0) then
+          if (abs(couvx) > eps) then
+            if (kk == 0) then
               asfa = asfa+hcoul1*coeff*couvx
               asfb = asfb+hbab1*coeff*couvx
 !Rasa -- start
@@ -109,40 +109,40 @@
                   write (*,300) ia, evecii(ia+(lev1-1)*ncfii),       &
                       ib-ncfii, evecff(ib-ncfii+(lev2-1)*ncfff),     &
                       orbital_principal_n(ja),orbital_symmetry_labels(ja),orbital_principal_n(jb), &
-                         & orbital_symmetry_labels(jb),coeff,hcoul1,'C',  &
+                         & orbital_symmetry_labels(jb),coeff,hcoul1,"C",  &
                       hcoul1*coeff*couvx
-                  write(*,303) hbab1,'B',hbab1*coeff*couvx
-              endif
+                  write(*,303) hbab1,"B",hbab1*coeff*couvx
+              end if
 !Rasa -- end
             else
               contr=hmag1*coeff*couvx
               asfa = asfa+hmag1*coeff*couvx
 !Rasa -- start
-              if (ldbpr(18) .and. (abs(contr) .gt. cutoff)) then
+              if (ldbpr(18) .and. (abs(contr) > cutoff)) then
                   write (*,300) ia, evecii(ia+(lev1-1)*ncfii),       &
                       ib-ncfii, evecff(ib-ncfii+(lev2-1)*ncfff),     &
                       orbital_principal_n(ja),orbital_symmetry_labels(ja),orbital_principal_n(jb), &
-                         & orbital_symmetry_labels(jb),coeff,hmag1,' ',   &
+                         & orbital_symmetry_labels(jb),coeff,hmag1," ",   &
                       contr
-              endif
+              end if
 !Rasa -- end
-            endif
-          endif
+            end if
+          end if
  131    continue
-        enddo
-    4 enddo
+        end do
+    4 end do
 !
       return
 !
   300 format (i5,2x,d12.5,i5,2x,d12.5, 2(1x,1i2,1a2),1p,d15.6,1x,d15.6, &
       1x,1a,1x,d15.6)
-  301 format (4x,'i',3x,'Coeff.(i)',5x,'f',2x,'Coeff.(f)',2x,            &
-      'Orb(i)',1x,'Orb(f)',2x,'MCT coeff.',4x,'Radial Factor',          &
-      5x,'Contribution')
-  302 format ('Upper level ',i3,a4,a4,10x,' Lower level',i3,a4,a4)
+  301 format (4x,"i",3x,"Coeff.(i)",5x,"f",2x,"Coeff.(f)",2x,            &
+      "Orb(i)",1x,"Orb(f)",2x,"MCT coeff.",4x,"Radial Factor",          &
+      5x,"Contribution")
+  302 format ("Upper level ",i3,a4,a4,10x," Lower level",i3,a4,a4)
           write (*,302) ivecff(lev2), jlabj, jparj, lev1, jlabi, jpari
   303 format (62x,1p,d15.6,1x,1a,1x,d15.6)
-  304 format(65x,'Total:')
+  304 format(65x,"Total:")
   305 format (62x,1p,16x,1a,1x,d15.6)
 !
-      end
+      end subroutine csfm

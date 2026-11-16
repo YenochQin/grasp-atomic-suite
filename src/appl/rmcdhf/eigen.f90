@@ -16,14 +16,14 @@
       use def_c
       use grid_c
       use orb_c
-      use pote_c
-      use tatb_c
+      use pote_c, only: double, max_radial_points, xp, xq, yp
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use quad_i
-      use dpbdt_i
+      use quad_i, only: quad
+      use dpbdt_i, only: dpbdt
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

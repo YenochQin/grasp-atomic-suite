@@ -22,15 +22,15 @@
       use def_c
       use grid_c
       use orb_c
-      use pote_c
+      use pote_c, only: double, max_radial_points, xp, xq, yp
       use scf_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use yzk_i
-      use draw_i
+      use yzk_i, only: yzk
+      use draw_i, only: draw
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -53,8 +53,8 @@
 !
 !   Clear for accumulation of sums
 !
-      xp(:radial_point_count) = 0._real64
-      xq(:radial_point_count) = 0._real64
+      xp(:radial_point_count) = 0.0_real64
+      xq(:radial_point_count) = 0.0_real64
 !
 !   Add contributions from exchange terms
 !
@@ -99,7 +99,7 @@
             nrows = nb2
          else
             nrows = nb2 + 1
-         endif
+         end if
          do ii = 1, nrows
             ii1 = ii
             ii2 = ii1 + nrows
@@ -108,20 +108,20 @@
                   ii2)
             else if (ii1 <= radial_point_count) then
                write (99, 303) radial_grid(ii1), xp(ii1), xq(ii1)
-            endif
+            end if
          end do
          call draw (xp, 1.0_real64, xq, speed_of_light_au, radial_point_count)
-      endif
+      end if
 !
       return
 !
-  300 format(/,/,' Exchange potential contributions (coefficients will ',&
-         ' be divided by C) for ',1i2,1a2,' orbital :'/,/)
-  301 format(/,25x,'(',1i2,')'/,1x,1p,d21.14,'* Y    (',1i2,1a2,',',1i2,1a2,&
-         ') ','* P (',1i2,1a2,')')
-  302 format(/,/,31x,'(P)',19x,'(Q)',41x,'(P)',19x,'(Q)'/,2(&
-         ' --------- r --------- ------ X  (r) -------',&
-         ' ------ X  (r) -------'))
+  300 format(/,/," Exchange potential contributions (coefficients will ",&
+         " be divided by C) for ",1i2,1a2," orbital :"/,/)
+  301 format(/,25x,"(",1i2,")"/,1x,1p,d21.14,"* Y    (",1i2,1a2,",",1i2,1a2,&
+         ") ","* P (",1i2,1a2,")")
+  302 format(/,/,31x,"(P)",19x,"(Q)",41x,"(P)",19x,"(Q)"/,2(&
+         " --------- r --------- ------ X  (r) -------",&
+         " ------ X  (r) -------"))
   303 format(1p,6(1x,1d21.14))
       return
 !

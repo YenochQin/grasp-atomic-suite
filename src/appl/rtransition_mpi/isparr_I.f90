@@ -4,6 +4,6 @@
       integer function isparr (icsf)
       implicit none (type, external)
       integer, intent(in) :: icsf
-      end function
+      end function isparr
       end interface
-      end module
+      end module isparr_i

@@ -6,6 +6,6 @@
       integer, intent(in) :: jblock
       integer, intent(in) :: myid
       integer, intent(in) :: nprocs
-      end subroutine
+      end subroutine setham
       end interface
-      end module
+      end module setham_i

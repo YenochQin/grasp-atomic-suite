@@ -30,21 +30,21 @@ contains
       character(len=:), allocatable, intent(out) :: argument_text
       integer :: text_length, argument_status
       call get_command_argument(argument_index, length=text_length, status=argument_status)
-      if (argument_status /= 0 .or. text_length == 0) error stop 'Missing rangular_mpi argument'
+      if (argument_status /= 0 .or. text_length == 0) error stop "Missing rangular_mpi argument"
       allocate(character(len=text_length) :: argument_text)
       call get_command_argument(argument_index, value=argument_text, status=argument_status)
-      if (argument_status /= 0) error stop 'Cannot read rangular_mpi argument'
+      if (argument_status /= 0) error stop "Cannot read rangular_mpi argument"
    end subroutine read_argument_text
 
    subroutine reject_reserved_filename(filename)
       character(len=*), intent(in) :: filename
       character(len=:), allocatable :: basename
       integer :: separator_position
-      separator_position = scan(filename, '/\', back=.true.)
+      separator_position = scan(filename, "/\", back=.true.)
       basename = filename(separator_position+1:)
-      if (basename == 'rangular.log' .or. basename == 'genmcp.dbg' .or. &
-          index(basename,'mcp') == 1 .or. index(basename,'tmp') == 1) &
-         error stop 'Input/timings filename uses a reserved rangular_mpi output name'
+      if (basename == "rangular.log" .or. basename == "genmcp.dbg" .or. &
+          index(basename,"mcp") == 1 .or. index(basename,"tmp") == 1) &
+         error stop "Input/timings filename uses a reserved rangular_mpi output name"
    end subroutine reject_reserved_filename
 
    subroutine parse_mpi_angular_options(options)
@@ -52,31 +52,31 @@ contains
       integer :: argument_index
       logical :: input_selected, timings_selected
       character(len=:), allocatable :: option_name
-      options%input_filename = 'rcsf.inp'
-      options%timings_filename = ''
+      options%input_filename = "rcsf.inp"
+      options%timings_filename = ""
       input_selected = .false.
       timings_selected = .false.
       argument_index = 1
       do while (argument_index <= command_argument_count())
          call read_argument_text(argument_index,option_name)
          select case (option_name)
-         case ('--csf-text','--csf-descriptors')
-            if (input_selected) error stop 'Select exactly one CSF input option'
+         case ("--csf-text","--csf-descriptors")
+            if (input_selected) error stop "Select exactly one CSF input option"
             call read_argument_text(argument_index+1,options%input_filename)
-            options%use_descriptors = option_name == '--csf-descriptors'
+            options%use_descriptors = option_name == "--csf-descriptors"
             input_selected = .true.
-         case ('--timings')
-            if (timings_selected) error stop 'Duplicate --timings option'
+         case ("--timings")
+            if (timings_selected) error stop "Duplicate --timings option"
             call read_argument_text(argument_index+1,options%timings_filename)
             timings_selected = .true.
-         case ('--help')
-            print '(A)', 'rangular_mpi [--csf-text FILE | --csf-descriptors FILE] [--timings NEW_FILE.csv]'
-            print '(A)', 'Default: original rcsf.inp input in the MPI serial I/O directory.'
-            print '(A)', 'Only rank zero reads CSFs. Relative input paths use the MPI serial I/O directory.'
-            print '(A)', 'Timings: NEW_FILE.rank000.csv, etc.; relative paths use each MPI rank work directory.'
+         case ("--help")
+            print "(A)", "rangular_mpi [--csf-text FILE | --csf-descriptors FILE] [--timings NEW_FILE.csv]"
+            print "(A)", "Default: original rcsf.inp input in the MPI serial I/O directory."
+            print "(A)", "Only rank zero reads CSFs. Relative input paths use the MPI serial I/O directory."
+            print "(A)", "Timings: NEW_FILE.rank000.csv, etc.; relative paths use each MPI rank work directory."
             stop
          case default
-            error stop 'Unknown rangular_mpi option; use --help'
+            error stop "Unknown rangular_mpi option; use --help"
          end select
          argument_index = argument_index + 2
       end do
@@ -93,10 +93,10 @@ contains
       profile_prefix = options%timings_filename
       prefix_length = len(profile_prefix)
       if (prefix_length >= 4) then
-         if (profile_prefix(prefix_length-3:) == '.csv') profile_prefix = profile_prefix(:prefix_length-4)
+         if (profile_prefix(prefix_length-3:) == ".csv") profile_prefix = profile_prefix(:prefix_length-4)
       end if
-      write(rank_label,'(I3.3)') rank_index
-      call open_stage_profile(profile_prefix//'.rank'//trim(rank_label)//'.csv')
+      write(rank_label,"(I3.3)") rank_index
+      call open_stage_profile(profile_prefix//".rank"//trim(rank_label)//".csv")
    end subroutine open_mpi_angular_profile
 
    subroutine load_mpi_angular_header(options, serial_directory, core_count, maximum_blocks, block_labels)
@@ -108,7 +108,7 @@ contains
       character(len=:), allocatable :: input_path
       integer :: mpi_status, allocation_status
       input_path = options%input_filename
-      if (rank_index == 0 .and. input_path(1:1) /= '/') input_path = trim(serial_directory)//'/'//input_path
+      if (rank_index == 0 .and. input_path(1:1) /= "/") input_path = trim(serial_directory)//"/"//input_path
       if (.not. options%use_descriptors) then
          call cslhmpi(input_path,core_count,maximum_blocks,block_labels)
          return
@@ -121,8 +121,8 @@ contains
       call mpi_bcast(current_csf_count,1,mpi_integer,0,mpi_comm_world,mpi_status)
       if (rank_index /= 0) then
          allocate(block_lengths(block_count+1),stat=allocation_status)
-         if (allocation_status /= 0) error stop 'Cannot allocate MPI CSF block lengths'
-         block_labels = ''
+         if (allocation_status /= 0) error stop "Cannot allocate MPI CSF block lengths"
+         block_labels = ""
       end if
       call mpi_bcast(block_lengths,block_count+1,mpi_integer,0,mpi_comm_world,mpi_status)
       call mpi_bcast(block_labels,8*block_count,mpi_character,0,mpi_comm_world,mpi_status)

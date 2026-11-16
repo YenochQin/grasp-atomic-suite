@@ -3,6 +3,6 @@
       interface
       subroutine radpar
       implicit none (type, external)
-      end subroutine
+      end subroutine radpar
       end interface
-      end module
+      end module radpar_i

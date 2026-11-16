@@ -50,6 +50,31 @@ else()
     find_package(Python3 COMPONENTS Interpreter)
 endif()
 if(Python3_Interpreter_FOUND)
+    foreach(variant serial mpi)
+        if(variant STREQUAL "mpi" AND NOT TARGET mpiu90)
+            continue()
+        endif()
+        set(target test.ris4_cache_${variant})
+        add_executable(${target} ris4/cache_io.F90
+            "${PROJECT_SOURCE_DIR}/src/appl/ris4/angdata.f90"
+            "${PROJECT_SOURCE_DIR}/src/appl/ris4/angdata_I.f90")
+        setup_fortran_modules(${target})
+        target_link_libraries_Fortran(${target} PRIVATE mod)
+        set(cache_mpi_arguments)
+        if(variant STREQUAL "mpi")
+            target_compile_definitions(${target} PRIVATE CACHE_MPI)
+            target_link_libraries_Fortran(${target} PRIVATE mpiu90)
+            target_link_libraries(${target} PRIVATE MPI::MPI_Fortran)
+            set(cache_mpi_arguments "${MPIEXEC_EXECUTABLE}")
+        endif()
+        add_test(NAME ris4_cache_${variant} COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/ris4/check_cache_io.py
+            $<TARGET_FILE:${target}> ${cache_mpi_arguments})
+        set_tests_properties(ris4_cache_${variant} PROPERTIES TIMEOUT 180)
+        if(variant STREQUAL "mpi")
+            set_tests_properties(ris4_cache_${variant} PROPERTIES PROCESSORS 2)
+        endif()
+    endforeach()
     add_test(NAME fical_mixed_mass_shift_units
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/ris4/fical_units.py"
             $<TARGET_FILE:fical>)

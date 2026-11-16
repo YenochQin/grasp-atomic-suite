@@ -20,15 +20,15 @@
 !-----------------------------------------------
       use cons_c
       use orb_c
-      use iccu_c
-      use default_c
-      use iounit_c
-      use mcp_c
-      use hblock_c
+      use iccu_c, only: iccut, iccutblk
+      use default_c, only: double, inpci, ndef, ndump
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
+      use getyn_i, only: getyn
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -49,22 +49,22 @@
             use_first_order_restriction = .true.
          else
             use_first_order_restriction = .false.
-         endif
+         end if
          if (use_first_order_restriction) then
-            write (stderr_unit,*) 'The contribution of CSFs 1 -- ICCUT will',&
-                            ' be treated variationally;'
-            write (stderr_unit,*) 'the remainder perturbatively; enter ICCUT:'
+            write (stderr_unit,*) "The contribution of CSFs 1 -- ICCUT will",&
+                            " be treated variationally;"
+            write (stderr_unit,*) "the remainder perturbatively; enter ICCUT:"
             do i = 1,symmetry_block_count
-              write(stderr_unit,*) 'Give ICCUT for block',i
+              write(stderr_unit,*) "Give ICCUT for block",i
     1         read *, iccut(i)
               if ((iccut(i) <= 1).or.(iccut(i) >= csf_counts_by_block(i))) then
-                write (stderr_unit,*) 'GETINF: ICCUT must be greater than 1',&
-                                ' and less than ',csf_counts_by_block(i)
-                write (stderr_unit,*) ' please reenter ICCUT:'
+                write (stderr_unit,*) "GETINF: ICCUT must be greater than 1",&
+                                " and less than ",csf_counts_by_block(i)
+                write (stderr_unit,*) " please reenter ICCUT:"
                 goto 1
-              endif
+              end if
             end do
-         endif
-      endif
+         end if
+      end if
       return
-      end
+      end subroutine getinf

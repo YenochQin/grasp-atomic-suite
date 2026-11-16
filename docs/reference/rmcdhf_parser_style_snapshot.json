@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "previous_manifest_sha256": "91885ff66bedb040aa0d9295c5c79d009066cd615b219ef14791953c71c5845e",
+  "description": "Decoded character values preserved; decimal zero padding retains kind and value. Style edits reviewed independently of partial parser AST.",
+  "files": {
+    "src/appl/rmcdhf/solve.f90": {
+      "before_suite_sha256": "0bffbe9f55c07b5d4e8e1c9cb227e0b615134262b4311c413a9c904f7cfeba0c",
+      "after_suite_sha256": "ce3144e7900778e7e72b173b3bb2a2046341cdfb060e9eb2f994d7804a23739e"
+    },
+    "src/appl/rmcdhf/strsum.f90": {
+      "before_suite_sha256": "53ffa87a2daff27c129406086e8ee6ddc87059b6a32aceed7075feb4831e36db",
+      "after_suite_sha256": "0fbfcf734e6283a22984b0a02526ab241ab6c41e2420830c640eb4f4775d48e8"
+    },
+    "src/appl/rmcdhf_mem/solve.f90": {
+      "before_suite_sha256": "0bffbe9f55c07b5d4e8e1c9cb227e0b615134262b4311c413a9c904f7cfeba0c",
+      "after_suite_sha256": "ce3144e7900778e7e72b173b3bb2a2046341cdfb060e9eb2f994d7804a23739e"
+    },
+    "src/appl/rmcdhf_mem/strsum.f90": {
+      "before_suite_sha256": "53ffa87a2daff27c129406086e8ee6ddc87059b6a32aceed7075feb4831e36db",
+      "after_suite_sha256": "0fbfcf734e6283a22984b0a02526ab241ab6c41e2420830c640eb4f4775d48e8"
+    },
+    "src/appl/rmcdhf_mem_mpi/solve.f90": {
+      "before_suite_sha256": "ef95901ab6ee5af59748e8a38eaedcbf010fb8718aae3ad57a3972bf4c5ed302",
+      "after_suite_sha256": "bd31fcbf99339bf04215eec783953db15133597de5d375a8098702d36014468d"
+    },
+    "src/appl/rmcdhf_mem_mpi/strsum.f90": {
+      "before_suite_sha256": "c58e5342e8b5ff0559b9856afd61d03f3c2b3d5291814c7c7577e515c64f7514",
+      "after_suite_sha256": "5e449cb24bf2d13fa2a30c121f0fc774740a8d5d498d56fdf34255adb99deeec"
+    },
+    "src/appl/rmcdhf_mpi/solve.f90": {
+      "before_suite_sha256": "ef95901ab6ee5af59748e8a38eaedcbf010fb8718aae3ad57a3972bf4c5ed302",
+      "after_suite_sha256": "bd31fcbf99339bf04215eec783953db15133597de5d375a8098702d36014468d"
+    },
+    "src/appl/rmcdhf_mpi/strsum.f90": {
+      "before_suite_sha256": "c58e5342e8b5ff0559b9856afd61d03f3c2b3d5291814c7c7577e515c64f7514",
+      "after_suite_sha256": "5e449cb24bf2d13fa2a30c121f0fc774740a8d5d498d56fdf34255adb99deeec"
+    }
+  }
+}

@@ -6,6 +6,6 @@
       integer, intent(in) :: ntestg
       integer, intent(in) :: ncore1
       integer, intent(in) :: ncore2
-      end subroutine
+      end subroutine kapdata
       end interface
-      end module
+      end module kapdata_i

@@ -28,7 +28,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use sixj_i
+      use sixj_i, only: sixj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -80,7 +80,7 @@ contains
       else
          a = zero
          b = one
-      endif
+      end if
       aa = a/dsqrt(b)
       if (mod(ifa,4) /= 0) aa = -aa
       return

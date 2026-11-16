@@ -13,20 +13,20 @@ contains
     subroutine profile_start()
         character(len=16) :: setting
         integer :: status
-        call get_environment_variable('JJ2LSJ_PROFILE', setting, status=status)
+        call get_environment_variable("JJ2LSJ_PROFILE", setting, status=status)
         enabled = .false.
-        if (status == 0) enabled = trim(setting) == '1'
+        if (status == 0) enabled = trim(setting) == "1"
         if (.not. enabled) return
         call system_clock(count_rate=rate)
-        if (rate <= 0) error stop 'jj2lsj: wall clock unavailable'
-        open(newunit=stream, file='jj2lsj_omp.profile.csv', status='replace', action='write', iostat=status)
+        if (rate <= 0) error stop "jj2lsj: wall clock unavailable"
+        open(newunit=stream, file="jj2lsj_omp.profile.csv", status="replace", action="write", iostat=status)
         if (status /= 0) then
-            write(error_unit,*) 'Cannot write jj2lsj_omp.profile.csv'
+            write(error_unit,*) "Cannot write jj2lsj_omp.profile.csv"
             error stop 1
         end if
-        write(stream,'(A)') 'phase,block,level,items,seconds'
+        write(stream,"(A)") "phase,block,level,items,seconds"
         beginning = profile_time()
-    end subroutine
+    end subroutine profile_start
 
     function profile_time() result(seconds)
         real(real64) :: seconds
@@ -35,7 +35,7 @@ contains
         if (.not. enabled) return
         call system_clock(count)
         seconds = real(count,real64)/real(rate,real64)
-    end function
+    end function profile_time
 
     subroutine profile_emit(phase, started, block, level, items, elapsed)
         character(len=*), intent(in) :: phase
@@ -53,7 +53,7 @@ contains
         if (present(items)) n=items
         write(stream,'(A,3(",",I0),",",F18.9)') phase,b,l,n,duration
         flush(stream)
-    end subroutine
+    end subroutine profile_emit
 
     subroutine profile_file_size(phase, unit)
         character(len=*), intent(in) :: phase
@@ -64,17 +64,17 @@ contains
         if (.not. enabled) return
         started=profile_time()
         flush(unit,iostat=status)
-        if (status/=0) error stop 'jj2lsj: output flush failed'
-        call profile_emit('output_flush',started)
+        if (status/=0) error stop "jj2lsj: output flush failed"
+        call profile_emit("output_flush",started)
         inquire(unit=unit,size=bytes,iostat=status)
-        if (status/=0 .or. bytes<0) error stop 'jj2lsj: output size unavailable'
+        if (status/=0 .or. bytes<0) error stop "jj2lsj: output size unavailable"
         write(stream,'(A,3(",",I0),",",F18.9)') phase,0,0,bytes,0.0_real64
-    end subroutine
+    end subroutine profile_file_size
 
     subroutine profile_finish()
         if (.not. enabled) return
-        call profile_emit('total',beginning)
+        call profile_emit("total",beginning)
         close(stream)
         enabled=.false.
-    end subroutine
-end module
+    end subroutine profile_finish
+end module jj2lsj_profile

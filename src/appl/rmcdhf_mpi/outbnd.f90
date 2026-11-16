@@ -28,7 +28,7 @@
          outbnd = .false.
       else
          outbnd = .true.
-      endif
+      end if
 !
       return
       end function outbnd

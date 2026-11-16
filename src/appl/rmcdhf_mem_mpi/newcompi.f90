@@ -25,18 +25,18 @@
       use orb_c
       use scf_c
       use syma_c,          only: jpgg
-      use iounit_c
-      use hblock_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use pos_c
-      use peav_c
-      use blkidx_c
+      use peav_c, only: double, eavblk
+      use blkidx_c, only: double, idxblk
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dsubrs_i
-      use iq_i
-      use csfwgt_i
+      use dsubrs_i, only: dsubrs
+      use iq_i, only: iq
+      use csfwgt_i, only: csfwgt
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -51,18 +51,18 @@
 !-----------------------------------------------
 !   Compute weighting factors
 !
-      sum = 0._real64
+      sum = 0.0_real64
       do j = 1, ncmin
          weitj = weight(j)
-         if (weitj == (-2._real64)) then
-            wt(j) = 1._real64
-         else if (weitj == (-1._real64)) then
+         if (weitj == (-2.0_real64)) then
+            wt(j) = 1.0_real64
+         else if (weitj == (-1.0_real64)) then
 !GG            WT(J) = IATJPO(J)
             jblock = idxblk(j)     ! Block number of this state
             wt(j) = abs(jpgg(jblock))
          else
             wt(j) = weight(j)
-         endif
+         end if
          sum = sum + wt(j)
       end do
 
@@ -74,7 +74,7 @@
       eol = .true.
 
       do j = 1, orbital_count
-         sum = 0._real64
+         sum = 0.0_real64
          do nb = 1, symmetry_block_count
             do i = mpi_rank + 1, csf_counts_by_block(nb), mpi_process_count
                sum = sum + dsubrs(eol,i,i,nb)*iq(j,i + csf_offsets_by_block(nb))
@@ -88,24 +88,24 @@
 !   Write out level energies and weights
 !
       if(mpi_rank == 0) write (*, 300)
-      sum = 0._real64
+      sum = 0.0_real64
       noff = 0
       do jall = 1, ncmin
          nb = idxblk(jall)                       ! Block number of this state
          ee = eavblk(nb) + shifted_eigenvalues(jall)
-         if (mpi_rank .eq. 0) then
+         if (mpi_rank == 0) then
             write (*, 301) iccmin(jall), ee, wt(jall)
             if (ldbpg(5)) then
                write (99, *) jall, nb, csf_counts_by_block(nb), mixing_offsets_by_block(nb)
                write (99, 302)
                write (99, 303) (csf_mixing_coefficients(i + noff),i=1,csf_counts_by_block(nb))
                noff = noff + csf_counts_by_block(nb)
-            endif
-         endif
+            end if
+         end if
          sum = sum + wt(jall)*ee
       end do
             !~~~~~~~~~
-            if (mpi_rank .eq. 0) then
+            if (mpi_rank == 0) then
             !~~~~~~~~~
 
       call csfwgt (.true.)
@@ -113,7 +113,7 @@
 !   Write out average energy
 !
       if (ncmin > 1) write (*, 304) sum
-      write (0,'(A25,1PD18.10)') 'Weighted average energy: ', sum
+      write (0,"(A25,1PD18.10)") "Weighted average energy: ", sum
 !
 !   Write out generalized occupation numbers
 !
@@ -121,15 +121,15 @@
       write (*, 303) (ucf(i),i=1,orbital_count)
 
             !~~~~~~~~~
-            endif
+            end if
             !~~~~~~~~~
 
-  300 format(/,'Optimise on the following level(s):'/)
-  301 format('Level ',1i2,4x,'Energy = ',1p,1d19.12,4x,'Weight = ',1d12.5)
-  302 format(/,'Configuration mixing coefficients:')
+  300 format(/,"Optimise on the following level(s):"/)
+  301 format("Level ",1i2,4x,"Energy = ",1p,1d19.12,4x,"Weight = ",1d12.5)
+  302 format(/,"Configuration mixing coefficients:")
   303 format(1x,1p,6d12.4)
-  304 format(/,'Weighted average energy of these levels = ',1p,d18.10)
-  305 format(/,'Generalised occupation numbers:'/)
+  304 format(/,"Weighted average energy of these levels = ",1p,d18.10)
+  305 format(/,"Generalised occupation numbers:"/)
 
       return
       end subroutine newcompi

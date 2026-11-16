@@ -35,15 +35,15 @@ contains
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
 !      USE cord_I
-      use itjpo_i
-      use ispar_i
-      use ichkq2_i
-      use setqna_i
-      use el1_i
-      use el2_i
-      use el3_i
-      use el4_i
-      use el5_i
+      use itjpo_i, only: itjpo
+      use ispar_i, only: ispar
+      use ichkq2_i, only: ichkq2
+      use setqna_i, only: setqna
+      use el1_i, only: el1
+      use el2_i, only: el2
+      use el3_i, only: el3
+      use el4_i, only: el4
+      use el5_i, only: el5
       use cord_i, only: cord_callback => cord
       implicit none (type, external)
       procedure(cord_callback) :: coefficient_consumer
@@ -61,21 +61,21 @@ contains
 !-----------------------------------------------
 !
 !   The Hamiltonian is an even scalar operator
-      if (itjpo (ja) .ne. itjpo (jb)) return
-      if (ispar (ja) .ne. ispar (jb)) return
-      if (ichkq2(ja,jb) .eq. 0) return
+      if (itjpo (ja) /= itjpo (jb)) return
+      if (ispar (ja) /= ispar (jb)) return
+      if (ichkq2(ja,jb) == 0) return
       call setqna (ja,jb)
 !
 !   1.0 Analyse peel shell interactions
 !
 !   1.1 Analyse electron distribution in peel. (The full procedure is
 !       needed only if the number of peel orbitals NPEEL .GE. 2)
-      if (orbital_count .lt. 1) then
-         print *, 'RKCO_GG: No subshells.'
+      if (orbital_count < 1) then
+         print *, "RKCO_GG: No subshells."
          stop
-      endif
-      if (npeel .eq. 0) goto 48
-      if (npeel .eq. 1) goto 43
+      end if
+      if (npeel == 0) goto 48
+      if (npeel == 1) goto 43
 !
 !   Find differences in occupations, NDQ, for each peel orbital in
 !   turn and use to set up labels of active orbitals maintaining the
@@ -89,31 +89,31 @@ contains
       do jw = 1,npeel
          j = jlist(jw)
          ndq = nq1(j) - nq2(j)
-         if (iabs (ndq) .gt. 2) return
-         if (ndq .lt. 0) then
-           if (ndq+1 .gt. 0) then
+         if (iabs (ndq) > 2) return
+         if (ndq < 0) then
+           if (ndq+1 > 0) then
              cycle
-           else if (ndq+1 .eq. 0) then
-             if (ja2 .gt. 0) then
+           else if (ndq+1 == 0) then
+             if (ja2 > 0) then
                jb2 = jw
              else
                ja2 = jw
              end if
              idq = idq+1
              idqg=1+idqg
-           else if (ndq+1 .lt. 0) then
+           else if (ndq+1 < 0) then
              ja2 = jw
              idq = idq+2
              idqg=20+idqg
            end if
          else
-           if (ndq-1 .gt. 0) then
+           if (ndq-1 > 0) then
              ja1 = jw
              idq = idq+2
              idqg=20+idqg
              cycle
-           else if (ndq-1 .eq. 0) then
-             if (ja1 .gt. 0) then
+           else if (ndq-1 == 0) then
+             if (ja1 > 0) then
                jb1 = jw
              else
                ja1 = jw
@@ -133,19 +133,19 @@ contains
 !   absolute differences NDQ:
 !
 !   1.2.1 IDQ .GT. 4: matrix element null
-      if (idq .gt. 4) return
-      if (idq .eq. 4) then
+      if (idq > 4) return
+      if (idq == 4) then
 !
 !   1.2.2 IDQ .EQ. 4: matrix element uniquely defined
-        if (jb1 .eq. 0) then
+        if (jb1 == 0) then
           jb1 = ja1
         end if
-        if (jb2 .eq. 0) then
+        if (jb2 == 0) then
           jb2 = ja2
         end if
         continue
-        if(idqg.ne.40) then
-          if(idqg.ne.22) then
+        if(idqg/=40) then
+          if(idqg/=22) then
 !
 !         TARP KONFIGURACIJU
 !                        KAI      N'1=N1+-1
@@ -166,8 +166,8 @@ contains
         return
       end if
 !
-      if (idq .ne. 2) then
-        if (idq .ne. 0) then
+      if (idq /= 2) then
+        if (idq /= 0) then
 !
 !         3.0 Diagnostic print - NW .LT. 1
           write (*,300)
@@ -178,7 +178,7 @@ contains
         goto 16
       end if
 !
-      if (ja .eq. jb) goto 43
+      if (ja == jb) goto 43
       klast = npeel
 !
 !   1.2.3 IDQ .EQ. 2: One orbital fixed each side include all
@@ -188,7 +188,7 @@ contains
 !   only. Must sum over all pairs of orbitals excluding core-core
 !   terms
    16 do kwa = 1,klast
-         if (idq .ne. 2) then
+         if (idq /= 2) then
            ja1 = kwa
            ja2 = kwa
          end if
@@ -198,30 +198,30 @@ contains
          it2 = jlist(ja2)
          do kw = kwa,npeel
             k1 = jlist(kw)
-            if (nq1(k1)*nq2(k1) .eq. 0) cycle
+            if (nq1(k1)*nq2(k1) == 0) cycle
             jb1 = kw
             jb2 = kw
             ja1 = jt1
             ja2 = jt2
 !
 !   Interchange JA1 and JB1 and/or JA2 and JB2 if necessary
-            if (ja1-jb1 .gt. 0) then
+            if (ja1-jb1 > 0) then
               jt3 = jb1
               jb1 = ja1
               ja1 = jt3
-            else if (ja1-jb1 .eq. 0) then
+            else if (ja1-jb1 == 0) then
               ib1 = jlist(jb1)
-              if (nq1(ib1) .le. 1) cycle
+              if (nq1(ib1) <= 1) cycle
             end if
-            if (ja2-jb2 .gt. 0) then
+            if (ja2-jb2 > 0) then
               jt3 = jb2
               jb2 = ja2
               ja2 = jt3
-            else if (ja2-jb2 .eq. 0) then
+            else if (ja2-jb2 == 0) then
               ib2 = jlist(jb2)
-              if (nq2(ib2) .le. 1) cycle
+              if (nq2(ib2) <= 1) cycle
             end if
-            if(idq.ne.0) then
+            if(idq/=0) then
 !
 !     TARP KONFIGURACIJU
 !                        KAI      N'1=N1+1
@@ -234,8 +234,8 @@ contains
               call el1(ja,jb,ja1,jb1,1,icolbrei)
             end if
          end do
-         if ((idq .eq. 0) .and. (ncore .eq. 0)) cycle
-         if ((ncore .eq. 0) .or. (orbital_kappa(it1) .ne. orbital_kappa(it2))) return
+         if ((idq == 0) .and. (ncore == 0)) cycle
+         if ((ncore == 0) .or. (orbital_kappa(it1) /= orbital_kappa(it2))) return
 !
 !   This section calculates the terms arising from active electrons
 !   which are in closed shells
@@ -251,19 +251,19 @@ contains
             ijw = klist(kw)
             do i = 1,npeel
                ij = jlist(i)
-               if (ijw .lt. ij) goto 29
+               if (ijw < ij) goto 29
             end do
             i = npeel+1
             goto 31
    29       im = npeel-i+1
             do ii = 1,im
                jlist(npeel+2-ii) = jlist(npeel+1-ii)
-               if (npeel .eq. ii) goto 31
+               if (npeel == ii) goto 31
                jjc1(npeel+1-ii) = jjc1(npeel-ii)
                jjc2(npeel+1-ii) = jjc2(npeel-ii)
             end do
    31       continue
-            if (i .lt. 3) then
+            if (i < 3) then
               i1 = jlist(1)
               jjc1(1) = jjq1(3,i1)
               jjc2(1) = jjq2(3,i1)
@@ -273,25 +273,25 @@ contains
             end if
             jlist(i) = ijw
             ja1 = jt1
-            if (jt1 .ge. i) ja1 = ja1+1
+            if (jt1 >= i) ja1 = ja1+1
             jb1 = i
             ja2 = jt2
-            if (jt2 .ge. i) ja2 = ja2+1
+            if (jt2 >= i) ja2 = ja2+1
             jb2 = i
-            if (ja1-jb1 .gt. 0) then
+            if (ja1-jb1 > 0) then
               jt3 = jb1
               jb1 = ja1
               ja1 = jt3
             end if
-            if (ja2-jb2 .gt. 0) then
+            if (ja2-jb2 > 0) then
               jt3 = jb2
               jb2 = ja2
               ja2 = jt3
             end if
             npeel = npeel+1
-            if(idq.ne.0) then
-              if(idqg.ne.40) then
-                if(idqg.ne.2) then
+            if(idq/=0) then
+              if(idqg/=40) then
+                if(idqg/=2) then
                    write(99,995)
                    return
                 else
@@ -332,8 +332,8 @@ contains
          jb2 = kw1
          do kw2 = 1,kw1
             ja1 = kw2
-            if (ja1 .eq. jb1) then
-              if (nq1(k1) .le. 1) cycle
+            if (ja1 == jb1) then
+              if (nq1(k1) <= 1) cycle
             end if
             ja2 = ja1
             if(ja /= jb) then
@@ -341,7 +341,7 @@ contains
 !
 !               TARP TU PACIU BUSENU
                 call el1(ja,jb,ja1,jb1,1,icolbrei)
-              else if(idqg.ne.2) then
+              else if(idqg/=2) then
                 write(99,996)
                 write(99,*)"JA,JB,JA1,JB1",ja,jb,ja1,jb1
                 write(99,*)"IDQG IDQ",idqg,idq
@@ -361,12 +361,12 @@ contains
             end if
          end do
       end do
-   48 if (incor .lt. 1) return
-      if (ncore .eq. 0) return
+   48 if (incor < 1) return
+      if (ncore == 0) return
 !
 !   2.0 The diagonal case. deal with contributions from core orbitals
 !       if INCOR .EQ. 1.
-      if(ja.ne.jb) return
+      if(ja/=jb) return
       do kw1 = 1,ncore
          jb1 = kw1
          jb2 = kw1
@@ -380,7 +380,7 @@ contains
          end do
 !
 !   2.2 Calculate contribution from peel/core terms
-         if (npeel .eq. 0) cycle
+         if (npeel == 0) cycle
          ipca = 1
          do kw2 = 1,npeel
             ja1 = kw2
@@ -389,9 +389,9 @@ contains
          end do
       end do
       return
-  300 format ('RKCO_GG: Error.')
-  994 format('   rie zymes 38?? atv N=N-N  !!!!!!')
-  995 format('   rie zymes 38 atv N=N-N  !!!!!!')
-  996 format('   rie zymes 45 atv N=N-N  !!!!!!')
+  300 format ("RKCO_GG: Error.")
+  994 format("   rie zymes 38?? atv N=N-N  !!!!!!")
+  995 format("   rie zymes 38 atv N=N-N  !!!!!!")
+  996 format("   rie zymes 45 atv N=N-N  !!!!!!")
       end subroutine rkco_gg
 end module rkco_gg_i

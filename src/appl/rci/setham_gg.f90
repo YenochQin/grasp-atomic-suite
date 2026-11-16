@@ -27,45 +27,45 @@
       use bcore_c, only: icore
       use bilst_c
       use buffer_c
-      use coeils_c
+      use coeils_c, only: double, frstco, indoei, ncoei, ndcoea, valoei
       use decide_c
       use debug_c
       use def_c
       use eigv_c
-      use iccu_c
+      use iccu_c, only: iccut, iccutblk
       use grid_c
       use hmat_c
-      use keilst_c
-      use ncdist_c
+      use keilst_c, only: double, frstki, indkei, ndkea, nkei, valkei
+      use ncdist_c, only: double, max_radial_points, zdist
       use orb_c, only: csf_count,  orbital_count
       use prnt_c
-      use stat_c
-      use stor_c
-      use tatb_c
-      use vinlst_c
-      use vpilst_c
+      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
+      use stor_c, only: double, keep
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
+      use vinlst_c, only: double, frstvi, indtei, ndvin, nvinti, valtei
+      use vpilst_c, only: double, frstvp, indvpi, ndvpa, nvpi, valvpi
       use wave_c
       use cteilsrk_c
-      use blim_c
+      use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
       use where_c
-      use eigvec1_c
+      use eigvec1_c, only: double, evec1
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use alcbuf_i
-      use iabint_i
-      use brint1_i
-      use brint2_i
-      use brint3_i
-      use brint4_i
-      use brint5_i
-      use brint6_i
-      use convrt_i
-      use ichop_i
-      use keint_i
-      use rkintc_i
-      use vint_i
-      use vpint_i
+      use alcbuf_i, only: alcbuf
+      use iabint_i, only: iabint
+      use brint1_i, only: brint1
+      use brint2_i, only: brint2
+      use brint3_i, only: brint3
+      use brint4_i, only: brint4
+      use brint5_i, only: brint5
+      use brint6_i, only: brint6
+      use convrt_i, only: convrt
+      use ichop_i, only: ichop
+      use keint_i, only: keint
+      use rkintc_i, only: rkintc
+      use vint_i, only: vint
+      use vpint_i, only: vpint
       use onescalar_i, only: onescalar
       use rkco_gg_i, only: rkco_gg
       use cord_i, only: cord
@@ -99,7 +99,7 @@
                  itype, iia
        real(real64) :: elemnt, precoeff, tcoeff, vcoeff, contr
 !-----------------------------------------------------------------------
-      print *, 'Calling setham ...'
+      print *, "Calling setham ..."
 !cjb
 !cjb  CUTOFF = 1.0D-12
       cutoff = 1.0e-12_real64
@@ -107,16 +107,16 @@
       stored_matrix_element_count = nelmntt
 
       !Per Bug fix 30/4-2013
-      atwinv = 1._real64/emn
+      atwinv = 1.0_real64/emn
       !Per Bug fix 30/4-2013
 
-      if (iprerun .eq. 2) then
+      if (iprerun == 2) then
          do ipi = 1,nvec
             do ipj = 1,csf_count
                write (*,*) ipi,ipj,evec1(ipj+(ipi-1)*csf_count)
-            enddo
-         enddo
-      endif
+            end do
+         end do
+      end if
 !
 !   Allocate storage to arrays in COMMON/BUFFER/; these are
 !   used for the Coulomb and transverse two-electron integrals
@@ -124,8 +124,8 @@
       call alcbuf (1)
 
 !     ...Locals
-      call alloc (hamiltonian_values, csf_count, 'EMT','SETHAM' )
-      call alloc (matrix_partner_indices, csf_count, 'IROW', 'SETHAM')
+      call alloc (hamiltonian_values, csf_count, "EMT","SETHAM" )
+      call alloc (matrix_partner_indices, csf_count, "IROW", "SETHAM")
 !
       inc1 = 1
       inc2 = 1
@@ -148,14 +148,14 @@
          do 2 i = 1, orbital_count
             icore(i) = 0
             do j = 1, csf_count
-               if (ichop (i,j) .le. 0) goto 2
-            enddo
+               if (ichop (i,j) <= 0) goto 2
+            end do
             icore(i) = 1
     2    continue
 
          nmcbp = 0
          ncore = 0
-      endif
+      end if
 
 ! Loop over rows of the Hamiltonian matrix - distributed
 
@@ -169,61 +169,61 @@
          do 85 ir = irstart, ic
 
 ! PER
-            if (lfordr .and. (ir .gt. iccut(1))) then
-               if (ir.ne.ic) cycle
+            if (lfordr .and. (ir > iccut(1))) then
+               if (ir/=ic) cycle
             end if
 ! PER
 
-            elemnt = 0._real64     ! accumulates various contributions to H
+            elemnt = 0.0_real64     ! accumulates various contributions to H
 
 !
 !   Generate the integral list for the matrix element of the
 !   one-body operators
 !
-            if (iprerun .eq. 1) then
+            if (iprerun == 1) then
                inc1 = 0
                inc2 = 0
-               if (ic.le.ncsfpre .or. ic.eq.ir) then
+               if (ic<=ncsfpre .or. ic==ir) then
                   inc1 = 1
-               endif
-            endif
+               end if
+            end if
 
-            if (iprerun .eq. 2) then
+            if (iprerun == 2) then
 !
 !   Diagonal elements are always included
 !   Off diagonal elements are included only if the
 !   products of the weights from the prerun are larger
 !   than the cutoff.
 !
-               if (ic .eq. ir) then
+               if (ic == ir) then
                   inc1 = 1
                   inc2 = 1
                else
                   inc1 = 0
                   inc2 = 0
-               endif
+               end if
                do ipi = 1,nvec
                   precoeff =                                           &
                    dabs(evec1(ic+(ipi-1)*csf_count)*evec1(ir+(ipi-1)*csf_count))
-                  if (precoeff .gt. coeffcut1) inc1 = 1
-                  if (precoeff .gt. coeffcut2) inc2 = 1
-               enddo
-            endif
+                  if (precoeff > coeffcut1) inc1 = 1
+                  if (precoeff > coeffcut2) inc2 = 1
+               end do
+            end if
 
 !            ...INC1.EQ.1 ------------>
-         if (inc1 .eq. 1) then   !inc1 is always 1 without PRE-RUN
+         if (inc1 == 1) then   !inc1 is always 1 without PRE-RUN
            call onescalar(ic,ir,ia,ib,tshell)
 !
 !   Accumulate the contribution from the one-body operators:
 !   kinetic energy, electron-nucleus interaction; update the
 !   angular integral counter
 !
-         if (ia .ne. 0) then
-            if (ia .eq. ib) then
+         if (ia /= 0) then
+            if (ia == ib) then
                do ia = 1,orbital_count
                   iia = ia
                   tcoeff = tshell(ia)
-                  if (abs (tcoeff) .gt. cutoff) then
+                  if (abs (tcoeff) > cutoff) then
                      ncoec = ncoec + 1
                      call iabint (iia, iia, tegral)
                         !------------------------
@@ -232,17 +232,17 @@
                         call keint (iia,iia,tegral)
                         !------------------------
                         elemnt = elemnt + tegral*atwinv*tcoeff
-                     endif
+                     end if
                      if (lvp) then
                         call vpint (iia, iia, tegral)
                         !------------------------
                         elemnt = elemnt + tegral*tcoeff
-                     endif
-                  endif
-               enddo
+                     end if
+                  end if
+               end do
             else
                tcoeff = tshell(1)
-               if (abs (tcoeff) .gt. cutoff) then
+               if (abs (tcoeff) > cutoff) then
                   ncoec = ncoec + 1
                   call iabint (ia, ib, tegral)
                         !------------------------
@@ -251,15 +251,15 @@
                      call keint (ia, ib, tegral)
                         !------------------------
                      elemnt = elemnt + tegral*atwinv*tcoeff
-                  endif
+                  end if
                   if (lvp) then
                      call vpint (ia, ib, tegral)
                         !------------------------
                      elemnt = elemnt + tegral*tcoeff
-                  endif
-               endif
-            endif
-         endif
+                  end if
+               end if
+            end if
+         end if
 !
          ibug1 = 0
 !
@@ -274,29 +274,29 @@
 !
          do 7 i = 1, angular_coefficient_count
             vcoeff = angular_coefficients(i)
-            if (abs (vcoeff) .gt. cutoff) then
+            if (abs (vcoeff) > cutoff) then
                nctec = nctec + 1
                if (lsms) then
-                  if (angular_coefficient_labels(5,i) .eq. 1) then
+                  if (angular_coefficient_labels(5,i) == 1) then
                      call vint (angular_coefficient_labels(1,i), angular_coefficient_labels(3,i), tgrl1)
                      call vint (angular_coefficient_labels(2,i), angular_coefficient_labels(4,i), tgrl2)
                      elemnt = elemnt - tgrl1*tgrl2*atwinv*vcoeff
-                  endif
-               endif
+                  end if
+               end if
                call rkintc (angular_coefficient_labels(1,i), angular_coefficient_labels(2,i),                     &
                             angular_coefficient_labels(3,i), angular_coefficient_labels(4,i),                     &
                             angular_coefficient_labels(5,i), tegral)
                elemnt = elemnt + tegral*vcoeff
-            endif
+            end if
     7    continue
 !
          ibug1 = 0
 
-         endif  !inc1 is always 1 without PRE-RUN
+         end if  !inc1 is always 1 without PRE-RUN
 !            ...INC1.EQ.1 <------------
 !***********************************************************************
 !            ...LTRANS .AND. (INC2.EQ.1) ------------>
-         if (ltrans .and. (inc2.eq.1)) then
+         if (ltrans .and. (inc2==1)) then
             !IF (INC2 .EQ. 1) THEN  !inc2 is always 1 without PRE-RUN
 !
 !   Accumulate the contribution from the two-electron
@@ -314,27 +314,27 @@
                      call brint1 (angular_coefficient_labels(1,i), angular_coefficient_labels(2,i),               &
                                   angular_coefficient_labels(3,i), angular_coefficient_labels(4,i),               &
                                   angular_coefficient_labels(5,i), tegral)
-                  elseif (itype == 2) then
+                  else if (itype == 2) then
                      call brint2 (angular_coefficient_labels(1,i), angular_coefficient_labels(2,i),               &
                                   angular_coefficient_labels(3,i), angular_coefficient_labels(4,i),               &
                                   angular_coefficient_labels(5,i), tegral)
-                  elseif (itype == 3) then
+                  else if (itype == 3) then
                      call brint3 (angular_coefficient_labels(1,i), angular_coefficient_labels(2,i),               &
                                   angular_coefficient_labels(3,i), angular_coefficient_labels(4,i),               &
                                   angular_coefficient_labels(5,i), tegral)
-                  elseif (itype == 4) then
+                  else if (itype == 4) then
                      call brint4 (angular_coefficient_labels(1,i), angular_coefficient_labels(2,i),               &
                                   angular_coefficient_labels(3,i), angular_coefficient_labels(4,i),               &
                                   angular_coefficient_labels(5,i), tegral)
-                  elseif (itype == 5) then
+                  else if (itype == 5) then
                      call brint5 (angular_coefficient_labels(1,i), angular_coefficient_labels(2,i),               &
                                   angular_coefficient_labels(3,i), angular_coefficient_labels(4,i),               &
                                   angular_coefficient_labels(5,i), tegral)
-                  elseif (itype == 6) then
+                  else if (itype == 6) then
                      call brint6 (angular_coefficient_labels(1,i), angular_coefficient_labels(2,i),               &
                                   angular_coefficient_labels(3,i), angular_coefficient_labels(4,i),               &
                                   angular_coefficient_labels(5,i), tegral)
-                  endif
+                  end if
                   contr = angular_coefficients(i)*tegral
                   if (angular_coefficient_labels(6,i) > 0) then
                      elemnt = elemnt + contr
@@ -343,8 +343,8 @@
 !                           clue: rkco<-breid<-talk<-label(6,i)
                      ncore = ncore + 1
                      elsto = elsto + contr
-                  endif
-               endif
+                  end if
+               end if
     8       continue
 !
             ibug1 = 0
@@ -354,7 +354,7 @@
 !            IF (IR .EQ. IC) ELEMNT = ELEMNT + ELSTO
 !
             !ENDIF   !inc2 is always 1 without PRE-RUN
-         endif
+         end if
 !            ...LTRANS .AND. (INC2.EQ.1) <------------
 !***********************************************************************
 !
@@ -365,7 +365,7 @@
             nelc       = nelc + 1
             hamiltonian_values(nelc)  = elemnt
             matrix_partner_indices(nelc) = ir
-         endif
+         end if
 !
    85    continue
 ! zou
@@ -386,9 +386,9 @@
 !         IF (MOD (IC, 20) .EQ. 0 .OR.                                   &
          if (mod (ic, 100) == 0 .or.                                   &
              ic < nprocs*2 .or. ic > (csf_count-nprocs*2)) then
-            print *, 'Row ', ic, ': ', nelc, ' nonzero elements;'       &
-                   , '  block = ', jblock
-         endif
+            print *, "Row ", ic, ": ", nelc, " nonzero elements;"       &
+                   , "  block = ", jblock
+         end if
 !
 !   Update the counter for the total number of elements
 !
@@ -402,8 +402,8 @@
       call alcbuf (3)
 
 !     ...Locals
-      call dalloc (hamiltonian_values, 'EMT', 'SETHAM')
-      call dalloc (matrix_partner_indices, 'IROW', 'SETHAM')
+      call dalloc (hamiltonian_values, "EMT", "SETHAM")
+      call dalloc (matrix_partner_indices, "IROW", "SETHAM")
 
 !  Fill the common block /setham_to_genmat2/ for use in genmat2
 

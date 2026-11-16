@@ -4,6 +4,6 @@
       integer function itjpo (icsf)
       implicit none (type, external)
       integer, intent(in) :: icsf
-      end function
+      end function itjpo
       end interface
-      end module
+      end module itjpo_i

@@ -7,4 +7,4 @@
       character(len=*) :: fullname
       end subroutine setdbg
       end interface
-      end module
+      end module setdbg_i

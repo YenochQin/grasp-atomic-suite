@@ -41,14 +41,14 @@ contains
 !-----------------------------------------------
 !
       if (abs(iunpkd) > 127) then
-         write (stderr_unit, *) 'PACK: Argument IUNPKD out of range.'
+         write (stderr_unit, *) "PACK: Argument IUNPKD out of range."
          stop
-      endif
+      end if
 !
       if (isubsh <= 0) then
-         write (stderr_unit, *) 'PACK: ISUBSH=', isubsh, ' less than 1'
+         write (stderr_unit, *) "PACK: ISUBSH=", isubsh, " less than 1"
          stop
-      endif
+      end if
 !
       ipackd(isubsh) = iunpkd
 !

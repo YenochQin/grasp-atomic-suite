@@ -22,6 +22,6 @@
       real(real64) :: cici(*)
       real(real64) :: cfshl(*)
       real(real64) :: cfci(*)
-      end subroutine
+      end subroutine biotr1
       end interface
-      end module
+      end module biotr1_i

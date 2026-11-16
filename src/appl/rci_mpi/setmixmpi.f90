@@ -19,8 +19,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
-      use lodmixmpi_i
+      use openfl_i, only: openfl
+      use lodmixmpi_i, only: lodmixmpi
       use mpiu_i, only: stopmpi
       implicit none (type, external)
 !-----------------------------------------------
@@ -31,23 +31,23 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      character(len=11), parameter :: form = 'UNFORMATTED'
-      character(len=7), parameter  :: status = 'UNKNOWN'
+      character(len=11), parameter :: form = "UNFORMATTED"
+      character(len=7), parameter  :: status = "UNKNOWN"
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: k
 !-----------------------------------------------
 !
-      if (mpi_rank .eq. 0) then
-         k = index (name,' ')
-         call openfl (25, name(1:k-1)//'.cm', form, status, mpi_error_code)
-         if (mpi_error_code .ne. 0) then
-            call stopmpi ('setmix: Error when opening .cm file', mpi_rank)
-         endif
+      if (mpi_rank == 0) then
+         k = index (name," ")
+         call openfl (25, name(1:k-1)//".cm", form, status, mpi_error_code)
+         if (mpi_error_code /= 0) then
+            call stopmpi ("setmix: Error when opening .cm file", mpi_rank)
+         end if
 
-         write (25) 'G92MIX'
-      endif
+         write (25) "G92MIX"
+      end if
 
       call lodmixmpi (idblk)
 

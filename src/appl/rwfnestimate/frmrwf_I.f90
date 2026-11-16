@@ -7,6 +7,6 @@
       integer, intent(in) :: index(max_orbitals)
       integer, intent(in) :: nsubs
       character (len = *), intent(in) :: filnam
-      end subroutine
+      end subroutine frmrwf
       end interface
-      end module
+      end module frmrwf_i

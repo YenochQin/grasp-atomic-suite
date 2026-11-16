@@ -31,7 +31,7 @@
 !   Determine which eigenvectors are to be printed out
 !
       nvex = nvec
-      call alloc (iloc,nvec,'ILOC', 'EVCOUT')
+      call alloc (iloc,nvec,"ILOC", "EVCOUT")
       do 1 i = 1,nvec
          iloc(i) = ivec(i)
     1 continue
@@ -47,7 +47,7 @@
 !
 !   Loop over sets of columns
 !
-    3 if (j2 .gt. nvex) j2 = nvex
+    3 if (j2 > nvex) j2 = nvex
 !
 !   Write out the column numbers; skip a line
 !
@@ -62,28 +62,28 @@
 !
 !   Skip a line after every tenth row
 !
-         if (mod(m,10) .eq. 0) write (24,302)
+         if (mod(m,10) == 0) write (24,302)
 !
     4 continue
 !
 !   Set up for the next set of columns
 !
       write (24,303)
-      if (j2 .lt. nvex) then
+      if (j2 < nvex) then
          j1 = j1+jp
          j2 = j2+jp
          goto 3
-      endif
+      end if
 !
 !   Deallocate storage for ILOC
 !
-      call dalloc (iloc, 'ILOC', 'EVCOUT')
+      call dalloc (iloc, "ILOC", "EVCOUT")
 !
       return
 !
-  300 format (//' Eigenvectors:'/)
+  300 format (//" Eigenvectors:"/)
   301 format (1x,8(i8,7x))
   302 format (1x)
   303 format (1x,1p,8d15.7)
 !
-      end
+      end subroutine evcout

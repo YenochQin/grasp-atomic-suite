@@ -30,8 +30,8 @@
             triangrk = .false.
          else
             triangrk = .true.
-         endif
-      endif
+         end if
+      end if
 
       return
       end function triangrk

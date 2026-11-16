@@ -27,7 +27,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ixjtik_i
+      use ixjtik_i, only: ixjtik
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -47,7 +47,7 @@ contains
 !     CHESKED TRIANGULAR CONDITIONS
 !
          if (ixjtik(j,k,l,m,n,4) == 0) return
-      endif
+      end if
       i1 = (j + k + l)/2
       as = dble(i1)
       a = dble(l)
@@ -88,7 +88,7 @@ contains
                 - one)*c*(c + one)*(c + two)*(c + three)))
             si = si*dsqrt((as - c - one)*(as - c)*(as - b + one)*(as - b + two)&
                /((b - three)*(b - two)*(b - one)*b*(b + one)))
-         endif
+         end if
 !  2
       else if (n - j == 4) then
          if (k - m == 4) then
@@ -127,7 +127,7 @@ contains
                (b + one)))
             si = si*dsqrt((as - a + two)*(as - a + one)*(as + three)*(as + two)&
                /((c + three)*(c + two)*(c + one)*c*(c - one)))
-         endif
+         end if
       else if (j - n == 2) then
 ! -1
          if (k - m == 4) then
@@ -161,7 +161,7 @@ contains
                c*(c + one)*(c + two)*(c + three))
             si = si*dsqrt(three*two*(as + one)*(as - a)*(as - c)*(as - b + one)&
                /((b - two)*(b - one)*b*(b + one)*(b + two)))
-         endif
+         end if
       else if (n - j == 2) then
 !  1
          if (k - m == 4) then
@@ -195,7 +195,7 @@ contains
                b + four)*(b + three)*(b + two)*(b + one)*b)
             si = si*dsqrt(three*two*(as - b)*(as - c + one)*(as - a + one)*(as&
                 + two)/((c + three)*(c + two)*(c + one)*c*(c - one)))
-         endif
+         end if
       else if (n - j == 0) then
 ! 0
          if (k - m == 4) then
@@ -230,8 +230,8 @@ contains
             x3 = (as - a)*(as - a - one)*(as + three)*(as + two)
             si = aka*(x1 - x2 + x3)/dsqrt((b - one)*b*(b + one)*(b + two)*(b + &
                three)*(c - one)*c*(c + one)*(c + two)*(c + three))
-         endif
-      endif
+         end if
+      end if
       return
       end subroutine sixj2
 end module sixj2_i

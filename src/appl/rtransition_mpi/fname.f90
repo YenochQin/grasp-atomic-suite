@@ -25,22 +25,22 @@
 !   Obtain the names of the initial and final state files
 !
     1 continue
-      write (6, *) ' Name of the Initial state'
-      read (*, '(A)') name(1)
-      write (6, *) ' Name of the Final state'
-      read (*, '(A)') name(2)
+      write (6, *) " Name of the Initial state"
+      read (*, "(A)") name(1)
+      write (6, *) " Name of the Final state"
+      read (*, "(A)") name(2)
 !
-      j = index(name(1),' ')
+      j = index(name(1)," ")
       if (j == 1) then
-         write (6, *) ' Names may not start with blanks'
-         go to 1
-      endif
+         write (6, *) " Names may not start with blanks"
+         goto 1
+      end if
 !
-      j = index(name(2),' ')
+      j = index(name(2)," ")
       if (j == 1) then
-         write (6, *) ' Names may not start with blanks'
-         go to 1
-      endif
+         write (6, *) " Names may not start with blanks"
+         goto 1
+      end if
 
       return
       end subroutine fname

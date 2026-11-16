@@ -17,7 +17,7 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use def_c
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use nsmdat_c,        only: sqn, dmomnm, qmomb
       implicit none (type, external)
 !-----------------------------------------------
@@ -40,13 +40,13 @@ contains
       read (22, *)
       read (22, *) cparm
 !
-      if (a /= 0._real64) then
+      if (a /= 0.0_real64) then
          nuclear_model_parameter_count = 2
          nuclear_model_parameters(1) = cparm*femtometer_to_bohr
          nuclear_model_parameters(2) = aparm*femtometer_to_bohr
       else
          nuclear_model_parameter_count = 0
-      endif
+      end if
 !
 !   Nuclear mass
 !
@@ -54,11 +54,11 @@ contains
       read (22, *) emnamu
 
 !
-      if (emnamu /= 0._real64) then
+      if (emnamu /= 0.0_real64) then
          emn = emnamu/electron_mass_u
       else
-         emn = 0._real64
-      endif
+         emn = 0.0_real64
+      end if
 
 
 !

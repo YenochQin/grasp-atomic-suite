@@ -21,13 +21,13 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use izas1_i
-      use itjj3_i
-      use rumtjj_i
-      use ixjtik_i
-      use a1jj_i
-      use w1jjg_i
-      use sixj_i
+      use izas1_i, only: izas1
+      use itjj3_i, only: itjj3
+      use rumtjj_i, only: rumtjj
+      use ixjtik_i, only: ixjtik
+      use a1jj_i, only: a1jj
+      use w1jjg_i, only: w1jjg
+      use sixj_i, only: sixj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

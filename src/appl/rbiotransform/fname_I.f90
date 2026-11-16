@@ -4,6 +4,6 @@
       subroutine fname (name)
       implicit none (type, external)
       character (len = 24), intent(in) :: name(2)
-      end subroutine
+      end subroutine fname
       end interface
-      end module
+      end module fname_i

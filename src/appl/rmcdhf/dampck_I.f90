@@ -8,6 +8,6 @@
       integer, intent(in) :: j
       real(real64), intent(inout) :: ed1
       real(real64), intent(inout) :: ed2
-      end subroutine
+      end subroutine dampck
       end interface
-      end module
+      end module dampck_i

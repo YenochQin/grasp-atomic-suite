@@ -30,9 +30,9 @@
          if (itjpor > 127) itjpor = 256 - itjpor
          itjpor = iabs (itjpor)
       else
-         write (6, *) 'ITJPOR: Argument ICSF is out of range.'
+         write (6, *) "ITJPOR: Argument ICSF is out of range."
          stop
-      endif
+      end if
 !
       return
       end function itjpor

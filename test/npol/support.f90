@@ -7,9 +7,9 @@ contains
         logical, intent(in) :: condition
         character(*), intent(in) :: label
         if (condition) return
-        write(*,'(A)') 'FAIL: '//label
+        write(*,"(A)") "FAIL: "//label
         error stop 2
-    end subroutine
+    end subroutine require
 
     subroutine near(actual, expected, label)
         use, intrinsic :: iso_fortran_env, only: real64
@@ -17,7 +17,7 @@ contains
         character(*), intent(in) :: label
         ! Arithmetic tolerance, not a physical accuracy threshold.
         call require(abs(actual-expected) <= 64*epsilon(actual)*max(1.0_real64,abs(expected)), label)
-    end subroutine
+    end subroutine near
 
     function fixture() result(cfg)
         type(npol_config) :: cfg
@@ -25,25 +25,25 @@ contains
         cfg%enabled = .true.
         cfg%use_e1 = .true.
         cfg%use_e2 = .true.
-        cfg%units = 'atomic'
+        cfg%units = "atomic"
         cfg%model_id = NPOL_MODEL
-        cfg%parameter_source = 'artificial software fixture; E2 convention: test only'
+        cfg%parameter_source = "artificial software fixture; E2 convention: test only"
         cfg%isotope_z = 2
         cfg%isotope_a = 4
         cfg%k1 = 16
         cfg%b1 = 2
         cfg%k2 = 128
         cfg%b2 = 2
-    end function
+    end function fixture
 
     subroutine write_fixture(path)
         character(*), intent(in) :: path
         integer :: u
-        open(newunit=u, file=path, status='replace')
-        write(u,'(A)') '&npol schema_version=1, enabled=.true., use_e1=.true., use_e2=.true.,', &
+        open(newunit=u, file=path, status="replace")
+        write(u,"(A)") "&npol schema_version=1, enabled=.true., use_e1=.true., use_e2=.true.,", &
             "units='atomic', model_id='flambaum2021_scalar_e1_e2',", &
             "parameter_source='artificial software fixture; E2 convention: test only',", &
-            'isotope_z=2, isotope_a=4, k1=16, b1=2, k2=128, b2=2 /'
+            "isotope_z=2, isotope_a=4, k1=16, b1=2, k2=128, b2=2 /"
         close(u)
-    end subroutine
+    end subroutine write_fixture
 end module npol_test_support

@@ -8,6 +8,6 @@
       character (len = *) :: isofile
       character (len = *) :: rwffile
       character (len = *), intent(in) :: npfile
-      end subroutine
+      end subroutine getscd
       end interface
-      end module
+      end module getscd_i

@@ -53,12 +53,12 @@
 !
 !CFF  Initialized NELT for NCF >5
       nelt = 5
-      if (csf_count .lt. 5) nelt = csf_count
+      if (csf_count < 5) nelt = csf_count
       do 7 iv = 1,nvec
 !
          icf = ivec(iv)
 !        .., initialize for a new eigenvector
-         wt = 0._real64;  iconf = 0
+         wt = 0.0_real64;  iconf = 0
          ibegin = (iv-1)*csf_count
          iend   = iv*csf_count
 !
@@ -100,8 +100,8 @@
 !
       return
 !
-  300 format (/'Weights of major contributors to ASF:'                  &
-             //'Level J Parity      CSF contributions'/)
+  300 format (/"Weights of major contributors to ASF:"                  &
+             //"Level J Parity      CSF contributions"/)
   301 format (i3,2x,2a4,5(3x,f8.5))
   302 format (13x,5(i11))
 !

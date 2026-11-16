@@ -15,7 +15,7 @@
       use def_c
       use grid_c
       use int_c
-      use pote_c
+      use pote_c, only: double, max_radial_points, xp, xq, yp
       use scf_c
       implicit none (type, external)
 !-----------------------------------------------

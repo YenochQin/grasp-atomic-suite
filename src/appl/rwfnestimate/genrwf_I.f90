@@ -3,6 +3,6 @@
       interface
       subroutine genrwf
       implicit none (type, external)
-      end subroutine
+      end subroutine genrwf
       end interface
-      end module
+      end module genrwf_i

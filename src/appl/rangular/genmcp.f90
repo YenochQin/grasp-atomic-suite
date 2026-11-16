@@ -45,27 +45,27 @@
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use default_c
-      use hblock_c
+      use default_c, only: double, inpci, ndef, ndump
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use orb_c
-      use stat_c
-      use mcp_c
-      use iounit_c
+      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
+      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use starttime_i
-      use setdbg_i
-      use setmc_i
-      use setsum_i
-      use cslh_i
-      use setmcp2_i
-      use strsum_i
-      use factt_i
+      use getyn_i, only: getyn
+      use starttime_i, only: starttime
+      use setdbg_i, only: setdbg
+      use setmc_i, only: setmc
+      use setsum_i, only: setsum
+      use cslh_i, only: cslh
+      use setmcp2_i, only: setmcp2
+      use strsum_i, only: strsum
+      use factt_i, only: factt
 !      USE settmp_I
-      use settmpgg_i
-      use stoptime_i
+      use settmpgg_i, only: settmpgg
+      use stoptime_i, only: stoptime
       use lodcsh2_i, only: lodcsh2
       use mcp_i, only: mcp
       implicit none (type, external)
@@ -86,35 +86,35 @@
 !-----------------------------------------------------------------------
 !
       call parse_angular_options(input_options)
-      input_format_name = 'text'
-      if (input_options%use_descriptors) input_format_name = 'descriptors'
+      input_format_name = "text"
+      if (input_options%use_descriptors) input_format_name = "descriptors"
       program_start_count = stage_clock()
       write(*,*)
-      write(*,*) 'RANGULAR'
-      write(*,*) 'This program performs angular integration '
-      write(*,*) 'Input file: ', input_options%input_filename
-      write(*,*) 'Outputfiles: mcp.30, mcp.31, ....'
-      write(*,*) 'rangular.log                     '
+      write(*,*) "RANGULAR"
+      write(*,*) "This program performs angular integration "
+      write(*,*) "Input file: ", input_options%input_filename
+      write(*,*) "Outputfiles: mcp.30, mcp.31, ...."
+      write(*,*) "rangular.log                     "
       write(*,*)
-      open(unit=739,file='rangular.log',status='UNKNOWN')
+      open(unit=739,file="rangular.log",status="UNKNOWN")
       myid = 0
       nprocs = 1
-      call starttime (ncount1, 'RANGULAR')
+      call starttime (ncount1, "RANGULAR")
 !=======================================================================
 !  Get NDEF
 !=======================================================================
       if (myid == 0) then
 !         WRITE (ISTDE, '(A)', ADVANCE='NO') 'Default settings?  (y/n) '
-         write (stderr_unit,'(A)') ' Full interaction?  (y/n) '
+         write (stderr_unit,"(A)") " Full interaction?  (y/n) "
          yes = getyn()
          if (yes) then
             ndef = 0
-            write(739,'(A)') 'y            ! Full interaction'
+            write(739,"(A)") "y            ! Full interaction"
          else
             ndef = 1
-            write(739,'(A)') 'n            ! Full interaction'
-         endif
-      endif
+            write(739,"(A)") "n            ! Full interaction"
+         end if
+      end if
 !=======================================================================
 !
 !  Checks and settings... Mostly done in backyard.
@@ -130,18 +130,18 @@
 !=======================================================================
 !CFF  delete chkplt
 !     CALL CHKPLT ('GENMCP')
-      call setdbg (debug, 'genmcp.dbg')
+      call setdbg (debug, "genmcp.dbg")
       call setmc
 !      IF (NDEF/=0 .AND. MYID==0) CALL SETSUM ('genmcp.sum')
       stage_start_count = stage_clock()
       call load_angular_header(input_options, ncore, nblk0, idblk)
-      call record_stage('input_header', 0, stage_start_count, int(csf_count,int64), storage=input_format_name)
+      call record_stage("input_header", 0, stage_start_count, int(csf_count,int64), storage=input_format_name)
       restrt = .false.
       stage_start_count = stage_clock()
-      call setmcp2 (myid, nprocs, ncore, idblk, 'mcp')
+      call setmcp2 (myid, nprocs, ncore, idblk, "mcp")
       if (ndef/=0 .and. myid==0) call strsum
       call factt
-      call record_stage('setup_including_interaction_input', 0, stage_start_count)
+      call record_stage("setup_including_interaction_input", 0, stage_start_count)
 !=======================================================================
 !     For each block, generate and sort the data
 !=======================================================================
@@ -149,26 +149,26 @@
          csf_count = csf_counts_by_block(nb)                        ! This ncf goes to common
          if (myid == 0) then
             write (6, *)
-            write (6, *) 'Block ', nb, ',  ncf = ', csf_count
-         endif
+            write (6, *) "Block ", nb, ",  ncf = ", csf_count
+         end if
             !*** Load current CSL block. Memories de-allocated in mcp ***
          stage_start_count = stage_clock()
-         call alloc (csf_subshell_occupations, max_orbitals, csf_count, 'IQA', 'GENMCP')
-         call alloc (csf_subshell_quantum_codes, max_orbitals,3,csf_count, 'JQSA', 'GENMCP')
-         call alloc (csf_coupling_quantum_codes, max_orbitals, csf_count, 'JCUPA', 'GENMCP')
-         call record_stage('csf_allocation', nb, stage_start_count)
+         call alloc (csf_subshell_occupations, max_orbitals, csf_count, "IQA", "GENMCP")
+         call alloc (csf_subshell_quantum_codes, max_orbitals,3,csf_count, "JQSA", "GENMCP")
+         call alloc (csf_coupling_quantum_codes, max_orbitals, csf_count, "JCUPA", "GENMCP")
+         call record_stage("csf_allocation", nb, stage_start_count)
 !
          stage_start_count = stage_clock()
          call load_angular_block(input_options, ncore, nb)
-         call record_stage('csf_load', nb, stage_start_count, int(csf_count,int64), storage=input_format_name)
+         call record_stage("csf_load", nb, stage_start_count, int(csf_count,int64), storage=input_format_name)
          !*** Open tmp.xx files for block nb ***
 !GG         CALL SETTMP (NB, KMAX, 'tmp')
-         call settmpgg (nb, 30, 'tmp')
+         call settmpgg (nb, 30, "tmp")
          !*** Generation of MCP coefficients ***
-         call mcp (nb, restrt, myid, nprocs, 'mcp')
+         call mcp (nb, restrt, myid, nprocs, "mcp")
       end do
       call close_angular_input(input_options)
-      call record_stage('program_total_including_interaction_input', 0, program_start_count)
+      call record_stage("program_total_including_interaction_input", 0, program_start_count)
       call close_stage_profile()
       close(24)                                  ! Summary file
       close(739)                                  ! rangular.log
@@ -176,6 +176,6 @@
 !=======================================================================
 !  Execution finished; Statistics output
 !=======================================================================
-      call stoptime (ncount1, 'RANGULAR')
+      call stoptime (ncount1, "RANGULAR")
       stop
       end program genmcp

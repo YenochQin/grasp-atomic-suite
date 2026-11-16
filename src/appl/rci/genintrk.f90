@@ -21,13 +21,13 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
       use cteilsrk_c
-      use kkstart_c
+      use kkstart_c, only: double, kmax, kstart
       use orb_c
-      use jlabl_c
+      use jlabl_c, only: jlbl, jlbp, jlbr
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use slater_i
+      use slater_i, only: slater
       use triangrk_i, only: triangrk
       implicit none (type, external)
 !-----------------------------------------------
@@ -49,12 +49,12 @@
 !
       j2max = orbital_two_j(1)
       do i = 2, orbital_count
-         if (orbital_two_j(i) .gt. j2max) j2max = orbital_two_j(i)
-      enddo
+         if (orbital_two_j(i) > j2max) j2max = orbital_two_j(i)
+      end do
 
-      if (j2max .gt. kmax) then
-         stop 'genintrk: KMAX too small'
-      endif
+      if (j2max > kmax) then
+         stop "genintrk: KMAX too small"
+      end if
 !
 !   Make the RK integrals: IA <= IB, IA <= IC, IA <= ID, IB <= ID
 !   When GEN is false, sweep through to find dimension
@@ -70,38 +70,38 @@
                      do id = ib, orbital_count
                         if (triangrk(orbital_l(ib),k,orbital_l(id))) then
                            n = n + 1
-                           if (gen .and. (mod(n,nprocs) .eq. myid)) then
+                           if (gen .and. (mod(n,nprocs) == myid)) then
                               indteirk(n) = ((ia*key+ib)*key+ic)*key+id
                               valteirk(n) = slater (ia,ib,ic,id,k)
-                           endif
-                        endif
-                     enddo
-                  endif
-               enddo
-            enddo
-         enddo
+                           end if
+                        end if
+                     end do
+                  end if
+               end do
+            end do
+         end do
          kstart(k+1) = n + 1
-      enddo
+      end do
 !
 !     Allocate memory for integral book keeping
 !
       if (.not. gen) then
-         call alloc (indteirk,n,'INDTEIRK', 'GENINTRK')
-         call alloc (valteirk,n,'VALTEIRK', 'GENINTRK')
+         call alloc (indteirk,n,"INDTEIRK", "GENINTRK")
+         call alloc (valteirk,n,"VALTEIRK", "GENINTRK")
 
 ! Initialization is necessary in the mpi version
 
          do i = 1, n
             indteirk(i) = 0
-            valteirk(i) = 0._real64
-         enddo
+            valteirk(i) = 0.0_real64
+         end do
 
-         if (myid .eq. 0)                                               &
-     &      print *, 'Allocating space for ',n,' Rk integrals'
+         if (myid == 0)                                               &
+     &      print *, "Allocating space for ",n," Rk integrals"
 
          gen = .true.
          goto 999
-      endif
+      end if
 
       return
-      end
+      end subroutine genintrk

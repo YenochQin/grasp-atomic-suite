@@ -9,31 +9,31 @@ module suite_system
     public :: terminate_process
 
     interface
-        subroutine c_exit(status) bind(c, name='exit')
+        subroutine c_exit(status) bind(c, name="exit")
             import c_int
             implicit none (type, external)
             integer(c_int), value :: status
         end subroutine c_exit
-        function c_system(command) bind(c, name='system') result(status)
+        function c_system(command) bind(c, name="system") result(status)
             import c_char, c_int
             implicit none (type, external)
             character(kind=c_char), intent(in) :: command(*)
             integer(c_int) :: status
         end function c_system
-        function c_chdir(path) bind(c, name='chdir') result(status)
+        function c_chdir(path) bind(c, name="chdir") result(status)
             import c_char, c_int
             implicit none (type, external)
             character(kind=c_char), intent(in) :: path(*)
             integer(c_int) :: status
         end function c_chdir
-        function c_getcwd(buffer, capacity) bind(c, name='getcwd') result(address)
+        function c_getcwd(buffer, capacity) bind(c, name="getcwd") result(address)
             import c_char, c_size_t, c_ptr
             implicit none (type, external)
             character(kind=c_char), intent(out) :: buffer(*)
             integer(c_size_t), value :: capacity
             type(c_ptr) :: address
         end function c_getcwd
-        function c_access(path, mode) bind(c, name='access') result(status)
+        function c_access(path, mode) bind(c, name="access") result(status)
             import c_char, c_int
             implicit none (type, external)
             character(kind=c_char), intent(in) :: path(*)
@@ -80,7 +80,7 @@ contains
         character(kind=c_char) :: buffer(len(path)+1)
         type(c_ptr) :: address
         integer :: i
-        path = ''
+        path = ""
         address = c_getcwd(buffer, int(size(buffer),c_size_t))
         status = 1
         if (.not.c_associated(address)) return
@@ -99,13 +99,13 @@ contains
         mask = 0_c_int
         do i = 1, len_trim(mode)
             select case(mode(i:i))
-            case('r')
+            case("r")
                 mask = ior(mask,4_c_int)
-            case('w')
+            case("w")
                 mask = ior(mask,2_c_int)
-            case('x')
+            case("x")
                 mask = ior(mask,1_c_int)
-            case(' ')
+            case(" ")
             case default
                 status = -1
                 return

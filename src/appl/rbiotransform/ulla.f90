@@ -19,9 +19,9 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use lulu_i
-      use setvec_i
-      use wrtmat_i
+      use lulu_i, only: lulu
+      use setvec_i, only: setvec
+      use wrtmat_i, only: wrtmat
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -81,10 +81,10 @@
 !
       ntest = 0
       if (ntest /= 0) then
-         write (6, *) ' U and L from Ulla '
+         write (6, *) " U and L from Ulla "
          call wrtmat (u, ndim, ndim, ndim, ndim)
          call wrtmat (l, ndim, ndim, ndim, ndim)
-      endif
+      end if
 !
 
       return

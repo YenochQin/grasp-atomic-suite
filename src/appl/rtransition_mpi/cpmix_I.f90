@@ -5,6 +5,6 @@
       implicit none (type, external)
       character (len = 128), intent(inout) :: name(2)
       integer, intent(in) :: inpci
-      end subroutine
+      end subroutine cpmix
       end interface
-      end module
+      end module cpmix_i

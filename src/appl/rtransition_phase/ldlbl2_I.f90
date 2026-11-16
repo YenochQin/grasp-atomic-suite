@@ -6,6 +6,6 @@
       subroutine ldlbl2 (name)
        implicit none (type, external)
        character(len=24) :: name
-      end subroutine
+      end subroutine ldlbl2
       end interface
-      end module
+      end module ldlbl2_i

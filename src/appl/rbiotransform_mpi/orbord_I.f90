@@ -4,6 +4,6 @@
       subroutine orbord (n)
       implicit none (type, external)
       integer :: n
-      end subroutine
+      end subroutine orbord
       end interface
-      end module
+      end module orbord_i

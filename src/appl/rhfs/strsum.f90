@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use engouth_i
+      use engouth_i, only: engouth
       implicit none (type, external)
 !-----------------------------------------------
 !
@@ -39,9 +39,9 @@
 !
       return
 !
-  302 format('Nuclear spin                        ',1p,d22.15,' au')
-  303 format('Nuclear magnetic dipole moment      ',1p,d22.15,' n.m.')
-  304 format('Nuclear electric quadrupole moment  ',1p,d22.15,' barns')
+  302 format("Nuclear spin                        ",1p,d22.15," au")
+  303 format("Nuclear magnetic dipole moment      ",1p,d22.15," n.m.")
+  304 format("Nuclear electric quadrupole moment  ",1p,d22.15," barns")
       return
 !
       end subroutine strsum

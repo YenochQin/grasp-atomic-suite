@@ -4,11 +4,11 @@
 !-----------------------------------------------
 !    M O D U L E S
 !-----------------------------------------------
-     use iounit_c
+     use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
+      use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -17,8 +17,8 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      character(len=9), parameter :: form = 'FORMATTED'
-      character(len=3), parameter :: status = 'NEW'
+      character(len=9), parameter :: form = "FORMATTED"
+      character(len=3), parameter :: status = "NEW"
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -27,9 +27,9 @@
 
       call openfl (24, filnam, form, status, ierr)
       if (ierr /= 0) then
-         write (stderr_unit, *) 'Error when opening ', filnam
+         write (stderr_unit, *) "Error when opening ", filnam
          stop
-      endif
+      end if
 
       return
       end subroutine setsum

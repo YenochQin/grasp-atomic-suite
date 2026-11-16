@@ -8,6 +8,6 @@
       integer :: ir
       integer, intent(in) :: ia
       integer, intent(in) :: ib
-      end function
+      end function gco
       end interface
-      end module
+      end module gco_i

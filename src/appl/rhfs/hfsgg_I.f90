@@ -3,6 +3,6 @@
       interface
       subroutine hfsgg
       implicit none (type, external)
-      end subroutine
+      end subroutine hfsgg
       end interface
-      end module
+      end module hfsgg_i

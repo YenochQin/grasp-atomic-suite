@@ -38,23 +38,23 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i
-      use setmc_i
-      use setcon_i
-      use setiso_i
-      use radpar_i
-      use radgrd_i
-      use setqic_i
-      use fname_i
-      use setcslb_i
-      use tcsl_i
-      use kapdata_i
-      use lodrwfi_i
-      use lodrwff_i
-      use brkt_i
-      use gets_i
-      use biotr1_i
-      use radfile_i
+      use getyn_i, only: getyn
+      use setmc_i, only: setmc
+      use setcon_i, only: setcon
+      use setiso_i, only: setiso
+      use radpar_i, only: radpar
+      use radgrd_i, only: radgrd
+      use setqic_i, only: setqic
+      use fname_i, only: fname
+      use setcslb_i, only: setcslb
+      use tcsl_i, only: tcsl
+      use kapdata_i, only: kapdata
+      use lodrwfi_i, only: lodrwfi
+      use lodrwff_i, only: lodrwff
+      use brkt_i, only: brkt
+      use gets_i, only: gets
+      use biotr1_i, only: biotr1
+      use radfile_i, only: radfile
       use factt_i, only: factt
       use mcpin_i, only: mcpin
       use mpiu_i, only: startmpi2
@@ -90,11 +90,11 @@
 !  Start mpi --- get processor info: myid, nprocs, host name; and print
 !=======================================================================
       call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1,            &
-                        startdir, permdir, tmpdir, 'RBIOTRANSFORM_MPI')
-      write (idstring, '(I3.3)') mpi_rank
-      print*, tmpdir , ' = tmpdir'
+                        startdir, permdir, tmpdir, "RBIOTRANSFORM_MPI")
+      write (idstring, "(I3.3)") mpi_rank
+      print*, tmpdir , " = tmpdir"
 
-      isofile = trim(startdir)//'/isodata'
+      isofile = trim(startdir)//"/isodata"
       lenperm = len_trim (permdir)
       lentmp = len_trim (tmpdir)
 
@@ -106,11 +106,11 @@
       ntestl = 0
       ntest = max0(ntestl,ntestg)
 !
-      if (mpi_rank .eq. 0) then
+      if (mpi_rank == 0) then
       print *
       print *
 
-      write (6, *) 'Default settings?'
+      write (6, *) "Default settings?"
       yes = getyn()
       write (6, *)
       if (yes) then
@@ -118,24 +118,24 @@
          ndump = 1
       else
          ndef = 1
-         write (6, *) 'Dump angular data on file?'
+         write (6, *) "Dump angular data on file?"
          yes = getyn()
          write (6, *)
          if (yes) then
             ndump = 1
          else
             ndump = 0
-         endif
-      endif
-      write (6, *) 'Input from a CI calculation?'
+         end if
+      end if
+      write (6, *) "Input from a CI calculation?"
       yes = getyn()
       write (6, *)
       if (yes) then
          inpci = 0
       else
          inpci = 1
-      endif
-      endif !myid=0
+      end if
+      end if !myid=0
       call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (ndump,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (inpci,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
@@ -168,15 +168,15 @@
 !   and open files where the transformed orbitals and CI
 !   coefficients are to be dumped
 !
-      if (mpi_rank .eq. 0) call fname (name)
+      if (mpi_rank == 0) call fname (name)
       call mpi_bcast (name,48,mpi_character,0,mpi_comm_world,mpi_error_code)
-      print *, 'DBG: myid=',mpi_rank, ' name(1)=', name(1)
-      print *, 'DBG: myid=',mpi_rank, ' name(2)=', name(2)
-      fullname(1) = trim(startdir) // '/' // trim(name(1))
-      fullname(2) = trim(startdir) // '/' // trim(name(2))
-      print *, 'DBG: myid=',mpi_rank, ' startdir =', startdir
-      print *, 'DBG: myid=',mpi_rank, ' fullname(1)=', fullname(1)
-      print *, 'DBG: myid=',mpi_rank, ' fullname(2)=', fullname(2)
+      print *, "DBG: myid=",mpi_rank, " name(1)=", name(1)
+      print *, "DBG: myid=",mpi_rank, " name(2)=", name(2)
+      fullname(1) = trim(startdir) // "/" // trim(name(1))
+      fullname(2) = trim(startdir) // "/" // trim(name(2))
+      print *, "DBG: myid=",mpi_rank, " startdir =", startdir
+      print *, "DBG: myid=",mpi_rank, " fullname(1)=", fullname(1)
+      print *, "DBG: myid=",mpi_rank, " fullname(2)=", fullname(2)
 !
 !   Open, check, load data from and close the initial state CSL file.
 !
@@ -210,13 +210,13 @@
 !
 !   Calculate the radial overlap matrices
 !
-      if (mpi_rank .eq. 0) then
+      if (mpi_rank == 0) then
       write (*, *)
-      write (*, *) ' ******************************************'
-      write (*, *) '  Overlap matrix before orbital rotations'
-      write (*, *) ' *****************************************'
+      write (*, *) " ******************************************"
+      write (*, *) "  Overlap matrix before orbital rotations"
+      write (*, *) " *****************************************"
       write (*, *)
-      endif!myid=0
+      end if!myid=0
 
       call brkt
 
@@ -234,13 +234,13 @@
       call biotr1 (pfii, qfii, nshlii, ninshli, pfff, qfff, &
          nshlff, ninshlf, max_radial_points, kamax, work, lwork1, ntestg, &
          cishl, cici, cfshl, cfci)
-      if (mpi_rank .eq. 0) then
+      if (mpi_rank == 0) then
       write (*, *)
-      write (*, *) ' ****************************************'
-      write (*, *) '  Overlap matrix after orbital rotations'
-      write (*, *) ' ****************************************'
+      write (*, *) " ****************************************"
+      write (*, *) "  Overlap matrix after orbital rotations"
+      write (*, *) " ****************************************"
       write (*, *)
-      endif !myid=0
+      end if !myid=0
 
       call brkt
 !
@@ -258,7 +258,7 @@
 !GG      CALL SETCSLA(NAME(1), ncore_not_used)
       call setcsla(name(1), ncore_not_used,3)
       iii = len_trim(tmpdir)
-      call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,mpi_error_code)
+      call sys_chdir(trim(tmpdir)//"/"//idstring,iii+4,mpi_error_code)
       call factt
       call mcpout(name(1),startdir,1,ntestg,inpci)
       call mcpin(name(1),startdir,1,ntestg,inpci)
@@ -279,7 +279,7 @@
 !GG      CALL SETCSLA(NAME(2), ncore_not_used)
       call setcsla(name(2), ncore_not_used,3)
       iii = len_trim(tmpdir)
-      call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,mpi_error_code)
+      call sys_chdir(trim(tmpdir)//"/"//idstring,iii+4,mpi_error_code)
       call mcpout(name(2),startdir,2,ntestg,inpci)
       call mcpin(name(2),startdir,2,ntestg,inpci)
 
@@ -292,7 +292,7 @@
 !=======================================================================
 
       call stopmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length,             &
-                           ncount1, 'RBIOTRANSFORM_MPI')
+                           ncount1, "RBIOTRANSFORM_MPI")
 !=======================================================================
       stop
       end program biotr

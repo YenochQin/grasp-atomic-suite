@@ -25,12 +25,12 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use orb_c
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ldigit_i
-      use convrt_i
+      use ldigit_i, only: ldigit
+      use convrt_i, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -49,18 +49,18 @@ contains
 !
 !
 
-      go to 2
+      goto 2
 
     1 continue
-      write (stderr_unit, *) ' redo ...'
+      write (stderr_unit, *) " redo ..."
 !
 !   Read a record
 !
     2 continue
       nsubs = 0
-      read (*, '(A)') record
+      read (*, "(A)") record
 
-      write(734,'(a)') trim(record)
+      write(734,"(a)") trim(record)
 !
 !   Parse RECORD from left to right
 !
@@ -68,7 +68,7 @@ contains
       i = 1
     3 continue
       reci = record(i:i)
-      if (reci/=' ' .and. reci/=',') then
+      if (reci/=" " .and. reci/=",") then
          if (istart == 0) istart = i
       else
          if (istart /= 0) then
@@ -78,7 +78,7 @@ contains
 !
 !   (1) Determine the principal quantum number
 !
-            if (record(istart:istart) == '*') then
+            if (record(istart:istart) == "*") then
                npany = .true.
                istart = min(istart + 1,iend)
             else
@@ -89,51 +89,51 @@ contains
                   nform = nform + 1
                end do
                if (nform == 0) then
-                  write (stderr_unit, *) 'GETRSL: Unable to interpret ', &
-                     'the principal quantum number;'
-                  go to 1
-               endif
+                  write (stderr_unit, *) "GETRSL: Unable to interpret ", &
+                     "the principal quantum number;"
+                  goto 1
+               end if
                call convrt (nform, cnum, lenth)
-               form = '(1I'//cnum(1:lenth)//')'
+               form = "(1I"//cnum(1:lenth)//")"
                read (record(istart:istart+nform-1), form, iostat=ios) npq
                if (ios /= 0) then
-                  write (stderr_unit, *) 'GETRSL: Unable to interpret ', 'string ', &
-                     record(istart:iend-2), ' as a principal quantum number'
-                  go to 1
-               endif
+                  write (stderr_unit, *) "GETRSL: Unable to interpret ", "string ", &
+                     record(istart:iend-2), " as a principal quantum number"
+                  goto 1
+               end if
                istart = istart + nform
-            endif
+            end if
 !
 !   (2) Determine the orbital angular momentum quantum number
 !
             nlq = record(istart:istart)
-            if (nlq == '*') then
+            if (nlq == "*") then
                nlany = .true.
             else
                nlany = .false.
-            endif
+            end if
 !
 !   (3) Determine the spin-orbit component
 !
             if (iend > istart) then
                nsq = record(iend:iend)
-               if (nsq == '*') then
+               if (nsq == "*") then
                   nsany = .true.
-               else if (nsq == '-') then
+               else if (nsq == "-") then
                   nsany = .false.
                else
-                  write (stderr_unit, *) 'GETRSL: Unable to interpret ', 'string ', &
-                     nsq, ' as a spin-orbit component indicator'
-                  go to 1
-               endif
+                  write (stderr_unit, *) "GETRSL: Unable to interpret ", "string ", &
+                     nsq, " as a spin-orbit component indicator"
+                  goto 1
+               end if
             else
                if (nlany) then
                   nsany = .true.
                else
                   nsany = .false.
-                  nsq = ' '
-               endif
-            endif
+                  nsq = " "
+               end if
+            end if
 !
 !
             found = .false.
@@ -144,8 +144,8 @@ contains
                if (.not.(npok .and. nlok .and. nsok)) cycle
                do k = 1, nsubs
                   if (indx(k) /= j) cycle
-                  write (stderr_unit, *) 'GETRSL: ', 'Repeated subshell in list;'
-                  go to 1
+                  write (stderr_unit, *) "GETRSL: ", "Repeated subshell in list;"
+                  goto 1
                end do
                found = .true.
                nsubs = nsubs + 1
@@ -153,19 +153,19 @@ contains
             end do
 !
             if (.not.found) then
-               write (stderr_unit, *) 'GETRSL: Subshell not occupied as ', &
-                  ' according to CSL  File;'
-               go to 1
-            endif
+               write (stderr_unit, *) "GETRSL: Subshell not occupied as ", &
+                  " according to CSL  File;"
+               goto 1
+            end if
 !
             istart = 0
-         endif
-      endif
+         end if
+      end if
 !
       if (i < 500) then
          i = i + 1
-         go to 3
-      endif
+         goto 3
+      end if
 !
       return
       end subroutine getrsl

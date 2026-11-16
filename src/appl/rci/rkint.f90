@@ -26,8 +26,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use zkf_i
-      use quad_i
+      use zkf_i, only: zkf
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -71,7 +71,7 @@
          ta(2:mtp) = rbd(2:mtp)*(1.0_real64 + bessn(1,iw,2:mtp))*tb(2:mtp)*radial_derivative_over_radius(2:&
             mtp)
 !
-      endif
+      end if
 !
       call quad (result)
       rkint = result
@@ -84,8 +84,8 @@
 !
       return
 !
-  300 format('_ (',1i2,')'/,'R     (',1i2,1a2,',',1i2,1a2,'|',1i2,1a2,',',1i2,&
-         1a2,';',1i2,') = ',1p,d19.12)
+  300 format("_ (",1i2,")"/,"R     (",1i2,1a2,",",1i2,1a2,"|",1i2,1a2,",",1i2,&
+         1a2,";",1i2,") = ",1p,d19.12)
       return
 !
       end function rkint

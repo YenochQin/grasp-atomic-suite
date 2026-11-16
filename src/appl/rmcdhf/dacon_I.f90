@@ -3,6 +3,6 @@
       interface
       subroutine dacon
       implicit none (type, external)
-      end subroutine
+      end subroutine dacon
       end interface
-      end module
+      end module dacon_i

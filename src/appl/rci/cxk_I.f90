@@ -11,6 +11,6 @@
       integer, intent(in) :: k
       integer, intent(in) :: ibr
       integer, intent(in) :: iex
-      end subroutine
+      end subroutine cxk
       end interface
-      end module
+      end module cxk_i

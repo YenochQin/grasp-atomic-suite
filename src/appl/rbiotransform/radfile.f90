@@ -28,12 +28,12 @@
       integer :: j, k, i
 !-----------------------------------------------
 !
-      j = index(name(1),' ')
-      open(unit=30, file=name(1)(1:j-1)//'.bw', form='UNFORMATTED', status=&
-         'UNKNOWN', position='asis')
+      j = index(name(1)," ")
+      open(unit=30, file=name(1)(1:j-1)//".bw", form="UNFORMATTED", status=&
+         "UNKNOWN", position="asis")
 
-      write (30) 'G92RWF'
-      write (*, *) 'NWII', nwii
+      write (30) "G92RWF"
+      write (*, *) "NWII", nwii
       do k = 1, nwii
          write (30) npii(k), nakii(k), eii(k), mfii(k)
          write (30) pzii(k), (pfii(i,k),i=1,mfii(k)), (qfii(i,k),i=1,mfii(k))
@@ -42,12 +42,12 @@
 
       close(30)
 
-      j = index(name(2),' ')
-      open(unit=30, file=name(2)(1:j-1)//'.bw', form='UNFORMATTED', status=&
-         'UNKNOWN', position='asis')
+      j = index(name(2)," ")
+      open(unit=30, file=name(2)(1:j-1)//".bw", form="UNFORMATTED", status=&
+         "UNKNOWN", position="asis")
 
-      write (30) 'G92RWF'
-      write (*, *) 'NWFF', nwff
+      write (30) "G92RWF"
+      write (*, *) "NWFF", nwff
       do k = 1, nwff
          write (30) npff(k), nakff(k), eff(k), mfff(k)
          write (30) pzff(k),(pfff(i,k),i=1,mfff(k)),(qfff(i,k),i=1,mfff(k))

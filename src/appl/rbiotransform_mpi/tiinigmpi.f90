@@ -32,13 +32,13 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
       use mcpdata_c
-      use sbdat1_c
+      use sbdat1_c, only: double, max_orbitals, nlmax, nshlp, nshlpp
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setvec_i
-      use wrtmat_i
+      use setvec_i, only: setvec
+      use wrtmat_i, only: wrtmat
       use copvec_i, only: copvec
       implicit none (type, external)
 !-----------------------------------------------
@@ -69,10 +69,10 @@
       ntestl = 0
       ntest = max(ntestl,ntestg)
 
-      if (ntest >= 10) write (6, *) ' Entering TIINI'
+      if (ntest >= 10) write (6, *) " Entering TIINI"
 
       call setvec (ciout, 0.0_real64, ncsf*nciv)
-      if (ncoeff .eq. 0) goto 200
+      if (ncoeff == 0) goto 200
 !
 !.  Obtain address of first coupling coefficient for h(il,il) :  IFIRST
 !.  Obtain number of        coupling coefficient for h(il,il) :  NFOUND
@@ -90,7 +90,7 @@
             ifirst = 1
          else
             ifirst = intptr(k - 1) + 1
-         endif
+         end if
          nfound = intptr(k) - ifirst + 1
          exit
       end do
@@ -120,14 +120,14 @@
 !
       if (ntest >= 100) then
          write (6, *)
-         write (6, *) ' Input and output vectors from TIINI I,L', i, l
+         write (6, *) " Input and output vectors from TIINI I,L", i, l
          call wrtmat (ciin, ncsf, nciv, ncsf, nciv)
          write (6, *)
          call wrtmat (ciout, ncsf, nciv, ncsf, nciv)
          write (6, *)
-      endif
+      end if
 !
-      if (ntest >= 10) write (6, *) ' Leaving  TIINI'
+      if (ntest >= 10) write (6, *) " Leaving  TIINI"
 
       return
       end subroutine tiinig

@@ -18,11 +18,11 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero
-      use ribojj_c
+      use ribojj_c, only: imgnjj, imgtjj, impnjj, imptjj
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rumtjj_i
+      use rumtjj_i, only: rumtjj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -104,7 +104,7 @@ contains
           ji1=j1
           ji2=j2
           ifaz=4
-      endif
+      end if
       if(j1 > 17) then
         ji1=ji1-17
         ji2=ji2-17
@@ -115,97 +115,97 @@ contains
         ji2=ji2-11
         l=1
         j=ipr1(ji1)+ji2
-      endif
+      end if
       if(k1 == 1 .and. k2 == 2) then
         if(l == 1) then
            if(i12ps(j) >= 0) then
               coef=dsqrt(dble(i12ps(j))/dble(i12pv(j)))
            else
               coef=-dsqrt(-dble(i12ps(j))/dble(i12pv(j)))
-           endif
+           end if
         else
            if(i12as(j) >= 0) then
               coef=dsqrt(dble(i12as(j))/dble(i12av(j)))
            else
               coef=-dsqrt(-dble(i12as(j))/dble(i12av(j)))
-           endif
-        endif
-      elseif(k1 == 0 .and. k2 == 3) then
+           end if
+        end if
+      else if(k1 == 0 .and. k2 == 3) then
         if(l == 1) then
            if(i03ps(j) >= 0) then
               coef=dsqrt(dble(i03ps(j))/dble(i03pv(j)))
            else
               coef=-dsqrt(-dble(i03ps(j))/dble(i03pv(j)))
-           endif
+           end if
         else
            if(i03as(j) >= 0) then
               coef=dsqrt(dble(i03as(j))/dble(i03av(j)))
            else
               coef=-dsqrt(-dble(i03as(j))/dble(i03av(j)))
-           endif
-        endif
-      elseif(k1 == 1 .and. k2 == 4) then
+           end if
+        end if
+      else if(k1 == 1 .and. k2 == 4) then
         if(l == 1) then
            if(i14ps(j) >= 0) then
               coef=dsqrt(dble(i14ps(j))/dble(i14pv(j)))
            else
               coef=-dsqrt(-dble(i14ps(j))/dble(i14pv(j)))
-           endif
+           end if
         else
            if(i14as(j) >= 0) then
               coef=dsqrt(dble(i14as(j))/dble(i14av(j)))
            else
               coef=-dsqrt(-dble(i14as(j))/dble(i14av(j)))
-           endif
-        endif
-      elseif(k1 == 0 .and. k2 == 5) then
+           end if
+        end if
+      else if(k1 == 0 .and. k2 == 5) then
         if(l == 1) then
            if(i05ps(j) >= 0) then
               coef=dsqrt(dble(i05ps(j))/dble(i05pv(j)))
            else
               coef=-dsqrt(-dble(i05ps(j))/dble(i05pv(j)))
-           endif
+           end if
         else
            if(i05as(j) >= 0) then
               coef=dsqrt(dble(i05as(j))/dble(i05av(j)))
            else
               coef=-dsqrt(-dble(i05as(j))/dble(i05av(j)))
-           endif
-        endif
-      elseif(k1 == 1 .and. k2 == 6) then
+           end if
+        end if
+      else if(k1 == 1 .and. k2 == 6) then
         if(l == 1) then
            if(i16ps(j) >= 0) then
               coef=dsqrt(dble(i16ps(j))/dble(i16pv(j)))
            else
               coef=-dsqrt(-dble(i16ps(j))/dble(i16pv(j)))
-           endif
+           end if
         else
            if(i16as(j) >= 0) then
               coef=dsqrt(dble(i16as(j))/dble(i16av(j)))
            else
               coef=-dsqrt(-dble(i16as(j))/dble(i16av(j)))
-           endif
-        endif
-      elseif(k1 == 0 .and. k2 == 7) then
+           end if
+        end if
+      else if(k1 == 0 .and. k2 == 7) then
         if(l == 1) then
            if(i07ps(j) >= 0) then
               coef=dsqrt(dble(i07ps(j))/dble(i07pv(j)))
            else
               coef=-dsqrt(-dble(i07ps(j))/dble(i07pv(j)))
-           endif
+           end if
         else
            if(i07as(j) >= 0) then
               coef=dsqrt(dble(i07as(j))/dble(i07av(j)))
            else
               coef=-dsqrt(-dble(i07as(j))/dble(i07av(j)))
-           endif
-        endif
+           end if
+        end if
       else
-        write(0,'(A,4I5)') ' J1 J2 = ',j1,j2
-        write(0,'(A)') ' ERROR IN SUB. RMEW7JJ '
+        write(0,"(A,4I5)") " J1 J2 = ",j1,j2
+        write(0,"(A)") " ERROR IN SUB. RMEW7JJ "
         stop
-      endif
+      end if
       if(mod(ifaz,4) /= 0)coef=-coef
       return
-      end
+      end subroutine rmew7bjj
 end module rmew7bjj_i

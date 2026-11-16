@@ -17,7 +17,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use def_c
-      use cuto_c
+      use cuto_c, only: cutoff, double
       use osc_c
       use syma_c
       use jj2lsjbio_c
@@ -49,32 +49,32 @@
 !-----------------------------------------------
 !
       d    = dabs(rlev_ener_2(inum_ff) - rlev_ener_1(inum_ii))
-      if(dabs(d - dabs(omega)) > 0.00000001_real32) then
-       print*, '                                                      '
-       print*, ' INCORRECT INPUT, PROGRAM STOP!!!                     '
-       print*, '                                                      '
-       print*, ' lsj.lbl files from the jj2lsj runs are inconsistent  '
-       print*, ' with the files used in the bioscl calculation.       '
-       print*, ' The bioscl calculation was for rci wave functions    '
-       print*, ' but the jj2lsj run was for rscf wave functions or    '
-       print*, ' vice versa.                                          '
-       print*, '                                                      '
-       print*, ' If the bioscl calculation was for RCI wave functions '
-       print*, ' run jj2lsj to produce labels for RCI wave functions. '
-       print*, ' Then rerun rtransition.                                   '
-       print*, '                                                      '
-       print*, ' If the bioscl calculation was for rscf wave functions'
-       print*, ' run jj2lsj to produce labels for rscf wave functions.'
-       print*, ' Then rerun rtransition.                                   '
+      if(dabs(d - dabs(omega)) > 0.00000001_real64) then
+       print*, "                                                      "
+       print*, " INCORRECT INPUT, PROGRAM STOP!!!                     "
+       print*, "                                                      "
+       print*, " lsj.lbl files from the jj2lsj runs are inconsistent  "
+       print*, " with the files used in the bioscl calculation.       "
+       print*, " The bioscl calculation was for rci wave functions    "
+       print*, " but the jj2lsj run was for rscf wave functions or    "
+       print*, " vice versa.                                          "
+       print*, "                                                      "
+       print*, " If the bioscl calculation was for RCI wave functions "
+       print*, " run jj2lsj to produce labels for RCI wave functions. "
+       print*, " Then rerun rtransition.                                   "
+       print*, "                                                      "
+       print*, " If the bioscl calculation was for rscf wave functions"
+       print*, " run jj2lsj to produce labels for rscf wave functions."
+       print*, " Then rerun rtransition.                                   "
        stop
       end if
       dd    = d*hartree_to_wavenumber_cm
       angs  =  1.0e8_real64 / dd
       angsa = angs
-      if(angs .gt. 2000._real64) then
-         sigma = (1.e8_real64/angs)**2
-         angsa = angs/(1._real64 + 8342.13e-8_real64 + 206030._real32/(130.e8_real64 - sigma) &
-                       +15997._real32/(38.9e8_real64 - sigma))
+      if(angs > 2000.0_real64) then
+         sigma = (1.0e8_real64/angs)**2
+         angsa = angs/(1.0_real64 + 8342.13e-8_real64 + 206030.0_real32/(130.0e8_real64 - sigma) &
+                       +15997.0_real32/(38.9e8_real64 - sigma))
       end if
 !
 !   Evaluate statistical factors and constants
@@ -95,7 +95,7 @@
 !
 !   Calculate Einstein A and B coefficients and oscillator strengths
 !
-      if (kk .eq. 0) then
+      if (kk == 0) then
 !
 !   Electric multipoles
 !
@@ -115,38 +115,38 @@
          if (.not. ltc(7)) then
             ac = ac*einstein_a_au_to_si
             ab = ab*einstein_a_au_to_si
-         endif
+         end if
 !
 !   Print information if both AC and AB are greater than CUTOFF
 !
-         if((abs(ac).ge.cutoff) .and. (abs(ab).ge.cutoff)) then
-            im = 'E'
-            if (-1.e9_real64 < eng .and. eng .lt. -1.0e-2_real64) then
-               write (32,'(A1)')  ""
-               write (32,'(A1)')  ""
-               if(dabs(rlev_ener_1(inum_ii)) .lt. 9999.5_real32) then
-                  write(32,'(I4,F14.8,2X,A)')                      &
+         if((abs(ac)>=cutoff) .and. (abs(ab)>=cutoff)) then
+            im = "E"
+            if (-1.0e9_real64 < eng .and. eng < -1.0e-2_real64) then
+               write (32,"(A1)")  ""
+               write (32,"(A1)")  ""
+               if(dabs(rlev_ener_1(inum_ii)) < 9999.5_real32) then
+                  write(32,"(I4,F14.8,2X,A)")                      &
                   iatjpoii(i)-1,rlev_ener_1(inum_ii),              &
                   trim(string_csf1(inum_ii))
-               else if(dabs(rlev_ener_1(inum_ii)) .lt. 99999.5_real32) then
-                   write(32,'(I4,F14.7,2X,A)')                     &
+               else if(dabs(rlev_ener_1(inum_ii)) < 99999.5_real32) then
+                   write(32,"(I4,F14.7,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                else
-                   write(32,'(I4,F14.6,2X,A)')                     &
+                   write(32,"(I4,F14.6,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                end if
-               if(dabs(rlev_ener_2(inum_ff)) .lt. 9999.5_real32) then
-                  write(32,'(I4,F14.8,2X,A)')                      &
+               if(dabs(rlev_ener_2(inum_ff)) < 9999.5_real32) then
+                  write(32,"(I4,F14.8,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
-               else if(dabs(rlev_ener_2(inum_ff)) .lt. 99999.5_real32) then
-                  write(32,'(I4,F14.7,2X,A)')                      &
+               else if(dabs(rlev_ener_2(inum_ff)) < 99999.5_real32) then
+                  write(32,"(I4,F14.7,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                else
-                  write(32,'(I4,F14.6,2X,A)')                      &
+                  write(32,"(I4,F14.6,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                end if
@@ -154,32 +154,32 @@
                    im,lk,-sb,-oscb,-ab,                            &
                    dabs(dabs(sb)-dabs(sa))/max(dabs(sb),dabs(sa))
                write (32,39)  -sa,-oscc,-ac
-            else if ( 1.e9_real64 .gt. eng .and. eng .gt. 1.e-2_real64) then
-               write (32,'(A1)')  ""
-               write (32,'(A1)')  ""
-               if(dabs(rlev_ener_2(inum_ff)) .lt. 9999.5_real32) then
-                  write(32,'(I4,F14.8,2X,A)')                      &
+            else if ( 1.0e9_real64 > eng .and. eng > 1.0e-2_real64) then
+               write (32,"(A1)")  ""
+               write (32,"(A1)")  ""
+               if(dabs(rlev_ener_2(inum_ff)) < 9999.5_real32) then
+                  write(32,"(I4,F14.8,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
-               else if(dabs(rlev_ener_2(inum_ff)) .lt. 99999.5_real32) then
-                  write(32,'(I4,F14.7,2X,A)')                      &
+               else if(dabs(rlev_ener_2(inum_ff)) < 99999.5_real32) then
+                  write(32,"(I4,F14.7,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                else
-                  write(32,'(I4,F14.6,2X,A)')                      &
+                  write(32,"(I4,F14.6,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                end if
-               if(dabs(rlev_ener_1(inum_ii)) .lt. 9999.5_real32) then
-                  write(32,'(I4,F14.8,2X,A)')                      &
+               if(dabs(rlev_ener_1(inum_ii)) < 9999.5_real32) then
+                  write(32,"(I4,F14.8,2X,A)")                      &
                   iatjpoii(i)-1,rlev_ener_1(inum_ii),              &
                   trim(string_csf1(inum_ii))
-               else if(dabs(rlev_ener_1(inum_ii)) .lt. 99999.5_real32) then
-                   write(32,'(I4,F14.7,2X,A)')                     &
+               else if(dabs(rlev_ener_1(inum_ii)) < 99999.5_real32) then
+                   write(32,"(I4,F14.7,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                else
-                   write(32,'(I4,F14.6,2X,A)')                     &
+                   write(32,"(I4,F14.6,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                end if
@@ -188,7 +188,7 @@
                    dabs(dabs(sb)-dabs(sa))/max(dabs(sb),dabs(sa))
                write (32,39)  sa,oscc,ac*iatjpoff(j)/iatjpoii(i)
             end if
-         endif
+         end if
       else
 !
 !   Magnetic multipoles
@@ -206,77 +206,77 @@
 !
 !   Print information if AM is greater than CUTOFF
 !
-         if (abs(am) .ge. cutoff) then
-            im = 'M'
-            if (-1.e9_real64 < eng .and. eng .lt. -1.0e-2_real64) then
-               write (32,'(A1)')  ""
-               write (32,'(A1)')  ""
-               if(dabs(rlev_ener_1(inum_ii)) .lt. 9999.5_real32) then
-                  write(32,'(I4,F14.8,2X,A)')                      &
+         if (abs(am) >= cutoff) then
+            im = "M"
+            if (-1.0e9_real64 < eng .and. eng < -1.0e-2_real64) then
+               write (32,"(A1)")  ""
+               write (32,"(A1)")  ""
+               if(dabs(rlev_ener_1(inum_ii)) < 9999.5_real32) then
+                  write(32,"(I4,F14.8,2X,A)")                      &
                   iatjpoii(i)-1,rlev_ener_1(inum_ii),              &
                   trim(string_csf1(inum_ii))
-               else if(dabs(rlev_ener_1(inum_ii)) .lt. 99999.5_real32) then
-                   write(32,'(I4,F14.7,2X,A)')                     &
+               else if(dabs(rlev_ener_1(inum_ii)) < 99999.5_real32) then
+                   write(32,"(I4,F14.7,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                else
-                   write(32,'(I4,F14.6,2X,A)')                     &
+                   write(32,"(I4,F14.6,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                end if
-               if(dabs(rlev_ener_2(inum_ff)) .lt. 9999.5_real32) then
-                  write(32,'(I4,F14.8,2X,A)')                      &
+               if(dabs(rlev_ener_2(inum_ff)) < 9999.5_real32) then
+                  write(32,"(I4,F14.8,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
-               else if(dabs(rlev_ener_2(inum_ff)) .lt. 99999.5_real32) then
-                  write(32,'(I4,F14.7,2X,A)')                      &
+               else if(dabs(rlev_ener_2(inum_ff)) < 99999.5_real32) then
+                  write(32,"(I4,F14.7,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                else
-                  write(32,'(I4,F14.6,2X,A)')                      &
+                  write(32,"(I4,F14.6,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                end if
                write (32,40) dd,angs,angsa,im,lk,-sa,-oscm,-am
-            else if ( 1.e9_real64 .gt. eng .and. eng .gt. 1.e-2_real64) then
-               write (32,'(A1)')  ""
-               write (32,'(A1)')  ""
-               if(dabs(rlev_ener_2(inum_ff)) .lt. 9999.5_real32) then
-                  write(32,'(I4,F14.8,2X,A)')                      &
+            else if ( 1.0e9_real64 > eng .and. eng > 1.0e-2_real64) then
+               write (32,"(A1)")  ""
+               write (32,"(A1)")  ""
+               if(dabs(rlev_ener_2(inum_ff)) < 9999.5_real32) then
+                  write(32,"(I4,F14.8,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
-               else if(dabs(rlev_ener_2(inum_ff)) .lt. 99999.5_real32) then
-                  write(32,'(I4,F14.7,2X,A)')                      &
+               else if(dabs(rlev_ener_2(inum_ff)) < 99999.5_real32) then
+                  write(32,"(I4,F14.7,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                else
-                  write(32,'(I4,F14.6,2X,A)')                      &
+                  write(32,"(I4,F14.6,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                end if
-               if(dabs(rlev_ener_1(inum_ii)) .lt. 9999.5_real32) then
-                  write(32,'(I4,F14.8,2X,A)')                      &
+               if(dabs(rlev_ener_1(inum_ii)) < 9999.5_real32) then
+                  write(32,"(I4,F14.8,2X,A)")                      &
                   iatjpoii(i)-1,rlev_ener_1(inum_ii),              &
                   trim(string_csf1(inum_ii))
-               else if(dabs(rlev_ener_1(inum_ii)) .lt. 99999.5_real32) then
-                   write(32,'(I4,F14.7,2X,A)')                     &
+               else if(dabs(rlev_ener_1(inum_ii)) < 99999.5_real32) then
+                   write(32,"(I4,F14.7,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                else
-                   write(32,'(I4,F14.6,2X,A)')                     &
+                   write(32,"(I4,F14.6,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                end if
                write (32,40) dd,angs,angsa,                        &
                    im,lk,sa,oscm,am*iatjpoff(j)/iatjpoii(i)
             end if
-         endif
-      endif
+         end if
+      end if
       return
-   38 format(f11.2,' CM-1',2x,f11.2,' ANGS(VAC)',2x,f11.2,' ANGS(AIR)'/&
-         1x,a1,i1,2x,'S = ',1pd12.5,3x,'GF = ',d12.5,3x,'AKI = ',d12.5,&
-         3x,'dT = ',0pf8.5)
+   38 format(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/&
+         1x,a1,i1,2x,"S = ",1pd12.5,3x,"GF = ",d12.5,3x,"AKI = ",d12.5,&
+         3x,"dT = ",0pf8.5)
    39 format(9x,1pd12.5,8x,d12.5,9x,d12.5)
-   40 format(f11.2,' CM-1',2x,f11.2,' ANGS(VAC)',2x,f11.2,' ANGS(AIR)'/&
-          1x,a1,i1,2x,'S = ',1pd12.5,3x,'GF = ',d12.5,3x,'AKI = ',d12.5)
+   40 format(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/&
+          1x,a1,i1,2x,"S = ",1pd12.5,3x,"GF = ",d12.5,3x,"AKI = ",d12.5)
       end subroutine printals

@@ -6,6 +6,6 @@
       character (len = 24), intent(inout) :: name
       logical, intent(out) :: avail
       integer, intent(in) :: kamax
-      end subroutine
+      end subroutine angdata
       end interface
-      end module
+      end module angdata_i

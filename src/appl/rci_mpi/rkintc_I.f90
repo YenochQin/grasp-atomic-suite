@@ -12,6 +12,6 @@
       integer, intent(inout) :: id
       integer, intent(inout) :: k
       real(real64), intent(out) :: tegral
-      end subroutine
+      end subroutine rkintc
       end interface
-      end module
+      end module rkintc_i

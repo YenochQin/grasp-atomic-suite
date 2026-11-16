@@ -26,7 +26,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use brintf_i
+      use brintf_i, only: brintf
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -50,14 +50,14 @@
 !
 !   This branch is executed on all entries except the first
 !
-         if (index .gt. indtp6(ntpi(6))) then
+         if (index > indtp6(ntpi(6))) then
 !
 !   The index is greater than the largest stored
 !
             found = .false.
             loc = ntpi(6)
 !
-         elseif (index .lt. indtp6(1)) then
+         else if (index < indtp6(1)) then
 !
 !   The index is less than the smallest stored
 !
@@ -71,25 +71,25 @@
 !
             ju = ntpi(6)
             jl = 1
-    1       if (ju-jl .gt. 1) then
+    1       if (ju-jl > 1) then
                jm = (ju+jl)/2
-               if (indtp6(jm) .gt. index) then
+               if (indtp6(jm) > index) then
                   ju = jm
                else
                   jl = jm
-               endif
+               end if
                goto 1
 !
             else
 !
 !   The range is bracketed to the extent possible
 !
-               if (index .eq. indtp6(ju)) then
+               if (index == indtp6(ju)) then
 !
                   found = .true.
                   loc = ju
 !
-               elseif (index .eq. indtp6(jl)) then
+               else if (index == indtp6(jl)) then
 !
                   found = .true.
                   loc = jl
@@ -99,11 +99,11 @@
                   found = .false.
                   loc = jl
 !
-               endif
+               end if
 !
-            endif
+            end if
 !
-         endif
+         end if
 !
          if (found) then
 !
@@ -126,12 +126,12 @@
 !   is inadequate to store another pair
 !
 !
-            if (ntpi(6) .gt. ndtpa(6)) then
+            if (ntpi(6) > ndtpa(6)) then
                newsiz = ndtpa(6)+ndtpa(6)/2
-               call ralloc (indtp6,newsiz,'INDTP6', 'BRINT6')
-               call ralloc (valtp6,newsiz,'VALTP6', 'BRINT6')
+               call ralloc (indtp6,newsiz,"INDTP6", "BRINT6")
+               call ralloc (valtp6,newsiz,"VALTP6", "BRINT6")
                ndtpa(6)= newsiz
-            endif
+            end if
             do 4 i = ntpi(6),loc+2,-1
                indtp6(i) = indtp6(i-1)
                valtp6(i) = valtp6(i-1)
@@ -142,7 +142,7 @@
             indtp6(loc+1) = index
             valtp6(loc+1) = tegral
 !
-         endif
+         end if
 !
       else
 !
@@ -165,13 +165,13 @@
 !
 !   Store the integral and its value
 !
-         call alloc (indtp6,ndtpa(6),'INDTP6', 'BRINT6')
-         call alloc (valtp6,ndtpa(6),'VALTP6', 'BRINT6')
+         call alloc (indtp6,ndtpa(6),"INDTP6", "BRINT6")
+         call alloc (valtp6,ndtpa(6),"VALTP6", "BRINT6")
 
          indtp6(1) = index
          valtp6(1) = tegral
 !
-      endif
+      end if
 !
       return
-      end
+      end subroutine brint6

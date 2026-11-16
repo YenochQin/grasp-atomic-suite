@@ -11,6 +11,6 @@
       integer, intent(in) :: i
       integer, intent(in) :: j
       integer, intent(in) :: nrnuc
-      end subroutine
+      end subroutine rintdensvec
       end interface
-      end module
+      end module rintdensvec_i

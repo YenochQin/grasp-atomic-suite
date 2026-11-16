@@ -33,15 +33,15 @@
       else if (imxmn == 2) then
          ival = min0(minval(ivec(2:nel)),ival)
       else
-         write (6, *) ' Stop in IFNMNX '
-         write (6, *) ' Improper calue of IMXMN ', imxmn
-         stop 'IFNMNX'
-      endif
+         write (6, *) " Stop in IFNMNX "
+         write (6, *) " Improper calue of IMXMN ", imxmn
+         stop "IFNMNX"
+      end if
 !
       ifnmnx = ival
 !
       ntest = 0
-      if (ntest /= 0) write (6, *) ' Value returned from IFNMNX', ifnmnx
+      if (ntest /= 0) write (6, *) " Value returned from IFNMNX", ifnmnx
 !
       return
       end function ifnmnx

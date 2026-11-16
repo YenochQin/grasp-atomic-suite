@@ -3,6 +3,6 @@
       interface
       subroutine prtrsl
       implicit none (type, external)
-      end subroutine
+      end subroutine prtrsl
       end interface
-      end module
+      end module prtrsl_i

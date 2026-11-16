@@ -19,13 +19,13 @@
       use debug_c
       use grid_c
       use orb_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dpbdt_i
-      use quad_i
+      use dpbdt_i, only: dpbdt
+      use quad_i, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -75,7 +75,7 @@
 !
       return
 !
-  300 format(/,'VINTI: V (',1i2,1a2,',',1i2,1a2,') = ',1p,d19.12)
+  300 format(/,"VINTI: V (",1i2,1a2,",",1i2,1a2,") = ",1p,d19.12)
       return
 !
       end function vinti

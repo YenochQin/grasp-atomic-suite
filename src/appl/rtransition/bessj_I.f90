@@ -5,6 +5,6 @@
       use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
       real(real64), intent(in) :: w
-      end subroutine
+      end subroutine bessj
       end interface
-      end module
+      end module bessj_i

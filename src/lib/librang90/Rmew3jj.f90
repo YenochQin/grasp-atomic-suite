@@ -18,7 +18,7 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero
-      use ribojj_c
+      use ribojj_c, only: imgnjj, imgtjj, impnjj, imptjj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -42,31 +42,31 @@ contains
       if(k1 == 0 .and. k2 == 0) then
         if(j1 /= j2) return
         coef=-dsqrt(dble(i00(ji1)))
-      elseif(k1 == 1 .and. k2 == 0) then
+      else if(k1 == 1 .and. k2 == 0) then
         if(j1 /= j2) return
         coef=-dsqrt(dble(i10(ji1)))
-      elseif(k1 == 0 .and. k2 == 1) then
+      else if(k1 == 0 .and. k2 == 1) then
         if(j1 /= j2) return
         coef=-dsqrt(dble(i01(ji1)))
-      elseif(k1 == 1 .and. k2 == 2) then
+      else if(k1 == 1 .and. k2 == 2) then
         if(j1 == 3 .and. j2 == 3) then
            coef=dsqrt(dble(60))
-        elseif(j1 == 5 .and. j2 == 4) then
+        else if(j1 == 5 .and. j2 == 4) then
            coef=dsqrt(dble(30))
-        elseif(j1 == 4 .and. j2 == 5) then
+        else if(j1 == 4 .and. j2 == 5) then
            coef=-dsqrt(dble(30))
-        endif
-      elseif(k1 == 0 .and. k2 == 3) then
+        end if
+      else if(k1 == 0 .and. k2 == 3) then
         if(j1 == 3 .and. j2 == 3) then
            coef=-dsqrt(dble(28))
-        elseif(j1 == 5 .and. j2 == 5) then
+        else if(j1 == 5 .and. j2 == 5) then
            coef=dsqrt(dble(28))
-        endif
+        end if
       else
-        write(0,'(A,4I5)') ' J1 J2 = ',j1,j2
-        write(0,'(A)') ' ERROR IN SUB. RMEW3JJ '
+        write(0,"(A,4I5)") " J1 J2 = ",j1,j2
+        write(0,"(A)") " ERROR IN SUB. RMEW3JJ "
         stop
-      endif
+      end if
       return
       end subroutine rmew3jj
 end module rmew3jj_i

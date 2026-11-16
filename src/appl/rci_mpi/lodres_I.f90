@@ -3,6 +3,6 @@
       interface
       subroutine lodres
       implicit none (type, external)
-      end subroutine
+      end subroutine lodres
       end interface
-      end module
+      end module lodres_i

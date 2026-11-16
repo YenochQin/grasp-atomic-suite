@@ -40,11 +40,11 @@ contains
 !-----------------------------------------------
       use memory_man
       use def_c, only: iccmin
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i
+      use convrt_i, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -70,8 +70,8 @@ contains
 
       if (ncd == 0) then
          ncd = 1
-         call alloc (iccmin, ncd, 'ICCMIN', 'ITEMS')
-      endif
+         call alloc (iccmin, ncd, "ICCMIN", "ITEMS")
+      end if
 !
 !   parse record from left to right
 !
@@ -84,81 +84,81 @@ contains
 !
     2 continue
       reci = record(i:i)
-      if (reci/=' ' .and. reci/=',') then
+      if (reci/=" " .and. reci/=",") then
          istart = i
       else
          i = i + 1
          if (i <= length_of_record) then
-            go to 2
+            goto 2
          else
-            go to 4
-         endif
-      endif
+            goto 4
+         end if
+      end if
 !
 !   .. search for end of string (blank, comma, or dash)
 !
     3 continue
       reci = record(i:i)
-      if (reci/=' ' .and. reci/=',' .and. reci/='-') then
+      if (reci/=" " .and. reci/="," .and. reci/="-") then
          i = i + 1
-         if (i <= length_of_record) go to 3
-      endif
+         if (i <= length_of_record) goto 3
+      end if
 !
 !     ... read integer
 !
       iend = i - 1
       isize = iend - istart + 1
       call convrt (isize, cnum, lenth)
-      form = '(1i'//cnum(1:lenth)//')'
+      form = "(1i"//cnum(1:lenth)//")"
       read (record(istart:iend), form, iostat=ios) level
       if (ios /= 0) then
-         write (stderr_unit, *) 'items: unable to decode '//record(istart:iend)//';'
+         write (stderr_unit, *) "items: unable to decode "//record(istart:iend)//";"
          ierr = -1
          return
-      endif
+      end if
 
       if (ifirst == 0) then
 !       .. this is the either the first or an isolated level
          ncmin = ncmin + 1
          if (ncmin > ncd) then
-            call ralloc (iccmin, ncmin, 'ICCMIN', 'ITEMS')
+            call ralloc (iccmin, ncmin, "ICCMIN", "ITEMS")
             ncd = ncmin
-         endif
+         end if
 
          if (level<1 .or. level>ncf) then
-            write (stderr_unit, *) 'items: serial numbers must be', &
-               ' in the range [1,', ncf, '];'
+            write (stderr_unit, *) "items: serial numbers must be", &
+               " in the range [1,", ncf, "];"
             ierr = -2
             return
-         endif
+         end if
 
          iccmin(ncmin) = level
          i = i + 1
-         if (reci == '-') ifirst = ncmin
-         go to 2
+         if (reci == "-") ifirst = ncmin
+         goto 2
       else
 !        .. the previous level was the beginning of a range
          level1 = iccmin(ncmin)
          number = level - level1
 
          if (number < 0) then
-            write (stderr_unit, *) level1, '-', level, ' not allowed'
+            write (stderr_unit, *) level1, "-", level, " not allowed"
             ierr = -3
             return
-         endif
+         end if
 
          ncmin = ncmin + number
          if (ncmin > ncd) then
-            call ralloc (iccmin, ncmin, 'ICCMIN', 'ITEMS')
+            call ralloc (iccmin, ncmin, "ICCMIN", "ITEMS")
             ncd = ncmin
-         endif
+         end if
          do j = 1, number
             iccmin(ifirst+j) = level1 + j
          end do
          i = i + 1
          ifirst = 0
-         go to 2
-      endif
+         goto 2
+      end if
 
 !   at least one level must be requested
 
@@ -166,14 +166,14 @@ contains
       if (ncmin == ncmin_in) then
          ierr = 1
          return
-      endif
+      end if
 !
 !   trim array to exactly the correct size
 !
       if (ncmin /= ncd) then
-         write (stderr_unit, *) 'items: ncmin .ne. ncd'
-         call ralloc (iccmin, ncmin, 'ICCMIN', 'ITEMS')
-      endif
+         write (stderr_unit, *) "items: ncmin .ne. ncd"
+         call ralloc (iccmin, ncmin, "ICCMIN", "ITEMS")
+      end if
 
       ierr = 0
       return

@@ -33,8 +33,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use alcbuf_i
-      use itjpo_i
+      use alcbuf_i, only: alcbuf
+      use itjpo_i, only: itjpo
       use convrt_i, only: convrt
       use rkco_gg_i, only: rkco_gg
       use cord_i, only: cord
@@ -79,8 +79,8 @@
 !   Output IC on the screen to show how far the calculation has preceede
 !
         call convrt (ic,cnum,lcnum)
-        if (mod(ic,100).eq.0) then
-          print *, 'Column '//cnum(1:lcnum)//' complete;'
+        if (mod(ic,100)==0) then
+          print *, "Column "//cnum(1:lcnum)//" complete;"
         end if
 !
         itjpoc = itjpo (ic)
@@ -94,14 +94,14 @@
 !
 !   Matrix elements are diagonal in J
 !
-          if (itjpo(ir) .eq. itjpoc) then
+          if (itjpo(ir) == itjpoc) then
             angular_coefficient_count = 0
 !GG            CALL RKCO (IC,IR,COR,CORD,INCOR)
             call rkco_gg (ic, ir, cord, incor, 1)
 !
             do 11 i = 1,angular_coefficient_count
               vcoeff = angular_coefficients(i)
-              if (abs (vcoeff) .gt. cutoff) then
+              if (abs (vcoeff) > cutoff) then
                 iia = angular_coefficient_labels(1,i)
                 iib = angular_coefficient_labels(2,i)
                 iic = angular_coefficient_labels(3,i)
@@ -110,20 +110,20 @@
 !
 !   Only K = 1   LABEL(5,I) .EQ. 1
 !
-                if (angular_coefficient_labels(5,i) .eq. 1) then
+                if (angular_coefficient_labels(5,i) == 1) then
                   if (ldbpa(2)) then
                     write (99,309) k,ic,ir,                            &
                     orbital_principal_n(iia),orbital_symmetry_labels(iia),orbital_principal_n(iib), &
                        & orbital_symmetry_labels(iib),                   &
                     orbital_principal_n(iic),orbital_symmetry_labels(iic),orbital_principal_n(iid), &
                        & orbital_symmetry_labels(iid),vcoeff
-                  endif
-                  if(doit.eq.1) write(51) ic,ir
+                  end if
+                  if(doit==1) write(51) ic,ir
 !** Storage sequence
                   lab  = ((iia*key + iic)*key+iib)*key+iid
-                  if(doit.eq.1) then
+                  if(doit==1) then
                     write(51) vcoeff,lab
-                  endif
+                  end if
 !***
                   do 10 j = 1,nvec
                     loc = (j-1)*csf_count
@@ -137,30 +137,30 @@
                            * vint (angular_coefficient_labels(2,i),angular_coefficient_labels(4,i))              &
                            + vint2(angular_coefficient_labels(2,i),angular_coefficient_labels(4,i))              &
                            * vint (angular_coefficient_labels(1,i),angular_coefficient_labels(3,i)) )/2.0_real64
-                    if (ir.ne.ic) then
+                    if (ir/=ic) then
                       contri = 2.0_real64 * contri
                       contrik1 = 2.0_real64 * contrik1
-                    endif
+                    end if
                     smsc1(j) = smsc1(j) + contrik1
                     smsc2(j) = smsc2(j) + contri
    10             continue
-                endif
-              endif
+                end if
+              end if
    11       continue
-          endif
+          end if
    12   continue
    13 continue
-      if(doit.eq.1) write(51) -1
+      if(doit==1) write(51) -1
 !
 ! Empty the buffer and close file
-      if(doit.eq.1) close(51)
+      if(doit==1) close(51)
 !
 !   Deallocate storage for the arrays in BUFFER
 !
       call alcbuf (3)
       return
-  309 format (' V^[(',1i2,')]_[',1i3,',',1i3,']',                      &
-         ' (',1i2,1a2,',',1i2,1a2,';',                                 &
-              1i2,1a2,',',1i2,1a2,') = ',1pd19.12)
+  309 format (" V^[(",1i2,")]_[",1i3,",",1i3,"]",                      &
+         " (",1i2,1a2,",",1i2,1a2,";",                                 &
+              1i2,1a2,",",1i2,1a2,") = ",1pd19.12)
 !
       end subroutine smsnew

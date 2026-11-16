@@ -28,8 +28,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use clrx_i
-      use iq_i
+      use clrx_i, only: clrx
+      use iq_i, only: iq
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -55,7 +55,7 @@
          gco = -dble(iqa*iqb)*fac*fac
       else
          gco = 0.0_real64
-      endif
+      end if
 
       return
       end function gco

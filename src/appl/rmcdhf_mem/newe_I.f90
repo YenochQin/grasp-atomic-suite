@@ -11,6 +11,6 @@
       real(real64), intent(inout) :: deleps
       logical, intent(out) :: fail
       integer, intent(out) :: inv
-      end subroutine
+      end subroutine newe
       end interface
-      end module
+      end module newe_i

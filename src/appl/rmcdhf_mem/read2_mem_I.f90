@@ -9,6 +9,6 @@
       integer, intent(in)       :: nfile
       integer, intent(out)      :: ncontr
       integer, intent(out)      :: iclmndum
-      end subroutine
+      end subroutine read2_mem
       end interface
-      end module
+      end module read2_mem_i

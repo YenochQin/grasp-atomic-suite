@@ -10,6 +10,6 @@
       real(real64), intent(in) :: ra(*)
       integer, intent(in) :: j
       real(real64), intent(out) :: dnorm
-      end subroutine
+      end subroutine intrpqf
       end interface
-      end module
+      end module intrpqf_i

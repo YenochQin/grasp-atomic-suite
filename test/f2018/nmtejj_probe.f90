@@ -11,11 +11,11 @@ program nmtejj_probe
             do nd = 1, modes
                 do iq = 0, (j+1)/2
                     do ij = 0, 99
-                        write(*,'(6(I0,1X))') j, iq, ij, nk, nd, nmtejj(iq, ij, j, nk, nd)
+                        write(*,"(6(I0,1X))") j, iq, ij, nk, nd, nmtejj(iq, ij, j, nk, nd)
                     end do
                 end do
             end do
         end do
     end do
-    write(*,'(6(I0,1X))') 39, 0, 0, 1, 1, nmtejj(0, 0, 39, 1, 1)
+    write(*,"(6(I0,1X))") 39, 0, 0, 1, 1, nmtejj(0, 0, 39, 1, 1)
 end program nmtejj_probe

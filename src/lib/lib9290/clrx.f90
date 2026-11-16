@@ -28,7 +28,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use facts_c
+      use facts_c, only: double, gam, mfact
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -80,7 +80,7 @@ contains
                clrx = 1.0_real64
             else
                clrx = -1.0_real64
-            endif
+            end if
 !
 !   Include the contribution from the factorials
 !
@@ -97,14 +97,14 @@ contains
                clrx = 1.0_real64
             else
                clrx = -1.0_real64
-            endif
+            end if
 !
 !   Include the contribution from the factorials
 !
             exptrm = exptrm + gam((kabkp+1)/2) - gam((kapkb-k+1)/2) - gam((&
                kamkb+k+1)/2) - gam((kbmka+k+1)/2)
 !
-         endif
+         end if
 !
 !   Final assembly
 !
@@ -116,7 +116,7 @@ contains
 !
          clrx = 0.0_real64
 !
-      endif
+      end if
 !
       return
 !

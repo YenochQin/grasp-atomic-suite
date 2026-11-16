@@ -4,6 +4,6 @@
       subroutine setxv (j)
       implicit none (type, external)
       integer :: j
-      end subroutine
+      end subroutine setxv
       end interface
-      end module
+      end module setxv_i

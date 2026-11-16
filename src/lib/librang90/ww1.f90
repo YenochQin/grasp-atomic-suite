@@ -32,11 +32,11 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use izas1_i
-      use itjj_i
-      use rumtjj_i
-      use ixjtik_i
-      use wj1_i
+      use izas1_i, only: izas1
+      use itjj_i, only: itjj
+      use rumtjj_i, only: rumtjj
+      use ixjtik_i, only: ixjtik
+      use wj1_i, only: wj1
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

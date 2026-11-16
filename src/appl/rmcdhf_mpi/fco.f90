@@ -35,8 +35,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use clrx_i
-      use iq_i
+      use clrx_i, only: clrx
+      use iq_i, only: iq
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -66,9 +66,9 @@
                fac = clrx(kappa,k,kappa)*dble(iqa)
                fco = -0.5_real64*fac*fac
             else
-               fco = 0._real64
-            endif
-         endif
+               fco = 0.0_real64
+            end if
+         end if
 !
       else
 !
@@ -77,10 +77,10 @@
 !            FCO = DBLE(IBITS(IIQA((IA - 1)/4 + 1,IR),8*MOD(IA - 1,4),8)*IBITS(&
 !               IIQA((IB - 1)/4 + 1,IR),8*MOD(IB - 1,4),8))
          else
-            fco = 0._real64
-         endif
+            fco = 0.0_real64
+         end if
 !
-      endif
+      end if
       return
 !*
 !  300 FORMAT (/'  ',1I2

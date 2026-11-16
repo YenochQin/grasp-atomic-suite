@@ -48,7 +48,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use cre_i
+      use cre_i, only: cre
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -88,10 +88,10 @@
          id = ic
          kc = kk
          ic = ik
-      endif
+      end if
       select case (ibr)
       case default
-         go to 17
+         goto 17
 !
 !   2.0  IBR = 1 --- The general case
 !
@@ -99,14 +99,14 @@
          if (nu - k >= 0) then
             if (nu - k <= 0) then
                s(1) = -(ka + kc)*(kd + kb)
-               if (k == 0) go to 16
+               if (k == 0) goto 16
                d = k*(k + 1)
                h = cre(ka,k,kc)*cre(kb,k,kd)
                if (mod(k,2) /= 0) h = -h
                s(1) = s(1)*h/d
                s(2:4) = s(1)
                return
-            endif
+            end if
 !
 !   2.2  NU = K+1
 !
@@ -127,7 +127,7 @@
             s(3) = a*g1*g4
             s(4) = a*g2*g3
             return
-         endif
+         end if
 !
 !   2.2  NU = K-1
 !
@@ -166,7 +166,7 @@
 !
       case (2)
          if (ia/=ic .or. ib==id) then
-            if (ia==ic .or. ib/=id) go to 17
+            if (ia==ic .or. ib/=id) goto 17
 !
             ik = ib
             ib = ia
@@ -181,7 +181,7 @@
             kk = kd
             kd = kc
             kc = kk
-         endif
+         end if
 !
          if (mod(k,2) /= 1) return
          dk = k*(k + 1)
@@ -192,7 +192,7 @@
 !   4.0  IBR = 3. Direct magnetic F-integrals
 !
       case (3)
-         if (ia/=ic .or. ib/=id) go to 17
+         if (ia/=ic .or. ib/=id) goto 17
          if (mod(k,2) /= 1) return
          dk = k*(k + 1)
          h = cre(ka,k,ka)*cre(kb,k,kb)/dk
@@ -202,7 +202,7 @@
 !   5.0   IBR = 4. Exchange magnetic G- and H-integrals
 !
       case (4)
-         if (ia/=id .or. ib/=ic) go to 17
+         if (ia/=id .or. ib/=ic) goto 17
          if (nu - k >= 0) then
             if (nu - k <= 0) then
                s(1) = dble(ka + kb)*cre(ka,k,kb)
@@ -212,7 +212,7 @@
                s(3) = s(1)
                s(2) = s(1) + s(1)
                return
-            endif
+            end if
 !
 !   5.2  NU = K+1
 !
@@ -229,7 +229,7 @@
             s(2) = -2.0_real64*a*g1*g2
             s(3) = -a*g2*g2
             return
-         endif
+         end if
 !
 !   5.3  NU = K-1
 !
@@ -271,8 +271,8 @@
       write (*, 301) ibr, is(1), is(2), is(3), is(4), nu, k, iex
       stop
 !
-  300 format('CXK: Illegal value K = 0 -'/,1x,4i3,2x,i3,2x,2i2)
-  301 format('CXK: Type ',i2,'-'/,1x,i2,3x,4i3,2x,2i3,2x,i2)
+  300 format("CXK: Illegal value K = 0 -"/,1x,4i3,2x,i3,2x,2i2)
+  301 format("CXK: Type ",i2,"-"/,1x,i2,3x,4i3,2x,2i3,2x,i2)
       return
 !
       end subroutine cxk

@@ -55,26 +55,26 @@ contains
 !   This initialization is carried out once per run
 !
       if (first) then
-         cblank(1:1) = '|'
-         cdash(1:1) = '-'
+         cblank(1:1) = "|"
+         cdash(1:1) = "-"
          do i = 2, 131
-            cblank(i:i) = ' '
-            cdash(i:i) = '-'
+            cblank(i:i) = " "
+            cdash(i:i) = "-"
          end do
-         cblank(132:132) = '|'
-         cdash(132:132) = '-'
+         cblank(132:132) = "|"
+         cdash(132:132) = "-"
          first = .false.
-      endif
+      end if
 !
 !   Initialization
 !
       if (sq == 0.0_real64) then
-         cp = 'X'
-         cq = '-'
+         cp = "X"
+         cq = "-"
       else
-         cp = 'P'
-         cq = 'Q'
-      endif
+         cp = "P"
+         cq = "Q"
+      end if
 !
 !   Determine the range of amplitude
 !
@@ -98,7 +98,7 @@ contains
          return
       else
          xscal = fift4/abs(dmx - dmn)
-      endif
+      end if
       yscal = ohtht/dble(radial_point_count)
 !
 !   Locate x = 0 if this is in the range
@@ -107,7 +107,7 @@ contains
          ioffst = 4 + xscal*abs(dmn)
       else
          ioffst = 1
-      endif
+      end if
 !
 !   Initialize the array CPLOT
 !
@@ -116,7 +116,7 @@ contains
             cplot(i) = cdash
          else
             cplot(i) = cblank
-         endif
+         end if
       end do
 !
 !   Generate the plot
@@ -146,11 +146,11 @@ contains
 !
       return
 !
-  300 format(' No plot: function is identically zero')
-  301 format('1')
+  300 format(" No plot: function is identically zero")
+  301 format("1")
   302 format(1x,1a132)
-  303 format(/,50x,1p,' r (max) = ',1d10.3,'Bohr radii,',&
-         ' Maximum of functions = ',1d10.3)
+  303 format(/,50x,1p," r (max) = ",1d10.3,"Bohr radii,",&
+         " Maximum of functions = ",1d10.3)
       return
 !
       end subroutine draw

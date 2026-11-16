@@ -22,6 +22,25 @@ add_executable(test.f2018_linear_algebra linear_algebra_contracts.f90)
 target_link_libraries_Fortran(test.f2018_linear_algebra PRIVATE mod)
 target_link_libraries(test.f2018_linear_algebra PRIVATE ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
 add_test(NAME f2018_linear_algebra_contracts COMMAND test.f2018_linear_algebra)
+foreach(variant rbiotransform rbiotransform_mpi)
+    add_executable(test.bndinv_${variant} bndinv_precision.f90
+        "${PROJECT_SOURCE_DIR}/src/appl/${variant}/bndinv.f90"
+        "${PROJECT_SOURCE_DIR}/src/appl/${variant}/bndinv_I.f90")
+    setup_fortran_modules(test.bndinv_${variant})
+    add_test(NAME f2018_bndinv_${variant} COMMAND test.bndinv_${variant})
+endforeach()
+if(Python3_Interpreter_FOUND)
+    add_test(NAME f2018_numeric_literals COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/check_numeric_literals.py ${CMAKE_Fortran_COMPILER})
+    add_test(NAME f2018_bndinv_interfaces COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/check_bndinv_interface.py ${CMAKE_Fortran_COMPILER})
+    add_test(NAME f2018_numeric_provenance COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/test/npol/check_upstream_tamper.py)
+    add_test(NAME f2018_qed_boundary COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/check_qed_boundary.py ${CMAKE_Fortran_COMPILER}
+        "${Fortran_MODULE_DIRECTORY_root}/mod" $<TARGET_FILE:mod>)
+    set_tests_properties(f2018_numeric_literals f2018_qed_boundary PROPERTIES TIMEOUT 60)
+endif()
 add_executable(test.f2018_storage_bytes storage_bytes.f90)
 target_link_libraries_Fortran(test.f2018_storage_bytes PRIVATE mod)
 add_test(NAME f2018_storage_bytes COMMAND test.f2018_storage_bytes)
@@ -100,6 +119,10 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
 endforeach()
 
 if(TARGET mpiu90 AND Python3_Interpreter_FOUND)
+    add_test(NAME f2018_worker_output COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/check_worker_output.py ${CMAKE_Fortran_COMPILER}
+        ${MPI_Fortran_COMPILER} ${MPIEXEC_EXECUTABLE})
+    set_tests_properties(f2018_worker_output PROPERTIES TIMEOUT 90 PROCESSORS 2)
     set(angular_app "${PROJECT_SOURCE_DIR}/src/appl/rangular_mpi")
     add_executable(test.f2018_sparse_empty_rank sparse_empty_rank.f90
         "${angular_app}/setsda.f90" "${angular_app}/setsda_I.f90" "${angular_app}/outsdampi_I.f90")

@@ -22,13 +22,13 @@ program mpi_contracts
     wide = 0
     values = 0
     enabled = .false.
-    message = ''
+    message = ""
     if (myid == 0) then
         packed = reshape([1_int8,2_int8,3_int8,4_int8,5_int8,6_int8],[2,3])
         wide = [2_int64**40,2_int64**40+7_int64]
         values = [0.25_real64,-1.5_real64]
         enabled = .true.
-        message = 'rank-zero'
+        message = "rank-zero"
     end if
     call MPI_Bcast(packed,size(packed),byte_type,0,MPI_COMM_WORLD,ierr)
     call MPI_Bcast(wide,size(wide),wide_type,0,MPI_COMM_WORLD,ierr)
@@ -39,7 +39,7 @@ program mpi_contracts
         call MPI_Abort(MPI_COMM_WORLD,4,ierr)
     if (any(wide /= [2_int64**40,2_int64**40+7_int64])) call MPI_Abort(MPI_COMM_WORLD,5,ierr)
     if (any(values /= [0.25_real64,-1.5_real64])) call MPI_Abort(MPI_COMM_WORLD,6,ierr)
-    if (.not.enabled .or. message /= 'rank-zero') call MPI_Abort(MPI_COMM_WORLD,7,ierr)
+    if (.not.enabled .or. message /= "rank-zero") call MPI_Abort(MPI_COMM_WORLD,7,ierr)
     local = real(myid+1,real64)
     call MPI_Allreduce(local,total,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierr)
     if (total /= real(nprocs*(nprocs+1)/2,real64)) call MPI_Abort(MPI_COMM_WORLD,8,ierr)

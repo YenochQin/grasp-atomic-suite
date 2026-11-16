@@ -6,6 +6,6 @@
       use prnt_c, only: nvec
       implicit none (type, external)
       real(real64), intent(out) :: gjc_diag(nvec), dgjc_diag(nvec)
-      end subroutine
+      end subroutine compute_gj_only_mpi
       end interface
-      end module
+      end module compute_gj_only_mpi_i

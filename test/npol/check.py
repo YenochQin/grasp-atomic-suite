@@ -170,10 +170,13 @@ def entrypoints(root: Path) -> None:
             assert "npol" not in main and "npfile" not in main
             assert re.search(r"call getscdmpi\s*\(eol, idblk, file1, file2\s*\)", main)
         elif mpi:
-            assert "npfile = ''" in main and "npfile = trim(permdir) // '/npol.inp'" in main
+            assert re.search(r"npfile = (['\"])\1", main)
+            assert re.search(r"npfile = trim\(permdir\) // (['\"])/npol\.inp\1", main)
             assert re.search(r"call getscdmpi\s*\(eol, idblk, file1, file2, npfile\)", main)
         else:
-            assert "call getscd (eol, idblk, 'isodata', 'rwfn.inp', 'npol.inp')" in main
+            assert re.search(
+                r"call getscd \(eol, idblk, (['\"])isodata\1, "
+                r"(['\"])rwfn\.inp\2, (['\"])npol\.inp\3\)", main)
         # No second matrix contribution and MODE=0 retained in both layouts.
         setham = (directory / "setham.f90").read_text().lower()
         assert "npol" not in setham and re.search(r"rinti\s*\([^\n]*,\s*0\s*\)", setham)

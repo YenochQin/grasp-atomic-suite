@@ -19,13 +19,13 @@ contains
 !-----------------------------------------------
       use mpi_c
       use def_c
-      use npar_c
+      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use nsmdat_c, only: sqn, dmomnm, qmomb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setiso_i
-      use orthsc_i
+      use setiso_i, only: setiso
+      use orthsc_i, only: orthsc
       use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
 !-----------------------------------------------
@@ -40,7 +40,7 @@ contains
       real(real64) :: con, fkk, ey, pzy, dnorm
       real(real64), pointer :: pa(:), qa(:), ra(:)
 !-----------------------------------------------
-      if (mpi_rank .eq. 0) call setiso (isofile)
+      if (mpi_rank == 0) call setiso (isofile)
 
       call mpi_bcast (nuclear_charge,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (emn,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
@@ -53,5 +53,5 @@ contains
         mpi_error_code)
 
       return
-      end
+      end subroutine setisompi
 end module setisompi_i

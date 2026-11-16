@@ -18,11 +18,11 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero
-      use ribojj_c
+      use ribojj_c, only: imgnjj, imgtjj, impnjj, imptjj
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rmew7bjj_i
+      use rmew7bjj_i, only: rmew7bjj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -43,15 +43,15 @@ contains
       if(k1 == 0 .and. k2 == 0) then
         if(j1 /= j2) return
         coef=-dsqrt(dble(i00(j1-11)))
-      elseif(k1 == 1 .and. k2 == 0) then
+      else if(k1 == 1 .and. k2 == 0) then
         if(j1 /= j2) return
         coef=-dsqrt(dble(i10(j1-11)))
-      elseif(k1 == 0 .and. k2 == 1) then
+      else if(k1 == 0 .and. k2 == 1) then
         if(j1 /= j2) return
         coef=-dsqrt(dble(i01(j1-11))/dble(7))
       else
         call rmew7bjj(j1,j2,k1,k2,coef)
-      endif
+      end if
       return
       end subroutine rmew7jj
 end module rmew7jj_i

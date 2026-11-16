@@ -60,8 +60,8 @@ contains
 !-----------------------------------------------
 
       ns = min(nmax,ncf)
-      call alloc (ap, (ns*(ns + 1))/2, 'AP', 'INIESTmpi')
-      call dinit ((ns*(ns + 1))/2, 0._real64, ap, 1)
+      call alloc (ap, (ns*(ns + 1))/2, "AP", "INIESTmpi")
+      call dinit ((ns*(ns + 1))/2, 0.0_real64, ap, 1)
 
 !  Expand the sparse form to normal form for upper-right sub-matrix
 
@@ -79,23 +79,23 @@ contains
 
       call gdsummpi (ap, (ns*(ns+1))/2)
 
-      call alloc(eigval, ns,     'EIGVAL', 'INIESTmpi')
-      call alloc (vec,   ns*niv, 'VEC',    'INIESTmpi')
-      call alloc (work,  8*ns,   'WORK',   'INIESTmpi')
+      call alloc(eigval, ns,     "EIGVAL", "INIESTmpi")
+      call alloc (vec,   ns*niv, "VEC",    "INIESTmpi")
+      call alloc (work,  8*ns,   "WORK",   "INIESTmpi")
 !GG      CALL ALLOC (iwork, 8*ns,   'IWORK',  'INIESTmpi')
-      call alloc (iwork, 5*ns,   'IWORK',  'INIESTmpi')
-      call alloc (ifail, ns,     'IFAIL',  'INIESTmpi')
+      call alloc (iwork, 5*ns,   "IWORK",  "INIESTmpi")
+      call alloc (ifail, ns,     "IFAIL",  "INIESTmpi")
 
-      abstol = 2*dlamch('S')
+      abstol = 2*dlamch("S")
 
-      call dspevx ('Vectors also', 'In a range', 'Upper triangular', ns, ap, &
-      -1._real64, -1._real64, 1, niv, abstol, nfound, eigval, vec, ns, work, iwork, ifail, &
+      call dspevx ("Vectors also", "In a range", "Upper triangular", ns, ap, &
+      -1.0_real64, -1.0_real64, 1, niv, abstol, nfound, eigval, vec, ns, work, iwork, ifail, &
          info)
       mpi_error_code = -abs(info)
 
 !  Build the Basis.
 
-      call dinit (ncf*niv, 0._real64, basis, 1)
+      call dinit (ncf*niv, 0.0_real64, basis, 1)
 
 !  scatter the vectors
 
@@ -105,12 +105,12 @@ contains
 
       call dcopy (niv, eigval, 1, basis(niv*ncf+1), 1)
 
-       call dalloc (ap,     'AP',     'INIESTmpi')
-       call dalloc (eigval, 'EIGVAL', 'INIESTmpi')
-       call dalloc (vec,    'VEC',    'INIESTmpi')
-       call dalloc (work,   'WORK',   'INIESTmpi')
-       call dalloc (iwork,  'IWORK',  'INIESTmpi')
-       call dalloc (ifail,  'IFAIL',  'INIESTmpi')
+       call dalloc (ap,     "AP",     "INIESTmpi")
+       call dalloc (eigval, "EIGVAL", "INIESTmpi")
+       call dalloc (vec,    "VEC",    "INIESTmpi")
+       call dalloc (work,   "WORK",   "INIESTmpi")
+       call dalloc (iwork,  "IWORK",  "INIESTmpi")
+       call dalloc (ifail,  "IFAIL",  "INIESTmpi")
 
       return
       end subroutine iniestmpi

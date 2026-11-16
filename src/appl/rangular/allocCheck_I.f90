@@ -5,6 +5,6 @@
       implicit none (type, external)
       integer, intent(in)  :: n
       integer, intent(out) :: irez
-      end subroutine
+      end subroutine alloccheck
       end interface
-      end module
+      end module alloccheck_i

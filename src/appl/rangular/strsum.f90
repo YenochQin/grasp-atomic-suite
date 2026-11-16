@@ -6,16 +6,16 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use def_c
-      use iccu_c
-      use mcp_c
+      use iccu_c, only: iccut, iccutblk
+      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
       use orb_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use calen_i
-      use convrt_i
+      use calen_i, only: calen
+      use convrt_i, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -30,34 +30,34 @@
 !   header of the summary file
 !
       call calen (ctime, cdate)
-      write (24, *) 'GENMCP run at ', ctime, ' on ', cdate, '.'
+      write (24, *) "GENMCP run at ", ctime, " on ", cdate, "."
 !
 !   Write out the basic dimensions of the electron cloud
 !
       write (24, *)
       call convrt (electron_count, record, lenth)
-      write (24, *) 'There are '//record(1:lenth)//' electrons in the cloud'
+      write (24, *) "There are "//record(1:lenth)//" electrons in the cloud"
       call convrt (csf_count, record, lenth)
-      write (24, *) ' in '//record(1:lenth)//' relativistic CSFs'
+      write (24, *) " in "//record(1:lenth)//" relativistic CSFs"
       call convrt (orbital_count, record, lenth)
-      write (24, *) ' based on '//record(1:lenth)//' relativistic subshells.'
+      write (24, *) " based on "//record(1:lenth)//" relativistic subshells."
 !
 !   If the CSFs are not treated uniformly, write out an
 !   informative message
 !
       if (diagonal_only) then
          write (24, *)
-         write (24, *) 'Only diagonal matrix elements are computed.'
+         write (24, *) "Only diagonal matrix elements are computed."
       else
          if (use_first_order_restriction) then
             do i = 1, symmetry_block_count
                write (24, *)
                call convrt (iccut(i), record, lenth)
-               write (24, *) 'CSFs 1--'//record(1:lenth)//' constitute'//&
-                  ' the zero-order space.'
+               write (24, *) "CSFs 1--"//record(1:lenth)//" constitute"//&
+                  " the zero-order space."
             end do
-         endif
-      endif
+         end if
+      end if
 !
       return
       end subroutine strsum

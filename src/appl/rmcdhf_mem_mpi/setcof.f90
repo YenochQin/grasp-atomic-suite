@@ -23,10 +23,10 @@
       use parameter_def,    only: orbital_index_radix
       use memory_man
       use orb_c
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use hmat_c
-      use iounit_c
-      use mcpa_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use mcpa_c, only: double, max_mcp_file_multipole_rank
       use mpi_c
       use pos_c
       use scf_c
@@ -36,11 +36,11 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dsubrs_i
-      use fco_i
-      use gco_i
-      use read1_mem_i
-      use read3_mem_i
+      use dsubrs_i, only: dsubrs
+      use fco_i, only: fco
+      use gco_i, only: gco
+      use read1_mem_i, only: read1_mem
+      use read3_mem_i, only: read3_mem
       use read02_mem_i, only: read02_mem
       implicit none (type, external)
 !-----------------------------------------------
@@ -52,7 +52,7 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       integer, parameter :: key = orbital_index_radix
-      character(len=6), parameter :: myname = 'SETCOF'
+      character(len=6), parameter :: myname = "SETCOF"
       real(real64), parameter :: eps = 1.0e-10_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -100,9 +100,9 @@
 !=======================================================================
 
       ndim = 1
-      call alloc (coeff, ndim, 'COEFF', 'SETCOF' )
-      call alloc (iclmn, ndim, 'ICLMN', 'SETCOF')
-      call alloc (indx, ndim, 'INDX', 'SETCOF')
+      call alloc (coeff, ndim, "COEFF", "SETCOF" )
+      call alloc (iclmn, ndim, "ICLMN", "SETCOF")
+      call alloc (indx, ndim, "INDX", "SETCOF")
 
       ndcof = 0
       nxcof = 0
@@ -125,11 +125,11 @@
             kmax = nkjj - 1
          else
             kmax = 0
-         endif
+         end if
          do k = 0, kmax, 2
 
             !<<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
-            sumr = 0._real64
+            sumr = 0.0_real64
             do nb = 1, symmetry_block_count
                do ir = mpi_rank + 1, csf_counts_by_block(nb), mpi_process_count
                   sumr = sumr + dsubrs(eol,ir,ir,nb)*fco(k,ir + csf_offsets_by_block(nb),j,&
@@ -139,26 +139,26 @@
             !>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
             if (ib == j) then
-               ykab = 2._real64*sumr/ucfj
+               ykab = 2.0_real64*sumr/ucfj
             else
                ykab = sumr/ucfj
-            endif
+            end if
 
            !*** The following IF has to be removed since YKAB
            !*** is incomplete in multiprocessor case
             !IF (ABS (YKAB) .GT. EPS) THEN
             nycof = nycof + 1
-            if (nycof .gt. nydim ) then
-               if (nydim .gt. 0) then
+            if (nycof > nydim ) then
+               if (nydim > 0) then
                   nydim = 2*nydim
-                  call ralloc(nya, nydim, 'NYA', 'SETCOF')
-                  call ralloc(ya, nydim, 'YA', 'SETCOF')
+                  call ralloc(nya, nydim, "NYA", "SETCOF")
+                  call ralloc(ya, nydim, "YA", "SETCOF")
                else
                   nydim = 64
-                  call alloc(nya, nydim, 'NYA', 'SETCOF')
-                  call alloc(ya, nydim, 'YA', 'SETCOF')
-               endif
-            endif
+                  call alloc(nya, nydim, "NYA", "SETCOF")
+                  call alloc(ya, nydim, "YA", "SETCOF")
+               end if
+            end if
             ya(nycof) = ykab
             nya(nycof) = k + ilabel
             !ENDIF
@@ -181,13 +181,13 @@
             kmin = abs((nkjj - nkjib)/2)
          else
             kmin = abs((nkjj - nkjib)/2) + 1
-         endif
+         end if
          kmax = (nkjj + nkjib)/2
 
          do k = kmin, kmax, 2
 
             !<<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
-            sumr = 0._real64
+            sumr = 0.0_real64
             do nb = 1, symmetry_block_count
                do ir = mpi_rank + 1, csf_counts_by_block(nb), mpi_process_count
                   sumr = sumr + dsubrs(eol,ir,ir,nb)*gco(k,ir + csf_offsets_by_block(nb),j,&
@@ -205,14 +205,14 @@
             if (nxcof > nxdim) then
                if (nxdim > 0) then
                   nxdim = 2*nxdim
-                  call ralloc (xa, nxdim, 'XA', 'SETCOF')
-                  call ralloc (nxa, nxdim, 'NXA', 'SETCOF')
+                  call ralloc (xa, nxdim, "XA", "SETCOF")
+                  call ralloc (nxa, nxdim, "NXA", "SETCOF")
                else
                   nxdim = 64
-                  call alloc (xa, nxdim, 'XA', 'SETCOF')
-                  call alloc (nxa, nxdim, 'NXA', 'SETCOF')
-               endif
-            endif
+                  call alloc (xa, nxdim, "XA", "SETCOF")
+                  call alloc (nxa, nxdim, "NXA", "SETCOF")
+               end if
+            end if
             xa(nxcof) = xkab
             nxa(nxcof) = k + ilabel
             !ENDIF
@@ -231,7 +231,7 @@
          !*** Read in IROW from file mcp.30 ***
          nelmntgg = imax2_30(jblock) - imin2_30(jblock)
          stored_matrix_element_count = int(nelmntgg,kind=int64)
-         call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'SETCOF')
+         call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "SETCOF")
          call read02_mem(jblock)
 
          !*** Loop over labels having non-zero coefficients
@@ -244,9 +244,9 @@
             ! 0, 0 marks the end of a block. This is the normal exit
 
             if (lab==0 .and. ncontr==0) then
-               call dalloc (matrix_partner_indices, 'IROW', 'SETCOF')
+               call dalloc (matrix_partner_indices, "IROW", "SETCOF")
                exit                              ! Actually to next block
-            endif
+            end if
 
             !*** Decode the labels of I(ab) ***
             ia = mod(lab,key)
@@ -258,17 +258,17 @@
             if (ia/=j .and. ib/=j) then
                ncontr_tot = ncontr_tot + ncontr  ! No contributions from this integral; skip
                cycle                             ! to next label
-            endif
+            end if
 
             if (ncontr > ndim) then
-               call dalloc (coeff, 'COEFF', 'SETCOF')
-               call dalloc (iclmn, 'ICLMN', 'SETCOF')
-               call dalloc (indx, 'INDX', 'SETCOF')
+               call dalloc (coeff, "COEFF", "SETCOF")
+               call dalloc (iclmn, "ICLMN", "SETCOF")
+               call dalloc (indx, "INDX", "SETCOF")
                ndim = ncontr
-               call alloc (coeff, ndim, 'COEFF', 'SETCOF' )
-               call alloc (iclmn, ndim, 'ICLMN', 'SETCOF')
-               call alloc (indx, ndim, 'INDX', 'SETCOF')
-            endif
+               call alloc (coeff, ndim, "COEFF", "SETCOF" )
+               call alloc (iclmn, ndim, "ICLMN", "SETCOF")
+               call alloc (indx, ndim, "INDX", "SETCOF")
+            end if
 
             ! Read the column index, the sparse matrix index, and the
             ! coefficient for all contributions from this integral
@@ -279,7 +279,7 @@
             ! Add up all the contributions from this integral;
             ! off-diagonal contributions have double the weight
 
-            sum = 0._real64
+            sum = 0.0_real64
             do i = 1, ncontr
                ir = matrix_partner_indices(indx(i))
                ic = iclmn(i)
@@ -301,7 +301,7 @@
                ithis = ib
             else
                ithis = ia
-            endif
+            end if
 
             !*** Check it against the previously recorded ***
             if (jblock > 1) then
@@ -310,21 +310,21 @@
                   da(i) = da(i) + sum
                   cycle  l123
                end do
-            endif
+            end if
 
             !*** Not found in the record, add an item ***
             ndcof = ndcof + 1
             if (ndcof > nddim) then
                if (nddim > 0) then
                   nddim = 2*nddim
-                  call ralloc (da, nddim, 'DA', 'SETCOF')
-                  call ralloc (nda, nddim, 'NDA', 'SETCOF')
+                  call ralloc (da, nddim, "DA", "SETCOF")
+                  call ralloc (nda, nddim, "NDA", "SETCOF")
                else
                   nddim = 64
-                  call alloc (da, nddim, 'DA', 'SETCOF')
-                  call alloc (nda, nddim, 'NDA', 'SETCOF')
-               endif
-            endif
+                  call alloc (da, nddim, "DA", "SETCOF")
+                  call alloc (nda, nddim, "NDA", "SETCOF")
+               end if
+            end if
             da(ndcof) = sum                      ! print*, DA(NDCOF), ndcof, myid, 'myid'
             nda(ndcof) = ithis
 
@@ -348,7 +348,7 @@
 !           ...Read in IROW from file mcp.30
             nelmntgg = imax2_30(jblock) - imin2_30(jblock)
             stored_matrix_element_count = int(nelmntgg,kind=int64)
-            call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'SETCOF')
+            call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "SETCOF")
             call read02_mem(jblock)
 
             k = nfile - 32                       ! multipolarity of the integral
@@ -362,9 +362,9 @@
             call read1_mem(nfile,ncontr_tot2,lab, ncontr)
 !
             if (lab==0 .and. ncontr==0) then
-               call dalloc (matrix_partner_indices, 'IROW', 'SETCOF')
+               call dalloc (matrix_partner_indices, "IROW", "SETCOF")
                cycle
-            endif
+            end if
             !***                       k
             !*** Decode the labels of R (abcd)
             indexs(4) = mod(lab,key)
@@ -380,20 +380,20 @@
 
             if (irank == 0) then
                ncontr_tot = ncontr_tot + ncontr
-               go to 999
-            endif
+               goto 999
+            end if
 
             !*** At least one subshell index matches; allocate storage
             !*** for reading in the rest of this block
             if (ncontr > ndim) then
-               call dalloc (coeff, 'COEFF', 'SETCOF')
-               call dalloc (iclmn, 'ICLMN', 'SETCOF')
-               call dalloc (indx, 'INDX', 'SETCOF')
+               call dalloc (coeff, "COEFF", "SETCOF")
+               call dalloc (iclmn, "ICLMN", "SETCOF")
+               call dalloc (indx, "INDX", "SETCOF")
                ndim = ncontr
-               call alloc (coeff, ndim, 'COEFF', 'SETCOF')
-               call alloc (iclmn, ndim, 'ICLMN', 'SETCOF')
-               call alloc (indx, ndim, 'INDX', 'SETCOF')
-            endif
+               call alloc (coeff, ndim, "COEFF", "SETCOF")
+               call alloc (iclmn, ndim, "ICLMN", "SETCOF")
+               call alloc (indx, ndim, "INDX", "SETCOF")
+            end if
 
             !*** Read column index, sparse matrix index, and
             !*** coefficient for all contributions from this integral
@@ -402,7 +402,7 @@
 
             !*** Add up all the contributions from this integral;
             !*** off-diagonal contributions have double the weight
-            sum = 0._real64
+            sum = 0.0_real64
             do i = 1, ncontr
                ir = matrix_partner_indices(indx(i))
                ic = iclmn(i)
@@ -437,30 +437,30 @@
                   exit
                end do
 
-               if (ithis == (-911)) stop 'ithis .EQ. -911'
+               if (ithis == (-911)) stop "ithis .EQ. -911"
 
                !*** Check ithis against the previously recorded ***
                if (jblock > 1) then
                   do i = 1, nxcof
                      if (nxa(i) /= ithis) cycle
                      xa(i) = xa(i) + sum
-                     go to 999
+                     goto 999
                   end do
-               endif
+               end if
 
                !*** Not found in records, add an item ***
                nxcof = nxcof + 1
                if (nxcof > nxdim) then
                   if (nxdim > 0) then
                      nxdim = 2*nxdim
-                     call ralloc (xa, nxdim, 'XA', 'SETCOF')
-                     call ralloc (nxa, nxdim, 'NXA', 'SETCOF')
+                     call ralloc (xa, nxdim, "XA", "SETCOF")
+                     call ralloc (nxa, nxdim, "NXA", "SETCOF")
                   else
                      nxdim = 64
-                     call alloc (xa, nxdim, 'XA', 'SETCOF')
-                     call alloc (nxa, nxdim, 'NXA', 'SETCOF')
-                  endif
-               endif
+                     call alloc (xa, nxdim, "XA", "SETCOF")
+                     call alloc (nxa, nxdim, "NXA", "SETCOF")
+                  end if
+               end if
                xa(nxcof) = sum
                nxa(nxcof) = ithis
 
@@ -480,7 +480,7 @@
                   else if (ifound == 1) then
                      loc2 = iind
                      exit
-                  endif
+                  end if
                end do
 
                if (loc2 - loc1 == 2) then
@@ -501,23 +501,23 @@
                      do i = 1, nycof
                         if (nya(i) /= ithis) cycle
                         ya(i) = ya(i) + sum + sum
-                        go to 999
+                        goto 999
                      end do
-                  endif
+                  end if
 
                   !*** Not found, add an item ***
                   nycof = nycof + 1
                   if (nycof > nydim) then
                      if (nydim > 0) then
                         nydim = 2*nydim
-                        call ralloc(nya, nydim, 'NYA', 'SETCOF')
-                        call ralloc(ya, nydim, 'YA', 'SETCOF')
+                        call ralloc(nya, nydim, "NYA", "SETCOF")
+                        call ralloc(ya, nydim, "YA", "SETCOF")
                      else
                         nydim = 64
-                        call alloc(nya, nydim, 'NYA', 'SETCOF 2b')
-                        call alloc(ya, nydim, 'YA', 'SETCOF')
-                     endif
-                  endif
+                        call alloc(nya, nydim, "NYA", "SETCOF 2b")
+                        call alloc(ya, nydim, "YA", "SETCOF")
+                     end if
+                  end if
                   ya(nycof) = sum + sum
                   nya(nycof) = ithis
 
@@ -542,27 +542,27 @@
                      do i = 1, nxcof
                         if (nxa(i) /= ithis) cycle
                         xa(i) = xa(i) + sum + sum
-                        go to 999
+                        goto 999
                      end do
-                  endif
+                  end if
 
                   !*** Not found, add an item ***
                   nxcof = nxcof + 1
                   if (nxcof > nxdim) then
                      if (nxdim > 0) then
                         nxdim = 2*nxdim
-                        call ralloc (xa, nxdim, 'XA', 'SETCOF')
-                        call ralloc (nxa, nxdim, 'NXA', 'SETCOF')
+                        call ralloc (xa, nxdim, "XA", "SETCOF")
+                        call ralloc (nxa, nxdim, "NXA", "SETCOF")
                      else
                         nxdim = 64
-                        call alloc (xa, nxdim, 'XA', 'SETCOF')
-                        call alloc (nxa, nxdim, 'NXA', 'SETCOF')
-                     endif
-                  endif
+                        call alloc (xa, nxdim, "XA", "SETCOF")
+                        call alloc (nxa, nxdim, "NXA", "SETCOF")
+                     end if
+                  end if
                   xa(nxcof) = sum + sum
                   nxa(nxcof) = ithis
 
-               endif
+               end if
 
             case (3)
 
@@ -585,30 +585,30 @@
                   ithis2 = ((iorb*key + iyo2)*key + iyo1)*key + k
                end do
 
-               if (ithis==(-911) .or. ithis2==(-911)) stop 'ithis2'
+               if (ithis==(-911) .or. ithis2==(-911)) stop "ithis2"
 
                !*** Check the previously recorded for YA
                if (jblock > 1) then
                   do i = 1, nycof
                      if (nya(i) /= ithis) cycle
                      ya(i) = ya(i) + sum + sum
-                     go to 456
+                     goto 456
                   end do
-               endif
+               end if
 
                ! Not found, add an item ***
                nycof = nycof + 1
                if (nycof > nydim) then
                   if (nydim > 0) then
                      nydim = 2*nydim
-                     call ralloc (nya, nydim, 'NYA', 'SETCOF')
-                     call ralloc (ya, nydim, 'YA', 'SETCOF')
+                     call ralloc (nya, nydim, "NYA", "SETCOF")
+                     call ralloc (ya, nydim, "YA", "SETCOF")
                   else
                      nydim = 64
-                     call alloc (nya, nydim, 'NYA', 'SETCOF')
-                     call alloc (ya, nydim, 'YA', 'SETCOF')
-                  endif
-               endif
+                     call alloc (nya, nydim, "NYA", "SETCOF")
+                     call alloc (ya, nydim, "YA", "SETCOF")
+                  end if
+               end if
                ya(nycof) = sum + sum
                nya(nycof) = ithis
 
@@ -619,23 +619,23 @@
                   do i = 1, nxcof
                      if (nxa(i) /= ithis2) cycle
                      xa(i) = xa(i) + sum
-                     go to 999
+                     goto 999
                   end do
-               endif
+               end if
 
                ! Not found, add an item ***
                nxcof = nxcof + 1
                if (nxcof > nxdim) then
                   if (nxdim > 0) then
                      nxdim = 2*nxdim
-                     call ralloc (xa, nxdim, 'XA', 'SETCOF')
-                     call ralloc (nxa, nxdim, 'NXA', 'SETCOF')
+                     call ralloc (xa, nxdim, "XA", "SETCOF")
+                     call ralloc (nxa, nxdim, "NXA", "SETCOF")
                   else
                      nxdim = 64
-                     call alloc (xa, nxdim, 'XA', 'SETCOF')
-                     call alloc (nxa, nxdim, 'NXA', 'SETCOF')
-                  endif
-               endif
+                     call alloc (xa, nxdim, "XA", "SETCOF")
+                     call alloc (nxa, nxdim, "NXA", "SETCOF")
+                  end if
+               end if
                xa(nxcof) = sum
                nxa(nxcof) = ithis2
 
@@ -654,39 +654,39 @@
                if (jblock > 1) then
                   do i = 1, nycof
                      if (nya(i) /= ithis) cycle
-                     ya(i) = ya(i) + 4._real64*sum
-                     go to 999
+                     ya(i) = ya(i) + 4.0_real64*sum
+                     goto 999
                   end do
-               endif
+               end if
 
                ! Not found, add an item ***
                nycof = nycof + 1
                if (nycof > nydim) then
                   if (nydim > 0) then
                      nydim = 2*nydim
-                     call ralloc(nya, nydim, 'NYA', 'SETCOF')
-                     call ralloc(ya, nydim, 'YA', 'SETCOF')
+                     call ralloc(nya, nydim, "NYA", "SETCOF")
+                     call ralloc(ya, nydim, "YA", "SETCOF")
                   else
                      nydim = 64
-                     call alloc(nya, nydim, 'NYA', 'SETCOF 4b')
-                     call alloc(ya, nydim, 'YA', 'SETCOF')
-                  endif
-               endif
-               ya(nycof) = 4._real64*sum
+                     call alloc(nya, nydim, "NYA", "SETCOF 4b")
+                     call alloc(ya, nydim, "YA", "SETCOF")
+                  end if
+               end if
+               ya(nycof) = 4.0_real64*sum
                nya(nycof) = ithis
 
             end select
 
-            go to 999
+            goto 999
          end do                                  ! loop for V-Coefficients
       end do
 
 !=======================================================================
 !   Deallocate storage for arrays local to this routine
 !=======================================================================
-      call dalloc (coeff, 'COEFF', 'SETCOF')
-      call dalloc (iclmn, 'ICLMN', 'SETCOF')
-      call dalloc (indx, 'INDX', 'SETCOF')
+      call dalloc (coeff, "COEFF", "SETCOF")
+      call dalloc (iclmn, "ICLMN", "SETCOF")
+      call dalloc (indx, "INDX", "SETCOF")
 
       return
       end subroutine setcof

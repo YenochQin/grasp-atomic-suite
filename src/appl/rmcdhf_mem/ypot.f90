@@ -20,16 +20,16 @@
       use parameter_def,    only: orbital_index_radix
       use debug_c
       use grid_c
-      use npot_c
+      use npot_c, only: double, first_grid_index_beyond_fermi_c, max_radial_points, negative_radius_times_potential
       use orb_c
-      use pote_c
+      use pote_c, only: double, max_radial_points, xp, xq, yp
       use scf_c
-      use tatb_c
+      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use yzk_i
-      use draw_i
+      use yzk_i, only: yzk
+      use draw_i, only: draw
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -83,7 +83,7 @@
             nrows = nb3
          else
             nrows = nb3 + 1
-         endif
+         end if
          do ii = 1, nrows
             ii1 = ii
             ii2 = ii1 + nrows
@@ -95,17 +95,17 @@
                write (99, 303) radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2)
             else
                write (99, 303) radial_grid(ii1), yp(ii1)
-            endif
+            end if
          end do
          call draw (yp, 1.0_real64, yp, 0.0_real64, radial_point_count)
-      endif
+      end if
 !
       return
 !
-  300 format(/,/,' Direct potential for ',1i2,1a2,' orbital :'/,/)
-  301 format(/,25x,'(',1i2,')'/,1x,1p,d21.14,'* Y    (',1i2,1a2,',',1i2,1a2,')'&
+  300 format(/,/," Direct potential for ",1i2,1a2," orbital :"/,/)
+  301 format(/,25x,"(",1i2,")"/,1x,1p,d21.14,"* Y    (",1i2,1a2,",",1i2,1a2,")"&
          )
-  302 format(/,/,3(' --------- r --------- ------- Y (r) -------'))
+  302 format(/,/,3(" --------- r --------- ------- Y (r) -------"))
   303 format(1p,6(1x,1d21.14))
       return
 !

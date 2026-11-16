@@ -39,10 +39,10 @@
 !
 !   Allocate storage for arrays
 !
-         call alloc (iptr, nmdim, 'IPTR', 'ALCNMA')
-         call alloc (isldr, nmdim, 'ISLDR', 'ALCNMA')
-         call alloc (isldr1, nmdim, 'ISLDR1', 'ALCNMA')
-         call alloc (xsldr, nmdim, 'XSLDR', 'ALCNMA')
+         call alloc (iptr, nmdim, "IPTR", "ALCNMA")
+         call alloc (isldr, nmdim, "ISLDR", "ALCNMA")
+         call alloc (isldr1, nmdim, "ISLDR1", "ALCNMA")
+         call alloc (xsldr, nmdim, "XSLDR", "ALCNMA")
 !
       case (2)
 !
@@ -50,10 +50,10 @@
 !
          newsiz = 2*nmdim
 !
-         call ralloc (iptr, newsiz, 'IPTR', 'ALCNMA')
-         call ralloc (isldr, newsiz, 'ISLDR', 'ALCNMA')
-         call ralloc (isldr1, newsiz, 'ISLDR1', 'ALCNMA')
-         call ralloc (xsldr, newsiz, 'XSLDR', 'ALCNMA')
+         call ralloc (iptr, newsiz, "IPTR", "ALCNMA")
+         call ralloc (isldr, newsiz, "ISLDR", "ALCNMA")
+         call ralloc (isldr1, newsiz, "ISLDR1", "ALCNMA")
+         call ralloc (xsldr, newsiz, "XSLDR", "ALCNMA")
 !
          nmdim = newsiz
 !
@@ -61,14 +61,14 @@
 !
 !   Deallocate the storage for the arrays
 !
-         call dalloc (iptr,  'IPTR', 'ALCNMA')
-         call dalloc (isldr, 'ISLDR', 'ALCNMA')
-         call dalloc (isldr1, 'ISLDR1', 'ALCNMA')
-         call dalloc (xsldr,  'XSLDR', 'ALCNMA')
+         call dalloc (iptr,  "IPTR", "ALCNMA")
+         call dalloc (isldr, "ISLDR", "ALCNMA")
+         call dalloc (isldr1, "ISLDR1", "ALCNMA")
+         call dalloc (xsldr,  "XSLDR", "ALCNMA")
 !
       case default
 !
-         write (6, *) 'ALCNMA: Invalid argument IMODE = ', imode
+         write (6, *) "ALCNMA: Invalid argument IMODE = ", imode
          stop
 !
       end select

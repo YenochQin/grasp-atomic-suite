@@ -32,8 +32,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ittk_i
-      use cre_i
+      use ittk_i, only: ittk
+      use cre_i, only: cre
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -22,18 +22,18 @@ contains
 !-----------------------------------------------
       if(n == 1) then
         jthn=mod(k,i)
-      elseif(n == 2) then
+      else if(n == 2) then
         jthn=mod(k/i,i)
-      elseif(n == 3) then
+      else if(n == 3) then
         jthn=mod(k/(i*i),i)
-      elseif(n == 4) then
+      else if(n == 4) then
         jthn=mod(k/(i*i*i),i)
-      elseif(n == 5) then
+      else if(n == 5) then
         jthn=mod(k/(i*i*i*i),i)
       else
-        write(6,'(A)') ' ERROR IN JTHN '
+        write(6,"(A)") " ERROR IN JTHN "
         stop
-      endif
+      end if
       return
       end function jthn
 end module jthn_i

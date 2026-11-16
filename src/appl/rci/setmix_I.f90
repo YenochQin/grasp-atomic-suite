@@ -5,6 +5,6 @@
       implicit none (type, external)
       character (len = *), intent(in) :: name
       character (len = 8) :: idblk(*)
-      end subroutine
+      end subroutine setmix
       end interface
-      end module
+      end module setmix_i

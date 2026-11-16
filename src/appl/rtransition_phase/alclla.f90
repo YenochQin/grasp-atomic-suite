@@ -40,13 +40,13 @@
 !
 !   Allocate storage for arrays
 !
-         call alloc (ibeg, lldim, 'IBEG', 'ALCLLA')
-         call alloc (ilab, lldim, 'ILAB', 'ALCLLA')
-         call alloc (ilast, lldim, 'ILAST', 'ALCLLA')
-         call alloc (ileft, lldim, 'ILEFT', 'ALCLLA')
-         call alloc (iptcsf, lldim, 'IPTCSF', 'ALCLLA')
-         call alloc (iright, lldim, 'IRIGHT', 'ALCLLA')
-         call alloc (lblint, lldim, 'LBLINT', 'ALCLLA')
+         call alloc (ibeg, lldim, "IBEG", "ALCLLA")
+         call alloc (ilab, lldim, "ILAB", "ALCLLA")
+         call alloc (ilast, lldim, "ILAST", "ALCLLA")
+         call alloc (ileft, lldim, "ILEFT", "ALCLLA")
+         call alloc (iptcsf, lldim, "IPTCSF", "ALCLLA")
+         call alloc (iright, lldim, "IRIGHT", "ALCLLA")
+         call alloc (lblint, lldim, "LBLINT", "ALCLLA")
 !
       case (2)
 !
@@ -54,13 +54,13 @@
 !
          newsiz = 2*lldim
 !
-         call ralloc (ibeg, newsiz, 'IBEG', 'ALCLLA')
-         call ralloc (ilab, newsiz, 'ILAB', 'ALCLLA')
-         call ralloc (ilast, newsiz, 'ILAST', 'ALCLLA')
-         call ralloc (ileft, newsiz, 'ILEFT', 'ALCLLA')
-         call ralloc (iptcsf, newsiz, 'IPTCSF', 'ALCLLA')
-         call ralloc (iright, newsiz, 'IRIGHT', 'ALCLLA')
-         call ralloc (lblint, newsiz, 'LBLINT', 'ALCLLA')
+         call ralloc (ibeg, newsiz, "IBEG", "ALCLLA")
+         call ralloc (ilab, newsiz, "ILAB", "ALCLLA")
+         call ralloc (ilast, newsiz, "ILAST", "ALCLLA")
+         call ralloc (ileft, newsiz, "ILEFT", "ALCLLA")
+         call ralloc (iptcsf, newsiz, "IPTCSF", "ALCLLA")
+         call ralloc (iright, newsiz, "IRIGHT", "ALCLLA")
+         call ralloc (lblint, newsiz, "LBLINT", "ALCLLA")
 !
          lldim = newsiz
 !
@@ -68,17 +68,17 @@
 !
 !   Deallocate the storage for the arrays
 !
-         call dalloc (ibeg, 'IBEG', 'ALCLLA')
-         call dalloc (ilab, 'ILAB', 'ALCLLA')
-         call dalloc (ilast, 'ILAST', 'ALCLLA')
-         call dalloc (ileft, 'ILEFT', 'ALCLLA')
-         call dalloc (iptcsf, 'IPTCSF', 'ALCLLA')
-         call dalloc (iright, 'IRIGHT', 'ALCLLA')
-         call dalloc (lblint, 'LBLINT', 'ALCLLA')
+         call dalloc (ibeg, "IBEG", "ALCLLA")
+         call dalloc (ilab, "ILAB", "ALCLLA")
+         call dalloc (ilast, "ILAST", "ALCLLA")
+         call dalloc (ileft, "ILEFT", "ALCLLA")
+         call dalloc (iptcsf, "IPTCSF", "ALCLLA")
+         call dalloc (iright, "IRIGHT", "ALCLLA")
+         call dalloc (lblint, "LBLINT", "ALCLLA")
 !
       case default
 !
-         write (6, *) 'ALCLLA: Invalid argument IMODE = ', imode
+         write (6, *) "ALCLLA: Invalid argument IMODE = ", imode
          stop
 !
       end select

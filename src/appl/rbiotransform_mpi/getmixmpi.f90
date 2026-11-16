@@ -38,43 +38,43 @@
 
       ik = 30
       if (iblk == 1) then
-         j = index(name,' ')
+         j = index(name," ")
          if (inpci == 0) then
-            open(unit=ik, file=name(1:j-1)//'.cm', form='UNFORMATTED', status=&
-               'OLD')
+            open(unit=ik, file=name(1:j-1)//".cm", form="UNFORMATTED", status=&
+               "OLD")
          else
-            open(unit=ik, file=name(1:j-1)//'.m', form='UNFORMATTED', status=&
-               'OLD')
-         endif
+            open(unit=ik, file=name(1:j-1)//".m", form="UNFORMATTED", status=&
+               "OLD")
+         end if
 
          read (ik, iostat=ios) g92mix
-         if (ios/=0 .or. g92mix/='G92MIX') then
+         if (ios/=0 .or. g92mix/="G92MIX") then
             write (6, *)                                              &
-                    'File', ik, 'Not a GRASP MIXing Coefficients File;'
+                    "File", ik, "Not a GRASP MIXing Coefficients File;"
             close(ik)
             stop
-         endif
+         end if
 !
          read (ik) nelectot, ncftot, nwtot, nvectot, nvecsiztot, nblock1
          if (electron_count/=nelectot .or. orbital_count/=nwtot) then
 !     :    (NCF .NE. NCFT) .OR.
-            write (6, *) 'File', ik, 'is not an'
-            write (6, *) ' appropriate to Coefficients file'
+            write (6, *) "File", ik, "is not an"
+            write (6, *) " appropriate to Coefficients file"
             close(ik)
             stop
-         endif
-      endif
+         end if
+      end if
 !
 !   Load data from the  rscf.mix  file
 !
-      write (6, *) 'Loading MIXing Coefficients File ...'
+      write (6, *) "Loading MIXing Coefficients File ..."
 !
       read (ik) nb, csf_count, nvec, iatjp, iaspa
-      call alloc (shifted_eigenvalues, nvec, 'EVAL', 'GETMIX')
-      call alloc (csf_mixing_coefficients, csf_count*nvec, 'EVEC', 'GETMIX')
-      call alloc (ivec, nvec, 'IVEC', 'GETMIX')
-      call alloc (iatjpo, nvec, 'IATJPO', 'GETMIX')
-      call alloc (iaspar, nvec, 'IASPAR', 'GETMIX')
+      call alloc (shifted_eigenvalues, nvec, "EVAL", "GETMIX")
+      call alloc (csf_mixing_coefficients, csf_count*nvec, "EVEC", "GETMIX")
+      call alloc (ivec, nvec, "IVEC", "GETMIX")
+      call alloc (iatjpo, nvec, "IATJPO", "GETMIX")
+      call alloc (iaspar, nvec, "IASPAR", "GETMIX")
 !
 !   These arrays are deallocated in mcp
 !
@@ -85,7 +85,7 @@
       read (ik) hamiltonian_energy_shift, (shifted_eigenvalues(i),i=1,nvec)
       read (ik) ((csf_mixing_coefficients(i + (j - 1)*csf_count),i=1,csf_count),j=1,nvec)
 !
-      write (6, *) ' ... load complete;'
+      write (6, *) " ... load complete;"
 !
 !   Close the  rscf.mix  file
 !

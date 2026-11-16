@@ -27,26 +27,26 @@
 !-----------------------------------------------
 
 
-      name(2) = trim(name(1))//'_CP'
+      name(2) = trim(name(1))//"_CP"
       if (inpci == 0) then
-         open(unit=78, file=trim(name(2))//'.cbm', form='UNFORMATTED', status=&
-            'UNKNOWN', position='asis')
+         open(unit=78, file=trim(name(2))//".cbm", form="UNFORMATTED", status=&
+            "UNKNOWN", position="asis")
       else
-         open(unit=78, file=trim(name(2))//'.bm', form='UNFORMATTED', status=&
-            'UNKNOWN', position='asis')
-      endif
+         open(unit=78, file=trim(name(2))//".bm", form="UNFORMATTED", status=&
+            "UNKNOWN", position="asis")
+      end if
       if (inpci == 0) then
-         open(unit=68, file=trim(name(1))//'.cbm', form='UNFORMATTED', status=&
-            'OLD', position='asis')
+         open(unit=68, file=trim(name(1))//".cbm", form="UNFORMATTED", status=&
+            "OLD", position="asis")
       else
-         open(unit=68, file=trim(name(1))//'.bm', form='UNFORMATTED', status=&
-            'OLD', position='asis')
-      endif
+         open(unit=68, file=trim(name(1))//".bm", form="UNFORMATTED", status=&
+            "OLD", position="asis")
+      end if
       read (68, iostat=ios) g92mix
-      if (ios/=0 .or. g92mix/='G92MIX') then
-         write (*, *) 'Not a GRASP mixing file'
+      if (ios/=0 .or. g92mix/="G92MIX") then
+         write (*, *) "Not a GRASP mixing file"
          stop
-      endif
+      end if
       write (78) g92mix
       read (68) nelec, ncftot, nw, nvectot, nvecsiz, nblock
       write (78) nelec, ncftot, nw, nvectot, nvecsiz, nblock
@@ -55,9 +55,9 @@
          read (68) ib, ncf, nvec, iatjp, iaspa
          write (78) ib, ncf, nvec, iatjp, iaspa
          write (*,*) ib, ncf, nvec, iatjp, iaspa
-         call alloc (eval, nvec, 'EVAL', 'CPMIX')
-         call alloc (evec, ncf*nvec, 'EVEC', 'CPMIX')
-         call alloc (ivec, nvec, 'IVEC', 'CPMIX')
+         call alloc (eval, nvec, "EVAL", "CPMIX")
+         call alloc (evec, ncf*nvec, "EVEC", "CPMIX")
+         call alloc (ivec, nvec, "IVEC", "CPMIX")
          read (68) (ivec(i),i=1,nvec)
          read (68) eav, (eval(i),i=1,nvec)
          read (68) ((evec(i + (j - 1)*ncf),i=1,ncf),j=1,nvec)
@@ -65,9 +65,9 @@
          write (78) (ivec(i),i=1,nvec)
          write (78) eav, (eval(i),i=1,nvec)
          write (78) ((evec(i + (j - 1)*ncf),i=1,ncf),j=1,nvec)
-         call dalloc (eval, 'EVAL', 'CPMIX')
-         call dalloc (evec, 'EVEC', 'CPMIX')
-         call dalloc (ivec, 'IVEC', 'CPMIX')
+         call dalloc (eval, "EVAL", "CPMIX")
+         call dalloc (evec, "EVEC", "CPMIX")
+         call dalloc (ivec, "IVEC", "CPMIX")
       end do
       name(2) = name(1)
       close(68)

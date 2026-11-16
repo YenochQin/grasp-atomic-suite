@@ -11,10 +11,10 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setcslb_i
-      use factt_i
-      use mcpout_i
-      use mcpin_i
+      use setcslb_i, only: setcslb
+      use factt_i, only: factt
+      use mcpout_i, only: mcpout
+      use mcpin_i, only: mcpin
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -30,7 +30,7 @@
 !-----------------------------------------------
 !
       write (6, *)
-      write (6, *) 'GENMCP: Execution begins for ', name
+      write (6, *) "GENMCP: Execution begins for ", name
 !
 !   Open, check, load data from, and close the  csl  file
 !

@@ -5,6 +5,6 @@
       implicit none (type, external)
       integer, intent(in) ::  igg
       integer, intent(out) :: ncore
-      end subroutine
+      end subroutine lodcslbio
       end interface
-      end module
+      end module lodcslbio_i

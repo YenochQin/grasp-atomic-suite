@@ -23,16 +23,16 @@
 !-----------------------------------------------
       use parameter_def,    only: max_orbitals
       use memory_man
-      use hblock_c
+      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use def_c
       use orb_c, ncftot=>csf_count
-      use stat_c
+      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i
-      use lodcslmpigg_i
+      use openfl_i, only: openfl
+      use lodcslmpigg_i, only: lodcslmpigg
       use lodcsh_i, only: lodcsh
       implicit none (type, external)
 !-----------------------------------------------
@@ -50,20 +50,20 @@
 !
 ! node-0 opens, reads the header of the file
 
-      if (mpi_rank .eq. 0) then
-         call openfl (21, name, 'FORMATTED', 'OLD', mpi_error_code)
-         if (mpi_error_code .eq. 1) then
-            print *, 'Error when opening ',name(1:len_trim (name))
+      if (mpi_rank == 0) then
+         call openfl (21, name, "FORMATTED", "OLD", mpi_error_code)
+         if (mpi_error_code == 1) then
+            print *, "Error when opening ",name(1:len_trim (name))
             error stop
-         endif
+         end if
 
-         read (21,'(1A15)',iostat = ios) str
-         if ((ios .ne. 0) .or.                   &
-               (str .ne. 'Core subshells:')) then
-            print *, 'Not a Configuration Symmetry List File;'
+         read (21,"(1A15)",iostat = ios) str
+         if ((ios /= 0) .or.                   &
+               (str /= "Core subshells:")) then
+            print *, "Not a Configuration Symmetry List File;"
             close (21)
             error stop
-         endif
+         end if
 
          !..Load header of <name> file
          call lodcsh (21, ncore)
@@ -83,7 +83,7 @@
 
 ! Allocate memories for all blocks and then load the entire file
 
-      call alloc (csf_subshell_occupations, max_orbitals, ncftot, 'IQA', 'SETCSLmpi')
+      call alloc (csf_subshell_occupations, max_orbitals, ncftot, "IQA", "SETCSLmpi")
 !GG      CALL ALLOC (jqsa, NNNW,3,NCFTOT, 'JQSA', 'SETCSmpiL')
 !GG      CALL ALLOC (jcupa, NNNW, NCFTOT, 'JCUPA', 'SETCSLmpi')
 

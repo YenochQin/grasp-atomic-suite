@@ -47,7 +47,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i
+      use convrt_i, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -110,12 +110,12 @@
 !
       if (j >= radial_point_count) then
          call convrt (radial_point_count, cnum, lcnum)
-         write (6, *) 'IN: maximum tabulation point exceeds'
-         write (6, *) ' dimensional limit (currently '//cnum(1:lcnum)//');'
-         write (6, *) ' radial wavefunction may indicate a'
-         write (6, *) ' continuum state.'
+         write (6, *) "IN: maximum tabulation point exceeds"
+         write (6, *) " dimensional limit (currently "//cnum(1:lcnum)//");"
+         write (6, *) " radial wavefunction may indicate a"
+         write (6, *) " continuum state."
          error stop
-      endif
+      end if
 !
 !   Compute required elements of remaining rows of  L  and  U
 !
@@ -142,11 +142,11 @@
       tlast = tthis
       tthis = abs(xs(i)/ti(i))
 !cff  Stop if J=NNNP
-      if (tthis + tlast <= eps .or. j .eq. max_radial_points-1 ) then 
+      if (tthis + tlast <= eps .or. j == max_radial_points-1 ) then
          mtp = j
       else
-         go to 1
-      endif
+         goto 1
+      end if
 !
 !   Reset counter
 !
@@ -167,8 +167,8 @@
       if (i > 0) then
          p(j) = (xs(i)-tj(i)*q(j))/ti(i)
          q(j-1) = (xr(i)+(1.0_real64-hhk*radial_derivative_over_radius(j))*q(j)+tg(j)*p(j))/th(i)
-         go to 2
-      endif
+         goto 2
+      end if
 !
 !   Complete tables with zeroes
 !

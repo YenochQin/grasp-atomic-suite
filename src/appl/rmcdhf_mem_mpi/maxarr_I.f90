@@ -4,6 +4,6 @@
       subroutine maxarr (j)
       implicit none (type, external)
       integer, intent(out) :: j
-      end subroutine
+      end subroutine maxarr
       end interface
-      end module
+      end module maxarr_i

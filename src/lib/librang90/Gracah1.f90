@@ -24,7 +24,7 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, one, two
-      use facts_c
+      use facts_c, only: double, gam, mfact
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -82,5 +82,5 @@ contains
          rac = zero
       end if
       return
-      end
+      end subroutine gracah1
 end module gracah1_i

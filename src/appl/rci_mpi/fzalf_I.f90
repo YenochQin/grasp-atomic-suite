@@ -7,6 +7,6 @@
       integer, intent(in) :: n
       integer, intent(in) :: kappa
       real(real64) :: z
-      end function
+      end function fzalf
       end interface
-      end module
+      end module fzalf_i

@@ -22,14 +22,14 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: half
-      use ribojj_c
-      use ribojj9_c
-      use ribojj11_c
+      use ribojj_c, only: imgnjj, imgtjj, impnjj, imptjj
+      use ribojj9_c, only: imgnjj9, imgtjj9, impnjj9, imptjj9
+      use ribojj11_c, only: imgnjj11, imgtjj11, impnjj11, imptjj11
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use mes_i
-      use ittk_i
+      use mes_i, only: mes
+      use ittk_i, only: ittk
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -57,7 +57,7 @@ contains
         if(itp1 /= itp)return
         itg1=imgtjj(itk)
         itg=imgnjj(itd)
-      elseif(id(3) == 9) then
+      else if(id(3) == 9) then
         if(itk > 300) then
           if(itd < 300) call mes(53)
           if(id(4) > 2) call mes(13)
@@ -72,7 +72,7 @@ contains
         else
           print*, "ERROR in ITJJ3"
           stop
-        endif
+        end if
       else
         if(id(4) > 2) call mes(13)
         if(ik(4) > 2) call mes(13)
@@ -81,7 +81,7 @@ contains
         if(itp1 /= itp)return
         itg1=imgtjj11(itk)
         itg=imgnjj11(itd)
-      endif
+      end if
       if(itg1 /= itg)return
       itjj3=1
       ibt(2)=id(2)

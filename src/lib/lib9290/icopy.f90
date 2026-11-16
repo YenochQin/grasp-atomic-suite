@@ -42,7 +42,7 @@ contains
       if (m /= 0) then
          iy(:m) = ix(:m)
          if (n < 7) return
-      endif
+      end if
       mp1 = m + 1
       iy(mp1:((n-mp1+7)/7)*7-1+mp1) = ix(mp1:((n-mp1+7)/7)*7-1+mp1)
       return

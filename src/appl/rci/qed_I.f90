@@ -8,6 +8,6 @@
       integer, intent(in) :: jstate
       real(real64), intent(out) :: slfint(max_orbitals)
       real(real64), intent(out) :: ucf(1)
-      end subroutine
+      end subroutine qed
       end interface
-      end module
+      end module qed_i

@@ -4,6 +4,6 @@
       subroutine setsum (filnam)
       implicit none (type, external)
       character (len = *), intent(in) :: filnam
-      end subroutine
+      end subroutine setsum
       end interface
-      end module
+      end module setsum_i

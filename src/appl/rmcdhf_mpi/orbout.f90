@@ -18,9 +18,9 @@
       integer :: j, mfj, i
 !-----------------------------------------------
 !
-      open(23, file=rwffile2, status='UNKNOWN', form='UNFORMATTED', position=&
-         'asis')
-      write (23) 'G92RWF'
+      open(23, file=rwffile2, status="UNKNOWN", form="UNFORMATTED", position=&
+         "asis")
+      write (23) "G92RWF"
       do j = 1, orbital_count
          mfj = orbital_last_grid_index(j)
          write (23) orbital_principal_n(j), orbital_kappa(j), orbital_energy_parameters(j), mfj

@@ -8,6 +8,6 @@
       real(real64), intent(out) :: valnmsk123, valnmsk1
       integer, intent(in) :: j
       integer, intent(in) :: k
-      end subroutine
+      end subroutine rinti_nms
       end interface
-      end module
+      end module rinti_nms_i

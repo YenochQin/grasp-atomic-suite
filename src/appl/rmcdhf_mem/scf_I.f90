@@ -5,6 +5,6 @@
       implicit none (type, external)
       logical, intent(in) :: eol
       character (len = *) :: rwffile2
-      end subroutine
+      end subroutine scf
       end interface
-      end module
+      end module scf_i

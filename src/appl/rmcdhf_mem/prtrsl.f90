@@ -17,12 +17,12 @@
 !   M o d u l e s
 !-----------------------------------------------
       use orb_c
-      use fixd_c
-      use iounit_c
+      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i
+      use convrt_i, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -43,12 +43,12 @@
          if (iend > 75) then
             write (stderr_unit, *) record(1:iend)
             iend = 0
-         endif
+         end if
          if (iend > 0) then
             ibeg = iend + 1
             iend = ibeg
-            record(ibeg:iend) = ' '
-         endif
+            record(ibeg:iend) = " "
+         end if
          ibeg = iend + 1
          call convrt (orbital_principal_n(loc), cnum, lenth)
          iend = ibeg + lenth - 1
@@ -57,7 +57,7 @@
             lenth = 1
          else
             lenth = 2
-         endif
+         end if
          ibeg = iend + 1
          iend = ibeg + lenth - 1
          record(ibeg:iend) = orbital_symmetry_labels(loc)(1:lenth)

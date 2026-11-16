@@ -26,8 +26,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i
-      use openfl_i
+      use convrt_i, only: convrt
+      use openfl_i, only: openfl
       use mpi_c,     only: mpi_rank, mpi_process_count, mpi_error_code
       implicit none (type, external)
 !-----------------------------------------------
@@ -58,13 +58,13 @@
       lng = len_trim(filehead)
       do k = 30, 32 + max_coulomb_multipole_rank
          call convrt (k, ck, lck)
-         call openfl (k, filehead(1:lng)//'.'//ck(1:2), 'UNFORMATTED', &
-            'UNKNOWN', mpi_error_code)
+         call openfl (k, filehead(1:lng)//"."//ck(1:2), "UNFORMATTED", &
+            "UNKNOWN", mpi_error_code)
          if (mpi_error_code == 0) cycle
          do i = 30, k
             close(i)
          end do
-         write (stderr_unit, *) 'Error when opening the mcp files'
+         write (stderr_unit, *) "Error when opening the mcp files"
          stop
       end do
 !
@@ -76,7 +76,7 @@
       write (30) (idblk(i),i=1,symmetry_block_count)
 
       do k = 30, 32 + max_coulomb_multipole_rank
-         write (k) 'MCP', symmetry_block_count, mpi_rank, mpi_process_count
+         write (k) "MCP", symmetry_block_count, mpi_rank, mpi_process_count
       end do
 
       return

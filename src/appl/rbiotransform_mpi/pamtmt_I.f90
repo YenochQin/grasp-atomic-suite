@@ -8,6 +8,6 @@
       real(real64) :: x(norb, norb)
       real(real64), intent(out) :: t(norb, norb)
       real(real64), intent(inout) :: work(*)
-      end subroutine
+      end subroutine pamtmt
       end interface
-      end module
+      end module pamtmt_i

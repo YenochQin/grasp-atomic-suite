@@ -37,19 +37,19 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use sbdat1_c
+      use sbdat1_c, only: double, max_orbitals, nlmax, nshlp, nshlpp
       use orb_c
       use mpi_c
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use wrtmat_i
-      use scalve_i
+      use wrtmat_i, only: wrtmat
+      use scalve_i, only: scalve
 !      USE copvec_I
-      use tiinig_i
-      use ti1tv_i
-      use vecsum_i
+      use tiinig_i, only: tiinig
+      use ti1tv_i, only: ti1tv
+      use vecsum_i, only: vecsum
       use copvec_i, only: copvec
       implicit none (type, external)
 !-----------------------------------------------
@@ -81,17 +81,17 @@
 !
       if (ntest >= 10) then
          write (6, *)
-         write (6, *) ' ***************'
-         write (6, *) ' Entering CITRAG'
-         write (6, *) ' ***************'
+         write (6, *) " ***************"
+         write (6, *) " Entering CITRAG"
+         write (6, *) " ***************"
          write (6, *)
-      endif
+      end if
       if (ntest >= 100) then
-         write (6, *) ' Input CI vectors '
+         write (6, *) " Input CI vectors "
          call wrtmat (ciin, ncsf, nciv, ncsf, nciv)
-         write (6, *) ' Transformation matrix T'
+         write (6, *) " Transformation matrix T"
          call wrtmat (t, nshl, nshl, nshl, nshl)
-      endif
+      end if
 !
 !. Factor from inactive shells
 !
@@ -107,11 +107,11 @@
          ipot = 2*iabs(orbital_kappa(nshlp(l,iin)))
          factor = factor**ipot
          call scalve (ciin, factor, nciv*ncsf)
-      endif
+      end if
       if (nin == nshl) call copvec (ciin, ciout, nciv*ncsf)
 !
       do i = nin + 1, nshl
-         if (ntest >= 100) write (6, *) ' Loop I,L = ', i, l
+         if (ntest >= 100) write (6, *) " Loop I,L = ", i, l
 !
 !. The diagonal contribution
 !
@@ -127,7 +127,7 @@
 !
          xnfaci = 1.0_real64
          do n = 1, 2*iabs(orbital_kappa(nshlp(l,i)))
-            if (ntest >= 100) write (6, *) ' Loop N = ', n
+            if (ntest >= 100) write (6, *) " Loop N = ", n
 !
 !   T ** (N-1) is supposed to be in SCR, copy to CIIN
 !   and apply S
@@ -145,9 +145,9 @@
       end do
 !
       if (ntest >= 100) then
-         write (6, *) ' Output CI vectors L = ', l
+         write (6, *) " Output CI vectors L = ", l
          call wrtmat (ciout, ncsf, nciv, ncsf, nciv)
-      endif
+      end if
 !
       return
       end subroutine citrag

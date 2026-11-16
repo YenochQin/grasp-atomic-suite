@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dracah_i
+      use dracah_i, only: dracah
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -45,13 +45,13 @@
          l1 =  kap1
       else
          l1 = -kap1-1
-      endif
+      end if
 !
       if (kap2 > 0) then
          l2 =  kap2
       else
          l2 = -kap2-1
-      endif
+      end if
 !
 !   Determine the j quantum numbers and l_2 tilda
 !

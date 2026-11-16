@@ -16,8 +16,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use mohr_i
-      use klamaq_i
+      use mohr_i, only: mohr
+      use klamaq_i, only: klamaq
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -40,8 +40,8 @@
             call mohr (neff, kappa, z, value)
          else
             call klamaq (n, kappa, z, value)
-         endif
-      endif
+         end if
+      end if
 !
       fzalf = value
 !

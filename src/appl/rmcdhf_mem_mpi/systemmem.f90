@@ -25,8 +25,8 @@
       character(len=128) :: line,cmem
 !-----------------------------------------------
 !
-      open(5321,file='/proc/meminfo', status='OLD', form='FORMATTED')
-      read(5321,'(A)')line
+      open(5321,file="/proc/meminfo", status="OLD", form="FORMATTED")
+      read(5321,"(A)")line
       close(5321)
       leng = len_trim(line)
       cmem = line(10:leng-3)

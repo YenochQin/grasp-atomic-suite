@@ -3,6 +3,6 @@
       interface
       subroutine ncharg
       implicit none (type, external)
-      end subroutine
+      end subroutine ncharg
       end interface
-      end module
+      end module ncharg_i

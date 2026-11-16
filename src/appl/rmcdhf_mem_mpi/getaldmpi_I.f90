@@ -3,6 +3,6 @@
       interface
       subroutine getaldmpi
       implicit none (type, external)
-      end subroutine
+      end subroutine getaldmpi
       end interface
-      end module
+      end module getaldmpi_i

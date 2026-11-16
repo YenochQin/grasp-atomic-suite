@@ -11,6 +11,6 @@
       integer, intent(in) :: ncminpat
       integer, intent(in) :: nevecpat
       integer :: ncftot
-      end subroutine
+      end subroutine maneigmpi
       end interface
-      end module
+      end module maneigmpi_i

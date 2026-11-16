@@ -17,7 +17,7 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use iounit_c
+      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -34,9 +34,9 @@ contains
       character :: c19(9)
 !
 !
-      data c19/ '1', '2', '3', '4', '5', '6', '7', '8', '9'/
-      data c1020/ '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', &
-         '20'/
+      data c19/ "1", "2", "3", "4", "5", "6", "7", "8", "9"/
+      data c1020/ "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", &
+         "20"/
 !
       if (intnum < 0) then
          lenth = log10(dble((-intnum))) + 2
@@ -44,23 +44,23 @@ contains
          lenth = 1
       else
          lenth = log10(dble(intnum)) + 1
-      endif
+      end if
 !
 !   Ensure that the length of CNUM as dimensioned is adequate;
 !   stop with an error message if it isn't
 !
       if (lenth > len(cnum)) then
-         write (stderr_unit, *) 'CONVRT: Length of CNUM inadeuate. (from:', from, ')'
+         write (stderr_unit, *) "CONVRT: Length of CNUM inadeuate. (from:", from, ")"
          error stop
       else
          if (lenth <= 9) then
-            form = '(1I'//c19(lenth)//')'
+            form = "(1I"//c19(lenth)//")"
             write (cnum(1:lenth), form(1:5)) intnum
          else
-            form = '(1I'//c1020(lenth-10)//')'
+            form = "(1I"//c1020(lenth-10)//")"
             write (cnum(1:lenth), form(1:6)) intnum
-         endif
-      endif
+         end if
+      end if
 !
       return
       end subroutine convrt2

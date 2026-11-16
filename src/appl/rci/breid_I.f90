@@ -8,6 +8,6 @@
       integer, intent(in) :: ja1
       integer, intent(in) :: ipca
       integer, intent(in) :: jb1
-      end subroutine
+      end subroutine breid
       end interface
-      end module
+      end module breid_i

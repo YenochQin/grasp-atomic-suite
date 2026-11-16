@@ -16,6 +16,6 @@
       real(real64), intent(in) :: dint6(max_orbitals, max_orbitals)
       real(real64), intent(in) :: dint7(max_orbitals, max_orbitals)
       integer, intent(in) :: doit
-      end subroutine
+      end subroutine densnew
       end interface
-      end module
+      end module densnew_i

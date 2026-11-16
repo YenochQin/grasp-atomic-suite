@@ -6,6 +6,6 @@
       integer, intent(in) :: nfile
       integer, intent(in) :: ncore
       integer, intent(in) :: jb
-      end subroutine
+      end subroutine lodcsh2gg
       end interface
-      end module
+      end module lodcsh2gg_i

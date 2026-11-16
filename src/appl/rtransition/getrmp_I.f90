@@ -3,6 +3,6 @@
       interface
       subroutine getrmp
       implicit none (type, external)
-      end subroutine
+      end subroutine getrmp
       end interface
-      end module
+      end module getrmp_i
