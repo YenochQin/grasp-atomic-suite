@@ -29,10 +29,25 @@ docs/
 → [rmcdhf 流程与共享状态](implemented/rmcdhf_flow_and_state.md) 阅读，分别对应
 角系数生成及径向轨道/混合系数的 SCF 迭代；两份文档均区分现行行为与待验证的 OpenMP 候选。
 
+## 三条独立后续任务
+
+以下文档分别作为新对话的任务入口，包含既有结果、待办、归属、验证要求和可复制的启动提示。
+本次拆分只整理文档，未启动代码实施；三个任务均默认不提交、不推送。
+
+| 任务 | 入口文档 | 起步范围 |
+| --- | --- | --- |
+| 变量语义重命名 | [variable_renaming_followup_2026-11-16.md](plans/variable_renaming_followup_2026-11-16.md) | 第一批 529 项已处理，原有 19,579 项待重新对齐核实；优先保留数值过程，避免大改将退役的 CSF reader |
+| CSF 描述符读取迁移 | [csf_descriptor_migration_2026-11-16.md](plans/csf_descriptor_migration_2026-11-16.md) | 公共 reader、低内存 RMCDHF 入口和 MPI 错误传播，再分程序完成全迁移；拥有旧 CSF reader 的过渡保护 |
+| 剩余非风格诊断修复 | [static_diagnostics_fixes_2026-11-16.md](plans/static_diagnostics_fixes_2026-11-16.md) | 优先 RIS4 缓存和 JJ2LSJ 唯一标签，精度/接口独立分批；CSF P1 由迁移任务承接，纯风格不动 |
+
+各对话开始时重新核对工作树。交接时 HEAD 为 `6f96222`，已包含另一任务的 rangular OpenMP 移除；历史目标、测试数和行号不代表当前状态。
+同文件的改名、输入迁移和缺陷修复须按批次排程或在独立检出中整合，不能互相覆盖。
+
 ## 逐份文档结论
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 剩余非风格项已分级，未实施 | [remaining_nonstyle_static_analysis_2026-11-16.md](reviews/remaining_nonstyle_static_analysis_2026-11-16.md) | 基准 9d6ee31；复核剩余输入、精度、接口与解析诊断。35 个受控输入场景定位 CSF 错误接受/零退出码、RIS4 截断缓存问题；1,107 个加强隐式类型检查的编译上下文区分声明顺序与漏声明。给出 P1–P3 建议，未修改代码。 |
 | 三类优先问题已修复并回归 | [priority_input_safety_fixes_2026-11-16.md](reviews/priority_input_safety_fixes_2026-11-16.md) | MCP 状态即时检查、单 rank 故障 MPI_Abort、相关 CSF 记录检查、CPATH 分配保护及四个 EPS 的 DOUBLE 声明。Release/Check 最终各 77 项通过，非 MPI 专项 5 项通过；EPS 当前未用于执行判断，未启用阈值筛选。纯风格未改，历史告警预算缺口保留。 |
 | 静态分析基线，优先项已跟进 | [fortls_fortitude_analysis_2026-11-16.md](reviews/fortls_fortitude_analysis_2026-11-16.md) | 基准 e47c59d；fortls 3.2.2 / Fortitude 0.10.1 覆盖 1,902 份文本。保留 35,361 条 Fortitude 和 57 条 fortls 的原始口径、误报与工具限制记录。三类优先项已按上条修复，其余规范和风格建议未批量处理。 |
 | 明确候选已实施，CSFG 已移除 | [variable_rename_csfg_removal_2026-11-16.md](reviews/variable_rename_csfg_removal_2026-11-16.md) | 529 项候选中 528 项改名、pi 保留；746 份普通源码同步引用，原容量名保持兼容别名；移除 948 份 CSFG 源码及专用构建/测试。Release/Check 编译和各 67 项回归通过（Release 含两个维护检查的定向重跑），44 对输出字节一致；历史告警预算缺口保留。 |
