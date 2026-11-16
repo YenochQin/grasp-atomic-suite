@@ -60,7 +60,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use default_c
       use iounit_c
 !-----------------------------------------------
@@ -77,7 +76,7 @@
       use strsum_i
       use factt_i
       use hfsgg_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

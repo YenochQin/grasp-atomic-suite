@@ -1,9 +1,10 @@
       module jlabl_c
+      implicit none (type, external)
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:16:25   2/14/04
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      character(len=4), dimension(32) :: jlbl, jlbr
-      character(len=4), dimension(2) :: jlbp
+      character(len=4) :: jlbl(32), jlbr(32)
+      character(len=4) :: jlbp(2)
 !
 !   Left-justified strings
 !

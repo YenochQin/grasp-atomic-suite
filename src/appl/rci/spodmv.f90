@@ -21,7 +21,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use eigv_c
       use where_c
       use fposition_c
@@ -31,22 +31,22 @@
       use dinit_i
       use posfile_i
       use dmerge_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: n
       integer, intent(in) :: m
-      real(double), dimension(n,m), intent(in) :: b
-      real(double), dimension(n,m), intent(inout) :: c
+      real(real64), intent(in) :: b(n, m)
+      real(real64), intent(inout) :: c(n, m)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(n) :: irow
+      integer :: irow(n)
       integer :: myid, nprocs, ncf, ncfdum, iccutdum, myiddum, nprocsdum, icol&
          , nelc, ir, iv
-      real(double), dimension(n) :: emt
-      real(double) :: elsto, diag, dl
+      real(real64) :: emt(n)
+      real(real64) :: elsto, diag, dl
 !-----------------------------------------------
 !
 !     !...nposition+1 is the current position of the .res file
@@ -61,7 +61,7 @@
 !   Initialise the result matrix; note that this is specific to the
 !   data structure of DVDSON
 
-      call dinit (n*m, 0.d0, c, 1)
+      call dinit (n*m, 0._real64, c, 1)
 
       !...moved from maneig before "CALL GDVD (SPODMV..."
       call posfile (0, imcdf, nposition)

@@ -27,7 +27,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use mpi_c
       use hmat_c,          only: hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices, stored_matrix_element_count
 !-----------------------------------------------
@@ -37,19 +37,19 @@
 !      USE dmerge_I
       use dmerge_i, only: dmerge
       use mpiu_i, only: gdsummpi
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: n
       integer, intent(in) :: m
-      real(double) :: b(n,m)
-      real(double) :: c(n,m)
+      real(real64), intent(in) :: b(n,m)
+      real(real64) :: c(n,m)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: icol, ibeg, iend, nelc, iv
-      real(double) :: diag, dl
+      real(real64) :: diag, dl
 !-----------------------------------------------
 !
 !-----------------------------------------------------------------------
@@ -57,7 +57,7 @@
 !   Initialise the result matrix; note that this is specific to the
 !   data structure of DVDSON --- no overdimensioning
 !
-      call dinit (n*m, 0.0d00, c, 1)
+      call dinit (n*m, 0.0_real64, c, 1)
 
       ibeg = 1
       do icol = mpi_rank + 1, n, mpi_process_count

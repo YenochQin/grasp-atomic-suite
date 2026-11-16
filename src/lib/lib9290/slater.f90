@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function slater (ia, ib, ic, id, k)
+      real(real64) function slater (ia, ib, ic, id, k)
 !                                                                      *
 !   The value of this  function is the Slater integral                 *
 !                                                                      *
@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use debug_c
       use grid_c
       use orb_c
@@ -29,23 +29,23 @@
 !-----------------------------------------------
       use yzk_i
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer :: ia
-      integer :: ib
-      integer :: ic
-      integer :: id
-      integer :: k
+      integer, intent(in) :: ia
+      integer, intent(in) :: ib
+      integer, intent(in) :: ic
+      integer, intent(in) :: id
+      integer, intent(in) :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      real(double) :: result
+      real(real64) :: result
 !-----------------------------------------------
 !
 !
@@ -59,7 +59,7 @@
          mtp = min(min(mtp,orbital_last_grid_index(ia)),orbital_last_grid_index(ic))
       endif
 !
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       do i = 2, mtp
          ta(i) = (radial_large_components(i,ia)*radial_large_components(i,ic) + radial_small_components(i,ia)* &
             & radial_small_components(i,ic))*radial_derivative_over_radius(i)*tb(i)

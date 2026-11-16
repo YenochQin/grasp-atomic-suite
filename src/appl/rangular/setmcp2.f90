@@ -13,7 +13,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
@@ -26,10 +25,11 @@
 !-----------------------------------------------
       use setmcp_i
       use getinf_i
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: myid
+      integer, intent(in) :: myid
       integer  :: nprocs
       integer  :: ncore
       character  :: filehead*(*)

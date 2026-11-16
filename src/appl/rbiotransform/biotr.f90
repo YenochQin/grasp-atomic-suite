@@ -30,7 +30,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals, max_radial_points
       use default_c,       only: ndef, ndump
       use sbdat_c,         only: nlmax, kamax, nshlii, nshlff
@@ -60,7 +60,7 @@
       use genmcp_i
       use starttime_i, only: starttime
       use stoptime_i, only: stoptime
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -69,15 +69,15 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(nlmax) :: ninshli, ninshlf
+      integer :: ninshli(nlmax), ninshlf(nlmax)
       integer :: ntestg, ntestl, ntest, inpci, ncore1, ncore2, mxl, k
       integer :: ncount1
-      real(double), dimension(lwork1) :: work
-      real(double), dimension(nlmax*nlmax) :: cishl
-      real(double), dimension(max_orbitals,max_orbitals)   :: s
-      real(double), dimension(nlmax*nlmax) :: cfshl
+      real(real64) :: work(lwork1)
+      real(real64) :: cishl(nlmax*nlmax)
+      real(real64)   :: s(max_orbitals, max_orbitals)
+      real(real64) :: cfshl(nlmax*nlmax)
       logical :: yes
-      character, dimension(2) :: name*24
+      character :: name(2)*24
       character(len=128) :: isofile
 !-----------------------------------------------
 !

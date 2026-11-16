@@ -17,7 +17,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only:  max_orbitals
       use cons_c
       use m_c
@@ -34,13 +34,13 @@
       use setqna_i
       use oneparticlejj1_i
       use oneparticlejj2_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in)  :: ka,iopar,ja,jb
       integer, intent(out) :: ia1,ia2
-      real(double), intent(out) :: vshell(max_orbitals)
+      real(real64), intent(out) :: vshell(max_orbitals)
 !      DIMENSION VSHELL(NNNW)
 !      DIMENSION IS(2),KS(2)
 !-----------------------------------------------
@@ -48,8 +48,8 @@
 !-----------------------------------------------
       integer :: kk,ij,idq,ja1,ja2,jw,ndq,ns,ish,i,ii,i1,im,  &
                  ks1,ks2,nx,npeelm
-      integer, dimension(2) :: is,ks
-      real(double) :: tcoeff
+      integer :: is(2),ks(2)
+      real(real64) :: tcoeff
 !-----------------------------------------------
       ia1 = 0
       kk = ka+ka+1

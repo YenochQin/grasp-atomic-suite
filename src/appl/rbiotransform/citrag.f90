@@ -39,7 +39,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use sbdat1_c
       use orb_c
 !
@@ -52,25 +52,25 @@
       use ti1tv_i
       use vecsum_i
       use copvec_i, only: copvec
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ncsf
-      integer  :: nciv
-      integer  :: l
-      integer  :: nshl
+      integer, intent(in) :: ncsf
+      integer, intent(in) :: nciv
+      integer, intent(in) :: l
+      integer, intent(in) :: nshl
       integer, intent(in) :: nin
-      integer  :: ntestg
-      real(double)  :: ciin(ncsf,nciv)
-      real(double)  :: t(nshl,nshl)
-      real(double)  :: ciout(ncsf,nciv)
-      real(double)  :: scr(ncsf,nciv)
+      integer, intent(in) :: ntestg
+      real(real64)  :: ciin(ncsf,nciv)
+      real(real64), intent(in) :: t(nshl,nshl)
+      real(real64)  :: ciout(ncsf,nciv)
+      real(real64)  :: scr(ncsf,nciv)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ntestl, ntest, iin, ipot, i, n
-      real(double) :: factor, tii, xnfaci
+      real(real64) :: factor, tii, xnfaci
 !-----------------------------------------------
 !
 
@@ -96,7 +96,7 @@
 !. Factor from inactive shells
 !
       if (nin /= 0) then
-         factor = 1.0d0
+         factor = 1.0_real64
          do iin = 1, nin
             factor = factor*t(iin,iin)
          end do
@@ -125,7 +125,7 @@
 !
 !.  Off diagonal contributions
 !
-         xnfaci = 1.0d0
+         xnfaci = 1.0_real64
          do n = 1, 2*iabs(orbital_kappa(nshlp(l,i)))
             if (ntest >= 100) write (6, *) ' Loop N = ', n
 !
@@ -135,7 +135,7 @@
             call copvec (scr, ciin, nciv*ncsf)
             call ti1tv (ciin, ncsf, nciv, i, l, t(1,i), nshl, scr, ntestg)
             xnfaci = xnfaci/float(n)
-            call vecsum (ciout, ciout, scr, 1.0d0, xnfaci, nciv*ncsf)
+            call vecsum (ciout, ciout, scr, 1.0_real64, xnfaci, nciv*ncsf)
          end do
          call copvec (ciout, ciin, nciv*ncsf)
 !

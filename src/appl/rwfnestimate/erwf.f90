@@ -41,7 +41,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use default_c
       use cons_c
       use iounit_c
@@ -60,7 +59,7 @@
       use genrwf_i
       use orthsc_i
       use wrtrwf_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use foparm_c
       use grid_c
@@ -29,7 +29,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use convrt_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -78,7 +78,7 @@
       write (24, *)
       write (24, 300) nuclear_charge
 
-      if (emn == 0.d0) then
+      if (emn == 0._real64) then
          write (24, *) ' the nucleus is stationary;'
       else
          write (24, 301) emn
@@ -101,7 +101,7 @@
 !   Write out the parameters of the radial grid
 !
       write (24, *)
-      if (asymptotic_grid_step == 0.d0) then
+      if (asymptotic_grid_step == 0._real64) then
          write (24, 305) radial_grid_scale, transformed_grid_step, radial_point_count
       else
          write (24, 306) radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count
@@ -144,9 +144,9 @@
             iend = 2
          end do
          if (iend /= 2) write (24, *) record(1:iend)
-         if (weight(1) == (-1.d0)) then
+         if (weight(1) == (-1._real64)) then
             write (24, *) 'Each is assigned its statistical weight;'
-         else if (weight(1) == (-2.d0)) then
+         else if (weight(1) == (-2._real64)) then
             write (24, *) 'All levels are weighted equally;'
          else
             write (24, *) ' weighted as follows:'

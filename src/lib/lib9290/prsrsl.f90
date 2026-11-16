@@ -26,7 +26,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use convrt_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -42,7 +42,7 @@
       character(len=6)   :: form
 !      CHARACTER(LEN=500) :: RECORD, RECORD2
       character(len=1000) :: record, record2
-      character(len=2), dimension(19) :: symlst
+      character(len=2) :: symlst(19)
 !
       data symlst/ 's ', 'p-', 'p ', 'd-', 'd ', 'f-', 'f ', 'g-', 'g ', 'h-', &
          'h ', 'i-', 'i ', 'k-', 'k ', 'l-', 'l ', 'm-', 'm'/

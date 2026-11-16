@@ -22,21 +22,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use arctan_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), intent(in) :: argi, argr
-      real(double), intent(out) :: resr, resi
+      real(real64), intent(in) :: argi, argr
+      real(real64), intent(out) :: resr, resi
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      real(double), dimension(7) :: fn, fd
-      real(double) :: hlntpi, twoi, diff, argum, clngi, facneg, argur, ovlfac, &
+      real(real64) :: fn(7), fd(7)
+      real(real64) :: hlntpi, twoi, diff, argum, clngi, facneg, argur, ovlfac, &
          clngr, fac, obasq, argui, argui2, ovlfr, ovlfi, termr, termi, argur2, &
          obasqr, obasqi, zfacr, zfaci
       logical,save :: first, negarg
@@ -45,12 +45,12 @@
 !   These are the Bernoulli numbers B02, B04, ..., B14, expressed as   *
 !   rational numbers. From abramowitz and stegun, p. 810.              *
 !
-      data fn/ 1.0d00, -1.0d00, 1.0d00, -1.0d00, 5.0d00, -691.0d00, 7.0d00/
-      data fd/ 6.0d00, 30.0d00, 42.0d00, 30.0d00, 66.0d00, 2730.0d00, 6.0d00/
+      data fn/ 1.0_real64, -1.0_real64, 1.0_real64, -1.0_real64, 5.0_real64, -691.0_real64, 7.0_real64/
+      data fd/ 6.0_real64, 30.0_real64, 42.0_real64, 30.0_real64, 66.0_real64, 2730.0_real64, 6.0_real64/
 !
 !----------------------------------------------------------------------*
 !
-      data hlntpi/ 1.0d00/
+      data hlntpi/ 1.0_real64/
 !
       data first/ .true./
 !
@@ -60,12 +60,12 @@
 !
       if (first) then
 !
-         hlntpi = 0.5d00*log(pi + pi)
+         hlntpi = 0.5_real64*log(pi + pi)
 !
          do i = 1, 7
             fn(i) = fn(i)/fd(i)
             twoi = dble(i + i)
-            fn(i) = fn(i)/(twoi*(twoi - 1.0d00))
+            fn(i) = fn(i)/(twoi*(twoi - 1.0_real64))
          end do
 !
          first = .false.
@@ -74,11 +74,11 @@
 !
 !   Cases where the argument is real
 !
-      if (argi == 0.0d00) then
+      if (argi == 0.0_real64) then
 !
 !   Cases where the argument is real and negative
 !
-         if (argr <= 0.0d00) then
+         if (argr <= 0.0_real64) then
 !
 !   Stop with an error message if the argument is too near a pole
 !
@@ -92,11 +92,11 @@
 !   to ensure that the argument is suitable for Stirling's formula
 !
                argum = pi/(-argr*sin(pi*argr))
-               if (argum < 0.0d00) then
+               if (argum < 0.0_real64) then
                   argum = -argum
                   clngi = pi
                else
-                  clngi = 0.0d00
+                  clngi = 0.0_real64
                endif
                facneg = log(argum)
                argur = -argr
@@ -108,7 +108,7 @@
 !
          else
 !
-            clngi = 0.0d00
+            clngi = 0.0_real64
             argur = argr
             negarg = .false.
 !
@@ -117,19 +117,19 @@
 !   Use Abramowitz and Stegun formula 6.1.15 to ensure that
 !   the argument in Stirling's formula is greater than 10
 !
-         ovlfac = 1.0d00
+         ovlfac = 1.0_real64
     2    continue
-         if (argur < 10.0d00) then
+         if (argur < 10.0_real64) then
             ovlfac = ovlfac*argur
-            argur = argur + 1.0d00
+            argur = argur + 1.0_real64
             go to 2
          endif
 !
 !   Now use Stirling's formula to compute Log (Gamma (ARGUM))
 !
-         clngr = (argur - 0.5d00)*log(argur) - argur + hlntpi
+         clngr = (argur - 0.5_real64)*log(argur) - argur + hlntpi
          fac = argur
-         obasq = 1.0d00/(argur*argur)
+         obasq = 1.0_real64/(argur*argur)
          do i = 1, 7
             fac = fac*obasq
             clngr = clngr + fn(i)*fac
@@ -153,29 +153,29 @@
 !   to ensure that the magnitude of the argument in Stirling's
 !   formula is greater than 10
 !
-         ovlfr = 1.0d00
-         ovlfi = 0.0d00
+         ovlfr = 1.0_real64
+         ovlfi = 0.0_real64
     4    continue
          argum = sqrt(argur*argur + argui2)
-         if (argum < 10.0d00) then
+         if (argum < 10.0_real64) then
             termr = ovlfr*argur - ovlfi*argui
             termi = ovlfr*argui + ovlfi*argur
             ovlfr = termr
             ovlfi = termi
-            argur = argur + 1.0d00
+            argur = argur + 1.0_real64
             go to 4
          endif
 !
 !   Now use Stirling's formula to compute Log (Gamma (ARGUM))
 !
          argur2 = argur*argur
-         termr = 0.5d00*log(argur2 + argui2)
+         termr = 0.5_real64*log(argur2 + argui2)
          termi = arctan(argui,argur)
-         clngr = (argur - 0.5d00)*termr - argui*termi - argur + hlntpi
-         clngi = (argur - 0.5d00)*termi + argui*termr - argui
+         clngr = (argur - 0.5_real64)*termr - argui*termi - argur + hlntpi
+         clngi = (argur - 0.5_real64)*termi + argui*termr - argui
          fac = (argur2 + argui2)**(-2)
          obasqr = (argur2 - argui2)*fac
-         obasqi = -2.0d00*argur*argui*fac
+         obasqi = -2.0_real64*argur*argui*fac
          zfacr = argur
          zfaci = argui
          do i = 1, 7
@@ -190,7 +190,7 @@
 !
 !   Add in the relevant pieces from the recurrence formula
 !
-         clngr = clngr - 0.5d00*log(ovlfr*ovlfr + ovlfi*ovlfi)
+         clngr = clngr - 0.5_real64*log(ovlfr*ovlfr + ovlfi*ovlfi)
          clngi = clngi - arctan(ovlfi,ovlfr)
 !
       endif

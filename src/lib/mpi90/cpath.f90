@@ -52,22 +52,22 @@
       use sys_chdir_i, only: sys_chdir
       use sys_getwd_i, only: sys_getwd
       use sys_mkdir_i, only: sys_mkdir
-      implicit none
+      implicit none (type, external)
       character(len=*), intent(out):: startdir, permdir, tmpdir
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer  ierr_all_nodes, ierr2m
+      integer ::  ierr_all_nodes, ierr2m
 !     ierr is used by cpath calls to sys_*dir routines
 !     ierr2m is used by MPI routines and by 'system' routines
       !...locals - be careful when changing lenidstring !
       integer, parameter:: lendisk0 = 128, lenidstring = 3
-      character(len=lendisk0) disk
-      character(len=lenidstring) idstring
-      integer   lendisk, i, len_cwd
-      integer lstring
-      integer asleep, itry, iteery
-      logical ydisks
+      character(len=lendisk0) :: disk
+      character(len=lenidstring) :: idstring
+      integer ::   lendisk, i, len_cwd
+      integer :: lstring
+      integer :: asleep, itry, iteery
+      logical :: ydisks
 !     integer system
 !    integer lengthsleep, statusleep
       character(:), allocatable :: mpi_tmp, env_user

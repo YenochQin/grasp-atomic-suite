@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function fzalf (n, kappa, z)
+      real(real64) function fzalf (n, kappa, z)
 !                                                                      *
 !   An estimate of the function  F (Z*\alpha) is computed here.        *
 !                                                                      *
@@ -16,24 +16,24 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use mohr_i
       use klamaq_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: n
-      integer  :: kappa
-      real(double)  :: z
+      integer, intent(in) :: n
+      integer, intent(in) :: kappa
+      real(real64)  :: z
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: neff
-      real(double) :: value
+      real(real64) :: value
 !-----------------------------------------------
 !
       if (n <= 2) then

@@ -16,7 +16,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use m_c,          only: npeel, jlist, jjc1, jjc2, jjq1, jjq2
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function rkint (rac, ia, ic, rbd, ib, id, k, iw)
+      real(real64) function rkint (rac, ia, ic, rbd, ib, id, k, iw)
 !                                                                      *
 !   This routine evaluates the transverse interaction integrals.  If   *
 !   IW = 0, it calulates the U(r1,r2) integral; otherwise, it calcu-   *
@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use bess_c
       use debug_c
@@ -31,21 +31,21 @@
 !-----------------------------------------------
       use zkf_i
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ia, ic
+      integer, intent(in) :: ia, ic
       integer, intent(in) :: ib, id
-      integer  :: k
+      integer, intent(in) :: k
       integer, intent(in) :: iw
-      real(double), dimension(max_radial_points), intent(in) :: rac
-      real(double), dimension(max_radial_points), intent(in) :: rbd
+      real(real64), intent(in) :: rac(max_radial_points)
+      real(real64), intent(in) :: rbd(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: mxrbd, mxrac, i
-      real(double) :: result
+      real(real64) :: result
 !-----------------------------------------------
 !
       mxrbd = min (orbital_last_grid_index(ib),orbital_last_grid_index(id))
@@ -59,19 +59,19 @@
          mtp = mxrac
          call zkf (k, ia, ic)
          mtp = min(mtp,mxrbd)
-         ta(1) = 0.0d00
+         ta(1) = 0.0_real64
          ta(2:mtp) = rbd(2:mtp)*tb(2:mtp)*radial_derivative_over_radius(2:mtp)
 !
       else
 !
 !   IW = 1,2
 !
-         ta(:mxrac) = rac(:mxrac)*(1.0d00 + bessj(1,iw,:mxrac))
+         ta(:mxrac) = rac(:mxrac)*(1.0_real64 + bessj(1,iw,:mxrac))
          mtp = mxrac
          call zkf (k, ia, ic)
          mtp = min(mtp,mxrbd)
-         ta(1) = 0.0d00
-         ta(2:mtp) = rbd(2:mtp)*(1.0d00 + bessn(1,iw,2:mtp))*tb(2:mtp)*radial_derivative_over_radius(2:&
+         ta(1) = 0.0_real64
+         ta(2:mtp) = rbd(2:mtp)*(1.0_real64 + bessn(1,iw,2:mtp))*tb(2:mtp)*radial_derivative_over_radius(2:&
             mtp)
 !
       endif

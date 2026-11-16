@@ -14,13 +14,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
       use osc_c, only: nkp, kp
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -33,7 +32,7 @@
 !-----------------------------------------------
       integer :: j1, j2, iblki, iblkf, nwd, nkpd
       logical :: found
-      character, dimension(-9:9) :: s*2
+      character :: s(-9:9)*2
 !-----------------------------------------------
 
       s((-9)) = '-9'

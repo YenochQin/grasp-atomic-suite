@@ -31,19 +31,19 @@
       use lodres_i
       use getcid_i
       use mpiu_i, only: stopmpi
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       character  :: isofile*(*)
       character  :: rwffile*(*)
-      character(len=8), dimension(*)  :: idblk
+      character(len=8)  :: idblk(*)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      character*11, parameter :: form = 'UNFORMATTED'
-      character*7, parameter :: status = 'UNKNOWN'
-      character*6, parameter :: restitle = 'R92RES'
+      character(len=11), parameter :: form = 'UNFORMATTED'
+      character(len=7), parameter :: status = 'UNKNOWN'
+      character(len=6), parameter :: restitle = 'R92RES'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

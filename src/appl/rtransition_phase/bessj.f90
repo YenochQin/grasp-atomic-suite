@@ -16,27 +16,27 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use bess_c, only: bj, tc, td
       use debug_c, only: ldbpr
       use grid_c
       use osc_c, only: lk, kk, l=>lk
       use def_c, only: speed_of_light_au, vacuum_speed_of_light_au, pi
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), intent(in) :: w
+      real(real64), intent(in) :: w
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i1, iw, nn, iend, iprod, i, jchan, j, iswap, modnn4, &
                  jj, jjj, ii
-      real(double) :: epsi, dfn, wr, wa, xbess1, s1, ssn, scn, sn, cn, b, skeep
+      real(real64) :: epsi, dfn, wr, wa, xbess1, s1, ssn, scn, sn, cn, b, skeep
 !-----------------------------------------------
 !
 !
-      epsi = 1.0d-05
+      epsi = 1.0e-5_real64
 !
       iw = 1
       nn = l - 1
@@ -52,12 +52,12 @@
       end do
       dfn = iprod
       jchan = radial_point_count
-      bj(1,iw) = 1.0d00
+      bj(1,iw) = 1.0_real64
       do j = 2, radial_point_count
          wr = w*radial_grid(j)
-         wa = -wr*wr*0.5d00
-         xbess1 = 1.0d00
-         s1 = 1.0d00
+         wa = -wr*wr*0.5_real64
+         xbess1 = 1.0_real64
+         s1 = 1.0_real64
          do i = 1, 4
             xbess1 = xbess1*wa/dble(i*(2*(nn + i) + 1))
             s1 = s1 + xbess1
@@ -80,28 +80,28 @@
 !   NN = 1, 5, 9, ...
 !
          case default
-            ssn = -1.0d00
-            scn = 1.0d00
+            ssn = -1.0_real64
+            scn = 1.0_real64
             iswap = 1
 !
 !   N = 2, 6, 10,....
 !
          case (2)
-            ssn = -1.0d00
-            scn = -1.0d00
+            ssn = -1.0_real64
+            scn = -1.0_real64
 !
 !   NN = 3, 7, 11,...
 !
          case (3)
-            ssn = 1.0d00
-            scn = -1.0d00
+            ssn = 1.0_real64
+            scn = -1.0_real64
             iswap = 1
 !
 !   NN = 0, 4, 8,...
 !
          case (4)
-            ssn = 1.0d00
-            scn = 1.0d00
+            ssn = 1.0_real64
+            scn = 1.0_real64
          end select
 !
    13    continue
@@ -115,12 +115,12 @@
                cn = scn*sin(wa)
             endif
             i = -1
-            s1 = 0.0d00
+            s1 = 0.0_real64
             i = i + 1
             i1 = i
             do i = i1, nn
                if (i == 0) then
-                  b = 1.0d00/wa
+                  b = 1.0_real64/wa
                else
                   b = b*dble((nn + i)*(nn - i + 1))/dble(2*i)/wa
                endif

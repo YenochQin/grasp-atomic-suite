@@ -17,7 +17,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use memory_man
       use def_c
       use hblock_c
@@ -27,11 +26,11 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use lodstate_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      character(len=8),dimension(*), intent(in):: idblk
+      character(len=8), intent(in):: idblk(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

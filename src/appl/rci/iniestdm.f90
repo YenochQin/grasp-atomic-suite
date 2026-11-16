@@ -16,7 +16,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
       use eigv_c
 !-----------------------------------------------
@@ -25,18 +25,18 @@
       use dspevx_i
       use suite_linear_algebra, only: dcopy, dspevx
       use dinit_i, only: dinit
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in):: nmax, ncf, niv
-      real(double), dimension(*) :: basis, hmx
+      real(real64) :: basis(*), hmx(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------------------------------
       integer :: myid, nprocs, info, ierr, ns, i, nfound, j
-      real(double), dimension(:), pointer :: ap, eigval, vec, work
-      integer, dimension(:), pointer :: iwork, ifail
+      real(real64), pointer :: ap(:), eigval(:), vec(:), work(:)
+      integer, pointer :: iwork(:), ifail(:)
 !-----------------------------------------------------------------------
 
       myid = 0
@@ -45,7 +45,7 @@
       ns = min (nmax, ncf)
 
       call alloc (ap, ns*(ns+1)/2, 'AP', 'INIESTDM')
-      call dinit (ns*(ns+1)/2, 0.d0, ap, 1)
+      call dinit (ns*(ns+1)/2, 0._real64, ap, 1)
 
 !  Get the upper left sub-matrix
 
@@ -60,13 +60,13 @@
       call alloc (ifail,     ns,  'IFAIL', 'INIESTDM')
 
       call dspevx ('Vectors also','In a range','Upper triangular',      &
-     &          ns,ap,-1.0d0,-1.0d0,1,niv,0.d0,                               &
+     &          ns,ap,-1.0_real64,-1.0_real64,1,niv,0._real64,                               &
      &          nfound,eigval,vec,ns,work,iwork,ifail,info)
            ierr = -abs (info)
 
 !  Build the Basis.
 
-      call dinit (ncf*niv, 0.d0, basis, 1)
+      call dinit (ncf*niv, 0._real64, basis, 1)
 
 !  scatter the vectors
 

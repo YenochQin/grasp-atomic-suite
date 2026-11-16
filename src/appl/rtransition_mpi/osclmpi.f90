@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine oscl(name,fullname,tmpdir,startdir,idstring)
+      use, intrinsic :: iso_fortran_env, only: real32
 !   This routine controls the main sequence of routine calls for the   *
 !   calculation  of  data for transitions between multiconfiguration   *
 !   Dirac-Fock energy levels.                                          *
@@ -12,7 +13,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
       use blk_c
       use biorb_c
@@ -48,22 +49,22 @@
       use ldlbl2_i, only: ldlbl2
       use strsum_i, only: strsum
       use sys_chdir_i, only: sys_chdir
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      character (len = 24), dimension(2), intent(inout) :: name
+      character (len = 24), intent(inout) :: name(2)
       character(len=3)  ::  idstring
-      character (len = 128), dimension(2), intent(inout) :: fullname
+      character (len = 128), intent(inout) :: fullname(2)
       character(len=128) :: startdir,tmpdir
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      character*4, parameter :: iau = 'Hart'
-      character*4, parameter :: iev = ' eV '
-      character*4, parameter :: icm = 'Kays'
-      character*4, parameter :: ihz = ' Hz '
-      character*4, parameter :: iang = ' A  '
+      character(len=4), parameter :: iau = 'Hart'
+      character(len=4), parameter :: iev = ' eV '
+      character(len=4), parameter :: icm = 'Kays'
+      character(len=4), parameter :: ihz = ' Hz '
+      character(len=4), parameter :: iang = ' A  '
       integer, parameter :: nca = 65536
       integer, parameter :: nfile = 93
       integer, parameter :: nfile1 = 237
@@ -75,8 +76,8 @@
                  nvecsizf, iblkf, nvecpr, i, m,       &
                  ielec, levii, levff, itkpo, itest, nlp, lines, &
                  ilbl, inum_ii, inum_ff, icount1, icount2, iii
-      real(double) :: factor, omega, argu, asfa, asfb, asfatmp, asfbtmp
-      real(double), dimension(:), pointer :: et, et1, ipr, ipr1, next
+      real(real64) :: factor, omega, argu, asfa, asfb, asfatmp, asfbtmp
+      real(real64), pointer :: et(:), et1(:), ipr(:), ipr1(:), next(:)
       logical :: avail, lsame
       character :: answ*1, iunits*4, g92mix*6
 !-----------------------------------------------
@@ -120,7 +121,7 @@
 !   Print transition energies in Angstroms
 !
          factor = hartree_to_wavenumber_cm
-         factor = 1.0d08/factor
+         factor = 1.0e8_real64/factor
          iunits = iang
 !
       else if (ltc(2)) then
@@ -134,7 +135,7 @@
 !
 !   Print transition energies in Hartree Atomic Units
 !
-         factor = 1.0d00
+         factor = 1.0_real64
          iunits = iau
 !
       else if (ltc(4)) then
@@ -263,8 +264,8 @@
 !
 !   Initialization for total decay rate
 !
-               totc(:nvecff) = 0.0d00
-               totb(:nvecff) = 0.0d00
+               totc(:nvecff) = 0.0_real64
+               totb(:nvecff) = 0.0_real64
 !
                call mctin (iopar, jkp, name)
 !
@@ -330,7 +331,7 @@
                         m = levff + nvecff*(levii - 1)
 !             M = LEVFF+NVECII*(LEVII-1)
                         et(m) = evalff(levff) + eavff - evalii(levii) - eavii
-                        if (lsame .and. et(m)<=0.0) cycle
+                        if (lsame .and. et(m)<=0.0_real32) cycle
                         omega = -et(m)
                         argu = omega/speed_of_light_au
                         call bessj (argu)

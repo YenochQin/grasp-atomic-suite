@@ -17,12 +17,12 @@
       use parameter_def, only: max_orbitals
       use orb_c,         only: csf_subshell_occupations, csf_count
       use iounit_c,      only: stderr_unit
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: isubsh
-      integer             :: icsf
+      integer, intent(in) :: icsf
 !-----------------------------------------------
 !
       iq = csf_subshell_occupations(isubsh,icsf)

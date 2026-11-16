@@ -12,12 +12,12 @@
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      character  :: jtime*10
-      character  :: jdate*8
+      character(len=10), intent(out) :: jtime
+      character(len=8), intent(out) :: jdate
 
       call date_and_time(jdate, jtime)
 

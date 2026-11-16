@@ -15,7 +15,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use biorb_c
       use decide_c
       use def_c
@@ -28,7 +27,7 @@
       use syma_c
       use wave_c
       use jj2lsjbio_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

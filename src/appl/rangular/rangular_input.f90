@@ -5,7 +5,7 @@ module rangular_input
    use rangular_reuse, only: configure_angular_reuse
    use cslh_i, only: cslh
    use lodcsh2_i, only: lodcsh2
-   implicit none
+   implicit none (type, external)
    private
    public :: angular_input_options, parse_angular_options, load_angular_header, load_angular_block, close_angular_input
    type :: angular_input_options

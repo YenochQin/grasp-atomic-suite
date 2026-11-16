@@ -19,18 +19,18 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, tenth, one, two, three, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use ittk_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), intent(in)  :: q, qm, c, cm
-      real(double), intent(out) :: a
+      real(real64), intent(in)  :: q, qm, c, cm
+      real(real64), intent(out) :: a
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

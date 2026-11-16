@@ -38,7 +38,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
       use def_c
       use eigv_c
@@ -56,12 +56,12 @@
       use itjpo_i
       use ispar_i
       use suite_linear_algebra, only: dcopy, dscal
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       logical, intent(in) ::  dvdfirst
-      integer  :: jblock
+      integer, intent(in) :: jblock
       integer, intent(in) :: ncfpat
       integer, intent(in) :: ncminpat
       integer, intent(in) :: nevecpat
@@ -73,9 +73,9 @@
       integer :: nvect, lim, lwork, nvex, niv, maxitr, n1000, mblock, &
          ilow, ihigh, liwork, ic, nloops, nmv, nend, j, jstate, &
          iofset, i, ia, ierr
-      integer, dimension(:), pointer :: iwork, jwork
-      real(double) :: pnwork, crite, critc, critr, ortho, amax, wa, dnfac
-      real(double), dimension(:), pointer :: work, diag
+      integer, pointer :: iwork(:), jwork(:)
+      real(real64) :: pnwork, crite, critc, critr, ortho, amax, wa, dnfac
+      real(real64), pointer :: work(:), diag(:)
       logical :: hiend
 !-----------------------------------------------
 
@@ -88,8 +88,8 @@
 !   Trivial case
 !=======================================================================
       if (csf_count == 1) then
-         shifted_eigenvalues(ncminpat+1) = 0.d0
-         csf_mixing_coefficients(nevecpat+1) = 1.d0
+         shifted_eigenvalues(ncminpat+1) = 0._real64
+         csf_mixing_coefficients(nevecpat+1) = 1._real64
          go to 123                               ! Don't like big ELSE
       endif
 !
@@ -142,13 +142,13 @@
          ilow = 1
          ihigh = nvex
          liwork = 6*lim + nvect
-         crite = 1.0d-17
+         crite = 1.0e-17_real64
 !         CRITC = 1.0D-08
 !         CRITR = 1.0D-08
 !         ORTHO = MAX(1D-8,CRITR)
-         critc = 1.0d-09
-         critr = 1.0d-09
-         ortho = max (1d-9, critr)
+         critc = 1.0e-9_real64
+         critr = 1.0e-9_real64
+         ortho = max (1e-9_real64, critr)
 !
 !   Store the diagonals in a separate array and make it global
 !
@@ -195,7 +195,7 @@
 !
          iofset = nevecpat + csf_count*(jstate - 1)
 
-         amax = 0.d0
+         amax = 0._real64
          do i = 1, csf_count
             wa = abs(csf_mixing_coefficients(i+iofset))
             if (wa <= amax) cycle
@@ -211,8 +211,8 @@
 !   Redefine eigenvectors so that the dominant component
 !   is positive
 !
-         if (csf_mixing_coefficients(ia+iofset) >= 0.d0) cycle
-         dnfac = -1.d0
+         if (csf_mixing_coefficients(ia+iofset) >= 0._real64) cycle
+         dnfac = -1._real64
          call dscal (csf_count, dnfac, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1)
 !===============================================================
 

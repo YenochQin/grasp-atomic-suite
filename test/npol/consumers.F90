@@ -1,5 +1,5 @@
 program npol_consumers
-    use vast_kind_param, only: double
+    use, intrinsic :: iso_fortran_env, only: real64
     use parameter_def, only: NNNP
     use npol_test_support
     use npol_C
@@ -21,9 +21,9 @@ program npol_consumers
     use mpi_c, only: myid => mpi_rank, nprocs => mpi_process_count
     use npol_mpi, only: npol_init_mpi
 #endif
-    implicit none
-    real(double) :: coul(NNNP), base_xp(NNNP), base_xq(NNNP), base_yp(NNNP), reduced(NNNP)
-    real(double) :: initial(2,2), delta, expected, actual, term, q
+    implicit none (type, external)
+    real(real64) :: coul(NNNP), base_xp(NNNP), base_xq(NNNP), base_yp(NNNP), reduced(NNNP)
+    real(real64) :: initial(2,2), delta, expected, actual, term, q
     integer :: i, j, mode, status, ranks, rank, ierr
     character(NPOL_MESSAGE_LEN) :: message
     ranks = 1
@@ -37,9 +37,9 @@ program npol_consumers
 #endif
     N = 4
     R = 0
-    R(:N) = [0.0_double, 1.0_double, 2.0_double, 3.0_double]
+    R(:N) = [0.0_real64, 1.0_real64, 2.0_real64, 3.0_real64]
     RP = 1
-    RPOR = 0.5_double
+    RPOR = 0.5_real64
     H = 1
     C = 2
     LDBPR = .false.
@@ -47,7 +47,7 @@ program npol_consumers
     NDCOF = 1
     allocate(NDA(1), DA(1), PF(NNNP,2), QF(NNNP,2))
     NDA = 2
-    q = 0.25_double
+    q = 0.25_real64
     DA = q
     NAK = 1
     MF(:2) = N
@@ -55,18 +55,18 @@ program npol_consumers
     QF = 0
     ! Opposite-sign small components cancel the diagonal external pieces in
     ! the second fixture below while leaving an off-diagonal overlap.
-    PF(2:N,1) = [1.0_double, 2.0_double, 1.0_double]
-    QF(2:N,1) = [0.5_double, 1.0_double, 0.5_double]
-    PF(2:N,2) = [2.0_double, 1.0_double, 3.0_double]
-    QF(2:N,2) = [1.0_double, 0.5_double, 1.5_double]
+    PF(2:N,1) = [1.0_real64, 2.0_real64, 1.0_real64]
+    QF(2:N,1) = [0.5_real64, 1.0_real64, 0.5_real64]
+    PF(2:N,2) = [2.0_real64, 1.0_real64, 3.0_real64]
+    QF(2:N,2) = [1.0_real64, 0.5_real64, 1.5_real64]
     coul = 7
     ZZ = coul
     call snapshot()
     ! Absent configuration goes through the real initialization seam.
 #ifdef NPOL_MPI
-    call npol_init_mpi('missing.inp', 2.0_double, N, R, ZZ, MPI_COMM_WORLD, status, message)
+    call npol_init_mpi('missing.inp', 2.0_real64, N, R, ZZ, MPI_COMM_WORLD, status, message)
 #else
-    call npol_init('missing.inp', 2.0_double, N, R, ZZ, status, message)
+    call npol_init('missing.inp', 2.0_real64, N, R, ZZ, status, message)
 #endif
     call require(status == 0 .and. all(ZZ == coul), 'disabled preserves full ZZ exactly')
     call YPOT(1)
@@ -84,9 +84,9 @@ program npol_consumers
     if (rank == 0) call write_fixture('npol.inp')
 #ifdef NPOL_MPI
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
-    call npol_init_mpi('npol.inp', 2.0_double, N, R, ZZ, MPI_COMM_WORLD, status, message)
+    call npol_init_mpi('npol.inp', 2.0_real64, N, R, ZZ, MPI_COMM_WORLD, status, message)
 #else
-    call npol_init('npol.inp', 2.0_double, N, R, ZZ, status, message)
+    call npol_init('npol.inp', 2.0_real64, N, R, ZZ, status, message)
 #endif
     call require(status == 0, message)
     call YPOT(1)
@@ -110,7 +110,7 @@ program npol_consumers
     do j = 1, 2
         expected = 0
         do i = 2, N
-            term = real(i,double)*RPOR(i)*(ZZ(i)-coul(i))*(PF(i,1)*PF(i,j)+QF(i,1)*QF(i,j))
+            term = real(i,real64)*RPOR(i)*(ZZ(i)-coul(i))*(PF(i,1)*PF(i,j)+QF(i,1)*QF(i,j))
             expected = expected-term
         end do
         actual = RINTI(1,j,0)
@@ -123,15 +123,15 @@ program npol_consumers
     PF = 0
     QF = 0
     PF(2:3,1) = 1
-    PF(2:3,2) = [1.0_double, -1.0_double]
+    PF(2:3,2) = [1.0_real64, -1.0_real64]
     ZZ = coul
     call snapshot()
     ZZ(2) = coul(2)+3
     ZZ(3) = coul(3)-2
     actual = RINTI(1,1,0)
-    call near(actual-initial(1,1), 0.0_double, 'isolated fixture diagonal cancels')
+    call near(actual-initial(1,1), 0.0_real64, 'isolated fixture diagonal cancels')
     actual = RINTI(1,2,0)
-    call near(actual-initial(2,1), -6.0_double, 'isolated offdiagonal external integral')
+    call near(actual-initial(2,1), -6.0_real64, 'isolated offdiagonal external integral')
 #ifdef NPOL_MPI
     call MPI_Finalize(ierr)
 #endif
@@ -158,20 +158,20 @@ end program
 subroutine DPBDT(j)
     use grid_c, only: N => radial_point_count
     use tatb_c, only: TA, TB
-    implicit none
+    implicit none (type, external)
     integer :: j
     TA(:N) = 0
     TB(:N) = 0
 end subroutine
 
 subroutine QUAD(result)
-    use vast_kind_param, only: double
+    use, intrinsic :: iso_fortran_env, only: real64
     use tatb_c, only: TA, MTP
-    implicit none
-    real(double), intent(out) :: result
+    implicit none (type, external)
+    real(real64), intent(out) :: result
     integer :: i
     result = 0
     do i = 2, MTP
-        result = result+real(i,double)*TA(i)
+        result = result+real(i,real64)*TA(i)
     end do
 end subroutine

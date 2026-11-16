@@ -1,7 +1,9 @@
       module ncc_c
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64, double => real64
+      implicit none (type, external)
+      private :: real64
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:35:13  12/28/06
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      real(double) :: c1, c2, c3, c4
+      real(real64) :: c1, c2, c3, c4
       end module ncc_c

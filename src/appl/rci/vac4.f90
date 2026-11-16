@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use debug_c
       use def_c
@@ -33,13 +33,13 @@
 !-----------------------------------------------
       use funl_i
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, k, nb2, nrows, ii, ii1, ii2
-      real(double), dimension(max_radial_points) :: tc
-      real(double) :: epsi, twocv, factor, ri, x, tci, rk, xk, xi, xm, xp
+      real(real64) :: tc(max_radial_points)
+      real(real64) :: epsi, twocv, factor, ri, x, tci, rk, xk, xi, xm, xp
 !-----------------------------------------------
 !
 !   Overall initialization
@@ -51,7 +51,7 @@
 !
       factor = -nuclear_charge/(pi*vacuum_speed_of_light_au)**2
 !
-      tc(1) = 0.0d00
+      tc(1) = 0.0_real64
 !
       i = 1
     1 continue
@@ -63,16 +63,16 @@
          tc(i) = tci
          if (i < radial_point_count) go to 1
       else
-         tc(i:radial_point_count) = 0.0d00
+         tc(i:radial_point_count) = 0.0_real64
       endif
 !
 !   Potential for finite nucleus: equation (11)
 !
       if (nuclear_model_parameter_count == 2) then
 !
-         factor = -1.0d00/(pi*vacuum_speed_of_light_au**3)
+         factor = -1.0_real64/(pi*vacuum_speed_of_light_au**3)
 !
-         tc(1) = 0.0d00
+         tc(1) = 0.0_real64
 !
          k = 1
     3    continue
@@ -80,7 +80,7 @@
 !
          rk = radial_grid(k)
          xk = twocv*rk
-         ta(1) = 0.0d00
+         ta(1) = 0.0_real64
 !
          do i = 2, mtp
             xi = twocv*radial_grid(i)
@@ -96,7 +96,7 @@
 !   Get out of the loop if the asymptotic region has been reached
 !
          if (abs(x) >= epsi) then
-            if (abs((tc(k)-x)/x) > 1.0d-03) then
+            if (abs((tc(k)-x)/x) > 1.0e-3_real64) then
                tc(k) = x
                if (k < radial_point_count) go to 3
             endif

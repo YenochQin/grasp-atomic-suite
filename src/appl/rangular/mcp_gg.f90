@@ -30,7 +30,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use iso_fortran_env, only: int64
       use rangular_profile, only: stage_clock, record_stage
       use rangular_reuse, only: reuse_requested, begin_reuse_block, end_reuse_block, load_reused_pair
@@ -60,7 +60,7 @@
       use sacoef_c
       use onescalar_i, only: onescalar
       use settmpgg_i, only: settmpgg
-      implicit none
+      implicit none (type, external)
       external cord
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -75,7 +75,7 @@
 !-----------------------------------------------
       integer, parameter :: coefficient_label_radix = orbital_index_radix
       integer, parameter :: orbital_index_radix_squared = orbital_index_radix*orbital_index_radix
-      real(double), parameter :: angular_coefficient_cutoff = 1.0d-10
+      real(real64), parameter :: angular_coefficient_cutoff = 1.0e-10_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -88,12 +88,12 @@
 !        PARAMETER (NGGMAX   = 134217728)
 !        PARAMETER (NGGMAX = 536870912)
 ! GG end
-      integer, dimension(:), pointer :: two_electron_counts_by_rank, mark
+      integer, pointer :: two_electron_counts_by_rank(:), mark(:)
       integer :: first_csf_column,first_csf_row,matrix_element_position,one_electron_coefficient_count,multipole_rank, &
          & csf_column_index,csf_row_index,orbital_a,orbital_b,lab,i,orbital_c, &
          orbital_d, orbital_swap_count, orbital_swap_temporary, lac, lbd, ntgi
-      real(double), dimension(max_orbitals) :: one_electron_shell_coefficients
-      real(double) :: two_electron_angular_coefficient
+      real(real64) :: one_electron_shell_coefficients(max_orbitals)
+      real(real64) :: two_electron_angular_coefficient
       logical :: is_direct_monopole_integral, increment_matrix_position
       integer :: irez, sort_buffer_capacity, sort_capacity_per_channel, markt, requested_sort_capacity, jj
       integer(int64) :: stage_start_count

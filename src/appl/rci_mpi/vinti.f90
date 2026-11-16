@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function vinti (j, k)
+      real(real64) function vinti (j, k)
 !                                                                      *
 !   The value of this  function is the one-electron integral V (J,K)   *
 !   for  orbitals  J, K. The analytical expression for this quantity   *
@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use debug_c
       use grid_c
       use orb_c
@@ -29,17 +29,17 @@
 !-----------------------------------------------
       use dpbdt_i
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: j
-      integer  :: k
+      integer, intent(in) :: j
+      integer, intent(in) :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, kpj, kpk, ifact1, ifact2
-      real(double) :: piece1, fact1, fact2, piece2
+      real(real64) :: piece1, fact1, fact2, piece2
 !-----------------------------------------------
 !
       mtp = max(orbital_last_grid_index(j),orbital_last_grid_index(k))
@@ -47,7 +47,7 @@
 !   Piece involving derivatives
 !
       call dpbdt (k)
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       do i = 2, mtp
          ta(i) = radial_large_components(i,j)*ta(i) + radial_small_components(i,j)*tb(i)
       end do
@@ -59,10 +59,10 @@
       kpj = orbital_kappa(j)
       kpk = orbital_kappa(k)
       ifact1 = kpj*(kpj + 1) - kpk*(kpk + 1)
-      fact1 = 0.5d00*dble(ifact1)
+      fact1 = 0.5_real64*dble(ifact1)
       ifact2 = (-kpj*((-kpj) + 1)) + kpk*((-kpk) + 1)
-      fact2 = 0.5d00*dble(ifact2)
-      ta(1) = 0.0d00
+      fact2 = 0.5_real64*dble(ifact2)
+      ta(1) = 0.0_real64
       do i = 2, mtp
          ta(i) = radial_derivative_over_radius(i)*(fact1*radial_large_components(i,j)*radial_large_components(i,k) + &
             & fact2*radial_small_components(i,j)*radial_small_components(i,k))

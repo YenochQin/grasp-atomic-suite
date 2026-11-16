@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use bcore_c
       use cons_c
       use debug_c
@@ -29,12 +29,12 @@
       use talk_i
       use itrig_i
       use cxk_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ja
-      integer  :: jb
+      integer, intent(in) :: ja
+      integer, intent(in) :: jb
       integer, intent(in) :: ja1
       integer, intent(in) :: ipca
       integer, intent(in) :: jb1
@@ -45,12 +45,12 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(4) :: js, kaps, ks
+      integer :: js(4), kaps(4), ks(4)
       integer :: ia1, ib1, isg, nqs1, nqs2, i, nd1, nd2, ne1, ne2, ibrd, ibre, &
          n, nu, k, kap1, itype, mu, ip, ipp, kk, nup1
-      real(double), dimension(7,20) :: cone
-      real(double), dimension(12) :: s
-      real(double) :: const, gam, dksks, dnunu1, coef, proc, prod
+      real(real64) :: cone(7, 20)
+      real(real64) :: s(12)
+      real(real64) :: const, gam, dksks, dnunu1, coef, proc, prod
 !-----------------------------------------------
 !
 !   1.0  Initialization

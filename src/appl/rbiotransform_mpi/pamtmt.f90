@@ -29,21 +29,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use lulu_i
       use setvec_i
       use wrtmat_i
       use invmat_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: norb
-      real(double)  :: x(norb,norb)
-      real(double)  :: t(norb,norb)
-      real(double)  :: work(*)
+      integer, intent(in) :: norb
+      real(real64)  :: x(norb,norb)
+      real(real64)  :: t(norb,norb)
+      real(real64), intent(inout) :: work(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -62,7 +62,7 @@
 !.LU factorize X
       call lulu (x, work(kll), work(klu), norb)
 !.Expand U to full matrix
-      call setvec (t, 0.0d0, norb**2)
+      call setvec (t, 0.0_real64, norb**2)
       do i = 1, norb
          do j = i, norb
             t(i,j) = work(klu-1+j*(j-1)/2+i)

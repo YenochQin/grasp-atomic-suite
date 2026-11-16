@@ -44,25 +44,25 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use inprod_i
       use prsym_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ndim
-      real(double), intent(in) :: a(ndim,ndim)
-      real(double)  :: l(*)
-      real(double)  :: u(*)
+      integer, intent(in) :: ndim
+      real(real64), intent(in) :: a(ndim,ndim)
+      real(real64)  :: l(*)
+      real(real64)  :: u(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: r, j, i, ntest
-      real(double) :: xfaci
+      real(real64) :: xfaci
 !-----------------------------------------------
 !
       do r = 1, ndim
@@ -71,8 +71,8 @@
             u(j*(j-1)/2+r) = a(r,j) - inprod(l(r*(r-1)/2+1),u(j*(j-1)/2+1),r-1)
          end do
 !
-         xfaci = 1.0d0/u(r*(r+1)/2)
-         l(r*(r+1)/2) = 1.0d0
+         xfaci = 1.0_real64/u(r*(r+1)/2)
+         l(r*(r+1)/2) = 1.0_real64
          do i = r + 1, ndim
             l(i*(i-1)/2+r) = (a(i,r)-inprod(l(i*(i-1)/2+1),u(r*(r-1)/2+1),r-1))&
                *xfaci

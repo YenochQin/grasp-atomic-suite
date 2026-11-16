@@ -22,7 +22,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use hmat_c,          only: hamiltonian_values
       use mpi_c
 !-----------------------------------------------
@@ -32,25 +32,25 @@
 !      USE dmerge_dnicmv_I
       use dmerge_dnicmv_i, only: dmerge_dnicmv
       use mpiu_i, only: gdsummpi
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: n
       integer, intent(in) :: m
-      real(double), dimension(n,m) :: b
-      real(double), dimension(n,m) :: c
+      real(real64), intent(in) :: b(n, m)
+      real(real64) :: c(n, m)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: ibeg, iend, icol, nelc, iv
-      real(double) :: diag, dl
+      real(real64) :: diag, dl
 !-----------------------------------------------
 
 !   Initialise the result matrix; note that this is specific to the
 !   data structure of DVDSON --- there is no overdimensioning
 
-      call dinit (n*m, 0.0d00, c, 1)
+      call dinit (n*m, 0.0_real64, c, 1)
 
       ibeg = 1
       iend = 0
@@ -85,25 +85,25 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: n
-      real(double), intent(in) :: dconst
-      real(double), intent(out) :: dl
-      real(double), dimension(*), intent(in) :: db
-      real(double), dimension(*), intent(inout) :: dc
-      real(double), dimension(n), intent(in) :: da
+      real(real64), intent(in) :: dconst
+      real(real64), intent(out) :: dl
+      real(real64), intent(in) :: db(*)
+      real(real64), intent(inout) :: dc(*)
+      real(real64), intent(in) :: da(n)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      real(double) :: dsum
+      real(real64) :: dsum
 !-----------------------------------------------
 
-      dsum = 0.d0
+      dsum = 0._real64
       dsum = dot_product(da,db(:n))
       dc(:n) = dc(:n) + dconst*da
       dl = dsum

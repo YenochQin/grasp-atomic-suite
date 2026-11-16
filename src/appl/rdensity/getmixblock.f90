@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
       use density_parallel, only: density_fail
       use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
@@ -33,7 +33,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use openfl_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -45,7 +45,7 @@
       integer :: k, ierr, ios, ncftot, nvectot, nvecsiz, nblock, i, nvecpat, &
          ncfpat, nvecsizpat, neavsum, jb, nb, ncfblk, nevblk, iatjp, iaspa, j
       integer :: nelecmix, nwmix
-      real(double) :: eavsum
+      real(real64) :: eavsum
       character :: filnam*256, form*11, g92mix*6, status*3
 !-----------------------------------------------
 !
@@ -102,7 +102,7 @@
 !***********************************************************************
 ! Initialize mixing coefficients to zero; others are fine
 !***********************************************************************
-      csf_mixing_coefficients(:nvectot*ncftot) = 0.d0
+      csf_mixing_coefficients(:nvectot*ncftot) = 0._real64
 
 !***********************************************************************
 ! Initialize counters and sum registers
@@ -119,7 +119,7 @@
       ncfpat = 0
       nvecsizpat = 0
       neavsum = 0
-      eavsum = 0.d0
+      eavsum = 0._real64
 
       write (*, *) '  block     ncf     nev    2j+1  parity'
       do jb = 1, nblock
@@ -169,7 +169,7 @@
          call density_fail('Mixing block totals do not match the header')
       if (.not.all(ieee_is_finite(csf_mixing_coefficients))) call density_fail('Non-finite mixing coefficients')
       do i=1,nvectot
-         if (abs(sum(csf_mixing_coefficients((i-1)*ncftot+1:i*ncftot)**2)-1.0d0) > 1.0d-6) &
+         if (abs(sum(csf_mixing_coefficients((i-1)*ncftot+1:i*ncftot)**2)-1.0_real64) > 1.0e-6_real64) &
             call density_fail('Mixing eigenvector is not normalized')
       end do
       hamiltonian_energy_shift = eavsum/neavsum

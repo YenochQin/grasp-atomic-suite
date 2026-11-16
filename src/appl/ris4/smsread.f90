@@ -22,11 +22,12 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use alcbuf_i
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), dimension(max_orbitals,max_orbitals), intent(in) :: vint, vint2
+      real(real64), intent(in) :: vint(max_orbitals, max_orbitals), vint2(max_orbitals, max_orbitals)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -34,7 +35,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double) :: contri, contrik1, coeffsms
+      real(real64) :: contri, contrik1, coeffsms
       integer :: ic, ir, i, j, iia, iib, iic, iid, loc, lab, ios
 !-----------------------------------------------
 !
@@ -60,10 +61,10 @@
             contri = - csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)                       &
                * coeffsms                                              &
                * ( vint2(iia,iic)*vint(iib,iid)                        &
-               + vint2(iib,iid)*vint(iia,iic))/2.0d00
+               + vint2(iib,iid)*vint(iia,iic))/2.0_real64
           if (ir.ne.ic) then
-            contri = 2.0d00 * contri
-            contrik1 = 2.0d00 * contrik1
+            contri = 2.0_real64 * contri
+            contrik1 = 2.0_real64 * contrik1
           endif
           smsc1(j) = smsc1(j) + contrik1
           smsc2(j) = smsc2(j) + contri

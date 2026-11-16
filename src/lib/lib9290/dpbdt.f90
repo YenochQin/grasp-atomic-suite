@@ -20,21 +20,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use grid_c
       use lic13_c
       use tatb_c, only: ta, tb
       use wave_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: j
+      integer, intent(in) :: j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, k, irow, loc
-      real(double) :: a1, a2, a3, a4, a5, a6, hdpbdt, hdqbdt, aik
+      real(real64) :: a1, a2, a3, a4, a5, a6, hdpbdt, hdqbdt, aik
 !-----------------------------------------------
 !
 
@@ -51,8 +51,8 @@
 !   First, points 1 to 6
 !
       do i = 1,6
-         hdpbdt = 0.d0
-         hdqbdt = 0.d0
+         hdpbdt = 0._real64
+         hdqbdt = 0._real64
 !cjb replace loop by SUM
 !        DO 1 K = 1,13
 !            AIK = A(I,K)

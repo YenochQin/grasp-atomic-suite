@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: half
       use m_c,             only: jlist, nq1, nq2, jjq1, jjq2
       use orb_c,           only: orbital_principal_n, orbital_kappa
@@ -26,13 +26,13 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use nmtejj_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)                :: ja
-      integer,      intent(out), dimension(7) :: ik, id
-      real(double), intent(out), dimension(3) :: bk, bd
+      integer,      intent(out) :: ik(7), id(7)
+      real(real64), intent(out) :: bk(3), bd(3)
 !      DIMENSION BK(3),IK(7),BD(3),ID(7)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

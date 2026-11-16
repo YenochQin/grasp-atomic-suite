@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: half
       use ribojj_c
       use ribojj9_c
@@ -25,16 +25,16 @@
 !-----------------------------------------------
       use mes_i
       use ittk_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)                :: kg1, iq
       integer,      intent(out)               :: itp, itg
-      integer,      intent(in),  dimension(7) :: ik, id
-      integer,      intent(out), dimension(7) :: ibt
-      real(double), intent(in),  dimension(3) :: bk, bd
-      real(double), intent(out), dimension(3) :: bt
+      integer,      intent(in) :: ik(7), id(7)
+      integer,      intent(out) :: ibt(7)
+      real(real64), intent(in) :: bk(3), bd(3)
+      real(real64), intent(out) :: bt(3)
 !      DIMENSION ID(7),IK(7),IBT(7),BT(3),BD(3),BK(3)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

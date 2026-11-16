@@ -17,7 +17,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only:  max_orbitals
       use debug_c
       use def_c
@@ -28,14 +28,14 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use rint_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(max_orbitals) :: j
+      integer :: j(max_orbitals)
       integer :: l, nakl, kount, mtp0, k, mtp, i
-      real(double), dimension(max_orbitals) :: ovlap
-      real(double) :: eps, ovrlap, dnorm, factor
+      real(real64) :: ovlap(max_orbitals)
+      real(real64) :: eps, ovrlap, dnorm, factor
       logical :: changed
 !-----------------------------------------------
 !
@@ -44,7 +44,7 @@
 !   Set tabulated values of the radial wavefunction to zero
 !   if they are less than EPS
 !
-      eps = 0.01d00*accy
+      eps = 0.01_real64*accy
 !
 !   Determine the number of interesting overlaps
 !
@@ -105,7 +105,7 @@
 
             orbital_last_grid_index(l) = mtp
             dnorm = rint(l,l,0)
-            factor = 1.0d00/sqrt(dnorm)
+            factor = 1.0_real64/sqrt(dnorm)
 !
             orbital_origin_parameters(l) = factor*orbital_origin_parameters(l)
             radial_large_components(2:mtp,l) = factor*radial_large_components(2:mtp,l)
@@ -123,8 +123,8 @@
            if ( mtp .ge. 1 ) then
 !cjb
             if (abs(radial_large_components(mtp,l)) < eps) then
-               radial_large_components(mtp,l) = 0.0d00
-               radial_small_components(mtp,l) = 0.0d00
+               radial_large_components(mtp,l) = 0.0_real64
+               radial_small_components(mtp,l) = 0.0_real64
                go to 7
             else
                orbital_last_grid_index(l) = mtp

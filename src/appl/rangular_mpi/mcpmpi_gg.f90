@@ -30,7 +30,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use iso_fortran_env, only: int64
       use rangular_profile, only: stage_clock, record_stage
       use parameter_def,   only:  max_orbitals, orbital_index_radix
@@ -56,7 +56,7 @@
       use orb_c,     only: csf_count, csf_subshell_occupations
       use stat_c,    only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
       use onescalar_i, only: onescalar
-      implicit none
+      implicit none (type, external)
       external cord
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -74,15 +74,15 @@
 !GG      REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-10
 !GG      REAL(DOUBLE), PARAMETER :: CUTOFF = 0.0D0
 !cjb  REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-08
-      real(double), parameter :: cutoff = 1.0d-10
+      real(real64), parameter :: cutoff = 1.0e-10_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(:), pointer :: llistv
+      integer, pointer :: llistv(:)
       integer :: jastrt,jbstrt,npos,llistt,k,ja,jb,ia,ib,lab,i,ic, &
          id, nswap, iswap, lac, lbd, ntgi
-      real(double), dimension(max_orbitals) :: tshell
-      real(double) :: vcoeff
+      real(real64) :: tshell(max_orbitals)
+      real(real64) :: vcoeff
       logical :: f0int, lincr
       integer(int64) :: stage_start_count
 !-----------------------------------------------

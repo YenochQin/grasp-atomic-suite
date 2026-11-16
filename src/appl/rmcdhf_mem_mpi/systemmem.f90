@@ -10,17 +10,17 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !MemTotal:       264566412 kB
 !MemTotal:       1056570236 kB
-      real(double) :: systemmem
+      real(real64) :: systemmem
       integer      :: summem, leng
       character(len=128) :: line,cmem
 !-----------------------------------------------

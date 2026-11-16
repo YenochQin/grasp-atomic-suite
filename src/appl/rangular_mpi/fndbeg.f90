@@ -8,13 +8,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
       use mcp_c
       use orb_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -22,12 +22,12 @@
       integer, intent(inout) :: jbstrt
       integer, intent(inout) :: index
       integer, intent(out) :: llistt
-      integer, dimension(:), pointer :: llistv
+      integer, pointer :: llistv(:)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: k, ios, icread, irread, indx, nrec, i, label
-      real(double) :: coeff
+      real(real64) :: coeff
       character :: srtlab*8, mcplab*3
 !-----------------------------------------------
 !

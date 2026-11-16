@@ -25,7 +25,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals, orbital_index_radix
       use memory_man
 !      USE def_C
@@ -50,11 +50,11 @@
       use itjpo_i
       use angdata_i
       use qqsort_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ik
+      integer, intent(in) :: ik
       integer, intent(in) :: ntestg
       integer  :: inpci
       character  :: name*24
@@ -66,19 +66,19 @@
       integer, parameter :: nvmax = 100
       integer, parameter :: key = orbital_index_radix
       integer, parameter :: keysq = key*key
-      real(double), parameter :: cutoff = 1.0d-10
+      real(real64), parameter :: cutoff = 1.0e-10_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(nlmax) :: llistt
-      integer, dimension(max_orbitals) :: nakinv
-      integer, dimension(nlmax) :: nshl, ninl
+      integer :: llistt(nlmax)
+      integer :: nakinv(max_orbitals)
+      integer :: nshl(nlmax), ninl(nlmax)
       integer :: i, ntestl, ntest, ka, iopar, j, ncf0, iblk, k, &
          ja, jb, ibb, ia, ib, lab, jan, jbn, l
-      real(double), dimension(max_orbitals) :: tshell
-      real(double), dimension(nvmax) :: sc
-      real(double), dimension(20*nlmax*nlmax) :: cirot
-      real(double), dimension(10000) :: evsc
+      real(real64) :: tshell(max_orbitals)
+      real(real64) :: sc(nvmax)
+      real(real64) :: cirot(20*nlmax*nlmax)
+      real(real64) :: evsc(10000)
       logical   :: f0int, lincr, restrt, comp, avail
       character :: cnum*20, ck*2
 !-----------------------------------------------

@@ -21,7 +21,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use debug_c
       use def_c
       use eigv_c
@@ -40,26 +40,26 @@
       use dsubrs_i
       use iq_i
       use csfwgt_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double) , intent(out) :: sum
+      real(real64) , intent(out) :: sum
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: j, nb, i, noff, jall, jblock
-      real(double) :: weitj, ee
+      real(real64) :: weitj, ee
       logical :: eol
 !-----------------------------------------------
 !   Compute weighting factors
 !
-      sum = 0.d0
+      sum = 0._real64
       do j = 1, ncmin
          weitj = weight(j)
-         if (weitj == (-2.d0)) then
-            wt(j) = 1.d0
-         else if (weitj == (-1.d0)) then
+         if (weitj == (-2._real64)) then
+            wt(j) = 1._real64
+         else if (weitj == (-1._real64)) then
 !GG            WT(J) = IATJPO(J)
             jblock = idxblk(j)     ! Block number of this state
             wt(j) = abs(jpgg(jblock))
@@ -77,7 +77,7 @@
       eol = .true.
 
       do j = 1, orbital_count
-         sum = 0.d0
+         sum = 0._real64
          do nb = 1, symmetry_block_count
             do i = mpi_rank + 1, csf_counts_by_block(nb), mpi_process_count
                sum = sum + dsubrs(eol,i,i,nb)*iq(j,i + csf_offsets_by_block(nb))
@@ -91,7 +91,7 @@
 !   Write out level energies and weights
 !
       if(mpi_rank == 0) write (*, 300)
-      sum = 0.d0
+      sum = 0._real64
       noff = 0
       do jall = 1, ncmin
          nb = idxblk(jall)                       ! Block number of this state

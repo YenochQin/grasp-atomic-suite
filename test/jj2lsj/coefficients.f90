@@ -9,14 +9,14 @@ program coefficients
     use factt_I
     use setcon_I
     use setiso_I
-    use vast_kind_param, only: LONG
-    implicit none
+    use, intrinsic :: iso_fortran_env, only: real64, int64
+    implicit none (type, external)
     integer :: counts(Blocks_number)
     integer, allocatable :: levels(:,:)
     integer :: block, first, last, lev, level, i, outc, outj, unique, outt
     integer, allocatable :: mask(:)
-    integer(LONG) :: stride
-    real(DOUBLE) :: threshold, weight
+    integer(int64) :: stride
+    real(real64) :: threshold, weight
 
     call setcon
     call factt
@@ -33,7 +33,7 @@ program coefficients
         if (counts(block) == 0) cycle
         mask = 0
         do i = first,last
-            weight = 0.0_DOUBLE
+            weight = 0.0_real64
             do lev = 1,counts(block)
                 level = levels(block,lev)
                 weight = weight+abs(EVEC(i+(level-1)*stride))
@@ -44,7 +44,7 @@ program coefficients
         allocate(asf_set_LS%asf(NVEC))
         do i = 1,NVEC
             allocate(asf_set_LS%asf(i)%eigenvector(asf_set_LS%csf_set_LS%nocsf))
-            asf_set_LS%asf(i)%eigenvector = 0.0_DOUBLE
+            asf_set_LS%asf(i)%eigenvector = 0.0_real64
         end do
         call asf2ls(1,mask,counts(block),block,levels,first,last,outt)
         write(80) block, counts(block), asf_set_LS%csf_set_LS%nocsf

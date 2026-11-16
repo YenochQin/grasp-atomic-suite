@@ -21,7 +21,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
       use memory_man
       use default_c
@@ -32,7 +32,7 @@
 !-----------------------------------------------
       use alclla_i
       use alcnma_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -51,14 +51,14 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(:), pointer :: ilab, iright, ileft, ibeg, iptr, &
-                    ilast, iblint, iptcsf, lblint, jlabl, isldr, isldr1
-      real(double), dimension(:), pointer :: xsldr, xl
+      integer, pointer :: ilab(:), iright(:), ileft(:), ibeg(:), iptr(:), &
+                    ilast(:), iblint(:), iptcsf(:), lblint(:), jlabl(:), isldr(:), isldr1(:)
+      real(real64), pointer :: xsldr(:), xl(:)
       integer :: nmcp, nint, nlabel, lldim, nmdim, ir, is, ni, i, m, j, &
                  icount, jlab, k, l, imcp, j1, j2, mlr, mup, ints, ia, ib
-      real(double) :: x
+      real(real64) :: x
       logical :: first
-      character(len=2), dimension(-9:9) :: s
+      character(len=2) :: s(-9:9)
 !-----------------------------------------------
 !
 !

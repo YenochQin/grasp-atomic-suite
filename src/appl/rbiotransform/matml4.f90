@@ -23,31 +23,31 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use wrtmat_i
       use setvec_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ncrow
-      integer  :: nccol
-      integer  :: narow
-      integer  :: nacol
-      integer  :: nbrow
-      integer  :: nbcol
+      integer, intent(in) :: ncrow
+      integer, intent(in) :: nccol
+      integer, intent(in) :: narow
+      integer, intent(in) :: nacol
+      integer, intent(in) :: nbrow
+      integer, intent(in) :: nbcol
       integer , intent(in) :: itrnsp
-      real(double)  :: c(ncrow,nccol)
-      real(double)  :: a(narow,nacol)
-      real(double)  :: b(nbrow,nbcol)
+      real(real64)  :: c(ncrow,nccol)
+      real(real64), intent(in) :: a(narow,nacol)
+      real(real64), intent(in) :: b(nbrow,nbcol)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ntest, j, k, i
-      real(double) :: bkj, bjk
+      real(real64) :: bkj, bjk
 !-----------------------------------------------
 !
       ntest = 0
@@ -61,7 +61,7 @@
          write (6, '(6I6)') ncrow, nccol, narow, nacol, nbrow, nbcol
       endif
 !
-      call setvec (c, 0.0d0, ncrow*nccol)
+      call setvec (c, 0.0_real64, ncrow*nccol)
 !
       if (itrnsp == 0) then
          do j = 1, nccol

@@ -15,17 +15,16 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use memory_man
       use eigv_c
       use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
       use prnt_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V A R I A B L E S
 !-----------------------------------------------
       integer :: i, j1, j2, nvex, jp, l, m
-      integer, dimension(:), pointer :: iloc
+      integer, pointer :: iloc(:)
 !-----------------------------------------------
 !
 !   Header

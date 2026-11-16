@@ -6,8 +6,7 @@ FILES="
 # Missing interface
 evcout.f90
 
-# Missing implementation
-#dspevx.f90 dspevx_I.f90
+# DSPEVX is supplied by LAPACK
 dspevx_I.f90
 
 # Missing implementation & not referenced in the original makefile

@@ -16,7 +16,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use grid_c
       use npar_c
@@ -27,7 +27,7 @@
 !-----------------------------------------------
       use calen_i
       use convrt_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -78,7 +78,7 @@
 !   Write out the parameters of the radial grid
 !
       write (24, *)
-      if (asymptotic_grid_step == 0.0d00) then
+      if (asymptotic_grid_step == 0.0_real64) then
          write (24, 305) radial_grid_scale, transformed_grid_step, radial_point_count
       else
          write (24, 306) radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count

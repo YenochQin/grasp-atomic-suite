@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix
       use def_c
       use grid_c
@@ -26,7 +26,7 @@
       use pote_c
       use scf_c
       use wave_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -40,18 +40,18 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: k, iecck, l1, l2, m, mfm, i
-      real(double) :: eps, wb, wa, wari
+      real(real64) :: eps, wb, wa, wari
 !-----------------------------------------------
 !
 !
       if (nec == 0) return
 !
 !ww      EPS = ACCY*0.1D 00
-      eps = accy*0.01d00
+      eps = accy*0.01_real64
 !
 !   Add contributions from off-diagonal parameters to exchange
 !
-      wb = 1.0d00/(ucf(j)*speed_of_light_au)/nprocs
+      wb = 1.0_real64/(ucf(j)*speed_of_light_au)/nprocs
       do k = 1, nec
 !
 !   Decode index

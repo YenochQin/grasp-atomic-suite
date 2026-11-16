@@ -22,7 +22,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix, max_orbitals
       use debug_c
       use prnt_c
@@ -37,11 +37,11 @@
       use itjpo_i
       use convrt_i, only: convrt
       use rkco_gg_i, only: rkco_gg
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), dimension(max_orbitals,max_orbitals), intent(in) :: vint, vint2
+      real(real64), intent(in) :: vint(max_orbitals, max_orbitals), vint2(max_orbitals, max_orbitals)
       integer, intent(in) :: doit
 !-----------------------------------------------
 !  E x t e r n a l   F u n c t i o n s
@@ -54,12 +54,12 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      character*11 :: cnum
-      character*4  :: jlbl,labj,labp
-      character*2  :: ck
+      character(len=11) :: cnum
+      character(len=4)  :: jlbl,labj,labp
+      character(len=2)  :: ck
       logical      :: getyn,firstt,vsh,nucde,smssh,yes
       logical      :: lfordr,ltrans,lvp,lse,lnms,lsms
-      real(double) :: contri, contrik1, vcoeff
+      real(real64) :: contri, contrik1, vcoeff
       integer      :: i,j,k,lab,loc,ic,ir,itjpoc,iia,iib,iic,iid,incor
       integer      :: lcnum
 !-----------------------------------------------
@@ -135,10 +135,10 @@
                            * ( vint2(angular_coefficient_labels(1,i),angular_coefficient_labels(3,i))            &
                            * vint (angular_coefficient_labels(2,i),angular_coefficient_labels(4,i))              &
                            + vint2(angular_coefficient_labels(2,i),angular_coefficient_labels(4,i))              &
-                           * vint (angular_coefficient_labels(1,i),angular_coefficient_labels(3,i)) )/2.0d00
+                           * vint (angular_coefficient_labels(1,i),angular_coefficient_labels(3,i)) )/2.0_real64
                     if (ir.ne.ic) then
-                      contri = 2.0d00 * contri
-                      contrik1 = 2.0d00 * contrik1
+                      contri = 2.0_real64 * contri
+                      contrik1 = 2.0_real64 * contrik1
                     endif
                     smsc1(j) = smsc1(j) + contrik1
                     smsc2(j) = smsc2(j) + contri

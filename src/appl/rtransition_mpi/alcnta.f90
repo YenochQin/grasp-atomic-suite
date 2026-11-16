@@ -18,14 +18,15 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use memory_man
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: ntdim
       integer , intent(in) :: imode
-      integer, dimension(:), pointer :: isldr, isldr1
-      real(double), dimension(:), pointer :: xsldr
+      integer, pointer :: isldr(:), isldr1(:)
+      real(real64), pointer :: xsldr(:)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

@@ -17,26 +17,26 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def, only: max_radial_points
       use def_c, only: accy, speed_of_light_au, expmax
       use grid_c
       use orb_c
       use pote_c, only: yp
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer , intent(in) :: iorb
       integer , intent(in) :: jp
       integer , intent(out) :: mtp
-      real(double) , intent(inout) :: p(max_radial_points)
-      real(double) , intent(out) :: q(max_radial_points)
+      real(real64) , intent(inout) :: p(max_radial_points)
+      real(real64) , intent(out) :: q(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, nm4, m, loc
-      real(double) :: eps, bige, bigebc, bgebc2, beta, fk, rjp, qem, offset, t&
+      real(real64) :: eps, bige, bigebc, bgebc2, beta, fk, rjp, qem, offset, t&
          , zloc, gam2, zlbb, dnu, fkmzbb, sump, sumq, em, cm, emfact, ovltrm, &
          pterm, qterm, exptrm
 !-----------------------------------------------
@@ -44,11 +44,11 @@
 !
 !   Initialize
 !
-      eps = accy*0.1d00
+      eps = accy*0.1_real64
       bige = -orbital_energy_parameters(iorb)
       bigebc = bige/speed_of_light_au
       bgebc2 = bigebc/speed_of_light_au
-      beta = sqrt((-bige*(2.0d00 + bgebc2)))
+      beta = sqrt((-bige*(2.0_real64 + bgebc2)))
       fk = dble(orbital_kappa(iorb))
 !
 !   Find MTP
@@ -56,7 +56,7 @@
       i = jp
       nm4 = radial_point_count - 4
       rjp = radial_grid(jp)
-      qem = 0.25d00*expmax
+      qem = 0.25_real64*expmax
     1 continue
       i = i + 1
       if (i <= nm4) then
@@ -78,22 +78,22 @@
 !
       do i = mtp, radial_point_count
 !
-         t = 2.0d00*beta*radial_grid(i)
+         t = 2.0_real64*beta*radial_grid(i)
 !
          zloc = yp(i)
          gam2 = fk**2 - (zloc/speed_of_light_au)**2
          zlbb = zloc/beta
-         dnu = zlbb*(1.0d00 + bgebc2)
+         dnu = zlbb*(1.0_real64 + bgebc2)
          fkmzbb = fk - zlbb
 !
          m = -1
-         sump = 0.0d00
-         sumq = 0.0d00
+         sump = 0.0_real64
+         sumq = 0.0_real64
          m = m + 1
          em = dble(m)
          if (m == 0) then
-            cm = 1.0d00
-            emfact = 1.0d00
+            cm = 1.0_real64
+            emfact = 1.0_real64
          else
             cm = cm*(gam2 - (dnu - em)**2)
             emfact = emfact*em
@@ -107,8 +107,8 @@
             m = m + 1
             em = dble(m)
             if (m == 0) then
-               cm = 1.0d00
-               emfact = 1.0d00
+               cm = 1.0_real64
+               emfact = 1.0_real64
             else
                cm = cm*(gam2 - (dnu - em)**2)
                emfact = emfact*em
@@ -119,18 +119,18 @@
             sump = sump + pterm
             sumq = sumq + qterm
          end do
-         exptrm = exp((-0.5d00*t) + offset)
+         exptrm = exp((-0.5_real64*t) + offset)
          p(i) = sump*exptrm
          q(i) = sumq*exptrm
-         if (p(i) /= 0.0d00) cycle
+         if (p(i) /= 0.0_real64) cycle
          loc = i + 1
          go to 4
       end do
       loc = radial_point_count + 1
 !
     4 continue
-      p(loc:radial_point_count) = 0.0d00
-      q(loc:radial_point_count) = 0.0d00
+      p(loc:radial_point_count) = 0.0_real64
+      q(loc:radial_point_count) = 0.0_real64
 !
       return
 !

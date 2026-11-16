@@ -1,8 +1,9 @@
       module recop00_i
+      implicit none (type, external)
       interface
 !
       subroutine recop00(ns,ja1,ja2,ka,iat)
-      use vast_kind_param, only:  double
+      implicit none (type, external)
       integer, intent(in)  :: ns, ja1, ja2, ka
       integer, intent(out) :: iat
       end subroutine

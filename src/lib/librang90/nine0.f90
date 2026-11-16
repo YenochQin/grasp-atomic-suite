@@ -18,23 +18,23 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, one
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use sixj_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: j1, j2, j3, l1, l2, l3, k1, k2, k3
-      real(double), intent(out) :: aa
+      integer, intent(in) :: j1, j2, j3, l1, l2, l3, k1, k2, k3
+      real(real64), intent(out) :: aa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: ifa
-      real(double) :: a, b
+      real(real64) :: a, b
 !-----------------------------------------------
       if (j1 == 0) then
          call sixj (l2, k2, j2, k3, l3, l1, 0, a)

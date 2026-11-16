@@ -18,7 +18,8 @@
       use grid_c
       use orb_c
       use scf_c
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -27,12 +28,12 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: npj, nakabs
-      real(double) :: alpha, csq, fnrel, fkabs, fkap2, zalpha, gamma, ebym
+      real(real64) :: alpha, csq, fnrel, fkabs, fkap2, zalpha, gamma, ebym
 !-----------------------------------------------
 !
 !   Initializations
 !
-      alpha = 1.0d00/speed_of_light_au
+      alpha = 1.0_real64/speed_of_light_au
       csq = speed_of_light_au*speed_of_light_au
       npj = orbital_principal_n(j)
       nakabs = abs(orbital_kappa(j))
@@ -53,10 +54,10 @@
       zalpha = zinf*alpha
       if (zalpha < fkabs) then
          gamma = sqrt(fkap2 - zalpha*zalpha)
-         ebym = 1.0d00/sqrt(1.0d00 + (zalpha/(gamma + fnrel + 0.5d00))**2)
-         epsmin = (1.0d00 - ebym)*csq
+         ebym = 1.0_real64/sqrt(1.0_real64 + (zalpha/(gamma + fnrel + 0.5_real64))**2)
+         epsmin = (1.0_real64 - ebym)*csq
       else
-         epsmin = 0.25d00*csq/dble(npj*npj)
+         epsmin = 0.25_real64*csq/dble(npj*npj)
       endif
       emin = epsmin
 !
@@ -65,8 +66,8 @@
       zalpha = nuclear_charge*alpha
       if (zalpha < fkabs) then
          gamma = sqrt(fkap2 - zalpha*zalpha)
-         ebym = 1.0d00/sqrt(1.0d00 + (zalpha/(gamma + fnrel - 0.5d00))**2)
-         epsmax = (1.0d00 - ebym)*csq
+         ebym = 1.0_real64/sqrt(1.0_real64 + (zalpha/(gamma + fnrel - 0.5_real64))**2)
+         epsmax = (1.0_real64 - ebym)*csq
       else
          epsmax = csq + csq
       endif

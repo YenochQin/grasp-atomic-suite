@@ -11,24 +11,24 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, half, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use rumtjj_i
       use c0t5s_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)  :: ll, j1, j2
-      real(double), intent(out) :: s
+      real(real64), intent(out) :: s
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: lq, lv, lqs, lvs, j, j1s, n, inn
-      real(double) :: a1, a4, q, qq, qs, qm, qms
+      real(real64) :: a1, a4, q, qq, qs, qm, qms
 !-----------------------------------------------
       s=zero
       call rumtjj(j1,ll,lq,lv,j)

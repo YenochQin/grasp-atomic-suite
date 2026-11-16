@@ -21,7 +21,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use parameter_def,   only: max_orbitals
       use debug_c
       use def_c
@@ -44,7 +43,7 @@
       use jcup_i
       use itjpo_i
       use ispar_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -56,9 +55,9 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(max_orbitals) :: iocc
-      integer, dimension(nw2)  :: iqsub
-      integer, dimension(max_orbitals) :: jx
+      integer :: iocc(max_orbitals)
+      integer  :: iqsub(nw2)
+      integer :: jx(max_orbitals)
       integer :: i
       integer :: ncorp1, npeel, npeel2, j, npj, nakj, lenth, ncfd, nrec &
          , ios, ierr, loc, nqs, newsiz, isparc, njx, ioc, ipty, nqsn    &

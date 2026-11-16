@@ -12,13 +12,13 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
       integer, intent(in) :: i
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: j
-      character(len=10), dimension(6) :: string5
+      character(len=10) :: string5(6)
 !
       data string5/'   I T L S',' I T L S 2',' I T L S 3', &
                    'AW P 1 L S','WA P 1 L S','       W 1'/

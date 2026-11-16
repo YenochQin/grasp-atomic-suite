@@ -19,12 +19,12 @@
       use iounit_c,      only: stderr_unit
       use orb_c,         only: orbital_count, csf_count
       use stat_c,        only: csf_coupling_quantum_codes
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: loc
-      integer             :: icsf
+      integer, intent(in) :: icsf
 !-----------------------------------------------
 !
       if (loc>=1 .and. loc<=max_orbitals-1) then

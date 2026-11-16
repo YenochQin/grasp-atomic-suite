@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use cuto_c
       use jlabl_c, labj=>jlbr, labp=> jlbp
@@ -24,21 +24,22 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       logical, intent(in) :: lsame
-      integer  :: i, j
+      integer :: i
+      integer, intent(in) :: j
       integer, intent(inout) :: lines
-      real(double), intent(in) :: asfa, asfb
-      real(double), intent(in) :: omega, factor
+      real(real64), intent(in) :: asfa, asfb
+      real(real64), intent(in) :: omega, factor
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ipar, jpar, isigna, isignb
-      real(double), dimension(10) :: dblfac
-      real(double) :: stfac, dll1, omc, faau, fosc, fbau, eng, ggfactor, &
+      real(real64) :: dblfac(10)
+      real(real64) :: stfac, dll1, omc, faau, fosc, fbau, eng, ggfactor, &
          acsq, absq, ac, ab, bc, bb, oscc, oscb, sa, sb, ams, am, bm, oscm
       character(len=4) :: jlabi, jlabj, jpari, jparj
       character(len=2) :: f1,f2
@@ -47,9 +48,9 @@
 !
 !  *****  DBLFAC(I) = (2I+1)!!
 !
-      data dblfac/ 3.0000000000d00, 1.5000000000d01, 1.0500000000d02, &
-         9.4500000000d02, 1.0395000000d04, 1.3513500000d05, 2.0270250000d06, &
-         3.4459425000d07, 6.5472907500d08, 1.3749310575d10/
+      data dblfac/ 3.0000000000_real64, 1.5000000000e1_real64, 1.0500000000e2_real64, &
+         9.4500000000e2_real64, 1.0395000000e4_real64, 1.3513500000e5_real64, 2.0270250000e6_real64, &
+         3.4459425000e7_real64, 6.5472907500e8_real64, 1.3749310575e10_real64/
 !
 !   Evaluate statistical factors and constants
 !
@@ -59,7 +60,7 @@
 !
       omc = omega/vacuum_speed_of_light_au
 !     OMC = OMEGA/C
-      faau = 2.0d00*omc*stfac/dble(iatjpoff(j))
+      faau = 2.0_real64*omc*stfac/dble(iatjpoff(j))
       fosc = vacuum_speed_of_light_au*stfac/omc
 !     FOSC = C*STFAC/OMC
       fbau = pi*fosc/omega
@@ -75,8 +76,8 @@
       jpari = labp(ipar)
       jparj = labp(jpar)
 !GG
-      ggfactor = vacuum_speed_of_light_au**(2*lk - 2)*dble(lk)*dblfac(lk)**2/((2.0d00*dble(lk) + &
-         1.0d00)*(dble(lk) + 1.0d00)*abs(omega)**(2*lk - 1))
+      ggfactor = vacuum_speed_of_light_au**(2*lk - 2)*dble(lk)*dblfac(lk)**2/((2.0_real64*dble(lk) + &
+         1.0_real64)*(dble(lk) + 1.0_real64)*abs(omega)**(2*lk - 1))
 !GG-end
 !
 !   Calculate Einstein A and B coefficients and oscillator strengths
@@ -126,7 +127,7 @@
 !   Print information if both AC and AB are greater than CUTOFF
 !
          if (abs(ac)>=cutoff .and. abs(ab)>=cutoff) then
-            if (-1.d+9 < eng .and. eng .lt. -1.0d-2) then
+            if (-1.e9_real64 < eng .and. eng .lt. -1.0e-2_real64) then
                if (lsame) then
                   f1 = 'f '
                   f2 = 'f '
@@ -138,7 +139,7 @@
             write (24, 300) f1,ivecff(j),jlabj,jparj,f2,ivecii(i),jlabi,jpari, &
                -eng, -ac, -oscc, -sa, dsqrt(-sa)*dble(isigna) !, ASFA
             write (24, 301) -ab, -oscb, -sb, dsqrt(-sb)*dble(isignb) !, ASFB
-            else if ( 1.d+9 .gt. eng .and. eng .gt. 1.d-2) then
+            else if ( 1.e9_real64 .gt. eng .and. eng .gt. 1.e-2_real64) then
                if (lsame) then
                   f1 = 'f '
                   f2 = 'f '
@@ -187,7 +188,7 @@
 !   Print information if AM is greater than CUTOFF
 !
          if (abs(am) >= cutoff) then
-            if (-1.d+9 < eng .and. eng .lt. -1.0d-2) then
+            if (-1.e9_real64 < eng .and. eng .lt. -1.0e-2_real64) then
                if (lsame) then
                   f1 = 'f '
                   f2 = 'f '
@@ -199,7 +200,7 @@
                      jlabi,jpari,-eng,-am,-oscm,-sa,dsqrt(-sa)*dble(isigna)
 !     :               ,ASFA (M-value)
 !            WRITE (24,*) 'Relative sign',ISIGNA
-            else if ( 1.d+9 .gt. eng .and. eng .gt. 1.d-2) then
+            else if ( 1.e9_real64 .gt. eng .and. eng .gt. 1.e-2_real64) then
                if (lsame) then
                   f1 = 'f '
                   f2 = 'f '

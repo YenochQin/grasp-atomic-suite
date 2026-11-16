@@ -7,7 +7,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use corre_c
       use damp_c
       use def_c
@@ -34,31 +34,32 @@
       use dampck_i
       use dampor_i
       use orthy_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: j
-      real(double) , intent(inout) :: dampmx
-      logical  :: eol, lsort
+      integer, intent(in) :: j
+      real(real64) , intent(inout) :: dampmx
+      logical, intent(in) :: eol
+      logical :: lsort
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      real(double), parameter :: p2 = 2.0d-01
-      real(double), parameter :: p005 = 5.0d-03
-      real(double), parameter :: p0001 = 1.0d-04
+      real(real64), parameter :: p2 = 2.0e-1_real64
+      real(real64), parameter :: p005 = 5.0e-3_real64
+      real(real64), parameter :: p0001 = 1.0e-4_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ipr, npts, inv, jp, nnp, i, nwww
-      real(double) :: ed1, gamaj, ed2, wtaev, dnorm, dnfac, del1, del2, odampj
+      real(real64) :: ed1, gamaj, ed2, wtaev, dnorm, dnfac, del1, del2, odampj
       logical :: fail, first
 !-----------------------------------------------
 !
 !   C Froese Fischer's IPR and ED1 parameter
 !
       data ipr/ 0/
-      data ed1/ 0.d0/
+      data ed1/ 0._real64/
       data first/ .false./
 !
 !
@@ -116,7 +117,7 @@
 !
 !   Compute norm of radial function
 !
-      ta(1) = 0.d0
+      ta(1) = 0._real64
       ta(2:mtp0) = (p(2:mtp0)**2+q(2:mtp0)**2)*radial_grid_derivative(2:mtp0)
       mtp = mtp0
 
@@ -128,7 +129,7 @@
 !
 !   Normalize
 !
-      dnfac = 1.d0/sqrt(dnorm)
+      dnfac = 1._real64/sqrt(dnorm)
       p0 = p0*dnfac
       p(:mtp0) = p(:mtp0)*dnfac
       q(:mtp0) = q(:mtp0)*dnfac
@@ -136,9 +137,9 @@
 !   Check if different method should be used or if improvement
 !   count should be reduced
 !
-      del1 = abs(1.d0 - ed2/orbital_energy_parameters(j))
+      del1 = abs(1._real64 - ed2/orbital_energy_parameters(j))
       if (method(j) == 1) then
-         del2 = max(abs(1.d0 - sqrt(dnorm)),abs(dnfac - 1.d0))
+         del2 = max(abs(1._real64 - sqrt(dnorm)),abs(dnfac - 1._real64))
          if (del1<p005 .and. del2>p2) then
             method(j) = 2
             go to 1
@@ -153,7 +154,7 @@
          call dampck (ipr, j, ed1, ed2)
          odampj = abs(orbital_damping_factors(j))
       else
-         odampj = 0.d0                           ! take the whole new orbital
+         odampj = 0._real64                           ! take the whole new orbital
       endif
       call dampor (j, inv, odampj)
 

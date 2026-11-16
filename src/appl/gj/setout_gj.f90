@@ -8,7 +8,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c,           only: vacuum_speed_of_light_au
       use jlabl_c,         only: labj=>jlbr, labp=>jlbp
       use nsmdat_c,        only: sqn, dmomnm, qmomb,                  &
@@ -19,18 +19,18 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use openfl_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       character(len=24), intent(in) :: name
       integer, intent(in) :: nci
-      real(double), intent(in) :: gjc_diag(nvec), dgjc_diag(nvec)
+      real(real64), intent(in) :: gjc_diag(nvec), dgjc_diag(nvec)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, ierr, jj, k
-      real(double) :: fj, gja1, gj, dgj
+      real(real64) :: fj, gja1, gj, dgj
       character :: filnam*256, form*11, status*3
 !-----------------------------------------------
 !
@@ -57,10 +57,10 @@
       do i = 1, nvec
          jj = iatjpo(i)
          if (jj <= 1) cycle
-         fj = 0.5d00*dble(jj - 1)
-         gja1 = sqrt(1.0d00/(fj*(fj + 1.0d00)))
+         fj = 0.5_real64*dble(jj - 1)
+         gja1 = sqrt(1.0_real64/(fj*(fj + 1.0_real64)))
          gj = vacuum_speed_of_light_au*gja1*gjc_diag(i)
-         dgj = 0.001160d0*gja1*dgjc_diag(i)
+         dgj = 0.001160_real64*gja1*dgjc_diag(i)
 !
          write (29, 403) ivec(i), labj(jj), labp((iaspar(i)+3)/2), gj, dgj, &
             gj + dgj

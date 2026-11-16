@@ -29,12 +29,12 @@
 !-----------------------------------------------
       use ldigit_i
       use convrt_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(out) :: nsubs
-      integer, dimension(*), intent(inout) :: indx
+      integer, intent(inout) :: indx(*)
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------

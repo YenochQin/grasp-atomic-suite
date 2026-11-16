@@ -15,44 +15,44 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use gdvd_i, only: dvd_operator
       use dvdson_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       procedure(dvd_operator) :: matrix_vector_callback
-      integer  :: n
-      integer  :: lim
+      integer, intent(in) :: n
+      integer, intent(in) :: lim
       integer  :: ilow
       integer  :: ihigh
-      integer  :: niv
+      integer, intent(inout) :: niv
       integer  :: mblock
       integer  :: maxiter
-      integer  :: iwrsz
-      integer  :: iiwsz
+      integer, intent(in) :: iwrsz
+      integer, intent(in) :: iiwsz
       integer  :: nloops
       integer, intent(out) :: nmv
       integer  :: ierr
-      real(double)  :: crite
-      real(double)  :: critc
-      real(double)  :: critr
-      real(double)  :: ortho
+      real(real64)  :: crite
+      real(real64)  :: critc
+      real(real64)  :: critr
+      real(real64)  :: ortho
       logical  :: hiend
       integer  :: iselec(lim)
-      integer  :: iwork(iiwsz)
-      real(double), dimension(n), intent(inout) :: diag
-      real(double)  :: work(iwrsz)
+      integer, intent(inout) :: iwork(iiwsz)
+      real(real64), intent(inout) :: diag(n)
+      real(real64), intent(inout) :: work(iwrsz)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(7) :: irev
+      integer :: irev(7)
       integer :: noc, irc, nb, iw1, iw2, iw3, iiw, iin, iw4, icur, i, indx, j
-      real(double) :: value, ovalue, rnorm, epsil
+      real(real64) :: value, ovalue, rnorm, epsil
 !
 !**********************************************************************
 !  NOC = number of orthogonalization constraints
@@ -116,10 +116,10 @@
 !-------------
 !* Choice of Diagonal preconditioning
             do j = 1, n
-               if (abs(diag(j)) > 1.0d-06) then
+               if (abs(diag(j)) > 1.0e-6_real64) then
                   work(iw2+icur+j-1) = work(iw1+icur+j-1)/diag(j)
                else
-                  work(iw2+icur+j-1) = work(iw1+icur+j-1)*1.0d06
+                  work(iw2+icur+j-1) = work(iw1+icur+j-1)*1.0e6_real64
                endif
             end do
 !*-------------

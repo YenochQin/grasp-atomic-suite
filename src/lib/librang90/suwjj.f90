@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, eps
       use ribojj_c
 !-----------------------------------------------
@@ -24,19 +24,19 @@
       use ixjtik_i
       use rmeajj_i
       use sixj_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)  :: k1, k2, j1, j2
       integer,      intent(out) :: ll
-      real(double), intent(out) :: suw
+      real(real64), intent(out) :: suw
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: kk1,kk2,i,ip,ig,l2q1,l2v1,l2j1,l2q2,l2v2,l2j2, &
                  l2qi,l2vi,l2ji
-      real(double) :: coef1, coef2, s, si1, si2
+      real(real64) :: coef1, coef2, s, si1, si2
 !-----------------------------------------------
       suw=zero
       if(imptjj(j1) /= imptjj(j2)) return

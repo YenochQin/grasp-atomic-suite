@@ -11,9 +11,9 @@
 !                                                                  *
 !*******************************************************************
 !
-      implicit none
-      integer, dimension(6)   :: mt9
-      integer, dimension(189) :: mt11
+      implicit none (type, external)
+      integer   :: mt9(6)
+      integer :: mt11(189)
       data mt9/40209,50000,30404,30408,30412,30416/
       data mt11/50211,                                              &
       60000,40404,40408,40412,40416,40420,                          &

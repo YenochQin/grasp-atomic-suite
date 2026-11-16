@@ -16,7 +16,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use debug_c
       use def_c, only: nuclear_charge, electron_count
       use grid_c
@@ -27,29 +27,29 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use draw_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, nb3, nrows, ii, ii1, ii2, ii3
-      real(double) :: third, wa, wb, wc, wd, we, wf
+      real(real64) :: third, wa, wb, wc, wd, we, wf
 !-----------------------------------------------
 !
 !
-      third = 1.0d00/3.0d00
+      third = 1.0_real64/3.0_real64
 !
       wa = nuclear_charge - dble(electron_count - 1)
-      wb = max(nuclear_charge - wa,0.0d00)
-      wb = wb**third/0.8853d00
+      wb = max(nuclear_charge - wa,0.0_real64)
+      wb = wb**third/0.8853_real64
       do i = 1, radial_point_count
 !
 !   Rational function approximation to the universal Thomas-Fermi
 !   function
 !
          wc = sqrt(wb*radial_grid(i))
-         wd = wc*(0.60112d0*wc + 1.81061d0) + 1.0d00
-         we = wc*(wc*(wc*(wc*(0.04793d0*wc + 0.21465d0) + 0.77112d0) + &
-            1.39515d0) + 1.81061d0) + 1.0d00
+         wd = wc*(0.60112_real64*wc + 1.81061_real64) + 1.0_real64
+         we = wc*(wc*(wc*(wc*(0.04793_real64*wc + 0.21465_real64) + 0.77112_real64) + &
+            1.39515_real64) + 1.81061_real64) + 1.0_real64
          wf = wd/we
          yp(i) = (negative_radius_times_potential(i)-wa)*wf*wf + wa
       end do
@@ -77,7 +77,7 @@
                write (99, 301) radial_grid(ii1), yp(ii1)
             endif
          end do
-         call draw (yp, 1.0d00, yp, 1.0d00, radial_point_count)
+         call draw (yp, 1.0_real64, yp, 1.0_real64, radial_point_count)
       endif
 !
       return

@@ -7,7 +7,6 @@ evcout.f90
 
 # For these routines, only the interface files were linked in the original
 # makefile.
-#dspevx.f90 dspevx_I.f90
 #ratden.f90 ratden_I.f90
 dspevx_I.f90
 ratden_I.f90
@@ -20,7 +19,6 @@ ratden_I.f90
 
 # Not referenced in the original makefile
 #setham_to_genmat2_C.f90
-#t.f90
 
 # Common block remnants
 where_C.f90

@@ -16,14 +16,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use hmat_c
       use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use convrt_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -32,7 +32,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: ic, nelc, ir, lenthr, lenthc
-      real(double) :: elsto
+      real(real64) :: elsto
       character    :: cir*8, cic*8
 !-----------------------------------------------
 !

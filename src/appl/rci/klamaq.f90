@@ -16,50 +16,50 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c,           only: speed_of_light_au
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: n
       integer, intent(in) :: kappa
-      real(double), intent(in) :: z
-      real(double), intent(out) :: fzalfa
+      real(real64), intent(in) :: z
+      real(real64), intent(out) :: fzalfa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: l, loc
-      real(double), dimension(36) :: bethe
-      real(double) :: c401, c402, ovlfac, bethel, term, zalfa, factor
+      real(real64) :: bethe(36)
+      real(real64) :: c401, c402, ovlfac, bethel, term, zalfa, factor
       logical :: first
 !-----------------------------------------------
 !
-      data bethe/ 2.9841285d00, 2.8117699d00, -0.0300167d00, 2.7676636d00, &
-         -0.0381902d00, -0.0052321d00,  2.7498118d00, -0.0419549d00, &
-         -0.0067409d00, -0.0017337d00,  2.7408237d00, -0.0440347d00, &
-         -0.0076008d00, -0.0022022d00, -0.0007721d00,  2.7356642d00, &
-         -0.0453122d00, -0.0081472d00, -0.0025022d00, -0.0009628d00, &
-         -0.0004079d00,  2.7324291d00, -0.0461552d00, -0.0085192d00, &
-         -0.0027091d00, -0.0010945d00, -0.0004997d00, -0.0002409d00, &
-          2.7302673d00, -0.0467413d00, -0.0087850d00, -0.0028591d00, &
-         -0.0011904d00, -0.0005665d00, -0.0002904d00, -0.0001539d00/
+      data bethe/ 2.9841285_real64, 2.8117699_real64, -0.0300167_real64, 2.7676636_real64, &
+         -0.0381902_real64, -0.0052321_real64,  2.7498118_real64, -0.0419549_real64, &
+         -0.0067409_real64, -0.0017337_real64,  2.7408237_real64, -0.0440347_real64, &
+         -0.0076008_real64, -0.0022022_real64, -0.0007721_real64,  2.7356642_real64, &
+         -0.0453122_real64, -0.0081472_real64, -0.0025022_real64, -0.0009628_real64, &
+         -0.0004079_real64,  2.7324291_real64, -0.0461552_real64, -0.0085192_real64, &
+         -0.0027091_real64, -0.0010945_real64, -0.0004997_real64, -0.0002409_real64, &
+          2.7302673_real64, -0.0467413_real64, -0.0087850_real64, -0.0028591_real64, &
+         -0.0011904_real64, -0.0005665_real64, -0.0002904_real64, -0.0001539_real64/
 !
 !----------------------------------------------------------------------*
 !
       data first/ .true./
 !
-      data c401/ 0.0d00/
-      data c402/ 0.0d00/
-      data ovlfac/ 0.0d00/
+      data c401/ 0.0_real64/
+      data c402/ 0.0_real64/
+      data ovlfac/ 0.0_real64/
 !
 !   Set up the constants
 !
       if (first) then
 !
-         c401 = 11.0d00/24.0d00
-         c402 = 3.0d00/8.0d00
-         ovlfac = 4.0d00/3.0d00
+         c401 = 11.0_real64/24.0_real64
+         c402 = 3.0_real64/8.0_real64
+         ovlfac = 4.0_real64/3.0_real64
 !
          first = .false.
 !

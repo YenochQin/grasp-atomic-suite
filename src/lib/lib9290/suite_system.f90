@@ -3,7 +3,7 @@
 ! changing it to EXECUTE_COMMAND_LINE's unencoded exit status.
 module suite_system
     use iso_c_binding, only: c_char, c_int, c_size_t, c_ptr, c_null_char, c_associated
-    implicit none
+    implicit none (type, external)
     private
     public :: run_shell, change_directory, working_directory, path_access, make_directory
     public :: terminate_process
@@ -11,26 +11,31 @@ module suite_system
     interface
         subroutine c_exit(status) bind(c, name='exit')
             import c_int
+            implicit none (type, external)
             integer(c_int), value :: status
         end subroutine c_exit
         function c_system(command) bind(c, name='system') result(status)
             import c_char, c_int
+            implicit none (type, external)
             character(kind=c_char), intent(in) :: command(*)
             integer(c_int) :: status
         end function c_system
         function c_chdir(path) bind(c, name='chdir') result(status)
             import c_char, c_int
+            implicit none (type, external)
             character(kind=c_char), intent(in) :: path(*)
             integer(c_int) :: status
         end function c_chdir
         function c_getcwd(buffer, capacity) bind(c, name='getcwd') result(address)
             import c_char, c_size_t, c_ptr
+            implicit none (type, external)
             character(kind=c_char), intent(out) :: buffer(*)
             integer(c_size_t), value :: capacity
             type(c_ptr) :: address
         end function c_getcwd
         function c_access(path, mode) bind(c, name='access') result(status)
             import c_char, c_int
+            implicit none (type, external)
             character(kind=c_char), intent(in) :: path(*)
             integer(c_int), value :: mode
             integer(c_int) :: status

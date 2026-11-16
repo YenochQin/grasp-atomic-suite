@@ -17,28 +17,28 @@
 !-----------------------------------------------                       *
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_radial_points
       use coun_c
       use def_c, only: accy
       use grid_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: mtpfr
       integer, intent(out) :: nncff
-      real(double), intent(out) :: sgn
-      real(double), dimension(max_radial_points), intent(in) :: fr
+      real(real64), intent(out) :: sgn
+      real(real64), intent(in) :: fr(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(max_radial_points) :: lcext
+      integer :: lcext(max_radial_points)
       integer :: next, i, loc, nstps
       integer :: trace_status
       character(len=8) :: trace_env
       logical, save :: trace_count = .false., trace_init = .false.
-      real(double) :: ext, emx, abfri, test, threse, ablcl
+      real(real64) :: ext, emx, abfri, test, threse, ablcl
       if (.not. trace_init) then
          call get_environment_variable('GRASP_TRACE_COUNT', trace_env, status=trace_status)
          trace_count = trace_status == 0 .and. (trace_env(1:1) == '1' .or. trace_env(1:1) == 'y')
@@ -51,16 +51,16 @@
 !   (2) Find the maximum amplitudes of FR
 !
       next = 1
-      ext = 0.0d00
+      ext = 0.0_real64
       lcext(1) = 1
-      emx = 0.0d00
+      emx = 0.0_real64
       do i = 2, mtpfr
          abfri = abs(fr(i))
-         test = abs(sign(1.0d00,fr(i))+sign(1.0d00,fr(i-1)))
+         test = abs(sign(1.0_real64,fr(i))+sign(1.0_real64,fr(i-1)))
          if (test <= accy) then
             next = next + 1
             lcext(next) = 0
-            ext = 0.0d00
+            ext = 0.0_real64
          endif
          if (abfri > ext) then
             ext = abfri
@@ -79,7 +79,7 @@
       loc = loc + 1
       if (loc <= next) then
          if (lcext(loc) == 0) then
-            ablcl = 0.0d00
+            ablcl = 0.0_real64
          else
             ablcl = abs(fr(lcext(loc)))
          endif
@@ -96,7 +96,7 @@
 !
       nncff = 0
       do i = 2, next
-         test = abs(sign(1.0d00,fr(lcext(i)))+sign(1.0d00,fr(lcext(i-1))))
+         test = abs(sign(1.0_real64,fr(lcext(i)))+sign(1.0_real64,fr(lcext(i-1))))
          if (test > accy) cycle
          nncff = nncff + 1
       end do
@@ -104,7 +104,7 @@
 !   Determine the position of the first oscillation, and the
 !   sign of the function at this location
 !
-      sgn = sign(1.0d00,fr(lcext(1)))
+      sgn = sign(1.0_real64,fr(lcext(1)))
       if (trace_count .and. mtpfr > 300 .and. count_trace_rank == 0) then
          write (734,'(A,I0,A,I0,A,ES16.8,A,ES16.8,A,I0)') 'COUNT_TRACE orbital=', &
               count_context, ' mtp=', mtpfr, ' emx=', emx, ' thre=', threse, ' nodes=', nncff

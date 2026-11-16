@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function brra (itype, ia, ic, ib, id, k)
+      real(real64) function brra (itype, ia, ic, ib, id, k)
 !                                                                      *
 !   This routine evaluates the transverse interaction integrals:       *
 !                                                                      *
@@ -22,7 +22,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use cons_c
       use grid_c
@@ -32,21 +32,21 @@
 !-----------------------------------------------
       use rkint_i
       use skint_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: itype
-      integer  :: ia
-      integer  :: ic
-      integer  :: ib
-      integer  :: id
+      integer, intent(in) :: ia
+      integer, intent(in) :: ic
+      integer, intent(in) :: ib
+      integer, intent(in) :: id
       integer  :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: mxrac, i, mxrbd
-      real(double), dimension(max_radial_points) :: rac, rbd
+      real(real64) :: rac(max_radial_points), rbd(max_radial_points)
 !-----------------------------------------------
 !
       mxrac = min(orbital_last_grid_index(ia),orbital_last_grid_index(ic))

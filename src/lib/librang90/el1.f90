@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, half, eps
       use m_c,             only: jlist, npeel
       use orb_c,           only: orbital_kappa
@@ -42,7 +42,7 @@
       use cxk_i
       use talk_i
       use gg1122_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -55,12 +55,12 @@
       integer :: ii,ia,ib,iat,ip1,ip2,ip3,ig1,ig2,ig3,ikk,i1,i2,i3,i4,&
                  ifaz,j12,ibrd,ibre,kra,kra1,l1,l2,mu,n,nu,nd1,nd2,   &
                  ne1,ne2,nup1
-      integer, dimension(2) :: j
-      integer, dimension(4) :: is,kaps,ks
-      real(double)          :: qm1,qm2,qm3,qm4,aa,ab,a1,bb,si,recc,rag
-      real(double), dimension(12)   :: s
-      real(double), dimension(30)   :: pmgg,ragg
-      real(double), dimension(7,20) :: cone
+      integer :: j(2)
+      integer :: is(4),kaps(4),ks(4)
+      real(real64)          :: qm1,qm2,qm3,qm4,aa,ab,a1,bb,si,recc,rag
+      real(real64)   :: s(12)
+      real(real64)   :: pmgg(30),ragg(30)
+      real(real64) :: cone(7, 20)
 !-----------------------------------------------
       if(ja /= jb)go to 9
 !

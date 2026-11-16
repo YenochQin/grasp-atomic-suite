@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, half, eps
       use m_c,             only: jlist, npeel
       use orb_c,           only: orbital_kappa
@@ -41,7 +41,7 @@
       use talk_i
       use perko2_i, only: perko2
       use speak_i, only: speak
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -54,11 +54,11 @@
       integer :: iat,ia,ib,ibrd,ibre,ip1,ip2,ig1,ig2,ikk,ii,i2,i3, &
                  ifaz,ifaz1,ifazfrcs,j12,jaa,jbb, &
                  kra,l1,l2,n,nd1,nd2,ne1,ne2,nup1,nu,mu
-      integer, dimension(2) :: j
-      integer, dimension(4) :: is,kaps,ks
-      real(double)          :: aa,a1,ab,bb,qm1,qm2,qm3,qm4,recc,si
-      real(double), dimension(12)    :: s
-      real(double), dimension(12,20) :: cond
+      integer :: j(2)
+      integer :: is(4),kaps(4),ks(4)
+      real(real64)          :: aa,a1,ab,bb,qm1,qm2,qm3,qm4,recc,si
+      real(real64)    :: s(12)
+      real(real64) :: cond(12, 20)
 !-----------------------------------------------
       if(npeel <= 1)return
       if(ja > jb) then

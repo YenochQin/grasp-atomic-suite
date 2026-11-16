@@ -16,7 +16,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_radial_points
       use damp_c
       use def_c
@@ -31,18 +31,18 @@
       use rint_i
 !      USE count_I
       use count_i, only: count
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: j
+      integer, intent(in) :: j
       integer, intent(inout) :: inv
-      real(double), intent(in) :: odampj
+      real(real64), intent(in) :: odampj
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: mtpo, mtpn, mtp, i, nncff, mfj
-      real(double) :: eps, factor, poldi, qoldi, dnorm, dnfac, sgn
+      real(real64) :: eps, factor, poldi, qoldi, dnorm, dnfac, sgn
       logical :: check
 !-----------------------------------------------
 !
@@ -50,7 +50,7 @@
 !   Initialization
 !
 !ww      EPS = 0.1D 00*ACCY
-      eps = 0.01d00*accy
+      eps = 0.01_real64*accy
       check = .not.noinvt(j)
 !
 !   Damp orbital J using the damping factor  ABS (ODAMP(J)):  ODAMP(J)
@@ -66,7 +66,7 @@
 !
       if (odampj > eps) then
 !
-         factor = 1.0d00 - odampj
+         factor = 1.0_real64 - odampj
 !
          orbital_origin_parameters(j) = factor*p0 + odampj*orbital_origin_parameters(j)
 !
@@ -88,13 +88,13 @@
 !
          orbital_last_grid_index(j) = mtp
          dnorm = rint(j,j,0)
-         dnfac = 1.0d00/sqrt(dnorm)
+         dnfac = 1.0_real64/sqrt(dnorm)
 !
 !   Determine if inversion is necessary
 !
          if (check) then
             call count (radial_large_components(:max_radial_points,j), mtp, nncff, sgn)
-            if (sgn < 0.0d00) then
+            if (sgn < 0.0_real64) then
                inv = inv + 1
                dnfac = -dnfac
             endif
@@ -110,8 +110,8 @@
     3    continue
          mfj = mfj - 1
          if (abs(radial_large_components(mfj,j)) < eps) then
-            radial_large_components(mfj,j) = 0.0d00
-            radial_small_components(mfj,j) = 0.0d00
+            radial_large_components(mfj,j) = 0.0_real64
+            radial_small_components(mfj,j) = 0.0_real64
             go to 3
          else
             orbital_last_grid_index(j) = mfj

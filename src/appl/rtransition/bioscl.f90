@@ -22,7 +22,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use default_c
       use debug_c, only: ldbpr, cutoff
 !-----------------------------------------------
@@ -40,13 +39,13 @@
       use oscl_i
       use starttime_i, only: starttime
       use stoptime_i, only: stoptime
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ntest, ncount1, ilbl
       logical :: yes
-      character, dimension(2) :: name*24
+      character :: name(2)*24
       character(len=128) :: isofile
 !-----------------------------------------------
 !

@@ -1,12 +1,14 @@
       module a1jj_i
+      implicit none (type, external)
       interface
 !
       subroutine a1jj (ik, bk, id, bd, qm1, a)
-      use vast_kind_param, only:  double
-      integer,      intent(in), dimension(7) :: ik, id
-      real(double), intent(in), dimension(3) :: bk, bd
-      real(double), intent(in)               :: qm1
-      real(double), intent(out)              :: a
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
+      integer,      intent(in) :: ik(7), id(7)
+      real(real64), intent(in) :: bk(3), bd(3)
+      real(real64), intent(in)               :: qm1
+      real(real64), intent(out)              :: a
       end subroutine
       end interface
       end module

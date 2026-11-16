@@ -17,7 +17,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use parameter_def,   only: max_radial_points
       use memory_man
       use decide_c
@@ -37,7 +36,7 @@
 !-----------------------------------------------
       use getyn_i
       use setqic_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

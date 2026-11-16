@@ -1,14 +1,14 @@
 ! Stable LS ranking. The input coefficients are never reordered or truncated.
 module jj2lsj_postprocess
-    use vast_kind_param, only: double
+    use, intrinsic :: iso_fortran_env, only: real64
     use ieee_arithmetic, only: ieee_is_finite
-    implicit none
+    implicit none (type, external)
     private
     public :: ls_ranking, rank_ls, post_worker_count
     type :: ls_ranking
         integer, allocatable :: order(:)
-        real(double) :: norm = 0.0_double
-        real(double) :: seconds = 0.0_double
+        real(real64) :: norm = 0.0_real64
+        real(real64) :: seconds = 0.0_real64
     end type
 contains
     integer function post_worker_count(levels) result(workers)
@@ -31,15 +31,15 @@ contains
     end function
 
     recursive subroutine rank_ls(values, ranking)
-        real(double), intent(in) :: values(:)
+        real(real64), intent(in) :: values(:)
         type(ls_ranking), intent(inout) :: ranking
-        real(double), allocatable :: squares(:)
+        real(real64), allocatable :: squares(:)
         integer, allocatable :: scratch(:)
         integer :: n, i, width, first, middle, last, left, right, out
         n=size(values)
         if (allocated(ranking%order)) deallocate(ranking%order)
         allocate(ranking%order(n),squares(n),scratch(n))
-        ranking%norm=0.0_double
+        ranking%norm=0.0_real64
         do i=1,n
             if (.not. ieee_is_finite(values(i))) error stop 'jj2lsj: nonfinite LS coefficient'
             squares(i)=values(i)*values(i)

@@ -10,7 +10,7 @@
 !...Translated by Pacific-Sierra Research 77to90  4.3E  10:50:43   2/14/04
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -18,9 +18,9 @@
       integer, intent(out) :: kd2
       integer, intent(out) :: ke1
       integer, intent(out) :: ke2
-      integer, dimension(4), intent(in) :: is
-      integer, dimension(4), intent(in) :: kaps
-      integer, dimension(4), intent(in) :: ks
+      integer, intent(in) :: is(4)
+      integer, intent(in) :: kaps(4)
+      integer, intent(in) :: ks(4)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

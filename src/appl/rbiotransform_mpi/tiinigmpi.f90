@@ -32,7 +32,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
       use mcpdata_c
       use sbdat1_c
@@ -43,18 +43,18 @@
       use setvec_i
       use wrtmat_i
       use copvec_i, only: copvec
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ncsf
-      integer  :: nciv
+      integer, intent(in) :: ncsf
+      integer, intent(in) :: nciv
       integer, intent(in) :: i
       integer, intent(in) :: l
       integer, intent(in) :: ntestg
-      real(double), intent(in) :: const
-      real(double), dimension(ncsf,nciv), intent(in)    :: ciin
-      real(double), dimension(ncsf,nciv), intent(inout) :: ciout
+      real(real64), intent(in) :: const
+      real(real64), intent(in)    :: ciin(ncsf, nciv)
+      real(real64), intent(inout) :: ciout(ncsf, nciv)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -64,8 +64,8 @@
 !-----------------------------------------------
       integer :: ntestl, ntest, nfound, k, ia, ib, ifirst, ielmnt, ival, ileft&
          , ivec
-      real(double), dimension(ncsf,nciv) :: ciouttmp
-      real(double) :: constn
+      real(real64) :: ciouttmp(ncsf, nciv)
+      real(real64) :: constn
 !-----------------------------------------------
 !
 !
@@ -74,7 +74,7 @@
 
       if (ntest >= 10) write (6, *) ' Entering TIINI'
 
-      call setvec (ciout, 0.0d0, ncsf*nciv)
+      call setvec (ciout, 0.0_real64, ncsf*nciv)
       if (ncoeff .eq. 0) goto 200
 !
 !.  Obtain address of first coupling coefficient for h(il,il) :  IFIRST
@@ -117,7 +117,7 @@
 !   For terms with vanishing occupation of il,
 !   just copy coefficients, since (x) ** 0 = 1
 !
-      where (ciout(:ncsf,:nciv) == 0.0d0)
+      where (ciout(:ncsf,:nciv) == 0.0_real64)
          ciout(:ncsf,:nciv) = ciin(:ncsf,:nciv)
       end where
 !

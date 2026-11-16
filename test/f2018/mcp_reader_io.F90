@@ -1,6 +1,6 @@
 ! Real SETMCP and disk SETCOF entry points with controlled angular weights.
 program mcp_reader_io
-    use vast_kind_param, only: double
+    use, intrinsic :: iso_fortran_env, only: real64
     use parameter_def, only: orbital_index_radix
     use orb_c, only: orbital_kappa, orbital_two_j
     use hblock_c, only: symmetry_block_count, csf_counts_by_block
@@ -17,7 +17,7 @@ program mcp_reader_io
 #else
     use mpi_s
 #endif
-    implicit none
+    implicit none (type, external)
     character(40) :: scenario, prefix
     character(80) :: filename
     character(8) :: labels(1)
@@ -97,7 +97,7 @@ program mcp_reader_io
                         if (corrupt .and. scenario=='short-payload') then
                             write(unit) mpi_rank+1
                         else
-                            write(unit) mpi_rank+1, 1, 0.25_double
+                            write(unit) mpi_rank+1, 1, 0.25_real64
                         endif
                     endif
                     omit = omit .or. (corrupt .and. scenario=='sentinel')
@@ -111,7 +111,7 @@ program mcp_reader_io
 #ifndef MCP_MEM
     orbital_kappa(1) = -1
     orbital_two_j(1) = 1
-    ucf(1) = 1.0_double
+    ucf(1) = 1.0_real64
     allocate(csf_offsets_by_block(1))
     csf_offsets_by_block = 0
     nddim = 0
@@ -128,13 +128,13 @@ program mcp_reader_io
         if (size(coeff_31)/=0 .or. any(lab_31/=0)) error stop 'Empty cached coefficients'
     else
         if (any(lab_31/=[packed_label,0]) .or. any(ncontr_31/=[1,0])) error stop 'Cached labels'
-        if (size(coeff_31)/=1 .or. coeff_31(1)/=0.25_double) error stop 'Cached coefficients'
+        if (size(coeff_31)/=1 .or. coeff_31(1)/=0.25_real64) error stop 'Cached coefficients'
     endif
 #else
     if (scenario=='empty') then
         if (ndcof/=0) error stop 'Empty contraction'
     else
-        if (ndcof/=1 .or. da(1)/=0.125_double) error stop 'Contracted coefficient'
+        if (ndcof/=1 .or. da(1)/=0.125_real64) error stop 'Contracted coefficient'
     endif
 #endif
     do unit=30,32
@@ -148,43 +148,43 @@ program mcp_reader_io
 end program
 
 function dsubrs(eol, i, j, jblock) result(value)
-    use vast_kind_param, only: double
-    implicit none
+    use, intrinsic :: iso_fortran_env, only: real64
+    implicit none (type, external)
     logical, intent(in) :: eol
     integer, intent(in) :: i, j
     integer :: jblock
-    real(double) :: value
-    value = 1.0_double
+    real(real64) :: value
+    value = 1.0_real64
 end function
 
 function fco(k, ir, ia, ib) result(value)
-    use vast_kind_param, only: double
-    implicit none
+    use, intrinsic :: iso_fortran_env, only: real64
+    implicit none (type, external)
     integer, intent(in) :: k, ia, ib
     integer :: ir
-    real(double) :: value
-    value = 0.0_double
+    real(real64) :: value
+    value = 0.0_real64
 end function
 
 function gco(k, ir, ia, ib) result(value)
-    use vast_kind_param, only: double
-    implicit none
+    use, intrinsic :: iso_fortran_env, only: real64
+    implicit none (type, external)
     integer :: k, ir
     integer, intent(in) :: ia, ib
-    real(double) :: value
-    value = 0.0_double
+    real(real64) :: value
+    value = 0.0_real64
 end function
 
 function systemmem() result(value)
-    use vast_kind_param, only: double
-    implicit none
-    real(double) :: value
-    value = 1.0_double
+    use, intrinsic :: iso_fortran_env, only: real64
+    implicit none (type, external)
+    real(real64) :: value
+    value = 1.0_real64
 end function
 
 function systemfreemem() result(value)
-    use vast_kind_param, only: double
-    implicit none
-    real(double) :: value
-    value = 1.0_double
+    use, intrinsic :: iso_fortran_env, only: real64
+    implicit none (type, external)
+    real(real64) :: value
+    value = 1.0_real64
 end function

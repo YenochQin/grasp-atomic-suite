@@ -24,14 +24,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use iounit_c
       use def_c
       use grid_c
       use int_c,           only: tf, tg
       use orb_c
       use pote_c,          only: yp
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -41,7 +41,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      real(double) :: dmhb2c, energy, enefac, rpi, yprpor
+      real(real64) :: dmhb2c, energy, enefac, rpi, yprpor
       logical :: notset
 !-----------------------------------------------
 !
@@ -50,9 +50,9 @@
 !
 !   Define constants
 !
-      dmhb2c = -transformed_grid_step/(2.0d00*speed_of_light_au)
+      dmhb2c = -transformed_grid_step/(2.0_real64*speed_of_light_au)
       energy = orbital_energy_parameters(j)
-      enefac = 2.0d00*speed_of_light_au*speed_of_light_au - energy
+      enefac = 2.0_real64*speed_of_light_au*speed_of_light_au - energy
 !
 !   Set up arrays TF and TG
 !
@@ -60,15 +60,15 @@
 !   to some arbitrary value
 !
       jp = 0
-      tf(1) = 0.0d00
-      tg(1) = 0.0d00
+      tf(1) = 0.0_real64
+      tg(1) = 0.0_real64
       do i = 2, radial_point_count
          rpi = radial_grid_derivative(i)
          yprpor = yp(i)*radial_derivative_over_radius(i)
          tf(i) = dmhb2c*(enefac*rpi + yprpor)
          tg(i) = dmhb2c*(energy*rpi - yprpor)
          if (.not.notset) cycle
-         if (abs(sign(1.0d00,tg(i))+sign(1.0d00,tg(1))) >= accy) cycle
+         if (abs(sign(1.0_real64,tg(i))+sign(1.0_real64,tg(1))) >= accy) cycle
          jp = i
          notset = .false.
       end do

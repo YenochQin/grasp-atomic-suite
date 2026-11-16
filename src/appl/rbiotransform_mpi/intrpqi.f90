@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use debug_c
       use def_c,           only: accy
@@ -29,14 +29,14 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use rintii_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: ma
-      integer  :: j
-      real(double) , intent(out) :: dnorm
-      real(double) , dimension(*), intent(in) :: pa, qa, ra
+      integer, intent(in) :: j
+      real(real64) , intent(out) :: dnorm
+      real(real64) , intent(in) :: pa(*), qa(*), ra(*)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -46,12 +46,12 @@
 !-----------------------------------------------
       integer :: i, mfj, nrstlo, kount, irow, k, nrsthi, llo, lhi, locnxt, &
          ilirok, ildiag, ilothr, mfjp1
-      real(double), dimension(mxord) :: x, dx
-      real(double), dimension((mxord*(mxord + 1))/2) :: polyp, polyq
-      real(double) :: rama, rn, xbar, pestl, qestl, diff, difft, dxkmn1, dxirow&
+      real(real64) :: x(mxord), dx(mxord)
+      real(real64) :: polyp((mxord*(mxord + 1))/2), polyq((mxord*(mxord + 1))/2)
+      real(real64) :: rama, rn, xbar, pestl, qestl, diff, difft, dxkmn1, dxirow&
          , factor, pestt, qestt, dpbp, dqbq, dnfac
       logical :: set
-      logical, dimension(max_radial_points) :: used
+      logical :: used(max_radial_points)
 !-----------------------------------------------
 !
 !   MXORD is the maximum order of the interpolation
@@ -67,8 +67,8 @@
 !
 !   This is always true in GRASP
 !
-      pfii(1,j) = 0.0d00
-      qfii(1,j) = 0.0d00
+      pfii(1,j) = 0.0_real64
+      qfii(1,j) = 0.0_real64
 !
 !   Checks
 !
@@ -102,8 +102,8 @@
 !
          xbar = radial_grid(i)
          irow = 0
-         pestl = 0.0d00
-         qestl = 0.0d00
+         pestl = 0.0_real64
+         qestl = 0.0_real64
 !
 !   Determine the nearest two grid points bounding the present
 !   grid point
@@ -160,7 +160,7 @@
                ilothr = iloc(irow,k - 1)
                dxkmn1 = dx(k-1)
                dxirow = dx(irow)
-               factor = 1.0d00/(x(irow)-x(k-1))
+               factor = 1.0_real64/(x(irow)-x(k-1))
                polyp(ilirok) = (polyp(ildiag)*dxirow-polyp(ilothr)*dxkmn1)*&
                   factor
                polyq(ilirok) = (polyq(ildiag)*dxirow-polyq(ilothr)*dxkmn1)*&
@@ -173,7 +173,7 @@
          ildiag = iloc(irow,irow)
          pestt = polyp(ildiag)
          qestt = polyq(ildiag)
-         if (pestt==0.0d00 .or. qestt==0.0d00) then
+         if (pestt==0.0_real64 .or. qestt==0.0_real64) then
             if (irow < mxord) then
                go to 4
             else
@@ -205,8 +205,8 @@
 !   tail to zero
 !
       mfjp1 = mfj + 1
-      pfii(mfjp1:radial_point_count,j) = 0.0d00
-      qfii(mfjp1:radial_point_count,j) = 0.0d00
+      pfii(mfjp1:radial_point_count,j) = 0.0_real64
+      qfii(mfjp1:radial_point_count,j) = 0.0_real64
 !
       if (ldbpr(3) .and. kount>0) write (99, 301) accy, kount, mfj
 !
@@ -214,7 +214,7 @@
 !
       dnorm = rintii(j,j,0)
 !ww      WRITE(92,*) 'DNORM',DNORM
-      dnfac = 1.0d00/dsqrt(dnorm)
+      dnfac = 1.0_real64/dsqrt(dnorm)
       pfii(:mfj,j) = pfii(:mfj,j)*dnfac
       qfii(:mfj,j) = qfii(:mfj,j)*dnfac
 !

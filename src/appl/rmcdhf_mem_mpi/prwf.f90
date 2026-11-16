@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_radial_points
       use def_c
       use grid_c
@@ -32,7 +32,7 @@
 !-----------------------------------------------
 !      USE draw_I
       use draw_i, only: draw
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -41,7 +41,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: nb2, nrows, ii, ii1, ii2, k, mfk, jgg
-      real(double) :: cbz
+      real(real64) :: cbz
 !-----------------------------------------------
 !
 !
@@ -67,7 +67,7 @@
                write (99, 301) radial_grid(ii1), p(ii1), q(ii1)
             endif
          end do
-         call draw (p, 1.0d00, q, cbz, mtp0)
+         call draw (p, 1.0_real64, q, cbz, mtp0)
 !
       else
 !
@@ -93,7 +93,7 @@
                   write (99, 301) radial_grid(ii1), radial_large_components(ii1,k), radial_small_components(ii1,k)
                endif
             end do
-            call draw (radial_large_components(:max_radial_points,k), 1.0d00, &
+            call draw (radial_large_components(:max_radial_points,k), 1.0_real64, &
                & radial_small_components(:max_radial_points,k), cbz, orbital_last_grid_index(k))
 !
          end do

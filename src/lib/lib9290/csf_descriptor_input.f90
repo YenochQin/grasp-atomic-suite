@@ -4,7 +4,7 @@ module csf_descriptor_input
    use iso_fortran_env, only: int8, int64, error_unit, file_storage_size
    use parameter_def, only: orbital_capacity => max_orbitals
    use terms_c, only: state_counts => itab, state_offsets => jtab, state_values => ntab
-   implicit none
+   implicit none (type, external)
    private
    public :: descriptor_source, open_descriptor_source, close_descriptor_source
    public :: read_descriptor_block, install_descriptor_header, descriptor_block_label

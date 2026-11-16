@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use eigv_c
       use jlabl_c, labj=>jlbr, labp=>jlbp
@@ -28,7 +28,7 @@
       use hblock_c
       use pos_c
       use blkidx_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -36,11 +36,11 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(5) :: iconf
+      integer :: iconf(5)
       integer :: iv, jblock, ncf, ncfpat, ncminpat, nevecpat, nevecoff, nelt, &
          icf, ivtjpo, ivspar, i, j, itemp, irem, ip
-      real(double) :: temp, w
-      real(double), dimension(5) :: coeff
+      real(real64) :: temp, w
+      real(real64) :: coeff(5)
       character :: record*256, cnum*8
 !-----------------------------------------------
 !
@@ -93,7 +93,7 @@
 
          l20: do i = nelt + 1, ncf
             w = csf_mixing_coefficients(nevecoff + i)
-            if (w==0.d0 .or. abs(w)<=abs(coeff(nelt))) cycle  l20
+            if (w==0._real64 .or. abs(w)<=abs(coeff(nelt))) cycle  l20
 !               we have a non-zero value larger than the largest so far
             do j = 1, nelt
                if (abs(w) <= abs(coeff(j))) cycle

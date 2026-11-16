@@ -23,30 +23,30 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_radial_points
       use grid_c,           only: transformed_grid_step, radial_derivative_over_radius
       use int_c,            only: tf ,tg ,xu, xv
       use orb_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer , intent(in) :: j
       integer , intent(in) :: jp
-      real(double) , intent(inout) :: p(max_radial_points)
-      real(double) , intent(inout) :: q(max_radial_points)
+      real(real64) , intent(inout) :: p(max_radial_points)
+      real(real64) , intent(inout) :: q(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      real(double) :: dkhb2, dkhb2f, cpi, cmi, pi, qi, tfi, tgi, cpim1, cmim1, &
+      real(real64) :: dkhb2, dkhb2f, cpi, cmi, pi, qi, tfi, tgi, cpim1, cmim1, &
          pim1, qim1, tfim1, tgim1, ucim1, udim1, uei
 !-----------------------------------------------
 !
 !   One global initialization
 !
-      dkhb2 = 0.5d00*transformed_grid_step*dble(orbital_kappa(j))
+      dkhb2 = 0.5_real64*transformed_grid_step*dble(orbital_kappa(j))
 !
 !   Tabulate P(r) and Q(r) by step-by-step integration
 !
@@ -54,8 +54,8 @@
 !
       i = 3
       dkhb2f = dkhb2*radial_derivative_over_radius(i)
-      cpi = 1.0d00 + dkhb2f
-      cmi = 1.0d00 - dkhb2f
+      cpi = 1.0_real64 + dkhb2f
+      cmi = 1.0_real64 - dkhb2f
       pi = p(i)
       qi = q(i)
       tfi = tf(i)
@@ -68,8 +68,8 @@
          cpim1 = cpi
          cmim1 = cmi
          dkhb2f = dkhb2*radial_derivative_over_radius(i)
-         cpi = 1.0d00 + dkhb2f
-         cmi = 1.0d00 - dkhb2f
+         cpi = 1.0_real64 + dkhb2f
+         cmi = 1.0_real64 - dkhb2f
          pim1 = pi
          qim1 = qi
          tfim1 = tfi

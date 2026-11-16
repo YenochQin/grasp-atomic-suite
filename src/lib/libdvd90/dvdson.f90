@@ -71,7 +71,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -80,33 +80,33 @@
       !USE dscal_I
       !USE dcopy_I
       use suite_linear_algebra, only: dcopy, dscal
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: irc
-      integer  :: n
-      integer  :: lim
-      integer  :: noc
+      integer, intent(in) :: n
+      integer, intent(in) :: lim
+      integer, intent(in) :: noc
       integer, intent(inout) :: ilow
       integer, intent(inout) :: ihigh
-      integer  :: niv
-      integer  :: mblock
+      integer, intent(inout) :: niv
+      integer, intent(in) :: mblock
       integer  :: maxiter
       integer, intent(in) :: iwrsz
       integer, intent(in) :: iiwsz
       integer, intent(inout) :: nloops
 !      INTEGER, INTENT(INOUT) :: IERR
       integer  :: ierr
-      real(double)  :: crite
-      real(double)  :: critc
-      real(double)  :: critr
+      real(real64)  :: crite
+      real(real64)  :: critc
+      real(real64)  :: critr
       logical  :: hiend
       integer  :: irev(*)
       integer  :: iselec(lim)
-      integer  :: iwork(iiwsz)
-      real(double)  :: work(iwrsz)
-      real(kind(0.0d0)) :: ddot
+      integer, intent(inout) :: iwork(iiwsz)
+      real(real64), intent(inout) :: work(iwrsz)
+      real(kind(0.0_real64)) :: ddot
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -464,7 +464,7 @@
       endif
 !       ----------------------------------------------------------------
 
-      if (hiend) call dscal (nume, -1.d0, work(ieigval), 1)
+      if (hiend) call dscal (nume, -1._real64, work(ieigval), 1)
 !
 ! -Copy the eigenvalues after the eigenvectors
 ! -Next, copy the difference of eigenvalues between the last two steps
@@ -500,13 +500,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       !USE ddot_I
       use suite_linear_algebra, only: ddot
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -514,14 +514,14 @@
       integer , intent(in) :: lim
       integer , intent(in) :: kpass
       integer , intent(in) :: nncv
-      real(double)  :: basis(n*lim)
-      real(double)  :: ab(n*lim)
-      real(double), intent(inout) :: s(lim*(lim + 1)/2)
+      real(real64)  :: basis(n*lim)
+      real(real64)  :: ab(n*lim)
+      real(real64), intent(inout) :: s(lim*(lim + 1)/2)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: idstart, isstart, iv, ibstart, ibv
-      real(double) :: ss
+      real(real64) :: ss
 !-----------------------------------------------
 !-----------------------------------------------------------------------
 !   on entry
@@ -590,7 +590,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
 !     USE MPI_C,           ONLY: MYID
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -603,7 +603,7 @@
       use adds_i
       use multbc_i
       use suite_linear_algebra, only: daxpy, dcopy, ddot, dscal, dspevx
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -618,29 +618,29 @@
       integer, intent(in) :: maxiter
       integer, intent(inout) :: nloops
       integer, intent(inout) :: ierr
-      real(double)  :: crite
-      real(double)  :: critc
-      real(double)  :: critr
+      real(real64)  :: crite
+      real(real64)  :: critc
+      real(real64)  :: critr
       logical, intent(in) :: hiend
       integer, intent(out) :: irev(*)
       integer  :: iselec(neig)
       integer  :: iscra2(5*lim)
       integer, intent(inout) :: incv(lim)
       integer, intent(inout) :: icv(nume + 1)
-      real(double), intent(inout) :: eigval(lim)
-      real(double)  :: basis(n*lim)
-      real(double)  :: orthobasis(n*lim + noc*n)
-      real(double)  :: ab(n*lim)
-      real(double)  :: s(lim*(lim + 1)/2)
-      real(double)  :: temps(lim*(lim + 1)/2)
-      real(double)  :: svec(lim*lim)
-      real(double), intent(inout) :: scra1(8*lim)
-      real(double), intent(inout) :: oldval(nume + 1)
+      real(real64), intent(inout) :: eigval(lim)
+      real(real64)  :: basis(n*lim)
+      real(real64)  :: orthobasis(n*lim + noc*n)
+      real(real64)  :: ab(n*lim)
+      real(real64)  :: s(lim*(lim + 1)/2)
+      real(real64)  :: temps(lim*(lim + 1)/2)
+      real(real64)  :: svec(lim*lim)
+      real(real64), intent(inout) :: scra1(8*lim)
+      real(real64), intent(inout) :: oldval(nume + 1)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: rest, i, kpass, nncv, ifind, nfound, info, newstart
-      real(double) :: tol
+      real(real64) :: tol
       logical :: first, done
 
       save first, done, rest, i, kpass, nncv, ifind, tol, nfound, info, &
@@ -705,7 +705,7 @@
 
       i = 1
       if (nume > 0) then
-         eigval(:nume) = 1.d30
+         eigval(:nume) = 1.e30_real64
          icv(:nume) = 0
          i = nume + 1
       endif
@@ -724,7 +724,7 @@
       call dcopy (ifind, eigval, 1, oldval, 1)
       call dcopy ((kpass*(kpass + 1))/2, s, 1, temps, 1)
       call dspevx ('Vectors also', 'In a range', 'Upper triangular', kpass, &
-         temps, -1.d0, -1.d0, 1, ifind, tol, nfound, eigval, svec, kpass, scra1, &
+         temps, -1._real64, -1._real64, 1, ifind, tol, nfound, eigval, svec, kpass, scra1, &
          iscra2, incv, info)
       ierr = -abs(info)
       if (ierr /= 0) go to 60
@@ -768,7 +768,7 @@
       end do
 !
 !          ..Change sign of eigenvalues if HIEND.
-      if (hiend) call dscal (nume, -1.d0, eigval, 1)
+      if (hiend) call dscal (nume, -1._real64, eigval, 1)
 
 ! Use of Reverse Communication.
 !
@@ -779,7 +779,7 @@
       if (irc == 1) return
 !          ..Continue from preconditioning
   100 continue
-      if (hiend) call dscal (nume, -1.d0, eigval, 1)
+      if (hiend) call dscal (nume, -1._real64, eigval, 1)
 !
 !          ..Shift the eigenvalues back to what they were.
       do i = 1, nncv
@@ -806,7 +806,7 @@
 
 !          ..Continue from matrix-vector multiply
   200 continue
-      if (hiend) call dscal (n*nncv, -1.d0, ab(newstart), 1)
+      if (hiend) call dscal (n*nncv, -1._real64, ab(newstart), 1)
 !
 ! Add new column in S, from the NNCV new vectors.
 !
@@ -865,7 +865,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -875,7 +875,7 @@
       !USE dscal_I
       use adds_i
       use suite_linear_algebra, only: dcopy, dscal
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -887,11 +887,11 @@
       integer, intent(in) :: lim
       logical, intent(in) :: hiend
       integer, intent(out) :: irev(*)
-      real(double)  :: scra1(*)
-      real(double)  :: orthobasis(n*(noc + lim))
-      real(double)  :: basis(n*lim)
-      real(double)  :: ab(n*lim)
-      real(double)  :: s(*)
+      real(real64)  :: scra1(*)
+      real(real64)  :: orthobasis(n*(noc + lim))
+      real(real64)  :: basis(n*lim)
+      real(real64)  :: ab(n*lim)
+      real(real64)  :: s(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -908,7 +908,7 @@
 ! If no initial estimates pick one
 !
       if (niv == 0) then
-         call dinit (n, 1.d0/sqrt(dble(n)), basis, 1)
+         call dinit (n, 1._real64/sqrt(dble(n)), basis, 1)
          niv = 1
       endif
 !
@@ -939,7 +939,7 @@
 !
 ! Scale if HIEND for highest eigepairs
 !
-      if (hiend) call dscal (n*niv, -1.d0, ab, 1)
+      if (hiend) call dscal (n*niv, -1._real64, ab, 1)
 !
 ! Also find the small matrix S = B^TAB.
 !
@@ -970,23 +970,23 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       !USE dgemv_I
       !USE dcopy_I
       use suite_linear_algebra, only: dcopy, dgemv
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: n
       integer, intent(in) :: k
       integer, intent(in) :: m
-      real(double)  :: c(k*m)
-      real(double)  :: temp(m)
-      real(double)  :: b(n*k)
+      real(real64)  :: c(k*m)
+      real(real64)  :: temp(m)
+      real(real64)  :: b(n*k)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -994,7 +994,7 @@
 !-----------------------------------------------
 !-----------------------------------------------------------------------
       do irow = 1, n
-         call dgemv ('Transp', k, m, 1.d0, c, k, b(irow), n, 0.d0, temp, 1)
+         call dgemv ('Transp', k, m, 1._real64, c, k, b(irow), n, 0._real64, temp, 1)
          call dcopy (m, temp, 1, b(irow), n)
       end do
 
@@ -1032,13 +1032,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
 !     USE MPI_C,           ONLY: MYID
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use suite_linear_algebra, only: daxpy, ddot, dgemv
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -1048,22 +1048,22 @@
       integer , intent(in) :: mblock
       integer, intent(in) :: kpass
       integer , intent(inout) :: nncv
-      real(double) , intent(in) :: critr
+      real(real64) , intent(in) :: critr
       logical , intent(out) :: done
       integer , intent(inout) :: incv(nume)
       integer, intent(inout) :: icv(nume)
-      real(double)  :: svec(lim*nume)
-      real(double) , intent(in) :: eigval(lim)
-      real(double) , intent(in) :: oldval(nume)
-      real(double)  :: ab(n*lim)
-      real(double)  :: basis(n*lim)
-      real(double) , intent(inout) :: scra1(lim)
-      real(double) , intent(out) :: epsil(lim)
+      real(real64)  :: svec(lim*nume)
+      real(real64) , intent(in) :: eigval(lim)
+      real(real64) , intent(in) :: oldval(nume)
+      real(real64)  :: ab(n*lim)
+      real(real64)  :: basis(n*lim)
+      real(real64) , intent(inout) :: scra1(lim)
+      real(real64) , intent(out) :: epsil(lim)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: newstart, nadded, icvc, limadd, icur, i, indx
-      real(double) :: sqres, gaplow, gap, gapup, dl, res, rhseps
+      real(real64) :: sqres, gaplow, gap, gapup, dl, res, rhseps
 !-----------------------------------------------
 !-----------------------------------------------------------------------
 !   on entry
@@ -1108,10 +1108,10 @@
 !        ..Compute d = AB*Svec_indx
 !        ..Daxpy d'= d - eigval b  gives the residual
 
-         call dgemv ('N', n, kpass, 1.d0, basis, n, svec((indx-1)*kpass+1) &
-            , 1, 0.d0, basis(icur), 1)
-         call dgemv ('N', n, kpass, 1.d0, ab, n, svec((indx-1)*kpass+1), 1, &
-            0.d0, ab(icur), 1)
+         call dgemv ('N', n, kpass, 1._real64, basis, n, svec((indx-1)*kpass+1) &
+            , 1, 0._real64, basis(icur), 1)
+         call dgemv ('N', n, kpass, 1._real64, ab, n, svec((indx-1)*kpass+1), 1, &
+            0._real64, ab(icur), 1)
          call daxpy (n, (-eigval(indx)),basis(icur), 1, ab(icur), 1)
 !
 !        ..Compute the norm of the residual
@@ -1141,7 +1141,7 @@
 !             ..Deps are also stored in EPSIL
 !
             if (indx == 1) then
-               gaplow = 1.0d+99
+               gaplow = 1.0e99_real64
                gap = abs(eigval(2)-eigval(1))
 !                 print*, 'h1,h2:',eigval(1),eigval(2)
             else
@@ -1160,7 +1160,7 @@
                rhseps = min(dl,sqrt(dl))
             endif
 
-            epsil(indx) = 0.d0
+            epsil(indx) = 0._real64
             call daxpy (n, (-rhseps), basis(icur), 1, ab(icur), 1)
 
 !          -------------- END OF ROBUST MODIFICATIONS -----------------
@@ -1199,13 +1199,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use multbc_i
       use dinit_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -1213,12 +1213,12 @@
       integer, intent(in) :: nume
       integer, intent(inout) :: kpass
 !CFF   ... add dimensionto SCRA1
-      real(double)  :: scra1(nume)
-      real(double)  :: basis(n*kpass)
-      real(double)  :: ab(n*kpass)
-      real(double), intent(out) :: s((kpass*(kpass + 1))/2)
-      real(double)  :: svec(kpass*nume)
-      real(double) , intent(in) :: eigval(kpass)
+      real(real64)  :: scra1(nume)
+      real(real64)  :: basis(n*kpass)
+      real(real64)  :: ab(n*kpass)
+      real(real64), intent(out) :: s((kpass*(kpass + 1))/2)
+      real(real64)  :: svec(kpass*nume)
+      real(real64) , intent(in) :: eigval(kpass)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -1243,8 +1243,8 @@
 ! calculation of the new upper S=diag(l1,...,l_NUME) and
 ! its matrix Svec of eigenvectors (e1,...,e_NUME)
 !
-      call dinit ((nume*(nume + 1))/2, 0.d0, s, 1)
-      call dinit (nume*nume, 0.d0, svec, 1)
+      call dinit ((nume*(nume + 1))/2, 0._real64, s, 1)
+      call dinit (nume*nume, 0._real64, svec, 1)
       ind = 0
       icur = 0
       do i = 1, nume
@@ -1288,14 +1288,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !     USE MPI_C
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       !USE idamax_I
       use suite_linear_algebra, only: idamax
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -1303,21 +1303,21 @@
       integer , intent(in) :: nume
       integer , intent(in) :: neig
       integer , intent(inout) :: nncv
-      real(double) , intent(in) :: crite
-      real(double) , intent(in) :: critc
+      real(real64) , intent(in) :: crite
+      real(real64) , intent(in) :: critc
       integer , intent(in) :: iselec(neig)
       integer, intent(inout) :: icv(nume)
       integer , intent(inout) :: ind(neig)
       integer , intent(out) :: incv(neig)
-      real(double) , intent(in) :: svec(kpass*nume)
-      real(double) , intent(in) :: eigval(nume)
-      real(double), intent(inout) :: rowlast(neig)
-      real(double) , intent(in) :: oldval(nume)
+      real(real64) , intent(in) :: svec(kpass*nume)
+      real(real64) , intent(in) :: eigval(nume)
+      real(real64), intent(inout) :: rowlast(neig)
+      real(real64) , intent(in) :: oldval(nume)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: nnce, i, ival, icnt, icur, l, indx, itemp
-      real(double) :: tmax, temp
+      real(real64) :: tmax, temp
       logical :: done
 !-----------------------------------------------
 !-----------------------------------------------------------------------
@@ -1431,7 +1431,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !     USE mpi_C
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -1440,20 +1440,20 @@
       !use ddot_I
       !use dscal_I
       use suite_linear_algebra, only: ddot, dgemv, dscal
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: n
       integer , intent(in) :: kp
       integer, intent(in) :: new
-      real(double), intent(inout) :: scra(new)
-      real(double), intent(inout) :: b((kp + new)*n)
+      real(real64), intent(inout) :: scra(new)
+      real(real64), intent(inout) :: b((kp + new)*n)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, newstart, kcur, k, jcur, j, mm
-      real(double) :: dnm
+      real(real64) :: dnm
 !-----------------------------------------------
 
 !
@@ -1469,7 +1469,7 @@
          kcur = 1
          do k = 1, kp
             jcur = newstart
-            call dgemv ('T', n, new, 1.d0, b(jcur), n, b(kcur), 1, 0.d0, scra, &
+            call dgemv ('T', n, new, 1._real64, b(jcur), n, b(kcur), 1, 0._real64, scra, &
                1)
             do j = 1, new
 !           call daxpy(N,-scra(j),B(kcur),1,B(jcur),1)
@@ -1493,7 +1493,7 @@
 !
             ! No trailing vectors: avoid forming B one element past its end.
             if (k < new) then
-            call dgemv ('T', n, new - k, 1.d0, b(jcur), n, b(kcur), 1, 0.d0, &
+            call dgemv ('T', n, new - k, 1._real64, b(jcur), n, b(kcur), 1, 0._real64, &
                scra, 1)
             end if
             do j = k + 1, new

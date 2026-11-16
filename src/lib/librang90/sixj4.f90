@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, half, one, two, three, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -27,17 +27,17 @@
       use dracah_i
       use sixj2_i
       use sixj3_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer             :: jc, je, jd, jb, jf
+      integer, intent(in) :: jc, je, jd, jb, jf
       integer, intent(in) :: itik
-      real(double)        :: si
+      real(real64)        :: si
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double) :: a, c, e, d, b, f, x1, x2, x3, s2, s3
+      real(real64) :: a, c, e, d, b, f, x1, x2, x3, s2, s3
 !-----------------------------------------------
       si = zero
       if (itik /= 0) then

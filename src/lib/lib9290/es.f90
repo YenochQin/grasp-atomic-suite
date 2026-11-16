@@ -20,28 +20,28 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), intent(in) :: f
-      real(double), intent(out) :: s2f
-      real(double), intent(out) :: s3f
+      real(real64), intent(in) :: f
+      real(real64), intent(out) :: s2f
+      real(real64), intent(out) :: s3f
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: n
-      real(double) :: fase, en, obn, enf, term2, term3, s2last
+      real(real64) :: fase, en, obn, enf, term2, term3, s2last
 !-----------------------------------------------
 !
       n = 0
-      s2f = 0.0d00
-      s3f = 0.0d00
-      fase = 1.0d00
+      s2f = 0.0_real64
+      s3f = 0.0_real64
+      fase = 1.0_real64
       n = n + 1
       en = dble(n)
-      obn = 1.0d00/en
+      obn = 1.0_real64/en
       fase = -fase
       enf = exp(en*f)
       term2 = fase*enf*obn*obn
@@ -52,7 +52,7 @@
       do while(abs(s2f) /= abs(s2last))
          n = n + 1
          en = dble(n)
-         obn = 1.0d00/en
+         obn = 1.0_real64/en
          fase = -fase
          enf = exp(en*f)
          term2 = fase*enf*obn*obn

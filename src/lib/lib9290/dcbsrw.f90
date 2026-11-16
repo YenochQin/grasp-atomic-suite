@@ -33,7 +33,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def, only: max_radial_points
       use def_c ,          only: speed_of_light_au, accy
       use grid_c, only: radial_grid, ntp=>radial_point_count
@@ -42,23 +42,23 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use cgamma_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: n
       integer, intent(in) :: kappa
       integer, intent(out) :: mtp
-      real(double), intent(in) :: z
-      real(double), intent(out) :: e
-      real(double), intent(out) :: rg0
-      real(double), dimension(max_radial_points), intent(inout) :: rg
-      real(double), dimension(max_radial_points), intent(out) :: rf
+      real(real64), intent(in) :: z
+      real(real64), intent(out) :: e
+      real(real64), intent(out) :: rg0
+      real(real64), intent(inout) :: rg(max_radial_points)
+      real(real64), intent(out) :: rf(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: k, nr, nrfac, i, iordr1, iordr2
-      real(double) :: alfa, fn, fkappa, fk, fnr, zalfa, gamma, twogp1, bign, &
+      real(real64) :: alfa, fn, fkappa, fk, fnr, zalfa, gamma, twogp1, bign, &
          eps, argr, argi, rgamm1, dummy, rgamm2, fac, fg, ff, facn, a, an1, an2&
          , b, bn, fden, bignmk, rho, rhon, f1, f2, ovlfac, cutoff
 !-----------------------------------------------
@@ -91,7 +91,7 @@
 !
 !   Ensure that the charge is physical
 !
-      if (z <= 0.0d00) then
+      if (z <= 0.0_real64) then
          write (*, 300)
          write (*, 304) z
          stop
@@ -103,7 +103,7 @@
 !
 !   Atomic units
 !
-      alfa = 1.0d00/speed_of_light_au
+      alfa = 1.0_real64/speed_of_light_au
 !
 !   Now determine all the parameters
 !
@@ -115,14 +115,14 @@
       fnr = dble(nr)
       zalfa = z*alfa
       gamma = sqrt(fk*fk - zalfa*zalfa)
-      twogp1 = gamma + gamma + 1.0d00
-      bign = sqrt(fn*fn - 2.0d00*fnr*(fk - gamma))
-      eps = 1.0d00/sqrt(1.0d00 + (zalfa/(gamma + fnr))**2)
+      twogp1 = gamma + gamma + 1.0_real64
+      bign = sqrt(fn*fn - 2.0_real64*fnr*(fk - gamma))
+      eps = 1.0_real64/sqrt(1.0_real64 + (zalfa/(gamma + fnr))**2)
 !
 !   EPS is the total energy divided by C*C; this must be converted
 !   to the units and reference energy of GRASP
 !
-      e = (1.0d00 - eps)*speed_of_light_au*speed_of_light_au
+      e = (1.0_real64 - eps)*speed_of_light_au*speed_of_light_au
 !
 !   Now the normalization constants
 !
@@ -132,12 +132,12 @@
       end do
 !
       argr = twogp1 + fnr
-      argi = 0.0d00
+      argi = 0.0_real64
       call cgamma (argr, argi, rgamm1, dummy)
       argr = twogp1
       call cgamma (argr, argi, rgamm2, dummy)
 !
-      fac = -sqrt(rgamm1)/(rgamm2*sqrt(dble(nrfac)))*sqrt(z/(2.0d00*bign*bign*(&
+      fac = -sqrt(rgamm1)/(rgamm2*sqrt(dble(nrfac)))*sqrt(z/(2.0_real64*bign*bign*(&
          bign - fkappa)))
 !
 !   Ensure that the slope of the large-component function is
@@ -145,8 +145,8 @@
 !
       if (kappa > 0) fac = -fac
 !
-      fg = fac*sqrt(1.0d00 + eps)
-      ff = fac*sqrt(1.0d00 - eps)
+      fg = fac*sqrt(1.0_real64 + eps)
+      ff = fac*sqrt(1.0_real64 - eps)
 !
 !   Now set up the coefficients of the confluent hypergeometric
 !   functions  F (-NR+1,2*GAMMA+1;RHO)  and  F (-NR,2*GAMMA+1;RHO)
@@ -160,10 +160,10 @@
          iordr2 = nr
       endif
 !
-      fac = 1.0d00
-      facn = 1.0d00
+      fac = 1.0_real64
+      facn = 1.0_real64
       a = -fnr
-      an1 = a + 1.0d00
+      an1 = a + 1.0_real64
       an2 = a
       b = twogp1
       bn = b
@@ -171,32 +171,32 @@
       k = 0
     2 continue
       k = k + 1
-      fden = 1.0d00/(facn*bn)
+      fden = 1.0_real64/(facn*bn)
       if (k <= iordr1) ta(k) = an1*fden
       if (k <= iordr2) then
          tb(k) = an2*fden
-         a = a + 1.0d00
-         an1 = an1*(a + 1.0d00)
+         a = a + 1.0_real64
+         an1 = an1*(a + 1.0_real64)
          an2 = an2*a
-         b = b + 1.0d00
+         b = b + 1.0_real64
          bn = bn*b
-         fac = fac + 1.0d00
+         fac = fac + 1.0_real64
          facn = facn*fac
          go to 2
       endif
 !
 !   Now tabulate the function over the entire grid
 !
-      rg(1) = 0.0d00
-      rf(1) = 0.0d00
+      rg(1) = 0.0_real64
+      rf(1) = 0.0_real64
       fac = (z + z)/bign
       bignmk = bign - fkappa
       do i = 2, ntp
          rho = fac*radial_grid(i)
          rhon = rho
          k = 0
-         f1 = 1.0d00
-         f2 = 1.0d00
+         f1 = 1.0_real64
+         f2 = 1.0_real64
     3    continue
          k = k + 1
          if (k <= iordr1) f1 = f1 + ta(k)*rhon
@@ -207,7 +207,7 @@
          endif
          f1 = fnr*f1
          f2 = bignmk*f2
-         ovlfac = exp((-0.5d00*rho))*rho**gamma
+         ovlfac = exp((-0.5_real64*rho))*rho**gamma
          rg(i) = fg*ovlfac*(f1 - f2)
          rf(i) = ff*ovlfac*(f1 + f2)
       end do
@@ -215,15 +215,15 @@
 !   Determine the effective maximum tabulation point based on the
 !   cutoff; define the cutoff conservatively
 !
-      cutoff = accy*0.1d00
+      cutoff = accy*0.1_real64
 !
       mtp = ntp + 1
     5 continue
       mtp = mtp - 1
 !      IF (ABS(RG(MTP)) < CUTOFF) THEN
-      if ((abs(rg(mtp)) < cutoff).or.(abs(radial_grid(mtp)) > 1.d+50)) then ! JE: APPLY BOX (R<1.D+50)
-         rg(mtp) = 0.0d00
-         rf(mtp) = 0.0d00
+      if ((abs(rg(mtp)) < cutoff).or.(abs(radial_grid(mtp)) > 1.e50_real64)) then ! JE: APPLY BOX (R<1.D+50)
+         rg(mtp) = 0.0_real64
+         rf(mtp) = 0.0_real64
          go to 5
       endif
 !

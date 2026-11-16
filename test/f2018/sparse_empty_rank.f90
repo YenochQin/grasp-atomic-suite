@@ -2,7 +2,7 @@
 program sparse_empty_rank
     use orb_c, only: ncf => csf_count
     use setsda_I, only: setsda
-    implicit none
+    implicit none (type, external)
     integer :: rank, block, count, columns, endpoint, row
     logical :: printing
     character(3) :: label

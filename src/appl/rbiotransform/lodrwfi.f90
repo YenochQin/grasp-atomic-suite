@@ -16,7 +16,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals, max_radial_points
       use memory_man
       use biorb_c
@@ -30,7 +30,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use intrpqi_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -39,13 +39,13 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer , dimension(max_orbitals) :: nak, np
+      integer  :: nak(max_orbitals), np(max_orbitals)
       integer :: ntestl, ntest, j, k, i, nwin, ios, npy, naky, my, jj, kk, jjj&
          , kkk, ierr
-      real(double), dimension(max_orbitals) :: e, gama
-      real(double) :: con, fkk, ey, pzy, dnorm
-      real(double), dimension(:), pointer :: pa, qa, ra
-      character , dimension(max_orbitals) :: nh*2
+      real(real64) :: e(max_orbitals), gama(max_orbitals)
+      real(real64) :: con, fkk, ey, pzy, dnorm
+      real(real64), pointer :: pa(:), qa(:), ra(:)
+      character  :: nh(max_orbitals)*2
       character :: g92rwf*6
 !-----------------------------------------------
 !
@@ -83,8 +83,8 @@
       con = con*con
 !
       do j = 1, nwii
-         pfii(:max_radial_points,j) = 0.0d00
-         qfii(:max_radial_points,j) = 0.0d00
+         pfii(:max_radial_points,j) = 0.0_real64
+         qfii(:max_radial_points,j) = 0.0_real64
 !
          k = abs(nak(j))
          if (nuclear_model_parameter_count /= 0) cycle

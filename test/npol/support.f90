@@ -1,7 +1,7 @@
 module npol_test_support
-    use vast_kind_param, only: double
+    use, intrinsic :: iso_fortran_env, only: double => real64
     use npol_C, only: npol_config, NPOL_MODEL
-    implicit none
+    implicit none (type, external)
 contains
     subroutine require(condition, label)
         logical, intent(in) :: condition
@@ -12,10 +12,11 @@ contains
     end subroutine
 
     subroutine near(actual, expected, label)
-        real(double), intent(in) :: actual, expected
+        use, intrinsic :: iso_fortran_env, only: real64
+        real(real64), intent(in) :: actual, expected
         character(*), intent(in) :: label
         ! Arithmetic tolerance, not a physical accuracy threshold.
-        call require(abs(actual-expected) <= 64*epsilon(actual)*max(1.0_double,abs(expected)), label)
+        call require(abs(actual-expected) <= 64*epsilon(actual)*max(1.0_real64,abs(expected)), label)
     end subroutine
 
     function fixture() result(cfg)

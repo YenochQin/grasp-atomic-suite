@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use eigv_c
       use orb_c
@@ -31,12 +31,12 @@
       use rint_i
       use engoutgg_i
       use csfwgt_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, mode
-      real(double) :: wa, wb, wc, wd, we
+      real(real64) :: wa, wb, wc, wd, we
 !-----------------------------------------------
 !
 !   Write out the orbital properties
@@ -54,7 +54,7 @@
          wb = rint(i,i,1)
          wc = rint(i,i,2)
          wd = rint (i,i, 4)
-         we = 0.d0
+         we = 0._real64
          if (orbital_symmetry_labels(i) /= 's ' .and. orbital_symmetry_labels(i) /= 'p-') then
             we = rint(i,i,-3)
          end if

@@ -74,7 +74,7 @@
       use genintrkwrap_i, only: genintrkwrap
       use mpiu_i, only: startmpi2
       use mpiu_i, only: stopmpi2
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -85,13 +85,13 @@
       integer, parameter :: nblk=50
       integer            :: lenperm, lentmp
       integer :: ncount1, ncount2, ncount_rate, ncount_max
-      integer, dimension(8) :: nymduhmsm
+      integer :: nymduhmsm(8)
       integer :: k, lenname, ncore, ndum, j2max, nseconds
       logical :: yes
       character (len = 3) :: idstring
 !      CHARACTER(LEN=128) :: NAME, TMPDIR, PERMDIR, ISOFILE
       character(len=128) :: startdir, name, isofile, namesave,tmpdir, permdir
-      character(len=8), dimension(nblk0) :: idblk
+      character(len=8) :: idblk(nblk0)
       character :: chdate*8, chtime*10, chzone*5, str*8, msg*128
 !-----------------------------------------------
 !=======================================================================

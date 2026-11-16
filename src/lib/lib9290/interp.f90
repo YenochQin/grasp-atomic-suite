@@ -19,17 +19,17 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: narr
-      real(double), intent(in) :: xval
-      real(double), intent(out) :: yval
-      real(double), intent(in) :: accy
-      real(double), dimension(narr), intent(in) :: xarr
-      real(double), dimension(narr), intent(in) :: yarr
+      real(real64), intent(in) :: xval
+      real(real64), intent(out) :: yval
+      real(real64), intent(in) :: accy
+      real(real64), intent(in) :: xarr(narr)
+      real(real64), intent(in) :: yarr(narr)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -39,10 +39,10 @@
 !-----------------------------------------------
       integer :: nrstlo, nrsthi, k, llo, lhi, llr, irow, locnxt, ilirok, ildiag&
          , ilothr, ibest, norder
-      real(double), dimension(mxord) :: dx, x, est
-      real(double), dimension((mxord*(mxord + 1))/2) :: poly
-      real(double) :: diff, difft, debeb, debe
-      logical, dimension(2*mxord + 2) :: used
+      real(real64) :: dx(mxord), x(mxord), est(mxord)
+      real(real64) :: poly((mxord*(mxord + 1))/2)
+      real(real64) :: diff, difft, debeb, debe
+      logical :: used(2*mxord + 2)
 !-----------------------------------------------
 !
 !
@@ -177,11 +177,11 @@
 ! Keep the original relative criterion for nonzero estimates. Identical
 ! zero estimates have zero change; a new zero after a nonzero estimate has
 ! no finite relative accuracy estimate, so it must not silently pass.
-      real(double) function relative_change(current, previous) result(change)
-      real(double), intent(in) :: current, previous
-      if (current == 0.d0) then
-         change = huge(1.d0)
-         if (previous == 0.d0) change = 0.d0
+      real(real64) function relative_change(current, previous) result(change)
+      real(real64), intent(in) :: current, previous
+      if (current == 0._real64) then
+         change = huge(1._real64)
+         if (previous == 0._real64) change = 0._real64
       else
          change = abs((current-previous)/current)
       endif

@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use orb_c
       use m_c
 !-----------------------------------------------
@@ -27,7 +27,7 @@
 !-----------------------------------------------
       use speak_i
       use clrx_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -42,12 +42,12 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      real(double), parameter :: eps = 1.0d-10
+      real(real64), parameter :: eps = 1.0e-10_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ia1,ib1,ns,kap1,j1,nqs1,numax,nu,kap2,j2,nqs2,numin
-      real(double) :: x,const,gam
+      real(real64) :: x,const,gam
 !-----------------------------------------------
 !
 !

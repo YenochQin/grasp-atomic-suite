@@ -17,7 +17,7 @@
 !-----------------------------------------------
       use openfl_i
       use lodcslbio_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use buffer_c,        only: angular_coefficient_labels, angular_coefficients, angular_buffer_capacity, &
          & angular_coefficient_count
       use debug_c ,        only: ibug1
@@ -24,7 +24,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use alcbuf_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -35,7 +35,7 @@
       integer, intent(in) :: ia2
       integer, intent(in) :: ib2
       integer, intent(in) :: k
-      real(double), intent(in) :: x
+      real(real64), intent(in) :: x
 !-----------------------------------------------
 !
 !

@@ -35,7 +35,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use memory_man
       use input_io, only: fail_input_io
       use def_c
@@ -51,7 +50,7 @@
 !-----------------------------------------------
       use convrt_i
       use openfl_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

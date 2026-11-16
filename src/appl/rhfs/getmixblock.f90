@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
       use def_c
       use eigv_c
@@ -30,7 +30,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use openfl_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -41,7 +41,7 @@
 !-----------------------------------------------
       integer :: k, ierr, ios, ncftot, nvectot, nvecsiz, nblock, i, nvecpat, &
          ncfpat, nvecsizpat, neavsum, jb, nb, ncfblk, nevblk, iatjp, iaspa, j
-      real(double) :: eavsum
+      real(real64) :: eavsum
       character :: filnam*256, form*11, g92mix*6, status*3
 !-----------------------------------------------
 !
@@ -91,7 +91,7 @@
 !***********************************************************************
 ! Initialize mixing coefficients to zero; others are fine
 !***********************************************************************
-      csf_mixing_coefficients(:nvectot*ncftot) = 0.d0
+      csf_mixing_coefficients(:nvectot*ncftot) = 0._real64
 
 !***********************************************************************
 ! Initialize counters and sum registers
@@ -108,7 +108,7 @@
       ncfpat = 0
       nvecsizpat = 0
       neavsum = 0
-      eavsum = 0.d0
+      eavsum = 0._real64
 
       write (*, *) '  block     ncf     nev    2j+1  parity'
       do jb = 1, nblock

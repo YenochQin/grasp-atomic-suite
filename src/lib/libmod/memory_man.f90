@@ -1,5 +1,15 @@
 module memory_man
-   use vast_kind_param
+   use, intrinsic :: iso_fortran_env, only: real64, int64, int8, &
+       byte => int8, short => int16, long => int64, double => real64, &
+       byte_log => int8, short_log => int16, long_log => int64, dble_complex => real64
+   implicit none (type, external)
+   private :: real64, int64, int8
+
+   ! Keep the legacy precision selectors shared with vast_kind_param.
+   integer, parameter :: extended = selected_real_kind(30)
+   integer, parameter :: double_ext = selected_real_kind(50)
+   integer, parameter :: ext_complex = extended
+
    interface alloc
       module procedure alloc_0i, alloc_1i, alloc_2i, alloc_3i,     &
                                  alloc_1il,                        &
@@ -25,8 +35,8 @@ module memory_man
 
    contains
    subroutine alloc_0i(array_pointer, lower_bound, upper_bound, variable_label, caller_label )
-     implicit none
-     integer, pointer, dimension(:) :: array_pointer
+     implicit none (type, external)
+     integer, pointer :: array_pointer(:)
      integer, intent(in) :: lower_bound, upper_bound
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
@@ -49,8 +59,8 @@ module memory_man
    end subroutine alloc_0i
 
    subroutine alloc_1i(array_pointer, element_count, variable_label, caller_label)
-     implicit none
-     integer, pointer, dimension(:) :: array_pointer
+     implicit none (type, external)
+     integer, pointer :: array_pointer(:)
      integer, intent(in) :: element_count
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
@@ -73,8 +83,8 @@ module memory_man
    end subroutine alloc_1i
 
    subroutine alloc_2i(array_pointer, first_dimension_size, second_dimension_size, variable_label, caller_label)
-     implicit none
-     integer, pointer, dimension(:,:) :: array_pointer
+     implicit none (type, external)
+     integer, pointer :: array_pointer(:, :)
      integer, intent(in) :: first_dimension_size, second_dimension_size
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
@@ -98,8 +108,8 @@ module memory_man
 
    subroutine alloc_3i(array_pointer, first_dimension_size, second_dimension_size, third_dimension_size, &
       & variable_label, caller_label)
-     implicit none
-     integer, pointer, dimension(:,:,:) :: array_pointer
+     implicit none (type, external)
+     integer, pointer :: array_pointer(:, :, :)
      integer, intent(in) :: first_dimension_size, second_dimension_size, third_dimension_size
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
@@ -122,9 +132,9 @@ module memory_man
    end subroutine alloc_3i
 
    subroutine alloc_1il(array_pointer, element_count, variable_label, caller_label)
-     implicit none
-     integer, pointer, dimension(:) :: array_pointer
-     integer(long), intent(in) :: element_count
+     implicit none (type, external)
+     integer, pointer :: array_pointer(:)
+     integer(int64), intent(in) :: element_count
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
 
@@ -146,8 +156,8 @@ module memory_man
    end subroutine alloc_1il
 
    subroutine alloc_1r(array_pointer, element_count, variable_label, caller_label)
-     implicit none
-     real(double), pointer, dimension(:) :: array_pointer
+     implicit none (type, external)
+     real(real64), pointer :: array_pointer(:)
      integer, intent(in) :: element_count
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
@@ -170,8 +180,8 @@ module memory_man
    end subroutine alloc_1r
 
    subroutine alloc_2r(array_pointer, first_dimension_size, second_dimension_size, variable_label, caller_label)
-     implicit none
-     real(double), pointer, dimension(:,:) :: array_pointer
+     implicit none (type, external)
+     real(real64), pointer :: array_pointer(:, :)
      integer, intent(in) :: first_dimension_size, second_dimension_size
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
@@ -194,9 +204,9 @@ module memory_man
    end subroutine alloc_2r
 
    subroutine alloc_1rl(array_pointer, element_count, variable_label, caller_label)
-     implicit none
-     real(double), pointer, dimension(:) :: array_pointer
-     integer(long), intent(in) :: element_count
+     implicit none (type, external)
+     real(real64), pointer :: array_pointer(:)
+     integer(int64), intent(in) :: element_count
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
 
@@ -218,8 +228,8 @@ module memory_man
    end subroutine alloc_1rl
 
    subroutine alloc_0b(array_pointer, lower_bound, upper_bound, variable_label, caller_label )
-     implicit none
-     integer(byte), pointer, dimension(:) :: array_pointer
+     implicit none (type, external)
+     integer(int8), pointer :: array_pointer(:)
      integer, intent(in) :: lower_bound, upper_bound
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
@@ -242,8 +252,8 @@ module memory_man
    end subroutine alloc_0b
 
    subroutine alloc_1b(array_pointer, element_count, variable_label, caller_label)
-     implicit none
-     integer(byte), pointer, dimension(:) :: array_pointer
+     implicit none (type, external)
+     integer(int8), pointer :: array_pointer(:)
      integer, intent(in) :: element_count
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
@@ -266,8 +276,8 @@ module memory_man
    end subroutine alloc_1b
 
    subroutine alloc_2b(array_pointer, first_dimension_size, second_dimension_size, variable_label, caller_label)
-     implicit none
-     integer(byte), pointer, dimension(:,:) :: array_pointer
+     implicit none (type, external)
+     integer(int8), pointer :: array_pointer(:, :)
      integer, intent(in) :: first_dimension_size, second_dimension_size
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
@@ -291,8 +301,8 @@ module memory_man
 
    subroutine alloc_3b(array_pointer, first_dimension_size, second_dimension_size, third_dimension_size, &
       & variable_label, caller_label)
-     implicit none
-     integer(byte), pointer, dimension(:,:,:) :: array_pointer
+     implicit none (type, external)
+     integer(int8), pointer :: array_pointer(:, :, :)
      integer, intent(in) :: first_dimension_size, second_dimension_size, third_dimension_size
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
@@ -315,9 +325,9 @@ module memory_man
    end subroutine alloc_3b
 
    subroutine alloc_1c(array_pointer, element_count, variable_label, caller_label)
-     implicit none
+     implicit none (type, external)
 !CFF     CHARACTER(LEN=256), POINTER, DIMENSION(:) :: p
-     character(len=*), pointer, dimension(:) :: array_pointer
+     character(len=*), pointer :: array_pointer(:)
      integer, intent(in) :: element_count
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status
@@ -339,8 +349,8 @@ module memory_man
    end subroutine alloc_1c
 
    subroutine dalloc_1i(array_pointer, variable_label, caller_label)
-     implicit none
-     integer, pointer, dimension(:) :: array_pointer
+     implicit none (type, external)
+     integer, pointer :: array_pointer(:)
      character(len=*) :: variable_label, caller_label
 !    write(777,*) "dalloc_1i var, sub",var, "  ", sub
      if (associated(array_pointer)) then
@@ -352,8 +362,8 @@ module memory_man
    end subroutine dalloc_1i
 
    subroutine dalloc_2i(array_pointer, variable_label, caller_label)
-     implicit none
-     integer, pointer, dimension(:,:) :: array_pointer
+     implicit none (type, external)
+     integer, pointer :: array_pointer(:, :)
      character(len=*) :: variable_label, caller_label
 !    write(777,*) "dalloc_2i var, sub",var, "  ", sub
      if (associated(array_pointer)) then
@@ -365,8 +375,8 @@ module memory_man
    end subroutine dalloc_2i
 
    subroutine dalloc_3i(array_pointer, variable_label, caller_label)
-     implicit none
-     integer, pointer, dimension(:,:,:) :: array_pointer
+     implicit none (type, external)
+     integer, pointer :: array_pointer(:, :, :)
      character(len=*) :: variable_label, caller_label
 !     write(777,*) "dalloc_3i var, sub",var, "  ", sub
      if (associated(array_pointer)) then
@@ -378,8 +388,8 @@ module memory_man
    end subroutine dalloc_3i
 
    subroutine dalloc_1r(array_pointer, variable_label, caller_label)
-     implicit none
-     real(double), pointer, dimension(:) :: array_pointer
+     implicit none (type, external)
+     real(real64), pointer :: array_pointer(:)
      character(len=*) :: variable_label, caller_label
 !    write(777,*) "dalloc_1r var, sub",var, "  ", sub
      if (associated(array_pointer)) then
@@ -391,8 +401,8 @@ module memory_man
    end subroutine dalloc_1r
 
    subroutine dalloc_2r(array_pointer, variable_label, caller_label)
-     implicit none
-     real(double), pointer, dimension(:,:) :: array_pointer
+     implicit none (type, external)
+     real(real64), pointer :: array_pointer(:, :)
      character(len=*) :: variable_label, caller_label
 !    write(777,*) "dalloc_2r var, sub",var, "  ", sub
      if (associated(array_pointer)) then
@@ -404,8 +414,8 @@ module memory_man
    end subroutine dalloc_2r
 
    subroutine dalloc_1b(array_pointer, variable_label, caller_label)
-     implicit none
-     integer(byte), pointer, dimension(:) :: array_pointer
+     implicit none (type, external)
+     integer(int8), pointer :: array_pointer(:)
      character(len=*) :: variable_label, caller_label
 !    write(777,*) "dalloc_1b var, sub",var, "  ", sub
      if (associated(array_pointer)) then
@@ -417,8 +427,8 @@ module memory_man
    end subroutine dalloc_1b
 
    subroutine dalloc_2b(array_pointer, variable_label, caller_label)
-     implicit none
-     integer(byte), pointer, dimension(:,:) :: array_pointer
+     implicit none (type, external)
+     integer(int8), pointer :: array_pointer(:, :)
      character(len=*) :: variable_label, caller_label
 !    write(777,*) "dalloc_2b var, sub",var, "  ", sub
      if (associated(array_pointer)) then
@@ -430,8 +440,8 @@ module memory_man
    end subroutine dalloc_2b
 
    subroutine dalloc_3b(array_pointer, variable_label, caller_label)
-     implicit none
-     integer(byte), pointer, dimension(:,:,:) :: array_pointer
+     implicit none (type, external)
+     integer(int8), pointer :: array_pointer(:, :, :)
      character(len=*) :: variable_label, caller_label
 !    write(777,*) "dalloc_3b var, sub",var, "  ", sub
      if (associated(array_pointer)) then
@@ -443,8 +453,8 @@ module memory_man
    end subroutine dalloc_3b
 
    subroutine dalloc_1c(array_pointer, variable_label, caller_label)
-     implicit none
-     character(len=256), pointer, dimension(:) :: array_pointer
+     implicit none (type, external)
+     character(len=256), pointer :: array_pointer(:)
      character(len=*) :: variable_label, caller_label
 !    write(777,*) "dalloc_1c var, sub",var, "  ", sub
      if (associated(array_pointer)) then
@@ -457,8 +467,8 @@ module memory_man
 
 
    subroutine ralloc_0i(array_pointer, lower_bound, upper_bound, variable_label, caller_label)
-     implicit none
-     integer, pointer, dimension(:) :: array_pointer, pnew
+     implicit none (type, external)
+     integer, pointer :: array_pointer(:), pnew(:)
      integer, intent(in) :: lower_bound, upper_bound
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status, nold
@@ -485,8 +495,8 @@ module memory_man
 
 
    subroutine ralloc_1i(array_pointer, element_count, variable_label, caller_label)
-     implicit none
-     integer, pointer, dimension(:) :: array_pointer, pnew
+     implicit none (type, external)
+     integer, pointer :: array_pointer(:), pnew(:)
      integer, intent(in) :: element_count
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status, nold
@@ -511,8 +521,8 @@ module memory_man
    end subroutine ralloc_1i
 
    subroutine ralloc_2i(array_pointer, first_dimension_size, second_dimension_size, variable_label, caller_label)
-     implicit none
-     integer, pointer, dimension(:,:) :: array_pointer, pnew
+     implicit none (type, external)
+     integer, pointer :: array_pointer(:, :), pnew(:, :)
      integer, intent(in) :: first_dimension_size, second_dimension_size
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status, n1_old, n2_old
@@ -540,8 +550,8 @@ module memory_man
 
    subroutine ralloc_3i(array_pointer, first_dimension_size, second_dimension_size, third_dimension_size, &
       & variable_label, caller_label)
-     implicit none
-     integer, pointer, dimension(:,:,:) :: array_pointer, pnew
+     implicit none (type, external)
+     integer, pointer :: array_pointer(:, :, :), pnew(:, :, :)
      integer, intent(in) :: first_dimension_size, second_dimension_size, third_dimension_size
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status, n1_old, n2_old, n3_old
@@ -570,8 +580,8 @@ module memory_man
    end subroutine ralloc_3i
 
    subroutine ralloc_1r(array_pointer, element_count, variable_label, caller_label)
-     implicit none
-     real(double), pointer, dimension(:) :: array_pointer, pnew
+     implicit none (type, external)
+     real(real64), pointer :: array_pointer(:), pnew(:)
      integer, intent(in) :: element_count
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status, nold
@@ -597,8 +607,8 @@ module memory_man
    end subroutine ralloc_1r
 
    subroutine ralloc_2r(array_pointer, first_dimension_size, second_dimension_size, variable_label, caller_label)
-     implicit none
-     real(double), pointer, dimension(:,:) :: array_pointer, pnew
+     implicit none (type, external)
+     real(real64), pointer :: array_pointer(:, :), pnew(:, :)
      integer, intent(in) :: first_dimension_size, second_dimension_size
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status, n1_old, n2_old
@@ -625,8 +635,8 @@ module memory_man
    end subroutine ralloc_2r
 
    subroutine ralloc_0b(array_pointer, lower_bound, upper_bound, variable_label, caller_label)
-     implicit none
-     integer(byte), pointer, dimension(:) :: array_pointer, pnew
+     implicit none (type, external)
+     integer(int8), pointer :: array_pointer(:), pnew(:)
      integer, intent(in) :: lower_bound, upper_bound
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status, nold
@@ -652,8 +662,8 @@ module memory_man
    end subroutine ralloc_0b
 
    subroutine ralloc_1b(array_pointer, element_count, variable_label, caller_label)
-     implicit none
-     integer(byte), pointer, dimension(:) :: array_pointer, pnew
+     implicit none (type, external)
+     integer(int8), pointer :: array_pointer(:), pnew(:)
      integer, intent(in) :: element_count
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status, nold
@@ -678,8 +688,8 @@ module memory_man
    end subroutine ralloc_1b
 
    subroutine ralloc_2b(array_pointer, first_dimension_size, second_dimension_size, variable_label, caller_label)
-     implicit none
-     integer(byte), pointer, dimension(:,:) :: array_pointer, pnew
+     implicit none (type, external)
+     integer(int8), pointer :: array_pointer(:, :), pnew(:, :)
      integer, intent(in) :: first_dimension_size, second_dimension_size
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status, n1_old, n2_old
@@ -707,8 +717,8 @@ module memory_man
 
    subroutine ralloc_3b(array_pointer, first_dimension_size, second_dimension_size, third_dimension_size, &
       & variable_label, caller_label)
-     implicit none
-     integer(byte), pointer, dimension(:,:,:) :: array_pointer, pnew
+     implicit none (type, external)
+     integer(int8), pointer :: array_pointer(:, :, :), pnew(:, :, :)
      integer, intent(in) :: first_dimension_size, second_dimension_size, third_dimension_size
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status, n1_old, n2_old, n3_old, i
@@ -741,8 +751,8 @@ module memory_man
    end subroutine ralloc_3b
 
    subroutine ralloc_1c(array_pointer, element_count, variable_label, caller_label)
-     implicit none
-     character(len=256), pointer, dimension(:) :: array_pointer, pnew
+     implicit none (type, external)
+     character(len=256), pointer :: array_pointer(:), pnew(:)
      integer, intent(in) :: element_count
      character(len=*), intent(in) :: variable_label, caller_label
      integer :: allocation_status, nold

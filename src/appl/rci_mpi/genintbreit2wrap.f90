@@ -17,7 +17,7 @@
       use genintbreit2_i
       use mpiu_i, only: gdsummpi
       use mpiu_i, only: gisummpi
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

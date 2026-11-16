@@ -15,7 +15,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use eigv_c
       use nsmdat_c,        only: sqn, dmomnm, qmomb,                  &
                                  hfsi=>sqn, hfsd=>dmomnm, hfsq=>qmomb
@@ -25,7 +24,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use engouth_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !
 !    Write nuclear data

@@ -21,12 +21,12 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer , intent(in) :: loc
-      integer  :: icsf
+      integer, intent(in) :: icsf
 !-----------------------------------------------
 !
       if (loc>=1 .and. loc<=nwr-1) then

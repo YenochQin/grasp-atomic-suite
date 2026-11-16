@@ -29,18 +29,18 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use getaldwt_i
       use iq_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: iqadum, j, i
-      real(double) :: sum
+      real(real64) :: sum
       logical :: getyn, yes
 !-----------------------------------------------
 !
@@ -54,7 +54,7 @@
       call getaldwt (csf_count, wt)
 
       do j = 1, orbital_count
-         sum = 0.d0
+         sum = 0._real64
          do i = 1, csf_count
             sum = sum + wt(i)*dble(iq(j,i))
          end do

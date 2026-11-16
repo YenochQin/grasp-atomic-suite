@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals, max_radial_points
       use def_c
       use eigv_c
@@ -32,19 +32,19 @@
       use iq_i
       use ratden_i
       use fzalf_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: jstate
-      real(double), intent(out) :: slfint(max_orbitals)
-      real(double), intent(out) :: ucf(1)
+      real(real64), intent(out) :: slfint(max_orbitals)
+      real(real64), intent(out) :: ucf(1)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: maxiter, j, i, ii, npj, kappa, mfj
-      real(double), dimension(max_radial_points) :: ptemp, qtemp
-      real(double) :: ucfj, zeff, ratio, valu
+      real(real64) :: ptemp(max_radial_points), qtemp(max_radial_points)
+      real(real64) :: ucfj, zeff, ratio, valu
       character :: npchar, nakchar*2
 !-----------------------------------------------
 !
@@ -56,7 +56,7 @@
 ! Modified so that UCFJ describes the current eigenstate
 !
       do j = 1, orbital_count
-         ucfj = 0.0d00
+         ucfj = 0.0_real64
 !         DO 3 I = 1,NVEC
          i = jstate
          do ii = 1, csf_count
@@ -83,8 +83,8 @@
 !
             mfj = orbital_last_grid_index(j)
 !
-            ptemp(1) = 0.0d00
-            qtemp(1) = 0.0d00
+            ptemp(1) = 0.0_real64
+            qtemp(1) = 0.0_real64
             do i = 2, mfj
                ptemp(i) = radial_large_components(i,j)
                qtemp(i) = radial_small_components(i,j)
@@ -104,7 +104,7 @@
 !   The self-energy for orbitals with principal quantum number
 !   greater than 8 is set to zero
 !
-            slfint(j) = 0.0d00
+            slfint(j) = 0.0_real64
 !
          endif
 !
@@ -119,7 +119,8 @@
 
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function ratden (p, q, mtpo, np, kappa, z)
+      real(real64) function ratden (p, q, mtpo, np, kappa, z)
+      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !   This subprogram computes the overlap of the orbital tabulated in   *
 !   the arrays  P  and  Q  with maximum tabulation point  MTPO  with   *
@@ -136,7 +137,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use grid_c
       use horb_c, only: ph, qh
@@ -146,21 +147,21 @@
 !-----------------------------------------------
       use dcbsrw_i
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer , intent(in) :: mtpo
       integer  :: np
       integer  :: kappa
-      real(double)  :: z
-      real(double), intent(in) :: p(max_radial_points)
-      real(double), intent(in) :: q(max_radial_points)
+      real(real64)  :: z
+      real(real64), intent(in) :: p(max_radial_points)
+      real(real64), intent(in) :: q(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: mtph, i, k
-      real(double) :: eh, pzh, result, result1
+      real(real64) :: eh, pzh, result, result1
 !-----------------------------------------------
 !
 !
@@ -173,11 +174,11 @@
 !
       mtp = min(mtph,mtpo)
       do i = 2, mtp
-         if (radial_grid_derivative(i) > 0.0219) cycle
+         if (radial_grid_derivative(i) > 0.0219_real32) cycle
          k = i
       end do
       mtp = k
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       ta(2:mtp) = (p(2:mtp)*p(2:mtp)+q(2:mtp)*q(2:mtp))*radial_grid_derivative(2:mtp)
 !         TA(I) = (P(I)*PH(I)+Q(I)*QH(I))*RP(I)
       call quad (result)

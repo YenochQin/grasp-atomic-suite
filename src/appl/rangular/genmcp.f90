@@ -71,18 +71,17 @@
       use stoptime_i
       use lodcsh2_i, only: lodcsh2
       use mcp_i, only: mcp
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer nblk0, ncount1, ncore, nb
-      parameter (nblk0 = 50)
-!-----------------------------------------------
+      integer, parameter :: nblk0 = 50   !-----------------------------------------------
+      integer :: ncount1, ncore, nb
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       logical ::  debug, restrt, yes
       character(len=128) :: startdir*128, permdir*128, tmpdir*128
-      character(len=8), dimension(nblk0):: idblk
+      character(len=8):: idblk(nblk0)
       integer :: myid,nprocs
       type(angular_input_options) :: input_options
       integer(int64) :: program_start_count, stage_start_count

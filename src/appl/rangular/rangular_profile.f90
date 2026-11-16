@@ -1,6 +1,6 @@
 module rangular_profile
    use iso_fortran_env, only: int64, real64
-   implicit none
+   implicit none (type, external)
    private
    public :: open_stage_profile, close_stage_profile, stage_clock, record_stage
    integer, save :: profile_unit = 0

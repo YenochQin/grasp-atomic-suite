@@ -32,11 +32,11 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use items_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      character (len = 8), dimension(*) :: idblk
+      character (len = 8) :: idblk(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

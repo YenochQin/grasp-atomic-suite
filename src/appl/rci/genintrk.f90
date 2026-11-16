@@ -21,7 +21,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
       use cteilsrk_c
       use kkstart_c
@@ -32,7 +32,7 @@
 !-----------------------------------------------
       use slater_i
       use triangrk_i, only: triangrk
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -96,7 +96,7 @@
 
          do i = 1, n
             indteirk(i) = 0
-            valteirk(i) = 0.d0
+            valteirk(i) = 0._real64
          enddo
 
          if (myid .eq. 0)                                               &

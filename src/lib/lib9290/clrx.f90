@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function clrx (kappaa, k, kappab)
+      real(real64) function clrx (kappaa, k, kappab)
 !                                                                      *
 !   The value of CLRX is the 3-j symbol:                               *
 !                                                                      *
@@ -25,9 +25,9 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use facts_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -36,7 +36,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ka, kb, kapkb, kabkp, kamkb, kbmka
-      real(double) :: exptrm
+      real(real64) :: exptrm
 !-----------------------------------------------
 !
 !
@@ -63,7 +63,7 @@
          kabkp = kapkb + k
          kamkb = ka - kb
          kbmka = kb - ka
-         exptrm = 0.5d00*(exptrm + gam(kapkb-k)+gam(kamkb+k+1)+gam(kbmka+k+1)-&
+         exptrm = 0.5_real64*(exptrm + gam(kapkb-k)+gam(kamkb+k+1)+gam(kbmka+k+1)-&
             gam(kabkp+1))
 !
 !   The remainder depends on the parity of KA+KB+K
@@ -75,9 +75,9 @@
 !   Include the phase factor: a minus sign if necessary
 !
             if (mod(3*kabkp/2,2) == 0) then
-               clrx = 1.0d00
+               clrx = 1.0_real64
             else
-               clrx = -1.0d00
+               clrx = -1.0_real64
             endif
 !
 !   Include the contribution from the factorials
@@ -92,9 +92,9 @@
 !   Include the phase factor: a minus sign if necessary
 !
             if (mod((3*kabkp - 1)/2,2) == 0) then
-               clrx = 1.0d00
+               clrx = 1.0_real64
             else
-               clrx = -1.0d00
+               clrx = -1.0_real64
             endif
 !
 !   Include the contribution from the factorials
@@ -112,7 +112,7 @@
 !
 !   Triangularity violated; set the coefficient to zero
 !
-         clrx = 0.0d00
+         clrx = 0.0_real64
 !
       endif
 !

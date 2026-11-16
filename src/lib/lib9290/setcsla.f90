@@ -23,11 +23,11 @@
 !-----------------------------------------------
       use openfl_i
       use lodcsl_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ncore
+      integer, intent(out) :: ncore
       character (len = 24), intent(in) :: name
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

@@ -17,7 +17,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, one
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -31,26 +31,26 @@
       use dracah_i
       use sixj3_i
       use sixj4_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer             :: two_j1, two_j2, two_j3, two_j4, two_j5, two_j6
+      integer, intent(in) :: two_j1, two_j2, two_j3, two_j4, two_j5, two_j6
       integer, intent(in) :: check_triangle_conditions
-      real(double)        :: six_j_value
+      real(real64)        :: six_j_value
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ifa
-      real(double), dimension(0:4,0:4,0:4,0:4,0:4,0:4) :: small_six_j_cache
-      real(double) :: uncached_six_j_sentinel, a
+      real(real64) :: small_six_j_cache(0:4, 0:4, 0:4, 0:4, 0:4, 0:4)
+      real(real64) :: uncached_six_j_sentinel, a
       logical :: store_in_six_j_cache
 !     Persistent memoization is intentional (DATA already implies SAVE).
 !     State remains per-thread when this source is compiled with OpenMP.
       save :: small_six_j_cache
 !-----------------------------------------------
-      data small_six_j_cache/ 15625*1.d-20/
-      data uncached_six_j_sentinel/ 1.d-20/
+      data small_six_j_cache/ 15625*1.e-20_real64/
+      data uncached_six_j_sentinel/ 1.e-20_real64/
 !     The jj2lsj OpenMP object build gives each thread its own lazy cache.
 !     Ordinary suite libraries compile this sentinel as a comment.
 !$OMP THREADPRIVATE(small_six_j_cache)

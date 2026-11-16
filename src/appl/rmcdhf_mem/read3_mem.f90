@@ -9,17 +9,18 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: long
+      use, intrinsic :: iso_fortran_env, only: int64
       use rmcdhf_mem_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer(long) :: ncontr_tot
-      integer       :: nfile, ncontr
+      integer(int64), intent(in) :: ncontr_tot
+      integer, intent(in) :: nfile
+      integer :: ncontr
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------

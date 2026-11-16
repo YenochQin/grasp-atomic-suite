@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function rint_sms3 (i, j)
+      real(real64) function rint_sms3 (i, j)
 !                                                                      *
 !   The value of RINT_SMS3 is an approximation to:                     *
 !                                                                      *
@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use grid_c
       use tatb_c
       use wave_c
@@ -29,16 +29,16 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: i, j
+      integer, intent(in) :: i, j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: l
-      real(double) :: result
+      real(real64) :: result
 !-----------------------------------------------
 !
 !   Tabulate integrand as required for SUBROUTINE QUAD
@@ -47,7 +47,7 @@
 !
 !   Value at first tabulation point is arbitrary
 !
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       do 1 l = 2,mtp
 !HFS        TA(L) = (R(L)**K)*(PF(L,I)*QF(L,J)+QF(L,I)*PF(L,J))*RP(L)
         ta(l) =  radial_grid_derivative(l)*(radial_small_components(l,i)*radial_large_components(l,j) &

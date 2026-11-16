@@ -17,7 +17,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use m_c
       use orb_c,           only: csf_count, orbital_count
 !-----------------------------------------------
@@ -27,12 +26,12 @@
       use jqs_i
       use ichop_i
       use jcup_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ja
-      integer  :: jb
+      integer, intent(in) :: ja
+      integer, intent(in) :: jb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

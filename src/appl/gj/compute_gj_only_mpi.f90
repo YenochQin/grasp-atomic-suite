@@ -10,7 +10,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals
       use decide_c
       use eigv_c
@@ -29,29 +29,30 @@
       use rint_i
       use rinthf_i
       use mpiu_i, only: gdsummpi
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), intent(out) :: gjc_diag(nvec), dgjc_diag(nvec)
+      real(real64), intent(out) :: gjc_diag(nvec), dgjc_diag(nvec)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      real(double), parameter :: cutoff = 1.0d-10
+      real(real64), parameter :: cutoff = 1.0e-10_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, j, ipt, ic, lcnum, ir, itjpoc, itjpor, idiff, ia, ib, &
          k, loc
-      real(double), dimension(max_orbitals) :: tshell
-      real(double), dimension(max_orbitals,max_orbitals) :: rintgj, rintdgj, gjmelt, dgjmelt
-      real(double) :: apart, gjpart, dgjpart, elemntgj, elemntdgj, contrgj, &
+      real(real64) :: tshell(max_orbitals)
+      real(real64) :: rintgj(max_orbitals, max_orbitals), rintdgj(max_orbitals, max_orbitals), &
+         gjmelt(max_orbitals, max_orbitals), dgjmelt(max_orbitals, max_orbitals)
+      real(real64) :: apart, gjpart, dgjpart, elemntgj, elemntdgj, contrgj, &
          contrdgj
       character :: cnum*11
 !-----------------------------------------------
 !
-      gjc_diag(:nvec) = 0.0d00
-      dgjc_diag(:nvec) = 0.0d00
+      gjc_diag(:nvec) = 0.0_real64
+      dgjc_diag(:nvec) = 0.0_real64
 !
 !   Precompute the radial integrals and angular factors required by
 !   the two one-body operators contributing to the Landé factor.
@@ -84,8 +85,8 @@
             idiff = itjpoc - itjpor
             if (.not.(idiff == 0 .and. ir >= ic)) cycle
 !
-            elemntgj = 0.0d00
-            elemntdgj = 0.0d00
+            elemntgj = 0.0_real64
+            elemntdgj = 0.0_real64
 !
             call oneparticlejj(1, ipt, ic, ir, ia, ib, tshell)
             if (ia == 0) cycle

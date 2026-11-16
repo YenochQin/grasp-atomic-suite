@@ -47,34 +47,34 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use cre_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: nu
-      integer  :: k
+      integer, intent(in) :: k
       integer, intent(in) :: ibr
       integer, intent(in) :: iex
       integer, intent(in) :: is(4)
       integer, intent(in) :: kaps(4)
-      real(double), intent(inout) :: s(12)
+      real(real64), intent(inout) :: s(12)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: mu, ia, ib, ic, id, ka, kb, kc, kd, kk, ik, ip
-      real(double) :: d, h, dk1, dk2, fk, gk, g1, g2, g3, g4, a, f1, f2, f3, f4&
+      real(real64) :: d, h, dk1, dk2, fk, gk, g1, g2, g3, g4, a, f1, f2, f3, f4&
          , b, dk
 !-----------------------------------------------
 !
 !
 !   1.0  Initialization
 !
-      s = 0.0d00
+      s = 0.0_real64
 !
       ia = is(1)
       ib = is(2)
@@ -229,7 +229,7 @@
             if (ka*kb < 0) h = -h
             a = h*fk/gk/dble(kk*(kk + 2))
             s(1) = -a*g1*g1
-            s(2) = -2.0d00*a*g1*g2
+            s(2) = -2.0_real64*a*g1*g2
             s(3) = -a*g2*g2
             return
          endif
@@ -248,7 +248,7 @@
          if (ka*kb < 0) h = -h
          a = h*gk/fk/dble(kk*(kk - 2))
          s(1) = -a*f2*f2
-         s(2) = -2.0d00*a*f1*f2
+         s(2) = -2.0_real64*a*f1*f2
          s(3) = -a*f1*f1
          b = h/dble(kk*kk)
          b = b + b

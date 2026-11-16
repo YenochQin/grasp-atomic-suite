@@ -25,13 +25,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: byte
       use parameter_def,   only: max_orbitals
       use orb_c,           only: csf_count, csf_subshell_occupations
       use syma_c,          only: jpgg, nblk0
       use mpi_c
       use lodcsh2gg_i, only: lodcsh2gg
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

@@ -23,7 +23,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double, long
+      use, intrinsic :: iso_fortran_env, only: real64, int64
       use memory_man
       use damp_c
       use def_c, only: iccmin, ncmin, ncmax
@@ -47,7 +47,7 @@
       use read1_mem_i
       use read03_mem_i
       use suite_linear_algebra, only: dcopy, ddot, dscal
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -58,11 +58,11 @@
       integer :: nfile, nelec, ntmp, jblock, jblockt, i, ncfpat, ncminpat, &
          nevecpat, ncft, ncoeff, lab, ncontr, itmp, ir, idiag, j, iofset, &
          jother, ia, jofset, iattmp, iastmp, nelmntgg
-      real(double), dimension(:), pointer :: cmvl
-      real(double) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa
+      real(real64), pointer :: cmvl(:)
+      real(real64) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa
       logical :: first
       character :: mcplab*3
-      integer(long), dimension(20) :: ncontr_tot, ncontr_tot2
+      integer(int64) :: ncontr_tot(20), ncontr_tot2(20)
 
       save first
 !
@@ -109,7 +109,7 @@
 !=======================================================================
 
          nelmntgg = imax2_30(jblock) - imin2_30(jblock)
-         stored_matrix_element_count = int(nelmntgg,kind=long)
+         stored_matrix_element_count = int(nelmntgg,kind=int64)
          csf_count = imax1_30(jblock) - imin1_30(jblock)
          call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'MATRIXmpi')
          call alloc (hamiltonian_values, stored_matrix_element_count, 'EMT', 'MATRIXmpi')
@@ -120,7 +120,7 @@
          stored_segment_end_offsets(0:csf_count) = 0
 
       !...EMT will be accumulated in setham
-         hamiltonian_values(:stored_matrix_element_count) = 0.d0
+         hamiltonian_values(:stored_matrix_element_count) = 0._real64
          call read03_mem(jblock)
 
          ncfpat = csf_offsets_by_block(jblock)
@@ -157,7 +157,7 @@
 !
 !   Determine average energy
 !
-         hamiltonian_energy_shift = 0.d0
+         hamiltonian_energy_shift = 0._real64
          do ir = mpi_rank + 1, csf_count, mpi_process_count
             hamiltonian_energy_shift = hamiltonian_energy_shift + hamiltonian_values(stored_segment_end_offsets(ir))
          end do
@@ -203,13 +203,13 @@
 
             ! cdamp has the original non-block feature
                cdampj = mixing_damping_factors(j + ncminpat)
-               if (cdampj == 0.d0) cycle         ! So SURE ???
+               if (cdampj == 0._real64) cycle         ! So SURE ???
 
-               omcdaj = 1.d0 - cdampj
+               omcdaj = 1._real64 - cdampj
 
            !...Damp eigenvector and determine the new dominant component
   123          continue
-               amax = 0.d0
+               amax = 0._real64
                do i = 1, csf_count
                   evecij = omcdaj*csf_mixing_coefficients(i+iofset) + cdampj*cmvl(i + iofset)
                   csf_mixing_coefficients(i+iofset) = evecij
@@ -220,14 +220,14 @@
                end do
 
             !...compute the normalization factor
-               sum = 0.d0
+               sum = 0._real64
                do i = 1, csf_count
                   sum = sum + csf_mixing_coefficients(i+iofset)**2
                end do
-               dnfac = 1.d0/sqrt(sum)
+               dnfac = 1._real64/sqrt(sum)
 
             !...Renormalize and invert as necessary
-               if (csf_mixing_coefficients(ia+iofset) < 0.d0) dnfac = -dnfac
+               if (csf_mixing_coefficients(ia+iofset) < 0._real64) dnfac = -dnfac
                call dscal (csf_count, dnfac, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1)
 
             !...Schmidt orthogonalise
@@ -237,8 +237,8 @@
                jofset = (jother - 1)*csf_count + nevecpat
                ovrlap = ddot(csf_count,csf_mixing_coefficients(iofset+1:iofset+(csf_count)),1, &
                   & csf_mixing_coefficients(jofset+1:jofset+(csf_count)),1)
-               if (ovrlap /= 0.d0) then          ! So SURE ???
-                  omcdaj = 1.d0
+               if (ovrlap /= 0._real64) then          ! So SURE ???
+                  omcdaj = 1._real64
                   cdampj = -ovrlap
                   call dcopy (csf_count, csf_mixing_coefficients(jofset+1:jofset+(csf_count)), 1, cmvl(iofset + &
                      & 1:iofset+(csf_count)), 1)

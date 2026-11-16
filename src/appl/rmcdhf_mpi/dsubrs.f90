@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function dsubrs (eol, i, j, jblock)
+      real(real64) function dsubrs (eol, i, j, jblock)
 !                                                                      *
 !   The coefficients d   for  I = r, J = s  are calculated here.       *
 !                     rs                                               *
@@ -35,16 +35,16 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use eigv_c
       use hblock_c
       use pos_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: i
+      integer, intent(in) :: i
       integer , intent(in) :: j
       integer  :: jblock
       logical , intent(in) :: eol
@@ -55,7 +55,7 @@
 !-----------------------------------------------
 
       if (eol) then
-         dsubrs = 0.d0
+         dsubrs = 0._real64
          do k = 1, eigenvector_counts_by_block(jblock)
             kcmin = k + eigenvalue_offsets_by_block(jblock)
             ik = i + mixing_offsets_by_block(jblock) + (k - 1)*csf_counts_by_block(jblock)
@@ -65,7 +65,7 @@
       else if (i == j) then
          dsubrs = wt(i)
       else
-         dsubrs = 0.d0
+         dsubrs = 0._real64
       endif
 
       return

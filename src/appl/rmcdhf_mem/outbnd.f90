@@ -15,13 +15,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use scf_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double) , intent(in) :: etry
+      real(real64) , intent(in) :: etry
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

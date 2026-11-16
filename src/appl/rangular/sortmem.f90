@@ -23,7 +23,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
       use memory_man
       use orb_c,           only: orbital_principal_n, csf_count, orbital_symmetry_labels
@@ -34,12 +34,12 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use convrt_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: nfile
-      integer  :: ncoeff
+      integer, intent(in) :: nfile
+      integer, intent(in) :: ncoeff
       integer, intent(out)  :: ntgral
       integer, intent(in)   :: nb,iggmax_k
       logical, intent(in)   :: lprint
@@ -52,11 +52,11 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !      INTEGER, DIMENSION(:), pointer :: ICLMN, INDEX, LABEL, NSWAP
-      integer, dimension(:), pointer :: nswap
+      integer, pointer :: nswap(:)
 !      REAL(DOUBLE), DIMENSION(:), pointer :: COEFF
       integer :: lcnum, lck, ierr, mb, i, l, ir, icl, ind, lab, nsw, j,&
          last, ibeg, iend, ncontr, ia, ib, k, id, ic, igg
-      real(double) :: cof
+      real(real64) :: cof
       character :: cnum*20, srtlab*8, mcplab*3, ck*2
       character (len = len (fhead) + 3):: fullname
 !-----------------------------------------------

@@ -1,27 +1,29 @@
 program fical
-  implicit none
+  use, intrinsic :: iso_fortran_env, only: real64
+  implicit none (type, external)
   integer :: i,j,ii,jj,l,lsjpresent,lmax,lmax1,lmax2
   integer :: nvec1,nvec2,nveclsj1,nveclsj2,level1(500),level2(500),levellsj1(500),levellsj2(500)
-  integer :: relflag,dspin,efacflag
+  integer :: relflag,efacflag
 
-  double precision :: energy1(500),nms1(500),sms1(500),ms1(500),fs1(6,500),fshift1(500),fshift11(500),fspin1(500)
-  double precision :: trms_1,t_1,w_1,b20_1,b40_1, radmom1(4)
-  double precision :: trms_2,t_2,w_2,b20_2,b40_2, radmom2(4)
+  real(real64) :: energy1(500),nms1(500),sms1(500),ms1(500),fs1(6,500),fshift1(500),fshift11(500)
+  real(real64) :: trms_1,t_1,w_1,b20_1,b40_1, radmom1(4)
+  real(real64) :: trms_2,t_2,w_2,b20_2,b40_2, radmom2(4)
 
-  double precision :: energy2(500),nms2(500),sms2(500),ms2(500),fs2(6,500),fshift2(500),fshift22(500),fspin2(500)
-  double precision :: tenergy, nmslaw, nmsconst, m1, m2, dr2, masshift,fieldshift,fieldshift22,fieldshift1(500),fieldshift2(500)
-  double precision :: isotopeshift
-  double precision :: f0, f2, f4, f6, f0res, f2res, linfac
-  double precision :: fieldshiftres, fieldshift22res, linfac2
+  real(real64) :: energy2(500),nms2(500),sms2(500),ms2(500),fs2(6,500),fshift2(500),fshift22(500)
+  real(real64) :: tenergy, nmslaw, nmsconst, m1, m2, dr2, masshift,fieldshift,fieldshift22,fieldshift1(500),fieldshift2(500)
+  real(real64) :: isotopeshift
+  real(real64) :: f0, f2, f4, f6, f0res, f2res, linfac
+  real(real64) :: fieldshiftres, fieldshift22res, linfac2
 
-  double precision :: drms, au2kays
-  double precision :: z
+  real(real64), parameter :: au2kays = 219474.63136320_real64   ! CODATA 2018
+  real(real64) :: drms
+  real(real64) :: z
 
   character(len=100) :: state1, state2, file1, file2, file3, file4, file5, file6
   character(len=11) :: spinpar1(500),spinpar2(500)
-  character(len=4) :: typeflag,spin1(500),spin2(500),spinlsj1(500),spinlsj2(500)
+  character(len=4) :: typeflag,spinlsj1(500),spinlsj2(500)
   character(len=3) :: unit
-  character(len=1) :: def,ci,rel,efac,corr,soph,par1(500),par2(500),parlsj1(500),parlsj2(500)
+  character(len=1) :: def,ci,rel,efac,soph,parlsj1(500),parlsj2(500)
   character(len=200) :: csflabel1(500),csflabel2(500),csflabel1scal,csflabel2scal
   character(len=200) :: headermpghz,headermpmhz,headermpmev
   character(len=200) :: headermpghzlsj,headermpmhzlsj,headermpmevlsj
@@ -36,55 +38,54 @@ program fical
   character(len=200) :: uplevel,lowlevel
 
   logical :: exist1,exist2
-  parameter (au2kays = 219474.63136320d0)   ! CODATA 2018
 
-  headermpghz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (GHz u)" &
-       ,6X,"NMS (GHz u)",6X,"SMS (GHz u)"8X,"MS (GHz u)")'
-  headermpghzlsj = '(X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (GHz u)" &
-       ,6X,"NMS (GHz u)",6X,"SMS (GHz u)"8X,"MS (GHz u)")'
-  headermpmhz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (MHz u)" &
-       ,6X,"NMS (MHz u)",6X,"SMS (MHz u)"8X,"MS (MHz u)")'
-  headermpmhzlsj = '(X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (MHz u)" &
-       ,6X,"NMS (MHz u)",6X,"SMS (MHz u)"8X,"MS (MHz u)")'
-  headermpmev = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (meV u)" &
-       ,6X,"NMS (meV u)",6X,"SMS (meV u)"8X,"MS (meV u)")'
-  headermpmevlsj = '(X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (meV u)" &
-       ,6X,"NMS (meV u)",6X,"SMS (meV u)"8X,"MS (meV u)")'
+  headermpghz = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (GHz u)" &
+       &,6X,"NMS (GHz u)",6X,"SMS (GHz u)",8X,"MS (GHz u)")'
+  headermpghzlsj = '(1X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (GHz u)" &
+       &,6X,"NMS (GHz u)",6X,"SMS (GHz u)",8X,"MS (GHz u)")'
+  headermpmhz = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (MHz u)" &
+       &,6X,"NMS (MHz u)",6X,"SMS (MHz u)",8X,"MS (MHz u)")'
+  headermpmhzlsj = '(1X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (MHz u)" &
+       &,6X,"NMS (MHz u)",6X,"SMS (MHz u)",8X,"MS (MHz u)")'
+  headermpmev = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (meV u)" &
+       &,6X,"NMS (meV u)",6X,"SMS (meV u)",8X,"MS (meV u)")'
+  headermpmevlsj = '(1X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (meV u)" &
+       &,6X,"NMS (meV u)",6X,"SMS (meV u)",8X,"MS (meV u)")'
 
-  headerfpghz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
-       ,3X,"F0 (GHz fm-2)",5X,"F2 (GHz fm-4)",5X,"F4 (GHz fm-6)",5X,"F6 (GHz fm-8)",5X,"Lin. dep. (per mille)")'
-  headerfpghzlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
-       ,3X,"F0 (GHz fm-2)",5X,"F2 (GHz fm-4)",5X,"F4 (GHz fm-6)",5X,"F6 (GHz fm-8)",5X,"Lin. dep. (per mille)")'
-  headerfpmhz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
-       ,3X,"F0 (MHz fm-2)",5X,"F2 (MHz fm-4)",5X,"F4 (MHz fm-6)",5X,"F6 (MHz fm-8)")'
-  headerfpmhzlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
-       ,3X,"F0 (MHz fm-2)",5X,"F2 (MHz fm-4)",5X,"F4 (MHz fm-6)",5X,"F6 (MHz fm-8)")'
-  headerfpmev = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
-       ,3X,"F0 (meV fm-2)",5X,"F2 (meV fm-4)",5X,"F4 (meV fm-6)",5X,"F6 (meV fm-8)")'
-  headerfpmevlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
-       ,3X,"F0 (meV fm-2)",5X,"F2 (meV fm-4)",5X,"F4 (meV fm-6)",5X,"F6 (meV fm-8)")'
-
-
-  headerfp2ghz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
-       ,1X,"F0VED0 (GHz fm-2)",1X,"F0VED1 (GHz fm-4)",3X,"Lin. dep. (per mille)")'
-  headerfp2ghzlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
-       ,1X,"F0VED0 (GHz fm-2)",1X,"F0VED1 (GHz fm-4)",3X,"Lin. dep. (per mille)")'
-  headerfp2mhz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
-       ,1X,"F0VED0 (MHz fm-2)",1X,"F0VED1 (MHz fm-4)")'
-  headerfp2mhzlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
-       ,1X,"F0VED0 (MHz fm-2)",1X,"F0VED1 (MHz fm-4)")'
-  headerfp2mev = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
-       ,1X,"F0VED0 (meV fm-2)",1X,"F0VED1 (meV fm-4)")'
-  headerfp2mevlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
-       ,1X,"F0VED0 (meV fm-2)",1X,"F0VED1 (meV fm-4)")'
+  headerfpghz = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
+       &,3X,"F0 (GHz fm-2)",5X,"F2 (GHz fm-4)",5X,"F4 (GHz fm-6)",5X,"F6 (GHz fm-8)",5X,"Lin. dep. (per mille)")'
+  headerfpghzlsj = '(1X,a,5X,a,5X,"Energy (cm-1)" &
+       &,3X,"F0 (GHz fm-2)",5X,"F2 (GHz fm-4)",5X,"F4 (GHz fm-6)",5X,"F6 (GHz fm-8)",5X,"Lin. dep. (per mille)")'
+  headerfpmhz = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
+       &,3X,"F0 (MHz fm-2)",5X,"F2 (MHz fm-4)",5X,"F4 (MHz fm-6)",5X,"F6 (MHz fm-8)")'
+  headerfpmhzlsj = '(1X,a,5X,a,5X,"Energy (cm-1)" &
+       &,3X,"F0 (MHz fm-2)",5X,"F2 (MHz fm-4)",5X,"F4 (MHz fm-6)",5X,"F6 (MHz fm-8)")'
+  headerfpmev = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
+       &,3X,"F0 (meV fm-2)",5X,"F2 (meV fm-4)",5X,"F4 (meV fm-6)",5X,"F6 (meV fm-8)")'
+  headerfpmevlsj = '(1X,a,5X,a,5X,"Energy (cm-1)" &
+       &,3X,"F0 (meV fm-2)",5X,"F2 (meV fm-4)",5X,"F4 (meV fm-6)",5X,"F6 (meV fm-8)")'
 
 
-  headereghz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (GHz)",9X,"FS (GHz)",10X,"IS (GHz)")'
-  headereghzlsj = '(X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (GHz)",9X,"FS (GHz)",10X,"IS (GHz)")'
-  headeremhz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (MHz)",9X,"FS (MHz)",10X,"IS (MHz)")'
-  headeremhzlsj = '(X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (MHz)",9X,"FS (MHz)",10X,"IS (MHz)")'
-  headeremev = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (meV)",9X,"FS (meV)",10X,"IS (meV)")'
-  headeremevlsj = '(X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (meV)",9X,"FS (meV)",10X,"IS (meV)")'
+  headerfp2ghz = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
+       &,1X,"F0VED0 (GHz fm-2)",1X,"F0VED1 (GHz fm-4)",3X,"Lin. dep. (per mille)")'
+  headerfp2ghzlsj = '(1X,a,5X,a,5X,"Energy (cm-1)" &
+       &,1X,"F0VED0 (GHz fm-2)",1X,"F0VED1 (GHz fm-4)",3X,"Lin. dep. (per mille)")'
+  headerfp2mhz = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
+       &,1X,"F0VED0 (MHz fm-2)",1X,"F0VED1 (MHz fm-4)")'
+  headerfp2mhzlsj = '(1X,a,5X,a,5X,"Energy (cm-1)" &
+       &,1X,"F0VED0 (MHz fm-2)",1X,"F0VED1 (MHz fm-4)")'
+  headerfp2mev = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
+       &,1X,"F0VED0 (meV fm-2)",1X,"F0VED1 (meV fm-4)")'
+  headerfp2mevlsj = '(1X,a,5X,a,5X,"Energy (cm-1)" &
+       &,1X,"F0VED0 (meV fm-2)",1X,"F0VED1 (meV fm-4)")'
+
+
+  headereghz = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (GHz)",9X,"FS (GHz)",10X,"IS (GHz)")'
+  headereghzlsj = '(1X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (GHz)",9X,"FS (GHz)",10X,"IS (GHz)")'
+  headeremhz = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (MHz)",9X,"FS (MHz)",10X,"IS (MHz)")'
+  headeremhzlsj = '(1X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (MHz)",9X,"FS (MHz)",10X,"IS (MHz)")'
+  headeremev = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (meV)",9X,"FS (meV)",10X,"IS (meV)")'
+  headeremevlsj = '(1X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (meV)",9X,"FS (meV)",10X,"IS (meV)")'
 
 !  format1a = '(i4,a13,i3,a12,f12.2,1P,4d16.7)'
 !  format1b = '(i4,a13,i3,a12,f12.2,1P,4d16.7)'
@@ -119,7 +120,7 @@ program fical
   read(*,*) def
   if(def.ne.'y'.and.def.ne.'n') then
      write(*,*) 'Your input must be "y" or "n" (case sensitive). Try again!'
-     call exit()
+     stop
   end if
 
   write(*,*) 'Give name of state 1: '
@@ -131,14 +132,14 @@ program fical
   read(*,*) ci
   if(ci.ne.'y'.and.ci.ne.'n') then
      write(*,*) 'Your input must be "y" or "n" (case sensitive). Try again!'
-     call exit()
+     stop
   end if
 
   write(*,*) 'Have electronic factors been calculated (y/n)?: '
   read(*,*) efac
   if(efac.ne.'y'.and.efac.ne.'n') then
      write(*,*) 'Your input must be "y" or "n" (case sensitive). Try again!'
-     call exit()
+     stop
   end if
 
   if(def.eq.'y') then
@@ -151,21 +152,21 @@ program fical
      read(*,*) typeflag
      if(typeflag.ne.'para'.and.typeflag.ne.'ener'.and.typeflag.ne.'both') then
         write(*,*) 'Your input must be "para", "ener" or "both" (case sensitive). Try again!'
-        call exit()
+        stop
      end if
 
      write(*,*) 'Units (GHz, MHz or meV)?: '
      read(*,*) unit
      if(unit.ne.'GHz'.and.unit.ne.'MHz'.and.unit.ne.'meV') then
         write(*,*) 'Your input must be "GHz", "MHz", or "meV" (case sensitive). Try again!'
-        call exit()
+        stop
      end if
 
      write(*,*) 'Use relativistically corrected mass shift parameters (y/n)?: '
      read(*,*) rel
      if(rel.ne.'y'.and.rel.ne.'n') then
         write(*,*) 'Your input must be "y" or "n" (case sensitive). Try again!'
-        call exit()
+        stop
      end if
 
      if(typeflag.eq.'ener'.or.typeflag.eq.'both') then
@@ -173,7 +174,7 @@ program fical
         read(*,*) soph
         if(soph.ne.'y'.and.soph.ne.'n') then
            write(*,*) 'Your input must be "y" or "n" (case sensitive). Try again!'
-           call exit()
+           stop
         end if
      else if(typeflag.eq.'para') then
         soph = 'n'
@@ -238,6 +239,8 @@ program fical
   ! OPEN AND READ IN DATA FROM INPUT FILES
 
   lsjpresent = 0
+  nveclsj1 = 0
+  nveclsj2 = 0
   inquire(file=file5, exist=exist1)
   inquire(file=file6, exist=exist2)
   if(exist1.and.exist2) then
@@ -250,9 +253,9 @@ program fical
 
   end if
 
-  call openfile(file1,unit,efacflag,relflag,nvec1,level1,spinpar1,fspin1,par1,energy1,nms1,sms1,ms1,fs1)
+  call openfile(file1,unit,efacflag,relflag,nvec1,level1,spinpar1,energy1,nms1,sms1,ms1,fs1)
 
-  call openfile(file2,unit,efacflag,relflag,nvec2,level2,spinpar2,fspin2,par2,energy2,nms2,sms2,ms2,fs2)
+  call openfile(file2,unit,efacflag,relflag,nvec2,level2,spinpar2,energy2,nms2,sms2,ms2,fs2)
 
   call openisodata(file4,file3,z)
 
@@ -276,25 +279,25 @@ program fical
   write(7,*)
 
   if(efacflag.eq.1) then
-     fshift1(:) = fs1(5,:)
-     fshift2(:) = fs2(5,:)
-     fshift11(:) = fs1(6,:)
-     fshift22(:) = fs2(6,:)
+     fshift1(:nvec1) = fs1(5,:nvec1)
+     fshift2(:nvec2) = fs2(5,:nvec2)
+     fshift11(:nvec1) = fs1(6,:nvec1)
+     fshift22(:nvec2) = fs2(6,:nvec2)
   else
      if(unit.eq.'GHz') then
-        fs1(1,:) = fs1(1,:)*z*4.9210908105d-3
-        fs2(1,:) = fs2(1,:)*z*4.9210908105d-3
+        fs1(1,:nvec1) = fs1(1,:nvec1)*z*4.9210908105e-3_real64
+        fs2(1,:nvec2) = fs2(1,:nvec2)*z*4.9210908105e-3_real64
      else if(unit.eq.'MHz') then
-        fs1(1,:) = fs1(1,:)*z*4.9210908105d0
-        fs2(1,:) = fs2(1,:)*z*4.9210908105d0
+        fs1(1,:nvec1) = fs1(1,:nvec1)*z*4.9210908105_real64
+        fs2(1,:nvec2) = fs2(1,:nvec2)*z*4.9210908105_real64
      else if(unit.eq.'meV') then
-        fs1(1,:) = fs1(1,:)*z*4.9210908105d-3/241.7989348d0
-        fs2(1,:) = fs2(1,:)*z*4.9210908105d-3/241.7989348d0
+        fs1(1,:nvec1) = fs1(1,:nvec1)*z*4.9210908105e-3_real64/241.7989348_real64
+        fs2(1,:nvec2) = fs2(1,:nvec2)*z*4.9210908105e-3_real64/241.7989348_real64
      end if
-     fshift1(:) = fs1(1,:)
-     fshift2(:) = fs2(1,:)
-     fshift11(:) = fs1(1,:)
-     fshift22(:) = fs2(1,:)
+     fshift1(:nvec1) = fs1(1,:nvec1)
+     fshift2(:nvec2) = fs2(1,:nvec2)
+     fshift11(:nvec1) = fs1(1,:nvec1)
+     fshift22(:nvec2) = fs2(1,:nvec2)
   end if
 
   if(soph.eq.'y') then
@@ -303,13 +306,13 @@ program fical
 
      drms =abs(radmom1(1)-radmom2(1))
 
-     fieldshift1(:) = 0.0d0
+     fieldshift1(:) = 0.0_real64
      do i=1,nvec1
         do j=1,4
            fieldshift1(i) = fieldshift1(i) + fs1(j,i)*(radmom1(j)-radmom2(j))
         end do
      end do
-     fieldshift2(:) = 0.0d0
+     fieldshift2(:) = 0.0_real64
      do i=1,nvec2
         do j=1,4
            fieldshift2(i) = fieldshift2(i) + fs2(j,i)*(radmom1(j)-radmom2(j))
@@ -336,21 +339,21 @@ program fical
      write(7,*) 'LINE MASS SHIFT PARAMETERS'
      write(7,*)
      if(unit.eq.'GHz') then
-        nmsconst = 29.9792458d0/1822.888485d0
+        nmsconst = 29.9792458_real64/1822.888485_real64
         if(lsjpresent.eq.0) then
            write(7,headermpghz)
         else
            write(7,headermpghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit.eq.'MHz') then
-        nmsconst = 29979.2458d0/1822.888485d0
+        nmsconst = 29979.2458_real64/1822.888485_real64
         if(lsjpresent.eq.0) then
            write(7,headermpmhz)
         else
            write(7,headermpmhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit.eq.'meV') then
-        nmsconst = 0.12398419739d0/1822.888485d0
+        nmsconst = 0.12398419739_real64/1822.888485_real64
         if(lsjpresent.eq.0) then
            write(7,headermpmev)
         else
@@ -372,7 +375,7 @@ program fical
            end do
            if(energy1(i).gt.energy2(j)) then
               tenergy = (energy1(i)-energy2(j))*au2kays
-              nmslaw = -1.d0*tenergy*nmsconst
+              nmslaw = -1._real64*tenergy*nmsconst
               if(state1.eq.state2.and.j.gt.i) then
                  if(lsjpresent.eq.0) then
                     write(7,format1a) level1(i), adjustl(trim(spinpar1(i))),level2(j),adjustl(trim(spinpar2(j))), &
@@ -392,7 +395,7 @@ program fical
               end if
            else
               tenergy = (energy2(j)-energy1(i))*au2kays
-              nmslaw = -1.d0*tenergy*nmsconst
+              nmslaw = -1._real64*tenergy*nmsconst
               if(state1.eq.state2.and.j.gt.i) then
                  if(lsjpresent.eq.0) then
                     write(7,format1a) level2(j), adjustl(trim(spinpar2(j))),level1(i),adjustl(trim(spinpar1(i))), &
@@ -461,7 +464,7 @@ program fical
                  f0res = f0
                  f2res = f2
               end if
-              linfac = 1000.d0*(f0*f2res/(f2*f0res)-1.d0)
+              linfac = linearity_discrepancy(f0,f2,f0res,f2res)
 
               if(state1.eq.state2.and.j.gt.i) then
                  if(lsjpresent.eq.0) then
@@ -492,7 +495,7 @@ program fical
                  f0res = f0
                  f2res = f2
               end if
-              linfac = 1000.d0*(f0*f2res/(f2*f0res)-1.d0)
+              linfac = linearity_discrepancy(f0,f2,f0res,f2res)
 
               if(state1.eq.state2.and.j.gt.i) then
                  if(lsjpresent.eq.0) then
@@ -566,7 +569,7 @@ program fical
                  fieldshiftres = fieldshift
                  fieldshift22res = fieldshift22
               end if
-              linfac2 = 1000.d0*(fieldshift*fieldshift22res/(fieldshift22*fieldshiftres)-1.d0)
+              linfac2 = linearity_discrepancy(fieldshift,fieldshift22,fieldshiftres,fieldshift22res)
 
               if(state1.eq.state2.and.j.gt.i) then
                  if(lsjpresent.eq.0) then
@@ -597,7 +600,7 @@ program fical
                  fieldshiftres = fieldshift
                  fieldshift22res = fieldshift22
               end if
-              linfac2 = 1000.d0*(fieldshift*fieldshift22res/(fieldshift22*fieldshiftres)-1.d0)
+              linfac2 = linearity_discrepancy(fieldshift,fieldshift22,fieldshiftres,fieldshift22res)
 
               if(state1.eq.state2.and.j.gt.i) then
                  if(lsjpresent.eq.0) then
@@ -669,14 +672,14 @@ program fical
                  if(soph.eq.'y') then
                     fieldshift = fieldshift1(i)-fieldshift2(j)
                  else if(soph.eq.'n') then
-                    fieldshift = (fshift1(i)-fshift2(j))*dr2 + (fshift11(i)-fshift22(j))*dr2**2.d0
+                    fieldshift = (fshift1(i)-fshift2(j))*dr2 + (fshift11(i)-fshift22(j))*dr2**2._real64
                  end if
               else
                  masshift = (ms1(i)-ms2(j))*(m1-m2)/(m1*m2)
                  if(soph.eq.'y') then
-                    fieldshift = -1.d0*(fieldshift1(i)-fieldshift2(j))
+                    fieldshift = -1._real64*(fieldshift1(i)-fieldshift2(j))
                  else if(soph.eq.'n') then
-                    fieldshift = -1.d0*(fshift2(j)-fshift1(i))*dr2 + (fshift22(j)-fshift11(i))*dr2**2.d0
+                    fieldshift = -1._real64*(fshift2(j)-fshift1(i))*dr2 + (fshift22(j)-fshift11(i))*dr2**2._real64
                  end if
               end if
               isotopeshift = masshift + fieldshift
@@ -705,16 +708,16 @@ program fical
                     fieldshift = fieldshift2(j)-fieldshift1(i)
                  else if(soph.eq.'n') then
                     !write(*,*) 'm1 larger than m2'
-                    fieldshift = (fshift2(j)-fshift1(i))*dr2 + (fshift22(j)-fshift11(i))*dr2**2.d0
+                    fieldshift = (fshift2(j)-fshift1(i))*dr2 + (fshift22(j)-fshift11(i))*dr2**2._real64
                  end if
               else
                  masshift = (ms2(j)-ms1(i))*(m1-m2)/(m1*m2)
                  if(soph.eq.'y') then
-                    fieldshift = -1.d0*(fieldshift2(j)-fieldshift1(i))
+                    fieldshift = -1._real64*(fieldshift2(j)-fieldshift1(i))
                  else if(soph.eq.'n') then
                     !write(*,*) 'm1 smaller than m2'
                     !write(*,*) fshift2(j)-fshift1(i),fshift22(j)-fshift11(i)
-                    fieldshift = -1.d0*(fshift2(j)-fshift1(i))*dr2 + (fshift22(j)-fshift11(i))*dr2**2.d0
+                    fieldshift = -1._real64*(fshift2(j)-fshift1(i))*dr2 + (fshift22(j)-fshift11(i))*dr2**2._real64
                  end if
               end if
               isotopeshift = masshift + fieldshift
@@ -745,22 +748,32 @@ program fical
   write(*,*) 'program FICAL finished ...'
   write(*,*)
   write(*,*) 'Isotope shift parameters/energies written to file ', file3
-end program fical
+contains
+
+pure function linearity_discrepancy(first,second,ref_first,ref_second) result(value)
+  use, intrinsic :: ieee_arithmetic, only: ieee_quiet_nan, ieee_value
+  implicit none (type, external)
+  real(real64), intent(in) :: first, second, ref_first, ref_second
+  real(real64) :: value, denominator
+
+  denominator = second*ref_first
+  if (abs(denominator) > 0.0_real64) then
+     value = 1000.0_real64*(first*ref_second/denominator-1.0_real64)
+  else
+     ! Electron-density-only reports have zero higher-order coefficients.
+     value = ieee_value(0.0_real64,ieee_quiet_nan)
+  end if
+end function linearity_discrepancy
 
 subroutine openisodata(name,nameout,z)
-  implicit none
+  implicit none (type, external)
   character(len=200) :: string
-  character(len=100) :: name, nameout
-  character(len=21) :: dummy21
-  character(len=21) :: dummy6
-  integer :: i
-  double precision :: z,a,c,t,rms,bohr,pi,radmom3(4)
-
-  bohr = 52917.721067d0
-  pi = 3.14159265359d0
+  character(*), intent(in) :: name, nameout
+  real(real64), intent(out) :: z
+  real(real64) :: a,c,radmom3(4)
 
   open (7,file=nameout,status='unknown',form='formatted')
-  open (8,file=name,status='unknown',form='formatted')
+  open (8,file=name,status='old',action='read',form='formatted')
 
   read(8,'(a)') string
   read(8,'(d18.5)') z
@@ -771,8 +784,8 @@ subroutine openisodata(name,nameout,z)
   read(8,'(a)') string
   read(8,'(d18.5)') c
 
-  a = a*4.d0*log(3.d0)
-  call fermidist(c,a,0.0d0,0.0d0,0.0d0,1, radmom3)
+  a = a*4._real64*log(3._real64)
+  call fermidist(c,a,0.0_real64,0.0_real64,0.0_real64,1, radmom3)
 
   write(7,*)
   write(7,'(a)') " REFERENCE ISOTOPE DATA FROM ISODATA"
@@ -787,209 +800,147 @@ subroutine openisodata(name,nameout,z)
 
 end subroutine openisodata
 
-subroutine openfile(name,unit,eflag,rflag,nvec,level,spinpar,fspin,par,energy,nms,sms,ms,fs)
-  implicit none
-  integer :: i,j,l
-  integer :: nvec,level(500)
-  integer :: eflag,rflag
-  double precision :: energy(500),nms(500),nmscorr(500),nmsrel(500)
-  double precision :: sms(500),smscorr(500),smsrel(500)
-  double precision :: ms(500),mscorr(500),msrel(500)
-  double precision :: fs(6,500),fspin(500)
-  double precision :: mev2ghz
+subroutine openfile(name,unit,eflag,rflag,nvec,level,spinpar,energy,nms,sms,ms,fs)
+  implicit none (type, external)
+  character(*), intent(in) :: name, unit
+  integer, intent(in) :: eflag, rflag
+  integer, intent(out) :: nvec, level(:)
+  character(len=11), intent(out) :: spinpar(:)
+  real(real64), intent(out) :: energy(:), nms(:), sms(:), ms(:), fs(:,:)
+  integer :: input, i, component
+  real(real64), parameter :: mev2ghz = 241.798926_real64
+  real(real64) :: ghz_to_output, terms(3)
   character(len=200) :: string
-  character(len=100) :: name
-  character(len=24) :: dummy24
-  character(len=23) :: dummy23
-  character(len=11) :: spinpar(500)
-  character(len=6) :: dummy6
-  character(len=4) :: spin(500)
-  character(len=3) :: unit
-  character(len=1) :: par(500)
 
-  parameter (mev2ghz = 241.798926d0)
+  select case (unit)
+  case ('GHz')
+     ghz_to_output = 1.0_real64
+  case ('MHz')
+     ghz_to_output = 1000.0_real64
+  case ('meV')
+     ghz_to_output = 1.0_real64/mev2ghz
+  case default
+     error stop 'FICAL: unsupported output unit '//trim(unit)
+  end select
+  component = 1
+  if (rflag == 1) component = 3
 
-  open (7,file=name,status='unknown',form='formatted')
-  read(7,'(a24,i3)') dummy24,nvec
+  open(newunit=input, file=name, status='old', action='read', form='formatted')
+  read(input,'(24x,i3)') nvec
+  if (nvec < 1 .or. nvec > size(level)) error stop 'FICAL: invalid eigenvalue count in '//trim(name)
 
   do i=1,3
-     read(7,'(a)') string
+     read(input,'(a)') string
   end do
-
   do i=1,nvec
-     !read(7,'(a15,d25.10)') level(i),energy(i)
-     read(7,'(i4,a11,d25.10)') level(i),spinpar(i),energy(i)
-     spin(i) = spinpar(i)(6:9)
-     par(i) = spinpar(i)(11:11)
-     !write(*,*) spinpar(i)
-     !write(*,*) par(i)
-     if(spin(i).eq.' 1/2') fspin(i) = 0.5
-     if(spin(i).eq.' 3/2') fspin(i) = 1.5
-     if(spin(i).eq.' 5/2') fspin(i) = 2.5
-     if(spin(i).eq.' 7/2') fspin(i) = 3.5
-     if(spin(i).eq.' 9/2') fspin(i) = 4.5
-     if(spin(i).eq.'11/2') fspin(i) = 5.5
-     if(spin(i).eq.'13/2') fspin(i) = 6.5
-     if(spin(i).eq.'15/2') fspin(i) = 7.5
-     if(spin(i).eq.'17/2') fspin(i) = 8.5
-     if(spin(i).eq.'19/2') fspin(i) = 9.5
-     if(spin(i).eq.'21/2') fspin(i) = 10.5
-
-     if(spin(i).eq.'   0') fspin(i) = 0.0
-     if(spin(i).eq.'   1') fspin(i) = 1.0
-     if(spin(i).eq.'   2') fspin(i) = 2.0
-     if(spin(i).eq.'   3') fspin(i) = 3.0
-     if(spin(i).eq.'   4') fspin(i) = 4.0
-     if(spin(i).eq.'   5') fspin(i) = 5.0
-     if(spin(i).eq.'   6') fspin(i) = 6.0
-     if(spin(i).eq.'   7') fspin(i) = 7.0
-     if(spin(i).eq.'   8') fspin(i) = 8.0
-     if(spin(i).eq.'   9') fspin(i) = 9.0
-     if(spin(i).eq.'  10') fspin(i) = 10.0
+     ! RIS4 format 323 places the energy in columns 21 through 40.
+     read(input,'(i4,a11,5x,d20.10)') level(i),spinpar(i),energy(i)
   end do
 
   do i=1,6
-     read(7,'(a)') string
+     read(input,'(a)') string
   end do
-
   do i=1,nvec
-     read(7,'(a23,2d20.10,d19.20)') dummy23,nms(i),nmscorr(i),nmsrel(i)
-     if(unit.eq.'MHz') then
-        nms(i) = nms(i)*1000.d0
-        nmscorr(i) = nmscorr(i)*1000.d0
-        nmsrel(i) = nmsrel(i)*1000.d0
-     else if(unit.eq.'meV') then
-        nms(i) = nms(i)/mev2ghz
-        nmscorr(i) = nmscorr(i)/mev2ghz
-        nmsrel(i) = nmsrel(i)/mev2ghz
-     end if
+     call read_mass_shift(input,name,'NMS',terms)
+     nms(i) = terms(component)*ghz_to_output
      if(i.lt.nvec) then
-        read(7,'(a)') string
-        read(7,'(a)') string
-        read(7,'(a)') string
+        read(input,'(a)') string
+        read(input,'(a)') string
+        read(input,'(a)') string
      end if
   end do
 
   do i=1,6
-     read(7,'(a)') string
+     read(input,'(a)') string
   end do
-
   do i=1,nvec
-     read(7,'(a23,2d20.10,d19.20)') dummy23,sms(i),smscorr(i),smsrel(i)
-     !write(*,*) dummy23,sms(i),smscorr(i),smsrel(i)
-     if(unit.eq.'GHz') then
-        ms(i) = nms(i) + sms(i)
-        mscorr(i) = nmscorr(i) + smscorr(i)
-        msrel(i) = nmsrel(i) + smsrel(i)
-     else if(unit.eq.'MHz') then
-        sms(i) = sms(i)*1000.d0
-        smscorr(i) = smscorr(i)*1000.d0
-        smsrel(i) = smsrel(i)*1000.d0
-        ms(i) = nms(i) + sms(i)
-        mscorr(i) = nmscorr(i) + smscorr(i)
-        msrel(i) = nmsrel(i) + smsrel(i)
-     else if(unit.eq.'meV') then
-        sms(i) = sms(i)/mev2ghz
-        smscorr(i) = smscorr(i)/mev2ghz
-        smsrel(i) = smsrel(i)/mev2ghz
-        ms(i) = nms(i) + sms(i)
-        mscorr(i) = nmscorr(i) + smscorr(i)
-        msrel(i) = nmsrel(i) + smsrel(i)
-     end if
+     call read_mass_shift(input,name,'SMS',terms)
+     sms(i) = terms(component)*ghz_to_output
+     ms(i) = nms(i) + sms(i)
      if(i.lt.nvec) then
-        read(7,'(a)') string
-        read(7,'(a)') string
-        read(7,'(a)') string
+        read(input,'(a)') string
+        read(input,'(a)') string
+        read(input,'(a)') string
      end if
   end do
 
   if(eflag.eq.1) then
-
+     ! The field-shift section headings specify GHz for all fitted coefficients.
      do i=1,10+nvec
-        read(7,'(a)') string
+        read(input,'(a)') string
      end do
-
      do i=1,nvec
-        read(7,'(a23,4d20.10)') dummy23,fs(1,i),fs(2,i),fs(3,i),fs(4,i)
-        !write(*,*) dummy23, fs(1,i),fs(2,i),fs(3,i),fs(4,i)
-        if(unit.eq.'MHz') then
-           fs(1:4,i) = fs(1:4,i)*1000.d0
-        else if(unit.eq.'meV') then
-           fs(1:4,i) = fs(1:4,i)/mev2ghz
-           !write(*,*) fs(1,i), fs(2,i), fs(3,i), fs(4,i), fs(5,i)
-        end if
+        read(input,'(20x,4d20.10)') fs(1:4,i)
+        fs(1:4,i) = fs(1:4,i)*ghz_to_output
      end do
 
      do i=1,5
-        read(7,'(a)') string
+        read(input,'(a)') string
      end do
-
      do i=1,nvec
-        read(7,'(a23,2d20.10)') dummy23,fs(5,i),fs(6,i)
-        if(unit.eq.'MHz') then
-           fs(5,i) = fs(5,i)*1000.d0
-           fs(6,i) = fs(6,i)*1000.d0
-        else if(unit.eq.'meV') then
-           fs(5,i) = fs(5,i)/mev2ghz
-           fs(6,i) = fs(6,i)/mev2ghz
-           !write(*,*) fs(1,i), fs(2,i), fs(3,i), fs(4,i), fs(5,i), fs(6,i)
-        end if
+        read(input,'(20x,2d20.10)') fs(5:6,i)
+        fs(5:6,i) = fs(5:6,i)*ghz_to_output
      end do
-
   else
-
+     ! Electron density is reported in atomic units and converted later.
      do i=1,6
-        read(7,'(a)') string
+        read(input,'(a)') string
      end do
-
      do i=1,nvec
-        read(7,'(a23,d20.10)') dummy23,fs(1,i)
+        read(input,'(20x,d20.10)') fs(1,i)
         write(*,*) fs(1,i)
-        fs(2,i) = 0.0d0
-        fs(3,i) = 0.0d0
-        fs(4,i) = 0.0d0
-        fs(5,i) = 0.0d0
-        fs(6,i) = 0.0d0
-
-!        if(unit.eq.'MHz') then
-!           fs(1,i) = fs(1,i)*1000.d0
-!        else if(unit.eq.'meV') then
-!           fs(1,i) = fs(1,i)/meV2Ghz
-!           !write(*,*) fs(1,i), fs(2,i), fs(3,i), fs(4,i), fs(5,i)
-!        end if
+        fs(2:6,i) = 0.0_real64
      end do
-
   end if
 
-  close(7)
-
-  if(rflag.eq.1) then
-     nms(:) = nmsrel(:)
-     sms(:) = smsrel(:)
-     ms(:) = msrel(:)
-  end if
-
-  return
+  close(input)
 end subroutine openfile
 
+subroutine read_mass_shift(input,name,parameter_name,terms)
+  implicit none (type, external)
+  integer, intent(in) :: input
+  character(*), intent(in) :: name, parameter_name
+  real(real64), intent(out) :: terms(3)
+  character(len=200) :: record
+  character(len=200) :: message
+  integer :: status
+
+  ! Formats 315 and 316 have the same three D20.10 fields, followed by
+  ! a unit label. Read the label on every row, since even levels in one
+  ! RIS4 file can use different units.
+  read(input,'(a)',iostat=status,iomsg=message) record
+  if (status /= 0) error stop 'FICAL: reading '//parameter_name//' in '//trim(name)//': '//trim(message)
+  if (record(21:40) == '' .or. record(41:60) == '' .or. record(61:80) == '') &
+     error stop 'FICAL: incomplete '//parameter_name//' record in '//trim(name)
+  read(record,'(20x,3d20.10)',iostat=status,iomsg=message) terms
+  if (status /= 0) error stop 'FICAL: invalid '//parameter_name//' record in '//trim(name)//': '//trim(message)
+
+  select case (adjustl(record(81:)))
+  case ('(MHz u)')
+     terms = terms/1000.0_real64
+  case ('(GHz u)')
+     ! Already in GHz u.
+  case default
+     error stop 'FICAL: unsupported '//parameter_name//' unit in '//trim(name)//' ['//trim(adjustl(record(81:)))//']'
+  end select
+end subroutine read_mass_shift
+
 subroutine fermidist(trms,t,w,b20,b40,flag, radmom)
-  implicit none
+  implicit none (type, external)
   integer :: m, m2, i, j, k, flag
-  double precision :: c0, a, t, w, b20, b40
-  double precision :: rmax, h, h2, pi, pi2, rms, trms, drms
-  double precision :: dnorm, norm, dinte, inte
-  double precision :: dr2, r2, dr4, r4, dr6, r6, dr8, r8, radmom(4)
-  double precision :: cv(0:2000), th(0:2000)
-  double precision, allocatable :: r(:), rho(:)
+  real(real64) :: c0, a, t, w, b20, b40
+  real(real64) :: rmax, h, h2, rms, trms, drms
+  real(real64), parameter :: pi = 3.14159265359_real64
+  real(real64) :: dnorm, norm, dinte, inte
+  real(real64) :: dr2, r2, dr4, r4, dr6, r6, dr8, r8, radmom(4)
+  real(real64) :: cv(0:2000), th(0:2000)
+  real(real64), allocatable :: r(:), rho(:)
 
-  parameter (pi = 3.14159265359d0)
-  parameter (pi2 = 9.86960440108936d0)
+  a = t/(4._real64*log(3._real64))
 
-  a = t/(4.d0*log(3.d0))
-
-  rmax = 100.0d0
+  rmax = 100.0_real64
 !  h = 0.1d0
-  h = 0.01d0
+  h = 0.01_real64
   m = int(rmax/h)
   m = m + mod(m,2)
 
@@ -997,52 +948,53 @@ subroutine fermidist(trms,t,w,b20,b40,flag, radmom)
 
   c0 = trms
   k = 1
-  drms = 1.0d0
-  do while (drms >= 1.d-8)
+  drms = 1.0_real64
+  do while (drms >= 1.e-8_real64)
      if(k>1) then
         c0 = trms/rms*c0
      end if
      do i=0, m
         r(i) = h*i;
-        if(abs(b20)<0.001d0.and.abs(b40)<0.001d0) then
-           rho(i) = 4.0d0*pi*(1.0d0 + w*r(i)**2.0d0/c0**2.0d0)/(1.0d0+exp((r(i)-c0)/a))
+        if(abs(b20)<0.001_real64.and.abs(b40)<0.001_real64) then
+           rho(i) = 4.0_real64*pi*(1.0_real64 + w*r(i)**2.0_real64/c0**2.0_real64)/(1.0_real64+exp((r(i)-c0)/a))
         end if
      end do
 
-     if(abs(b20) > 0.0d0.or.abs(b40) > 0.0d0) then
+     if(abs(b20) > 0.0_real64.or.abs(b40) > 0.0_real64) then
         m2 = 360
-        h2 = pi/360.d0
+        h2 = pi/360._real64
         do i=0, m2, 1
-           th(i) = i*pi/360.d0
-           cv(i) = c0*(1.d0 + b20*sqrt(5.d0/(16.d0*pi))*(3.d0*(cos(th(i)))**2.d0 - 1.d0) &
-                + b40*3.d0/(16.d0*sqrt(pi))*(35.d0*(cos(th(i)))**4.d0 - 30.d0*(cos(th(i)))**2.d0 + 3.d0))
+           th(i) = i*pi/360._real64
+           cv(i) = c0*(1._real64 + b20*sqrt(5._real64/(16._real64*pi))*(3._real64*(cos(th(i)))**2._real64 - 1._real64) &
+                + b40*3._real64/(16._real64*sqrt(pi))*(35._real64*(cos(th(i)))**4._real64 - &
+                   30._real64*(cos(th(i)))**2._real64 + 3._real64))
         end do
 
         do i=0, m, 1
            inte = 0.0
            do j=1, m2-1, 2
-              dinte = h2/3.0d0 &
-                   *((1.0d0 + w*r(i)**2.0d0/c0**2.0d0)/(1.d0 + exp((r(i) - cv(j-1))/a))*sin(th(j-1)) &
-                   + 4.0d0*(1.0d0 + w*r(i)**2.0d0/c0**2.0d0)/(1.d0 + exp((r(i) - cv(j))/a))*sin(th(j)) &
-                   + (1.0d0 + w*r(i)**2.0d0/c0**2.0d0)/(1.d0 + exp((r(i) - cv(j+1))/a))*sin(th(j+1)))
+              dinte = h2/3.0_real64 &
+                   *((1.0_real64 + w*r(i)**2.0_real64/c0**2.0_real64)/(1._real64 + exp((r(i) - cv(j-1))/a))*sin(th(j-1)) &
+                   + 4.0_real64*(1.0_real64 + w*r(i)**2.0_real64/c0**2.0_real64)/(1._real64 + exp((r(i) - cv(j))/a))*sin(th(j)) &
+                   + (1.0_real64 + w*r(i)**2.0_real64/c0**2.0_real64)/(1._real64 + exp((r(i) - cv(j+1))/a))*sin(th(j+1)))
               inte = inte + dinte
            end do
-           rho(i) = 2.0d0*pi*inte
+           rho(i) = 2.0_real64*pi*inte
            !write(*,*) r(i), rho(i)
         end do
      end if
 
-     norm = 0.0d0
-     r2 = 0.0d0
-     r4 = 0.0d0
-     r6 = 0.0d0
-     r8 = 0.0d0
+     norm = 0.0_real64
+     r2 = 0.0_real64
+     r4 = 0.0_real64
+     r6 = 0.0_real64
+     r8 = 0.0_real64
      do i=1, m-1, 2
-        dnorm = (h/3.0d0)*(rho(i-1)*r(i-1)**2.0d0 + 4.0d0*rho(i)*r(i)**2.0d0 + rho(i+1)*r(i+1)**2.0d0)
-        dr2 = (h/3.0d0)*(rho(i-1)*r(i-1)**4.0d0 + 4.0d0*rho(i)*r(i)**4.0d0 + rho(i+1)*r(i+1)**4.0d0)
-        dr4 = (h/3.0d0)*(rho(i-1)*r(i-1)**6.0d0 + 4.0d0*rho(i)*r(i)**6.0d0 + rho(i+1)*r(i+1)**6.0d0)
-        dr6 = (h/3.0d0)*(rho(i-1)*r(i-1)**8.0d0 + 4.0d0*rho(i)*r(i)**8.0d0 + rho(i+1)*r(i+1)**8.0d0)
-        dr8 = (h/3.0d0)*(rho(i-1)*r(i-1)**10.0d0 + 4.0d0*rho(i)*r(i)**10.0d0 + rho(i+1)*r(i+1)**10.0d0)
+        dnorm = (h/3.0_real64)*(rho(i-1)*r(i-1)**2.0_real64 + 4.0_real64*rho(i)*r(i)**2.0_real64 + rho(i+1)*r(i+1)**2.0_real64)
+        dr2 = (h/3.0_real64)*(rho(i-1)*r(i-1)**4.0_real64 + 4.0_real64*rho(i)*r(i)**4.0_real64 + rho(i+1)*r(i+1)**4.0_real64)
+        dr4 = (h/3.0_real64)*(rho(i-1)*r(i-1)**6.0_real64 + 4.0_real64*rho(i)*r(i)**6.0_real64 + rho(i+1)*r(i+1)**6.0_real64)
+        dr6 = (h/3.0_real64)*(rho(i-1)*r(i-1)**8.0_real64 + 4.0_real64*rho(i)*r(i)**8.0_real64 + rho(i+1)*r(i+1)**8.0_real64)
+        dr8 = (h/3.0_real64)*(rho(i-1)*r(i-1)**10.0_real64 + 4.0_real64*rho(i)*r(i)**10.0_real64 + rho(i+1)*r(i+1)**10.0_real64)
         norm = norm + dnorm
         r2 = r2 + dr2
         r4 = r4 + dr4
@@ -1054,12 +1006,12 @@ subroutine fermidist(trms,t,w,b20,b40,flag, radmom)
      radmom(2) = r4/norm
      radmom(3) = r6/norm
      radmom(4) = r8/norm
-     norm = 1.0d0/norm
+     norm = 1.0_real64/norm
      k = k + 1
      if(flag.eq.0) then
         drms = abs(trms-rms)
      else
-        drms = 0.0d0
+        drms = 0.0_real64
      end if
   end do
 
@@ -1070,7 +1022,7 @@ subroutine fermidist(trms,t,w,b20,b40,flag, radmom)
 end subroutine fermidist
 
 subroutine openlsj(name,nvec,level,spin,par,csflabel,lmax)
-  implicit none
+  implicit none (type, external)
   integer :: i, nvec,level(500),lmax
   character(len=4) :: spin(500)
   character(len=1) :: par(500)
@@ -1115,3 +1067,5 @@ subroutine openlsj(name,nvec,level,spin,par,csflabel,lmax)
   nvec = i-1
   !write(*,*) nvec
 end subroutine openlsj
+
+end program fical

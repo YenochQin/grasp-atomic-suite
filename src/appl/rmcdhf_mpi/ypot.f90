@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix
       use debug_c
       use grid_c
@@ -34,7 +34,7 @@
 !-----------------------------------------------
       use yzk_i
       use draw_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -47,7 +47,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, index, label, k, ioy1, ioy2, nb3, nrows, ii, ii1, ii2, ii3
-      real(double) :: coeff
+      real(real64) :: coeff
 !-----------------------------------------------
 !   Debug printout: composition
 
@@ -100,7 +100,7 @@
                write (99, 303) radial_grid(ii1),yp(ii1)
             endif
          end do
-         call draw (yp, 1.0d00, yp, 0.0d00, radial_point_count)
+         call draw (yp, 1.0_real64, yp, 0.0_real64, radial_point_count)
       endif
 !
       return

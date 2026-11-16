@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function rinthf (i, j, k)
+      real(real64) function rinthf (i, j, k)
 !                                                                      *
 !   The value of RINTHF is an approximation to:                        *
 !                                                                      *
@@ -22,7 +22,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use grid_c
       use tatb_c
       use wave_c
@@ -30,18 +30,18 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: i
-      integer  :: j
+      integer, intent(in) :: i
+      integer, intent(in) :: j
       integer, intent(in) :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: l
-      real(double) :: result
+      real(real64) :: result
 !-----------------------------------------------
 !
 !   Tabulate integrand as required for SUBROUTINE QUAD
@@ -50,7 +50,7 @@
 !
 !   Value at first tabulation point is arbitrary
 !
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       do l = 2, mtp
          ta(l) = radial_grid(l)**k*(radial_large_components(l,i)*radial_small_components(l,j) + &
             & radial_small_components(l,i)*radial_large_components(l,j))*radial_grid_derivative(l)

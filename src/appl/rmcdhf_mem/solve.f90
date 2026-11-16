@@ -26,7 +26,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_radial_points
       use debug_c
       use def_c, only: speed_of_light_au, nsolv
@@ -55,11 +55,11 @@
       use prwf_i
       use count_i
       use newe_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: j
+      integer, intent(in) :: j
       integer, intent(inout) :: inv
       integer, intent(out) :: jp
       integer, intent(out) :: nnp
@@ -69,8 +69,8 @@
 !-----------------------------------------------
       integer :: kount, nakj, nloops, icase, mtph, mtpi, i, mtpc, mtpv, mtpvc, &
          loc1, loc2, loc, mx, nprime
-      real(double), dimension(max_radial_points) :: ph, qh, pv, qv
-      real(double) :: twocsq, elast, tenej, deleps, sgn, qjpoh, qjpih, qjpoi, &
+      real(real64) :: ph(max_radial_points), qh(max_radial_points), pv(max_radial_points), qv(max_radial_points)
+      real(real64) :: twocsq, elast, tenej, deleps, sgn, qjpoh, qjpih, qjpoi, &
          qjpii, dnorm, alfa, p0h, p0v, q0v, qjpov, qjpiv, crnorm, dvnorm, aa, &
          bb, cc, discr, qq, root1, root2, pmx, apm, pati, abpi, ratio, test1, &
          test2, dele
@@ -84,7 +84,7 @@
       kount = 0
       nakj = orbital_kappa(j)
 !     TWOCSQ = 2.0D 00*137.036**2
-      twocsq = 2.0d00*speed_of_light_au*speed_of_light_au
+      twocsq = 2.0_real64*speed_of_light_au*speed_of_light_au
 !
 !   Debug header
 !
@@ -99,12 +99,12 @@
 !   Checks on lower bounds
 !
       if (orbital_energy_parameters(j) < epsmin) then
-         if (orbital_energy_parameters(j) > 0.0d00) then
+         if (orbital_energy_parameters(j) > 0.0_real64) then
             epsmin = orbital_energy_parameters(j)
          else
             write (*, 301) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_energy_parameters(j)
             orbital_energy_parameters(j) = epsmin
-            if (abs(emin - elast)<=1.0d-06 .and. method(j)<=2) then
+            if (abs(emin - elast)<=1.0e-6_real64 .and. method(j)<=2) then
                call dcbsrw (orbital_principal_n(j), nakj, zinf, orbital_energy_parameters(j), p0, p, q, mtp0)
                write (*, 302) orbital_principal_n(j), orbital_symmetry_labels(j), zinf
                return
@@ -116,7 +116,7 @@
 !
       if (method(j) <= 2) then
          if (orbital_energy_parameters(j) > epsmax) then
-            tenej = 10.0d00*orbital_energy_parameters(j)
+            tenej = 10.0_real64*orbital_energy_parameters(j)
             epsmax = min(tenej,twocsq)
             emax = epsmax
             if (orbital_energy_parameters(j) > twocsq) then
@@ -141,7 +141,7 @@
             & orbital_energy_parameters(j&
             )
 !
-         if (kount>nloops .or. epsmax-epsmin<1.0d00/dble(orbital_principal_n(j))**3) then
+         if (kount>nloops .or. epsmax-epsmin<1.0_real64/dble(orbital_principal_n(j))**3) then
             write (*, 305) method(j), orbital_principal_n(j), orbital_symmetry_labels(j)
             write (*, 306) kount - 1, nloops, p0, orbital_energy_parameters(j), deleps, epsmin, epsmax&
                , jp, mtp, nnp, nnodep(j), sgn
@@ -181,7 +181,7 @@
 !   Determine energy adjustment for methods 1 and 2
 !
       if (method(j) <= 2) then
-         ta(1) = 0.0d00
+         ta(1) = 0.0_real64
          ta(2:mtpi) = (p(2:mtpi)**2+q(2:mtpi)**2)*radial_grid_derivative(2:mtpi)
          mtp = mtpi
          call quad (dnorm)
@@ -194,7 +194,7 @@
       mtpc = max(mtph,mtpi)
       alfa = -(qjpii - qjpoi)/(qjpih - qjpoh)
       p0h = p0
-      p0 = p0*(1.0d00 + alfa)
+      p0 = p0*(1.0_real64 + alfa)
       p(:mtpc) = p(:mtpc) + alfa*ph(:mtpc)
       q(:mtpc) = q(:mtpc) + alfa*qh(:mtpc)
 !
@@ -204,7 +204,7 @@
 !   variational equations outwards and inwards; store small
 !   component at join point each time
 !
-         p0v = 0.0d00
+         p0v = 0.0_real64
          call setxv (j)
          icase = 3
          call start (j, icase, p0v, pv, q0v, qv)
@@ -220,17 +220,17 @@
          pv(:mtpvc) = pv(:mtpvc) + alfa*ph(:mtpvc)
          qv(:mtpvc) = qv(:mtpvc) + alfa*qh(:mtpvc)
 !
-         ta(1) = 0.0d00
+         ta(1) = 0.0_real64
          ta(2:mtpc) = radial_grid_derivative(2:mtpc)*(p(2:mtpc)**2+q(2:mtpc)**2)
          mtp = mtpc
          call quad (dnorm)
 !
          mtp = min(mtpc,mtpvc)
-         ta(1) = 0.0d00
+         ta(1) = 0.0_real64
          ta(2:mtp) = radial_grid_derivative(2:mtp)*(p(2:mtp)*pv(2:mtp)+q(2:mtp)*qv(2:mtp))
          call quad (crnorm)
 !
-         ta(1) = 0.0d00
+         ta(1) = 0.0_real64
          ta(2:mtpvc) = radial_grid_derivative(2:mtpvc)*(pv(2:mtpvc)**2+qv(2:mtpvc)**2)
          mtp = mtpvc
          call quad (dvnorm)
@@ -241,14 +241,14 @@
 !
          aa = dvnorm
          bb = crnorm + crnorm
-         cc = dnorm - 1.0d00
-         discr = bb*bb - 4.0d00*aa*cc
-         if (discr > 0.0d00) then
-            qq = -0.5d00*(bb + sign(1.0d00,bb)*sqrt(discr))
+         cc = dnorm - 1.0_real64
+         discr = bb*bb - 4.0_real64*aa*cc
+         if (discr > 0.0_real64) then
+            qq = -0.5_real64*(bb + sign(1.0_real64,bb)*sqrt(discr))
             root1 = cc/qq
             root2 = qq/aa
-            pmx = 0.0d00
-            apm = 0.0d00
+            pmx = 0.0_real64
+            apm = 0.0_real64
             do i = 2, jp
                pati = p(i)
                if (pati > pmx) then
@@ -260,9 +260,9 @@
                apm = abpi
                loc2 = i
             end do
-            if (pmx /= 0.0d00) then
+            if (pmx /= 0.0_real64) then
                ratio = apm/abs(pmx)
-               if (ratio < 10.0d00) then
+               if (ratio < 10.0_real64) then
                   loc = loc1
                else
                   loc = loc2
@@ -272,17 +272,17 @@
             endif
             test1 = p(loc) + root1*pv(loc)
             test2 = p(loc) + root2*pv(loc)
-            if (test1>0.0d00 .and. test2<0.0d00) then
+            if (test1>0.0_real64 .and. test2<0.0_real64) then
                dele = root1
-            else if (test1<0.0d00 .and. test2>0.0d00) then
+            else if (test1<0.0_real64 .and. test2>0.0_real64) then
                dele = root2
-            else if (test1>0.0d00 .and. test2>0.0d00) then
+            else if (test1>0.0_real64 .and. test2>0.0_real64) then
                if (test1 < test2) then
                   dele = root1
                else
                   dele = root2
                endif
-            else if (test1<0.0d00 .and. test2<0.0d00) then
+            else if (test1<0.0_real64 .and. test2<0.0_real64) then
                if (test1 > test2) then
                   dele = root1
                else
@@ -321,7 +321,7 @@
 !   Proceed according to method
 !
       if (method(j) > 2) then
-         if (check .and. sgn<0.0d00) then
+         if (check .and. sgn<0.0_real64) then
             inv = 1
             p0 = -p0
             p(2:mtp0) = -p(2:mtp0)

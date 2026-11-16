@@ -31,7 +31,8 @@
 !-----------------------------------------------
       use brintf_i
       use triangbreit1_i
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -94,7 +95,7 @@
 
          do i = 1, nb
             indtp1(i) = 0
-            valtp1(i) = 0.d0
+            valtp1(i) = 0._real64
          enddo
 
          if (myid .eq. 0)                                         &

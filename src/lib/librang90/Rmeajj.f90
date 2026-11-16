@@ -11,7 +11,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero
       use ribojj_c
 !-----------------------------------------------
@@ -19,19 +19,19 @@
 !-----------------------------------------------
       use rmeajj11_i
       use rmeajj9_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)  :: ll, it, lq, j, its, lqs, j1s
-      real(double), intent(out) :: coef
+      real(real64), intent(out) :: coef
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i1, i2, ie1,  jt, jts
-      integer, dimension(1,2) :: ids3, idv3
-      integer, dimension(3,3) :: ids5, idv5
-      integer, dimension(6,8) :: ids7, idv7
+      integer :: ids3(1, 2), idv3(1, 2)
+      integer :: ids5(3, 3), idv5(3, 3)
+      integer :: ids7(6, 8), idv7(6, 8)
 !-----------------------------------------------
       data ids3/12,20/
       data idv3/1,1/

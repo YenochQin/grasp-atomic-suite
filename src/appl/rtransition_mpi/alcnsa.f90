@@ -19,14 +19,15 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use memory_man
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: nsdim
       integer, intent(in) :: imode
-      integer, dimension(:), pointer :: jja, jjb, lab, nptr
-      real(double), dimension(:), pointer :: hb1, hb2, hc1, hc2, hm1, hm2
+      integer, pointer :: jja(:), jjb(:), lab(:), nptr(:)
+      real(real64), pointer :: hb1(:), hb2(:), hc1(:), hc2(:), hm1(:), hm2(:)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

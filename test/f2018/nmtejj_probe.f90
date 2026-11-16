@@ -2,7 +2,7 @@
 ! d1260ba implementation, including all three table branches and misses.
 program nmtejj_probe
     use nmtejj_I, only: nmtejj
-    implicit none
+    implicit none (type, external)
     integer :: j, iq, ij, nk, nd, modes
     do j = 1, 37, 2
         modes = 1

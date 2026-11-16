@@ -64,7 +64,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -90,23 +90,24 @@
       use trpmat_i, only: trpmat
       use ulla_i, only: ulla
       use wrtmat_i, only: wrtmat
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: ngrid,  mxl
       integer, intent(in) :: lscr,  ntestg
-      integer, dimension(mxl)  :: nli, ninshli, nlf, ninshlf
+      integer, intent(in) :: nli(mxl), nlf(mxl)
+      integer :: ninshli(mxl), ninshlf(mxl)
 !     The following have dimensions (NGRID:*)
 !GG      REAL(DOUBLE), DIMENSION(:,:), pointer :: PI, QI, PF, QF
-      real(double), dimension(ngrid,*) :: pi, qi, pf, qf
+      real(real64) :: pi(ngrid, *), qi(ngrid, *), pf(ngrid, *), qf(ngrid, *)
 !     The following have fixed dimensions (NGRID, NLMAX)
-      real(double), dimension(*)  :: cishl, cfshl
+      real(real64)  :: cishl(*), cfshl(*)
 !     The work array
 !     REAL(DOUBLE), DIMENSION(LWORK1) :: work
 !     Th following have fixed dimensions (20*NLMAX*NLMAX)
-      real(double), dimension(*) :: cici, cfci
-      real(double), dimension(*) :: scr
+      real(real64) :: cici(*), cfci(*)
+      real(real64) :: scr(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -115,7 +116,7 @@
                  klci, klcf, klscr, l, iioff, ifoff, ni, nf, nifmn, iii,&
                  jjj, klpmx, klpmn, nmx, nmn, klcmx, klcmn, ndiff, j, &
                  klti, i, kltf
-      real(double) :: tii, tiii
+      real(real64) :: tii, tiii
 !-----------------------------------------------
 !
       ntestl = 0
@@ -364,12 +365,12 @@
             endif
             call matml4 (scr(klscr), scr(klsifi), scr(klsif), nmn, ndiff, nmn, &
                nmn, nmn, ndiff, 0)
-            call scalve (scr(klscr), -1.0d0, nmn*ndiff)
+            call scalve (scr(klscr), -1.0_real64, nmn*ndiff)
             call copvec (scr(klscr), scr(klsif), nmn*ndiff)
 !
 ! Construct complete CMX
 !
-            call setvec (scr(klscr), 0.0d0, nmx**2)
+            call setvec (scr(klscr), 0.0_real64, nmx**2)
             do j = 1, nmx
                if (j <= nifmn) then
                   call copvec (scr(klcmx+(j-1)*nifmn), scr(klscr+(j-1)*nmx), &
@@ -377,7 +378,7 @@
                else
                   call copvec (scr(klsif+(j-nmn-1)*nmn), scr(klscr+(j-1)*nmx), &
                      nmn)
-                  scr(klscr-1+(j-1)*nmx+j) = 1.0d0
+                  scr(klscr-1+(j-1)*nmx+j) = 1.0_real64
                endif
             end do
 !
@@ -453,7 +454,7 @@
          call pamtmt (scr(klci), scr(klti), scr(klscr), ni)
          do i = 1, ni
             tii = scr(klti-1+(i-1)*ni+i)
-            tiii = 1.0d0/tii
+            tiii = 1.0_real64/tii
             call scalve (scr(klti+(i-1)*ni), tiii, i - 1)
          end do
          call copvec (scr(klti), cici(iioff), ni*ni)
@@ -464,7 +465,7 @@
          call pamtmt (scr(klcf), scr(kltf), scr(klscr), nf)
          do i = 1, nf
             tii = scr(kltf-1+(i-1)*nf+i)
-            tiii = 1.0d0/tii
+            tiii = 1.0_real64/tii
             call scalve (scr(kltf+(i-1)*nf), tiii, i - 1)
          end do
          call copvec (scr(kltf), cfci(ifoff), nf*nf)

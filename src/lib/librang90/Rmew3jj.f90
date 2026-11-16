@@ -11,20 +11,20 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero
       use ribojj_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)  :: j1, j2, k1, k2
-      real(double), intent(out) :: coef
+      real(real64), intent(out) :: coef
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer               :: ji1
-      integer, dimension(3) :: i00, i10, i01
+      integer :: i00(3), i10(3), i01(3)
 !-----------------------------------------------
       data i00/16,6,10/
       data i10/12,12,0/

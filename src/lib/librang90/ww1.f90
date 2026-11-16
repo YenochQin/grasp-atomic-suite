@@ -22,7 +22,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, tenth, two, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -32,22 +32,22 @@
       use rumtjj_i
       use ixjtik_i
       use wj1_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)               :: k2
-      integer,      intent(in), dimension(7) :: ik, id
-      real(double), intent(in)               :: qm1, qm2, qm3, qm4
-      real(double), intent(in), dimension(3) :: bk, bd
-      real(double), intent(out)              :: ww
+      integer,      intent(in) :: ik(7), id(7)
+      real(real64), intent(in)               :: qm1, qm2, qm3, qm4
+      real(real64), intent(in) :: bk(3), bd(3)
+      real(real64), intent(out)              :: ww
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: kk2,kk6,iq,iqm,iq3,iq4,ie,ie1,it,itp,itg,ibtt
-      integer, dimension(7)      :: ibt
-      real(double)               :: enqp, d1, w
-      real(double), dimension(3) :: bt
+      integer      :: ibt(7)
+      real(real64)               :: enqp, d1, w
+      real(real64) :: bt(3)
 !-----------------------------------------------
       ww=zero
       if(id(6) /= ik(6))return

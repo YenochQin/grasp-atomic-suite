@@ -13,35 +13,35 @@ subroutine polint(xa,ya,dens)
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      implicit none
-      real(double), intent(out) :: dens
-      real(double), dimension(3),  intent(in) :: xa, ya
+      implicit none (type, external)
+      real(real64), intent(out) :: dens
+      real(real64),  intent(in) :: xa(3), ya(3)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double), dimension(3,3) :: m, mi
-      real(double), dimension(3) :: rm, pm
+      real(real64) :: m(3, 3), mi(3, 3)
+      real(real64) :: rm(3), pm(3)
 
-      real(double) :: mdet
+      real(real64) :: mdet
 !-----------------------------------------------
 
       rm(1) = ya(1)
       rm(2) = ya(2)
       rm(3) = ya(3)
 
-      m(1,1) = 1.0d0
-      m(1,2) = xa(1)**2.0d0
-      m(1,3) = xa(1)**4.0d0
-      m(2,1) = 1.0d0
-      m(2,2) = xa(2)**2.0d0
-      m(2,3) = xa(2)**4.0d0
-      m(3,1) = 1.d0
-      m(3,2) = xa(3)**2.0d0
-      m(3,3) = xa(3)**4.0d0
+      m(1,1) = 1.0_real64
+      m(1,2) = xa(1)**2.0_real64
+      m(1,3) = xa(1)**4.0_real64
+      m(2,1) = 1.0_real64
+      m(2,2) = xa(2)**2.0_real64
+      m(2,3) = xa(2)**4.0_real64
+      m(3,1) = 1._real64
+      m(3,2) = xa(3)**2.0_real64
+      m(3,3) = xa(3)**4.0_real64
       mdet = m(1,1)*m(2,2)*m(3,3)-m(1,1)*m(2,3)*m(3,2)- &
            m(1,2)*m(2,1)*m(3,3)+m(1,2)*m(2,3)*m(3,1)+ &
            m(1,3)*m(2,1)*m(3,2)-m(1,3)*m(2,2)*m(3,1)

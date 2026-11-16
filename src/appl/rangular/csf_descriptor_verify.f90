@@ -13,7 +13,7 @@ program csf_descriptor_verify
                                    read_descriptor_block, descriptor_block_label
    use cslh_i, only: cslh
    use lodcsh2_i, only: lodcsh2
-   implicit none
+   implicit none (type, external)
    integer, parameter :: maximum_blocks = 50
    type(descriptor_source) :: source
    integer(int8), allocatable :: descriptor_occupations(:,:), descriptor_quantum_numbers(:,:,:), descriptor_couplings(:,:)

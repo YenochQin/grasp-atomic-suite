@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -26,26 +26,26 @@
       use dspevx_i
       use suite_linear_algebra, only: dcopy, dspevx
       use dinit_i, only: dinit
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
        integer, intent(in) :: nmax, ncf, myid, nprocs, niv, imcdf
-       real(double), intent(in) :: eav
-       real(double), dimension(*), intent(inout):: basis
+       real(real64), intent(in) :: eav
+       real(real64), intent(inout):: basis(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-       real(double), dimension(:), pointer :: ap, eigval, vec, work, hmx
-       integer, dimension(:), pointer :: iwork, ifail, irow
+       real(real64), pointer :: ap(:), eigval(:), vec(:), work(:), hmx(:)
+       integer, pointer :: iwork(:), ifail(:), irow(:)
        integer :: in, ns, ncfdum, iccutdum, myiddum, nprocsdum, info, &
             ierr, j, joff, nelc, ir, nfound
-       real(double) :: elsto
+       real(real64) :: elsto
 !-----------------------------------------------------------------------
       ns = min (nmax, ncf)
 
       call alloc (ap, (ns*(ns+1))/2, 'AP', 'INIESTSD')
-      call dinit ((ns*(ns+1))/2, 0.d0, ap, 1)
+      call dinit ((ns*(ns+1))/2, 0._real64, ap, 1)
 
 !**** separate upper left block of size NS*NS
 
@@ -97,7 +97,7 @@
       call alloc (ifail,ns, 'IFAIL','INIESTSD' )
 
       call dspevx ('Vectors also','In a range','Upper triangular',     &
-                ns,ap,-1.0d0,-1.0d0,1,niv,0.d0,                        &
+                ns,ap,-1.0_real64,-1.0_real64,1,niv,0._real64,                        &
                 nfound,eigval,vec,ns,work,iwork,ifail,info)
       ierr = -abs (info)
 
@@ -105,7 +105,7 @@
 
 !       ..Build the Basis.
 
-      call dinit (ncf*niv, 0.d0, basis, 1)
+      call dinit (ncf*niv, 0._real64, basis, 1)
 !       ...scatter the vectors
       do j = 1, niv
          call dcopy (ns, vec(ns*(j-1)+1:ns*(j-1)+(ns)),1, basis(ncf*(j-1)+1), 1)

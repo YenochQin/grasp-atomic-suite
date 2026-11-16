@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
        subroutine rinti_nms (j,k,valnmsk123,valnmsk1)
+      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !   The value of this  function is the one-electron integral I (J,K)   *
 !   for  orbitals  J, K. The analytical expression for this quantity   *
@@ -17,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: radial_workspace_capacity
       use def_c
       use grid_c
@@ -30,18 +31,19 @@
 !-----------------------------------------------
       use dpbdt_i
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), intent(out) :: valnmsk123, valnmsk1
+      real(real64), intent(out) :: valnmsk123, valnmsk1
       integer, intent(in) :: j
       integer, intent(in) :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double), dimension(radial_workspace_capacity) :: pa, pb, qa, qb
-      real(double) :: a1, a2, piece1, piece2, piece3, piece4
+      real(real64) :: pa(radial_workspace_capacity), pb(radial_workspace_capacity), qa(radial_workspace_capacity), &
+         qb(radial_workspace_capacity)
+      real(real64) :: a1, a2, piece1, piece2, piece3, piece4
       integer :: l, kap1, kap2, i, l1, l2, j1, j2, l2_tilda
 !-----------------------------------------------
 !
@@ -49,8 +51,8 @@
 !   Set KAP1 and KAP2
 !
 !C*      RINTI_NMS = 0.0D 00
-      valnmsk1   = 0.0d00
-      valnmsk123 = 0.0d00
+      valnmsk1   = 0.0_real64
+      valnmsk123 = 0.0_real64
       kap1 = orbital_kappa(j)
       kap2 = orbital_kappa(k)
 !
@@ -89,20 +91,20 @@
 !   Piece involving derivatives
 !
       call dpbdt (j)
-      pa(1) = 0.0d00
-      qa(1) = 0.0d00
+      pa(1) = 0.0_real64
+      qa(1) = 0.0_real64
       do 11 i = 2,mtp
         pa(i) = ta(i)
         qa(i) = tb(i)
    11 continue
       call dpbdt (k)
-      pb(1) = 0.0d00
-      qb(1) = 0.0d00
+      pb(1) = 0.0_real64
+      qb(1) = 0.0_real64
       do 12 i = 2,mtp
         pb(i) = ta(i)
         qb(i) = tb(i)
    12 continue
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       do 1 i = 2,mtp
          ta(i) = (pa(i)*pb(i)+qa(i)*qb(i))/radial_grid_derivative(i)
     1 continue
@@ -111,7 +113,7 @@
 !
       a1 = dble(l2*(l2+1))
       a2 = dble(l2_tilda*(l2_tilda+1))
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       do 2 i = 2,mtp
         ta(i) = radial_grid_derivative(i)                                                  &
               *(a1*radial_large_components(i,j)*radial_large_components(i,k)+a2*radial_small_components(i,j)* &
@@ -122,15 +124,15 @@
 !
 !   Pieces not involving derivatives
 !
-      ta(1) = 0.d0
+      ta(1) = 0._real64
       do 3 i = 2,mtp
          ta(i) = (radial_small_components(i,j)*pb(i)+radial_small_components(i,k)*pa(i))/radial_grid(i)
     3 continue
       call quad (piece3)
-      piece3 = -2.0*nuclear_charge*piece3/(speed_of_light_au*transformed_grid_step)
+      piece3 = -2.0_real32*nuclear_charge*piece3/(speed_of_light_au*transformed_grid_step)
 !
       if (kap2 .ne. 1) then
-        ta(1) = 0.0d00
+        ta(1) = 0.0_real64
         do 4 i = 2,mtp
            ta(i) = radial_grid_derivative(i)                                               &
                  * (radial_small_components(i,j)*radial_large_components(i,k)+radial_large_components(i,j)* &
@@ -138,12 +140,12 @@
                  /(radial_grid(i)*radial_grid(i))
     4   continue
         call quad (piece4)
-        piece4 = -piece4*nuclear_charge*(dble (kap2)-1.0)/speed_of_light_au
+        piece4 = -piece4*nuclear_charge*(dble (kap2)-1.0_real32)/speed_of_light_au
       else
-        piece4 = 0.0d00
+        piece4 = 0.0_real64
       end if
-      valnmsk1 = 0.5*(piece1+piece2)
-      valnmsk123 = 0.5*(piece1+piece2+piece3+piece4)
+      valnmsk1 = 0.5_real32*(piece1+piece2)
+      valnmsk123 = 0.5_real32*(piece1+piece2+piece3+piece4)
 !
 !   Debug printout
 !

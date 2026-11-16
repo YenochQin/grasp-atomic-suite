@@ -16,15 +16,15 @@
       use l2_c
       use m_c,      only: jjc1, jjc2, jjq1, jjq2, jlist
       use couple_c, only: mja, nja, j1, j2, j3, mangm
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: ns
       integer, intent(inout) :: kj23
-      integer, dimension(2,2), intent(in) :: is
-      integer, dimension(2,2), intent(in) :: js
-      integer, dimension(2,2), intent(in) :: ks
+      integer, intent(in) :: is(2, 2)
+      integer, intent(in) :: js(2, 2)
+      integer, intent(in) :: ks(2, 2)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

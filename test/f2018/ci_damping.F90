@@ -1,18 +1,19 @@
 ! Compile the unmodified production MATRIX body; only assembly/eigensolution
 ! and memory-record input are controlled seams. BLAS is the linked real library.
 module ci_fixture
-    use vast_kind_param, only: double, long
+    use, intrinsic :: iso_fortran_env, only: double => real64, long => int64
     use eigv_c, only: evec => csf_mixing_coefficients, eval => shifted_eigenvalues
-    implicit none
+    implicit none (type, external)
     integer :: solves = 0
 contains
     subroutine eigenpairs()
+        use, intrinsic :: iso_fortran_env, only: real64
         solves = solves + 1
-        eval = [-2.0_double, -1.0_double]
+        eval = [-2.0_real64, -1.0_real64]
         if (solves == 1) then
-            evec(3:6) = [1.0_double, 0.0_double, 0.0_double, 1.0_double]
+            evec(3:6) = [1.0_real64, 0.0_real64, 0.0_real64, 1.0_real64]
         else
-            evec(3:6) = [0.6_double, 0.8_double, -0.8_double, 0.6_double]
+            evec(3:6) = [0.6_real64, 0.8_real64, -0.8_real64, 0.6_real64]
         endif
     end subroutine
 end module
@@ -43,9 +44,10 @@ program ci_damping
 #ifdef CI_MEM
     use rmcdhf_mem_C, only: imin1_30, imax1_30, imin2_30, imax2_30
 #endif
-    implicit none
+    use, intrinsic :: iso_fortran_env, only: real64
+    implicit none (type, external)
     integer :: unit, i, records, local_size
-    real(double), parameter :: tol = 1e-12_double
+    real(real64), parameter :: tol = 1e-12_real64
 #ifdef CI_MPI
     call startmpi(myid,nprocs,host,lenhost)
 #else
@@ -57,7 +59,7 @@ program ci_damping
     allocate(ncfblk(1), nevblk(1), ncmaxblk(1), ncfpast(1), ncminpast(1), nevecpast(1), eavblk(1))
     allocate(iccmin(2), cdamp(2), evec(8), eval(2))
     ncfblk=2; nevblk=2; ncmaxblk=2; ncfpast=0; ncminpast=0; nevecpast=2
-    iccmin=[1,2]; cdamp=[0.0_double,0.5_double]; evec=99.0_double
+    iccmin=[1,2]; cdamp=[0.0_real64,0.5_real64]; evec=99.0_real64
     nullify(emt,irow,iendc)
     local_size = count([(mod(i-1,nprocs)==myid, i=1,2)])
 #ifdef CI_MEM
@@ -85,19 +87,19 @@ program ci_damping
     endif
     call matrix_step(.true.)
     ! With fcheck=all, the production allocation/zeroing must include IENDC(0).
-    if(maxval(abs(evec(3:6)-[1.0_double,0.0_double,0.0_double,1.0_double]))>tol) &
+    if(maxval(abs(evec(3:6)-[1.0_real64,0.0_real64,0.0_real64,1.0_real64]))>tol) &
         error stop 'FIRST must bypass damping'
     call matrix_step(.false.)
     if(.not.all(ieee_is_finite(evec))) error stop 'nonfinite damped roots'
-    if(maxval(abs(evec(3:6)-[0.6_double,0.8_double,0.8_double,-0.6_double]))>tol) &
+    if(maxval(abs(evec(3:6)-[0.6_real64,0.8_real64,0.8_real64,-0.6_real64]))>tol) &
         error stop 'DDOT damping branch differs from analytic roots'
     if(abs(dot_product(evec(3:4),evec(5:6)))>tol) error stop 'orthogonality'
-    if(abs(sum(evec(3:4)**2)-1.0_double)>tol.or.abs(sum(evec(5:6)**2)-1.0_double)>tol) &
+    if(abs(sum(evec(3:4)**2)-1.0_real64)>tol.or.abs(sum(evec(5:6)**2)-1.0_real64)>tol) &
         error stop 'normalization'
-    if(any(evec(1:2)/=99.0_double).or.any(evec(7:8)/=99.0_double)) error stop 'block offset guards'
-    cdamp=0.0_double
+    if(any(evec(1:2)/=99.0_real64).or.any(evec(7:8)/=99.0_real64)) error stop 'block offset guards'
+    cdamp=0.0_real64
     call matrix_step(.false.)
-    if(maxval(abs(evec(3:6)-[0.6_double,0.8_double,-0.8_double,0.6_double]))>tol) &
+    if(maxval(abs(evec(3:6)-[0.6_real64,0.8_real64,-0.8_real64,0.6_real64]))>tol) &
         error stop 'zero damping control'
     if(solves/=3) error stop 'fixture did not execute three production calls'
     if(myid==0) then
@@ -129,7 +131,7 @@ subroutine maneigmpi(dvdfirst,lprint,jblock,ncfpat,ncminpat,nevecpat,ncftot)
 subroutine maneig(dvdfirst,lprint,jblock,ncfpat,ncminpat,nevecpat,ncftot)
 #endif
     use ci_fixture
-    implicit none
+    implicit none (type, external)
     logical,intent(in)::dvdfirst
     logical::lprint
     integer,intent(in)::jblock,ncfpat,ncminpat,nevecpat
@@ -143,15 +145,15 @@ subroutine setham(jblock,myid,nprocs,ncontr_tot,ncontr_tot2)
 #else
 subroutine setham(jblock,myid,nprocs)
 #endif
-    use vast_kind_param, only: double,long
+    use, intrinsic :: iso_fortran_env, only: real64, int64
     use hmat_c, only: emt => hamiltonian_values
-    implicit none
+    implicit none (type, external)
     integer,intent(in)::jblock,myid,nprocs
 #ifdef CI_MEM
-    integer(long)::ncontr_tot(20),ncontr_tot2(20)
+    integer(int64)::ncontr_tot(20),ncontr_tot2(20)
 #endif
     if(jblock/=1) error stop 'Hamiltonian seam block'
-    emt=0.0_double
+    emt=0.0_real64
 end subroutine
 
 #ifdef CI_MEM
@@ -162,7 +164,7 @@ subroutine read03_mem(jblock)
 #else
     use mpi_s, only: myid => mpi_rank, nprocs => mpi_process_count
 #endif
-    implicit none
+    implicit none (type, external)
     integer,intent(in)::jblock
     integer::i,k
     if(jblock/=1) error stop 'memory seam block'
@@ -174,10 +176,10 @@ subroutine read03_mem(jblock)
     enddo
 end subroutine
 subroutine read1_mem(nfile,ncontr_tot2,lab,ncontr)
-    use vast_kind_param, only: long
-    implicit none
+    use, intrinsic :: iso_fortran_env, only: int64
+    implicit none (type, external)
     integer,intent(in)::nfile
-    integer(long),intent(in)::ncontr_tot2
+    integer(int64),intent(in)::ncontr_tot2
     integer,intent(out)::lab,ncontr
     error stop 'unexpected empty block seam'
 end subroutine

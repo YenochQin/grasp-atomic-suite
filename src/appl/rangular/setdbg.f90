@@ -27,7 +27,7 @@
 !-----------------------------------------------
       use getyn_i
       use openfl_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -39,9 +39,9 @@
       integer :: i, ierr
       logical :: yes
 !
-      character(len = len (fullname)) filnam
-      character*11 form
-      character*3 status
+      character(len = len (fullname)) :: filnam
+      character(len=11) :: form
+      character(len=3) :: status
 !
 !   Initialise the arrays that control the debug printout
 !

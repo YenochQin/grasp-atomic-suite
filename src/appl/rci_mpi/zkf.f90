@@ -20,13 +20,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: radial_workspace_capacity
       use cnc_c, only: cnc5c
       use grid_c, only: radial_point_count, radial_grid, radial_grid_derivative
       use ncc_c
       use tatb_c, zk=>tb
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -37,8 +37,8 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ii, mtpp1, mtpp3, mtpp4, kk
-      real(double), dimension(radial_workspace_capacity) :: rhop, rttk, temp
-      real(double) :: sum, zklim
+      real(real64) :: rhop(radial_workspace_capacity), rttk(radial_workspace_capacity), temp(radial_workspace_capacity)
+      real(real64) :: sum, zklim
 !-----------------------------------------------
 !
       if (k > 0) then
@@ -57,7 +57,7 @@
 !
 !   Fill array TEMP with r**k * RHOP
 !
-      temp(1) = 0.0d00
+      temp(1) = 0.0_real64
       if (k == 0) then
          temp(2:mtp) = rhop(2:mtp)
       else
@@ -66,15 +66,15 @@
 !
 !   Set an additional four points to zero
 !
-      temp(mtpp1:mtpp4) = 0.0d00
+      temp(mtpp1:mtpp4) = 0.0_real64
 !
 !                                     k
 !   Compute the first few values of  r  * ZK  using semi-open
 !   Newton-Cotes formulae
 !
-      zk(1) = 0.0d00
+      zk(1) = 0.0_real64
       do ii = 2, 4
-         sum = 0.0d00
+         sum = 0.0_real64
          do kk = 2, 5
             sum = sum + cnc5c(kk,ii)*temp(kk)
          end do

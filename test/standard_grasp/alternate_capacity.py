@@ -13,7 +13,6 @@ def main() -> None:
     compiler = sys.argv[1]
     suite = Path(__file__).resolve().parents[2]
     sources = [
-        "lib/libmod/vast_kind_param_M.f90",
         "lib/libmod/suite_parameters_M.f90",
         "lib/libmod/parameter_def_M.f90",
         "lib/libmod/grid_C.f90",

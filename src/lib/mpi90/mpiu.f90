@@ -12,14 +12,14 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       use mpi
-      implicit none
+      implicit none (type, external)
       integer, intent(out)  :: myid,  nprocs, lenhost
       character(len=*), intent(out) :: host
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      integer ierr
+      integer :: ierr
 
       call mpi_init (ierr)
       call mpi_comm_rank (mpi_comm_world, myid, ierr)
@@ -39,7 +39,7 @@
 !***********************************************************************
       use mpi
       use mpiu_i, only: startmpi
-      implicit none
+      implicit none (type, external)
       integer :: myid, nprocs, lenhost, ncount1
       character(len=*), intent(out) :: host
       character(len=*), intent(in) :: progname, description
@@ -82,7 +82,7 @@
       use cpath_i, only: cpath
       use mpiu_i, only: mpix_printmsg
       use mpiu_i, only: startmpi
-      implicit none
+      implicit none (type, external)
       integer, intent(out)  :: myid,  nprocs, lenhost
       integer, intent(out)  :: ncount1
       character(len=*), intent(out) :: host
@@ -92,12 +92,12 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      character idstring*3
-      character chdate*8, chtime*10, chzone*5
+      character :: idstring*3
+      character :: chdate*8, chtime*10, chzone*5
                !ccyymmdd  hhmmss.sss  Shhmm
-      integer  nymduhmsm(8)
+      integer ::  nymduhmsm(8)
                !Year Month Day Universal Hour Minute Sesond Millisecond
-      integer lenstart, lenperm, lentmp, ncount_rate, ncount_max
+      integer :: lenstart, lenperm, lentmp, ncount_rate, ncount_max
 ! For printing
       character(len=80) :: msg
 
@@ -176,14 +176,14 @@
 ! Shared-filesystem-safe MPI shutdown companion to mpix_startup.
 !***********************************************************************
       use mpi
-      implicit none
+      implicit none (type, external)
       integer, intent(in) :: myid, ncount1
       character(len=*), intent(in) :: progname
       integer :: ncount2, ncount_rate, ncount_max, nseconds, ierr
       character(len=8) :: chdate
       character(len=10) :: chtime
       character(len=5) :: chzone
-      integer, dimension(8) :: nymduhmsm
+      integer :: nymduhmsm(8)
 
       call system_clock (ncount2, ncount_rate, ncount_max)
       ncount2 = ncount2 - ncount1
@@ -218,13 +218,13 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       use mpi
-      implicit none
+      implicit none (type, external)
       integer, intent(in)  ::  myid
       character(len=*), intent(in) :: what
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer ierr
+      integer :: ierr
 
       print *, 'mpi stopped by node-', myid, ' from ', what
       call mpi_barrier (mpi_comm_world,ierr)
@@ -249,21 +249,21 @@
       use mpi
       use mpiu_i, only: mpix_printmsg
       use mpiu_i, only: stopmpi
-      implicit none
+      implicit none (type, external)
       integer, intent(in)  ::  myid,nprocs,lenhost
       integer              ::  ncount1
       character*(*), intent(in) ::  host, progname
 ! Things for timing
-      integer   ncount2, ncount_rate, ncount_max, nseconds
-      character chdate*8, chtime*10, chzone*5
+      integer ::   ncount2, ncount_rate, ncount_max, nseconds
+      character :: chdate*8, chtime*10, chzone*5
                !ccyymmdd  hhmmss.sss  Shhmm
-      integer  nymduhmsm(8)
+      integer ::  nymduhmsm(8)
                !Year Month Day Universal Hour Minute Sesond Millisecond
 
 ! For printing
-      character str2nds*8, msg*80
+      character :: str2nds*8, msg*80
 
-      integer ierr
+      integer :: ierr
 
 !=======================================================================
 !  Get processor info: myid, nprocs, host name; and print
@@ -315,7 +315,7 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       use mpi
-      implicit none
+      implicit none (type, external)
       integer, intent(in)  ::  myid, nprocs
       character(len=*), intent(inout) :: msg
 
@@ -352,7 +352,7 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       use mpi
-      implicit none
+      implicit none (type, external)
       integer, intent(in) :: myid
       character(len=*), intent(in) :: what
 !-----------------------------------------------
@@ -382,13 +382,13 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       use mpi
-      implicit none
+      implicit none (type, external)
       integer, intent(in) :: n
       integer, intent(out) :: newtype, ierr
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer ier0
+      integer :: ier0
 
       call mpi_type_contiguous (n, mpi_byte, newtype, ier0)
       call mpi_type_commit (newtype, ierr)
@@ -403,19 +403,19 @@
 
 !     Sum x over all nodes and in y, then copy y to  x
 !***********************************************************************
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use mpi
       use suite_linear_algebra, only: dcopy
       use dinit_i, only: dinit
-      implicit none
+      implicit none (type, external)
 
       integer, intent(in)                         :: n
-      real(double), dimension(1:n), intent(inout) ::   x
+      real(real64), intent(inout) ::   x(1:n)
 
       integer                                     :: ierr
-      real(double), dimension(1:n)                :: y
+      real(real64)                :: y(1:n)
 
-      call dinit (n, 0.d0, y, 1)
+      call dinit (n, 0._real64, y, 1)
       call mpi_allreduce (x, y, n, mpi_double_precision, &
                                    mpi_sum, mpi_comm_world, ierr)
       call dcopy (n, y, 1, x, 1)   ! copy y to x
@@ -428,21 +428,21 @@
 
 !     Sum x onto node-0 only; non-root ranks do not receive the result.
 !***********************************************************************
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use mpi_c, only: mpi_rank
       use mpi
       use suite_linear_algebra, only: dcopy
       use dinit_i, only: dinit
-      implicit none
+      implicit none (type, external)
 
       integer, intent(in)                          :: n
-      real(double), dimension(1:n), intent(inout) :: x
+      real(real64), intent(inout) :: x(1:n)
 
       integer                                      :: ierr
-      real(double), dimension(1:n)                 :: y
+      real(real64)                 :: y(1:n)
 
       if (mpi_rank .eq. 0) then
-         call dinit (n, 0.d0, y, 1)
+         call dinit (n, 0._real64, y, 1)
          call mpi_reduce (x, y, n, mpi_double_precision, mpi_sum, 0, &
                           mpi_comm_world, ierr)
          call dcopy (n, y, 1, x, 1)
@@ -459,17 +459,17 @@
 
 !     Max x onto node-0 only; non-root ranks do not receive the result.
 !***********************************************************************
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use mpi_c, only: mpi_rank
       use mpi
       use suite_linear_algebra, only: dcopy
-      implicit none
+      implicit none (type, external)
 
       integer, intent(in)                          :: n
-      real(double), dimension(1:n), intent(inout) :: x
+      real(real64), intent(inout) :: x(1:n)
 
       integer                                      :: ierr
-      real(double), dimension(1:n)                 :: y
+      real(real64)                 :: y(1:n)
 
       if (mpi_rank .eq. 0) then
          call mpi_reduce (x, y, n, mpi_double_precision, mpi_max, 0, &
@@ -489,13 +489,13 @@
 !***********************************************************************
       use mpi
       use icopy_i, only: icopy
-      implicit none
+      implicit none (type, external)
 
       integer, intent(in)                         :: n
-      integer, dimension(1:n), intent(inout) ::  ix
+      integer, intent(inout) ::  ix(1:n)
 
       integer                                     :: ierr, i
-      integer, dimension(1:n)                ::  iy
+      integer                ::  iy(1:n)
 
       iy = 0
 

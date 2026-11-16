@@ -27,14 +27,14 @@
 !      USE setcsll_I
       use lodcsh_i
       use setcsll_i, only: setcsll
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: ncore
-      integer  :: nblkin
+      integer, intent(in) :: nblkin
       character  :: name*(*)
-      character(len=8), dimension(*) :: idblk
+      character(len=8) :: idblk(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

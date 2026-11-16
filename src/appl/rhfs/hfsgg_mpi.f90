@@ -10,7 +10,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals
       use memory_man
       use decide_c
@@ -39,25 +39,27 @@
       use oneparticlejj_i
       use gracah1_i
       use mpiu_i, only: gdrsummpi_root
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      real(double), parameter :: cutoff = 1.0d-10
+      real(real64), parameter :: cutoff = 1.0e-10_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ffmin, ffmax, ff, i, j, kt, ipt, ic, ir, itjpoc, itjpor&
          , idiff, ia, ib, k, kk, loc1, loc2, ii, jj, jjii, jb, ja, jjb, jja, iflag, &
          occ_ic, occ_ir, ndiff, diff_pos, diff_neg
-      real(double), dimension(max_orbitals) :: tshell
-      real(double), dimension(2,max_orbitals,max_orbitals) :: rintme, amelt, elemfac
-      real(double), dimension(max_orbitals,max_orbitals) :: rintgj, rintdgj, gjmelt, dgjmelt, &
-         gjfac, dgjfac
+      real(real64) :: tshell(max_orbitals)
+      real(real64) :: rintme(2, max_orbitals, max_orbitals), amelt(2, max_orbitals, max_orbitals), &
+         elemfac(2, max_orbitals, max_orbitals)
+      real(real64) :: rintgj(max_orbitals, max_orbitals), rintdgj(max_orbitals, max_orbitals), &
+         gjmelt(max_orbitals, max_orbitals), dgjmelt(max_orbitals, max_orbitals), &
+         gjfac(max_orbitals, max_orbitals), dgjfac(max_orbitals, max_orbitals)
 !     .. Local pointer arrays
-      real(double), dimension(:,:), pointer :: hfc
-      real(double),  dimension(:), pointer :: gjc, dgjc
-      real(double) ::  apart, gjpart, dgjpart, elemnt,  elemntgj, elemntdgj,&
+      real(real64), pointer :: hfc(:, :)
+      real(real64), pointer :: gjc(:), dgjc(:)
+      real(real64) ::  apart, gjpart, dgjpart, elemnt,  elemntgj, elemntdgj,&
          contr, contrgj, contrdgj, aumhz, barnau, dnmau, gfac, hfac, fj, &
          gja1, afa1, afa2, bfa1, bfa2, bfa3, gj, dgj, tilde1, &
          tilde2, factor1, factor2, rac1, rac2, hfselt1, hfselt2, evecic1, evecir1,&
@@ -76,12 +78,12 @@
 !
 !   Initialise
 !
-      hfc(:,:nvec*nvec) = 0.0d00
+      hfc(:,:nvec*nvec) = 0.0_real64
 !
-      gjc(:nvec*nvec) = 0.0d00
-      dgjc(:nvec*nvec) = 0.0d00
-      gjfac(:,:) = 0.0d00
-      dgjfac(:,:) = 0.0d00
+      gjc(:nvec*nvec) = 0.0_real64
+      dgjc(:nvec*nvec) = 0.0_real64
+      gjfac(:,:) = 0.0_real64
+      dgjfac(:,:) = 0.0_real64
 
 !
 !   Calculate and save the radial integrals and angular
@@ -140,9 +142,9 @@
 !
 !   Initialise the accumulator
 !
-               elemnt = 0.0d00
-               elemntgj = 0.0d00
-               elemntdgj = 0.0d00
+               elemnt = 0.0_real64
+               elemntgj = 0.0_real64
+               elemntdgj = 0.0_real64
 !
 !   Consider 3 cases
 !               (k)
@@ -295,12 +297,12 @@
 !   These are the conversion factors to obtain the hyperfine
 !   constants in MHz
 !
-      aumhz = hartree_to_wavenumber_cm*speed_of_light_cm_per_s*1.0d-06
-      barnau = 1.0d-24/bohr_radius_cm**2
-      dnmau = b1/(2.0d00*vacuum_speed_of_light_au*proton_mass_u)
+      aumhz = hartree_to_wavenumber_cm*speed_of_light_cm_per_s*1.0e-6_real64
+      barnau = 1.0e-24_real64/bohr_radius_cm**2
+      dnmau = b1/(2.0_real64*vacuum_speed_of_light_au*proton_mass_u)
 !
       gfac = aumhz*dnmau*hfsd/hfsi
-      hfac = aumhz*2.0d00*hfsq*barnau
+      hfac = aumhz*2.0_real64*hfsq*barnau
 !
 !   Output the hyperfine interaction constants
 !
@@ -315,30 +317,30 @@
 !
             if (.not.(jj==jjii .and. jjii>1 .or. jj>jjii)) cycle
 !
-            fj = 0.5d00*dble(jj - 1)
+            fj = 0.5_real64*dble(jj - 1)
 !
-            gja1 = sqrt(1.0d00/(fj*(fj + 1.0d00)))
+            gja1 = sqrt(1.0_real64/(fj*(fj + 1.0_real64)))
 
             afa1 = gfac*gja1
 
             if (jj == 2) then
-               afa2 = 0.d000
+               afa2 = 0._real64
             else
-               afa2 = gfac*sqrt(1.0d00/(fj*(2.0d00*fj - 1.0d00)))
+               afa2 = gfac*sqrt(1.0_real64/(fj*(2.0_real64*fj - 1.0_real64)))
             endif
-            bfa1 = hfac*sqrt((fj*(2.0d00*fj - 1.0d00))/((fj + 1.0d00)*(2.0d00*&
-               fj + 3.0d00)))
+            bfa1 = hfac*sqrt((fj*(2.0_real64*fj - 1.0_real64))/((fj + 1.0_real64)*(2.0_real64*&
+               fj + 3.0_real64)))
             if (jj == 2) then
-               bfa2 = 0.0d00
+               bfa2 = 0.0_real64
             else
-               bfa2 = 0.25d00*hfac*sqrt((fj*(fj - 1.0d00))/((fj + 1.0d00)*(&
-                  2.0d00*fj - 1.0d00)))
+               bfa2 = 0.25_real64*hfac*sqrt((fj*(fj - 1.0_real64))/((fj + 1.0_real64)*(&
+                  2.0_real64*fj - 1.0_real64)))
             endif
             if (jj == 4) then
-               bfa3 = 0.0d00
+               bfa3 = 0.0_real64
             else
-               bfa3 = 0.125d00*hfac*sqrt((fj*(fj - 1.0d000)*(2.0d00*fj - 1.0d00&
-                  ))/(2.0d00*fj - 3.0d00))
+               bfa3 = 0.125_real64*hfac*sqrt((fj*(fj - 1.0_real64)*(2.0_real64*fj - 1.0_real64&
+                  ))/(2.0_real64*fj - 3.0_real64))
             endif
 !
 !   Diagonal (J,J) A and B factors
@@ -357,7 +359,7 @@
 !
                   if (i == ii) then
                      gj = vacuum_speed_of_light_au*gja1*gjc(nvec*(i-1)+ii)
-                     dgj = 0.001160d0*gja1*dgjc(nvec*(i-1)+ii)
+                     dgj = 0.001160_real64*gja1*dgjc(nvec*(i-1)+ii)
                      write (29, 403) ivec(i), labj(jj), labp((iaspar(i)+3)/2), &
                         afa1*hfc(1,nvec*(i-1)+ii), bfa1*hfc(3,nvec*(i-1)+ii), &
                         gj, dgj, gj + dgj
@@ -375,7 +377,7 @@
 !
             case (4)
                write (24, 303) ivec(i), labj(jj), labp((iaspar(i)+3)/2), ivec(&
-                  ii), labj(jjii), labp((iaspar(ii)+3)/2), 0.0d00, bfa3*hfc(5,&
+                  ii), labj(jjii), labp((iaspar(ii)+3)/2), 0.0_real64, bfa3*hfc(5,&
                   nvec*(i-1)+ii)
             end select
 !
@@ -385,18 +387,18 @@
 !   These are the factors needed to obtain the F-dependent hyperfine
 !   matrix elements in Hartrees
 !
-      tilde1 = sqrt((hfsi + 1.0d00)/hfsi)*hfsd*0.5d00*b1/(proton_mass_u*vacuum_speed_of_light_au)
-      if (hfsi > 0.6d00) then
-         tilde2 = sqrt((hfsi + 1.0d00)*(2.0d00*hfsi + 3.d0)/((2.0d00*hfsi - &
-            1.0d00)*hfsi))
-         tilde2 = tilde2*hfsq*0.5d00*barnau
+      tilde1 = sqrt((hfsi + 1.0_real64)/hfsi)*hfsd*0.5_real64*b1/(proton_mass_u*vacuum_speed_of_light_au)
+      if (hfsi > 0.6_real64) then
+         tilde2 = sqrt((hfsi + 1.0_real64)*(2.0_real64*hfsi + 3._real64)/((2.0_real64*hfsi - &
+            1.0_real64)*hfsi))
+         tilde2 = tilde2*hfsq*0.5_real64*barnau
       else
-         tilde2 = 0.0d00
+         tilde2 = 0.0_real64
       endif
 !
 !     II = 2*I
 !
-      ii = nint(2.0d00*hfsi)
+      ii = nint(2.0_real64*hfsi)
 !
 !   Calculate the F-dependent matrix elemnts
 !
@@ -421,11 +423,11 @@
 !   Phase factor
 !
                if (mod((ii + jja - ff)/2,2) == 1) then
-                  factor1 = -1.0d00
+                  factor1 = -1.0_real64
                else
-                  factor1 = 1.0d00
+                  factor1 = 1.0_real64
                endif
-               factor2 = factor1*sqrt((dble(jjb) + 1.0d00)*(dble(ii) + 1.0d00))
+               factor2 = factor1*sqrt((dble(jjb) + 1.0_real64)*(dble(ii) + 1.0_real64))
 !
 !   Determine the Racah W coefficients.
 !
@@ -439,7 +441,7 @@
                if (jja - jjb == 0) then
                   hfselt1 = factor2*rac1*hfc(1,nvec*(jb-1)+ja)*tilde1
                   hfselt2 = factor2*rac2*hfc(3,nvec*(jb-1)+ja)*tilde2
-                  if (abs(hfselt1 + hfselt2) > cutoff*10.0d-05) then
+                  if (abs(hfselt1 + hfselt2) > cutoff*10.0e-5_real64) then
                      if (iflag == 0) write (24, 304)
                      iflag = 1
                      write (24, 305) ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
@@ -452,7 +454,7 @@
                else if (abs(jja - jjb) == 2) then
                   hfselt1 = factor2*rac1*hfc(2,nvec*(jb-1)+ja)*tilde1
                   hfselt2 = factor2*rac2*hfc(4,nvec*(jb-1)+ja)*tilde2
-                  if (abs(hfselt1 + hfselt2) > cutoff*10.0d-05) then
+                  if (abs(hfselt1 + hfselt2) > cutoff*10.0e-5_real64) then
                      if (iflag == 0) write (24, 304)
                      iflag = 1
                      write (24, 305) ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
@@ -463,9 +465,9 @@
 !   Obtain and output matrix elements for J,J-2
 !
                else if (abs(jja - jjb) == 4) then
-                  hfselt1 = 0.0d00
+                  hfselt1 = 0.0_real64
                   hfselt2 = factor2*rac2*hfc(5,nvec*(jb-1)+ja)*tilde2
-                  if (abs(hfselt1 + hfselt2) > cutoff*10.0d-05) then
+                  if (abs(hfselt1 + hfselt2) > cutoff*10.0e-5_real64) then
                      if (iflag == 0) write (24, 304)
                      iflag = 1
                      write (24, 305) ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
@@ -473,8 +475,8 @@
                         labj(ff+1), hfselt1 + hfselt2
                   endif
                else
-                  hfselt1 = 0.0d00
-                  hfselt2 = 0.0d00
+                  hfselt1 = 0.0_real64
+                  hfselt2 = 0.0_real64
                endif
             end do
          end do

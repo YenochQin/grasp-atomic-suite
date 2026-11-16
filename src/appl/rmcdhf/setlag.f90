@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine setlag(eol)
+      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !   Sets up the data structure  pertaining to the Lagrange multipli-   *
 !   ers  on the first entry;  on subsequent calls it  determines new   *
@@ -19,7 +20,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix
       use memory_man
       use orba_c
@@ -43,7 +44,7 @@
       use dacon_i
       use quad_i
       use rinti_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -51,15 +52,16 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      real(double), parameter :: p001 = 1.0d-01
+      real(real64), parameter :: p001 = 1.0e-1_real64
       integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: itwice, liraw, li, lip1, naklj, ljraw, lj, ieccli, l1, l2, &
          jlast, mlast, m, j, i
-      real(double), dimension(max_radial_points) :: ypj, ypm, xpj, xpm, xqj, xqm
-      real(double) :: eps, ucfj, ucfm, result, rijm, qdif, obqdif, obqsum
+      real(real64) :: ypj(max_radial_points), ypm(max_radial_points), xpj(max_radial_points), xpm(max_radial_points), &
+         xqj(max_radial_points), xqm(max_radial_points)
+      real(real64) :: eps, ucfj, ucfm, result, rijm, qdif, obqdif, obqsum
       logical :: first, fixli, fixlj, fulli, fullj, vli, vlj
 !-----------------------------------------------
 !
@@ -82,7 +84,7 @@
 !   This part is not distributed.
 !=======================================================================
 
-         eps = accy*0.01d0      ! criterion to see if an orb is occupied
+         eps = accy*0.01_real64      ! criterion to see if an orb is occupied
          do itwice = 1, 2
             nec = 0
          do ljraw = closed_core_subshell_count+1, orbital_count
@@ -178,7 +180,7 @@
          mtp = max(orbital_last_grid_index(j),orbital_last_grid_index(m))
 !
          if (is_orbital_fixed(m)) then
-            ta(1) = 0.d0
+            ta(1) = 0._real64
             do i = 2, mtp
                ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,m)*xqj(i) &
                   & -radial_small_components(i,m)*xpj(i))*speed_of_light_au+       &
@@ -200,7 +202,7 @@
 ! end dbg
 
          else if (is_orbital_fixed(j)) then
-            ta(1) = 0.d0
+            ta(1) = 0._real64
             do i = 2, mtp
                ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,j)*xqm(i) &
                   & -radial_small_components(i,j)*xpm(i))*speed_of_light_au+      &
@@ -231,8 +233,8 @@
             qdif = abs((ucfj - ucfm)/max(ucfj,ucfm))
             
             if (qdif > p001) then
-               obqdif = 1.d0/ucfj - 1.d0/ucfm
-               ta(1) = 0.d0
+               obqdif = 1._real64/ucfj - 1._real64/ucfm
+               ta(1) = 0._real64
                do i = 2, mtp
                   ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,m)*xqj(i) &
                      & -radial_small_components(i,m)*xpj(i)          &
@@ -255,9 +257,9 @@
 
             else
  
-               obqsum = 1.d0/ucfj + 1.d0/ucfm
+               obqsum = 1._real64/ucfj + 1._real64/ucfm
 
-               ta(1) = 0.d0
+               ta(1) = 0._real64
                do i = 2, mtp
                   ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,m)*xqj(i) &
                      & -radial_small_components(i,m)*xpj(i)         &
@@ -269,7 +271,7 @@
 
                call quad (result)
                rijm = rinti(m,j,1)               
-               ecv(li) = (result - 2.0*rijm)/obqsum 
+               ecv(li) = (result - 2.0_real32*rijm)/obqsum
 
 
 !start dbg

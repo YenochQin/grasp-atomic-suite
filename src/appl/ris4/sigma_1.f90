@@ -15,23 +15,23 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use orb_c,           only: orbital_principal_n, orbital_kappa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use dracah_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: ipar, i1, i2
-      real(double), intent(out) :: apart
+      real(real64), intent(out) :: apart
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: l1, l2, kap1, kap2, j1, j2, l1_tilda
-      real(double) :: rac
+      real(real64) :: rac
 !-----------------------------------------------
 !
 !   Set KAP1 and KAP2
@@ -64,9 +64,9 @@
 !
          call dracah (1,j1,1,j2,2*l1_tilda,2,rac)
          if (mod(1+j1+1+j2,4) == 0) rac=-rac
-         apart =  rac*dsqrt(6.0d00*(j2+1))
+         apart =  rac*dsqrt(6.0_real64*(j2+1))
       else
-         apart = 0.0d00
+         apart = 0.0_real64
       end if
 !
 !   Determine the phase factori

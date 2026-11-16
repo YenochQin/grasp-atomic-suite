@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals, max_radial_points
       use def_c
       use decide_c
@@ -35,11 +35,11 @@
       use lodrwfi_i
       use lodrwff_i
       use brkt_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      character (len = 128), dimension(2) :: name
+      character (len = 128) :: name(2)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -131,16 +131,16 @@
 !   Determine the parameters controlling the radial grid
 !
       if (nuclear_model_parameter_count == 0) then
-         radial_grid_scale = exp((-65.0d00/16.0d00))/nuclear_charge
-         transformed_grid_step = 0.5d00**4
+         radial_grid_scale = exp((-65.0_real64/16.0_real64))/nuclear_charge
+         transformed_grid_step = 0.5_real64**4
          radial_point_count = min(220,max_radial_points)
       else
 !CFF     ... should be Z-dependent
-         radial_grid_scale = 2.0d-06/nuclear_charge
-         transformed_grid_step = 5.0d-02
+         radial_grid_scale = 2.0e-6_real64/nuclear_charge
+         transformed_grid_step = 5.0e-2_real64
          radial_point_count = max_radial_points
       endif
-      asymptotic_grid_step = 0.0d00
+      asymptotic_grid_step = 0.0_real64
       if (ndef /= 0) then
         if (mpi_rank .eq. 0) then
          write (6, *) 'The default radial grid parameters'

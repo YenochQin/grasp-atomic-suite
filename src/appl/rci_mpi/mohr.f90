@@ -18,19 +18,19 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use interp_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer , intent(in) :: n
       integer , intent(in) :: kappa
-      real(double)  :: z
-      real(double) , intent(out) :: fzalfa
+      real(real64)  :: z
+      real(real64) , intent(out) :: fzalfa
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -39,45 +39,45 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double), dimension(numval) :: val1s, val2s, val2p1, val2p3, arg
-      real(double) :: accy, value
+      real(real64) :: val1s(numval), val2s(numval), val2p1(numval), val2p3(numval), arg(numval)
+      real(real64) :: accy, value
 !-----------------------------------------------
 !
 !
 !   1s data :
 !
-      data val1s/ 10.3168d00, 4.6540d00, 3.2460d00, 2.5519d00, 2.1351d00, &
-         1.8644d00, 1.6838d00, 1.5675d00, 1.5032d00, 1.4880d00, 1.5317d00, &
-         1.6614d00/
+      data val1s/ 10.3168_real64, 4.6540_real64, 3.2460_real64, 2.5519_real64, 2.1351_real64, &
+         1.8644_real64, 1.6838_real64, 1.5675_real64, 1.5032_real64, 1.4880_real64, 1.5317_real64, &
+         1.6614_real64/
 !
 !   2s data:
 !
-      data val2s/ 10.5468d00, 4.8930d00, 3.5063d00, 2.8391d00, 2.4550d00, &
-         2.2244d00, 2.0948d00, 2.0435d00, 2.0650d00, 2.1690d00, 2.3870d00, &
-         2.7980d00/
+      data val2s/ 10.5468_real64, 4.8930_real64, 3.5063_real64, 2.8391_real64, 2.4550_real64, &
+         2.2244_real64, 2.0948_real64, 2.0435_real64, 2.0650_real64, 2.1690_real64, 2.3870_real64, &
+         2.7980_real64/
 !
 !   2p- data:
 !
-      data val2p1/ -0.1264d00, -0.1145d00, -0.0922d00, -0.0641d00, -0.0308d00, &
-         0.0082d00, 0.0549d00, 0.1129d00, 0.1884d00, 0.2934d00, 0.4530d00, &
-         0.7250d00/
+      data val2p1/ -0.1264_real64, -0.1145_real64, -0.0922_real64, -0.0641_real64, -0.0308_real64, &
+         0.0082_real64, 0.0549_real64, 0.1129_real64, 0.1884_real64, 0.2934_real64, 0.4530_real64, &
+         0.7250_real64/
 !
 !   2p data:
 !
-      data val2p3/ 0.1235d00, 0.1303d00, 0.1436d00, 0.1604d00, 0.1794d00, &
-         0.1999d00, 0.2215d00, 0.2440d00, 0.2671d00, 0.2906d00, 0.3141d00, &
-         0.3367d00/
+      data val2p3/ 0.1235_real64, 0.1303_real64, 0.1436_real64, 0.1604_real64, 0.1794_real64, &
+         0.1999_real64, 0.2215_real64, 0.2440_real64, 0.2671_real64, 0.2906_real64, 0.3141_real64, &
+         0.3367_real64/
 !
 !   Z data:
 !
-      data arg/ 1.0d00, 10.0d00, 20.0d00, 30.0d00, 40.0d00, 50.0d00, 60.0d00, &
-         70.0d00, 80.0d00, 90.0d00, 100.0d00, 110.0d00/
+      data arg/ 1.0_real64, 10.0_real64, 20.0_real64, 30.0_real64, 40.0_real64, 50.0_real64, 60.0_real64, &
+         70.0_real64, 80.0_real64, 90.0_real64, 100.0_real64, 110.0_real64/
 !
 !----------------------------------------------------------------------*
 !
 !   Convergence criterion for interpolation
 !
-      data accy/ 1.0d-03/
+      data accy/ 1.0e-3_real64/
 !
 !   Interpolate or issue error message as appropriate
 !

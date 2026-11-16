@@ -17,7 +17,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use memory_man
       use grid_c
       use orb_c
@@ -27,7 +26,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use openfl_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

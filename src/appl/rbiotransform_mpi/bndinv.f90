@@ -4,6 +4,7 @@
 !     ------------------------------------------------------------------
 !
       subroutine bndinv(a, el, n, determ, epsil, itest, nsize)
+      use, intrinsic :: iso_fortran_env, only: real32
 !
 !       DOUBLE PRECISION MATRIX INVERSION SUBROUTINE
 !       FROM "DLYTAP".
@@ -17,23 +18,23 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer , intent(in) :: n
       integer , intent(out) :: itest
       integer , intent(in) :: nsize
-      real(double) , intent(out) :: determ
-      real(double) , intent(in) :: epsil
-      real(double) , intent(inout) :: a(nsize,nsize)
-      real(double) , intent(inout) :: el(nsize,nsize)
+      real(real64) , intent(out) :: determ
+      real(real64) , intent(in) :: epsil
+      real(real64) , intent(inout) :: a(nsize,nsize)
+      real(real64) , intent(inout) :: el(nsize,nsize)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: isl2, k000fx, indsnl, i, j, n1, m, k, j1, i1, ks
-      real(double) :: d, c, s, deterp, f, e, epsilp, rat
+      real(real64) :: d, c, s, deterp, f, e, epsilp, rat
 !-----------------------------------------------
       if (n < 2) go to 140
       isl2 = 0
@@ -46,8 +47,8 @@
 !
 !       SET EL = IDENTITY MATRIX
       do i = 1, n
-         el(i,:n) = 0.0d0
-         el(i,i) = 1.0d0
+         el(i,:n) = 0.0_real64
+         el(i,i) = 1.0_real64
       end do
 !
 !       TRIANGULARIZE A, FORM EL
@@ -56,7 +57,7 @@
       m = 2
       do j = 1, n1
          do i = m, n
-            if (a(i,j) == 0.0d0) cycle
+            if (a(i,j) == 0.0_real64) cycle
             d = dsqrt(a(j,j)*a(j,j)+a(i,j)*a(i,j))
             c = a(j,j)/d
             s = a(i,j)/d
@@ -94,7 +95,7 @@
          e = a(i,i)
       end do
       epsilp = epsil
-      if (epsilp <= 0) epsilp = 1.0e-8
+      if (epsilp <= 0) epsilp = 1.0e-8_real32
       rat = e/f
       if (abs(rat) < epsilp) go to 130
 !
@@ -113,10 +114,10 @@
             endif
             select case (k000fx)
             case default
-               a(i,j) = 1.0d0/a(i,i)
+               a(i,j) = 1.0_real64/a(i,i)
             case (2)
                ks = i + 1
-               d = 0.0d0
+               d = 0.0_real64
                d = sum(a(i,ks:j)*a(ks:j,j))
                a(i,j) = -d/a(i,i)
             end select
@@ -135,7 +136,7 @@
       m = 1
       do i = 1, n
          do j = 1, n
-            d = 0.0d0
+            d = 0.0_real64
             d = sum(a(i,m:n)*el(m:n,j))
             el(i,j) = d
          end do

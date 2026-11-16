@@ -16,14 +16,14 @@
 !-----------------------------------------------
       use parameter_def, only: max_orbitals
       use orb_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in)           :: ncore
       integer, intent(out)          :: ierr
       character(len=256), intent(in) :: record
-      integer, dimension(max_orbitals), intent(out) :: ioccs
+      integer, intent(out) :: ioccs(max_orbitals)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -31,7 +31,7 @@
          iocci,nkji
       character(len=2) :: symi
       character(len=5) :: form
-      character(len=1), dimension(3) :: cnum = (/'1', '2', '3'/)
+      character(len=1), parameter :: cnum(3) = (/'1', '2', '3'/)
       character :: reci
 !-----------------------------------------------
 !

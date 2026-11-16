@@ -1,12 +1,12 @@
 module input_io
     use, intrinsic :: iso_fortran_env, only: error_unit
-    implicit none
+    implicit none (type, external)
     private
     public :: fail_input_io
 
     abstract interface
         subroutine abort_input()
-            implicit none
+            implicit none (type, external)
         end subroutine abort_input
     end interface
 

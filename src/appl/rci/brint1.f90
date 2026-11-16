@@ -12,19 +12,19 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use bilst_c
       use orb_c,           only: orbital_count
       use kkstartbreit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: ia, ib, ic, id, k
-      real(double), intent(out) :: tegral
+      real(real64), intent(out) :: tegral
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

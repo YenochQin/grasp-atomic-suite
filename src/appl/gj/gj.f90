@@ -8,7 +8,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use default_c
       use iounit_c
       use memory_man
@@ -26,13 +26,13 @@
       use setmc_i
       use setout_gj_i
       use factt_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: k, nci, ncore_not_used
       logical :: yes
-      real(double), dimension(:), pointer :: gjc_diag, dgjc_diag
+      real(real64), pointer :: gjc_diag(:), dgjc_diag(:)
       character :: name*24
 !-----------------------------------------------
 !

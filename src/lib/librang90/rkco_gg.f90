@@ -22,7 +22,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-!      USE vast_kind_param, ONLY:  DOUBLE
       use m_c
       use orb_c
       use dumx_c
@@ -41,7 +40,7 @@
       use el4_i
       use el5_i
       use cord_i, only: cord_callback => cord
-      implicit none
+      implicit none (type, external)
       procedure(cord_callback) :: coefficient_consumer
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

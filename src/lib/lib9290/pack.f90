@@ -25,15 +25,15 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  byte
+      use, intrinsic :: iso_fortran_env, only: int8
       use iounit_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: iunpkd
       integer, intent(in) :: isubsh
-      integer(byte), dimension(*), intent(inout) :: ipackd
+      integer(int8), intent(inout) :: ipackd(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

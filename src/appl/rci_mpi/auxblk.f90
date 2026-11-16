@@ -7,7 +7,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals
       use decide_c
       use def_c
@@ -26,12 +26,12 @@
 !-----------------------------------------------
       use ncharg_i
       use vacpol_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: j2max
-      real(double), intent(out) :: atwinv
+      real(real64), intent(out) :: atwinv
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -90,8 +90,8 @@
 !
 !   Initialisations for nuclear translational energy corrections
 !
-      if (emn > 0.d0) then
-         atwinv = 1.d0/emn
+      if (emn > 0._real64) then
+         atwinv = 1._real64/emn
          if (lnms) then
             frstki = .true.
             nkei = 0

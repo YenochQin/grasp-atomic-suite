@@ -25,14 +25,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  byte
       use parameter_def,   only:  max_orbitals
       use mpi_c
       use orb_c,           only: csf_count, csf_subshell_occupations
       use stat_c,          only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
 
       use lodcsh2_i, only: lodcsh2
-      implicit none
+      implicit none (type, external)
       integer       :: nfile, ncore, jblock
       integer :: mpix_int1
 

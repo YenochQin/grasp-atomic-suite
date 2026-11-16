@@ -21,7 +21,7 @@
 !-----------------------------------------------
       use memory_man
       use buffer_c,       only: angular_coefficient_labels, angular_coefficients, angular_buffer_capacity
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

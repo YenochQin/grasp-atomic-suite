@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use memory_man
       use def_c
@@ -24,7 +24,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -33,8 +33,8 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: j, i, k, nwin, ios, npyff, nakyff, myff, jj
-      real(double) :: con, fkk, eyff, pzy
-      real(double), dimension(:), pointer :: pa, qa, ra
+      real(real64) :: con, fkk, eyff, pzy
+      real(real64), pointer :: pa(:), qa(:), ra(:)
       character :: g92rwf*6
 !-----------------------------------------------
 !
@@ -64,10 +64,10 @@
       con = con*con
 !
       do j = 1, nwff
-         pfff(:max_radial_points,j) = 0.0d00
-         qfff(:max_radial_points,j) = 0.0d00
+         pfff(:max_radial_points,j) = 0.0_real64
+         qfff(:max_radial_points,j) = 0.0_real64
 !
-         eff(j) = -1.0d00
+         eff(j) = -1.0_real64
 !
          k = abs(nakff(j))
          if (nuclear_model_parameter_count > 0) then
@@ -106,7 +106,7 @@
          read (69) (ra(i),i=1,myff)
 
          do j = 1, nwff
-            if (.not.(eff(j)<0.0d00 .and. npyff==npff(j) .and. nakyff==nakff(j)&
+            if (.not.(eff(j)<0.0_real64 .and. npyff==npff(j) .and. nakyff==nakff(j)&
                )) cycle
             pzff(j) = pzy
             eff(j) = eyff

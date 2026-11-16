@@ -33,7 +33,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: radial_workspace_capacity
       use cnc_c,           only: cnc5c
       use def_c,           only: accy
@@ -45,13 +45,13 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: k
-      integer  :: i
-      integer  :: j
+      integer, intent(in) :: i
+      integer, intent(in) :: j
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -61,11 +61,12 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ii, mtpp1, mtpp3, mtpp4, kk, np4
-      real(double), dimension(radial_workspace_capacity) :: rhop
-      real(double), dimension(radial_workspace_capacity,klimit) :: rttk, rttkm, rttk1, rttkm1
-      real(double), dimension(radial_workspace_capacity) :: rm, wk, temp
-      real(double) :: sum, rtmp, zklim, dif
-      logical, dimension(0:klimit) :: kcalc
+      real(real64) :: rhop(radial_workspace_capacity)
+      real(real64) :: rttk(radial_workspace_capacity, klimit), rttkm(radial_workspace_capacity, klimit), &
+         rttk1(radial_workspace_capacity, klimit), rttkm1(radial_workspace_capacity, klimit)
+      real(real64) :: rm(radial_workspace_capacity), wk(radial_workspace_capacity), temp(radial_workspace_capacity)
+      real(real64) :: sum, rtmp, zklim, dif
+      logical :: kcalc(0:klimit)
 
       save kcalc, rttk, rttkm, rttk1, rttkm1, rm
 !-----------------------------------------------
@@ -83,12 +84,12 @@
          endif
          if (k > 0) then
             rttk(2:radial_point_count,k) = radial_grid(2:radial_point_count)**k
-            rttkm(2:radial_point_count,k) = 1.d0/rttk(2:radial_point_count,k)
+            rttkm(2:radial_point_count,k) = 1._real64/rttk(2:radial_point_count,k)
             rttk1(2:radial_point_count,k) = rttk(2:radial_point_count,k)*radial_grid(2:radial_point_count)
-            rttkm1(2:radial_point_count,k) = 1.d0/rttk1(2:radial_point_count,k)
-            rm(2:radial_point_count) = 1.d0/radial_grid(2:radial_point_count)
+            rttkm1(2:radial_point_count,k) = 1._real64/rttk1(2:radial_point_count,k)
+            rm(2:radial_point_count) = 1._real64/radial_grid(2:radial_point_count)
          else
-            rm(2:radial_point_count) = 1.d0/radial_grid(2:radial_point_count)
+            rm(2:radial_point_count) = 1._real64/radial_grid(2:radial_point_count)
          endif
       endif
 !
@@ -111,7 +112,7 @@
 !
 !   Fill array TEMP with R**K * RHOP
 !
-      temp(1) = 0.0d00
+      temp(1) = 0.0_real64
       if (k == 0) then
          temp(2:mtp) = rhop(2:mtp)
       else
@@ -120,15 +121,15 @@
 !
 !   Set an additional four points to zero
 !
-      temp(mtpp1:mtpp4) = 0.0d00
+      temp(mtpp1:mtpp4) = 0.0_real64
 !
 !                                     K
 !   Compute the first few values of  R  * ZK  using semi-open
 !   Newton-Cotes formulae
 !
-      zk(1) = 0.0d00
+      zk(1) = 0.0_real64
       do ii = 2, 4
-         sum = 0.0d00
+         sum = 0.0_real64
          do kk = 2, 5
             sum = sum + cnc5c(kk,ii)*temp(kk)
          end do
@@ -155,9 +156,9 @@
       if (k == 0) then
 !
          if (i == j) then
-            zklim = 1.0d00
+            zklim = 1.0_real64
          else
-            zklim = 0.0d00
+            zklim = 0.0_real64
          endif
 !
          do kk = mtpp3, mtp, -1
@@ -190,12 +191,12 @@
 !   Start array WK / R**(K+1)
 !
       np4 = radial_point_count + 4
-      wk(np4:mtpp1:(-1)) = 0.0d00
+      wk(np4:mtpp1:(-1)) = 0.0_real64
 !
 !   Fill array TEMP with RHOP / R**(K+1) ; set TEMP(1) = 0
 !   to avoid 0/0 case
 !
-      temp(1) = 0.0d00
+      temp(1) = 0.0_real64
       if (k == 0) then
          temp(2:mtp) = rhop(2:mtp)*rm(2:mtp)
       else
@@ -208,7 +209,7 @@
          wk(ii) = wk(ii+4) + c1*(temp(ii)+temp(ii+4)) + c2*(temp(ii+1)+temp(ii+&
             3)) + c3*temp(ii+2)
       end do
-      wk(1) = 0.0d00
+      wk(1) = 0.0_real64
 !
 !   Compute WK
 !
@@ -220,7 +221,7 @@
 !
 !   Assemble solution
 !
-      yk(1) = 0.0d00
+      yk(1) = 0.0_real64
       yk(2:radial_point_count) = zk(2:radial_point_count) + wk(2:radial_point_count)
 !
       return

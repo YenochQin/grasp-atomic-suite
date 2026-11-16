@@ -23,7 +23,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, tenth, half, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -32,20 +32,20 @@
       use c0t5s_i
       use rmeajj_i
       use wap1_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)               :: k1
-      integer,      intent(in), dimension(7) :: ik1, ik2, id1, id2
-      real(double), intent(in)               :: qm1, qm2, qm3, qm4
-      real(double), intent(in), dimension(3) :: bk1, bk2, bd1, bd2
-      real(double), intent(out)              :: ww
+      integer,      intent(in) :: ik1(7), ik2(7), id1(7), id2(7)
+      real(real64), intent(in)               :: qm1, qm2, qm3, qm4
+      real(real64), intent(in) :: bk1(3), bk2(3), bd1(3), bd2(3)
+      real(real64), intent(out)              :: ww
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: iqmm1, iqmm2, iqmm3, iqmm4, iqmm23, kk1
-      real(double) :: a1, s, bk, wa
+      real(real64) :: a1, s, bk, wa
 !-----------------------------------------------
       ww=zero
       if(ik1(3) > 9) then

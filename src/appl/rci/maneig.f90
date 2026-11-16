@@ -46,7 +46,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double, long
+      use, intrinsic :: iso_fortran_env, only: real64, int64
       use memory_man
       use eigv_c
       use fposition_c
@@ -73,7 +73,7 @@
       use ispar_i
       use suite_linear_algebra, only: dcopy, dspevx, dswap
       use suite_linear_algebra, only: dlamch
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !  E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -94,18 +94,18 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer(long) :: nstore
+      integer(int64) :: nstore
       integer :: myid, nprocs, nrows, i, ndense, ncfdum, iccutdum, myiddum, &
          nprocsdum, iofset, nelc, ir, nvecmn, nvex, m, info, loc, nbrkev,   &
          imv, ndense_l, lim, lwork, liwork, maxitr, mblock, nend, &
          ilow, ihigh, niv, nloops, nmv, ierr, j, ia
-      real(double) :: elsto,  dummy, &
+      real(real64) :: elsto,  dummy, &
           diatmp, crite, critc, critr, ortho, dmungo, amax, wa, abstol
 ! GG          DIATMP, CRITE, CRITC, CRITR, ORTHO, DMUNGO, AMAX, WA
       logical :: hiend, ldisc, sparse
       character(len=8) :: cnum
-      real(double), dimension(:), pointer :: w, z, work, diag
-      integer, dimension(:), pointer :: iwork, ifail, jwork
+      real(real64), pointer :: w(:), z(:), work(:), diag(:)
+      integer, pointer :: iwork(:), ifail(:), jwork(:)
 !-----------------------------------------------------------------------
       abstol = 2*dlamch('S')
       myid = 0
@@ -132,8 +132,8 @@
 
          call alloc (shifted_eigenvalues, 1,'EVAL', 'MANEIG' )
          call alloc (csf_mixing_coefficients, 1, 'EVECO', 'MANEIG')
-         shifted_eigenvalues(1) = 0.d0
-         csf_mixing_coefficients(1) = 1.d0
+         shifted_eigenvalues(1) = 0._real64
+         csf_mixing_coefficients(1) = 1._real64
 
          ! Still read through the .res file
 !GG
@@ -171,7 +171,7 @@
 !   and initialize emt
 
             call alloc (hamiltonian_values, ndense, 'EMT', 'MANEIG')
-            call dinit (ndense, 0.0d00, hamiltonian_values, 1)
+            call dinit (ndense, 0.0_real64, hamiltonian_values, 1)
 
 !   Read the matrix into position from the disc file; it's already
 !   been properly positioned.
@@ -349,7 +349,7 @@
                   end do
 
                   call alloc (hamiltonian_values, ndense_l, 'EMT', 'MANEIG')
-                  call dinit (ndense_l, 0.0d00, hamiltonian_values, 1)
+                  call dinit (ndense_l, 0.0_real64, hamiltonian_values, 1)
                   call alloc (work, csf_count, 'WORK', 'MANEIG')
                   call alloc (matrix_partner_indices, csf_count, 'IROW', 'MANEIG')
 
@@ -393,10 +393,10 @@
             liwork = 6*lim + nvecmx
             call alloc (iwork, liwork, 'IWORK', 'MANEIG')
 !*changed by Misha 02/12/97
-            crite = 1.0d-17
-            critc = 1.0d-09
-            critr = 1.0d-09
-            ortho = max(1d-9,critr)
+            crite = 1.0e-17_real64
+            critc = 1.0e-9_real64
+            critr = 1.0e-9_real64
+            ortho = max(1e-9_real64,critr)
 ! end of changes
 
 !            maxitr = MAX (nvecmx*100, ncf/10)
@@ -407,7 +407,7 @@
             call alloc (shifted_eigenvalues, nvecmx, 'EVAL', 'MANEIG')
             call alloc (csf_mixing_coefficients, csf_count*nvecmx, 'EVEC', 'MANEIG')
 
-            dmungo = 10.d99
+            dmungo = 10.e99_real64
             call dinit (nvecmx, dmungo, shifted_eigenvalues, 1)
 
 !   Compute the eigenpairs in each block
@@ -536,7 +536,7 @@
 
          iofset = (j - 1)*csf_count
 
-         amax = 0.d0
+         amax = 0._real64
          do i = 1, csf_count
             wa = abs(csf_mixing_coefficients(i+iofset))
             if (wa <= amax) cycle
@@ -551,7 +551,7 @@
 
 !          Change sign of eigenvactor if dominant component is negative
 
-         if (csf_mixing_coefficients(ia+iofset) >= 0.d0) cycle
+         if (csf_mixing_coefficients(ia+iofset) >= 0._real64) cycle
          csf_mixing_coefficients(1+iofset:csf_count+iofset) = -csf_mixing_coefficients(1+iofset:csf_count+iofset)
       end do
 

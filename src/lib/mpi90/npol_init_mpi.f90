@@ -2,25 +2,25 @@
 module npol_mpi
     use mpi, only: mpi_comm_rank, mpi_bcast, mpi_allreduce, mpi_abort, &
         mpi_integer, mpi_double_precision, mpi_logical, mpi_character, mpi_min
-    use vast_kind_param, only: double
     use parameter_def, only: max_radial_points
     use npol_c
     use npol_input, only: npol_read_config, npol_validate_config
     use npol_kernel, only: npol_check_grid, npol_build_grid, npol_compose
     use npol_initialization, only: npol_write_summary, npol_summary_path
-    implicit none
+    implicit none (type, external)
     private
     public :: npol_init_mpi, npol_abort_mpi
 contains
     subroutine npol_init_mpi(path, z, n, r, zz, comm, status, message)
+        use, intrinsic :: iso_fortran_env, only: real64
         character(*), intent(in) :: path
-        real(double), intent(in) :: z, r(:)
+        real(real64), intent(in) :: z, r(:)
         integer, intent(in) :: n, comm
-        real(double), intent(inout) :: zz(:)
+        real(real64), intent(inout) :: zz(:)
         integer, intent(out) :: status
         character(*), intent(out) :: message
         type(npol_config) :: cfg
-        real(double) :: a(max_radial_points), b(max_radial_points), v(max_radial_points), candidate(max_radial_points)
+        real(real64) :: a(max_radial_points), b(max_radial_points), v(max_radial_points), candidate(max_radial_points)
         integer :: rank, ierr, root_n
         ! Fixed-size wire message, independent of caller's character length.
         character(npol_message_len) :: detail

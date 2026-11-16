@@ -7,12 +7,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -23,9 +23,9 @@
 !-----------------------------------------------
       integer :: ios, nelec, ncftot, nw, nvectot, nvecsiz, nblock, iblk, ib, &
          ncf, nvec, iatjp, iaspa, i, j
-      real(double),dimension(:), pointer :: eval, evec
-      integer,dimension(:), pointer :: ivec
-      real(double) :: eav
+      real(real64), pointer :: eval(:), evec(:)
+      integer, pointer :: ivec(:)
+      real(real64) :: eav
       character :: g92mix*6
 !-----------------------------------------------
 

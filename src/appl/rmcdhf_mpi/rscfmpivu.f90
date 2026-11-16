@@ -68,7 +68,7 @@
       use scfmpi_i
       use mpiu_i, only: startmpi2
       use mpiu_i, only: stopmpi2
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -78,7 +78,7 @@
 !-----------------------------------------------
       integer :: ncore1, ncount1, lenperm, lentmp
       logical :: eol, yes
-      character, dimension(nblk0) :: idblk*8
+      character :: idblk(nblk0)*8
 !      CHARACTER (LEN = *) :: host
       character (len = 3) :: idstring
       character (len = 128) :: startdir,permdir,tmpdir,file_rcsl,file1,file2

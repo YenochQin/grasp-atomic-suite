@@ -25,7 +25,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix, max_orbitals
       use memory_man
       use def_c
@@ -56,7 +56,7 @@
 !      USE itjpo_I
       use citrag_i, only: citrag
       use getmix_i, only: getmix
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -68,21 +68,21 @@
 !-----------------------------------------------
 !   Set the encoding key and its square
       integer, parameter :: key = orbital_index_radix, keysq = key*key, nvmax=100
-      real(double), parameter :: cutoff = 1.0d-10
+      real(real64), parameter :: cutoff = 1.0e-10_real64
       integer, parameter :: nf = 200
 
       logical ::  f0int,lincr,restrt,comp,avail
       character(len=20) :: cnum
       character(len=2)  :: ck
 !
-      real(double), dimension(max_orbitals) :: tshell
-      real(double), dimension(nvmax) ::sc
-      integer, dimension(max_orbitals) :: nakinv
-      integer, dimension(nlmax) :: llistt, nshl, ninl
-      real(double), dimension(20*nlmax*nlmax) :: cirot
-      real(double), dimension(10000) :: evsc
+      real(real64) :: tshell(max_orbitals)
+      real(real64) ::sc(nvmax)
+      integer :: nakinv(max_orbitals)
+      integer :: llistt(nlmax), nshl(nlmax), ninl(nlmax)
+      real(real64) :: cirot(20*nlmax*nlmax)
+      real(real64) :: evsc(10000)
 !
-      real(double), dimension(:), pointer :: scr, ciout
+      real(real64), pointer :: scr(:), ciout(:)
       integer :: ntest, ntestl, i, j, iblk, ncfd, nwd, kamaxd,  &
                  l, iioff, nvecsize
 !

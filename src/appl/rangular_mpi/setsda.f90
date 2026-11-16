@@ -32,7 +32,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use outsdampi_i, only: outsdampi
-      implicit none
+      implicit none (type, external)
       procedure(outsdampi) :: write_coefficient_callback
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -47,8 +47,8 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: mb, iend, iclast, i, ic, npos, ierr
-      integer, dimension(:), pointer :: iendc
-      integer, dimension(:), pointer :: irow
+      integer, pointer :: iendc(:)
+      integer, pointer :: irow(:)
       character :: mcplab*3
 !-----------------------------------------------
 

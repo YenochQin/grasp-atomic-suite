@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function rint_sms2 (i, j)
+      real(real64) function rint_sms2 (i, j)
 !                                                                      *
 !   The value of RINT_SMS2 is an approximation to:                     *
 !                                                                      *
@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use grid_c
       use tatb_c
       use wave_c
@@ -31,7 +31,7 @@
       use sigma_1_i
       use sigma_2_i
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -40,7 +40,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: l
-      real(double) :: result, apart1, apart2
+      real(real64) :: result, apart1, apart2
 !-----------------------------------------------
 !
 !   Tabulate integrand as required for SUBROUTINE QUAD
@@ -51,7 +51,7 @@
 !
       call sigma_1(2,i,j,apart1)
       call sigma_2(2,i,j,apart2)
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       do 1 l = 2,mtp
 !HFS        TA(L) = (R(L)**K)*(PF(L,I)*QF(L,J)+QF(L,I)*PF(L,J))*RP(L)
         ta(l) =  radial_grid_derivative(l)*(apart1*radial_small_components(l,i)*radial_large_components(l,j) &

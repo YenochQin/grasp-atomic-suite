@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use grid_c
       use npar_c
@@ -31,12 +31,12 @@
 !-----------------------------------------------
       use funk_i
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, k
-      real(double) :: epsi, twocv, factor, ri, x, tbi, rk, xk, xi, xm, xp
+      real(real64) :: epsi, twocv, factor, ri, x, tbi, rk, xk, xi, xm, xp
 !-----------------------------------------------
 !
 !   Overall initialization
@@ -47,9 +47,9 @@
 !   Potential for a point nucleus: equation (1)
 !   (this is also the asymptotoc form for a finite nucleus)
 !
-      factor = -(2.0d00*nuclear_charge)/(3.0d00*pi*vacuum_speed_of_light_au)
+      factor = -(2.0_real64*nuclear_charge)/(3.0_real64*pi*vacuum_speed_of_light_au)
 !
-      tb(1) = 0.0d00
+      tb(1) = 0.0_real64
 !
       i = 1
     1 continue
@@ -63,18 +63,18 @@
          tb(i) = tbi
          if (i < radial_point_count) go to 1
       else
-         tb(i:radial_point_count) = 0.0d00
+         tb(i:radial_point_count) = 0.0_real64
       endif
 !
 !   Potential for a finite nucleus: equation (4)
 !
       if (nuclear_model_parameter_count == 2) then
 !
-         factor = -2.0d00/(3.0d00*vacuum_speed_of_light_au**2)
+         factor = -2.0_real64/(3.0_real64*vacuum_speed_of_light_au**2)
 !
 !   Set up integrand
 !
-         tb(1) = 0.0d00
+         tb(1) = 0.0_real64
 !
          k = 1
     3    continue
@@ -83,7 +83,7 @@
          rk = radial_grid(k)
          xk = twocv*rk
 !
-         ta(1) = 0.0d00
+         ta(1) = 0.0_real64
          do i = 2, mtp
             xi = twocv*radial_grid(i)
             xm = dabs(xk - xi)
@@ -98,7 +98,7 @@
 !   Get out of loop if the asymptotic value has been attained
 !
          if (dabs(x) >= epsi) then
-            if (dabs((x - tb(k))/x) > 1.0d-05) then
+            if (dabs((x - tb(k))/x) > 1.0e-5_real64) then
                tb(k) = x
                if (k < radial_point_count) go to 3
             endif

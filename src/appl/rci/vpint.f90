@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-     use vast_kind_param, only: double
+     use, intrinsic :: iso_fortran_env, only: real64
      use parameter_def,   only: orbital_index_radix
      use memory_man
      use grid_c
@@ -24,12 +24,12 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
      use vpintf_i
-     implicit none
+     implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(inout) :: ia, ib
-      real(double), intent(out) :: tegral
+      real(real64), intent(out) :: tegral
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------

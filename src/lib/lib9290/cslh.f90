@@ -18,7 +18,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use memory_man
       use hblock_c
       use def_c
@@ -29,14 +28,14 @@
 !-----------------------------------------------
       use setcsll_i
       use lodcsh_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ncore
-      integer  :: nblkin
-      character  :: name*(*)
-      character  :: idblk(*)*8
+      integer, intent(out) :: ncore
+      integer, intent(in) :: nblkin
+      character(len=*), intent(inout) :: name
+      character(len=8), intent(out) :: idblk(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

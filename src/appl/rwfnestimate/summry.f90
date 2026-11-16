@@ -18,7 +18,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use grid_c
       use orb_c
       use wave_c
@@ -27,7 +26,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use rint_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

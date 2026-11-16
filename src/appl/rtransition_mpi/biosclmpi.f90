@@ -22,7 +22,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use default_c
       use debug_c, only: ldbpr, cutoff
 !-----------------------------------------------
@@ -45,14 +44,14 @@
       use mpiu_i, only: stopmpi2
       use setiso_i, only: setiso
       use sys_chdir_i, only: sys_chdir
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ntest,ncount1,ilbl,lenperm,lentmp, iii
       logical :: yes
-      character, dimension(2) :: name*24
-      character, dimension(2) :: fullname*128
+      character :: name(2)*24
+      character :: fullname(2)*128
       character(len=3)  ::  idstring
       character(len=128) :: isofile,startdir,permdir,tmpdir
 !-----------------------------------------------

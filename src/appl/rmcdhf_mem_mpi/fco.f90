@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function fco (k, ir, ia, ib)
+      real(real64) function fco (k, ir, ia, ib)
 !                                                                      *
 !   This routine evaluates a coefficient                               *
 !                                                                      *
@@ -32,7 +32,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use debug_c
       use orb_c, iiqa=>csf_subshell_occupations
 !-----------------------------------------------
@@ -40,11 +40,11 @@
 !-----------------------------------------------
       use clrx_i
       use iq_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: k
+      integer, intent(in) :: k
       integer  :: ir
       integer , intent(in) :: ia
       integer , intent(in) :: ib
@@ -52,7 +52,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: iqa, iqf, kappa
-      real(double) :: fac
+      real(real64) :: fac
 !-----------------------------------------------
 !
       if (ia == ib) then
@@ -67,9 +67,9 @@
             if (iqa == iqf) then
                kappa = orbital_kappa(ia)
                fac = clrx(kappa,k,kappa)*dble(iqa)
-               fco = -0.5d0*fac*fac
+               fco = -0.5_real64*fac*fac
             else
-               fco = 0.d0
+               fco = 0._real64
             endif
          endif
 !
@@ -80,7 +80,7 @@
 !            FCO = DBLE(IBITS(IIQA((IA - 1)/4 + 1,IR),8*MOD(IA - 1,4),8)*IBITS(&
 !               IIQA((IB - 1)/4 + 1,IR),8*MOD(IB - 1,4),8))
          else
-            fco = 0.d0
+            fco = 0._real64
          endif
 !
       endif

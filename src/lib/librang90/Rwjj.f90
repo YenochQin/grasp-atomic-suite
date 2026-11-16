@@ -11,7 +11,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c
       use ribojj_c
 !-----------------------------------------------
@@ -21,12 +21,12 @@
       use rmew3jj_i
       use rmew5jj_i
       use rmew7jj_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)  :: j, j1, j2, k1, k2
-      real(double), intent(out) :: coef
+      real(real64), intent(out) :: coef
 !-----------------------------------------------
       if(j == 1) then
          call rmew1jj(j1,j2,k1,k2,coef)

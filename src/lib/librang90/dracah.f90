@@ -16,9 +16,9 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use facts_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -28,7 +28,7 @@
       integer , intent(in) :: l
       integer , intent(in) :: m
       integer , intent(in) :: n
-      real(double) , intent(out) :: rac
+      real(real64) , intent(out) :: rac
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -44,7 +44,7 @@
       if (2*max(max(j,l),n) - j4>0 .or. mod(j4,2)/=0) go to 2
       go to 1
     2 continue
-      rac = 0.0d00
+      rac = 0.0_real64
       return
 !
     1 continue
@@ -57,7 +57,7 @@
       j7 = (j + k + m + n)/2
       numin = max(max(max(j1,j2),j3),j4) + 1
       numax = min(min(j5,j6),j7) + 1
-      rac = 1.0d00
+      rac = 1.0_real64
       icount = 0
 !
       if (numin /= numax) then
@@ -65,19 +65,19 @@
 !
          do kk = numin, numax
             ki = numax - icount
-            rac = 1.0d00 - rac*dble(ki*(j5 - ki + 2)*(j6 - ki + 2)*(j7 - ki + 2&
+            rac = 1.0_real64 - rac*dble(ki*(j5 - ki + 2)*(j6 - ki + 2)*(j7 - ki + 2&
                ))/dble((ki - 1 - j1)*(ki - 1 - j2)*(ki - 1 - j3)*(ki - 1 - j4))
             icount = icount + 1
          end do
 !
          numin = numin - 1
       endif
-      rac = rac*(-1.0d00)**(j5 + numin + 1)*exp((gam(numin+1)-gam(numin-j1)-gam&
+      rac = rac*(-1.0_real64)**(j5 + numin + 1)*exp((gam(numin+1)-gam(numin-j1)-gam&
          (numin-j2)-gam(numin-j3)-gam(numin-j4)-gam(j5+2-numin)-gam(j6+2-numin)&
          -gam(j7+2-numin))+(gam(j1+1-i)+gam(j1+1-j)+gam(j1+1-m)-gam(j1+2)+gam(&
          j2+1-k)+gam(j2+1-l)+gam(j2+1-m)-gam(j2+2)+gam(j3+1-i)+gam(j3+1-k)+gam(&
          j3+1-n)-gam(j3+2)+gam(j4+1-j)+gam(j4+1-l)+gam(j4+1-n)-gam(j4+2))*&
-         0.5d00)
+         0.5_real64)
 !
       return
       end subroutine dracah

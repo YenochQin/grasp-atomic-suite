@@ -36,7 +36,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use parameter_def,   only: max_orbitals
       use debug_c
       use def_c
@@ -54,7 +53,7 @@
       use iq_i
       use jqs_i
       use jcup_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -65,14 +64,14 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       integer, parameter :: loadall = -119
-      character*7, parameter :: myname = 'LODCSH2'
+      character(len=7), parameter :: myname = 'LODCSH2'
       integer, parameter :: nw2 = 2*max_orbitals
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(max_orbitals) :: iocc
-      integer, dimension(nw2) :: iqsub
-      integer, dimension(max_orbitals) :: jx
+      integer :: iocc(max_orbitals)
+      integer :: iqsub(nw2)
+      integer :: jx(max_orbitals)
       integer :: ncorp1, nrec, ncf, npeel, i, j
       integer :: ios, ierr, loc, nqs, isparc, njx, ioc, ipty
       integer :: nqsn, njxn, npeeln, nopen, jlast, ilast, iocci

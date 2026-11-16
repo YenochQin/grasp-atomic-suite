@@ -22,7 +22,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
       use bilst_c
       use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
@@ -30,12 +30,12 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use brintf_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: ia, ib, ic, id, nu
-      real(double), intent(out) :: tegral
+      real(real64), intent(out) :: tegral
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------

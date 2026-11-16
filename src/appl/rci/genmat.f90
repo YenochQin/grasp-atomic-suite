@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use eigv_c
       use iccu_c
       use orb_c
@@ -32,28 +32,28 @@
 !-----------------------------------------------
       use posfile_i
       use setham_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: jblock
-      integer  :: myid
-      integer  :: nprocs
+      integer, intent(in) :: jblock
+      integer, intent(in) :: myid
+      integer, intent(in) :: nprocs
       integer, intent(out) :: irestart
-      real(double)  :: atwinv
-      real(double)  :: elsto
-      real(double), dimension(*) :: slf_en
+      real(real64)  :: atwinv
+      real(real64)  :: elsto
+      real(real64) :: slf_en(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: iread, ios, ncfdum, iccutdum, myiddum, nprocsdum, i, &
          ios2, nelc, ir, irowdum, ipos, nrows, j, icstrt
-      real(double) :: stoel, dum, eav0
+      real(real64) :: stoel, dum, eav0
 !-----------------------------------------------
 !
       stored_matrix_element_count = 0                      ! Counting continues in setham
-      hamiltonian_energy_shift    = 0.d0
-      elsto  = 0.d0
+      hamiltonian_energy_shift    = 0._real64
+      elsto  = 0._real64
 
 ! See how much had been done (Hamiltonian matrix)
 ! irestart is set;

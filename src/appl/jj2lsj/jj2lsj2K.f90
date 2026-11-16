@@ -37,7 +37,7 @@
       use starttime_i, only: starttime
       use stoptime_i, only: stoptime
       use setcon_i, only: setcon
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

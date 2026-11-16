@@ -9,19 +9,19 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !      DIMENSION IS(4),KAPS(4),S(12)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: nu
-      integer :: k
+      integer, intent(in) :: k
       integer, intent(in) :: ibr
       integer, intent(in) :: iex
       integer, intent(in) :: is(4)
       integer, intent(in) :: kaps(4)
-      real(double) , intent(inout) :: s(12)
+      real(real64) , intent(inout) :: s(12)
 !-----------------------------------------------
 !
       stop 'CXK: Error '

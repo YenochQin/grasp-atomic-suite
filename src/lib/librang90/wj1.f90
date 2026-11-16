@@ -23,7 +23,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, tenth, one, two, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -33,20 +33,20 @@
       use cle0sm_i
       use c1e1sm_i
       use rwjj_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)               :: k2
-      integer,      intent(in), dimension(7) :: ik, id
-      real(double), intent(in)               :: qm1, qm2
-      real(double), intent(in), dimension(3) :: bk, bd
-      real(double), intent(out)              :: wj
+      integer,      intent(in) :: ik(7), id(7)
+      real(real64), intent(in)               :: qm1, qm2
+      real(real64), intent(in) :: bk(3), bd(3)
+      real(real64), intent(out)              :: wj
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: k1, iq, iqm2
-      real(double) :: a, qq, w, wk1
+      real(real64) :: a, qq, w, wk1
 !-----------------------------------------------
       wj=zero
       if(id(3) == 9) then

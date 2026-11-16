@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine printals (inum_ii,inum_ff,asfa,asfb,i,j,omega,factor)
+      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !   This  routine  prints the basic oscillator strength  information   *
 !   for transitions between level I and level J in LSJ coupling.       *
@@ -14,7 +15,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use cuto_c
       use osc_c
@@ -23,32 +24,32 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: i, j, inum_ii, inum_ff
-      real(double), intent(in) :: asfa, asfb
-      real(double), intent(in) :: omega, factor
+      real(real64), intent(in) :: asfa, asfb
+      real(real64), intent(in) :: omega, factor
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !      INTEGER :: IPAR, JPAR, ISIGNA, ISIGNB
       character (len=1) :: im
-      real(double), dimension(10) :: dblfac
-      real(double) :: d,dd,ab,angs,angsa,ac,am,ams,sa,sb,oscc,oscb,  &
+      real(real64) :: dblfac(10)
+      real(real64) :: d,dd,ab,angs,angsa,ac,am,ams,sa,sb,oscc,oscb,  &
                       sigma,faau,stfac,dll1,omc,fosc,eng,ggfactor,   &
                       acsq,absq,oscm
 !
 !  *****  DBLFAC(I) = (2I+1)!!
 !
-      data dblfac/ 3.0000000000d00, 1.5000000000d01, 1.0500000000d02, &
-         9.4500000000d02, 1.0395000000d04, 1.3513500000d05, 2.0270250000d06, &
-         3.4459425000d07, 6.5472907500d08, 1.3749310575d10/
+      data dblfac/ 3.0000000000_real64, 1.5000000000e1_real64, 1.0500000000e2_real64, &
+         9.4500000000e2_real64, 1.0395000000e4_real64, 1.3513500000e5_real64, 2.0270250000e6_real64, &
+         3.4459425000e7_real64, 6.5472907500e8_real64, 1.3749310575e10_real64/
 !-----------------------------------------------
 !
       d    = dabs(rlev_ener_2(inum_ff) - rlev_ener_1(inum_ii))
-      if(dabs(d - dabs(omega)) > 0.00000001) then
+      if(dabs(d - dabs(omega)) > 0.00000001_real32) then
        print*, '                                                      '
        print*, ' INCORRECT INPUT, PROGRAM STOP!!!                     '
        print*, '                                                      '
@@ -68,12 +69,12 @@
        stop
       end if
       dd    = d*hartree_to_wavenumber_cm
-      angs  =  1.0d08 / dd
+      angs  =  1.0e8_real64 / dd
       angsa = angs
-      if(angs .gt. 2000.d0) then
-         sigma = (1.d8/angs)**2
-         angsa = angs/(1.d0 + 8342.13d-8 + 206030./(130.d+8 - sigma) &
-                       +15997./(38.9d+8 - sigma))
+      if(angs .gt. 2000._real64) then
+         sigma = (1.e8_real64/angs)**2
+         angsa = angs/(1._real64 + 8342.13e-8_real64 + 206030._real32/(130.e8_real64 - sigma) &
+                       +15997._real32/(38.9e8_real64 - sigma))
       end if
 !
 !   Evaluate statistical factors and constants
@@ -83,14 +84,14 @@
       stfac = stfac/dll1
 !
       omc = omega/vacuum_speed_of_light_au
-      faau = 2.0d00*omc*stfac/dble (iatjpoff(j))
+      faau = 2.0_real64*omc*stfac/dble (iatjpoff(j))
       fosc = vacuum_speed_of_light_au*stfac/omc
       eng = omega*factor
       if (ltc(1)) eng = factor/omega
 !
       ggfactor = vacuum_speed_of_light_au**(2*lk-2)*dble(lk)*dblfac(lk)**2/    &
-                 ((2.0d00 * dble(lk)+1.0d00)*            &
-                 (dble(lk)+1.0d00)*abs(omega)**(2*lk-1))
+                 ((2.0_real64 * dble(lk)+1.0_real64)*            &
+                 (dble(lk)+1.0_real64)*abs(omega)**(2*lk-1))
 !
 !   Calculate Einstein A and B coefficients and oscillator strengths
 !
@@ -120,14 +121,14 @@
 !
          if((abs(ac).ge.cutoff) .and. (abs(ab).ge.cutoff)) then
             im = 'E'
-            if (-1.d+9 < eng .and. eng .lt. -1.0d-2) then
+            if (-1.e9_real64 < eng .and. eng .lt. -1.0e-2_real64) then
                write (32,'(A1)')  ""
                write (32,'(A1)')  ""
-               if(dabs(rlev_ener_1(inum_ii)) .lt. 9999.5) then
+               if(dabs(rlev_ener_1(inum_ii)) .lt. 9999.5_real32) then
                   write(32,'(I4,F14.8,2X,A)')                      &
                   iatjpoii(i)-1,rlev_ener_1(inum_ii),              &
                   trim(string_csf1(inum_ii))
-               else if(dabs(rlev_ener_1(inum_ii)) .lt. 99999.5) then
+               else if(dabs(rlev_ener_1(inum_ii)) .lt. 99999.5_real32) then
                    write(32,'(I4,F14.7,2X,A)')                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
@@ -136,11 +137,11 @@
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                end if
-               if(dabs(rlev_ener_2(inum_ff)) .lt. 9999.5) then
+               if(dabs(rlev_ener_2(inum_ff)) .lt. 9999.5_real32) then
                   write(32,'(I4,F14.8,2X,A)')                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
-               else if(dabs(rlev_ener_2(inum_ff)) .lt. 99999.5) then
+               else if(dabs(rlev_ener_2(inum_ff)) .lt. 99999.5_real32) then
                   write(32,'(I4,F14.7,2X,A)')                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
@@ -153,14 +154,14 @@
                    im,lk,-sb,-oscb,-ab,                            &
                    dabs(dabs(sb)-dabs(sa))/max(dabs(sb),dabs(sa))
                write (32,39)  -sa,-oscc,-ac
-            else if ( 1.d+9 .gt. eng .and. eng .gt. 1.d-2) then
+            else if ( 1.e9_real64 .gt. eng .and. eng .gt. 1.e-2_real64) then
                write (32,'(A1)')  ""
                write (32,'(A1)')  ""
-               if(dabs(rlev_ener_2(inum_ff)) .lt. 9999.5) then
+               if(dabs(rlev_ener_2(inum_ff)) .lt. 9999.5_real32) then
                   write(32,'(I4,F14.8,2X,A)')                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
-               else if(dabs(rlev_ener_2(inum_ff)) .lt. 99999.5) then
+               else if(dabs(rlev_ener_2(inum_ff)) .lt. 99999.5_real32) then
                   write(32,'(I4,F14.7,2X,A)')                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
@@ -169,11 +170,11 @@
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                end if
-               if(dabs(rlev_ener_1(inum_ii)) .lt. 9999.5) then
+               if(dabs(rlev_ener_1(inum_ii)) .lt. 9999.5_real32) then
                   write(32,'(I4,F14.8,2X,A)')                      &
                   iatjpoii(i)-1,rlev_ener_1(inum_ii),              &
                   trim(string_csf1(inum_ii))
-               else if(dabs(rlev_ener_1(inum_ii)) .lt. 99999.5) then
+               else if(dabs(rlev_ener_1(inum_ii)) .lt. 99999.5_real32) then
                    write(32,'(I4,F14.7,2X,A)')                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
@@ -207,14 +208,14 @@
 !
          if (abs(am) .ge. cutoff) then
             im = 'M'
-            if (-1.d+9 < eng .and. eng .lt. -1.0d-2) then
+            if (-1.e9_real64 < eng .and. eng .lt. -1.0e-2_real64) then
                write (32,'(A1)')  ""
                write (32,'(A1)')  ""
-               if(dabs(rlev_ener_1(inum_ii)) .lt. 9999.5) then
+               if(dabs(rlev_ener_1(inum_ii)) .lt. 9999.5_real32) then
                   write(32,'(I4,F14.8,2X,A)')                      &
                   iatjpoii(i)-1,rlev_ener_1(inum_ii),              &
                   trim(string_csf1(inum_ii))
-               else if(dabs(rlev_ener_1(inum_ii)) .lt. 99999.5) then
+               else if(dabs(rlev_ener_1(inum_ii)) .lt. 99999.5_real32) then
                    write(32,'(I4,F14.7,2X,A)')                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
@@ -223,11 +224,11 @@
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                end if
-               if(dabs(rlev_ener_2(inum_ff)) .lt. 9999.5) then
+               if(dabs(rlev_ener_2(inum_ff)) .lt. 9999.5_real32) then
                   write(32,'(I4,F14.8,2X,A)')                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
-               else if(dabs(rlev_ener_2(inum_ff)) .lt. 99999.5) then
+               else if(dabs(rlev_ener_2(inum_ff)) .lt. 99999.5_real32) then
                   write(32,'(I4,F14.7,2X,A)')                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
@@ -237,14 +238,14 @@
                   trim(string_csf2(inum_ff))
                end if
                write (32,40) dd,angs,angsa,im,lk,-sa,-oscm,-am
-            else if ( 1.d+9 .gt. eng .and. eng .gt. 1.d-2) then
+            else if ( 1.e9_real64 .gt. eng .and. eng .gt. 1.e-2_real64) then
                write (32,'(A1)')  ""
                write (32,'(A1)')  ""
-               if(dabs(rlev_ener_2(inum_ff)) .lt. 9999.5) then
+               if(dabs(rlev_ener_2(inum_ff)) .lt. 9999.5_real32) then
                   write(32,'(I4,F14.8,2X,A)')                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
-               else if(dabs(rlev_ener_2(inum_ff)) .lt. 99999.5) then
+               else if(dabs(rlev_ener_2(inum_ff)) .lt. 99999.5_real32) then
                   write(32,'(I4,F14.7,2X,A)')                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
@@ -253,11 +254,11 @@
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                end if
-               if(dabs(rlev_ener_1(inum_ii)) .lt. 9999.5) then
+               if(dabs(rlev_ener_1(inum_ii)) .lt. 9999.5_real32) then
                   write(32,'(I4,F14.8,2X,A)')                      &
                   iatjpoii(i)-1,rlev_ener_1(inum_ii),              &
                   trim(string_csf1(inum_ii))
-               else if(dabs(rlev_ener_1(inum_ii)) .lt. 99999.5) then
+               else if(dabs(rlev_ener_1(inum_ii)) .lt. 99999.5_real32) then
                    write(32,'(I4,F14.7,2X,A)')                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))

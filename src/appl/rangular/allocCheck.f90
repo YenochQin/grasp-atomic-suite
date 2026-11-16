@@ -10,9 +10,9 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -21,8 +21,8 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double), pointer, dimension(:) :: pr
-      integer, pointer, dimension(:) :: pi
+      real(real64), pointer :: pr(:)
+      integer, pointer :: pi(:)
       integer :: error
 !-----------------------------------------------
       irez = 1

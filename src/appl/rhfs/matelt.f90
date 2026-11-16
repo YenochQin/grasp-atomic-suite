@@ -17,28 +17,28 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals
       use orb_c,           only: orbital_principal_n, orbital_kappa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use clrx_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: i1
-      integer  :: k
+      integer, intent(in) :: k
       integer, intent(in) :: i2
-      real(double), intent(out) :: apart
-      real(double), intent(out) :: gjpart
-      real(double), intent(out) :: dgjpart
+      real(real64), intent(out) :: apart
+      real(real64), intent(out) :: gjpart
+      real(real64), intent(out) :: dgjpart
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: kap1, kap2, l1, l2
-      real(double) :: fase, ovlfac
+      real(real64) :: fase, ovlfac
 !-----------------------------------------------
 !
 !
@@ -73,9 +73,9 @@
 !   Determine the phase factor
 !
          if (mod(kap1 + 1,2) == 0) then
-            fase = 1.0d00
+            fase = 1.0_real64
          else
-            fase = -1.0d00
+            fase = -1.0_real64
          endif
 !
 !   The other factor is \sqrt (2 j_2 + 1); since j = | \kappa | - 1/2,
@@ -91,7 +91,7 @@
             apart = (kap1 + orbital_kappa(i2))*clrx(kap1,k,kap2)*ovlfac
 !
             gjpart = apart
-            dgjpart = -(kap1 + orbital_kappa(i2)-1.0d00)*clrx(kap1,k,kap2)*ovlfac
+            dgjpart = -(kap1 + orbital_kappa(i2)-1.0_real64)*clrx(kap1,k,kap2)*ovlfac
          else
 !
 !   These are for the electric multipole moments
@@ -102,9 +102,9 @@
 !
       else
 !
-         apart = 0.0d00
-         gjpart = 0.0d00
-         dgjpart = 0.0d00
+         apart = 0.0_real64
+         gjpart = 0.0_real64
+         dgjpart = 0.0_real64
 !
       endif
 !

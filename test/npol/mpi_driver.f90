@@ -5,8 +5,9 @@ program npol_mpi_driver
     use npol_test_support
     use parameter_def, only: NNNP
     use suite_system, only: change_directory
-    implicit none
-    real(double) :: r(NNNP), zz(NNNP), coul(NNNP), reference(3), z
+    use, intrinsic :: iso_fortran_env, only: real64
+    implicit none (type, external)
+    real(real64) :: r(NNNP), zz(NNNP), coul(NNNP), reference(3), z
     integer :: rank, ierr, n, status, ios
     character(4096) :: root_path, directory
     character(32) :: mode
@@ -24,7 +25,7 @@ program npol_mpi_driver
     if (rank == 0) root_path = trim(directory)//'/input/npol.inp'
     n = 3
     r = 0
-    r(:3) = [0.0_double, 2.0_double, 4.0_double]
+    r(:3) = [0.0_real64, 2.0_real64, 4.0_real64]
     coul = 7
     zz = coul
     z = 2
@@ -32,8 +33,8 @@ program npol_mpi_driver
     if (mode == 'mismatch' .and. rank /= 0) n = 2
     if (mode == 'charge' .and. rank /= 0) z = 3
     if (mode == 'compose' .and. rank /= 0) then
-        r(2) = huge(1.0_double)
-        coul(2) = huge(1.0_double)
+        r(2) = huge(1.0_real64)
+        coul(2) = huge(1.0_real64)
         zz = coul
     end if
     call npol_init_mpi(trim(root_path), z, n, r, zz, MPI_COMM_WORLD, status, message)
@@ -59,9 +60,9 @@ program npol_mpi_driver
         call require(npol_settings%b1 == 2 .and. npol_settings%b2 == 2, 'cutoff broadcast')
         if (mode == 'ok') then
             call require(npol_settings%k1 == 16 .and. npol_settings%k2 == 128, 'strength broadcast')
-            call near(vnp_e1(2), -0.5_double, 'MPI E1 not divided by ranks')
-            call near(vnp_e2(2), -1.0_double, 'MPI E2 not divided by ranks')
-            call near(zz(2), 10.0_double, 'MPI full potential')
+            call near(vnp_e1(2), -0.5_real64, 'MPI E1 not divided by ranks')
+            call near(vnp_e2(2), -1.0_real64, 'MPI E2 not divided by ranks')
+            call near(zz(2), 10.0_real64, 'MPI full potential')
         else
             call require(npol_settings%k1 == 0 .and. npol_settings%k2 == 0, 'zero strength broadcast')
             call require(all(zz == coul), 'MPI zero exact copy')

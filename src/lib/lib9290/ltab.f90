@@ -16,18 +16,18 @@
 !   M o d u l e s
 !-----------------------------------------------
       use terms_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer, dimension(4), intent(in) :: is
-      integer, dimension(4), intent(inout) :: nqs
-      integer, dimension(4), intent(in) :: ks
-      integer, dimension(4), intent(inout) :: irows
+      integer, intent(in) :: is(4)
+      integer, intent(inout) :: nqs(4)
+      integer, intent(in) :: ks(4)
+      integer, intent(inout) :: irows(4)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(4) :: kq
+      integer :: kq(4)
       integer :: kq1, kq2
       integer  :: i
 !-----------------------------------------------

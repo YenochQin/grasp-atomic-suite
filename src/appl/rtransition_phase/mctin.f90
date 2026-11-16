@@ -16,7 +16,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix, max_orbitals
       use debug_c
       use decide_c
@@ -30,7 +30,7 @@
 !-----------------------------------------------
       use alcnsa_i
       use alcnta_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -46,7 +46,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: nfile2, m, k, iblki, iblkf, i, labl, ncsf, j
-      real(double), dimension(max_orbitals) :: tshell
+      real(real64) :: tshell(max_orbitals)
       logical :: avail
 !-----------------------------------------------
 !

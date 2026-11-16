@@ -1,12 +1,13 @@
 program mpi_contracts
     use mpi_c, host => processor_name, ierr => mpi_error_code, istat => mpi_status_buffer, lenhost => &
        & processor_name_length, myid => mpi_rank, nprocs => mpi_process_count
-    use vast_kind_param, only: byte, long
-    implicit none
+    use, intrinsic :: iso_fortran_env, only: real64, int64
+    use, intrinsic :: iso_fortran_env, only: int8
+    implicit none (type, external)
     integer :: byte_type, wide_type, width
-    integer(byte) :: packed(2,3)
-    integer(long) :: wide(2)
-    real(double) :: values(2), local, total
+    integer(int8) :: packed(2,3)
+    integer(int64) :: wide(2)
+    real(real64) :: values(2), local, total
     logical :: enabled
     character(12) :: message
 
@@ -23,9 +24,9 @@ program mpi_contracts
     enabled = .false.
     message = ''
     if (myid == 0) then
-        packed = reshape([1_byte,2_byte,3_byte,4_byte,5_byte,6_byte],[2,3])
-        wide = [2_long**40,2_long**40+7_long]
-        values = [0.25_double,-1.5_double]
+        packed = reshape([1_int8,2_int8,3_int8,4_int8,5_int8,6_int8],[2,3])
+        wide = [2_int64**40,2_int64**40+7_int64]
+        values = [0.25_real64,-1.5_real64]
         enabled = .true.
         message = 'rank-zero'
     end if
@@ -34,14 +35,14 @@ program mpi_contracts
     call MPI_Bcast(values,size(values),MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
     call MPI_Bcast(enabled,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
     call MPI_Bcast(message,len(message),MPI_CHARACTER,0,MPI_COMM_WORLD,ierr)
-    if (any(packed /= reshape([1_byte,2_byte,3_byte,4_byte,5_byte,6_byte],[2,3]))) &
+    if (any(packed /= reshape([1_int8,2_int8,3_int8,4_int8,5_int8,6_int8],[2,3]))) &
         call MPI_Abort(MPI_COMM_WORLD,4,ierr)
-    if (any(wide /= [2_long**40,2_long**40+7_long])) call MPI_Abort(MPI_COMM_WORLD,5,ierr)
-    if (any(values /= [0.25_double,-1.5_double])) call MPI_Abort(MPI_COMM_WORLD,6,ierr)
+    if (any(wide /= [2_int64**40,2_int64**40+7_int64])) call MPI_Abort(MPI_COMM_WORLD,5,ierr)
+    if (any(values /= [0.25_real64,-1.5_real64])) call MPI_Abort(MPI_COMM_WORLD,6,ierr)
     if (.not.enabled .or. message /= 'rank-zero') call MPI_Abort(MPI_COMM_WORLD,7,ierr)
-    local = real(myid+1,double)
+    local = real(myid+1,real64)
     call MPI_Allreduce(local,total,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierr)
-    if (total /= real(nprocs*(nprocs+1)/2,double)) call MPI_Abort(MPI_COMM_WORLD,8,ierr)
+    if (total /= real(nprocs*(nprocs+1)/2,real64)) call MPI_Abort(MPI_COMM_WORLD,8,ierr)
     call MPI_Type_free(byte_type,ierr)
     call MPI_Finalize(ierr)
 end program mpi_contracts

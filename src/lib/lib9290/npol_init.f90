@@ -1,23 +1,23 @@
 module npol_initialization
-    use vast_kind_param, only: double
     use parameter_def, only: max_radial_points
     use npol_c
     use npol_input, only: npol_read_config, npol_validate_config
     use npol_kernel, only: npol_check_grid, npol_build_grid, npol_compose
-    implicit none
+    implicit none (type, external)
     private
     public :: npol_init, npol_write_summary, npol_summary_path
 contains
     ! Caller supplies the freshly initialized Coulomb ZZ, never a prior total.
     subroutine npol_init(path, z, n, r, zz, status, message)
+        use, intrinsic :: iso_fortran_env, only: real64
         character(*), intent(in) :: path
-        real(double), intent(in) :: z, r(:)
+        real(real64), intent(in) :: z, r(:)
         integer, intent(in) :: n
-        real(double), intent(inout) :: zz(:)
+        real(real64), intent(inout) :: zz(:)
         integer, intent(out) :: status
         character(*), intent(out) :: message
         type(npol_config) :: cfg
-        real(double) :: a(max_radial_points), b(max_radial_points), v(max_radial_points), candidate(max_radial_points)
+        real(real64) :: a(max_radial_points), b(max_radial_points), v(max_radial_points), candidate(max_radial_points)
         call npol_reset()
         call npol_check_grid(n, r, status, message)
         if (status /= 0) return

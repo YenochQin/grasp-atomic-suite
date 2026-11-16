@@ -6,7 +6,7 @@ module rwfnestimate_input
    use orb_c, only: orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, orbital_symmetry_labels
    use def_c, only: electron_count
    use setcsh_i, only: setcsh
-   implicit none
+   implicit none (type, external)
    private
    public :: radial_input_options, parse_radial_options, load_radial_header
 

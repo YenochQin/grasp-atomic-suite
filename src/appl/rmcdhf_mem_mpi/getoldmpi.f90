@@ -8,7 +8,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_orbitals
       use memory_man
       use blkidx_c
@@ -32,7 +32,7 @@
       use getoldwt_i
       use prtrsl_i
       use getrsl_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -41,7 +41,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: iqadum
-      integer , dimension(max_orbitals) :: indx
+      integer  :: indx(max_orbitals)
       integer :: i, nsubs, norder, loc, noffset, jblock, j
       logical :: getyn, yes
       character :: record*256
@@ -100,7 +100,7 @@
 !
       call alloc (mixing_damping_factors, ncmin, 'CDAMP', 'GETOLDmpi')
 !
-      mixing_damping_factors(:ncmin) = 0.d0
+      mixing_damping_factors(:ncmin) = 0._real64
 !
 !   Print the list of all subshells
 !
@@ -127,7 +127,7 @@
 
       is_orbital_fixed(indx(:nsubs)) = .false.
 !XHH      give a big value, rather than zero to scnsty()
-      scnsty(indx(:nsubs)) = 1.d20
+      scnsty(indx(:nsubs)) = 1.e20_real64
       fixed_orbital_count = orbital_count - nsubs
       if (fixed_orbital_count == orbital_count) then
          if(mpi_rank == 0)                                                 &
@@ -163,7 +163,7 @@
             if (is_orbital_fixed(loc)) cycle
             method(loc) = 1
             noinvt(loc) = .false.
-            orbital_damping_factors(loc) = 0.d0
+            orbital_damping_factors(loc) = 0._real64
             lcorre(loc) = .false.
          end do
       endif

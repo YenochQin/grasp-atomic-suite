@@ -14,12 +14,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use grid_c
       use int_c
       use wave_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -28,10 +28,10 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      real(double) :: hhc
+      real(real64) :: hhc
 !-----------------------------------------------
 !
-      hhc = 0.5d00*transformed_grid_step/speed_of_light_au
+      hhc = 0.5_real64*transformed_grid_step/speed_of_light_au
 !
 !   Set up arrays TF and TG
 !

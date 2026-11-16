@@ -1,10 +1,12 @@
       module oneparticlejj2_i
+      implicit none (type, external)
       interface
 !
       subroutine oneparticlejj2(ns,ka,ja,jb,coeff)
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
       integer, intent(in) :: ns,ka,ja,jb
-      real(double), intent(out) :: coeff
+      real(real64), intent(out) :: coeff
       end subroutine
       end interface
       end module

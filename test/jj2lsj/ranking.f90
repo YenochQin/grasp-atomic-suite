@@ -1,18 +1,18 @@
 program test_ranking
-    use vast_kind_param, only: DOUBLE
+    use, intrinsic :: iso_fortran_env, only: real64
     use iso_fortran_env, only: int64
     use ieee_arithmetic, only: ieee_value, ieee_quiet_nan
     use jj2lsj_postprocess, only: ls_ranking, rank_ls
-    implicit none
+    implicit none (type, external)
     type(ls_ranking) :: ranked
-    real(DOUBLE), allocatable :: values(:), old_weights(:), old_squares(:)
+    real(real64), allocatable :: values(:), old_weights(:), old_squares(:)
     integer, allocatable :: old_order(:)
-    real(DOUBLE) :: old_norm, wa
+    real(real64) :: old_norm, wa
     integer :: n, case_no, i, j, k
     character(len=16) :: argument
     call get_command_argument(1,argument)
     if (trim(argument)=='nonfinite') then
-        call rank_ls([ieee_value(0.0_DOUBLE,ieee_quiet_nan)],ranked)
+        call rank_ls([ieee_value(0.0_real64,ieee_quiet_nan)],ranked)
         stop 0
     end if
     do case_no=1,6
@@ -23,21 +23,21 @@ program test_ranking
         do i=1,n
             select case(case_no)
             case(2)
-                values(i)=-0.0_DOUBLE
+                values(i)=-0.0_real64
             case(3)
-                values(i)=(-1.0_DOUBLE)**i*real(mod(i,7),DOUBLE)/8.0_DOUBLE
+                values(i)=(-1.0_real64)**i*real(mod(i,7),real64)/8.0_real64
             case(4)
-                values(i)=real(i,DOUBLE)/512.0_DOUBLE
+                values(i)=real(i,real64)/512.0_real64
             case(5)
-                values(i)=real(n-i,DOUBLE)/512.0_DOUBLE
-                if (mod(i,3)==0) values(i)=-0.0_DOUBLE
+                values(i)=real(n-i,real64)/512.0_real64
+                if (mod(i,3)==0) values(i)=-0.0_real64
             case(6)
-                values(i)=(-1.0_DOUBLE)**i/real(mod(37*i,263)+1,DOUBLE)
+                values(i)=(-1.0_real64)**i/real(mod(37*i,263)+1,real64)
             end select
         end do
         ! Independent legacy insertion oracle, including its strict > tie rule.
-        old_norm=0.0_DOUBLE
-        old_weights=0.0_DOUBLE; old_squares=0.0_DOUBLE; old_order=0
+        old_norm=0.0_real64
+        old_weights=0.0_real64; old_squares=0.0_real64; old_order=0
         do i=1,n
             wa=values(i)
             old_norm=old_norm+wa*wa
@@ -64,8 +64,8 @@ program test_ranking
     end do
     ! Large zero plateau: tied coefficients must retain their original LS IDs.
     allocate(values(84000))
-    values=0.0_DOUBLE
-    values(2)=-0.5_DOUBLE; values(84000)=0.5_DOUBLE
+    values=0.0_real64
+    values(2)=-0.5_real64; values(84000)=0.5_real64
     call rank_ls(values,ranked)
     if (any(ranked%order(:3)/=[2,84000,1])) error stop 'large tie ordering'
     do i=4,84000

@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -27,19 +27,19 @@
       use ittk_i
       use nine0_i
       use sixj_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: j1, j2, j3, l1, l2, l3, k1, k2, k3
       integer, intent(in)  :: i
       integer, intent(out) :: inn
-      real(double)  :: aa
+      real(real64)  :: aa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: n1, n2, n3, n4, n5, n6, max_, min_, ix
-      real(double) :: s1, s2, s3, x
+      real(real64) :: s1, s2, s3, x
 !-----------------------------------------------
       if (i == 1) then
          inn = 0

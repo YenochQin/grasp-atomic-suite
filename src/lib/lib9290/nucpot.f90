@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use debug_c
       use def_c,           only: nuclear_charge, pi
       use grid_c
@@ -25,12 +25,12 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use es_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, nb3, nrows, ii, ii1, ii2, ii3
-      real(double) :: c, a, abc, tabc, abc2, thabc2, abc3, cba, pi2, hpiac2, &
+      real(real64) :: c, a, abc, tabc, abc2, thabc2, abc3, cba, pi2, hpiac2, &
          h3php, s2mcba, s3mcba, sabc3, dmsas, en, zbn, ri, rmc, rmcba, rbc, &
          s2rcba, s3rcba
       logical :: set
@@ -50,18 +50,18 @@
          c = nuclear_model_parameters(1)
          a = nuclear_model_parameters(2)
          abc = a/c
-         tabc = 2.0d00*abc
+         tabc = 2.0_real64*abc
          abc2 = abc*abc
-         thabc2 = 3.0d00*abc2
+         thabc2 = 3.0_real64*abc2
          abc3 = abc2*abc
          cba = c/a
          pi2 = pi*pi
-         hpiac2 = 0.5d00*pi2*abc2
-         h3php = 1.5d00 + hpiac2
+         hpiac2 = 0.5_real64*pi2*abc2
+         h3php = 1.5_real64 + hpiac2
          call es ((-cba), s2mcba, s3mcba)
-         sabc3 = 6.0d00*abc3
+         sabc3 = 6.0_real64*abc3
          dmsas = -sabc3*s3mcba
-         en = 1.0d00 + abc2*pi2 + dmsas
+         en = 1.0_real64 + abc2*pi2 + dmsas
          zbn = nuclear_charge/en
 !
          set = .false.
@@ -70,17 +70,17 @@
             rmc = ri - c
             rmcba = rmc/a
             rbc = ri/c
-            if (rbc <= 1.0d00) then
+            if (rbc <= 1.0_real64) then
                call es (rmcba, s2rcba, s3rcba)
                negative_radius_times_potential(i) = zbn*(dmsas + sabc3*s3rcba + rbc*(h3php - thabc2*s2rcba&
-                   - 0.5d00*rbc*rbc))
+                   - 0.5_real64*rbc*rbc))
             else
                if (.not.set) then
                   first_grid_index_beyond_fermi_c = i
                   set = .true.
                endif
                call es ((-rmcba), s2rcba, s3rcba)
-               negative_radius_times_potential(i) = nuclear_charge*(1.0d00 + thabc2*(rbc*s2rcba + tabc*s3rcba)/en)
+               negative_radius_times_potential(i) = nuclear_charge*(1.0_real64 + thabc2*(rbc*s2rcba + tabc*s3rcba)/en)
             endif
          end do
       endif

@@ -44,7 +44,6 @@ testmix.f90 testmix_I.f90
 bioscl.f90
 
 # Implementation not compiled in the original makefile
-#ichkq1.f90 ichkq1_I.f90
 #setcsl.f90 setcsl_I.f90
 "
 generate-makefile > ${MAKEFILE}

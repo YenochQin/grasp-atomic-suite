@@ -2,7 +2,7 @@
 ! This module owns no scientific cutoffs and never changes the MCP writer.
 module rangular_reuse
    use iso_fortran_env, only: int64
-   use vast_kind_param, only: double
+   use, intrinsic :: iso_fortran_env, only: real64
    use parameter_def, only: max_orbitals
    use orb_c, only: orbital_count, csf_count, csf_subshell_occupations, orbital_kappa
    use stat_c, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
@@ -12,19 +12,19 @@ module rangular_reuse
    use rkco_gg_i, only: rkco_gg
    use cord_i, only: cord
    use alcbuf_i, only: alcbuf
-   implicit none
+   implicit none (type, external)
    private
    public :: configure_angular_reuse, begin_reuse_block, end_reuse_block, load_reused_pair, reuse_requested
 
    type :: pair_entry
       integer(int64) :: hash
       integer :: key_start, key_size, term_start, term_count, first, second, bra, ket
-      real(double) :: scalar
+      real(real64) :: scalar
    end type pair_entry
    type(pair_entry), allocatable :: entries(:)
    integer, allocatable :: buckets(:), term_labels(:,:)
    integer(int64), allocatable :: keys(:), coupling_hash(:)
-   real(double), allocatable :: values(:)
+   real(real64), allocatable :: values(:)
    integer :: entry_count, key_count, term_count, report_unit = 0
    integer(int64) :: byte_limit = 0, reserved_bytes, fixed_bytes, entry_bytes
    integer(int64) :: pairs, hits, misses, bypasses, not_stored, probes
@@ -139,8 +139,8 @@ contains
    subroutine original_pair(ja, jb, first, second, scalar)
       integer, intent(in) :: ja, jb
       integer, intent(out) :: first, second
-      real(double), intent(out) :: scalar
-      real(double) :: tshell(max_orbitals)
+      real(real64), intent(out) :: scalar
+      real(real64) :: tshell(max_orbitals)
       first = 0; second = 0; tshell = 0
       if (ja /= jb) call onescalar(ja,jb,first,second,tshell)
       ! ONESCALAR leaves its other outputs undefined on some early returns.
@@ -157,7 +157,7 @@ contains
    subroutine load_reused_pair(ja, jb, first, second, scalar)
       integer, intent(in) :: ja, jb
       integer, intent(out) :: first, second
-      real(double), intent(out) :: scalar
+      real(real64), intent(out) :: scalar
       integer(int64) :: key(3+2*max_orbitals), hash
       integer :: length, orbital_map(0:max_orbitals), inverse_map(max_orbitals)
       integer :: bucket, entry, start, count, i, j

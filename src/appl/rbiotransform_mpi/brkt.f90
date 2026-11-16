@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use grid_c
       use tatb_c
       use biorb_c
@@ -24,13 +24,13 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, j, l
-      real(double), dimension(max_orbitals,max_orbitals) :: braket
-      real(double) :: result
+      real(real64) :: braket(max_orbitals, max_orbitals)
+      real(real64) :: result
 !-----------------------------------------------
 !
 
@@ -45,7 +45,7 @@
 !   Tabulate the integrand as required for SUBROUTINE QUAD; the
 !   value at the first tabulation point is arbitrary
 !
-            ta = 0.0d0
+            ta = 0.0_real64
 !            TA(1)=0.D0
             do l = 2, mtp
                ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*radial_grid_derivative(l)

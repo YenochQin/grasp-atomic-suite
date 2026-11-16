@@ -16,26 +16,26 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use iounit_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: ndef
       integer , intent(in) :: ncmin
-      real(double)  :: wt(ncmin)
+      real(real64)  :: wt(ncmin)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, n159
-      real(double) :: sumwgt
+      real(real64) :: sumwgt
 !-----------------------------------------------
 
 ! Standard weights: ncmin=1, OL calculation
 
       if (ncmin == 1) then
-         wt(1) = -1.d0
+         wt(1) = -1._real64
          return
       endif
 
@@ -63,9 +63,9 @@
 
       select case (n159)                         ! Equal weight
       case (1)
-         wt = -2.d0
+         wt = -2._real64
       case (5)                                   ! Standard weight
-         wt = -1.d0
+         wt = -1._real64
       case (9)                                   ! User-input weight
 
   123    continue
@@ -73,16 +73,16 @@
             ' levels :'
          read (stdin_unit, *) (wt(i),i=1,ncmin)
 
-         sumwgt = 0.d0
+         sumwgt = 0._real64
          do i = 1, ncmin
-            if (wt(i) <= 0.d0) then
+            if (wt(i) <= 0._real64) then
                write (stderr_unit, *) 'Weights must exceed 0;'
                go to 123
             else
                sumwgt = sumwgt + wt(i)
             endif
          end do
-         sumwgt = 1.d0/sumwgt
+         sumwgt = 1._real64/sumwgt
          wt = sumwgt*wt
 
       case default

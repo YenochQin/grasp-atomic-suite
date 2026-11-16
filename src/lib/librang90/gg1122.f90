@@ -22,7 +22,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, tenth, eps
       use trk_c
 !-----------------------------------------------
@@ -30,18 +30,18 @@
 !-----------------------------------------------
       use mes_i
       use wj1_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)               :: k1, k2
-      real(double), intent(in)               :: qm1, qm2, qm3, qm4
-      real(double), intent(out)              :: aa
+      real(real64), intent(in)               :: qm1, qm2, qm3, qm4
+      real(real64), intent(out)              :: aa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: iqmm1, iqmm2, iqmm3, iqmm4, iqmm12, iqmm34
-      real(double) :: a1, w
+      real(real64) :: a1, w
 !-----------------------------------------------
       aa=zero
       if(ik1(3) > 9) then

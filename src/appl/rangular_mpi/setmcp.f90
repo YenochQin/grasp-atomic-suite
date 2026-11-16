@@ -32,7 +32,7 @@
       use convrt_i
       use openfl_i
       use mpi_c,     only: mpi_rank, mpi_process_count, mpi_error_code
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

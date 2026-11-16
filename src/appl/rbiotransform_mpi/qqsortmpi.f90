@@ -27,7 +27,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
       use memory_man
       use orb_c
@@ -37,7 +37,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -55,7 +55,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, l, ir, ja, jb, int, j, intt
-      real(double) :: cn
+      real(real64) :: cn
 !-----------------------------------------------
 !
       rewind (nfile + 80)

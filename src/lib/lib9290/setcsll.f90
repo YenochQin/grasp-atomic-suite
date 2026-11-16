@@ -13,17 +13,17 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use openfl_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: nunit
+      integer, intent(in) :: nunit
       integer, intent(in) :: nblkin
       integer, intent(out) :: nblock
       integer, intent(out) :: ncftot
       character (len = *), intent(inout) :: name
-      integer, dimension(*), intent(inout) :: ncfblk
-      character (len = 8), dimension(*), intent(out) :: idblk
+      integer, intent(inout) :: ncfblk(*)
+      character (len = 8), intent(out) :: idblk(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

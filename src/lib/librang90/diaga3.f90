@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, one
       use m_c,             only: jlist, jjq1, jjc1, jjc2
 !-----------------------------------------------
@@ -23,19 +23,19 @@
 !-----------------------------------------------
       use ixjtik_i
       use sixj_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in)  :: ja1, ja2, ka, ire
 !      INTEGER, INTENT(OUT) :: IAT
       integer, intent(inout)      :: iat
-      real(double), intent(out) :: rec
+      real(real64), intent(out) :: rec
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i,ll1,ji,kk1,kk2,iti,iti1,itis,iti1s,ifaz
-      real(double) :: aa, a3
+      real(real64) :: aa, a3
 !-----------------------------------------------
       rec = zero
       i=ja1+1

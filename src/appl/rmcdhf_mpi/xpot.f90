@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix
       use debug_c
       use def_c
@@ -34,7 +34,7 @@
 !-----------------------------------------------
       use yzk_i
       use draw_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -47,7 +47,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i,index,label,k,ioy1,ioy2,iorb,nb2,nrows,ii,ii1,ii2,mfi
-      real(double) :: coeff, ctb
+      real(real64) :: coeff, ctb
 !-----------------------------------------------
 !
 !   Debug printout: header
@@ -56,8 +56,8 @@
 !
 !   Clear for accumulation of sums
 !
-      xp(:radial_point_count) = 0.d0
-      xq(:radial_point_count) = 0.d0
+      xp(:radial_point_count) = 0._real64
+      xq(:radial_point_count) = 0._real64
 !
 !   Add contributions from exchange terms
 !
@@ -113,7 +113,7 @@
                write (99, 303) radial_grid(ii1), xp(ii1), xq(ii1)
             endif
          end do
-         call draw (xp, 1.0d00, xq, speed_of_light_au, radial_point_count)
+         call draw (xp, 1.0_real64, xq, speed_of_light_au, radial_point_count)
       endif
 !
       return

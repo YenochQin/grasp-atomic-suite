@@ -11,7 +11,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, tenth, half, two, eps
       use ribojj_c
       use ribojj9_c
@@ -26,22 +26,22 @@
       use a1jj_i
       use sixj_i
       use izas1_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)               :: k1
-      integer,      intent(in), dimension(7) :: ik, id
-      real(double), intent(in)               :: qm1, qm2
-      real(double), intent(in), dimension(3) :: bk, bd
-      real(double), intent(out)              :: ww
+      integer,      intent(in) :: ik(7), id(7)
+      real(real64), intent(in)               :: qm1, qm2
+      real(real64), intent(in) :: bk(3), bd(3)
+      real(real64), intent(out)              :: ww
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: kk1,iq,iqm,ie,it,itk,itd,itp,itp1,itg,itg1,ibtt
-      integer,      dimension(7) :: ibt
-      real(double)               :: enqp, d1, si1, w
-      real(double), dimension(3) :: bt
+      integer :: ibt(7)
+      real(real64)               :: enqp, d1, si1, w
+      real(real64) :: bt(3)
 !-----------------------------------------------
       ww=zero
       if(izas1(id(7),bd(3),ik(7),bk(3)) == 0)return

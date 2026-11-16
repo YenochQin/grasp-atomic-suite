@@ -12,7 +12,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -21,7 +21,7 @@
       !USE vec_I
       !USE dcopy_I
       use suite_linear_algebra, only: dcopy, dspevx
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -32,8 +32,8 @@
       integer, intent(in) :: jcol(0:*)
       integer, intent(in) :: irow(*)
       integer, intent(in) :: iblock(*)
-      real(double), intent(in) :: hmx(*)
-      real(double)  :: basis(*)
+      real(real64), intent(in) :: hmx(*)
+      real(real64)  :: basis(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -42,10 +42,10 @@
          j, istart, ish, ii, nfound, info, ierr, ic
       !REAL(DOUBLE) :: EIGVAL, WORK
 
-      integer, dimension(:), pointer :: iqiwork,iqif,iqjsh
-      integer, dimension(:), allocatable, target :: iwork, ifail, jsh
-      real(double), dimension(:), pointer :: iqap,iqeig,iqvec,iqwork
-      real(double), dimension(:), allocatable, target :: ap, eigval, vec, work
+      integer, pointer :: iqiwork(:),iqif(:),iqjsh(:)
+      integer, allocatable, target :: iwork(:), ifail(:), jsh(:)
+      real(real64), pointer :: iqap(:),iqeig(:),iqvec(:),iqwork(:)
+      real(real64), allocatable, target :: ap(:), eigval(:), vec(:), work(:)
 
 !-----------------------------------------------
 !     !pointer (iqap,ap(1)),(iqeig,eigval(1)),(iqvec,vec(1))
@@ -63,7 +63,7 @@
       if (ierr.ne.0) call mem_fail(6,ns*(ns + 1)/2,'iniest::ap',ierr);
       iqap=>ap
 
-      call dinit (ns*(ns + 1)/2, 0.d0, ap, 1)
+      call dinit (ns*(ns + 1)/2, 0._real64, ap, 1)
 
       !CALL ALLOC (IQEIG, NS, 8)
       allocate (eigval(ns),stat=ierr)
@@ -118,7 +118,7 @@
   102    continue
       end do
       call dspevx ('Vectors also', 'In a range', 'Lower triangular', ns, ap, &
-         -1.d0, -1.d0, 1, niv, 0.d0, nfound, eigval, vec, ns, work, iwork, ifail, &
+         -1._real64, -1._real64, 1, niv, 0._real64, nfound, eigval, vec, ns, work, iwork, ifail, &
          info)
       ierr = -abs(info)
       if (ierr /= 0) write (6, *) 'iniest ierr =', ierr
@@ -130,7 +130,7 @@
 !
 !       ..Build the Basis.
 !
-      call dinit (n*niv, 0.d0, basis, 1)
+      call dinit (n*niv, 0._real64, basis, 1)
       istart = 0
       do j = 1, niv
 !scatter the vectors

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function brintf (itype, ia, ib, ic, id, k)
+      real(real64) function brintf (itype, ia, ib, ic, id, k)
 !                                                                      *
 !   Computes integrals for the transverse photon interaction.          *
 !                                                                      *
@@ -22,16 +22,17 @@
 !-----------------------------------------------
       use bessel_i
       use brra_i
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: itype
-      integer  :: ia
-      integer  :: ib
-      integer  :: ic
-      integer  :: id
-      integer  :: k
+      integer, intent(in) :: itype
+      integer, intent(in) :: ia
+      integer, intent(in) :: ib
+      integer, intent(in) :: ic
+      integer, intent(in) :: id
+      integer, intent(in) :: k
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------

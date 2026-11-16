@@ -19,14 +19,14 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use memory_man
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: lldim
       integer , intent(in) :: imode
-      integer, dimension(:), pointer :: ibeg, ilab, ilast, ileft, &
-                                        iptcsf, iright, lblint
+      integer, pointer :: ibeg(:), ilab(:), ilast(:), ileft(:), &
+                                        iptcsf(:), iright(:), lblint(:)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

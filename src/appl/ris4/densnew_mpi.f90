@@ -7,7 +7,7 @@
 !   fragment that the root process later merges into name.IOB.          *
 !                                                                      *
 !***********************************************************************
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix, max_orbitals, max_radial_points
       use debug_c
       use decide_c
@@ -31,22 +31,22 @@
       use ispar_i
       use itjpo_i
       use onescalar_i
-      implicit none
-      real(double), dimension(max_orbitals,max_orbitals), intent(in) :: dint1, dint2, &
-                                                        dint3, dint4, &
-                                                        dint5, dint6, &
-                                                        dint7
+      implicit none (type, external)
+      real(real64), intent(in) :: dint1(max_orbitals, max_orbitals), dint2(max_orbitals, max_orbitals), &
+                                                        dint3(max_orbitals, max_orbitals), dint4(max_orbitals, max_orbitals), &
+                                                        dint5(max_orbitals, max_orbitals), dint6(max_orbitals, max_orbitals), &
+                                                        dint7(max_orbitals, max_orbitals)
       integer, intent(in) :: doit
       integer, parameter :: key = orbital_index_radix
-      real(double), dimension(max_orbitals) :: tshell
-      real(double), dimension(max_orbitals) :: tshell_s
-      real(double) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5,     &
+      real(real64) :: tshell(max_orbitals)
+      real(real64) :: tshell_s(max_orbitals)
+      real(real64) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5,     &
                       elemnt6, elemnt7, contri1, contri2, contri3,     &
                       contri4, contri5, contri6, contri7, evpair,      &
                       pair_scale
       logical :: has_contr
       character :: cnum*11, ck*2
-      integer, dimension(max_orbitals) :: ia_s
+      integer :: ia_s(max_orbitals)
       integer :: ka, iopar, incor, ic, lcnum, itjpoc, ir, ia, ib, i, j
       integer :: loc, ncontr, lab, occ_ic, occ_ir, ndiff
 
@@ -82,13 +82,13 @@
                if (ndiff .ne. 0 .and. ndiff .ne. 2) cycle
                if (ndiff .eq. 0 .and. ic .ne. ir) cycle
 
-               elemnt1 = 0.0d00
-               elemnt2 = 0.0d00
-               elemnt3 = 0.0d00
-               elemnt4 = 0.0d00
-               elemnt5 = 0.0d00
-               elemnt6 = 0.0d00
-               elemnt7 = 0.0d00
+               elemnt1 = 0.0_real64
+               elemnt2 = 0.0_real64
+               elemnt3 = 0.0_real64
+               elemnt4 = 0.0_real64
+               elemnt5 = 0.0_real64
+               elemnt6 = 0.0_real64
+               elemnt7 = 0.0_real64
                has_contr = .false.
 
                call onescalar(ic,ir,ia,ib,tshell)
@@ -146,9 +146,9 @@
                    abs(elemnt6) .le. cutoff .and. &
                    abs(elemnt7) .le. cutoff) cycle
                if (ir .eq. ic) then
-                  pair_scale = 1.0d00
+                  pair_scale = 1.0_real64
                else
-                  pair_scale = 2.0d00
+                  pair_scale = 2.0_real64
                endif
                do j = 1,nvec
                   loc = (j-1)*csf_count

@@ -17,10 +17,11 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64, double => real64
       use jj2lsj_profile
       use jj2lsj_postprocess
-      implicit none
+      implicit none (type, external)
+      private :: real64
 !-----------------------------------------------
 !   R o u t i n e s
 !-----------------------------------------------
@@ -110,13 +111,13 @@
       type, public :: cs_function_ls
          integer :: totalj
          character(len=1)  :: parity
-         integer, dimension(:), pointer :: occupation
-         integer, dimension(:), pointer :: seniority
-         integer, dimension(:), pointer :: w
-         integer, dimension(:), pointer :: shelll
-         integer, dimension(:), pointer :: shells
-         integer, dimension(:), pointer :: shelllx
-         integer, dimension(:), pointer :: shellsx
+         integer, pointer :: occupation(:)
+         integer, pointer :: seniority(:)
+         integer, pointer :: w(:)
+         integer, pointer :: shelll(:)
+         integer, pointer :: shells(:)
+         integer, pointer :: shelllx(:)
+         integer, pointer :: shellsx(:)
       end type cs_function_ls
 !
       type, public :: csf_basis_ls
@@ -124,9 +125,9 @@
          integer :: nwshells      ! Number of (nonrelativistic) shells.
          integer :: nwcore        ! Number of (closed) core shells.
          integer :: number_of_electrons
-         type(nl), dimension(:), pointer             :: shell
-         type(cs_function_ls), dimension(:), pointer :: csf
-         type(parent_from_jj), dimension(:), pointer :: parent
+         type(nl), pointer             :: shell(:)
+         type(cs_function_ls), pointer :: csf(:)
+         type(parent_from_jj), pointer :: parent(:)
       end type csf_basis_ls
 !
       type, public :: as_function_ls
@@ -134,14 +135,14 @@
          integer          :: max_csf_no
          integer          :: totall, totals, totalj
          character(len=1) :: parity
-         real(double)     :: energy
-         real(double), dimension(:), pointer :: eigenvector
+         real(real64)     :: energy
+         real(real64), pointer :: eigenvector(:)
       end type as_function_ls
 !
       type, public :: asf_basis_ls
          integer      :: noasf           ! Number of considered ASF.
-         real(double) :: average_energy  ! Averaged energy of this set of ASF.
-         type(as_function_ls), dimension(:), pointer :: asf
+         real(real64) :: average_energy  ! Averaged energy of this set of ASF.
+         type(as_function_ls), pointer :: asf(:)
          type(csf_basis_ls) :: csf_set_ls
       end type asf_basis_ls
 !-----------------------------------------------
@@ -154,15 +155,15 @@
 !
       type, public :: lsj_list
          integer::list_size                    !number items in a list
-         integer, dimension(:),pointer:: items !serial numbers of lists items
+         integer,pointer:: items(:) !serial numbers of lists items
       end type lsj_list
 !
       type(asf_basis_ls), public :: asf_set_ls
 !
       integer, private :: imincompoff, ls_convention
-      integer, dimension(:,:),pointer:: jcoup ! xJ values
-      real(double) :: epsnew, mincomp
-      character(len=1), dimension(0:20), private, parameter :: l_string =&
+      integer,pointer:: jcoup(:, :) ! xJ values
+      real(real64) :: epsnew, mincomp
+      character(len=1), private, parameter :: l_string(0:20) =&
                (/ "S","P","D","F","G","H","I","K","L","M","N","O","Q",   &
                   "R","T","U","V","W","X","Y","Z" /)
 !-----------------------------------------------
@@ -179,14 +180,15 @@ contains
 !     Parallel rows are committed in the original LS order. The unchanged
 !     scalar backend remains the reference and handles sequential *.lsj.T I/O.
       subroutine asf2ls(iw1,ithresh,levmax,iblknum,levels,ncfmin,ncfmax,ioutt)
+      use, intrinsic :: iso_fortran_env, only: real32
       use prnt_c, only: ivec
 !$    USE omp_lib, ONLY: omp_get_max_threads
-      implicit none
+      implicit none (type, external)
       integer, intent(in) :: iw1, levmax, iblknum, ncfmin, ncfmax, ioutt
       integer, intent(in) :: ithresh(:), levels(blocks_number,vectors_number)
       integer :: threads, batch_size, first, last, row, ls, lev, level, status
       integer, allocatable :: selected(:)
-      real(double), allocatable :: rows(:,:), cumulative(:)
+      real(real64), allocatable :: rows(:,:), cumulative(:)
       logical, allocatable :: active(:)
       logical :: finished
       character(len=16) :: serial_backend
@@ -211,7 +213,7 @@ contains
       allocate(rows(levmax,batch_size), active(batch_size))
       allocate(cumulative(levmax), selected(levmax))
       selected = levels(iblknum,1:levmax)
-      cumulative = 0.0_double
+      cumulative = 0.0_real64
       finished = .false.
       write(*,'(A,I0,A,I0)') ' jj2lsj OpenMP: max threads=',threads, &
                            ', LS rows per batch=',batch_size
@@ -240,7 +242,7 @@ contains
                asf_set_ls%asf(level)%level_no = ivec(level)
             end do
             if (imincompoff == 1) then
-               finished = .not. any(cumulative*100.+dabs(mincomp) <= 100.)
+               finished = .not. any(cumulative*100._real32+dabs(mincomp) <= 100._real32)
                if (finished) exit
             end if
          end do
@@ -256,17 +258,17 @@ contains
       use orb_c, only: csf_count
       use itjpo_i
       use ispar_i
-      use vast_kind_param, only: long
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: int64
+      implicit none (type, external)
       integer, intent(in) :: ls, iw1, ncfmin, ncfmax
       integer, intent(in) :: ithresh(:), selected(:)
-      real(double), intent(out) :: values(:)
+      real(real64), intent(out) :: values(:)
       logical, intent(out) :: active
       integer :: jj, lev, parity
-      integer(long) :: offset, ncf_long
-      real(double) :: coefficient
+      integer(int64) :: offset, ncf_long
+      real(real64) :: coefficient
 
-      values = 0.0_double
+      values = 0.0_real64
       parity = ispar(ncfmin+iw1-1)
       active = (asf_set_ls%csf_set_ls%csf(ls)%parity == '+' .and. parity == 1) .or. &
                (asf_set_ls%csf_set_ls%csf(ls)%parity == '-' .and. parity == -1)
@@ -286,6 +288,7 @@ contains
 
       subroutine asf2ls_serial(iw1,ithresh,levmax,iblknum,levels,ncfmin,     &
                         ncfmax,ioutt)
+      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !     Expands an atomic state functions from the same block,           *
 !     which is represented in a jj-coupling CSF basis into a basis     *
@@ -303,7 +306,7 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: int64
       use eigv_c,          only: csf_mixing_coefficients
       use prnt_c,          only: ivec
       use orb_c,           only: csf_count
@@ -317,26 +320,25 @@ contains
 !      USE idigit_I
 !      USE ittk_I
 !      USE ixjtik_I
-      use vast_kind_param, only: long
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: iw1, levmax,iblknum,ioutt
       integer, intent(in) :: ncfmin, ncfmax
-      integer, dimension(:), intent(in) :: ithresh
-      integer, dimension(blocks_number,vectors_number), intent(in) :: levels
+      integer, intent(in) :: ithresh(:)
+      integer, intent(in) :: levels(blocks_number, vectors_number)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       character(len=18) :: string
       integer      :: jj_number, lev, level, ls_number, ijj, ils
       integer      :: imincomp, idum
-      real(double) :: wa_transformation
-      real(double), dimension(vectors_number) :: wa
-      real(double), dimension(vectors_number) :: wb
-      integer(long) loc_i8, ncf_i8
+      real(real64) :: wa_transformation
+      real(real64) :: wa(vectors_number)
+      real(real64) :: wb(vectors_number)
+      integer(int64) :: loc_i8, ncf_i8
 !-----------------------------------------------
       wb = zero
       ncf_i8 = csf_count
@@ -391,7 +393,7 @@ contains
                wb(lev) = wa(lev)*wa(lev) + wb(lev)
                asf_set_ls%asf(level)%eigenvector(ls_number) = wa(lev)
                asf_set_ls%asf(level)%level_no = ivec(level)
-               if((wb(lev)*100.+dabs(mincomp)) <= 100.) imincomp = 0
+               if((wb(lev)*100._real32+dabs(mincomp)) <= 100._real32) imincomp = 0
             end do
             if(imincompoff == 1 ) then
                if(imincomp == 1) go to 1
@@ -424,9 +426,8 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use cons_c,          only: zero, one
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -435,7 +436,7 @@ contains
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double) :: wa
+      real(real64) :: wa
       integer      :: nn, n1, n2, factor
 !-----------------------------------------------
       wa = zero; factor = one
@@ -507,20 +508,19 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use cons_c,          only: zero, one
       use nine_i, only: nine
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: l_shell, l, s, j, jm_shell, jp_shell
-      real(double)        :: wa
+      real(real64)        :: wa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: delta_j
-      real(double) :: rac9
+      real(real64) :: rac9
 !-----------------------------------------------
       wa = zero
       if (mod(l+s,4) /= 0)  then
@@ -569,18 +569,17 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use jj2lsj_c
       use jj2lsj_data_1_c
       use jj2lsj_data_2_c
       use jj2lsj_data_3_c
       use cons_c,          only: zero, one
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: lshell, n, w, q, l, s, j, nm, qm, jm, qp, jp
-      real(double)        :: wa
+      real(real64)        :: wa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -856,13 +855,12 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,    only: double
       use prnt_c,             only: nvec
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use itjpo_i
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -904,7 +902,7 @@ contains
 !                                                                      *
 !***********************************************************************
       use convrt_double_i, only: convrt_double
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -958,7 +956,7 @@ contains
 !                                                                      *
 !***********************************************************************
       use convrt_double_i, only: convrt_double
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1143,7 +1141,6 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use m_c,             only: ncore
       use orb_c,           only: csf_count, orbital_count
 !-----------------------------------------------
@@ -1152,7 +1149,7 @@ contains
       use jqs_i
       use ichop_i
       use jcup_i
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -1245,13 +1242,13 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use jj2lsj_c
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in)                                 :: l_shell, n
-      type(subshell_term_ls), dimension(120), intent(out) :: ls
+      type(subshell_term_ls), intent(out) :: ls(120)
       integer, intent(out)                                :: number
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -1448,6 +1445,7 @@ contains
 !                                                                      *
       subroutine inscreen(thresh,levels,number_of_levels,ioutc,ioutj,  &
                                                           unique,ioutt)
+      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !     The input from the screen.                                       *
 !                                                                      *
@@ -1463,7 +1461,6 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use orb_c,           only: csf_count, orbital_count
       use prnt_c,          only: nvec
       use iounit_c,        only: stdin_unit, stderr_unit
@@ -1475,19 +1472,19 @@ contains
       use getyn_i, only: getyn
       use openfl_i, only: openfl
       use setcsla_i, only: setcsla
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(out)      :: ioutc,ioutj,unique,ioutt
-      real(double), intent(out) :: thresh
-      integer,  dimension(blocks_number), intent(out) :: number_of_levels
-      integer, dimension(blocks_number,vectors_number), intent(out) :: levels
+      real(real64), intent(out) :: thresh
+      integer, intent(out) :: number_of_levels(blocks_number)
+      integer, intent(out) :: levels(blocks_number, vectors_number)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double) :: phase_start
+      real(real64) :: phase_start
       integer            :: nelecdum, ncftotdum, nwdum, nblockdum
       integer            :: jbdum, ncfinblkdum, nevinblkdum, iatjpdum
       integer            :: i, ii, isum, k, nci, ierr, jb
@@ -1496,8 +1493,8 @@ contains
       character(len=6)   :: g92mix
       character(len=24)  :: name
       character(len=256) :: record, util_csl_file
-      integer, dimension(blocks_number)    :: posi
-      integer, dimension(1:vectors_number) :: levels_tmp
+      integer    :: posi(blocks_number)
+      integer :: levels_tmp(1:vectors_number)
 !-----------------------------------------------
       nblock = 0
     1 write (stderr_unit,*) 'Name of state'
@@ -1541,11 +1538,11 @@ contains
       write (stderr_unit,*) 'Default settings?  (y/n) '
       yes = getyn ()
       if (yes) then
-         epsnew = 0.005d00
+         epsnew = 0.005_real64
          isum = 0
          imincompoff = 1
          mincomp = 1
-         thresh = 0.001d00
+         thresh = 0.001_real64
          ioutc = 0
          ioutj = 0
          ioutt = 0
@@ -1621,7 +1618,7 @@ contains
             imincompoff = 1
             write (stderr_unit,*) 'What is the value below which an eigenvector component'
             write (stderr_unit,*) 'is to be neglected in the determination of the LSJ expansion:'
-            write (stderr_unit,'(A,F8.5)') ' should be smaller than:',mincomp*0.01
+            write (stderr_unit,'(A,F8.5)') ' should be smaller than:',mincomp*0.01_real32
 !GG-2024
          write (stderr_unit,*) '(default setting: 0.005)'
 !GG-2024 end
@@ -1839,12 +1836,11 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use idigit_i
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1852,17 +1848,17 @@ contains
       character(len=*), intent(in) :: record
       logical, intent(out)         :: fail
       integer, intent(out)         :: number_of_levels
-      integer, dimension(1:vectors_number), intent(inout) :: levels
+      integer, intent(inout) :: levels(1:vectors_number)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !GG      logical, dimension(200)   :: low_to
-      logical, dimension(2000)   :: low_to
+      logical   :: low_to(2000)
       character(len=500)        :: string
       integer                   :: a, i, lower, n
-      integer, dimension(2000)   :: low
+      integer   :: low(2000)
 !GG      integer, dimension(200)   :: low
-      integer, dimension(vectors_number) :: run
+      integer :: run(vectors_number)
 !-----------------------------------------------
       fail = .true.;  levels(1:vectors_number) = 0;  number_of_levels = 0
       run(1:vectors_number) = 0;   string = adjustl(record)
@@ -1918,6 +1914,7 @@ contains
 !***********************************************************************
 !                                                                      *
       subroutine jj2lsj
+      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !     Controls the transformation of atomic states from a jj-          *
 !     to a LS-coupled CSF basis.                                       *
@@ -1936,7 +1933,7 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: int64
       use eigv_c,          only: hamiltonian_energy_shift, shifted_eigenvalues, csf_mixing_coefficients
       use orb_c,           only: csf_count
       use prnt_c,          only: ivec, nvec
@@ -1949,9 +1946,8 @@ contains
 !-----------------------------------------------
       use itjpo_i
       use ispar_i
-      use vast_kind_param, only: long
       use convrt_double_i, only: convrt_double
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -1964,20 +1960,20 @@ contains
       integer :: ncfmin, ncfmax, ncf_ls_jj_max
       type(ls_ranking), allocatable :: rankings(:)
       integer :: post_lev, post_workers
-      real(double) :: rank_start
-      real(double) :: phase_start, format_start, format_seconds
-      real(double) :: thresh, wa, wb,ssms,g_j,g_jls, sumthrsh
+      real(real64) :: rank_start
+      real(real64) :: phase_start, format_start, format_seconds
+      real(real64) :: thresh, wa, wb,ssms,g_j,g_jls, sumthrsh
       character(len=4)   :: string_cnum
       character(len=164)  :: string_csf_one
-      integer,  dimension(blocks_number)      :: number_of_levels
-      integer, dimension(blocks_number,vectors_number) :: levels
-      integer, dimension(1:vectors_number)     :: max_comp
-      integer, dimension(:), pointer     :: leading_ls
-      integer, dimension(:), pointer       :: iw
-      real(double), dimension(:), pointer  :: weights, weights2
-      integer, dimension(:), pointer  :: ithresh
-      character(len=164), dimension(1:vectors_number) :: string_csf
-      integer(long) loc_i8, ncf_i8
+      integer      :: number_of_levels(blocks_number)
+      integer :: levels(blocks_number, vectors_number)
+      integer     :: max_comp(1:vectors_number)
+      integer, pointer     :: leading_ls(:)
+      integer, pointer       :: iw(:)
+      real(real64), pointer  :: weights(:), weights2(:)
+      integer, pointer  :: ithresh(:)
+      character(len=164) :: string_csf(1:vectors_number)
+      integer(int64) :: loc_i8, ncf_i8
 !-----------------------------------------------
       ssms = zero;   g_j = zero;   g_jls = zero;    before_j = 0
       call inscreen(thresh,levels,number_of_levels,ioutc,ioutj,unique, &
@@ -2106,13 +2102,13 @@ contains
             print *, " "
             print *, " Level  J Parity      CSF contributions"
             print *, " "
-            if (level > 1   .and.   dabs(wb) > 1.0001) then
+            if (level > 1   .and.   dabs(wb) > 1.0001_real32) then
                print *, "level, wb = ",level,wb
                stop "JJ2LSJ(): program stop A."
             end if
             nocsf_min = 5
             do j = 1,5
-               if(abs(weights(j)) < 0.00001) then
+               if(abs(weights(j)) < 0.00001_real32) then
                   nocsf_min = j - 1
                   exit
                end if
@@ -2159,18 +2155,18 @@ contains
             call profile_emit('ls_rank_gather',phase_start,iblknum,level,asf_set_ls%csf_set_ls%nocsf)
             phase_start=profile_time()
             if(imincompoff == 1) then
-               if (level > 1 .and. (wb*100.+dabs(mincomp)) <= 100.) then
+               if (level > 1 .and. (wb*100._real32+dabs(mincomp)) <= 100._real32) then
                   write (*,"(A,F5.0,A)")   &
                     "Attention!!!  The program not reach the accuracy",mincomp," %"
                   print *, "level, sum of weights in LSJ = ",level,wb
                   print *,""
                end if
             else
-               if (level > 1 .and. abs(wb) > 1.001) then
+               if (level > 1 .and. abs(wb) > 1.001_real32) then
                   print*,"Attention!!!  The sum of weights is bigger then 1.0001"
                   print *, "level, sum of weights in LSJ = ",level,wb
                end if
-               if (level > 1 .and.  abs(wb) < .998) then
+               if (level > 1 .and.  abs(wb) < .998_real32) then
                   print*,"Attention!!!  The sum of weights is little then .998"
                   print *, "level, sum of weights in LSJ = ",level,wb
                end if
@@ -2212,7 +2208,7 @@ contains
 !     output to *.lsj.lbl
             call profile_emit('ls_stdout',phase_start,iblknum,level)
             phase_start=profile_time()
-            format_seconds=0.0_double
+            format_seconds=0.0_real64
             if(before_j == 0) then
                before_j = 1
             else if(lev == 1 .and. before_j == 1) then
@@ -2305,7 +2301,7 @@ contains
 !                                                                      *
 !***********************************************************************
       use packls_i, only: packls
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -2318,20 +2314,20 @@ contains
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer                                 :: i, j, counter
-      integer, dimension(:), pointer          :: occupation
+      integer, pointer          :: occupation(:)
 !GG      integer, dimension(8)                   :: Q
-      integer, dimension(18)                   :: q
+      integer                   :: q(18)
       character(len=4)                        :: ls, xls
-      character(len=4), dimension(:),pointer  :: string_ls, string_xls
+      character(len=4),pointer  :: string_ls(:), string_xls(:)
 !GG      character(len=3), dimension(15)         :: COUPLE
-      character(len=3), dimension(35)         :: couple
+      character(len=3)         :: couple(35)
 !GG      character(len=3), dimension(8)          :: ELC
-      character(len=3), dimension(18)          :: elc
+      character(len=3)          :: elc(18)
       character(len=2)                        :: string
 !GG      CHARACTER(LEN=64)                       :: string_CSF_PACK
       character(len=164)                       :: string_csf_pack
-      character(len=3), dimension(:), pointer :: string_nl
-      character(len=1), dimension(0:20)       :: l1
+      character(len=3), pointer :: string_nl(:)
+      character(len=1)       :: l1(0:20)
       data l1 /'s','p','d','f','g','h','i','k','l','m','n', &
                'o','q','r','t','u','v','w','x','y','z'/
 !-----------------------------------------------
@@ -2390,7 +2386,6 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use orb_c,           only: orbital_count, orbital_principal_n, orbital_kappa
       use m_c,             only: ncore
 !-----------------------------------------------
@@ -2400,7 +2395,7 @@ contains
       use iq_i
       use jqs_i
       use convrt_double_i, only: convrt_double
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -2410,12 +2405,12 @@ contains
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer                                 :: i, j, counter, string_lenth
-      integer, dimension(:), pointer          :: occupation
-      character(len=4), dimension(:), pointer :: string_j, string_x
+      integer, pointer          :: occupation(:)
+      character(len=4), pointer :: string_j(:), string_x(:)
       character(len=4)                        :: string_cnum
       character(len=2)                        :: string
-      character(len=4), dimension(:), pointer ::  string_nl
-      character(len=1), dimension(0:20)       :: l1
+      character(len=4), pointer ::  string_nl(:)
+      character(len=1)       :: l1(0:20)
       data l1 /'s','p','d','f','g','h','i','k','l','m','n', &
                'o','q','r','t','u','v','w','x','y','z'/
 !-----------------------------------------------
@@ -2485,7 +2480,7 @@ contains
 !                                                                      *
 !***********************************************************************
       use convrt_double_i, only: convrt_double
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -2496,13 +2491,13 @@ contains
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer                                 :: i, j, counter, string_lenth
-      integer, dimension(:), pointer          :: occupation
+      integer, pointer          :: occupation(:)
       character(len=4)                        :: ls, xls
-      character(len=4), dimension(:),pointer  :: string_ls, string_xls
+      character(len=4),pointer  :: string_ls(:), string_xls(:)
       character(len=4)                        :: string_cnum
       character(len=2)                        :: string
-      character(len=3), dimension(:), pointer :: string_nl
-      character(len=1), dimension(0:20)       :: l1
+      character(len=3), pointer :: string_nl(:)
+      character(len=1)       :: l1(0:20)
       data l1 /'s','p','d','f','g','h','i','k','l','m','n', &
                'o','q','r','t','u','v','w','x','y','z'/
 !-----------------------------------------------
@@ -2563,8 +2558,7 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -2577,8 +2571,8 @@ contains
 !-----------------------------------------------
       integer                                  :: i, j
       character (len=2)                        :: string
-      character (len=3), dimension(:), pointer :: string_nl
-      character (len=1), dimension(0:20)       :: l1
+      character (len=3), pointer :: string_nl(:)
+      character (len=1)       :: l1(0:20)
       data l1 /'s','p','d','f','g','h','i','k','l','m','n', &
                'o','q','r','t','u','v','w','x','y','z'/
 !-----------------------------------------------
@@ -2624,7 +2618,6 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use def_c,           only: electron_count
       use orb_c,           only: orbital_count, orbital_principal_n, orbital_kappa, csf_count
       use m_c,             only: ncore
@@ -2633,26 +2626,26 @@ contains
 !-----------------------------------------------
       use itjpo_i
       use iq_i
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer, dimension(:), intent(in)  :: ithresh
+      integer, intent(in)  :: ithresh(:)
       integer, intent(in)  :: ncfmin, ncfmax
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      type(nl), dimension(:), pointer :: shell_temp
-      integer, dimension(:), pointer  :: nllsval, nljjval
+      type(nl), pointer :: shell_temp(:)
+      integer, pointer  :: nllsval(:), nljjval(:)
       type(lsj_list)                  :: nonequiv_csfs_jj
 !
       integer :: isubc, isubc2, icsf_jj, icsf_jj2, icsf_jj_real, icsf_ls
       integer :: n, action_type
       logical :: new_one, found_parent_minus, found_parent_plus
 !
-      integer, dimension(:), pointer :: all_occupation
-      integer, dimension(:), pointer :: li, si, l_i, s_i, w, q
+      integer, pointer :: all_occupation(:)
+      integer, pointer :: li(:), si(:), l_i(:), s_i(:), w(:), q(:)
       integer                        :: j
 !-----------------------------------------------
       asf_set_ls%csf_set_ls%number_of_electrons = electron_count
@@ -2838,7 +2831,7 @@ contains
 !     NIST                                     last update: May 2011   *
 !                                                                      *
 !***********************************************************************
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -2871,12 +2864,11 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use ispar_i
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -2926,13 +2918,12 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use jj2lsj_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use ittk_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -2940,7 +2931,7 @@ contains
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      type(subshell_term_ls), dimension(120) :: ls_terms
+      type(subshell_term_ls) :: ls_terms(120)
       integer :: iterm, nr_terms, suma, delta_j
 !GG 2015.12.02 NIST
 !GG      integer :: number
@@ -3035,7 +3026,6 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use orb_c,           only: orbital_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -3043,12 +3033,12 @@ contains
       use itjpo_i
       use ispar_i
       use iq_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer :: ncsf1, ncsf2
-      logical rez
+      logical :: rez
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -3096,7 +3086,6 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use orb_c,           only: orbital_kappa
       use cons_c,          only: zero
 !-----------------------------------------------
@@ -3104,12 +3093,12 @@ contains
 !-----------------------------------------------
       use iq_i
       use jqs_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: jj_number,ls_number
-      real(double)        :: wa
+      real(real64)        :: wa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -3198,7 +3187,6 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use orb_c,           only: orbital_kappa
       use cons_c,          only: zero, one
 !-----------------------------------------------
@@ -3209,16 +3197,16 @@ contains
       use jqs_i
       use nine_i, only: nine
       use sixj_i, only: sixj
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: shell_number,jj_number,ls_number
-      real(double)        :: wa
+      real(real64)        :: wa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double) :: wa_sum, rac6, rac9
+      real(real64) :: wa_sum, rac6, rac9
       integer      :: delta_j, number_minus, number_plus,   &
 !GG begin  2025
                       number_plus_1,                        &
@@ -3324,6 +3312,7 @@ contains
 !***********************************************************************
 !                                                                      *
       subroutine uniquelsj
+      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !     Subroutine defines a unique labels for energy levels             *
 !                                                                      *
@@ -3334,12 +3323,11 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use iso_fortran_env, only: int32
-      implicit none
+      implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -3351,21 +3339,21 @@ contains
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      character(len=256), dimension(:,:), pointer :: coupling
-      real(double), dimension(:,:), pointer       :: comp, mix
-      character(len=3), dimension(:), pointer     :: str_no
-      character(len=5), dimension(:), pointer     :: str_j
-      character(len=1), dimension(:), pointer     :: str_p
-      character(len=256), dimension(:), pointer   :: opt_coupling
-      character(len=256), dimension(:), pointer   :: tmp_coupling
-      real(double), dimension(:), pointer         :: energy, pro
-      real(double), dimension(:), pointer         :: tmp_comp, tmp_mix
-      integer, dimension(:), pointer           :: mas_max, icount, iprgg
+      character(len=256), pointer :: coupling(:, :)
+      real(real64), pointer       :: comp(:, :), mix(:, :)
+      character(len=3), pointer     :: str_no(:)
+      character(len=5), pointer     :: str_j(:)
+      character(len=1), pointer     :: str_p(:)
+      character(len=256), pointer   :: opt_coupling(:)
+      character(len=256), pointer   :: tmp_coupling(:)
+      real(real64), pointer         :: energy(:), pro(:)
+      real(real64), pointer         :: tmp_comp(:), tmp_mix(:)
+      integer, pointer           :: mas_max(:), icount(:), iprgg(:)
       character    :: record*53
       character    :: form*11
       character    :: str*7
-      real(double) :: phase_start
-      real(double) :: max_comp
+      real(real64) :: phase_start
+      real(real64) :: max_comp
       integer      :: ios, ierr, inum, num_lev, i1,i2,i3,i4
       integer      :: ipr, iprf, num_opt, lev_opt, new_j
       integer(int32)    :: last, length
@@ -3423,7 +3411,7 @@ contains
                mas_max(num_lev) = inum - 1
              exit
             else if                                                    &
-              (mix(inum,num_lev)==0.00.and.comp(inum,num_lev)==0.00)then
+              (mix(inum,num_lev)==0.00_real32.and.comp(inum,num_lev)==0.00_real32)then
                mas_max(num_lev) = inum - 1
                new_j = 0
                go to 1

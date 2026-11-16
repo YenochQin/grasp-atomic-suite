@@ -24,11 +24,11 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       use suite_system, only: make_directory
-      implicit none
+      implicit none (type, external)
       character(len=*), intent(in):: dir
       integer, intent(in):: lendir
       integer, intent(out):: ierr
-      character(len=255) mkdir_error_message
+      character(len=255) :: mkdir_error_message
 !      character(len=*), parameter::iam = 'SUN'  ! soly for machine
 !      character(len=len_trim (iam)), optional, intent(out):: machine
 

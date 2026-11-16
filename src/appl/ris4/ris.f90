@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use default_c
       use iounit_c
       use debug_c,         only: cutoff
@@ -36,11 +36,11 @@
       use factt_i
       use ris_cal_i
       use getsmd_i, only: getsmd
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double) :: dr2
+      real(real64) :: dr2
       logical   :: yes
       character :: name*24
       integer :: k, nci, ncore_not_used, nopar
@@ -48,7 +48,7 @@
 !
 !   Matrix elements smaller than CUTOFF are not accumulated
 !
-      cutoff = 1.0d-10
+      cutoff = 1.0e-10_real64
 !
       write (stderr_unit, *)
       write (stderr_unit, *) 'RIS: Execution begins ...'

@@ -7,10 +7,10 @@
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:16:25   2/14/04
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      implicit none
-      integer, dimension(39) :: itab
-      integer, dimension(40) :: jtab
-      integer, dimension(357) :: ntab
+      implicit none (type, external)
+      integer :: itab(39)
+      integer :: jtab(40)
+      integer :: ntab(357)
       integer :: nrows
       integer, private :: i
       data nrows/ 39/

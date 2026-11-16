@@ -14,14 +14,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: ndim
-      real(double), intent(in) :: factor
-      real(double), dimension(ndim), intent(inout) :: vector
+      real(real64), intent(in) :: factor
+      real(real64), intent(inout) :: vector(ndim)
 !-----------------------------------------------
 !
       vector(:ndim) = vector(:ndim)*factor

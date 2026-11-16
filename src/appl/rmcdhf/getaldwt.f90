@@ -15,23 +15,23 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use itjpo_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer , intent(in) :: ncf
-      real(double)  :: wt(ncf)
+      real(real64)  :: wt(ncf)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, n159
-      real(double) :: sumwgt, ftjpoi
+      real(real64) :: sumwgt, ftjpoi
 !-----------------------------------------------
 
 ! Select a method to assign level weights for NCF > 1 case
@@ -54,10 +54,10 @@
 
       select case (n159)                         ! Equal weight
       case (1)
-         wt = 1.d0
+         wt = 1._real64
          sumwgt = dble(ncf)
       case (5)                                   ! Standard weight
-         sumwgt = 0.d0
+         sumwgt = 0._real64
          do i = 1, ncf
             ftjpoi = dble(itjpo(i))
             wt(i) = ftjpoi
@@ -70,9 +70,9 @@
             ' levels :'
          read (stdin_unit, *) (wt(i),i=1,ncf)
 
-         sumwgt = 0.d0
+         sumwgt = 0._real64
          do i = 1, ncf
-            if (wt(i) <= 0.d0) then
+            if (wt(i) <= 0._real64) then
                write (stderr_unit, *) 'Weights must exceed 0;'
                go to 123
             else
@@ -85,7 +85,7 @@
          error stop
       end select
 
-      sumwgt = 1.d0/sumwgt
+      sumwgt = 1._real64/sumwgt
       wt = sumwgt*wt
 
       return

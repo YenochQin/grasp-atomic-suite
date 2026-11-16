@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -25,7 +25,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ncount2, ncount_rate, ncount_max, nseconds
-      integer, dimension(8) :: nymduhmsm
+      integer :: nymduhmsm(8)
       character :: chdate*8, chtime*10, chzone*5, str2nds*8, msg*80
 !-----------------------------------------------
 

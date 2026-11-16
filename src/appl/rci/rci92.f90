@@ -73,7 +73,7 @@
       use genintrk_i, only: genintrk
       use starttime_i, only: starttime
       use stoptime_i, only: stoptime
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -83,11 +83,11 @@
 !-----------------------------------------------
       integer, parameter :: nblk=50
       integer :: ncount1, ncount2, ncount_rate, ncount_max
-      integer, dimension(8) :: nymduhmsm
+      integer :: nymduhmsm(8)
       integer :: myid, nprocs, k, lenname, ncore, ndum, j2max, nseconds
       logical :: yes
       character(len=128) :: name, tmpdir, permdir, isofile
-      character(len=8), dimension(nblk0) :: idblk
+      character(len=8) :: idblk(nblk0)
       character :: chdate*8, chtime*10, chzone*5, str*8, msg*128
 !-----------------------------------------------
 !

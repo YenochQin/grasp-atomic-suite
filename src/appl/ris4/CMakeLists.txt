@@ -1,3 +1,6 @@
+add_executable(fical fical.f90)
+install(TARGETS fical DESTINATION bin/)
+
 if(GRASP_BUILD_SERIAL_APPS)
     add_executable(ris4
         ris_C.f90

@@ -17,7 +17,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use iounit_c,     only: stdin_unit, stderr_unit
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

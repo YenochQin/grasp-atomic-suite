@@ -18,24 +18,24 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, half, one, two, three
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use ixjtik_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer                   :: i, j, k, l, m
+      integer, intent(in) :: i, j, k, l, m
       integer, intent(in)       :: itik
-      real(double), intent(out) :: si
+      real(real64), intent(out) :: si
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: ifa
-      real(double) :: as, aka, a, b, c
+      real(real64) :: as, aka, a, b, c
 !-----------------------------------------------
       si = zero
       if (itik /= 0) then

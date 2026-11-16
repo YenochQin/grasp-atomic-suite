@@ -25,7 +25,7 @@
 !-----------------------------------------------
       use getyn_i
       use openfl_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -33,8 +33,8 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      character*9, parameter :: form = 'FORMATTED'
-      character*3, parameter :: status = 'NEW'
+      character(len=9), parameter :: form = 'FORMATTED'
+      character(len=3), parameter :: status = 'NEW'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

@@ -22,7 +22,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only:  max_radial_points
       use memory_man
       use debug_c
@@ -38,7 +38,7 @@
       use intrpq_i
       use orthsc_i
       use mpiu_i, only: stopmpi
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -48,8 +48,8 @@
 !-----------------------------------------------
       integer :: j, i, k, nwin, ios, npy, naky, my
 !     integer :: ierr
-      real(double) :: con, fkk, ey, pzy, dnorm
-      real(double), dimension(:), pointer :: pa, qa, ra
+      real(real64) :: con, fkk, ey, pzy, dnorm
+      real(real64), pointer :: pa(:), qa(:), ra(:)
 !-----------------------------------------------
 !
 !-----------------------------------------------------------------------
@@ -69,11 +69,11 @@
       do j = 1, orbital_count
 
          do i = 1, radial_point_count
-            radial_large_components(i,j) = 0.d0
-            radial_small_components(i,j) = 0.d0
+            radial_large_components(i,j) = 0._real64
+            radial_small_components(i,j) = 0._real64
          enddo
 
-         orbital_energy_parameters(j) = -1.d0
+         orbital_energy_parameters(j) = -1._real64
          k = abs (orbital_kappa(j))
          if (nuclear_model_parameter_count .gt. 0) then
             orbital_origin_exponents(j) = dble (k)
@@ -125,7 +125,7 @@
                                mpi_comm_world,mpi_error_code)
 
          do j = 1, orbital_count
-            if (.not.(orbital_energy_parameters(j)<0.0d00 .and. npy==orbital_principal_n(j) .and. naky==orbital_kappa(j))) cycle
+            if (.not.(orbital_energy_parameters(j)<0.0_real64 .and. npy==orbital_principal_n(j) .and. naky==orbital_kappa(j))) cycle
                orbital_origin_parameters(j) = pzy
                orbital_energy_parameters(j) = ey
                call intrpq (pa, qa, my, ra, j, dnorm)

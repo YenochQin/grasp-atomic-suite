@@ -12,7 +12,8 @@ program rdensity
     use getsmd_i
     use getmixblock_i
     use factt_i
-    implicit none
+    use, intrinsic :: iso_fortran_env, only: real64
+    implicit none (type, external)
     character(24) :: name
     character(256) :: arg
     integer :: nci, ordering, status, i, ios, length, ncore
@@ -24,7 +25,7 @@ program rdensity
     ndef = 0
     ordering = 2
     status = 0
-    cutoff = 1.0d-10
+    cutoff = 1.0e-10_real64
     interactive = command_argument_count() == 0
     if (rank == 0) then
         if (interactive) then

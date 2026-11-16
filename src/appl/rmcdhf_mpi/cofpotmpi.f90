@@ -6,7 +6,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use pote_c
       use mpi_c
 !-----------------------------------------------
@@ -19,14 +19,14 @@
       use dacon_i
       use pote_c
       use suite_linear_algebra, only: dcopy
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: j
       integer  :: npts
       logical  :: eol
-      real(double), dimension(npts) :: tmpmpi
+      real(real64) :: tmpmpi(npts)
 !-----------------------------------------------------------------------
 
       call setcof (eol, j)

@@ -11,7 +11,8 @@
         "dvd90",
         "mcp90",
         "rang90",
-        "jj2lsj_omp"
+        "jj2lsj_omp",
+        "fical"
       ],
       "tests": [
         "lib9290_quad",
@@ -49,7 +50,8 @@
         "f2018_weights_rmcdhf_mem",
         "f2018_weights_rmcdhf_mpi",
         "f2018_weights_rmcdhf_mem_mpi",
-        "f2018_input_precision"
+        "f2018_input_precision",
+        "fical_mixed_mass_shift_units"
       ]
     },
     {

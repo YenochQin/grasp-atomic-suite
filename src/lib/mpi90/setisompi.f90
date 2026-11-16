@@ -24,7 +24,8 @@
 !-----------------------------------------------
       use setiso_i
       use orthsc_i
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -34,8 +35,8 @@
 !-----------------------------------------------
       integer :: j, i, k, nwin, ios, npy, naky, my
 !     integer :: ierr
-      real(double) :: con, fkk, ey, pzy, dnorm
-      real(double), dimension(:), pointer :: pa, qa, ra
+      real(real64) :: con, fkk, ey, pzy, dnorm
+      real(real64), pointer :: pa(:), qa(:), ra(:)
 !-----------------------------------------------
       if (mpi_rank .eq. 0) call setiso (isofile)
 

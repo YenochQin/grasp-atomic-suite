@@ -9,7 +9,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double, long
+      use, intrinsic :: iso_fortran_env, only: real64, int64
       use parameter_def,    only: orbital_index_radix
       use memory_man
 !-----------------------------------------------
@@ -28,7 +28,7 @@
       use fco_i
       use slater_i
       use gco_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -38,19 +38,19 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       integer, parameter :: key = orbital_index_radix
-      character*6, parameter :: myname = 'SETHAM'
+      character(len=6), parameter :: myname = 'SETHAM'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ncfpat, ia, ir, itmp, idiag, km, k, k0, ib, nkjia, nkjib, kmin&
          , kmax, ndim, jblockt, ncft, ncoeff, ios, lab, ncontr, iclmndum, i, &
          loc, nfile, id, ic
-      integer(long) :: lod      !  INTEGER*8 version of LOC
-      real(double) :: diaa, coef, f0aa, fkaa, f0ab, gkab, tegral
+      integer(int64) :: lod      !  INTEGER*8 version of LOC
+      real(real64) :: diaa, coef, f0aa, fkaa, f0ab, gkab, tegral
       logical :: set
       character :: mcplab*3
-      real(double), dimension(:), pointer :: coeff
-      integer, dimension(:), pointer :: indx
+      real(real64), pointer :: coeff(:)
+      integer, pointer :: indx(:)
 !-----------------------------------------------
 !
 !     !*** needs EMT, IENDC.
@@ -105,7 +105,7 @@
          set = .false.
          do ir = myid + 1, csf_count, nprocs
             coef = fco(0,ir + ncfpat,ia,ia)
-            if (coef == 0.d0) cycle
+            if (coef == 0._real64) cycle
             !*** Angular coefficient not zero ...
             if (.not.set) then
                f0aa = slater(ia,ia,ia,ia,0)
@@ -134,7 +134,7 @@
 
          do ir = myid + 1, csf_count, nprocs
             coef = fco(k,ir + ncfpat,ia,ia)
-            if (coef == 0.d0) cycle
+            if (coef == 0._real64) cycle
             if (.not.set) then
                fkaa = slater(ia,ia,ia,ia,k)
                set = .true.
@@ -156,7 +156,7 @@
             set = .false.
             do ir = myid + 1, csf_count, nprocs
                coef = fco(0,ir + ncfpat,ia,ib)
-               if (coef == 0.d0) cycle
+               if (coef == 0._real64) cycle
                if (.not.set) then
                   f0ab = slater(ia,ib,ia,ib,0)
                   set = .true.
@@ -195,7 +195,7 @@
 
             do ir = myid + 1, csf_count, nprocs
                coef = gco(k,ir + ncfpat,ia,ib)
-               if (coef == 0.d0) cycle
+               if (coef == 0._real64) cycle
                if (.not.set) then
                   gkab = slater(ia,ib,ib,ia,k)
                   set = .true.

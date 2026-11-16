@@ -18,23 +18,22 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use openfl_i
       use lodmix_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       character(len=*) , intent(in) :: name
-      character(len=8), dimension(*) :: idblk
+      character(len=8) :: idblk(*)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      character*11, parameter :: form = 'UNFORMATTED'
-      character*7, parameter :: status = 'UNKNOWN'
+      character(len=11), parameter :: form = 'UNFORMATTED'
+      character(len=7), parameter :: status = 'UNKNOWN'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

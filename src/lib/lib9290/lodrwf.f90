@@ -17,7 +17,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use memory_man
       use debug_c
@@ -31,7 +31,7 @@
 !-----------------------------------------------
       use intrpq_i
       use orthsc_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -44,8 +44,8 @@
 !-----------------------------------------------
       integer :: j, i, k, nwin, ios, npy, naky, my
       integer :: ierr
-      real(double) :: con, fkk, ey, pzy, dnorm
-      real(double), dimension(:), pointer :: pa, qa, ra
+      real(real64) :: con, fkk, ey, pzy, dnorm
+      real(real64), pointer :: pa(:), qa(:), ra(:)
 !-----------------------------------------------
 !
 !
@@ -68,10 +68,10 @@
 !
       do j = 1, orbital_count
 !
-         radial_large_components(:radial_point_count,j) = 0.0d00
-         radial_small_components(:radial_point_count,j) = 0.0d00
+         radial_large_components(:radial_point_count,j) = 0.0_real64
+         radial_small_components(:radial_point_count,j) = 0.0_real64
 !
-         orbital_energy_parameters(j) = -1.0d00
+         orbital_energy_parameters(j) = -1.0_real64
 !
          k = abs(orbital_kappa(j))
          if (nuclear_model_parameter_count > 0) then
@@ -108,7 +108,7 @@
          read (23) (ra(i),i=1,my)
 
          do j = 1, orbital_count
-            if (.not.(orbital_energy_parameters(j)<0.0d00 .and. npy==orbital_principal_n(j) .and. naky==orbital_kappa(j))) cycle
+            if (.not.(orbital_energy_parameters(j)<0.0_real64 .and. npy==orbital_principal_n(j) .and. naky==orbital_kappa(j))) cycle
             orbital_origin_parameters(j) = pzy
             orbital_energy_parameters(j) = ey
             call intrpq(pa, qa, my, ra, j, dnorm)

@@ -14,7 +14,7 @@
 !                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
       use debug_c
-      implicit none
+      implicit none (type, external)
 !
       ldbpa = .false.
       ldbpg = .false.

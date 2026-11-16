@@ -18,7 +18,7 @@
 !-----------------------------------------------
       use mtjj_c
       use mtjj2_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -28,8 +28,8 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer                :: i2v, inn, il, jp, jg, jj
-      integer, dimension(9)  :: lp, lg
-      integer, dimension(27) :: lp3, lg3
+      integer  :: lp(9), lg(9)
+      integer :: lp3(27), lg3(27)
 !-----------------------------------------------
       data lp/1,0,3,0,6,0,12,0,26/
       data lg/2,0,5,0,11,0,25,0,63/

@@ -5,7 +5,7 @@ program csf_record_io
 #ifdef MCP_MPI
     use mpi_c
 #endif
-    implicit none
+    implicit none (type, external)
     character(32) :: header, scenario
     integer :: ncore, rank, ranks, status
     logical :: corrupt

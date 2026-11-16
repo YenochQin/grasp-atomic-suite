@@ -3,7 +3,7 @@
 !     I N P R O D
 !     ------------------------------------------------------------------
 !
-      real(kind(0.0d0)) function inprod (a, b, ndim)
+      real(real64) function inprod (a, b, ndim)
 !      CALCULATE SCALAR PRODUCT BETWEEN TO VECTORS A,B
 !************************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:08:49   1/ 6/07
@@ -12,14 +12,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: ndim
-      real(double), intent(in) :: a(*)
-      real(double), intent(in) :: b(*)
+      real(real64), intent(in) :: a(*)
+      real(real64), intent(in) :: b(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

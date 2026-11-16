@@ -1,7 +1,7 @@
 ! Optional wall-clock diagnostics. Calls to profile_emit are coordinator-only.
 module jj2lsj_profile
     use iso_fortran_env, only: int64, real64, error_unit
-    implicit none
+    implicit none (type, external)
     private
     public :: profile_start, profile_finish, profile_time, profile_emit
     public :: profile_file_size

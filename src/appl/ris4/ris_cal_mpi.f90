@@ -7,7 +7,7 @@
 !   before the root rank writes the final output.                       *
 !                                                                      *
 !***********************************************************************
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_orbitals
       use memory_man
       use debug_c
@@ -51,19 +51,20 @@
       use mpiu_i, only: gdrsummpi_root
       use starttime_i, only: starttime
       use stoptime_i, only: stoptime
-      implicit none
-      character*24, intent(in) :: name
-      real(double), dimension(:,:,:), pointer :: dint1vec
-      real(double), dimension(:,:), pointer   :: dens1vec
-      real(double), dimension(:), pointer     :: densfit
-      real(double), dimension(:,:), pointer   :: fmat
-      real(double), dimension(:), pointer     :: rho
-      real(double), dimension(:), pointer     :: res
-      real(double), dimension(max_orbitals,max_orbitals) :: vint, vint2
-      real(double), dimension(max_orbitals,max_orbitals) :: dint1, dint2, dint3, &
-                                            dint4, dint5, dint6, &
-                                            dint7
-      real(double) :: au2fm, rcre, hzsmsu, hznmsu, fo90
+      implicit none (type, external)
+      character(len=24), intent(in) :: name
+      real(real64), pointer :: dint1vec(:, :, :)
+      real(real64), pointer   :: dens1vec(:, :)
+      real(real64), pointer     :: densfit(:)
+      real(real64), pointer   :: fmat(:, :)
+      real(real64), pointer     :: rho(:)
+      real(real64), pointer     :: res(:)
+      real(real64) :: vint(max_orbitals, max_orbitals), vint2(max_orbitals, max_orbitals)
+      real(real64) :: dint1(max_orbitals, max_orbitals), dint2(max_orbitals, max_orbitals), dint3(max_orbitals, max_orbitals), &
+                                            dint4(max_orbitals, max_orbitals), dint5(max_orbitals, max_orbitals), &
+                                               dint6(max_orbitals, max_orbitals), &
+                                            dint7(max_orbitals, max_orbitals)
+      real(real64) :: au2fm, rcre, hzsmsu, hznmsu, fo90
       logical :: avail_tb, avail_ob, yes2, saveyes, serial_save
       integer :: i, j, ncount1, doit_ob, doit_tb, nrnuc, yes2_mpi
       integer :: avail_ob_mpi, avail_tb_mpi, serial_save_mpi
@@ -80,7 +81,7 @@
       avail_tb_mpi = 0
       serial_save_mpi = 0
 
-      fo90 = nuclear_model_parameters(1)+2.d0*log(3.d0)*nuclear_model_parameters(2)
+      fo90 = nuclear_model_parameters(1)+2._real64*log(3._real64)*nuclear_model_parameters(2)
       do i=1,max_radial_points
          if(radial_grid(i+1).gt.fo90.and.radial_grid(i).le.fo90) then
             nrnuc = i+1
@@ -90,8 +91,8 @@
 
       allocate( dens1vec(nvec,nrnuc),dint1vec(max_orbitals,max_orbitals,nrnuc) )
       allocate( densfit(nrnuc) )
-      dint1vec(:,:,:) = 0.d0
-      dens1vec(:,:) = 0.d0
+      dint1vec(:,:,:) = 0._real64
+      dens1vec(:,:) = 0._real64
       allocate( fmat(6,nvec),rho(nvec),res(nvec) )
 
       call alloc (smsc1, nvec,'SMSC1', 'RIS_CAL_MPI')
@@ -107,15 +108,15 @@
       call starttime (ncount1, 'RIS_CAL_MPI')
 
       do i = 1,nvec
-         smsc1(i)  = 0.0d00
-         smsc2(i)  = 0.0d00
-         dens1(i) = 0.0d00
-         dens2(i) = 0.0d00
-         dens3(i) = 0.0d00
-         dens4(i) = 0.0d00
-         dens5(i) = 0.0d00
-         dens6(i) = 0.0d00
-         dens7(i) = 0.0d00
+         smsc1(i)  = 0.0_real64
+         smsc2(i)  = 0.0_real64
+         dens1(i) = 0.0_real64
+         dens2(i) = 0.0_real64
+         dens3(i) = 0.0_real64
+         dens4(i) = 0.0_real64
+         dens5(i) = 0.0_real64
+         dens6(i) = 0.0_real64
+         dens7(i) = 0.0_real64
       enddo
 
       if (mpi_rank .eq. 0) then
@@ -143,14 +144,14 @@
                dint5(i,j) = rint(i,j,-1)
                dint6(i,j) = rint(i,j,-2)
             else
-               dint1(i,j) = 0.0d00
-               dint1vec(i,j,:) = 0.0d00
-               dint2(i,j) = 0.0d00
-               dint3(i,j) = 0.0d00
-               dint4(i,j) = 0.0d00
-               dint5(i,j) = 0.0d00
-               dint6(i,j) = 0.0d00
-               dint7(i,j) = 0.0d00
+               dint1(i,j) = 0.0_real64
+               dint1vec(i,j,:) = 0.0_real64
+               dint2(i,j) = 0.0_real64
+               dint3(i,j) = 0.0_real64
+               dint4(i,j) = 0.0_real64
+               dint5(i,j) = 0.0_real64
+               dint6(i,j) = 0.0_real64
+               dint7(i,j) = 0.0_real64
             endif
          end do
       end do
@@ -165,12 +166,12 @@
                      + rint_sms2(i,j)/rcre                                &
                      + rint_sms3(i,j)
                else
-                  vint (i,j) = 0.0d00
-                  vint2(i,j) = 0.0d00
+                  vint (i,j) = 0.0_real64
+                  vint2(i,j) = 0.0_real64
                endif
             else
-               vint (i,j) = 0.0d00
-               vint2(i,j) = 0.0d00
+               vint (i,j) = 0.0_real64
+               vint2(i,j) = 0.0_real64
             endif
          end do
       end do
@@ -316,9 +317,9 @@
          write (24,313) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
               dens7(i),(dens2(i)-dens7(i)),dens2(i)
          hznmsu=dens7(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s
-         write (24,316) hznmsu*(1.0d-09), &
-              (dens2(i)-dens7(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-09), &
-              dens2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-09)
+         write (24,316) hznmsu*(1.0e-9_real64), &
+              (dens2(i)-dens7(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-9_real64), &
+              dens2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-9_real64)
       end do
 
       write (24,302)
@@ -328,13 +329,13 @@
               smsc1(i),smsc2(i)-smsc1(i),smsc2(i)
          hzsmsu=smsc1(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s
          if (dabs(hzsmsu) .le. (10**8)) then
-            write (24,315) hzsmsu*(1.0d-06), &
-                 (smsc2(i)-smsc1(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-06), &
-                 smsc2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-06)
+            write (24,315) hzsmsu*(1.0e-6_real64), &
+                 (smsc2(i)-smsc1(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-6_real64), &
+                 smsc2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-6_real64)
          else
-            write (24,316) hzsmsu*(1.0d-09), &
-                 (smsc2(i)-smsc1(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-09), &
-                 smsc2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-09)
+            write (24,316) hzsmsu*(1.0e-9_real64), &
+                 (smsc2(i)-smsc1(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-9_real64), &
+                 smsc2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-9_real64)
          endif
       end do
       if(yes2) then

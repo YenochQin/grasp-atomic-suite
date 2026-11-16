@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function arctan (arg1, arg2)
+      real(real64) function arctan (arg1, arg2)
 !-----------------------------------------------
 !                                                                      *
 !                   -1                                                 *
@@ -16,15 +16,15 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
 !
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), intent(in) :: arg1
-      real(double), intent(in) :: arg2
+      real(real64), intent(in) :: arg1
+      real(real64), intent(in) :: arg2
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -36,8 +36,8 @@
 !   returns a positive value
 !
       if (first) then
-         arctan = atan2(-1.0d00,-1.0d00)
-         if (arctan > 0.0d00) then
+         arctan = atan2(-1.0_real64,-1.0_real64)
+         if (arctan > 0.0_real64) then
             intrin = .true.
          else
             intrin = .false.
@@ -51,7 +51,7 @@
       if (intrin) then
          arctan = atan2(arg1,arg2)
       else
-         if (arg1 >= 0.0d00) then
+         if (arg1 >= 0.0_real64) then
             arctan = atan2(arg1,arg2)
          else
             arctan = pi + pi + atan2(arg1,arg2)

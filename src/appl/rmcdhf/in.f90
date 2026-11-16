@@ -41,7 +41,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_radial_points
       use def_c,            only: accy
       use grid_c,           only: transformed_grid_step, radial_point_count, radial_grid, radial_derivative_over_radius
@@ -51,29 +51,30 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use convrt_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer , intent(in) :: iorb
       integer , intent(in) :: jp
       integer , intent(out) :: mtp
-      real(double) , intent(inout) :: p(max_radial_points)
-      real(double) , intent(inout) :: q(max_radial_points)
+      real(real64) , intent(inout) :: p(max_radial_points)
+      real(real64) , intent(inout) :: q(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, j, lcnum, mtpp1
-      real(double), dimension(max_radial_points) :: th, ti, tj, xr, xs
-      real(double) :: eps, hhk, hhkf, cpj, cmj, cpjp1, cmjp1, tei, tthis, tci, &
+      real(real64) :: th(max_radial_points), ti(max_radial_points), tj(max_radial_points), xr(max_radial_points), &
+         xs(max_radial_points)
+      real(real64) :: eps, hhk, hhkf, cpj, cmj, cpjp1, cmjp1, tei, tthis, tci, &
          tdi, tlast
       character :: cnum*5
 !-----------------------------------------------
 !
 !   Global initializations
 !
-      eps = 0.01d00*accy
-      hhk = 0.5d00*transformed_grid_step*dble(orbital_kappa(iorb))
+      eps = 0.01_real64*accy
+      hhk = 0.5_real64*transformed_grid_step*dble(orbital_kappa(iorb))
 !
 !   Initialize counters
 !
@@ -83,11 +84,11 @@
 !   Other initializations
 !
       hhkf = hhk*radial_derivative_over_radius(j)
-      cpj = 1.0d00 + hhkf
-      cmj = 1.0d00 - hhkf
+      cpj = 1.0_real64 + hhkf
+      cmj = 1.0_real64 - hhkf
       hhkf = hhk*radial_derivative_over_radius(j+1)
-      cpjp1 = 1.0d00 + hhkf
-      cmjp1 = 1.0d00 - hhkf
+      cpjp1 = 1.0_real64 + hhkf
+      cmjp1 = 1.0_real64 - hhkf
 !
 !   Compute required elements of first two rows of  L  and  U
 !
@@ -123,8 +124,8 @@
       cpj = cpjp1
       cmj = cmjp1
       hhkf = hhk*radial_derivative_over_radius(j+1)
-      cpjp1 = 1.0d00 + hhkf
-      cmjp1 = 1.0d00 - hhkf
+      cpjp1 = 1.0_real64 + hhkf
+      cmjp1 = 1.0_real64 - hhkf
 !
       tci = -tg(j)/ti(i-1)
       th(i) = cpj - tci*tj(i-1)
@@ -154,7 +155,7 @@
 !
 !   Last two rows of solution of  U*W = Z ; evaluation of Q(J)
 !
-      q(j) = 0.0d00
+      q(j) = 0.0_real64
       p(j) = xs(i)/ti(i)
       q(j-1) = (xr(i)+tg(j)*p(j))/th(i)
 !
@@ -166,15 +167,15 @@
 !
       if (i > 0) then
          p(j) = (xs(i)-tj(i)*q(j))/ti(i)
-         q(j-1) = (xr(i)+(1.0d00-hhk*radial_derivative_over_radius(j))*q(j)+tg(j)*p(j))/th(i)
+         q(j-1) = (xr(i)+(1.0_real64-hhk*radial_derivative_over_radius(j))*q(j)+tg(j)*p(j))/th(i)
          go to 2
       endif
 !
 !   Complete tables with zeroes
 !
       mtpp1 = mtp + 1
-      p(mtpp1:radial_point_count) = 0.0d00
-      q(mtpp1:radial_point_count) = 0.0d00
+      p(mtpp1:radial_point_count) = 0.0_real64
+      q(mtpp1:radial_point_count) = 0.0_real64
 !
       return
       end subroutine in

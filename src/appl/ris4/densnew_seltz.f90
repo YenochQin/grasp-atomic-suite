@@ -25,7 +25,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix, max_orbitals, max_radial_points
       use blk_c
       use debug_c
@@ -51,17 +51,18 @@
       use getyn_i
       use itjpo_i
       use onescalar_i
-      implicit none
-      integer :: l, loc, ncontr, lab, nrnuc
+      implicit none (type, external)
+      integer :: l, loc, ncontr, lab
+      integer, intent(in) :: nrnuc
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), dimension(max_orbitals,max_orbitals), intent(in) :: dint1, dint2, &
-                                                        dint3, dint4, &
-                                                        dint5, dint6, &
-                                                        dint7
-      real(double), dimension(nvec,nrnuc), intent(out)     :: dens1vec !  JE ADD
-      real(double), dimension(max_orbitals,max_orbitals,nrnuc), intent(in) :: dint1vec !  JE ADD
+      real(real64), intent(in) :: dint1(max_orbitals, max_orbitals), dint2(max_orbitals, max_orbitals), &
+                                                        dint3(max_orbitals, max_orbitals), dint4(max_orbitals, max_orbitals), &
+                                                        dint5(max_orbitals, max_orbitals), dint6(max_orbitals, max_orbitals), &
+                                                        dint7(max_orbitals, max_orbitals)
+      real(real64), intent(out)     :: dens1vec(nvec, nrnuc) !  JE ADD
+      real(real64), intent(in) :: dint1vec(max_orbitals, max_orbitals, nrnuc) !  JE ADD
       integer, intent(in) :: doit
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -70,16 +71,16 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double), dimension(max_orbitals) :: tshell, tshell_s
-      real(double), dimension(nrnuc) :: contri1vec, elemnt1vec
-      real(double), dimension(:), pointer :: emt1, emt2, emt3, emt4,   &
-                                             emt5, emt6
-      real(double) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5,     &
+      real(real64) :: tshell(max_orbitals), tshell_s(max_orbitals)
+      real(real64) :: contri1vec(nrnuc), elemnt1vec(nrnuc)
+      real(real64), pointer :: emt1(:), emt2(:), emt3(:), emt4(:),   &
+                                             emt5(:), emt6(:)
+      real(real64) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5,     &
                       elemnt6, elemnt7, contri1, contri2, contri3,     &
                       contri4, contri5, contri6, contri7
       logical :: vsh, nucde, smssh, yes
       character :: cnum*11, ck*2
-      integer, dimension(max_orbitals) :: ia_s
+      integer :: ia_s(max_orbitals)
       integer :: ka, iopar, incor, ic, lcnum, itjpoc, ir, ia, ib, i, ii, j
 !-----------------------------------------------
 !
@@ -92,7 +93,7 @@
 ! DINT6 contain the expect. value <r-2>
 ! DINT7 contain the sum of NMS parameters: K^1_NMS+K^2_NMS+K^3_NMS
 !
-      dens1vec(:,:) = 0.0d00                                     ! JE ADD
+      dens1vec(:,:) = 0.0_real64                                     ! JE ADD
 !
 !   Set the rank (zero) and parity (even) for the one-particle
 !   coefficients
@@ -127,14 +128,14 @@
 !
 !   Initialise the accumulator
 !
-            elemnt1 = 0.0d00
-            elemnt2 = 0.0d00
-            elemnt3 = 0.0d00
-            elemnt4 = 0.0d00
-            elemnt5 = 0.0d00
-            elemnt6 = 0.0d00
-            elemnt7 = 0.0d00
-            elemnt1vec(:) = 0.0d00                                      ! JE ADD
+            elemnt1 = 0.0_real64
+            elemnt2 = 0.0_real64
+            elemnt3 = 0.0_real64
+            elemnt4 = 0.0_real64
+            elemnt5 = 0.0_real64
+            elemnt6 = 0.0_real64
+            elemnt7 = 0.0_real64
+            elemnt1vec(:) = 0.0_real64                                      ! JE ADD
 !
 !   Call the MCT package to compute T coefficients
 !
@@ -198,14 +199,14 @@
               contri6 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt6
               contri7 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt7
               if (ir.ne.ic) then
-                contri1 = 2.0d00 * contri1
-                contri1vec(:) = 2.0d00 * contri1vec(:)                  ! JE ADD
-                contri2 = 2.0d00 * contri2
-                contri3 = 2.0d00 * contri3
-                contri4 = 2.0d00 * contri4
-                contri5 = 2.0d00 * contri5
-                contri6 = 2.0d00 * contri6
-                contri7 = 2.0d00 * contri7
+                contri1 = 2.0_real64 * contri1
+                contri1vec(:) = 2.0_real64 * contri1vec(:)                  ! JE ADD
+                contri2 = 2.0_real64 * contri2
+                contri3 = 2.0_real64 * contri3
+                contri4 = 2.0_real64 * contri4
+                contri5 = 2.0_real64 * contri5
+                contri6 = 2.0_real64 * contri6
+                contri7 = 2.0_real64 * contri7
               endif
               dens1(j) = dens1(j) + contri1
               do 22 l = 2,nrnuc                                         ! JE ADD

@@ -23,7 +23,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use parameter_def,   only: max_orbitals
       use def_c
       use orb_c
@@ -34,16 +33,16 @@
 !-----------------------------------------------
       use prsrsl_i
       use prsrcn_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: nfile
-      integer  :: ncore
+      integer, intent(in) :: nfile
+      integer, intent(out) :: ncore
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(max_orbitals) :: iocc
+      integer :: iocc(max_orbitals)
       integer :: iqadum, npeel, i, j, npj, nakj, ios, ierr
       character :: str*256
 !-----------------------------------------------

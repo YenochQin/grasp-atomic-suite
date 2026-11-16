@@ -19,25 +19,25 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c, only: hartree_to_wavenumber_cm, hartree_to_ev, speed_of_light_cm_per_s, einstein_a_au_to_si, einstein_b_au_to_si
       use jlabl_c, labj=> jlbr, labp=>jlbp
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: nn
       integer, intent(in) :: mode
-      real(double), intent(in) :: eav
+      real(real64), intent(in) :: eav
       integer, intent(in) :: jtot(nn)
       integer, intent(in) :: ipar(nn)
       integer, intent(in) :: ilev(nn)
-      real(double), intent(in) :: e(nn)
+      real(real64), intent(in) :: e(nn)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: j, i, ip
-      real(double) :: eau, ecm, eev
+      real(real64) :: eau, ecm, eev
 !-----------------------------------------------
 !
 !   Always print the eigenenergies

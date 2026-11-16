@@ -1,7 +1,7 @@
 module input_io_mpi
     use mpi, only: mpi_comm_world, mpi_initialized, mpi_finalized, mpi_abort
     use input_io, only: fail_input_io
-    implicit none
+    implicit none (type, external)
     private
     public :: fail_input_io_mpi
 

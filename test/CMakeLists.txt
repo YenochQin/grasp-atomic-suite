@@ -50,6 +50,11 @@ else()
     find_package(Python3 COMPONENTS Interpreter)
 endif()
 if(Python3_Interpreter_FOUND)
+    add_test(NAME fical_mixed_mass_shift_units
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/ris4/fical_units.py"
+            $<TARGET_FILE:fical>)
+    set_tests_properties(fical_mixed_mass_shift_units PROPERTIES TIMEOUT 30 LABELS f2018_properties)
+
     if(TARGET rdensity)
         add_test(NAME rdensity_serial_regression
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/rdensity/regression.py

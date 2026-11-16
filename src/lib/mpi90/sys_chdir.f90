@@ -15,7 +15,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use suite_system, only: change_directory
-      implicit none
+      implicit none (type, external)
       character(len=*), intent(in):: dir
       integer, intent(in):: lendir
       integer, intent(out):: ierr

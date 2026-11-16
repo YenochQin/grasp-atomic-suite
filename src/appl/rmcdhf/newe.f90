@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use int_c
       use orb_c
       use scf_c
@@ -26,7 +26,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use outbnd_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -34,28 +34,28 @@
       integer , intent(in) :: nprime
       integer , intent(in) :: mx
       integer , intent(out) :: inv
-      real(double) , intent(in) :: sgn
-      real(double) , intent(inout) :: deleps
+      real(real64) , intent(in) :: sgn
+      real(real64) , intent(inout) :: deleps
       logical , intent(out) :: fail
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      real(double), parameter :: p02 = 2.0d-02
-      real(double), parameter :: p05 = 5.0d-02
-      real(double), parameter :: p001 = 1.0d-03
-      real(double), parameter :: p00001 = 1.0d-05
-      real(double), parameter :: d2p5 = 2.5d00
+      real(real64), parameter :: p02 = 2.0e-2_real64
+      real(real64), parameter :: p05 = 5.0e-2_real64
+      real(real64), parameter :: p001 = 1.0e-3_real64
+      real(real64), parameter :: p00001 = 1.0e-5_real64
+      real(real64), parameter :: d2p5 = 2.5_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      real(double) :: eps, abdele, delebe, dn, dnprme, dnpn25, etry, delta
+      real(real64) :: eps, abdele, delebe, dn, dnprme, dnpn25, etry, delta
 !-----------------------------------------------
 !
 !
 !   Determine if the iterative process has succeeded
 !
-      if (sgn>0.0d00 .and. mx==0) then
+      if (sgn>0.0_real64 .and. mx==0) then
          fail = .false.
       else
          fail = .true.
@@ -85,7 +85,7 @@
             if (outbnd(etry) .and. mx/=0) etry = eps*dnpn25
             if (outbnd(etry)) etry = eps - deleps
             if (outbnd(etry)) then
-               deleps = 0.5d00*deleps
+               deleps = 0.5_real64*deleps
                go to 1
             endif
          else if (mx == 0) then
@@ -95,12 +95,12 @@
             p(:mtp0) = -p(:mtp0)
             q(:mtp0) = -q(:mtp0)
             fail = .false.
-         else if (sgn < 0.0d00) then
+         else if (sgn < 0.0_real64) then
             etry = eps*dnpn25
-            if (outbnd(etry)) etry = 0.5d00*(epsmax + eps)
-            if (outbnd(etry)) etry = 0.5d00*(epsmin + eps)
+            if (outbnd(etry)) etry = 0.5_real64*(epsmax + eps)
+            if (outbnd(etry)) etry = 0.5_real64*(epsmin + eps)
          else if (mx < 0) then
-            delta = 1.0d00 - eps/epsmax
+            delta = 1.0_real64 - eps/epsmax
             epsmax = eps
             if (delta < p05) then
                emax = emax*dnpn25
@@ -108,9 +108,9 @@
                emax = eps*dnpn25
             endif
             etry = emax
-            if (outbnd(etry)) etry = 0.5d00*(epsmax + epsmin)
+            if (outbnd(etry)) etry = 0.5_real64*(epsmax + epsmin)
          else if (mx > 0) then
-            delta = 1.0d00 - epsmin/eps
+            delta = 1.0_real64 - epsmin/eps
             epsmin = eps
             if (delta < p05) then
                emin = emin*dnpn25
@@ -118,7 +118,7 @@
                emin = eps*dnpn25
             endif
             etry = emin
-            if (outbnd(etry)) etry = 0.5d00*(epsmax + epsmin)
+            if (outbnd(etry)) etry = 0.5_real64*(epsmax + epsmin)
          endif
          orbital_energy_parameters(j) = etry
       endif

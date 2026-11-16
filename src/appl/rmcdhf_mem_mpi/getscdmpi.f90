@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_orbitals, max_radial_points
       use coun_c
       use damp_c, only: orbital_damping_factors, mixing_damping_factors
@@ -53,7 +53,7 @@
       use getoldmpi_i
       use convrt_i
       use getrsl_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -65,16 +65,16 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      character*6, parameter :: myname = 'GETSCD'
+      character(len=6), parameter :: myname = 'GETSCD'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: np_status
       character(npol_message_len) :: np_message
       integer :: iqadum
-      integer , dimension(max_orbitals) :: indx
+      integer  :: indx(max_orbitals)
       integer :: i, j, iend, ibeg, lenth, nsubs, loc
-      real(double) :: odampu, cdampu
+      real(real64) :: odampu, cdampu
       logical :: yes
       character :: record*80, cnum*20
 !-----------------------------------------------
@@ -88,17 +88,17 @@
       speed_of_light_au = vacuum_speed_of_light_au
 ! DEFAULT IS SET ABOVE IN SETISO (from isodata), JG (Lund, 2013)
       if (nuclear_model_parameter_count == 0) then
-         radial_grid_scale = exp((-65.d0/16.d0))/nuclear_charge
-         transformed_grid_step = 0.5d0**4
+         radial_grid_scale = exp((-65._real64/16._real64))/nuclear_charge
+         transformed_grid_step = 0.5_real64**4
          radial_point_count = min(220,max_radial_points)
       else
 !         default comes here
 !CFF     ... RNT should be Z-dependent
-         radial_grid_scale = 2.0d-06/nuclear_charge
-         transformed_grid_step = 5.d-2
+         radial_grid_scale = 2.0e-6_real64/nuclear_charge
+         transformed_grid_step = 5.e-2_real64
          radial_point_count = max_radial_points
       endif
-      asymptotic_grid_step = 0.d0
+      asymptotic_grid_step = 0._real64
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
@@ -194,15 +194,15 @@
 !
 !   Set some defaults
 !
-      thresh = 0.05d0
+      thresh = 0.05_real64
 
 !      IORDER(I) = I    ! Completely determined in GETOLDMPI
       method(:orbital_count) = 3
       noinvt(:orbital_count) = .true.
 !FF      ... Revised Sep. 2014
 !CFF      ODAMP(:NW) = 1.D0
-      orbital_damping_factors(:orbital_count) = 0.0d0
-      scnsty(:orbital_count) = 0.0d0
+      orbital_damping_factors(:orbital_count) = 0.0_real64
+      scnsty(:orbital_count) = 0.0_real64
 
       where (orbital_kappa(:orbital_count) < 0)
          nnodep(:orbital_count) = orbital_principal_n(:orbital_count) + orbital_kappa(:orbital_count)
@@ -273,7 +273,7 @@
     3       continue
             write (stderr_unit, *) 'Enter the new threshold value:'
             read (*, *) thresh
-            if (thresh <= 0.d0) then
+            if (thresh <= 0._real64) then
                write (stderr_unit, *) myname, ': This must exceed 0;'
                go to 3
             endif
@@ -401,7 +401,7 @@
 !   ODAMP
 !
          do i = 1, orbital_count
-            if (.not.(orbital_damping_factors(i)/=0.d0 .and. .not.is_orbital_fixed(i))) cycle
+            if (.not.(orbital_damping_factors(i)/=0._real64 .and. .not.is_orbital_fixed(i))) cycle
             write (stderr_unit, *) 'Subshell accelerating parameters have ', &
                'been set.   Revise these?'
             yes = getyn()
@@ -423,7 +423,7 @@
                write (stderr_unit, *) ' -1 < ODAMP < 0 implies |ODAMP| is ', &
                   'held constant):'
                read (*, *) odampu
-               if (abs(odampu)==0.d0 .or. abs(odampu)>=1.d0) then
+               if (abs(odampu)==0._real64 .or. abs(odampu)>=1._real64) then
                   write (stderr_unit, *) myname, ': Value out of range ...'
                   go to 21
                else
@@ -442,7 +442,7 @@
                write (stderr_unit, *) ' -1 < ODAMP < 0 implies |ODAMP| is ', &
                   'held constant):'
                read (*, *) odampu
-               if (abs(odampu)==0.d0 .or. abs(odampu)>=1.d0) then
+               if (abs(odampu)==0._real64 .or. abs(odampu)>=1._real64) then
                   write (stderr_unit, *) myname, ': Value out of range ...'
                   go to 23
                else

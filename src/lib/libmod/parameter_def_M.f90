@@ -34,6 +34,6 @@
       use suite_parameters, only: nnnw => max_orbitals
       use suite_parameters, only: nnnwm1 => max_orbitals_minus_one
       use suite_parameters, only: nnnwm2 => max_orbitals_minus_two
-      implicit none
+      implicit none (type, external)
       end module parameter_def
 !======================================================================

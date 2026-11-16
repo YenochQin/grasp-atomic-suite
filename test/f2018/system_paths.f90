@@ -3,7 +3,7 @@ program system_paths
     use sys_chdir_I
     use sys_getwd_I
     use sys_mkdir_I
-    implicit none
+    implicit none (type, external)
     character(4096) :: before, after
     character(1) :: short
     character(8) :: mode

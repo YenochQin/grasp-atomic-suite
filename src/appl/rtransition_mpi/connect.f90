@@ -14,10 +14,10 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use biorb_c
       use orb_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -30,8 +30,8 @@
 !
 !     Initialize
 !
-      nnii(:orbital_count) = 0.d0
-      nnff(:orbital_count) = 0.d0
+      nnii(:orbital_count) = 0._real64
+      nnff(:orbital_count) = 0._real64
 !
 !   Loop over the orbitals in the merged list
 !

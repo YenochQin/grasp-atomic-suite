@@ -13,18 +13,18 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use grid_c
       use int_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: j
 !-----------------------------------------------
 !
-      xu(:radial_point_count) = 0.0d00
-      xv(:radial_point_count) = 0.0d00
+      xu(:radial_point_count) = 0.0_real64
+      xv(:radial_point_count) = 0.0_real64
 !
       return
       end subroutine setxz

@@ -9,17 +9,18 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: long
+      use, intrinsic :: iso_fortran_env, only: int64
       use rmcdhf_mem_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer        :: nfile, lab, ncontr
-      integer(long)  :: ncontr_tot2
+      integer, intent(in) :: nfile
+      integer :: lab, ncontr
+      integer(int64), intent(in) :: ncontr_tot2
 !-----------------------------------------------
 
       if(nfile == 31) then

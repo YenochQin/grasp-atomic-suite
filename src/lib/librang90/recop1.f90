@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: one
       use m_c,             only: jlist, jjq1, npeel
 !-----------------------------------------------
@@ -24,18 +24,18 @@
       use diaga1_i
       use diaga3_i
       use diaga5_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in)       :: ns, ja1, ka, ire
       integer, intent(out)      :: iat
-      real(double), intent(out) :: recc
+      real(real64), intent(out) :: recc
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: ij1, iskr, npeelgg
-      real(double) :: s, re
+      real(real64) :: s, re
 !-----------------------------------------------
       iat=1
       ij1=jlist(ja1)

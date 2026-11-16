@@ -20,13 +20,13 @@
       use stat_c,        only: csf_subshell_quantum_codes
       use iounit_c,      only: stderr_unit
       use orb_c,         only: csf_count
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer             :: iwhich
+      integer, intent(in) :: iwhich
       integer, intent(in) :: isubsh
-      integer             :: icsf
+      integer, intent(in) :: icsf
 !-----------------------------------------------
 !
       jqs = csf_subshell_quantum_codes(isubsh,iwhich,icsf)

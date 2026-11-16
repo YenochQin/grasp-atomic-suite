@@ -15,7 +15,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use parameter_def,   only: max_orbitals
       use def_c
       use orb_c
@@ -29,7 +28,7 @@
       use isparr_i
       use itjpo_i
       use itjpor_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -40,11 +39,11 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: j1
-      integer, dimension(0:max_orbitals + 1) :: newnp
-      integer, dimension(max_orbitals) :: newnak, icon, icon1
+      integer :: newnp(0:max_orbitals + 1)
+      integer :: newnak(max_orbitals), icon(max_orbitals), icon1(max_orbitals)
       integer :: i, j, icomp, new, ipi1, ipi2, k, new1, new2, m, nline
       character :: line*500
-      character, dimension(max_orbitals) :: newnh*2
+      character :: newnh(max_orbitals)*2
       character :: new3*2
 !-----------------------------------------------
 !

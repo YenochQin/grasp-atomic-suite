@@ -15,17 +15,17 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use debug_c
       use def_c, only: precis
       use grid_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: grid_points_with_padding, radial_index, half_grid_point_count, debug_row_count, debug_row_index, &
          & left_grid_index, right_grid_index
-      real(double) :: exp_grid_step, exp_grid_coordinate, exp_grid_coordinate_minus_one, newton_relative_tolerance, &
+      real(real64) :: exp_grid_step, exp_grid_coordinate, exp_grid_coordinate_minus_one, newton_relative_tolerance, &
          & grid_step_ratio, previous_radius_estimate, radius_estimate, transformed_coordinate, shifted_radius_estimate, &
          & grid_equation_residual, &
          inverse_grid_equation_derivative, radius_correction
@@ -36,12 +36,12 @@
 !   set to zero
 !
       grid_points_with_padding = radial_point_count + 10
-      radial_grid(1) = 0.0d00
-      radial_derivative_over_radius(1) = 0.0d00
+      radial_grid(1) = 0.0_real64
+      radial_derivative_over_radius(1) = 0.0_real64
 !
 !   Now set up the grids
 !
-      if (asymptotic_grid_step == 0.0d00) then
+      if (asymptotic_grid_step == 0.0_real64) then
 !        default comes here
 !
 !   Exponential grid if HP is zero
@@ -50,13 +50,13 @@
 !
          radial_grid_derivative(1) = radial_grid_scale
          exp_grid_step = exp(transformed_grid_step)
-         exp_grid_coordinate = 1.0d00
+         exp_grid_coordinate = 1.0_real64
 !
 !   Set up the arrays R, RP, RPOR
 !
          do radial_index = 2, grid_points_with_padding
             exp_grid_coordinate = exp_grid_step*exp_grid_coordinate
-            exp_grid_coordinate_minus_one = exp_grid_coordinate - 1.0d00
+            exp_grid_coordinate_minus_one = exp_grid_coordinate - 1.0_real64
             radial_grid(radial_index) = radial_grid_scale*exp_grid_coordinate_minus_one
             radial_grid_derivative(radial_index) = radial_grid_scale*exp_grid_coordinate
             radial_derivative_over_radius(radial_index) = exp_grid_coordinate/exp_grid_coordinate_minus_one
@@ -68,11 +68,11 @@
 !
 !   Initializations
 !
-         newton_relative_tolerance = 1.0d03*precis
+         newton_relative_tolerance = 1.0e3_real64*precis
          grid_step_ratio = transformed_grid_step/asymptotic_grid_step
-         radial_grid_derivative(1) = radial_grid_scale/(grid_step_ratio*radial_grid_scale + 1.0d00)
-         previous_radius_estimate = 0.0d00
-         radius_estimate = 0.0d00
+         radial_grid_derivative(1) = radial_grid_scale/(grid_step_ratio*radial_grid_scale + 1.0_real64)
+         previous_radius_estimate = 0.0_real64
+         radius_estimate = 0.0_real64
 !
 !   Set up the arrays R, RP, RPOR
 !
@@ -87,14 +87,14 @@
             shifted_radius_estimate = radius_estimate + radial_grid_scale
             grid_equation_residual = log(shifted_radius_estimate/radial_grid_scale) + grid_step_ratio*radius_estimate &
                & - transformed_coordinate
-            inverse_grid_equation_derivative = shifted_radius_estimate/(grid_step_ratio*shifted_radius_estimate + 1.0d00)
+            inverse_grid_equation_derivative = shifted_radius_estimate/(grid_step_ratio*shifted_radius_estimate + 1.0_real64)
             radius_correction = -grid_equation_residual*inverse_grid_equation_derivative
             radius_estimate = previous_radius_estimate + radius_correction
 !
             if (abs(radius_correction/radius_estimate) < newton_relative_tolerance) then
                radial_grid(radial_index) = radius_estimate
                shifted_radius_estimate = radius_estimate + radial_grid_scale
-               inverse_grid_equation_derivative = shifted_radius_estimate/(grid_step_ratio*shifted_radius_estimate + 1.0d00)
+               inverse_grid_equation_derivative = shifted_radius_estimate/(grid_step_ratio*shifted_radius_estimate + 1.0_real64)
                radial_grid_derivative(radial_index) = inverse_grid_equation_derivative
                radial_derivative_over_radius(radial_index) = inverse_grid_equation_derivative/radius_estimate
             else

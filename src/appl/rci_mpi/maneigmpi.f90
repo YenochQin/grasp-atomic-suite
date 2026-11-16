@@ -61,7 +61,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double, long
+      use, intrinsic :: iso_fortran_env, only: real64, int64
       use memory_man
       use eigv_c
       use fposition_c
@@ -93,7 +93,7 @@
       use mpiu_i, only: gdsummpi
       use mpiu_i, only: stopmpi
       use suite_linear_algebra, only: dlamch
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !  E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -102,7 +102,7 @@
 !-----------------------------------------------
       integer, intent(out) :: iatjpo
       integer, intent(out) :: iaspar
-      integer(long)        :: nelmnt_a
+      integer(int64)        :: nelmnt_a
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -122,19 +122,19 @@
 !     Use Davidson (memory, sparse) if nstore_s < nstore_d
 !     Use Davidson (memory, dense) if nstore_d < nstore_s
 !-----------------------------------------------
-      integer(long) :: nstore_s, nstore_d
+      integer(int64) :: nstore_s, nstore_d
       integer :: nrows, i, ndense, ncfdum, iccutdum, myiddum, &
          nprocsdum, iofset, nelc, ir, nvecmn, nvex, m, info, loc, nbrkev,   &
          imv, ndense_l, lim, lwork, liwork, maxitr, mblock, nend, &
          ilow, ihigh, niv, nloops, nmv, j, ia,   &
          idummy
-      real(double) :: elsto,  dummy, &
+      real(real64) :: elsto,  dummy, &
           diatmp, crite, critc, critr, ortho, dmungo, amax, wa, abstol
 ! GG          DIATMP, CRITE, CRITC, CRITR, ORTHO, DMUNGO, AMAX, WA
       logical :: hiend, ldisc, sparse
       character(len=8) :: cnum
-      real(double), dimension(:), pointer :: w, z, work, diag
-      integer, dimension(:), pointer :: iwork, ifail, jwork
+      real(real64), pointer :: w(:), z(:), work(:), diag(:)
+      integer, pointer :: iwork(:), ifail(:), jwork(:)
 !-----------------------------------------------
 !
 !-----------------------------------------------------------------------
@@ -161,8 +161,8 @@
 
          call alloc (shifted_eigenvalues, 1,'EVAL', 'MANEIG' )
          call alloc (csf_mixing_coefficients, 1, 'EVECO', 'MANEIG')
-         shifted_eigenvalues(1) = 0.d0
-         csf_mixing_coefficients(1) = 1.d0
+         shifted_eigenvalues(1) = 0._real64
+         csf_mixing_coefficients(1) = 1._real64
 
          ! Still read through the .res file
 !GG
@@ -197,7 +197,7 @@
 
             ndense = (csf_count*(csf_count + 1))/2
             call alloc (hamiltonian_values, ndense, 'EMT', 'MANEIG')
-            call dinit (ndense, 0.0d00, hamiltonian_values, 1)
+            call dinit (ndense, 0.0_real64, hamiltonian_values, 1)
 
 !   Read the matrix into position from the disc file; it's already
 !   been properly positioned.
@@ -311,7 +311,7 @@
             endif
 
             call alloc (diag,csf_count,'DIAG', 'MANEIG')
-            call dinit (csf_count, 0.d0, diag, 1)
+            call dinit (csf_count, 0._real64, diag, 1)
             if (ldisc) then
 !-----------------------------------------------------------------------
 !
@@ -402,7 +402,7 @@
                   end do
 
                   call alloc (hamiltonian_values, ndense_l, 'EMT', 'MANEIG')
-                  call dinit (ndense_l, 0.0d00, hamiltonian_values, 1)
+                  call dinit (ndense_l, 0.0_real64, hamiltonian_values, 1)
                   call alloc (work, csf_count, 'WORK', 'MANEIG')
                   call alloc (matrix_partner_indices, csf_count, 'IROW', 'MANEIG')
 
@@ -447,17 +447,17 @@
 !           lwork = 2*ncf*lim + lim*lim + (nvecmx+10)*lim + nvecmx
             lwork = 2*csf_count*lim + lim*lim*2 + 11*lim + nvecmx
             call alloc (work, lwork, 'WORK', 'MANEIG')
-            work(1:lwork) = 0.0d0
+            work(1:lwork) = 0.0_real64
             liwork = 6*lim + nvecmx
             call alloc (iwork, liwork, 'IWORK', 'MANEIG')
 !*changed by Misha 02/12/97
-            crite = 1.0d-17
+            crite = 1.0e-17_real64
 !GG            CRITC = 1.0D-08
 !GG            CRITR = 1.0D-08
 !GG            ORTHO = MAX(1D-8,CRITR)
-            critc = 1.0d-09
-            critr = 1.0d-09
-            ortho = max(1d-9,critr)
+            critc = 1.0e-9_real64
+            critr = 1.0e-9_real64
+            ortho = max(1e-9_real64,critr)
 ! end of changes
 
 !            maxitr = MAX (nvecmx*100, ncf/10)
@@ -468,7 +468,7 @@
             call alloc (shifted_eigenvalues, nvecmx, 'EVAL', 'MANEIG')
             call alloc (csf_mixing_coefficients, csf_count*nvecmx, 'EVEC', 'MANEIG')
 
-            dmungo = 10.d99
+            dmungo = 10.e99_real64
             call dinit (nvecmx, dmungo, shifted_eigenvalues, 1)
 
 !   Compute the eigenpairs in each block
@@ -596,7 +596,7 @@
 
          iofset = (j - 1)*csf_count
 
-         amax = 0.d0
+         amax = 0._real64
          do i = 1, csf_count
             wa = abs(csf_mixing_coefficients(i+iofset))
             if (wa <= amax) cycle
@@ -611,7 +611,7 @@
 
 !          Change sign of eigenvactor if dominant component is negative
 
-         if (csf_mixing_coefficients(ia+iofset) >= 0.d0) cycle
+         if (csf_mixing_coefficients(ia+iofset) >= 0._real64) cycle
          csf_mixing_coefficients(1+iofset:csf_count+iofset) = -csf_mixing_coefficients(1+iofset:csf_count+iofset)
       end do
 

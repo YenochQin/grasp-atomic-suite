@@ -1,8 +1,9 @@
       module reco_i
+      implicit none (type, external)
       interface
 !
       subroutine reco(ja1,ja2,ja3,ja4,ka,iat)
-      use vast_kind_param, only:  double
+      implicit none (type, external)
       integer, intent(in)  :: ja1, ja2, ja3, ja4, ka
       integer, intent(out) :: iat
       end subroutine

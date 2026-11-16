@@ -11,21 +11,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)  :: it, lq, j, its, lqs, j1s
-      real(double), intent(out) :: coef
+      real(real64), intent(out) :: coef
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: jt, jts
-      integer, dimension(20) :: ids3,ids4,ids5,ids6,ids7,idv7,ids8,&
-      idv8,ids9,ids10,ids11,idv11,ids12,idv12,ids13,idv13,ids14,   &
-      ids15,idv15,ids16,idv16,ids17,idv17,ids18,idv18
+      integer :: ids3(20),ids4(20),ids5(20),ids6(20),ids7(20),idv7(20),ids8(20),&
+      idv8(20),ids9(20),ids10(20),ids11(20),idv11(20),ids12(20),idv12(20),ids13(20),idv13(20),ids14(20),   &
+      ids15(20),idv15(20),ids16(20),idv16(20),ids17(20),idv17(20),ids18(20),idv18(20)
 !-----------------------------------------------
       data ids3/2*0,660,0,1664,0,1650,130,0,816,0,1680,8*0/
       data ids4/2*0,-55770,-20592,6292,-13260,0,12740,-19110,     &

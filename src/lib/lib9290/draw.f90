@@ -16,35 +16,35 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use grid_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: mf
-      real(double), intent(in) :: sp
-      real(double), intent(in) :: sq
-      real(double), dimension(max_radial_points), intent(in) :: p
-      real(double), dimension(max_radial_points), intent(in) :: q
+      real(real64), intent(in) :: sp
+      real(real64), intent(in) :: sq
+      real(real64), intent(in) :: p(max_radial_points)
+      real(real64), intent(in) :: q(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, ioffst, ixlocq, ixlocp, iyloc
-      real(double) :: sixty, fift4, ohtht, dmx, dmn, spi, sqi, rmx, xscal, &
+      real(real64) :: sixty, fift4, ohtht, dmx, dmn, spi, sqi, rmx, xscal, &
          yscal, sqx, spx
       logical :: first
       character :: cblank*132, cdash*132
 !cjb
 !     CHARACTER , DIMENSION(60) :: CPLOT*132
-      character , dimension(mf) :: cplot*132
+      character  :: cplot(mf)*132
 !cjb
       character :: cp, cq
 !-----------------------------------------------
-      data sixty/ 60.0d00/
-      data fift4/ 54.0d00/
-      data ohtht/ 131.0d00/
+      data sixty/ 60.0_real64/
+      data fift4/ 54.0_real64/
+      data ohtht/ 131.0_real64/
 !
       data first/ .true./
 
@@ -66,7 +66,7 @@
 !
 !   Initialization
 !
-      if (sq == 0.0d00) then
+      if (sq == 0.0_real64) then
          cp = 'X'
          cq = '-'
       else
@@ -91,7 +91,7 @@
 !
 !   Determine the scale factors
 !
-      if (dmx==0.0d00 .and. dmn==0.0d00) then
+      if (dmx==0.0_real64 .and. dmn==0.0_real64) then
          write (99, 300)
          return
       else
@@ -101,7 +101,7 @@
 !
 !   Locate x = 0 if this is in the range
 !
-      if (dmx>0.0d00 .and. dmn<0.0d00) then
+      if (dmx>0.0_real64 .and. dmn<0.0_real64) then
          ioffst = 4 + xscal*abs(dmn)
       else
          ioffst = 1

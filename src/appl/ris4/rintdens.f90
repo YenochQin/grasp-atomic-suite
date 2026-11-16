@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function rintdens (i, j)
+      real(real64) function rintdens (i, j)
 !                                                                      *
 !   The value of RINTDENS is an approximation to:                      *
 !                                                                      *
@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c,           only: vacuum_speed_of_light_au, pi
       use grid_c
       use wave_c
@@ -27,7 +27,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use polint_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -36,8 +36,8 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: l, ii, nmin
-      real(double), dimension(3) :: xa, ya
-      real(double) :: dens
+      real(real64) :: xa(3), ya(3)
+      real(real64) :: dens
 !-----------------------------------------------
 !
       nmin = 10
@@ -46,7 +46,7 @@
       do l = nmin,nmin+4,2
          xa(ii) = radial_grid(l)
          ya(ii) = (radial_large_components(l,i)*radial_large_components(l,j) + radial_small_components(l,i)* &
-            & radial_small_components(l,j))/(4.0d00*pi*radial_grid(l)*radial_grid(l))
+            & radial_small_components(l,j))/(4.0_real64*pi*radial_grid(l)*radial_grid(l))
          ii = ii + 1
       end do
       call polint (xa,ya,dens)

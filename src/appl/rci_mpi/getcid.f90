@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use decide_c
       use def_c,           only: vacuum_speed_of_light_au, speed_of_light_au, nuclear_charge, accy, electron_count, emn
@@ -46,12 +46,12 @@
       use nucpot_i, only: nucpot
       use radgrd_i, only: radgrd
       use setqic_i, only: setqic
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       character(len=*) :: isofile, rwffile
-      character(len=8), dimension(*) ::  idblk
+      character(len=8) ::  idblk(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -181,7 +181,7 @@
             write (stderr_unit,*) 'Enter the scale factor:'
             read *, wfact
          else
-            wfact = 1.0d00
+            wfact = 1.0_real64
          endif
       endif ! myid .EQ. 0
       call mpi_bcast (ltrans, 1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
@@ -262,11 +262,11 @@
 !        N = MIN (220,NNNP)
 !     ELSE
 !CFF     .. should be Z-dependent
-         radial_grid_scale = 2.0d-06/nuclear_charge
-         transformed_grid_step = 5.d-2
+         radial_grid_scale = 2.0e-6_real64/nuclear_charge
+         transformed_grid_step = 5.e-2_real64
          radial_point_count = max_radial_points
 !     ENDIF
-      asymptotic_grid_step = 0.d0
+      asymptotic_grid_step = 0._real64
 !     IF ( NDEF.NE.0) THEN
 !        IF (myid .EQ. 0) THEN
 !           WRITE (istde,*) 'The default radial grid parameters',      &

@@ -7449,7 +7449,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-0288"></a>
 
-#### [dspevx.f90](../../src/appl/rci/dspevx.f90)
+#### `dspevx.f90`（旧实现已移除）
 
 文件：`src/appl/rci/dspevx.f90`；实体 51；SHA-256 `8552c5f84d5c7e36cf88bbd2d4b782ad8f50bf0ffcea68ca74e780de935190a6`。
 
@@ -9166,7 +9166,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-0371"></a>
 
-#### [t.f90](../../src/appl/rci/t.f90)
+#### `t.f90`（旧实现已移除）
 
 文件：`src/appl/rci/t.f90`；实体 13；SHA-256 `1d24bbf830195e51b0076ae759ab7322ad2ce3036e86e701dd31cd06d7defbeb`。
 
@@ -25191,7 +25191,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1145"></a>
 
-#### [ichkq1.f90](../../src/appl/rtransition/ichkq1.f90)
+#### `ichkq1.f90`（本地副本已移除）
 
 文件：`src/appl/rtransition/ichkq1.f90`；实体 7；SHA-256 `7f48e821844a2c6996ee735fd4de4159b55e43beb36d9947f7527386376c5cab`。
 
@@ -28488,7 +28488,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1309"></a>
 
-#### [ichkq1.f90](../../src/appl/rtransition_phase/ichkq1.f90)
+#### `ichkq1.f90`（本地副本已移除）
 
 文件：`src/appl/rtransition_phase/ichkq1.f90`；实体 7；SHA-256 `7f48e821844a2c6996ee735fd4de4159b55e43beb36d9947f7527386376c5cab`。
 

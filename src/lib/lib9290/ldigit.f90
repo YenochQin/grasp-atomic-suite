@@ -12,7 +12,7 @@
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -21,7 +21,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      character, dimension(0:9) :: cdgt
+      character :: cdgt(0:9)
 !-----------------------------------------------
 !
 !

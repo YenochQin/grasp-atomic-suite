@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double, long
+      use, intrinsic :: iso_fortran_env, only: real64, int64
       use parameter_def,    only: orbital_index_radix
       use memory_man
       use input_io_mpi, only: fail_input_io => fail_input_io_mpi
@@ -39,27 +39,27 @@
       use dsubrs_i
       use fco_i
       use gco_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: j
+      integer, intent(in) :: j
       logical  :: eol
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       integer, parameter :: key = orbital_index_radix
-      character*6, parameter :: myname = 'SETCOF'
-      real(double), parameter :: eps = 1.0d-10
+      character(len=6), parameter :: myname = 'SETCOF'
+      real(real64), parameter :: eps = 1.0e-10_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer , dimension(4) :: indexs
+      integer  :: indexs(4)
       integer :: ndim, nakj, nkjj, ilabel, nwterm, ib, k, nb, ir, nkjib, kmax, &
          kmin, nfile, i, jblock, jblockt, iendcdum, ncoeff, ios, lab, ncontr, &
          ia, ic, ithis, irank, iind, il, iorb, iyo1, iyo2, ifound, loc1, loc2, &
          ithis2, indind, nelmntgg
-      real(double) :: ucfj, sumr, ykab, xkab, sum,  contr
+      real(real64) :: ucfj, sumr, ykab, xkab, sum,  contr
       character :: mcplab*3, idstring*3, msg*128
 !-----------------------------------------------
 !** Locals
@@ -86,8 +86,8 @@
 !     POINTER (pncminpast, ncminpast(1))
 !     POINTER (pnevecpast, nevecpast(1))
 !
-      real(double), dimension(:), pointer :: coeff
-      integer, dimension(:), pointer :: iclmn, indx
+      real(real64), pointer :: coeff(:)
+      integer, pointer :: iclmn(:), indx(:)
 !     INTEGER, DIMENSION(:), pointer :: nda, nxa, nya
 !     INTEGER, DIMENSION(:), pointer :: ncfblk, nevblk, ncmaxblk, &
 !                                       ncfpast, ncminpast, nevecpast
@@ -126,7 +126,7 @@
          do k = 0, kmax, 2
 
             !<<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
-            sumr = 0.d0
+            sumr = 0._real64
             do nb = 1, symmetry_block_count
                do ir = mpi_rank + 1, csf_counts_by_block(nb), mpi_process_count
                   sumr = sumr + dsubrs(eol,ir,ir,nb)*fco(k,ir + csf_offsets_by_block(nb),j,&
@@ -136,7 +136,7 @@
             !>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
             if (ib == j) then
-               ykab = 2.d0*sumr/ucfj
+               ykab = 2._real64*sumr/ucfj
             else
                ykab = sumr/ucfj
             endif
@@ -184,7 +184,7 @@
          do k = kmin, kmax, 2
 
             !<<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
-            sumr = 0.d0
+            sumr = 0._real64
             do nb = 1, symmetry_block_count
                do ir = mpi_rank + 1, csf_counts_by_block(nb), mpi_process_count
                   sumr = sumr + dsubrs(eol,ir,ir,nb)*gco(k,ir + csf_offsets_by_block(nb),j,&
@@ -257,7 +257,7 @@
          endif
          read (30, iostat=ios) nelmntgg
          if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof sparse element count')
-         stored_matrix_element_count = int(nelmntgg,kind=long)
+         stored_matrix_element_count = int(nelmntgg,kind=int64)
          call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'SETCOF')
          read (30, iostat=ios) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), (matrix_partner_indices(i),i=1, &
             & stored_matrix_element_count)
@@ -317,7 +317,7 @@
             ! Add up all the contributions from this integral;
             ! off-diagonal contributions have double the weight
 
-            sum = 0.d0
+            sum = 0._real64
             do i = 1, ncontr
                ir = matrix_partner_indices(indx(i))
                ic = iclmn(i)
@@ -327,7 +327,7 @@
                if (ir /= ic) contr = contr + contr
                sum = sum + contr
             end do
-            sum = 0.5d0*sum/ucfj
+            sum = 0.5_real64*sum/ucfj
 
             ! Put coefficients in the list. Since there is always
             ! (almost) some repeatence from different blocks, a check
@@ -399,7 +399,7 @@
             endif
             read (30, iostat=ios) nelmntgg
             if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof sparse element count')
-            stored_matrix_element_count = int(nelmntgg,kind=long)
+            stored_matrix_element_count = int(nelmntgg,kind=int64)
             call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'SETCOF')
             read (30, iostat=ios) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), (matrix_partner_indices(i),i=1, &
                & stored_matrix_element_count)
@@ -464,7 +464,7 @@
 
             !*** Add up all the contributions from this integral;
             !*** off-diagonal contributions have double the weight
-            sum = 0.d0
+            sum = 0._real64
             do i = 1, ncontr
                ir = matrix_partner_indices(indx(i))
                ic = iclmn(i)
@@ -472,7 +472,7 @@
                if (ir /= ic) contr = contr + contr
                sum = sum + contr
             end do
-            sum = 0.5d0*sum/ucfj
+            sum = 0.5_real64*sum/ucfj
 
             select case (irank)
             case (1)
@@ -716,7 +716,7 @@
                if (jblock > 1) then
                   do i = 1, nycof
                      if (nya(i) /= ithis) cycle
-                     ya(i) = ya(i) + 4.d0*sum
+                     ya(i) = ya(i) + 4._real64*sum
                      go to 999
                   end do
                endif
@@ -734,7 +734,7 @@
                      call alloc(ya, nydim, 'YA', 'SETCOF')
                   endif
                endif
-               ya(nycof) = 4.d0*sum
+               ya(nycof) = 4._real64*sum
                nya(nycof) = ithis
 
             end select

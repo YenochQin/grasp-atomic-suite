@@ -7,7 +7,7 @@
 !   fragment that the root process later merges into name.ITB.          *
 !                                                                      *
 !***********************************************************************
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix, max_orbitals
       use debug_c
       use prnt_c
@@ -21,14 +21,14 @@
       use itjpo_i
       use convrt_i, only: convrt
       use rkco_gg_i, only: rkco_gg
-      implicit none
-      real(double), dimension(max_orbitals,max_orbitals), intent(in) :: vint, vint2
+      implicit none (type, external)
+      real(real64), intent(in) :: vint(max_orbitals, max_orbitals), vint2(max_orbitals, max_orbitals)
       integer, intent(in) :: doit
       external :: cord
       integer, parameter :: key = orbital_index_radix
-      character*11 :: cnum
-      real(double), dimension(nvec) :: evpair
-      real(double) :: contri, contrik1, vcoeff, radial_k1, radial_sms,  &
+      character(len=11) :: cnum
+      real(real64) :: evpair(nvec)
+      real(real64) :: contri, contrik1, vcoeff, radial_k1, radial_sms,  &
          pair_scale, term_k1, term_sms
       integer :: j,k,loc,ic,ir,itjpoc,incor,lcnum, iia, iib, iic, iid
       integer :: i, occ_ic, occ_ir, ndiff
@@ -64,9 +64,9 @@
                call rkco_gg (ic, ir, cord, incor, 1)
                if (angular_coefficient_count .eq. 0) cycle
                if (ir .eq. ic) then
-                  pair_scale = 1.0d00
+                  pair_scale = 1.0_real64
                else
-                  pair_scale = 2.0d00
+                  pair_scale = 2.0_real64
                endif
                do j = 1,nvec
                   loc = (j-1)*csf_count
@@ -82,9 +82,9 @@
                         iid = angular_coefficient_labels(4,k)
                         radial_k1 = vint(iia,iic) * vint(iib,iid)
                         radial_sms = (vint2(iia,iic) * vint(iib,iid) +   &
-                           vint2(iib,iid) * vint(iia,iic))/2.0d00
-                        if (radial_k1 == 0.0d00 .and.                     &
-                            radial_sms == 0.0d00) cycle
+                           vint2(iib,iid) * vint(iia,iic))/2.0_real64
+                        if (radial_k1 == 0.0_real64 .and.                     &
+                            radial_sms == 0.0_real64) cycle
                         term_k1 = -vcoeff * radial_k1
                         term_sms = -vcoeff * radial_sms
                         if(doit.eq.1) write(51) ic,ir

@@ -16,7 +16,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use bess_c
       use biorb_c
       use debug_c
@@ -31,32 +31,32 @@
 !-----------------------------------------------
       use clrx_i
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: i,j
-      real(double), intent(out) :: hcoul, hbab, hmag
+      real(real64), intent(out) :: hcoul, hbab, hmag
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: nkji, nkjj, ipj, naki, nakj, ii, lp, lm
-      real(double) :: eps, hgauge, tji, tjj, fact, form, fl, flp, dfki, dfkj, &
+      real(real64) :: eps, hgauge, tji, tjj, fact, form, fl, flp, dfki, dfkj, &
          clp, clm, ciplp, cimlp, ciplm, cimlm, value, cjl, cip, tarom, esther, &
          tekel, peres, tamar, enoch, seth, shem, darius, cyrus, daniel, boaz, &
          esau, aaron, gimel
 !-----------------------------------------------
 
 !
-      eps = 1.0d-10
+      eps = 1.0e-10_real64
 !
       if (ldbpr(12) .or. ldbpr(13) .or. ldbpr(14) .or. ldbpr(15)) write (99, &
          303) i, j
 !
-      hmag = 0.0d00
-      hcoul = 0.0d00
-      hgauge = 0.0d00
-      hbab = 0.0d00
+      hmag = 0.0_real64
+      hcoul = 0.0_real64
+      hgauge = 0.0_real64
+      hbab = 0.0_real64
 !
 !  Evaluate factor multiplying Mbar(a,b)
 !
@@ -64,14 +64,14 @@
       nkjj = orbital_two_j(j)
       tji = dble(nkji)
       tjj = dble(nkjj)
-      fact = 1.0d00
+      fact = 1.0_real64
       ipj = (nkji + 1)/2 + nkjj
       if (mod(ipj,2) /= 0) fact = -fact
       naki = orbital_kappa(i)
       nakj = orbital_kappa(j)
-      form = fact*sqrt(tjj + 1.0d00)*clrx(nakj,lk,naki)
+      form = fact*sqrt(tjj + 1.0_real64)*clrx(nakj,lk,naki)
       fl = dble(lk)
-      flp = fl + 1.0d00
+      flp = fl + 1.0_real64
       dfki = dble(naki)
       dfkj = dble(nakj)
 !
@@ -114,7 +114,7 @@
 !
 !  Tabulate Coulomb integrand
 !
-            ta(1) = 0.0d00
+            ta(1) = 0.0_real64
             ta(2:mtp) = radial_grid_derivative(2:mtp)*(bj(2:mtp,3)*(ciplp*tb(2:mtp)+cimlp*tc(2:mtp)&
                )+bj(2:mtp,1)*(ciplm*tb(2:mtp)+cimlm*tc(2:mtp)))
             call quad (value)
@@ -127,7 +127,7 @@
 !
 !  Tabulate gauge dependent integrand
 !
-            ta(1) = 0.0d00
+            ta(1) = 0.0_real64
             ta(2:mtp) = radial_grid_derivative(2:mtp)*(bj(2:mtp,2)*(cjl*td(2:mtp))+bj(2:mtp,3)*(cip&
                *tb(2:mtp)+flp*tc(2:mtp))+bj(2:mtp,1)*(cip*tb(2:mtp)-fl*tc(2:mtp&
                )))
@@ -147,7 +147,7 @@
 !
             if (ldbpr(14) .or. ldbpr(15)) then
 !
-               ta(1) = 0.0d00
+               ta(1) = 0.0_real64
                ta(2:mtp) = td(2:mtp)*bj(2:mtp,2)*radial_grid_derivative(2:mtp)
                if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
                call quad (tarom)
@@ -157,7 +157,7 @@
                tekel = esther*tarom
                if (ldbpr(14)) write (99, 307) tekel
 !
-               ta(1) = 0.0d00
+               ta(1) = 0.0_real64
                ta(2:mtp) = -tb(2:mtp)*bj(2:mtp,3)*radial_grid_derivative(2:mtp)
                if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
                call quad (peres)
@@ -168,7 +168,7 @@
                tamar = cip*peres
                if (ldbpr(14)) write (99, 307) tamar
 !
-               ta(1) = 0.0d00
+               ta(1) = 0.0_real64
                ta(2:mtp) = -tb(2:mtp)*bj(2:mtp,1)*radial_grid_derivative(2:mtp)
                if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
                call quad (enoch)
@@ -179,7 +179,7 @@
                seth = cip*enoch
                if (ldbpr(14)) write (99, 307) seth
 !
-               ta(1) = 0.0d00
+               ta(1) = 0.0_real64
                ta(2:mtp) = bj(2:mtp,1)*tc(2:mtp)*radial_grid_derivative(2:mtp)
                if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
                call quad (shem)
@@ -190,7 +190,7 @@
                darius = fl*shem
                if (ldbpr(14)) write (99, 307) darius
 !
-               ta(1) = 0.0d00
+               ta(1) = 0.0_real64
                ta(2:mtp) = -bj(2:mtp,3)*tc(2:mtp)*radial_grid_derivative(2:mtp)
                if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
                call quad (cyrus)
@@ -228,7 +228,7 @@
 !
          if (abs(form) > eps) then
 !
-            ta(1) = 0.0d00
+            ta(1) = 0.0_real64
             do ii = 2, mtp
 !zou
                ta(ii) = (pfii(ii,nnii(i))*qfff(ii,nnff(j))+qfii(ii,nnii(i))*&

@@ -20,7 +20,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use parameter_def, only: max_radial_points, radial_workspace_capacity
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use left_c, only: set
       use orb_c, only: orbital_principal_n, orbital_symmetry_labels
       use wave_c
@@ -29,7 +29,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use solvh_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -58,7 +58,7 @@
 !   Estimate the leading coefficient of the series expansion for
 !   the orbital
 !
-         orbital_origin_parameters(loc) = 10.0d00
+         orbital_origin_parameters(loc) = 10.0_real64
 !
 !   Calculate radial wavefunctions
 !

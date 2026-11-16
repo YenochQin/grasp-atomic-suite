@@ -9,7 +9,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double, long
+      use, intrinsic :: iso_fortran_env, only: real64, int64
       use memory_man
       use input_io, only: fail_input_io
       use rmcdhf_mem_c
@@ -21,19 +21,19 @@
 !-----------------------------------------------
       use systemmem_i
       use systemfreemem_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: nblock, nfile
+      integer, intent(in) :: nblock, nfile
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       character :: mcplab*3
-      real(double) :: coeff_dumm
-      real(double) :: sysmemt, sysmemf
+      real(real64) :: coeff_dumm
+      real(real64) :: sysmemt, sysmemf
       integer :: i, jblock, jblockt, ncft, ncoeff, ios, ncf
-      integer(long) :: ncontr_tot, ncontr_tot2
+      integer(int64) :: ncontr_tot, ncontr_tot2
       integer :: iclmn_dumm, lab_dumm, ncontr_dumm, indx_dumm
       integer :: nelmntgg, iendcdum, irow_dumm
 !-----------------------------------------------
@@ -51,7 +51,7 @@
           endif
           read (30, iostat=ios) nelmntgg
           if (ios /= 0) call fail_input_io(ios, 30, 'MCP setmcp_mem sparse element count')
-          stored_matrix_element_count = int(nelmntgg,kind=long)
+          stored_matrix_element_count = int(nelmntgg,kind=int64)
           if(jblock == 1) then
             call alloc (imin1_30,nblock,'IMIN1_30','setmcp_mem')
             call alloc (imin2_30,nblock,'IMIN2_30','setmcp_mem')
@@ -299,7 +299,7 @@
          if(nfile == 30) then
             read (30, iostat=ios) nelmntgg
             if (ios /= 0) call fail_input_io(ios, 30, 'MCP setmcp_mem sparse element count')
-            stored_matrix_element_count = int(nelmntgg,kind=long)
+            stored_matrix_element_count = int(nelmntgg,kind=int64)
             read (30, iostat=ios) (iendc_30(i),i=                                  &
                      imin1_30(jblock)+mpi_rank+1,imax1_30(jblock),mpi_process_count), &
                      (irow_30(i),i=imin2_30(jblock)+1,imax2_30(jblock))

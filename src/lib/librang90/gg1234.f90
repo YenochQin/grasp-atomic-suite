@@ -26,7 +26,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, tenth, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -34,19 +34,19 @@
       use mes_i
       use c0t5s_i
       use rmeajj_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer,      intent(in), dimension(7) :: ik1,ik2,ik3,ik4,id1,id2,id3,id4
-      real(double), intent(in)               :: qm1,qm2,qm3,qm4
-      real(double), intent(in), dimension(3) :: bk1,bk2,bk3,bk4,bd1,bd2,bd3,bd4
-      real(double), intent(out)              :: ww
+      integer,      intent(in) :: ik1(7),ik2(7),ik3(7),ik4(7),id1(7),id2(7),id3(7),id4(7)
+      real(real64), intent(in)               :: qm1,qm2,qm3,qm4
+      real(real64), intent(in) :: bk1(3),bk2(3),bk3(3),bk4(3),bd1(3),bd2(3),bd3(3),bd4(3)
+      real(real64), intent(out)              :: ww
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: iqmm1, iqmm2, iqmm3, iqmm4
-      real(double) :: a1, c, c1, s, v, z
+      real(real64) :: a1, c, c1, s, v, z
 !-----------------------------------------------
       ww=zero
       if(ik1(3) > 9) then

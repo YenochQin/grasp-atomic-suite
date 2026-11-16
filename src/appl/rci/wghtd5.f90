@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
       use eigv_c
       use jlabl_c, labj=>jlbr, labp=>jlbp
@@ -26,21 +26,21 @@
 !-----------------------------------------------
 !      USE ispar_I
 !      USE itjpo_I
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: iatjpo, iaspar
+      integer, intent(in) :: iatjpo, iaspar
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      integer, dimension(5) :: iconf
+      integer :: iconf(5)
 !      REAL(DOUBLE), DIMENSION(5) :: WGHT(5)
-      real(double), dimension(5) :: wt(5)
+      real(real64) :: wt(5)
 !      REAL(DOUBLE), DIMENSION(:), pointer :: wt
 !      INTEGER, DIMENSION(:), pointer :: next
-      real(double) :: awt
+      real(real64) :: awt
       integer :: i, j, jj, ibegin, iend, nelt, iv, icf, ip
 !
 !   Allocate storage for local arrays
@@ -58,7 +58,7 @@
 !
          icf = ivec(iv)
 !        .., initialize for a new eigenvector
-         wt = 0.d0;  iconf = 0
+         wt = 0._real64;  iconf = 0
          ibegin = (iv-1)*csf_count
          iend   = iv*csf_count
 !

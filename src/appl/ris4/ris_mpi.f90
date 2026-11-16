@@ -5,7 +5,7 @@
 !   Entry routine for the MPI RIS program.                             *
 !                                                                      *
 !***********************************************************************
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use default_c
       use iounit_c
       use debug_c,         only: cutoff
@@ -22,7 +22,7 @@
       use ris_cal_mpi_i
       use mpiu_i, only: mpix_shutdown
       use mpiu_i, only: mpix_startup
-      implicit none
+      implicit none (type, external)
       integer :: argc, iarg, k, nci, ncore_not_used, ncount1
       logical :: yes, use_args
       character(len=24) :: arg
@@ -37,7 +37,7 @@
       nci = 1
       ndef = 0
       use_args = .false.
-      cutoff = 1.0d-10
+      cutoff = 1.0e-10_real64
 
       if (mpi_rank == 0) then
          argc = command_argument_count()

@@ -1,10 +1,12 @@
       module rwjj_i
+      implicit none (type, external)
       interface
 !
       subroutine rwjj(j,j1,j2,k1,k2,coef)
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
       integer,      intent(in)  :: j, j1, j2, k1, k2
-      real(double), intent(out) :: coef
+      real(real64), intent(out) :: coef
       end subroutine
       end interface
       end module

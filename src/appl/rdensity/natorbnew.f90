@@ -1,7 +1,6 @@
 ! MPI/serial migration of GRASP rdensity (upstream 488e875d).
 ! Accumulate one-body density matrices before contracting radial functions.
 module density_calculation
-    use vast_kind_param, only: double
     use parameter_def, only: max_orbitals
     use orb_c
     use wave_c
@@ -16,20 +15,21 @@ module density_calculation
     use onescalar_i
     use itjpo_i
     use ispar_i
-    implicit none
+    implicit none (type, external)
     private
     public :: calculate_density
 contains
     recursive subroutine calculate_density(name, nci, ordering)
+        use, intrinsic :: iso_fortran_env, only: real64
         character(*), intent(in) :: name
         integer, intent(in) :: nci, ordering
-        real(double), allocatable :: rho(:,:,:)
-        real(double) :: angular(max_orbitals), coefficient
+        real(real64), allocatable :: rho(:,:,:)
+        real(real64) :: angular(max_orbitals), coefficient
         integer, allocatable :: jvalue(:), parity(:)
         integer :: ic, ir, ia, ib, i, state, offset, different, delta
 
         allocate(rho(orbital_count,orbital_count,nvec), jvalue(csf_count), parity(csf_count))
-        rho = 0.0d0
+        rho = 0.0_real64
         do ic = 1,csf_count
             jvalue(ic) = itjpo(ic)
             parity(ic) = ispar(ic)
@@ -87,10 +87,11 @@ contains
     end subroutine
 
     recursive subroutine write_density(name, nci, rho)
+        use, intrinsic :: iso_fortran_env, only: real64
         character(*), intent(in) :: name
         integer, intent(in) :: nci
-        real(double), intent(in) :: rho(:,:,:)
-        real(double), allocatable :: radial(:)
+        real(real64), intent(in) :: rho(:,:,:)
+        real(real64), allocatable :: radial(:)
         integer :: unit, ios, state, a, b, l
         character(256) :: filename
 
@@ -102,20 +103,20 @@ contains
         write(unit,*) '     r [au]          D(r)=r^2*rho(r)       rho(r)'
         write(unit,*)
         do state = 1,nvec
-            radial = 0.0d0
+            radial = 0.0_real64
             do a = 1,orbital_count
                 radial = radial+rho(a,a,state)*(radial_large_components(:radial_point_count,a)**2+ &
                    & radial_small_components(:radial_point_count,a)**2)
                 do b = a+1,orbital_count
                     if (orbital_kappa(a) /= orbital_kappa(b)) cycle
-                    radial = radial+2.0d0*rho(a,b,state)*(radial_large_components(:radial_point_count,a)* &
+                    radial = radial+2.0_real64*rho(a,b,state)*(radial_large_components(:radial_point_count,a)* &
                        & radial_large_components(:radial_point_count,b)+radial_small_components(:radial_point_count,a)* &
                        & radial_small_components(:radial_point_count,b))
                 enddo
             enddo
             write(unit,'(1x,i3,5x,2a4)') ivec(state), jlbr(iatjpo(state)), jlbp((iaspar(state)+3)/2)
             do l = 2,radial_point_count
-                if (radial(l) > 0.0d0) write(unit,'(3es20.10e3)') radial_grid(l), radial(l), radial(l)/radial_grid(l)**2
+                if (radial(l) > 0.0_real64) write(unit,'(3es20.10e3)') radial_grid(l), radial(l), radial(l)/radial_grid(l)**2
             enddo
         enddo
         close(unit, iostat=ios)
@@ -123,17 +124,18 @@ contains
     end subroutine
 
     recursive subroutine make_natural_orbitals(name, ordering, rho)
+        use, intrinsic :: iso_fortran_env, only: real64
         character(*), intent(in) :: name
         integer, intent(in) :: ordering
-        real(double), intent(in) :: rho(:,:,:)
-        real(double), allocatable :: matrix(:,:), rotation(:,:), occupation(:)
-        real(double), allocatable :: p(:,:), q(:,:), origin(:)
+        real(real64), intent(in) :: rho(:,:,:)
+        real(real64), allocatable :: matrix(:,:), rotation(:,:), occupation(:)
+        real(real64), allocatable :: p(:,:), q(:,:), origin(:)
         integer, allocatable :: orbits(:)
         integer :: kappa, ndim, a, b, i, state, points, unit, ios, temp
-        real(double) :: weight
+        real(real64) :: weight
         character(160) :: error
 
-        weight = sum(real(iatjpo(:nvec), double))
+        weight = sum(real(iatjpo(:nvec), real64))
         do kappa = minval(orbital_kappa(:orbital_count)),maxval(orbital_kappa(:orbital_count))
             ndim = count(orbital_kappa(:orbital_count) == kappa)
             if (ndim == 0) cycle
@@ -150,9 +152,9 @@ contains
                     b = b-1
                 enddo
             enddo
-            matrix = 0.0d0
+            matrix = 0.0_real64
             do state = 1,nvec
-                matrix = matrix+real(iatjpo(state),double)*rho(orbits,orbits,state)/weight
+                matrix = matrix+real(iatjpo(state),real64)*rho(orbits,orbits,state)/weight
             enddo
             write(*,'(a,i5)') 'KAPPA: ', kappa
             write(*,'(a,i5)') 'NDIM: ', ndim

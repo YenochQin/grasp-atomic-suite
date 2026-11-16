@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
       use biorb_c
       use debug_c
@@ -29,11 +29,11 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use spme_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), intent(out) :: asfa, asfb
+      real(real64), intent(out) :: asfa, asfb
       integer, intent(in) :: lev1, lev2
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -41,14 +41,14 @@
       integer, parameter :: key=orbital_index_radix, nca=65536
       integer :: ja, jb, m, nclr, ncup, ncount, nfi, ipar, jpar, &
                  ia, ib, j
-      real(double) :: hcoul1, hbab1, hmag1, eps, couvx, coeff, contr
+      real(real64) :: hcoul1, hbab1, hmag1, eps, couvx, coeff, contr
       character(len=4) :: jlabi, jlabj, jpari, jparj
 !-----------------------------------------------------------------------
 !
-      eps = 1.0d-10
+      eps = 1.0e-10_real64
 !
-      asfa = 0.0d00
-      asfb = 0.0d00
+      asfa = 0.0_real64
+      asfb = 0.0_real64
       ncount = 0
       nfi = 0
 !

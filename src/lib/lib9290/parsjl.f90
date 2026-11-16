@@ -19,14 +19,14 @@
 !-----------------------------------------------
       use convrt_i
       use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in)           :: mode, ncore, loc
       integer, intent(out)          :: njx, ierr
       character(len=256), intent(in) :: record
-      integer, dimension(*), intent(out) :: jx
+      integer, intent(out) :: jx(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

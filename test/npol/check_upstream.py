@@ -86,7 +86,8 @@ def main(root: Path) -> None:
     for name, record in renamed["files"].items():
         assert record["before_suite_sha256"] == lowercase["files"][name]["after_suite_sha256"], \
             f"Variable-rename snapshot has a different predecessor: {name}"
-    safety = json.loads((root / "docs/reference/rmcdhf_input_safety_snapshot.json").read_text())
+    safety_path = root / "docs/reference/rmcdhf_input_safety_snapshot.json"
+    safety = json.loads(safety_path.read_text())
     assert safety["schema_version"] == 1, "Unknown input-safety snapshot schema"
     assert hashlib.sha256(renamed_path.read_bytes()).hexdigest() == safety["previous_manifest_sha256"], \
         "Variable-rename snapshot changed; review input-safety provenance"
@@ -94,6 +95,16 @@ def main(root: Path) -> None:
     for name, record in safety["files"].items():
         assert record["before_suite_sha256"] == renamed["files"][name]["after_suite_sha256"], \
             f"Input-safety snapshot has a different predecessor: {name}"
+    declarations = json.loads((root / "docs/reference/rmcdhf_declarations_snapshot.json").read_text())
+    assert declarations["schema_version"] == 1, "Unknown declaration snapshot schema"
+    assert hashlib.sha256(safety_path.read_bytes()).hexdigest() == declarations["previous_manifest_sha256"], \
+        "Input-safety snapshot changed; review declaration provenance"
+    prior_fortran = renamed["files"] | safety["files"]
+    assert set(declarations["files"]).issubset(prior_fortran), "Declaration snapshot contains unrelated files"
+    for name, record in declarations["files"].items():
+        assert record["before_suite_sha256"] == prior_fortran[name]["after_suite_sha256"], \
+            f"Declaration snapshot has a different predecessor: {name}"
+    reviewed_fortran = prior_fortran | declarations["files"]
     actual = {
         str(path.relative_to(root))
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")
@@ -104,7 +115,7 @@ def main(root: Path) -> None:
     for relative, record in expected.items():
         if relative in lowercase["files"]:
             digest = hashlib.sha256((root / relative).read_bytes()).hexdigest()
-            reviewed = safety["files"].get(relative, renamed["files"][relative])
+            reviewed = reviewed_fortran[relative]
             assert digest == reviewed["after_suite_sha256"], \
                 f"Unreviewed deviation from reviewed GRASP snapshot: {relative}"
             continue
@@ -112,7 +123,7 @@ def main(root: Path) -> None:
         digest = hashlib.sha256(original_bytes(root / relative, edits)).hexdigest()
         assert digest == record["sha256"], f"Unreviewed deviation from GRASP source: {relative}"
     print(f"PASS: {len(expected)} imported files match reviewed snapshots "
-          f"({len(renamed['files'])} exact renamed Fortran identities)")
+          f"({len(reviewed_fortran)} exact Fortran identities)")
 
 
 if __name__ == "__main__":

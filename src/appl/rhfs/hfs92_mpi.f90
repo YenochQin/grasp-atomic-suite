@@ -8,7 +8,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use default_c
       use iounit_c
       use mpi_c
@@ -29,15 +29,15 @@
       use mpiu_i, only: gdmaxmpi_root
       use mpiu_i, only: mpix_shutdown
       use mpiu_i, only: mpix_startup
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: argc, iarg, k, nci, ncore_not_used, ncount1
       integer :: nstage1, nstage2, ncount_rate, ncount_max
       logical :: yes, use_args
-      real(double) :: time_setcsla, time_gethfd, time_getmixblock, time_hfsgg
-      real(double), dimension(1) :: timbuf
+      real(real64) :: time_setcsla, time_gethfd, time_getmixblock, time_hfsgg
+      real(real64) :: timbuf(1)
       character(len=24) :: arg
       character :: name*24
 !-----------------------------------------------

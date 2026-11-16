@@ -24,7 +24,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
       use mpi_c
 
@@ -32,7 +32,7 @@
       use dinit_i, only: dinit
       use mpiu_i, only: gdsummpi
       use suite_linear_algebra, only: dlamch
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -41,16 +41,16 @@
       integer  :: niv
       integer, intent(in) :: jcol(0:*)
       integer, intent(in) :: irow(*)
-      real(double)  :: basis(*)
-      real(double), intent(in) :: hmx(*)
+      real(real64)  :: basis(*)
+      real(real64), intent(in) :: hmx(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ns, joffspar, j, joffnorm, ir, nfound, info
 
-      integer, dimension(:), pointer :: iwork,ifail
-      real(double), dimension(:), pointer :: ap, eigval,vec, work
-      real(double) :: abstol
+      integer, pointer :: iwork(:),ifail(:)
+      real(real64), pointer :: ap(:), eigval(:),vec(:), work(:)
+      real(real64) :: abstol
 
 !     real dLAMCH
 !     external dLAMCH
@@ -59,7 +59,7 @@
 
       ns = min(nmax,ncf)
       call alloc (ap, (ns*(ns + 1))/2, 'AP', 'INIESTmpi')
-      call dinit ((ns*(ns + 1))/2, 0.d0, ap, 1)
+      call dinit ((ns*(ns + 1))/2, 0._real64, ap, 1)
 
 !  Expand the sparse form to normal form for upper-right sub-matrix
 
@@ -87,13 +87,13 @@
       abstol = 2*dlamch('S')
 
       call dspevx ('Vectors also', 'In a range', 'Upper triangular', ns, ap, &
-      -1.d0, -1.d0, 1, niv, abstol, nfound, eigval, vec, ns, work, iwork, ifail, &
+      -1._real64, -1._real64, 1, niv, abstol, nfound, eigval, vec, ns, work, iwork, ifail, &
          info)
       mpi_error_code = -abs(info)
 
 !  Build the Basis.
 
-      call dinit (ncf*niv, 0.d0, basis, 1)
+      call dinit (ncf*niv, 0._real64, basis, 1)
 
 !  scatter the vectors
 

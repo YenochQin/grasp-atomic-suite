@@ -1,7 +1,7 @@
 ! Shared compile-time limits. Keep upstream values as the default configuration.
 ! Edit here (or use the grid patcher), then rebuild all libraries and programs.
 module suite_parameters
-    implicit none
+    implicit none (type, external)
     private
     public :: orbital_index_radix, max_radial_points, radial_workspace_capacity, max_orbitals, max_orbitals_minus_one, &
        & max_orbitals_minus_two

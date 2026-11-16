@@ -19,10 +19,10 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use jlabl_c, labj=>jlbr, labp=>jlbp
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -30,14 +30,14 @@
       integer, intent(in) :: ipar
       integer, intent(in) :: nn
       integer, intent(in) :: mode
-      real(double), intent(in) :: eav
-      integer, dimension(nn), intent(in) :: ilev
-      real(double), dimension(nn), intent(in) :: e
+      real(real64), intent(in) :: eav
+      integer, intent(in) :: ilev(nn)
+      real(real64), intent(in) :: e(nn)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: j, i, ip
-      real(double) :: eau, ecm, eev
+      real(real64) :: eau, ecm, eev
 !-----------------------------------------------
 !
 !   Always print the eigenenergies

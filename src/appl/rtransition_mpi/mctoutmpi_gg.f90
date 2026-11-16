@@ -16,7 +16,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix, max_orbitals
       use memory_man
       use blk_c
@@ -34,17 +34,17 @@
       use itjpo_i
       use oneparticlejj_i
       use trsort_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: iopar
-      integer  :: jkp
+      integer, intent(in) :: jkp
       character  :: name(2)*24
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      real(double), parameter :: cutoff = 1.0d-10
+      real(real64), parameter :: cutoff = 1.0e-10_real64
       integer, parameter :: nfile = 93
       integer, parameter :: nfile1 = 237
 !-----------------------------------------------
@@ -53,9 +53,9 @@
       integer :: nfile2, iblki, iblkf, nmct, nlabel, ncfi0, ncff0, ic, ir, ncr&
          , ia, ib, newsiz, i
       logical :: avail
-      integer, dimension(:), pointer :: label
-      real(double), dimension(:), pointer:: coeff
-      real(double), dimension(max_orbitals) :: tshell
+      integer, pointer :: label(:)
+      real(real64), pointer:: coeff(:)
+      real(real64) :: tshell(max_orbitals)
 !-----------------------------------------------
 !
 !

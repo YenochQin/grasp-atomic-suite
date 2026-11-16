@@ -1,7 +1,7 @@
 ! Serial implementation of the rdensity process boundary.
 module density_parallel
-    use vast_kind_param, only: double
-    implicit none
+    use, intrinsic :: iso_fortran_env, only: double => real64
+    implicit none (type, external)
     integer :: rank = 0, workers = 1
 contains
     subroutine parallel_start
@@ -18,7 +18,8 @@ contains
     end subroutine
 
     subroutine sum_density(matrix)
-        real(double), contiguous, intent(inout) :: matrix(:,:)
+        use, intrinsic :: iso_fortran_env, only: real64
+        real(real64), contiguous, intent(inout) :: matrix(:,:)
     end subroutine
 
     subroutine density_fail(message)

@@ -11,9 +11,10 @@
 !                                                                  *
 !*******************************************************************
 !
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64, double => real64
 !
-      implicit none
-      integer, dimension(7)      :: id1,id2,ik1,ik2,id3,id4,ik3,ik4
-      real(double), dimension(3) :: bd1,bd2,bk1,bk2,bd3,bd4,bk3,bk4
+      implicit none (type, external)
+      private :: real64
+      integer      :: id1(7),id2(7),ik1(7),ik2(7),id3(7),id4(7),ik3(7),ik4(7)
+      real(real64) :: bd1(3),bd2(3),bk1(3),bk2(3),bd3(3),bd4(3),bk3(3),bk4(3)
       end module trk_c

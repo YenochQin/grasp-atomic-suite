@@ -1,13 +1,14 @@
 ! Fault injection between the production loader's counting and loading passes.
 module memory_io_injection
-    use vast_kind_param, only: double
-    implicit none
+    use, intrinsic :: iso_fortran_env, only: double => real64
+    implicit none (type, external)
     logical :: inject = .false.
     character(40) :: injected_case
     character(80) :: injected_file
     integer :: injected_rank, injected_ranks
 contains
     subroutine rewrite_input()
+        use, intrinsic :: iso_fortran_env, only: real64
         logical :: omit
         if (.not.inject) return
         inject = .false.
@@ -31,7 +32,7 @@ contains
             if (injected_case == 'load-short-payload') then
                 write(32) 1
             else
-                write(32) 1, 1, 0.25_double
+                write(32) 1, 1, 0.25_real64
             endif
         endif
         omit = omit .or. injected_case == 'load-sentinel'
@@ -44,9 +45,9 @@ end module
 ! the on-disk input after the final channel-32 allocation, before REWIND.
 ! The header-reader tests separately exercise the production allocator.
 module memory_man
-    use vast_kind_param, only: double, long
+    use, intrinsic :: iso_fortran_env, only: double => real64, long => int64
     use memory_io_injection, only: rewrite_input
-    implicit none
+    implicit none (type, external)
     interface alloc
         module procedure fixture_alloc_i, fixture_alloc_il, fixture_alloc_r, fixture_alloc_rl
     end interface
@@ -59,14 +60,16 @@ contains
         p = 0
     end subroutine
     subroutine fixture_alloc_il(p, n, var, caller)
+        use, intrinsic :: iso_fortran_env, only: int64
         integer, pointer :: p(:)
-        integer(long), intent(in) :: n
+        integer(int64), intent(in) :: n
         character(*), intent(in) :: var, caller
         allocate(p(n))
         p = 0
     end subroutine
     subroutine fixture_alloc_r(p, n, var, caller)
-        real(double), pointer :: p(:)
+        use, intrinsic :: iso_fortran_env, only: real64
+        real(real64), pointer :: p(:)
         integer, intent(in) :: n
         character(*), intent(in) :: var, caller
         allocate(p(n))
@@ -74,8 +77,9 @@ contains
         if (var == 'COEFF_32') call rewrite_input()
     end subroutine
     subroutine fixture_alloc_rl(p, n, var, caller)
-        real(double), pointer :: p(:)
-        integer(long), intent(in) :: n
+        use, intrinsic :: iso_fortran_env, only: real64, int64
+        real(real64), pointer :: p(:)
+        integer(int64), intent(in) :: n
         character(*), intent(in) :: var, caller
         allocate(p(n))
         p = 0
@@ -85,7 +89,7 @@ end module
 
 ! Exercise the production memory loader, including its label-count sentinels.
 program mcp_memory_io
-    use vast_kind_param, only: double
+    use, intrinsic :: iso_fortran_env, only: real64
     use rmcdhf_mem_c, only: lab_32, ncontr_32, coeff_32, indx_32, iclmn_32
     use setmcp_mem_I, only: setmcp_mem
     use memory_io_injection
@@ -94,7 +98,7 @@ program mcp_memory_io
 #else
     use mpi_s
 #endif
-    implicit none
+    implicit none (type, external)
     character(40) :: scenario
     character(80) :: filename
     integer :: status
@@ -143,7 +147,7 @@ program mcp_memory_io
                 if (corrupt .and. scenario == 'short-payload') then
                     write(32) 1
                 else
-                    write(32) 1, 1, 0.25_double
+                    write(32) 1, 1, 0.25_real64
                 endif
                 if (.not. (corrupt .and. scenario == 'sentinel')) write(32) 0, 0
             endif
@@ -161,7 +165,7 @@ program mcp_memory_io
     else
         if (size(lab_32) /= 2 .or. any(lab_32 /= [42,0])) error stop 'MCP labels'
         if (any(ncontr_32 /= [1,0])) error stop 'MCP contribution counts'
-        if (size(coeff_32) /= 1 .or. coeff_32(1) /= 0.25_double) error stop 'MCP coefficient'
+        if (size(coeff_32) /= 1 .or. coeff_32(1) /= 0.25_real64) error stop 'MCP coefficient'
         if (indx_32(1) /= 1 .or. iclmn_32(1) /= 1) error stop 'MCP indices'
     endif
     close(32, status='delete')
@@ -174,15 +178,15 @@ end program
 
 ! Keep deterministic memory-reporting seams; no host-memory assumption is needed.
 function systemmem() result(value)
-    use vast_kind_param, only: double
-    implicit none
-    real(double) :: value
-    value = 1.0_double
+    use, intrinsic :: iso_fortran_env, only: real64
+    implicit none (type, external)
+    real(real64) :: value
+    value = 1.0_real64
 end function
 
 function systemfreemem() result(value)
-    use vast_kind_param, only: double
-    implicit none
-    real(double) :: value
-    value = 1.0_double
+    use, intrinsic :: iso_fortran_env, only: real64
+    implicit none (type, external)
+    real(real64) :: value
+    value = 1.0_real64
 end function

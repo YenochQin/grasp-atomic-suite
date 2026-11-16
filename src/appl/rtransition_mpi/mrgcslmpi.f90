@@ -11,7 +11,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use debug_c
       use def_c, only:  emn, ioncty, electron_count, nuclear_charge
 !-----------------------------------------------
@@ -20,7 +19,7 @@
       use ldcsl1_i
       use ldcsl2_i
       use merg12_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

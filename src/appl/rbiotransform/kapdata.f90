@@ -18,7 +18,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
       use parameter_def,   only: max_orbitals
       use biorb_c,         only: nwii,nakii,npii,nwff,nakff,npff
       use sbdat_c,         only: nlmax,ninii,ninff,nshlii,nshlff,      &
@@ -34,7 +33,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -45,7 +44,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: j1
-      integer, dimension(2*max_orbitals) :: isort
+      integer :: isort(2*max_orbitals)
       integer :: ntestl, ntest, i, j, k, ital, nref
       logical :: klar
 !-----------------------------------------------

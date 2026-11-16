@@ -21,7 +21,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, half, eps
       use m_c
       use trk_c
@@ -32,17 +32,17 @@
       use perko2_i
       use reco2_i
       use gg12_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: jja,jjb,ja,jb
-      real(double), intent(out) :: coeff
+      real(real64), intent(out) :: coeff
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: iat,jaa,jbb,nn,ib1,ii,inn,ifaz
-      real(double) :: qm1,qm2,rec,ww
+      real(real64) :: qm1,qm2,rec,ww
 !-----------------------------------------------
       coeff=zero
       if(ja == jb) return

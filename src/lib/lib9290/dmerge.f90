@@ -13,23 +13,23 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)    :: n
-      real(double), intent(in)    :: dconst
-      real(double), intent(out)   :: dl
-      integer, dimension(n), intent(in) :: idy
-      real(double), dimension(*), intent(in) :: db
-      real(double), dimension(*), intent(inout) :: dc
-      real(double), dimension(n), intent(in) :: da
+      real(real64), intent(in)    :: dconst
+      real(real64), intent(out)   :: dl
+      integer, intent(in) :: idy(n)
+      real(real64), intent(in) :: db(*)
+      real(real64), intent(inout) :: dc(*)
+      real(real64), intent(in) :: da(n)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      real(double) :: dsum
+      real(real64) :: dsum
 !-----------------------------------------------
 
       dsum = 0.0

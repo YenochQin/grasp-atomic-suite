@@ -8,7 +8,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use default_c
       use iounit_c
       use memory_man
@@ -29,13 +29,13 @@
       use factt_i
       use mpiu_i, only: mpix_shutdown
       use mpiu_i, only: mpix_startup
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: argc, iarg, k, nci, ncore_not_used, ncount1
       logical :: yes, use_args
-      real(double), dimension(:), pointer :: gjc_diag, dgjc_diag
+      real(real64), pointer :: gjc_diag(:), dgjc_diag(:)
       character(len=24) :: arg
       character :: name*24
 !-----------------------------------------------

@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use memory_man
       use def_c
@@ -24,7 +24,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -33,8 +33,8 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: j, i, k, nwin, ios, npyii, nakyii, myii, jj
-      real(double) :: con, fkk, eyii, pzy
-      real(double), dimension(:), pointer :: pa, qa, ra
+      real(real64) :: con, fkk, eyii, pzy
+      real(real64), pointer :: pa(:), qa(:), ra(:)
       character :: g92rwf*6
 !-----------------------------------------------
 !
@@ -61,10 +61,10 @@
       write (*, *) 'NWII', nwii
       do j = 1, nwii
          write (*, *) nakii(j), npii(j), nhii(j)
-         pfii(:max_radial_points,j) = 0.0d00
-         qfii(:max_radial_points,j) = 0.0d00
+         pfii(:max_radial_points,j) = 0.0_real64
+         qfii(:max_radial_points,j) = 0.0_real64
 !
-         eii(j) = -1.0d00
+         eii(j) = -1.0_real64
 !
          k = abs(nakii(j))
          if (nuclear_model_parameter_count > 0) then
@@ -103,7 +103,7 @@
          read (69) (ra(i),i=1,myii)
 
          do j = 1, nwii
-            if (.not.(eii(j)<0.0d00 .and. npyii==npii(j) .and. nakyii==nakii(j)&
+            if (.not.(eii(j)<0.0_real64 .and. npyii==npii(j) .and. nakyii==nakii(j)&
                )) cycle
             pzii(j) = pzy
             eii(j) = eyii

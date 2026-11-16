@@ -22,7 +22,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double, long
+      use, intrinsic :: iso_fortran_env, only: real64, int64
       use parameter_def,   only: max_orbitals
       use memory_man
       use decide_c
@@ -64,20 +64,20 @@
       use engout_i
       use wghtd5_i
       use qed_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ncore
+      integer, intent(in) :: ncore
       integer,  intent(in):: j2max
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double), dimension(max_orbitals) :: slfint
+      real(real64) :: slfint(max_orbitals)
       character(len=8) :: cnum
-      real(double) :: atwinv, elsto, eau, ecm, eev, elemnt
-      real(double), dimension(:), pointer :: slf_en, ucf, etot
-      integer(long) :: nelmnt_a
+      real(real64) :: atwinv, elsto, eau, ecm, eev, elemnt
+      real(real64), pointer :: slf_en(:), ucf(:), etot(:)
+      integer(int64) :: nelmnt_a
       integer :: myid, nprocs,  iiatjpo, iiaspar
       integer :: i, j, irestart, ncminpas, jblock, ic, ip, mode
 !-----------------------------------------------
@@ -145,7 +145,7 @@
             write (24,*)
                call qed_slfen (slfint)
             do ic = 1, csf_count
-               elemnt = 0.0d00
+               elemnt = 0.0_real64
                do i = 1,orbital_count
 !              print *,ic, i,iq(i,ic),slfint(i)
                   elemnt = elemnt+iq (i,ic)*slfint(i)
@@ -244,7 +244,7 @@
   302 format (1i3,2x,2a4,1p,3d22.14)
             do j = 1, nvec
                call qed (j,slfint,ucf)
-               elemnt = 0.0d00
+               elemnt = 0.0_real64
                ic = ivec(j)
                do i = 1,orbital_count
                   elemnt = elemnt+ucf(i)*slfint(i)

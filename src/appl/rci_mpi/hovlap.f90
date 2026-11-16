@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function hovlap (p, q, mtpo, np, kappa, z)
+      real(real64) function hovlap (p, q, mtpo, np, kappa, z)
 !                                                                      *
 !   This subprogram computes the overlap of the orbital tabulated in   *
 !   the arrays  P  and  Q  with maximum tabulation point  MTPO  with   *
@@ -17,7 +17,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use grid_c
       use horb_c, only: ph, qh
@@ -27,21 +27,21 @@
 !-----------------------------------------------
       use dcbsrw_i
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: mtpo
       integer  :: np
       integer  :: kappa
-      real(double)  :: z
-      real(double), dimension(max_radial_points), intent(in) :: p
-      real(double), dimension(max_radial_points), intent(in) :: q
+      real(real64)  :: z
+      real(real64), intent(in) :: p(max_radial_points)
+      real(real64), intent(in) :: q(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: mtph, i
-      real(double) :: eh, pzh, result
+      real(real64) :: eh, pzh, result
 !-----------------------------------------------
 !
 !   Set up the hydrogenic orbital
@@ -51,7 +51,7 @@
 !   Compute the overlap
 !
       mtp = min(mtph,mtpo)
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       ta(2:mtp) = (p(2:mtp)*ph(2:mtp)+q(2:mtp)*qh(2:mtp))*radial_grid_derivative(2:mtp)
       call quad (result)
 !

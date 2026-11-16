@@ -16,40 +16,40 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def, only: max_radial_points, radial_workspace_capacity, max_orbitals
       !USE DEF_C
       use grid_c
       use int_c, only: tf, tg
       use orb_c
       use sbc_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer , intent(in) :: iorb
       integer , intent(in) :: nstrt
       integer , intent(in) :: nend
-      real(double) , intent(inout) :: p(max_radial_points)
-      real(double) , intent(inout) :: q(max_radial_points)
+      real(real64) , intent(inout) :: p(max_radial_points)
+      real(real64) , intent(inout) :: q(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      real(double), parameter :: b1 = -0.50d00
-      real(double), parameter :: b2 = 0.50d00
-      real(double), parameter :: b3 = 0.75d00
-      real(double), parameter :: b4 = 0.25d00
+      real(real64), parameter :: b1 = -0.50_real64
+      real(real64), parameter :: b2 = 0.50_real64
+      real(real64), parameter :: b3 = 0.75_real64
+      real(real64), parameter :: b4 = 0.25_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: idiff, loc, j, jp1, jm1
-      real(double) :: tbh, tc1, fk, cc, pj, qj, fac, ppj, qpj, pjm1, qjm1, &
+      real(real64) :: tbh, tc1, fk, cc, pj, qj, fac, ppj, qpj, pjm1, qjm1, &
          ppjm1, qpjm1, pjm2, qjm2, ppjm2, qpjm2, pjm3, qjm3, ppjm3, qpjm3, pjm4&
          , qjm4, ppjm4, qpjm4, rppj, rqpj, ccrpor, cpjp1, cmjp1, fjp1, gjp1, &
          denom, factor, pjp1, qjp1, ppjp1, qpjp1, pjp2, qjp2, ppjp2, qpjp2, &
          pjp3, qjp3, ppjp3, qpjp3, pjp4, qjp4, ppjp4, qpjp4, rpmj, rqmj, cpjm1&
          , cmjm1, fjm1, gjm1
-      real(double) :: c1, c2, c3, c4, c5, c6
+      real(real64) :: c1, c2, c3, c4, c5, c6
       logical :: out
 !-----------------------------------------------
 !
@@ -62,8 +62,8 @@
       c4 = c(4)
       c5 = c(5)
       c6 = c(6)
-      tbh = 2.0d00/transformed_grid_step
-      tc1 = 2.0d00*c1
+      tbh = 2.0_real64/transformed_grid_step
+      tc1 = 2.0_real64*c1
 !
 !   Determine whether integration is inward or outwarD
 !
@@ -135,12 +135,12 @@
 !
          jp1 = j + 1
          ccrpor = cc*radial_derivative_over_radius(jp1)
-         cpjp1 = 1.0d00 + ccrpor
-         cmjp1 = 1.0d00 - ccrpor
+         cpjp1 = 1.0_real64 + ccrpor
+         cmjp1 = 1.0_real64 - ccrpor
          fjp1 = tc1*tf(jp1)
          gjp1 = tc1*tg(jp1)
          denom = cpjp1*cmjp1 - gjp1*fjp1
-         factor = 1.0d00/denom
+         factor = 1.0_real64/denom
          pjp1 = (cmjp1*rppj - fjp1*rqpj)*factor
          qjp1 = (cpjp1*rqpj - gjp1*rppj)*factor
          p(jp1) = pjp1
@@ -227,12 +227,12 @@
 !
          jm1 = j - 1
          ccrpor = cc*radial_derivative_over_radius(jm1)
-         cpjm1 = 1.0d00 + ccrpor
-         cmjm1 = 1.0d00 - ccrpor
+         cpjm1 = 1.0_real64 + ccrpor
+         cmjm1 = 1.0_real64 - ccrpor
          fjm1 = tc1*tf(jm1)
          gjm1 = tc1*tg(jm1)
          denom = cpjm1*cmjm1 - gjm1*fjm1
-         factor = 1.0d00/denom
+         factor = 1.0_real64/denom
          pjm1 = (cpjm1*rpmj + fjm1*rqmj)*factor
          qjm1 = (cmjm1*rqmj + gjm1*rpmj)*factor
          p(jm1) = pjm1

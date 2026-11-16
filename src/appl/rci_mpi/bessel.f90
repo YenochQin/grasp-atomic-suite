@@ -43,7 +43,7 @@
 !-----------------------------------------------
 !   M O D U L E S
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
       use bess_c
       use debug_c
@@ -52,7 +52,7 @@
       use orb_c
       use stor_c
       use wfac_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -69,11 +69,11 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: icode, iwkp, ikkp, l, i, nn, j, jchan, irem, iswap
-      real(double) :: epsi, w, wa, xbess1, xbess2, s1, s2, dfnm, dfn, ssn, scn&
+      real(real64) :: epsi, w, wa, xbess1, xbess2, s1, s2, dfnm, dfn, ssn, scn&
          , sn, cn, obwa, b, skeep
 !-----------------------------------------------
 !
-      epsi = dsqrt(0.1d00*accy)
+      epsi = dsqrt(0.1_real64*accy)
 !
 !   Form unique label symmetric in IA, IB
 !
@@ -115,25 +115,25 @@
 !
 !   Negligible w
 !
-         bessj(ik,iw,:radial_point_count) = 0.0d00
-         bessn(ik,iw,:radial_point_count) = 0.0d00
+         bessj(ik,iw,:radial_point_count) = 0.0_real64
+         bessn(ik,iw,:radial_point_count) = 0.0_real64
          return
 !
       endif
 !
       nn = k
 !
-      bessj(ik,iw,1) = 0.0d00
-      bessn(ik,iw,1) = 0.0d00
+      bessj(ik,iw,1) = 0.0_real64
+      bessn(ik,iw,1) = 0.0_real64
 !
 !   Use a four-term power series for low w*r
 !
       l5: do j = 2, radial_point_count
-         wa = -0.5d00*(radial_grid(j)*w)**2
-         xbess1 = 1.0d00
-         xbess2 = 1.0d00
-         s1 = 0.0d00
-         s2 = 0.0d00
+         wa = -0.5_real64*(radial_grid(j)*w)**2
+         xbess1 = 1.0_real64
+         xbess2 = 1.0_real64
+         s1 = 0.0_real64
+         s2 = 0.0_real64
          do i = 1, 4
             xbess1 = xbess1*wa/dble(i*(2*(nn + i) + 1))
             xbess2 = xbess2*wa/dble(i*(2*(i - nn) - 1))
@@ -159,16 +159,16 @@
 !
     6 continue
       if (nn == 0) then
-         dfnm = 1.0d00
-         dfn = 1.0d00
+         dfnm = 1.0_real64
+         dfn = 1.0_real64
       else
-         dfnm = 1.0d00
+         dfnm = 1.0_real64
          do i = 3, 2*nn - 1, 2
             dfnm = dfnm*dble(i)
          end do
          dfn = dfnm*dble(2*nn + 1)
       endif
-      dfnm = 1.0d00/dfnm
+      dfnm = 1.0_real64/dfnm
 !
       irem = mod(nn,4)
 !
@@ -177,32 +177,32 @@
 !
 !   NN = 1, 5, 9, ...
 !
-         ssn = -1.0d00
-         scn = 1.0d00
+         ssn = -1.0_real64
+         scn = 1.0_real64
          iswap = 1
 !
       case (2)
 !
 !   N = 2, 6, 10, ....
 !
-         ssn = -1.0d00
-         scn = -1.0d00
+         ssn = -1.0_real64
+         scn = -1.0_real64
          iswap = 0
 !
       case (3)
 !
 !   NN = 3, 7, 11,...
 !
-         ssn = 1.0d00
-         scn = -1.0d00
+         ssn = 1.0_real64
+         scn = -1.0_real64
          iswap = 1
 !
       case default
 !
 !   NN = 0, 4, 8,...
 !
-         ssn = 1.0d00
-         scn = 1.0d00
+         ssn = 1.0_real64
+         scn = 1.0_real64
          iswap = 0
 !
       end select
@@ -216,7 +216,7 @@
             sn = ssn*dcos(wa)
             cn = scn*dsin(wa)
          endif
-         obwa = 1.0d00/wa
+         obwa = 1.0_real64/wa
          b = obwa
          s1 = b*sn
          s2 = b*cn
@@ -228,8 +228,8 @@
             s1 = s1 + b*sn
             s2 = s2 + b*cn
          end do
-         s1 = s1*dfn/wa**nn - 1.0d00
-         s2 = s2*wa**(nn + 1)*dfnm - 1.0d00
+         s1 = s1*dfn/wa**nn - 1.0_real64
+         s2 = s2*wa**(nn + 1)*dfnm - 1.0_real64
          bessj(ik,iw,j) = s1
          bessn(ik,iw,j) = s2
       end do

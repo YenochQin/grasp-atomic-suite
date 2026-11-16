@@ -14,13 +14,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use grid_c
       use int_c
       use pote_c
       use scf_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -29,19 +29,19 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: nm1, i
-      real(double) :: dmhh
+      real(real64) :: dmhh
 !-----------------------------------------------
 !
 !   Define constants
 !
-      dmhh = -transformed_grid_step*0.5d00
+      dmhh = -transformed_grid_step*0.5_real64
 !
 !   Set up arrays XU and XV; since XU(1), XV(1) are never used,
 !   set them to some arbitrary value
 !
       nm1 = radial_point_count - 1
-      xu(1) = 0.0d00
-      xv(1) = 0.0d00
+      xu(1) = 0.0_real64
+      xv(1) = 0.0_real64
       xu(2:nm1) = dmhh*(xp(3:nm1+1)*radial_derivative_over_radius(3:nm1+1)+xp(2:nm1)*radial_derivative_over_radius(2:nm1)) + dp(2&
          :nm1)
       xv(2:nm1) = dmhh*(xq(3:nm1+1)*radial_derivative_over_radius(3:nm1+1)+xq(2:nm1)*radial_derivative_over_radius(2:nm1)) + dq(2&

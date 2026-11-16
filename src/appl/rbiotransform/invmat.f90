@@ -19,37 +19,37 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use bndinv_i
       use wrtmat_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: matdim
-      integer  :: ndim
-      real(double)  :: a(matdim,matdim)
-      real(double)  :: b(matdim,matdim)
+      integer, intent(in) :: matdim
+      integer, intent(in) :: ndim
+      real(real64)  :: a(matdim,matdim)
+      real(real64)  :: b(matdim,matdim)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: itest, ntest
-      real(double) :: determ, epsil
+      real(real64) :: determ, epsil
 !-----------------------------------------------
 !
       itest = 0
       if (ndim == 1) then
-         if (a(1,1) /= 0.0d0) then
-            a(1,1) = 1.0d0/a(1,1)
+         if (a(1,1) /= 0.0_real64) then
+            a(1,1) = 1.0_real64/a(1,1)
          else
             itest = 1
          endif
       else
-         determ = 0.0d0
-         epsil = 0.0d0
+         determ = 0.0_real64
+         epsil = 0.0_real64
          call bndinv (a, b, ndim, determ, epsil, itest, matdim)
       endif
 !

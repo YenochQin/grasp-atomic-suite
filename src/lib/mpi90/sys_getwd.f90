@@ -19,11 +19,11 @@
       use suite_system, only: working_directory
 
       use mpiu_i, only: stopmpi
-      implicit none
+      implicit none (type, external)
       character(len=*), intent(out):: dir
       integer, intent(out):: lcwd
 
-      integer status
+      integer :: status
 
 
       status = working_directory(dir)

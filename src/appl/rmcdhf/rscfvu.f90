@@ -66,7 +66,7 @@
       use factt_i
       use scf_i
       use stoptime_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -76,7 +76,7 @@
 !-----------------------------------------------
       integer :: ncore1, ncount1
       logical :: eol, yes
-      character, dimension(nblk0) :: idblk*8
+      character :: idblk(nblk0)*8
 !-----------------------------------------------
 !
 !

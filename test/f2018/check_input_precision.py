@@ -28,9 +28,14 @@ def main() -> None:
             text = source(f"src/appl/{variant}/setcof.f90")
             statements = re.findall(r"^\s*real[^\n]*,\s*parameter\s*::\s*eps\s*=[^\n]+", text, re.I | re.M)
             assert len(statements) == 1
-            probe = ("program eps_contract\nuse vast_kind_param, only: double\nimplicit none\n"
-                     + statements[0] + "\nif (kind(eps) /= double) error stop 'EPS is not DOUBLE'\n"
-                     + "if (real(eps,double) /= 1.0d-10) error stop 'EPS value lost precision'\nend program\n")
+            declaration = statements[0]
+            if args.baseline_ref:
+                # Translate historical kind spellings before compiling the probe.
+                declaration = re.sub(r"\b(real\s*\(\s*)(?:double|wp)(\s*\))", r"\g<1>real64\2", declaration, flags=re.I)
+                declaration = re.sub(r"(?<=[0-9.])_(?:double|wp)\b", "_real64", declaration, flags=re.I)
+            probe = ("program eps_contract\nuse, intrinsic :: iso_fortran_env, only: real64\nimplicit none (type, external)\n"
+                     + declaration + "\nif (kind(eps) /= real64) error stop 'EPS does not use 64-bit reals'\n"
+                     + "if (real(eps,real64) /= 1.0e-10_real64) error stop 'EPS value lost precision'\nend program\n")
             path = work/f"{variant}.f90"
             path.write_text(probe)
             binary = work/variant
@@ -38,7 +43,7 @@ def main() -> None:
                             str(path), "-o", str(binary)], check=True, cwd=work, capture_output=True, text=True)
             result = subprocess.run([str(binary)], capture_output=True, text=True)
             assert result.returncode == 0, (variant, result.stdout+result.stderr)
-            print(variant + ": DOUBLE EPS verified")
+            print(variant + ": working-precision EPS verified")
 
         text = source("src/lib/mpi90/cpath.f90")
         helper = re.search(r"^\s*function getenv_allocating\([^\n]+\n.*?^\s*end\s*$", text, re.M | re.S)

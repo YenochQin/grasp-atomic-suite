@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function eigen (j)
+      real(real64) function eigen (j)
 !                                                                      *
 !   This function computes an estimate of the energy of orbital J .    *
 !                                                                      *
@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use grid_c
       use orb_c
@@ -27,16 +27,16 @@
 !-----------------------------------------------
       use quad_i
       use dpbdt_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: j
+      integer, intent(in) :: j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      real(double) :: piece1, piece2, piece3, piece4, piece5
+      real(real64) :: piece1, piece2, piece3, piece4, piece5
 !-----------------------------------------------
 !
 !
@@ -46,7 +46,7 @@
 !
 !   Exchange term
 !
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       do i = 2, mtp
          ta(i) = (radial_large_components(i,j)*xq(i)-radial_small_components(i,j)*xp(i))*radial_derivative_over_radius(i)
       end do
@@ -55,7 +55,7 @@
 !
 !   Direct term
 !
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       do i = 2, mtp
          ta(i) = (radial_large_components(i,j)**2 + radial_small_components(i,j)**2)*yp(i)*radial_derivative_over_radius(i)
       end do
@@ -63,22 +63,22 @@
 !
 !   Kinetic energy terms
 !
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       do i = 2, mtp
          ta(i) = radial_small_components(i,j)**2*radial_grid_derivative(i)
       end do
       call quad (piece3)
-      piece3 = 2.0d00*speed_of_light_au*speed_of_light_au*piece3
+      piece3 = 2.0_real64*speed_of_light_au*speed_of_light_au*piece3
 !
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       do i = 2, mtp
          ta(i) = (radial_large_components(i,j)*radial_small_components(i,j))*radial_derivative_over_radius(i)
       end do
       call quad (piece4)
-      piece4 = -2.0d00*dble(orbital_kappa(j))*speed_of_light_au*piece4
+      piece4 = -2.0_real64*dble(orbital_kappa(j))*speed_of_light_au*piece4
 !
       call dpbdt (j)
-      ta(1) = 0.0d00
+      ta(1) = 0.0_real64
       do i = 2, mtp
          ta(i) = radial_large_components(i,j)*tb(i) - radial_small_components(i,j)*ta(i)
       end do

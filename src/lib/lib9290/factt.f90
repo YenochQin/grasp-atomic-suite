@@ -15,9 +15,9 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use facts_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -25,27 +25,27 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      real(double) :: x
+      real(real64) :: x
 !-----------------------------------------------
 !
-      gam(1) = 1.0d00
-      gam(2) = 1.0d00
-      x = 2.0d00
+      gam(1) = 1.0_real64
+      gam(2) = 1.0_real64
+      x = 2.0_real64
 !
       do i = 3, 30
          gam(i) = gam(i-1)*x
-         x = x + 1.0d00
+         x = x + 1.0_real64
       end do
 !
       do i = 1, 30
          gam(i) = log(gam(i))
       end do
 !
-      x = 3.0d01
+      x = 3.0e1_real64
 !
       do i = 31, mfact
          gam(i) = gam(i-1) + log(x)
-         x = x + 1.0d00
+         x = x + 1.0_real64
       end do
 !
       return

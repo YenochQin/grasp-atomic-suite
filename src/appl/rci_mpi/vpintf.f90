@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-    real(kind(0.0d0))  function vpintf (ia,ib)
+    real(real64)  function vpintf (ia,ib)
 !                                                                      *
 !   Computes nuclear vacuum polarization integrals.                    *
 !                                                                      *
@@ -13,7 +13,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-     use vast_kind_param, only: double
+     use, intrinsic :: iso_fortran_env, only: real64
      use parameter_def,   only: orbital_index_radix
      use debug_c
      use grid_c
@@ -25,7 +25,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
      use quad_i
-     implicit none
+     implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

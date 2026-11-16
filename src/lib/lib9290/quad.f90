@@ -29,21 +29,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use grid_c
       use ncc_c
       use tatb_c, only: ta, mtp
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double) , intent(out) :: result
+      real(real64) , intent(out) :: result
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: mtpm1, i, ip1, loc
-      real(double) :: tai, taip1, quott, frip1, fri, ratio, rip1, ri, sigma
+      real(real64) :: tai, taip1, quott, frip1, fri, ratio, rip1, ri, sigma
 !-----------------------------------------------
 !
 !
@@ -53,13 +53,13 @@
       do i = 2, mtpm1
 !
          tai = ta(i)
-         if (abs(tai) <= 0.d0) cycle
+         if (abs(tai) <= 0._real64) cycle
 !
          ip1 = i + 1
          taip1 = ta(ip1)
          quott = taip1/tai
 !
-         if (quott <= 0.d0) cycle
+         if (quott <= 0._real64) cycle
 !
 !   Exponent from fit
 !
@@ -73,11 +73,11 @@
 !   Analytical integration and error estimate for interval r(1:i)
 !
          fri = ri*fri
-         result = fri/(sigma + 1.d0)
+         result = fri/(sigma + 1._real64)
 !
 !   Set the tail to zero
 !
-         ta(mtp+1:3+mtp) = 0.d0
+         ta(mtp+1:3+mtp) = 0._real64
 !
 !   Newton-Cotes quadature for the remainder
 !
@@ -98,7 +98,7 @@
 !
 !   No value which will permit computation of exponent
 !
-      result = 0.d0
+      result = 0._real64
 !
     4 continue
       return

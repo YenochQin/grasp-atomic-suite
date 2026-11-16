@@ -1,29 +1,30 @@
 ! Density eigensystem and radial transformation, shared by serial/MPI targets.
 ! Algorithm derived from GRASP rdensity/natorbnew.f90 (488e875d).
 module natural_orbitals
-    use vast_kind_param, only: double
+    use, intrinsic :: iso_fortran_env, only: real64
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
-    implicit none
+    implicit none (type, external)
     private
     public :: diagonalize_density, transform_radial_block
     interface
         recursive subroutine dsyev(jobz, uplo, n, a, lda, w, work, lwork, info)
-            import double
+            import real64
+            implicit none (type, external)
             character, intent(in) :: jobz, uplo
             integer, intent(in) :: n, lda, lwork
-            real(double), intent(inout) :: a(lda,*), work(*)
-            real(double), intent(out) :: w(*)
+            real(real64), intent(inout) :: a(lda,*), work(*)
+            real(real64), intent(out) :: w(*)
             integer, intent(out) :: info
         end subroutine
     end interface
 contains
     recursive subroutine diagonalize_density(matrix, ordering, occupation, rotation, error)
-        real(double), intent(in) :: matrix(:,:)
+        real(real64), intent(in) :: matrix(:,:)
         integer, intent(in) :: ordering
-        real(double), intent(out) :: occupation(:), rotation(:,:)
+        real(real64), intent(out) :: occupation(:), rotation(:,:)
         character(*), intent(out) :: error
-        real(double), allocatable :: values(:), vectors(:,:), work(:)
-        real(double) :: query(1)
+        real(real64), allocatable :: values(:), vectors(:,:), work(:)
+        real(real64) :: query(1)
         integer, allocatable :: order(:)
         logical, allocatable :: used(:)
         integer :: n, info, i, j, slot, lwork
@@ -71,7 +72,7 @@ contains
             ! overwritten or left unassigned by mixed/pure eigenvectors.
             do i = 1,n
                 slot = maxloc(abs(vectors(:,i)), dim=1)
-                if (abs(vectors(slot,i)) < 1.0d0-1.0d-12) cycle
+                if (abs(vectors(slot,i)) < 1.0_real64-1.0e-12_real64) cycle
                 order(slot) = i
                 used(i) = .true.
             enddo
@@ -95,7 +96,7 @@ contains
     end subroutine
 
     recursive subroutine transform_radial_block(rotation, p, q, pz)
-        real(double), intent(inout) :: rotation(:,:), p(:,:), q(:,:), pz(:)
+        real(real64), intent(inout) :: rotation(:,:), p(:,:), q(:,:), pz(:)
         integer :: i
 
         p = matmul(p, rotation)
@@ -103,7 +104,7 @@ contains
         pz = matmul(pz, rotation)
         ! Fix the phase after ALL origin coefficients have been transformed.
         do i = 1,size(pz)
-            if (pz(i) >= 0.0d0) cycle
+            if (pz(i) >= 0.0_real64) cycle
             p(:,i) = -p(:,i)
             q(:,i) = -q(:,i)
             pz(i) = -pz(i)

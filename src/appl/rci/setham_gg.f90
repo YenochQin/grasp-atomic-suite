@@ -21,7 +21,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double, long
+      use, intrinsic :: iso_fortran_env, only: real64, int64
       use parameter_def,   only: max_radial_points, orbital_index_radix
       use memory_man
 !-----------------------------------------------
@@ -71,22 +71,22 @@
       use vpint_i
       use onescalar_i, only: onescalar
       use rkco_gg_i, only: rkco_gg
-      implicit none
+      implicit none (type, external)
       external breid,cord
 !----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer(long)       :: nelmntt
+      integer(int64)       :: nelmntt
       integer             :: jblock, icstrt
       integer, intent(in) :: myid, nprocs
-      real(double)        :: elsto, atwinv
-      real(double), dimension(*) :: slf_en
+      real(real64)        :: elsto, atwinv
+      real(real64) :: slf_en(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      real(double), dimension(max_orbitals) :: tshell
-      real(double) :: tgrl1, tgrl2, tegral
+      real(real64) :: tshell(max_orbitals)
+      real(real64) :: tgrl1, tgrl2, tegral
 
       integer, parameter :: key = orbital_index_radix
 !
@@ -99,17 +99,17 @@
       integer :: ipi, ipj, inc1, inc2, kt, ipt, incor, ncoec, nctec, &
                  i, j, nmcbp, ncore, ic, nelc, irstart, ir, ia, ib,  &
                  itype, iia
-       real(double) :: elemnt, precoeff, tcoeff, vcoeff, contr
+       real(real64) :: elemnt, precoeff, tcoeff, vcoeff, contr
 !-----------------------------------------------------------------------
       print *, 'Calling setham ...'
 !cjb
 !cjb  CUTOFF = 1.0D-12
-      cutoff = 1.0d-12
+      cutoff = 1.0e-12_real64
 
       stored_matrix_element_count = nelmntt
 
       !Per Bug fix 30/4-2013
-      atwinv = 1.d0/emn
+      atwinv = 1._real64/emn
       !Per Bug fix 30/4-2013
 
       if (iprerun .eq. 2) then
@@ -176,7 +176,7 @@
             end if
 ! PER
 
-            elemnt = 0.d0     ! accumulates various contributions to H
+            elemnt = 0._real64     ! accumulates various contributions to H
 
 !
 !   Generate the integral list for the matrix element of the

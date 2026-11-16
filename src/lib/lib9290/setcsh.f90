@@ -24,12 +24,12 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use lodcsh_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: nfile
-      integer  :: ncore
+      integer, intent(in) :: nfile
+      integer, intent(out) :: ncore
       character (len = *), intent(in) :: name
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

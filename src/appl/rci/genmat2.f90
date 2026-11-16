@@ -14,22 +14,22 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double, long
+      use, intrinsic :: iso_fortran_env, only: real64, int64
       use hmat_c  !! rather than setham_to_genmat2
       use decide_c
       use eigv_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in)        :: irestart
-      integer(long), intent(out) :: nelmnt_a
-      real(double), intent(in)   :: elsto
+      integer(int64), intent(out) :: nelmnt_a
+      real(real64), intent(in)   :: elsto
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(6) :: ntpi_a
-      real(double)          :: densty
+      integer :: ntpi_a(6)
+      real(real64)          :: densty
 !-----------------------------------------------
 !-----------------------------------------------------------------------
 ! Transfer parameters around and print out on node-0.

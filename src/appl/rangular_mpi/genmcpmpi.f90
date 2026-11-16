@@ -66,18 +66,17 @@
       use setdbgmpi_i, only: setdbgmpi
       use setmcpmpi_i, only: setmcpmpi
       use mcpmpi_i, only: mcpmpi
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer nblk0, ncount1, ncore, nb
-      parameter (nblk0 = 50)
-!-----------------------------------------------
+      integer, parameter :: nblk0 = 50   !-----------------------------------------------
+      integer :: ncount1, ncore, nb
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       logical ::  debug, restrt, yes
       character(len=128) :: startdir, permdir, tmpdir
-      character(len=8), dimension(nblk0):: idblk
+      character(len=8):: idblk(nblk0)
       character(len=3) :: idstring
       integer :: lenperm, lentmp
       type(mpi_angular_input_options) :: input_options

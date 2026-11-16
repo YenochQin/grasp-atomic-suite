@@ -13,35 +13,35 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: ndim
-      real(double), intent(in) :: faca
-      real(double), intent(in) :: facb
-      real(double), dimension(ndim), intent(in)  :: a
-      real(double), dimension(ndim), intent(in)  :: b
-      real(double), dimension(ndim), intent(out) :: c
+      real(real64), intent(in) :: faca
+      real(real64), intent(in) :: facb
+      real(real64), intent(in)  :: a(ndim)
+      real(real64), intent(in)  :: b(ndim)
+      real(real64), intent(out) :: c(ndim)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      real(double) :: s
+      real(real64) :: s
 !-----------------------------------------------
 !
-      if (faca/=0.0d0 .and. facb/=0.0d0) then
+      if (faca/=0.0_real64 .and. facb/=0.0_real64) then
          c(:ndim) = faca*a(:ndim) + facb*b(:ndim)
 !
-      else if (faca==0.0d0 .and. facb/=0.0d0) then
+      else if (faca==0.0_real64 .and. facb/=0.0_real64) then
          c(:ndim) = facb*b(:ndim)
 !
-      else if (faca/=0.0d0 .and. facb==0.0d0) then
+      else if (faca/=0.0_real64 .and. facb==0.0_real64) then
          c(:ndim) = faca*a(:ndim)
 !
-      else if (faca==0.0d0 .and. facb==0.0d0) then
-         c(:ndim) = 0.0d0
+      else if (faca==0.0_real64 .and. facb==0.0_real64) then
+         c(:ndim) = 0.0_real64
       endif
 !
       return

@@ -14,23 +14,23 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use debug_c
       use def_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      real(double), parameter :: reference_bohr_radius_cm = 0.52917721067d-08
-      real(double), parameter :: inverse_fine_structure_constant  = 137.035999139d00
-      real(double), parameter :: reference_speed_of_light_cm_per_s  = 2.99792458d10
-      real(double), parameter :: electron_charge_esu   = 4.803204673d-10
-      real(double), parameter :: electron_mass_g   = 9.10938356d-28
-      real(double), parameter :: reference_electron_mass_u = 5.48579909070d-04
-      real(double), parameter :: reference_proton_mass_u = 1.007276466879d00
-      real(double), parameter :: reduced_planck_constant_erg_s = 1.054571800d-27
-      real(double), parameter :: rydberg_energy_ev = 13.605693009d00
-      real(double), parameter :: rydberg_wavenumber_cm  = 109737.31568508d00
+      real(real64), parameter :: reference_bohr_radius_cm = 0.52917721067e-8_real64
+      real(real64), parameter :: inverse_fine_structure_constant  = 137.035999139_real64
+      real(real64), parameter :: reference_speed_of_light_cm_per_s  = 2.99792458e10_real64
+      real(real64), parameter :: electron_charge_esu   = 4.803204673e-10_real64
+      real(real64), parameter :: electron_mass_g   = 9.10938356e-28_real64
+      real(real64), parameter :: reference_electron_mass_u = 5.48579909070e-4_real64
+      real(real64), parameter :: reference_proton_mass_u = 1.007276466879_real64
+      real(real64), parameter :: reduced_planck_constant_erg_s = 1.054571800e-27_real64
+      real(real64), parameter :: rydberg_energy_ev = 13.605693009_real64
+      real(real64), parameter :: rydberg_wavenumber_cm  = 109737.31568508_real64
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -94,20 +94,20 @@
 !      FBSI converts the Einstein B coefficients from atomic to SI
 !            units
 !
-      hartree_to_wavenumber_cm = 2.0d00*rydberg_wavenumber_cm
-      hartree_to_ev = 2.0d00*rydberg_energy_ev
+      hartree_to_wavenumber_cm = 2.0_real64*rydberg_wavenumber_cm
+      hartree_to_ev = 2.0_real64*rydberg_energy_ev
       speed_of_light_cm_per_s = reference_speed_of_light_cm_per_s
       einstein_a_au_to_si = (electron_mass_g/reduced_planck_constant_erg_s)*(electron_charge_esu*electron_charge_esu/ &
          & reduced_planck_constant_erg_s)**2
-      einstein_b_au_to_si = (10.0d00*reference_bohr_radius_cm**3/reduced_planck_constant_erg_s)*einstein_a_au_to_si
+      einstein_b_au_to_si = (10.0_real64*reference_bohr_radius_cm**3/reduced_planck_constant_erg_s)*einstein_a_au_to_si
 !
 !   Calculate conversion factor for Fermis to Bohr radii
 !
-      femtometer_to_bohr = 1.0d-13/reference_bohr_radius_cm
+      femtometer_to_bohr = 1.0e-13_real64/reference_bohr_radius_cm
 !
 !   Calculate \pi from FORTRAN function
 !
-      pi = 4.0d00*atan(1.0d00)
+      pi = 4.0_real64*atan(1.0_real64)
 !
 !   Printouts
 !

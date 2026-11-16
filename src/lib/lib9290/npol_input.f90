@@ -1,19 +1,19 @@
 module npol_input
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
-    use vast_kind_param, only: double
     use npol_c, only: npol_config, npol_model
-    implicit none
+    implicit none (type, external)
     private
     public :: npol_read_config, npol_validate_config
 contains
     subroutine npol_read_config(path, cfg, status, message)
+        use, intrinsic :: iso_fortran_env, only: real64
         character(*), intent(in) :: path
         type(npol_config), intent(out) :: cfg
         integer, intent(out) :: status
         character(*), intent(out) :: message
         integer :: schema_version, isotope_z, isotope_a, unit, ios, bytes
         logical :: enabled, use_e1, use_e2, exists
-        real(double) :: k1, b1, k2, b2
+        real(real64) :: k1, b1, k2, b2
         ! Match the maximum accepted file size so namelist strings cannot be
         ! truncated before length validation. Fixed scratch buffers also avoid
         ! saved allocatable descriptors under the suite's -fno-automatic flag.
@@ -172,8 +172,9 @@ contains
     end subroutine
 
     subroutine npol_validate_config(cfg, z, status, message)
+        use, intrinsic :: iso_fortran_env, only: real64
         type(npol_config), intent(in) :: cfg
-        real(double), intent(in) :: z
+        real(real64), intent(in) :: z
         integer, intent(out) :: status
         character(*), intent(out) :: message
         status = 1
@@ -194,7 +195,7 @@ contains
         if (len_trim(cfg%parameter_source) == 0) return
         message = 'npol: isotope_z must be positive and match the running nuclear charge'
         if (.not.ieee_is_finite(z)) return
-        if (cfg%isotope_z <= 0 .or. real(cfg%isotope_z,double) /= z) return
+        if (cfg%isotope_z <= 0 .or. real(cfg%isotope_z,real64) /= z) return
         message = 'npol: isotope_a must be supplied and at least isotope_z'
         if (cfg%isotope_a < cfg%isotope_z) return
         if (cfg%use_e1) then

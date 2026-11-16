@@ -1,90 +1,105 @@
-! LP64 Fortran BLAS/LAPACK interfaces: default INTEGER and suite DOUBLE.
+! LP64 Fortran BLAS/LAPACK interfaces: default INTEGER and suite working precision.
 ! Keep these declarations consistent with the linked numerical library.
 module suite_linear_algebra
-    use vast_kind_param, only: double
-    implicit none
+    use, intrinsic :: iso_fortran_env, only: real64
+    implicit none (type, external)
     private
     public :: dcopy, ddot, daxpy, dscal, dnrm2, dgemv, dgemm, dspevx, dswap, idamax
     public :: slamch, dlamch, lsame, xerbla
     interface
         logical function lsame(ca, cb)
+            implicit none (type, external)
             character(1), intent(in) :: ca, cb
         end function
         subroutine xerbla(srname, info)
+            implicit none (type, external)
             character(*), intent(in) :: srname
             integer, intent(in) :: info
         end subroutine
-        real function slamch(cmach)
+        real(real32) function slamch(cmach)
+            use, intrinsic :: iso_fortran_env, only: real32
+            implicit none (type, external)
             character(1), intent(in) :: cmach
         end function
         function dlamch(cmach) result(value)
-            import double
+            import real64
+            implicit none (type, external)
             character(1), intent(in) :: cmach
-            real(double) :: value
+            real(real64) :: value
         end function
         subroutine dswap(n, x, incx, y, incy)
-            import double
+            import real64
+            implicit none (type, external)
             integer, intent(in) :: n, incx, incy
-            real(double), intent(inout) :: x(*), y(*)
+            real(real64), intent(inout) :: x(*), y(*)
         end subroutine
         function idamax(n, x, incx) result(index)
-            import double
+            import real64
+            implicit none (type, external)
             integer, intent(in) :: n, incx
-            real(double), intent(in) :: x(*)
+            real(real64), intent(in) :: x(*)
             integer :: index
         end function
         subroutine dcopy(n, x, incx, y, incy)
-            import double
+            import real64
+            implicit none (type, external)
             integer, intent(in) :: n, incx, incy
-            real(double), intent(in) :: x(*)
-            real(double), intent(inout) :: y(*)
+            real(real64), intent(in) :: x(*)
+            real(real64), intent(inout) :: y(*)
         end subroutine
         function ddot(n, x, incx, y, incy) result(value)
-            import double
+            import real64
+            implicit none (type, external)
             integer, intent(in) :: n, incx, incy
-            real(double), intent(in) :: x(*), y(*)
-            real(double) :: value
+            real(real64), intent(in) :: x(*), y(*)
+            real(real64) :: value
         end function
         subroutine daxpy(n, alpha, x, incx, y, incy)
-            import double
+            import real64
+            implicit none (type, external)
             integer, intent(in) :: n, incx, incy
-            real(double), intent(in) :: alpha, x(*)
-            real(double), intent(inout) :: y(*)
+            real(real64), intent(in) :: alpha, x(*)
+            real(real64), intent(inout) :: y(*)
         end subroutine
         subroutine dscal(n, alpha, x, incx)
-            import double
+            import real64
+            implicit none (type, external)
             integer, intent(in) :: n, incx
-            real(double), intent(in) :: alpha
-            real(double), intent(inout) :: x(*)
+            real(real64), intent(in) :: alpha
+            real(real64), intent(inout) :: x(*)
         end subroutine
         function dnrm2(n, x, incx) result(value)
-            import double
+            import real64
+            implicit none (type, external)
             integer, intent(in) :: n, incx
-            real(double), intent(in) :: x(*)
-            real(double) :: value
+            real(real64), intent(in) :: x(*)
+            real(real64) :: value
         end function
         subroutine dgemv(trans, m, n, alpha, a, lda, x, incx, beta, y, incy)
-            import double
+            import real64
+            implicit none (type, external)
             character(1), intent(in) :: trans
             integer, intent(in) :: m, n, lda, incx, incy
-            real(double), intent(in) :: alpha, beta, a(lda,*), x(*)
-            real(double), intent(inout) :: y(*)
+            real(real64), intent(in) :: alpha, beta, a(lda,*), x(*)
+            real(real64), intent(inout) :: y(*)
         end subroutine
         subroutine dgemm(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)
-            import double
+            import real64
+            implicit none (type, external)
             character(1), intent(in) :: transa, transb
             integer, intent(in) :: m, n, k, lda, ldb, ldc
-            real(double), intent(in) :: alpha, beta, a(lda,*), b(ldb,*)
-            real(double), intent(inout) :: c(ldc,*)
+            real(real64), intent(in) :: alpha, beta, a(lda,*), b(ldb,*)
+            real(real64), intent(inout) :: c(ldc,*)
         end subroutine
         subroutine dspevx(jobz, range, uplo, n, ap, vl, vu, il, iu, abstol, m, w, z, ldz, work, iwork, ifail, info)
-            import double
+            import real64
+            implicit none (type, external)
             character(1), intent(in) :: jobz, range, uplo
             integer, intent(in) :: n, il, iu, ldz
-            real(double), intent(in) :: vl, vu, abstol
-            real(double), intent(inout) :: ap(*)
+            real(real64), intent(in) :: vl, vu, abstol
+            real(real64), intent(inout) :: ap(*)
             integer, intent(out) :: m, info
-            real(double), intent(out) :: w(*), z(ldz,*), work(*)
+            real(real64), intent(out) :: w(*), z(ldz,*), work(*)
             integer, intent(out) :: iwork(*), ifail(*)
         end subroutine
     end interface

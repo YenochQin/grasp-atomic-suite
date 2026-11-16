@@ -23,7 +23,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, half, eps
       use m_c,             only: nq1, jlist, npeel
       use orb_c,           only: orbital_kappa
@@ -46,7 +46,7 @@
       use cxk_i
       use talk_i
       use sixj_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -61,12 +61,12 @@
                  ikk,inn,i1,i2,i3,i4,ibrd,ibre,ifaz,ifazp,ifazfrcs, &
                  jaa,jbb,jcc,jb1,j12,kra,kra1,l1,l2,l3,nd1,nd2,ne1, &
                  ne2,n,nn,nu,nup1,mu
-      integer, dimension(3) :: j
-      integer, dimension(4) :: is,kaps,ks
-      real(double)          :: a1,aa,ab,bb,qm1,qm2,qm3,qm4,rag,recc,si
-      real(double), dimension(12) :: s
-      real(double), dimension(30) :: pmgg,ragg
-      real(double), dimension(12,20) :: cone
+      integer :: j(3)
+      integer :: is(4),kaps(4),ks(4)
+      real(real64)          :: a1,aa,ab,bb,qm1,qm2,qm3,qm4,rag,recc,si
+      real(real64) :: s(12)
+      real(real64) :: pmgg(30),ragg(30)
+      real(real64) :: cone(12, 20)
 !-----------------------------------------------
       if(npeel <= 1)return
       call eile(ja,jb,jc,jaa,jbb,jcc)

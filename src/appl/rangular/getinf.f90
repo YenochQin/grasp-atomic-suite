@@ -32,7 +32,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use getyn_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

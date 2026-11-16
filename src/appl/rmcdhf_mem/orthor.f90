@@ -24,7 +24,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_radial_points
       use def_c
       use grid_c
@@ -42,17 +42,17 @@
       use rint_i
 !      USE count_I
       use count_i, only: count
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: j
+      integer, intent(in) :: j
       integer , intent(inout) :: inv
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: kraw, k, mtp, i, nncff, jgg
-      real(double) :: eps, ovrlap, dnorm, factor, sgn
+      real(real64) :: eps, ovrlap, dnorm, factor, sgn
       logical :: check, changed
 !-----------------------------------------------
 !
@@ -60,7 +60,7 @@
 
 !
 !ww      EPS = ACCY*0.1D 00
-      eps = accy*0.01d00
+      eps = accy*0.01_real64
 !
       check = .not.noinvt(j)
 !
@@ -103,13 +103,13 @@
 !
          orbital_last_grid_index(j) = mtp
          dnorm = rint(j,j,0)
-         factor = 1.0d00/sqrt(dnorm)
+         factor = 1.0_real64/sqrt(dnorm)
 !
 !   Determine if inversion is necessary
 !
          if (check) then
             call count (radial_large_components(:max_radial_points,j), mtp, nncff, sgn)
-            if (sgn < 0.0d00) then
+            if (sgn < 0.0_real64) then
                inv = inv + 1
                factor = -factor
             endif
@@ -127,8 +127,8 @@
     3    continue
          mtp = mtp - 1
          if (abs(radial_large_components(mtp,j)) < eps) then
-            radial_large_components(mtp,j) = 0.0d00
-            radial_small_components(mtp,j) = 0.0d00
+            radial_large_components(mtp,j) = 0.0_real64
+            radial_small_components(mtp,j) = 0.0_real64
             go to 3
          else
             orbital_last_grid_index(j) = mtp

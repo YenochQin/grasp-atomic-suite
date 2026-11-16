@@ -18,22 +18,22 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use lulu_i
       use setvec_i
       use wrtmat_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ndim
-      real(double), intent(in) :: a(ndim,ndim)
-      real(double)  :: u(ndim,ndim)
-      real(double)  :: l(ndim,ndim)
-      real(double)  :: scr(*)
+      integer, intent(in) :: ndim
+      real(real64), intent(in) :: a(ndim,ndim)
+      real(real64)  :: u(ndim,ndim)
+      real(real64)  :: l(ndim,ndim)
+      real(real64)  :: scr(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -70,8 +70,8 @@
 !   U(I,J) = U(J*(J-1)/2 + I ) ( J .GE. I )
 !
 !. 3 : Obtain U as PLP and L as PUP
-      call setvec (u, 0.0d0, ndim**2)
-      call setvec (l, 0.0d0, ndim**2)
+      call setvec (u, 0.0_real64, ndim**2)
+      call setvec (l, 0.0_real64, ndim**2)
 !
       do imax = 1, ndim
          do imin = 1, imax

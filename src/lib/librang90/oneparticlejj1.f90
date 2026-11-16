@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, half, eps
       use trk_c
 !-----------------------------------------------
@@ -30,17 +30,17 @@
       use recop2_i
       use wj1_i
       use perko2_i, only: perko2
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: ns,ka,jja,jjb,ja,jb
-      real(double), intent(out) :: coeff
+      real(real64), intent(out) :: coeff
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: iat
-      real(double) :: rec,wj,qm1,qm2
+      real(real64) :: rec,wj,qm1,qm2
 !-----------------------------------------------
 !
 !     THE CASE 11   + -

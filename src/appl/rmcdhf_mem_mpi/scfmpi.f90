@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine scfmpi(eol, rwffile2)
+      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !   This  subroutine  performs  the SCF iterations. The procedure is   *
 !   essentially algorithm 5.1 of C Froese Fischer, Comput Phys Rep 3   *
@@ -24,7 +25,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
       use blkidx_c
       use default_c
@@ -57,20 +58,20 @@
       use orthsc_i
       use orbout_i
       use endsum_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      logical  :: eol
+      logical, intent(in) :: eol
       character  :: rwffile2*(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: j, i, nit, jseq, kount, k, l_mpi
-      real(double) :: wtaev, wtaev0, dampmx
+      real(real64) :: wtaev, wtaev0, dampmx
       logical :: convg, lsort, dvdfirst
 !-----------------------------------------------
 !CFF   .. set the logical variable dvdfirst
@@ -247,7 +248,7 @@
 !cjb unified convergence criteria in RMCDHF and RMCDHF_MPI
 !cjb     IF(DABS(WTAEV-WTAEV0).LT.1.0D-8.and.              &
 !cjb                   DAMPMX.LT.1.0D-2) CONVG=.true.
-         if (abs((wtaev - wtaev0)/wtaev) < 0.001*accy) convg = .true.
+         if (abs((wtaev - wtaev0)/wtaev) < 0.001_real32*accy) convg = .true.
          wtaev0 = wtaev
          if (.not.convg) cycle
          if (ldbpr(25) .and. .not.ldbpr(24) .and. mpi_rank==0) call prwf (0)

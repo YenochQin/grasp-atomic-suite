@@ -8,9 +8,11 @@
 !     NIST                                     last update: May 2017   *
 !                                                                      *
 !***********************************************************************
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64, double => real64
+      implicit none (type, external)
+      private :: real64
 !
-      real(double), dimension(:,:), pointer :: channel_coefficients
-      integer, dimension(:,:), pointer :: channel_csf_columns, channel_matrix_positions, channel_packed_orbital_labels
+      real(real64), pointer :: channel_coefficients(:, :)
+      integer, pointer :: channel_csf_columns(:, :), channel_matrix_positions(:, :), channel_packed_orbital_labels(:, :)
 !
       end module sacoef_c

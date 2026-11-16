@@ -24,7 +24,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
       use parameter_def,    only: max_orbitals
       use memory_man
       use hblock_c
@@ -37,7 +36,7 @@
       use openfl_i
       use lodcsh_i
       use lodcsh2gg_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

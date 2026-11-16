@@ -9,15 +9,15 @@
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: n
-      integer  :: incx
-      integer  :: incy
-      integer, dimension(*), intent(in) :: ix
-      integer, dimension(*), intent(out) :: iy
+      integer, intent(in) :: incx
+      integer, intent(in) :: incy
+      integer, intent(in) :: ix(*)
+      integer, intent(out) :: iy(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

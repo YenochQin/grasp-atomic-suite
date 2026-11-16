@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use grid_c
       use tatb_c
       use orb_c
@@ -26,18 +26,18 @@
 !-----------------------------------------------
       use quad_i
       use wrtmat_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer       :: nshli
-      integer       :: nshlf
-      real(double)  :: s(nshli,nshlf)
+      integer, intent(in) :: nshli
+      integer, intent(in) :: nshlf
+      real(real64)  :: s(nshli,nshlf)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: i, j, l
-      real(double) :: result
+      real(real64) :: result
 !-----------------------------------------------
 !
       do i = 1, nshli
@@ -50,7 +50,7 @@
 !   Tabulate the integrand as required for SUBROUTINE QUAD; the
 !   value at the first tabulation point is arbitrary
 !
-            ta(1) = 0.d0
+            ta(1) = 0._real64
             do l = 2, mtp
                ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*radial_grid_derivative(l)
             end do

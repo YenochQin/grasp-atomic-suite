@@ -24,12 +24,13 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use getyn_i
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real32
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ndkp, istart, i, iend, lenth, ios, mult
-      real, dimension(3) :: cnum
+      real(real32) :: cnum(3)
       logical :: lelec, lmagn, yes
       character :: record*256, reci
 !-----------------------------------------------

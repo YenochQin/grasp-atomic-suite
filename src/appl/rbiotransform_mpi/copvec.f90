@@ -7,14 +7,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
-      implicit none
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: ndim
-      real(double), dimension(ndim), intent(in)  :: from
-      real(double), dimension(ndim), intent(out) :: to
+      real(real64), intent(in)  :: from(ndim)
+      real(real64), intent(out) :: to(ndim)
 !
       to(:ndim) = from(:ndim)
 !

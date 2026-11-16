@@ -1,9 +1,11 @@
       module compute_gj_only_i
+      implicit none (type, external)
       interface
       subroutine compute_gj_only (gjc_diag, dgjc_diag)
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use prnt_c, only: nvec
-      real(double), intent(out) :: gjc_diag(nvec), dgjc_diag(nvec)
+      implicit none (type, external)
+      real(real64), intent(out) :: gjc_diag(nvec), dgjc_diag(nvec)
       end subroutine
       end interface
       end module

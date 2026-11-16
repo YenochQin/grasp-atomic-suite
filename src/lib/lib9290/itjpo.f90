@@ -18,11 +18,11 @@
       use stat_c,        only: csf_coupling_quantum_codes
       use iounit_c,      only: stderr_unit
       use orb_c,         only: csf_count
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer       :: icsf
+      integer, intent(in) :: icsf
 !-----------------------------------------------
       if (icsf>=1 .and. icsf<=csf_count) then
         itjpo = csf_coupling_quantum_codes(max_orbitals,icsf)

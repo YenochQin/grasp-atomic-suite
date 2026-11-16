@@ -598,7 +598,6 @@ class PatchGridTests(unittest.TestCase):
         fixture(root, "atomic-suite")
         source = SCRIPT.parents[1] / "src/lib/libmod"
         module_names = [
-            "vast_kind_param_M.f90",
             "suite_parameters_M.f90",
             "parameter_def_M.f90",
             "grid_C.f90",

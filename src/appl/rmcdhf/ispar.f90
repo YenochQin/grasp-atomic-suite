@@ -16,11 +16,11 @@
 !-----------------------------------------------
       use parameter_def, only: max_orbitals
       use stat_c,        only: csf_coupling_quantum_codes
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer       :: icsf
+      integer, intent(in) :: icsf
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------

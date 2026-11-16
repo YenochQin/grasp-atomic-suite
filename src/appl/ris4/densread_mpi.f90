@@ -6,7 +6,7 @@
 !   only accumulates records whose IC belongs to its strided subset.    *
 !                                                                      *
 !***********************************************************************
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix, max_orbitals
       use debug_c,          only: cutoff
       use prnt_c
@@ -14,17 +14,18 @@
       use orb_c
       use eigv_c
       use mpi_c,            only: mpi_rank, mpi_process_count
-      implicit none
-      real(double), dimension(max_orbitals,max_orbitals), intent(in) :: dint1, dint2,  &
-                                          dint3, dint4, dint5, dint6,  &
-                                          dint7
+      implicit none (type, external)
+      real(real64), intent(in) :: dint1(max_orbitals, max_orbitals), dint2(max_orbitals, max_orbitals),  &
+                                          dint3(max_orbitals, max_orbitals), dint4(max_orbitals, max_orbitals), &
+                                             dint5(max_orbitals, max_orbitals), dint6(max_orbitals, max_orbitals),  &
+                                          dint7(max_orbitals, max_orbitals)
       integer, parameter :: key = orbital_index_radix
-      real(double), dimension(max_orbitals) :: tshell_r
-      real(double) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5
-      real(double) :: elemnt6, elemnt7
-      real(double) :: contri1, contri2, contri3, contri4, contri5
-      real(double) :: contri6, contri7
-      real(double) :: evpair, pair_scale
+      real(real64) :: tshell_r(max_orbitals)
+      real(real64) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5
+      real(real64) :: elemnt6, elemnt7
+      real(real64) :: contri1, contri2, contri3, contri4, contri5
+      real(real64) :: contri6, contri7
+      real(real64) :: evpair, pair_scale
       integer :: ios, ia, ib, ic, ir, i, j, loc, lab, ncount
       logical :: ownrec
 
@@ -33,13 +34,13 @@
 
       if (ios .eq. 0) then
          ownrec = mod(ic-1, mpi_process_count) .eq. mpi_rank
-         elemnt1 = 0.0d00
-         elemnt2 = 0.0d00
-         elemnt3 = 0.0d00
-         elemnt4 = 0.0d00
-         elemnt5 = 0.0d00
-         elemnt6 = 0.0d00
-         elemnt7 = 0.0d00
+         elemnt1 = 0.0_real64
+         elemnt2 = 0.0_real64
+         elemnt3 = 0.0_real64
+         elemnt4 = 0.0_real64
+         elemnt5 = 0.0_real64
+         elemnt6 = 0.0_real64
+         elemnt7 = 0.0_real64
 
          do i= 1,ncount
             read(50) tshell_r(i),lab
@@ -64,9 +65,9 @@
                 abs(elemnt6) .le. cutoff .and. &
                 abs(elemnt7) .le. cutoff) goto 16
             if (ir .eq. ic) then
-               pair_scale = 1.0d00
+               pair_scale = 1.0_real64
             else
-               pair_scale = 2.0d00
+               pair_scale = 2.0_real64
             endif
             do j = 1,nvec
                loc = (j-1)*csf_count

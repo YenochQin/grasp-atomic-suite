@@ -28,7 +28,7 @@
       use el51_i
       use el52_i
       use el53_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

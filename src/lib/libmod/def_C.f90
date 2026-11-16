@@ -4,28 +4,30 @@
       module def_c
 !                                                                      *
 !***********************************************************************
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64, double => real64
       use parameter_def,   only:  max_radial_points
+      implicit none (type, external)
+      private :: real64
 !...Created by Pacific-Sierra Research 77to90  4.3E  11:02:52   1/ 2/07
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      real(double) :: tenmax, expmax, expmin, precis
-      real(double) :: hartree_to_wavenumber_cm, hartree_to_ev, speed_of_light_cm_per_s, einstein_a_au_to_si, einstein_b_au_to_si
-      real(double) :: femtometer_to_bohr, electron_mass_u, b1
+      real(real64) :: tenmax, expmax, expmin, precis
+      real(real64) :: hartree_to_wavenumber_cm, hartree_to_ev, speed_of_light_cm_per_s, einstein_a_au_to_si, einstein_b_au_to_si
+      real(real64) :: femtometer_to_bohr, electron_mass_u, b1
       integer :: ioncty, electron_count
-      real(double) :: emn, nuclear_charge
+      real(real64) :: emn, nuclear_charge
       integer :: ionctyff, nelecff
-      real(double) :: emnff, zff
+      real(real64) :: emnff, zff
       integer :: ionctyii, nelecii
-      real(double) :: emnii, zii
+      real(real64) :: emnii, zii
       integer :: nelecr
-      real(double) :: speed_of_light_au
-      real(double) :: proton_mass_u, bohr_radius_cm
+      real(real64) :: speed_of_light_au
+      real(real64) :: proton_mass_u, bohr_radius_cm
       integer :: nscf, nsic, nsolv
-      real(double) :: accy
-      real(double), dimension(:), pointer :: wt, weight
+      real(real64) :: accy
+      real(real64), pointer :: wt(:), weight(:)
       integer :: ncmin, ncmax
-      integer, dimension(:), pointer :: iccmin
-      real(double) :: vacuum_speed_of_light_au, pi
-      real(double), dimension(max_radial_points) :: dp, dq
+      integer, pointer :: iccmin(:)
+      real(real64) :: vacuum_speed_of_light_au, pi
+      real(real64) :: dp(max_radial_points), dq(max_radial_points)
       end module def_c

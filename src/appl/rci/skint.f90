@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function skint (rac, ia, ic, rbd, ib, id, k, iw)
+      real(real64) function skint (rac, ia, ic, rbd, ib, id, k, iw)
 !                                                                      *
 !   This routine evaluates transverse interaction integrals:           *
 !                                                                      *
@@ -20,7 +20,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use bess_c
       use debug_c
@@ -33,24 +33,24 @@
 !-----------------------------------------------
       use zkf_i
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ia, ib, ic, id
+      integer, intent(in) :: ia, ib, ic, id
       integer, intent(in) :: k, iw
-      real(double), dimension(max_radial_points), intent(in) :: rac
-      real(double), dimension(max_radial_points), intent(in) :: rbd
+      real(real64), intent(in) :: rac(max_radial_points)
+      real(real64), intent(in) :: rbd(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: mxrac, mxrbd, i
-      real(double), dimension(max_radial_points) :: tkeep
-      real(double) :: epsi, w, wk, valu
+      real(real64) :: tkeep(max_radial_points)
+      real(real64) :: epsi, w, wk, valu
 !-----------------------------------------------
 !
 !
-      epsi = 1.0d-10
+      epsi = 1.0e-10_real64
 !
       w = wij(iw)
       wk = dble(k + k + 1)
@@ -72,10 +72,10 @@
          tkeep(:mtp) = tb(:mtp)
          call zkf (k + 1, ia, ic)
          mtp = min(mtp,mxrbd)
-         ta(1) = 0.0d00
+         ta(1) = 0.0_real64
          ta(2:mtp) = rbd(2:mtp)*radial_derivative_over_radius(2:mtp)*(tb(2:mtp)-tkeep(2:mtp))
          call quad (valu)
-         skint = wk*valu*0.5d00
+         skint = wk*valu*0.5_real64
 !
       else
 !
@@ -87,17 +87,17 @@
          call zkf (k - 1, ia, ic)
 !
          mtp = min(mtp,mxrbd)
-         ta(1) = 0.0d00
-         ta(2:mtp) = ((1.0d00 + bessn(2,iw,2:mtp))*tb(2:mtp)-tkeep(2:mtp)*bessn&
+         ta(1) = 0.0_real64
+         ta(2:mtp) = ((1.0_real64 + bessn(2,iw,2:mtp))*tb(2:mtp)-tkeep(2:mtp)*bessn&
             (2,iw,2:mtp))*rbd(2:mtp)/radial_grid(2:mtp)**2*radial_derivative_over_radius(2:mtp)
          call quad (valu)
          skint = (wk/w)**2*valu
-         ta(:mxrbd) = rbd(:mxrbd)*(1.0d00 + bessj(2,iw,:mxrbd))
+         ta(:mxrbd) = rbd(:mxrbd)*(1.0_real64 + bessj(2,iw,:mxrbd))
          mtp = mxrbd
          call zkf (k + 1, ib, id)
          mtp = min(mtp,mxrac)
-         ta(1) = 0.0d00
-         ta(2:mtp) = rac(2:mtp)*(1.0d00 + bessn(1,iw,2:mtp))*tb(2:mtp)*radial_grid(2:mtp)&
+         ta(1) = 0.0_real64
+         ta(2:mtp) = rac(2:mtp)*(1.0_real64 + bessn(1,iw,2:mtp))*tb(2:mtp)*radial_grid(2:mtp)&
             *radial_grid_derivative(2:mtp)
          call quad (valu)
          skint = skint - valu*w*w/dble((2*k + 3)*(2*k - 1))

@@ -11,21 +11,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero, eps
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer,      intent(in), dimension(7) :: ik, id
-      real(double), intent(in), dimension(3) :: bk, bd
-      real(double), intent(in)               :: qm1
-      real(double), intent(out)              :: a
+      integer,      intent(in) :: ik(7), id(7)
+      real(real64), intent(in) :: bk(3), bd(3)
+      real(real64), intent(in)               :: qm1
+      real(real64), intent(out)              :: a
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer      :: ifaz, isuma
-      real(double) :: ab
+      real(real64) :: ab
 !-----------------------------------------------
       a=zero
       if(qm1 < eps) then

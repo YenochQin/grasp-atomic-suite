@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function rinti (j, k, mode)
+      real(real64) function rinti (j, k, mode)
 !                                                                      *
 !   The value of this  function is the one-electron integral I (J,K)   *
 !   for  orbitals  J, K. The analytical expression for this quantity   *
@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use debug_c
       use def_c,           only: speed_of_light_au
       use grid_c
@@ -31,21 +31,21 @@
 !-----------------------------------------------
       use dpbdt_i
       use quad_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: j
-      integer  :: k
+      integer, intent(in) :: j
+      integer, intent(in) :: k
       integer, intent(in) :: mode
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i
-      real(double) :: piece1, piece2, piece3, piece4
+      real(real64) :: piece1, piece2, piece3, piece4
 !-----------------------------------------------
 !
 !   Stop if orbitals J and K have different kappa values
@@ -62,7 +62,7 @@
 !   Piece involving derivatives
 !
       call dpbdt (k)
-      ta(1) = 0.d0
+      ta(1) = 0._real64
       do i = 2, mtp
          ta(i) = radial_small_components(i,j)*ta(i) - radial_large_components(i,j)*tb(i)
       end do
@@ -71,14 +71,14 @@
 !
 !   Pieces not involving derivatives
 !
-      ta(1) = 0.d0
+      ta(1) = 0._real64
       do i = 2, mtp
          ta(i) = radial_grid_derivative(i)*radial_small_components(i,j)*radial_small_components(i,k)
       end do
       call quad (piece2)
-      piece2 = -2.d0*speed_of_light_au*speed_of_light_au*piece2
+      piece2 = -2._real64*speed_of_light_au*speed_of_light_au*piece2
 !
-      ta(1) = 0.d0
+      ta(1) = 0._real64
       do i = 2, mtp
          ta(i) = radial_derivative_over_radius(i)*(radial_large_components(i,j)*radial_small_components(i,k) + &
             & radial_small_components(i,j)*radial_large_components(i,k))
@@ -90,7 +90,7 @@
 !
       if (mode == 0) then
 !
-         ta(1) = 0.d0
+         ta(1) = 0._real64
          do i = 2, mtp
             ta(i) = radial_derivative_over_radius(i)*negative_radius_times_potential(i)*(radial_large_components(i,j)* &
                & radial_large_components(i,k) + radial_small_components(i,j)*radial_small_components(i,k))
@@ -99,7 +99,7 @@
          piece4 = -piece4
 !
       else
-         piece4 = 0.d0
+         piece4 = 0._real64
       endif
 !
       rinti = piece1 + piece2 + piece3 + piece4

@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function shield (j)
+      real(real64) function shield (j)
+      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !   This  routine estimates the screening (or shielding) for orbital   *
 !   J according to the relativistic hydrogenic energy formula.         *
@@ -25,10 +26,10 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use orb_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -36,7 +37,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double) :: a, aa, bb, cc, t, beta
+      real(real64) :: a, aa, bb, cc, t, beta
 !-----------------------------------------------
 !
 !
@@ -44,7 +45,7 @@
 ! note E(J) = -E(n,k)
       a = 1 - orbital_energy_parameters(j)/(speed_of_light_au*speed_of_light_au)
       a = 1/(a*a) - 1
-      if (a < 0.0) then
+      if (a < 0.0_real32) then
          shield = -speed_of_light_au
          return
       endif
@@ -54,7 +55,7 @@
       bb = a*dble(orbital_principal_n(j)-iabs(orbital_kappa(j)))
       cc = dble((orbital_principal_n(j)-iabs(orbital_kappa(j)))**2-orbital_kappa(j)**2)
       t = bb*bb - aa*cc
-      if (t < 0.0) then
+      if (t < 0.0_real32) then
          shield = -speed_of_light_au
          return
       endif

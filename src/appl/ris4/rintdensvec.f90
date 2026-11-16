@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_orbitals
       use def_c,            only: pi
       use grid_c
@@ -26,22 +26,23 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), dimension(max_orbitals,max_orbitals,radial_point_count), intent(out) :: dint1vec
-      integer  :: i, j
+      real(real64), intent(out) :: dint1vec(max_orbitals, max_orbitals, radial_point_count)
+      integer, intent(in) :: i, j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: l, nrnuc
+      integer :: l
+      integer, intent(in) :: nrnuc
 !-----------------------------------------------
 !
       do l = 2, nrnuc
          dint1vec(i,j,l) = (radial_large_components(l,i)*radial_large_components(l,j)+radial_small_components(l,i)* &
             & radial_small_components(l,j))/          &
-                   (4.0d00*pi*radial_grid(l)*radial_grid(l))
+                   (4.0_real64*pi*radial_grid(l)*radial_grid(l))
       end do
 !
       return

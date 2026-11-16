@@ -3,7 +3,7 @@ program cpath_io
     use cpath_I, only: cpath
     use sys_chdir_I, only: sys_chdir
     use sys_getwd_I, only: sys_getwd
-    implicit none
+    implicit none (type, external)
     character(128) :: startdir, permdir, tmpdir
     character(128) :: expected, current
     character(3) :: rank_text

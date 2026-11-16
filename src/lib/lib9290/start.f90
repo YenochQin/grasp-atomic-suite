@@ -25,7 +25,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use cnc_c
       use def_c,           only: speed_of_light_au, nuclear_charge, accy
@@ -35,23 +35,24 @@
       use pote_c,          only: yp, xp, xq
       use scf_c,           only: ndcof, nda, da
       use wave_c,          only: orbital_origin_parameters,radial_large_components,radial_small_components
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: orbital_index
+      integer, intent(in) :: orbital_index
       integer, intent(in) :: radial_equation_type
-      real(double), intent(in) :: origin_slope_parameter
-      real(double), intent(out) :: small_component_origin_coefficient
-      real(double), dimension(max_radial_points), intent(inout) :: large_component_values
-      real(double), dimension(max_radial_points), intent(inout) :: small_component_values
+      real(real64), intent(in) :: origin_slope_parameter
+      real(real64), intent(out) :: small_component_origin_coefficient
+      real(real64), intent(inout) :: large_component_values(max_radial_points)
+      real(real64), intent(inout) :: small_component_values(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: mxiter=36, kiorb, i, jorb, niter, j
-      real(double), dimension(6) :: rdp, rdq, rsep, rseq
-      real(double), dimension(2:6) :: spest, sqest
-      real(double) :: obc, zonc, giorb, fkiorb, omgi, omgmk, omgpk, rsep1, &
+      integer, parameter :: mxiter = 36
+      integer :: kiorb, i, jorb, niter, j
+      real(real64) :: rdp(6), rdq(6), rsep(6), rseq(6)
+      real(real64) :: spest(2:6), sqest(2:6)
+      real(real64) :: obc, zonc, giorb, fkiorb, omgi, omgmk, omgpk, rsep1, &
          rseq1, pzero, p1, q1, sump, sumq, factor, csq, twocsq, energy, enefac&
          , ri, rpi, rirpi, ypirpi, difmaw, difmax, coefij, pi, qi, rj
 !-----------------------------------------------
@@ -59,12 +60,12 @@
 !
 !   Initialization
 !
-      obc = 1.0d00/speed_of_light_au
+      obc = 1.0_real64/speed_of_light_au
       zonc = nuclear_charge*obc
       giorb = orbital_origin_exponents(orbital_index)
       kiorb = orbital_kappa(orbital_index)
       fkiorb = dble(kiorb)
-      omgi = 1.0d00 - giorb
+      omgi = 1.0_real64 - giorb
 !
       omgmk = omgi - fkiorb
       omgpk = omgi + fkiorb
@@ -83,18 +84,18 @@
          else
             if (kiorb < 0) then
                large_component_values(1) = origin_slope_parameter
-               small_component_values(1) = 0.0d00
+               small_component_values(1) = 0.0_real64
             else
-               large_component_values(1) = 0.0d00
+               large_component_values(1) = 0.0_real64
                small_component_values(1) = origin_slope_parameter*(giorb + fkiorb)/zonc
             endif
          endif
          if (radial_equation_type == 1) then
-            rsep = 0.0d00
-            rseq = 0.0d00
+            rsep = 0.0_real64
+            rseq = 0.0_real64
          else
-            rsep1 = 0.0d00
-            rseq1 = 0.0d00
+            rsep1 = 0.0_real64
+            rseq1 = 0.0_real64
             do i = 1, ndcof
                jorb = nda(i)
                pzero = orbital_origin_parameters(jorb)
@@ -110,13 +111,13 @@
                else
                   if (kiorb < 0) then
                      p1 = pzero
-                     q1 = 0.0d00
+                     q1 = 0.0_real64
                   else
-                     p1 = 0.0d00
+                     p1 = 0.0_real64
                      q1 = pzero*(giorb + fkiorb)/zonc
                   endif
-                  sump = 0.0d00
-                  sumq = 0.0d00
+                  sump = 0.0_real64
+                  sumq = 0.0_real64
                endif
                factor = da(i)
                rsep1 = rsep1 + factor*(sump + omgmk*p1)
@@ -132,10 +133,10 @@
             end do
          endif
       else if (radial_equation_type == 3) then
-         large_component_values(1) = 0.0d00
-         small_component_values(1) = 0.0d00
-         rsep(1) = 0.0d00
-         rseq(1) = 0.0d00
+         large_component_values(1) = 0.0_real64
+         small_component_values(1) = 0.0_real64
+         rsep(1) = 0.0_real64
+         rseq(1) = 0.0_real64
          do i = 2, 6
             factor = obc*radial_grid_derivative(i)*radial_grid(i)**omgi
             rsep(i) = -factor*radial_small_components(i,orbital_index)
@@ -180,7 +181,7 @@
 !
     7 continue
       niter = niter + 1
-      difmax = 0.0d00
+      difmax = 0.0_real64
       do j = 2, 6
          sump = sum(cnc6c(:,j)*(omgmk*radial_grid_derivative(:6)*large_component_values(:6)-rdp*small_component_values(:6)+rsep))
          sumq = sum(cnc6c(:,j)*(omgpk*radial_grid_derivative(:6)*small_component_values(:6)-rdq*large_component_values(:6)+rseq))
@@ -219,8 +220,8 @@
 !
 !   This is always true in GRASP2
 !
-      large_component_values(1) = 0.0d00
-      small_component_values(1) = 0.0d00
+      large_component_values(1) = 0.0_real64
+      small_component_values(1) = 0.0_real64
 !
       do i = 2, 6
          factor = radial_grid(i)**giorb

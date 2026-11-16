@@ -1,16 +1,16 @@
 module npol_kernel
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
-    use vast_kind_param, only: double
     use parameter_def, only: max_radial_points
     use npol_c, only: npol_config
     use npol_input, only: npol_validate_config
-    implicit none
+    implicit none (type, external)
     private
     public :: npol_check_grid, npol_build_grid, npol_compose
 contains
     subroutine npol_check_grid(n, r, status, message)
+        use, intrinsic :: iso_fortran_env, only: real64
         integer, intent(in) :: n
-        real(double), intent(in) :: r(:)
+        real(real64), intent(in) :: r(:)
         integer, intent(out) :: status
         character(*), intent(out) :: message
         status = 1
@@ -24,20 +24,21 @@ contains
     end subroutine
 
     subroutine npol_build_grid(cfg, n, r, e1, e2, total, status, message)
+        use, intrinsic :: iso_fortran_env, only: real64
         type(npol_config), intent(in) :: cfg
         integer, intent(in) :: n
-        real(double), intent(in) :: r(:)
-        real(double), intent(inout) :: e1(:), e2(:), total(:)
+        real(real64), intent(in) :: r(:)
+        real(real64), intent(inout) :: e1(:), e2(:), total(:)
         integer, intent(out) :: status
         character(*), intent(out) :: message
-        real(double) :: a(max_radial_points), b(max_radial_points), v(max_radial_points)
+        real(real64) :: a(max_radial_points), b(max_radial_points), v(max_radial_points)
         integer :: i
         call npol_check_grid(n, r, status, message)
         if (status /= 0) return
         status = 1
         message = 'npol: output arrays shorter than N'
         if (min(size(e1), size(e2), size(total)) < n) return
-        call npol_validate_config(cfg, real(cfg%isotope_z,double), status, message)
+        call npol_validate_config(cfg, real(cfg%isotope_z,real64), status, message)
         if (status /= 0) return
         a(:n) = 0
         b(:n) = 0
@@ -50,7 +51,7 @@ contains
                 call channel(r(i), cfg%k2, cfg%b2, 6, b(i), status)
                 if (status /= 0) exit
             end if
-            if (abs(a(i)) > huge(1.0_double)-abs(b(i))) then
+            if (abs(a(i)) > huge(1.0_real64)-abs(b(i))) then
                 status = 1
                 exit
             end if
@@ -68,11 +69,12 @@ contains
     ! Evaluate K/(r**p+b**p) without forming potentially overflowing powers.
     ! Binary mantissas/exponents preserve subnormal results when representable.
     subroutine channel(r, k, b, p, v, status)
-        real(double), intent(in) :: r, k, b
+        use, intrinsic :: iso_fortran_env, only: real64
+        real(real64), intent(in) :: r, k, b
         integer, intent(in) :: p
-        real(double), intent(out) :: v
+        real(real64), intent(out) :: v
         integer, intent(out) :: status
-        real(double) :: s, m, denominator
+        real(real64) :: s, m, denominator
         integer :: e
         status = 0
         v = 0
@@ -91,12 +93,13 @@ contains
     end subroutine
 
     subroutine npol_compose(n, r, coul, v, total, status, message)
+        use, intrinsic :: iso_fortran_env, only: real64
         integer, intent(in) :: n
-        real(double), intent(in) :: r(:), coul(:), v(:)
-        real(double), intent(inout) :: total(:)
+        real(real64), intent(in) :: r(:), coul(:), v(:)
+        real(real64), intent(inout) :: total(:)
         integer, intent(out) :: status
         character(*), intent(out) :: message
-        real(double) :: candidate(max_radial_points), shift
+        real(real64) :: candidate(max_radial_points), shift
         integer :: i
         call npol_check_grid(n, r, status, message)
         if (status /= 0) return

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function gco (k, ir, ia, ib)
+      real(real64) function gco (k, ir, ia, ib)
 !                                                                      *
 !   This routine evaluates a coefficient                               *
 !                                                                      *
@@ -25,7 +25,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use debug_c
       use orb_c, iiqa=>csf_subshell_occupations
 !-----------------------------------------------
@@ -33,7 +33,7 @@
 !-----------------------------------------------
       use clrx_i
       use iq_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -45,7 +45,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: iqa, iqb
-      real(double) :: fac
+      real(real64) :: fac
 !      LOGICAL :: FULLA, FULLB
 !-----------------------------------------------
 !
@@ -57,7 +57,7 @@
          fac = clrx(orbital_kappa(ia),k,orbital_kappa(ib))
          gco = -dble(iqa*iqb)*fac*fac
       else
-         gco = 0.0d00
+         gco = 0.0_real64
       endif
 
       return

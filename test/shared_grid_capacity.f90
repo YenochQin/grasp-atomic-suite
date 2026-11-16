@@ -8,7 +8,7 @@ program shared_grid_capacity
     use grid_c, only: R => radial_grid, RP => radial_grid_derivative, RPOR => radial_derivative_over_radius
     use pote_c, only: XP, XQ, YP
     use tatb_c, only: TA, TB
-    implicit none
+    implicit none (type, external)
 
     if (any([NNNP, NNN1, KEYORB, NNNW, NNNWM1, NNNWM2] /= &
             [CONFIG_NNNP, CONFIG_NNN1, CONFIG_KEYORB, CONFIG_NNNW, CONFIG_NNNWM1, CONFIG_NNNWM2])) &

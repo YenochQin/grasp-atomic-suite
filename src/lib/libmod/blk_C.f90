@@ -4,16 +4,18 @@
       module blk_c
 !                                                                      *
 !***********************************************************************
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64, double => real64
+      implicit none (type, external)
+      private :: real64
 !...Created by Pacific-Sierra Research 77to90  4.3E  14:35:02   1/ 6/07
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      integer, dimension(20) :: ncfblk, nevinblk, ncfinblk, two_j
+      integer :: ncfblk(20), nevinblk(20), ncfinblk(20), two_j(20)
       integer :: nblock
-      real(double), dimension(:), pointer :: idxblk
+      real(real64), pointer :: idxblk(:)
       integer :: nelectot, ncftot, nwtot, nvectot, nvecsiztot, nblock1
       integer :: nblocki
       integer :: nblockf
-      integer, dimension(10) :: ncfi
-      integer, dimension(10) :: ncff
+      integer :: ncfi(10)
+      integer :: ncff(10)
       end module blk_c

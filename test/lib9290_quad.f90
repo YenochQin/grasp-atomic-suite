@@ -1,5 +1,5 @@
 program lib9290_quad
-    implicit none
+    implicit none (type, external)
 
     call setup
     call runtest
@@ -13,11 +13,11 @@ contains
            & => radial_derivative_over_radius
         use tatb_c, nnn1 => radial_workspace_capacity
         use quad_I
-        use vast_kind_param, only: dp => DOUBLE
+        use, intrinsic :: iso_fortran_env, only: real64
 
 
         integer :: i
-        real(dp) :: result
+        real(real64) :: result
 
         ! Integrate exp(-2x) from 0 to infinity. Expected result is 1/2.
         do i = 1, NNN1
@@ -26,10 +26,10 @@ contains
         call quad(result)
 
         print *, "RESULT from QUAD", result
-        print *, "expected        ", 0.5_dp
-        print *, "difference      ", abs(result - 0.5_dp)
+        print *, "expected        ", 0.5_real64
+        print *, "difference      ", abs(result - 0.5_real64)
 
-        if(abs(result - 0.5_dp) > 1e-12_dp) then
+        if(abs(result - 0.5_real64) > 1e-12_real64) then
             stop 1
         end if
     end subroutine runtest
@@ -42,10 +42,11 @@ contains
         use tatb_c, nnn1 => radial_workspace_capacity
         use setqic_I
         use radgrd_I
+        use, intrinsic :: iso_fortran_env, only: real64
 
-        H = 5.0D-2
-        RNT = 2.0D-6
-        HP = 0.0D0
+        H = 5.0e-2_real64
+        RNT = 2.0e-6_real64
+        HP = 0.0_real64
         N = NNNP
         MTP = NNNP
 

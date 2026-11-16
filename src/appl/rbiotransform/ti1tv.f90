@@ -34,7 +34,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
       use mcpdata_c
       use sbdat1_c
@@ -44,21 +44,21 @@
 !-----------------------------------------------
       use setvec_i
       use wrtmat_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: ncsf, nciv, nshl, i, l, ntestg
-      real(double), dimension(ncsf, nciv), intent(in) :: ciin
-      real(double), dimension(nshl), intent(in) :: t
-      real(double), dimension(ncsf, nciv), intent(out) :: ciout
+      real(real64), intent(in) :: ciin(ncsf, nciv)
+      real(real64), intent(in) :: t(nshl)
+      real(real64), intent(out) :: ciout(ncsf, nciv)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer, parameter :: key=orbital_index_radix
       integer :: ntestl, ntest, nfound, k, ia, ib, ir, ira, irb, ifirst, &
                  j, ileft, iright, ivec, ielmnt
-      real(double) :: racah, x
+      real(real64) :: racah, x
 !
       ntestl = 00
       ntest = max(ntestl,ntestg)
@@ -66,7 +66,7 @@
 !
       if(ntest.ge.10) write(6,*) ' Entering TI1TV'
 
-      call setvec(ciout,0.0d0,nciv*ncsf)
+      call setvec(ciout,0.0_real64,nciv*ncsf)
 !
 !.  Obtain address of first coupling coefficient for h(jl,il) :  IFIRST
 !.  Obtain number of        coupling coefficient for h(jl,il) :  NFOUND

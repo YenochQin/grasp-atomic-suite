@@ -17,7 +17,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals, max_radial_points
       use def_c
       use eigv_c
@@ -31,18 +31,18 @@
 !-----------------------------------------------
       use ratden_i
       use fzalf_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), dimension(max_orbitals), intent(out) :: slfint
+      real(real64), intent(out) :: slfint(max_orbitals)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: maxiter, j, npj, kappa, mfj, i, npjmax
 !GG      REAL(DOUBLE), DIMENSION(1) :: UCF
-      real(double), dimension(max_radial_points) :: ptemp, qtemp
-      real(double) :: zeff, ratio, valu
+      real(real64) :: ptemp(max_radial_points), qtemp(max_radial_points)
+      real(real64) :: zeff, ratio, valu
       character :: npchar, nakchar*2
 !-----------------------------------------------
 !
@@ -73,8 +73,8 @@
 !
             mfj = orbital_last_grid_index(j)
 !
-            ptemp(1) = 0.0d00
-            qtemp(1) = 0.0d00
+            ptemp(1) = 0.0_real64
+            qtemp(1) = 0.0_real64
             do i = 2, mfj
                ptemp(i) = radial_large_components(i,j)
                qtemp(i) = radial_small_components(i,j)
@@ -89,7 +89,7 @@
 !   The self-energy for orbitals with principal quantum number
 !   greater than 8 is set to zero
 !
-            slfint(j) = 0.0d00
+            slfint(j) = 0.0_real64
 !
          endif
 !

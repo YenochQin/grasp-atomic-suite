@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      real(kind(0.0d0)) function cre (kap1, k, kap2)
+      real(real64) function cre (kap1, k, kap2)
 !-----------------------------------------------
 !                                                                      *
 !   Computes the relativistic reduced matrix element                   *
@@ -22,23 +22,23 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use clrx_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: kap1
-      integer  :: k
-      integer  :: kap2
+      integer, intent(in) :: kap1
+      integer, intent(in) :: k
+      integer, intent(in) :: kap2
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: k1
-      real(double) :: dk1k2
+      real(real64) :: dk1k2
 !-----------------------------------------------
 !
       k1 = abs(kap1)

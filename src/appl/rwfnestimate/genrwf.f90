@@ -3,6 +3,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine genrwf
+      use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !   Controls the computation of the subshell radial wavefunctions.     *
 !                                                                      *
@@ -19,7 +20,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
       use coun_c
       use def_c, only: nuclear_charge, speed_of_light_au, max_radial_points
@@ -42,21 +43,22 @@
       use frmtfp_i
       use frmhyd_i
       use summry_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer , dimension(max_orbitals) :: index
+      integer  :: index(max_orbitals)
       integer :: j, i, k, nradial, nsubs, loc
-      real(double) :: con, fkk
-      logical :: all, yes, modify=.false., existed
+      real(real64) :: con, fkk
+      logical :: all, yes, existed
+      logical, save :: modify = .false.
       character :: infile*128
 !-----------------------------------------------
 
 !
 !   Set the threshold for node counting
 !
-      thresh = 0.05
+      thresh = 0.05_real32
 !
 !   Set up the Thomas-Fermi potential
 !
@@ -75,8 +77,8 @@
       do j = 1, orbital_count
          set(j) = .false.
          source(j) = ' '
-         radial_large_components(:radial_point_count,j) = 0.d0
-         radial_small_components(:radial_point_count,j) = 0.d0
+         radial_large_components(:radial_point_count,j) = 0._real64
+         radial_small_components(:radial_point_count,j) = 0._real64
 
          k = abs(orbital_kappa(j))
          if (nuclear_model_parameter_count > 0) then
@@ -176,8 +178,8 @@
          do j = 1, nsubs
             loc = index(j)
             set(loc) = .false.
-            radial_large_components(:radial_point_count,loc) = 0.d0
-            radial_small_components(:radial_point_count,loc) = 0.d0
+            radial_large_components(:radial_point_count,loc) = 0._real64
+            radial_small_components(:radial_point_count,loc) = 0._real64
             source(loc) = ' '
          end do
          all = .false.

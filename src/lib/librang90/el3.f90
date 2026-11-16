@@ -26,7 +26,7 @@
       use el31_i
       use el32_i
       use el33_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

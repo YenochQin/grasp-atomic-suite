@@ -13,33 +13,33 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use hmat_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use dinit_i
       use dmerge_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: n
       integer, intent(in) :: m
-      real(double), dimension(n,m), intent(in) :: b
-      real(double), dimension(n,m), intent(inout) :: c
+      real(real64), intent(in) :: b(n, m)
+      real(real64), intent(inout) :: c(n, m)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ibeg, icol, iend, nelc, iv
-      real(double) :: diag, dl
+      real(real64) :: diag, dl
 !-----------------------------------------------
 !
 !
 !   Initialise the result matrix; note that this is specific to the
 !   data structure of DVDSON --- no overdimensioning
 !
-      call dinit (n*m, 0.d0, c, 1)
+      call dinit (n*m, 0._real64, c, 1)
 
       ibeg = 1
       do icol = 1, n

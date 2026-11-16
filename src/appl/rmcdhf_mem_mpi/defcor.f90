@@ -13,21 +13,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use grid_c
       use wave_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: j
+      integer, intent(in) :: j
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      real(double), parameter :: w3 = 1.0d00/120.0d00
-      real(double), parameter :: w2 = -15.0d00*w3
-      real(double), parameter :: w1 = 40.0d00*w3
+      real(real64), parameter :: w3 = 1.0_real64/120.0_real64
+      real(real64), parameter :: w2 = -15.0_real64*w3
+      real(real64), parameter :: w1 = 40.0_real64*w3
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -44,8 +44,8 @@
 !   only
 !
       if (first) then
-         dp(:2) = 0.0d00
-         dq(:2) = 0.0d00
+         dp(:2) = 0.0_real64
+         dq(:2) = 0.0_real64
          first = .false.
       endif
 !
@@ -68,8 +68,8 @@
 !   small in this region
 !
       mfjm2 = orbital_last_grid_index(j) - 2
-      dp(mfjm2:radial_point_count) = 0.0d00
-      dq(mfjm2:radial_point_count) = 0.0d00
+      dp(mfjm2:radial_point_count) = 0.0_real64
+      dq(mfjm2:radial_point_count) = 0.0_real64
 !
       return
       end subroutine defcor

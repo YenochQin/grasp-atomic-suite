@@ -32,7 +32,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param,  only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_orbitals
       use def_c
       use orb_c, only: orbital_kappa, orbital_energy_parameters
@@ -48,7 +48,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use rint_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -59,10 +59,10 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: j1
-      integer , dimension(max_orbitals) :: kindx
+      integer  :: kindx(max_orbitals)
       integer :: kfixed, nakj, ktotal, i, ki, j, knon, ishift, kj, lraw, l, &
          nakl, mtp0, kraw, k, mtp
-      real(double) :: eps, ovrlap, dnorm, factor
+      real(real64) :: eps, ovrlap, dnorm, factor
       logical :: check
 !-----------------------------------------------
 !
@@ -71,7 +71,7 @@
 !-----------------------------------------------------------------------
       check = .not.noinvt(jp)
 
-      eps = 0.01d0*accy
+      eps = 0.01_real64*accy
       kfixed = 0
       nakj = orbital_kappa(jp)
 
@@ -203,9 +203,9 @@
 
          orbital_last_grid_index(l) = mtp
          dnorm = rint(l,l,0)
-         factor = 1.d0/sqrt(dnorm)
+         factor = 1._real64/sqrt(dnorm)
 
-         if (orbital_origin_parameters(l) < 0.d0) factor = -factor
+         if (orbital_origin_parameters(l) < 0._real64) factor = -factor
 
          orbital_origin_parameters(l) = factor*orbital_origin_parameters(l)
          radial_large_components(2:mtp,l) = factor*radial_large_components(2:mtp,l)
@@ -217,8 +217,8 @@
    20    continue
          mtp = mtp - 1
          if (abs(radial_large_components(mtp,l)) < eps) then
-            radial_large_components(mtp,l) = 0.d0
-            radial_small_components(mtp,l) = 0.d0
+            radial_large_components(mtp,l) = 0._real64
+            radial_small_components(mtp,l) = 0._real64
             go to 20
          else
             orbital_last_grid_index(l) = mtp

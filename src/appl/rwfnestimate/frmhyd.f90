@@ -19,7 +19,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use parameter_def, only: radial_workspace_capacity
-      use vast_kind_param, only:  double
+      use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use left_c
       use orb_c, only: orbital_energy_parameters, orbital_principal_n, orbital_kappa, orbital_symmetry_labels
@@ -32,7 +32,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use dcbsrw_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -45,13 +45,14 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: j, loc, nradial
-      real(double) :: zeff, delz
+      integer :: j, loc
+      integer, intent(in) :: nradial
+      real(real64) :: zeff, delz
       logical :: yes, getyn
 !-----------------------------------------------
 !
 !
-      delz = 0.d0
+      delz = 0._real64
       if (nradial == 4)  then
          write (stderr_unit, *) 'Enter increase in Z for correlation orbitals'
          read  (5, *) delz

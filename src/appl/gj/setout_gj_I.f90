@@ -1,11 +1,13 @@
       module setout_gj_i
+      implicit none (type, external)
       interface
       subroutine setout_gj (name, nci, gjc_diag, dgjc_diag)
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use prnt_c, only: nvec
+      implicit none (type, external)
       character(len=24), intent(in) :: name
       integer, intent(in) :: nci
-      real(double), intent(in) :: gjc_diag(nvec), dgjc_diag(nvec)
+      real(real64), intent(in) :: gjc_diag(nvec), dgjc_diag(nvec)
       end subroutine
       end interface
       end module

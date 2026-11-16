@@ -14,7 +14,7 @@
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -25,8 +25,8 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       character(len=6)                  :: form
-      character(len=2), dimension(0:10) :: c1020
-      character, dimension(9)           :: c19
+      character(len=2) :: c1020(0:10)
+      character           :: c19(9)
 !
       data c19 /'1','2','3','4','5','6','7','8','9'/
       data c1020 /'10','11','12','13','14','15','16','17','18','19','20'/

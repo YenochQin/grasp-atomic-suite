@@ -11,29 +11,29 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only: double
+      use, intrinsic :: iso_fortran_env, only: real64
       use cons_c,          only: zero
       use ribojj_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use rumtjj_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer,      intent(in)  :: j1, j2, k1, k2
-      real(double), intent(out) :: coef
+      real(real64), intent(out) :: coef
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ll, iq1, lv1, il1, iq2, lv2, il2, ji1, ji2, ifaz, j, l
-      integer, dimension(6)  :: ipr1
-      integer, dimension(8)  :: ipr2
-      integer, dimension(21) :: i12ps,i12pv,i03ps,i03pv,i14ps, &
-      i14pv,i05ps,i05pv,i16ps,i16pv,i07ps,i07pv
-      integer, dimension(36) :: i12as,i12av,i03as,i03av,i14as, &
-      i14av,i05as,i05av,i16as,i16av,i07as,i07av
+      integer  :: ipr1(6)
+      integer  :: ipr2(8)
+      integer :: i12ps(21),i12pv(21),i03ps(21),i03pv(21),i14ps(21), &
+      i14pv(21),i05ps(21),i05pv(21),i16ps(21),i16pv(21),i07ps(21),i07pv(21)
+      integer :: i12as(36),i12av(36),i03as(36),i03av(36),i14as(36), &
+      i14av(36),i05as(36),i05av(36),i16as(36),i16av(36),i07as(36),i07av(36)
 !-----------------------------------------------
       data ipr1/0,5,9,12,14,15/
       data ipr2/0,7,13,18,22,25,27,28/

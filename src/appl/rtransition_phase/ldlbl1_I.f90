@@ -1,8 +1,10 @@
       module ldlbl1_i
+      implicit none (type, external)
       interface
 !...Translated by Charlotte Froese Fischer
 !                       Gediminas Gaigalas  10/05/17
       subroutine ldlbl1 (name)
+      implicit none (type, external)
       character(len=24) :: name
       end subroutine
       end interface

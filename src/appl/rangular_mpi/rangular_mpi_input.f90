@@ -14,7 +14,7 @@ module rangular_mpi_input
    use cslhmpi_i, only: cslhmpi
    use lodcslmpi_i, only: lodcslmpi
    use rangular_profile, only: open_stage_profile
-   implicit none
+   implicit none (type, external)
    private
    public :: mpi_angular_input_options, parse_mpi_angular_options, open_mpi_angular_profile
    public :: load_mpi_angular_header, load_mpi_angular_block, close_mpi_angular_input

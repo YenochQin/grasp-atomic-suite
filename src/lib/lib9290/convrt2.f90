@@ -16,7 +16,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use iounit_c
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -28,8 +28,8 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       character :: form*6
-      character, dimension(0:10) :: c1020*2
-      character, dimension(9) :: c19
+      character :: c1020(0:10)*2
+      character :: c19(9)
 !
 !
       data c19/ '1', '2', '3', '4', '5', '6', '7', '8', '9'/

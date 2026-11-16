@@ -37,7 +37,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use vast_kind_param, only:  double
       use memory_man
       use input_io_mpi, only: fail_input_io => fail_input_io_mpi
       use def_c
@@ -54,7 +53,7 @@
       use convrt_i
       use openfl_i
       use setmcp_mem_i
-      implicit none
+      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
