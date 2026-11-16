@@ -29,7 +29,7 @@
       call setcof (eol, j)
       call ypot (j)
       call xpot (j)
-      call lagcon (j, nprocs)
+      call lagcon (j, mpi_process_count)
       call dacon
 
       return

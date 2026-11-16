@@ -42,29 +42,30 @@
       real(double) :: piece1, fact1, fact2, piece2
 !-----------------------------------------------
 !
-      mtp = max(mf(j),mf(k))
+      mtp = max(orbital_last_grid_index(j),orbital_last_grid_index(k))
 !
 !   Piece involving derivatives
 !
       call dpbdt (k)
       ta(1) = 0.0d00
       do i = 2, mtp
-         ta(i) = pf(i,j)*ta(i) + qf(i,j)*tb(i)
+         ta(i) = radial_large_components(i,j)*ta(i) + radial_small_components(i,j)*tb(i)
       end do
       call quad (piece1)
-      piece1 = piece1/h
+      piece1 = piece1/transformed_grid_step
 !
 !   Pieces not involving derivatives
 !
-      kpj = nak(j)
-      kpk = nak(k)
+      kpj = orbital_kappa(j)
+      kpk = orbital_kappa(k)
       ifact1 = kpj*(kpj + 1) - kpk*(kpk + 1)
       fact1 = 0.5d00*dble(ifact1)
       ifact2 = (-kpj*((-kpj) + 1)) + kpk*((-kpk) + 1)
       fact2 = 0.5d00*dble(ifact2)
       ta(1) = 0.0d00
       do i = 2, mtp
-         ta(i) = rpor(i)*(fact1*pf(i,j)*pf(i,k) + fact2*qf(i,j)*qf(i,k))
+         ta(i) = radial_derivative_over_radius(i)*(fact1*radial_large_components(i,j)*radial_large_components(i,k) + &
+            & fact2*radial_small_components(i,j)*radial_small_components(i,k))
       end do
       call quad (piece2)
 !
@@ -72,7 +73,8 @@
 !
 !   Debug printout
 !
-      if (ldbpr(6)) write (99, 300) np(j), nh(j), np(k), nh(k), vinti
+      if (ldbpr(6)) write (99, 300) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_principal_n(k), &
+         & orbital_symmetry_labels(k), vinti
 !
       return
 !

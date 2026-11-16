@@ -20,7 +20,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use def_c, only: aucm, auev
+      use def_c, only: hartree_to_wavenumber_cm, hartree_to_ev
       use jlabl_c
       implicit none
 !-----------------------------------------------
@@ -47,8 +47,8 @@
       do j = 1, nn
          i = ilev(j)
          eau = e(j) + eav
-         ecm = eau*aucm
-         eev = eau*auev
+         ecm = eau*hartree_to_wavenumber_cm
+         eev = eau*hartree_to_ev
          ip = (ipar(j)+3)/2
          write (24, 302) i, jlbr(jtot(j)), jlbp(ip), eau, ecm, eev
 !          WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
@@ -64,8 +64,8 @@
             do j = 2, nn
                i = ilev(j)
                eau = e(j) - e(j-1)
-               ecm = eau*aucm
-               eev = eau*auev
+               ecm = eau*hartree_to_wavenumber_cm
+               eev = eau*hartree_to_ev
                ip = (ipar(j)+3)/2
                write (24, 302) i, jlbr(jtot(j)), jlbp(ip), eau, ecm, eev
 !               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
@@ -80,8 +80,8 @@
             do j = 2, nn
                i = ilev(j)
                eau = e(j) - e(1)
-               ecm = eau*aucm
-               eev = eau*auev
+               ecm = eau*hartree_to_wavenumber_cm
+               eev = eau*hartree_to_ev
                ip = (ipar(j)+3)/2
                write (24, 302) i, jlbr(jtot(j)), jlbp(ip), eau, ecm, eev
 !               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV

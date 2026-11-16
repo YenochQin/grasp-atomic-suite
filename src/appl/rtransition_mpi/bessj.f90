@@ -21,7 +21,7 @@
       use debug_c, only: ldbpr
       use grid_c
       use osc_c, only: lk, kk, l=>lk
-      use def_c, only: c, cvac, pi
+      use def_c, only: speed_of_light_au, vacuum_speed_of_light_au, pi
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -51,10 +51,10 @@
          iprod = iprod*i
       end do
       dfn = iprod
-      jchan = n
+      jchan = radial_point_count
       bj(1,iw) = 1.0d00
-      do j = 2, n
-         wr = w*r(j)
+      do j = 2, radial_point_count
+         wr = w*radial_grid(j)
          wa = -wr*wr*0.5d00
          xbess1 = 1.0d00
          s1 = 1.0d00
@@ -72,7 +72,7 @@
 !   Use sin/cos expansion when power series takes longer
 !   than 4 terms to converge
 !
-      if (jchan < n) then
+      if (jchan < radial_point_count) then
          iswap = 0
          modnn4 = mod(nn - 1,4) + 1
          select case (modnn4)
@@ -105,8 +105,8 @@
          end select
 !
    13    continue
-         do j = jchan, n
-            wa = w*r(j)
+         do j = jchan, radial_point_count
+            wa = w*radial_grid(j)
             if (iswap <= 0) then
                sn = ssn*sin(wa)
                cn = scn*cos(wa)
@@ -139,7 +139,7 @@
          if (ldbpr(16)) then
             do jj = 1, 3
                jjj = l - 2 + jj
-               write (99, 300) jjj, (bj(ii,jj),ii=1,n)
+               write (99, 300) jjj, (bj(ii,jj),ii=1,radial_point_count)
             end do
          endif
 !
@@ -148,7 +148,7 @@
 ! zou
          do jj = 1, 3
             jjj = l - 2 + jj
-            bj(:n,jj) = bj(:n,jj)*(c/cvac)**jjj
+            bj(:radial_point_count,jj) = bj(:radial_point_count,jj)*(speed_of_light_au/vacuum_speed_of_light_au)**jjj
          end do
 ! zou
          return

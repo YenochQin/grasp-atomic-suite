@@ -37,7 +37,7 @@
 
       call openfl (23, name, 'UNFORMATTED', 'OLD', ierr)
       if (ierr == 1) then
-         write (istde, *) 'Error when opening', name(1:len_trim(name))
+         write (stderr_unit, *) 'Error when opening', name(1:len_trim(name))
          stop
       endif
 !
@@ -45,7 +45,7 @@
 !
       read (23, iostat=ios) g92rwf
       if (ios/=0 .or. g92rwf/='G92RWF') then
-         write (istde, *) 'This is not a Radial WaveFunction File;'
+         write (stderr_unit, *) 'This is not a Radial WaveFunction File;'
          close(23)
          stop
       endif
@@ -55,7 +55,7 @@
       call lodrwf (ierr)
 
       if (ierr /= 0) then
-         write (istde, *) 'Radial wavefunctions defined in CSL file', &
+         write (stderr_unit, *) 'Radial wavefunctions defined in CSL file', &
             ' not found in Radial WaveFunction File'
          close(23)
          stop

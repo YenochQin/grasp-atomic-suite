@@ -25,7 +25,7 @@
       use eigv_c
       use where_c
       use fposition_c
-      use mpi_c,           only:  myid, nprocs
+      use mpi_c,           only:  mpi_rank, mpi_process_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -68,14 +68,14 @@
       call posfile (0, imcdf, nposition)
 
       read (imcdf) ncfdum, iccutdum, myiddum, nprocsdum
-      if (ncf/=ncfdum .or. myid/=myiddum .or. nprocsdum/=nprocs) stop &
+      if (ncf/=ncfdum .or. mpi_rank/=myiddum .or. nprocsdum/=mpi_process_count) stop &
          'spodmv: ncf read wrong'
 
 
-      do icol = myid + 1, n, nprocs
+      do icol = mpi_rank + 1, n, mpi_process_count
          read (imcdf) nelc, elsto, (emt(ir),ir=1,nelc), (irow(ir),ir=1,nelc)
          do iv = 1, m
-            diag = c(icol,iv) + (emt(nelc)-eav)*b(icol,iv)
+            diag = c(icol,iv) + (emt(nelc)-hamiltonian_energy_shift)*b(icol,iv)
             call dmerge (nelc - 1, b(1:n,iv), c(1:n,iv), irow(1:n), &
                          emt(1:n), b(icol,iv), dl)
             c(icol,iv) = diag + dl

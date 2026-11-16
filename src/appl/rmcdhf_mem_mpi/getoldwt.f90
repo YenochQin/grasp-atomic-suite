@@ -41,16 +41,16 @@
 
 ! Select a method to assign level weights for ncmin > 1 case
 
-      write (istde, *) 'level weights (1 equal;  5 standard;  9 user)'
+      write (stderr_unit, *) 'level weights (1 equal;  5 standard;  9 user)'
 
       ! Let user try 10 times to get the correct input. 10 is BIG
       ! enough since the idea here is to allow user mistakes and
       ! at the same time to avoid an infinity loop.
 
       do i = 1, 10
-         read (istdi, *) n159
+         read (stdin_unit, *) n159
          if (n159==1 .or. n159==5 .or. n159==9) exit
-         write (istde, *) 'Input not correct, do it again. tried=', i
+         write (stderr_unit, *) 'Input not correct, do it again. tried=', i
       end do
 
       if (ndef.eq.0) then
@@ -69,14 +69,14 @@
       case (9)                                   ! User-input weight
 
   123    continue
-         write (istde, *) 'Enter the (relative) weights of the', ncmin, &
+         write (stderr_unit, *) 'Enter the (relative) weights of the', ncmin, &
             ' levels :'
-         read (istdi, *) (wt(i),i=1,ncmin)
+         read (stdin_unit, *) (wt(i),i=1,ncmin)
 
          sumwgt = 0.d0
          do i = 1, ncmin
             if (wt(i) <= 0.d0) then
-               write (istde, *) 'Weights must exceed 0;'
+               write (stderr_unit, *) 'Weights must exceed 0;'
                go to 123
             else
                sumwgt = sumwgt + wt(i)
@@ -86,7 +86,7 @@
          wt = sumwgt*wt
 
       case default
-         write (istde, *) 'Impossible ! Because it was guarded'
+         write (stderr_unit, *) 'Impossible ! Because it was guarded'
          stop
       end select
 

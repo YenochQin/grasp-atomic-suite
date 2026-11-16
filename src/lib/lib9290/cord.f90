@@ -68,7 +68,7 @@
          ib1 = ns
       endif
 !
-      kap1 = nak(ia1)
+      kap1 = orbital_kappa(ia1)
       j1 = iabs(kap1)
       nqs1 = nq1(ia1)
 !
@@ -92,7 +92,7 @@
 !
       else
 !
-         kap2 = nak(ib1)
+         kap2 = orbital_kappa(ib1)
          j2 = abs(kap2)
          nqs2 = nq1(ib1)
          const = dble(nqs1*nqs2)

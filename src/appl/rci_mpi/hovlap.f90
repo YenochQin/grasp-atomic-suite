@@ -18,7 +18,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnp
+      use parameter_def,   only: max_radial_points
       use grid_c
       use horb_c, only: ph, qh
       use tatb_c, only: mtp, ta
@@ -35,8 +35,8 @@
       integer  :: np
       integer  :: kappa
       real(double)  :: z
-      real(double), dimension(nnnp), intent(in) :: p
-      real(double), dimension(nnnp), intent(in) :: q
+      real(double), dimension(max_radial_points), intent(in) :: p
+      real(double), dimension(max_radial_points), intent(in) :: q
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -52,7 +52,7 @@
 !
       mtp = min(mtph,mtpo)
       ta(1) = 0.0d00
-      ta(2:mtp) = (p(2:mtp)*ph(2:mtp)+q(2:mtp)*qh(2:mtp))*rp(2:mtp)
+      ta(2:mtp) = (p(2:mtp)*ph(2:mtp)+q(2:mtp)*qh(2:mtp))*radial_grid_derivative(2:mtp)
       call quad (result)
 !
       hovlap = result

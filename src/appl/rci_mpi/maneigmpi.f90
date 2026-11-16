@@ -66,7 +66,7 @@
       use eigv_c
       use fposition_c
       use hmat_c
-      use orb_c,           only: ncf, nw, iqa
+      use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
       use prnt_c
       use where_c
       use wchblk_c
@@ -139,30 +139,30 @@
 !
 !-----------------------------------------------------------------------
       abstol = 2*dlamch('S')
-      if (myid == 0) write (6, *) 'Calling maneig...'
+      if (mpi_rank == 0) write (6, *) 'Calling maneig...'
 
 !  (nrows+1) is the number of records of the present block's .res file
 
-      nrows = (ncf - myid - 1 + nprocs)/nprocs
-      if (ncf < nprocs) nrows = ncf/(myid + 1)
+      nrows = (csf_count - mpi_rank - 1 + mpi_process_count)/mpi_process_count
+      if (csf_count < mpi_process_count) nrows = csf_count/(mpi_rank + 1)
       !CALL posfile (1, imcdf, nrows+1)
       call posfile (0, imcdf, nposition)
 
-      if (ncf == 1) then
+      if (csf_count == 1) then
 !-----------------------------------------------------------------------
 !
 ! (1) - Trivial    ncf = 1
 !
 !-------------------------------------------------------
-         if (myid .eq. 0) write (24, *) 'Trivial eigenvalue problem.'
+         if (mpi_rank .eq. 0) write (24, *) 'Trivial eigenvalue problem.'
 
 !   Matrix of order 1: the trivial case; we assume that the value
 !   of EAV is available
 
-         call alloc (eval, 1,'EVAL', 'MANEIG' )
-         call alloc (evec, 1, 'EVECO', 'MANEIG')
-         eval(1) = 0.d0
-         evec(1) = 1.d0
+         call alloc (shifted_eigenvalues, 1,'EVAL', 'MANEIG' )
+         call alloc (csf_mixing_coefficients, 1, 'EVECO', 'MANEIG')
+         shifted_eigenvalues(1) = 0.d0
+         csf_mixing_coefficients(1) = 1.d0
 
          ! Still read through the .res file
 !GG
@@ -178,14 +178,14 @@
 ! (2) - Non trivial
 !
 !-------------------------------------------------------
-         if(myid==0) write(*,*) "ncf=",ncf, " iolpck=", iolpck
-         if (ncf <= iolpck) then
+         if(mpi_rank==0) write(*,*) "ncf=",csf_count, " iolpck=", iolpck
+         if (csf_count <= iolpck) then
 !-----------------------------------------------------------------------
 !
 ! (2.1) - LAPACK    Dense, Memory,
 !
 !-------------------------------------------------------
-            if (myid == 0) then
+            if (mpi_rank == 0) then
                write (6, *) &
                   'LAPACK routine DSPEVX selected for eigenvalue problem.'
                write (24, *) &
@@ -195,38 +195,38 @@
 !   Allocate storage for the dense representation of the matrix
 !   and initialize emt
 
-            ndense = (ncf*(ncf + 1))/2
-            call alloc (emt, ndense, 'EMT', 'MANEIG')
-            call dinit (ndense, 0.0d00, emt, 1)
+            ndense = (csf_count*(csf_count + 1))/2
+            call alloc (hamiltonian_values, ndense, 'EMT', 'MANEIG')
+            call dinit (ndense, 0.0d00, hamiltonian_values, 1)
 
 !   Read the matrix into position from the disc file; it's already
 !   been properly positioned.
 
-            call alloc (work, ncf,'WORK', 'MANEIG' )
-            call alloc (irow, ncf, 'IROW', 'MANEIG')
+            call alloc (work, csf_count,'WORK', 'MANEIG' )
+            call alloc (matrix_partner_indices, csf_count, 'IROW', 'MANEIG')
             read (imcdf) ncfdum, iccutdum, myiddum, nprocsdum
-            if (ncf/=ncfdum .or. myid/=myiddum .or. nprocsdum/=nprocs) stop &
+            if (csf_count/=ncfdum .or. mpi_rank/=myiddum .or. nprocsdum/=mpi_process_count) stop &
                'maneig:1'
 
-            do i = myid + 1, ncf, nprocs
+            do i = mpi_rank + 1, csf_count, mpi_process_count
                iofset = (i*(i - 1))/2
-               read (imcdf) nelc, elsto, (work(ir),ir=1,nelc), (irow(ir),ir=1,&
+               read (imcdf) nelc, elsto, (work(ir),ir=1,nelc), (matrix_partner_indices(ir),ir=1,&
                   nelc)
                ! In the row-mode of the lower triangle,
                ! diagonal is the last one
                do ir = 1, nelc - 1
-                  emt(iofset+irow(ir)) = work(ir)
+                  hamiltonian_values(iofset+matrix_partner_indices(ir)) = work(ir)
                end do
-               emt(iofset+irow(nelc)) = work(nelc) - eav
+               hamiltonian_values(iofset+matrix_partner_indices(nelc)) = work(nelc) - hamiltonian_energy_shift
 
             end do
 
             call dalloc (work, 'WORK', 'MANEIG')
-            call dalloc (irow, 'IROW', 'MANEIG')
+            call dalloc (matrix_partner_indices, 'IROW', 'MANEIG')
 
 ! Let each node have a complete copy of EMT
 
-            call gdsummpi (emt, ndense)
+            call gdsummpi (hamiltonian_values, ndense)
 
 !   Find the eigenpairs
 !
@@ -236,37 +236,37 @@
 !    nvecmx - maximum .............
 !    nvex - clear from def: NVECMX-NVECMN+1
 
-            nvecmn = ncf
+            nvecmn = csf_count
             do i = 1, nvec
                nvecmn = min(nvecmn,ivec(i))
             end do
             nvex = nvecmx - nvecmn + 1
             call alloc (w, nvex, 'W', 'MANEIG')
-            call alloc (z, ncf*nvex,'Z', 'MANEIG' )
-            call alloc (work, ncf*8,'WORK', 'MANEIG' )
-            call alloc (iwork, ncf*5,'IWORK', 'MANEIG' )
+            call alloc (z, csf_count*nvex,'Z', 'MANEIG' )
+            call alloc (work, csf_count*8,'WORK', 'MANEIG' )
+            call alloc (iwork, csf_count*5,'IWORK', 'MANEIG' )
 ! GG            CALL ALLOC (IFAIL, NVEX, 'IFAIL', 'MANEIG')
-            call alloc (ifail, ncf, 'IFAIL', 'MANEIG')
-            call dspevx ('V', 'I', 'U', ncf, emt, dummy, dummy, nvecmn, nvecmx&
-               , abstol, m, w, z, ncf, work, iwork, ifail, info)
+            call alloc (ifail, csf_count, 'IFAIL', 'MANEIG')
+            call dspevx ('V', 'I', 'U', csf_count, hamiltonian_values, dummy, dummy, nvecmn, nvecmx&
+               , abstol, m, w, z, csf_count, work, iwork, ifail, info)
             if (info /= 0)                                             &
-                call stopmpi('maneig: Failure in DSPEVX [LAPACK]',myid)
+                call stopmpi('maneig: Failure in DSPEVX [LAPACK]',mpi_rank)
             call dalloc (work, 'WORK', 'MANEIG')
             call dalloc (iwork, 'IWORK', 'MANEIG')
             call dalloc (ifail, 'IFAIL', 'MANEIG')
-            call dalloc (emt, 'EMT', 'MANEIG')
+            call dalloc (hamiltonian_values, 'EMT', 'MANEIG')
 
 !   Store the eigenpairs in their proper positions EVAL() and EVEC()
 
-            call alloc (eval, nvec,'EVAL', 'MANEIG')
-            call alloc (evec, ncf*nvec, 'EVEC', 'MANEIG')
+            call alloc (shifted_eigenvalues, nvec,'EVAL', 'MANEIG')
+            call alloc (csf_mixing_coefficients, csf_count*nvec, 'EVEC', 'MANEIG')
 
             do i = 1, nvec
                loc = ivec(i)
-               eval(i) = w(loc - nvecmn + 1)
-               iofset = ncf*(i - 1)
-               loc = ncf*(loc - nvecmn)
-               call dcopy (ncf, z(loc + 1:loc+(ncf)), 1, evec(iofset+1:iofset+(ncf)), 1)
+               shifted_eigenvalues(i) = w(loc - nvecmn + 1)
+               iofset = csf_count*(i - 1)
+               loc = csf_count*(loc - nvecmn)
+               call dcopy (csf_count, z(loc + 1:loc+(csf_count)), 1, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1)
             end do
             call dalloc (w, 'W', 'MANEIG')
             call dalloc (z, 'Z', 'MANEIG')
@@ -277,10 +277,10 @@
 ! (2.2) - DVDSON --- preparation work
 !
 !-------------------------------------------------------
-            if (myid == 0) write (24,*)'DVDSON routine selected' &
+            if (mpi_rank == 0) write (24,*)'DVDSON routine selected' &
                                       //' for eigenvalue problem;'
 !--------------------------------------------------------------
-            if (myid == 0) print *,'zou: nelmnt',nelmnt
+            if (mpi_rank == 0) print *,'zou: nelmnt',stored_matrix_element_count
 !            print *, 'myid, nprocs,nincor', myid, nprocs, nincor
 
 !           If on any process more memory is needed than NINCOR, use disc.
@@ -292,9 +292,9 @@
 !           This is a comparion of matrix elements only.
 !
             nstore_s = nelmnt_a
-            nstore_d = ((ncf+nprocs-1)/nprocs)
-            nstore_d = nstore_d*((ncf+1)/2)
-            if (myid .eq. 0) write(*,*) "nstore_s=", nstore_s,   &
+            nstore_d = ((csf_count+mpi_process_count-1)/mpi_process_count)
+            nstore_d = nstore_d*((csf_count+1)/2)
+            if (mpi_rank .eq. 0) write(*,*) "nstore_s=", nstore_s,   &
                              "nstore_d=", nstore_d, 'nincor=', nincor
             ldisc = .false.
             if ( nstore_s > nincor) then
@@ -310,15 +310,15 @@
                endif
             endif
 
-            call alloc (diag,ncf,'DIAG', 'MANEIG')
-            call dinit (ncf, 0.d0, diag, 1)
+            call alloc (diag,csf_count,'DIAG', 'MANEIG')
+            call dinit (csf_count, 0.d0, diag, 1)
             if (ldisc) then
 !-----------------------------------------------------------------------
 !
 ! (2.2.1) - DVDSON --- Disk, load diagonal
 !
 !-------------------------------------------------------
-               if (myid == 0)  then
+               if (mpi_rank == 0)  then
                   write (*, *) ' matrix stored on disc;'
                   write (24, *) ' matrix stored on disc;'
                end if
@@ -330,15 +330,15 @@
 
 !   Load diagonal - Each node will have the same, complete copy
 !   after this if block
-               print *, myid, 'Reading diagonal, unit imcdf =', imcdf
+               print *, mpi_rank, 'Reading diagonal, unit imcdf =', imcdf
                read (imcdf) ncfdum, iccutdum, myiddum, nprocsdum
-               if (ncf/=ncfdum .or. myid/=myiddum .or. nprocsdum/=nprocs) stop &
+               if (csf_count/=ncfdum .or. mpi_rank/=myiddum .or. nprocsdum/=mpi_process_count) stop &
                   'maneig:2'
 
-               do i = myid + 1, ncf, nprocs
+               do i = mpi_rank + 1, csf_count, mpi_process_count
                   read (imcdf) nelc, elsto, (dummy,ir=2,nelc), diatmp, &
                                             (idummy, ir=1,nelc)
-                  diag(i) = diatmp - eav
+                  diag(i) = diatmp - hamiltonian_energy_shift
                end do
                print *, ' finished'
             else
@@ -357,29 +357,29 @@
 ! (2.2.2.1) - DVDSON --- Memory, load all, sparse
 !
 !-------------------------------------------------------
-                  if (myid == 0) then
+                  if (mpi_rank == 0) then
                      write (24, *) ' sparse matrix stored in memory'
                      write ( *, *) ' sparse matrix stored in memory'
                   end if
 
                   imv = 2
-                  write (6, *) 'nelmnt = ', nelmnt
-                  call alloc (emt, nelmnt, 'EMT', 'MANEIG')
-                  call alloc (irow, nelmnt, 'IROW', 'MANEIG')
-                  call alloc (iendc, 0, ncf , 'IENDC', 'MANEIG')
+                  write (6, *) 'nelmnt = ', stored_matrix_element_count
+                  call alloc (hamiltonian_values, stored_matrix_element_count, 'EMT', 'MANEIG')
+                  call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'MANEIG')
+                  call alloc (stored_segment_end_offsets, 0, csf_count , 'IENDC', 'MANEIG')
                   iofset = 0
-                  iendc(0) = 0
+                  stored_segment_end_offsets(0) = 0
 
                   read (imcdf) ncfdum, iccutdum, myiddum, nprocsdum
-                  if (ncf/=ncfdum .or. myid/=myiddum .or. nprocsdum/=nprocs) &
+                  if (csf_count/=ncfdum .or. mpi_rank/=myiddum .or. nprocsdum/=mpi_process_count) &
                      stop 'maneig:3'
-                  do i = myid + 1, ncf, nprocs
-                     read (imcdf) nelc, elsto, (emt(ir+iofset),ir=1,nelc), (&
-                        irow(ir + iofset),ir=1,nelc)
-                     emt(nelc+iofset) = emt(nelc+iofset) - eav
-                     diag(i) = emt(nelc+iofset)
+                  do i = mpi_rank + 1, csf_count, mpi_process_count
+                     read (imcdf) nelc, elsto, (hamiltonian_values(ir+iofset),ir=1,nelc), (&
+                        matrix_partner_indices(ir + iofset),ir=1,nelc)
+                     hamiltonian_values(nelc+iofset) = hamiltonian_values(nelc+iofset) - hamiltonian_energy_shift
+                     diag(i) = hamiltonian_values(nelc+iofset)
                      iofset = iofset + nelc
-                     iendc(i) = iofset
+                     stored_segment_end_offsets(i) = iofset
                   end do
                else
 !-----------------------------------------------------------------------
@@ -387,7 +387,7 @@
 ! (2.2.2.2) - DVDSON --- Memory, load all, dense
 !
 !-------------------------------------------------------
-                  if (myid .eq. 0) then
+                  if (mpi_rank .eq. 0) then
                      write (24,*) ' full matrix stored in in memory'
                      write ( *,*) ' full matrix stored in in memory'
                   end if
@@ -397,32 +397,32 @@
 ! Find NDENSE_L, the number of elements on the node (dense form)
 
                   ndense_l = 0
-                  do i = myid + 1, ncf, nprocs
+                  do i = mpi_rank + 1, csf_count, mpi_process_count
                      ndense_l = ndense_l + i
                   end do
 
-                  call alloc (emt, ndense_l, 'EMT', 'MANEIG')
-                  call dinit (ndense_l, 0.0d00, emt, 1)
-                  call alloc (work, ncf, 'WORK', 'MANEIG')
-                  call alloc (irow, ncf, 'IROW', 'MANEIG')
+                  call alloc (hamiltonian_values, ndense_l, 'EMT', 'MANEIG')
+                  call dinit (ndense_l, 0.0d00, hamiltonian_values, 1)
+                  call alloc (work, csf_count, 'WORK', 'MANEIG')
+                  call alloc (matrix_partner_indices, csf_count, 'IROW', 'MANEIG')
 
                   read (imcdf) ncfdum, iccutdum, myiddum, nprocsdum
-                  if (ncf/=ncfdum .or. myid/=myiddum .or. nprocsdum/=nprocs) &
+                  if (csf_count/=ncfdum .or. mpi_rank/=myiddum .or. nprocsdum/=mpi_process_count) &
                      stop 'maneig:4'
 
                   iofset = 0
-                  do i = myid + 1, ncf, nprocs
-                     read (imcdf) nelc, elsto, (work(ir),ir=1,nelc), (irow(ir),&
+                  do i = mpi_rank + 1, csf_count, mpi_process_count
+                     read (imcdf) nelc, elsto, (work(ir),ir=1,nelc), (matrix_partner_indices(ir),&
                         ir=1,nelc)
-                     work(nelc) = work(nelc) - eav
+                     work(nelc) = work(nelc) - hamiltonian_energy_shift
                      diag(i) = work(nelc)
                      do ir = 1, nelc
-                        emt(iofset+irow(ir)) = work(ir)
+                        hamiltonian_values(iofset+matrix_partner_indices(ir)) = work(ir)
                      end do
                      iofset = iofset + i
                   end do
                   call dalloc (work, 'WORK', 'MANEIG')
-                  call dalloc (irow, 'IROW', 'MANEIG')
+                  call dalloc (matrix_partner_indices, 'IROW', 'MANEIG')
 
                endif
 !               ...Memory mode - sparse or dense
@@ -437,15 +437,15 @@
 
 ! Make diagonals global, no matter it is disk or memory mode
 
-            call gdsummpi (diag, ncf)
+            call gdsummpi (diag, csf_count)
 !
 !   Allocate storage for workspace; see the header of DVDSON for
 !   the expression below; the value of LIM can be reduced to NVECMX
 !   plus a smaller number if storage is severely constrained
 !
-            lim = min(ncf,2*nvecmx + 60)
+            lim = min(csf_count,2*nvecmx + 60)
 !           lwork = 2*ncf*lim + lim*lim + (nvecmx+10)*lim + nvecmx
-            lwork = 2*ncf*lim + lim*lim*2 + 11*lim + nvecmx
+            lwork = 2*csf_count*lim + lim*lim*2 + 11*lim + nvecmx
             call alloc (work, lwork, 'WORK', 'MANEIG')
             work(1:lwork) = 0.0d0
             liwork = 6*lim + nvecmx
@@ -461,15 +461,15 @@
 ! end of changes
 
 !            maxitr = MAX (nvecmx*100, ncf/10)
-            maxitr = max(nvecmx*100,ncf/10)
+            maxitr = max(nvecmx*100,csf_count/10)
             !maxitr = MIN (nvect*100, ncf)  ! FROM RSCFVU !!!
             call alloc (jwork, lim,'JWORK', 'MANEIG' )
 
-            call alloc (eval, nvecmx, 'EVAL', 'MANEIG')
-            call alloc (evec, ncf*nvecmx, 'EVEC', 'MANEIG')
+            call alloc (shifted_eigenvalues, nvecmx, 'EVAL', 'MANEIG')
+            call alloc (csf_mixing_coefficients, csf_count*nvecmx, 'EVEC', 'MANEIG')
 
             dmungo = 10.d99
-            call dinit (nvecmx, dmungo, eval, 1)
+            call dinit (nvecmx, dmungo, shifted_eigenvalues, 1)
 
 !   Compute the eigenpairs in each block
 
@@ -479,7 +479,7 @@
             else
                mblock = 1
             endif
-            nend = ncf*nvex
+            nend = csf_count*nvex
 
             ilow = 1
             ihigh = nvex
@@ -491,63 +491,63 @@
             select case (imv)
             case (1)
 !******************** sparse and matrix on disk **********************
-              if (myid .eq. 0) print *, ' Sparse - Disk, iniestsd'
+              if (mpi_rank .eq. 0) print *, ' Sparse - Disk, iniestsd'
                call posfile (0, imcdf, nposition)! was within iniestsd before
-               call iniestsd (iolpck, ncf, myid, nprocs, niv, work, imcdf, eav)
+               call iniestsd (iolpck, csf_count, mpi_rank, mpi_process_count, niv, work, imcdf, hamiltonian_energy_shift)
               print *, 'Returned from iniestsd '
-              if (ncf.gt. iolpck) then
+              if (csf_count.gt. iolpck) then
                 print *, 'Calling GDVD'
-                call gdvd (spodmv,ncf,lim,diag,ilow,ihigh,            &
+                call gdvd (spodmv,csf_count,lim,diag,ilow,ihigh,            &
                   jwork,niv,mblock,crite,critc, critr,ortho,maxitr,   &
                   work,lwork,iwork,liwork,hiend,nloops,               &
-                  nmv,ierr)
+                  nmv,mpi_error_code)
               end if
 
             case (2)
 !******************** sparse and matrix in memory ********************
-               if (myid .eq. 0) print *, ' Sparse - Memory, iniestmpi'
-               call iniestmpi (iolpck, ncf,niv,work,emt,iendc,irow)
-               if(ncf.gt. iolpck) then
-                 call gdvd (spicmvmpi,ncf,lim,diag,ilow,ihigh,        &
+               if (mpi_rank .eq. 0) print *, ' Sparse - Memory, iniestmpi'
+               call iniestmpi (iolpck, csf_count,niv,work,hamiltonian_values,stored_segment_end_offsets,matrix_partner_indices)
+               if(csf_count.gt. iolpck) then
+                 call gdvd (spicmvmpi,csf_count,lim,diag,ilow,ihigh,        &
                   jwork,niv,mblock,crite,critc, critr,ortho,maxitr,   &
                   work,lwork,iwork,liwork,hiend,nloops,               &
-                  nmv,ierr)
+                  nmv,mpi_error_code)
                end if
 
-               call dalloc (emt, 'EMT', 'MANEIG')
-               call dalloc (irow, 'IROW', 'MANEIG')
-               call dalloc (iendc, 'IENDC', 'MANEIG')
+               call dalloc (hamiltonian_values, 'EMT', 'MANEIG')
+               call dalloc (matrix_partner_indices, 'IROW', 'MANEIG')
+               call dalloc (stored_segment_end_offsets, 'IENDC', 'MANEIG')
 
             case (3)
 !*************************** dense and in memory **********************
-               if (myid .eq. 0) print *, ' Dense - Memory, iniestdm'
-              call iniestdm (iolpck,ncf,niv,work,emt)
-              if (ncf.gt. iolpck) then
-                call gdvd (dnicmv,ncf,lim,diag,ilow,ihigh,            &
+               if (mpi_rank .eq. 0) print *, ' Dense - Memory, iniestdm'
+              call iniestdm (iolpck,csf_count,niv,work,hamiltonian_values)
+              if (csf_count.gt. iolpck) then
+                call gdvd (dnicmv,csf_count,lim,diag,ilow,ihigh,            &
                     jwork,niv,mblock,crite,critc, critr,ortho,maxitr, &
                     work,lwork,iwork,liwork,hiend,nloops,             &
-                    nmv,ierr)
+                    nmv,mpi_error_code)
               end if
-               call dalloc (emt, 'EMT', 'MANEIG')
+               call dalloc (hamiltonian_values, 'EMT', 'MANEIG')
             end select
 !************************************************************************
             call dalloc (diag, 'DIAG', 'MANEIG')
             call dalloc (iwork, 'IWORK', 'MANEIG')
             call dalloc (jwork, 'JWORK', 'MANEIG')
-            if (myid .eq. 0) then
+            if (mpi_rank .eq. 0) then
                write (24, *) ' ', nloops, ' iterations;'
                write (24, *) ' ', nmv, ' matrix-vector multiplies.'
             endif
-            if (ierr /= 0) then
-               write (istde, *) 'MANEIG: Returned from DVDSON with'
-               write (istde, *) ' IERR = ', ierr, '.'
+            if (mpi_error_code /= 0) then
+               write (stderr_unit, *) 'MANEIG: Returned from DVDSON with'
+               write (stderr_unit, *) ' IERR = ', mpi_error_code, '.'
                stop 'maneig: DVDSON wrong'
             endif
 
 !   Put the eigenpairs in order, overwriting as necessary
 
-            call dcopy (nvex, work(nend+1:nend+(nvex)), 1, eval, 1)
-            call dcopy (ncf*nvex, work(1:ncf*nvex), 1, evec, 1)
+            call dcopy (nvex, work(nend+1:nend+(nvex)), 1, shifted_eigenvalues, 1)
+            call dcopy (csf_count*nvex, work(1:csf_count*nvex), 1, csf_mixing_coefficients, 1)
             call dalloc (work, 'WORK', 'MANEIG')
 
 !   Rearrange and reallocate storage for the eigenpairs
@@ -562,16 +562,17 @@
                   iofset = ivec(i)
                   loc = iwork(i)
                   if (iofset == loc) cycle
-                  call dswap (1, eval(iofset:(iofset)+((1)-1)), 1, eval(i:(i)+((1)-1)), 1)
+                  call dswap (1, shifted_eigenvalues(iofset:(iofset)+((1)-1)), 1, shifted_eigenvalues(i:(i)+((1)-1)), 1)
                   iwork(i) = iwork(iofset)
                   iwork(iofset) = loc
-                  iofset = ncf*(iofset - 1)
-                  loc = ncf*(i - 1)
-                  call dswap (ncf, evec(iofset+1:iofset+(ncf)), 1, evec(loc+1:loc+(ncf)), 1)
+                  iofset = csf_count*(iofset - 1)
+                  loc = csf_count*(i - 1)
+                  call dswap (csf_count, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1, &
+                     & csf_mixing_coefficients(loc+1:loc+(csf_count)), 1)
                end do
                call dalloc (iwork, 'IWORK', 'MANEIG')
-               call ralloc (eval,  nvec, 'EVAL', 'MANEIG')
-               call ralloc (evec, ncf*nvec, 'EVEC', 'MANEIG' )
+               call ralloc (shifted_eigenvalues,  nvec, 'EVAL', 'MANEIG')
+               call ralloc (csf_mixing_coefficients, csf_count*nvec, 'EVEC', 'MANEIG' )
 
             endif
 
@@ -593,11 +594,11 @@
 
 !         Find the dominant component of each eigenvector
 
-         iofset = (j - 1)*ncf
+         iofset = (j - 1)*csf_count
 
          amax = 0.d0
-         do i = 1, ncf
-            wa = abs(evec(i+iofset))
+         do i = 1, csf_count
+            wa = abs(csf_mixing_coefficients(i+iofset))
             if (wa <= amax) cycle
             amax = wa
             ia = i
@@ -610,8 +611,8 @@
 
 !          Change sign of eigenvactor if dominant component is negative
 
-         if (evec(ia+iofset) >= 0.d0) cycle
-         evec(1+iofset:ncf+iofset) = -evec(1+iofset:ncf+iofset)
+         if (csf_mixing_coefficients(ia+iofset) >= 0.d0) cycle
+         csf_mixing_coefficients(1+iofset:csf_count+iofset) = -csf_mixing_coefficients(1+iofset:csf_count+iofset)
       end do
 
       return

@@ -36,17 +36,17 @@
 !   The damping is adaptive (i.e., can be modified by this SUBROUTINE)
 !   if and only if ODAMP(J) .GE. 0.0
 !
-      adaptv = odamp(j) >= 0.0d00
+      adaptv = orbital_damping_factors(j) >= 0.0d00
 !
       if (ipr /= j) then
-         if (adaptv) odamp(j) = 0.75d00*odamp(j)
+         if (adaptv) orbital_damping_factors(j) = 0.75d00*orbital_damping_factors(j)
       else
-         ed2 = ed2-e(j)
+         ed2 = ed2-orbital_energy_parameters(j)
          if (adaptv) then
             if (ed1*ed2 > 0.0d00) then
-               odamp(j) = 0.75d00*odamp(j)
+               orbital_damping_factors(j) = 0.75d00*orbital_damping_factors(j)
             else
-               odamp(j) = 0.25d00+0.75d00*odamp(j)
+               orbital_damping_factors(j) = 0.25d00+0.75d00*orbital_damping_factors(j)
             endif
          endif
       endif
@@ -54,7 +54,7 @@
       if (ipr == j) then
          ed1 = ed2
       else
-         ed1 = ed2-e(j)
+         ed1 = ed2-orbital_energy_parameters(j)
       endif
 !
       ipr = j

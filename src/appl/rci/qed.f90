@@ -19,11 +19,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw, nnnp
+      use parameter_def,   only: max_orbitals, max_radial_points
       use def_c
       use eigv_c
       use npar_c
-      use orb_c, only: nw, ncf, np, nak
+      use orb_c, only: orbital_count, csf_count, orbital_principal_n, orbital_kappa
       use prnt_c
       use wave_c
 !-----------------------------------------------
@@ -37,13 +37,13 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer, intent(in) :: jstate
-      real(double), intent(out) :: slfint(nnnw)
+      real(double), intent(out) :: slfint(max_orbitals)
       real(double), intent(out) :: ucf(1)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: maxiter, j, i, ii, npj, kappa, mfj
-      real(double), dimension(nnnp) :: ptemp, qtemp
+      real(double), dimension(max_radial_points) :: ptemp, qtemp
       real(double) :: ucfj, zeff, ratio, valu
       character :: npchar, nakchar*2
 !-----------------------------------------------
@@ -55,12 +55,12 @@
 !
 ! Modified so that UCFJ describes the current eigenstate
 !
-      do j = 1, nw
+      do j = 1, orbital_count
          ucfj = 0.0d00
 !         DO 3 I = 1,NVEC
          i = jstate
-         do ii = 1, ncf
-            ucfj = ucfj + dble(iq(j,ii))*evec(ii + (i - 1)*ncf)**2
+         do ii = 1, csf_count
+            ucfj = ucfj + dble(iq(j,ii))*csf_mixing_coefficients(ii + (i - 1)*csf_count)**2
          end do
 !    3    CONTINUE
 !     print *, ucfj,'ucf'
@@ -68,33 +68,33 @@
 ! zou    UCF(J) = UCFJ/DBLE (NCF)
       end do
 !
-      do j = 1, nw
+      do j = 1, orbital_count
 !
-         npj = np(j)
+         npj = orbital_principal_n(j)
 !
          if (npj <= 8) then
 !
 !   Only orbitals with principal quantum number 8 or less can
 !   be treated by this section of code
 !
-            kappa = nak(j)
+            kappa = orbital_kappa(j)
 !
 !   Begin by transferring the function to a temporary array
 !
-            mfj = mf(j)
+            mfj = orbital_last_grid_index(j)
 !
             ptemp(1) = 0.0d00
             qtemp(1) = 0.0d00
             do i = 2, mfj
-               ptemp(i) = pf(i,j)
-               qtemp(i) = qf(i,j)
+               ptemp(i) = radial_large_components(i,j)
+               qtemp(i) = radial_small_components(i,j)
             end do
 !
-            zeff = z
+            zeff = nuclear_charge
             ratio = ratden(ptemp,qtemp,mfj,npj,kappa,zeff)
             valu = ratio*fzalf(npj,kappa,zeff)/dble(npj**3)
 !
-            slfint(j) = valu*zeff**4/(pi*c**3)
+            slfint(j) = valu*zeff**4/(pi*speed_of_light_au**3)
 !        print *, 'No. orb.=',j,' Zeff = ',zeff
 !    &   , 'Scale= ',ratio
 !    &   , 'S.E. = ',slfint(j)*2*13.6058,slfint(j)/ratio*2*13.6058
@@ -137,7 +137,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnp
+      use parameter_def,   only: max_radial_points
       use grid_c
       use horb_c, only: ph, qh
       use tatb_c, only: mtp, ta
@@ -154,8 +154,8 @@
       integer  :: np
       integer  :: kappa
       real(double)  :: z
-      real(double), intent(in) :: p(nnnp)
-      real(double), intent(in) :: q(nnnp)
+      real(double), intent(in) :: p(max_radial_points)
+      real(double), intent(in) :: q(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -173,15 +173,15 @@
 !
       mtp = min(mtph,mtpo)
       do i = 2, mtp
-         if (rp(i) > 0.0219) cycle
+         if (radial_grid_derivative(i) > 0.0219) cycle
          k = i
       end do
       mtp = k
       ta(1) = 0.0d00
-      ta(2:mtp) = (p(2:mtp)*p(2:mtp)+q(2:mtp)*q(2:mtp))*rp(2:mtp)
+      ta(2:mtp) = (p(2:mtp)*p(2:mtp)+q(2:mtp)*q(2:mtp))*radial_grid_derivative(2:mtp)
 !         TA(I) = (P(I)*PH(I)+Q(I)*QH(I))*RP(I)
       call quad (result)
-      ta(2:mtp) = (ph(2:mtp)*ph(2:mtp)+qh(2:mtp)*qh(2:mtp))*rp(2:mtp)
+      ta(2:mtp) = (ph(2:mtp)*ph(2:mtp)+qh(2:mtp)*qh(2:mtp))*radial_grid_derivative(2:mtp)
       call quad (result1)
 !
       ratden = result/result1

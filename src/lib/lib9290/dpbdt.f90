@@ -59,8 +59,8 @@
 !            HDPBDT = HDPBDT+AIK*PF(K,J)
 !            HDQBDT = HDQBDT+AIK*QF(K,J)
 !    1    CONTINUE
-         hdpbdt = sum(a(i   ,:)*pf(:13,j))
-         hdqbdt = sum(a(i   ,:)*qf(:13,j))
+         hdpbdt = sum(a(i   ,:)*radial_large_components(:13,j))
+         hdqbdt = sum(a(i   ,:)*radial_small_components(:13,j))
 !cjb
          ta(i) = hdpbdt
          tb(i) = hdqbdt
@@ -71,21 +71,27 @@
 !   Special treatment for this region because of the symmetry of
 !   the differentiation formula
 !
-      do i = 7, n - 6
-         ta(i) = a1*(pf(i - 6,j) - pf(i + 6,j)) + a2*(pf(i - 5,j) - pf(i + 5,j)&
-            ) + a3*(pf(i - 4,j) - pf(i + 4,j)) + a4*(pf(i - 3,j) - pf(i + 3,j))&
-             + a5*(pf(i - 2,j) - pf(i + 2,j)) + a6*(pf(i - 1,j) - pf(i + 1,j))
-         tb(i) = a1*(qf(i - 6,j) - qf(i + 6,j)) + a2*(qf(i - 5,j) - qf(i + 5,j)&
-            ) + a3*(qf(i - 4,j) - qf(i + 4,j)) + a4*(qf(i - 3,j) - qf(i + 3,j))&
-             + a5*(qf(i - 2,j) - qf(i + 2,j)) + a6*(qf(i - 1,j) - qf(i + 1,j))
+      do i = 7, radial_point_count - 6
+         ta(i) = a1*(radial_large_components(i - 6,j) - radial_large_components(i + 6,j)) + a2* &
+            & (radial_large_components(i - 5,j) - radial_large_components(i + 5,j)&
+            ) + a3*(radial_large_components(i - 4,j) - radial_large_components(i + 4,j)) + a4* &
+               & (radial_large_components(i - 3,j) - radial_large_components(i + 3,j))&
+             + a5*(radial_large_components(i - 2,j) - radial_large_components(i + 2,j)) + a6* &
+                & (radial_large_components(i - 1,j) - radial_large_components(i + 1,j))
+         tb(i) = a1*(radial_small_components(i - 6,j) - radial_small_components(i + 6,j)) + a2* &
+            & (radial_small_components(i - 5,j) - radial_small_components(i + 5,j)&
+            ) + a3*(radial_small_components(i - 4,j) - radial_small_components(i + 4,j)) + a4* &
+               & (radial_small_components(i - 3,j) - radial_small_components(i + 3,j))&
+             + a5*(radial_small_components(i - 2,j) - radial_small_components(i + 2,j)) + a6* &
+                & (radial_small_components(i - 1,j) - radial_small_components(i + 1,j))
       end do
 !
 !   Last, points N-5 to N
 !
-      do i = n - 5, n
-         irow = i - n + 13
-          hdpbdt = sum(a(irow,:)*pf(n-12:n,j))
-          hdqbdt = sum(a(irow,:)*qf(n-12:n,j))
+      do i = radial_point_count - 5, radial_point_count
+         irow = i - radial_point_count + 13
+          hdpbdt = sum(a(irow,:)*radial_large_components(radial_point_count-12:radial_point_count,j))
+          hdqbdt = sum(a(irow,:)*radial_small_components(radial_point_count-12:radial_point_count,j))
 !- git 1/12/07 code below from the new libraries
 !         HDPBDT = 0.D0
 !        HDQBDT = 0.D0

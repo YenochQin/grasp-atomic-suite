@@ -13,7 +13,7 @@
 !-----------------------------------------------
       use vast_kind_param, only:  double
       use debug_c
-      use def_c, only:  emn, ioncty, nelec, z
+      use def_c, only:  emn, ioncty, electron_count, nuclear_charge
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

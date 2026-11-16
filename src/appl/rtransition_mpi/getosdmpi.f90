@@ -15,12 +15,12 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw, nnnp
+      use parameter_def,   only: max_orbitals, max_radial_points
       use def_c
       use decide_c
       use default_c
       use foparm_c
-      use grid_c, only: h, hp, n, rnt
+      use grid_c, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale
       use npar_c
       use osc_c, only: ltc
       use mpi_c
@@ -51,21 +51,21 @@
 !   Determine the physical effects specifications
 !
       if (ndef /= 0) then
-         if (myid .eq. 0) then
+         if (mpi_rank .eq. 0) then
             print *, 'The physical speed of light in'
-            print *, ' atomic units is',cvac,';'
+            print *, ' atomic units is',vacuum_speed_of_light_au,';'
             print *, ' revise this value?'
             yes = getyn ()
             if (yes) then
                print *, 'Enter the revised value:'
-               read *,c
+               read *,speed_of_light_au
             else
-               c = cvac
+               speed_of_light_au = vacuum_speed_of_light_au
             endif
          endif !myid=0
-         call mpi_bcast(c,1,mpi_double_precision,0,mpi_comm_world,ierr)
+         call mpi_bcast(speed_of_light_au,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
       else
-         c = cvac
+         speed_of_light_au = vacuum_speed_of_light_au
       endif
 !
       lfordr = .false.
@@ -80,7 +80,7 @@
       ltc = .false.
 !
       if (ndef /= 0) then
-       if (myid .eq.0) then
+       if (mpi_rank .eq.0) then
          write (6, *) 'Which units are to be used to'
          write (6, *) ' express the transition energies?'
          write (6, *) '    A    : Angstrom:'
@@ -106,7 +106,7 @@
             go to 2
          endif
        endif !myid=0
-       call mpi_bcast(ltc(1),5,mpi_logical,0,mpi_comm_world,ierr)
+       call mpi_bcast(ltc(1),5,mpi_logical,0,mpi_comm_world,mpi_error_code)
       else
          ltc(5) = .true.
       endif
@@ -116,61 +116,61 @@
 !      IF (YES) LTC(6) = .TRUE.
 !
       if (ndef /= 0) then
-       if (myid .eq. 0) then
+       if (mpi_rank .eq. 0) then
          write (6, *) 'Einstein A and B coefficients are'
          write (6, *) ' printed in SI units; use Hartree'
          write (6, *) ' atomic units instead?'
          yes = getyn()
          if (yes) ltc(7) = .true.
        endif !myid=0
-       call mpi_bcast(ltc(7),1,mpi_logical,0,mpi_comm_world,ierr)
+       call mpi_bcast(ltc(7),1,mpi_logical,0,mpi_comm_world,mpi_error_code)
       else
          ltc(7) = .false.
       endif
 !
 !   Determine the parameters controlling the radial grid
 !
-      if (nparm == 0) then
-         rnt = exp((-65.0d00/16.0d00))/z
-         h = 0.5d00**4
-         n = min(220,nnnp)
+      if (nuclear_model_parameter_count == 0) then
+         radial_grid_scale = exp((-65.0d00/16.0d00))/nuclear_charge
+         transformed_grid_step = 0.5d00**4
+         radial_point_count = min(220,max_radial_points)
       else
 !CFF     ... should be Z-dependent
-         rnt = 2.0d-06/z
-         h = 5.0d-02
-         n = nnnp
+         radial_grid_scale = 2.0d-06/nuclear_charge
+         transformed_grid_step = 5.0d-02
+         radial_point_count = max_radial_points
       endif
-      hp = 0.0d00
+      asymptotic_grid_step = 0.0d00
       if (ndef /= 0) then
-        if (myid .eq. 0) then
+        if (mpi_rank .eq. 0) then
          write (6, *) 'The default radial grid parameters'
          write (6, *) ' for this case are:'
-         write (6, *) ' RNT = ', rnt, ';'
-         write (6, *) ' H = ', h, ';'
-         write (6, *) ' HP = ', hp, ';'
-         write (6, *) ' N = ', n, ';'
+         write (6, *) ' RNT = ', radial_grid_scale, ';'
+         write (6, *) ' H = ', transformed_grid_step, ';'
+         write (6, *) ' HP = ', asymptotic_grid_step, ';'
+         write (6, *) ' N = ', radial_point_count, ';'
          write (6, *) ' revise these values?'
          yes = getyn()
          if (yes) then
             write (6, *) 'Enter RNT:'
-            read (5, *) rnt
+            read (5, *) radial_grid_scale
             write (6, *) 'Enter H:'
-            read (5, *) h
+            read (5, *) transformed_grid_step
             write (6, *) 'Enter HP:'
-            read (5, *) hp
+            read (5, *) asymptotic_grid_step
             write (6, *) 'Enter N:'
-            read (5, *) n
+            read (5, *) radial_point_count
          endif
         endif !myid=0
-        call mpi_bcast(rnt,1,mpi_double_precision,0,mpi_comm_world,ierr)
-        call mpi_bcast(h,1,mpi_double_precision,0,mpi_comm_world,ierr)
-        call mpi_bcast(hp,1,mpi_double_precision,0,mpi_comm_world,ierr)
-        call mpi_bcast (n, 1, mpi_integer, 0, mpi_comm_world, ierr)
+        call mpi_bcast(radial_grid_scale,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
+        call mpi_bcast(transformed_grid_step,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
+        call mpi_bcast(asymptotic_grid_step,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
+        call mpi_bcast (radial_point_count, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
       endif
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
-      accy = h**6
+      accy = transformed_grid_step**6
 !
 !   Set up the coefficients for the numerical proceduRes
 !

@@ -8,7 +8,7 @@ from check import check_commands, check_feature_commands, check_junit, check_ros
 
 class AcceptanceTests(unittest.TestCase):
     def test_roster_requires_each_configured_group(self) -> None:
-        for features in (set(), {"serial"}, {"mpi"}, {"serial", "mpi", "csfg"}):
+        for features in (set(), {"serial"}, {"mpi"}, {"serial", "mpi"}):
             targets, tests = requirements(features)
             check_roster(features, targets, tests)
             with self.assertRaises(ValueError):
@@ -22,6 +22,12 @@ class AcceptanceTests(unittest.TestCase):
             check_roster(set(), targets | {"rmcdhf_mpi"}, tests)
         with self.assertRaises(ValueError):
             check_roster(set(), targets, set())
+
+    def test_removed_csfg_feature_is_rejected(self) -> None:
+        with self.assertRaisesRegex(ValueError, "CSFG support has been removed"):
+            requirements({"serial", "mpi", "csfg"})
+        with self.assertRaisesRegex(ValueError, "CSFG support has been removed"):
+            check_feature_commands([], {"csfg": True})
 
     def test_every_compile_command_is_checked(self) -> None:
         compiler = Path("/compiler/gfortran-15")

@@ -3,9 +3,9 @@
 !...Created by Pacific-Sierra Research 77to90  4.3E  13:03:28   1/25/07
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      integer :: nbdim, nvcoef
-      integer, dimension(:,:), pointer :: label
-      real(double), dimension(:), pointer :: coeff
+      integer :: angular_buffer_capacity, angular_coefficient_count
+      integer, dimension(:,:), pointer :: angular_coefficient_labels
+      real(double), dimension(:), pointer :: angular_coefficients
 !     Active only in the audited rangular OpenMP object build.
-!$OMP THREADPRIVATE(NBDIM, NVCOEF, LABEL, COEFF)
+!$OMP THREADPRIVATE(angular_buffer_capacity, angular_coefficient_count, angular_coefficient_labels, angular_coefficients)
       end module buffer_c

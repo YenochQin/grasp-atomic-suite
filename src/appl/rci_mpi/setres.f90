@@ -54,14 +54,14 @@
 !
 ! Compose the "rciXXX.res" file names (for each node)
 !
-      write (idstring, '(I3.3)') myid
+      write (idstring, '(I3.3)') mpi_rank
       defnam = 'rci' // idstring // '.res'
 !
 ! Ask if this is a restart
 !
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          if (ndef /= 0) then
-            write (istde, *) 'Restarting RCI90 ?'
+            write (stderr_unit, *) 'Restarting RCI90 ?'
             restrt = getyn()
          else
             restrt = .false.
@@ -72,7 +72,7 @@
 !           WRITE(734,'(a)') 'n            ! Restarting RCI90 ?'
 !         END IF
       end if
-      call mpi_bcast (restrt, 1, mpi_logical, 0, mpi_comm_world, ierr)
+      call mpi_bcast (restrt, 1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
 !
 ! Do some settings and checks
 !
@@ -80,29 +80,29 @@
 !         ...Restart, make sure file exist
          inquire(file=defnam, exist=found)
          if (.not. found) then
-            call stopmpi ('setres: .res not exist', myid)
+            call stopmpi ('setres: .res not exist', mpi_rank)
          endif
       endif
 !
 ! Open the .res file
 !
-      call openfl (imcdf, defnam, form, status, ierr)
-      if (ierr .ne. 0) then
-         call stopmpi ('setres: Error openning .res file', myid)
+      call openfl (imcdf, defnam, form, status, mpi_error_code)
+      if (mpi_error_code .ne. 0) then
+         call stopmpi ('setres: Error openning .res file', mpi_rank)
       endif
 !
 ! If restart, load the contents. Otherwise generate them via getcid
 !
 ! But first of all, iccutblk() is needed in both cases
 !
-      call alloc (iccutblk, nblock, 'ICCUTBLK', 'SETRES')
+      call alloc (iccutblk, symmetry_block_count, 'ICCUTBLK', 'SETRES')
 
       if (restrt) then
 !        ...Check the signature of the file
          read (imcdf, iostat=ios) r92res
          if (ios/=0 .or. r92res/=restitle) then
             close(imcdf)
-            call stopmpi ('setres: Not RCI92 .res file', myid)
+            call stopmpi ('setres: Not RCI92 .res file', mpi_rank)
          endif
 
 !         ...Read and check restart information

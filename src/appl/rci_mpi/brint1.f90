@@ -14,7 +14,7 @@
 !-----------------------------------------------
       use vast_kind_param, only: double
       use bilst_c
-      use orb_c,           only: nw
+      use orb_c,           only: orbital_count
       use kkstartbreit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -31,7 +31,7 @@
       integer ::  index, loc, ju, jl, jm, key
 !-----------------------------------------------
 !
-      key = nw + 1
+      key = orbital_count + 1
       index = ((ia*key+ib)*key+ic)*key+id
 !
       jl = kstartbreit1(k)

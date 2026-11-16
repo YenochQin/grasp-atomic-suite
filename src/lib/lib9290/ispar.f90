@@ -14,10 +14,10 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnw
-      use stat_c,        only: jcupa
-      use iounit_c,      only: istde
-      use orb_c,         only: ncf
+      use parameter_def, only: max_orbitals
+      use stat_c,        only: csf_coupling_quantum_codes
+      use iounit_c,      only: stderr_unit
+      use orb_c,         only: csf_count
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -27,13 +27,13 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !
-      if (icsf>=1 .and. icsf<=ncf) then
-         ispar = jcupa(nnnw,icsf)
+      if (icsf>=1 .and. icsf<=csf_count) then
+         ispar = csf_coupling_quantum_codes(max_orbitals,icsf)
          if (ispar > 127) ispar = ispar - 256
          ispar = sign(1,ispar)
       else
-         write (istde, *) 'ISPAR: Argument ICSF is out of range.'
-         write (istde, *) 'ICSF =',icsf,' NCF =',ncf
+         write (stderr_unit, *) 'ISPAR: Argument ICSF is out of range.'
+         write (stderr_unit, *) 'ICSF =',icsf,' NCF =',csf_count
          stop
       endif
 !

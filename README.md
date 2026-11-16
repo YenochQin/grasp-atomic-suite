@@ -46,7 +46,7 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 | Program | Source directory | CMake targets | Purpose |
 | --- | --- | --- | --- |
 | Ordinary GRASP calculation chain | `src/appl/rangular*`, `rwfnestimate`, `rci*`, `rbiotransform*`, `rtransition*` | `rangular{,_mpi}`, `rwfnestimate`, `rci{,_mpi}`, `rbiotransform{,_mpi}`, `rtransition{,_phase,_mpi}` | Ten targets reuse the suite libraries and central capacities; see [provenance, builds and validation scope](docs/implemented/standard_grasp_integration.md). |
-| `jj2lsj_omp` | `src/appl/jj2lsj` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/jj2lsj_openmp.md). Separate from `jj2lsj_csfg`. |
+| `jj2lsj_omp` | `src/appl/jj2lsj` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/jj2lsj_openmp.md). CSFG support has been removed. |
 | `gj` | `src/appl/gj` | `gj`, `gj_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, `name.c`, `name.m/name.cm`, and `name.w`, then writes `name.gj/name.cgj`. |
 | `rhfs` | `src/appl/rhfs` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
 | `rdensity` | `src/appl/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/rdensity_mpi.md). |
@@ -237,17 +237,17 @@ This repository is distributed under the [MIT License](LICENSE).
 
 ## GRASPG / CSFG extension
 
-`GRASP_BUILD_CSFG=ON` (opt-in; default is OFF) adds 12 serial Fortran utilities, four MPI calculation
-programs when MPI is available, and the installed `rsave_csfg` script. They reuse
-this suite's base libraries and shared capacities. Set `GRASP_BUILD_CSFG=OFF` to
-exclude the extension, or `GRASP_ENABLE_MPI=OFF` to retain its serial utilities only.
-See the [integration and parameter guide](docs/implemented/graspg_integration.md)
-for executable names, source provenance, configuration, and validation limits.
+The CSFG extension source, targets and dedicated tests were removed on 2026-11-16.
+`GRASP_BUILD_CSFG=ON` is rejected. `--no-csfg` and `GRASP_BUILD_CSFG=OFF` remain
+accepted for compatibility with existing ordinary-suite build commands.
+The ordinary shared libraries remain in use. See the
+[historical integration record](docs/archive/graspg_integration.md) for provenance;
+it does not describe a currently available build option.
 
 ### Attribution and citation
 
 The CSFG implementation is derived from [compas/graspg](https://github.com/compas/graspg).
-This repository integrates and adapts that upstream code; the GRASPG implementation
+This repository previously integrated and adapted that upstream code; the GRASPG implementation
 and CSFG methods are credited to their original authors. Research using these
 programs should cite the GRASPG software paper, the CSFG method paper, and the
 underlying GRASP2018 package:

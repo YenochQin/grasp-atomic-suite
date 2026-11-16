@@ -22,7 +22,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnw
+      use parameter_def,    only: max_orbitals
       use memory_man
       use debug_c
       use decide_c
@@ -79,9 +79,9 @@
       real(double), dimension(:), pointer     :: res
 
 
-      real(double), dimension(nnnw)      :: tshell
-      real(double), dimension(nnnw,nnnw) :: vint, vint2
-      real(double), dimension(nnnw,nnnw) :: dint1, dint2, dint3, &
+      real(double), dimension(max_orbitals)      :: tshell
+      real(double), dimension(max_orbitals,max_orbitals) :: vint, vint2
+      real(double), dimension(max_orbitals,max_orbitals) :: dint1, dint2, dint3, &
                                             dint4, dint5, dint6, &
                                             dint7
       real(double) :: au2fm, rcre, hzsmsu, hznmsu, fo90
@@ -102,11 +102,11 @@
       write(*,*) '-------------------------------'
 
 !     Determine point end point NRNUC for density fit
-      fo90 = parm(1)+2.d0*log(3.d0)*parm(2)
+      fo90 = nuclear_model_parameters(1)+2.d0*log(3.d0)*nuclear_model_parameters(2)
       !PARM(1) - Fermi parameter c
       !PARM(2) - Fermi parameter a
-      do i=1,nnnp
-         if(r(i+1).gt.fo90.and.r(i).le.fo90) then
+      do i=1,max_radial_points
+         if(radial_grid(i+1).gt.fo90.and.radial_grid(i).le.fo90) then
             nrnuc = i+1
             exit
          end if
@@ -115,7 +115,7 @@
 
 !   Allocate memory
 
-      allocate( dens1vec(nvec,nrnuc),dint1vec(nnnw,nnnw,nrnuc) )    ! JE ADD
+      allocate( dens1vec(nvec,nrnuc),dint1vec(max_orbitals,max_orbitals,nrnuc) )    ! JE ADD
       allocate( densfit(nrnuc) )                                   ! JE ADD
 
       dint1vec(:,:,:) = 0.d0                                      ! JE ADD
@@ -163,9 +163,9 @@
       write(*,*) ' Compute higher order field shift electronic factors?'
       yes2 = getyn ()
 
-      do 5 i = 1,nw
-        do 4 j = 1,nw
-          if (nak(i).eq.nak(j)) then
+      do 5 i = 1,orbital_count
+        do 4 j = 1,orbital_count
+          if (orbital_kappa(i).eq.orbital_kappa(j)) then
             dint1(i,j) = rintdens(i,j)
             !GG                 DINT2(I,J) = RINTI(I,J,1)
             if(yes2) then
@@ -193,10 +193,10 @@
 !   Calculate and save the Vinti integrals
 !
 !      IF (SMSSH) THEN
-      do 7 i = 1,nw
-        do 6 j = 1,nw
+      do 7 i = 1,orbital_count
+        do 6 j = 1,orbital_count
           if (i.ne.j) then
-            rcre = cre(nak(i),1,nak(j))
+            rcre = cre(orbital_kappa(i),1,orbital_kappa(j))
             if (dabs(rcre) .gt. cutoff) then
               vint  (i,j) = vinti(i,j)
               vint2(i,j) = vint(i,j)                                   &
@@ -318,22 +318,22 @@
       write (24,309)
       do i = 1, nvec
          write (24,323) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
-              eav+eval(i)
+              hamiltonian_energy_shift+shifted_eigenvalues(i)
       end do
       write (24,308)
       do 18 i = 1,nvec
          write(24,314)
          write (24,313) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
               dens7(i),(dens2(i)-dens7(i)),dens2(i)
-         hznmsu=dens7(i)*aumamu*aucm*ccms
+         hznmsu=dens7(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s
 !         if (dabs(HzNMSu) .LE. (10**8)) THEN
 !             WRITE (24,315) HzNMSu*(1.0D-06),
 !     :      (DENS2(I)-DENS7(I))*AUMAMU*AUCM*CCMS*(1.0D-06),
 !     :       DENS2(I)*AUMAMU*AUCM*CCMS*(1.0D-06)
 !         else
          write (24,316) hznmsu*(1.0d-09), &
-              (dens2(i)-dens7(i))*aumamu*aucm*ccms*(1.0d-09), &
-              dens2(i)*aumamu*aucm*ccms*(1.0d-09)
+              (dens2(i)-dens7(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-09), &
+              dens2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-09)
 !         endif
  18   continue
 
@@ -342,21 +342,21 @@
          write(24,314)
          write (24,313) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
               smsc1(i),smsc2(i)-smsc1(i),smsc2(i)
-         hzsmsu=smsc1(i)*aumamu*aucm*ccms
+         hzsmsu=smsc1(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s
          if (dabs(hzsmsu) .le. (10**8)) then
             write (24,315) hzsmsu*(1.0d-06), &
-                 (smsc2(i)-smsc1(i))*aumamu*aucm*ccms*(1.0d-06), &
-                 smsc2(i)*aumamu*aucm*ccms*(1.0d-06)
+                 (smsc2(i)-smsc1(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-06), &
+                 smsc2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-06)
          else
             write (24,316) hzsmsu*(1.0d-09), &
-                 (smsc2(i)-smsc1(i))*aumamu*aucm*ccms*(1.0d-09), &
-                 smsc2(i)*aumamu*aucm*ccms*(1.0d-09)
+                 (smsc2(i)-smsc1(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-09), &
+                 smsc2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-09)
          endif
  14   continue
       if(yes2) then
          write (24,307)
          do 16 i = 1,nvec
-            call edensityfit(r,dens1vec(i,:),z,parm,nrnuc,fmat(:,i),rho(i),res(i))  ! JE ADD
+            call edensityfit(radial_grid,dens1vec(i,:),nuclear_charge,nuclear_model_parameters,nrnuc,fmat(:,i),rho(i),res(i))  ! JE ADD
             write (24,303) ivec(i),labj(iatjpo(i)), &
                  labp((iaspar(i)+3)/2),rho(i)
  16      continue

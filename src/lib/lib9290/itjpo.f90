@@ -14,22 +14,22 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnw
-      use stat_c,        only: jcupa
-      use iounit_c,      only: istde
-      use orb_c,         only: ncf
+      use parameter_def, only: max_orbitals
+      use stat_c,        only: csf_coupling_quantum_codes
+      use iounit_c,      only: stderr_unit
+      use orb_c,         only: csf_count
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer       :: icsf
 !-----------------------------------------------
-      if (icsf>=1 .and. icsf<=ncf) then
-        itjpo = jcupa(nnnw,icsf)
+      if (icsf>=1 .and. icsf<=csf_count) then
+        itjpo = csf_coupling_quantum_codes(max_orbitals,icsf)
         if (itjpo > 127) itjpo = 256 - itjpo
         itjpo = iabs (itjpo)
       else
-         write (istde, *) 'ITJPO: Argument ICSF is out of range.'
+         write (stderr_unit, *) 'ITJPO: Argument ICSF is out of range.'
          stop
       endif
 !

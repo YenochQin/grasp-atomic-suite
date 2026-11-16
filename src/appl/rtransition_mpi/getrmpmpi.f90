@@ -39,7 +39,7 @@
 !
       ndkp = 1
       call alloc (kp, ndkp, 'KP', 'GETRMP' )
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
 !
 !   Entry message
 !
@@ -111,17 +111,17 @@
 !
          if (nkp == 0) go to 1
        endif !myid=0
-       call mpi_bcast(nkp,1,mpi_integer,0,mpi_comm_world,ierr)
+       call mpi_bcast(nkp,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
 !
 !   Trim array to the exact size
 !
       if (ndkp /= nkp) call ralloc (kp, nkp, 'KP', 'GETRMP')
-      call mpi_bcast(kp(1),nkp,mpi_integer,0,mpi_comm_world, ierr)
+      call mpi_bcast(kp(1),nkp,mpi_integer,0,mpi_comm_world, mpi_error_code)
 !
 !   If M1 or E2 inquire if the transitions are between levels
 !   with different J quantum numbers.
 !
-      if(myid == 0) then
+      if(mpi_rank == 0) then
          do i = 1, nkp
             if (kp(i) == 1) then
                write (*, *)                                         &
@@ -144,8 +144,8 @@
             endif
          end do
       endif !myid=0
-      call mpi_bcast(noffd1,1,mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast(noffd2,1,mpi_integer,0,mpi_comm_world, ierr)
+      call mpi_bcast(noffd1,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast(noffd2,1,mpi_integer,0,mpi_comm_world, mpi_error_code)
 !
       return
       end subroutine getrmp

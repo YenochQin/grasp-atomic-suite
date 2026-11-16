@@ -4,7 +4,7 @@
 ! packed matrix to LAPACK.  This tests storage semantics without launching MPI.
 module sparse_reduction_check
     use vast_kind_param, only: double
-    use mpi_C, only: myid, nprocs
+    use mpi_c, only: myid => mpi_rank, nprocs => mpi_process_count
     implicit none
     integer, parameter :: matrix_size = 8
     real(double) :: dense(matrix_size, matrix_size)
@@ -42,8 +42,9 @@ end subroutine gdsummpi
 
 program mpi90_local_sparse
     use sparse_reduction_check
-    use hmat_C, only: emt, irow, iendc, nelmnt
-    use mpi_C, only: ierr
+    use hmat_c, only: emt => hamiltonian_values, irow => matrix_partner_indices, iendc => stored_segment_end_offsets, &
+       & nelmnt => stored_matrix_element_count
+    use mpi_c, only: ierr => mpi_error_code
     use spicmvmpi_I, only: spicmvmpi
     use iniestmpi_I, only: iniestmpi
     implicit none

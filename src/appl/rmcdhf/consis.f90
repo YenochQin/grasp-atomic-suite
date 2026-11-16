@@ -32,9 +32,9 @@
 !
 !
       scmea = 0.0d00
-      mtp = min(mtp0,mf(j))
+      mtp = min(mtp0,orbital_last_grid_index(j))
       do i = 1, mtp
-         deltao = abs(p(i)-pf(i,j)) + abs(q(i)-qf(i,j))
+         deltao = abs(p(i)-radial_large_components(i,j)) + abs(q(i)-radial_small_components(i,j))
          scmea = dmax1(deltao,scmea)
       end do
       scnsty(j) = scmea*sqrt(ucf(j))

@@ -5,7 +5,7 @@
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnw
-      real(double), dimension(nnnw) :: odamp
-      real(double), dimension(:), pointer :: cdamp
+      use parameter_def,    only: max_orbitals
+      real(double), dimension(max_orbitals) :: orbital_damping_factors
+      real(double), dimension(:), pointer :: mixing_damping_factors
       end module damp_c

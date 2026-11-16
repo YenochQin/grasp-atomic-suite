@@ -5,10 +5,10 @@
 !                     Gediminas Gaigalas  10/05/17
       subroutine draw (p, sp, q, sq, mf)
       use vast_kind_param,only: double
-      use parameter_def, only: nnnp
-      real(double), dimension(nnnp), intent(in) :: p
+      use parameter_def, only: max_radial_points
+      real(double), dimension(max_radial_points), intent(in) :: p
       real(double), intent(in) :: sp
-      real(double), dimension(nnnp), intent(in) :: q
+      real(double), dimension(max_radial_points), intent(in) :: q
       real(double), intent(in) :: sq
       integer, intent(in) :: mf
 !VAST.../GRID/ R(IN), N(IN)

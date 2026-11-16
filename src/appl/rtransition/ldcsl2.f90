@@ -82,13 +82,13 @@
 !         NCORE = NCORE+1
 !    3 CONTINUE
 !
-      nelecff = nelec
-      nwff = nw
-      ncfff = ncf
-      nhff(:nw) = nh(:nw)
-      npff(:nw) = np(:nw)
-      nakff(:nw) = nak(:nw)
-      nklff(:nw) = nkl(:nw)
-      nkjff(:nw) = nkj(:nw)
+      nelecff = electron_count
+      nwff = orbital_count
+      ncfff = csf_count
+      nhff(:orbital_count) = orbital_symmetry_labels(:orbital_count)
+      npff(:orbital_count) = orbital_principal_n(:orbital_count)
+      nakff(:orbital_count) = orbital_kappa(:orbital_count)
+      nklff(:orbital_count) = orbital_l(:orbital_count)
+      nkjff(:orbital_count) = orbital_two_j(:orbital_count)
       return
       end subroutine ldcsl2

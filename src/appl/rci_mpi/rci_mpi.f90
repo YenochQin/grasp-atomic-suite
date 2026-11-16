@@ -98,9 +98,9 @@
 !  Start mpi --- get processor info: myid, nprocs, host name; and print
 !=======================================================================
 
-      call startmpi2 (myid, nprocs, host, lenhost, ncount1,       &
+      call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1,       &
                            startdir, permdir, tmpdir, 'RCI_MPI')
-      write (idstring, '(I3.3)') myid
+      write (idstring, '(I3.3)') mpi_rank
 
       lenperm = len_trim (permdir)
       lentmp = len_trim (tmpdir)
@@ -109,9 +109,9 @@
 !  Get NDEF on node-0 and then send to all nodes
 !=======================================================================
 
-      if (myid .eq. 0) then
-         write (istde,*)
-         write (istde, *) 'Default settings? '
+      if (mpi_rank .eq. 0) then
+         write (stderr_unit,*)
+         write (stderr_unit, *) 'Default settings? '
          yes = getyn()
          if (yes) then
             ndef = 0
@@ -123,7 +123,7 @@
 !cjb        write(734,'(A)') 'n            ! Default settings'
          endif
       endif
-      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
 !     CALL MPI_Bcast (imethod,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 
 
@@ -133,17 +133,17 @@
 !=======================================================================
 
       lenname = 0     ! Otherwise it might cause trouble for myid!=0
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          do
-            write (istde,*) 'Name of state: '
+            write (stderr_unit,*) 'Name of state: '
             read (*,'(A)') name
             k = index (name,' ')
             if (k .gt. 1) exit
-            write (istde,*) 'Name may not start with a blank. redo...'
+            write (stderr_unit,*) 'Name may not start with a blank. redo...'
          enddo
          namesave = name
 
-         if (myid .eq. 0) then
+         if (mpi_rank .eq. 0) then
             open(unit=734,file=trim(name)//'.clog',status='unknown')
             write(734,'(a)') 'y            ! Default settings'
             write(734,'(a)') trim(name)
@@ -187,11 +187,11 @@
       call setdbg
       call setmc
       call setcon
-      if (myid .eq. 0)  call setsum (name)
+      if (mpi_rank .eq. 0)  call setsum (name)
       call cslhmpi (name(1:lenname) // '.c', ncore, nblk0, idblk)
       call setres (isofile, name(1:lenname) // '.w', idblk)
       call setmixmpi (name, idblk)
-      if (myid .eq. 0)  call strsum
+      if (mpi_rank .eq. 0)  call strsum
       call factt
 
 !=======================================================================
@@ -201,14 +201,14 @@
 !   "MPI_Allreduce" stuff.
 !=======================================================================
 
-      call genintrkwrap (myid, nprocs, j2max)
+      call genintrkwrap (mpi_rank, mpi_process_count, j2max)
 
 !
 !   If transverse interaction comput Breit integrals of type 1 and 2
 !
       if (ltrans) then
-         call genintbreit1wrap (myid, nprocs, j2max)
-         call genintbreit2wrap (myid, nprocs, j2max)
+         call genintbreit1wrap (mpi_rank, mpi_process_count, j2max)
+         call genintbreit2wrap (mpi_rank, mpi_process_count, j2max)
       end if
 
 !=======================================================================
@@ -226,7 +226,7 @@
 !  Execution finished; Statistics output
 !=======================================================================
 
-      call stopmpi2 (myid, nprocs, host, lenhost,          &
+      call stopmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length,          &
                            ncount1, 'RCI_MPI')
 
       stop

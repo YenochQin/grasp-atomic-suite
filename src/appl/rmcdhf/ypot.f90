@@ -20,7 +20,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: keyorb
+      use parameter_def,    only: orbital_index_radix
       use debug_c
       use grid_c
       use npot_c
@@ -41,7 +41,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -50,14 +50,14 @@
 !-----------------------------------------------
 !   Debug printout: composition
 
-      if (ldbpr(29) .or. ldbpr(30)) write (99, 300) np(j), nh(j)
+      if (ldbpr(29) .or. ldbpr(30)) write (99, 300) orbital_principal_n(j), orbital_symmetry_labels(j)
 !
 !   Initialize array YP with the nuclear potential piece
 !
 !   Since YA() below  contains contributions from THIS node only,
 !   the initialization should be in consistence with that.
 
-      yp(:n) = zz(:n)
+      yp(:radial_point_count) = negative_radius_times_potential(:radial_point_count)
 
       do index = 1, nycof
 
@@ -69,19 +69,20 @@
          ioy2 = label/key
          coeff = ya(index)
 
-         if (ldbpr(29)) write (99, 301) k, coeff, np(ioy1), nh(ioy1), np(ioy2)&
-            , nh(ioy2)
+         if (ldbpr(29)) write (99, 301) k, coeff, orbital_principal_n(ioy1), orbital_symmetry_labels(ioy1), &
+            & orbital_principal_n(ioy2)&
+            , orbital_symmetry_labels(ioy2)
 
          call yzk (k, ioy1, ioy2)                ! Accumulate contributions
-         yp(:n) = yp(:n) - coeff*tb(:n)
+         yp(:radial_point_count) = yp(:radial_point_count) - coeff*tb(:radial_point_count)
       end do
 !
 !   Debug printout
 !
       if (ldbpr(30)) then
          write (99, 302)
-         nb3 = n/3
-         if (3*nb3 == n) then
+         nb3 = radial_point_count/3
+         if (3*nb3 == radial_point_count) then
             nrows = nb3
          else
             nrows = nb3 + 1
@@ -90,16 +91,16 @@
             ii1 = ii
             ii2 = ii1 + nrows
             ii3 = ii2 + nrows
-            if (ii3 <= n) then
-               write (99, 303) r(ii1), yp(ii1), r(ii2), yp(ii2), r(ii3), yp(ii3&
+            if (ii3 <= radial_point_count) then
+               write (99, 303) radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2), radial_grid(ii3), yp(ii3&
                   )
-            else if (ii2 <= n) then
-               write (99, 303) r(ii1), yp(ii1), r(ii2), yp(ii2)
+            else if (ii2 <= radial_point_count) then
+               write (99, 303) radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2)
             else
-               write (99, 303) r(ii1), yp(ii1)
+               write (99, 303) radial_grid(ii1), yp(ii1)
             endif
          end do
-         call draw (yp, 1.0d00, yp, 0.0d00, n)
+         call draw (yp, 1.0d00, yp, 0.0d00, radial_point_count)
       endif
 !
       return

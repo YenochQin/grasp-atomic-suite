@@ -33,12 +33,12 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnw
+      use parameter_def,    only: max_orbitals
       use def_c
-      use orb_c, only: nak, e
+      use orb_c, only: orbital_kappa, orbital_energy_parameters
       use orba_c, only: iorder
       use corre_c, only: lcorre
-      use fixd_c, only: lfix
+      use fixd_c, only: is_orbital_fixed
       use invt_c, only: noinvt
       use iounit_c
       use scf_c, only: scnsty
@@ -58,7 +58,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: j1
-      integer , dimension(nnnw) :: kindx
+      integer , dimension(max_orbitals) :: kindx
       integer :: kfixed, nakj, ktotal, i, ki, j, knon, ishift, kj, lraw, l, &
          nakl, mtp0, kraw, k, mtp
       real(double) :: eps, ovrlap, dnorm, factor
@@ -72,7 +72,7 @@
 
       eps = 0.01d0*accy
       kfixed = 0
-      nakj = nak(jp)
+      nakj = orbital_kappa(jp)
 
 !-----------------------------------------------------------------------
 ! Find orbitals of the same kappa as orbital jp.
@@ -81,7 +81,7 @@
       do i = 1, nw
 !         Orbital jp is supposed to be an ordered one, so should be k
          ki = iorder(i)
-         if (nak(ki) /= nakj) cycle
+         if (orbital_kappa(ki) /= nakj) cycle
          ktotal = ktotal + 1
          kindx(ktotal) = ki
       end do
@@ -98,7 +98,7 @@
       knon = 0
       do i = 1, ktotal
          ki = kindx(i)
-         if (lfix(ki)) then
+         if (is_orbital_fixed(ki)) then
 
             j = j + 1
 
@@ -145,7 +145,7 @@
             ki = kindx(i)
             do j = i + 1, kfixed + knon
                kj = kindx(j)
-               if (scnsty(kj)/e(kj)**2 >= scnsty(ki)/e(ki)**2) cycle
+               if (scnsty(kj)/orbital_energy_parameters(kj)**2 >= scnsty(ki)/orbital_energy_parameters(ki)**2) cycle
 
                    ! No need to do shifting, exchanging is fine
                kindx(j) = ki
@@ -178,9 +178,9 @@
       do lraw = kfixed + 1, ktotal
          l = kindx(lraw)
 
-         nakl = nak(l)
+         nakl = orbital_kappa(l)
 
-         mtp0 = mf(l)
+         mtp0 = orbital_last_grid_index(l)
 
          do kraw = 1, lraw - 1
             k = kindx(kraw)
@@ -188,39 +188,39 @@
 
 !   Schmidt orthogonalise
 
-            pz(l) = pz(l) - ovrlap*pz(k)
-            mtp = max(mf(l),mf(k))
-            mtp0 = max(mtp0,mf(k))
+            orbital_origin_parameters(l) = orbital_origin_parameters(l) - ovrlap*orbital_origin_parameters(k)
+            mtp = max(orbital_last_grid_index(l),orbital_last_grid_index(k))
+            mtp0 = max(mtp0,orbital_last_grid_index(k))
 
-            pf(:mtp,l) = pf(:mtp,l) - ovrlap*pf(:mtp,k)
-            qf(:mtp,l) = qf(:mtp,l) - ovrlap*qf(:mtp,k)
+            radial_large_components(:mtp,l) = radial_large_components(:mtp,l) - ovrlap*radial_large_components(:mtp,k)
+            radial_small_components(:mtp,l) = radial_small_components(:mtp,l) - ovrlap*radial_small_components(:mtp,k)
          end do
 
 !   Normalise
 
          mtp = mtp0
 
-         mf(l) = mtp
+         orbital_last_grid_index(l) = mtp
          dnorm = rint(l,l,0)
          factor = 1.d0/sqrt(dnorm)
 
-         if (pz(l) < 0.d0) factor = -factor
+         if (orbital_origin_parameters(l) < 0.d0) factor = -factor
 
-         pz(l) = factor*pz(l)
-         pf(2:mtp,l) = factor*pf(2:mtp,l)
-         qf(2:mtp,l) = factor*qf(2:mtp,l)
+         orbital_origin_parameters(l) = factor*orbital_origin_parameters(l)
+         radial_large_components(2:mtp,l) = factor*radial_large_components(2:mtp,l)
+         radial_small_components(2:mtp,l) = factor*radial_small_components(2:mtp,l)
 
 !   Find new MF(L)
 
          mtp = mtp + 1
    20    continue
          mtp = mtp - 1
-         if (abs(pf(mtp,l)) < eps) then
-            pf(mtp,l) = 0.d0
-            qf(mtp,l) = 0.d0
+         if (abs(radial_large_components(mtp,l)) < eps) then
+            radial_large_components(mtp,l) = 0.d0
+            radial_small_components(mtp,l) = 0.d0
             go to 20
          else
-            mf(l) = mtp
+            orbital_last_grid_index(l) = mtp
          endif
 
       end do

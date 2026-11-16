@@ -20,7 +20,7 @@
       use vast_kind_param, only: double
       use cons_c,          only: zero, tenth, half, eps
       use m_c,             only: nq1, jlist
-      use orb_c,           only: nak
+      use orb_c,           only: orbital_kappa
       use trk_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -53,9 +53,9 @@
       call recop00(ns,ia,ib,ka,iat)
       if(iat == 0)return
       ij=jlist(ia)
-      ks1=(iabs(nak(ij))*2)-1
+      ks1=(iabs(orbital_kappa(ij))*2)-1
       ij=jlist(ib)
-      ks2=(iabs(nak(ij))*2)-1
+      ks2=(iabs(orbital_kappa(ij))*2)-1
       call recop2(ns,ia,ib,ks1,ks2,ka,0,iat,rec)
       if(iat == 0)return
       call perko2(ja,jb,ja,ja,2)

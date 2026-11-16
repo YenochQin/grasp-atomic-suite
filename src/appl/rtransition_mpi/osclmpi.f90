@@ -16,7 +16,7 @@
       use memory_man
       use blk_c
       use biorb_c
-      use def_c, ccmps=>ccms
+      use def_c, ccmps=>speed_of_light_cm_per_s
       use default_c
       use eigv_c
       use orb_c
@@ -87,13 +87,13 @@
 ! for the case that the inital file and final file are same
 !
       lsame = trim(fullname(1)) == trim(fullname(2))
-      if (lsame.and.myid.eq.0) call cpmix (fullname, inpci)
-      call mpi_barrier(mpi_comm_world,ierr)
+      if (lsame.and.mpi_rank.eq.0) call cpmix (fullname, inpci)
+      call mpi_barrier(mpi_comm_world,mpi_error_code)
 !
 ! write header for the result file
 !
 !cjb fort.24
-        if (myid .eq. 0) then
+        if (mpi_rank .eq. 0) then
       if (lsame) then
          write(24,*) 'Transition in file:'
          write(24,*) 'f = ',trim(name(1))
@@ -119,7 +119,7 @@
 !
 !   Print transition energies in Angstroms
 !
-         factor = aucm
+         factor = hartree_to_wavenumber_cm
          factor = 1.0d08/factor
          iunits = iang
 !
@@ -127,7 +127,7 @@
 !
 !   Print energies in eV
 !
-         factor = auev
+         factor = hartree_to_ev
          iunits = iev
 !
       else if (ltc(3)) then
@@ -141,7 +141,7 @@
 !
 !   Print transition energies in Hz
 !
-         factor = aucm
+         factor = hartree_to_wavenumber_cm
          factor = factor*ccmps
          iunits = ihz
 !
@@ -149,7 +149,7 @@
 !
 !   Print transition energies in Kaysers
 !
-         factor = aucm
+         factor = hartree_to_wavenumber_cm
          iunits = icm
 !
       endif
@@ -183,7 +183,7 @@
             write (*, *) 'Not a GRASP mixing file'
             stop
          endif
-         read (68) nelec, ncftoti, nwi, nvectoti, nvecsizi, nblocki
+         read (68) electron_count, ncftoti, nwi, nvectoti, nvecsizi, nblocki
          write (*, *) '   nelec  = ', my_nelec
          write (*, *) '   ncftoti = ', ncftoti
          write (*, *) '   nwi     = ', nwi
@@ -213,7 +213,7 @@
                write (*, *) 'Not a GRASP mixing file'
                stop
             endif
-            read (78) nelec, ncftotf, nwf, nvectotf, nvecsizf, nblockf
+            read (78) electron_count, ncftotf, nwf, nvectotf, nvecsizf, nblockf
             write (*, *) '   nelec  = ', my_nelec
             write (*, *) '   ncftotf = ', ncftotf
             write (*, *) '   nwf     = ', nwf
@@ -222,18 +222,18 @@
 !GG  lbl
             if(iblki .eq. 1) then
                call ldlbl2 (fullname(2))
-               if(myid.eq.0.and.iopen_status1.eq.0.and.iopen_status2.eq.0) then
+               if(mpi_rank.eq.0.and.iopen_status1.eq.0.and.iopen_status2.eq.0) then
                   iii = len_trim(startdir)
-                  call sys_chdir(trim(startdir),iii,ierr)
-                  if (ierr.ne.0) then
+                  call sys_chdir(trim(startdir),iii,mpi_error_code)
+                  if (mpi_error_code.ne.0) then
                      print *, "error changing dir!"
                     call exit(1)
                   endif
                   ilbl = 1
                   call strsum(name,inpci,ilbl)
                   iii = len_trim(tmpdir)
-                  call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,ierr)
-                  if (ierr.ne.0) then
+                  call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,mpi_error_code)
+                  if (mpi_error_code.ne.0) then
                      print *, "Error changing dir!"
                      call exit(1)
                   endif
@@ -281,7 +281,7 @@
 !   Set up list of levels for calculation of oscillator strengths
 !   sort list into increasing order of energy if option 6 set
 !
-                  if (myid.eq.0.and.iblki==1.and.iblkf==1) then
+                  if (mpi_rank.eq.0.and.iblki==1.and.iblkf==1) then
                      if (kk == 0) then
                         write (24, 308) lk
                      else
@@ -332,17 +332,17 @@
                         et(m) = evalff(levff) + eavff - evalii(levii) - eavii
                         if (lsame .and. et(m)<=0.0) cycle
                         omega = -et(m)
-                        argu = omega/c
+                        argu = omega/speed_of_light_au
                         call bessj (argu)
 !
 !  Calculate oscillator strength between the ASFs
 !
                         call csfm (asfatmp,asfbtmp,levii,levff)
                         call mpi_allreduce(asfatmp,asfa,1,mpi_double_precision, &
-                             mpi_sum, mpi_comm_world, ierr)
+                             mpi_sum, mpi_comm_world, mpi_error_code)
                         call mpi_allreduce(asfbtmp,asfb,1,mpi_double_precision, &
-                             mpi_sum, mpi_comm_world, ierr)
-                        if (myid .eq. 0) then
+                             mpi_sum, mpi_comm_world, mpi_error_code)
+                        if (mpi_rank .eq. 0) then
                            call printa(asfa,asfb,levii,levff,omega,factor, &
                                lines,lsame)
                            if(iopen_status1.eq.0 .and. iopen_status2 .eq.0) then
@@ -416,7 +416,7 @@
 !
 !   Close all files
 !
-      if (myid .eq. 0) close(24)
+      if (mpi_rank .eq. 0) close(24)
 !
       return
 !

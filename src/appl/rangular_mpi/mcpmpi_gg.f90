@@ -33,9 +33,9 @@
       use vast_kind_param, only:  double
       use iso_fortran_env, only: int64
       use rangular_profile, only: stage_clock, record_stage
-      use parameter_def,   only:  nnnw, keyorb
+      use parameter_def,   only:  max_orbitals, orbital_index_radix
       use memory_man
-      use mpi_c,           only:  myid, nprocs
+      use mpi_c,           only:  mpi_rank, mpi_process_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -48,13 +48,13 @@
 !-----------------------------------------------
 !   C O M M O N  B L O C K S
 !-----------------------------------------------
-      use buffer_c,  only: nvcoef, label, coeff
+      use buffer_c,  only: angular_coefficient_count, angular_coefficient_labels, angular_coefficients
       use debug_c,   only: ldbpa
       use default_c, only: ndef
       use iccu_c,    only: iccut
-      use mcp_c,     only: kmax, diag, lfordr
-      use orb_c,     only: ncf, iqa
-      use stat_c,    only: jqsa, jcupa
+      use mcp_c,     only: max_coulomb_multipole_rank, diagonal_only, use_first_order_restriction
+      use orb_c,     only: csf_count, csf_subshell_occupations
+      use stat_c,    only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
       use onescalar_i, only: onescalar
       implicit none
       external cord
@@ -69,8 +69,8 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
-      integer, parameter :: keysq = keyorb*keyorb
+      integer, parameter :: key = orbital_index_radix
+      integer, parameter :: keysq = orbital_index_radix*orbital_index_radix
 !GG      REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-10
 !GG      REAL(DOUBLE), PARAMETER :: CUTOFF = 0.0D0
 !cjb  REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-08
@@ -81,7 +81,7 @@
       integer, dimension(:), pointer :: llistv
       integer :: jastrt,jbstrt,npos,llistt,k,ja,jb,ia,ib,lab,i,ic, &
          id, nswap, iswap, lac, lbd, ntgi
-      real(double), dimension(nnnw) :: tshell
+      real(double), dimension(max_orbitals) :: tshell
       real(double) :: vcoeff
       logical :: f0int, lincr
       integer(int64) :: stage_start_count
@@ -94,7 +94,7 @@
 !   of the lists of V coefficients of each multipolarity
 !
       stage_start_count = stage_clock()
-      call alloc(llistv, 0, kmax, 'LLISTV', 'MCPMPI')
+      call alloc(llistv, 0, max_coulomb_multipole_rank, 'LLISTV', 'MCPMPI')
 !
 !   If this is a restart, determine the pair of CSFs with which
 !   the computation should begin.
@@ -106,10 +106,10 @@
          stop
          call fndbeg (jastrt, jbstrt, npos, llistt, llistv)
       else
-         jastrt = 1 + myid
+         jastrt = 1 + mpi_rank
          npos = 0
          llistt = 0
-         do k = 0, kmax
+         do k = 0, max_coulomb_multipole_rank
             llistv(k) = 0
          enddo
       endif
@@ -127,10 +127,10 @@
 !
       call record_stage('coefficient_buffer_allocation',nb,stage_start_count)
       stage_start_count = stage_clock()
-      do 5 ja = jastrt, ncf, nprocs
+      do 5 ja = jastrt, csf_count, mpi_process_count
          jbstrt = 1
          do 4 jb = jbstrt, ja
-            if (diag .or. (lfordr .and. (jb .gt. iccut(nb))) ) then
+            if (diagonal_only .or. (use_first_order_restriction .and. (jb .gt. iccut(nb))) ) then
                if (jb /= ja) cycle
             end if
 !
@@ -160,17 +160,17 @@
 !   are the density pairs. NVCOEF is initialized here but changed
 !   in /rkco/cor[d] via COMMON.
 !
-            nvcoef = 0
+            angular_coefficient_count = 0
 !            CALL RKCO_GG (JA, JB, 0, 1)
             call rkco_gg (ja, jb, cord, 0, 1)
-            do 2 i = 1, nvcoef
-               vcoeff = coeff(i)
+            do 2 i = 1, angular_coefficient_count
+               vcoeff = angular_coefficients(i)
                if (abs (vcoeff) > cutoff) then
-                  ia = label(1,i)
-                  ib = label(2,i)
-                  ic = label(3,i)
-                  id = label(4,i)
-                  k  = label(5,i)
+                  ia = angular_coefficient_labels(1,i)
+                  ib = angular_coefficient_labels(2,i)
+                  ic = angular_coefficient_labels(3,i)
+                  id = angular_coefficient_labels(4,i)
+                  k  = angular_coefficient_labels(5,i)
                   f0int=(k.eq.0).and.(ia.eq.ic).and.(ib.eq.id)
                   if (.not. f0int) then
 ! Swap index to make sure IA <= IC, IB <= ID and record the number
@@ -212,7 +212,7 @@
                write (30) ja, jb, npos
     4    continue
          if (mod(ja-1,100) == 0) print '(A4,I7,A9,I10,A9,I3,A8,I3)',  &
-            'Row ',ja,' nnonz = ',npos,' block = ',nb,' myid = ',myid
+            'Row ',ja,' nnonz = ',npos,' block = ',nb,' myid = ',mpi_rank
     5 continue
       call record_stage('pair_generation_and_buffering',nb,stage_start_count, &
                         int(llistt,int64)+sum(int(llistv,int64)),storage='disk')
@@ -220,18 +220,18 @@
 !
 !   Deallocate storage that is no longer required
 !
-      call dalloc (iqa, 'IQA', 'MCPMPI')
-      call dalloc (jqsa, 'JQSA', 'MCPMPI')
-      call dalloc (jcupa, 'JCUPA', 'MCPMPI')
+      call dalloc (csf_subshell_occupations, 'IQA', 'MCPMPI')
+      call dalloc (csf_subshell_quantum_codes, 'JQSA', 'MCPMPI')
+      call dalloc (csf_coupling_quantum_codes, 'JCUPA', 'MCPMPI')
       call alcbuf (3)
       call record_stage('csf_and_pair_buffer_release',nb,stage_start_count)
 !
 !   Write out a report for this run
 !
-      if (ndef .ne. 0 .and. myid .eq. 0) then
+      if (ndef .ne. 0 .and. mpi_rank .eq. 0) then
          write (24,*)
          write (24,*) llistt, ' T coefficients generated;'
-         do k = 0, kmax
+         do k = 0, max_coulomb_multipole_rank
             write (24,*) llistv(k),' V(k=',k,') coefficients generated;'
          enddo
       endif
@@ -241,7 +241,7 @@
 
       stage_start_count = stage_clock()
       rewind (30)
-      call setsda (outsdampi, npos, ldbpa(4), nb, myid, nprocs, fhead)
+      call setsda (outsdampi, npos, ldbpa(4), nb, mpi_rank, mpi_process_count, fhead)
       close (30, status = 'DELETE')
       call record_stage('sparse_structure_and_output',nb,stage_start_count,int(npos,int64),storage='disk')
 !
@@ -251,16 +251,16 @@
       stage_start_count = stage_clock()
       rewind (31)
       call sort (31, (llistt), ntgi, ldbpa(2), nb, fhead)
-      if (ndef .ne. 0 .and. myid .eq. 0)      &
+      if (ndef .ne. 0 .and. mpi_rank .eq. 0)      &
          write (24,*) ntgi, ' I(ab) integrals;'
       close (31, status = 'DELETE')
       call record_stage('sort_and_output',nb,stage_start_count,int(llistt,int64),31,'disk')
 !   2) the V coefficient
-      do k = 0, kmax
+      do k = 0, max_coulomb_multipole_rank
          stage_start_count = stage_clock()
          rewind (k+32)
          call sort (k+32, (llistv(k)), ntgi, ldbpa(3), nb, fhead)
-         if (ndef .ne. 0 .and. myid .eq. 0)       &
+         if (ndef .ne. 0 .and. mpi_rank .eq. 0)       &
             write (24,*) ' k = ', k, ': ', ntgi, ' Slater integrals;'
          close (k+32, status = 'DELETE')
          call record_stage('sort_and_output',nb,stage_start_count,int(llistv(k),int64),k+32,'disk')

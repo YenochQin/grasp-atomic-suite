@@ -18,7 +18,7 @@
       use vast_kind_param, only: double
       use memory_man
       use eigv_c
-      use orb_c,           only: ncf, nw, iqa
+      use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
       use prnt_c
       implicit none
 !-----------------------------------------------
@@ -60,9 +60,9 @@
 !
 !   Write out the rows
 !
-      do 4 m = 1,ncf
+      do 4 m = 1,csf_count
 !
-         write (24,303) (evec(m+(l-1)*ncf),l = j1,j2)
+         write (24,303) (csf_mixing_coefficients(m+(l-1)*csf_count),l = j1,j2)
 !
 !   Skip a line after every tenth row
 !

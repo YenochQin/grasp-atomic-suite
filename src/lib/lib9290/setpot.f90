@@ -50,9 +50,9 @@
 !
 !   Define constants
 !
-      dmhb2c = -h/(2.0d00*c)
-      energy = e(j)
-      enefac = 2.0d00*c*c - energy
+      dmhb2c = -transformed_grid_step/(2.0d00*speed_of_light_au)
+      energy = orbital_energy_parameters(j)
+      enefac = 2.0d00*speed_of_light_au*speed_of_light_au - energy
 !
 !   Set up arrays TF and TG
 !
@@ -62,9 +62,9 @@
       jp = 0
       tf(1) = 0.0d00
       tg(1) = 0.0d00
-      do i = 2, n
-         rpi = rp(i)
-         yprpor = yp(i)*rpor(i)
+      do i = 2, radial_point_count
+         rpi = radial_grid_derivative(i)
+         yprpor = yp(i)*radial_derivative_over_radius(i)
          tf(i) = dmhb2c*(enefac*rpi + yprpor)
          tg(i) = dmhb2c*(energy*rpi - yprpor)
          if (.not.notset) cycle
@@ -76,8 +76,8 @@
 !   Trap for inappropriate grid
 !
       if (jp == 0) then
-         write (istde, *) 'SETPOT: Join set to NNNP/2 = ', nnnp/2
-         jp = nnnp/2
+         write (stderr_unit, *) 'SETPOT: Join set to NNNP/2 = ', max_radial_points/2
+         jp = max_radial_points/2
       endif
 !
       return

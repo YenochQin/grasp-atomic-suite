@@ -19,7 +19,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: keyorb
+      use parameter_def,    only: orbital_index_radix
       use def_c
       use grid_c
       use lagr_c
@@ -35,7 +35,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -51,7 +51,7 @@
 !
 !   Add contributions from off-diagonal parameters to exchange
 !
-      wb = 1.0d00/(ucf(j)*c)/nprocs
+      wb = 1.0d00/(ucf(j)*speed_of_light_au)/nprocs
       do k = 1, nec
 !
 !   Decode index
@@ -73,11 +73,11 @@
 !
 !   ADD CONTRIBUTIONS TO EXCHANGE TERMS
 !
-         mfm = mf(m)
+         mfm = orbital_last_grid_index(m)
          do i = 1, mfm
-            wari = wa*r(i)
-            xp(i) = xp(i) + wari*qf(i,m)
-            xq(i) = xq(i) - wari*pf(i,m)
+            wari = wa*radial_grid(i)
+            xp(i) = xp(i) + wari*radial_small_components(i,m)
+            xq(i) = xq(i) - wari*radial_large_components(i,m)
          end do
 !
       end do

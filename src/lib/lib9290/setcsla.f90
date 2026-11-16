@@ -49,7 +49,7 @@
 !
       call openfl (21, filnam, form, status, ierr)
       if (ierr == 1) then
-         write (istde, *) 'Error when opening', filnam
+         write (stderr_unit, *) 'Error when opening', filnam
          stop
       endif
 !
@@ -57,7 +57,7 @@
 !
       read (21, '(1A15)', iostat=ios) record
       if (ios/=0 .or. record(1:15)/='Core subshells:') then
-         write (istde, *) 'Not a Configuration Symmetry List File;'
+         write (stderr_unit, *) 'Not a Configuration Symmetry List File;'
          close(21)
       endif
 !

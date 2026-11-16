@@ -26,7 +26,7 @@
       use vast_kind_param, only: double
       use cons_c,          only: zero, half, eps
       use m_c,             only: nq1, jlist, npeel
-      use orb_c,           only: nak
+      use orb_c,           only: orbital_kappa
       use trk_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -98,10 +98,10 @@
         is(2)=iib
         is(3)=iic
         is(4)=iid
-        kaps(1)=2*nak(is(1))
-        kaps(2)=2*nak(is(2))
-        kaps(3)=2*nak(is(3))
-        kaps(4)=2*nak(is(4))
+        kaps(1)=2*orbital_kappa(is(1))
+        kaps(2)=2*orbital_kappa(is(2))
+        kaps(3)=2*orbital_kappa(is(3))
+        kaps(4)=2*orbital_kappa(is(4))
         ks(1)=iabs(kaps(1))
         ks(2)=iabs(kaps(2))
         ks(3)=iabs(kaps(3))

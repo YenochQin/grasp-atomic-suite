@@ -18,12 +18,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnn1
+      use parameter_def, only: radial_workspace_capacity
       use vast_kind_param, only:  double
       use def_c
       use left_c
-      use orb_c, only: e, np, nak, nh
-      use wave_c, only: pf, qf, pz, mf
+      use orb_c, only: orbital_energy_parameters, orbital_principal_n, orbital_kappa, orbital_symmetry_labels
+      use wave_c, only: radial_large_components, radial_small_components, orbital_origin_parameters, orbital_last_grid_index
       use whfrom_c, only: source
       use hydpar_c, only: sigma
       use iounit_c
@@ -38,7 +38,7 @@
 !-----------------------------------------------
       integer , intent(in) :: nsubs
       logical , intent(in) :: modify
-      integer , intent(in) :: index(nnnw)
+      integer , intent(in) :: index(max_orbitals)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -53,25 +53,26 @@
 !
       delz = 0.d0
       if (nradial == 4)  then
-         write (istde, *) 'Enter increase in Z for correlation orbitals'
+         write (stderr_unit, *) 'Enter increase in Z for correlation orbitals'
          read  (5, *) delz
       end if
-      write (istde, *) 'Orbital Z_eff for hydrogenic orbitals'
+      write (stderr_unit, *) 'Orbital Z_eff for hydrogenic orbitals'
       do j = 1, nsubs
          loc = index(j)
          if (set(loc)) cycle
          if (modify) then
-            write (istde, *) 'Input new value >'
+            write (stderr_unit, *) 'Input new value >'
             read (5, *) sigma(loc)
          endif
-         zeff = z - sigma(loc) + delz
-         write (istde, '(I2,A2,F10.2)') np(loc), nh(loc), zeff
+         zeff = nuclear_charge - sigma(loc) + delz
+         write (stderr_unit, '(I2,A2,F10.2)') orbital_principal_n(loc), orbital_symmetry_labels(loc), zeff
 !           ...Calculate radial wavefunctions
-         call dcbsrw (np(loc), nak(loc), zeff, e(loc), pz(loc), pf(:,loc), &
-            qf(:,loc), mf(loc))
+         call dcbsrw (orbital_principal_n(loc), orbital_kappa(loc), zeff, orbital_energy_parameters(loc), &
+            & orbital_origin_parameters(loc), radial_large_components(:,loc), &
+            radial_small_components(:,loc), orbital_last_grid_index(loc))
          set(loc) = .true.
          source(loc) = 'Hyd'
       end do
-      write (istde, *)
+      write (stderr_unit, *)
       return
       end subroutine frmhyd

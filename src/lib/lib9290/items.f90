@@ -110,7 +110,7 @@
       form = '(1i'//cnum(1:lenth)//')'
       read (record(istart:iend), form, iostat=ios) level
       if (ios /= 0) then
-         write (istde, *) 'items: unable to decode '//record(istart:iend)//';'
+         write (stderr_unit, *) 'items: unable to decode '//record(istart:iend)//';'
          ierr = -1
          return
       endif
@@ -124,7 +124,7 @@
          endif
 
          if (level<1 .or. level>ncf) then
-            write (istde, *) 'items: serial numbers must be', &
+            write (stderr_unit, *) 'items: serial numbers must be', &
                ' in the range [1,', ncf, '];'
             ierr = -2
             return
@@ -140,7 +140,7 @@
          number = level - level1
 
          if (number < 0) then
-            write (istde, *) level1, '-', level, ' not allowed'
+            write (stderr_unit, *) level1, '-', level, ' not allowed'
             ierr = -3
             return
          endif
@@ -169,7 +169,7 @@
 !   trim array to exactly the correct size
 !
       if (ncmin /= ncd) then
-         write (istde, *) 'items: ncmin .ne. ncd'
+         write (stderr_unit, *) 'items: ncmin .ne. ncd'
          call ralloc (iccmin, ncmin, 'ICCMIN', 'ITEMS')
       endif
 

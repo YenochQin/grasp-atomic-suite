@@ -34,7 +34,7 @@
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
-      use parameter_def,   only:  nnnw
+      use parameter_def,   only:  max_orbitals
       use iso_fortran_env, only: int64
       use rangular_mpi_input, only: mpi_angular_input_options, parse_mpi_angular_options, &
            open_mpi_angular_profile, load_mpi_angular_header, load_mpi_angular_block, close_mpi_angular_input
@@ -92,9 +92,9 @@
 !=======================================================================
 !  Start mpi --- get processor info: myid, nprocs, host name; and print
 !=======================================================================
-      call startmpi2 (myid, nprocs, host, lenhost, ncount1, &
+      call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1, &
                            startdir, permdir, tmpdir, 'RANGULAR_MPI')
-      write (idstring, '(I3.3)') myid
+      write (idstring, '(I3.3)') mpi_rank
       lenperm = len_trim (permdir)
       lentmp = len_trim (tmpdir)
       call open_mpi_angular_profile(input_options)
@@ -104,10 +104,10 @@
 !=======================================================================
 !  Get NDEF on node-0 and then send to all nodes
 !=======================================================================
-      if (myid == 0) then
-         write (istde,*)
+      if (mpi_rank == 0) then
+         write (stderr_unit,*)
 !         WRITE (istde,'(A)') ' Default settings?  (y/n) '
-         write (istde,'(A)') ' Full interaction?  (y/n) '
+         write (stderr_unit,'(A)') ' Full interaction?  (y/n) '
          yes = getyn ()
          if (yes) then
             ndef = 0
@@ -117,8 +117,8 @@
             write(739,'(A)') 'n            ! Full interaction'
          endif
       endif
-      call mpi_barrier(mpi_comm_world,ierr)
-      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_barrier(mpi_comm_world,mpi_error_code)
+      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
 
 !=======================================================================
 !
@@ -143,7 +143,7 @@
 !cjb  myid, nprocs = NOT args
 !cjb  CALL setmcpmpi (myid, nprocs, ncore, idblk, 'mcp' // idstring)
       call setmcpmpi (ncore, idblk, 'mcp' // idstring)
-      if (ndef/=0 .and. myid==0) call strsum
+      if (ndef/=0 .and. mpi_rank==0) call strsum
       call factt
       call record_stage('mcp_setup_including_interaction_input',0,stage_start_count)
 
@@ -151,24 +151,24 @@
 !     For each block, generate and sort the data
 !=======================================================================
 
-      do nb = 1, nblock
-         ncf = ncfblk(nb)                        ! This ncf goes to common
-         if (myid == 0) then
+      do nb = 1, symmetry_block_count
+         csf_count = csf_counts_by_block(nb)                        ! This ncf goes to common
+         if (mpi_rank == 0) then
             write (6, *)
-            write (6, *) 'Block ', nb, ',  ncf = ', ncf
+            write (6, *) 'Block ', nb, ',  ncf = ', csf_count
          endif
             !*** Load current CSL block. Memories de-allocated in mcp ***
          stage_start_count = stage_clock()
-         call alloc (iqa, nnnw, ncf, 'IQA', 'GENMCP')
-         call alloc (jqsa, nnnw,3,ncf, 'JQSA', 'GENMCP')
-         call alloc (jcupa, nnnw, ncf, 'JCUPA', 'GENMCP')
-         call record_stage('csf_allocation',nb,stage_start_count,int(ncf,int64))
+         call alloc (csf_subshell_occupations, max_orbitals, csf_count, 'IQA', 'GENMCP')
+         call alloc (csf_subshell_quantum_codes, max_orbitals,3,csf_count, 'JQSA', 'GENMCP')
+         call alloc (csf_coupling_quantum_codes, max_orbitals, csf_count, 'JCUPA', 'GENMCP')
+         call record_stage('csf_allocation',nb,stage_start_count,int(csf_count,int64))
 !
          stage_start_count = stage_clock()
          call load_mpi_angular_block(input_options,ncore,nb)
-         call record_stage('csf_load_and_broadcast',nb,stage_start_count,int(ncf,int64),storage=input_format_name)
+         call record_stage('csf_load_and_broadcast',nb,stage_start_count,int(csf_count,int64),storage=input_format_name)
          !*** Open tmp.xx files for block nb ***
-         call settmp (nb, kmax, 'tmp' // idstring)
+         call settmp (nb, max_coulomb_multipole_rank, 'tmp' // idstring)
          !*** Generation of MCP coefficients ***
 !cjb  myid, nprocs = NOT args
 !cjb     CALL MCPmpi (NB, RESTRT, MYID, NPROCS, 'mcp' // idstring)
@@ -183,6 +183,6 @@
 !=======================================================================
 !  Execution finished; Statistics output
 !=======================================================================
-      call stopmpi2 (myid,nprocs,host,lenhost,ncount1,'RANGULAR_MPI')
+      call stopmpi2 (mpi_rank,mpi_process_count,processor_name,processor_name_length,ncount1,'RANGULAR_MPI')
       stop
       end program genmcpmpi

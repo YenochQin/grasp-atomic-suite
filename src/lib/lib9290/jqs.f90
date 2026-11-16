@@ -16,10 +16,10 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnw
-      use stat_c,        only: jqsa
-      use iounit_c,      only: istde
-      use orb_c,         only: ncf
+      use parameter_def, only: max_orbitals
+      use stat_c,        only: csf_subshell_quantum_codes
+      use iounit_c,      only: stderr_unit
+      use orb_c,         only: csf_count
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -29,7 +29,7 @@
       integer             :: icsf
 !-----------------------------------------------
 !
-      jqs = jqsa(isubsh,iwhich,icsf)
+      jqs = csf_subshell_quantum_codes(isubsh,iwhich,icsf)
 !
       return
       end function jqs

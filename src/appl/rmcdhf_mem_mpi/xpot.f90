@@ -20,7 +20,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: keyorb
+      use parameter_def,    only: orbital_index_radix
       use debug_c
       use def_c
       use grid_c
@@ -42,7 +42,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -52,12 +52,12 @@
 !
 !   Debug printout: header
 !
-      if (ldbpr(27) .or. ldbpr(28)) write (99, 300) np(j), nh(j)
+      if (ldbpr(27) .or. ldbpr(28)) write (99, 300) orbital_principal_n(j), orbital_symmetry_labels(j)
 !
 !   Clear for accumulation of sums
 !
-      xp(:n) = 0.d0
-      xq(:n) = 0.d0
+      xp(:radial_point_count) = 0.d0
+      xq(:radial_point_count) = 0.d0
 !
 !   Add contributions from exchange terms
 !
@@ -74,21 +74,22 @@
          coeff = xa(index)
 
          ! Debug printout: composition
-         if (ldbpr(27)) write (99, 301) k, coeff, np(ioy1), nh(ioy1), np(ioy2)&
-            , nh(ioy2), np(iorb), nh(iorb)
+         if (ldbpr(27)) write (99, 301) k, coeff, orbital_principal_n(ioy1), orbital_symmetry_labels(ioy1), &
+            & orbital_principal_n(ioy2)&
+            , orbital_symmetry_labels(ioy2), orbital_principal_n(iorb), orbital_symmetry_labels(iorb)
 
          call yzk (k, ioy1, ioy2)
 !
 !   Accumulate contributions
 !
-         mfi = mf(iorb)
-         coeff = coeff/c
+         mfi = orbital_last_grid_index(iorb)
+         coeff = coeff/speed_of_light_au
          !DO I = 1, MF(IORB)
          do i = 1, mfi
 !GG         DO I = 1, N
             ctb = coeff*tb(i)
-            xp(i) = xp(i) + ctb*qf(i,iorb)
-            xq(i) = xq(i) - ctb*pf(i,iorb)
+            xp(i) = xp(i) + ctb*radial_small_components(i,iorb)
+            xq(i) = xq(i) - ctb*radial_large_components(i,iorb)
          end do
       end do
 !
@@ -96,8 +97,8 @@
 !
       if (ldbpr(28)) then
          write (99, 302)
-         nb2 = n/2
-         if (2*nb2 == n) then
+         nb2 = radial_point_count/2
+         if (2*nb2 == radial_point_count) then
             nrows = nb2
          else
             nrows = nb2 + 1
@@ -105,14 +106,14 @@
          do ii = 1, nrows
             ii1 = ii
             ii2 = ii1 + nrows
-            if (ii2 <= n) then
-               write (99, 303) r(ii1), xp(ii1), xq(ii1), r(ii2), xp(ii2), xq(&
+            if (ii2 <= radial_point_count) then
+               write (99, 303) radial_grid(ii1), xp(ii1), xq(ii1), radial_grid(ii2), xp(ii2), xq(&
                   ii2)
-            else if (ii1 <= n) then
-               write (99, 303) r(ii1), xp(ii1), xq(ii1)
+            else if (ii1 <= radial_point_count) then
+               write (99, 303) radial_grid(ii1), xp(ii1), xq(ii1)
             endif
          end do
-         call draw (xp, 1.0d00, xq, c, n)
+         call draw (xp, 1.0d00, xq, speed_of_light_au, radial_point_count)
       endif
 !
       return

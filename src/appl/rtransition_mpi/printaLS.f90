@@ -67,7 +67,7 @@
        print*, ' Then rerun rtransition.                              '
        stop
       end if
-      dd    = d*aucm
+      dd    = d*hartree_to_wavenumber_cm
       angs  =  1.0d08 / dd
       angsa = angs
       if(angs .gt. 2000.d0) then
@@ -82,13 +82,13 @@
       dll1 = dble (lk+lk+1)
       stfac = stfac/dll1
 !
-      omc = omega/cvac
+      omc = omega/vacuum_speed_of_light_au
       faau = 2.0d00*omc*stfac/dble (iatjpoff(j))
-      fosc = cvac*stfac/omc
+      fosc = vacuum_speed_of_light_au*stfac/omc
       eng = omega*factor
       if (ltc(1)) eng = factor/omega
 !
-      ggfactor = cvac**(2*lk-2)*dble(lk)*dblfac(lk)**2/    &
+      ggfactor = vacuum_speed_of_light_au**(2*lk-2)*dble(lk)*dblfac(lk)**2/    &
                  ((2.0d00 * dble(lk)+1.0d00)*            &
                  (dble(lk)+1.0d00)*abs(omega)**(2*lk-1))
 !
@@ -112,8 +112,8 @@
 !   Convert to SI units if option 5 not set
 !
          if (.not. ltc(7)) then
-            ac = ac*fasi
-            ab = ab*fasi
+            ac = ac*einstein_a_au_to_si
+            ab = ab*einstein_a_au_to_si
          endif
 !
 !   Print information if both AC and AB are greater than CUTOFF
@@ -197,11 +197,11 @@
          ams = asfa**2
          am = ams*faau
          oscm = ams*fosc
-         sa=oscm*ggfactor*cvac*cvac*4
+         sa=oscm*ggfactor*vacuum_speed_of_light_au*vacuum_speed_of_light_au*4
 !
 !   Convert to SI units if option 5 not set
 !
-         if (.not. ltc(7)) am = am*fasi
+         if (.not. ltc(7)) am = am*einstein_a_au_to_si
 !
 !   Print information if AM is greater than CUTOFF
 !

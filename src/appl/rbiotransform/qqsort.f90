@@ -28,7 +28,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: keyorb
+      use parameter_def,   only: orbital_index_radix
       use memory_man
       use orb_c
       use default_c
@@ -48,7 +48,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
       integer, parameter :: nf = 200
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -173,7 +173,7 @@
 !     :          STATUS='UNKNOWN',FORM='UNFORMATTED')
 !          REWIND (NF)
 !        ENDIF
-         if (nfile == 1) write (nf) ncf, nw, kamax
+         if (nfile == 1) write (nf) csf_count, orbital_count, kamax
 !
 !  Print out angular data for this kappa
 !

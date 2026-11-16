@@ -429,7 +429,7 @@
 !     Sum x onto node-0 only; non-root ranks do not receive the result.
 !***********************************************************************
       use vast_kind_param, only:  double
-      use mpi_c, only: myid
+      use mpi_c, only: mpi_rank
       use mpi
       use suite_linear_algebra, only: dcopy
       use dinit_i, only: dinit
@@ -441,7 +441,7 @@
       integer                                      :: ierr
       real(double), dimension(1:n)                 :: y
 
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          call dinit (n, 0.d0, y, 1)
          call mpi_reduce (x, y, n, mpi_double_precision, mpi_sum, 0, &
                           mpi_comm_world, ierr)
@@ -460,7 +460,7 @@
 !     Max x onto node-0 only; non-root ranks do not receive the result.
 !***********************************************************************
       use vast_kind_param, only:  double
-      use mpi_c, only: myid
+      use mpi_c, only: mpi_rank
       use mpi
       use suite_linear_algebra, only: dcopy
       implicit none
@@ -471,7 +471,7 @@
       integer                                      :: ierr
       real(double), dimension(1:n)                 :: y
 
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          call mpi_reduce (x, y, n, mpi_double_precision, mpi_max, 0, &
                           mpi_comm_world, ierr)
          call dcopy (n, y, 1, x, 1)

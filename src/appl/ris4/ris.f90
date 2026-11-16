@@ -50,37 +50,37 @@
 !
       cutoff = 1.0d-10
 !
-      write (istde, *)
-      write (istde, *) 'RIS: Execution begins ...'
+      write (stderr_unit, *)
+      write (stderr_unit, *) 'RIS: Execution begins ...'
 !      CALL STARTTIME (ncount1, 'RIS')
 
-      write (istde, *)
-      write (istde, *) 'Default settings?'
+      write (stderr_unit, *)
+      write (stderr_unit, *) 'Default settings?'
       yes = getyn ()
-      write (istde, *)
+      write (stderr_unit, *)
       if (yes) then
          ndef = 0
       else
          ndef = 1
       endif
 
-    9 write (istde, *) 'Name of state'
+    9 write (stderr_unit, *) 'Name of state'
       read(*,'(A)') name
       k=index(name,' ')
       if (k.eq.1) then
-         write (istde, *) 'Names may not start with a blank'
+         write (stderr_unit, *) 'Names may not start with a blank'
          goto 9
       endif
       print *
 
-      write (istde, *) 'Mixing coefficients from a CI calc.?'
+      write (stderr_unit, *) 'Mixing coefficients from a CI calc.?'
       yes = getyn ()
       if (yes) then
          nci = 0
       else
          nci = 1
       endif
-      write (istde, *)
+      write (stderr_unit, *)
 
 !
 !   Check compatibility of plant substitutions
@@ -142,9 +142,9 @@
 !
 !   Print completion message
 !
-      write (istde, *)
+      write (stderr_unit, *)
 !      CALL STOPTIME (ncount1, 'RIS')
-      write (istde, *) 'RIS: Execution complete.'
+      write (stderr_unit, *) 'RIS: Execution complete.'
 !
       stop
       end  program ris

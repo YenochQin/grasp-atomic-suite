@@ -63,13 +63,13 @@
 !
 !
 !-----------------------------------------------------------------------
-      gamaj = gama(j)
+      gamaj = orbital_origin_exponents(j)
 !
 !   C Froese Fischer's parameters IPR, ED1, ED2 are set and
 !   used in this routine and in DAMPCK
 !
     1 continue
-      ed2 = e(j)
+      ed2 = orbital_energy_parameters(j)
       ed1 = ped(j)
 !
 !   Set up the exchange potential and arrays XU, XV as appropriate
@@ -79,7 +79,7 @@
 !   Add in Lagrange-multiplier contribution
 !   Add in derivative-terms contribution
 !
-      npts = n
+      npts = radial_point_count
       call cofpot (eol, j, npts)
 !
 !   Calculate deferred corrections
@@ -94,7 +94,7 @@
 !   Upon failure issue message; take corrective action if possible
 !
       if (fail) then
-         if (myid == 0) write (*, 300) np(j), nh(j), method(j)
+         if (mpi_rank == 0) write (*, 300) orbital_principal_n(j), orbital_symmetry_labels(j), method(j)
          if (method(j) /= 2) then
             method(j) = 2
 !XHH orthsc does not have any argument
@@ -108,7 +108,7 @@
             call setlag (eol)
             go to 1
          else
-            if (myid == 0) write (*, 301)
+            if (mpi_rank == 0) write (*, 301)
             !CALL TIMER (0)
             stop
          endif
@@ -117,7 +117,7 @@
 !   Compute norm of radial function
 !
       ta(1) = 0.d0
-      ta(2:mtp0) = (p(2:mtp0)**2+q(2:mtp0)**2)*rp(2:mtp0)
+      ta(2:mtp0) = (p(2:mtp0)**2+q(2:mtp0)**2)*radial_grid_derivative(2:mtp0)
       mtp = mtp0
 
       call quad (dnorm)
@@ -136,7 +136,7 @@
 !   Check if different method should be used or if improvement
 !   count should be reduced
 !
-      del1 = abs(1.d0 - ed2/e(j))
+      del1 = abs(1.d0 - ed2/orbital_energy_parameters(j))
       if (method(j) == 1) then
          del2 = max(abs(1.d0 - sqrt(dnorm)),abs(dnfac - 1.d0))
          if (del1<p005 .and. del2>p2) then
@@ -151,7 +151,7 @@
 !
       if (scnsty(j) > accy) then
          call dampck (ipr, j, ed1, ed2)
-         odampj = abs(odamp(j))
+         odampj = abs(orbital_damping_factors(j))
       else
          odampj = 0.d0                           ! take the whole new orbital
       endif
@@ -164,17 +164,18 @@
 
       if (orthst) then
          !CALL orthor (J, inv)
-         nwww = nw
+         nwww = orbital_count
          call orthy (nwww, j, lsort)
       endif
 !
 !   Print details of iteration
 !
-      if (myid == 0)                                                &
-         write (*, 302) np(j),nh(j),e(j),method(j),pz(j),scnsty(j), &
+      if (mpi_rank == 0)                                                &
+         write (*, 302) orbital_principal_n(j),orbital_symmetry_labels(j),orbital_energy_parameters(j),method(j), &
+            & orbital_origin_parameters(j),scnsty(j), &
 !cjb DNORM-1 -> SQRT(DNORM)-1
 !cjb                    DNORM - 1, ODAMPJ, JP, MF(J), INV, NNP
-                        sqrt(dnorm)-1,odampj,jp,mf(j),inv,nnp
+                        sqrt(dnorm)-1,odampj,jp,orbital_last_grid_index(j),inv,nnp
       dampmx = max(dampmx,abs(odampj))
 
   300 format(/,' Failure; equation for orbital ',1i2,1a2,&

@@ -15,9 +15,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use buffer_c,        only: label, coeff, nbdim, nvcoef
+      use buffer_c,        only: angular_coefficient_labels, angular_coefficients, angular_buffer_capacity, &
+         & angular_coefficient_count
       use debug_c ,        only: ibug1
-      use orb_c,           only: np, nh
+      use orb_c,           only: orbital_principal_n, orbital_symmetry_labels
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -38,25 +39,26 @@
 !-----------------------------------------------
 !
 !
-      if (ibug1 /= 0) write (99, 300) ja, jb, np(ia1), nh(ia1), np(ib1), nh(ib1&
-         ), np(ia2), nh(ia2), np(ib2), nh(ib2), k, x
+      if (ibug1 /= 0) write (99, 300) ja, jb, orbital_principal_n(ia1), orbital_symmetry_labels(ia1), &
+         & orbital_principal_n(ib1), orbital_symmetry_labels(ib1&
+         ), orbital_principal_n(ia2), orbital_symmetry_labels(ia2), orbital_principal_n(ib2), orbital_symmetry_labels(ib2), k, x
 !
 !   Increment counter
 !
-      nvcoef = nvcoef + 1
+      angular_coefficient_count = angular_coefficient_count + 1
 !
 !   Ensure that arrays are of adequate size; reallocate if necessary
 !
-      if (nvcoef > nbdim) call alcbuf (2)
+      if (angular_coefficient_count > angular_buffer_capacity) call alcbuf (2)
 !
 !   Store integral indices and coefficient in COMMON/BUFFER/
 !
-      label(1,nvcoef) = ia1
-      label(2,nvcoef) = ib1
-      label(3,nvcoef) = ia2
-      label(4,nvcoef) = ib2
-      label(5,nvcoef) = k
-      coeff(nvcoef) = x
+      angular_coefficient_labels(1,angular_coefficient_count) = ia1
+      angular_coefficient_labels(2,angular_coefficient_count) = ib1
+      angular_coefficient_labels(3,angular_coefficient_count) = ia2
+      angular_coefficient_labels(4,angular_coefficient_count) = ib2
+      angular_coefficient_labels(5,angular_coefficient_count) = k
+      angular_coefficients(angular_coefficient_count) = x
 !
       return
 !

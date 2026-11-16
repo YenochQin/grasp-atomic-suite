@@ -8,8 +8,10 @@ contains
 
     subroutine runtest
         use parameter_def
-        use grid_C
-        use tatb_C
+        use grid_c, h => transformed_grid_step, hp => asymptotic_grid_step, n => radial_point_count, nnn1 => &
+           & radial_workspace_capacity, r => radial_grid, rnt => radial_grid_scale, rp => radial_grid_derivative, rpor &
+           & => radial_derivative_over_radius
+        use tatb_c, nnn1 => radial_workspace_capacity
         use quad_I
         use vast_kind_param, only: dp => DOUBLE
 
@@ -34,8 +36,10 @@ contains
 
     subroutine setup
         use parameter_def
-        use grid_C
-        use tatb_C
+        use grid_c, h => transformed_grid_step, hp => asymptotic_grid_step, n => radial_point_count, nnn1 => &
+           & radial_workspace_capacity, r => radial_grid, rnt => radial_grid_scale, rp => radial_grid_derivative, rpor &
+           & => radial_derivative_over_radius
+        use tatb_c, nnn1 => radial_workspace_capacity
         use setqic_I
         use radgrd_I
 

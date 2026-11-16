@@ -21,7 +21,7 @@
       use memory_man
       use grid_c
       use orb_c
-      use wave_c, only: pz, pf, qf, mf
+      use wave_c, only: orbital_origin_parameters, radial_large_components, radial_small_components, orbital_last_grid_index
       use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -47,13 +47,13 @@
       end do
 
       if (newunit == 100) then
-         write (istde, *) 'All unit numbers from 23 to 99 are BUSY!'
+         write (stderr_unit, *) 'All unit numbers from 23 to 99 are BUSY!'
          stop
       endif
 
       call openfl (newunit, filnam, 'UNFORMATTED', 'NEW', ierr)
       if (ierr == 1) then
-         write (istde, *) 'Error when opening "', filnam(1:len_trim(filnam)), &
+         write (stderr_unit, *) 'Error when opening "', filnam(1:len_trim(filnam)), &
             '"'
 
          stop
@@ -65,19 +65,20 @@
 !
 !   Write out the radial wavefunctions
 !
-      do j = 1, nw
-         mfj = mf(j)
-         write (newunit) np(j), nak(j), e(j), mfj
-         write (newunit) pz(j), (pf(i,j),i=1,mfj), (qf(i,j),i=1,mfj)
-         write (newunit) (r(i),i=1,mfj)
+      do j = 1, orbital_count
+         mfj = orbital_last_grid_index(j)
+         write (newunit) orbital_principal_n(j), orbital_kappa(j), orbital_energy_parameters(j), mfj
+         write (newunit) orbital_origin_parameters(j), (radial_large_components(i,j),i=1,mfj), &
+            & (radial_small_components(i,j),i=1,mfj)
+         write (newunit) (radial_grid(i),i=1,mfj)
       end do
 
       close(newunit)
 !
 !   Deallocate the storage for the radial wavefunctions
 !
-      call dalloc (pf, 'PF', 'WRTRWF')
-      call dalloc (qf, 'QF', 'WQRTRWF')
+      call dalloc (radial_large_components, 'PF', 'WRTRWF')
+      call dalloc (radial_small_components, 'QF', 'WQRTRWF')
 !
       return
       end subroutine wrtrwf

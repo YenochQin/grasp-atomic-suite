@@ -46,13 +46,14 @@
 !
 !   Tabulate integrand as required for SUBROUTINE QUAD
 !
-      mtp = min(mf(i),mf(j))
+      mtp = min(orbital_last_grid_index(i),orbital_last_grid_index(j))
 !
 !   Value at first tabulation point is arbitrary
 !
       ta(1) = 0.0d00
       do l = 2, mtp
-         ta(l) = r(l)**k*(pf(l,i)*qf(l,j) + qf(l,i)*pf(l,j))*rp(l)
+         ta(l) = radial_grid(l)**k*(radial_large_components(l,i)*radial_small_components(l,j) + &
+            & radial_small_components(l,i)*radial_large_components(l,j))*radial_grid_derivative(l)
       end do
 !
 !   Perform integration

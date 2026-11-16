@@ -5,11 +5,11 @@ module rangular_parallel
    use omp_lib, only: omp_in_parallel, omp_get_max_threads, omp_get_thread_limit, omp_set_dynamic, &
                      omp_get_wtime, omp_get_num_threads, omp_get_thread_num
    use vast_kind_param, only: double
-   use parameter_def, only: orbital_capacity => nnnw
-   use buffer_c, only: raw_labels => label, raw_coefficients => coeff, &
-                       raw_coefficient_count => nvcoef, pair_buffer_capacity => nbdim
-   use orb_c, only: current_csf_count => ncf
-   use mcp_c, only: diagonal_only => diag, first_order_only => lfordr
+   use parameter_def, only: orbital_capacity => max_orbitals
+   use buffer_c, only: raw_labels => angular_coefficient_labels, raw_coefficients => angular_coefficients, &
+                       raw_coefficient_count => angular_coefficient_count, pair_buffer_capacity => angular_buffer_capacity
+   use orb_c, only: current_csf_count => csf_count
+   use mcp_c, only: diagonal_only => diagonal_only, first_order_only => use_first_order_restriction
    use iccu_c, only: reference_limits => iccut
    use debug_c, only: angular_debug_flags => ldbpa, coefficient_debug => ibug1
    use onescalar_i, only: onescalar

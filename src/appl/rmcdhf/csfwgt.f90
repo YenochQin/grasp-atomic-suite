@@ -49,7 +49,7 @@
 !
 
       if (lstdio) then
-         write (istdo, 300)
+         write (stdout_unit, 300)
       else
          write (24, 300)
       endif
@@ -58,10 +58,10 @@
 !         loop over eigenvectors
 
          jblock = idxblk(iv)
-         ncf = ncfblk(jblock)
-         ncfpat = ncfpast(jblock)
-         ncminpat = ncminpast(jblock)
-         nevecpat = nevecpast(jblock)
+         ncf = csf_counts_by_block(jblock)
+         ncfpat = csf_offsets_by_block(jblock)
+         ncminpat = eigenvalue_offsets_by_block(jblock)
+         nevecpat = mixing_offsets_by_block(jblock)
          nevecoff = nevecpat + (iv - ncminpat - 1)*ncf
          nelt = min(5,ncf)                       !Find maximum 5 ... within block
          icf = iccmin(iv)
@@ -77,7 +77,7 @@
 
 
          do i = 1, nelt
-            coeff(i) = evec(nevecoff + i)
+            coeff(i) = csf_mixing_coefficients(nevecoff + i)
             iconf(i) = i
          end do
 
@@ -95,7 +95,7 @@
          end do
 
          l20: do i = nelt + 1, ncf
-            w = evec(nevecoff + i)
+            w = csf_mixing_coefficients(nevecoff + i)
             if (w==0.d0 .or. abs(w)<=abs(coeff(nelt))) cycle  l20
 !               we have a non-zero value larger than the largest so far
             do j = 1, nelt
@@ -112,9 +112,9 @@
            ip =  ivspar
 
          if (lstdio) then
-            write (istdo, 320) jblock, icf, labj(ivtjpo), labp(ip), (coeff(i),i&
+            write (stdout_unit, 320) jblock, icf, labj(ivtjpo), labp(ip), (coeff(i),i&
                =1,nelt)
-            write (istdo, 330) (iconf(i),i=1,nelt)
+            write (stdout_unit, 330) (iconf(i),i=1,nelt)
          else
 
             write (24, 320) jblock, icf, labj(ivtjpo), labp(ip), (coeff(i),i=1,&

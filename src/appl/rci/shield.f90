@@ -42,25 +42,25 @@
 !
 ! a=[(1+\alpha^2 E)^{-2} - 1]^{-1/2}
 ! note E(J) = -E(n,k)
-      a = 1 - e(j)/(c*c)
+      a = 1 - orbital_energy_parameters(j)/(speed_of_light_au*speed_of_light_au)
       a = 1/(a*a) - 1
       if (a < 0.0) then
-         shield = -c
+         shield = -speed_of_light_au
          return
       endif
       a = 1/sqrt(a)
 !
       aa = 1 + a*a
-      bb = a*dble(np(j)-iabs(nak(j)))
-      cc = dble((np(j)-iabs(nak(j)))**2-nak(j)**2)
+      bb = a*dble(orbital_principal_n(j)-iabs(orbital_kappa(j)))
+      cc = dble((orbital_principal_n(j)-iabs(orbital_kappa(j)))**2-orbital_kappa(j)**2)
       t = bb*bb - aa*cc
       if (t < 0.0) then
-         shield = -c
+         shield = -speed_of_light_au
          return
       endif
       beta = bb + sqrt(t)
       beta = beta/aa
-      shield = z - beta*c
+      shield = nuclear_charge - beta*speed_of_light_au
 !     print *, j, '  Initial Screen Factor = ',shield
       return
       end function shield

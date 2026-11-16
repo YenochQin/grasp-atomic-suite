@@ -16,7 +16,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw
+      use parameter_def,   only: max_orbitals
       use def_c
       use orb_c
       use blk_c
@@ -40,11 +40,11 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: j1
-      integer, dimension(0:nnnw + 1) :: newnp
-      integer, dimension(nnnw) :: newnak, icon, icon1
+      integer, dimension(0:max_orbitals + 1) :: newnp
+      integer, dimension(max_orbitals) :: newnak, icon, icon1
       integer :: i, j, icomp, new, ipi1, ipi2, k, new1, new2, m, nline
       character :: line*500
-      character, dimension(nnnw) :: newnh*2
+      character, dimension(max_orbitals) :: newnh*2
       character :: new3*2
 !-----------------------------------------------
 !
@@ -58,7 +58,7 @@
 !
 !   The same number of electrons must appear in both lists
 !
-      if (nelecr /= nelec) then
+      if (nelecr /= electron_count) then
          write (6, *) 'The number of electrons is not equal in the'
          write (6, *) ' first and second GRASP92 Configuration'
          write (6, *) ' symmetry list files.'
@@ -73,20 +73,20 @@
       endif
 
       do i = 1, ncore
-         if (np(i)==npr(i) .and. nak(i)==nakr(i)) cycle
+         if (orbital_principal_n(i)==npr(i) .and. orbital_kappa(i)==nakr(i)) cycle
          write (6, *) 'The core orbitals must be the same'
          stop
       end do
 
-      icon(:nw) = 0
+      icon(:orbital_count) = 0
 !
 !   For each orbital in the initial list check if there is a corresponding
 !   orbital in the final list. If so give the number of the corresponding
 !   orbital
 !
-      do i = 1, nw
+      do i = 1, orbital_count
          do j = 1, nwr
-            if (np(i)/=npr(j) .or. nak(i)/=nakr(j)) cycle
+            if (orbital_principal_n(i)/=npr(j) .or. orbital_kappa(i)/=nakr(j)) cycle
             icon(i) = j
          end do
       end do
@@ -95,7 +95,7 @@
 !   is consistent. The condition for this is that ICON is increasing
 !
       j = 0
-      do i = 1, nw
+      do i = 1, orbital_count
          if (icon(i) == 0) cycle
          j = j + 1
          icon1(j) = icon(i)
@@ -126,12 +126,12 @@
 !   Add the initial state orbitals at the end
 !
       new = nwr
-      do i = 1, nw
+      do i = 1, orbital_count
          if (icon(i) /= 0) cycle
          new = new + 1
-         newnp(new) = np(i)
-         newnak(new) = nak(i)
-         newnh(new) = nh(i)
+         newnp(new) = orbital_principal_n(i)
+         newnak(new) = orbital_kappa(i)
+         newnh(new) = orbital_symmetry_labels(i)
          write (*, *) newnp(new), newnh(new), new
       end do
 !
@@ -141,16 +141,16 @@
 !
 !   Position in initial state list
 !
-         do j = 1, nw
-            if (newnp(i)/=np(j) .or. newnak(i)/=nak(j)) cycle
+         do j = 1, orbital_count
+            if (newnp(i)/=orbital_principal_n(j) .or. newnak(i)/=orbital_kappa(j)) cycle
             ipi1 = j
          end do
          write (*, *) 'i,ipi1', i, ipi1
 
          do j = 1, nwr
             ipi2 = 0
-            do k = 1, nw
-               if (newnp(j)/=np(k) .or. newnak(j)/=nak(k)) cycle
+            do k = 1, orbital_count
+               if (newnp(j)/=orbital_principal_n(k) .or. newnak(j)/=orbital_kappa(k)) cycle
                ipi2 = k
             end do
             write (*, *) 'j,ipi2', j, ipi2
@@ -172,19 +172,19 @@
          end do
       end do l193
 
-      nw = new
-      np(:nw) = newnp(1:nw)
-      nak(:nw) = newnak(:nw)
-      nh(:nw) = newnh(:nw)
+      orbital_count = new
+      orbital_principal_n(:orbital_count) = newnp(1:orbital_count)
+      orbital_kappa(:orbital_count) = newnak(:orbital_count)
+      orbital_symmetry_labels(:orbital_count) = newnh(:orbital_count)
 !
 !   Determine NKL and NKJ
 !
-      do i = 1, nw
-         nkj(i) = 2*abs(nak(i)) - 1
-         if (nak(i) > 0) then
-            nkl(i) = (nkj(i)+1)/2
+      do i = 1, orbital_count
+         orbital_two_j(i) = 2*abs(orbital_kappa(i)) - 1
+         if (orbital_kappa(i) > 0) then
+            orbital_l(i) = (orbital_two_j(i)+1)/2
          else
-            nkl(i) = (nkj(i)-1)/2
+            orbital_l(i) = (orbital_two_j(i)-1)/2
          endif
       end do
 !
@@ -195,9 +195,9 @@
 !   the  .csl file
 !
       write (21, '(A)') 'Core subshells:'
-      write (21, 301) (np(i),nh(i),i=1,ncore)
+      write (21, 301) (orbital_principal_n(i),orbital_symmetry_labels(i),i=1,ncore)
       write (21, '(A)') 'Peel subshells:'
-      write (21, 301) (np(i),nh(i),i=ncore + 1,nw)
+      write (21, 301) (orbital_principal_n(i),orbital_symmetry_labels(i),i=ncore + 1,orbital_count)
       write (21, '(A)') 'CSF(s):'
 !
 !   Now write out all CSFs in the initial and final state list

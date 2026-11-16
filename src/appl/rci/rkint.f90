@@ -19,10 +19,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnp
+      use parameter_def,   only: max_radial_points
       use bess_c
       use debug_c
-      use grid_c, only: rpor
+      use grid_c, only: radial_derivative_over_radius
       use orb_c
       use tatb_c,  only: mtp, ta, tb
       use wave_c
@@ -39,8 +39,8 @@
       integer, intent(in) :: ib, id
       integer  :: k
       integer, intent(in) :: iw
-      real(double), dimension(nnnp), intent(in) :: rac
-      real(double), dimension(nnnp), intent(in) :: rbd
+      real(double), dimension(max_radial_points), intent(in) :: rac
+      real(double), dimension(max_radial_points), intent(in) :: rbd
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -48,8 +48,8 @@
       real(double) :: result
 !-----------------------------------------------
 !
-      mxrbd = min (mf(ib),mf(id))
-      mxrac = min (mf(ia),mf(ic))
+      mxrbd = min (orbital_last_grid_index(ib),orbital_last_grid_index(id))
+      mxrac = min (orbital_last_grid_index(ia),orbital_last_grid_index(ic))
 !
       if (iw == 0) then
 !
@@ -60,7 +60,7 @@
          call zkf (k, ia, ic)
          mtp = min(mtp,mxrbd)
          ta(1) = 0.0d00
-         ta(2:mtp) = rbd(2:mtp)*tb(2:mtp)*rpor(2:mtp)
+         ta(2:mtp) = rbd(2:mtp)*tb(2:mtp)*radial_derivative_over_radius(2:mtp)
 !
       else
 !
@@ -71,7 +71,7 @@
          call zkf (k, ia, ic)
          mtp = min(mtp,mxrbd)
          ta(1) = 0.0d00
-         ta(2:mtp) = rbd(2:mtp)*(1.0d00 + bessn(1,iw,2:mtp))*tb(2:mtp)*rpor(2:&
+         ta(2:mtp) = rbd(2:mtp)*(1.0d00 + bessn(1,iw,2:mtp))*tb(2:mtp)*radial_derivative_over_radius(2:&
             mtp)
 !
       endif
@@ -81,8 +81,9 @@
 !
 !   Debug printout if option set
 !
-      if (ldbpr(11)) write (99, 300) k, np(ia), nh(ia), np(ic), nh(ic), np(ib)&
-         , nh(ib), np(id), nh(id), iw, result
+      if (ldbpr(11)) write (99, 300) k, orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ic), &
+         & orbital_symmetry_labels(ic), orbital_principal_n(ib)&
+         , orbital_symmetry_labels(ib), orbital_principal_n(id), orbital_symmetry_labels(id), iw, result
 !
       return
 !

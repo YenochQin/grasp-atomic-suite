@@ -71,10 +71,10 @@
 !
 !   Define quantities used later
 !
-         eps = e(j)
+         eps = orbital_energy_parameters(j)
          abdele = abs(deleps)
          delebe = abs(deleps/eps)
-         dn = dble(np(j))
+         dn = dble(orbital_principal_n(j))
          dnprme = dble(nprime)
          dnpn25 = (dnprme/dn)**d2p5
 !
@@ -120,7 +120,7 @@
             etry = emin
             if (outbnd(etry)) etry = 0.5d00*(epsmax + epsmin)
          endif
-         e(j) = etry
+         orbital_energy_parameters(j) = etry
       endif
 !
       return

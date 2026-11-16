@@ -23,40 +23,43 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: np10, i, nb2, nrows, ii, ii1, ii2
-      real(double) :: eph, ett, ettm1, epslon, a, rlast, rest, t, rests, fofr, &
-         fpri, delr
+      integer :: grid_points_with_padding, radial_index, half_grid_point_count, debug_row_count, debug_row_index, &
+         & left_grid_index, right_grid_index
+      real(double) :: exp_grid_step, exp_grid_coordinate, exp_grid_coordinate_minus_one, newton_relative_tolerance, &
+         & grid_step_ratio, previous_radius_estimate, radius_estimate, transformed_coordinate, shifted_radius_estimate, &
+         & grid_equation_residual, &
+         inverse_grid_equation_derivative, radius_correction
 !-----------------------------------------------
 !
 !
 !   RPOR(1) is never used in the program: it is arbitrarily
 !   set to zero
 !
-      np10 = n + 10
-      r(1) = 0.0d00
-      rpor(1) = 0.0d00
+      grid_points_with_padding = radial_point_count + 10
+      radial_grid(1) = 0.0d00
+      radial_derivative_over_radius(1) = 0.0d00
 !
 !   Now set up the grids
 !
-      if (hp == 0.0d00) then
+      if (asymptotic_grid_step == 0.0d00) then
 !        default comes here
 !
 !   Exponential grid if HP is zero
 !
 !   Initializations
 !
-         rp(1) = rnt
-         eph = exp(h)
-         ett = 1.0d00
+         radial_grid_derivative(1) = radial_grid_scale
+         exp_grid_step = exp(transformed_grid_step)
+         exp_grid_coordinate = 1.0d00
 !
 !   Set up the arrays R, RP, RPOR
 !
-         do i = 2, np10
-            ett = eph*ett
-            ettm1 = ett - 1.0d00
-            r(i) = rnt*ettm1
-            rp(i) = rnt*ett
-            rpor(i) = ett/ettm1
+         do radial_index = 2, grid_points_with_padding
+            exp_grid_coordinate = exp_grid_step*exp_grid_coordinate
+            exp_grid_coordinate_minus_one = exp_grid_coordinate - 1.0d00
+            radial_grid(radial_index) = radial_grid_scale*exp_grid_coordinate_minus_one
+            radial_grid_derivative(radial_index) = radial_grid_scale*exp_grid_coordinate
+            radial_derivative_over_radius(radial_index) = exp_grid_coordinate/exp_grid_coordinate_minus_one
          end do
 !
       else
@@ -65,36 +68,37 @@
 !
 !   Initializations
 !
-         epslon = 1.0d03*precis
-         a = h/hp
-         rp(1) = rnt/(a*rnt + 1.0d00)
-         rlast = 0.0d00
-         rest = 0.0d00
+         newton_relative_tolerance = 1.0d03*precis
+         grid_step_ratio = transformed_grid_step/asymptotic_grid_step
+         radial_grid_derivative(1) = radial_grid_scale/(grid_step_ratio*radial_grid_scale + 1.0d00)
+         previous_radius_estimate = 0.0d00
+         radius_estimate = 0.0d00
 !
 !   Set up the arrays R, RP, RPOR
 !
-         do i = 2, np10
+         do radial_index = 2, grid_points_with_padding
 !
-            t = h*dble(i - 1)
+            transformed_coordinate = transformed_grid_step*dble(radial_index - 1)
 !
 !   Solve the implicit equation for R using the Newton-Raphson
 !   method
 !
     2       continue
-            rests = rest + rnt
-            fofr = log(rests/rnt) + a*rest - t
-            fpri = rests/(a*rests + 1.0d00)
-            delr = -fofr*fpri
-            rest = rlast + delr
+            shifted_radius_estimate = radius_estimate + radial_grid_scale
+            grid_equation_residual = log(shifted_radius_estimate/radial_grid_scale) + grid_step_ratio*radius_estimate &
+               & - transformed_coordinate
+            inverse_grid_equation_derivative = shifted_radius_estimate/(grid_step_ratio*shifted_radius_estimate + 1.0d00)
+            radius_correction = -grid_equation_residual*inverse_grid_equation_derivative
+            radius_estimate = previous_radius_estimate + radius_correction
 !
-            if (abs(delr/rest) < epslon) then
-               r(i) = rest
-               rests = rest + rnt
-               fpri = rests/(a*rests + 1.0d00)
-               rp(i) = fpri
-               rpor(i) = fpri/rest
+            if (abs(radius_correction/radius_estimate) < newton_relative_tolerance) then
+               radial_grid(radial_index) = radius_estimate
+               shifted_radius_estimate = radius_estimate + radial_grid_scale
+               inverse_grid_equation_derivative = shifted_radius_estimate/(grid_step_ratio*shifted_radius_estimate + 1.0d00)
+               radial_grid_derivative(radial_index) = inverse_grid_equation_derivative
+               radial_derivative_over_radius(radial_index) = inverse_grid_equation_derivative/radius_estimate
             else
-               rlast = rest
+               previous_radius_estimate = radius_estimate
                go to 2
             endif
 !
@@ -106,20 +110,23 @@
 !
       if (ldbpr(1)) then
          write (99, 300)
-         nb2 = n/2
-         if (2*nb2 == n) then
-            nrows = nb2
+         half_grid_point_count = radial_point_count/2
+         if (2*half_grid_point_count == radial_point_count) then
+            debug_row_count = half_grid_point_count
          else
-            nrows = nb2 + 1
+            debug_row_count = half_grid_point_count + 1
          endif
-         do ii = 1, nrows
-            ii1 = ii
-            ii2 = ii1 + nrows
-            if (ii2 <= n) then
-               write (99, 301) r(ii1), rp(ii1), rpor(ii1), r(ii2), rp(ii2), &
-                  rpor(ii2)
-            else if (ii1 <= n) then
-               write (99, 301) r(ii1), rp(ii1), rpor(ii1)
+         do debug_row_index = 1, debug_row_count
+            left_grid_index = debug_row_index
+            right_grid_index = left_grid_index + debug_row_count
+            if (right_grid_index <= radial_point_count) then
+               write (99, 301) radial_grid(left_grid_index), radial_grid_derivative(left_grid_index), &
+                  & radial_derivative_over_radius(left_grid_index), radial_grid(right_grid_index), &
+                  & radial_grid_derivative(right_grid_index), &
+                  radial_derivative_over_radius(right_grid_index)
+            else if (left_grid_index <= radial_point_count) then
+               write (99, 301) radial_grid(left_grid_index), radial_grid_derivative(left_grid_index), &
+                  & radial_derivative_over_radius(left_grid_index)
             endif
          end do
       endif

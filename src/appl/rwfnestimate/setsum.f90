@@ -36,9 +36,9 @@
       form = 'FORMATTED'
       status = 'NEW'
 !
-      write (istde, *) 'File  erwf.sum  will be created as the ', &
+      write (stderr_unit, *) 'File  erwf.sum  will be created as the ', &
          'ERWF SUMmary File; '
-      write (istde, *) 'enter another file name if this is not ', &
+      write (stderr_unit, *) 'enter another file name if this is not ', &
          'acceptable; null otherwise:'
       read (*, '(A)') filnam
 !
@@ -48,7 +48,7 @@
       call openfl (24, filnam, form, status, ierr)
       if (ierr /= 0) then
     2    continue
-         write (istde, *) 'Enter a name for the ERWF SUMmary File ', &
+         write (stderr_unit, *) 'Enter a name for the ERWF SUMmary File ', &
             'that is to be created:'
          read (*, '(A)') filnam
          if (len_trim(filnam) == 0) go to 2

@@ -1,7 +1,7 @@
 
 !***************************************************************************
 
-      subroutine gdvd(op, n, lim, diag, ilow, ihigh, iselec, niv, mblock, crite&
+      subroutine gdvd(matrix_vector_callback, n, lim, diag, ilow, ihigh, iselec, niv, mblock, crite&
          , critc, critr, ortho, maxiter, work, iwrsz, iwork, iiwsz, hiend, &
          nloops, nmv, ierr)
 !      Written by M. Saparov
@@ -25,7 +25,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      procedure(dvd_operator) :: op
+      procedure(dvd_operator) :: matrix_vector_callback
       integer  :: n
       integer  :: lim
       integer  :: ilow
@@ -137,7 +137,7 @@
 !*********
       else if (irc==2 .or. irc==3) then
 !********* ..Matrix-vector multiply.
-         call op (n, nb, work(iw1), work(iw2))
+         call matrix_vector_callback (n, nb, work(iw1), work(iw2))
          nmv = nmv + nb
 
          go to 99

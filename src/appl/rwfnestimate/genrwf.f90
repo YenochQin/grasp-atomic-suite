@@ -22,13 +22,13 @@
       use vast_kind_param, only:  double
       use memory_man
       use coun_c
-      use def_c, only: z, c, nnnp
+      use def_c, only: nuclear_charge, speed_of_light_au, max_radial_points
       use default_c
       use grid_c
       use left_c, only: set
       use npar_c
       use orb_c
-      use wave_c, only: pf, qf
+      use wave_c, only: radial_large_components, radial_small_components
       use whfrom_c, only: source
       use iounit_c
 !-----------------------------------------------
@@ -46,7 +46,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer , dimension(nnnw) :: index
+      integer , dimension(max_orbitals) :: index
       integer :: j, i, k, nradial, nsubs, loc
       real(double) :: con, fkk
       logical :: all, yes, modify=.false., existed
@@ -66,30 +66,30 @@
 !   radial wavefunction arrays; initialise these and all
 !   associated arrays
 !
-      call alloc (pf,nnnp,nw,'PF', 'GENRWF')
-      call alloc (qf,nnnp,nw,'QF', 'GENRWF')
+      call alloc (radial_large_components,max_radial_points,orbital_count,'PF', 'GENRWF')
+      call alloc (radial_small_components,max_radial_points,orbital_count,'QF', 'GENRWF')
 
-      con = z/c
+      con = nuclear_charge/speed_of_light_au
       con = con*con
 
-      do j = 1, nw
+      do j = 1, orbital_count
          set(j) = .false.
          source(j) = ' '
-         pf(:n,j) = 0.d0
-         qf(:n,j) = 0.d0
+         radial_large_components(:radial_point_count,j) = 0.d0
+         radial_small_components(:radial_point_count,j) = 0.d0
 
-         k = abs(nak(j))
-         if (nparm > 0) then
-            gama(j) = dble(k)
-         else if (nparm == 0) then
+         k = abs(orbital_kappa(j))
+         if (nuclear_model_parameter_count > 0) then
+            orbital_origin_exponents(j) = dble(k)
+         else if (nuclear_model_parameter_count == 0) then
             fkk = dble(k*k)
             if (fkk >= con) then
-               gama(j) = sqrt(fkk - con)
+               orbital_origin_exponents(j) = sqrt(fkk - con)
             else
-               write (istde, *) 'LODRWF: Imaginary gamma parameter ', 'for ', &
-                  np(j), nh(j), ' orbital;'
-               write (istde, *) 'the point model for the nucleus ', &
-                  'is inappropriate for Z > ', c, '.'
+               write (stderr_unit, *) 'LODRWF: Imaginary gamma parameter ', 'for ', &
+                  orbital_principal_n(j), orbital_symmetry_labels(j), ' orbital;'
+               write (stderr_unit, *) 'the point model for the nucleus ', &
+                  'is inappropriate for Z > ', speed_of_light_au, '.'
                stop
             endif
          endif
@@ -104,35 +104,35 @@
   123 continue
       if (.not.all) then
   234    continue
-         write (istde, *)
-         write (istde, *) 'Read subshell radial wavefunctions. ', &
+         write (stderr_unit, *)
+         write (stderr_unit, *) 'Read subshell radial wavefunctions. ', &
             'Choose one below'
-         write (istde, *) '    1 -- GRASP92 File'
-         write (istde, *) '    2 -- Thomas-Fermi'
-         write (istde, *) '    3 -- Screened Hydrogenic'
-         write (istde, *) '    4 -- Screened Hydrogenic [custom Z]'
+         write (stderr_unit, *) '    1 -- GRASP92 File'
+         write (stderr_unit, *) '    2 -- Thomas-Fermi'
+         write (stderr_unit, *) '    3 -- Screened Hydrogenic'
+         write (stderr_unit, *) '    4 -- Screened Hydrogenic [custom Z]'
 
-         read (istdi, *) nradial
+         read (stdin_unit, *) nradial
          if (nradial<1 .or. nradial>4) then
-            write (istde, *) nradial, 'is not a valid choice, redo'
+            write (stderr_unit, *) nradial, 'is not a valid choice, redo'
             go to 234
          endif
 
          if (nradial == 1) then
   345       continue
-            write (istde, *) 'Enter the file name (Null then "rwfn.out")'
-            read (istdi, '(A)') infile
+            write (stderr_unit, *) 'Enter the file name (Null then "rwfn.out")'
+            read (stdin_unit, '(A)') infile
             if (len_trim(infile) == 0) infile = 'rwfn.out'
 
             inquire(file=infile, exist=existed)
             if (.not.existed) then
-               write (istde, *) ' File "', infile(1:len_trim(infile)), &
+               write (stderr_unit, *) ' File "', infile(1:len_trim(infile)), &
                   '" does not exist, redo'
                go to 345
             endif
          endif
 
-         write (istde, *) 'Enter the list of relativistic subshells:'
+         write (stderr_unit, *) 'Enter the list of relativistic subshells:'
          open(unit=734, file='tmp_734', status='NEW')
          call getrsl (index, nsubs)
          close(734, status='DELETE')
@@ -154,20 +154,20 @@
 !
 ! All read. Let know, and allow modifying if non default
 !
-      write (istde, *) 'All required subshell radial wavefunctions ', &
+      write (stderr_unit, *) 'All required subshell radial wavefunctions ', &
          ' have been estimated:'
-      call summry (istde)
+      call summry (stderr_unit)
 
       if (ndef == 0) then
          modify = .false.
       else
-         write (istde, *) 'Revise any of these estimates?'
+         write (stderr_unit, *) 'Revise any of these estimates?'
          modify = getyn()
       endif
 
       if (modify) then
   456    continue
-         write (istde, *) 'Enter the list of subshells whose radial ', &
+         write (stderr_unit, *) 'Enter the list of subshells whose radial ', &
             'wavefunctions are to be revised:'
          open(unit=734, file='tmp_734', status='NEW')
          call getrsl (index, nsubs)
@@ -176,8 +176,8 @@
          do j = 1, nsubs
             loc = index(j)
             set(loc) = .false.
-            pf(:n,loc) = 0.d0
-            qf(:n,loc) = 0.d0
+            radial_large_components(:radial_point_count,loc) = 0.d0
+            radial_small_components(:radial_point_count,loc) = 0.d0
             source(loc) = ' '
          end do
          all = .false.

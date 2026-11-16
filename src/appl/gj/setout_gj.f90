@@ -9,7 +9,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use def_c,           only: cvac
+      use def_c,           only: vacuum_speed_of_light_au
       use jlabl_c,         only: labj=>jlbr, labp=>jlbp
       use nsmdat_c,        only: sqn, dmomnm, qmomb,                  &
                                  hfsi=>sqn, hfsd=>dmomnm, hfsq=>qmomb
@@ -59,7 +59,7 @@
          if (jj <= 1) cycle
          fj = 0.5d00*dble(jj - 1)
          gja1 = sqrt(1.0d00/(fj*(fj + 1.0d00)))
-         gj = cvac*gja1*gjc_diag(i)
+         gj = vacuum_speed_of_light_au*gja1*gjc_diag(i)
          dgj = 0.001160d0*gja1*dgjc_diag(i)
 !
          write (29, 403) ivec(i), labj(jj), labp((iaspar(i)+3)/2), gj, dgj, &

@@ -31,7 +31,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw, nnnp
+      use parameter_def,   only: max_orbitals, max_radial_points
       use default_c,       only: ndef, ndump
       use sbdat_c,         only: nlmax, kamax, nshlii, nshlff
       use biorb_c,         only: nwii, nwff
@@ -79,7 +79,7 @@
       integer :: ncount1,lenperm,lentmp,iii,ncore_not_used
       real(double), dimension(lwork1) :: work
       real(double), dimension(nlmax*nlmax) :: cishl
-      real(double), dimension(nnnw,nnnw)   :: s
+      real(double), dimension(max_orbitals,max_orbitals)   :: s
       real(double), dimension(nlmax*nlmax) :: cfshl
       logical :: yes
       character, dimension(2) :: name*24
@@ -92,9 +92,9 @@
 !=======================================================================
 !  Start mpi --- get processor info: myid, nprocs, host name; and print
 !=======================================================================
-      call startmpi2 (myid, nprocs, host, lenhost, ncount1,            &
+      call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1,            &
                         startdir, permdir, tmpdir, 'RBIOTRANSFORM_MPI')
-      write (idstring, '(I3.3)') myid
+      write (idstring, '(I3.3)') mpi_rank
       print*, tmpdir , ' = tmpdir'
 
       isofile = trim(startdir)//'/isodata'
@@ -109,7 +109,7 @@
       ntestl = 0
       ntest = max0(ntestl,ntestg)
 !
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
       print *
       print *
 
@@ -139,9 +139,9 @@
          inpci = 1
       endif
       endif !myid=0
-      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (ndump,1,mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (inpci,1,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (ndump,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (inpci,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
 !
 !   Perform machine- and installation-dependent setup
 !
@@ -171,15 +171,15 @@
 !   and open files where the transformed orbitals and CI
 !   coefficients are to be dumped
 !
-      if (myid .eq. 0) call fname (name)
-      call mpi_bcast (name,48,mpi_character,0,mpi_comm_world,ierr)
-      print *, 'DBG: myid=',myid, ' name(1)=', name(1)
-      print *, 'DBG: myid=',myid, ' name(2)=', name(2)
+      if (mpi_rank .eq. 0) call fname (name)
+      call mpi_bcast (name,48,mpi_character,0,mpi_comm_world,mpi_error_code)
+      print *, 'DBG: myid=',mpi_rank, ' name(1)=', name(1)
+      print *, 'DBG: myid=',mpi_rank, ' name(2)=', name(2)
       fullname(1) = trim(startdir) // '/' // trim(name(1))
       fullname(2) = trim(startdir) // '/' // trim(name(2))
-      print *, 'DBG: myid=',myid, ' startdir =', startdir
-      print *, 'DBG: myid=',myid, ' fullname(1)=', fullname(1)
-      print *, 'DBG: myid=',myid, ' fullname(2)=', fullname(2)
+      print *, 'DBG: myid=',mpi_rank, ' startdir =', startdir
+      print *, 'DBG: myid=',mpi_rank, ' fullname(1)=', fullname(1)
+      print *, 'DBG: myid=',mpi_rank, ' fullname(2)=', fullname(2)
 !
 !   Open, check, load data from and close the initial state CSL file.
 !
@@ -213,7 +213,7 @@
 !
 !   Calculate the radial overlap matrices
 !
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
       write (*, *)
       write (*, *) ' ******************************************'
       write (*, *) '  Overlap matrix before orbital rotations'
@@ -235,9 +235,9 @@
 !. for counter transformation of CI coefficients.
 !
       call biotr1 (pfii, qfii, nshlii, ninshli, pfff, qfff, &
-         nshlff, ninshlf, nnnp, kamax, work, lwork1, ntestg, &
+         nshlff, ninshlf, max_radial_points, kamax, work, lwork1, ntestg, &
          cishl, cici, cfshl, cfci)
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
       write (*, *)
       write (*, *) ' ****************************************'
       write (*, *) '  Overlap matrix after orbital rotations'
@@ -257,11 +257,11 @@
 !   The interface with the transformation part is in the routine mcp
 !
       iii = len_trim(startdir)
-      call sys_chdir(trim(startdir),iii,ierr)
+      call sys_chdir(trim(startdir),iii,mpi_error_code)
 !GG      CALL SETCSLA(NAME(1), ncore_not_used)
       call setcsla(name(1), ncore_not_used,3)
       iii = len_trim(tmpdir)
-      call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,ierr)
+      call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,mpi_error_code)
       call factt
       call mcpout(name(1),startdir,1,ntestg,inpci)
       call mcpin(name(1),startdir,1,ntestg,inpci)
@@ -278,11 +278,11 @@
 !   The interface with the transformation part is in the routine mcp
 !
       iii = len_trim(startdir)
-      call sys_chdir(trim(startdir),iii,ierr)
+      call sys_chdir(trim(startdir),iii,mpi_error_code)
 !GG      CALL SETCSLA(NAME(2), ncore_not_used)
       call setcsla(name(2), ncore_not_used,3)
       iii = len_trim(tmpdir)
-      call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,ierr)
+      call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,mpi_error_code)
       call mcpout(name(2),startdir,2,ntestg,inpci)
       call mcpin(name(2),startdir,2,ntestg,inpci)
 
@@ -294,7 +294,7 @@
 !  Execution finished; Statistics output
 !=======================================================================
 
-      call stopmpi2 (myid, nprocs, host, lenhost,             &
+      call stopmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length,             &
                            ncount1, 'RBIOTRANSFORM_MPI')
 !=======================================================================
       stop

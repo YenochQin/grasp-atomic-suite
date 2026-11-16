@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnw
+      use parameter_def, only: max_orbitals
       use iounit_c
       use orb_c
 !-----------------------------------------------
@@ -78,7 +78,7 @@
 !              READ (RECORD(IEND-1:IEND),'(1A2)',IOSTAT = IOS) SYM
                sym = record(iend-1:iend)
                if (ios /= 0) then
-                  write (istde, *) 'PRSRSL: Symmetry ', record(iend-1:iend), &
+                  write (stderr_unit, *) 'PRSRSL: Symmetry ', record(iend-1:iend), &
                      ' could not be decoded.'
                   stop
                endif
@@ -88,7 +88,7 @@
 !              READ (RECI,'(1A1)',IOSTAT = IOS) SYM(1:1)
                sym(1:1) = reci
                if (ios /= 0) then
-                  write (istde, *) 'PRSRSL: Symmetry ', reci, ' could not', &
+                  write (stderr_unit, *) 'PRSRSL: Symmetry ', reci, ' could not', &
                      ' be decoded.'
                   stop
                endif
@@ -96,33 +96,33 @@
             endif
             do ii = 1, 19
                if (sym /= symlst(ii)) cycle
-               nw = nw + 1
-               if (nw > nnnw) then
-                  write (istde, *) 'PRSRSL: Number of subshells ', &
-                     'exceeds allocation: plant NW was set to', nnnw
+               orbital_count = orbital_count + 1
+               if (orbital_count > max_orbitals) then
+                  write (stderr_unit, *) 'PRSRSL: Number of subshells ', &
+                     'exceeds allocation: plant NW was set to', max_orbitals
                   stop
                endif
-               nh(nw) = sym
+               orbital_symmetry_labels(orbital_count) = sym
                iib2 = ii/2
-               nkl(nw) = iib2
+               orbital_l(orbital_count) = iib2
                if (mod(ii,2) == 1) then
-                  nak(nw) = (-iib2) - 1
-                  nkj(nw) = ii
+                  orbital_kappa(orbital_count) = (-iib2) - 1
+                  orbital_two_j(orbital_count) = ii
                else
-                  nak(nw) = iib2
-                  nkj(nw) = ii - 1
+                  orbital_kappa(orbital_count) = iib2
+                  orbital_two_j(orbital_count) = ii - 1
                endif
                call convrt (iend - istart + 1, cteger, lteger)
                form = '(1I'//cteger(1:lteger)//')'
-               read (record(istart:iend), fmt=form, iostat=ios) np(nw)
+               read (record(istart:iend), fmt=form, iostat=ios) orbital_principal_n(orbital_count)
                if (ios /= 0) then
-                  write (istde, *) 'PRSRSL: Principal quantum number ', record(&
+                  write (stderr_unit, *) 'PRSRSL: Principal quantum number ', record(&
                      istart:iend), ' could not be decoded.'
                   stop
                endif
                go to 3
             end do
-            write (istde, *) 'PRSRSL: Symmetry ', sym, ' could not be decoded.'
+            write (stderr_unit, *) 'PRSRSL: Symmetry ', sym, ' could not be decoded.'
             stop
     3       continue
             istart = 0

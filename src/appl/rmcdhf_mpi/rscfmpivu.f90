@@ -92,9 +92,9 @@
       startdir = '  '  ;    file_rcsl = '  '
       permdir = '  '   ;    file1     = '  '
       tmpdir = '  '    ;    file2     = '  '
-      call startmpi2 (myid, nprocs, host, lenhost, ncount1,       &
+      call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1,       &
                       startdir, permdir, tmpdir, 'RMCDHF_MPI')
-      write (idstring, '(I3.3)') myid
+      write (idstring, '(I3.3)') mpi_rank
       lenperm = len_trim (permdir)
       lentmp = len_trim (tmpdir)
 
@@ -102,9 +102,9 @@
 !  Get NDEF
 !=======================================================================
 
-      if (myid == 0) then
-         write (istde,*)
-         write (istde, '(A)') 'Default settings?  (y/n) '
+      if (mpi_rank == 0) then
+         write (stderr_unit,*)
+         write (stderr_unit, '(A)') 'Default settings?  (y/n) '
          yes = getyn()
          if (yes) then
             ndef = 0
@@ -114,7 +114,7 @@
             ndef = 1
          endif
       endif
-     call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,ierr)
+     call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
 
 !=======================================================================
 !
@@ -135,26 +135,26 @@
       call setmc
       call setcon
 
-      if (myid .eq. 0) call setsum (permdir(1:lenperm) // '/rmcdhf.sum')
+      if (mpi_rank .eq. 0) call setsum (permdir(1:lenperm) // '/rmcdhf.sum')
 
-      call setmcp (ncore, nblk0, idblk, 'mcp' // idstring)
-      if(myid == 0) file_rcsl = permdir(1:lenperm)//'/rcsf.inp'
+      call setmcp (closed_core_subshell_count, nblk0, idblk, 'mcp' // idstring)
+      if(mpi_rank == 0) file_rcsl = permdir(1:lenperm)//'/rcsf.inp'
       call setcslmpi (file_rcsl, ncore1, idblk)
-      if (ncore /= ncore1) error stop 'rscfmpivu: ncore'
+      if (closed_core_subshell_count /= ncore1) error stop 'rscfmpivu: ncore'
 
 !=======================================================================
 !  Gather all remaining information and perform some setup. This
 !  part (routine) asks for user-inputs.
 !=======================================================================
 
-      if(myid == 0) file1 = permdir(1:lenperm) // '/isodata'
-      if(myid == 0) file2 = permdir(1:lenperm) // '/rwfn.inp'
+      if(mpi_rank == 0) file1 = permdir(1:lenperm) // '/isodata'
+      if(mpi_rank == 0) file2 = permdir(1:lenperm) // '/rwfn.inp'
       call getscdmpi (eol, idblk, file1, file2 )
 !     &            permdir(1:lenperm) // '/isodata',
 !     &            permdir(1:lenperm) // '/rwfn.inp')
       file1 = '  '
-      if(myid == 0) file1 = permdir(1:lenperm) // '/rmix.out'
-      if (myid .eq. 0) then
+      if(mpi_rank == 0) file1 = permdir(1:lenperm) // '/rmix.out'
+      if (mpi_rank .eq. 0) then
          call strsum
          if (eol) call setmix (file1)
       endif
@@ -167,7 +167,7 @@
 !=======================================================================
 
       file1 = '  '
-      if(myid == 0) file1 = permdir(1:lenperm) // '/rwfn.out'
+      if(mpi_rank == 0) file1 = permdir(1:lenperm) // '/rwfn.out'
 
       call scfmpi (eol, file1)
 
@@ -175,6 +175,6 @@
 !  Execution finished; Statistics output
 !=======================================================================
 
-      call stopmpi2 (myid, nprocs, host, lenhost, ncount1, 'RMCDHF_MPI')
+      call stopmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1, 'RMCDHF_MPI')
 
       end program rscfmpivu

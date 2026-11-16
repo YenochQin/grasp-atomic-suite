@@ -5,11 +5,11 @@
 !                     Gediminas Gaigalas  10/05/17
       real(kind(0.0d0)) function skint (rac, ia, ic, rbd, ib, id, k, iw)
       use vast_kind_param,only: double
-      use parameter_def,   only: nnnp
-      real(double), dimension(nnnp), intent(in) :: rac
+      use parameter_def,   only: max_radial_points
+      real(double), dimension(max_radial_points), intent(in) :: rac
       integer, intent(in) :: ia
       integer, intent(in) :: ic
-      real(double), dimension(nnnp), intent(in) :: rbd
+      real(double), dimension(max_radial_points), intent(in) :: rbd
       integer, intent(in) :: ib
       integer, intent(in) :: id
       integer, intent(in) :: k

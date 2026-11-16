@@ -34,9 +34,9 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use parameter_def, only: nnnp
-      use def_c ,          only: c, accy
-      use grid_c, only: r, ntp=>n
+      use parameter_def, only: max_radial_points
+      use def_c ,          only: speed_of_light_au, accy
+      use grid_c, only: radial_grid, ntp=>radial_point_count
       use tatb_c, only: ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -52,8 +52,8 @@
       real(double), intent(in) :: z
       real(double), intent(out) :: e
       real(double), intent(out) :: rg0
-      real(double), dimension(nnnp), intent(inout) :: rg
-      real(double), dimension(nnnp), intent(out) :: rf
+      real(double), dimension(max_radial_points), intent(inout) :: rg
+      real(double), dimension(max_radial_points), intent(out) :: rf
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -95,15 +95,15 @@
          write (*, 300)
          write (*, 304) z
          stop
-      else if (z > c) then
+      else if (z > speed_of_light_au) then
          write (*, 300)
-         write (*, 305) z, c
+         write (*, 305) z, speed_of_light_au
          stop
       endif
 !
 !   Atomic units
 !
-      alfa = 1.0d00/c
+      alfa = 1.0d00/speed_of_light_au
 !
 !   Now determine all the parameters
 !
@@ -122,7 +122,7 @@
 !   EPS is the total energy divided by C*C; this must be converted
 !   to the units and reference energy of GRASP
 !
-      e = (1.0d00 - eps)*c*c
+      e = (1.0d00 - eps)*speed_of_light_au*speed_of_light_au
 !
 !   Now the normalization constants
 !
@@ -192,7 +192,7 @@
       fac = (z + z)/bign
       bignmk = bign - fkappa
       do i = 2, ntp
-         rho = fac*r(i)
+         rho = fac*radial_grid(i)
          rhon = rho
          k = 0
          f1 = 1.0d00
@@ -221,7 +221,7 @@
     5 continue
       mtp = mtp - 1
 !      IF (ABS(RG(MTP)) < CUTOFF) THEN
-      if ((abs(rg(mtp)) < cutoff).or.(abs(r(mtp)) > 1.d+50)) then ! JE: APPLY BOX (R<1.D+50)
+      if ((abs(rg(mtp)) < cutoff).or.(abs(radial_grid(mtp)) > 1.d+50)) then ! JE: APPLY BOX (R<1.D+50)
          rg(mtp) = 0.0d00
          rf(mtp) = 0.0d00
          go to 5

@@ -56,11 +56,11 @@
 
       if (eol) then
          dsubrs = 0.d0
-         do k = 1, nevblk(jblock)
-            kcmin = k + ncminpast(jblock)
-            ik = i + nevecpast(jblock) + (k - 1)*ncfblk(jblock)
-            jk = j + nevecpast(jblock) + (k - 1)*ncfblk(jblock)
-            dsubrs = dsubrs + evec(ik)*evec(jk)*wt(kcmin)
+         do k = 1, eigenvector_counts_by_block(jblock)
+            kcmin = k + eigenvalue_offsets_by_block(jblock)
+            ik = i + mixing_offsets_by_block(jblock) + (k - 1)*csf_counts_by_block(jblock)
+            jk = j + mixing_offsets_by_block(jblock) + (k - 1)*csf_counts_by_block(jblock)
+            dsubrs = dsubrs + csf_mixing_coefficients(ik)*csf_mixing_coefficients(jk)*wt(kcmin)
          end do
       else if (i == j) then
          dsubrs = wt(i)

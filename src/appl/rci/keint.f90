@@ -20,7 +20,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: keyorb
+      use parameter_def,   only: orbital_index_radix
       use memory_man
       use keilst_c
 !-----------------------------------------------
@@ -50,7 +50,7 @@
 !
 !   Compute the composite (packed) index
 !
-      index = ia*keyorb+ib
+      index = ia*orbital_index_radix+ib
 !
       if (.not. frstki) then
 !

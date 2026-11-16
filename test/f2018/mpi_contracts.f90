@@ -1,5 +1,6 @@
 program mpi_contracts
-    use mpi_C
+    use mpi_c, host => processor_name, ierr => mpi_error_code, istat => mpi_status_buffer, lenhost => &
+       & processor_name_length, myid => mpi_rank, nprocs => mpi_process_count
     use vast_kind_param, only: byte, long
     implicit none
     integer :: byte_type, wide_type, width

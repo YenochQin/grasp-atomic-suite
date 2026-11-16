@@ -22,7 +22,7 @@
       use def_c
       use hblock_c
       use blk_c, only: idxblk
-      use orb_c, only: ncf, nw, iqa
+      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -43,8 +43,8 @@
 !    ncmin, iccmin(1:ncmin) -- via items (memories allocated there)
 ! Thus we let node-0 do it and then broadcast here
 
-      call alloc (ncmaxblk, nblock, 'NCMAXBLK', 'LODMIX')
-      call alloc (nevblk, nblock, 'NEVBLK', 'LODMIX')
+      call alloc (ncmaxblk, symmetry_block_count, 'NCMAXBLK', 'LODMIX')
+      call alloc (eigenvector_counts_by_block, symmetry_block_count, 'NEVBLK', 'LODMIX')
 
 !      print *, ' LODMIX: change lodstate arg-list - see rscf2/getold.f90 '
 !      stop
@@ -60,19 +60,19 @@
       ncftot = 0
       noffset = 0
       nvecsiz = 0
-      do jb = 1, nblock
-         do j = 1, nevblk(jb)
+      do jb = 1, symmetry_block_count
+         do j = 1, eigenvector_counts_by_block(jb)
             idxblk(j + noffset) = jb
          enddo
-         ncftot = ncftot + ncfblk(jb)
-         noffset = noffset + nevblk(jb)
-         nvecsiz = nvecsiz + ncfblk(jb) * nevblk(jb)
+         ncftot = ncftot + csf_counts_by_block(jb)
+         noffset = noffset + eigenvector_counts_by_block(jb)
+         nvecsiz = nvecsiz + csf_counts_by_block(jb) * eigenvector_counts_by_block(jb)
       enddo
       if (noffset .ne. ncmin) stop 'lodmix: ncmin trouble'
 !
 !   Write header data to the  .mix  file
 !
-      write (25) nelec, ncftot, nw, ncmin, nvecsiz, nblock
+      write (25) electron_count, ncftot, orbital_count, ncmin, nvecsiz, symmetry_block_count
 !
       return
       end subroutine lodmix

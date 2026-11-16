@@ -35,7 +35,7 @@
       logical :: found, first
 !-----------------------------------------------
 !
-      key = nw + 1
+      key = orbital_count + 1
 !
 !   Ensure that the indices are in `canonical' order
 !   Compute the composite (packed) index

@@ -1,0 +1,5301 @@
+{
+  "schema_version": 1,
+  "source_revision": "c6548d651b909849340e7b5a7457d7681192804e",
+  "scope": "The 529 named candidates in the 2026-11-16 inventory; unresolved entries remain unchanged.",
+  "candidate_count": 529,
+  "renamed": 528,
+  "retained": 1,
+  "adjusted_candidates": 5,
+  "renames": [
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "nb",
+      "proposed_name": "symmetry_block_index",
+      "new_name": "symmetry_block_index",
+      "status": "renamed",
+      "declaration_line": 69,
+      "meaning": "当前对称性块编号；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "myid",
+      "proposed_name": "mpi_rank",
+      "new_name": "mpi_rank",
+      "status": "renamed",
+      "declaration_line": 70,
+      "meaning": "CSF 对循环使用的进程编号；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "nprocs",
+      "proposed_name": "mpi_process_count",
+      "new_name": "mpi_process_count",
+      "status": "renamed",
+      "declaration_line": 71,
+      "meaning": "CSF 对循环的进程步长；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "restrt",
+      "proposed_name": "is_restart",
+      "new_name": "is_restart",
+      "status": "renamed",
+      "declaration_line": 72,
+      "meaning": "是否走重启逻辑；当前入口含未就绪停止分支；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "fhead",
+      "proposed_name": "output_file_prefix",
+      "new_name": "output_file_prefix",
+      "status": "renamed",
+      "declaration_line": 73,
+      "meaning": "输出文件前缀；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "key",
+      "proposed_name": "orbital_index_radix",
+      "new_name": "coefficient_label_radix",
+      "status": "renamed",
+      "declaration_line": 77,
+      "meaning": "轨道索引打包基数；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "keysq",
+      "proposed_name": "orbital_index_radix_squared",
+      "new_name": "orbital_index_radix_squared",
+      "status": "renamed",
+      "declaration_line": 78,
+      "meaning": "打包基数的平方；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "cutoff",
+      "proposed_name": "angular_coefficient_cutoff",
+      "new_name": "angular_coefficient_cutoff",
+      "status": "renamed",
+      "declaration_line": 79,
+      "meaning": "保留角系数的绝对值阈值；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "nggmax",
+      "proposed_name": "initial_sort_buffer_capacity",
+      "new_name": "initial_sort_buffer_capacity",
+      "status": "renamed",
+      "declaration_line": 85,
+      "meaning": "初始排序缓存总容量；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "llistv",
+      "proposed_name": "two_electron_counts_by_rank",
+      "new_name": "two_electron_counts_by_rank",
+      "status": "renamed",
+      "declaration_line": 92,
+      "meaning": "各多极秩的两电子 V 系数计数；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "ia",
+      "proposed_name": "orbital_a",
+      "new_name": "orbital_a",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "角系数的第 a 个轨道索引；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "ib",
+      "proposed_name": "orbital_b",
+      "new_name": "orbital_b",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "角系数的第 b 个轨道索引；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "ic",
+      "proposed_name": "orbital_c",
+      "new_name": "orbital_c",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "角系数的第 c 个轨道索引；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "id",
+      "proposed_name": "orbital_d",
+      "new_name": "orbital_d",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "角系数的第 d 个轨道索引；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "iswap",
+      "proposed_name": "orbital_swap_temporary",
+      "new_name": "orbital_swap_temporary",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "交换轨道索引时的临时变量；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "ja",
+      "proposed_name": "csf_column_index",
+      "new_name": "csf_column_index",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "外层 CSF 索引；对应输出列号；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "jastrt",
+      "proposed_name": "first_csf_column",
+      "new_name": "first_csf_column",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "外层 CSF 起始索引；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "jb",
+      "proposed_name": "csf_row_index",
+      "new_name": "csf_row_index",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "内层 CSF 索引；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "jbstrt",
+      "proposed_name": "first_csf_row",
+      "new_name": "first_csf_row",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "内层 CSF 起始索引；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "k",
+      "proposed_name": "multipole_rank",
+      "new_name": "multipole_rank",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "Coulomb 多极秩；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "llistt",
+      "proposed_name": "one_electron_coefficient_count",
+      "new_name": "one_electron_coefficient_count",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "单电子 T 系数计数；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "npos",
+      "proposed_name": "matrix_element_position",
+      "new_name": "matrix_element_position",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "当前有效矩阵位置计数；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "nswap",
+      "proposed_name": "orbital_swap_count",
+      "new_name": "orbital_swap_count",
+      "status": "renamed",
+      "declaration_line": 93,
+      "meaning": "规范化轨道标签时的交换次数；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "tshell",
+      "proposed_name": "one_electron_shell_coefficients",
+      "new_name": "one_electron_shell_coefficients",
+      "status": "renamed",
+      "declaration_line": 96,
+      "meaning": "ONESCALAR 输出的单电子子壳层系数；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "vcoeff",
+      "proposed_name": "two_electron_angular_coefficient",
+      "new_name": "two_electron_angular_coefficient",
+      "status": "renamed",
+      "declaration_line": 97,
+      "meaning": "当前两电子角系数；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "f0int",
+      "proposed_name": "is_direct_monopole_integral",
+      "new_name": "is_direct_monopole_integral",
+      "status": "renamed",
+      "declaration_line": 98,
+      "meaning": "k=0 且 a=c、b=d 的分支标志；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "lincr",
+      "proposed_name": "increment_matrix_position",
+      "new_name": "increment_matrix_position",
+      "status": "renamed",
+      "declaration_line": 98,
+      "meaning": "是否尚需增加矩阵位置计数；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "iggmax",
+      "proposed_name": "sort_buffer_capacity",
+      "new_name": "sort_buffer_capacity",
+      "status": "renamed",
+      "declaration_line": 99,
+      "meaning": "当前排序缓存总容量；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "iggmax_k",
+      "proposed_name": "sort_capacity_per_channel",
+      "new_name": "sort_capacity_per_channel",
+      "status": "renamed",
+      "declaration_line": 99,
+      "meaning": "每个通道的排序缓存容量；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg.f90",
+      "scope": "subroutine:mcp",
+      "old_name": "newsiz",
+      "proposed_name": "requested_sort_capacity",
+      "new_name": "requested_sort_capacity",
+      "status": "renamed",
+      "declaration_line": 99,
+      "meaning": "缓存扩容的目标总容量；源码建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg_I.f90",
+      "scope": "module:mcp_i/interface:interface@2/subroutine:mcp",
+      "old_name": "nb",
+      "proposed_name": "symmetry_block_index",
+      "new_name": "symmetry_block_index",
+      "status": "renamed",
+      "declaration_line": 7,
+      "meaning": "当前对称性块编号；接口联动建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg_I.f90",
+      "scope": "module:mcp_i/interface:interface@2/subroutine:mcp",
+      "old_name": "myid",
+      "proposed_name": "mpi_rank",
+      "new_name": "mpi_rank",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "CSF 对循环使用的进程编号；接口联动建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg_I.f90",
+      "scope": "module:mcp_i/interface:interface@2/subroutine:mcp",
+      "old_name": "nprocs",
+      "proposed_name": "mpi_process_count",
+      "new_name": "mpi_process_count",
+      "status": "renamed",
+      "declaration_line": 9,
+      "meaning": "CSF 对循环的进程步长；接口联动建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg_I.f90",
+      "scope": "module:mcp_i/interface:interface@2/subroutine:mcp",
+      "old_name": "restrt",
+      "proposed_name": "is_restart",
+      "new_name": "is_restart",
+      "status": "renamed",
+      "declaration_line": 10,
+      "meaning": "是否走重启逻辑；当前入口含未就绪停止分支；接口联动建议"
+    },
+    {
+      "file": "src/appl/rangular/mcp_gg_I.f90",
+      "scope": "module:mcp_i/interface:interface@2/subroutine:mcp",
+      "old_name": "fhead",
+      "proposed_name": "output_file_prefix",
+      "new_name": "output_file_prefix",
+      "status": "renamed",
+      "declaration_line": 11,
+      "meaning": "输出文件前缀；接口联动建议"
+    },
+    {
+      "file": "src/appl/rangular/setsda.f90",
+      "scope": "subroutine:setsda",
+      "old_name": "outsdadummy",
+      "proposed_name": "write_coefficient_callback",
+      "new_name": "write_coefficient_callback",
+      "status": "renamed",
+      "declaration_line": 36,
+      "meaning": "角系数输出回调；接口联动建议"
+    },
+    {
+      "file": "src/appl/rangular/setsda_I.f90",
+      "scope": "module:setsda_i/interface:interface@2/subroutine:setsda",
+      "old_name": "outsda",
+      "proposed_name": "write_coefficient_callback",
+      "new_name": "write_coefficient_callback",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "角系数输出回调；接口联动建议"
+    },
+    {
+      "file": "src/appl/rangular_mpi/setsda.f90",
+      "scope": "subroutine:setsda",
+      "old_name": "outsdadummy",
+      "proposed_name": "write_coefficient_callback",
+      "new_name": "write_coefficient_callback",
+      "status": "renamed",
+      "declaration_line": 36,
+      "meaning": "角系数输出回调；接口联动建议"
+    },
+    {
+      "file": "src/appl/rangular_mpi/setsda_I.f90",
+      "scope": "module:setsda_i/interface:interface@2/subroutine:setsda",
+      "old_name": "outsda",
+      "proposed_name": "write_coefficient_callback",
+      "new_name": "write_coefficient_callback",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "角系数输出回调；接口联动建议"
+    },
+    {
+      "file": "src/appl/rmcdhf/mpi_s.f90",
+      "scope": "module:mpi_s",
+      "old_name": "myid",
+      "proposed_name": "mpi_rank",
+      "new_name": "mpi_rank",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "统一执行流程中的进程编号；串行模拟路径也使用此状态；源码建议"
+    },
+    {
+      "file": "src/appl/rmcdhf/mpi_s.f90",
+      "scope": "module:mpi_s",
+      "old_name": "nprocs",
+      "proposed_name": "mpi_process_count",
+      "new_name": "mpi_process_count",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "统一执行流程中的进程数量；串行模拟路径也使用此状态；源码建议"
+    },
+    {
+      "file": "src/appl/rmcdhf_mem/mpi_s.f90",
+      "scope": "module:mpi_s",
+      "old_name": "myid",
+      "proposed_name": "mpi_rank",
+      "new_name": "mpi_rank",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "统一执行流程中的进程编号；串行模拟路径也使用此状态；源码建议"
+    },
+    {
+      "file": "src/appl/rmcdhf_mem/mpi_s.f90",
+      "scope": "module:mpi_s",
+      "old_name": "nprocs",
+      "proposed_name": "mpi_process_count",
+      "new_name": "mpi_process_count",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "统一执行流程中的进程数量；串行模拟路径也使用此状态；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "i",
+      "proposed_name": "radial_index",
+      "new_name": "radial_index",
+      "status": "renamed",
+      "declaration_line": 26,
+      "meaning": "网格构造循环的径向索引；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "ii",
+      "proposed_name": "debug_row_index",
+      "new_name": "debug_row_index",
+      "status": "renamed",
+      "declaration_line": 26,
+      "meaning": "调试输出的行索引；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "ii1",
+      "proposed_name": "left_grid_index",
+      "new_name": "left_grid_index",
+      "status": "renamed",
+      "declaration_line": 26,
+      "meaning": "调试输出左列的网格索引；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "ii2",
+      "proposed_name": "right_grid_index",
+      "new_name": "right_grid_index",
+      "status": "renamed",
+      "declaration_line": 26,
+      "meaning": "调试输出右列的网格索引；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "nb2",
+      "proposed_name": "half_grid_point_count",
+      "new_name": "half_grid_point_count",
+      "status": "renamed",
+      "declaration_line": 26,
+      "meaning": "网格点数整数除以二，供调试排版使用；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "np10",
+      "proposed_name": "grid_points_with_padding",
+      "new_name": "grid_points_with_padding",
+      "status": "renamed",
+      "declaration_line": 26,
+      "meaning": "运行时网格点数加 10；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "nrows",
+      "proposed_name": "debug_row_count",
+      "new_name": "debug_row_count",
+      "status": "renamed",
+      "declaration_line": 26,
+      "meaning": "调试输出行数；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "a",
+      "proposed_name": "grid_step_ratio",
+      "new_name": "grid_step_ratio",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "H/HP；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "delr",
+      "proposed_name": "radius_correction",
+      "new_name": "radius_correction",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "Newton 半径修正量；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "eph",
+      "proposed_name": "exp_grid_step",
+      "new_name": "exp_grid_step",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "exp(H)；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "epslon",
+      "proposed_name": "newton_relative_tolerance",
+      "new_name": "newton_relative_tolerance",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "Newton 网格求解的相对收敛容限；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "ett",
+      "proposed_name": "exp_grid_coordinate",
+      "new_name": "exp_grid_coordinate",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "递推得到的 exp(t)；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "ettm1",
+      "proposed_name": "exp_grid_coordinate_minus_one",
+      "new_name": "exp_grid_coordinate_minus_one",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "exp(t)-1；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "fofr",
+      "proposed_name": "grid_equation_residual",
+      "new_name": "grid_equation_residual",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "隐式网格方程的残差；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "fpri",
+      "proposed_name": "inverse_grid_equation_derivative",
+      "new_name": "inverse_grid_equation_derivative",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "网格方程导数的倒数；不应命名为普通一阶导数；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "rest",
+      "proposed_name": "radius_estimate",
+      "new_name": "radius_estimate",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "当前半径估计；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "rests",
+      "proposed_name": "shifted_radius_estimate",
+      "new_name": "shifted_radius_estimate",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "REST+RNT；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "rlast",
+      "proposed_name": "previous_radius_estimate",
+      "new_name": "previous_radius_estimate",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "Newton 迭代保存的上一半径估计；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/radgrd.f90",
+      "scope": "subroutine:radgrd",
+      "old_name": "t",
+      "proposed_name": "transformed_coordinate",
+      "new_name": "transformed_coordinate",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "H*(I-1)；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/setcon.f90",
+      "scope": "subroutine:setcon",
+      "old_name": "ainfcm",
+      "proposed_name": "bohr_radius_cm",
+      "new_name": "reference_bohr_radius_cm",
+      "status": "renamed",
+      "declaration_line": 24,
+      "meaning": "Bohr 半径，cm；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/setcon.f90",
+      "scope": "subroutine:setcon",
+      "old_name": "alfai",
+      "proposed_name": "inverse_fine_structure_constant",
+      "new_name": "inverse_fine_structure_constant",
+      "status": "renamed",
+      "declaration_line": 25,
+      "meaning": "精细结构常数的倒数；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/setcon.f90",
+      "scope": "subroutine:setcon",
+      "old_name": "ccmps",
+      "proposed_name": "speed_of_light_cm_per_s",
+      "new_name": "reference_speed_of_light_cm_per_s",
+      "status": "renamed",
+      "declaration_line": 26,
+      "meaning": "光速，cm/s；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/setcon.f90",
+      "scope": "subroutine:setcon",
+      "old_name": "eesu",
+      "proposed_name": "electron_charge_esu",
+      "new_name": "electron_charge_esu",
+      "status": "renamed",
+      "declaration_line": 27,
+      "meaning": "电子电荷的 esu 数值；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/setcon.f90",
+      "scope": "subroutine:setcon",
+      "old_name": "emeg",
+      "proposed_name": "electron_mass_g",
+      "new_name": "electron_mass_g",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "电子质量，g；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/setcon.f90",
+      "scope": "subroutine:setcon",
+      "old_name": "emeamu",
+      "proposed_name": "electron_mass_u",
+      "new_name": "reference_electron_mass_u",
+      "status": "renamed",
+      "declaration_line": 29,
+      "meaning": "电子质量，u；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/setcon.f90",
+      "scope": "subroutine:setcon",
+      "old_name": "empamu",
+      "proposed_name": "proton_mass_u",
+      "new_name": "reference_proton_mass_u",
+      "status": "renamed",
+      "declaration_line": 30,
+      "meaning": "质子质量，u；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/setcon.f90",
+      "scope": "subroutine:setcon",
+      "old_name": "hbares",
+      "proposed_name": "reduced_planck_constant_erg_s",
+      "new_name": "reduced_planck_constant_erg_s",
+      "status": "renamed",
+      "declaration_line": 31,
+      "meaning": "约化 Planck 常数，erg·s；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/setcon.f90",
+      "scope": "subroutine:setcon",
+      "old_name": "rinfev",
+      "proposed_name": "rydberg_energy_ev",
+      "new_name": "rydberg_energy_ev",
+      "status": "renamed",
+      "declaration_line": 32,
+      "meaning": "Rydberg 能量，eV；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/setcon.f90",
+      "scope": "subroutine:setcon",
+      "old_name": "rinfk",
+      "proposed_name": "rydberg_wavenumber_cm",
+      "new_name": "rydberg_wavenumber_cm",
+      "status": "renamed",
+      "declaration_line": 33,
+      "meaning": "Rydberg 波数，cm⁻¹；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/start.f90",
+      "scope": "subroutine:start",
+      "old_name": "iorb",
+      "proposed_name": "orbital_index",
+      "new_name": "orbital_index",
+      "status": "renamed",
+      "declaration_line": 42,
+      "meaning": "当前轨道索引；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/start.f90",
+      "scope": "subroutine:start",
+      "old_name": "itype",
+      "proposed_name": "radial_equation_type",
+      "new_name": "radial_equation_type",
+      "status": "renamed",
+      "declaration_line": 43,
+      "meaning": "1 齐次、2 非齐次、3 变分方程；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/start.f90",
+      "scope": "subroutine:start",
+      "old_name": "p0",
+      "proposed_name": "origin_slope_parameter",
+      "new_name": "origin_slope_parameter",
+      "status": "renamed",
+      "declaration_line": 44,
+      "meaning": "输入的近原点斜率参数；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/start.f90",
+      "scope": "subroutine:start",
+      "old_name": "q0",
+      "proposed_name": "small_component_origin_coefficient",
+      "new_name": "small_component_origin_coefficient",
+      "status": "renamed",
+      "declaration_line": 45,
+      "meaning": "小分量级数展开首项；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/start.f90",
+      "scope": "subroutine:start",
+      "old_name": "p",
+      "proposed_name": "large_component_values",
+      "new_name": "large_component_values",
+      "status": "renamed",
+      "declaration_line": 46,
+      "meaning": "大分量起始积分值；首点按原实现使用缩放约定；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/start.f90",
+      "scope": "subroutine:start",
+      "old_name": "q",
+      "proposed_name": "small_component_values",
+      "new_name": "small_component_values",
+      "status": "renamed",
+      "declaration_line": 47,
+      "meaning": "小分量起始积分值；首点按原实现使用缩放约定；源码建议"
+    },
+    {
+      "file": "src/lib/lib9290/start_I.f90",
+      "scope": "module:start_i/interface:interface@2/subroutine:start",
+      "old_name": "iorb",
+      "proposed_name": "orbital_index",
+      "new_name": "orbital_index",
+      "status": "renamed",
+      "declaration_line": 10,
+      "meaning": "当前轨道索引；接口联动建议"
+    },
+    {
+      "file": "src/lib/lib9290/start_I.f90",
+      "scope": "module:start_i/interface:interface@2/subroutine:start",
+      "old_name": "itype",
+      "proposed_name": "radial_equation_type",
+      "new_name": "radial_equation_type",
+      "status": "renamed",
+      "declaration_line": 11,
+      "meaning": "1 齐次、2 非齐次、3 变分方程；接口联动建议"
+    },
+    {
+      "file": "src/lib/lib9290/start_I.f90",
+      "scope": "module:start_i/interface:interface@2/subroutine:start",
+      "old_name": "p0",
+      "proposed_name": "origin_slope_parameter",
+      "new_name": "origin_slope_parameter",
+      "status": "renamed",
+      "declaration_line": 12,
+      "meaning": "输入的近原点斜率参数；接口联动建议"
+    },
+    {
+      "file": "src/lib/lib9290/start_I.f90",
+      "scope": "module:start_i/interface:interface@2/subroutine:start",
+      "old_name": "p",
+      "proposed_name": "large_component_values",
+      "new_name": "large_component_values",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "大分量起始积分值；首点按原实现使用缩放约定；接口联动建议"
+    },
+    {
+      "file": "src/lib/lib9290/start_I.f90",
+      "scope": "module:start_i/interface:interface@2/subroutine:start",
+      "old_name": "q0",
+      "proposed_name": "small_component_origin_coefficient",
+      "new_name": "small_component_origin_coefficient",
+      "status": "renamed",
+      "declaration_line": 14,
+      "meaning": "小分量级数展开首项；接口联动建议"
+    },
+    {
+      "file": "src/lib/lib9290/start_I.f90",
+      "scope": "module:start_i/interface:interface@2/subroutine:start",
+      "old_name": "q",
+      "proposed_name": "small_component_values",
+      "new_name": "small_component_values",
+      "status": "renamed",
+      "declaration_line": 15,
+      "meaning": "小分量起始积分值；首点按原实现使用缩放约定；接口联动建议"
+    },
+    {
+      "file": "src/lib/libdvd90/gdvd.f90",
+      "scope": "subroutine:gdvd",
+      "old_name": "op",
+      "proposed_name": "matrix_vector_callback",
+      "new_name": "matrix_vector_callback",
+      "status": "renamed",
+      "declaration_line": 28,
+      "meaning": "Davidson 矩阵与向量乘积回调；接口联动建议"
+    },
+    {
+      "file": "src/lib/libdvd90/gdvd_I.f90",
+      "scope": "module:gdvd_i/interface:interface@10/subroutine:gdvd",
+      "old_name": "op",
+      "proposed_name": "matrix_vector_callback",
+      "new_name": "matrix_vector_callback",
+      "status": "renamed",
+      "declaration_line": 19,
+      "meaning": "Davidson 矩阵与向量乘积回调；接口联动建议"
+    },
+    {
+      "file": "src/lib/libmod/buffer_C.f90",
+      "scope": "module:buffer_c",
+      "old_name": "nbdim",
+      "proposed_name": "angular_buffer_capacity",
+      "new_name": "angular_buffer_capacity",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "角系数缓冲区分配容量；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/buffer_C.f90",
+      "scope": "module:buffer_c",
+      "old_name": "nvcoef",
+      "proposed_name": "angular_coefficient_count",
+      "new_name": "angular_coefficient_count",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "当前 CSF 对产生的有效角系数条数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/buffer_C.f90",
+      "scope": "module:buffer_c",
+      "old_name": "label",
+      "proposed_name": "angular_coefficient_labels",
+      "new_name": "angular_coefficient_labels",
+      "status": "renamed",
+      "declaration_line": 7,
+      "meaning": "角系数对应的四个轨道索引与多极秩标签；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/buffer_C.f90",
+      "scope": "module:buffer_c",
+      "old_name": "coeff",
+      "proposed_name": "angular_coefficients",
+      "new_name": "angular_coefficients",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "当前缓冲的角系数值；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/core_C.f90",
+      "scope": "module:core_c",
+      "old_name": "ncore",
+      "proposed_name": "closed_core_subshell_count",
+      "new_name": "closed_core_subshell_count",
+      "status": "renamed",
+      "declaration_line": 5,
+      "meaning": "闭壳层核心的相对子壳层数；不是核心电子数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/damp_C.f90",
+      "scope": "module:damp_c",
+      "old_name": "odamp",
+      "proposed_name": "orbital_damping_factors",
+      "new_name": "orbital_damping_factors",
+      "status": "renamed",
+      "declaration_line": 9,
+      "meaning": "径向轨道阻尼因子；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/damp_C.f90",
+      "scope": "module:damp_c",
+      "old_name": "cdamp",
+      "proposed_name": "mixing_damping_factors",
+      "new_name": "mixing_damping_factors",
+      "status": "renamed",
+      "declaration_line": 10,
+      "meaning": "展开系数阻尼因子；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "aucm",
+      "proposed_name": "hartree_to_wavenumber_cm",
+      "new_name": "hartree_to_wavenumber_cm",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "能量从原子单位换算至 cm⁻¹ 的系数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "auev",
+      "proposed_name": "hartree_to_ev",
+      "new_name": "hartree_to_ev",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "能量从原子单位换算至 eV 的系数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "ccms",
+      "proposed_name": "speed_of_light_cm_per_s",
+      "new_name": "speed_of_light_cm_per_s",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "真空光速，cm/s；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "fasi",
+      "proposed_name": "einstein_a_au_to_si",
+      "new_name": "einstein_a_au_to_si",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "Einstein A 系数从原子单位到 SI 的换算因子；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "fbsi",
+      "proposed_name": "einstein_b_au_to_si",
+      "new_name": "einstein_b_au_to_si",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "Einstein B 系数从原子单位到 SI 的换算因子；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "aumamu",
+      "proposed_name": "electron_mass_u",
+      "new_name": "electron_mass_u",
+      "status": "renamed",
+      "declaration_line": 14,
+      "meaning": "原子质量单位表示的电子质量；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "fmtoau",
+      "proposed_name": "femtometer_to_bohr",
+      "new_name": "femtometer_to_bohr",
+      "status": "renamed",
+      "declaration_line": 14,
+      "meaning": "长度从 fm 到 Bohr 的换算系数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "nelec",
+      "proposed_name": "electron_count",
+      "new_name": "electron_count",
+      "status": "renamed",
+      "declaration_line": 15,
+      "meaning": "当前体系的电子总数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "z",
+      "proposed_name": "nuclear_charge",
+      "new_name": "nuclear_charge",
+      "status": "renamed",
+      "declaration_line": 16,
+      "meaning": "核电荷数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "c",
+      "proposed_name": "speed_of_light_au",
+      "new_name": "speed_of_light_au",
+      "status": "renamed",
+      "declaration_line": 22,
+      "meaning": "径向方程使用的原子单位光速参数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "empam",
+      "proposed_name": "proton_mass_u",
+      "new_name": "proton_mass_u",
+      "status": "renamed",
+      "declaration_line": 23,
+      "meaning": "原子质量单位表示的质子质量；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "rbcm",
+      "proposed_name": "bohr_radius_cm",
+      "new_name": "bohr_radius_cm",
+      "status": "renamed",
+      "declaration_line": 23,
+      "meaning": "以 cm 表示的 Bohr 半径；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "cvac",
+      "proposed_name": "vacuum_speed_of_light_au",
+      "new_name": "vacuum_speed_of_light_au",
+      "status": "renamed",
+      "declaration_line": 29,
+      "meaning": "SETCON 初始化的真空光速原子单位常数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/def_C.f90",
+      "scope": "module:def_c",
+      "old_name": "pi",
+      "proposed_name": "pi",
+      "new_name": "pi",
+      "status": "retained",
+      "declaration_line": 29,
+      "meaning": "圆周率；已具有明确数学含义，可保留；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/eigv_C.f90",
+      "scope": "module:eigv_c",
+      "old_name": "eav",
+      "proposed_name": "hamiltonian_energy_shift",
+      "new_name": "hamiltonian_energy_shift",
+      "status": "renamed",
+      "declaration_line": 11,
+      "meaning": "哈密顿矩阵使用并单独输出的平均能量移位；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/eigv_C.f90",
+      "scope": "module:eigv_c",
+      "old_name": "eval",
+      "proposed_name": "shifted_eigenvalues",
+      "new_name": "shifted_eigenvalues",
+      "status": "renamed",
+      "declaration_line": 12,
+      "meaning": "与 EAV 分开存储的本征值；各调用路径的能量恢复需联查；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/eigv_C.f90",
+      "scope": "module:eigv_c",
+      "old_name": "evec",
+      "proposed_name": "csf_mixing_coefficients",
+      "new_name": "csf_mixing_coefficients",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "按块/态存储的 CSF 展开系数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/fixd_C.f90",
+      "scope": "module:fixd_c",
+      "old_name": "nfix",
+      "proposed_name": "fixed_orbital_count",
+      "new_name": "fixed_orbital_count",
+      "status": "renamed",
+      "declaration_line": 7,
+      "meaning": "固定轨道数量；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/fixd_C.f90",
+      "scope": "module:fixd_c",
+      "old_name": "lfix",
+      "proposed_name": "is_orbital_fixed",
+      "new_name": "is_orbital_fixed",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "各轨道是否固定的标志；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/grid_C.f90",
+      "scope": "module:grid_c",
+      "old_name": "n",
+      "proposed_name": "radial_point_count",
+      "new_name": "radial_point_count",
+      "status": "renamed",
+      "declaration_line": 7,
+      "meaning": "运行时使用的径向网格点数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/grid_C.f90",
+      "scope": "module:grid_c",
+      "old_name": "r",
+      "proposed_name": "radial_grid",
+      "new_name": "radial_grid",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "径向网格坐标；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/grid_C.f90",
+      "scope": "module:grid_c",
+      "old_name": "rp",
+      "proposed_name": "radial_grid_derivative",
+      "new_name": "radial_grid_derivative",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "网格坐标对变换变量的导数；不是相邻网格间距；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/grid_C.f90",
+      "scope": "module:grid_c",
+      "old_name": "rpor",
+      "proposed_name": "radial_derivative_over_radius",
+      "new_name": "radial_derivative_over_radius",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "网格导数与半径之比；首元素按实现置零；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/grid_C.f90",
+      "scope": "module:grid_c",
+      "old_name": "h",
+      "proposed_name": "transformed_grid_step",
+      "new_name": "transformed_grid_step",
+      "status": "renamed",
+      "declaration_line": 9,
+      "meaning": "变换坐标上的网格步长；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/grid_C.f90",
+      "scope": "module:grid_c",
+      "old_name": "hp",
+      "proposed_name": "asymptotic_grid_step",
+      "new_name": "asymptotic_grid_step",
+      "status": "renamed",
+      "declaration_line": 9,
+      "meaning": "控制渐近线性网格的步长参数；零表示指数网格；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/grid_C.f90",
+      "scope": "module:grid_c",
+      "old_name": "rnt",
+      "proposed_name": "radial_grid_scale",
+      "new_name": "radial_grid_scale",
+      "status": "renamed",
+      "declaration_line": 9,
+      "meaning": "径向网格尺度参数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/hblock_C.f90",
+      "scope": "module:hblock_c",
+      "old_name": "nblock",
+      "proposed_name": "symmetry_block_count",
+      "new_name": "symmetry_block_count",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "对称性分块数量；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/hblock_C.f90",
+      "scope": "module:hblock_c",
+      "old_name": "ncfblk",
+      "proposed_name": "csf_counts_by_block",
+      "new_name": "csf_counts_by_block",
+      "status": "renamed",
+      "declaration_line": 9,
+      "meaning": "每个对称性块的 CSF 数；注意下标 0 的哨兵；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/hblock_C.f90",
+      "scope": "module:hblock_c",
+      "old_name": "nevblk",
+      "proposed_name": "eigenvector_counts_by_block",
+      "new_name": "eigenvector_counts_by_block",
+      "status": "renamed",
+      "declaration_line": 10,
+      "meaning": "每个对称性块的目标本征向量数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/hmat_C.f90",
+      "scope": "module:hmat_c",
+      "old_name": "nelmnt",
+      "proposed_name": "stored_matrix_element_count",
+      "new_name": "stored_matrix_element_count",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "当前块/进程实际存储的矩阵元数量；保留宽整数 kind；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/hmat_C.f90",
+      "scope": "module:hmat_c",
+      "old_name": "emt",
+      "proposed_name": "hamiltonian_values",
+      "new_name": "hamiltonian_values",
+      "status": "renamed",
+      "declaration_line": 7,
+      "meaning": "压缩存储的哈密顿矩阵元素；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/hmat_C.f90",
+      "scope": "module:hmat_c",
+      "old_name": "iendc",
+      "proposed_name": "stored_segment_end_offsets",
+      "new_name": "stored_segment_end_offsets",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "各存储段终点偏移；普通 RMCDHF 当前为按行下三角，其他消费者仍须逐一核对；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/hmat_C.f90",
+      "scope": "module:hmat_c",
+      "old_name": "irow",
+      "proposed_name": "matrix_partner_indices",
+      "new_name": "matrix_partner_indices",
+      "status": "renamed",
+      "declaration_line": 9,
+      "meaning": "压缩矩阵的另一维 CSF 索引；名称不预设全库统一 CSR/CSC 方向；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/iounit_C.f90",
+      "scope": "module:iounit_c",
+      "old_name": "istde",
+      "proposed_name": "stderr_unit",
+      "new_name": "stderr_unit",
+      "status": "renamed",
+      "declaration_line": 10,
+      "meaning": "标准错误逻辑单元；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/iounit_C.f90",
+      "scope": "module:iounit_c",
+      "old_name": "istdi",
+      "proposed_name": "stdin_unit",
+      "new_name": "stdin_unit",
+      "status": "renamed",
+      "declaration_line": 10,
+      "meaning": "标准输入逻辑单元；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/iounit_C.f90",
+      "scope": "module:iounit_c",
+      "old_name": "istdo",
+      "proposed_name": "stdout_unit",
+      "new_name": "stdout_unit",
+      "status": "renamed",
+      "declaration_line": 10,
+      "meaning": "标准输出逻辑单元；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/jj2lsj_C.f90",
+      "scope": "module:jj2lsj_c/type:subshell_term_ls",
+      "old_name": "l_shell",
+      "proposed_name": "subshell_l",
+      "new_name": "subshell_l",
+      "status": "renamed",
+      "declaration_line": 19,
+      "meaning": "子壳层轨道角动量 l；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/jj2lsj_C.f90",
+      "scope": "module:jj2lsj_c/type:subshell_term_ls",
+      "old_name": "q",
+      "proposed_name": "subshell_two_quasispin",
+      "new_name": "subshell_two_quasispin",
+      "status": "renamed",
+      "declaration_line": 21,
+      "meaning": "子壳层总准自旋 2Q；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/jj2lsj_C.f90",
+      "scope": "module:jj2lsj_c/type:subshell_term_ls",
+      "old_name": "ll",
+      "proposed_name": "subshell_two_l",
+      "new_name": "subshell_two_l",
+      "status": "renamed",
+      "declaration_line": 22,
+      "meaning": "子壳层总轨道角动量 2L；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/jj2lsj_C.f90",
+      "scope": "module:jj2lsj_c/type:subshell_term_ls",
+      "old_name": "s",
+      "proposed_name": "subshell_two_s",
+      "new_name": "subshell_two_s",
+      "status": "renamed",
+      "declaration_line": 23,
+      "meaning": "子壳层总自旋 2S；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/mcp_C.f90",
+      "scope": "module:mcp_c",
+      "old_name": "kmax",
+      "proposed_name": "max_coulomb_multipole_rank",
+      "new_name": "max_coulomb_multipole_rank",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "两电子 Coulomb 角系数的最大多极秩 k；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/mcp_C.f90",
+      "scope": "module:mcp_c",
+      "old_name": "diag",
+      "proposed_name": "diagonal_only",
+      "new_name": "diagonal_only",
+      "status": "renamed",
+      "declaration_line": 7,
+      "meaning": "是否只计算对角 CSF 对；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/mcp_C.f90",
+      "scope": "module:mcp_c",
+      "old_name": "lfordr",
+      "proposed_name": "use_first_order_restriction",
+      "new_name": "use_first_order_restriction",
+      "status": "renamed",
+      "declaration_line": 7,
+      "meaning": "是否使用结合 ICCUT 的一阶空间限制；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/mcpa_C.f90",
+      "scope": "module:mcpa_c",
+      "old_name": "kmaxf",
+      "proposed_name": "max_mcp_file_multipole_rank",
+      "new_name": "max_mcp_file_multipole_rank",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "从 MCP 输入文件侧使用的最大多极秩；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_0i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 29,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_0i",
+      "old_name": "first",
+      "proposed_name": "lower_bound",
+      "new_name": "lower_bound",
+      "status": "renamed",
+      "declaration_line": 30,
+      "meaning": "目标数组下界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_0i",
+      "old_name": "last",
+      "proposed_name": "upper_bound",
+      "new_name": "upper_bound",
+      "status": "renamed",
+      "declaration_line": 30,
+      "meaning": "目标数组上界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_0i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 31,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_0i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 31,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_0i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 32,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 53,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1i",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 54,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 55,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 55,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 56,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 77,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2i",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 78,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2i",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 78,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 79,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 79,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 80,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 102,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 103,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 103,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "n3",
+      "proposed_name": "third_dimension_size",
+      "new_name": "third_dimension_size",
+      "status": "renamed",
+      "declaration_line": 103,
+      "meaning": "第三维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 104,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 104,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 105,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1il",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 126,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1il",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 127,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1il",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 128,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1il",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 128,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1il",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 129,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1r",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 150,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1r",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 151,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1r",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 152,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1r",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 152,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1r",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 153,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2r",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 174,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2r",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 175,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2r",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 175,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2r",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 176,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2r",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 176,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2r",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 177,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1rl",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 198,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1rl",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 199,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1rl",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 200,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1rl",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 200,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1rl",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 201,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_0b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 222,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_0b",
+      "old_name": "first",
+      "proposed_name": "lower_bound",
+      "new_name": "lower_bound",
+      "status": "renamed",
+      "declaration_line": 223,
+      "meaning": "目标数组下界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_0b",
+      "old_name": "last",
+      "proposed_name": "upper_bound",
+      "new_name": "upper_bound",
+      "status": "renamed",
+      "declaration_line": 223,
+      "meaning": "目标数组上界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_0b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 224,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_0b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 224,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_0b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 225,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 246,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1b",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 247,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 248,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 248,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 249,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 270,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2b",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 271,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2b",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 271,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 272,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 272,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_2b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 273,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 295,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 296,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 296,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "n3",
+      "proposed_name": "third_dimension_size",
+      "new_name": "third_dimension_size",
+      "status": "renamed",
+      "declaration_line": 296,
+      "meaning": "第三维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 297,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 297,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 298,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1c",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 320,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1c",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 321,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1c",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 322,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1c",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 322,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:alloc_1c",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 323,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_1i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 343,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_1i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 344,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_1i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 344,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_2i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 356,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_2i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 357,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_2i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 357,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_3i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 369,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_3i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 370,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_3i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 370,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_1r",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 382,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_1r",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 383,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_1r",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 383,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_2r",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 395,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_2r",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 396,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_2r",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 396,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_1b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 408,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_1b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 409,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_1b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 409,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_2b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 421,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_2b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 422,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_2b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 422,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_3b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 434,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_3b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 435,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_3b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 435,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_1c",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 447,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_1c",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 448,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:dalloc_1c",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 448,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_0i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 461,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_0i",
+      "old_name": "first",
+      "proposed_name": "lower_bound",
+      "new_name": "lower_bound",
+      "status": "renamed",
+      "declaration_line": 462,
+      "meaning": "目标数组下界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_0i",
+      "old_name": "last",
+      "proposed_name": "upper_bound",
+      "new_name": "upper_bound",
+      "status": "renamed",
+      "declaration_line": 462,
+      "meaning": "目标数组上界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_0i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 463,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_0i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 463,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_0i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 464,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 489,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1i",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 490,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 491,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 491,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 492,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 515,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2i",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 516,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2i",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 516,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 517,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 517,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 518,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 544,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 545,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 545,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "n3",
+      "proposed_name": "third_dimension_size",
+      "new_name": "third_dimension_size",
+      "status": "renamed",
+      "declaration_line": 545,
+      "meaning": "第三维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 546,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 546,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 547,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1r",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 574,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1r",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 575,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1r",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 576,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1r",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 576,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1r",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 577,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2r",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 601,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2r",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 602,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2r",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 602,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2r",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 603,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2r",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 603,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2r",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 604,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_0b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 629,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_0b",
+      "old_name": "first",
+      "proposed_name": "lower_bound",
+      "new_name": "lower_bound",
+      "status": "renamed",
+      "declaration_line": 630,
+      "meaning": "目标数组下界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_0b",
+      "old_name": "last",
+      "proposed_name": "upper_bound",
+      "new_name": "upper_bound",
+      "status": "renamed",
+      "declaration_line": 630,
+      "meaning": "目标数组上界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_0b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 631,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_0b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 631,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_0b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 632,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 656,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1b",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 657,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 658,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 658,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 659,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 682,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2b",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 683,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2b",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 683,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 684,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 684,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_2b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 685,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 711,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 712,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 712,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "n3",
+      "proposed_name": "third_dimension_size",
+      "new_name": "third_dimension_size",
+      "status": "renamed",
+      "declaration_line": 712,
+      "meaning": "第三维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 713,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 713,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 714,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1c",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 745,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1c",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 746,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1c",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 747,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1c",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 747,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90",
+      "scope": "module:memory_man/subroutine:ralloc_1c",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 748,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_0i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 29,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_0i",
+      "old_name": "first",
+      "proposed_name": "lower_bound",
+      "new_name": "lower_bound",
+      "status": "renamed",
+      "declaration_line": 30,
+      "meaning": "目标数组下界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_0i",
+      "old_name": "last",
+      "proposed_name": "upper_bound",
+      "new_name": "upper_bound",
+      "status": "renamed",
+      "declaration_line": 30,
+      "meaning": "目标数组上界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_0i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 31,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_0i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 31,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_0i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 32,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 52,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1i",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 53,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 54,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 54,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 55,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 75,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2i",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 76,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2i",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 76,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 77,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 77,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 78,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 99,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 100,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 100,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "n3",
+      "proposed_name": "third_dimension_size",
+      "new_name": "third_dimension_size",
+      "status": "renamed",
+      "declaration_line": 100,
+      "meaning": "第三维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 101,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 101,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 102,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1il",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 123,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1il",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 124,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1il",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 125,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1il",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 125,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1il",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 126,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1r",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 146,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1r",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 147,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1r",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 148,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1r",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 148,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1r",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 149,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2r",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 169,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2r",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 170,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2r",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 170,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2r",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 171,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2r",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 171,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2r",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 172,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1rl",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 192,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1rl",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 193,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1rl",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 194,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1rl",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 194,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1rl",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 195,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_0b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 215,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_0b",
+      "old_name": "first",
+      "proposed_name": "lower_bound",
+      "new_name": "lower_bound",
+      "status": "renamed",
+      "declaration_line": 216,
+      "meaning": "目标数组下界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_0b",
+      "old_name": "last",
+      "proposed_name": "upper_bound",
+      "new_name": "upper_bound",
+      "status": "renamed",
+      "declaration_line": 216,
+      "meaning": "目标数组上界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_0b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 217,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_0b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 217,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_0b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 218,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 238,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1b",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 239,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 240,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 240,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 241,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 261,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2b",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 262,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2b",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 262,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 263,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 263,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_2b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 264,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 285,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 286,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 286,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "n3",
+      "proposed_name": "third_dimension_size",
+      "new_name": "third_dimension_size",
+      "status": "renamed",
+      "declaration_line": 286,
+      "meaning": "第三维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 287,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 287,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_3b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 288,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1c",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 309,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1c",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 310,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1c",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 311,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1c",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 311,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:alloc_1c",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 312,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_1i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 332,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_1i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 333,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_1i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 333,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_2i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 345,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_2i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 346,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_2i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 346,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_3i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 358,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_3i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 359,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_3i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 359,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_1r",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 371,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_1r",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 372,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_1r",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 372,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_2r",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 384,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_2r",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 385,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_2r",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 385,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_1b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 397,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_1b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 398,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_1b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 398,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_2b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 410,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_2b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 411,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_2b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 411,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_3b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 423,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_3b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 424,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_3b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 424,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_1c",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 436,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_1c",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 437,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:dalloc_1c",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 437,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_0i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 450,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_0i",
+      "old_name": "first",
+      "proposed_name": "lower_bound",
+      "new_name": "lower_bound",
+      "status": "renamed",
+      "declaration_line": 451,
+      "meaning": "目标数组下界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_0i",
+      "old_name": "last",
+      "proposed_name": "upper_bound",
+      "new_name": "upper_bound",
+      "status": "renamed",
+      "declaration_line": 451,
+      "meaning": "目标数组上界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_0i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 452,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_0i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 452,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_0i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 453,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 478,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1i",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 479,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 480,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 480,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 481,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 504,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2i",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 505,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2i",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 505,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 506,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 506,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 507,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 533,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 534,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 534,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "n3",
+      "proposed_name": "third_dimension_size",
+      "new_name": "third_dimension_size",
+      "status": "renamed",
+      "declaration_line": 534,
+      "meaning": "第三维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 535,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 535,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3i",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 536,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1r",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 563,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1r",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 564,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1r",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 565,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1r",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 565,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1r",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 566,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2r",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 590,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2r",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 591,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2r",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 591,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2r",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 592,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2r",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 592,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2r",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 593,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_0b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 618,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_0b",
+      "old_name": "first",
+      "proposed_name": "lower_bound",
+      "new_name": "lower_bound",
+      "status": "renamed",
+      "declaration_line": 619,
+      "meaning": "目标数组下界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_0b",
+      "old_name": "last",
+      "proposed_name": "upper_bound",
+      "new_name": "upper_bound",
+      "status": "renamed",
+      "declaration_line": 619,
+      "meaning": "目标数组上界；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_0b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 620,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_0b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 620,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_0b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 621,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 645,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1b",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 646,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 647,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 647,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 648,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 671,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2b",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 672,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2b",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 672,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 673,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 673,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_2b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 674,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 700,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "n1",
+      "proposed_name": "first_dimension_size",
+      "new_name": "first_dimension_size",
+      "status": "renamed",
+      "declaration_line": 701,
+      "meaning": "第一维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "n2",
+      "proposed_name": "second_dimension_size",
+      "new_name": "second_dimension_size",
+      "status": "renamed",
+      "declaration_line": 701,
+      "meaning": "第二维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "n3",
+      "proposed_name": "third_dimension_size",
+      "new_name": "third_dimension_size",
+      "status": "renamed",
+      "declaration_line": 701,
+      "meaning": "第三维尺寸；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 702,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 702,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_3b",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 703,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1c",
+      "old_name": "p",
+      "proposed_name": "array_pointer",
+      "new_name": "array_pointer",
+      "status": "renamed",
+      "declaration_line": 734,
+      "meaning": "本次分配、重分配或释放操作的数组指针；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1c",
+      "old_name": "n",
+      "proposed_name": "element_count",
+      "new_name": "element_count",
+      "status": "renamed",
+      "declaration_line": 735,
+      "meaning": "请求的一维元素数量；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1c",
+      "old_name": "sub",
+      "proposed_name": "caller_label",
+      "new_name": "caller_label",
+      "status": "renamed",
+      "declaration_line": 736,
+      "meaning": "分配诊断使用的调用过程标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1c",
+      "old_name": "var",
+      "proposed_name": "variable_label",
+      "new_name": "variable_label",
+      "status": "renamed",
+      "declaration_line": 736,
+      "meaning": "分配诊断使用的变量标签字符串；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/memory_man.f90_PROFILING",
+      "scope": "module:memory_man/subroutine:ralloc_1c",
+      "old_name": "error",
+      "proposed_name": "allocation_status",
+      "new_name": "allocation_status",
+      "status": "renamed",
+      "declaration_line": 737,
+      "meaning": "ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议"
+    },
+    {
+      "file": "src/lib/libmod/npar_C.f90",
+      "scope": "module:npar_c",
+      "old_name": "nparm",
+      "proposed_name": "nuclear_model_parameter_count",
+      "new_name": "nuclear_model_parameter_count",
+      "status": "renamed",
+      "declaration_line": 11,
+      "meaning": "核模型参数个数；0 对应点核、2 对应 Fermi 模型；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/npar_C.f90",
+      "scope": "module:npar_c",
+      "old_name": "parm",
+      "proposed_name": "nuclear_model_parameters",
+      "new_name": "nuclear_model_parameters",
+      "status": "renamed",
+      "declaration_line": 12,
+      "meaning": "核模型参数数组；Fermi 分支依次读取 c 与 a；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/npot_C.f90",
+      "scope": "module:npot_c",
+      "old_name": "nnuc",
+      "proposed_name": "first_grid_index_beyond_fermi_c",
+      "new_name": "first_grid_index_beyond_fermi_c",
+      "status": "renamed",
+      "declaration_line": 7,
+      "meaning": "Fermi 分支首次满足 r/c > 1 的网格索引；不可泛称核半径；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/npot_C.f90",
+      "scope": "module:npot_c",
+      "old_name": "zz",
+      "proposed_name": "negative_radius_times_potential",
+      "new_name": "negative_radius_times_potential",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "存储的是 -r V(r)；加入核极化后的使用路径也需保持此约定；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/orb_C.f90",
+      "scope": "module:orb_c",
+      "old_name": "nh",
+      "proposed_name": "orbital_symmetry_labels",
+      "new_name": "orbital_symmetry_labels",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "各相对子壳层的字符标签；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/orb_C.f90",
+      "scope": "module:orb_c",
+      "old_name": "e",
+      "proposed_name": "orbital_energy_parameters",
+      "new_name": "orbital_energy_parameters",
+      "status": "renamed",
+      "declaration_line": 15,
+      "meaning": "轨道能量参数；保留当前 E 的符号与零点约定；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/orb_C.f90",
+      "scope": "module:orb_c",
+      "old_name": "gama",
+      "proposed_name": "orbital_origin_exponents",
+      "new_name": "orbital_origin_exponents",
+      "status": "renamed",
+      "declaration_line": 15,
+      "meaning": "近原点径向展开使用的 gamma 指数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/orb_C.f90",
+      "scope": "module:orb_c",
+      "old_name": "ncf",
+      "proposed_name": "csf_count",
+      "new_name": "csf_count",
+      "status": "renamed",
+      "declaration_line": 16,
+      "meaning": "当前所处理 CSF 空间的大小；分块路径中是当前块大小；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/orb_C.f90",
+      "scope": "module:orb_c",
+      "old_name": "nw",
+      "proposed_name": "orbital_count",
+      "new_name": "orbital_count",
+      "status": "renamed",
+      "declaration_line": 16,
+      "meaning": "当前轨道/相对子壳层数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/orb_C.f90",
+      "scope": "module:orb_c",
+      "old_name": "iqa",
+      "proposed_name": "csf_subshell_occupations",
+      "new_name": "csf_subshell_occupations",
+      "status": "renamed",
+      "declaration_line": 17,
+      "meaning": "轨道与 CSF 对应的占据数表；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/orb_C.f90",
+      "scope": "module:orb_c",
+      "old_name": "nak",
+      "proposed_name": "orbital_kappa",
+      "new_name": "orbital_kappa",
+      "status": "renamed",
+      "declaration_line": 19,
+      "meaning": "各轨道的相对论量子数 kappa；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/orb_C.f90",
+      "scope": "module:orb_c",
+      "old_name": "np",
+      "proposed_name": "orbital_principal_n",
+      "new_name": "orbital_principal_n",
+      "status": "renamed",
+      "declaration_line": 19,
+      "meaning": "各轨道的主量子数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/orb_C.f90",
+      "scope": "module:orb_c",
+      "old_name": "nkj",
+      "proposed_name": "orbital_two_j",
+      "new_name": "orbital_two_j",
+      "status": "renamed",
+      "declaration_line": 20,
+      "meaning": "各轨道的 2j；NKJ+1 是子壳层容量；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/orb_C.f90",
+      "scope": "module:orb_c",
+      "old_name": "nkl",
+      "proposed_name": "orbital_l",
+      "new_name": "orbital_l",
+      "status": "renamed",
+      "declaration_line": 20,
+      "meaning": "各轨道的轨道角动量 l；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/pos_C.f90",
+      "scope": "module:pos_c",
+      "old_name": "ncftot",
+      "proposed_name": "total_csf_count",
+      "new_name": "total_csf_count",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "所有对称性块合计 CSF 数；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/pos_C.f90",
+      "scope": "module:pos_c",
+      "old_name": "nvecsiz",
+      "proposed_name": "mixing_coefficient_storage_size",
+      "new_name": "mixing_coefficient_storage_size",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "展开系数存储区的总长度；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/pos_C.f90",
+      "scope": "module:pos_c",
+      "old_name": "ncfpast",
+      "proposed_name": "csf_offsets_by_block",
+      "new_name": "csf_offsets_by_block",
+      "status": "renamed",
+      "declaration_line": 7,
+      "meaning": "当前块之前的 CSF 累计偏移；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/pos_C.f90",
+      "scope": "module:pos_c",
+      "old_name": "ncminpast",
+      "proposed_name": "eigenvalue_offsets_by_block",
+      "new_name": "eigenvalue_offsets_by_block",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "当前块之前的目标态/本征值累计偏移；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/pos_C.f90",
+      "scope": "module:pos_c",
+      "old_name": "nevecpast",
+      "proposed_name": "mixing_offsets_by_block",
+      "new_name": "mixing_offsets_by_block",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "当前块之前的展开系数累计偏移；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/sacoef_C.f90",
+      "scope": "module:sacoef_c",
+      "old_name": "tcoeff",
+      "proposed_name": "channel_coefficients",
+      "new_name": "channel_coefficients",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "按通道缓存的角系数值；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/sacoef_C.f90",
+      "scope": "module:sacoef_c",
+      "old_name": "iiclmn",
+      "proposed_name": "channel_csf_columns",
+      "new_name": "channel_csf_columns",
+      "status": "renamed",
+      "declaration_line": 14,
+      "meaning": "按通道记录的 JA/CSF 列号；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/sacoef_C.f90",
+      "scope": "module:sacoef_c",
+      "old_name": "iindex",
+      "proposed_name": "channel_matrix_positions",
+      "new_name": "channel_matrix_positions",
+      "status": "renamed",
+      "declaration_line": 14,
+      "meaning": "按通道记录的矩阵位置索引 npos；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/sacoef_C.f90",
+      "scope": "module:sacoef_c",
+      "old_name": "ilabel",
+      "proposed_name": "channel_packed_orbital_labels",
+      "new_name": "channel_packed_orbital_labels",
+      "status": "renamed",
+      "declaration_line": 14,
+      "meaning": "按通道记录的打包轨道标签；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/stat_C.f90",
+      "scope": "module:stat_c",
+      "old_name": "jqsa",
+      "proposed_name": "csf_subshell_quantum_codes",
+      "new_name": "csf_subshell_quantum_codes",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "每个 CSF 的子壳层量子数编码表；各维编码需保留；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/stat_C.f90",
+      "scope": "module:stat_c",
+      "old_name": "jcupa",
+      "proposed_name": "csf_coupling_quantum_codes",
+      "new_name": "csf_coupling_quantum_codes",
+      "status": "renamed",
+      "declaration_line": 15,
+      "meaning": "每个 CSF 的中间耦合量子数编码表；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/suite_parameters_M.f90",
+      "scope": "module:suite_parameters",
+      "old_name": "keyorb",
+      "proposed_name": "orbital_index_radix",
+      "new_name": "orbital_index_radix",
+      "status": "renamed",
+      "declaration_line": 9,
+      "meaning": "轨道索引打包的基数；不是轨道数量；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/suite_parameters_M.f90",
+      "scope": "module:suite_parameters",
+      "old_name": "nnnp",
+      "proposed_name": "max_radial_points",
+      "new_name": "max_radial_points",
+      "status": "renamed",
+      "declaration_line": 10,
+      "meaning": "编译期径向网格容量；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/suite_parameters_M.f90",
+      "scope": "module:suite_parameters",
+      "old_name": "nnn1",
+      "proposed_name": "radial_workspace_capacity",
+      "new_name": "radial_workspace_capacity",
+      "status": "renamed",
+      "declaration_line": 11,
+      "meaning": "含额外 10 点的径向工作区容量；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/suite_parameters_M.f90",
+      "scope": "module:suite_parameters",
+      "old_name": "nnnw",
+      "proposed_name": "max_orbitals",
+      "new_name": "max_orbitals",
+      "status": "renamed",
+      "declaration_line": 12,
+      "meaning": "编译期轨道/相对子壳层容量；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/suite_parameters_M.f90",
+      "scope": "module:suite_parameters",
+      "old_name": "nnnwm1",
+      "proposed_name": "max_orbitals_minus_one",
+      "new_name": "max_orbitals_minus_one",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "轨道容量减一；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/suite_parameters_M.f90",
+      "scope": "module:suite_parameters",
+      "old_name": "nnnwm2",
+      "proposed_name": "max_orbitals_minus_two",
+      "new_name": "max_orbitals_minus_two",
+      "status": "renamed",
+      "declaration_line": 14,
+      "meaning": "轨道容量减二；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/wave_C.f90",
+      "scope": "module:wave_c",
+      "old_name": "mf",
+      "proposed_name": "orbital_last_grid_index",
+      "new_name": "orbital_last_grid_index",
+      "status": "renamed",
+      "declaration_line": 7,
+      "meaning": "每个轨道存储的有效径向范围终点索引；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/wave_C.f90",
+      "scope": "module:wave_c",
+      "old_name": "pz",
+      "proposed_name": "orbital_origin_parameters",
+      "new_name": "orbital_origin_parameters",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "各轨道的近原点展开/斜率参数；不能当作普通网格上的 P(0)；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/wave_C.f90",
+      "scope": "module:wave_c",
+      "old_name": "pf",
+      "proposed_name": "radial_large_components",
+      "new_name": "radial_large_components",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "各轨道的径向大分量表；源码建议"
+    },
+    {
+      "file": "src/lib/libmod/wave_C.f90",
+      "scope": "module:wave_c",
+      "old_name": "qf",
+      "proposed_name": "radial_small_components",
+      "new_name": "radial_small_components",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "各轨道的径向小分量表；源码建议"
+    },
+    {
+      "file": "src/lib/librang90/rkco_gg.f90",
+      "scope": "subroutine:rkco_gg",
+      "old_name": "cord",
+      "proposed_name": "coefficient_consumer",
+      "new_name": "coefficient_consumer",
+      "status": "renamed",
+      "declaration_line": 45,
+      "meaning": "角系数处理回调；接口联动建议"
+    },
+    {
+      "file": "src/lib/librang90/rkco_gg_I.f90",
+      "scope": "module:rkco_gg_i/interface:interface@2/subroutine:rkco_gg",
+      "old_name": "cord",
+      "proposed_name": "coefficient_consumer",
+      "new_name": "coefficient_consumer",
+      "status": "renamed",
+      "declaration_line": 7,
+      "meaning": "角系数处理回调；接口联动建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj.f90",
+      "scope": "subroutine:sixj",
+      "old_name": "i",
+      "proposed_name": "two_j1",
+      "new_name": "two_j1",
+      "status": "renamed",
+      "declaration_line": 38,
+      "meaning": "6j 符号第一行第 1 个角动量的二倍；源码建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj.f90",
+      "scope": "subroutine:sixj",
+      "old_name": "j",
+      "proposed_name": "two_j2",
+      "new_name": "two_j2",
+      "status": "renamed",
+      "declaration_line": 38,
+      "meaning": "6j 符号第一行第 2 个角动量的二倍；源码建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj.f90",
+      "scope": "subroutine:sixj",
+      "old_name": "k",
+      "proposed_name": "two_j3",
+      "new_name": "two_j3",
+      "status": "renamed",
+      "declaration_line": 38,
+      "meaning": "6j 符号第一行第 3 个角动量的二倍；源码建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj.f90",
+      "scope": "subroutine:sixj",
+      "old_name": "l",
+      "proposed_name": "two_j4",
+      "new_name": "two_j4",
+      "status": "renamed",
+      "declaration_line": 38,
+      "meaning": "6j 符号第二行第 1 个角动量的二倍；源码建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj.f90",
+      "scope": "subroutine:sixj",
+      "old_name": "m",
+      "proposed_name": "two_j5",
+      "new_name": "two_j5",
+      "status": "renamed",
+      "declaration_line": 38,
+      "meaning": "6j 符号第二行第 2 个角动量的二倍；源码建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj.f90",
+      "scope": "subroutine:sixj",
+      "old_name": "n",
+      "proposed_name": "two_j6",
+      "new_name": "two_j6",
+      "status": "renamed",
+      "declaration_line": 38,
+      "meaning": "6j 符号第二行第 3 个角动量的二倍；源码建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj.f90",
+      "scope": "subroutine:sixj",
+      "old_name": "itik",
+      "proposed_name": "check_triangle_conditions",
+      "new_name": "check_triangle_conditions",
+      "status": "renamed",
+      "declaration_line": 39,
+      "meaning": "非零时先检查三角条件；保持整数控制约定；源码建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj.f90",
+      "scope": "subroutine:sixj",
+      "old_name": "si",
+      "proposed_name": "six_j_value",
+      "new_name": "six_j_value",
+      "status": "renamed",
+      "declaration_line": 40,
+      "meaning": "计算出的 6j 符号值；源码建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj.f90",
+      "scope": "subroutine:sixj",
+      "old_name": "raca",
+      "proposed_name": "small_six_j_cache",
+      "new_name": "small_six_j_cache",
+      "status": "renamed",
+      "declaration_line": 45,
+      "meaning": "小角动量参数的 6j 缓存；源码建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj.f90",
+      "scope": "subroutine:sixj",
+      "old_name": "undef",
+      "proposed_name": "uncached_six_j_sentinel",
+      "new_name": "uncached_six_j_sentinel",
+      "status": "renamed",
+      "declaration_line": 46,
+      "meaning": "尚未缓存的标记值；源码建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj.f90",
+      "scope": "subroutine:sixj",
+      "old_name": "save",
+      "proposed_name": "store_in_six_j_cache",
+      "new_name": "store_in_six_j_cache",
+      "status": "renamed",
+      "declaration_line": 47,
+      "meaning": "是否将本次结果写入缓存的逻辑变量；不是 SAVE 属性；源码建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj_I.f90",
+      "scope": "module:sixj_i/interface:interface@2/subroutine:sixj",
+      "old_name": "i",
+      "proposed_name": "two_j1",
+      "new_name": "two_j1",
+      "status": "renamed",
+      "declaration_line": 6,
+      "meaning": "6j 符号第一行第 1 个角动量的二倍；接口联动建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj_I.f90",
+      "scope": "module:sixj_i/interface:interface@2/subroutine:sixj",
+      "old_name": "j",
+      "proposed_name": "two_j2",
+      "new_name": "two_j2",
+      "status": "renamed",
+      "declaration_line": 7,
+      "meaning": "6j 符号第一行第 2 个角动量的二倍；接口联动建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj_I.f90",
+      "scope": "module:sixj_i/interface:interface@2/subroutine:sixj",
+      "old_name": "k",
+      "proposed_name": "two_j3",
+      "new_name": "two_j3",
+      "status": "renamed",
+      "declaration_line": 8,
+      "meaning": "6j 符号第一行第 3 个角动量的二倍；接口联动建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj_I.f90",
+      "scope": "module:sixj_i/interface:interface@2/subroutine:sixj",
+      "old_name": "l",
+      "proposed_name": "two_j4",
+      "new_name": "two_j4",
+      "status": "renamed",
+      "declaration_line": 9,
+      "meaning": "6j 符号第二行第 1 个角动量的二倍；接口联动建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj_I.f90",
+      "scope": "module:sixj_i/interface:interface@2/subroutine:sixj",
+      "old_name": "m",
+      "proposed_name": "two_j5",
+      "new_name": "two_j5",
+      "status": "renamed",
+      "declaration_line": 10,
+      "meaning": "6j 符号第二行第 2 个角动量的二倍；接口联动建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj_I.f90",
+      "scope": "module:sixj_i/interface:interface@2/subroutine:sixj",
+      "old_name": "n",
+      "proposed_name": "two_j6",
+      "new_name": "two_j6",
+      "status": "renamed",
+      "declaration_line": 11,
+      "meaning": "6j 符号第二行第 3 个角动量的二倍；接口联动建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj_I.f90",
+      "scope": "module:sixj_i/interface:interface@2/subroutine:sixj",
+      "old_name": "itik",
+      "proposed_name": "check_triangle_conditions",
+      "new_name": "check_triangle_conditions",
+      "status": "renamed",
+      "declaration_line": 12,
+      "meaning": "非零时先检查三角条件；保持整数控制约定；接口联动建议"
+    },
+    {
+      "file": "src/lib/librang90/sixj_I.f90",
+      "scope": "module:sixj_i/interface:interface@2/subroutine:sixj",
+      "old_name": "si",
+      "proposed_name": "six_j_value",
+      "new_name": "six_j_value",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "计算出的 6j 符号值；接口联动建议"
+    },
+    {
+      "file": "src/lib/mpi90/mpi_C.f90",
+      "scope": "module:mpi_c",
+      "old_name": "host",
+      "proposed_name": "processor_name",
+      "new_name": "processor_name",
+      "status": "renamed",
+      "declaration_line": 13,
+      "meaning": "MPI 返回的处理器名称；源码建议"
+    },
+    {
+      "file": "src/lib/mpi90/mpi_C.f90",
+      "scope": "module:mpi_c",
+      "old_name": "lenhost",
+      "proposed_name": "processor_name_length",
+      "new_name": "processor_name_length",
+      "status": "renamed",
+      "declaration_line": 14,
+      "meaning": "处理器名称的有效字符数；源码建议"
+    },
+    {
+      "file": "src/lib/mpi90/mpi_C.f90",
+      "scope": "module:mpi_c",
+      "old_name": "myid",
+      "proposed_name": "mpi_rank",
+      "new_name": "mpi_rank",
+      "status": "renamed",
+      "declaration_line": 14,
+      "meaning": "MPI 进程编号，从 0 开始；源码建议"
+    },
+    {
+      "file": "src/lib/mpi90/mpi_C.f90",
+      "scope": "module:mpi_c",
+      "old_name": "nprocs",
+      "proposed_name": "mpi_process_count",
+      "new_name": "mpi_process_count",
+      "status": "renamed",
+      "declaration_line": 14,
+      "meaning": "MPI 进程总数；源码建议"
+    },
+    {
+      "file": "src/lib/mpi90/mpi_C.f90",
+      "scope": "module:mpi_c",
+      "old_name": "ierr",
+      "proposed_name": "mpi_error_code",
+      "new_name": "mpi_error_code",
+      "status": "renamed",
+      "declaration_line": 15,
+      "meaning": "MPI 调用返回码；源码建议"
+    },
+    {
+      "file": "src/lib/mpi90/mpi_C.f90",
+      "scope": "module:mpi_c",
+      "old_name": "istat",
+      "proposed_name": "mpi_status_buffer",
+      "new_name": "mpi_status_buffer",
+      "status": "renamed",
+      "declaration_line": 16,
+      "meaning": "MPI 状态数组；保留 MPI_STATUS_SIZE；源码建议"
+    }
+  ]
+}

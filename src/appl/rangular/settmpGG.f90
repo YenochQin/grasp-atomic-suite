@@ -36,7 +36,7 @@
             'UNKNOWN', ierr)
       if (ierr /= 0) then
          close(k)
-         write (istde, *) 'Error when opening the tmp files'
+         write (stderr_unit, *) 'Error when opening the tmp files'
          stop
       end if
       write (k) 'MCP', nb

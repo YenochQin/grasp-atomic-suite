@@ -17,7 +17,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnp
+      use parameter_def,    only: max_radial_points
       use damp_c
       use def_c
       use grid_c
@@ -68,74 +68,74 @@
 !
          factor = 1.0d00 - odampj
 !
-         pz(j) = factor*p0 + odampj*pz(j)
+         orbital_origin_parameters(j) = factor*p0 + odampj*orbital_origin_parameters(j)
 !
-         mtpo = mf(j)
+         mtpo = orbital_last_grid_index(j)
          mtpn = mtp0
          mtp0 = mtpo
 !
          mtp = max(mtpn,mtpo)
          do i = 1, mtp
-            poldi = pf(i,j)
-            pf(i,j) = factor*p(i) + odampj*pf(i,j)
+            poldi = radial_large_components(i,j)
+            radial_large_components(i,j) = factor*p(i) + odampj*radial_large_components(i,j)
             p(i) = poldi
-            qoldi = qf(i,j)
-            qf(i,j) = factor*q(i) + odampj*qf(i,j)
+            qoldi = radial_small_components(i,j)
+            radial_small_components(i,j) = factor*q(i) + odampj*radial_small_components(i,j)
             q(i) = qoldi
          end do
 !
 !   Compute normalization factor
 !
-         mf(j) = mtp
+         orbital_last_grid_index(j) = mtp
          dnorm = rint(j,j,0)
          dnfac = 1.0d00/sqrt(dnorm)
 !
 !   Determine if inversion is necessary
 !
          if (check) then
-            call count (pf(:nnnp,j), mtp, nncff, sgn)
+            call count (radial_large_components(:max_radial_points,j), mtp, nncff, sgn)
             if (sgn < 0.0d00) then
                inv = inv + 1
                dnfac = -dnfac
             endif
          endif
 !
-         pz(j) = pz(j)*dnfac
-         pf(:mtp,j) = dnfac*pf(:mtp,j)
-         qf(:mtp,j) = dnfac*qf(:mtp,j)
+         orbital_origin_parameters(j) = orbital_origin_parameters(j)*dnfac
+         radial_large_components(:mtp,j) = dnfac*radial_large_components(:mtp,j)
+         radial_small_components(:mtp,j) = dnfac*radial_small_components(:mtp,j)
 !
 !   Find new MF(J)
 !
          mfj = mtp + 1
     3    continue
          mfj = mfj - 1
-         if (abs(pf(mfj,j)) < eps) then
-            pf(mfj,j) = 0.0d00
-            qf(mfj,j) = 0.0d00
+         if (abs(radial_large_components(mfj,j)) < eps) then
+            radial_large_components(mfj,j) = 0.0d00
+            radial_small_components(mfj,j) = 0.0d00
             go to 3
          else
-            mf(j) = mfj
+            orbital_last_grid_index(j) = mfj
          endif
 !
       else
 !
-         pz(j) = p0
+         orbital_origin_parameters(j) = p0
 !
-         mtpo = mf(j)
+         mtpo = orbital_last_grid_index(j)
          mtpn = mtp0
          mtp0 = mtpo
 !
          mtp = max(mtpn,mtpo)
          do i = 1, mtp
-            poldi = pf(i,j)
-            pf(i,j) = p(i)
+            poldi = radial_large_components(i,j)
+            radial_large_components(i,j) = p(i)
             p(i) = poldi
-            qoldi = qf(i,j)
-            qf(i,j) = q(i)
+            qoldi = radial_small_components(i,j)
+            radial_small_components(i,j) = q(i)
             q(i) = qoldi
          end do
 !
-         mf(j) = mtp
+         orbital_last_grid_index(j) = mtp
 !
       endif
 !

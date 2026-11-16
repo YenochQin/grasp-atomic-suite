@@ -16,9 +16,9 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnw
+      use parameter_def, only: max_orbitals
       use stat_c,        only: jcupar
-      use iounit_c,      only: istde
+      use iounit_c,      only: stderr_unit
       use orb_c,         only: ncfr
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -34,7 +34,7 @@
 !
 !
       if (icsf>=1 .and. icsf<=ncfr) then
-         isparr = jcupar(nnnw,icsf)
+         isparr = jcupar(max_orbitals,icsf)
 
          if (isparr > 127) isparr = isparr - 256
          isparr = sign(1,isparr)

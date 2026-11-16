@@ -19,10 +19,10 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnp, nnn1
+      use parameter_def, only: max_radial_points, radial_workspace_capacity
       use vast_kind_param, only:  double
       use left_c, only: set
-      use orb_c, only: np, nh
+      use orb_c, only: orbital_principal_n, orbital_symmetry_labels
       use wave_c
       use whfrom_c, only: source
 !-----------------------------------------------
@@ -37,7 +37,7 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer , intent(in) :: nsubs
-      integer , intent(in) :: index(nnnw)
+      integer , intent(in) :: index(max_orbitals)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -58,7 +58,7 @@
 !   Estimate the leading coefficient of the series expansion for
 !   the orbital
 !
-         pz(loc) = 10.0d00
+         orbital_origin_parameters(loc) = 10.0d00
 !
 !   Calculate radial wavefunctions
 !
@@ -67,7 +67,7 @@
 !   Message if SOLVH did not converge; reset SET(LOC) otherwise
 !
          if (fail) then
-            write (*, 300) np(loc), nh(loc)
+            write (*, 300) orbital_principal_n(loc), orbital_symmetry_labels(loc)
          else
             set(loc) = .true.
                !SOURCE(LOC) = 'Thomas-Fermi estimate'

@@ -26,8 +26,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: byte
-      use parameter_def,   only: nnnw
-      use orb_c,           only: ncf, iqa
+      use parameter_def,   only: max_orbitals
+      use orb_c,           only: csf_count, csf_subshell_occupations
       use syma_c,          only: jpgg, nblk0
       use mpi_c
       use lodcsh2gg_i, only: lodcsh2gg
@@ -42,7 +42,7 @@
       integer :: mpix_int1
 !-----------------------------------------------------------------------
 !
-      if (myid == 0) then
+      if (mpi_rank == 0) then
 !GG         CALL lodcsh2 ((nfile), (ncore), (jblock))
          call lodcsh2gg ((nfile), (ncore), (jblock))
       endif
@@ -51,10 +51,10 @@
 !cjb mpix_bytes
 !cjb if your compiler or your MPI does not accept type MPIX_INT1
 !cjb try standard MPI type MPI_INTEGER1
-      call mpix_bytes (1, mpix_int1, ierr)
-      call mpi_bcast (iqa(:,:),nnnw*ncf,mpix_int1,0,mpi_comm_world,ierr)
+      call mpix_bytes (1, mpix_int1, mpi_error_code)
+      call mpi_bcast (csf_subshell_occupations(:,:),max_orbitals*csf_count,mpix_int1,0,mpi_comm_world,mpi_error_code)
 !cjb  CALL MPI_Bcast (IQA(:,:),NNNW*NCF,MPI_INTEGER1,0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast (jpgg(:),nblk0,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (jpgg(:),nblk0,mpi_integer,0,mpi_comm_world,mpi_error_code)
 !GG      CALL MPI_Bcast                                                   &
 !GG               (JQSA(:,:,:),3*NNNW*NCF,MPIX_INT1,0,MPI_COMM_WORLD,ierr)
 !GG      CALL MPI_Bcast                                                   &

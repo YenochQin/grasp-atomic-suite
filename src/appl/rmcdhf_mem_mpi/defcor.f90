@@ -51,25 +51,25 @@
 !
 !   Intermediate points
 !
-      mfjm3 = mf(j) - 3
+      mfjm3 = orbital_last_grid_index(j) - 3
       do i = 3, mfjm3
 !
-         dp(i) = w3*(pf(i + 3,j) - pf(i - 2,j)) + &
-                 w2*(pf(i + 2,j) - pf(i - 1,j)) + &
-                 w1*(pf(i + 1,j) - pf(i,j))
+         dp(i) = w3*(radial_large_components(i + 3,j) - radial_large_components(i - 2,j)) + &
+                 w2*(radial_large_components(i + 2,j) - radial_large_components(i - 1,j)) + &
+                 w1*(radial_large_components(i + 1,j) - radial_large_components(i,j))
 !
-         dq(i) = w3*(qf(i + 3,j) - qf(i - 2,j)) + &
-                 w2*(qf(i + 2,j) - qf(i - 1,j)) + &
-                 w1*(qf(i + 1,j) - qf(i,j))
+         dq(i) = w3*(radial_small_components(i + 3,j) - radial_small_components(i - 2,j)) + &
+                 w2*(radial_small_components(i + 2,j) - radial_small_components(i - 1,j)) + &
+                 w1*(radial_small_components(i + 1,j) - radial_small_components(i,j))
 !
       end do
 !
 !   Set remaining deferred corrections to zero: slopes are
 !   small in this region
 !
-      mfjm2 = mf(j) - 2
-      dp(mfjm2:n) = 0.0d00
-      dq(mfjm2:n) = 0.0d00
+      mfjm2 = orbital_last_grid_index(j) - 2
+      dp(mfjm2:radial_point_count) = 0.0d00
+      dq(mfjm2:radial_point_count) = 0.0d00
 !
       return
       end subroutine defcor

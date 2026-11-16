@@ -18,12 +18,12 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use parameter_def,   only:  nnnw
+      use parameter_def,   only:  max_orbitals
       use debug_c
       use def_c
       use grid_c
       use orb_c
-      use wave_c, only: pz, mf, pf, qf
+      use wave_c, only: orbital_origin_parameters, orbital_last_grid_index, radial_large_components, radial_small_components
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -32,9 +32,9 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(nnnw) :: j
+      integer, dimension(max_orbitals) :: j
       integer :: l, nakl, kount, mtp0, k, mtp, i
-      real(double), dimension(nnnw) :: ovlap
+      real(double), dimension(max_orbitals) :: ovlap
       real(double) :: eps, ovrlap, dnorm, factor
       logical :: changed
 !-----------------------------------------------
@@ -59,20 +59,20 @@
 !
 !      IF (NOVL .EQ. 0) RETURN
 !
-      do l = 2, nw
+      do l = 2, orbital_count
 !
-         nakl = nak(l)
+         nakl = orbital_kappa(l)
          kount = 0
 !XHH MTP0 introduced to count the maximum number of points during
 !    orthogonalization of the L-th orbital to other orbitals
 !    The logical variable changed is initialized to .F.
 
-         mtp0 = mf(l)
+         mtp0 = orbital_last_grid_index(l)
          changed = .false.
 !
          do k = 1, l - 1
 !
-            if (nak(k) /= nakl) cycle
+            if (orbital_kappa(k) /= nakl) cycle
 !XHH
             changed = .true.
 !
@@ -86,12 +86,12 @@
             j(kount) = k
             ovlap(kount) = ovrlap
 !
-            pz(l) = pz(l) - ovrlap*pz(k)
-            mtp = max(mf(l),mf(k))
-            mtp0 = max(mtp0,mf(k))
+            orbital_origin_parameters(l) = orbital_origin_parameters(l) - ovrlap*orbital_origin_parameters(k)
+            mtp = max(orbital_last_grid_index(l),orbital_last_grid_index(k))
+            mtp0 = max(mtp0,orbital_last_grid_index(k))
 
-            pf(:mtp,l) = pf(:mtp,l) - ovrlap*pf(:mtp,k)
-            qf(:mtp,l) = qf(:mtp,l) - ovrlap*qf(:mtp,k)
+            radial_large_components(:mtp,l) = radial_large_components(:mtp,l) - ovrlap*radial_large_components(:mtp,k)
+            radial_small_components(:mtp,l) = radial_small_components(:mtp,l) - ovrlap*radial_small_components(:mtp,k)
          end do
 !
 !   Normalise
@@ -103,13 +103,13 @@
          if (changed) then
             mtp = mtp0
 
-            mf(l) = mtp
+            orbital_last_grid_index(l) = mtp
             dnorm = rint(l,l,0)
             factor = 1.0d00/sqrt(dnorm)
 !
-            pz(l) = factor*pz(l)
-            pf(2:mtp,l) = factor*pf(2:mtp,l)
-            qf(2:mtp,l) = factor*qf(2:mtp,l)
+            orbital_origin_parameters(l) = factor*orbital_origin_parameters(l)
+            radial_large_components(2:mtp,l) = factor*radial_large_components(2:mtp,l)
+            radial_small_components(2:mtp,l) = factor*radial_small_components(2:mtp,l)
 !
 !   Find new MF(L)
 !
@@ -122,12 +122,12 @@
 !cjb Subscript out of range for array pf
            if ( mtp .ge. 1 ) then
 !cjb
-            if (abs(pf(mtp,l)) < eps) then
-               pf(mtp,l) = 0.0d00
-               qf(mtp,l) = 0.0d00
+            if (abs(radial_large_components(mtp,l)) < eps) then
+               radial_large_components(mtp,l) = 0.0d00
+               radial_small_components(mtp,l) = 0.0d00
                go to 7
             else
-               mf(l) = mtp
+               orbital_last_grid_index(l) = mtp
             endif
 !cjb endif
            endif
@@ -157,7 +157,8 @@
 !      WRITE (*,301)
 !     :      (OVLAP(I),NP(L),NH(L),NP(J(I)),NH(J(I)),I = 1,KOUNT)
 !---------------------------------------------------------------
-         write (99, 301) (ovlap(i),np(l),nh(l),np(j(i)),nh(j(i)),i=1,kount)
+         write (99, 301) (ovlap(i),orbital_principal_n(l),orbital_symmetry_labels(l),orbital_principal_n(j(i)), &
+            & orbital_symmetry_labels(j(i)),i=1,kount)
 !
       end do
 !

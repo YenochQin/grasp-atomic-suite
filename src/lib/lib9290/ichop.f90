@@ -16,8 +16,8 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnw
-      use orb_c,         only: nkl, nkj
+      use parameter_def, only: max_orbitals
+      use orb_c,         only: orbital_l, orbital_two_j
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -40,7 +40,7 @@
 !     IF ((ISUBSH .GE. 1) .AND. (ISUBSH .LE. NW)) THEN
 !        IF ((ICSF .GE. 1) .AND. (ICSF .LE. NCF)) THEN
       iocc = iq(isubsh,icsf)
-      ifull = nkj(isubsh) + 1
+      ifull = orbital_two_j(isubsh) + 1
       if (iocc == 0) then
          ichop = -1
       else if (iocc == ifull) then

@@ -21,7 +21,19 @@
 
 !    Compatibility interface: all limits are defined in suite_parameters.
 !    Keep existing USE parameter_def callers without duplicate definitions.
-      use suite_parameters, only: keyorb, nnnp, nnn1, nnnw, nnnwm1, nnnwm2
+      use suite_parameters, only: orbital_index_radix
+      use suite_parameters, only: max_radial_points
+      use suite_parameters, only: radial_workspace_capacity
+      use suite_parameters, only: max_orbitals
+      use suite_parameters, only: max_orbitals_minus_one
+      use suite_parameters, only: max_orbitals_minus_two
+! Legacy capacity names remain aliases of the same named constants.
+      use suite_parameters, only: keyorb => orbital_index_radix
+      use suite_parameters, only: nnnp => max_radial_points
+      use suite_parameters, only: nnn1 => radial_workspace_capacity
+      use suite_parameters, only: nnnw => max_orbitals
+      use suite_parameters, only: nnnwm1 => max_orbitals_minus_one
+      use suite_parameters, only: nnnwm2 => max_orbitals_minus_two
       implicit none
       end module parameter_def
 !======================================================================

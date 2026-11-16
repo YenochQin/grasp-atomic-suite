@@ -18,14 +18,14 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnp
+      use parameter_def,   only: max_radial_points
       use memory_man
       use debug_c
-      use def_c,           only: c, z
+      use def_c,           only: speed_of_light_au, nuclear_charge
       use grid_c
       use npar_c
       use orb_c
-      use wave_c,          only: pz, pf,qf
+      use wave_c,          only: orbital_origin_parameters, radial_large_components,radial_small_components
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -55,31 +55,31 @@
 !
 !   Allocate storage to orbital arrays
 !
-      call alloc(pf, nnnp, nw, 'PF', 'LODRWF')
-      call alloc(qf, nnnp, nw, 'QF', 'LODRWF')
+      call alloc(radial_large_components, max_radial_points, orbital_count, 'PF', 'LODRWF')
+      call alloc(radial_small_components, max_radial_points, orbital_count, 'QF', 'LODRWF')
 
 !
 !   Setup: (1) Orbital arrays to zero
 !          (2) Array E to -1 (no orbitals estimated)
 !          (3) Parameters GAMMA for each orbital
 !
-      con = z/c
+      con = nuclear_charge/speed_of_light_au
       con = con*con
 !
-      do j = 1, nw
+      do j = 1, orbital_count
 !
-         pf(:n,j) = 0.0d00
-         qf(:n,j) = 0.0d00
+         radial_large_components(:radial_point_count,j) = 0.0d00
+         radial_small_components(:radial_point_count,j) = 0.0d00
 !
-         e(j) = -1.0d00
+         orbital_energy_parameters(j) = -1.0d00
 !
-         k = abs(nak(j))
-         if (nparm > 0) then
-            gama(j) = dble(k)
-         else if (nparm == 0) then
+         k = abs(orbital_kappa(j))
+         if (nuclear_model_parameter_count > 0) then
+            orbital_origin_exponents(j) = dble(k)
+         else if (nuclear_model_parameter_count == 0) then
             fkk = dble(k*k)
             if (fkk >= con) then
-               gama(j) = sqrt(fkk - con)
+               orbital_origin_exponents(j) = sqrt(fkk - con)
             else
                !WRITE (istde,*) 'LODRWF: Imaginary gamma parameter'
                !WRITE (istde,*) ' for ',NP(J),NH(J),' orbital; the'
@@ -107,12 +107,12 @@
          read (23) pzy, (pa(i),i=1,my), (qa(i),i=1,my)
          read (23) (ra(i),i=1,my)
 
-         do j = 1, nw
-            if (.not.(e(j)<0.0d00 .and. npy==np(j) .and. naky==nak(j))) cycle
-            pz(j) = pzy
-            e(j) = ey
+         do j = 1, orbital_count
+            if (.not.(orbital_energy_parameters(j)<0.0d00 .and. npy==orbital_principal_n(j) .and. naky==orbital_kappa(j))) cycle
+            orbital_origin_parameters(j) = pzy
+            orbital_energy_parameters(j) = ey
             call intrpq(pa, qa, my, ra, j, dnorm)
-            if (ldbpr(3)) write (99, 301) np(j), nh(j), e(j), dnorm
+            if (ldbpr(3)) write (99, 301) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_energy_parameters(j), dnorm
             nwin = nwin + 1
          end do
          call dalloc (pa, 'PA', 'LODRWF' )
@@ -124,7 +124,7 @@
 !
 !   Stop with an error message if all orbitals are not known
 !
-      if (nwin < nw) then
+      if (nwin < orbital_count) then
          iierr = 1
          go to 5
       endif

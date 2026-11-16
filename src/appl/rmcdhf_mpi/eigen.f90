@@ -42,22 +42,22 @@
 !
 !   Initialization
 !
-      mtp = mf(j)
+      mtp = orbital_last_grid_index(j)
 !
 !   Exchange term
 !
       ta(1) = 0.0d00
       do i = 2, mtp
-         ta(i) = (pf(i,j)*xq(i)-qf(i,j)*xp(i))*rpor(i)
+         ta(i) = (radial_large_components(i,j)*xq(i)-radial_small_components(i,j)*xp(i))*radial_derivative_over_radius(i)
       end do
       call quad (piece1)
-      piece1 = c*piece1
+      piece1 = speed_of_light_au*piece1
 !
 !   Direct term
 !
       ta(1) = 0.0d00
       do i = 2, mtp
-         ta(i) = (pf(i,j)**2 + qf(i,j)**2)*yp(i)*rpor(i)
+         ta(i) = (radial_large_components(i,j)**2 + radial_small_components(i,j)**2)*yp(i)*radial_derivative_over_radius(i)
       end do
       call quad (piece2)
 !
@@ -65,25 +65,25 @@
 !
       ta(1) = 0.0d00
       do i = 2, mtp
-         ta(i) = qf(i,j)**2*rp(i)
+         ta(i) = radial_small_components(i,j)**2*radial_grid_derivative(i)
       end do
       call quad (piece3)
-      piece3 = 2.0d00*c*c*piece3
+      piece3 = 2.0d00*speed_of_light_au*speed_of_light_au*piece3
 !
       ta(1) = 0.0d00
       do i = 2, mtp
-         ta(i) = (pf(i,j)*qf(i,j))*rpor(i)
+         ta(i) = (radial_large_components(i,j)*radial_small_components(i,j))*radial_derivative_over_radius(i)
       end do
       call quad (piece4)
-      piece4 = -2.0d00*dble(nak(j))*c*piece4
+      piece4 = -2.0d00*dble(orbital_kappa(j))*speed_of_light_au*piece4
 !
       call dpbdt (j)
       ta(1) = 0.0d00
       do i = 2, mtp
-         ta(i) = pf(i,j)*tb(i) - qf(i,j)*ta(i)
+         ta(i) = radial_large_components(i,j)*tb(i) - radial_small_components(i,j)*ta(i)
       end do
       call quad (piece5)
-      piece5 = c*piece5/h
+      piece5 = speed_of_light_au*piece5/transformed_grid_step
 !
 !   Assembly
 !

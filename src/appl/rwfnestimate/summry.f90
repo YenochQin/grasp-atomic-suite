@@ -41,14 +41,15 @@
 !
       write (nunit, 300)
 !
-      do i = 1, nw
+      do i = 1, orbital_count
          lenth = len_trim(source(i))
 !--------Output P(2) and Q(2) for each orbital
 !         WRITE (NUNIT, 301) NP(I), NH(I), E(I), PZ(I), GAMA(I), PF(2,I), QF(2,I&
 !            ), MF(I), SOURCE(I)(1:LENTH)
 !--------Output <r> (RINT(I,I,1)) for each orbital
-         write (nunit, 301) np(i), nh(i), e(i), pz(i), gama(i), rint(i,i,1)&
-             , mf(i), source(i)(1:lenth)
+         write (nunit, 301) orbital_principal_n(i), orbital_symmetry_labels(i), orbital_energy_parameters(i), &
+            & orbital_origin_parameters(i), orbital_origin_exponents(i), rint(i,i,1)&
+             , orbital_last_grid_index(i), source(i)(1:lenth)
 !         WRITE (NUNIT,302) SOURCE(I)(1:LENTH)
       end do
 !

@@ -8,8 +8,8 @@
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:23:52  12/28/06
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      integer :: nparm
-      real(double), dimension(2) :: parm
+      integer :: nuclear_model_parameter_count
+      real(double), dimension(2) :: nuclear_model_parameters
       end module npar_c
 
       module nsmdat_c

@@ -35,7 +35,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use parameter_def,   only: keyorb
+      use parameter_def,   only: orbital_index_radix
       use mcpdata_c
       use sbdat1_c
       use orbord_c
@@ -55,7 +55,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, parameter :: key=keyorb
+      integer, parameter :: key=orbital_index_radix
       integer :: ntestl, ntest, nfound, k, ia, ib, ir, ira, irb, ifirst, &
                  j, ileft, iright, ivec, ielmnt
       real(double) :: racah, x

@@ -26,7 +26,7 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: keyorb, nnnw, nnnp
+      use parameter_def,    only: orbital_index_radix, max_orbitals, max_radial_points
       use debug_c
       use decide_c
       use def_c
@@ -55,7 +55,7 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), dimension(nnnw,nnnw), intent(in) :: dint1, dint2, &
+      real(double), dimension(max_orbitals,max_orbitals), intent(in) :: dint1, dint2, &
                                                         dint3, dint4, &
                                                         dint5, dint6, &
                                                         dint7
@@ -63,11 +63,11 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double), dimension(nnnw) :: tshell, tshell_s
+      real(double), dimension(max_orbitals) :: tshell, tshell_s
       real(double), dimension(:), pointer :: emt1, emt2, emt3, emt4,   &
                                              emt5, emt6
       real(double) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5,     &
@@ -75,7 +75,7 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
                       contri4, contri5, contri6, contri7
       logical :: vsh, nucde, smssh, yes
       character :: cnum*11, ck*2
-      integer, dimension(nnnw) :: ia_s
+      integer, dimension(max_orbitals) :: ia_s
       integer :: ka, iopar, incor, ic, lcnum, itjpoc, ir, ia, ib, i, j
       integer :: l, loc, ncontr, lab, ii
 !-----------------------------------------------
@@ -104,7 +104,7 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !   Sweep through the Hamiltonian matrix to determine the
 !   sms parameter
 !
-     do 13 ic = 1,ncf
+     do 13 ic = 1,csf_count
 !
 !   Output IC on the screen to show how far the calculation has preceede
 !
@@ -115,7 +115,7 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !
         itjpoc = itjpo (ic)
 
-        do 12 ir = ic,ncf
+        do 12 ir = ic,csf_count
 !
 !   Matrix elements are diagonal in J
 !
@@ -138,7 +138,7 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
             if (ia .ne. 0) then
               if (ia .eq. ib) then
                     ncontr = 0
-                do 8 ia = 1,nw
+                do 8 ia = 1,orbital_count
                   if (abs (tshell(ia)) .gt. cutoff) then
                     ncontr = ncontr + 1
                     tshell_s(ncontr) = tshell(ia)
@@ -159,7 +159,7 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
                 end do
               else
                 if (abs (tshell(1)) .gt. cutoff) then
-                  if (nak(ia).eq.nak(ib)) then
+                  if (orbital_kappa(ia).eq.orbital_kappa(ib)) then
                     if (doit.eq.1) write(50) ic,ir,1
                     lab = ia*key + ib
                     if (doit.eq.1) write(50) tshell(1),lab
@@ -175,14 +175,14 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
               endif
             endif
             do 9 j = 1,nvec
-              loc = (j-1)*ncf
-              contri1 = evec(ic+loc)*evec(ir+loc)*elemnt1
-              contri2 = evec(ic+loc)*evec(ir+loc)*elemnt2
-              contri3 = evec(ic+loc)*evec(ir+loc)*elemnt3
-              contri4 = evec(ic+loc)*evec(ir+loc)*elemnt4
-              contri5 = evec(ic+loc)*evec(ir+loc)*elemnt5
-              contri6 = evec(ic+loc)*evec(ir+loc)*elemnt6
-              contri7 = evec(ic+loc)*evec(ir+loc)*elemnt7
+              loc = (j-1)*csf_count
+              contri1 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt1
+              contri2 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt2
+              contri3 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt3
+              contri4 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt4
+              contri5 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt5
+              contri6 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt6
+              contri7 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt7
               if (ir.ne.ic) then
                 contri1 = 2.0d00 * contri1
                 contri2 = 2.0d00 * contri2

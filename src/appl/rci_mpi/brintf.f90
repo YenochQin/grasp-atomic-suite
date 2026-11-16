@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def,   only: keyorb
+      use parameter_def,   only: orbital_index_radix
       use stor_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -35,7 +35,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
       integer, parameter :: key2 = key*key
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

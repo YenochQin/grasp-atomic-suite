@@ -5,8 +5,8 @@
 !                     Gediminas Gaigalas  10/05/17
       subroutine qed_slfen (slfint)
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw
-      real(double), dimension(nnnw), intent(out) :: slfint
+      use parameter_def,   only: max_orbitals
+      real(double), dimension(max_orbitals), intent(out) :: slfint
       end subroutine
       end interface
       end module

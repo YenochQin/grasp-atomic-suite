@@ -35,21 +35,21 @@
 !
 !
       if (n == 1) then
-         ncfii = ncf
-         nwii = nw
-         npii(:nw) = np(:nw)
-         nakii(:nw) = nak(:nw)
-         nklii(:nw) = nkl(:nw)
-         nkjii(:nw) = nkj(:nw)
-         nhii(:nw) = nh(:nw)
+         ncfii = csf_count
+         nwii = orbital_count
+         npii(:orbital_count) = orbital_principal_n(:orbital_count)
+         nakii(:orbital_count) = orbital_kappa(:orbital_count)
+         nklii(:orbital_count) = orbital_l(:orbital_count)
+         nkjii(:orbital_count) = orbital_two_j(:orbital_count)
+         nhii(:orbital_count) = orbital_symmetry_labels(:orbital_count)
       else
-         ncfff = ncf
-         nwff = nw
-         npff(:nw) = np(:nw)
-         nakff(:nw) = nak(:nw)
-         nklff(:nw) = nkl(:nw)
-         nkjff(:nw) = nkj(:nw)
-         nhff(:nw) = nh(:nw)
+         ncfff = csf_count
+         nwff = orbital_count
+         npff(:orbital_count) = orbital_principal_n(:orbital_count)
+         nakff(:orbital_count) = orbital_kappa(:orbital_count)
+         nklff(:orbital_count) = orbital_l(:orbital_count)
+         nkjff(:orbital_count) = orbital_two_j(:orbital_count)
+         nhff(:orbital_count) = orbital_symmetry_labels(:orbital_count)
       endif
 
       return

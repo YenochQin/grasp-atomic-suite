@@ -222,16 +222,13 @@ ctest --test-dir build-all --output-on-failure
 
 ## GRASPG / CSFG 扩展
 
-默认启用 `GRASP_BUILD_CSFG=ON`，构建 12 个串行 Fortran 工具、4 个 MPI 计算程序（需要 MPI），
-并安装 `rsave_csfg`。这些目标使用本仓库基础库；公共容量统一在 `suite_parameters_M.f90`，
-CSFG 专有容量与初值在 `csfg_parameters_M.f90`。程序清单、迁移分析、构建和验证范围见
-[GRASPG 集成说明](docs/implemented/graspg_integration.md)。
-
-`-DGRASP_BUILD_CSFG=OFF` 可关闭整个扩展；`-DGRASP_ENABLE_MPI=OFF` 保留串行 CSFG 工具。
+2026-11-16 已移除 CSFG 专用源码、目标和测试，普通程序使用的共享库保留。
+`GRASP_BUILD_CSFG=ON` 会报错；`--no-csfg` 和 `GRASP_BUILD_CSFG=OFF` 仅作为旧构建命令的兼容写法保留。
+来源与旧集成过程见[归档记录](docs/archive/graspg_integration.md)，其中的启用方式已不适用于当前源码。
 
 ### 来源与文献引用
 
-CSFG 实现源自上游 [compas/graspg](https://github.com/compas/graspg)。本仓库对其进行迁移、
+CSFG 实现源自上游 [compas/graspg](https://github.com/compas/graspg)。本仓库曾对其进行迁移、
 集成和适配；GRASPG 实现与 CSFG 方法归功于原作者。使用这些程序开展研究时，
 请引用 GRASPG 软件论文、CSFG 方法论文以及其基础 GRASP2018 程序包：
 

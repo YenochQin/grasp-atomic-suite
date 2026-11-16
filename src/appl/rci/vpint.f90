@@ -16,7 +16,7 @@
 !   M o d u l e s
 !-----------------------------------------------
      use vast_kind_param, only: double
-     use parameter_def,   only: keyorb
+     use parameter_def,   only: orbital_index_radix
      use memory_man
      use grid_c
      use vpilst_c, indoei=>indvpi, valoei=>valvpi, first=>frstvp
@@ -33,7 +33,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

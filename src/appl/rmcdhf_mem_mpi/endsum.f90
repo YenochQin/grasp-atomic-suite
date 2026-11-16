@@ -42,27 +42,28 @@
 !   Write out the orbital properties
 !
       write (24, 301)
-      do i = 1, nw
-         write (24, 302) np(i),nh(i),e(i),pz(i),gama(i),pf(2,i),qf(2,i), &
-            scnsty(i), mf(i)
+      do i = 1, orbital_count
+         write (24, 302) orbital_principal_n(i),orbital_symmetry_labels(i),orbital_energy_parameters(i), &
+            & orbital_origin_parameters(i),orbital_origin_exponents(i),radial_large_components(2,i),radial_small_components(2,i), &
+            scnsty(i), orbital_last_grid_index(i)
       end do
 !
       write (24, 303)
-      do i = 1, nw
+      do i = 1, orbital_count
          wa = rint(i,i,-1)
          wb = rint(i,i,1)
          wc = rint(i,i,2)
          wd = rint (i,i, 4)
          we = 0.d0
-         if (nh(i) /= 's ' .and. nh(i) /= 'p-') then
+         if (orbital_symmetry_labels(i) /= 's ' .and. orbital_symmetry_labels(i) /= 'p-') then
             we = rint(i,i,-3)
          end if
-         write (24,304) np(i),nh(i),we,wa,wb,wc,wd, ucf(i)
+         write (24,304) orbital_principal_n(i),orbital_symmetry_labels(i),we,wa,wb,wc,wd, ucf(i)
       end do
 !
       if (ncmin /= 0) then
          mode = 0
-         call engoutgg (eval,iccmin,ncmin,mode)
+         call engoutgg (shifted_eigenvalues,iccmin,ncmin,mode)
 !GG         CALL ENGOUT (EVAL, IATJPO, IASPAR, ICCMIN, NCMIN, MODE)
          call csfwgt (.false.)
       endif

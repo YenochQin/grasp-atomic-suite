@@ -17,7 +17,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use orb_c, only: ncf, nw, iqa
+      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
       use debug_c, only: ldpa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -38,7 +38,7 @@
 !
       ichkq1 = 0
       k = 0
-      do i = 1, nw
+      do i = 1, orbital_count
          iqa = iq(i,ja)
          iqb = iq(i,jb)
          if (iqa == iqb) cycle

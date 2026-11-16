@@ -82,8 +82,8 @@
 !
 ! Things for timing
 !-----------------------------------------------------------------------
-      myid = 0
-      nprocs = 1
+      mpi_rank = 0
+      mpi_process_count = 1
 
       write(*,*)
       write(*,*) 'RMCDHF'
@@ -103,8 +103,8 @@
 !  Get NDEF
 !=======================================================================
 
-      if (myid == 0) then
-         write (istde, '(A)', advance='NO') 'Default settings?  (y/n) '
+      if (mpi_rank == 0) then
+         write (stderr_unit, '(A)', advance='NO') 'Default settings?  (y/n) '
          yes = getyn()
          if (yes) then
             ndef = 0
@@ -135,9 +135,9 @@
 
       call setsum ('rmcdhf.sum')
 
-      call setmcp (ncore, nblk0, idblk, 'mcp')
+      call setmcp (closed_core_subshell_count, nblk0, idblk, 'mcp')
       call setcsl ('rcsf.inp', ncore1, idblk)
-      if (ncore /= ncore1) stop 'rscfvu: ncore'
+      if (closed_core_subshell_count /= ncore1) stop 'rscfvu: ncore'
 
 !=======================================================================
 !  Gather all remaining information and perform some setup. This
@@ -146,7 +146,7 @@
 
       call getscd (eol, idblk, 'isodata', 'rwfn.inp', 'npol.inp')
 
-      if (myid == 0) then
+      if (mpi_rank == 0) then
          call strsum
          if (eol) call setmix ('rmix.out')
       endif

@@ -44,7 +44,7 @@
 !   M O D U L E S
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: keyorb
+      use parameter_def,   only: orbital_index_radix
       use bess_c
       use debug_c
       use def_c
@@ -64,7 +64,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -85,7 +85,7 @@
 !
 !   Function not in position; is it available in BESS arrays?
 !
-      w = wfact*dabs(e(ia)-e(ib))/c
+      w = wfact*dabs(orbital_energy_parameters(ia)-orbital_energy_parameters(ib))/speed_of_light_au
       wij(iw) = w
 !
       do iwkp = 1, 2
@@ -95,17 +95,19 @@
 !   Function found move into position
 !
             keep(ik,iw) = icode
-            if (ldbpr(7)) write (99, 302) np(ia), nh(ia), np(ib), nh(ib), k, &
+            if (ldbpr(7)) write (99, 302) orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib) &
+               & , orbital_symmetry_labels(ib), k, &
                ikkp, iwkp, ik, iw
-            bessj(ik,iw,:n) = bessj(ikkp,iwkp,:n)
-            bessn(ik,iw,:n) = bessn(ikkp,iwkp,:n)
+            bessj(ik,iw,:radial_point_count) = bessj(ikkp,iwkp,:radial_point_count)
+            bessn(ik,iw,:radial_point_count) = bessn(ikkp,iwkp,:radial_point_count)
             return
          end do
       end do
 !
 !   Function not found; evaluate it
 !
-      if (ldbpr(7)) write (99, 303) np(ia), nh(ia), np(ib), nh(ib), k, ik, iw
+      if (ldbpr(7)) write (99, 303) orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
+         & orbital_symmetry_labels(ib), k, ik, iw
 !
       keep(ik,iw) = icode
 !
@@ -113,8 +115,8 @@
 !
 !   Negligible w
 !
-         bessj(ik,iw,:n) = 0.0d00
-         bessn(ik,iw,:n) = 0.0d00
+         bessj(ik,iw,:radial_point_count) = 0.0d00
+         bessn(ik,iw,:radial_point_count) = 0.0d00
          return
 !
       endif
@@ -126,8 +128,8 @@
 !
 !   Use a four-term power series for low w*r
 !
-      l5: do j = 2, n
-         wa = -0.5d00*(r(j)*w)**2
+      l5: do j = 2, radial_point_count
+         wa = -0.5d00*(radial_grid(j)*w)**2
          xbess1 = 1.0d00
          xbess2 = 1.0d00
          s1 = 0.0d00
@@ -205,8 +207,8 @@
 !
       end select
 !
-      do j = jchan, n
-         wa = w*r(j)
+      do j = jchan, radial_point_count
+         wa = w*radial_grid(j)
          if (iswap == 0) then
             sn = ssn*dsin(wa)
             cn = scn*dcos(wa)

@@ -2,9 +2,9 @@
 module rwfnestimate_input
    use iso_fortran_env, only: int64, error_unit
    use tomlf, only: toml_table, toml_array, toml_error, toml_load, get_value, len
-   use parameter_def, only: nnnw
-   use orb_c, only: nw, np, nak, nkl, nkj, nh
-   use def_c, only: nelec
+   use parameter_def, only: max_orbitals
+   use orb_c, only: orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, orbital_symmetry_labels
+   use def_c, only: electron_count
    use setcsh_i, only: setcsh
    implicit none
    private
@@ -101,12 +101,12 @@ contains
       call get_value(info, 'electron_count', total_electrons, stat=status)
       call require_input(status == 0, &
          'header_info.electron_count must be an integer including core electrons; regenerate old headers with rCSFs')
-      call require_input(total_electrons > 0 .and. total_electrons <= int(huge(nelec), int64), &
+      call require_input(total_electrons > 0 .and. total_electrons <= int(huge(electron_count), int64), &
                          'electron_count must be positive and fit a suite integer')
       call get_value(info, 'header_lines', lines, requested=.false.)
       call require_input(associated(lines), 'header_info.header_lines must be an array')
       call require_input(len(lines) == 5, 'header_info.header_lines must contain five strings')
-      nw = 0
+      orbital_count = 0
       core_count = 0
       do index = 1, 5
          call get_value(lines, index, line, stat=status)
@@ -118,7 +118,7 @@ contains
             call require_input(trim(line) == 'Core subshells:', 'invalid core header label')
          case (2)
             call append_subshells(line)
-            core_count = nw
+            core_count = orbital_count
          case (3)
             call require_input(trim(line) == 'Peel subshells:', 'invalid peel header label')
          case (4)
@@ -127,14 +127,14 @@ contains
             call require_input(trim(line) == 'CSF(s):', 'invalid CSF header label')
          end select
       end do
-      call require_input(nw > 0, 'empty orbital table')
-      core_electrons = sum(nkj(:core_count) + 1)
-      capacity = sum(nkj(:nw) + 1)
+      call require_input(orbital_count > 0, 'empty orbital table')
+      core_electrons = sum(orbital_two_j(:core_count) + 1)
+      capacity = sum(orbital_two_j(:orbital_count) + 1)
       call require_input(total_electrons >= core_electrons, 'electron_count is smaller than the closed-core population')
       call require_input(total_electrons <= capacity, 'electron_count exceeds the orbital table capacity')
-      nelec = int(total_electrons)
+      electron_count = int(total_electrons)
       write(*, '(A,I0,A,I0,A,I0)') 'Loaded TOML header: core subshells=', core_count, &
-         ', orbitals=', nw, ', total electrons=', nelec
+         ', orbitals=', orbital_count, ', total electrons=', electron_count
    end subroutine load_toml_header
 
    subroutine append_subshells(text)
@@ -162,7 +162,7 @@ contains
       character(len=*), parameter :: letters = 'spdfghiklm'
       integer :: digits, principal, momentum, kappa, status, previous
       character(len=:), allocatable :: suffix
-      call require_input(nw < nnnw, 'orbital table exceeds configured NNNW capacity')
+      call require_input(orbital_count < max_orbitals, 'orbital table exceeds configured NNNW capacity')
       digits = 0
       do while (digits < len(label))
          if (scan(label(digits+1:digits+1), '0123456789') == 0) exit
@@ -182,15 +182,15 @@ contains
       else
          kappa = -momentum - 1
       end if
-      do previous = 1, nw
-         call require_input(np(previous) /= principal .or. nak(previous) /= kappa, &
+      do previous = 1, orbital_count
+         call require_input(orbital_principal_n(previous) /= principal .or. orbital_kappa(previous) /= kappa, &
                             'duplicate orbital across core/peel lists: '//label)
       end do
-      nw = nw + 1
-      np(nw) = principal
-      nak(nw) = kappa
-      nkl(nw) = momentum
-      nkj(nw) = 2*abs(kappa) - 1
-      nh(nw) = suffix
+      orbital_count = orbital_count + 1
+      orbital_principal_n(orbital_count) = principal
+      orbital_kappa(orbital_count) = kappa
+      orbital_l(orbital_count) = momentum
+      orbital_two_j(orbital_count) = 2*abs(kappa) - 1
+      orbital_symmetry_labels(orbital_count) = suffix
    end subroutine append_subshell
 end module rwfnestimate_input

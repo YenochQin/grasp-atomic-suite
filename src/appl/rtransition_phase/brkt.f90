@@ -15,7 +15,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw
+      use parameter_def,   only: max_orbitals
       use grid_c
       use tatb_c
       use biorb_c
@@ -29,7 +29,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, j, l
-      real(double), dimension(nnnw,nnnw) :: braket
+      real(double), dimension(max_orbitals,max_orbitals) :: braket
       real(double) :: result
 !-----------------------------------------------
 
@@ -47,7 +47,7 @@
 !
             ta(1) = 0.d0
             do l = 2, mtp
-               ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*rp(l)
+               ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*radial_grid_derivative(l)
             end do
 !
 !   Perform the quadrature

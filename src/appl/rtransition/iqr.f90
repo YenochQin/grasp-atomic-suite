@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use orb_c,         only: iqa
+      use orb_c,         only: csf_subshell_occupations
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -24,7 +24,7 @@
 !-----------------------------------------------
 !
 !
-            iqr = iqa(isubsh,icsf)
+            iqr = csf_subshell_occupations(isubsh,icsf)
 !
       return
       end function iqr

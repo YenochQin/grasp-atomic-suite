@@ -21,8 +21,8 @@
       use debug_c
       use grid_c
       use left_c
-      use orb_c, only: e, np, nak, nh
-      use wave_c, only: pz
+      use orb_c, only: orbital_energy_parameters, orbital_principal_n, orbital_kappa, orbital_symmetry_labels
+      use wave_c, only: orbital_origin_parameters
       use whfrom_c, only: source
       use iounit_c
 !-----------------------------------------------
@@ -36,7 +36,7 @@
 !-----------------------------------------------
       integer , intent(in) :: nsubs
       character  :: filnam*(*)
-      integer , intent(in) :: index(nnnw)
+      integer , intent(in) :: index(max_orbitals)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -54,7 +54,7 @@
 
       call openfl (23, filnam, 'UNFORMATTED', 'OLD', ierr)
       if (ierr == 1) then
-         write (istde, *) 'Error openning file "', filnam(1:len_trim(filnam)), &
+         write (stderr_unit, *) 'Error openning file "', filnam(1:len_trim(filnam)), &
             '"'
          close(23)
          stop
@@ -64,7 +64,7 @@
 !
       read (23, iostat=ios) g92rwf
       if (ios/=0 .or. g92rwf/='G92RWF') then
-         write (istde, *) 'This is not a Radial WaveFunction File;'
+         write (stderr_unit, *) 'This is not a Radial WaveFunction File;'
          close(23)
          stop
       endif
@@ -79,17 +79,18 @@
       if (ios == 0) then
          do j = 1, nsubs
             loc = index(j)
-            if (.not.(.not.set(loc) .and. np(loc)==npy .and. nak(loc)==naky)) &
+            if (.not.(.not.set(loc) .and. orbital_principal_n(loc)==npy .and. orbital_kappa(loc)==naky)) &
                cycle
             found = .true.
-            e(loc) = ey
+            orbital_energy_parameters(loc) = ey
             call alloc (pa, my, 'PA', 'FRMFRW')
             call alloc (qa, my, 'QA', 'FRMFRW')
             call alloc (ra, my, 'RA', 'FRMFRW')
-            read (23) pz(loc), (pa(i),i=1,my), (qa(i),i=1,my)
+            read (23) orbital_origin_parameters(loc), (pa(i),i=1,my), (qa(i),i=1,my)
             read (23) (ra(i),i=1,my)
             call intrpq (pa, qa, my, ra, loc, dnorm)
-            if (ldbpr(3)) write (99, 301) np(loc), nh(loc), e(loc), dnorm
+            if (ldbpr(3)) write (99, 301) orbital_principal_n(loc), orbital_symmetry_labels(loc), &
+               & orbital_energy_parameters(loc), dnorm
             call dalloc (pa, 'PA', 'FRMFRW')
             call dalloc (qa, 'QA', 'FRMFRW')
             call dalloc (ra, 'RA', 'FRMFRW')

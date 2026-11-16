@@ -26,15 +26,15 @@
 !-----------------------------------------------
 !
       call mpi_reduce (nnonz, nnonz_a, 1, mpi_integer, mpi_sum, 0,  &
-               mpi_comm_world, ierr)
-      if (myid .eq. 0) &
+               mpi_comm_world, mpi_error_code)
+      if (mpi_rank .eq. 0) &
       write(6, *)' ... complete; density of non-zero elements of H(DC):', &
          nnonz_a, '/', (ncf*(ncf + 1))/2
 !
 !   Debug printout
 !
       if (lprint) then
-        if (myid .eq. 0) then
+        if (mpi_rank .eq. 0) then
           write (99, *)
           write (99, *) 'From ', myname, ' :'
           write (99, 301) nnonz_a

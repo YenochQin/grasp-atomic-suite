@@ -18,8 +18,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use parameter_def, only: nnnp
-      use def_c, only: accy, c, expmax
+      use parameter_def, only: max_radial_points
+      use def_c, only: accy, speed_of_light_au, expmax
       use grid_c
       use orb_c
       use pote_c, only: yp
@@ -30,8 +30,8 @@
       integer , intent(in) :: iorb
       integer , intent(in) :: jp
       integer , intent(out) :: mtp
-      real(double) , intent(inout) :: p(nnnp)
-      real(double) , intent(out) :: q(nnnp)
+      real(double) , intent(inout) :: p(max_radial_points)
+      real(double) , intent(out) :: q(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -45,22 +45,22 @@
 !   Initialize
 !
       eps = accy*0.1d00
-      bige = -e(iorb)
-      bigebc = bige/c
-      bgebc2 = bigebc/c
+      bige = -orbital_energy_parameters(iorb)
+      bigebc = bige/speed_of_light_au
+      bgebc2 = bigebc/speed_of_light_au
       beta = sqrt((-bige*(2.0d00 + bgebc2)))
-      fk = dble(nak(iorb))
+      fk = dble(orbital_kappa(iorb))
 !
 !   Find MTP
 !
       i = jp
-      nm4 = n - 4
-      rjp = r(jp)
+      nm4 = radial_point_count - 4
+      rjp = radial_grid(jp)
       qem = 0.25d00*expmax
     1 continue
       i = i + 1
       if (i <= nm4) then
-         if (beta*(r(i)-rjp) > qem) then
+         if (beta*(radial_grid(i)-rjp) > qem) then
             mtp = i
          else
             go to 1
@@ -72,16 +72,16 @@
 !
 !   Compute offset for exponential function
 !
-      offset = beta*r(mtp)
+      offset = beta*radial_grid(mtp)
 !
 !   Tabulate tail points
 !
-      do i = mtp, n
+      do i = mtp, radial_point_count
 !
-         t = 2.0d00*beta*r(i)
+         t = 2.0d00*beta*radial_grid(i)
 !
          zloc = yp(i)
-         gam2 = fk**2 - (zloc/c)**2
+         gam2 = fk**2 - (zloc/speed_of_light_au)**2
          zlbb = zloc/beta
          dnu = zlbb*(1.0d00 + bgebc2)
          fkmzbb = fk - zlbb
@@ -126,11 +126,11 @@
          loc = i + 1
          go to 4
       end do
-      loc = n + 1
+      loc = radial_point_count + 1
 !
     4 continue
-      p(loc:n) = 0.0d00
-      q(loc:n) = 0.0d00
+      p(loc:radial_point_count) = 0.0d00
+      q(loc:radial_point_count) = 0.0d00
 !
       return
 !

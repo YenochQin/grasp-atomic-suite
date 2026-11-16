@@ -4,10 +4,10 @@
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
       subroutine prsrcn (record, ncore, ioccs, ierr)
-      use parameter_def, only: nnnw
+      use parameter_def, only: max_orbitals
       character (len = 256), intent(in) :: record
       integer, intent(in) :: ncore
-      integer, dimension(nnnw), intent(out) :: ioccs
+      integer, dimension(max_orbitals), intent(out) :: ioccs
       integer, intent(out) :: ierr
 !VAST.../ORB2/ NW(IN)
 !VAST.../ORB4/ NP(IN)

@@ -32,7 +32,7 @@
       if (status.ne.0) then
 !        print*, 'couldn''t get the current directory, exiting...'
 !cjb myid =
-         call stopmpi ('sys_getwd: status.ne.0; myid = ', myid)
+         call stopmpi ('sys_getwd: status.ne.0; myid = ', mpi_rank)
 
       end if
       return

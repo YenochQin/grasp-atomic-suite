@@ -107,7 +107,7 @@
 !       IPOT = 2*(2*L+1)  (number of m_lm_s. This should be replaced
 !                          by (2j+1) corresponding to L)
 !
-         ipot = 2*iabs(nak(nshlp(l,iin)))
+         ipot = 2*iabs(orbital_kappa(nshlp(l,iin)))
          factor = factor**ipot
          call scalve (ciin, factor, nciv*ncsf)
       endif
@@ -129,7 +129,7 @@
 !.  Off diagonal contributions
 !
          xnfaci = 1.0d0
-         do n = 1, 2*iabs(nak(nshlp(l,i)))
+         do n = 1, 2*iabs(orbital_kappa(nshlp(l,i)))
             if (ntest >= 100) write (6, *) ' Loop N = ', n
 !
 !   T ** (N-1) is supposed to be in SCR, copy to CIIN
@@ -139,7 +139,7 @@
             call ti1tv (ciin,ncsf,nciv,i,l,t(1,i),nshl,scrtmp,ntestg)
 !            CALL MPI_ALLREDUCE(SCRtmp(1,1),SCR(1,1),NCIV*NCSF,         &
             call mpi_allreduce(scrtmp,scr,nciv*ncsf,         &
-            mpi_double_precision, mpi_sum, mpi_comm_world, ierr)
+            mpi_double_precision, mpi_sum, mpi_comm_world, mpi_error_code)
             xnfaci = xnfaci/float(n)
             call vecsum (ciout, ciout, scr, 1.0d0, xnfaci, nciv*ncsf)
          end do

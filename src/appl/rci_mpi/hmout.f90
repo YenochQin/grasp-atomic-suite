@@ -18,7 +18,7 @@
 !-----------------------------------------------
       use vast_kind_param, only: double
       use hmat_c
-      use orb_c,           only: ncf, nw, iqa
+      use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -36,12 +36,12 @@
       character    :: cir*8, cic*8
 !-----------------------------------------------
 !
-      do ic = 1, ncf
-         read (imcdf) nelc, elsto, (emt(ir),ir=1,nelc), (irow(ir),ir=1,nelc)
+      do ic = 1, csf_count
+         read (imcdf) nelc, elsto, (hamiltonian_values(ir),ir=1,nelc), (matrix_partner_indices(ir),ir=1,nelc)
          do ir = 1, nelc
-            call convrt (irow(ir), cir, lenthr)
+            call convrt (matrix_partner_indices(ir), cir, lenthr)
             call convrt (ic, cic, lenthc)
-            write (99, 300) cir(1:lenthr), cic(1:lenthc), emt(ir)
+            write (99, 300) cir(1:lenthr), cic(1:lenthc), hamiltonian_values(ir)
          end do
       end do
 !

@@ -33,10 +33,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw
+      use parameter_def,   only: max_orbitals
       use debug_c
       use def_c
-      use orb_c, ncfblock => ncf
+      use orb_c, ncfblock => csf_count
       use stat_c
       use terms_c,         only: jtab, ntab
       use iounit_c
@@ -62,13 +62,13 @@
 !-----------------------------------------------
       integer, parameter :: loadall = -119
       character*7, parameter :: myname = 'LODCSH2'
-      integer, parameter :: nw2 = 2*nnnw
+      integer, parameter :: nw2 = 2*max_orbitals
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(nnnw) :: iocc
+      integer, dimension(max_orbitals) :: iocc
       integer, dimension(nw2) :: iqsub
-      integer, dimension(nnnw) :: jx
+      integer, dimension(max_orbitals) :: jx
       integer :: ncorp1, nrec, ncf, npeel, i, j
       integer :: ios, ierr, loc, nqs, isparc, njx, ioc, ipty
       integer :: nqsn, njxn, npeeln, nopen, jlast, ilast, iocci
@@ -85,7 +85,7 @@
       endif
 
       ncorp1 = ncore + 1
-      npeel = nw - ncore
+      npeel = orbital_count - ncore
 !
 ! NPEEL is used as 1) number of peel orbitals (here) and
 !                  2) number of peel electrons (later in this routine)
@@ -102,11 +102,11 @@
 !
 !   Zero out the arrays that store packed integers - only when ncfblock>0
 !
-      iqa(:nnnw,:ncfblock) = 0
-      jqsa(:nnnw,1,:ncfblock) = 0
-      jqsa(:nnnw,2,:ncfblock) = 0
-      jqsa(:nnnw,3,:ncfblock) = 0
-      jcupa(:nnnw,:ncfblock) = 0
+      csf_subshell_occupations(:max_orbitals,:ncfblock) = 0
+      csf_subshell_quantum_codes(:max_orbitals,1,:ncfblock) = 0
+      csf_subshell_quantum_codes(:max_orbitals,2,:ncfblock) = 0
+      csf_subshell_quantum_codes(:max_orbitals,3,:ncfblock) = 0
+      csf_coupling_quantum_codes(:max_orbitals,:ncfblock) = 0
 
       ncf = 0
     3 continue
@@ -134,7 +134,7 @@
 !
          read (nfile,'(A)',iostat = ios) str
          if (ios /= 0) then
-            write (istde, *) myname//': Expecting subshell quantum', &
+            write (stderr_unit, *) myname//': Expecting subshell quantum', &
                ' number specification;'
             go to 27
          endif
@@ -146,20 +146,20 @@
 !
          read (nfile,'(A)',iostat = ios) str
          if (ios /= 0) then
-            write (istde, *) myname//': Expecting intermediate ', &
+            write (stderr_unit, *) myname//': Expecting intermediate ', &
                'and final angular momentum'
-            write (istde, *) 'quantum number and final parity ', &
+            write (stderr_unit, *) 'quantum number and final parity ', &
                'specification;'
             go to 26
          endif
 !
 !   Zero out the arrays that store packed integers
 !
-         iqa(:nnnw,ncf) = 0
-         jqsa(:nnnw,1,ncf) = 0
-         jqsa(:nnnw,2,ncf) = 0
-         jqsa(:nnnw,3,ncf) = 0
-         jcupa(:nnnw,ncf) = 0
+         csf_subshell_occupations(:max_orbitals,ncf) = 0
+         csf_subshell_quantum_codes(:max_orbitals,1,ncf) = 0
+         csf_subshell_quantum_codes(:max_orbitals,2,ncf) = 0
+         csf_subshell_quantum_codes(:max_orbitals,3,ncf) = 0
+         csf_coupling_quantum_codes(:max_orbitals,ncf) = 0
 
 !   Determine the parity and all intermediate and the final
 !   angular momentum quantum numbers
@@ -171,7 +171,7 @@
          else if (recl == '-') then
             isparc = -1
          else
-            write (istde, *) myname//': Incorrect parity ', &
+            write (stderr_unit, *) myname//': Incorrect parity ', &
                             'specification;'
             go to 26
          endif
@@ -184,10 +184,10 @@
 !   in IQ, JQS for the core subshells
 !
          do i = 1, ncore
-            call pack (nkj(i) + 1, i, iqa(1:nnnw,ncf))
-            call pack (0, i, jqsa(1:nnnw,1,ncf))
-            call pack (0, i, jqsa(1:nnnw,2,ncf))
-            call pack (1, i, jqsa(1:nnnw,3,ncf))
+            call pack (orbital_two_j(i) + 1, i, csf_subshell_occupations(1:max_orbitals,ncf))
+            call pack (0, i, csf_subshell_quantum_codes(1:max_orbitals,1,ncf))
+            call pack (0, i, csf_subshell_quantum_codes(1:max_orbitals,2,ncf))
+            call pack (1, i, csf_subshell_quantum_codes(1:max_orbitals,3,ncf))
          end do
 !
 !   Check all subshell, intermediate and final angular momentum
@@ -203,10 +203,10 @@
          nopen = 0
          jlast = 0
          ilast = 0
-         do i = ncorp1, nw
+         do i = ncorp1, orbital_count
             iocci = iocc(i)
             npeeln = npeeln + iocci
-            nkji = nkj(i)
+            nkji = orbital_two_j(i)
             ifulli = nkji + 1
             empty = iocci == 0
             if (.not.empty) ioc = ioc + 1
@@ -215,11 +215,11 @@
                nu = 0
                jsub = 0
             else
-               ipty = ipty + nkl(i)*iocci
+               ipty = ipty + orbital_l(i)*iocci
                if (nkji /= 7) then
                   nqsn = nqsn + 1
                   if (nqsn > nqs) then
-                     write (istde, *) myname//': Too few subshell ', &
+                     write (stderr_unit, *) myname//': Too few subshell ', &
                         'quantum numbers specified;'
                      go to 26
                   endif
@@ -229,7 +229,7 @@
                   if (iocci /= 4) then
                      nqsn = nqsn + 1
                      if (nqsn > nqs) then
-                        write (istde, *) myname//': Too few subshell ', &
+                        write (stderr_unit, *) myname//': Too few subshell ', &
                            'quantum numbers specified;'
                         go to 26
                      endif
@@ -238,7 +238,7 @@
                   else
                      nqsn = nqsn + 1
                      if (nqsn > nqs) then
-                        write (istde, *) myname//': Too few subshell ', &
+                        write (stderr_unit, *) myname//': Too few subshell ', &
                            'quantum numbers specified;'
                         go to 26
                      endif
@@ -247,7 +247,7 @@
                         nu = jsub/2
                         nqsn = nqsn + 1
                         if (nqsn > nqs) then
-                           write (istde, *) myname//': Too few subshell', &
+                           write (stderr_unit, *) myname//': Too few subshell', &
                               ' quantum numbers specified;'
                            go to 26
                         endif
@@ -271,9 +271,9 @@
                      if (ntab(j) == nu) go to 9
                   endif
                end do
-               call convrt (np(i), str, lenth)
-               write (istde, *) myname//': Subshell quantum numbers ', &
-                  'specified incorrectly for '//str(1:lenth)//nh(i)//&
+               call convrt (orbital_principal_n(i), str, lenth)
+               write (stderr_unit, *) myname//': Subshell quantum numbers ', &
+                  'specified incorrectly for '//str(1:lenth)//orbital_symmetry_labels(i)//&
                   ' subshell.'
                go to 26
             endif
@@ -287,7 +287,7 @@
                      ilast = ioc
                      njxn = njxn + 1
                      if (njxn > njx) then
-                        write (istde, *) myname//': Too few intermediate', &
+                        write (stderr_unit, *) myname//': Too few intermediate', &
                            ' and final angular momentum', &
                            ' quantum numbers specified;'
                         go to 26
@@ -296,59 +296,59 @@
                      do j = abs(jlast - jsub), jlast + jsub, 2
                         if (jxn == j) go to 11
                      end do
-                     call convrt (np(i), str, lenth)
-                     write (istde, *) myname//': coupling of '//str(1:lenth)//&
-                        nh(i), ' subshell to previous subshells is incorrect.'
+                     call convrt (orbital_principal_n(i), str, lenth)
+                     write (stderr_unit, *) myname//': coupling of '//str(1:lenth)//&
+                        orbital_symmetry_labels(i), ' subshell to previous subshells is incorrect.'
                      go to 26
                   endif
    11             continue
-                  call pack (jxn + 1, nopen - 1, jcupa(1:nnnw,ncf))
+                  call pack (jxn + 1, nopen - 1, csf_coupling_quantum_codes(1:max_orbitals,ncf))
                   jlast = jxn
                else
                   jlast = jsub
                endif
             endif
-            call pack(iocci, i, iqa(1:nnnw,ncf))
-            call pack (nu, i, jqsa(1:nnnw,1,ncf))
-            call pack (0, i, jqsa(1:nnnw,2,ncf))
-            call pack (jsub + 1, i, jqsa(1:nnnw,3,ncf))
+            call pack(iocci, i, csf_subshell_occupations(1:max_orbitals,ncf))
+            call pack (nu, i, csf_subshell_quantum_codes(1:max_orbitals,1,ncf))
+            call pack (0, i, csf_subshell_quantum_codes(1:max_orbitals,2,ncf))
+            call pack (jsub + 1, i, csf_subshell_quantum_codes(1:max_orbitals,3,ncf))
          end do
 !
-         do i = max(1,nopen), nw
-            call pack (0, i, jcupa(1:nnnw,ncf))
+         do i = max(1,nopen), orbital_count
+            call pack (0, i, csf_coupling_quantum_codes(1:max_orbitals,ncf))
          end do
 !
          if (nqsn /= nqs) then
-            write (istde, *) myname//': Too many subshell', &
+            write (stderr_unit, *) myname//': Too many subshell', &
                ' quantum numbers specified;'
             go to 26
          endif
 !
          if (ilast /= ioc) njxn = njxn + 1
          if (njxn /= njx) then
-            write (istde, *) myname//': Too many intermediate', &
+            write (stderr_unit, *) myname//': Too many intermediate', &
                ' and final angular momentum', ' quantum numbers specified;'
             go to 26
          endif
 !
          if (jx(njxn) /= jlast) then
-            write (istde, *) myname//': Final angular momentum', &
+            write (stderr_unit, *) myname//': Final angular momentum', &
                ' incorrectly specified;'
             go to 26
          endif
 !
          ipty = (-1)**ipty
          if (ipty /= isparc) then
-            write (istde, *) myname//': Parity specified incorrectly;'
+            write (stderr_unit, *) myname//': Parity specified incorrectly;'
             go to 26
          endif
 !
          jpi = (jlast + 1)*ipty
-         call pack (jpi, nnnw, jcupa(1:nnnw,ncf))
+         call pack (jpi, max_orbitals, csf_coupling_quantum_codes(1:max_orbitals,ncf))
 !
          if (ncf > 1) then
             if (npeeln /= npeel) then
-               write (istde, *) myname//': Inconsistency in the number', &
+               write (stderr_unit, *) myname//': Inconsistency in the number', &
                   ' of electrons.'
                go to 26
             endif
@@ -361,7 +361,7 @@
 !
          if (ncf > 1) then
             do j = 1, ncf - 1
-               do i = ncorp1, nw
+               do i = ncorp1, orbital_count
                   if (iq(i,j) /= iq(i,ncf)) go to 17
                   if (jqs(1,i,j) /= jqs(1,i,ncf)) go to 17
                   if (jqs(2,i,j) /= jqs(2,i,ncf)) go to 17
@@ -371,7 +371,7 @@
                   if (jcup(i,j) /= jcup(i,ncf)) go to 17
                end do
             end do
-            write (istde, *) myname//': Repeated CSF;'
+            write (stderr_unit, *) myname//': Repeated CSF;'
             go to 26
          endif
 !
@@ -389,13 +389,13 @@
 !
          if (ncf == 1) then
             do i = 1, ncore
-               call pack (nkj(i) + 1, i, iqa(1:nnnw,1))
-               call pack (0, i, jqsa(1:nnnw,1,1))
-               call pack (0, i, jqsa(1:nnnw,2,1))
-               call pack (1, i, jqsa(1:nnnw,3,1))
+               call pack (orbital_two_j(i) + 1, i, csf_subshell_occupations(1:max_orbitals,1))
+               call pack (0, i, csf_subshell_quantum_codes(1:max_orbitals,1,1))
+               call pack (0, i, csf_subshell_quantum_codes(1:max_orbitals,2,1))
+               call pack (1, i, csf_subshell_quantum_codes(1:max_orbitals,3,1))
             end do
-            call pack (0, 1, jcupa(1:nnnw,1))
-            call pack (1, nnnw, jcupa(1:nnnw,1))
+            call pack (0, 1, csf_coupling_quantum_codes(1:max_orbitals,1))
+            call pack (1, max_orbitals, csf_coupling_quantum_codes(1:max_orbitals,1))
          else
             ncf = ncf - 1
          endif
@@ -403,7 +403,7 @@
       endif
 
       if (ncf /= ncfblock) then
-         write (istde, *) myname//': ncf=', ncf, 'ncfblock=', ncfblock
+         write (stderr_unit, *) myname//': ncf=', ncf, 'ncfblock=', ncfblock
          stop
       endif
 !
@@ -412,12 +412,12 @@
 !
       i = ncorp1
    19 continue
-      if (i <= nw) then
+      if (i <= orbital_count) then
          do j = 1, ncf
             if (iq(i,j) /= 0) go to 23
          end do
-         call convrt (np(i), str, lenth)
-         write (6, *) 'Subshell '//str(1:lenth)//nh(i)//' is empty', &
+         call convrt (orbital_principal_n(i), str, lenth)
+         write (6, *) 'Subshell '//str(1:lenth)//orbital_symmetry_labels(i)//' is empty', &
             ' in all CSFs'
    23    continue
          i = i + 1
@@ -428,10 +428,10 @@
 !   This will act as a check now - it's been determined in lodcsh
 !
       ncorel = 0
-      ncorel = sum(nkj(:ncore)+1)
+      ncorel = sum(orbital_two_j(:ncore)+1)
 !      NELEC = NCOREL+NPEEL
-      if (ncorel + npeel /= nelec) then
-         write (istde, *) myname//': nelec not equal to that in lodcsh'
+      if (ncorel + npeel /= electron_count) then
+         write (stderr_unit, *) myname//': nelec not equal to that in lodcsh'
          stop
       endif
       write (6,*)'There are ',ncf,' relativistic CSFs... load complete;'
@@ -443,10 +443,10 @@
       backspace (nfile)
    28 continue
       backspace (nfile)
-      write (istde, *) ' CSF sequence number: ', ncf
+      write (stderr_unit, *) ' CSF sequence number: ', ncf
       do i = 1, 3
          read  (nfile,'(A)',err = 29,end = 29) str
-         write (istde, *) str(1:len_trim(str))
+         write (stderr_unit, *) str(1:len_trim(str))
       end do
    29 continue
       close(nfile)

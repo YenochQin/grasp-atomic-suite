@@ -18,7 +18,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnn1
+      use parameter_def,    only: radial_workspace_capacity
       use def_c
       use grid_c
       use wave_c
@@ -40,7 +40,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double), dimension(nnn1) :: pa, pb, qa, qb
+      real(double), dimension(radial_workspace_capacity) :: pa, pb, qa, qb
       real(double) :: a1, a2, piece1, piece2, piece3, piece4
       integer :: l, kap1, kap2, i, l1, l2, j1, j2, l2_tilda
 !-----------------------------------------------
@@ -51,13 +51,13 @@
 !C*      RINTI_NMS = 0.0D 00
       valnmsk1   = 0.0d00
       valnmsk123 = 0.0d00
-      kap1 = nak(j)
-      kap2 = nak(k)
+      kap1 = orbital_kappa(j)
+      kap2 = orbital_kappa(k)
 !
 !   Stop if orbitals J and K have different kappa values
 !
       if (kap1 .ne. kap2) then
-         write (*,300) np(j),nh(j),np(k),nh(k)
+         write (*,300) orbital_principal_n(j),orbital_symmetry_labels(j),orbital_principal_n(k),orbital_symmetry_labels(k)
          stop
       endif
 !
@@ -78,11 +78,11 @@
 !
 !   Determine the j quantum numbers and l_2 tilda
 !
-      j1 = 2*iabs(nak(j))-1
-      j2 = 2*iabs(nak(k))-1
+      j1 = 2*iabs(orbital_kappa(j))-1
+      j2 = 2*iabs(orbital_kappa(k))-1
       l2_tilda = j2 - l2
 !
-      mtp = max (mf(j),mf(k))
+      mtp = max (orbital_last_grid_index(j),orbital_last_grid_index(k))
 !
 !   Kinetic energy contribution
 !
@@ -104,18 +104,19 @@
    12 continue
       ta(1) = 0.0d00
       do 1 i = 2,mtp
-         ta(i) = (pa(i)*pb(i)+qa(i)*qb(i))/rp(i)
+         ta(i) = (pa(i)*pb(i)+qa(i)*qb(i))/radial_grid_derivative(i)
     1 continue
       call quad (piece1)
-      piece1 = piece1/(h*h)
+      piece1 = piece1/(transformed_grid_step*transformed_grid_step)
 !
       a1 = dble(l2*(l2+1))
       a2 = dble(l2_tilda*(l2_tilda+1))
       ta(1) = 0.0d00
       do 2 i = 2,mtp
-        ta(i) = rp(i)                                                  &
-              *(a1*pf(i,j)*pf(i,k)+a2*qf(i,j)*qf(i,k))                 &
-              /(r(i)*r(i))
+        ta(i) = radial_grid_derivative(i)                                                  &
+              *(a1*radial_large_components(i,j)*radial_large_components(i,k)+a2*radial_small_components(i,j)* &
+                 & radial_small_components(i,k))                 &
+              /(radial_grid(i)*radial_grid(i))
     2 continue
       call quad (piece2)
 !
@@ -123,20 +124,21 @@
 !
       ta(1) = 0.d0
       do 3 i = 2,mtp
-         ta(i) = (qf(i,j)*pb(i)+qf(i,k)*pa(i))/r(i)
+         ta(i) = (radial_small_components(i,j)*pb(i)+radial_small_components(i,k)*pa(i))/radial_grid(i)
     3 continue
       call quad (piece3)
-      piece3 = -2.0*z*piece3/(c*h)
+      piece3 = -2.0*nuclear_charge*piece3/(speed_of_light_au*transformed_grid_step)
 !
       if (kap2 .ne. 1) then
         ta(1) = 0.0d00
         do 4 i = 2,mtp
-           ta(i) = rp(i)                                               &
-                 * (qf(i,j)*pf(i,k)+pf(i,j)*qf(i,k))                   &
-                 /(r(i)*r(i))
+           ta(i) = radial_grid_derivative(i)                                               &
+                 * (radial_small_components(i,j)*radial_large_components(i,k)+radial_large_components(i,j)* &
+                    & radial_small_components(i,k))                   &
+                 /(radial_grid(i)*radial_grid(i))
     4   continue
         call quad (piece4)
-        piece4 = -piece4*z*(dble (kap2)-1.0)/c
+        piece4 = -piece4*nuclear_charge*(dble (kap2)-1.0)/speed_of_light_au
       else
         piece4 = 0.0d00
       end if
@@ -147,7 +149,8 @@
 !
 !C*      LDBPR(5)=.TRUE.
       if (ldbpr(5))                                                    &
-         write (99,302) np(j),nh(j),np(k),nh(k),valnmsk123
+         write (99,302) orbital_principal_n(j),orbital_symmetry_labels(j),orbital_principal_n(k), &
+            & orbital_symmetry_labels(k),valnmsk123
 !
 !C*      RETURN
 !

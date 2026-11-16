@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnw
+      use parameter_def, only: max_orbitals
       use orb_c,         only: nwr, ncfr
       use stat_c,        only: jcupar
 !-----------------------------------------------

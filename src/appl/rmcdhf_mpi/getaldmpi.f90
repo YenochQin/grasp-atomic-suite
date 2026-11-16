@@ -43,23 +43,23 @@
       logical      :: getyn, yes
 !-----------------------------------------------
 !
-      if (myid .eq. 0) then
-        write (istde, *) '(E)AL type calculation; H(DC) will not be ', &
+      if (mpi_rank .eq. 0) then
+        write (stderr_unit, *) '(E)AL type calculation; H(DC) will not be ', &
                         'diagonalised;'
-        write (istde, *) 'getald ...'
-        write (istde, *) 'ncf=', ncf
+        write (stderr_unit, *) 'getald ...'
+        write (stderr_unit, *) 'ncf=', csf_count
       end if
 
-      call alloc (wt, ncf, 'WT', 'GETALDmpi')
+      call alloc (wt, csf_count, 'WT', 'GETALDmpi')
 
-      if (myid .eq. 0) call getaldwt (ncf, wt)
+      if (mpi_rank .eq. 0) call getaldwt (csf_count, wt)
 
-      call mpi_bcast (wt(1), ncf, mpi_double_precision, 0,        &
-                      mpi_comm_world, ierr)
+      call mpi_bcast (wt(1), csf_count, mpi_double_precision, 0,        &
+                      mpi_comm_world, mpi_error_code)
 
-      do j = 1, nw
+      do j = 1, orbital_count
          sum = 0.d0
-         do i = 1, ncf
+         do i = 1, csf_count
             sum = sum + wt(i)*dble(iq(j,i))
          end do
          ucf(j) = sum
@@ -67,7 +67,7 @@
 
       ncmin = 0
       nscf = 12
-      nsic = 2 + (nw - nfix)/4
+      nsic = 2 + (orbital_count - fixed_orbital_count)/4
       orthst = .false.
 
       return

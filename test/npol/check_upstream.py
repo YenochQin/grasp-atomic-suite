@@ -1,4 +1,4 @@
-"""Verify imported sources against reviewed upstream and lowercase snapshots.
+"""Verify imported sources against the reviewed upstream and rename snapshots.
 
 This check is independent of the external grasp checkout and never executes SCF.
 It protects SOLVE/IMPROV/SCF/orthogonalization and the other imported routines from
@@ -68,7 +68,8 @@ def main(root: Path) -> None:
     # Each before-suite identity was checked through original_bytes before the
     # case-only conversion. Pin the exact resulting bytes, not a relaxed hash
     # that would also ignore changes to string literals or comments.
-    lowercase = json.loads((root / "docs/reference/rmcdhf_lowercase_snapshot.json").read_text())
+    lowercase_path = root / "docs/reference/rmcdhf_lowercase_snapshot.json"
+    lowercase = json.loads(lowercase_path.read_text())
     assert lowercase["schema_version"] == 1, "Unknown lowercase snapshot schema"
     assert hashlib.sha256(upstream_path.read_bytes()).hexdigest() == lowercase["upstream_manifest_sha256"], \
         "Upstream manifest changed; review lowercase provenance"
@@ -76,6 +77,14 @@ def main(root: Path) -> None:
         "F2018 edits changed; review lowercase provenance"
     assert set(lowercase["files"]) == {name for name in expected if name.endswith(".f90")}, \
         "Lowercase snapshot must cover exactly the imported Fortran files"
+    renamed = json.loads((root / "docs/reference/rmcdhf_variable_rename_snapshot.json").read_text())
+    assert renamed["schema_version"] == 1, "Unknown variable-rename snapshot schema"
+    assert hashlib.sha256(lowercase_path.read_bytes()).hexdigest() == renamed["previous_manifest_sha256"], \
+        "Lowercase snapshot changed; review variable-rename provenance"
+    assert renamed["files"].keys() == lowercase["files"].keys(), "Variable-rename snapshot coverage changed"
+    for name, record in renamed["files"].items():
+        assert record["before_suite_sha256"] == lowercase["files"][name]["after_suite_sha256"], \
+            f"Variable-rename snapshot has a different predecessor: {name}"
     actual = {
         str(path.relative_to(root))
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")
@@ -86,14 +95,14 @@ def main(root: Path) -> None:
     for relative, record in expected.items():
         if relative in lowercase["files"]:
             digest = hashlib.sha256((root / relative).read_bytes()).hexdigest()
-            assert digest == lowercase["files"][relative]["after_suite_sha256"], \
-                f"Unreviewed deviation from lowercase GRASP snapshot: {relative}"
+            assert digest == renamed["files"][relative]["after_suite_sha256"], \
+                f"Unreviewed deviation from renamed GRASP snapshot: {relative}"
             continue
         edits = compatibility.get(relative, {}).get("edits", [])
         digest = hashlib.sha256(original_bytes(root / relative, edits)).hexdigest()
         assert digest == record["sha256"], f"Unreviewed deviation from GRASP source: {relative}"
     print(f"PASS: {len(expected)} imported files match reviewed snapshots "
-          f"({len(lowercase['files'])} exact lowercase Fortran identities)")
+          f"({len(renamed['files'])} exact renamed Fortran identities)")
 
 
 if __name__ == "__main__":

@@ -35,12 +35,12 @@
        !...Core orbitals
       nelectron = 0
       do i = 1, ncore
-         sigma(i) = nelectron + (nkj(i)+1)/2
-         nelectron = nelectron + nkj(i) + 1
+         sigma(i) = nelectron + (orbital_two_j(i)+1)/2
+         nelectron = nelectron + orbital_two_j(i) + 1
       end do
 
        !...Peel orbitals
-      sigma(ncore+1:nw) = nelectron
+      sigma(ncore+1:orbital_count) = nelectron
 
       return
       end subroutine screenpar

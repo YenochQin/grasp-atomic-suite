@@ -56,8 +56,8 @@
          eav = eavblk(jblock)
          i = ilev(j)
          eau = e(j) + eav
-         ecm = eau*aucm
-         eev = eau*auev
+         ecm = eau*hartree_to_wavenumber_cm
+         eev = eau*hartree_to_ev
 !GG         IP = (IPAR(J)+3)/2
          jtot = iabs(jpgg(jblock))
          if(jpgg(jblock) >= 0) then
@@ -79,8 +79,8 @@
             do j = 2, nn
                i = ilev(j)
                eau = e(j) - e(j-1)
-               ecm = eau*aucm
-               eev = eau*auev
+               ecm = eau*hartree_to_wavenumber_cm
+               eev = eau*hartree_to_ev
 !GG               IP = (IPAR(J)+3)/2
                jblock = idxblk(j)
                jtot = iabs(jpgg(jblock))
@@ -102,8 +102,8 @@
             do j = 2, nn
                i = ilev(j)
                eau = e(j) - e(1)
-               ecm = eau*aucm
-               eev = eau*auev
+               ecm = eau*hartree_to_wavenumber_cm
+               eev = eau*hartree_to_ev
 !GG               IP = (IPAR(J)+3)/2
                jblock = idxblk(j)
                jtot = iabs(jpgg(jblock))

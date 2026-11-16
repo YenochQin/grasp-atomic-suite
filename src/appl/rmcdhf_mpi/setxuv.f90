@@ -34,21 +34,23 @@
 !
 !   Define constants
 !
-      dmhh = -h*0.5d00
+      dmhh = -transformed_grid_step*0.5d00
 !
 !   Set up arrays XU and XV; since XU(1), XV(1) are never used,
 !   set them to some arbitrary value
 !
-      nm1 = n - 1
+      nm1 = radial_point_count - 1
       xu(1) = 0.0d00
       xv(1) = 0.0d00
-      xu(2:nm1) = dmhh*(xp(3:nm1+1)*rpor(3:nm1+1)+xp(2:nm1)*rpor(2:nm1)) + dp(2&
+      xu(2:nm1) = dmhh*(xp(3:nm1+1)*radial_derivative_over_radius(3:nm1+1)+xp(2:nm1)*radial_derivative_over_radius(2:nm1)) + dp(2&
          :nm1)
-      xv(2:nm1) = dmhh*(xq(3:nm1+1)*rpor(3:nm1+1)+xq(2:nm1)*rpor(2:nm1)) + dq(2&
+      xv(2:nm1) = dmhh*(xq(3:nm1+1)*radial_derivative_over_radius(3:nm1+1)+xq(2:nm1)*radial_derivative_over_radius(2:nm1)) + dq(2&
          :nm1)
 !
-      xu(n) = dmhh*xp(n)*rpor(n) + dp(n)
-      xv(n) = dmhh*xp(n)*rpor(n) + dq(n)
+      xu(radial_point_count) = dmhh*xp(radial_point_count)*radial_derivative_over_radius(radial_point_count) + &
+         & dp(radial_point_count)
+      xv(radial_point_count) = dmhh*xp(radial_point_count)*radial_derivative_over_radius(radial_point_count) + &
+         & dq(radial_point_count)
 !
       return
       end subroutine setxuv

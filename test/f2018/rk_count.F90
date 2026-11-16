@@ -8,11 +8,8 @@ program rk_count
     use vast_kind_param, only: double,long
     use rk_fixture
     use cteilsrk_C, only: indteirk,valteirk,rk_local_count
-    use orb_C, only: nw,nkl,nkj
+    use orb_c, only: nw => orbital_count, nkl => orbital_l, nkj => orbital_two_j
     use genintrk_I, only: genintrk
-#ifdef RK_CSFG
-    use symmatrix_mod, only: kstartia
-#endif
     implicit none
     integer :: ranks, rank, count_total, jmax, total_calls, orbitals, i
     integer(long) :: large_total
@@ -28,9 +25,6 @@ program rk_count
                 call genintrk(rank,ranks,count_total,jmax)
                 if(.not.all(ieee_is_finite(valteirk))) error stop 'Nonfinite integral cache'
                 if(calls/=rk_local_count(count_total,rank,ranks)) error stop 'Local Slater evaluation count'
-#ifdef RK_CSFG
-                if(kstartia(jmax*nw+nw)/=count_total) error stop 'CSFG integral cache boundary'
-#endif
                 if(count(abs(valteirk)>0.0_double)/=calls) error stop 'Local integral cache ownership'
                 do i=1,count_total
                     if(mod(i,ranks)==rank) then

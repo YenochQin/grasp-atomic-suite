@@ -16,7 +16,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use iounit_c,     only: istdi, istde
+      use iounit_c,     only: stdin_unit, stderr_unit
       implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -24,13 +24,13 @@
       character (len = 1) :: rspns
 !-----------------------------------------------
     1 continue
-      read (istdi, '(A)') rspns
+      read (stdin_unit, '(A)') rspns
       if (rspns == 'y' .or. rspns == 'Y') then
          getyn = .true.
       else if (rspns == 'n' .or. rspns == 'N') then
          getyn = .false.
       else
-         write (istde, *) 'Expecting <y><cr> or <n><cr> ...'
+         write (stderr_unit, *) 'Expecting <y><cr> or <n><cr> ...'
          go to 1
       endif
 !

@@ -35,10 +35,10 @@
       integer :: ios, ierror
       character (len = 6) :: g92rwf
 !-----------------------------------------------
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          call openfl (23, name, 'UNFORMATTED', 'OLD', ierror)
          if (ierror .eq. 1) then
-            write (istde,*) 'Error opening', name(1:len_trim (name))
+            write (stderr_unit,*) 'Error opening', name(1:len_trim (name))
             stop
          endif
 
@@ -46,7 +46,7 @@
 
          read (23,iostat = ios) g92rwf
          if ((ios .ne. 0) .or. (g92rwf .ne. 'G92RWF')) then
-            write (istde,*) 'This is not a Radial WaveFunction File;'
+            write (stderr_unit,*) 'This is not a Radial WaveFunction File;'
             close (23)
             stop
          endif
@@ -57,15 +57,15 @@
       call lodrwfmpi (ierror)
 
       if (ierror .ne. 0) then
-         if (myid .eq. 0) then
-            write (istde,*) 'Radial wavefunctions defined in CSL file' &
+         if (mpi_rank .eq. 0) then
+            write (stderr_unit,*) 'Radial wavefunctions defined in CSL file' &
                           , ' not found in Radial WaveFunction File'
             close (23)
          endif
          stop
       endif
 
-      if (myid .eq. 0) close (23)
+      if (mpi_rank .eq. 0) close (23)
 
       return
       end

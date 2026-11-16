@@ -34,8 +34,8 @@
 !
       j = 0
       dlrgst = 0.d0
-      do i = 1, nw
-         if (lfix(i)) cycle
+      do i = 1, orbital_count
+         if (is_orbital_fixed(i)) cycle
          if (scnsty(i) <= dlrgst) cycle
          dlrgst = scnsty(i)
          j = i

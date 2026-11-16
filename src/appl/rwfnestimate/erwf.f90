@@ -72,16 +72,16 @@
 !   Startup message
 !
       call parse_radial_options(input_options)
-      write (istde, *) 'RWFNESTIMATE'
-      write (istde, *) 'This program estimates radial wave functions'
-      write (istde, *) 'for orbitals'
-      write (istde, *) 'Input files: isodata, selected CSF text/header, optional rwfn file'
-      write (istde, *) 'Selected input: ', input_options%filename
-      write (istde, *) 'Output file: rwfn.inp'
+      write (stderr_unit, *) 'RWFNESTIMATE'
+      write (stderr_unit, *) 'This program estimates radial wave functions'
+      write (stderr_unit, *) 'for orbitals'
+      write (stderr_unit, *) 'Input files: isodata, selected CSF text/header, optional rwfn file'
+      write (stderr_unit, *) 'Selected input: ', input_options%filename
+      write (stderr_unit, *) 'Output file: rwfn.inp'
 
 
 !
-      write (istde, *) 'Default settings ?'
+      write (stderr_unit, *) 'Default settings ?'
       yes = getyn()
       if (yes) then
          ndef = 0
@@ -137,7 +137,7 @@
 !
 !   Print completion message
 !
-      write (istde, *) 'RWFNESTIMATE: Execution complete.'
+      write (stderr_unit, *) 'RWFNESTIMATE: Execution complete.'
 !
       stop
       end program erwf

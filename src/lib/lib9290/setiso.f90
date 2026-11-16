@@ -51,14 +51,14 @@
       inquire(file=fname, exist=found)
       if (.not.found) then
          lenf = len_trim(fname)
-         write (istde,*)                                              &
+         write (stderr_unit,*)                                              &
                      myname,'- file: ',fname(1:lenf),' does not exist'
          stop
       endif
 !
       call openfl (22, fname, form, status, ierr)
       if (ierr /= 0) then
-         write (istde, *) 'Error opening isodata file: ', fname(1:lenf)
+         write (stderr_unit, *) 'Error opening isodata file: ', fname(1:lenf)
          stop
       endif
 !
@@ -66,7 +66,7 @@
 !
       read (22, '(A)', iostat=ios) str
       if (ios/=0 .or. str/=signature) then
-         write (istde, *) 'Not an ISOtope Data File;'
+         write (stderr_unit, *) 'Not an ISOtope Data File;'
          close(22)
          stop
       endif

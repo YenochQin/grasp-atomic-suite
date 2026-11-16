@@ -1,7 +1,0 @@
-      MODULE lodcsl_Zero_I
-      INTERFACE
-      SUBROUTINE lodcsl_Zero (NEXT_BLOCKZ)
-      LOGICAL, INTENT(OUT)  :: NEXT_BLOCKZ
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE

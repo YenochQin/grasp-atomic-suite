@@ -17,7 +17,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnp
+      use parameter_def,   only: max_radial_points
       use grid_c
       implicit none
 !-----------------------------------------------
@@ -26,8 +26,8 @@
       integer, intent(in) :: mf
       real(double), intent(in) :: sp
       real(double), intent(in) :: sq
-      real(double), dimension(nnnp), intent(in) :: p
-      real(double), dimension(nnnp), intent(in) :: q
+      real(double), dimension(max_radial_points), intent(in) :: p
+      real(double), dimension(max_radial_points), intent(in) :: q
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -87,7 +87,7 @@
 !
 !   Determine the radial extent of the function
 !
-      rmx = r(mf)
+      rmx = radial_grid(mf)
 !
 !   Determine the scale factors
 !
@@ -97,7 +97,7 @@
       else
          xscal = fift4/abs(dmx - dmn)
       endif
-      yscal = ohtht/dble(n)
+      yscal = ohtht/dble(radial_point_count)
 !
 !   Locate x = 0 if this is in the range
 !

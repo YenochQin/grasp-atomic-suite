@@ -57,10 +57,10 @@
       dll1 = dble(lk + lk + 1)
       stfac = stfac/dll1
 !
-      omc = omega/cvac
+      omc = omega/vacuum_speed_of_light_au
 !     OMC = OMEGA/C
       faau = 2.0d00*omc*stfac/dble(iatjpoff(j))
-      fosc = cvac*stfac/omc
+      fosc = vacuum_speed_of_light_au*stfac/omc
 !     FOSC = C*STFAC/OMC
       fbau = pi*fosc/omega
       eng = omega*factor
@@ -75,7 +75,7 @@
       jpari = labp(ipar)
       jparj = labp(jpar)
 !GG
-      ggfactor = cvac**(2*lk - 2)*dble(lk)*dblfac(lk)**2/((2.0d00*dble(lk) + &
+      ggfactor = vacuum_speed_of_light_au**(2*lk - 2)*dble(lk)*dblfac(lk)**2/((2.0d00*dble(lk) + &
          1.0d00)*(dble(lk) + 1.0d00)*abs(omega)**(2*lk - 1))
 !GG-end
 !
@@ -112,10 +112,10 @@
 !   Convert to SI units if option 5 not set
 !
          if (.not.ltc(7)) then
-            ac = ac*fasi
-            ab = ab*fasi
-            bc = bc*fbsi
-            bb = bb*fbsi
+            ac = ac*einstein_a_au_to_si
+            ab = ab*einstein_a_au_to_si
+            bc = bc*einstein_b_au_to_si
+            bb = bb*einstein_b_au_to_si
          endif
 !
 !   Accumulate total of A coefficients
@@ -169,14 +169,14 @@
          am = ams*faau
          bm = ams*fbau
          oscm = ams*fosc
-         sa = oscm*ggfactor*cvac*cvac*4
+         sa = oscm*ggfactor*vacuum_speed_of_light_au*vacuum_speed_of_light_au*4
 !GG-end
 !
 !   Convert to SI units if option 5 not set
 !
          if (.not.ltc(7)) then
-            am = am*fasi
-            bm = am*fbsi
+            am = am*einstein_a_au_to_si
+            bm = am*einstein_b_au_to_si
          endif
 !
 !   Accumulate total of A coefficients

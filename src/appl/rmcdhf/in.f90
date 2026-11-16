@@ -42,11 +42,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnp
+      use parameter_def,    only: max_radial_points
       use def_c,            only: accy
-      use grid_c,           only: h, n, r, rpor
+      use grid_c,           only: transformed_grid_step, radial_point_count, radial_grid, radial_derivative_over_radius
       use int_c,            only: tf, tg, xu, xv
-      use orb_c,            only: nak
+      use orb_c,            only: orbital_kappa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -58,13 +58,13 @@
       integer , intent(in) :: iorb
       integer , intent(in) :: jp
       integer , intent(out) :: mtp
-      real(double) , intent(inout) :: p(nnnp)
-      real(double) , intent(inout) :: q(nnnp)
+      real(double) , intent(inout) :: p(max_radial_points)
+      real(double) , intent(inout) :: q(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, j, lcnum, mtpp1
-      real(double), dimension(nnnp) :: th, ti, tj, xr, xs
+      real(double), dimension(max_radial_points) :: th, ti, tj, xr, xs
       real(double) :: eps, hhk, hhkf, cpj, cmj, cpjp1, cmjp1, tei, tthis, tci, &
          tdi, tlast
       character :: cnum*5
@@ -73,7 +73,7 @@
 !   Global initializations
 !
       eps = 0.01d00*accy
-      hhk = 0.5d00*h*dble(nak(iorb))
+      hhk = 0.5d00*transformed_grid_step*dble(orbital_kappa(iorb))
 !
 !   Initialize counters
 !
@@ -82,10 +82,10 @@
 !
 !   Other initializations
 !
-      hhkf = hhk*rpor(j)
+      hhkf = hhk*radial_derivative_over_radius(j)
       cpj = 1.0d00 + hhkf
       cmj = 1.0d00 - hhkf
-      hhkf = hhk*rpor(j+1)
+      hhkf = hhk*radial_derivative_over_radius(j+1)
       cpjp1 = 1.0d00 + hhkf
       cmjp1 = 1.0d00 - hhkf
 !
@@ -109,8 +109,8 @@
 !
 !   Failure if tables not long enough
 !
-      if (j >= n) then
-         call convrt (n, cnum, lcnum)
+      if (j >= radial_point_count) then
+         call convrt (radial_point_count, cnum, lcnum)
          write (6, *) 'IN: maximum tabulation point exceeds'
          write (6, *) ' dimensional limit (currently '//cnum(1:lcnum)//');'
          write (6, *) ' radial wavefunction may indicate a'
@@ -122,7 +122,7 @@
 !
       cpj = cpjp1
       cmj = cmjp1
-      hhkf = hhk*rpor(j+1)
+      hhkf = hhk*radial_derivative_over_radius(j+1)
       cpjp1 = 1.0d00 + hhkf
       cmjp1 = 1.0d00 - hhkf
 !
@@ -142,7 +142,7 @@
 !
       tlast = tthis
       tthis = abs(xs(i)/ti(i))
-      if (tthis + tlast <= eps .or. j .eq. nnnp-1 ) then 
+      if (tthis + tlast <= eps .or. j .eq. max_radial_points-1 ) then 
          mtp = j
       else
          go to 1
@@ -166,15 +166,15 @@
 !
       if (i > 0) then
          p(j) = (xs(i)-tj(i)*q(j))/ti(i)
-         q(j-1) = (xr(i)+(1.0d00-hhk*rpor(j))*q(j)+tg(j)*p(j))/th(i)
+         q(j-1) = (xr(i)+(1.0d00-hhk*radial_derivative_over_radius(j))*q(j)+tg(j)*p(j))/th(i)
          go to 2
       endif
 !
 !   Complete tables with zeroes
 !
       mtpp1 = mtp + 1
-      p(mtpp1:n) = 0.0d00
-      q(mtpp1:n) = 0.0d00
+      p(mtpp1:radial_point_count) = 0.0d00
+      q(mtpp1:radial_point_count) = 0.0d00
 !
       return
       end subroutine in

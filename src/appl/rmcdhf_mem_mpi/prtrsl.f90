@@ -38,13 +38,13 @@
 !   Print the list of all subshell radial wavefunctions
 !
       iend = 0
-      do i = 1, nw
+      do i = 1, orbital_count
 !         LOC = IORDER(I)
          loc = i
 ! For the commenting-out of the IF...ENDIF, see comments in the header
 !         IF (.NOT. LFIX(LOC)) THEN
          if (iend > 75) then
-            write (istde, *) record(1:iend)
+            write (stderr_unit, *) record(1:iend)
             iend = 0
          endif
          if (iend > 0) then
@@ -53,20 +53,20 @@
             record(ibeg:iend) = ' '
          endif
          ibeg = iend + 1
-         call convrt (np(loc), cnum, lenth)
+         call convrt (orbital_principal_n(loc), cnum, lenth)
          iend = ibeg + lenth - 1
          record(ibeg:iend) = cnum(1:lenth)
-         if (nak(loc) < 0) then
+         if (orbital_kappa(loc) < 0) then
             lenth = 1
          else
             lenth = 2
          endif
          ibeg = iend + 1
          iend = ibeg + lenth - 1
-         record(ibeg:iend) = nh(loc)(1:lenth)
+         record(ibeg:iend) = orbital_symmetry_labels(loc)(1:lenth)
 !         ENDIF
       end do
-      if (iend > 1) write (istde, *) record(1:iend)
+      if (iend > 1) write (stderr_unit, *) record(1:iend)
 !
       return
       end subroutine prtrsl

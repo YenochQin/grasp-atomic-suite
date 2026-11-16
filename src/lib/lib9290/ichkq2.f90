@@ -38,7 +38,7 @@
 !
       ichkq2 = 0
       k = 0
-      do i = 1, nw
+      do i = 1, orbital_count
          i_iqa = iq(i,ja)
          i_iqb = iq(i,jb)
          if (i_iqa == i_iqb) cycle

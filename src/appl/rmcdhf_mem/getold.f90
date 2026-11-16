@@ -6,13 +6,13 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnw
+      use parameter_def,    only: max_orbitals
       use memory_man
       use blkidx_c
-      use damp_c, only: cdamp, odamp
+      use damp_c, only: mixing_damping_factors, orbital_damping_factors
       use def_c, rwtdum=>wt
       use default_c
-      use fixd_c, only: lfix, nfix
+      use fixd_c, only: is_orbital_fixed, fixed_orbital_count
       use hblock_c
       use iounit_c
       use invt_c, only: noinvt
@@ -37,7 +37,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: iqadum
-      integer , dimension(nnnw) :: indx
+      integer , dimension(max_orbitals) :: indx
       integer :: i, nsubs, norder, loc, noffset, jblock, j
       logical :: getyn, yes
       character :: record*256
@@ -49,8 +49,8 @@
 !    nevblk(), ncmaxblk()
 !    ncmin, iccmin(1:ncmin) -- via items (memories allocated there)
 
-      call alloc (ncmaxblk, nblock, 'NCMAXBLK', 'GETOLD')
-      call alloc (nevblk, nblock, 'NEVBLK', 'GETOLD' )
+      call alloc (ncmaxblk, symmetry_block_count, 'NCMAXBLK', 'GETOLD')
+      call alloc (eigenvector_counts_by_block, symmetry_block_count, 'NEVBLK', 'GETOLD' )
 
 !cjb  ncmaxblk & nevblk initialised in lodstate
 !     NEVBLK = 0
@@ -70,13 +70,13 @@
 !
 !   Eigenvector damping
 !
-      call alloc (cdamp, ncmin, 'CDAMP', 'GETOLD')
+      call alloc (mixing_damping_factors, ncmin, 'CDAMP', 'GETOLD')
 !
-      cdamp(:ncmin) = 0.d0
+      mixing_damping_factors(:ncmin) = 0.d0
 !
 !   Print the list of all subshells
 !
-      write (istde, *) 'Radial functions'
+      write (stderr_unit, *) 'Radial functions'
       call prtrsl
 !
 !   Determine which orbitals are to be varied, which are fixed.
@@ -85,42 +85,42 @@
 !   Instead of broadcasting these quantities, we broadcast
 !   the intermediate result from GETRSL (see below)
 !
-      lfix(:nw) = .true.
+      is_orbital_fixed(:orbital_count) = .true.
 
-      write (istde, *) 'Enter orbitals to be varied (Updating order)'
+      write (stderr_unit, *) 'Enter orbitals to be varied (Updating order)'
       call getrsl (indx, nsubs)
 
-      lfix(indx(:nsubs)) = .false.
+      is_orbital_fixed(indx(:nsubs)) = .false.
 !XHH      give a big value, rather than zero to scnsty()
       scnsty(indx(:nsubs)) = 1.d20
-      nfix = nw - nsubs
-      if (nfix == nw) write (istde, *) &
+      fixed_orbital_count = orbital_count - nsubs
+      if (fixed_orbital_count == orbital_count) write (stderr_unit, *) &
          'All subshell radial wavefunctions are fixed;', &
          ' performing CI calculation.'
 
 !   Determine orbital updating order
 
       norder = 0
-      do i = 1, nw
+      do i = 1, orbital_count
          iorder(i) = i
-         if (lfix(i)) cycle
+         if (is_orbital_fixed(i)) cycle
          norder = norder + 1
          iorder(i) = indx(norder)
       end do
 !
 !XHH added a array to store the index of the correlation functions
 !
-      lcorre(:nw) = .true.
+      lcorre(:orbital_count) = .true.
 
-      write (istde, *) 'Which of these are spectroscopic orbitals?'
+      write (stderr_unit, *) 'Which of these are spectroscopic orbitals?'
       call getrsl (indx, nsubs)
       if (nsubs > 0) then
          do i = 1, nsubs
             loc = indx(i)
-            if (lfix(loc)) cycle
+            if (is_orbital_fixed(loc)) cycle
             method(loc) = 1
             noinvt(loc) = .false.
-            odamp(loc) = 0.d0
+            orbital_damping_factors(loc) = 0.d0
             lcorre(loc) = .false.
          end do
       endif
@@ -128,9 +128,9 @@
 ! Set NSIC. It will be non-zero if all orbitals to be varied are
 ! spectroscopic orbitals
 
-      nsic = (nw - nfix)/4
-      do i = 1, nw
-         if (.not.(.not.lfix(i) .and. lcorre(i))) cycle
+      nsic = (orbital_count - fixed_orbital_count)/4
+      do i = 1, orbital_count
+         if (.not.(.not.is_orbital_fixed(i) .and. lcorre(i))) cycle
          nsic = 0
          exit
       end do
@@ -149,11 +149,11 @@
 !
       call alloc (idxblk, ncmin, 'IDXBLK', 'GETOLD')
       noffset = 0
-      do jblock = 1, nblock
-         do j = 1, nevblk(jblock)
+      do jblock = 1, symmetry_block_count
+         do j = 1, eigenvector_counts_by_block(jblock)
             idxblk(j+noffset) = jblock
          end do
-         noffset = noffset + nevblk(jblock)
+         noffset = noffset + eigenvector_counts_by_block(jblock)
       end do
       if (noffset /= ncmin) stop 'getold: ncmin trouble'
 

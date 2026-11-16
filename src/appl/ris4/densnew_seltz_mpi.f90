@@ -9,7 +9,7 @@
 !                                                                      *
 !***********************************************************************
       use vast_kind_param,  only: double
-      use parameter_def,    only: keyorb, nnnw, nnnp
+      use parameter_def,    only: orbital_index_radix, max_orbitals, max_radial_points
       use blk_c
       use debug_c
       use decide_c
@@ -25,7 +25,7 @@
       use buffer_c
       use ris_c
       use syma_c
-      use mpi_c,            only: myid, nprocs
+      use mpi_c,            only: mpi_rank, mpi_process_count
       use prnt_c,           only : nvec
       use alcbuf_i
       use convrt_i
@@ -34,14 +34,14 @@
       use onescalar_i
       implicit none
       integer, intent(in) :: doit, nrnuc
-      real(double), dimension(nnnw,nnnw), intent(in) :: dint1, dint2, &
+      real(double), dimension(max_orbitals,max_orbitals), intent(in) :: dint1, dint2, &
                                                         dint3, dint4, &
                                                         dint5, dint6, &
                                                         dint7
       real(double), dimension(nvec,nrnuc), intent(out) :: dens1vec
-      real(double), dimension(nnnw,nnnw,nrnuc), intent(in) :: dint1vec
-      integer, parameter :: key = keyorb
-      real(double), dimension(nnnw) :: tshell, tshell_s
+      real(double), dimension(max_orbitals,max_orbitals,nrnuc), intent(in) :: dint1vec
+      integer, parameter :: key = orbital_index_radix
+      real(double), dimension(max_orbitals) :: tshell, tshell_s
       real(double), dimension(nrnuc) :: contri1vec, elemnt1vec
       real(double) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5,     &
                       elemnt6, elemnt7, contri1, contri2, contri3,     &
@@ -49,7 +49,7 @@
                       pair_scale
       logical :: has_contr
       character :: cnum*11, ck*2
-      integer, dimension(nnnw) :: ia_s
+      integer, dimension(max_orbitals) :: ia_s
       integer :: ka, iopar, incor, ic, lcnum, itjpoc, ir, ia, ib, i, j
       integer :: l, loc, ncontr, lab, occ_ic, occ_ir, ndiff
 
@@ -60,20 +60,20 @@
 
       call alcbuf (1)
 
-      do ic = myid + 1, ncf, nprocs
-         if (myid == 0 .and. mod(ic,100) .eq. 1) then
+      do ic = mpi_rank + 1, csf_count, mpi_process_count
+         if (mpi_rank == 0 .and. mod(ic,100) .eq. 1) then
             call convrt (ic,cnum,lcnum)
             print *, 'Column '//cnum(1:lcnum)//' complete on root;'
          endif
 
          itjpoc = itjpo (ic)
-         do ir = ic,ncf
+         do ir = ic,csf_count
             if (itjpo(ir) .eq. itjpoc) then
                if (ispar(ic) .ne. ispar(ir)) cycle
                ndiff = 0
-               do i = 1,nw
-                  occ_ic = iqa(i,ic)
-                  occ_ir = iqa(i,ir)
+               do i = 1,orbital_count
+                  occ_ic = csf_subshell_occupations(i,ic)
+                  occ_ir = csf_subshell_occupations(i,ir)
                   if (occ_ic .eq. occ_ir) cycle
                   if (iabs(occ_ic - occ_ir) .gt. 1) then
                      ndiff = 3
@@ -99,7 +99,7 @@
                if (ia .ne. 0) then
                   if (ia .eq. ib) then
                      ncontr = 0
-                     do ia = 1,nw
+                     do ia = 1,orbital_count
                         if (abs (tshell(ia)) .gt. cutoff) then
                            ncontr = ncontr + 1
                            tshell_s(ncontr) = tshell(ia)
@@ -119,7 +119,7 @@
                      end do
                   else
                      if (abs (tshell(1)) .gt. cutoff) then
-                        if (nak(ia).eq.nak(ib)) then
+                        if (orbital_kappa(ia).eq.orbital_kappa(ib)) then
                            elemnt1 = elemnt1 + dint1(ia,ib)*tshell(1)
                            do l = 2,nrnuc
                               elemnt1vec(l)=elemnt1vec(l)+dint1vec(ia,ib,l)*tshell(1)
@@ -150,8 +150,8 @@
                   pair_scale = 2.0d00
                endif
                do j = 1,nvec
-                  loc = (j-1)*ncf
-                  evpair = pair_scale * evec(ic+loc)*evec(ir+loc)
+                  loc = (j-1)*csf_count
+                  evpair = pair_scale * csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)
                   contri1 = evpair*elemnt1
                   contri1vec(:) = evpair*elemnt1vec(:)
                   contri2 = evpair*elemnt2

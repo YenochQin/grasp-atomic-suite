@@ -50,7 +50,7 @@
       go to 2
 
     1 continue
-      write (istde, *) ' redo ...'
+      write (stderr_unit, *) ' redo ...'
 !
 !   Read a record
 !
@@ -87,7 +87,7 @@
                   nform = nform + 1
                end do
                if (nform == 0) then
-                  write (istde, *) 'GETRSL: Unable to interpret ', &
+                  write (stderr_unit, *) 'GETRSL: Unable to interpret ', &
                      'the principal quantum number;'
                   go to 1
                endif
@@ -95,7 +95,7 @@
                form = '(1I'//cnum(1:lenth)//')'
                read (record(istart:istart+nform-1), form, iostat=ios) npq
                if (ios /= 0) then
-                  write (istde, *) 'GETRSL: Unable to interpret ', 'string ', &
+                  write (stderr_unit, *) 'GETRSL: Unable to interpret ', 'string ', &
                      record(istart:iend-2), ' as a principal quantum number'
                   go to 1
                endif
@@ -120,7 +120,7 @@
                else if (nsq == '-') then
                   nsany = .false.
                else
-                  write (istde, *) 'GETRSL: Unable to interpret ', 'string ', &
+                  write (stderr_unit, *) 'GETRSL: Unable to interpret ', 'string ', &
                      nsq, ' as a spin-orbit component indicator'
                   go to 1
                endif
@@ -135,14 +135,14 @@
 !
 !
             found = .false.
-            do j = 1, nw
-               npok = npany .or. np(j)==npq
-               nlok = nlany .or. nlq==nh(j)(1:1)
-               nsok = nsany .or. nsq==nh(j)(2:2)
+            do j = 1, orbital_count
+               npok = npany .or. orbital_principal_n(j)==npq
+               nlok = nlany .or. nlq==orbital_symmetry_labels(j)(1:1)
+               nsok = nsany .or. nsq==orbital_symmetry_labels(j)(2:2)
                if (.not.(npok .and. nlok .and. nsok)) cycle
                do k = 1, nsubs
                   if (indx(k) /= j) cycle
-                  write (istde, *) 'GETRSL: ', 'Repeated subshell in list;'
+                  write (stderr_unit, *) 'GETRSL: ', 'Repeated subshell in list;'
                   go to 1
                end do
                found = .true.
@@ -151,7 +151,7 @@
             end do
 !
             if (.not.found) then
-               write (istde, *) 'GETRSL: Subshell not occupied as ', &
+               write (stderr_unit, *) 'GETRSL: Subshell not occupied as ', &
                   ' according to CSL  File;'
                go to 1
             endif

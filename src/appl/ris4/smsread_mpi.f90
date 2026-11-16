@@ -7,18 +7,18 @@
 !                                                                      *
 !***********************************************************************
       use vast_kind_param,  only: double
-      use parameter_def,    only: keyorb, nnnw
+      use parameter_def,    only: orbital_index_radix, max_orbitals
       use prnt_c
       use ris_c
       use orb_c
       use eigv_c
       use buffer_c
       use debug_c,          only: cutoff
-      use mpi_c,            only: myid, nprocs
+      use mpi_c,            only: mpi_rank, mpi_process_count
       use alcbuf_i
       implicit none
-      real(double), dimension(nnnw,nnnw), intent(in) :: vint, vint2
-      integer, parameter :: key = keyorb
+      real(double), dimension(max_orbitals,max_orbitals), intent(in) :: vint, vint2
+      integer, parameter :: key = orbital_index_radix
       real(double), dimension(nvec) :: evpair
       real(double) :: contri, contrik1, coeffsms, radial_k1, radial_sms,&
          pair_scale, term_k1, term_sms
@@ -30,7 +30,7 @@
    16 read (51,iostat = ios) ic,ir
       if (ios .eq. 0) then
          read(51) coeffsms,lab
-         ownrec = mod(ic-1, nprocs) .eq. myid
+         ownrec = mod(ic-1, mpi_process_count) .eq. mpi_rank
          if (ownrec) then
             iid = mod (lab, key)
             lab = lab/key
@@ -50,8 +50,8 @@
                pair_scale = 2.0d00
             endif
             do j = 1,nvec
-               loc = (j-1)*ncf
-               evpair(j) = pair_scale * evec(ic+loc) * evec(ir+loc)
+               loc = (j-1)*csf_count
+               evpair(j) = pair_scale * csf_mixing_coefficients(ic+loc) * csf_mixing_coefficients(ir+loc)
             end do
             do j = 1,nvec
                contrik1 = evpair(j) * term_k1

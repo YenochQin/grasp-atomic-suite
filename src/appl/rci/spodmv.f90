@@ -74,7 +74,7 @@
       do icol = myid + 1, n, nprocs
          read (imcdf) nelc, elsto, (emt(ir),ir=1,nelc), (irow(ir),ir=1,nelc)
          do iv = 1, m
-            diag = c(icol,iv) + (emt(nelc)-eav)*b(icol,iv)
+            diag = c(icol,iv) + (emt(nelc)-hamiltonian_energy_shift)*b(icol,iv)
             call dmerge (nelc - 1, b(1,iv), c(1,iv), irow(1), emt(1), b(icol,iv&
                ), dl)
             c(icol,iv) = diag + dl

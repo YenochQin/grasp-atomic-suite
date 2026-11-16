@@ -18,10 +18,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use parameter_def,   only:  nnnw
+      use parameter_def,   only:  max_orbitals
       use cons_c
       use m_c
-      use orb_c,   only: nw, nak
+      use orb_c,   only: orbital_count, orbital_kappa
       use dumx_c,  only: jlis, jc1s, jc2s
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -40,7 +40,7 @@
 !-----------------------------------------------
       integer, intent(in)  :: ka,iopar,ja,jb
       integer, intent(out) :: ia1,ia2
-      real(double), intent(out) :: vshell(nnnw)
+      real(double), intent(out) :: vshell(max_orbitals)
 !      DIMENSION VSHELL(NNNW)
 !      DIMENSION IS(2),KS(2)
 !-----------------------------------------------
@@ -59,7 +59,7 @@
 !
       call setqna (ja,jb)
 !
-      do ij = 1,nw
+      do ij = 1,orbital_count
          vshell(ij) = zero
       end do
 !
@@ -106,7 +106,7 @@
 !
 !   If ISH .GT. NW, then loop is over and return
     9 ish = ish+1
-      if (ish .gt. nw) return
+      if (ish .gt. orbital_count) return
       if (ichop (ish,ja) .eq. -1) goto 9
       if (ichop (ish,ja) .eq. 0) goto 16
 !
@@ -157,8 +157,8 @@
 !     IA1, IA2 are the indices of interacting shells in NW
    19 ia1 = jlist(ja1)
       ia2 = jlist(ja2)
-      ks1 = 2*abs (nak(ia1))
-      ks2 = 2*abs (nak(ia2))
+      ks1 = 2*abs (orbital_kappa(ia1))
+      ks2 = 2*abs (orbital_kappa(ia2))
 !
 !   Check triangular condition for the active shells
       if (itrig (ks1,ks2,kk).eq.1) goto 99

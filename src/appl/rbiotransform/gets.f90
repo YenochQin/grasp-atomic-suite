@@ -51,7 +51,7 @@
 !
             ta(1) = 0.d0
             do l = 2, mtp
-               ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*rp(l)
+               ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*radial_grid_derivative(l)
             end do
 !
 !   Perform the quadrature

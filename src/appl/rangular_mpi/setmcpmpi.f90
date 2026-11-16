@@ -54,20 +54,20 @@
 
 ! DIAG, ICCUT, LFORDR are set in GETINF
 
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          call getinf
       endif
 
-      call mpi_bcast (iccut(1),100,mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (diag,  1,mpi_logical,0,mpi_comm_world,ierr)
-      call mpi_bcast (lfordr,1,mpi_logical,0,mpi_comm_world,ierr)
+      call mpi_bcast (iccut(1),100,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (diagonal_only,  1,mpi_logical,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (use_first_order_restriction,1,mpi_logical,0,mpi_comm_world,mpi_error_code)
 
-      do k = 30, 32+kmax
-         write (k) nelec,ncf,nw
-         write (k) diag,iccut(1),lfordr
+      do k = 30, 32+max_coulomb_multipole_rank
+         write (k) electron_count,csf_count,orbital_count
+         write (k) diagonal_only,iccut(1),use_first_order_restriction
       enddo
 
-      do k = 30, 32+kmax
+      do k = 30, 32+max_coulomb_multipole_rank
          close (k)
       enddo
 

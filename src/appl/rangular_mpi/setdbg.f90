@@ -54,7 +54,7 @@
          return
       endif
 
-      write (istde,*) 'Generate debug printout?'
+      write (stderr_unit,*) 'Generate debug printout?'
       debug = getyn ()
       if (debug) then
 !
@@ -63,9 +63,9 @@
          form = 'FORMATTED'
          status = 'NEW'
 !
-         write (istde,*) 'File ', fullname,' will be created as the'    &
+         write (stderr_unit,*) 'File ', fullname,' will be created as the'    &
      &,                 ' GENMCP DeBuG Printout File; '
-         write (istde,*) ' enter another file name if this is not '     &
+         write (stderr_unit,*) ' enter another file name if this is not '     &
      &,                 'acceptable; null otherwise:'
          read (*,'(A)') filnam
 !
@@ -73,7 +73,7 @@
 !
     4    call openfl (99, filnam, form, status, ierr)
          if (ierr .ne. 0) then
-    5       write (istde,*) 'Enter a name for the GENMCP DeBuG Printout'&
+    5       write (stderr_unit,*) 'Enter a name for the GENMCP DeBuG Printout'&
      &,                    ' file that is to be created:'
             read (*,'(A)') filnam
             if (len_trim (filnam) .eq. 0) goto 5
@@ -82,18 +82,18 @@
 !
 !   Set options for general printout
 !
-         write (istde,*) ' Print out the machine constants used?'
+         write (stderr_unit,*) ' Print out the machine constants used?'
          ldbpg(1) = getyn ()
 !
 !   Set options for angular modules
 !
-         write (istde,*) ' Printout from LODCSL? (Not used)'
+         write (stderr_unit,*) ' Printout from LODCSL? (Not used)'
          ldbpa(1) = getyn ()
-         write (istde,*) ' Print out T coefficients?'
+         write (stderr_unit,*) ' Print out T coefficients?'
          ldbpa(2) = getyn ()
-         write (istde,*) ' Print out Coulomb V coefficients?'
+         write (stderr_unit,*) ' Print out Coulomb V coefficients?'
          ldbpa(3) = getyn ()
-         write (istde,*) ' Print out sparse matrix definition arrays?'
+         write (stderr_unit,*) ' Print out sparse matrix definition arrays?'
          ldbpa(4) = getyn ()
 
       endif

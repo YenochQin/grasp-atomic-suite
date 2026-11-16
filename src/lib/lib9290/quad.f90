@@ -63,11 +63,11 @@
 !
 !   Exponent from fit
 !
-         frip1 = taip1/rp(ip1)
-         fri = tai/rp(i)
+         frip1 = taip1/radial_grid_derivative(ip1)
+         fri = tai/radial_grid_derivative(i)
          ratio = frip1/fri
-         rip1 = r(ip1)
-         ri = r(i)
+         rip1 = radial_grid(ip1)
+         ri = radial_grid(i)
          sigma = log(ratio)/log(rip1/ri)
 !
 !   Analytical integration and error estimate for interval r(1:i)

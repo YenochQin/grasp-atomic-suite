@@ -34,7 +34,7 @@
 !-----------------------------------------------
       use vast_kind_param, only:  double
       use debug_c
-      use orb_c, iiqa=>iqa
+      use orb_c, iiqa=>csf_subshell_occupations
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -63,9 +63,9 @@
          if (k == 0) then
             fco = dble((iqa*(iqa - 1))/2)
          else
-            iqf = nkj(ia) + 1
+            iqf = orbital_two_j(ia) + 1
             if (iqa == iqf) then
-               kappa = nak(ia)
+               kappa = orbital_kappa(ia)
                fac = clrx(kappa,k,kappa)*dble(iqa)
                fco = -0.5d0*fac*fac
             else

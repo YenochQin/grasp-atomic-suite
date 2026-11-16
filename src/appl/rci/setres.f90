@@ -57,7 +57,7 @@
 ! Ask if this is a restart
 !
       if (ndef /= 0) then
-         write (istde, *) 'Restarting RCI90 ?'
+         write (stderr_unit, *) 'Restarting RCI90 ?'
          restrt = getyn()
       else
          restrt = .false.
@@ -85,7 +85,7 @@
 !
 ! But first of all, iccutblk() is needed in both cases
 !
-      call alloc (iccutblk, nblock, 'ICCUTBLK', 'SETRES')
+      call alloc (iccutblk, symmetry_block_count, 'ICCUTBLK', 'SETRES')
 
       if (restrt) then
 !        ...Check the signature of the file

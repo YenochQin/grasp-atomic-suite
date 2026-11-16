@@ -23,14 +23,14 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use parameter_def,   only:  nnnp
+      use parameter_def,   only:  max_radial_points
       use memory_man
       use debug_c
-      use def_c, only: c, z
+      use def_c, only: speed_of_light_au, nuclear_charge
       use grid_c
       use npar_c
       use orb_c
-      use wave_c, only: pz, pf, qf
+      use wave_c, only: orbital_origin_parameters, radial_large_components, radial_small_components
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -56,37 +56,37 @@
 !
 !   Allocate storage to orbital arrays
 !
-      call alloc(pf, nnnp, nw, 'PF', 'LODRWFMPI')
-      call alloc(qf, nnnp, nw, 'QF', 'LODRWFMPI')
+      call alloc(radial_large_components, max_radial_points, orbital_count, 'PF', 'LODRWFMPI')
+      call alloc(radial_small_components, max_radial_points, orbital_count, 'QF', 'LODRWFMPI')
 
 !   Setup: (1) Orbital arrays to zero
 !          (2) Array E to -1 (no orbitals estimated)
 !          (3) Parameters GAMMA for each orbital
 !
-      con = z / c
+      con = nuclear_charge / speed_of_light_au
       con = con * con
 
-      do j = 1, nw
+      do j = 1, orbital_count
 
-         do i = 1, n
-            pf(i,j) = 0.d0
-            qf(i,j) = 0.d0
+         do i = 1, radial_point_count
+            radial_large_components(i,j) = 0.d0
+            radial_small_components(i,j) = 0.d0
          enddo
 
-         e(j) = -1.d0
-         k = abs (nak(j))
-         if (nparm .gt. 0) then
-            gama(j) = dble (k)
-         elseif (nparm .eq. 0) then
+         orbital_energy_parameters(j) = -1.d0
+         k = abs (orbital_kappa(j))
+         if (nuclear_model_parameter_count .gt. 0) then
+            orbital_origin_exponents(j) = dble (k)
+         elseif (nuclear_model_parameter_count .eq. 0) then
             fkk = dble (k*k)
             if (fkk .ge. con) then
-               gama(j) = sqrt (fkk-con)
+               orbital_origin_exponents(j) = sqrt (fkk-con)
             else
                !WRITE (istde,*) 'LODRWF: Imaginary gamma parameter'
                !WRITE (istde,*) ' for ',NP(J),NH(J),' orbital; the'
                !WRITE (istde,*) ' point model for the nucleus'
                !WRITE (istde,*) ' is inappropriate for Z > ',C,'.'
-               call stopmpi ('lodrwfmpi: Inappropriate gamma', myid)
+               call stopmpi ('lodrwfmpi: Inappropriate gamma', mpi_rank)
             endif
          endif
       enddo
@@ -94,43 +94,43 @@
 !   Read orbital information from Read Orbitals File; write summary
 !   to  .dbg  file if option set
 !
-      if (ldbpr(3) .and. myid .eq. 0) write (99,300)
+      if (ldbpr(3) .and. mpi_rank .eq. 0) write (99,300)
       nwin = 0
     3 continue
 
-      if (myid .eq. 0) read (23,iostat = ios) npy,naky,ey,my
-      call mpi_bcast (ios,1,mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (npy,1,mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (naky,1,mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (my,1,mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (ey,1,mpi_double_precision,0,mpi_comm_world,ierr)
+      if (mpi_rank .eq. 0) read (23,iostat = ios) npy,naky,ey,my
+      call mpi_bcast (ios,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (npy,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (naky,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (my,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (ey,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
 
       if (ios .eq. 0) then
          call alloc (pa,my, 'PA', 'LODRWFMPI')
          call alloc (qa,my, 'QA', 'LODRWFMPI')
          call alloc (ra,my, 'RA', 'LODRWFMPI')
 
-         if (myid .eq. 0) then
+         if (mpi_rank .eq. 0) then
             read (23) pzy,(pa(i),i = 1,my),(qa(i),i =1 ,my)
             read (23) (ra(i),i = 1,my)
          endif
 
          call mpi_bcast (pzy,1,mpi_double_precision,0, &
-                               mpi_comm_world,ierr)
+                               mpi_comm_world,mpi_error_code)
          call mpi_bcast (pa,my,mpi_double_precision,0, &
-                               mpi_comm_world,ierr)
+                               mpi_comm_world,mpi_error_code)
          call mpi_bcast (qa,my,mpi_double_precision,0, &
-                               mpi_comm_world,ierr)
+                               mpi_comm_world,mpi_error_code)
          call mpi_bcast (ra,my,mpi_double_precision,0, &
-                               mpi_comm_world,ierr)
+                               mpi_comm_world,mpi_error_code)
 
-         do j = 1, nw
-            if (.not.(e(j)<0.0d00 .and. npy==np(j) .and. naky==nak(j))) cycle
-               pz(j) = pzy
-               e(j) = ey
+         do j = 1, orbital_count
+            if (.not.(orbital_energy_parameters(j)<0.0d00 .and. npy==orbital_principal_n(j) .and. naky==orbital_kappa(j))) cycle
+               orbital_origin_parameters(j) = pzy
+               orbital_energy_parameters(j) = ey
                call intrpq (pa, qa, my, ra, j, dnorm)
-               if (ldbpr(3) .and. myid .eq. 0) &
-                     write (99,301) np(j), nh(j), e(j), dnorm
+               if (ldbpr(3) .and. mpi_rank .eq. 0) &
+                     write (99,301) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_energy_parameters(j), dnorm
                nwin = nwin + 1
          enddo
 
@@ -140,12 +140,12 @@
 
          goto 3
       endif
-      if (ldbpr(3) .and. myid .eq. 0) &
+      if (ldbpr(3) .and. mpi_rank .eq. 0) &
             write (99,*) ' orbitals renormalised;'
 !
 !   Return with an error code if all orbitals are not known
 !
-      if (nwin .lt. nw) then
+      if (nwin .lt. orbital_count) then
          ierror = 1
          return
       endif
@@ -154,7 +154,7 @@
 !
       call orthsc
 
-      if (ldbpr(3) .and. myid .eq. 0) &
+      if (ldbpr(3) .and. mpi_rank .eq. 0) &
             write (99,*) 'orbitals orthogonalised and renormalised;'
       ierror = 0
 

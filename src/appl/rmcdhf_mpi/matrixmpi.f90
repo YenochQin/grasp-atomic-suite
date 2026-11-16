@@ -66,14 +66,14 @@
 !
 !-----------------------------------------------------------------------
 
-      if (myid == 0) write (6, *)
+      if (mpi_rank == 0) write (6, *)
 
 !   Allocate memory for CMVL once (the maximum size)
 !   Save previous estimate of eigenvectors
 
       if (.not.first) then
-         call alloc (cmvl, nvecsiz, 'CMVL', 'MATRIXmpi')
-         call dcopy (nvecsiz, evec, 1, cmvl, 1)
+         call alloc (cmvl, mixing_coefficient_storage_size, 'CMVL', 'MATRIXmpi')
+         call dcopy (mixing_coefficient_storage_size, csf_mixing_coefficients, 1, cmvl, 1)
       endif
 
 !=======================================================================
@@ -81,7 +81,7 @@
 !   and mixing coefficients file (unit 25) for writing
 !=======================================================================
 
-      do nfile = 30, 32 + kmaxf
+      do nfile = 30, 32 + max_mcp_file_multipole_rank
          rewind (nfile)
          if (nfile == 30) then
             read (nfile)
@@ -95,12 +95,12 @@
 
       ! To put in ncmin and nvecsiz. Values read here are the same
       ! as those from elsewhere (shch as common blocks)
-      if (myid == 0) then
+      if (mpi_rank == 0) then
          rewind (25)
          read (25)                               ! 'G92MIX'
-         read (25) nelec, ncftot, nw, ntmp, ntmp, nblock
+         read (25) nelec, total_csf_count, orbital_count, ntmp, ntmp, symmetry_block_count
          backspace (25)
-         write (25) nelec, ncftot, nw, ncmin, nvecsiz, nblock
+         write (25) nelec, total_csf_count, orbital_count, ncmin, mixing_coefficient_storage_size, symmetry_block_count
       endif
 
 !=======================================================================
@@ -108,7 +108,7 @@
 !=======================================================================
 
                !------------------------------------------------
-      do jblock = 1, nblock                      ! block do-loop
+      do jblock = 1, symmetry_block_count                      ! block do-loop
                !------------------------------------------------
 
 !=======================================================================
@@ -117,38 +117,39 @@
 ! Length of iendc can be reduced
 !=======================================================================
 
-         read (30) mcplab, jblockt, ncf
-         if (jblockt/=jblock .or. ncf/=ncfblk(jblock)) error stop &
+         read (30) mcplab, jblockt, csf_count
+         if (jblockt/=jblock .or. csf_count/=csf_counts_by_block(jblock)) error stop &
             'MATRIXMPI: jblockt .NE. jblock .OR. ncf1 .NE. ncf2'
          read (30) nelmntgg
-         nelmnt = int(nelmntgg,kind=long)
-         call alloc (irow, nelmnt, 'IROW', 'MATRIXmpi')
-         call alloc (emt, nelmnt, 'EMT', 'MATRIXmpi')
-        call alloc (iendc, 0, ncf, 'IENDC', 'MATRIXMPI' )
+         stored_matrix_element_count = int(nelmntgg,kind=long)
+         call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'MATRIXmpi')
+         call alloc (hamiltonian_values, stored_matrix_element_count, 'EMT', 'MATRIXmpi')
+        call alloc (stored_segment_end_offsets, 0, csf_count, 'IENDC', 'MATRIXMPI' )
 
 !                                                ! may not be necessary if iendc is ALWAYS used
 !GG         IENDC(:NCF) = 0                        ! the way it is assigned here.
-         iendc(0:ncf) = 0
+         stored_segment_end_offsets(0:csf_count) = 0
 
       !...EMT will be accumulated in setham
-         emt(:nelmnt) = 0.d0
+         hamiltonian_values(:stored_matrix_element_count) = 0.d0
 
-         read (30) (iendc(i),i=myid+1,ncf,nprocs), (irow(i),i=1,nelmnt)
+         read (30) (stored_segment_end_offsets(i),i=mpi_rank+1,csf_count,mpi_process_count), (matrix_partner_indices(i) &
+            & ,i=1,stored_matrix_element_count)
 
-         ncfpat = ncfpast(jblock)
-         ncminpat = ncminpast(jblock)
-         nevecpat = nevecpast(jblock)
+         ncfpat = csf_offsets_by_block(jblock)
+         ncminpat = eigenvalue_offsets_by_block(jblock)
+         nevecpat = mixing_offsets_by_block(jblock)
 
 !=======================================================================
 !   Skip current block if no eigenlaue is required
 !=======================================================================
 
-         if (nevblk(jblock) == 0) then
-            do nfile = 31, 32 + kmaxf
+         if (eigenvector_counts_by_block(jblock) == 0) then
+            do nfile = 31, 32 + max_mcp_file_multipole_rank
                read (nfile) mcplab, jblockt, ncft, ncoeff
                if (jblockt /= jblock)                  &
                           error stop 'MATRIXmpi: jblockt .NE. jblock'
-               if (ncft /= ncf) error stop 'MATRIXmpi: ncft .NE. ncf'
+               if (ncft /= csf_count) error stop 'MATRIXmpi: ncft .NE. ncf'
 
                read (nfile) lab, ncontr
                do while(lab/=0 .or. ncontr/=0)
@@ -157,8 +158,8 @@
                end do
             end do
 
-            call dalloc (iendc, 'IENDC', 'MATRIXmpi')
-            call dalloc (irow, 'IROW', 'MATRIXmpi')
+            call dalloc (stored_segment_end_offsets, 'IENDC', 'MATRIXmpi')
+            call dalloc (matrix_partner_indices, 'IROW', 'MATRIXmpi')
 
             cycle
 
@@ -168,42 +169,42 @@
 !   Generate the Hamiltonian matrix - average energy is removed here
 !=======================================================================
 
-         call setham (jblock, myid, nprocs)
+         call setham (jblock, mpi_rank, mpi_process_count)
 !
 !   Determine average energy
 !
-         eav = 0.d0
-         do ir = myid + 1, ncf, nprocs
-            eav = eav + emt(iendc(ir))
+         hamiltonian_energy_shift = 0.d0
+         do ir = mpi_rank + 1, csf_count, mpi_process_count
+            hamiltonian_energy_shift = hamiltonian_energy_shift + hamiltonian_values(stored_segment_end_offsets(ir))
          end do
-         call mpi_barrier(mpi_comm_world,ierr)
-         call mpi_allreduce (eav,tmp,1,mpi_double_precision,mpi_sum,  &
-                             mpi_comm_world,ierr)
-         eav = tmp / ncf
+         call mpi_barrier(mpi_comm_world,mpi_error_code)
+         call mpi_allreduce (hamiltonian_energy_shift,tmp,1,mpi_double_precision,mpi_sum,  &
+                             mpi_comm_world,mpi_error_code)
+         hamiltonian_energy_shift = tmp / csf_count
 !GG         EAV = EAV/NCF
-         eavblk(jblock) = eav
+         eavblk(jblock) = hamiltonian_energy_shift
 
       ! Print Hamiltonian matrix and average energy
       ! hmout is not general
       !call hmout (0, 1, ncf)
 
-         if (myid == 0) write (*, 302) eav
+         if (mpi_rank == 0) write (*, 302) hamiltonian_energy_shift
 
       ! Subtract the average energy from the diagonal elements
       ! to reduce the condition number of the matrix
 !         DO I = 1, (NCF - (MYID + 1) + NPROCS)/NPROCS
 !            EMT(IENDC(NPROCS*(I-1)+MYID+1)) = EMT(IENDC(NPROCS*(I-1)+MYID+1))&
 !                - EAV
-         do i = myid + 1, ncf, nprocs
-            idiag = iendc(i)     ! new mode: each row ends in diagonal
-            emt(idiag) = emt(idiag) - eav
+         do i = mpi_rank + 1, csf_count, mpi_process_count
+            idiag = stored_segment_end_offsets(i)     ! new mode: each row ends in diagonal
+            hamiltonian_values(idiag) = hamiltonian_values(idiag) - hamiltonian_energy_shift
          end do
 
 !=======================================================================
 !   Compute and store eigenpairs
 !=======================================================================
          call maneigmpi (dvdfirst, ldbpg(3),                      &
-                   jblock, ncfpat, ncminpat, nevecpat, ncftot)
+                   jblock, ncfpat, ncminpat, nevecpat, total_csf_count)
 
 !=======================================================================
 !   Damp and Schmidt orthogonalise eigenvectors for OL calculations
@@ -211,13 +212,13 @@
 
          if (.not.first) then
 
-            do j = 1, nevblk(jblock)
+            do j = 1, eigenvector_counts_by_block(jblock)
 
-               iofset = (j - 1)*ncf + nevecpat
+               iofset = (j - 1)*csf_count + nevecpat
                jother = j
 
             ! cdamp has the original non-block feature
-               cdampj = cdamp(j + ncminpat)
+               cdampj = mixing_damping_factors(j + ncminpat)
                if (cdampj == 0.d0) cycle         ! So SURE ???
 
                omcdaj = 1.d0 - cdampj
@@ -225,9 +226,9 @@
            !...Damp eigenvector and determine the new dominant component
   123          continue
                amax = 0.d0
-               do i = 1, ncf
-                  evecij = omcdaj*evec(i+iofset) + cdampj*cmvl(i + iofset)
-                  evec(i+iofset) = evecij
+               do i = 1, csf_count
+                  evecij = omcdaj*csf_mixing_coefficients(i+iofset) + cdampj*cmvl(i + iofset)
+                  csf_mixing_coefficients(i+iofset) = evecij
                   wa = abs(evecij)
                   if (wa <= amax) cycle
                   amax = wa
@@ -236,25 +237,27 @@
 
             !...compute the normalization factor
                sum = 0.d0
-               do i = 1, ncf
-                  sum = sum + evec(i+iofset)**2
+               do i = 1, csf_count
+                  sum = sum + csf_mixing_coefficients(i+iofset)**2
                end do
                dnfac = 1.d0/sqrt(sum)
 
             !...Renormalize and invert as necessary
-               if (evec(ia+iofset) < 0.d0) dnfac = -dnfac
-               call dscal (ncf, dnfac, evec(iofset+1:iofset+(ncf)), 1)
+               if (csf_mixing_coefficients(ia+iofset) < 0.d0) dnfac = -dnfac
+               call dscal (csf_count, dnfac, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1)
 
             !...Schmidt orthogonalise
   234          continue
                jother = jother - 1
                if (jother < 1) cycle
-               jofset = (jother - 1)*ncf + nevecpat
-               ovrlap = ddot(ncf,evec(iofset+1:iofset+(ncf)),1,evec(jofset+1:jofset+(ncf)),1)
+               jofset = (jother - 1)*csf_count + nevecpat
+               ovrlap = ddot(csf_count,csf_mixing_coefficients(iofset+1:iofset+(csf_count)),1, &
+                  & csf_mixing_coefficients(jofset+1:jofset+(csf_count)),1)
                if (ovrlap /= 0.d0) then          ! So SURE ???
                   omcdaj = 1.d0
                   cdampj = -ovrlap
-                  call dcopy (ncf, evec(jofset+1:jofset+(ncf)), 1, cmvl(iofset + 1:iofset+(ncf)), 1)
+                  call dcopy (csf_count, csf_mixing_coefficients(jofset+1:jofset+(csf_count)), 1, cmvl(iofset + &
+                     & 1:iofset+(csf_count)), 1)
                   go to 123
                else
                   go to 234
@@ -265,7 +268,7 @@
 !   Write out the eigenpair information: ASF symmetries, eigenvalues,
 !   and eigenvectors to GRASP92 mixing coefficients File
 
-         if (nevblk(jblock) == 0) then
+         if (eigenvector_counts_by_block(jblock) == 0) then
             iattmp = 999
             iastmp = 999
          else
@@ -280,17 +283,17 @@
 !GG            IASTMP = IASPAR(NCMINPAT + 1)
          endif
 
-         if (myid == 0) then
-            write (25) jblock, ncf, nevblk(jblock), iattmp, iastmp
-            write (25) (iccmin(i + ncminpat),i=1,nevblk(jblock))
-            write (25) eav, (eval(i + ncminpat),i=1,nevblk(jblock))
-            write (25) ((evec(i+(j-1)*ncf+nevecpat),i=1,ncf),j=1,nevblk(jblock)&
+         if (mpi_rank == 0) then
+            write (25) jblock, csf_count, eigenvector_counts_by_block(jblock), iattmp, iastmp
+            write (25) (iccmin(i + ncminpat),i=1,eigenvector_counts_by_block(jblock))
+            write (25) hamiltonian_energy_shift, (shifted_eigenvalues(i + ncminpat),i=1,eigenvector_counts_by_block(jblock))
+            write (25) ((csf_mixing_coefficients(i+(j-1)*csf_count+nevecpat),i=1,csf_count),j=1,eigenvector_counts_by_block(jblock)&
                )
          endif
 
-         call dalloc (emt, 'EMT', 'MATRIXmpi')
-         call dalloc (iendc, 'IENDC', 'MATRIXmpi')
-         call dalloc (irow, 'IROW', 'MATRIXmpi')
+         call dalloc (hamiltonian_values, 'EMT', 'MATRIXmpi')
+         call dalloc (stored_segment_end_offsets, 'IENDC', 'MATRIXmpi')
+         call dalloc (matrix_partner_indices, 'IROW', 'MATRIXmpi')
 
 !----------------------
       end do

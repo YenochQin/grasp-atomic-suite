@@ -47,14 +47,14 @@
 !-----------------------------------------------------------------------
       call openfl (25, name, 'UNFORMATTED', 'NEW', ierr)
       if (ierr /= 0) then
-         write (istde, *) 'Error when opening ', name(1:len_trim(name))
+         write (stderr_unit, *) 'Error when opening ', name(1:len_trim(name))
          stop
       endif
 !
 !   Write the file header
 !
       write (25) 'G92MIX'
-      write (25) nelec, ncf, nw, 0, 0, nblock
+      write (25) electron_count, csf_count, orbital_count, 0, 0, symmetry_block_count
 !     ...The above record will be overidden in matrix.f
 !        with the final form of
 !     WRITE (25)  NELEC, NCF, NW, nvectot, nvecsiz, nblock

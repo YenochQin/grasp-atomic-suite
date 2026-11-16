@@ -5,9 +5,9 @@
 !                     Gediminas Gaigalas  10/05/17
       real(kind(0.0d0)) function hovlap (p, q, mtpo, np, kappa, z)
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnp
-      real(double), dimension(nnnp), intent(in) :: p
-      real(double), dimension(nnnp), intent(in) :: q
+      use parameter_def,   only: max_radial_points
+      real(double), dimension(max_radial_points), intent(in) :: p
+      real(double), dimension(max_radial_points), intent(in) :: q
       integer, intent(in) :: mtpo
       integer :: np
       integer :: kappa

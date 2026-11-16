@@ -1,6 +1,6 @@
 ! Exercise the production MPI sparse-file writer without launching MPI.
 program sparse_empty_rank
-    use orb_C, only: ncf
+    use orb_c, only: ncf => csf_count
     use setsda_I, only: setsda
     implicit none
     integer :: rank, block, count, columns, endpoint, row

@@ -48,7 +48,7 @@
 !   stop with an error message if it isn't
 !
       if (lenth > len(cnum)) then
-         write (istde, *) 'CONVRT: Length of CNUM inadeuate. (from:', from, ')'
+         write (stderr_unit, *) 'CONVRT: Length of CNUM inadeuate. (from:', from, ')'
          error stop
       else
          if (lenth <= 9) then

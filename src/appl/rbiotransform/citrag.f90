@@ -104,7 +104,7 @@
 !       IPOT = 2*(2*L+1)  (number of m_lm_s. This should be replaced
 !                          by (2j+1) corresponding to L)
 !
-         ipot = 2*iabs(nak(nshlp(l,iin)))
+         ipot = 2*iabs(orbital_kappa(nshlp(l,iin)))
          factor = factor**ipot
          call scalve (ciin, factor, nciv*ncsf)
       endif
@@ -126,7 +126,7 @@
 !.  Off diagonal contributions
 !
          xnfaci = 1.0d0
-         do n = 1, 2*iabs(nak(nshlp(l,i)))
+         do n = 1, 2*iabs(orbital_kappa(nshlp(l,i)))
             if (ntest >= 100) write (6, *) ' Loop N = ', n
 !
 !   T ** (N-1) is supposed to be in SCR, copy to CIIN

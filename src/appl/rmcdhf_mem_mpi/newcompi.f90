@@ -76,39 +76,39 @@
 !
       eol = .true.
 
-      do j = 1, nw
+      do j = 1, orbital_count
          sum = 0.d0
-         do nb = 1, nblock
-            do i = myid + 1, ncfblk(nb), nprocs
-               sum = sum + dsubrs(eol,i,i,nb)*iq(j,i + ncfpast(nb))
+         do nb = 1, symmetry_block_count
+            do i = mpi_rank + 1, csf_counts_by_block(nb), mpi_process_count
+               sum = sum + dsubrs(eol,i,i,nb)*iq(j,i + csf_offsets_by_block(nb))
             end do
          end do
 !         UCF(J) = SUM
          call mpi_allreduce (sum, ucf(j), 1, mpi_double_precision, &
-                             mpi_sum, mpi_comm_world, ierr)
+                             mpi_sum, mpi_comm_world, mpi_error_code)
       end do
 !
 !   Write out level energies and weights
 !
-      if(myid == 0) write (*, 300)
+      if(mpi_rank == 0) write (*, 300)
       sum = 0.d0
       noff = 0
       do jall = 1, ncmin
          nb = idxblk(jall)                       ! Block number of this state
-         ee = eavblk(nb) + eval(jall)
-         if (myid .eq. 0) then
+         ee = eavblk(nb) + shifted_eigenvalues(jall)
+         if (mpi_rank .eq. 0) then
             write (*, 301) iccmin(jall), ee, wt(jall)
             if (ldbpg(5)) then
-               write (99, *) jall, nb, ncfblk(nb), nevecpast(nb)
+               write (99, *) jall, nb, csf_counts_by_block(nb), mixing_offsets_by_block(nb)
                write (99, 302)
-               write (99, 303) (evec(i + noff),i=1,ncfblk(nb))
-               noff = noff + ncfblk(nb)
+               write (99, 303) (csf_mixing_coefficients(i + noff),i=1,csf_counts_by_block(nb))
+               noff = noff + csf_counts_by_block(nb)
             endif
          endif
          sum = sum + wt(jall)*ee
       end do
             !~~~~~~~~~
-            if (myid .eq. 0) then
+            if (mpi_rank .eq. 0) then
             !~~~~~~~~~
 
       call csfwgt (.true.)
@@ -121,7 +121,7 @@
 !   Write out generalized occupation numbers
 !
       write (*, 305)
-      write (*, 303) (ucf(i),i=1,nw)
+      write (*, 303) (ucf(i),i=1,orbital_count)
 
             !~~~~~~~~~
             endif

@@ -19,16 +19,16 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnp
+      use parameter_def,   only: max_radial_points
       use decide_c
-      use def_c,           only: cvac, c, z, accy, nelec, emn
+      use def_c,           only: vacuum_speed_of_light_au, speed_of_light_au, nuclear_charge, accy, electron_count, emn
       use default_c
       use grid_c
       use hblock_c
       use iccu_c
       use iounit_c
       use npar_c
-      use npot_c,          only: zz, nnuc
+      use npot_c,          only: negative_radius_times_potential, first_grid_index_beyond_fermi_c
       use nsmdat_c
       use orb_c
       use wave_c
@@ -71,21 +71,21 @@
 !
       if (ndef .ne. 0) then
 !cjb node0 input
-        if (myid .eq. 0) then
-         write (istde,*) 'Revise the physical speed of light (',cvac,  &
+        if (mpi_rank .eq. 0) then
+         write (stderr_unit,*) 'Revise the physical speed of light (',vacuum_speed_of_light_au,  &
                            ' in a.u.) ?'
          yes = getyn ()
          if (yes) then
-            write (istde,*) 'Enter the revised value:'
-            read *,c
+            write (stderr_unit,*) 'Enter the revised value:'
+            read *,speed_of_light_au
          else
-            c = cvac
+            speed_of_light_au = vacuum_speed_of_light_au
          endif
         endif
-        call mpi_bcast (c, 1, mpi_double_precision, 0, &
-                               mpi_comm_world, ierr)
+        call mpi_bcast (speed_of_light_au, 1, mpi_double_precision, 0, &
+                               mpi_comm_world, mpi_error_code)
       else
-         c = cvac
+         speed_of_light_au = vacuum_speed_of_light_au
       endif
 !
 ! Treat some CSF's as perturbation ? Broadcasting is used only in
@@ -93,12 +93,12 @@
 ! Quantities to be obtained: LFORDR
 !
       if (ndef .ne. 0) then
-         if (myid .eq. 0) then
-            write (istde,*) 'Treat contributions of some CSFs',       &
+         if (mpi_rank .eq. 0) then
+            write (stderr_unit,*) 'Treat contributions of some CSFs',       &
                             ' as first-order perturbations?'
             lfordr = getyn ()
          endif
-         call mpi_bcast (lfordr,1,mpi_logical,0,mpi_comm_world,ierr)
+         call mpi_bcast (lfordr,1,mpi_logical,0,mpi_comm_world,mpi_error_code)
       else
          lfordr = .false.
       endif
@@ -107,38 +107,38 @@
 
       if (.not. lfordr) then
          !...Default first
-         do i = 1, nblock
-           iccutblk(i) = ncfblk(i)
+         do i = 1, symmetry_block_count
+           iccutblk(i) = csf_counts_by_block(i)
          enddo
       else
 
       ! Let master do the i/o, then broadcast
-         if (myid .eq. 0) then
-            write (istde,*) 'There are ', nblock, 'blocks. They are:'
-            write (istde,*) '  block     J Parity     No of CSFs'
-            do i = 1, nblock
-               write (istde,*) i, idblk(i)(1:5), ncfblk(i)
+         if (mpi_rank .eq. 0) then
+            write (stderr_unit,*) 'There are ', symmetry_block_count, 'blocks. They are:'
+            write (stderr_unit,*) '  block     J Parity     No of CSFs'
+            do i = 1, symmetry_block_count
+               write (stderr_unit,*) i, idblk(i)(1:5), csf_counts_by_block(i)
             enddo
 
-            write (istde,*)
-            write (istde,*) 'Enter iccut for each block'
-            do jblock = 1, nblock
-               write (istde,*) 'Block ', jblock, '   ncf = ',        &
-                              ncfblk(jblock)                         &
+            write (stderr_unit,*)
+            write (stderr_unit,*) 'Enter iccut for each block'
+            do jblock = 1, symmetry_block_count
+               write (stderr_unit,*) 'Block ', jblock, '   ncf = ',        &
+                              csf_counts_by_block(jblock)                         &
                       , ' id = ', idblk(jblock)(1:5)
-  123          read (istdi,*) ntmp
-               if (ntmp .ge. 0 .and. ntmp .le. ncfblk(jblock)) then
+  123          read (stdin_unit,*) ntmp
+               if (ntmp .ge. 0 .and. ntmp .le. csf_counts_by_block(jblock)) then
                   iccutblk(jblock) = ntmp
                else
-                  write (istde,*) 'ICCUT out of range, re-enter:'
+                  write (stderr_unit,*) 'ICCUT out of range, re-enter:'
                   goto 123
                endif
                write(734,*) ntmp,'! ICCUT for block',jblock
             enddo
          endif
 
-         call mpi_bcast (iccutblk,nblock,mpi_integer,0,            &
-                                               mpi_comm_world,ierr)
+         call mpi_bcast (iccutblk,symmetry_block_count,mpi_integer,0,            &
+                                               mpi_comm_world,mpi_error_code)
       endif ! .NOT. LFORDR
 
 !*****************************************************************
@@ -172,41 +172,41 @@
 ! Include transverse ?
 ! Quantities to be obtained: LTRANS, WFACT
 !
-      if (myid .eq. 0) then
-         write (istde,*) 'Include contribution of H (Transverse)?'
+      if (mpi_rank .eq. 0) then
+         write (stderr_unit,*) 'Include contribution of H (Transverse)?'
          ltrans = getyn ()
-         write (istde,*) 'Modify all transverse photon frequencies?'
+         write (stderr_unit,*) 'Modify all transverse photon frequencies?'
          yes = getyn ()
          if (yes) then
-            write (istde,*) 'Enter the scale factor:'
+            write (stderr_unit,*) 'Enter the scale factor:'
             read *, wfact
          else
             wfact = 1.0d00
          endif
       endif ! myid .EQ. 0
-      call mpi_bcast (ltrans, 1, mpi_logical, 0, mpi_comm_world, ierr)
+      call mpi_bcast (ltrans, 1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
       call mpi_bcast (wfact, 1, mpi_double_precision, 0,            &
-                           mpi_comm_world, ierr)
+                           mpi_comm_world, mpi_error_code)
 !
 ! Other interactions ? One logical for each case. Done altogether
 !
-      if (myid .eq. 0) then
-         write (istde,*) 'Include H (Vacuum Polarisation)?'
+      if (mpi_rank .eq. 0) then
+         write (stderr_unit,*) 'Include H (Vacuum Polarisation)?'
          lvp = getyn ()
 
-         write (istde,*) 'Include H (Normal Mass Shift)?'
+         write (stderr_unit,*) 'Include H (Normal Mass Shift)?'
          lnms = getyn ()
 
-         write (istde,*) 'Include H (Specific Mass Shift)?'
+         write (stderr_unit,*) 'Include H (Specific Mass Shift)?'
          lsms = getyn ()
 
-         write (istde,*) 'Estimate self-energy?'
+         write (stderr_unit,*) 'Estimate self-energy?'
          lse = getyn ()
          if (lse.eqv..true.) then
              nqedcut = 1
-            write (istde,*)                                           &
+            write (stderr_unit,*)                                           &
         'Largest n quantum number for including self-energy for orbital'
-            write (istde,*) 'n should be less or equal 8'
+            write (stderr_unit,*) 'n should be less or equal 8'
             read *, nqedmax
          else
             nqedcut = 0
@@ -246,10 +246,10 @@
          end if
       endif ! myid .EQ. 0
 
-      call mpi_bcast (lvp,  1, mpi_logical, 0, mpi_comm_world, ierr)
-      call mpi_bcast (lnms, 1, mpi_logical, 0, mpi_comm_world, ierr)
-      call mpi_bcast (lsms, 1, mpi_logical, 0, mpi_comm_world, ierr)
-      call mpi_bcast (lse,  1, mpi_logical, 0, mpi_comm_world, ierr)
+      call mpi_bcast (lvp,  1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
+      call mpi_bcast (lnms, 1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
+      call mpi_bcast (lsms, 1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
+      call mpi_bcast (lse,  1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
 !
 ! Parameters controlling the radial grid
 !
@@ -262,11 +262,11 @@
 !        N = MIN (220,NNNP)
 !     ELSE
 !CFF     .. should be Z-dependent
-         rnt = 2.0d-06/z
-         h = 5.d-2
-         n = nnnp
+         radial_grid_scale = 2.0d-06/nuclear_charge
+         transformed_grid_step = 5.d-2
+         radial_point_count = max_radial_points
 !     ENDIF
-      hp = 0.d0
+      asymptotic_grid_step = 0.d0
 !     IF ( NDEF.NE.0) THEN
 !        IF (myid .EQ. 0) THEN
 !           WRITE (istde,*) 'The default radial grid parameters',      &
@@ -305,7 +305,7 @@
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
-      accy = h**6
+      accy = transformed_grid_step**6
 !
 !   Set up the coefficients for the numerical procedures
 !
@@ -327,37 +327,41 @@
 !   .res  file; this is the second record on the file --- the
 !   first is the header (see SUBROUTINE SETRES)
 !
-      write (imcdf) nelec, ncf, nw, nblock ! ncf is ncftot, from setcsll
+      write (imcdf) electron_count, csf_count, orbital_count, symmetry_block_count ! ncf is ncftot, from setcsll
 !
 !   Write the nuclear parameters and $- r \times V_ (r)$
 !   to the  .res  file; these are the third, fourth, and fifth
 !   records on the file
 !
-      write (imcdf) z, emn
-      write (imcdf) nparm,(parm(i), i = 1, nparm)
-      write (imcdf) n, (zz(i), i = 1, n), nnuc
+      write (imcdf) nuclear_charge, emn
+      write (imcdf) nuclear_model_parameter_count,(nuclear_model_parameters(i), i = 1, nuclear_model_parameter_count)
+      write (imcdf) radial_point_count, (negative_radius_times_potential(i), i = 1, radial_point_count), &
+         & first_grid_index_beyond_fermi_c
 !
 !   Write the physical effects specification to the  .res  file.
 !   iccutblk() is now an array of length nblock.
 !   This is the sixth record on the file
 !
-      write (imcdf) c, lfordr, (iccutblk(i), i = 1, nblock),           &
+      write (imcdf) speed_of_light_au, lfordr, (iccutblk(i), i = 1, symmetry_block_count),           &
                     ltrans, wfact, lvp, lnms, lsms
 !
 !   Write the grid data to the  .res  file; this is the seventh
 !   record on the file
 !
-      np10 = n + 10
-      write (imcdf) rnt, h, hp, (r(i), i = 1, np10),                   &
-                 (rp(i), i = 1, np10), (rpor(i), i = 1, np10) ! (imcdf)
+      np10 = radial_point_count + 10
+      write (imcdf) radial_grid_scale, transformed_grid_step, asymptotic_grid_step, (radial_grid(i), i = 1, np10), &
+         & &
+                 (radial_grid_derivative(i), i = 1, np10), (radial_derivative_over_radius(i), i = 1, np10) ! (imcdf)
 !
 !   Write out the interpolated radial wavefunctions; there are
 !   2*NW such records; thus the total number of records written
 !   at this point is 7+2*NW
 !
-      do j = 1, nw
-         write (imcdf) e(j), gama(j), pz(j), mf(j)
-         write (imcdf) (pf(i,j), i = 1, mf(j)), (qf(i,j), i = 1, mf(j))
+      do j = 1, orbital_count
+         write (imcdf) orbital_energy_parameters(j), orbital_origin_exponents(j), orbital_origin_parameters(j), &
+            & orbital_last_grid_index(j)
+         write (imcdf) (radial_large_components(i,j), i = 1, orbital_last_grid_index(j)), (radial_small_components(i,j) &
+            & , i = 1, orbital_last_grid_index(j))
       enddo
 !
       return

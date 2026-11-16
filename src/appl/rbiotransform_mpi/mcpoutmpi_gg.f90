@@ -26,7 +26,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw, keyorb
+      use parameter_def,   only: max_orbitals, orbital_index_radix
       use memory_man
 !      USE def_C
 !      USE EIGV_C
@@ -36,7 +36,7 @@
       use syma_c
       use stat_c
       use blk_c
-      use orb_c,           only: ncf, nw,nak, iqa
+      use orb_c,           only: csf_count, orbital_count,orbital_kappa, csf_subshell_occupations
       use jqjc_c
       use orbord_c
       use mcpdata_c
@@ -64,18 +64,18 @@
 !-----------------------------------------------
       integer, parameter :: nf = 200
       integer, parameter :: nvmax = 100
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
       integer, parameter :: keysq = key*key
       real(double), parameter :: cutoff = 1.0d-10
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer, dimension(nlmax) :: llistt
-      integer, dimension(nnnw) :: nakinv
+      integer, dimension(max_orbitals) :: nakinv
       integer, dimension(nlmax) :: nshl, ninl
       integer :: i, ntestl, ntest, ka, iopar, j, ncf0, iblk, k, &
          ja, jb, ibb, ia, ib, lab, jan, jbn, l
-      real(double), dimension(nnnw) :: tshell
+      real(double), dimension(max_orbitals) :: tshell
       real(double), dimension(nvmax) :: sc
       real(double), dimension(20*nlmax*nlmax) :: cirot
       real(double), dimension(10000) :: evsc
@@ -109,9 +109,9 @@
       if (avail) return
 
       if (ik == 1) then
-         nakinv(:nnnw) = nakinvii(:nnnw)
+         nakinv(:max_orbitals) = nakinvii(:max_orbitals)
       else
-         nakinv(:nnnw) = nakinvff(:nnnw)
+         nakinv(:max_orbitals) = nakinvff(:max_orbitals)
       endif
 
 
@@ -138,7 +138,7 @@
 !   JA and JB respectively refer to the initial and final states
 !   in the list of NCF configurations
 !
-         do ja = myid+ncf0,ncfblk(iblk),nprocs
+         do ja = mpi_rank+ncf0,ncfblk(iblk),mpi_process_count
             if (mod(ja,100)==0 .and. ik==1) then
                write (*, *) ' JA1 =', ja, ja - ncf0 + 1
             else if (mod(ja,100)==0 .and. ik==2) then
@@ -173,7 +173,7 @@
               call onescalar(ja,jb,ia,ib,tshell)
                if (ia == 0) cycle
                if (ia == ib) then
-                  do ia = 1, nw
+                  do ia = 1, orbital_count
 !
 !   If T coefficient is greater than zero and the kappa quantum numbers
 !   of the two orbitals are the same dump to file
@@ -186,7 +186,7 @@
                         , tshell(ia)
                   end do
                else
-                  if (dabs(tshell(1))>cutoff .and. nak(ia)==nak(ib)) then
+                  if (dabs(tshell(1))>cutoff .and. orbital_kappa(ia)==orbital_kappa(ib)) then
                      llistt(nakinv(ia)) = llistt(nakinv(ia)) + 1
                      if (nordii==0 .and. nordff==0) then
 !
@@ -221,7 +221,7 @@
             if (llistt(l) > 0) then
                call qqsort (l, llistt(l), ik, name, kamax)
             else
-               if (l == 1) write (nf) ncf, nw, kamax
+               if (l == 1) write (nf) csf_count, orbital_count, kamax
                write (nf) llistt(l), llistt(l)
             endif
          end do
@@ -238,8 +238,8 @@
 !   Deallocate storage that is no longer required. This was
 !   allocated in lodcsl.
 !
-      call dalloc (iqa, 'IQA', 'MCPOUT')
-      call dalloc (jqsa, 'JQSA', 'MCPOUT')
-      call dalloc (jcupa, 'JCUPA', 'MCPOUT')
+      call dalloc (csf_subshell_occupations, 'IQA', 'MCPOUT')
+      call dalloc (csf_subshell_quantum_codes, 'JQSA', 'MCPOUT')
+      call dalloc (csf_coupling_quantum_codes, 'JCUPA', 'MCPOUT')
       return
       end subroutine mcpout

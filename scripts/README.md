@@ -1,5 +1,9 @@
 # GRASP 辅助脚本
 
+2026-11-16：网格工具同时识别原版及语义变量名，命令行/TOML 参数保持不变。
+`atomic-suite` 现覆盖十五个普通网格入口和两个 RCI 续算入口，CSFG 专用入口已移除。
+集中容量的新名称和 `parameter_def` 旧名别名见[共同参数说明](../docs/implemented/common_parameters.md)。
+
 大规模 RMCDHF MPI 停顿采样使用 [sample_rmcdhf_mpi.py](sample_rmcdhf_mpi.py)，
 只读附着到指定 Linux PID 树，记录线程状态、等待位置、I/O、缺页和系统压力。
 用法、原版流程对照及验证边界见 [RMCDHF MPI 诊断](../docs/implemented/rmcdhf_mpi_diagnostics.md)。

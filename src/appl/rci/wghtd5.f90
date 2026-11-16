@@ -19,7 +19,7 @@
       use memory_man
       use eigv_c
       use jlabl_c, labj=>jlbr, labp=>jlbp
-      use orb_c, only: ncf, nw, iqa
+      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
       use prnt_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -53,17 +53,17 @@
 !
 !CFF  Initialized NELT for NCF >5
       nelt = 5
-      if (ncf .lt. 5) nelt = ncf
+      if (csf_count .lt. 5) nelt = csf_count
       do 7 iv = 1,nvec
 !
          icf = ivec(iv)
 !        .., initialize for a new eigenvector
          wt = 0.d0;  iconf = 0
-         ibegin = (iv-1)*ncf
-         iend   = iv*ncf
+         ibegin = (iv-1)*csf_count
+         iend   = iv*csf_count
 !
          do 4 i = ibegin+1, iend
-            awt = abs(evec(i))
+            awt = abs(csf_mixing_coefficients(i))
             if (awt > wt(5)) then
 !              ... the weight needs to be inserted
                do j = 1,5
@@ -89,7 +89,7 @@
          ip = (iaspar + 3 ) / 2
 !        NELT = MIN (I,5)
          write (24,301) icf,labj(iatjpo),labp(ip),      &
-               (evec(iconf(j)),j = 1,nelt)
+               (csf_mixing_coefficients(iconf(j)),j = 1,nelt)
          write (24,302) (iconf(j)-ibegin,j = 1,nelt)
     7 continue
 !

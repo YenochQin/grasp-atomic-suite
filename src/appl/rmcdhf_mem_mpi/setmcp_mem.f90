@@ -14,7 +14,7 @@
       use rmcdhf_mem_c
       use iounit_c
       use mpi_c
-      use hmat_c,          only: nelmnt
+      use hmat_c,          only: stored_matrix_element_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -44,11 +44,11 @@
           !*** Read in IROW from file mcp.30 ***
           read (30) mcplab, jblockt, ncf
           if (jblockt /= jblock) then
-            write (istde, *) 'setmcp_mem', '1: jblockt .NE. jblock'
+            write (stderr_unit, *) 'setmcp_mem', '1: jblockt .NE. jblock'
             stop
           endif
           read (30) nelmntgg
-          nelmnt = int(nelmntgg,kind=long)
+          stored_matrix_element_count = int(nelmntgg,kind=long)
           if(jblock == 1) then
             call alloc (imin1_30,nblock,'IMIN1_30','setmcp_mem')
             call alloc (imin2_30,nblock,'IMIN2_30','setmcp_mem')
@@ -57,19 +57,19 @@
             imin1_30(jblock) = 0
             imax1_30(jblock) = ncf
             imin2_30(jblock) = 0
-            imax2_30(jblock) = nelmnt
+            imax2_30(jblock) = stored_matrix_element_count
           else
             imin1_30(jblock) = imax1_30(jblock-1) + 0
             imax1_30(jblock) = imax1_30(jblock-1) + ncf
             imin2_30(jblock) = imax2_30(jblock-1) + 0
-            imax2_30(jblock) = imax2_30(jblock-1) + nelmnt
+            imax2_30(jblock) = imax2_30(jblock-1) + stored_matrix_element_count
           end if
-          read (30) (iendcdum,i=myid + 1,ncf,nprocs),                  &
-                                                 (irow_dumm,i=1,nelmnt)
+          read (30) (iendcdum,i=mpi_rank + 1,ncf,mpi_process_count),                  &
+                                                 (irow_dumm,i=1,stored_matrix_element_count)
         else
           read (nfile) mcplab, jblockt, ncft, ncoeff
           if (jblockt /= jblock) then
-            write (istde, *) 'setmcp_mem', ':2 jblockt .NE. jblock'
+            write (stderr_unit, *) 'setmcp_mem', ':2 jblockt .NE. jblock'
             stop
           endif
 
@@ -91,156 +91,156 @@
          ! Total physical memory
          sysmemt = systemmem()  ! GB
          sysmemf = systemfreemem()  ! GB
-         if(myid == 0) write(*,'(A53)')                                &
+         if(mpi_rank == 0) write(*,'(A53)')                                &
          '-----------------------------------------------------'
-         if(myid == 0) write(*,'(A53)')                                &
+         if(mpi_rank == 0) write(*,'(A53)')                                &
          'Spin-angular coefficient are putting into the memory:'
-         if(myid == 0) write(*,'(A53)')                                &
+         if(mpi_rank == 0) write(*,'(A53)')                                &
          '-----------------------------------------------------'
-         if(myid == 0) write(*,'(A1)') ''
-         if(myid == 0) write(*,'(A30,F10.2,A3)')                       &
+         if(mpi_rank == 0) write(*,'(A1)') ''
+         if(mpi_rank == 0) write(*,'(A30,F10.2,A3)')                       &
                           'Total memory on computer:',sysmemt,' Gb'
-         if(myid == 0) write(*,'(A30,F10.2,A3)')                       &
+         if(mpi_rank == 0) write(*,'(A30,F10.2,A3)')                       &
                           'Free  memory on computer:',sysmemf,' Gb'
-         if(myid == 0) write(*,'(A1)') ''
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.30:'
+         if(mpi_rank == 0) write(*,'(A1)') ''
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.30:'
          call alloc (iendc_30,imax1_30(nblock),'IENDC_30','setmcp_mem')
          call alloc (irow_30, imax2_30(nblock),'IROW_30', 'setmcp_mem')
       else if(nfile == 31) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.31:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.31:'
          call alloc (lab_31,   ncontr_tot2,'LAB_31',   'setmcp_mem')
          call alloc (ncontr_31,ncontr_tot2,'NCONTR_31','setmcp_mem')
          call alloc (iclmn_31, ncontr_tot, 'ICLMN_31', 'setmcp_mem')
          call alloc (indx_31,  ncontr_tot, 'INDX_31',  'setmcp_mem')
          call alloc (coeff_31, ncontr_tot, 'COEFF_31', 'setmcp_mem')
       else if(nfile == 32) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.32:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.32:'
          call alloc (lab_32,   ncontr_tot2,'LAB_32',   'setmcp_mem')
          call alloc (ncontr_32,ncontr_tot2,'NCONTR_32','setmcp_mem')
          call alloc (iclmn_32, ncontr_tot, 'ICLMN_32', 'setmcp_mem')
          call alloc (indx_32,  ncontr_tot, 'INDX_32',  'setmcp_mem')
          call alloc (coeff_32, ncontr_tot, 'COEFF_32', 'setmcp_mem')
       else if(nfile == 33) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.33:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.33:'
          call alloc (lab_33,   ncontr_tot2,'LAB_33',   'setmcp_mem')
          call alloc (ncontr_33,ncontr_tot2,'NCONTR_33','setmcp_mem')
          call alloc (iclmn_33, ncontr_tot, 'ICLMN_33', 'setmcp_mem')
          call alloc (indx_33,  ncontr_tot, 'INDX_33',  'setmcp_mem')
          call alloc (coeff_33, ncontr_tot, 'COEFF_33', 'setmcp_mem')
       else if(nfile == 34) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.34:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.34:'
          call alloc (lab_34,   ncontr_tot2,'LAB_34',   'setmcp_mem')
          call alloc (ncontr_34,ncontr_tot2,'NCONTR_34','setmcp_mem')
          call alloc (iclmn_34, ncontr_tot, 'ICLMN_34', 'setmcp_mem')
          call alloc (indx_34,  ncontr_tot, 'INDX_34',  'setmcp_mem')
          call alloc (coeff_34, ncontr_tot, 'COEFF_34', 'setmcp_mem')
       else if(nfile == 35) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.35:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.35:'
          call alloc (lab_35,   ncontr_tot2,'LAB_35',   'setmcp_mem')
          call alloc (ncontr_35,ncontr_tot2,'NCONTR_35','setmcp_mem')
          call alloc (iclmn_35, ncontr_tot, 'ICLMN_35', 'setmcp_mem')
          call alloc (indx_35,  ncontr_tot, 'INDX_35',  'setmcp_mem')
          call alloc (coeff_35, ncontr_tot, 'COEFF_35', 'setmcp_mem')
       else if(nfile == 36) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.36:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.36:'
          call alloc (lab_36,   ncontr_tot2,'LAB_36',   'setmcp_mem')
          call alloc (ncontr_36,ncontr_tot2,'NCONTR_36','setmcp_mem')
          call alloc (iclmn_36, ncontr_tot, 'ICLMN_36', 'setmcp_mem')
          call alloc (indx_36,  ncontr_tot, 'INDX_36',  'setmcp_mem')
          call alloc (coeff_36, ncontr_tot, 'COEFF_36', 'setmcp_mem')
       else if(nfile == 37) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.37:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.37:'
          call alloc (lab_37,   ncontr_tot2,'LAB_37',   'setmcp_mem')
          call alloc (ncontr_37,ncontr_tot2,'NCONTR_37','setmcp_mem')
          call alloc (iclmn_37, ncontr_tot, 'ICLMN_37', 'setmcp_mem')
          call alloc (indx_37,  ncontr_tot, 'INDX_37',  'setmcp_mem')
          call alloc (coeff_37, ncontr_tot, 'COEFF_37', 'setmcp_mem')
       else if(nfile == 38) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.38:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.38:'
          call alloc (lab_38,   ncontr_tot2,'LAB_38',   'setmcp_mem')
          call alloc (ncontr_38,ncontr_tot2,'NCONTR_38','setmcp_mem')
          call alloc (iclmn_38, ncontr_tot, 'ICLMN_38', 'setmcp_mem')
          call alloc (indx_38,  ncontr_tot, 'INDX_38',  'setmcp_mem')
          call alloc (coeff_38, ncontr_tot, 'COEFF_38', 'setmcp_mem')
       else if(nfile == 39) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.39:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.39:'
          call alloc (lab_39,   ncontr_tot2,'LAB_39',   'setmcp_mem')
          call alloc (ncontr_39,ncontr_tot2,'NCONTR_39','setmcp_mem')
          call alloc (iclmn_39, ncontr_tot, 'ICLMN_39', 'setmcp_mem')
          call alloc (indx_39,  ncontr_tot, 'INDX_39',  'setmcp_mem')
          call alloc (coeff_39, ncontr_tot, 'COEFF_39', 'setmcp_mem')
       else if(nfile == 40) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.40:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.40:'
          call alloc (lab_40,   ncontr_tot2,'LAB_40',   'setmcp_mem')
          call alloc (ncontr_40,ncontr_tot2,'NCONTR_40','setmcp_mem')
          call alloc (iclmn_40, ncontr_tot, 'ICLMN_40', 'setmcp_mem')
          call alloc (indx_40,  ncontr_tot, 'INDX_40',  'setmcp_mem')
          call alloc (coeff_40, ncontr_tot, 'COEFF_40', 'setmcp_mem')
       else if(nfile == 41) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.41:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.41:'
          call alloc (lab_41,   ncontr_tot2,'LAB_41',   'setmcp_mem')
          call alloc (ncontr_41,ncontr_tot2,'NCONTR_41','setmcp_mem')
          call alloc (iclmn_41, ncontr_tot, 'ICLMN_41', 'setmcp_mem')
          call alloc (indx_41,  ncontr_tot, 'INDX_41',  'setmcp_mem')
          call alloc (coeff_41, ncontr_tot, 'COEFF_41', 'setmcp_mem')
       else if(nfile == 42) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.42:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.42:'
          call alloc (lab_42,   ncontr_tot2,'LAB_42',   'setmcp_mem')
          call alloc (ncontr_42,ncontr_tot2,'NCONTR_42','setmcp_mem')
          call alloc (iclmn_42, ncontr_tot, 'ICLMN_42', 'setmcp_mem')
          call alloc (indx_42,  ncontr_tot, 'INDX_42',  'setmcp_mem')
          call alloc (coeff_42, ncontr_tot, 'COEFF_42', 'setmcp_mem')
       else if(nfile == 43) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.43:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.43:'
          call alloc (lab_43,   ncontr_tot2,'LAB_43',   'setmcp_mem')
          call alloc (ncontr_43,ncontr_tot2,'NCONTR_43','setmcp_mem')
          call alloc (iclmn_43, ncontr_tot, 'ICLMN_43', 'setmcp_mem')
          call alloc (indx_43,  ncontr_tot, 'INDX_43',  'setmcp_mem')
          call alloc (coeff_43, ncontr_tot, 'COEFF_43', 'setmcp_mem')
       else if(nfile == 44) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.44:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.44:'
          call alloc (lab_44,   ncontr_tot2,'LAB_44',   'setmcp_mem')
          call alloc (ncontr_44,ncontr_tot2,'NCONTR_44','setmcp_mem')
          call alloc (iclmn_44, ncontr_tot, 'ICLMN_44', 'setmcp_mem')
          call alloc (indx_44,  ncontr_tot, 'INDX_44',  'setmcp_mem')
          call alloc (coeff_44, ncontr_tot, 'COEFF_44', 'setmcp_mem')
       else if(nfile == 45) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.45:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.45:'
          call alloc (lab_45,   ncontr_tot2,'LAB_45',   'setmcp_mem')
          call alloc (ncontr_45,ncontr_tot2,'NCONTR_45','setmcp_mem')
          call alloc (iclmn_45, ncontr_tot, 'ICLMN_45', 'setmcp_mem')
          call alloc (indx_45,  ncontr_tot, 'INDX_45',  'setmcp_mem')
          call alloc (coeff_45, ncontr_tot, 'COEFF_45', 'setmcp_mem')
       else if(nfile == 46) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.46:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.46:'
          call alloc (lab_46,   ncontr_tot2,'LAB_46',   'setmcp_mem')
          call alloc (ncontr_46,ncontr_tot2,'NCONTR_46','setmcp_mem')
          call alloc (iclmn_46, ncontr_tot, 'ICLMN_46', 'setmcp_mem')
          call alloc (indx_46,  ncontr_tot, 'INDX_46',  'setmcp_mem')
          call alloc (coeff_46, ncontr_tot, 'COEFF_46', 'setmcp_mem')
       else if(nfile == 47) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.47:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.47:'
          call alloc (lab_47,   ncontr_tot2,'LAB_47',   'setmcp_mem')
          call alloc (ncontr_47,ncontr_tot2,'NCONTR_47','setmcp_mem')
          call alloc (iclmn_47, ncontr_tot, 'ICLMN_47', 'setmcp_mem')
          call alloc (indx_47,  ncontr_tot, 'INDX_47',  'setmcp_mem')
          call alloc (coeff_47, ncontr_tot, 'COEFF_47', 'setmcp_mem')
       else if(nfile == 48) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.48:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.48:'
          call alloc (lab_48,   ncontr_tot2,'LAB_48',   'setmcp_mem')
          call alloc (ncontr_48,ncontr_tot2,'NCONTR_48','setmcp_mem')
          call alloc (iclmn_48, ncontr_tot, 'ICLMN_48', 'setmcp_mem')
          call alloc (indx_48,  ncontr_tot, 'INDX_48',  'setmcp_mem')
          call alloc (coeff_48, ncontr_tot, 'COEFF_48', 'setmcp_mem')
       else if(nfile == 49) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.49:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.49:'
          call alloc (lab_49,   ncontr_tot2,'LAB_49',   'setmcp_mem')
          call alloc (ncontr_49,ncontr_tot2,'NCONTR_49','setmcp_mem')
          call alloc (iclmn_49, ncontr_tot, 'ICLMN_49', 'setmcp_mem')
          call alloc (indx_49,  ncontr_tot, 'INDX_49',  'setmcp_mem')
          call alloc (coeff_49, ncontr_tot, 'COEFF_49', 'setmcp_mem')
       else if(nfile == 50) then
-         if(myid == 0) write(*,'(A27)') 'Allocation for mcp.50:'
+         if(mpi_rank == 0) write(*,'(A27)') 'Allocation for mcp.50:'
          call alloc (lab_50,   ncontr_tot2,'LAB_50',   'setmcp_mem')
          call alloc (ncontr_50,ncontr_tot2,'NCONTR_50','setmcp_mem')
          call alloc (iclmn_50, ncontr_tot, 'ICLMN_50', 'setmcp_mem')
@@ -267,13 +267,13 @@
           !*** Read in IROW from file mcp.30 ***
           read (30) mcplab, jblockt, ncf
           if (jblockt /= jblock) then
-            write (istde, *) 'setmcp_mem', '3: jblockt .NE. jblock'
+            write (stderr_unit, *) 'setmcp_mem', '3: jblockt .NE. jblock'
             stop
           endif
         else
           read (nfile) mcplab, jblockt, ncft, ncoeff
           if (jblockt /= jblock) then
-            write (istde, *) 'setmcp_mem', ':4 jblockt .NE. jblock'
+            write (stderr_unit, *) 'setmcp_mem', ':4 jblockt .NE. jblock'
             stop
           endif
           ncontr_tot2 = ncontr_tot2 + 1
@@ -281,9 +281,9 @@
 
          if(nfile == 30) then
             read (30) nelmntgg
-            nelmnt = int(nelmntgg,kind=long)
+            stored_matrix_element_count = int(nelmntgg,kind=long)
             read (30) (iendc_30(i),i=                                  &
-                     imin1_30(jblock)+myid+1,imax1_30(jblock),nprocs), &
+                     imin1_30(jblock)+mpi_rank+1,imax1_30(jblock),mpi_process_count), &
                      (irow_30(i),i=imin2_30(jblock)+1,imax2_30(jblock))
          else if(nfile == 31) then
             read (nfile, iostat=ios) lab_31(ncontr_tot2),              &
@@ -612,7 +612,7 @@
 
       end do
       sysmemf = systemfreemem()  ! GB
-      if(myid == 0)                                                    &
+      if(mpi_rank == 0)                                                    &
       write(*,'(A30,F10.2,A3)') 'Free memory on computer',sysmemf,' Gb'
       close(nfile)
 

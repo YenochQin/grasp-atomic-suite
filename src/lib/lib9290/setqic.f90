@@ -168,14 +168,14 @@
 !   Sienkiewicz-Baylis coefficients for SBSTEP
 !
       c(1) = cg(1)/denom
-      factor = h/denom
+      factor = transformed_grid_step/denom
       do 3 i = 2,6
          c(i) = cg(i)*factor
     3 continue
 !
 !   Newton-Cotes coefficients for YZK and QUAD
 !
-      factor = h/c5den
+      factor = transformed_grid_step/c5den
       do 5 j = 2,4
          do 4 i = 2,5
             cnc5c(i,j) = factor*c5num(i,j)
@@ -189,7 +189,7 @@
 !
 !   Newton-Cotes coefficients for START
 !
-      factor = h/c6den
+      factor = transformed_grid_step/c6den
       do 7 j = 2,6
          do 6 i = 1,6
             cnc6c(i,j) = factor*c6num(i,j)

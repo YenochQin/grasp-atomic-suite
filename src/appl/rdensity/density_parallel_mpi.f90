@@ -2,7 +2,7 @@
 module density_parallel
     use vast_kind_param, only: double
     use mpi
-    use mpi_c, only: rank => myid, workers => nprocs, host, lenhost
+    use mpi_c, only: rank => mpi_rank, workers => mpi_process_count, processor_name, processor_name_length
     implicit none
     private
     public :: rank, workers, parallel_start, parallel_finish
@@ -27,7 +27,7 @@ module density_parallel
     end interface
 contains
     subroutine parallel_start
-        call mpix_startup(rank, workers, host, lenhost, start_count, &
+        call mpix_startup(rank, workers, processor_name, processor_name_length, start_count, &
             'RDENSITY_MPI', 'MPI density and natural orbitals', &
             'isodata, name.c, name.w, name.(c)m', 'name.nw, name.(c)d', .true.)
     end subroutine

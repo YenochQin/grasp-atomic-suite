@@ -5,10 +5,9 @@
 
 ## 范围
 
-`GRASP_BUILD_CSFG` 默认 **OFF**。CSFG 专用源代码保留在已有独立目录，唯一构建入口集中到
-[CSFGExtension.cmake](../../cmake/CSFGExtension.cmake)，默认不编译其程序、库或源码测试。
-普通构建中的检查会拒绝意外进入编译命令清单的 CSFG 源文件。
-本轮不继续实现或验收 CSFG；旧 CSFG 结果属于历史证据，不代表当前隔离分支的新验证。
+2026-11-16 已移除 CSFG 专用源码、构建入口和测试。`GRASP_BUILD_CSFG=ON` 会明确报错；
+OFF 和 `--no-csfg` 仅保留旧命令兼容性。普通构建检查继续拒绝 CSFG 源文件混入。
+旧验证元数据中的 `csfg=false` 维度保留用于历史告警预算标识，不代表存在可启用的扩展。
 
 ## 三种配置
 

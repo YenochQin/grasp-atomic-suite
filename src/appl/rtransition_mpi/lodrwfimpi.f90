@@ -15,7 +15,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnp
+      use parameter_def,   only: max_radial_points
       use memory_man
       use def_c
       use npar_c
@@ -52,24 +52,24 @@
 !
 !   Allocate storage to orbital arrays
 !
-      call alloc (pfii, nnnp, nwii, 'PFII', 'LODRWFI')
-      call alloc (qfii, nnnp, nwii, 'QFII', 'LODRWFI')
+      call alloc (pfii, max_radial_points, nwii, 'PFII', 'LODRWFI')
+      call alloc (qfii, max_radial_points, nwii, 'QFII', 'LODRWFI')
 !
-      con = z/c
+      con = nuclear_charge/speed_of_light_au
       con = con*con
 !
       write (*, *) 'NWII', nwii
       do j = 1, nwii
          write (*, *) nakii(j), npii(j), nhii(j)
-         pfii(:nnnp,j) = 0.0d00
-         qfii(:nnnp,j) = 0.0d00
+         pfii(:max_radial_points,j) = 0.0d00
+         qfii(:max_radial_points,j) = 0.0d00
 !
          eii(j) = -1.0d00
 !
          k = abs(nakii(j))
-         if (nparm > 0) then
+         if (nuclear_model_parameter_count > 0) then
             gamaii(j) = dble(k)
-         else if (nparm == 0) then
+         else if (nuclear_model_parameter_count == 0) then
             fkk = dble(k*k)
             if (fkk >= con) then
                gamaii(j) = sqrt(fkk - con)
@@ -77,7 +77,7 @@
                write (6, *) 'LODRWF: Imaginary gamma parameter'
                write (6, *) ' for ', npii(j), nhii(j), ' orbital; the'
                write (6, *) ' point model for the nucleus'
-               write (6, *) ' is inappropriate for Z > ', c, '.'
+               write (6, *) ' is inappropriate for Z > ', speed_of_light_au, '.'
                stop
             endif
          endif

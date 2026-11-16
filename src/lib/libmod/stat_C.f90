@@ -10,7 +10,7 @@
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
       integer, dimension(:,:,:), pointer :: jqsar
-      integer(byte), dimension(:,:,:), pointer :: jqsa
+      integer(byte), dimension(:,:,:), pointer :: csf_subshell_quantum_codes
       integer, dimension(:,:), pointer :: jcupar
-      integer(byte), dimension(:,:), pointer :: jcupa
+      integer(byte), dimension(:,:), pointer :: csf_coupling_quantum_codes
       end module stat_c

@@ -70,13 +70,13 @@
 
       densty = dble(nelmnttmp)/dble((ncftmp*(ncftmp + 1))/2)
 
-      eav = eav/dble(ncftmp) + elsto
+      hamiltonian_energy_shift = hamiltonian_energy_shift/dble(ncftmp) + elsto
 
       write (24, 312) nelmnttmp
       write (24, 313) densty
       write (24, *)
-      write (24, 300) eav
-      write (24, *) eav, elsto, ncftmp
+      write (24, 300) hamiltonian_energy_shift
+      write (24, *) hamiltonian_energy_shift, elsto, ncftmp
 
   300 format('Average energy = ',1p,d19.12,' Hartrees.')
   301 format('CUTOFF set to ',1p,d17.10)

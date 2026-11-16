@@ -1,7 +1,7 @@
 module npol_kernel
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use vast_kind_param, only: double
-    use parameter_def, only: nnnp
+    use parameter_def, only: max_radial_points
     use npol_c, only: npol_config
     use npol_input, only: npol_validate_config
     implicit none
@@ -15,7 +15,7 @@ contains
         character(*), intent(out) :: message
         status = 1
         message = 'npol: N must be in 1:NNNP and fit the supplied arrays'
-        if (n < 1 .or. n > nnnp .or. n > size(r)) return
+        if (n < 1 .or. n > max_radial_points .or. n > size(r)) return
         message = 'npol: radial grid must be finite and nonnegative'
         if (.not.all(ieee_is_finite(r(:n)))) return
         if (any(r(:n) < 0)) return
@@ -30,7 +30,7 @@ contains
         real(double), intent(inout) :: e1(:), e2(:), total(:)
         integer, intent(out) :: status
         character(*), intent(out) :: message
-        real(double) :: a(nnnp), b(nnnp), v(nnnp)
+        real(double) :: a(max_radial_points), b(max_radial_points), v(max_radial_points)
         integer :: i
         call npol_check_grid(n, r, status, message)
         if (status /= 0) return
@@ -96,7 +96,7 @@ contains
         real(double), intent(inout) :: total(:)
         integer, intent(out) :: status
         character(*), intent(out) :: message
-        real(double) :: candidate(nnnp), shift
+        real(double) :: candidate(max_radial_points), shift
         integer :: i
         call npol_check_grid(n, r, status, message)
         if (status /= 0) return

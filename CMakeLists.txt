@@ -206,10 +206,11 @@ if(TARGET mpiu90)
     add_subdirectory("src/appl/rmcdhf_mem_mpi")
 endif()
 
-# CSFG stays behind a single opt-in boundary, outside the active ordinary build.
-option(GRASP_BUILD_CSFG "Build the isolated GRASPG/CSFG extension" OFF)
+# Reject stale opt-in requests after the CSFG source and targets were removed.
+# OFF remains accepted by existing build scripts and historical matrix metadata.
+option(GRASP_BUILD_CSFG "Removed CSFG extension (ON is unsupported)" OFF)
 if(GRASP_BUILD_CSFG)
-    include(cmake/CSFGExtension.cmake)
+    message(FATAL_ERROR "CSFG support has been removed; build the ordinary suite instead.")
 endif()
 
 # Unit and integration tests

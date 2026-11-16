@@ -11,13 +11,13 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw
+      use parameter_def,   only: max_orbitals
       use decide_c
       use eigv_c
       use foparm_c,        only: iccut
-      use iounit_c,        only: istde
-      use mpi_c,           only: myid, nprocs
-      use orb_c,           only: ncf, nw
+      use iounit_c,        only: stderr_unit
+      use mpi_c,           only: mpi_rank, mpi_process_count
+      use orb_c,           only: csf_count, orbital_count
       use prnt_c,          only: nvec
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -43,8 +43,8 @@
 !-----------------------------------------------
       integer :: i, j, ipt, ic, lcnum, ir, itjpoc, itjpor, idiff, ia, ib, &
          k, loc
-      real(double), dimension(nnnw) :: tshell
-      real(double), dimension(nnnw,nnnw) :: rintgj, rintdgj, gjmelt, dgjmelt
+      real(double), dimension(max_orbitals) :: tshell
+      real(double), dimension(max_orbitals,max_orbitals) :: rintgj, rintdgj, gjmelt, dgjmelt
       real(double) :: apart, gjpart, dgjpart, elemntgj, elemntdgj, contrgj, &
          contrdgj
       character :: cnum*11
@@ -56,8 +56,8 @@
 !   Precompute the radial integrals and angular factors required by
 !   the two one-body operators contributing to the Landé factor.
 !
-      do i = 1, nw
-         do j = 1, nw
+      do i = 1, orbital_count
+         do j = 1, orbital_count
             rintgj(i,j) = rinthf(i,j,1)
             rintdgj(i,j) = rint(i,j,0)
             call matelt(i, 1, j, apart, gjpart, dgjpart)
@@ -70,13 +70,13 @@
 !
 !   Each rank evaluates a strided subset of the outer IC loop.
 !
-      do ic = myid + 1, ncf, nprocs
-         if (myid == 0 .and. mod(ic,100) == 1) then
+      do ic = mpi_rank + 1, csf_count, mpi_process_count
+         if (mpi_rank == 0 .and. mod(ic,100) == 1) then
             call convrt(ic, cnum, lcnum)
-            write (istde, *) 'Column '//cnum(1:lcnum)//' complete on root;'
+            write (stderr_unit, *) 'Column '//cnum(1:lcnum)//' complete on root;'
          endif
 !
-         do ir = 1, ncf
+         do ir = 1, csf_count
             if (lfordr .and. ic>iccut .and. ic/=ir) cycle
 !
             itjpoc = itjpo(ic)
@@ -91,7 +91,7 @@
             if (ia == 0) cycle
 !
             if (ia == ib) then
-               do i = 1, nw
+               do i = 1, orbital_count
                   if (abs(tshell(i)) <= cutoff) cycle
                   elemntgj = elemntgj + gjmelt(i,i)*rintgj(i,i)*tshell(i)
                   elemntdgj = elemntdgj + dgjmelt(i,i)*rintdgj(i,i)*tshell(i)
@@ -105,15 +105,17 @@
             if (abs(elemntgj) <= cutoff .and. abs(elemntdgj) <= cutoff) cycle
 !
             do k = 1, nvec
-               loc = (k - 1)*ncf
+               loc = (k - 1)*csf_count
                if (ir /= ic) then
-                  contrgj = elemntgj*(evec(ic + loc)*evec(ir + loc) + evec(ir &
-                     + loc)*evec(ic + loc))
-                  contrdgj = elemntdgj*(evec(ic + loc)*evec(ir + loc) + evec(ir&
-                      + loc)*evec(ic + loc))
+                  contrgj = elemntgj*(csf_mixing_coefficients(ic + loc)*csf_mixing_coefficients(ir + loc) + &
+                     & csf_mixing_coefficients(ir &
+                     + loc)*csf_mixing_coefficients(ic + loc))
+                  contrdgj = elemntdgj*(csf_mixing_coefficients(ic + loc)*csf_mixing_coefficients(ir + loc) + &
+                     & csf_mixing_coefficients(ir&
+                      + loc)*csf_mixing_coefficients(ic + loc))
                else
-                  contrgj = elemntgj*evec(ic + loc)*evec(ir + loc)
-                  contrdgj = elemntdgj*evec(ic + loc)*evec(ir + loc)
+                  contrgj = elemntgj*csf_mixing_coefficients(ic + loc)*csf_mixing_coefficients(ir + loc)
+                  contrdgj = elemntdgj*csf_mixing_coefficients(ic + loc)*csf_mixing_coefficients(ir + loc)
                endif
                gjc_diag(k) = gjc_diag(k) + contrgj
                dgjc_diag(k) = dgjc_diag(k) + contrdgj

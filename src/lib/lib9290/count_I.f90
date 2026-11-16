@@ -5,8 +5,8 @@
 !                     Gediminas Gaigalas  10/05/17
       subroutine count (fr, mtpfr, nncff, sgn)
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnp
-      real(double), dimension(nnnp), intent(in) :: fr
+      use parameter_def,    only: max_radial_points
+      real(double), dimension(max_radial_points), intent(in) :: fr
       integer, intent(in) :: mtpfr
       integer, intent(out) :: nncff
       real(double), intent(out) :: sgn

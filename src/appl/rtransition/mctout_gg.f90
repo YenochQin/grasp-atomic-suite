@@ -17,7 +17,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: keyorb, nnnw
+      use parameter_def,   only: orbital_index_radix, max_orbitals
       use memory_man
       use blk_c
       use debug_c,         only: ldbpa
@@ -54,7 +54,7 @@
       logical :: avail
       integer, dimension(:), pointer :: label
       real(double), dimension(:), pointer:: coeff
-      real(double), dimension(nnnw) :: tshell
+      real(double), dimension(max_orbitals) :: tshell
 !-----------------------------------------------
 !
 !
@@ -134,7 +134,7 @@
                   call oneparticlejj(lk,iopar,ic,ir,ia,ib,tshell)
                   if (ia /= 0) then
                      if (ia == ib) then
-                        do ia = 1, nw
+                        do ia = 1, orbital_count
                            if (abs(tshell(ia)) <= cutoff) cycle
                            ncr = ncr + 1
                            if (ncr > nlabel) then
@@ -143,7 +143,7 @@
                               call ralloc (coeff,  newsiz, 'COEFF', 'MCTOUT')
                               nlabel = newsiz
                            endif
-                           label(ncr) = ia*keyorb + ia
+                           label(ncr) = ia*orbital_index_radix + ia
                            coeff(ncr) = tshell(ia)
                         end do
                      else
@@ -155,7 +155,7 @@
                               call ralloc (coeff,  newsiz, 'COEFF', 'MCTOUT')
                               nlabel = newsiz
                            endif
-                           label(ncr) = ia*keyorb + ib
+                           label(ncr) = ia*orbital_index_radix + ib
                            coeff(ncr) = tshell(1)
                         endif
                      endif

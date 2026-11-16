@@ -35,16 +35,16 @@
 !   The damping is adaptive (i.e., can be modified by this SUBROUTINE)
 !   if and only if ODAMP(J) .GE. 0.0
 !
-      adaptv = odamp(j) >= 0.0d00
+      adaptv = orbital_damping_factors(j) >= 0.0d00
 !
-      ed2 = (ed2-e(j))/ed2
+      ed2 = (ed2-orbital_energy_parameters(j))/ed2
       if (adaptv) then
          if (ed1*ed2 < -1.0d-4) then
 !           We have a significant oscillation, damp
-            odamp(j) = 0.10d00 + 0.90d00*odamp(j)
+            orbital_damping_factors(j) = 0.10d00 + 0.90d00*orbital_damping_factors(j)
 !           Print *, 'Increasing ODAMP', odamp(j)
          else
-            odamp(j) = 0.50d00*odamp(j)
+            orbital_damping_factors(j) = 0.50d00*orbital_damping_factors(j)
          endif
       endif
 !

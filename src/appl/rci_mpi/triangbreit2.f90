@@ -13,7 +13,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use orb_c, only: nkl, nkj
+      use orb_c, only: orbital_l, orbital_two_j
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -25,14 +25,14 @@
       integer :: la,lb,lc,ld,ja,jb,jc,jd
 !-----------------------------------------------
 !
-      la = nkl(ia)
-      lb = nkl(ib)
-      lc = nkl(ic)
-      ld = nkl(id)
-      ja = nkj(ia)
-      jb = nkj(ib)
-      jc = nkj(ic)
-      jd = nkj(id)
+      la = orbital_l(ia)
+      lb = orbital_l(ib)
+      lc = orbital_l(ic)
+      ld = orbital_l(id)
+      ja = orbital_two_j(ia)
+      jb = orbital_two_j(ib)
+      jc = orbital_two_j(ic)
+      jd = orbital_two_j(id)
 
       triangbreit2 = .false.
 

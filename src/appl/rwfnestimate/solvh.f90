@@ -64,8 +64,8 @@
 !
 !   Establish the number of nodes in the large component
 !
-      npiorb = np(iorb)
-      nkiorb = nak(iorb)
+      npiorb = orbital_principal_n(iorb)
+      nkiorb = orbital_kappa(iorb)
       nakabs = abs(nkiorb)
       if (nkiorb < 0) then
          nliorb = nakabs - 1
@@ -76,13 +76,13 @@
 !
 !   Establish the bounds on, and an estimate of, the eigenvalue
 !
-      csq = c*c
-      alpha = 1.0d00/c
+      csq = speed_of_light_au*speed_of_light_au
+      alpha = 1.0d00/speed_of_light_au
       nrel = npiorb - nakabs
       fkabs = dble(nakabs)
       fkap2 = fkabs*fkabs
 !
-      zalpha = yp(n)*alpha
+      zalpha = yp(radial_point_count)*alpha
       if (zalpha < fkabs) then
          gamma = sqrt(fkap2 - zalpha*zalpha)
          ebym = 1.0d00/sqrt(1.0d00 + (zalpha/(gamma + nrel + 0.5d00))**2)
@@ -91,14 +91,14 @@
          emin = 0.25d00*csq/dble(npiorb*npiorb)
       endif
 !
-      zalpha = z*alpha
+      zalpha = nuclear_charge*alpha
 !
       if (zalpha < fkabs) then
          gamma = sqrt(fkap2 - zalpha*zalpha)
          ebym = 1.0d00/sqrt(1.0d00 + (zalpha/(gamma + nrel))**2)
-         e(iorb) = (1.0d00 - ebym)*csq
+         orbital_energy_parameters(iorb) = (1.0d00 - ebym)*csq
       else
-         e(iorb) = csq
+         orbital_energy_parameters(iorb) = csq
       endif
 !
       if (zalpha < fkabs) then
@@ -127,18 +127,18 @@
 !
 !   Generate estimate of eigenvalue for this iteration
 !
-      eest = e(iorb) + dele
+      eest = orbital_energy_parameters(iorb) + dele
       if (eest>emin .and. eest<emax) then
-         e(iorb) = eest
+         orbital_energy_parameters(iorb) = eest
       else
-         e(iorb) = 0.5d00*(emin + emax)
+         orbital_energy_parameters(iorb) = 0.5d00*(emin + emax)
       endif
 !
 !   E is the positive binding energy. An invalid trial energy cannot
 !   produce the decaying bound-state tail used by TAIL.
 !
-      if (.not.ieee_is_finite(e(iorb)) .or. &
-          e(iorb)<=0.0d00 .or. e(iorb)>=2.0d00*csq) then
+      if (.not.ieee_is_finite(orbital_energy_parameters(iorb)) .or. &
+          orbital_energy_parameters(iorb)<=0.0d00 .or. orbital_energy_parameters(iorb)>=2.0d00*csq) then
          fail = .true.
          return
       endif
@@ -150,45 +150,46 @@
 !   Initialize outward integration
 !
       itype = 1
-      call start (iorb, itype, pz(iorb), pf(:,iorb), q0, qf(:,iorb))
+      call start (iorb, itype, orbital_origin_parameters(iorb), radial_large_components(:,iorb), q0, &
+         & radial_small_components(:,iorb))
 !
 !   Continue outward integration to classical turning point
 !
       nstrt = 6
-      call sbstep (iorb, nstrt, jp, pf(:,iorb), qf(:,iorb))
-      pfjpo = pf(jp,iorb)
-      qfjpo = qf(jp,iorb)
+      call sbstep (iorb, nstrt, jp, radial_large_components(:,iorb), radial_small_components(:,iorb))
+      pfjpo = radial_large_components(jp,iorb)
+      qfjpo = radial_small_components(jp,iorb)
 !
 !   Initialize inward integration
 !
-      call tail (iorb, pf(:,iorb), qf(:,iorb), jp, mtp)
+      call tail (iorb, radial_large_components(:,iorb), radial_small_components(:,iorb), jp, mtp)
 !
 !   Continue inward integration to classical turning point
 !
       nstrt = mtp
-      call sbstep (iorb, nstrt, jp, pf(:,iorb), qf(:,iorb))
-      pfjpi = pf(jp,iorb)
-      qfjpi = qf(jp,iorb)
+      call sbstep (iorb, nstrt, jp, radial_large_components(:,iorb), radial_small_components(:,iorb))
+      pfjpi = radial_large_components(jp,iorb)
+      qfjpi = radial_small_components(jp,iorb)
 !
 !   Make large component continuous, determine mismatch in small
 !   component
 !
       ratio = pfjpo/pfjpi
-      pf(jp:n,iorb) = pf(jp:n,iorb)*ratio
-      qf(jp:n,iorb) = qf(jp:n,iorb)*ratio
+      radial_large_components(jp:radial_point_count,iorb) = radial_large_components(jp:radial_point_count,iorb)*ratio
+      radial_small_components(jp:radial_point_count,iorb) = radial_small_components(jp:radial_point_count,iorb)*ratio
 !
 !   Count nodes
 !
-      call count (pf(:,iorb), mtp, npc, sgn)
+      call count (radial_large_components(:,iorb), mtp, npc, sgn)
 !
 !   Correct the energy estimate if the number of nodes is wrong
 !
       if (npc > nnp) then
-         emin = e(iorb)
+         emin = orbital_energy_parameters(iorb)
          dele = 0.5d00*(emax - emin)
          go to 1
       else if (npc < nnp) then
-         emax = e(iorb)
+         emax = orbital_energy_parameters(iorb)
          dele = -0.5d00*(emax - emin)
          go to 1
       endif
@@ -198,8 +199,9 @@
 !   Compute 'norm' of solution
 !
       ta(1) = 0.0d00
-      ta(2:n) = (pf(2:n,iorb)**2+qf(2:n,iorb)**2)*rp(2:n)
-      mtp = n
+      ta(2:radial_point_count) = (radial_large_components(2:radial_point_count,iorb)**2+ &
+         & radial_small_components(2:radial_point_count,iorb)**2)*radial_grid_derivative(2:radial_point_count)
+      mtp = radial_point_count
       call quad (dnorm)
       if (.not.ieee_is_finite(dnorm) .or. dnorm<=0.0d00) then
          fail = .true.
@@ -217,7 +219,7 @@
          return
       endif
       if (abs(dmsmch) > epslon*abs(qfjpo)) then
-         dele = c*pf(jp,iorb)*dmsmch/dnorm
+         dele = speed_of_light_au*radial_large_components(jp,iorb)*dmsmch/dnorm
          if (.not.ieee_is_finite(dele)) then
             fail = .true.
             return
@@ -229,32 +231,32 @@
 !   if the proposed correction falls outside the bounds.
 !
          if (dele < 0.0d00) then
-            emax = max(e(iorb), emax*(1.0d00 - 0.2e00*abs(dele/e(iorb))))
+            emax = max(orbital_energy_parameters(iorb), emax*(1.0d00 - 0.2e00*abs(dele/orbital_energy_parameters(iorb))))
          else
-            emin = min(e(iorb), emin*(1.0d00 + 0.2e00*abs(dele/e(iorb))))
+            emin = min(orbital_energy_parameters(iorb), emin*(1.0d00 + 0.2e00*abs(dele/orbital_energy_parameters(iorb))))
          endif
-         pz(iorb) = pz(iorb)/sqrt(dnorm)
+         orbital_origin_parameters(iorb) = orbital_origin_parameters(iorb)/sqrt(dnorm)
          go to 1
       endif
 !
 !   Normalize
 !
       dnfac = 1.0d00/sqrt(dnorm)
-      pz(iorb) = pz(iorb)*dnfac
-      pf(:n,iorb) = pf(:n,iorb)*dnfac
-      qf(:n,iorb) = qf(:n,iorb)*dnfac
+      orbital_origin_parameters(iorb) = orbital_origin_parameters(iorb)*dnfac
+      radial_large_components(:radial_point_count,iorb) = radial_large_components(:radial_point_count,iorb)*dnfac
+      radial_small_components(:radial_point_count,iorb) = radial_small_components(:radial_point_count,iorb)*dnfac
 !
 !   Find maximum tabulation point
 !
-      i = n + 1
+      i = radial_point_count + 1
     5 continue
       i = i - 1
-      if (abs(pf(i,iorb)) < epslon) then
-         pf(i,iorb) = 0.0d00
-         qf(i,iorb) = 0.0d00
+      if (abs(radial_large_components(i,iorb)) < epslon) then
+         radial_large_components(i,iorb) = 0.0d00
+         radial_small_components(i,iorb) = 0.0d00
          go to 5
       else
-         mf(iorb) = i
+         orbital_last_grid_index(iorb) = i
       endif
 !
       return

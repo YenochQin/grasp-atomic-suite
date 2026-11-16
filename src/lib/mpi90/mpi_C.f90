@@ -10,10 +10,10 @@
       use mpiu_i, only: startmpi, mpix_bytes
       implicit none
 
-      character*(mpi_max_processor_name) host
-      integer myid, nprocs, lenhost
-      integer ierr, ierrtotal
-      integer istat(mpi_status_size)
+      character*(mpi_max_processor_name) processor_name
+      integer mpi_rank, mpi_process_count, processor_name_length
+      integer mpi_error_code, ierrtotal
+      integer mpi_status_buffer(mpi_status_size)
 
 
 

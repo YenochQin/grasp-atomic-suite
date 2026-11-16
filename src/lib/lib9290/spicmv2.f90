@@ -45,11 +45,11 @@
       do icol = 1, n
             !IBEG = IENDC(ICOL-1)+1
             !IEND = IENDC(ICOL)
-         iend = iendc(icol)
+         iend = stored_segment_end_offsets(icol)
          nelc = iend - ibeg + 1
          do iv = 1, m
-            diag = c(icol,iv) + emt(iend)*b(icol,iv)
-            call dmerge (nelc-1, b(:n,iv), c(:n,iv), irow(ibeg:iend-1), emt(ibeg:iend-1), b(&
+            diag = c(icol,iv) + hamiltonian_values(iend)*b(icol,iv)
+            call dmerge (nelc-1, b(:n,iv), c(:n,iv), matrix_partner_indices(ibeg:iend-1), hamiltonian_values(ibeg:iend-1), b(&
                icol,iv), dl)
             c(icol,iv) = diag + dl
          end do

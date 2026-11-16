@@ -25,7 +25,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnp
+      use parameter_def,    only: max_radial_points
       use def_c
       use grid_c
       use ovl_c
@@ -69,7 +69,7 @@
 ! treated the same way.
       changed = .false.
 !      DO 4 K = 1,NW
-      do kraw = 1, nw
+      do kraw = 1, orbital_count
          k = iorder(kraw)
 !         write(istde,*) '***',kraw,k,np(k),nh(k),scnsty(k),'***'
 !
@@ -81,7 +81,7 @@
 !         IF ( (K .NE. J) .AND.
 !     :        (NAK(K) .EQ. NAK(J)) ) THEN
 !XHH orbitals before the current and unchanged ones are considered
-         if (.not.(nak(k)==nak(j) .and. (k<j .or. lfix(k)))) cycle
+         if (.not.(orbital_kappa(k)==orbital_kappa(j) .and. (k<j .or. is_orbital_fixed(k)))) cycle
 
          changed = .true.
 !
@@ -91,24 +91,24 @@
 !
 !   Schmidt orthogonalise
 !
-         pz(j) = pz(j) - ovrlap*pz(k)
-         mtp = max(mf(j),mf(k))
-         pf(:mtp,j) = pf(:mtp,j) - ovrlap*pf(:mtp,k)
-         qf(:mtp,j) = qf(:mtp,j) - ovrlap*qf(:mtp,k)
+         orbital_origin_parameters(j) = orbital_origin_parameters(j) - ovrlap*orbital_origin_parameters(k)
+         mtp = max(orbital_last_grid_index(j),orbital_last_grid_index(k))
+         radial_large_components(:mtp,j) = radial_large_components(:mtp,j) - ovrlap*radial_large_components(:mtp,k)
+         radial_small_components(:mtp,j) = radial_small_components(:mtp,j) - ovrlap*radial_small_components(:mtp,k)
       end do
 !XHH
       if (changed) then
 !
 !   Normalise
 !
-         mf(j) = mtp
+         orbital_last_grid_index(j) = mtp
          dnorm = rint(j,j,0)
          factor = 1.0d00/sqrt(dnorm)
 !
 !   Determine if inversion is necessary
 !
          if (check) then
-            call count (pf(:nnnp,j), mtp, nncff, sgn)
+            call count (radial_large_components(:max_radial_points,j), mtp, nncff, sgn)
             if (sgn < 0.0d00) then
                inv = inv + 1
                factor = -factor
@@ -117,21 +117,21 @@
 !
 !   Perform normalization and/or inversion
 !
-         pz(j) = factor*pz(j)
-         pf(2:mtp,j) = factor*pf(2:mtp,j)
-         qf(2:mtp,j) = factor*qf(2:mtp,j)
+         orbital_origin_parameters(j) = factor*orbital_origin_parameters(j)
+         radial_large_components(2:mtp,j) = factor*radial_large_components(2:mtp,j)
+         radial_small_components(2:mtp,j) = factor*radial_small_components(2:mtp,j)
 !
 !   Find new MF(J)
 !
          mtp = mtp + 1
     3    continue
          mtp = mtp - 1
-         if (abs(pf(mtp,j)) < eps) then
-            pf(mtp,j) = 0.0d00
-            qf(mtp,j) = 0.0d00
+         if (abs(radial_large_components(mtp,j)) < eps) then
+            radial_large_components(mtp,j) = 0.0d00
+            radial_small_components(mtp,j) = 0.0d00
             go to 3
          else
-            mf(j) = mtp
+            orbital_last_grid_index(j) = mtp
          endif
 !
 !XHH two lines moved forward and added an ENDIF

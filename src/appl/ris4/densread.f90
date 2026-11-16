@@ -20,7 +20,7 @@ subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: keyorb, nnnw, nnnp
+      use parameter_def,    only: orbital_index_radix, max_orbitals, max_radial_points
       use prnt_c
       use ris_c
       use orb_c
@@ -32,17 +32,17 @@ subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), dimension(nnnw,nnnw), intent(in) :: dint1, dint2,  &
+      real(double), dimension(max_orbitals,max_orbitals), intent(in) :: dint1, dint2,  &
                                           dint3, dint4, dint5, dint6,  &
                                           dint7
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double), dimension(nnnw) :: tshell_r
+      real(double), dimension(max_orbitals) :: tshell_r
       real(double) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5
       real(double) :: elemnt6, elemnt7
       real(double) :: contri1, contri2, contri3, contri4, contri5
@@ -111,14 +111,14 @@ subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !*        IRI = IROW(I)
 !*         IF (I .GT. IENDC(ICI)) ICI = ICI+1
          do 22 j = 1,nvec
-            loc = (j-1)*ncf
-            contri1 = evec(ic+loc)*evec(ir+loc)*elemnt1
-            contri2 = evec(ic+loc)*evec(ir+loc)*elemnt2
-            contri3 = evec(ic+loc)*evec(ir+loc)*elemnt3
-            contri4 = evec(ic+loc)*evec(ir+loc)*elemnt4
-            contri5 = evec(ic+loc)*evec(ir+loc)*elemnt5
-            contri6 = evec(ic+loc)*evec(ir+loc)*elemnt6
-            contri7 = evec(ic+loc)*evec(ir+loc)*elemnt7
+            loc = (j-1)*csf_count
+            contri1 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt1
+            contri2 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt2
+            contri3 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt3
+            contri4 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt4
+            contri5 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt5
+            contri6 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt6
+            contri7 = csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)*elemnt7
             if (ir.ne.ic) then
                contri1 = 2.0d00 * contri1
                contri2 = 2.0d00 * contri2

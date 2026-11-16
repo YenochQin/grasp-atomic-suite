@@ -21,10 +21,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use parameter_def,   only: nnnp
+      use parameter_def,   only: max_radial_points
       use debug_c
       use def_c
-      use grid_c, only: r, n
+      use grid_c, only: radial_grid, radial_point_count
       use npar_c
       use ncdist_c, only: zdist
       use tatb_c, only: mtp, ta, tb
@@ -38,39 +38,39 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, k, nb2, nrows, ii, ii1, ii2
-      real(double), dimension(nnnp) :: tc
+      real(double), dimension(max_radial_points) :: tc
       real(double) :: epsi, twocv, factor, ri, x, tci, rk, xk, xi, xm, xp
 !-----------------------------------------------
 !
 !   Overall initialization
 !
       epsi = precis*precis
-      twocv = cvac + cvac
+      twocv = vacuum_speed_of_light_au + vacuum_speed_of_light_au
 !
 !   Potential for point nucleus: equation (12)
 !
-      factor = -z/(pi*cvac)**2
+      factor = -nuclear_charge/(pi*vacuum_speed_of_light_au)**2
 !
       tc(1) = 0.0d00
 !
       i = 1
     1 continue
       i = i + 1
-      ri = r(i)
+      ri = radial_grid(i)
       x = twocv*ri
       tci = (factor/ri)*funl(x,1)
       if (dabs(tci) >= epsi) then
          tc(i) = tci
-         if (i < n) go to 1
+         if (i < radial_point_count) go to 1
       else
-         tc(i:n) = 0.0d00
+         tc(i:radial_point_count) = 0.0d00
       endif
 !
 !   Potential for finite nucleus: equation (11)
 !
-      if (nparm == 2) then
+      if (nuclear_model_parameter_count == 2) then
 !
-         factor = -1.0d00/(pi*cvac**3)
+         factor = -1.0d00/(pi*vacuum_speed_of_light_au**3)
 !
          tc(1) = 0.0d00
 !
@@ -78,12 +78,12 @@
     3    continue
          k = k + 1
 !
-         rk = r(k)
+         rk = radial_grid(k)
          xk = twocv*rk
          ta(1) = 0.0d00
 !
          do i = 2, mtp
-            xi = twocv*r(i)
+            xi = twocv*radial_grid(i)
             xm = dabs(xk - xi)
             xp = xk + xi
             ta(i) = (funl(xm,0) - funl(xp,0))*zdist(i)
@@ -98,7 +98,7 @@
          if (dabs(x) >= epsi) then
             if (dabs((tc(k)-x)/x) > 1.0d-03) then
                tc(k) = x
-               if (k < n) go to 3
+               if (k < radial_point_count) go to 3
             endif
          endif
 !
@@ -106,8 +106,8 @@
 !
       if (ldbpr(8)) then
          write (99, 300)
-         nb2 = n/2
-         if (2*nb2 == n) then
+         nb2 = radial_point_count/2
+         if (2*nb2 == radial_point_count) then
             nrows = nb2
          else
             nrows = nb2 + 1
@@ -115,18 +115,18 @@
          do ii = 1, nrows
             ii1 = ii
             ii2 = ii1 + nrows
-            if (ii2 <= n) then
-               write (99, 301) r(ii1), tb(ii1), tc(ii1), r(ii2), tb(ii2), tc(&
+            if (ii2 <= radial_point_count) then
+               write (99, 301) radial_grid(ii1), tb(ii1), tc(ii1), radial_grid(ii2), tb(ii2), tc(&
                   ii2)
-            else if (ii1 <= n) then
-               write (99, 301) r(ii1), tb(ii1), tc(ii1)
+            else if (ii1 <= radial_point_count) then
+               write (99, 301) radial_grid(ii1), tb(ii1), tc(ii1)
             endif
          end do
       endif
 !
 !   Generate total vacuum-polarization potential
 !
-      tb(:n) = tc(:n) + tb(:n)
+      tb(:radial_point_count) = tc(:radial_point_count) + tb(:radial_point_count)
 !
       return
 !

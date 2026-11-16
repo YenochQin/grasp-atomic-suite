@@ -20,7 +20,7 @@
       use memory_man
       use hblock_c
       use def_c
-      use orb_c, only: ncftot=>ncf
+      use orb_c, only: ncftot=>csf_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -44,9 +44,9 @@
 !     POINTER (ncfblk, ncfblk(0:*))
 !-----------------------------------------------------------------------
 
-      call alloc (ncfblk, 0,  nblkin, 'NCFBLK', 'SETCSL' )
-      call setcsll (21, name, nblkin, nblock, ncfblk(1:), ncftot, idblk)
-      call ralloc (ncfblk, 0, nblock, 'NCFBLK', 'SETCSL' )
+      call alloc (csf_counts_by_block, 0,  nblkin, 'NCFBLK', 'SETCSL' )
+      call setcsll (21, name, nblkin, symmetry_block_count, csf_counts_by_block(1:), ncftot, idblk)
+      call ralloc (csf_counts_by_block, 0, symmetry_block_count, 'NCFBLK', 'SETCSL' )
 
       rewind (21)
       read (21, *)

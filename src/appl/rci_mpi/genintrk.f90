@@ -45,14 +45,14 @@
       integer :: key, i, k, ia, ib, ic, id
 !-----------------------------------------------------------------------
 
-      key = nw + 1
+      key = orbital_count + 1
       kstart(0) = 1
 !
 !   Find 2*JMAX; it should not be greater than PARAMETER KMAX
 !
-      j2max = nkj(1)
-      do i = 2, nw
-         if (nkj(i) .gt. j2max) j2max = nkj(i)
+      j2max = orbital_two_j(1)
+      do i = 2, orbital_count
+         if (orbital_two_j(i) .gt. j2max) j2max = orbital_two_j(i)
       enddo
 
       if (j2max .gt. kmax) then
@@ -66,12 +66,12 @@
 
   999 n = 0
       do k = 0, j2max
-         do ia = 1, nw
-            do ib = ia, nw
-               do ic = ia, nw
-                  if (triangrk(nkl(ia),k,nkl(ic))) then
-                     do id = ib, nw
-                        if (triangrk(nkl(ib),k,nkl(id))) then
+         do ia = 1, orbital_count
+            do ib = ia, orbital_count
+               do ic = ia, orbital_count
+                  if (triangrk(orbital_l(ia),k,orbital_l(ic))) then
+                     do id = ib, orbital_count
+                        if (triangrk(orbital_l(ib),k,orbital_l(id))) then
                            n = n + 1
                            if (gen .and. (mod(n,nprocs) .eq. myid)) then
                               indteirk(n) = ((ia*key+ib)*key+ic)*key+id

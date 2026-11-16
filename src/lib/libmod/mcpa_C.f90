@@ -3,5 +3,5 @@
 !...Created by Pacific-Sierra Research 77to90  4.3E  13:49:35   1/ 5/07
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      integer :: kmaxf
+      integer :: max_mcp_file_multipole_rank
       end module mcpa_c

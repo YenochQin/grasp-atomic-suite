@@ -13,8 +13,8 @@ subroutine edensityfit(xvec,yvec,z,par,nrnuc,f,rho,res)
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use def_c,            only: pi,fmtoau,ccms,aucm
-      use parameter_def,    only: nnnp, nnn1
+      use def_c,            only: pi,femtometer_to_bohr,speed_of_light_cm_per_s,hartree_to_wavenumber_cm
+      use parameter_def,    only: max_radial_points, radial_workspace_capacity
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -22,8 +22,8 @@ subroutine edensityfit(xvec,yvec,z,par,nrnuc,f,rho,res)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), dimension(nnn1) :: xvec
-      real(double), dimension(nnnp) :: yvec
+      real(double), dimension(radial_workspace_capacity) :: xvec
+      real(double), dimension(max_radial_points) :: yvec
 !GG      REAL(DOUBLE), DIMENSION(NNNP) :: XVEC, YVEC
       real(double), dimension(5) :: p
       real(double), dimension(6) :: f
@@ -33,8 +33,8 @@ subroutine edensityfit(xvec,yvec,z,par,nrnuc,f,rho,res)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double), dimension(nnn1) :: x
-      real(double), dimension(nnnp) :: y, w, dy
+      real(double), dimension(radial_workspace_capacity) :: x
+      real(double), dimension(max_radial_points) :: y, w, dy
 !GG      REAL(DOUBLE), DIMENSION(NNNP) :: X, Y, W, DY
       real(double), dimension(3,3)  :: m, mi, c, ci
       real(double), dimension(4)    :: dr, dr2
@@ -46,8 +46,8 @@ subroutine edensityfit(xvec,yvec,z,par,nrnuc,f,rho,res)
       integer :: i, inuc, nmin, nmax, nr
 !-----------------------------------------------
 !
-      au2fm = 1.d0/fmtoau                ! Bohr radius in fm
-      const = 1.d-9*ccms*aucm*au2fm      ! To get electronic factors in GHz
+      au2fm = 1.d0/femtometer_to_bohr                ! Bohr radius in fm
+      const = 1.d-9*speed_of_light_cm_per_s*hartree_to_wavenumber_cm*au2fm      ! To get electronic factors in GHz
 
 !     COPY ARRAYS
       x(:) = xvec(:)

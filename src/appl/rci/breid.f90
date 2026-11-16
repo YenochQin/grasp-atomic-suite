@@ -20,7 +20,7 @@
       use cons_c
       use debug_c
       use m_c
-      use orb_c, only: np, nak
+      use orb_c, only: orbital_principal_n, orbital_kappa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -77,7 +77,7 @@
       nqs1 = nq1(ia1)
       nqs2 = nq2(ib1)
       do i = 1, 4
-         kaps(i) = 2*nak(js(i))
+         kaps(i) = 2*orbital_kappa(js(i))
          ks(i) = iabs(kaps(i))
       end do
       const = nqs1*nqs2

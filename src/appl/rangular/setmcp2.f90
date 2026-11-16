@@ -45,12 +45,12 @@
 
       if (myid == 0) call getinf
 
-      do k = 30, 32 + kmax
-         write (k) nelec, ncf, nw
-         write (k) diag, iccut(1), lfordr
+      do k = 30, 32 + max_coulomb_multipole_rank
+         write (k) electron_count, csf_count, orbital_count
+         write (k) diagonal_only, iccut(1), use_first_order_restriction
       end do
 
-      do k = 30, 32 + kmax
+      do k = 30, 32 + max_coulomb_multipole_rank
          close(k)
       end do
 

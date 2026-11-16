@@ -85,7 +85,7 @@
 !=======================================================================
 
 !=======================================================================
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          inquire(file='disks',exist=ydisks)
          if(ydisks) then
 !=======================================================================
@@ -96,7 +96,7 @@
             read (1001,*) permdir  ! paths for serial i/o, node-0 only
             read (1001,*) tmpdir   ! temporary for local disk of node-0
             !...paths for slaves, read and send;
-            do i = 1, nprocs - 1
+            do i = 1, mpi_process_count - 1
                read (1001,*) disk
                call mpi_send (disk, lendisk0, mpi_character, i, i, &
                               mpi_comm_world, ierr2m)
@@ -115,14 +115,14 @@
 !=======================================================================
             if(.not.getenv_allocating("MPI_TMP", mpi_tmp)) then
                 ! error041 failed to get env variable MPI_TMP
-                print *, ' warning041 cpath failed at getenv MPI_TMP, myid = ', myid
+                print *, ' warning041 cpath failed at getenv MPI_TMP, myid = ', mpi_rank
                 print *, ' warning041 cpath will now default to /scratch/USER '
 
                 if(.not.getenv_allocating("USER", env_user)) then
                     ! error061 failed to get env variable USER = MPI_ABORT
-                    print *, ' error061 cpath failed at getenv USER, myid = ', myid
+                    print *, ' error061 cpath failed at getenv USER, myid = ', mpi_rank
                     print *, ' error061 cpath fatal error, calling MPI_ABORT'
-                    call mpi_abort(mpi_comm_world, ierr, ierr2m)
+                    call mpi_abort(mpi_comm_world, mpi_error_code, ierr2m)
                 endif
 
                 mpi_tmp = '/scratch/'//env_user ! Defaults to /scratch/$USER
@@ -131,23 +131,23 @@
 ! step 08 MPI_Send/MPI_Recv tmpdir
 !=======================================================================
             if(len(mpi_tmp) > lendisk0) then
-                print *, ' error062 cpath MPI_TMP too long, myid = ', myid
+                print *, ' error062 cpath MPI_TMP too long, myid = ', mpi_rank
                 print *, ' error062 cpath fatal error, calling MPI_ABORT'
-                call mpi_abort(mpi_comm_world, ierr, ierr2m)
+                call mpi_abort(mpi_comm_world, mpi_error_code, ierr2m)
             endif
 
             tmpdir = mpi_tmp
             disk = mpi_tmp
-            do i = 1, nprocs - 1
+            do i = 1, mpi_process_count - 1
                call mpi_send (disk, lendisk0, mpi_character, i, i, &
                               mpi_comm_world, ierr2m)
             enddo
          end if
       else  ! node0 has sent
          !...slaves receive their local dirs
-         if (nprocs .gt. 1) then
-           call mpi_recv (disk, lendisk0, mpi_character, 0, myid, &
-                          mpi_comm_world, istat, ierr2m)
+         if (mpi_process_count .gt. 1) then
+           call mpi_recv (disk, lendisk0, mpi_character, 0, mpi_rank, &
+                          mpi_comm_world, mpi_status_buffer, ierr2m)
          endif
       end if  ! node0 has sent & slaves have received
       lendisk = len_trim (disk)
@@ -168,15 +168,15 @@
 ! step 14 mkdir tmpdir
 !=======================================================================
 !
-      call sys_chdir (disk, lendisk, ierr)
+      call sys_chdir (disk, lendisk, mpi_error_code)
 !     print *, ' in cpath myid = ', myid, ' disk = ', disk
-      if (ierr.ne.0) call sys_mkdir (disk, lendisk, ierr)
-      if (ierr.ne.0) then
+      if (mpi_error_code.ne.0) call sys_mkdir (disk, lendisk, mpi_error_code)
+      if (mpi_error_code.ne.0) then
 ! error141 failed to mkdir tmpdir
 ! step14 try mkdir twice more
         do itry = 1, 2
 ! get some sleep -- different loop times depending on myid
-          do iteery = 1, myid+1
+          do iteery = 1, mpi_rank+1
             asleep = 2
             asleep = asleep * int(sqrt(real(3*iteery)))
             asleep = asleep / int(sqrt(real(5*iteery)))
@@ -191,15 +191,15 @@
 !       print *, ' step14 cpath sleeps ', achar(asleep+48), ' seconds,',&
 !                ' myid = ', myid
 
-          call sys_mkdir (disk, lendisk, ierr)
-          if (ierr.eq.0) exit
+          call sys_mkdir (disk, lendisk, mpi_error_code)
+          if (mpi_error_code.eq.0) exit
         enddo
 !      if (ierr.ne.0) call exit(1)
-        if (ierr .ne. 0) then
+        if (mpi_error_code .ne. 0) then
 !
 ! error141 failed to mkdir tmpdir
         print *, ' error141 cpath failed at sys_mkdir(disk), myid = ',&
-                                                             myid
+                                                             mpi_rank
 !        stop
 !        stop
 !        CALL stopmpi (' error in cpath ', myid)
@@ -211,20 +211,20 @@
 ! step 16 cd tmpdir
 !=======================================================================
 !
-      call sys_chdir (disk, lendisk, ierr)
-      if (ierr .ne. 0) then
+      call sys_chdir (disk, lendisk, mpi_error_code)
+      if (mpi_error_code .ne. 0) then
 ! error161 failed to chdir tmpdir
 ! step16 try chdir twice more
         do itry = 1, 2
 ! get some sleep -- different loop times depending on myid
-          do iteery = 1, myid+1
+          do iteery = 1, mpi_rank+1
             asleep = 2
             asleep = asleep * int(sqrt(real(3*iteery)))
             asleep = asleep / int(sqrt(real(5*iteery)))
           enddo
 
 ! get more sleep -- different sleep times (1-9 sec) depending on myid
-          asleep = int(1 + 4 * itry * real(myid) / real(nprocs))
+          asleep = int(1 + 4 * itry * real(mpi_rank) / real(mpi_process_count))
 !         ierr2m = system ('sleep ' // achar(asleep+48))
 ! use EXECUTE_COMMAND_LINE if function 'system' is not supported
 !       call execute_command_line ('sleep ' // achar(asleep+48), &
@@ -232,15 +232,15 @@
 !       print *, ' error161 cpath achar(asleep+48) = ', achar(asleep+48)
 !       print *, ' step16 cpath sleeps ', achar(asleep+48), ' seconds,',&
 !                ' myid = ', myid
-          call sys_chdir (disk, lendisk, ierr)
-          if (ierr.eq.0) exit
+          call sys_chdir (disk, lendisk, mpi_error_code)
+          if (mpi_error_code.eq.0) exit
         enddo
 !      if (ierr.ne.0) call exit(1)
-        if (ierr .ne. 0) then
+        if (mpi_error_code .ne. 0) then
 !
 ! error161 failed to chdir tmpdir
        print *, ' error161 cpath failed at sys_chdir(disk); myid = ',&
-                                                            myid
+                                                            mpi_rank
 !         stop
 !         stop
 !         CALL stopmpi (' error in cpath ', myid)
@@ -255,11 +255,11 @@
 !  go to sub-dir defined by myid. Create if did not exist
 !=======================================================================
 !
-      write (idstring,'(I3.3)') myid
-      call sys_chdir (idstring, lenidstring, ierr)
-      if (ierr .ne. 0) then
-         call sys_mkdir (idstring, lenidstring, ierr)
-        if (ierr .ne. 0) then
+      write (idstring,'(I3.3)') mpi_rank
+      call sys_chdir (idstring, lenidstring, mpi_error_code)
+      if (mpi_error_code .ne. 0) then
+         call sys_mkdir (idstring, lenidstring, mpi_error_code)
+        if (mpi_error_code .ne. 0) then
 !
 ! error181 failed to mkdir tmpdir/myid
           print *, ' error181 cpath failed to make sub-dir ' // idstring
@@ -267,8 +267,8 @@
 !         stop
           goto 999
         endif
-        call sys_chdir (idstring, lenidstring, ierr)
-        if (ierr .ne. 0) then
+        call sys_chdir (idstring, lenidstring, mpi_error_code)
+        if (mpi_error_code .ne. 0) then
 !
 ! error183 failed to chdir tmpdir/myid
          print *, ' error183 cpath failed to go to sub-dir ' // idstring
@@ -287,7 +287,7 @@
 !  collect ierr -> ierr_all_nodes and check if ierr_all_nodes == 0
 !       print *, ' step20 cpath ierr = ', ierr, ' myid = ', myid
 !
-      ierr_all_nodes = ierr
+      ierr_all_nodes = mpi_error_code
       call mpi_barrier(mpi_comm_world, ierr2m)
       call mpi_allreduce (mpi_in_place,ierr_all_nodes,1, &
                           mpi_integer, mpi_sum, mpi_comm_world, ierr2m)
@@ -303,14 +303,14 @@
 !
 ! error201 non zero ierr
       if (ierr_all_nodes .ne. 0) then
-        print *, ' error201 cpath ierr = ', ierr, ' myid = ', myid
+        print *, ' error201 cpath ierr = ', mpi_error_code, ' myid = ', mpi_rank
 !
-        if (myid .eq. 0) then
-          print *, ' error201 cpath terminated at 999, myid = ', myid
+        if (mpi_rank .eq. 0) then
+          print *, ' error201 cpath terminated at 999, myid = ', mpi_rank
         endif
 !       stop
 !       stop
-        call stopmpi (' error in cpath ', myid)
+        call stopmpi (' error in cpath ', mpi_rank)
       endif
 
 !=======================================================================

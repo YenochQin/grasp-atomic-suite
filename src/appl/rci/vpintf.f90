@@ -14,7 +14,7 @@
 !   M o d u l e s
 !-----------------------------------------------
      use vast_kind_param, only: double
-     use parameter_def,   only: keyorb
+     use parameter_def,   only: orbital_index_radix
      use debug_c
      use grid_c
      use ncdist_c
@@ -33,23 +33,25 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
        integer :: k
 !------------------------------------------------
 !
-      mtp = min (mf(ia),mf(ib))
+      mtp = min (orbital_last_grid_index(ia),orbital_last_grid_index(ib))
       !TA(1) = 0.0D 00  !! Why would this be wrong?!!
       ta(1)  = 0
       do 1 k = 2,mtp
-         ta(k) = (pf(k,ia)*pf(k,ib)+qf(k,ia)*qf(k,ib))                  &
+         ta(k) = (radial_large_components(k,ia)*radial_large_components(k,ib)+radial_small_components(k,ia)* &
+            & radial_small_components(k,ib))                  &
                  *zdist(k)
     1 continue
       call quad (vpintf)
 !
-      if (ldbpr(9)) write (99,300) np(ia),nh(ia),np(ib),nh(ib),vpintf
+      if (ldbpr(9)) write (99,300) orbital_principal_n(ia),orbital_symmetry_labels(ia),orbital_principal_n(ib), &
+         & orbital_symmetry_labels(ib),vpintf
 !
       return
 !

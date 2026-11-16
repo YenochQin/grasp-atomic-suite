@@ -45,19 +45,19 @@
 
       inquire(file=name, exist=found)
       if (.not.found) then
-         write (istde, *) name(1:length), ' does not exist'
+         write (stderr_unit, *) name(1:length), ' does not exist'
          stop
       endif
 
       inquire(unit=nfile, opened=found)
       if (found) then
-         write (istde, *) 'Unit ', nfile, ' has been used elsewhere'
+         write (stderr_unit, *) 'Unit ', nfile, ' has been used elsewhere'
          stop
       endif
 
       open(nfile, file=name, status='OLD', iostat=ios, position='asis')
       if (ios /= 0) then
-         write (istde, *) 'Error when opening ', name
+         write (stderr_unit, *) 'Error when opening ', name
          stop
       endif
 !
@@ -66,7 +66,7 @@
       read (nfile, '(1A15)', iostat=ios) record
 
       if (ios/=0 .or. record(1:15)/='Core subshells:') then
-         write (istde, *) 'Not a Configuration Symmetry List File;'
+         write (stderr_unit, *) 'Not a Configuration Symmetry List File;'
          close(nfile)
          stop
       endif

@@ -26,10 +26,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  byte
-      use parameter_def,   only:  nnnw
+      use parameter_def,   only:  max_orbitals
       use mpi_c
-      use orb_c,           only: ncf, iqa
-      use stat_c,          only: jqsa, jcupa
+      use orb_c,           only: csf_count, csf_subshell_occupations
+      use stat_c,          only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
 
       use lodcsh2_i, only: lodcsh2
       implicit none
@@ -38,7 +38,7 @@
 
 !-----------------------------------------------------------------------
 
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          call lodcsh2 ((nfile), (ncore), (jblock))
       endif
 
@@ -47,19 +47,19 @@
 !cjb mpix_bytes
 !cjb if your compiler or your MPI does not accept type MPIX_INT1
 !cjb try standard MPI type MPI_INTEGER1
-      call mpix_bytes (1, mpix_int1, ierr)
+      call mpix_bytes (1, mpix_int1, mpi_error_code)
 !     CALL MPI_Type_create_f90_integer (15, MPIX_INT1, ierr)
 
       call mpi_bcast                                                   &
-               (iqa(:,:),     nnnw*ncf,mpix_int1,0,mpi_comm_world,ierr)
+               (csf_subshell_occupations(:,:),     max_orbitals*csf_count,mpix_int1,0,mpi_comm_world,mpi_error_code)
 !cjb mpix_bytes
 !cjb           (IQA(:,:),    NNNW*NCF,MPI_INTEGER1,0,MPI_COMM_WORLD,ierr)
       call mpi_bcast                                                   &
-               (jqsa(:,:,:),3*nnnw*ncf,mpix_int1,0,mpi_comm_world,ierr)
+               (csf_subshell_quantum_codes(:,:,:),3*max_orbitals*csf_count,mpix_int1,0,mpi_comm_world,mpi_error_code)
 !cjb mpix_bytes
 !cjb           (JQSA(:,:,:),3*NNNW*NCF,MPI_INTEGER1,0,MPI_COMM_WORLD,ierr)
       call mpi_bcast                                                   &
-               (jcupa(:,:),   nnnw*ncf,mpix_int1,0,mpi_comm_world,ierr)
+               (csf_coupling_quantum_codes(:,:),   max_orbitals*csf_count,mpix_int1,0,mpi_comm_world,mpi_error_code)
 !cjb mpix_bytes
 !cjb           (JCUPA(:,:),   NNNW*NCF,MPI_INTEGER1,0,MPI_COMM_WORLD,ierr)
       return

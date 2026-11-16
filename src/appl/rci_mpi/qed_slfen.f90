@@ -18,11 +18,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw, nnnp
+      use parameter_def,   only: max_orbitals, max_radial_points
       use def_c
       use eigv_c
       use npar_c
-      use orb_c, only: nw, np, nak
+      use orb_c, only: orbital_count, orbital_principal_n, orbital_kappa
       use prnt_c
       use wave_c
       use qedcut_c
@@ -36,13 +36,13 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), dimension(nnnw), intent(out) :: slfint
+      real(double), dimension(max_orbitals), intent(out) :: slfint
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: maxiter, j, npj, kappa, mfj, i, npjmax
 !      REAL(DOUBLE), DIMENSION(1) :: UCF
-      real(double), dimension(nnnp) :: ptemp, qtemp
+      real(double), dimension(max_radial_points) :: ptemp, qtemp
       real(double) :: zeff, ratio, valu
       character :: npchar, nakchar*2
 !-----------------------------------------------
@@ -52,41 +52,41 @@
 !
       maxiter = 20
 !
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          if (nqedcut.eq.1) then
             npjmax = nqedmax
          else
             npjmax = 8
          end if
       end if
-      call mpi_bcast (npjmax,1,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (npjmax,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
 !
 !
-      do j = 1, nw
+      do j = 1, orbital_count
 !
-         npj = np(j)
+         npj = orbital_principal_n(j)
 !
          if (npj <= npjmax) then
 !
 !   Only orbitals with principal quantum number 8 or less can
 !   be treated by this section of code
 !
-            kappa = nak(j)
+            kappa = orbital_kappa(j)
 !
 !   Begin by transferring the function to a temporary array
 !
-            mfj = mf(j)
+            mfj = orbital_last_grid_index(j)
 !
             ptemp(1) = 0.0d00
             qtemp(1) = 0.0d00
             do i = 2, mfj
-               ptemp(i) = pf(i,j)
-               qtemp(i) = qf(i,j)
+               ptemp(i) = radial_large_components(i,j)
+               qtemp(i) = radial_small_components(i,j)
             end do
-            zeff = z
+            zeff = nuclear_charge
             ratio = ratden(ptemp,qtemp,mfj,npj,kappa,zeff)
             valu = ratio*fzalf(npj,kappa,zeff)/dble(npj**3)
-            slfint(j) = valu*zeff**4/(pi*c**3)
+            slfint(j) = valu*zeff**4/(pi*speed_of_light_au**3)
 !
          else
 !

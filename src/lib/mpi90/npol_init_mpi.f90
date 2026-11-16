@@ -3,7 +3,7 @@ module npol_mpi
     use mpi, only: mpi_comm_rank, mpi_bcast, mpi_allreduce, mpi_abort, &
         mpi_integer, mpi_double_precision, mpi_logical, mpi_character, mpi_min
     use vast_kind_param, only: double
-    use parameter_def, only: nnnp
+    use parameter_def, only: max_radial_points
     use npol_c
     use npol_input, only: npol_read_config, npol_validate_config
     use npol_kernel, only: npol_check_grid, npol_build_grid, npol_compose
@@ -20,7 +20,7 @@ contains
         integer, intent(out) :: status
         character(*), intent(out) :: message
         type(npol_config) :: cfg
-        real(double) :: a(nnnp), b(nnnp), v(nnnp), candidate(nnnp)
+        real(double) :: a(max_radial_points), b(max_radial_points), v(max_radial_points), candidate(max_radial_points)
         integer :: rank, ierr, root_n
         ! Fixed-size wire message, independent of caller's character length.
         character(npol_message_len) :: detail

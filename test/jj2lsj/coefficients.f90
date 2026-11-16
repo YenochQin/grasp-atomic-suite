@@ -2,9 +2,9 @@
 ! every signed double for bitwise comparison, including the zero truncated tail.
 program coefficients
     use jj2lsj_code
-    use orb_C, only: NCF
+    use orb_c, only: NCF => csf_count
     use prnt_C, only: NVEC
-    use eigv_C, only: EVEC
+    use eigv_c, only: EVEC => csf_mixing_coefficients
     use blk_C, only: NBLOCK, NCFINBLK
     use factt_I
     use setcon_I

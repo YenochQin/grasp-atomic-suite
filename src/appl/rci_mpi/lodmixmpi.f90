@@ -22,7 +22,7 @@
       use def_c
       use hblock_c
       use blk_c,           only: idxblk
-      use orb_c,           only: ncf, nw, iqa
+      use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
       use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -45,28 +45,28 @@
 !    ncmin, iccmin(1:ncmin) -- via items (memories allocated there)
 ! Thus we let node-0 do it and then broadcast here
 
-      call alloc (ncmaxblk, nblock, 'NCMAXBLK', 'LODMIXmpi')
-      call alloc (nevblk, nblock, 'NEVBLK', 'LODMIXmpi')
+      call alloc (ncmaxblk, symmetry_block_count, 'NCMAXBLK', 'LODMIXmpi')
+      call alloc (eigenvector_counts_by_block, symmetry_block_count, 'NEVBLK', 'LODMIXmpi')
 
 !      print *, ' LODMIX: change lodstate arg-list - see rscf2/getold.f90 '
 !      stop
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          call lodstate (idblk)
       endif
 
-      call mpi_bcast (nevblk, nblock, mpi_integer, 0,               &
-                                       mpi_comm_world, ierr)
-      call mpi_bcast (ncmaxblk, nblock, mpi_integer, 0,             &
-                                       mpi_comm_world, ierr)
-      call mpi_bcast (ncmin, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      call mpi_bcast (eigenvector_counts_by_block, symmetry_block_count, mpi_integer, 0,               &
+                                       mpi_comm_world, mpi_error_code)
+      call mpi_bcast (ncmaxblk, symmetry_block_count, mpi_integer, 0,             &
+                                       mpi_comm_world, mpi_error_code)
+      call mpi_bcast (ncmin, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
 
       if (ncmin .ne. 0) then
-         if (myid .ne. 0) then   ! lodstate allocated it from node-0
+         if (mpi_rank .ne. 0) then   ! lodstate allocated it from node-0
             call alloc (iccmin, ncmin, 'ICCMIN', 'LODMIXmpi')
          endif
 
          call mpi_bcast (iccmin, ncmin, mpi_integer4, 0,            &
-                                       mpi_comm_world, ierr)
+                                       mpi_comm_world, mpi_error_code)
       endif
 
 !
@@ -79,25 +79,25 @@
       ncftot = 0
       noffset = 0
       nvecsiz = 0
-      do jb = 1, nblock
-         do j = 1, nevblk(jb)
+      do jb = 1, symmetry_block_count
+         do j = 1, eigenvector_counts_by_block(jb)
             idxblk(j + noffset) = jb
          enddo
-         ncftot = ncftot + ncfblk(jb)
-         noffset = noffset + nevblk(jb)
-         nvecsiz = nvecsiz + ncfblk(jb) * nevblk(jb)
+         ncftot = ncftot + csf_counts_by_block(jb)
+         noffset = noffset + eigenvector_counts_by_block(jb)
+         nvecsiz = nvecsiz + csf_counts_by_block(jb) * eigenvector_counts_by_block(jb)
       enddo
       if (noffset .ne. ncmin) stop 'lodmixmpi: ncmin trouble'
 !
 !   Write header data to the  .mix  file
 !
-      if (myid .eq. 0) then
-         nelec4 = nelec
+      if (mpi_rank .eq. 0) then
+         nelec4 = electron_count
          ncftot4 = ncftot
-         nw4 = nw
+         nw4 = orbital_count
          ncmin4 = ncmin
          nvecsiz4 = nvecsiz
-         nblock4 = nblock
+         nblock4 = symmetry_block_count
          write (25) nelec4, ncftot4, nw4, ncmin4, nvecsiz4, nblock4
       endif
 !

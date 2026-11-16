@@ -8,7 +8,7 @@
 !                                                                      *
 !***********************************************************************
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnw
+      use parameter_def,    only: max_orbitals
       use memory_man
       use debug_c
       use decide_c
@@ -59,15 +59,15 @@
       real(double), dimension(:,:), pointer   :: fmat
       real(double), dimension(:), pointer     :: rho
       real(double), dimension(:), pointer     :: res
-      real(double), dimension(nnnw,nnnw) :: vint, vint2
-      real(double), dimension(nnnw,nnnw) :: dint1, dint2, dint3, &
+      real(double), dimension(max_orbitals,max_orbitals) :: vint, vint2
+      real(double), dimension(max_orbitals,max_orbitals) :: dint1, dint2, dint3, &
                                             dint4, dint5, dint6, &
                                             dint7
       real(double) :: au2fm, rcre, hzsmsu, hznmsu, fo90
       logical :: avail_tb, avail_ob, yes2, saveyes, serial_save
       integer :: i, j, ncount1, doit_ob, doit_tb, nrnuc, yes2_mpi
       integer :: avail_ob_mpi, avail_tb_mpi, serial_save_mpi
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          write(*,*) '-------------------------------'
          write(*,*) 'RIS_CAL_MPI: Execution Begins ...'
          write(*,*) '-------------------------------'
@@ -80,15 +80,15 @@
       avail_tb_mpi = 0
       serial_save_mpi = 0
 
-      fo90 = parm(1)+2.d0*log(3.d0)*parm(2)
-      do i=1,nnnp
-         if(r(i+1).gt.fo90.and.r(i).le.fo90) then
+      fo90 = nuclear_model_parameters(1)+2.d0*log(3.d0)*nuclear_model_parameters(2)
+      do i=1,max_radial_points
+         if(radial_grid(i+1).gt.fo90.and.radial_grid(i).le.fo90) then
             nrnuc = i+1
             exit
          end if
       end do
 
-      allocate( dens1vec(nvec,nrnuc),dint1vec(nnnw,nnnw,nrnuc) )
+      allocate( dens1vec(nvec,nrnuc),dint1vec(max_orbitals,max_orbitals,nrnuc) )
       allocate( densfit(nrnuc) )
       dint1vec(:,:,:) = 0.d0
       dens1vec(:,:) = 0.d0
@@ -118,7 +118,7 @@
          dens7(i) = 0.0d00
       enddo
 
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          write(*,*) ' Compute higher order field shift electronic factors?'
          yes2 = getyn ()
          if (yes2) then
@@ -127,12 +127,12 @@
             yes2_mpi = 0
          endif
       endif
-      call mpi_bcast(yes2_mpi, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      call mpi_bcast(yes2_mpi, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
       yes2 = yes2_mpi .eq. 1
 
-      do i = 1,nw
-         do j = 1,nw
-            if (nak(i).eq.nak(j)) then
+      do i = 1,orbital_count
+         do j = 1,orbital_count
+            if (orbital_kappa(i).eq.orbital_kappa(j)) then
                dint1(i,j) = rintdens(i,j)
                if(yes2) then
                   call rintdensvec(i,j,dint1vec,nrnuc)
@@ -155,10 +155,10 @@
          end do
       end do
 
-      do i = 1,nw
-         do j = 1,nw
+      do i = 1,orbital_count
+         do j = 1,orbital_count
             if (i.ne.j) then
-               rcre = cre(nak(i),1,nak(j))
+               rcre = cre(orbital_kappa(i),1,orbital_kappa(j))
                if (dabs(rcre) .gt. cutoff) then
                   vint  (i,j) = vinti(i,j)
                   vint2(i,j) = vint(i,j)                                  &
@@ -175,7 +175,7 @@
          end do
       end do
 
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          call angdata(name,avail_ob,1)
          if (avail_ob) close(50)
          call angdata(name,avail_tb,2)
@@ -202,25 +202,25 @@
             if(saveyes) doit_tb = 1
          endif
       endif
-      call mpi_bcast(avail_ob_mpi, 1, mpi_integer, 0, mpi_comm_world, ierr)
-      call mpi_bcast(avail_tb_mpi, 1, mpi_integer, 0, mpi_comm_world, ierr)
-      call mpi_bcast(doit_ob, 1, mpi_integer, 0, mpi_comm_world, ierr)
-      call mpi_bcast(doit_tb, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      call mpi_bcast(avail_ob_mpi, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
+      call mpi_bcast(avail_tb_mpi, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
+      call mpi_bcast(doit_ob, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
+      call mpi_bcast(doit_tb, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
       avail_ob = avail_ob_mpi .eq. 1
       avail_tb = avail_tb_mpi .eq. 1
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          ! Saving angular coefficients still has to stay on the root
          ! process because the serial file format is shared.
          serial_save = ((.not. avail_ob .and. doit_ob .eq. 1) .or.      &
                         (.not. avail_tb .and. doit_tb .eq. 1))
          serial_save_mpi = merge(1, 0, serial_save)
       endif
-      call mpi_bcast(serial_save_mpi, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      call mpi_bcast(serial_save_mpi, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
       serial_save = serial_save_mpi .eq. 1
 
       if (serial_save) then
-         call mpi_barrier(mpi_comm_world, ierr)
-         if (myid .eq. 0) then
+         call mpi_barrier(mpi_comm_world, mpi_error_code)
+         if (mpi_rank .eq. 0) then
             j = index(name,' ')
             if (avail_ob) then
                open(unit=50,file = name(1:j-1)//'.IOB',status='OLD',form='UNFORMATTED')
@@ -254,7 +254,7 @@
                call smsnew(doit_tb,vint,vint2)
             endif
          endif
-         call mpi_barrier(mpi_comm_world, ierr)
+         call mpi_barrier(mpi_comm_world, mpi_error_code)
          go to 800
       endif
 
@@ -286,7 +286,7 @@
          call smsnew_mpi(doit_tb,vint,vint2)
       endif
 
-      call mpi_barrier(mpi_comm_world, ierr)
+      call mpi_barrier(mpi_comm_world, mpi_error_code)
 
       call gdrsummpi_root(smsc1(:), nvec)
       call gdrsummpi_root(smsc2(:), nvec)
@@ -300,7 +300,7 @@
       if (yes2) call gdrsummpi_root(dens1vec(:,:), nvec*nrnuc)
 
   800 continue
-      if (myid .ne. 0) go to 900
+      if (mpi_rank .ne. 0) go to 900
 
       write (24,'(a24,i3)') 'Number of eigenvalues: ',nvec
       write(24,*)
@@ -308,17 +308,17 @@
       write (24,309)
       do i = 1, nvec
          write (24,323) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
-              eav+eval(i)
+              hamiltonian_energy_shift+shifted_eigenvalues(i)
       end do
       write (24,308)
       do i = 1,nvec
          write(24,314)
          write (24,313) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
               dens7(i),(dens2(i)-dens7(i)),dens2(i)
-         hznmsu=dens7(i)*aumamu*aucm*ccms
+         hznmsu=dens7(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s
          write (24,316) hznmsu*(1.0d-09), &
-              (dens2(i)-dens7(i))*aumamu*aucm*ccms*(1.0d-09), &
-              dens2(i)*aumamu*aucm*ccms*(1.0d-09)
+              (dens2(i)-dens7(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-09), &
+              dens2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-09)
       end do
 
       write (24,302)
@@ -326,21 +326,21 @@
          write(24,314)
          write (24,313) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
               smsc1(i),smsc2(i)-smsc1(i),smsc2(i)
-         hzsmsu=smsc1(i)*aumamu*aucm*ccms
+         hzsmsu=smsc1(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s
          if (dabs(hzsmsu) .le. (10**8)) then
             write (24,315) hzsmsu*(1.0d-06), &
-                 (smsc2(i)-smsc1(i))*aumamu*aucm*ccms*(1.0d-06), &
-                 smsc2(i)*aumamu*aucm*ccms*(1.0d-06)
+                 (smsc2(i)-smsc1(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-06), &
+                 smsc2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-06)
          else
             write (24,316) hzsmsu*(1.0d-09), &
-                 (smsc2(i)-smsc1(i))*aumamu*aucm*ccms*(1.0d-09), &
-                 smsc2(i)*aumamu*aucm*ccms*(1.0d-09)
+                 (smsc2(i)-smsc1(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-09), &
+                 smsc2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0d-09)
          endif
       end do
       if(yes2) then
          write (24,307)
          do i = 1,nvec
-            call edensityfit(r,dens1vec(i,:),z,parm,nrnuc,fmat(:,i),rho(i),res(i))
+            call edensityfit(radial_grid,dens1vec(i,:),nuclear_charge,nuclear_model_parameters,nrnuc,fmat(:,i),rho(i),res(i))
             write (24,303) ivec(i),labj(iatjpo(i)), &
                  labp((iaspar(i)+3)/2),rho(i)
          end do
@@ -375,7 +375,7 @@
       call dalloc (dens6,'DENS6','RIS_CAL_MPI')
       call dalloc (dens7,'DENS7','RIS_CAL_MPI')
 
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          write(*,*) '-------------------------------'
          write(*,*) 'RIS_CAL_MPI: Execution Finished ...'
          write(*,*) '-------------------------------'

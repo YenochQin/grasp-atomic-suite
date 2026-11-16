@@ -39,10 +39,10 @@
       rewind (30)
       read (30) mcplab, srtlab
       if (srtlab == '  SORTED') then
-         jastrt = ncf + 1
-         jbstrt = ncf + 1
+         jastrt = csf_count + 1
+         jbstrt = csf_count + 1
          llistt = 0
-         llistv(:kmax) = 0
+         llistv(:max_coulomb_multipole_rank) = 0
          go to 8
       endif
 !
@@ -65,13 +65,13 @@
 !
       else
 !
-         if (jastrt==ncf .and. jbstrt==ncf) then
+         if (jastrt==csf_count .and. jbstrt==csf_count) then
 !
 !   All coefficients have been generated; sorting may still
 !   be necessary; force this option
 !
-            jastrt = ncf + 1
-            jbstrt = ncf + 1
+            jastrt = csf_count + 1
+            jbstrt = csf_count + 1
 !
          else
 !
@@ -79,7 +79,7 @@
 !   for augmentation of lists by SUBROUTINE MCP; update JBSTRT and,
 !   if appropriate, JASTRT
 !
-            do k = 31, 32 + kmax
+            do k = 31, 32 + max_coulomb_multipole_rank
                rewind (k)
                nrec = 3
                do i = 1, nrec
@@ -112,7 +112,7 @@
             end do
 
             jbstrt = jbstrt + 1
-            if (jbstrt > ncf) then
+            if (jbstrt > csf_count) then
                jastrt = jastrt + 1
                jbstrt = jastrt
             endif

@@ -36,22 +36,22 @@
 !-----------------------------------------------
 !
 !
-      twoc = c + c
+      twoc = speed_of_light_au + speed_of_light_au
 !
       do k = 1, ndcof
 !
          iorb = nda(k)
          call dpbdt (iorb)
-         mfi = mf(iorb)
+         mfi = orbital_last_grid_index(iorb)
          coeff = da(k)
-         fk = dble(nak(iorb))
+         fk = dble(orbital_kappa(iorb))
 !
          do i = 2, mfi
-            rporii = 1.0d0/(h*rpor(i))
-            pfi = pf(i,iorb)
-            qfi = qf(i,iorb)
-            zbci = zz(i)/c
-            xp(i) = xp(i) + coeff*(ta(i)*rporii+fk*pfi-(twoc*r(i)+zbci)*qfi)
+            rporii = 1.0d0/(transformed_grid_step*radial_derivative_over_radius(i))
+            pfi = radial_large_components(i,iorb)
+            qfi = radial_small_components(i,iorb)
+            zbci = negative_radius_times_potential(i)/speed_of_light_au
+            xp(i) = xp(i) + coeff*(ta(i)*rporii+fk*pfi-(twoc*radial_grid(i)+zbci)*qfi)
             xq(i) = xq(i) + coeff*(tb(i)*rporii-fk*qfi+zbci*pfi)
          end do
 !

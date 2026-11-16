@@ -60,15 +60,15 @@
 !
 !  Evaluate factor multiplying Mbar(a,b)
 !
-      nkji = nkj(i)
-      nkjj = nkj(j)
+      nkji = orbital_two_j(i)
+      nkjj = orbital_two_j(j)
       tji = dble(nkji)
       tjj = dble(nkjj)
       fact = 1.0d00
       ipj = (nkji + 1)/2 + nkjj
       if (mod(ipj,2) /= 0) fact = -fact
-      naki = nak(i)
-      nakj = nak(j)
+      naki = orbital_kappa(i)
+      nakj = orbital_kappa(j)
       form = fact*sqrt(tjj + 1.0d00)*clrx(nakj,lk,naki)
       fl = dble(lk)
       flp = fl + 1.0d00
@@ -86,16 +86,16 @@
 !  initial and final state lists, respectively.
 !  N(I) -> NNII(I), N(J) -> NNFF(J)
 !
-            do ii = 1, n
+            do ii = 1, radial_point_count
                tb(ii) = pfii(ii,nnii(i))*qfff(ii,nnff(j)) + qfii(ii,nnii(i))*&
                   pfff(ii,nnff(j))
                tc(ii) = pfii(ii,nnii(i))*qfff(ii,nnff(j)) - qfii(ii,nnii(i))*&
                   pfff(ii,nnff(j))
 ! zou
-               tb(ii) = tb(ii)*c/cvac
-               tc(ii) = tc(ii)*c/cvac
+               tb(ii) = tb(ii)*speed_of_light_au/vacuum_speed_of_light_au
+               tc(ii) = tc(ii)*speed_of_light_au/vacuum_speed_of_light_au
                td(ii) = pfii(ii,nnii(i))*pfff(ii,nnff(j)) + qfii(ii,nnii(i))*&
-                  qfff(ii,nnff(j))*(c/cvac)**2
+                  qfff(ii,nnff(j))*(speed_of_light_au/vacuum_speed_of_light_au)**2
 !           TD(II) = PFII(II,NNII(I))*PFFF(II,NNFF(J)) +
 !    :               QFII(II,NNII(I))*QFFF(II,NNFF(J))
 ! zou
@@ -115,7 +115,7 @@
 !  Tabulate Coulomb integrand
 !
             ta(1) = 0.0d00
-            ta(2:mtp) = rp(2:mtp)*(bj(2:mtp,3)*(ciplp*tb(2:mtp)+cimlp*tc(2:mtp)&
+            ta(2:mtp) = radial_grid_derivative(2:mtp)*(bj(2:mtp,3)*(ciplp*tb(2:mtp)+cimlp*tc(2:mtp)&
                )+bj(2:mtp,1)*(ciplm*tb(2:mtp)+cimlm*tc(2:mtp)))
             call quad (value)
             hcoul = form*value
@@ -128,13 +128,13 @@
 !  Tabulate gauge dependent integrand
 !
             ta(1) = 0.0d00
-            ta(2:mtp) = rp(2:mtp)*(bj(2:mtp,2)*(cjl*td(2:mtp))+bj(2:mtp,3)*(cip&
+            ta(2:mtp) = radial_grid_derivative(2:mtp)*(bj(2:mtp,2)*(cjl*td(2:mtp))+bj(2:mtp,3)*(cip&
                *tb(2:mtp)+flp*tc(2:mtp))+bj(2:mtp,1)*(cip*tb(2:mtp)-fl*tc(2:mtp&
                )))
 !
 !  Print gauge dependent integrand if requested
 !
-            if (ldbpr(13)) write (99, 300) i, j, (ii,ta(ii),ii=1,n)
+            if (ldbpr(13)) write (99, 300) i, j, (ii,ta(ii),ii=1,radial_point_count)
             call quad (value)
             hgauge = form*value
             hbab = hcoul + sqrt(flp/fl)*hgauge
@@ -148,8 +148,8 @@
             if (ldbpr(14) .or. ldbpr(15)) then
 !
                ta(1) = 0.0d00
-               ta(2:mtp) = td(2:mtp)*bj(2:mtp,2)*rp(2:mtp)
-               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,n)
+               ta(2:mtp) = td(2:mtp)*bj(2:mtp,2)*radial_grid_derivative(2:mtp)
+               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
                call quad (tarom)
                if (ldbpr(14)) write (99, 305) tarom
                esther = -cjl
@@ -158,8 +158,8 @@
                if (ldbpr(14)) write (99, 307) tekel
 !
                ta(1) = 0.0d00
-               ta(2:mtp) = -tb(2:mtp)*bj(2:mtp,3)*rp(2:mtp)
-               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,n)
+               ta(2:mtp) = -tb(2:mtp)*bj(2:mtp,3)*radial_grid_derivative(2:mtp)
+               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
                call quad (peres)
                if (ldbpr(14)) then
                   write (99, 308) peres
@@ -169,8 +169,8 @@
                if (ldbpr(14)) write (99, 307) tamar
 !
                ta(1) = 0.0d00
-               ta(2:mtp) = -tb(2:mtp)*bj(2:mtp,1)*rp(2:mtp)
-               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,n)
+               ta(2:mtp) = -tb(2:mtp)*bj(2:mtp,1)*radial_grid_derivative(2:mtp)
+               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
                call quad (enoch)
                if (ldbpr(14)) then
                   write (99, 309) enoch
@@ -180,8 +180,8 @@
                if (ldbpr(14)) write (99, 307) seth
 !
                ta(1) = 0.0d00
-               ta(2:mtp) = bj(2:mtp,1)*tc(2:mtp)*rp(2:mtp)
-               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,n)
+               ta(2:mtp) = bj(2:mtp,1)*tc(2:mtp)*radial_grid_derivative(2:mtp)
+               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
                call quad (shem)
                if (ldbpr(14)) then
                   write (99, 310) shem
@@ -191,8 +191,8 @@
                if (ldbpr(14)) write (99, 307) darius
 !
                ta(1) = 0.0d00
-               ta(2:mtp) = -bj(2:mtp,3)*tc(2:mtp)*rp(2:mtp)
-               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,n)
+               ta(2:mtp) = -bj(2:mtp,3)*tc(2:mtp)*radial_grid_derivative(2:mtp)
+               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
                call quad (cyrus)
                if (ldbpr(14)) write (99, 311) cyrus
                daniel = flp
@@ -232,7 +232,7 @@
             do ii = 2, mtp
 !zou
                ta(ii) = (pfii(ii,nnii(i))*qfff(ii,nnff(j))+qfii(ii,nnii(i))*&
-                  pfff(ii,nnff(j)))*bj(ii,2)*rp(ii)*c/cvac
+                  pfff(ii,nnff(j)))*bj(ii,2)*radial_grid_derivative(ii)*speed_of_light_au/vacuum_speed_of_light_au
 !           TA(II) =  (PFII(II,NNII(I))*QFFF(II,NNFF(J)) +
 !    :      QFII(II,NNII(I))*PFFF(II,NNFF(J)))*BJ(II,2)*RP(II)
 !zou

@@ -29,7 +29,7 @@
 !-----------------------------------------------
       use vast_kind_param, only:  double
       use mpi_c
-      use hmat_c,          only: emt, iendc, irow, nelmnt
+      use hmat_c,          only: hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices, stored_matrix_element_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -60,15 +60,15 @@
       call dinit (n*m, 0.0d00, c, 1)
 
       ibeg = 1
-      do icol = myid + 1, n, nprocs
+      do icol = mpi_rank + 1, n, mpi_process_count
             !IBEG = IENDC(ICOL-1)+1
             !IEND = IENDC(ICOL)
-         iend = iendc(icol)
+         iend = stored_segment_end_offsets(icol)
          nelc = iend - ibeg + 1
          do iv = 1, m
-            diag =  c(icol,iv) + emt(iend)*b(icol,iv)
+            diag =  c(icol,iv) + hamiltonian_values(iend)*b(icol,iv)
             call dmerge (nelc-1,b(:n,iv),c(:n,iv),               &
-                         irow(ibeg:iend-1),emt(ibeg:iend-1),b(icol,iv),dl)
+                         matrix_partner_indices(ibeg:iend-1),hamiltonian_values(ibeg:iend-1),b(icol,iv),dl)
             c(icol,iv) = diag + dl
          enddo
          ibeg = iend + 1

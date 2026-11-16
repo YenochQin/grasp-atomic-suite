@@ -18,9 +18,9 @@
 !-----------------------------------------------
       use vast_kind_param, only:  double
       use debug_c
-      use def_c, only: z, nelec
+      use def_c, only: nuclear_charge, electron_count
       use grid_c
-      use npot_c, only: zz
+      use npot_c, only: negative_radius_times_potential
       use orb_c
       use pote_c, only: yp
 !-----------------------------------------------
@@ -38,28 +38,28 @@
 !
       third = 1.0d00/3.0d00
 !
-      wa = z - dble(nelec - 1)
-      wb = max(z - wa,0.0d00)
+      wa = nuclear_charge - dble(electron_count - 1)
+      wb = max(nuclear_charge - wa,0.0d00)
       wb = wb**third/0.8853d00
-      do i = 1, n
+      do i = 1, radial_point_count
 !
 !   Rational function approximation to the universal Thomas-Fermi
 !   function
 !
-         wc = sqrt(wb*r(i))
+         wc = sqrt(wb*radial_grid(i))
          wd = wc*(0.60112d0*wc + 1.81061d0) + 1.0d00
          we = wc*(wc*(wc*(wc*(0.04793d0*wc + 0.21465d0) + 0.77112d0) + &
             1.39515d0) + 1.81061d0) + 1.0d00
          wf = wd/we
-         yp(i) = (zz(i)-wa)*wf*wf + wa
+         yp(i) = (negative_radius_times_potential(i)-wa)*wf*wf + wa
       end do
 !
 !   Debug printout
 !
       if (ldbpr(26)) then
          write (99, 300)
-         nb3 = n/3
-         if (3*nb3 == n) then
+         nb3 = radial_point_count/3
+         if (3*nb3 == radial_point_count) then
             nrows = nb3
          else
             nrows = nb3 + 1
@@ -68,16 +68,16 @@
             ii1 = ii
             ii2 = ii1 + nrows
             ii3 = ii2 + nrows
-            if (ii3 <= n) then
-               write (99, 301) r(ii1), yp(ii1), r(ii2), yp(ii2), r(ii3), yp(ii3&
+            if (ii3 <= radial_point_count) then
+               write (99, 301) radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2), radial_grid(ii3), yp(ii3&
                   )
-            else if (ii2 <= n) then
-               write (99, 301) r(ii1), yp(ii1), r(ii2), yp(ii2)
+            else if (ii2 <= radial_point_count) then
+               write (99, 301) radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2)
             else
-               write (99, 301) r(ii1), yp(ii1)
+               write (99, 301) radial_grid(ii1), yp(ii1)
             endif
          end do
-         call draw (yp, 1.0d00, yp, 1.0d00, n)
+         call draw (yp, 1.0d00, yp, 1.0d00, radial_point_count)
       endif
 !
       return

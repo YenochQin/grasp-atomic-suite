@@ -9,7 +9,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use hmat_c,     only: irow
+      use hmat_c,     only: matrix_partner_indices
       use rmcdhf_mem_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -26,7 +26,7 @@
 !-----------------------------------------------
 
       do i = imin2_30(jblock)+1, imax2_30(jblock)
-         irow(i-imin2_30(jblock)) = irow_30(i)
+         matrix_partner_indices(i-imin2_30(jblock)) = irow_30(i)
       end do
 
       return

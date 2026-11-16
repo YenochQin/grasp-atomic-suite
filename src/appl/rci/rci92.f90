@@ -115,7 +115,7 @@
 !
 !      WRITE (ISTDE, *) 'RCI2: Execution begins ...'
 !      WRITE (ISTDE, *)
-      write (istde, '(A)') 'Default settings? '
+      write (stderr_unit, '(A)') 'Default settings? '
       yes = getyn()
       if (yes) then
          ndef = 0
@@ -126,11 +126,11 @@
 ! Get name of the state (used in files like <name>.c, <name>.s)
 !
       do while(.true.)
-         write (istde, '(A)') 'Name of state: '
+         write (stderr_unit, '(A)') 'Name of state: '
          read (*, '(A)') name
          k = index(name,' ')
          if (k > 1) exit
-         write (istde, *) 'Name may not start with a blank. redo...'
+         write (stderr_unit, *) 'Name may not start with a blank. redo...'
       end do
 
 ! Now the name of the state is known, open the log file

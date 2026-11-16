@@ -39,12 +39,12 @@
 !-----------------------------------------------
 !
       if (abs(iunpkd) > 127) then
-         write (istde, *) 'PACK: Argument IUNPKD out of range.'
+         write (stderr_unit, *) 'PACK: Argument IUNPKD out of range.'
          stop
       endif
 !
       if (isubsh <= 0) then
-         write (istde, *) 'PACK: ISUBSH=', isubsh, ' less than 1'
+         write (stderr_unit, *) 'PACK: ISUBSH=', isubsh, ' less than 1'
          stop
       endif
 !

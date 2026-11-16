@@ -5,11 +5,11 @@
 !                     Gediminas Gaigalas  10/05/17
       subroutine in (iorb, jp, p, q, mtp)
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnp
+      use parameter_def,    only: max_radial_points
       integer, intent(in) :: iorb
       integer, intent(in) :: jp
-      real(double), dimension(nnnp), intent(inout) :: p
-      real(double), dimension(nnnp), intent(inout) :: q
+      real(double), dimension(max_radial_points), intent(inout) :: p
+      real(double), dimension(max_radial_points), intent(inout) :: q
       integer, intent(out) :: mtp
       end subroutine
       end interface

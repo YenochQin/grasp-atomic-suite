@@ -81,11 +81,11 @@
 !
       eol = .true.
 
-      do j = 1, nw
+      do j = 1, orbital_count
          sum = 0.d0
-         do nb = 1, nblock
-            do i = myid + 1, ncfblk(nb), nprocs
-               sum = sum + dsubrs(eol,i,i,nb)*iq(j,i + ncfpast(nb))
+         do nb = 1, symmetry_block_count
+            do i = mpi_rank + 1, csf_counts_by_block(nb), mpi_process_count
+               sum = sum + dsubrs(eol,i,i,nb)*iq(j,i + csf_offsets_by_block(nb))
             end do
          end do
          ucf(j) = sum
@@ -98,13 +98,13 @@
       noff = 0
       do jall = 1, ncmin
          nb = idxblk(jall)                       ! Block number of this state
-         ee = eavblk(nb) + eval(jall)
+         ee = eavblk(nb) + shifted_eigenvalues(jall)
          write (*, 301) iccmin(jall), ee, wt(jall)
          if (ldbpg(5)) then
-            write (99, *) jall, nb, ncfblk(nb), nevecpast(nb)
+            write (99, *) jall, nb, csf_counts_by_block(nb), mixing_offsets_by_block(nb)
             write (99, 302)
-            write (99, 303) (evec(i + noff),i=1,ncfblk(nb))
-            noff = noff + ncfblk(nb)
+            write (99, 303) (csf_mixing_coefficients(i + noff),i=1,csf_counts_by_block(nb))
+            noff = noff + csf_counts_by_block(nb)
          endif
          sum = sum + wt(jall)*ee
       end do
@@ -118,7 +118,7 @@
 !   Write out generalized occupation numbers
 !
       write (*, 305)
-      write (*, 303) (ucf(i),i=1,nw)
+      write (*, 303) (ucf(i),i=1,orbital_count)
 
   300 format(/,'Optimise on the following level(s):'/)
   301 format('Level ',1i2,4x,'Energy = ',1p,1d19.12,4x,'Weight = ',1d12.5)

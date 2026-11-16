@@ -32,10 +32,10 @@
 !
       ibeg = 1
       do ico = myid + 1, ncf, nprocs
-         idiag = iendc(ico)
+         idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
-            iro = irow(list)
-            write (99,*) 'H(',iro,ico,')= ', emt(list)
+            iro = matrix_partner_indices(list)
+            write (99,*) 'H(',iro,ico,')= ', hamiltonian_values(list)
          enddo
          ibeg = idiag + 1
       enddo

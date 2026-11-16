@@ -15,7 +15,7 @@
       use memory_man
       use blk_c
       use biorb_c
-      use def_c, ccmps=>ccms
+      use def_c, ccmps=>speed_of_light_cm_per_s
       use default_c
       use eigv_c
       use orb_c
@@ -107,7 +107,7 @@
 !
 !   Print transition energies in Angstroms
 !
-         factor = aucm
+         factor = hartree_to_wavenumber_cm
          factor = 1.0d08/factor
          iunits = iang
 !
@@ -115,7 +115,7 @@
 !
 !   Print energies in eV
 !
-         factor = auev
+         factor = hartree_to_ev
          iunits = iev
 !
       else if (ltc(3)) then
@@ -129,7 +129,7 @@
 !
 !   Print transition energies in Hz
 !
-         factor = aucm
+         factor = hartree_to_wavenumber_cm
          factor = factor*ccmps
          iunits = ihz
 !
@@ -137,7 +137,7 @@
 !
 !   Print transition energies in Kaysers
 !
-         factor = aucm
+         factor = hartree_to_wavenumber_cm
          iunits = icm
 !
       endif
@@ -171,7 +171,7 @@
             write (*, *) 'Not a GRASP mixing file'
             stop
          endif
-         read (68) nelec, ncftoti, nwi, nvectoti, nvecsizi, nblocki
+         read (68) electron_count, ncftoti, nwi, nvectoti, nvecsizi, nblocki
          write (*, *) '   nelec  = ', my_nelec
          write (*, *) '   ncftoti = ', ncftoti
          write (*, *) '   nwi     = ', nwi
@@ -201,7 +201,7 @@
                write (*, *) 'Not a GRASP mixing file'
                stop
             endif
-            read (78) nelec, ncftotf, nwf, nvectotf, nvecsizf, nblockf
+            read (78) electron_count, ncftotf, nwf, nvectotf, nvecsizf, nblockf
             write (*, *) '   nelec  = ', my_nelec
             write (*, *) '   ncftotf = ', ncftotf
             write (*, *) '   nwf     = ', nwf
@@ -308,7 +308,7 @@
                         et(m) = evalff(levff) + eavff - evalii(levii) - eavii
                         if (lsame .and. et(m)<=0.0) cycle
                         omega = -et(m)
-                        argu = omega/c
+                        argu = omega/speed_of_light_au
                         call bessj (argu)
 !
 !  Calculate oscillator strength between the ASFs

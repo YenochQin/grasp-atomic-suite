@@ -18,7 +18,7 @@
       use vast_kind_param, only:  double
       use memory_man
       use def_c
-      use orb_c, only: ncf, nw, iqa
+      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
       use eigv_c
       use prnt_c
       use syma_c
@@ -60,7 +60,7 @@
          endif
 !
          read (ik) nelectot, ncftot, nwtot, nvectot, nvecsiztot, nblock1
-         if (nelec/=nelectot .or. nw/=nwtot) then
+         if (electron_count/=nelectot .or. orbital_count/=nwtot) then
 !     :    (NCF .NE. NCFT) .OR.
             write (6, *) 'File', ik, 'is not an'
             write (6, *) ' appropriate to Coefficients file'
@@ -73,9 +73,9 @@
 !
       write (6, *) 'Loading MIXing Coefficients File ...'
 !
-      read (ik) nb, ncf, nvec, iatjp, iaspa
-      call alloc (eval, nvec, 'EVAL', 'GETMIX')
-      call alloc (evec, ncf*nvec, 'EVEC', 'GETMIX')
+      read (ik) nb, csf_count, nvec, iatjp, iaspa
+      call alloc (shifted_eigenvalues, nvec, 'EVAL', 'GETMIX')
+      call alloc (csf_mixing_coefficients, csf_count*nvec, 'EVEC', 'GETMIX')
       call alloc (ivec, nvec, 'IVEC', 'GETMIX')
       call alloc (iatjpo, nvec, 'IATJPO', 'GETMIX')
       call alloc (iaspar, nvec, 'IASPAR', 'GETMIX')
@@ -86,8 +86,8 @@
 !     READ (IK) (IATJPO(I),IASPAR(I),I = 1,NVEC)
       iatjpo(:nvec) = iatjp
       iaspar(:nvec) = iaspa
-      read (ik) eav, (eval(i),i=1,nvec)
-      read (ik) ((evec(i + (j - 1)*ncf),i=1,ncf),j=1,nvec)
+      read (ik) hamiltonian_energy_shift, (shifted_eigenvalues(i),i=1,nvec)
+      read (ik) ((csf_mixing_coefficients(i + (j - 1)*csf_count),i=1,csf_count),j=1,nvec)
 !
       write (6, *) ' ... load complete;'
 !

@@ -41,29 +41,29 @@
 !
 !   Determine the physical effects specifications
 !
-      diag = .false.
-      if (diag) then
-         lfordr = .false.
+      diagonal_only = .false.
+      if (diagonal_only) then
+         use_first_order_restriction = .false.
          do i = 1,100
             iccut(i) = 0
          end do
       else
          if (ndef /= 0) then
-            lfordr = .true.
+            use_first_order_restriction = .true.
          else
-            lfordr = .false.
+            use_first_order_restriction = .false.
          endif
-         if (lfordr) then
-            write (istde,*) 'The contribution of CSFs 1 -- ICCUT will',&
+         if (use_first_order_restriction) then
+            write (stderr_unit,*) 'The contribution of CSFs 1 -- ICCUT will',&
                             ' be treated variationally;'
-            write (istde,*) 'the remainder perturbatively; enter ICCUT:'
-            do i = 1,nblock
-              write(istde,*) 'Give ICCUT for block',i
+            write (stderr_unit,*) 'the remainder perturbatively; enter ICCUT:'
+            do i = 1,symmetry_block_count
+              write(stderr_unit,*) 'Give ICCUT for block',i
     1         read *, iccut(i)
-              if ((iccut(i) <= 1).or.(iccut(i) >= ncfblk(i))) then
-                write (istde,*) 'GETINF: ICCUT must be greater than 1',&
-                                ' and less than ',ncfblk(i)
-                write (istde,*) ' please reenter ICCUT:'
+              if ((iccut(i) <= 1).or.(iccut(i) >= csf_counts_by_block(i))) then
+                write (stderr_unit,*) 'GETINF: ICCUT must be greater than 1',&
+                                ' and less than ',csf_counts_by_block(i)
+                write (stderr_unit,*) ' please reenter ICCUT:'
                 goto 1
               endif
             end do

@@ -45,23 +45,23 @@
 !-----------------------------------------------
 !
 
-      write (istde, *) 'There are ', nblock, ' blocks  ', &
+      write (stderr_unit, *) 'There are ', symmetry_block_count, ' blocks  ', &
          '(block   J/Parity   NCF):'
-      write (istde, '( 4(I3, 1X, A5, I8, 5X) )') (j,idblk(j)(1:5),ncfblk(j),j=1&
-         ,nblock)
+      write (stderr_unit, '( 4(I3, 1X, A5, I8, 5X) )') (j,idblk(j)(1:5),csf_counts_by_block(j),j=1&
+         ,symmetry_block_count)
 
-      nevblk = 0
+      eigenvector_counts_by_block = 0
       ncmaxblk = 0
 
-      write (istde, *)
-      write (istde, *) 'Enter ASF serial numbers for each block'
+      write (stderr_unit, *)
+      write (stderr_unit, *) 'Enter ASF serial numbers for each block'
 
       ncmin = 0
   123 continue
-      do jblock = 1, nblock
-         ncf = ncfblk(jblock)
+      do jblock = 1, symmetry_block_count
+         ncf = csf_counts_by_block(jblock)
   234    continue
-         write (istde, *) 'Block ', jblock, '   ncf = ', ncf, ' id = ', idblk(&
+         write (stderr_unit, *) 'Block ', jblock, '   ncf = ', ncf, ' id = ', idblk(&
             jblock)(1:5)
 
 !        ...Read and parse the list of levels
@@ -75,7 +75,7 @@
          call items (ncmin, ncf, str, ierr)
          if (ncmin == 0) call dalloc (iccmin, 'ICCMIN', 'LODSTATE' )
          if (ierr < 0) go to 234
-         nevblk(jblock) = ncmin - ncminold
+         eigenvector_counts_by_block(jblock) = ncmin - ncminold
 
 !        ...Determine ncmaxblk
          ntmp = 0
@@ -86,7 +86,7 @@
       end do
 
       if (ncmin == 0) then
-         write (istde, *) 'At least one state should be selected'
+         write (stderr_unit, *) 'At least one state should be selected'
          go to 123
       endif
 

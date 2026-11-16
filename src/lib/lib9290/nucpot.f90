@@ -17,10 +17,10 @@
 !-----------------------------------------------
       use vast_kind_param, only: double
       use debug_c
-      use def_c,           only: z, pi
+      use def_c,           only: nuclear_charge, pi
       use grid_c
       use npar_c
-      use npot_c,          only: zz, nnuc
+      use npot_c,          only: negative_radius_times_potential, first_grid_index_beyond_fermi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -39,16 +39,16 @@
 !
 !   Point nucleus
 !
-      if (nparm == 0) then
+      if (nuclear_model_parameter_count == 0) then
 !
-         zz(:n) = z
+         negative_radius_times_potential(:radial_point_count) = nuclear_charge
 !
 !   Fermi distribution
 !
-      else if (nparm == 2) then
+      else if (nuclear_model_parameter_count == 2) then
 !
-         c = parm(1)
-         a = parm(2)
+         c = nuclear_model_parameters(1)
+         a = nuclear_model_parameters(2)
          abc = a/c
          tabc = 2.0d00*abc
          abc2 = abc*abc
@@ -62,33 +62,33 @@
          sabc3 = 6.0d00*abc3
          dmsas = -sabc3*s3mcba
          en = 1.0d00 + abc2*pi2 + dmsas
-         zbn = z/en
+         zbn = nuclear_charge/en
 !
          set = .false.
-         do i = 1, n
-            ri = r(i)
+         do i = 1, radial_point_count
+            ri = radial_grid(i)
             rmc = ri - c
             rmcba = rmc/a
             rbc = ri/c
             if (rbc <= 1.0d00) then
                call es (rmcba, s2rcba, s3rcba)
-               zz(i) = zbn*(dmsas + sabc3*s3rcba + rbc*(h3php - thabc2*s2rcba&
+               negative_radius_times_potential(i) = zbn*(dmsas + sabc3*s3rcba + rbc*(h3php - thabc2*s2rcba&
                    - 0.5d00*rbc*rbc))
             else
                if (.not.set) then
-                  nnuc = i
+                  first_grid_index_beyond_fermi_c = i
                   set = .true.
                endif
                call es ((-rmcba), s2rcba, s3rcba)
-               zz(i) = z*(1.0d00 + thabc2*(rbc*s2rcba + tabc*s3rcba)/en)
+               negative_radius_times_potential(i) = nuclear_charge*(1.0d00 + thabc2*(rbc*s2rcba + tabc*s3rcba)/en)
             endif
          end do
       endif
 !
       if (ldbpr(2)) then
          write (99, 300)
-         nb3 = n/3
-         if (3*nb3 == n) then
+         nb3 = radial_point_count/3
+         if (3*nb3 == radial_point_count) then
             nrows = nb3
          else
             nrows = nb3 + 1
@@ -97,13 +97,15 @@
             ii1 = ii
             ii2 = ii1 + nrows
             ii3 = ii2 + nrows
-            if (ii3 <= n) then
-               write (99, 301) r(ii1), zz(ii1), r(ii2), zz(ii2), r(ii3), zz(ii3&
+            if (ii3 <= radial_point_count) then
+               write (99, 301) radial_grid(ii1), negative_radius_times_potential(ii1), radial_grid(ii2), &
+                  & negative_radius_times_potential(ii2), radial_grid(ii3), negative_radius_times_potential(ii3&
                   )
-            else if (ii2 <= n) then
-               write (99, 301) r(ii1), zz(ii1), r(ii2), zz(ii2)
+            else if (ii2 <= radial_point_count) then
+               write (99, 301) radial_grid(ii1), negative_radius_times_potential(ii1), radial_grid(ii2), &
+                  & negative_radius_times_potential(ii2)
             else
-               write (99, 301) r(ii1), zz(ii1)
+               write (99, 301) radial_grid(ii1), negative_radius_times_potential(ii1)
             endif
          end do
       endif

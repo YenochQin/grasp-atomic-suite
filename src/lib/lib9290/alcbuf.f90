@@ -20,7 +20,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use memory_man
-      use buffer_c,       only: label, coeff, nbdim
+      use buffer_c,       only: angular_coefficient_labels, angular_coefficients, angular_buffer_capacity
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -37,25 +37,25 @@
 !
 !   Allocation
 !
-         nbdim = 10
-         call alloc (label, 6,nbdim, 'LABEL', 'ALCBUF')
-         call alloc (coeff, nbdim, 'COEFF', 'ALCBUF')
+         angular_buffer_capacity = 10
+         call alloc (angular_coefficient_labels, 6,angular_buffer_capacity, 'LABEL', 'ALCBUF')
+         call alloc (angular_coefficients, angular_buffer_capacity, 'COEFF', 'ALCBUF')
 !
       case (2)
 !
 !   Reallocation to double storage
 !
-         newsiz = nbdim + nbdim
-         call ralloc(label,6,newsiz, 'LABEL', 'ALCBUF')
-         call ralloc(coeff,newsiz, 'COEFF', 'ALCBUF')
-         nbdim = newsiz
+         newsiz = angular_buffer_capacity + angular_buffer_capacity
+         call ralloc(angular_coefficient_labels,6,newsiz, 'LABEL', 'ALCBUF')
+         call ralloc(angular_coefficients,newsiz, 'COEFF', 'ALCBUF')
+         angular_buffer_capacity = newsiz
 !
       case (3)
 !
 !   Deallocation
 !
-          call dalloc(label, 'LABEL', 'ALCBUF')
-          call dalloc(coeff, 'COEFF', 'ALCBUF')
+          call dalloc(angular_coefficient_labels, 'LABEL', 'ALCBUF')
+          call dalloc(angular_coefficients, 'COEFF', 'ALCBUF')
 !
       case default
 !

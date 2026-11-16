@@ -43,44 +43,44 @@
 !
       ibeg = 1
       do ico = 1, ncf, 4
-         ibeg = iendc(ico - 1) + 1
-         idiag = iendc(ico)
+         ibeg = stored_segment_end_offsets(ico - 1) + 1
+         idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
-            iro = irow(list)
-            write (96, *) 'H(', iro, ico, ')= ', emt(list)
+            iro = matrix_partner_indices(list)
+            write (96, *) 'H(', iro, ico, ')= ', hamiltonian_values(list)
          end do
          !ibeg = idiag + 1
       end do
 
-      ibeg = iendc(1) + 1
+      ibeg = stored_segment_end_offsets(1) + 1
       do ico = 2, ncf, 4
-         ibeg = iendc(ico - 1) + 1
-         idiag = iendc(ico)
+         ibeg = stored_segment_end_offsets(ico - 1) + 1
+         idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
-            iro = irow(list)
-            write (97, *) 'H(', iro, ico, ')= ', emt(list)
+            iro = matrix_partner_indices(list)
+            write (97, *) 'H(', iro, ico, ')= ', hamiltonian_values(list)
          end do
          !ibeg = idiag + 1
       end do
 
-      ibeg = iendc(2) + 1
+      ibeg = stored_segment_end_offsets(2) + 1
       do ico = 3, ncf, 4
-         ibeg = iendc(ico - 1) + 1
-         idiag = iendc(ico)
+         ibeg = stored_segment_end_offsets(ico - 1) + 1
+         idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
-            iro = irow(list)
-            write (98, *) 'H(', iro, ico, ')= ', emt(list)
+            iro = matrix_partner_indices(list)
+            write (98, *) 'H(', iro, ico, ')= ', hamiltonian_values(list)
          end do
          !ibeg = idiag + 1
       end do
 
-      ibeg = iendc(3) + 1
+      ibeg = stored_segment_end_offsets(3) + 1
       do ico = 4, ncf, 4
-         ibeg = iendc(ico - 1) + 1
-         idiag = iendc(ico)
+         ibeg = stored_segment_end_offsets(ico - 1) + 1
+         idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
-            iro = irow(list)
-            write (99, *) 'H(', iro, ico, ')= ', emt(list)
+            iro = matrix_partner_indices(list)
+            write (99, *) 'H(', iro, ico, ')= ', hamiltonian_values(list)
          end do
          !ibeg = idiag + 1
       end do

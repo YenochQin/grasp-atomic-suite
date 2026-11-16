@@ -17,7 +17,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: keyorb, nnnw
+      use parameter_def,   only: orbital_index_radix, max_orbitals
       use debug_c
       use decide_c
       use def_c
@@ -46,7 +46,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: nfile2, m, k, iblki, iblkf, i, labl, ncsf, j
-      real(double), dimension(nnnw) :: tshell
+      real(double), dimension(max_orbitals) :: tshell
       logical :: avail
 !-----------------------------------------------
 !
@@ -57,7 +57,7 @@
       m = 0
       k = 0
 !
-      read (nfile2) iblki, iblkf, nw, nkp
+      read (nfile2) iblki, iblkf, orbital_count, nkp
       read (nfile2) nint
 !
       do i = 1, nint

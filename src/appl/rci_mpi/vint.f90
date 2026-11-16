@@ -19,7 +19,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: keyorb
+      use parameter_def,   only: orbital_index_radix
       use memory_man
       use vinlst_c, first=>frstvi
 !-----------------------------------------------
@@ -35,7 +35,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -45,7 +45,7 @@
 !
 !   Compute the composite (packed) index
 !
-      index = ia*keyorb+ib
+      index = ia*orbital_index_radix+ib
 !
       if (.not. first) then
 !

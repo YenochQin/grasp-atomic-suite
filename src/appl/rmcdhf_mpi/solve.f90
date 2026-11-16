@@ -27,10 +27,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnp
+      use parameter_def,    only: max_radial_points
       use debug_c
-      use def_c, only: c, nsolv
-      use grid_c, only: rp
+      use def_c, only: speed_of_light_au, nsolv
+      use grid_c, only: radial_grid_derivative
       use int_c, only: p, q, p0, q0, mtp0
       use invt_c
       use node_c
@@ -71,7 +71,7 @@
 !-----------------------------------------------
       integer :: kount, nakj, nloops, icase, mtph, mtpi, i, mtpc, mtpv, mtpvc, &
          loc1, loc2, loc, mx, nprime
-      real(double), dimension(nnnp) :: ph, qh, pv, qv
+      real(double), dimension(max_radial_points) :: ph, qh, pv, qv
       real(double) :: twocsq, elast, tenej, deleps, sgn, qjpoh, qjpih, qjpoi, &
          qjpii, dnorm, alfa, p0h, p0v, q0v, qjpov, qjpiv, crnorm, dvnorm, aa, &
          bb, cc, discr, qq, root1, root2, pmx, apm, pati, abpi, ratio, test1, &
@@ -84,31 +84,31 @@
       check = .not.noinvt(j)
       fail = .false.
       kount = 0
-      nakj = nak(j)
+      nakj = orbital_kappa(j)
 !     TWOCSQ = 2.0D 00*137.036**2
-      twocsq = 2.0d00*c*c
+      twocsq = 2.0d00*speed_of_light_au*speed_of_light_au
 !
 !   Debug header
 !
-      if (ldbpr(22)) write (99, 300) np(j), nh(j)
+      if (ldbpr(22)) write (99, 300) orbital_principal_n(j), orbital_symmetry_labels(j)
 !
-      nloops = max(nsolv,3*np(j))
+      nloops = max(nsolv,3*orbital_principal_n(j))
 !
       call estim (j)
-      elast = e(j)
-      e(j) = eigen(j)
+      elast = orbital_energy_parameters(j)
+      orbital_energy_parameters(j) = eigen(j)
 !
 !   Checks on lower bounds
 !
-      if (e(j) < epsmin) then
-         if (e(j) > 0.0d00) then
-            epsmin = e(j)
+      if (orbital_energy_parameters(j) < epsmin) then
+         if (orbital_energy_parameters(j) > 0.0d00) then
+            epsmin = orbital_energy_parameters(j)
          else
-            write (*, 301) np(j), nh(j), e(j)
-            e(j) = epsmin
+            write (*, 301) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_energy_parameters(j)
+            orbital_energy_parameters(j) = epsmin
             if (abs(emin - elast)<=1.0d-06 .and. method(j)<=2) then
-               call dcbsrw (np(j), nakj, zinf, e(j), p0, p, q, mtp0)
-               write (*, 302) np(j), nh(j), zinf
+               call dcbsrw (orbital_principal_n(j), nakj, zinf, orbital_energy_parameters(j), p0, p, q, mtp0)
+               write (*, 302) orbital_principal_n(j), orbital_symmetry_labels(j), zinf
                return
             endif
          endif
@@ -117,13 +117,13 @@
 !   Check on upper bound
 !
       if (method(j) <= 2) then
-         if (e(j) > epsmax) then
-            tenej = 10.0d00*e(j)
+         if (orbital_energy_parameters(j) > epsmax) then
+            tenej = 10.0d00*orbital_energy_parameters(j)
             epsmax = min(tenej,twocsq)
             emax = epsmax
-            if (e(j) > twocsq) then
-               write (*, 303) np(j), nh(j), e(j)
-               e(j) = twocsq
+            if (orbital_energy_parameters(j) > twocsq) then
+               write (*, 303) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_energy_parameters(j)
+               orbital_energy_parameters(j) = twocsq
             endif
          endif
       endif
@@ -133,18 +133,19 @@
     1 continue
       kount = kount + 1
 !
-      p0 = pz(j)
+      p0 = orbital_origin_parameters(j)
 !
       if (kount > 1) then
 !
 !   Check that bounds are ordered correctly
 !
-         if (epsmax <= epsmin) write (*, 304) epsmin, epsmax, np(j), nh(j), e(j&
+         if (epsmax <= epsmin) write (*, 304) epsmin, epsmax, orbital_principal_n(j), orbital_symmetry_labels(j), &
+            & orbital_energy_parameters(j&
             )
 !
-         if (kount>nloops .or. epsmax-epsmin<1.0d00/dble(np(j))**3) then
-            write (*, 305) method(j), np(j), nh(j)
-            write (*, 306) kount - 1, nloops, p0, e(j), deleps, epsmin, epsmax&
+         if (kount>nloops .or. epsmax-epsmin<1.0d00/dble(orbital_principal_n(j))**3) then
+            write (*, 305) method(j), orbital_principal_n(j), orbital_symmetry_labels(j)
+            write (*, 306) kount - 1, nloops, p0, orbital_energy_parameters(j), deleps, epsmin, epsmax&
                , jp, mtp, nnp, nnodep(j), sgn
             fail = .true.
             return
@@ -183,11 +184,11 @@
 !
       if (method(j) <= 2) then
          ta(1) = 0.0d00
-         ta(2:mtpi) = (p(2:mtpi)**2+q(2:mtpi)**2)*rp(2:mtpi)
+         ta(2:mtpi) = (p(2:mtpi)**2+q(2:mtpi)**2)*radial_grid_derivative(2:mtpi)
          mtp = mtpi
          call quad (dnorm)
 !        DELEPS = 137.036*P(JP)*(QJPII-QJPOI)/DNORM
-         deleps = c*p(jp)*(qjpii - qjpoi)/dnorm
+         deleps = speed_of_light_au*p(jp)*(qjpii - qjpoi)/dnorm
       endif
 !
 !   Generate the continuous solution
@@ -222,17 +223,17 @@
          qv(:mtpvc) = qv(:mtpvc) + alfa*qh(:mtpvc)
 !
          ta(1) = 0.0d00
-         ta(2:mtpc) = rp(2:mtpc)*(p(2:mtpc)**2+q(2:mtpc)**2)
+         ta(2:mtpc) = radial_grid_derivative(2:mtpc)*(p(2:mtpc)**2+q(2:mtpc)**2)
          mtp = mtpc
          call quad (dnorm)
 !
          mtp = min(mtpc,mtpvc)
          ta(1) = 0.0d00
-         ta(2:mtp) = rp(2:mtp)*(p(2:mtp)*pv(2:mtp)+q(2:mtp)*qv(2:mtp))
+         ta(2:mtp) = radial_grid_derivative(2:mtp)*(p(2:mtp)*pv(2:mtp)+q(2:mtp)*qv(2:mtp))
          call quad (crnorm)
 !
          ta(1) = 0.0d00
-         ta(2:mtpvc) = rp(2:mtpvc)*(pv(2:mtpvc)**2+qv(2:mtpvc)**2)
+         ta(2:mtpvc) = radial_grid_derivative(2:mtpvc)*(pv(2:mtpvc)**2+qv(2:mtpvc)**2)
          mtp = mtpvc
          call quad (dvnorm)
 !
@@ -316,7 +317,7 @@
 !
 !   DEBUG PRINTOUT
 !
-      if (ldbpr(22)) write (99, 306) kount, nloops, p0, e(j), deleps, epsmin, &
+      if (ldbpr(22)) write (99, 306) kount, nloops, p0, orbital_energy_parameters(j), deleps, epsmin, &
          epsmax, jp, mtp, nnp, nnodep(j), sgn
 !
 !   Proceed according to method
@@ -330,7 +331,7 @@
          endif
       else
          mx = nnp - nnodep(j)
-         nprime = nnp + nkl(j) + 1
+         nprime = nnp + orbital_l(j) + 1
          call newe (j, sgn, nprime, mx, deleps, fail, inv)
          if (fail) go to 1
       endif

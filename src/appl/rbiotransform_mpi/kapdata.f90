@@ -19,7 +19,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw
+      use parameter_def,   only: max_orbitals
       use biorb_c,         only: nwii,nakii,npii,nwff,nakff,npff
       use sbdat_c,         only: nlmax,ninii,ninff,nshlii,nshlff,      &
                                  ikappa,nakinvii,nakinvff,nlmax,       &
@@ -45,7 +45,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: j1
-      integer, dimension(2*nnnw) :: isort
+      integer, dimension(2*max_orbitals) :: isort
       integer :: ntestl, ntest, i, j, k, ital, nref
       logical :: klar
 !-----------------------------------------------
@@ -55,7 +55,7 @@
       ntestl = 0
       ntest = max0(ntestl,ntestg)
 
-      isort(:2*nnnw) = 100
+      isort(:2*max_orbitals) = 100
 
       ikappa(:nlmax) = 0
       nshlii(:nlmax) = 0
@@ -63,14 +63,14 @@
       ninii(:nlmax) = 0
       ninff(:nlmax) = 0
 
-      nakinvii(:nnnw) = 0
-      nakinvff(:nnnw) = 0
+      nakinvii(:max_orbitals) = 0
+      nakinvff(:max_orbitals) = 0
 
       nshlpii(:nlmax,:nlmax) = 0
       nshlpff(:nlmax,:nlmax) = 0
 
-      nshlppii(:nlmax,:nnnw) = 0
-      nshlppff(:nlmax,:nnnw) = 0
+      nshlppii(:nlmax,:max_orbitals) = 0
+      nshlppff(:nlmax,:max_orbitals) = 0
 !
 !   Sort the kappa quantum numbers
 !
@@ -99,7 +99,7 @@
 !
       kamax = 1
       ikappa(1) = isort(1)
-      do k = 1, 2*nnnw - 1
+      do k = 1, 2*max_orbitals - 1
          if (isort(k)==isort(k+1) .or. isort(k+1)>=100) cycle
          kamax = kamax + 1
          ikappa(kamax) = isort(k+1)

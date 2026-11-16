@@ -43,9 +43,9 @@
          ierr = 0
       else
          loc = len_trim(filnam)
-         write (istde, *) 'OPENFL: Error opening file ', filnam(1:loc), ' as '&
+         write (stderr_unit, *) 'OPENFL: Error opening file ', filnam(1:loc), ' as '&
             , rstat, ';'
-         write (istde, *) 'The argument RSTAT=', rstat, ' is not used !'
+         write (stderr_unit, *) 'The argument RSTAT=', rstat, ' is not used !'
          ierr = 1
       endif
 !

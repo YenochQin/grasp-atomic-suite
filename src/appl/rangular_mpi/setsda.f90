@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      subroutine setsda(outsdadummy,nnonz,lprint,nb,myid,nprocs,fhead)
+      subroutine setsda(write_coefficient_callback,nnonz,lprint,nb,myid,nprocs,fhead)
 !                                                                      *
 !   This routine examines lists                                        *
 !                               (IC,IR,npos)                           *
@@ -33,7 +33,7 @@
 !-----------------------------------------------
       use outsdampi_i, only: outsdampi
       implicit none
-      procedure(outsdampi) :: outsdadummy
+      procedure(outsdampi) :: write_coefficient_callback
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -57,7 +57,7 @@
 
       read (30) mcplab, mb
       if (nb /= mb) then
-         write (istde, *) 'setsda: nb = ', nb, '.NE. mb (=', mb, ')'
+         write (stderr_unit, *) 'setsda: nb = ', nb, '.NE. mb (=', mb, ')'
          stop
       endif
 !
@@ -65,7 +65,7 @@
 !cjb           PRINT *, ' setsda.f90 FHEAD = ', FHEAD
 !   Allocate storage for IENDC(0:NCF)
 !
-      call alloc (iendc, 0,  ncf,'IENDC','SETSDA'  )
+      call alloc (iendc, 0,  csf_count,'IENDC','SETSDA'  )
       call alloc (irow, nnonz, 'IROW', 'SETSDA' )
 !
 !   Analyse data on file 30; set up IENDC and IROW
@@ -97,13 +97,13 @@
          , position='APPEND')
 !cjb           PRINT *, ' after OPEN '
       if (ierr /= 0) then
-         write (istde, *) ' Error when opening the file mcp.30'
+         write (stderr_unit, *) ' Error when opening the file mcp.30'
          stop
       endif
 
-      write (29) 'MCP', nb, ncf
+      write (29) 'MCP', nb, csf_count
       write (29) nnonz
-      write (29) (iendc(i),i=myid + 1,ncf,nprocs), (irow(i),i=1,nnonz)
+      write (29) (iendc(i),i=myid + 1,csf_count,nprocs), (irow(i),i=1,nnonz)
       close(29)
 !cjb
 !
@@ -112,6 +112,6 @@
       call dalloc (iendc, 'IENDC', 'SETSDA')
       call dalloc (irow, 'IROW', 'SETSDA')
 !
-      call outsdadummy (lprint, nnonz, ncf)
+      call write_coefficient_callback (lprint, nnonz, csf_count)
       return
       end subroutine setsda

@@ -252,8 +252,8 @@ contains
 
       recursive subroutine transform_ls_row(ls,iw1,ithresh,selected, &
                                            ncfmin,ncfmax,values,active)
-      use eigv_c, only: evec
-      use orb_c, only: ncf
+      use eigv_c, only: csf_mixing_coefficients
+      use orb_c, only: csf_count
       use itjpo_i
       use ispar_i
       use vast_kind_param, only: long
@@ -271,14 +271,14 @@ contains
       active = (asf_set_ls%csf_set_ls%csf(ls)%parity == '+' .and. parity == 1) .or. &
                (asf_set_ls%csf_set_ls%csf(ls)%parity == '-' .and. parity == -1)
       if (.not. active) return
-      ncf_long = ncf
+      ncf_long = csf_count
       do jj = ncfmin, ncfmax
          if (ithresh(jj) /= 1) cycle
          if (asf_set_ls%csf_set_ls%csf(ls)%totalj /= itjpo(jj)-1) cycle
          coefficient = tralsjj(jj,ls)
          do lev = 1,size(selected)
             offset = (selected(lev)-1)*ncf_long
-            values(lev) = values(lev)+evec(jj+offset)*coefficient
+            values(lev) = values(lev)+csf_mixing_coefficients(jj+offset)*coefficient
          end do
       end do
       end subroutine transform_ls_row
@@ -304,9 +304,9 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use eigv_c,          only: evec
+      use eigv_c,          only: csf_mixing_coefficients
       use prnt_c,          only: ivec
-      use orb_c,           only: ncf
+      use orb_c,           only: csf_count
       use cons_c,          only: zero, one
 !      USE JJ2LSJ_C
 !-----------------------------------------------
@@ -339,7 +339,7 @@ contains
       integer(long) loc_i8, ncf_i8
 !-----------------------------------------------
       wb = zero
-      ncf_i8 = ncf
+      ncf_i8 = csf_count
       if(ioutt == 1) write(59) ' *   Block Number=',iblknum
       if(ioutt == 2) then
          read(59) string, idum
@@ -381,7 +381,7 @@ contains
                      level = levels(iblknum,lev)
                      loc_i8 = (level-1)*ncf_i8
                      wa(lev) =                                         &
-                      wa(lev)+evec(jj_number+loc_i8)*wa_transformation
+                      wa(lev)+csf_mixing_coefficients(jj_number+loc_i8)*wa_transformation
                   end do
                end if
             end do
@@ -1145,7 +1145,7 @@ contains
 !-----------------------------------------------
       use vast_kind_param, only: double
       use m_c,             only: ncore
-      use orb_c,           only: ncf, nw
+      use orb_c,           only: csf_count, orbital_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -1160,13 +1160,13 @@ contains
       integer :: jcnt, jcntop, jncf, jnw
 !-----------------------------------------------
       jcoup = 0
-      do jncf = 1, ncf
+      do jncf = 1, csf_count
          jcnt = 1
          jcntop = 0
-         do jnw = ncore+1, nw
+         do jnw = ncore+1, orbital_count
             if(jnw == 1) then
                if(ichop(jnw,jncf) /= 0) then
-                  if(nw == 1) then
+                  if(orbital_count == 1) then
                       jcoup(jnw,jncf) = 0
                   else
                       if(ichop(jnw+1,jncf) /= 0) then
@@ -1180,7 +1180,7 @@ contains
                   end if
                else
                   jcntop = 1
-                  if(nw > 1) then
+                  if(orbital_count > 1) then
                      if (ichop(jnw+1,jncf) == 0) then
 !GG 2015_06_21 Gediminas Gaigalas
 !GG                        Jcoup(JNW,JNCF)   = JCUP(JCNT,JNCF) - 1
@@ -1262,53 +1262,53 @@ contains
       select case (l_shell)
       case (0)
          do i = 1,2
-            if (mod(m_q + term_ls_s(i)%q,2) == 0) then
-               if (abs(m_q) <= term_ls_s(i)%q) then
+            if (mod(m_q + term_ls_s(i)%subshell_two_quasispin,2) == 0) then
+               if (abs(m_q) <= term_ls_s(i)%subshell_two_quasispin) then
                   j = j + 1
-                  ls(j)%l_shell  = term_ls_s(i)%l_shell
+                  ls(j)%subshell_l  = term_ls_s(i)%subshell_l
                   ls(j)%w        = term_ls_s(i)%w
-                  ls(j)%q        = term_ls_s(i)%q
-                  ls(j)%ll       = term_ls_s(i)%ll
-                  ls(j)%s        = term_ls_s(i)%s
+                  ls(j)%subshell_two_quasispin        = term_ls_s(i)%subshell_two_quasispin
+                  ls(j)%subshell_two_l       = term_ls_s(i)%subshell_two_l
+                  ls(j)%subshell_two_s        = term_ls_s(i)%subshell_two_s
                end if
             end if
          end do
       case (1)
          do i = 1,6
-            if (mod(m_q + term_ls_p(i)%q,2) == 0) then
-               if (abs(m_q) <= term_ls_p(i)%q) then
+            if (mod(m_q + term_ls_p(i)%subshell_two_quasispin,2) == 0) then
+               if (abs(m_q) <= term_ls_p(i)%subshell_two_quasispin) then
                   j = j + 1
-                  ls(j)%l_shell  = term_ls_p(i)%l_shell
+                  ls(j)%subshell_l  = term_ls_p(i)%subshell_l
                   ls(j)%w        = term_ls_p(i)%w
-                  ls(j)%q        = term_ls_p(i)%q
-                  ls(j)%ll       = term_ls_p(i)%ll
-                  ls(j)%s        = term_ls_p(i)%s
+                  ls(j)%subshell_two_quasispin        = term_ls_p(i)%subshell_two_quasispin
+                  ls(j)%subshell_two_l       = term_ls_p(i)%subshell_two_l
+                  ls(j)%subshell_two_s        = term_ls_p(i)%subshell_two_s
                end if
             end if
          end do
       case (2)
          do i = 1,32
-            if (mod(m_q + term_ls_d(i)%q,2) == 0) then
-               if (abs(m_q) <= term_ls_d(i)%q) then
+            if (mod(m_q + term_ls_d(i)%subshell_two_quasispin,2) == 0) then
+               if (abs(m_q) <= term_ls_d(i)%subshell_two_quasispin) then
                   j = j + 1
-                  ls(j)%l_shell  = term_ls_d(i)%l_shell
+                  ls(j)%subshell_l  = term_ls_d(i)%subshell_l
                   ls(j)%w        = term_ls_d(i)%w
-                  ls(j)%q        = term_ls_d(i)%q
-                  ls(j)%ll       = term_ls_d(i)%ll
-                  ls(j)%s        = term_ls_d(i)%s
+                  ls(j)%subshell_two_quasispin        = term_ls_d(i)%subshell_two_quasispin
+                  ls(j)%subshell_two_l       = term_ls_d(i)%subshell_two_l
+                  ls(j)%subshell_two_s        = term_ls_d(i)%subshell_two_s
                end if
             end if
          end do
       case (3)
          do i = 1,238
-            if (mod(m_q + term_ls_f(i)%q,2) == 0) then
-               if (abs(m_q) <= term_ls_f(i)%q) then
+            if (mod(m_q + term_ls_f(i)%subshell_two_quasispin,2) == 0) then
+               if (abs(m_q) <= term_ls_f(i)%subshell_two_quasispin) then
                   j = j + 1
-                  ls(j)%l_shell  = term_ls_f(i)%l_shell
+                  ls(j)%subshell_l  = term_ls_f(i)%subshell_l
                   ls(j)%w        = term_ls_f(i)%w
-                  ls(j)%q        = term_ls_f(i)%q
-                  ls(j)%ll       = term_ls_f(i)%ll
-                  ls(j)%s        = term_ls_f(i)%s
+                  ls(j)%subshell_two_quasispin        = term_ls_f(i)%subshell_two_quasispin
+                  ls(j)%subshell_two_l       = term_ls_f(i)%subshell_two_l
+                  ls(j)%subshell_two_s        = term_ls_f(i)%subshell_two_s
                end if
             end if
          end do
@@ -1316,19 +1316,19 @@ contains
          select case (n)
          case (1)
             i = 1;       j = 1
-            ls(j)%l_shell  = term_ls_g1(i)%l_shell
+            ls(j)%subshell_l  = term_ls_g1(i)%subshell_l
             ls(j)%w        = term_ls_g1(i)%w
-            ls(j)%q        = term_ls_g1(i)%q
-            ls(j)%ll       = term_ls_g1(i)%ll
-            ls(j)%s        = term_ls_g1(i)%s
+            ls(j)%subshell_two_quasispin        = term_ls_g1(i)%subshell_two_quasispin
+            ls(j)%subshell_two_l       = term_ls_g1(i)%subshell_two_l
+            ls(j)%subshell_two_s        = term_ls_g1(i)%subshell_two_s
          case (2)
             do i = 1,9
                j = j + 1
-               ls(j)%l_shell  = term_ls_g2(i)%l_shell
+               ls(j)%subshell_l  = term_ls_g2(i)%subshell_l
                ls(j)%w        = term_ls_g2(i)%w
-               ls(j)%q        = term_ls_g2(i)%q
-               ls(j)%ll       = term_ls_g2(i)%ll
-               ls(j)%s        = term_ls_g2(i)%s
+               ls(j)%subshell_two_quasispin        = term_ls_g2(i)%subshell_two_quasispin
+               ls(j)%subshell_two_l       = term_ls_g2(i)%subshell_two_l
+               ls(j)%subshell_two_s        = term_ls_g2(i)%subshell_two_s
             end do
          case default
             stop  "gettermLS(): program stop A."
@@ -1337,19 +1337,19 @@ contains
          select case (n)
          case (1)
             i = 1;       j = 1
-            ls(j)%l_shell  = term_ls_h1(i)%l_shell
+            ls(j)%subshell_l  = term_ls_h1(i)%subshell_l
             ls(j)%w        = term_ls_h1(i)%w
-            ls(j)%q        = term_ls_h1(i)%q
-            ls(j)%ll       = term_ls_h1(i)%ll
-            ls(j)%s        = term_ls_h1(i)%s
+            ls(j)%subshell_two_quasispin        = term_ls_h1(i)%subshell_two_quasispin
+            ls(j)%subshell_two_l       = term_ls_h1(i)%subshell_two_l
+            ls(j)%subshell_two_s        = term_ls_h1(i)%subshell_two_s
          case (2)
             do i = 1,11
                j = j + 1
-               ls(j)%l_shell  = term_ls_h2(i)%l_shell
+               ls(j)%subshell_l  = term_ls_h2(i)%subshell_l
                ls(j)%w        = term_ls_h2(i)%w
-               ls(j)%q        = term_ls_h2(i)%q
-               ls(j)%ll       = term_ls_h2(i)%ll
-               ls(j)%s        = term_ls_h2(i)%s
+               ls(j)%subshell_two_quasispin        = term_ls_h2(i)%subshell_two_quasispin
+               ls(j)%subshell_two_l       = term_ls_h2(i)%subshell_two_l
+               ls(j)%subshell_two_s        = term_ls_h2(i)%subshell_two_s
             end do
          case default
             stop  "gettermLS(): program stop B."
@@ -1358,19 +1358,19 @@ contains
          select case (n)
          case (1)
             i = 1;       j = 1
-            ls(j)%l_shell  = term_ls_i1(i)%l_shell
+            ls(j)%subshell_l  = term_ls_i1(i)%subshell_l
             ls(j)%w        = term_ls_i1(i)%w
-            ls(j)%q        = term_ls_i1(i)%q
-            ls(j)%ll       = term_ls_i1(i)%ll
-            ls(j)%s        = term_ls_i1(i)%s
+            ls(j)%subshell_two_quasispin        = term_ls_i1(i)%subshell_two_quasispin
+            ls(j)%subshell_two_l       = term_ls_i1(i)%subshell_two_l
+            ls(j)%subshell_two_s        = term_ls_i1(i)%subshell_two_s
          case (2)
             do i = 1,13
                j = j + 1
-               ls(j)%l_shell  = term_ls_i2(i)%l_shell
+               ls(j)%subshell_l  = term_ls_i2(i)%subshell_l
                ls(j)%w        = term_ls_i2(i)%w
-               ls(j)%q        = term_ls_i2(i)%q
-               ls(j)%ll       = term_ls_i2(i)%ll
-               ls(j)%s        = term_ls_i2(i)%s
+               ls(j)%subshell_two_quasispin        = term_ls_i2(i)%subshell_two_quasispin
+               ls(j)%subshell_two_l       = term_ls_i2(i)%subshell_two_l
+               ls(j)%subshell_two_s        = term_ls_i2(i)%subshell_two_s
             end do
          case default
             stop  "gettermLS(): program stop C."
@@ -1379,19 +1379,19 @@ contains
          select case (n)
          case (1)
             i = 1;       j = 1
-            ls(j)%l_shell  = term_ls_k1(i)%l_shell
+            ls(j)%subshell_l  = term_ls_k1(i)%subshell_l
             ls(j)%w        = term_ls_k1(i)%w
-            ls(j)%q        = term_ls_k1(i)%q
-            ls(j)%ll       = term_ls_k1(i)%ll
-            ls(j)%s        = term_ls_k1(i)%s
+            ls(j)%subshell_two_quasispin        = term_ls_k1(i)%subshell_two_quasispin
+            ls(j)%subshell_two_l       = term_ls_k1(i)%subshell_two_l
+            ls(j)%subshell_two_s        = term_ls_k1(i)%subshell_two_s
          case (2)
             do i = 1,15
                j = j + 1
-               ls(j)%l_shell  = term_ls_k2(i)%l_shell
+               ls(j)%subshell_l  = term_ls_k2(i)%subshell_l
                ls(j)%w        = term_ls_k2(i)%w
-               ls(j)%q        = term_ls_k2(i)%q
-               ls(j)%ll       = term_ls_k2(i)%ll
-               ls(j)%s        = term_ls_k2(i)%s
+               ls(j)%subshell_two_quasispin        = term_ls_k2(i)%subshell_two_quasispin
+               ls(j)%subshell_two_l       = term_ls_k2(i)%subshell_two_l
+               ls(j)%subshell_two_s        = term_ls_k2(i)%subshell_two_s
             end do
          case default
             stop  "gettermLS(): program stop D."
@@ -1400,19 +1400,19 @@ contains
          select case (n)
          case (1)
             i = 1;       j = 1
-            ls(j)%l_shell  = term_ls_l1(i)%l_shell
+            ls(j)%subshell_l  = term_ls_l1(i)%subshell_l
             ls(j)%w        = term_ls_l1(i)%w
-            ls(j)%q        = term_ls_l1(i)%q
-            ls(j)%ll       = term_ls_l1(i)%ll
-            ls(j)%s        = term_ls_l1(i)%s
+            ls(j)%subshell_two_quasispin        = term_ls_l1(i)%subshell_two_quasispin
+            ls(j)%subshell_two_l       = term_ls_l1(i)%subshell_two_l
+            ls(j)%subshell_two_s        = term_ls_l1(i)%subshell_two_s
          case (2)
             do i = 1,17
                j = j + 1
-               ls(j)%l_shell  = term_ls_l2(i)%l_shell
+               ls(j)%subshell_l  = term_ls_l2(i)%subshell_l
                ls(j)%w        = term_ls_l2(i)%w
-               ls(j)%q        = term_ls_l2(i)%q
-               ls(j)%ll       = term_ls_l2(i)%ll
-               ls(j)%s        = term_ls_l2(i)%s
+               ls(j)%subshell_two_quasispin        = term_ls_l2(i)%subshell_two_quasispin
+               ls(j)%subshell_two_l       = term_ls_l2(i)%subshell_two_l
+               ls(j)%subshell_two_s        = term_ls_l2(i)%subshell_two_s
             end do
          case default
             stop  "gettermLS(): program stop E."
@@ -1421,19 +1421,19 @@ contains
          select case (n)
          case (1)
             i = 1;       j = 1
-            ls(j)%l_shell  = term_ls_m1(i)%l_shell
+            ls(j)%subshell_l  = term_ls_m1(i)%subshell_l
             ls(j)%w        = term_ls_m1(i)%w
-            ls(j)%q        = term_ls_m1(i)%q
-            ls(j)%ll       = term_ls_m1(i)%ll
-            ls(j)%s        = term_ls_m1(i)%s
+            ls(j)%subshell_two_quasispin        = term_ls_m1(i)%subshell_two_quasispin
+            ls(j)%subshell_two_l       = term_ls_m1(i)%subshell_two_l
+            ls(j)%subshell_two_s        = term_ls_m1(i)%subshell_two_s
          case (2)
             do i = 1,19
                j = j + 1
-               ls(j)%l_shell  = term_ls_m2(i)%l_shell
+               ls(j)%subshell_l  = term_ls_m2(i)%subshell_l
                ls(j)%w        = term_ls_m2(i)%w
-               ls(j)%q        = term_ls_m2(i)%q
-               ls(j)%ll       = term_ls_m2(i)%ll
-               ls(j)%s        = term_ls_m2(i)%s
+               ls(j)%subshell_two_quasispin        = term_ls_m2(i)%subshell_two_quasispin
+               ls(j)%subshell_two_l       = term_ls_m2(i)%subshell_two_l
+               ls(j)%subshell_two_s        = term_ls_m2(i)%subshell_two_s
             end do
          case default
             stop  "gettermLS(): program stop F."
@@ -1464,13 +1464,13 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use orb_c,           only: ncf, nw
+      use orb_c,           only: csf_count, orbital_count
       use prnt_c,          only: nvec
-      use iounit_c,        only: istdi, istde
+      use iounit_c,        only: stdin_unit, stderr_unit
       use cons_c,          only: eps, zero
       use blk_c,           only: nevinblk, ncfinblk, nblock, two_j
       use m_c,             only: ncore
-      use def_c,           only: z, nelec
+      use def_c,           only: nuclear_charge, electron_count
       use getmixblock_i, only: getmixblock
       use getyn_i, only: getyn
       use openfl_i, only: openfl
@@ -1500,24 +1500,24 @@ contains
       integer, dimension(1:vectors_number) :: levels_tmp
 !-----------------------------------------------
       nblock = 0
-    1 write (istde,*) 'Name of state'
-      read(istdi,'(A)') name
+    1 write (stderr_unit,*) 'Name of state'
+      read(stdin_unit,'(A)') name
       k=index(name,' ')
       if (k.eq.1) then
-         write (istde,*) 'Names may not start with a blank'
+         write (stderr_unit,*) 'Names may not start with a blank'
          goto 1
       endif
 !
 !   Open, check, load data from, and close, the  .csl  file
       phase_start=profile_time()
       call setcsla(name,ncore)
-      call profile_emit('csf_read_parse',phase_start,items=ncf)
+      call profile_emit('csf_read_parse',phase_start,items=csf_count)
       phase_start=profile_time()
-      allocate(jcoup(1:nw,1:ncf))
+      allocate(jcoup(1:orbital_count,1:csf_count))
       call getxj
-      call profile_emit('jcoup',phase_start,items=ncf)
-      write (istde,*)
-      write (istde,*) 'Mixing coefficients from a CI calc.?'
+      call profile_emit('jcoup',phase_start,items=csf_count)
+      write (stderr_unit,*)
+      write (stderr_unit,*) 'Mixing coefficients from a CI calc.?'
       yes = getyn ()
       if (yes) then
          nci = 0
@@ -1525,7 +1525,7 @@ contains
          nci = 1
       endif
 !GG-2017
-      write (istde,*) 'Do you need a unique labeling? (y/n)'
+      write (stderr_unit,*) 'Do you need a unique labeling? (y/n)'
       yes = getyn ()
       if (yes) then
          unique = 1
@@ -1538,7 +1538,7 @@ contains
       phase_start=profile_time()
       call getmixblock (name, nci)
       call profile_emit('mix_read',phase_start,items=nvec)
-      write (istde,*) 'Default settings?  (y/n) '
+      write (stderr_unit,*) 'Default settings?  (y/n) '
       yes = getyn ()
       if (yes) then
          epsnew = 0.005d00
@@ -1562,9 +1562,9 @@ contains
          ls_convention = 1
 !GG-2024 end
       else
-         write (istde,*) 'All levels (Y/N)'
+         write (stderr_unit,*) 'All levels (Y/N)'
          yes = getyn ()
-         write (istde,*)
+         write (stderr_unit,*)
          if (yes) then
             isum = 0
             do i = 1, nblock
@@ -1582,34 +1582,34 @@ contains
             do i = 1, nblock-1
                posi(i+1) = nevinblk(i) + posi(i)
             end do
-            write (istde,*) "Maximum number of ASFs is:",nvec
-            write (istde,*) "Enter the level numbers of the ASF which are to be transformed,"
-    2       write (istde,*) "Enter the block number"
+            write (stderr_unit,*) "Maximum number of ASFs is:",nvec
+            write (stderr_unit,*) "Enter the level numbers of the ASF which are to be transformed,"
+    2       write (stderr_unit,*) "Enter the block number"
             read (*, "(I2)") iblock
-            write (istde,*) "The block number is:",iblock
-            write (istde,*) " e.g. 1 3 4  7 - 20  48  69 - 85 :"
+            write (stderr_unit,*) "The block number is:",iblock
+            write (stderr_unit,*) " e.g. 1 3 4  7 - 20  48  69 - 85 :"
             read (*, "(a)") record
             call inscreenlev(record,levels_tmp,number_of_levels_tmp,fail)
             if (fail) then
-               write (istde,*) "Unable to interprete the serial level numbers; redo ..."
+               write (stderr_unit,*) "Unable to interprete the serial level numbers; redo ..."
                goto 2
             end if
             number_of_levels(iblock) = number_of_levels_tmp
             if (nvec < number_of_levels(iblock)) then
-               write (istde,*) "There are to much ASF:", number_of_levels(iblock)
+               write (stderr_unit,*) "There are to much ASF:", number_of_levels(iblock)
                go to 2
             end if
             do i = 1,number_of_levels_tmp
                levels(iblock,i) = posi(iblock) + levels_tmp(i)
             end do
-            write (istde,*) ""
-            write (istde,*) "Do you need to include more levels?  (y/n)"
+            write (stderr_unit,*) ""
+            write (stderr_unit,*) "Do you need to include more levels?  (y/n)"
             yes = getyn ()
             if (yes) go to 2
          end if
-    3    write (istde,*) 'Maximum % of omitted composition'
+    3    write (stderr_unit,*) 'Maximum % of omitted composition'
 !GG-2024
-         write (istde,*) '(default setting: 1.000)'
+         write (stderr_unit,*) '(default setting: 1.000)'
 !GG-2024 end
          read *, mincomp
          if(mincomp == zero) then
@@ -1619,32 +1619,32 @@ contains
             ioutj = 1
          else if( mincomp > zero) then
             imincompoff = 1
-            write (istde,*) 'What is the value below which an eigenvector component'
-            write (istde,*) 'is to be neglected in the determination of the LSJ expansion:'
-            write (istde,'(A,F8.5)') ' should be smaller than:',mincomp*0.01
+            write (stderr_unit,*) 'What is the value below which an eigenvector component'
+            write (stderr_unit,*) 'is to be neglected in the determination of the LSJ expansion:'
+            write (stderr_unit,'(A,F8.5)') ' should be smaller than:',mincomp*0.01
 !GG-2024
-         write (istde,*) '(default setting: 0.005)'
+         write (stderr_unit,*) '(default setting: 0.005)'
 !GG-2024 end
             read *, epsnew
          else
-            write (istde,*) " The maximum of omitted composition can be 100%"
+            write (stderr_unit,*) " The maximum of omitted composition can be 100%"
             go to 3
          end if
-         write (istde,*) 'What is the value below which an eigenvector composition'
-         write (istde,*) 'is to be neglected for printing?'
+         write (stderr_unit,*) 'What is the value below which an eigenvector composition'
+         write (stderr_unit,*) 'is to be neglected for printing?'
 !GG-2024
-         write (istde,*) '(default setting: 0.001)'
+         write (stderr_unit,*) '(default setting: 0.001)'
 !GG-2024 end
          read *, thresh
          if( mincomp > zero) then
-            write (istde,*) "Do you need the output file *.lsj.c?  (y/n)"
+            write (stderr_unit,*) "Do you need the output file *.lsj.c?  (y/n)"
             yes = getyn ()
             if (yes) then
                ioutc = 1
             else
                ioutc = 0
             end if
-            write (istde,*) "Do you need the output file *.lsj.j?  (y/n)"
+            write (stderr_unit,*) "Do you need the output file *.lsj.j?  (y/n)"
             yes = getyn ()
             if (yes) then
                ioutj = 1
@@ -1653,13 +1653,13 @@ contains
             end if
          end if
          if(mincomp == zero) then
-            write (istde,*)                                            &
+            write (stderr_unit,*)                                            &
             "Do you need the transformation output file *.lsj.T?  (y/n)"
             yes = getyn ()
             if (yes) then
                ioutt = 1
             else
-               write (istde,*)                                         &
+               write (stderr_unit,*)                                         &
                "Will you use the transformation file *.lsj.T?  (y/n)"
                yes = getyn ()
                if (yes) then
@@ -1672,15 +1672,15 @@ contains
             ioutt = 0
          end if
 !GG-2024
-         write (istde,*)                                               &
+         write (stderr_unit,*)                                               &
          "Which convention should be used for d shell identification?"
-         write (istde,*)                                               &
+         write (stderr_unit,*)                                               &
            "Seniority notation / Nielson-Koster indexes (0/1)"
          read *, ls_convention
 !GG-2024 end
       endif
 !
-      write (istde,*)
+      write (stderr_unit,*)
       if (imincompoff == 1)             &
          write (*,"(A,F8.3)") ' Maximum % of omitted composition is ',mincomp
       write (*,"(A,ES8.1,A)")   &
@@ -1688,7 +1688,7 @@ contains
       write (*,"(A,ES8.1,A)")   &
         ' Below ',thresh,' the eigenvector composition is to be neglected for printing'
 !GG-2024
-      write (istde,*)
+      write (stderr_unit,*)
       if (ls_convention == 0) then
         write (*,"(A)")                                                &
             " Seniority notaton is used for d shell identification in"
@@ -1756,7 +1756,7 @@ contains
             stop
          end if
          write (58,'(2X,A6,A,F5.1,A,I3,A,I7)' )    &
-         name(1:k-1),'  Z = ',z ,'  NEL = ',nelec,'   NCFG ='! ,asf_set_LS%csf_set_LS%nocsf
+         name(1:k-1),'  Z = ',nuclear_charge ,'  NEL = ',electron_count,'   NCFG ='! ,asf_set_LS%csf_set_LS%nocsf
       endif
 !
 !     Opening the files   *.lsj.T and
@@ -1770,7 +1770,7 @@ contains
             stop
          end if
          write (59) 'jj2lsj'
-         write (59) nelec, ncf, nw, nblock
+         write (59) electron_count, csf_count, orbital_count, nblock
          do jb = 1, nblock
             iatjpdum = two_j(jb) +1
             write (59) jb, ncfinblk(jb), nevinblk(jb), iatjpdum
@@ -1785,14 +1785,14 @@ contains
          end if
          read (59, iostat=ierr) g92mix
          if (ierr/=0 .or. g92mix/='jj2lsj') then
-            write (istde, *) 'Not a jj2lsj Transformation File;'
+            write (stderr_unit, *) 'Not a jj2lsj Transformation File;'
             close(59)
             stop
          endif
          read (59) nelecdum, ncftotdum, nwdum, nblockdum
-         if(nelecdum /= nelec .or. ncftotdum /= ncf .or. nwdum /= nw   &
+         if(nelecdum /= electron_count .or. ncftotdum /= csf_count .or. nwdum /= orbital_count   &
                                         .or. nblockdum /= nblock) then
-            print*, nelec, ncf, nw, nblock
+            print*, electron_count, csf_count, orbital_count, nblock
             print*, nelecdum, ncftotdum, nwdum, nblockdum
             print*, "Wrong transformation file *.lsj.T"
             close(59)
@@ -1937,12 +1937,12 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use eigv_c,          only: eav, eval, evec
-      use orb_c,           only: ncf
+      use eigv_c,          only: hamiltonian_energy_shift, shifted_eigenvalues, csf_mixing_coefficients
+      use orb_c,           only: csf_count
       use prnt_c,          only: ivec, nvec
-      use iounit_c,        only: istde
+      use iounit_c,        only: stderr_unit
       use cons_c,          only: zero, one
-      use def_c,           only: z, nelec
+      use def_c,           only: nuclear_charge, electron_count
       use blk_c,           only: nevinblk, ncfinblk, nblock, two_j
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -1982,8 +1982,8 @@ contains
       ssms = zero;   g_j = zero;   g_jls = zero;    before_j = 0
       call inscreen(thresh,levels,number_of_levels,ioutc,ioutj,unique, &
                                                                  ioutt)
-      allocate(ithresh(ncf))
-      ncf_i8 = ncf
+      allocate(ithresh(csf_count))
+      ncf_i8 = csf_count
       do  iblknum = 1, nblock
          if(iblknum == 1) then
             ncfmin = 1
@@ -2000,7 +2000,7 @@ contains
             do  lev = 1, number_of_levels(iblknum)
                 level = levels(iblknum,lev)
                 loc_i8 = (level-1)*ncf_i8
-                sumthrsh = sumthrsh + dabs(evec(i+loc_i8))
+                sumthrsh = sumthrsh + dabs(csf_mixing_coefficients(i+loc_i8))
             end do
             if(dabs(sumthrsh) >= dabs(epsnew)) ithresh(i) = 1
          end do
@@ -2022,7 +2022,7 @@ contains
          do lev = 1, number_of_levels(iblknum)
             level = levels(iblknum,lev)
             asf_set_ls%asf(level)%level_no = level
-            asf_set_ls%asf(level)%energy = eav+eval(level)
+            asf_set_ls%asf(level)%energy = hamiltonian_energy_shift+shifted_eigenvalues(level)
             asf_set_ls%asf(level)%eigenvector = zero
          end do
          asf_set_ls%noasf = number_of_levels(iblknum)
@@ -2033,7 +2033,7 @@ contains
          allocate (weights2(ncf_ls_jj_max))
          allocate (iw(ncf_ls_jj_max))
          allocate (leading_ls(ncf_ls_jj_max))
-         ncf_i8 = ncf
+         ncf_i8 = csf_count
          call profile_emit('workspace',phase_start,iblknum)
          do  lev = 1, number_of_levels(iblknum)
             level = levels(iblknum,lev)
@@ -2042,7 +2042,7 @@ contains
             do  i = ncfmin, ncfmax
                if(ithresh(i) == 1) then
                   loc_i8 = (level-1)*ncf_i8
-                  wa = evec(i+loc_i8) * evec(i+loc_i8)
+                  wa = csf_mixing_coefficients(i+loc_i8) * csf_mixing_coefficients(i+loc_i8)
                   wb = wb + wa
                   do  j = 1,999
                      if (wa > weights(j)) then
@@ -2200,7 +2200,7 @@ contains
             print *, "Definition of leading CSF:"
             print *, " "
             if(sum_nocsf_min > 5) sum_nocsf_min = 5
-            do  i = 1,ncf
+            do  i = 1,csf_count
                do  j = 1, sum_nocsf_min
                   if (i == iw(j)) then
                      call prcsfls (-1,asf_set_ls%csf_set_ls,leading_ls(j))
@@ -2391,7 +2391,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use orb_c,           only: nw, np, nak
+      use orb_c,           only: orbital_count, orbital_principal_n, orbital_kappa
       use m_c,             only: ncore
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -2420,10 +2420,10 @@ contains
                'o','q','r','t','u','v','w','x','y','z'/
 !-----------------------------------------------
       counter = 0
-      allocate(occupation(nw))
-      allocate(string_j(nw))
-      allocate(string_x(nw))
-      do j = ncore+1, nw
+      allocate(occupation(orbital_count))
+      allocate(string_j(orbital_count))
+      allocate(string_x(orbital_count))
+      do j = ncore+1, orbital_count
          if (iq(j,csf_number) > 0) then
             counter = counter +1
             occupation(counter) = j
@@ -2444,12 +2444,12 @@ contains
 !
       allocate(string_nl(counter))
       do i = 1,counter
-         write(string,'(I2)')np(occupation(i))
+         write(string,'(I2)')orbital_principal_n(occupation(i))
          string_nl(i)(1:2) = string(1:2)
-         j = ((iabs(nak(occupation(i)))*2)-1+    &
-             nak(occupation(i))/iabs(nak(occupation(i))))/2
+         j = ((iabs(orbital_kappa(occupation(i)))*2)-1+    &
+             orbital_kappa(occupation(i))/iabs(orbital_kappa(occupation(i))))/2
          string_nl(i)(3:3) = l1(j)
-         if(nak(occupation(i)) <= 0) then
+         if(orbital_kappa(occupation(i)) <= 0) then
          string_nl(i)(4:4) = " "
          else
          string_nl(i)(4:4) = "-"
@@ -2625,8 +2625,8 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use def_c,           only: nelec
-      use orb_c,           only: nw, np, nak, ncf
+      use def_c,           only: electron_count
+      use orb_c,           only: orbital_count, orbital_principal_n, orbital_kappa, csf_count
       use m_c,             only: ncore
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -2655,25 +2655,25 @@ contains
       integer, dimension(:), pointer :: li, si, l_i, s_i, w, q
       integer                        :: j
 !-----------------------------------------------
-      asf_set_ls%csf_set_ls%number_of_electrons = nelec
+      asf_set_ls%csf_set_ls%number_of_electrons = electron_count
 !
 !     1. define  nl, parent
-      allocate(shell_temp(nw));  allocate(nllsval(nw));  allocate(nljjval(nw))
+      allocate(shell_temp(orbital_count));  allocate(nllsval(orbital_count));  allocate(nljjval(orbital_count))
       nljjval = 0;  nllsval = 0
 !
       asf_set_ls%csf_set_ls%nwshells = 0
-      do isubc = 1, nw, 1
-         nljjval(isubc) = np(isubc)*100 +                              &
-                  ((iabs(nak(isubc))*2)-1+nak(isubc)/iabs(nak(isubc)))/2
+      do isubc = 1, orbital_count, 1
+         nljjval(isubc) = orbital_principal_n(isubc)*100 +                              &
+                  ((iabs(orbital_kappa(isubc))*2)-1+orbital_kappa(isubc)/iabs(orbital_kappa(isubc)))/2
          new_one = .true.
          do isubc2 = 1, isubc-1, 1
             if(nljjval(isubc) == nljjval(isubc2)) new_one = .false.
          end do
          if(new_one) then
             asf_set_ls%csf_set_ls%nwshells = asf_set_ls%csf_set_ls%nwshells + 1
-            shell_temp(asf_set_ls%csf_set_ls%nwshells)%n = np(isubc)
+            shell_temp(asf_set_ls%csf_set_ls%nwshells)%n = orbital_principal_n(isubc)
             shell_temp(asf_set_ls%csf_set_ls%nwshells)%l=                &
-            ((iabs(nak(isubc))*2)-1+nak(isubc)/iabs(nak(isubc)))/2
+            ((iabs(orbital_kappa(isubc))*2)-1+orbital_kappa(isubc)/iabs(orbital_kappa(isubc)))/2
             nllsval(asf_set_ls%csf_set_ls%nwshells) = nljjval(isubc)
          end if
       end do
@@ -2690,9 +2690,9 @@ contains
 !     begin find parent
       do isubc = 1, asf_set_ls%csf_set_ls%nwshells, 1
          found_parent_minus = .false.;  found_parent_plus = .false.
-         do isubc2 = 1, nw, 1
+         do isubc2 = 1, orbital_count, 1
             if(nllsval(isubc) == nljjval(isubc2)) then
-               if(nak(isubc2) > 0) then
+               if(orbital_kappa(isubc2) > 0) then
                   found_parent_minus = .true.
                   asf_set_ls%csf_set_ls%parent(isubc)%parent_minus = isubc2
                else
@@ -2724,7 +2724,7 @@ contains
 !     3. form the list of "nonequivalent" csfs_jj
 !        (i.e. csfs_jj different in J,parity, or
 !         some l's occupation numbers Ni = N_(i+) + N_(i-))
-      allocate(nonequiv_csfs_jj%items(ncf))
+      allocate(nonequiv_csfs_jj%items(csf_count))
       nonequiv_csfs_jj%list_size = 0
       do icsf_jj = ncfmin, ncfmax
          new_one = .true.
@@ -2769,7 +2769,7 @@ contains
 !
          do isubc = 1, asf_set_ls%csf_set_ls%nwshells, 1
             all_occupation(isubc) = 0
-            do isubc2 = 1, nw, 1
+            do isubc2 = 1, orbital_count, 1
                if(nllsval(isubc) == nljjval(isubc2))       &
                all_occupation(isubc)=all_occupation(isubc)+iq(isubc2,icsf_jj_real)
             end do  !isubc2
@@ -2803,7 +2803,7 @@ contains
          j = itjpo(icsf_jj_real)-1
          do isubc = 1, asf_set_ls%csf_set_ls%nwshells, 1
             all_occupation(isubc)=0
-            do isubc2 = 1, nw, 1
+            do isubc2 = 1, orbital_count, 1
                if(nllsval(isubc) == nljjval(isubc2))            &
                all_occupation(isubc)=all_occupation(isubc)+iq(isubc2,icsf_jj_real)
             end do  !isubc2
@@ -2982,13 +2982,13 @@ contains
                l_shell = asf_set_ls%csf_set_ls%shell(isubc)%l
                call gettermls(l_shell,n,ls_terms,numbergg)
 !GG 2015.12.02 NIST
-               li(isubc)  = ls_terms(iterm)%ll
-               si(isubc)  = ls_terms(iterm)%s
+               li(isubc)  = ls_terms(iterm)%subshell_two_l
+               si(isubc)  = ls_terms(iterm)%subshell_two_s
                w(isubc)   = ls_terms(iterm)%w
-               q(isubc)   = ls_terms(iterm)%q
+               q(isubc)   = ls_terms(iterm)%subshell_two_quasispin
                if(isubc.eq.1) then
-                  l_i(isubc) = ls_terms(iterm)%ll
-                  s_i(isubc) = ls_terms(iterm)%s
+                  l_i(isubc) = ls_terms(iterm)%subshell_two_l
+                  s_i(isubc) = ls_terms(iterm)%subshell_two_s
                   if(asf_set_ls%csf_set_ls%nwshells.gt.1) then
                      call setls_job_count(isubc + 1, rez)
                   else
@@ -3036,7 +3036,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use orb_c,           only: nw
+      use orb_c,           only: orbital_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -3063,7 +3063,7 @@ contains
          do isubc_ls = asf_set_ls%csf_set_ls%nwcore + 1,  &
                        asf_set_ls%csf_set_ls%nwshells, 1
             nls1 = 0;   nls2 = 0
-            do isubc_jj = 1, nw, 1
+            do isubc_jj = 1, orbital_count, 1
                if(nllsval(isubc_ls) == nljjval(isubc_jj)) then
                    nls1 = nls1 + iq(isubc_jj,ncsf1)
                    nls2 = nls2 + iq(isubc_jj,ncsf2)
@@ -3097,7 +3097,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use orb_c,           only: nak
+      use orb_c,           only: orbital_kappa
       use cons_c,          only: zero
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -3127,10 +3127,10 @@ contains
       end if
 !
       if (number_minus == 0) then
-         jj_minus = iabs(nak(number_plus))*2 - 3
+         jj_minus = iabs(orbital_kappa(number_plus))*2 - 3
          n_minus  = 0;    j_1_minus = 0;   q_minus = (jj_minus + 1)/2
       else
-         jj_minus  = iabs(nak(number_minus))*2 - 1
+         jj_minus  = iabs(orbital_kappa(number_minus))*2 - 1
          n_minus   = iq(number_minus,jj_number)
          q_minus   = (jj_minus +1)/2 - jqs(1,number_minus,jj_number)
          j_1_minus = jqs(3,number_minus,jj_number)-1
@@ -3138,10 +3138,10 @@ contains
       end if
 !
       if (number_plus == 0) then
-         jj_plus = iabs(nak(number_minus))*2 + 1
+         jj_plus = iabs(orbital_kappa(number_minus))*2 + 1
          n_plus  = 0;    j_1_plus = 0;   q_plus = (jj_plus + 1)/2
       else
-         jj_plus  = iabs(nak(number_plus))*2 - 1
+         jj_plus  = iabs(orbital_kappa(number_plus))*2 - 1
          n_plus   = iq(number_plus,jj_number)
          q_plus   = (jj_plus + 1)/2 - jqs(1,number_plus,jj_number)
          j_1_plus = jqs(3,number_plus,jj_number)-1
@@ -3199,7 +3199,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use orb_c,           only: nak
+      use orb_c,           only: orbital_kappa
       use cons_c,          only: zero, one
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -3246,11 +3246,11 @@ contains
       end if
 !
       if (number_minus == 0) then
-         jj_minus  = iabs(nak(number_plus))*2 - 1
+         jj_minus  = iabs(orbital_kappa(number_plus))*2 - 1
          n_minus   = 0;    j_i_minus = 0;    q_minus = (jj_minus + 1)/2
          jp_1_i    = jcoup(number_plus_1,jj_number)
       else
-         jj_minus  = iabs(nak(number_minus))*2 - 1
+         jj_minus  = iabs(orbital_kappa(number_minus))*2 - 1
          n_minus   = iq(number_minus,jj_number)
          q_minus   = (jj_minus + 1)/2 - jqs(1,number_minus,jj_number)
          j_i_minus = jqs(3,number_minus,jj_number)-1
@@ -3258,11 +3258,11 @@ contains
       end if
 !
       if (number_plus == 0) then
-         jj_plus  = iabs(nak(number_minus))*2 - 1
+         jj_plus  = iabs(orbital_kappa(number_minus))*2 - 1
          q_plus   = (jj_plus + 1)/2
          n_plus   = 0;         j_i_plus = 0;         j_1_i   = jp_1_i
       else
-         jj_plus  = iabs(nak(number_plus))*2 - 1
+         jj_plus  = iabs(orbital_kappa(number_plus))*2 - 1
          n_plus   = iq(number_plus,jj_number)
          q_plus   = (jj_plus + 1)/2 - jqs(1,number_plus,jj_number)
          j_i_plus = jqs(3,number_plus,jj_number)-1

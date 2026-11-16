@@ -17,7 +17,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use def_c,           only: c
+      use def_c,           only: speed_of_light_au
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -108,7 +108,7 @@
       else
          term = term + c402/dble((l + 1)*(l + l + 1))
          if (kappa == (-1)) then
-            zalfa = z/c
+            zalfa = z/speed_of_light_au
             factor = log(zalfa)
             factor = -(factor + factor)
             term = term + factor + c401

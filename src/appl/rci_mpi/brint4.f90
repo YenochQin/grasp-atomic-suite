@@ -25,7 +25,7 @@
       use vast_kind_param, only: double
       use memory_man
       use bilst_c
-      use orb_c,           only: ncf, nw, iqa
+      use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -43,7 +43,7 @@
       integer :: key, index, loc, ju, jl, jm, newsiz, i
 !-----------------------------------------------
 !
-      key = nw + 1
+      key = orbital_count + 1
 !
 !   Compute the integral label
 !

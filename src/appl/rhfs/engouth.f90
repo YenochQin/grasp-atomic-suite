@@ -20,7 +20,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use def_c, only: aucm, auev, ccms, fasi, fbsi
+      use def_c, only: hartree_to_wavenumber_cm, hartree_to_ev, speed_of_light_cm_per_s, einstein_a_au_to_si, einstein_b_au_to_si
       use jlabl_c, labj=> jlbr, labp=>jlbp
       implicit none
 !-----------------------------------------------
@@ -49,8 +49,8 @@
       do j = 1, nn
          i = ilev(j)
          eau = e(j) + eav
-         ecm = eau*aucm
-         eev = eau*auev
+         ecm = eau*hartree_to_wavenumber_cm
+         eev = eau*hartree_to_ev
          ip = (ipar(j)+3)/2
          write (24, 302) i, labj(jtot(j)), labp(ip), eau, ecm, eev
          write (29, 302) i, labj(jtot(j)), labp(ip), eau, ecm, eev
@@ -68,8 +68,8 @@
             do j = 2, nn
                i = ilev(j)
                eau = e(j) - e(j-1)
-               ecm = eau*aucm
-               eev = eau*auev
+               ecm = eau*hartree_to_wavenumber_cm
+               eev = eau*hartree_to_ev
                ip = (ipar(j)+3)/2
                write (24, 302) i, labj(jtot(j)), labp(ip), eau, ecm, eev
                write (29, 302) i, labj(jtot(j)), labp(ip), eau, ecm, eev
@@ -86,8 +86,8 @@
             do j = 2, nn
                i = ilev(j)
                eau = e(j) - e(1)
-               ecm = eau*aucm
-               eev = eau*auev
+               ecm = eau*hartree_to_wavenumber_cm
+               eev = eau*hartree_to_ev
                ip = (ipar(j)+3)/2
                write (24, 302) i, labj(jtot(j)), labp(ip), eau, ecm, eev
                write (29, 302) i, labj(jtot(j)), labp(ip), eau, ecm, eev

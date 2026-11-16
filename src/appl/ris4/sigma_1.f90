@@ -16,7 +16,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use orb_c,           only: np, nak
+      use orb_c,           only: orbital_principal_n, orbital_kappa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -36,8 +36,8 @@
 !
 !   Set KAP1 and KAP2
 !
-      kap1 = nak(i1)
-      kap2 = nak(i2)
+      kap1 = orbital_kappa(i1)
+      kap2 = orbital_kappa(i2)
 !
 !   Determine the l quantum numbers
 !
@@ -55,8 +55,8 @@
 !
 !   Determine the j quantum numbers and l_1 tilda
 !
-      j1 = iabs(nak(i1))*2-1
-      j2 = iabs(nak(i2))*2-1
+      j1 = iabs(orbital_kappa(i1))*2-1
+      j2 = iabs(orbital_kappa(i2))*2-1
       l1_tilda = j1 - l1
       if (l1_tilda == l2) then
 !

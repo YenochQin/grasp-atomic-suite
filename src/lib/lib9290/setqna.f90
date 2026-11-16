@@ -19,7 +19,7 @@
 !-----------------------------------------------
       use vast_kind_param, only: double
       use m_c
-      use orb_c,           only: ncf, nw
+      use orb_c,           only: csf_count, orbital_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -43,7 +43,7 @@
 !   List parameters defining all shells in both configurations, whether
 !   participating or not
 !
-      do j = 1, nw
+      do j = 1, orbital_count
          nq1(j) = iq(j,ja)
          nq2(j) = iq(j,jb)
          do k = 1, 3
@@ -58,7 +58,7 @@
 !
       npeel = 0
       ncore = 0
-      do j = 1, nw
+      do j = 1, orbital_count
          if (ichop(j,ja)==(-1) .and. ichop(j,jb)==(-1)) cycle
          if (ichop(j,ja)==1 .and. ichop(j,jb)==1) then
             ncore = ncore + 1

@@ -18,7 +18,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use convrt_i
-      use orb_c, only: ncf, nw, iqa
+      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -51,9 +51,9 @@
 !   is 2, the intermediate and final angular momenta are being read
 !
       if (mode == 1) then
-         njxmax = 2*(nw - ncore)
+         njxmax = 2*(orbital_count - ncore)
       else
-         njxmax = nw - ncore
+         njxmax = orbital_count - ncore
       endif
 !
 !   Initialise NJX

@@ -14,7 +14,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnw
+      use parameter_def, only: max_orbitals
       use orb_c
       implicit none
 !-----------------------------------------------
@@ -23,7 +23,7 @@
       integer, intent(in)           :: ncore
       integer, intent(out)          :: ierr
       character(len=256), intent(in) :: record
-      integer, dimension(nnnw), intent(out) :: ioccs
+      integer, dimension(max_orbitals), intent(out) :: ioccs
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -37,7 +37,7 @@
 !
 !   Initialise IOCCS for the peel subshells
 !
-      ioccs(ncore+1:nw) = 0
+      ioccs(ncore+1:orbital_count) = 0
 !
 !   Parse RECORD from left to right
 !
@@ -70,8 +70,8 @@
             ierr = 1
             go to 6
          endif
-         do j = ncore + 1, nw
-            if (np(j)/=npi .or. nh(j)/=symi) cycle
+         do j = ncore + 1, orbital_count
+            if (orbital_principal_n(j)/=npi .or. orbital_symmetry_labels(j)/=symi) cycle
             ishell = j
             go to 5
          end do
@@ -91,11 +91,11 @@
             ierr = 3
             go to 6
          endif
-         nkji = nkj(ishell)
+         nkji = orbital_two_j(ishell)
          if (nkji <= 7) then
-            if (iocci<0 .or. iocci>nkj(ishell)+1) then
+            if (iocci<0 .or. iocci>orbital_two_j(ishell)+1) then
                write (6, *) 'PRSRCN: Occupation specified'
-               write (6, *) ' incorrectly for ', np(ishell), nh(ishell)
+               write (6, *) ' incorrectly for ', orbital_principal_n(ishell), orbital_symmetry_labels(ishell)
                write (6, *) ' subshell.'
                ierr = 4
                go to 6
@@ -103,7 +103,7 @@
          else
             if (iocci<0 .or. iocci>2) then
                write (6, *) 'PRSRCN: Occupation specified'
-               write (6, *) ' incorrectly for ', np(ishell), nh(ishell)
+               write (6, *) ' incorrectly for ', orbital_principal_n(ishell), orbital_symmetry_labels(ishell)
                write (6, *) ' subshell.'
                ierr = 5
                go to 6

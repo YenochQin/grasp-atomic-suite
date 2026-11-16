@@ -15,7 +15,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnp
+      use parameter_def,   only: max_radial_points
       use memory_man
       use def_c
       use npar_c
@@ -53,26 +53,26 @@
 !
 !   Allocate storage to orbital arrays
 !
-      call alloc (pfff, nnnp, nwff, 'PFFF', 'LODRWFF')
-      call alloc (qfff, nnnp, nwff, 'QFFF', 'LODRWFF')
+      call alloc (pfff, max_radial_points, nwff, 'PFFF', 'LODRWFF')
+      call alloc (qfff, max_radial_points, nwff, 'QFFF', 'LODRWFF')
 !
 !   Setup: (1) Orbital arrays to zero
 !          (2) Array E to -1 (no orbitals estimated)
 !          (3) Parameters GAMMA for each orbital
 !
-      con = z/c
+      con = nuclear_charge/speed_of_light_au
       con = con*con
 !
       do j = 1, nwff
-         pfff(:nnnp,j) = 0.0d00
-         qfff(:nnnp,j) = 0.0d00
+         pfff(:max_radial_points,j) = 0.0d00
+         qfff(:max_radial_points,j) = 0.0d00
 !
          eff(j) = -1.0d00
 !
          k = abs(nakff(j))
-         if (nparm > 0) then
+         if (nuclear_model_parameter_count > 0) then
             gamaff(j) = dble(k)
-         else if (nparm == 0) then
+         else if (nuclear_model_parameter_count == 0) then
             fkk = dble(k*k)
             if (fkk >= con) then
                gamaff(j) = sqrt(fkk - con)
@@ -80,7 +80,7 @@
                write (6, *) 'LODRWF: Imaginary gamma parameter'
                write (6, *) ' for ', npff(j), nhff(j), ' orbital; the'
                write (6, *) ' point model for the nucleus'
-               write (6, *) ' is inappropriate for Z > ', c, '.'
+               write (6, *) ' is inappropriate for Z > ', speed_of_light_au, '.'
                stop
             endif
          endif

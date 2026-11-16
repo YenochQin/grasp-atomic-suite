@@ -56,15 +56,15 @@
 !   Even in non-default, the user can choose not to have debug
 !   print-out
 
-      write (istde, '(A)') 'Generate debug output?  (y/n) '
+      write (stderr_unit, '(A)') 'Generate debug output?  (y/n) '
       if (.not.getyn()) return
 
       lendbg = len_trim(dbgfile)
 
-      write (istde, *) 'File  ', dbgfile(1:lendbg), &
+      write (stderr_unit, *) 'File  ', dbgfile(1:lendbg), &
       '  will be                           created as the RSCF92 DeBuG Printout&
       & File;'
-      write (istde, *) 'enter another file name if this is not', &
+      write (stderr_unit, *) 'enter another file name if this is not', &
          ' acceptable; null otherwise:'
 
   123 continue
@@ -75,73 +75,73 @@
       if (lenfil == 0) then
          filnam = dbgfile
       else if (lenfil > lendbg) then
-         write (istde,*) 'File name too long, (> ', lendbg, '); redo...'
+         write (stderr_unit,*) 'File name too long, (> ', lendbg, '); redo...'
          go to 123
       endif
 
       call openfl (99, filnam, form, status, ierr)
       if (ierr /= 0) then
-         write (istde, *) 'File name not accepted; redo...'
+         write (stderr_unit, *) 'File name not accepted; redo...'
          go to 123
       endif
 !
 !   Set options for general printout
 !
-      write (istde, *) 'Print out the machine constants used?'
+      write (stderr_unit, *) 'Print out the machine constants used?'
       ldbpg(1) = getyn()
-      write (istde, *) 'Print out the physical constants used?'
+      write (stderr_unit, *) 'Print out the physical constants used?'
       ldbpg(2) = getyn()
-      write (istde, *) 'Printout from FNDBLK?'
+      write (stderr_unit, *) 'Printout from FNDBLK?'
       ldbpg(3) = getyn()
-      write (istde, *) 'Print out the Hamiltonian matrix?'
+      write (stderr_unit, *) 'Print out the Hamiltonian matrix?'
       ldbpg(4) = getyn()
-      write (istde, *) 'Print out the eigenvectors?'
+      write (stderr_unit, *) 'Print out the eigenvectors?'
       ldbpg(5) = getyn()
 !      LDBPG(1:5) = .TRUE.
 !
 !   Set options for printout from radial modules
 !
-      write (istde, *) 'Printout from RADGRD?'
+      write (stderr_unit, *) 'Printout from RADGRD?'
       ldbpr(1) = getyn()
-      write (istde, *) 'Printout from NUCPOT?'
+      write (stderr_unit, *) 'Printout from NUCPOT?'
       ldbpr(2) = getyn()
-      write (istde, *) 'Printout from LODRWF?'
+      write (stderr_unit, *) 'Printout from LODRWF?'
       ldbpr(3) = getyn()
-      write (istde, *) 'Print out I(ab) integrals?'
+      write (stderr_unit, *) 'Print out I(ab) integrals?'
       ldbpr(4) = getyn()
-      write (istde, *) 'Print out Slater integrals?'
+      write (stderr_unit, *) 'Print out Slater integrals?'
       ldbpr(10) = getyn()
-      write (istde, *) 'Make summary printout on progress', &
+      write (stderr_unit, *) 'Make summary printout on progress', &
          ' of each iteration in SOLVE?'
       ldbpr(22) = getyn()
-      write (istde, *) 'Tabulate and make printer plots', &
+      write (stderr_unit, *) 'Tabulate and make printer plots', &
          ' of subshell radial functions on', ' each iteration in SOLVE?'
       ldbpr(23) = getyn()
-      write (istde, *) 'Tabulate and make printer plots', &
+      write (stderr_unit, *) 'Tabulate and make printer plots', &
          ' of subshell radial functions', ' after each SCF cycle?'
       ldbpr(24) = getyn()
-      write (istde, *) 'Tabulate and make printer plots', &
+      write (stderr_unit, *) 'Tabulate and make printer plots', &
          ' of subshell radial functions on', ' convergence?'
       ldbpr(25) = getyn()
-      write (istde, *) 'List compositions of exchange', ' potentials?'
+      write (stderr_unit, *) 'List compositions of exchange', ' potentials?'
       ldbpr(27) = getyn()
-      write (istde, *) 'Tabulate and make printer plots', &
+      write (stderr_unit, *) 'Tabulate and make printer plots', &
          ' of exchange potentials?'
       ldbpr(28) = getyn()
-      write (istde, *) 'List compositions of direct', ' potentials?'
+      write (stderr_unit, *) 'List compositions of direct', ' potentials?'
       ldbpr(29) = getyn()
-      write (istde, *) 'Tabulate and make printer plots', &
+      write (stderr_unit, *) 'Tabulate and make printer plots', &
          ' of direct potentials?'
       ldbpr(30) = getyn()
 !      LDBPR(1:30) = .TRUE.
 !
 !   Set options for printout of angular coefficients
 !
-      write (istde, *) ' Printout from LODCSL?'
+      write (stderr_unit, *) ' Printout from LODCSL?'
       ldbpa(1) = getyn()
-      write (istde, *) ' Print out T coefficients?'
+      write (stderr_unit, *) ' Print out T coefficients?'
       ldbpa(2) = getyn()
-      write (istde, *) ' Print out V coefficients?'
+      write (stderr_unit, *) ' Print out V coefficients?'
       ldbpa(3) = getyn()
 !      LDBPA(1:3) = .TRUE.
 

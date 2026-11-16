@@ -3,10 +3,10 @@
 module rangular_reuse
    use iso_fortran_env, only: int64
    use vast_kind_param, only: double
-   use parameter_def, only: nnnw
-   use orb_c, only: nw, ncf, iqa, nak
-   use stat_c, only: jqsa, jcupa
-   use buffer_c, only: nvcoef, nbdim, label, coeff
+   use parameter_def, only: max_orbitals
+   use orb_c, only: orbital_count, csf_count, csf_subshell_occupations, orbital_kappa
+   use stat_c, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
+   use buffer_c, only: angular_coefficient_count, angular_buffer_capacity, angular_coefficient_labels, angular_coefficients
    use debug_c, only: ibug1, ibug2, ibug3, ldbpa, ldbpg
    use onescalar_i, only: onescalar
    use rkco_gg_i, only: rkco_gg
@@ -68,18 +68,18 @@ contains
       if (.not. reuse_requested) return
       ! Debug printouts require execution of the original kernels for each pair.
       if (ibug1 /= 0 .or. ibug2 /= 0 .or. ibug3 /= 0 .or. any(ldbpa) .or. any(ldbpg)) return
-      available = byte_limit - 8_int64*ncf
+      available = byte_limit - 8_int64*csf_count
       if (available < 1024) return
       entry_capacity = int(min(available/512, 1048576_int64))
       table_capacity = 2
       do while (table_capacity < 2*entry_capacity)
          table_capacity = 2*table_capacity
       end do
-      fixed_bytes = 8_int64*ncf + 4_int64*table_capacity
+      fixed_bytes = 8_int64*csf_count + 4_int64*table_capacity
       remaining = byte_limit - fixed_bytes - entry_bytes*entry_capacity
       key_capacity = int(remaining/2/8)
       term_capacity = int((remaining - 8_int64*key_capacity)/28)
-      allocate(coupling_hash(ncf), buckets(table_capacity), entries(entry_capacity), &
+      allocate(coupling_hash(csf_count), buckets(table_capacity), entries(entry_capacity), &
          keys(key_capacity), term_labels(5,term_capacity), values(term_capacity), stat=status)
       if (status /= 0) then
          call release_cache()
@@ -88,10 +88,10 @@ contains
       end if
       reserved_bytes = fixed_bytes + entry_bytes*entry_capacity + 8_int64*key_capacity + 28_int64*term_capacity
       buckets = 0
-      do j = 1, ncf
+      do j = 1, csf_count
          hash = 1
-         do i = 1, nnnw
-            hash = mix(hash, int(jcupa(i,j),int64))
+         do i = 1, max_orbitals
+            hash = mix(hash, int(csf_coupling_quantum_codes(i,j),int64))
          end do
          coupling_hash(j) = hash
       end do
@@ -102,30 +102,30 @@ contains
       integer, intent(in) :: orbital, csf
       integer(int64) :: word
       integer :: i
-      word = iand(int(iqa(orbital,csf),int64),255_int64)
+      word = iand(int(csf_subshell_occupations(orbital,csf),int64),255_int64)
       do i = 1, 3
-         word = ior(word,shiftl(iand(int(jqsa(orbital,i,csf),int64),255_int64),8*i))
+         word = ior(word,shiftl(iand(int(csf_subshell_quantum_codes(orbital,i,csf),int64),255_int64),8*i))
       end do
    end function shell_word
 
    subroutine pair_key(ja, jb, key, length, orbital_map, inverse_map, hash)
       integer, intent(in) :: ja, jb
-      integer(int64), intent(out) :: key(3+2*nnnw), hash
-      integer, intent(out) :: length, orbital_map(0:nnnw), inverse_map(nnnw)
+      integer(int64), intent(out) :: key(3+2*max_orbitals), hash
+      integer, intent(out) :: length, orbital_map(0:max_orbitals), inverse_map(max_orbitals)
       integer :: orbital, slot, i
       key(1:3) = [coupling_hash(ja), coupling_hash(jb), int(merge(1,0,ja==jb),int64)]
       slot = 0
       orbital_map = 0
       inverse_map = 0
       length = 3
-      do orbital = 1, nw
+      do orbital = 1, orbital_count
          ! Removing only jointly empty shells preserves the union's ordering,
          ! bra/ket equality pattern, fermion phases and every coupling chain.
-         if (iqa(orbital,ja) == 0 .and. iqa(orbital,jb) == 0) cycle
+         if (csf_subshell_occupations(orbital,ja) == 0 .and. csf_subshell_occupations(orbital,jb) == 0) cycle
          slot = slot + 1
          orbital_map(slot) = orbital
          inverse_map(orbital) = slot
-         key(length+1) = ior(shiftl(int(nak(orbital),int64),32),shell_word(orbital,ja))
+         key(length+1) = ior(shiftl(int(orbital_kappa(orbital),int64),32),shell_word(orbital,ja))
          key(length+2) = shell_word(orbital,jb)
          length = length + 2
       end do
@@ -140,7 +140,7 @@ contains
       integer, intent(in) :: ja, jb
       integer, intent(out) :: first, second
       real(double), intent(out) :: scalar
-      real(double) :: tshell(nnnw)
+      real(double) :: tshell(max_orbitals)
       first = 0; second = 0; tshell = 0
       if (ja /= jb) call onescalar(ja,jb,first,second,tshell)
       ! ONESCALAR leaves its other outputs undefined on some early returns.
@@ -150,7 +150,7 @@ contains
       else
          second = 0
       end if
-      nvcoef = 0
+      angular_coefficient_count = 0
       call rkco_gg(ja,jb,cord,0,1)
    end subroutine original_pair
 
@@ -158,8 +158,8 @@ contains
       integer, intent(in) :: ja, jb
       integer, intent(out) :: first, second
       real(double), intent(out) :: scalar
-      integer(int64) :: key(3+2*nnnw), hash
-      integer :: length, orbital_map(0:nnnw), inverse_map(nnnw)
+      integer(int64) :: key(3+2*max_orbitals), hash
+      integer :: length, orbital_map(0:max_orbitals), inverse_map(max_orbitals)
       integer :: bucket, entry, start, count, i, j
       pairs = pairs + 1
       if (.not. active) then
@@ -176,23 +176,23 @@ contains
          if (entries(entry)%hash == hash .and. entries(entry)%key_size == length) then
             start = entries(entry)%key_start
             if (all(keys(start:start+length-1) == key(1:length))) then
-               if (all(jcupa(:,ja) == jcupa(:,entries(entry)%bra)) .and. &
-                   all(jcupa(:,jb) == jcupa(:,entries(entry)%ket))) then
+               if (all(csf_coupling_quantum_codes(:,ja) == csf_coupling_quantum_codes(:,entries(entry)%bra)) .and. &
+                   all(csf_coupling_quantum_codes(:,jb) == csf_coupling_quantum_codes(:,entries(entry)%ket))) then
                   hits = hits + 1
                   first = orbital_map(entries(entry)%first)
                   second = orbital_map(entries(entry)%second)
                   scalar = entries(entry)%scalar
-                  nvcoef = entries(entry)%term_count
-                  do while (nbdim < nvcoef)
+                  angular_coefficient_count = entries(entry)%term_count
+                  do while (angular_buffer_capacity < angular_coefficient_count)
                      call alcbuf(2)
                   end do
                   start = entries(entry)%term_start
-                  do i = 1, nvcoef
+                  do i = 1, angular_coefficient_count
                      do j = 1, 4
-                        label(j,i) = orbital_map(term_labels(j,start+i-1))
+                        angular_coefficient_labels(j,i) = orbital_map(term_labels(j,start+i-1))
                      end do
-                     label(5,i) = term_labels(5,start+i-1)
-                     coeff(i) = values(start+i-1)
+                     angular_coefficient_labels(5,i) = term_labels(5,start+i-1)
+                     angular_coefficients(i) = values(start+i-1)
                   end do
                   return
                end if
@@ -202,7 +202,7 @@ contains
       end do
       misses = misses + 1
       call original_pair(ja,jb,first,second,scalar)
-      count = nvcoef
+      count = angular_coefficient_count
       if (entry_count == size(entries) .or. key_count+length > size(keys) .or. &
           int(term_count,int64)+count > size(values,kind=int64)) then
          not_stored = not_stored + 1
@@ -210,7 +210,7 @@ contains
       end if
       ! A future kernel producing an orbital outside the occupied union falls
       ! back without caching. Never infer an extra mapping or recoupling phase.
-      if (first < 0 .or. first > nw .or. second < 0 .or. second > nw) then
+      if (first < 0 .or. first > orbital_count .or. second < 0 .or. second > orbital_count) then
          not_stored = not_stored + 1
          return
       end if
@@ -228,11 +228,11 @@ contains
       end if
       do i = 1, count
          do j = 1, 4
-            if (label(j,i) < 1 .or. label(j,i) > nw) then
+            if (angular_coefficient_labels(j,i) < 1 .or. angular_coefficient_labels(j,i) > orbital_count) then
                not_stored = not_stored + 1
                return
             end if
-            if (inverse_map(label(j,i)) == 0) then
+            if (inverse_map(angular_coefficient_labels(j,i)) == 0) then
                not_stored = not_stored + 1
                return
             end if
@@ -257,10 +257,10 @@ contains
       key_count = key_count + length
       do i = 1, count
          do j = 1, 4
-            term_labels(j,term_count+i) = inverse_map(label(j,i))
+            term_labels(j,term_count+i) = inverse_map(angular_coefficient_labels(j,i))
          end do
-         term_labels(5,term_count+i) = label(5,i)
-         values(term_count+i) = coeff(i)
+         term_labels(5,term_count+i) = angular_coefficient_labels(5,i)
+         values(term_count+i) = angular_coefficients(i)
       end do
       term_count = term_count + count
    end subroutine load_reused_pair

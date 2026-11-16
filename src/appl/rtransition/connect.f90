@@ -30,18 +30,18 @@
 !
 !     Initialize
 !
-      nnii(:nw) = 0.d0
-      nnff(:nw) = 0.d0
+      nnii(:orbital_count) = 0.d0
+      nnff(:orbital_count) = 0.d0
 !
 !   Loop over the orbitals in the merged list
 !
-      do i = 1, nw
+      do i = 1, orbital_count
          do j = 1, nwii
-            if (np(i)/=npii(j) .or. nak(i)/=nakii(j)) cycle
+            if (orbital_principal_n(i)/=npii(j) .or. orbital_kappa(i)/=nakii(j)) cycle
             nnii(i) = j
          end do
          do j = 1, nwff
-            if (np(i)/=npff(j) .or. nak(i)/=nakff(j)) cycle
+            if (orbital_principal_n(i)/=npff(j) .or. orbital_kappa(i)/=nakff(j)) cycle
             nnff(i) = j
          end do
       end do

@@ -17,7 +17,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use parameter_def, only: nnnp, nnn1, nnnw
+      use parameter_def, only: max_radial_points, radial_workspace_capacity, max_orbitals
       !USE DEF_C
       use grid_c
       use int_c, only: tf, tg
@@ -30,8 +30,8 @@
       integer , intent(in) :: iorb
       integer , intent(in) :: nstrt
       integer , intent(in) :: nend
-      real(double) , intent(inout) :: p(nnnp)
-      real(double) , intent(inout) :: q(nnnp)
+      real(double) , intent(inout) :: p(max_radial_points)
+      real(double) , intent(inout) :: q(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -62,7 +62,7 @@
       c4 = c(4)
       c5 = c(5)
       c6 = c(6)
-      tbh = 2.0d00/h
+      tbh = 2.0d00/transformed_grid_step
       tc1 = 2.0d00*c1
 !
 !   Determine whether integration is inward or outwarD
@@ -78,8 +78,8 @@
 !
 !   Overall initializations
 !
-      fk = dble(nak(iorb))
-      cc = c1*fk*h
+      fk = dble(orbital_kappa(iorb))
+      cc = c1*fk*transformed_grid_step
 !
 !   Perform integration depending on case
 !
@@ -90,35 +90,35 @@
          loc = nstrt
          pj = p(loc)
          qj = q(loc)
-         fac = fk*rpor(loc)
+         fac = fk*radial_derivative_over_radius(loc)
          ppj = (-fac*pj) - tbh*tf(loc)*qj
          qpj = fac*qj - tbh*tg(loc)*pj
 !
          loc = loc - 1
          pjm1 = p(loc)
          qjm1 = q(loc)
-         fac = fk*rpor(loc)
+         fac = fk*radial_derivative_over_radius(loc)
          ppjm1 = (-fac*pjm1) - tbh*tf(loc)*qjm1
          qpjm1 = fac*qjm1 - tbh*tg(loc)*pjm1
 !
          loc = loc - 1
          pjm2 = p(loc)
          qjm2 = q(loc)
-         fac = fk*rpor(loc)
+         fac = fk*radial_derivative_over_radius(loc)
          ppjm2 = (-fac*pjm2) - tbh*tf(loc)*qjm2
          qpjm2 = fac*qjm2 - tbh*tg(loc)*pjm2
 !
          loc = loc - 1
          pjm3 = p(loc)
          qjm3 = q(loc)
-         fac = fk*rpor(loc)
+         fac = fk*radial_derivative_over_radius(loc)
          ppjm3 = (-fac*pjm3) - tbh*tf(loc)*qjm3
          qpjm3 = fac*qjm3 - tbh*tg(loc)*pjm3
 !
          loc = loc - 1
          pjm4 = p(loc)
          qjm4 = q(loc)
-         fac = fk*rpor(loc)
+         fac = fk*radial_derivative_over_radius(loc)
          ppjm4 = (-fac*pjm4) - tbh*tf(loc)*qjm4
          qpjm4 = fac*qjm4 - tbh*tg(loc)*pjm4
 !
@@ -134,7 +134,7 @@
             qpjm2 + c5*qpjm3 + c6*qpjm4
 !
          jp1 = j + 1
-         ccrpor = cc*rpor(jp1)
+         ccrpor = cc*radial_derivative_over_radius(jp1)
          cpjp1 = 1.0d00 + ccrpor
          cmjp1 = 1.0d00 - ccrpor
          fjp1 = tc1*tf(jp1)
@@ -168,7 +168,7 @@
 !
             pj = pjp1
             qj = qjp1
-            fac = fk*rpor(jp1)
+            fac = fk*radial_derivative_over_radius(jp1)
             ppj = (-fac*pj) - tbh*tf(jp1)*qj
             qpj = fac*qj - tbh*tg(jp1)*pj
 !
@@ -182,35 +182,35 @@
          loc = nstrt
          pj = p(loc)
          qj = q(loc)
-         fac = fk*rpor(loc)
+         fac = fk*radial_derivative_over_radius(loc)
          ppj = (-fac*pj) - tbh*tf(loc)*qj
          qpj = fac*qj - tbh*tg(loc)*pj
 !
          loc = loc + 1
          pjp1 = p(loc)
          qjp1 = q(loc)
-         fac = fk*rpor(loc)
+         fac = fk*radial_derivative_over_radius(loc)
          ppjp1 = (-fac*pjp1) - tbh*tf(loc)*qjp1
          qpjp1 = fac*qjp1 - tbh*tg(loc)*pjp1
 !
          loc = loc + 1
          pjp2 = p(loc)
          qjp2 = q(loc)
-         fac = fk*rpor(loc)
+         fac = fk*radial_derivative_over_radius(loc)
          ppjp2 = (-fac*pjp2) - tbh*tf(loc)*qjp2
          qpjp2 = fac*qjp2 - tbh*tg(loc)*pjp2
 !
          loc = loc + 1
          pjp3 = p(loc)
          qjp3 = q(loc)
-         fac = fk*rpor(loc)
+         fac = fk*radial_derivative_over_radius(loc)
          ppjp3 = (-fac*pjp3) - tbh*tf(loc)*qjp3
          qpjp3 = fac*qjp3 - tbh*tg(loc)*pjp3
 !
          loc = loc + 1
          pjp4 = p(loc)
          qjp4 = q(loc)
-         fac = fk*rpor(loc)
+         fac = fk*radial_derivative_over_radius(loc)
          ppjp4 = (-fac*pjp4) - tbh*tf(loc)*qjp4
          qpjp4 = fac*qjp4 - tbh*tg(loc)*pjp4
 !
@@ -226,7 +226,7 @@
             qpjp2 - c5*qpjp3 - c6*qpjp4
 !
          jm1 = j - 1
-         ccrpor = cc*rpor(jm1)
+         ccrpor = cc*radial_derivative_over_radius(jm1)
          cpjm1 = 1.0d00 + ccrpor
          cmjm1 = 1.0d00 - ccrpor
          fjm1 = tc1*tf(jm1)
@@ -260,7 +260,7 @@
 !
             pj = pjm1
             qj = qjm1
-            fac = fk*rpor(jm1)
+            fac = fk*radial_derivative_over_radius(jm1)
             ppj = (-fac*pj) - tbh*tf(jm1)*qj
             qpj = fac*qj - tbh*tg(jm1)*pj
 !

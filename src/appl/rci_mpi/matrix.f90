@@ -23,7 +23,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double, long
-      use parameter_def,   only: nnnw
+      use parameter_def,   only: max_orbitals
       use memory_man
       use decide_c
       use debug_c
@@ -33,7 +33,7 @@
       use hmat_c
       use iounit_c
       use jlabl_c, labj=>jlbr, labp=>jlbp
-      use orb_c, only: ncf, nw, iqa
+      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
       use prnt_c
       use stat_c
       use wave_c
@@ -73,7 +73,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      real(double), dimension(nnnw) :: slfint
+      real(double), dimension(max_orbitals) :: slfint
       character(len=8) :: cnum
       real(double) :: atwinv, elsto, eau, ecm, eev, elemnt
       real(double), dimension(:), pointer :: slf_en, ucf, etot
@@ -89,24 +89,24 @@
 !***************************************************************
       ncminpas = 0
 
-      do 100 jblock = 1, nblock
-         ncf    =   ncfblk(jblock)
-         nvec   =   nevblk(jblock)
+      do 100 jblock = 1, symmetry_block_count
+         csf_count    =   csf_counts_by_block(jblock)
+         nvec   =   eigenvector_counts_by_block(jblock)
          nvecmx = ncmaxblk(jblock)
          iccut(1)  = iccutblk(jblock)
          !.. Determine position of the previous block in the .res file
 
-         nposition = 7 + nw + nw  ! File position of the previous block
+         nposition = 7 + orbital_count + orbital_count  ! File position of the previous block
                                   ! in the .res file
          do i = 1, jblock - 1
-            j = (ncfblk(i) - myid - 1 + nprocs) / nprocs
-            if (ncfblk(i) .lt. nprocs) j = ncfblk(i) / (myid+1)
+            j = (csf_counts_by_block(i) - mpi_rank - 1 + mpi_process_count) / mpi_process_count
+            if (csf_counts_by_block(i) .lt. mpi_process_count) j = csf_counts_by_block(i) / (mpi_rank+1)
             nposition = nposition + j + 1
          enddo
 
          !.. SETHAM does not handle this extrem case
-         if (nprocs .gt. ncf)                                          &
-                         call stopmpi ('matrix: too many nodes', myid)
+         if (mpi_process_count .gt. csf_count)                                          &
+                         call stopmpi ('matrix: too many nodes', mpi_rank)
 
 !        ...Obtain ivec() from iccmin()
          if (nvec .gt. 0) then
@@ -121,12 +121,12 @@
 !        ... of this routine and in the setham. In this block version,
 !        ... both allocation and deallocation are placed here. See the
 !        ... following goto 80 for reason.
-         call alloc (iqa, nnnw, ncf, 'IQA', 'MATRIX')
-         call alloc (jqsa, nnnw, 3, ncf, 'JQSA', 'MATRIX')
-         call alloc (jcupa, nnnw, ncf, 'JCUPA', 'MATRIX')
-         call alloc (slf_en,ncf,'SLF_EN', 'MATRIX')
-         call alloc (ucf, nw,'UCF', 'MATRIX')
-          do ic=1,ncf
+         call alloc (csf_subshell_occupations, max_orbitals, csf_count, 'IQA', 'MATRIX')
+         call alloc (csf_subshell_quantum_codes, max_orbitals, 3, csf_count, 'JQSA', 'MATRIX')
+         call alloc (csf_coupling_quantum_codes, max_orbitals, csf_count, 'JCUPA', 'MATRIX')
+         call alloc (slf_en,csf_count,'SLF_EN', 'MATRIX')
+         call alloc (ucf, orbital_count,'UCF', 'MATRIX')
+          do ic=1,csf_count
                slf_en(ic) = 0.0
           enddo
 
@@ -135,7 +135,7 @@
 ! zou
 
          if (lse) then
-            if (myid .eq. 0) then
+            if (mpi_rank .eq. 0) then
               print *, 'Entering QED ...'
 
               write (24,*)
@@ -143,15 +143,15 @@
               write (24,*)
             endif
             call qed_slfen (slfint)
-            do ic = 1, ncf
+            do ic = 1, csf_count
                elemnt = 0.0d00
-               do i = 1,nw
+               do i = 1,orbital_count
                   elemnt = elemnt+iq (i,ic)*slfint(i)
                enddo
                slf_en(ic) = elemnt
             enddo
 
-            if (myid .eq. 0) then
+            if (mpi_rank .eq. 0) then
                write (24,*)
                write (24,*) 'Self-energy corrections estimated'       &
                        //' --- these will influence the data'
@@ -161,10 +161,10 @@
 
 ! zou
          if (nvec <= 0) then
-            if (myid .eq. 0) write (25) jblock, ncf, nvec, 999, 999
+            if (mpi_rank .eq. 0) write (25) jblock, csf_count, nvec, 999, 999
 !           ...Generate H matrix of the current block and write to disk
 !           ...eav, nelmnt are also obtained from genmat
-            call genmat (atwinv, jblock, myid, nprocs, elsto, irestart,&
+            call genmat (atwinv, jblock, mpi_rank, mpi_process_count, elsto, irestart,&
            slf_en)
              ! This call is optional, meaning the matrix of this block
                ! does not need to be computed. But don't comment it out
@@ -173,14 +173,14 @@
             goto 80 ! need to clear memory
          endif
 !        ------------------------
-         call genmat (atwinv, jblock, myid, nprocs, elsto, irestart,   &
+         call genmat (atwinv, jblock, mpi_rank, mpi_process_count, elsto, irestart,   &
            slf_en)
          call genmat2 (irestart, nelmnt_a, elsto)
 !
 !   Allocate and deallocate memory for the mixing coefficients
 !   from the prerun
 !
-      if (iprerun.eq.1) call alloc (evec1,ncf*nvec, 'EVEC1', 'MATRIX')
+      if (iprerun.eq.1) call alloc (evec1,csf_count*nvec, 'EVEC1', 'MATRIX')
       if (iprerun.eq.2) call dalloc (evec1, 'EVEC1', 'MATRIX')
 
 ! Since maneig needs both nelmnt and nelmnt_a, # of non-zero
@@ -198,26 +198,26 @@
 !   eigenvalues  and eigenvectors to RCI92 mixing coefficients file.
 !   EAV and ELSTO are added back to energy here
 !
-        if (myid .eq. 0) then
+        if (mpi_rank .eq. 0) then
 ! ELSTO has never been in Hamiltonian matrix, yet it was
 ! added to EAV which was later substracted from H. Thus at
 ! this point, EAV is correct (it has ELSTO added), EVAL()
 ! need ELSTO and the correct EAV.
-           if (ncf > 1) then
+           if (csf_count > 1) then
               do i = 1, nvec
-                 eval(i) = eval(i) + elsto
+                 shifted_eigenvalues(i) = shifted_eigenvalues(i) + elsto
               enddo
            end if
 
-           call engout (eav,eval,iiatjpo,iiaspar,ivec,nvec,3)
+           call engout (hamiltonian_energy_shift,shifted_eigenvalues,iiatjpo,iiaspar,ivec,nvec,3)
            call wghtd5 (iiatjpo, iiaspar)
 
 !          ...Write ASF symmetries, eigenvalues, and eigenvectors to RCI92
 !          ...MIXing coefficients File; close the file; print a report
-           write (25) jblock, ncf, nvec, iiatjpo, iiaspar
+           write (25) jblock, csf_count, nvec, iiatjpo, iiaspar
            write (25) (ivec(i), i = 1, nvec)
-           write (25) eav,(eval(i),i = 1,nvec)
-           write (25) ((evec(i+(j-1)*ncf),i = 1,ncf),j = 1,nvec)
+           write (25) hamiltonian_energy_shift,(shifted_eigenvalues(i),i = 1,nvec)
+           write (25) ((csf_mixing_coefficients(i+(j-1)*csf_count),i = 1,csf_count),j = 1,nvec)
 
            print *, 'RCI90 MIXing coefficients File generated.'
         endif
@@ -226,8 +226,8 @@
 !
       if (iprerun .eq. 1) then
          do j = 1, nvec
-            do i = 1, ncf
-               evec1(i+(j-1)*ncf) = evec(i+(j-1)*ncf)
+            do i = 1, csf_count
+               evec1(i+(j-1)*csf_count) = csf_mixing_coefficients(i+(j-1)*csf_count)
             enddo
          enddo
       endif
@@ -237,9 +237,9 @@
 !   estimates
 !
       if (.not.lse) then
-         if (myid .eq. 0)            print *, 'Entering QED ...'
+         if (mpi_rank .eq. 0)            print *, 'Entering QED ...'
             call alloc (etot,nvec,'ETOT', 'MATRIX')
-         if (myid .eq. 0) then
+         if (mpi_rank .eq. 0) then
             write (24,*)
             write (24,*) ' Self Energy Corrections: '
             write (24,*)
@@ -253,26 +253,26 @@
             call qed (j,slfint,ucf)
             elemnt = 0.0d00
             ic = ivec(j)
-            do i = 1,nw
+            do i = 1,orbital_count
                elemnt = elemnt+ucf(i)*slfint(i)
 !              ELEMNT = ELEMNT+IQ (I,IC)*SLFINT(I)
             enddo
-            etot(j) = eval(j)+elemnt
+            etot(j) = shifted_eigenvalues(j)+elemnt
 !
             eau = elemnt
-            ecm = eau*aucm
-            eev = eau*auev
+            ecm = eau*hartree_to_wavenumber_cm
+            eev = eau*hartree_to_ev
             ip = (iiaspar+3)/2
-            if (myid .eq. 0)                                           &
+            if (mpi_rank .eq. 0)                                           &
                write (24,302) j,labj(iiatjpo),labp(ip),eau,ecm,eev
 !
          enddo
-         if (myid .eq. 0) then
+         if (mpi_rank .eq. 0) then
             write (24,*)
             write (24,*) 'Self-energy corrections estimated'           &
                     //' --- these do not influence the data'
             write (24,*) ' in the RCI92 MIXing coefficients File.'
-            call engout (eav,etot,iiatjpo,iiaspar,ivec,nvec,mode)
+            call engout (hamiltonian_energy_shift,etot,iiatjpo,iiaspar,ivec,nvec,mode)
 ! zou       CALL ENGOUT (EAV+elsto,ETOT,IiATJPO,iIASPAR,IVEC,NVEC,MODE)
          endif
          call dalloc (etot, 'ETOT', 'MATRIX')
@@ -281,15 +281,15 @@
 !        ...Locals
          call dalloc (ivec, 'IVEC', 'MATRIX')
 !        ...Allocated in maneig
-         call dalloc (eval, 'EVAL', 'MATRIX')
-         call dalloc (evec, 'EVEC', 'MATRIX')
+         call dalloc (shifted_eigenvalues, 'EVAL', 'MATRIX')
+         call dalloc (csf_mixing_coefficients, 'EVEC', 'MATRIX')
 
    80    continue
 
 !        ...Locals
-         call dalloc (iqa, 'IQA', 'MATRIX')
-         call dalloc (jqsa, 'JQSA', 'MATRIX')
-         call dalloc (jcupa, 'JCUPA', 'MATRIX')
+         call dalloc (csf_subshell_occupations, 'IQA', 'MATRIX')
+         call dalloc (csf_subshell_quantum_codes, 'JQSA', 'MATRIX')
+         call dalloc (csf_coupling_quantum_codes, 'JCUPA', 'MATRIX')
          call dalloc (slf_en, 'SLF_EN', 'MATRIX')
          call dalloc (ucf, 'UCF', 'MATRIX')
 
@@ -299,8 +299,8 @@
 !
       close (imcdf)
 !     ...Clean up
-      call dalloc (ncfblk, 'NCFBLK', 'MATRIX')
-      call dalloc (nevblk, 'NEVBLK', 'MATRIX')
+      call dalloc (csf_counts_by_block, 'NCFBLK', 'MATRIX')
+      call dalloc (eigenvector_counts_by_block, 'NEVBLK', 'MATRIX')
       call dalloc (ncmaxblk, 'NCMAXBLK', 'MATRIX')
       call dalloc (iccutblk, 'ICUTTBLK', 'MATRIX')
       call dalloc (iccmin, 'ICCMIN', 'MATRIX') ! allocated in items as pnccmin
@@ -374,8 +374,8 @@
          endif
       endif
 
-      call dalloc (pf, 'PF', 'MATRIX') ! lodrwf or lodres
-      call dalloc (qf, 'QF', 'MATRIX') ! lodrwf or lodres
+      call dalloc (radial_large_components, 'PF', 'MATRIX') ! lodrwf or lodres
+      call dalloc (radial_small_components, 'QF', 'MATRIX') ! lodrwf or lodres
 
       return
 

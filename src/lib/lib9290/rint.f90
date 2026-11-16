@@ -50,14 +50,15 @@
 !
 !   Determine the maximum tabulation point for the integrand
 !
-      mtp = min(mf(i),mf(j))
+      mtp = min(orbital_last_grid_index(i),orbital_last_grid_index(j))
 !
 !   Tabulate the integrand as required for SUBROUTINE QUAD; the
 !   value at the first tabulation point is arbitrary
 !
       ta(1) = 0.0d00
       do l = 2, mtp
-         ta(l) = r(l)**k*(pf(l,i)*pf(l,j) + qf(l,i)*qf(l,j))*rp(l)
+         ta(l) = radial_grid(l)**k*(radial_large_components(l,i)*radial_large_components(l,j) + &
+            & radial_small_components(l,i)*radial_small_components(l,j))*radial_grid_derivative(l)
       end do
 !
 !   Perform the quadrature

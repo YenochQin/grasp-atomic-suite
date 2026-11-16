@@ -25,11 +25,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnw
+      use parameter_def,    only: max_orbitals
       use memory_man
       use hblock_c
       use def_c
-      use orb_c, ncftot=>ncf
+      use orb_c, ncftot=>csf_count
       use stat_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -71,7 +71,7 @@
 
 ! Allocate memories for all blocks and then load the entire file
 
-      call alloc (iqa, nnnw, ncftot, 'IQA', 'SETCSL')
+      call alloc (csf_subshell_occupations, max_orbitals, ncftot, 'IQA', 'SETCSL')
 !GG      CALL ALLOC (jqsa, NNNW,3,NCFTOT, 'JQSA', 'SETCSL')
 !GG      CALL ALLOC (jcupa, NNNW, NCFTOT, 'JCUPA', 'SETCSL')
 

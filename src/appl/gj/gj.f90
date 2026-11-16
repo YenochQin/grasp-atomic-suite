@@ -36,16 +36,16 @@
       character :: name*24
 !-----------------------------------------------
 !
-      write (istde, *)
-      write (istde, *) 'GJ'
-      write (istde, *) 'This is the serial Lande-factor program'
-      write (istde, *) 'Input files:  isodata, name.c, name.(c)m, name.w'
-      write (istde, *) 'Output files: name.gj or name.cgj'
+      write (stderr_unit, *)
+      write (stderr_unit, *) 'GJ'
+      write (stderr_unit, *) 'This is the serial Lande-factor program'
+      write (stderr_unit, *) 'Input files:  isodata, name.c, name.(c)m, name.w'
+      write (stderr_unit, *) 'Output files: name.gj or name.cgj'
 !
-      write (istde, *)
-      write (istde, *) 'Default settings?'
+      write (stderr_unit, *)
+      write (stderr_unit, *) 'Default settings?'
       yes = getyn()
-      write (istde, *)
+      write (stderr_unit, *)
       if (yes) then
          ndef = 0
       else
@@ -53,16 +53,16 @@
       endif
 !
    10 continue
-      write (istde, *) 'Name of state'
+      write (stderr_unit, *) 'Name of state'
       read (*, '(A)') name
       k = index(name,' ')
       if (k == 1) then
-         write (istde, *) 'Names may not start with a blank'
+         write (stderr_unit, *) 'Names may not start with a blank'
          go to 10
       endif
 !
-      write (istde, *)
-      write (istde, *) 'Mixing coefficients from a CI calc.?'
+      write (stderr_unit, *)
+      write (stderr_unit, *) 'Mixing coefficients from a CI calc.?'
       yes = getyn()
       if (yes) then
          nci = 0
@@ -87,7 +87,7 @@
       call dalloc(gjc_diag, 'GJC_DIAG', 'GJ')
       call dalloc(dgjc_diag, 'DGJC_DIAG', 'GJ')
 !
-      write (istde, *)
-      write (istde, *) 'GJ: Execution complete.'
+      write (stderr_unit, *)
+      write (stderr_unit, *) 'GJ: Execution complete.'
       stop
       end program gj

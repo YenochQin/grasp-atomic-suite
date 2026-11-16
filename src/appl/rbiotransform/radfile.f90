@@ -41,7 +41,7 @@
       do k = 1, nwii
          write (30) npii(k), nakii(k), eii(k), mfii(k)
          write (30) pzii(k), (pfii(i,k),i=1,mfii(k)), (qfii(i,k),i=1,mfii(k))
-         write (30) (r(i),i=1,mfii(k))
+         write (30) (radial_grid(i),i=1,mfii(k))
       end do
 
       close(30)
@@ -55,7 +55,7 @@
       do k = 1, nwff
          write (30) npff(k), nakff(k), eff(k), mfff(k)
          write (30) pzff(k),(pfff(i,k),i=1,mfff(k)),(qfff(i,k),i=1,mfff(k))
-         write (30) (r(i),i=1,mfff(k))
+         write (30) (radial_grid(i),i=1,mfff(k))
       end do
 
       close(30)

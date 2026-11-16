@@ -81,7 +81,7 @@ def audit(source_root: Path, build: Path) -> dict[str, int]:
         persistent_state_source = source_text[name]
         if name == "sixj":
             persistent_state_source = re.sub(
-                r"^\s*save\s*::\s*raca\s*$",
+                r"^\s*save\s*::\s*small_six_j_cache\s*$",
                 "",
                 persistent_state_source,
                 flags=re.MULTILINE,

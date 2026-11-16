@@ -31,17 +31,17 @@
       real(double) :: hhc
 !-----------------------------------------------
 !
-      hhc = 0.5d00*h/c
+      hhc = 0.5d00*transformed_grid_step/speed_of_light_au
 !
 !   Set up arrays TF and TG
 !
-      do i = 1, n
-         xu(i) = -qf(i,j)*hhc*rp(i)
-         xv(i) = pf(i,j)*hhc*rp(i)
+      do i = 1, radial_point_count
+         xu(i) = -radial_small_components(i,j)*hhc*radial_grid_derivative(i)
+         xv(i) = radial_large_components(i,j)*hhc*radial_grid_derivative(i)
       end do
 !
-      xu(:n-1) = xu(2:n) + xu(:n-1)
-      xv(:n-1) = xv(2:n) + xv(:n-1)
+      xu(:radial_point_count-1) = xu(2:radial_point_count) + xu(:radial_point_count-1)
+      xv(:radial_point_count-1) = xv(2:radial_point_count) + xv(:radial_point_count-1)
 !
       return
 !

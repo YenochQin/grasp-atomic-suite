@@ -37,22 +37,22 @@
 !   Write out the basic dimensions of the electron cloud
 !
       write (24, *)
-      call convrt (nelec, record, lenth)
+      call convrt (electron_count, record, lenth)
       write (24, *) 'There are '//record(1:lenth)//' electrons in the cloud'
-      call convrt (ncf, record, lenth)
+      call convrt (csf_count, record, lenth)
       write (24, *) ' in '//record(1:lenth)//' relativistic CSFs'
-      call convrt (nw, record, lenth)
+      call convrt (orbital_count, record, lenth)
       write (24, *) ' based on '//record(1:lenth)//' relativistic subshells.'
 !
 !   If the CSFs are not treated uniformly, write out an
 !   informative message
 !
-      if (diag) then
+      if (diagonal_only) then
          write (24, *)
          write (24, *) 'Only diagonal matrix elements are computed.'
       else
-         if (lfordr) then
-            do i = 1, nblock
+         if (use_first_order_restriction) then
+            do i = 1, symmetry_block_count
                write (24, *)
                call convrt (iccut(i), record, lenth)
                write (24, *) 'CSFs 1--'//record(1:lenth)//' constitute'//&

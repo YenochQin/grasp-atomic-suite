@@ -5,14 +5,14 @@
 !                     Gediminas Gaigalas  10/05/17
       subroutine dcbsrw (n, kappa, z, e, rg0, rg, rf, mtp)
       use vast_kind_param,only: double
-      use parameter_def, only: nnnp
+      use parameter_def, only: max_radial_points
       integer, intent(in) :: n
       integer, intent(in) :: kappa
       real(double), intent(in) :: z
       real(double), intent(out) :: e
       real(double), intent(out) :: rg0
-      real(double), dimension(nnnp), intent(inout) :: rg
-      real(double), dimension(nnnp), intent(out) :: rf
+      real(double), dimension(max_radial_points), intent(inout) :: rg
+      real(double), dimension(max_radial_points), intent(out) :: rf
       integer, intent(out) :: mtp
 !VAST.../DEF2/ C(IN)
 !VAST.../DEF4/ ACCY(IN)

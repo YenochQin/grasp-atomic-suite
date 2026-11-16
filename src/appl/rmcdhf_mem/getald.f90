@@ -44,18 +44,18 @@
       logical :: getyn, yes
 !-----------------------------------------------
 !
-      write (istde, *) '(E)AL type calculation; H(DC) will not be ', &
+      write (stderr_unit, *) '(E)AL type calculation; H(DC) will not be ', &
          'diagonalised;'
-      write (istde, *) 'getald ...'
-      write (istde, *) 'ncf=', ncf
+      write (stderr_unit, *) 'getald ...'
+      write (stderr_unit, *) 'ncf=', csf_count
 
-      call alloc (wt, ncf, 'WT', 'GETALD')
+      call alloc (wt, csf_count, 'WT', 'GETALD')
 
-      call getaldwt (ncf, wt)
+      call getaldwt (csf_count, wt)
 
-      do j = 1, nw
+      do j = 1, orbital_count
          sum = 0.d0
-         do i = 1, ncf
+         do i = 1, csf_count
             sum = sum + wt(i)*dble(iq(j,i))
          end do
          ucf(j) = sum
@@ -63,7 +63,7 @@
 
       ncmin = 0
       nscf = 12
-      nsic = 2 + (nw - nfix)/4
+      nsic = 2 + (orbital_count - fixed_orbital_count)/4
       orthst = .false.
 
       return

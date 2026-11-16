@@ -31,7 +31,7 @@ end program
     for kind, valid in [("integer", True), ("integer(byte)", False)]:
         cases["mpi_handle_" + str(valid)] = (
             "program probe\n use mpi_C\n use vast_kind_param, only: byte\n implicit none\n"
-            + kind + " :: dtype\n call mpix_bytes(1,dtype,ierr)\n end program\n", valid
+            + kind + " :: dtype\n call mpix_bytes(1,dtype,mpi_error_code)\n end program\n", valid
         )
     with tempfile.TemporaryDirectory(prefix="suite-interface-") as temporary:
         work = Path(temporary)

@@ -13,7 +13,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use orb_c,           only: ncf, nw
+      use orb_c,           only: csf_count, orbital_count
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -43,7 +43,7 @@
             'UNFORMATTED', position='asis')
          rewind (nf)
          read (nf) ncfd, nwd, kamaxd
-         if (.not.(ncfd==ncf .and. nwd==nw .and. kamaxd==kamax)) then
+         if (.not.(ncfd==csf_count .and. nwd==orbital_count .and. kamaxd==kamax)) then
             write (6, *) ' Angular file not appropriate'
             avail = .false.
             return

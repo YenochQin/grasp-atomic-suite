@@ -24,7 +24,7 @@
 !-----------------------------------------------
       use memory_man
       use bilst_c
-      use orb_c, only: nkj, nw
+      use orb_c, only: orbital_two_j, orbital_count
       use kkstartbreit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -44,14 +44,14 @@
       integer :: i, key, k, ia, ib, ic, id
 !-----------------------------------------------
 !
-      key = nw + 1
+      key = orbital_count + 1
       kstartbreit1(0) = 1
 !
 !   Find 2*JMAX; it should not be greater than PARAMETER KMAX
 !
-      j2max = nkj(1)
-      do i = 2, nw
-         if (nkj(i) .gt. j2max) j2max = nkj(i)
+      j2max = orbital_two_j(1)
+      do i = 2, orbital_count
+         if (orbital_two_j(i) .gt. j2max) j2max = orbital_two_j(i)
       enddo
 
       if (j2max .gt. kmax) then
@@ -66,10 +66,10 @@
 
   999 nb = 0
       do k = 0, j2max
-         do ia = 1, nw
-            do ib = 1, nw
-               do ic = 1, nw
-                  do id = 1, nw
+         do ia = 1, orbital_count
+            do ib = 1, orbital_count
+               do ic = 1, orbital_count
+                  do id = 1, orbital_count
                      if (triangbreit1(ia,ib,ic,id,k)) then
                         nb = nb + 1
                         if (gen .and.(mod(nb,nprocs) .eq. myid)) then

@@ -14,9 +14,9 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnw
-      use orb_c,         only: iqa, ncf
-      use iounit_c,      only: istde
+      use parameter_def, only: max_orbitals
+      use orb_c,         only: csf_subshell_occupations, csf_count
+      use iounit_c,      only: stderr_unit
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -25,7 +25,7 @@
       integer             :: icsf
 !-----------------------------------------------
 !
-      iq = iqa(isubsh,icsf)
+      iq = csf_subshell_occupations(isubsh,icsf)
 !
       return
       end function iq

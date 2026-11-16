@@ -65,7 +65,7 @@
 
       joffspar = 0                               ! offset for sparse form
 !     DO J = 1, NS
-      do j = myid + 1, ns, nprocs
+      do j = mpi_rank + 1, ns, mpi_process_count
          joffnorm = (j*(j - 1))/2                ! offset for normal form
          do ir = joffspar + 1, jcol(j)
             ap(irow(ir)+joffnorm) = hmx(ir)
@@ -89,7 +89,7 @@
       call dspevx ('Vectors also', 'In a range', 'Upper triangular', ns, ap, &
       -1.d0, -1.d0, 1, niv, abstol, nfound, eigval, vec, ns, work, iwork, ifail, &
          info)
-      ierr = -abs(info)
+      mpi_error_code = -abs(info)
 
 !  Build the Basis.
 

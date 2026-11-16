@@ -27,7 +27,7 @@
 !-----------------------------------------------
       use vast_kind_param, only:  double
       use debug_c
-      use orb_c, iiqa=>iqa
+      use orb_c, iiqa=>csf_subshell_occupations
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -53,8 +53,8 @@
          iqb = iq (ib,ir)
 !GG      IQA = IBITS(IIQA((IA - 1)/4 + 1,IR),8*MOD(IA - 1,4),8)
 !GG      IQB = IBITS(IIQA((IB - 1)/4 + 1,IR),8*MOD(IB - 1,4),8)
-      if (iqa==nkj(ia) + 1 .or. iqb==nkj(ib)+1) then
-         fac = clrx(nak(ia),k,nak(ib))
+      if (iqa==orbital_two_j(ia) + 1 .or. iqb==orbital_two_j(ib)+1) then
+         fac = clrx(orbital_kappa(ia),k,orbital_kappa(ib))
          gco = -dble(iqa*iqb)*fac*fac
       else
          gco = 0.0d00

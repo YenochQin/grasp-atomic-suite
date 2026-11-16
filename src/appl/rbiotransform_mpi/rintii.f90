@@ -53,7 +53,7 @@
 !
       ta(1) = 0.0d00
       do l = 2, mtp
-         ta(l) = r(l)**k*(pfii(l,i)*pfii(l,j) + qfii(l,i)*qfii(l,j))*rp(l)
+         ta(l) = radial_grid(l)**k*(pfii(l,i)*pfii(l,j) + qfii(l,i)*qfii(l,j))*radial_grid_derivative(l)
       end do
 !
 !   Perform the quadrature

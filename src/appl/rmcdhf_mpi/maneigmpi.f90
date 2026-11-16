@@ -88,9 +88,9 @@
 !=======================================================================
 !   Trivial case
 !=======================================================================
-      if (ncf == 1) then
-         eval(ncminpat+1) = 0.d0
-         evec(nevecpat+1) = 1.d0
+      if (csf_count == 1) then
+         shifted_eigenvalues(ncminpat+1) = 0.d0
+         csf_mixing_coefficients(nevecpat+1) = 1.d0
          go to 123                               ! Don't like big ELSE
       endif
 !
@@ -104,41 +104,43 @@
 !
       nvect = ncmaxblk(jblock)
 !CFF   ... make this more like rscf
-      lim   = min (ncf, 2*nvect + 80)
+      lim   = min (csf_count, 2*nvect + 80)
 !GG      lim   = MIN (ncf, 2*nvect + 40)
 !      LIM = MIN(NCF,2*NVECT + 20)
-      lwork = 2*ncf*lim + lim*lim*2 + 11*lim + nvect
+      lwork = 2*csf_count*lim + lim*lim*2 + 11*lim + nvect
       call alloc (work, lwork, 'WORK', 'MANEIGmpi')
 
       !...At most 14 ? restriction removed xhh 98-05-19
       !nvex = MIN (nvect,ncfblk(jblock),14)
-      nvex = min(nvect,ncfblk(jblock))
+      nvex = min(nvect,csf_counts_by_block(jblock))
       niv = nvex
-      maxitr = min(nvect*200,ncf)
+      maxitr = min(nvect*200,csf_count)
 !      N1000 = 2000
       n1000 = 4000
 !
 !   Initial estimates for eigenvectors
 !
 !CFF
-      if (dvdfirst .or. (ncf .le. n1000) ) then
+      if (dvdfirst .or. (csf_count .le. n1000) ) then
 !GG         CALL INIESTmpi (N1000, NCF, NIV, WORK, EMT, IENDC, IROW)
-         call iniestmpi (n1000, ncf, niv, work, emt, iendc(0:ncf), irow)
+         call iniestmpi (n1000, csf_count, niv, work, hamiltonian_values, stored_segment_end_offsets(0:csf_count), &
+            & matrix_partner_indices)
       else
 !CFF        .. use current estimates
-      nend = ncf * nvex
-         do j = 1, nevblk(jblock)
-            work( nend + iccmin(j+ncminpat) ) = eval(ncminpat+j)
-            call dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1:nevecpat + ncf*(j-1)+(ncf)),    1,    &
-                          work( ncf*(iccmin(j+ncminpat)-1) + 1 :( ncf*(iccmin(j+ncminpat)-1) + 1 )+((ncf)-1)), 1)
+      nend = csf_count * nvex
+         do j = 1, eigenvector_counts_by_block(jblock)
+            work( nend + iccmin(j+ncminpat) ) = shifted_eigenvalues(ncminpat+j)
+            call dcopy (csf_count, csf_mixing_coefficients( nevecpat + csf_count*(j-1) + 1:nevecpat + csf_count*(j-1)+ &
+               & (csf_count)),    1,    &
+                          work( csf_count*(iccmin(j+ncminpat)-1) + 1 :( csf_count*(iccmin(j+ncminpat)-1) + 1 )+((csf_count)-1)), 1)
          enddo
       endif
 
 ! iniest looks for eigenvectors of n1000*n1000 matrix so there
 ! is no need to call dvdson if block size <= n1000
 
-      if (ncf > n1000) then
-         if (myid == 0) write (*,*) 'Calling dvdson!!!', maxitr,nvect
+      if (csf_count > n1000) then
+         if (mpi_rank == 0) write (*,*) 'Calling dvdson!!!', maxitr,nvect
 
          ! Call Davidson eigensolver
 
@@ -156,47 +158,48 @@
 !
 !   Store the diagonals in a separate array and make it global
 !
-         call alloc (diag, ncf, 'DIAG', 'MANEIGmpi')
-         call alloc (atmp, ncf, 'ATMP', 'MANEIGmpi')
-         do i = 1, ncf
+         call alloc (diag, csf_count, 'DIAG', 'MANEIGmpi')
+         call alloc (atmp, csf_count, 'ATMP', 'MANEIGmpi')
+         do i = 1, csf_count
             atmp(i) = 0.d0
             diag(i) = 0.d0    ! this one may not be necessary
          enddo
 
-         do ic = myid + 1, ncf, nprocs
+         do ic = mpi_rank + 1, csf_count, mpi_process_count
 !GG            DIAG(IC) = EMT(IENDC(IC))
-            atmp(ic) = emt(iendc(ic))
+            atmp(ic) = hamiltonian_values(stored_segment_end_offsets(ic))
          end do
-         call mpi_allreduce (atmp, diag, ncf, mpi_double_precision,  &
-                             mpi_sum, mpi_comm_world, ierr)
+         call mpi_allreduce (atmp, diag, csf_count, mpi_double_precision,  &
+                             mpi_sum, mpi_comm_world, mpi_error_code)
          call dalloc(atmp,'ATMP', 'MANEIGmpi')
 
          call alloc (iwork, liwork, 'IWORK', 'MANEIGmpi')
          call alloc (jwork, lim, 'JWORK', 'MANEIGmpi')
-         if (ncf.gt.1000) then
-            call gdvd (spicmvmpi,ncf,lim,diag,ilow,ihigh,jwork,niv,mblock, &
+         if (csf_count.gt.1000) then
+            call gdvd (spicmvmpi,csf_count,lim,diag,ilow,ihigh,jwork,niv,mblock, &
             crite, critc, critr, ortho, maxitr, work, lwork, iwork, liwork, &
-            hiend, nloops, nmv, ierr)
+            hiend, nloops, nmv, mpi_error_code)
          end if
          call dalloc (diag, 'DIAG', 'MANEIGmpi')
          call dalloc (iwork, 'IWORK', 'MANEIGmpi')
          call dalloc (jwork, 'JWORK', 'MANEIGmpi')
 
-         if (myid .eq. 0) then
+         if (mpi_rank .eq. 0) then
             write (*,301) nloops, nmv
-            if (ierr .ne. 0) then
-               write (*,302) ierr
+            if (mpi_error_code .ne. 0) then
+               write (*,302) mpi_error_code
             endif
          endif
       endif
 !
 !   Pick up the eigen pairs and store in EVAL and EVEC
 !
-      nend = ncf*nvex
-      do j = 1, nevblk(jblock)
-         eval(ncminpat+j) = work(nend + iccmin(j + ncminpat))
-         call dcopy (ncf, work(ncf*(iccmin(j + ncminpat) - 1) + 1:ncf*(iccmin(j + ncminpat) - 1)+(ncf)), 1, &
-      & evec( nevecpat+ncf*(j-1)+1:nevecpat+ncf*(j-1)+(ncf)), 1)
+      nend = csf_count*nvex
+      do j = 1, eigenvector_counts_by_block(jblock)
+         shifted_eigenvalues(ncminpat+j) = work(nend + iccmin(j + ncminpat))
+         call dcopy (csf_count, work(csf_count*(iccmin(j + ncminpat) - 1) + 1:csf_count*(iccmin(j + ncminpat) - 1)+ &
+            & (csf_count)), 1, &
+      & csf_mixing_coefficients( nevecpat+csf_count*(j-1)+1:nevecpat+csf_count*(j-1)+(csf_count)), 1)
       end do
 !     print *, ncminpat,(eval(ncminpat+j),j=1,nevblk(jblock)),
 !    1 'zou,from maneig'
@@ -206,15 +209,15 @@
       call dalloc (work, 'WORK', 'MANEIGmpi')
 
   123 continue
-      do jstate = 1, nevblk(jblock)
+      do jstate = 1, eigenvector_counts_by_block(jblock)
 !
 !   Find the dominant component of each eigenvector
 !
-         iofset = nevecpat + ncf*(jstate - 1)
+         iofset = nevecpat + csf_count*(jstate - 1)
 
          amax = 0.d0
-         do i = 1, ncf
-            wa = abs(evec(i+iofset))
+         do i = 1, csf_count
+            wa = abs(csf_mixing_coefficients(i+iofset))
             if (wa <= amax) cycle
             amax = wa
             ia = i
@@ -228,9 +231,9 @@
 !   Redefine eigenvectors so that the dominant component
 !   is positive
 !
-         if (evec(ia+iofset) >= 0.d0) cycle
+         if (csf_mixing_coefficients(ia+iofset) >= 0.d0) cycle
          dnfac = -1.d0
-         call dscal (ncf, dnfac, evec(iofset+1:iofset+(ncf)), 1)
+         call dscal (csf_count, dnfac, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1)
 !===============================================================
 
       end do

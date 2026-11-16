@@ -62,7 +62,7 @@
 !
       call openfl (25, filnam, form, status, ierr)
       if (ierr == 1) then
-         write (istde, *) 'Error when opening', filnam
+         write (stderr_unit, *) 'Error when opening', filnam
          call density_fail('Cannot read mixing coefficients')
       endif
 !
@@ -70,22 +70,22 @@
 !
       read (25, iostat=ios) g92mix
       if (ios/=0 .or. g92mix/='G92MIX') then
-         write (istde, *) 'Not a GRASP92 MIXing Coefficients File;'
+         write (stderr_unit, *) 'Not a GRASP92 MIXing Coefficients File;'
          close(25)
          call density_fail('Cannot read mixing coefficients')
       endif
 
       read (25, iostat=ios) nelecmix, ncftot, nwmix, nvectot, nvecsiz, nblock
       if (ios /= 0) call density_fail('Truncated mixing header')
-      if (nelecmix /= nelec .or. ncftot /= ncf .or. nwmix /= nw) &
+      if (nelecmix /= electron_count .or. ncftot /= csf_count .or. nwmix /= orbital_count) &
          call density_fail('CSF and mixing-file dimensions do not match')
       if (ncftot < 1 .or. nvectot < 1 .or. nblock < 1) &
          call density_fail('Empty or invalid mixing file')
-      if (int(ncftot,int64)*nvectot > huge(ncf)) &
+      if (int(ncftot,int64)*nvectot > huge(csf_count)) &
          call density_fail('Mixing vector size exceeds integer index capacity')
-      write (*, *) '   nelec  = ', nelec
+      write (*, *) '   nelec  = ', electron_count
       write (*, *) '   ncftot = ', ncftot
-      write (*, *) '   nw     = ', nw
+      write (*, *) '   nw     = ', orbital_count
       write (*, *) '   nblock = ', nblock
       write (*, *)
 
@@ -93,8 +93,8 @@
 ! Allocate memory for old format data
 !***********************************************************************
 
-      call alloc (eval, nvectot, 'EVAL', 'GETMIXBLOCK')
-      call alloc (evec, ncftot*nvectot, 'EVEC', 'GETMIXBLOCK')
+      call alloc (shifted_eigenvalues, nvectot, 'EVAL', 'GETMIXBLOCK')
+      call alloc (csf_mixing_coefficients, ncftot*nvectot, 'EVEC', 'GETMIXBLOCK')
       call alloc (ivec, nvectot, 'IVEC', 'GETMIXBLOCK')
       call alloc (iatjpo, nvectot, 'IATJPO', 'GETMIXBLOCK')
       call alloc (iaspar, nvectot, 'IASPAR', 'GETMIXBLOCK')
@@ -102,7 +102,7 @@
 !***********************************************************************
 ! Initialize mixing coefficients to zero; others are fine
 !***********************************************************************
-      evec(:nvectot*ncftot) = 0.d0
+      csf_mixing_coefficients(:nvectot*ncftot) = 0.d0
 
 !***********************************************************************
 ! Initialize counters and sum registers
@@ -140,17 +140,17 @@
             iatjpo(nvecpat+1:nevblk+nvecpat) = iatjp
             iaspar(nvecpat+1:nevblk+nvecpat) = iaspa
 
-            read (25, iostat=ios) eav, (eval(nvecpat+i),i=1,nevblk)
+            read (25, iostat=ios) hamiltonian_energy_shift, (shifted_eigenvalues(nvecpat+i),i=1,nevblk)
 
             if (ios /= 0) call density_fail('Truncated mixing energies')
 !           ...Construct the true energy by adding up the average
-            eval(nvecpat+1:nevblk+nvecpat) = eval(nvecpat+1:nevblk+nvecpat) + &
-               eav
+            shifted_eigenvalues(nvecpat+1:nevblk+nvecpat) = shifted_eigenvalues(nvecpat+1:nevblk+nvecpat) + &
+               hamiltonian_energy_shift
 !           ...For overal (all blocks) average energy
-            eavsum = eavsum + eav*ncfblk
+            eavsum = eavsum + hamiltonian_energy_shift*ncfblk
             neavsum = neavsum + ncfblk
 
-            read (25, iostat=ios) ((evec(nvecsizpat+ncfpat+i+(j-1)*ncftot),i=1,ncfblk),j=1,&
+            read (25, iostat=ios) ((csf_mixing_coefficients(nvecsizpat+ncfpat+i+(j-1)*ncftot),i=1,ncfblk),j=1,&
                nevblk)
             if (ios /= 0) call density_fail('Truncated mixing eigenvectors')
          endif
@@ -167,22 +167,22 @@
 
       if (ncfpat /= ncftot .or. nvecpat /= nvectot) &
          call density_fail('Mixing block totals do not match the header')
-      if (.not.all(ieee_is_finite(evec))) call density_fail('Non-finite mixing coefficients')
+      if (.not.all(ieee_is_finite(csf_mixing_coefficients))) call density_fail('Non-finite mixing coefficients')
       do i=1,nvectot
-         if (abs(sum(evec((i-1)*ncftot+1:i*ncftot)**2)-1.0d0) > 1.0d-6) &
+         if (abs(sum(csf_mixing_coefficients((i-1)*ncftot+1:i*ncftot)**2)-1.0d0) > 1.0d-6) &
             call density_fail('Mixing eigenvector is not normalized')
       end do
-      eav = eavsum/neavsum
+      hamiltonian_energy_shift = eavsum/neavsum
 
       if (ncftot /= neavsum) write (6, *) &
          'Not all blocks are diagonalized --- Average E ', 'not correct'
 
 !     ...Substrct the overal average energy
-      eval(:nvectot) = eval(:nvectot) - eav
+      shifted_eigenvalues(:nvectot) = shifted_eigenvalues(:nvectot) - hamiltonian_energy_shift
 
       close(25)
 
-      ncf = ncftot
+      csf_count = ncftot
       nvec = nvectot
 
       return

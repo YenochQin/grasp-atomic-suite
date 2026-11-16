@@ -81,7 +81,7 @@
       l_mpi = mpi_logical
 !      if (ISIZE.EQ.8) L_MPI = MPI_LOGICAL8
 
-      ncftot = ncf
+      total_csf_count = csf_count
       !IF (myid .EQ. 0) PRINT *, '===SCF==='
 
 !=======================================================================
@@ -91,22 +91,22 @@
       if (ndef == 0) then
          lsort = .false.
       else
-         if (myid .eq. 0) then
+         if (mpi_rank .eq. 0) then
   123       continue
-            write (istde, *) 'Orthonomalization order? '
-            write (istde, *) '     1 -- Update order'
-            write (istde, *) '     2 -- Self consistency connected'
-            read (istdi, *) j
+            write (stderr_unit, *) 'Orthonomalization order? '
+            write (stderr_unit, *) '     1 -- Update order'
+            write (stderr_unit, *) '     2 -- Self consistency connected'
+            read (stdin_unit, *) j
             if (j == 1) then
                lsort = .false.
             else if (j == 2) then
                lsort = .true.
             else
-               write (istde, *) 'Input is wrong, redo...'
+               write (stderr_unit, *) 'Input is wrong, redo...'
                go to 123
             endif
          endif
-         call mpi_bcast (lsort, 1, l_mpi, 0, mpi_comm_world, ierr)
+         call mpi_bcast (lsort, 1, l_mpi, 0, mpi_comm_world, mpi_error_code)
       endif
 
 !=======================================================================
@@ -119,26 +119,27 @@
 !   Allocate and fill in auxiliary arrays
 !=======================================================================
 
-      call alloc (ncfpast, nblock, 'NCFPAST', 'SCFmpi')
-      call alloc (ncminpast, nblock, 'NCMINPAST', 'SCFmpi')
-      call alloc (nevecpast, nblock, 'NEVECPAST', 'SCFmpi')
-      call alloc (eavblk, nblock, 'EAVBLK', 'SCFmpi')
+      call alloc (csf_offsets_by_block, symmetry_block_count, 'NCFPAST', 'SCFmpi')
+      call alloc (eigenvalue_offsets_by_block, symmetry_block_count, 'NCMINPAST', 'SCFmpi')
+      call alloc (mixing_offsets_by_block, symmetry_block_count, 'NEVECPAST', 'SCFmpi')
+      call alloc (eavblk, symmetry_block_count, 'EAVBLK', 'SCFmpi')
 
-      ncfpast(1) = 0
-      ncminpast(1) = 0
-      nevecpast(1) = 0
-      do i = 2, nblock
-         ncfpast(i) = ncfpast(i-1) + ncfblk(i - 1)
-         ncminpast(i) = ncminpast(i-1) + nevblk(i - 1)
-         nevecpast(i) = nevecpast(i-1) + nevblk(i - 1)*ncfblk(i - 1)
+      csf_offsets_by_block(1) = 0
+      eigenvalue_offsets_by_block(1) = 0
+      mixing_offsets_by_block(1) = 0
+      do i = 2, symmetry_block_count
+         csf_offsets_by_block(i) = csf_offsets_by_block(i-1) + csf_counts_by_block(i - 1)
+         eigenvalue_offsets_by_block(i) = eigenvalue_offsets_by_block(i-1) + eigenvector_counts_by_block(i - 1)
+         mixing_offsets_by_block(i) = mixing_offsets_by_block(i-1) + eigenvector_counts_by_block(i - 1)*csf_counts_by_block(i - 1)
       end do
 
       !*** Size of the eigenvector array for all blocks
-      nvecsiz = nevecpast(nblock) + nevblk(nblock)*ncfblk(nblock)
+      mixing_coefficient_storage_size = mixing_offsets_by_block(symmetry_block_count) + &
+         & eigenvector_counts_by_block(symmetry_block_count)*csf_counts_by_block(symmetry_block_count)
 
       if (eol) then
-         call alloc (eval, ncmin, 'EVAL', 'SCFmpi')
-         call alloc (evec, nvecsiz, 'EVEC', 'SCFmpi')
+         call alloc (shifted_eigenvalues, ncmin, 'EVAL', 'SCFmpi')
+         call alloc (csf_mixing_coefficients, mixing_coefficient_storage_size, 'EVEC', 'SCFmpi')
          call alloc (iatjpo, ncmin, 'IATJPO', 'SCFmpi')
          call alloc (iaspar, ncmin, 'IASPAR', 'SCFmpi')
       endif
@@ -174,7 +175,7 @@
       wtaev0 = 0.0
       dvdfirst = .false.
       do nit = 1, nscf
-         if (myid == 0) write (*, 301) nit
+         if (mpi_rank == 0) write (*, 301) nit
 
 !   For all pairs constrained through a Lagrange multiplier, compute
 !   the Lagrange multiplier
@@ -184,10 +185,10 @@
 !   Improve all orbitals in turn
 
          dampmx = 0.0
-         if (myid == 0) write (*, 302)
-         do j = 1, nw
+         if (mpi_rank == 0) write (*, 302)
+         do j = 1, orbital_count
             jseq = iorder(j)
-            if (lfix(jseq)) cycle
+            if (is_orbital_fixed(jseq)) cycle
             call improvmpi (eol, jseq, lsort, dampmx)
          end do
 !
@@ -222,7 +223,7 @@
          endif
 
     3    continue
-         if (ldbpr(24) .and. myid==0) call prwf (0)
+         if (ldbpr(24) .and. mpi_rank==0) call prwf (0)
 
 !   Perform Gram-Schmidt process
 !   For OL calculation, orthst is true and orbitals are orthonormalized
@@ -231,7 +232,7 @@
 
 !   Write the subshell radial wavefunctions to the .rwf file
 
-         if (myid == 0) call orbout (rwffile2)
+         if (mpi_rank == 0) call orbout (rwffile2)
 
          if (eol) then
             call matrixmpi(dvdfirst)
@@ -249,27 +250,27 @@
          if (abs((wtaev - wtaev0)/wtaev) < 0.001*accy) convg = .true.
          wtaev0 = wtaev
          if (.not.convg) cycle
-         if (ldbpr(25) .and. .not.ldbpr(24) .and. myid==0) call prwf (0)
+         if (ldbpr(25) .and. .not.ldbpr(24) .and. mpi_rank==0) call prwf (0)
             !IF (EOL) CALL matrixmpi (dvdfirst)
          go to 5
 
       end do
 
-      if (myid==0) write (istde,*)' Maximum iterations in SCF Exceeded.'
+      if (mpi_rank==0) write (stderr_unit,*)' Maximum iterations in SCF Exceeded.'
 
     5 continue
-      do i = 31, 32 + kmaxf
+      do i = 31, 32 + max_mcp_file_multipole_rank
          close(i)                                ! The MCP coefficient files
       end do
 
-      if (myid == 0) then
+      if (mpi_rank == 0) then
          !CLOSE (23)     ! The .rwf file
          close(25)                               ! The .mix file
       endif
 !
 !   Complete the summary - moved from rscf92 for easier alloc/dalloc
 !
-      if (myid .eq. 0) call endsum
+      if (mpi_rank .eq. 0) call endsum
 !
 !   Deallocate storage
 !
@@ -278,7 +279,7 @@
       if (nec > 0) then
          call dalloc (iecc, 'IECC', 'SCFmpi')
          call dalloc (ecv, 'ECV', 'SCFmpi')
-         call dalloc (iqa, 'IQA', 'SCFmpi')
+         call dalloc (csf_subshell_occupations, 'IQA', 'SCFmpi')
       endif
 
       if (nddim > 0) then
@@ -300,8 +301,8 @@
       endif
 
       if (eol) then
-         call dalloc (eval, 'EVAL', 'SCFmpi')
-         call dalloc (evec, 'EvEC', 'SCFmpi')
+         call dalloc (shifted_eigenvalues, 'EVAL', 'SCFmpi')
+         call dalloc (csf_mixing_coefficients, 'EvEC', 'SCFmpi')
          call dalloc (iatjpo, 'IATJPO', 'SCFmpi')
          call dalloc (iaspar, 'IASPAR', 'SCFmpi')
          call dalloc (ncmaxblk, 'NCMAXBLK', 'SCFmpi') ! getold.f
@@ -310,9 +311,9 @@
          call dalloc (iccmin, 'ICCMIN', 'SCFmpi')       ! Allocated in items.f<-getold.f
       endif
 !
-      call dalloc (ncfpast, 'NCFPAST', 'SCFmpi')
-      call dalloc (ncminpast, 'NCMINPAST', 'SCFmpi')
-      call dalloc (nevecpast, 'NEVECPAST', 'SCFmpi')
+      call dalloc (csf_offsets_by_block, 'NCFPAST', 'SCFmpi')
+      call dalloc (eigenvalue_offsets_by_block, 'NCMINPAST', 'SCFmpi')
+      call dalloc (mixing_offsets_by_block, 'NEVECPAST', 'SCFmpi')
 
   301 format(/,' Iteration number ',1i3,/,' --------------------')
   302 format(41x,'Self-            Damping'/,&

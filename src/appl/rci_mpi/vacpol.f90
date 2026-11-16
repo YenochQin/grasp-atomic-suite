@@ -39,7 +39,7 @@
 !
 !   Redefine  ZDIST  to be  rho*r*r'
 !
-      zdist(:mtp) = zdist(:mtp)*r(:mtp)*rp(:mtp)
+      zdist(:mtp) = zdist(:mtp)*radial_grid(:mtp)*radial_grid_derivative(:mtp)
 !
 !   Second-order vacuum polarisation potential; returned in
 !   array TB

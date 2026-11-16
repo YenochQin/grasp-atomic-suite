@@ -33,8 +33,9 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 明确候选已实施，CSFG 已移除 | [variable_rename_csfg_removal_2026-11-16.md](reviews/variable_rename_csfg_removal_2026-11-16.md) | 529 项候选中 528 项改名、pi 保留；746 份普通源码同步引用，原容量名保持兼容别名；移除 948 份 CSFG 源码及专用构建/测试。Release/Check 编译和各 67 项回归通过（Release 含两个维护检查的定向重跑），44 对输出字节一致；历史告警预算缺口保留。 |
 | 已统一大小写，软件回归通过 | [non_csfg_lowercase_2026-11-16.md](reviews/non_csfg_lowercase_2026-11-16.md) | 排除 CSFG，1,880 份 Fortran 文本中修改 1,872 份；保留字符串、注释、宏和排版。GNU 15 Release/Check 编译通过，各 67 项回归通过（Release 含三个维护检查的定向重跑）；44 对附加输出逐字节一致。记录既有告警预算覆盖缺口和行尾空白，未做语义重命名。 |
-| 变量清单已整理，语义重命名待实施 | [non_csfg_variable_inventory_2026-11-16.md](plans/non_csfg_variable_inventory_2026-11-16.md) | 基准 caaf3a5；排除 CSFG 构建边界，覆盖 1,880 份 Fortran 文本、20,108 个按文件/作用域区分的实体，另列构建标识符与 USE 别名；529 项有候选命名，其余语义待核实。保留转换前拼写与哈希，后续小写化记录见上条。 |
+| 明确候选已处理，其余待核实 | [non_csfg_variable_inventory_2026-11-16.md](plans/non_csfg_variable_inventory_2026-11-16.md) | 原始采集基准 caaf3a5；1,880 份 Fortran 文本、20,108 个实体。529 项明确候选已逐项标记（528 改名、pi 保留），其余 19,579 项待核实；原名、原声明行及哈希作为历史快照，当前名称与位置另有 JSON 映射。 |
 | 已实施，串行专项回归通过 | [rangular_angular_reuse.md](implemented/rangular_angular_reuse.md) | 默认关闭的有界 CSF 对缓存；保留顺序、占据/耦合及轨道共享关系，复用原始 T/V 系数，普通 MCP 写出不变；包含命中率、缓存容量与 RSS 测量，OpenMP/MPI 未接入。 |
 | 已完成输出与性能对照 | [rangular_reuse_benchmark_2026-11-14.md](reviews/rangular_reuse_benchmark_2026-11-14.md) | 独立构建修改前基准，两组数据各三轮，文本/描述符 MCP 零容差及字节一致；合成样本命中 99.93%、整程 1.21×，现有 14,551-CSF 样本几乎不命中、慢约 37%；默认保持关闭。 |
 | 已实施，GNU 15 专项回归通过 | [rwfnestimate_header_input.md](implemented/rwfnestimate_header_input.md) | 普通 rwfnestimate 原生读取 rCSFs header.toml 的轨道表和含 core 总电子数；保留文本入口和 header 字节；Ni/Zn 及 TOML Release/Check 专项各 3/3，原生描述符配对哈希不变。 |
@@ -71,9 +72,9 @@ docs/
 | 已完成接入检查 | [standard_grasp_integration_validation_2026-11-08.md](reviews/standard_grasp_integration_validation_2026-11-08.md) | GNU 15.3.0 全量及 serial-only 构建通过；35 项补丁器测试通过；CTest 28/39 通过，11 项 NP/strict 失败在未修改基线复现。记录既有并行模块输出冲突；不宣称全绿或物理验收。 |
 | 已实施 | [jj2lsj_postprocessing.md](implemented/jj2lsj_postprocessing.md) | 2026-11-04 分阶段计时、稳定归并排序及 ASF 排序并行；唯一标签和输出按序执行，跨 block 流水线经计时评估暂缓。 |
 | 已实施 | [jj2lsj_openmp.md](implemented/jj2lsj_openmp.md) | 2026-11-02 `jj2lsj_omp` 普通 CSF 的 OpenMP LS 行转换，保留默认提前停止与串行 `.lsj.T`；数值/文件回归及 Debug、无 OpenMP 构建通过；Gd I 真实输入兼容性通过，已有单次性能观测。 |
-| 已实施 | [graspg_integration.md](implemented/graspg_integration.md) | 2026-10-30 GRASPG 计算源码、16 个程序、共享参数与串行/MPI CMake；工程回归通过，真实原子 SCF/RCI 验证未执行。 |
+| 已移除，历史归档 | [graspg_integration.md](archive/graspg_integration.md) | 记录 2026-10-30 的 GRASPG 集成与来源；2026-11-16 专用源码、构建和测试入口已移除。旧启用说明不是当前可用功能，普通共享库保留。 |
 | 已实施 | [rdensity_mpi.md](implemented/rdensity_mpi.md) | 2026-10-09 新增串行/MPI 自然轨道程序；CSF 分工、矩阵归约、解析小模型及 Ni 对照测试。大规模性能与物理收敛仍待验证。 |
-| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-10-13 保留参数转导层，恢复原版参数值；2026-11-11 退役 strict/diag 后现有 19 个网格入口、4 个 RCI 续算入口，NNNP=590、NNN1=600。 |
+| 已实施 | [common_parameters.md](implemented/common_parameters.md) | 2026-11-16 使用语义容量名称并保留旧名别名；CSFG 移除后覆盖 15 个普通网格入口、2 个 RCI 续算入口，默认容量仍为 590/600。 |
 | 已实施 | [RHFS_gJ_report.md](implemented/RHFS_gJ_report.md) | 串行 RHFS 的加载、矩阵元、ASF 投影及输出链仍存在。仅覆盖该路径，不是 gj/MPI 完整说明。 |
 | 已实施，普通 MPI 已移除 NP 入口 | [rmcdhf_nuclear_polarization.md](implemented/rmcdhf_nuclear_polarization.md) | 2026-11-15 普通 rmcdhf_mpi 恢复直接核势初始化；rmcdhf、rmcdhf_mem、rmcdhf_mem_mpi 保留可选 NP。保留 2026-10-24 历史代码验证，物理计算验证未执行。 |
 | 已完成代码计划 | [rmcdhf_nuclear_polarization_implementation.md](plans/rmcdhf_nuclear_polarization_implementation.md) | 保留实施设计、完成清单与结果；现行输入契约见已实施说明。 |
@@ -98,10 +99,10 @@ docs/
 - [suite_parameters_M.f90](../src/lib/libmod/suite_parameters_M.f90) 定义容量，
   [parameter_def_M.f90](../src/lib/libmod/parameter_def_M.f90) 转导原有常量名；
   当前 `NNNP=590`、`NNN1=600`。网格初始化仍在各入口。
-- 二十五个入口（含普通 GRASP 计算链、四个 GRASPG、新复制的四个原版 RMCDHF 及 P0 诊断目标）保留各自的原版点核/有限核默认值与 ACCY 初始化时序；
-  当前有限核默认 `N=NNNP=590`。suite 脚本布局按需修改集中容量配置和这些入口，保持转导接口。
+- 当前网格脚本覆盖十五个普通网格入口和两个 RCI 续算 ACCY 入口，保留各自的默认值与初始化时序；
+  CSFG 和此前退役的求解器不在现行范围。有限核默认 `radial_point_count=max_radial_points=590`，旧容量名仍由转导接口提供。
 - [test/CMakeLists.txt](../test/CMakeLists.txt) 保留共享容量检查和网格脚本回归；
-  历史测试数量不能代替当前实际验证。严格内存 MPI 的 Linux 重启测试另见其说明。
+  历史测试数量不能代替当前实际验证；退役求解器的测试记录仅供追溯。
 - 历史 `N=2990,H=0.05` 的风险审查与候选网格实验仍有参考价值，
   但该组合已不是仓库默认值，参数恢复本身也不代表生产体系收敛。
 

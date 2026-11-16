@@ -1,4 +1,4 @@
-"""Build ordinary-GRASP production and validation profiles; CSFG is isolated.
+"""Build ordinary-GRASP production and validation profiles; CSFG is retired.
 
 Use --stage build to collect a fresh matrix before explicitly creating/reviewing
 a warning baseline. The default stage runs the complete CTest suite and checks
@@ -22,6 +22,7 @@ from warning_inventory import AXES, BASELINE, case_id, compare, digest, inventor
 SOURCE = Path(__file__).resolve().parents[2]
 OPTIONS = {"serial": "GRASP_BUILD_SERIAL_APPS", "mpi": "GRASP_ENABLE_MPI",
            "csfg": "GRASP_BUILD_CSFG", "openmp": "GRASP_JJ2LSJ_OPENMP"}
+# The permanently false csfg axis keeps historical warning-budget IDs stable.
 
 
 def cases() -> list[dict]:

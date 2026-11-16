@@ -20,7 +20,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use def_c,           only: cvac, pi
+      use def_c,           only: vacuum_speed_of_light_au, pi
       use grid_c
       use wave_c
 !-----------------------------------------------
@@ -44,8 +44,9 @@
 
       ii = 1
       do l = nmin,nmin+4,2
-         xa(ii) = r(l)
-         ya(ii) = (pf(l,i)*pf(l,j) + qf(l,i)*qf(l,j))/(4.0d00*pi*r(l)*r(l))
+         xa(ii) = radial_grid(l)
+         ya(ii) = (radial_large_components(l,i)*radial_large_components(l,j) + radial_small_components(l,i)* &
+            & radial_small_components(l,j))/(4.0d00*pi*radial_grid(l)*radial_grid(l))
          ii = ii + 1
       end do
       call polint (xa,ya,dens)

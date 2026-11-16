@@ -138,8 +138,8 @@ contains
    end subroutine load_angular_header
 
    subroutine load_angular_block(options, core_count, block_index)
-      use orb_c, only: occupations => iqa
-      use stat_c, only: subshell_quantum_numbers => jqsa, couplings => jcupa
+      use orb_c, only: occupations => csf_subshell_occupations
+      use stat_c, only: subshell_quantum_numbers => csf_subshell_quantum_codes, couplings => csf_coupling_quantum_codes
       type(angular_input_options), intent(inout) :: options
       integer, intent(in) :: core_count, block_index
       if (options%use_descriptors) then

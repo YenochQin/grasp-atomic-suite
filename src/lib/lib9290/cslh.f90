@@ -22,7 +22,7 @@
       use memory_man
       use hblock_c
       use def_c
-      use orb_c, ncftot=>ncf
+      use orb_c, ncftot=>csf_count
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -47,10 +47,10 @@
 
 ! node-0 does exactly the same as the serial code does
 
-      call alloc (ncfblk, nblkin + 1, 'NCFBLK', 'CSLH')
+      call alloc (csf_counts_by_block, nblkin + 1, 'NCFBLK', 'CSLH')
 
-      call setcsll (21, name, nblkin, nblock, ncfblk, ncftot, idblk)
-      call ralloc (ncfblk, nblock + 1, 'NCFBLK', 'CSLH')
+      call setcsll (21, name, nblkin, symmetry_block_count, csf_counts_by_block, ncftot, idblk)
+      call ralloc (csf_counts_by_block, symmetry_block_count + 1, 'NCFBLK', 'CSLH')
       rewind (21)
       read (21, *)
       !..Load header of <name> file

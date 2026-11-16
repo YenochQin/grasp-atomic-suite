@@ -5,9 +5,9 @@
 !                     Gediminas Gaigalas  10/05/17
       subroutine qed (jstate, slfint, ucf)
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw
+      use parameter_def,   only: max_orbitals
       integer, intent(in) :: jstate
-      real(double), dimension(nnnw), intent(out) :: slfint
+      real(double), dimension(max_orbitals), intent(out) :: slfint
       real(double), dimension(1), intent(out) :: ucf
       end subroutine
       end interface

@@ -21,7 +21,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double, long
-      use parameter_def,    only: keyorb
+      use parameter_def,    only: orbital_index_radix
       use memory_man
       use orb_c
       use hblock_c
@@ -47,7 +47,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
       character*6, parameter :: myname = 'SETCOF'
       real, parameter :: eps = 1.0d-10
 !-----------------------------------------------
@@ -104,8 +104,8 @@
       nxcof = 0
       nycof = 0
 
-      nakj = nak(j)
-      nkjj = nkj(j)
+      nakj = orbital_kappa(j)
+      nkjj = orbital_two_j(j)
       ucfj = ucf(j)
 
 !=======================================================================
@@ -115,7 +115,7 @@
 
       ilabel = 0
       nwterm = key*(key + 1)
-      do ib = 1, nw
+      do ib = 1, orbital_count
          ilabel = ilabel + nwterm
          if (ib == j) then
             kmax = nkjj - 1
@@ -126,9 +126,9 @@
 
             !<<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
             sumr = 0.d0
-            do nb = 1, nblock
-               do ir = myid + 1, ncfblk(nb), nprocs
-                  sumr = sumr + dsubrs(eol,ir,ir,nb)*fco(k,ir + ncfpast(nb),j,&
+            do nb = 1, symmetry_block_count
+               do ir = mpi_rank + 1, csf_counts_by_block(nb), mpi_process_count
+                  sumr = sumr + dsubrs(eol,ir,ir,nb)*fco(k,ir + csf_offsets_by_block(nb),j,&
                      ib)
                end do
             end do
@@ -177,11 +177,11 @@
 
       ilabel = key*j
       nwterm = key*key*(key + 1)
-      do ib = 1, nw
+      do ib = 1, orbital_count
          ilabel = ilabel + nwterm
          if (ib == j) cycle
-         nkjib = nkj(ib)
-         if (nakj*nak(ib) > 0) then
+         nkjib = orbital_two_j(ib)
+         if (nakj*orbital_kappa(ib) > 0) then
             kmin = abs((nkjj - nkjib)/2)
          else
             kmin = abs((nkjj - nkjib)/2) + 1
@@ -192,9 +192,9 @@
 
             !<<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
             sumr = 0.d0
-            do nb = 1, nblock
-               do ir = myid + 1, ncfblk(nb), nprocs
-                  sumr = sumr + dsubrs(eol,ir,ir,nb)*gco(k,ir + ncfpast(nb),j,&
+            do nb = 1, symmetry_block_count
+               do ir = mpi_rank + 1, csf_counts_by_block(nb), mpi_process_count
+                  sumr = sumr + dsubrs(eol,ir,ir,nb)*gco(k,ir + csf_offsets_by_block(nb),j,&
                      ib)
                end do
             end do
@@ -236,7 +236,7 @@
 !   contents of these records.
 !=======================================================================
 
-      do nfile = 30, 32 + kmaxf
+      do nfile = 30, 32 + max_mcp_file_multipole_rank
          rewind (nfile)
          if (nfile /= 30) then
             do i = 1, 3
@@ -256,23 +256,24 @@
 !   integrals
 !=======================================================================
 
-      do jblock = 1, nblock
+      do jblock = 1, symmetry_block_count
 
          !*** Read in IROW from file mcp.30 ***
-         read (30) mcplab, jblockt, ncf
+         read (30) mcplab, jblockt, csf_count
          if (jblockt /= jblock) then
-            write (istde, *) myname, '1: jblockt .NE. jblock'
+            write (stderr_unit, *) myname, '1: jblockt .NE. jblock'
             error stop
          endif
          read (30) nelmntgg
-         nelmnt = int(nelmntgg,kind=long)
-         call alloc (irow, nelmnt, 'IROW', 'SETCOF')
-         read (30) (iendcdum,i=myid + 1,ncf,nprocs), (irow(i),i=1,nelmnt)
+         stored_matrix_element_count = int(nelmntgg,kind=long)
+         call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'SETCOF')
+         read (30) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), (matrix_partner_indices(i),i=1, &
+            & stored_matrix_element_count)
 
          !*** Block info file mcp.31 ***
-         read (31) mcplab, jblockt, ncf, ncoeff
+         read (31) mcplab, jblockt, csf_count, ncoeff
          if (jblockt /= jblock) then
-            write (istde, *) myname, '2: jblockt .NE. jblock'
+            write (stderr_unit, *) myname, '2: jblockt .NE. jblock'
             error stop
          endif
 
@@ -285,7 +286,7 @@
             ! 0, 0 marks the end of a block. This is the normal exit
 
             if (lab==0 .and. ncontr==0) then
-               call dalloc (irow, 'IROW', 'SETCOF')
+               call dalloc (matrix_partner_indices, 'IROW', 'SETCOF')
                exit                              ! Actually to next block
             endif
 
@@ -321,7 +322,7 @@
 
             sum = 0.d0
             do i = 1, ncontr
-               ir = irow(indx(i))
+               ir = matrix_partner_indices(indx(i))
                ic = iclmn(i)
 
                contr = dsubrs(eol,ir,ic,jblock)*coeff(i)
@@ -381,7 +382,7 @@
 !   integrals
 !=======================================================================
 
-      do nfile = 32, 32 + kmaxf
+      do nfile = 32, 32 + max_mcp_file_multipole_rank
 
 !         ...Re-position file mcp.30
 
@@ -394,21 +395,22 @@
 !   Loop over blocks again, this time, for V-coefficients
 !=======================================================================
 
-         do jblock = 1, nblock
+         do jblock = 1, symmetry_block_count
 !           ...Read in IROW from file mcp.30
-            read (30) mcplab, jblockt, ncf
+            read (30) mcplab, jblockt, csf_count
             if (jblockt /= jblock) then
-               write (istde, *) myname, ':3 jblockt .NE. jblock'
+               write (stderr_unit, *) myname, ':3 jblockt .NE. jblock'
                error stop
             endif
             read (30) nelmntgg
-            nelmnt = int(nelmntgg,kind=long)
-            call alloc (irow, nelmnt, 'IROW', 'SETCOF')
-            read (30) (iendcdum,i=myid + 1,ncf,nprocs), (irow(i),i=1,nelmnt)
+            stored_matrix_element_count = int(nelmntgg,kind=long)
+            call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'SETCOF')
+            read (30) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), (matrix_partner_indices(i),i=1, &
+               & stored_matrix_element_count)
 
-            read (nfile) mcplab, jblockt, ncf, ncoeff
+            read (nfile) mcplab, jblockt, csf_count, ncoeff
             if (jblockt /= jblock) then
-               write (istde, *) myname, ':4 jblockt .NE. jblock'
+               write (stderr_unit, *) myname, ':4 jblockt .NE. jblock'
                error stop
             endif
 
@@ -422,7 +424,7 @@
             read (nfile, iostat=ios) lab, ncontr
 !
             if (lab==0 .and. ncontr==0) then
-               call dalloc (irow, 'IROW', 'SETCOF')
+               call dalloc (matrix_partner_indices, 'IROW', 'SETCOF')
                cycle
             endif
             !***                       k
@@ -463,7 +465,7 @@
             !*** off-diagonal contributions have double the weight
             sum = 0.d0
             do i = 1, ncontr
-               ir = irow(indx(i))
+               ir = matrix_partner_indices(indx(i))
                ic = iclmn(i)
                contr = dsubrs(eol,ir,ic,jblock)*coeff(i)
                if (ir /= ic) contr = contr + contr

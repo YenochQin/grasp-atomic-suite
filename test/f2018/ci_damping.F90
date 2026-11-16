@@ -2,7 +2,7 @@
 ! and memory-record input are controlled seams. BLAS is the linked real library.
 module ci_fixture
     use vast_kind_param, only: double, long
-    use eigv_C, only: evec, eval
+    use eigv_c, only: evec => csf_mixing_coefficients, eval => shifted_eigenvalues
     implicit none
     integer :: solves = 0
 contains
@@ -20,21 +20,24 @@ end module
 program ci_damping
     use ci_fixture
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
-    use damp_C, only: cdamp
-    use def_C, only: iccmin, ncmin, ncmax
+    use damp_c, only: cdamp => mixing_damping_factors
+    use def_c, only: iccmin, ncmin, ncmax
     use debug_C, only: ldbpg
-    use hblock_C, only: nblock, ncfblk, nevblk, ncmaxblk
-    use hmat_C, only: emt, irow, iendc
-    use mcpa_C, only: kmaxf
-    use orb_C, only: ncf, nw
-    use pos_C, only: ncftot, nvecsiz, ncfpast, ncminpast, nevecpast
+    use hblock_c, only: nblock => symmetry_block_count, ncfblk => csf_counts_by_block, nevblk => &
+       & eigenvector_counts_by_block, ncmaxblk
+    use hmat_c, only: emt => hamiltonian_values, irow => matrix_partner_indices, iendc => stored_segment_end_offsets
+    use mcpa_c, only: kmaxf => max_mcp_file_multipole_rank
+    use orb_c, only: ncf => csf_count, nw => orbital_count
+    use pos_c, only: ncftot => total_csf_count, nvecsiz => mixing_coefficient_storage_size, ncfpast => &
+       & csf_offsets_by_block, ncminpast => eigenvalue_offsets_by_block, nevecpast => mixing_offsets_by_block
     use peav_C, only: eavblk
     use syma_C, only: jpgg
 #ifdef CI_MPI
-    use mpi_C
+    use mpi_c, host => processor_name, ierr => mpi_error_code, istat => mpi_status_buffer, lenhost => &
+       & processor_name_length, myid => mpi_rank, nprocs => mpi_process_count
     use matrixmpi_I
 #else
-    use mpi_s
+    use mpi_s, myid => mpi_rank, nprocs => mpi_process_count
     use matrix_I
 #endif
 #ifdef CI_MEM
@@ -141,7 +144,7 @@ subroutine setham(jblock,myid,nprocs,ncontr_tot,ncontr_tot2)
 subroutine setham(jblock,myid,nprocs)
 #endif
     use vast_kind_param, only: double,long
-    use hmat_C, only: emt
+    use hmat_c, only: emt => hamiltonian_values
     implicit none
     integer,intent(in)::jblock,myid,nprocs
 #ifdef CI_MEM
@@ -153,11 +156,11 @@ end subroutine
 
 #ifdef CI_MEM
 subroutine read03_mem(jblock)
-    use hmat_C, only: irow,iendc
+    use hmat_c, only: irow => matrix_partner_indices, iendc => stored_segment_end_offsets
 #ifdef CI_MPI
-    use mpi_C, only: myid,nprocs
+    use mpi_c, only: myid => mpi_rank, nprocs => mpi_process_count
 #else
-    use mpi_s, only: myid,nprocs
+    use mpi_s, only: myid => mpi_rank, nprocs => mpi_process_count
 #endif
     implicit none
     integer,intent(in)::jblock

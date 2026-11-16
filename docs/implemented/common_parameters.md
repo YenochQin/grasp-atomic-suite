@@ -1,39 +1,42 @@
 # 参数转导层与原版默认值
 
-> 文档状态：现行实现；2026-10-13 保留参数转导层，使用原版默认值与网格初始化。
+> 文档状态：现行实现；2026-11-16 使用语义变量名，保留容量兼容别名及原版默认值与网格初始化。
 > 参考源码：工作区 GRASP `488e875d1a7ec631baf4ad33682798bc795b7435`。
-> 2026-11-11 移除已否决的 strict/diag 后，共十九个网格入口与四个 RCI 续算 ACCY 入口；见[退役范围](rejected_rmcdhf_variants.md)。
+> 移除 CSFG 后，网格脚本覆盖十五个普通网格入口与两个 RCI 续算 ACCY 入口。
 > 容量由集中配置定义，经 parameter_def 转导；历史实验数值不代表当前默认值。
 
 ## 参数归属
 
 [`suite_parameters_M.f90`](../../src/lib/libmod/suite_parameters_M.f90) 是容量常量的唯一来源；
 [`parameter_def_M.f90`](../../src/lib/libmod/parameter_def_M.f90) 用 `USE suite_parameters, ONLY: ...`
-转导六个原有名称。共享库和各串行/MPI 程序继续 `USE parameter_def`，
+转导语义名称，并为六个原有名称提供 `USE` 别名。共享库和各串行/MPI 程序继续 `USE parameter_def`，
 修改配置不需要逐个修改调用方。配置模块默认值与参考原版相同。
 网格的 `radial_grid_defaults` 集中初始化模块不使用，各入口保留原版初始化。
 
-| 常量 | 默认值 | 含义 |
-| --- | --- | --- |
-| `KEYORB` | 215 | 轨道整数打包参数 |
-| `NNNP` | 590 | 径向数组编译容量；部分旧径向路径也将它用于尾部边界 |
-| `NNN1` | 600 | 带额外空间的径向数组容量 |
-| `NNNW` | 127 | 轨道容量 |
-| `NNNWM1` | 126 | `NNNW-1` |
-| `NNNWM2` | 125 | `NNNW-2` |
+| 配置模块中的名称 | parameter_def 兼容别名 | 默认值 | 含义 |
+| --- | --- | --- | --- |
+| `orbital_index_radix` | `KEYORB` | 215 | 轨道整数打包参数 |
+| `max_radial_points` | `NNNP` | 590 | 径向数组编译容量；部分旧径向路径也将它用于尾部边界 |
+| `radial_workspace_capacity` | `NNN1` | 600 | 带额外空间的径向数组容量 |
+| `max_orbitals` | `NNNW` | 127 | 轨道容量 |
+| `max_orbitals_minus_one` | `NNNWM1` | 126 | 轨道容量减一 |
+| `max_orbitals_minus_two` | `NNNWM2` | 125 | 轨道容量减二 |
 
-在 `suite_parameters_M.f90` 修改基础常量。`NNN1=NNNP+10`、`NNNWM1=NNNW-1`、
-`NNNWM2=NNNW-2` 自动派生；无需修改转导模块。修改后须全量重编译。`NNNP` 和运行时点数 `N` 不是同一变量。
+在 `suite_parameters_M.f90` 修改表中第一列的基础常量；工作区容量和两个轨道容量派生量自动计算。
+无需修改转导模块。修改后须全量重编译。`max_radial_points` 与运行时点数 `radial_point_count` 不同。
 
 ## 各入口的原版默认值
 
-六个 RMCDHF 入口（四个原版、独立严格内存 MPI 和 P0 诊断版本）及 RHFS、RIS、RDENSITY 各自初始化网格；
+四个保留的 RMCDHF 入口及 RHFS、RIS、RDENSITY 各自初始化网格；
 g_J 继续复用 RHFS。运行时变量仍保存在原有 `grid_C`、`def_C` 和 `coun_C`。
 
 | 核模型 | RNT | H | N | HP |
 | --- | --- | --- | --- | --- |
 | 有限核 | `2D-6/Z` | `0.05` | `NNNP`（默认 590） | 0 |
 | 点核 | `EXP(-65D0/16D0)/Z` | `0.0625` | `MIN(220,NNNP)` | 0 |
+
+上表保留原版公式记号。当前代码中 `RNT/H/N/HP/Z` 分别为
+`radial_grid_scale/transformed_grid_step/radial_point_count/asymptotic_grid_step/nuclear_charge`。
 
 RMCDHF 的 `THRESH=0.05D0`、`METHOD=3`、`ODAMP=0` 保持原版。
 旧 orbopt 程序及其专用实验开关已移除。
@@ -49,20 +52,20 @@ ACCY 初始化时序也恢复原版：
 输入 `.w` 经插值到本次运行网格，不会自动将 N/H/RNT 改成文件网格。
 已否决的 strict/diag 独立求解器已[移除](rejected_rmcdhf_variants.md)；现行入口只覆盖保留程序。
 
-GRASPG 的波函数估计、SCF 和两个 RCI 程序也使用这些共享容量。两个 RCI 程序沿用其原始公共网格初始化（没有启用独立点核分支）；波函数估计和 SCF 保留各自的点核/有限核分支。GRASPG 专有容量与初值见 [CSFG 参数说明](graspg_integration.md#graspg-专有容量与默认值)。
+CSFG 的专用源码、构建和测试已移除，其历史参数见[归档记录](../archive/graspg_integration.md)。
 
 普通 `rwfnestimate`、串行/MPI `rci`、串行/MPI `rbiotransform` 和三个 `rtransition` 变体新增八个网格入口；普通 RCI 保留原有公共网格初始化，未启用注释中的点核分支。`rangular` 不初始化径向网格，但通过同一 `parameter_def` 使用轨道容量和打包参数。普通 `rwfnestimate` 的六个实现/接口文件已移除局部 NNNP/NNN1 定义；修改中央容量无需逐个修改这些文件。
 
 ## 网格实验与重编译
 
 在独立源码副本上使用 [网格脚本](../../scripts/README.md)。`atomic-suite` 布局
-修改 `suite_parameters_M.f90` 和需要变更的十九个入口；显式 ACCY 修改也覆盖普通/GRASPG 共四个 RCI 续算入口。
-仅使用 `--nnnp` 时只改中央配置的 NNNP，NNN1 自动派生，转导模块及入口保持原样；
+修改 `suite_parameters_M.f90` 和需要变更的十五个普通入口；显式 ACCY 修改也覆盖两个普通 RCI 续算入口。
+仅使用 `--nnnp` 时只改中央配置的 `max_radial_points`，工作区容量自动派生，转导模块及入口保持原样；
 `--n` 单独选择实际点数，其他网格参数仍修改各入口。脚本检查六项定义与完整转导接口。
 
 容量修改示例（只预览，不写入）：
 
-```sh
+```fish
 ../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
   --layout atomic-suite --grasp . --nnnp 1990 --diff
 ```
@@ -77,7 +80,7 @@ GRASPG 的波函数估计、SCF 和两个 RCI 程序也使用这些共享容量�
 
 恢复本次容量后，请使用新的构建目录全量编译；旧 build/bin 或已安装 bin 不会自动更新：
 
-```sh
+```fish
 cmake -S . -B build-upstream-parameters -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON
 cmake --build build-upstream-parameters --parallel 4
 ctest --test-dir build-upstream-parameters --output-on-failure
@@ -85,7 +88,7 @@ ctest --test-dir build-upstream-parameters --output-on-failure
 
 使用 `build-upstream-parameters/bin/` 下的本次产物，或自行安装后核实可执行文件路径。
 Linux 服务器需在服务器上重新编译。`shared_grid_capacity` 检查共享数组编译容量一致；
-网格脚本回归覆盖原版布局和 suite 二十一入口布局的预览、应用、重复应用、备份与恢复。
+网格脚本回归覆盖原版布局和 suite 十五个网格入口、两个续算入口的预览、应用、重复应用、备份与恢复。
 工程测试不能代替生产模型的收敛验证；候选网格仍按
 [网格实验方案](../plans/grasp_grid_parameter_tuning.md) 验收。
 

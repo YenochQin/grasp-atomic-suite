@@ -32,10 +32,10 @@
 !
 !   Initializations
 !
-      alpha = 1.0d00/c
-      csq = c*c
-      npj = np(j)
-      nakabs = abs(nak(j))
+      alpha = 1.0d00/speed_of_light_au
+      csq = speed_of_light_au*speed_of_light_au
+      npj = orbital_principal_n(j)
+      nakabs = abs(orbital_kappa(j))
       fnrel = dble(npj - nakabs)
       fkabs = dble(nakabs)
       fkap2 = fkabs*fkabs
@@ -46,7 +46,7 @@
 !
 !   Changed on 07/06/93 by WPW
 !
-      zinf = z + dble((-nelec) + 1)
+      zinf = nuclear_charge + dble((-electron_count) + 1)
 !
 !   Set the lower bound
 !
@@ -62,7 +62,7 @@
 !
 !   Set the upper bound
 !
-      zalpha = z*alpha
+      zalpha = nuclear_charge*alpha
       if (zalpha < fkabs) then
          gamma = sqrt(fkap2 - zalpha*zalpha)
          ebym = 1.0d00/sqrt(1.0d00 + (zalpha/(gamma + fnrel - 0.5d00))**2)

@@ -29,7 +29,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, j, l
-      real(double), dimension(nnnw,nnnw) :: braket
+      real(double), dimension(max_orbitals,max_orbitals) :: braket
       real(double) :: result
 !-----------------------------------------------
 !
@@ -48,7 +48,7 @@
             ta = 0.0d0
 !            TA(1)=0.D0
             do l = 2, mtp
-               ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*rp(l)
+               ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*radial_grid_derivative(l)
             end do
 !
 !   Perform the quadrature
@@ -56,7 +56,7 @@
             call quad (result)
 
             braket(i,j) = result
-            if (myid .eq. 0)                                          &
+            if (mpi_rank .eq. 0)                                          &
             write (*,9) '<',npii(i),nhii(i),'|',npff(j),nhff(j),'> =',&
                braket(i,j)
          end do

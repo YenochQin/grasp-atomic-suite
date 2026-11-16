@@ -43,21 +43,22 @@
 !
 !   Tabulate integrand as required for SUBROUTINE QUAD
 !
-      mtp = min (mf(i),mf(j))
+      mtp = min (orbital_last_grid_index(i),orbital_last_grid_index(j))
 !
 !   Value at first tabulation point is arbitrary
 !
       ta(1) = 0.0d00
       do 1 l = 2,mtp
 !HFS        TA(L) = (R(L)**K)*(PF(L,I)*QF(L,J)+QF(L,I)*PF(L,J))*RP(L)
-        ta(l) =  rp(l)*(qf(l,i)*pf(l,j)                                &
-              -         pf(l,i)*qf(l,j))/r(l)
+        ta(l) =  radial_grid_derivative(l)*(radial_small_components(l,i)*radial_large_components(l,j) &
+           & &
+              -         radial_large_components(l,i)*radial_small_components(l,j))/radial_grid(l)
     1 continue
 !
 !   Perform integration
 !
       call quad (result)
-      rint_sms3 = result*z/c
+      rint_sms3 = result*nuclear_charge/speed_of_light_au
 !
       return
       end function rint_sms3

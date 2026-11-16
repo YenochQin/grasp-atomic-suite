@@ -60,36 +60,36 @@
 !      ELSE
 !         WRITE (24, *) 'Restart mode --- no report on radial integrals'
       call mpi_reduce (ncoeitmp, ncoei_a, 1, mpi_integer, mpi_sum, 0,  &
-                                       mpi_comm_world, ierr)
+                                       mpi_comm_world, mpi_error_code)
       call mpi_reduce (ncoectmp, ncoec_a, 1, mpi_integer, mpi_sum, 0,  &
-                                       mpi_comm_world, ierr)
+                                       mpi_comm_world, mpi_error_code)
       call mpi_reduce (ncteitmp, nctei_a, 1, mpi_integer, mpi_sum, 0,  &
-                                       mpi_comm_world, ierr)
+                                       mpi_comm_world, mpi_error_code)
       call mpi_reduce (nctectmp, nctec_a, 1, mpi_integer, mpi_sum, 0,  &
-                                       mpi_comm_world, ierr)
+                                       mpi_comm_world, mpi_error_code)
 
       if (ltrans) then
          call mpi_reduce (ntpitmp, ntpi_a, 6, mpi_integer, mpi_sum, 0, &
-                                       mpi_comm_world, ierr)
+                                       mpi_comm_world, mpi_error_code)
          call mpi_reduce (nmcbptmp, nmcbp_a, 1, mpi_integer, mpi_sum,0,&
-                                       mpi_comm_world, ierr)
+                                       mpi_comm_world, mpi_error_code)
          call mpi_reduce (ncoretmp, ncore_a, 1, mpi_integer,mpi_sum,0, &
-                                       mpi_comm_world, ierr)
+                                       mpi_comm_world, mpi_error_code)
       endif
 
       if (lvp)                                                         &
          call mpi_reduce (nvpitmp, nvpi_a, 1, mpi_integer, mpi_sum, 0, &
-                                       mpi_comm_world, ierr)
+                                       mpi_comm_world, mpi_error_code)
 
       if (lnms)                                                        &
          call mpi_reduce (nkeitmp, nkei_a, 1, mpi_integer, mpi_sum, 0, &
-                                       mpi_comm_world, ierr)
+                                       mpi_comm_world, mpi_error_code)
 
       if (lsms)                                                        &
          call mpi_reduce (nvintitmp, nvinti_a, 1, mpi_integer, mpi_sum,&
-                                       0, mpi_comm_world, ierr)
+                                       0, mpi_comm_world, mpi_error_code)
 
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          write (24,301) cutofftmp
          write (24,302) ncoei_a
          write (24,303) ncoec_a
@@ -105,7 +105,7 @@
          if (lsms) write (24,311) nvinti_a
       endif
             else
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          write (24,*) 'Restart mode --- no report on radial integrals'
       endif
       endif                                      !(irestart .NE. 0) ! non-restart mode
@@ -123,20 +123,20 @@
       call mpi_allreduce (nelmnttmp, nelmnt_a, 1, mpi_integer8,  &
 !AK:      MPI_INTEGER8 required to match the sizes of NELMNT_a and NELMNTtmp
 !CFF &    MPI_SUM, MPI_COMM_WORLD, ierr) ! want MAX not SUM
-     &    mpi_max, mpi_comm_world, ierr)
+     &    mpi_max, mpi_comm_world, mpi_error_code)
 !cjb  NELMNT_a decides between sparse and dense
 !cjb  see comments in maneig.f90
 
       call mpi_bcast (elsto, 1, mpi_double_precision, 0,         &
-                            mpi_comm_world, ierr)
-      call mpi_allreduce (eav, eav_a, 1, mpi_double_precision,   &
-                              mpi_sum, mpi_comm_world, ierr)
-      eav = eav_a / dble (ncftmp) + elsto
+                            mpi_comm_world, mpi_error_code)
+      call mpi_allreduce (hamiltonian_energy_shift, eav_a, 1, mpi_double_precision,   &
+                              mpi_sum, mpi_comm_world, mpi_error_code)
+      hamiltonian_energy_shift = eav_a / dble (ncftmp) + elsto
 
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          write (24,312) nelmnt_a
          write (24, *)
-         write (24, 300) eav
+         write (24, 300) hamiltonian_energy_shift
       endif
 
   300 format('Average energy = ',1p,d19.12,' Hartrees.')

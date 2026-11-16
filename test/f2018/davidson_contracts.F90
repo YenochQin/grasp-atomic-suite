@@ -9,10 +9,7 @@ program davidson_contracts
     use spicmv2_I, only: spicmv2
     use adds_I, only: adds
     use newvec_I, only: newvec
-    use hmat_C, only: emt, irow, iendc
-#ifdef DAVIDSON_MPI
-    use mpi_C, only: myid, nprocs, host, lenhost, startmpi, MPI_Finalize
-#endif
+    use hmat_c, only: emt => hamiltonian_values, irow => matrix_partner_indices, iendc => stored_segment_end_offsets
     implicit none
     integer, parameter :: n=3, nd=6, lim=6, lwork=2*nd*lim+2*lim*lim+11*lim+1, liwork=6*lim+1
     integer :: niv, ilow, ihigh, mblock, maxiter, loops, nmv, ierr, i
@@ -22,9 +19,6 @@ program davidson_contracts
     logical :: hiend
     character(16) :: scenario
     real(double) :: expected
-#ifdef DAVIDSON_MPI
-    call startmpi(myid,nprocs,host,lenhost)
-#endif
     guard = -99
     call dinit(3, 2.0_double, guard(2:6), 2)
     if (any(guard /= [-99.0_double,2.0_double,-99.0_double,2.0_double, &
@@ -114,9 +108,6 @@ program davidson_contracts
     if (maxval(abs(matmul(big,work(:nd))-work(nd+1)*work(:nd))) > 1e-12_double) error stop 'GDVD residual'
     if (abs(sum(work(:nd)**2)-1.0_double) > 1e-12_double) error stop 'GDVD normalization'
     print *, 'PASS Davidson interfaces and numerical contracts'
-#ifdef DAVIDSON_MPI
-    call MPI_Finalize(ierr)
-#endif
 contains
     subroutine check_partial_updates()
         real(double) :: b(3,3), ab(3,3), packed(6), coeff(6), eigen(3), old(2), scratch(3), shifts(3)
@@ -138,11 +129,7 @@ contains
         coeff=[1.0_double,0.0_double,0.0_double,1.0_double,0.0_double,0.0_double]
         eigen=[1.0_double,2.0_double,3.0_double];old=[0.0_double,0.0_double]
         flags=[0,1];pending=[1,2];count_new=1;scratch=-99;shifts=-99
-#ifdef DAVIDSON_MPI
-        call newvec(3,1,2,3,1,2,1e-12_double,count_new,pending,coeff,eigen,old,ab,b,flags,scratch,shifts,done)
-#else
         call newvec(3,2,3,1,2,1e-12_double,count_new,pending,coeff,eigen,old,ab,b,flags,scratch,shifts,done)
-#endif
         if(.not.done.or.any(flags/=1)) error stop 'NEWVEC must retain other roots convergence state'
     end subroutine
     subroutine check_estimates()

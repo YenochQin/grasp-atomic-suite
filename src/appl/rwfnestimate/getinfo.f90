@@ -22,7 +22,7 @@
       use iounit_c
       use def_c
       use default_c
-      use grid_c, only: rnt, h, hp, n
+      use grid_c, only: radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count
       use npar_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -50,22 +50,22 @@
 !
 !   Set defaults
 !
-      c = cvac
+      speed_of_light_au = vacuum_speed_of_light_au
 !
-      if (nparm == 0) then
-         rnt = exp((-65.0d00/16.0d00))/z
-         h = 0.5d00**4
-         n = min(220,nnnp)
+      if (nuclear_model_parameter_count == 0) then
+         radial_grid_scale = exp((-65.0d00/16.0d00))/nuclear_charge
+         transformed_grid_step = 0.5d00**4
+         radial_point_count = min(220,max_radial_points)
       else
 !CFF     .. should be Z-dependent
-         rnt = 2.0d-06/z
-         h = 5.0d-02
-         n = nnnp
+         radial_grid_scale = 2.0d-06/nuclear_charge
+         transformed_grid_step = 5.0d-02
+         radial_point_count = max_radial_points
       endif
-      hp = 0.0d00
+      asymptotic_grid_step = 0.0d00
 !
       if (ndef /= 0) then
-         write (istde, *) 'Change the default speed of light ', &
+         write (stderr_unit, *) 'Change the default speed of light ', &
             'or radial grid parameters?'
 !
          yes = getyn()
@@ -73,34 +73,34 @@
 !
 !   Modify the speed of light
 !
-            write (istde, *) 'The physical speed of light in ', &
-               'atomic units is', cvac, ';'
-            write (istde, *) 'revise this value?'
+            write (stderr_unit, *) 'The physical speed of light in ', &
+               'atomic units is', vacuum_speed_of_light_au, ';'
+            write (stderr_unit, *) 'revise this value?'
             yes = getyn()
             if (yes) then
-               write (istde, *) 'Enter the revised value:'
-               read (5, *) c
+               write (stderr_unit, *) 'Enter the revised value:'
+               read (5, *) speed_of_light_au
             endif
 !
 !   Modify the parameters controlling the radial grid
 !
-            write (istde, *) 'The default radial grid parameters ', &
+            write (stderr_unit, *) 'The default radial grid parameters ', &
                'for this case are:'
-            write (istde, *) ' RNT = ', rnt, ';'
-            write (istde, *) ' H = ', h, ';'
-            write (istde, *) ' HP = ', hp, ';'
-            write (istde, *) ' N = ', n, ';'
-            write (istde, *) 'revise these values?'
+            write (stderr_unit, *) ' RNT = ', radial_grid_scale, ';'
+            write (stderr_unit, *) ' H = ', transformed_grid_step, ';'
+            write (stderr_unit, *) ' HP = ', asymptotic_grid_step, ';'
+            write (stderr_unit, *) ' N = ', radial_point_count, ';'
+            write (stderr_unit, *) 'revise these values?'
             yes = getyn()
             if (yes) then
-               write (istde, *) 'Enter RNT:'
-               read (5, *) rnt
-               write (istde, *) 'Enter H:'
-               read (5, *) h
-               write (istde, *) 'Enter HP:'
-               read (5, *) hp
-               write (istde, *) 'Enter N:'
-               read (5, *) n
+               write (stderr_unit, *) 'Enter RNT:'
+               read (5, *) radial_grid_scale
+               write (stderr_unit, *) 'Enter H:'
+               read (5, *) transformed_grid_step
+               write (stderr_unit, *) 'Enter HP:'
+               read (5, *) asymptotic_grid_step
+               write (stderr_unit, *) 'Enter N:'
+               read (5, *) radial_point_count
             endif
 !
          endif
@@ -108,7 +108,7 @@
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
-      accy = h**6
+      accy = transformed_grid_step**6
 !
 !   Set up the coefficients for the numerical procedures
 !

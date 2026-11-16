@@ -17,10 +17,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw, nnnp
+      use parameter_def,   only: max_orbitals, max_radial_points
       use memory_man
       use biorb_c
-      use def_c,           only: z, c
+      use def_c,           only: nuclear_charge, speed_of_light_au
       use debug_c
       use grid_c
       use npar_c
@@ -39,13 +39,13 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer , dimension(nnnw) :: nak, np
+      integer , dimension(max_orbitals) :: nak, np
       integer :: ntestl, ntest, j, k, i, nwin, ios, npy, naky, my, jj, kk, jjj&
          , kkk, ierr
-      real(double), dimension(nnnw) :: e, gama
+      real(double), dimension(max_orbitals) :: e, gama
       real(double) :: con, fkk, ey, dnorm, pzy
       real(double), dimension(:), pointer :: pa, qa, ra
-      character , dimension(nnnw) :: nh*2
+      character , dimension(max_orbitals) :: nh*2
       character :: g92rwf*6
 !-----------------------------------------------
 !
@@ -75,18 +75,18 @@
 !
 !   Allocate storage to orbital arrays
 !
-      call alloc (pfff, nnnp,nwff, 'PFFF', 'LODRWFF')
-      call alloc (qfff, nnnp,nwff, 'QFFF', 'LODRWF')
+      call alloc (pfff, max_radial_points,nwff, 'PFFF', 'LODRWFF')
+      call alloc (qfff, max_radial_points,nwff, 'QFFF', 'LODRWF')
 !
-      con = z/c
+      con = nuclear_charge/speed_of_light_au
       con = con*con
 !
       do j = 1, nwff
-         pfff(:nnnp,j) = 0.0d00
-         qfff(:nnnp,j) = 0.0d00
+         pfff(:max_radial_points,j) = 0.0d00
+         qfff(:max_radial_points,j) = 0.0d00
 !
          k = abs(nak(j))
-         if (nparm /= 0) cycle
+         if (nuclear_model_parameter_count /= 0) cycle
          fkk = dble(k*k)
          if (fkk >= con) then
             gama(j) = sqrt(fkk - con)
@@ -94,7 +94,7 @@
             write (6, *) 'LODRWF: Imaginary gamma parameter'
             write (6, *) ' for ', np(j), nh(j), ' orbital; the'
             write (6, *) ' point model for the nucleus'
-            write (6, *) ' is inappropriate for Z > ', c, '.'
+            write (6, *) ' is inappropriate for Z > ', speed_of_light_au, '.'
             stop
          endif
 !

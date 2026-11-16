@@ -14,7 +14,7 @@
       use rmcdhf_mem_c
       use iounit_c
       use mpi_s
-      use hmat_c,          only: nelmnt
+      use hmat_c,          only: stored_matrix_element_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -44,11 +44,11 @@
           !*** Read in IROW from file mcp.30 ***
           read (30) mcplab, jblockt, ncf
           if (jblockt /= jblock) then
-            write (istde, *) 'setmcp_mem', '1: jblockt .NE. jblock'
+            write (stderr_unit, *) 'setmcp_mem', '1: jblockt .NE. jblock'
             stop
           endif
           read (30) nelmntgg
-          nelmnt = int(nelmntgg,kind=long)
+          stored_matrix_element_count = int(nelmntgg,kind=long)
           if(jblock == 1) then
             call alloc (imin1_30,nblock,'IMIN1_30','setmcp_mem')
             call alloc (imin2_30,nblock,'IMIN2_30','setmcp_mem')
@@ -57,19 +57,19 @@
             imin1_30(jblock) = 0
             imax1_30(jblock) = ncf
             imin2_30(jblock) = 0
-            imax2_30(jblock) = nelmnt
+            imax2_30(jblock) = stored_matrix_element_count
           else
             imin1_30(jblock) = imax1_30(jblock-1) + 0
             imax1_30(jblock) = imax1_30(jblock-1) + ncf
             imin2_30(jblock) = imax2_30(jblock-1) + 0
-            imax2_30(jblock) = imax2_30(jblock-1) + nelmnt
+            imax2_30(jblock) = imax2_30(jblock-1) + stored_matrix_element_count
           end if
-          read (30) (iendcdum,i=myid + 1,ncf,nprocs),                  &
-                                                 (irow_dumm,i=1,nelmnt)
+          read (30) (iendcdum,i=mpi_rank + 1,ncf,mpi_process_count),                  &
+                                                 (irow_dumm,i=1,stored_matrix_element_count)
         else
           read (nfile) mcplab, jblockt, ncft, ncoeff
           if (jblockt /= jblock) then
-            write (istde, *) 'setmcp_mem', ':2 jblockt .NE. jblock'
+            write (stderr_unit, *) 'setmcp_mem', ':2 jblockt .NE. jblock'
             stop
           endif
 
@@ -267,13 +267,13 @@
           !*** Read in IROW from file mcp.30 ***
           read (30) mcplab, jblockt, ncf
           if (jblockt /= jblock) then
-            write (istde, *) 'setmcp_mem', '3: jblockt .NE. jblock'
+            write (stderr_unit, *) 'setmcp_mem', '3: jblockt .NE. jblock'
             stop
           endif
         else
           read (nfile) mcplab, jblockt, ncft, ncoeff
           if (jblockt /= jblock) then
-            write (istde, *) 'setmcp_mem', ':4 jblockt .NE. jblock'
+            write (stderr_unit, *) 'setmcp_mem', ':4 jblockt .NE. jblock'
             stop
           endif
           ncontr_tot2 = ncontr_tot2 + 1
@@ -281,9 +281,9 @@
 
          if(nfile == 30) then
             read (30) nelmntgg
-            nelmnt = int(nelmntgg,kind=long)
+            stored_matrix_element_count = int(nelmntgg,kind=long)
             read (30) (iendc_30(i),i=                                  &
-                     imin1_30(jblock)+myid+1,imax1_30(jblock),nprocs), &
+                     imin1_30(jblock)+mpi_rank+1,imax1_30(jblock),mpi_process_count), &
                      (irow_30(i),i=imin2_30(jblock)+1,imax2_30(jblock))
          else if(nfile == 31) then
             read (nfile, iostat=ios) lab_31(ncontr_tot2),              &

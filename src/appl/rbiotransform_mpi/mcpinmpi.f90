@@ -26,13 +26,13 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: keyorb, nnnw
+      use parameter_def,   only: orbital_index_radix, max_orbitals
       use memory_man
       use def_c
       use eigv_c
       use foparm_c
       use mcp_c
-      use orb_c,           only: ncf, nw
+      use orb_c,           only: csf_count, orbital_count
       use prnt_c
       use syma_c
       use stat_c
@@ -67,7 +67,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !   Set the encoding key and its square
-      integer, parameter :: key = keyorb, keysq = key*key, nvmax=100
+      integer, parameter :: key = orbital_index_radix, keysq = key*key, nvmax=100
       real(double), parameter :: cutoff = 1.0d-10
       integer, parameter :: nf = 200
 
@@ -75,9 +75,9 @@
       character(len=20) :: cnum
       character(len=2)  :: ck
 !
-      real(double), dimension(nnnw) :: tshell
+      real(double), dimension(max_orbitals) :: tshell
       real(double), dimension(nvmax) ::sc
-      integer, dimension(nnnw) :: nakinv
+      integer, dimension(max_orbitals) :: nakinv
       integer, dimension(nlmax) :: llistt, nshl, ninl
       real(double), dimension(20*nlmax*nlmax) :: cirot
       real(double), dimension(10000) :: evsc
@@ -99,7 +99,7 @@
           ninl(i) = ninii(i)
         enddo
 
-        do i = 1,nnnw
+        do i = 1,max_orbitals
           nakinv(i) = nakinvii(i)
         enddo
 
@@ -109,7 +109,7 @@
           enddo
         enddo
 
-        do j = 1,nnnw
+        do j = 1,max_orbitals
           do i = 1,nlmax
             nshlpp(i,j) = nshlppii(i,j)
           enddo
@@ -126,7 +126,7 @@
           ninl(i) = ninff(i)
         enddo
 
-        do i = 1,nnnw
+        do i = 1,max_orbitals
           nakinv(i) = nakinvff(i)
         enddo
 
@@ -136,7 +136,7 @@
           enddo
         enddo
 
-        do j = 1,nnnw
+        do j = 1,max_orbitals
           do i = 1,nlmax
             nshlpp(i,j) = nshlppff(i,j)
           enddo
@@ -156,8 +156,8 @@
 !
 !   Allocate memory for use in CITRAG
 !
-      call alloc (scr, ncf*nvec, 'scr', 'MCPIN')
-      call alloc (ciout, ncf*nvec, 'CIOUT', 'MCPIN')
+      call alloc (scr, csf_count*nvec, 'scr', 'MCPIN')
+      call alloc (ciout, csf_count*nvec, 'CIOUT', 'MCPIN')
 !
 !   if data available on file read the datafile. Else sort the
 !   MCP data into inegral based lists.
@@ -211,7 +211,7 @@
 !
         if (nshl(l).gt.0)                                             &
 !        CALL CITRAG(EVEC,NCF,NVEC,L,NSHL(L),                   &
-        call citrag(evec(1:500),ncf,nvec,l,nshl(l),                   &
+        call citrag(csf_mixing_coefficients(1:500),csf_count,nvec,l,nshl(l),                   &
                     cirot(iioff),ninl(l),ntestl,ciout, scr )
 !
 !   Deallocate storage for this kappa.
@@ -229,7 +229,7 @@
 !
 !   Write the rotated CI vectors on file
 !
-      if(myid .eq. 0) then
+      if(mpi_rank .eq. 0) then
       if(iblk.eq.1) then
         j = index(name,' ')
         if (inpci.eq.0) then
@@ -241,16 +241,16 @@
         endif
 
         write(31) 'G92MIX'
-        write(31) nelec,ncftot,nw,nvectot,nvecsize,nblock
+        write(31) electron_count,ncftot,orbital_count,nvectot,nvecsize,nblock
       endif
-         write(31) iblk,ncf,nvec,iatjpo(1),iaspar(1)
+         write(31) iblk,csf_count,nvec,iatjpo(1),iaspar(1)
          write(31) (ivec(i),i = 1,nvec)
-         write(31) eav,(eval(i),i = 1,nvec)
-         write(31) ((evec(i+(j-1)*ncf),i = 1,ncf),j = 1,nvec)
+         write(31) hamiltonian_energy_shift,(shifted_eigenvalues(i),i = 1,nvec)
+         write(31) ((csf_mixing_coefficients(i+(j-1)*csf_count),i = 1,csf_count),j = 1,nvec)
       endif !myid=0
 
-      call dalloc (eval, 'EVAL', 'MCPIN')
-      call dalloc (evec, 'EVEC', 'MCPIN')
+      call dalloc (shifted_eigenvalues, 'EVAL', 'MCPIN')
+      call dalloc (csf_mixing_coefficients, 'EVEC', 'MCPIN')
       call dalloc (ivec, 'IVEC', 'MCPIN')
       call dalloc (iatjpo, 'IATJPO', 'MCPIN')
       call dalloc (iaspar, 'IASPAR', 'MCPIN')

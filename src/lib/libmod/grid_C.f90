@@ -3,8 +3,8 @@
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:22:09  12/28/06
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      use parameter_def,   only: nnn1
-      integer :: n
-      real(double), dimension(nnn1) :: r, rp, rpor
-      real(double) :: rnt, h, hp
+      use parameter_def,   only: radial_workspace_capacity
+      integer :: radial_point_count
+      real(double), dimension(radial_workspace_capacity) :: radial_grid, radial_grid_derivative, radial_derivative_over_radius
+      real(double) :: radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       end module grid_c

@@ -15,7 +15,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw
+      use parameter_def,   only: max_orbitals
       use memory_man
       use def_c
       use biorb_c
@@ -78,43 +78,43 @@
 !
 !   Copy data to reference arrays
 !
-    4 nelecr = nelec
-      nelecii = nelec
-      ncfr = ncf
-      nwr = nw
+    4 nelecr = electron_count
+      nelecii = electron_count
+      ncfr = csf_count
+      nwr = orbital_count
 !
-      call alloc (iqar, nnnw, ncf, 'IQAR', 'LDCSL1' )
-      call alloc (jqsar,nnnw,3,ncf, 'JQSAR', 'LDCSL1')
-      call alloc (jcupar,nnnw, ncf, 'JCUPAR', 'LDCSL1')
+      call alloc (iqar, max_orbitals, csf_count, 'IQAR', 'LDCSL1' )
+      call alloc (jqsar,max_orbitals,3,csf_count, 'JQSAR', 'LDCSL1')
+      call alloc (jcupar,max_orbitals, csf_count, 'JCUPAR', 'LDCSL1')
 !
-      do 6 i = 1,ncf
-         do 5 j = 1,nnnw
-            iqar(j,i) = iqa(j,i)
-            jqsar(j,1,i) = jqsa(j,1,i)
-            jqsar(j,2,i) = jqsa(j,2,i)
-            jqsar(j,3,i) = jqsa(j,3,i)
-            jcupar(j,i) = jcupa(j,i)
+      do 6 i = 1,csf_count
+         do 5 j = 1,max_orbitals
+            iqar(j,i) = csf_subshell_occupations(j,i)
+            jqsar(j,1,i) = csf_subshell_quantum_codes(j,1,i)
+            jqsar(j,2,i) = csf_subshell_quantum_codes(j,2,i)
+            jqsar(j,3,i) = csf_subshell_quantum_codes(j,3,i)
+            jcupar(j,i) = csf_coupling_quantum_codes(j,i)
     5    continue
     6 continue
 !
-      nwii=nw
-      ncfii=ncf
-      do 7 i = 1,nw
-         nhii(i) = nh(i)
-         npii(i) = np(i)
-         nakii(i) = nak(i)
-         nklii(i) = nkl(i)
-         nkjii(i) = nkj(i)
-         npr(i) = np(i)
-         nakr(i) = nak(i)
-         nhr(i) = nh(i)
+      nwii=orbital_count
+      ncfii=csf_count
+      do 7 i = 1,orbital_count
+         nhii(i) = orbital_symmetry_labels(i)
+         npii(i) = orbital_principal_n(i)
+         nakii(i) = orbital_kappa(i)
+         nklii(i) = orbital_l(i)
+         nkjii(i) = orbital_two_j(i)
+         npr(i) = orbital_principal_n(i)
+         nakr(i) = orbital_kappa(i)
+         nhr(i) = orbital_symmetry_labels(i)
     7 continue
 !
 !   Deallocate storage so that LODCSL can restart correctly
 !
-      call dalloc (iqa, 'IQA', 'LDCSL1')
-      call dalloc (jqsa, 'JQSA', 'LDCSL1')
-      call dalloc (jcupa, 'JCUPA', 'LDCSL1')
+      call dalloc (csf_subshell_occupations, 'IQA', 'LDCSL1')
+      call dalloc (csf_subshell_quantum_codes, 'JQSA', 'LDCSL1')
+      call dalloc (csf_coupling_quantum_codes, 'JCUPA', 'LDCSL1')
 !
       close (21)
 

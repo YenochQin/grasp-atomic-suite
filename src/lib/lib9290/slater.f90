@@ -23,7 +23,7 @@
       use grid_c
       use orb_c
       use tatb_c,          only: ta, tb, mtp
-      use wave_c,          only: mf, qf, pf
+      use wave_c,          only: orbital_last_grid_index, radial_small_components, radial_large_components
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -54,14 +54,15 @@
 !   Multiply by second term, and obtain result by integration
 !
       if (k==0 .and. ib==id) then
-         mtp = min(mf(ia),mf(ic))
+         mtp = min(orbital_last_grid_index(ia),orbital_last_grid_index(ic))
       else
-         mtp = min(min(mtp,mf(ia)),mf(ic))
+         mtp = min(min(mtp,orbital_last_grid_index(ia)),orbital_last_grid_index(ic))
       endif
 !
       ta(1) = 0.0d00
       do i = 2, mtp
-         ta(i) = (pf(i,ia)*pf(i,ic) + qf(i,ia)*qf(i,ic))*rpor(i)*tb(i)
+         ta(i) = (radial_large_components(i,ia)*radial_large_components(i,ic) + radial_small_components(i,ia)* &
+            & radial_small_components(i,ic))*radial_derivative_over_radius(i)*tb(i)
       end do
 !
       call quad (result)
@@ -69,8 +70,9 @@
 !
 !   Debug printout
 !
-      if (ldbpr(10)) write (99, 300) k, np(ia), nh(ia), np(ib), nh(ib), np(ic)&
-         , nh(ic), np(id), nh(id), slater
+      if (ldbpr(10)) write (99, 300) k, orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
+         & orbital_symmetry_labels(ib), orbital_principal_n(ic)&
+         , orbital_symmetry_labels(ic), orbital_principal_n(id), orbital_symmetry_labels(id), slater
 !
       return
 !

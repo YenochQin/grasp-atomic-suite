@@ -9,22 +9,22 @@
 !                                                                      *
 !***********************************************************************
       use vast_kind_param,  only: double
-      use parameter_def,    only: keyorb, nnnw, nnnp
+      use parameter_def,    only: orbital_index_radix, max_orbitals, max_radial_points
       use debug_c,          only: cutoff
       use prnt_c
       use ris_c
       use orb_c
       use eigv_c
-      use mpi_c,            only: myid, nprocs
+      use mpi_c,            only: mpi_rank, mpi_process_count
       implicit none
       integer, intent(in) :: nrnuc
-      real(double), dimension(nnnw,nnnw), intent(in) :: dint1, dint2,  &
+      real(double), dimension(max_orbitals,max_orbitals), intent(in) :: dint1, dint2,  &
                                           dint3, dint4, dint5, dint6,  &
                                           dint7
       real(double), dimension(nvec,nrnuc), intent(out) :: dens1vec
-      real(double), dimension(nnnw,nnnw,nrnuc), intent(in) :: dint1vec
-      integer, parameter :: key = keyorb
-      real(double), dimension(nnnw) :: tshell_r
+      real(double), dimension(max_orbitals,max_orbitals,nrnuc), intent(in) :: dint1vec
+      integer, parameter :: key = orbital_index_radix
+      real(double), dimension(max_orbitals) :: tshell_r
       real(double), dimension(nrnuc) :: contri1vec, elemnt1vec
       real(double) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5
       real(double) :: elemnt6, elemnt7
@@ -39,7 +39,7 @@
    16 read (50,iostat = ios) ic,ir,ncount
 
       if (ios .eq. 0) then
-         ownrec = mod(ic-1, nprocs) .eq. myid
+         ownrec = mod(ic-1, mpi_process_count) .eq. mpi_rank
          elemnt1 = 0.0d00
          elemnt2 = 0.0d00
          elemnt3 = 0.0d00
@@ -81,8 +81,8 @@
                pair_scale = 2.0d00
             endif
             do j = 1,nvec
-               loc = (j-1)*ncf
-               evpair = pair_scale * evec(ic+loc)*evec(ir+loc)
+               loc = (j-1)*csf_count
+               evpair = pair_scale * csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)
                contri1 = evpair*elemnt1
                contri1vec(:) = evpair*elemnt1vec(:)
                contri2 = evpair*elemnt2

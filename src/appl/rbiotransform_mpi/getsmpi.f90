@@ -52,7 +52,7 @@
 !
             ta(1) = 0.d0
             do l = 2, mtp
-               ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*rp(l)
+               ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*radial_grid_derivative(l)
             end do
 !
 !   Perform the quadrature
@@ -64,7 +64,7 @@
 !
 !   Print out
 !
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
 !      WRITE (*, *) '********************'
 !      WRITE (*, *) ' S matrix from GETS'
 !      WRITE (*, *) '********************'

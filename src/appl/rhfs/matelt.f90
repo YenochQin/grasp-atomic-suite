@@ -18,8 +18,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw
-      use orb_c,           only: np, nak
+      use parameter_def,   only: max_orbitals
+      use orb_c,           only: orbital_principal_n, orbital_kappa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -44,12 +44,12 @@
 !
 !   Set KAP1 and KAP2
 !
-      kap1 = nak(i1)
+      kap1 = orbital_kappa(i1)
 !
       if (mod(k,2) == 1) then
-         kap2 = -nak(i2)
+         kap2 = -orbital_kappa(i2)
       else
-         kap2 = nak(i2)
+         kap2 = orbital_kappa(i2)
       endif
 !
 !   Determine the l quantum numbers
@@ -88,10 +88,10 @@
 !
 !   These are for the magnetic multipole moments and the two operators of the g_j factor
 !
-            apart = (kap1 + nak(i2))*clrx(kap1,k,kap2)*ovlfac
+            apart = (kap1 + orbital_kappa(i2))*clrx(kap1,k,kap2)*ovlfac
 !
             gjpart = apart
-            dgjpart = -(kap1 + nak(i2)-1.0d00)*clrx(kap1,k,kap2)*ovlfac
+            dgjpart = -(kap1 + orbital_kappa(i2)-1.0d00)*clrx(kap1,k,kap2)*ovlfac
          else
 !
 !   These are for the electric multipole moments

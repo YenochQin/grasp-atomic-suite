@@ -23,8 +23,8 @@
       integer  :: j
 !-----------------------------------------------
 !
-      xu(:n) = 0.0d00
-      xv(:n) = 0.0d00
+      xu(:radial_point_count) = 0.0d00
+      xv(:radial_point_count) = 0.0d00
 !
       return
       end subroutine setxz

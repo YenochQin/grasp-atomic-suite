@@ -19,7 +19,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnw
+      use parameter_def,    only: max_orbitals
       use def_c,            only: pi
       use grid_c
       use wave_c
@@ -30,7 +30,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), dimension(nnnw,nnnw,n), intent(out) :: dint1vec
+      real(double), dimension(max_orbitals,max_orbitals,radial_point_count), intent(out) :: dint1vec
       integer  :: i, j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -39,8 +39,9 @@
 !-----------------------------------------------
 !
       do l = 2, nrnuc
-         dint1vec(i,j,l) = (pf(l,i)*pf(l,j)+qf(l,i)*qf(l,j))/          &
-                   (4.0d00*pi*r(l)*r(l))
+         dint1vec(i,j,l) = (radial_large_components(l,i)*radial_large_components(l,j)+radial_small_components(l,i)* &
+            & radial_small_components(l,j))/          &
+                   (4.0d00*pi*radial_grid(l)*radial_grid(l))
       end do
 !
       return

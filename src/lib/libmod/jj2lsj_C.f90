@@ -16,11 +16,11 @@
 ! Define some global data for the jj2LSJ transformation program
 !
       type :: subshell_term_ls
-         integer :: l_shell ! angular momentum l
+         integer :: subshell_l ! angular momentum l
          integer :: w       ! w
-         integer :: q       ! Subshell total quasispin 2*Q
-         integer :: ll      ! Subshell total angular momentum 2*L
-         integer :: s       ! Subshell Total sinp 2*S
+         integer :: subshell_two_quasispin       ! Subshell total quasispin 2*Q
+         integer :: subshell_two_l      ! Subshell total angular momentum 2*L
+         integer :: subshell_two_s       ! Subshell Total sinp 2*S
       end type subshell_term_ls
 !
       type :: ls_jj_me

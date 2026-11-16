@@ -18,7 +18,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnp
+      use parameter_def,    only: max_radial_points
       use coun_c
       use def_c, only: accy
       use grid_c
@@ -29,11 +29,11 @@
       integer, intent(in) :: mtpfr
       integer, intent(out) :: nncff
       real(double), intent(out) :: sgn
-      real(double), dimension(nnnp), intent(in) :: fr
+      real(double), dimension(max_radial_points), intent(in) :: fr
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, dimension(nnnp) :: lcext
+      integer, dimension(max_radial_points) :: lcext
       integer :: next, i, loc, nstps
       integer :: trace_status
       character(len=8) :: trace_env
@@ -111,7 +111,7 @@
          write (734,'(A,I0)') 'COUNT_EXTREMA orbital=', count_context
          do i = 1, next
             if (lcext(i) > 0) write (734,'(I0,A,I0,A,ES16.8,A,ES16.8)') &
-                 i, ',', lcext(i), ',', r(lcext(i)), ',', abs(fr(lcext(i)))
+                 i, ',', lcext(i), ',', radial_grid(lcext(i)), ',', abs(fr(lcext(i)))
          end do
       end if
 !

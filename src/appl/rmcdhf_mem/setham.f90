@@ -13,7 +13,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double, long
-      use parameter_def,    only: keyorb
+      use parameter_def,    only: orbital_index_radix
       use memory_man
 !-----------------------------------------------
 !   C O M M O N    B l o c k s
@@ -44,7 +44,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
       character*6, parameter :: myname = 'SETHAM'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -76,7 +76,7 @@
 !     POINTER (PINDX,INDX(1))
 !
 !-----------------------------------------------------------------------
-      ncfpat = ncfpast(jblock)
+      ncfpat = csf_offsets_by_block(jblock)
 !=======================================================================
 !   Accumulate diagonal terms that do not require MCP coefficients
 !=======================================================================
@@ -85,9 +85,9 @@
 !   Piece involving I(a,a) integrals
 !=======================================================================
 
-      do ia = 1, nw
+      do ia = 1, orbital_count
          set = .false.
-         do ir = myid + 1, ncf, nprocs
+         do ir = myid + 1, csf_count, nprocs
             itmp = iq(ia,ir + ncfpat)
             if (itmp <= 0) cycle
             !*** Occupation number not zero ...
@@ -96,8 +96,8 @@
                set = .true.
             endif
             ! IDIAG = IENDC(IR-1)+1
-            idiag = iendc(ir)                    ! lower-triangle-by-rows mode
-            emt(idiag) = emt(idiag) + itmp*diaa
+            idiag = stored_segment_end_offsets(ir)                    ! lower-triangle-by-rows mode
+            hamiltonian_values(idiag) = hamiltonian_values(idiag) + itmp*diaa
          end do
       end do
 
@@ -106,9 +106,9 @@
 !   Piece involving F (a,a) integrals
 !=======================================================================
 
-      do ia = 1, nw
+      do ia = 1, orbital_count
          set = .false.
-         do ir = myid + 1, ncf, nprocs
+         do ir = myid + 1, csf_count, nprocs
             coef = fco(0,ir + ncfpat,ia,ia)
             if (coef == 0.d0) cycle
             !*** Angular coefficient not zero ...
@@ -117,8 +117,8 @@
                set = .true.
             endif
             ! IDIAG = IENDC(IR-1)+1
-            idiag = iendc(ir)
-            emt(idiag) = emt(idiag) + coef*f0aa
+            idiag = stored_segment_end_offsets(ir)
+            hamiltonian_values(idiag) = hamiltonian_values(idiag) + coef*f0aa
          end do
       end do
 
@@ -131,13 +131,13 @@
       k = 0
     6 continue
       k = k + 2
-      do ia = 1, nw
-         k0 = nkj(ia) - 1
+      do ia = 1, orbital_count
+         k0 = orbital_two_j(ia) - 1
          km = max0(k0,km)
          if (k > k0) cycle
          set = .false.
 
-         do ir = myid + 1, ncf, nprocs
+         do ir = myid + 1, csf_count, nprocs
             coef = fco(k,ir + ncfpat,ia,ia)
             if (coef == 0.d0) cycle
             if (.not.set) then
@@ -145,8 +145,8 @@
                set = .true.
             endif
             ! IDIAG = IENDC(IR-1)+1
-            idiag = iendc(ir)
-            emt(idiag) = emt(idiag) + coef*fkaa
+            idiag = stored_segment_end_offsets(ir)
+            hamiltonian_values(idiag) = hamiltonian_values(idiag) + coef*fkaa
          end do
       end do
       if (k < km) go to 6
@@ -156,10 +156,10 @@
 !   Piece involving F (a,b) integrals
 !=======================================================================
 
-      do ia = 1, nw - 1
-         do ib = ia + 1, nw
+      do ia = 1, orbital_count - 1
+         do ib = ia + 1, orbital_count
             set = .false.
-            do ir = myid + 1, ncf, nprocs
+            do ir = myid + 1, csf_count, nprocs
                coef = fco(0,ir + ncfpat,ia,ib)
                if (coef == 0.d0) cycle
                if (.not.set) then
@@ -167,8 +167,8 @@
                   set = .true.
                endif
             ! IDIAG = IENDC(IR-1)+1
-               idiag = iendc(ir)
-               emt(idiag) = emt(idiag) + coef*f0ab
+               idiag = stored_segment_end_offsets(ir)
+               hamiltonian_values(idiag) = hamiltonian_values(idiag) + coef*f0ab
             end do
          end do
       end do
@@ -182,12 +182,12 @@
       k = -1
    12 continue
       k = k + 1
-      do ia = 1, nw - 1
-         nkjia = nkj(ia)
-         do ib = ia + 1, nw
-            nkjib = nkj(ib)
+      do ia = 1, orbital_count - 1
+         nkjia = orbital_two_j(ia)
+         do ib = ia + 1, orbital_count
+            nkjib = orbital_two_j(ib)
             set = .false.
-            if (nak(ia)*nak(ib) > 0) then
+            if (orbital_kappa(ia)*orbital_kappa(ib) > 0) then
                kmin = abs((nkjia - nkjib)/2)
             else
                kmin = abs((nkjia - nkjib)/2) + 1
@@ -198,7 +198,7 @@
             km = max0(kmax,km)
             if (k<kmin .or. k>kmax) cycle
 
-            do ir = myid + 1, ncf, nprocs
+            do ir = myid + 1, csf_count, nprocs
                coef = gco(k,ir + ncfpat,ia,ib)
                if (coef == 0.d0) cycle
                if (.not.set) then
@@ -206,8 +206,8 @@
                   set = .true.
                endif
                ! IDIAG = IENDC(IR-1)+1
-               idiag = iendc(ir)
-               emt(idiag) = emt(idiag) + coef*gkab
+               idiag = stored_segment_end_offsets(ir)
+               hamiltonian_values(idiag) = hamiltonian_values(idiag) + coef*gkab
             end do
          end do
       end do
@@ -253,19 +253,19 @@
          do i = 1, ncontr
             loc = indx(i)
             lod = loc   !  (Convert type)
-            if (lod > nelmnt) then
+            if (lod > stored_matrix_element_count) then
                write (6, *) '  Error in computing 1-e contribution'
-               write (6, *) '  LOC = ', loc , '  NELMNT = ', nelmnt
+               write (6, *) '  LOC = ', loc , '  NELMNT = ', stored_matrix_element_count
                stop
             endif
-            emt(loc) = emt(loc) + tegral*coeff(i)
+            hamiltonian_values(loc) = hamiltonian_values(loc) + tegral*coeff(i)
          end do
 
          ncontr_tot2(1) = ncontr_tot2(1) + 1
          call read1_mem(31,ncontr_tot2(1),lab, ncontr)
       end do
 
-      do nfile = 32, 32 + kmaxf
+      do nfile = 32, 32 + max_mcp_file_multipole_rank
          k = nfile - 32
 
 !=======================================================================
@@ -304,12 +304,12 @@
             do i = 1, ncontr
                loc = indx(i)
                lod = loc
-               if (lod > nelmnt) then   !! NELMENT (from Hmat_C) is INT*8
+               if (lod > stored_matrix_element_count) then   !! NELMENT (from Hmat_C) is INT*8
                   write (6, *) '  Error in computing 2-e contribution'
-                  write (6, *) '  LOC= ', loc , '  NELMNT = ', nelmnt
+                  write (6, *) '  LOC= ', loc , '  NELMNT = ', stored_matrix_element_count
                   stop
                endif
-               emt(loc) = emt(loc) + tegral*coeff(i)
+               hamiltonian_values(loc) = hamiltonian_values(loc) + tegral*coeff(i)
             end do
 
             ncontr_tot2(nfile-30) = ncontr_tot2(nfile-30) + 1

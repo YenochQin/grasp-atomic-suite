@@ -30,13 +30,13 @@
       character(len=*) , intent(in) :: dbgfile
 !-----------------------------------------------
 !
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          call setdbg (dbgfile)
       endif
 
-      call mpi_bcast (ldbpa, 5, mpi_logical, 0, mpi_comm_world, ierr)
-      call mpi_bcast (ldbpg, 5, mpi_logical, 0, mpi_comm_world, ierr)
-      call mpi_bcast (ldbpr,30, mpi_logical, 0, mpi_comm_world, ierr)
+      call mpi_bcast (ldbpa, 5, mpi_logical, 0, mpi_comm_world, mpi_error_code)
+      call mpi_bcast (ldbpg, 5, mpi_logical, 0, mpi_comm_world, mpi_error_code)
+      call mpi_bcast (ldbpr,30, mpi_logical, 0, mpi_comm_world, mpi_error_code)
 
       return
       end subroutine setdbgmpi

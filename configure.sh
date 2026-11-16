@@ -58,7 +58,7 @@ Build configuration
   Serial applications:            $(cache_value GRASP_BUILD_SERIAL_APPS)
   MPI applications:               $(cache_value GRASP_ENABLE_MPI)
   OpenMP: jj2lsj=$(cache_value GRASP_JJ2LSJ_OPENMP), rangular=$rangular_openmp
-  CSFG extension:                 $(cache_value GRASP_BUILD_CSFG)
+  CSFG extension:                 removed
 
 Output locations
   Executable programs: $build_abspath/bin
@@ -107,7 +107,7 @@ Usage: ./configure.sh [options] [-DNAME=VALUE ...]
   --no-serial       Explicitly omit ordinary serial applications, including rwfnestimate
   --no-mpi          Disable MPI programs (enabled by default)
   --no-openmp       Disable both jj2lsj and rangular OpenMP support
-  --no-csfg         Disable the optional CSFG extension (already off by default)
+  --no-csfg         Compatibility option; CSFG source and targets have been removed
   --debug           Use a Debug build; default directory becomes build-debug
   --profile NAME    f2018-release (production), f2018-check or f2018-audit
   --build-dir PATH  Build directory (default: build); compatible caches are updated

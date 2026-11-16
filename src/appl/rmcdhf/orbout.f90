@@ -25,11 +25,11 @@
       open(23, file=rwffile2, status='UNKNOWN', form='UNFORMATTED', position=&
          'asis')
       write (23) 'G92RWF'
-      do j = 1, nw
-         mfj = mf(j)
-         write (23) np(j), nak(j), e(j), mfj
-         write (23) pz(j), (pf(i,j),i=1,mfj), (qf(i,j),i=1,mfj)
-         write (23) (r(i),i=1,mfj)               ! This is a waste of resources
+      do j = 1, orbital_count
+         mfj = orbital_last_grid_index(j)
+         write (23) orbital_principal_n(j), orbital_kappa(j), orbital_energy_parameters(j), mfj
+         write (23) orbital_origin_parameters(j), (radial_large_components(i,j),i=1,mfj), (radial_small_components(i,j),i=1,mfj)
+         write (23) (radial_grid(i),i=1,mfj)               ! This is a waste of resources
       end do
       close(23)
 

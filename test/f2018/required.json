@@ -144,62 +144,6 @@
       ]
     },
     {
-      "name": "csfg",
-      "requires": [
-        "csfg"
-      ],
-      "targets": [
-        "mod_csfg",
-        "9290_csfg",
-        "rang90_csfg",
-        "jj2lsj_csfg",
-        "rwfnestimate_csfg",
-        "rmixaccumulate_csfg",
-        "rcsfggenerate_csfg",
-        "rcsfginteract_csfg",
-        "rcsfgzerofirst_csfg",
-        "rcsfgexpand_csfg",
-        "rcsfgextend_csfg",
-        "rcsfgsplit_csfg",
-        "rdistHmatrix_csfg",
-        "rcsfgblocksplit_csfg",
-        "rlevels_csfg"
-      ],
-      "tests": [
-        "csfg_capacity",
-        "csfg_file_formats",
-        "csfg_alternate_capacity",
-        "f2018_weights_rmcdhf90_csfg_mpi",
-        "f2018_csfg_reallocation",
-        "f2018_nmtejj_csfg_parity",
-        "f2018_rk_count_csfg",
-        "f2018_csfg_dacon"
-      ]
-    },
-    {
-      "name": "csfg_mpi",
-      "requires": [
-        "csfg",
-        "mpi"
-      ],
-      "targets": [
-        "dvd90mpi",
-        "me_csfg",
-        "rangular_csfg_mpi",
-        "rci_csfg_mpi",
-        "rci_block_csfg_mpi",
-        "rmcdhf_csfg_mpi"
-      ],
-      "tests": [
-        "f2018_csfg_debug_mpi_1",
-        "f2018_csfg_debug_mpi_2",
-        "f2018_csfg_debug_mpi_4",
-        "f2018_dgemvmpi_1",
-        "f2018_dgemvmpi_2",
-        "f2018_dgemvmpi_4"
-      ]
-    },
-    {
       "name": "ci_rmcdhf_mpi",
       "requires": [
         "mpi"
@@ -221,24 +165,6 @@
         "f2018_ci_damping_rmcdhf_mem_mpi_1",
         "f2018_ci_damping_rmcdhf_mem_mpi_2",
         "f2018_ci_damping_rmcdhf_mem_mpi_4"
-      ]
-    },
-    {
-      "name": "csfg_davidson",
-      "requires": [
-        "csfg",
-        "mpi"
-      ],
-      "targets": [
-        "dvd90mpi"
-      ],
-      "tests": [
-        "f2018_davidson_mpi_1",
-        "f2018_davidson_mpi_2",
-        "f2018_davidson_mpi_4",
-        "f2018_davidson_early_mpi_1",
-        "f2018_davidson_early_mpi_2",
-        "f2018_davidson_early_mpi_4"
       ]
     }
   ]

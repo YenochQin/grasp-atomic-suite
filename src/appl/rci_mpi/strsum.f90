@@ -51,11 +51,11 @@
 !   Write out the basic dimensions of the electron cloud
 !
       write (24, *)
-      call convrt2 (nelec, record, lenth, 'strsum.nelec')
+      call convrt2 (electron_count, record, lenth, 'strsum.nelec')
       write (24, *) 'There are '//record(1:lenth)//' electrons in the cloud'
-      call convrt2 (ncf, record, lenth, 'strsum.ncf')
+      call convrt2 (csf_count, record, lenth, 'strsum.ncf')
       write (24, *) ' in '//record(1:lenth)//' relativistic CSFs'
-      call convrt2 (nw, record, lenth, 'strsum.nw')
+      call convrt2 (orbital_count, record, lenth, 'strsum.nw')
       write (24, *) ' based on '//record(1:lenth)//' relativistic subshells.'
 !
 !   If the CSFs are not treated uniformly, write out an
@@ -63,27 +63,27 @@
 !
       if (lfordr) then
          write (24, *)
-         do nb = 1, nblock
+         do nb = 1, symmetry_block_count
             iccut = iccutblk(nb)
             call convrt2 (iccut, record, lenth, 'strsum.icccut')
             write (24, *) ' CSFs 1--'//record(1:lenth)//' constitute'//&
-               ' the zero-order space;  nb = ', nb, ' ncf = ', ncfblk(nb)
+               ' the zero-order space;  nb = ', nb, ' ncf = ', csf_counts_by_block(nb)
          end do
       endif
 !
 !   Write out the nuclear parameters
 !
       write (24, *)
-      write (24, 300) z
+      write (24, 300) nuclear_charge
       if (emn == 0.0d00) then
          write (24, *) ' the nucleus is stationary;'
       else
          write (24, 301) emn
       endif
-      if (nparm == 2) then
+      if (nuclear_model_parameter_count == 2) then
          write (24, *) ' Fermi nucleus:'
-         write (24, 302) parm(1), parm(2)
-         call convrt2 (nnuc, record, lenth, 'strsum.nnuc')
+         write (24, 302) nuclear_model_parameters(1), nuclear_model_parameters(2)
+         call convrt2 (first_grid_index_beyond_fermi_c, record, lenth, 'strsum.nnuc')
          write (24, *) ' there are '//record(1:lenth)//&
             ' tabulation points in the nucleus.'
       else
@@ -93,7 +93,7 @@
 !   Write out the physical effects specifications
 !
       write (24, *)
-      write (24, 303) c
+      write (24, 303) speed_of_light_au
 !
       write (24, *)
       if (ltrans .or. lvp .or. lnms .or. lsms) then
@@ -116,12 +116,12 @@
 !   Write out the parameters of the radial grid
 !
       write (24, *)
-      if (hp == 0.0d00) then
-         write (24, 305) rnt, h, n
+      if (asymptotic_grid_step == 0.0d00) then
+         write (24, 305) radial_grid_scale, transformed_grid_step, radial_point_count
       else
-         write (24, 306) rnt, h, hp, n
+         write (24, 306) radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count
       endif
-      write (24, 307) r(1), r(2), r(n)
+      write (24, 307) radial_grid(1), radial_grid(2), radial_grid(radial_point_count)
 !
 !   Write out the orbital properties
 !
@@ -130,9 +130,11 @@
       write (24, *)
       write (24, 308)
       write (24, *)
-      do i = 1, nw
-         write (24, 309) np(i), nh(i), e(i), pz(i), gama(i), pf(2,i), qf(2,i), &
-            mf(i)
+      do i = 1, orbital_count
+         write (24, 309) orbital_principal_n(i), orbital_symmetry_labels(i), orbital_energy_parameters(i), &
+            & orbital_origin_parameters(i), orbital_origin_exponents(i), radial_large_components(2,i), &
+            & radial_small_components(2,i), &
+            orbital_last_grid_index(i)
       end do
 !
 !   Write the list of eigenpair indices
@@ -142,8 +144,8 @@
 !   Find total number of eigenstates and print corresponding info
 !
       ntmp = 0
-      do i = 1, nblock
-         ntmp = ntmp + nevblk(i)
+      do i = 1, symmetry_block_count
+         ntmp = ntmp + eigenvector_counts_by_block(i)
       enddo
 
       write (24,*) ntmp, ' levels will be computed'

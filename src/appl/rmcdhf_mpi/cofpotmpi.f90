@@ -32,19 +32,19 @@
       call setcof (eol, j)
       call ypot (j)
       call xpot (j)
-      call lagcon (j, nprocs)
+      call lagcon (j, mpi_process_count)
       call dacon
 
       call mpi_allreduce (yp, tmpmpi, npts, mpi_double_precision,  &
-                          mpi_sum, mpi_comm_world, ierr)
+                          mpi_sum, mpi_comm_world, mpi_error_code)
       call dcopy (npts, tmpmpi, 1, yp, 1)
 
       call mpi_allreduce (xp, tmpmpi, npts, mpi_double_precision,  &
-                          mpi_sum, mpi_comm_world, ierr)
+                          mpi_sum, mpi_comm_world, mpi_error_code)
       call dcopy (npts, tmpmpi, 1, xp, 1)
 
       call mpi_allreduce (xq, tmpmpi, npts, mpi_double_precision,  &
-                          mpi_sum, mpi_comm_world, ierr)
+                          mpi_sum, mpi_comm_world, mpi_error_code)
       call dcopy (npts, tmpmpi, 1, xq, 1)
 
       return

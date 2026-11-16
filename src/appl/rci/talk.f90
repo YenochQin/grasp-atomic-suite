@@ -15,7 +15,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: keyorb
+      use parameter_def,   only: orbital_index_radix
       use buffer_c
       use debug_c
       use orb_c
@@ -33,31 +33,32 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   Print coefficient if requested
 !
-      if (ibug1 /= 0) write (99, 300)ja,jb,np(ia),nh(ia),np(ib),nh(ib),&
-         np(ic),nh(ic),np(id),nh(id),nu,itype,coef
+      if (ibug1 /= 0) write (99, 300)ja,jb,orbital_principal_n(ia),orbital_symmetry_labels(ia),orbital_principal_n(ib), &
+         & orbital_symmetry_labels(ib),&
+         orbital_principal_n(ic),orbital_symmetry_labels(ic),orbital_principal_n(id),orbital_symmetry_labels(id),nu,itype,coef
 !
 !   Increment counter
 !
       if(dabs(coef) > eps) then
-         nvcoef = nvcoef + 1
+         angular_coefficient_count = angular_coefficient_count + 1
 !
 !   Ensure that arrays are of adequate size; reallocate if necessary
 !
-         if (nvcoef > nbdim) call alcbuf (2)
+         if (angular_coefficient_count > angular_buffer_capacity) call alcbuf (2)
 !
 !   Store integral indices and coefficient in COMMON/BUFFER/
 !
-         label(1,nvcoef) = ia
-         label(2,nvcoef) = ib
-         label(3,nvcoef) = ic
-         label(4,nvcoef) = id
-         label(5,nvcoef) = nu
-         label(6,nvcoef) = itype
-         coeff(nvcoef)   = coef
+         angular_coefficient_labels(1,angular_coefficient_count) = ia
+         angular_coefficient_labels(2,angular_coefficient_count) = ib
+         angular_coefficient_labels(3,angular_coefficient_count) = ic
+         angular_coefficient_labels(4,angular_coefficient_count) = id
+         angular_coefficient_labels(5,angular_coefficient_count) = nu
+         angular_coefficient_labels(6,angular_coefficient_count) = itype
+         angular_coefficients(angular_coefficient_count)   = coef
       end if
 !
       return

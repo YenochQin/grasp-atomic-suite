@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      subroutine rkco_gg (ja,jb,cord,incor,icolbrei)
+      subroutine rkco_gg (ja,jb,coefficient_consumer,incor,icolbrei)
 !                                                                      *
 !   Configurations JA, JB. Analyse the tables of quantum numbers set   *
 !   in the COMMON  blocks M0 , M1, M2, M3  to determine all possible   *
@@ -42,7 +42,7 @@
       use el5_i
       use cord_i, only: cord_callback => cord
       implicit none
-      procedure(cord_callback) :: cord
+      procedure(cord_callback) :: coefficient_consumer
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -66,7 +66,7 @@
 !
 !   1.1 Analyse electron distribution in peel. (The full procedure is
 !       needed only if the number of peel orbitals NPEEL .GE. 2)
-      if (nw .lt. 1) then
+      if (orbital_count .lt. 1) then
          print *, 'RKCO_GG: No subshells.'
          stop
       endif
@@ -231,7 +231,7 @@
             end if
          end do
          if ((idq .eq. 0) .and. (ncore .eq. 0)) cycle
-         if ((ncore .eq. 0) .or. (nak(it1) .ne. nak(it2))) return
+         if ((ncore .eq. 0) .or. (orbital_kappa(it1) .ne. orbital_kappa(it2))) return
 !
 !   This section calculates the terms arising from active electrons
 !   which are in closed shells
@@ -372,7 +372,7 @@
          do kw2 = 1,kw1
             ja1 = kw2
             ja2 = kw2
-            call cord (ja,jb,ja1,ipca,jb1)
+            call coefficient_consumer (ja,jb,ja1,ipca,jb1)
          end do
 !
 !   2.2 Calculate contribution from peel/core terms
@@ -381,7 +381,7 @@
          do kw2 = 1,npeel
             ja1 = kw2
             ja2 = kw2
-            call cord (ja,jb,ja1,ipca,jb1)
+            call coefficient_consumer (ja,jb,ja1,ipca,jb1)
          end do
       end do
       return

@@ -42,12 +42,12 @@
 !   Overall initialization
 !
       epsi = precis*precis
-      twocv = cvac + cvac
+      twocv = vacuum_speed_of_light_au + vacuum_speed_of_light_au
 !
 !   Potential for a point nucleus: equation (1)
 !   (this is also the asymptotoc form for a finite nucleus)
 !
-      factor = -(2.0d00*z)/(3.0d00*pi*cvac)
+      factor = -(2.0d00*nuclear_charge)/(3.0d00*pi*vacuum_speed_of_light_au)
 !
       tb(1) = 0.0d00
 !
@@ -55,22 +55,22 @@
     1 continue
       i = i + 1
 !
-      ri = r(i)
+      ri = radial_grid(i)
       x = twocv*ri
       tbi = (factor/ri)*funk(x,1)
 !
       if (abs(tbi) >= epsi) then
          tb(i) = tbi
-         if (i < n) go to 1
+         if (i < radial_point_count) go to 1
       else
-         tb(i:n) = 0.0d00
+         tb(i:radial_point_count) = 0.0d00
       endif
 !
 !   Potential for a finite nucleus: equation (4)
 !
-      if (nparm == 2) then
+      if (nuclear_model_parameter_count == 2) then
 !
-         factor = -2.0d00/(3.0d00*cvac**2)
+         factor = -2.0d00/(3.0d00*vacuum_speed_of_light_au**2)
 !
 !   Set up integrand
 !
@@ -80,12 +80,12 @@
     3    continue
          k = k + 1
 !
-         rk = r(k)
+         rk = radial_grid(k)
          xk = twocv*rk
 !
          ta(1) = 0.0d00
          do i = 2, mtp
-            xi = twocv*r(i)
+            xi = twocv*radial_grid(i)
             xm = abs(xk - xi)
             xp = xk + xi
             ta(i) = (funk(xm,0) - funk(xp,0))*zdist(i)
@@ -100,7 +100,7 @@
          if (abs(x) >= epsi) then
             if (abs((x - tb(k))/x) > 1.0d-05) then
                tb(k) = x
-               if (k < n) go to 3
+               if (k < radial_point_count) go to 3
             endif
          endif
 !

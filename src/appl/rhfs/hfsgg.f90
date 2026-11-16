@@ -25,11 +25,12 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw
+      use parameter_def,   only: max_orbitals
       use memory_man
       use decide_c
-      use def_c,           only: aumamu, cvac, empam, rbcm, aucm,     &
-                                 ccms, b1=>aumamu
+      use def_c,           only: electron_mass_u, vacuum_speed_of_light_au, proton_mass_u, bohr_radius_cm, &
+         & hartree_to_wavenumber_cm,     &
+                                 speed_of_light_cm_per_s, b1=>electron_mass_u
       use eigv_c
       use foparm_c
       use jlabl_c,               labj=>jlbr, labp=>jlbp
@@ -60,9 +61,9 @@
 !-----------------------------------------------
       integer :: ffmin, ffmax, ff, i, j, kt, ipt, ic, lcnum, ir, itjpoc, itjpor&
          , idiff, ia, ib, k, kk, loc1, loc2, ii, jj, jjii, jb, ja, jjb, jja, iflag
-      real(double), dimension(nnnw) :: tshell
-      real(double), dimension(2,nnnw,nnnw) :: rintme, amelt
-      real(double), dimension(nnnw,nnnw) :: rintgj, rintdgj, gjmelt, dgjmelt
+      real(double), dimension(max_orbitals) :: tshell
+      real(double), dimension(2,max_orbitals,max_orbitals) :: rintme, amelt
+      real(double), dimension(max_orbitals,max_orbitals) :: rintgj, rintdgj, gjmelt, dgjmelt
 !     .. Local pointer arrays
       real(double), dimension(:,:), pointer :: hfc
       real(double),  dimension(:), pointer :: gjc, dgjc
@@ -96,8 +97,8 @@
 !   matrix elements for the two multipolarities
 !
       do kt = 1, 2
-         do i = 1, nw
-            do j = 1, nw
+         do i = 1, orbital_count
+            do j = 1, orbital_count
                if (kt == 1) then
                   rintme(kt,i,j) = rinthf(i,j,-2)
                   rintgj(i,j) = rinthf(i,j,1)
@@ -121,7 +122,7 @@
 !   Sweep through the Hamiltonian matrix to determine the
 !   diagonal and off-diagonal hyperfine constants
 !
-      do ic = 1, ncf
+      do ic = 1, csf_count
          itjpoc = itjpo(ic)
 !
 !   Output IC on the screen to show how far the calculation has preceede
@@ -131,7 +132,7 @@
             write (6, *) 'Column '//cnum(1:lcnum)//' complete;'
          endif
 !
-         do ir = 1, ncf
+         do ir = 1, csf_count
 !
 !   If LFORDR is .TRUE., a `first order' calculation is indicated;
 !   only the CSFs with serial numbers exceeding IC are treated specially
@@ -173,14 +174,14 @@
                if (ia /= 0) then
                   if (ia == ib) then
                      if (kt/=1 .or. idiff/=0) then
-                        do ia = 1, nw
+                        do ia = 1, orbital_count
                            if (abs(tshell(ia)) <= cutoff) cycle
                            elemnt = elemnt + amelt(kt,ia,ia)*rintme(kt,ia,ia)*&
                               tshell(ia)
                            cycle
                         end do
                      else
-                        do ia = 1, nw
+                        do ia = 1, orbital_count
                            if (abs(tshell(ia)) <= cutoff) cycle
                            elemnt = elemnt + amelt(kt,ia,ia)*rintme(kt,ia,ia)*&
                               tshell(ia)
@@ -210,13 +211,13 @@
                if (abs(elemnt) <= cutoff .and. abs(elemntgj) <= cutoff .and. &
                    abs(elemntdgj) <= cutoff) cycle
                do k = 1, nvec
-                  loc1 = (k - 1)*ncf
-                  evecic1 = evec(ic + loc1)
-                  evecir1 = evec(ir + loc1)
+                  loc1 = (k - 1)*csf_count
+                  evecic1 = csf_mixing_coefficients(ic + loc1)
+                  evecir1 = csf_mixing_coefficients(ir + loc1)
                   do kk = 1, nvec
-                     loc2 = (kk - 1)*ncf
-                     evecic2 = evec(ic + loc2)
-                     evecir2 = evec(ir + loc2)
+                     loc2 = (kk - 1)*csf_count
+                     evecic2 = csf_mixing_coefficients(ic + loc2)
+                     evecir2 = csf_mixing_coefficients(ir + loc2)
                      if (idiff==0 .and. ir/=ic) then
                         contr = elemnt*(evecic1*evecir2 + evecir1*evecic2)
                         contrgj = elemntgj*(evecic1*evecir2 + evecir1*evecic2)
@@ -261,9 +262,9 @@
 !   These are the conversion factors to obtain the hyperfine
 !   constants in MHz
 !
-      aumhz = aucm*ccms*1.0d-06
-      barnau = 1.0d-24/rbcm**2
-      dnmau = b1/(2.0d00*cvac*empam)
+      aumhz = hartree_to_wavenumber_cm*speed_of_light_cm_per_s*1.0d-06
+      barnau = 1.0d-24/bohr_radius_cm**2
+      dnmau = b1/(2.0d00*vacuum_speed_of_light_au*proton_mass_u)
 !
       gfac = aumhz*dnmau*hfsd/hfsi
       hfac = aumhz*2.0d00*hfsq*barnau
@@ -322,7 +323,7 @@
 !   Output diagonal hfs and g_j factors to file <name>.h or <name>.ch
 !
                   if (i == ii) then
-                     gj = cvac*gja1*gjc(nvec*(i-1)+ii)
+                     gj = vacuum_speed_of_light_au*gja1*gjc(nvec*(i-1)+ii)
                      dgj = 0.001160d0*gja1*dgjc(nvec*(i-1)+ii)
                      write (29, 403) ivec(i), labj(jj), labp((iaspar(i)+3)/2), &
                         afa1*hfc(1,nvec*(i-1)+ii), bfa1*hfc(3,nvec*(i-1)+ii), &
@@ -351,7 +352,7 @@
 !   These are the factors needed to obtain the F-dependent hyperfine
 !   matrix elements in Hartrees
 !
-      tilde1 = sqrt((hfsi + 1.0d00)/hfsi)*hfsd*0.5d00*b1/(empam*cvac)
+      tilde1 = sqrt((hfsi + 1.0d00)/hfsi)*hfsd*0.5d00*b1/(proton_mass_u*vacuum_speed_of_light_au)
       if (hfsi > 0.6d00) then
          tilde2 = sqrt((hfsi + 1.0d00)*(2.0d00*hfsi + 3.d0)/((2.0d00*hfsi - &
             1.0d00)*hfsi))

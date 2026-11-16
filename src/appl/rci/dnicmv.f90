@@ -23,7 +23,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use hmat_c,          only: emt
+      use hmat_c,          only: hamiltonian_values
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -58,9 +58,9 @@
          iend = iend + icol
          nelc = iend - ibeg + 1
          do iv = 1, m
-            diag = c(icol,iv) + emt(iend)*b(icol,iv)
+            diag = c(icol,iv) + hamiltonian_values(iend)*b(icol,iv)
             call dmerge_dnicmv (nelc - 1, b(1:n,iv), c(1:n,iv), &
-                                emt(ibeg:iend), b(icol,iv), dl)
+                                hamiltonian_values(ibeg:iend), b(icol,iv), dl)
             c(icol,iv) = diag + dl
          end do
          ibeg = iend + 1

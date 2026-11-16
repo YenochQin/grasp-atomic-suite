@@ -38,7 +38,7 @@
          do i = 30, k
             close(i)
          end do
-         write (istde, *) 'Error when opening the tmp files'
+         write (stderr_unit, *) 'Error when opening the tmp files'
          stop
       end do
 

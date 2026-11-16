@@ -60,9 +60,9 @@
 !=======================================================================
 !  Start mpi --- get processor info: myid, nprocs, host name; and print
 !=======================================================================
-      call startmpi2 (myid, nprocs, host, lenhost, ncount1,           &
+      call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1,           &
                       startdir, permdir, tmpdir, 'RTRANSITION_MPI')
-      write (idstring, '(I3.3)') myid
+      write (idstring, '(I3.3)') mpi_rank
       print*, tmpdir , ' = tmpdir'
 
       lenperm = len_trim (permdir)
@@ -72,7 +72,7 @@
       isofile = trim(startdir)//'/isodata'
       ntest = 1001
 
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          write (6, *)
          write (6, *) ' Default settings?'
          yes = getyn()
@@ -100,9 +100,9 @@
             inpci = 1
          endif
       endif   !myid=0
-      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (ndump,1,mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (inpci,1,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (ndump,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (inpci,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
 !Rasa -- start
 !GG      LDBPR = .FALSE.
 !      WRITE (6, *) ' Generate debug output?'
@@ -125,8 +125,8 @@
 !
 !   Obtain the names of the initial and final state files
 !
-      if (myid .eq. 0) call fname(name)
-      call mpi_bcast (name,48,mpi_character,0,mpi_comm_world,ierr)
+      if (mpi_rank .eq. 0) call fname(name)
+      call mpi_bcast (name,48,mpi_character,0,mpi_comm_world,mpi_error_code)
       fullname(1) = trim(startdir) // '/' // trim(name(1))
       fullname(2) = trim(startdir) // '/' // trim(name(2))
 !
@@ -134,7 +134,7 @@
 !   .csl  files. These files are then merged to one file.
 !
 !cjb print FULLNAME1= FULLNAME2=
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
         print*,"FULLNAME1=",fullname(1)
         print*,"FULLNAME2=",fullname(2)
       end if
@@ -164,17 +164,17 @@
 !
 !   Open and append a summary of the inputs to the  .sum  file
 !
-      if (myid == 0) then
+      if (mpi_rank == 0) then
           iii = len_trim(startdir)
-          call sys_chdir(trim(startdir),iii,ierr)
-          if (ierr.ne.0) then
+          call sys_chdir(trim(startdir),iii,mpi_error_code)
+          if (mpi_error_code.ne.0) then
               print *, "error changing dir!"
               call exit(1)
           endif
           call strsum(name,inpci,ilbl)
           iii = len_trim(tmpdir)
-          call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,ierr)
-          if (ierr.ne.0) then
+          call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,mpi_error_code)
+          if (mpi_error_code.ne.0) then
               print *, "Error changing dir!"
               call exit(1)
           endif
@@ -190,7 +190,7 @@
 !
 !   Print completion message
 !
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
           print *
           print *, 'RTRANSITION_MPI: Execution complete.'
       endif
@@ -198,7 +198,7 @@
 !  Execution finished; Statistics output
 !=======================================================================
 
-      call stopmpi2 (myid, nprocs, host, lenhost,                     &
+      call stopmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length,                     &
                            ncount1, 'RTRANSITION_MPI')
 !=======================================================================
 !

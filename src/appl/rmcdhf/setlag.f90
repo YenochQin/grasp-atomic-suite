@@ -20,13 +20,13 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: keyorb
+      use parameter_def,    only: orbital_index_radix
       use memory_man
       use orba_c
       use core_c
       use def_c
       use fixd_c
-      use grid_c, only: n, rpor
+      use grid_c, only: radial_point_count, radial_derivative_over_radius
       use lagr_c
       use orb_c
       use mpi_s
@@ -52,13 +52,13 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       real(double), parameter :: p001 = 1.0d-01
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: itwice, liraw, li, lip1, naklj, ljraw, lj, ieccli, l1, l2, &
          jlast, mlast, m, j, i
-      real(double), dimension(nnnp) :: ypj, ypm, xpj, xpm, xqj, xqm
+      real(double), dimension(max_radial_points) :: ypj, ypm, xpj, xpm, xqj, xqm
       real(double) :: eps, ucfj, ucfm, result, rijm, qdif, obqdif, obqsum
       logical :: first, fixli, fixlj, fulli, fullj, vli, vlj
 !-----------------------------------------------
@@ -85,16 +85,16 @@
          eps = accy*0.01d0      ! criterion to see if an orb is occupied
          do itwice = 1, 2
             nec = 0
-         do ljraw = ncore+1, nw
+         do ljraw = closed_core_subshell_count+1, orbital_count
                lj = iorder(ljraw)
-            naklj = nak(lj)
-            vlj = .not. lfix(lj)
-               fullj = abs ( ucf(lj)-dble (nkj(lj)+1) ) .lt. eps
+            naklj = orbital_kappa(lj)
+            vlj = .not. is_orbital_fixed(lj)
+               fullj = abs ( ucf(lj)-dble (orbital_two_j(lj)+1) ) .lt. eps
             do liraw = 1, ljraw-1
                li = iorder(liraw)
-               vli = .not. lfix(li)
-               fulli = abs ( ucf(li)-dble (nkj(li)+1) ) .lt. eps
-               if  (nak(li) .eq. naklj) then
+               vli = .not. is_orbital_fixed(li)
+               fulli = abs ( ucf(li)-dble (orbital_two_j(li)+1) ) .lt. eps
+               if  (orbital_kappa(li) .eq. naklj) then
                   if  (vli  .or. vlj ) then       ! at least one orbital varied
 !                                                   but not both (varied and full)
                      if (.not. ((vli .and. vlj) .and. (fulli .and. fullj))) then 
@@ -119,7 +119,7 @@
 !   Print information about Lagrange multipliers
 !=======================================================================
 
-         if (myid == 0) then
+         if (mpi_rank == 0) then
             if (nec == 0) then
                write (*, 302)
             else
@@ -129,7 +129,8 @@
                   ieccli = iecc(li)
                   l1 = ieccli/key
                   l2 = ieccli - key*l1
-                  write (*, 305) np(l2), nh(l2), np(l1), nh(l1)
+                  write (*, 305) orbital_principal_n(l2), orbital_symmetry_labels(l2), orbital_principal_n(l1), &
+                     & orbital_symmetry_labels(l1)
                end do
             endif
          endif
@@ -140,7 +141,7 @@
 !     RETURN
 
       if (nec == 0) return
-      if (myid == 0) write (*, 306)
+      if (mpi_rank == 0) write (*, 306)
       jlast = 0
       mlast = 0
 
@@ -156,9 +157,9 @@
             call ypot (j)
             call xpot (j)
             call dacon
-            ypj(:n) = yp(:n)
-            xpj(:n) = xp(:n)
-            xqj(:n) = xq(:n)
+            ypj(:radial_point_count) = yp(:radial_point_count)
+            xpj(:radial_point_count) = xp(:radial_point_count)
+            xqj(:radial_point_count) = xq(:radial_point_count)
             jlast = j
          endif
 !
@@ -168,19 +169,21 @@
             call ypot (m)
             call xpot (m)
             call dacon
-            ypm(:n) = yp(:n)
-            xpm(:n) = xp(:n)
-            xqm(:n) = xq(:n)
+            ypm(:radial_point_count) = yp(:radial_point_count)
+            xpm(:radial_point_count) = xp(:radial_point_count)
+            xqm(:radial_point_count) = xq(:radial_point_count)
             mlast = m
          endif
 !
-         mtp = max(mf(j),mf(m))
+         mtp = max(orbital_last_grid_index(j),orbital_last_grid_index(m))
 !
-         if (lfix(m)) then
+         if (is_orbital_fixed(m)) then
             ta(1) = 0.d0
             do i = 2, mtp
-               ta(i) = rpor(i)*((pf(i,m)*xqj(i)-qf(i,m)*xpj(i))*c+       &
-                                (pf(i,m)*pf(i,j)+qf(i,m)*qf(i,j))*ypj(i)) 
+               ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,m)*xqj(i) &
+                  & -radial_small_components(i,m)*xpj(i))*speed_of_light_au+       &
+                                (radial_large_components(i,m)*radial_large_components(i,j)+radial_small_components(i,m) &
+                                   & *radial_small_components(i,j))*ypj(i))
             end do
 
             call quad (result)
@@ -196,11 +199,13 @@
 !           ENDDO ! dbg
 ! end dbg
 
-         else if (lfix(j)) then
+         else if (is_orbital_fixed(j)) then
             ta(1) = 0.d0
             do i = 2, mtp
-               ta(i) = rpor(i)*((pf(i,j)*xqm(i)-qf(i,j)*xpm(i))*c+      &
-                                (pf(i,j)*pf(i,m)+qf(i,j)*qf(i,m))*ypm(i)) 
+               ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,j)*xqm(i) &
+                  & -radial_small_components(i,j)*xpm(i))*speed_of_light_au+      &
+                                (radial_large_components(i,j)*radial_large_components(i,m)+radial_small_components(i,j) &
+                                   & *radial_small_components(i,m))*ypm(i))
             end do
 
 !start dbg
@@ -229,9 +234,12 @@
                obqdif = 1.d0/ucfj - 1.d0/ucfm
                ta(1) = 0.d0
                do i = 2, mtp
-                  ta(i) = rpor(i)*((pf(i,m)*xqj(i)-qf(i,m)*xpj(i)          &
-                                   -pf(i,j)*xqm(i)+qf(i,j)*xpm(i))*c       &
-                          +(ypj(i)-ypm(i))*(pf(i,m)*pf(i,j)+qf(i,m)*qf(i,j))) 
+                  ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,m)*xqj(i) &
+                     & -radial_small_components(i,m)*xpj(i)          &
+                                   -radial_large_components(i,j)*xqm(i)+radial_small_components(i,j)*xpm(i))* &
+                                      & speed_of_light_au       &
+                          +(ypj(i)-ypm(i))*(radial_large_components(i,m)*radial_large_components(i,j)+ &
+                             & radial_small_components(i,m)*radial_small_components(i,j)))
                end do
 
                call quad (result)
@@ -251,9 +259,12 @@
 
                ta(1) = 0.d0
                do i = 2, mtp
-                  ta(i) = rpor(i)*((pf(i,m)*xqj(i)-qf(i,m)*xpj(i)         &
-                                   +pf(i,j)*xqm(i)-qf(i,j)*xpm(i))*c      &
-                         +(ypj(i)+ypm(i))*(pf(i,m)*pf(i,j)+qf(i,m)*qf(i,j))) 
+                  ta(i) = radial_derivative_over_radius(i)*((radial_large_components(i,m)*xqj(i) &
+                     & -radial_small_components(i,m)*xpj(i)         &
+                                   +radial_large_components(i,j)*xqm(i)-radial_small_components(i,j)*xpm(i))* &
+                                      & speed_of_light_au      &
+                         +(ypj(i)+ypm(i))*(radial_large_components(i,m)*radial_large_components(i,j)+ &
+                            & radial_small_components(i,m)*radial_small_components(i,j)))
                end do
 
                call quad (result)
@@ -272,7 +283,8 @@
             endif
          endif
 
-         write (*, 307) np(j), nh(j), np(m), nh(m), ecv(li)
+         write (*, 307) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_principal_n(m), &
+            & orbital_symmetry_labels(m), ecv(li)
 
       end do
 

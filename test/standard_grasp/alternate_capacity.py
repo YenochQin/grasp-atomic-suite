@@ -32,7 +32,7 @@ def main() -> None:
             path = suite / "src" / source
             text = path.read_text()
             if path.name == "suite_parameters_M.f90":
-                for name, original, replacement in (("nnnp", 590, 790), ("nnnw", 127, 149)):
+                for name, original, replacement in (("max_radial_points", 590, 790), ("max_orbitals", 127, 149)):
                     pattern = rf"^(\s*integer\s*,\s*parameter\s*::\s*{name}\s*=\s*){original}\b"
                     text, count = re.subn(pattern, rf"\g<1>{replacement}", text, flags=re.IGNORECASE | re.MULTILINE)
                     if count != 1:

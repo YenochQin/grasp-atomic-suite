@@ -30,7 +30,7 @@
 
       call openfl (24, filnam, form, status, ierr)
       if (ierr /= 0) then
-         write (istde, *) 'Error when opening ', filnam
+         write (stderr_unit, *) 'Error when opening ', filnam
          error stop
       endif
 

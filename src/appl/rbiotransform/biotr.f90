@@ -31,7 +31,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw, nnnp
+      use parameter_def,   only: max_orbitals, max_radial_points
       use default_c,       only: ndef, ndump
       use sbdat_c,         only: nlmax, kamax, nshlii, nshlff
       use biorb_c,         only: nwii, nwff
@@ -74,7 +74,7 @@
       integer :: ncount1
       real(double), dimension(lwork1) :: work
       real(double), dimension(nlmax*nlmax) :: cishl
-      real(double), dimension(nnnw,nnnw)   :: s
+      real(double), dimension(max_orbitals,max_orbitals)   :: s
       real(double), dimension(nlmax*nlmax) :: cfshl
       logical :: yes
       character, dimension(2) :: name*24
@@ -210,7 +210,7 @@
 !. for counter transformation of CI coefficients.
 !
       call biotr1 (pfii, qfii, nshlii, ninshli, pfff, qfff, &
-         nshlff, ninshlf, nnnp, kamax, work, lwork1, ntestg, &
+         nshlff, ninshlf, max_radial_points, kamax, work, lwork1, ntestg, &
          cishl, cici, cfshl, cfci)
       write (*, *)
       write (*, *) ' ****************************************'

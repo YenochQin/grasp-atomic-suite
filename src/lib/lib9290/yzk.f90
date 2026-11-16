@@ -34,14 +34,14 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnn1
+      use parameter_def,   only: radial_workspace_capacity
       use cnc_c,           only: cnc5c
       use def_c,           only: accy
       use grid_c
       use ncc_c
       use orb_c
       use tatb_c,          only: zk=>ta, yk=>tb, mtp
-      use wave_c,          only: mf , pf, qf
+      use wave_c,          only: orbital_last_grid_index , radial_large_components, radial_small_components
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -61,9 +61,9 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ii, mtpp1, mtpp3, mtpp4, kk, np4
-      real(double), dimension(nnn1) :: rhop
-      real(double), dimension(nnn1,klimit) :: rttk, rttkm, rttk1, rttkm1
-      real(double), dimension(nnn1) :: rm, wk, temp
+      real(double), dimension(radial_workspace_capacity) :: rhop
+      real(double), dimension(radial_workspace_capacity,klimit) :: rttk, rttkm, rttk1, rttkm1
+      real(double), dimension(radial_workspace_capacity) :: rm, wk, temp
       real(double) :: sum, rtmp, zklim, dif
       logical, dimension(0:klimit) :: kcalc
 
@@ -82,13 +82,13 @@
             stop
          endif
          if (k > 0) then
-            rttk(2:n,k) = r(2:n)**k
-            rttkm(2:n,k) = 1.d0/rttk(2:n,k)
-            rttk1(2:n,k) = rttk(2:n,k)*r(2:n)
-            rttkm1(2:n,k) = 1.d0/rttk1(2:n,k)
-            rm(2:n) = 1.d0/r(2:n)
+            rttk(2:radial_point_count,k) = radial_grid(2:radial_point_count)**k
+            rttkm(2:radial_point_count,k) = 1.d0/rttk(2:radial_point_count,k)
+            rttk1(2:radial_point_count,k) = rttk(2:radial_point_count,k)*radial_grid(2:radial_point_count)
+            rttkm1(2:radial_point_count,k) = 1.d0/rttk1(2:radial_point_count,k)
+            rm(2:radial_point_count) = 1.d0/radial_grid(2:radial_point_count)
          else
-            rm(2:n) = 1.d0/r(2:n)
+            rm(2:radial_point_count) = 1.d0/radial_grid(2:radial_point_count)
          endif
       endif
 !
@@ -96,7 +96,7 @@
 !   RHOP  (see comment statements below) would be zero; determine
 !   other important locations
 !
-      mtp = min(mf(i),mf(j))
+      mtp = min(orbital_last_grid_index(i),orbital_last_grid_index(j))
       mtpp1 = mtp + 1
       mtpp3 = mtp + 3
       mtpp4 = mtp + 4
@@ -105,7 +105,8 @@
 !                   I     J     I     J
 !
       do ii = 2, mtp
-         rhop(ii) = rp(ii)*(pf(ii,i)*pf(ii,j) + qf(ii,i)*qf(ii,j))
+         rhop(ii) = radial_grid_derivative(ii)*(radial_large_components(ii,i)*radial_large_components(ii,j) + &
+            & radial_small_components(ii,i)*radial_small_components(ii,j))
       end do
 !
 !   Fill array TEMP with R**K * RHOP
@@ -176,19 +177,19 @@
 !
       if (k == 0) then
 !
-         zk(mtpp4:n) = zklim
+         zk(mtpp4:radial_point_count) = zklim
 !
       else
 !
          zk(2:mtpp3) = zk(2:mtpp3)*rttkm(2:mtpp3,k)
 !
-         zk(mtpp4:n) = zklim*rttkm(mtpp4:n,k)
+         zk(mtpp4:radial_point_count) = zklim*rttkm(mtpp4:radial_point_count,k)
 !
       endif
 !
 !   Start array WK / R**(K+1)
 !
-      np4 = n + 4
+      np4 = radial_point_count + 4
       wk(np4:mtpp1:(-1)) = 0.0d00
 !
 !   Fill array TEMP with RHOP / R**(K+1) ; set TEMP(1) = 0
@@ -212,7 +213,7 @@
 !   Compute WK
 !
       if (k == 0) then
-         wk(2:mtp) = wk(2:mtp)*r(2:mtp)
+         wk(2:mtp) = wk(2:mtp)*radial_grid(2:mtp)
       else
          wk(2:mtp) = wk(2:mtp)*rttk1(2:mtp,k)
       endif
@@ -220,7 +221,7 @@
 !   Assemble solution
 !
       yk(1) = 0.0d00
-      yk(2:n) = zk(2:n) + wk(2:n)
+      yk(2:radial_point_count) = zk(2:radial_point_count) + wk(2:radial_point_count)
 !
       return
       end subroutine yzk

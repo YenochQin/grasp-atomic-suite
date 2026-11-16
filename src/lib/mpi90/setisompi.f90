@@ -37,17 +37,17 @@
       real(double) :: con, fkk, ey, pzy, dnorm
       real(double), dimension(:), pointer :: pa, qa, ra
 !-----------------------------------------------
-      if (myid .eq. 0) call setiso (isofile)
+      if (mpi_rank .eq. 0) call setiso (isofile)
 
-      call mpi_bcast (z,1,mpi_double_precision,0,mpi_comm_world,ierr)
-      call mpi_bcast (emn,1,mpi_double_precision,0,mpi_comm_world,ierr)
-      call mpi_bcast (parm,2,mpi_double_precision,0,mpi_comm_world,ierr)
-      call mpi_bcast (nparm,1,mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (sqn,1,mpi_double_precision,0,mpi_comm_world,ierr)
+      call mpi_bcast (nuclear_charge,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (emn,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (nuclear_model_parameters,2,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (nuclear_model_parameter_count,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (sqn,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (dmomnm,1,mpi_double_precision,0,mpi_comm_world, &
-        ierr)
+        mpi_error_code)
       call mpi_bcast (qmomb,1,mpi_double_precision,0,mpi_comm_world, &
-        ierr)
+        mpi_error_code)
 
       return
       end

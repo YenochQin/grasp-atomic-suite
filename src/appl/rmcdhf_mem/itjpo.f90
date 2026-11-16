@@ -14,15 +14,15 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnw
-      use stat_c,        only: jcupa
+      use parameter_def, only: max_orbitals
+      use stat_c,        only: csf_coupling_quantum_codes
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer       :: icsf
 !-----------------------------------------------
-      itjpo = jcupa(nnnw,icsf)
+      itjpo = csf_coupling_quantum_codes(max_orbitals,icsf)
       if (itjpo > 127) itjpo = 256 - itjpo
       itjpo = iabs (itjpo)
       return

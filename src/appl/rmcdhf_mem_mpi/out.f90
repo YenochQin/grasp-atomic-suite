@@ -24,8 +24,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnp
-      use grid_c,           only: h, rpor
+      use parameter_def,    only: max_radial_points
+      use grid_c,           only: transformed_grid_step, radial_derivative_over_radius
       use int_c,            only: tf ,tg ,xu, xv
       use orb_c
       implicit none
@@ -34,8 +34,8 @@
 !-----------------------------------------------
       integer , intent(in) :: j
       integer , intent(in) :: jp
-      real(double) , intent(inout) :: p(nnnp)
-      real(double) , intent(inout) :: q(nnnp)
+      real(double) , intent(inout) :: p(max_radial_points)
+      real(double) , intent(inout) :: q(max_radial_points)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -46,14 +46,14 @@
 !
 !   One global initialization
 !
-      dkhb2 = 0.5d00*h*dble(nak(j))
+      dkhb2 = 0.5d00*transformed_grid_step*dble(orbital_kappa(j))
 !
 !   Tabulate P(r) and Q(r) by step-by-step integration
 !
 !   Initializations: set quantities for I = 3
 !
       i = 3
-      dkhb2f = dkhb2*rpor(i)
+      dkhb2f = dkhb2*radial_derivative_over_radius(i)
       cpi = 1.0d00 + dkhb2f
       cmi = 1.0d00 - dkhb2f
       pi = p(i)
@@ -67,7 +67,7 @@
       do i = 4, jp
          cpim1 = cpi
          cmim1 = cmi
-         dkhb2f = dkhb2*rpor(i)
+         dkhb2f = dkhb2*radial_derivative_over_radius(i)
          cpi = 1.0d00 + dkhb2f
          cmi = 1.0d00 - dkhb2f
          pim1 = pi

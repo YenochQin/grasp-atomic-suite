@@ -20,7 +20,7 @@
       use def_c
       use grid_c
       use npar_c
-      use npot_c, only: nnuc
+      use npot_c, only: first_grid_index_beyond_fermi_c
       use orb_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -49,21 +49,21 @@
 !   Write out the basic dimensions of the electron cloud
 !
       write (24, *)
-      call convrt (nelec, record, lenth)
+      call convrt (electron_count, record, lenth)
       write (24, *) 'There are '//record(1:lenth)//' electrons in the cloud'
-      call convrt (ncf, record, lenth)
+      call convrt (csf_count, record, lenth)
       write (24, *) ' in '//record(1:lenth)//' relativistic CSFs'
-      call convrt (nw, record, lenth)
+      call convrt (orbital_count, record, lenth)
       write (24, *) ' based on '//record(1:lenth)//' relativistic subshells.'
 !
 !   Write out the nuclear parameters
 !
       write (24, *)
-      write (24, 300) z
-      if (nparm == 2) then
+      write (24, 300) nuclear_charge
+      if (nuclear_model_parameter_count == 2) then
          write (24, *) ' Fermi nucleus:'
-         write (24, 302) parm(1), parm(2)
-         call convrt (nnuc, record, lenth)
+         write (24, 302) nuclear_model_parameters(1), nuclear_model_parameters(2)
+         call convrt (first_grid_index_beyond_fermi_c, record, lenth)
          write (24, *) ' there are '//record(1:lenth)//&
             ' tabulation points in the nucleus.'
       else
@@ -73,17 +73,17 @@
 !   Write out the physical effects specifications
 !
       write (24, *)
-      write (24, 303) c
+      write (24, 303) speed_of_light_au
 !
 !   Write out the parameters of the radial grid
 !
       write (24, *)
-      if (hp == 0.0d00) then
-         write (24, 305) rnt, h, n
+      if (asymptotic_grid_step == 0.0d00) then
+         write (24, 305) radial_grid_scale, transformed_grid_step, radial_point_count
       else
-         write (24, 306) rnt, h, hp, n
+         write (24, 306) radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count
       endif
-      write (24, 307) r(1), r(2), r(n)
+      write (24, 307) radial_grid(1), radial_grid(2), radial_grid(radial_point_count)
 !
       write (24, *)
 !

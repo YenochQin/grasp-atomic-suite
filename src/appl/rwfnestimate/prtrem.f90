@@ -17,7 +17,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use left_c
-      use orb_c, only: nw,  np, nak, nh
+      use orb_c, only: orbital_count,  orbital_principal_n, orbital_kappa, orbital_symmetry_labels
       use iounit_c
 !...Translated by Pacific-Sierra Research 77to90  4.3E  11:06:21   1/ 2/07
 !-----------------------------------------------
@@ -47,7 +47,7 @@
 !   Determine if there are any subshell radial wavefunctions that
 !   remain to be estimated
 !
-      do i = 1, nw
+      do i = 1, orbital_count
          if (set(i)) cycle
          all = .false.
          go to 2
@@ -59,13 +59,13 @@
 !   be estimated; this list is no more than 80 characters wide
 !
     2 continue
-      write (istde, *) 'The following subshell radial wavefunctions ', &
+      write (stderr_unit, *) 'The following subshell radial wavefunctions ', &
          'remain to be estimated:'
       iend = 0
-      do i = 1, nw
+      do i = 1, orbital_count
          if (set(i)) cycle
          if (iend > 75) then
-            write (istde, *) record(1:iend)
+            write (stderr_unit, *) record(1:iend)
             iend = 0
          endif
          if (iend > 0) then
@@ -74,19 +74,19 @@
             record(ibeg:iend) = ' '
          endif
          ibeg = iend + 1
-         call convrt (np(i), cnum, lenth)
+         call convrt (orbital_principal_n(i), cnum, lenth)
          iend = ibeg + lenth - 1
          record(ibeg:iend) = cnum(1:lenth)
-         if (nak(i) < 0) then
+         if (orbital_kappa(i) < 0) then
             lenth = 1
          else
             lenth = 2
          endif
          ibeg = iend + 1
          iend = ibeg + lenth - 1
-         record(ibeg:iend) = nh(i)(1:lenth)
+         record(ibeg:iend) = orbital_symmetry_labels(i)(1:lenth)
       end do
-      if (iend > 1) write (istde, *) record(1:iend)
+      if (iend > 1) write (stderr_unit, *) record(1:iend)
 !
     4 continue
       return

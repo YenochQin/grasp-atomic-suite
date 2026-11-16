@@ -75,28 +75,28 @@
 
 !  Parameter ierror carries through mcp.30,... mcp.kmax
 
-      read (30, iostat=ios) ncore, nblock, kmaxf
+      read (30, iostat=ios) ncore, symmetry_block_count, max_mcp_file_multipole_rank
       ierror = ierror + abs(ios)
-      if (nblock>nblkin .or. nblock<1) then
-         write (istde, *) 'setmcp: nblock = ', nblock
+      if (symmetry_block_count>nblkin .or. symmetry_block_count<1) then
+         write (stderr_unit, *) 'setmcp: nblock = ', symmetry_block_count
          error stop
       endif
 
 !cjb allocate ncfblk(0:*)
 !cjb  CALL ALLOC (NCFBLK, NBLOCK + 1, 'NCFBLK', 'SETMCP')
-      call alloc (ncfblk, 0, nblock , 'NCFBLK', 'SETMCP')
+      call alloc (csf_counts_by_block, 0, symmetry_block_count , 'NCFBLK', 'SETMCP')
 !cjb
-      ncfblk(0) = 0
+      csf_counts_by_block(0) = 0
 
-      read (30, iostat=ios) (ncfblk(i),i=1,nblock)
+      read (30, iostat=ios) (csf_counts_by_block(i),i=1,symmetry_block_count)
       ierror = ierror + abs(ios)
-      read (30, iostat=ios) (idblk(i),i=1,nblock)
+      read (30, iostat=ios) (idblk(i),i=1,symmetry_block_count)
       ierror = ierror + abs(ios)
 
 !  Look for other mcp files
 
       found = .true.
-      do k = 31, 32 + kmaxf
+      do k = 31, 32 + max_mcp_file_multipole_rank
          call convrt (k, ck, lck)
          filnam = filehead(1:lenfh)//'.'//ck(1:2)
          inquire(file=filnam, exist=found1)
@@ -104,13 +104,13 @@
       end do
 
       if (.not.found) then
-         write (istde, *) 'The mcp files do not exist'
+         write (stderr_unit, *) 'The mcp files do not exist'
          error stop
       endif
 
 !  Open the files; check file headers
 
-      do k = 30, 32 + kmaxf
+      do k = 30, 32 + max_mcp_file_multipole_rank
 
          if (k /= 30) then
             call convrt (k, ck, lck)
@@ -118,27 +118,27 @@
             call openfl (k, filnam, 'UNFORMATTED', 'OLD', ierror)
          endif
 
-         read (k, iostat=ios) mcplab, nblock, myidd, nprocss
+         read (k, iostat=ios) mcplab, symmetry_block_count, myidd, nprocss
 
          ierror = ierror + abs(ios)
-         if (myid/=myidd .or. nprocs/=nprocss) then
-            write (istde, *) 'mcp files were generated under different', &
+         if (mpi_rank/=myidd .or. mpi_process_count/=nprocss) then
+            write (stderr_unit, *) 'mcp files were generated under different', &
                ' processor configuration.'
             error stop
          endif
 
          if (mcplab /= 'MCP') then
-            write (istde, *) 'Not a sorted GRASP92 MCP File;'
+            write (stderr_unit, *) 'Not a sorted GRASP92 MCP File;'
             ierror = ierror + 1
          endif
 
-         read (k, iostat=ios) nelec, ncf, nw
+         read (k, iostat=ios) electron_count, csf_count, orbital_count
          ierror = ierror + abs(ios)
          read (k, iostat=ios) diag, iccut, lfordr
          ierror = ierror + abs(ios)
 
          if (ierror == 0) cycle
-         write (istde, *) 'setmcp: Error accumulated , stopping...'
+         write (stderr_unit, *) 'setmcp: Error accumulated , stopping...'
          do i = 30, k
             close(i)
          end do

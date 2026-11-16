@@ -66,10 +66,6 @@ SUITE_GRID_FILES = (
     "src/appl/rtransition/getosd.f90",
     "src/appl/rtransition_phase/getosd.f90",
     "src/appl/rtransition_mpi/getosdmpi.f90",
-    "src/appl/rwfnestimate90_csfg/getinfo.f90",
-    "src/appl/rmcdhf90_csfg_mpi/getscdmpi.f90",
-    "src/appl/rci90_csfg_mpi/getcid.f90",
-    "src/appl/rci90_block_csfg_mpi/getcid.f90",
     "src/appl/rmcdhf/getscd.f90",
     "src/appl/rmcdhf_mpi/getscdmpi.f90",
     "src/appl/rmcdhf_mem/getscd.f90",
@@ -81,12 +77,43 @@ SUITE_GRID_FILES = (
 SUITE_RESTART_FILES = (
     "src/appl/rci/lodres.f90",
     "src/appl/rci_mpi/lodres.f90",
-    "src/appl/rci90_csfg_mpi/lodres.f90",
-    "src/appl/rci90_block_csfg_mpi/lodres.f90",
 )
 SUITE_CONFIG_FILE = "src/lib/libmod/suite_parameters_M.f90"
 SUITE_PARAMETER_NAMES = ("KEYORB", "NNNP", "NNN1", "NNNW", "NNNWM1", "NNNWM2")
-CAPACITY_RE = re.compile(r"\b(NNNP|NNN1)\s*=\s*([^)!\n]+)", re.IGNORECASE)
+SEMANTIC_NAMES = {
+    "KEYORB": "orbital_index_radix",
+    "NNNP": "max_radial_points",
+    "NNN1": "radial_workspace_capacity",
+    "NNNW": "max_orbitals",
+    "NNNWM1": "max_orbitals_minus_one",
+    "NNNWM2": "max_orbitals_minus_two",
+    "N": "radial_point_count",
+    "R": "radial_grid",
+    "RNT": "radial_grid_scale",
+    "H": "transformed_grid_step",
+    "HP": "asymptotic_grid_step",
+    "Z": "nuclear_charge",
+    "NPARM": "nuclear_model_parameter_count",
+}
+LEGACY_NAMES = {value.upper(): key for key, value in SEMANTIC_NAMES.items()}
+FORTRAN_WORD_RE = re.compile(r"'(?:[^']|'')*'|\"(?:[^\"]|\"\")*\"|\b[A-Za-z_][A-Za-z_0-9]*\b")
+CAPACITY_RE = re.compile(
+    r"\b(NNNP|NNN1|max_radial_points|radial_workspace_capacity)\s*=(?!>)\s*([^)!\n]+)",
+    re.IGNORECASE,
+)
+
+
+def code_names(text: str, names: dict[str, str]) -> str:
+    """Translate known code identifiers while retaining quoted text exactly."""
+    return FORTRAN_WORD_RE.sub(lambda match: names.get(match[0].upper(), match[0]), text)
+
+
+def semantic_source(text: str) -> bool:
+    return any(
+        match[0].upper() in LEGACY_NAMES
+        for line in text.splitlines()
+        for match in FORTRAN_WORD_RE.finditer(line.split("!", 1)[0])
+    )
 
 
 @dataclass(frozen=True)
@@ -111,19 +138,22 @@ class Change:
 
 def active(line: str) -> str:
     """Drop Fortran comments for the known assignment/declaration locations."""
-    return line.split("!", 1)[0].strip()
+    return code_names(line.split("!", 1)[0].strip(), LEGACY_NAMES)
 
 
 def assignment(line: str, name: str) -> bool:
     return re.match(rf"^{name}\s*=", active(line), re.IGNORECASE) is not None
 
 
-def set_assignment(line: str, name: str, expression: str) -> str:
+def set_assignment(line: str, name: str, expression: str, *, semantic: bool = False) -> str:
     code, marker, comment = line.partition("!")
     if ";" in code or "&" in code:
         raise ValueError(f"unsupported continued/multiple assignment: {line.strip()}")
     indent = code[: len(code) - len(code.lstrip())]
     suffix = f" !{comment.rstrip()}" if marker else ""
+    if semantic:
+        name = SEMANTIC_NAMES.get(name.upper(), name.lower())
+        expression = code_names(expression, SEMANTIC_NAMES).lower()
     return f"{indent}{name} = {expression}{suffix}\n"
 
 
@@ -161,13 +191,13 @@ def patch_capacity(text: str, capacity: int) -> str:
         def replace(match: re.Match[str]) -> str:
             nonlocal hits
             hits += 1
-            name = match[1].upper()
-            if name == "NNN1" and re.sub(r"\s+", "", match[2]).upper() == "NNNP+10":
+            name = LEGACY_NAMES.get(match[1].upper(), match[1].upper())
+            if name == "NNN1" and re.sub(r"\s+", "", code_names(match[2], LEGACY_NAMES)).upper() == "NNNP+10":
                 return match[0]
             value = capacity if name == "NNNP" else capacity + 10
             if match[2].strip() == str(value):
                 return match[0]
-            return f"{name} = {value}"
+            return f"{match[1]} = {value}"
 
         lines[i] = CAPACITY_RE.sub(replace, line)
     if not hits:
@@ -184,6 +214,7 @@ def patch_grid(
     sync_accy: bool = True,
 ) -> str:
     lines = text.splitlines(keepends=True)
+    semantic = semantic_source(text)
     starts = [i for i, line in enumerate(lines) if assignment(line, "RNT")]
     expected = 1 if "/rci" in relative else 2
     if len(starts) != expected:
@@ -230,7 +261,7 @@ def patch_grid(
                 )
                 if name == "RNT":
                     expression += "/Z"
-                lines[i] = set_assignment(lines[i], name, expression)
+                lines[i] = set_assignment(lines[i], name, expression, semantic=semantic)
             if name == "N":
                 expression = (
                     active(lines[i]).split("=", 1)[1].strip().upper().replace(" ", "")
@@ -252,7 +283,7 @@ def patch_grid(
         raise ValueError("expected exactly one common HP assignment")
     if settings.hp is not None:
         i = hp_lines[0]
-        lines[i] = set_assignment(lines[i], "HP", real_literal(settings.hp))
+        lines[i] = set_assignment(lines[i], "HP", real_literal(settings.hp), semantic=semantic)
 
     accy_lines = [i for i, line in enumerate(lines) if assignment(line, "ACCY")]
     expected_accy = (1, 2) if "/rmcdhf" in relative else (1,)
@@ -267,7 +298,7 @@ def patch_grid(
     i = accy_lines[0]
     if settings.accy is not None:
         expression = "H**6" if settings.accy == 0 else real_literal(settings.accy)
-        lines[i] = set_assignment(lines[i], "ACCY", expression)
+        lines[i] = set_assignment(lines[i], "ACCY", expression, semantic=semantic)
     # RMCDHF computes ACCY before optional grid input. Recompute before its
     # ACCY prompt, so the user can still override ACCY afterwards.
     if "/rmcdhf" in relative and sync_accy:
@@ -278,7 +309,7 @@ def patch_grid(
             raise ValueError("expected exactly one RMCDHF ACCY prompt")
         i = prompts[0]
         expression = active(lines[accy_lines[0]]).split("=", 1)[1].strip()
-        replacement = set_assignment(lines[accy_lines[0]], "ACCY", expression)
+        replacement = set_assignment(lines[accy_lines[0]], "ACCY", expression, semantic=semantic)
         if assignment(lines[i - 1], "ACCY"):
             lines[i - 1] = replacement
         else:
@@ -344,14 +375,20 @@ def source_path(root: Path, relative: str) -> Path:
 def validate_suite_exports(config: str, wrapper: str) -> None:
     """Require one definition per shared limit and the legacy re-export API."""
     config_code = "\n".join(active(line) for line in config.splitlines())
-    wrapper_code = "\n".join(active(line) for line in wrapper.splitlines())
+    wrapper_code = "\n".join(line.split("!", 1)[0].strip() for line in wrapper.splitlines())
     imported: set[str] = set()
     for match in re.finditer(
         r"^USE\s+suite_parameters\s*,\s*ONLY\s*:\s*([^\n]+)$",
         wrapper_code,
         re.IGNORECASE | re.MULTILINE,
     ):
-        imported.update(name.strip().upper() for name in match[1].split(","))
+        for item in match[1].split(","):
+            parts = [part.strip().upper() for part in item.split("=>")]
+            local = parts[0]
+            if len(parts) == 2 and local in SUITE_PARAMETER_NAMES:
+                if parts[1] != SEMANTIC_NAMES[local].upper():
+                    raise ValueError(f"incorrect compatibility alias for {local}")
+            imported.add(local)
     if not set(SUITE_PARAMETER_NAMES).issubset(imported):
         raise ValueError("parameter_def must re-export all six suite_parameters limits")
     for name in SUITE_PARAMETER_NAMES:
@@ -403,7 +440,7 @@ def plan(
     if layout == "atomic-suite":
         validate_suite_exports(texts[SUITE_CONFIG_FILE], texts[CAPACITY_FILES[0]])
     capacity_match = re.search(
-        r"\bNNNP\s*=\s*(\d+)", texts[capacity_files[0]], re.IGNORECASE
+        r"\bNNNP\s*=\s*(\d+)", "\n".join(active(line) for line in texts[capacity_files[0]].splitlines()), re.IGNORECASE
     )
     if not capacity_match:
         raise ValueError("cannot read global NNNP")
@@ -456,7 +493,7 @@ def plan(
                 raise ValueError(f"{relative}: expected one restart ACCY assignment")
             i = indices[0]
             expression = "H**6" if settings.accy == 0 else real_literal(settings.accy)
-            lines[i] = set_assignment(lines[i], "ACCY", expression)
+            lines[i] = set_assignment(lines[i], "ACCY", expression, semantic=semantic_source(texts[relative]))
             texts[relative] = "".join(lines)
     # Inspect the entire tree, not just files we intend to edit. Unknown radial
     # capacity/default locations may be an upstream version we do not support.

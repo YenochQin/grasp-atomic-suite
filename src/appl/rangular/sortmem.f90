@@ -24,11 +24,12 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: keyorb
+      use parameter_def,   only: orbital_index_radix
       use memory_man
-      use orb_c,           only: np, ncf, nh
+      use orb_c,           only: orbital_principal_n, csf_count, orbital_symmetry_labels
       use iounit_c
-      use sacoef_c, coeff=>tcoeff,label=>ilabel,iclmn=>iiclmn,index=>iindex
+      use sacoef_c, coeff=>channel_coefficients,label=>channel_packed_orbital_labels,iclmn=>channel_csf_columns, &
+         & index=>channel_matrix_positions
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -46,7 +47,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -79,7 +80,7 @@
 !
       call convrt (nfile, ck, lck)
       if (lck > 2) then
-         write (istde, *) 'sort: nfile > 99; check fullname'
+         write (stderr_unit, *) 'sort: nfile > 99; check fullname'
          stop
       endif
 
@@ -88,7 +89,7 @@
       open(29,file=fullname,status='OLD',form='UNFORMATTED', &
          iostat=ierr, position='APPEND')
       if (ierr /= 0) then
-         write (istde, *) ' Error when opening the file ', fullname
+         write (stderr_unit, *) ' Error when opening the file ', fullname
          stop
       endif
 !
@@ -229,7 +230,7 @@
 !
 !
   456 continue
-      write (29) 'MCP', nb, ncf, ncoeff
+      write (29) 'MCP', nb, csf_count, ncoeff
 !GG      WRITE (9999,*) 'MCP', NB, NCF, NCOEFF, NFILE
 !
 !   Write the sorted list to mcp.xx
@@ -309,7 +310,8 @@
                if (nfile == 31) then
                   ia = mod(lab,key)
                   ib = lab/key
-                  write (99, 301) np(ia), nh(ia), np(ib), nh(ib)
+                  write (99, 301) orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
+                     & orbital_symmetry_labels(ib)
                   do j = ibeg, iend
                      write (99, 302) iclmn(j,igg),index(j,igg),       &
                                                         coeff(j,igg)
@@ -322,8 +324,9 @@
                   lab = lab/key
                   ic = mod(lab,key)
                   ia = lab/key
-                  write (99, 304) k, np(ia), nh(ia), np(ib), nh(ib), np(ic), nh&
-                     (ic), np(id), nh(id)
+                  write (99, 304) k, orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
+                     & orbital_symmetry_labels(ib), orbital_principal_n(ic), orbital_symmetry_labels&
+                     (ic), orbital_principal_n(id), orbital_symmetry_labels(id)
                   do j = ibeg, iend
                      write (99, 305) k,iclmn(j,igg),index(j,igg),     &
                                                           coeff(j,igg)

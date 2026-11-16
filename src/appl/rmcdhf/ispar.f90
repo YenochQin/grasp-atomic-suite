@@ -14,8 +14,8 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnw
-      use stat_c,        only: jcupa
+      use parameter_def, only: max_orbitals
+      use stat_c,        only: csf_coupling_quantum_codes
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -26,7 +26,7 @@
 !-----------------------------------------------
 !-----------------------------------------------
 !
-         ispar = jcupa(nnnw,icsf)
+         ispar = csf_coupling_quantum_codes(max_orbitals,icsf)
          if (ispar > 127) ispar = ispar - 256
          ispar = sign(1,ispar)
 !

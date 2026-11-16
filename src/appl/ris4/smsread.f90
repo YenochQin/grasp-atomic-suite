@@ -11,7 +11,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def,    only: keyorb, nnnw
+      use parameter_def,    only: orbital_index_radix, max_orbitals
       use prnt_c
       use ris_c
       use orb_c
@@ -26,11 +26,11 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      real(double), dimension(nnnw,nnnw), intent(in) :: vint, vint2
+      real(double), dimension(max_orbitals,max_orbitals), intent(in) :: vint, vint2
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -53,11 +53,11 @@
           iic = mod (lab, key)
           iia = lab/key
         do j = 1,nvec
-          loc = (j-1)*ncf
-            contrik1 = - evec(ic+loc)*evec(ir+loc)                     &
+          loc = (j-1)*csf_count
+            contrik1 = - csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)                     &
                * coeffsms                                              &
                * vint (iia,iic)*vint(iib,iid)
-            contri = - evec(ic+loc)*evec(ir+loc)                       &
+            contri = - csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)                       &
                * coeffsms                                              &
                * ( vint2(iia,iic)*vint(iib,iid)                        &
                + vint2(iib,iid)*vint(iia,iic))/2.0d00

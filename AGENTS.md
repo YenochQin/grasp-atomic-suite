@@ -14,20 +14,24 @@ implementation guides belong in `docs/implemented/`, pending experiments in
 State the source revision and distinguish implemented code from completed
 physical validation; update relative links and the index when moving documents.
 
-The supported ordinary RMCDHF programs are `rmcdhf{,_mem,_mpi,_mem_mpi}`;
-CSFG remains behind its separate opt-in boundary. The rejected `rmcdhf_orbopt*`,
+The supported ordinary RMCDHF programs are `rmcdhf{,_mem,_mpi,_mem_mpi}`.
+CSFG source and targets have been removed; retain the ordinary shared libraries.
+The rejected `rmcdhf_orbopt*`,
 `rmcdhf_mem_strict_mpi`, and `rmcdhf_mem_diag_mpi` programs are retired; historical
 documents are not authorization to restore them. See [retirement scope](docs/implemented/rejected_rmcdhf_variants.md).
 Retained programs share
 `libmod`, `lib9290`, `libdvd90`, and `mpi90` with the property programs; do not
 introduce a second copy of these libraries. Preserve suite MPI helpers.
 Keep `src/lib/libmod/parameter_def_M.f90` as the legacy re-export interface.
-Define shared capacities only in `suite_parameters_M.f90`, using upstream defaults:
+Define shared capacities only in `suite_parameters_M.f90` under their descriptive
+names; `parameter_def` also exports the six old names as aliases. Preserve upstream defaults:
 `KEYORB=215`, `NNNP=590`, `NNN1=NNNP+10`, `NNNW=127`, `NNNWM1=NNNW-1`, and
 `NNNWM2=NNNW-2`. The grid patcher edits this configuration module for capacity
 changes; existing applications continue to `USE parameter_def`.
+For capacity edits, use the primary-name mapping in [common parameters](docs/implemented/common_parameters.md).
 Each grid entry point registered in the patcher keeps its upstream point/finite-nucleus
-settings and ACCY initialization order, including RDENSITY. Finite nuclei default to `N=NNNP=590`.
+settings and ACCY initialization order, including RDENSITY. Finite nuclei default to
+`radial_point_count=max_radial_points=590`.
 Upstream RMCDHF computes ACCY before interactive grid input; explicitly supply
 ACCY when changing H in restart inputs. Grid experiments belong in separate copies.
 

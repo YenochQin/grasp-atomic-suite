@@ -22,7 +22,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: keyorb
+      use parameter_def,   only: orbital_index_radix
       use memory_man
       use default_c
       use orb_c
@@ -48,7 +48,7 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       integer, parameter :: nca = 65536
-      integer, parameter :: key = keyorb
+      integer, parameter :: key = orbital_index_radix
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -314,7 +314,7 @@
             kp(jkp))//'T', status='UNKNOWN', form='UNFORMATTED', position=&
             'asis')
       endif
-      write (nfile2) iblki,iblkf,nw,nkp,nprocs,myid
+      write (nfile2) iblki,iblkf,orbital_count,nkp,mpi_process_count,mpi_rank
       write (nfile2) nint
       if (nmcp /= 0) then
          if (lprint) write (99, 301)
@@ -326,7 +326,8 @@
             if (lprint) then
                ia = lblint(i)/key
                ib = mod(lblint(i),key)
-               write (99, 302) np(ia), nh(ia), np(ib), nh(ib)
+               write (99, 302) orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
+                  & orbital_symmetry_labels(ib)
             endif
             write (nfile2) (isldr(m),isldr1(m),xsldr(m),m=mlr,mup)
             if (lprint) then

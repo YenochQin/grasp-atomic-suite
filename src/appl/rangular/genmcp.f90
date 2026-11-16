@@ -39,7 +39,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def,   only:  nnnw
+      use parameter_def,   only:  max_orbitals
       use iso_fortran_env, only: int64
       use rangular_input, only: angular_input_options, parse_angular_options, load_angular_header, &
                                 load_angular_block, close_angular_input
@@ -109,7 +109,7 @@
 !=======================================================================
       if (myid == 0) then
 !         WRITE (ISTDE, '(A)', ADVANCE='NO') 'Default settings?  (y/n) '
-         write (istde,'(A)') ' Full interaction?  (y/n) '
+         write (stderr_unit,'(A)') ' Full interaction?  (y/n) '
          yes = getyn()
          if (yes) then
             ndef = 0
@@ -139,7 +139,7 @@
 !      IF (NDEF/=0 .AND. MYID==0) CALL SETSUM ('genmcp.sum')
       stage_start_count = stage_clock()
       call load_angular_header(input_options, ncore, nblk0, idblk)
-      call record_stage('input_header', 0, stage_start_count, int(ncf,int64), storage=input_format_name)
+      call record_stage('input_header', 0, stage_start_count, int(csf_count,int64), storage=input_format_name)
       restrt = .false.
       stage_start_count = stage_clock()
       call setmcp2 (myid, nprocs, ncore, idblk, 'mcp')
@@ -149,22 +149,22 @@
 !=======================================================================
 !     For each block, generate and sort the data
 !=======================================================================
-      do nb = 1, nblock
-         ncf = ncfblk(nb)                        ! This ncf goes to common
+      do nb = 1, symmetry_block_count
+         csf_count = csf_counts_by_block(nb)                        ! This ncf goes to common
          if (myid == 0) then
             write (6, *)
-            write (6, *) 'Block ', nb, ',  ncf = ', ncf
+            write (6, *) 'Block ', nb, ',  ncf = ', csf_count
          endif
             !*** Load current CSL block. Memories de-allocated in mcp ***
          stage_start_count = stage_clock()
-         call alloc (iqa, nnnw, ncf, 'IQA', 'GENMCP')
-         call alloc (jqsa, nnnw,3,ncf, 'JQSA', 'GENMCP')
-         call alloc (jcupa, nnnw, ncf, 'JCUPA', 'GENMCP')
+         call alloc (csf_subshell_occupations, max_orbitals, csf_count, 'IQA', 'GENMCP')
+         call alloc (csf_subshell_quantum_codes, max_orbitals,3,csf_count, 'JQSA', 'GENMCP')
+         call alloc (csf_coupling_quantum_codes, max_orbitals, csf_count, 'JCUPA', 'GENMCP')
          call record_stage('csf_allocation', nb, stage_start_count)
 !
          stage_start_count = stage_clock()
          call load_angular_block(input_options, ncore, nb)
-         call record_stage('csf_load', nb, stage_start_count, int(ncf,int64), storage=input_format_name)
+         call record_stage('csf_load', nb, stage_start_count, int(csf_count,int64), storage=input_format_name)
          !*** Open tmp.xx files for block nb ***
 !GG         CALL SETTMP (NB, KMAX, 'tmp')
          call settmpgg (nb, 30, 'tmp')

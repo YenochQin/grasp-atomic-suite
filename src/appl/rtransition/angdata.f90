@@ -15,7 +15,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only:  double
-      use orb_c, only: ncf, nw, iqa
+      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
       use osc_c, only: nkp, kp
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -73,7 +73,7 @@
             kp(jkp))//'T', status='OLD', form='UNFORMATTED', position='asis')
          rewind (nfile2)
          read (nfile2) iblki, iblkf, nwd, nkpd
-         if (.not.(nwd==nw .and. nkpd==nkp)) then
+         if (.not.(nwd==orbital_count .and. nkpd==nkp)) then
             write (6, *) ' Angular file not appropriate'
             avail = .false.
             close(nfile2, status='DELETE')

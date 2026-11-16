@@ -21,9 +21,9 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnn1
+      use parameter_def,   only: radial_workspace_capacity
       use cnc_c, only: cnc5c
-      use grid_c, only: n, r, rp
+      use grid_c, only: radial_point_count, radial_grid, radial_grid_derivative
       use ncc_c
       use tatb_c, zk=>tb
       implicit none
@@ -37,12 +37,12 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ii, mtpp1, mtpp3, mtpp4, kk
-      real(double), dimension(nnn1) :: rhop, rttk, temp
+      real(double), dimension(radial_workspace_capacity) :: rhop, rttk, temp
       real(double) :: sum, zklim
 !-----------------------------------------------
 !
       if (k > 0) then
-         rttk(2:n) = r(2:n)**k
+         rttk(2:radial_point_count) = radial_grid(2:radial_point_count)**k
       endif
 !
 !   MTP is fed in through  COMMON/TATB/
@@ -53,7 +53,7 @@
 !
 !   Compute  RP(S)*F(S)  and store it in  RHOP
 !
-      rhop(2:mtp) = rp(2:mtp)*ta(2:mtp)
+      rhop(2:mtp) = radial_grid_derivative(2:mtp)*ta(2:mtp)
 !
 !   Fill array TEMP with r**k * RHOP
 !
@@ -96,13 +96,13 @@
 !
       if (k == 0) then
 !
-         zk(mtpp4:n) = zklim
+         zk(mtpp4:radial_point_count) = zklim
 !
       else
 !
          zk(2:mtpp3) = zk(2:mtpp3)/rttk(2:mtpp3)
 !
-         zk(mtpp4:n) = zklim/rttk(mtpp4:n)
+         zk(mtpp4:radial_point_count) = zklim/rttk(mtpp4:radial_point_count)
 !
       endif
 !

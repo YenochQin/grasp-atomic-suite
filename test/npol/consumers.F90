@@ -5,19 +5,20 @@ program npol_consumers
     use npol_C
     use npol_initialization
     use debug_C, only: LDBPR
-    use def_C, only: C
-    use grid_C, only: N, R, RP, RPOR, H
-    use npot_C, only: ZZ
-    use orb_C, only: NAK
-    use pote_C, only: YP, XP, XQ
-    use scf_C, only: NYCOF, NDCOF, NDA, DA
-    use wave_C, only: MF, PF, QF
+    use def_c, only: C => speed_of_light_au
+    use grid_c, only: N => radial_point_count, R => radial_grid, RP => radial_grid_derivative, RPOR => &
+       & radial_derivative_over_radius, H => transformed_grid_step
+    use npot_c, only: ZZ => negative_radius_times_potential
+    use orb_c, only: NAK => orbital_kappa
+    use pote_c, only: YP, XP, XQ
+    use scf_c, only: NYCOF, NDCOF, NDA, DA
+    use wave_c, only: MF => orbital_last_grid_index, PF => radial_large_components, QF => radial_small_components
     use ypot_I
     use dacon_I
     use rinti_I
 #ifdef NPOL_MPI
     use mpi
-    use mpi_C, only: myid, nprocs
+    use mpi_c, only: myid => mpi_rank, nprocs => mpi_process_count
     use npol_mpi, only: npol_init_mpi
 #endif
     implicit none
@@ -155,8 +156,8 @@ end program
 
 ! Deterministic test-only derivative/quadrature seams. Never linked into apps.
 subroutine DPBDT(j)
-    use grid_C, only: N
-    use tatb_C, only: TA, TB
+    use grid_c, only: N => radial_point_count
+    use tatb_c, only: TA, TB
     implicit none
     integer :: j
     TA(:N) = 0
@@ -165,7 +166,7 @@ end subroutine
 
 subroutine QUAD(result)
     use vast_kind_param, only: double
-    use tatb_C, only: TA, MTP
+    use tatb_c, only: TA, MTP
     implicit none
     real(double), intent(out) :: result
     integer :: i

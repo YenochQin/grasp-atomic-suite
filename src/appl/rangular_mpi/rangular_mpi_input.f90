@@ -1,14 +1,14 @@
 ! Rank zero owns the descriptor stream; all ranks retain the ordinary CSF arrays.
 module rangular_mpi_input
    use iso_fortran_env, only: int64
-   use mpi_c, only: rank_index => myid, mpi_bcast, mpi_integer, mpi_integer1, mpi_character, mpi_comm_world
-   use parameter_def, only: orbital_capacity => nnnw
-   use orb_c, only: current_csf_count => ncf, orbital_count => nw, occupations => iqa, &
-                    principal_numbers => np, relativistic_kappas => nak, orbital_momenta => nkl, &
-                    single_electron_two_j => nkj, orbital_labels => nh
-   use stat_c, only: subshell_quantum_numbers => jqsa, couplings => jcupa
-   use hblock_c, only: block_count => nblock, block_lengths => ncfblk
-   use def_c, only: electron_count => nelec
+   use mpi_c, only: rank_index => mpi_rank, mpi_bcast, mpi_integer, mpi_integer1, mpi_character, mpi_comm_world
+   use parameter_def, only: orbital_capacity => max_orbitals
+   use orb_c, only: current_csf_count => csf_count, orbital_count => orbital_count, occupations => csf_subshell_occupations, &
+                    principal_numbers => orbital_principal_n, relativistic_kappas => orbital_kappa, orbital_momenta => orbital_l, &
+                    single_electron_two_j => orbital_two_j, orbital_labels => orbital_symmetry_labels
+   use stat_c, only: subshell_quantum_numbers => csf_subshell_quantum_codes, couplings => csf_coupling_quantum_codes
+   use hblock_c, only: block_count => symmetry_block_count, block_lengths => csf_counts_by_block
+   use def_c, only: electron_count => electron_count
    use csf_descriptor_input, only: descriptor_source, open_descriptor_source, install_descriptor_header, &
                                    read_descriptor_block, close_descriptor_source
    use cslhmpi_i, only: cslhmpi

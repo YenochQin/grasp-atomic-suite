@@ -93,6 +93,17 @@ def fixture(root: Path, layout: str = "grasp2018") -> None:
 
 
 class PatchGridTests(unittest.TestCase):
+    def test_semantic_identifier_translation_preserves_literals(self) -> None:
+        text = "radial_grid_scale = 2d-6/nuclear_charge; print *, 'radial_grid_scale', \"NNNP\""
+        self.assertEqual(
+            grid.code_names(text, grid.LEGACY_NAMES),
+            "RNT = 2d-6/Z; print *, 'radial_grid_scale', \"NNNP\"",
+        )
+        self.assertEqual(
+            grid.set_assignment("      radial_point_count = max_radial_points\n", "N", "MIN(220,NNNP)", semantic=True),
+            "      radial_point_count = min(220,max_radial_points)\n",
+        )
+
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
@@ -382,6 +393,7 @@ class PatchGridTests(unittest.TestCase):
                     if relative in capacity_files:
                         after = re.sub(rb"\bNNNP = 590\b", b"NNNP = 1990", after, flags=re.IGNORECASE)
                         after = re.sub(rb"\bNNN1 = 600\b", b"NNN1 = 2000", after, flags=re.IGNORECASE)
+                        after = after.replace(b"max_radial_points = 590", b"max_radial_points = 1990")
                     elif relative in grid_files and not relative.endswith(
                         "rwfnrelabel.f90"
                     ):
@@ -493,8 +505,8 @@ class PatchGridTests(unittest.TestCase):
         originals = {p: p.read_bytes() for p in root.rglob("*.f90")}
         capacity_only = grid.plan(root, grid.Settings(nnnp=2990), "atomic-suite")
         self.assertEqual([c.relative for c in capacity_only], [grid.SUITE_CONFIG_FILE])
-        self.assertIn(b"NNNP = 2990", capacity_only[0].after)
-        self.assertIn(b"nnn1 = nnnp + 10", capacity_only[0].after.lower())
+        self.assertIn(b"max_radial_points = 2990", capacity_only[0].after)
+        self.assertIn(b"radial_workspace_capacity = max_radial_points + 10", capacity_only[0].after)
         settings = grid.Settings(nnnp=1990, n=1179, h=0.025)
         changes = grid.plan(root, settings, "atomic-suite")
         self.assertEqual(len(changes), 1 + len(grid.SUITE_GRID_FILES))
@@ -543,7 +555,7 @@ class PatchGridTests(unittest.TestCase):
         self.assertNotIn(grid.CAPACITY_FILES[0], {c.relative for c in changes})
         for change in changes:
             if "/rmcdhf" in change.relative:
-                self.assertEqual(change.after.count(b"ACCY = 1D-10"), 2)
+                self.assertEqual(change.after.lower().count(b"accy = 1d-10"), 2)
         backup = grid.apply(root, changes, Path(self.temporary.name) / "real-backup")
         self.assertEqual(grid.plan(root, settings, "atomic-suite"), [])
         restored_root, restoration = grid.restore_plan(backup, root)
@@ -563,10 +575,16 @@ class PatchGridTests(unittest.TestCase):
         fixture(root, "atomic-suite")
         wrapper = root / grid.CAPACITY_FILES[0]
         original = wrapper.read_text()
-        incomplete, count = re.subn(r"\bNNNWM1, NNNWM2\b", "NNNWM1", original, flags=re.IGNORECASE)
+        incomplete, count = re.subn(
+            r"^\s*use suite_parameters, only: nnnwm2 => max_orbitals_minus_two\n", "", original,
+            flags=re.IGNORECASE | re.MULTILINE,
+        )
         self.assertEqual(count, 1, "fixture must remove exactly one required re-export")
         wrapper.write_text(incomplete)
         with self.assertRaisesRegex(ValueError, "must re-export all six"):
+            grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
+        wrapper.write_text(original.replace("nnnp => max_radial_points", "nnnp => max_orbitals"))
+        with self.assertRaisesRegex(ValueError, "incorrect compatibility alias for NNNP"):
             grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
         wrapper.write_text(original)
         config = root / grid.SUITE_CONFIG_FILE

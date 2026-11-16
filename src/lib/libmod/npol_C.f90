@@ -1,7 +1,7 @@
 ! NP state is published only after parsing, construction and output succeed.
 module npol_c
     use vast_kind_param, only: double
-    use parameter_def, only: nnnp
+    use parameter_def, only: max_radial_points
     implicit none
     private
     integer, parameter, public :: npol_message_len = 512
@@ -17,8 +17,9 @@ module npol_c
     type(npol_config), protected, public :: npol_settings
     logical, protected, public :: npol_ready = .false.
     integer, protected, public :: npol_n = 0
-    real(double), protected, public :: zz_coul(nnnp) = 0
-    real(double), protected, public :: vnp_e1(nnnp) = 0, vnp_e2(nnnp) = 0, vnp_total(nnnp) = 0
+    real(double), protected, public :: zz_coul(max_radial_points) = 0
+    real(double), protected, public :: vnp_e1(max_radial_points) = 0, vnp_e2(max_radial_points) = 0, &
+       & vnp_total(max_radial_points) = 0
     public :: npol_reset, npol_capture, npol_publish
 contains
     subroutine npol_reset()
@@ -36,7 +37,7 @@ contains
     subroutine npol_capture(n, coul)
         integer, intent(in) :: n
         real(double), intent(in) :: coul(n)
-        if (n < 1 .or. n > nnnp) return
+        if (n < 1 .or. n > max_radial_points) return
         npol_n = n
         zz_coul(:n) = coul
     end subroutine
@@ -46,7 +47,7 @@ contains
         type(npol_config), intent(in) :: cfg
         integer, intent(in) :: n
         real(double), intent(in) :: e1(n), e2(n), total(n)
-        if (n /= npol_n .or. n < 1 .or. n > nnnp) return
+        if (n /= npol_n .or. n < 1 .or. n > max_radial_points) return
         npol_settings = cfg
         vnp_e1(:n) = e1
         vnp_e2(:n) = e2

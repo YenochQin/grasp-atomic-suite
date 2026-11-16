@@ -13,7 +13,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use orb_c,           only: ncf, nw
+      use orb_c,           only: csf_count, orbital_count
       use mpi_c
       implicit none
 !-----------------------------------------------
@@ -44,8 +44,8 @@
             'UNFORMATTED', position='asis')
          rewind (nf)
          read (nf) ncfd,nwd,kamaxd,nprocsd,myidd
-         if (.not.(ncfd==ncf .and. nwd==nw .and. kamaxd==kamax     &
-                         .and.nprocsd==nprocs.and.myidd==myid)) then
+         if (.not.(ncfd==csf_count .and. nwd==orbital_count .and. kamaxd==kamax     &
+                         .and.nprocsd==mpi_process_count.and.myidd==mpi_rank)) then
             write (6, *) ' Angular file not appropriate'
             avail = .false.
             return

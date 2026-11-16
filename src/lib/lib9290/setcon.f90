@@ -21,16 +21,16 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      real(double), parameter :: ainfcm = 0.52917721067d-08
-      real(double), parameter :: alfai  = 137.035999139d00
-      real(double), parameter :: ccmps  = 2.99792458d10
-      real(double), parameter :: eesu   = 4.803204673d-10
-      real(double), parameter :: emeg   = 9.10938356d-28
-      real(double), parameter :: emeamu = 5.48579909070d-04
-      real(double), parameter :: empamu = 1.007276466879d00
-      real(double), parameter :: hbares = 1.054571800d-27
-      real(double), parameter :: rinfev = 13.605693009d00
-      real(double), parameter :: rinfk  = 109737.31568508d00
+      real(double), parameter :: reference_bohr_radius_cm = 0.52917721067d-08
+      real(double), parameter :: inverse_fine_structure_constant  = 137.035999139d00
+      real(double), parameter :: reference_speed_of_light_cm_per_s  = 2.99792458d10
+      real(double), parameter :: electron_charge_esu   = 4.803204673d-10
+      real(double), parameter :: electron_mass_g   = 9.10938356d-28
+      real(double), parameter :: reference_electron_mass_u = 5.48579909070d-04
+      real(double), parameter :: reference_proton_mass_u = 1.007276466879d00
+      real(double), parameter :: reduced_planck_constant_erg_s = 1.054571800d-27
+      real(double), parameter :: rydberg_energy_ev = 13.605693009d00
+      real(double), parameter :: rydberg_wavenumber_cm  = 109737.31568508d00
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -69,8 +69,8 @@
 !
 !   Calculate constants for /DEF3/:
 !
-      empam = empamu
-      rbcm = ainfcm
+      proton_mass_u = reference_proton_mass_u
+      bohr_radius_cm = reference_bohr_radius_cm
 !
 !   Calculate constants for  /DEF11/:
 !
@@ -78,8 +78,8 @@
 !      B1 is the conversion factor between the amu and the atomic
 !         unit of mass
 !
-      cvac = alfai
-      aumamu = emeamu
+      vacuum_speed_of_light_au = inverse_fine_structure_constant
+      electron_mass_u = reference_electron_mass_u
 !
 !   Calculate constants for  /DEF10/:
 !
@@ -94,15 +94,16 @@
 !      FBSI converts the Einstein B coefficients from atomic to SI
 !            units
 !
-      aucm = 2.0d00*rinfk
-      auev = 2.0d00*rinfev
-      ccms = ccmps
-      fasi = (emeg/hbares)*(eesu*eesu/hbares)**2
-      fbsi = (10.0d00*ainfcm**3/hbares)*fasi
+      hartree_to_wavenumber_cm = 2.0d00*rydberg_wavenumber_cm
+      hartree_to_ev = 2.0d00*rydberg_energy_ev
+      speed_of_light_cm_per_s = reference_speed_of_light_cm_per_s
+      einstein_a_au_to_si = (electron_mass_g/reduced_planck_constant_erg_s)*(electron_charge_esu*electron_charge_esu/ &
+         & reduced_planck_constant_erg_s)**2
+      einstein_b_au_to_si = (10.0d00*reference_bohr_radius_cm**3/reduced_planck_constant_erg_s)*einstein_a_au_to_si
 !
 !   Calculate conversion factor for Fermis to Bohr radii
 !
-      fmtoau = 1.0d-13/ainfcm
+      femtometer_to_bohr = 1.0d-13/reference_bohr_radius_cm
 !
 !   Calculate \pi from FORTRAN function
 !
@@ -110,8 +111,9 @@
 !
 !   Printouts
 !
-      if (ldbpg(2)) write (99, 300) ainfcm, alfai, ccmps, eesu, emeg, emeamu, &
-         empamu, hbares, rinfev, rinfk
+      if (ldbpg(2)) write (99, 300) reference_bohr_radius_cm, inverse_fine_structure_constant, &
+         & reference_speed_of_light_cm_per_s, electron_charge_esu, electron_mass_g, reference_electron_mass_u, &
+         reference_proton_mass_u, reduced_planck_constant_erg_s, rydberg_energy_ev, rydberg_wavenumber_cm
 !
       return
 !

@@ -47,8 +47,8 @@
       do j = 1, nn
          i = ilev(j)
          eau = e(j) + eav
-         ecm = eau*aucm
-         eev = eau*auev
+         ecm = eau*hartree_to_wavenumber_cm
+         eev = eau*hartree_to_ev
          ip = (ipar + 3)/2
          write (24, 302) i, labj(jtot), labp(ip), eau, ecm, eev
       end do
@@ -63,8 +63,8 @@
             do j = 2, nn
                i = ilev(j)
                eau = e(j) - e(j-1)
-               ecm = eau*aucm
-               eev = eau*auev
+               ecm = eau*hartree_to_wavenumber_cm
+               eev = eau*hartree_to_ev
                ip = (ipar + 3)/2
                write (24, 302) i, labj(jtot), labp(ip), eau, ecm, eev
             end do
@@ -78,8 +78,8 @@
             do j = 2, nn
                i = ilev(j)
                eau = e(j) - e(1)
-               ecm = eau*aucm
-               eev = eau*auev
+               ecm = eau*hartree_to_wavenumber_cm
+               eev = eau*hartree_to_ev
                ip = (ipar + 3)/2
                write (24, 302) i, labj(jtot), labp(ip), eau, ecm, eev
             end do

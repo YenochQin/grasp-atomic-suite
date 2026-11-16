@@ -15,10 +15,10 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: nnnw
-      use iounit_c,      only: istde
-      use orb_c,         only: nw, ncf
-      use stat_c,        only: jcupa
+      use parameter_def, only: max_orbitals
+      use iounit_c,      only: stderr_unit
+      use orb_c,         only: orbital_count, csf_count
+      use stat_c,        only: csf_coupling_quantum_codes
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -27,15 +27,15 @@
       integer             :: icsf
 !-----------------------------------------------
 !
-      if (loc>=1 .and. loc<=nnnw-1) then
-         if (icsf>=1 .and. icsf<=ncf) then
-            jcup = jcupa(loc,icsf)
+      if (loc>=1 .and. loc<=max_orbitals-1) then
+         if (icsf>=1 .and. icsf<=csf_count) then
+            jcup = csf_coupling_quantum_codes(loc,icsf)
          else
-            write (istde, *) 'JCUP: Argument ICSF is out of range.'
+            write (stderr_unit, *) 'JCUP: Argument ICSF is out of range.'
             stop
          endif
       else
-         write (istde, *) 'JCUP: Argument LOC is out of range.'
+         write (stderr_unit, *) 'JCUP: Argument LOC is out of range.'
          stop
       endif
 !

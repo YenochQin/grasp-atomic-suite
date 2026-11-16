@@ -16,7 +16,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: keyorb
+      use parameter_def,   only: orbital_index_radix
       use biorb_c
       use debug_c
       use eigv_c
@@ -38,7 +38,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer, parameter :: key=keyorb, nca=65536
+      integer, parameter :: key=orbital_index_radix, nca=65536
       integer :: ja, jb, m, nclr, ncup, ncount, nfi, ipar, jpar, &
                  ia, ib, j
       real(double) :: hcoul1, hbab1, hmag1, eps, couvx, coeff, contr
@@ -76,7 +76,7 @@
         nclr = nptr(m)+1
         ncup = nptr(m+1)
         if (nclr .gt. ncup) goto 4
-        if (mod(nkl(ja)+nkl(jb)+kk+lk,2) .ne. 0) goto 4
+        if (mod(orbital_l(ja)+orbital_l(jb)+kk+lk,2) .ne. 0) goto 4
         call spme (ja,jb,hcoul1,hbab1,hmag1)
 !
         do j = nclr,ncup
@@ -111,7 +111,8 @@
                 .gt. cutoff)) then
                   write (*,300) ia, evecii(ia+(lev1-1)*ncfii),       &
                       ib-ncfii, evecff(ib-ncfii+(lev2-1)*ncfff),     &
-                      np(ja),nh(ja),np(jb),nh(jb),coeff,hcoul1,'C',  &
+                      orbital_principal_n(ja),orbital_symmetry_labels(ja),orbital_principal_n(jb), &
+                         & orbital_symmetry_labels(jb),coeff,hcoul1,'C',  &
                       hcoul1*coeff*couvx
                   write(*,303) hbab1,'B',hbab1*coeff*couvx
               endif
@@ -123,7 +124,8 @@
               if (ldbpr(18) .and. (abs(contr) .gt. cutoff)) then
                   write (*,300) ia, evecii(ia+(lev1-1)*ncfii),       &
                       ib-ncfii, evecff(ib-ncfii+(lev2-1)*ncfff),     &
-                      np(ja),nh(ja),np(jb),nh(jb),coeff,hmag1,' ',   &
+                      orbital_principal_n(ja),orbital_symmetry_labels(ja),orbital_principal_n(jb), &
+                         & orbital_symmetry_labels(jb),coeff,hmag1,' ',   &
                       contr
               endif
 !Rasa -- end

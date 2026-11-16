@@ -1,9 +1,10 @@
 # 非 CSFG 源码变量清单与重命名准备
 
-> 状态：变量声明清单已整理；语义核定与重命名待继续。本文只记录，不修改 Fortran、构建脚本或计算行为。
+> 状态：本轮已完成 529 项明确候选的处理：528 项重命名，pi 保留；其余 19,579 项仍待核实。
 
 > 后续状态（2026-11-16）：普通 Fortran 源码已完成[纯大小写转换与回归](../reviews/non_csfg_lowercase_2026-11-16.md)。
-> 本文保留采集时的变量拼写和源码哈希，作为转换前快照；文件路径和行号不变。当前代码中的对应名称已为小写，语义重命名仍未实施。
+> 本文保留采集时的原名、声明行号和源码哈希作为历史快照。本轮重命名会改变部分行号；当前名称、作用域与声明位置见[映射清单](../reference/non_csfg_variable_renames_2026-11-16.json)。
+> 2026-11-16 后续按用户要求移除 CSFG 专用源码及构建/测试入口；原排除表保留为范围历史。实施与验证见[本轮记录](../reviews/variable_rename_csfg_removal_2026-11-16.md)。
 
 - 日期：2026-11-16。
 - 源码基准：`caaf3a51ce12ec8e85e30622fc854c9e2a070683`；采集时 `git status --short -- src` 为空。
@@ -14,7 +15,7 @@
 
 记录当前 `src/` 中的普通串行、MPI、OpenMP 应用及共享库；不以当前 CMake 是否启用某个普通应用作为删除清单条目的依据。
 排除路径中不区分大小写含 `csfg` 的文件，同时排除 `src/tool/graspg/` 和 `src/lib/libdvd90mpi/`。
-后两者虽不都含 `csfg` 字样，但仅由 [cmake/CSFGExtension.cmake](../../cmake/CSFGExtension.cmake) 加入构建；普通共享库仍纳入。
+采集时后两者虽不都含 `csfg` 字样，但仅由当时的 `cmake/CSFGExtension.cmake` 加入构建；现在该入口与 CSFG 专用代码均已移除，普通共享库保留。
 
 - 遍历 `src/` 文件 **2,886** 个；排除 CSFG 边界内文件 **948** 个。
 - 纳入 **1,880** 份 Fortran 文本：1,879 个 `.f90`，另含 `memory_man.f90_PROFILING`。后者是旁存实现，不宣称当前参与构建。
@@ -49,9 +50,9 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 4. 单位仅在源码与调用关系已确认时写入名称。重命名保持 type/kind、shape/lower-bound、初始化、指针/分配属性、SAVE、INTENT、THREADPRIVATE 和数值表达式不变。
 5. 模块公开变量要联查全部 `USE`、`ONLY`、重导出、host association、OpenMP 数据子句与消费者；形参要联查接口及关键字实参。字符串标签、文件字段与外部协议名另行判断。
 6. 函数名作为结果变量的条目单独标出；可考虑后续添加具有语义的 `RESULT(...)`，不能因此盲目改动外部函数符号。
-7. `parameter_def` 保持兼容重导出入口，容量定义仍归 `suite_parameters`。如果以后改公开常量名，必须设计兼容别名及 patcher/测试同步方案。
-8. CSFG 代码未纳入改名，但可能消费普通共享模块；共享公开名变动前必须检查这些跨边界引用，不能用“排除 CSFG”作为破坏其接口的理由。
-9. 建议顺序：局部变量及对应接口 → 普通过程族的串行/MPI/内存版本 → 共享模块公共名。分批编译与输出回归；本次未执行这些实施步骤。
+7. `parameter_def` 保持兼容重导出入口，容量定义仍归 `suite_parameters`。本轮已为六个旧容量名提供别名，并同步 patcher 和测试。
+8. CSFG 专用代码已按用户要求移除，普通共享库保留。旧的排除范围及接口讨论作为历史记录，不表示仍有可启用的 CSFG 功能。
+9. 建议顺序：局部变量及对应接口 → 普通过程族的串行/MPI/内存版本 → 共享模块公共名。本轮已完成明确候选的引用联动、编译与输出回归；未核实项继续保留。
 
 几个已核对的歧义：`grid_C::N` 是运行时网格点数，`suite_parameters::NNNP` 是容量；
 `SIXJ::N` 是第六个角动量的二倍，`memory_man::alloc_1i::n` 是分配长度。
@@ -59,9 +60,9 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 `RADGRD::FPRI` 是隐式方程导数的倒数，`npot_C::ZZ` 存储 `-r*V(r)`。
 因此禁止使用全仓库字符串替换来实现本清单。
 
-## 3. 已有源码依据的核心候选
+## 3. 原始核心候选（实施状态见逐项表）
 
-下表用于建立命名词汇；“建议”不是已经实施或已完成全调用图验证。完整声明位置与类型见后文。
+下表保留最初命名词汇；本轮 5 个冲突候选的最终调整、全部 529 项状态见第 6 节和映射清单。下表不是额外待办项。
 内存管理各重载和接口对应项的同类建议直接写在逐项表中，避免在本节重复数百行。
 
 | 文件 / 作用域 | 原名 | 候选名称 | 已确认的含义或限制 | 依据 |
@@ -240,6 +241,8 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 | [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `istat` | `mpi_status_buffer` | MPI 状态数组；保留 MPI_STATUS_SIZE | [mpiu.f90](../../src/lib/mpi90/mpiu.f90)、[mpi_C.f90](../../src/lib/mpi90/mpi_C.f90) |
 
 ## 4. 提取方式、覆盖检查与限制
+
+以下记录清单最初采集阶段的检查；后续源码重命名及 CSFG 移除的验证以本轮实施记录为准。
 
 - 使用临时目录中的 fparser 0.2.5，对纳入文件按 free-form Fortran 2008 语法树提取；未往共享 Python 环境添加包。
 - 提取普通声明、派生类型成员、独立 PARAMETER、函数头结果、形参和 ASSOCIATE 别名；保留文件、作用域、声明行、类型、属性与形状。
@@ -1663,45 +1666,45 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `NB` | 69 | 形参 | `INTEGER` | `symmetry_block_index` | 当前对称性块编号；源码建议 |
-| `MYID` | 70 | 形参 | `INTEGER` | `mpi_rank` | CSF 对循环使用的进程编号；源码建议 |
-| `NPROCS` | 71 | 形参 | `INTEGER` | `mpi_process_count` | CSF 对循环的进程步长；源码建议 |
-| `RESTRT` | 72 | 形参 | `LOGICAL; INTENT(IN)` | `is_restart` | 是否走重启逻辑；当前入口含未就绪停止分支；源码建议 |
-| `FHEAD` | 73 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `output_file_prefix` | 输出文件前缀；源码建议 |
-| `KEY` | 77 | 常量 | `INTEGER; PARAMETER` | `orbital_index_radix` | 轨道索引打包基数；源码建议 |
-| `KEYSQ` | 78 | 常量 | `INTEGER; PARAMETER` | `orbital_index_radix_squared` | 打包基数的平方；源码建议 |
-| `CUTOFF` | 79 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `angular_coefficient_cutoff` | 保留角系数的绝对值阈值；源码建议 |
-| `NGGMAX` | 85 | 常量 | `INTEGER; PARAMETER` | `initial_sort_buffer_capacity` | 初始排序缓存总容量；源码建议 |
-| `LLISTV` | 92 | 局部变量 | `INTEGER; DIMENSION(:), POINTER` | `two_electron_counts_by_rank` | 各多极秩的两电子 V 系数计数；源码建议 |
+| `NB` | 69 | 形参 | `INTEGER` | `symmetry_block_index` | 当前对称性块编号；源码建议；已实施 |
+| `MYID` | 70 | 形参 | `INTEGER` | `mpi_rank` | CSF 对循环使用的进程编号；源码建议；已实施 |
+| `NPROCS` | 71 | 形参 | `INTEGER` | `mpi_process_count` | CSF 对循环的进程步长；源码建议；已实施 |
+| `RESTRT` | 72 | 形参 | `LOGICAL; INTENT(IN)` | `is_restart` | 是否走重启逻辑；当前入口含未就绪停止分支；源码建议；已实施 |
+| `FHEAD` | 73 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `output_file_prefix` | 输出文件前缀；源码建议；已实施 |
+| `KEY` | 77 | 常量 | `INTEGER; PARAMETER` | `coefficient_label_radix` | 轨道索引打包基数；源码建议；已实施；原候选 orbital_index_radix 因同作用域名称冲突调整 |
+| `KEYSQ` | 78 | 常量 | `INTEGER; PARAMETER` | `orbital_index_radix_squared` | 打包基数的平方；源码建议；已实施 |
+| `CUTOFF` | 79 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `angular_coefficient_cutoff` | 保留角系数的绝对值阈值；源码建议；已实施 |
+| `NGGMAX` | 85 | 常量 | `INTEGER; PARAMETER` | `initial_sort_buffer_capacity` | 初始排序缓存总容量；源码建议；已实施 |
+| `LLISTV` | 92 | 局部变量 | `INTEGER; DIMENSION(:), POINTER` | `two_electron_counts_by_rank` | 各多极秩的两电子 V 系数计数；源码建议；已实施 |
 | `MARK` | 92 | 局部变量 | `INTEGER; DIMENSION(:), POINTER` | 待核实 | 待核实语义及命名 |
 | `I` | 93 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
-| `IA` | 93 | 局部变量 | `INTEGER` | `orbital_a` | 角系数的第 a 个轨道索引；源码建议 |
-| `IB` | 93 | 局部变量 | `INTEGER` | `orbital_b` | 角系数的第 b 个轨道索引；源码建议 |
-| `IC` | 93 | 局部变量 | `INTEGER` | `orbital_c` | 角系数的第 c 个轨道索引；源码建议 |
-| `ID` | 93 | 局部变量 | `INTEGER` | `orbital_d` | 角系数的第 d 个轨道索引；源码建议 |
-| `ISWAP` | 93 | 局部变量 | `INTEGER` | `orbital_swap_temporary` | 交换轨道索引时的临时变量；源码建议 |
-| `JA` | 93 | 局部变量 | `INTEGER` | `csf_column_index` | 外层 CSF 索引；对应输出列号；源码建议 |
-| `JASTRT` | 93 | 局部变量 | `INTEGER` | `first_csf_column` | 外层 CSF 起始索引；源码建议 |
-| `JB` | 93 | 局部变量 | `INTEGER` | `csf_row_index` | 内层 CSF 索引；源码建议 |
-| `JBSTRT` | 93 | 局部变量 | `INTEGER` | `first_csf_row` | 内层 CSF 起始索引；源码建议 |
-| `K` | 93 | 局部变量 | `INTEGER` | `multipole_rank` | Coulomb 多极秩；源码建议 |
+| `IA` | 93 | 局部变量 | `INTEGER` | `orbital_a` | 角系数的第 a 个轨道索引；源码建议；已实施 |
+| `IB` | 93 | 局部变量 | `INTEGER` | `orbital_b` | 角系数的第 b 个轨道索引；源码建议；已实施 |
+| `IC` | 93 | 局部变量 | `INTEGER` | `orbital_c` | 角系数的第 c 个轨道索引；源码建议；已实施 |
+| `ID` | 93 | 局部变量 | `INTEGER` | `orbital_d` | 角系数的第 d 个轨道索引；源码建议；已实施 |
+| `ISWAP` | 93 | 局部变量 | `INTEGER` | `orbital_swap_temporary` | 交换轨道索引时的临时变量；源码建议；已实施 |
+| `JA` | 93 | 局部变量 | `INTEGER` | `csf_column_index` | 外层 CSF 索引；对应输出列号；源码建议；已实施 |
+| `JASTRT` | 93 | 局部变量 | `INTEGER` | `first_csf_column` | 外层 CSF 起始索引；源码建议；已实施 |
+| `JB` | 93 | 局部变量 | `INTEGER` | `csf_row_index` | 内层 CSF 索引；源码建议；已实施 |
+| `JBSTRT` | 93 | 局部变量 | `INTEGER` | `first_csf_row` | 内层 CSF 起始索引；源码建议；已实施 |
+| `K` | 93 | 局部变量 | `INTEGER` | `multipole_rank` | Coulomb 多极秩；源码建议；已实施 |
 | `LAB` | 93 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `LAC` | 93 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `LBD` | 93 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
-| `LLISTT` | 93 | 局部变量 | `INTEGER` | `one_electron_coefficient_count` | 单电子 T 系数计数；源码建议 |
-| `NPOS` | 93 | 局部变量 | `INTEGER` | `matrix_element_position` | 当前有效矩阵位置计数；源码建议 |
-| `NSWAP` | 93 | 局部变量 | `INTEGER` | `orbital_swap_count` | 规范化轨道标签时的交换次数；源码建议 |
+| `LLISTT` | 93 | 局部变量 | `INTEGER` | `one_electron_coefficient_count` | 单电子 T 系数计数；源码建议；已实施 |
+| `NPOS` | 93 | 局部变量 | `INTEGER` | `matrix_element_position` | 当前有效矩阵位置计数；源码建议；已实施 |
+| `NSWAP` | 93 | 局部变量 | `INTEGER` | `orbital_swap_count` | 规范化轨道标签时的交换次数；源码建议；已实施 |
 | `NTGI` | 93 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
-| `TSHELL` | 95 | 局部变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | `one_electron_shell_coefficients` | ONESCALAR 输出的单电子子壳层系数；源码建议 |
-| `VCOEFF` | 96 | 局部变量 | `REAL(KIND = DOUBLE)` | `two_electron_angular_coefficient` | 当前两电子角系数；源码建议 |
-| `F0INT` | 97 | 局部变量 | `LOGICAL` | `is_direct_monopole_integral` | k=0 且 a=c、b=d 的分支标志；源码建议 |
-| `LINCR` | 97 | 局部变量 | `LOGICAL` | `increment_matrix_position` | 是否尚需增加矩阵位置计数；源码建议 |
-| `IGGMAX` | 98 | 局部变量 | `INTEGER` | `sort_buffer_capacity` | 当前排序缓存总容量；源码建议 |
-| `IGGMAX_K` | 98 | 局部变量 | `INTEGER` | `sort_capacity_per_channel` | 每个通道的排序缓存容量；源码建议 |
+| `TSHELL` | 95 | 局部变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | `one_electron_shell_coefficients` | ONESCALAR 输出的单电子子壳层系数；源码建议；已实施 |
+| `VCOEFF` | 96 | 局部变量 | `REAL(KIND = DOUBLE)` | `two_electron_angular_coefficient` | 当前两电子角系数；源码建议；已实施 |
+| `F0INT` | 97 | 局部变量 | `LOGICAL` | `is_direct_monopole_integral` | k=0 且 a=c、b=d 的分支标志；源码建议；已实施 |
+| `LINCR` | 97 | 局部变量 | `LOGICAL` | `increment_matrix_position` | 是否尚需增加矩阵位置计数；源码建议；已实施 |
+| `IGGMAX` | 98 | 局部变量 | `INTEGER` | `sort_buffer_capacity` | 当前排序缓存总容量；源码建议；已实施 |
+| `IGGMAX_K` | 98 | 局部变量 | `INTEGER` | `sort_capacity_per_channel` | 每个通道的排序缓存容量；源码建议；已实施 |
 | `IREZ` | 98 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `JJ` | 98 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `MARKT` | 98 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
-| `NEWSIZ` | 98 | 局部变量 | `INTEGER` | `requested_sort_capacity` | 缓存扩容的目标总容量；源码建议 |
+| `NEWSIZ` | 98 | 局部变量 | `INTEGER` | `requested_sort_capacity` | 缓存扩容的目标总容量；源码建议；已实施 |
 | `stage_start_count` | 99 | 局部变量 | `INTEGER(KIND = int64)` | 待核实 | 待核实语义及命名 |
 
 外部/内建过程声明（不计作数据变量）：`EXTERNAL :: CORD`（行 65）。
@@ -1716,11 +1719,11 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `NB` | 7 | 接口形参 | `INTEGER` | `symmetry_block_index` | 当前对称性块编号；接口联动建议 |
-| `MYID` | 8 | 接口形参 | `INTEGER` | `mpi_rank` | CSF 对循环使用的进程编号；接口联动建议 |
-| `NPROCS` | 9 | 接口形参 | `INTEGER` | `mpi_process_count` | CSF 对循环的进程步长；接口联动建议 |
-| `RESTRT` | 10 | 接口形参 | `LOGICAL; INTENT(IN)` | `is_restart` | 是否走重启逻辑；当前入口含未就绪停止分支；接口联动建议 |
-| `FHEAD` | 11 | 接口形参 | `CHARACTER(LEN = *); INTENT(IN)` | `output_file_prefix` | 输出文件前缀；接口联动建议 |
+| `NB` | 7 | 接口形参 | `INTEGER` | `symmetry_block_index` | 当前对称性块编号；接口联动建议；已实施 |
+| `MYID` | 8 | 接口形参 | `INTEGER` | `mpi_rank` | CSF 对循环使用的进程编号；接口联动建议；已实施 |
+| `NPROCS` | 9 | 接口形参 | `INTEGER` | `mpi_process_count` | CSF 对循环的进程步长；接口联动建议；已实施 |
+| `RESTRT` | 10 | 接口形参 | `LOGICAL; INTENT(IN)` | `is_restart` | 是否走重启逻辑；当前入口含未就绪停止分支；接口联动建议；已实施 |
+| `FHEAD` | 11 | 接口形参 | `CHARACTER(LEN = *); INTENT(IN)` | `output_file_prefix` | 输出文件前缀；接口联动建议；已实施 |
 
 <a id="file-0035"></a>
 
@@ -2333,7 +2336,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `OUTSDAdummy` | 36 | 过程形参 | `PROCEDURE(outsda)` | `write_coefficient_callback` | 角系数输出回调；接口联动建议 |
+| `OUTSDAdummy` | 36 | 过程形参 | `PROCEDURE(outsda)` | `write_coefficient_callback` | 角系数输出回调；接口联动建议；已实施 |
 | `NNONZ` | 40 | 形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
 | `NB` | 41 | 形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
 | `MYID` | 42 | 形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
@@ -2361,7 +2364,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `OUTSDA` | 8 | 过程形参 | `PROCEDURE(output_callback)` | `write_coefficient_callback` | 角系数输出回调；接口联动建议 |
+| `OUTSDA` | 8 | 过程形参 | `PROCEDURE(output_callback)` | `write_coefficient_callback` | 角系数输出回调；接口联动建议；已实施 |
 | `NNONZ` | 9 | 接口形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
 | `LPRINT` | 10 | 接口形参 | `LOGICAL` | 待核实 | 待核实语义及命名 |
 | `NB` | 11 | 接口形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
@@ -2987,7 +2990,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `OUTSDAdummy` | 36 | 过程形参 | `PROCEDURE(outsdampi)` | `write_coefficient_callback` | 角系数输出回调；接口联动建议 |
+| `OUTSDAdummy` | 36 | 过程形参 | `PROCEDURE(outsdampi)` | `write_coefficient_callback` | 角系数输出回调；接口联动建议；已实施 |
 | `NNONZ` | 40 | 形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
 | `NB` | 41 | 形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
 | `MYID` | 42 | 形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
@@ -3015,7 +3018,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `OUTSDA` | 8 | 过程形参 | `PROCEDURE(output_callback)` | `write_coefficient_callback` | 角系数输出回调；接口联动建议 |
+| `OUTSDA` | 8 | 过程形参 | `PROCEDURE(output_callback)` | `write_coefficient_callback` | 角系数输出回调；接口联动建议；已实施 |
 | `NNONZ` | 9 | 接口形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
 | `LPRINT` | 10 | 接口形参 | `LOGICAL` | 待核实 | 待核实语义及命名 |
 | `NB` | 11 | 接口形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
@@ -16352,8 +16355,8 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `MYID` | 6 | 模块变量 | `INTEGER` | `mpi_rank` | 统一执行流程中的进程编号；串行模拟路径也使用此状态；源码建议 |
-| `NPROCS` | 6 | 模块变量 | `INTEGER` | `mpi_process_count` | 统一执行流程中的进程数量；串行模拟路径也使用此状态；源码建议 |
+| `MYID` | 6 | 模块变量 | `INTEGER` | `mpi_rank` | 统一执行流程中的进程编号；串行模拟路径也使用此状态；源码建议；已实施 |
+| `NPROCS` | 6 | 模块变量 | `INTEGER` | `mpi_process_count` | 统一执行流程中的进程数量；串行模拟路径也使用此状态；源码建议；已实施 |
 
 <a id="file-0695"></a>
 
@@ -18493,8 +18496,8 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `MYID` | 6 | 模块变量 | `INTEGER` | `mpi_rank` | 统一执行流程中的进程编号；串行模拟路径也使用此状态；源码建议 |
-| `NPROCS` | 6 | 模块变量 | `INTEGER` | `mpi_process_count` | 统一执行流程中的进程数量；串行模拟路径也使用此状态；源码建议 |
+| `MYID` | 6 | 模块变量 | `INTEGER` | `mpi_rank` | 统一执行流程中的进程编号；串行模拟路径也使用此状态；源码建议；已实施 |
+| `NPROCS` | 6 | 模块变量 | `INTEGER` | `mpi_process_count` | 统一执行流程中的进程数量；串行模拟路径也使用此状态；源码建议；已实施 |
 
 <a id="file-0805"></a>
 
@@ -32709,25 +32712,25 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `I` | 26 | 局部变量 | `INTEGER` | `radial_index` | 网格构造循环的径向索引；源码建议 |
-| `II` | 26 | 局部变量 | `INTEGER` | `debug_row_index` | 调试输出的行索引；源码建议 |
-| `II1` | 26 | 局部变量 | `INTEGER` | `left_grid_index` | 调试输出左列的网格索引；源码建议 |
-| `II2` | 26 | 局部变量 | `INTEGER` | `right_grid_index` | 调试输出右列的网格索引；源码建议 |
-| `NB2` | 26 | 局部变量 | `INTEGER` | `half_grid_point_count` | 网格点数整数除以二，供调试排版使用；源码建议 |
-| `NP10` | 26 | 局部变量 | `INTEGER` | `grid_points_with_padding` | 运行时网格点数加 10；源码建议 |
-| `NROWS` | 26 | 局部变量 | `INTEGER` | `debug_row_count` | 调试输出行数；源码建议 |
-| `A` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `grid_step_ratio` | H/HP；源码建议 |
-| `DELR` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `radius_correction` | Newton 半径修正量；源码建议 |
-| `EPH` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `exp_grid_step` | exp(H)；源码建议 |
-| `EPSLON` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `newton_relative_tolerance` | Newton 网格求解的相对收敛容限；源码建议 |
-| `ETT` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `exp_grid_coordinate` | 递推得到的 exp(t)；源码建议 |
-| `ETTM1` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `exp_grid_coordinate_minus_one` | exp(t)-1；源码建议 |
-| `FOFR` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `grid_equation_residual` | 隐式网格方程的残差；源码建议 |
-| `FPRI` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `inverse_grid_equation_derivative` | 网格方程导数的倒数；不应命名为普通一阶导数；源码建议 |
-| `REST` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `radius_estimate` | 当前半径估计；源码建议 |
-| `RESTS` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `shifted_radius_estimate` | REST+RNT；源码建议 |
-| `RLAST` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `previous_radius_estimate` | Newton 迭代保存的上一半径估计；源码建议 |
-| `T` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `transformed_coordinate` | H*(I-1)；源码建议 |
+| `I` | 26 | 局部变量 | `INTEGER` | `radial_index` | 网格构造循环的径向索引；源码建议；已实施 |
+| `II` | 26 | 局部变量 | `INTEGER` | `debug_row_index` | 调试输出的行索引；源码建议；已实施 |
+| `II1` | 26 | 局部变量 | `INTEGER` | `left_grid_index` | 调试输出左列的网格索引；源码建议；已实施 |
+| `II2` | 26 | 局部变量 | `INTEGER` | `right_grid_index` | 调试输出右列的网格索引；源码建议；已实施 |
+| `NB2` | 26 | 局部变量 | `INTEGER` | `half_grid_point_count` | 网格点数整数除以二，供调试排版使用；源码建议；已实施 |
+| `NP10` | 26 | 局部变量 | `INTEGER` | `grid_points_with_padding` | 运行时网格点数加 10；源码建议；已实施 |
+| `NROWS` | 26 | 局部变量 | `INTEGER` | `debug_row_count` | 调试输出行数；源码建议；已实施 |
+| `A` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `grid_step_ratio` | H/HP；源码建议；已实施 |
+| `DELR` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `radius_correction` | Newton 半径修正量；源码建议；已实施 |
+| `EPH` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `exp_grid_step` | exp(H)；源码建议；已实施 |
+| `EPSLON` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `newton_relative_tolerance` | Newton 网格求解的相对收敛容限；源码建议；已实施 |
+| `ETT` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `exp_grid_coordinate` | 递推得到的 exp(t)；源码建议；已实施 |
+| `ETTM1` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `exp_grid_coordinate_minus_one` | exp(t)-1；源码建议；已实施 |
+| `FOFR` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `grid_equation_residual` | 隐式网格方程的残差；源码建议；已实施 |
+| `FPRI` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `inverse_grid_equation_derivative` | 网格方程导数的倒数；不应命名为普通一阶导数；源码建议；已实施 |
+| `REST` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `radius_estimate` | 当前半径估计；源码建议；已实施 |
+| `RESTS` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `shifted_radius_estimate` | REST+RNT；源码建议；已实施 |
+| `RLAST` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `previous_radius_estimate` | Newton 迭代保存的上一半径估计；源码建议；已实施 |
+| `T` | 27 | 局部变量 | `REAL(KIND = DOUBLE)` | `transformed_coordinate` | H*(I-1)；源码建议；已实施 |
 
 <a id="file-1506"></a>
 
@@ -32814,16 +32817,16 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `AINFCM` | 24 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `bohr_radius_cm` | Bohr 半径，cm；源码建议 |
-| `ALFAI` | 25 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `inverse_fine_structure_constant` | 精细结构常数的倒数；源码建议 |
-| `CCMPS` | 26 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `speed_of_light_cm_per_s` | 光速，cm/s；源码建议 |
-| `EESU` | 27 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `electron_charge_esu` | 电子电荷的 esu 数值；源码建议 |
-| `EMEG` | 28 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `electron_mass_g` | 电子质量，g；源码建议 |
-| `EMEAMU` | 29 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `electron_mass_u` | 电子质量，u；源码建议 |
-| `EMPAMU` | 30 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `proton_mass_u` | 质子质量，u；源码建议 |
-| `HBARES` | 31 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `reduced_planck_constant_erg_s` | 约化 Planck 常数，erg·s；源码建议 |
-| `RINFEV` | 32 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `rydberg_energy_ev` | Rydberg 能量，eV；源码建议 |
-| `RINFK` | 33 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `rydberg_wavenumber_cm` | Rydberg 波数，cm⁻¹；源码建议 |
+| `AINFCM` | 24 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `reference_bohr_radius_cm` | Bohr 半径，cm；源码建议；已实施；原候选 bohr_radius_cm 因同作用域名称冲突调整 |
+| `ALFAI` | 25 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `inverse_fine_structure_constant` | 精细结构常数的倒数；源码建议；已实施 |
+| `CCMPS` | 26 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `reference_speed_of_light_cm_per_s` | 光速，cm/s；源码建议；已实施；原候选 speed_of_light_cm_per_s 因同作用域名称冲突调整 |
+| `EESU` | 27 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `electron_charge_esu` | 电子电荷的 esu 数值；源码建议；已实施 |
+| `EMEG` | 28 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `electron_mass_g` | 电子质量，g；源码建议；已实施 |
+| `EMEAMU` | 29 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `reference_electron_mass_u` | 电子质量，u；源码建议；已实施；原候选 electron_mass_u 因同作用域名称冲突调整 |
+| `EMPAMU` | 30 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `reference_proton_mass_u` | 质子质量，u；源码建议；已实施；原候选 proton_mass_u 因同作用域名称冲突调整 |
+| `HBARES` | 31 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `reduced_planck_constant_erg_s` | 约化 Planck 常数，erg·s；源码建议；已实施 |
+| `RINFEV` | 32 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `rydberg_energy_ev` | Rydberg 能量，eV；源码建议；已实施 |
+| `RINFK` | 33 | 常量 | `REAL(KIND = DOUBLE); PARAMETER` | `rydberg_wavenumber_cm` | Rydberg 波数，cm⁻¹；源码建议；已实施 |
 
 <a id="file-1512"></a>
 
@@ -33331,12 +33334,12 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `IORB` | 41 | 形参 | `INTEGER` | `orbital_index` | 当前轨道索引；源码建议 |
-| `ITYPE` | 42 | 形参 | `INTEGER; INTENT(IN)` | `radial_equation_type` | 1 齐次、2 非齐次、3 变分方程；源码建议 |
-| `P0` | 43 | 形参 | `REAL(KIND = DOUBLE); INTENT(IN)` | `origin_slope_parameter` | 输入的近原点斜率参数；源码建议 |
-| `Q0` | 44 | 形参 | `REAL(KIND = DOUBLE); INTENT(OUT)` | `small_component_origin_coefficient` | 小分量级数展开首项；源码建议 |
-| `P` | 45 | 形参 | `REAL(KIND = DOUBLE); DIMENSION(NNNP), INTENT(INOUT)` | `large_component_values` | 大分量起始积分值；首点按原实现使用缩放约定；源码建议 |
-| `Q` | 46 | 形参 | `REAL(KIND = DOUBLE); DIMENSION(NNNP), INTENT(INOUT)` | `small_component_values` | 小分量起始积分值；首点按原实现使用缩放约定；源码建议 |
+| `IORB` | 41 | 形参 | `INTEGER` | `orbital_index` | 当前轨道索引；源码建议；已实施 |
+| `ITYPE` | 42 | 形参 | `INTEGER; INTENT(IN)` | `radial_equation_type` | 1 齐次、2 非齐次、3 变分方程；源码建议；已实施 |
+| `P0` | 43 | 形参 | `REAL(KIND = DOUBLE); INTENT(IN)` | `origin_slope_parameter` | 输入的近原点斜率参数；源码建议；已实施 |
+| `Q0` | 44 | 形参 | `REAL(KIND = DOUBLE); INTENT(OUT)` | `small_component_origin_coefficient` | 小分量级数展开首项；源码建议；已实施 |
+| `P` | 45 | 形参 | `REAL(KIND = DOUBLE); DIMENSION(NNNP), INTENT(INOUT)` | `large_component_values` | 大分量起始积分值；首点按原实现使用缩放约定；源码建议；已实施 |
+| `Q` | 46 | 形参 | `REAL(KIND = DOUBLE); DIMENSION(NNNP), INTENT(INOUT)` | `small_component_values` | 小分量起始积分值；首点按原实现使用缩放约定；源码建议；已实施 |
 | `I` | 50 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `J` | 50 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `JORB` | 50 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
@@ -33389,12 +33392,12 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `IORB` | 9 | 接口形参 | `INTEGER; INTENT(IN)` | `orbital_index` | 当前轨道索引；接口联动建议 |
-| `ITYPE` | 10 | 接口形参 | `INTEGER; INTENT(IN)` | `radial_equation_type` | 1 齐次、2 非齐次、3 变分方程；接口联动建议 |
-| `P0` | 11 | 接口形参 | `REAL(KIND = DOUBLE); INTENT(IN)` | `origin_slope_parameter` | 输入的近原点斜率参数；接口联动建议 |
-| `P` | 12 | 接口形参 | `REAL(KIND = DOUBLE); DIMENSION(NNNP), INTENT(INOUT)` | `large_component_values` | 大分量起始积分值；首点按原实现使用缩放约定；接口联动建议 |
-| `Q0` | 13 | 接口形参 | `REAL(KIND = DOUBLE); INTENT(OUT)` | `small_component_origin_coefficient` | 小分量级数展开首项；接口联动建议 |
-| `Q` | 14 | 接口形参 | `REAL(KIND = DOUBLE); DIMENSION(NNNP), INTENT(INOUT)` | `small_component_values` | 小分量起始积分值；首点按原实现使用缩放约定；接口联动建议 |
+| `IORB` | 9 | 接口形参 | `INTEGER; INTENT(IN)` | `orbital_index` | 当前轨道索引；接口联动建议；已实施 |
+| `ITYPE` | 10 | 接口形参 | `INTEGER; INTENT(IN)` | `radial_equation_type` | 1 齐次、2 非齐次、3 变分方程；接口联动建议；已实施 |
+| `P0` | 11 | 接口形参 | `REAL(KIND = DOUBLE); INTENT(IN)` | `origin_slope_parameter` | 输入的近原点斜率参数；接口联动建议；已实施 |
+| `P` | 12 | 接口形参 | `REAL(KIND = DOUBLE); DIMENSION(NNNP), INTENT(INOUT)` | `large_component_values` | 大分量起始积分值；首点按原实现使用缩放约定；接口联动建议；已实施 |
+| `Q0` | 13 | 接口形参 | `REAL(KIND = DOUBLE); INTENT(OUT)` | `small_component_origin_coefficient` | 小分量级数展开首项；接口联动建议；已实施 |
+| `Q` | 14 | 接口形参 | `REAL(KIND = DOUBLE); DIMENSION(NNNP), INTENT(INOUT)` | `small_component_values` | 小分量起始积分值；首点按原实现使用缩放约定；接口联动建议；已实施 |
 
 <a id="file-1543"></a>
 
@@ -33967,7 +33970,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `OP` | 28 | 过程形参 | `PROCEDURE(dvd_operator)` | `matrix_vector_callback` | Davidson 矩阵与向量乘积回调；接口联动建议 |
+| `OP` | 28 | 过程形参 | `PROCEDURE(dvd_operator)` | `matrix_vector_callback` | Davidson 矩阵与向量乘积回调；接口联动建议；已实施 |
 | `N` | 29 | 形参 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `LIM` | 30 | 形参 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `ILOW` | 31 | 形参 | `INTEGER` | 待核实 | 待核实语义及命名 |
@@ -34027,7 +34030,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `OP` | 19 | 过程形参 | `PROCEDURE(dvd_operator)` | `matrix_vector_callback` | Davidson 矩阵与向量乘积回调；接口联动建议 |
+| `OP` | 19 | 过程形参 | `PROCEDURE(dvd_operator)` | `matrix_vector_callback` | Davidson 矩阵与向量乘积回调；接口联动建议；已实施 |
 | `N` | 20 | 接口形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
 | `LIM` | 21 | 接口形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
 | `DIAG` | 22 | 接口形参 | `REAL(KIND = DOUBLE); DIMENSION(N), INTENT(INOUT)` | 待核实 | 待核实语义及命名 |
@@ -34506,10 +34509,10 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `NBDIM` | 6 | 模块变量 | `INTEGER` | `angular_buffer_capacity` | 角系数缓冲区分配容量；源码建议 |
-| `NVCOEF` | 6 | 模块变量 | `INTEGER` | `angular_coefficient_count` | 当前 CSF 对产生的有效角系数条数；源码建议 |
-| `label` | 7 | 模块变量 | `INTEGER; DIMENSION(:, :), POINTER` | `angular_coefficient_labels` | 角系数对应的四个轨道索引与多极秩标签；源码建议 |
-| `coeff` | 8 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | `angular_coefficients` | 当前缓冲的角系数值；源码建议 |
+| `NBDIM` | 6 | 模块变量 | `INTEGER` | `angular_buffer_capacity` | 角系数缓冲区分配容量；源码建议；已实施 |
+| `NVCOEF` | 6 | 模块变量 | `INTEGER` | `angular_coefficient_count` | 当前 CSF 对产生的有效角系数条数；源码建议；已实施 |
+| `label` | 7 | 模块变量 | `INTEGER; DIMENSION(:, :), POINTER` | `angular_coefficient_labels` | 角系数对应的四个轨道索引与多极秩标签；源码建议；已实施 |
+| `coeff` | 8 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | `angular_coefficients` | 当前缓冲的角系数值；源码建议；已实施 |
 
 <a id="file-1577"></a>
 
@@ -34612,7 +34615,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `NCORE` | 5 | 模块变量 | `INTEGER` | `closed_core_subshell_count` | 闭壳层核心的相对子壳层数；不是核心电子数；源码建议 |
+| `NCORE` | 5 | 模块变量 | `INTEGER` | `closed_core_subshell_count` | 闭壳层核心的相对子壳层数；不是核心电子数；源码建议；已实施 |
 
 <a id="file-1584"></a>
 
@@ -34703,8 +34706,8 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `ODAMP` | 9 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | `orbital_damping_factors` | 径向轨道阻尼因子；源码建议 |
-| `cdamp` | 10 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | `mixing_damping_factors` | 展开系数阻尼因子；源码建议 |
+| `ODAMP` | 9 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | `orbital_damping_factors` | 径向轨道阻尼因子；源码建议；已实施 |
+| `cdamp` | 10 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | `mixing_damping_factors` | 展开系数阻尼因子；源码建议；已实施 |
 
 <a id="file-1590"></a>
 
@@ -34758,18 +34761,18 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 | `EXPMIN` | 12 | 模块变量 | `REAL(KIND = DOUBLE)` | 待核实 | 待核实语义及命名 |
 | `PRECIS` | 12 | 模块变量 | `REAL(KIND = DOUBLE)` | 待核实 | 待核实语义及命名 |
 | `TENMAX` | 12 | 模块变量 | `REAL(KIND = DOUBLE)` | 待核实 | 待核实语义及命名 |
-| `AUCM` | 13 | 模块变量 | `REAL(KIND = DOUBLE)` | `hartree_to_wavenumber_cm` | 能量从原子单位换算至 cm⁻¹ 的系数；源码建议 |
-| `AUEV` | 13 | 模块变量 | `REAL(KIND = DOUBLE)` | `hartree_to_ev` | 能量从原子单位换算至 eV 的系数；源码建议 |
-| `CCMS` | 13 | 模块变量 | `REAL(KIND = DOUBLE)` | `speed_of_light_cm_per_s` | 真空光速，cm/s；源码建议 |
-| `FASI` | 13 | 模块变量 | `REAL(KIND = DOUBLE)` | `einstein_a_au_to_si` | Einstein A 系数从原子单位到 SI 的换算因子；源码建议 |
-| `FBSI` | 13 | 模块变量 | `REAL(KIND = DOUBLE)` | `einstein_b_au_to_si` | Einstein B 系数从原子单位到 SI 的换算因子；源码建议 |
-| `AUMAMU` | 14 | 模块变量 | `REAL(KIND = DOUBLE)` | `electron_mass_u` | 原子质量单位表示的电子质量；源码建议 |
+| `AUCM` | 13 | 模块变量 | `REAL(KIND = DOUBLE)` | `hartree_to_wavenumber_cm` | 能量从原子单位换算至 cm⁻¹ 的系数；源码建议；已实施 |
+| `AUEV` | 13 | 模块变量 | `REAL(KIND = DOUBLE)` | `hartree_to_ev` | 能量从原子单位换算至 eV 的系数；源码建议；已实施 |
+| `CCMS` | 13 | 模块变量 | `REAL(KIND = DOUBLE)` | `speed_of_light_cm_per_s` | 真空光速，cm/s；源码建议；已实施 |
+| `FASI` | 13 | 模块变量 | `REAL(KIND = DOUBLE)` | `einstein_a_au_to_si` | Einstein A 系数从原子单位到 SI 的换算因子；源码建议；已实施 |
+| `FBSI` | 13 | 模块变量 | `REAL(KIND = DOUBLE)` | `einstein_b_au_to_si` | Einstein B 系数从原子单位到 SI 的换算因子；源码建议；已实施 |
+| `AUMAMU` | 14 | 模块变量 | `REAL(KIND = DOUBLE)` | `electron_mass_u` | 原子质量单位表示的电子质量；源码建议；已实施 |
 | `B1` | 14 | 模块变量 | `REAL(KIND = DOUBLE)` | 待核实 | 待核实语义及命名 |
-| `FMTOAU` | 14 | 模块变量 | `REAL(KIND = DOUBLE)` | `femtometer_to_bohr` | 长度从 fm 到 Bohr 的换算系数；源码建议 |
+| `FMTOAU` | 14 | 模块变量 | `REAL(KIND = DOUBLE)` | `femtometer_to_bohr` | 长度从 fm 到 Bohr 的换算系数；源码建议；已实施 |
 | `IONCTY` | 15 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
-| `NELEC` | 15 | 模块变量 | `INTEGER` | `electron_count` | 当前体系的电子总数；源码建议 |
+| `NELEC` | 15 | 模块变量 | `INTEGER` | `electron_count` | 当前体系的电子总数；源码建议；已实施 |
 | `EMN` | 16 | 模块变量 | `REAL(KIND = DOUBLE)` | 待核实 | 待核实语义及命名 |
-| `Z` | 16 | 模块变量 | `REAL(KIND = DOUBLE)` | `nuclear_charge` | 核电荷数；源码建议 |
+| `Z` | 16 | 模块变量 | `REAL(KIND = DOUBLE)` | `nuclear_charge` | 核电荷数；源码建议；已实施 |
 | `IONCTYFF` | 17 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `NELECFF` | 17 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `EMNFF` | 18 | 模块变量 | `REAL(KIND = DOUBLE)` | 待核实 | 待核实语义及命名 |
@@ -34779,9 +34782,9 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 | `EMNII` | 20 | 模块变量 | `REAL(KIND = DOUBLE)` | 待核实 | 待核实语义及命名 |
 | `ZII` | 20 | 模块变量 | `REAL(KIND = DOUBLE)` | 待核实 | 待核实语义及命名 |
 | `NELECR` | 21 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
-| `C` | 22 | 模块变量 | `REAL(KIND = DOUBLE)` | `speed_of_light_au` | 径向方程使用的原子单位光速参数；源码建议 |
-| `EMPAM` | 23 | 模块变量 | `REAL(KIND = DOUBLE)` | `proton_mass_u` | 原子质量单位表示的质子质量；源码建议 |
-| `RBCM` | 23 | 模块变量 | `REAL(KIND = DOUBLE)` | `bohr_radius_cm` | 以 cm 表示的 Bohr 半径；源码建议 |
+| `C` | 22 | 模块变量 | `REAL(KIND = DOUBLE)` | `speed_of_light_au` | 径向方程使用的原子单位光速参数；源码建议；已实施 |
+| `EMPAM` | 23 | 模块变量 | `REAL(KIND = DOUBLE)` | `proton_mass_u` | 原子质量单位表示的质子质量；源码建议；已实施 |
+| `RBCM` | 23 | 模块变量 | `REAL(KIND = DOUBLE)` | `bohr_radius_cm` | 以 cm 表示的 Bohr 半径；源码建议；已实施 |
 | `NSCF` | 24 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `NSIC` | 24 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `NSOLV` | 24 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
@@ -34791,8 +34794,8 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 | `NCMAX` | 27 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `NCMIN` | 27 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `iccmin` | 28 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | 待核实 | 待核实语义及命名 |
-| `CVAC` | 29 | 模块变量 | `REAL(KIND = DOUBLE)` | `vacuum_speed_of_light_au` | SETCON 初始化的真空光速原子单位常数；源码建议 |
-| `PI` | 29 | 模块变量 | `REAL(KIND = DOUBLE)` | `pi` | 圆周率；已具有明确数学含义，可保留；源码建议 |
+| `CVAC` | 29 | 模块变量 | `REAL(KIND = DOUBLE)` | `vacuum_speed_of_light_au` | SETCON 初始化的真空光速原子单位常数；源码建议；已实施 |
+| `PI` | 29 | 模块变量 | `REAL(KIND = DOUBLE)` | `pi` | 圆周率；已具有明确数学含义，可保留；源码建议；已核定保留（pi） |
 | `DP` | 30 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNP)` | 待核实 | 待核实语义及命名 |
 | `DQ` | 30 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNP)` | 待核实 | 待核实语义及命名 |
 
@@ -34834,13 +34837,13 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `EAV` | 11 | 模块变量 | `REAL(KIND = DOUBLE)` | `hamiltonian_energy_shift` | 哈密顿矩阵使用并单独输出的平均能量移位；源码建议 |
+| `EAV` | 11 | 模块变量 | `REAL(KIND = DOUBLE)` | `hamiltonian_energy_shift` | 哈密顿矩阵使用并单独输出的平均能量移位；源码建议；已实施 |
 | `EAVFF` | 11 | 模块变量 | `REAL(KIND = DOUBLE)` | 待核实 | 待核实语义及命名 |
 | `EAVII` | 11 | 模块变量 | `REAL(KIND = DOUBLE)` | 待核实 | 待核实语义及命名 |
-| `EVAL` | 12 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | `shifted_eigenvalues` | 与 EAV 分开存储的本征值；各调用路径的能量恢复需联查；源码建议 |
+| `EVAL` | 12 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | `shifted_eigenvalues` | 与 EAV 分开存储的本征值；各调用路径的能量恢复需联查；源码建议；已实施 |
 | `EVALFF` | 12 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | 待核实 | 待核实语义及命名 |
 | `EVALII` | 12 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | 待核实 | 待核实语义及命名 |
-| `EVEC` | 13 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | `csf_mixing_coefficients` | 按块/态存储的 CSF 展开系数；源码建议 |
+| `EVEC` | 13 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | `csf_mixing_coefficients` | 按块/态存储的 CSF 展开系数；源码建议；已实施 |
 | `EVECFF` | 13 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | 待核实 | 待核实语义及命名 |
 | `EVECII` | 13 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | 待核实 | 待核实语义及命名 |
 
@@ -34879,8 +34882,8 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `NFIX` | 7 | 模块变量 | `INTEGER` | `fixed_orbital_count` | 固定轨道数量；源码建议 |
-| `LFIX` | 8 | 模块变量 | `LOGICAL; DIMENSION(NNNW)` | `is_orbital_fixed` | 各轨道是否固定的标志；源码建议 |
+| `NFIX` | 7 | 模块变量 | `INTEGER` | `fixed_orbital_count` | 固定轨道数量；源码建议；已实施 |
+| `LFIX` | 8 | 模块变量 | `LOGICAL; DIMENSION(NNNW)` | `is_orbital_fixed` | 各轨道是否固定的标志；源码建议；已实施 |
 
 <a id="file-1599"></a>
 
@@ -34916,13 +34919,13 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `N` | 7 | 模块变量 | `INTEGER` | `radial_point_count` | 运行时使用的径向网格点数；源码建议 |
-| `R` | 8 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNN1)` | `radial_grid` | 径向网格坐标；源码建议 |
-| `RP` | 8 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNN1)` | `radial_grid_derivative` | 网格坐标对变换变量的导数；不是相邻网格间距；源码建议 |
-| `RPOR` | 8 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNN1)` | `radial_derivative_over_radius` | 网格导数与半径之比；首元素按实现置零；源码建议 |
-| `H` | 9 | 模块变量 | `REAL(KIND = DOUBLE)` | `transformed_grid_step` | 变换坐标上的网格步长；源码建议 |
-| `HP` | 9 | 模块变量 | `REAL(KIND = DOUBLE)` | `asymptotic_grid_step` | 控制渐近线性网格的步长参数；零表示指数网格；源码建议 |
-| `RNT` | 9 | 模块变量 | `REAL(KIND = DOUBLE)` | `radial_grid_scale` | 径向网格尺度参数；源码建议 |
+| `N` | 7 | 模块变量 | `INTEGER` | `radial_point_count` | 运行时使用的径向网格点数；源码建议；已实施 |
+| `R` | 8 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNN1)` | `radial_grid` | 径向网格坐标；源码建议；已实施 |
+| `RP` | 8 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNN1)` | `radial_grid_derivative` | 网格坐标对变换变量的导数；不是相邻网格间距；源码建议；已实施 |
+| `RPOR` | 8 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNN1)` | `radial_derivative_over_radius` | 网格导数与半径之比；首元素按实现置零；源码建议；已实施 |
+| `H` | 9 | 模块变量 | `REAL(KIND = DOUBLE)` | `transformed_grid_step` | 变换坐标上的网格步长；源码建议；已实施 |
+| `HP` | 9 | 模块变量 | `REAL(KIND = DOUBLE)` | `asymptotic_grid_step` | 控制渐近线性网格的步长参数；零表示指数网格；源码建议；已实施 |
+| `RNT` | 9 | 模块变量 | `REAL(KIND = DOUBLE)` | `radial_grid_scale` | 径向网格尺度参数；源码建议；已实施 |
 
 <a id="file-1602"></a>
 
@@ -34934,10 +34937,10 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `NBLOCK` | 6 | 模块变量 | `INTEGER` | `symmetry_block_count` | 对称性分块数量；源码建议 |
-| `ncfblk` | 9 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `csf_counts_by_block` | 每个对称性块的 CSF 数；注意下标 0 的哨兵；源码建议 |
+| `NBLOCK` | 6 | 模块变量 | `INTEGER` | `symmetry_block_count` | 对称性分块数量；源码建议；已实施 |
+| `ncfblk` | 9 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `csf_counts_by_block` | 每个对称性块的 CSF 数；注意下标 0 的哨兵；源码建议；已实施 |
 | `ncmaxblk` | 10 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | 待核实 | 待核实语义及命名 |
-| `nevblk` | 10 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `eigenvector_counts_by_block` | 每个对称性块的目标本征向量数；源码建议 |
+| `nevblk` | 10 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `eigenvector_counts_by_block` | 每个对称性块的目标本征向量数；源码建议；已实施 |
 
 <a id="file-1603"></a>
 
@@ -34949,10 +34952,10 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `NELMNT` | 6 | 模块变量 | `INTEGER(KIND = LONG)` | `stored_matrix_element_count` | 当前块/进程实际存储的矩阵元数量；保留宽整数 kind；源码建议 |
-| `emt` | 7 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | `hamiltonian_values` | 压缩存储的哈密顿矩阵元素；源码建议 |
-| `iendc` | 8 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `stored_segment_end_offsets` | 各存储段终点偏移；普通 RMCDHF 当前为按行下三角，其他消费者仍须逐一核对；源码建议 |
-| `irow` | 9 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `matrix_partner_indices` | 压缩矩阵的另一维 CSF 索引；名称不预设全库统一 CSR/CSC 方向；源码建议 |
+| `NELMNT` | 6 | 模块变量 | `INTEGER(KIND = LONG)` | `stored_matrix_element_count` | 当前块/进程实际存储的矩阵元数量；保留宽整数 kind；源码建议；已实施 |
+| `emt` | 7 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:), POINTER` | `hamiltonian_values` | 压缩存储的哈密顿矩阵元素；源码建议；已实施 |
+| `iendc` | 8 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `stored_segment_end_offsets` | 各存储段终点偏移；普通 RMCDHF 当前为按行下三角，其他消费者仍须逐一核对；源码建议；已实施 |
+| `irow` | 9 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `matrix_partner_indices` | 压缩矩阵的另一维 CSF 索引；名称不预设全库统一 CSR/CSC 方向；源码建议；已实施 |
 | `NTPITMP` | 10 | 模块变量 | `INTEGER; DIMENSION(6)` | 待核实 | 待核实语义及命名 |
 | `NELMNTTMP` | 11 | 模块变量 | `INTEGER(KIND = LONG)` | 待核实 | 待核实语义及命名 |
 | `NCFTMP` | 12 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
@@ -35047,9 +35050,9 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `ISTDE` | 10 | 模块变量 | `INTEGER` | `stderr_unit` | 标准错误逻辑单元；源码建议 |
-| `ISTDI` | 10 | 模块变量 | `INTEGER` | `stdin_unit` | 标准输入逻辑单元；源码建议 |
-| `ISTDO` | 10 | 模块变量 | `INTEGER` | `stdout_unit` | 标准输出逻辑单元；源码建议 |
+| `ISTDE` | 10 | 模块变量 | `INTEGER` | `stderr_unit` | 标准错误逻辑单元；源码建议；已实施 |
+| `ISTDI` | 10 | 模块变量 | `INTEGER` | `stdin_unit` | 标准输入逻辑单元；源码建议；已实施 |
+| `ISTDO` | 10 | 模块变量 | `INTEGER` | `stdout_unit` | 标准输出逻辑单元；源码建议；已实施 |
 
 <a id="file-1610"></a>
 
@@ -35061,11 +35064,11 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `l_shell` | 19 | 成员 | `INTEGER` | `subshell_l` | 子壳层轨道角动量 l；源码建议 |
+| `l_shell` | 19 | 成员 | `INTEGER` | `subshell_l` | 子壳层轨道角动量 l；源码建议；已实施 |
 | `w` | 20 | 成员 | `INTEGER` | 待核实 | 待核实语义及命名 |
-| `Q` | 21 | 成员 | `INTEGER` | `subshell_two_quasispin` | 子壳层总准自旋 2Q；源码建议 |
-| `LL` | 22 | 成员 | `INTEGER` | `subshell_two_l` | 子壳层总轨道角动量 2L；源码建议 |
-| `S` | 23 | 成员 | `INTEGER` | `subshell_two_s` | 子壳层总自旋 2S；源码建议 |
+| `Q` | 21 | 成员 | `INTEGER` | `subshell_two_quasispin` | 子壳层总准自旋 2Q；源码建议；已实施 |
+| `LL` | 22 | 成员 | `INTEGER` | `subshell_two_l` | 子壳层总轨道角动量 2L；源码建议；已实施 |
+| `S` | 23 | 成员 | `INTEGER` | `subshell_two_s` | 子壳层总自旋 2S；源码建议；已实施 |
 
 作用域：`module:jj2lsj_c/type:ls_jj_me`
 
@@ -35493,9 +35496,9 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `KMAX` | 6 | 模块变量 | `INTEGER` | `max_coulomb_multipole_rank` | 两电子 Coulomb 角系数的最大多极秩 k；源码建议 |
-| `DIAG` | 7 | 模块变量 | `LOGICAL` | `diagonal_only` | 是否只计算对角 CSF 对；源码建议 |
-| `LFORDR` | 7 | 模块变量 | `LOGICAL` | `use_first_order_restriction` | 是否使用结合 ICCUT 的一阶空间限制；源码建议 |
+| `KMAX` | 6 | 模块变量 | `INTEGER` | `max_coulomb_multipole_rank` | 两电子 Coulomb 角系数的最大多极秩 k；源码建议；已实施 |
+| `DIAG` | 7 | 模块变量 | `LOGICAL` | `diagonal_only` | 是否只计算对角 CSF 对；源码建议；已实施 |
+| `LFORDR` | 7 | 模块变量 | `LOGICAL` | `use_first_order_restriction` | 是否使用结合 ICCUT 的一阶空间限制；源码建议；已实施 |
 
 <a id="file-1626"></a>
 
@@ -35507,7 +35510,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `KMAXF` | 6 | 模块变量 | `INTEGER` | `max_mcp_file_multipole_rank` | 从 MCP 输入文件侧使用的最大多极秩；源码建议 |
+| `KMAXF` | 6 | 模块变量 | `INTEGER` | `max_mcp_file_multipole_rank` | 从 MCP 输入文件侧使用的最大多极秩；源码建议；已实施 |
 
 <a id="file-1627"></a>
 
@@ -35550,249 +35553,249 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 29 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `first` | 30 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议 |
-| `last` | 30 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议 |
-| `sub` | 31 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 31 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 32 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 29 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `first` | 30 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议；已实施 |
+| `last` | 30 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议；已实施 |
+| `sub` | 31 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 31 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 32 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_1i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 53 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n` | 54 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 55 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 55 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 56 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 53 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n` | 54 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 55 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 55 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 56 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_2i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 77 | 形参 | `INTEGER; POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n1` | 78 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 78 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `sub` | 79 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 79 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 80 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 77 | 形参 | `INTEGER; POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n1` | 78 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 78 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `sub` | 79 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 79 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 80 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_3i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 101 | 形参 | `INTEGER; POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n1` | 102 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 102 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `n3` | 102 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议 |
-| `sub` | 103 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 103 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 104 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 101 | 形参 | `INTEGER; POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n1` | 102 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 102 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `n3` | 102 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议；已实施 |
+| `sub` | 103 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 103 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 104 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_1il`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 125 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n` | 126 | 形参 | `INTEGER(KIND = LONG); INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 127 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 127 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 128 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 125 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n` | 126 | 形参 | `INTEGER(KIND = LONG); INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 127 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 127 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 128 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_1r`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 149 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n` | 150 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 151 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 151 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 152 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 149 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n` | 150 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 151 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 151 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 152 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_2r`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 173 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n1` | 174 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 174 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `sub` | 175 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 175 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 176 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 173 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n1` | 174 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 174 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `sub` | 175 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 175 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 176 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_1rl`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 197 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n` | 198 | 形参 | `INTEGER(KIND = LONG); INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 199 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 199 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 200 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 197 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n` | 198 | 形参 | `INTEGER(KIND = LONG); INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 199 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 199 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 200 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_0b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 221 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `first` | 222 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议 |
-| `last` | 222 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议 |
-| `sub` | 223 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 223 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 224 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 221 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `first` | 222 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议；已实施 |
+| `last` | 222 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议；已实施 |
+| `sub` | 223 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 223 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 224 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_1b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 245 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n` | 246 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 247 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 247 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 248 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 245 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n` | 246 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 247 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 247 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 248 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_2b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 269 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n1` | 270 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 270 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `sub` | 271 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 271 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 272 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 269 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n1` | 270 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 270 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `sub` | 271 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 271 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 272 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_3b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 293 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n1` | 294 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 294 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `n3` | 294 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议 |
-| `sub` | 295 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 295 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 296 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 293 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n1` | 294 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 294 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `n3` | 294 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议；已实施 |
+| `sub` | 295 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 295 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 296 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_1c`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 318 | 形参 | `CHARACTER(LEN = *); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n` | 319 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 320 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 320 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 321 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 318 | 形参 | `CHARACTER(LEN = *); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n` | 319 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 320 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 320 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 321 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_1i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 341 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 342 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 342 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 341 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 342 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 342 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_2i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 354 | 形参 | `INTEGER; POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 355 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 355 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 354 | 形参 | `INTEGER; POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 355 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 355 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_3i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 367 | 形参 | `INTEGER; POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 368 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 368 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 367 | 形参 | `INTEGER; POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 368 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 368 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_1r`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 380 | 形参 | `REAL(KIND = DOUBLE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 381 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 381 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 380 | 形参 | `REAL(KIND = DOUBLE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 381 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 381 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_2r`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 393 | 形参 | `REAL(KIND = DOUBLE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 394 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 394 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 393 | 形参 | `REAL(KIND = DOUBLE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 394 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 394 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_1b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 406 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 407 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 407 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 406 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 407 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 407 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_2b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 419 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 420 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 420 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 419 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 420 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 420 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_3b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 432 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 433 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 433 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 432 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 433 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 433 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_1c`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 445 | 形参 | `CHARACTER(LEN = 256); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 446 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 446 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 445 | 形参 | `CHARACTER(LEN = 256); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 446 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 446 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:ralloc_0i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 459 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 459 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 459 | 局部变量 | `INTEGER; POINTER, DIMENSION(:)` | 待核实 | 待核实语义及命名 |
-| `first` | 460 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议 |
-| `last` | 460 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议 |
-| `sub` | 461 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 461 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 462 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `first` | 460 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议；已实施 |
+| `last` | 460 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议；已实施 |
+| `sub` | 461 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 461 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 462 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `nold` | 462 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
 作用域：`module:memory_man/subroutine:ralloc_1i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 487 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 487 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 487 | 局部变量 | `INTEGER; POINTER, DIMENSION(:)` | 待核实 | 待核实语义及命名 |
-| `n` | 488 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 489 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 489 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 490 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n` | 488 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 489 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 489 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 490 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `nold` | 490 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
 作用域：`module:memory_man/subroutine:ralloc_2i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 513 | 形参 | `INTEGER; POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 513 | 形参 | `INTEGER; POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 513 | 局部变量 | `INTEGER; POINTER, DIMENSION(:, :)` | 待核实 | 待核实语义及命名 |
-| `n1` | 514 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 514 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `sub` | 515 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 515 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 516 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n1` | 514 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 514 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `sub` | 515 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 515 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 516 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `n1_old` | 516 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n2_old` | 516 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
@@ -35800,14 +35803,14 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 541 | 形参 | `INTEGER; POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 541 | 形参 | `INTEGER; POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 541 | 局部变量 | `INTEGER; POINTER, DIMENSION(:, :, :)` | 待核实 | 待核实语义及命名 |
-| `n1` | 542 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 542 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `n3` | 542 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议 |
-| `sub` | 543 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 543 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 544 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n1` | 542 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 542 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `n3` | 542 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议；已实施 |
+| `sub` | 543 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 543 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 544 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `n1_old` | 544 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n2_old` | 544 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n3_old` | 544 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
@@ -35816,25 +35819,25 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 570 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 570 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 570 | 局部变量 | `REAL(KIND = double); POINTER, DIMENSION(:)` | 待核实 | 待核实语义及命名 |
-| `n` | 571 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 572 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 572 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 573 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n` | 571 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 572 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 572 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 573 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `nold` | 573 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
 作用域：`module:memory_man/subroutine:ralloc_2r`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 597 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 597 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 597 | 局部变量 | `REAL(KIND = double); POINTER, DIMENSION(:, :)` | 待核实 | 待核实语义及命名 |
-| `n1` | 598 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 598 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `sub` | 599 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 599 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 600 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n1` | 598 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 598 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `sub` | 599 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 599 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 600 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `n1_old` | 600 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n2_old` | 600 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
@@ -35842,38 +35845,38 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 625 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 625 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 625 | 局部变量 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | 待核实 | 待核实语义及命名 |
-| `first` | 626 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议 |
-| `last` | 626 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议 |
-| `sub` | 627 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 627 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 628 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `first` | 626 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议；已实施 |
+| `last` | 626 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议；已实施 |
+| `sub` | 627 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 627 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 628 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `nold` | 628 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
 作用域：`module:memory_man/subroutine:ralloc_1b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 652 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 652 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 652 | 局部变量 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | 待核实 | 待核实语义及命名 |
-| `n` | 653 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 654 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 654 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 655 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n` | 653 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 654 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 654 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 655 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `nold` | 655 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
 作用域：`module:memory_man/subroutine:ralloc_2b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 678 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 678 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 678 | 局部变量 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | 待核实 | 待核实语义及命名 |
-| `n1` | 679 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 679 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `sub` | 680 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 680 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 681 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n1` | 679 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 679 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `sub` | 680 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 680 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 681 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `n1_old` | 681 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n2_old` | 681 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
@@ -35881,14 +35884,14 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 706 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 706 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 706 | 局部变量 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | 待核实 | 待核实语义及命名 |
-| `n1` | 707 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 707 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `n3` | 707 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议 |
-| `sub` | 708 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 708 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 709 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n1` | 707 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 707 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `n3` | 707 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议；已实施 |
+| `sub` | 708 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 708 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 709 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `i` | 709 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n1_old` | 709 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n2_old` | 709 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
@@ -35898,12 +35901,12 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 739 | 形参 | `CHARACTER(LEN = 256); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 739 | 形参 | `CHARACTER(LEN = 256); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 739 | 局部变量 | `CHARACTER(LEN = 256); POINTER, DIMENSION(:)` | 待核实 | 待核实语义及命名 |
-| `n` | 740 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 741 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 741 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 742 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n` | 740 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 741 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 741 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 742 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `nold` | 742 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
 <a id="file-1630"></a>
@@ -35916,249 +35919,249 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 29 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `first` | 30 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议 |
-| `last` | 30 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议 |
-| `sub` | 31 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 31 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 32 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 29 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `first` | 30 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议；已实施 |
+| `last` | 30 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议；已实施 |
+| `sub` | 31 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 31 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 32 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_1i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 52 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n` | 53 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 54 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 54 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 55 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 52 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n` | 53 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 54 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 54 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 55 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_2i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 75 | 形参 | `INTEGER; POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n1` | 76 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 76 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `sub` | 77 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 77 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 78 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 75 | 形参 | `INTEGER; POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n1` | 76 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 76 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `sub` | 77 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 77 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 78 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_3i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 98 | 形参 | `INTEGER; POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n1` | 99 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 99 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `n3` | 99 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议 |
-| `sub` | 100 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 100 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 101 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 98 | 形参 | `INTEGER; POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n1` | 99 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 99 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `n3` | 99 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议；已实施 |
+| `sub` | 100 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 100 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 101 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_1il`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 121 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n` | 122 | 形参 | `INTEGER(KIND = LONG); INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 123 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 123 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 124 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 121 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n` | 122 | 形参 | `INTEGER(KIND = LONG); INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 123 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 123 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 124 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_1r`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 144 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n` | 145 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 146 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 146 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 147 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 144 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n` | 145 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 146 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 146 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 147 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_2r`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 167 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n1` | 168 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 168 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `sub` | 169 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 169 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 170 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 167 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n1` | 168 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 168 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `sub` | 169 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 169 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 170 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_1rl`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 190 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n` | 191 | 形参 | `INTEGER(KIND = LONG); INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 192 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 192 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 193 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 190 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n` | 191 | 形参 | `INTEGER(KIND = LONG); INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 192 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 192 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 193 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_0b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 213 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `first` | 214 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议 |
-| `last` | 214 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议 |
-| `sub` | 215 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 215 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 216 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 213 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `first` | 214 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议；已实施 |
+| `last` | 214 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议；已实施 |
+| `sub` | 215 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 215 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 216 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_1b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 236 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n` | 237 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 238 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 238 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 239 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 236 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n` | 237 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 238 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 238 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 239 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_2b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 259 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n1` | 260 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 260 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `sub` | 261 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 261 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 262 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 259 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n1` | 260 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 260 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `sub` | 261 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 261 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 262 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_3b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 282 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n1` | 283 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 283 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `n3` | 283 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议 |
-| `sub` | 284 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 284 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 285 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 282 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n1` | 283 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 283 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `n3` | 283 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议；已实施 |
+| `sub` | 284 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 284 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 285 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:alloc_1c`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 305 | 形参 | `CHARACTER(LEN = 256); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `n` | 306 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 307 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 307 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 308 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `p` | 305 | 形参 | `CHARACTER(LEN = 256); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `n` | 306 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 307 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 307 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 308 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_1i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 328 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 329 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 329 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 328 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 329 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 329 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_2i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 341 | 形参 | `INTEGER; POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 342 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 342 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 341 | 形参 | `INTEGER; POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 342 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 342 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_3i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 354 | 形参 | `INTEGER; POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 355 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 355 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 354 | 形参 | `INTEGER; POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 355 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 355 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_1r`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 367 | 形参 | `REAL(KIND = DOUBLE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 368 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 368 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 367 | 形参 | `REAL(KIND = DOUBLE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 368 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 368 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_2r`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 380 | 形参 | `REAL(KIND = DOUBLE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 381 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 381 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 380 | 形参 | `REAL(KIND = DOUBLE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 381 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 381 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_1b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 393 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 394 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 394 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 393 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 394 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 394 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_2b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 406 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 407 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 407 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 406 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 407 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 407 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_3b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 419 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 420 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 420 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 419 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 420 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 420 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:dalloc_1c`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 432 | 形参 | `CHARACTER(LEN = 256); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
-| `sub` | 433 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 433 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
+| `p` | 432 | 形参 | `CHARACTER(LEN = 256); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
+| `sub` | 433 | 形参 | `CHARACTER(LEN = *)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 433 | 形参 | `CHARACTER(LEN = *)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
 
 作用域：`module:memory_man/subroutine:ralloc_0i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 446 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 446 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 446 | 局部变量 | `INTEGER; POINTER, DIMENSION(:)` | 待核实 | 待核实语义及命名 |
-| `first` | 447 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议 |
-| `last` | 447 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议 |
-| `sub` | 448 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 448 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 449 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `first` | 447 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议；已实施 |
+| `last` | 447 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议；已实施 |
+| `sub` | 448 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 448 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 449 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `nold` | 449 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
 作用域：`module:memory_man/subroutine:ralloc_1i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 474 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 474 | 形参 | `INTEGER; POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 474 | 局部变量 | `INTEGER; POINTER, DIMENSION(:)` | 待核实 | 待核实语义及命名 |
-| `n` | 475 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 476 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 476 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 477 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n` | 475 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 476 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 476 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 477 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `nold` | 477 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
 作用域：`module:memory_man/subroutine:ralloc_2i`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 500 | 形参 | `INTEGER; POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 500 | 形参 | `INTEGER; POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 500 | 局部变量 | `INTEGER; POINTER, DIMENSION(:, :)` | 待核实 | 待核实语义及命名 |
-| `n1` | 501 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 501 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `sub` | 502 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 502 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 503 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n1` | 501 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 501 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `sub` | 502 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 502 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 503 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `n1_old` | 503 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n2_old` | 503 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
@@ -36166,14 +36169,14 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 528 | 形参 | `INTEGER; POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 528 | 形参 | `INTEGER; POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 528 | 局部变量 | `INTEGER; POINTER, DIMENSION(:, :, :)` | 待核实 | 待核实语义及命名 |
-| `n1` | 529 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 529 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `n3` | 529 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议 |
-| `sub` | 530 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 530 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 531 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n1` | 529 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 529 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `n3` | 529 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议；已实施 |
+| `sub` | 530 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 530 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 531 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `n1_old` | 531 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n2_old` | 531 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n3_old` | 531 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
@@ -36182,25 +36185,25 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 557 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 557 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 557 | 局部变量 | `REAL(KIND = double); POINTER, DIMENSION(:)` | 待核实 | 待核实语义及命名 |
-| `n` | 558 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 559 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 559 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 560 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n` | 558 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 559 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 559 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 560 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `nold` | 560 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
 作用域：`module:memory_man/subroutine:ralloc_2r`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 584 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 584 | 形参 | `REAL(KIND = double); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 584 | 局部变量 | `REAL(KIND = double); POINTER, DIMENSION(:, :)` | 待核实 | 待核实语义及命名 |
-| `n1` | 585 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 585 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `sub` | 586 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 586 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 587 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n1` | 585 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 585 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `sub` | 586 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 586 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 587 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `n1_old` | 587 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n2_old` | 587 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
@@ -36208,38 +36211,38 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 612 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 612 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 612 | 局部变量 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | 待核实 | 待核实语义及命名 |
-| `first` | 613 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议 |
-| `last` | 613 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议 |
-| `sub` | 614 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 614 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 615 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `first` | 613 | 形参 | `INTEGER; INTENT(IN)` | `lower_bound` | 目标数组下界；内存接口建议；已实施 |
+| `last` | 613 | 形参 | `INTEGER; INTENT(IN)` | `upper_bound` | 目标数组上界；内存接口建议；已实施 |
+| `sub` | 614 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 614 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 615 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `nold` | 615 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
 作用域：`module:memory_man/subroutine:ralloc_1b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 639 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 639 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 639 | 局部变量 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:)` | 待核实 | 待核实语义及命名 |
-| `n` | 640 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 641 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 641 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 642 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n` | 640 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 641 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 641 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 642 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `nold` | 642 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
 作用域：`module:memory_man/subroutine:ralloc_2b`
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 665 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 665 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 665 | 局部变量 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :)` | 待核实 | 待核实语义及命名 |
-| `n1` | 666 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 666 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `sub` | 667 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 667 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 668 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n1` | 666 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 666 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `sub` | 667 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 667 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 668 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `n1_old` | 668 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n2_old` | 668 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
@@ -36247,14 +36250,14 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 693 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 693 | 形参 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 693 | 局部变量 | `INTEGER(KIND = BYTE); POINTER, DIMENSION(:, :, :)` | 待核实 | 待核实语义及命名 |
-| `n1` | 694 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议 |
-| `n2` | 694 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议 |
-| `n3` | 694 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议 |
-| `sub` | 695 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 695 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 696 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n1` | 694 | 形参 | `INTEGER; INTENT(IN)` | `first_dimension_size` | 第一维尺寸；内存接口建议；已实施 |
+| `n2` | 694 | 形参 | `INTEGER; INTENT(IN)` | `second_dimension_size` | 第二维尺寸；内存接口建议；已实施 |
+| `n3` | 694 | 形参 | `INTEGER; INTENT(IN)` | `third_dimension_size` | 第三维尺寸；内存接口建议；已实施 |
+| `sub` | 695 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 695 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 696 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `i` | 696 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n1_old` | 696 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 | `n2_old` | 696 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
@@ -36264,12 +36267,12 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `p` | 726 | 形参 | `CHARACTER(LEN = 256); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议 |
+| `p` | 726 | 形参 | `CHARACTER(LEN = 256); POINTER, DIMENSION(:)` | `array_pointer` | 本次分配、重分配或释放操作的数组指针；内存接口建议；已实施 |
 | `pnew` | 726 | 局部变量 | `CHARACTER(LEN = 256); POINTER, DIMENSION(:)` | 待核实 | 待核实语义及命名 |
-| `n` | 727 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议 |
-| `sub` | 728 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议 |
-| `var` | 728 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议 |
-| `error` | 729 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议 |
+| `n` | 727 | 形参 | `INTEGER; INTENT(IN)` | `element_count` | 请求的一维元素数量；内存接口建议；已实施 |
+| `sub` | 728 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `caller_label` | 分配诊断使用的调用过程标签字符串；内存接口建议；已实施 |
+| `var` | 728 | 形参 | `CHARACTER(LEN = *); INTENT(IN)` | `variable_label` | 分配诊断使用的变量标签字符串；内存接口建议；已实施 |
+| `error` | 729 | 局部变量 | `INTEGER` | `allocation_status` | ALLOCATE/DEALLOCATE 的 STAT 状态码；内存接口建议；已实施 |
 | `nold` | 729 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
 
 <a id="file-1631"></a>
@@ -36346,8 +36349,8 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `NPARM` | 11 | 模块变量 | `INTEGER` | `nuclear_model_parameter_count` | 核模型参数个数；0 对应点核、2 对应 Fermi 模型；源码建议 |
-| `PARM` | 12 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(2)` | `nuclear_model_parameters` | 核模型参数数组；Fermi 分支依次读取 c 与 a；源码建议 |
+| `NPARM` | 11 | 模块变量 | `INTEGER` | `nuclear_model_parameter_count` | 核模型参数个数；0 对应点核、2 对应 Fermi 模型；源码建议；已实施 |
+| `PARM` | 12 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(2)` | `nuclear_model_parameters` | 核模型参数数组；Fermi 分支依次读取 c 与 a；源码建议；已实施 |
 
 作用域：`module:nsmdat_c`
 
@@ -36428,8 +36431,8 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `NNUC` | 7 | 模块变量 | `INTEGER` | `first_grid_index_beyond_fermi_c` | Fermi 分支首次满足 r/c > 1 的网格索引；不可泛称核半径；源码建议 |
-| `ZZ` | 8 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNP)` | `negative_radius_times_potential` | 存储的是 -r V(r)；加入核极化后的使用路径也需保持此约定；源码建议 |
+| `NNUC` | 7 | 模块变量 | `INTEGER` | `first_grid_index_beyond_fermi_c` | Fermi 分支首次满足 r/c > 1 的网格索引；不可泛称核半径；源码建议；已实施 |
+| `ZZ` | 8 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNP)` | `negative_radius_times_potential` | 存储的是 -r V(r)；加入核极化后的使用路径也需保持此约定；源码建议；已实施 |
 
 <a id="file-1639"></a>
 
@@ -36454,23 +36457,23 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `NH` | 13 | 模块变量 | `CHARACTER(LEN = 2); DIMENSION(NNNW)` | `orbital_symmetry_labels` | 各相对子壳层的字符标签；源码建议 |
+| `NH` | 13 | 模块变量 | `CHARACTER(LEN = 2); DIMENSION(NNNW)` | `orbital_symmetry_labels` | 各相对子壳层的字符标签；源码建议；已实施 |
 | `NHR` | 14 | 模块变量 | `CHARACTER(LEN = 2); DIMENSION(NNNW)` | 待核实 | 待核实语义及命名 |
-| `E` | 15 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | `orbital_energy_parameters` | 轨道能量参数；保留当前 E 的符号与零点约定；源码建议 |
-| `GAMA` | 15 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | `orbital_origin_exponents` | 近原点径向展开使用的 gamma 指数；源码建议 |
+| `E` | 15 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | `orbital_energy_parameters` | 轨道能量参数；保留当前 E 的符号与零点约定；源码建议；已实施 |
+| `GAMA` | 15 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | `orbital_origin_exponents` | 近原点径向展开使用的 gamma 指数；源码建议；已实施 |
 | `PED` | 15 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | 待核实 | 待核实语义及命名 |
-| `NCF` | 16 | 模块变量 | `INTEGER` | `csf_count` | 当前所处理 CSF 空间的大小；分块路径中是当前块大小；源码建议 |
+| `NCF` | 16 | 模块变量 | `INTEGER` | `csf_count` | 当前所处理 CSF 空间的大小；分块路径中是当前块大小；源码建议；已实施 |
 | `NCFR` | 16 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
-| `NW` | 16 | 模块变量 | `INTEGER` | `orbital_count` | 当前轨道/相对子壳层数；源码建议 |
+| `NW` | 16 | 模块变量 | `INTEGER` | `orbital_count` | 当前轨道/相对子壳层数；源码建议；已实施 |
 | `NWR` | 16 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
-| `IQA` | 17 | 模块变量 | `INTEGER(KIND = BYTE); DIMENSION(:, :), POINTER` | `csf_subshell_occupations` | 轨道与 CSF 对应的占据数表；源码建议 |
+| `IQA` | 17 | 模块变量 | `INTEGER(KIND = BYTE); DIMENSION(:, :), POINTER` | `csf_subshell_occupations` | 轨道与 CSF 对应的占据数表；源码建议；已实施 |
 | `IQAR` | 18 | 模块变量 | `INTEGER; DIMENSION(:, :), POINTER` | 待核实 | 待核实语义及命名 |
-| `NAK` | 19 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | `orbital_kappa` | 各轨道的相对论量子数 kappa；源码建议 |
+| `NAK` | 19 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | `orbital_kappa` | 各轨道的相对论量子数 kappa；源码建议；已实施 |
 | `NAKR` | 19 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | 待核实 | 待核实语义及命名 |
-| `NP` | 19 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | `orbital_principal_n` | 各轨道的主量子数；源码建议 |
+| `NP` | 19 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | `orbital_principal_n` | 各轨道的主量子数；源码建议；已实施 |
 | `NPR` | 19 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | 待核实 | 待核实语义及命名 |
-| `NKJ` | 20 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | `orbital_two_j` | 各轨道的 2j；NKJ+1 是子壳层容量；源码建议 |
-| `NKL` | 20 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | `orbital_l` | 各轨道的轨道角动量 l；源码建议 |
+| `NKJ` | 20 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | `orbital_two_j` | 各轨道的 2j；NKJ+1 是子壳层容量；源码建议；已实施 |
+| `NKL` | 20 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | `orbital_l` | 各轨道的轨道角动量 l；源码建议；已实施 |
 
 <a id="file-1641"></a>
 
@@ -36586,11 +36589,11 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `NCFTOT` | 6 | 模块变量 | `INTEGER` | `total_csf_count` | 所有对称性块合计 CSF 数；源码建议 |
-| `NVECSIZ` | 6 | 模块变量 | `INTEGER` | `mixing_coefficient_storage_size` | 展开系数存储区的总长度；源码建议 |
-| `ncfpast` | 7 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `csf_offsets_by_block` | 当前块之前的 CSF 累计偏移；源码建议 |
-| `ncminpast` | 8 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `eigenvalue_offsets_by_block` | 当前块之前的目标态/本征值累计偏移；源码建议 |
-| `nevecpast` | 8 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `mixing_offsets_by_block` | 当前块之前的展开系数累计偏移；源码建议 |
+| `NCFTOT` | 6 | 模块变量 | `INTEGER` | `total_csf_count` | 所有对称性块合计 CSF 数；源码建议；已实施 |
+| `NVECSIZ` | 6 | 模块变量 | `INTEGER` | `mixing_coefficient_storage_size` | 展开系数存储区的总长度；源码建议；已实施 |
+| `ncfpast` | 7 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `csf_offsets_by_block` | 当前块之前的 CSF 累计偏移；源码建议；已实施 |
+| `ncminpast` | 8 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `eigenvalue_offsets_by_block` | 当前块之前的目标态/本征值累计偏移；源码建议；已实施 |
+| `nevecpast` | 8 | 模块变量 | `INTEGER; DIMENSION(:), POINTER` | `mixing_offsets_by_block` | 当前块之前的展开系数累计偏移；源码建议；已实施 |
 
 <a id="file-1649"></a>
 
@@ -36713,10 +36716,10 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `TCOEFF` | 13 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:, :), POINTER` | `channel_coefficients` | 按通道缓存的角系数值；源码建议 |
-| `IICLMN` | 14 | 模块变量 | `INTEGER; DIMENSION(:, :), POINTER` | `channel_csf_columns` | 按通道记录的 JA/CSF 列号；源码建议 |
-| `IINDEX` | 14 | 模块变量 | `INTEGER; DIMENSION(:, :), POINTER` | `channel_matrix_positions` | 按通道记录的矩阵位置索引 npos；源码建议 |
-| `ILABEL` | 14 | 模块变量 | `INTEGER; DIMENSION(:, :), POINTER` | `channel_packed_orbital_labels` | 按通道记录的打包轨道标签；源码建议 |
+| `TCOEFF` | 13 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:, :), POINTER` | `channel_coefficients` | 按通道缓存的角系数值；源码建议；已实施 |
+| `IICLMN` | 14 | 模块变量 | `INTEGER; DIMENSION(:, :), POINTER` | `channel_csf_columns` | 按通道记录的 JA/CSF 列号；源码建议；已实施 |
+| `IINDEX` | 14 | 模块变量 | `INTEGER; DIMENSION(:, :), POINTER` | `channel_matrix_positions` | 按通道记录的矩阵位置索引 npos；源码建议；已实施 |
+| `ILABEL` | 14 | 模块变量 | `INTEGER; DIMENSION(:, :), POINTER` | `channel_packed_orbital_labels` | 按通道记录的打包轨道标签；源码建议；已实施 |
 
 <a id="file-1657"></a>
 
@@ -36810,9 +36813,9 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
 | `jqsar` | 12 | 模块变量 | `INTEGER; DIMENSION(:, :, :), POINTER` | 待核实 | 待核实语义及命名 |
-| `jqsa` | 13 | 模块变量 | `INTEGER(KIND = BYTE); DIMENSION(:, :, :), POINTER` | `csf_subshell_quantum_codes` | 每个 CSF 的子壳层量子数编码表；各维编码需保留；源码建议 |
+| `jqsa` | 13 | 模块变量 | `INTEGER(KIND = BYTE); DIMENSION(:, :, :), POINTER` | `csf_subshell_quantum_codes` | 每个 CSF 的子壳层量子数编码表；各维编码需保留；源码建议；已实施 |
 | `jcupar` | 14 | 模块变量 | `INTEGER; DIMENSION(:, :), POINTER` | 待核实 | 待核实语义及命名 |
-| `jcupa` | 15 | 模块变量 | `INTEGER(KIND = BYTE); DIMENSION(:, :), POINTER` | `csf_coupling_quantum_codes` | 每个 CSF 的中间耦合量子数编码表；源码建议 |
+| `jcupa` | 15 | 模块变量 | `INTEGER(KIND = BYTE); DIMENSION(:, :), POINTER` | `csf_coupling_quantum_codes` | 每个 CSF 的中间耦合量子数编码表；源码建议；已实施 |
 
 <a id="file-1662"></a>
 
@@ -36851,12 +36854,12 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `KEYORB` | 8 | 常量 | `INTEGER; PARAMETER` | `orbital_index_radix` | 轨道索引打包的基数；不是轨道数量；源码建议 |
-| `NNNP` | 9 | 常量 | `INTEGER; PARAMETER` | `max_radial_points` | 编译期径向网格容量；源码建议 |
-| `NNN1` | 10 | 常量 | `INTEGER; PARAMETER` | `radial_workspace_capacity` | 含额外 10 点的径向工作区容量；源码建议 |
-| `NNNW` | 11 | 常量 | `INTEGER; PARAMETER` | `max_orbitals` | 编译期轨道/相对子壳层容量；源码建议 |
-| `NNNWM1` | 12 | 常量 | `INTEGER; PARAMETER` | `max_orbitals_minus_one` | 轨道容量减一；源码建议 |
-| `NNNWM2` | 13 | 常量 | `INTEGER; PARAMETER` | `max_orbitals_minus_two` | 轨道容量减二；源码建议 |
+| `KEYORB` | 8 | 常量 | `INTEGER; PARAMETER` | `orbital_index_radix` | 轨道索引打包的基数；不是轨道数量；源码建议；已实施 |
+| `NNNP` | 9 | 常量 | `INTEGER; PARAMETER` | `max_radial_points` | 编译期径向网格容量；源码建议；已实施 |
+| `NNN1` | 10 | 常量 | `INTEGER; PARAMETER` | `radial_workspace_capacity` | 含额外 10 点的径向工作区容量；源码建议；已实施 |
+| `NNNW` | 11 | 常量 | `INTEGER; PARAMETER` | `max_orbitals` | 编译期轨道/相对子壳层容量；源码建议；已实施 |
+| `NNNWM1` | 12 | 常量 | `INTEGER; PARAMETER` | `max_orbitals_minus_one` | 轨道容量减一；源码建议；已实施 |
+| `NNNWM2` | 13 | 常量 | `INTEGER; PARAMETER` | `max_orbitals_minus_two` | 轨道容量减二；源码建议；已实施 |
 
 <a id="file-1665"></a>
 
@@ -37012,14 +37015,14 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `MF` | 7 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | `orbital_last_grid_index` | 每个轨道存储的有效径向范围终点索引；源码建议 |
-| `PZ` | 8 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | `orbital_origin_parameters` | 各轨道的近原点展开/斜率参数；不能当作普通网格上的 P(0)；源码建议 |
+| `MF` | 7 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | `orbital_last_grid_index` | 每个轨道存储的有效径向范围终点索引；源码建议；已实施 |
+| `PZ` | 8 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | `orbital_origin_parameters` | 各轨道的近原点展开/斜率参数；不能当作普通网格上的 P(0)；源码建议；已实施 |
 | `MFFF` | 9 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | 待核实 | 待核实语义及命名 |
 | `PZFF` | 10 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | 待核实 | 待核实语义及命名 |
 | `MFII` | 11 | 模块变量 | `INTEGER; DIMENSION(NNNW)` | 待核实 | 待核实语义及命名 |
 | `PZII` | 12 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(NNNW)` | 待核实 | 待核实语义及命名 |
-| `PF` | 13 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:, :), POINTER` | `radial_large_components` | 各轨道的径向大分量表；源码建议 |
-| `QF` | 13 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:, :), POINTER` | `radial_small_components` | 各轨道的径向小分量表；源码建议 |
+| `PF` | 13 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:, :), POINTER` | `radial_large_components` | 各轨道的径向大分量表；源码建议；已实施 |
+| `QF` | 13 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:, :), POINTER` | `radial_small_components` | 各轨道的径向小分量表；源码建议；已实施 |
 | `pfff` | 14 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:, :), POINTER` | 待核实 | 待核实语义及命名 |
 | `pfii` | 14 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:, :), POINTER` | 待核实 | 待核实语义及命名 |
 | `qfff` | 14 | 模块变量 | `REAL(KIND = DOUBLE); DIMENSION(:, :), POINTER` | 待核实 | 待核实语义及命名 |
@@ -40757,7 +40760,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `CORD` | 45 | 过程形参 | `PROCEDURE(cord_callback)` | `coefficient_consumer` | 角系数处理回调；接口联动建议 |
+| `CORD` | 45 | 过程形参 | `PROCEDURE(cord_callback)` | `coefficient_consumer` | 角系数处理回调；接口联动建议；已实施 |
 | `ICOLBREI` | 50 | 形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
 | `INCOR` | 50 | 形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
 | `JA` | 50 | 形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
@@ -40803,7 +40806,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `CORD` | 7 | 过程形参 | `PROCEDURE(cord_callback)` | `coefficient_consumer` | 角系数处理回调；接口联动建议 |
+| `CORD` | 7 | 过程形参 | `PROCEDURE(cord_callback)` | `coefficient_consumer` | 角系数处理回调；接口联动建议；已实施 |
 | `ICOLBREI` | 8 | 接口形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
 | `INCOR` | 8 | 接口形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
 | `JA` | 8 | 接口形参 | `INTEGER; INTENT(IN)` | 待核实 | 待核实语义及命名 |
@@ -40853,19 +40856,19 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `I` | 38 | 形参 | `INTEGER` | `two_j1` | 6j 符号第一行第 1 个角动量的二倍；源码建议 |
-| `J` | 38 | 形参 | `INTEGER` | `two_j2` | 6j 符号第一行第 2 个角动量的二倍；源码建议 |
-| `K` | 38 | 形参 | `INTEGER` | `two_j3` | 6j 符号第一行第 3 个角动量的二倍；源码建议 |
-| `L` | 38 | 形参 | `INTEGER` | `two_j4` | 6j 符号第二行第 1 个角动量的二倍；源码建议 |
-| `M` | 38 | 形参 | `INTEGER` | `two_j5` | 6j 符号第二行第 2 个角动量的二倍；源码建议 |
-| `N` | 38 | 形参 | `INTEGER` | `two_j6` | 6j 符号第二行第 3 个角动量的二倍；源码建议 |
-| `ITIK` | 39 | 形参 | `INTEGER; INTENT(IN)` | `check_triangle_conditions` | 非零时先检查三角条件；保持整数控制约定；源码建议 |
-| `SI` | 40 | 形参 | `REAL(KIND = DOUBLE)` | `six_j_value` | 计算出的 6j 符号值；源码建议 |
+| `I` | 38 | 形参 | `INTEGER` | `two_j1` | 6j 符号第一行第 1 个角动量的二倍；源码建议；已实施 |
+| `J` | 38 | 形参 | `INTEGER` | `two_j2` | 6j 符号第一行第 2 个角动量的二倍；源码建议；已实施 |
+| `K` | 38 | 形参 | `INTEGER` | `two_j3` | 6j 符号第一行第 3 个角动量的二倍；源码建议；已实施 |
+| `L` | 38 | 形参 | `INTEGER` | `two_j4` | 6j 符号第二行第 1 个角动量的二倍；源码建议；已实施 |
+| `M` | 38 | 形参 | `INTEGER` | `two_j5` | 6j 符号第二行第 2 个角动量的二倍；源码建议；已实施 |
+| `N` | 38 | 形参 | `INTEGER` | `two_j6` | 6j 符号第二行第 3 个角动量的二倍；源码建议；已实施 |
+| `ITIK` | 39 | 形参 | `INTEGER; INTENT(IN)` | `check_triangle_conditions` | 非零时先检查三角条件；保持整数控制约定；源码建议；已实施 |
+| `SI` | 40 | 形参 | `REAL(KIND = DOUBLE)` | `six_j_value` | 计算出的 6j 符号值；源码建议；已实施 |
 | `IFA` | 44 | 局部变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
-| `RACA` | 45 | 局部变量 | `REAL(KIND = DOUBLE); DIMENSION(0 : 4, 0 : 4, 0 : 4, 0 : 4, 0 : 4, 0 : 4)` | `small_six_j_cache` | 小角动量参数的 6j 缓存；源码建议 |
+| `RACA` | 45 | 局部变量 | `REAL(KIND = DOUBLE); DIMENSION(0 : 4, 0 : 4, 0 : 4, 0 : 4, 0 : 4, 0 : 4)` | `small_six_j_cache` | 小角动量参数的 6j 缓存；源码建议；已实施 |
 | `A` | 46 | 局部变量 | `REAL(KIND = DOUBLE)` | 待核实 | 待核实语义及命名 |
-| `UNDEF` | 46 | 局部变量 | `REAL(KIND = DOUBLE)` | `uncached_six_j_sentinel` | 尚未缓存的标记值；源码建议 |
-| `SAVE` | 47 | 局部变量 | `LOGICAL` | `store_in_six_j_cache` | 是否将本次结果写入缓存的逻辑变量；不是 SAVE 属性；源码建议 |
+| `UNDEF` | 46 | 局部变量 | `REAL(KIND = DOUBLE)` | `uncached_six_j_sentinel` | 尚未缓存的标记值；源码建议；已实施 |
+| `SAVE` | 47 | 局部变量 | `LOGICAL` | `store_in_six_j_cache` | 是否将本次结果写入缓存的逻辑变量；不是 SAVE 属性；源码建议；已实施 |
 
 <a id="file-1828"></a>
 
@@ -41137,14 +41140,14 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `I` | 6 | 接口形参 | `INTEGER; INTENT(IN)` | `two_j1` | 6j 符号第一行第 1 个角动量的二倍；接口联动建议 |
-| `J` | 7 | 接口形参 | `INTEGER; INTENT(IN)` | `two_j2` | 6j 符号第一行第 2 个角动量的二倍；接口联动建议 |
-| `K` | 8 | 接口形参 | `INTEGER; INTENT(IN)` | `two_j3` | 6j 符号第一行第 3 个角动量的二倍；接口联动建议 |
-| `L` | 9 | 接口形参 | `INTEGER; INTENT(IN)` | `two_j4` | 6j 符号第二行第 1 个角动量的二倍；接口联动建议 |
-| `M` | 10 | 接口形参 | `INTEGER; INTENT(IN)` | `two_j5` | 6j 符号第二行第 2 个角动量的二倍；接口联动建议 |
-| `N` | 11 | 接口形参 | `INTEGER; INTENT(IN)` | `two_j6` | 6j 符号第二行第 3 个角动量的二倍；接口联动建议 |
-| `ITIK` | 12 | 接口形参 | `INTEGER; INTENT(IN)` | `check_triangle_conditions` | 非零时先检查三角条件；保持整数控制约定；接口联动建议 |
-| `SI` | 13 | 接口形参 | `REAL(KIND = DOUBLE); INTENT(OUT)` | `six_j_value` | 计算出的 6j 符号值；接口联动建议 |
+| `I` | 6 | 接口形参 | `INTEGER; INTENT(IN)` | `two_j1` | 6j 符号第一行第 1 个角动量的二倍；接口联动建议；已实施 |
+| `J` | 7 | 接口形参 | `INTEGER; INTENT(IN)` | `two_j2` | 6j 符号第一行第 2 个角动量的二倍；接口联动建议；已实施 |
+| `K` | 8 | 接口形参 | `INTEGER; INTENT(IN)` | `two_j3` | 6j 符号第一行第 3 个角动量的二倍；接口联动建议；已实施 |
+| `L` | 9 | 接口形参 | `INTEGER; INTENT(IN)` | `two_j4` | 6j 符号第二行第 1 个角动量的二倍；接口联动建议；已实施 |
+| `M` | 10 | 接口形参 | `INTEGER; INTENT(IN)` | `two_j5` | 6j 符号第二行第 2 个角动量的二倍；接口联动建议；已实施 |
+| `N` | 11 | 接口形参 | `INTEGER; INTENT(IN)` | `two_j6` | 6j 符号第二行第 3 个角动量的二倍；接口联动建议；已实施 |
+| `ITIK` | 12 | 接口形参 | `INTEGER; INTENT(IN)` | `check_triangle_conditions` | 非零时先检查三角条件；保持整数控制约定；接口联动建议；已实施 |
+| `SI` | 13 | 接口形参 | `REAL(KIND = DOUBLE); INTENT(OUT)` | `six_j_value` | 计算出的 6j 符号值；接口联动建议；已实施 |
 
 <a id="file-1841"></a>
 
@@ -41739,13 +41742,13 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 | 原名 | 行 | 类别 | 类型、属性、形状 | 候选名称 | 含义 / 状态 |
 | --- | ---: | --- | --- | --- | --- |
-| `host` | 13 | 模块变量 | `CHARACTER*(MPI_MAX_PROCESSOR_NAME)` | `processor_name` | MPI 返回的处理器名称；源码建议 |
-| `lenhost` | 14 | 模块变量 | `INTEGER` | `processor_name_length` | 处理器名称的有效字符数；源码建议 |
-| `myid` | 14 | 模块变量 | `INTEGER` | `mpi_rank` | MPI 进程编号，从 0 开始；源码建议 |
-| `nprocs` | 14 | 模块变量 | `INTEGER` | `mpi_process_count` | MPI 进程总数；源码建议 |
-| `ierr` | 15 | 模块变量 | `INTEGER` | `mpi_error_code` | MPI 调用返回码；源码建议 |
+| `host` | 13 | 模块变量 | `CHARACTER*(MPI_MAX_PROCESSOR_NAME)` | `processor_name` | MPI 返回的处理器名称；源码建议；已实施 |
+| `lenhost` | 14 | 模块变量 | `INTEGER` | `processor_name_length` | 处理器名称的有效字符数；源码建议；已实施 |
+| `myid` | 14 | 模块变量 | `INTEGER` | `mpi_rank` | MPI 进程编号，从 0 开始；源码建议；已实施 |
+| `nprocs` | 14 | 模块变量 | `INTEGER` | `mpi_process_count` | MPI 进程总数；源码建议；已实施 |
+| `ierr` | 15 | 模块变量 | `INTEGER` | `mpi_error_code` | MPI 调用返回码；源码建议；已实施 |
 | `ierrtotal` | 15 | 模块变量 | `INTEGER` | 待核实 | 待核实语义及命名 |
-| `istat` | 16 | 模块变量 | `INTEGER; (MPI_STATUS_SIZE)` | `mpi_status_buffer` | MPI 状态数组；保留 MPI_STATUS_SIZE；源码建议 |
+| `istat` | 16 | 模块变量 | `INTEGER; (MPI_STATUS_SIZE)` | `mpi_status_buffer` | MPI 状态数组；保留 MPI_STATUS_SIZE；源码建议；已实施 |
 
 <a id="file-1866"></a>
 
@@ -42790,4 +42793,4 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 OpenMP 私有/共享变量以及所有普通程序变体，再执行对应构建与确定性输出回归。公共模块还要检查
 排除范围内消费者的兼容性。编译通过只能验证软件接口，不能作为原子结构物理准确性或收敛性的证明。
 
-本次没有运行新科学计算，没有修改数值算法，也没有实施任何候选名称。
+清单采集阶段未改源码；后续已实施上述 529 项候选的处理，未核实项仍保留。没有改变数值算法或开展新的物理收敛实验。

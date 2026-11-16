@@ -66,7 +66,7 @@
 !
       call openfl (25, filnam, form, status, ierr)
       if (ierr == 1) then
-         write (istde, *) 'Error when opening', filnam
+         write (stderr_unit, *) 'Error when opening', filnam
          stop
       endif
 !
@@ -74,15 +74,15 @@
 !
       read (25, iostat=ios) g92mix
       if (ios/=0 .or. g92mix/='G92MIX') then
-         write (istde, *) 'Not a GRASP92 MIXing Coefficients File;'
+         write (stderr_unit, *) 'Not a GRASP92 MIXing Coefficients File;'
          close(25)
          stop
       endif
 
-      read (25) nelec, ncftot, nw, nvectot, nvecsiz, nblock
-      write (*, *) '   nelec  = ', nelec
+      read (25) electron_count, ncftot, orbital_count, nvectot, nvecsiz, nblock
+      write (*, *) '   nelec  = ', electron_count
       write (*, *) '   ncftot = ', ncftot
-      write (*, *) '   nw     = ', nw
+      write (*, *) '   nw     = ', orbital_count
       write (*, *) '   nblock = ', nblock
       write (*, *)
       ncftot_i8 = ncftot
@@ -96,8 +96,8 @@
 !GG      CALL ALLOC (IVEC, NVECTOT, 'IVEC', 'GETMIXBLOCK')
 !GG      CALL ALLOC (IATJPO, NVECTOT, 'IATJPO', 'GETMIXBLOCK')
 !GG      CALL ALLOC (IASPAR, NVECTOT, 'IASPAR', 'GETMIXBLOCK')
-      allocate (eval(nvectot))
-      allocate (evec(ncftot_i8*nvectot))
+      allocate (shifted_eigenvalues(nvectot))
+      allocate (csf_mixing_coefficients(ncftot_i8*nvectot))
       allocate (ivec(nvectot))
       allocate (iatjpo(nvectot))
       allocate (iaspar(nvectot))
@@ -105,7 +105,7 @@
 !***********************************************************************
 ! Initialize mixing coefficients to zero; others are fine
 !***********************************************************************
-      evec(:nvectot*ncftot_i8) = 0.d0
+      csf_mixing_coefficients(:nvectot*ncftot_i8) = 0.d0
 
 !***********************************************************************
 ! Initialize counters and sum registers
@@ -141,16 +141,16 @@
             iatjpo(nvecpat+1:nevblk+nvecpat) = iatjp
             iaspar(nvecpat+1:nevblk+nvecpat) = iaspa
 
-            read (25) eav, (eval(nvecpat+i),i=1,nevblk)
+            read (25) hamiltonian_energy_shift, (shifted_eigenvalues(nvecpat+i),i=1,nevblk)
 
 !           ...Construct the true energy by adding up the average
-            eval(nvecpat+1:nevblk+nvecpat) = eval(nvecpat+1:nevblk+nvecpat) + &
-               eav
+            shifted_eigenvalues(nvecpat+1:nevblk+nvecpat) = shifted_eigenvalues(nvecpat+1:nevblk+nvecpat) + &
+               hamiltonian_energy_shift
 !           ...For overal (all blocks) average energy
-            eavsum = eavsum + eav*ncfblk
+            eavsum = eavsum + hamiltonian_energy_shift*ncfblk
             neavsum = neavsum + ncfblk
 
-            read (25) ((evec(nvecsizpat+ncfpat+i+(j-1)*ncftot_i8),i=1,ncfblk),j=1,&
+            read (25) ((csf_mixing_coefficients(nvecsizpat+ncfpat+i+(j-1)*ncftot_i8),i=1,ncfblk),j=1,&
                nevblk)
          endif
 !
@@ -164,17 +164,17 @@
 !        one eigenstate is calculated. It is not the averge of the
 !        total Hamiltonian.
 
-      eav = eavsum/neavsum
+      hamiltonian_energy_shift = eavsum/neavsum
 
       if (ncftot /= neavsum) write (6, *) &
          'Not all blocks are diagonalized --- Average E ', 'not correct'
 
 !     ...Substrct the overal average energy
-      eval(:nvectot) = eval(:nvectot) - eav
+      shifted_eigenvalues(:nvectot) = shifted_eigenvalues(:nvectot) - hamiltonian_energy_shift
 !
       close(25)
 !
-      ncf = ncftot
+      csf_count = ncftot
       nvec = nvectot
 !
       return

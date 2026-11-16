@@ -50,7 +50,7 @@
 !  ap is global, hmx is local !!!
 
       ihmx = 0
-      do i = myid + 1, ns, nprocs
+      do i = mpi_rank + 1, ns, mpi_process_count
          iap = i*(i-1)/2
          do j = 1, i
             ap(j+iap) = hmx(j+ihmx)
@@ -71,7 +71,7 @@
       call dspevx ('V','I','U',                                        &
                 ns,ap,-1.d0,-1.d0,1,niv,abstol,                            &
                 nfound,eigval,vec,ns,work,iwork,ifail,info)
-      ierr = -abs (info)
+      mpi_error_code = -abs (info)
 
 !  Build the Basis.
 

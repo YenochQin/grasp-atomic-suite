@@ -54,15 +54,15 @@
 !   Determine KMAX; this is the number of  .mcp  files for the
 !   two-electron integrals
 
-      kmax = 0
-      do k = 1, nw
-         kmax = max(kmax,nkj(k))
+      max_coulomb_multipole_rank = 0
+      do k = 1, orbital_count
+         max_coulomb_multipole_rank = max(max_coulomb_multipole_rank,orbital_two_j(k))
       end do
 
 !   All files  mcp.xx  are UNFORMATTED;
 
       lng = len_trim(filehead)
-      do k = 30, 32 + kmax
+      do k = 30, 32 + max_coulomb_multipole_rank
          call convrt (k, ck, lck)
          call openfl (k, filehead(1:lng)//'.'//ck(1:2), 'UNFORMATTED', &
             'UNKNOWN', ierr)
@@ -70,19 +70,19 @@
          do i = 30, k
             close(i)
          end do
-         write (istde, *) 'Error when opening the mcp files'
+         write (stderr_unit, *) 'Error when opening the mcp files'
          stop
       end do
 !
 !   We want to know kmax before openning other mcp files (not mcp.30)
 !   in rscf
 !
-      write (30) ncore, nblock, kmax
-      write (30) (ncfblk(i),i=1,nblock)
-      write (30) (idblk(i),i=1,nblock)
+      write (30) ncore, symmetry_block_count, max_coulomb_multipole_rank
+      write (30) (csf_counts_by_block(i),i=1,symmetry_block_count)
+      write (30) (idblk(i),i=1,symmetry_block_count)
 
-      do k = 30, 32 + kmax
-         write (k) 'MCP', nblock, myid, nprocs
+      do k = 30, 32 + max_coulomb_multipole_rank
+         write (k) 'MCP', symmetry_block_count, myid, nprocs
       end do
 
       return

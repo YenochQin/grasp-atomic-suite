@@ -42,11 +42,11 @@
       integer :: k
 !-----------------------------------------------
 !
-      if (myid .eq. 0) then
+      if (mpi_rank .eq. 0) then
          k = index (name,' ')
-         call openfl (25, name(1:k-1)//'.cm', form, status, ierr)
-         if (ierr .ne. 0) then
-            call stopmpi ('setmix: Error when opening .cm file', myid)
+         call openfl (25, name(1:k-1)//'.cm', form, status, mpi_error_code)
+         if (mpi_error_code .ne. 0) then
+            call stopmpi ('setmix: Error when opening .cm file', mpi_rank)
          endif
 
          write (25) 'G92MIX'

@@ -20,7 +20,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnp
+      use parameter_def,   only: max_radial_points
       use debug_c
       use def_c,           only: accy
       use grid_c
@@ -52,7 +52,7 @@
       real(double) :: rn, xbar, pestl, qestl, diff, difft, dxkmn1, dxirow, &
          factor, pestt, qestt, dpbp, dqbq, dnfac
       logical :: set
-      logical, dimension(nnnp) :: used
+      logical, dimension(max_radial_points) :: used
 !-----------------------------------------------
 !
 !
@@ -63,32 +63,32 @@
 !   Initialization
 !
       rama = ra(ma)
-      rn = r(n)
+      rn = radial_grid(radial_point_count)
 !
 !   This is always true in GRASP
 !
-      pf(1,j) = 0.0d00
-      qf(1,j) = 0.0d00
+      radial_large_components(1,j) = 0.0d00
+      radial_small_components(1,j) = 0.0d00
 !
 !   Checks
 !
       if (rama > rn) then
          write (*, 300) rn, rama
-         print*, "N =",n,"MA =",ma
+         print*, "N =",radial_point_count,"MA =",ma
          stop
       endif
 !
 !   Determine end of grid
 !
-      i = n
+      i = radial_point_count
     1 continue
       i = i - 1
-      if (r(i) <= rama) then
+      if (radial_grid(i) <= rama) then
          mfj = i
       else
          go to 1
       endif
-      mf(j) = mfj
+      orbital_last_grid_index(j) = mfj
 !
 !   Overall initialization for interpolation
 !
@@ -101,7 +101,7 @@
 !
 !   Initialization for interpolation
 !
-         xbar = r(i)
+         xbar = radial_grid(i)
          irow = 0
          pestl = 0.0d00
          qestl = 0.0d00
@@ -178,23 +178,23 @@
             if (irow < mxord) then
                go to 4
             else
-               pf(i,j) = pestt
-               qf(i,j) = qestt
+               radial_large_components(i,j) = pestt
+               radial_small_components(i,j) = qestt
             endif
          else
             dpbp = abs((pestt - pestl)/pestt)
             dqbq = abs((qestt - qestl)/qestt)
             if (dqbq<accy .and. dpbp<accy) then
-               pf(i,j) = pestt
-               qf(i,j) = qestt
+               radial_large_components(i,j) = pestt
+               radial_small_components(i,j) = qestt
             else
                pestl = pestt
                qestl = qestt
                if (irow < mxord) then
                   go to 4
                else
-                  pf(i,j) = pestt
-                  qf(i,j) = qestt
+                  radial_large_components(i,j) = pestt
+                  radial_small_components(i,j) = qestt
                   kount = kount + 1
                endif
             endif
@@ -206,8 +206,8 @@
 !   tail to zero
 !
       mfjp1 = mfj + 1
-      pf(mfjp1:n,j) = 0.0d00
-      qf(mfjp1:n,j) = 0.0d00
+      radial_large_components(mfjp1:radial_point_count,j) = 0.0d00
+      radial_small_components(mfjp1:radial_point_count,j) = 0.0d00
 !
       if (ldbpr(3) .and. kount>0) write (99, 301) accy, kount, mfj
 !
@@ -215,8 +215,8 @@
 !
       dnorm = rint(j,j,0)
       dnfac = 1.0d00/sqrt(dnorm)
-      pf(:mfj,j) = pf(:mfj,j)*dnfac
-      qf(:mfj,j) = qf(:mfj,j)*dnfac
+      radial_large_components(:mfj,j) = radial_large_components(:mfj,j)*dnfac
+      radial_small_components(:mfj,j) = radial_small_components(:mfj,j)*dnfac
 !
       return
 !

@@ -27,7 +27,7 @@
 !
 !   Atomic number
 !
-      read (22, *) z
+      read (22, *) nuclear_charge
 !
 !   Nuclear geometry
 !
@@ -39,11 +39,11 @@
       read (22, *) cparm
 !
       if (a /= 0.d0) then
-         nparm = 2
-         parm(1) = cparm*fmtoau
-         parm(2) = aparm*fmtoau
+         nuclear_model_parameter_count = 2
+         nuclear_model_parameters(1) = cparm*femtometer_to_bohr
+         nuclear_model_parameters(2) = aparm*femtometer_to_bohr
       else
-         nparm = 0
+         nuclear_model_parameter_count = 0
       endif
 !
 !   Nuclear mass
@@ -53,7 +53,7 @@
 
 !
       if (emnamu /= 0.d0) then
-         emn = emnamu/aumamu
+         emn = emnamu/electron_mass_u
       else
          emn = 0.d0
       endif

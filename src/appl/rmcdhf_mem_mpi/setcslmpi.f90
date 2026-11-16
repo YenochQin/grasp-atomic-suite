@@ -25,11 +25,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param,  only: double
-      use parameter_def,    only: nnnw
+      use parameter_def,    only: max_orbitals
       use memory_man
       use hblock_c
       use def_c
-      use orb_c, ncftot=>ncf
+      use orb_c, ncftot=>csf_count
       use stat_c
       use mpi_c
 !-----------------------------------------------
@@ -54,9 +54,9 @@
 !
 ! node-0 opens, reads the header of the file
 
-      if (myid .eq. 0) then
-         call openfl (21, name, 'FORMATTED', 'OLD', ierr)
-         if (ierr .eq. 1) then
+      if (mpi_rank .eq. 0) then
+         call openfl (21, name, 'FORMATTED', 'OLD', mpi_error_code)
+         if (mpi_error_code .eq. 1) then
             print *, 'Error when opening ',name(1:len_trim (name))
             stop
          endif
@@ -76,18 +76,18 @@
 ! Broadcast results to other nodes. ncfblk should be allocated
 ! on these nodes (with myid .ne. 0)
 
-      call mpi_bcast (nw,    1, mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (ncore, 1, mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (nelec, 1, mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (np(1),nw, mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (nak(1),nw, mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (nkl(1),nw, mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (nkj(1),nw, mpi_integer,0,mpi_comm_world,ierr)
-      call mpi_bcast (nh(1),2*nw, mpi_character,0,mpi_comm_world,ierr)
+      call mpi_bcast (orbital_count,    1, mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (ncore, 1, mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (electron_count, 1, mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (orbital_principal_n(1),orbital_count, mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (orbital_kappa(1),orbital_count, mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (orbital_l(1),orbital_count, mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (orbital_two_j(1),orbital_count, mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (orbital_symmetry_labels(1),2*orbital_count, mpi_character,0,mpi_comm_world,mpi_error_code)
 
 ! Allocate memories for all blocks and then load the entire file
 
-      call alloc (iqa, nnnw, ncftot, 'IQA', 'SETCSLmpi')
+      call alloc (csf_subshell_occupations, max_orbitals, ncftot, 'IQA', 'SETCSLmpi')
 !GG      CALL ALLOC (jqsa, NNNW,3,NCFTOT, 'JQSA', 'SETCSmpiL')
 !GG      CALL ALLOC (jcupa, NNNW, NCFTOT, 'JCUPA', 'SETCSLmpi')
 

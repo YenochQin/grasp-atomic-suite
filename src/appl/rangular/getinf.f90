@@ -52,9 +52,9 @@
 !     ELSE
 !        DIAG = .FALSE.
 !     ENDIF
-      diag = .false.
-      if (diag) then
-         lfordr = .false.
+      diagonal_only = .false.
+      if (diagonal_only) then
+         use_first_order_restriction = .false.
          do i = 1,100
             iccut(i) = 0
          end do
@@ -63,16 +63,16 @@
 !            WRITE (istde,*) 'Treat contributions of some CSFs', &
 !                            ' as first-order perturbations?'
 !            LFORDR = GETYN ()
-            lfordr = .true.
+            use_first_order_restriction = .true.
          else
-            lfordr = .false.
+            use_first_order_restriction = .false.
          endif
-         if (lfordr) then
-            write (istde,*) 'The contribution of CSFs 1 -- ICCUT will',&
+         if (use_first_order_restriction) then
+            write (stderr_unit,*) 'The contribution of CSFs 1 -- ICCUT will',&
                             ' be treated variationally;'
-            write (istde,*) 'the remainder perturbatively; enter ICCUT:'
-            do i = 1,nblock
-               write(istde,*) 'Give ICCUT for block',i
+            write (stderr_unit,*) 'the remainder perturbatively; enter ICCUT:'
+            do i = 1,symmetry_block_count
+               write(stderr_unit,*) 'Give ICCUT for block',i
                read *, iccut(i)
                write(739,*) iccut(i), '! ICCUT FOR BLOCK',i
 !    1          READ *, ICCUT(i)

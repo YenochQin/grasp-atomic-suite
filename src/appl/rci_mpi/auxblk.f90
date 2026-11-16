@@ -8,7 +8,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use vast_kind_param, only: double
-      use parameter_def,   only: nnnw
+      use parameter_def,   only: max_orbitals
       use decide_c
       use def_c
       use grid_c
@@ -19,7 +19,7 @@
       use bilst_c
       use keilst_c
       use vinlst_c
-      use orb_c, only: ncf, nw, iqa
+      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
       use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -44,7 +44,7 @@
 
       if (ltrans) then
 !        ...Check the maximum numbers of orbtitals allowed in brint.f
-         i = nnnw
+         i = max_orbitals
          select case (j2max)
          case (11)
             i = 114
@@ -68,9 +68,9 @@
             i = 90
          end select
 
-         if (i < nw) then
-            write (istde, *) 'In setham. The number of orbitals is too'
-            write (istde, *) 'large for the brint routine'
+         if (i < orbital_count) then
+            write (stderr_unit, *) 'In setham. The number of orbitals is too'
+            write (stderr_unit, *) 'large for the brint routine'
             stop
          endif
 
@@ -83,7 +83,7 @@
       if (lvp) then
          call ncharg
          call vacpol
-         zdist(2:n) = tb(2:n)*rp(2:n)
+         zdist(2:radial_point_count) = tb(2:radial_point_count)*radial_grid_derivative(2:radial_point_count)
          frstvp = .true.
          nvpi = 0
       endif
