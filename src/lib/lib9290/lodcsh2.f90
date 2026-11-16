@@ -26,9 +26,6 @@
 !   Modified by C. F. Fischer for block calculation      22 May 1997   *
 !   Updated by Xinghong He                               08 Jul 1998   *
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  12:13:05   2/14/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------

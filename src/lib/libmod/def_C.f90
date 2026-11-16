@@ -8,9 +8,6 @@
       use parameter_def,   only:  max_radial_points
       implicit none (type, external)
       private :: real64
-!...Created by Pacific-Sierra Research 77to90  4.3E  11:02:52   1/ 2/07
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
       real(real64) :: tenmax, expmax, expmin, precis
       real(real64) :: hartree_to_wavenumber_cm, hartree_to_ev, speed_of_light_cm_per_s, einstein_a_au_to_si, einstein_b_au_to_si
       real(real64) :: femtometer_to_bohr, electron_mass_u, b1

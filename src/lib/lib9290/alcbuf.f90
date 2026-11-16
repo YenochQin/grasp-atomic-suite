@@ -11,9 +11,6 @@
 !   Editted after translation by C. Froese Fischer       29 Apr 2007   *
 !                                                                      *
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  16:02:30   2/14/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !====================================================================
 
 !-----------------------------------------------

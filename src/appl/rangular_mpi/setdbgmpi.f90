@@ -8,9 +8,6 @@
 !   Written by Xinghong He                  Last update: 29 Jun 1998   *
 !                                                                      *
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  11:11:16  12/23/06
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------

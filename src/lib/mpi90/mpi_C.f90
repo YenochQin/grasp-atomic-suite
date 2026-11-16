@@ -1,8 +1,5 @@
       module mpi_c
       use, intrinsic :: iso_fortran_env, only: double => real64
-!...Created by Pacific-Sierra Research 77to90  4.3E  06:23:52  12/28/06
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 ! Use the MPI implementation's explicit Fortran interfaces. Integer handles
 ! remain the public convention of this legacy module; choice buffers are
 ! described by the MPI module rather than unchecked external declarations.

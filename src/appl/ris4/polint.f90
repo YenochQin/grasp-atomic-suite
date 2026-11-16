@@ -7,9 +7,6 @@ subroutine polint(xa,ya,dens)
 !                                                                             *
 !   Written by Jorgen Ekman Jul. 2016                                         *
 !************************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  14:07:11   1/ 3/07
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  11/02/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------

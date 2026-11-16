@@ -54,9 +54,6 @@
 !                                         Last revision:    Nov 2017   *
 !                                                                      *
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  14:06:03   1/ 3/07
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  11/01/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------

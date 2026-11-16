@@ -12,9 +12,6 @@
 !   Modified by Xinghong He                 Last update: 24 Jun 1997   *
 !                                                                      *
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  14:04:58   1/ 3/07
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -135,7 +132,6 @@
 !                                                                      *
 !***********************************************************************
 !
-!...Translated by Pacific-Sierra Research 77to90  4.3E  14:04:58   1/ 3/07
 !...Switches:
 !-----------------------------------------------
 !   M o d u l e s

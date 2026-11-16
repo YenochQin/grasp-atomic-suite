@@ -19,7 +19,6 @@
       use left_c
       use orb_c, only: orbital_count,  orbital_principal_n, orbital_kappa, orbital_symmetry_labels
       use iounit_c
-!...Translated by Pacific-Sierra Research 77to90  4.3E  11:06:21   1/ 2/07
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

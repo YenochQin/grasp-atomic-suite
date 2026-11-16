@@ -30,9 +30,6 @@
 !   Parameter ncd removed for simpler structure            Jun 10 1998
 !
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  19:51:17   2/16/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------

@@ -9,9 +9,6 @@
       use parameter_def,   only:  max_orbitals
       implicit none (type, external)
       private :: real64, int8
-!...Created by Pacific-Sierra Research 77to90  4.3E  08:57:22  12/25/06
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 
       character(len=2) :: orbital_symmetry_labels(max_orbitals)
       character(len=2) :: nhr(max_orbitals)

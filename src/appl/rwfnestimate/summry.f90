@@ -13,7 +13,6 @@
 !                                                                      *
 !***********************************************************************
 !
-!...Translated by Pacific-Sierra Research 77to90  4.3E  11:06:21   1/ 2/07
 !...Modified by Yanting Li, output <r> for each orbital, 19 Aug 2022
 !-----------------------------------------------
 !   M o d u l e s

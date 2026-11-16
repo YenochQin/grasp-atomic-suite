@@ -1,8 +1,5 @@
       subroutine cofpot(eol, j, npts)
 !-----------------------------------------------
-!...Translated by Pacific-Sierra Research 77to90  4.3E  14:06:32   1/ 3/07
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------

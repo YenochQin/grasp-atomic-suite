@@ -2,9 +2,6 @@
 !                                                                      *
       subroutine settmp(nb, kmax, filehead)
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  11:01:42   1/ 5/07
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

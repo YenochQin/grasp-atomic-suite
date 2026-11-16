@@ -19,9 +19,6 @@
 !   Written by Farid A Parpia, at Oxford   Last updated: 06 Oct 1992   *
 !                                                                      *
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  10:46:52   2/14/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------

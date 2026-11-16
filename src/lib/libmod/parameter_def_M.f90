@@ -2,9 +2,6 @@
       module parameter_def
 !    THis module defines some global parameters for the
 !    application
-!...Translated by Pacific-Sierra Research 77to90 4.3E 11:01:42 1/15/07
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !====================================================================
 !    KEYORB: Is a packing parameter defined by a packing algorithm.
 !            This is the largest integer for which KEYORB**4 < 2^31

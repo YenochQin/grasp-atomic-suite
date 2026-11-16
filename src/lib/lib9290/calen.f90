@@ -8,9 +8,6 @@
 !                                         Last revision: 25 Sep 1992   *
 !                                                                      *
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  10:46:38   2/14/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
       implicit none (type, external)
 !-----------------------------------------------

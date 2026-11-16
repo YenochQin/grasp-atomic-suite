@@ -15,9 +15,6 @@
 !   Modified for ifort -i8 by A. Kramida (AK) Last update 22 Mar 2016  *
 !                                                                      *
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  14:04:58   1/ 3/07
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------

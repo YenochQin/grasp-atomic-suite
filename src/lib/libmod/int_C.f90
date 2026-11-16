@@ -3,9 +3,6 @@
       use parameter_def,    only: max_radial_points
       implicit none (type, external)
       private :: real64
-!...Created by Pacific-Sierra Research 77to90  4.3E  06:37:37  12/28/06
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
       integer :: mtp0
       real(real64) :: p(max_radial_points), q(max_radial_points)
       real(real64) :: p0, q0

@@ -12,9 +12,6 @@
 !  Xinghong He 98-06-23
 !
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  10:47:12   2/14/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------

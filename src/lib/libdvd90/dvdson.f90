@@ -64,10 +64,7 @@
 !     All the routines have IMPLICIT REAL*8          (A-H,O-Z)
 !
 !-----------------------------------------------------------------------
-!...Translated by Pacific-Sierra Research 77to90  4.3E  20:12:31   2/12/04
 !   Editted by C. F. Fischer                                       5/10/07
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -494,9 +491,6 @@
 !     DDOT, DSCAL
 !
 !-----------------------------------------------------------------------
-!...Translated by Pacific-Sierra Research 77to90  4.3E  20:12:31   2/12/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -584,9 +578,6 @@
 !     DSPEVX, MULTBC, TSTSEL, OVFLOW, NEWVEC, ADDS,
 !     DCOPY, DDOT, DAXPY
 !-----------------------------------------------------------------------
-!...Translated by Pacific-Sierra Research 77to90  4.3E  20:12:31   2/12/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -859,9 +850,6 @@
 !     constraint vectors in the begining. This equialence holds:
 !           equivalence(Basis(1),OrthoBasis(NOC*N+1))
 !-----------------------------------------------------------------------
-!...Translated by Pacific-Sierra Research 77to90  4.3E  20:12:31   2/12/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -964,9 +952,6 @@
 !       Subroutines called
 !       DINIT, DGEMV, DCOPY
 !-----------------------------------------------------------------------
-!...Translated by Pacific-Sierra Research 77to90  4.3E  20:12:31   2/12/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -1026,9 +1011,6 @@
 !     DNRM2, DGEMV
 !
 !-----------------------------------------------------------------------
-!...Translated by Pacific-Sierra Research 77to90  4.3E  20:12:31   2/12/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -1193,9 +1175,6 @@
 !     Subroutines called:
 !     DCOPY, DINIT, MULTBC
 !-----------------------------------------------------------------------
-!...Translated by Pacific-Sierra Research 77to90  4.3E  20:12:31   2/12/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -1282,9 +1261,6 @@
 !     Subroutines called
 !     IDAMAX
 !-----------------------------------------------------------------------
-!...Translated by Pacific-Sierra Research 77to90  4.3E  20:12:31   2/12/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -1425,9 +1401,6 @@
 !     using Modified Gram Schmidt. Then normalizes them.
 !       The procedure is repeated twice.
 !-----------------------------------------------------------------------
-!...Translated by Pacific-Sierra Research 77to90  4.3E  20:12:31   2/12/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------

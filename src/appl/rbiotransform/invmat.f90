@@ -15,7 +15,6 @@
 ! OUTPUT : A : INVERSE MATRIX ( ORIGINAL MATRIX THUS DESTROYED )
 ! WARNINGS ARE ISSUED IN CASE OF CONVERGENCE PROBLEMS )
 !
-!...Translated by Pacific-Sierra Research 77to90  4.3E  14:08:49   1/ 6/07
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------

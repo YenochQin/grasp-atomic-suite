@@ -11,9 +11,6 @@
 ! Normalization of the orbitals moved out of the inner loop
 ! XHH 1997.02.14
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  15:41:29   2/14/04
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------

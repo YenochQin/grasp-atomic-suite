@@ -20,9 +20,6 @@
 !   ensure that the self-energy for such orbital is zero.              *
 !   Reference: M J Seaton, Rep. Prog. Phys., Vol.46, P167,1983         *
 !***********************************************************************
-!...Translated by Pacific-Sierra Research 77to90  4.3E  14:04:58   1/ 3/07
-!...Modified by Charlotte Froese Fischer
-!                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
