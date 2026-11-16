@@ -5,17 +5,17 @@ module rangular_parallel
    use omp_lib, only: omp_in_parallel, omp_get_max_threads, omp_get_thread_limit, omp_set_dynamic, &
                      omp_get_wtime, omp_get_num_threads, omp_get_thread_num
    use vast_kind_param, only: double
-   use parameter_def, only: orbital_capacity => NNNW
-   use buffer_C, only: raw_labels => LABEL, raw_coefficients => COEFF, &
-                       raw_coefficient_count => NVCOEF, pair_buffer_capacity => NBDIM
-   use orb_C, only: current_csf_count => NCF
-   use mcp_C, only: diagonal_only => DIAG, first_order_only => LFORDR
-   use iccu_C, only: reference_limits => ICCUT
-   use debug_C, only: angular_debug_flags => LDBPA, coefficient_debug => IBUG1
-   use onescalar_I, only: onescalar
-   use rkco_gg_I, only: rkco_gg
-   use cord_I, only: cord
-   use alcbuf_I, only: alcbuf
+   use parameter_def, only: orbital_capacity => nnnw
+   use buffer_c, only: raw_labels => label, raw_coefficients => coeff, &
+                       raw_coefficient_count => nvcoef, pair_buffer_capacity => nbdim
+   use orb_c, only: current_csf_count => ncf
+   use mcp_c, only: diagonal_only => diag, first_order_only => lfordr
+   use iccu_c, only: reference_limits => iccut
+   use debug_c, only: angular_debug_flags => ldbpa, coefficient_debug => ibug1
+   use onescalar_i, only: onescalar
+   use rkco_gg_i, only: rkco_gg
+   use cord_i, only: cord
+   use alcbuf_i, only: alcbuf
    use rangular_profile, only: record_seconds_stage
    implicit none
    private

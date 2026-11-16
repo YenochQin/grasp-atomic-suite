@@ -1,16 +1,16 @@
 !
 !***********************************************************************
 !                                                                      *
-      MODULE sacoef_C
+      module sacoef_c
 !                                                                      *
 !                                                                      *
 !     Written by G. Gaigalas,                                          *
 !     NIST                                     last update: May 2017   *
 !                                                                      *
 !***********************************************************************
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !
-      REAL(DOUBLE), DIMENSION(:,:), pointer :: TCOEFF
-      INTEGER, DIMENSION(:,:), pointer :: IICLMN, IINDEX, ILABEL
+      real(double), dimension(:,:), pointer :: tcoeff
+      integer, dimension(:,:), pointer :: iiclmn, iindex, ilabel
 !
-      END MODULE sacoef_C
+      end module sacoef_c

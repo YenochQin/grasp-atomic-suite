@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE read1_mem(NFILE, NCONTR_tot2, LAB, NCONTR)
+      subroutine read1_mem(nfile, ncontr_tot2, lab, ncontr)
 !                                                                  *
 !   Written by  G. Gaigalas               Vilnius, September 2021  *
 !                                                                  *
@@ -9,83 +9,83 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: LONG
-      USE rmcdhf_mem_C
+      use vast_kind_param, only: long
+      use rmcdhf_mem_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER        :: NFILE, LAB, NCONTR
-      INTEGER(LONG)  :: NCONTR_tot2
+      integer        :: nfile, lab, ncontr
+      integer(long)  :: ncontr_tot2
 !-----------------------------------------------
 
-      if(NFILE == 31) then
-         LAB    = LAB_31(NCONTR_tot2)
-         NCONTR = NCONTR_31(NCONTR_tot2)
-      else if(NFILE == 32) then
-         LAB    = LAB_32(NCONTR_tot2)
-         NCONTR = NCONTR_32(NCONTR_tot2)
-      else if(NFILE == 33) then
-         LAB    = LAB_33(NCONTR_tot2)
-         NCONTR = NCONTR_33(NCONTR_tot2)
-      else if(NFILE == 34) then
-         LAB    = LAB_34(NCONTR_tot2)
-         NCONTR = NCONTR_34(NCONTR_tot2)
-      else if(NFILE == 35) then
-         LAB    = LAB_35(NCONTR_tot2)
-         NCONTR = NCONTR_35(NCONTR_tot2)
-      else if(NFILE == 36) then
-         LAB    = LAB_36(NCONTR_tot2)
-         NCONTR = NCONTR_36(NCONTR_tot2)
-      else if(NFILE == 37) then
-         LAB    = LAB_37(NCONTR_tot2)
-         NCONTR = NCONTR_37(NCONTR_tot2)
-      else if(NFILE == 38) then
-         LAB    = LAB_38(NCONTR_tot2)
-         NCONTR = NCONTR_38(NCONTR_tot2)
-      else if(NFILE == 39) then
-         LAB    = LAB_39(NCONTR_tot2)
-         NCONTR = NCONTR_39(NCONTR_tot2)
-      else if(NFILE == 40) then
-         LAB    = LAB_40(NCONTR_tot2)
-         NCONTR = NCONTR_40(NCONTR_tot2)
-      else if(NFILE == 41) then
-         LAB    = LAB_41(NCONTR_tot2)
-         NCONTR = NCONTR_41(NCONTR_tot2)
-      else if(NFILE == 42) then
-         LAB    = LAB_42(NCONTR_tot2)
-         NCONTR = NCONTR_42(NCONTR_tot2)
-      else if(NFILE == 43) then
-         LAB    = LAB_43(NCONTR_tot2)
-         NCONTR = NCONTR_43(NCONTR_tot2)
-      else if(NFILE == 44) then
-         LAB    = LAB_44(NCONTR_tot2)
-         NCONTR = NCONTR_44(NCONTR_tot2)
-      else if(NFILE == 45) then
-         LAB    = LAB_45(NCONTR_tot2)
-         NCONTR = NCONTR_45(NCONTR_tot2)
-      else if(NFILE == 46) then
-         LAB    = LAB_46(NCONTR_tot2)
-         NCONTR = NCONTR_46(NCONTR_tot2)
-      else if(NFILE == 47) then
-         LAB    = LAB_47(NCONTR_tot2)
-         NCONTR = NCONTR_47(NCONTR_tot2)
-      else if(NFILE == 48) then
-         LAB    = LAB_48(NCONTR_tot2)
-         NCONTR = NCONTR_48(NCONTR_tot2)
-      else if(NFILE == 49) then
-         LAB    = LAB_49(NCONTR_tot2)
-         NCONTR = NCONTR_49(NCONTR_tot2)
-      else if(NFILE == 50) then
-         LAB    = LAB_50(NCONTR_tot2)
-         NCONTR = NCONTR_50(NCONTR_tot2)
+      if(nfile == 31) then
+         lab    = lab_31(ncontr_tot2)
+         ncontr = ncontr_31(ncontr_tot2)
+      else if(nfile == 32) then
+         lab    = lab_32(ncontr_tot2)
+         ncontr = ncontr_32(ncontr_tot2)
+      else if(nfile == 33) then
+         lab    = lab_33(ncontr_tot2)
+         ncontr = ncontr_33(ncontr_tot2)
+      else if(nfile == 34) then
+         lab    = lab_34(ncontr_tot2)
+         ncontr = ncontr_34(ncontr_tot2)
+      else if(nfile == 35) then
+         lab    = lab_35(ncontr_tot2)
+         ncontr = ncontr_35(ncontr_tot2)
+      else if(nfile == 36) then
+         lab    = lab_36(ncontr_tot2)
+         ncontr = ncontr_36(ncontr_tot2)
+      else if(nfile == 37) then
+         lab    = lab_37(ncontr_tot2)
+         ncontr = ncontr_37(ncontr_tot2)
+      else if(nfile == 38) then
+         lab    = lab_38(ncontr_tot2)
+         ncontr = ncontr_38(ncontr_tot2)
+      else if(nfile == 39) then
+         lab    = lab_39(ncontr_tot2)
+         ncontr = ncontr_39(ncontr_tot2)
+      else if(nfile == 40) then
+         lab    = lab_40(ncontr_tot2)
+         ncontr = ncontr_40(ncontr_tot2)
+      else if(nfile == 41) then
+         lab    = lab_41(ncontr_tot2)
+         ncontr = ncontr_41(ncontr_tot2)
+      else if(nfile == 42) then
+         lab    = lab_42(ncontr_tot2)
+         ncontr = ncontr_42(ncontr_tot2)
+      else if(nfile == 43) then
+         lab    = lab_43(ncontr_tot2)
+         ncontr = ncontr_43(ncontr_tot2)
+      else if(nfile == 44) then
+         lab    = lab_44(ncontr_tot2)
+         ncontr = ncontr_44(ncontr_tot2)
+      else if(nfile == 45) then
+         lab    = lab_45(ncontr_tot2)
+         ncontr = ncontr_45(ncontr_tot2)
+      else if(nfile == 46) then
+         lab    = lab_46(ncontr_tot2)
+         ncontr = ncontr_46(ncontr_tot2)
+      else if(nfile == 47) then
+         lab    = lab_47(ncontr_tot2)
+         ncontr = ncontr_47(ncontr_tot2)
+      else if(nfile == 48) then
+         lab    = lab_48(ncontr_tot2)
+         ncontr = ncontr_48(ncontr_tot2)
+      else if(nfile == 49) then
+         lab    = lab_49(ncontr_tot2)
+         ncontr = ncontr_49(ncontr_tot2)
+      else if(nfile == 50) then
+         lab    = lab_50(ncontr_tot2)
+         ncontr = ncontr_50(ncontr_tot2)
       else
-         print*, "Error in read1_memi  NFILE=",NFILE
+         print*, "Error in read1_memi  NFILE=",nfile
          stop
       end if
 
-      RETURN
-      END SUBROUTINE read1_mem
+      return
+      end subroutine read1_mem

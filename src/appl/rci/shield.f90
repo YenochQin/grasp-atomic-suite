@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION SHIELD (J)
+      real(kind(0.0d0)) function shield (j)
 !                                                                      *
 !   This  routine estimates the screening (or shielding) for orbital   *
 !   J according to the relativistic hydrogenic energy formula.         *
@@ -25,42 +25,42 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE orb_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use def_c
+      use orb_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: J
+      integer , intent(in) :: j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE) :: A, AA, BB, CC, T, BETA
+      real(double) :: a, aa, bb, cc, t, beta
 !-----------------------------------------------
 !
 !
 ! a=[(1+\alpha^2 E)^{-2} - 1]^{-1/2}
 ! note E(J) = -E(n,k)
-      A = 1 - E(J)/(C*C)
-      A = 1/(A*A) - 1
-      IF (A < 0.0) THEN
-         SHIELD = -C
-         RETURN
-      ENDIF
-      A = 1/SQRT(A)
+      a = 1 - e(j)/(c*c)
+      a = 1/(a*a) - 1
+      if (a < 0.0) then
+         shield = -c
+         return
+      endif
+      a = 1/sqrt(a)
 !
-      AA = 1 + A*A
-      BB = A*DBLE(NP(J)-IABS(NAK(J)))
-      CC = DBLE((NP(J)-IABS(NAK(J)))**2-NAK(J)**2)
-      T = BB*BB - AA*CC
-      IF (T < 0.0) THEN
-         SHIELD = -C
-         RETURN
-      ENDIF
-      BETA = BB + SQRT(T)
-      BETA = BETA/AA
-      SHIELD = Z - BETA*C
+      aa = 1 + a*a
+      bb = a*dble(np(j)-iabs(nak(j)))
+      cc = dble((np(j)-iabs(nak(j)))**2-nak(j)**2)
+      t = bb*bb - aa*cc
+      if (t < 0.0) then
+         shield = -c
+         return
+      endif
+      beta = bb + sqrt(t)
+      beta = beta/aa
+      shield = z - beta*c
 !     print *, j, '  Initial Screen Factor = ',shield
-      RETURN
-      END FUNCTION SHIELD
+      return
+      end function shield

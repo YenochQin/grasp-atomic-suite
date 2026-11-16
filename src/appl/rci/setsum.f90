@@ -1,6 +1,6 @@
 !***********************************************************************
 
-      SUBROUTINE SETSUM(NAME)
+      subroutine setsum(name)
 !
 !   Open the  .csum  file on stream 24.
 !   Xinghong He                                          10 Jun 1998
@@ -12,21 +12,21 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      IMPLICIT NONE
+      use openfl_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER(LEN=*) , INTENT(IN) :: NAME
+      character(len=*) , intent(in) :: name
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K, IERR
+      integer :: k, ierr
 !-----------------------------------------------------------------------
 
-      K = INDEX(NAME,' ')
+      k = index(name,' ')
 
-      CALL OPENFL (24, NAME(1:K-1)//'.csum', 'FORMATTED', 'UNKNOWN', IERR)
+      call openfl (24, name(1:k-1)//'.csum', 'FORMATTED', 'UNKNOWN', ierr)
 
-      RETURN
-      END SUBROUTINE SETSUM
+      return
+      end subroutine setsum

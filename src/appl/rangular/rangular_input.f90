@@ -4,8 +4,8 @@ module rangular_input
    use rangular_profile, only: open_stage_profile
    use rangular_parallel, only: configure_pair_engine, parallel_pairs_available
    use rangular_reuse, only: configure_angular_reuse
-   use cslh_I, only: cslh
-   use lodcsh2_I, only: lodcsh2
+   use cslh_i, only: cslh
+   use lodcsh2_i, only: lodcsh2
    implicit none
    private
    public :: angular_input_options, parse_angular_options, load_angular_header, load_angular_block, close_angular_input
@@ -138,8 +138,8 @@ contains
    end subroutine load_angular_header
 
    subroutine load_angular_block(options, core_count, block_index)
-      use orb_C, only: occupations => IQA
-      use stat_C, only: subshell_quantum_numbers => JQSA, couplings => JCUPA
+      use orb_c, only: occupations => iqa
+      use stat_c, only: subshell_quantum_numbers => jqsa, couplings => jcupa
       type(angular_input_options), intent(inout) :: options
       integer, intent(in) :: core_count, block_index
       if (options%use_descriptors) then

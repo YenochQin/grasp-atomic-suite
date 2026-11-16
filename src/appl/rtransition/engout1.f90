@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ENGOUT1(EAV, E, JTOT, IPAR, ILEV, NN, MODE, K)
+      subroutine engout1(eav, e, jtot, ipar, ilev, nn, mode, k)
 !                                                                      *
 !   This  subroutine prints  energy levels, splittings, and energies   *
 !   relative to the lowest in  Hartrees, Kaysers, and  eV, using the   *
@@ -19,50 +19,50 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C, ONLY: AUCM, AUEV, CCMS, FASI, FBSI
-      USE jlabl_C, LABJ=>JLBR, LABP=>JLBP
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use def_c, only: aucm, auev, ccms, fasi, fbsi
+      use jlabl_c, labj=>jlbr, labp=>jlbp
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: NN
-      INTEGER  :: MODE
-      INTEGER , INTENT(IN) :: K
-      REAL(DOUBLE) , INTENT(IN) :: EAV
-      INTEGER , INTENT(IN) :: JTOT(NN)
-      INTEGER , INTENT(IN) :: IPAR(NN)
-      INTEGER , INTENT(IN) :: ILEV(NN)
-      REAL(DOUBLE) , INTENT(IN) :: E(NN)
+      integer , intent(in) :: nn
+      integer  :: mode
+      integer , intent(in) :: k
+      real(double) , intent(in) :: eav
+      integer , intent(in) :: jtot(nn)
+      integer , intent(in) :: ipar(nn)
+      integer , intent(in) :: ilev(nn)
+      real(double) , intent(in) :: e(nn)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, I, IP
-      REAL(DOUBLE) :: EAU, ECM, EEV
+      integer :: j, i, ip
+      real(double) :: eau, ecm, eev
 !-----------------------------------------------
 !
 !   Always print the eigenenergies
 !
-      IF (K == 1) WRITE (24, 299)
-      IF (K == 2) WRITE (24, 300)
-      WRITE (24, 301)
-      DO J = 1, NN
-         I = ILEV(J)
-         EAU = E(J) + EAV
-         ECM = EAU*AUCM
-         EEV = EAU*AUEV
-         IP = (IPAR(J)+3)/2
-         WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM
-      END DO
+      if (k == 1) write (24, 299)
+      if (k == 2) write (24, 300)
+      write (24, 301)
+      do j = 1, nn
+         i = ilev(j)
+         eau = e(j) + eav
+         ecm = eau*aucm
+         eev = eau*auev
+         ip = (ipar(j)+3)/2
+         write (24, 302) i, labj(jtot(j)), labp(ip), eau, ecm
+      end do
 !
-      RETURN
+      return
 !
-  299 FORMAT('Eigenenergies for the initial state list')
-  300 FORMAT('Eigenenergies for the final state list')
-  301 FORMAT('Level  J Parity',10X,'Hartrees',18X,'Kaysers')
-  302 FORMAT(1I3,4X,2A4,1P,2D25.15)
-  303 FORMAT('Energy of each level relative to immediately lower',' level:')
-  304 FORMAT('Energy of each level relative to lowest level:')
-      RETURN
+  299 format('Eigenenergies for the initial state list')
+  300 format('Eigenenergies for the final state list')
+  301 format('Level  J Parity',10x,'Hartrees',18x,'Kaysers')
+  302 format(1i3,4x,2a4,1p,2d25.15)
+  303 format('Energy of each level relative to immediately lower',' level:')
+  304 format('Energy of each level relative to lowest level:')
+      return
 !
-      END SUBROUTINE ENGOUT1
+      end subroutine engout1

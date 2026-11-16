@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE QUAD(RESULT)
+      subroutine quad(result)
 !                                                                      *
 !   The argument result is an approximation  to the integral of F(R)   *
 !   from  zero  to  infinity,  where the values of RP(I)*F(R(I)) are   *
@@ -29,62 +29,62 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE DEF_C
-      USE GRID_C
-      USE NCC_C
-      USE TATB_C, ONLY: TA, MTP
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use def_c
+      use grid_c
+      use ncc_c
+      use tatb_c, only: ta, mtp
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE) , INTENT(OUT) :: RESULT
+      real(double) , intent(out) :: result
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: MTPM1, I, IP1, LOC
-      REAL(DOUBLE) :: TAI, TAIP1, QUOTT, FRIP1, FRI, RATIO, RIP1, RI, SIGMA
+      integer :: mtpm1, i, ip1, loc
+      real(double) :: tai, taip1, quott, frip1, fri, ratio, rip1, ri, sigma
 !-----------------------------------------------
 !
 !
 !   Find first values that will permit computation of exponent
 !
-      MTPM1 = MTP - 1
-      DO I = 2, MTPM1
+      mtpm1 = mtp - 1
+      do i = 2, mtpm1
 !
-         TAI = TA(I)
-         IF (ABS(TAI) <= 0.D0) CYCLE
+         tai = ta(i)
+         if (abs(tai) <= 0.d0) cycle
 !
-         IP1 = I + 1
-         TAIP1 = TA(IP1)
-         QUOTT = TAIP1/TAI
+         ip1 = i + 1
+         taip1 = ta(ip1)
+         quott = taip1/tai
 !
-         IF (QUOTT <= 0.D0) CYCLE
+         if (quott <= 0.d0) cycle
 !
 !   Exponent from fit
 !
-         FRIP1 = TAIP1/RP(IP1)
-         FRI = TAI/RP(I)
-         RATIO = FRIP1/FRI
-         RIP1 = R(IP1)
-         RI = R(I)
-         SIGMA = LOG(RATIO)/LOG(RIP1/RI)
+         frip1 = taip1/rp(ip1)
+         fri = tai/rp(i)
+         ratio = frip1/fri
+         rip1 = r(ip1)
+         ri = r(i)
+         sigma = log(ratio)/log(rip1/ri)
 !
 !   Analytical integration and error estimate for interval r(1:i)
 !
-         FRI = RI*FRI
-         RESULT = FRI/(SIGMA + 1.D0)
+         fri = ri*fri
+         result = fri/(sigma + 1.d0)
 !
 !   Set the tail to zero
 !
-         TA(MTP+1:3+MTP) = 0.D0
+         ta(mtp+1:3+mtp) = 0.d0
 !
 !   Newton-Cotes quadature for the remainder
 !
-         RESULT = RESULT + C1*TAI
-         RESULT = RESULT + SUM(C2*(TA(IP1:MTP:4)+TA(IP1+2:MTP+2:4))+C3*TA(IP1+1&
-            :MTP+1:4)+C4*TA(IP1+3:MTP+3:4))
-         IF (MOD(MTP - I,4) == 0) RESULT = RESULT - C1*TA(MTP)
+         result = result + c1*tai
+         result = result + sum(c2*(ta(ip1:mtp:4)+ta(ip1+2:mtp+2:4))+c3*ta(ip1+1&
+            :mtp+1:4)+c4*ta(ip1+3:mtp+3:4))
+         if (mod(mtp - i,4) == 0) result = result - c1*ta(mtp)
 !
 !   Test of result's accuracy; `decomment' to activate
 !
@@ -92,19 +92,19 @@
 !              RATIO = ABS (ESTDER/RESULT)
 !              IF (RATIO .GT. ACCY) PRINT (*,300) RATIO
 !
-         GO TO 4
+         go to 4
 !
-      END DO
+      end do
 !
 !   No value which will permit computation of exponent
 !
-      RESULT = 0.D0
+      result = 0.d0
 !
-    4 CONTINUE
-      RETURN
+    4 continue
+      return
 !
-  300 FORMAT(/,'QUAD: Estimated accuracy is ',1P,D10.3,/,&
+  300 format(/,'QUAD: Estimated accuracy is ',1p,d10.3,/,&
          ' Decrease RNT or improve input data conditioning to',' ameliorate.'/)
-      RETURN
+      return
 !
-      END SUBROUTINE QUAD
+      end subroutine quad

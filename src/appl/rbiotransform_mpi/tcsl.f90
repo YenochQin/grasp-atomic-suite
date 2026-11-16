@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE TCSL(N)
+      subroutine tcsl(n)
 !                                                                      *
 !   This subroutine transfers data to the initial and final state      *
 !   common blocks                                                      *
@@ -14,18 +14,18 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE biorb_C
-      USE orb_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use biorb_c
+      use orb_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: N
+      integer, intent(in) :: n
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
+      integer :: i
 !-----------------------------------------------
 !
 !  Initial state commons
@@ -34,23 +34,23 @@
 !  Final state commons
 !
 !
-      IF (N == 1) THEN
-         NCFII = NCF
-         NWII = NW
-         NPII(:NW) = NP(:NW)
-         NAKII(:NW) = NAK(:NW)
-         NKLII(:NW) = NKL(:NW)
-         NKJII(:NW) = NKJ(:NW)
-         NHII(:NW) = NH(:NW)
-      ELSE
-         NCFFF = NCF
-         NWFF = NW
-         NPFF(:NW) = NP(:NW)
-         NAKFF(:NW) = NAK(:NW)
-         NKLFF(:NW) = NKL(:NW)
-         NKJFF(:NW) = NKJ(:NW)
-         NHFF(:NW) = NH(:NW)
-      ENDIF
+      if (n == 1) then
+         ncfii = ncf
+         nwii = nw
+         npii(:nw) = np(:nw)
+         nakii(:nw) = nak(:nw)
+         nklii(:nw) = nkl(:nw)
+         nkjii(:nw) = nkj(:nw)
+         nhii(:nw) = nh(:nw)
+      else
+         ncfff = ncf
+         nwff = nw
+         npff(:nw) = np(:nw)
+         nakff(:nw) = nak(:nw)
+         nklff(:nw) = nkl(:nw)
+         nkjff(:nw) = nkj(:nw)
+         nhff(:nw) = nh(:nw)
+      endif
 
-      RETURN
-      END SUBROUTINE TCSL
+      return
+      end subroutine tcsl

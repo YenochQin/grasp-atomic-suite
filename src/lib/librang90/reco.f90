@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE RECO(JA1,JA2,JA3,JA4,KA,IAT)
+      subroutine reco(ja1,ja2,ja3,ja4,ka,iat)
 !                                                                  *
 !     -------------  SECTION REC    SUBPROGRAM 05  --------------  *
 !                                                                  *
@@ -15,65 +15,65 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE m_C,             ONLY: NPEEL, JLIST, JJC1, JJC2, JJQ1, JJQ2
-      IMPLICIT NONE
+      use m_c,             only: npeel, jlist, jjc1, jjc2, jjq1, jjq2
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)  :: JA1, JA2, JA3, JA4, KA
-      INTEGER, INTENT(OUT) :: IAT
+      integer, intent(in)  :: ja1, ja2, ja3, ja4, ka
+      integer, intent(out) :: iat
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, IJ1, IJ2, IJ, J, IA1, IA2
+      integer :: i, ij1, ij2, ij, j, ia1, ia2
 !-----------------------------------------------
-      IAT=1
-      IF(NPEEL == 1)RETURN
-      IJ1=JLIST(JA1)
-      IJ2=JLIST(JA2)
-      IF(JA1 == 1.AND.JA2 == 2) GO TO 1
-      IF(KA /= 0)GO TO 5
+      iat=1
+      if(npeel == 1)return
+      ij1=jlist(ja1)
+      ij2=jlist(ja2)
+      if(ja1 == 1.and.ja2 == 2) go to 1
+      if(ka /= 0)go to 5
 !
 !  CASES WHEN :          KA = 0
 !                  OR    JA1 = JA2
 !                  OR    JA1 = 1    JA2 = 2
 !
-    1 DO I=1,NPEEL
-        IJ=JLIST(I)
-        IF(I < NPEEL-1) THEN
-          IF(JJC1(I) /= JJC2(I))IAT=0
-        END IF
-        IF(KA /= 0) THEN
-          IF(I == JA1) CYCLE
-          IF(I == JA2) CYCLE
-        END IF
-        DO J=1,3
-          IF(JA1 == JA2 .AND. I == JA1 .AND. J == 1) CYCLE
-          IF(JJQ1(J,IJ) /= JJQ2(J,IJ))IAT=0
-        END DO
-      END DO
-      RETURN
+    1 do i=1,npeel
+        ij=jlist(i)
+        if(i < npeel-1) then
+          if(jjc1(i) /= jjc2(i))iat=0
+        end if
+        if(ka /= 0) then
+          if(i == ja1) cycle
+          if(i == ja2) cycle
+        end if
+        do j=1,3
+          if(ja1 == ja2 .and. i == ja1 .and. j == 1) cycle
+          if(jjq1(j,ij) /= jjq2(j,ij))iat=0
+        end do
+      end do
+      return
 !
 !  OTHER CASES
 !
-    5 CONTINUE
-      DO I=1,NPEEL
-        IJ=JLIST(I)
-        IF(I < NPEEL-1) THEN
-          IA1=JA1-1
-          IA2=JA2-1
-          IF(JA1 == 1)IA1=JA1
-          IF(I >= IA1.AND.I < IA2)GO TO 7
-          IF(JJC1(I) /= JJC2(I))IAT=0
-        END IF
-    7   IF(I == JA1) CYCLE
-        IF(I == JA2) CYCLE
-        IF((KA == 2).AND.(I == JA3)) CYCLE
-        IF((KA == 3).AND.(I == JA3)) CYCLE
-        IF((KA == 3).AND.(I == JA4)) CYCLE
-        DO J=1,3
-          IF(JJQ1(J,IJ) /= JJQ2(J,IJ))IAT=0
-        END DO
-      END DO
-      RETURN
-      END SUBROUTINE RECO
+    5 continue
+      do i=1,npeel
+        ij=jlist(i)
+        if(i < npeel-1) then
+          ia1=ja1-1
+          ia2=ja2-1
+          if(ja1 == 1)ia1=ja1
+          if(i >= ia1.and.i < ia2)go to 7
+          if(jjc1(i) /= jjc2(i))iat=0
+        end if
+    7   if(i == ja1) cycle
+        if(i == ja2) cycle
+        if((ka == 2).and.(i == ja3)) cycle
+        if((ka == 3).and.(i == ja3)) cycle
+        if((ka == 3).and.(i == ja4)) cycle
+        do j=1,3
+          if(jjq1(j,ij) /= jjq2(j,ij))iat=0
+        end do
+      end do
+      return
+      end subroutine reco

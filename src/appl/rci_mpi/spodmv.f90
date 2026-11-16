@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SPODMV(N, M, B, C)
+      subroutine spodmv(n, m, b, c)
 !                                                                      *
 !   Matrix-matrix product: C = AB.  A  sparse  representation of the   *
 !   lower triangle of the  (NxN)  matrix  A  is read from the disk     *
@@ -21,68 +21,68 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE eigv_C
-      USE Where_C
-      USE fposition_C
-      USE mpi_C,           ONLY:  myid, nprocs
+      use vast_kind_param, only:  double
+      use eigv_c
+      use where_c
+      use fposition_c
+      use mpi_c,           only:  myid, nprocs
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dinit_I
-      USE posfile_I
-      USE dmerge_I
-      USE mpiu_I, ONLY: gdsummpi
-      IMPLICIT NONE
+      use dinit_i
+      use posfile_i
+      use dmerge_i
+      use mpiu_i, only: gdsummpi
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: N
-      INTEGER, INTENT(IN) :: M
-      REAL(DOUBLE), DIMENSION(N,M), INTENT(IN) :: B
-      REAL(DOUBLE), DIMENSION(N,M), INTENT(INOUT) :: C
+      integer, intent(in) :: n
+      integer, intent(in) :: m
+      real(double), dimension(n,m), intent(in) :: b
+      real(double), dimension(n,m), intent(inout) :: c
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, DIMENSION(N) :: IROW
+      integer, dimension(n) :: irow
 !cjb  INTEGER :: MYID, NPROCS, NCF, NCFDUM, ICCUTDUM, MYIDDUM, NPROCSDUM, ICOL&
-      INTEGER ::               NCF, NCFDUM, ICCUTDUM, MYIDDUM, NPROCSDUM, ICOL&
-         , NELC, IR, IV
-      REAL(DOUBLE), DIMENSION(N) :: EMT
-      REAL(DOUBLE) :: ELSTO, DIAG, DL
+      integer ::               ncf, ncfdum, iccutdum, myiddum, nprocsdum, icol&
+         , nelc, ir, iv
+      real(double), dimension(n) :: emt
+      real(double) :: elsto, diag, dl
 !-----------------------------------------------
 !
 !     !...nposition+1 is the current position of the .res file
 !     !...It is set in matrix and used in maneig, spodmv
 !
 !-----------------------------------------------------------------------
-      WRITE (6, *) 'Calling spodmv...'
-      NCF = N
+      write (6, *) 'Calling spodmv...'
+      ncf = n
 
 !   Initialise the result matrix; note that this is specific to the
 !   data structure of DVDSON
 
-      CALL DINIT (N*M, 0.D0, C, 1)
+      call dinit (n*m, 0.d0, c, 1)
 
       !...moved from maneig before "CALL GDVD (SPODMV..."
-      CALL POSFILE (0, IMCDF, NPOSITION)
+      call posfile (0, imcdf, nposition)
 
-      READ (IMCDF) NCFDUM, ICCUTDUM, MYIDDUM, NPROCSDUM
-      IF (NCF/=NCFDUM .OR. MYID/=MYIDDUM .OR. NPROCSDUM/=NPROCS) STOP &
+      read (imcdf) ncfdum, iccutdum, myiddum, nprocsdum
+      if (ncf/=ncfdum .or. myid/=myiddum .or. nprocsdum/=nprocs) stop &
          'spodmv: ncf read wrong'
 
 
-      DO ICOL = MYID + 1, N, NPROCS
-         READ (IMCDF) NELC, ELSTO, (EMT(IR),IR=1,NELC), (IROW(IR),IR=1,NELC)
-         DO IV = 1, M
-            DIAG = C(ICOL,IV) + (EMT(NELC)-EAV)*B(ICOL,IV)
-            CALL DMERGE (NELC - 1, B(1:N,IV), C(1:N,IV), IROW(1:N), &
-                         EMT(1:N), B(ICOL,IV), DL)
-            C(ICOL,IV) = DIAG + DL
-         END DO
-      END DO
+      do icol = myid + 1, n, nprocs
+         read (imcdf) nelc, elsto, (emt(ir),ir=1,nelc), (irow(ir),ir=1,nelc)
+         do iv = 1, m
+            diag = c(icol,iv) + (emt(nelc)-eav)*b(icol,iv)
+            call dmerge (nelc - 1, b(1:n,iv), c(1:n,iv), irow(1:n), &
+                         emt(1:n), b(icol,iv), dl)
+            c(icol,iv) = diag + dl
+         end do
+      end do
 
-      CALL gdsummpi (C, N*M)
+      call gdsummpi (c, n*m)
 
-      RETURN
-      END SUBROUTINE SPODMV
+      return
+      end subroutine spodmv

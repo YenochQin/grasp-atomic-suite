@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION ICHKQ1 (JA, JB)
+      integer function ichkq1 (ja, jb)
 !                                                                      *
 !   This routine is to check the occupation condition for one electron *
 !   operator.                                                          *
@@ -16,37 +16,37 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE debug_C
-      USE orb_C, ONLY: ncf,nw,iqa
+      use vast_kind_param, only:  double
+      use debug_c
+      use orb_c, only: ncf,nw,iqa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE iq_I
-      IMPLICIT NONE
+      use iq_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: JA
-      INTEGER  :: JB
+      integer  :: ja
+      integer  :: jb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K, I, IQA, IQB
+      integer :: k, i, iqa, iqb
 !-----------------------------------------------
 !
 !
-      ICHKQ1 = 0
-      K = 0
-      DO I = 1, NW
-         IQA = IQ(I,JA)
-         IQB = IQ(I,JB)
-         IF (IQA == IQB) CYCLE
-         K = K + 1
-         IF (K > 2) RETURN
-         IF (IABS(IQA - IQB) <= 1) CYCLE
-         RETURN
-      END DO
-      IF (K==2 .OR. K==0) ICHKQ1 = 1
-      RETURN
-      END FUNCTION ICHKQ1
+      ichkq1 = 0
+      k = 0
+      do i = 1, nw
+         iqa = iq(i,ja)
+         iqb = iq(i,jb)
+         if (iqa == iqb) cycle
+         k = k + 1
+         if (k > 2) return
+         if (iabs(iqa - iqb) <= 1) cycle
+         return
+      end do
+      if (k==2 .or. k==0) ichkq1 = 1
+      return
+      end function ichkq1

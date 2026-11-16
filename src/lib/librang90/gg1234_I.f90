@@ -1,13 +1,13 @@
-      MODULE GG1234_I
-      INTERFACE
+      module gg1234_i
+      interface
 !
-      SUBROUTINE GG1234(IK1,IK2,IK3,IK4,BK1,BK2,BK3,BK4,ID1,ID2,  &
-      ID3,ID4,BD1,BD2,BD3,BD4,QM1,QM2,QM3,QM4,WW)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER,      INTENT(IN), DIMENSION(7) :: IK1,IK2,IK3,IK4,ID1,ID2,ID3,ID4
-      REAL(DOUBLE), INTENT(IN)               :: QM1,QM2,QM3,QM4
-      REAL(DOUBLE), INTENT(IN), DIMENSION(3) :: BK1,BK2,BK3,BK4,BD1,BD2,BD3,BD4
-      REAL(DOUBLE), INTENT(OUT)              :: WW
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine gg1234(ik1,ik2,ik3,ik4,bk1,bk2,bk3,bk4,id1,id2,  &
+      id3,id4,bd1,bd2,bd3,bd4,qm1,qm2,qm3,qm4,ww)
+      use vast_kind_param, only:  double
+      integer,      intent(in), dimension(7) :: ik1,ik2,ik3,ik4,id1,id2,id3,id4
+      real(double), intent(in)               :: qm1,qm2,qm3,qm4
+      real(double), intent(in), dimension(3) :: bk1,bk2,bk3,bk4,bd1,bd2,bd3,bd4
+      real(double), intent(out)              :: ww
+      end subroutine
+      end interface
+      end module

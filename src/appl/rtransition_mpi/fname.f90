@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE FNAME(NAME)
+      subroutine fname(name)
 !                                                                      *
 !   Determines the name of the initial and final states                *
 !                                                                      *
@@ -13,37 +13,37 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER  :: NAME(2)*24
+      character  :: name(2)*24
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J
+      integer :: j
 !-----------------------------------------------
 !
 !
 !   Obtain the names of the initial and final state files
 !
-    1 CONTINUE
-      WRITE (6, *) ' Name of the Initial state'
-      READ (*, '(A)') NAME(1)
-      WRITE (6, *) ' Name of the Final state'
-      READ (*, '(A)') NAME(2)
+    1 continue
+      write (6, *) ' Name of the Initial state'
+      read (*, '(A)') name(1)
+      write (6, *) ' Name of the Final state'
+      read (*, '(A)') name(2)
 !
-      J = INDEX(NAME(1),' ')
-      IF (J == 1) THEN
-         WRITE (6, *) ' Names may not start with blanks'
-         GO TO 1
-      ENDIF
+      j = index(name(1),' ')
+      if (j == 1) then
+         write (6, *) ' Names may not start with blanks'
+         go to 1
+      endif
 !
-      J = INDEX(NAME(2),' ')
-      IF (J == 1) THEN
-         WRITE (6, *) ' Names may not start with blanks'
-         GO TO 1
-      ENDIF
+      j = index(name(2),' ')
+      if (j == 1) then
+         write (6, *) ' Names may not start with blanks'
+         go to 1
+      endif
 
-      RETURN
-      END SUBROUTINE FNAME
+      return
+      end subroutine fname

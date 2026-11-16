@@ -1,13 +1,13 @@
-      MODULE iniestsd_I
-      INTERFACE
+      module iniestsd_i
+      interface
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:04:58   1/ 3/07
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      SUBROUTINE INIESTSD (nmax,ncf, myid,nprocs,NIV,BASIS,IMCDF,EAV)
-      USE vast_kind_param,ONLY: DOUBLE
-      INTEGER, INTENT(IN) :: nmax, ncf, myid, nprocs, niv, imcdf
-      REAL(DOUBLE), INTENT(IN) :: EAV
-      REAL(DOUBLE), DIMENSION(*), INTENT(INOUT):: Basis
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine iniestsd (nmax,ncf, myid,nprocs,niv,basis,imcdf,eav)
+      use vast_kind_param,only: double
+      integer, intent(in) :: nmax, ncf, myid, nprocs, niv, imcdf
+      real(double), intent(in) :: eav
+      real(double), dimension(*), intent(inout):: basis
+      end subroutine
+      end interface
+      end module

@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE SIXJ3(J, K, L, M, N, ITIK, SI)
+      subroutine sixj3(j, k, l, m, n, itik, si)
 !                                                                  *
 !     THIS PACKAGE DETERMINES THE VALUES OF 6j COEFFICIENT         *
 !                                                                  *
@@ -17,493 +17,493 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, ONE, TWO, THREE, FOUR, SEVEN
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, one, two, three, four, seven
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ixjtik_I
-      IMPLICIT NONE
+      use ixjtik_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J, K, L, M, N
-      INTEGER, INTENT(IN) :: ITIK
-      REAL(DOUBLE), INTENT(OUT) :: SI
+      integer  :: j, k, l, m, n
+      integer, intent(in) :: itik
+      real(double), intent(out) :: si
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: I1
-      REAL(DOUBLE) :: AS, A, B, C, AKA
+      integer      :: i1
+      real(double) :: as, a, b, c, aka
 !-----------------------------------------------
-      SI = ZERO
-      IF (ITIK /= 0) THEN
+      si = zero
+      if (itik /= 0) then
 !
 !     CHESKED TRIANGULAR CONDITIONS
 !
-         IF (IXJTIK(J,K,L,M,N,6) == 0) RETURN
-      ENDIF
-      I1 = (J + K + L)/2
-      AS = DBLE(I1)
-      A = DBLE(L)
-      B = DBLE(J)
-      C = DBLE(K)
-      AKA = ONE
-      IF (MOD(I1,2) /= 0) AKA = -AKA
-      IF (J - N == 6) THEN
+         if (ixjtik(j,k,l,m,n,6) == 0) return
+      endif
+      i1 = (j + k + l)/2
+      as = dble(i1)
+      a = dble(l)
+      b = dble(j)
+      c = dble(k)
+      aka = one
+      if (mod(i1,2) /= 0) aka = -aka
+      if (j - n == 6) then
 ! -3
-         IF (K - M == 6) THEN
+         if (k - m == 6) then
 !                        -3  -3
-            SI = AKA*DSQRT((AS + ONE)*AS*(AS - ONE)*(AS - TWO)*(AS - THREE)*(AS&
-                - FOUR)/((B + ONE)*B*(B - ONE)*(B - TWO)*(B - THREE)*(B - FOUR)&
-               *(B - THREE - TWO)))
-            SI = SI*DSQRT((AS - A - THREE - TWO)*(AS - A - FOUR)*(AS - A - &
-               THREE)*(AS - A - TWO)*(AS - A - ONE)*(AS - A)/((C + ONE)*C*(C - &
-               ONE)*(C - TWO)*(C - THREE)*(C - FOUR)*(C - THREE - TWO)))
-         ELSE IF (M - K == 6) THEN
+            si = aka*dsqrt((as + one)*as*(as - one)*(as - two)*(as - three)*(as&
+                - four)/((b + one)*b*(b - one)*(b - two)*(b - three)*(b - four)&
+               *(b - three - two)))
+            si = si*dsqrt((as - a - three - two)*(as - a - four)*(as - a - &
+               three)*(as - a - two)*(as - a - one)*(as - a)/((c + one)*c*(c - &
+               one)*(c - two)*(c - three)*(c - four)*(c - three - two)))
+         else if (m - k == 6) then
 !                        3  -3
-            SI = AKA*DSQRT((AS - C)*(AS - C - ONE)*(AS - C - TWO)*(AS - C - &
-               THREE)*(AS - C - FOUR)*(AS - C - THREE - TWO)/((B + ONE)*B*(B - &
-               ONE)*(B - TWO)*(B - THREE)*(B - FOUR)*(B - THREE - TWO)))
-            SI = SI*DSQRT((AS - B + THREE + THREE)*(AS - B + THREE + TWO)*(AS&
-                - B + FOUR)*(AS - B + THREE)*(AS - B + TWO)*(AS - B + ONE)/((C&
-                + FOUR + THREE)*(C + THREE + THREE)*(C + THREE + TWO)*(C + FOUR&
-               )*(C + THREE)*(C + TWO)*(C + ONE)))
-         ELSE IF (K - M == 4) THEN
+            si = aka*dsqrt((as - c)*(as - c - one)*(as - c - two)*(as - c - &
+               three)*(as - c - four)*(as - c - three - two)/((b + one)*b*(b - &
+               one)*(b - two)*(b - three)*(b - four)*(b - three - two)))
+            si = si*dsqrt((as - b + three + three)*(as - b + three + two)*(as&
+                - b + four)*(as - b + three)*(as - b + two)*(as - b + one)/((c&
+                + four + three)*(c + three + three)*(c + three + two)*(c + four&
+               )*(c + three)*(c + two)*(c + one)))
+         else if (k - m == 4) then
 !                       -2  -3
-            SI = AKA*DSQRT(TWO*THREE*(AS - C)*(AS - B + ONE)*(AS - THREE)*(AS&
-                - TWO)*(AS - ONE)*AS*(AS + ONE)/((B - THREE - TWO)*(B - FOUR)*(&
-               B - THREE)*(B - TWO)*(B - ONE)*B*(B + ONE)))
-            SI = SI*DSQRT((AS - A - FOUR)*(AS - A - THREE)*(AS - A - TWO)*(AS&
-                - A - ONE)*(AS - A)/((C - FOUR)*(C - THREE)*(C - TWO)*(C - ONE)&
-               *C*(C + ONE)*(C + TWO)))
-         ELSE IF (M - K == 4) THEN
+            si = aka*dsqrt(two*three*(as - c)*(as - b + one)*(as - three)*(as&
+                - two)*(as - one)*as*(as + one)/((b - three - two)*(b - four)*(&
+               b - three)*(b - two)*(b - one)*b*(b + one)))
+            si = si*dsqrt((as - a - four)*(as - a - three)*(as - a - two)*(as&
+                - a - one)*(as - a)/((c - four)*(c - three)*(c - two)*(c - one)&
+               *c*(c + one)*(c + two)))
+         else if (m - k == 4) then
 !                        2  -3
-            SI = AKA*DSQRT(TWO*THREE*(AS + ONE)*(AS - A)*(AS - C - FOUR)*(AS - &
-               C - THREE)*(AS - C - TWO)*(AS - C - ONE)*(AS - C)/((C + THREE + &
-               THREE)*(C + THREE + TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*(C + &
-               ONE)*C))
-            SI = SI*DSQRT((AS - B + THREE + TWO)*(AS - B + FOUR)*(AS - B + &
-               THREE)*(AS - B + TWO)*(AS - B + ONE)/((B - THREE - TWO)*(B - &
-               FOUR)*(B - THREE)*(B - TWO)*(B - ONE)*B*(B + ONE)))
-         ELSE IF (K - M == 2) THEN
+            si = aka*dsqrt(two*three*(as + one)*(as - a)*(as - c - four)*(as - &
+               c - three)*(as - c - two)*(as - c - one)*(as - c)/((c + three + &
+               three)*(c + three + two)*(c + four)*(c + three)*(c + two)*(c + &
+               one)*c))
+            si = si*dsqrt((as - b + three + two)*(as - b + four)*(as - b + &
+               three)*(as - b + two)*(as - b + one)/((b - three - two)*(b - &
+               four)*(b - three)*(b - two)*(b - one)*b*(b + one)))
+         else if (k - m == 2) then
 !                       -1   -3
-            SI = AKA*DSQRT(THREE*(THREE + TWO)*(AS - C)*(AS - C - ONE)*(AS - B&
-                + TWO)*(AS - B + ONE)*(AS - TWO)*(AS - ONE)*AS*(AS + ONE)/((B&
-                - THREE - TWO)*(B - FOUR)*(B - THREE)*(B - TWO)*(B - ONE)*B*(B&
-                + ONE)))
-            SI = SI*DSQRT((AS - A - THREE)*(AS - A - TWO)*(AS - A - ONE)*(AS - &
-               A)/((C - THREE)*(C - TWO)*(C - ONE)*C*(C + ONE)*(C + TWO)*(C + &
-               THREE)))
-         ELSE IF (M - K == 2) THEN
+            si = aka*dsqrt(three*(three + two)*(as - c)*(as - c - one)*(as - b&
+                + two)*(as - b + one)*(as - two)*(as - one)*as*(as + one)/((b&
+                - three - two)*(b - four)*(b - three)*(b - two)*(b - one)*b*(b&
+                + one)))
+            si = si*dsqrt((as - a - three)*(as - a - two)*(as - a - one)*(as - &
+               a)/((c - three)*(c - two)*(c - one)*c*(c + one)*(c + two)*(c + &
+               three)))
+         else if (m - k == 2) then
 !                        1   -3
-            SI = AKA*DSQRT(THREE*(THREE + TWO)*(AS + ONE)*AS*(AS - A - ONE)*(AS&
-                - A)*(AS - C - THREE)*(AS - C - TWO)*(AS - C - ONE)*(AS - C)/((&
-               B - THREE - TWO)*(B - FOUR)*(B - THREE)*(B - TWO)*(B - ONE)*B*(B&
-                + ONE)))
-            SI = SI*DSQRT((AS - B + FOUR)*(AS - B + THREE)*(AS - B + TWO)*(AS&
-                - B + ONE)/((C + THREE + TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*&
-               (C + ONE)*C*(C - ONE)))
-         ELSE IF (M - K == 0) THEN
+            si = aka*dsqrt(three*(three + two)*(as + one)*as*(as - a - one)*(as&
+                - a)*(as - c - three)*(as - c - two)*(as - c - one)*(as - c)/((&
+               b - three - two)*(b - four)*(b - three)*(b - two)*(b - one)*b*(b&
+                + one)))
+            si = si*dsqrt((as - b + four)*(as - b + three)*(as - b + two)*(as&
+                - b + one)/((c + three + two)*(c + four)*(c + three)*(c + two)*&
+               (c + one)*c*(c - one)))
+         else if (m - k == 0) then
 !                        0   -3
-            SI = AKA*TWO*DSQRT((THREE + TWO)*(AS + ONE)*AS*(AS - ONE)*(AS - A&
-                - TWO)*(AS - A - ONE)*(AS - A)/((B - THREE - TWO)*(B - FOUR)*(B&
-                - THREE)*(B - TWO)*(B - ONE)*B*(B + ONE)))
-            SI = SI*DSQRT((AS - C - TWO)*(AS - C - ONE)*(AS - C)*(AS - B + &
-               THREE)*(AS - B + TWO)*(AS - B + ONE)/((C + FOUR)*(C + THREE)*(C&
-                + TWO)*(C + ONE)*C*(C - ONE)*(C - TWO)))
-         ENDIF
-      ELSE IF (N - J == 6) THEN
+            si = aka*two*dsqrt((three + two)*(as + one)*as*(as - one)*(as - a&
+                - two)*(as - a - one)*(as - a)/((b - three - two)*(b - four)*(b&
+                - three)*(b - two)*(b - one)*b*(b + one)))
+            si = si*dsqrt((as - c - two)*(as - c - one)*(as - c)*(as - b + &
+               three)*(as - b + two)*(as - b + one)/((c + four)*(c + three)*(c&
+                + two)*(c + one)*c*(c - one)*(c - two)))
+         endif
+      else if (n - j == 6) then
 !  3
-         IF (K - M == 6) THEN
+         if (k - m == 6) then
 !                        -3  3
-            SI = AKA*DSQRT((AS - B)*(AS - B - ONE)*(AS - B - TWO)*(AS - B - &
-               THREE)*(AS - B - FOUR)*(AS - B - THREE - TWO)/((C + ONE)*C*(C - &
-               ONE)*(C - TWO)*(C - THREE)*(C - FOUR)*(C - THREE - TWO)))
-            SI = SI*DSQRT((AS - C + THREE + THREE)*(AS - C + THREE + TWO)*(AS&
-                - C + FOUR)*(AS - C + THREE)*(AS - C + TWO)*(AS - C + ONE)/((B&
-                + FOUR + THREE)*(B + THREE + THREE)*(B + THREE + TWO)*(B + FOUR&
-               )*(B + THREE)*(B + TWO)*(B + ONE)))
-         ELSE IF (M - K == 6) THEN
+            si = aka*dsqrt((as - b)*(as - b - one)*(as - b - two)*(as - b - &
+               three)*(as - b - four)*(as - b - three - two)/((c + one)*c*(c - &
+               one)*(c - two)*(c - three)*(c - four)*(c - three - two)))
+            si = si*dsqrt((as - c + three + three)*(as - c + three + two)*(as&
+                - c + four)*(as - c + three)*(as - c + two)*(as - c + one)/((b&
+                + four + three)*(b + three + three)*(b + three + two)*(b + four&
+               )*(b + three)*(b + two)*(b + one)))
+         else if (m - k == 6) then
 !                        3   3
-            SI = AKA*DSQRT((AS - A + THREE + THREE)*(AS - A + THREE + TWO)*(AS&
-                - A + FOUR)*(AS - A + THREE)*(AS - A + TWO)*(AS - A + ONE)/((B&
-                + SEVEN)*(B + THREE + THREE)*(B + THREE + TWO)*(B + FOUR)*(B + &
-               THREE)*(B + TWO)*(B + ONE)))
-            SI = SI*DSQRT((AS + SEVEN)*(AS + THREE + THREE)*(AS + THREE + TWO)*&
-               (AS + FOUR)*(AS + THREE)*(AS + TWO)/((C + SEVEN)*(C + THREE + &
-               THREE)*(C + THREE + TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*(C + &
-               ONE)))
-         ELSE IF (K - M == 4) THEN
+            si = aka*dsqrt((as - a + three + three)*(as - a + three + two)*(as&
+                - a + four)*(as - a + three)*(as - a + two)*(as - a + one)/((b&
+                + seven)*(b + three + three)*(b + three + two)*(b + four)*(b + &
+               three)*(b + two)*(b + one)))
+            si = si*dsqrt((as + seven)*(as + three + three)*(as + three + two)*&
+               (as + four)*(as + three)*(as + two)/((c + seven)*(c + three + &
+               three)*(c + three + two)*(c + four)*(c + three)*(c + two)*(c + &
+               one)))
+         else if (k - m == 4) then
 !                       -2   3
-            SI = -AKA*DSQRT(TWO*THREE*(AS - A + ONE)*(AS + TWO)*(AS - B - FOUR)&
-               *(AS - B - THREE)*(AS - B - TWO)*(AS - B - ONE)*(AS - B)/((B + &
-               SEVEN)*(B + THREE + THREE)*(B + THREE + TWO)*(B + FOUR)*(B + &
-               THREE)*(B + TWO)*(B + ONE)))
-            SI = SI*DSQRT((AS - C + THREE + TWO)*(AS - C + FOUR)*(AS - C + &
-               THREE)*(AS - C + TWO)*(AS - C + ONE)/((C - FOUR)*(C - THREE)*(C&
-                - TWO)*(C - ONE)*C*(C + ONE)*(C + TWO)))
-         ELSE IF (M - K == 4) THEN
+            si = -aka*dsqrt(two*three*(as - a + one)*(as + two)*(as - b - four)&
+               *(as - b - three)*(as - b - two)*(as - b - one)*(as - b)/((b + &
+               seven)*(b + three + three)*(b + three + two)*(b + four)*(b + &
+               three)*(b + two)*(b + one)))
+            si = si*dsqrt((as - c + three + two)*(as - c + four)*(as - c + &
+               three)*(as - c + two)*(as - c + one)/((c - four)*(c - three)*(c&
+                - two)*(c - one)*c*(c + one)*(c + two)))
+         else if (m - k == 4) then
 !                        2   3
-            SI = -AKA*DSQRT(TWO*THREE*(AS - B)*(AS - C + ONE)*(AS - A + THREE&
-                + TWO)*(AS - A + FOUR)*(AS - A + THREE)*(AS - A + TWO)*(AS - A&
-                + ONE)/((B + SEVEN)*(B + THREE + THREE)*(B + THREE + TWO)*(B + &
-               FOUR)*(B + THREE)*(B + TWO)*(B + ONE)))
-            SI = SI*DSQRT((AS + THREE + THREE)*(AS + THREE + TWO)*(AS + FOUR)*(&
-               AS + THREE)*(AS + TWO)/((C + THREE + THREE)*(C + THREE + TWO)*(C&
-                + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)*C))
-         ELSE IF (K - M == 2) THEN
+            si = -aka*dsqrt(two*three*(as - b)*(as - c + one)*(as - a + three&
+                + two)*(as - a + four)*(as - a + three)*(as - a + two)*(as - a&
+                + one)/((b + seven)*(b + three + three)*(b + three + two)*(b + &
+               four)*(b + three)*(b + two)*(b + one)))
+            si = si*dsqrt((as + three + three)*(as + three + two)*(as + four)*(&
+               as + three)*(as + two)/((c + three + three)*(c + three + two)*(c&
+                + four)*(c + three)*(c + two)*(c + one)*c))
+         else if (k - m == 2) then
 !                       -1   3
-            SI = AKA*DSQRT(THREE*(THREE + TWO)*(AS - A + ONE)*(AS - A + TWO)*(&
-               AS + THREE)*(AS + TWO)*(AS - B - THREE)*(AS - B - TWO)*(AS - B&
-                - ONE)*(AS - B)/((B + SEVEN)*(B + THREE + THREE)*(B + THREE + &
-               TWO)*(B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)))
-            SI = SI*DSQRT((AS - C + FOUR)*(AS - C + THREE)*(AS - C + TWO)*(AS&
-                - C + ONE)/((C - THREE)*(C - TWO)*(C - ONE)*C*(C + ONE)*(C + &
-               TWO)*(C + THREE)))
-         ELSE IF (M - K == 2) THEN
+            si = aka*dsqrt(three*(three + two)*(as - a + one)*(as - a + two)*(&
+               as + three)*(as + two)*(as - b - three)*(as - b - two)*(as - b&
+                - one)*(as - b)/((b + seven)*(b + three + three)*(b + three + &
+               two)*(b + four)*(b + three)*(b + two)*(b + one)))
+            si = si*dsqrt((as - c + four)*(as - c + three)*(as - c + two)*(as&
+                - c + one)/((c - three)*(c - two)*(c - one)*c*(c + one)*(c + &
+               two)*(c + three)))
+         else if (m - k == 2) then
 !                        1   3
-            SI = AKA*DSQRT(THREE*(THREE + TWO)*(AS - B)*(AS - B - ONE)*(AS - C&
-                + TWO)*(AS - C + ONE)*(AS - A + FOUR)*(AS - A + THREE)*(AS - A&
-                + TWO)*(AS - A + ONE)/((B + SEVEN)*(B + THREE + THREE)*(B + &
-               THREE + TWO)*(B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)))
-            SI = SI*DSQRT((AS + THREE + TWO)*(AS + FOUR)*(AS + THREE)*(AS + TWO&
-               )/((C + THREE + TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)*&
-               C*(C - ONE)))
-         ELSE IF (M - K == 0) THEN
+            si = aka*dsqrt(three*(three + two)*(as - b)*(as - b - one)*(as - c&
+                + two)*(as - c + one)*(as - a + four)*(as - a + three)*(as - a&
+                + two)*(as - a + one)/((b + seven)*(b + three + three)*(b + &
+               three + two)*(b + four)*(b + three)*(b + two)*(b + one)))
+            si = si*dsqrt((as + three + two)*(as + four)*(as + three)*(as + two&
+               )/((c + three + two)*(c + four)*(c + three)*(c + two)*(c + one)*&
+               c*(c - one)))
+         else if (m - k == 0) then
 !                        0   3
-            SI = -AKA*TWO*DSQRT((THREE + TWO)*(AS - B)*(AS - B - ONE)*(AS - B&
-                - TWO)*(AS - C + THREE)*(AS - C + TWO)*(AS - C + ONE)/((B + &
-               SEVEN)*(B + THREE + THREE)*(B + THREE + TWO)*(B + FOUR)*(B + &
-               THREE)*(B + TWO)*(B + ONE)))
-            SI = SI*DSQRT((AS - A + THREE)*(AS - A + TWO)*(AS - A + ONE)*(AS + &
-               FOUR)*(AS + THREE)*(AS + TWO)/((C + FOUR)*(C + THREE)*(C + TWO)*&
-               (C + ONE)*C*(C - ONE)*(C - TWO)))
-         ENDIF
-      ELSE IF (J - N == 4) THEN
+            si = -aka*two*dsqrt((three + two)*(as - b)*(as - b - one)*(as - b&
+                - two)*(as - c + three)*(as - c + two)*(as - c + one)/((b + &
+               seven)*(b + three + three)*(b + three + two)*(b + four)*(b + &
+               three)*(b + two)*(b + one)))
+            si = si*dsqrt((as - a + three)*(as - a + two)*(as - a + one)*(as + &
+               four)*(as + three)*(as + two)/((c + four)*(c + three)*(c + two)*&
+               (c + one)*c*(c - one)*(c - two)))
+         endif
+      else if (j - n == 4) then
 ! -2
-         IF (K - M == 6) THEN
+         if (k - m == 6) then
 !                       -3  -2
-            SI = AKA*DSQRT(TWO*THREE*(AS - B)*(AS - C + ONE)*(AS - THREE)*(AS&
-                - TWO)*(AS - ONE)*AS*(AS + ONE)/((C - THREE - TWO)*(C - FOUR)*(&
-               C - THREE)*(C - TWO)*(C - ONE)*C*(C + ONE)))
-            SI = SI*DSQRT((AS - A - FOUR)*(AS - A - THREE)*(AS - A - TWO)*(AS&
-                - A - ONE)*(AS - A)/((B - FOUR)*(B - THREE)*(B - TWO)*(B - ONE)&
-               *B*(B + ONE)*(B + TWO)))
-         ELSE IF (M - K == 6) THEN
+            si = aka*dsqrt(two*three*(as - b)*(as - c + one)*(as - three)*(as&
+                - two)*(as - one)*as*(as + one)/((c - three - two)*(c - four)*(&
+               c - three)*(c - two)*(c - one)*c*(c + one)))
+            si = si*dsqrt((as - a - four)*(as - a - three)*(as - a - two)*(as&
+                - a - one)*(as - a)/((b - four)*(b - three)*(b - two)*(b - one)&
+               *b*(b + one)*(b + two)))
+         else if (m - k == 6) then
 !                       3   -2
-            SI = -AKA*DSQRT(TWO*THREE*(AS - A + ONE)*(AS + TWO)*(AS - C - FOUR)&
-               *(AS - C - THREE)*(AS - C - TWO)*(AS - C - ONE)*(AS - C)/((C + &
-               SEVEN)*(C + THREE + THREE)*(C + THREE + TWO)*(C + FOUR)*(C + &
-               THREE)*(C + TWO)*(C + ONE)))
-            SI = SI*DSQRT((AS - B + THREE + TWO)*(AS - B + FOUR)*(AS - B + &
-               THREE)*(AS - B + TWO)*(AS - B + ONE)/((B - FOUR)*(B - THREE)*(B&
-                - TWO)*(B - ONE)*B*(B + ONE)*(B + TWO)))
-         ELSE IF (K - M == 4) THEN
+            si = -aka*dsqrt(two*three*(as - a + one)*(as + two)*(as - c - four)&
+               *(as - c - three)*(as - c - two)*(as - c - one)*(as - c)/((c + &
+               seven)*(c + three + three)*(c + three + two)*(c + four)*(c + &
+               three)*(c + two)*(c + one)))
+            si = si*dsqrt((as - b + three + two)*(as - b + four)*(as - b + &
+               three)*(as - b + two)*(as - b + one)/((b - four)*(b - three)*(b&
+                - two)*(b - one)*b*(b + one)*(b + two)))
+         else if (k - m == 4) then
 !                      -2  -2
-            SI = AKA*((TWO + THREE)*(AS - C)*(AS - B) - (AS + TWO)*(AS - A - &
-               FOUR))*DSQRT((AS - TWO)*(AS - ONE)*AS*(AS + ONE)/((B - FOUR)*(B&
-                - THREE)*(B - TWO)*(B - ONE)*B*(B + ONE)*(B + TWO)))
-            SI = SI*DSQRT((AS - A - THREE)*(AS - A - TWO)*(AS - A - ONE)*(AS - &
-               A)/((C - FOUR)*(C - THREE)*(C - TWO)*(C - ONE)*C*(C + ONE)*(C + &
-               TWO)))
-         ELSE IF (M - K == 4) THEN
+            si = aka*((two + three)*(as - c)*(as - b) - (as + two)*(as - a - &
+               four))*dsqrt((as - two)*(as - one)*as*(as + one)/((b - four)*(b&
+                - three)*(b - two)*(b - one)*b*(b + one)*(b + two)))
+            si = si*dsqrt((as - a - three)*(as - a - two)*(as - a - one)*(as - &
+               a)/((c - four)*(c - three)*(c - two)*(c - one)*c*(c + one)*(c + &
+               two)))
+         else if (m - k == 4) then
 !                       2  -2
-            SI = -AKA*((TWO + THREE)*(AS + ONE)*(AS - A + ONE) - (AS - C + ONE)&
-               *(AS - B + THREE + TWO))*DSQRT((AS - C - THREE)*(AS - C - TWO)*(&
-               AS - C - ONE)*(AS - C)/((B - FOUR)*(B - THREE)*(B - TWO)*(B - &
-               ONE)*B*(B + ONE)*(B + TWO)))
-            SI = SI*DSQRT((AS - B + FOUR)*(AS - B + THREE)*(AS - B + TWO)*(AS&
-                - B + ONE)/((C + THREE + THREE)*(C + THREE + TWO)*(C + FOUR)*(C&
-                + THREE)*(C + TWO)*(C + ONE)*C))
-         ELSE IF (K - M == 2) THEN
+            si = -aka*((two + three)*(as + one)*(as - a + one) - (as - c + one)&
+               *(as - b + three + two))*dsqrt((as - c - three)*(as - c - two)*(&
+               as - c - one)*(as - c)/((b - four)*(b - three)*(b - two)*(b - &
+               one)*b*(b + one)*(b + two)))
+            si = si*dsqrt((as - b + four)*(as - b + three)*(as - b + two)*(as&
+                - b + one)/((c + three + three)*(c + three + two)*(c + four)*(c&
+                + three)*(c + two)*(c + one)*c))
+         else if (k - m == 2) then
 !                       -1  -2
-            SI = AKA*(TWO*(AS - C - ONE)*(AS - B) - (AS + TWO)*(AS - A - THREE)&
-               )*DSQRT(TWO*(THREE + TWO)*(AS - C)*(AS - B + ONE)*(AS - ONE)*AS*&
-               (AS + ONE)/((B - FOUR)*(B - THREE)*(B - TWO)*(B - ONE)*B*(B + &
-               ONE)*(B + TWO)))
-            SI = SI*DSQRT((AS - A - TWO)*(AS - A - ONE)*(AS - A)/((C - THREE)*(&
-               C - TWO)*(C - ONE)*C*(C + ONE)*(C + TWO)*(C + THREE)))
-         ELSE IF (M - K == 2) THEN
+            si = aka*(two*(as - c - one)*(as - b) - (as + two)*(as - a - three)&
+               )*dsqrt(two*(three + two)*(as - c)*(as - b + one)*(as - one)*as*&
+               (as + one)/((b - four)*(b - three)*(b - two)*(b - one)*b*(b + &
+               one)*(b + two)))
+            si = si*dsqrt((as - a - two)*(as - a - one)*(as - a)/((c - three)*(&
+               c - two)*(c - one)*c*(c + one)*(c + two)*(c + three)))
+         else if (m - k == 2) then
 !                        1  -2
-            SI = -AKA*(TWO*AS*(AS - A + ONE) - (AS - C + ONE)*(AS - B + FOUR))*&
-               DSQRT(TWO*(THREE + TWO)*(AS + ONE)*(AS - A)*(AS - C - TWO)*(AS&
-                - C - ONE)*(AS - C)/((B - FOUR)*(B - THREE)*(B - TWO)*(B - ONE)&
-               *B*(B + ONE)*(B + TWO)))
-            SI = SI*DSQRT((AS - B + THREE)*(AS - B + TWO)*(AS - B + ONE)/((C + &
-               THREE + TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)*C*(C - &
-               ONE)))
-         ELSE IF (M - K == 0) THEN
+            si = -aka*(two*as*(as - a + one) - (as - c + one)*(as - b + four))*&
+               dsqrt(two*(three + two)*(as + one)*(as - a)*(as - c - two)*(as&
+                - c - one)*(as - c)/((b - four)*(b - three)*(b - two)*(b - one)&
+               *b*(b + one)*(b + two)))
+            si = si*dsqrt((as - b + three)*(as - b + two)*(as - b + one)/((c + &
+               three + two)*(c + four)*(c + three)*(c + two)*(c + one)*c*(c - &
+               one)))
+         else if (m - k == 0) then
 !                        0  -2
-            SI = -AKA*((AS - ONE)*(AS - A + ONE) - (AS - C + ONE)*(AS - B + &
-               THREE))*DSQRT(TWO*THREE*(THREE + TWO)*(AS + ONE)*AS*(AS - A - &
-               ONE)*(AS - A)/((B - FOUR)*(B - THREE)*(B - TWO)*(B - ONE)*B*(B&
-                + ONE)*(B + TWO)))
-            SI = SI*DSQRT((AS - C - ONE)*(AS - C)*(AS - B + TWO)*(AS - B + ONE)&
-               /((C + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)*C*(C - ONE)*(C - &
-               TWO)))
-         ENDIF
-      ELSE IF (N - J == 4) THEN
+            si = -aka*((as - one)*(as - a + one) - (as - c + one)*(as - b + &
+               three))*dsqrt(two*three*(three + two)*(as + one)*as*(as - a - &
+               one)*(as - a)/((b - four)*(b - three)*(b - two)*(b - one)*b*(b&
+                + one)*(b + two)))
+            si = si*dsqrt((as - c - one)*(as - c)*(as - b + two)*(as - b + one)&
+               /((c + four)*(c + three)*(c + two)*(c + one)*c*(c - one)*(c - &
+               two)))
+         endif
+      else if (n - j == 4) then
 !  2
-         IF (K - M == 6) THEN
+         if (k - m == 6) then
 !                        -3  2
-            SI = AKA*DSQRT(TWO*THREE*(AS + ONE)*(AS - A)*(AS - B - FOUR)*(AS - &
-               B - THREE)*(AS - B - TWO)*(AS - B - ONE)*(AS - B)/((B + THREE + &
-               THREE)*(B + THREE + TWO)*(B + FOUR)*(B + THREE)*(B + TWO)*(B + &
-               ONE)*B))
-            SI = SI*DSQRT((AS - C + THREE + TWO)*(AS - C + FOUR)*(AS - C + &
-               THREE)*(AS - C + TWO)*(AS - C + ONE)/((C - THREE - TWO)*(C - &
-               FOUR)*(C - THREE)*(C - TWO)*(C - ONE)*C*(C + ONE)))
-         ELSE IF (M - K == 6) THEN
+            si = aka*dsqrt(two*three*(as + one)*(as - a)*(as - b - four)*(as - &
+               b - three)*(as - b - two)*(as - b - one)*(as - b)/((b + three + &
+               three)*(b + three + two)*(b + four)*(b + three)*(b + two)*(b + &
+               one)*b))
+            si = si*dsqrt((as - c + three + two)*(as - c + four)*(as - c + &
+               three)*(as - c + two)*(as - c + one)/((c - three - two)*(c - &
+               four)*(c - three)*(c - two)*(c - one)*c*(c + one)))
+         else if (m - k == 6) then
 !                        3  2
-            SI = -AKA*DSQRT(TWO*THREE*(AS - C)*(AS - B + ONE)*(AS - A + THREE&
-                + TWO)*(AS - A + FOUR)*(AS - A + THREE)*(AS - A + TWO)*(AS - A&
-                + ONE)/((C + SEVEN)*(C + THREE + THREE)*(C + THREE + TWO)*(C + &
-               FOUR)*(C + THREE)*(C + TWO)*(C + ONE)))
-            SI = SI*DSQRT((AS + THREE + THREE)*(AS + THREE + TWO)*(AS + FOUR)*(&
-               AS + THREE)*(AS + TWO)/((B + THREE + THREE)*(B + THREE + TWO)*(B&
-                + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)*B))
-         ELSE IF (K - M == 4) THEN
+            si = -aka*dsqrt(two*three*(as - c)*(as - b + one)*(as - a + three&
+                + two)*(as - a + four)*(as - a + three)*(as - a + two)*(as - a&
+                + one)/((c + seven)*(c + three + three)*(c + three + two)*(c + &
+               four)*(c + three)*(c + two)*(c + one)))
+            si = si*dsqrt((as + three + three)*(as + three + two)*(as + four)*(&
+               as + three)*(as + two)/((b + three + three)*(b + three + two)*(b&
+                + four)*(b + three)*(b + two)*(b + one)*b))
+         else if (k - m == 4) then
 !                       -2  2
-            SI = -AKA*((TWO + THREE)*(AS + ONE)*(AS - A + ONE) - (AS - B + ONE)&
-               *(AS - C + THREE + TWO))*DSQRT((AS - B - THREE)*(AS - B - TWO)*(&
-               AS - B - ONE)*(AS - B)/((C - FOUR)*(C - THREE)*(C - TWO)*(C - &
-               ONE)*C*(C + ONE)*(C + TWO)))
-            SI = SI*DSQRT((AS - C + FOUR)*(AS - C + THREE)*(AS - C + TWO)*(AS&
-                - C + ONE)/((B + THREE + THREE)*(B + THREE + TWO)*(B + FOUR)*(B&
-                + THREE)*(B + TWO)*(B + ONE)*B))
-         ELSE IF (M - K == 4) THEN
+            si = -aka*((two + three)*(as + one)*(as - a + one) - (as - b + one)&
+               *(as - c + three + two))*dsqrt((as - b - three)*(as - b - two)*(&
+               as - b - one)*(as - b)/((c - four)*(c - three)*(c - two)*(c - &
+               one)*c*(c + one)*(c + two)))
+            si = si*dsqrt((as - c + four)*(as - c + three)*(as - c + two)*(as&
+                - c + one)/((b + three + three)*(b + three + two)*(b + four)*(b&
+                + three)*(b + two)*(b + one)*b))
+         else if (m - k == 4) then
 !                        2  2
-            SI = AKA*((TWO + THREE)*(AS - B)*(AS - C) - (AS - A)*(AS + THREE + &
-               THREE))*DSQRT((AS - A + FOUR)*(AS - A + THREE)*(AS - A + TWO)*(&
-               AS - A + ONE)/((B + THREE + THREE)*(B + THREE + TWO)*(B + FOUR)*&
-               (B + THREE)*(B + TWO)*(B + ONE)*B))
-            SI = SI*DSQRT((AS + THREE + TWO)*(AS + FOUR)*(AS + THREE)*(AS + TWO&
-               )/((C + THREE + THREE)*(C + THREE + TWO)*(C + FOUR)*(C + THREE)*&
-               (C + TWO)*(C + ONE)*C))
-         ELSE IF (K - M == 2) THEN
+            si = aka*((two + three)*(as - b)*(as - c) - (as - a)*(as + three + &
+               three))*dsqrt((as - a + four)*(as - a + three)*(as - a + two)*(&
+               as - a + one)/((b + three + three)*(b + three + two)*(b + four)*&
+               (b + three)*(b + two)*(b + one)*b))
+            si = si*dsqrt((as + three + two)*(as + four)*(as + three)*(as + two&
+               )/((c + three + three)*(c + three + two)*(c + four)*(c + three)*&
+               (c + two)*(c + one)*c))
+         else if (k - m == 2) then
 !                       -1  2
-            SI = AKA*(TWO*(AS - A + TWO)*(AS + ONE) - (AS - B + ONE)*(AS - C + &
-               FOUR))*DSQRT(TWO*(THREE + TWO)*(AS - A + ONE)*(AS + TWO)*(AS - B&
-                - TWO)*(AS - B - ONE)*(AS - B)/((B + THREE + THREE)*(B + THREE&
-                + TWO)*(B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)*B))
-            SI = SI*DSQRT((AS - C + THREE)*(AS - C + TWO)*(AS - C + ONE)/((C - &
-               THREE)*(C - TWO)*(C - ONE)*C*(C + ONE)*(C + TWO)*(C + THREE)))
-         ELSE IF (M - K == 2) THEN
+            si = aka*(two*(as - a + two)*(as + one) - (as - b + one)*(as - c + &
+               four))*dsqrt(two*(three + two)*(as - a + one)*(as + two)*(as - b&
+                - two)*(as - b - one)*(as - b)/((b + three + three)*(b + three&
+                + two)*(b + four)*(b + three)*(b + two)*(b + one)*b))
+            si = si*dsqrt((as - c + three)*(as - c + two)*(as - c + one)/((c - &
+               three)*(c - two)*(c - one)*c*(c + one)*(c + two)*(c + three)))
+         else if (m - k == 2) then
 !                        1  2
-            SI = -AKA*(TWO*(AS - B - ONE)*(AS - C) - (AS - A)*(AS + THREE + TWO&
-               ))*DSQRT(TWO*(THREE + TWO)*(AS - B)*(AS - C + ONE)*(AS - A + &
-               THREE)*(AS - A + TWO)*(AS - A + ONE)/((B + THREE + THREE)*(B + &
-               THREE + TWO)*(B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)*B))
-            SI = SI*DSQRT((AS + FOUR)*(AS + THREE)*(AS + TWO)/((C + THREE + TWO&
-               )*(C + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)*C*(C - ONE)))
-         ELSE IF (M - K == 0) THEN
+            si = -aka*(two*(as - b - one)*(as - c) - (as - a)*(as + three + two&
+               ))*dsqrt(two*(three + two)*(as - b)*(as - c + one)*(as - a + &
+               three)*(as - a + two)*(as - a + one)/((b + three + three)*(b + &
+               three + two)*(b + four)*(b + three)*(b + two)*(b + one)*b))
+            si = si*dsqrt((as + four)*(as + three)*(as + two)/((c + three + two&
+               )*(c + four)*(c + three)*(c + two)*(c + one)*c*(c - one)))
+         else if (m - k == 0) then
 !                        0  2
-            SI = AKA*((AS - B - TWO)*(AS - C) - (AS - A)*(AS + FOUR))*DSQRT(TWO&
-               *THREE*(THREE + TWO)*(AS - B)*(AS - B - ONE)*(AS - C + TWO)*(AS&
-                - C + ONE)/((B + THREE + THREE)*(B + THREE + TWO)*(B + FOUR)*(B&
-                + THREE)*(B + TWO)*(B + ONE)*B))
-            SI = SI*DSQRT((AS - A + TWO)*(AS - A + ONE)*(AS + THREE)*(AS + TWO)&
-               /((C + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)*C*(C - ONE)*(C - &
-               TWO)))
-         ENDIF
-      ELSE IF (J - N == 2) THEN
+            si = aka*((as - b - two)*(as - c) - (as - a)*(as + four))*dsqrt(two&
+               *three*(three + two)*(as - b)*(as - b - one)*(as - c + two)*(as&
+                - c + one)/((b + three + three)*(b + three + two)*(b + four)*(b&
+                + three)*(b + two)*(b + one)*b))
+            si = si*dsqrt((as - a + two)*(as - a + one)*(as + three)*(as + two)&
+               /((c + four)*(c + three)*(c + two)*(c + one)*c*(c - one)*(c - &
+               two)))
+         endif
+      else if (j - n == 2) then
 ! - 1
-         IF (K - M == 6) THEN
+         if (k - m == 6) then
 !                       -3   -1
-            SI = AKA*DSQRT(THREE*(THREE + TWO)*(AS - B)*(AS - B - ONE)*(AS - C&
-                + TWO)*(AS - C + ONE)*(AS - TWO)*(AS - ONE)*AS*(AS + ONE)/((C&
-                - THREE - TWO)*(C - FOUR)*(C - THREE)*(C - TWO)*(C - ONE)*C*(C&
-                + ONE)))
-            SI = SI*DSQRT((AS - A - THREE)*(AS - A - TWO)*(AS - A - ONE)*(AS - &
-               A)/((B - THREE)*(B - TWO)*(B - ONE)*B*(B + ONE)*(B + TWO)*(B + &
-               THREE)))
-         ELSE IF (M - K == 6) THEN
+            si = aka*dsqrt(three*(three + two)*(as - b)*(as - b - one)*(as - c&
+                + two)*(as - c + one)*(as - two)*(as - one)*as*(as + one)/((c&
+                - three - two)*(c - four)*(c - three)*(c - two)*(c - one)*c*(c&
+                + one)))
+            si = si*dsqrt((as - a - three)*(as - a - two)*(as - a - one)*(as - &
+               a)/((b - three)*(b - two)*(b - one)*b*(b + one)*(b + two)*(b + &
+               three)))
+         else if (m - k == 6) then
 !                       3    -1
-            SI = AKA*DSQRT(THREE*(THREE + TWO)*(AS - A + ONE)*(AS - A + TWO)*(&
-               AS + THREE)*(AS + TWO)*(AS - C - THREE)*(AS - C - TWO)*(AS - C&
-                - ONE)*(AS - C)/((C + SEVEN)*(C + THREE + THREE)*(C + THREE + &
-               TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)))
-            SI = SI*DSQRT((AS - B + FOUR)*(AS - B + THREE)*(AS - B + TWO)*(AS&
-                - B + ONE)/((B - THREE)*(B - TWO)*(B - ONE)*B*(B + ONE)*(B + &
-               TWO)*(B + THREE)))
-         ELSE IF (K - M == 4) THEN
+            si = aka*dsqrt(three*(three + two)*(as - a + one)*(as - a + two)*(&
+               as + three)*(as + two)*(as - c - three)*(as - c - two)*(as - c&
+                - one)*(as - c)/((c + seven)*(c + three + three)*(c + three + &
+               two)*(c + four)*(c + three)*(c + two)*(c + one)))
+            si = si*dsqrt((as - b + four)*(as - b + three)*(as - b + two)*(as&
+                - b + one)/((b - three)*(b - two)*(b - one)*b*(b + one)*(b + &
+               two)*(b + three)))
+         else if (k - m == 4) then
 !                       -2   -1
-            SI = AKA*(TWO*(AS - B - ONE)*(AS - C) - (AS + TWO)*(AS - A - THREE)&
-               )*DSQRT(TWO*(THREE + TWO)*(AS - B)*(AS - C + ONE)*(AS - ONE)*AS*&
-               (AS + ONE)/((C - FOUR)*(C - THREE)*(C - TWO)*(C - ONE)*C*(C + &
-               ONE)*(C + TWO)))
-            SI = SI*DSQRT((AS - A - TWO)*(AS - A - ONE)*(AS - A)/((B - THREE)*(&
-               B - TWO)*(B - ONE)*B*(B + ONE)*(B + TWO)*(B + THREE)))
-         ELSE IF (M - K == 4) THEN
+            si = aka*(two*(as - b - one)*(as - c) - (as + two)*(as - a - three)&
+               )*dsqrt(two*(three + two)*(as - b)*(as - c + one)*(as - one)*as*&
+               (as + one)/((c - four)*(c - three)*(c - two)*(c - one)*c*(c + &
+               one)*(c + two)))
+            si = si*dsqrt((as - a - two)*(as - a - one)*(as - a)/((b - three)*(&
+               b - two)*(b - one)*b*(b + one)*(b + two)*(b + three)))
+         else if (m - k == 4) then
 !                       2    -1
-            SI = AKA*(TWO*(AS - A + TWO)*(AS + ONE) - (AS - C + ONE)*(AS - B + &
-               FOUR))*DSQRT(TWO*(THREE + TWO)*(AS - A + ONE)*(AS + TWO)*(AS - C&
-                - TWO)*(AS - C - ONE)*(AS - C)/((C + THREE + THREE)*(C + THREE&
-                + TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)*C))
-            SI = SI*DSQRT((AS - B + THREE)*(AS - B + TWO)*(AS - B + ONE)/((B - &
-               THREE)*(B - TWO)*(B - ONE)*B*(B + ONE)*(B + TWO)*(B + THREE)))
-         ELSE IF (K - M == 2) THEN
+            si = aka*(two*(as - a + two)*(as + one) - (as - c + one)*(as - b + &
+               four))*dsqrt(two*(three + two)*(as - a + one)*(as + two)*(as - c&
+                - two)*(as - c - one)*(as - c)/((c + three + three)*(c + three&
+                + two)*(c + four)*(c + three)*(c + two)*(c + one)*c))
+            si = si*dsqrt((as - b + three)*(as - b + two)*(as - b + one)/((b - &
+               three)*(b - two)*(b - one)*b*(b + one)*(b + two)*(b + three)))
+         else if (k - m == 2) then
 !                        -1   -1
-            SI = AKA*(TWO*THREE*(AS - C)*(AS - C - ONE)*(AS - B - ONE)*(AS - B)&
-                - TWO*FOUR*(AS - C)*(AS - B)*(AS + TWO)*(AS - A - TWO) + (AS + &
-               THREE)*(AS + TWO)*(AS - A - THREE)*(AS - A - TWO))
-            SI = SI*DSQRT(AS*(AS + ONE)*(AS - A - ONE)*(AS - A)/((B - THREE)*(B&
-                - TWO)*(B - ONE)*B*(B + ONE)*(B + TWO)*(B + THREE)*(C - THREE)*&
-               (C - TWO)*(C - ONE)*C*(C + ONE)*(C + TWO)*(C + THREE)))
-         ELSE IF (M - K == 2) THEN
+            si = aka*(two*three*(as - c)*(as - c - one)*(as - b - one)*(as - b)&
+                - two*four*(as - c)*(as - b)*(as + two)*(as - a - two) + (as + &
+               three)*(as + two)*(as - a - three)*(as - a - two))
+            si = si*dsqrt(as*(as + one)*(as - a - one)*(as - a)/((b - three)*(b&
+                - two)*(b - one)*b*(b + one)*(b + two)*(b + three)*(c - three)*&
+               (c - two)*(c - one)*c*(c + one)*(c + two)*(c + three)))
+         else if (m - k == 2) then
 !                         1   -1
-            SI = AKA*(TWO*THREE*(AS + ONE)*AS*(AS - A + ONE)*(AS - A + TWO) - &
-               TWO*FOUR*(AS + ONE)*(AS - A + ONE)*(AS - C + ONE)*(AS - B + &
-               THREE) + (AS - C + ONE)*(AS - C + TWO)*(AS - B + FOUR)*(AS - B&
-                + THREE))
-            SI = SI*DSQRT((AS - C - ONE)*(AS - C)*(AS - B + TWO)*(AS - B + ONE)&
-               /((B - THREE)*(B - TWO)*(B - ONE)*B*(B + ONE)*(B + TWO)*(B + &
-               THREE)*(C + THREE + TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*(C + &
-               ONE)*C*(C - ONE)))
-         ELSE IF (M - K == 0) THEN
+            si = aka*(two*three*(as + one)*as*(as - a + one)*(as - a + two) - &
+               two*four*(as + one)*(as - a + one)*(as - c + one)*(as - b + &
+               three) + (as - c + one)*(as - c + two)*(as - b + four)*(as - b&
+                + three))
+            si = si*dsqrt((as - c - one)*(as - c)*(as - b + two)*(as - b + one)&
+               /((b - three)*(b - two)*(b - one)*b*(b + one)*(b + two)*(b + &
+               three)*(c + three + two)*(c + four)*(c + three)*(c + two)*(c + &
+               one)*c*(c - one)))
+         else if (m - k == 0) then
 !                         0   -1
-            SI = AKA*TWO*(AS*(AS - ONE)*(AS - A + ONE)*(AS - A + TWO) - THREE*&
-               AS*(AS - A + ONE)*(AS - C + ONE)*(AS - B + TWO) + (AS - C + ONE)&
-               *(AS - C + TWO)*(AS - B + THREE)*(AS - B + TWO))
-            SI = SI*DSQRT(THREE*(AS + ONE)*(AS - A)*(AS - C)*(AS - B + ONE)/((B&
-                - THREE)*(B - TWO)*(B - ONE)*B*(B + ONE)*(B + TWO)*(B + THREE)*&
-               (C + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)*C*(C - ONE)*(C - TWO)&
+            si = aka*two*(as*(as - one)*(as - a + one)*(as - a + two) - three*&
+               as*(as - a + one)*(as - c + one)*(as - b + two) + (as - c + one)&
+               *(as - c + two)*(as - b + three)*(as - b + two))
+            si = si*dsqrt(three*(as + one)*(as - a)*(as - c)*(as - b + one)/((b&
+                - three)*(b - two)*(b - one)*b*(b + one)*(b + two)*(b + three)*&
+               (c + four)*(c + three)*(c + two)*(c + one)*c*(c - one)*(c - two)&
                ))
-         ENDIF
-      ELSE IF (N - J == 2) THEN
+         endif
+      else if (n - j == 2) then
 ! - 1
-         IF (K - M == 6) THEN
+         if (k - m == 6) then
 !                        -3   1
-            SI = AKA*DSQRT(THREE*(THREE + TWO)*(AS + ONE)*AS*(AS - A - ONE)*(AS&
-                - A)*(AS - B - THREE)*(AS - B - TWO)*(AS - B - ONE)*(AS - B)/((&
-               C - THREE - TWO)*(C - FOUR)*(C - THREE)*(C - TWO)*(C - ONE)*C*(C&
-                + ONE)))
-            SI = SI*DSQRT((AS - C + FOUR)*(AS - C + THREE)*(AS - C + TWO)*(AS&
-                - C + ONE)/((B + THREE + TWO)*(B + FOUR)*(B + THREE)*(B + TWO)*&
-               (B + ONE)*B*(B - ONE)))
-         ELSE IF (M - K == 6) THEN
+            si = aka*dsqrt(three*(three + two)*(as + one)*as*(as - a - one)*(as&
+                - a)*(as - b - three)*(as - b - two)*(as - b - one)*(as - b)/((&
+               c - three - two)*(c - four)*(c - three)*(c - two)*(c - one)*c*(c&
+                + one)))
+            si = si*dsqrt((as - c + four)*(as - c + three)*(as - c + two)*(as&
+                - c + one)/((b + three + two)*(b + four)*(b + three)*(b + two)*&
+               (b + one)*b*(b - one)))
+         else if (m - k == 6) then
 !                        3    1
-            SI = AKA*DSQRT(THREE*(THREE + TWO)*(AS - C)*(AS - C - ONE)*(AS - B&
-                + TWO)*(AS - B + ONE)*(AS - A + FOUR)*(AS - A + THREE)*(AS - A&
-                + TWO)*(AS - A + ONE)/((C + SEVEN)*(C + THREE + THREE)*(C + &
-               THREE + TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)))
-            SI = SI*DSQRT((AS + THREE + TWO)*(AS + FOUR)*(AS + THREE)*(AS + TWO&
-               )/((B + THREE + TWO)*(B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)*&
-               B*(B - ONE)))
-         ELSE IF (K - M == 4) THEN
+            si = aka*dsqrt(three*(three + two)*(as - c)*(as - c - one)*(as - b&
+                + two)*(as - b + one)*(as - a + four)*(as - a + three)*(as - a&
+                + two)*(as - a + one)/((c + seven)*(c + three + three)*(c + &
+               three + two)*(c + four)*(c + three)*(c + two)*(c + one)))
+            si = si*dsqrt((as + three + two)*(as + four)*(as + three)*(as + two&
+               )/((b + three + two)*(b + four)*(b + three)*(b + two)*(b + one)*&
+               b*(b - one)))
+         else if (k - m == 4) then
 !                        -2   1
-            SI = -AKA*(TWO*AS*(AS - A + ONE) - (AS - B + ONE)*(AS - C + FOUR))*&
-               DSQRT(TWO*(THREE + TWO)*(AS + ONE)*(AS - A)*(AS - B - TWO)*(AS&
-                - B - ONE)*(AS - B)/((C - FOUR)*(C - THREE)*(C - TWO)*(C - ONE)&
-               *C*(C + ONE)*(C + TWO)))
-            SI = SI*DSQRT((AS - C + THREE)*(AS - C + TWO)*(AS - C + ONE)/((B + &
-               THREE + TWO)*(B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)*B*(B - &
-               ONE)))
-         ELSE IF (M - K == 4) THEN
+            si = -aka*(two*as*(as - a + one) - (as - b + one)*(as - c + four))*&
+               dsqrt(two*(three + two)*(as + one)*(as - a)*(as - b - two)*(as&
+                - b - one)*(as - b)/((c - four)*(c - three)*(c - two)*(c - one)&
+               *c*(c + one)*(c + two)))
+            si = si*dsqrt((as - c + three)*(as - c + two)*(as - c + one)/((b + &
+               three + two)*(b + four)*(b + three)*(b + two)*(b + one)*b*(b - &
+               one)))
+         else if (m - k == 4) then
 !                         2   1
-            SI = -AKA*(TWO*(AS - C - ONE)*(AS - B) - (AS - A)*(AS + THREE + TWO&
-               ))*DSQRT(TWO*(THREE + TWO)*(AS - C)*(AS - B + ONE)*(AS - A + &
-               THREE)*(AS - A + TWO)*(AS - A + ONE)/((C + THREE + THREE)*(C + &
-               THREE + TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)*C))
-            SI = SI*DSQRT((AS + FOUR)*(AS + THREE)*(AS + TWO)/((B + THREE + TWO&
-               )*(B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)*B*(B - ONE)))
-         ELSE IF (M - K == 2) THEN
+            si = -aka*(two*(as - c - one)*(as - b) - (as - a)*(as + three + two&
+               ))*dsqrt(two*(three + two)*(as - c)*(as - b + one)*(as - a + &
+               three)*(as - a + two)*(as - a + one)/((c + three + three)*(c + &
+               three + two)*(c + four)*(c + three)*(c + two)*(c + one)*c))
+            si = si*dsqrt((as + four)*(as + three)*(as + two)/((b + three + two&
+               )*(b + four)*(b + three)*(b + two)*(b + one)*b*(b - one)))
+         else if (m - k == 2) then
 !                         1   1
-            SI = AKA*(TWO*THREE*(AS - B)*(AS - B - ONE)*(AS - C)*(AS - C - ONE)&
-                - TWO*FOUR*(AS - B)*(AS - C)*(AS - A)*(AS + FOUR) + (AS - A)*(&
-               AS - A - ONE)*(AS + THREE + TWO)*(AS + FOUR))
-            SI = SI*DSQRT((AS - A + TWO)*(AS - A + ONE)*(AS + THREE)*(AS + TWO)&
-               /((B + THREE + TWO)*(B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)*B&
-               *(B - ONE)*(C + THREE + TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*(C&
-                + ONE)*C*(C - ONE)))
-         ELSE IF (K - M == 2) THEN
+            si = aka*(two*three*(as - b)*(as - b - one)*(as - c)*(as - c - one)&
+                - two*four*(as - b)*(as - c)*(as - a)*(as + four) + (as - a)*(&
+               as - a - one)*(as + three + two)*(as + four))
+            si = si*dsqrt((as - a + two)*(as - a + one)*(as + three)*(as + two)&
+               /((b + three + two)*(b + four)*(b + three)*(b + two)*(b + one)*b&
+               *(b - one)*(c + three + two)*(c + four)*(c + three)*(c + two)*(c&
+                + one)*c*(c - one)))
+         else if (k - m == 2) then
 !                        -1   1
-            SI = AKA*(TWO*THREE*(AS + ONE)*AS*(AS - A + ONE)*(AS - A + TWO) - &
-               TWO*FOUR*(AS + ONE)*(AS - A + ONE)*(AS - B + ONE)*(AS - C + &
-               THREE) + (AS - B + ONE)*(AS - B + TWO)*(AS - C + FOUR)*(AS - C&
-                + THREE))
-            SI = SI*DSQRT((AS - B - ONE)*(AS - B)*(AS - C + TWO)*(AS - C + ONE)&
-               /((C - THREE)*(C - TWO)*(C - ONE)*C*(C + ONE)*(C + TWO)*(C + &
-               THREE)*(B + THREE + TWO)*(B + FOUR)*(B + THREE)*(B + TWO)*(B + &
-               ONE)*B*(B - ONE)))
-         ELSE IF (M - K == 0) THEN
+            si = aka*(two*three*(as + one)*as*(as - a + one)*(as - a + two) - &
+               two*four*(as + one)*(as - a + one)*(as - b + one)*(as - c + &
+               three) + (as - b + one)*(as - b + two)*(as - c + four)*(as - c&
+                + three))
+            si = si*dsqrt((as - b - one)*(as - b)*(as - c + two)*(as - c + one)&
+               /((c - three)*(c - two)*(c - one)*c*(c + one)*(c + two)*(c + &
+               three)*(b + three + two)*(b + four)*(b + three)*(b + two)*(b + &
+               one)*b*(b - one)))
+         else if (m - k == 0) then
 !                         0   1
-            SI = -AKA*TWO*((AS - B - ONE)*(AS - B - TWO)*(AS - C)*(AS - C - ONE&
-               ) - THREE*(AS - B - ONE)*(AS - C)*(AS - A)*(AS + THREE) + (AS - &
-               A)*(AS - A - ONE)*(AS + FOUR)*(AS + THREE))
-            SI = SI*DSQRT(THREE*(AS - B)*(AS - C + ONE)*(AS - A + ONE)*(AS + &
-               TWO)/((B + THREE + TWO)*(B + FOUR)*(B + THREE)*(B + TWO)*(B + &
-               ONE)*B*(B - ONE)*(C + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)*C*(C&
-                - ONE)*(C - TWO)))
-         ENDIF
-      ELSE IF (J - N == 0) THEN
+            si = -aka*two*((as - b - one)*(as - b - two)*(as - c)*(as - c - one&
+               ) - three*(as - b - one)*(as - c)*(as - a)*(as + three) + (as - &
+               a)*(as - a - one)*(as + four)*(as + three))
+            si = si*dsqrt(three*(as - b)*(as - c + one)*(as - a + one)*(as + &
+               two)/((b + three + two)*(b + four)*(b + three)*(b + two)*(b + &
+               one)*b*(b - one)*(c + four)*(c + three)*(c + two)*(c + one)*c*(c&
+                - one)*(c - two)))
+         endif
+      else if (j - n == 0) then
 !  0
-         IF (K - M == 6) THEN
+         if (k - m == 6) then
 !                       -3    0
-            SI = AKA*TWO*DSQRT((THREE + TWO)*(AS + ONE)*AS*(AS - ONE)*(AS - A&
-                - TWO)*(AS - A - ONE)*(AS - A)/((C - THREE - TWO)*(C - FOUR)*(C&
-                - THREE)*(C - TWO)*(C - ONE)*C*(C + ONE)))
-            SI = SI*DSQRT((AS - B - TWO)*(AS - B - ONE)*(AS - B)*(AS - C + &
-               THREE)*(AS - C + TWO)*(AS - C + ONE)/((B + FOUR)*(B + THREE)*(B&
-                + TWO)*(B + ONE)*B*(B - ONE)*(B - TWO)))
-         ELSE IF (M - K == 6) THEN
+            si = aka*two*dsqrt((three + two)*(as + one)*as*(as - one)*(as - a&
+                - two)*(as - a - one)*(as - a)/((c - three - two)*(c - four)*(c&
+                - three)*(c - two)*(c - one)*c*(c + one)))
+            si = si*dsqrt((as - b - two)*(as - b - one)*(as - b)*(as - c + &
+               three)*(as - c + two)*(as - c + one)/((b + four)*(b + three)*(b&
+                + two)*(b + one)*b*(b - one)*(b - two)))
+         else if (m - k == 6) then
 !                        3    0
-            SI = -AKA*TWO*DSQRT((THREE + TWO)*(AS - C)*(AS - C - ONE)*(AS - C&
-                - TWO)*(AS - B + THREE)*(AS - B + TWO)*(AS - B + ONE)/((C + &
-               SEVEN)*(C + THREE + THREE)*(C + THREE + TWO)*(C + FOUR)*(C + &
-               THREE)*(C + TWO)*(C + ONE)))
-            SI = SI*DSQRT((AS - A + THREE)*(AS - A + TWO)*(AS - A + ONE)*(AS + &
-               FOUR)*(AS + THREE)*(AS + TWO)/((B + FOUR)*(B + THREE)*(B + TWO)*&
-               (B + ONE)*B*(B - ONE)*(B - TWO)))
-         ELSE IF (K - M == 4) THEN
+            si = -aka*two*dsqrt((three + two)*(as - c)*(as - c - one)*(as - c&
+                - two)*(as - b + three)*(as - b + two)*(as - b + one)/((c + &
+               seven)*(c + three + three)*(c + three + two)*(c + four)*(c + &
+               three)*(c + two)*(c + one)))
+            si = si*dsqrt((as - a + three)*(as - a + two)*(as - a + one)*(as + &
+               four)*(as + three)*(as + two)/((b + four)*(b + three)*(b + two)*&
+               (b + one)*b*(b - one)*(b - two)))
+         else if (k - m == 4) then
 !                       -2    0
-            SI = -AKA*((AS - ONE)*(AS - A + ONE) - (AS - B + ONE)*(AS - C + &
-               THREE))*DSQRT(TWO*THREE*(THREE + TWO)*(AS + ONE)*AS*(AS - A - &
-               ONE)*(AS - A)/((C - FOUR)*(C - THREE)*(C - TWO)*(C - ONE)*C*(C&
-                + ONE)*(C + TWO)))
-            SI = SI*DSQRT((AS - B - ONE)*(AS - B)*(AS - C + TWO)*(AS - C + ONE)&
-               /((B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)*B*(B - ONE)*(B - &
-               TWO)))
-         ELSE IF (M - K == 4) THEN
+            si = -aka*((as - one)*(as - a + one) - (as - b + one)*(as - c + &
+               three))*dsqrt(two*three*(three + two)*(as + one)*as*(as - a - &
+               one)*(as - a)/((c - four)*(c - three)*(c - two)*(c - one)*c*(c&
+                + one)*(c + two)))
+            si = si*dsqrt((as - b - one)*(as - b)*(as - c + two)*(as - c + one)&
+               /((b + four)*(b + three)*(b + two)*(b + one)*b*(b - one)*(b - &
+               two)))
+         else if (m - k == 4) then
 !                        2    0
-            SI = AKA*((AS - C - TWO)*(AS - B) - (AS - A)*(AS + FOUR))*DSQRT(TWO&
-               *THREE*(THREE + TWO)*(AS - C)*(AS - C - ONE)*(AS - B + TWO)*(AS&
-                - B + ONE)/((C + THREE + THREE)*(C + THREE + TWO)*(C + FOUR)*(C&
-                + THREE)*(C + TWO)*(C + ONE)*C))
-            SI = SI*DSQRT((AS - A + TWO)*(AS - A + ONE)*(AS + THREE)*(AS + TWO)&
-               /((B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)*B*(B - ONE)*(B - &
-               TWO)))
-         ELSE IF (K - M == 2) THEN
+            si = aka*((as - c - two)*(as - b) - (as - a)*(as + four))*dsqrt(two&
+               *three*(three + two)*(as - c)*(as - c - one)*(as - b + two)*(as&
+                - b + one)/((c + three + three)*(c + three + two)*(c + four)*(c&
+                + three)*(c + two)*(c + one)*c))
+            si = si*dsqrt((as - a + two)*(as - a + one)*(as + three)*(as + two)&
+               /((b + four)*(b + three)*(b + two)*(b + one)*b*(b - one)*(b - &
+               two)))
+         else if (k - m == 2) then
 !                       -1    0
-            SI = AKA*TWO*(AS*(AS - ONE)*(AS - A + ONE)*(AS - A + TWO) - THREE*&
-               AS*(AS - A + ONE)*(AS - B + ONE)*(AS - C + TWO) + (AS - B + ONE)&
-               *(AS - B + TWO)*(AS - C + THREE)*(AS - C + TWO))
-            SI = SI*DSQRT(THREE*(AS + ONE)*(AS - A)*(AS - B)*(AS - C + ONE)/((C&
-                - THREE)*(C - TWO)*(C - ONE)*C*(C + ONE)*(C + TWO)*(C + THREE)*&
-               (B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)*B*(B - ONE)*(B - TWO)&
+            si = aka*two*(as*(as - one)*(as - a + one)*(as - a + two) - three*&
+               as*(as - a + one)*(as - b + one)*(as - c + two) + (as - b + one)&
+               *(as - b + two)*(as - c + three)*(as - c + two))
+            si = si*dsqrt(three*(as + one)*(as - a)*(as - b)*(as - c + one)/((c&
+                - three)*(c - two)*(c - one)*c*(c + one)*(c + two)*(c + three)*&
+               (b + four)*(b + three)*(b + two)*(b + one)*b*(b - one)*(b - two)&
                ))
-         ELSE IF (M - K == 2) THEN
+         else if (m - k == 2) then
 !                        1    0
-            SI = -AKA*TWO*((AS - C - ONE)*(AS - C - TWO)*(AS - B)*(AS - B - ONE&
-               ) - THREE*(AS - C - ONE)*(AS - B)*(AS - A)*(AS + THREE) + (AS - &
-               A)*(AS - A - ONE)*(AS + FOUR)*(AS + THREE))
-            SI = SI*DSQRT(THREE*(AS - C)*(AS - B + ONE)*(AS - A + ONE)*(AS + &
-               TWO)/((C + THREE + TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*(C + &
-               ONE)*C*(C - ONE)*(B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)*B*(B&
-                - ONE)*(B - TWO)))
-         ELSE IF (K - M == 0) THEN
+            si = -aka*two*((as - c - one)*(as - c - two)*(as - b)*(as - b - one&
+               ) - three*(as - c - one)*(as - b)*(as - a)*(as + three) + (as - &
+               a)*(as - a - one)*(as + four)*(as + three))
+            si = si*dsqrt(three*(as - c)*(as - b + one)*(as - a + one)*(as + &
+               two)/((c + three + two)*(c + four)*(c + three)*(c + two)*(c + &
+               one)*c*(c - one)*(b + four)*(b + three)*(b + two)*(b + one)*b*(b&
+                - one)*(b - two)))
+         else if (k - m == 0) then
 !                        0    0
-            SI = AKA*((AS - B)*(AS - B - ONE)*(AS - B - TWO)*(AS - C)*(AS - C&
-                - ONE)*(AS - C - TWO) - THREE*THREE*(AS - B)*(AS - B - ONE)*(AS&
-                - C)*(AS - C - ONE)*(AS - A)*(AS + TWO) + THREE*THREE*(AS - B)*&
-               (AS - C)*(AS - A)*(AS - A - ONE)*(AS + THREE)*(AS + TWO) - (AS&
-                - A)*(AS - A - ONE)*(AS - A - TWO)*(AS + FOUR)*(AS + THREE)*(AS&
-                + TWO))
-            SI = SI/DSQRT((B + FOUR)*(B + THREE)*(B + TWO)*(B + ONE)*B*(B - ONE&
-               )*(B - TWO)*(C + FOUR)*(C + THREE)*(C + TWO)*(C + ONE)*C*(C - &
-               ONE)*(C - TWO))
-         ENDIF
-      ENDIF
-      RETURN
-      END SUBROUTINE SIXJ3
+            si = aka*((as - b)*(as - b - one)*(as - b - two)*(as - c)*(as - c&
+                - one)*(as - c - two) - three*three*(as - b)*(as - b - one)*(as&
+                - c)*(as - c - one)*(as - a)*(as + two) + three*three*(as - b)*&
+               (as - c)*(as - a)*(as - a - one)*(as + three)*(as + two) - (as&
+                - a)*(as - a - one)*(as - a - two)*(as + four)*(as + three)*(as&
+                + two))
+            si = si/dsqrt((b + four)*(b + three)*(b + two)*(b + one)*b*(b - one&
+               )*(b - two)*(c + four)*(c + three)*(c + two)*(c + one)*c*(c - &
+               one)*(c - two))
+         endif
+      endif
+      return
+      end subroutine sixj3

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION SLATER (IA, IB, IC, ID, K)
+      real(kind(0.0d0)) function slater (ia, ib, ic, id, k)
 !                                                                      *
 !   The value of this  function is the Slater integral                 *
 !                                                                      *
@@ -18,64 +18,64 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE DEBUG_C
-      USE GRID_C
-      USE ORB_C
-      USE TATB_C,          ONLY: TA, TB, MTP
-      USE WAVE_C,          ONLY: MF, QF, PF
+      use vast_kind_param, only: double
+      use debug_c
+      use grid_c
+      use orb_c
+      use tatb_c,          only: ta, tb, mtp
+      use wave_c,          only: mf, qf, pf
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE yzk_I
-      USE quad_I
-      IMPLICIT NONE
+      use yzk_i
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER :: IA
-      INTEGER :: IB
-      INTEGER :: IC
-      INTEGER :: ID
-      INTEGER :: K
+      integer :: ia
+      integer :: ib
+      integer :: ic
+      integer :: id
+      integer :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE) :: RESULT
+      integer :: i
+      real(double) :: result
 !-----------------------------------------------
 !
 !
-      CALL YZK (K, IB, ID)
+      call yzk (k, ib, id)
 !
 !   Multiply by second term, and obtain result by integration
 !
-      IF (K==0 .AND. IB==ID) THEN
-         MTP = MIN(MF(IA),MF(IC))
-      ELSE
-         MTP = MIN(MIN(MTP,MF(IA)),MF(IC))
-      ENDIF
+      if (k==0 .and. ib==id) then
+         mtp = min(mf(ia),mf(ic))
+      else
+         mtp = min(min(mtp,mf(ia)),mf(ic))
+      endif
 !
-      TA(1) = 0.0D00
-      DO I = 2, MTP
-         TA(I) = (PF(I,IA)*PF(I,IC) + QF(I,IA)*QF(I,IC))*RPOR(I)*TB(I)
-      END DO
+      ta(1) = 0.0d00
+      do i = 2, mtp
+         ta(i) = (pf(i,ia)*pf(i,ic) + qf(i,ia)*qf(i,ic))*rpor(i)*tb(i)
+      end do
 !
-      CALL QUAD (RESULT)
-      SLATER = RESULT
+      call quad (result)
+      slater = result
 !
 !   Debug printout
 !
-      IF (LDBPR(10)) WRITE (99, 300) K, NP(IA), NH(IA), NP(IB), NH(IB), NP(IC)&
-         , NH(IC), NP(ID), NH(ID), SLATER
+      if (ldbpr(10)) write (99, 300) k, np(ia), nh(ia), np(ib), nh(ib), np(ic)&
+         , nh(ic), np(id), nh(id), slater
 !
-      RETURN
+      return
 !
-  300 FORMAT(/,'  (',1I1,')',/,' R   (',1I2,1A2,',',1I2,1A2,';',1I2,1A2,',',1I2&
-         ,1A2,') ','= ',1P,D19.12)
-      RETURN
+  300 format(/,'  (',1i1,')',/,' R   (',1i2,1a2,',',1i2,1a2,';',1i2,1a2,',',1i2&
+         ,1a2,') ','= ',1p,d19.12)
+      return
 !
-      END FUNCTION SLATER
+      end function slater

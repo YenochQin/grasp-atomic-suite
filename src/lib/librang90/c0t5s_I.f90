@@ -1,10 +1,10 @@
-      MODULE c0t5s_I
-      INTERFACE
+      module c0t5s_i
+      interface
 !
-      SUBROUTINE C0T5S(Q, QM, SM, C, CM, A)
-      USE vast_kind_param, ONLY:  DOUBLE
-      REAL(DOUBLE), INTENT(IN)  :: Q, QM, SM, C, CM
-      REAL(DOUBLE), INTENT(OUT) :: A
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine c0t5s(q, qm, sm, c, cm, a)
+      use vast_kind_param, only:  double
+      real(double), intent(in)  :: q, qm, sm, c, cm
+      real(double), intent(out) :: a
+      end subroutine
+      end interface
+      end module

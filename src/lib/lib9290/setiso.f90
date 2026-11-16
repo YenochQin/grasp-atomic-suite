@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETISO(FNAME)
+      subroutine setiso(fname)
 !                                                                      *
 !   Open, check, load data from and close the  .iso  file. This file   *
 !   is always attached to stream  22 in  RSCF92,  RCI92,  HFS92, and   *
@@ -22,59 +22,59 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE IOUNIT_C
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      USE lodiso_I
-      IMPLICIT NONE
+      use openfl_i
+      use lodiso_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER (LEN = *), INTENT(IN) :: FNAME
+      character (len = *), intent(in) :: fname
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      CHARACTER(LEN=3), PARAMETER  :: STATUS = 'OLD'
-      CHARACTER(LEN=6), PARAMETER  :: MYNAME = 'SETISO'
-      CHARACTER(LEN=9), PARAMETER  :: FORM = 'FORMATTED'
-      CHARACTER(LEN=14), PARAMETER :: SIGNATURE = 'Atomic number:'
+      character(len=3), parameter  :: status = 'OLD'
+      character(len=6), parameter  :: myname = 'SETISO'
+      character(len=9), parameter  :: form = 'FORMATTED'
+      character(len=14), parameter :: signature = 'Atomic number:'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER           :: LENF, IERR, IOS
-      LOGICAL           :: FOUND
-      CHARACTER(LEN=14) :: STR
+      integer           :: lenf, ierr, ios
+      logical           :: found
+      character(len=14) :: str
 !-----------------------------------------------
 !
-      INQUIRE(FILE=FNAME, EXIST=FOUND)
-      IF (.NOT.FOUND) THEN
-         LENF = LEN_TRIM(FNAME)
-         WRITE (ISTDE,*)                                              &
-                     MYNAME,'- file: ',FNAME(1:LENF),' does not exist'
-         STOP
-      ENDIF
+      inquire(file=fname, exist=found)
+      if (.not.found) then
+         lenf = len_trim(fname)
+         write (istde,*)                                              &
+                     myname,'- file: ',fname(1:lenf),' does not exist'
+         stop
+      endif
 !
-      CALL OPENFL (22, FNAME, FORM, STATUS, IERR)
-      IF (IERR /= 0) THEN
-         WRITE (ISTDE, *) 'Error opening isodata file: ', FNAME(1:LENF)
-         STOP
-      ENDIF
+      call openfl (22, fname, form, status, ierr)
+      if (ierr /= 0) then
+         write (istde, *) 'Error opening isodata file: ', fname(1:lenf)
+         stop
+      endif
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      READ (22, '(A)', IOSTAT=IOS) STR
-      IF (IOS/=0 .OR. STR/=SIGNATURE) THEN
-         WRITE (ISTDE, *) 'Not an ISOtope Data File;'
-         CLOSE(22)
-         STOP
-      ENDIF
+      read (22, '(A)', iostat=ios) str
+      if (ios/=0 .or. str/=signature) then
+         write (istde, *) 'Not an ISOtope Data File;'
+         close(22)
+         stop
+      endif
 !
 !   Load data from the .iso file and then close it.
 !
-      CALL LODISO
-      CLOSE(22)
+      call lodiso
+      close(22)
 
-      RETURN
-      END SUBROUTINE SETISO
+      return
+      end subroutine setiso

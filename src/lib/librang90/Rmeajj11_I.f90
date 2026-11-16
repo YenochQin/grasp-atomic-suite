@@ -1,10 +1,10 @@
-      MODULE rmeajj11_I
-      INTERFACE
+      module rmeajj11_i
+      interface
 !
-      SUBROUTINE RMEAJJ11(J1,J2,LL,S)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER,      INTENT(IN)  :: J1, J2, LL
-      REAL(DOUBLE), INTENT(OUT) :: S
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine rmeajj11(j1,j2,ll,s)
+      use vast_kind_param, only:  double
+      integer,      intent(in)  :: j1, j2, ll
+      real(double), intent(out) :: s
+      end subroutine
+      end interface
+      end module

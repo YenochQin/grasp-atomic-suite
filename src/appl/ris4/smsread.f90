@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SMSREAD(VINT,VINT2)
+      subroutine smsread(vint,vint2)
 !
 !   Call(s) to: [LIB92]: ALCBUF                                        *
 !                                                                      *
@@ -11,66 +11,66 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE parameter_def,    ONLY: KEYORB, NNNW
-      USE prnt_C
-      USE ris_C
-      USE orb_C
-      USE eigv_C
-      USE BUFFER_C
-      USE debug_C,          ONLY: CUTOFF
+      use parameter_def,    only: keyorb, nnnw
+      use prnt_c
+      use ris_c
+      use orb_c
+      use eigv_c
+      use buffer_c
+      use debug_c,          only: cutoff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE alcbuf_I
-      IMPLICIT NONE
+      use alcbuf_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: VINT, VINT2
+      real(double), dimension(nnnw,nnnw), intent(in) :: vint, vint2
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE) :: CONTRI, CONTRIK1, COEFFSMS
-      INTEGER :: IC, IR, I, J, IIA, IIB, IIC, IID, LOC, LAB, IOS
+      real(double) :: contri, contrik1, coeffsms
+      integer :: ic, ir, i, j, iia, iib, iic, iid, loc, lab, ios
 !-----------------------------------------------
 !
-      CALL ALCBUF (1)
+      call alcbuf (1)
 
-      REWIND(51)
-  16  READ (51,IOSTAT = IOS) IC,IR
+      rewind(51)
+  16  read (51,iostat = ios) ic,ir
 !C      WRITE(*,*) IC,IR
-      IF (IOS .EQ. 0) THEN
+      if (ios .eq. 0) then
 !cc        DO J = 1,NVEC
-          READ(51) COEFFSMS,LAB
-          IID = MOD (LAB, KEY)
-          LAB = LAB/KEY
-          IIB  = MOD (LAB, KEY)
-          LAB = LAB/KEY
-          IIC = MOD (LAB, KEY)
-          IIA = LAB/KEY
-        DO J = 1,NVEC
-          LOC = (J-1)*NCF
-            CONTRIK1 = - EVEC(IC+LOC)*EVEC(IR+LOC)                     &
-               * COEFFSMS                                              &
-               * VINT (IIA,IIC)*VINT(IIB,IID)
-            CONTRI = - EVEC(IC+LOC)*EVEC(IR+LOC)                       &
-               * COEFFSMS                                              &
-               * ( VINT2(IIA,IIC)*VINT(IIB,IID)                        &
-               + VINT2(IIB,IID)*VINT(IIA,IIC))/2.0D00
-          IF (IR.NE.IC) THEN
-            CONTRI = 2.0D00 * CONTRI
-            CONTRIK1 = 2.0D00 * CONTRIK1
-          ENDIF
-          SMSC1(J) = SMSC1(J) + CONTRIK1
-          SMSC2(J) = SMSC2(J) + CONTRI
-        ENDDO
+          read(51) coeffsms,lab
+          iid = mod (lab, key)
+          lab = lab/key
+          iib  = mod (lab, key)
+          lab = lab/key
+          iic = mod (lab, key)
+          iia = lab/key
+        do j = 1,nvec
+          loc = (j-1)*ncf
+            contrik1 = - evec(ic+loc)*evec(ir+loc)                     &
+               * coeffsms                                              &
+               * vint (iia,iic)*vint(iib,iid)
+            contri = - evec(ic+loc)*evec(ir+loc)                       &
+               * coeffsms                                              &
+               * ( vint2(iia,iic)*vint(iib,iid)                        &
+               + vint2(iib,iid)*vint(iia,iic))/2.0d00
+          if (ir.ne.ic) then
+            contri = 2.0d00 * contri
+            contrik1 = 2.0d00 * contrik1
+          endif
+          smsc1(j) = smsc1(j) + contrik1
+          smsc2(j) = smsc2(j) + contri
+        enddo
 
-      GOTO 16
-      ENDIF
-      CALL ALCBUF (3)
-      RETURN
-      END SUBROUTINE SMSREAD
+      goto 16
+      endif
+      call alcbuf (3)
+      return
+      end subroutine smsread

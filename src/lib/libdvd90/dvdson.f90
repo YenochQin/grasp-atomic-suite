@@ -1,6 +1,6 @@
-      SUBROUTINE DVDSON(IRC, IREV, N, LIM, NOC, ILOW, IHIGH, ISELEC, NIV, &
-         MBLOCK, CRITE, CRITC, CRITR, MAXITER, WORK, IWRSZ, IWORK, IIWSZ, HIEND&
-         , NLOOPS, IERR)
+      subroutine dvdson(irc, irev, n, lim, noc, ilow, ihigh, iselec, niv, &
+         mblock, crite, critc, critr, maxiter, work, iwrsz, iwork, iiwsz, hiend&
+         , nloops, ierr)
 !=======================================================================
 !
 !     Author: Andreas Stathopoulos, Charlotte F. Fischer
@@ -71,48 +71,48 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE initdvd_I
-      USE dvdrvr_I
+      use initdvd_i
+      use dvdrvr_i
       !USE dscal_I
       !USE dcopy_I
-      USE suite_linear_algebra, ONLY: dcopy, dscal
-      IMPLICIT NONE
+      use suite_linear_algebra, only: dcopy, dscal
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: IRC
-      INTEGER  :: N
-      INTEGER  :: LIM
-      INTEGER  :: NOC
-      INTEGER, INTENT(INOUT) :: ILOW
-      INTEGER, INTENT(INOUT) :: IHIGH
-      INTEGER  :: NIV
-      INTEGER  :: MBLOCK
-      INTEGER  :: MAXITER
-      INTEGER, INTENT(IN) :: IWRSZ
-      INTEGER, INTENT(IN) :: IIWSZ
-      INTEGER, INTENT(INOUT) :: NLOOPS
+      integer  :: irc
+      integer  :: n
+      integer  :: lim
+      integer  :: noc
+      integer, intent(inout) :: ilow
+      integer, intent(inout) :: ihigh
+      integer  :: niv
+      integer  :: mblock
+      integer  :: maxiter
+      integer, intent(in) :: iwrsz
+      integer, intent(in) :: iiwsz
+      integer, intent(inout) :: nloops
 !      INTEGER, INTENT(INOUT) :: IERR
-      INTEGER  :: IERR
-      REAL(DOUBLE)  :: CRITE
-      REAL(DOUBLE)  :: CRITC
-      REAL(DOUBLE)  :: CRITR
-      LOGICAL  :: HIEND
-      INTEGER  :: IREV(*)
-      INTEGER  :: ISELEC(LIM)
-      INTEGER  :: IWORK(IIWSZ)
-      REAL(DOUBLE)  :: WORK(IWRSZ)
+      integer  :: ierr
+      real(double)  :: crite
+      real(double)  :: critc
+      real(double)  :: critr
+      logical  :: hiend
+      integer  :: irev(*)
+      integer  :: iselec(lim)
+      integer  :: iwork(iiwsz)
+      real(double)  :: work(iwrsz)
       real(kind(0.0d0)) :: ddot
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NEIG, I, NUME, IORTHO, IBASIS, IEIGVAL, IAB, IS, ITEMPS, ISVEC&
-         , ISCRA1, IOLDVAL, ISCRA2, ISCRA3, IICV
-      SAVE
+      integer :: neig, i, nume, iortho, ibasis, ieigval, iab, is, itemps, isvec&
+         , iscra1, ioldval, iscra2, iscra3, iicv
+      save
 !      SAVE NEIG, I, NUME, IORTHO, IBASIS, IEIGVAL, IAB, IS, ITEMPS, ISVEC, &
 !         ISCRA1, IOLDVAL, ISCRA2, ISCRA3, IICV
 !-----------------------------------------------
@@ -305,184 +305,184 @@
 !-----------------------------------------------------------------------
 !       Reverse Communication
 !-----------------------------------------------------------------------
-      IF (IRC==1 .OR. IRC==3) THEN
+      if (irc==1 .or. irc==3) then
 !          ..(=1)preconditioning. Go into DVDRVR
 !          ..(=3)or Matrix vector in DVDRVR
-         GO TO 200
-      ELSE IF (IRC == 2) THEN
+         go to 200
+      else if (irc == 2) then
 !          ..matrix vector for setting up.
-         GO TO 100
-      ENDIF
+         go to 100
+      endif
 !-----------------------------------------------------------------------
 !
 ! Checking user input errors, and setting up the problem to solve.
 !
-      IERR = 0
-      IF (LIM > N) IERR = IERR + 1
-      IF (LIM <= 0) IERR = IERR + 2
+      ierr = 0
+      if (lim > n) ierr = ierr + 1
+      if (lim <= 0) ierr = ierr + 2
 
-      HIEND = .FALSE.
+      hiend = .false.
 
-      IF (ILOW<=0 .OR. ILOW>N) THEN
+      if (ilow<=0 .or. ilow>n) then
 !          ..Look for user choice of eigenpairs in ISELEC
-         IF (ISELEC(1) <= 0) THEN
+         if (iselec(1) <= 0) then
 !             ..Nothing is given in ISELEC
-            IERR = IERR + 4
-         ELSE
+            ierr = ierr + 4
+         else
 !             ..Find number of eigenpairs wanted, and their
 !           ..min/max indices
-            NEIG = 1
-            ILOW = ISELEC(1)
-            IHIGH = ISELEC(1)
-            DO I = 2, LIM
-               IF (ISELEC(I) <= 0) EXIT
-               ILOW = MIN(ILOW,ISELEC(I))
-               IHIGH = MAX(IHIGH,ISELEC(I))
-               NEIG = NEIG + 1
-            END DO
+            neig = 1
+            ilow = iselec(1)
+            ihigh = iselec(1)
+            do i = 2, lim
+               if (iselec(i) <= 0) exit
+               ilow = min(ilow,iselec(i))
+               ihigh = max(ihigh,iselec(i))
+               neig = neig + 1
+            end do
 !           ..Check if a very large index is asked for
-            IF (IHIGH > N) IERR = IERR + 8
-         ENDIF
-      ELSE
+            if (ihigh > n) ierr = ierr + 8
+         endif
+      else
 !          ..Look for a range between ILOW and IHIGH
 !          ..Invalid range. IHIGH>N
-         IF (IHIGH > N) IERR = IERR + 8
-         NEIG = IHIGH - ILOW + 1
+         if (ihigh > n) ierr = ierr + 8
+         neig = ihigh - ilow + 1
 !          ..Invalid range. IHIGH<ILOW
-         IF (NEIG <= 0) IERR = IERR + 16
-         IF (NEIG > LIM) THEN
+         if (neig <= 0) ierr = ierr + 16
+         if (neig > lim) then
 !           ..Not enough Basis space. Increase LIM or decrease NEIG
-            IERR = IERR + 32
-         ELSE
+            ierr = ierr + 32
+         else
 !           ..Fill in the ISELEC with the required indices
-            DO I = 1, NEIG
-               ISELEC(I) = ILOW + I - 1
-            END DO
-         ENDIF
-      ENDIF
+            do i = 1, neig
+               iselec(i) = ilow + i - 1
+            end do
+         endif
+      endif
 
-      IF (IERR /= 0) RETURN
+      if (ierr /= 0) return
 
-      NUME = IHIGH
+      nume = ihigh
 !       ..Identify if few of the highest eigenpairs are wanted.
-      IF (ILOW + IHIGH - 1 > N) THEN
-         HIEND = .TRUE.
-         NUME = N - ILOW + 1
+      if (ilow + ihigh - 1 > n) then
+         hiend = .true.
+         nume = n - ilow + 1
 !          ..Change the problem to a minimum eipenpairs one
 !          ..by picking the corresponding eigenpairs on the
 !          ..opposite side of the spectrum.
-         I = 1
-         IF (NEIG > 0) THEN
-            ISELEC(:NEIG) = N - ISELEC(:NEIG) + 1
-            I = NEIG + 1
-         ENDIF
-      ENDIF
+         i = 1
+         if (neig > 0) then
+            iselec(:neig) = n - iselec(:neig) + 1
+            i = neig + 1
+         endif
+      endif
 !       ..duplications in ISELEC
-      IF (NEIG > NUME) IERR = IERR + 64
+      if (neig > nume) ierr = ierr + 64
 !       ..Not enough Basis space. Increase LIM or decrease NUME
-      IF (NUME>LIM .OR. NUME==LIM .AND. NUME/=N) IERR = IERR + 128
+      if (nume>lim .or. nume==lim .and. nume/=n) ierr = ierr + 128
 !     ..Size of Block out of bounds
-      IF (MBLOCK<1 .OR. MBLOCK>NEIG) IERR = IERR + 256
+      if (mblock<1 .or. mblock>neig) ierr = ierr + 256
 
 !       ..Check for enough workspace for Dvdson
-      IF (IWRSZ<LIM*(2*N + LIM + (NUME + 10)) + NUME + NOC*N .OR. IIWSZ<6*LIM+&
-         NUME) IERR = IERR + 512
+      if (iwrsz<lim*(2*n + lim + (nume + 10)) + nume + noc*n .or. iiwsz<6*lim+&
+         nume) ierr = ierr + 512
 
-      IF (NIV > LIM) THEN
+      if (niv > lim) then
 !        ..Check number of initial estimates NIV is lower than LIM.
-         WRITE (6, *) 'WARNING: Too many initial estimates.?'
-         WRITE (6, *) 'The routine needs at most:', LIM
-         IERR = IERR + 4096
-      ELSE IF (NIV < NUME) THEN
+         write (6, *) 'WARNING: Too many initial estimates.?'
+         write (6, *) 'The routine needs at most:', lim
+         ierr = ierr + 4096
+      else if (niv < nume) then
 !        ..check if enough initial estimates.
-         WRITE (6, *) 'WARNING: Not enough initial estimates'
-         WRITE (6, *) NUME - NIV, ' Lanczos vectors will be added'
-      ENDIF
+         write (6, *) 'WARNING: Not enough initial estimates'
+         write (6, *) nume - niv, ' Lanczos vectors will be added'
+      endif
 
-      IF (IERR /= 0) RETURN
+      if (ierr /= 0) return
 !
 ! Assigning space for the real work arrays
 !
-      IORTHO  = 1
-      IBASIS  = IORTHO  + N*NOC
-      IEIGVAL = IBASIS  + N*LIM
-      IAB     = IEIGVAL + LIM
-      IS      = IAB     + N*LIM
-      ITEMPS  = IS      + LIM*(LIM + 1)/2
-      ISVEC   = ITEMPS  + LIM*(LIM + 1)/2
+      iortho  = 1
+      ibasis  = iortho  + n*noc
+      ieigval = ibasis  + n*lim
+      iab     = ieigval + lim
+      is      = iab     + n*lim
+      itemps  = is      + lim*(lim + 1)/2
+      isvec   = itemps  + lim*(lim + 1)/2
 !CC   iscra1  = iSvec   + LIM*(NUME+1)
-      ISCRA1  = ISVEC   + LIM*LIM
-      IOLDVAL = ISCRA1  + 8*LIM
+      iscra1  = isvec   + lim*lim
+      ioldval = iscra1  + 8*lim
 !
 ! Assigning space for the integer work arrays
 !
-      ISCRA2 = 1
-      ISCRA3 = ISCRA2 + 5*LIM
-      IICV = ISCRA3 + LIM
+      iscra2 = 1
+      iscra3 = iscra2 + 5*lim
+      iicv = iscra3 + lim
 !
 ! Initialize tha basis, the AB, the S.
 !
 
-  100 CONTINUE
-      CALL INITDVD (IRC, IREV, N, NOC, NIV, NUME + 1, LIM, HIEND, WORK(ISCRA1)&
-         , WORK(IORTHO), WORK(IBASIS), WORK(IAB), WORK(IS))
+  100 continue
+      call initdvd (irc, irev, n, noc, niv, nume + 1, lim, hiend, work(iscra1)&
+         , work(iortho), work(ibasis), work(iab), work(is))
 !       ----------------------------------------------------------------
 !       ..Reverse Communication for possible matrix vector
-      IF (IRC == 2) THEN
-         IREV(2) = IBASIS + (IREV(2)-1)*N
-         IREV(3) = IAB + (IREV(3)-1)*N
-         RETURN
-      ENDIF
+      if (irc == 2) then
+         irev(2) = ibasis + (irev(2)-1)*n
+         irev(3) = iab + (irev(3)-1)*n
+         return
+      endif
 !       ----------------------------------------------------------------
 !
 ! Call main driver routine.
 !
-      NLOOPS = 1
+      nloops = 1
 
-  200 CONTINUE
-      CALL DVDRVR (IRC, IREV, N, HIEND, LIM, MBLOCK, NOC, NUME, NIV, NEIG, &
-         ISELEC, CRITE, CRITC, CRITR, MAXITER, WORK(IEIGVAL), WORK(IBASIS), &
-         WORK(IORTHO), WORK(IAB), WORK(IS), WORK(ITEMPS), WORK(ISVEC), WORK(&
-         ISCRA1), IWORK(ISCRA2), IWORK(ISCRA3), IWORK(IICV), WORK(IOLDVAL), &
-         NLOOPS, IERR)
+  200 continue
+      call dvdrvr (irc, irev, n, hiend, lim, mblock, noc, nume, niv, neig, &
+         iselec, crite, critc, critr, maxiter, work(ieigval), work(ibasis), &
+         work(iortho), work(iab), work(is), work(itemps), work(isvec), work(&
+         iscra1), iwork(iscra2), iwork(iscra3), iwork(iicv), work(ioldval), &
+         nloops, ierr)
 !       ----------------------------------------------------------------
 !       some Reverse Communication
-      IF (IRC == 1) THEN
+      if (irc == 1) then
 !        ..Preconditioning
-         IREV(2) = IAB + (IREV(2)-1)*N
-         IREV(3) = IBASIS + (IREV(3)-1)*N
-         IREV(4) = IEIGVAL
-         IREV(5) = ISCRA3
-         IREV(6) = ISCRA1
-         IREV(7) = ISCRA1 + LIM
-         RETURN
-      ELSE IF (IRC == 3) THEN
+         irev(2) = iab + (irev(2)-1)*n
+         irev(3) = ibasis + (irev(3)-1)*n
+         irev(4) = ieigval
+         irev(5) = iscra3
+         irev(6) = iscra1
+         irev(7) = iscra1 + lim
+         return
+      else if (irc == 3) then
 !        ..Matrix-vector
-         IREV(2) = IBASIS + (IREV(2)-1)*N
-         IREV(3) = IAB + (IREV(3)-1)*N
-         RETURN
-      ENDIF
+         irev(2) = ibasis + (irev(2)-1)*n
+         irev(3) = iab + (irev(3)-1)*n
+         return
+      endif
 !       ----------------------------------------------------------------
 
-      IF (HIEND) CALL DSCAL (NUME, -1.D0, WORK(IEIGVAL), 1)
+      if (hiend) call dscal (nume, -1.d0, work(ieigval), 1)
 !
 ! -Copy the eigenvalues after the eigenvectors
 ! -Next, copy the difference of eigenvalues between the last two steps
 ! -Next, copy the residuals for the first NUME estimates
 !
-      CALL DCOPY (NUME, WORK(IEIGVAL), 1, WORK(IBASIS+N*NUME), 1)
-      CALL DCOPY (NUME, WORK(IOLDVAL), 1, WORK(IBASIS+(N+1)*NUME), 1)
-      CALL DCOPY (NUME, WORK(ISCRA1), 1, WORK(IBASIS+(N+2)*NUME), 1)
+      call dcopy (nume, work(ieigval), 1, work(ibasis+n*nume), 1)
+      call dcopy (nume, work(ioldval), 1, work(ibasis+(n+1)*nume), 1)
+      call dcopy (nume, work(iscra1), 1, work(ibasis+(n+2)*nume), 1)
 !
 ! Set IRC=0 for normal exit with no reverse communication
 !
-      IRC = 0
-      RETURN
-      END SUBROUTINE DVDSON
+      irc = 0
+      return
+      end subroutine dvdson
 
 
 !=======================================================================
-      SUBROUTINE ADDS(N, LIM, KPASS, NNCV, BASIS, AB, S)
+      subroutine adds(n, lim, kpass, nncv, basis, ab, s)
 !=======================================================================
 !     Called by: DVDSON
 !
@@ -500,28 +500,28 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       !USE ddot_I
-      USE suite_linear_algebra, ONLY: ddot
-      IMPLICIT NONE
+      use suite_linear_algebra, only: ddot
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: N
-      INTEGER , INTENT(IN) :: LIM
-      INTEGER , INTENT(IN) :: KPASS
-      INTEGER , INTENT(IN) :: NNCV
-      REAL(DOUBLE)  :: BASIS(N*LIM)
-      REAL(DOUBLE)  :: AB(N*LIM)
-      REAL(DOUBLE), INTENT(INOUT) :: S(LIM*(LIM + 1)/2)
+      integer, intent(in) :: n
+      integer , intent(in) :: lim
+      integer , intent(in) :: kpass
+      integer , intent(in) :: nncv
+      real(double)  :: basis(n*lim)
+      real(double)  :: ab(n*lim)
+      real(double), intent(inout) :: s(lim*(lim + 1)/2)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IDSTART, ISSTART, IV, IBSTART, IBV
-      REAL(DOUBLE) :: SS
+      integer :: idstart, isstart, iv, ibstart, ibv
+      real(double) :: ss
 !-----------------------------------------------
 !-----------------------------------------------------------------------
 !   on entry
@@ -539,27 +539,27 @@
 ! The new S is calculated by adding the new last columns
 ! S(new)=B^T D(new).
 !
-      IDSTART = KPASS*N + 1
-      ISSTART = KPASS*(KPASS + 1)/2
-      DO IV = 1, NNCV
-         IBSTART = 1
-         DO IBV = 1, KPASS + IV
-            SS = DDOT(N,BASIS(IBSTART),1,AB(IDSTART),1)
-            S(ISSTART+IBV) = SS
-            IBSTART = IBSTART + N
-         END DO
-         ISSTART = ISSTART + KPASS + IV
-         IDSTART = IDSTART + N
-      END DO
+      idstart = kpass*n + 1
+      isstart = kpass*(kpass + 1)/2
+      do iv = 1, nncv
+         ibstart = 1
+         do ibv = 1, kpass + iv
+            ss = ddot(n,basis(ibstart),1,ab(idstart),1)
+            s(isstart+ibv) = ss
+            ibstart = ibstart + n
+         end do
+         isstart = isstart + kpass + iv
+         idstart = idstart + n
+      end do
 
-      RETURN
-      END SUBROUTINE ADDS
+      return
+      end subroutine adds
 
 
 !=======================================================================
-      SUBROUTINE DVDRVR(IRC, IREV, N, HIEND, LIM, MBLOCK, NOC, NUME, NIV, NEIG&
-         , ISELEC, CRITE, CRITC, CRITR, MAXITER, EIGVAL, BASIS, ORTHOBASIS, AB&
-         , S, TEMPS, SVEC, SCRA1, ISCRA2, INCV, ICV, OLDVAL, NLOOPS, IERR)
+      subroutine dvdrvr(irc, irev, n, hiend, lim, mblock, noc, nume, niv, neig&
+         , iselec, crite, critc, critr, maxiter, eigval, basis, orthobasis, ab&
+         , s, temps, svec, scra1, iscra2, incv, icv, oldval, nloops, ierr)
 !=======================================================================
 !     called by DVDSON
 !
@@ -590,61 +590,61 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
+      use vast_kind_param, only: double
 !     USE MPI_C,           ONLY: MYID
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE suite_linear_algebra, ONLY: slamch
-      USE ovflow_I
-      USE tstsel_I
-      USE newvec_I
-      USE mgs_nrm_I
-      USE adds_I
-      USE multbc_I
-      USE suite_linear_algebra, ONLY: daxpy, dcopy, ddot, dscal, dspevx
-      IMPLICIT NONE
+      use suite_linear_algebra, only: slamch
+      use ovflow_i
+      use tstsel_i
+      use newvec_i
+      use mgs_nrm_i
+      use adds_i
+      use multbc_i
+      use suite_linear_algebra, only: daxpy, dcopy, ddot, dscal, dspevx
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(INOUT) :: IRC
-      INTEGER, INTENT(IN) :: N
-      INTEGER, INTENT(IN) :: LIM
-      INTEGER  :: MBLOCK
-      INTEGER, INTENT(IN) :: NOC
-      INTEGER, INTENT(IN) :: NUME
-      INTEGER, INTENT(IN) :: NIV
-      INTEGER, INTENT(IN) :: NEIG
-      INTEGER, INTENT(IN) :: MAXITER
-      INTEGER, INTENT(INOUT) :: NLOOPS
-      INTEGER, INTENT(INOUT) :: IERR
-      REAL(DOUBLE)  :: CRITE
-      REAL(DOUBLE)  :: CRITC
-      REAL(DOUBLE)  :: CRITR
-      LOGICAL, INTENT(IN) :: HIEND
-      INTEGER, INTENT(OUT) :: IREV(*)
-      INTEGER  :: ISELEC(NEIG)
-      INTEGER  :: ISCRA2(5*LIM)
-      INTEGER, INTENT(INOUT) :: INCV(LIM)
-      INTEGER, INTENT(INOUT) :: ICV(NUME + 1)
-      REAL(DOUBLE), INTENT(INOUT) :: EIGVAL(LIM)
-      REAL(DOUBLE)  :: BASIS(N*LIM)
-      REAL(DOUBLE)  :: ORTHOBASIS(N*LIM + NOC*N)
-      REAL(DOUBLE)  :: AB(N*LIM)
-      REAL(DOUBLE)  :: S(LIM*(LIM + 1)/2)
-      REAL(DOUBLE)  :: TEMPS(LIM*(LIM + 1)/2)
-      REAL(DOUBLE)  :: SVEC(LIM*LIM)
-      REAL(DOUBLE), INTENT(INOUT) :: SCRA1(8*LIM)
-      REAL(DOUBLE), INTENT(INOUT) :: OLDVAL(NUME + 1)
+      integer, intent(inout) :: irc
+      integer, intent(in) :: n
+      integer, intent(in) :: lim
+      integer  :: mblock
+      integer, intent(in) :: noc
+      integer, intent(in) :: nume
+      integer, intent(in) :: niv
+      integer, intent(in) :: neig
+      integer, intent(in) :: maxiter
+      integer, intent(inout) :: nloops
+      integer, intent(inout) :: ierr
+      real(double)  :: crite
+      real(double)  :: critc
+      real(double)  :: critr
+      logical, intent(in) :: hiend
+      integer, intent(out) :: irev(*)
+      integer  :: iselec(neig)
+      integer  :: iscra2(5*lim)
+      integer, intent(inout) :: incv(lim)
+      integer, intent(inout) :: icv(nume + 1)
+      real(double), intent(inout) :: eigval(lim)
+      real(double)  :: basis(n*lim)
+      real(double)  :: orthobasis(n*lim + noc*n)
+      real(double)  :: ab(n*lim)
+      real(double)  :: s(lim*(lim + 1)/2)
+      real(double)  :: temps(lim*(lim + 1)/2)
+      real(double)  :: svec(lim*lim)
+      real(double), intent(inout) :: scra1(8*lim)
+      real(double), intent(inout) :: oldval(nume + 1)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: REST, I, KPASS, NNCV, IFIND, NFOUND, INFO, NEWSTART
-      REAL(DOUBLE) :: TOL
-      LOGICAL :: FIRST, DONE
+      integer :: rest, i, kpass, nncv, ifind, nfound, info, newstart
+      real(double) :: tol
+      logical :: first, done
 
-      SAVE FIRST, DONE, REST, I, KPASS, NNCV, IFIND, TOL, NFOUND, INFO, &
-         NEWSTART
+      save first, done, rest, i, kpass, nncv, ifind, tol, nfound, info, &
+         newstart
 !-----------------------------------------------
 !CC   DIMENSION SVEC(LIM*(NUME+1)),EIGVAL(LIM)
 !
@@ -694,161 +694,161 @@
 
 !-----------------------------------------------------------------------
 !     Reverse Communication
-      IF (IRC == 1) THEN
+      if (irc == 1) then
 !          ..Came from preconditioning
-         GO TO 100
-      ELSE IF (IRC == 3) THEN
+         go to 100
+      else if (irc == 3) then
 !          ..came from matrix vector multiply
-         GO TO 200
-      ENDIF
+         go to 200
+      endif
 !-----------------------------------------------------------------------
 
-      I = 1
-      IF (NUME > 0) THEN
-         EIGVAL(:NUME) = 1.D30
-         ICV(:NUME) = 0
-         I = NUME + 1
-      ENDIF
-      FIRST = .TRUE.
-      KPASS = NIV
-      NNCV = KPASS
+      i = 1
+      if (nume > 0) then
+         eigval(:nume) = 1.d30
+         icv(:nume) = 0
+         i = nume + 1
+      endif
+      first = .true.
+      kpass = niv
+      nncv = kpass
 !
 ! Decide HERE how many to restart with, not more than LIM-3.
 !
-      REST = MAX(LIM/2,2*NUME)
-      REST = MIN(REST,LIM - 3)
+      rest = max(lim/2,2*nume)
+      rest = min(rest,lim - 3)
 
-   10 CONTINUE
-      IFIND = MIN(KPASS,REST)
-      TOL = SLAMCH('S')
-      CALL DCOPY (IFIND, EIGVAL, 1, OLDVAL, 1)
-      CALL DCOPY ((KPASS*(KPASS + 1))/2, S, 1, TEMPS, 1)
-      CALL DSPEVX ('Vectors also', 'In a range', 'Upper triangular', KPASS, &
-         TEMPS, -1.D0, -1.D0, 1, IFIND, TOL, NFOUND, EIGVAL, SVEC, KPASS, SCRA1, &
-         ISCRA2, INCV, INFO)
-      IERR = -ABS(INFO)
-      IF (IERR /= 0) GO TO 60
+   10 continue
+      ifind = min(kpass,rest)
+      tol = slamch('S')
+      call dcopy (ifind, eigval, 1, oldval, 1)
+      call dcopy ((kpass*(kpass + 1))/2, s, 1, temps, 1)
+      call dspevx ('Vectors also', 'In a range', 'Upper triangular', kpass, &
+         temps, -1.d0, -1.d0, 1, ifind, tol, nfound, eigval, svec, kpass, scra1, &
+         iscra2, incv, info)
+      ierr = -abs(info)
+      if (ierr /= 0) go to 60
 !
 ! TeST for convergence on the absolute difference of eigenvalues between
 ! successive steps. Also SELect the unconverged eigenpairs and sort them
 ! by the largest magnitude in the last added NNCV rows of Svec.
 !
-      DONE = TSTSEL(KPASS,NUME,NEIG,ISELEC,SVEC,EIGVAL,ICV,CRITE,CRITC,SCRA1,&
-         ISCRA2,OLDVAL,NNCV,INCV)
-      IF (DONE .OR. KPASS>=N) GO TO 30
+      done = tstsel(kpass,nume,neig,iselec,svec,eigval,icv,crite,critc,scra1,&
+         iscra2,oldval,nncv,incv)
+      if (done .or. kpass>=n) go to 30
 !
 ! Maximum size for expanding basis. Truncate basis, D, and S, Svec
 ! Consider the basis vectors found in TSTSEL for the newvec. KPASS=NUME
 !
 
 !          Change suggested by Anreas, March 18, 1996
-      IF (KPASS == LIM) THEN
+      if (kpass == lim) then
 !      PRINT*,'collapsing the basis: lim,nume,rest',lim,nume,rest
 !        PRINT*,'myid = ', myid, '  nprocs = ', nprocs
 !        PRINT*,'collapsing the basis: lim,nume,rest',lim,nume,rest,myid
 !23456789012345678901234567890123456789012345678901234567890123456789012
 
-         CALL OVFLOW (N, REST, KPASS, SCRA1, BASIS, AB, S, SVEC, EIGVAL)
+         call ovflow (n, rest, kpass, scra1, basis, ab, s, svec, eigval)
 !             CALL OVFLOW(N,NUME,KPASS,SCRA1,BASIS,AB,S,SVEC,EIGVAL)
-      ENDIF
+      endif
 !
 ! Compute and add the new residuals. NNCV is set to the number of new
 ! vectors that have not converged. If none, DONE=true, exit.
 !
-      CALL NEWVEC (N, NUME, LIM, MBLOCK, KPASS, CRITR, NNCV, INCV, SVEC, EIGVAL&
-         , OLDVAL, AB, BASIS, ICV, SCRA1, SCRA1(LIM+1), DONE)
+      call newvec (n, nume, lim, mblock, kpass, critr, nncv, incv, svec, eigval&
+         , oldval, ab, basis, icv, scra1, scra1(lim+1), done)
 
-      IF (DONE) GO TO 30
+      if (done) go to 30
 !-----------------------------------------------------------------------
 ! Preconditioning the NNCV (residuals-deps x) stored in AB(kpass+1).
 !          ..Robust Preconditioning (Eigenvalue shift).
 !          ..Look for lowest, so Li-|eps_i|
-      DO I = 1, NNCV
-         EIGVAL(INCV(I)) = EIGVAL(INCV(I)) - SCRA1(LIM+INCV(I))
-      END DO
+      do i = 1, nncv
+         eigval(incv(i)) = eigval(incv(i)) - scra1(lim+incv(i))
+      end do
 !
 !          ..Change sign of eigenvalues if HIEND.
-      IF (HIEND) CALL DSCAL (NUME, -1.D0, EIGVAL, 1)
+      if (hiend) call dscal (nume, -1.d0, eigval, 1)
 
 ! Use of Reverse Communication.
 !
-      IREV(1) = NNCV
-      IREV(2) = KPASS + 1
-      IREV(3) = KPASS + 1
-      IRC = 1
-      IF (IRC == 1) RETURN
+      irev(1) = nncv
+      irev(2) = kpass + 1
+      irev(3) = kpass + 1
+      irc = 1
+      if (irc == 1) return
 !          ..Continue from preconditioning
-  100 CONTINUE
-      IF (HIEND) CALL DSCAL (NUME, -1.D0, EIGVAL, 1)
+  100 continue
+      if (hiend) call dscal (nume, -1.d0, eigval, 1)
 !
 !          ..Shift the eigenvalues back to what they were.
-      DO I = 1, NNCV
-         EIGVAL(INCV(I)) = EIGVAL(INCV(I)) + SCRA1(LIM+INCV(I))
-      END DO
+      do i = 1, nncv
+         eigval(incv(i)) = eigval(incv(i)) + scra1(lim+incv(i))
+      end do
 !-----------------------------------------------------------------------
 !
 ! Orthonormalization of the previous vectors to the Basis and to any
 ! orthogonalization constraints. The not-yet-filled
 ! spaces of AB (from NEWSATRT onwards) are used for scratch.
 !
-      NEWSTART = KPASS*N + 1
+      newstart = kpass*n + 1
 
-      CALL MGS_NRM (N, NOC + KPASS, NNCV, SCRA1(LIM+1), ORTHOBASIS)
+      call mgs_nrm (n, noc + kpass, nncv, scra1(lim+1), orthobasis)
 !-----------------------------------------------------------------------
 ! Use of Reverse Communication. Add new columns in D through matrix vector
 ! multiplication CALL OP(N,NNCV,BASIS(NEWSTART),AB(NEWSTART))
 !
-      IREV(1) = NNCV
-      IREV(2) = KPASS + 1
-      IREV(3) = KPASS + 1
-      IRC = 3
-      RETURN
+      irev(1) = nncv
+      irev(2) = kpass + 1
+      irev(3) = kpass + 1
+      irc = 3
+      return
 
 !          ..Continue from matrix-vector multiply
-  200 CONTINUE
-      IF (HIEND) CALL DSCAL (N*NNCV, -1.D0, AB(NEWSTART), 1)
+  200 continue
+      if (hiend) call dscal (n*nncv, -1.d0, ab(newstart), 1)
 !
 ! Add new column in S, from the NNCV new vectors.
 !
-      CALL ADDS (N, LIM, KPASS, NNCV, BASIS, AB, S)
+      call adds (n, lim, kpass, nncv, basis, ab, s)
 
-      KPASS = KPASS + NNCV
-      NLOOPS = NLOOPS + 1
+      kpass = kpass + nncv
+      nloops = nloops + 1
 
-      IF (NLOOPS <= MAXITER) GO TO 10
-      IERR = IERR + 2048
-      NLOOPS = NLOOPS - 1
-      KPASS = KPASS - NNCV
-   30 CONTINUE
-      DO I = 1, NUME
-         OLDVAL(I) = ABS(OLDVAL(I)-EIGVAL(I))
-      END DO
+      if (nloops <= maxiter) go to 10
+      ierr = ierr + 2048
+      nloops = nloops - 1
+      kpass = kpass - nncv
+   30 continue
+      do i = 1, nume
+         oldval(i) = abs(oldval(i)-eigval(i))
+      end do
 
-      CALL MULTBC (N, KPASS, NUME, SVEC, SCRA1, BASIS)
-      CALL MULTBC (N, KPASS, NUME, SVEC, SCRA1, AB)
+      call multbc (n, kpass, nume, svec, scra1, basis)
+      call multbc (n, kpass, nume, svec, scra1, ab)
 !
 ! i=1,NUME residual(i)= DCi-liBCi= newDi-linewBi
 ! temporarily stored in AB(NUME*N+1)
 !
-      DO I = 1, NUME
-         CALL DCOPY (N, AB((I-1)*N+1), 1, AB(NUME*N+1), 1)
-         CALL DAXPY (N, (-EIGVAL(I)),BASIS((I-1)*N+1), 1, AB(NUME*N+1), 1)
-         SCRA1(I) = DDOT(N,AB(NUME*N+1),1,AB(NUME*N+1),1)
-         SCRA1(I) = SQRT(SCRA1(I))
-      END DO
+      do i = 1, nume
+         call dcopy (n, ab((i-1)*n+1), 1, ab(nume*n+1), 1)
+         call daxpy (n, (-eigval(i)),basis((i-1)*n+1), 1, ab(nume*n+1), 1)
+         scra1(i) = ddot(n,ab(nume*n+1),1,ab(nume*n+1),1)
+         scra1(i) = sqrt(scra1(i))
+      end do
 !
 ! Set IRC=0 for normal exit with no reverse communication
 !
 !     IF (MYID == 0) WRITE (6, *) 'DVDSON::NLOOPS =', NLOOPS
-   60 CONTINUE
-      IRC = 0
-      RETURN
-      END SUBROUTINE DVDRVR
+   60 continue
+      irc = 0
+      return
+      end subroutine dvdrvr
 
 
 !=======================================================================
-      SUBROUTINE INITDVD(IRC, IREV, N, NOC, NIV, NUME, LIM, HIEND, SCRA1, &
-         ORTHOBASIS, BASIS, AB, S)
+      subroutine initdvd(irc, irev, n, noc, niv, nume, lim, hiend, scra1, &
+         orthobasis, basis, ab, s)
 !=======================================================================
 !     Initializes the basis and the auxiliary arrays AB and S.
 !     If not enough initial estimates exist the basis will be
@@ -865,95 +865,95 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dinit_I
+      use dinit_i
       !USE dcopy_I
-      USE mgs_nrm_I
+      use mgs_nrm_i
       !USE dscal_I
-      USE adds_I
-      USE suite_linear_algebra, ONLY: dcopy, dscal
-      IMPLICIT NONE
+      use adds_i
+      use suite_linear_algebra, only: dcopy, dscal
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(INOUT) :: IRC
-      INTEGER, INTENT(IN) :: N
-      INTEGER, INTENT(IN) :: NOC
-      INTEGER, INTENT(INOUT) :: NIV
-      INTEGER, INTENT(IN) :: NUME
-      INTEGER, INTENT(IN) :: LIM
-      LOGICAL, INTENT(IN) :: HIEND
-      INTEGER, INTENT(OUT) :: IREV(*)
-      REAL(DOUBLE)  :: SCRA1(*)
-      REAL(DOUBLE)  :: ORTHOBASIS(N*(NOC + LIM))
-      REAL(DOUBLE)  :: BASIS(N*LIM)
-      REAL(DOUBLE)  :: AB(N*LIM)
-      REAL(DOUBLE)  :: S(*)
+      integer, intent(inout) :: irc
+      integer, intent(in) :: n
+      integer, intent(in) :: noc
+      integer, intent(inout) :: niv
+      integer, intent(in) :: nume
+      integer, intent(in) :: lim
+      logical, intent(in) :: hiend
+      integer, intent(out) :: irev(*)
+      real(double)  :: scra1(*)
+      real(double)  :: orthobasis(n*(noc + lim))
+      real(double)  :: basis(n*lim)
+      real(double)  :: ab(n*lim)
+      real(double)  :: s(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IST, IEND, NEW, KPASS
+      integer :: ist, iend, new, kpass
 
-      SAVE IST, IEND, NEW, KPASS
+      save ist, iend, new, kpass
 !-----------------------------------------------
 !
 !-----------------------------------------------------------------------
 !       ..Reverse Communication
-      IF (IRC == 2) GO TO 100
+      if (irc == 2) go to 100
 !-----------------------------------------------------------------------
 !
 ! If no initial estimates pick one
 !
-      IF (NIV == 0) THEN
-         CALL DINIT (N, 1.D0/SQRT(DBLE(N)), BASIS, 1)
-         NIV = 1
-      ENDIF
+      if (niv == 0) then
+         call dinit (n, 1.d0/sqrt(dble(n)), basis, 1)
+         niv = 1
+      endif
 !
 ! Compute AB. Also fill basis with orthonormalized ABs until enough NIVs.
 !
-      IST = 1
-      IEND = NIV
-      NEW = NIV
-   10 CONTINUE
-      IRC = 2
-      IREV(1) = NEW
-      IREV(2) = IST
-      IREV(3) = IST
-      RETURN
-  100 CONTINUE
-      IF (IEND < NUME) THEN
-         NEW = MIN(NUME - IEND,IEND - IST + 1)
-         CALL DCOPY (N*NEW, AB((IST-1)*N+1), 1, BASIS(1+IEND*N), 1)
+      ist = 1
+      iend = niv
+      new = niv
+   10 continue
+      irc = 2
+      irev(1) = new
+      irev(2) = ist
+      irev(3) = ist
+      return
+  100 continue
+      if (iend < nume) then
+         new = min(nume - iend,iend - ist + 1)
+         call dcopy (n*new, ab((ist-1)*n+1), 1, basis(1+iend*n), 1)
 !            ..orthonormalize OrthoBasis i.e.,
 !            B-1..B-noc,B1,...,Biend,( Biend+1,...Biend+new )
-         CALL MGS_NRM (N, NOC + IEND, NEW, SCRA1, ORTHOBASIS)
-         IST = IEND + 1
-         IEND = IEND + NEW
-         GO TO 10
-      ENDIF
-      NIV = IEND
+         call mgs_nrm (n, noc + iend, new, scra1, orthobasis)
+         ist = iend + 1
+         iend = iend + new
+         go to 10
+      endif
+      niv = iend
       !xhh print*, 'niv=',niv, 'nume=', nume
 !
 ! Scale if HIEND for highest eigepairs
 !
-      IF (HIEND) CALL DSCAL (N*NIV, -1.D0, AB, 1)
+      if (hiend) call dscal (n*niv, -1.d0, ab, 1)
 !
 ! Also find the small matrix S = B^TAB.
 !
-      KPASS = 0
-      CALL ADDS (N, LIM, KPASS, NIV, BASIS, AB, S)
+      kpass = 0
+      call adds (n, lim, kpass, niv, basis, ab, s)
 
-      IRC = 0
-      RETURN
-      END SUBROUTINE INITDVD
+      irc = 0
+      return
+      end subroutine initdvd
 
 
 
 !=======================================================================
-      SUBROUTINE MULTBC(N, K, M, C, TEMP, B)
+      subroutine multbc(n, k, m, c, temp, b)
 !=======================================================================
 !     called by: DVDRVR
 !
@@ -970,41 +970,41 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       !USE dgemv_I
       !USE dcopy_I
-      USE suite_linear_algebra, ONLY: dcopy, dgemv
-      IMPLICIT NONE
+      use suite_linear_algebra, only: dcopy, dgemv
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: N
-      INTEGER, INTENT(IN) :: K
-      INTEGER, INTENT(IN) :: M
-      REAL(DOUBLE)  :: C(K*M)
-      REAL(DOUBLE)  :: TEMP(M)
-      REAL(DOUBLE)  :: B(N*K)
+      integer, intent(in) :: n
+      integer, intent(in) :: k
+      integer, intent(in) :: m
+      real(double)  :: c(k*m)
+      real(double)  :: temp(m)
+      real(double)  :: b(n*k)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IROW
+      integer :: irow
 !-----------------------------------------------
 !-----------------------------------------------------------------------
-      DO IROW = 1, N
-         CALL DGEMV ('Transp', K, M, 1.D0, C, K, B(IROW), N, 0.D0, TEMP, 1)
-         CALL DCOPY (M, TEMP, 1, B(IROW), N)
-      END DO
+      do irow = 1, n
+         call dgemv ('Transp', k, m, 1.d0, c, k, b(irow), n, 0.d0, temp, 1)
+         call dcopy (m, temp, 1, b(irow), n)
+      end do
 
-      RETURN
-      END SUBROUTINE MULTBC
+      return
+      end subroutine multbc
 
 
 !=======================================================================
-      SUBROUTINE NEWVEC(N, NUME, LIM, MBLOCK, KPASS, CRITR, NNCV, INCV, SVEC, &
-         EIGVAL, OLDVAL, AB, BASIS, ICV, SCRA1, EPSIL, DONE)
+      subroutine newvec(n, nume, lim, mblock, kpass, critr, nncv, incv, svec, &
+         eigval, oldval, ab, basis, icv, scra1, epsil, done)
 !=======================================================================
 !
 !     Called by: DVDRVR
@@ -1032,38 +1032,38 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
+      use vast_kind_param, only: double
 !     USE MPI_C,           ONLY: MYID
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE suite_linear_algebra, ONLY: daxpy, ddot, dgemv
-      IMPLICIT NONE
+      use suite_linear_algebra, only: daxpy, ddot, dgemv
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: N
-      INTEGER , INTENT(IN) :: NUME
-      INTEGER , INTENT(IN) :: LIM
-      INTEGER , INTENT(IN) :: MBLOCK
-      INTEGER, INTENT(IN) :: KPASS
-      INTEGER , INTENT(INOUT) :: NNCV
-      REAL(DOUBLE) , INTENT(IN) :: CRITR
-      LOGICAL , INTENT(OUT) :: DONE
-      INTEGER , INTENT(INOUT) :: INCV(NUME)
-      INTEGER, INTENT(INOUT) :: ICV(NUME)
-      REAL(DOUBLE)  :: SVEC(LIM*NUME)
-      REAL(DOUBLE) , INTENT(IN) :: EIGVAL(LIM)
-      REAL(DOUBLE) , INTENT(IN) :: OLDVAL(NUME)
-      REAL(DOUBLE)  :: AB(N*LIM)
-      REAL(DOUBLE)  :: BASIS(N*LIM)
-      REAL(DOUBLE) , INTENT(INOUT) :: SCRA1(LIM)
-      REAL(DOUBLE) , INTENT(OUT) :: EPSIL(LIM)
+      integer, intent(in) :: n
+      integer , intent(in) :: nume
+      integer , intent(in) :: lim
+      integer , intent(in) :: mblock
+      integer, intent(in) :: kpass
+      integer , intent(inout) :: nncv
+      real(double) , intent(in) :: critr
+      logical , intent(out) :: done
+      integer , intent(inout) :: incv(nume)
+      integer, intent(inout) :: icv(nume)
+      real(double)  :: svec(lim*nume)
+      real(double) , intent(in) :: eigval(lim)
+      real(double) , intent(in) :: oldval(nume)
+      real(double)  :: ab(n*lim)
+      real(double)  :: basis(n*lim)
+      real(double) , intent(inout) :: scra1(lim)
+      real(double) , intent(out) :: epsil(lim)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NEWSTART, NADDED, ICVC, LIMADD, ICUR, I, INDX
-      REAL(DOUBLE) :: SQRES, GAPLOW, GAP, GAPUP, DL, RES, RHSEPS
+      integer :: newstart, nadded, icvc, limadd, icur, i, indx
+      real(double) :: sqres, gaplow, gap, gapup, dl, res, rhseps
 !-----------------------------------------------
 !-----------------------------------------------------------------------
 !   on entry
@@ -1092,95 +1092,95 @@
 !      the Basis should be collapsed to current approximations.
 !-----------------------------------------------------------------------
 !       !include 'mpif.h'
-      DONE = .FALSE.
-      NEWSTART = KPASS*N + 1
-      NADDED = 0
-      ICVC = 0
-      LIMADD = MIN(LIM,MBLOCK + KPASS)
-      ICUR = NEWSTART
+      done = .false.
+      newstart = kpass*n + 1
+      nadded = 0
+      icvc = 0
+      limadd = min(lim,mblock + kpass)
+      icur = newstart
 !
 ! Compute RESIDUALS for the MBLOCK of the NNCV not converged vectors.
 !
-      DO I = 1, NNCV
-         INDX = INCV(I)
+      do i = 1, nncv
+         indx = incv(i)
 !
 !          ..Compute b = BASIS*Svec_indx
 !        ..Compute d = AB*Svec_indx
 !        ..Daxpy d'= d - eigval b  gives the residual
 
-         CALL DGEMV ('N', N, KPASS, 1.D0, BASIS, N, SVEC((INDX-1)*KPASS+1) &
-            , 1, 0.D0, BASIS(ICUR), 1)
-         CALL DGEMV ('N', N, KPASS, 1.D0, AB, N, SVEC((INDX-1)*KPASS+1), 1, &
-            0.D0, AB(ICUR), 1)
-         CALL DAXPY (N, (-EIGVAL(INDX)),BASIS(ICUR), 1, AB(ICUR), 1)
+         call dgemv ('N', n, kpass, 1.d0, basis, n, svec((indx-1)*kpass+1) &
+            , 1, 0.d0, basis(icur), 1)
+         call dgemv ('N', n, kpass, 1.d0, ab, n, svec((indx-1)*kpass+1), 1, &
+            0.d0, ab(icur), 1)
+         call daxpy (n, (-eigval(indx)),basis(icur), 1, ab(icur), 1)
 !
 !        ..Compute the norm of the residual
 !        ..and check for convergence
 !
-         SQRES = DDOT(N,AB(ICUR),1,AB(ICUR),1)
-         SCRA1(INDX) = SQRT(SQRES)
+         sqres = ddot(n,ab(icur),1,ab(icur),1)
+         scra1(indx) = sqrt(sqres)
 
 !        IF (MYID == 0) WRITE (6, '(A11,F22.16,I2,A10,F19.16)') ' EIGVAL(i) ', &
 !           EIGVAL(INDX), INDX, ' Res.Norm ', SCRA1(INDX)
 
-         IF (SCRA1(INDX) < CRITR) THEN
+         if (scra1(indx) < critr) then
 !           ..Converged,do not add. Go for next non converged one
-            ICVC = ICVC + 1
-            ICV(INDX) = 1
-            IF (ICVC < NNCV) CYCLE
+            icvc = icvc + 1
+            icv(indx) = 1
+            if (icvc < nncv) cycle
 !           ..All have converged.
        !print*, 'converged by critr'
        !print*, 'converged by critr',myid
-            DONE = .TRUE.
-            RETURN
-         ELSE
+            done = .true.
+            return
+         else
 !           ..Not converged. Consider it for preconditioning
 !          ---------------  ROBUST MODIFICATION ---------------------
 !           ..Daxpy d'= d'- \delta_eps b  gives the rhs for precond.
 !           ..It is stored in AB.
 !             ..Deps are also stored in EPSIL
 !
-            IF (INDX == 1) THEN
-               GAPLOW = 1.0D+99
-               GAP = ABS(EIGVAL(2)-EIGVAL(1))
+            if (indx == 1) then
+               gaplow = 1.0d+99
+               gap = abs(eigval(2)-eigval(1))
 !                 print*, 'h1,h2:',eigval(1),eigval(2)
-            ELSE
-               GAPLOW = ABS(EIGVAL(INDX)-EIGVAL(INDX-1))
-               GAPUP = ABS(EIGVAL(INDX+1)-EIGVAL(INDX))
-               GAP = MIN(GAPLOW,GAPUP)
-            ENDIF
-            DL = ABS(OLDVAL(INDX)-EIGVAL(INDX))
-            RES = SCRA1(INDX)
+            else
+               gaplow = abs(eigval(indx)-eigval(indx-1))
+               gapup = abs(eigval(indx+1)-eigval(indx))
+               gap = min(gaplow,gapup)
+            endif
+            dl = abs(oldval(indx)-eigval(indx))
+            res = scra1(indx)
 
-            IF (GAP > RES) THEN
+            if (gap > res) then
 !                 EPSIL(indx) = min(dl,res,gaplow)
-               RHSEPS = SQRT(DL*RES)
-            ELSE
+               rhseps = sqrt(dl*res)
+            else
 !                EPSIL(indx) = min( res, gaplow)
-               RHSEPS = MIN(DL,SQRT(DL))
-            ENDIF
+               rhseps = min(dl,sqrt(dl))
+            endif
 
-            EPSIL(INDX) = 0.D0
-            CALL DAXPY (N, (-RHSEPS), BASIS(ICUR), 1, AB(ICUR), 1)
+            epsil(indx) = 0.d0
+            call daxpy (n, (-rhseps), basis(icur), 1, ab(icur), 1)
 
 !          -------------- END OF ROBUST MODIFICATIONS -----------------
 !
-            NADDED = NADDED + 1
-            INCV(NADDED) = INDX
-            IF (NADDED + KPASS == LIMADD) EXIT
+            nadded = nadded + 1
+            incv(nadded) = indx
+            if (nadded + kpass == limadd) exit
 !           ..More to be added in the block
-            ICUR = ICUR + N
-         ENDIF
-      END DO
+            icur = icur + n
+         endif
+      end do
 
-      NNCV = NADDED
+      nncv = nadded
 
-      RETURN
-      END SUBROUTINE NEWVEC
+      return
+      end subroutine newvec
 
 
 !=======================================================================
-      SUBROUTINE OVFLOW(N, NUME, KPASS, SCRA1, BASIS, AB, S, SVEC, EIGVAL)
+      subroutine ovflow(n, nume, kpass, scra1, basis, ab, s, svec, eigval)
 !=======================================================================
 !     Called by: DVDRVR
 !     Called when the upper limit (LIM) has been reached for the basis
@@ -1199,30 +1199,30 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE multbc_I
-      USE dinit_I
-      IMPLICIT NONE
+      use multbc_i
+      use dinit_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: N
-      INTEGER, INTENT(IN) :: NUME
-      INTEGER, INTENT(INOUT) :: KPASS
+      integer, intent(in) :: n
+      integer, intent(in) :: nume
+      integer, intent(inout) :: kpass
 !CFF   ... add dimensionto SCRA1
-      REAL(DOUBLE)  :: SCRA1(NUME)
-      REAL(DOUBLE)  :: BASIS(N*KPASS)
-      REAL(DOUBLE)  :: AB(N*KPASS)
-      REAL(DOUBLE), INTENT(OUT) :: S((KPASS*(KPASS + 1))/2)
-      REAL(DOUBLE)  :: SVEC(KPASS*NUME)
-      REAL(DOUBLE) , INTENT(IN) :: EIGVAL(KPASS)
+      real(double)  :: scra1(nume)
+      real(double)  :: basis(n*kpass)
+      real(double)  :: ab(n*kpass)
+      real(double), intent(out) :: s((kpass*(kpass + 1))/2)
+      real(double)  :: svec(kpass*nume)
+      real(double) , intent(in) :: eigval(kpass)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IND, ICUR, I
+      integer :: ind, icur, i
 !-----------------------------------------------
 !   on entry
 !   -------
@@ -1237,32 +1237,32 @@
 !-----------------------------------------------------------------------
 ! Truncate  the basis and the AB array.
 !
-      CALL MULTBC (N, KPASS, NUME, SVEC, SCRA1, BASIS)
-      CALL MULTBC (N, KPASS, NUME, SVEC, SCRA1, AB)
+      call multbc (n, kpass, nume, svec, scra1, basis)
+      call multbc (n, kpass, nume, svec, scra1, ab)
 !
 ! calculation of the new upper S=diag(l1,...,l_NUME) and
 ! its matrix Svec of eigenvectors (e1,...,e_NUME)
 !
-      CALL DINIT ((NUME*(NUME + 1))/2, 0.D0, S, 1)
-      CALL DINIT (NUME*NUME, 0.D0, SVEC, 1)
-      IND = 0
-      ICUR = 0
-      DO I = 1, NUME
-         S(IND+I) = EIGVAL(I)
-         SVEC(ICUR+I) = 1
-         ICUR = ICUR + NUME
-         IND = IND + I
-      END DO
+      call dinit ((nume*(nume + 1))/2, 0.d0, s, 1)
+      call dinit (nume*nume, 0.d0, svec, 1)
+      ind = 0
+      icur = 0
+      do i = 1, nume
+         s(ind+i) = eigval(i)
+         svec(icur+i) = 1
+         icur = icur + nume
+         ind = ind + i
+      end do
 
-      KPASS = NUME
+      kpass = nume
 
-      RETURN
-      END SUBROUTINE OVFLOW
+      return
+      end subroutine ovflow
 
 
 !=======================================================================
-      LOGICAL FUNCTION TSTSEL (KPASS, NUME, NEIG, ISELEC, SVEC, EIGVAL, ICV, &
-         CRITE, CRITC, ROWLAST, IND, OLDVAL, NNCV, INCV)
+      logical function tstsel (kpass, nume, neig, iselec, svec, eigval, icv, &
+         crite, critc, rowlast, ind, oldval, nncv, incv)
 !=======================================================================
 !
 !     Called by: DVDRVR
@@ -1288,37 +1288,37 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !     USE MPI_C
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       !USE idamax_I
-      USE suite_linear_algebra, ONLY: idamax
-      IMPLICIT NONE
+      use suite_linear_algebra, only: idamax
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: KPASS
-      INTEGER , INTENT(IN) :: NUME
-      INTEGER , INTENT(IN) :: NEIG
-      INTEGER , INTENT(INOUT) :: NNCV
-      REAL(DOUBLE) , INTENT(IN) :: CRITE
-      REAL(DOUBLE) , INTENT(IN) :: CRITC
-      INTEGER , INTENT(IN) :: ISELEC(NEIG)
-      INTEGER, INTENT(INOUT) :: ICV(NUME)
-      INTEGER , INTENT(INOUT) :: IND(NEIG)
-      INTEGER , INTENT(OUT) :: INCV(NEIG)
-      REAL(DOUBLE) , INTENT(IN) :: SVEC(KPASS*NUME)
-      REAL(DOUBLE) , INTENT(IN) :: EIGVAL(NUME)
-      REAL(DOUBLE), INTENT(INOUT) :: ROWLAST(NEIG)
-      REAL(DOUBLE) , INTENT(IN) :: OLDVAL(NUME)
+      integer , intent(in) :: kpass
+      integer , intent(in) :: nume
+      integer , intent(in) :: neig
+      integer , intent(inout) :: nncv
+      real(double) , intent(in) :: crite
+      real(double) , intent(in) :: critc
+      integer , intent(in) :: iselec(neig)
+      integer, intent(inout) :: icv(nume)
+      integer , intent(inout) :: ind(neig)
+      integer , intent(out) :: incv(neig)
+      real(double) , intent(in) :: svec(kpass*nume)
+      real(double) , intent(in) :: eigval(nume)
+      real(double), intent(inout) :: rowlast(neig)
+      real(double) , intent(in) :: oldval(nume)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NNCE, I, IVAL, ICNT, ICUR, L, INDX, ITEMP
-      REAL(DOUBLE) :: TMAX, TEMP
-      LOGICAL :: DONE
+      integer :: nnce, i, ival, icnt, icur, l, indx, itemp
+      real(double) :: tmax, temp
+      logical :: done
 !-----------------------------------------------
 !-----------------------------------------------------------------------
 !
@@ -1347,74 +1347,74 @@
 !-----------------------------------------------------------------------
 !       !include 'mpif.h'
 
-      DONE = .FALSE.
+      done = .false.
 !
 ! Test all wanted eigenvalues for convergence under CRITE
 !
-      NNCE = 0
-      DO I = 1, NEIG
-         IVAL = ISELEC(I)
-         IF (ABS(OLDVAL(IVAL)-EIGVAL(IVAL)) < CRITE) CYCLE
-         NNCE = NNCE + 1
-      END DO
-      IF (NNCE == 0) THEN
+      nnce = 0
+      do i = 1, neig
+         ival = iselec(i)
+         if (abs(oldval(ival)-eigval(ival)) < crite) cycle
+         nnce = nnce + 1
+      end do
+      if (nnce == 0) then
 !        IF (MYID == 0) WRITE (6, *) 'converged by crite'
-         TSTSEL = .TRUE.
-         RETURN
-      ENDIF
+         tstsel = .true.
+         return
+      endif
 !
 ! Find the maximum element of the last NNCV coefficients of unconverged
 ! eigenvectors. For those unconverged coefficients, put their indices
 ! to IND and find their number NNCV
 !
-      ICNT = 0
-      DO I = 1, NEIG
+      icnt = 0
+      do i = 1, neig
 !Rasa      IF (ICV(ISELEC(I)).EQ.0) THEN
 !             ..Find coefficient and test for convergence
-         ICUR = KPASS*ISELEC(I)
-         TMAX = ABS(SVEC(ICUR))
-         DO L = 1, NNCV - 1
-            TMAX = MAX(TMAX,ABS(SVEC(ICUR-L)))
-         END DO
-         IF (TMAX < CRITC) THEN
+         icur = kpass*iselec(i)
+         tmax = abs(svec(icur))
+         do l = 1, nncv - 1
+            tmax = max(tmax,abs(svec(icur-l)))
+         end do
+         if (tmax < critc) then
 !                ..this  coefficient converged
-            ICV(ISELEC(I)) = 1
-         ELSE
+            icv(iselec(i)) = 1
+         else
 !                ..Not converged. Add it to the list.
 !Rasa -- start change
-            ICV(ISELEC(I)) = 0
+            icv(iselec(i)) = 0
 !Rasa -- end change
-            ICNT = ICNT + 1
-            IND(ICNT) = ISELEC(I)
-            ROWLAST(ICNT) = TMAX
-         ENDIF
+            icnt = icnt + 1
+            ind(icnt) = iselec(i)
+            rowlast(icnt) = tmax
+         endif
 !Rasa      ENDIF
-      END DO
+      end do
 
-      NNCV = ICNT
-      IF (NNCV == 0) THEN
-         DONE = .TRUE.
+      nncv = icnt
+      if (nncv == 0) then
+         done = .true.
       !IF (NNCV.EQ.0) print*, 'converged by critc', kpass
 !        WRITE (6, *) 'converged by critc', KPASS, MYID
-      ENDIF
+      endif
 !
 ! Sort the ROWLAST elements interchanging their indices as well
 !
-      DO I = 1, NNCV
-         INDX = IDAMAX(NNCV - I + 1,ROWLAST(I),1)
-         INCV(I) = IND(INDX+I-1)
+      do i = 1, nncv
+         indx = idamax(nncv - i + 1,rowlast(i),1)
+         incv(i) = ind(indx+i-1)
 
-         TEMP = ROWLAST(INDX+I-1)
-         ROWLAST(INDX+I-1) = ROWLAST(I)
-         ROWLAST(I) = TEMP
-         ITEMP = IND(INDX+I-1)
-         IND(INDX+I-1) = IND(I)
-         IND(I) = ITEMP
-      END DO
+         temp = rowlast(indx+i-1)
+         rowlast(indx+i-1) = rowlast(i)
+         rowlast(i) = temp
+         itemp = ind(indx+i-1)
+         ind(indx+i-1) = ind(i)
+         ind(i) = itemp
+      end do
 
-      TSTSEL = DONE
-      RETURN
-      END FUNCTION TSTSEL
+      tstsel = done
+      return
+      end function tstsel
 
 
 !=======================================================================
@@ -1431,7 +1431,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  double
+      use vast_kind_param, only:  double
 !     USE mpi_C
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -1439,16 +1439,16 @@
       !use dgemv_I
       !use ddot_I
       !use dscal_I
-      USE suite_linear_algebra, ONLY: ddot, dgemv, dscal
+      use suite_linear_algebra, only: ddot, dgemv, dscal
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer, INTENT(IN) :: n
+      integer, intent(in) :: n
       integer , intent(in) :: kp
-      integer, INTENT(IN) :: new
-      real(double), INTENT(INOUT) :: scra(new)
-      real(double), INTENT(INOUT) :: b((kp + new)*n)
+      integer, intent(in) :: new
+      real(double), intent(inout) :: scra(new)
+      real(double), intent(inout) :: b((kp + new)*n)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -1469,7 +1469,7 @@
          kcur = 1
          do k = 1, kp
             jcur = newstart
-            call dgemv ('T', n, new, 1.D0, b(jcur), n, b(kcur), 1, 0.D0, scra, &
+            call dgemv ('T', n, new, 1.d0, b(jcur), n, b(kcur), 1, 0.d0, scra, &
                1)
             do j = 1, new
 !           call daxpy(N,-scra(j),B(kcur),1,B(jcur),1)
@@ -1493,7 +1493,7 @@
 !
             ! No trailing vectors: avoid forming B one element past its end.
             if (k < new) then
-            call dgemv ('T', n, new - k, 1.D0, b(jcur), n, b(kcur), 1, 0.D0, &
+            call dgemv ('T', n, new - k, 1.d0, b(jcur), n, b(kcur), 1, 0.d0, &
                scra, 1)
             end if
             do j = k + 1, new

@@ -2,8 +2,8 @@
 ! The physical state table remains owned by terms_C; no table is duplicated.
 module csf_descriptor_input
    use iso_fortran_env, only: int8, int64, error_unit, file_storage_size
-   use parameter_def, only: orbital_capacity => NNNW
-   use terms_C, only: state_counts => ITAB, state_offsets => JTAB, state_values => NTAB
+   use parameter_def, only: orbital_capacity => nnnw
+   use terms_c, only: state_counts => itab, state_offsets => jtab, state_values => ntab
    implicit none
    private
    public :: descriptor_source, open_descriptor_source, close_descriptor_source
@@ -178,11 +178,11 @@ contains
    end function descriptor_block_label
 
    subroutine install_descriptor_header(source, core_count, block_labels)
-      use orb_C, only: current_csf_count => NCF, current_orbital_count => NW, &
-                       principal_numbers => NP, relativistic_kappas => NAK, orbital_momenta => NKL, &
-                       single_electron_two_j => NKJ, orbital_labels => NH
-      use def_C, only: electron_count => NELEC
-      use hblock_C, only: block_count => NBLOCK, block_lengths => NCFBLK
+      use orb_c, only: current_csf_count => ncf, current_orbital_count => nw, &
+                       principal_numbers => np, relativistic_kappas => nak, orbital_momenta => nkl, &
+                       single_electron_two_j => nkj, orbital_labels => nh
+      use def_c, only: electron_count => nelec
+      use hblock_c, only: block_count => nblock, block_lengths => ncfblk
       type(descriptor_source), intent(in) :: source
       integer, intent(out) :: core_count
       character(len=8), intent(out) :: block_labels(:)

@@ -1,10 +1,10 @@
-      MODULE genintbreit2_I
-      INTERFACE
+      module genintbreit2_i
+      interface
 !...Translated by Charlotte Froese Fischer
 !                       Gediminas Gaigalas  10/05/17
-      SUBROUTINE genintbreit2 (myid, nprocs, NB, j2max)
-      INTEGER, INTENT(IN) :: myid, nprocs
-      INTEGER             :: NB, j2max
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine genintbreit2 (myid, nprocs, nb, j2max)
+      integer, intent(in) :: myid, nprocs
+      integer             :: nb, j2max
+      end subroutine
+      end interface
+      end module

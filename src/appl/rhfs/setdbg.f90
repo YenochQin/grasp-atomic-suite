@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETDBG
+      subroutine setdbg
 !-----------------------------------------------
 !                                                                      *
 !   This subroutine sets the arrays that control debug printout from   *
@@ -17,101 +17,101 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE debug_C
-      USE default_C
+      use debug_c
+      use default_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE openfl_I
-      IMPLICIT NONE
+      use getyn_i
+      use openfl_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER   :: I, IERR
-      LOGICAL   :: YES
-      CHARACTER :: FILNAM*256, DEFNAM*11, FORM*11, STATUS*3
+      integer   :: i, ierr
+      logical   :: yes
+      character :: filnam*256, defnam*11, form*11, status*3
 !-----------------------------------------------
 !
 !   Initialise the arrays that control the debug printout
 !
-      LDBPA = .FALSE.
+      ldbpa = .false.
 !
-      LDBPG = .FALSE.
+      ldbpg = .false.
 !
-      LDBPR = .FALSE.
+      ldbpr = .false.
 !
-      IF (NDEF == 0) RETURN
+      if (ndef == 0) return
 
-      WRITE (6, *) 'Generate debug printout?'
-      YES = GETYN()
-      IF (YES) THEN
+      write (6, *) 'Generate debug printout?'
+      yes = getyn()
+      if (yes) then
 !
 !   The  .dbg  file is formatted; open it on unit 99
 !
-         DEFNAM = 'hfs92.dbg'
-         FORM = 'FORMATTED'
-         STATUS = 'NEW'
+         defnam = 'hfs92.dbg'
+         form = 'FORMATTED'
+         status = 'NEW'
 !
-         WRITE (6, *) 'File  hfs92.dbg  will be created as the'
-         WRITE (6, *) ' HFS92 DeBuG Printout File; enter another'
-         WRITE (6, *) ' file name if this is not acceptable;'
-         WRITE (6, *) ' null otherwise:'
-         READ (*, '(A)') FILNAM
+         write (6, *) 'File  hfs92.dbg  will be created as the'
+         write (6, *) ' HFS92 DeBuG Printout File; enter another'
+         write (6, *) ' file name if this is not acceptable;'
+         write (6, *) ' null otherwise:'
+         read (*, '(A)') filnam
 !
-         IF (LEN_TRIM(FILNAM) == 0) FILNAM = DEFNAM
+         if (len_trim(filnam) == 0) filnam = defnam
 !
-    4    CONTINUE
-         CALL OPENFL (99, FILNAM, FORM, STATUS, IERR)
-         IF (IERR /= 0) THEN
-    5       CONTINUE
-            WRITE (6, *) 'Enter a name for the HFS92 DeBuG Printout'
-            WRITE (6, *) ' file that is to be created:'
-            READ (*, '(A)') FILNAM
-            IF (LEN_TRIM(FILNAM) == 0) GO TO 5
-            GO TO 4
-         ENDIF
+    4    continue
+         call openfl (99, filnam, form, status, ierr)
+         if (ierr /= 0) then
+    5       continue
+            write (6, *) 'Enter a name for the HFS92 DeBuG Printout'
+            write (6, *) ' file that is to be created:'
+            read (*, '(A)') filnam
+            if (len_trim(filnam) == 0) go to 5
+            go to 4
+         endif
 !
 !   Set options for general printout
 !
-         WRITE (6, *) ' Print out the machine constants used?'
-         YES = GETYN()
-         IF (YES) LDBPG(1) = .TRUE.
-         WRITE (6, *) ' Print out the physical constants used?'
-         YES = GETYN()
-         IF (YES) LDBPG(2) = .TRUE.
+         write (6, *) ' Print out the machine constants used?'
+         yes = getyn()
+         if (yes) ldbpg(1) = .true.
+         write (6, *) ' Print out the physical constants used?'
+         yes = getyn()
+         if (yes) ldbpg(2) = .true.
 !
 !   Set options for radial modules
 !
-         WRITE (6, *) ' Printout from radial modules?'
-         YES = GETYN()
-         IF (YES) THEN
-            WRITE (6, *) ' Printout from RADGRD?'
-            YES = GETYN()
-            IF (YES) LDBPR(1) = .TRUE.
-            WRITE (6, *) ' Printout from NUCPOT?'
-            YES = GETYN()
-            IF (YES) LDBPR(2) = .TRUE.
-            WRITE (6, *) ' Printout from LODRWF?'
-            YES = GETYN()
-            IF (YES) LDBPR(3) = .TRUE.
+         write (6, *) ' Printout from radial modules?'
+         yes = getyn()
+         if (yes) then
+            write (6, *) ' Printout from RADGRD?'
+            yes = getyn()
+            if (yes) ldbpr(1) = .true.
+            write (6, *) ' Printout from NUCPOT?'
+            yes = getyn()
+            if (yes) ldbpr(2) = .true.
+            write (6, *) ' Printout from LODRWF?'
+            yes = getyn()
+            if (yes) ldbpr(3) = .true.
 !
-         ENDIF
+         endif
 !
 !   Set options for angular modules
 !
-         WRITE (6, *) ' Printout from angular modules?'
-         YES = GETYN()
-         IF (YES) THEN
-            WRITE (6, *) ' Printout from LODCSL?'
-            YES = GETYN()
-            IF (YES) LDBPA(1) = .TRUE.
-            WRITE (6, *) ' Print out T coefficients?'
-            YES = GETYN()
-            IF (YES) LDBPA(2) = .TRUE.
-         ENDIF
+         write (6, *) ' Printout from angular modules?'
+         yes = getyn()
+         if (yes) then
+            write (6, *) ' Printout from LODCSL?'
+            yes = getyn()
+            if (yes) ldbpa(1) = .true.
+            write (6, *) ' Print out T coefficients?'
+            yes = getyn()
+            if (yes) ldbpa(2) = .true.
+         endif
 !
-      ENDIF
+      endif
 !
-      RETURN
-      END SUBROUTINE SETDBG
+      return
+      end subroutine setdbg

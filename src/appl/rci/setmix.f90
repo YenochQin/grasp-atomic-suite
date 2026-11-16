@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETMIX(NAME, IDBLK)
+      subroutine setmix(name, idblk)
 !                                                                      *
 !   Opens the  .mix  file on stream 25; writes a header to this file;  *
 !   calls LODMIX to interactively determine the eigenpairs required.   *
@@ -18,36 +18,36 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      USE lodmix_I
-      IMPLICIT NONE
+      use openfl_i
+      use lodmix_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER(LEN=*) , INTENT(IN) :: NAME
-      CHARACTER(LEN=8), DIMENSION(*) :: IDBLK
+      character(len=*) , intent(in) :: name
+      character(len=8), dimension(*) :: idblk
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      CHARACTER*11, PARAMETER :: FORM = 'UNFORMATTED'
-      CHARACTER*7, PARAMETER :: STATUS = 'UNKNOWN'
+      character*11, parameter :: form = 'UNFORMATTED'
+      character*7, parameter :: status = 'UNKNOWN'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K, IERR
+      integer :: k, ierr
 !-----------------------------------------------
 
-      K = INDEX(NAME,' ')
-      CALL OPENFL (25, NAME(1:K-1)//'.cm', FORM, STATUS, IERR)
-      IF (IERR /= 0) STOP 'setmix: Error when opening .cm file'
+      k = index(name,' ')
+      call openfl (25, name(1:k-1)//'.cm', form, status, ierr)
+      if (ierr /= 0) stop 'setmix: Error when opening .cm file'
 
-      WRITE (25) 'G92MIX'
+      write (25) 'G92MIX'
 
-      CALL LODMIX (IDBLK)
+      call lodmix (idblk)
 
-      RETURN
-      END SUBROUTINE SETMIX
+      return
+      end subroutine setmix

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE LODCSLBio(NCORE,IGG)
+      subroutine lodcslbio(ncore,igg)
 !                                                                      *
 !   Loads the data from the  .csl  file. A number of checks are made   *
 !   to ensure correctness and consistency.                             *
@@ -21,136 +21,136 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW
-      USE DEBUG_C
-      USE DEF_C
-      USE ORB_C
-      USE STAT_C
-      USE TERMS_C,          only: jtab, ntab
-      USE IOUNIT_C
-      USE BLK_C,            only: NBLOCK,NCFBLK
-      USE memory_man
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw
+      use debug_c
+      use def_c
+      use orb_c
+      use stat_c
+      use terms_c,          only: jtab, ntab
+      use iounit_c
+      use blk_c,            only: nblock,ncfblk
+      use memory_man
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE prsrsl_I
-      USE convrt_I
-      USE prsrcn_I
-      USE parsjl_I
-      USE pack_I
-      USE iq_I
-      USE jqs_I
-      USE jcup_I
-      USE itjpo_I
-      USE ispar_I
-      IMPLICIT NONE
+      use prsrsl_i
+      use convrt_i
+      use prsrcn_i
+      use parsjl_i
+      use pack_i
+      use iq_i
+      use jqs_i
+      use jcup_i
+      use itjpo_i
+      use ispar_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,  INTENT(IN) ::  IGG
-      INTEGER,  INTENT(OUT) :: NCORE
+      integer,  intent(in) ::  igg
+      integer,  intent(out) :: ncore
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: NW2 = 2*NNNW
+      integer, parameter :: nw2 = 2*nnnw
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER , DIMENSION(NNNW) :: IOCC
-      INTEGER , DIMENSION(NW2)  :: IQSUB
-      INTEGER , DIMENSION(NNNW) :: JX
-      INTEGER :: I
-      INTEGER :: NCORP1, NPEEL, NPEEL2, J, NPJ, NAKJ, LENTH, NCFD, NREC &
-         , IOS, IERR, LOC, NQS, NEWSIZ, ISPARC, NJX, IOC, IPTY, NQSN    &
-         , NJXN, NPEELN, NOPEN, JLAST, ILAST, IOCCI, NKJI, IFULLI, NU   &
-         , JSUB, IQT, NBEG, NEND, JXN, JPI, II, ITEMP, NCOREL
-      LOGICAL :: EMPTY, FULL
-      CHARACTER          :: RECL
-      CHARACTER(LEN=256) :: RECORD
+      integer , dimension(nnnw) :: iocc
+      integer , dimension(nw2)  :: iqsub
+      integer , dimension(nnnw) :: jx
+      integer :: i
+      integer :: ncorp1, npeel, npeel2, j, npj, nakj, lenth, ncfd, nrec &
+         , ios, ierr, loc, nqs, newsiz, isparc, njx, ioc, ipty, nqsn    &
+         , njxn, npeeln, nopen, jlast, ilast, iocci, nkji, ifulli, nu   &
+         , jsub, iqt, nbeg, nend, jxn, jpi, ii, itemp, ncorel
+      logical :: empty, full
+      character          :: recl
+      character(len=256) :: record
 !-----------------------------------------------
 !
 !
 !   Entry message
 !
-      WRITE (6, *) 'Loading Configuration Symmetry List File ...'
+      write (6, *) 'Loading Configuration Symmetry List File ...'
 !
 !   Get the list of subshells
 !
-      NW = 0
+      nw = 0
 !
 !   Read the list of core subshells; set up the arrays NP, NAK,
 !   NKL, NKJ, NH for these subshells
 !
-      CALL PRSRSL (21, 1)
-      NCORE = NW
-      NCORP1 = NW + 1
+      call prsrsl (21, 1)
+      ncore = nw
+      ncorp1 = nw + 1
 !
 !   Skip the peel subshell identification header; read the list of
 !   peel subshells; set up the arrays NP, NAK, NKL, NKJ, NH for
 !   these subshells
 !
-      READ (21, *)
-      CALL PRSRSL (21, 2)
-      NPEEL = NW - NCORE
-      NPEEL2 = NPEEL*2
+      read (21, *)
+      call prsrsl (21, 2)
+      npeel = nw - ncore
+      npeel2 = npeel*2
 !
 !   Ensure that the sets of core and peel subshell are disjoint
 !
-      DO J = NCORE + 1, NW
-         NPJ = NP(J)
-         NAKJ = NAK(J)
-         DO I = 1, NCORE
-            IF (NP(I)/=NPJ .OR. NAK(I)/=NAKJ) CYCLE
-            WRITE (ISTDE, *) 'LODCSL: The lists of core and', &
+      do j = ncore + 1, nw
+         npj = np(j)
+         nakj = nak(j)
+         do i = 1, ncore
+            if (np(i)/=npj .or. nak(i)/=nakj) cycle
+            write (istde, *) 'LODCSL: The lists of core and', &
                ' peel subshells must form disjoint sets.'
-            STOP
-         END DO
-      END DO
+            stop
+         end do
+      end do
 !
 !   Print the number of relativistic subshells
 !
-      IF (NW > 1) THEN
-         CALL CONVRT (NW, RECORD, LENTH)
-         WRITE (6, *) 'There are '//RECORD(1:LENTH)// &
+      if (nw > 1) then
+         call convrt (nw, record, lenth)
+         write (6, *) 'There are '//record(1:lenth)// &
                       ' relativistic subshells;'
-      ELSE
-         WRITE (6, *) 'There is 1 relativistic subshell;'
-      ENDIF
+      else
+         write (6, *) 'There is 1 relativistic subshell;'
+      endif
 !
 !   Initial allocation for arrays with a dimension dependent
 !   on the number of CSFs; the initial allocation must be
 !   greater than 1
 !
-      IF(IGG == 1) THEN
-         NCFD = 1000
-         CALL ALLOC (IQA,  NNNW,  NCFD, 'IQA',   'LODCSL')
-         CALL ALLOC (JQSA, NNNW,3,NCFD, 'JQSA',  'LODCSL')
-         CALL ALLOC (JCUPA,NNNW,  NCFD, 'JCUPA', 'LODCSL')
-      ELSE IF(IGG == 2) THEN
-         NCFD = 1000 + NCF
-         CALL RALLOC (IQA,  NNNW,  NCFD, 'IQA',   'LODCSL')
-         CALL RALLOC (JQSA, NNNW,3,NCFD, 'JQSA',  'LODCSL')
-         CALL RALLOC (JCUPA,NNNW,  NCFD, 'JCUPA', 'LODCSL')
-      ELSE IF(IGG == 3) THEN
-         CALL DALLOC (IQA,   'IQA',   'LODCSL')
-         CALL DALLOC (JQSA,  'JQSA',  'LODCSL')
-         CALL DALLOC (JCUPA, 'JCUPA', 'LODCSL')
-         NCFD = 1000
-         CALL ALLOC (IQA,  NNNW,  NCFD, 'IQA',   'LODCSL')
-         CALL ALLOC (JQSA, NNNW,3,NCFD, 'JQSA',  'LODCSL')
-         CALL ALLOC (JCUPA,NNNW,  NCFD, 'JCUPA', 'LODCSL')
-      END IF
+      if(igg == 1) then
+         ncfd = 1000
+         call alloc (iqa,  nnnw,  ncfd, 'IQA',   'LODCSL')
+         call alloc (jqsa, nnnw,3,ncfd, 'JQSA',  'LODCSL')
+         call alloc (jcupa,nnnw,  ncfd, 'JCUPA', 'LODCSL')
+      else if(igg == 2) then
+         ncfd = 1000 + ncf
+         call ralloc (iqa,  nnnw,  ncfd, 'IQA',   'LODCSL')
+         call ralloc (jqsa, nnnw,3,ncfd, 'JQSA',  'LODCSL')
+         call ralloc (jcupa,nnnw,  ncfd, 'JCUPA', 'LODCSL')
+      else if(igg == 3) then
+         call dalloc (iqa,   'IQA',   'LODCSL')
+         call dalloc (jqsa,  'JQSA',  'LODCSL')
+         call dalloc (jcupa, 'JCUPA', 'LODCSL')
+         ncfd = 1000
+         call alloc (iqa,  nnnw,  ncfd, 'IQA',   'LODCSL')
+         call alloc (jqsa, nnnw,3,ncfd, 'JQSA',  'LODCSL')
+         call alloc (jcupa,nnnw,  ncfd, 'JCUPA', 'LODCSL')
+      end if
 
 !
 !   Skip the header for the list of CSFs
 !
-      READ (21, *)
+      read (21, *)
 !
 !   NREC is the sequence number of the last record read in the
 !   Configuration Symmetry List File
 !
-      NREC = 5
+      nrec = 5
 !
 !   There must be three records for each CSF: For instance,
 !
@@ -182,402 +182,402 @@
 !   These conventions have been chosen so as to render the CSF
 !   specifications easily interpreted by the user
 !
-      NCF = 0
-      NBLOCK = 0
-    3 CONTINUE
-      NCF = NCF + 1
+      ncf = 0
+      nblock = 0
+    3 continue
+      ncf = ncf + 1
 !
-      READ (21, '(A)', IOSTAT=IOS) RECORD
+      read (21, '(A)', iostat=ios) record
 !**********************************************************************
 !blk*
 !   To skip the border line added to mark the end of a block
 !
-      IF (RECORD(1:2) == ' *') THEN
-         NBLOCK = NBLOCK + 1
-         NCFBLK(NBLOCK) = NCF -1
-         READ (21, '(A)', IOSTAT=IOS) RECORD
-      ENDIF
+      if (record(1:2) == ' *') then
+         nblock = nblock + 1
+         ncfblk(nblock) = ncf -1
+         read (21, '(A)', iostat=ios) record
+      endif
 !**********************************************************************
 
-      IF (IOS == 0) THEN
+      if (ios == 0) then
 !
 !   Read in the occupations (q) of the peel shells; stop with a
 !   message if an error occurs
 !
-         CALL PRSRCN (RECORD, NCORE, IOCC, IERR)
-         IF (IERR /= 0) GO TO 26
+         call prsrcn (record, ncore, iocc, ierr)
+         if (ierr /= 0) go to 26
 !
 !   Read the J_sub and v quantum numbers
 !
-         READ (21, '(A)', IOSTAT=IOS) RECORD
-         IF (IOS /= 0) THEN
-            WRITE (ISTDE, *) 'LODCSL: Expecting subshell quantum', &
+         read (21, '(A)', iostat=ios) record
+         if (ios /= 0) then
+            write (istde, *) 'LODCSL: Expecting subshell quantum', &
                ' number specification;'
-            GO TO 26
-         ENDIF
-         LOC = LEN_TRIM(RECORD)
-         CALL PARSJL (1, NCORE, RECORD, LOC, IQSUB, NQS, IERR)
-         IF (IERR /= 0) GO TO 26
+            go to 26
+         endif
+         loc = len_trim(record)
+         call parsjl (1, ncore, record, loc, iqsub, nqs, ierr)
+         if (ierr /= 0) go to 26
 !
 !   Read the X, J, and (sign of) P quantum numbers
 !
-         READ (21, '(A)', IOSTAT=IOS) RECORD
-         IF (IOS /= 0) THEN
-            WRITE (ISTDE, *) 'LODCSL: Expecting intermediate ', &
+         read (21, '(A)', iostat=ios) record
+         if (ios /= 0) then
+            write (istde, *) 'LODCSL: Expecting intermediate ', &
                'and final angular momentum'
-            WRITE (ISTDE, *) 'quantum number and final parity ', &
+            write (istde, *) 'quantum number and final parity ', &
                'specification;'
-            GO TO 26
-         ENDIF
+            go to 26
+         endif
 !
 !   Allocate additional storage if necessary
 !
 !CFF     It is possible that this should be moved to "3 Continue"
 !        where NCF is incremented
-         IF (NCF > NCFD) THEN
-            NEWSIZ = NCFD + NCFD/2
-            CALL RALLOC (IQA,  NNNW,  NEWSIZ, 'IQA',   'LODCSL')
-            CALL RALLOC (JQSA, NNNW,3,NEWSIZ, 'JQSA',  'LODCSL')
-            CALL RALLOC (JCUPA,NNNW,  NEWSIZ, 'JCUPA', 'LODCSL')
-            NCFD = NEWSIZ
-         ENDIF
+         if (ncf > ncfd) then
+            newsiz = ncfd + ncfd/2
+            call ralloc (iqa,  nnnw,  newsiz, 'IQA',   'LODCSL')
+            call ralloc (jqsa, nnnw,3,newsiz, 'JQSA',  'LODCSL')
+            call ralloc (jcupa,nnnw,  newsiz, 'JCUPA', 'LODCSL')
+            ncfd = newsiz
+         endif
 !
 !   Zero out the arrays that store packed integers
 !
-         DO I = 1,NNNW
-            IQA(I,NCF)    = 0
-            JQSA(I,1,NCF) = 0
-            JQSA(I,2,NCF) = 0
-            JQSA(I,3,NCF) = 0
-            JCUPA(I,NCF)  = 0
-         END DO
+         do i = 1,nnnw
+            iqa(i,ncf)    = 0
+            jqsa(i,1,ncf) = 0
+            jqsa(i,2,ncf) = 0
+            jqsa(i,3,ncf) = 0
+            jcupa(i,ncf)  = 0
+         end do
 !
 !   Determine the parity and all intermediate and the final
 !   angular momentum quantum numbers
 !
-         DO I = 256, 1, -1
-            IF (RECORD(I:I) == ' ') CYCLE
-            LOC = I
-            EXIT
-         END DO
-         RECL = RECORD(LOC:LOC)
-         IF (RECL == '+') THEN
-            ISPARC = 1
-         ELSE IF (RECL == '-') THEN
-            ISPARC = -1
-         ELSE
-            WRITE (ISTDE, *) 'LODCSL: Incorrect parity ', &
+         do i = 256, 1, -1
+            if (record(i:i) == ' ') cycle
+            loc = i
+            exit
+         end do
+         recl = record(loc:loc)
+         if (recl == '+') then
+            isparc = 1
+         else if (recl == '-') then
+            isparc = -1
+         else
+            write (istde, *) 'LODCSL: Incorrect parity ', &
                              'specification;'
-            GO TO 26
-         ENDIF
-         LOC = LOC - 1
+            go to 26
+         endif
+         loc = loc - 1
 !
-         CALL PARSJL (2, NCORE, RECORD, LOC, JX, NJX, IERR)
-         IF (IERR /= 0) GO TO 26
+         call parsjl (2, ncore, record, loc, jx, njx, ierr)
+         if (ierr /= 0) go to 26
 !
 !   Set the occupation and subshell quantum number array elements
 !   in IQ, JQS for the core subshells
 !
-         DO I = 1, NCORE
-            CALL PACK (NKJ(I) + 1, I, IQA(1:NNNW,NCF))
-            CALL PACK (0, I, JQSA(1:NNNW,1,NCF))
-            CALL PACK (0, I, JQSA(1:NNNW,2,NCF))
-            CALL PACK (1, I, JQSA(1:NNNW,3,NCF))
-         END DO
+         do i = 1, ncore
+            call pack (nkj(i) + 1, i, iqa(1:nnnw,ncf))
+            call pack (0, i, jqsa(1:nnnw,1,ncf))
+            call pack (0, i, jqsa(1:nnnw,2,ncf))
+            call pack (1, i, jqsa(1:nnnw,3,ncf))
+         end do
 !
 !   Check all subshell, intermediate and final angular momentum
 !   quantum numbers; set the array elements in IQ, JQS for the peel
 !   subshells; set the coupling array element in JCUP and the total
 !   angular momentum array element in ITJPO
 !
-         IOC = 0
-         IPTY = 0
-         NQSN = 0
-         NJXN = 0
-         NPEELN = 0
-         NOPEN = 0
-         JLAST = 0
-         ILAST = 0
-         DO I = NCORP1, NW
-            IOCCI = IOCC(I)
-            NPEELN = NPEELN + IOCCI
-            NKJI = NKJ(I)
-            IFULLI = NKJI + 1
-            EMPTY = IOCCI == 0
-            IF (.NOT.EMPTY) IOC = IOC + 1
-            FULL = IOCCI == IFULLI
-            IF (EMPTY .OR. FULL) THEN
-               NU = 0
-               JSUB = 0
-            ELSE
-               IPTY = IPTY + NKL(I)*IOCCI
-               IF (NKJI /= 7) THEN
-                  NQSN = NQSN + 1
-                  IF (NQSN > NQS) THEN
-                     WRITE (ISTDE, *) 'LODCSL: Too few subshell quantum', &
+         ioc = 0
+         ipty = 0
+         nqsn = 0
+         njxn = 0
+         npeeln = 0
+         nopen = 0
+         jlast = 0
+         ilast = 0
+         do i = ncorp1, nw
+            iocci = iocc(i)
+            npeeln = npeeln + iocci
+            nkji = nkj(i)
+            ifulli = nkji + 1
+            empty = iocci == 0
+            if (.not.empty) ioc = ioc + 1
+            full = iocci == ifulli
+            if (empty .or. full) then
+               nu = 0
+               jsub = 0
+            else
+               ipty = ipty + nkl(i)*iocci
+               if (nkji /= 7) then
+                  nqsn = nqsn + 1
+                  if (nqsn > nqs) then
+                     write (istde, *) 'LODCSL: Too few subshell quantum', &
                         ' numbers specified;'
-                     GO TO 26
-                  ENDIF
-                  NU = 0
-                  JSUB = IQSUB(NQSN)
-               ELSE
-                  IF (IOCCI /= 4) THEN
-                     NQSN = NQSN + 1
-                     IF (NQSN > NQS) THEN
-                        WRITE (ISTDE, *) 'LODCSL: Too few subshell ', &
+                     go to 26
+                  endif
+                  nu = 0
+                  jsub = iqsub(nqsn)
+               else
+                  if (iocci /= 4) then
+                     nqsn = nqsn + 1
+                     if (nqsn > nqs) then
+                        write (istde, *) 'LODCSL: Too few subshell ', &
                            'quantum numbers specified;'
-                        GO TO 26
-                     ENDIF
-                     NU = 0
-                     JSUB = IQSUB(NQSN)
-                  ELSE
-                     NQSN = NQSN + 1
-                     IF (NQSN > NQS) THEN
-                        WRITE (ISTDE, *) 'LODCSL: Too few subshell ', &
+                        go to 26
+                     endif
+                     nu = 0
+                     jsub = iqsub(nqsn)
+                  else
+                     nqsn = nqsn + 1
+                     if (nqsn > nqs) then
+                        write (istde, *) 'LODCSL: Too few subshell ', &
                            'quantum numbers specified;'
-                        GO TO 26
-                     ENDIF
-                     JSUB = IQSUB(NQSN)
-                     IF (JSUB==4 .OR. JSUB==8) THEN
-                        NU = JSUB/2
-                        NQSN = NQSN + 1
-                        IF (NQSN > NQS) THEN
-                           WRITE (ISTDE, *) 'LODCSL: Too few subshell', &
+                        go to 26
+                     endif
+                     jsub = iqsub(nqsn)
+                     if (jsub==4 .or. jsub==8) then
+                        nu = jsub/2
+                        nqsn = nqsn + 1
+                        if (nqsn > nqs) then
+                           write (istde, *) 'LODCSL: Too few subshell', &
                               ' quantum numbers specified;'
-                           GO TO 26
-                        ENDIF
-                        JSUB = IQSUB(NQSN)
-                     ELSE
-                        NU = 0
-                     ENDIF
-                  ENDIF
-               ENDIF
-               IQT = MIN(IOCCI,IFULLI - IOCCI)
-               LOC = (IFULLI - 2)/2
-               LOC = (LOC*(LOC + 1))/2 + IQT
-               NBEG = JTAB(LOC+1) + 1
-               NEND = JTAB(LOC+2)
-               DO J = NBEG, NEND, 3
-                  IF (NTAB(J+2) /= JSUB + 1) CYCLE
-                  IF (NU == 0) THEN
-                     NU = NTAB(J)
-                     GO TO 9
-                  ELSE
-                     IF (NTAB(J) == NU) GO TO 9
-                  ENDIF
-               END DO
-               CALL CONVRT (NP(I), RECORD, LENTH)
-               WRITE (ISTDE, *) 'LODCSL: Subshell quantum numbers ', &
-                  'specified incorrectly for '//RECORD(1:LENTH)//NH(I)//&
+                           go to 26
+                        endif
+                        jsub = iqsub(nqsn)
+                     else
+                        nu = 0
+                     endif
+                  endif
+               endif
+               iqt = min(iocci,ifulli - iocci)
+               loc = (ifulli - 2)/2
+               loc = (loc*(loc + 1))/2 + iqt
+               nbeg = jtab(loc+1) + 1
+               nend = jtab(loc+2)
+               do j = nbeg, nend, 3
+                  if (ntab(j+2) /= jsub + 1) cycle
+                  if (nu == 0) then
+                     nu = ntab(j)
+                     go to 9
+                  else
+                     if (ntab(j) == nu) go to 9
+                  endif
+               end do
+               call convrt (np(i), record, lenth)
+               write (istde, *) 'LODCSL: Subshell quantum numbers ', &
+                  'specified incorrectly for '//record(1:lenth)//nh(i)//&
                   ' subshell.'
-               GO TO 26
-            ENDIF
-    9       CONTINUE
-            IF (.NOT.EMPTY .AND. .NOT.FULL) THEN
-               NOPEN = NOPEN + 1
-               IF (NOPEN > 1) THEN
-                  IF (JSUB == 0) THEN
-                     JXN = JLAST
-                  ELSE
-                     ILAST = IOC
-                     NJXN = NJXN + 1
-                     IF (NJXN > NJX) THEN
-                        WRITE (ISTDE, *) 'LODCSL: Too few intermediate', &
+               go to 26
+            endif
+    9       continue
+            if (.not.empty .and. .not.full) then
+               nopen = nopen + 1
+               if (nopen > 1) then
+                  if (jsub == 0) then
+                     jxn = jlast
+                  else
+                     ilast = ioc
+                     njxn = njxn + 1
+                     if (njxn > njx) then
+                        write (istde, *) 'LODCSL: Too few intermediate', &
                            ' and final angular momentum', &
                            ' quantum numbers specified;'
-                        GO TO 26
-                     ENDIF
-                     JXN = JX(NJXN)
-                     DO J = ABS(JLAST - JSUB), JLAST + JSUB, 2
-                        IF (JXN == J) GO TO 11
-                     END DO
-                     CALL CONVRT (NP(I), RECORD, LENTH)
-                     WRITE (ISTDE, *) &
-                        'LODCSL: coupling of '//RECORD(1:LENTH)//NH(I),&
+                        go to 26
+                     endif
+                     jxn = jx(njxn)
+                     do j = abs(jlast - jsub), jlast + jsub, 2
+                        if (jxn == j) go to 11
+                     end do
+                     call convrt (np(i), record, lenth)
+                     write (istde, *) &
+                        'LODCSL: coupling of '//record(1:lenth)//nh(i),&
                         ' subshell to previous subshells is incorrect.'
-                     GO TO 26
-                  ENDIF
-   11             CONTINUE
-                  CALL PACK (JXN + 1, NOPEN - 1, JCUPA(1:NNNW,NCF))
-                  JLAST = JXN
-               ELSE
-                  JLAST = JSUB
-               ENDIF
-            ENDIF
-            CALL PACK (IOCCI, I, IQA(1:NNNW,NCF))
-            CALL PACK (NU, I, JQSA(1:NNNW,1,NCF))
-            CALL PACK (0, I, JQSA(1:NNNW,2,NCF))
-            CALL PACK (JSUB + 1, I, JQSA(1:NNNW,3,NCF))
-         END DO
+                     go to 26
+                  endif
+   11             continue
+                  call pack (jxn + 1, nopen - 1, jcupa(1:nnnw,ncf))
+                  jlast = jxn
+               else
+                  jlast = jsub
+               endif
+            endif
+            call pack (iocci, i, iqa(1:nnnw,ncf))
+            call pack (nu, i, jqsa(1:nnnw,1,ncf))
+            call pack (0, i, jqsa(1:nnnw,2,ncf))
+            call pack (jsub + 1, i, jqsa(1:nnnw,3,ncf))
+         end do
 !
-         DO I = MAX(1,NOPEN), NW
-            CALL PACK (0, I, JCUPA(1:NNNW,NCF))
-         END DO
+         do i = max(1,nopen), nw
+            call pack (0, i, jcupa(1:nnnw,ncf))
+         end do
 !
-         IF (NQSN /= NQS) THEN
-            WRITE (ISTDE, *) 'LODCSL: Too many subshell', &
+         if (nqsn /= nqs) then
+            write (istde, *) 'LODCSL: Too many subshell', &
                ' quantum numbers specified;'
-            GO TO 26
-         ENDIF
+            go to 26
+         endif
 !
-         IF (ILAST /= IOC) NJXN = NJXN + 1
-         IF (NJXN /= NJX) THEN
-            WRITE (ISTDE, *) 'LODCSL: Too many intermediate', &
+         if (ilast /= ioc) njxn = njxn + 1
+         if (njxn /= njx) then
+            write (istde, *) 'LODCSL: Too many intermediate', &
             ' and final angular momentum', ' quantum numbers specified;'
-            GO TO 26
-         ENDIF
+            go to 26
+         endif
 !
-         IF (JX(NJXN) /= JLAST) THEN
-            WRITE (ISTDE, *) 'LODCSL: Final angular momentum', &
+         if (jx(njxn) /= jlast) then
+            write (istde, *) 'LODCSL: Final angular momentum', &
                ' incorrectly specified;'
-            GO TO 26
-         ENDIF
+            go to 26
+         endif
 !
-         IPTY = (-1)**IPTY
-         IF (IPTY /= ISPARC) THEN
-            WRITE (ISTDE, *) 'LODCSL: Parity specified incorrectly;'
-            GO TO 26
-         ENDIF
+         ipty = (-1)**ipty
+         if (ipty /= isparc) then
+            write (istde, *) 'LODCSL: Parity specified incorrectly;'
+            go to 26
+         endif
 !
-         JPI = (JLAST + 1)*IPTY
-         CALL PACK (JPI, NNNW, JCUPA(1:NNNW,NCF))
+         jpi = (jlast + 1)*ipty
+         call pack (jpi, nnnw, jcupa(1:nnnw,ncf))
 !
-         IF (NCF > 1) THEN
-            IF (NPEELN /= NPEEL) THEN
-               WRITE (ISTDE, *) 'LODCSL: Inconsistency in the number', &
+         if (ncf > 1) then
+            if (npeeln /= npeel) then
+               write (istde, *) 'LODCSL: Inconsistency in the number', &
                   ' of electrons.'
-               GO TO 26
-            ENDIF
-         ELSE
-            NPEEL = NPEELN
-         ENDIF
+               go to 26
+            endif
+         else
+            npeel = npeeln
+         endif
 !
 !   Check if this CSF was already in the list; stop with a
 !   message if this is the case
 !
-         IF (NCF > 1) THEN
-            DO J = 1, NCF - 1
-               DO I = NCORP1, NW
-                  IF (IQ(I,J) /= IQ(I,NCF)) GO TO 17
-                  IF (JQS(1,I,J) /= JQS(1,I,NCF)) GO TO 17
-                  IF (JQS(2,I,J) /= JQS(2,I,NCF)) GO TO 17
-                  IF (JQS(3,I,J) /= JQS(3,I,NCF)) GO TO 17
-               END DO
-               DO I = 1, NOPEN - 1
-                  IF (JCUP(I,J) /= JCUP(I,NCF)) GO TO 17
-               END DO
-            END DO
-            WRITE (ISTDE, *) 'LODCSL: Repeated CSF;'
-            GO TO 26
-         ENDIF
+         if (ncf > 1) then
+            do j = 1, ncf - 1
+               do i = ncorp1, nw
+                  if (iq(i,j) /= iq(i,ncf)) go to 17
+                  if (jqs(1,i,j) /= jqs(1,i,ncf)) go to 17
+                  if (jqs(2,i,j) /= jqs(2,i,ncf)) go to 17
+                  if (jqs(3,i,j) /= jqs(3,i,ncf)) go to 17
+               end do
+               do i = 1, nopen - 1
+                  if (jcup(i,j) /= jcup(i,ncf)) go to 17
+               end do
+            end do
+            write (istde, *) 'LODCSL: Repeated CSF;'
+            go to 26
+         endif
 !
 !   Successfully read a CSF; update NREC and read another CSF
 !
-   17    CONTINUE
-         NREC = NREC + 3
-         GO TO 3
+   17    continue
+         nrec = nrec + 3
+         go to 3
 !
-      ELSE
+      else
 !
 !   There is always at least one CSF
 !
-         IF (NCF == 1) THEN
-            DO I = 1, NCORE
-               CALL PACK (NKJ(I) + 1, I, IQA(1:NNNW,1))
-               CALL PACK (0, I, JQSA(1:NNNW,1,1))
-               CALL PACK (0, I, JQSA(1:NNNW,2,1))
-               CALL PACK (1, I, JQSA(1:NNNW,3,1))
-            END DO
-            CALL PACK (0, 1, JCUPA(1:NNNW,1))
-            CALL PACK (1, NNNW, JCUPA(1:NNNW,1))
-         ELSE
-            NCF = NCF - 1
-         ENDIF
+         if (ncf == 1) then
+            do i = 1, ncore
+               call pack (nkj(i) + 1, i, iqa(1:nnnw,1))
+               call pack (0, i, jqsa(1:nnnw,1,1))
+               call pack (0, i, jqsa(1:nnnw,2,1))
+               call pack (1, i, jqsa(1:nnnw,3,1))
+            end do
+            call pack (0, 1, jcupa(1:nnnw,1))
+            call pack (1, nnnw, jcupa(1:nnnw,1))
+         else
+            ncf = ncf - 1
+         endif
 !
-      ENDIF
+      endif
 !
 !   Check if any subshell is empty; eliminate it from the
 !   list if this is the case; issue a message
 !
-      I = NCORP1
-   19 CONTINUE
-      IF (I <= NW) THEN
-         DO J = 1, NCF
-            IF (IQ(I,J) /= 0) GO TO 23
-         END DO
-         CALL CONVRT (NP(I), RECORD, LENTH)
-         WRITE (6, *) 'Subshell '//RECORD(1:LENTH)//NH(I)//' is empty', &
+      i = ncorp1
+   19 continue
+      if (i <= nw) then
+         do j = 1, ncf
+            if (iq(i,j) /= 0) go to 23
+         end do
+         call convrt (np(i), record, lenth)
+         write (6, *) 'Subshell '//record(1:lenth)//nh(i)//' is empty', &
             ' in all CSFs; eliminating this', ' subshell from the list;'
-         NW = NW - 1
-         DO II = I, NW
-            NP(II) = NP(II+1)
-            NAK(II) = NAK(II+1)
-            NKL(II) = NKL(II+1)
-            NKJ(II) = NKJ(II+1)
-            NH(II) = NH(II+1)
-            DO J = 1, NCF
-               ITEMP = IQ(II + 1,J)
-               CALL PACK (ITEMP, II, IQA(1:NNNW,J))
-               ITEMP = JQS(1,II + 1,J)
-               CALL PACK (ITEMP, II, JQSA(II:NNNW,1,J))
-               ITEMP = JQS(2,II + 1,J)
-               CALL PACK (ITEMP, II, JQSA(II:NNNW,2,J))
-               ITEMP = JQS(3,II + 1,J)
-               CALL PACK (ITEMP, II, JQSA(II:NNNW,3,J))
-            END DO
-         END DO
-   23    CONTINUE
-         I = I + 1
-         GO TO 19
-      ENDIF
+         nw = nw - 1
+         do ii = i, nw
+            np(ii) = np(ii+1)
+            nak(ii) = nak(ii+1)
+            nkl(ii) = nkl(ii+1)
+            nkj(ii) = nkj(ii+1)
+            nh(ii) = nh(ii+1)
+            do j = 1, ncf
+               itemp = iq(ii + 1,j)
+               call pack (itemp, ii, iqa(1:nnnw,j))
+               itemp = jqs(1,ii + 1,j)
+               call pack (itemp, ii, jqsa(ii:nnnw,1,j))
+               itemp = jqs(2,ii + 1,j)
+               call pack (itemp, ii, jqsa(ii:nnnw,2,j))
+               itemp = jqs(3,ii + 1,j)
+               call pack (itemp, ii, jqsa(ii:nnnw,3,j))
+            end do
+         end do
+   23    continue
+         i = i + 1
+         go to 19
+      endif
 !
 !   Store the number of electrons in the COMMON variable
 !
-      NCOREL = 0
-      NCOREL = SUM(NKJ(:NCORE)+1)
-      NELEC = NCOREL + NPEEL
+      ncorel = 0
+      ncorel = sum(nkj(:ncore)+1)
+      nelec = ncorel + npeel
 !
 !   All done; report
 !
-      CALL CONVRT (NCF, RECORD, LENTH)
-      WRITE (6, *) 'There are '//RECORD(1:LENTH)//' relativistic CSFs;'
-      WRITE (6, *) ' ... load complete;'
+      call convrt (ncf, record, lenth)
+      write (6, *) 'There are '//record(1:lenth)//' relativistic CSFs;'
+      write (6, *) ' ... load complete;'
 !
 !   Debug printout
 !
-      IF (LDBPA(1)) THEN
-         WRITE (99, *) 'From LODCSL:'
-         DO I = 1, NCF
-            WRITE (99, *) 'CSF ', I
-            WRITE (99, *) 'ITJPO: ', ITJPO(I)
-            WRITE (99, *) 'ISPAR: ', ISPAR(I)
-            WRITE (99, *) 'IQ: ', (IQ(J,I),J=1,NW)
-            WRITE (99, *) 'JQS(1): ', (JQS(1,J,I),J=1,NW)
-            WRITE (99, *) 'JQS(2): ', (JQS(2,J,I),J=1,NW)
-            WRITE (99, *) 'JQS(3): ', (JQS(3,J,I),J=1,NW)
-            WRITE (99, *) 'JCUP: ', (JCUP(J,I),J=1,NW - 1)
-         END DO
-      ENDIF
+      if (ldbpa(1)) then
+         write (99, *) 'From LODCSL:'
+         do i = 1, ncf
+            write (99, *) 'CSF ', i
+            write (99, *) 'ITJPO: ', itjpo(i)
+            write (99, *) 'ISPAR: ', ispar(i)
+            write (99, *) 'IQ: ', (iq(j,i),j=1,nw)
+            write (99, *) 'JQS(1): ', (jqs(1,j,i),j=1,nw)
+            write (99, *) 'JQS(2): ', (jqs(2,j,i),j=1,nw)
+            write (99, *) 'JQS(3): ', (jqs(3,j,i),j=1,nw)
+            write (99, *) 'JCUP: ', (jcup(j,i),j=1,nw - 1)
+         end do
+      endif
 
 
-      NBLOCK = NBLOCK + 1
-      NCFBLK(NBLOCK) = NCF
+      nblock = nblock + 1
+      ncfblk(nblock) = ncf
 !
-      RETURN
+      return
 !
-   26 CONTINUE
-      CALL CONVRT (NCF, RECORD, LENTH)
-      WRITE (ISTDE, *) ' CSF sequence number: '//RECORD(1:LENTH)//':'
-      REWIND (21)
-      DO I = 1, NREC
-         READ (21, *)
-      END DO
-      DO I = 1, 3
-         READ (21,'(A)',ERR = 29,END = 29) RECORD
-         LENTH = LEN_TRIM(RECORD)
-         WRITE (ISTDE, *) RECORD(1:LENTH)
-      END DO
-   29 CLOSE(21)
-      STOP
+   26 continue
+      call convrt (ncf, record, lenth)
+      write (istde, *) ' CSF sequence number: '//record(1:lenth)//':'
+      rewind (21)
+      do i = 1, nrec
+         read (21, *)
+      end do
+      do i = 1, 3
+         read (21,'(A)',err = 29,end = 29) record
+         lenth = len_trim(record)
+         write (istde, *) record(1:lenth)
+      end do
+   29 close(21)
+      stop
 !
-      END SUBROUTINE LODCSLBio
+      end subroutine lodcslbio

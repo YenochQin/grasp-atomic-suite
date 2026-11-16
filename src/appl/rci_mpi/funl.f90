@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION FUNL (X, K)
+      real(kind(0.0d0)) function funl (x, k)
 !                                                                      *
 !   This  function  evaluates the LK(X) functions using the analytic   *
 !   functions defined  in table 5  and equations  (20) and  (21)  of   *
@@ -15,86 +15,86 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: K
-      REAL(DOUBLE), INTENT(IN) :: X
+      integer, intent(in) :: k
+      real(double), intent(in) :: x
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K1, I
-      REAL(DOUBLE), DIMENSION(6,2) :: F
-      REAL(DOUBLE), DIMENSION(3,2) :: G
-      REAL(DOUBLE), DIMENSION(2,2) :: H
-      REAL(DOUBLE) :: A, B, SUM, XN, X2, SUMG, SUMH, XM
+      integer :: k1, i
+      real(double), dimension(6,2) :: f
+      real(double), dimension(3,2) :: g
+      real(double), dimension(2,2) :: h
+      real(double) :: a, b, sum, xn, x2, sumg, sumh, xm
 !-----------------------------------------------
 !
 !
-      DATA F/ 2.008188D00, -2.397605D00, 1.046471D00, -3.670660D-01, &
-         6.374000D-02, -3.705800D-02, 1.646407D00, -2.092942D00, 9.623100D-01, &
-         -2.549600D-01, 1.644040D-01, 0.0D00/
+      data f/ 2.008188d00, -2.397605d00, 1.046471d00, -3.670660d-01, &
+         6.374000d-02, -3.705800d-02, 1.646407d00, -2.092942d00, 9.623100d-01, &
+         -2.549600d-01, 1.644040d-01, 0.0d00/
 !
-      DATA G/ 7.51198D-01, 1.38889D-01, 2.0886D-02, 1.37691D-01, -4.16667D-01, &
-          - 9.7486D-02/
+      data g/ 7.51198d-01, 1.38889d-01, 2.0886d-02, 1.37691d-01, -4.16667d-01, &
+          - 9.7486d-02/
 !
-      DATA H/ -4.44444D-01, -3.472D-03, 4.44444D-01, 1.7361D-02/
+      data h/ -4.44444d-01, -3.472d-03, 4.44444d-01, 1.7361d-02/
 !
-      DATA A, B/ 2.2D00,  - 1.72D00/
+      data a, b/ 2.2d00,  - 1.72d00/
 !
-      IF (K>=0 .AND. K<=1) THEN
-         IF (X <= 2.0D00) THEN
-            IF (X == 0.0D00) GO TO 6
+      if (k>=0 .and. k<=1) then
+         if (x <= 2.0d00) then
+            if (x == 0.0d00) go to 6
 !
 !   Use rational approximation for X < 2
 !
-            K1 = K + 1
-            SUM = 0.0D00
-            XN = 1.0D00
-            DO I = 1, 6
-               SUM = SUM + XN*F(I,K1)
-               XN = XN*X
-            END DO
-            X2 = X*X
-            SUMG = G(1,K1) + X2*(G(2,K1)+X2*G(3,K1))
-            SUMH = H(1,K1) + X2*X2*H(2,K1)
-            XN = DLOG(X)
-            SUMG = XN*(SUMG + XN*SUMH)
-            IF (K /= 0) THEN
-               SUM = SUM + SUMG
-               GO TO 7
-            ENDIF
-            SUM = SUM + X*SUMG
-            GO TO 7
-         ENDIF
+            k1 = k + 1
+            sum = 0.0d00
+            xn = 1.0d00
+            do i = 1, 6
+               sum = sum + xn*f(i,k1)
+               xn = xn*x
+            end do
+            x2 = x*x
+            sumg = g(1,k1) + x2*(g(2,k1)+x2*g(3,k1))
+            sumh = h(1,k1) + x2*x2*h(2,k1)
+            xn = dlog(x)
+            sumg = xn*(sumg + xn*sumh)
+            if (k /= 0) then
+               sum = sum + sumg
+               go to 7
+            endif
+            sum = sum + x*sumg
+            go to 7
+         endif
 !
-         SUM = A + B/X
-         IF (K /= 0) SUM = SUM + (SUM + B/X)/X
-         SUM = SUM/X
-         XM = -X
-         SUM = SUM*DEXP(XM)
-         GO TO 7
-    6    CONTINUE
-         IF (K == 1) GO TO 98
-         SUM = F(1,1)
-    7    CONTINUE
-         FUNL = SUM
-         RETURN
+         sum = a + b/x
+         if (k /= 0) sum = sum + (sum + b/x)/x
+         sum = sum/x
+         xm = -x
+         sum = sum*dexp(xm)
+         go to 7
+    6    continue
+         if (k == 1) go to 98
+         sum = f(1,1)
+    7    continue
+         funl = sum
+         return
 !
 !   Error section
 !
-   98    CONTINUE
-         WRITE (*, 302)
-         STOP
-      ENDIF
-      WRITE (*, 301)
-      STOP
+   98    continue
+         write (*, 302)
+         stop
+      endif
+      write (*, 301)
+      stop
 !
-  301 FORMAT(/,'FUNL: K must be either 0 or 1')
-  302 FORMAT(/,'FUNL: Attempt to calculate function for'/,&
+  301 format(/,'FUNL: K must be either 0 or 1')
+  302 format(/,'FUNL: Attempt to calculate function for'/,&
          ' zero argument and K value of 1')
-      RETURN
+      return
 !
-      END FUNCTION FUNL
+      end function funl

@@ -1,5 +1,5 @@
 !***********************************************************************
-      SUBROUTINE ORBOUT(RWFFILE2)
+      subroutine orbout(rwffile2)
 !***********************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:06:32   1/ 3/07
 !...Modified by Charlotte Froese Fischer
@@ -7,31 +7,31 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE grid_C
-      USE orb_C
-      USE wave_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use grid_c
+      use orb_c
+      use wave_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER , INTENT(IN) :: RWFFILE2*(*)
+      character , intent(in) :: rwffile2*(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, MFJ, I
+      integer :: j, mfj, i
 !-----------------------------------------------
 !
-      OPEN(23, FILE=RWFFILE2, STATUS='UNKNOWN', FORM='UNFORMATTED', POSITION=&
+      open(23, file=rwffile2, status='UNKNOWN', form='UNFORMATTED', position=&
          'asis')
-      WRITE (23) 'G92RWF'
-      DO J = 1, NW
-         MFJ = MF(J)
-         WRITE (23) NP(J), NAK(J), E(J), MFJ
-         WRITE (23) PZ(J), (PF(I,J),I=1,MFJ), (QF(I,J),I=1,MFJ)
-         WRITE (23) (R(I),I=1,MFJ)               ! This is a waste of resources
-      END DO
-      CLOSE(23)
+      write (23) 'G92RWF'
+      do j = 1, nw
+         mfj = mf(j)
+         write (23) np(j), nak(j), e(j), mfj
+         write (23) pz(j), (pf(i,j),i=1,mfj), (qf(i,j),i=1,mfj)
+         write (23) (r(i),i=1,mfj)               ! This is a waste of resources
+      end do
+      close(23)
 
-      RETURN
-      END SUBROUTINE ORBOUT
+      return
+      end subroutine orbout

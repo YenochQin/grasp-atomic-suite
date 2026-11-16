@@ -1,13 +1,13 @@
-      MODULE WJ1_I
-      INTERFACE
+      module wj1_i
+      interface
 !
-      SUBROUTINE WJ1(IK,BK,ID,BD,K2,QM1,QM2,WJ)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER,      INTENT(IN)               :: K2
-      INTEGER,      INTENT(IN), DIMENSION(7) :: IK, ID
-      REAL(DOUBLE), INTENT(IN)               :: QM1, QM2
-      REAL(DOUBLE), INTENT(IN), DIMENSION(3) :: BK, BD
-      REAL(DOUBLE), INTENT(OUT)              :: WJ
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine wj1(ik,bk,id,bd,k2,qm1,qm2,wj)
+      use vast_kind_param, only:  double
+      integer,      intent(in)               :: k2
+      integer,      intent(in), dimension(7) :: ik, id
+      real(double), intent(in)               :: qm1, qm2
+      real(double), intent(in), dimension(3) :: bk, bd
+      real(double), intent(out)              :: wj
+      end subroutine
+      end interface
+      end module

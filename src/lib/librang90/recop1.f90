@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE RECOP1(NS,JA1,KA,IRE,IAT,RECC)
+      subroutine recop1(ns,ja1,ka,ire,iat,recc)
 !                                                                  *
 !   ---------------  SECTION REC    SUBPROGRAM 06  --------------  *
 !                                                                  *
@@ -15,64 +15,64 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ONE
-      USE m_C,             ONLY: JLIST, JJQ1, NPEEL
+      use vast_kind_param, only: double
+      use cons_c,          only: one
+      use m_c,             only: jlist, jjq1, npeel
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE diaga1_I
-      USE diaga3_I
-      USE diaga5_I
-      IMPLICIT NONE
+      use diaga1_i
+      use diaga3_i
+      use diaga5_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)       :: NS, JA1, KA, IRE
-      INTEGER, INTENT(OUT)      :: IAT
-      REAL(DOUBLE), INTENT(OUT) :: RECC
+      integer, intent(in)       :: ns, ja1, ka, ire
+      integer, intent(out)      :: iat
+      real(double), intent(out) :: recc
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: IJ1, ISKR, NPEELGG
-      REAL(DOUBLE) :: S, RE
+      integer      :: ij1, iskr, npeelgg
+      real(double) :: s, re
 !-----------------------------------------------
-      IAT=1
-      IJ1=JLIST(JA1)
-      S=DBLE(JJQ1(3,IJ1))
-      RECC=ONE/DSQRT(S)
-      IF(NPEEL == 1 .AND. NS == -1)RETURN
-      IF(NS == -1) THEN
-         NPEELGG = NPEEL
-      ELSE
-         NPEELGG = NS
-      END IF
-      IAT=0
-      IF(IRE /= 0) THEN
-        IF(KA == 0) THEN
-          IAT=1
-          RETURN
-        END IF
-      END IF
-      IAT=1
-      IF(NPEELGG == 1) RETURN
-      IAT=0
-      IF(NPEELGG /= 2) THEN
-        CALL DIAGA5(NPEELGG,JA1,2*KA,IRE,IAT,RE)
-        RECC=RE*RECC
-        IF(IAT == 0) RETURN
-        IF(JA1 == NPEELGG) RETURN
-        IAT=0
-      END IF
-      CALL DIAGA1(JA1,2*KA,IRE,IAT,RE)
-      IF(IAT == 0)RETURN
-      RECC=RE*RECC
-      IF(NPEELGG == 2) RETURN
-      ISKR=NPEELGG-JA1
-      IF(JA1 == 1)ISKR=NPEELGG-1-JA1
-      IF(ISKR <= 1)RETURN
-      IAT=0
-      CALL DIAGA3(JA1,NPEELGG,2*KA,IRE,IAT,RE)
-      RECC=RE*RECC
-      RETURN
-      END SUBROUTINE RECOP1
+      iat=1
+      ij1=jlist(ja1)
+      s=dble(jjq1(3,ij1))
+      recc=one/dsqrt(s)
+      if(npeel == 1 .and. ns == -1)return
+      if(ns == -1) then
+         npeelgg = npeel
+      else
+         npeelgg = ns
+      end if
+      iat=0
+      if(ire /= 0) then
+        if(ka == 0) then
+          iat=1
+          return
+        end if
+      end if
+      iat=1
+      if(npeelgg == 1) return
+      iat=0
+      if(npeelgg /= 2) then
+        call diaga5(npeelgg,ja1,2*ka,ire,iat,re)
+        recc=re*recc
+        if(iat == 0) return
+        if(ja1 == npeelgg) return
+        iat=0
+      end if
+      call diaga1(ja1,2*ka,ire,iat,re)
+      if(iat == 0)return
+      recc=re*recc
+      if(npeelgg == 2) return
+      iskr=npeelgg-ja1
+      if(ja1 == 1)iskr=npeelgg-1-ja1
+      if(iskr <= 1)return
+      iat=0
+      call diaga3(ja1,npeelgg,2*ka,ire,iat,re)
+      recc=re*recc
+      return
+      end subroutine recop1

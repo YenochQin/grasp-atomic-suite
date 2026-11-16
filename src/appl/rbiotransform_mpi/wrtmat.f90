@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE WRTMAT(A, NROW, NCOL, NMROW, NMCOL)
+      subroutine wrtmat(a, nrow, ncol, nmrow, nmcol)
 !                                                                      *
 !***********************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:08:49   1/ 6/07
@@ -9,27 +9,27 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NROW
-      INTEGER, INTENT(IN) :: NCOL
-      INTEGER, INTENT(IN) :: NMROW
-      INTEGER, INTENT(IN) :: NMCOL
-      REAL(DOUBLE), INTENT(IN) :: A(NMROW,NMCOL)
+      integer, intent(in) :: nrow
+      integer, intent(in) :: ncol
+      integer, intent(in) :: nmrow
+      integer, intent(in) :: nmcol
+      real(double), intent(in) :: a(nmrow,nmcol)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, J
+      integer :: i, j
 !-----------------------------------------------
 
-      DO I = 1, NROW
-         WRITE (6, 1010) I, (A(I,J),J=1,NCOL)
-      END DO
+      do i = 1, nrow
+         write (6, 1010) i, (a(i,j),j=1,ncol)
+      end do
 
- 1010 FORMAT('0',I5,2X,4(1X,E14.7),/,(' ',7X,4(1X,E14.7)))
+ 1010 format('0',i5,2x,4(1x,e14.7),/,(' ',7x,4(1x,e14.7)))
 
-      RETURN
-      END SUBROUTINE WRTMAT
+      return
+      end subroutine wrtmat

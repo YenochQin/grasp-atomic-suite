@@ -40,7 +40,7 @@
 !***********************************************************************
 !***********************************************************************
 !***********************************************************************
-      PROGRAM HFS92
+      program hfs92
 !                                                                      *
 !   Entry routine for HFS92. Controls the entire computation.          *
 !                                                                      *
@@ -60,65 +60,65 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE default_C
-      USE iounit_C
+      use vast_kind_param, only:  double
+      use default_c
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setdbg_I
-      USE setmc_I
-      USE setcon_I
-      USE setsum_I
-      USE setcsla_I
-      USE gethfd_I
-      USE getmixblock_I
-      USE strsum_I
-      USE factt_I
-      USE hfsgg_I
-      IMPLICIT NONE
+      use getyn_i
+      use setdbg_i
+      use setmc_i
+      use setcon_i
+      use setsum_i
+      use setcsla_i
+      use gethfd_i
+      use getmixblock_i
+      use strsum_i
+      use factt_i
+      use hfsgg_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER   :: K, NCI, NCORE_NOT_USED
-      LOGICAL   :: YES
-      CHARACTER :: NAME*24
+      integer   :: k, nci, ncore_not_used
+      logical   :: yes
+      character :: name*24
 !-----------------------------------------------
 !
 
-      WRITE (ISTDE, *)
-      WRITE (ISTDE, *) 'RHFS'
-      WRITE (ISTDE, *) 'This is the hyperfine structure program'
-      WRITE (ISTDE, *) 'Input files:  isodata, name.c, name.(c)m, name.w'
-      WRITE (ISTDE, *) 'Output files: name.(c)h, name.(c)hoffd'
+      write (istde, *)
+      write (istde, *) 'RHFS'
+      write (istde, *) 'This is the hyperfine structure program'
+      write (istde, *) 'Input files:  isodata, name.c, name.(c)m, name.w'
+      write (istde, *) 'Output files: name.(c)h, name.(c)hoffd'
 
-      WRITE (ISTDE, *)
-      WRITE (ISTDE, *) 'Default settings?'
-      YES = GETYN()
-      WRITE (ISTDE, *)
-      IF (YES) THEN
-         NDEF = 0
-      ELSE
-         NDEF = 1
-      ENDIF
+      write (istde, *)
+      write (istde, *) 'Default settings?'
+      yes = getyn()
+      write (istde, *)
+      if (yes) then
+         ndef = 0
+      else
+         ndef = 1
+      endif
 
-   10 CONTINUE
-      WRITE (ISTDE, *) 'Name of state'
-      READ (*, '(A)') NAME
-      K = INDEX(NAME,' ')
-      IF (K == 1) THEN
-         WRITE (ISTDE, *) 'Names may not start with a blank'
-         GO TO 10
-      ENDIF
-      WRITE (ISTDE, *)
-      WRITE (ISTDE, *) 'Mixing coefficients from a CI calc.?'
-      YES = GETYN()
-      IF (YES) THEN
-         NCI = 0
-      ELSE
-         NCI = 1
-      ENDIF
+   10 continue
+      write (istde, *) 'Name of state'
+      read (*, '(A)') name
+      k = index(name,' ')
+      if (k == 1) then
+         write (istde, *) 'Names may not start with a blank'
+         go to 10
+      endif
+      write (istde, *)
+      write (istde, *) 'Mixing coefficients from a CI calc.?'
+      yes = getyn()
+      if (yes) then
+         nci = 0
+      else
+         nci = 1
+      endif
 !
 !   Check compatibility of plant substitutions
 !
@@ -127,27 +127,27 @@
 !   Determine if there is to be any debug printout; this will be
 !   made on the  .dbg  file
 !
-      CALL SETDBG
+      call setdbg
 !
 !   Perform machine- and installation-dependent setup
 !
-      CALL SETMC
+      call setmc
 !
 !   Set up the physical constants
 !
-      CALL SETCON
+      call setcon
 !
 !   Open the  .sum  file
 !
-      CALL SETSUM (NAME, NCI)
+      call setsum (name, nci)
 !
 !   Open, check, load data from, and close, the  .csl  file
 !
-      CALL SETCSLA (NAME, NCORE_NOT_USED)
+      call setcsla (name, ncore_not_used)
 !
 !   Get the remaining information
 !
-      CALL GETHFD (NAME)
+      call gethfd (name)
 !
 !   Get the eigenvectors
 !
@@ -155,7 +155,7 @@
 !GG      YES = GETYN()
 !GG      WRITE (ISTDE, *)
 !GG      IF (YES) THEN
-         CALL GETMIXBLOCK (NAME, NCI)
+         call getmixblock (name, nci)
 !GG      ELSE
 !GG         IF (NCI == 0) THEN
 !GG            CALL GETMIXC (NAME)
@@ -166,20 +166,20 @@
 !
 !   Append a summary of the inputs to the  .sum  file
 !
-      CALL STRSUM
+      call strsum
 !
 !   Set up the table of logarithms of factorials
 !
-      CALL FACTT
+      call factt
 !
 !   Proceed with the HFS calculation
 !
-      CALL HFSGG
+      call hfsgg
 !
 !   Print completion message
 !
-      WRITE (ISTDE, *)
-      WRITE (ISTDE, *) 'RHFS: Execution complete.'
+      write (istde, *)
+      write (istde, *) 'RHFS: Execution complete.'
 !
-      STOP
-      END PROGRAM HFS92
+      stop
+      end program hfs92

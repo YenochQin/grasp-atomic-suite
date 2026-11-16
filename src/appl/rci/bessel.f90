@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE BESSEL(IA, IB, IK, IW, K)
+      subroutine bessel(ia, ib, ik, iw, k)
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -43,199 +43,199 @@
 !-----------------------------------------------
 !   M O D U L E S
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: KEYORB
-      USE bess_C
-      USE debug_C
-      USE def_C
-      USE grid_C
-      USE orb_C
-      USE stor_C
-      USE wfaC_c
-      IMPLICIT NONE
+      use vast_kind_param, only: double
+      use parameter_def,   only: keyorb
+      use bess_c
+      use debug_c
+      use def_c
+      use grid_c
+      use orb_c
+      use stor_c
+      use wfac_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: IA
-      INTEGER, INTENT(IN) :: IB
-      INTEGER, INTENT(IN) :: IK
-      INTEGER, INTENT(IN) :: IW
-      INTEGER, INTENT(IN) :: K
+      integer, intent(in) :: ia
+      integer, intent(in) :: ib
+      integer, intent(in) :: ik
+      integer, intent(in) :: iw
+      integer, intent(in) :: k
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ICODE, IWKP, IKKP, L, I, NN, J, JCHAN, IREM, ISWAP
-      REAL(DOUBLE) :: EPSI, W, WA, XBESS1, XBESS2, S1, S2, DFNM, DFN, SSN, SCN&
-         , SN, CN, OBWA, B, SKEEP
+      integer :: icode, iwkp, ikkp, l, i, nn, j, jchan, irem, iswap
+      real(double) :: epsi, w, wa, xbess1, xbess2, s1, s2, dfnm, dfn, ssn, scn&
+         , sn, cn, obwa, b, skeep
 !-----------------------------------------------
 !
-      EPSI = SQRT(0.1D00*ACCY)
+      epsi = sqrt(0.1d00*accy)
 !
 !   Form unique label symmetric in IA, IB
 !
-      ICODE = MAX(IA,IB) + KEY*(MIN(IA,IB) + KEY*K)
+      icode = max(ia,ib) + key*(min(ia,ib) + key*k)
 !
 !   Function in position; return
 !
-      IF (ICODE == KEEP(IK,IW)) RETURN
+      if (icode == keep(ik,iw)) return
 !
 !   Function not in position; is it available in BESS arrays?
 !
-      W = WFACT*ABS(E(IA)-E(IB))/C
-      WIJ(IW) = W
+      w = wfact*abs(e(ia)-e(ib))/c
+      wij(iw) = w
 !
-      DO IWKP = 1, 2
-         DO IKKP = 1, 2
-            IF (KEEP(IKKP,IWKP) /= ICODE) CYCLE
+      do iwkp = 1, 2
+         do ikkp = 1, 2
+            if (keep(ikkp,iwkp) /= icode) cycle
 !
 !   Function found move into position
 !
-            KEEP(IK,IW) = ICODE
-            IF (LDBPR(7)) WRITE (99, 302) NP(IA), NH(IA), NP(IB), NH(IB), K, &
-               IKKP, IWKP, IK, IW
-            BESSJ(IK,IW,:N) = BESSJ(IKKP,IWKP,:N)
-            BESSN(IK,IW,:N) = BESSN(IKKP,IWKP,:N)
-            RETURN
-         END DO
-      END DO
+            keep(ik,iw) = icode
+            if (ldbpr(7)) write (99, 302) np(ia), nh(ia), np(ib), nh(ib), k, &
+               ikkp, iwkp, ik, iw
+            bessj(ik,iw,:n) = bessj(ikkp,iwkp,:n)
+            bessn(ik,iw,:n) = bessn(ikkp,iwkp,:n)
+            return
+         end do
+      end do
 !
 !   Function not found; evaluate it
 !
-      IF (LDBPR(7)) WRITE (99, 303) NP(IA), NH(IA), NP(IB), NH(IB), K, IK, IW
+      if (ldbpr(7)) write (99, 303) np(ia), nh(ia), np(ib), nh(ib), k, ik, iw
 !
-      KEEP(IK,IW) = ICODE
+      keep(ik,iw) = icode
 !
-      IF (W < EPSI**2) THEN
+      if (w < epsi**2) then
 !
 !   Negligible w
 !
-         BESSJ(IK,IW,:N) = 0.0D00
-         BESSN(IK,IW,:N) = 0.0D00
-         RETURN
+         bessj(ik,iw,:n) = 0.0d00
+         bessn(ik,iw,:n) = 0.0d00
+         return
 !
-      ENDIF
+      endif
 !
-      NN = K
+      nn = k
 !
-      BESSJ(IK,IW,1) = 0.0D00
-      BESSN(IK,IW,1) = 0.0D00
+      bessj(ik,iw,1) = 0.0d00
+      bessn(ik,iw,1) = 0.0d00
 !
 !   Use a four-term power series for low w*r
 !
-      L5: DO J = 2, N
-         WA = -0.5D00*(R(J)*W)**2
-         XBESS1 = 1.0D00
-         XBESS2 = 1.0D00
-         S1 = 0.0D00
-         S2 = 0.0D00
-         DO I = 1, 4
-            XBESS1 = XBESS1*WA/DBLE(I*(2*(NN + I) + 1))
-            XBESS2 = XBESS2*WA/DBLE(I*(2*(I - NN) - 1))
-            S1 = S1 + XBESS1
-            S2 = S2 + XBESS2
-            IF (ABS(XBESS1)>=ABS(S1)*EPSI .OR. ABS(XBESS2)>=ABS(S2)*EPSI) &
-               CYCLE
-            BESSJ(IK,IW,J) = S1
-            BESSN(IK,IW,J) = S2
-            CYCLE  L5
-         END DO
-         JCHAN = J
-         GO TO 6
-      END DO L5
+      l5: do j = 2, n
+         wa = -0.5d00*(r(j)*w)**2
+         xbess1 = 1.0d00
+         xbess2 = 1.0d00
+         s1 = 0.0d00
+         s2 = 0.0d00
+         do i = 1, 4
+            xbess1 = xbess1*wa/dble(i*(2*(nn + i) + 1))
+            xbess2 = xbess2*wa/dble(i*(2*(i - nn) - 1))
+            s1 = s1 + xbess1
+            s2 = s2 + xbess2
+            if (abs(xbess1)>=abs(s1)*epsi .or. abs(xbess2)>=abs(s2)*epsi) &
+               cycle
+            bessj(ik,iw,j) = s1
+            bessn(ik,iw,j) = s2
+            cycle  l5
+         end do
+         jchan = j
+         go to 6
+      end do l5
 !
 !   If here then calculated whole array using four-term power
 !   series.  Hence return
 !
-      RETURN
+      return
 !
 !   Use sin/cos expansion when power series requires more than
 !   four terms terms to converge
 !
-    6 CONTINUE
-      IF (NN == 0) THEN
-         DFNM = 1.0D00
-         DFN = 1.0D00
-      ELSE
-         DFNM = 1.0D00
-         DO I = 3, 2*NN - 1, 2
-            DFNM = DFNM*DBLE(I)
-         END DO
-         DFN = DFNM*DBLE(2*NN + 1)
-      ENDIF
-      DFNM = 1.0D00/DFNM
+    6 continue
+      if (nn == 0) then
+         dfnm = 1.0d00
+         dfn = 1.0d00
+      else
+         dfnm = 1.0d00
+         do i = 3, 2*nn - 1, 2
+            dfnm = dfnm*dble(i)
+         end do
+         dfn = dfnm*dble(2*nn + 1)
+      endif
+      dfnm = 1.0d00/dfnm
 !
-      IREM = MOD(NN,4)
+      irem = mod(nn,4)
 !
-      SELECT CASE (IREM)
-      CASE (1)
+      select case (irem)
+      case (1)
 !
 !   NN = 1, 5, 9, ...
 !
-         SSN = -1.0D00
-         SCN = 1.0D00
-         ISWAP = 1
+         ssn = -1.0d00
+         scn = 1.0d00
+         iswap = 1
 !
-      CASE (2)
+      case (2)
 !
 !   N = 2, 6, 10, ....
 !
-         SSN = -1.0D00
-         SCN = -1.0D00
-         ISWAP = 0
+         ssn = -1.0d00
+         scn = -1.0d00
+         iswap = 0
 !
-      CASE (3)
+      case (3)
 !
 !   NN = 3, 7, 11,...
 !
-         SSN = 1.0D00
-         SCN = -1.0D00
-         ISWAP = 1
+         ssn = 1.0d00
+         scn = -1.0d00
+         iswap = 1
 !
-      CASE DEFAULT
+      case default
 !
 !   NN = 0, 4, 8,...
 !
-         SSN = 1.0D00
-         SCN = 1.0D00
-         ISWAP = 0
+         ssn = 1.0d00
+         scn = 1.0d00
+         iswap = 0
 !
-      END SELECT
+      end select
 !
-      DO J = JCHAN, N
-         WA = W*R(J)
-         IF (ISWAP == 0) THEN
-            SN = SSN*SIN(WA)
-            CN = SCN*COS(WA)
-         ELSE
-            SN = SSN*COS(WA)
-            CN = SCN*SIN(WA)
-         ENDIF
-         OBWA = 1.0D00/WA
-         B = OBWA
-         S1 = B*SN
-         S2 = B*CN
-         DO I = 1, NN
-            SKEEP = SN
-            SN = CN
-            CN = -SKEEP
-            B = B*OBWA*DBLE((NN + I)*(NN - I + 1))/DBLE(2*I)
-            S1 = S1 + B*SN
-            S2 = S2 + B*CN
-         END DO
-         S1 = S1*DFN/WA**NN - 1.0D00
-         S2 = S2*WA**(NN + 1)*DFNM - 1.0D00
-         BESSJ(IK,IW,J) = S1
-         BESSN(IK,IW,J) = S2
-      END DO
-      RETURN
+      do j = jchan, n
+         wa = w*r(j)
+         if (iswap == 0) then
+            sn = ssn*sin(wa)
+            cn = scn*cos(wa)
+         else
+            sn = ssn*cos(wa)
+            cn = scn*sin(wa)
+         endif
+         obwa = 1.0d00/wa
+         b = obwa
+         s1 = b*sn
+         s2 = b*cn
+         do i = 1, nn
+            skeep = sn
+            sn = cn
+            cn = -skeep
+            b = b*obwa*dble((nn + i)*(nn - i + 1))/dble(2*i)
+            s1 = s1 + b*sn
+            s2 = s2 + b*cn
+         end do
+         s1 = s1*dfn/wa**nn - 1.0d00
+         s2 = s2*wa**(nn + 1)*dfnm - 1.0d00
+         bessj(ik,iw,j) = s1
+         bessn(ik,iw,j) = s2
+      end do
+      return
 !
-  303 FORMAT(93X,I2,A2,2X,I2,A2,2X,I2,2X,'New',6X,'(',I2,',',I2,')')
-  302 FORMAT(93X,I2,A2,2X,I2,A2,2X,I2,2X,'(',I2,',',I2,')',2X,'(',I2,',',I2,')'&
+  303 format(93x,i2,a2,2x,i2,a2,2x,i2,2x,'New',6x,'(',i2,',',i2,')')
+  302 format(93x,i2,a2,2x,i2,a2,2x,i2,2x,'(',i2,',',i2,')',2x,'(',i2,',',i2,')'&
          )
-      RETURN
+      return
 !
-      END SUBROUTINE BESSEL
+      end subroutine bessel

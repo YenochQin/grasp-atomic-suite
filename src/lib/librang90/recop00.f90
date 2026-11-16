@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE RECOP00(NS,JA1,JA2,KA,IAT)
+      subroutine recop00(ns,ja1,ja2,ka,iat)
 !                                                                  *
 !   ---------------  SECTION REC    SUBPROGRAM 06  --------------  *
 !                                                                  *
@@ -14,70 +14,70 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE m_C,             ONLY: NPEEL, JJC1, JJC2, JLIST, JJQ1, JJQ2
+      use m_c,             only: npeel, jjc1, jjc2, jlist, jjq1, jjq2
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ittk_I
-      IMPLICIT NONE
+      use ittk_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)  :: NS, JA1, JA2, KA
-      INTEGER, INTENT(OUT) :: IAT
+      integer, intent(in)  :: ns, ja1, ja2, ka
+      integer, intent(out) :: iat
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, ISKR, IJ1, J, JI, JJ, NPEELGG, KK, LK, LD
+      integer :: i, iskr, ij1, j, ji, jj, npeelgg, kk, lk, ld
 !-----------------------------------------------
-      IAT=1
-      IF(NPEEL == 1 .AND. NS == -1)RETURN
-      IAT=0
-      IF(NS == -1) THEN
-         NPEELGG = NPEEL
-      ELSE
-         NPEELGG = NS
-      END IF
-      IF(NPEELGG > 1) THEN
-        LK=JJC1(NPEELGG-1)-1
-        LD=JJC2(NPEELGG-1)-1
-      ELSE IF(NPEELGG == 1) THEN
-        LK=JJC1(NPEELGG)-1
-        LD=JJC2(NPEELGG)-1
-      ELSE
-        PRINT*, "ERROR in RECOP00"
-        STOP
-      END IF
-      IF(ITTK(LK,LD,2*KA) == 0)RETURN
-      IAT=1
-      IF(NPEEL == 1)RETURN
-      DO I=1,NPEEL
-        IF(JA1 /= I) THEN
-          IF(JA2 /= I) THEN
-            IJ1=JLIST(I)
-            IF(JJQ1(1,IJ1) /= JJQ2(1,IJ1))IAT=0
-            IF(JJQ1(2,IJ1) /= JJQ2(2,IJ1))IAT=0
-            IF(JJQ1(3,IJ1) /= JJQ2(3,IJ1))IAT=0
-          ENDIF
-        ENDIF
-      END DO
-      IF(IAT == 0)RETURN
-      IF(NPEELGG <= 2)RETURN
-      IF(JA1 <= 2)RETURN
-      DO J=3,JA1
-        JJ=J-2
-        IF(JJC1(JJ) /= JJC2(JJ))IAT=0
-        IF(IAT == 0)RETURN
-      END DO
-      ISKR=NPEELGG-JA2
-      IF(ISKR > 0) THEN
-        DO JI=1,ISKR
-          KK=JA2-2+JI
-          LK=JJC1(KK)-1
-          LD=JJC2(KK)-1
-          IF(ITTK(LK,LD,2*KA) == 0)IAT=0
-          IF(IAT == 0)RETURN
-        END DO
-      ENDIF
-      RETURN
-      END SUBROUTINE RECOP00
+      iat=1
+      if(npeel == 1 .and. ns == -1)return
+      iat=0
+      if(ns == -1) then
+         npeelgg = npeel
+      else
+         npeelgg = ns
+      end if
+      if(npeelgg > 1) then
+        lk=jjc1(npeelgg-1)-1
+        ld=jjc2(npeelgg-1)-1
+      else if(npeelgg == 1) then
+        lk=jjc1(npeelgg)-1
+        ld=jjc2(npeelgg)-1
+      else
+        print*, "ERROR in RECOP00"
+        stop
+      end if
+      if(ittk(lk,ld,2*ka) == 0)return
+      iat=1
+      if(npeel == 1)return
+      do i=1,npeel
+        if(ja1 /= i) then
+          if(ja2 /= i) then
+            ij1=jlist(i)
+            if(jjq1(1,ij1) /= jjq2(1,ij1))iat=0
+            if(jjq1(2,ij1) /= jjq2(2,ij1))iat=0
+            if(jjq1(3,ij1) /= jjq2(3,ij1))iat=0
+          endif
+        endif
+      end do
+      if(iat == 0)return
+      if(npeelgg <= 2)return
+      if(ja1 <= 2)return
+      do j=3,ja1
+        jj=j-2
+        if(jjc1(jj) /= jjc2(jj))iat=0
+        if(iat == 0)return
+      end do
+      iskr=npeelgg-ja2
+      if(iskr > 0) then
+        do ji=1,iskr
+          kk=ja2-2+ji
+          lk=jjc1(kk)-1
+          ld=jjc2(kk)-1
+          if(ittk(lk,ld,2*ka) == 0)iat=0
+          if(iat == 0)return
+        end do
+      endif
+      return
+      end subroutine recop00

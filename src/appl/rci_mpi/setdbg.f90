@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETDBG
+      subroutine setdbg
 !                                                                      *
 !   This subroutine sets the arrays that control debug printout from   *
 !   the radial and angular modules of the GRASP92 suite.               *
@@ -13,13 +13,13 @@
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
-      USE debug_C
-      IMPLICIT NONE
+      use debug_c
+      implicit none
 !
-      LDBPA = .FALSE.
-      LDBPG = .FALSE.
+      ldbpa = .false.
+      ldbpg = .false.
 
-      LDBPR = .FALSE.
+      ldbpr = .false.
 
-      RETURN
-      END SUBROUTINE SETDBG
+      return
+      end subroutine setdbg

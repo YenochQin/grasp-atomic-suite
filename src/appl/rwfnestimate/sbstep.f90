@@ -2,7 +2,7 @@
 
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SBSTEP(IORB, NSTRT, NEND, P, Q)
+      subroutine sbstep(iorb, nstrt, nend, p, q)
 !                                                                      *
 !   This  subroutine continues the solution of the homogeneous Dirac   *
 !   radial equation  from tabulation point NSTRT to tabulation point   *
@@ -16,258 +16,258 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE parameter_def, ONLY: NNNP, NNN1, NNNW
+      use vast_kind_param, only:  double
+      use parameter_def, only: nnnp, nnn1, nnnw
       !USE DEF_C
-      USE GRID_C
-      USE INT_C, ONLY: TF, TG
-      USE ORB_C
-      USE SBC_C
-      IMPLICIT NONE
+      use grid_c
+      use int_c, only: tf, tg
+      use orb_c
+      use sbc_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: IORB
-      INTEGER , INTENT(IN) :: NSTRT
-      INTEGER , INTENT(IN) :: NEND
-      REAL(DOUBLE) , INTENT(INOUT) :: P(NNNP)
-      REAL(DOUBLE) , INTENT(INOUT) :: Q(NNNP)
+      integer , intent(in) :: iorb
+      integer , intent(in) :: nstrt
+      integer , intent(in) :: nend
+      real(double) , intent(inout) :: p(nnnp)
+      real(double) , intent(inout) :: q(nnnp)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      REAL(DOUBLE), PARAMETER :: B1 = -0.50D00
-      REAL(DOUBLE), PARAMETER :: B2 = 0.50D00
-      REAL(DOUBLE), PARAMETER :: B3 = 0.75D00
-      REAL(DOUBLE), PARAMETER :: B4 = 0.25D00
+      real(double), parameter :: b1 = -0.50d00
+      real(double), parameter :: b2 = 0.50d00
+      real(double), parameter :: b3 = 0.75d00
+      real(double), parameter :: b4 = 0.25d00
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IDIFF, LOC, J, JP1, JM1
-      REAL(DOUBLE) :: TBH, TC1, FK, CC, PJ, QJ, FAC, PPJ, QPJ, PJM1, QJM1, &
-         PPJM1, QPJM1, PJM2, QJM2, PPJM2, QPJM2, PJM3, QJM3, PPJM3, QPJM3, PJM4&
-         , QJM4, PPJM4, QPJM4, RPPJ, RQPJ, CCRPOR, CPJP1, CMJP1, FJP1, GJP1, &
-         DENOM, FACTOR, PJP1, QJP1, PPJP1, QPJP1, PJP2, QJP2, PPJP2, QPJP2, &
-         PJP3, QJP3, PPJP3, QPJP3, PJP4, QJP4, PPJP4, QPJP4, RPMJ, RQMJ, CPJM1&
-         , CMJM1, FJM1, GJM1
-      REAL(DOUBLE) :: C1, C2, C3, C4, C5, C6
-      LOGICAL :: OUT
+      integer :: idiff, loc, j, jp1, jm1
+      real(double) :: tbh, tc1, fk, cc, pj, qj, fac, ppj, qpj, pjm1, qjm1, &
+         ppjm1, qpjm1, pjm2, qjm2, ppjm2, qpjm2, pjm3, qjm3, ppjm3, qpjm3, pjm4&
+         , qjm4, ppjm4, qpjm4, rppj, rqpj, ccrpor, cpjp1, cmjp1, fjp1, gjp1, &
+         denom, factor, pjp1, qjp1, ppjp1, qpjp1, pjp2, qjp2, ppjp2, qpjp2, &
+         pjp3, qjp3, ppjp3, qpjp3, pjp4, qjp4, ppjp4, qpjp4, rpmj, rqmj, cpjm1&
+         , cmjm1, fjm1, gjm1
+      real(double) :: c1, c2, c3, c4, c5, c6
+      logical :: out
 !-----------------------------------------------
 !
 !
 !   Initializations
 !
-      C1 = C(1)
-      C2 = C(2)
-      C3 = C(3)
-      C4 = C(4)
-      C5 = C(5)
-      C6 = C(6)
-      TBH = 2.0D00/H
-      TC1 = 2.0D00*C1
+      c1 = c(1)
+      c2 = c(2)
+      c3 = c(3)
+      c4 = c(4)
+      c5 = c(5)
+      c6 = c(6)
+      tbh = 2.0d00/h
+      tc1 = 2.0d00*c1
 !
 !   Determine whether integration is inward or outwarD
 !
-      IDIFF = NEND - NSTRT
-      IF (IDIFF > 0) THEN
-         OUT = .TRUE.
-      ELSE IF (IDIFF == 0) THEN
-         RETURN
-      ELSE IF (IDIFF < 0) THEN
-         OUT = .FALSE.
-      ENDIF
+      idiff = nend - nstrt
+      if (idiff > 0) then
+         out = .true.
+      else if (idiff == 0) then
+         return
+      else if (idiff < 0) then
+         out = .false.
+      endif
 !
 !   Overall initializations
 !
-      FK = DBLE(NAK(IORB))
-      CC = C1*FK*H
+      fk = dble(nak(iorb))
+      cc = c1*fk*h
 !
 !   Perform integration depending on case
 !
-      IF (OUT) THEN
+      if (out) then
 !
 !   Initialization for outward integration
 !
-         LOC = NSTRT
-         PJ = P(LOC)
-         QJ = Q(LOC)
-         FAC = FK*RPOR(LOC)
-         PPJ = (-FAC*PJ) - TBH*TF(LOC)*QJ
-         QPJ = FAC*QJ - TBH*TG(LOC)*PJ
+         loc = nstrt
+         pj = p(loc)
+         qj = q(loc)
+         fac = fk*rpor(loc)
+         ppj = (-fac*pj) - tbh*tf(loc)*qj
+         qpj = fac*qj - tbh*tg(loc)*pj
 !
-         LOC = LOC - 1
-         PJM1 = P(LOC)
-         QJM1 = Q(LOC)
-         FAC = FK*RPOR(LOC)
-         PPJM1 = (-FAC*PJM1) - TBH*TF(LOC)*QJM1
-         QPJM1 = FAC*QJM1 - TBH*TG(LOC)*PJM1
+         loc = loc - 1
+         pjm1 = p(loc)
+         qjm1 = q(loc)
+         fac = fk*rpor(loc)
+         ppjm1 = (-fac*pjm1) - tbh*tf(loc)*qjm1
+         qpjm1 = fac*qjm1 - tbh*tg(loc)*pjm1
 !
-         LOC = LOC - 1
-         PJM2 = P(LOC)
-         QJM2 = Q(LOC)
-         FAC = FK*RPOR(LOC)
-         PPJM2 = (-FAC*PJM2) - TBH*TF(LOC)*QJM2
-         QPJM2 = FAC*QJM2 - TBH*TG(LOC)*PJM2
+         loc = loc - 1
+         pjm2 = p(loc)
+         qjm2 = q(loc)
+         fac = fk*rpor(loc)
+         ppjm2 = (-fac*pjm2) - tbh*tf(loc)*qjm2
+         qpjm2 = fac*qjm2 - tbh*tg(loc)*pjm2
 !
-         LOC = LOC - 1
-         PJM3 = P(LOC)
-         QJM3 = Q(LOC)
-         FAC = FK*RPOR(LOC)
-         PPJM3 = (-FAC*PJM3) - TBH*TF(LOC)*QJM3
-         QPJM3 = FAC*QJM3 - TBH*TG(LOC)*PJM3
+         loc = loc - 1
+         pjm3 = p(loc)
+         qjm3 = q(loc)
+         fac = fk*rpor(loc)
+         ppjm3 = (-fac*pjm3) - tbh*tf(loc)*qjm3
+         qpjm3 = fac*qjm3 - tbh*tg(loc)*pjm3
 !
-         LOC = LOC - 1
-         PJM4 = P(LOC)
-         QJM4 = Q(LOC)
-         FAC = FK*RPOR(LOC)
-         PPJM4 = (-FAC*PJM4) - TBH*TF(LOC)*QJM4
-         QPJM4 = FAC*QJM4 - TBH*TG(LOC)*PJM4
+         loc = loc - 1
+         pjm4 = p(loc)
+         qjm4 = q(loc)
+         fac = fk*rpor(loc)
+         ppjm4 = (-fac*pjm4) - tbh*tf(loc)*qjm4
+         qpjm4 = fac*qjm4 - tbh*tg(loc)*pjm4
 !
 !   March out
 !
-         J = NSTRT - 1
-    1    CONTINUE
-         J = J + 1
+         j = nstrt - 1
+    1    continue
+         j = j + 1
 !
-         RPPJ = B1*PJ + B2*PJM1 + B3*PJM2 + B4*PJM3 + C2*PPJ + C3*PPJM1 + C4*&
-            PPJM2 + C5*PPJM3 + C6*PPJM4
-         RQPJ = B1*QJ + B2*QJM1 + B3*QJM2 + B4*QJM3 + C2*QPJ + C3*QPJM1 + C4*&
-            QPJM2 + C5*QPJM3 + C6*QPJM4
+         rppj = b1*pj + b2*pjm1 + b3*pjm2 + b4*pjm3 + c2*ppj + c3*ppjm1 + c4*&
+            ppjm2 + c5*ppjm3 + c6*ppjm4
+         rqpj = b1*qj + b2*qjm1 + b3*qjm2 + b4*qjm3 + c2*qpj + c3*qpjm1 + c4*&
+            qpjm2 + c5*qpjm3 + c6*qpjm4
 !
-         JP1 = J + 1
-         CCRPOR = CC*RPOR(JP1)
-         CPJP1 = 1.0D00 + CCRPOR
-         CMJP1 = 1.0D00 - CCRPOR
-         FJP1 = TC1*TF(JP1)
-         GJP1 = TC1*TG(JP1)
-         DENOM = CPJP1*CMJP1 - GJP1*FJP1
-         FACTOR = 1.0D00/DENOM
-         PJP1 = (CMJP1*RPPJ - FJP1*RQPJ)*FACTOR
-         QJP1 = (CPJP1*RQPJ - GJP1*RPPJ)*FACTOR
-         P(JP1) = PJP1
-         Q(JP1) = QJP1
+         jp1 = j + 1
+         ccrpor = cc*rpor(jp1)
+         cpjp1 = 1.0d00 + ccrpor
+         cmjp1 = 1.0d00 - ccrpor
+         fjp1 = tc1*tf(jp1)
+         gjp1 = tc1*tg(jp1)
+         denom = cpjp1*cmjp1 - gjp1*fjp1
+         factor = 1.0d00/denom
+         pjp1 = (cmjp1*rppj - fjp1*rqpj)*factor
+         qjp1 = (cpjp1*rqpj - gjp1*rppj)*factor
+         p(jp1) = pjp1
+         q(jp1) = qjp1
 !
-         IF (JP1 < NEND) THEN
+         if (jp1 < nend) then
 !
-            PPJM4 = PPJM3
-            QPJM4 = QPJM3
+            ppjm4 = ppjm3
+            qpjm4 = qpjm3
 !
-            PJM3 = PJM2
-            QJM3 = QJM2
-            PPJM3 = PPJM2
-            QPJM3 = QPJM2
+            pjm3 = pjm2
+            qjm3 = qjm2
+            ppjm3 = ppjm2
+            qpjm3 = qpjm2
 !
-            PJM2 = PJM1
-            QJM2 = QJM1
-            PPJM2 = PPJM1
-            QPJM2 = QPJM1
+            pjm2 = pjm1
+            qjm2 = qjm1
+            ppjm2 = ppjm1
+            qpjm2 = qpjm1
 !
-            PJM1 = PJ
-            QJM1 = QJ
-            PPJM1 = PPJ
-            QPJM1 = QPJ
+            pjm1 = pj
+            qjm1 = qj
+            ppjm1 = ppj
+            qpjm1 = qpj
 !
-            PJ = PJP1
-            QJ = QJP1
-            FAC = FK*RPOR(JP1)
-            PPJ = (-FAC*PJ) - TBH*TF(JP1)*QJ
-            QPJ = FAC*QJ - TBH*TG(JP1)*PJ
+            pj = pjp1
+            qj = qjp1
+            fac = fk*rpor(jp1)
+            ppj = (-fac*pj) - tbh*tf(jp1)*qj
+            qpj = fac*qj - tbh*tg(jp1)*pj
 !
-            GO TO 1
+            go to 1
 !
-         ENDIF
-      ELSE
+         endif
+      else
 !
 !   Initializations for inward integration
 !
-         LOC = NSTRT
-         PJ = P(LOC)
-         QJ = Q(LOC)
-         FAC = FK*RPOR(LOC)
-         PPJ = (-FAC*PJ) - TBH*TF(LOC)*QJ
-         QPJ = FAC*QJ - TBH*TG(LOC)*PJ
+         loc = nstrt
+         pj = p(loc)
+         qj = q(loc)
+         fac = fk*rpor(loc)
+         ppj = (-fac*pj) - tbh*tf(loc)*qj
+         qpj = fac*qj - tbh*tg(loc)*pj
 !
-         LOC = LOC + 1
-         PJP1 = P(LOC)
-         QJP1 = Q(LOC)
-         FAC = FK*RPOR(LOC)
-         PPJP1 = (-FAC*PJP1) - TBH*TF(LOC)*QJP1
-         QPJP1 = FAC*QJP1 - TBH*TG(LOC)*PJP1
+         loc = loc + 1
+         pjp1 = p(loc)
+         qjp1 = q(loc)
+         fac = fk*rpor(loc)
+         ppjp1 = (-fac*pjp1) - tbh*tf(loc)*qjp1
+         qpjp1 = fac*qjp1 - tbh*tg(loc)*pjp1
 !
-         LOC = LOC + 1
-         PJP2 = P(LOC)
-         QJP2 = Q(LOC)
-         FAC = FK*RPOR(LOC)
-         PPJP2 = (-FAC*PJP2) - TBH*TF(LOC)*QJP2
-         QPJP2 = FAC*QJP2 - TBH*TG(LOC)*PJP2
+         loc = loc + 1
+         pjp2 = p(loc)
+         qjp2 = q(loc)
+         fac = fk*rpor(loc)
+         ppjp2 = (-fac*pjp2) - tbh*tf(loc)*qjp2
+         qpjp2 = fac*qjp2 - tbh*tg(loc)*pjp2
 !
-         LOC = LOC + 1
-         PJP3 = P(LOC)
-         QJP3 = Q(LOC)
-         FAC = FK*RPOR(LOC)
-         PPJP3 = (-FAC*PJP3) - TBH*TF(LOC)*QJP3
-         QPJP3 = FAC*QJP3 - TBH*TG(LOC)*PJP3
+         loc = loc + 1
+         pjp3 = p(loc)
+         qjp3 = q(loc)
+         fac = fk*rpor(loc)
+         ppjp3 = (-fac*pjp3) - tbh*tf(loc)*qjp3
+         qpjp3 = fac*qjp3 - tbh*tg(loc)*pjp3
 !
-         LOC = LOC + 1
-         PJP4 = P(LOC)
-         QJP4 = Q(LOC)
-         FAC = FK*RPOR(LOC)
-         PPJP4 = (-FAC*PJP4) - TBH*TF(LOC)*QJP4
-         QPJP4 = FAC*QJP4 - TBH*TG(LOC)*PJP4
+         loc = loc + 1
+         pjp4 = p(loc)
+         qjp4 = q(loc)
+         fac = fk*rpor(loc)
+         ppjp4 = (-fac*pjp4) - tbh*tf(loc)*qjp4
+         qpjp4 = fac*qjp4 - tbh*tg(loc)*pjp4
 !
 !   March in
 !
-         J = NSTRT + 1
-    2    CONTINUE
-         J = J - 1
+         j = nstrt + 1
+    2    continue
+         j = j - 1
 !
-         RPMJ = B1*PJ + B2*PJP1 + B3*PJP2 + B4*PJP3 - C2*PPJ - C3*PPJP1 - C4*&
-            PPJP2 - C5*PPJP3 - C6*PPJP4
-         RQMJ = B1*QJ + B2*QJP1 + B3*QJP2 + B4*QJP3 - C2*QPJ - C3*QPJP1 - C4*&
-            QPJP2 - C5*QPJP3 - C6*QPJP4
+         rpmj = b1*pj + b2*pjp1 + b3*pjp2 + b4*pjp3 - c2*ppj - c3*ppjp1 - c4*&
+            ppjp2 - c5*ppjp3 - c6*ppjp4
+         rqmj = b1*qj + b2*qjp1 + b3*qjp2 + b4*qjp3 - c2*qpj - c3*qpjp1 - c4*&
+            qpjp2 - c5*qpjp3 - c6*qpjp4
 !
-         JM1 = J - 1
-         CCRPOR = CC*RPOR(JM1)
-         CPJM1 = 1.0D00 + CCRPOR
-         CMJM1 = 1.0D00 - CCRPOR
-         FJM1 = TC1*TF(JM1)
-         GJM1 = TC1*TG(JM1)
-         DENOM = CPJM1*CMJM1 - GJM1*FJM1
-         FACTOR = 1.0D00/DENOM
-         PJM1 = (CPJM1*RPMJ + FJM1*RQMJ)*FACTOR
-         QJM1 = (CMJM1*RQMJ + GJM1*RPMJ)*FACTOR
-         P(JM1) = PJM1
-         Q(JM1) = QJM1
+         jm1 = j - 1
+         ccrpor = cc*rpor(jm1)
+         cpjm1 = 1.0d00 + ccrpor
+         cmjm1 = 1.0d00 - ccrpor
+         fjm1 = tc1*tf(jm1)
+         gjm1 = tc1*tg(jm1)
+         denom = cpjm1*cmjm1 - gjm1*fjm1
+         factor = 1.0d00/denom
+         pjm1 = (cpjm1*rpmj + fjm1*rqmj)*factor
+         qjm1 = (cmjm1*rqmj + gjm1*rpmj)*factor
+         p(jm1) = pjm1
+         q(jm1) = qjm1
 !
-         IF (JM1 > NEND) THEN
+         if (jm1 > nend) then
 !
-            PPJP4 = PPJP3
-            QPJP4 = QPJP3
+            ppjp4 = ppjp3
+            qpjp4 = qpjp3
 !
-            PJP3 = PJP2
-            QJP3 = QJP2
-            PPJP3 = PPJP2
-            QPJP3 = QPJP2
+            pjp3 = pjp2
+            qjp3 = qjp2
+            ppjp3 = ppjp2
+            qpjp3 = qpjp2
 !
-            PJP2 = PJP1
-            QJP2 = QJP1
-            PPJP2 = PPJP1
-            QPJP2 = QPJP1
+            pjp2 = pjp1
+            qjp2 = qjp1
+            ppjp2 = ppjp1
+            qpjp2 = qpjp1
 !
-            PJP1 = PJ
-            QJP1 = QJ
-            PPJP1 = PPJ
-            QPJP1 = QPJ
+            pjp1 = pj
+            qjp1 = qj
+            ppjp1 = ppj
+            qpjp1 = qpj
 !
-            PJ = PJM1
-            QJ = QJM1
-            FAC = FK*RPOR(JM1)
-            PPJ = (-FAC*PJ) - TBH*TF(JM1)*QJ
-            QPJ = FAC*QJ - TBH*TG(JM1)*PJ
+            pj = pjm1
+            qj = qjm1
+            fac = fk*rpor(jm1)
+            ppj = (-fac*pj) - tbh*tf(jm1)*qj
+            qpj = fac*qj - tbh*tg(jm1)*pj
 !
-            GO TO 2
+            go to 2
 !
-         ENDIF
-      ENDIF
+         endif
+      endif
 !
-      RETURN
-      END SUBROUTINE SBSTEP
+      return
+      end subroutine sbstep

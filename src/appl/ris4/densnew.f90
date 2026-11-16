@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-SUBROUTINE DENSNEW(DOIT,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
+subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !       SUBROUTINE DENSNEW(DOIT,DINT1,DINT2,DINT3,                      &
 !                          DINT4,DINT5,DINT6,DINT7,                     &
 !                          DINT1VEC,DENS1VEC)
@@ -25,59 +25,59 @@ SUBROUTINE DENSNEW(DOIT,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: KEYORB, NNNW, NNNP
-      USE debug_C
-      USE decide_C
-      USE DEF_C
-      USE eigv_C
-      USE foparm_C
-      USE grid_C
-      USE JLABL_C
-      USE npar_C
-      USE orb_C
-      USE blk_C
-      USE prnt_C
-      USE TEILST_C
-      USE BUFFER_C
-      USE ris_C
-      USE syma_C
-      USE prnt_C,           ONLY : NVEC
+      use vast_kind_param,  only: double
+      use parameter_def,    only: keyorb, nnnw, nnnp
+      use debug_c
+      use decide_c
+      use def_c
+      use eigv_c
+      use foparm_c
+      use grid_c
+      use jlabl_c
+      use npar_c
+      use orb_c
+      use blk_c
+      use prnt_c
+      use teilst_c
+      use buffer_c
+      use ris_c
+      use syma_c
+      use prnt_c,           only : nvec
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE alcbuf_I
-      USE convrt_I
-      USE getyn_I
-      USE itjpo_I
-      USE onescalar_I
-      IMPLICIT NONE
+      use alcbuf_i
+      use convrt_i
+      use getyn_i
+      use itjpo_i
+      use onescalar_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT1, DINT2, &
-                                                        DINT3, DINT4, &
-                                                        DINT5, DINT6, &
-                                                        DINT7
-      INTEGER, INTENT(IN) :: DOIT
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint1, dint2, &
+                                                        dint3, dint4, &
+                                                        dint5, dint6, &
+                                                        dint7
+      integer, intent(in) :: doit
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL, TSHELL_S
-      REAL(DOUBLE), DIMENSION(:), pointer :: EMT1, EMT2, EMT3, EMT4,   &
-                                             EMT5, EMT6
-      REAL(DOUBLE) :: ELEMNT1, ELEMNT2, ELEMNT3, ELEMNT4, ELEMNT5,     &
-                      ELEMNT6, ELEMNT7, CONTRI1, CONTRI2, CONTRI3,     &
-                      CONTRI4, CONTRI5, CONTRI6, CONTRI7
-      LOGICAL :: VSH, NUCDE, SMSSH, YES
-      CHARACTER :: CNUM*11, CK*2
-      INTEGER, DIMENSION(NNNW) :: IA_S
-      INTEGER :: KA, IOPAR, INCOR, IC, LCNUM, ITJPOC, IR, IA, IB, I, J
-      Integer :: L, LOC, NCONTR, LAB, II
+      real(double), dimension(nnnw) :: tshell, tshell_s
+      real(double), dimension(:), pointer :: emt1, emt2, emt3, emt4,   &
+                                             emt5, emt6
+      real(double) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5,     &
+                      elemnt6, elemnt7, contri1, contri2, contri3,     &
+                      contri4, contri5, contri6, contri7
+      logical :: vsh, nucde, smssh, yes
+      character :: cnum*11, ck*2
+      integer, dimension(nnnw) :: ia_s
+      integer :: ka, iopar, incor, ic, lcnum, itjpoc, ir, ia, ib, i, j
+      integer :: l, loc, ncontr, lab, ii
 !-----------------------------------------------
 !
 ! DOIT: IF DOIT=1 angular coefficients will be stored after creation
@@ -93,123 +93,123 @@ SUBROUTINE DENSNEW(DOIT,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
 !   Set the rank (zero) and parity (even) for the one-particle
 !   coefficients
 !
-      KA = 0
-      IOPAR = 1
-      INCOR = 1
+      ka = 0
+      iopar = 1
+      incor = 1
 !
 !   Allocate storage for the arrays in BUFFER
 !
-      CALL ALCBUF (1)
+      call alcbuf (1)
 !
 !   Sweep through the Hamiltonian matrix to determine the
 !   sms parameter
 !
-     DO 13 IC = 1,NCF
+     do 13 ic = 1,ncf
 !
 !   Output IC on the screen to show how far the calculation has preceede
 !
-        CALL CONVRT (IC,CNUM,LCNUM)
-        if (mod(IC,100).eq.0) then
-          PRINT *, 'Column '//CNUM(1:LCNUM)//' complete;'
+        call convrt (ic,cnum,lcnum)
+        if (mod(ic,100).eq.0) then
+          print *, 'Column '//cnum(1:lcnum)//' complete;'
         end if
 !
-        ITJPOC = ITJPO (IC)
+        itjpoc = itjpo (ic)
 
-        DO 12 IR = IC,NCF
+        do 12 ir = ic,ncf
 !
 !   Matrix elements are diagonal in J
 !
-          IF (ITJPO(IR) .EQ. ITJPOC) THEN
+          if (itjpo(ir) .eq. itjpoc) then
 !
 !   Initialise the accumulator
 !
-            ELEMNT1 = 0.0D00
-            ELEMNT2 = 0.0D00
-            ELEMNT3 = 0.0D00
-            ELEMNT4 = 0.0D00
-            ELEMNT5 = 0.0D00
-            ELEMNT6 = 0.0D00
-            ELEMNT7 = 0.0D00
+            elemnt1 = 0.0d00
+            elemnt2 = 0.0d00
+            elemnt3 = 0.0d00
+            elemnt4 = 0.0d00
+            elemnt5 = 0.0d00
+            elemnt6 = 0.0d00
+            elemnt7 = 0.0d00
 !
 !   Call the MCT package to compute T coefficients
 !
-           CALL ONESCALAR(IC,IR,IA,IB,TSHELL)
+           call onescalar(ic,ir,ia,ib,tshell)
 !GG            CALL TNSRJJ (KA,IOPAR,IC,IR,IA,IB,TSHELL)
-            IF (IA .NE. 0) THEN
-              IF (IA .EQ. IB) THEN
-                    NCONTR = 0
-                DO 8 IA = 1,NW
-                  IF (ABS (TSHELL(IA)) .GT. CUTOFF) THEN
-                    NCONTR = NCONTR + 1
-                    TSHELL_S(NCONTR) = TSHELL(IA)
-                    IA_S(NCONTR) = IA
-                    ELEMNT1 = ELEMNT1 + DINT1(IA,IA)*TSHELL(IA)
-                    ELEMNT2 = ELEMNT2 + DINT2(IA,IA)*TSHELL(IA)
-                    ELEMNT3 = ELEMNT3 + DINT3(IA,IA)*TSHELL(IA)
-                    ELEMNT4 = ELEMNT4 + DINT4(IA,IA)*TSHELL(IA)
-                    ELEMNT5 = ELEMNT5 + DINT5(IA,IA)*TSHELL(IA)
-                    ELEMNT6 = ELEMNT6 + DINT6(IA,IA)*TSHELL(IA)
-                    ELEMNT7 = ELEMNT7 + DINT7(IA,IA)*TSHELL(IA)
-                  ENDIF
-    8           CONTINUE
-                IF (DOIT.EQ.1) WRITE(50) IC,IR,NCONTR
-                DO I = 1,NCONTR
-                  LAB = IA_S(I)*(KEY + 1)
-                  IF (DOIT.EQ.1) WRITE(50) TSHELL_S(I),LAB
-                END DO
-              ELSE
-                IF (ABS (TSHELL(1)) .GT. CUTOFF) THEN
-                  IF (NAK(IA).EQ.NAK(IB)) THEN
-                    IF (DOIT.EQ.1) WRITE(50) IC,IR,1
-                    LAB = IA*KEY + IB
-                    IF (DOIT.EQ.1) WRITE(50) TSHELL(1),LAB
-                    ELEMNT1 = ELEMNT1 + DINT1(IA,IB)*TSHELL(1)
-                    ELEMNT2 = ELEMNT2 + DINT2(IA,IB)*TSHELL(1)
-                    ELEMNT3 = ELEMNT3 + DINT3(IA,IB)*TSHELL(1)
-                    ELEMNT4 = ELEMNT4 + DINT4(IA,IB)*TSHELL(1)
-                    ELEMNT5 = ELEMNT5 + DINT5(IA,IB)*TSHELL(1)
-                    ELEMNT6 = ELEMNT6 + DINT6(IA,IB)*TSHELL(1)
-                    ELEMNT7 = ELEMNT7 + DINT7(IA,IB)*TSHELL(1)
-                  ENDIF
-                ENDIF
-              ENDIF
-            ENDIF
-            DO 9 J = 1,NVEC
-              LOC = (J-1)*NCF
-              CONTRI1 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT1
-              CONTRI2 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT2
-              CONTRI3 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT3
-              CONTRI4 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT4
-              CONTRI5 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT5
-              CONTRI6 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT6
-              CONTRI7 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT7
-              IF (IR.NE.IC) THEN
-                CONTRI1 = 2.0D00 * CONTRI1
-                CONTRI2 = 2.0D00 * CONTRI2
-                CONTRI3 = 2.0D00 * CONTRI3
-                CONTRI4 = 2.0D00 * CONTRI4
-                CONTRI5 = 2.0D00 * CONTRI5
-                CONTRI6 = 2.0D00 * CONTRI6
-                CONTRI7 = 2.0D00 * CONTRI7
-              ENDIF
-              DENS1(J) = DENS1(J) + CONTRI1
-              DENS2(J) = DENS2(J) + CONTRI2
-              DENS3(J) = DENS3(J) + CONTRI3
-              DENS4(J) = DENS4(J) + CONTRI4
-              DENS5(J) = DENS5(J) + CONTRI5
-              DENS6(J) = DENS6(J) + CONTRI6
-              DENS7(J) = DENS7(J) + CONTRI7
-    9       CONTINUE
-          ENDIF
-   12   CONTINUE
-   13 CONTINUE
+            if (ia .ne. 0) then
+              if (ia .eq. ib) then
+                    ncontr = 0
+                do 8 ia = 1,nw
+                  if (abs (tshell(ia)) .gt. cutoff) then
+                    ncontr = ncontr + 1
+                    tshell_s(ncontr) = tshell(ia)
+                    ia_s(ncontr) = ia
+                    elemnt1 = elemnt1 + dint1(ia,ia)*tshell(ia)
+                    elemnt2 = elemnt2 + dint2(ia,ia)*tshell(ia)
+                    elemnt3 = elemnt3 + dint3(ia,ia)*tshell(ia)
+                    elemnt4 = elemnt4 + dint4(ia,ia)*tshell(ia)
+                    elemnt5 = elemnt5 + dint5(ia,ia)*tshell(ia)
+                    elemnt6 = elemnt6 + dint6(ia,ia)*tshell(ia)
+                    elemnt7 = elemnt7 + dint7(ia,ia)*tshell(ia)
+                  endif
+    8           continue
+                if (doit.eq.1) write(50) ic,ir,ncontr
+                do i = 1,ncontr
+                  lab = ia_s(i)*(key + 1)
+                  if (doit.eq.1) write(50) tshell_s(i),lab
+                end do
+              else
+                if (abs (tshell(1)) .gt. cutoff) then
+                  if (nak(ia).eq.nak(ib)) then
+                    if (doit.eq.1) write(50) ic,ir,1
+                    lab = ia*key + ib
+                    if (doit.eq.1) write(50) tshell(1),lab
+                    elemnt1 = elemnt1 + dint1(ia,ib)*tshell(1)
+                    elemnt2 = elemnt2 + dint2(ia,ib)*tshell(1)
+                    elemnt3 = elemnt3 + dint3(ia,ib)*tshell(1)
+                    elemnt4 = elemnt4 + dint4(ia,ib)*tshell(1)
+                    elemnt5 = elemnt5 + dint5(ia,ib)*tshell(1)
+                    elemnt6 = elemnt6 + dint6(ia,ib)*tshell(1)
+                    elemnt7 = elemnt7 + dint7(ia,ib)*tshell(1)
+                  endif
+                endif
+              endif
+            endif
+            do 9 j = 1,nvec
+              loc = (j-1)*ncf
+              contri1 = evec(ic+loc)*evec(ir+loc)*elemnt1
+              contri2 = evec(ic+loc)*evec(ir+loc)*elemnt2
+              contri3 = evec(ic+loc)*evec(ir+loc)*elemnt3
+              contri4 = evec(ic+loc)*evec(ir+loc)*elemnt4
+              contri5 = evec(ic+loc)*evec(ir+loc)*elemnt5
+              contri6 = evec(ic+loc)*evec(ir+loc)*elemnt6
+              contri7 = evec(ic+loc)*evec(ir+loc)*elemnt7
+              if (ir.ne.ic) then
+                contri1 = 2.0d00 * contri1
+                contri2 = 2.0d00 * contri2
+                contri3 = 2.0d00 * contri3
+                contri4 = 2.0d00 * contri4
+                contri5 = 2.0d00 * contri5
+                contri6 = 2.0d00 * contri6
+                contri7 = 2.0d00 * contri7
+              endif
+              dens1(j) = dens1(j) + contri1
+              dens2(j) = dens2(j) + contri2
+              dens3(j) = dens3(j) + contri3
+              dens4(j) = dens4(j) + contri4
+              dens5(j) = dens5(j) + contri5
+              dens6(j) = dens6(j) + contri6
+              dens7(j) = dens7(j) + contri7
+    9       continue
+          endif
+   12   continue
+   13 continue
 
-       IF (DOIT.EQ.1) WRITE(50) -1
+       if (doit.eq.1) write(50) -1
 !
 ! Empty the buffer and close file
-      IF (DOIT.EQ.1) CLOSE(50)
+      if (doit.eq.1) close(50)
 !
 !   Deallocate storage for the arrays in BUFFER
-      CALL ALCBUF (3)
-      RETURN
-      END SUBROUTINE DENSNEW
+      call alcbuf (3)
+      return
+      end subroutine densnew

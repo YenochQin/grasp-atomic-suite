@@ -1,10 +1,10 @@
-      MODULE reco_I
-      INTERFACE
+      module reco_i
+      interface
 !
-      SUBROUTINE RECO(JA1,JA2,JA3,JA4,KA,IAT)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER, INTENT(IN)  :: JA1, JA2, JA3, JA4, KA
-      INTEGER, INTENT(OUT) :: IAT
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine reco(ja1,ja2,ja3,ja4,ka,iat)
+      use vast_kind_param, only:  double
+      integer, intent(in)  :: ja1, ja2, ja3, ja4, ka
+      integer, intent(out) :: iat
+      end subroutine
+      end interface
+      end module

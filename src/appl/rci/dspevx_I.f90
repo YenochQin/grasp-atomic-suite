@@ -1,5 +1,5 @@
-      MODULE dspevx_I
+      module dspevx_i
 ! Re-export the canonical LP64 LAPACK interface.
-      USE suite_linear_algebra, ONLY: dspevx
-      IMPLICIT NONE
-      END MODULE dspevx_I
+      use suite_linear_algebra, only: dspevx
+      implicit none
+      end module dspevx_i

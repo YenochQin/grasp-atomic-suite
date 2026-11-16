@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION ISPARR (ICSF)
+      integer function isparr (icsf)
 !                                                                      *
 !   ISPARR is the value of P for CSF number ICSF.                      *
 !                                                                      *
@@ -14,32 +14,32 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE parameter_def, ONLY: NNNW
-      USE STAT_C,        ONLY: JCUPAR
-      USE IOUNIT_C,      ONLY: ISTDE
-      USE ORB_C,         ONLY: NCFR
+      use parameter_def, only: nnnw
+      use stat_c,        only: jcupar
+      use iounit_c,      only: istde
+      use orb_c,         only: ncfr
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: ICSF
+      integer  :: icsf
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !
 !
-      IF (ICSF>=1 .AND. ICSF<=NCFR) THEN
-         isparr = jcupar(NNNW,icsf)
+      if (icsf>=1 .and. icsf<=ncfr) then
+         isparr = jcupar(nnnw,icsf)
 
-         IF (ISPARR > 127) ISPARR = ISPARR - 256
-         ISPARR = SIGN(1,ISPARR)
-      ELSE
-         WRITE (6, *) 'ISPARR: Argument ICSF is out of range.'
-         STOP
-      ENDIF
+         if (isparr > 127) isparr = isparr - 256
+         isparr = sign(1,isparr)
+      else
+         write (6, *) 'ISPARR: Argument ICSF is out of range.'
+         stop
+      endif
 !
-      RETURN
-      END FUNCTION ISPARR
+      return
+      end function isparr

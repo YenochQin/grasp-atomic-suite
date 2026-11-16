@@ -3,7 +3,7 @@
 !     B N D I N V
 !     ------------------------------------------------------------------
 !
-      SUBROUTINE BNDINV(A, EL, N, DETERM, EPSIL, ITEST, NSIZE)
+      subroutine bndinv(a, el, n, determ, epsil, itest, nsize)
 !
 !       DOUBLE PRECISION MATRIX INVERSION SUBROUTINE
 !       FROM "DLYTAP".
@@ -17,114 +17,114 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: N
-      INTEGER , INTENT(OUT) :: ITEST
-      INTEGER , INTENT(IN) :: NSIZE
-      REAL(DOUBLE) , INTENT(OUT) :: DETERM
-      REAL(DOUBLE) , INTENT(IN) :: EPSIL
-      REAL(DOUBLE) , INTENT(INOUT) :: A(NSIZE,NSIZE)
-      REAL(DOUBLE) , INTENT(INOUT) :: EL(NSIZE,NSIZE)
+      integer , intent(in) :: n
+      integer , intent(out) :: itest
+      integer , intent(in) :: nsize
+      real(double) , intent(out) :: determ
+      real(double) , intent(in) :: epsil
+      real(double) , intent(inout) :: a(nsize,nsize)
+      real(double) , intent(inout) :: el(nsize,nsize)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ISL2, K000FX, INDSNL, I, J, N1, M, K, J1, I1, KS
-      REAL(DOUBLE) :: D, C, S, DETERP, F, E, EPSILP, RAT
+      integer :: isl2, k000fx, indsnl, i, j, n1, m, k, j1, i1, ks
+      real(double) :: d, c, s, deterp, f, e, epsilp, rat
 !-----------------------------------------------
-      IF (N < 2) GO TO 140
-      ISL2 = 0
-      K000FX = 2
-      IF (ISL2 == 0) INDSNL = 2
-      IF (ISL2 == 1) INDSNL = 1
+      if (n < 2) go to 140
+      isl2 = 0
+      k000fx = 2
+      if (isl2 == 0) indsnl = 2
+      if (isl2 == 1) indsnl = 1
 !       CALL SLITET(2,INDSNL)
 !       CALL OVERFL(K000FX)
 !       CALL DVCHK(K000FX)
 !
 !       SET EL = IDENTITY MATRIX
-      DO I = 1, N
-         EL(I,:N) = 0.0D0
-         EL(I,I) = 1.0D0
-      END DO
+      do i = 1, n
+         el(i,:n) = 0.0d0
+         el(i,i) = 1.0d0
+      end do
 !
 !       TRIANGULARIZE A, FORM EL
 !
-      N1 = N - 1
-      M = 2
-      DO J = 1, N1
-         DO I = M, N
-            IF (A(I,J) == 0.0D0) CYCLE
-            D = DSQRT(A(J,J)*A(J,J)+A(I,J)*A(I,J))
-            C = A(J,J)/D
-            S = A(I,J)/D
-            DO K = J, N
-               D = C*A(J,K) + S*A(I,K)
-               A(I,K) = C*A(I,K) - S*A(J,K)
-               A(J,K) = D
-            END DO
-            DO K = 1, N
-               D = C*EL(J,K) + S*EL(I,K)
-               EL(I,K) = C*EL(I,K) - S*EL(J,K)
-               EL(J,K) = D
-            END DO
-         END DO
-         M = M + 1
-      END DO
+      n1 = n - 1
+      m = 2
+      do j = 1, n1
+         do i = m, n
+            if (a(i,j) == 0.0d0) cycle
+            d = dsqrt(a(j,j)*a(j,j)+a(i,j)*a(i,j))
+            c = a(j,j)/d
+            s = a(i,j)/d
+            do k = j, n
+               d = c*a(j,k) + s*a(i,k)
+               a(i,k) = c*a(i,k) - s*a(j,k)
+               a(j,k) = d
+            end do
+            do k = 1, n
+               d = c*el(j,k) + s*el(i,k)
+               el(i,k) = c*el(i,k) - s*el(j,k)
+               el(j,k) = d
+            end do
+         end do
+         m = m + 1
+      end do
 !       CALL OVERFL(K000FX)
 !       GO TO (140,51),K000FX
 !
 !       CALCULATE THE DETERMINANT
-      DETERP = A(1,1)
-      DO I = 2, N
-         DETERP = DETERP*A(I,I)
-      END DO
-      DETERM = DETERP
+      deterp = a(1,1)
+      do i = 2, n
+         deterp = deterp*a(i,i)
+      end do
+      determ = deterp
 !       CALL OVERFL(K000FX)
 !       GO TO (140,520,520),K000FX
 !
 !       IS MATRIX SINGULAR
-      F = A(1,1)
-      E = A(1,1)
-      DO I = 2, N
-         IF (DABS(F) < DABS(A(I,I))) F = A(I,I)
-         IF (DABS(E) <= DABS(A(I,I))) CYCLE
-         E = A(I,I)
-      END DO
-      EPSILP = EPSIL
-      IF (EPSILP <= 0) EPSILP = 1.0E-8
-      RAT = E/F
-      IF (ABS(RAT) < EPSILP) GO TO 130
+      f = a(1,1)
+      e = a(1,1)
+      do i = 2, n
+         if (dabs(f) < dabs(a(i,i))) f = a(i,i)
+         if (dabs(e) <= dabs(a(i,i))) cycle
+         e = a(i,i)
+      end do
+      epsilp = epsil
+      if (epsilp <= 0) epsilp = 1.0e-8
+      rat = e/f
+      if (abs(rat) < epsilp) go to 130
 !
 !       INVERT TRIANGULAR MATRIX
-      J = N
-      DO J1 = 1, N
+      j = n
+      do j1 = 1, n
 !       CALL SLITE(2)
-         I = J
-         ISL2 = 1
-         DO I1 = 1, J
+         i = j
+         isl2 = 1
+         do i1 = 1, j
 !       CALL SLITET(2,K000FX)
-            IF (ISL2 == 0) K000FX = 2
-            IF (ISL2 == 1) THEN
-               K000FX = 1
-               ISL2 = 0
-            ENDIF
-            SELECT CASE (K000FX)
-            CASE DEFAULT
-               A(I,J) = 1.0D0/A(I,I)
-            CASE (2)
-               KS = I + 1
-               D = 0.0D0
-               D = SUM(A(I,KS:J)*A(KS:J,J))
-               A(I,J) = -D/A(I,I)
-            END SELECT
- 1003       CONTINUE
-            I = I - 1
-         END DO
-         J = J - 1
-      END DO
+            if (isl2 == 0) k000fx = 2
+            if (isl2 == 1) then
+               k000fx = 1
+               isl2 = 0
+            endif
+            select case (k000fx)
+            case default
+               a(i,j) = 1.0d0/a(i,i)
+            case (2)
+               ks = i + 1
+               d = 0.0d0
+               d = sum(a(i,ks:j)*a(ks:j,j))
+               a(i,j) = -d/a(i,i)
+            end select
+ 1003       continue
+            i = i - 1
+         end do
+         j = j - 1
+      end do
 !       CALL OVERFL(K000FX)
 !       GO TO (140,103,103),K000FX
 
@@ -132,30 +132,30 @@
 !       GO TO (140,105),K000FX
 !
 !       PREMULTIPLY EL BY INVERTED TRIANGULAR MATRIX
-      M = 1
-      DO I = 1, N
-         DO J = 1, N
-            D = 0.0D0
-            D = SUM(A(I,M:N)*EL(M:N,J))
-            EL(I,J) = D
-         END DO
-         M = M + 1
-      END DO
+      m = 1
+      do i = 1, n
+         do j = 1, n
+            d = 0.0d0
+            d = sum(a(i,m:n)*el(m:n,j))
+            el(i,j) = d
+         end do
+         m = m + 1
+      end do
 !       CALL OVERFL(K000FX)
 !       GO TO (140,123,123),K000FX
 !
 !       RECOPY EL TO A
-      A(:N,:N) = EL(:N,:N)
-      ITEST = 0
+      a(:n,:n) = el(:n,:n)
+      itest = 0
 !126    IF(INDSNL.EQ.1)CALL SLITE(2)
-  126 CONTINUE
-      IF (INDSNL == 1) ISL2 = 1
-      RETURN
+  126 continue
+      if (indsnl == 1) isl2 = 1
+      return
 !
-  130 CONTINUE
-      ITEST = 1
-      GO TO 126
-  140 CONTINUE
-      ITEST = -1
-      GO TO 126
-      END SUBROUTINE BNDINV
+  130 continue
+      itest = 1
+      go to 126
+  140 continue
+      itest = -1
+      go to 126
+      end subroutine bndinv

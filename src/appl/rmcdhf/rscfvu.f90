@@ -23,7 +23,7 @@
 !***********************************************************************
 !***********************************************************************
 !                                                                      *
-      PROGRAM RSCFVU
+      program rscfvu
 !                                                                      *
 !   Entry routine for RSCFVU. Controls the entire computation.         *
 !                                                                      *
@@ -45,45 +45,45 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-       USE default_C
-       USE core_C
-       USE iounit_C
-       USE mpi_s
+       use default_c
+       use core_c
+       use iounit_c
+       use mpi_s
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE starttime_I
-      USE setdbg_I
-      USE setmc_I
-      USE setcon_I
-      USE setsum_I
-      USE setmcp_I
-      USE setcsl_I
-      USE getscd_I
-      USE strsum_I
-      USE setmix_I
-      USE factt_I
-      USE scf_I
-      USE stoptime_I
-      IMPLICIT NONE
+      use getyn_i
+      use starttime_i
+      use setdbg_i
+      use setmc_i
+      use setcon_i
+      use setsum_i
+      use setmcp_i
+      use setcsl_i
+      use getscd_i
+      use strsum_i
+      use setmix_i
+      use factt_i
+      use scf_i
+      use stoptime_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: NBLK0 = 50  ! Maximum number of blocks
+      integer, parameter :: nblk0 = 50  ! Maximum number of blocks
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NCORE1, NCOUNT1
-      LOGICAL :: EOL, YES
-      CHARACTER, DIMENSION(NBLK0) :: IDBLK*8
+      integer :: ncore1, ncount1
+      logical :: eol, yes
+      character, dimension(nblk0) :: idblk*8
 !-----------------------------------------------
 !
 !
 ! Things for timing
 !-----------------------------------------------------------------------
-      MYID = 0
-      NPROCS = 1
+      myid = 0
+      nprocs = 1
 
       write(*,*)
       write(*,*) 'RMCDHF'
@@ -95,24 +95,24 @@
                'Outputfiles: rwfn.out, rmix.out, rmcdhf.sum, rmcdhf.log'
       write(*,*)
 
-      CALL STARTTIME (NCOUNT1, 'RMCDHF')
+      call starttime (ncount1, 'RMCDHF')
 
-     OPEN(UNIT=734,FILE='rmcdhf.log',STATUS='UNKNOWN')
+     open(unit=734,file='rmcdhf.log',status='UNKNOWN')
 
 !=======================================================================
 !  Get NDEF
 !=======================================================================
 
-      IF (MYID == 0) THEN
-         WRITE (ISTDE, '(A)', ADVANCE='NO') 'Default settings?  (y/n) '
-         YES = GETYN()
-         IF (YES) THEN
-            NDEF = 0
-            WRITE(734,'(A)') 'y            ! Default settings'
-         ELSE
-            NDEF = 1
-         ENDIF
-      ENDIF
+      if (myid == 0) then
+         write (istde, '(A)', advance='NO') 'Default settings?  (y/n) '
+         yes = getyn()
+         if (yes) then
+            ndef = 0
+            write(734,'(A)') 'y            ! Default settings'
+         else
+            ndef = 1
+         endif
+      endif
 
 !=======================================================================
 !
@@ -129,43 +129,43 @@
 !    FACTT - table of logarithms of factorials setup
 !=======================================================================
 
-      CALL SETDBG ('rscf92.dbg')
-      CALL SETMC
-      CALL SETCON
+      call setdbg ('rscf92.dbg')
+      call setmc
+      call setcon
 
-      CALL SETSUM ('rmcdhf.sum')
+      call setsum ('rmcdhf.sum')
 
-      CALL SETMCP (NCORE, NBLK0, IDBLK, 'mcp')
-      CALL SETCSL ('rcsf.inp', NCORE1, IDBLK)
-      IF (NCORE /= NCORE1) ERROR STOP 'rscfvu: ncore'
+      call setmcp (ncore, nblk0, idblk, 'mcp')
+      call setcsl ('rcsf.inp', ncore1, idblk)
+      if (ncore /= ncore1) error stop 'rscfvu: ncore'
 
 !=======================================================================
 !  Gather all remaining information and perform some setup. This
 !  part (routine) asks for user-inputs.
 !=======================================================================
 
-      CALL GETSCD (EOL, IDBLK, 'isodata', 'rwfn.inp', 'npol.inp')
+      call getscd (eol, idblk, 'isodata', 'rwfn.inp', 'npol.inp')
 
-      IF (MYID == 0) THEN
-         CALL STRSUM
-         IF (EOL) CALL SETMIX ('rmix.out')
-      ENDIF
+      if (myid == 0) then
+         call strsum
+         if (eol) call setmix ('rmix.out')
+      endif
 
-      CALL FACTT
+      call factt
 
 !=======================================================================
 !  Proceed with the SCF calculation close all files except
 !  the  .sum  file
 !=======================================================================
 
-      CALL SCF (EOL, 'rwfn.out')
-      CLOSE (734)
+      call scf (eol, 'rwfn.out')
+      close (734)
 
 !=======================================================================
 !  Execution finished; Statistics output
 !=======================================================================
 
-      CALL STOPTIME (NCOUNT1, 'RMCDHF')
+      call stoptime (ncount1, 'RMCDHF')
 
-      STOP
-      END PROGRAM RSCFVU
+      stop
+      end program rscfvu

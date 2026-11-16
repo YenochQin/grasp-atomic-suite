@@ -1,9 +1,9 @@
-      MODULE ris_cal_I
-      INTERFACE
+      module ris_cal_i
+      interface
 !...Translated by Gediminas Gaigalas 11/18/19
-      SUBROUTINE ris_cal(NAME)
-      USE vast_kind_param,ONLY: DOUBLE
-      CHARACTER*24, INTENT(IN) :: NAME
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine ris_cal(name)
+      use vast_kind_param,only: double
+      character*24, intent(in) :: name
+      end subroutine
+      end interface
+      end module

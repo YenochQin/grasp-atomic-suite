@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      SUBROUTINE CSLHMPI(NAME, NCORE, NBLKIN, IDBLK)
+      subroutine cslhmpi(name, ncore, nblkin, idblk)
 !
 !  A container which calls setcsll to open, read <name> file to get
 !     nblock, ncfblk(), idblk(), ncftot.
@@ -19,66 +19,66 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE memory_man
-      use mpi_C
-      USE HBLOCK_C
-      USE def_C, ONLY: EMN,IONCTY,NELEC,Z
-      USE ORB_C, NCFTOT=>NCF
+      use memory_man
+      use mpi_c
+      use hblock_c
+      use def_c, only: emn,ioncty,nelec,z
+      use orb_c, ncftot=>ncf
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE setcsll_I
-      USE lodcsh_I
-      IMPLICIT NONE
+      use setcsll_i
+      use lodcsh_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NCORE
-      INTEGER, INTENT(IN)  :: NBLKIN
-      CHARACTER  :: NAME*(*)
-      CHARACTER  :: IDBLK(*)*8
+      integer  :: ncore
+      integer, intent(in)  :: nblkin
+      character  :: name*(*)
+      character  :: idblk(*)*8
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IQADUM
+      integer :: iqadum
 !-----------------------------------------------
 !
 
 !     node-0 does exactly the same as the serial code does
-      IF (myid .EQ. 0) THEN
-        CALL ALLOC   (ncfblk, nblkin+1, 'ncfblk', 'cslhmpi')
-        CALL SETCSLL (21, name, nblkin, nblock, ncfblk, ncftot, &
+      if (myid .eq. 0) then
+        call alloc   (ncfblk, nblkin+1, 'ncfblk', 'cslhmpi')
+        call setcsll (21, name, nblkin, nblock, ncfblk, ncftot, &
                        idblk)
-        CALL RALLOC  (ncfblk, nblock+1, 'ncfblk', 'cslhmpi')
-         REWIND (21)
-         READ   (21,*)
+        call ralloc  (ncfblk, nblock+1, 'ncfblk', 'cslhmpi')
+         rewind (21)
+         read   (21,*)
          !..Load header of <name> file
-         CALL LODCSH (21, NCORE)
-      ENDIF
+         call lodcsh (21, ncore)
+      endif
 
 ! Broadcast results to other nodes. ncfblk should be allocated
 ! on these nodes (with myid .ne. 0)
 
-      CALL MPI_Bcast (nblock, 1, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (ncftot, 1, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast (nblock, 1, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (ncftot, 1, mpi_integer,0,mpi_comm_world,ierr)
 
-      IF (myid /= 0) THEN
-         CALL alloc (ncfblk, 1+nblock, 'ncfblk', 'cslhmpi')
-      ENDIF
+      if (myid /= 0) then
+         call alloc (ncfblk, 1+nblock, 'ncfblk', 'cslhmpi')
+      endif
 
-      CALL MPI_Bcast (ncfblk, 1+nblock, MPI_INTEGER,0, &
-                                              MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (idblk, 8*nblock, MPI_CHARACTER,0, &
-                                              MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (ncore, 1, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (nelec, 1, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (nw,    1, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (np,   nw, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (nak,  nw, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (nkl,  nw, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (nkj,  nw, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (nh, 2*nw, MPI_CHARACTER,0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast (ncfblk, 1+nblock, mpi_integer,0, &
+                                              mpi_comm_world,ierr)
+      call mpi_bcast (idblk, 8*nblock, mpi_character,0, &
+                                              mpi_comm_world,ierr)
+      call mpi_bcast (ncore, 1, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (nelec, 1, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (nw,    1, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (np,   nw, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (nak,  nw, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (nkl,  nw, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (nkj,  nw, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (nh, 2*nw, mpi_character,0,mpi_comm_world,ierr)
 
-      RETURN
-      END SUBROUTINE CSLHMPI
+      return
+      end subroutine cslhmpi

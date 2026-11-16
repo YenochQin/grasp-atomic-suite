@@ -1,12 +1,12 @@
-      MODULE couple_C
-      USE vast_kind_param, ONLY:  DOUBLE
+      module couple_c
+      use vast_kind_param, only:  double
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:33:54  12/28/06
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      INTEGER, PARAMETER :: MANGM = 60
-      INTEGER, PARAMETER :: MTRIAD = 12
-      INTEGER, DIMENSION(MANGM) :: J1
-      INTEGER, DIMENSION(MTRIAD,3) :: J2, J3
-      INTEGER :: MJA, NJA
-      LOGICAL, DIMENSION(MANGM) :: FREE
-      END MODULE couple_C
+      integer, parameter :: mangm = 60
+      integer, parameter :: mtriad = 12
+      integer, dimension(mangm) :: j1
+      integer, dimension(mtriad,3) :: j2, j3
+      integer :: mja, nja
+      logical, dimension(mangm) :: free
+      end module couple_c

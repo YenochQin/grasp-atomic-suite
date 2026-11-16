@@ -1,7 +1,7 @@
-      MODULE decide_C
-      USE vast_kind_param, ONLY:  DOUBLE
+      module decide_c
+      use vast_kind_param, only:  double
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:22:09  12/28/06
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      LOGICAL :: LFORDR, LTRANS, LVP, LSE, LNMS, LSMS
-      END MODULE decide_C
+      logical :: lfordr, ltrans, lvp, lse, lnms, lsms
+      end module decide_c

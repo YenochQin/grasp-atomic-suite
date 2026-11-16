@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      SUBROUTINE INIESTmpi (NMAX, NCF, NIV, BASIS, HMX, JCOL, IROW)
+      subroutine iniestmpi (nmax, ncf, niv, basis, hmx, jcol, irow)
 !
 !       Routine for providing initial estimates from the diagonal
 !     of the matrix. This way was used by Dvdson in atomic structure
@@ -24,91 +24,91 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      use mpi_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use mpi_c
 
-      USE suite_linear_algebra, ONLY: dcopy, dspevx
-      USE dinit_I, ONLY: dinit
-      USE mpiu_I, ONLY: gdsummpi
-      USE suite_linear_algebra, ONLY: dlamch
-      IMPLICIT NONE
+      use suite_linear_algebra, only: dcopy, dspevx
+      use dinit_i, only: dinit
+      use mpiu_i, only: gdsummpi
+      use suite_linear_algebra, only: dlamch
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NMAX
-      INTEGER, INTENT(IN) :: NCF
-      INTEGER  :: NIV
-      INTEGER, INTENT(IN) :: JCOL(0:*)
-      INTEGER, INTENT(IN) :: IROW(*)
-      real(double)  :: BASIS(*)
-      real(double), INTENT(IN) :: HMX(*)
+      integer, intent(in) :: nmax
+      integer, intent(in) :: ncf
+      integer  :: niv
+      integer, intent(in) :: jcol(0:*)
+      integer, intent(in) :: irow(*)
+      real(double)  :: basis(*)
+      real(double), intent(in) :: hmx(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NS, JOFFSPAR, J, JOFFNORM, IR, NFOUND, INFO
+      integer :: ns, joffspar, j, joffnorm, ir, nfound, info
 
       integer, dimension(:), pointer :: iwork,ifail
       real(double), dimension(:), pointer :: ap, eigval,vec, work
-      real(double) :: ABSTOL
+      real(double) :: abstol
 
 !     real dLAMCH
 !     external dLAMCH
 
 !-----------------------------------------------
 
-      NS = MIN(NMAX,NCF)
-      CALL ALLOC (AP, (NS*(NS + 1))/2, 'AP', 'INIESTmpi')
-      CALL DINIT ((NS*(NS + 1))/2, 0.D0, AP, 1)
+      ns = min(nmax,ncf)
+      call alloc (ap, (ns*(ns + 1))/2, 'AP', 'INIESTmpi')
+      call dinit ((ns*(ns + 1))/2, 0.d0, ap, 1)
 
 !  Expand the sparse form to normal form for upper-right sub-matrix
 
-      JOFFSPAR = 0                               ! offset for sparse form
+      joffspar = 0                               ! offset for sparse form
 !     DO J = 1, NS
-      DO j = myid + 1, ns, nprocs
-         JOFFNORM = (J*(J - 1))/2                ! offset for normal form
-         DO IR = JOFFSPAR + 1, JCOL(J)
-            AP(IROW(IR)+JOFFNORM) = HMX(IR)
-         END DO
-         JOFFSPAR = JCOL(J)
-      END DO
+      do j = myid + 1, ns, nprocs
+         joffnorm = (j*(j - 1))/2                ! offset for normal form
+         do ir = joffspar + 1, jcol(j)
+            ap(irow(ir)+joffnorm) = hmx(ir)
+         end do
+         joffspar = jcol(j)
+      end do
 
 !  Merge ap from all nodes and then send to all nodes
 
-      CALL gdsummpi (ap, (NS*(NS+1))/2)
+      call gdsummpi (ap, (ns*(ns+1))/2)
 
-      CALL ALLOC(eigval, ns,     'EIGVAL', 'INIESTmpi')
-      CALL ALLOC (vec,   ns*niv, 'VEC',    'INIESTmpi')
-      CALL ALLOC (work,  8*ns,   'WORK',   'INIESTmpi')
+      call alloc(eigval, ns,     'EIGVAL', 'INIESTmpi')
+      call alloc (vec,   ns*niv, 'VEC',    'INIESTmpi')
+      call alloc (work,  8*ns,   'WORK',   'INIESTmpi')
 !GG      CALL ALLOC (iwork, 8*ns,   'IWORK',  'INIESTmpi')
-      CALL ALLOC (iwork, 5*ns,   'IWORK',  'INIESTmpi')
-      CALL ALLOC (ifail, ns,     'IFAIL',  'INIESTmpi')
+      call alloc (iwork, 5*ns,   'IWORK',  'INIESTmpi')
+      call alloc (ifail, ns,     'IFAIL',  'INIESTmpi')
 
-      ABSTOL = 2*dLAMCH('S')
+      abstol = 2*dlamch('S')
 
-      CALL DSPEVX ('Vectors also', 'In a range', 'Upper triangular', NS, AP, &
-      -1.D0, -1.D0, 1, NIV, ABSTOL, NFOUND, EIGVAL, VEC, NS, WORK, IWORK, IFAIL, &
-         INFO)
-      IERR = -ABS(INFO)
+      call dspevx ('Vectors also', 'In a range', 'Upper triangular', ns, ap, &
+      -1.d0, -1.d0, 1, niv, abstol, nfound, eigval, vec, ns, work, iwork, ifail, &
+         info)
+      ierr = -abs(info)
 
 !  Build the Basis.
 
-      CALL DINIT (NCF*NIV, 0.D0, BASIS, 1)
+      call dinit (ncf*niv, 0.d0, basis, 1)
 
 !  scatter the vectors
 
-      DO J = 1, NIV
-         CALL DCOPY (NS, VEC(NS*(J-1)+1:NS*(J-1)+(NS)), 1, BASIS(NCF*(J-1)+1), 1)
-      END DO
+      do j = 1, niv
+         call dcopy (ns, vec(ns*(j-1)+1:ns*(j-1)+(ns)), 1, basis(ncf*(j-1)+1), 1)
+      end do
 
-      CALL DCOPY (NIV, EIGVAL, 1, BASIS(NIV*NCF+1), 1)
+      call dcopy (niv, eigval, 1, basis(niv*ncf+1), 1)
 
-       CALL DALLOC (ap,     'AP',     'INIESTmpi')
-       CALL DALLOC (eigval, 'EIGVAL', 'INIESTmpi')
-       CALL DALLOC (vec,    'VEC',    'INIESTmpi')
-       CALL DALLOC (work,   'WORK',   'INIESTmpi')
-       CALL DALLOC (iwork,  'IWORK',  'INIESTmpi')
-       CALL DALLOC (ifail,  'IFAIL',  'INIESTmpi')
+       call dalloc (ap,     'AP',     'INIESTmpi')
+       call dalloc (eigval, 'EIGVAL', 'INIESTmpi')
+       call dalloc (vec,    'VEC',    'INIESTmpi')
+       call dalloc (work,   'WORK',   'INIESTmpi')
+       call dalloc (iwork,  'IWORK',  'INIESTmpi')
+       call dalloc (ifail,  'IFAIL',  'INIESTmpi')
 
-      RETURN
-      END SUBROUTINE INIESTmpi
+      return
+      end subroutine iniestmpi

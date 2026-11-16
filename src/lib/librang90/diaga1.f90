@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE DIAGA1(JA1,KA,IRE,IAT,RECC)
+      subroutine diaga1(ja1,ka,ire,iat,recc)
 !                                                                  *
 !   ---------------  SECTION REC    SUBPROGRAM 01  --------------  *
 !                                                                  *
@@ -15,58 +15,58 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO
-      USE m_C,             ONLY: JLIST, JJQ1, JJQ2, JJC1, JJC2
+      use vast_kind_param, only: double
+      use cons_c,          only: zero
+      use m_c,             only: jlist, jjq1, jjq2, jjc1, jjc2
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ixjtik_I
-      USE sixj_I
-      IMPLICIT NONE
+      use ixjtik_i
+      use sixj_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)       :: JA1, KA, IRE
+      integer, intent(in)       :: ja1, ka, ire
 !      INTEGER, INTENT(OUT)      :: IAT
-      INTEGER, INTENT(INOUT)      :: IAT
-      REAL(DOUBLE), INTENT(OUT) :: RECC
+      integer, intent(inout)      :: iat
+      real(double), intent(out) :: recc
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IJ1,IA1,IB1,K1,J1,IT1,IT1S,IFAZ,LL1
-      REAL(DOUBLE) :: A1
+      integer :: ij1,ia1,ib1,k1,j1,it1,it1s,ifaz,ll1
+      real(double) :: a1
 !-----------------------------------------------
-      RECC = ZERO
-      IJ1=JLIST(JA1)
-      IA1=JJQ1(3,IJ1)-1
-      IB1=JJQ2(3,IJ1)-1
-      IF(JA1 <= 2) THEN
-        LL1=JLIST(1)
-        IF(JA1 == 1)LL1=JLIST(2)
-        J1=JJQ1(3,LL1)-1
-        IT1=JJC1(1)-1
-        IT1S=JJC2(1)-1
-      ELSE
-        K1=JA1-2
-        J1=JJC1(K1)-1
-        K1=JA1-1
-        IT1=JJC1(K1)-1
-        IT1S=JJC2(K1)-1
-      END IF
-      IF(IRE /= 0) THEN
-        CALL SIXJ(KA,IB1,IA1,J1,IT1,IT1S,0,A1)
-        A1=A1*DSQRT(DBLE((IA1+1)*(IT1S+1)))
-        IFAZ=J1+IT1+IB1+KA
-        IF((IFAZ/4)*4 /= IFAZ)A1=-A1
-        RECC=A1
-        IAT=1
-        IF(JA1 /= 1)RETURN
-        IFAZ=IA1+IB1+2*J1-IT1-IT1S
-        IF((IFAZ/4)*4 /= IFAZ)RECC=-RECC
-      ELSE
-        IF(IXJTIK(KA,IB1,IA1,J1,IT1,IT1S) == 0)RETURN
-        IAT=1
-      END IF
-      RETURN
-      END SUBROUTINE DIAGA1
+      recc = zero
+      ij1=jlist(ja1)
+      ia1=jjq1(3,ij1)-1
+      ib1=jjq2(3,ij1)-1
+      if(ja1 <= 2) then
+        ll1=jlist(1)
+        if(ja1 == 1)ll1=jlist(2)
+        j1=jjq1(3,ll1)-1
+        it1=jjc1(1)-1
+        it1s=jjc2(1)-1
+      else
+        k1=ja1-2
+        j1=jjc1(k1)-1
+        k1=ja1-1
+        it1=jjc1(k1)-1
+        it1s=jjc2(k1)-1
+      end if
+      if(ire /= 0) then
+        call sixj(ka,ib1,ia1,j1,it1,it1s,0,a1)
+        a1=a1*dsqrt(dble((ia1+1)*(it1s+1)))
+        ifaz=j1+it1+ib1+ka
+        if((ifaz/4)*4 /= ifaz)a1=-a1
+        recc=a1
+        iat=1
+        if(ja1 /= 1)return
+        ifaz=ia1+ib1+2*j1-it1-it1s
+        if((ifaz/4)*4 /= ifaz)recc=-recc
+      else
+        if(ixjtik(ka,ib1,ia1,j1,it1,it1s) == 0)return
+        iat=1
+      end if
+      return
+      end subroutine diaga1

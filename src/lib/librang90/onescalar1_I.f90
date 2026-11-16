@@ -1,10 +1,10 @@
-      MODULE onescalar1_I
-      INTERFACE
+      module onescalar1_i
+      interface
 !
-      SUBROUTINE ONESCALAR1(NS,JJA,JJB,JA,JB,COEFF)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER, INTENT(IN) :: NS,JJA,JJB,JA,JB
-      REAL(DOUBLE), INTENT(OUT) :: COEFF
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine onescalar1(ns,jja,jjb,ja,jb,coeff)
+      use vast_kind_param, only:  double
+      integer, intent(in) :: ns,jja,jjb,ja,jb
+      real(double), intent(out) :: coeff
+      end subroutine
+      end interface
+      end module

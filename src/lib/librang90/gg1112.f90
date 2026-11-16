@@ -1,7 +1,7 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE GG1112(IK1,IK2,BK1,BK2,ID1,ID2,BD1,BD2,K1,  &
-                        QM1,QM2,QM3,QM4,WW)
+      subroutine gg1112(ik1,ik2,bk1,bk2,id1,id2,bd1,bd2,k1,  &
+                        qm1,qm2,qm3,qm4,ww)
 !                                                                  *
 ! ----------------  SECTION METWO    SUBPROGRAM 15  -------------  *
 !                                                                  *
@@ -23,55 +23,55 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE CONS_C,          ONLY: ZERO, TENTH, HALF, EPS
+      use vast_kind_param, only:  double
+      use cons_c,          only: zero, tenth, half, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE mes_I
-      USE c0t5s_I
-      USE rmeajj_I
-      USE wap1_I
-      IMPLICIT NONE
+      use mes_i
+      use c0t5s_i
+      use rmeajj_i
+      use wap1_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN)               :: K1
-      INTEGER,      INTENT(IN), DIMENSION(7) :: IK1, IK2, ID1, ID2
-      REAL(DOUBLE), INTENT(IN)               :: QM1, QM2, QM3, QM4
-      REAL(DOUBLE), INTENT(IN), DIMENSION(3) :: BK1, BK2, BD1, BD2
-      REAL(DOUBLE), INTENT(OUT)              :: WW
+      integer,      intent(in)               :: k1
+      integer,      intent(in), dimension(7) :: ik1, ik2, id1, id2
+      real(double), intent(in)               :: qm1, qm2, qm3, qm4
+      real(double), intent(in), dimension(3) :: bk1, bk2, bd1, bd2
+      real(double), intent(out)              :: ww
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IQMM1, IQMM2, IQMM3, IQMM4, IQMM23, KK1
-      REAL(DOUBLE) :: A1, S, BK, WA
+      integer :: iqmm1, iqmm2, iqmm3, iqmm4, iqmm23, kk1
+      real(double) :: a1, s, bk, wa
 !-----------------------------------------------
-      WW=ZERO
-      IF(IK1(3) > 9) THEN
-        IF(IK1(4) > 2) CALL MES(34)
-        IF(ID1(4) > 2) CALL MES(34)
-      ENDIF
-      IF(IK2(3) > 9) THEN
-        IF(IK2(4) > 2) CALL MES(34)
-        IF(ID2(4) > 2) CALL MES(34)
-      ENDIF
-      IQMM1=QM1+QM1+TENTH*QM1
-      IQMM2=QM2+QM2+TENTH*QM2
-      IQMM3=QM3+QM3+TENTH*QM3
-      IQMM23=IQMM1+IQMM2+IQMM3
-      IF(IK1(4) /= (ID1(4)+IQMM23))RETURN
-      IQMM4=QM4+QM4+TENTH*QM4
-      IF(IK2(4) /= (ID2(4)+IQMM4))RETURN
-      KK1=K1*2
-      CALL C0T5S(BD2(1),BD2(3),QM4,BK2(1),BK2(3),A1)
-      IF(ABS(A1) < EPS)RETURN
+      ww=zero
+      if(ik1(3) > 9) then
+        if(ik1(4) > 2) call mes(34)
+        if(id1(4) > 2) call mes(34)
+      endif
+      if(ik2(3) > 9) then
+        if(ik2(4) > 2) call mes(34)
+        if(id2(4) > 2) call mes(34)
+      endif
+      iqmm1=qm1+qm1+tenth*qm1
+      iqmm2=qm2+qm2+tenth*qm2
+      iqmm3=qm3+qm3+tenth*qm3
+      iqmm23=iqmm1+iqmm2+iqmm3
+      if(ik1(4) /= (id1(4)+iqmm23))return
+      iqmm4=qm4+qm4+tenth*qm4
+      if(ik2(4) /= (id2(4)+iqmm4))return
+      kk1=k1*2
+      call c0t5s(bd2(1),bd2(3),qm4,bk2(1),bk2(3),a1)
+      if(abs(a1) < eps)return
 !GG      CALL SJJ(IK2(3),IK2(1),IK2(7),IK2(6),ID2(1),ID2(7),ID2(6),S)
-      CALL RMEAJJ(IK2(3),IK2(1),IK2(7),IK2(6),ID2(1),ID2(7),ID2(6),S)
-      IF(ABS(S) < EPS)RETURN
-      BK=HALF*DBLE(IK2(3))
-      CALL WAP1(IK1,BK1,ID1,BD1,K1,BK,QM1,QM2,QM3,WA)
-      IF(ABS(WA) < EPS)RETURN
-      WW=-A1*WA*S/SQRT(DBLE(IK2(7)+1))
-      RETURN
-      END SUBROUTINE GG1112
+      call rmeajj(ik2(3),ik2(1),ik2(7),ik2(6),id2(1),id2(7),id2(6),s)
+      if(abs(s) < eps)return
+      bk=half*dble(ik2(3))
+      call wap1(ik1,bk1,id1,bd1,k1,bk,qm1,qm2,qm3,wa)
+      if(abs(wa) < eps)return
+      ww=-a1*wa*s/sqrt(dble(ik2(7)+1))
+      return
+      end subroutine gg1112

@@ -1,8 +1,8 @@
-      MODULE nmtejj_I
-      INTERFACE
+      module nmtejj_i
+      interface
 !
-      INTEGER FUNCTION NMTEJJ(I2Q,I2J,J,NK,ND)
-      INTEGER, INTENT(IN) :: I2Q, I2J, J, NK, ND
-      END FUNCTION
-      END INTERFACE
-      END MODULE
+      integer function nmtejj(i2q,i2j,j,nk,nd)
+      integer, intent(in) :: i2q, i2j, j, nk, nd
+      end function
+      end interface
+      end module

@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      SUBROUTINE LODSTATE(IDBLK)
+      subroutine lodstate(idblk)
 !
 !   Print block info and ask ASF serial numbers for each block
 !
@@ -24,71 +24,71 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE memory_man
-      USE DEF_C
-      USE hblock_C
-      use iounit_C
+      use memory_man
+      use def_c
+      use hblock_c
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE items_I
-      IMPLICIT NONE
+      use items_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER (LEN = 8), DIMENSION(*) :: IDBLK
+      character (len = 8), dimension(*) :: idblk
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, I, JBLOCK, NCF, NCMINOLD, IERR, NTMP
-      CHARACTER :: STR*256
+      integer :: j, i, jblock, ncf, ncminold, ierr, ntmp
+      character :: str*256
 !-----------------------------------------------
 !
 
-      WRITE (ISTDE, *) 'There are ', NBLOCK, ' blocks  ', &
+      write (istde, *) 'There are ', nblock, ' blocks  ', &
          '(block   J/Parity   NCF):'
-      WRITE (ISTDE, '( 4(I3, 1X, A5, I8, 5X) )') (J,IDBLK(J)(1:5),NCFBLK(J),J=1&
-         ,NBLOCK)
+      write (istde, '( 4(I3, 1X, A5, I8, 5X) )') (j,idblk(j)(1:5),ncfblk(j),j=1&
+         ,nblock)
 
-      NEVBLK = 0
-      NCMAXBLK = 0
+      nevblk = 0
+      ncmaxblk = 0
 
-      WRITE (ISTDE, *)
-      WRITE (ISTDE, *) 'Enter ASF serial numbers for each block'
+      write (istde, *)
+      write (istde, *) 'Enter ASF serial numbers for each block'
 
-      NCMIN = 0
-  123 CONTINUE
-      DO JBLOCK = 1, NBLOCK
-         NCF = NCFBLK(JBLOCK)
-  234    CONTINUE
-         WRITE (ISTDE, *) 'Block ', JBLOCK, '   ncf = ', NCF, ' id = ', IDBLK(&
-            JBLOCK)(1:5)
+      ncmin = 0
+  123 continue
+      do jblock = 1, nblock
+         ncf = ncfblk(jblock)
+  234    continue
+         write (istde, *) 'Block ', jblock, '   ncf = ', ncf, ' id = ', idblk(&
+            jblock)(1:5)
 
 !        ...Read and parse the list of levels
 
-         READ (*, '(A)') STR
-         WRITE(734,'(a)') trim(str) ! write to rscf.log file see, rscf
+         read (*, '(A)') str
+         write(734,'(a)') trim(str) ! write to rscf.log file see, rscf
 
 !        ...ICCMIN is allocated and accumulated in items
 !        ...ncmin is both input and output parameters to items
-         NCMINOLD = NCMIN
-         CALL ITEMS (NCMIN, NCF, STR, IERR)
-         IF (NCMIN == 0) CALL DALLOC (ICCMIN, 'ICCMIN', 'LODSTATE' )
-         IF (IERR < 0) GO TO 234
-         NEVBLK(JBLOCK) = NCMIN - NCMINOLD
+         ncminold = ncmin
+         call items (ncmin, ncf, str, ierr)
+         if (ncmin == 0) call dalloc (iccmin, 'ICCMIN', 'LODSTATE' )
+         if (ierr < 0) go to 234
+         nevblk(jblock) = ncmin - ncminold
 
 !        ...Determine ncmaxblk
-         NTMP = 0
-         DO I = NCMINOLD + 1, NCMIN
-            NTMP = MAX(NTMP,ICCMIN(I))
-         END DO
-         NCMAXBLK(JBLOCK) = NTMP
-      END DO
+         ntmp = 0
+         do i = ncminold + 1, ncmin
+            ntmp = max(ntmp,iccmin(i))
+         end do
+         ncmaxblk(jblock) = ntmp
+      end do
 
-      IF (NCMIN == 0) THEN
-         WRITE (ISTDE, *) 'At least one state should be selected'
-         GO TO 123
-      ENDIF
+      if (ncmin == 0) then
+         write (istde, *) 'At least one state should be selected'
+         go to 123
+      endif
 
-      RETURN
-      END SUBROUTINE LODSTATE
+      return
+      end subroutine lodstate

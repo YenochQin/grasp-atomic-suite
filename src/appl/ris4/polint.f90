@@ -1,6 +1,6 @@
 !************************************************************************
 !
-SUBROUTINE POLINT(XA,YA,DENS)
+subroutine polint(xa,ya,dens)
 !                                                                             *
 !   This routine uses interpolating polynomial d(r) = d0 + d2*r^2 + d4*r^4    *
 !   to extrapolate electron density at r = 0.                                 *
@@ -13,59 +13,59 @@ SUBROUTINE POLINT(XA,YA,DENS)
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      IMPLICIT NONE
-      REAL(DOUBLE), INTENT(OUT) :: DENS
-      REAL(DOUBLE), DIMENSION(3),  INTENT(IN) :: XA, YA
+      implicit none
+      real(double), intent(out) :: dens
+      real(double), dimension(3),  intent(in) :: xa, ya
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE), DIMENSION(3,3) :: M, MI
-      REAL(DOUBLE), DIMENSION(3) :: RM, PM
+      real(double), dimension(3,3) :: m, mi
+      real(double), dimension(3) :: rm, pm
 
-      REAL(DOUBLE) :: MDET
+      real(double) :: mdet
 !-----------------------------------------------
 
-      RM(1) = YA(1)
-      RM(2) = YA(2)
-      RM(3) = YA(3)
+      rm(1) = ya(1)
+      rm(2) = ya(2)
+      rm(3) = ya(3)
 
-      M(1,1) = 1.0d0
-      M(1,2) = XA(1)**2.0d0
-      M(1,3) = XA(1)**4.0d0
-      M(2,1) = 1.0d0
-      M(2,2) = XA(2)**2.0d0
-      M(2,3) = XA(2)**4.0d0
-      M(3,1) = 1.d0
-      M(3,2) = XA(3)**2.0d0
-      M(3,3) = XA(3)**4.0d0
-      MDET = M(1,1)*M(2,2)*M(3,3)-M(1,1)*M(2,3)*M(3,2)- &
-           M(1,2)*M(2,1)*M(3,3)+M(1,2)*M(2,3)*M(3,1)+ &
-           M(1,3)*M(2,1)*M(3,2)-M(1,3)*M(2,2)*M(3,1)
+      m(1,1) = 1.0d0
+      m(1,2) = xa(1)**2.0d0
+      m(1,3) = xa(1)**4.0d0
+      m(2,1) = 1.0d0
+      m(2,2) = xa(2)**2.0d0
+      m(2,3) = xa(2)**4.0d0
+      m(3,1) = 1.d0
+      m(3,2) = xa(3)**2.0d0
+      m(3,3) = xa(3)**4.0d0
+      mdet = m(1,1)*m(2,2)*m(3,3)-m(1,1)*m(2,3)*m(3,2)- &
+           m(1,2)*m(2,1)*m(3,3)+m(1,2)*m(2,3)*m(3,1)+ &
+           m(1,3)*m(2,1)*m(3,2)-m(1,3)*m(2,2)*m(3,1)
 
 !     DETERMINE INVERSE OF MATRIX
-      MI(1,1) = (M(2,2)*M(3,3)-M(2,3)*M(3,2))/MDET
-      MI(1,2) = (M(1,3)*M(3,2)-M(1,2)*M(3,3))/MDET
-      MI(1,3) = (M(1,2)*M(2,3)-M(1,3)*M(2,2))/MDET
+      mi(1,1) = (m(2,2)*m(3,3)-m(2,3)*m(3,2))/mdet
+      mi(1,2) = (m(1,3)*m(3,2)-m(1,2)*m(3,3))/mdet
+      mi(1,3) = (m(1,2)*m(2,3)-m(1,3)*m(2,2))/mdet
 
-      MI(2,1) = (M(2,3)*M(3,1)-M(2,1)*M(3,3))/MDET
-      MI(2,2) = (M(1,1)*M(3,3)-M(1,3)*M(3,1))/MDET
-      MI(2,3) = (M(1,3)*M(2,1)-M(1,1)*M(2,3))/MDET
+      mi(2,1) = (m(2,3)*m(3,1)-m(2,1)*m(3,3))/mdet
+      mi(2,2) = (m(1,1)*m(3,3)-m(1,3)*m(3,1))/mdet
+      mi(2,3) = (m(1,3)*m(2,1)-m(1,1)*m(2,3))/mdet
 
-      MI(3,1) = (M(2,1)*M(3,2)-M(2,2)*M(3,1))/MDET
-      MI(3,2) = (M(1,2)*M(3,1)-M(1,1)*M(3,2))/MDET
-      MI(3,3) = (M(1,1)*M(2,2)-M(1,2)*M(2,1))/MDET
+      mi(3,1) = (m(2,1)*m(3,2)-m(2,2)*m(3,1))/mdet
+      mi(3,2) = (m(1,2)*m(3,1)-m(1,1)*m(3,2))/mdet
+      mi(3,3) = (m(1,1)*m(2,2)-m(1,2)*m(2,1))/mdet
 
 !     DETERMINE PARAMETERS FROM FIT
-      PM(1) = MI(1,1)*RM(1)+MI(1,2)*RM(2)+MI(1,3)*RM(3)
-      PM(2) = MI(2,1)*RM(1)+MI(2,2)*RM(2)+MI(2,3)*RM(3)
-      PM(3) = MI(3,1)*RM(1)+MI(3,2)*RM(2)+MI(3,3)*RM(3)
+      pm(1) = mi(1,1)*rm(1)+mi(1,2)*rm(2)+mi(1,3)*rm(3)
+      pm(2) = mi(2,1)*rm(1)+mi(2,2)*rm(2)+mi(2,3)*rm(3)
+      pm(3) = mi(3,1)*rm(1)+mi(3,2)*rm(2)+mi(3,3)*rm(3)
 
 !     Finally RHO(0) in au^{-3} is defined
-      DENS = PM(1)
+      dens = pm(1)
 
-      RETURN
-    END SUBROUTINE POLINT
+      return
+    end subroutine polint

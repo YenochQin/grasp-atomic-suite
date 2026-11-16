@@ -1,7 +1,7 @@
-      MODULE iniest_I
-      INTERFACE
+      module iniest_i
+      interface
 !
-      SUBROUTINE INIEST(N, NB, NIV, HMX, JCOL, IROW, BASIS, IBLOCK, JBLOCK)
+      subroutine iniest(n, nb, niv, hmx, jcol, irow, basis, iblock, jblock)
 !************************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:04:58   1/ 3/07
 !...Modified by Charlotte Froese Fischer
@@ -9,16 +9,16 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,ONLY: DOUBLE
-      INTEGER, INTENT(IN) :: N
-      INTEGER, INTENT(IN) :: NB
-      INTEGER  :: NIV
-      INTEGER, INTENT(IN) :: JBLOCK
-      INTEGER, INTENT(IN) :: JCOL(0:*)
-      INTEGER, INTENT(IN) :: IROW(*)
-      INTEGER, INTENT(IN) :: IBLOCK(*)
-      REAL(DOUBLE), INTENT(IN) :: HMX(*)
-      REAL(DOUBLE)  :: BASIS(*)
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      use vast_kind_param,only: double
+      integer, intent(in) :: n
+      integer, intent(in) :: nb
+      integer  :: niv
+      integer, intent(in) :: jblock
+      integer, intent(in) :: jcol(0:*)
+      integer, intent(in) :: irow(*)
+      integer, intent(in) :: iblock(*)
+      real(double), intent(in) :: hmx(*)
+      real(double)  :: basis(*)
+      end subroutine
+      end interface
+      end module

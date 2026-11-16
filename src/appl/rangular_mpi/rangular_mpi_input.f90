@@ -1,18 +1,18 @@
 ! Rank zero owns the descriptor stream; all ranks retain the ordinary CSF arrays.
 module rangular_mpi_input
    use iso_fortran_env, only: int64
-   use mpi_C, only: rank_index => myid, MPI_Bcast, MPI_INTEGER, MPI_INTEGER1, MPI_CHARACTER, MPI_COMM_WORLD
-   use parameter_def, only: orbital_capacity => NNNW
-   use orb_C, only: current_csf_count => NCF, orbital_count => NW, occupations => IQA, &
-                    principal_numbers => NP, relativistic_kappas => NAK, orbital_momenta => NKL, &
-                    single_electron_two_j => NKJ, orbital_labels => NH
-   use stat_C, only: subshell_quantum_numbers => JQSA, couplings => JCUPA
-   use hblock_C, only: block_count => NBLOCK, block_lengths => NCFBLK
-   use def_C, only: electron_count => NELEC
+   use mpi_c, only: rank_index => myid, mpi_bcast, mpi_integer, mpi_integer1, mpi_character, mpi_comm_world
+   use parameter_def, only: orbital_capacity => nnnw
+   use orb_c, only: current_csf_count => ncf, orbital_count => nw, occupations => iqa, &
+                    principal_numbers => np, relativistic_kappas => nak, orbital_momenta => nkl, &
+                    single_electron_two_j => nkj, orbital_labels => nh
+   use stat_c, only: subshell_quantum_numbers => jqsa, couplings => jcupa
+   use hblock_c, only: block_count => nblock, block_lengths => ncfblk
+   use def_c, only: electron_count => nelec
    use csf_descriptor_input, only: descriptor_source, open_descriptor_source, install_descriptor_header, &
                                    read_descriptor_block, close_descriptor_source
-   use cslhmpi_I, only: cslhmpi
-   use lodcslmpi_I, only: lodcslmpi
+   use cslhmpi_i, only: cslhmpi
+   use lodcslmpi_i, only: lodcslmpi
    use rangular_profile, only: open_stage_profile
    implicit none
    private
@@ -117,23 +117,23 @@ contains
          call open_descriptor_source(options%descriptors,input_path,maximum_blocks)
          call install_descriptor_header(options%descriptors,core_count,block_labels)
       end if
-      call MPI_Bcast(block_count,1,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_status)
-      call MPI_Bcast(current_csf_count,1,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_status)
+      call mpi_bcast(block_count,1,mpi_integer,0,mpi_comm_world,mpi_status)
+      call mpi_bcast(current_csf_count,1,mpi_integer,0,mpi_comm_world,mpi_status)
       if (rank_index /= 0) then
          allocate(block_lengths(block_count+1),stat=allocation_status)
          if (allocation_status /= 0) error stop 'Cannot allocate MPI CSF block lengths'
          block_labels = ''
       end if
-      call MPI_Bcast(block_lengths,block_count+1,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_status)
-      call MPI_Bcast(block_labels,8*block_count,MPI_CHARACTER,0,MPI_COMM_WORLD,mpi_status)
-      call MPI_Bcast(core_count,1,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_status)
-      call MPI_Bcast(electron_count,1,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_status)
-      call MPI_Bcast(orbital_count,1,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_status)
-      call MPI_Bcast(principal_numbers,orbital_count,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_status)
-      call MPI_Bcast(relativistic_kappas,orbital_count,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_status)
-      call MPI_Bcast(orbital_momenta,orbital_count,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_status)
-      call MPI_Bcast(single_electron_two_j,orbital_count,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_status)
-      call MPI_Bcast(orbital_labels,2*orbital_count,MPI_CHARACTER,0,MPI_COMM_WORLD,mpi_status)
+      call mpi_bcast(block_lengths,block_count+1,mpi_integer,0,mpi_comm_world,mpi_status)
+      call mpi_bcast(block_labels,8*block_count,mpi_character,0,mpi_comm_world,mpi_status)
+      call mpi_bcast(core_count,1,mpi_integer,0,mpi_comm_world,mpi_status)
+      call mpi_bcast(electron_count,1,mpi_integer,0,mpi_comm_world,mpi_status)
+      call mpi_bcast(orbital_count,1,mpi_integer,0,mpi_comm_world,mpi_status)
+      call mpi_bcast(principal_numbers,orbital_count,mpi_integer,0,mpi_comm_world,mpi_status)
+      call mpi_bcast(relativistic_kappas,orbital_count,mpi_integer,0,mpi_comm_world,mpi_status)
+      call mpi_bcast(orbital_momenta,orbital_count,mpi_integer,0,mpi_comm_world,mpi_status)
+      call mpi_bcast(single_electron_two_j,orbital_count,mpi_integer,0,mpi_comm_world,mpi_status)
+      call mpi_bcast(orbital_labels,2*orbital_count,mpi_character,0,mpi_comm_world,mpi_status)
    end subroutine load_mpi_angular_header
 
    subroutine load_mpi_angular_block(options, core_count, block_index)
@@ -153,12 +153,12 @@ contains
       do
          last_csf = int(min(int(current_csf_count,int64),int(first_csf,int64)+columns_per_message-1_int64))
          message_columns = last_csf-first_csf+1
-         call MPI_Bcast(occupations(:,first_csf:last_csf),orbital_capacity*message_columns, &
-                        MPI_INTEGER1,0,MPI_COMM_WORLD,mpi_status)
-         call MPI_Bcast(subshell_quantum_numbers(:,:,first_csf:last_csf),3*orbital_capacity*message_columns, &
-                        MPI_INTEGER1,0,MPI_COMM_WORLD,mpi_status)
-         call MPI_Bcast(couplings(:,first_csf:last_csf),orbital_capacity*message_columns, &
-                        MPI_INTEGER1,0,MPI_COMM_WORLD,mpi_status)
+         call mpi_bcast(occupations(:,first_csf:last_csf),orbital_capacity*message_columns, &
+                        mpi_integer1,0,mpi_comm_world,mpi_status)
+         call mpi_bcast(subshell_quantum_numbers(:,:,first_csf:last_csf),3*orbital_capacity*message_columns, &
+                        mpi_integer1,0,mpi_comm_world,mpi_status)
+         call mpi_bcast(couplings(:,first_csf:last_csf),orbital_capacity*message_columns, &
+                        mpi_integer1,0,mpi_comm_world,mpi_status)
          if (last_csf == current_csf_count) exit
          first_csf = last_csf+1
       end do

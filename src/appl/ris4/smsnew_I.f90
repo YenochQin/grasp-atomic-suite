@@ -1,11 +1,11 @@
-      MODULE smsnew_I
-      INTERFACE
+      module smsnew_i
+      interface
 !...Translated by Gediminas Gaigalas 11/18/19
-      SUBROUTINE smsnew (DOIT,VINT,VINT2)
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: VINT, VINT2
-      INTEGER, INTENT(IN) :: DOIT
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine smsnew (doit,vint,vint2)
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw
+      real(double), dimension(nnnw,nnnw), intent(in) :: vint, vint2
+      integer, intent(in) :: doit
+      end subroutine
+      end interface
+      end module

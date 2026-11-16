@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE CLE0SM(Q,QM,S,C,CM,A)
+      subroutine cle0sm(q,qm,s,c,cm,a)
 !                                                                  *
 !     THIS PACKAGE DETERMINES THE VALUES OF FOLLOWING              *
 !                                                 ---         ---  *
@@ -19,37 +19,37 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, TENTH, ONE, TWO, EPS
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, tenth, one, two, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ittk_I
-      USE c1e0sm_I
-      IMPLICIT NONE
+      use ittk_i
+      use c1e0sm_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE), INTENT(IN)  :: Q, QM, S, C, CM
-      REAL(DOUBLE), INTENT(OUT) :: A
+      real(double), intent(in)  :: q, qm, s, c, cm
+      real(double), intent(out) :: a
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IIQ, IIC, IIS
+      integer :: iiq, iic, iis
 !-----------------------------------------------
-      A=ZERO
-      IIQ=TWO*Q+TENTH
-      IIC=TWO*C+TENTH
-      IIS=TWO*S+TENTH
-      IF(ITTK(IIQ,IIC,IIS).EQ.0)RETURN
-      IF(S.LT.EPS) THEN
-       IF((Q+TENTH).LT.DABS(QM))RETURN
-        IF((C+TENTH).LT.DABS(CM))RETURN
-        IF(DABS(Q-C).GT.EPS)RETURN
-        IF(DABS(QM-CM).GT.EPS)RETURN
-        A=ONE
-      ELSE
-        CALL C1E0SM(Q,QM,C,CM,A)
-      END IF
-      RETURN
-      END SUBROUTINE CLE0SM
+      a=zero
+      iiq=two*q+tenth
+      iic=two*c+tenth
+      iis=two*s+tenth
+      if(ittk(iiq,iic,iis).eq.0)return
+      if(s.lt.eps) then
+       if((q+tenth).lt.dabs(qm))return
+        if((c+tenth).lt.dabs(cm))return
+        if(dabs(q-c).gt.eps)return
+        if(dabs(qm-cm).gt.eps)return
+        a=one
+      else
+        call c1e0sm(q,qm,c,cm,a)
+      end if
+      return
+      end subroutine cle0sm

@@ -14,8 +14,8 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  double
-      USE hmat_C
+      use vast_kind_param, only:  double
+      use hmat_c
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

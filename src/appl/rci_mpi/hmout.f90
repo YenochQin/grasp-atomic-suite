@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE HMOUT(IMCDF)
+      subroutine hmout(imcdf)
 !                                                                      *
 !   Routine for printing the Hamiltonian matrix.  File IMCDF must be   *
 !   positioned correctly before a call is made to this module.         *
@@ -16,36 +16,36 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE hmat_C
-      USE orb_C,           ONLY: ncf, nw, iqa
+      use vast_kind_param, only: double
+      use hmat_c
+      use orb_c,           only: ncf, nw, iqa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE convrt_I
-      IMPLICIT NONE
+      use convrt_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: IMCDF
+      integer, intent(in) :: imcdf
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: IC, NELC, IR, LENTHR, LENTHC
-      REAL(DOUBLE) :: ELSTO
-      CHARACTER    :: CIR*8, CIC*8
+      integer      :: ic, nelc, ir, lenthr, lenthc
+      real(double) :: elsto
+      character    :: cir*8, cic*8
 !-----------------------------------------------
 !
-      DO IC = 1, NCF
-         READ (IMCDF) NELC, ELSTO, (EMT(IR),IR=1,NELC), (IROW(IR),IR=1,NELC)
-         DO IR = 1, NELC
-            CALL CONVRT (IROW(IR), CIR, LENTHR)
-            CALL CONVRT (IC, CIC, LENTHC)
-            WRITE (99, 300) CIR(1:LENTHR), CIC(1:LENTHC), EMT(IR)
-         END DO
-      END DO
+      do ic = 1, ncf
+         read (imcdf) nelc, elsto, (emt(ir),ir=1,nelc), (irow(ir),ir=1,nelc)
+         do ir = 1, nelc
+            call convrt (irow(ir), cir, lenthr)
+            call convrt (ic, cic, lenthc)
+            write (99, 300) cir(1:lenthr), cic(1:lenthc), emt(ir)
+         end do
+      end do
 !
-  300 FORMAT(' H (',A,',',A,') = ',1P,1D19.12)
-      RETURN
+  300 format(' H (',a,',',a,') = ',1p,1d19.12)
+      return
 !
-      END SUBROUTINE HMOUT
+      end subroutine hmout

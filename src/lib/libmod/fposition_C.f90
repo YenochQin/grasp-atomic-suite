@@ -1,6 +1,6 @@
-      MODULE fposition_C
+      module fposition_c
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:33:54  12/28/06
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      INTEGER :: NPOSITION
-      END MODULE fposition_C
+      integer :: nposition
+      end module fposition_c

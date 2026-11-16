@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE VACPOL
+      subroutine vacpol
 !                                                                      *
 !   This  routine controls the setting up of the vacuum polarization   *
 !   potential for the given nuclear charge distribution at each grid   *
@@ -20,39 +20,39 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE grid_C
-      USE npar_C
-      USE ncdist_C
-      USE tatb_C
+      use vast_kind_param, only:  double
+      use grid_c
+      use npar_c
+      use ncdist_c
+      use tatb_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE vac2_I
-      USE vac4_I
-      IMPLICIT NONE
+      use vac2_i
+      use vac4_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
+      integer :: i
 !-----------------------------------------------
 !
 !   Redefine  ZDIST  to be  rho*r*r'
 !
-      ZDIST(:MTP) = ZDIST(:MTP)*R(:MTP)*RP(:MTP)
+      zdist(:mtp) = zdist(:mtp)*r(:mtp)*rp(:mtp)
 !
 !   Second-order vacuum polarisation potential; returned in
 !   array TB
 !
-      CALL VAC2
+      call vac2
 !
 !   Fourth-order vacuum polarization potential; returned in
 !   array TA
 !
-      CALL VAC4
+      call vac4
 !
 !   If option 7 is set, use user-defined vacuum polarization
 !   potential
 !
-      RETURN
-      END SUBROUTINE VACPOL
+      return
+      end subroutine vacpol

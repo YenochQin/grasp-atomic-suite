@@ -3,7 +3,7 @@
 !     T R P M A T
 !     ------------------------------------------------------------------
 !
-      SUBROUTINE TRPMAT(XIN, NROW, NCOL, XOUT)
+      subroutine trpmat(xin, nrow, ncol, xout)
 !
 ! XOUT(I,J) = XIN(J,I)
 !************************************************************************
@@ -13,22 +13,22 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: NROW
-      INTEGER , INTENT(IN) :: NCOL
-      REAL(DOUBLE) , INTENT(IN) :: XIN(NROW,NCOL)
-      REAL(DOUBLE) , INTENT(OUT) :: XOUT(NCOL,NROW)
+      integer , intent(in) :: nrow
+      integer , intent(in) :: ncol
+      real(double) , intent(in) :: xin(nrow,ncol)
+      real(double) , intent(out) :: xout(ncol,nrow)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IROW, ICOL
+      integer :: irow, icol
 !-----------------------------------------------
 !
-      XOUT = TRANSPOSE(XIN)
+      xout = transpose(xin)
 !
-      RETURN
-      END SUBROUTINE TRPMAT
+      return
+      end subroutine trpmat

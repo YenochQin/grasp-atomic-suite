@@ -1,8 +1,8 @@
-      MODULE horb_C
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
+      module horb_c
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:33:54  12/28/06
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      REAL(DOUBLE), DIMENSION(NNNP) :: PH, QH
-      END MODULE horb_C
+      real(double), dimension(nnnp) :: ph, qh
+      end module horb_c

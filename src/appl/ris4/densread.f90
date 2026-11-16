@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-SUBROUTINE DENSREAD(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
+subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !      SUBROUTINE DENSREAD(DINT1,DINT2,DINT3,                           &
 !                          DINT4,DINT5,DINT6,                           &
 !                          DINT7,DINT1VEC,DENS1VEC)
@@ -19,36 +19,36 @@ SUBROUTINE DENSREAD(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: KEYORB, NNNW, NNNP
-      USE prnt_C
-      USE ris_C
-      USE orb_C
-      USE eigv_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: keyorb, nnnw, nnnp
+      use prnt_c
+      use ris_c
+      use orb_c
+      use eigv_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT1, DINT2,  &
-                                          DINT3, DINT4, DINT5, DINT6,  &
-                                          DINT7
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint1, dint2,  &
+                                          dint3, dint4, dint5, dint6,  &
+                                          dint7
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL_R
-      REAL(DOUBLE) :: ELEMNT1, ELEMNT2, ELEMNT3, ELEMNT4, ELEMNT5
-      REAL(DOUBLE) :: ELEMNT6, ELEMNT7
-      REAL(DOUBLE) :: CONTRI1, CONTRI2, CONTRI3, CONTRI4, CONTRI5
-      REAL(DOUBLE) :: CONTRI6, CONTRI7
-      INTEGER :: ICOLD, IROLD, IOS, IA, IB, IC, IR, I, J, L, LOC, LAB
-      INTEGER :: NCOUNT
+      real(double), dimension(nnnw) :: tshell_r
+      real(double) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5
+      real(double) :: elemnt6, elemnt7
+      real(double) :: contri1, contri2, contri3, contri4, contri5
+      real(double) :: contri6, contri7
+      integer :: icold, irold, ios, ia, ib, ic, ir, i, j, l, loc, lab
+      integer :: ncount
 !-----------------------------------------------
 !
 ! DINT1 contain the density
@@ -60,48 +60,48 @@ SUBROUTINE DENSREAD(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
 ! DINT7 contain the sum of NMS parameters: K^1_NMS+K^2_NMS+K^3_NMS
 !
 
-      ICOLD = 0
-      IROLD = 0
+      icold = 0
+      irold = 0
 
-      REWIND (50)
-   16 READ (50,IOSTAT = IOS) IC,IR,NCOUNT
+      rewind (50)
+   16 read (50,iostat = ios) ic,ir,ncount
 
-      IF (IOS .EQ. 0) THEN
+      if (ios .eq. 0) then
 !*      print*, 'ic', IC,IR,NCOUNT
 !
 !   Read successful; decode the labels of I(ab)
 !
 !      Initialise
-        IF ((IC.NE.ICOLD).OR.(IR.NE.IROLD)) THEN
+        if ((ic.ne.icold).or.(ir.ne.irold)) then
 !*            ISPARC = ISPAR (IC)
 !*            ITJPOC = ITJPO (IC)
 !*            ITJPOR = ITJPO (IR)
 !*            IDIFF = ITJPOC - ITJPOR
-            ICOLD = IC
-            IROLD = IR
+            icold = ic
+            irold = ir
 !*        DO I = 1,NELMNT
-          ELEMNT1 = 0.0D00
-          ELEMNT2 = 0.0D00
-          ELEMNT3 = 0.0D00
-          ELEMNT4 = 0.0D00
-          ELEMNT5 = 0.0D00
-          ELEMNT6 = 0.0D00
-          ELEMNT7 = 0.0D00
+          elemnt1 = 0.0d00
+          elemnt2 = 0.0d00
+          elemnt3 = 0.0d00
+          elemnt4 = 0.0d00
+          elemnt5 = 0.0d00
+          elemnt6 = 0.0d00
+          elemnt7 = 0.0d00
 !*        ENDDO
-        ENDIF
-        DO I= 1,NCOUNT
-           READ(50) TSHELL_R(I),LAB
-           IA = LAB/KEY
-           IB = MOD(LAB,KEY)
+        endif
+        do i= 1,ncount
+           read(50) tshell_r(i),lab
+           ia = lab/key
+           ib = mod(lab,key)
 !*           LOC = INDEX(I)
-           ELEMNT1 = ELEMNT1 + DINT1(IA,IB)*TSHELL_R(I)
-           ELEMNT2 = ELEMNT2 + DINT2(IA,IB)*TSHELL_R(I)
-           ELEMNT3 = ELEMNT3 + DINT3(IA,IB)*TSHELL_R(I)
-           ELEMNT4 = ELEMNT4 + DINT4(IA,IB)*TSHELL_R(I)
-           ELEMNT5 = ELEMNT5 + DINT5(IA,IB)*TSHELL_R(I)
-           ELEMNT6 = ELEMNT6 + DINT6(IA,IB)*TSHELL_R(I)
-           ELEMNT7 = ELEMNT7 + DINT7(IA,IB)*TSHELL_R(I)
-        ENDDO
+           elemnt1 = elemnt1 + dint1(ia,ib)*tshell_r(i)
+           elemnt2 = elemnt2 + dint2(ia,ib)*tshell_r(i)
+           elemnt3 = elemnt3 + dint3(ia,ib)*tshell_r(i)
+           elemnt4 = elemnt4 + dint4(ia,ib)*tshell_r(i)
+           elemnt5 = elemnt5 + dint5(ia,ib)*tshell_r(i)
+           elemnt6 = elemnt6 + dint6(ia,ib)*tshell_r(i)
+           elemnt7 = elemnt7 + dint7(ia,ib)*tshell_r(i)
+        enddo
 !
 !   Return to the start of the loop
 !
@@ -110,35 +110,35 @@ SUBROUTINE DENSREAD(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
 !*      DO 21 I = 1,NELMNT
 !*        IRI = IROW(I)
 !*         IF (I .GT. IENDC(ICI)) ICI = ICI+1
-         DO 22 J = 1,NVEC
-            LOC = (J-1)*NCF
-            CONTRI1 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT1
-            CONTRI2 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT2
-            CONTRI3 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT3
-            CONTRI4 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT4
-            CONTRI5 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT5
-            CONTRI6 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT6
-            CONTRI7 = EVEC(IC+LOC)*EVEC(IR+LOC)*ELEMNT7
-            IF (IR.NE.IC) THEN
-               CONTRI1 = 2.0D00 * CONTRI1
-               CONTRI2 = 2.0D00 * CONTRI2
-               CONTRI3 = 2.0D00 * CONTRI3
-               CONTRI4 = 2.0D00 * CONTRI4
-               CONTRI5 = 2.0D00 * CONTRI5
-               CONTRI6 = 2.0D00 * CONTRI6
-               CONTRI7 = 2.0D00 * CONTRI7
-            ENDIF
-            DENS1(J) = DENS1(J) + CONTRI1
-            DENS2(J) = DENS2(J) + CONTRI2
-            DENS3(J) = DENS3(J) + CONTRI3
-            DENS4(J) = DENS4(J) + CONTRI4
-            DENS5(J) = DENS5(J) + CONTRI5
-            DENS6(J) = DENS6(J) + CONTRI6
-            DENS7(J) = DENS7(J) + CONTRI7
-   22    CONTINUE
+         do 22 j = 1,nvec
+            loc = (j-1)*ncf
+            contri1 = evec(ic+loc)*evec(ir+loc)*elemnt1
+            contri2 = evec(ic+loc)*evec(ir+loc)*elemnt2
+            contri3 = evec(ic+loc)*evec(ir+loc)*elemnt3
+            contri4 = evec(ic+loc)*evec(ir+loc)*elemnt4
+            contri5 = evec(ic+loc)*evec(ir+loc)*elemnt5
+            contri6 = evec(ic+loc)*evec(ir+loc)*elemnt6
+            contri7 = evec(ic+loc)*evec(ir+loc)*elemnt7
+            if (ir.ne.ic) then
+               contri1 = 2.0d00 * contri1
+               contri2 = 2.0d00 * contri2
+               contri3 = 2.0d00 * contri3
+               contri4 = 2.0d00 * contri4
+               contri5 = 2.0d00 * contri5
+               contri6 = 2.0d00 * contri6
+               contri7 = 2.0d00 * contri7
+            endif
+            dens1(j) = dens1(j) + contri1
+            dens2(j) = dens2(j) + contri2
+            dens3(j) = dens3(j) + contri3
+            dens4(j) = dens4(j) + contri4
+            dens5(j) = dens5(j) + contri5
+            dens6(j) = dens6(j) + contri6
+            dens7(j) = dens7(j) + contri7
+   22    continue
 !*   21 CONTINUE
 
-      GOTO 16
-      ENDIF
-      RETURN
-      END SUBROUTINE DENSREAD
+      goto 16
+      endif
+      return
+      end subroutine densread

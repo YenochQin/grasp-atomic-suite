@@ -3,7 +3,7 @@
 !     I E L S U M
 !     ------------------------------------------------------------------
 !
-      INTEGER FUNCTION IELSUM (IVEC, NELMNT)
+      integer function ielsum (ivec, nelmnt)
 !
 ! Sum elements of integer array
 !
@@ -14,22 +14,22 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NELMNT
-      INTEGER, INTENT(IN) :: IVEC(*)
+      integer, intent(in) :: nelmnt
+      integer, intent(in) :: ivec(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ISUM, IEL
+      integer :: isum, iel
 !-----------------------------------------------
 !
-      ISUM = 0
-      ISUM = SUM(IVEC(:NELMNT))
+      isum = 0
+      isum = sum(ivec(:nelmnt))
 !
-      IELSUM = ISUM
+      ielsum = isum
 !
-      RETURN
-      END FUNCTION IELSUM
+      return
+      end function ielsum

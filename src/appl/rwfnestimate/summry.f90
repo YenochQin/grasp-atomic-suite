@@ -2,7 +2,7 @@
 
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SUMMRY(NUNIT)
+      subroutine summry(nunit)
 !                                                                      *
 !   Prints  a summary of the complete  list of subshell radial wave-   *
 !   functions on NUNIT.                                                *
@@ -18,50 +18,50 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE GRID_C
-      USE ORB_C
-      USE WAVE_C
-      USE WHFROM_C, ONLY: SOURCE
+      use vast_kind_param, only:  double
+      use grid_c
+      use orb_c
+      use wave_c
+      use whfrom_c, only: source
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rint_I
-      IMPLICIT NONE
+      use rint_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: NUNIT
+      integer , intent(in) :: nunit
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, LENTH
+      integer :: i, lenth
 !-----------------------------------------------
 !
 !
-      WRITE (NUNIT, 300)
+      write (nunit, 300)
 !
-      DO I = 1, NW
-         LENTH = LEN_TRIM(SOURCE(I))
+      do i = 1, nw
+         lenth = len_trim(source(i))
 !--------Output P(2) and Q(2) for each orbital
 !         WRITE (NUNIT, 301) NP(I), NH(I), E(I), PZ(I), GAMA(I), PF(2,I), QF(2,I&
 !            ), MF(I), SOURCE(I)(1:LENTH)
 !--------Output <r> (RINT(I,I,1)) for each orbital
-         WRITE (NUNIT, 301) NP(I), NH(I), E(I), PZ(I), GAMA(I), RINT(I,I,1)&
-             , MF(I), SOURCE(I)(1:LENTH)
+         write (nunit, 301) np(i), nh(i), e(i), pz(i), gama(i), rint(i,i,1)&
+             , mf(i), source(i)(1:lenth)
 !         WRITE (NUNIT,302) SOURCE(I)(1:LENTH)
-      END DO
+      end do
 !
-      RETURN
+      return
 !
 !-Format for P(2) and Q(2)
 !  300 FORMAT('Shell',6X,'e',11X,'p0',8X,'gamma',8X,'P(2)',7X,'Q(2)',6X,'MTP',&
 !         '  SRC'/)
 !  301 FORMAT(1X,I2,A2,5D12.4,I5,2X,A3)
 !-Format for <r>
-  300 FORMAT('Shell',6X,'e',11X,'p0',8X,'gamma',8X,'<r>',6X,'MTP','  SRC'/)
-  301 FORMAT(1X,I2,A2,4D12.4,I5,2X,A3)
-      RETURN
+  300 format('Shell',6x,'e',11x,'p0',8x,'gamma',8x,'<r>',6x,'MTP','  SRC'/)
+  301 format(1x,i2,a2,4d12.4,i5,2x,a3)
+      return
 !  302 FORMAT ('      Source: ',A)
 !
-      END SUBROUTINE SUMMRY
+      end subroutine summry

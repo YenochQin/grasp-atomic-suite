@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETSUM(NAME, NCI)
+      subroutine setsum(name, nci)
 !                                                                      *
 !   Open the  .sum  files on stream 24 and 29                          *
 !                                                                      *
@@ -15,36 +15,36 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      IMPLICIT NONE
+      use openfl_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NCI
-      CHARACTER, INTENT(IN) :: NAME*24
+      integer, intent(in) :: nci
+      character, intent(in) :: name*24
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER   :: K, IERR
-      CHARACTER :: FILNAM*256, FORM*11, STATUS*3
+      integer   :: k, ierr
+      character :: filnam*256, form*11, status*3
 !-----------------------------------------------
 !
 !   File  rdensity.sum  is FORMATTED
 !
-      K = INDEX(NAME,' ')
-      IF (NCI == 0) THEN
-         FILNAM = NAME(1:K-1)//'.ci'
-      ELSE
-         FILNAM = NAME(1:K-1)//'.i'
-      ENDIF
-      FORM = 'FORMATTED'
-      STATUS = 'NEW'
+      k = index(name,' ')
+      if (nci == 0) then
+         filnam = name(1:k-1)//'.ci'
+      else
+         filnam = name(1:k-1)//'.i'
+      endif
+      form = 'FORMATTED'
+      status = 'NEW'
 !
-      CALL OPENFL (24, FILNAM, FORM, STATUS, IERR)
-      IF (IERR /= 0) THEN
-         WRITE (6, *) 'Error when opening', FILNAM
-         STOP
-      ENDIF
+      call openfl (24, filnam, form, status, ierr)
+      if (ierr /= 0) then
+         write (6, *) 'Error when opening', filnam
+         stop
+      endif
 !
-      RETURN
-      END SUBROUTINE SETSUM
+      return
+      end subroutine setsum

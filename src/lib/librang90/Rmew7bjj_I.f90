@@ -1,10 +1,10 @@
-      MODULE rmew7bjj_I
-      INTERFACE
+      module rmew7bjj_i
+      interface
 !
-      SUBROUTINE RMEW7BJJ(J1,J2,K1,K2,COEF)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER,      INTENT(IN)  :: J1, J2, K1, K2
-      REAL(DOUBLE), INTENT(OUT) :: COEF
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine rmew7bjj(j1,j2,k1,k2,coef)
+      use vast_kind_param, only:  double
+      integer,      intent(in)  :: j1, j2, k1, k2
+      real(double), intent(out) :: coef
+      end subroutine
+      end interface
+      end module

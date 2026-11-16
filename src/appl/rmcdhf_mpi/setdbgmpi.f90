@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETDBGmpi(DBGFILE)
+      subroutine setdbgmpi(dbgfile)
 !                                                                      *
 !   This subroutine sets the arrays that control debug printout from   *
 !   the radial and angular modules of the GRASP92 suite.               *
@@ -17,26 +17,26 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE DEBUG_C
-      USE MPI_C
+      use debug_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE setdbg_I, ONLY: setdbg
-      IMPLICIT NONE
+      use setdbg_i, only: setdbg
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER(LEN=*) , INTENT(IN) :: DBGFILE
+      character(len=*) , intent(in) :: dbgfile
 !-----------------------------------------------
 !
-      IF (myid .EQ. 0) THEN
-         CALL setdbg (dbgfile)
-      ENDIF
+      if (myid .eq. 0) then
+         call setdbg (dbgfile)
+      endif
 
-      CALL MPI_Bcast (ldbpa, 5, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast (ldbpg, 5, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast (ldbpr,30, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+      call mpi_bcast (ldbpa, 5, mpi_logical, 0, mpi_comm_world, ierr)
+      call mpi_bcast (ldbpg, 5, mpi_logical, 0, mpi_comm_world, ierr)
+      call mpi_bcast (ldbpr,30, mpi_logical, 0, mpi_comm_world, ierr)
 
-      RETURN
-      END SUBROUTINE SETDBGmpi
+      return
+      end subroutine setdbgmpi

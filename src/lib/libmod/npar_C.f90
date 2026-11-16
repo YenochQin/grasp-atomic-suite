@@ -1,23 +1,23 @@
 !
 !***********************************************************************
 !                                                                      *
-      MODULE npar_C
+      module npar_c
 !                                                                      *
 !***********************************************************************
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:23:52  12/28/06
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      INTEGER :: NPARM
-      REAL(DOUBLE), DIMENSION(2) :: PARM
-      END MODULE npar_C
+      integer :: nparm
+      real(double), dimension(2) :: parm
+      end module npar_c
 
-      MODULE nsmdat_C
-      USE vast_kind_param, ONLY:  DOUBLE
+      module nsmdat_c
+      use vast_kind_param, only:  double
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:36:34  12/28/06
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      REAL(DOUBLE) :: SQN,DMOMNM,QMOMB
-      REAL(DOUBLE) :: HFSI, HFSD, HFSQ
-      REAL(DOUBLE) :: SMSI, SMSD, SMSQ
-      END MODULE nsmdat_C
+      real(double) :: sqn,dmomnm,qmomb
+      real(double) :: hfsi, hfsd, hfsq
+      real(double) :: smsi, smsd, smsq
+      end module nsmdat_c

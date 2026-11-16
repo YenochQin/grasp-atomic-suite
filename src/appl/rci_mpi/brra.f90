@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION BRRA (ITYPE, IA, IC, IB, ID, K)
+      real(kind(0.0d0)) function brra (itype, ia, ic, ib, id, k)
 !                                                                      *
 !   This routine evaluates the transverse interaction integrals:       *
 !                                                                      *
@@ -22,105 +22,105 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE cons_C
-      USE grid_C
-      USE wave_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use cons_c
+      use grid_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rkint_I
-      USE skint_I
-      IMPLICIT NONE
+      use rkint_i
+      use skint_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: ITYPE
-      INTEGER  :: IA
-      INTEGER  :: IC
-      INTEGER  :: IB
-      INTEGER  :: ID
-      INTEGER  :: K
+      integer, intent(in) :: itype
+      integer  :: ia
+      integer  :: ic
+      integer  :: ib
+      integer  :: id
+      integer  :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: MXRAC, I, MXRBD
-      REAL(DOUBLE), DIMENSION(NNNP) :: RAC, RBD
+      integer :: mxrac, i, mxrbd
+      real(double), dimension(nnnp) :: rac, rbd
 !-----------------------------------------------
 !
-      MXRAC = MIN(MF(IA),MF(IC))
-      DO I = 1, MXRAC
-         RAC(I) = PF(I,IA)*QF(I,IC)
-      END DO
+      mxrac = min(mf(ia),mf(ic))
+      do i = 1, mxrac
+         rac(i) = pf(i,ia)*qf(i,ic)
+      end do
 !
-      MXRBD = MIN(MF(IB),MF(ID))
-      DO I = 1, MXRBD
-         RBD(I) = PF(I,IB)*QF(I,ID)
-      END DO
+      mxrbd = min(mf(ib),mf(id))
+      do i = 1, mxrbd
+         rbd(i) = pf(i,ib)*qf(i,id)
+      end do
 !
-      GO TO (21,22,23,24,25,26) ITYPE
+      go to (21,22,23,24,25,26) itype
 !
 !   ITYPE = 1
 !
-   21 CONTINUE
-      IF (IA==IB .AND. IC==ID) GO TO 9
-      IF (IA==ID .AND. IC==IB) GO TO 10
-      BRRA = (RKINT(RAC,IA,IC,RBD,IB,ID,K,1) + RKINT(RAC,IA,IC,RBD,IB,ID,K,2)&
-          + RKINT(RBD,IB,ID,RAC,IA,IC,K,1) + RKINT(RBD,IB,ID,RAC,IA,IC,K,2))*&
-         HALF
-      RETURN
+   21 continue
+      if (ia==ib .and. ic==id) go to 9
+      if (ia==id .and. ic==ib) go to 10
+      brra = (rkint(rac,ia,ic,rbd,ib,id,k,1) + rkint(rac,ia,ic,rbd,ib,id,k,2)&
+          + rkint(rbd,ib,id,rac,ia,ic,k,1) + rkint(rbd,ib,id,rac,ia,ic,k,2))*&
+         half
+      return
 !
 !   ITYPE = 2
 !
-   22 CONTINUE
-      IF (IA==IB .AND. IC==ID) GO TO 26
-      IF (IA==ID .AND. IC==IB) GO TO 26
-      BRRA = (SKINT(RAC,IA,IC,RBD,IB,ID,K,1) + SKINT(RAC,IA,IC,RBD,IB,ID,K,2))*&
-         HALF
-      RETURN
+   22 continue
+      if (ia==ib .and. ic==id) go to 26
+      if (ia==id .and. ic==ib) go to 26
+      brra = (skint(rac,ia,ic,rbd,ib,id,k,1) + skint(rac,ia,ic,rbd,ib,id,k,2))*&
+         half
+      return
 !
 !   ITYPE = 3
 !
-   23 CONTINUE
-      IF (IA == IC) THEN
-         DO I = 1, MXRBD
-            RBD(I) = RBD(I) + PF(I,ID)*QF(I,IB)
-         END DO
-         BRRA = (RKINT(RAC,IA,IC,RBD,IB,ID,K,0) + RKINT(RBD,IB,ID,RAC,IA,IC,K,0&
-            ) + RKINT(RAC,IA,IC,RBD,IB,ID,K,2) + RKINT(RBD,IB,ID,RAC,IA,IC,K,2)&
-            )*HALF
-         RETURN
-      ENDIF
-      DO I = 1, MXRAC
-         RAC(I) = RAC(I) + PF(I,IC)*QF(I,IA)
-      END DO
-      BRRA = (RKINT(RAC,IA,IC,RBD,IB,ID,K,1) + RKINT(RBD,IB,ID,RAC,IA,IC,K,1)&
-          + RKINT(RAC,IA,IC,RBD,IB,ID,K,0) + RKINT(RBD,IB,ID,RAC,IA,IC,K,0))*&
-         HALF
-      RETURN
+   23 continue
+      if (ia == ic) then
+         do i = 1, mxrbd
+            rbd(i) = rbd(i) + pf(i,id)*qf(i,ib)
+         end do
+         brra = (rkint(rac,ia,ic,rbd,ib,id,k,0) + rkint(rbd,ib,id,rac,ia,ic,k,0&
+            ) + rkint(rac,ia,ic,rbd,ib,id,k,2) + rkint(rbd,ib,id,rac,ia,ic,k,2)&
+            )*half
+         return
+      endif
+      do i = 1, mxrac
+         rac(i) = rac(i) + pf(i,ic)*qf(i,ia)
+      end do
+      brra = (rkint(rac,ia,ic,rbd,ib,id,k,1) + rkint(rbd,ib,id,rac,ia,ic,k,1)&
+          + rkint(rac,ia,ic,rbd,ib,id,k,0) + rkint(rbd,ib,id,rac,ia,ic,k,0))*&
+         half
+      return
 !
 !   ITYPE = 4
 !
-   24 CONTINUE
-      BRRA = RKINT(RAC,IA,IC,RBD,IB,ID,K,0) + RKINT(RBD,IB,ID,RAC,IA,IC,K,0)
-      RETURN
+   24 continue
+      brra = rkint(rac,ia,ic,rbd,ib,id,k,0) + rkint(rbd,ib,id,rac,ia,ic,k,0)
+      return
 !
 !   ITYPE = 5
 !
-   25 CONTINUE
-      IF (IA==ID .AND. IC==IB) GO TO 10
-    9 CONTINUE
-      BRRA = TWO*RKINT(RAC,IA,IC,RBD,IB,ID,K,1)
-      RETURN
-   10 CONTINUE
-      BRRA = RKINT(RAC,IA,IC,RBD,IB,ID,K,1) + RKINT(RBD,IB,ID,RAC,IA,IC,K,1)
-      RETURN
+   25 continue
+      if (ia==id .and. ic==ib) go to 10
+    9 continue
+      brra = two*rkint(rac,ia,ic,rbd,ib,id,k,1)
+      return
+   10 continue
+      brra = rkint(rac,ia,ic,rbd,ib,id,k,1) + rkint(rbd,ib,id,rac,ia,ic,k,1)
+      return
 !
 !   ITYPE = 6
 !
-   26 CONTINUE
-      BRRA = SKINT(RAC,IA,IC,RBD,IB,ID,K,1)
-      RETURN
+   26 continue
+      brra = skint(rac,ia,ic,rbd,ib,id,k,1)
+      return
 !
-      END FUNCTION BRRA
+      end function brra

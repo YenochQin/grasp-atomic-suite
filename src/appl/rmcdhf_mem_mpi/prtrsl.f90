@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE PRTRSL
+      subroutine prtrsl
 !                                                                      *
 !   This subroutine is now called only in GETOLD to print out all
 !   orbitals so that the user can do cut-and-paste in supplying the
@@ -19,54 +19,54 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE orb_C
-      USE fixd_C
-      USE iounit_C
+      use orb_c
+      use fixd_c
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE convrt_I
-      IMPLICIT NONE
+      use convrt_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IEND, I, LOC, IBEG, LENTH
-      CHARACTER :: RECORD*80, CNUM*2
+      integer :: iend, i, loc, ibeg, lenth
+      character :: record*80, cnum*2
 !-----------------------------------------------
 !
 !
 !   Print the list of all subshell radial wavefunctions
 !
-      IEND = 0
-      DO I = 1, NW
+      iend = 0
+      do i = 1, nw
 !         LOC = IORDER(I)
-         LOC = I
+         loc = i
 ! For the commenting-out of the IF...ENDIF, see comments in the header
 !         IF (.NOT. LFIX(LOC)) THEN
-         IF (IEND > 75) THEN
-            WRITE (ISTDE, *) RECORD(1:IEND)
-            IEND = 0
-         ENDIF
-         IF (IEND > 0) THEN
-            IBEG = IEND + 1
-            IEND = IBEG
-            RECORD(IBEG:IEND) = ' '
-         ENDIF
-         IBEG = IEND + 1
-         CALL CONVRT (NP(LOC), CNUM, LENTH)
-         IEND = IBEG + LENTH - 1
-         RECORD(IBEG:IEND) = CNUM(1:LENTH)
-         IF (NAK(LOC) < 0) THEN
-            LENTH = 1
-         ELSE
-            LENTH = 2
-         ENDIF
-         IBEG = IEND + 1
-         IEND = IBEG + LENTH - 1
-         RECORD(IBEG:IEND) = NH(LOC)(1:LENTH)
+         if (iend > 75) then
+            write (istde, *) record(1:iend)
+            iend = 0
+         endif
+         if (iend > 0) then
+            ibeg = iend + 1
+            iend = ibeg
+            record(ibeg:iend) = ' '
+         endif
+         ibeg = iend + 1
+         call convrt (np(loc), cnum, lenth)
+         iend = ibeg + lenth - 1
+         record(ibeg:iend) = cnum(1:lenth)
+         if (nak(loc) < 0) then
+            lenth = 1
+         else
+            lenth = 2
+         endif
+         ibeg = iend + 1
+         iend = ibeg + lenth - 1
+         record(ibeg:iend) = nh(loc)(1:lenth)
 !         ENDIF
-      END DO
-      IF (IEND > 1) WRITE (ISTDE, *) RECORD(1:IEND)
+      end do
+      if (iend > 1) write (istde, *) record(1:iend)
 !
-      RETURN
-      END SUBROUTINE PRTRSL
+      return
+      end subroutine prtrsl

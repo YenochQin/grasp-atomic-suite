@@ -1,16 +1,16 @@
-      MODULE setham_I
-      INTERFACE
+      module setham_i
+      interface
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:04:58   1/ 3/07
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      SUBROUTINE SETHAM (myid, nprocs, jblock, ELSTO,ICSTRT, nelmntt,  &
+      subroutine setham (myid, nprocs, jblock, elsto,icstrt, nelmntt,  &
                          atwinv,slf_en)
-      USE vast_kind_param,   ONLY: DOUBLE, LONG
-      INTEGER(LONG)       :: NELMNTT
-      INTEGER             :: JBLOCK, ICSTRT
-      INTEGER, INTENT(IN) :: MYID, NPROCS
-      REAL(DOUBLE) :: ELSTO, ATWINV
-      REAL(DOUBLE), DIMENSION(*) :: slf_en
-      END SUBROUTINE SETHAM
-      END INTERFACE
-      END MODULE
+      use vast_kind_param,   only: double, long
+      integer(long)       :: nelmntt
+      integer             :: jblock, icstrt
+      integer, intent(in) :: myid, nprocs
+      real(double) :: elsto, atwinv
+      real(double), dimension(*) :: slf_en
+      end subroutine setham
+      end interface
+      end module

@@ -11,7 +11,7 @@
 !     J. Olsen, M.R. Godefroid, P. Jonsson, P.A. Malmqvist and         *
 !     C. Froese Fischer, Phys. Rev. E, 4499 (1995)                     *
 !                                                                      *
-      PROGRAM BIOTR
+      program biotr
 !                                                                      *
 !     Program written by                                               *
 !                                                                      *
@@ -30,65 +30,65 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW, NNNP
-      USE default_C,       ONLY: ndef, ndump
-      USE sbdat_C,         ONLY: NLMAX, KAMAX, NSHLII, NSHLFF
-      USE biorb_C,         ONLY: nwii, nwff
-      USE wave_C,          ONLY: pfii, qfii, pfff, qfff
-      USE cimat_C,         ONLY: cici, cfci
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw, nnnp
+      use default_c,       only: ndef, ndump
+      use sbdat_c,         only: nlmax, kamax, nshlii, nshlff
+      use biorb_c,         only: nwii, nwff
+      use wave_c,          only: pfii, qfii, pfff, qfff
+      use cimat_c,         only: cici, cfci
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setmc_I
-      USE setcon_I
-      USE setiso_I
-      USE radpar_I
-      USE radgrd_I
-      USE setqic_I
-      USE fname_I
-      USE setcslb_I
-      USE tcsl_I
-      USE kapdata_I
-      USE lodrwfi_I
-      USE lodrwff_I
-      USE brkt_I
-      USE gets_I
-      USE biotr1_I
-      USE radfile_I
-      USE genmcp_I
-      USE starttime_I, ONLY: starttime
-      USE stoptime_I, ONLY: stoptime
-      IMPLICIT NONE
+      use getyn_i
+      use setmc_i
+      use setcon_i
+      use setiso_i
+      use radpar_i
+      use radgrd_i
+      use setqic_i
+      use fname_i
+      use setcslb_i
+      use tcsl_i
+      use kapdata_i
+      use lodrwfi_i
+      use lodrwff_i
+      use brkt_i
+      use gets_i
+      use biotr1_i
+      use radfile_i
+      use genmcp_i
+      use starttime_i, only: starttime
+      use stoptime_i, only: stoptime
+      implicit none
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !GG      INTEGER, PARAMETER :: LWORK1 = 100000
-      INTEGER, PARAMETER :: LWORK1 = 10000000
+      integer, parameter :: lwork1 = 10000000
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, DIMENSION(NLMAX) :: NINSHLI, NINSHLF
-      INTEGER :: NTESTG, NTESTL, NTEST, INPCI, NCORE1, NCORE2, MXL, K
-      INTEGER :: NCOUNT1
-      REAL(DOUBLE), DIMENSION(LWORK1) :: WORK
-      REAL(DOUBLE), DIMENSION(NLMAX*NLMAX) :: CISHL
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW)   :: S
-      REAL(DOUBLE), DIMENSION(NLMAX*NLMAX) :: CFSHL
-      LOGICAL :: YES
-      CHARACTER, DIMENSION(2) :: NAME*24
-      CHARACTER(LEN=128) :: ISOFILE
+      integer, dimension(nlmax) :: ninshli, ninshlf
+      integer :: ntestg, ntestl, ntest, inpci, ncore1, ncore2, mxl, k
+      integer :: ncount1
+      real(double), dimension(lwork1) :: work
+      real(double), dimension(nlmax*nlmax) :: cishl
+      real(double), dimension(nnnw,nnnw)   :: s
+      real(double), dimension(nlmax*nlmax) :: cfshl
+      logical :: yes
+      character, dimension(2) :: name*24
+      character(len=128) :: isofile
 !-----------------------------------------------
 !
-      ISOFILE = 'isodata'
+      isofile = 'isodata'
 !   Debug flags
 !
-      NTESTG = 0
-      NTESTL = 0
-      NTEST = MAX0(NTESTL,NTESTG)
+      ntestg = 0
+      ntestl = 0
+      ntest = max0(ntestl,ntestg)
 !
-      CALL STARTTIME (ncount1, 'BIOTRANSFORM')
+      call starttime (ncount1, 'BIOTRANSFORM')
       write(*,*)
       write(*,*) 'RBIOTRANSFORM'
       write(*,*) 'This program transforms the initial and final wave'
@@ -98,142 +98,142 @@
       write(*,*) '              name2.c, name2.w, name2.(c)m         '
       print*,'              name1.TB, name2.TB (optional angular files)'
       write(*,*) 'Output files: name1.bw, name1.(c)bm, '
-      WRITE(*,*) '              name2.bw, name2.c(bm)'
+      write(*,*) '              name2.bw, name2.c(bm)'
       write(*,*) '              name1.TB, name2.TB (angular files)'
       write(*,*)
 
-      WRITE (6, *) 'Default settings?'
-      YES = GETYN()
-      WRITE (6, *)
-      IF (YES) THEN
-         NDEF = 0
-         NDUMP = 1
-      ELSE
-         NDEF = 1
-         WRITE (6, *) 'Dump angular data on file?'
-         YES = GETYN()
-         WRITE (6, *)
-         IF (YES) THEN
-            NDUMP = 1
-         ELSE
-            NDUMP = 0
-         ENDIF
-      ENDIF
-      WRITE (6, *) 'Input from a CI calculation?'
-      YES = GETYN()
-      WRITE (6, *)
-      IF (YES) THEN
-         INPCI = 0
-      ELSE
-         INPCI = 1
-      ENDIF
+      write (6, *) 'Default settings?'
+      yes = getyn()
+      write (6, *)
+      if (yes) then
+         ndef = 0
+         ndump = 1
+      else
+         ndef = 1
+         write (6, *) 'Dump angular data on file?'
+         yes = getyn()
+         write (6, *)
+         if (yes) then
+            ndump = 1
+         else
+            ndump = 0
+         endif
+      endif
+      write (6, *) 'Input from a CI calculation?'
+      yes = getyn()
+      write (6, *)
+      if (yes) then
+         inpci = 0
+      else
+         inpci = 1
+      endif
 !
 !   Perform machine- and installation-dependent setup
 !
-      CALL SETMC
+      call setmc
 !
 !   Set up the physical constants
 !
-      CALL SETCON
+      call setcon
 !
 !   Open, check, load data from, and close the  .iso  file
 !
-      CALL SETISO (ISOFILE)
+      call setiso (isofile)
 !
 !   Determine the parameters controlling the radial grid
 !
-      CALL RADPAR
+      call radpar
 !
 !   Generate the radial grid
 !
-      CALL RADGRD
+      call radgrd
 !
 !   Set up the coefficients for the numerical procedures
 !
-      CALL SETQIC
+      call setqic
 !
 !   Obtain the names of the initial and final state files
 !   and open files where the transformed orbitals and CI
 !   coefficients are to be dumped
 !
-      CALL FNAME (NAME)
+      call fname (name)
 !
 !   Open, check, load data from and close the initial state CSL file.
 !
-      CALL SETCSLB (NAME(1), NCORE1,1)
+      call setcslb (name(1), ncore1,1)
 !
 !   Transfer the data to the initial state COMMON
 !
-      CALL TCSL (1)
+      call tcsl (1)
 !
 !   Open, check, load data from and close the final state CSL file.
 !
-      CALL SETCSLB (NAME(2), NCORE2,2)
+      call setcslb (name(2), ncore2,2)
 !
 !   Transfer the data to the final state COMMON
 !
-      CALL TCSL (2)
+      call tcsl (2)
 !
 !   Determine the number of kappa quantum numbers and
 !   the number of orbitals for each kappa quantum number
 !   for the initial state and final states
 !
-      CALL KAPDATA (NTESTG, NCORE1, NCORE2)
+      call kapdata (ntestg, ncore1, ncore2)
 !
 !   Read the the radial orbitals for the initial state
 !
-      CALL LODRWFI (NAME(1), NTESTG)
+      call lodrwfi (name(1), ntestg)
 !
 !   Read the the radial orbitals for the initial state
 !
-      CALL LODRWFF (NAME(2), NTESTG)
+      call lodrwff (name(2), ntestg)
 !
 !   Calculate the radial overlap matrices
 !
-      WRITE (*, *)
-      WRITE (*, *) ' ******************************************'
-      WRITE (*, *) '  Overlap matrix before orbital rotations'
-      WRITE (*, *) ' *****************************************'
-      WRITE (*, *)
+      write (*, *)
+      write (*, *) ' ******************************************'
+      write (*, *) '  Overlap matrix before orbital rotations'
+      write (*, *) ' *****************************************'
+      write (*, *)
 
-      CALL BRKT
+      call brkt
 
-      CALL GETS (S, NWII, NWFF)
+      call gets (s, nwii, nwff)
 
 !
 !   Once we have the overlap matrices
 !   we can manipulate the initial and final state separately.
 !
-      MXL = KAMAX
+      mxl = kamax
 !
 !. Calculate biorthonormal orbitals, and orbital matrix
 !. for counter transformation of CI coefficients.
 !
-      CALL BIOTR1 (PFII, QFII, NSHLII, NINSHLI, PFFF, QFFF, &
-         NSHLFF, NINSHLF, NNNP, KAMAX, WORK, LWORK1, NTESTG, &
-         CISHL, CICI, CFSHL, CFCI)
-      WRITE (*, *)
-      WRITE (*, *) ' ****************************************'
-      WRITE (*, *) '  Overlap matrix after orbital rotations'
-      WRITE (*, *) ' ****************************************'
-      WRITE (*, *)
+      call biotr1 (pfii, qfii, nshlii, ninshli, pfff, qfff, &
+         nshlff, ninshlf, nnnp, kamax, work, lwork1, ntestg, &
+         cishl, cici, cfshl, cfci)
+      write (*, *)
+      write (*, *) ' ****************************************'
+      write (*, *) '  Overlap matrix after orbital rotations'
+      write (*, *) ' ****************************************'
+      write (*, *)
 
-      CALL BRKT
+      call brkt
 !
 !  Write the transformed radial functions to file
 !
-      CALL RADFILE (NAME)
+      call radfile (name)
 !
 !   Obtain one-electron coupling coefficients for the initial state.
 !   The coefficients are dumped on files one kappa in turn and
 !   thus the different kappa can be manipulated independently.
 !   The interface with the transformation part is in the routine mcp
 !
-      CALL GENMCP (NAME(1), 1, NTESTG, INPCI)
+      call genmcp (name(1), 1, ntestg, inpci)
 !***** added by Yu Zou, Feb.18,2000 ***********
-      DO K = 1, KAMAX
-         CLOSE(UNIT=80 + K, STATUS='DELETE')
-      END DO
+      do k = 1, kamax
+         close(unit=80 + k, status='DELETE')
+      end do
 !***** added by Yu Zou, Feb.18,2000 ***********
 !
 !   Obtain one-electron coupling coefficients for the final state.
@@ -241,12 +241,12 @@
 !   thus the different kappa can be manipulated independently.
 !   The interface with the transformation part is in the routine mcp
 !
-      CALL GENMCP (NAME(2), 2, NTESTG, INPCI)
+      call genmcp (name(2), 2, ntestg, inpci)
 
-      DO K = 1, KAMAX
-         CLOSE(UNIT=80 + K, STATUS='DELETE')
-      END DO
-      CALL STOPTIME (ncount1, 'BIOTRANSFORM')
+      do k = 1, kamax
+         close(unit=80 + k, status='DELETE')
+      end do
+      call stoptime (ncount1, 'BIOTRANSFORM')
 
-      STOP
-      END PROGRAM BIOTR
+      stop
+      end program biotr

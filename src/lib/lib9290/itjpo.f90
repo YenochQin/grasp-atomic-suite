@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION ITJPO (ICSF)
+      integer function itjpo (icsf)
 !                                                                      *
 !   ITJPO is the value of 2J+1 for CSF number ICSF.                    *
 !                                                                      *
@@ -14,24 +14,24 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE parameter_def, ONLY: NNNW
-      USE STAT_C,        ONLY: JCUPA
-      USE IOUNIT_C,      ONLY: ISTDE
-      USE orb_C,         ONLY: NCF
-      IMPLICIT NONE
+      use parameter_def, only: nnnw
+      use stat_c,        only: jcupa
+      use iounit_c,      only: istde
+      use orb_c,         only: ncf
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER       :: ICSF
+      integer       :: icsf
 !-----------------------------------------------
-      IF (ICSF>=1 .AND. ICSF<=NCF) THEN
-        itjpo = jcupa(NNNW,icsf)
-        IF (ITJPO > 127) ITJPO = 256 - ITJPO
-        ITJPO = IABS (ITJPO)
-      ELSE
-         WRITE (ISTDE, *) 'ITJPO: Argument ICSF is out of range.'
-         STOP
-      ENDIF
+      if (icsf>=1 .and. icsf<=ncf) then
+        itjpo = jcupa(nnnw,icsf)
+        if (itjpo > 127) itjpo = 256 - itjpo
+        itjpo = iabs (itjpo)
+      else
+         write (istde, *) 'ITJPO: Argument ICSF is out of range.'
+         stop
+      endif
 !
-      RETURN
-      END FUNCTION ITJPO
+      return
+      end function itjpo

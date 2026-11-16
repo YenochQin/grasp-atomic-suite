@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE NINE0(J1,J2,J3,L1,L2,L3,K1,K2,K3,AA)
+      subroutine nine0(j1,j2,j3,l1,l2,l3,k1,k2,k3,aa)
 !                                                                  *
 !     THIS PACKAGE DETERMINES THE VALUES OF 9j COEFFICIENT         *
 !                                                                  *
@@ -18,65 +18,65 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, ONE
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, one
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE sixj_I
-      IMPLICIT NONE
+      use sixj_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J1, J2, J3, L1, L2, L3, K1, K2, K3
-      REAL(DOUBLE), INTENT(OUT) :: AA
+      integer  :: j1, j2, j3, l1, l2, l3, k1, k2, k3
+      real(double), intent(out) :: aa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: IFA
-      REAL(DOUBLE) :: A, B
+      integer      :: ifa
+      real(double) :: a, b
 !-----------------------------------------------
-      IF (J1 == 0) THEN
-         CALL SIXJ (L2, K2, J2, K3, L3, L1, 0, A)
-         B = DBLE((J2 + 1)*(L1 + 1))
-         IFA = K2 + J2 + L3 + L1
-      ELSE IF (J2 == 0) THEN
-         CALL SIXJ (L3, K3, J3, K1, L1, L2, 0, A)
-         B = DBLE((J3 + 1)*(L2 + 1))
-         IFA = K3 + J3 + L1 + L2
-      ELSE IF (J3 == 0) THEN
-         CALL SIXJ (L1, K1, J1, K2, L2, L3, 0, A)
-         B = DBLE((J1 + 1)*(L3 + 1))
-         IFA = K1 + J1 + L2 + L3
-      ELSE IF (L1 == 0) THEN
-         CALL SIXJ (K2, J2, L2, J3, K3, K1, 0, A)
-         B = DBLE((L2 + 1)*(K1 + 1))
-         IFA = J2 + L2 + K3 + K1
-      ELSE IF (L2 == 0) THEN
-         CALL SIXJ (K3, J3, L3, J1, K1, K2, 0, A)
-         B = DBLE((L3 + 1)*(K2 + 1))
-         IFA = J3 + L3 + K1 + K2
-      ELSE IF (L3 == 0) THEN
-         CALL SIXJ (K1, J1, L1, J2, K2, K3, 0, A)
-         B = DBLE((L1 + 1)*(K3 + 1))
-         IFA = J1 + L1 + K2 + K3
-      ELSE IF (K1 == 0) THEN
-         CALL SIXJ (J2, J3, J1, L3, L2, K2, 0, A)
-         B = DBLE((J1 + 1)*(K2 + 1))
-         IFA = J3 + J1 + L2 + K2
-      ELSE IF (K2 == 0) THEN
-         CALL SIXJ (J3, J1, J2, L1, L3, K3, 0, A)
-         B = DBLE((J2 + 1)*(K3 + 1))
-         IFA = J1 + J2 + L3 + K3
-      ELSE IF (K3 == 0) THEN
-         CALL SIXJ (J1, J2, J3, L2, L1, K1, 0, A)
-         B = DBLE((J3 + 1)*(K1 + 1))
-         IFA = J2 + J3 + L1 + K1
-      ELSE
-         A = ZERO
-         B = ONE
-      ENDIF
-      AA = A/DSQRT(B)
-      IF (MOD(IFA,4) /= 0) AA = -AA
-      RETURN
-      END SUBROUTINE NINE0
+      if (j1 == 0) then
+         call sixj (l2, k2, j2, k3, l3, l1, 0, a)
+         b = dble((j2 + 1)*(l1 + 1))
+         ifa = k2 + j2 + l3 + l1
+      else if (j2 == 0) then
+         call sixj (l3, k3, j3, k1, l1, l2, 0, a)
+         b = dble((j3 + 1)*(l2 + 1))
+         ifa = k3 + j3 + l1 + l2
+      else if (j3 == 0) then
+         call sixj (l1, k1, j1, k2, l2, l3, 0, a)
+         b = dble((j1 + 1)*(l3 + 1))
+         ifa = k1 + j1 + l2 + l3
+      else if (l1 == 0) then
+         call sixj (k2, j2, l2, j3, k3, k1, 0, a)
+         b = dble((l2 + 1)*(k1 + 1))
+         ifa = j2 + l2 + k3 + k1
+      else if (l2 == 0) then
+         call sixj (k3, j3, l3, j1, k1, k2, 0, a)
+         b = dble((l3 + 1)*(k2 + 1))
+         ifa = j3 + l3 + k1 + k2
+      else if (l3 == 0) then
+         call sixj (k1, j1, l1, j2, k2, k3, 0, a)
+         b = dble((l1 + 1)*(k3 + 1))
+         ifa = j1 + l1 + k2 + k3
+      else if (k1 == 0) then
+         call sixj (j2, j3, j1, l3, l2, k2, 0, a)
+         b = dble((j1 + 1)*(k2 + 1))
+         ifa = j3 + j1 + l2 + k2
+      else if (k2 == 0) then
+         call sixj (j3, j1, j2, l1, l3, k3, 0, a)
+         b = dble((j2 + 1)*(k3 + 1))
+         ifa = j1 + j2 + l3 + k3
+      else if (k3 == 0) then
+         call sixj (j1, j2, j3, l2, l1, k1, 0, a)
+         b = dble((j3 + 1)*(k1 + 1))
+         ifa = j2 + j3 + l1 + k1
+      else
+         a = zero
+         b = one
+      endif
+      aa = a/dsqrt(b)
+      if (mod(ifa,4) /= 0) aa = -aa
+      return
+      end subroutine nine0

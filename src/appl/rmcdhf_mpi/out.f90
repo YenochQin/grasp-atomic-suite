@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE OUT(J, JP, P, Q)
+      subroutine out(j, jp, p, q)
 !                                                                      *
 !   This subroutine carries out the step-by-step outward integration   *
 !   of a pair of inhomogeneous Dirac radial equations.                 *
@@ -23,67 +23,67 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNP
-      USE grid_C,           ONLY: h, rpor
-      USE int_C,            ONLY: TF ,TG ,XU, XV
-      USE orb_C
-      IMPLICIT NONE
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnp
+      use grid_c,           only: h, rpor
+      use int_c,            only: tf ,tg ,xu, xv
+      use orb_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: J
-      INTEGER , INTENT(IN) :: JP
-      REAL(DOUBLE) , INTENT(INOUT) :: P(NNNP)
-      REAL(DOUBLE) , INTENT(INOUT) :: Q(NNNP)
+      integer , intent(in) :: j
+      integer , intent(in) :: jp
+      real(double) , intent(inout) :: p(nnnp)
+      real(double) , intent(inout) :: q(nnnp)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE) :: DKHB2, DKHB2F, CPI, CMI, PI, QI, TFI, TGI, CPIM1, CMIM1, &
-         PIM1, QIM1, TFIM1, TGIM1, UCIM1, UDIM1, UEI
+      integer :: i
+      real(double) :: dkhb2, dkhb2f, cpi, cmi, pi, qi, tfi, tgi, cpim1, cmim1, &
+         pim1, qim1, tfim1, tgim1, ucim1, udim1, uei
 !-----------------------------------------------
 !
 !   One global initialization
 !
-      DKHB2 = 0.5D00*H*DBLE(NAK(J))
+      dkhb2 = 0.5d00*h*dble(nak(j))
 !
 !   Tabulate P(r) and Q(r) by step-by-step integration
 !
 !   Initializations: set quantities for I = 3
 !
-      I = 3
-      DKHB2F = DKHB2*RPOR(I)
-      CPI = 1.0D00 + DKHB2F
-      CMI = 1.0D00 - DKHB2F
-      PI = P(I)
-      QI = Q(I)
-      TFI = TF(I)
-      TGI = TG(I)
+      i = 3
+      dkhb2f = dkhb2*rpor(i)
+      cpi = 1.0d00 + dkhb2f
+      cmi = 1.0d00 - dkhb2f
+      pi = p(i)
+      qi = q(i)
+      tfi = tf(i)
+      tgi = tg(i)
 !
 !   March out to from I = 4 to I = JP
 !
 !XHH Use doo-loop
-      DO I = 4, JP
-         CPIM1 = CPI
-         CMIM1 = CMI
-         DKHB2F = DKHB2*RPOR(I)
-         CPI = 1.0D00 + DKHB2F
-         CMI = 1.0D00 - DKHB2F
-         PIM1 = PI
-         QIM1 = QI
-         TFIM1 = TFI
-         TGIM1 = TGI
-         TFI = TF(I)
-         TGI = TG(I)
-         UCIM1 = CMIM1*PIM1 - TFIM1*QIM1 + XU(I-1)
-         UDIM1 = CPIM1*QIM1 - TGIM1*PIM1 + XV(I-1)
-         UEI = CPI*CMI - TFI*TGI
-         PI = (CMI*UCIM1 - TFI*UDIM1)/UEI
-         QI = (CPI*UDIM1 - TGI*UCIM1)/UEI
-         P(I) = PI
-         Q(I) = QI
-      END DO
+      do i = 4, jp
+         cpim1 = cpi
+         cmim1 = cmi
+         dkhb2f = dkhb2*rpor(i)
+         cpi = 1.0d00 + dkhb2f
+         cmi = 1.0d00 - dkhb2f
+         pim1 = pi
+         qim1 = qi
+         tfim1 = tfi
+         tgim1 = tgi
+         tfi = tf(i)
+         tgi = tg(i)
+         ucim1 = cmim1*pim1 - tfim1*qim1 + xu(i-1)
+         udim1 = cpim1*qim1 - tgim1*pim1 + xv(i-1)
+         uei = cpi*cmi - tfi*tgi
+         pi = (cmi*ucim1 - tfi*udim1)/uei
+         qi = (cpi*udim1 - tgi*ucim1)/uei
+         p(i) = pi
+         q(i) = qi
+      end do
 !
-      RETURN
-      END SUBROUTINE OUT
+      return
+      end subroutine out

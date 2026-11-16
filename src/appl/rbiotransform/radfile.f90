@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE RADFILE(NAME)
+      subroutine radfile(name)
 !                                                                      *
 !  This subroutine outputs the transformed radial orbitals             *
 !                                                                      *
@@ -13,52 +13,52 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE biorb_C
-      USE grid_C
-      USE orb_C
-      USE wave_C
+      use vast_kind_param, only:  double
+      use biorb_c
+      use grid_c
+      use orb_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER, INTENT(IN) :: NAME(2)*24
+      character, intent(in) :: name(2)*24
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, K, I
+      integer :: j, k, i
 !-----------------------------------------------
 !
-      J = INDEX(NAME(1),' ')
-      OPEN(UNIT=30, FILE=NAME(1)(1:J-1)//'.bw', FORM='UNFORMATTED', STATUS=&
-         'UNKNOWN', POSITION='asis')
+      j = index(name(1),' ')
+      open(unit=30, file=name(1)(1:j-1)//'.bw', form='UNFORMATTED', status=&
+         'UNKNOWN', position='asis')
 
-      WRITE (30) 'G92RWF'
-      WRITE (*, *) 'NWII', NWII
-      DO K = 1, NWII
-         WRITE (30) NPII(K), NAKII(K), EII(K), MFII(K)
-         WRITE (30) PZII(K), (PFII(I,K),I=1,MFII(K)), (QFII(I,K),I=1,MFII(K))
-         WRITE (30) (R(I),I=1,MFII(K))
-      END DO
+      write (30) 'G92RWF'
+      write (*, *) 'NWII', nwii
+      do k = 1, nwii
+         write (30) npii(k), nakii(k), eii(k), mfii(k)
+         write (30) pzii(k), (pfii(i,k),i=1,mfii(k)), (qfii(i,k),i=1,mfii(k))
+         write (30) (r(i),i=1,mfii(k))
+      end do
 
-      CLOSE(30)
+      close(30)
 
-      J = INDEX(NAME(2),' ')
-      OPEN(UNIT=30, FILE=NAME(2)(1:J-1)//'.bw', FORM='UNFORMATTED', STATUS=&
-         'UNKNOWN', POSITION='asis')
+      j = index(name(2),' ')
+      open(unit=30, file=name(2)(1:j-1)//'.bw', form='UNFORMATTED', status=&
+         'UNKNOWN', position='asis')
 
-      WRITE (30) 'G92RWF'
-      WRITE (*, *) 'NWFF', NWFF
-      DO K = 1, NWFF
-         WRITE (30) NPFF(K), NAKFF(K), EFF(K), MFFF(K)
-         WRITE (30) PZFF(K),(PFFF(I,K),I=1,MFFF(K)),(QFFF(I,K),I=1,MFFF(K))
-         WRITE (30) (R(I),I=1,MFFF(K))
-      END DO
+      write (30) 'G92RWF'
+      write (*, *) 'NWFF', nwff
+      do k = 1, nwff
+         write (30) npff(k), nakff(k), eff(k), mfff(k)
+         write (30) pzff(k),(pfff(i,k),i=1,mfff(k)),(qfff(i,k),i=1,mfff(k))
+         write (30) (r(i),i=1,mfff(k))
+      end do
 
-      CLOSE(30)
+      close(30)
 
-      RETURN
-      END SUBROUTINE RADFILE
+      return
+      end subroutine radfile

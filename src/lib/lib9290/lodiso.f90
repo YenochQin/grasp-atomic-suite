@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE LODISO
+      subroutine lodiso
 !                                                                      *
 !   Loads the data from the  .iso  file.                               *
 !                                                                      *
@@ -13,61 +13,61 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE DEF_C
-      USE NPAR_C
-      USE NSMDAT_C,        ONLY: SQN, DMOMNM, QMOMB
-      IMPLICIT NONE
+      use vast_kind_param, only: double
+      use def_c
+      use npar_c
+      use nsmdat_c,        only: sqn, dmomnm, qmomb
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE) :: A, APARM, CPARM, EMNAMU
+      real(double) :: a, aparm, cparm, emnamu
 !
 !   Read and echo pertinent information from  .iso  file
 !
 !   Atomic number
 !
-      READ (22, *) Z
+      read (22, *) z
 !
 !   Nuclear geometry
 !
-      READ (22, *)
-      READ (22, *) A
-      READ (22, *)
-      READ (22, *) APARM
-      READ (22, *)
-      READ (22, *) CPARM
+      read (22, *)
+      read (22, *) a
+      read (22, *)
+      read (22, *) aparm
+      read (22, *)
+      read (22, *) cparm
 !
-      IF (A /= 0.D0) THEN
-         NPARM = 2
-         PARM(1) = CPARM*FMTOAU
-         PARM(2) = APARM*FMTOAU
-      ELSE
-         NPARM = 0
-      ENDIF
+      if (a /= 0.d0) then
+         nparm = 2
+         parm(1) = cparm*fmtoau
+         parm(2) = aparm*fmtoau
+      else
+         nparm = 0
+      endif
 !
 !   Nuclear mass
 !
-      READ (22, *)
-      READ (22, *) EMNAMU
+      read (22, *)
+      read (22, *) emnamu
 
 !
-      IF (EMNAMU /= 0.D0) THEN
-         EMN = EMNAMU/AUMAMU
-      ELSE
-         EMN = 0.D0
-      ENDIF
+      if (emnamu /= 0.d0) then
+         emn = emnamu/aumamu
+      else
+         emn = 0.d0
+      endif
 
 
 !
 !   Nuclear spin and moments
 !
-      READ (22, *)
-      READ (22, *) SQN
-      READ (22, *)
-      READ (22, *) DMOMNM
-      READ (22, *)
-      READ (22, *) QMOMB
+      read (22, *)
+      read (22, *) sqn
+      read (22, *)
+      read (22, *) dmomnm
+      read (22, *)
+      read (22, *) qmomb
 !
 !   Grid parameters from isodata
 !   Jon Grumer (Lund, 2013)
@@ -81,5 +81,5 @@
 !     READ (22,*)
 !     READ (22,*) N
 
-      RETURN
-      END SUBROUTINE LODISO
+      return
+      end subroutine lodiso

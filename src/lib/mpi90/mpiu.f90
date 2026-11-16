@@ -11,21 +11,21 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      USE mpi
-      IMPLICIT NONE
-      INTEGER, INTENT(OUT)  :: myid,  nprocs, lenhost
-      CHARACTER(LEN=*), INTENT(OUT) :: host
+      use mpi
+      implicit none
+      integer, intent(out)  :: myid,  nprocs, lenhost
+      character(len=*), intent(out) :: host
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
       integer ierr
 
-      call MPI_Init (ierr)
-      call MPI_Comm_rank (MPI_COMM_WORLD, myid, ierr)
-      call MPI_Comm_size (MPI_COMM_WORLD, nprocs, ierr)
-      call MPI_Get_processor_name (host, lenhost, ierr)
-      if (ierr .ne. MPI_SUCCESS) print *, ' ierr=', ierr, ' id=', myid
+      call mpi_init (ierr)
+      call mpi_comm_rank (mpi_comm_world, myid, ierr)
+      call mpi_comm_size (mpi_comm_world, nprocs, ierr)
+      call mpi_get_processor_name (host, lenhost, ierr)
+      if (ierr .ne. mpi_success) print *, ' ierr=', ierr, ' id=', myid
 
       return
       end
@@ -37,30 +37,30 @@
 ! Shared-filesystem-safe MPI startup for the post-processing programs.
 ! Unlike startmpi2, this variant does not change the working directory.
 !***********************************************************************
-      USE mpi
-      USE mpiu_I, ONLY: startmpi
-      IMPLICIT NONE
-      INTEGER :: myid, nprocs, lenhost, ncount1
-      CHARACTER(LEN=*), INTENT(OUT) :: host
-      CHARACTER(LEN=*), INTENT(IN) :: progname, description
-      CHARACTER(LEN=*), INTENT(IN) :: infiledesc, outfiledesc
-      LOGICAL, INTENT(IN) :: quiet_workers
-      INTEGER :: ncount_rate, ncount_max, iouterr
+      use mpi
+      use mpiu_i, only: startmpi
+      implicit none
+      integer :: myid, nprocs, lenhost, ncount1
+      character(len=*), intent(out) :: host
+      character(len=*), intent(in) :: progname, description
+      character(len=*), intent(in) :: infiledesc, outfiledesc
+      logical, intent(in) :: quiet_workers
+      integer :: ncount_rate, ncount_max, iouterr
 
-      CALL startmpi (myid, nprocs, host, lenhost)
-      CALL SYSTEM_CLOCK (ncount1, ncount_rate, ncount_max)
+      call startmpi (myid, nprocs, host, lenhost)
+      call system_clock (ncount1, ncount_rate, ncount_max)
 
-      IF (myid .EQ. 0) THEN
-         WRITE (6, *)
-         WRITE (6, *) TRIM(progname)
-         WRITE (6, *) TRIM(description)
-         WRITE (6, *) 'Input files:  ' // TRIM(infiledesc)
-         WRITE (6, *) 'Output files: ' // TRIM(outfiledesc)
-         WRITE (6, *) 'Running on ', nprocs, ' MPI ranks'
-      ELSE IF (quiet_workers) THEN
-         OPEN (UNIT=6, FILE='/dev/null', STATUS='OLD', ACTION='WRITE', &
-              IOSTAT=iouterr)
-      ENDIF
+      if (myid .eq. 0) then
+         write (6, *)
+         write (6, *) trim(progname)
+         write (6, *) trim(description)
+         write (6, *) 'Input files:  ' // trim(infiledesc)
+         write (6, *) 'Output files: ' // trim(outfiledesc)
+         write (6, *) 'Running on ', nprocs, ' MPI ranks'
+      else if (quiet_workers) then
+         open (unit=6, file='/dev/null', status='OLD', action='WRITE', &
+              iostat=iouterr)
+      endif
 
       return
       end
@@ -79,15 +79,15 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      USE cpath_I, ONLY: cpath
-      USE mpiu_I, ONLY: mpix_printmsg
-      USE mpiu_I, ONLY: startmpi
-      IMPLICIT NONE
-      INTEGER, INTENT(OUT)  :: myid,  nprocs, lenhost
-      INTEGER, INTENT(OUT)  :: ncount1
-      CHARACTER(LEN=*), INTENT(OUT) :: host
-      CHARACTER(LEN=*), INTENT(IN) :: progname
-      CHARACTER(LEN=*), INTENT(OUT) :: startdir, permdir, tmpdir
+      use cpath_i, only: cpath
+      use mpiu_i, only: mpix_printmsg
+      use mpiu_i, only: startmpi
+      implicit none
+      integer, intent(out)  :: myid,  nprocs, lenhost
+      integer, intent(out)  :: ncount1
+      character(len=*), intent(out) :: host
+      character(len=*), intent(in) :: progname
+      character(len=*), intent(out) :: startdir, permdir, tmpdir
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -95,41 +95,41 @@
       character idstring*3
       character chdate*8, chtime*10, chzone*5
                !ccyymmdd  hhmmss.sss  Shhmm
-      integer  nYMDUHMSM(8)
+      integer  nymduhmsm(8)
                !Year Month Day Universal Hour Minute Sesond Millisecond
       integer lenstart, lenperm, lentmp, ncount_rate, ncount_max
 ! For printing
-      CHARACTER(LEN=80) :: msg
+      character(len=80) :: msg
 
 !=======================================================================
 !  Get processor info: myid, nprocs, host name; and print
 !=======================================================================
 
-      CALL startmpi (myid, nprocs, host, lenhost)
-      WRITE (idstring, '(I3.3)') myid
-      IF (myid .EQ. 0) THEN
+      call startmpi (myid, nprocs, host, lenhost)
+      write (idstring, '(I3.3)') myid
+      if (myid .eq. 0) then
          print *, '===================================================='
          print *, '       ', progname, ': Execution Begins ...'
          print *, '===================================================='
          print *,        'Participating nodes:'
-       ENDIF
+       endif
       msg = '  Host: ' // host(1:lenhost) // '    ID: ' // idstring
-      CALL mpix_printmsg (msg, myid, nprocs)
+      call mpix_printmsg (msg, myid, nprocs)
 
 !=======================================================================
 !  Get date, time, zone and print
 !=======================================================================
 
-      CALL DATE_AND_TIME (chdate, chtime, chzone, nYMDUHMSM)
-      IF (myid .EQ. 0) THEN
-         PRINT *
-         PRINT *, 'Date and Time:'
-      ENDIF
+      call date_and_time (chdate, chtime, chzone, nymduhmsm)
+      if (myid .eq. 0) then
+         print *
+         print *, 'Date and Time:'
+      endif
       msg = '  ' // host(1:lenhost) // ': ' // &
             '  Date: ' // chdate // &
             '  Time: ' // chtime // &
             '  Zone: ' // chzone
-      CALL mpix_printmsg (msg, myid, nprocs)
+      call mpix_printmsg (msg, myid, nprocs)
 
 !=======================================================================
 !  Set up local working dir and go there
@@ -137,37 +137,37 @@
 !     permdir - for I/O specific to node-0.
 !=======================================================================
 
-      CALL cpath (startdir, permdir, tmpdir)
+      call cpath (startdir, permdir, tmpdir)
 
-      lenstart = LEN_TRIM (startdir)
-      lenperm = LEN_TRIM (permdir)
-      lentmp = LEN_TRIM (tmpdir)
+      lenstart = len_trim (startdir)
+      lenperm = len_trim (permdir)
+      lentmp = len_trim (tmpdir)
 
-      IF (myid .EQ. 0) THEN
-         PRINT *
-         PRINT *, 'Start Dir:'
-      ENDIF
+      if (myid .eq. 0) then
+         print *
+         print *, 'Start Dir:'
+      endif
       msg = '  ' // host(1:lenhost) // ': ' // startdir(1:lenstart)
-      CALL mpix_printmsg (msg, myid, nprocs)
+      call mpix_printmsg (msg, myid, nprocs)
 
-      IF (myid .EQ. 0) THEN
-         PRINT *
-         PRINT *, 'Serial I/O Dir (node-0 only):'
-         PRINT *, '  ' // host(1:lenhost) // ': ' // permdir(1:lenperm)
-      ENDIF
+      if (myid .eq. 0) then
+         print *
+         print *, 'Serial I/O Dir (node-0 only):'
+         print *, '  ' // host(1:lenhost) // ': ' // permdir(1:lenperm)
+      endif
 
-      IF (myid .EQ. 0) THEN
-         PRINT *
-         PRINT *, 'Work Dir (Parallel I/O):'
-      ENDIF
+      if (myid .eq. 0) then
+         print *
+         print *, 'Work Dir (Parallel I/O):'
+      endif
       msg = '  ' // host(1:lenhost) // ': ' // tmpdir(1:lentmp)
-      CALL mpix_printmsg (msg, myid, nprocs)
+      call mpix_printmsg (msg, myid, nprocs)
 
 !=======================================================================
 !  Start timing - Record the wall clock
 !=======================================================================
 
-      CALL SYSTEM_CLOCK (ncount1, ncount_rate, ncount_max)
+      call system_clock (ncount1, ncount_rate, ncount_max)
       return
       end
 
@@ -175,30 +175,30 @@
       subroutine mpix_shutdown (myid, ncount1, progname)
 ! Shared-filesystem-safe MPI shutdown companion to mpix_startup.
 !***********************************************************************
-      USE mpi
-      IMPLICIT NONE
-      INTEGER, INTENT(IN) :: myid, ncount1
-      CHARACTER(LEN=*), INTENT(IN) :: progname
-      INTEGER :: ncount2, ncount_rate, ncount_max, nseconds, ierr
-      CHARACTER(LEN=8) :: chdate
-      CHARACTER(LEN=10) :: chtime
-      CHARACTER(LEN=5) :: chzone
-      INTEGER, DIMENSION(8) :: nYMDUHMSM
+      use mpi
+      implicit none
+      integer, intent(in) :: myid, ncount1
+      character(len=*), intent(in) :: progname
+      integer :: ncount2, ncount_rate, ncount_max, nseconds, ierr
+      character(len=8) :: chdate
+      character(len=10) :: chtime
+      character(len=5) :: chzone
+      integer, dimension(8) :: nymduhmsm
 
-      CALL SYSTEM_CLOCK (ncount2, ncount_rate, ncount_max)
+      call system_clock (ncount2, ncount_rate, ncount_max)
       ncount2 = ncount2 - ncount1
       nseconds = ncount2 / ncount_rate
-      CALL DATE_AND_TIME (chdate, chtime, chzone, nYMDUHMSM)
+      call date_and_time (chdate, chtime, chzone, nymduhmsm)
 
-      IF (myid .EQ. 0) THEN
-         WRITE (6, *)
-         WRITE (6, *) TRIM(progname) // ': Execution complete.'
-         WRITE (6, *) 'Wall time: ', nseconds, ' seconds'
-         WRITE (6, *) 'Finish date: ', chdate, ' time: ', chtime, &
+      if (myid .eq. 0) then
+         write (6, *)
+         write (6, *) trim(progname) // ': Execution complete.'
+         write (6, *) 'Wall time: ', nseconds, ' seconds'
+         write (6, *) 'Finish date: ', chdate, ' time: ', chtime, &
                       ' zone: ', chzone
-      ENDIF
+      endif
 
-      CALL MPI_Finalize (ierr)
+      call mpi_finalize (ierr)
 
       return
       end
@@ -217,18 +217,18 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      USE mpi
-      IMPLICIT NONE
-      INTEGER, INTENT(IN)  ::  myid
-      CHARACTER(LEN=*), INTENT(IN) :: WHAT
+      use mpi
+      implicit none
+      integer, intent(in)  ::  myid
+      character(len=*), intent(in) :: what
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer ierr
 
       print *, 'mpi stopped by node-', myid, ' from ', what
-      call MPI_Barrier (MPI_COMM_WORLD,ierr)
-      call MPI_Finalize (ierr)
+      call mpi_barrier (mpi_comm_world,ierr)
+      call mpi_finalize (ierr)
 
       stop
       end
@@ -246,18 +246,18 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      USE mpi
-      USE mpiu_I, ONLY: mpix_printmsg
-      USE mpiu_I, ONLY: stopmpi
-      IMPLICIT NONE
-      INTEGER, INTENT(IN)  ::  myid,nprocs,lenhost
+      use mpi
+      use mpiu_i, only: mpix_printmsg
+      use mpiu_i, only: stopmpi
+      implicit none
+      integer, intent(in)  ::  myid,nprocs,lenhost
       integer              ::  ncount1
-      character*(*), INTENT(IN) ::  host, progname
+      character*(*), intent(in) ::  host, progname
 ! Things for timing
-      INTEGER   ncount2, ncount_rate, ncount_max, nseconds
+      integer   ncount2, ncount_rate, ncount_max, nseconds
       character chdate*8, chtime*10, chzone*5
                !ccyymmdd  hhmmss.sss  Shhmm
-      integer  nYMDUHMSM(8)
+      integer  nymduhmsm(8)
                !Year Month Day Universal Hour Minute Sesond Millisecond
 
 ! For printing
@@ -288,17 +288,17 @@
          print *, 'Finish Date and Time:'
       endif
 
-      call date_and_time (chdate, chtime, chzone, nYMDUHMSM)
+      call date_and_time (chdate, chtime, chzone, nymduhmsm)
 
       msg = '  ' // host(1:lenhost) // ': ' // &
             '  Date: ' // chdate // &
             '  Time: ' // chtime // &
             '  Zone: ' // chzone
-      CALL mpix_printmsg (msg, myid, nprocs)
+      call mpix_printmsg (msg, myid, nprocs)
 
       if (myid .eq. 0) print *
 
-      call MPI_Barrier (MPI_COMM_WORLD,ierr)
+      call mpi_barrier (mpi_comm_world,ierr)
       call stopmpi (progname // ': Execution complete.', myid)
       return
       end
@@ -314,31 +314,31 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      USE mpi
-      IMPLICIT NONE
-      INTEGER, INTENT(IN)  ::  myid, nprocs
-      CHARACTER(LEN=*), INTENT(INOUT) :: msg
+      use mpi
+      implicit none
+      integer, intent(in)  ::  myid, nprocs
+      character(len=*), intent(inout) :: msg
 
 !-----------------------------------------------
 !   L o c a l  V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: inID, istat(MPI_STATUS_SIZE), ierr, msgLength
+      integer :: inid, istat(mpi_status_size), ierr, msglength
 
-      msgLength = len_trim (msg)
+      msglength = len_trim (msg)
 
       if (myid .ne. 0) then
-         call MPI_Send (msgLength, 1, MPI_INTEGER, 0, myid, &
-                        MPI_COMM_WORLD, ierr)   ! Send nsgLength
-         call MPI_Send (msg, msgLength, MPI_CHARACTER, 0, myid+nprocs, &
-                        MPI_COMM_WORLD, ierr)   ! Send msg
+         call mpi_send (msglength, 1, mpi_integer, 0, myid, &
+                        mpi_comm_world, ierr)   ! Send nsgLength
+         call mpi_send (msg, msglength, mpi_character, 0, myid+nprocs, &
+                        mpi_comm_world, ierr)   ! Send msg
       else
-         print *, msg(1:msgLength)      ! msg from node 0 itself
-         do inID = 1, nprocs - 1
-            call MPI_Recv (msgLength, 1, MPI_INTEGER, inID, &
-                           inID, MPI_COMM_WORLD, istat, ierr)
-            call MPI_Recv (msg, msgLength, MPI_CHARACTER, inID, &
-                           inID+nprocs, MPI_COMM_WORLD, istat, ierr)
-            print *, msg(1:msgLength)
+         print *, msg(1:msglength)      ! msg from node 0 itself
+         do inid = 1, nprocs - 1
+            call mpi_recv (msglength, 1, mpi_integer, inid, &
+                           inid, mpi_comm_world, istat, ierr)
+            call mpi_recv (msg, msglength, mpi_character, inid, &
+                           inid+nprocs, mpi_comm_world, istat, ierr)
+            print *, msg(1:msglength)
          enddo
       endif
 
@@ -351,15 +351,15 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      USE mpi
-      IMPLICIT NONE
-      INTEGER, INTENT(IN) :: myid
-      CHARACTER(LEN=*), INTENT(IN) :: what
+      use mpi
+      implicit none
+      integer, intent(in) :: myid
+      character(len=*), intent(in) :: what
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ierr
-      CHARACTER(LEN=1) :: CHTMP
+      integer :: ierr
+      character(len=1) :: chtmp
 !-----------------------------------------------
 !
       if (myid .eq. 0) then
@@ -367,13 +367,13 @@
          read (*, '(a)') chtmp
       endif
 
-      call mpi_barrier (MPI_COMM_WORLD, ierr)
+      call mpi_barrier (mpi_comm_world, ierr)
 
       return
       end
 
 !***********************************************************************
-      subroutine mpix_bytes (n, newType, ierr)
+      subroutine mpix_bytes (n, newtype, ierr)
 
 !  Constructs new mpi data type newType of n-bytes long
 !***********************************************************************
@@ -381,17 +381,17 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      USE mpi
-      IMPLICIT NONE
-      INTEGER, INTENT(IN) :: n
-      INTEGER, INTENT(out) :: newtype, ierr
+      use mpi
+      implicit none
+      integer, intent(in) :: n
+      integer, intent(out) :: newtype, ierr
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer ier0
 
-      call MPI_Type_contiguous (n, MPI_BYTE, newType, ier0)
-      call MPI_Type_commit (newType, ierr)
+      call mpi_type_contiguous (n, mpi_byte, newtype, ier0)
+      call mpi_type_commit (newtype, ierr)
 
       ierr = ierr + ier0
 
@@ -399,109 +399,109 @@
       end
 
 !***********************************************************************
-      SUBROUTINE gdsummpi (x, n)
+      subroutine gdsummpi (x, n)
 
 !     Sum x over all nodes and in y, then copy y to  x
 !***********************************************************************
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE mpi
-      USE suite_linear_algebra, ONLY: dcopy
-      USE dinit_I, ONLY: dinit
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use mpi
+      use suite_linear_algebra, only: dcopy
+      use dinit_i, only: dinit
+      implicit none
 
-      INTEGER, INTENT(IN)                         :: n
-      REAL(DOUBLE), DIMENSION(1:n), INTENT(INOUT) ::   x
+      integer, intent(in)                         :: n
+      real(double), dimension(1:n), intent(inout) ::   x
 
-      INTEGER                                     :: ierr
-      REAL(DOUBLE), DIMENSION(1:n)                :: y
+      integer                                     :: ierr
+      real(double), dimension(1:n)                :: y
 
-      CALL dinit (n, 0.d0, y, 1)
-      CALL MPI_Allreduce (x, y, n, MPI_DOUBLE_PRECISION, &
-                                   MPI_SUM, MPI_COMM_WORLD, ierr)
-      CALL dcopy (n, y, 1, x, 1)   ! copy y to x
+      call dinit (n, 0.d0, y, 1)
+      call mpi_allreduce (x, y, n, mpi_double_precision, &
+                                   mpi_sum, mpi_comm_world, ierr)
+      call dcopy (n, y, 1, x, 1)   ! copy y to x
 
-      RETURN
-      END
+      return
+      end
 
 !***********************************************************************
-      SUBROUTINE gdrsummpi_root (x, n)
+      subroutine gdrsummpi_root (x, n)
 
 !     Sum x onto node-0 only; non-root ranks do not receive the result.
 !***********************************************************************
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE mpi_C, ONLY: MYID
-      USE mpi
-      USE suite_linear_algebra, ONLY: dcopy
-      USE dinit_I, ONLY: dinit
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use mpi_c, only: myid
+      use mpi
+      use suite_linear_algebra, only: dcopy
+      use dinit_i, only: dinit
+      implicit none
 
-      INTEGER, INTENT(IN)                          :: n
-      REAL(DOUBLE), DIMENSION(1:n), INTENT(INOUT) :: x
+      integer, intent(in)                          :: n
+      real(double), dimension(1:n), intent(inout) :: x
 
-      INTEGER                                      :: ierr
-      REAL(DOUBLE), DIMENSION(1:n)                 :: y
+      integer                                      :: ierr
+      real(double), dimension(1:n)                 :: y
 
-      IF (MYID .EQ. 0) THEN
-         CALL dinit (n, 0.d0, y, 1)
-         CALL MPI_Reduce (x, y, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, &
-                          MPI_COMM_WORLD, ierr)
-         CALL dcopy (n, y, 1, x, 1)
-      ELSE
-         CALL MPI_Reduce (x, y, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, &
-                          MPI_COMM_WORLD, ierr)
-      ENDIF
+      if (myid .eq. 0) then
+         call dinit (n, 0.d0, y, 1)
+         call mpi_reduce (x, y, n, mpi_double_precision, mpi_sum, 0, &
+                          mpi_comm_world, ierr)
+         call dcopy (n, y, 1, x, 1)
+      else
+         call mpi_reduce (x, y, n, mpi_double_precision, mpi_sum, 0, &
+                          mpi_comm_world, ierr)
+      endif
 
-      RETURN
-      END
+      return
+      end
 
 !***********************************************************************
-      SUBROUTINE gdmaxmpi_root (x, n)
+      subroutine gdmaxmpi_root (x, n)
 
 !     Max x onto node-0 only; non-root ranks do not receive the result.
 !***********************************************************************
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE mpi_C, ONLY: MYID
-      USE mpi
-      USE suite_linear_algebra, ONLY: dcopy
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use mpi_c, only: myid
+      use mpi
+      use suite_linear_algebra, only: dcopy
+      implicit none
 
-      INTEGER, INTENT(IN)                          :: n
-      REAL(DOUBLE), DIMENSION(1:n), INTENT(INOUT) :: x
+      integer, intent(in)                          :: n
+      real(double), dimension(1:n), intent(inout) :: x
 
-      INTEGER                                      :: ierr
-      REAL(DOUBLE), DIMENSION(1:n)                 :: y
+      integer                                      :: ierr
+      real(double), dimension(1:n)                 :: y
 
-      IF (MYID .EQ. 0) THEN
-         CALL MPI_Reduce (x, y, n, MPI_DOUBLE_PRECISION, MPI_MAX, 0, &
-                          MPI_COMM_WORLD, ierr)
-         CALL dcopy (n, y, 1, x, 1)
-      ELSE
-         CALL MPI_Reduce (x, y, n, MPI_DOUBLE_PRECISION, MPI_MAX, 0, &
-                          MPI_COMM_WORLD, ierr)
-      ENDIF
+      if (myid .eq. 0) then
+         call mpi_reduce (x, y, n, mpi_double_precision, mpi_max, 0, &
+                          mpi_comm_world, ierr)
+         call dcopy (n, y, 1, x, 1)
+      else
+         call mpi_reduce (x, y, n, mpi_double_precision, mpi_max, 0, &
+                          mpi_comm_world, ierr)
+      endif
 
-      RETURN
-      END
+      return
+      end
 
 !***********************************************************************
-      SUBROUTINE gisummpi (ix, n)
+      subroutine gisummpi (ix, n)
 !     Sum x over all nodes and in iy, then copy iy to  ix
 !***********************************************************************
-      USE mpi
-      USE icopy_I, ONLY: icopy
-      IMPLICIT NONE
+      use mpi
+      use icopy_i, only: icopy
+      implicit none
 
-      INTEGER, INTENT(IN)                         :: n
-      INTEGER, DIMENSION(1:n), INTENT(INOUT) ::  ix
+      integer, intent(in)                         :: n
+      integer, dimension(1:n), intent(inout) ::  ix
 
-      INTEGER                                     :: ierr, i
-      INTEGER, DIMENSION(1:n)                ::  iy
+      integer                                     :: ierr, i
+      integer, dimension(1:n)                ::  iy
 
       iy = 0
 
-      CALL MPI_Allreduce (ix, iy, n, MPI_INTEGER, MPI_SUM, &
-                                     MPI_COMM_WORLD, ierr)
-      CALL icopy (n, iy, 1, ix, 1)
+      call mpi_allreduce (ix, iy, n, mpi_integer, mpi_sum, &
+                                     mpi_comm_world, ierr)
+      call icopy (n, iy, 1, ix, 1)
 
-      RETURN
-      END
+      return
+      end

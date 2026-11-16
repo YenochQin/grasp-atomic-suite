@@ -1,8 +1,8 @@
-      MODULE read02_mem_I
-      INTERFACE
+      module read02_mem_i
+      interface
 !   Written by  G. Gaigalas               Vilnius, September 2021
-      SUBROUTINE read02_mem(JBLOCK)
-      INTEGER, INTENT(IN)       :: JBLOCK
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine read02_mem(jblock)
+      integer, intent(in)       :: jblock
+      end subroutine
+      end interface
+      end module

@@ -2,10 +2,10 @@
 module rwfnestimate_input
    use iso_fortran_env, only: int64, error_unit
    use tomlf, only: toml_table, toml_array, toml_error, toml_load, get_value, len
-   use parameter_def, only: NNNW
-   use orb_C, only: NW, NP, NAK, NKL, NKJ, NH
-   use def_C, only: NELEC
-   use setcsh_I, only: setcsh
+   use parameter_def, only: nnnw
+   use orb_c, only: nw, np, nak, nkl, nkj, nh
+   use def_c, only: nelec
+   use setcsh_i, only: setcsh
    implicit none
    private
    public :: radial_input_options, parse_radial_options, load_radial_header
@@ -101,12 +101,12 @@ contains
       call get_value(info, 'electron_count', total_electrons, stat=status)
       call require_input(status == 0, &
          'header_info.electron_count must be an integer including core electrons; regenerate old headers with rCSFs')
-      call require_input(total_electrons > 0 .and. total_electrons <= int(huge(NELEC), int64), &
+      call require_input(total_electrons > 0 .and. total_electrons <= int(huge(nelec), int64), &
                          'electron_count must be positive and fit a suite integer')
       call get_value(info, 'header_lines', lines, requested=.false.)
       call require_input(associated(lines), 'header_info.header_lines must be an array')
       call require_input(len(lines) == 5, 'header_info.header_lines must contain five strings')
-      NW = 0
+      nw = 0
       core_count = 0
       do index = 1, 5
          call get_value(lines, index, line, stat=status)
@@ -118,7 +118,7 @@ contains
             call require_input(trim(line) == 'Core subshells:', 'invalid core header label')
          case (2)
             call append_subshells(line)
-            core_count = NW
+            core_count = nw
          case (3)
             call require_input(trim(line) == 'Peel subshells:', 'invalid peel header label')
          case (4)
@@ -127,14 +127,14 @@ contains
             call require_input(trim(line) == 'CSF(s):', 'invalid CSF header label')
          end select
       end do
-      call require_input(NW > 0, 'empty orbital table')
-      core_electrons = sum(NKJ(:core_count) + 1)
-      capacity = sum(NKJ(:NW) + 1)
+      call require_input(nw > 0, 'empty orbital table')
+      core_electrons = sum(nkj(:core_count) + 1)
+      capacity = sum(nkj(:nw) + 1)
       call require_input(total_electrons >= core_electrons, 'electron_count is smaller than the closed-core population')
       call require_input(total_electrons <= capacity, 'electron_count exceeds the orbital table capacity')
-      NELEC = int(total_electrons)
+      nelec = int(total_electrons)
       write(*, '(A,I0,A,I0,A,I0)') 'Loaded TOML header: core subshells=', core_count, &
-         ', orbitals=', NW, ', total electrons=', NELEC
+         ', orbitals=', nw, ', total electrons=', nelec
    end subroutine load_toml_header
 
    subroutine append_subshells(text)
@@ -162,7 +162,7 @@ contains
       character(len=*), parameter :: letters = 'spdfghiklm'
       integer :: digits, principal, momentum, kappa, status, previous
       character(len=:), allocatable :: suffix
-      call require_input(NW < NNNW, 'orbital table exceeds configured NNNW capacity')
+      call require_input(nw < nnnw, 'orbital table exceeds configured NNNW capacity')
       digits = 0
       do while (digits < len(label))
          if (scan(label(digits+1:digits+1), '0123456789') == 0) exit
@@ -182,15 +182,15 @@ contains
       else
          kappa = -momentum - 1
       end if
-      do previous = 1, NW
-         call require_input(NP(previous) /= principal .or. NAK(previous) /= kappa, &
+      do previous = 1, nw
+         call require_input(np(previous) /= principal .or. nak(previous) /= kappa, &
                             'duplicate orbital across core/peel lists: '//label)
       end do
-      NW = NW + 1
-      NP(NW) = principal
-      NAK(NW) = kappa
-      NKL(NW) = momentum
-      NKJ(NW) = 2*abs(kappa) - 1
-      NH(NW) = suffix
+      nw = nw + 1
+      np(nw) = principal
+      nak(nw) = kappa
+      nkl(nw) = momentum
+      nkj(nw) = 2*abs(kappa) - 1
+      nh(nw) = suffix
    end subroutine append_subshell
 end module rwfnestimate_input

@@ -24,7 +24,7 @@
 !***********************************************************************
 !***********************************************************************
 !                                                                      *
-      PROGRAM ERWF
+      program erwf
 !                                                                      *
 !   Entry routine for RCI92. Controls the entire computation.          *
 !                                                                      *
@@ -41,103 +41,103 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE DEFAULT_C
-      USE CONS_C
-      USE IOUNIT_C
-      USE rwfnestimate_input, ONLY: radial_input_options, parse_radial_options, load_radial_header
+      use vast_kind_param, only:  double
+      use default_c
+      use cons_c
+      use iounit_c
+      use rwfnestimate_input, only: radial_input_options, parse_radial_options, load_radial_header
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setdbg_I
-      USE setmc_I
-      USE setcon_I
-      USE setsum_I
-      USE screenpar_I
-      USE getinf_I
-      USE strsum_I
-      USE genrwf_I
-      USE orthsc_I
-      USE wrtrwf_I
-      IMPLICIT NONE
+      use getyn_i
+      use setdbg_i
+      use setmc_i
+      use setcon_i
+      use setsum_i
+      use screenpar_i
+      use getinf_i
+      use strsum_i
+      use genrwf_i
+      use orthsc_i
+      use wrtrwf_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NCORE
-      LOGICAL :: YES
-      TYPE(radial_input_options) :: input_options
+      integer :: ncore
+      logical :: yes
+      type(radial_input_options) :: input_options
 !-----------------------------------------------
 
 !   Startup message
 !
-      CALL parse_radial_options(input_options)
-      WRITE (ISTDE, *) 'RWFNESTIMATE'
-      WRITE (ISTDE, *) 'This program estimates radial wave functions'
-      WRITE (ISTDE, *) 'for orbitals'
-      WRITE (ISTDE, *) 'Input files: isodata, selected CSF text/header, optional rwfn file'
-      WRITE (ISTDE, *) 'Selected input: ', input_options%filename
-      WRITE (ISTDE, *) 'Output file: rwfn.inp'
+      call parse_radial_options(input_options)
+      write (istde, *) 'RWFNESTIMATE'
+      write (istde, *) 'This program estimates radial wave functions'
+      write (istde, *) 'for orbitals'
+      write (istde, *) 'Input files: isodata, selected CSF text/header, optional rwfn file'
+      write (istde, *) 'Selected input: ', input_options%filename
+      write (istde, *) 'Output file: rwfn.inp'
 
 
 !
-      WRITE (ISTDE, *) 'Default settings ?'
-      YES = GETYN()
-      IF (YES) THEN
-         NDEF = 0
-      ELSE
-         NDEF = 1
-      ENDIF
+      write (istde, *) 'Default settings ?'
+      yes = getyn()
+      if (yes) then
+         ndef = 0
+      else
+         ndef = 1
+      endif
 
 !
 !   Determine if there is to be any debug printout; this will be
 !   made on the  .dbg  file
 !
-      CALL SETDBG
+      call setdbg
 !
 !   Perform machine- and installation-dependent setup
 !
-      CALL SETMC
+      call setmc
 !
 !   Set up the physical constants
 !
-      CALL SETCON
+      call setcon
 !
 !   Open the  .sum  file
 !
-      IF (NDEF /= 0) CALL SETSUM
+      if (ndef /= 0) call setsum
 !
 !   Load orbital metadata from the selected CSF text or rCSFs header.
 !
-      CALL load_radial_header(input_options, NCORE)
+      call load_radial_header(input_options, ncore)
 !
 !   Hydrogenic screen parameters for all orbitals
 !
-      CALL SCREENPAR (NCORE)
+      call screenpar (ncore)
 !
 !   Determine other relevant information
 !
-      CALL GETINF
+      call getinf
 !
 !   Write the first part of the  .sum  file
 !
-      IF (NDEF /= 0) CALL STRSUM
+      if (ndef /= 0) call strsum
 !
 !   Generate the subshell radial wavefunctions
 !
-      CALL GENRWF
+      call genrwf
 !
 !   Orthogonalize the radial orbitals
 !
-      CALL ORTHSC
+      call orthsc
 !
 !   Write the subshell radial wavefunctions out
 !
-      CALL WRTRWF
+      call wrtrwf
 !
 !   Print completion message
 !
-      WRITE (ISTDE, *) 'RWFNESTIMATE: Execution complete.'
+      write (istde, *) 'RWFNESTIMATE: Execution complete.'
 !
-      STOP
-      END PROGRAM ERWF
+      stop
+      end program erwf

@@ -9,27 +9,27 @@ module suite_system
     public :: terminate_process
 
     interface
-        subroutine c_exit(status) bind(C, name='exit')
+        subroutine c_exit(status) bind(c, name='exit')
             import c_int
             integer(c_int), value :: status
         end subroutine c_exit
-        function c_system(command) bind(C, name='system') result(status)
+        function c_system(command) bind(c, name='system') result(status)
             import c_char, c_int
             character(kind=c_char), intent(in) :: command(*)
             integer(c_int) :: status
         end function c_system
-        function c_chdir(path) bind(C, name='chdir') result(status)
+        function c_chdir(path) bind(c, name='chdir') result(status)
             import c_char, c_int
             character(kind=c_char), intent(in) :: path(*)
             integer(c_int) :: status
         end function c_chdir
-        function c_getcwd(buffer, capacity) bind(C, name='getcwd') result(address)
+        function c_getcwd(buffer, capacity) bind(c, name='getcwd') result(address)
             import c_char, c_size_t, c_ptr
             character(kind=c_char), intent(out) :: buffer(*)
             integer(c_size_t), value :: capacity
             type(c_ptr) :: address
         end function c_getcwd
-        function c_access(path, mode) bind(C, name='access') result(status)
+        function c_access(path, mode) bind(c, name='access') result(status)
             import c_char, c_int
             character(kind=c_char), intent(in) :: path(*)
             integer(c_int), value :: mode

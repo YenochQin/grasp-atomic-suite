@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION ICHOP (ISUBSH, ICSF)
+      integer function ichop (isubsh, icsf)
 !                                                                      *
 !   ICHOP is -1 if subshell ISUBSH is empty in CSF  ICSF,  +1 if the   *
 !   subshell is full, and 0 if it is open.                             *
@@ -16,22 +16,22 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE parameter_def, ONLY: NNNW
-      USE ORB_C,         ONLY: NKL, NKJ
+      use parameter_def, only: nnnw
+      use orb_c,         only: nkl, nkj
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE iq_I
-      IMPLICIT NONE
+      use iq_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER :: ISUBSH
-      INTEGER :: ICSF
+      integer :: isubsh
+      integer :: icsf
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IOCC, IFULL
+      integer :: iocc, ifull
 !-----------------------------------------------
 !
 !
@@ -39,15 +39,15 @@
 !      appropriate range, testing seems redundant
 !     IF ((ISUBSH .GE. 1) .AND. (ISUBSH .LE. NW)) THEN
 !        IF ((ICSF .GE. 1) .AND. (ICSF .LE. NCF)) THEN
-      IOCC = IQ(ISUBSH,ICSF)
-      IFULL = NKJ(ISUBSH) + 1
-      IF (IOCC == 0) THEN
-         ICHOP = -1
-      ELSE IF (IOCC == IFULL) THEN
-         ICHOP = 1
-      ELSE
-         ICHOP = 0
-      ENDIF
+      iocc = iq(isubsh,icsf)
+      ifull = nkj(isubsh) + 1
+      if (iocc == 0) then
+         ichop = -1
+      else if (iocc == ifull) then
+         ichop = 1
+      else
+         ichop = 0
+      endif
 !        ELSE
 !           PRINT *, 'ICHOP: Argument ICSF is out of range.'
 !           STOP
@@ -57,5 +57,5 @@
 !        STOP
 !     ENDIF
 !
-      RETURN
-      END FUNCTION ICHOP
+      return
+      end function ichop

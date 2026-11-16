@@ -1,19 +1,19 @@
-      MODULE densnew_I
-      INTERFACE
+      module densnew_i
+      interface
 !...Translated by Gediminas Gaigalas 11/18/19
-      SUBROUTINE densnew (DOIT,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,    &
-                          DINT7)
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW, NNNP
-      USE prnt_C,          ONLY : NVEC
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT1
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT2
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT3
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT4
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT5
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT6
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT7
-      INTEGER, INTENT(IN) :: DOIT
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine densnew (doit,dint1,dint2,dint3,dint4,dint5,dint6,    &
+                          dint7)
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw, nnnp
+      use prnt_c,          only : nvec
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint1
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint2
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint3
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint4
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint5
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint6
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint7
+      integer, intent(in) :: doit
+      end subroutine
+      end interface
+      end module

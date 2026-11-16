@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GENMAT2(IRESTART, NELMNT_A, ELSTO)
+      subroutine genmat2(irestart, nelmnt_a, elsto)
 !
 !   Get eav and do writings to the summary file .csum
 !   The mpi version (genmat2mpi) also gets nelmnt_a and elsto
@@ -14,26 +14,26 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE, LONG
-      USE hmat_C  !! rather than setham_to_genmat2
-      USE decide_C
-      USE eigv_C
-      USE mpi_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double, long
+      use hmat_c  !! rather than setham_to_genmat2
+      use decide_c
+      use eigv_c
+      use mpi_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)        :: IRESTART
-      INTEGER(LONG), INTENT(OUT) :: NELMNT_A
-      REAL(DOUBLE), INTENT(IN)   :: ELSTO
+      integer, intent(in)        :: irestart
+      integer(long), intent(out) :: nelmnt_a
+      real(double), intent(in)   :: elsto
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, DIMENSION(6) :: NTPI_A
-      INTEGER               :: NCOEI_A, NCTEI_A, NCTEC_A, NMCBP_A,    &
-                               NCORE_A, NVPI_A, NKEI_A, NVINTI_A,     &
-                               NCOEC_A
-      REAL(DOUBLE)          :: DENSTY, EAV_A
+      integer, dimension(6) :: ntpi_a
+      integer               :: ncoei_a, nctei_a, nctec_a, nmcbp_a,    &
+                               ncore_a, nvpi_a, nkei_a, nvinti_a,     &
+                               ncoec_a
+      real(double)          :: densty, eav_a
 !-----------------------------------------------
 !-----------------------------------------------------------------------
 ! Transfer parameters around and print out on node-0.
@@ -43,7 +43,7 @@
 ! The following parameters are accumulated in setham which will not
 ! contain the correct values in restart mode. And thus is skipped.
 !-----------------------------------------------------------------------
-      IF (IRESTART /= 0) THEN                    ! non-restart mode
+      if (irestart /= 0) then                    ! non-restart mode
 !         WRITE (24, 301) CUTOFFTMP
 !         WRITE (24, 302) NCOEITMP
 !         WRITE (24, 303) NCOECTMP
@@ -59,56 +59,56 @@
 !         IF (LSMS) WRITE (24, 311) NVINTITMP
 !      ELSE
 !         WRITE (24, *) 'Restart mode --- no report on radial integrals'
-      CALL MPI_Reduce (NCOEItmp, NCOEI_a, 1, MPI_INTEGER, MPI_SUM, 0,  &
-                                       MPI_COMM_WORLD, ierr)
-      CALL MPI_Reduce (NCOECtmp, NCOEC_a, 1, MPI_INTEGER, MPI_SUM, 0,  &
-                                       MPI_COMM_WORLD, ierr)
-      CALL MPI_Reduce (NCTEItmp, NCTEI_a, 1, MPI_INTEGER, MPI_SUM, 0,  &
-                                       MPI_COMM_WORLD, ierr)
-      CALL MPI_Reduce (NCTECtmp, NCTEC_a, 1, MPI_INTEGER, MPI_SUM, 0,  &
-                                       MPI_COMM_WORLD, ierr)
+      call mpi_reduce (ncoeitmp, ncoei_a, 1, mpi_integer, mpi_sum, 0,  &
+                                       mpi_comm_world, ierr)
+      call mpi_reduce (ncoectmp, ncoec_a, 1, mpi_integer, mpi_sum, 0,  &
+                                       mpi_comm_world, ierr)
+      call mpi_reduce (ncteitmp, nctei_a, 1, mpi_integer, mpi_sum, 0,  &
+                                       mpi_comm_world, ierr)
+      call mpi_reduce (nctectmp, nctec_a, 1, mpi_integer, mpi_sum, 0,  &
+                                       mpi_comm_world, ierr)
 
-      IF (LTRANS) THEN
-         CALL MPI_Reduce (NTPItmp, NTPI_a, 6, MPI_INTEGER, MPI_SUM, 0, &
-                                       MPI_COMM_WORLD, ierr)
-         CALL MPI_Reduce (NMCBPtmp, NMCBP_a, 1, MPI_INTEGER, MPI_SUM,0,&
-                                       MPI_COMM_WORLD, ierr)
-         CALL MPI_Reduce (NCOREtmp, NCORE_a, 1, MPI_INTEGER,MPI_SUM,0, &
-                                       MPI_COMM_WORLD, ierr)
-      ENDIF
+      if (ltrans) then
+         call mpi_reduce (ntpitmp, ntpi_a, 6, mpi_integer, mpi_sum, 0, &
+                                       mpi_comm_world, ierr)
+         call mpi_reduce (nmcbptmp, nmcbp_a, 1, mpi_integer, mpi_sum,0,&
+                                       mpi_comm_world, ierr)
+         call mpi_reduce (ncoretmp, ncore_a, 1, mpi_integer,mpi_sum,0, &
+                                       mpi_comm_world, ierr)
+      endif
 
-      IF (LVP)                                                         &
-         CALL MPI_Reduce (NVPItmp, NVPI_a, 1, MPI_INTEGER, MPI_SUM, 0, &
-                                       MPI_COMM_WORLD, ierr)
+      if (lvp)                                                         &
+         call mpi_reduce (nvpitmp, nvpi_a, 1, mpi_integer, mpi_sum, 0, &
+                                       mpi_comm_world, ierr)
 
-      IF (LNMS)                                                        &
-         CALL MPI_Reduce (NKEItmp, NKEI_a, 1, MPI_INTEGER, MPI_SUM, 0, &
-                                       MPI_COMM_WORLD, ierr)
+      if (lnms)                                                        &
+         call mpi_reduce (nkeitmp, nkei_a, 1, mpi_integer, mpi_sum, 0, &
+                                       mpi_comm_world, ierr)
 
-      IF (LSMS)                                                        &
-         CALL MPI_Reduce (NVINTItmp, NVINTI_a, 1, MPI_INTEGER, MPI_SUM,&
-                                       0, MPI_COMM_WORLD, ierr)
+      if (lsms)                                                        &
+         call mpi_reduce (nvintitmp, nvinti_a, 1, mpi_integer, mpi_sum,&
+                                       0, mpi_comm_world, ierr)
 
-      IF (myid .EQ. 0) THEN
-         WRITE (24,301) CUTOFFtmp
-         WRITE (24,302) NCOEI_a
-         WRITE (24,303) NCOEC_a
-         WRITE (24,304) NCTEI_a
-         WRITE (24,305) NCTEC_a
-         IF (LTRANS) THEN
-            WRITE (24,306) NTPI_a
-            WRITE (24,307) NMCBP_a
-            WRITE (24,308) NCORE_a
-         ENDIF
-         IF (LVP) WRITE (24,309) NVPI_a
-         IF (LNMS) WRITE (24,310) NKEI_a
-         IF (LSMS) WRITE (24,311) NVINTI_a
-      ENDIF
-            ELSE
-      IF (myid .EQ. 0) THEN
-         WRITE (24,*) 'Restart mode --- no report on radial integrals'
-      ENDIF
-      ENDIF                                      !(irestart .NE. 0) ! non-restart mode
+      if (myid .eq. 0) then
+         write (24,301) cutofftmp
+         write (24,302) ncoei_a
+         write (24,303) ncoec_a
+         write (24,304) nctei_a
+         write (24,305) nctec_a
+         if (ltrans) then
+            write (24,306) ntpi_a
+            write (24,307) nmcbp_a
+            write (24,308) ncore_a
+         endif
+         if (lvp) write (24,309) nvpi_a
+         if (lnms) write (24,310) nkei_a
+         if (lsms) write (24,311) nvinti_a
+      endif
+            else
+      if (myid .eq. 0) then
+         write (24,*) 'Restart mode --- no report on radial integrals'
+      endif
+      endif                                      !(irestart .NE. 0) ! non-restart mode
 
 
 
@@ -120,42 +120,42 @@
 !  later with EAV.
 !-----------------------------------------------------------------------
 
-      CALL MPI_Allreduce (NELMNTtmp, NELMNT_a, 1, MPI_INTEGER8,  &
+      call mpi_allreduce (nelmnttmp, nelmnt_a, 1, mpi_integer8,  &
 !AK:      MPI_INTEGER8 required to match the sizes of NELMNT_a and NELMNTtmp
 !CFF &    MPI_SUM, MPI_COMM_WORLD, ierr) ! want MAX not SUM
-     &    MPI_MAX, MPI_COMM_WORLD, ierr)
+     &    mpi_max, mpi_comm_world, ierr)
 !cjb  NELMNT_a decides between sparse and dense
 !cjb  see comments in maneig.f90
 
-      CALL MPI_Bcast (ELSTO, 1, MPI_DOUBLE_PRECISION, 0,         &
-                            MPI_COMM_WORLD, ierr)
-      CALL MPI_Allreduce (EAV, EAV_a, 1, MPI_DOUBLE_PRECISION,   &
-                              MPI_SUM, MPI_COMM_WORLD, ierr)
-      EAV = EAV_a / DBLE (ncftmp) + ELSTO
+      call mpi_bcast (elsto, 1, mpi_double_precision, 0,         &
+                            mpi_comm_world, ierr)
+      call mpi_allreduce (eav, eav_a, 1, mpi_double_precision,   &
+                              mpi_sum, mpi_comm_world, ierr)
+      eav = eav_a / dble (ncftmp) + elsto
 
-      IF (myid .EQ. 0) THEN
-         WRITE (24,312) NELMNT_a
-         WRITE (24, *)
-         WRITE (24, 300) eav
-      ENDIF
+      if (myid .eq. 0) then
+         write (24,312) nelmnt_a
+         write (24, *)
+         write (24, 300) eav
+      endif
 
-  300 FORMAT('Average energy = ',1P,D19.12,' Hartrees.')
-  301 FORMAT('CUTOFF set to ',1P,D17.10)
-  302 FORMAT('Dirac-Coulomb one-e radial integrals:',1I8)
-  303 FORMAT('One-e angular integrals that exceed CUTOFF: ',1I8)
-  304 FORMAT('Coulomb two-e radial integrals: ',1I8)
-  305 FORMAT('Two-e angular integrals that exceed CUTOFF: ',1I11)
-  306 FORMAT('Transverse two-e radial integrals: '/,6I8)
+  300 format('Average energy = ',1p,d19.12,' Hartrees.')
+  301 format('CUTOFF set to ',1p,d17.10)
+  302 format('Dirac-Coulomb one-e radial integrals:',1i8)
+  303 format('One-e angular integrals that exceed CUTOFF: ',1i8)
+  304 format('Coulomb two-e radial integrals: ',1i8)
+  305 format('Two-e angular integrals that exceed CUTOFF: ',1i11)
+  306 format('Transverse two-e radial integrals: '/,6i8)
 !cjb 1I8 -> 1I16
 ! 307 FORMAT('MCBP coefficients that exceed CUTOFF: ',1I8)
-  307 FORMAT('MCBP coefficients that exceed CUTOFF: ',1I16)
-  308 FORMAT('Core coefficients that exceed CUTOFF: ',1I8)
-  309 FORMAT('Vacuum polarisation integrals: ',1I8)
-  310 FORMAT('Kinetic energy integrals: ',1I8)
-  311 FORMAT('Vinti integrals: ',1I8)
-  312 FORMAT('Elements that exceed CUTOFF in the lower',&
-         ' triangle of the H matrix: ',1I11)
-  313 FORMAT('Density of the H(amiltonian) matrix: ',1P,D22.15)
+  307 format('MCBP coefficients that exceed CUTOFF: ',1i16)
+  308 format('Core coefficients that exceed CUTOFF: ',1i8)
+  309 format('Vacuum polarisation integrals: ',1i8)
+  310 format('Kinetic energy integrals: ',1i8)
+  311 format('Vinti integrals: ',1i8)
+  312 format('Elements that exceed CUTOFF in the lower',&
+         ' triangle of the H matrix: ',1i11)
+  313 format('Density of the H(amiltonian) matrix: ',1p,d22.15)
 
-      RETURN
-      END SUBROUTINE GENMAT2
+      return
+      end subroutine genmat2

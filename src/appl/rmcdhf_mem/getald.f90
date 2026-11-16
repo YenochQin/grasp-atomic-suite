@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      SUBROUTINE GETALD
+      subroutine getald
 !
 !   Interactively determines the data governing AL problem.
 !
@@ -19,52 +19,52 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE memory_man
-      USE def_C
-      USE fixd_C
-      USE orb_C
-      USE orthct_C
-      USE scf_C
-      USE iounit_C
+      use memory_man
+      use def_c
+      use fixd_c
+      use orb_c
+      use orthct_c
+      use scf_c
+      use iounit_c
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getaldwt_I
-      USE iq_I
-      IMPLICIT NONE
+      use getaldwt_i
+      use iq_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IQADUM, J, I
-      REAL(DOUBLE) :: SUM
-      LOGICAL :: GETYN, YES
+      integer :: iqadum, j, i
+      real(double) :: sum
+      logical :: getyn, yes
 !-----------------------------------------------
 !
-      WRITE (ISTDE, *) '(E)AL type calculation; H(DC) will not be ', &
+      write (istde, *) '(E)AL type calculation; H(DC) will not be ', &
          'diagonalised;'
-      WRITE (ISTDE, *) 'getald ...'
-      WRITE (ISTDE, *) 'ncf=', NCF
+      write (istde, *) 'getald ...'
+      write (istde, *) 'ncf=', ncf
 
-      CALL ALLOC (WT, NCF, 'WT', 'GETALD')
+      call alloc (wt, ncf, 'WT', 'GETALD')
 
-      CALL GETALDWT (NCF, WT)
+      call getaldwt (ncf, wt)
 
-      DO J = 1, NW
-         SUM = 0.D0
-         DO I = 1, NCF
-            SUM = SUM + WT(I)*DBLE(IQ(J,I))
-         END DO
-         UCF(J) = SUM
-      END DO
+      do j = 1, nw
+         sum = 0.d0
+         do i = 1, ncf
+            sum = sum + wt(i)*dble(iq(j,i))
+         end do
+         ucf(j) = sum
+      end do
 
-      NCMIN = 0
-      NSCF = 12
-      NSIC = 2 + (NW - NFIX)/4
-      ORTHST = .FALSE.
+      ncmin = 0
+      nscf = 12
+      nsic = 2 + (nw - nfix)/4
+      orthst = .false.
 
-      RETURN
-      END SUBROUTINE GETALD
+      return
+      end subroutine getald

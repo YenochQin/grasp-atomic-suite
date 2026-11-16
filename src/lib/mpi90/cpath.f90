@@ -42,16 +42,16 @@
 !   M o d u l e s
 !-----------------------------------------------
 !     COMMON /mpi/ myid, nprocs, ierr
-      use mpi_C
+      use mpi_c
 !     include 'mpif.h'
 !     integer  myid, nprocs, ierr, istat(MPI_STATUS_SIZE)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      USE mpiu_I, ONLY: stopmpi
-      USE sys_chdir_I, ONLY: sys_chdir
-      USE sys_getwd_I, ONLY: sys_getwd
-      USE sys_mkdir_I, ONLY: sys_mkdir
+      use mpiu_i, only: stopmpi
+      use sys_chdir_i, only: sys_chdir
+      use sys_getwd_i, only: sys_getwd
+      use sys_mkdir_i, only: sys_mkdir
       implicit none
       character(len=*), intent(out):: startdir, permdir, tmpdir
 !-----------------------------------------------
@@ -86,7 +86,7 @@
 
 !=======================================================================
       if (myid .eq. 0) then
-         inquire(FILE='disks',exist=ydisks)
+         inquire(file='disks',exist=ydisks)
          if(ydisks) then
 !=======================================================================
 ! step 02 read disks file and MPI_Send
@@ -98,8 +98,8 @@
             !...paths for slaves, read and send;
             do i = 1, nprocs - 1
                read (1001,*) disk
-               call MPI_Send (disk, lendisk0, MPI_CHARACTER, i, i, &
-                              MPI_COMM_WORLD, ierr2m)
+               call mpi_send (disk, lendisk0, mpi_character, i, i, &
+                              mpi_comm_world, ierr2m)
             enddo
             disk = tmpdir           ! local disk of node-0
             close (1001)
@@ -122,7 +122,7 @@
                     ! error061 failed to get env variable USER = MPI_ABORT
                     print *, ' error061 cpath failed at getenv USER, myid = ', myid
                     print *, ' error061 cpath fatal error, calling MPI_ABORT'
-                    call MPI_ABORT(MPI_COMM_WORLD, ierr, ierr2m)
+                    call mpi_abort(mpi_comm_world, ierr, ierr2m)
                 endif
 
                 mpi_tmp = '/scratch/'//env_user ! Defaults to /scratch/$USER
@@ -133,21 +133,21 @@
             if(len(mpi_tmp) > lendisk0) then
                 print *, ' error062 cpath MPI_TMP too long, myid = ', myid
                 print *, ' error062 cpath fatal error, calling MPI_ABORT'
-                call MPI_ABORT(MPI_COMM_WORLD, ierr, ierr2m)
+                call mpi_abort(mpi_comm_world, ierr, ierr2m)
             endif
 
             tmpdir = mpi_tmp
             disk = mpi_tmp
             do i = 1, nprocs - 1
-               call MPI_Send (disk, lendisk0, MPI_CHARACTER, i, i, &
-                              MPI_COMM_WORLD, ierr2m)
+               call mpi_send (disk, lendisk0, mpi_character, i, i, &
+                              mpi_comm_world, ierr2m)
             enddo
          end if
       else  ! node0 has sent
          !...slaves receive their local dirs
          if (nprocs .gt. 1) then
-           call MPI_Recv (disk, lendisk0, MPI_CHARACTER, 0, myid, &
-                          MPI_COMM_WORLD, istat, ierr2m)
+           call mpi_recv (disk, lendisk0, mpi_character, 0, myid, &
+                          mpi_comm_world, istat, ierr2m)
          endif
       end if  ! node0 has sent & slaves have received
       lendisk = len_trim (disk)
@@ -288,9 +288,9 @@
 !       print *, ' step20 cpath ierr = ', ierr, ' myid = ', myid
 !
       ierr_all_nodes = ierr
-      call MPI_Barrier(MPI_COMM_WORLD, ierr2m)
-      CALL MPI_ALLREDUCE (MPI_IN_PLACE,ierr_all_nodes,1, &
-                          MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, ierr2m)
+      call mpi_barrier(mpi_comm_world, ierr2m)
+      call mpi_allreduce (mpi_in_place,ierr_all_nodes,1, &
+                          mpi_integer, mpi_sum, mpi_comm_world, ierr2m)
 ! step20 ierr_all_nodes
 !       if (myid .eq. 0) then
 !        print *, ' step20 cpath ierr_all_nodes = ', ierr_all_nodes, &
@@ -310,7 +310,7 @@
         endif
 !       stop
 !       stop
-        CALL stopmpi (' error in cpath ', myid)
+        call stopmpi (' error in cpath ', myid)
       endif
 
 !=======================================================================

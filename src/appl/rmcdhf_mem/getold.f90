@@ -1,46 +1,46 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GETOLD(IDBLK)
+      subroutine getold(idblk)
 !...Translated by Pacific-Sierra Research 77to90  4.3E  15:25:01   1/ 6/07
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNW
-      USE memory_man
-      USE blkidx_C
-      USE damp_C, ONLY: cdamp, odamp
-      USE def_C, rwtdum=>wt
-      USE default_C
-      USE fixd_C, ONLY: lfix, nfix
-      USE hblock_C
-      USE iounit_C
-      USE invt_C, ONLY: noinvt
-      USE orthct_C
-      USE ORB_C
-      USE ORBA_C, ONLY: IORDER
-      USE CORRE_C, ONLY: LCORRE
-      USE scf_C, ONLY: SCNSTY,METHOD
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnw
+      use memory_man
+      use blkidx_c
+      use damp_c, only: cdamp, odamp
+      use def_c, rwtdum=>wt
+      use default_c
+      use fixd_c, only: lfix, nfix
+      use hblock_c
+      use iounit_c
+      use invt_c, only: noinvt
+      use orthct_c
+      use orb_c
+      use orba_c, only: iorder
+      use corre_c, only: lcorre
+      use scf_c, only: scnsty,method
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE lodstate_I
-      USE getoldwt_I
-      USE prtrsl_I
-      USE getrsl_I
-      IMPLICIT NONE
+      use lodstate_i
+      use getoldwt_i
+      use prtrsl_i
+      use getrsl_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER  :: IDBLK(*)*8
+      character  :: idblk(*)*8
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IQADUM
-      INTEGER , DIMENSION(NNNW) :: INDX
-      INTEGER :: I, NSUBS, NORDER, LOC, NOFFSET, JBLOCK, J
-      LOGICAL :: GETYN, YES
-      CHARACTER :: RECORD*256
+      integer :: iqadum
+      integer , dimension(nnnw) :: indx
+      integer :: i, nsubs, norder, loc, noffset, jblock, j
+      logical :: getyn, yes
+      character :: record*256
 !-----------------------------------------------
 
       !WRITE (istde,*) 'EOL type calculation;'
@@ -49,8 +49,8 @@
 !    nevblk(), ncmaxblk()
 !    ncmin, iccmin(1:ncmin) -- via items (memories allocated there)
 
-      CALL ALLOC (NCMAXBLK, NBLOCK, 'NCMAXBLK', 'GETOLD')
-      CALL ALLOC (NEVBLK, NBLOCK, 'NEVBLK', 'GETOLD' )
+      call alloc (ncmaxblk, nblock, 'NCMAXBLK', 'GETOLD')
+      call alloc (nevblk, nblock, 'NEVBLK', 'GETOLD' )
 
 !cjb  ncmaxblk & nevblk initialised in lodstate
 !     NEVBLK = 0
@@ -59,25 +59,25 @@
 
 !cjb LODSTATE(NBLOCK, NCFBLK, IDBLK, NEVBLK, NCMAXBLK) -> (IDBLK)
 !     CALL LODSTATE (NBLOCK, NCFBLK(1), IDBLK, NEVBLK, NCMAXBLK)
-      CALL LODSTATE (IDBLK)
+      call lodstate (idblk)
 !cjb
 !
 !   Allocate the storage for and set the weights
 !
-      CALL ALLOC (WEIGHT, NCMIN, 'WEIGHT', 'GETOLD')
+      call alloc (weight, ncmin, 'WEIGHT', 'GETOLD')
 
-      CALL GETOLDWT (NDEF, NCMIN, WEIGHT)
+      call getoldwt (ndef, ncmin, weight)
 !
 !   Eigenvector damping
 !
-      CALL ALLOC (CDAMP, NCMIN, 'CDAMP', 'GETOLD')
+      call alloc (cdamp, ncmin, 'CDAMP', 'GETOLD')
 !
-      CDAMP(:NCMIN) = 0.D0
+      cdamp(:ncmin) = 0.d0
 !
 !   Print the list of all subshells
 !
-      WRITE (ISTDE, *) 'Radial functions'
-      CALL PRTRSL
+      write (istde, *) 'Radial functions'
+      call prtrsl
 !
 !   Determine which orbitals are to be varied, which are fixed.
 !   Quantities determined here:
@@ -85,77 +85,77 @@
 !   Instead of broadcasting these quantities, we broadcast
 !   the intermediate result from GETRSL (see below)
 !
-      LFIX(:NW) = .TRUE.
+      lfix(:nw) = .true.
 
-      WRITE (ISTDE, *) 'Enter orbitals to be varied (Updating order)'
-      CALL GETRSL (INDX, NSUBS)
+      write (istde, *) 'Enter orbitals to be varied (Updating order)'
+      call getrsl (indx, nsubs)
 
-      LFIX(INDX(:NSUBS)) = .FALSE.
+      lfix(indx(:nsubs)) = .false.
 !XHH      give a big value, rather than zero to scnsty()
-      SCNSTY(INDX(:NSUBS)) = 1.D20
-      NFIX = NW - NSUBS
-      IF (NFIX == NW) WRITE (ISTDE, *) &
+      scnsty(indx(:nsubs)) = 1.d20
+      nfix = nw - nsubs
+      if (nfix == nw) write (istde, *) &
          'All subshell radial wavefunctions are fixed;', &
          ' performing CI calculation.'
 
 !   Determine orbital updating order
 
-      NORDER = 0
-      DO I = 1, NW
-         IORDER(I) = I
-         IF (LFIX(I)) CYCLE
-         NORDER = NORDER + 1
-         IORDER(I) = INDX(NORDER)
-      END DO
+      norder = 0
+      do i = 1, nw
+         iorder(i) = i
+         if (lfix(i)) cycle
+         norder = norder + 1
+         iorder(i) = indx(norder)
+      end do
 !
 !XHH added a array to store the index of the correlation functions
 !
-      LCORRE(:NW) = .TRUE.
+      lcorre(:nw) = .true.
 
-      WRITE (ISTDE, *) 'Which of these are spectroscopic orbitals?'
-      CALL GETRSL (INDX, NSUBS)
-      IF (NSUBS > 0) THEN
-         DO I = 1, NSUBS
-            LOC = INDX(I)
-            IF (LFIX(LOC)) CYCLE
-            METHOD(LOC) = 1
-            NOINVT(LOC) = .FALSE.
-            ODAMP(LOC) = 0.D0
-            LCORRE(LOC) = .FALSE.
-         END DO
-      ENDIF
+      write (istde, *) 'Which of these are spectroscopic orbitals?'
+      call getrsl (indx, nsubs)
+      if (nsubs > 0) then
+         do i = 1, nsubs
+            loc = indx(i)
+            if (lfix(loc)) cycle
+            method(loc) = 1
+            noinvt(loc) = .false.
+            odamp(loc) = 0.d0
+            lcorre(loc) = .false.
+         end do
+      endif
 
 ! Set NSIC. It will be non-zero if all orbitals to be varied are
 ! spectroscopic orbitals
 
-      NSIC = (NW - NFIX)/4
-      DO I = 1, NW
-         IF (.NOT.(.NOT.LFIX(I) .AND. LCORRE(I))) CYCLE
-         NSIC = 0
-         EXIT
-      END DO
+      nsic = (nw - nfix)/4
+      do i = 1, nw
+         if (.not.(.not.lfix(i) .and. lcorre(i))) cycle
+         nsic = 0
+         exit
+      end do
 !
-      NSCF = 24
-      NSOLV = 3
-      ORTHST = .TRUE.
+      nscf = 24
+      nsolv = 3
+      orthst = .true.
 !
 !   Make the allocation for the auxiliary vector required
 !   by SUBROUTINE NEWCO
 !
-      CALL ALLOC (RWTDUM, NCMIN, 'RWTDUM', 'GETOLD')
+      call alloc (rwtdum, ncmin, 'RWTDUM', 'GETOLD')
 !
 !   Place the block numbers of the all ncmin eigenstate(wanted)
 !   in array idxblk
 !
-      CALL ALLOC (IDXBLK, NCMIN, 'IDXBLK', 'GETOLD')
-      NOFFSET = 0
-      DO JBLOCK = 1, NBLOCK
-         DO J = 1, NEVBLK(JBLOCK)
-            IDXBLK(J+NOFFSET) = JBLOCK
-         END DO
-         NOFFSET = NOFFSET + NEVBLK(JBLOCK)
-      END DO
-      IF (NOFFSET /= NCMIN) STOP 'getold: ncmin trouble'
+      call alloc (idxblk, ncmin, 'IDXBLK', 'GETOLD')
+      noffset = 0
+      do jblock = 1, nblock
+         do j = 1, nevblk(jblock)
+            idxblk(j+noffset) = jblock
+         end do
+         noffset = noffset + nevblk(jblock)
+      end do
+      if (noffset /= ncmin) stop 'getold: ncmin trouble'
 
-      RETURN
-      END SUBROUTINE GETOLD
+      return
+      end subroutine getold

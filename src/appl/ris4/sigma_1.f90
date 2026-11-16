@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SIGMA_1 (IPAR,I1,I2,APART)
+      subroutine sigma_1 (ipar,i1,i2,apart)
 !                                                                      *
 !   This  routine computes                                             *
 !   [-kappa_a || sigma^(1) ||kappa_b]  if IPAR = 1                     *
@@ -15,65 +15,65 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE orb_C,           ONLY: NP, NAK
+      use vast_kind_param, only:  double
+      use orb_c,           only: np, nak
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dracah_I
-      IMPLICIT NONE
+      use dracah_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: IPAR, I1, I2
-      REAL(DOUBLE), INTENT(OUT) :: APART
+      integer, intent(in) :: ipar, i1, i2
+      real(double), intent(out) :: apart
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: L1, L2, KAP1, KAP2, J1, J2, L1_TILDA
-      REAL(DOUBLE) :: RAC
+      integer :: l1, l2, kap1, kap2, j1, j2, l1_tilda
+      real(double) :: rac
 !-----------------------------------------------
 !
 !   Set KAP1 and KAP2
 !
-      KAP1 = NAK(I1)
-      KAP2 = NAK(I2)
+      kap1 = nak(i1)
+      kap2 = nak(i2)
 !
 !   Determine the l quantum numbers
 !
-      IF (KAP1 > 0) THEN
-         L1 =  KAP1
-      ELSE
-         L1 = -KAP1-1
-      ENDIF
+      if (kap1 > 0) then
+         l1 =  kap1
+      else
+         l1 = -kap1-1
+      endif
 !
-      IF (KAP2 > 0) THEN
-         L2 =  KAP2
-      ELSE
-         L2 = -KAP2-1
-      ENDIF
+      if (kap2 > 0) then
+         l2 =  kap2
+      else
+         l2 = -kap2-1
+      endif
 !
 !   Determine the j quantum numbers and l_1 tilda
 !
-      J1 = IABS(NAK(I1))*2-1
-      J2 = IABS(NAK(I2))*2-1
-      L1_TILDA = J1 - L1
-      IF (L1_TILDA == L2) THEN
+      j1 = iabs(nak(i1))*2-1
+      j2 = iabs(nak(i2))*2-1
+      l1_tilda = j1 - l1
+      if (l1_tilda == l2) then
 !
 !   Determine the Racah W coefficients.
 !
-         CALL DRACAH (1,J1,1,J2,2*L1_TILDA,2,RAC)
-         IF (MOD(1+J1+1+J2,4) == 0) RAC=-RAC
-         APART =  RAC*DSQRT(6.0D00*(J2+1))
-      ELSE
-         APART = 0.0D00
-      END IF
+         call dracah (1,j1,1,j2,2*l1_tilda,2,rac)
+         if (mod(1+j1+1+j2,4) == 0) rac=-rac
+         apart =  rac*dsqrt(6.0d00*(j2+1))
+      else
+         apart = 0.0d00
+      end if
 !
 !   Determine the phase factori
 !
-      IF(MOD(2*L1_TILDA+1+J1+2,4) == 0) APART=-APART
-      IF(IPAR == 2) THEN
-         APART = DSQRT(DBLE(J1+1))*APART
-      END IF
-      RETURN
-      END SUBROUTINE SIGMA_1
+      if(mod(2*l1_tilda+1+j1+2,4) == 0) apart=-apart
+      if(ipar == 2) then
+         apart = dsqrt(dble(j1+1))*apart
+      end if
+      return
+      end subroutine sigma_1

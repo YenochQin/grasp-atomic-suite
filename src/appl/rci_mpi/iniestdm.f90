@@ -1,6 +1,6 @@
 !************************************************************************
 !
-      SUBROUTINE INIESTdm (nmax, ncf, NIV, BASIS, hmx)
+      subroutine iniestdm (nmax, ncf, niv, basis, hmx)
 
 !     Routine for providing initial estimates from the diagonal
 !     of the matrix. This way was used by Dvdson in atomic structure
@@ -16,81 +16,81 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE eigv_C
-      USE mpi_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use eigv_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dspevx_I
-      USE suite_linear_algebra, ONLY: dcopy, dspevx
-      USE dinit_I, ONLY: dinit
-      USE suite_linear_algebra, ONLY: slamch
-      IMPLICIT NONE
+      use dspevx_i
+      use suite_linear_algebra, only: dcopy, dspevx
+      use dinit_i, only: dinit
+      use suite_linear_algebra, only: slamch
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN):: nmax, ncf, niv
-      REAL(DOUBLE), DIMENSION(*) :: basis, hmx
+      integer, intent(in):: nmax, ncf, niv
+      real(double), dimension(*) :: basis, hmx
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------------------------------
-      INTEGER :: info, ns, i, nfound, j, ihmx, iap
-      REAL(DOUBLE), DIMENSION(:), pointer :: ap, eigval, vec, work
-      INTEGER, DIMENSION(:), pointer :: iwork, ifail
-      REAL(DOUBLE) :: ABSTOL
+      integer :: info, ns, i, nfound, j, ihmx, iap
+      real(double), dimension(:), pointer :: ap, eigval, vec, work
+      integer, dimension(:), pointer :: iwork, ifail
+      real(double) :: abstol
 !-----------------------------------------------------------------------
-      NS = MIN (nmax, ncf)
+      ns = min (nmax, ncf)
 
-      CALL alloc (ap, NS*(NS+1)/2, 'AP', 'INIESTDM')
-      CALL dinit (NS*(NS+1)/2, 0.d0, ap, 1)
+      call alloc (ap, ns*(ns+1)/2, 'AP', 'INIESTDM')
+      call dinit (ns*(ns+1)/2, 0.d0, ap, 1)
 
 !  Get the upper left sub-matrix
 !  ap is global, hmx is local !!!
 
       ihmx = 0
-      DO i = myid + 1, ns, nprocs
+      do i = myid + 1, ns, nprocs
          iap = i*(i-1)/2
-         DO j = 1, i
+         do j = 1, i
             ap(j+iap) = hmx(j+ihmx)
-         ENDDO
+         enddo
          ihmx = ihmx + i
-      ENDDO
+      enddo
 
-      CALL alloc (eigval,   NS, 'EIGVAL', 'INIESTDM')
-      CALL alloc (vec,   NS*NIV, 'VEC', 'INIESTDM')
-      CALL alloc (work,  8*NS,  'WORK', 'INIESTDM')
-      CALL alloc (iwork, 5*NS,  'IWORK', 'INIESTDM')
-      CALL alloc (ifail,     NS,  'IFAIL', 'INIESTDM')
+      call alloc (eigval,   ns, 'EIGVAL', 'INIESTDM')
+      call alloc (vec,   ns*niv, 'VEC', 'INIESTDM')
+      call alloc (work,  8*ns,  'WORK', 'INIESTDM')
+      call alloc (iwork, 5*ns,  'IWORK', 'INIESTDM')
+      call alloc (ifail,     ns,  'IFAIL', 'INIESTDM')
 
 !      CALL DSPEVX ('Vectors also','In a range','Upper triangular',     &
 !     &          NS,AP,-1.0D0,-1.0D0,1,NIV,0.d0,                        &
 !     &          NFOUND,EIGVAL,VEC,NS,work,iwork,IFAIL,INFO)
-      ABSTOL = 2*SLAMCH('S')
-      CALL DSPEVX ('V','I','U',                                        &
-                NS,AP,-1.d0,-1.d0,1,NIV,ABSTOL,                            &
-                NFOUND,EIGVAL,VEC,NS,work,iwork,IFAIL,INFO)
-      IERR = -ABS (INFO)
+      abstol = 2*slamch('S')
+      call dspevx ('V','I','U',                                        &
+                ns,ap,-1.d0,-1.d0,1,niv,abstol,                            &
+                nfound,eigval,vec,ns,work,iwork,ifail,info)
+      ierr = -abs (info)
 
 !  Build the Basis.
 
-      CALL DINIT (ncf*NIV, 0.D0, BASIS, 1)
+      call dinit (ncf*niv, 0.d0, basis, 1)
 
 !  scatter the vectors
 
-      DO J = 1, NIV
-            CALL dcopy (ns, vec(ns*(j-1)+1:ns*(j-1)+(ns)),1, basis(ncf*(j-1)+1), 1)
-      ENDDO
+      do j = 1, niv
+            call dcopy (ns, vec(ns*(j-1)+1:ns*(j-1)+(ns)),1, basis(ncf*(j-1)+1), 1)
+      enddo
 
-      CALL dcopy (NIV, EIGVAL, 1, BASIS(NIV*ncf+1), 1)
+      call dcopy (niv, eigval, 1, basis(niv*ncf+1), 1)
 
-      CALL dalloc (ap, 'AP', 'INIESTDM')
-      CALL dalloc (eigval, 'EIGVAL', 'INIESTDM')
-      CALL dalloc (vec, 'VEC', 'INIESTDM')
-      CALL dalloc (work, 'WORK', 'INIESTDM')
-      CALL dalloc (iwork, 'IWORK', 'INIESTDM')
-      CALL dalloc (ifail, 'IFAIL', 'INIESTDM')
+      call dalloc (ap, 'AP', 'INIESTDM')
+      call dalloc (eigval, 'EIGVAL', 'INIESTDM')
+      call dalloc (vec, 'VEC', 'INIESTDM')
+      call dalloc (work, 'WORK', 'INIESTDM')
+      call dalloc (iwork, 'IWORK', 'INIESTDM')
+      call dalloc (ifail, 'IFAIL', 'INIESTDM')
 
-      RETURN
-      END
+      return
+      end

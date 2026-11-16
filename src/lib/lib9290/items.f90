@@ -36,13 +36,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE memory_man
-      USE def_C, ONLY: ICCMIN
-      USE iounit_C
+      use memory_man
+      use def_c, only: iccmin
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_I
+      use convrt_i
       implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -50,7 +50,7 @@
       integer  :: ncmin
       integer, intent(in) :: ncf
       integer, intent(out) :: ierr
-      CHARACTER (LEN = *), INTENT(IN) :: RECORD
+      character (len = *), intent(in) :: record
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ALCNTA(ISLDR, ISLDR1, XSLDR, NTDIM, IMODE)
+      subroutine alcnta(isldr, isldr1, xsldr, ntdim, imode)
 !                                                                      *
 !   This  subprogram allocates (IMODE = 1), reallocates (IMODE = 2),   *
 !   and deallocates (IMODE = 3) storage for  certain arrays that are   *
@@ -17,60 +17,60 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE memory_man
-      IMPLICIT NONE
+      use memory_man
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NTDIM
-      INTEGER , INTENT(IN) :: IMODE
-      INTEGER, DIMENSION(:), POINTER :: ISLDR, ISLDR1
-      REAL(DOUBLE), DIMENSION(:), POINTER :: XSLDR
+      integer  :: ntdim
+      integer , intent(in) :: imode
+      integer, dimension(:), pointer :: isldr, isldr1
+      real(double), dimension(:), pointer :: xsldr
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NEWSIZ
+      integer :: newsiz
 !-----------------------------------------------
 !
-      SELECT CASE (IMODE)
-      CASE (1)
+      select case (imode)
+      case (1)
 !
 !   Initial array dimension
 !
-         NTDIM = 1
+         ntdim = 1
 !
 !   Allocate storage for arrays
 !
-         CALL ALLOC (ISLDR, NTDIM, 'ISLDR', 'ALCNTA' )
-         CALL ALLOC (ISLDR1, NTDIM,'ISLDR1', 'ALCNTA' )
-         CALL ALLOC (XSLDR, NTDIM, 'XSLDR', 'ALCNTA' )
+         call alloc (isldr, ntdim, 'ISLDR', 'ALCNTA' )
+         call alloc (isldr1, ntdim,'ISLDR1', 'ALCNTA' )
+         call alloc (xsldr, ntdim, 'XSLDR', 'ALCNTA' )
 !
-      CASE (2)
+      case (2)
 !
 !   Double the allocation of storage for the arrays
 !
-         NEWSIZ = 2*NTDIM
+         newsiz = 2*ntdim
 !
-         CALL RALLOC (ISLDR, NEWSIZ, 'ISLDR', 'ALCNTA' )
-         CALL RALLOC (ISLDR1, NEWSIZ, 'ISLDR1', 'ALCNTA' )
-         CALL RALLOC (XSLDR, NEWSIZ, 'XSLDR', 'ALCNTA' )
+         call ralloc (isldr, newsiz, 'ISLDR', 'ALCNTA' )
+         call ralloc (isldr1, newsiz, 'ISLDR1', 'ALCNTA' )
+         call ralloc (xsldr, newsiz, 'XSLDR', 'ALCNTA' )
 !
-         NTDIM = NEWSIZ
+         ntdim = newsiz
 !
-      CASE (3)
+      case (3)
 !
 !   Deallocate the storage for the arrays
 !
-         CALL DALLOC (ISLDR, 'ISLDR', 'ALCNTA' )
-         CALL DALLOC (ISLDR1, 'ISLDR1', 'ALCNTA' )
-         CALL DALLOC (XSLDR,  'XSLDR', 'ALCNTA' )
+         call dalloc (isldr, 'ISLDR', 'ALCNTA' )
+         call dalloc (isldr1, 'ISLDR1', 'ALCNTA' )
+         call dalloc (xsldr,  'XSLDR', 'ALCNTA' )
 !
-      CASE DEFAULT
+      case default
 !
-         WRITE (6, *) 'ALCNTA: Invalid argument IMODE = ', IMODE
-         STOP
+         write (6, *) 'ALCNTA: Invalid argument IMODE = ', imode
+         stop
 !
-      END SELECT
+      end select
 !
-      RETURN
-      END SUBROUTINE ALCNTA
+      return
+      end subroutine alcnta

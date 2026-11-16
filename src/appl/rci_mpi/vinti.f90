@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION VINTI (J, K)
+      real(kind(0.0d0)) function vinti (j, k)
 !                                                                      *
 !   The value of this  function is the one-electron integral V (J,K)   *
 !   for  orbitals  J, K. The analytical expression for this quantity   *
@@ -18,65 +18,65 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE debug_C
-      USE grid_C
-      USE orb_C
-      USE tatb_C
-      USE wave_C
+      use vast_kind_param, only:  double
+      use debug_c
+      use grid_c
+      use orb_c
+      use tatb_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dpbdt_I
-      USE quad_I
-      IMPLICIT NONE
+      use dpbdt_i
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
-      INTEGER  :: K
+      integer  :: j
+      integer  :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, KPJ, KPK, IFACT1, IFACT2
-      REAL(DOUBLE) :: PIECE1, FACT1, FACT2, PIECE2
+      integer :: i, kpj, kpk, ifact1, ifact2
+      real(double) :: piece1, fact1, fact2, piece2
 !-----------------------------------------------
 !
-      MTP = MAX(MF(J),MF(K))
+      mtp = max(mf(j),mf(k))
 !
 !   Piece involving derivatives
 !
-      CALL DPBDT (K)
-      TA(1) = 0.0D00
-      DO I = 2, MTP
-         TA(I) = PF(I,J)*TA(I) + QF(I,J)*TB(I)
-      END DO
-      CALL QUAD (PIECE1)
-      PIECE1 = PIECE1/H
+      call dpbdt (k)
+      ta(1) = 0.0d00
+      do i = 2, mtp
+         ta(i) = pf(i,j)*ta(i) + qf(i,j)*tb(i)
+      end do
+      call quad (piece1)
+      piece1 = piece1/h
 !
 !   Pieces not involving derivatives
 !
-      KPJ = NAK(J)
-      KPK = NAK(K)
-      IFACT1 = KPJ*(KPJ + 1) - KPK*(KPK + 1)
-      FACT1 = 0.5D00*DBLE(IFACT1)
-      IFACT2 = (-KPJ*((-KPJ) + 1)) + KPK*((-KPK) + 1)
-      FACT2 = 0.5D00*DBLE(IFACT2)
-      TA(1) = 0.0D00
-      DO I = 2, MTP
-         TA(I) = RPOR(I)*(FACT1*PF(I,J)*PF(I,K) + FACT2*QF(I,J)*QF(I,K))
-      END DO
-      CALL QUAD (PIECE2)
+      kpj = nak(j)
+      kpk = nak(k)
+      ifact1 = kpj*(kpj + 1) - kpk*(kpk + 1)
+      fact1 = 0.5d00*dble(ifact1)
+      ifact2 = (-kpj*((-kpj) + 1)) + kpk*((-kpk) + 1)
+      fact2 = 0.5d00*dble(ifact2)
+      ta(1) = 0.0d00
+      do i = 2, mtp
+         ta(i) = rpor(i)*(fact1*pf(i,j)*pf(i,k) + fact2*qf(i,j)*qf(i,k))
+      end do
+      call quad (piece2)
 !
-      VINTI = PIECE1 - PIECE2
+      vinti = piece1 - piece2
 !
 !   Debug printout
 !
-      IF (LDBPR(6)) WRITE (99, 300) NP(J), NH(J), NP(K), NH(K), VINTI
+      if (ldbpr(6)) write (99, 300) np(j), nh(j), np(k), nh(k), vinti
 !
-      RETURN
+      return
 !
-  300 FORMAT(/,'VINTI: V (',1I2,1A2,',',1I2,1A2,') = ',1P,D19.12)
-      RETURN
+  300 format(/,'VINTI: V (',1i2,1a2,',',1i2,1a2,') = ',1p,d19.12)
+      return
 !
-      END FUNCTION VINTI
+      end function vinti

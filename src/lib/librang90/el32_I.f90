@@ -1,8 +1,8 @@
-      MODULE el32_I
-      INTERFACE
+      module el32_i
+      interface
 !
-      SUBROUTINE EL32(JJJA,JJJB,JA,JB,JJA,JJB,JJC,JJD,ICOLBREI)
-      INTEGER, INTENT(IN) :: JJJA,JJJB,JA,JB,JJA,JJB,JJC,JJD,ICOLBREI
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine el32(jjja,jjjb,ja,jb,jja,jjb,jjc,jjd,icolbrei)
+      integer, intent(in) :: jjja,jjjb,ja,jb,jja,jjb,jjc,jjd,icolbrei
+      end subroutine
+      end interface
+      end module

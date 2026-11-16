@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION RINTDENS (I, J)
+      real(kind(0.0d0)) function rintdens (i, j)
 !                                                                      *
 !   The value of RINTDENS is an approximation to:                      *
 !                                                                      *
@@ -19,37 +19,37 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE def_C,           ONLY: cvac, pi
-      USE grid_C
-      USE wave_C
+      use vast_kind_param, only: double
+      use def_c,           only: cvac, pi
+      use grid_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE polint_I
-      IMPLICIT NONE
+      use polint_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: I, J
+      integer  :: i, j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: L, II, NMIN
-      REAL(DOUBLE), DIMENSION(3) :: XA, YA
-      REAL(DOUBLE) :: DENS
+      integer :: l, ii, nmin
+      real(double), dimension(3) :: xa, ya
+      real(double) :: dens
 !-----------------------------------------------
 !
-      NMIN = 10
+      nmin = 10
 
-      II = 1
-      DO L = NMIN,NMIN+4,2
-         XA(II) = R(L)
-         YA(II) = (PF(L,I)*PF(L,J) + QF(L,I)*QF(L,J))/(4.0D00*PI*R(L)*R(L))
-         II = II + 1
-      END DO
-      CALL POLINT (XA,YA,DENS)
-      RINTDENS = DENS
+      ii = 1
+      do l = nmin,nmin+4,2
+         xa(ii) = r(l)
+         ya(ii) = (pf(l,i)*pf(l,j) + qf(l,i)*qf(l,j))/(4.0d00*pi*r(l)*r(l))
+         ii = ii + 1
+      end do
+      call polint (xa,ya,dens)
+      rintdens = dens
 !
-      RETURN
-      END FUNCTION RINTDENS
+      return
+      end function rintdens

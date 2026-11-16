@@ -1,109 +1,109 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SMSNEW_MPI(DOIT,VINT,VINT2)
+      subroutine smsnew_mpi(doit,vint,vint2)
 !                                                                      *
 !   MPI version of SMSNEW. Each rank handles a strided subset of the   *
 !   outer IC loop and can optionally write a per-rank angular-data      *
 !   fragment that the root process later merges into name.ITB.          *
 !                                                                      *
 !***********************************************************************
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: KEYORB, NNNW
-      USE debug_C
-      USE prnt_C
-      USE orb_C
-      USE BUFFER_C
-      USE eigv_C
-      USE ris_C
-      USE mpi_C,            ONLY: MYID, NPROCS
-      USE alcbuf_I
-      USE ispar_I
-      USE itjpo_I
-      USE convrt_I, ONLY: convrt
-      USE rkco_gg_I, ONLY: rkco_gg
-      IMPLICIT NONE
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: VINT, VINT2
-      INTEGER, INTENT(IN) :: DOIT
-      EXTERNAL :: CORD
-      INTEGER, PARAMETER :: KEY = KEYORB
-      CHARACTER*11 :: CNUM
-      REAL(DOUBLE), DIMENSION(NVEC) :: EVPAIR
-      REAL(DOUBLE) :: CONTRI, CONTRIK1, VCOEFF, RADIAL_K1, RADIAL_SMS,  &
-         PAIR_SCALE, TERM_K1, TERM_SMS
-      INTEGER :: J,K,LOC,IC,IR,ITJPOC,INCOR,LCNUM, IIA, IIB, IIC, IID
-      INTEGER :: I, OCC_IC, OCC_IR, NDIFF
+      use vast_kind_param,  only: double
+      use parameter_def,    only: keyorb, nnnw
+      use debug_c
+      use prnt_c
+      use orb_c
+      use buffer_c
+      use eigv_c
+      use ris_c
+      use mpi_c,            only: myid, nprocs
+      use alcbuf_i
+      use ispar_i
+      use itjpo_i
+      use convrt_i, only: convrt
+      use rkco_gg_i, only: rkco_gg
+      implicit none
+      real(double), dimension(nnnw,nnnw), intent(in) :: vint, vint2
+      integer, intent(in) :: doit
+      external :: cord
+      integer, parameter :: key = keyorb
+      character*11 :: cnum
+      real(double), dimension(nvec) :: evpair
+      real(double) :: contri, contrik1, vcoeff, radial_k1, radial_sms,  &
+         pair_scale, term_k1, term_sms
+      integer :: j,k,loc,ic,ir,itjpoc,incor,lcnum, iia, iib, iic, iid
+      integer :: i, occ_ic, occ_ir, ndiff
 
-      INCOR = 1
-      CALL ALCBUF (1)
+      incor = 1
+      call alcbuf (1)
 
-      DO IC = MYID + 1, NCF, NPROCS
-         IF (MYID == 0 .AND. MOD(IC,100) .EQ. 1) THEN
-            CALL CONVRT (IC,CNUM,LCNUM)
-            PRINT *, 'Column '//CNUM(1:LCNUM)//' complete on root;'
-         ENDIF
+      do ic = myid + 1, ncf, nprocs
+         if (myid == 0 .and. mod(ic,100) .eq. 1) then
+            call convrt (ic,cnum,lcnum)
+            print *, 'Column '//cnum(1:lcnum)//' complete on root;'
+         endif
 
-         ITJPOC = ITJPO (IC)
-         DO IR = IC,NCF
-            IF (ITJPO(IR) .EQ. ITJPOC) THEN
-               IF (ISPAR(IC) .NE. ISPAR(IR)) CYCLE
-               NDIFF = 0
-               DO I = 1,NW
-                  OCC_IC = IQA(I,IC)
-                  OCC_IR = IQA(I,IR)
-                  IF (OCC_IC .EQ. OCC_IR) CYCLE
-                  IF (IABS(OCC_IC - OCC_IR) .GT. 2) THEN
-                     NDIFF = 5
-                     EXIT
-                  ENDIF
-                  NDIFF = NDIFF + IABS(OCC_IC - OCC_IR)
-                  IF (NDIFF .GT. 4) EXIT
-               END DO
-               IF (NDIFF .GT. 4 .OR. MOD(NDIFF,2) .NE. 0) CYCLE
+         itjpoc = itjpo (ic)
+         do ir = ic,ncf
+            if (itjpo(ir) .eq. itjpoc) then
+               if (ispar(ic) .ne. ispar(ir)) cycle
+               ndiff = 0
+               do i = 1,nw
+                  occ_ic = iqa(i,ic)
+                  occ_ir = iqa(i,ir)
+                  if (occ_ic .eq. occ_ir) cycle
+                  if (iabs(occ_ic - occ_ir) .gt. 2) then
+                     ndiff = 5
+                     exit
+                  endif
+                  ndiff = ndiff + iabs(occ_ic - occ_ir)
+                  if (ndiff .gt. 4) exit
+               end do
+               if (ndiff .gt. 4 .or. mod(ndiff,2) .ne. 0) cycle
 
-               NVCOEF = 0
-               CALL RKCO_GG (IC, IR, CORD, INCOR, 1)
-               IF (NVCOEF .EQ. 0) CYCLE
-               IF (IR .EQ. IC) THEN
-                  PAIR_SCALE = 1.0D00
-               ELSE
-                  PAIR_SCALE = 2.0D00
-               ENDIF
-               DO J = 1,NVEC
-                  LOC = (J-1)*NCF
-                  EVPAIR(J) = PAIR_SCALE * EVEC(IC+LOC) * EVEC(IR+LOC)
-               END DO
-               DO K = 1,NVCOEF
-                  VCOEFF = COEFF(K)
-                  IF (ABS (VCOEFF) .GT. CUTOFF) THEN
-                     IF (LABEL(5,K) .EQ. 1) THEN
-                        IIA = LABEL(1,K)
-                        IIB = LABEL(2,K)
-                        IIC = LABEL(3,K)
-                        IID = LABEL(4,K)
-                        RADIAL_K1 = VINT(IIA,IIC) * VINT(IIB,IID)
-                        RADIAL_SMS = (VINT2(IIA,IIC) * VINT(IIB,IID) +   &
-                           VINT2(IIB,IID) * VINT(IIA,IIC))/2.0D00
-                        IF (RADIAL_K1 == 0.0D00 .AND.                     &
-                            RADIAL_SMS == 0.0D00) CYCLE
-                        TERM_K1 = -VCOEFF * RADIAL_K1
-                        TERM_SMS = -VCOEFF * RADIAL_SMS
-                        IF(DOIT.EQ.1) WRITE(51) IC,IR
-                        IF(DOIT.EQ.1) THEN
-                           WRITE(51) VCOEFF, ((IIA*KEY + IIC)*KEY+IIB)*KEY+IID
-                        ENDIF
-                        DO J = 1,NVEC
-                           CONTRIK1 = EVPAIR(J) * TERM_K1
-                           CONTRI = EVPAIR(J) * TERM_SMS
-                           SMSC1(J) = SMSC1(J) + CONTRIK1
-                           SMSC2(J) = SMSC2(J) + CONTRI
-                        END DO
-                     ENDIF
-                  ENDIF
-               END DO
-            ENDIF
-         END DO
-      END DO
+               nvcoef = 0
+               call rkco_gg (ic, ir, cord, incor, 1)
+               if (nvcoef .eq. 0) cycle
+               if (ir .eq. ic) then
+                  pair_scale = 1.0d00
+               else
+                  pair_scale = 2.0d00
+               endif
+               do j = 1,nvec
+                  loc = (j-1)*ncf
+                  evpair(j) = pair_scale * evec(ic+loc) * evec(ir+loc)
+               end do
+               do k = 1,nvcoef
+                  vcoeff = coeff(k)
+                  if (abs (vcoeff) .gt. cutoff) then
+                     if (label(5,k) .eq. 1) then
+                        iia = label(1,k)
+                        iib = label(2,k)
+                        iic = label(3,k)
+                        iid = label(4,k)
+                        radial_k1 = vint(iia,iic) * vint(iib,iid)
+                        radial_sms = (vint2(iia,iic) * vint(iib,iid) +   &
+                           vint2(iib,iid) * vint(iia,iic))/2.0d00
+                        if (radial_k1 == 0.0d00 .and.                     &
+                            radial_sms == 0.0d00) cycle
+                        term_k1 = -vcoeff * radial_k1
+                        term_sms = -vcoeff * radial_sms
+                        if(doit.eq.1) write(51) ic,ir
+                        if(doit.eq.1) then
+                           write(51) vcoeff, ((iia*key + iic)*key+iib)*key+iid
+                        endif
+                        do j = 1,nvec
+                           contrik1 = evpair(j) * term_k1
+                           contri = evpair(j) * term_sms
+                           smsc1(j) = smsc1(j) + contrik1
+                           smsc2(j) = smsc2(j) + contri
+                        end do
+                     endif
+                  endif
+               end do
+            endif
+         end do
+      end do
 
-      CALL ALCBUF (3)
-      RETURN
-      END SUBROUTINE SMSNEW_MPI
+      call alcbuf (3)
+      return
+      end subroutine smsnew_mpi

@@ -1,5 +1,5 @@
 !***********************************************************************
-      SUBROUTINE STRSUM
+      subroutine strsum
 
 !   Generates the first part of  rscf92.sum  (on stream 24).
 !
@@ -14,27 +14,27 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE foparm_C
-      USE grid_C
-      USE mcpb_C
-      USE npar_C
-      USE npot_C
-      USE orb_C
-      USE wave_C
-      USE wfac_C
+      use vast_kind_param, only:  double
+      use def_c
+      use foparm_c
+      use grid_c
+      use mcpb_c
+      use npar_c
+      use npot_c
+      use orb_c
+      use wave_c
+      use wfac_c
 !      USE iccu_C
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE convrt_I
-      IMPLICIT NONE
+      use convrt_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: LENTH, IEND, I, IBEG
-      CHARACTER :: RECORD*256, CDATA*26, CTIME*8, CDATE*8, CLEVEL*4
+      integer :: lenth, iend, i, ibeg
+      character :: record*256, cdata*26, ctime*8, cdate*8, clevel*4
 !-----------------------------------------------
 !
 !     POINTER (PWEIGH,WEIGHT(1))
@@ -45,7 +45,7 @@
 !   Both the nuclear charge and the number of electrons are
 !   known at this point; load IONCTY with the ionicity
 !
-      IONCTY = NINT(Z) - NELEC
+      ioncty = nint(z) - nelec
 !
 !   Get the date and time of day; make this information the
 !   header of the summary file
@@ -55,117 +55,117 @@
 !
 !   Write out the basic dimensions of the electron cloud
 !
-      WRITE (24, *)
-      CALL CONVRT (NELEC, RECORD, LENTH)
-      WRITE (24, *) 'There are '//RECORD(1:LENTH)//' electrons in the cloud'
-      CALL CONVRT (NCF, RECORD, LENTH)
-      WRITE (24, *) ' in '//RECORD(1:LENTH)//' relativistic CSFs'
-      CALL CONVRT (NW, RECORD, LENTH)
-      WRITE (24, *) ' based on '//RECORD(1:LENTH)//' relativistic subshells.'
+      write (24, *)
+      call convrt (nelec, record, lenth)
+      write (24, *) 'There are '//record(1:lenth)//' electrons in the cloud'
+      call convrt (ncf, record, lenth)
+      write (24, *) ' in '//record(1:lenth)//' relativistic CSFs'
+      call convrt (nw, record, lenth)
+      write (24, *) ' based on '//record(1:lenth)//' relativistic subshells.'
 !
 !   If the CSFs are not treated uniformly, write out an
 !   informative message
 !
-      IF (LFORDR) THEN
-         WRITE (24, *)
-         CALL CONVRT (ICCUT, RECORD, LENTH)
-         WRITE (24, *) ' CSFs 1--'//RECORD(1:LENTH)//' constitute'//&
+      if (lfordr) then
+         write (24, *)
+         call convrt (iccut, record, lenth)
+         write (24, *) ' CSFs 1--'//record(1:lenth)//' constitute'//&
             ' the zero-order space;'
-      ENDIF
+      endif
 !
 !   Write out the nuclear parameters
 !
-      WRITE (24, *)
-      WRITE (24, 300) Z
-      IF (EMN == 0.D0) THEN
-         WRITE (24, *) ' the nucleus is stationary;'
-      ELSE
-         WRITE (24, 301) EMN
-      ENDIF
-      IF (NPARM == 2) THEN
-         WRITE (24, *) ' Fermi nucleus:'
-         WRITE (24, 302) PARM(1), PARM(2)
-         CALL CONVRT (NNUC, RECORD, LENTH)
-         WRITE (24, *) ' there are '//RECORD(1:LENTH)//&
+      write (24, *)
+      write (24, 300) z
+      if (emn == 0.d0) then
+         write (24, *) ' the nucleus is stationary;'
+      else
+         write (24, 301) emn
+      endif
+      if (nparm == 2) then
+         write (24, *) ' Fermi nucleus:'
+         write (24, 302) parm(1), parm(2)
+         call convrt (nnuc, record, lenth)
+         write (24, *) ' there are '//record(1:lenth)//&
             ' tabulation points in the nucleus.'
-      ELSE
-         WRITE (24, *) ' point nucleus.'
-      ENDIF
+      else
+         write (24, *) ' point nucleus.'
+      endif
 !
 !   Write out the physical effects specifications
 !
-      WRITE (24, *)
-      WRITE (24, 303) C
+      write (24, *)
+      write (24, 303) c
 !
 !   Write out the parameters of the radial grid
 !
-      WRITE (24, *)
-      IF (HP == 0.D0) THEN
-         WRITE (24, 305) RNT, H, N
-      ELSE
-         WRITE (24, 306) RNT, H, HP, N
-      ENDIF
-      WRITE (24, 307) R(1), R(2), R(N)
-      WRITE (24, *)
+      write (24, *)
+      if (hp == 0.d0) then
+         write (24, 305) rnt, h, n
+      else
+         write (24, 306) rnt, h, hp, n
+      endif
+      write (24, 307) r(1), r(2), r(n)
+      write (24, *)
 !
 !  (E)AL calculation, returns here
 !
-      IF (NCMIN == 0) THEN
-         WRITE (24, *) '(E)AL calculation.'
-         RETURN
-      ENDIF
+      if (ncmin == 0) then
+         write (24, *) '(E)AL calculation.'
+         return
+      endif
 !
 !  Info exclusively for EOL calculations
 !
-      IF (NCMIN == 1) THEN
-         WRITE (24, *) 'OL calculation.'
-         CALL CONVRT (ICCMIN(1), RECORD, LENTH)
-         WRITE (24, *) 'Level '//RECORD(1:LENTH)//' will be optimised.'
-      ELSE
-         WRITE (24, *) 'EOL calculation.'
-         CALL CONVRT (NCMIN, RECORD, LENTH)
-         WRITE (24, *) RECORD(1:LENTH)//' levels will be optimised;'
-         RECORD(1:20) = ' their indices are: '
-         IEND = 20
-         DO I = 1, NCMIN
-            IBEG = IEND + 1
-            CALL CONVRT (ICCMIN(I), CLEVEL, LENTH)
-            IF (I /= NCMIN) THEN
-               IEND = IBEG + LENTH + 1
-               RECORD(IBEG:IEND) = CLEVEL(1:LENTH)//', '
-            ELSE
-               IEND = IBEG + LENTH
-               RECORD(IBEG:IEND) = CLEVEL(1:LENTH)//'.'
-            ENDIF
-            IF (IEND < 120) CYCLE
-            WRITE (24, *) RECORD(1:IEND)
-            RECORD(1:2) = '  '
-            IEND = 2
-         END DO
-         IF (IEND /= 2) WRITE (24, *) RECORD(1:IEND)
-         IF (WEIGHT(1) == (-1.D0)) THEN
-            WRITE (24, *) 'Each is assigned its statistical weight;'
-         ELSE IF (WEIGHT(1) == (-2.D0)) THEN
-            WRITE (24, *) 'All levels are weighted equally;'
-         ELSE
-            WRITE (24, *) ' weighted as follows:'
-            WRITE (24, *) (WEIGHT(I),I=1,NCMIN)
-         ENDIF
-      ENDIF
+      if (ncmin == 1) then
+         write (24, *) 'OL calculation.'
+         call convrt (iccmin(1), record, lenth)
+         write (24, *) 'Level '//record(1:lenth)//' will be optimised.'
+      else
+         write (24, *) 'EOL calculation.'
+         call convrt (ncmin, record, lenth)
+         write (24, *) record(1:lenth)//' levels will be optimised;'
+         record(1:20) = ' their indices are: '
+         iend = 20
+         do i = 1, ncmin
+            ibeg = iend + 1
+            call convrt (iccmin(i), clevel, lenth)
+            if (i /= ncmin) then
+               iend = ibeg + lenth + 1
+               record(ibeg:iend) = clevel(1:lenth)//', '
+            else
+               iend = ibeg + lenth
+               record(ibeg:iend) = clevel(1:lenth)//'.'
+            endif
+            if (iend < 120) cycle
+            write (24, *) record(1:iend)
+            record(1:2) = '  '
+            iend = 2
+         end do
+         if (iend /= 2) write (24, *) record(1:iend)
+         if (weight(1) == (-1.d0)) then
+            write (24, *) 'Each is assigned its statistical weight;'
+         else if (weight(1) == (-2.d0)) then
+            write (24, *) 'All levels are weighted equally;'
+         else
+            write (24, *) ' weighted as follows:'
+            write (24, *) (weight(i),i=1,ncmin)
+         endif
+      endif
 
-  300 FORMAT('The atomic number is ',1F14.10,';')
-  301 FORMAT(' the mass of the nucleus is ',1P,D19.12,' electron masses;')
-  302 FORMAT('  c =',1P,1D19.12,' Bohr radii,'/,'  a =',1D19.12,' Bohr radii;')
-  303 FORMAT('Speed of light = ',3P,D19.12,' atomic units.')
-  305 FORMAT('Radial grid: R(I) = RNT*(exp((I-1)*H)-1),',' I = 1, ..., N;'/,/,&
-         ' RNT  = ',1P,D19.12,' Bohr radii;'/,' H    = ',D19.12,' Bohr radii;'/&
-         ,' N    = ',1I4,';')
-  306 FORMAT('Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,',&
-         ' I = 1, ..., N;'/,/,' RNT  = ',1P,D19.12,' Bohr radii;'/,' H    = ',D&
-         19.12,' Bohr radii;'/,' HP   = ',D19.12,' Bohr radii;'/,' N    = ',1I4&
+  300 format('The atomic number is ',1f14.10,';')
+  301 format(' the mass of the nucleus is ',1p,d19.12,' electron masses;')
+  302 format('  c =',1p,1d19.12,' Bohr radii,'/,'  a =',1d19.12,' Bohr radii;')
+  303 format('Speed of light = ',3p,d19.12,' atomic units.')
+  305 format('Radial grid: R(I) = RNT*(exp((I-1)*H)-1),',' I = 1, ..., N;'/,/,&
+         ' RNT  = ',1p,d19.12,' Bohr radii;'/,' H    = ',d19.12,' Bohr radii;'/&
+         ,' N    = ',1i4,';')
+  306 format('Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,',&
+         ' I = 1, ..., N;'/,/,' RNT  = ',1p,d19.12,' Bohr radii;'/,' H    = ',d&
+         19.12,' Bohr radii;'/,' HP   = ',d19.12,' Bohr radii;'/,' N    = ',1i4&
          ,';')
-  307 FORMAT(' R(1) = ',1P,1D19.12,' Bohr radii;'/,' R(2) = ',1D19.12,&
-         ' Bohr radii;'/,' R(N) = ',1D19.12,' Bohr radii.')
+  307 format(' R(1) = ',1p,1d19.12,' Bohr radii;'/,' R(2) = ',1d19.12,&
+         ' Bohr radii;'/,' R(N) = ',1d19.12,' Bohr radii.')
 
-      RETURN
-      END SUBROUTINE STRSUM
+      return
+      end subroutine strsum

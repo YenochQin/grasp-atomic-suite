@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE START(IORB, ITYPE, P0, P, Q0, Q)
+      subroutine start(iorb, itype, p0, p, q0, q)
 !                                                                      *
 !   This subroutine sets up  P(1:6), Q(1:6),  required  to start the   *
 !   integration for programs  OUT  and  SBSTEP .                       *
@@ -24,183 +24,183 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE CNC_C
-      USE DEF_C,           ONLY: C, Z, ACCY
-      USE GRID_C
-      USE NPAR_C
-      USE ORB_C
-      USE POTE_C,          ONLY: YP, XP, XQ
-      USE SCF_C,           ONLY: NDCOF, NDA, DA
-      USE WAVE_C,          ONLY: PZ,PF,QF
-      IMPLICIT NONE
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use cnc_c
+      use def_c,           only: c, z, accy
+      use grid_c
+      use npar_c
+      use orb_c
+      use pote_c,          only: yp, xp, xq
+      use scf_c,           only: ndcof, nda, da
+      use wave_c,          only: pz,pf,qf
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: IORB
-      INTEGER, INTENT(IN) :: ITYPE
-      REAL(DOUBLE), INTENT(IN) :: P0
-      REAL(DOUBLE), INTENT(OUT) :: Q0
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(INOUT) :: P
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(INOUT) :: Q
+      integer  :: iorb
+      integer, intent(in) :: itype
+      real(double), intent(in) :: p0
+      real(double), intent(out) :: q0
+      real(double), dimension(nnnp), intent(inout) :: p
+      real(double), dimension(nnnp), intent(inout) :: q
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: MXITER=36, KIORB, I, JORB, NITER, J
-      REAL(DOUBLE), DIMENSION(6) :: RDP, RDQ, RSEP, RSEQ
-      REAL(DOUBLE), DIMENSION(2:6) :: SPEST, SQEST
-      REAL(DOUBLE) :: OBC, ZONC, GIORB, FKIORB, OMGI, OMGMK, OMGPK, RSEP1, &
-         RSEQ1, PZERO, P1, Q1, SUMP, SUMQ, FACTOR, CSQ, TWOCSQ, ENERGY, ENEFAC&
-         , RI, RPI, RIRPI, YPIRPI, DIFMAW, DIFMAX, COEFIJ, PI, QI, RJ
+      integer :: mxiter=36, kiorb, i, jorb, niter, j
+      real(double), dimension(6) :: rdp, rdq, rsep, rseq
+      real(double), dimension(2:6) :: spest, sqest
+      real(double) :: obc, zonc, giorb, fkiorb, omgi, omgmk, omgpk, rsep1, &
+         rseq1, pzero, p1, q1, sump, sumq, factor, csq, twocsq, energy, enefac&
+         , ri, rpi, rirpi, ypirpi, difmaw, difmax, coefij, pi, qi, rj
 !-----------------------------------------------
 !
 !
 !   Initialization
 !
-      OBC = 1.0D00/C
-      ZONC = Z*OBC
-      GIORB = GAMA(IORB)
-      KIORB = NAK(IORB)
-      FKIORB = DBLE(KIORB)
-      OMGI = 1.0D00 - GIORB
+      obc = 1.0d00/c
+      zonc = z*obc
+      giorb = gama(iorb)
+      kiorb = nak(iorb)
+      fkiorb = dble(kiorb)
+      omgi = 1.0d00 - giorb
 !
-      OMGMK = OMGI - FKIORB
-      OMGPK = OMGI + FKIORB
+      omgmk = omgi - fkiorb
+      omgpk = omgi + fkiorb
 !
 !   Determine P(1), Q(1): THESE STORE  R**(-GAMMA)*(P(1),Q(1));
 !   set up  RSEP  and  RSEQ , the inhomogeneous terms
 !
-      IF (ITYPE==1 .OR. ITYPE==2) THEN
-         IF (NPARM == 0) THEN
-            P(1) = P0
-            IF (KIORB < 0) THEN
-               Q(1) = -P0*ZONC/(GIORB - FKIORB)
-            ELSE
-               Q(1) = P0*(GIORB + FKIORB)/ZONC
-            ENDIF
-         ELSE
-            IF (KIORB < 0) THEN
-               P(1) = P0
-               Q(1) = 0.0D00
-            ELSE
-               P(1) = 0.0D00
-               Q(1) = P0*(GIORB + FKIORB)/ZONC
-            ENDIF
-         ENDIF
-         IF (ITYPE == 1) THEN
-            RSEP = 0.0D00
-            RSEQ = 0.0D00
-         ELSE
-            RSEP1 = 0.0D00
-            RSEQ1 = 0.0D00
-            DO I = 1, NDCOF
-               JORB = NDA(I)
-               PZERO = PZ(JORB)
-               IF (NPARM == 0) THEN
-                  P1 = PZERO
-                  IF (KIORB < 0) THEN
-                     Q1 = -PZERO*ZONC/(GIORB - FKIORB)
-                  ELSE
-                     Q1 = PZERO*(GIORB + FKIORB)/ZONC
-                  ENDIF
-                  SUMP = ZONC*Q1
-                  SUMQ = -ZONC*P1
-               ELSE
-                  IF (KIORB < 0) THEN
-                     P1 = PZERO
-                     Q1 = 0.0D00
-                  ELSE
-                     P1 = 0.0D00
-                     Q1 = PZERO*(GIORB + FKIORB)/ZONC
-                  ENDIF
-                  SUMP = 0.0D00
-                  SUMQ = 0.0D00
-               ENDIF
-               FACTOR = DA(I)
-               RSEP1 = RSEP1 + FACTOR*(SUMP + OMGMK*P1)
-               RSEQ1 = RSEQ1 + FACTOR*(SUMQ + OMGPK*Q1)
-            END DO
-            FACTOR = RP(1)
-            RSEP(1) = FACTOR*RSEP1
-            RSEQ(1) = FACTOR*RSEQ1
-            DO I = 2, 6
-               FACTOR = -RP(I)*R(I)**(-GIORB)
-               RSEP(I) = FACTOR*XP(I)
-               RSEQ(I) = FACTOR*XQ(I)
-            END DO
-         ENDIF
-      ELSE IF (ITYPE == 3) THEN
-         P(1) = 0.0D00
-         Q(1) = 0.0D00
-         RSEP(1) = 0.0D00
-         RSEQ(1) = 0.0D00
-         DO I = 2, 6
-            FACTOR = OBC*RP(I)*R(I)**OMGI
-            RSEP(I) = -FACTOR*QF(I,IORB)
-            RSEQ(I) = FACTOR*PF(I,IORB)
-         END DO
-      ENDIF
-      Q0 = Q(1)
+      if (itype==1 .or. itype==2) then
+         if (nparm == 0) then
+            p(1) = p0
+            if (kiorb < 0) then
+               q(1) = -p0*zonc/(giorb - fkiorb)
+            else
+               q(1) = p0*(giorb + fkiorb)/zonc
+            endif
+         else
+            if (kiorb < 0) then
+               p(1) = p0
+               q(1) = 0.0d00
+            else
+               p(1) = 0.0d00
+               q(1) = p0*(giorb + fkiorb)/zonc
+            endif
+         endif
+         if (itype == 1) then
+            rsep = 0.0d00
+            rseq = 0.0d00
+         else
+            rsep1 = 0.0d00
+            rseq1 = 0.0d00
+            do i = 1, ndcof
+               jorb = nda(i)
+               pzero = pz(jorb)
+               if (nparm == 0) then
+                  p1 = pzero
+                  if (kiorb < 0) then
+                     q1 = -pzero*zonc/(giorb - fkiorb)
+                  else
+                     q1 = pzero*(giorb + fkiorb)/zonc
+                  endif
+                  sump = zonc*q1
+                  sumq = -zonc*p1
+               else
+                  if (kiorb < 0) then
+                     p1 = pzero
+                     q1 = 0.0d00
+                  else
+                     p1 = 0.0d00
+                     q1 = pzero*(giorb + fkiorb)/zonc
+                  endif
+                  sump = 0.0d00
+                  sumq = 0.0d00
+               endif
+               factor = da(i)
+               rsep1 = rsep1 + factor*(sump + omgmk*p1)
+               rseq1 = rseq1 + factor*(sumq + omgpk*q1)
+            end do
+            factor = rp(1)
+            rsep(1) = factor*rsep1
+            rseq(1) = factor*rseq1
+            do i = 2, 6
+               factor = -rp(i)*r(i)**(-giorb)
+               rsep(i) = factor*xp(i)
+               rseq(i) = factor*xq(i)
+            end do
+         endif
+      else if (itype == 3) then
+         p(1) = 0.0d00
+         q(1) = 0.0d00
+         rsep(1) = 0.0d00
+         rseq(1) = 0.0d00
+         do i = 2, 6
+            factor = obc*rp(i)*r(i)**omgi
+            rsep(i) = -factor*qf(i,iorb)
+            rseq(i) = factor*pf(i,iorb)
+         end do
+      endif
+      q0 = q(1)
 !
 !   Set up  RDP  and  RDQ
 !
-      CSQ = C*C
-      TWOCSQ = CSQ + CSQ
-      ENERGY = E(IORB)
-      ENEFAC = TWOCSQ - ENERGY
-      DO I = 1, 6
-         RI = R(I)
-         RPI = RP(I)
-         RIRPI = RI*RPI
-         YPIRPI = YP(I)*RPI
-         RDP(I) = -OBC*(ENEFAC*RIRPI + YPIRPI)
-         RDQ(I) = -OBC*(ENERGY*RIRPI - YPIRPI)
-      END DO
+      csq = c*c
+      twocsq = csq + csq
+      energy = e(iorb)
+      enefac = twocsq - energy
+      do i = 1, 6
+         ri = r(i)
+         rpi = rp(i)
+         rirpi = ri*rpi
+         ypirpi = yp(i)*rpi
+         rdp(i) = -obc*(enefac*rirpi + ypirpi)
+         rdq(i) = -obc*(energy*rirpi - ypirpi)
+      end do
 !
 !   Determine  P(2:6) , Q(2:6)
 !
 !   Initilizations for the iterations
 !
-      NITER = 0
-      P1 = P(1)
-      Q1 = Q(1)
-      DIFMAW = MAX(ABS(P1),ABS(Q1))
+      niter = 0
+      p1 = p(1)
+      q1 = q(1)
+      difmaw = max(abs(p1),abs(q1))
 !
-      P(2:6) = P1
-      Q(2:6) = Q1
+      p(2:6) = p1
+      q(2:6) = q1
 !
 !   This is the largest factor by which any result will be
 !   multiplied
 !
-      FACTOR = R(6)**GIORB
+      factor = r(6)**giorb
 !
 !   Now iterate
 !
-    7 CONTINUE
-      NITER = NITER + 1
-      DIFMAX = 0.0D00
-      DO J = 2, 6
-         SUMP = SUM(CNC6C(:,J)*(OMGMK*RP(:6)*P(:6)-RDP*Q(:6)+RSEP))
-         SUMQ = SUM(CNC6C(:,J)*(OMGPK*RP(:6)*Q(:6)-RDQ*P(:6)+RSEQ))
-         RJ = R(J)
-         SUMP = SUMP/RJ
-         SUMQ = SUMQ/RJ
-         SPEST(J) = SUMP
-         SQEST(J) = SUMQ
-         DIFMAX = MAX(DIFMAX,ABS(SUMP - P(J)))
-         DIFMAX = MAX(DIFMAX,ABS(SUMQ - Q(J)))
-      END DO
+    7 continue
+      niter = niter + 1
+      difmax = 0.0d00
+      do j = 2, 6
+         sump = sum(cnc6c(:,j)*(omgmk*rp(:6)*p(:6)-rdp*q(:6)+rsep))
+         sumq = sum(cnc6c(:,j)*(omgpk*rp(:6)*q(:6)-rdq*p(:6)+rseq))
+         rj = r(j)
+         sump = sump/rj
+         sumq = sumq/rj
+         spest(j) = sump
+         sqest(j) = sumq
+         difmax = max(difmax,abs(sump - p(j)))
+         difmax = max(difmax,abs(sumq - q(j)))
+      end do
 !zou  IF (DIFMAX .LT. DIFMAW) THEN
-      P(2:6) = SPEST(:6)
-      Q(2:6) = SQEST(:6)
-      DIFMAW = DIFMAX
-      DIFMAX = DIFMAX*FACTOR
-      IF (DIFMAX > ACCY) THEN
-         IF (NITER < MXITER) THEN
-            GO TO 7
-         ENDIF
-      ENDIF
+      p(2:6) = spest(:6)
+      q(2:6) = sqest(:6)
+      difmaw = difmax
+      difmax = difmax*factor
+      if (difmax > accy) then
+         if (niter < mxiter) then
+            go to 7
+         endif
+      endif
 !     ELSE
 !        DIFMAX = DIFMAX*FACTOR
 !        IF (DIFMAX .GT. ACCY) THEN
@@ -208,30 +208,30 @@
 !        ENDIF
 !zou  ENDIF
 ! not convergent, using the initial P,Q
-      IF (DIFMAX > ACCY) THEN
-         P(2:6) = P1
-         Q(2:6) = Q1
-      ENDIF
+      if (difmax > accy) then
+         p(2:6) = p1
+         q(2:6) = q1
+      endif
 !zou
 !
 !   All done
 !
 !   This is always true in GRASP2
 !
-      P(1) = 0.0D00
-      Q(1) = 0.0D00
+      p(1) = 0.0d00
+      q(1) = 0.0d00
 !
-      DO I = 2, 6
-         FACTOR = R(I)**GIORB
-         P(I) = FACTOR*P(I)
-         Q(I) = FACTOR*Q(I)
-      END DO
+      do i = 2, 6
+         factor = r(i)**giorb
+         p(i) = factor*p(i)
+         q(i) = factor*q(i)
+      end do
 !
-      RETURN
+      return
 !
-  300 FORMAT('START: ',1I2,1A2,' subshell: accuracy ',1P,1D8.1,/,&
-         ' attained after ',1I2,' iterations; this fails the'/,&
-         ' accuracy criterion ',D8.1,'.')
-      RETURN
+  300 format('START: ',1i2,1a2,' subshell: accuracy ',1p,1d8.1,/,&
+         ' attained after ',1i2,' iterations; this fails the'/,&
+         ' accuracy criterion ',d8.1,'.')
+      return
 !
-      END SUBROUTINE START
+      end subroutine start

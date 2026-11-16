@@ -1,20 +1,20 @@
 !
 !***********************************************************************
 !                                                                      *
-      MODULE jj2lsjbio_C
+      module jj2lsjbio_c
 !                                                                      *
 !                                                                      *
 !     Written by G. Gaigalas,                                          *
 !     NIST                                     last update: May 2017   *
 !                                                                      *
 !***********************************************************************
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !
-      REAL(DOUBLE), DIMENSION(:), pointer :: RLev_ENER_1,RLev_ENER_2
-      CHARACTER(LEN=64), POINTER, DIMENSION(:) :: string_CSF1
-      CHARACTER(LEN=64), POINTER, DIMENSION(:) :: string_CSF2
-      INTEGER :: NVECTOTI,NVECTOTF,IOPEN_STATUS1,IOPEN_STATUS2
-      INTEGER, DIMENSION(:), pointer :: Lev_POS_1,Lev_J_1,Lev_Par_1
-      INTEGER, DIMENSION(:), pointer :: Lev_POS_2,Lev_J_2,Lev_Par_2
+      real(double), dimension(:), pointer :: rlev_ener_1,rlev_ener_2
+      character(len=64), pointer, dimension(:) :: string_csf1
+      character(len=64), pointer, dimension(:) :: string_csf2
+      integer :: nvectoti,nvectotf,iopen_status1,iopen_status2
+      integer, dimension(:), pointer :: lev_pos_1,lev_j_1,lev_par_1
+      integer, dimension(:), pointer :: lev_pos_2,lev_j_2,lev_par_2
 !
-      END MODULE jj2lsjbio_C
+      end module jj2lsjbio_c

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE BRINT1 (IA,IB,IC,ID,K,TEGRAL)
+      subroutine brint1 (ia,ib,ic,id,k,tegral)
 !                                                                      *
 !   Returns integrals for the transverse photon interaction.           *
 !                                                                      *
@@ -12,65 +12,65 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE bilst_C
-      USE orb_C,           ONLY: NW
-      USE kkstartbreit_C
+      use vast_kind_param, only: double
+      use bilst_c
+      use orb_c,           only: nw
+      use kkstartbreit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: ia, ib, ic, id, k
-      REAL(DOUBLE), INTENT(out) :: tegral
+      integer, intent(in) :: ia, ib, ic, id, k
+      real(double), intent(out) :: tegral
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER ::  index, loc, ju, jl, jm, key
+      integer ::  index, loc, ju, jl, jm, key
 !-----------------------------------------------
 !
-      KEY = NW + 1
-      INDEX = ((IA*KEY+IB)*KEY+IC)*KEY+ID
+      key = nw + 1
+      index = ((ia*key+ib)*key+ic)*key+id
 !
-      JL = KSTARTBREIT1(K)
-      JU = KSTARTBREIT1(K+1) - 1
+      jl = kstartbreit1(k)
+      ju = kstartbreit1(k+1) - 1
 !
-      IF (INDEX < INDTP1(JL).OR.INDEX > INDTP1(JU)) THEN
-        WRITE(*,*) 'Something wrong in brint1'
-        STOP
-      ENDIF
+      if (index < indtp1(jl).or.index > indtp1(ju)) then
+        write(*,*) 'Something wrong in brint1'
+        stop
+      endif
 !
 !   The index is within the range of the indices stored; search
 !   for it in the list of indices
 !
-    1 IF (JU-JL .GT. 1) THEN
-         JM = (JU+JL)/2
-         IF (INDTP1(JM) > INDEX) THEN
-            JU = JM
-         ELSE
-            JL = JM
-         ENDIF
-         GOTO 1
-      ENDIF
+    1 if (ju-jl .gt. 1) then
+         jm = (ju+jl)/2
+         if (indtp1(jm) > index) then
+            ju = jm
+         else
+            jl = jm
+         endif
+         goto 1
+      endif
 !
 !   The range is bracketed to the extent possible
 !
-      IF (INDEX .EQ. INDTP1(JU)) THEN
-         LOC = JU
-      ELSEIF (INDEX .EQ. INDTP1(JL)) THEN
-         LOC = JL
-      ELSE
-         WRITE(*,*) K,IA,IB,IC,ID,INDEX
-         WRITE(*,*) 'Brint1 Integral not found'
-         STOP
-      ENDIF
+      if (index .eq. indtp1(ju)) then
+         loc = ju
+      elseif (index .eq. indtp1(jl)) then
+         loc = jl
+      else
+         write(*,*) k,ia,ib,ic,id,index
+         write(*,*) 'Brint1 Integral not found'
+         stop
+      endif
 !
 !   Return the value of the integral
 !   from storage
 
-      TEGRAL = VALTP1(LOC)
+      tegral = valtp1(loc)
 !
-      RETURN
-      END SUBROUTINE BRINT1
+      return
+      end subroutine brint1

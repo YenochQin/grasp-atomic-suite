@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETSDA(OUTSDAdummy,NNONZ,LPRINT,NB,MYID,NPROCS,FHEAD)
+      subroutine setsda(outsdadummy,nnonz,lprint,nb,myid,nprocs,fhead)
 !                                                                      *
 !   This routine examines lists                                        *
 !                               (IC,IR,npos)                           *
@@ -22,89 +22,89 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE memory_man
+      use memory_man
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      USE orb_C
-      USE iounit_C
+      use orb_c
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE outsda_I, ONLY: outsda
-      IMPLICIT NONE
-      PROCEDURE(outsda) :: OUTSDAdummy
+      use outsda_i, only: outsda
+      implicit none
+      procedure(outsda) :: outsdadummy
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NNONZ
-      INTEGER, INTENT(IN) :: NB
-      INTEGER, INTENT(IN) :: MYID
-      INTEGER, INTENT(IN) :: NPROCS
-      LOGICAL  :: LPRINT
-      CHARACTER, INTENT(IN) :: FHEAD*(*)
+      integer, intent(in) :: nnonz
+      integer, intent(in) :: nb
+      integer, intent(in) :: myid
+      integer, intent(in) :: nprocs
+      logical  :: lprint
+      character, intent(in) :: fhead*(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: MB, IEND, ICLAST, I, IC, NPOS, IERR
-      INTEGER, DIMENSION(:), pointer :: IENDC
-      INTEGER, DIMENSION(:), pointer :: IROW
-      CHARACTER :: MCPLAB*3
+      integer :: mb, iend, iclast, i, ic, npos, ierr
+      integer, dimension(:), pointer :: iendc
+      integer, dimension(:), pointer :: irow
+      character :: mcplab*3
 !-----------------------------------------------
 
-      IF (MYID == 0) WRITE (6, *) &
+      if (myid == 0) write (6, *) &
          'Analysing sparse matrix array definition file ...', 30
 
-      READ (30) MCPLAB, MB
-      IF (NB /= MB) THEN
-         WRITE (ISTDE, *) 'setsda: nb = ', NB, '.NE. mb (=', MB, ')'
-         STOP
-      ENDIF
+      read (30) mcplab, mb
+      if (nb /= mb) then
+         write (istde, *) 'setsda: nb = ', nb, '.NE. mb (=', mb, ')'
+         stop
+      endif
 !
 !   Allocate storage for IENDC(0:NCF)
 !
-      CALL ALLOC (IENDC, 0,  NCF,'IENDC','SETSDA'  )
-      CALL ALLOC (IROW, NNONZ, 'IROW', 'SETSDA' )
+      call alloc (iendc, 0,  ncf,'IENDC','SETSDA'  )
+      call alloc (irow, nnonz, 'IROW', 'SETSDA' )
 !
 !   Analyse data on file 30; set up IENDC and IROW
 ! In multiprocessor environment, iendc of each node will have the
 ! same length (ncf+1); but will have its own part filled. irow is
 ! local, and its length is determined by the local parameter nnonz.
 
-      IEND = 0
-      ICLAST = 0
-      DO I = 1, NNONZ
-         READ (30) IC, IROW(I), NPOS
-         IF (IC /= ICLAST) THEN
-            IENDC(ICLAST) = IEND
-            ICLAST = IC
-         ENDIF
-         IEND = NPOS
-      END DO
+      iend = 0
+      iclast = 0
+      do i = 1, nnonz
+         read (30) ic, irow(i), npos
+         if (ic /= iclast) then
+            iendc(iclast) = iend
+            iclast = ic
+         endif
+         iend = npos
+      end do
 !xhh - changed to suits MPI environment as well
 !      IENDC(NCF) = IEND
-      IENDC(IC) = IEND
+      iendc(ic) = iend
 !
 !   Sorting complete; rewrite to mcpXXX.30 file
 !
-      OPEN(29, FILE=FHEAD//'.30', STATUS='OLD', FORM='UNFORMATTED', IOSTAT=IERR&
-         , POSITION='APPEND')
-      IF (IERR /= 0) THEN
-         WRITE (ISTDE, *) ' Error when opening the file mcp.30'
-         STOP
-      ENDIF
+      open(29, file=fhead//'.30', status='OLD', form='UNFORMATTED', iostat=ierr&
+         , position='APPEND')
+      if (ierr /= 0) then
+         write (istde, *) ' Error when opening the file mcp.30'
+         stop
+      endif
 
-      WRITE (29) 'MCP', NB, NCF
-      WRITE (29) NNONZ
-      WRITE (29) (IENDC(I),I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NNONZ)
-      CLOSE(29)
+      write (29) 'MCP', nb, ncf
+      write (29) nnonz
+      write (29) (iendc(i),i=myid + 1,ncf,nprocs), (irow(i),i=1,nnonz)
+      close(29)
 !cjb
 !
 !   Deallocate storage
 !
-      CALL DALLOC (IENDC, 'IENDC', 'SETSDA')
-      CALL DALLOC (IROW, 'IROW', 'SETSDA')
+      call dalloc (iendc, 'IENDC', 'SETSDA')
+      call dalloc (irow, 'IROW', 'SETSDA')
 !
-      CALL OUTSDAdummy (LPRINT, NNONZ, NCF)
-      RETURN
-      END SUBROUTINE SETSDA
+      call outsdadummy (lprint, nnonz, ncf)
+      return
+      end subroutine setsda

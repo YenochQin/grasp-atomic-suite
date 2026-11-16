@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE EL4(JJA,JJB,JA,JB,JC,JD,ICOLBREI)
+      subroutine el4(jja,jjb,ja,jb,jc,jd,icolbrei)
 !                                                                  *
 !   --------------  SECTION METWO    SUBPROGRAM 09  -------------  *
 !                                                                  *
@@ -20,26 +20,26 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE m_C,            ONLY: NPEEL
+      use m_c,            only: npeel
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE el41_I
-      IMPLICIT NONE
+      use el41_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: JJA,JJB,JA,JB,JC,JD,ICOLBREI
+      integer, intent(in) :: jja,jjb,ja,jb,jc,jd,icolbrei
 !-----------------------------------------------
-      IF(NPEEL <= 2)RETURN
-      IF(JA == JB) THEN
-        CALL EL41(JJA,JJB,JC,JD,JA,1,JA,JB,JC,JD,ICOLBREI)
-      ELSE IF(JC == JD) THEN
-        CALL EL41(JJA,JJB,JA,JB,JC,2,JA,JB,JC,JD,ICOLBREI)
-      ELSE
-        WRITE(99,100)
-        STOP
-      END IF
-      RETURN
-  100 FORMAT(5X,'ERRO IN EL4 ')
-      END SUBROUTINE EL4
+      if(npeel <= 2)return
+      if(ja == jb) then
+        call el41(jja,jjb,jc,jd,ja,1,ja,jb,jc,jd,icolbrei)
+      else if(jc == jd) then
+        call el41(jja,jjb,ja,jb,jc,2,ja,jb,jc,jd,icolbrei)
+      else
+        write(99,100)
+        stop
+      end if
+      return
+  100 format(5x,'ERRO IN EL4 ')
+      end subroutine el4

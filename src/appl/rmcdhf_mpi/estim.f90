@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ESTIM(J)
+      subroutine estim(j)
 !                                                                      *
 !   This  subprogram implements  Part 1 of Algorithm 7.1 of C Froese   *
 !   Fischer, Comput Phys Rep, 3 (1986) 320-321.                        *
@@ -14,31 +14,31 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE def_C
-      USE grid_C
-      USE orb_C
-      USE scf_C
-      IMPLICIT NONE
+      use def_c
+      use grid_c
+      use orb_c
+      use scf_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: J
+      integer , intent(in) :: j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NPJ, NAKABS
-      REAL(DOUBLE) :: ALPHA, CSQ, FNREL, FKABS, FKAP2, ZALPHA, GAMMA, EBYM
+      integer :: npj, nakabs
+      real(double) :: alpha, csq, fnrel, fkabs, fkap2, zalpha, gamma, ebym
 !-----------------------------------------------
 !
 !   Initializations
 !
-      ALPHA = 1.0D00/C
-      CSQ = C*C
-      NPJ = NP(J)
-      NAKABS = ABS(NAK(J))
-      FNREL = DBLE(NPJ - NAKABS)
-      FKABS = DBLE(NAKABS)
-      FKAP2 = FKABS*FKABS
+      alpha = 1.0d00/c
+      csq = c*c
+      npj = np(j)
+      nakabs = abs(nak(j))
+      fnrel = dble(npj - nakabs)
+      fkabs = dble(nakabs)
+      fkap2 = fkabs*fkabs
 !
 !   Set ZINF, the asymptotic charge seen by the electron
 !
@@ -46,31 +46,31 @@
 !
 !   Changed on 07/06/93 by WPW
 !
-      ZINF = Z + DBLE((-NELEC) + 1)
+      zinf = z + dble((-nelec) + 1)
 !
 !   Set the lower bound
 !
-      ZALPHA = ZINF*ALPHA
-      IF (ZALPHA < FKABS) THEN
-         GAMMA = SQRT(FKAP2 - ZALPHA*ZALPHA)
-         EBYM = 1.0D00/SQRT(1.0D00 + (ZALPHA/(GAMMA + FNREL + 0.5D00))**2)
-         EPSMIN = (1.0D00 - EBYM)*CSQ
-      ELSE
-         EPSMIN = 0.25D00*CSQ/DBLE(NPJ*NPJ)
-      ENDIF
-      EMIN = EPSMIN
+      zalpha = zinf*alpha
+      if (zalpha < fkabs) then
+         gamma = sqrt(fkap2 - zalpha*zalpha)
+         ebym = 1.0d00/sqrt(1.0d00 + (zalpha/(gamma + fnrel + 0.5d00))**2)
+         epsmin = (1.0d00 - ebym)*csq
+      else
+         epsmin = 0.25d00*csq/dble(npj*npj)
+      endif
+      emin = epsmin
 !
 !   Set the upper bound
 !
-      ZALPHA = Z*ALPHA
-      IF (ZALPHA < FKABS) THEN
-         GAMMA = SQRT(FKAP2 - ZALPHA*ZALPHA)
-         EBYM = 1.0D00/SQRT(1.0D00 + (ZALPHA/(GAMMA + FNREL - 0.5D00))**2)
-         EPSMAX = (1.0D00 - EBYM)*CSQ
-      ELSE
-         EPSMAX = CSQ + CSQ
-      ENDIF
-      EMAX = EPSMAX
+      zalpha = z*alpha
+      if (zalpha < fkabs) then
+         gamma = sqrt(fkap2 - zalpha*zalpha)
+         ebym = 1.0d00/sqrt(1.0d00 + (zalpha/(gamma + fnrel - 0.5d00))**2)
+         epsmax = (1.0d00 - ebym)*csq
+      else
+         epsmax = csq + csq
+      endif
+      emax = epsmax
 !
-      RETURN
-      END SUBROUTINE ESTIM
+      return
+      end subroutine estim

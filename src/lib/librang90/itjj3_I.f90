@@ -1,14 +1,14 @@
-      MODULE itjj3_I
-      INTERFACE
+      module itjj3_i
+      interface
 !
-      INTEGER FUNCTION ITJJ3(IK,ID,KG1,BK,BD,IBT,BT,ITP,ITG,IQ)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER,      INTENT(IN)                :: KG1, IQ
-      INTEGER,      INTENT(OUT)               :: ITP, ITG
-      INTEGER,      INTENT(IN),  DIMENSION(7) :: IK, ID
-      INTEGER,      INTENT(OUT), DIMENSION(7) :: IBT
-      REAL(DOUBLE), INTENT(IN),  DIMENSION(3) :: BK, BD
-      REAL(DOUBLE), INTENT(OUT), DIMENSION(3) :: BT
-      END FUNCTION
-      END INTERFACE
-      END MODULE
+      integer function itjj3(ik,id,kg1,bk,bd,ibt,bt,itp,itg,iq)
+      use vast_kind_param, only:  double
+      integer,      intent(in)                :: kg1, iq
+      integer,      intent(out)               :: itp, itg
+      integer,      intent(in),  dimension(7) :: ik, id
+      integer,      intent(out), dimension(7) :: ibt
+      real(double), intent(in),  dimension(3) :: bk, bd
+      real(double), intent(out), dimension(3) :: bt
+      end function
+      end interface
+      end module

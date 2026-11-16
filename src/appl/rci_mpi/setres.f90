@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETRES(ISOFILE, RWFFILE, IDBLK)
+      subroutine setres(isofile, rwffile, idblk)
 !                                                                      *
 !   Open, check, load data from the  .res  file.                       *
 !                                                                      *
@@ -16,106 +16,106 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE memory_man
-      USE default_C
-      USE where_C
-      USE hblock_C
-      USE iccu_C
-      USE iounit_C
-      USE mpi_C
+      use memory_man
+      use default_c
+      use where_c
+      use hblock_c
+      use iccu_c
+      use iounit_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE openfl_I
-      USE lodres_I
-      USE getcid_I
-      USE mpiu_I, ONLY: stopmpi
-      IMPLICIT NONE
+      use getyn_i
+      use openfl_i
+      use lodres_i
+      use getcid_i
+      use mpiu_i, only: stopmpi
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER  :: ISOFILE*(*)
-      CHARACTER  :: RWFFILE*(*)
-      CHARACTER(LEN=8), DIMENSION(*)  :: IDBLK
+      character  :: isofile*(*)
+      character  :: rwffile*(*)
+      character(len=8), dimension(*)  :: idblk
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      CHARACTER*11, PARAMETER :: FORM = 'UNFORMATTED'
-      CHARACTER*7, PARAMETER :: STATUS = 'UNKNOWN'
-      CHARACTER*6, PARAMETER :: RESTITLE = 'R92RES'
+      character*11, parameter :: form = 'UNFORMATTED'
+      character*7, parameter :: status = 'UNKNOWN'
+      character*6, parameter :: restitle = 'R92RES'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IOS
-      LOGICAL :: FOUND, RESTRT
-      CHARACTER :: R92RES*6, DEFNAM*11, IDSTRING*3
+      integer :: ios
+      logical :: found, restrt
+      character :: r92res*6, defnam*11, idstring*3
 !-----------------------------------------------
 !
 ! Compose the "rciXXX.res" file names (for each node)
 !
-      WRITE (idstring, '(I3.3)') myid
-      DEFNAM = 'rci' // idstring // '.res'
+      write (idstring, '(I3.3)') myid
+      defnam = 'rci' // idstring // '.res'
 !
 ! Ask if this is a restart
 !
-      IF (myid .EQ. 0) THEN
-         IF (NDEF /= 0) THEN
-            WRITE (ISTDE, *) 'Restarting RCI90 ?'
-            RESTRT = GETYN()
-         ELSE
-            RESTRT = .FALSE.
-         ENDIF
+      if (myid .eq. 0) then
+         if (ndef /= 0) then
+            write (istde, *) 'Restarting RCI90 ?'
+            restrt = getyn()
+         else
+            restrt = .false.
+         endif
 !         IF (RESTRT) THEN
 !           WRITE(734,'(a)') 'y            ! Restarting RCI90 ?'
 !         ELSE
 !           WRITE(734,'(a)') 'n            ! Restarting RCI90 ?'
 !         END IF
-      END IF
-      CALL MPI_Bcast (RESTRT, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+      end if
+      call mpi_bcast (restrt, 1, mpi_logical, 0, mpi_comm_world, ierr)
 !
 ! Do some settings and checks
 !
-      IF (RESTRT) THEN
+      if (restrt) then
 !         ...Restart, make sure file exist
-         INQUIRE(FILE=DEFNAM, EXIST=FOUND)
-         IF (.NOT. FOUND) THEN
-            CALL stopmpi ('setres: .res not exist', myid)
-         ENDIF
-      ENDIF
+         inquire(file=defnam, exist=found)
+         if (.not. found) then
+            call stopmpi ('setres: .res not exist', myid)
+         endif
+      endif
 !
 ! Open the .res file
 !
-      CALL OPENFL (IMCDF, DEFNAM, FORM, STATUS, IERR)
-      IF (IERR .NE. 0) THEN
-         CALL stopmpi ('setres: Error openning .res file', myid)
-      ENDIF
+      call openfl (imcdf, defnam, form, status, ierr)
+      if (ierr .ne. 0) then
+         call stopmpi ('setres: Error openning .res file', myid)
+      endif
 !
 ! If restart, load the contents. Otherwise generate them via getcid
 !
 ! But first of all, iccutblk() is needed in both cases
 !
-      CALL ALLOC (ICCUTBLK, NBLOCK, 'ICCUTBLK', 'SETRES')
+      call alloc (iccutblk, nblock, 'ICCUTBLK', 'SETRES')
 
-      IF (RESTRT) THEN
+      if (restrt) then
 !        ...Check the signature of the file
-         READ (IMCDF, IOSTAT=IOS) R92RES
-         IF (IOS/=0 .OR. R92RES/=RESTITLE) THEN
-            CLOSE(IMCDF)
-            CALL stopmpi ('setres: Not RCI92 .res file', myid)
-         ENDIF
+         read (imcdf, iostat=ios) r92res
+         if (ios/=0 .or. r92res/=restitle) then
+            close(imcdf)
+            call stopmpi ('setres: Not RCI92 .res file', myid)
+         endif
 
 !         ...Read and check restart information
-         CALL LODRES
+         call lodres
 
-      ELSE
+      else
 
 !         ...Write the file header
 !         ...Generate the first part of the .res file
-         WRITE (IMCDF) RESTITLE
-         CALL GETCID (ISOFILE, RWFFILE, IDBLK)
+         write (imcdf) restitle
+         call getcid (isofile, rwffile, idblk)
 
-      ENDIF
+      endif
 
-      RETURN
-      END SUBROUTINE SETRES
+      return
+      end subroutine setres

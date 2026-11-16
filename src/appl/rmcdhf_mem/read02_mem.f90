@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE read02_mem(JBLOCK)
+      subroutine read02_mem(jblock)
 !                                                                  *
 !   Written by  G. Gaigalas               Vilnius, September 2021  *
 !                                                                  *
@@ -9,25 +9,25 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE hmat_C,     ONLY: IROW
-      USE rmcdhf_mem_C
+      use hmat_c,     only: irow
+      use rmcdhf_mem_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER :: JBLOCK
+      integer :: jblock
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER :: I
+      integer :: i
 !-----------------------------------------------
 
-      DO I = IMIN2_30(JBLOCK)+1, IMAX2_30(JBLOCK)
-         IROW(I-IMIN2_30(JBLOCK)) = IROW_30(I)
-      END DO
+      do i = imin2_30(jblock)+1, imax2_30(jblock)
+         irow(i-imin2_30(jblock)) = irow_30(i)
+      end do
 
-      RETURN
-      END SUBROUTINE read02_mem
+      return
+      end subroutine read02_mem

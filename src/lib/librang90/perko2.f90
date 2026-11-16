@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE PERKO2(JA1,JA2,JA3,JA4,I)
+      subroutine perko2(ja1,ja2,ja3,ja4,i)
 !                                                                  *
 !   --------------  SECTION METWO    SUBPROGRAM 23  -------------  *
 !                                                                  *
@@ -18,24 +18,24 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE trk_C
+      use vast_kind_param, only:  double
+      use trk_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE perko1_I
-      IMPLICIT NONE
+      use perko1_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: JA1, JA2, JA3, JA4, I
+      integer, intent(in) :: ja1, ja2, ja3, ja4, i
 !-----------------------------------------------
-      CALL PERKO1(JA1,BK1,IK1,BD1,ID1)
-      IF(I == 1)RETURN
-      CALL PERKO1(JA2,BK2,IK2,BD2,ID2)
-      IF(I == 2)RETURN
-      CALL PERKO1(JA3,BK3,IK3,BD3,ID3)
-      IF(I == 3)RETURN
-      CALL PERKO1(JA4,BK4,IK4,BD4,ID4)
-      RETURN
-      END SUBROUTINE PERKO2
+      call perko1(ja1,bk1,ik1,bd1,id1)
+      if(i == 1)return
+      call perko1(ja2,bk2,ik2,bd2,id2)
+      if(i == 2)return
+      call perko1(ja3,bk3,ik3,bd3,id3)
+      if(i == 3)return
+      call perko1(ja4,bk4,ik4,bd4,id4)
+      return
+      end subroutine perko2

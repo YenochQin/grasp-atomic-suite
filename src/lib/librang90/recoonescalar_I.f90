@@ -1,9 +1,9 @@
-      MODULE recoonescalar_I
-      INTERFACE
+      module recoonescalar_i
+      interface
 !
-      SUBROUTINE RECOONESCALAR(NS,JA1,JA2,JA3,JA4,KA,IAT)
-      INTEGER, INTENT(IN)  :: NS, JA1, JA2, JA3, JA4, KA
-      INTEGER, INTENT(OUT) :: IAT
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine recoonescalar(ns,ja1,ja2,ja3,ja4,ka,iat)
+      integer, intent(in)  :: ns, ja1, ja2, ja3, ja4, ka
+      integer, intent(out) :: iat
+      end subroutine
+      end interface
+      end module

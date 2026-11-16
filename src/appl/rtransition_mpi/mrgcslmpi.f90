@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE MRGCSL(NAME)
+      subroutine mrgcsl(name)
 !                                                                      *
 !   Entry routine for merging two csl lists                            *
 !                                                                      *
@@ -11,24 +11,24 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE debug_C
-      USE def_C, ONLY:  EMN, IONCTY, NELEC, Z
+      use vast_kind_param, only:  double
+      use debug_c
+      use def_c, only:  emn, ioncty, nelec, z
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ldcsl1_I
-      USE ldcsl2_I
-      USE merg12_I
-      IMPLICIT NONE
+      use ldcsl1_i
+      use ldcsl2_i
+      use merg12_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER  :: NAME(2)*128
+      character  :: name(2)*128
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NCORER, NCORE
+      integer :: ncorer, ncore
 !-----------------------------------------------
 !
 
@@ -37,16 +37,16 @@
 !
 !   Load the first  .csl  file
 !
-      CALL LDCSL1 (NCORER, NAME(1))
+      call ldcsl1 (ncorer, name(1))
 !
 !   Load the second  .csl  file
 !
-      CALL LDCSL2 (NCORE, NAME(2))
+      call ldcsl2 (ncore, name(2))
 !
 !   Merge the two  .csl  lists, observe that there may be doublets
 !   among the CSF's
 !
-      CALL MERG12 (NAME, NCORER, NCORE)
+      call merg12 (name, ncorer, ncore)
 
-      RETURN
-      END SUBROUTINE MRGCSL
+      return
+      end subroutine mrgcsl

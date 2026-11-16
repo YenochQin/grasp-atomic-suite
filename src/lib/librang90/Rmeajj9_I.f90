@@ -1,10 +1,10 @@
-      MODULE rmeajj9_I
-      INTERFACE
+      module rmeajj9_i
+      interface
 !
-      SUBROUTINE RMEAJJ9(IT,LQ,J,ITS,LQS,J1S,COEF)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER,      INTENT(IN)  :: IT, LQ, J, ITS, LQS, J1S
-      REAL(DOUBLE), INTENT(OUT) :: COEF
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine rmeajj9(it,lq,j,its,lqs,j1s,coef)
+      use vast_kind_param, only:  double
+      integer,      intent(in)  :: it, lq, j, its, lqs, j1s
+      real(double), intent(out) :: coef
+      end subroutine
+      end interface
+      end module

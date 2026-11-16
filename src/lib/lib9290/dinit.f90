@@ -1,4 +1,4 @@
-      SUBROUTINE DINIT(N, A, X, INCX)
+      subroutine dinit(n, a, x, incx)
 !     ==================================================================
 !
 !     PURPOSE ... INITIALIZES REAL*8           VECTOR TO
@@ -13,42 +13,42 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: N
-      INTEGER, INTENT(IN) :: INCX
-      REAL(DOUBLE), INTENT(IN) :: A
-      REAL(DOUBLE), DIMENSION(*), INTENT(OUT) :: X
+      integer, intent(in) :: n
+      integer, intent(in) :: incx
+      real(double), intent(in) :: a
+      real(double), dimension(*), intent(out) :: x
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: XADDR, I
+      integer :: xaddr, i
 !-----------------------------------------------
 !
-      IF (INCX == 1) THEN
+      if (incx == 1) then
 !
 !         ----------------------------------
 !         ... UNIT INCREMENT (STANDARD CASE)
 !         ----------------------------------
 !
-         X(:N) = A
+         x(:n) = a
 !
-      ELSE
+      else
 !
 !         ----------------------
 !         ... NON-UNIT INCREMENT
 !         ----------------------
 !
-         XADDR = 1
-         IF (INCX < 0) XADDR = ((-N) + 1)*INCX + 1
+         xaddr = 1
+         if (incx < 0) xaddr = ((-n) + 1)*incx + 1
 !
-         X(XADDR:(N-1)*INCX+XADDR:INCX) = A
+         x(xaddr:(n-1)*incx+xaddr:incx) = a
 !
-      ENDIF
+      endif
 !
-      RETURN
+      return
 !
-      END SUBROUTINE DINIT
+      end subroutine dinit

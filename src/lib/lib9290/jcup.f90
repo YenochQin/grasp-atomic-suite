@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION JCUP (LOC, ICSF)
+      integer function jcup (loc, icsf)
 !                                                                      *
 !   JCUP is the 2J+1 value of the LOCth nontrivial intermediate ang-   *
 !   ular momentum in CSF  ICSF.                                        *
@@ -15,29 +15,29 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE parameter_def, ONLY: NNNW
-      USE IOUNIT_C,      ONLY: ISTDE
-      use orb_C,         ONLY: NW, NCF
-      use stat_C,        ONLY: JCUPA
-      IMPLICIT NONE
+      use parameter_def, only: nnnw
+      use iounit_c,      only: istde
+      use orb_c,         only: nw, ncf
+      use stat_c,        only: jcupa
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: LOC
-      INTEGER             :: ICSF
+      integer, intent(in) :: loc
+      integer             :: icsf
 !-----------------------------------------------
 !
-      IF (LOC>=1 .AND. LOC<=NNNW-1) THEN
-         IF (ICSF>=1 .AND. ICSF<=NCF) THEN
+      if (loc>=1 .and. loc<=nnnw-1) then
+         if (icsf>=1 .and. icsf<=ncf) then
             jcup = jcupa(loc,icsf)
-         ELSE
-            WRITE (ISTDE, *) 'JCUP: Argument ICSF is out of range.'
-            STOP
-         ENDIF
-      ELSE
-         WRITE (ISTDE, *) 'JCUP: Argument LOC is out of range.'
-         STOP
-      ENDIF
+         else
+            write (istde, *) 'JCUP: Argument ICSF is out of range.'
+            stop
+         endif
+      else
+         write (istde, *) 'JCUP: Argument LOC is out of range.'
+         stop
+      endif
 !
-      RETURN
-      END FUNCTION JCUP
+      return
+      end function jcup

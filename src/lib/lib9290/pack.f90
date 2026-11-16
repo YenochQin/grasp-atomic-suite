@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE PACK(IUNPKD, ISUBSH, IPACKD)
+      subroutine pack(iunpkd, isubsh, ipackd)
 !                                                                      *
 !   Subshell occupation numbers and all angular momenta 2J+1 are not   *
 !   likely to exceed 127 in any application of the GRASP92 suite. It   *
@@ -25,30 +25,30 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  BYTE
-      USE IOUNIT_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  byte
+      use iounit_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: IUNPKD
-      INTEGER, INTENT(IN) :: ISUBSH
-      INTEGER(BYTE), DIMENSION(*), INTENT(INOUT) :: IPACKD
+      integer, intent(in) :: iunpkd
+      integer, intent(in) :: isubsh
+      integer(byte), dimension(*), intent(inout) :: ipackd
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !
-      IF (ABS(IUNPKD) > 127) THEN
-         WRITE (ISTDE, *) 'PACK: Argument IUNPKD out of range.'
-         STOP
-      ENDIF
+      if (abs(iunpkd) > 127) then
+         write (istde, *) 'PACK: Argument IUNPKD out of range.'
+         stop
+      endif
 !
-      IF (ISUBSH <= 0) THEN
-         WRITE (ISTDE, *) 'PACK: ISUBSH=', ISUBSH, ' less than 1'
-         STOP
-      ENDIF
+      if (isubsh <= 0) then
+         write (istde, *) 'PACK: ISUBSH=', isubsh, ' less than 1'
+         stop
+      endif
 !
-      IPACKD(ISUBSH) = IUNPKD
+      ipackd(isubsh) = iunpkd
 !
-      RETURN
-      END SUBROUTINE PACK
+      return
+      end subroutine pack

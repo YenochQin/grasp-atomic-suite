@@ -1,6 +1,6 @@
-      MODULE hfsgg_mpi_I
-      INTERFACE
-      SUBROUTINE hfsgg_mpi
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      module hfsgg_mpi_i
+      interface
+      subroutine hfsgg_mpi
+      end subroutine
+      end interface
+      end module

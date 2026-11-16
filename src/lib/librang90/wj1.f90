@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE WJ1(IK,BK,ID,BD,K2,QM1,QM2,WJ)
+      subroutine wj1(ik,bk,id,bd,k2,qm1,qm2,wj)
 !                                                                  *
 !   ---------------  SECTION SQ    SUBPROGRAM 24  --------------   *
 !                                                                  *
@@ -23,80 +23,80 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, TENTH, ONE, TWO, EPS
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, tenth, one, two, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE mes_I
-      USE w1jjg_I
-      USE cle0sm_I
-      USE c1e1sm_I
-      USE rwjj_I
-      IMPLICIT NONE
+      use mes_i
+      use w1jjg_i
+      use cle0sm_i
+      use c1e1sm_i
+      use rwjj_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN)               :: K2
-      INTEGER,      INTENT(IN), DIMENSION(7) :: IK, ID
-      REAL(DOUBLE), INTENT(IN)               :: QM1, QM2
-      REAL(DOUBLE), INTENT(IN), DIMENSION(3) :: BK, BD
-      REAL(DOUBLE), INTENT(OUT)              :: WJ
+      integer,      intent(in)               :: k2
+      integer,      intent(in), dimension(7) :: ik, id
+      real(double), intent(in)               :: qm1, qm2
+      real(double), intent(in), dimension(3) :: bk, bd
+      real(double), intent(out)              :: wj
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: K1, IQ, IQM2
-      REAL(DOUBLE) :: A, QQ, W, WK1
+      integer      :: k1, iq, iqm2
+      real(double) :: a, qq, w, wk1
 !-----------------------------------------------
-      WJ=ZERO
-      IF(ID(3) == 9) THEN
-        IF(MAX0(IK(4),ID(4)) < 3) THEN
-          IF(IK(1) < 300) CALL MES(56)
-          IF(ID(1) < 300) CALL MES(56)
-          IQM2=QM2+QM2+QM2*EPS
-          IF((ID(4)+IQM2) > 2) CALL MES(2)
-          CALL W1JJG(K2,QM1,QM2,IK,BK,ID,BD,WJ)
-          RETURN
-        ELSE
-          PRINT*, "ERROR in  WJ1"
-          STOP
-        ENDIF
-      ELSEIF(ID(3) > 9) THEN
-        IQM2=QM2+QM2+QM2*EPS
-        IF((ID(4)+IQM2) > 2) CALL MES(2)
-        CALL W1JJG(K2,QM1,QM2,IK,BK,ID,BD,WJ)
-        RETURN
-      ENDIF
-      QQ=QM1+QM2
-      IF(DABS(QQ) >= EPS) THEN
-        IF(((K2/2)*2) /= K2)RETURN
-        IQ=QQ+QQ*TENTH
-        IF((IK(4)-ID(4)-2*IQ) /= 0)RETURN
-        CALL C1E1SM(BD(1),BD(3),QQ,BK(1),BK(3),A)
-        IF(DABS(A) < EPS)RETURN
-        CALL RWJJ(IK(3),IK(1),ID(1),1,K2,W)
-        WJ=A*W/DSQRT(TWO*BK(1)+ONE)
-      ELSE IF(IK(4) /= ID(4))THEN
-        RETURN
-      ELSE IF(K2 == 0) THEN
-        IF(ID(1) /= IK(1))RETURN
-        IF(QM1 < EPS) THEN
-          A=DBLE(ID(3)+1-ID(4))
-        ELSE
-          A=-DBLE(ID(4))
-        END IF
-        WJ=A*DSQRT(DBLE(IK(6)+1)/DBLE(IK(3)+1))
-      ELSE
-        K1=1
-        IF(((K2/2)*2) /= K2)K1=0
-        WK1=DBLE(K1)
-        CALL CLE0SM(BD(1),BD(3),WK1,BK(1),BK(3),A)
-        IF(DABS(A) < EPS)RETURN
-        CALL RWJJ(IK(3),IK(1),ID(1),K1,K2,W)
-        A=A*W
-        WJ=A/DSQRT(TWO*TWO*BK(1)+TWO)
-        IF(QM1 >= EPS)RETURN
-        IF(((K2/2)*2) /= K2)WJ=-WJ
-      END IF
-      RETURN
-      END SUBROUTINE WJ1
+      wj=zero
+      if(id(3) == 9) then
+        if(max0(ik(4),id(4)) < 3) then
+          if(ik(1) < 300) call mes(56)
+          if(id(1) < 300) call mes(56)
+          iqm2=qm2+qm2+qm2*eps
+          if((id(4)+iqm2) > 2) call mes(2)
+          call w1jjg(k2,qm1,qm2,ik,bk,id,bd,wj)
+          return
+        else
+          print*, "ERROR in  WJ1"
+          stop
+        endif
+      elseif(id(3) > 9) then
+        iqm2=qm2+qm2+qm2*eps
+        if((id(4)+iqm2) > 2) call mes(2)
+        call w1jjg(k2,qm1,qm2,ik,bk,id,bd,wj)
+        return
+      endif
+      qq=qm1+qm2
+      if(dabs(qq) >= eps) then
+        if(((k2/2)*2) /= k2)return
+        iq=qq+qq*tenth
+        if((ik(4)-id(4)-2*iq) /= 0)return
+        call c1e1sm(bd(1),bd(3),qq,bk(1),bk(3),a)
+        if(dabs(a) < eps)return
+        call rwjj(ik(3),ik(1),id(1),1,k2,w)
+        wj=a*w/dsqrt(two*bk(1)+one)
+      else if(ik(4) /= id(4))then
+        return
+      else if(k2 == 0) then
+        if(id(1) /= ik(1))return
+        if(qm1 < eps) then
+          a=dble(id(3)+1-id(4))
+        else
+          a=-dble(id(4))
+        end if
+        wj=a*dsqrt(dble(ik(6)+1)/dble(ik(3)+1))
+      else
+        k1=1
+        if(((k2/2)*2) /= k2)k1=0
+        wk1=dble(k1)
+        call cle0sm(bd(1),bd(3),wk1,bk(1),bk(3),a)
+        if(dabs(a) < eps)return
+        call rwjj(ik(3),ik(1),id(1),k1,k2,w)
+        a=a*w
+        wj=a/dsqrt(two*two*bk(1)+two)
+        if(qm1 >= eps)return
+        if(((k2/2)*2) /= k2)wj=-wj
+      end if
+      return
+      end subroutine wj1

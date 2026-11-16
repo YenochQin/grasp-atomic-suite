@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE EILE(JA,JB,JC,JAA,JBB,JCC)
+      subroutine eile(ja,jb,jc,jaa,jbb,jcc)
 !                                                                  *
 !     ------------  SECTION METWO    SUBPROGRAM 02  ------------   *
 !                                                                  *
@@ -12,21 +12,21 @@
 !                                                                  *
 !*******************************************************************
 !
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)  :: JA, JB, JC
-      INTEGER, INTENT(OUT) :: JAA, JBB, JCC
+      integer, intent(in)  :: ja, jb, jc
+      integer, intent(out) :: jaa, jbb, jcc
 !-----------------------------------------------
-      JAA=JA
-      JCC=JA
-      IF(JAA > JB)JAA=JB
-      IF(JCC < JB)JCC=JB
-      IF(JAA > JC)JAA=JC
-      IF(JCC < JC)JCC=JC
-      IF((JA > JAA).AND.(JA < JCC))JBB=JA
-      IF((JB > JAA).AND.(JB < JCC))JBB=JB
-      IF((JC > JAA).AND.(JC < JCC))JBB=JC
-      RETURN
-      END SUBROUTINE EILE
+      jaa=ja
+      jcc=ja
+      if(jaa > jb)jaa=jb
+      if(jcc < jb)jcc=jb
+      if(jaa > jc)jaa=jc
+      if(jcc < jc)jcc=jc
+      if((ja > jaa).and.(ja < jcc))jbb=ja
+      if((jb > jaa).and.(jb < jcc))jbb=jb
+      if((jc > jaa).and.(jc < jcc))jbb=jc
+      return
+      end subroutine eile

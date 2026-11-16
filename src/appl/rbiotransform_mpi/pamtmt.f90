@@ -3,7 +3,7 @@
 !     P A M T M T
 !     ------------------------------------------------------------------
 !
-      SUBROUTINE PAMTMT(X, T, WORK, NORB)
+      subroutine pamtmt(x, t, work, norb)
 !
 ! GENERATE PER AKE'S T MATRIX FROM A
 ! ORBITAL ROTATION MATRIX X
@@ -29,66 +29,66 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE lulu_I
-      USE setvec_I
-      USE wrtmat_I
-      USE invmat_I
-      IMPLICIT NONE
+      use lulu_i
+      use setvec_i
+      use wrtmat_i
+      use invmat_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NORB
-      REAL(DOUBLE)  :: X(NORB,NORB)
-      REAL(DOUBLE)  :: T(NORB,NORB)
-      REAL(DOUBLE)  :: WORK(*)
+      integer  :: norb
+      real(double)  :: x(norb,norb)
+      real(double)  :: t(norb,norb)
+      real(double)  :: work(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NTEST, KLFREE, KLL, KLU, I, J
+      integer :: ntest, klfree, kll, klu, i, j
 !-----------------------------------------------
 ! DIMENSION OF WORK : NORB ** 2 + NORB*(NORB+1) / 2
 !
-      NTEST = 0
+      ntest = 0
 !. Allocate local memory
-      KLFREE = 1
+      klfree = 1
 !     KLL = KFLREE
-      KLL = KLFREE
-      KLFREE = KLL + NORB*(NORB + 1)/2
-      KLU = KLFREE
-      KLFREE = KLU + NORB**2
+      kll = klfree
+      klfree = kll + norb*(norb + 1)/2
+      klu = klfree
+      klfree = klu + norb**2
 !.LU factorize X
-      CALL LULU (X, WORK(KLL), WORK(KLU), NORB)
+      call lulu (x, work(kll), work(klu), norb)
 !.Expand U to full matrix
-      CALL SETVEC (T, 0.0D0, NORB**2)
-      DO I = 1, NORB
-         DO J = I, NORB
-            T(I,J) = WORK(KLU-1+J*(J-1)/2+I)
-         END DO
-      END DO
-      IF (NTEST >= 10) THEN
-         WRITE (6, *) ' MATRIX TO BE INVERTED '
-         CALL WRTMAT (T, NORB, NORB, NORB, NORB)
-      ENDIF
+      call setvec (t, 0.0d0, norb**2)
+      do i = 1, norb
+         do j = i, norb
+            t(i,j) = work(klu-1+j*(j-1)/2+i)
+         end do
+      end do
+      if (ntest >= 10) then
+         write (6, *) ' MATRIX TO BE INVERTED '
+         call wrtmat (t, norb, norb, norb, norb)
+      endif
 !.Invert U
-      CALL INVMAT (T, WORK(KLU), NORB, NORB)
-      IF (NTEST >= 10) THEN
-         WRITE (6, *) ' INVERTED MATRIX '
-         CALL WRTMAT (T, NORB, NORB, NORB, NORB)
-      ENDIF
+      call invmat (t, work(klu), norb, norb)
+      if (ntest >= 10) then
+         write (6, *) ' INVERTED MATRIX '
+         call wrtmat (t, norb, norb, norb, norb)
+      endif
 !.Subtract L
-      DO I = 1, NORB
-         T(I,:I-1) = -WORK(KLL+I*(I-1)/2:I-2+KLL+I*(I-1)/2)
-      END DO
+      do i = 1, norb
+         t(i,:i-1) = -work(kll+i*(i-1)/2:i-2+kll+i*(i-1)/2)
+      end do
 !
-      IF (NTEST /= 0) THEN
-         WRITE (6, *) ' INPUT X MATRIX '
-         CALL WRTMAT (X, NORB, NORB, NORB, NORB)
-         WRITE (6, *) ' T MATRIX '
-         CALL WRTMAT (T, NORB, NORB, NORB, NORB)
-      ENDIF
+      if (ntest /= 0) then
+         write (6, *) ' INPUT X MATRIX '
+         call wrtmat (x, norb, norb, norb, norb)
+         write (6, *) ' T MATRIX '
+         call wrtmat (t, norb, norb, norb, norb)
+      endif
 !
-      RETURN
-      END SUBROUTINE PAMTMT
+      return
+      end subroutine pamtmt

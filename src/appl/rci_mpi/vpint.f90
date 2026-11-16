@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE VPINT (IA,IB,TEGRAL)
+      subroutine vpint (ia,ib,tegral)
 !                                                                      *
 !   This  routine computes nuclear vacuum polarization integrals.      *
 !                                                                      *
@@ -15,171 +15,171 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-     USE vast_kind_param, ONLY: DOUBLE
-     USE parameter_def,   ONLY: KEYORB
-     USE memory_man
-     USE grid_C
-     USE vpilst_C, indoei=>indvpi, valoei=>valvpi, FIRST=>FRSTVP
+     use vast_kind_param, only: double
+     use parameter_def,   only: keyorb
+     use memory_man
+     use grid_c
+     use vpilst_c, indoei=>indvpi, valoei=>valvpi, first=>frstvp
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-     USE vpintf_I
-     IMPLICIT NONE
+     use vpintf_i
+     implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(INOUT) :: IA, IB
-      REAl(DOUBLE), INTENT(OUT) :: TEGRAL
+      integer, intent(inout) :: ia, ib
+      real(double), intent(out) :: tegral
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: FOUND
-      INTEGER :: iswap, index, loc, ju, jl, jm, newsiz, i
+      logical :: found
+      integer :: iswap, index, loc, ju, jl, jm, newsiz, i
 !------------------------------------------------
 !
 !   Ensure that the indices are in `canonical' order
 !
-      IF (IA > IB) THEN
-         ISWAP = IB
-         IB = IA
-         IA = ISWAP
-      ENDIF
+      if (ia > ib) then
+         iswap = ib
+         ib = ia
+         ia = iswap
+      endif
 !
 !   Compute the composite (packed) index
 !
-      INDEX = IA*KEY+IB
+      index = ia*key+ib
 !
-      IF (.NOT. FIRST) THEN
+      if (.not. first) then
 !
 !   This branch is executed on all entries except the first
 !
-         IF (INDEX > INDOEI(NVPI)) THEN
+         if (index > indoei(nvpi)) then
 !
 !   The index is greater than the largest stored
 !
-            FOUND = .FALSE.
-            LOC = NVPI
+            found = .false.
+            loc = nvpi
 !
-         ELSEIF (INDEX < INDOEI(1)) THEN
+         elseif (index < indoei(1)) then
 !
 !   The index is less than the smallest stored
 !
-            FOUND = .FALSE.
-            LOC = 0
+            found = .false.
+            loc = 0
 !
-         ELSE
+         else
 !
 !   The index is within the range of the indices stored; search
 !   for it in the list of indices
 !
-            JU = NVPI
-            JL = 1
+            ju = nvpi
+            jl = 1
 !
-    1       IF (JU-JL .GT. 1) THEN
+    1       if (ju-jl .gt. 1) then
 !
-               JM = (JU+JL)/2
-               IF (INDOEI(JM) .GT. INDEX) THEN
-                  JU = JM
-               ELSE
-                  JL = JM
-               ENDIF
-               GOTO 1
+               jm = (ju+jl)/2
+               if (indoei(jm) .gt. index) then
+                  ju = jm
+               else
+                  jl = jm
+               endif
+               goto 1
 !
-            ELSE
+            else
 !
 !   The range is bracketed to the extent possible
 !
-               IF (INDEX .EQ. INDOEI(JU)) THEN
+               if (index .eq. indoei(ju)) then
 !
-                  FOUND = .TRUE.
-                  LOC = JU
+                  found = .true.
+                  loc = ju
 !
-               ELSEIF (INDEX .EQ. INDOEI(JL)) THEN
+               elseif (index .eq. indoei(jl)) then
 !
-                  FOUND = .TRUE.
-                  LOC = JL
+                  found = .true.
+                  loc = jl
 !
-               ELSE
+               else
 !
-                  FOUND = .FALSE.
-                  LOC = JL
+                  found = .false.
+                  loc = jl
 !
-               ENDIF
+               endif
 !
-            ENDIF
+            endif
 !
-         ENDIF
+         endif
 !
-         IF (FOUND) THEN
+         if (found) then
 !
 !   Found the index in the list; return the value of the integral
 !   from storage
 !
-            TEGRAL = VALOEI(LOC)
+            tegral = valoei(loc)
 !
-         ELSE
+         else
 !
 !   Index not found; compute the integral
 !
-            TEGRAL = VPINTF (IA,IB)
+            tegral = vpintf (ia,ib)
 !
 !   Increment the integral counter
 !
-            NVPI = NVPI+1
+            nvpi = nvpi+1
 !
 !   Increase array length by half the present length if the latter
 !   is inadequate to store another pair
 !
-            IF (NVPI .GT. NDVPA) THEN
-               NEWSIZ = NDVPA+NDVPA/2
-               CALL RALLOC (INDOEI,NEWSIZ,'INDOEI', 'VPINT')
-               CALL RALLOC (VALOEI,NEWSIZ,'VALOEI', 'VPINT')
-               NDVPA = NEWSIZ
-            ENDIF
+            if (nvpi .gt. ndvpa) then
+               newsiz = ndvpa+ndvpa/2
+               call ralloc (indoei,newsiz,'INDOEI', 'VPINT')
+               call ralloc (valoei,newsiz,'VALOEI', 'VPINT')
+               ndvpa = newsiz
+            endif
 !
-            DO 2 I = NVPI,LOC+2,-1
-               INDOEI(I) = INDOEI(I-1)
-               VALOEI(I) = VALOEI(I-1)
-    2       CONTINUE
+            do 2 i = nvpi,loc+2,-1
+               indoei(i) = indoei(i-1)
+               valoei(i) = valoei(i-1)
+    2       continue
 !
 !   Put the new index and value into storage
 !
-            INDOEI(LOC+1) = INDEX
-            VALOEI(LOC+1) = TEGRAL
+            indoei(loc+1) = index
+            valoei(loc+1) = tegral
 !
-         ENDIF
+         endif
 !
-      ELSE
+      else
 !
 !   This branch is executed only once
 !
-         FIRST = .FALSE.
+         first = .false.
 !
 !   Allocate the initial storage for arrays INDOEI and VALOEI;
 !   NDVPA stores the array dimension
 !
-         NDVPA = 2
-         CALL ALLOC (INDOEI,NDVPA,'INDOEI', 'VPINT')
-         CALL ALLOC (VALOEI,NDVPA,'VALOEI', 'VPINT')
+         ndvpa = 2
+         call alloc (indoei,ndvpa,'INDOEI', 'VPINT')
+         call alloc (valoei,ndvpa,'VALOEI', 'VPINT')
 !
 !   Compute the integral's value
 !
-         TEGRAL = VPINTF (IA,IB)
+         tegral = vpintf (ia,ib)
 !
 !   Initialise the integral counter
 !
-         NVPI = 1
+         nvpi = 1
 !
 !   Store the integral and its value
 !
-         INDOEI(1) = INDEX
-         VALOEI(1) = TEGRAL
+         indoei(1) = index
+         valoei(1) = tegral
 !
-      ENDIF
+      endif
 !
-      RETURN
-      END SUBROUTINE VPINT
+      return
+      end subroutine vpint

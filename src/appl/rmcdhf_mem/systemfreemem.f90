@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      FUNCTION SYSTEMFreeMem()
+      function systemfreemem()
 !                                                                  *
 !   Written by  G. Gaigalas               Vilnius, September 2021  *
 !                                                                  *
@@ -9,29 +9,29 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
+      use vast_kind_param, only: double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !MemTotal:       264566412 kB
 !MemTotal:       1056570236 kB
-      REAL(DOUBLE) :: SYSTEMFreeMem
-      INTEGER      :: SUMMem, LENG
-      CHARACTER(LEN=128) :: LINE,CMem
+      real(double) :: systemfreemem
+      integer      :: summem, leng
+      character(len=128) :: line,cmem
 !-----------------------------------------------
 !
-      OPEN(5321,FILE='/proc/meminfo', STATUS='OLD', FORM='FORMATTED')
-      READ(5321,'(A)')LINE
-      READ(5321,'(A)')LINE
-      CLOSE(5321)
-      LENG = LEN_TRIM(LINE)
-      CMem = LINE(10:LENG-3)
-      READ(CMem,*)SUMMem  ! KB
-      SYSTEMFreeMem = SUMMem * 1.0 / 1048576.0  ! GB
+      open(5321,file='/proc/meminfo', status='OLD', form='FORMATTED')
+      read(5321,'(A)')line
+      read(5321,'(A)')line
+      close(5321)
+      leng = len_trim(line)
+      cmem = line(10:leng-3)
+      read(cmem,*)summem  ! KB
+      systemfreemem = summem * 1.0 / 1048576.0  ! GB
 
-      RETURN
-      END FUNCTION SYSTEMFreeMem
+      return
+      end function systemfreemem

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE DEFCOR(J)
+      subroutine defcor(j)
 !                                                                      *
 !   Compute the deferred corrections for orbital J .                   *
 !                                                                      *
@@ -13,29 +13,29 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE grid_C
-      USE wave_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use def_c
+      use grid_c
+      use wave_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
+      integer  :: j
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      REAL(DOUBLE), PARAMETER :: W3 = 1.0D00/120.0D00
-      REAL(DOUBLE), PARAMETER :: W2 = -15.0D00*W3
-      REAL(DOUBLE), PARAMETER :: W1 = 40.0D00*W3
+      real(double), parameter :: w3 = 1.0d00/120.0d00
+      real(double), parameter :: w2 = -15.0d00*w3
+      real(double), parameter :: w1 = 40.0d00*w3
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, MFJM3, MFJM2
-      LOGICAL :: FIRST
+      integer :: i, mfjm3, mfjm2
+      logical :: first
 !-----------------------------------------------
 !
-      DATA FIRST/ .TRUE./
+      data first/ .true./
 !
 !   The deferred corrections for the first two points are
 !   unnecessary, because the integration always commences
@@ -43,33 +43,33 @@
 !   deferred correction at the third and subsequent points
 !   only
 !
-      IF (FIRST) THEN
-         DP(:2) = 0.0D00
-         DQ(:2) = 0.0D00
-         FIRST = .FALSE.
-      ENDIF
+      if (first) then
+         dp(:2) = 0.0d00
+         dq(:2) = 0.0d00
+         first = .false.
+      endif
 !
 !   Intermediate points
 !
-      MFJM3 = MF(J) - 3
-      DO I = 3, MFJM3
+      mfjm3 = mf(j) - 3
+      do i = 3, mfjm3
 !
-         DP(I) = W3*(PF(I + 3,J) - PF(I - 2,J)) + &
-                 W2*(PF(I + 2,J) - PF(I - 1,J)) + &
-                 W1*(PF(I + 1,J) - PF(I,J))
+         dp(i) = w3*(pf(i + 3,j) - pf(i - 2,j)) + &
+                 w2*(pf(i + 2,j) - pf(i - 1,j)) + &
+                 w1*(pf(i + 1,j) - pf(i,j))
 !
-         DQ(I) = W3*(QF(I + 3,J) - QF(I - 2,J)) + &
-                 W2*(QF(I + 2,J) - QF(I - 1,J)) + &
-                 W1*(QF(I + 1,J) - QF(I,J))
+         dq(i) = w3*(qf(i + 3,j) - qf(i - 2,j)) + &
+                 w2*(qf(i + 2,j) - qf(i - 1,j)) + &
+                 w1*(qf(i + 1,j) - qf(i,j))
 !
-      END DO
+      end do
 !
 !   Set remaining deferred corrections to zero: slopes are
 !   small in this region
 !
-      MFJM2 = MF(J) - 2
-      DP(MFJM2:N) = 0.0D00
-      DQ(MFJM2:N) = 0.0D00
+      mfjm2 = mf(j) - 2
+      dp(mfjm2:n) = 0.0d00
+      dq(mfjm2:n) = 0.0d00
 !
-      RETURN
-      END SUBROUTINE DEFCOR
+      return
+      end subroutine defcor

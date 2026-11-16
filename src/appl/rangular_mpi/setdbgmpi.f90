@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETDBGmpi (DEBUG, fullname)
+      subroutine setdbgmpi (debug, fullname)
 !                                                                      *
 !   This routine calls setdbg to open the  .dbg  file and sets the     *
 !   arrays that control debug printout from the GENMCP program.        *
@@ -14,25 +14,25 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE MPI_C
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE setdbg_I
-      USE DEBUG_C
-      IMPLICIT NONE
+      use setdbg_i
+      use debug_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      LOGICAL, INTENT(out) :: debug
-      Character(LEN=*) :: fullname
+      logical, intent(out) :: debug
+      character(len=*) :: fullname
 !-----------------------------------------------
 !
-     IF (myid == 0) THEN
-         CALL setdbg (debug, fullname)
-      ENDIF
-      CALL MPI_Bcast (debug,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (ldbpa,5,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (ldbpg,5,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
-      RETURN
-      END SUBROUTINE SETDBGmpi
+     if (myid == 0) then
+         call setdbg (debug, fullname)
+      endif
+      call mpi_bcast (debug,1,mpi_logical,0,mpi_comm_world,ierr)
+      call mpi_bcast (ldbpa,5,mpi_logical,0,mpi_comm_world,ierr)
+      call mpi_bcast (ldbpg,5,mpi_logical,0,mpi_comm_world,ierr)
+      return
+      end subroutine setdbgmpi

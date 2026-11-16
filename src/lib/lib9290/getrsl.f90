@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GETRSL(INDX, NSUBS)
+      subroutine getrsl(indx, nsubs)
 !                                                                      *
 !   READs and parses a list of relativistic subshell labels delimit-   *
 !   ed either by blanks or by commas. An asterisk may be used as the   *
@@ -22,148 +22,148 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE ORB_C
-      USE IOUNIT_C
+      use orb_c
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ldigit_I
-      USE convrt_I
-      IMPLICIT NONE
+      use ldigit_i
+      use convrt_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(OUT) :: NSUBS
-      INTEGER, DIMENSION(*), INTENT(INOUT) :: INDX
+      integer, intent(out) :: nsubs
+      integer, dimension(*), intent(inout) :: indx
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ISTART, I, IEND, NFORM, J, LENTH, IOS, NPQ, K
-      LOGICAL :: FOUND, NLANY, NLOK, NPANY, NPOK, NSANY, NSOK
-      CHARACTER :: NLQ, NSQ, RECI, CNUM*2, FORM*5, RECORD*500
+      integer :: istart, i, iend, nform, j, lenth, ios, npq, k
+      logical :: found, nlany, nlok, npany, npok, nsany, nsok
+      character :: nlq, nsq, reci, cnum*2, form*5, record*500
 !-----------------------------------------------
 !
 !
 
-      GO TO 2
+      go to 2
 
-    1 CONTINUE
-      WRITE (ISTDE, *) ' redo ...'
+    1 continue
+      write (istde, *) ' redo ...'
 !
 !   Read a record
 !
-    2 CONTINUE
-      NSUBS = 0
-      READ (*, '(A)') RECORD
+    2 continue
+      nsubs = 0
+      read (*, '(A)') record
 
-      WRITE(734,'(a)') trim(record)
+      write(734,'(a)') trim(record)
 !
 !   Parse RECORD from left to right
 !
-      ISTART = 0
-      I = 1
-    3 CONTINUE
-      RECI = RECORD(I:I)
-      IF (RECI/=' ' .AND. RECI/=',') THEN
-         IF (ISTART == 0) ISTART = I
-      ELSE
-         IF (ISTART /= 0) THEN
-            IEND = I - 1
+      istart = 0
+      i = 1
+    3 continue
+      reci = record(i:i)
+      if (reci/=' ' .and. reci/=',') then
+         if (istart == 0) istart = i
+      else
+         if (istart /= 0) then
+            iend = i - 1
 !
 !   Parse the substring from left to right
 !
 !   (1) Determine the principal quantum number
 !
-            IF (RECORD(ISTART:ISTART) == '*') THEN
-               NPANY = .TRUE.
-               ISTART = MIN(ISTART + 1,IEND)
-            ELSE
-               NPANY = .FALSE.
-               NFORM = 0
-               DO J = ISTART, IEND
-                  IF (.NOT.LDIGIT(RECORD(J:J))) CYCLE
-                  NFORM = NFORM + 1
-               END DO
-               IF (NFORM == 0) THEN
-                  WRITE (ISTDE, *) 'GETRSL: Unable to interpret ', &
+            if (record(istart:istart) == '*') then
+               npany = .true.
+               istart = min(istart + 1,iend)
+            else
+               npany = .false.
+               nform = 0
+               do j = istart, iend
+                  if (.not.ldigit(record(j:j))) cycle
+                  nform = nform + 1
+               end do
+               if (nform == 0) then
+                  write (istde, *) 'GETRSL: Unable to interpret ', &
                      'the principal quantum number;'
-                  GO TO 1
-               ENDIF
-               CALL CONVRT (NFORM, CNUM, LENTH)
-               FORM = '(1I'//CNUM(1:LENTH)//')'
-               READ (RECORD(ISTART:ISTART+NFORM-1), FORM, IOSTAT=IOS) NPQ
-               IF (IOS /= 0) THEN
-                  WRITE (ISTDE, *) 'GETRSL: Unable to interpret ', 'string ', &
-                     RECORD(ISTART:IEND-2), ' as a principal quantum number'
-                  GO TO 1
-               ENDIF
-               ISTART = ISTART + NFORM
-            ENDIF
+                  go to 1
+               endif
+               call convrt (nform, cnum, lenth)
+               form = '(1I'//cnum(1:lenth)//')'
+               read (record(istart:istart+nform-1), form, iostat=ios) npq
+               if (ios /= 0) then
+                  write (istde, *) 'GETRSL: Unable to interpret ', 'string ', &
+                     record(istart:iend-2), ' as a principal quantum number'
+                  go to 1
+               endif
+               istart = istart + nform
+            endif
 !
 !   (2) Determine the orbital angular momentum quantum number
 !
-            NLQ = RECORD(ISTART:ISTART)
-            IF (NLQ == '*') THEN
-               NLANY = .TRUE.
-            ELSE
-               NLANY = .FALSE.
-            ENDIF
+            nlq = record(istart:istart)
+            if (nlq == '*') then
+               nlany = .true.
+            else
+               nlany = .false.
+            endif
 !
 !   (3) Determine the spin-orbit component
 !
-            IF (IEND > ISTART) THEN
-               NSQ = RECORD(IEND:IEND)
-               IF (NSQ == '*') THEN
-                  NSANY = .TRUE.
-               ELSE IF (NSQ == '-') THEN
-                  NSANY = .FALSE.
-               ELSE
-                  WRITE (ISTDE, *) 'GETRSL: Unable to interpret ', 'string ', &
-                     NSQ, ' as a spin-orbit component indicator'
-                  GO TO 1
-               ENDIF
-            ELSE
-               IF (NLANY) THEN
-                  NSANY = .TRUE.
-               ELSE
-                  NSANY = .FALSE.
-                  NSQ = ' '
-               ENDIF
-            ENDIF
+            if (iend > istart) then
+               nsq = record(iend:iend)
+               if (nsq == '*') then
+                  nsany = .true.
+               else if (nsq == '-') then
+                  nsany = .false.
+               else
+                  write (istde, *) 'GETRSL: Unable to interpret ', 'string ', &
+                     nsq, ' as a spin-orbit component indicator'
+                  go to 1
+               endif
+            else
+               if (nlany) then
+                  nsany = .true.
+               else
+                  nsany = .false.
+                  nsq = ' '
+               endif
+            endif
 !
 !
-            FOUND = .FALSE.
-            DO J = 1, NW
-               NPOK = NPANY .OR. NP(J)==NPQ
-               NLOK = NLANY .OR. NLQ==NH(J)(1:1)
-               NSOK = NSANY .OR. NSQ==NH(J)(2:2)
-               IF (.NOT.(NPOK .AND. NLOK .AND. NSOK)) CYCLE
-               DO K = 1, NSUBS
-                  IF (INDX(K) /= J) CYCLE
-                  WRITE (ISTDE, *) 'GETRSL: ', 'Repeated subshell in list;'
-                  GO TO 1
-               END DO
-               FOUND = .TRUE.
-               NSUBS = NSUBS + 1
-               INDX(NSUBS) = J
-            END DO
+            found = .false.
+            do j = 1, nw
+               npok = npany .or. np(j)==npq
+               nlok = nlany .or. nlq==nh(j)(1:1)
+               nsok = nsany .or. nsq==nh(j)(2:2)
+               if (.not.(npok .and. nlok .and. nsok)) cycle
+               do k = 1, nsubs
+                  if (indx(k) /= j) cycle
+                  write (istde, *) 'GETRSL: ', 'Repeated subshell in list;'
+                  go to 1
+               end do
+               found = .true.
+               nsubs = nsubs + 1
+               indx(nsubs) = j
+            end do
 !
-            IF (.NOT.FOUND) THEN
-               WRITE (ISTDE, *) 'GETRSL: Subshell not occupied as ', &
+            if (.not.found) then
+               write (istde, *) 'GETRSL: Subshell not occupied as ', &
                   ' according to CSL  File;'
-               GO TO 1
-            ENDIF
+               go to 1
+            endif
 !
-            ISTART = 0
-         ENDIF
-      ENDIF
+            istart = 0
+         endif
+      endif
 !
-      IF (I < 500) THEN
-         I = I + 1
-         GO TO 3
-      ENDIF
+      if (i < 500) then
+         i = i + 1
+         go to 3
+      endif
 !
-      RETURN
-      END SUBROUTINE GETRSL
+      return
+      end subroutine getrsl

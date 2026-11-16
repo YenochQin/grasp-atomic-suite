@@ -1,7 +1,7 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ALCLLA(IBEG, ILAB, ILAST, ILEFT, IPTCSF, IRIGHT, LBLINT, &
-         LLDIM, IMODE)
+      subroutine alclla(ibeg, ilab, ilast, ileft, iptcsf, iright, lblint, &
+         lldim, imode)
 !                                                                      *
 !   This  subprogram allocates (IMODE = 1), reallocates (IMODE = 2),   *
 !   and deallocates (IMODE = 3) storage for  certain arrays that are   *
@@ -18,73 +18,73 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE memory_man
-      IMPLICIT NONE
+      use memory_man
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: LLDIM
-      INTEGER , INTENT(IN) :: IMODE
-      INTEGER, DIMENSION(:), pointer :: IBEG, ILAB, ILAST, ILEFT, &
-                                        IPTCSF, IRIGHT, LBLINT
+      integer  :: lldim
+      integer , intent(in) :: imode
+      integer, dimension(:), pointer :: ibeg, ilab, ilast, ileft, &
+                                        iptcsf, iright, lblint
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NEWSIZ
+      integer :: newsiz
 !-----------------------------------------------
 !
 !
-      SELECT CASE (IMODE)
-      CASE (1)
+      select case (imode)
+      case (1)
 !
 !   Initial array dimension
 !
-         LLDIM = 64
+         lldim = 64
 !
 !   Allocate storage for arrays
 !
-         CALL ALLOC (IBEG, LLDIM, 'IBEG', 'ALCLLA')
-         CALL ALLOC (ILAB, LLDIM, 'ILAB', 'ALCLLA')
-         CALL ALLOC (ILAST, LLDIM, 'ILAST', 'ALCLLA')
-         CALL ALLOC (ILEFT, LLDIM, 'ILEFT', 'ALCLLA')
-         CALL ALLOC (IPTCSF, LLDIM, 'IPTCSF', 'ALCLLA')
-         CALL ALLOC (IRIGHT, LLDIM, 'IRIGHT', 'ALCLLA')
-         CALL ALLOC (LBLINT, LLDIM, 'LBLINT', 'ALCLLA')
+         call alloc (ibeg, lldim, 'IBEG', 'ALCLLA')
+         call alloc (ilab, lldim, 'ILAB', 'ALCLLA')
+         call alloc (ilast, lldim, 'ILAST', 'ALCLLA')
+         call alloc (ileft, lldim, 'ILEFT', 'ALCLLA')
+         call alloc (iptcsf, lldim, 'IPTCSF', 'ALCLLA')
+         call alloc (iright, lldim, 'IRIGHT', 'ALCLLA')
+         call alloc (lblint, lldim, 'LBLINT', 'ALCLLA')
 !
-      CASE (2)
+      case (2)
 !
 !   Double the allocation of storage for the arrays
 !
-         NEWSIZ = 2*LLDIM
+         newsiz = 2*lldim
 !
-         CALL RALLOC (IBEG, NEWSIZ, 'IBEG', 'ALCLLA')
-         CALL RALLOC (ILAB, NEWSIZ, 'ILAB', 'ALCLLA')
-         CALL RALLOC (ILAST, NEWSIZ, 'ILAST', 'ALCLLA')
-         CALL RALLOC (ILEFT, NEWSIZ, 'ILEFT', 'ALCLLA')
-         CALL RALLOC (IPTCSF, NEWSIZ, 'IPTCSF', 'ALCLLA')
-         CALL RALLOC (IRIGHT, NEWSIZ, 'IRIGHT', 'ALCLLA')
-         CALL RALLOC (LBLINT, NEWSIZ, 'LBLINT', 'ALCLLA')
+         call ralloc (ibeg, newsiz, 'IBEG', 'ALCLLA')
+         call ralloc (ilab, newsiz, 'ILAB', 'ALCLLA')
+         call ralloc (ilast, newsiz, 'ILAST', 'ALCLLA')
+         call ralloc (ileft, newsiz, 'ILEFT', 'ALCLLA')
+         call ralloc (iptcsf, newsiz, 'IPTCSF', 'ALCLLA')
+         call ralloc (iright, newsiz, 'IRIGHT', 'ALCLLA')
+         call ralloc (lblint, newsiz, 'LBLINT', 'ALCLLA')
 !
-         LLDIM = NEWSIZ
+         lldim = newsiz
 !
-      CASE (3)
+      case (3)
 !
 !   Deallocate the storage for the arrays
 !
-         CALL DALLOC (IBEG, 'IBEG', 'ALCLLA')
-         CALL DALLOC (ILAB, 'ILAB', 'ALCLLA')
-         CALL DALLOC (ILAST, 'ILAST', 'ALCLLA')
-         CALL DALLOC (ILEFT, 'ILEFT', 'ALCLLA')
-         CALL DALLOC (IPTCSF, 'IPTCSF', 'ALCLLA')
-         CALL DALLOC (IRIGHT, 'IRIGHT', 'ALCLLA')
-         CALL DALLOC (LBLINT, 'LBLINT', 'ALCLLA')
+         call dalloc (ibeg, 'IBEG', 'ALCLLA')
+         call dalloc (ilab, 'ILAB', 'ALCLLA')
+         call dalloc (ilast, 'ILAST', 'ALCLLA')
+         call dalloc (ileft, 'ILEFT', 'ALCLLA')
+         call dalloc (iptcsf, 'IPTCSF', 'ALCLLA')
+         call dalloc (iright, 'IRIGHT', 'ALCLLA')
+         call dalloc (lblint, 'LBLINT', 'ALCLLA')
 !
-      CASE DEFAULT
+      case default
 !
-         WRITE (6, *) 'ALCLLA: Invalid argument IMODE = ', IMODE
-         STOP
+         write (6, *) 'ALCLLA: Invalid argument IMODE = ', imode
+         stop
 !
-      END SELECT
+      end select
 !
-      RETURN
-      END SUBROUTINE ALCLLA
+      return
+      end subroutine alclla

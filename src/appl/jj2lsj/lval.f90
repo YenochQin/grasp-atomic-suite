@@ -1,7 +1,7 @@
 !
 !***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION LVAL (SYMBOL)
+      integer function lval (symbol)
 !                                                                      *
 !   Modified by Gediminas Gaigalas,                   September 1997   *
 !   Modified by G. Gaigalas,                                May 2011   *
@@ -13,24 +13,24 @@
 !...Translated by Pacific-Sierra Research 77to90  4.3E  21:52:17  11/14/01
 !...Switches:
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER , INTENT(IN) :: SYMBOL
+      character , intent(in) :: symbol
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER           :: LOCATE
-      CHARACTER(LEN=26) :: SET
+      integer           :: locate
+      character(len=26) :: set
 !
-      DATA SET/ 'spdfghiklmnoqSPDFGHIKLMNOQ'/
+      data set/ 'spdfghiklmnoqSPDFGHIKLMNOQ'/
 !-----------------------------------------------
-      LOCATE = INDEX(SET,SYMBOL)
-      IF (LOCATE <= 13) THEN
-         LVAL = LOCATE - 1
-      ELSE
-         LVAL = LOCATE - 14
-      ENDIF
-      RETURN
-      END FUNCTION LVAL
+      locate = index(set,symbol)
+      if (locate <= 13) then
+         lval = locate - 1
+      else
+         lval = locate - 14
+      endif
+      return
+      end function lval

@@ -1,6 +1,6 @@
 ! Serial implementation of the rdensity process boundary.
 module density_parallel
-    use vast_kind_param, only: DOUBLE
+    use vast_kind_param, only: double
     implicit none
     integer :: rank = 0, workers = 1
 contains
@@ -18,7 +18,7 @@ contains
     end subroutine
 
     subroutine sum_density(matrix)
-        real(DOUBLE), contiguous, intent(inout) :: matrix(:,:)
+        real(double), contiguous, intent(inout) :: matrix(:,:)
     end subroutine
 
     subroutine density_fail(message)

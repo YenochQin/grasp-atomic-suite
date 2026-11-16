@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GETINF
+      subroutine getinf
 !                                                                      *
 !   Interactively determines data governing the generation of MCP co-  *
 !   efficients.                                                        *
@@ -21,53 +21,53 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE CONS_C
-      USE orb_C
-      USE iccu_C
-      USE default_C
-      USE iounit_C
-      USE mcp_C
-      USE hblock_C
+      use cons_c
+      use orb_c
+      use iccu_c
+      use default_c
+      use iounit_c
+      use mcp_c
+      use hblock_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      IMPLICIT NONE
+      use getyn_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
+      integer :: i
 !-----------------------------------------------
 !
 !   Determine the physical effects specifications
 !
-      DIAG = .FALSE.
-      IF (DIAG) THEN
-         LFORDR = .FALSE.
+      diag = .false.
+      if (diag) then
+         lfordr = .false.
          do i = 1,100
-            ICCUT(i) = 0
+            iccut(i) = 0
          end do
-      ELSE
-         IF (NDEF /= 0) THEN
-            LFORDR = .TRUE.
-         ELSE
-            LFORDR = .FALSE.
-         ENDIF
-         IF (LFORDR) THEN
-            WRITE (istde,*) 'The contribution of CSFs 1 -- ICCUT will',&
+      else
+         if (ndef /= 0) then
+            lfordr = .true.
+         else
+            lfordr = .false.
+         endif
+         if (lfordr) then
+            write (istde,*) 'The contribution of CSFs 1 -- ICCUT will',&
                             ' be treated variationally;'
-            WRITE (istde,*) 'the remainder perturbatively; enter ICCUT:'
+            write (istde,*) 'the remainder perturbatively; enter ICCUT:'
             do i = 1,nblock
               write(istde,*) 'Give ICCUT for block',i
-    1         READ *, ICCUT(i)
-              IF ((ICCUT(i) <= 1).OR.(ICCUT(i) >= ncfblk(i))) THEN
-                WRITE (istde,*) 'GETINF: ICCUT must be greater than 1',&
+    1         read *, iccut(i)
+              if ((iccut(i) <= 1).or.(iccut(i) >= ncfblk(i))) then
+                write (istde,*) 'GETINF: ICCUT must be greater than 1',&
                                 ' and less than ',ncfblk(i)
-                WRITE (istde,*) ' please reenter ICCUT:'
-                GOTO 1
-              ENDIF
+                write (istde,*) ' please reenter ICCUT:'
+                goto 1
+              endif
             end do
-         ENDIF
-      ENDIF
-      RETURN
-      END
+         endif
+      endif
+      return
+      end

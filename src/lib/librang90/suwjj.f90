@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE SUWJJ(K1,K2,LL,J1,J2,SUW)
+      subroutine suwjj(k1,k2,ll,j1,j2,suw)
 !                                                                  *
 !                 (k1 k2)                                          *
 !     ( j QJ ::: W      ::: j QJ )                                 *
@@ -14,56 +14,56 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, EPS
-      USE ribojj_C
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, eps
+      use ribojj_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rumtjj_I
-      USE ixjtik_I
-      USE rmeajj_I
-      USE sixj_I
-      IMPLICIT NONE
+      use rumtjj_i
+      use ixjtik_i
+      use rmeajj_i
+      use sixj_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN)  :: K1, K2, J1, J2
-      INTEGER,      INTENT(OUT) :: LL
-      REAL(DOUBLE), INTENT(OUT) :: SUW
+      integer,      intent(in)  :: k1, k2, j1, j2
+      integer,      intent(out) :: ll
+      real(double), intent(out) :: suw
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: KK1,KK2,I,IP,IG,L2Q1,L2V1,L2J1,L2Q2,L2V2,L2J2, &
-                 L2QI,L2VI,L2JI
-      REAL(DOUBLE) :: COEF1, COEF2, S, SI1, SI2
+      integer :: kk1,kk2,i,ip,ig,l2q1,l2v1,l2j1,l2q2,l2v2,l2j2, &
+                 l2qi,l2vi,l2ji
+      real(double) :: coef1, coef2, s, si1, si2
 !-----------------------------------------------
-      SUW=ZERO
-      IF(IMPTJJ(J1) /= IMPTJJ(J2)) RETURN
-      S=ZERO
-      CALL RUMTJJ(J1,LL,L2Q1,L2V1,L2J1)
-      KK1=K1*2
-      KK2=K2*2
-      IP=IMPNJJ(J1)
-      IG=IMGNJJ(J1)
-      CALL RUMTJJ(J2,LL,L2Q2,L2V2,L2J2)
-      DO I=IP,IG
-        CALL RUMTJJ(I,LL,L2QI,L2VI,L2JI)
-        IF(IXJTIK(LL,LL,KK2,L2J2,L2J1,L2JI) /= 0) THEN
-          IF(IXJTIK(1,1,KK1,L2Q2,L2Q1,L2QI) /= 0) THEN
-            CALL RMEAJJ(LL,J1,L2Q1,L2J1,I,L2QI,L2JI,COEF1)
-            IF(DABS(COEF1) > EPS) THEN
-              CALL RMEAJJ(LL,I,L2QI,L2JI,J2,L2Q2,L2J2,COEF2)
-              IF(DABS(COEF2) > EPS) THEN
-                CALL SIXJ(LL,LL,KK2,L2J2,L2J1,L2JI,0,SI1)
-                CALL SIXJ(1,1,KK1,L2Q2,L2Q1,L2QI,0,SI2)
-                S=S+SI1*SI2*COEF1*COEF2
-              ENDIF
-            ENDIF
-          ENDIF
-        ENDIF
-      END DO
-      SUW=S*DSQRT(DBLE((KK1+1)*(KK2+1)))
-      IF(MOD(L2Q1+L2J1+L2Q2+L2J2+KK1+KK2,4) /= 0)SUW=-SUW
-      RETURN
-      END SUBROUTINE SUWJJ
+      suw=zero
+      if(imptjj(j1) /= imptjj(j2)) return
+      s=zero
+      call rumtjj(j1,ll,l2q1,l2v1,l2j1)
+      kk1=k1*2
+      kk2=k2*2
+      ip=impnjj(j1)
+      ig=imgnjj(j1)
+      call rumtjj(j2,ll,l2q2,l2v2,l2j2)
+      do i=ip,ig
+        call rumtjj(i,ll,l2qi,l2vi,l2ji)
+        if(ixjtik(ll,ll,kk2,l2j2,l2j1,l2ji) /= 0) then
+          if(ixjtik(1,1,kk1,l2q2,l2q1,l2qi) /= 0) then
+            call rmeajj(ll,j1,l2q1,l2j1,i,l2qi,l2ji,coef1)
+            if(dabs(coef1) > eps) then
+              call rmeajj(ll,i,l2qi,l2ji,j2,l2q2,l2j2,coef2)
+              if(dabs(coef2) > eps) then
+                call sixj(ll,ll,kk2,l2j2,l2j1,l2ji,0,si1)
+                call sixj(1,1,kk1,l2q2,l2q1,l2qi,0,si2)
+                s=s+si1*si2*coef1*coef2
+              endif
+            endif
+          endif
+        endif
+      end do
+      suw=s*dsqrt(dble((kk1+1)*(kk2+1)))
+      if(mod(l2q1+l2j1+l2q2+l2j2+kk1+kk2,4) /= 0)suw=-suw
+      return
+      end subroutine suwjj

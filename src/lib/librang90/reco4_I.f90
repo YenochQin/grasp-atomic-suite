@@ -1,11 +1,11 @@
-      MODULE reco4_I
-      INTERFACE
+      module reco4_i
+      interface
 !
-      SUBROUTINE RECO4(JA1,JA2,JA3,JA4,K1,K2,K3,K4,KA,IRE,IAT,RECC)
-      USE vast_kind_param,  ONLY:  DOUBLE
-      INTEGER, INTENT(IN)       :: JA1,JA2,JA3,JA4,K1,K2,K3,K4,KA,IRE
-      INTEGER, INTENT(OUT)      :: IAT
-      REAL(DOUBLE), INTENT(OUT) :: RECC
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine reco4(ja1,ja2,ja3,ja4,k1,k2,k3,k4,ka,ire,iat,recc)
+      use vast_kind_param,  only:  double
+      integer, intent(in)       :: ja1,ja2,ja3,ja4,k1,k2,k3,k4,ka,ire
+      integer, intent(out)      :: iat
+      real(double), intent(out) :: recc
+      end subroutine
+      end interface
+      end module

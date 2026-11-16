@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SOLVE(J, FAIL, INV, JP, NNP)
+      subroutine solve(j, fail, inv, jp, nnp)
 !                                                                      *
 !   This subroutine  performs  step  2 in Algorithm 5.2 and 5.3 of C   *
 !   Froese Fischer, Comput Phys Rep 3 (1986) 295. Some minor changes   *
@@ -26,334 +26,334 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNP
-      USE debug_C
-      USE def_C, ONLY: C, NSOLV
-      USE grid_C, ONLY: rp
-      USE int_C, ONLY: p, q, p0, q0, mtp0
-      USE invt_C
-      USE node_c
-      USE orb_C
-      USE scf_C
-      USE tatb_C
-      USE wave_C
-      USE POTE_C
-      USE MPI_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnp
+      use debug_c
+      use def_c, only: c, nsolv
+      use grid_c, only: rp
+      use int_c, only: p, q, p0, q0, mtp0
+      use invt_c
+      use node_c
+      use orb_c
+      use scf_c
+      use tatb_c
+      use wave_c
+      use pote_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE estim_I
-      USE eigen_I
-      USE dcbsrw_I
-      USE setpot_I
-      USE setxz_I
-      USE start_I
-      USE out_I
-      USE in_I
-      USE setxuv_I
-      USE quad_I
-      USE setxv_I
-      USE prwf_I
-      USE count_I
-      USE newe_I
-      IMPLICIT NONE
+      use estim_i
+      use eigen_i
+      use dcbsrw_i
+      use setpot_i
+      use setxz_i
+      use start_i
+      use out_i
+      use in_i
+      use setxuv_i
+      use quad_i
+      use setxv_i
+      use prwf_i
+      use count_i
+      use newe_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
-      INTEGER, INTENT(INOUT) :: INV
-      INTEGER, INTENT(OUT) :: JP
-      INTEGER, INTENT(OUT) :: NNP
-      LOGICAL  :: FAIL
+      integer  :: j
+      integer, intent(inout) :: inv
+      integer, intent(out) :: jp
+      integer, intent(out) :: nnp
+      logical  :: fail
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: KOUNT, NAKJ, NLOOPS, ICASE, MTPH, MTPI, I, MTPC, MTPV, MTPVC, &
-         LOC1, LOC2, LOC, MX, NPRIME
-      REAL(DOUBLE), DIMENSION(NNNP) :: PH, QH, PV, QV
-      REAL(DOUBLE) :: TWOCSQ, ELAST, TENEJ, DELEPS, SGN, QJPOH, QJPIH, QJPOI, &
-         QJPII, DNORM, ALFA, P0H, P0V, Q0V, QJPOV, QJPIV, CRNORM, DVNORM, AA, &
-         BB, CC, DISCR, QQ, ROOT1, ROOT2, PMX, APM, PATI, ABPI, RATIO, TEST1, &
-         TEST2, DELE
-      LOGICAL :: CHECK
+      integer :: kount, nakj, nloops, icase, mtph, mtpi, i, mtpc, mtpv, mtpvc, &
+         loc1, loc2, loc, mx, nprime
+      real(double), dimension(nnnp) :: ph, qh, pv, qv
+      real(double) :: twocsq, elast, tenej, deleps, sgn, qjpoh, qjpih, qjpoi, &
+         qjpii, dnorm, alfa, p0h, p0v, q0v, qjpov, qjpiv, crnorm, dvnorm, aa, &
+         bb, cc, discr, qq, root1, root2, pmx, apm, pati, abpi, ratio, test1, &
+         test2, dele
+      logical :: check
 !-----------------------------------------------
 !
 !   Initialization
 !
-      CHECK = .NOT.NOINVT(J)
-      FAIL = .FALSE.
-      KOUNT = 0
-      NAKJ = NAK(J)
+      check = .not.noinvt(j)
+      fail = .false.
+      kount = 0
+      nakj = nak(j)
 !     TWOCSQ = 2.0D 00*137.036**2
-      TWOCSQ = 2.0D00*C*C
+      twocsq = 2.0d00*c*c
 !
 !   Debug header
 !
-      IF (LDBPR(22)) WRITE (99, 300) NP(J), NH(J)
+      if (ldbpr(22)) write (99, 300) np(j), nh(j)
 !
-      NLOOPS = MAX(NSOLV,3*NP(J))
+      nloops = max(nsolv,3*np(j))
 !
-      CALL ESTIM (J)
-      ELAST = E(J)
-      E(J) = EIGEN(J)
+      call estim (j)
+      elast = e(j)
+      e(j) = eigen(j)
 !
 !   Checks on lower bounds
 !
-      IF (E(J) < EPSMIN) THEN
-         IF (E(J) > 0.0D00) THEN
-            EPSMIN = E(J)
-         ELSE
-            WRITE (*, 301) NP(J), NH(J), E(J)
-            E(J) = EPSMIN
-            IF (ABS(EMIN - ELAST)<=1.0D-06 .AND. METHOD(J)<=2) THEN
-               CALL DCBSRW (NP(J), NAKJ, ZINF, E(J), P0, P, Q, MTP0)
-               WRITE (*, 302) NP(J), NH(J), ZINF
-               RETURN
-            ENDIF
-         ENDIF
-      ENDIF
+      if (e(j) < epsmin) then
+         if (e(j) > 0.0d00) then
+            epsmin = e(j)
+         else
+            write (*, 301) np(j), nh(j), e(j)
+            e(j) = epsmin
+            if (abs(emin - elast)<=1.0d-06 .and. method(j)<=2) then
+               call dcbsrw (np(j), nakj, zinf, e(j), p0, p, q, mtp0)
+               write (*, 302) np(j), nh(j), zinf
+               return
+            endif
+         endif
+      endif
 !
 !   Check on upper bound
 !
-      IF (METHOD(J) <= 2) THEN
-         IF (E(J) > EPSMAX) THEN
-            TENEJ = 10.0D00*E(J)
-            EPSMAX = MIN(TENEJ,TWOCSQ)
-            EMAX = EPSMAX
-            IF (E(J) > TWOCSQ) THEN
-               WRITE (*, 303) NP(J), NH(J), E(J)
-               E(J) = TWOCSQ
-            ENDIF
-         ENDIF
-      ENDIF
+      if (method(j) <= 2) then
+         if (e(j) > epsmax) then
+            tenej = 10.0d00*e(j)
+            epsmax = min(tenej,twocsq)
+            emax = epsmax
+            if (e(j) > twocsq) then
+               write (*, 303) np(j), nh(j), e(j)
+               e(j) = twocsq
+            endif
+         endif
+      endif
 !
 !   Iteration loop begins here
 !
-    1 CONTINUE
-      KOUNT = KOUNT + 1
+    1 continue
+      kount = kount + 1
 !
-      P0 = PZ(J)
+      p0 = pz(j)
 !
-      IF (KOUNT > 1) THEN
+      if (kount > 1) then
 !
 !   Check that bounds are ordered correctly
 !
-         IF (EPSMAX <= EPSMIN) WRITE (*, 304) EPSMIN, EPSMAX, NP(J), NH(J), E(J&
+         if (epsmax <= epsmin) write (*, 304) epsmin, epsmax, np(j), nh(j), e(j&
             )
 !
-         IF (KOUNT>NLOOPS .OR. EPSMAX-EPSMIN<1.0D00/DBLE(NP(J))**3) THEN
-            WRITE (*, 305) METHOD(J), NP(J), NH(J)
-            WRITE (*, 306) KOUNT - 1, NLOOPS, P0, E(J), DELEPS, EPSMIN, EPSMAX&
-               , JP, MTP, NNP, NNODEP(J), SGN
-            FAIL = .TRUE.
-            RETURN
-         ENDIF
-      ENDIF
+         if (kount>nloops .or. epsmax-epsmin<1.0d00/dble(np(j))**3) then
+            write (*, 305) method(j), np(j), nh(j)
+            write (*, 306) kount - 1, nloops, p0, e(j), deleps, epsmin, epsmax&
+               , jp, mtp, nnp, nnodep(j), sgn
+            fail = .true.
+            return
+         endif
+      endif
 !
 !   Set up arrays TF and TG; find join point
 !
-      CALL SETPOT (J, JP)
+      call setpot (j, jp)
 !
 !   Set right-hand side to zero to form homogeneous equations;
 !   integrate homogeneous equations outwards and inwards; store
 !   small component at join point each time
 !
-      CALL SETXZ (J)
-      ICASE = 1
-      CALL START (J, ICASE, P0, PH, Q0, QH)
-      CALL OUT (J, JP, PH, QH)
-      QJPOH = QH(JP)
-      CALL IN (J, JP, PH, QH, MTPH)
-      QJPIH = QH(JP)
+      call setxz (j)
+      icase = 1
+      call start (j, icase, p0, ph, q0, qh)
+      call out (j, jp, ph, qh)
+      qjpoh = qh(jp)
+      call in (j, jp, ph, qh, mtph)
+      qjpih = qh(jp)
 !
 !   Set up right-hand side for inhomogeneous equations; integrate
 !   inhomogeneous equations outwards and inwards; store small
 !   component at join point each time
 !
-      CALL SETXUV (J)
-      ICASE = 2
-      CALL START (J, ICASE, P0, P, Q0, Q)
-      CALL OUT (J, JP, P, Q)
-      QJPOI = Q(JP)
-      CALL IN (J, JP, P, Q, MTPI)
-      QJPII = Q(JP)
+      call setxuv (j)
+      icase = 2
+      call start (j, icase, p0, p, q0, q)
+      call out (j, jp, p, q)
+      qjpoi = q(jp)
+      call in (j, jp, p, q, mtpi)
+      qjpii = q(jp)
 !
 !   Determine energy adjustment for methods 1 and 2
 !
-      IF (METHOD(J) <= 2) THEN
-         TA(1) = 0.0D00
-         TA(2:MTPI) = (P(2:MTPI)**2+Q(2:MTPI)**2)*RP(2:MTPI)
-         MTP = MTPI
-         CALL QUAD (DNORM)
+      if (method(j) <= 2) then
+         ta(1) = 0.0d00
+         ta(2:mtpi) = (p(2:mtpi)**2+q(2:mtpi)**2)*rp(2:mtpi)
+         mtp = mtpi
+         call quad (dnorm)
 !        DELEPS = 137.036*P(JP)*(QJPII-QJPOI)/DNORM
-         DELEPS = C*P(JP)*(QJPII - QJPOI)/DNORM
-      ENDIF
+         deleps = c*p(jp)*(qjpii - qjpoi)/dnorm
+      endif
 !
 !   Generate the continuous solution
 !
-      MTPC = MAX(MTPH,MTPI)
-      ALFA = -(QJPII - QJPOI)/(QJPIH - QJPOH)
-      P0H = P0
-      P0 = P0*(1.0D00 + ALFA)
-      P(:MTPC) = P(:MTPC) + ALFA*PH(:MTPC)
-      Q(:MTPC) = Q(:MTPC) + ALFA*QH(:MTPC)
+      mtpc = max(mtph,mtpi)
+      alfa = -(qjpii - qjpoi)/(qjpih - qjpoh)
+      p0h = p0
+      p0 = p0*(1.0d00 + alfa)
+      p(:mtpc) = p(:mtpc) + alfa*ph(:mtpc)
+      q(:mtpc) = q(:mtpc) + alfa*qh(:mtpc)
 !
-      IF (METHOD(J)==2 .OR. METHOD(J)==4) THEN
+      if (method(j)==2 .or. method(j)==4) then
 !
 !   Set up right-hand side for variational equations; integrate
 !   variational equations outwards and inwards; store small
 !   component at join point each time
 !
-         P0V = 0.0D00
-         CALL SETXV (J)
-         ICASE = 3
-         CALL START (J, ICASE, P0V, PV, Q0V, QV)
-         CALL OUT (J, JP, PV, QV)
-         QJPOV = QV(JP)
-         CALL IN (J, JP, PV, QV, MTPV)
-         QJPIV = QV(JP)
+         p0v = 0.0d00
+         call setxv (j)
+         icase = 3
+         call start (j, icase, p0v, pv, q0v, qv)
+         call out (j, jp, pv, qv)
+         qjpov = qv(jp)
+         call in (j, jp, pv, qv, mtpv)
+         qjpiv = qv(jp)
 !
 !   Generate continuous solutions
 !
-         MTPVC = MAX(MTPC,MTPV)
-         ALFA = -(QJPIV - QJPOV)/(QJPIH - QJPOH)
-         PV(:MTPVC) = PV(:MTPVC) + ALFA*PH(:MTPVC)
-         QV(:MTPVC) = QV(:MTPVC) + ALFA*QH(:MTPVC)
+         mtpvc = max(mtpc,mtpv)
+         alfa = -(qjpiv - qjpov)/(qjpih - qjpoh)
+         pv(:mtpvc) = pv(:mtpvc) + alfa*ph(:mtpvc)
+         qv(:mtpvc) = qv(:mtpvc) + alfa*qh(:mtpvc)
 !
-         TA(1) = 0.0D00
-         TA(2:MTPC) = RP(2:MTPC)*(P(2:MTPC)**2+Q(2:MTPC)**2)
-         MTP = MTPC
-         CALL QUAD (DNORM)
+         ta(1) = 0.0d00
+         ta(2:mtpc) = rp(2:mtpc)*(p(2:mtpc)**2+q(2:mtpc)**2)
+         mtp = mtpc
+         call quad (dnorm)
 !
-         MTP = MIN(MTPC,MTPVC)
-         TA(1) = 0.0D00
-         TA(2:MTP) = RP(2:MTP)*(P(2:MTP)*PV(2:MTP)+Q(2:MTP)*QV(2:MTP))
-         CALL QUAD (CRNORM)
+         mtp = min(mtpc,mtpvc)
+         ta(1) = 0.0d00
+         ta(2:mtp) = rp(2:mtp)*(p(2:mtp)*pv(2:mtp)+q(2:mtp)*qv(2:mtp))
+         call quad (crnorm)
 !
-         TA(1) = 0.0D00
-         TA(2:MTPVC) = RP(2:MTPVC)*(PV(2:MTPVC)**2+QV(2:MTPVC)**2)
-         MTP = MTPVC
-         CALL QUAD (DVNORM)
+         ta(1) = 0.0d00
+         ta(2:mtpvc) = rp(2:mtpvc)*(pv(2:mtpvc)**2+qv(2:mtpvc)**2)
+         mtp = mtpvc
+         call quad (dvnorm)
 !
 !   Determine deleps required to normalize new solution to
 !   first order: modified form of solution to a quadratic
 !   equation (see Press et al.)
 !
-         AA = DVNORM
-         BB = CRNORM + CRNORM
-         CC = DNORM - 1.0D00
-         DISCR = BB*BB - 4.0D00*AA*CC
-         IF (DISCR > 0.0D00) THEN
-            QQ = -0.5D00*(BB + SIGN(1.0D00,BB)*SQRT(DISCR))
-            ROOT1 = CC/QQ
-            ROOT2 = QQ/AA
-            PMX = 0.0D00
-            APM = 0.0D00
-            DO I = 2, JP
-               PATI = P(I)
-               IF (PATI > PMX) THEN
-                  PMX = PATI
-                  LOC1 = I
-               ENDIF
-               ABPI = ABS(PATI)
-               IF (ABPI <= APM) CYCLE
-               APM = ABPI
-               LOC2 = I
-            END DO
-            IF (PMX /= 0.0D00) THEN
-               RATIO = APM/ABS(PMX)
-               IF (RATIO < 10.0D00) THEN
-                  LOC = LOC1
-               ELSE
-                  LOC = LOC2
-               ENDIF
-            ELSE
-               LOC = LOC2
-            ENDIF
-            TEST1 = P(LOC) + ROOT1*PV(LOC)
-            TEST2 = P(LOC) + ROOT2*PV(LOC)
-            IF (TEST1>0.0D00 .AND. TEST2<0.0D00) THEN
-               DELE = ROOT1
-            ELSE IF (TEST1<0.0D00 .AND. TEST2>0.0D00) THEN
-               DELE = ROOT2
-            ELSE IF (TEST1>0.0D00 .AND. TEST2>0.0D00) THEN
-               IF (TEST1 < TEST2) THEN
-                  DELE = ROOT1
-               ELSE
-                  DELE = ROOT2
-               ENDIF
-            ELSE IF (TEST1<0.0D00 .AND. TEST2<0.0D00) THEN
-               IF (TEST1 > TEST2) THEN
-                  DELE = ROOT1
-               ELSE
-                  DELE = ROOT2
-               ENDIF
-            ENDIF
-         ELSE
-            DELE = -BB/(AA + AA)
-         ENDIF
+         aa = dvnorm
+         bb = crnorm + crnorm
+         cc = dnorm - 1.0d00
+         discr = bb*bb - 4.0d00*aa*cc
+         if (discr > 0.0d00) then
+            qq = -0.5d00*(bb + sign(1.0d00,bb)*sqrt(discr))
+            root1 = cc/qq
+            root2 = qq/aa
+            pmx = 0.0d00
+            apm = 0.0d00
+            do i = 2, jp
+               pati = p(i)
+               if (pati > pmx) then
+                  pmx = pati
+                  loc1 = i
+               endif
+               abpi = abs(pati)
+               if (abpi <= apm) cycle
+               apm = abpi
+               loc2 = i
+            end do
+            if (pmx /= 0.0d00) then
+               ratio = apm/abs(pmx)
+               if (ratio < 10.0d00) then
+                  loc = loc1
+               else
+                  loc = loc2
+               endif
+            else
+               loc = loc2
+            endif
+            test1 = p(loc) + root1*pv(loc)
+            test2 = p(loc) + root2*pv(loc)
+            if (test1>0.0d00 .and. test2<0.0d00) then
+               dele = root1
+            else if (test1<0.0d00 .and. test2>0.0d00) then
+               dele = root2
+            else if (test1>0.0d00 .and. test2>0.0d00) then
+               if (test1 < test2) then
+                  dele = root1
+               else
+                  dele = root2
+               endif
+            else if (test1<0.0d00 .and. test2<0.0d00) then
+               if (test1 > test2) then
+                  dele = root1
+               else
+                  dele = root2
+               endif
+            endif
+         else
+            dele = -bb/(aa + aa)
+         endif
 !
 !   Generate new solution
 !
-         MTP0 = MAX(MTPC,MTPVC)
-         P0 = P0 + DELE*ALFA*P0H
-         P(2:MTP0) = P(2:MTP0) + DELE*PV(2:MTP0)
-         Q(2:MTP0) = Q(2:MTP0) + DELE*QV(2:MTP0)
-      ELSE
-         MTP0 = MTPC
-      ENDIF
+         mtp0 = max(mtpc,mtpvc)
+         p0 = p0 + dele*alfa*p0h
+         p(2:mtp0) = p(2:mtp0) + dele*pv(2:mtp0)
+         q(2:mtp0) = q(2:mtp0) + dele*qv(2:mtp0)
+      else
+         mtp0 = mtpc
+      endif
 !
 !   Debug printout
 !
-      IF (LDBPR(23)) CALL PRWF (J)
+      if (ldbpr(23)) call prwf (j)
 !
 !   Count nodes in large component function; determine sign at first
 !   oscillation, effective quantum number; note that node counting
 !   is never enforced on the small component
 !
-      CALL COUNT (P, MTP0, NNP, SGN)
+      call count (p, mtp0, nnp, sgn)
 !
 !   DEBUG PRINTOUT
 !
-      IF (LDBPR(22)) WRITE (99, 306) KOUNT, NLOOPS, P0, E(J), DELEPS, EPSMIN, &
-         EPSMAX, JP, MTP, NNP, NNODEP(J), SGN
+      if (ldbpr(22)) write (99, 306) kount, nloops, p0, e(j), deleps, epsmin, &
+         epsmax, jp, mtp, nnp, nnodep(j), sgn
 !
 !   Proceed according to method
 !
-      IF (METHOD(J) > 2) THEN
-         IF (CHECK .AND. SGN<0.0D00) THEN
-            INV = 1
-            P0 = -P0
-            P(2:MTP0) = -P(2:MTP0)
-            Q(2:MTP0) = -Q(2:MTP0)
-         ENDIF
-      ELSE
-         MX = NNP - NNODEP(J)
-         NPRIME = NNP + NKL(J) + 1
-         CALL NEWE (J, SGN, NPRIME, MX, DELEPS, FAIL, INV)
-         IF (FAIL) GO TO 1
-      ENDIF
+      if (method(j) > 2) then
+         if (check .and. sgn<0.0d00) then
+            inv = 1
+            p0 = -p0
+            p(2:mtp0) = -p(2:mtp0)
+            q(2:mtp0) = -q(2:mtp0)
+         endif
+      else
+         mx = nnp - nnodep(j)
+         nprime = nnp + nkl(j) + 1
+         call newe (j, sgn, nprime, mx, deleps, fail, inv)
+         if (fail) go to 1
+      endif
 !
 !   Solution found
 !
-      RETURN
+      return
 !
-  300 FORMAT(/,/,' Debug printout active; orbital: ',1I2,1A2)
-  301 FORMAT(' E(',1I2,1A2,') = ',1P,D11.4,'; adjusted to EPSMIN')
-  302 FORMAT(' Returned hydrogenic function for ',1I2,1A2,' with',&
-         ' effective charge ',F7.3)
-  303 FORMAT(' E(',1I2,1A2,') = ',1P,D11.4,'; adjusted to TWOCSQ')
-  304 FORMAT(' Warning: difficulty with node-counting procedure'/,&
-         ' lower bound on energy (',1P,D11.4,') exceeds upper',' bound (',1D&
-         11.4,'; E(',1I2,1A2,') = ',1D11.4)
-  305 FORMAT(' Method ',1I1,' unable to solve for ',1I2,1A2,' orbital')
-  306 FORMAT(' Iteration number: ',1I2,', limit: ',1I2,/,&
-         ' Present estimate of P0; ',1D21.14,/,' Present estimate of E(J): ',1D&
-         21.14,', DELEPS: ',1D21.14,/,' Lower bound on energy: ',1D21.14,&
-         ', upper bound: ',1D21.14,/,' Join point: ',1I4,&
-         ', Maximum tabulation point:',1I4,/,' Number of nodes counted: ',1I2,&
-         ', Correct number: ',1I2,/,' Sign of P at first oscillation: ',F3.0)
-      RETURN
+  300 format(/,/,' Debug printout active; orbital: ',1i2,1a2)
+  301 format(' E(',1i2,1a2,') = ',1p,d11.4,'; adjusted to EPSMIN')
+  302 format(' Returned hydrogenic function for ',1i2,1a2,' with',&
+         ' effective charge ',f7.3)
+  303 format(' E(',1i2,1a2,') = ',1p,d11.4,'; adjusted to TWOCSQ')
+  304 format(' Warning: difficulty with node-counting procedure'/,&
+         ' lower bound on energy (',1p,d11.4,') exceeds upper',' bound (',1d&
+         11.4,'; E(',1i2,1a2,') = ',1d11.4)
+  305 format(' Method ',1i1,' unable to solve for ',1i2,1a2,' orbital')
+  306 format(' Iteration number: ',1i2,', limit: ',1i2,/,&
+         ' Present estimate of P0; ',1d21.14,/,' Present estimate of E(J): ',1d&
+         21.14,', DELEPS: ',1d21.14,/,' Lower bound on energy: ',1d21.14,&
+         ', upper bound: ',1d21.14,/,' Join point: ',1i4,&
+         ', Maximum tabulation point:',1i4,/,' Number of nodes counted: ',1i2,&
+         ', Correct number: ',1i2,/,' Sign of P at first oscillation: ',f3.0)
+      return
 !
-      END SUBROUTINE SOLVE
+      end subroutine solve

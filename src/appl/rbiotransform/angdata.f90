@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ANGDATA(NAME, AVAIL, KAMAX)
+      subroutine angdata(name, avail, kamax)
 !                                                                      *
 !   Checks if the angular file name.T is available and appropriate     *
 !                                                                      *
@@ -13,44 +13,44 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE orb_C,           ONLY: NCF, NW
-      IMPLICIT NONE
+      use orb_c,           only: ncf, nw
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)      :: KAMAX
-      LOGICAL, INTENT(OUT)     :: AVAIL
-      CHARACTER, INTENT(INOUT) :: NAME*24
+      integer, intent(in)      :: kamax
+      logical, intent(out)     :: avail
+      character, intent(inout) :: name*24
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, NF, NCFD, NWD, KAMAXD
-      LOGICAL :: FOUND
+      integer :: j, nf, ncfd, nwd, kamaxd
+      logical :: found
 !-----------------------------------------------
 !
-      J = INDEX(NAME,' ')
-      INQUIRE(FILE=NAME(1:J-1)//'.TB', EXIST=FOUND)
-      IF (.NOT.FOUND) THEN
-         WRITE (6, *) ' Angular file not available'
-         AVAIL = .FALSE.
-         RETURN
-      ELSE
+      j = index(name,' ')
+      inquire(file=name(1:j-1)//'.TB', exist=found)
+      if (.not.found) then
+         write (6, *) ' Angular file not available'
+         avail = .false.
+         return
+      else
 !
 !  Open the file and check if it is appropriate for the present case
 !
-         NF = 200
-         OPEN(UNIT=NF, FILE=NAME(1:J-1)//'.TB', STATUS='OLD', FORM=&
-            'UNFORMATTED', POSITION='asis')
-         REWIND (NF)
-         READ (NF) NCFD, NWD, KAMAXD
-         IF (.NOT.(NCFD==NCF .AND. NWD==NW .AND. KAMAXD==KAMAX)) THEN
-            WRITE (6, *) ' Angular file not appropriate'
-            AVAIL = .FALSE.
-            RETURN
-         ELSE
-            WRITE (6, *) ' Angular data read from file'
-            AVAIL = .TRUE.
-         ENDIF
-      ENDIF
-      RETURN
-      END SUBROUTINE ANGDATA
+         nf = 200
+         open(unit=nf, file=name(1:j-1)//'.TB', status='OLD', form=&
+            'UNFORMATTED', position='asis')
+         rewind (nf)
+         read (nf) ncfd, nwd, kamaxd
+         if (.not.(ncfd==ncf .and. nwd==nw .and. kamaxd==kamax)) then
+            write (6, *) ' Angular file not appropriate'
+            avail = .false.
+            return
+         else
+            write (6, *) ' Angular data read from file'
+            avail = .true.
+         endif
+      endif
+      return
+      end subroutine angdata

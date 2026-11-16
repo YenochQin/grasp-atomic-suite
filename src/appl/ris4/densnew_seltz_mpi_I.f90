@@ -1,17 +1,17 @@
-      MODULE densnew_seltz_mpi_I
-      INTERFACE
-      SUBROUTINE densnew_seltz_mpi (DOIT,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6, &
-         DINT7,DINT1VEC,DENS1VEC,NRNUC)
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def, ONLY: NNNW
-      USE prnt_C, ONLY: NVEC
-      INTEGER, INTENT(IN) :: DOIT, NRNUC
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT1, DINT2, &
-                                                        DINT3, DINT4, &
-                                                        DINT5, DINT6, &
-                                                        DINT7
-      REAL(DOUBLE), DIMENSION(NVEC,NRNUC), INTENT(OUT) :: DENS1VEC
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW,NRNUC), INTENT(IN) :: DINT1VEC
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      module densnew_seltz_mpi_i
+      interface
+      subroutine densnew_seltz_mpi (doit,dint1,dint2,dint3,dint4,dint5,dint6, &
+         dint7,dint1vec,dens1vec,nrnuc)
+      use vast_kind_param, only: double
+      use parameter_def, only: nnnw
+      use prnt_c, only: nvec
+      integer, intent(in) :: doit, nrnuc
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint1, dint2, &
+                                                        dint3, dint4, &
+                                                        dint5, dint6, &
+                                                        dint7
+      real(double), dimension(nvec,nrnuc), intent(out) :: dens1vec
+      real(double), dimension(nnnw,nnnw,nrnuc), intent(in) :: dint1vec
+      end subroutine
+      end interface
+      end module

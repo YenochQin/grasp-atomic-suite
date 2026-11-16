@@ -1,12 +1,12 @@
-      MODULE sortmem_I
-      INTERFACE
-      SUBROUTINE sortmem (NFILE,IGGMAX_K,NCOEFF,NTGRAL,LPRINT,NB,FHEAD)
-      INTEGER, INTENT(IN)  :: NFILE
-      INTEGER, INTENT(IN)  :: NCOEFF
-      INTEGER, INTENT(OUT) :: NTGRAL
-      LOGICAL, INTENT(IN)  :: LPRINT
-      INTEGER, INTENT(IN)  :: NB,IGGMAX_K
-      CHARACTER (LEN = *), INTENT(IN) :: FHEAD
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      module sortmem_i
+      interface
+      subroutine sortmem (nfile,iggmax_k,ncoeff,ntgral,lprint,nb,fhead)
+      integer, intent(in)  :: nfile
+      integer, intent(in)  :: ncoeff
+      integer, intent(out) :: ntgral
+      logical, intent(in)  :: lprint
+      integer, intent(in)  :: nb,iggmax_k
+      character (len = *), intent(in) :: fhead
+      end subroutine
+      end interface
+      end module

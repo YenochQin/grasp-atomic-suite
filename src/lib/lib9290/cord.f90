@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE CORD(JA, JB, JA1, IPCA, JB1)
+      subroutine cord(ja, jb, ja1, ipca, jb1)
 !-----------------------------------------------
 !                                                                      *
 !   Computes the MCP coefficients for contributions involving closed   *
@@ -19,95 +19,95 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE ORB_C
-      USE M_C
+      use vast_kind_param, only:  double
+      use orb_c
+      use m_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE speak_I
-      USE clrx_I
-      IMPLICIT NONE
+      use speak_i
+      use clrx_i
+      implicit none
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: JA
-      INTEGER  :: JB
-      INTEGER, INTENT(IN) :: JA1
-      INTEGER, INTENT(IN) :: IPCA
-      INTEGER, INTENT(IN) :: JB1
+      integer  :: ja
+      integer  :: jb
+      integer, intent(in) :: ja1
+      integer, intent(in) :: ipca
+      integer, intent(in) :: jb1
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      REAL(DOUBLE), PARAMETER :: EPS = 1.0D-10
+      real(double), parameter :: eps = 1.0d-10
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IA1,IB1,NS,KAP1,J1,NQS1,NUMAX,NU,KAP2,J2,NQS2,NUMIN
-      REAL(DOUBLE) :: X,CONST,GAM
+      integer :: ia1,ib1,ns,kap1,j1,nqs1,numax,nu,kap2,j2,nqs2,numin
+      real(double) :: x,const,gam
 !-----------------------------------------------
 !
 !
 !   Set quantum numbers required.
 !
-      IF (IPCA == 2) THEN
-         IA1 = KLIST(JA1)
-      ELSE
-         IA1 = JLIST(JA1)
-      ENDIF
-      IB1 = KLIST(JB1)
+      if (ipca == 2) then
+         ia1 = klist(ja1)
+      else
+         ia1 = jlist(ja1)
+      endif
+      ib1 = klist(jb1)
 !
 !   Force IA1 to be greater than IB1
 !
-      IF (IA1 > IB1) THEN
-         NS = IA1
-         IA1 = IB1
-         IB1 = NS
-      ENDIF
+      if (ia1 > ib1) then
+         ns = ia1
+         ia1 = ib1
+         ib1 = ns
+      endif
 !
-      KAP1 = NAK(IA1)
-      J1 = IABS(KAP1)
-      NQS1 = NQ1(IA1)
+      kap1 = nak(ia1)
+      j1 = iabs(kap1)
+      nqs1 = nq1(ia1)
 !
-      IF (IA1 == IB1) THEN
+      if (ia1 == ib1) then
 !
 !   Case when IA1 .EQ. IB1
 !
-         X = DBLE(NQS1*(NQS1 - 1)/2)
-         CALL SPEAK (JA, JB, IA1, IB1, IA1, IB1, 0, X)
-         NUMAX = J1 + J1 - 2
-         IF (NUMAX <= 0) RETURN
-         CONST = DBLE(NQS1*NQS1/2)
-         DO NU = 2, NUMAX, 2
-            GAM = CLRX(KAP1,NU,KAP1)
-            X = -CONST*GAM*GAM
-            IF (ABS(X) < EPS) CYCLE
-            CALL SPEAK (JA, JB, IA1, IB1, IA1, IB1, NU, X)
-         END DO
+         x = dble(nqs1*(nqs1 - 1)/2)
+         call speak (ja, jb, ia1, ib1, ia1, ib1, 0, x)
+         numax = j1 + j1 - 2
+         if (numax <= 0) return
+         const = dble(nqs1*nqs1/2)
+         do nu = 2, numax, 2
+            gam = clrx(kap1,nu,kap1)
+            x = -const*gam*gam
+            if (abs(x) < eps) cycle
+            call speak (ja, jb, ia1, ib1, ia1, ib1, nu, x)
+         end do
 !
 !   Case when IA1 .NE. IB1
 !
-      ELSE
+      else
 !
-         KAP2 = NAK(IB1)
-         J2 = ABS(KAP2)
-         NQS2 = NQ1(IB1)
-         CONST = DBLE(NQS1*NQS2)
-         CALL SPEAK (JA, JB, IA1, IB1, IA1, IB1, 0, CONST)
-         NUMIN = ABS(J1 - J2)
-         NUMAX = J1 + J2 - 1
-         IF (KAP1*KAP2 < 0) NUMIN = NUMIN + 1
-         DO NU = NUMIN, NUMAX, 2
-            GAM = CLRX(KAP1,NU,KAP2)
-            X = -CONST*GAM*GAM
-            IF (ABS(X) < EPS) CYCLE
-            CALL SPEAK (JA, JB, IA1, IB1, IB1, IA1, NU, X)
-         END DO
+         kap2 = nak(ib1)
+         j2 = abs(kap2)
+         nqs2 = nq1(ib1)
+         const = dble(nqs1*nqs2)
+         call speak (ja, jb, ia1, ib1, ia1, ib1, 0, const)
+         numin = abs(j1 - j2)
+         numax = j1 + j2 - 1
+         if (kap1*kap2 < 0) numin = numin + 1
+         do nu = numin, numax, 2
+            gam = clrx(kap1,nu,kap2)
+            x = -const*gam*gam
+            if (abs(x) < eps) cycle
+            call speak (ja, jb, ia1, ib1, ib1, ia1, nu, x)
+         end do
 !
-      ENDIF
+      endif
 !
-      RETURN
-      END SUBROUTINE CORD
+      return
+      end subroutine cord

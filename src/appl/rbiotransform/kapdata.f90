@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE KAPDATA(NTESTG, NCORE1, NCORE2)
+      subroutine kapdata(ntestg, ncore1, ncore2)
 !                                                                      *
 !   This subroutine determines the number of kappa quantum numbers     *
 !   KAMAX together with the number of orbitals of each kappa.          *
@@ -18,13 +18,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW
-      USE biorb_C,         ONLY: nwii,nakii,npii,nwff,nakff,npff
-      USE sbdat_C,         ONLY: NLMAX,NINII,NINFF,NSHLII,NSHLFF,      &
-                                 IKAPPA,NAKINVII,NAKINVFF,NLMAX,       &
-                                 NSHLPII,NSHLPFF,NSHLPPII,NSHLPPFF,KAMAX
-      USE orbord_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw
+      use biorb_c,         only: nwii,nakii,npii,nwff,nakff,npff
+      use sbdat_c,         only: nlmax,ninii,ninff,nshlii,nshlff,      &
+                                 ikappa,nakinvii,nakinvff,nlmax,       &
+                                 nshlpii,nshlpff,nshlppii,nshlppff,kamax
+      use orbord_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -34,172 +34,172 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NTESTG
-      INTEGER, INTENT(IN) :: NCORE1
-      INTEGER, INTENT(IN) :: NCORE2
+      integer, intent(in) :: ntestg
+      integer, intent(in) :: ncore1
+      integer, intent(in) :: ncore2
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J1
-      INTEGER, DIMENSION(2*NNNW) :: ISORT
-      INTEGER :: NTESTL, NTEST, I, J, K, ITAL, NREF
-      LOGICAL :: KLAR
+      integer :: j1
+      integer, dimension(2*nnnw) :: isort
+      integer :: ntestl, ntest, i, j, k, ital, nref
+      logical :: klar
 !-----------------------------------------------
 !
 !
 !
-      NTESTL = 0
-      NTEST = MAX0(NTESTL,NTESTG)
+      ntestl = 0
+      ntest = max0(ntestl,ntestg)
 
-      ISORT(:2*NNNW) = 100
+      isort(:2*nnnw) = 100
 
-      IKAPPA(:NLMAX) = 0
-      NSHLII(:NLMAX) = 0
-      NSHLFF(:NLMAX) = 0
-      NINII(:NLMAX) = 0
-      NINFF(:NLMAX) = 0
+      ikappa(:nlmax) = 0
+      nshlii(:nlmax) = 0
+      nshlff(:nlmax) = 0
+      ninii(:nlmax) = 0
+      ninff(:nlmax) = 0
 
-      NAKINVII(:NNNW) = 0
-      NAKINVFF(:NNNW) = 0
+      nakinvii(:nnnw) = 0
+      nakinvff(:nnnw) = 0
 
-      NSHLPII(:NLMAX,:NLMAX) = 0
-      NSHLPFF(:NLMAX,:NLMAX) = 0
+      nshlpii(:nlmax,:nlmax) = 0
+      nshlpff(:nlmax,:nlmax) = 0
 
-      NSHLPPII(:NLMAX,:NNNW) = 0
-      NSHLPPFF(:NLMAX,:NNNW) = 0
+      nshlppii(:nlmax,:nnnw) = 0
+      nshlppff(:nlmax,:nnnw) = 0
 !
 !   Sort the kappa quantum numbers
 !
-      DO K = 1, NWII + NWFF
-         IF (K <= NWII) THEN
-            ITAL = NAKII(K)
-         ELSE
-            ITAL = NAKFF(K-NWII)
-         ENDIF
-         I = K - 1
-         KLAR = .FALSE.
-   12    CONTINUE
-         IF (I>0 .AND. .NOT.KLAR) THEN
-            IF (ITAL <= ISORT(I)) THEN
-               ISORT(I+1) = ISORT(I)
-               I = I - 1
-            ELSE
-               KLAR = .TRUE.
-            ENDIF
-            GO TO 12
-         ENDIF
-         ISORT(I+1) = ITAL
-      END DO
+      do k = 1, nwii + nwff
+         if (k <= nwii) then
+            ital = nakii(k)
+         else
+            ital = nakff(k-nwii)
+         endif
+         i = k - 1
+         klar = .false.
+   12    continue
+         if (i>0 .and. .not.klar) then
+            if (ital <= isort(i)) then
+               isort(i+1) = isort(i)
+               i = i - 1
+            else
+               klar = .true.
+            endif
+            go to 12
+         endif
+         isort(i+1) = ital
+      end do
 !
 !   Determine the unique set of kappa IKAPPA
 !
-      KAMAX = 1
-      IKAPPA(1) = ISORT(1)
-      DO K = 1, 2*NNNW - 1
-         IF (ISORT(K)==ISORT(K+1) .OR. ISORT(K+1)>=100) CYCLE
-         KAMAX = KAMAX + 1
-         IKAPPA(KAMAX) = ISORT(K+1)
-      END DO
+      kamax = 1
+      ikappa(1) = isort(1)
+      do k = 1, 2*nnnw - 1
+         if (isort(k)==isort(k+1) .or. isort(k+1)>=100) cycle
+         kamax = kamax + 1
+         ikappa(kamax) = isort(k+1)
+      end do
 !
 !  Make a connection between each kappa and a number in the
 !  range [1,KAMAX] as to know on which file to dump the data
 !  Determine the number of shells NSHLII for each I in the
 !  range [1,KAMAX]
 !
-      IF (NTEST >= 10) THEN
-         WRITE (*, *) '******************'
-         WRITE (*, *) ' Entering kapdata'
-         WRITE (*, *) '******************'
-         WRITE (*, *)
-         WRITE (*, *) 'There are', NWII, 'orbitals in the initial state'
-         WRITE (*, *) 'with the following n and kappa quantum numbers'
-      ENDIF
+      if (ntest >= 10) then
+         write (*, *) '******************'
+         write (*, *) ' Entering kapdata'
+         write (*, *) '******************'
+         write (*, *)
+         write (*, *) 'There are', nwii, 'orbitals in the initial state'
+         write (*, *) 'with the following n and kappa quantum numbers'
+      endif
 
-      DO J = 1, NWII
-         IF (NTEST >= 10) WRITE (*, *) 'orbital number', J, 'n and kappa', NPII&
-            (J), NAKII(J)
-         IF (J <= NCORE1) THEN
-            DO I = 1, KAMAX
-               IF (IKAPPA(I) /= NAKII(J)) CYCLE
-               NAKINVII(J) = I
-               NINII(I) = NINII(I) + 1
-               NSHLII(I) = NSHLII(I) + 1
-               NSHLPII(I,NSHLII(I)) = J
-               NSHLPPII(I,J) = NSHLII(I)
-            END DO
-         ELSE
-            DO I = 1, KAMAX
-               IF (IKAPPA(I) /= NAKII(J)) CYCLE
-               NAKINVII(J) = I
-               NSHLII(I) = NSHLII(I) + 1
-               NSHLPII(I,NSHLII(I)) = J
-               NSHLPPII(I,J) = NSHLII(I)
-            END DO
-         ENDIF
-      END DO
+      do j = 1, nwii
+         if (ntest >= 10) write (*, *) 'orbital number', j, 'n and kappa', npii&
+            (j), nakii(j)
+         if (j <= ncore1) then
+            do i = 1, kamax
+               if (ikappa(i) /= nakii(j)) cycle
+               nakinvii(j) = i
+               ninii(i) = ninii(i) + 1
+               nshlii(i) = nshlii(i) + 1
+               nshlpii(i,nshlii(i)) = j
+               nshlppii(i,j) = nshlii(i)
+            end do
+         else
+            do i = 1, kamax
+               if (ikappa(i) /= nakii(j)) cycle
+               nakinvii(j) = i
+               nshlii(i) = nshlii(i) + 1
+               nshlpii(i,nshlii(i)) = j
+               nshlppii(i,j) = nshlii(i)
+            end do
+         endif
+      end do
 
-      IF (NTEST >= 10) THEN
-         WRITE (*, *) 'There are', NWFF, 'orbitals in the final state'
-         WRITE (*, *) 'with the following n and kappa quantum numbers'
-      ENDIF
-      DO J = 1, NWFF
-         IF (NTEST >= 10) WRITE (*, *) 'orbital number', J, 'n and kappa=', &
-            NPFF(J), NAKFF(J)
-         IF (J <= NCORE2) THEN
-            DO I = 1, KAMAX
-               IF (IKAPPA(I) /= NAKFF(J)) CYCLE
-               NAKINVFF(J) = I
-               NINFF(I) = NINFF(I) + 1
-               NSHLFF(I) = NSHLFF(I) + 1
-               NSHLPFF(I,NSHLFF(I)) = J
-               NSHLPPFF(I,J) = NSHLFF(I)
-            END DO
-         ELSE
-            DO I = 1, KAMAX
-               IF (IKAPPA(I) /= NAKFF(J)) CYCLE
-               NAKINVFF(J) = I
-               NSHLFF(I) = NSHLFF(I) + 1
-               NSHLPFF(I,NSHLFF(I)) = J
-               NSHLPPFF(I,J) = NSHLFF(I)
-            END DO
-         ENDIF
-      END DO
+      if (ntest >= 10) then
+         write (*, *) 'There are', nwff, 'orbitals in the final state'
+         write (*, *) 'with the following n and kappa quantum numbers'
+      endif
+      do j = 1, nwff
+         if (ntest >= 10) write (*, *) 'orbital number', j, 'n and kappa=', &
+            npff(j), nakff(j)
+         if (j <= ncore2) then
+            do i = 1, kamax
+               if (ikappa(i) /= nakff(j)) cycle
+               nakinvff(j) = i
+               ninff(i) = ninff(i) + 1
+               nshlff(i) = nshlff(i) + 1
+               nshlpff(i,nshlff(i)) = j
+               nshlppff(i,j) = nshlff(i)
+            end do
+         else
+            do i = 1, kamax
+               if (ikappa(i) /= nakff(j)) cycle
+               nakinvff(j) = i
+               nshlff(i) = nshlff(i) + 1
+               nshlpff(i,nshlff(i)) = j
+               nshlppff(i,j) = nshlff(i)
+            end do
+         endif
+      end do
 
-      IF (NTEST >= 10) THEN
-         WRITE (*, *) 'Total number of different kappa', KAMAX
-         DO I = 1, KAMAX
-            WRITE (*, *) 'L=', I, 'corresponds to kappa=', IKAPPA(I)
-            WRITE (*, *) 'nr of init.  orb. with this kappa=', NSHLII(I)
-            WRITE (*, *) 'nr of final. orb. with this kappa=', NSHLFF(I)
-         END DO
-         DO I = 1, KAMAX
-            WRITE (*, *) 'Position in initial state list'
-            DO J = 1, NSHLII(I)
-               WRITE (*, *) 'L=', I, 'orb. nr', J, ',position', NSHLPII(I,J)
-            END DO
-            WRITE (*, *) 'Position in final   state list'
-            DO J = 1, NSHLFF(I)
-               WRITE (*, *) 'L=', I, 'orb. nr', J, ',position', NSHLPFF(I,J)
-            END DO
-            WRITE (*, *) 'Relative positions for initial state orbitals'
-            DO J = 1, NWII
-               IF (NSHLPPII(I,J) == 0) CYCLE
-               WRITE (*, *) 'Orbital', J, 'is nr', NSHLPPII(I,J), 'with kappa'&
-                  , IKAPPA(I)
-            END DO
-            WRITE (*, *) 'Relative positions for final state orbitals'
-            DO J = 1, NWFF
-               IF (NSHLPPFF(I,J) == 0) CYCLE
-               WRITE (*, *) 'Orbital', J, 'is nr', NSHLPPFF(I,J), 'with kappa'&
-                  , IKAPPA(I)
-            END DO
-         END DO
+      if (ntest >= 10) then
+         write (*, *) 'Total number of different kappa', kamax
+         do i = 1, kamax
+            write (*, *) 'L=', i, 'corresponds to kappa=', ikappa(i)
+            write (*, *) 'nr of init.  orb. with this kappa=', nshlii(i)
+            write (*, *) 'nr of final. orb. with this kappa=', nshlff(i)
+         end do
+         do i = 1, kamax
+            write (*, *) 'Position in initial state list'
+            do j = 1, nshlii(i)
+               write (*, *) 'L=', i, 'orb. nr', j, ',position', nshlpii(i,j)
+            end do
+            write (*, *) 'Position in final   state list'
+            do j = 1, nshlff(i)
+               write (*, *) 'L=', i, 'orb. nr', j, ',position', nshlpff(i,j)
+            end do
+            write (*, *) 'Relative positions for initial state orbitals'
+            do j = 1, nwii
+               if (nshlppii(i,j) == 0) cycle
+               write (*, *) 'Orbital', j, 'is nr', nshlppii(i,j), 'with kappa'&
+                  , ikappa(i)
+            end do
+            write (*, *) 'Relative positions for final state orbitals'
+            do j = 1, nwff
+               if (nshlppff(i,j) == 0) cycle
+               write (*, *) 'Orbital', j, 'is nr', nshlppff(i,j), 'with kappa'&
+                  , ikappa(i)
+            end do
+         end do
 
-      ENDIF
+      endif
 !
 !  Check if the orbital ordering is normal or reversed.
 !
@@ -211,70 +211,70 @@
 !
 !    NPII(NSHLPII(I,1)) > NPII(NSHLPII(I,2)) > ... > NPII(NSHLPII(I,NSHLII(I))
 !
-      NORDII = 0
-      DO I = 1, KAMAX
-         NREF = 0
-         DO J = 1 + NINII(I), NSHLII(I)
-            IF (NPII(NSHLPII(I,J)) < NREF) NORDII = 1
-            NREF = NPII(NSHLPII(I,J))
-         END DO
-      END DO
+      nordii = 0
+      do i = 1, kamax
+         nref = 0
+         do j = 1 + ninii(i), nshlii(i)
+            if (npii(nshlpii(i,j)) < nref) nordii = 1
+            nref = npii(nshlpii(i,j))
+         end do
+      end do
 
-      NORDFF = 0
-      DO I = 1, KAMAX
-         NREF = 0
-         DO J = 1 + NINFF(I), NSHLFF(I)
-            IF (NPFF(NSHLPFF(I,J)) < NREF) NORDFF = 1
-            NREF = NPFF(NSHLPFF(I,J))
-         END DO
-      END DO
+      nordff = 0
+      do i = 1, kamax
+         nref = 0
+         do j = 1 + ninff(i), nshlff(i)
+            if (npff(nshlpff(i,j)) < nref) nordff = 1
+            nref = npff(nshlpff(i,j))
+         end do
+      end do
 
-      IF (NORDII /= NORDFF) THEN
-         WRITE (*, *) ' Orbital order of the initial and final states'
-         WRITE (*, *) ' should be the same. STOP'
-         STOP
-      ENDIF
+      if (nordii /= nordff) then
+         write (*, *) ' Orbital order of the initial and final states'
+         write (*, *) ' should be the same. STOP'
+         stop
+      endif
 !
 !   If not normal order check if reversed order
 !
-      IF (NORDII == 1) THEN
-         DO I = 1, KAMAX
-            NREF = 0
-            DO J = NSHLII(I), 1 + NINII(I), -1
-               IF (NPII(NSHLPII(I,J)) < NREF) NORDII = 2
-               NREF = NPII(NSHLPII(I,J))
-            END DO
-         END DO
+      if (nordii == 1) then
+         do i = 1, kamax
+            nref = 0
+            do j = nshlii(i), 1 + ninii(i), -1
+               if (npii(nshlpii(i,j)) < nref) nordii = 2
+               nref = npii(nshlpii(i,j))
+            end do
+         end do
 
-         DO I = 1, KAMAX
-            NREF = 0
-            DO J = NSHLFF(I), 1 + NINFF(I), -1
-               IF (NPFF(NSHLPFF(I,J)) < NREF) NORDFF = 2
-               NREF = NPFF(NSHLPFF(I,J))
-            END DO
-         END DO
-      ENDIF
+         do i = 1, kamax
+            nref = 0
+            do j = nshlff(i), 1 + ninff(i), -1
+               if (npff(nshlpff(i,j)) < nref) nordff = 2
+               nref = npff(nshlpff(i,j))
+            end do
+         end do
+      endif
 
-      IF (NORDII==2 .OR. NORDFF==2) THEN
-         WRITE (*, *) ' The orbital order is neither normal or reversed'
-         WRITE (*, *) ' STOP'
-         STOP
-      ENDIF
+      if (nordii==2 .or. nordff==2) then
+         write (*, *) ' The orbital order is neither normal or reversed'
+         write (*, *) ' STOP'
+         stop
+      endif
 
 !w      write(*,*) 'Give nordii'
 !w      read(*,*) nordii
 !w      nordff = nordii
 
-      IF (NORDII == 0) THEN
-         WRITE (*, *) ' Normal orbital ordering'
-      ELSE
-         WRITE (*, *) ' Reverse orbital ordering'
-      ENDIF
+      if (nordii == 0) then
+         write (*, *) ' Normal orbital ordering'
+      else
+         write (*, *) ' Reverse orbital ordering'
+      endif
 
-      WRITE (*, *) '*****************'
-      WRITE (*, *) ' Leaving kapdata'
-      WRITE (*, *) '*****************'
-      WRITE (*, *)
+      write (*, *) '*****************'
+      write (*, *) ' Leaving kapdata'
+      write (*, *) '*****************'
+      write (*, *)
 
-      RETURN
-      END SUBROUTINE KAPDATA
+      return
+      end subroutine kapdata

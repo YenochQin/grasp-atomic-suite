@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE NUCPOT
+      subroutine nucpot
 !                                                                      *
 !   Evaluate the nuclear potential for point and Fermi models.         *
 !                                                                      *
@@ -15,104 +15,104 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE DEBUG_C
-      USE DEF_C,           ONLY: Z, PI
-      USE GRID_C
-      USE NPAR_C
-      USE NPOT_C,          ONLY: ZZ, NNUC
+      use vast_kind_param, only: double
+      use debug_c
+      use def_c,           only: z, pi
+      use grid_c
+      use npar_c
+      use npot_c,          only: zz, nnuc
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE es_I
-      IMPLICIT NONE
+      use es_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, NB3, NROWS, II, II1, II2, II3
-      REAL(DOUBLE) :: C, A, ABC, TABC, ABC2, THABC2, ABC3, CBA, PI2, HPIAC2, &
-         H3PHP, S2MCBA, S3MCBA, SABC3, DMSAS, EN, ZBN, RI, RMC, RMCBA, RBC, &
-         S2RCBA, S3RCBA
-      LOGICAL :: SET
+      integer :: i, nb3, nrows, ii, ii1, ii2, ii3
+      real(double) :: c, a, abc, tabc, abc2, thabc2, abc3, cba, pi2, hpiac2, &
+         h3php, s2mcba, s3mcba, sabc3, dmsas, en, zbn, ri, rmc, rmcba, rbc, &
+         s2rcba, s3rcba
+      logical :: set
 !-----------------------------------------------
 !
 !
 !   Point nucleus
 !
-      IF (NPARM == 0) THEN
+      if (nparm == 0) then
 !
-         ZZ(:N) = Z
+         zz(:n) = z
 !
 !   Fermi distribution
 !
-      ELSE IF (NPARM == 2) THEN
+      else if (nparm == 2) then
 !
-         C = PARM(1)
-         A = PARM(2)
-         ABC = A/C
-         TABC = 2.0D00*ABC
-         ABC2 = ABC*ABC
-         THABC2 = 3.0D00*ABC2
-         ABC3 = ABC2*ABC
-         CBA = C/A
-         PI2 = PI*PI
-         HPIAC2 = 0.5D00*PI2*ABC2
-         H3PHP = 1.5D00 + HPIAC2
-         CALL ES ((-CBA), S2MCBA, S3MCBA)
-         SABC3 = 6.0D00*ABC3
-         DMSAS = -SABC3*S3MCBA
-         EN = 1.0D00 + ABC2*PI2 + DMSAS
-         ZBN = Z/EN
+         c = parm(1)
+         a = parm(2)
+         abc = a/c
+         tabc = 2.0d00*abc
+         abc2 = abc*abc
+         thabc2 = 3.0d00*abc2
+         abc3 = abc2*abc
+         cba = c/a
+         pi2 = pi*pi
+         hpiac2 = 0.5d00*pi2*abc2
+         h3php = 1.5d00 + hpiac2
+         call es ((-cba), s2mcba, s3mcba)
+         sabc3 = 6.0d00*abc3
+         dmsas = -sabc3*s3mcba
+         en = 1.0d00 + abc2*pi2 + dmsas
+         zbn = z/en
 !
-         SET = .FALSE.
-         DO I = 1, N
-            RI = R(I)
-            RMC = RI - C
-            RMCBA = RMC/A
-            RBC = RI/C
-            IF (RBC <= 1.0D00) THEN
-               CALL ES (RMCBA, S2RCBA, S3RCBA)
-               ZZ(I) = ZBN*(DMSAS + SABC3*S3RCBA + RBC*(H3PHP - THABC2*S2RCBA&
-                   - 0.5D00*RBC*RBC))
-            ELSE
-               IF (.NOT.SET) THEN
-                  NNUC = I
-                  SET = .TRUE.
-               ENDIF
-               CALL ES ((-RMCBA), S2RCBA, S3RCBA)
-               ZZ(I) = Z*(1.0D00 + THABC2*(RBC*S2RCBA + TABC*S3RCBA)/EN)
-            ENDIF
-         END DO
-      ENDIF
+         set = .false.
+         do i = 1, n
+            ri = r(i)
+            rmc = ri - c
+            rmcba = rmc/a
+            rbc = ri/c
+            if (rbc <= 1.0d00) then
+               call es (rmcba, s2rcba, s3rcba)
+               zz(i) = zbn*(dmsas + sabc3*s3rcba + rbc*(h3php - thabc2*s2rcba&
+                   - 0.5d00*rbc*rbc))
+            else
+               if (.not.set) then
+                  nnuc = i
+                  set = .true.
+               endif
+               call es ((-rmcba), s2rcba, s3rcba)
+               zz(i) = z*(1.0d00 + thabc2*(rbc*s2rcba + tabc*s3rcba)/en)
+            endif
+         end do
+      endif
 !
-      IF (LDBPR(2)) THEN
-         WRITE (99, 300)
-         NB3 = N/3
-         IF (3*NB3 == N) THEN
-            NROWS = NB3
-         ELSE
-            NROWS = NB3 + 1
-         ENDIF
-         DO II = 1, NROWS
-            II1 = II
-            II2 = II1 + NROWS
-            II3 = II2 + NROWS
-            IF (II3 <= N) THEN
-               WRITE (99, 301) R(II1), ZZ(II1), R(II2), ZZ(II2), R(II3), ZZ(II3&
+      if (ldbpr(2)) then
+         write (99, 300)
+         nb3 = n/3
+         if (3*nb3 == n) then
+            nrows = nb3
+         else
+            nrows = nb3 + 1
+         endif
+         do ii = 1, nrows
+            ii1 = ii
+            ii2 = ii1 + nrows
+            ii3 = ii2 + nrows
+            if (ii3 <= n) then
+               write (99, 301) r(ii1), zz(ii1), r(ii2), zz(ii2), r(ii3), zz(ii3&
                   )
-            ELSE IF (II2 <= N) THEN
-               WRITE (99, 301) R(II1), ZZ(II1), R(II2), ZZ(II2)
-            ELSE
-               WRITE (99, 301) R(II1), ZZ(II1)
-            ENDIF
-         END DO
-      ENDIF
+            else if (ii2 <= n) then
+               write (99, 301) r(ii1), zz(ii1), r(ii2), zz(ii2)
+            else
+               write (99, 301) r(ii1), zz(ii1)
+            endif
+         end do
+      endif
 !
-      RETURN
+      return
 !
-  300 FORMAT(/,'From SUBROUTINE NUCPOT:'/,3(&
+  300 format(/,'From SUBROUTINE NUCPOT:'/,3(&
          ' -------- r -------- ----- -r*V(r) -----'))
-  301 FORMAT(1P,6(1X,1D19.12))
-      RETURN
+  301 format(1p,6(1x,1d19.12))
+      return
 !
-      END SUBROUTINE NUCPOT
+      end subroutine nucpot

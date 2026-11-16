@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE OPENFL(NFILE, FILNAM, RFORM, RSTAT, IERR)
+      subroutine openfl(nfile, filnam, rform, rstat, ierr)
 !                                                                      *
 !   Issues OPEN for file with unit number NFILE, name FILNAM, format   *
 !   RFORM, status RSTAT.  If this is successful the head is position-  *
@@ -18,36 +18,36 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE IOUNIT_C
-      IMPLICIT NONE
+      use iounit_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NFILE
-      INTEGER, INTENT(OUT) :: IERR
-      CHARACTER (LEN = *), INTENT(IN) :: FILNAM
-      CHARACTER (LEN = *), INTENT(IN) :: RFORM
-      CHARACTER (LEN = *), INTENT(IN) :: RSTAT
+      integer, intent(in) :: nfile
+      integer, intent(out) :: ierr
+      character (len = *), intent(in) :: filnam
+      character (len = *), intent(in) :: rform
+      character (len = *), intent(in) :: rstat
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IOS, LOC
+      integer :: ios, loc
 !-----------------------------------------------
 !
 !
-      OPEN(NFILE, FILE=FILNAM, FORM=RFORM, STATUS='UNKNOWN', IOSTAT=IOS, &
-         POSITION='asis')
+      open(nfile, file=filnam, form=rform, status='UNKNOWN', iostat=ios, &
+         position='asis')
 !
-      IF (IOS == 0) THEN
-         REWIND (NFILE)
-         IERR = 0
-      ELSE
-         LOC = LEN_TRIM(FILNAM)
-         WRITE (ISTDE, *) 'OPENFL: Error opening file ', FILNAM(1:LOC), ' as '&
-            , RSTAT, ';'
-         WRITE (ISTDE, *) 'The argument RSTAT=', RSTAT, ' is not used !'
-         IERR = 1
-      ENDIF
+      if (ios == 0) then
+         rewind (nfile)
+         ierr = 0
+      else
+         loc = len_trim(filnam)
+         write (istde, *) 'OPENFL: Error opening file ', filnam(1:loc), ' as '&
+            , rstat, ';'
+         write (istde, *) 'The argument RSTAT=', rstat, ' is not used !'
+         ierr = 1
+      endif
 !
-      RETURN
-      END SUBROUTINE OPENFL
+      return
+      end subroutine openfl

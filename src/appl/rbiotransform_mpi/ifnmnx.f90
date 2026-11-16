@@ -3,7 +3,7 @@
 !     I F N M N X
 !     ------------------------------------------------------------------
 !
-      INTEGER FUNCTION IFNMNX (IVEC, NEL, IMXMN)
+      integer function ifnmnx (ivec, nel, imxmn)
 !
 ! Smallest or largest value of integer array
 !
@@ -17,34 +17,34 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: NEL
-      INTEGER , INTENT(IN) :: IMXMN
-      INTEGER , INTENT(IN) :: IVEC(NEL)
+      integer , intent(in) :: nel
+      integer , intent(in) :: imxmn
+      integer , intent(in) :: ivec(nel)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IVAL, IEL, NTEST
+      integer :: ival, iel, ntest
 !-----------------------------------------------
 !
-      IVAL = IVEC(1)
-      IF (IMXMN == 1) THEN
-         IVAL = MAX0(MAXVAL(IVEC(2:NEL)),IVAL)
-      ELSE IF (IMXMN == 2) THEN
-         IVAL = MIN0(MINVAL(IVEC(2:NEL)),IVAL)
-      ELSE
-         WRITE (6, *) ' Stop in IFNMNX '
-         WRITE (6, *) ' Improper calue of IMXMN ', IMXMN
-         STOP 'IFNMNX'
-      ENDIF
+      ival = ivec(1)
+      if (imxmn == 1) then
+         ival = max0(maxval(ivec(2:nel)),ival)
+      else if (imxmn == 2) then
+         ival = min0(minval(ivec(2:nel)),ival)
+      else
+         write (6, *) ' Stop in IFNMNX '
+         write (6, *) ' Improper calue of IMXMN ', imxmn
+         stop 'IFNMNX'
+      endif
 !
-      IFNMNX = IVAL
+      ifnmnx = ival
 !
-      NTEST = 0
-      IF (NTEST /= 0) WRITE (6, *) ' Value returned from IFNMNX', IFNMNX
+      ntest = 0
+      if (ntest /= 0) write (6, *) ' Value returned from IFNMNX', ifnmnx
 !
-      RETURN
-      END FUNCTION IFNMNX
+      return
+      end function ifnmnx

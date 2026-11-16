@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE SIXJ35(J,K,L,M,N,ITIK,SI)
+      subroutine sixj35(j,k,l,m,n,itik,si)
 !                                                                  *
 !     THIS PACKAGE DETERMINES THE VALUES OF 6j COEFFICIENT         *
 !                                                                  *
@@ -17,131 +17,131 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, ONE, TWO, THREE, FOUR
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, one, two, three, four
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ixjtik_I
-      IMPLICIT NONE
+      use ixjtik_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER                   :: J, K, L, M, N
-      INTEGER, INTENT(IN)       :: ITIK
-      REAL(DOUBLE), INTENT(OUT) :: SI
+      integer                   :: j, k, l, m, n
+      integer, intent(in)       :: itik
+      real(double), intent(out) :: si
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I1
-      REAL(DOUBLE) :: AS, A, B, C, AKA
+      integer :: i1
+      real(double) :: as, a, b, c, aka
 !-----------------------------------------------
-      SI = ZERO
-      IF (ITIK /= 0) THEN
+      si = zero
+      if (itik /= 0) then
 !
 !     CHESKED TRIANGULAR CONDITIONS
 !
-         IF (IXJTIK(J,K,L,M,N,3) == 0) RETURN
-      ENDIF
-      I1 = (J + K + L)/2
-      AS = DBLE(I1)
-      A = DBLE(L)
-      B = DBLE(J)
-      C = DBLE(K)
-      AKA = ONE
-      IF (MOD(I1,2) /= 0) AKA = -AKA
-      IF (J - N == 3) THEN
+         if (ixjtik(j,k,l,m,n,3) == 0) return
+      endif
+      i1 = (j + k + l)/2
+      as = dble(i1)
+      a = dble(l)
+      b = dble(j)
+      c = dble(k)
+      aka = one
+      if (mod(i1,2) /= 0) aka = -aka
+      if (j - n == 3) then
 ! -3
-         IF (K - M == 3) THEN
+         if (k - m == 3) then
 !  I                      -3/2  -3/2
-            SI = AKA*DSQRT((AS - ONE)*AS*(AS + ONE)*(AS - A - TWO)*(AS - A - &
-               ONE)*(AS - A)/((B - TWO)*(B - ONE)*B*(B + ONE)*(C - TWO)*(C - &
-               ONE)*C*(C + ONE)))
-         ELSE IF (M - K == 3) THEN
+            si = aka*dsqrt((as - one)*as*(as + one)*(as - a - two)*(as - a - &
+               one)*(as - a)/((b - two)*(b - one)*b*(b + one)*(c - two)*(c - &
+               one)*c*(c + one)))
+         else if (m - k == 3) then
 !  IV  P(12)              3/2   -3/2
-            SI = AKA*DSQRT((AS - C - TWO)*(AS - C - ONE)*(AS - C)*(AS - B + ONE&
-               )*(AS - B + TWO)*(AS - B + THREE)/((C + 1)*(C + TWO)*(C + THREE)&
-               *(C + FOUR)*(B - TWO)*(B - ONE)*B*(B + ONE)))
-         ELSE IF (K - M == 1) THEN
+            si = aka*dsqrt((as - c - two)*(as - c - one)*(as - c)*(as - b + one&
+               )*(as - b + two)*(as - b + three)/((c + 1)*(c + two)*(c + three)&
+               *(c + four)*(b - two)*(b - one)*b*(b + one)))
+         else if (k - m == 1) then
 !  II  P(12)             -1/2   -3/2
-            SI = AKA*DSQRT(THREE*AS*(AS + ONE)*(AS - A - ONE)*(AS - A)*(AS - C)&
-               *(AS - B + ONE)/((C - ONE)*C*(C + ONE)*(C + TWO)*(B - TWO)*(B - &
-               ONE)*B*(B + ONE)))
-         ELSE IF (M - K == 1) THEN
+            si = aka*dsqrt(three*as*(as + one)*(as - a - one)*(as - a)*(as - c)&
+               *(as - b + one)/((c - one)*c*(c + one)*(c + two)*(b - two)*(b - &
+               one)*b*(b + one)))
+         else if (m - k == 1) then
 !  III P(12)              1/2   -3/2
-            SI = AKA*DSQRT(THREE*(AS + ONE)*(AS - A)*(AS - C - ONE)*(AS - C)*(&
-               AS - B + ONE)*(AS - B + TWO)/(C*(C + ONE)*(C + TWO)*(C + THREE)*&
-               (B - TWO)*(B - ONE)*B*(B + ONE)))
-         ENDIF
-      ELSE IF (N - J == 3) THEN
+            si = aka*dsqrt(three*(as + one)*(as - a)*(as - c - one)*(as - c)*(&
+               as - b + one)*(as - b + two)/(c*(c + one)*(c + two)*(c + three)*&
+               (b - two)*(b - one)*b*(b + one)))
+         endif
+      else if (n - j == 3) then
 !  3
-         IF (K - M == 3) THEN
+         if (k - m == 3) then
 !  IV                     -3/2   3/2
-            SI = AKA*DSQRT((AS - B - TWO)*(AS - B - ONE)*(AS - B)*(AS - C + ONE&
-               )*(AS - C + TWO)*(AS - C + THREE)/((B + ONE)*(B + TWO)*(B + &
-               THREE)*(B + FOUR)*(C - TWO)*(C - ONE)*C*(C + ONE)))
-         ELSE IF (M - K == 3) THEN
+            si = aka*dsqrt((as - b - two)*(as - b - one)*(as - b)*(as - c + one&
+               )*(as - c + two)*(as - c + three)/((b + one)*(b + two)*(b + &
+               three)*(b + four)*(c - two)*(c - one)*c*(c + one)))
+         else if (m - k == 3) then
 !  2       pataisyta               3/2   3/2
-            SI = -AKA*DSQRT((AS + TWO)*(AS + THREE)*(AS + FOUR)*(AS - A + ONE)*&
-               (AS - A + TWO)*(AS - A + THREE)/((B + ONE)*(B + TWO)*(B + THREE)&
-               *(B + FOUR)*(C + ONE)*(C + TWO)*(C + THREE)*(C + FOUR)))
-         ELSE IF (K - M == 1) THEN
+            si = -aka*dsqrt((as + two)*(as + three)*(as + four)*(as - a + one)*&
+               (as - a + two)*(as - a + three)/((b + one)*(b + two)*(b + three)&
+               *(b + four)*(c + one)*(c + two)*(c + three)*(c + four)))
+         else if (k - m == 1) then
 !  1   P(12)   pataisytas          -1/2    3/2
-            SI = -AKA*DSQRT(THREE*(AS + TWO)*(AS - A + ONE)*(AS - C + ONE)*(AS&
-                - C + TWO)*(AS - B - ONE)*(AS - B)/((C - ONE)*C*(C + ONE)*(C + &
-               TWO)*(B + ONE)*(B + TWO)*(B + THREE)*(B + FOUR)))
-         ELSE IF (M - K == 1) THEN
+            si = -aka*dsqrt(three*(as + two)*(as - a + one)*(as - c + one)*(as&
+                - c + two)*(as - b - one)*(as - b)/((c - one)*c*(c + one)*(c + &
+               two)*(b + one)*(b + two)*(b + three)*(b + four)))
+         else if (m - k == 1) then
 !  3  P(12)     taisyta           1/2    3/2
-            SI = AKA*DSQRT(THREE*(AS + TWO)*(AS + THREE)*(AS - A + ONE)*(AS - A&
-                + TWO)*(AS - B)*(AS - C + ONE)/(C*(C + ONE)*(C + TWO)*(C + &
-               THREE)*(B + ONE)*(B + TWO)*(B + THREE)*(B + FOUR)))
-         ENDIF
+            si = aka*dsqrt(three*(as + two)*(as + three)*(as - a + one)*(as - a&
+                + two)*(as - b)*(as - c + one)/(c*(c + one)*(c + two)*(c + &
+               three)*(b + one)*(b + two)*(b + three)*(b + four)))
+         endif
 ! -1
-      ELSE IF (J - N == 1) THEN
-         IF (K - M == 3) THEN
+      else if (j - n == 1) then
+         if (k - m == 3) then
 !  II                   -3/2   -1/2
-            SI = AKA*DSQRT((THREE*AS*(AS + ONE)*(AS - A - ONE)*(AS - A)*(AS - B&
-               )*(AS - C + ONE))/((B - ONE)*B*(B + ONE)*(B + TWO)*(C - TWO)*(C&
-                - ONE)*C*(C + ONE)))
-         ELSE IF (M - K == 3) THEN
+            si = aka*dsqrt((three*as*(as + one)*(as - a - one)*(as - a)*(as - b&
+               )*(as - c + one))/((b - one)*b*(b + one)*(b + two)*(c - two)*(c&
+                - one)*c*(c + one)))
+         else if (m - k == 3) then
 !  1                     3/2   -1/2
-            SI = -AKA*DSQRT(THREE*(AS + TWO)*(AS - A + ONE)*(AS - B + ONE)*(AS&
-                - B + TWO)*(AS - C - ONE)*(AS - C)/((B - ONE)*B*(B + ONE)*(B + &
-               TWO)*(C + ONE)*(C + TWO)*(C + THREE)*(C + FOUR)))
-         ELSE IF (K - M == 1) THEN
+            si = -aka*dsqrt(three*(as + two)*(as - a + one)*(as - b + one)*(as&
+                - b + two)*(as - c - one)*(as - c)/((b - one)*b*(b + one)*(b + &
+               two)*(c + one)*(c + two)*(c + three)*(c + four)))
+         else if (k - m == 1) then
 !  V                    -1/2   -1/2
-            SI = AKA*(TWO*(AS - B)*(AS - C) - (AS + TWO)*(AS - A - ONE))*DSQRT(&
-               (AS + ONE)*(AS - A)/((B - ONE)*B*(B + ONE)*(B + TWO)*(C - ONE)*C&
-               *(C + ONE)*(C + TWO)))
-         ELSE IF (M - K == 1) THEN
+            si = aka*(two*(as - b)*(as - c) - (as + two)*(as - a - one))*dsqrt(&
+               (as + one)*(as - a)/((b - one)*b*(b + one)*(b + two)*(c - one)*c&
+               *(c + one)*(c + two)))
+         else if (m - k == 1) then
 !  VI P(12)              1/2   -1/2
-            SI = AKA*((AS - B + TWO)*(AS - C + ONE) - TWO*(AS - A + ONE)*(AS + &
-               ONE))*DSQRT((AS - C)*(AS - B + ONE)/(C*(C + ONE)*(C + TWO)*(C + &
-               THREE)*(B - ONE)*B*(B + ONE)*(B + TWO)))
-         ENDIF
+            si = aka*((as - b + two)*(as - c + one) - two*(as - a + one)*(as + &
+               one))*dsqrt((as - c)*(as - b + one)/(c*(c + one)*(c + two)*(c + &
+               three)*(b - one)*b*(b + one)*(b + two)))
+         endif
 ! 1
-      ELSE IF (N - J == 1) THEN
-         IF (K - M == 3) THEN
+      else if (n - j == 1) then
+         if (k - m == 3) then
 !  III                  -3/2    1/2
-            SI = AKA*DSQRT(THREE*(AS + ONE)*(AS - A)*(AS - B - ONE)*(AS - B)*(&
-               AS - C + ONE)*(AS - C + TWO)/(B*(B + ONE)*(B + TWO)*(B + THREE)*&
-               (C - TWO)*(C - ONE)*C*(C + ONE)))
-         ELSE IF (M - K == 3) THEN
+            si = aka*dsqrt(three*(as + one)*(as - a)*(as - b - one)*(as - b)*(&
+               as - c + one)*(as - c + two)/(b*(b + one)*(b + two)*(b + three)*&
+               (c - two)*(c - one)*c*(c + one)))
+         else if (m - k == 3) then
 !  3              pataisyta       3/2    1/2
-            SI = AKA*DSQRT(THREE*(AS + TWO)*(AS + THREE)*(AS - A + ONE)*(AS - A&
-                + TWO)*(AS - B + ONE)*(AS - C)/(B*(B + ONE)*(B + TWO)*(B + &
-               THREE)*(C + ONE)*(C + TWO)*(C + THREE)*(C + FOUR)))
-         ELSE IF (K - M == 1) THEN
+            si = aka*dsqrt(three*(as + two)*(as + three)*(as - a + one)*(as - a&
+                + two)*(as - b + one)*(as - c)/(b*(b + one)*(b + two)*(b + &
+               three)*(c + one)*(c + two)*(c + three)*(c + four)))
+         else if (k - m == 1) then
 !  VI                   -1/2    1/2
-            SI = AKA*((AS - C + TWO)*(AS - B + ONE) - TWO*(AS - A + ONE)*(AS + &
-               ONE))*DSQRT((AS - B)*(AS - C + ONE)/(B*(B + ONE)*(B + TWO)*(B + &
-               THREE)*(C - ONE)*C*(C + ONE)*(C + TWO)))
-         ELSE IF (M - K == 1) THEN
+            si = aka*((as - c + two)*(as - b + one) - two*(as - a + one)*(as + &
+               one))*dsqrt((as - b)*(as - c + one)/(b*(b + one)*(b + two)*(b + &
+               three)*(c - one)*c*(c + one)*(c + two)))
+         else if (m - k == 1) then
 !  4      pataisyta               1/2    1/2
-            SI = -AKA*(TWO*(AS - B)*(AS - C) - (AS + THREE)*(AS - A))*DSQRT((AS&
-                + TWO)*(AS - A + ONE)/(B*(B + ONE)*(B + TWO)*(B + THREE)*C*(C&
-                + ONE)*(C + TWO)*(C + THREE)))
-         ENDIF
-      ENDIF
-      RETURN
-      END SUBROUTINE SIXJ35
+            si = -aka*(two*(as - b)*(as - c) - (as + three)*(as - a))*dsqrt((as&
+                + two)*(as - a + one)/(b*(b + one)*(b + two)*(b + three)*c*(c&
+                + one)*(c + two)*(c + three)))
+         endif
+      endif
+      return
+      end subroutine sixj35

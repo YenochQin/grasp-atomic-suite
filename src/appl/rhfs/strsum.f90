@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE STRSUM
+      subroutine strsum
 !                                                                      *
 !   Generates the first part of  hfs92.sum  (on stream 24 and 29).     *
 !                                                                      *
@@ -15,37 +15,37 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE eigv_C
-      USE nsmdat_C,        ONLY: SQN, DMOMNM, QMOMB,                  &
-                                 HFSI=>SQN, HFSD=>DMOMNM, HFSQ=>QMOMB
-      USE prnt_C
-      USE syma_C
+      use vast_kind_param, only:  double
+      use eigv_c
+      use nsmdat_c,        only: sqn, dmomnm, qmomb,                  &
+                                 hfsi=>sqn, hfsd=>dmomnm, hfsq=>qmomb
+      use prnt_c
+      use syma_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE engouth_I
-      IMPLICIT NONE
+      use engouth_i
+      implicit none
 !-----------------------------------------------
 !
 !    Write nuclear data
 !
-      WRITE (24, 302) HFSI
-      WRITE (24, 303) HFSD
-      WRITE (24, 304) HFSQ
-      WRITE (29, 302) HFSI
-      WRITE (29, 303) HFSD
-      WRITE (29, 304) HFSQ
+      write (24, 302) hfsi
+      write (24, 303) hfsd
+      write (24, 304) hfsq
+      write (29, 302) hfsi
+      write (29, 303) hfsd
+      write (29, 304) hfsq
 !
 !    Write the list of eigenpair indices
 !
 !      CALL ENGOUTH (EAV, EVAL, IATJPO, IASPAR, IVEC, NVEC, 3)
 !
-      RETURN
+      return
 !
-  302 FORMAT('Nuclear spin                        ',1P,D22.15,' au')
-  303 FORMAT('Nuclear magnetic dipole moment      ',1P,D22.15,' n.m.')
-  304 FORMAT('Nuclear electric quadrupole moment  ',1P,D22.15,' barns')
-      RETURN
+  302 format('Nuclear spin                        ',1p,d22.15,' au')
+  303 format('Nuclear magnetic dipole moment      ',1p,d22.15,' n.m.')
+  304 format('Nuclear electric quadrupole moment  ',1p,d22.15,' barns')
+      return
 !
-      END SUBROUTINE STRSUM
+      end subroutine strsum

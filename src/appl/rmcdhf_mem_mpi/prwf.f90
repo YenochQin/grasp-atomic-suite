@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE PRWF(J)
+      subroutine prwf(j)
 !                                                                      *
 !   Makes a (debug) printout of wave functions. There are two modes:   *
 !                                                                      *
@@ -20,90 +20,90 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNP
-      USE def_C
-      USE grid_C
-      USE int_C
-      USE orb_C
-      USE wave_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnp
+      use def_c
+      use grid_c
+      use int_c
+      use orb_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
 !      USE draw_I
-      USE draw_I, ONLY: draw
-      IMPLICIT NONE
+      use draw_i, only: draw
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: J
+      integer , intent(in) :: j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NB2, NROWS, II, II1, II2, K, MFK, JGG
-      REAL(DOUBLE) :: CBZ
+      integer :: nb2, nrows, ii, ii1, ii2, k, mfk, jgg
+      real(double) :: cbz
 !-----------------------------------------------
 !
 !
-      CBZ = C/Z
+      cbz = c/z
 !
-      IF (J > 0) THEN
+      if (j > 0) then
 !
 !   Mode (1)
 !
-         WRITE (99, 300) NP(J), NH(J)
-         NB2 = MTP0/2
-         IF (2*NB2 == MTP0) THEN
-            NROWS = NB2
-         ELSE
-            NROWS = NB2 + 1
-         ENDIF
-         DO II = 1, NROWS
-            II1 = II
-            II2 = II1 + NROWS
-            IF (II2 <= MTP0) THEN
-               WRITE (99, 301) R(II1), P(II1), Q(II1), R(II2), P(II2), Q(II2)
-            ELSE IF (II1 <= MTP0) THEN
-               WRITE (99, 301) R(II1), P(II1), Q(II1)
-            ENDIF
-         END DO
-         CALL DRAW (P, 1.0D00, Q, CBZ, MTP0)
+         write (99, 300) np(j), nh(j)
+         nb2 = mtp0/2
+         if (2*nb2 == mtp0) then
+            nrows = nb2
+         else
+            nrows = nb2 + 1
+         endif
+         do ii = 1, nrows
+            ii1 = ii
+            ii2 = ii1 + nrows
+            if (ii2 <= mtp0) then
+               write (99, 301) r(ii1), p(ii1), q(ii1), r(ii2), p(ii2), q(ii2)
+            else if (ii1 <= mtp0) then
+               write (99, 301) r(ii1), p(ii1), q(ii1)
+            endif
+         end do
+         call draw (p, 1.0d00, q, cbz, mtp0)
 !
-      ELSE
+      else
 !
 !   Mode (2)
 !
-         DO K = 1, NW
-            WRITE (99, 300) NP(K), NH(K)
-            MFK = MF(K)
-            NB2 = MFK/2
-            IF (2*NB2 == MFK) THEN
-               NROWS = NB2
-            ELSE
-               NROWS = NB2 + 1
-            ENDIF
-            DO II = 1, NROWS
-               II1 = II
-               II2 = II1 + NROWS
-               IF (II2 <= MFK) THEN
-                  WRITE (99, 301) R(II1), PF(II1,K), QF(II1,K), R(II2), PF(II2,&
-                     K), QF(II2,K)
-               ELSE IF (II1 <= MFK) THEN
-                  WRITE (99, 301) R(II1), PF(II1,K), QF(II1,K)
-               ENDIF
-            END DO
-            CALL DRAW (PF(:NNNP,K), 1.0D00, QF(:NNNP,K), CBZ, MF(K))
+         do k = 1, nw
+            write (99, 300) np(k), nh(k)
+            mfk = mf(k)
+            nb2 = mfk/2
+            if (2*nb2 == mfk) then
+               nrows = nb2
+            else
+               nrows = nb2 + 1
+            endif
+            do ii = 1, nrows
+               ii1 = ii
+               ii2 = ii1 + nrows
+               if (ii2 <= mfk) then
+                  write (99, 301) r(ii1), pf(ii1,k), qf(ii1,k), r(ii2), pf(ii2,&
+                     k), qf(ii2,k)
+               else if (ii1 <= mfk) then
+                  write (99, 301) r(ii1), pf(ii1,k), qf(ii1,k)
+               endif
+            end do
+            call draw (pf(:nnnp,k), 1.0d00, qf(:nnnp,k), cbz, mf(k))
 !
-         END DO
+         end do
 !
-      ENDIF
+      endif
 !
-      RETURN
+      return
 !
-  300 FORMAT('1',1I2,1A2,' orbital:'/,2(&
+  300 format('1',1i2,1a2,' orbital:'/,2(&
          ' --------- r --------- ------- P (r) -------',&
          ' ------- Q (r) -------'))
-  301 FORMAT(1P,6(1X,1D21.14))
-      RETURN
+  301 format(1p,6(1x,1d21.14))
+      return
 !
-      END SUBROUTINE PRWF
+      end subroutine prwf

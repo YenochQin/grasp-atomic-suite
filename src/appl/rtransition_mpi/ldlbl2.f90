@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE LDLBL2 (NAME)
+      subroutine ldlbl2 (name)
 !                                                                      *
 !   Open, check and load data from the  .lsj.lbl   file of the         *
 !   inital state.                                                      *
@@ -16,63 +16,63 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE memory_man
-      USE jj2lsjbio_C
-      IMPLICIT NONE
+      use vast_kind_param, only: double
+      use memory_man
+      use jj2lsjbio_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER, INTENT(IN) :: NAME*128
+      character, intent(in) :: name*128
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE) :: WEIGHTS
-      CHARACTER    :: RECORD*15
-      INTEGER      :: ICount, IOS, ITEST, J
+      real(double) :: weights
+      character    :: record*15
+      integer      :: icount, ios, itest, j
 !-----------------------------------------------
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      J = INDEX(NAME,' ')
-      OPEN (UNIT = 31,FILE=NAME(1:J-1)//'.lsj.lbl',FORM='FORMATTED',  &
-           STATUS='OLD',IOSTAT = IOPEN_STATUS2)
-      IF(IOPEN_STATUS2 == 0) THEN
-         READ (31,'(1A15)',IOSTAT = IOS) RECORD
-         IF (IOS /= 0) THEN
-            PRINT *, 'Not a i *.lsj.lbl  File;'
-            CLOSE (31)
-            STOP
-         ELSE
-            CALL ALLOC (Lev_POS_2,  NVECTOTF,'Lev_POS_2',  'LDLBL2')
-            CALL ALLOC (Lev_J_2,    NVECTOTF,'Lev_J_2',    'LDLBL2')
-            CALL ALLOC (Lev_Par_2,  NVECTOTF,'Lev_Par_2',  'LDLBL2')
-            CALL ALLOC (RLev_ENER_2,NVECTOTF,'RLev_ENER_2','LDLBL2')
+      j = index(name,' ')
+      open (unit = 31,file=name(1:j-1)//'.lsj.lbl',form='FORMATTED',  &
+           status='OLD',iostat = iopen_status2)
+      if(iopen_status2 == 0) then
+         read (31,'(1A15)',iostat = ios) record
+         if (ios /= 0) then
+            print *, 'Not a i *.lsj.lbl  File;'
+            close (31)
+            stop
+         else
+            call alloc (lev_pos_2,  nvectotf,'Lev_POS_2',  'LDLBL2')
+            call alloc (lev_j_2,    nvectotf,'Lev_J_2',    'LDLBL2')
+            call alloc (lev_par_2,  nvectotf,'Lev_Par_2',  'LDLBL2')
+            call alloc (rlev_ener_2,nvectotf,'RLev_ENER_2','LDLBL2')
 !CPJ        CALL ALLOC (string_CSF2,NVECTOTF,'string_CSF2','LDLBL2')
-            allocate(string_CSF2(1:NVECTOTF))
+            allocate(string_csf2(1:nvectotf))
 !
-            ICount = 1
-            READ (31,'(1X,I2,1X,A4,5X,A1,8X,F16.9)',IOSTAT = IOS)     &
-              Lev_Pos_2(ICount),Lev_J_2(ICount),Lev_Par_2(ICount),    &
-              RLev_ENER_2(ICount)
-            IF (IOS .NE. 0) GO TO 1
+            icount = 1
+            read (31,'(1X,I2,1X,A4,5X,A1,8X,F16.9)',iostat = ios)     &
+              lev_pos_2(icount),lev_j_2(icount),lev_par_2(icount),    &
+              rlev_ener_2(icount)
+            if (ios .ne. 0) go to 1
 !
-            READ (31,'(7X,F12.8,17X,A)') WEIGHTS,string_CSF2(ICount)
+            read (31,'(7X,F12.8,17X,A)') weights,string_csf2(icount)
 !
-    2       READ (31,'(1X,I2)',IOSTAT = IOS) ITEST
-            IF (IOS .NE. 0) GO TO 1
-            IF (ITEST .EQ. 0) GO TO 2
-            BACKSPACE 31
-            ICount = ICount + 1
-            READ (31,'(1X,I2,1X,A4,5X,A1,8X,F16.9)',IOSTAT = IOS)     &
-              Lev_Pos_2(ICount),Lev_J_2(ICount),Lev_Par_2(ICount),    &
-              RLev_ENER_2(ICount)
-            IF (IOS .NE. 0) GO TO 1
-            READ (31,'(7X,F12.8,17X,A)') WEIGHTS,string_CSF2(ICount)
-            GO TO 2
-         ENDIF
-      ENDIF
-    1 CONTINUE
-      CLOSE (31)
-      RETURN
-      END SUBROUTINE LDLBL2
+    2       read (31,'(1X,I2)',iostat = ios) itest
+            if (ios .ne. 0) go to 1
+            if (itest .eq. 0) go to 2
+            backspace 31
+            icount = icount + 1
+            read (31,'(1X,I2,1X,A4,5X,A1,8X,F16.9)',iostat = ios)     &
+              lev_pos_2(icount),lev_j_2(icount),lev_par_2(icount),    &
+              rlev_ener_2(icount)
+            if (ios .ne. 0) go to 1
+            read (31,'(7X,F12.8,17X,A)') weights,string_csf2(icount)
+            go to 2
+         endif
+      endif
+    1 continue
+      close (31)
+      return
+      end subroutine ldlbl2

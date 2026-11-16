@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      SUBROUTINE SETCSLmpi(NAME, NCORE, IDBLK)
+      subroutine setcslmpi(name, ncore, idblk)
 !
 !  A container which calls lib92/lodcsh to get
 !     ncore, nelec, nw, np(), nak(), nkl(), nkj(), nh()
@@ -24,76 +24,76 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNW
-      USE memory_man
-      USE hblock_C
-      USE def_C
-      USE orb_C, NCFTOT=>NCF
-      USE stat_C
-      USE MPI_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnw
+      use memory_man
+      use hblock_c
+      use def_c
+      use orb_c, ncftot=>ncf
+      use stat_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      USE lodcslmpiGG_I
-      USE lodcsh_I, ONLY: lodcsh
-      IMPLICIT NONE
+      use openfl_i
+      use lodcslmpigg_i
+      use lodcsh_i, only: lodcsh
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NCORE
-      CHARACTER  :: NAME*(*)
-      CHARACTER  :: IDBLK(*)*8
+      integer  :: ncore
+      character  :: name*(*)
+      character  :: idblk(*)*8
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER ::  IOS
-      CHARACTER :: STR*15
+      integer ::  ios
+      character :: str*15
 !-----------------------------------------------
 !
 ! node-0 opens, reads the header of the file
 
-      IF (myid .EQ. 0) THEN
-         CALL OPENFL (21, name, 'FORMATTED', 'OLD', ierr)
-         IF (ierr .EQ. 1) THEN
-            PRINT *, 'Error when opening ',name(1:LEN_TRIM (name))
-            STOP
-         ENDIF
+      if (myid .eq. 0) then
+         call openfl (21, name, 'FORMATTED', 'OLD', ierr)
+         if (ierr .eq. 1) then
+            print *, 'Error when opening ',name(1:len_trim (name))
+            stop
+         endif
 
-         READ (21,'(1A15)',IOSTAT = ios) str
-         IF ((ios .NE. 0) .OR.                   &
-               (str .NE. 'Core subshells:')) THEN
-            PRINT *, 'Not a Configuration Symmetry List File;'
-            CLOSE (21)
-            STOP
-         ENDIF
+         read (21,'(1A15)',iostat = ios) str
+         if ((ios .ne. 0) .or.                   &
+               (str .ne. 'Core subshells:')) then
+            print *, 'Not a Configuration Symmetry List File;'
+            close (21)
+            stop
+         endif
 
          !..Load header of <name> file
-         CALL LODCSH (21, NCORE)
-      END IF
+         call lodcsh (21, ncore)
+      end if
 
 ! Broadcast results to other nodes. ncfblk should be allocated
 ! on these nodes (with myid .ne. 0)
 
-      CALL MPI_Bcast (nw,    1, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (ncore, 1, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (nelec, 1, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (np(1),nw, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (nak(1),nw, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (nkl(1),nw, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (nkj(1),nw, MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (nh(1),2*nw, MPI_CHARACTER,0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast (nw,    1, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (ncore, 1, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (nelec, 1, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (np(1),nw, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (nak(1),nw, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (nkl(1),nw, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (nkj(1),nw, mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (nh(1),2*nw, mpi_character,0,mpi_comm_world,ierr)
 
 ! Allocate memories for all blocks and then load the entire file
 
-      CALL ALLOC (iqa, NNNW, NCFTOT, 'IQA', 'SETCSLmpi')
+      call alloc (iqa, nnnw, ncftot, 'IQA', 'SETCSLmpi')
 !GG      CALL ALLOC (jqsa, NNNW,3,NCFTOT, 'JQSA', 'SETCSmpiL')
 !GG      CALL ALLOC (jcupa, NNNW, NCFTOT, 'JCUPA', 'SETCSLmpi')
 
 !GG      CALL LODCSLmpi (21, NCORE, -119)
-      CALL LODCSLmpiGG (21, NCORE, -119)
+      call lodcslmpigg (21, ncore, -119)
       ! -119 means "load all blocks"
 
-      RETURN
-      END SUBROUTINE SETCSLmpi
+      return
+      end subroutine setcslmpi

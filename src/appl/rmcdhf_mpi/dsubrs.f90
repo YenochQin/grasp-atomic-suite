@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION DSUBRS (EOL, I, J, JBLOCK)
+      real(kind(0.0d0)) function dsubrs (eol, i, j, jblock)
 !                                                                      *
 !   The coefficients d   for  I = r, J = s  are calculated here.       *
 !                     rs                                               *
@@ -35,38 +35,38 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE eigv_C
-      USE hblock_C
-      USE pos_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use def_c
+      use eigv_c
+      use hblock_c
+      use pos_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: I
-      INTEGER , INTENT(IN) :: J
-      INTEGER  :: JBLOCK
-      LOGICAL , INTENT(IN) :: EOL
+      integer  :: i
+      integer , intent(in) :: j
+      integer  :: jblock
+      logical , intent(in) :: eol
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K, KCMIN, IK, JK
+      integer :: k, kcmin, ik, jk
 !-----------------------------------------------
 
-      IF (EOL) THEN
-         DSUBRS = 0.D0
-         DO K = 1, NEVBLK(JBLOCK)
-            KCMIN = K + NCMINPAST(JBLOCK)
-            IK = I + NEVECPAST(JBLOCK) + (K - 1)*NCFBLK(JBLOCK)
-            JK = J + NEVECPAST(JBLOCK) + (K - 1)*NCFBLK(JBLOCK)
-            DSUBRS = DSUBRS + EVEC(IK)*EVEC(JK)*WT(KCMIN)
-         END DO
-      ELSE IF (I == J) THEN
-         DSUBRS = WT(I)
-      ELSE
-         DSUBRS = 0.D0
-      ENDIF
+      if (eol) then
+         dsubrs = 0.d0
+         do k = 1, nevblk(jblock)
+            kcmin = k + ncminpast(jblock)
+            ik = i + nevecpast(jblock) + (k - 1)*ncfblk(jblock)
+            jk = j + nevecpast(jblock) + (k - 1)*ncfblk(jblock)
+            dsubrs = dsubrs + evec(ik)*evec(jk)*wt(kcmin)
+         end do
+      else if (i == j) then
+         dsubrs = wt(i)
+      else
+         dsubrs = 0.d0
+      endif
 
-      RETURN
-      END FUNCTION DSUBRS
+      return
+      end function dsubrs

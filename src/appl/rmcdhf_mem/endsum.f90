@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ENDSUM
+      subroutine endsum
 !                                                                      *
 !   Generates the last part of  rscf92.sum  (on stream 24).            *
 !                                                                      *
@@ -18,66 +18,66 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE eigv_C
-      USE orb_C
-      USE scf_C
+      use vast_kind_param, only:  double
+      use def_c
+      use eigv_c
+      use orb_c
+      use scf_c
 !gg      USE syma_C
-      USE wave_C
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rint_I
-      USE engoutgg_I
-      USE csfwgt_I
-      IMPLICIT NONE
+      use rint_i
+      use engoutgg_i
+      use csfwgt_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, MODE
-      REAL(DOUBLE) :: WA, WB, WC, WD, WE
+      integer :: i, mode
+      real(double) :: wa, wb, wc, wd, we
 !-----------------------------------------------
 !
 !   Write out the orbital properties
 !
-      WRITE (24, 301)
-      DO I = 1, NW
-         WRITE (24, 302) NP(I),NH(I),E(I),PZ(I),GAMA(I),PF(2,I),QF(2,I), &
-            SCNSTY(I), MF(I)
-      END DO
+      write (24, 301)
+      do i = 1, nw
+         write (24, 302) np(i),nh(i),e(i),pz(i),gama(i),pf(2,i),qf(2,i), &
+            scnsty(i), mf(i)
+      end do
 !
-      WRITE (24, 303)
-      DO I = 1, NW
-         WA = RINT(I,I,-1)
-         WB = RINT(I,I,1)
-         WC = RINT(I,I,2)
-         WD = RINT (I,I, 4)
-         WE = 0.d0
-         IF (NH(I) /= 's ' .AND. NH(i) /= 'p-') then
-            WE = RINT(I,I,-3)
-         END IF
-         WRITE (24,304) NP(I),NH(I),WE,WA,WB,WC,WD, UCF(I)
-      END DO
+      write (24, 303)
+      do i = 1, nw
+         wa = rint(i,i,-1)
+         wb = rint(i,i,1)
+         wc = rint(i,i,2)
+         wd = rint (i,i, 4)
+         we = 0.d0
+         if (nh(i) /= 's ' .and. nh(i) /= 'p-') then
+            we = rint(i,i,-3)
+         end if
+         write (24,304) np(i),nh(i),we,wa,wb,wc,wd, ucf(i)
+      end do
 !
-      IF (NCMIN /= 0) THEN
-         MODE = 0
-         CALL ENGOUTGG (EVAL,ICCMIN,NCMIN,MODE)
+      if (ncmin /= 0) then
+         mode = 0
+         call engoutgg (eval,iccmin,ncmin,mode)
 !GG         CALL ENGOUT (EVAL, IATJPO, IASPAR, ICCMIN, NCMIN, MODE)
-         CALL CSFWGT (.FALSE.)
-      ENDIF
+         call csfwgt (.false.)
+      endif
 !
-      CLOSE(24)
+      close(24)
 !
-      RETURN
+      return
 !
-  301 FORMAT(/,'Radial wavefunction summary:'/,/,67X,'Self'/,'Subshell',6X,'e',&
-         13X,'p0',5X,'gamma',5X,'P(2)',7X,'Q(2)',3X,'Consistency',' MTP'/)
-  302 FORMAT(1X,I2,A2,1X,1P,D17.10,1P,D11.3,0P,F6.2,1P,3(D11.3),I5)
-  303 FORMAT (/18X,'-3',14X,'-1',29X,'2',14x,'4',5X,'Generalised'     &
-              /'Subshell',4X,'<  r  >',8X,'<  r  >',8X,'<  r  >',8X,  &
-               '<  r  >',8X,'<  r  >',6X,'occupation'/)
-  304 FORMAT (1X,1I2,1A2,1X,1P,6D15.5)
-      RETURN
+  301 format(/,'Radial wavefunction summary:'/,/,67x,'Self'/,'Subshell',6x,'e',&
+         13x,'p0',5x,'gamma',5x,'P(2)',7x,'Q(2)',3x,'Consistency',' MTP'/)
+  302 format(1x,i2,a2,1x,1p,d17.10,1p,d11.3,0p,f6.2,1p,3(d11.3),i5)
+  303 format (/18x,'-3',14x,'-1',29x,'2',14x,'4',5x,'Generalised'     &
+              /'Subshell',4x,'<  r  >',8x,'<  r  >',8x,'<  r  >',8x,  &
+               '<  r  >',8x,'<  r  >',6x,'occupation'/)
+  304 format (1x,1i2,1a2,1x,1p,6d15.5)
+      return
 !
-      END SUBROUTINE ENDSUM
+      end subroutine endsum

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GENMAT(ATWINV, JBLOCK, MYID, NPROCS, ELSTO, IRESTART, SLF_EN)
+      subroutine genmat(atwinv, jblock, myid, nprocs, elsto, irestart, slf_en)
 !
 !        Generate Hamiltonian matrix for all blocks
 !        This routine calls setham to do the computation. It makes
@@ -19,112 +19,112 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE eigv_C
-      USE iccu_C
-      USE orb_C
-      USE where_C
-      USE hblock_C
-      USE hmat_C
-      USE iounit_C
+      use vast_kind_param, only:  double
+      use eigv_c
+      use iccu_c
+      use orb_c
+      use where_c
+      use hblock_c
+      use hmat_c
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE posfile_I
-      USE setham_I
-      IMPLICIT NONE
+      use posfile_i
+      use setham_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: JBLOCK
-      INTEGER  :: MYID
-      INTEGER  :: NPROCS
-      INTEGER, INTENT(OUT) :: IRESTART
-      REAL(DOUBLE)  :: ATWINV
-      REAL(DOUBLE)  :: ELSTO
-      REAL(DOUBLE), DIMENSION(*) :: SLF_EN
+      integer  :: jblock
+      integer  :: myid
+      integer  :: nprocs
+      integer, intent(out) :: irestart
+      real(double)  :: atwinv
+      real(double)  :: elsto
+      real(double), dimension(*) :: slf_en
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IREAD, IOS, NCFDUM, ICCUTDUM, MYIDDUM, NPROCSDUM, I, &
-         IOS2, NELC, IR, IROWDUM, IPOS, NROWS, J, ICSTRT
-      REAL(DOUBLE) :: STOEL, DUM, EAV0
+      integer :: iread, ios, ncfdum, iccutdum, myiddum, nprocsdum, i, &
+         ios2, nelc, ir, irowdum, ipos, nrows, j, icstrt
+      real(double) :: stoel, dum, eav0
 !-----------------------------------------------
 !
-      NELMNT = 0                      ! Counting continues in setham
-      EAV    = 0.D0
-      ELSTO  = 0.D0
+      nelmnt = 0                      ! Counting continues in setham
+      eav    = 0.d0
+      elsto  = 0.d0
 
 ! See how much had been done (Hamiltonian matrix)
 ! irestart is set;
 ! iread accumulated;
 ! nelmnt, eav, elsto obtained (to be further modified in setham)
 
-      IREAD = 0                       ! # of rows read, initialization necessary
+      iread = 0                       ! # of rows read, initialization necessary
 
-      READ (IMCDF, IOSTAT=IOS) NCFDUM, ICCUTDUM, MYIDDUM, NPROCSDUM
-      IRESTART = IOS
+      read (imcdf, iostat=ios) ncfdum, iccutdum, myiddum, nprocsdum
+      irestart = ios
 
-      IF (IOS == 0) THEN
+      if (ios == 0) then
 
-         IF (NCF/=NCFDUM .OR. ICCUT(1)/=ICCUTDUM .OR. MYID/=MYIDDUM .OR. &
-            NPROCS/= NPROCSDUM) THEN
-            WRITE (ISTDE, *) NCF, NCFDUM, ICCUT(1), ICCUTDUM, MYID, MYIDDUM, &
-               NPROCS, NPROCSDUM, 'check'
-            STOP 'genmat:1'
-         ENDIF
+         if (ncf/=ncfdum .or. iccut(1)/=iccutdum .or. myid/=myiddum .or. &
+            nprocs/= nprocsdum) then
+            write (istde, *) ncf, ncfdum, iccut(1), iccutdum, myid, myiddum, &
+               nprocs, nprocsdum, 'check'
+            stop 'genmat:1'
+         endif
 
-         DO I = MYID + 1, NCF, NPROCS
-            READ (IMCDF, IOSTAT=IOS2) NELC, STOEL, (DUM,IR=2,NELC), EAV0, (&
-               IROWDUM,IR=1,NELC)
+         do i = myid + 1, ncf, nprocs
+            read (imcdf, iostat=ios2) nelc, stoel, (dum,ir=2,nelc), eav0, (&
+               irowdum,ir=1,nelc)
                             ! Lower triangle row-mode, diagonal last
-            IF (IOS2 == 0) THEN
-               IREAD = IREAD + 1
-               NELMNT = NELMNT + NELC
-               EAV = EAV + EAV0
-               ELSTO = STOEL
-            ELSE
-               EXIT
-            ENDIF
-         END DO
-         IPOS = 7 + NW + NW + IREAD + 1
-      ELSE
-         IPOS = 7 + NW + NW
-      ENDIF
+            if (ios2 == 0) then
+               iread = iread + 1
+               nelmnt = nelmnt + nelc
+               eav = eav + eav0
+               elsto = stoel
+            else
+               exit
+            endif
+         end do
+         ipos = 7 + nw + nw + iread + 1
+      else
+         ipos = 7 + nw + nw
+      endif
 
 ! Find the maximum number of rows
 
-      NROWS = (NCF - MYID - 1 + NPROCS)/NPROCS
-      IF (NCF < NPROCS) NROWS = NCF/(MYID + 1)
+      nrows = (ncf - myid - 1 + nprocs)/nprocs
+      if (ncf < nprocs) nrows = ncf/(myid + 1)
 
 ! Report the number of rows read.
 ! A more suitable report on all nodes can be done here, but this will
 ! set a synchronization point.
 
-      WRITE (ISTDE, *) IREAD, ' (total ', NROWS, ') rows read from .res'
-      IF (MYID == 0) WRITE (24, *) IREAD, ' (total ', NROWS, &
+      write (istde, *) iread, ' (total ', nrows, ') rows read from .res'
+      if (myid == 0) write (24, *) iread, ' (total ', nrows, &
          ') rows read from .res'
 
 ! Position the file for the next record from setham
 
-      DO I = 1, JBLOCK - 1
-         J = (NCFBLK(I) - MYID - 1 + NPROCS)/NPROCS
-         IF (NCFBLK(I) < NPROCS) J = NCFBLK(I)/(MYID + 1)
-         IPOS = IPOS + J + 1
-      END DO
-      CALL POSFILE (0, IMCDF, IPOS)
+      do i = 1, jblock - 1
+         j = (ncfblk(i) - myid - 1 + nprocs)/nprocs
+         if (ncfblk(i) < nprocs) j = ncfblk(i)/(myid + 1)
+         ipos = ipos + j + 1
+      end do
+      call posfile (0, imcdf, ipos)
 
-      IF (IOS /= 0) WRITE (IMCDF) NCF, ICCUT(1), MYID, NPROCS
+      if (ios /= 0) write (imcdf) ncf, iccut(1), myid, nprocs
 
-      IF (IREAD < NROWS) THEN
-         ICSTRT = IREAD*NPROCS + MYID + 1
+      if (iread < nrows) then
+         icstrt = iread*nprocs + myid + 1
 !     ...Generate the rest of the Hamiltonian matrix
-         CALL SETHAM (MYID, NPROCS, JBLOCK, ELSTO, ICSTRT, NELMNT, ATWINV, &
-            SLF_EN)
-      ELSE
-         NELMNTTMP = NELMNT
-         NCFTMP = NCF
-      ENDIF
+         call setham (myid, nprocs, jblock, elsto, icstrt, nelmnt, atwinv, &
+            slf_en)
+      else
+         nelmnttmp = nelmnt
+         ncftmp = ncf
+      endif
 
-      RETURN
-      END SUBROUTINE GENMAT
+      return
+      end subroutine genmat

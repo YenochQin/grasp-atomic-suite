@@ -1,5 +1,5 @@
 !***********************************************************************
-      SUBROUTINE SPICMVmpi (N,M,B,C)
+      subroutine spicmvmpi (n,m,b,c)
 !     IMPLICIT REAL*8          (A-H,O-Z)
 
 !   This routine now works for both rscfmpivu and rcimpivu. By removing
@@ -27,29 +27,29 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE mpi_C
-      USE HMAT_C,          ONLY: EMT, IENDC, IROW, NELMNT
+      use vast_kind_param, only:  double
+      use mpi_c
+      use hmat_c,          only: emt, iendc, irow, nelmnt
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dinit_I
+      use dinit_i
 !      USE dmerge_I
-      USE dmerge_I, ONLY: dmerge
-      USE mpiu_I, ONLY: gdsummpi
-      IMPLICIT NONE
+      use dmerge_i, only: dmerge
+      use mpiu_i, only: gdsummpi
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: N
-      INTEGER, INTENT(IN) :: M
-      REAL(DOUBLE) :: B(N,M)
-      REAL(DOUBLE) :: C(N,M)
+      integer, intent(in) :: n
+      integer, intent(in) :: m
+      real(double) :: b(n,m)
+      real(double) :: c(n,m)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ICOL, IBEG, IEND, NELC, IV
-      REAL(DOUBLE) :: DIAG, DL
+      integer :: icol, ibeg, iend, nelc, iv
+      real(double) :: diag, dl
 !-----------------------------------------------
 !
 !-----------------------------------------------------------------------
@@ -57,24 +57,24 @@
 !   Initialise the result matrix; note that this is specific to the
 !   data structure of DVDSON --- no overdimensioning
 !
-      CALL DINIT (N*M, 0.0D00, C, 1)
+      call dinit (n*m, 0.0d00, c, 1)
 
       ibeg = 1
-      DO ICOL = myid + 1, N, nprocs
+      do icol = myid + 1, n, nprocs
             !IBEG = IENDC(ICOL-1)+1
             !IEND = IENDC(ICOL)
-         IEND = IENDC(ICOL)
-         NELC = IEND - IBEG + 1
-         DO IV = 1, M
-            DIAG =  C(ICOL,IV) + EMT(iend)*B(icol,IV)
-            CALL DMERGE (NELC-1,B(:N,IV),C(:N,IV),               &
-                         IROW(IBEG:IEND-1),EMT(IBEG:IEND-1),B(ICOL,IV),DL)
-            C(ICOL,IV) = DIAG + DL
-         ENDDO
+         iend = iendc(icol)
+         nelc = iend - ibeg + 1
+         do iv = 1, m
+            diag =  c(icol,iv) + emt(iend)*b(icol,iv)
+            call dmerge (nelc-1,b(:n,iv),c(:n,iv),               &
+                         irow(ibeg:iend-1),emt(ibeg:iend-1),b(icol,iv),dl)
+            c(icol,iv) = diag + dl
+         enddo
          ibeg = iend + 1
-      ENDDO
+      enddo
 
-      CALL gdsummpi (C, N*M)
+      call gdsummpi (c, n*m)
 
-      RETURN
-      END SUBROUTINE SPICMVmpi
+      return
+      end subroutine spicmvmpi

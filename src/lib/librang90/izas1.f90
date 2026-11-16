@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      INTEGER FUNCTION IZAS1(IB,QB,IK,QK)
+      integer function izas1(ib,qb,ik,qk)
 !                                                                  *
 !   Written by G. Gaigalas,                                        *
 !   Vilnius,  Lithuania                             March    1995  *
@@ -12,26 +12,26 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: TENTH, TWO
-      IMPLICIT NONE
+      use vast_kind_param, only: double
+      use cons_c,          only: tenth, two
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN) :: IB, IK
-      REAL(DOUBLE), INTENT(IN) :: QB, QK
+      integer,      intent(in) :: ib, ik
+      real(double), intent(in) :: qb, qk
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IQB, IQK
+      integer :: iqb, iqk
 !-----------------------------------------------
-      IZAS1=0
-      IQB=TWO*DABS(QB)+TENTH
-      IF(IQB > IB)RETURN
-      IF(MOD(IB+IQB,2) /= 0)RETURN
-      IQK=TWO*DABS(QK)+TENTH
-      IF(IQK > IK)RETURN
-      IF(MOD(IK+IQK,2) /= 0)RETURN
-      IZAS1=1
-      RETURN
-      END  FUNCTION IZAS1
+      izas1=0
+      iqb=two*dabs(qb)+tenth
+      if(iqb > ib)return
+      if(mod(ib+iqb,2) /= 0)return
+      iqk=two*dabs(qk)+tenth
+      if(iqk > ik)return
+      if(mod(ik+iqk,2) /= 0)return
+      izas1=1
+      return
+      end  function izas1

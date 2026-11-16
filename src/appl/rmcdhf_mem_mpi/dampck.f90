@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE DAMPCK(IPR, J, ED1, ED2)
+      subroutine dampck(ipr, j, ed1, ed2)
 !                                                                      *
 !   This subroutine determines the damping factor appropriate to the   *
 !   present  orbital. The algorithm is taken from C Froese Fischer's   *
@@ -16,47 +16,47 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE damp_C
-      USE orb_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use damp_c
+      use orb_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(INOUT) :: IPR
-      INTEGER, INTENT(IN) :: J
-      REAL(DOUBLE), INTENT(INOUT) :: ED1
-      REAL(DOUBLE), INTENT(INOUT) :: ED2
+      integer, intent(inout) :: ipr
+      integer, intent(in) :: j
+      real(double), intent(inout) :: ed1
+      real(double), intent(inout) :: ed2
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: ADAPTV
+      logical :: adaptv
 !-----------------------------------------------
 !
 !   The damping is adaptive (i.e., can be modified by this SUBROUTINE)
 !   if and only if ODAMP(J) .GE. 0.0
 !
-      ADAPTV = ODAMP(J) >= 0.0D00
+      adaptv = odamp(j) >= 0.0d00
 !
-      IF (IPR /= J) THEN
-         IF (ADAPTV) ODAMP(J) = 0.75D00*ODAMP(J)
-      ELSE
-         ED2 = ED2-E(J)
-         IF (ADAPTV) THEN
-            IF (ED1*ED2 > 0.0D00) THEN
-               ODAMP(J) = 0.75D00*ODAMP(J)
-            ELSE
-               ODAMP(J) = 0.25D00+0.75D00*ODAMP(J)
-            ENDIF
-         ENDIF
-      ENDIF
+      if (ipr /= j) then
+         if (adaptv) odamp(j) = 0.75d00*odamp(j)
+      else
+         ed2 = ed2-e(j)
+         if (adaptv) then
+            if (ed1*ed2 > 0.0d00) then
+               odamp(j) = 0.75d00*odamp(j)
+            else
+               odamp(j) = 0.25d00+0.75d00*odamp(j)
+            endif
+         endif
+      endif
 !
-      IF (IPR == J) THEN
-         ED1 = ED2
-      ELSE
-         ED1 = ED2-E(J)
-      ENDIF
+      if (ipr == j) then
+         ed1 = ed2
+      else
+         ed1 = ed2-e(j)
+      endif
 !
-      IPR = J
-      RETURN
-      END SUBROUTINE DAMPCK
+      ipr = j
+      return
+      end subroutine dampck

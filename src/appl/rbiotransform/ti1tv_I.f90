@@ -1,14 +1,14 @@
-      MODULE ti1tv_I
-      INTERFACE
+      module ti1tv_i
+      interface
 !...Translated by Charlotte Froese Fischer
 !                       Gediminas Gaigalas  10/05/17
-      SUBROUTINE TI1TV(CIIN,NCSF,NCIV,I,L,T,NSHL,CIOUT,NTESTG)
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
-      INTEGER, INTENT(IN) :: ncsf, nciv, nshl, i, L, ntestg
-      REAL(DOUBLE), DIMENSION(ncsf, nciv), INTENT(IN) :: ciin
-      REAL(DOUBLE), DIMENSION(nshl), INTENT(IN) :: t
-      REAL(DOUBLE), DIMENSION(ncsf, nciv), INTENT(OUT) :: ciout
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine ti1tv(ciin,ncsf,nciv,i,l,t,nshl,ciout,ntestg)
+      use vast_kind_param, only:  double
+      implicit none
+      integer, intent(in) :: ncsf, nciv, nshl, i, l, ntestg
+      real(double), dimension(ncsf, nciv), intent(in) :: ciin
+      real(double), dimension(nshl), intent(in) :: t
+      real(double), dimension(ncsf, nciv), intent(out) :: ciout
+      end subroutine
+      end interface
+      end module

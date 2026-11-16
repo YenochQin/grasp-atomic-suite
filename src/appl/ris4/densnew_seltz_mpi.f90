@@ -1,180 +1,180 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE DENSNEW_SELTZ_MPI(DOIT,DINT1,DINT2,DINT3,DINT4,DINT5, &
-         DINT6,DINT7,DINT1VEC,DENS1VEC,NRNUC)
+      subroutine densnew_seltz_mpi(doit,dint1,dint2,dint3,dint4,dint5, &
+         dint6,dint7,dint1vec,dens1vec,nrnuc)
 !                                                                      *
 !   MPI version of DENSNEW_SELTZ. Each rank handles a strided subset   *
 !   of the outer IC loop. In MPI mode angular coefficients are         *
 !   evaluated on the fly and not saved.                                *
 !                                                                      *
 !***********************************************************************
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: KEYORB, NNNW, NNNP
-      USE blk_C
-      USE debug_C
-      USE decide_C
-      USE DEF_C
-      USE eigv_C
-      USE foparm_C
-      USE grid_C
-      USE JLABL_C
-      USE npar_C
-      USE orb_C
-      USE prnt_C
-      USE TEILST_C
-      USE BUFFER_C
-      USE ris_C
-      USE syma_C
-      USE mpi_C,            ONLY: MYID, NPROCS
-      USE prnt_C,           ONLY : NVEC
-      USE alcbuf_I
-      USE convrt_I
-      USE ispar_I
-      USE itjpo_I
-      USE onescalar_I
-      IMPLICIT NONE
-      INTEGER, INTENT(IN) :: DOIT, NRNUC
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT1, DINT2, &
-                                                        DINT3, DINT4, &
-                                                        DINT5, DINT6, &
-                                                        DINT7
-      REAL(DOUBLE), DIMENSION(NVEC,NRNUC), INTENT(OUT) :: DENS1VEC
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW,NRNUC), INTENT(IN) :: DINT1VEC
-      INTEGER, PARAMETER :: KEY = KEYORB
-      REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL, TSHELL_S
-      REAL(DOUBLE), DIMENSION(NRNUC) :: CONTRI1VEC, ELEMNT1VEC
-      REAL(DOUBLE) :: ELEMNT1, ELEMNT2, ELEMNT3, ELEMNT4, ELEMNT5,     &
-                      ELEMNT6, ELEMNT7, CONTRI1, CONTRI2, CONTRI3,     &
-                      CONTRI4, CONTRI5, CONTRI6, CONTRI7, EVPAIR,      &
-                      PAIR_SCALE
-      LOGICAL :: HAS_CONTR
-      CHARACTER :: CNUM*11, CK*2
-      INTEGER, DIMENSION(NNNW) :: IA_S
-      INTEGER :: KA, IOPAR, INCOR, IC, LCNUM, ITJPOC, IR, IA, IB, I, J
-      INTEGER :: L, LOC, NCONTR, LAB, OCC_IC, OCC_IR, NDIFF
+      use vast_kind_param,  only: double
+      use parameter_def,    only: keyorb, nnnw, nnnp
+      use blk_c
+      use debug_c
+      use decide_c
+      use def_c
+      use eigv_c
+      use foparm_c
+      use grid_c
+      use jlabl_c
+      use npar_c
+      use orb_c
+      use prnt_c
+      use teilst_c
+      use buffer_c
+      use ris_c
+      use syma_c
+      use mpi_c,            only: myid, nprocs
+      use prnt_c,           only : nvec
+      use alcbuf_i
+      use convrt_i
+      use ispar_i
+      use itjpo_i
+      use onescalar_i
+      implicit none
+      integer, intent(in) :: doit, nrnuc
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint1, dint2, &
+                                                        dint3, dint4, &
+                                                        dint5, dint6, &
+                                                        dint7
+      real(double), dimension(nvec,nrnuc), intent(out) :: dens1vec
+      real(double), dimension(nnnw,nnnw,nrnuc), intent(in) :: dint1vec
+      integer, parameter :: key = keyorb
+      real(double), dimension(nnnw) :: tshell, tshell_s
+      real(double), dimension(nrnuc) :: contri1vec, elemnt1vec
+      real(double) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5,     &
+                      elemnt6, elemnt7, contri1, contri2, contri3,     &
+                      contri4, contri5, contri6, contri7, evpair,      &
+                      pair_scale
+      logical :: has_contr
+      character :: cnum*11, ck*2
+      integer, dimension(nnnw) :: ia_s
+      integer :: ka, iopar, incor, ic, lcnum, itjpoc, ir, ia, ib, i, j
+      integer :: l, loc, ncontr, lab, occ_ic, occ_ir, ndiff
 
-      DENS1VEC(:,:) = 0.0D00
-      KA = 0
-      IOPAR = 1
-      INCOR = 1
+      dens1vec(:,:) = 0.0d00
+      ka = 0
+      iopar = 1
+      incor = 1
 
-      CALL ALCBUF (1)
+      call alcbuf (1)
 
-      DO IC = MYID + 1, NCF, NPROCS
-         IF (MYID == 0 .AND. MOD(IC,100) .EQ. 1) THEN
-            CALL CONVRT (IC,CNUM,LCNUM)
-            PRINT *, 'Column '//CNUM(1:LCNUM)//' complete on root;'
-         ENDIF
+      do ic = myid + 1, ncf, nprocs
+         if (myid == 0 .and. mod(ic,100) .eq. 1) then
+            call convrt (ic,cnum,lcnum)
+            print *, 'Column '//cnum(1:lcnum)//' complete on root;'
+         endif
 
-         ITJPOC = ITJPO (IC)
-         DO IR = IC,NCF
-            IF (ITJPO(IR) .EQ. ITJPOC) THEN
-               IF (ISPAR(IC) .NE. ISPAR(IR)) CYCLE
-               NDIFF = 0
-               DO I = 1,NW
-                  OCC_IC = IQA(I,IC)
-                  OCC_IR = IQA(I,IR)
-                  IF (OCC_IC .EQ. OCC_IR) CYCLE
-                  IF (IABS(OCC_IC - OCC_IR) .GT. 1) THEN
-                     NDIFF = 3
-                     EXIT
-                  ENDIF
-                  NDIFF = NDIFF + 1
-                  IF (NDIFF .GT. 2) EXIT
-               END DO
-               IF (NDIFF .NE. 0 .AND. NDIFF .NE. 2) CYCLE
-               IF (NDIFF .EQ. 0 .AND. IC .NE. IR) CYCLE
+         itjpoc = itjpo (ic)
+         do ir = ic,ncf
+            if (itjpo(ir) .eq. itjpoc) then
+               if (ispar(ic) .ne. ispar(ir)) cycle
+               ndiff = 0
+               do i = 1,nw
+                  occ_ic = iqa(i,ic)
+                  occ_ir = iqa(i,ir)
+                  if (occ_ic .eq. occ_ir) cycle
+                  if (iabs(occ_ic - occ_ir) .gt. 1) then
+                     ndiff = 3
+                     exit
+                  endif
+                  ndiff = ndiff + 1
+                  if (ndiff .gt. 2) exit
+               end do
+               if (ndiff .ne. 0 .and. ndiff .ne. 2) cycle
+               if (ndiff .eq. 0 .and. ic .ne. ir) cycle
 
-               ELEMNT1 = 0.0D00
-               ELEMNT2 = 0.0D00
-               ELEMNT3 = 0.0D00
-               ELEMNT4 = 0.0D00
-               ELEMNT5 = 0.0D00
-               ELEMNT6 = 0.0D00
-               ELEMNT7 = 0.0D00
-               ELEMNT1VEC(:) = 0.0D00
-               HAS_CONTR = .FALSE.
+               elemnt1 = 0.0d00
+               elemnt2 = 0.0d00
+               elemnt3 = 0.0d00
+               elemnt4 = 0.0d00
+               elemnt5 = 0.0d00
+               elemnt6 = 0.0d00
+               elemnt7 = 0.0d00
+               elemnt1vec(:) = 0.0d00
+               has_contr = .false.
 
-               CALL ONESCALAR(IC,IR,IA,IB,TSHELL)
-               IF (IA .NE. 0) THEN
-                  IF (IA .EQ. IB) THEN
-                     NCONTR = 0
-                     DO IA = 1,NW
-                        IF (ABS (TSHELL(IA)) .GT. CUTOFF) THEN
-                           NCONTR = NCONTR + 1
-                           TSHELL_S(NCONTR) = TSHELL(IA)
-                           IA_S(NCONTR) = IA
-                           ELEMNT1 = ELEMNT1 + DINT1(IA,IA)*TSHELL(IA)
-                           DO L = 2,NRNUC
-                              ELEMNT1VEC(L)=ELEMNT1VEC(L)+DINT1VEC(IA,IA,L)*TSHELL(IA)
-                           END DO
-                           ELEMNT2 = ELEMNT2 + DINT2(IA,IA)*TSHELL(IA)
-                           ELEMNT3 = ELEMNT3 + DINT3(IA,IA)*TSHELL(IA)
-                           ELEMNT4 = ELEMNT4 + DINT4(IA,IA)*TSHELL(IA)
-                           ELEMNT5 = ELEMNT5 + DINT5(IA,IA)*TSHELL(IA)
-                           ELEMNT6 = ELEMNT6 + DINT6(IA,IA)*TSHELL(IA)
-                           ELEMNT7 = ELEMNT7 + DINT7(IA,IA)*TSHELL(IA)
-                           HAS_CONTR = .TRUE.
-                        ENDIF
-                     END DO
-                  ELSE
-                     IF (ABS (TSHELL(1)) .GT. CUTOFF) THEN
-                        IF (NAK(IA).EQ.NAK(IB)) THEN
-                           ELEMNT1 = ELEMNT1 + DINT1(IA,IB)*TSHELL(1)
-                           DO L = 2,NRNUC
-                              ELEMNT1VEC(L)=ELEMNT1VEC(L)+DINT1VEC(IA,IB,L)*TSHELL(1)
-                           END DO
-                           ELEMNT2 = ELEMNT2 + DINT2(IA,IB)*TSHELL(1)
-                           ELEMNT3 = ELEMNT3 + DINT3(IA,IB)*TSHELL(1)
-                           ELEMNT4 = ELEMNT4 + DINT4(IA,IB)*TSHELL(1)
-                           ELEMNT5 = ELEMNT5 + DINT5(IA,IB)*TSHELL(1)
-                           ELEMNT6 = ELEMNT6 + DINT6(IA,IB)*TSHELL(1)
-                           ELEMNT7 = ELEMNT7 + DINT7(IA,IB)*TSHELL(1)
-                           HAS_CONTR = .TRUE.
-                        ENDIF
-                     ENDIF
-                  ENDIF
-               ENDIF
-               IF (.NOT. HAS_CONTR) CYCLE
-               IF (ABS(ELEMNT1) .LE. CUTOFF .AND. &
-                   ABS(ELEMNT2) .LE. CUTOFF .AND. &
-                   ABS(ELEMNT3) .LE. CUTOFF .AND. &
-                   ABS(ELEMNT4) .LE. CUTOFF .AND. &
-                   ABS(ELEMNT5) .LE. CUTOFF .AND. &
-                   ABS(ELEMNT6) .LE. CUTOFF .AND. &
-                   ABS(ELEMNT7) .LE. CUTOFF .AND. &
-                   ALL(ABS(ELEMNT1VEC(:)) .LE. CUTOFF)) CYCLE
-               IF (IR .EQ. IC) THEN
-                  PAIR_SCALE = 1.0D00
-               ELSE
-                  PAIR_SCALE = 2.0D00
-               ENDIF
-               DO J = 1,NVEC
-                  LOC = (J-1)*NCF
-                  EVPAIR = PAIR_SCALE * EVEC(IC+LOC)*EVEC(IR+LOC)
-                  CONTRI1 = EVPAIR*ELEMNT1
-                  CONTRI1VEC(:) = EVPAIR*ELEMNT1VEC(:)
-                  CONTRI2 = EVPAIR*ELEMNT2
-                  CONTRI3 = EVPAIR*ELEMNT3
-                  CONTRI4 = EVPAIR*ELEMNT4
-                  CONTRI5 = EVPAIR*ELEMNT5
-                  CONTRI6 = EVPAIR*ELEMNT6
-                  CONTRI7 = EVPAIR*ELEMNT7
-                  DENS1(J) = DENS1(J) + CONTRI1
-                  DO L = 2,NRNUC
-                     DENS1VEC(J,L) = DENS1VEC(J,L) + CONTRI1VEC(L)
-                  END DO
-                  DENS2(J) = DENS2(J) + CONTRI2
-                  DENS3(J) = DENS3(J) + CONTRI3
-                  DENS4(J) = DENS4(J) + CONTRI4
-                  DENS5(J) = DENS5(J) + CONTRI5
-                  DENS6(J) = DENS6(J) + CONTRI6
-                  DENS7(J) = DENS7(J) + CONTRI7
-               END DO
-            ENDIF
-         END DO
-      END DO
+               call onescalar(ic,ir,ia,ib,tshell)
+               if (ia .ne. 0) then
+                  if (ia .eq. ib) then
+                     ncontr = 0
+                     do ia = 1,nw
+                        if (abs (tshell(ia)) .gt. cutoff) then
+                           ncontr = ncontr + 1
+                           tshell_s(ncontr) = tshell(ia)
+                           ia_s(ncontr) = ia
+                           elemnt1 = elemnt1 + dint1(ia,ia)*tshell(ia)
+                           do l = 2,nrnuc
+                              elemnt1vec(l)=elemnt1vec(l)+dint1vec(ia,ia,l)*tshell(ia)
+                           end do
+                           elemnt2 = elemnt2 + dint2(ia,ia)*tshell(ia)
+                           elemnt3 = elemnt3 + dint3(ia,ia)*tshell(ia)
+                           elemnt4 = elemnt4 + dint4(ia,ia)*tshell(ia)
+                           elemnt5 = elemnt5 + dint5(ia,ia)*tshell(ia)
+                           elemnt6 = elemnt6 + dint6(ia,ia)*tshell(ia)
+                           elemnt7 = elemnt7 + dint7(ia,ia)*tshell(ia)
+                           has_contr = .true.
+                        endif
+                     end do
+                  else
+                     if (abs (tshell(1)) .gt. cutoff) then
+                        if (nak(ia).eq.nak(ib)) then
+                           elemnt1 = elemnt1 + dint1(ia,ib)*tshell(1)
+                           do l = 2,nrnuc
+                              elemnt1vec(l)=elemnt1vec(l)+dint1vec(ia,ib,l)*tshell(1)
+                           end do
+                           elemnt2 = elemnt2 + dint2(ia,ib)*tshell(1)
+                           elemnt3 = elemnt3 + dint3(ia,ib)*tshell(1)
+                           elemnt4 = elemnt4 + dint4(ia,ib)*tshell(1)
+                           elemnt5 = elemnt5 + dint5(ia,ib)*tshell(1)
+                           elemnt6 = elemnt6 + dint6(ia,ib)*tshell(1)
+                           elemnt7 = elemnt7 + dint7(ia,ib)*tshell(1)
+                           has_contr = .true.
+                        endif
+                     endif
+                  endif
+               endif
+               if (.not. has_contr) cycle
+               if (abs(elemnt1) .le. cutoff .and. &
+                   abs(elemnt2) .le. cutoff .and. &
+                   abs(elemnt3) .le. cutoff .and. &
+                   abs(elemnt4) .le. cutoff .and. &
+                   abs(elemnt5) .le. cutoff .and. &
+                   abs(elemnt6) .le. cutoff .and. &
+                   abs(elemnt7) .le. cutoff .and. &
+                   all(abs(elemnt1vec(:)) .le. cutoff)) cycle
+               if (ir .eq. ic) then
+                  pair_scale = 1.0d00
+               else
+                  pair_scale = 2.0d00
+               endif
+               do j = 1,nvec
+                  loc = (j-1)*ncf
+                  evpair = pair_scale * evec(ic+loc)*evec(ir+loc)
+                  contri1 = evpair*elemnt1
+                  contri1vec(:) = evpair*elemnt1vec(:)
+                  contri2 = evpair*elemnt2
+                  contri3 = evpair*elemnt3
+                  contri4 = evpair*elemnt4
+                  contri5 = evpair*elemnt5
+                  contri6 = evpair*elemnt6
+                  contri7 = evpair*elemnt7
+                  dens1(j) = dens1(j) + contri1
+                  do l = 2,nrnuc
+                     dens1vec(j,l) = dens1vec(j,l) + contri1vec(l)
+                  end do
+                  dens2(j) = dens2(j) + contri2
+                  dens3(j) = dens3(j) + contri3
+                  dens4(j) = dens4(j) + contri4
+                  dens5(j) = dens5(j) + contri5
+                  dens6(j) = dens6(j) + contri6
+                  dens7(j) = dens7(j) + contri7
+               end do
+            endif
+         end do
+      end do
 
-      CALL ALCBUF (3)
-      RETURN
-      END SUBROUTINE DENSNEW_SELTZ_MPI
+      call alcbuf (3)
+      return
+      end subroutine densnew_seltz_mpi

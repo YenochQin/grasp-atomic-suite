@@ -3,7 +3,7 @@
 !     V E C S U M
 !     ------------------------------------------------------------------
 !
-      SUBROUTINE VECSUM(C, A, B, FACA, FACB, NDIM)
+      subroutine vecsum(c, a, b, faca, facb, ndim)
 !
 !     CACLULATE THE VECTOR C(I)=FACA*A(I)+FACB*B(I)
 !************************************************************************
@@ -13,36 +13,36 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NDIM
-      REAL(DOUBLE), INTENT(IN) :: FACA
-      REAL(DOUBLE), INTENT(IN) :: FACB
-      REAL(DOUBLE), DIMENSION(NDIM), INTENT(IN)  :: A
-      REAL(DOUBLE), DIMENSION(NDIM), INTENT(IN)  :: B
-      REAL(DOUBLE), DIMENSION(NDIM), INTENT(OUT) :: C
+      integer, intent(in) :: ndim
+      real(double), intent(in) :: faca
+      real(double), intent(in) :: facb
+      real(double), dimension(ndim), intent(in)  :: a
+      real(double), dimension(ndim), intent(in)  :: b
+      real(double), dimension(ndim), intent(out) :: c
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE) :: S
+      integer :: i
+      real(double) :: s
 !-----------------------------------------------
 !
-      IF (FACA/=0.0D0 .AND. FACB/=0.0D0) THEN
-         C(:NDIM) = FACA*A(:NDIM) + FACB*B(:NDIM)
+      if (faca/=0.0d0 .and. facb/=0.0d0) then
+         c(:ndim) = faca*a(:ndim) + facb*b(:ndim)
 !
-      ELSE IF (FACA==0.0D0 .AND. FACB/=0.0D0) THEN
-         C(:NDIM) = FACB*B(:NDIM)
+      else if (faca==0.0d0 .and. facb/=0.0d0) then
+         c(:ndim) = facb*b(:ndim)
 !
-      ELSE IF (FACA/=0.0D0 .AND. FACB==0.0D0) THEN
-         C(:NDIM) = FACA*A(:NDIM)
+      else if (faca/=0.0d0 .and. facb==0.0d0) then
+         c(:ndim) = faca*a(:ndim)
 !
-      ELSE IF (FACA==0.0D0 .AND. FACB==0.0D0) THEN
-         C(:NDIM) = 0.0D0
-      ENDIF
+      else if (faca==0.0d0 .and. facb==0.0d0) then
+         c(:ndim) = 0.0d0
+      endif
 !
-      RETURN
-      END SUBROUTINE VECSUM
+      return
+      end subroutine vecsum

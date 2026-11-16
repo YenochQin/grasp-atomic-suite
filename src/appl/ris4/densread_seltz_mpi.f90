@@ -1,111 +1,111 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE DENSREAD_SELTZ_MPI(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,&
-         DINT7,DINT1VEC,DENS1VEC,NRNUC)
+      subroutine densread_seltz_mpi(dint1,dint2,dint3,dint4,dint5,dint6,&
+         dint7,dint1vec,dens1vec,nrnuc)
 !                                                                      *
 !   MPI version of DENSREAD_SELTZ. Each rank scans the full angular    *
 !   file but only accumulates records whose IC belongs to its strided   *
 !   subset.                                                             *
 !                                                                      *
 !***********************************************************************
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: KEYORB, NNNW, NNNP
-      USE debug_C,          ONLY: CUTOFF
-      USE prnt_C
-      USE ris_C
-      USE orb_C
-      USE eigv_C
-      USE mpi_C,            ONLY: MYID, NPROCS
-      IMPLICIT NONE
-      INTEGER, INTENT(IN) :: NRNUC
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT1, DINT2,  &
-                                          DINT3, DINT4, DINT5, DINT6,  &
-                                          DINT7
-      REAL(DOUBLE), DIMENSION(NVEC,NRNUC), INTENT(OUT) :: DENS1VEC
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW,NRNUC), INTENT(IN) :: DINT1VEC
-      INTEGER, PARAMETER :: KEY = KEYORB
-      REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL_R
-      REAL(DOUBLE), DIMENSION(NRNUC) :: CONTRI1VEC, ELEMNT1VEC
-      REAL(DOUBLE) :: ELEMNT1, ELEMNT2, ELEMNT3, ELEMNT4, ELEMNT5
-      REAL(DOUBLE) :: ELEMNT6, ELEMNT7
-      REAL(DOUBLE) :: CONTRI1, CONTRI2, CONTRI3, CONTRI4, CONTRI5
-      REAL(DOUBLE) :: CONTRI6, CONTRI7
-      REAL(DOUBLE) :: EVPAIR, PAIR_SCALE
-      INTEGER :: IOS, IA, IB, IC, IR, I, J, L, LOC, LAB, NCOUNT
-      LOGICAL :: OWNREC
+      use vast_kind_param,  only: double
+      use parameter_def,    only: keyorb, nnnw, nnnp
+      use debug_c,          only: cutoff
+      use prnt_c
+      use ris_c
+      use orb_c
+      use eigv_c
+      use mpi_c,            only: myid, nprocs
+      implicit none
+      integer, intent(in) :: nrnuc
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint1, dint2,  &
+                                          dint3, dint4, dint5, dint6,  &
+                                          dint7
+      real(double), dimension(nvec,nrnuc), intent(out) :: dens1vec
+      real(double), dimension(nnnw,nnnw,nrnuc), intent(in) :: dint1vec
+      integer, parameter :: key = keyorb
+      real(double), dimension(nnnw) :: tshell_r
+      real(double), dimension(nrnuc) :: contri1vec, elemnt1vec
+      real(double) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5
+      real(double) :: elemnt6, elemnt7
+      real(double) :: contri1, contri2, contri3, contri4, contri5
+      real(double) :: contri6, contri7
+      real(double) :: evpair, pair_scale
+      integer :: ios, ia, ib, ic, ir, i, j, l, loc, lab, ncount
+      logical :: ownrec
 
-      DENS1VEC(:,:) = 0.0D00
-      REWIND (50)
-   16 READ (50,IOSTAT = IOS) IC,IR,NCOUNT
+      dens1vec(:,:) = 0.0d00
+      rewind (50)
+   16 read (50,iostat = ios) ic,ir,ncount
 
-      IF (IOS .EQ. 0) THEN
-         OWNREC = MOD(IC-1, NPROCS) .EQ. MYID
-         ELEMNT1 = 0.0D00
-         ELEMNT2 = 0.0D00
-         ELEMNT3 = 0.0D00
-         ELEMNT4 = 0.0D00
-         ELEMNT5 = 0.0D00
-         ELEMNT6 = 0.0D00
-         ELEMNT7 = 0.0D00
-         ELEMNT1VEC(:) = 0.0D00
+      if (ios .eq. 0) then
+         ownrec = mod(ic-1, nprocs) .eq. myid
+         elemnt1 = 0.0d00
+         elemnt2 = 0.0d00
+         elemnt3 = 0.0d00
+         elemnt4 = 0.0d00
+         elemnt5 = 0.0d00
+         elemnt6 = 0.0d00
+         elemnt7 = 0.0d00
+         elemnt1vec(:) = 0.0d00
 
-         DO I= 1,NCOUNT
-            READ(50) TSHELL_R(I),LAB
-            IF (.NOT. OWNREC) CYCLE
-            IA = LAB/KEY
-            IB = MOD(LAB,KEY)
-            ELEMNT1 = ELEMNT1 + DINT1(IA,IB)*TSHELL_R(I)
-            DO L = 2,NRNUC
-               ELEMNT1VEC(L) = ELEMNT1VEC(L) + DINT1VEC(IA,IB,L)*TSHELL_R(I)
-            END DO
-            ELEMNT2 = ELEMNT2 + DINT2(IA,IB)*TSHELL_R(I)
-            ELEMNT3 = ELEMNT3 + DINT3(IA,IB)*TSHELL_R(I)
-            ELEMNT4 = ELEMNT4 + DINT4(IA,IB)*TSHELL_R(I)
-            ELEMNT5 = ELEMNT5 + DINT5(IA,IB)*TSHELL_R(I)
-            ELEMNT6 = ELEMNT6 + DINT6(IA,IB)*TSHELL_R(I)
-            ELEMNT7 = ELEMNT7 + DINT7(IA,IB)*TSHELL_R(I)
-         ENDDO
+         do i= 1,ncount
+            read(50) tshell_r(i),lab
+            if (.not. ownrec) cycle
+            ia = lab/key
+            ib = mod(lab,key)
+            elemnt1 = elemnt1 + dint1(ia,ib)*tshell_r(i)
+            do l = 2,nrnuc
+               elemnt1vec(l) = elemnt1vec(l) + dint1vec(ia,ib,l)*tshell_r(i)
+            end do
+            elemnt2 = elemnt2 + dint2(ia,ib)*tshell_r(i)
+            elemnt3 = elemnt3 + dint3(ia,ib)*tshell_r(i)
+            elemnt4 = elemnt4 + dint4(ia,ib)*tshell_r(i)
+            elemnt5 = elemnt5 + dint5(ia,ib)*tshell_r(i)
+            elemnt6 = elemnt6 + dint6(ia,ib)*tshell_r(i)
+            elemnt7 = elemnt7 + dint7(ia,ib)*tshell_r(i)
+         enddo
 
-         IF (OWNREC) THEN
-            IF (ABS(ELEMNT1) .LE. CUTOFF .AND. &
-                ABS(ELEMNT2) .LE. CUTOFF .AND. &
-                ABS(ELEMNT3) .LE. CUTOFF .AND. &
-                ABS(ELEMNT4) .LE. CUTOFF .AND. &
-                ABS(ELEMNT5) .LE. CUTOFF .AND. &
-                ABS(ELEMNT6) .LE. CUTOFF .AND. &
-                ABS(ELEMNT7) .LE. CUTOFF .AND. &
-                ALL(ABS(ELEMNT1VEC(:)) .LE. CUTOFF)) GOTO 16
-            IF (IR .EQ. IC) THEN
-               PAIR_SCALE = 1.0D00
-            ELSE
-               PAIR_SCALE = 2.0D00
-            ENDIF
-            DO J = 1,NVEC
-               LOC = (J-1)*NCF
-               EVPAIR = PAIR_SCALE * EVEC(IC+LOC)*EVEC(IR+LOC)
-               CONTRI1 = EVPAIR*ELEMNT1
-               CONTRI1VEC(:) = EVPAIR*ELEMNT1VEC(:)
-               CONTRI2 = EVPAIR*ELEMNT2
-               CONTRI3 = EVPAIR*ELEMNT3
-               CONTRI4 = EVPAIR*ELEMNT4
-               CONTRI5 = EVPAIR*ELEMNT5
-               CONTRI6 = EVPAIR*ELEMNT6
-               CONTRI7 = EVPAIR*ELEMNT7
-               DENS1(J) = DENS1(J) + CONTRI1
-               DO L = 2,NRNUC
-                  DENS1VEC(J,L) = DENS1VEC(J,L) + CONTRI1VEC(L)
-               END DO
-               DENS2(J) = DENS2(J) + CONTRI2
-               DENS3(J) = DENS3(J) + CONTRI3
-               DENS4(J) = DENS4(J) + CONTRI4
-               DENS5(J) = DENS5(J) + CONTRI5
-               DENS6(J) = DENS6(J) + CONTRI6
-               DENS7(J) = DENS7(J) + CONTRI7
-            END DO
-         ENDIF
+         if (ownrec) then
+            if (abs(elemnt1) .le. cutoff .and. &
+                abs(elemnt2) .le. cutoff .and. &
+                abs(elemnt3) .le. cutoff .and. &
+                abs(elemnt4) .le. cutoff .and. &
+                abs(elemnt5) .le. cutoff .and. &
+                abs(elemnt6) .le. cutoff .and. &
+                abs(elemnt7) .le. cutoff .and. &
+                all(abs(elemnt1vec(:)) .le. cutoff)) goto 16
+            if (ir .eq. ic) then
+               pair_scale = 1.0d00
+            else
+               pair_scale = 2.0d00
+            endif
+            do j = 1,nvec
+               loc = (j-1)*ncf
+               evpair = pair_scale * evec(ic+loc)*evec(ir+loc)
+               contri1 = evpair*elemnt1
+               contri1vec(:) = evpair*elemnt1vec(:)
+               contri2 = evpair*elemnt2
+               contri3 = evpair*elemnt3
+               contri4 = evpair*elemnt4
+               contri5 = evpair*elemnt5
+               contri6 = evpair*elemnt6
+               contri7 = evpair*elemnt7
+               dens1(j) = dens1(j) + contri1
+               do l = 2,nrnuc
+                  dens1vec(j,l) = dens1vec(j,l) + contri1vec(l)
+               end do
+               dens2(j) = dens2(j) + contri2
+               dens3(j) = dens3(j) + contri3
+               dens4(j) = dens4(j) + contri4
+               dens5(j) = dens5(j) + contri5
+               dens6(j) = dens6(j) + contri6
+               dens7(j) = dens7(j) + contri7
+            end do
+         endif
 
-         GOTO 16
-      ENDIF
+         goto 16
+      endif
 
-      RETURN
-      END SUBROUTINE DENSREAD_SELTZ_MPI
+      return
+      end subroutine densread_seltz_mpi

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION IQ (ISUBSH, ICSF)
+      integer function iq (isubsh, icsf)
 !                                                                      *
 !   IQ is the occupation of subshell ISUBSH in CSF  ICSF.              *
 !                                                                      *
@@ -14,18 +14,18 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE parameter_def, ONLY: NNNW
-      USE ORB_C,         ONLY: IQA, NCF
-      USE IOUNIT_C,      ONLY: istde
-      IMPLICIT NONE
+      use parameter_def, only: nnnw
+      use orb_c,         only: iqa, ncf
+      use iounit_c,      only: istde
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: ISUBSH
-      INTEGER             :: ICSF
+      integer, intent(in) :: isubsh
+      integer             :: icsf
 !-----------------------------------------------
 !
-      IQ = IQA(isubsh,icsf)
+      iq = iqa(isubsh,icsf)
 !
-      RETURN
-      END FUNCTION IQ
+      return
+      end function iq

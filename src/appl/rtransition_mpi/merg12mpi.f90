@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE MERG12(NAME, NCORER, NCORE)
+      subroutine merg12(name, ncorer, ncore)
 !                                                                      *
 !   This subroutines merges the initial and final state lists          *
 !   Observ that there may doublets in this list if the initial         *
@@ -15,37 +15,37 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW
-      USE def_C
-      USE orb_C
-      USE blk_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw
+      use def_c
+      use orb_c
+      use blk_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE iq_I
-      USE iqr_I
-      USE ispar_I
-      USE isparr_I
-      USE itjpo_I
-      USE itjpor_I
-      IMPLICIT NONE
+      use iq_i
+      use iqr_i
+      use ispar_i
+      use isparr_i
+      use itjpo_i
+      use itjpor_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: NCORER
-      INTEGER , INTENT(IN) :: NCORE
-      CHARACTER , INTENT(IN) :: NAME(2)*128
+      integer , intent(in) :: ncorer
+      integer , intent(in) :: ncore
+      character , intent(in) :: name(2)*128
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J1
-      INTEGER, DIMENSION(0:NNNW + 1) :: NEWNP
-      INTEGER, DIMENSION(NNNW) :: NEWNAK, ICON, ICON1
-      INTEGER :: I, J, ICOMP, NEW, IPI1, IPI2, K, NEW1, NEW2, M, NLINE
-      CHARACTER :: LINE*500
-      CHARACTER, DIMENSION(NNNW) :: NEWNH*2
-      CHARACTER :: NEW3*2
+      integer :: j1
+      integer, dimension(0:nnnw + 1) :: newnp
+      integer, dimension(nnnw) :: newnak, icon, icon1
+      integer :: i, j, icomp, new, ipi1, ipi2, k, new1, new2, m, nline
+      character :: line*500
+      character, dimension(nnnw) :: newnh*2
+      character :: new3*2
 !-----------------------------------------------
 !
 !
@@ -53,140 +53,140 @@
 ! NCFF(I): the end position of the Ith block for the final states in the globle CSF list
 
 !
-      OPEN(UNIT=21, FILE='SLASK', FORM='FORMATTED', STATUS='UNKNOWN', POSITION=&
+      open(unit=21, file='SLASK', form='FORMATTED', status='UNKNOWN', position=&
          'asis')
 !
 !   The same number of electrons must appear in both lists
 !
-      IF (NELECR /= NELEC) THEN
-         WRITE (6, *) 'The number of electrons is not equal in the'
-         WRITE (6, *) ' first and second GRASP92 Configuration'
-         WRITE (6, *) ' symmetry list files.'
-         STOP
-      ENDIF
+      if (nelecr /= nelec) then
+         write (6, *) 'The number of electrons is not equal in the'
+         write (6, *) ' first and second GRASP92 Configuration'
+         write (6, *) ' symmetry list files.'
+         stop
+      endif
 !
 !   THe core orbitals must be the same
 !
-      IF (NCORE /= NCORER) THEN
-         WRITE (6, *) 'The number of core orbitals must be the same'
-         STOP
-      ENDIF
+      if (ncore /= ncorer) then
+         write (6, *) 'The number of core orbitals must be the same'
+         stop
+      endif
 
-      DO I = 1, NCORE
-         IF (NP(I)==NPR(I) .AND. NAK(I)==NAKR(I)) CYCLE
-         WRITE (6, *) 'The core orbitals must be the same'
-         STOP
-      END DO
+      do i = 1, ncore
+         if (np(i)==npr(i) .and. nak(i)==nakr(i)) cycle
+         write (6, *) 'The core orbitals must be the same'
+         stop
+      end do
 
-      ICON(:NW) = 0
+      icon(:nw) = 0
 !
 !   For each orbital in the initial list check if there is a corresponding
 !   orbital in the final list. If so give the number of the corresponding
 !   orbital
 !
-      DO I = 1, NW
-         DO J = 1, NWR
-            IF (NP(I)/=NPR(J) .OR. NAK(I)/=NAKR(J)) CYCLE
-            ICON(I) = J
-         END DO
-      END DO
+      do i = 1, nw
+         do j = 1, nwr
+            if (np(i)/=npr(j) .or. nak(i)/=nakr(j)) cycle
+            icon(i) = j
+         end do
+      end do
 !
 !   Check if the ordering of the initial and final state orbitals
 !   is consistent. The condition for this is that ICON is increasing
 !
-      J = 0
-      DO I = 1, NW
-         IF (ICON(I) == 0) CYCLE
-         J = J + 1
-         ICON1(J) = ICON(I)
-      END DO
+      j = 0
+      do i = 1, nw
+         if (icon(i) == 0) cycle
+         j = j + 1
+         icon1(j) = icon(i)
+      end do
 
-      ICOMP = ICON1(1)
-      DO I = 2, J
-         IF (ICON1(I) < ICOMP) THEN
-            WRITE (*, *) ' In merg12: ordering of the initial and final'
-            WRITE (*, *) ' state orbitals is inconsistent. STOP'
-            STOP
-         ELSE
-            ICOMP = ICON1(I)
-         ENDIF
-      END DO
+      icomp = icon1(1)
+      do i = 2, j
+         if (icon1(i) < icomp) then
+            write (*, *) ' In merg12: ordering of the initial and final'
+            write (*, *) ' state orbitals is inconsistent. STOP'
+            stop
+         else
+            icomp = icon1(i)
+         endif
+      end do
 !
 !   Determine a common orbital set for the initial and final state.
 !   The common set must be such that the order of both the initial and
 !   final state sets are preserved.
 !
-      DO I = 1, NWR
-         NEWNP(I) = NPR(I)
-         NEWNAK(I) = NAKR(I)
-         NEWNH(I) = NHR(I)
-         WRITE (*, *) NEWNP(I), NEWNH(I)
-      END DO
+      do i = 1, nwr
+         newnp(i) = npr(i)
+         newnak(i) = nakr(i)
+         newnh(i) = nhr(i)
+         write (*, *) newnp(i), newnh(i)
+      end do
 !
 !   Add the initial state orbitals at the end
 !
-      NEW = NWR
-      DO I = 1, NW
-         IF (ICON(I) /= 0) CYCLE
-         NEW = NEW + 1
-         NEWNP(NEW) = NP(I)
-         NEWNAK(NEW) = NAK(I)
-         NEWNH(NEW) = NH(I)
-         WRITE (*, *) NEWNP(NEW), NEWNH(NEW), NEW
-      END DO
+      new = nwr
+      do i = 1, nw
+         if (icon(i) /= 0) cycle
+         new = new + 1
+         newnp(new) = np(i)
+         newnak(new) = nak(i)
+         newnh(new) = nh(i)
+         write (*, *) newnp(new), newnh(new), new
+      end do
 !
 !   Now sort in the orbitals at the end in the right position
 !
-      L193: DO I = NWR + 1, NEW
+      l193: do i = nwr + 1, new
 !
 !   Position in initial state list
 !
-         DO J = 1, NW
-            IF (NEWNP(I)/=NP(J) .OR. NEWNAK(I)/=NAK(J)) CYCLE
-            IPI1 = J
-         END DO
-         WRITE (*, *) 'i,ipi1', I, IPI1
+         do j = 1, nw
+            if (newnp(i)/=np(j) .or. newnak(i)/=nak(j)) cycle
+            ipi1 = j
+         end do
+         write (*, *) 'i,ipi1', i, ipi1
 
-         DO J = 1, NWR
-            IPI2 = 0
-            DO K = 1, NW
-               IF (NEWNP(J)/=NP(K) .OR. NEWNAK(J)/=NAK(K)) CYCLE
-               IPI2 = K
-            END DO
-            WRITE (*, *) 'j,ipi2', J, IPI2
-            IF (IPI2 == 0) CYCLE
-            IF (IPI1 >= IPI2) CYCLE
-            NEW1 = NEWNP(I)
-            NEW2 = NEWNAK(I)
-            NEW3 = NEWNH(I)
-            NEWNP(I:1+J:(-1)) = NEWNP(I-1:J:(-1))
-            NEWNAK(I:1+J:(-1)) = NEWNAK(I-1:J:(-1))
-            NEWNH(I:1+J:(-1)) = NEWNH(I-1:J:(-1))
-            NEWNP(J) = NEW1
-            NEWNAK(J) = NEW2
-            NEWNH(J) = NEW3
-            DO M = 1, NEW
-               WRITE (*, *) NEWNP(M), NEWNH(M)
-            END DO
-            CYCLE  L193
-         END DO
-      END DO L193
+         do j = 1, nwr
+            ipi2 = 0
+            do k = 1, nw
+               if (newnp(j)/=np(k) .or. newnak(j)/=nak(k)) cycle
+               ipi2 = k
+            end do
+            write (*, *) 'j,ipi2', j, ipi2
+            if (ipi2 == 0) cycle
+            if (ipi1 >= ipi2) cycle
+            new1 = newnp(i)
+            new2 = newnak(i)
+            new3 = newnh(i)
+            newnp(i:1+j:(-1)) = newnp(i-1:j:(-1))
+            newnak(i:1+j:(-1)) = newnak(i-1:j:(-1))
+            newnh(i:1+j:(-1)) = newnh(i-1:j:(-1))
+            newnp(j) = new1
+            newnak(j) = new2
+            newnh(j) = new3
+            do m = 1, new
+               write (*, *) newnp(m), newnh(m)
+            end do
+            cycle  l193
+         end do
+      end do l193
 
-      NW = NEW
-      NP(:NW) = NEWNP(1:NW)
-      NAK(:NW) = NEWNAK(:NW)
-      NH(:NW) = NEWNH(:NW)
+      nw = new
+      np(:nw) = newnp(1:nw)
+      nak(:nw) = newnak(:nw)
+      nh(:nw) = newnh(:nw)
 !
 !   Determine NKL and NKJ
 !
-      DO I = 1, NW
-         NKJ(I) = 2*ABS(NAK(I)) - 1
-         IF (NAK(I) > 0) THEN
-            NKL(I) = (NKJ(I)+1)/2
-         ELSE
-            NKL(I) = (NKJ(I)-1)/2
-         ENDIF
-      END DO
+      do i = 1, nw
+         nkj(i) = 2*abs(nak(i)) - 1
+         if (nak(i) > 0) then
+            nkl(i) = (nkj(i)+1)/2
+         else
+            nkl(i) = (nkj(i)-1)/2
+         endif
+      end do
 !
 !   Determine the common core subshells; write out the list;
 !   determine the pell subshells; write out the list; these
@@ -194,87 +194,87 @@
 !   one additional line forms the remainder of the header of
 !   the  .csl file
 !
-      WRITE (21, '(A)') 'Core subshells:'
-      WRITE (21, 301) (NP(I),NH(I),I=1,NCORE)
-      WRITE (21, '(A)') 'Peel subshells:'
-      WRITE (21, 301) (NP(I),NH(I),I=NCORE + 1,NW)
-      WRITE (21, '(A)') 'CSF(s):'
+      write (21, '(A)') 'Core subshells:'
+      write (21, 301) (np(i),nh(i),i=1,ncore)
+      write (21, '(A)') 'Peel subshells:'
+      write (21, 301) (np(i),nh(i),i=ncore + 1,nw)
+      write (21, '(A)') 'CSF(s):'
 !
 !   Now write out all CSFs in the initial and final state list
 !
-      J = INDEX(NAME(1),' ')
-      OPEN(UNIT=23, FILE=NAME(1)(1:J-1)//'.c', FORM='FORMATTED', STATUS='OLD', &
-         POSITION='asis')
+      j = index(name(1),' ')
+      open(unit=23, file=name(1)(1:j-1)//'.c', form='FORMATTED', status='OLD', &
+         position='asis')
 
-      DO I = 1, 5
-         READ (23, '(A)') LINE
-      END DO
+      do i = 1, 5
+         read (23, '(A)') line
+      end do
 
-      NBLOCKI = 0
-      NLINE = 0
-    5 CONTINUE
-      READ (23, '(A)', END=98) LINE
-      IF (LINE(1:2) == ' *') THEN
-         NBLOCKI = NBLOCKI + 1
-         NCFI(NBLOCKI) = NLINE/3
-      ELSE
-         NLINE = NLINE + 1
-      ENDIF
-      K = 500
-   10 CONTINUE
-      IF (LINE(K:K) == ' ') THEN
-         K = K - 1
-         IF (K > 1) GO TO 10
-      ENDIF
-      WRITE (21, '(A)') LINE(1:K)
-      GO TO 5
-   98 CONTINUE
-      NBLOCKI = NBLOCKI + 1
-      NCFI(NBLOCKI) = NLINE/3
-      CLOSE(23)
+      nblocki = 0
+      nline = 0
+    5 continue
+      read (23, '(A)', end=98) line
+      if (line(1:2) == ' *') then
+         nblocki = nblocki + 1
+         ncfi(nblocki) = nline/3
+      else
+         nline = nline + 1
+      endif
+      k = 500
+   10 continue
+      if (line(k:k) == ' ') then
+         k = k - 1
+         if (k > 1) go to 10
+      endif
+      write (21, '(A)') line(1:k)
+      go to 5
+   98 continue
+      nblocki = nblocki + 1
+      ncfi(nblocki) = nline/3
+      close(23)
 
 ! zou
 !     if(NAME(2).EQ.NAME(1)) return
 ! zou
-      J = INDEX(NAME(2),' ')
-      OPEN(UNIT=23, FILE=NAME(2)(1:J-1)//'.c', FORM='FORMATTED', STATUS='OLD', &
-         POSITION='asis')
+      j = index(name(2),' ')
+      open(unit=23, file=name(2)(1:j-1)//'.c', form='FORMATTED', status='OLD', &
+         position='asis')
 
-      DO I = 1, 5
-         READ (23, '(A)') LINE
-      END DO
+      do i = 1, 5
+         read (23, '(A)') line
+      end do
 
-      NBLOCKF = 0
-      NLINE = 0
-   15 CONTINUE
-      READ (23, '(A)', END=99) LINE
-      IF (LINE(1:2) == ' *') THEN
-         NBLOCKF = NBLOCKF + 1
-         NCFF(NBLOCKF) = NLINE/3
-      ELSE
-         NLINE = NLINE + 1
-      ENDIF
-      K = 500
-   20 CONTINUE
-      IF (LINE(K:K) == ' ') THEN
-         K = K - 1
-         IF (K > 1) GO TO 20
-      ENDIF
-      WRITE (21, '(A)') LINE(1:K)
-      GO TO 15
-   99 CONTINUE
-      NBLOCKF = NBLOCKF + 1
-      NCFF(NBLOCKF) = NLINE/3
-      CLOSE(23)
+      nblockf = 0
+      nline = 0
+   15 continue
+      read (23, '(A)', end=99) line
+      if (line(1:2) == ' *') then
+         nblockf = nblockf + 1
+         ncff(nblockf) = nline/3
+      else
+         nline = nline + 1
+      endif
+      k = 500
+   20 continue
+      if (line(k:k) == ' ') then
+         k = k - 1
+         if (k > 1) go to 20
+      endif
+      write (21, '(A)') line(1:k)
+      go to 15
+   99 continue
+      nblockf = nblockf + 1
+      ncff(nblockf) = nline/3
+      close(23)
 
-      CLOSE(21)
+      close(21)
 !
 
-      WRITE (6, *) NBLOCKI
-      WRITE (6, *) (NCFI(I),I=1,NBLOCKI)
-      WRITE (6, *) NBLOCKF
-      WRITE (6, *) (NCFF(I),I=1,NBLOCKF)
-  301 FORMAT(120(1X,1I2,1A2))
+      write (6, *) nblocki
+      write (6, *) (ncfi(i),i=1,nblocki)
+      write (6, *) nblockf
+      write (6, *) (ncff(i),i=1,nblockf)
+  301 format(120(1x,1i2,1a2))
 !
-      RETURN
-      END SUBROUTINE MERG12
+      return
+      end subroutine merg12

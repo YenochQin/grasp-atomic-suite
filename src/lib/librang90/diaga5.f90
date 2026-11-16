@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE DIAGA5(NPEELGG,JA1,KA,IRE,IAT,RECC)
+      subroutine diaga5(npeelgg,ja1,ka,ire,iat,recc)
 !                                                                  *
 !   ---------------  SECTION REC    SUBPROGRAM 01  --------------  *
 !                                                                  *
@@ -15,50 +15,50 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO
-      USE m_C,             ONLY: JLIST, JJC1, JJC2, JJQ1, JJQ2
+      use vast_kind_param, only: double
+      use cons_c,          only: zero
+      use m_c,             only: jlist, jjc1, jjc2, jjq1, jjq2
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ixjtik_I
-      USE sixj_I
-      IMPLICIT NONE
+      use ixjtik_i
+      use sixj_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)       :: NPEELGG,JA1,KA,IRE
+      integer, intent(in)       :: npeelgg,ja1,ka,ire
 !      INTEGER, INTENT(OUT)      :: IAT
-      INTEGER, INTENT(INOUT)      :: IAT
-      REAL(DOUBLE), INTENT(OUT) :: RECC
+      integer, intent(inout)      :: iat
+      real(double), intent(out) :: recc
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: ITI1,ITI1S,IJ1,ITI,ITIS,JI
-      REAL(DOUBLE) :: A3
+      integer      :: iti1,iti1s,ij1,iti,itis,ji
+      real(double) :: a3
 !-----------------------------------------------
-      RECC = ZERO
-      ITI1=JJC1(NPEELGG-1)-1
-      ITI1S=JJC2(NPEELGG-1)-1
-      IJ1=JLIST(NPEELGG)
-      IF(JA1 == NPEELGG) THEN
-        ITI=JJQ1(3,IJ1)-1
-        ITIS=JJQ2(3,IJ1)-1
-        JI=JJC1(NPEELGG-2)-1
-      ELSE
-        JI=JJQ1(3,IJ1)-1
-        ITI=JJC1(NPEELGG-2)-1
-        ITIS=JJC2(NPEELGG-2)-1
-      END IF
-      IF(IRE == 0) THEN
-        IF(IXJTIK(KA,ITIS,ITI,JI,ITI1,ITI1S) /= 0) IAT=1
-      ELSE
-        CALL SIXJ(KA,ITIS,ITI,JI,ITI1,ITI1S,0,A3)
-        RECC=A3*DSQRT(DBLE((ITI+1)*(ITI1S+1)))
-        IF(MOD(KA+JI+ITIS+ITI1,4) /= 0)RECC=-RECC
-        IAT=1
-        IF(JA1 == NPEELGG)RETURN
-        IF(MOD(ITI+ITIS-ITI1S-ITI1+2*JI,4) /= 0)RECC=-RECC
-      END IF
-      RETURN
-      END SUBROUTINE DIAGA5
+      recc = zero
+      iti1=jjc1(npeelgg-1)-1
+      iti1s=jjc2(npeelgg-1)-1
+      ij1=jlist(npeelgg)
+      if(ja1 == npeelgg) then
+        iti=jjq1(3,ij1)-1
+        itis=jjq2(3,ij1)-1
+        ji=jjc1(npeelgg-2)-1
+      else
+        ji=jjq1(3,ij1)-1
+        iti=jjc1(npeelgg-2)-1
+        itis=jjc2(npeelgg-2)-1
+      end if
+      if(ire == 0) then
+        if(ixjtik(ka,itis,iti,ji,iti1,iti1s) /= 0) iat=1
+      else
+        call sixj(ka,itis,iti,ji,iti1,iti1s,0,a3)
+        recc=a3*dsqrt(dble((iti+1)*(iti1s+1)))
+        if(mod(ka+ji+itis+iti1,4) /= 0)recc=-recc
+        iat=1
+        if(ja1 == npeelgg)return
+        if(mod(iti+itis-iti1s-iti1+2*ji,4) /= 0)recc=-recc
+      end if
+      return
+      end subroutine diaga5

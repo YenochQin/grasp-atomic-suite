@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION RINT_SMS3 (I, J)
+      real(kind(0.0d0)) function rint_sms3 (i, j)
 !                                                                      *
 !   The value of RINT_SMS3 is an approximation to:                     *
 !                                                                      *
@@ -20,44 +20,44 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE grid_C
-      USE tatb_C
-      USE wave_C
-      USE def_C
+      use vast_kind_param, only:  double
+      use grid_c
+      use tatb_c
+      use wave_c
+      use def_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE quad_I
-      IMPLICIT NONE
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: I, J
+      integer  :: i, j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: L
-      REAL(DOUBLE) :: RESULT
+      integer      :: l
+      real(double) :: result
 !-----------------------------------------------
 !
 !   Tabulate integrand as required for SUBROUTINE QUAD
 !
-      MTP = MIN (MF(I),MF(J))
+      mtp = min (mf(i),mf(j))
 !
 !   Value at first tabulation point is arbitrary
 !
-      TA(1) = 0.0D00
-      DO 1 L = 2,MTP
+      ta(1) = 0.0d00
+      do 1 l = 2,mtp
 !HFS        TA(L) = (R(L)**K)*(PF(L,I)*QF(L,J)+QF(L,I)*PF(L,J))*RP(L)
-        TA(L) =  RP(L)*(QF(L,I)*PF(L,J)                                &
-              -         PF(L,I)*QF(L,J))/R(L)
-    1 CONTINUE
+        ta(l) =  rp(l)*(qf(l,i)*pf(l,j)                                &
+              -         pf(l,i)*qf(l,j))/r(l)
+    1 continue
 !
 !   Perform integration
 !
-      CALL QUAD (RESULT)
-      RINT_SMS3 = RESULT*Z/C
+      call quad (result)
+      rint_sms3 = result*z/c
 !
-      RETURN
-      END FUNCTION RINT_SMS3
+      return
+      end function rint_sms3

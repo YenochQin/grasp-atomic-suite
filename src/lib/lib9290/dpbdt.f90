@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE DPBDT(J)
+      subroutine dpbdt(j)
 !-----------------------------------------------
 !                                                                      *
 !   This subroutine computes H times the derivative, with respect to   *
@@ -20,72 +20,72 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE GRID_C
-      USE LIC13_C
-      USE TATB_C, ONLY: TA, TB
-      USE WAVE_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use grid_c
+      use lic13_c
+      use tatb_c, only: ta, tb
+      use wave_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
+      integer  :: j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, K, IROW, LOC
-      REAL(DOUBLE) :: A1, A2, A3, A4, A5, A6, HDPBDT, HDQBDT, AIK
+      integer :: i, k, irow, loc
+      real(double) :: a1, a2, a3, a4, a5, a6, hdpbdt, hdqbdt, aik
 !-----------------------------------------------
 !
 
 !     Replace the equivalence statement
-      A1=A(7,1)
-      A2=A(7,2)
-      A3=A(7,3)
-      A4=A(7,4)
-      A5=A(7,5)
-      A6=A(7,6)
+      a1=a(7,1)
+      a2=a(7,2)
+      a3=a(7,3)
+      a4=a(7,4)
+      a5=a(7,5)
+      a6=a(7,6)
 !
 !   Compute derivative in three separate regions
 !
 !   First, points 1 to 6
 !
-      DO I = 1,6
-         HDPBDT = 0.D0
-         HDQBDT = 0.D0
+      do i = 1,6
+         hdpbdt = 0.d0
+         hdqbdt = 0.d0
 !cjb replace loop by SUM
 !        DO 1 K = 1,13
 !            AIK = A(I,K)
 !            HDPBDT = HDPBDT+AIK*PF(K,J)
 !            HDQBDT = HDQBDT+AIK*QF(K,J)
 !    1    CONTINUE
-         HDPBDT = SUM(A(I   ,:)*PF(:13,J))
-         HDQBDT = SUM(A(I   ,:)*QF(:13,J))
+         hdpbdt = sum(a(i   ,:)*pf(:13,j))
+         hdqbdt = sum(a(i   ,:)*qf(:13,j))
 !cjb
-         TA(I) = HDPBDT
-         TB(I) = HDQBDT
-      END DO
+         ta(i) = hdpbdt
+         tb(i) = hdqbdt
+      end do
 
 !   Next, points 7 to N-6
 !
 !   Special treatment for this region because of the symmetry of
 !   the differentiation formula
 !
-      DO I = 7, N - 6
-         TA(I) = A1*(PF(I - 6,J) - PF(I + 6,J)) + A2*(PF(I - 5,J) - PF(I + 5,J)&
-            ) + A3*(PF(I - 4,J) - PF(I + 4,J)) + A4*(PF(I - 3,J) - PF(I + 3,J))&
-             + A5*(PF(I - 2,J) - PF(I + 2,J)) + A6*(PF(I - 1,J) - PF(I + 1,J))
-         TB(I) = A1*(QF(I - 6,J) - QF(I + 6,J)) + A2*(QF(I - 5,J) - QF(I + 5,J)&
-            ) + A3*(QF(I - 4,J) - QF(I + 4,J)) + A4*(QF(I - 3,J) - QF(I + 3,J))&
-             + A5*(QF(I - 2,J) - QF(I + 2,J)) + A6*(QF(I - 1,J) - QF(I + 1,J))
-      END DO
+      do i = 7, n - 6
+         ta(i) = a1*(pf(i - 6,j) - pf(i + 6,j)) + a2*(pf(i - 5,j) - pf(i + 5,j)&
+            ) + a3*(pf(i - 4,j) - pf(i + 4,j)) + a4*(pf(i - 3,j) - pf(i + 3,j))&
+             + a5*(pf(i - 2,j) - pf(i + 2,j)) + a6*(pf(i - 1,j) - pf(i + 1,j))
+         tb(i) = a1*(qf(i - 6,j) - qf(i + 6,j)) + a2*(qf(i - 5,j) - qf(i + 5,j)&
+            ) + a3*(qf(i - 4,j) - qf(i + 4,j)) + a4*(qf(i - 3,j) - qf(i + 3,j))&
+             + a5*(qf(i - 2,j) - qf(i + 2,j)) + a6*(qf(i - 1,j) - qf(i + 1,j))
+      end do
 !
 !   Last, points N-5 to N
 !
-      DO I = N - 5, N
-         IROW = I - N + 13
-          HDPBDT = SUM(A(IROW,:)*PF(N-12:N,J))
-          HDQBDT = SUM(A(IROW,:)*QF(N-12:N,J))
+      do i = n - 5, n
+         irow = i - n + 13
+          hdpbdt = sum(a(irow,:)*pf(n-12:n,j))
+          hdqbdt = sum(a(irow,:)*qf(n-12:n,j))
 !- git 1/12/07 code below from the new libraries
 !         HDPBDT = 0.D0
 !        HDQBDT = 0.D0
@@ -96,8 +96,8 @@
 !           HDQBDT = HDQBDT + AIK*QF(LOC,J)
 !        END DO
 !- git 1/12/07
-         TA(I) = HDPBDT
-         TB(I) = HDQBDT
-      END DO
-      RETURN
-      END SUBROUTINE DPBDT
+         ta(i) = hdpbdt
+         tb(i) = hdqbdt
+      end do
+      return
+      end subroutine dpbdt

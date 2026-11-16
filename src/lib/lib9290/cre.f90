@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION CRE (KAP1, K, KAP2)
+      real(kind(0.0d0)) function cre (kap1, k, kap2)
 !-----------------------------------------------
 !                                                                      *
 !   Computes the relativistic reduced matrix element                   *
@@ -22,29 +22,29 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE clrx_I
-      IMPLICIT NONE
+      use clrx_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: KAP1
-      INTEGER  :: K
-      INTEGER  :: KAP2
+      integer  :: kap1
+      integer  :: k
+      integer  :: kap2
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K1
-      REAL(DOUBLE) :: DK1K2
+      integer :: k1
+      real(double) :: dk1k2
 !-----------------------------------------------
 !
-      K1 = ABS(KAP1)
-      DK1K2 = DBLE(4*K1*IABS(KAP2))
-      CRE = SQRT(DK1K2)*CLRX(KAP1,K,KAP2)
-      IF (MOD(K1,2) == 1) CRE = -CRE
+      k1 = abs(kap1)
+      dk1k2 = dble(4*k1*iabs(kap2))
+      cre = sqrt(dk1k2)*clrx(kap1,k,kap2)
+      if (mod(k1,2) == 1) cre = -cre
 !
-      RETURN
-      END FUNCTION CRE
+      return
+      end function cre

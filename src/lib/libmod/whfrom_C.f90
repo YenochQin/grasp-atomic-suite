@@ -1,8 +1,8 @@
-      MODULE whfrom_C
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW
+      module whfrom_c
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw
 !...Created by Pacific-Sierra Research 77to90  4.3E  11:02:52   1/ 2/07
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      CHARACTER, DIMENSION(NNNW) :: SOURCE*256
-      END MODULE whfrom_C
+      character, dimension(nnnw) :: source*256
+      end module whfrom_c

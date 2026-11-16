@@ -1,9 +1,9 @@
-      MODULE perko2_I
-      INTERFACE
-      SUBROUTINE PERKO2(JA1,JA2,JA3,JA4,I)
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE trk_C
-      INTEGER, INTENT(IN) :: JA1, JA2, JA3, JA4, I
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      module perko2_i
+      interface
+      subroutine perko2(ja1,ja2,ja3,ja4,i)
+      use vast_kind_param, only:  double
+      use trk_c
+      integer, intent(in) :: ja1, ja2, ja3, ja4, i
+      end subroutine
+      end interface
+      end module

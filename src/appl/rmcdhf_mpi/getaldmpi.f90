@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      SUBROUTINE GETALDmpi
+      subroutine getaldmpi
 !
 !   Interactively determines the data governing AL problem.
 !
@@ -19,56 +19,56 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
+      use vast_kind_param, only:  double
+      use memory_man
 
-      USE def_C
-      USE fixd_C
-      USE orb_C
-      USE orthct_C
-      USE scf_C
-      USE iounit_C
-      USE MPI_C
+      use def_c
+      use fixd_c
+      use orb_c
+      use orthct_c
+      use scf_c
+      use iounit_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getaldwt_I
-      USE iq_I
-      IMPLICIT NONE
+      use getaldwt_i
+      use iq_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: IQADUM, J, I
-      REAL(DOUBLE) :: SUM
-      LOGICAL      :: GETYN, YES
+      integer      :: iqadum, j, i
+      real(double) :: sum
+      logical      :: getyn, yes
 !-----------------------------------------------
 !
-      IF (myid .EQ. 0) THEN
-        WRITE (ISTDE, *) '(E)AL type calculation; H(DC) will not be ', &
+      if (myid .eq. 0) then
+        write (istde, *) '(E)AL type calculation; H(DC) will not be ', &
                         'diagonalised;'
-        WRITE (ISTDE, *) 'getald ...'
-        WRITE (ISTDE, *) 'ncf=', NCF
-      END IF
+        write (istde, *) 'getald ...'
+        write (istde, *) 'ncf=', ncf
+      end if
 
-      CALL ALLOC (WT, NCF, 'WT', 'GETALDmpi')
+      call alloc (wt, ncf, 'WT', 'GETALDmpi')
 
-      IF (myid .EQ. 0) CALL GETALDWT (NCF, WT)
+      if (myid .eq. 0) call getaldwt (ncf, wt)
 
-      CALL MPI_Bcast (wt(1), ncf, MPI_DOUBLE_PRECISION, 0,        &
-                      MPI_COMM_WORLD, ierr)
+      call mpi_bcast (wt(1), ncf, mpi_double_precision, 0,        &
+                      mpi_comm_world, ierr)
 
-      DO J = 1, NW
-         SUM = 0.D0
-         DO I = 1, NCF
-            SUM = SUM + WT(I)*DBLE(IQ(J,I))
-         END DO
-         UCF(J) = SUM
-      END DO
+      do j = 1, nw
+         sum = 0.d0
+         do i = 1, ncf
+            sum = sum + wt(i)*dble(iq(j,i))
+         end do
+         ucf(j) = sum
+      end do
 
-      NCMIN = 0
-      NSCF = 12
-      NSIC = 2 + (NW - NFIX)/4
-      ORTHST = .FALSE.
+      ncmin = 0
+      nscf = 12
+      nsic = 2 + (nw - nfix)/4
+      orthst = .false.
 
-      RETURN
-      END SUBROUTINE GETALDmpi
+      return
+      end subroutine getaldmpi

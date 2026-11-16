@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETCOF(EOL, J)
+      subroutine setcof(eol, j)
 !                                                                      *
 !   This  subroutine  sets  up the coefficients and orbital pointers   *
 !   for the direct and exchange potentials for orbital  J .  It also   *
@@ -20,46 +20,46 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE, LONG
-      USE parameter_def,    ONLY: KEYORB
-      USE memory_man
-      USE orb_C
-      USE hblock_C
-      USE hmat_C
-      USE iounit_C
-      USE MCPA_C
-      USE mpi_s
-      USE pos_C
-      USE scf_C
+      use vast_kind_param,  only: double, long
+      use parameter_def,    only: keyorb
+      use memory_man
+      use orb_c
+      use hblock_c
+      use hmat_c
+      use iounit_c
+      use mcpa_c
+      use mpi_s
+      use pos_c
+      use scf_c
 !      USE cons_C,           ONLY: EPS
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dsubrs_I
-      USE fco_I
-      USE gco_I
-      IMPLICIT NONE
+      use dsubrs_i
+      use fco_i
+      use gco_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
-      LOGICAL  :: EOL
+      integer  :: j
+      logical  :: eol
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
-      CHARACTER*6, PARAMETER :: MYNAME = 'SETCOF'
-      REAL, PARAMETER :: EPS = 1.0D-10
+      integer, parameter :: key = keyorb
+      character*6, parameter :: myname = 'SETCOF'
+      real, parameter :: eps = 1.0d-10
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER , DIMENSION(4) :: INDEXS
-      INTEGER :: NDIM, NAKJ, NKJJ, ILABEL, NWTERM, IB, K, NB, IR, NKJIB, KMAX, &
-         KMIN, NFILE, I, JBLOCK, JBLOCKT, IENDCDUM, NCOEFF, IOS, LAB, NCONTR, &
-         IA, IC, ITHIS, IRANK, IIND, IL, IORB, IYO1, IYO2, IFOUND, LOC1, LOC2, &
-         ITHIS2, INDIND, NELMNTGG
-      REAL(DOUBLE) :: UCFJ, SUMR, YKAB, XKAB, SUM,  CONTR
-      CHARACTER :: MCPLAB*3, IDSTRING*3, MSG*128
+      integer , dimension(4) :: indexs
+      integer :: ndim, nakj, nkjj, ilabel, nwterm, ib, k, nb, ir, nkjib, kmax, &
+         kmin, nfile, i, jblock, jblockt, iendcdum, ncoeff, ios, lab, ncontr, &
+         ia, ic, ithis, irank, iind, il, iorb, iyo1, iyo2, ifound, loc1, loc2, &
+         ithis2, indind, nelmntgg
+      real(double) :: ucfj, sumr, ykab, xkab, sum,  contr
+      character :: mcplab*3, idstring*3, msg*128
 !-----------------------------------------------
 !** Locals
 !     POINTER (PCOEFF,COEFF(1))
@@ -85,8 +85,8 @@
 !     POINTER (pncminpast, ncminpast(1))
 !     POINTER (pnevecpast, nevecpast(1))
 !
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF
-      INTEGER, DIMENSION(:), pointer :: iclmn, indx
+      real(double), dimension(:), pointer :: coeff
+      integer, dimension(:), pointer :: iclmn, indx
 !     INTEGER, DIMENSION(:), pointer :: nda, nxa, nya
 !     INTEGER, DIMENSION(:), pointer :: ncfblk, nevblk, ncmaxblk, &
 !                                       ncfpast, ncminpast, nevecpast
@@ -95,140 +95,140 @@
 !   Initializations
 !=======================================================================
 
-      NDIM = 1
-      CALL ALLOC (COEFF, NDIM, 'COEFF', 'SETCOF' )
-      CALL ALLOC (ICLMN, NDIM, 'ICLMN', 'SETCOF')
-      CALL ALLOC (INDX, NDIM, 'INDX', 'SETCOF')
+      ndim = 1
+      call alloc (coeff, ndim, 'COEFF', 'SETCOF' )
+      call alloc (iclmn, ndim, 'ICLMN', 'SETCOF')
+      call alloc (indx, ndim, 'INDX', 'SETCOF')
 
-      NDCOF = 0
-      NXCOF = 0
-      NYCOF = 0
+      ndcof = 0
+      nxcof = 0
+      nycof = 0
 
-      NAKJ = NAK(J)
-      NKJJ = NKJ(J)
-      UCFJ = UCF(J)
+      nakj = nak(j)
+      nkjj = nkj(j)
+      ucfj = ucf(j)
 
 !=======================================================================
 !   Generate YA coefficients that do not require MCP output list.
 !   Computation distributed and then collected.
 !=======================================================================
 
-      ILABEL = 0
-      NWTERM = KEY*(KEY + 1)
-      DO IB = 1, NW
-         ILABEL = ILABEL + NWTERM
-         IF (IB == J) THEN
-            KMAX = NKJJ - 1
-         ELSE
-            KMAX = 0
-         ENDIF
-         DO K = 0, KMAX, 2
+      ilabel = 0
+      nwterm = key*(key + 1)
+      do ib = 1, nw
+         ilabel = ilabel + nwterm
+         if (ib == j) then
+            kmax = nkjj - 1
+         else
+            kmax = 0
+         endif
+         do k = 0, kmax, 2
 
             !<<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
-            SUMR = 0.D0
-            DO NB = 1, NBLOCK
-               DO IR = MYID + 1, NCFBLK(NB), NPROCS
-                  SUMR = SUMR + DSUBRS(EOL,IR,IR,NB)*FCO(K,IR + NCFPAST(NB),J,&
-                     IB)
-               END DO
-            END DO
+            sumr = 0.d0
+            do nb = 1, nblock
+               do ir = myid + 1, ncfblk(nb), nprocs
+                  sumr = sumr + dsubrs(eol,ir,ir,nb)*fco(k,ir + ncfpast(nb),j,&
+                     ib)
+               end do
+            end do
             !>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-            IF (IB == J) THEN
-               YKAB = 2.D0*SUMR/UCFJ
-            ELSE
-               YKAB = SUMR/UCFJ
-            ENDIF
+            if (ib == j) then
+               ykab = 2.d0*sumr/ucfj
+            else
+               ykab = sumr/ucfj
+            endif
 
            !*** The following IF has to be removed since YKAB
            !*** is incomplete in multiprocessor case
             !IF (ABS (YKAB) .GT. EPS) THEN
-            NYCOF = NYCOF + 1
-            IF (NYCOF .GT. NYDIM ) THEN
-               IF (NYDIM .GT. 0) THEN
-                 NYDIM = 2*NYDIM
+            nycof = nycof + 1
+            if (nycof .gt. nydim ) then
+               if (nydim .gt. 0) then
+                 nydim = 2*nydim
 !cjb RALLOC ALLOC NYA, YA, (NYDIM NYCOF)
-                 CALL RALLOC(NYA, NYDIM, 'NYA', 'SETCOF')
-                 CALL RALLOC(YA, NYDIM, 'YA', 'SETCOF')
+                 call ralloc(nya, nydim, 'NYA', 'SETCOF')
+                 call ralloc(ya, nydim, 'YA', 'SETCOF')
 !                 CALL RALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
 !                 CALL RALLOC(YA, NYCOF, 'YA', 'SETCOF')
-               ELSE
+               else
 !cjb similar here
-                 NYDIM = 64
-                 CALL ALLOC(NYA, NYDIM, 'NYA', 'SETCOF')
-                 CALL ALLOC(YA, NYDIM, 'YA', 'SETCOF')
+                 nydim = 64
+                 call alloc(nya, nydim, 'NYA', 'SETCOF')
+                 call alloc(ya, nydim, 'YA', 'SETCOF')
 !                 CALL ALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
 !                 CALL ALLOC(YA, NYCOF, 'YA', 'SETCOF')
 !                 NYDIM = NYCOF
 !cjb
-               ENDIF
-            ENDIF
-            YA(NYCOF) = YKAB
-            NYA(NYCOF) = K + ILABEL
+               endif
+            endif
+            ya(nycof) = ykab
+            nya(nycof) = k + ilabel
             !ENDIF
 
-         END DO
-      END DO
+         end do
+      end do
 
 !=======================================================================
 !   Generate XA coefficients that do not require MCP output list
 !   Computation distributed and then collected.
 !=======================================================================
 
-      ILABEL = KEY*J
-      NWTERM = KEY*KEY*(KEY + 1)
-      DO IB = 1, NW
-         ILABEL = ILABEL + NWTERM
-         IF (IB == J) CYCLE
-         NKJIB = NKJ(IB)
-         IF (NAKJ*NAK(IB) > 0) THEN
-            KMIN = ABS((NKJJ - NKJIB)/2)
-         ELSE
-            KMIN = ABS((NKJJ - NKJIB)/2) + 1
-         ENDIF
-         KMAX = (NKJJ + NKJIB)/2
+      ilabel = key*j
+      nwterm = key*key*(key + 1)
+      do ib = 1, nw
+         ilabel = ilabel + nwterm
+         if (ib == j) cycle
+         nkjib = nkj(ib)
+         if (nakj*nak(ib) > 0) then
+            kmin = abs((nkjj - nkjib)/2)
+         else
+            kmin = abs((nkjj - nkjib)/2) + 1
+         endif
+         kmax = (nkjj + nkjib)/2
 
-         DO K = KMIN, KMAX, 2
+         do k = kmin, kmax, 2
 
             !<<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
-            SUMR = 0.D0
-            DO NB = 1, NBLOCK
-               DO IR = MYID + 1, NCFBLK(NB), NPROCS
-                  SUMR = SUMR + DSUBRS(EOL,IR,IR,NB)*GCO(K,IR + NCFPAST(NB),J,&
-                     IB)
-               END DO
-            END DO
+            sumr = 0.d0
+            do nb = 1, nblock
+               do ir = myid + 1, ncfblk(nb), nprocs
+                  sumr = sumr + dsubrs(eol,ir,ir,nb)*gco(k,ir + ncfpast(nb),j,&
+                     ib)
+               end do
+            end do
             !>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-            XKAB = SUMR/UCFJ
+            xkab = sumr/ucfj
 
            !*** The following IF has to be removed since YKAB
            !*** is incomplete in multiprocessor case
             !IF (ABS (XKAB) .GT. EPS) THEN
-            NXCOF = NXCOF + 1
-            IF (NXCOF > NXDIM) THEN
-               IF (NXDIM > 0) THEN
-                 NXDIM = 2*NXDIM
+            nxcof = nxcof + 1
+            if (nxcof > nxdim) then
+               if (nxdim > 0) then
+                 nxdim = 2*nxdim
 !cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
-                 CALL RALLOC (XA, NXDIM, 'XA', 'SETCOF')
-                 CALL RALLOC (NXA, NXDIM, 'NXA', 'SETCOF')
+                 call ralloc (xa, nxdim, 'XA', 'SETCOF')
+                 call ralloc (nxa, nxdim, 'NXA', 'SETCOF')
 !                  CALL RALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL RALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
-               ELSE
-                  NXDIM = 64
-                 CALL ALLOC (XA, NXDIM, 'XA', 'SETCOF')
-                 CALL ALLOC (NXA, NXDIM, 'NXA', 'SETCOF')
+               else
+                  nxdim = 64
+                 call alloc (xa, nxdim, 'XA', 'SETCOF')
+                 call alloc (nxa, nxdim, 'NXA', 'SETCOF')
 !                  CALL ALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL ALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
 !                  NXDIM = NXCOF
 !cjb
-               ENDIF
-            ENDIF
-            XA(NXCOF) = XKAB
-            NXA(NXCOF) = K + ILABEL
+               endif
+            endif
+            xa(nxcof) = xkab
+            nxa(nxcof) = k + ilabel
             !ENDIF
-         END DO
-      END DO
+         end do
+      end do
 
 !=======================================================================
 !   Subroutine setham called from matrix had gone through the mcp
@@ -236,100 +236,100 @@
 !   contents of these records.
 !=======================================================================
 
-      DO NFILE = 30, 32 + KMAXF
-         REWIND (NFILE)
-         IF (NFILE /= 30) THEN
-            DO I = 1, 3
-               READ (NFILE)
-               CYCLE
-            END DO
-         ELSE
-            DO I = 1, 3
-               READ (NFILE)
-               READ (NFILE)
-            END DO
-         ENDIF
-      END DO
+      do nfile = 30, 32 + kmaxf
+         rewind (nfile)
+         if (nfile /= 30) then
+            do i = 1, 3
+               read (nfile)
+               cycle
+            end do
+         else
+            do i = 1, 3
+               read (nfile)
+               read (nfile)
+            end do
+         endif
+      end do
 
 !=======================================================================
 !   Generate DA coefficients; these arise from the one-electron
 !   integrals
 !=======================================================================
 
-      DO JBLOCK = 1, NBLOCK
+      do jblock = 1, nblock
 
          !*** Read in IROW from file mcp.30 ***
-         READ (30) MCPLAB, JBLOCKT, NCF
-         IF (JBLOCKT /= JBLOCK) THEN
-            WRITE (ISTDE, *) MYNAME, '1: jblockt .NE. jblock'
-            ERROR STOP
-         ENDIF
-         READ (30) NELMNTGG
-         NELMNT = INT(NELMNTGG,KIND=LONG)
-         CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')
-         READ (30) (IENDCDUM,I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)
+         read (30) mcplab, jblockt, ncf
+         if (jblockt /= jblock) then
+            write (istde, *) myname, '1: jblockt .NE. jblock'
+            error stop
+         endif
+         read (30) nelmntgg
+         nelmnt = int(nelmntgg,kind=long)
+         call alloc (irow, nelmnt, 'IROW', 'SETCOF')
+         read (30) (iendcdum,i=myid + 1,ncf,nprocs), (irow(i),i=1,nelmnt)
 
          !*** Block info file mcp.31 ***
-         READ (31) MCPLAB, JBLOCKT, NCF, NCOEFF
-         IF (JBLOCKT /= JBLOCK) THEN
-            WRITE (ISTDE, *) MYNAME, '2: jblockt .NE. jblock'
-            ERROR STOP
-         ENDIF
+         read (31) mcplab, jblockt, ncf, ncoeff
+         if (jblockt /= jblock) then
+            write (istde, *) myname, '2: jblockt .NE. jblock'
+            error stop
+         endif
 
          !*** Loop over labels having non-zero coefficients
          !*** it exits when no more labels for the block
 
-         L123: DO WHILE(.TRUE.)
-            READ (31, IOSTAT=IOS) LAB, NCONTR
+         l123: do while(.true.)
+            read (31, iostat=ios) lab, ncontr
 
             ! 0, 0 marks the end of a block. This is the normal exit
 
-            IF (LAB==0 .AND. NCONTR==0) THEN
-               CALL DALLOC (IROW, 'IROW', 'SETCOF')
-               EXIT                              ! Actually to next block
-            ENDIF
+            if (lab==0 .and. ncontr==0) then
+               call dalloc (irow, 'IROW', 'SETCOF')
+               exit                              ! Actually to next block
+            endif
 
             !*** Decode the labels of I(ab) ***
-            IA = MOD(LAB,KEY)
-            IB = LAB/KEY
+            ia = mod(lab,key)
+            ib = lab/key
 
             ! At least one orbital should be J in order to have
             ! non-zero value; otherwise, goto next label.
 
-            IF (IA/=J .AND. IB/=J) THEN
-               READ (31)                         ! No contributions from this integral; skip
-               CYCLE                             ! to next label
-            ENDIF
+            if (ia/=j .and. ib/=j) then
+               read (31)                         ! No contributions from this integral; skip
+               cycle                             ! to next label
+            endif
 
-            IF (NCONTR > NDIM) THEN
-               CALL DALLOC (COEFF, 'COEFF', 'SETCOF')
-               CALL DALLOC (ICLMN, 'ICLMN', 'SETCOF')
-               CALL DALLOC (INDX, 'INDX', 'SETCOF')
-               NDIM = NCONTR
-               CALL ALLOC (COEFF, NDIM, 'COEFF', 'SETCOF' )
-               CALL ALLOC (ICLMN, NDIM, 'ICLMN', 'SETCOF')
-               CALL ALLOC (INDX, NDIM, 'INDX', 'SETCOF')
-            ENDIF
+            if (ncontr > ndim) then
+               call dalloc (coeff, 'COEFF', 'SETCOF')
+               call dalloc (iclmn, 'ICLMN', 'SETCOF')
+               call dalloc (indx, 'INDX', 'SETCOF')
+               ndim = ncontr
+               call alloc (coeff, ndim, 'COEFF', 'SETCOF' )
+               call alloc (iclmn, ndim, 'ICLMN', 'SETCOF')
+               call alloc (indx, ndim, 'INDX', 'SETCOF')
+            endif
 
             ! Read the column index, the sparse matrix index, and the
             ! coefficient for all contributions from this integral
 
-            READ (31) (ICLMN(I),INDX(I),COEFF(I),I=1,NCONTR)
+            read (31) (iclmn(i),indx(i),coeff(i),i=1,ncontr)
 
             ! Add up all the contributions from this integral;
             ! off-diagonal contributions have double the weight
 
-            SUM = 0.D0
-            DO I = 1, NCONTR
-               IR = IROW(INDX(I))
-               IC = ICLMN(I)
+            sum = 0.d0
+            do i = 1, ncontr
+               ir = irow(indx(i))
+               ic = iclmn(i)
 
-               CONTR = DSUBRS(EOL,IR,IC,JBLOCK)*COEFF(I)
+               contr = dsubrs(eol,ir,ic,jblock)*coeff(i)
 
-               IF (IR /= IC) CONTR = CONTR + CONTR
-               SUM = SUM + CONTR
-            END DO
-            SUM = 0.5D0*SUM/UCFJ
+               if (ir /= ic) contr = contr + contr
+               sum = sum + contr
+            end do
+            sum = 0.5d0*sum/ucfj
 
             ! Put coefficients in the list. Since there is always
             ! (almost) some repetition from different blocks, a check
@@ -337,455 +337,455 @@
             ! the NDCOF and thus the number of calls to YZK later.
 
             !*** Find the right counting parameter ***
-            IF (IA == J) THEN
-               ITHIS = IB
-            ELSE
-               ITHIS = IA
-            ENDIF
+            if (ia == j) then
+               ithis = ib
+            else
+               ithis = ia
+            endif
 
             !*** Check it against the previously recorded ***
-            IF (JBLOCK > 1) THEN
-               DO I = 1, NDCOF
-                  IF (NDA(I) /= ITHIS) CYCLE     ! found, add the value
-                  DA(I) = DA(I) + SUM
-                  CYCLE  L123
-               END DO
-            ENDIF
+            if (jblock > 1) then
+               do i = 1, ndcof
+                  if (nda(i) /= ithis) cycle     ! found, add the value
+                  da(i) = da(i) + sum
+                  cycle  l123
+               end do
+            endif
 
             !*** Not found in the record, add an item ***
-            NDCOF = NDCOF + 1
-            IF (NDCOF > NDDIM) THEN
-               IF (NDDIM > 0) THEN
-                  NDDIM = 2*NDDIM
-                  CALL RALLOC (DA, NDDIM, 'DA', 'SETCOF')
-                  CALL RALLOC (NDA, NDDIM, 'NDA', 'SETCOF')
+            ndcof = ndcof + 1
+            if (ndcof > nddim) then
+               if (nddim > 0) then
+                  nddim = 2*nddim
+                  call ralloc (da, nddim, 'DA', 'SETCOF')
+                  call ralloc (nda, nddim, 'NDA', 'SETCOF')
 !                  CALL RALLOC (DA, NDCOF, 'DA', 'SETCOF')
 !                  CALL RALLOC (NDA, NDCOF, 'NDA', 'SETCOF')
-               ELSE
-                  NDDIM = 64
-                 CALL ALLOC (DA, NDDIM, 'DA', 'SETCOF')
-                  CALL ALLOC (NDA, NDDIM, 'NDA', 'SETCOF')
+               else
+                  nddim = 64
+                 call alloc (da, nddim, 'DA', 'SETCOF')
+                  call alloc (nda, nddim, 'NDA', 'SETCOF')
 !                  CALL ALLOC (DA, NDCOF, 'DA', 'SETCOF')
 !                  CALL ALLOC (NDA, NDCOF, 'NDA', 'SETCOF')
 !                  NDDIM = NDCOF
-               ENDIF
-            ENDIF
-            DA(NDCOF) = SUM                      ! print*, DA(NDCOF), ndcof, myid, 'myid'
-            NDA(NDCOF) = ITHIS
+               endif
+            endif
+            da(ndcof) = sum                      ! print*, DA(NDCOF), ndcof, myid, 'myid'
+            nda(ndcof) = ithis
 
-         END DO L123                             ! For labels
-      END DO                                     ! For blocks
+         end do l123                             ! For labels
+      end do                                     ! For blocks
 
 !=======================================================================
 !   Generate YA and XA coefficients; these arise from the two-electron
 !   integrals
 !=======================================================================
 
-      DO NFILE = 32, 32 + KMAXF
+      do nfile = 32, 32 + kmaxf
 
 !         ...Re-position file mcp.30
 
-         REWIND (30)
-         DO I = 1, 6
-            READ (30)
-         END DO
+         rewind (30)
+         do i = 1, 6
+            read (30)
+         end do
 
 !=======================================================================
 !   Loop over blocks again, this time, for V-coefficients
 !=======================================================================
 
-         DO JBLOCK = 1, NBLOCK
+         do jblock = 1, nblock
 !           ...Read in IROW from file mcp.30
-            READ (30) MCPLAB, JBLOCKT, NCF
-            IF (JBLOCKT /= JBLOCK) THEN
-               WRITE (ISTDE, *) MYNAME, ':3 jblockt .NE. jblock'
-               ERROR STOP
-            ENDIF
-            READ (30) NELMNTGG
-            NELMNT = INT(NELMNTGG,KIND=LONG)
-            CALL ALLOC (IROW, NELMNT, 'IROW', 'SETCOF')
-            READ (30) (IENDCDUM,I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)
+            read (30) mcplab, jblockt, ncf
+            if (jblockt /= jblock) then
+               write (istde, *) myname, ':3 jblockt .NE. jblock'
+               error stop
+            endif
+            read (30) nelmntgg
+            nelmnt = int(nelmntgg,kind=long)
+            call alloc (irow, nelmnt, 'IROW', 'SETCOF')
+            read (30) (iendcdum,i=myid + 1,ncf,nprocs), (irow(i),i=1,nelmnt)
 
-            READ (NFILE) MCPLAB, JBLOCKT, NCF, NCOEFF
-            IF (JBLOCKT /= JBLOCK) THEN
-               WRITE (ISTDE, *) MYNAME, ':4 jblockt .NE. jblock'
-               ERROR STOP
-            ENDIF
+            read (nfile) mcplab, jblockt, ncf, ncoeff
+            if (jblockt /= jblock) then
+               write (istde, *) myname, ':4 jblockt .NE. jblock'
+               error stop
+            endif
 
-            K = NFILE - 32                       ! multipolarity of the integral
+            k = nfile - 32                       ! multipolarity of the integral
 
 !=======================================================================
 !   Attempt to read another block of data
 !=======================================================================
 
-  999       CONTINUE
-            READ (NFILE, IOSTAT=IOS) LAB, NCONTR
+  999       continue
+            read (nfile, iostat=ios) lab, ncontr
 !
-            IF (LAB==0 .AND. NCONTR==0) THEN
-               CALL DALLOC (IROW, 'IROW', 'SETCOF')
-               CYCLE
-            ENDIF
+            if (lab==0 .and. ncontr==0) then
+               call dalloc (irow, 'IROW', 'SETCOF')
+               cycle
+            endif
             !***                       k
             !*** Decode the labels of R (abcd)
-            INDEXS(4) = MOD(LAB,KEY)
-            LAB = LAB/KEY
-            INDEXS(2) = MOD(LAB,KEY)
-            LAB = LAB/KEY
-            INDEXS(3) = MOD(LAB,KEY)
-            INDEXS(1) = LAB/KEY
+            indexs(4) = mod(lab,key)
+            lab = lab/key
+            indexs(2) = mod(lab,key)
+            lab = lab/key
+            indexs(3) = mod(lab,key)
+            indexs(1) = lab/key
 
             !*** Determine the number of indices that match
-            IRANK = 0
-            IRANK = IRANK + COUNT(INDEXS==J)
+            irank = 0
+            irank = irank + count(indexs==j)
 
-            IF (IRANK == 0) THEN
-               READ (NFILE)
-               GO TO 999
-            ENDIF
+            if (irank == 0) then
+               read (nfile)
+               go to 999
+            endif
 
             !*** At least one subshell index matches; allocate storage
             !*** for reading in the rest of this block
-            IF (NCONTR > NDIM) THEN
-               CALL DALLOC (COEFF, 'COEFF', 'SETCOF')
-               CALL DALLOC (ICLMN, 'ICLMN', 'SETCOF')
-               CALL DALLOC (INDX, 'INDX', 'SETCOF')
-               NDIM = NCONTR
-               CALL ALLOC (COEFF, NDIM, 'COEFF', 'SETCOF')
-               CALL ALLOC (ICLMN, NDIM, 'ICLMN', 'SETCOF')
-               CALL ALLOC (INDX, NDIM, 'INDX', 'SETCOF')
-            ENDIF
+            if (ncontr > ndim) then
+               call dalloc (coeff, 'COEFF', 'SETCOF')
+               call dalloc (iclmn, 'ICLMN', 'SETCOF')
+               call dalloc (indx, 'INDX', 'SETCOF')
+               ndim = ncontr
+               call alloc (coeff, ndim, 'COEFF', 'SETCOF')
+               call alloc (iclmn, ndim, 'ICLMN', 'SETCOF')
+               call alloc (indx, ndim, 'INDX', 'SETCOF')
+            endif
 
             !*** Read column index, sparse matrix index, and
             !*** coefficient for all contributions from this integral
-            READ (NFILE) (ICLMN(I),INDX(I),COEFF(I),I=1,NCONTR)
+            read (nfile) (iclmn(i),indx(i),coeff(i),i=1,ncontr)
 
             !*** Add up all the contributions from this integral;
             !*** off-diagonal contributions have double the weight
-            SUM = 0.D0
-            DO I = 1, NCONTR
-               IR = IROW(INDX(I))
-               IC = ICLMN(I)
-               CONTR = DSUBRS(EOL,IR,IC,JBLOCK)*COEFF(I)
-               IF (IR /= IC) CONTR = CONTR + CONTR
-               SUM = SUM + CONTR
-            END DO
-            SUM = 0.5D0*SUM/UCFJ
+            sum = 0.d0
+            do i = 1, ncontr
+               ir = irow(indx(i))
+               ic = iclmn(i)
+               contr = dsubrs(eol,ir,ic,jblock)*coeff(i)
+               if (ir /= ic) contr = contr + contr
+               sum = sum + contr
+            end do
+            sum = 0.5d0*sum/ucfj
 
-            SELECT CASE (IRANK)
-            CASE (1)
+            select case (irank)
+            case (1)
 
 !=======================================================================
 !   One matching index: exchange potential contribution
 !=======================================================================
 
                !*** Similar to DA, find ithis ***
-               ITHIS = -911                      ! initialize to an impossible value
+               ithis = -911                      ! initialize to an impossible value
                               ! though not necessary
-               DO IIND = 1, 4
-                  IF (INDEXS(IIND) /= J) CYCLE   ! at least one
-                  IL = IIND + 2
-                  IF (IL > 4) IL = IL - 4
-                  IORB = INDEXS(IL)
-                  IL = IIND + 1
-                  IF (IL > 4) IL = IL - 4
-                  IYO1 = INDEXS(IL)
-                  IL = IIND + 3
-                  IF (IL > 4) IL = IL - 4
-                  IYO2 = INDEXS(IL)
-                  ITHIS = ((IORB*KEY + IYO2)*KEY + IYO1)*KEY + K
-                  EXIT
-               END DO
+               do iind = 1, 4
+                  if (indexs(iind) /= j) cycle   ! at least one
+                  il = iind + 2
+                  if (il > 4) il = il - 4
+                  iorb = indexs(il)
+                  il = iind + 1
+                  if (il > 4) il = il - 4
+                  iyo1 = indexs(il)
+                  il = iind + 3
+                  if (il > 4) il = il - 4
+                  iyo2 = indexs(il)
+                  ithis = ((iorb*key + iyo2)*key + iyo1)*key + k
+                  exit
+               end do
 
-               IF (ITHIS == (-911)) ERROR STOP 'ithis .EQ. -911'
+               if (ithis == (-911)) error stop 'ithis .EQ. -911'
 
                !*** Check ithis against the previously recorded ***
-               IF (JBLOCK > 1) THEN
-                  DO I = 1, NXCOF
-                     IF (NXA(I) /= ITHIS) CYCLE
-                     XA(I) = XA(I) + SUM
-                     GO TO 999
-                  END DO
-               ENDIF
+               if (jblock > 1) then
+                  do i = 1, nxcof
+                     if (nxa(i) /= ithis) cycle
+                     xa(i) = xa(i) + sum
+                     go to 999
+                  end do
+               endif
 
                !*** Not found in records, add an item ***
-               NXCOF = NXCOF + 1
-               IF (NXCOF > NXDIM) THEN
-                  IF (NXDIM > 0) THEN
-                    NXDIM = 2*NXDIM
+               nxcof = nxcof + 1
+               if (nxcof > nxdim) then
+                  if (nxdim > 0) then
+                    nxdim = 2*nxdim
 !cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
-                    CALL RALLOC (XA, NXDIM, 'XA', 'SETCOF')
-                    CALL RALLOC (NXA, NXDIM, 'NXA', 'SETCOF')
+                    call ralloc (xa, nxdim, 'XA', 'SETCOF')
+                    call ralloc (nxa, nxdim, 'NXA', 'SETCOF')
 !                  CALL RALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL RALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
-                 ELSE
-                    NXDIM = 64
-                    CALL ALLOC (XA, NXDIM, 'XA', 'SETCOF')
-                    CALL ALLOC (NXA, NXDIM, 'NXA', 'SETCOF')
+                 else
+                    nxdim = 64
+                    call alloc (xa, nxdim, 'XA', 'SETCOF')
+                    call alloc (nxa, nxdim, 'NXA', 'SETCOF')
 !                  CALL ALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL ALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
 !                  NXDIM = NXCOF
 !cjb
-                  ENDIF
-               ENDIF
-               XA(NXCOF) = SUM
-               NXA(NXCOF) = ITHIS
+                  endif
+               endif
+               xa(nxcof) = sum
+               nxa(nxcof) = ithis
 
-            CASE (2)
+            case (2)
 
 !=======================================================================
 !   Two matching indices: either direct or exchange potential
 !   contribution
 !=======================================================================
 
-               IFOUND = 0
-               DO IIND = 1, 4
-                  IF (INDEXS(IIND) /= J) CYCLE
-                  IF (IFOUND == 0) THEN
-                     LOC1 = IIND
-                     IFOUND = IFOUND + 1
-                  ELSE IF (IFOUND == 1) THEN
-                     LOC2 = IIND
-                     EXIT
-                  ENDIF
-               END DO
+               ifound = 0
+               do iind = 1, 4
+                  if (indexs(iind) /= j) cycle
+                  if (ifound == 0) then
+                     loc1 = iind
+                     ifound = ifound + 1
+                  else if (ifound == 1) then
+                     loc2 = iind
+                     exit
+                  endif
+               end do
 
-               IF (LOC2 - LOC1 == 2) THEN
+               if (loc2 - loc1 == 2) then
 !
 !   Direct contribution
 !
                   !*** Find ithis ***
-                  IL = LOC1 + 3
-                  IF (IL > 4) IL = IL - 4
-                  IYO2 = INDEXS(IL)
-                  IL = LOC1 + 1
-                  IF (IL > 4) IL = IL - 4
-                  IYO1 = INDEXS(IL)
-                  ITHIS = (IYO2*KEY + IYO1)*KEY + K
+                  il = loc1 + 3
+                  if (il > 4) il = il - 4
+                  iyo2 = indexs(il)
+                  il = loc1 + 1
+                  if (il > 4) il = il - 4
+                  iyo1 = indexs(il)
+                  ithis = (iyo2*key + iyo1)*key + k
 
                   !*** Check it against the previously recorded ***
-                  IF (JBLOCK > 1) THEN
-                     DO I = 1, NYCOF
-                        IF (NYA(I) /= ITHIS) CYCLE
-                        YA(I) = YA(I) + SUM + SUM
-                        GO TO 999
-                     END DO
-                  ENDIF
+                  if (jblock > 1) then
+                     do i = 1, nycof
+                        if (nya(i) /= ithis) cycle
+                        ya(i) = ya(i) + sum + sum
+                        go to 999
+                     end do
+                  endif
 
                   !*** Not found, add an item ***
-                  NYCOF = NYCOF + 1
-                  IF (NYCOF > NYDIM) THEN
-                     IF (NYDIM > 0) THEN
-                       NYDIM = 2*NYDIM
+                  nycof = nycof + 1
+                  if (nycof > nydim) then
+                     if (nydim > 0) then
+                       nydim = 2*nydim
 !cjb RALLOC ALLOC NYA, YA, (NYDIM NYCOF)
-                       CALL RALLOC(NYA, NYDIM, 'NYA', 'SETCOF')
-                       CALL RALLOC(YA, NYDIM, 'YA', 'SETCOF')
+                       call ralloc(nya, nydim, 'NYA', 'SETCOF')
+                       call ralloc(ya, nydim, 'YA', 'SETCOF')
 !                 CALL RALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
 !                 CALL RALLOC(YA, NYCOF, 'YA', 'SETCOF')
-                     ELSE
-                       NYDIM = 64
-                       CALL ALLOC(NYA, NYDIM, 'NYA', 'SETCOF')
-                       CALL ALLOC(YA, NYDIM, 'YA', 'SETCOF')
+                     else
+                       nydim = 64
+                       call alloc(nya, nydim, 'NYA', 'SETCOF')
+                       call alloc(ya, nydim, 'YA', 'SETCOF')
 !                 CALL ALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
 !                 CALL ALLOC(YA, NYCOF, 'YA', 'SETCOF')
 !                 NYDIM = NYCOF
 !cjb
-                     ENDIF
-                  ENDIF
-                  YA(NYCOF) = SUM + SUM
-                  NYA(NYCOF) = ITHIS
+                     endif
+                  endif
+                  ya(nycof) = sum + sum
+                  nya(nycof) = ithis
 
-               ELSE
+               else
 !
 !   Exchange contribution
 !
                   !*** Find ithis ***
-                  IL = LOC1 + 2
-                  IF (IL > 4) IL = IL - 4
-                  IORB = INDEXS(IL)
-                  IL = LOC1 + 1
-                  IF (IL > 4) IL = IL - 4
-                  IYO1 = INDEXS(IL)
-                  IL = LOC1 + 3
-                  IF (IL > 4) IL = IL - 4
-                  IYO2 = INDEXS(IL)
-                  ITHIS = ((IORB*KEY + IYO2)*KEY + IYO1)*KEY + K
+                  il = loc1 + 2
+                  if (il > 4) il = il - 4
+                  iorb = indexs(il)
+                  il = loc1 + 1
+                  if (il > 4) il = il - 4
+                  iyo1 = indexs(il)
+                  il = loc1 + 3
+                  if (il > 4) il = il - 4
+                  iyo2 = indexs(il)
+                  ithis = ((iorb*key + iyo2)*key + iyo1)*key + k
 
                   !*** Check it against the previously recorded ***
-                  IF (JBLOCK > 1) THEN
-                     DO I = 1, NXCOF
-                        IF (NXA(I) /= ITHIS) CYCLE
-                        XA(I) = XA(I) + SUM + SUM
-                        GO TO 999
-                     END DO
-                  ENDIF
+                  if (jblock > 1) then
+                     do i = 1, nxcof
+                        if (nxa(i) /= ithis) cycle
+                        xa(i) = xa(i) + sum + sum
+                        go to 999
+                     end do
+                  endif
 
                   !*** Not found, add an item ***
-                  NXCOF = NXCOF + 1
-                  IF (NXCOF > NXDIM) THEN
-                     IF (NXDIM > 0) THEN
-                       NXDIM = 2*NXDIM
+                  nxcof = nxcof + 1
+                  if (nxcof > nxdim) then
+                     if (nxdim > 0) then
+                       nxdim = 2*nxdim
 !cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
-                       CALL RALLOC (XA, NXDIM, 'XA', 'SETCOF')
-                       CALL RALLOC (NXA, NXDIM, 'NXA', 'SETCOF')
+                       call ralloc (xa, nxdim, 'XA', 'SETCOF')
+                       call ralloc (nxa, nxdim, 'NXA', 'SETCOF')
 !                  CALL RALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL RALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
-                     ELSE
-                       NXDIM = 64
-                       CALL ALLOC (XA, NXDIM, 'XA', 'SETCOF')
-                       CALL ALLOC (NXA, NXDIM, 'NXA', 'SETCOF')
+                     else
+                       nxdim = 64
+                       call alloc (xa, nxdim, 'XA', 'SETCOF')
+                       call alloc (nxa, nxdim, 'NXA', 'SETCOF')
 !                  CALL ALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL ALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
 !                  NXDIM = NXCOF
 !cjb
-                     ENDIF
-                  ENDIF
-                  XA(NXCOF) = SUM + SUM
-                  NXA(NXCOF) = ITHIS
+                     endif
+                  endif
+                  xa(nxcof) = sum + sum
+                  nxa(nxcof) = ithis
 
-               ENDIF
+               endif
 
-            CASE (3)
+            case (3)
 
 !=======================================================================
 !   Three matching indices: direct and exchange potential contributions
 !=======================================================================
 
                !*** Find ithis AND ithis2
-               ITHIS = -911
-               ITHIS2 = -911
-               DO IIND = 1, 4
-                  IF (INDEXS(IIND) == J) CYCLE
-                  INDIND = INDEXS(IIND)
-                  IYO2 = INDIND
-                  IYO1 = J
-                  ITHIS = (IYO2*KEY + IYO1)*KEY + K
-                  IORB = INDIND
-                  IYO1 = J
-                  IYO2 = J
-                  ITHIS2 = ((IORB*KEY + IYO2)*KEY + IYO1)*KEY + K
-               END DO
+               ithis = -911
+               ithis2 = -911
+               do iind = 1, 4
+                  if (indexs(iind) == j) cycle
+                  indind = indexs(iind)
+                  iyo2 = indind
+                  iyo1 = j
+                  ithis = (iyo2*key + iyo1)*key + k
+                  iorb = indind
+                  iyo1 = j
+                  iyo2 = j
+                  ithis2 = ((iorb*key + iyo2)*key + iyo1)*key + k
+               end do
 
-               IF (ITHIS==(-911) .OR. ITHIS2==(-911)) ERROR STOP 'ithis2'
+               if (ithis==(-911) .or. ithis2==(-911)) error stop 'ithis2'
 
                !*** Check the previously recorded for YA
-               IF (JBLOCK > 1) THEN
-                  DO I = 1, NYCOF
-                     IF (NYA(I) /= ITHIS) CYCLE
-                     YA(I) = YA(I) + SUM + SUM
-                     GO TO 456
-                  END DO
-               ENDIF
+               if (jblock > 1) then
+                  do i = 1, nycof
+                     if (nya(i) /= ithis) cycle
+                     ya(i) = ya(i) + sum + sum
+                     go to 456
+                  end do
+               endif
 
                ! Not found, add an item ***
-               NYCOF = NYCOF + 1
-               IF (NYCOF > NYDIM) THEN
-                  IF (NYDIM > 0) THEN
-                    NYDIM = 2*NYDIM
-                    CALL RALLOC (NYA, NYDIM, 'NYA', 'SETCOF')
-                    CALL RALLOC (YA, NYDIM, 'YA', 'SETCOF')
+               nycof = nycof + 1
+               if (nycof > nydim) then
+                  if (nydim > 0) then
+                    nydim = 2*nydim
+                    call ralloc (nya, nydim, 'NYA', 'SETCOF')
+                    call ralloc (ya, nydim, 'YA', 'SETCOF')
 !                     CALL RALLOC (NYA, NYCOF, 'NYA', 'SETCOF')
 !                     CALL RALLOC (YA, NYCOF, 'YA', 'SETCOF')
-                  ELSE
-                    NYDIM = 64
-                     CALL ALLOC (NYA, NYDIM, 'NYA', 'SETCOF')
-                     CALL ALLOC (YA, NYDIM, 'YA', 'SETCOF')
+                  else
+                    nydim = 64
+                     call alloc (nya, nydim, 'NYA', 'SETCOF')
+                     call alloc (ya, nydim, 'YA', 'SETCOF')
 !                     CALL ALLOC (NYA, NYCOF, 'NYA', 'SETCOF')
 !                     CALL ALLOC (YA, NYCOF, 'YA', 'SETCOF')
 !                     NYDIM = NYCOF
-                  ENDIF
-               ENDIF
-               YA(NYCOF) = SUM + SUM
-               NYA(NYCOF) = ITHIS
+                  endif
+               endif
+               ya(nycof) = sum + sum
+               nya(nycof) = ithis
 
-  456          CONTINUE
+  456          continue
 
                !*** Check the previously recorded for XA
-               IF (JBLOCK > 1) THEN
-                  DO I = 1, NXCOF
-                     IF (NXA(I) /= ITHIS2) CYCLE
-                     XA(I) = XA(I) + SUM
-                     GO TO 999
-                  END DO
-               ENDIF
+               if (jblock > 1) then
+                  do i = 1, nxcof
+                     if (nxa(i) /= ithis2) cycle
+                     xa(i) = xa(i) + sum
+                     go to 999
+                  end do
+               endif
 
                ! Not found, add an item ***
-               NXCOF = NXCOF + 1
-               IF (NXCOF > NXDIM) THEN
-                  IF (NXDIM > 0) THEN
-                    NXDIM = 2*NXDIM
+               nxcof = nxcof + 1
+               if (nxcof > nxdim) then
+                  if (nxdim > 0) then
+                    nxdim = 2*nxdim
 !cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
-                   CALL RALLOC (XA, NXDIM, 'XA', 'SETCOF')
-                   CALL RALLOC (NXA, NXDIM, 'NXA', 'SETCOF')
+                   call ralloc (xa, nxdim, 'XA', 'SETCOF')
+                   call ralloc (nxa, nxdim, 'NXA', 'SETCOF')
 !                  CALL RALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL RALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
-                 ELSE
-                   CALL ALLOC (XA, NXDIM, 'XA', 'SETCOF')
-                   CALL ALLOC (NXA, NXDIM, 'NXA', 'SETCOF')
+                 else
+                   call alloc (xa, nxdim, 'XA', 'SETCOF')
+                   call alloc (nxa, nxdim, 'NXA', 'SETCOF')
 !                  CALL ALLOC (XA, NXCOF, 'XA', 'SETCOF')
 !                  CALL ALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
 !                  NXDIM = NXCOF
 !cjb
-                  ENDIF
-               ENDIF
-               XA(NXCOF) = SUM
-               NXA(NXCOF) = ITHIS2
+                  endif
+               endif
+               xa(nxcof) = sum
+               nxa(nxcof) = ithis2
 
-            CASE (4)
+            case (4)
 
 !=======================================================================
 !   Four matching indices: direct potential contribution
 !=======================================================================
 
                !*** Find ithis AND ithis2
-               IYO2 = J
-               IYO1 = J
-               ITHIS = (IYO2*KEY + IYO1)*KEY + K
+               iyo2 = j
+               iyo1 = j
+               ithis = (iyo2*key + iyo1)*key + k
 
                !*** Check the previously recorded for YA
-               IF (JBLOCK > 1) THEN
-                  DO I = 1, NYCOF
-                     IF (NYA(I) /= ITHIS) CYCLE
-                     YA(I) = YA(I) + 4.D0*SUM
-                     GO TO 999
-                  END DO
-               ENDIF
+               if (jblock > 1) then
+                  do i = 1, nycof
+                     if (nya(i) /= ithis) cycle
+                     ya(i) = ya(i) + 4.d0*sum
+                     go to 999
+                  end do
+               endif
 
                ! Not found, add an item ***
-               NYCOF = NYCOF + 1
-               IF (NYCOF > NYDIM) THEN
-                  IF (NYDIM > 0) THEN
-                    NYDIM = 2*NYDIM
+               nycof = nycof + 1
+               if (nycof > nydim) then
+                  if (nydim > 0) then
+                    nydim = 2*nydim
 !cjb RALLOC ALLOC NYA, YA, (NYDIM NYCOF)
-                    CALL RALLOC(NYA, NYDIM, 'NYA', 'SETCOF')
-                    CALL RALLOC(YA, NYDIM, 'YA', 'SETCOF')
+                    call ralloc(nya, nydim, 'NYA', 'SETCOF')
+                    call ralloc(ya, nydim, 'YA', 'SETCOF')
 !                 CALL RALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
 !                 CALL RALLOC(YA, NYCOF, 'YA', 'SETCOF')
-                 ELSE
+                 else
 !cjb similar here
-                   NYDIM = 64
-                   CALL ALLOC(NYA, NYDIM, 'NYA', 'SETCOF')
-                   CALL ALLOC(YA, NYDIM, 'YA', 'SETCOF')
+                   nydim = 64
+                   call alloc(nya, nydim, 'NYA', 'SETCOF')
+                   call alloc(ya, nydim, 'YA', 'SETCOF')
 !                 CALL ALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
 !                 CALL ALLOC(YA, NYCOF, 'YA', 'SETCOF')
 !                 NYDIM = NYCOF
 !cjb
-                  ENDIF
-               ENDIF
-               YA(NYCOF) = 4.D0*SUM
-               NYA(NYCOF) = ITHIS
+                  endif
+               endif
+               ya(nycof) = 4.d0*sum
+               nya(nycof) = ithis
 
-            END SELECT
+            end select
 
-            GO TO 999
-         END DO                                  ! loop for V-Coefficients
-      END DO
+            go to 999
+         end do                                  ! loop for V-Coefficients
+      end do
 
 !=======================================================================
 !   Deallocate storage for arrays local to this routine
 !=======================================================================
-      CALL DALLOC (COEFF, 'COEFF', 'SETCOF')
-      CALL DALLOC (ICLMN, 'ICLMN', 'SETCOF')
-      CALL DALLOC (INDX, 'INDX', 'SETCOF')
+      call dalloc (coeff, 'COEFF', 'SETCOF')
+      call dalloc (iclmn, 'ICLMN', 'SETCOF')
+      call dalloc (indx, 'INDX', 'SETCOF')
 
-      RETURN
-      END SUBROUTINE SETCOF
+      return
+      end subroutine setcof

@@ -1,67 +1,67 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SMSREAD_MPI(VINT,VINT2)
+      subroutine smsread_mpi(vint,vint2)
 !                                                                      *
 !   MPI version of SMSREAD. Each rank scans the full angular file but  *
 !   only accumulates records whose IC belongs to its strided subset.    *
 !                                                                      *
 !***********************************************************************
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: KEYORB, NNNW
-      USE prnt_C
-      USE ris_C
-      USE orb_C
-      USE eigv_C
-      USE BUFFER_C
-      USE debug_C,          ONLY: CUTOFF
-      USE mpi_C,            ONLY: MYID, NPROCS
-      USE alcbuf_I
-      IMPLICIT NONE
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: VINT, VINT2
-      INTEGER, PARAMETER :: KEY = KEYORB
-      REAL(DOUBLE), DIMENSION(NVEC) :: EVPAIR
-      REAL(DOUBLE) :: CONTRI, CONTRIK1, COEFFSMS, RADIAL_K1, RADIAL_SMS,&
-         PAIR_SCALE, TERM_K1, TERM_SMS
-      INTEGER :: IC, IR, J, IIA, IIB, IIC, IID, LOC, LAB, IOS
-      LOGICAL :: OWNREC
+      use vast_kind_param,  only: double
+      use parameter_def,    only: keyorb, nnnw
+      use prnt_c
+      use ris_c
+      use orb_c
+      use eigv_c
+      use buffer_c
+      use debug_c,          only: cutoff
+      use mpi_c,            only: myid, nprocs
+      use alcbuf_i
+      implicit none
+      real(double), dimension(nnnw,nnnw), intent(in) :: vint, vint2
+      integer, parameter :: key = keyorb
+      real(double), dimension(nvec) :: evpair
+      real(double) :: contri, contrik1, coeffsms, radial_k1, radial_sms,&
+         pair_scale, term_k1, term_sms
+      integer :: ic, ir, j, iia, iib, iic, iid, loc, lab, ios
+      logical :: ownrec
 
-      CALL ALCBUF (1)
-      REWIND(51)
-   16 READ (51,IOSTAT = IOS) IC,IR
-      IF (IOS .EQ. 0) THEN
-         READ(51) COEFFSMS,LAB
-         OWNREC = MOD(IC-1, NPROCS) .EQ. MYID
-         IF (OWNREC) THEN
-            IID = MOD (LAB, KEY)
-            LAB = LAB/KEY
-            IIB  = MOD (LAB, KEY)
-            LAB = LAB/KEY
-            IIC = MOD (LAB, KEY)
-            IIA = LAB/KEY
-            RADIAL_K1 = VINT(IIA,IIC) * VINT(IIB,IID)
-            RADIAL_SMS = (VINT2(IIA,IIC) * VINT(IIB,IID)                 &
-               + VINT2(IIB,IID) * VINT(IIA,IIC))/2.0D00
-            IF (RADIAL_K1 == 0.0D00 .AND. RADIAL_SMS == 0.0D00) GOTO 16
-            TERM_K1 = -COEFFSMS * RADIAL_K1
-            TERM_SMS = -COEFFSMS * RADIAL_SMS
-            IF (IR .EQ. IC) THEN
-               PAIR_SCALE = 1.0D00
-            ELSE
-               PAIR_SCALE = 2.0D00
-            ENDIF
-            DO J = 1,NVEC
-               LOC = (J-1)*NCF
-               EVPAIR(J) = PAIR_SCALE * EVEC(IC+LOC) * EVEC(IR+LOC)
-            END DO
-            DO J = 1,NVEC
-               CONTRIK1 = EVPAIR(J) * TERM_K1
-               CONTRI = EVPAIR(J) * TERM_SMS
-               SMSC1(J) = SMSC1(J) + CONTRIK1
-               SMSC2(J) = SMSC2(J) + CONTRI
-            ENDDO
-         ENDIF
-         GOTO 16
-      ENDIF
-      CALL ALCBUF (3)
-      RETURN
-      END SUBROUTINE SMSREAD_MPI
+      call alcbuf (1)
+      rewind(51)
+   16 read (51,iostat = ios) ic,ir
+      if (ios .eq. 0) then
+         read(51) coeffsms,lab
+         ownrec = mod(ic-1, nprocs) .eq. myid
+         if (ownrec) then
+            iid = mod (lab, key)
+            lab = lab/key
+            iib  = mod (lab, key)
+            lab = lab/key
+            iic = mod (lab, key)
+            iia = lab/key
+            radial_k1 = vint(iia,iic) * vint(iib,iid)
+            radial_sms = (vint2(iia,iic) * vint(iib,iid)                 &
+               + vint2(iib,iid) * vint(iia,iic))/2.0d00
+            if (radial_k1 == 0.0d00 .and. radial_sms == 0.0d00) goto 16
+            term_k1 = -coeffsms * radial_k1
+            term_sms = -coeffsms * radial_sms
+            if (ir .eq. ic) then
+               pair_scale = 1.0d00
+            else
+               pair_scale = 2.0d00
+            endif
+            do j = 1,nvec
+               loc = (j-1)*ncf
+               evpair(j) = pair_scale * evec(ic+loc) * evec(ir+loc)
+            end do
+            do j = 1,nvec
+               contrik1 = evpair(j) * term_k1
+               contri = evpair(j) * term_sms
+               smsc1(j) = smsc1(j) + contrik1
+               smsc2(j) = smsc2(j) + contri
+            enddo
+         endif
+         goto 16
+      endif
+      call alcbuf (3)
+      return
+      end subroutine smsread_mpi

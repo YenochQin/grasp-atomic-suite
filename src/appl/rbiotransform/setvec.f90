@@ -3,7 +3,7 @@
 !     S E T V E C
 !     ------------------------------------------------------------------
 !
-      SUBROUTINE SETVEC(VECTOR, VALUE, NDIM)
+      subroutine setvec(vector, value, ndim)
 !
 ! VECTOR (*) = VALUE
 !
@@ -14,21 +14,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NDIM
-      REAL(DOUBLE), INTENT(IN) :: VALUE
-      REAL(DOUBLE), DIMENSION(NDIM), INTENT(OUT) :: VECTOR
+      integer, intent(in) :: ndim
+      real(double), intent(in) :: value
+      real(double), dimension(ndim), intent(out) :: vector
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
+      integer :: i
 !-----------------------------------------------
 !
-      VECTOR(:NDIM) = VALUE
+      vector(:ndim) = value
 !
-      RETURN
-      END SUBROUTINE SETVEC
+      return
+      end subroutine setvec

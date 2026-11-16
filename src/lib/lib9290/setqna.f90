@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETQNA(JA, JB)
+      subroutine setqna(ja, jb)
 !                                                                      *
 !   This generates the  arrays  defining  the quantum numbers of the   *
 !   states involved in the  matrix  element  linking  configurations   *
@@ -17,130 +17,130 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE M_C
-      USE ORB_C,           ONLY: NCF, NW
+      use vast_kind_param, only: double
+      use m_c
+      use orb_c,           only: ncf, nw
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE iq_I
-      USE jqs_I
-      USE ichop_I
-      USE jcup_I
-      IMPLICIT NONE
+      use iq_i
+      use jqs_i
+      use ichop_i
+      use jcup_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: JA
-      INTEGER  :: JB
+      integer  :: ja
+      integer  :: jb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, K, JCNT, JCNTOP, JW1, JW2, JW
+      integer :: j, k, jcnt, jcntop, jw1, jw2, jw
 !-----------------------------------------------
 !
 !
 !   List parameters defining all shells in both configurations, whether
 !   participating or not
 !
-      DO J = 1, NW
-         NQ1(J) = IQ(J,JA)
-         NQ2(J) = IQ(J,JB)
-         DO K = 1, 3
-            JJQ1(K,J) = JQS(K,J,JA)
-            JJQ2(K,J) = JQS(K,J,JB)
-         END DO
-      END DO
+      do j = 1, nw
+         nq1(j) = iq(j,ja)
+         nq2(j) = iq(j,jb)
+         do k = 1, 3
+            jjq1(k,j) = jqs(k,j,ja)
+            jjq2(k,j) = jqs(k,j,jb)
+         end do
+      end do
 !
 !   Define coupling schemes: set JLIST array to define those shells
 !   which are open in either configuration, and KLIST array to locate
 !   the rest. Exclude shells which are empty in both configurations
 !
-      NPEEL = 0
-      NCORE = 0
-      DO J = 1, NW
-         IF (ICHOP(J,JA)==(-1) .AND. ICHOP(J,JB)==(-1)) CYCLE
-         IF (ICHOP(J,JA)==1 .AND. ICHOP(J,JB)==1) THEN
-            NCORE = NCORE + 1
-            KLIST(NCORE) = J
-         ELSE
-            NPEEL = NPEEL + 1
-            JLIST(NPEEL) = J
-         ENDIF
-      END DO
+      npeel = 0
+      ncore = 0
+      do j = 1, nw
+         if (ichop(j,ja)==(-1) .and. ichop(j,jb)==(-1)) cycle
+         if (ichop(j,ja)==1 .and. ichop(j,jb)==1) then
+            ncore = ncore + 1
+            klist(ncore) = j
+         else
+            npeel = npeel + 1
+            jlist(npeel) = j
+         endif
+      end do
 !
 !   Return if not more than one shell is open
 !
-      IF (NPEEL <= 1) RETURN
+      if (npeel <= 1) return
 !
 !   Set arrays of coupling angular momenta interpolating closed
 !   shells where necessary. Left hand side first ...
 !
-      JCNT = 1
-      JCNTOP = 0
-      JW1 = JLIST(1)
-      JW2 = JLIST(2)
-      IF (ICHOP(JW1,JA) /= 0) THEN
-         JJC1(1) = JQS(3,JW2,JA)
-         IF (ICHOP(JW2,JA) == 0) JCNTOP = 1
-      ELSE
-         JCNTOP = 1
-         IF (ICHOP(JW2,JA) == 0) THEN
-            JJC1(1) = JCUP(JCNT,JA)
-            JCNT = JCNT + 1
-         ELSE
-            JJC1(1) = JQS(3,JW1,JA)
-         ENDIF
-      ENDIF
+      jcnt = 1
+      jcntop = 0
+      jw1 = jlist(1)
+      jw2 = jlist(2)
+      if (ichop(jw1,ja) /= 0) then
+         jjc1(1) = jqs(3,jw2,ja)
+         if (ichop(jw2,ja) == 0) jcntop = 1
+      else
+         jcntop = 1
+         if (ichop(jw2,ja) == 0) then
+            jjc1(1) = jcup(jcnt,ja)
+            jcnt = jcnt + 1
+         else
+            jjc1(1) = jqs(3,jw1,ja)
+         endif
+      endif
 !
-      DO J = 3, NPEEL
-         JW = JLIST(J)
-         IF (ICHOP(JW,JA) /= 0) THEN
-            JJC1(J-1) = JJC1(J-2)
-         ELSE
-            IF (JCNTOP /= 0) THEN
-               JJC1(J-1) = JCUP(JCNT,JA)
-               JCNT = JCNT + 1
-            ELSE
-               JJC1(J-1) = JQS(3,JW,JA)
-            ENDIF
-            JCNTOP = JCNTOP + 1
-         ENDIF
-      END DO
+      do j = 3, npeel
+         jw = jlist(j)
+         if (ichop(jw,ja) /= 0) then
+            jjc1(j-1) = jjc1(j-2)
+         else
+            if (jcntop /= 0) then
+               jjc1(j-1) = jcup(jcnt,ja)
+               jcnt = jcnt + 1
+            else
+               jjc1(j-1) = jqs(3,jw,ja)
+            endif
+            jcntop = jcntop + 1
+         endif
+      end do
 !
 !   ... and repeat for right hand side
 !
-      JCNT = 1
-      JCNTOP = 0
-      JW1 = JLIST(1)
-      JW2 = JLIST(2)
-      IF (ICHOP(JW1,JB) /= 0) THEN
-         JJC2(1) = JQS(3,JW2,JB)
-         IF (ICHOP(JW2,JB) == 0) JCNTOP = 1
-      ELSE
-         JCNTOP = 1
-         IF (ICHOP(JW2,JB) == 0) THEN
-            JJC2(1) = JCUP(JCNT,JB)
-            JCNT = JCNT + 1
-         ELSE
-            JJC2(1) = JQS(3,JW1,JB)
-         ENDIF
-      ENDIF
+      jcnt = 1
+      jcntop = 0
+      jw1 = jlist(1)
+      jw2 = jlist(2)
+      if (ichop(jw1,jb) /= 0) then
+         jjc2(1) = jqs(3,jw2,jb)
+         if (ichop(jw2,jb) == 0) jcntop = 1
+      else
+         jcntop = 1
+         if (ichop(jw2,jb) == 0) then
+            jjc2(1) = jcup(jcnt,jb)
+            jcnt = jcnt + 1
+         else
+            jjc2(1) = jqs(3,jw1,jb)
+         endif
+      endif
 !
-      DO J = 3, NPEEL
-         JW = JLIST(J)
-         IF (ICHOP(JW,JB) /= 0) THEN
-            JJC2(J-1) = JJC2(J-2)
-         ELSE
-            IF (JCNTOP /= 0) THEN
-               JJC2(J-1) = JCUP(JCNT,JB)
-               JCNT = JCNT + 1
-            ELSE
-               JJC2(J-1) = JQS(3,JW,JB)
-            ENDIF
-            JCNTOP = JCNTOP + 1
-         ENDIF
-      END DO
+      do j = 3, npeel
+         jw = jlist(j)
+         if (ichop(jw,jb) /= 0) then
+            jjc2(j-1) = jjc2(j-2)
+         else
+            if (jcntop /= 0) then
+               jjc2(j-1) = jcup(jcnt,jb)
+               jcnt = jcnt + 1
+            else
+               jjc2(j-1) = jqs(3,jw,jb)
+            endif
+            jcntop = jcntop + 1
+         endif
+      end do
 !
-      RETURN
-      END SUBROUTINE SETQNA
+      return
+      end subroutine setqna

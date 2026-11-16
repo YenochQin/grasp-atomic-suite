@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ANGDATA(NAME, AVAIL, JKP, NFILE2)
+      subroutine angdata(name, avail, jkp, nfile2)
 !                                                                      *
 !   Checks if the angular file name(1).name(2).T is available          *
 !   and appropriate                                                    *
@@ -14,75 +14,75 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE orb_C, ONLY: NCF, NW, IQA
-      USE osc_C, ONLY: NKP, KP
+      use vast_kind_param, only:  double
+      use orb_c, only: ncf, nw, iqa
+      use osc_c, only: nkp, kp
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: JKP
-      INTEGER, INTENT(IN) :: NFILE2
-      LOGICAL, INTENT(OUT) :: AVAIL
-      CHARACTER, INTENT(INOUT) :: NAME(2)*24
+      integer  :: jkp
+      integer, intent(in) :: nfile2
+      logical, intent(out) :: avail
+      character, intent(inout) :: name(2)*24
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J1, J2, IBLKI, IBLKF, NWD, NKPD
-      LOGICAL :: FOUND
-      CHARACTER, DIMENSION(-9:9) :: S*2
+      integer :: j1, j2, iblki, iblkf, nwd, nkpd
+      logical :: found
+      character, dimension(-9:9) :: s*2
 !-----------------------------------------------
 
-      S((-9)) = '-9'
-      S((-8)) = '-8'
-      S((-7)) = '-7'
-      S((-6)) = '-6'
-      S((-5)) = '-5'
-      S((-4)) = '-4'
-      S((-3)) = '-3'
-      S((-2)) = '-2'
-      S((-1)) = '-1'
-      S(0) = '+0'
-      S(1) = '+1'
-      S(2) = '+2'
-      S(3) = '+3'
-      S(4) = '+4'
-      S(5) = '+5'
-      S(6) = '+6'
-      S(7) = '+7'
-      S(8) = '+8'
-      S(9) = '+9'
+      s((-9)) = '-9'
+      s((-8)) = '-8'
+      s((-7)) = '-7'
+      s((-6)) = '-6'
+      s((-5)) = '-5'
+      s((-4)) = '-4'
+      s((-3)) = '-3'
+      s((-2)) = '-2'
+      s((-1)) = '-1'
+      s(0) = '+0'
+      s(1) = '+1'
+      s(2) = '+2'
+      s(3) = '+3'
+      s(4) = '+4'
+      s(5) = '+5'
+      s(6) = '+6'
+      s(7) = '+7'
+      s(8) = '+8'
+      s(9) = '+9'
 
-      J1 = INDEX(NAME(1),' ')
-      J2 = INDEX(NAME(2),' ')
-      INQUIRE(FILE=NAME(1)(1:J1-1)//'.'//NAME(2)(1:J2-1)//'.'//S(KP(JKP))//'T'&
-         , EXIST=FOUND)
-      IF (.NOT.FOUND) THEN
-         WRITE (6, *)
-         WRITE (6, *) ' Angular file not available'
-         AVAIL = .FALSE.
-         RETURN
-      ELSE
+      j1 = index(name(1),' ')
+      j2 = index(name(2),' ')
+      inquire(file=name(1)(1:j1-1)//'.'//name(2)(1:j2-1)//'.'//s(kp(jkp))//'T'&
+         , exist=found)
+      if (.not.found) then
+         write (6, *)
+         write (6, *) ' Angular file not available'
+         avail = .false.
+         return
+      else
 !
 !  Open the file and check if it is appropriate for the present case
 !
-         OPEN(UNIT=NFILE2, FILE=NAME(1)(1:J1-1)//'.'//NAME(2)(1:J2-1)//'.'//S(&
-            KP(JKP))//'T', STATUS='OLD', FORM='UNFORMATTED', POSITION='asis')
-         REWIND (NFILE2)
-         READ (NFILE2) IBLKI, IBLKF, NWD, NKPD
-         IF (.NOT.(NWD==NW .AND. NKPD==NKP)) THEN
-            WRITE (6, *) ' Angular file not appropriate'
-            AVAIL = .FALSE.
-            CLOSE(NFILE2, STATUS='DELETE')
-            RETURN
-         ELSE
-            REWIND (NFILE2)
-            WRITE (6, *) ' Angular data read from file'
-            AVAIL = .TRUE.
-         ENDIF
-      ENDIF
-      RETURN
-      END SUBROUTINE ANGDATA
+         open(unit=nfile2, file=name(1)(1:j1-1)//'.'//name(2)(1:j2-1)//'.'//s(&
+            kp(jkp))//'T', status='OLD', form='UNFORMATTED', position='asis')
+         rewind (nfile2)
+         read (nfile2) iblki, iblkf, nwd, nkpd
+         if (.not.(nwd==nw .and. nkpd==nkp)) then
+            write (6, *) ' Angular file not appropriate'
+            avail = .false.
+            close(nfile2, status='DELETE')
+            return
+         else
+            rewind (nfile2)
+            write (6, *) ' Angular data read from file'
+            avail = .true.
+         endif
+      endif
+      return
+      end subroutine angdata

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETHAM (myid, nprocs, jblock, ELSTO,ICSTRT, nelmntt, &
+      subroutine setham (myid, nprocs, jblock, elsto,icstrt, nelmntt, &
                          atwinv,slf_en)
 !                                                                      *
 !   Sets up the Hamiltonian matrix and determines the average energy.  *
@@ -21,74 +21,74 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE, LONG
-      USE parameter_def,   ONLY: NNNP, KEYORB
-      USE memory_man
+      use vast_kind_param, only: double, long
+      use parameter_def,   only: nnnp, keyorb
+      use memory_man
 !-----------------------------------------------
 !   C O M M O N    B l o c k s
 !-----------------------------------------------
-      USE bcore_C, ONLY: icore
-      USE bilst_C
-      USE buffer_C
-      USE coeils_C
-      USE decide_C
-      USE debug_C
-      USE def_C
-      USE eigv_C
-      USE iccu_C
-      USE grid_C
-      USE hmat_C
-      USE keilst_C
-      USE ncdist_C
-      USE orb_C, ONLY: ncf,  nw
-      USE prnt_C
-      USE stat_C
-      USE stor_C
-      USE tatb_C
-      USE vinlst_C
-      USE vpilst_C
-      USE wave_C
-      USE cteilsrk_C
-      USE blim_c
-      USE where_C
-      USE eigvec1_C
+      use bcore_c, only: icore
+      use bilst_c
+      use buffer_c
+      use coeils_c
+      use decide_c
+      use debug_c
+      use def_c
+      use eigv_c
+      use iccu_c
+      use grid_c
+      use hmat_c
+      use keilst_c
+      use ncdist_c
+      use orb_c, only: ncf,  nw
+      use prnt_c
+      use stat_c
+      use stor_c
+      use tatb_c
+      use vinlst_c
+      use vpilst_c
+      use wave_c
+      use cteilsrk_c
+      use blim_c
+      use where_c
+      use eigvec1_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE alcbuf_I
-      USE iabint_I
-      USE brint1_I
-      USE brint2_I
-      USE brint3_I
-      USE brint4_I
-      USE brint5_I
-      USE brint6_I
-      USE convrt_I
-      USE ichop_I
-      USE keint_I
-      USE rkintc_I
-      USE vint_I
-      USE vpint_I
-      USE onescalar_I, ONLY: onescalar
-      USE rkco_gg_I, ONLY: rkco_gg
-      IMPLICIT NONE
-      EXTERNAL BREID,CORD
+      use alcbuf_i
+      use iabint_i
+      use brint1_i
+      use brint2_i
+      use brint3_i
+      use brint4_i
+      use brint5_i
+      use brint6_i
+      use convrt_i
+      use ichop_i
+      use keint_i
+      use rkintc_i
+      use vint_i
+      use vpint_i
+      use onescalar_i, only: onescalar
+      use rkco_gg_i, only: rkco_gg
+      implicit none
+      external breid,cord
 !----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER(LONG)       :: NELMNTT
-      INTEGER             :: JBLOCK, ICSTRT
-      INTEGER, INTENT(IN) :: MYID, NPROCS
-      REAL(DOUBLE)        :: ELSTO, ATWINV
-      REAL(DOUBLE), DIMENSION(*) :: slf_en
+      integer(long)       :: nelmntt
+      integer             :: jblock, icstrt
+      integer, intent(in) :: myid, nprocs
+      real(double)        :: elsto, atwinv
+      real(double), dimension(*) :: slf_en
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      REAL(DOUBLE), DIMENSION(NNNW) :: tshell
-      REAL(DOUBLE) :: tgrl1, tgrl2, tegral
+      real(double), dimension(nnnw) :: tshell
+      real(double) :: tgrl1, tgrl2, tegral
 
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !
 !     Matrix elements smaller than CUTOFF are not accumulated
 !
@@ -96,332 +96,332 @@
 !     REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-20
 !cjb CUTOFF = 1.0D-12 below
 !cjb
-      INTEGER :: ipi, ipj, inc1, inc2, kt, ipt, incor, ncoec, nctec, &
+      integer :: ipi, ipj, inc1, inc2, kt, ipt, incor, ncoec, nctec, &
                  i, j, nmcbp, ncore, ic, nelc, irstart, ir, ia, ib,  &
                  itype, iia
-       REAL(DOUBLE) :: elemnt, precoeff, tcoeff, vcoeff, contr
+       real(double) :: elemnt, precoeff, tcoeff, vcoeff, contr
 !-----------------------------------------------------------------------
-      PRINT *, 'Calling setham ...'
+      print *, 'Calling setham ...'
 !cjb
 !cjb  CUTOFF = 1.0D-12
-      CUTOFF = 1.0D-12
+      cutoff = 1.0d-12
 
       nelmnt = nelmntt
 
       !Per Bug fix 30/4-2013
-      ATWINV = 1.D0/EMN
+      atwinv = 1.d0/emn
       !Per Bug fix 30/4-2013
 
-      IF (IPRERUN .EQ. 2) THEN
-         DO IPI = 1,NVEC
-            DO IPJ = 1,NCF
-               WRITE (*,*) IPI,IPJ,EVEC1(IPJ+(IPI-1)*NCF)
-            ENDDO
-         ENDDO
-      ENDIF
+      if (iprerun .eq. 2) then
+         do ipi = 1,nvec
+            do ipj = 1,ncf
+               write (*,*) ipi,ipj,evec1(ipj+(ipi-1)*ncf)
+            enddo
+         enddo
+      endif
 !
 !   Allocate storage to arrays in COMMON/BUFFER/; these are
 !   used for the Coulomb and transverse two-electron integrals
 !
-      CALL ALCBUF (1)
+      call alcbuf (1)
 
 !     ...Locals
-      CALL alloc (emt, ncf, 'EMT','SETHAM' )
-      CALL alloc (irow, ncf, 'IROW', 'SETHAM')
+      call alloc (emt, ncf, 'EMT','SETHAM' )
+      call alloc (irow, ncf, 'IROW', 'SETHAM')
 !
-      INC1 = 1
-      INC2 = 1
+      inc1 = 1
+      inc2 = 1
 !
 !   Initialisations for contributions from the Dirac-Coulomb
 !   operator
 !
-      KT  = 0
-      IPT = 1
+      kt  = 0
+      ipt = 1
 !
-      INCOR = 1
+      incor = 1
 
-      NCOEC = 0
+      ncoec = 0
 !
-      NCTEC   = 0
+      nctec   = 0
 
-      IF (LTRANS) THEN
+      if (ltrans) then
 
 !        ...Initialisations for transverse interaction correction
-         DO 2 I = 1, NW
-            ICORE(I) = 0
-            DO J = 1, NCF
-               IF (ICHOP (I,J) .LE. 0) GOTO 2
-            ENDDO
-            ICORE(I) = 1
-    2    CONTINUE
+         do 2 i = 1, nw
+            icore(i) = 0
+            do j = 1, ncf
+               if (ichop (i,j) .le. 0) goto 2
+            enddo
+            icore(i) = 1
+    2    continue
 
-         NMCBP = 0
-         NCORE = 0
-      ENDIF
+         nmcbp = 0
+         ncore = 0
+      endif
 
 ! Loop over rows of the Hamiltonian matrix - distributed
 
-      DO 10 ic = icstrt, ncf, nprocs
+      do 10 ic = icstrt, ncf, nprocs
 
-         NELC = 0    ! counter - Number of non-zeros of this row
+         nelc = 0    ! counter - Number of non-zeros of this row
 
 ! Loop over columns of the current row
 
          irstart = 1
-         DO 85 IR = irstart, IC
+         do 85 ir = irstart, ic
 
 ! PER
-            IF (LFORDR .AND. (IR .GT. ICCUT(1))) THEN
-               IF (IR.NE.IC) CYCLE
-            END IF
+            if (lfordr .and. (ir .gt. iccut(1))) then
+               if (ir.ne.ic) cycle
+            end if
 ! PER
 
-            ELEMNT = 0.D0     ! accumulates various contributions to H
+            elemnt = 0.d0     ! accumulates various contributions to H
 
 !
 !   Generate the integral list for the matrix element of the
 !   one-body operators
 !
-            IF (IPRERUN .EQ. 1) THEN
-               INC1 = 0
-               INC2 = 0
-               IF (IC.LE.NCSFPRE .OR. IC.EQ.IR) THEN
-                  INC1 = 1
-               ENDIF
-            ENDIF
+            if (iprerun .eq. 1) then
+               inc1 = 0
+               inc2 = 0
+               if (ic.le.ncsfpre .or. ic.eq.ir) then
+                  inc1 = 1
+               endif
+            endif
 
-            IF (IPRERUN .EQ. 2) THEN
+            if (iprerun .eq. 2) then
 !
 !   Diagonal elements are always included
 !   Off diagonal elements are included only if the
 !   products of the weights from the prerun are larger
 !   than the cutoff.
 !
-               IF (IC .EQ. IR) THEN
-                  INC1 = 1
-                  INC2 = 1
-               ELSE
-                  INC1 = 0
-                  INC2 = 0
-               ENDIF
-               DO IPI = 1,NVEC
-                  PRECOEFF =                                           &
-                   DABS(EVEC1(IC+(IPI-1)*NCF)*EVEC1(IR+(IPI-1)*NCF))
-                  IF (PRECOEFF .GT. COEFFCUT1) INC1 = 1
-                  IF (PRECOEFF .GT. COEFFCUT2) INC2 = 1
-               ENDDO
-            ENDIF
+               if (ic .eq. ir) then
+                  inc1 = 1
+                  inc2 = 1
+               else
+                  inc1 = 0
+                  inc2 = 0
+               endif
+               do ipi = 1,nvec
+                  precoeff =                                           &
+                   dabs(evec1(ic+(ipi-1)*ncf)*evec1(ir+(ipi-1)*ncf))
+                  if (precoeff .gt. coeffcut1) inc1 = 1
+                  if (precoeff .gt. coeffcut2) inc2 = 1
+               enddo
+            endif
 
 !            ...INC1.EQ.1 ------------>
-         IF (INC1 .EQ. 1) THEN   !inc1 is always 1 without PRE-RUN
-           CALL ONESCALAR(IC,IR,IA,IB,TSHELL)
+         if (inc1 .eq. 1) then   !inc1 is always 1 without PRE-RUN
+           call onescalar(ic,ir,ia,ib,tshell)
 !
 !   Accumulate the contribution from the one-body operators:
 !   kinetic energy, electron-nucleus interaction; update the
 !   angular integral counter
 !
-         IF (IA .NE. 0) THEN
-            IF (IA .EQ. IB) THEN
-               DO IA = 1,NW
+         if (ia .ne. 0) then
+            if (ia .eq. ib) then
+               do ia = 1,nw
                   iia = ia
-                  TCOEFF = TSHELL(IA)
-                  IF (ABS (TCOEFF) .GT. CUTOFF) THEN
-                     NCOEC = NCOEC + 1
-                     CALL IABINT (IIA, IIA, TEGRAL)
+                  tcoeff = tshell(ia)
+                  if (abs (tcoeff) .gt. cutoff) then
+                     ncoec = ncoec + 1
+                     call iabint (iia, iia, tegral)
                         !------------------------
-                     ELEMNT = ELEMNT + TEGRAL*TCOEFF
-                     IF (LNMS) THEN
-                        CALL KEINT (IIA,IIA,TEGRAL)
+                     elemnt = elemnt + tegral*tcoeff
+                     if (lnms) then
+                        call keint (iia,iia,tegral)
                         !------------------------
-                        ELEMNT = ELEMNT + TEGRAL*ATWINV*TCOEFF
-                     ENDIF
-                     IF (LVP) THEN
-                        CALL VPINT (IIA, IIA, TEGRAL)
+                        elemnt = elemnt + tegral*atwinv*tcoeff
+                     endif
+                     if (lvp) then
+                        call vpint (iia, iia, tegral)
                         !------------------------
-                        ELEMNT = ELEMNT + TEGRAL*TCOEFF
-                     ENDIF
-                  ENDIF
-               ENDDO
-            ELSE
-               TCOEFF = TSHELL(1)
-               IF (ABS (TCOEFF) .GT. CUTOFF) THEN
-                  NCOEC = NCOEC + 1
-                  CALL IABINT (IA, IB, TEGRAL)
+                        elemnt = elemnt + tegral*tcoeff
+                     endif
+                  endif
+               enddo
+            else
+               tcoeff = tshell(1)
+               if (abs (tcoeff) .gt. cutoff) then
+                  ncoec = ncoec + 1
+                  call iabint (ia, ib, tegral)
                         !------------------------
-                  ELEMNT = ELEMNT + TEGRAL*TCOEFF
-                  IF (LNMS) THEN
-                     CALL KEINT (IA, IB, TEGRAL)
+                  elemnt = elemnt + tegral*tcoeff
+                  if (lnms) then
+                     call keint (ia, ib, tegral)
                         !------------------------
-                     ELEMNT = ELEMNT + TEGRAL*ATWINV*TCOEFF
-                  ENDIF
-                  IF (LVP) THEN
-                     CALL VPINT (IA, IB, TEGRAL)
+                     elemnt = elemnt + tegral*atwinv*tcoeff
+                  endif
+                  if (lvp) then
+                     call vpint (ia, ib, tegral)
                         !------------------------
-                     ELEMNT = ELEMNT + TEGRAL*TCOEFF
-                  ENDIF
-               ENDIF
-            ENDIF
-         ENDIF
+                     elemnt = elemnt + tegral*tcoeff
+                  endif
+               endif
+            endif
+         endif
 !
-         IBUG1 = 0
+         ibug1 = 0
 !
 !   Accumulate the contributions from the two-electron
 !   Coulomb operator and the mass polarisation; the latter
 !   is computed first because the orbital indices may be
 !   permuted by RKINTC
 !
-         NVCOEF = 0
+         nvcoef = 0
 !
-         CALL RKCO_GG (IC, IR, CORD, INCOR, 1)
+         call rkco_gg (ic, ir, cord, incor, 1)
 !
-         DO 7 I = 1, NVCOEF
-            VCOEFF = COEFF(I)
-            IF (ABS (VCOEFF) .GT. CUTOFF) THEN
-               NCTEC = NCTEC + 1
-               IF (LSMS) THEN
-                  IF (LABEL(5,I) .EQ. 1) THEN
-                     CALL VINT (LABEL(1,I), LABEL(3,I), TGRL1)
-                     CALL VINT (LABEL(2,I), LABEL(4,I), TGRL2)
-                     ELEMNT = ELEMNT - TGRL1*TGRL2*ATWINV*VCOEFF
-                  ENDIF
-               ENDIF
-               CALL RKINTC (LABEL(1,I), LABEL(2,I),                     &
-                            LABEL(3,I), LABEL(4,I),                     &
-                            LABEL(5,I), TEGRAL)
-               ELEMNT = ELEMNT + TEGRAL*VCOEFF
-            ENDIF
-    7    CONTINUE
+         do 7 i = 1, nvcoef
+            vcoeff = coeff(i)
+            if (abs (vcoeff) .gt. cutoff) then
+               nctec = nctec + 1
+               if (lsms) then
+                  if (label(5,i) .eq. 1) then
+                     call vint (label(1,i), label(3,i), tgrl1)
+                     call vint (label(2,i), label(4,i), tgrl2)
+                     elemnt = elemnt - tgrl1*tgrl2*atwinv*vcoeff
+                  endif
+               endif
+               call rkintc (label(1,i), label(2,i),                     &
+                            label(3,i), label(4,i),                     &
+                            label(5,i), tegral)
+               elemnt = elemnt + tegral*vcoeff
+            endif
+    7    continue
 !
-         IBUG1 = 0
+         ibug1 = 0
 
-         ENDIF  !inc1 is always 1 without PRE-RUN
+         endif  !inc1 is always 1 without PRE-RUN
 !            ...INC1.EQ.1 <------------
 !***********************************************************************
 !            ...LTRANS .AND. (INC2.EQ.1) ------------>
-         IF (LTRANS .AND. (INC2.EQ.1)) THEN
+         if (ltrans .and. (inc2.eq.1)) then
             !IF (INC2 .EQ. 1) THEN  !inc2 is always 1 without PRE-RUN
 !
 !   Accumulate the contribution from the two-electron
 !   transverse interaction operator
 !
-            NVCOEF = 0
+            nvcoef = 0
 !
-            CALL RKCO_GG (IC, IR, BREID, 1, 2)
+            call rkco_gg (ic, ir, breid, 1, 2)
 !
-            DO 8 I = 1, NVCOEF
-               IF (DABS (COEFF(I)) > CUTOFF) THEN
-                  NMCBP = NMCBP + 1
-                  ITYPE = ABS (LABEL(6,I))
-                  IF (ITYPE == 1) THEN
-                     CALL BRINT1 (LABEL(1,I), LABEL(2,I),               &
-                                  LABEL(3,I), LABEL(4,I),               &
-                                  LABEL(5,I), TEGRAL)
-                  ELSEIF (ITYPE == 2) THEN
-                     CALL BRINT2 (LABEL(1,I), LABEL(2,I),               &
-                                  LABEL(3,I), LABEL(4,I),               &
-                                  LABEL(5,I), TEGRAL)
-                  ELSEIF (ITYPE == 3) THEN
-                     CALL BRINT3 (LABEL(1,I), LABEL(2,I),               &
-                                  LABEL(3,I), LABEL(4,I),               &
-                                  LABEL(5,I), TEGRAL)
-                  ELSEIF (ITYPE == 4) THEN
-                     CALL BRINT4 (LABEL(1,I), LABEL(2,I),               &
-                                  LABEL(3,I), LABEL(4,I),               &
-                                  LABEL(5,I), TEGRAL)
-                  ELSEIF (ITYPE == 5) THEN
-                     CALL BRINT5 (LABEL(1,I), LABEL(2,I),               &
-                                  LABEL(3,I), LABEL(4,I),               &
-                                  LABEL(5,I), TEGRAL)
-                  ELSEIF (ITYPE == 6) THEN
-                     CALL BRINT6 (LABEL(1,I), LABEL(2,I),               &
-                                  LABEL(3,I), LABEL(4,I),               &
-                                  LABEL(5,I), TEGRAL)
-                  ENDIF
-                  CONTR = COEFF(I)*TEGRAL
-                  IF (LABEL(6,I) > 0) THEN
-                     ELEMNT = ELEMNT + CONTR
-                  ELSE
+            do 8 i = 1, nvcoef
+               if (dabs (coeff(i)) > cutoff) then
+                  nmcbp = nmcbp + 1
+                  itype = abs (label(6,i))
+                  if (itype == 1) then
+                     call brint1 (label(1,i), label(2,i),               &
+                                  label(3,i), label(4,i),               &
+                                  label(5,i), tegral)
+                  elseif (itype == 2) then
+                     call brint2 (label(1,i), label(2,i),               &
+                                  label(3,i), label(4,i),               &
+                                  label(5,i), tegral)
+                  elseif (itype == 3) then
+                     call brint3 (label(1,i), label(2,i),               &
+                                  label(3,i), label(4,i),               &
+                                  label(5,i), tegral)
+                  elseif (itype == 4) then
+                     call brint4 (label(1,i), label(2,i),               &
+                                  label(3,i), label(4,i),               &
+                                  label(5,i), tegral)
+                  elseif (itype == 5) then
+                     call brint5 (label(1,i), label(2,i),               &
+                                  label(3,i), label(4,i),               &
+                                  label(5,i), tegral)
+                  elseif (itype == 6) then
+                     call brint6 (label(1,i), label(2,i),               &
+                                  label(3,i), label(4,i),               &
+                                  label(5,i), tegral)
+                  endif
+                  contr = coeff(i)*tegral
+                  if (label(6,i) > 0) then
+                     elemnt = elemnt + contr
+                  else
 !                        ...It comes here only when ic=ir=1
 !                           clue: rkco<-breid<-talk<-label(6,i)
-                     NCORE = NCORE + 1
-                     ELSTO = ELSTO + CONTR
-                  ENDIF
-               ENDIF
-    8       CONTINUE
+                     ncore = ncore + 1
+                     elsto = elsto + contr
+                  endif
+               endif
+    8       continue
 !
-            IBUG1 = 0
+            ibug1 = 0
 !
 !               ...ELSTO is a constant over all diagonals, thus its
 !                  contribution to the total energy can be added later
 !            IF (IR .EQ. IC) ELEMNT = ELEMNT + ELSTO
 !
             !ENDIF   !inc2 is always 1 without PRE-RUN
-         ENDIF
+         endif
 !            ...LTRANS .AND. (INC2.EQ.1) <------------
 !***********************************************************************
 !
 ! Store this element if it is diagonal or its value is greater than
 ! CUTOFF
 !
-         IF ( (IR == IC) .OR. (DABS (ELEMNT) > CUTOFF) ) THEN
-            NELC       = NELC + 1
-            EMT(NELC)  = ELEMNT
-            IROW(NELC) = IR
-         ENDIF
+         if ( (ir == ic) .or. (dabs (elemnt) > cutoff) ) then
+            nelc       = nelc + 1
+            emt(nelc)  = elemnt
+            irow(nelc) = ir
+         endif
 !
-   85    CONTINUE
+   85    continue
 ! zou
 !        print *, ic,SLF_EN(IC)
-         IF(LSE) EMT(NELC) = EMT(NELC) + SLF_EN(IC)
+         if(lse) emt(nelc) = emt(nelc) + slf_en(ic)
 ! zou
 !
 !   This column is done; write it to disk
 !
-         WRITE (imcdf) NELC, ELSTO, (EMT(IR), IR = 1, NELC),            &
-                                   (IROW(IR), IR = 1, NELC)
+         write (imcdf) nelc, elsto, (emt(ir), ir = 1, nelc),            &
+                                   (irow(ir), ir = 1, nelc)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! This EAV (and the above EMT) does not have ELSTO.
-         EAV = EAV + EMT(NELC)
+         eav = eav + emt(nelc)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 !-----------------------------------------------------------------------
 !         IF (MOD (IC, 20) .EQ. 0 .OR.                                   &
-         IF (MOD (IC, 100) == 0 .OR.                                   &
-             IC < nprocs*2 .OR. IC > (NCF-nprocs*2)) THEN
-            PRINT *, 'Row ', IC, ': ', NELC, ' nonzero elements;'       &
+         if (mod (ic, 100) == 0 .or.                                   &
+             ic < nprocs*2 .or. ic > (ncf-nprocs*2)) then
+            print *, 'Row ', ic, ': ', nelc, ' nonzero elements;'       &
                    , '  block = ', jblock
-         ENDIF
+         endif
 !
 !   Update the counter for the total number of elements
 !
-         NELMNT = NELMNT + NELC
+         nelmnt = nelmnt + nelc
 !
-   10 CONTINUE
+   10 continue
 !***********************************************************************
 !
 !   Deallocate storage for the arrays in /BUFFER/
 !
-      CALL ALCBUF (3)
+      call alcbuf (3)
 
 !     ...Locals
-      CALL DALLOC (EMT, 'EMT', 'SETHAM')
-      CALL DALLOC (IROW, 'IROW', 'SETHAM')
+      call dalloc (emt, 'EMT', 'SETHAM')
+      call dalloc (irow, 'IROW', 'SETHAM')
 
 !  Fill the common block /setham_to_genmat2/ for use in genmat2
 
-      CUTOFFtmp = CUTOFF
-      NCOEItmp = NCOEI
-      NCOECtmp = NCOEC
-      NCTEItmp = RK_LOCAL_COUNT(SIZE(VALTEIRK), MYID, NPROCS)
-      NCTECtmp = NCTEC
-      NTPItmp = NTPI
-      NMCBPtmp = NMCBP
-      NCOREtmp = NCORE
-      NVPItmp = NVPI
-      NKEItmp = NKEI
-      NVINTItmp = NVINTI
-      NELMNTtmp = NELMNT
-      NCFtmp = NCF
+      cutofftmp = cutoff
+      ncoeitmp = ncoei
+      ncoectmp = ncoec
+      ncteitmp = rk_local_count(size(valteirk), myid, nprocs)
+      nctectmp = nctec
+      ntpitmp = ntpi
+      nmcbptmp = nmcbp
+      ncoretmp = ncore
+      nvpitmp = nvpi
+      nkeitmp = nkei
+      nvintitmp = nvinti
+      nelmnttmp = nelmnt
+      ncftmp = ncf
 
-      RETURN
-      END SUBROUTINE SETHAM
+      return
+      end subroutine setham

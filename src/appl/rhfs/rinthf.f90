@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION RINTHF (I, J, K)
+      real(kind(0.0d0)) function rinthf (i, j, k)
 !                                                                      *
 !   The value of RINTHF is an approximation to:                        *
 !                                                                      *
@@ -22,43 +22,43 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE grid_C
-      USE tatb_C
-      USE wave_C
+      use vast_kind_param, only:  double
+      use grid_c
+      use tatb_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE quad_I
-      IMPLICIT NONE
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: I
-      INTEGER  :: J
-      INTEGER, INTENT(IN) :: K
+      integer  :: i
+      integer  :: j
+      integer, intent(in) :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: L
-      REAL(DOUBLE) :: RESULT
+      integer :: l
+      real(double) :: result
 !-----------------------------------------------
 !
 !   Tabulate integrand as required for SUBROUTINE QUAD
 !
-      MTP = MIN(MF(I),MF(J))
+      mtp = min(mf(i),mf(j))
 !
 !   Value at first tabulation point is arbitrary
 !
-      TA(1) = 0.0D00
-      DO L = 2, MTP
-         TA(L) = R(L)**K*(PF(L,I)*QF(L,J) + QF(L,I)*PF(L,J))*RP(L)
-      END DO
+      ta(1) = 0.0d00
+      do l = 2, mtp
+         ta(l) = r(l)**k*(pf(l,i)*qf(l,j) + qf(l,i)*pf(l,j))*rp(l)
+      end do
 !
 !   Perform integration
 !
-      CALL QUAD (RESULT)
-      RINTHF = RESULT
+      call quad (result)
+      rinthf = result
 !
-      RETURN
-      END FUNCTION RINTHF
+      return
+      end function rinthf

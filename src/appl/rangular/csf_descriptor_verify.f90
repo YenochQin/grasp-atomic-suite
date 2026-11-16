@@ -1,18 +1,18 @@
 ! Compare both loaders directly, before any angular coefficient calculation.
 program csf_descriptor_verify
    use iso_fortran_env, only: int8, int64, error_unit
-   use parameter_def, only: orbital_capacity => NNNW
-   use orb_C, only: occupations => IQA, current_csf_count => NCF, orbital_count => NW, &
-                    principal_numbers => NP, relativistic_kappas => NAK, orbital_momenta => NKL, &
-                    single_electron_two_j => NKJ, orbital_labels => NH
-   use stat_C, only: subshell_quantum_numbers => JQSA, couplings => JCUPA
-   use hblock_C, only: block_count => NBLOCK, block_lengths => NCFBLK
-   use def_C, only: electron_count => NELEC
-   use iounit_C, only: standard_error_unit => ISTDE
+   use parameter_def, only: orbital_capacity => nnnw
+   use orb_c, only: occupations => iqa, current_csf_count => ncf, orbital_count => nw, &
+                    principal_numbers => np, relativistic_kappas => nak, orbital_momenta => nkl, &
+                    single_electron_two_j => nkj, orbital_labels => nh
+   use stat_c, only: subshell_quantum_numbers => jqsa, couplings => jcupa
+   use hblock_c, only: block_count => nblock, block_lengths => ncfblk
+   use def_c, only: electron_count => nelec
+   use iounit_c, only: standard_error_unit => istde
    use csf_descriptor_input, only: descriptor_source, open_descriptor_source, close_descriptor_source, &
                                    read_descriptor_block, descriptor_block_label
-   use cslh_I, only: cslh
-   use lodcsh2_I, only: lodcsh2
+   use cslh_i, only: cslh
+   use lodcsh2_i, only: lodcsh2
    implicit none
    integer, parameter :: maximum_blocks = 50
    type(descriptor_source) :: source

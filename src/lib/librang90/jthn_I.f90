@@ -1,8 +1,8 @@
-      MODULE jthn_I
-      INTERFACE
+      module jthn_i
+      interface
 !
-      INTEGER FUNCTION JTHN(K,N,I)
-      INTEGER, INTENT(IN) :: I, N, K
-      END FUNCTION
-      END INTERFACE
-      END MODULE
+      integer function jthn(k,n,i)
+      integer, intent(in) :: i, n, k
+      end function
+      end interface
+      end module

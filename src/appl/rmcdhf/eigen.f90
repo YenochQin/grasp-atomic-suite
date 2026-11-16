@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION EIGEN (J)
+      real(kind(0.0d0)) function eigen (j)
 !                                                                      *
 !   This function computes an estimate of the energy of orbital J .    *
 !                                                                      *
@@ -15,80 +15,80 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE grid_C
-      USE orb_C
-      USE pote_C
-      USE tatb_C
-      USE wave_C
+      use vast_kind_param, only:  double
+      use def_c
+      use grid_c
+      use orb_c
+      use pote_c
+      use tatb_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE quad_I
-      USE dpbdt_I
-      IMPLICIT NONE
+      use quad_i
+      use dpbdt_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
+      integer  :: j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE) :: PIECE1, PIECE2, PIECE3, PIECE4, PIECE5
+      integer :: i
+      real(double) :: piece1, piece2, piece3, piece4, piece5
 !-----------------------------------------------
 !
 !
 !   Initialization
 !
-      MTP = MF(J)
+      mtp = mf(j)
 !
 !   Exchange term
 !
-      TA(1) = 0.0D00
-      DO I = 2, MTP
-         TA(I) = (PF(I,J)*XQ(I)-QF(I,J)*XP(I))*RPOR(I)
-      END DO
-      CALL QUAD (PIECE1)
-      PIECE1 = C*PIECE1
+      ta(1) = 0.0d00
+      do i = 2, mtp
+         ta(i) = (pf(i,j)*xq(i)-qf(i,j)*xp(i))*rpor(i)
+      end do
+      call quad (piece1)
+      piece1 = c*piece1
 !
 !   Direct term
 !
-      TA(1) = 0.0D00
-      DO I = 2, MTP
-         TA(I) = (PF(I,J)**2 + QF(I,J)**2)*YP(I)*RPOR(I)
-      END DO
-      CALL QUAD (PIECE2)
+      ta(1) = 0.0d00
+      do i = 2, mtp
+         ta(i) = (pf(i,j)**2 + qf(i,j)**2)*yp(i)*rpor(i)
+      end do
+      call quad (piece2)
 !
 !   Kinetic energy terms
 !
-      TA(1) = 0.0D00
-      DO I = 2, MTP
-         TA(I) = QF(I,J)**2*RP(I)
-      END DO
-      CALL QUAD (PIECE3)
-      PIECE3 = 2.0D00*C*C*PIECE3
+      ta(1) = 0.0d00
+      do i = 2, mtp
+         ta(i) = qf(i,j)**2*rp(i)
+      end do
+      call quad (piece3)
+      piece3 = 2.0d00*c*c*piece3
 !
-      TA(1) = 0.0D00
-      DO I = 2, MTP
-         TA(I) = (PF(I,J)*QF(I,J))*RPOR(I)
-      END DO
-      CALL QUAD (PIECE4)
-      PIECE4 = -2.0D00*DBLE(NAK(J))*C*PIECE4
+      ta(1) = 0.0d00
+      do i = 2, mtp
+         ta(i) = (pf(i,j)*qf(i,j))*rpor(i)
+      end do
+      call quad (piece4)
+      piece4 = -2.0d00*dble(nak(j))*c*piece4
 !
-      CALL DPBDT (J)
-      TA(1) = 0.0D00
-      DO I = 2, MTP
-         TA(I) = PF(I,J)*TB(I) - QF(I,J)*TA(I)
-      END DO
-      CALL QUAD (PIECE5)
-      PIECE5 = C*PIECE5/H
+      call dpbdt (j)
+      ta(1) = 0.0d00
+      do i = 2, mtp
+         ta(i) = pf(i,j)*tb(i) - qf(i,j)*ta(i)
+      end do
+      call quad (piece5)
+      piece5 = c*piece5/h
 !
 !   Assembly
 !
-      EIGEN = PIECE1 + PIECE2 + PIECE3 + PIECE4 + PIECE5
+      eigen = piece1 + piece2 + piece3 + piece4 + piece5
 !
-      RETURN
+      return
 !
-      END FUNCTION EIGEN
+      end function eigen

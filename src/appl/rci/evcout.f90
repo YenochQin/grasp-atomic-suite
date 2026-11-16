@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE EVCOUT
+      subroutine evcout
 !                                                                      *
 !   Routine for printing eigenvectors.                                 *
 !                                                                      *
@@ -15,79 +15,79 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE memory_man
-      USE eigv_C
-      USE orb_C,           ONLY: ncf, nw, iqa
-      USE prnt_C
-      IMPLICIT NONE
+      use vast_kind_param, only: double
+      use memory_man
+      use eigv_c
+      use orb_c,           only: ncf, nw, iqa
+      use prnt_c
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V A R I A B L E S
 !-----------------------------------------------
-      INTEGER :: I, J1, J2, nvex, jp, l, m
-      INTEGER, DIMENSION(:), pointer :: ILOC
+      integer :: i, j1, j2, nvex, jp, l, m
+      integer, dimension(:), pointer :: iloc
 !-----------------------------------------------
 !
 !   Header
 !
-      WRITE (24,300)
+      write (24,300)
 !
 !   Determine which eigenvectors are to be printed out
 !
-      NVEX = NVEC
-      CALL ALLOC (ILOC,NVEC,'ILOC', 'EVCOUT')
-      DO 1 I = 1,NVEC
-         ILOC(I) = IVEC(I)
-    1 CONTINUE
+      nvex = nvec
+      call alloc (iloc,nvec,'ILOC', 'EVCOUT')
+      do 1 i = 1,nvec
+         iloc(i) = ivec(i)
+    1 continue
 !
 !   There are eight columns across the width of a page
 !
-      JP = 8
+      jp = 8
 !
 !   Set up for the first set of columns
 !
-      J1 = 1
-      J2 = JP
+      j1 = 1
+      j2 = jp
 !
 !   Loop over sets of columns
 !
-    3 IF (J2 .GT. NVEX) J2 = NVEX
+    3 if (j2 .gt. nvex) j2 = nvex
 !
 !   Write out the column numbers; skip a line
 !
-      WRITE (24,301) (ILOC(L),L = J1,J2)
-      WRITE (24,302)
+      write (24,301) (iloc(l),l = j1,j2)
+      write (24,302)
 !
 !   Write out the rows
 !
-      DO 4 M = 1,NCF
+      do 4 m = 1,ncf
 !
-         WRITE (24,303) (EVEC(M+(L-1)*NCF),L = J1,J2)
+         write (24,303) (evec(m+(l-1)*ncf),l = j1,j2)
 !
 !   Skip a line after every tenth row
 !
-         IF (MOD(M,10) .EQ. 0) WRITE (24,302)
+         if (mod(m,10) .eq. 0) write (24,302)
 !
-    4 CONTINUE
+    4 continue
 !
 !   Set up for the next set of columns
 !
-      WRITE (24,303)
-      IF (J2 .LT. NVEX) THEN
-         J1 = J1+JP
-         J2 = J2+JP
-         GOTO 3
-      ENDIF
+      write (24,303)
+      if (j2 .lt. nvex) then
+         j1 = j1+jp
+         j2 = j2+jp
+         goto 3
+      endif
 !
 !   Deallocate storage for ILOC
 !
-      CALL DALLOC (ILOC, 'ILOC', 'EVCOUT')
+      call dalloc (iloc, 'ILOC', 'EVCOUT')
 !
-      RETURN
+      return
 !
-  300 FORMAT (//' Eigenvectors:'/)
-  301 FORMAT (1X,8(I8,7X))
-  302 FORMAT (1X)
-  303 FORMAT (1X,1P,8D15.7)
+  300 format (//' Eigenvectors:'/)
+  301 format (1x,8(i8,7x))
+  302 format (1x)
+  303 format (1x,1p,8d15.7)
 !
-      END
+      end

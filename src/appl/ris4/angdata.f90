@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ANGDATA(NAME,AVAIL,WHICHONE)
+      subroutine angdata(name,avail,whichone)
 !                                                                      *
 !   Checks if the angular files name.IOB (one-body) or                 *
 !   name.ITB (Two-body) are available                                  *
@@ -13,61 +13,61 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE orb_C
+      use vast_kind_param,  only: double
+      use orb_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER (LEN = 24), INTENT(IN) :: NAME
-      LOGICAL, INTENT(OUT) :: AVAIL
-      INTEGER, INTENT(IN)  :: WHICHONE
+      character (len = 24), intent(in) :: name
+      logical, intent(out) :: avail
+      integer, intent(in)  :: whichone
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: FOUND
-      INTEGER :: J, NF, istat, IWORD
+      logical :: found
+      integer :: j, nf, istat, iword
 !-----------------------------------------------
 !
-      J = INDEX(NAME,' ')
-      IF (WHICHONE.EQ.1) THEN
-          NF = 50
-          INQUIRE (FILE = NAME(1:J-1)//'.IOB', EXIST = FOUND)
-      ELSEIF (WHICHONE.EQ.2) THEN
-          NF = 51
-          INQUIRE (FILE = NAME(1:J-1)//'.ITB', EXIST = FOUND)
-      ELSE
+      j = index(name,' ')
+      if (whichone.eq.1) then
+          nf = 50
+          inquire (file = name(1:j-1)//'.IOB', exist = found)
+      elseif (whichone.eq.2) then
+          nf = 51
+          inquire (file = name(1:j-1)//'.ITB', exist = found)
+      else
          print*,'This message should never appear'
-      ENDIF
+      endif
 
-      IF (.NOT.FOUND) THEN
-      IF (WHICHONE.EQ.1) PRINT *, ' One-body angular file not available'
-      IF (WHICHONE.EQ.2) PRINT *, ' Two-body angular file not available'
-        AVAIL = .FALSE.
-        RETURN
-      ELSE
-        IF (WHICHONE.EQ.1) THEN
-          OPEN(UNIT=NF,FILE = NAME(1:J-1)//'.IOB',STATUS='UNKNOWN'     &
-            ,POSITION='APPEND',FORM='UNFORMATTED')
-        ELSE
-          OPEN(UNIT=NF,FILE = NAME(1:J-1)//'.ITB',STATUS='UNKNOWN'     &
-            ,POSITION='APPEND',FORM='UNFORMATTED')
-        ENDIF
-        BACKSPACE (UNIT = NF,IOSTAT=istat)
-        READ(NF) IWORD
-        REWIND(UNIT = NF)
-        IF (IWORD.EQ.-1) THEN
-          IF (WHICHONE.EQ.1) PRINT *, ' One-body angular file available'
-          IF (WHICHONE.EQ.2) PRINT *, ' Two-body angular file available'
-          AVAIL = .TRUE.
-        ELSE
-          AVAIL = .FALSE.
-          IF (WHICHONE.EQ.1) PRINT *,' One-body angular file incomplete'
-          IF (WHICHONE.EQ.2) PRINT *,' Two-body angular file incomplete'
-        ENDIF
-      ENDIF
-      RETURN
-      END SUBROUTINE ANGDATA
+      if (.not.found) then
+      if (whichone.eq.1) print *, ' One-body angular file not available'
+      if (whichone.eq.2) print *, ' Two-body angular file not available'
+        avail = .false.
+        return
+      else
+        if (whichone.eq.1) then
+          open(unit=nf,file = name(1:j-1)//'.IOB',status='UNKNOWN'     &
+            ,position='APPEND',form='UNFORMATTED')
+        else
+          open(unit=nf,file = name(1:j-1)//'.ITB',status='UNKNOWN'     &
+            ,position='APPEND',form='UNFORMATTED')
+        endif
+        backspace (unit = nf,iostat=istat)
+        read(nf) iword
+        rewind(unit = nf)
+        if (iword.eq.-1) then
+          if (whichone.eq.1) print *, ' One-body angular file available'
+          if (whichone.eq.2) print *, ' Two-body angular file available'
+          avail = .true.
+        else
+          avail = .false.
+          if (whichone.eq.1) print *,' One-body angular file incomplete'
+          if (whichone.eq.2) print *,' Two-body angular file incomplete'
+        endif
+      endif
+      return
+      end subroutine angdata

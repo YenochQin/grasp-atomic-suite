@@ -1,6 +1,6 @@
 !**************************************************************************
 !
-      SUBROUTINE DMERGE(N, DB, DC, IDY, DA, DCONST, DL)
+      subroutine dmerge(n, db, dc, idy, da, dconst, dl)
 !-----------------------------------------------
 !
 !  this merge version has the advantage of loading da(i)
@@ -13,31 +13,31 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN)    :: N
-      REAL(DOUBLE), INTENT(IN)    :: DCONST
-      REAL(DOUBLE), INTENT(OUT)   :: DL
-      INTEGER, DIMENSION(N), INTENT(IN) :: IDY
-      REAL(DOUBLE), DIMENSION(*), INTENT(IN) :: DB
-      REAL(DOUBLE), DIMENSION(*), INTENT(INOUT) :: DC
-      REAL(DOUBLE), DIMENSION(N), INTENT(IN) :: DA
+      integer,      intent(in)    :: n
+      real(double), intent(in)    :: dconst
+      real(double), intent(out)   :: dl
+      integer, dimension(n), intent(in) :: idy
+      real(double), dimension(*), intent(in) :: db
+      real(double), dimension(*), intent(inout) :: dc
+      real(double), dimension(n), intent(in) :: da
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE) :: DSUM
+      integer :: i
+      real(double) :: dsum
 !-----------------------------------------------
 
-      DSUM = 0.0
-      DO I = 1, N
-         DSUM = DSUM + DA(I)*DB(IDY(I))
-         DC(IDY(I)) = DC(IDY(I)) + DCONST*DA(I)
-      END DO
-      DL = DSUM
+      dsum = 0.0
+      do i = 1, n
+         dsum = dsum + da(i)*db(idy(i))
+         dc(idy(i)) = dc(idy(i)) + dconst*da(i)
+      end do
+      dl = dsum
 
-      RETURN
-      END SUBROUTINE DMERGE
+      return
+      end subroutine dmerge

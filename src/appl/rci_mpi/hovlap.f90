@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION HOVLAP (P, Q, MTPO, NP, KAPPA, Z)
+      real(kind(0.0d0)) function hovlap (p, q, mtpo, np, kappa, z)
 !                                                                      *
 !   This subprogram computes the overlap of the orbital tabulated in   *
 !   the arrays  P  and  Q  with maximum tabulation point  MTPO  with   *
@@ -17,45 +17,45 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE grid_C
-      USE horb_C, ONLY: ph, qh
-      USE tatb_C, ONLY: mtp, ta
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use grid_c
+      use horb_c, only: ph, qh
+      use tatb_c, only: mtp, ta
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dcbsrw_I
-      USE quad_I
-      IMPLICIT NONE
+      use dcbsrw_i
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: MTPO
-      INTEGER  :: NP
-      INTEGER  :: KAPPA
-      REAL(DOUBLE)  :: Z
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(IN) :: P
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(IN) :: Q
+      integer, intent(in) :: mtpo
+      integer  :: np
+      integer  :: kappa
+      real(double)  :: z
+      real(double), dimension(nnnp), intent(in) :: p
+      real(double), dimension(nnnp), intent(in) :: q
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: MTPH, I
-      REAL(DOUBLE) :: EH, PZH, RESULT
+      integer :: mtph, i
+      real(double) :: eh, pzh, result
 !-----------------------------------------------
 !
 !   Set up the hydrogenic orbital
 !
-      CALL DCBSRW (NP, KAPPA, Z, EH, PZH, PH, QH, MTPH)
+      call dcbsrw (np, kappa, z, eh, pzh, ph, qh, mtph)
 !
 !   Compute the overlap
 !
-      MTP = MIN(MTPH,MTPO)
-      TA(1) = 0.0D00
-      TA(2:MTP) = (P(2:MTP)*PH(2:MTP)+Q(2:MTP)*QH(2:MTP))*RP(2:MTP)
-      CALL QUAD (RESULT)
+      mtp = min(mtph,mtpo)
+      ta(1) = 0.0d00
+      ta(2:mtp) = (p(2:mtp)*ph(2:mtp)+q(2:mtp)*qh(2:mtp))*rp(2:mtp)
+      call quad (result)
 !
-      HOVLAP = RESULT
+      hovlap = result
 !
-      RETURN
-      END FUNCTION HOVLAP
+      return
+      end function hovlap

@@ -4,7 +4,7 @@
 !     S C A L V E
 !     ------------------------------------------------------------------
 !
-      SUBROUTINE SCALVE(VECTOR, FACTOR, NDIM)
+      subroutine scalve(vector, factor, ndim)
 !
 ! CALCULATE SCALAR(FACTOR) TIMES VECTOR
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:08:49   1/ 6/07
@@ -13,17 +13,17 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NDIM
-      REAL(DOUBLE), INTENT(IN) :: FACTOR
-      REAL(DOUBLE), DIMENSION(NDIM), INTENT(INOUT) :: VECTOR
+      integer, intent(in) :: ndim
+      real(double), intent(in) :: factor
+      real(double), dimension(ndim), intent(inout) :: vector
 !-----------------------------------------------
 !
-      VECTOR(:NDIM) = VECTOR(:NDIM)*FACTOR
+      vector(:ndim) = vector(:ndim)*factor
 !
-      RETURN
-      END SUBROUTINE SCALVE
+      return
+      end subroutine scalve

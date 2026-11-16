@@ -2,7 +2,7 @@
 
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GENRWF
+      subroutine genrwf
 !                                                                      *
 !   Controls the computation of the subshell radial wavefunctions.     *
 !                                                                      *
@@ -19,172 +19,172 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE COUN_C
-      USE DEF_C, ONLY: Z, C, NNNP
-      USE DEFAULT_C
-      USE GRID_C
-      USE LEFT_C, ONLY: SET
-      USE NPAR_C
-      USE ORB_C
-      USE WAVE_C, ONLY: PF, QF
-      USE WHFROM_C, ONLY: SOURCE
-      USE IOUNIT_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use coun_c
+      use def_c, only: z, c, nnnp
+      use default_c
+      use grid_c
+      use left_c, only: set
+      use npar_c
+      use orb_c
+      use wave_c, only: pf, qf
+      use whfrom_c, only: source
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE tfpot_I
-      USE prtrem_I
-      USE getrsl_I
-      USE frmrwf_I
-      USE frmtfp_I
-      USE frmhyd_I
-      USE summry_I
-      IMPLICIT NONE
+      use getyn_i
+      use tfpot_i
+      use prtrem_i
+      use getrsl_i
+      use frmrwf_i
+      use frmtfp_i
+      use frmhyd_i
+      use summry_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER , DIMENSION(NNNW) :: INDEX
-      INTEGER :: J, I, K, NRADIAL, NSUBS, LOC
-      REAL(DOUBLE) :: CON, FKK
-      LOGICAL :: ALL, YES, MODIFY=.FALSE., EXISTED
-      CHARACTER :: INFILE*128
+      integer , dimension(nnnw) :: index
+      integer :: j, i, k, nradial, nsubs, loc
+      real(double) :: con, fkk
+      logical :: all, yes, modify=.false., existed
+      character :: infile*128
 !-----------------------------------------------
 
 !
 !   Set the threshold for node counting
 !
-      THRESH = 0.05
+      thresh = 0.05
 !
 !   Set up the Thomas-Fermi potential
 !
-      CALL TFPOT
+      call tfpot
 !
 !   Allocate storage to the arrays that store the subshell
 !   radial wavefunction arrays; initialise these and all
 !   associated arrays
 !
-      CALL ALLOC (PF,NNNP,NW,'PF', 'GENRWF')
-      CALL ALLOC (QF,NNNP,NW,'QF', 'GENRWF')
+      call alloc (pf,nnnp,nw,'PF', 'GENRWF')
+      call alloc (qf,nnnp,nw,'QF', 'GENRWF')
 
-      CON = Z/C
-      CON = CON*CON
+      con = z/c
+      con = con*con
 
-      DO J = 1, NW
-         SET(J) = .FALSE.
-         SOURCE(J) = ' '
-         PF(:N,J) = 0.D0
-         QF(:N,J) = 0.D0
+      do j = 1, nw
+         set(j) = .false.
+         source(j) = ' '
+         pf(:n,j) = 0.d0
+         qf(:n,j) = 0.d0
 
-         K = ABS(NAK(J))
-         IF (NPARM > 0) THEN
-            GAMA(J) = DBLE(K)
-         ELSE IF (NPARM == 0) THEN
-            FKK = DBLE(K*K)
-            IF (FKK >= CON) THEN
-               GAMA(J) = SQRT(FKK - CON)
-            ELSE
-               WRITE (ISTDE, *) 'LODRWF: Imaginary gamma parameter ', 'for ', &
-                  NP(J), NH(J), ' orbital;'
-               WRITE (ISTDE, *) 'the point model for the nucleus ', &
-                  'is inappropriate for Z > ', C, '.'
-               STOP
-            ENDIF
-         ENDIF
-      END DO
+         k = abs(nak(j))
+         if (nparm > 0) then
+            gama(j) = dble(k)
+         else if (nparm == 0) then
+            fkk = dble(k*k)
+            if (fkk >= con) then
+               gama(j) = sqrt(fkk - con)
+            else
+               write (istde, *) 'LODRWF: Imaginary gamma parameter ', 'for ', &
+                  np(j), nh(j), ' orbital;'
+               write (istde, *) 'the point model for the nucleus ', &
+                  'is inappropriate for Z > ', c, '.'
+               stop
+            endif
+         endif
+      end do
 !
 !   Write out the complete list of subshell radial wave functions
 !
-      CALL PRTREM (ALL)
+      call prtrem (all)
 !
 ! Direct to read radial functions till finish
 !
-  123 CONTINUE
-      IF (.NOT.ALL) THEN
-  234    CONTINUE
-         WRITE (ISTDE, *)
-         WRITE (ISTDE, *) 'Read subshell radial wavefunctions. ', &
+  123 continue
+      if (.not.all) then
+  234    continue
+         write (istde, *)
+         write (istde, *) 'Read subshell radial wavefunctions. ', &
             'Choose one below'
-         WRITE (ISTDE, *) '    1 -- GRASP92 File'
-         WRITE (ISTDE, *) '    2 -- Thomas-Fermi'
-         WRITE (ISTDE, *) '    3 -- Screened Hydrogenic'
-         WRITE (ISTDE, *) '    4 -- Screened Hydrogenic [custom Z]'
+         write (istde, *) '    1 -- GRASP92 File'
+         write (istde, *) '    2 -- Thomas-Fermi'
+         write (istde, *) '    3 -- Screened Hydrogenic'
+         write (istde, *) '    4 -- Screened Hydrogenic [custom Z]'
 
-         READ (ISTDI, *) NRADIAL
-         IF (NRADIAL<1 .OR. NRADIAL>4) THEN
-            WRITE (ISTDE, *) NRADIAL, 'is not a valid choice, redo'
-            GO TO 234
-         ENDIF
+         read (istdi, *) nradial
+         if (nradial<1 .or. nradial>4) then
+            write (istde, *) nradial, 'is not a valid choice, redo'
+            go to 234
+         endif
 
-         IF (NRADIAL == 1) THEN
-  345       CONTINUE
-            WRITE (ISTDE, *) 'Enter the file name (Null then "rwfn.out")'
-            READ (ISTDI, '(A)') INFILE
-            IF (LEN_TRIM(INFILE) == 0) INFILE = 'rwfn.out'
+         if (nradial == 1) then
+  345       continue
+            write (istde, *) 'Enter the file name (Null then "rwfn.out")'
+            read (istdi, '(A)') infile
+            if (len_trim(infile) == 0) infile = 'rwfn.out'
 
-            INQUIRE(FILE=INFILE, EXIST=EXISTED)
-            IF (.NOT.EXISTED) THEN
-               WRITE (ISTDE, *) ' File "', INFILE(1:LEN_TRIM(INFILE)), &
+            inquire(file=infile, exist=existed)
+            if (.not.existed) then
+               write (istde, *) ' File "', infile(1:len_trim(infile)), &
                   '" does not exist, redo'
-               GO TO 345
-            ENDIF
-         ENDIF
+               go to 345
+            endif
+         endif
 
-         WRITE (ISTDE, *) 'Enter the list of relativistic subshells:'
-         OPEN(UNIT=734, FILE='tmp_734', STATUS='NEW')
-         CALL GETRSL (INDEX, NSUBS)
-         CLOSE(734, STATUS='DELETE')
+         write (istde, *) 'Enter the list of relativistic subshells:'
+         open(unit=734, file='tmp_734', status='NEW')
+         call getrsl (index, nsubs)
+         close(734, status='DELETE')
 
-         IF (NRADIAL == 1) THEN
-            CALL FRMRWF (INDEX, NSUBS, INFILE)
-         ELSE IF (NRADIAL == 2) THEN
-            CALL FRMTFP (INDEX, NSUBS)
-         ELSE IF (NRADIAL == 3) THEN
-            CALL FRMHYD (INDEX, NSUBS, MODIFY,NRADIAL)
-         ELSE IF (NRADIAL == 4) THEN
-            CALL FRMHYD (INDEX, NSUBS, MODIFY,NRADIAL)
-         ENDIF
+         if (nradial == 1) then
+            call frmrwf (index, nsubs, infile)
+         else if (nradial == 2) then
+            call frmtfp (index, nsubs)
+         else if (nradial == 3) then
+            call frmhyd (index, nsubs, modify,nradial)
+         else if (nradial == 4) then
+            call frmhyd (index, nsubs, modify,nradial)
+         endif
 
-         CALL PRTREM (ALL)
-         IF (.NOT.ALL) GO TO 234
+         call prtrem (all)
+         if (.not.all) go to 234
 
-      ENDIF
+      endif
 !
 ! All read. Let know, and allow modifying if non default
 !
-      WRITE (ISTDE, *) 'All required subshell radial wavefunctions ', &
+      write (istde, *) 'All required subshell radial wavefunctions ', &
          ' have been estimated:'
-      CALL SUMMRY (ISTDE)
+      call summry (istde)
 
-      IF (NDEF == 0) THEN
-         MODIFY = .FALSE.
-      ELSE
-         WRITE (ISTDE, *) 'Revise any of these estimates?'
-         MODIFY = GETYN()
-      ENDIF
+      if (ndef == 0) then
+         modify = .false.
+      else
+         write (istde, *) 'Revise any of these estimates?'
+         modify = getyn()
+      endif
 
-      IF (MODIFY) THEN
-  456    CONTINUE
-         WRITE (ISTDE, *) 'Enter the list of subshells whose radial ', &
+      if (modify) then
+  456    continue
+         write (istde, *) 'Enter the list of subshells whose radial ', &
             'wavefunctions are to be revised:'
-         OPEN(UNIT=734, FILE='tmp_734', STATUS='NEW')
-         CALL GETRSL (INDEX, NSUBS)
-         CLOSE(734, STATUS='DELETE')
-         IF (NSUBS == 0) GO TO 456
-         DO J = 1, NSUBS
-            LOC = INDEX(J)
-            SET(LOC) = .FALSE.
-            PF(:N,LOC) = 0.D0
-            QF(:N,LOC) = 0.D0
-            SOURCE(LOC) = ' '
-         END DO
-         ALL = .FALSE.
-         GO TO 123
-      ENDIF
+         open(unit=734, file='tmp_734', status='NEW')
+         call getrsl (index, nsubs)
+         close(734, status='DELETE')
+         if (nsubs == 0) go to 456
+         do j = 1, nsubs
+            loc = index(j)
+            set(loc) = .false.
+            pf(:n,loc) = 0.d0
+            qf(:n,loc) = 0.d0
+            source(loc) = ' '
+         end do
+         all = .false.
+         go to 123
+      endif
 
-      IF (NDEF /= 0) CALL SUMMRY (24)
+      if (ndef /= 0) call summry (24)
 
-      RETURN
-      END SUBROUTINE GENRWF
+      return
+      end subroutine genrwf

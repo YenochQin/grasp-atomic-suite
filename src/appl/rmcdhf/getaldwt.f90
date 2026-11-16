@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      SUBROUTINE GETALDWT(NCF, WT)
+      subroutine getaldwt(ncf, wt)
 !
 !   Interactively determines the weights.
 !
@@ -15,78 +15,78 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE iounit_C
+      use vast_kind_param, only:  double
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE itjpo_I
-      IMPLICIT NONE
+      use itjpo_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: NCF
-      REAL(DOUBLE)  :: WT(NCF)
+      integer , intent(in) :: ncf
+      real(double)  :: wt(ncf)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, N159
-      REAL(DOUBLE) :: SUMWGT, FTJPOI
+      integer :: i, n159
+      real(double) :: sumwgt, ftjpoi
 !-----------------------------------------------
 
 ! Select a method to assign level weights for NCF > 1 case
 
-      WRITE (ISTDE, *) 'level weights (1 equal;  5 standard;  9 user)'
+      write (istde, *) 'level weights (1 equal;  5 standard;  9 user)'
 
       ! Let user try 10 times to get the correct input. 10 is BIG
       ! enough since the idea here is to allow user mistakes and
       ! at the same time to avoid an infinity loop.
 
-      DO I = 1, 10
-         READ (ISTDI, *) N159
-         IF (N159==1 .OR. N159==5 .OR. N159==9) EXIT
-         WRITE (ISTDE, *) 'Input not correct, do it again. tried=', I
-      END DO
+      do i = 1, 10
+         read (istdi, *) n159
+         if (n159==1 .or. n159==5 .or. n159==9) exit
+         write (istde, *) 'Input not correct, do it again. tried=', i
+      end do
 
-      IF (I > 10) ERROR STOP 'Must be running un-attended'
+      if (i > 10) error stop 'Must be running un-attended'
 
 !------------------------------------------------------------------
 
-      SELECT CASE (N159)                         ! Equal weight
-      CASE (1)
-         WT = 1.D0
-         SUMWGT = DBLE(NCF)
-      CASE (5)                                   ! Standard weight
-         SUMWGT = 0.D0
-         DO I = 1, NCF
-            FTJPOI = DBLE(ITJPO(I))
-            WT(I) = FTJPOI
-            SUMWGT = SUMWGT + FTJPOI
-         END DO
-      CASE (9)                                   ! User-input weight
+      select case (n159)                         ! Equal weight
+      case (1)
+         wt = 1.d0
+         sumwgt = dble(ncf)
+      case (5)                                   ! Standard weight
+         sumwgt = 0.d0
+         do i = 1, ncf
+            ftjpoi = dble(itjpo(i))
+            wt(i) = ftjpoi
+            sumwgt = sumwgt + ftjpoi
+         end do
+      case (9)                                   ! User-input weight
 
-  123    CONTINUE
-         WRITE (ISTDE, *) 'Enter the (relative) weights of the', NCF, &
+  123    continue
+         write (istde, *) 'Enter the (relative) weights of the', ncf, &
             ' levels :'
-         READ (ISTDI, *) (WT(I),I=1,NCF)
+         read (istdi, *) (wt(i),i=1,ncf)
 
-         SUMWGT = 0.D0
-         DO I = 1, NCF
-            IF (WT(I) <= 0.D0) THEN
-               WRITE (ISTDE, *) 'Weights must exceed 0;'
-               GO TO 123
-            ELSE
-               SUMWGT = SUMWGT + WT(I)
-            ENDIF
-         END DO
+         sumwgt = 0.d0
+         do i = 1, ncf
+            if (wt(i) <= 0.d0) then
+               write (istde, *) 'Weights must exceed 0;'
+               go to 123
+            else
+               sumwgt = sumwgt + wt(i)
+            endif
+         end do
 
-      CASE DEFAULT
-         WRITE (ISTDE, *) 'Impossible ! Because it was guarded'
-         ERROR STOP
-      END SELECT
+      case default
+         write (istde, *) 'Impossible ! Because it was guarded'
+         error stop
+      end select
 
-      SUMWGT = 1.D0/SUMWGT
-      WT = SUMWGT*WT
+      sumwgt = 1.d0/sumwgt
+      wt = sumwgt*wt
 
-      RETURN
-      END SUBROUTINE GETALDWT
+      return
+      end subroutine getaldwt

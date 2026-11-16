@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      SUBROUTINE CSLH(NAME, NCORE, NBLKIN, IDBLK)
+      subroutine cslh(name, ncore, nblkin, idblk)
 !  A container which calls setcsll to open, read <name> file to get
 !     nblock, ncfblk(), idblk(), ncftot.
 !  It then calls lib92/lodcsh to get
@@ -18,43 +18,43 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE HBLOCK_C
-      USE DEF_C
-      USE ORB_C, NCFTOT=>NCF
+      use vast_kind_param, only:  double
+      use memory_man
+      use hblock_c
+      use def_c
+      use orb_c, ncftot=>ncf
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE setcsll_I
-      USE lodcsh_I
-      IMPLICIT NONE
+      use setcsll_i
+      use lodcsh_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NCORE
-      INTEGER  :: NBLKIN
-      CHARACTER  :: NAME*(*)
-      CHARACTER  :: IDBLK(*)*8
+      integer  :: ncore
+      integer  :: nblkin
+      character  :: name*(*)
+      character  :: idblk(*)*8
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IQADUM
-      INTEGER :: IERR
+      integer :: iqadum
+      integer :: ierr
 !-----------------------------------------------
 !
 
 ! node-0 does exactly the same as the serial code does
 
-      CALL ALLOC (NCFBLK, NBLKIN + 1, 'NCFBLK', 'CSLH')
+      call alloc (ncfblk, nblkin + 1, 'NCFBLK', 'CSLH')
 
-      CALL SETCSLL (21, NAME, NBLKIN, NBLOCK, NCFBLK, NCFTOT, IDBLK)
-      CALL RALLOC (NCFBLK, NBLOCK + 1, 'NCFBLK', 'CSLH')
-      REWIND (21)
-      READ (21, *)
+      call setcsll (21, name, nblkin, nblock, ncfblk, ncftot, idblk)
+      call ralloc (ncfblk, nblock + 1, 'NCFBLK', 'CSLH')
+      rewind (21)
+      read (21, *)
       !..Load header of <name> file
-      CALL LODCSH (21, NCORE)
+      call lodcsh (21, ncore)
 
-      RETURN
-      END SUBROUTINE CSLH
+      return
+      end subroutine cslh

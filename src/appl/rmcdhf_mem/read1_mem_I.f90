@@ -1,12 +1,12 @@
-      MODULE read1_mem_I
-      INTERFACE
+      module read1_mem_i
+      interface
 !   Written by  G. Gaigalas               Vilnius, September 2021
-      SUBROUTINE read1_mem(NFILE, NCONTR_tot2, LAB, NCONTR)
-      USE vast_kind_param, ONLY: LONG
-      INTEGER(LONG), INTENT(IN) :: NCONTR_tot2
-      INTEGER, INTENT(IN)       :: NFILE
-      INTEGER, INTENT(OUT)      :: LAB
-      INTEGER, INTENT(OUT)      :: NCONTR
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine read1_mem(nfile, ncontr_tot2, lab, ncontr)
+      use vast_kind_param, only: long
+      integer(long), intent(in) :: ncontr_tot2
+      integer, intent(in)       :: nfile
+      integer, intent(out)      :: lab
+      integer, intent(out)      :: ncontr
+      end subroutine
+      end interface
+      end module

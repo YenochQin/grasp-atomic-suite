@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE RKINTC(IA, IB, IC, ID, K, TEGRAL)
+      subroutine rkintc(ia, ib, ic, id, k, tegral)
 !                                                                      *
 !                         k                                            *
 !   This routine returns R (abcd) integrals.                           *
@@ -14,93 +14,93 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE cteilsrk_C
-      USE orb_C
-      USE kkstart_C
+      use vast_kind_param, only:  double
+      use cteilsrk_c
+      use orb_c
+      use kkstart_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(INOUT) :: IA, IB, IC, ID
-      INTEGER, INTENT(IN) :: K
-      REAL(DOUBLE), INTENT(OUT) :: TEGRAL
+      integer, intent(inout) :: ia, ib, ic, id
+      integer, intent(in) :: k
+      real(double), intent(out) :: tegral
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: KEY, ISWAP, INDEX, JL, JU, JM, LOC
-      LOGICAL :: FOUND, FIRST
+      integer :: key, iswap, index, jl, ju, jm, loc
+      logical :: found, first
 !-----------------------------------------------
 !
-      KEY = NW + 1
+      key = nw + 1
 !
 !   Ensure that the indices are in `canonical' order
 !   Compute the composite (packed) index
 !
 
 
-      IF (IA > IC) THEN
-         ISWAP = IC
-         IC = IA
-         IA = ISWAP
-      ENDIF
-      IF (IB > ID) THEN
-         ISWAP = ID
-         ID = IB
-         IB = ISWAP
-      ENDIF
-      IF (IA > IB) THEN
-         ISWAP = IB
-         IB = IA
-         IA = ISWAP
-         ISWAP = ID
-         ID = IC
-         IC = ISWAP
-      ENDIF
+      if (ia > ic) then
+         iswap = ic
+         ic = ia
+         ia = iswap
+      endif
+      if (ib > id) then
+         iswap = id
+         id = ib
+         ib = iswap
+      endif
+      if (ia > ib) then
+         iswap = ib
+         ib = ia
+         ia = iswap
+         iswap = id
+         id = ic
+         ic = iswap
+      endif
 
-      INDEX = ((IA*KEY + IB)*KEY + IC)*KEY + ID
+      index = ((ia*key + ib)*key + ic)*key + id
 !
-      JL = KSTART(K)
-      JU = KSTART(K+1) - 1
+      jl = kstart(k)
+      ju = kstart(k+1) - 1
 
-      IF (INDEX<INDTEIRK(JL) .OR. INDEX>INDTEIRK(JU)) THEN
-         WRITE (*, *) 'Something wrong in rkintc'
-         STOP
-      ENDIF
+      if (index<indteirk(jl) .or. index>indteirk(ju)) then
+         write (*, *) 'Something wrong in rkintc'
+         stop
+      endif
 !
 !   The index is within the range of the indices stored; search
 !   for it in the list of indices
 !
-    1 CONTINUE
-      IF (JU - JL > 1) THEN
-         JM = (JU + JL)/2
-         IF (INDTEIRK(JM) > INDEX) THEN
-            JU = JM
-         ELSE
-            JL = JM
-         ENDIF
-         GO TO 1
-      ENDIF
+    1 continue
+      if (ju - jl > 1) then
+         jm = (ju + jl)/2
+         if (indteirk(jm) > index) then
+            ju = jm
+         else
+            jl = jm
+         endif
+         go to 1
+      endif
 !
 !   The range is bracketed to the extent possible
 !
-      IF (INDEX == INDTEIRK(JU)) THEN
-         LOC = JU
-      ELSE IF (INDEX == INDTEIRK(JL)) THEN
-         LOC = JL
-      ELSE
-         WRITE (*, *) K, IA, IB, IC, ID, INDEX
-         WRITE (*, *) 'Rkintc Integral not found'
-         STOP
-      ENDIF
+      if (index == indteirk(ju)) then
+         loc = ju
+      else if (index == indteirk(jl)) then
+         loc = jl
+      else
+         write (*, *) k, ia, ib, ic, id, index
+         write (*, *) 'Rkintc Integral not found'
+         stop
+      endif
 !
 !   Return the value of the integral
 !   from storage
 
-      TEGRAL = VALTEIRK(LOC)
+      tegral = valteirk(loc)
 !
-      RETURN
-      END SUBROUTINE RKINTC
+      return
+      end subroutine rkintc

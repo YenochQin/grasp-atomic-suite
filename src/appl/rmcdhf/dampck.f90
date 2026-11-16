@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE DAMPCK(IPR, J, ED1, ED2)
+      subroutine dampck(ipr, j, ed1, ed2)
 !                                                                      *
 !   This subroutine determines the damping factor appropriate to the   *
 !   present  orbital. The algorithm is taken from C Froese Fischer's   *
@@ -15,41 +15,41 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE damp_C
-      USE orb_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use damp_c
+      use orb_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(INOUT) :: IPR
-      INTEGER, INTENT(IN) :: J
-      REAL(DOUBLE), INTENT(INOUT) :: ED1
-      REAL(DOUBLE), INTENT(INOUT) :: ED2
+      integer, intent(inout) :: ipr
+      integer, intent(in) :: j
+      real(double), intent(inout) :: ed1
+      real(double), intent(inout) :: ed2
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: ADAPTV
+      logical :: adaptv
 !-----------------------------------------------
 !
 !   The damping is adaptive (i.e., can be modified by this SUBROUTINE)
 !   if and only if ODAMP(J) .GE. 0.0
 !
-      ADAPTV = ODAMP(J) >= 0.0D00
+      adaptv = odamp(j) >= 0.0d00
 !
-      ED2 = (ED2-E(J))/ED2
-      IF (ADAPTV) THEN
-         IF (ED1*ED2 < -1.0d-4) THEN
+      ed2 = (ed2-e(j))/ed2
+      if (adaptv) then
+         if (ed1*ed2 < -1.0d-4) then
 !           We have a significant oscillation, damp
-            ODAMP(J) = 0.10D00 + 0.90D00*ODAMP(J)
+            odamp(j) = 0.10d00 + 0.90d00*odamp(j)
 !           Print *, 'Increasing ODAMP', odamp(j)
-         ELSE
-            ODAMP(J) = 0.50D00*ODAMP(J)
-         ENDIF
-      ENDIF
+         else
+            odamp(j) = 0.50d00*odamp(j)
+         endif
+      endif
 !
 !     Save the relative difference for the next update of this orbital
-      PED(J) = ED2
+      ped(j) = ed2
 !
-      RETURN
-      END SUBROUTINE DAMPCK
+      return
+      end subroutine dampck

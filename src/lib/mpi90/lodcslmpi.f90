@@ -1,5 +1,5 @@
 !***********************************************************************
-      SUBROUTINE lodcslmpi (nfile, ncore, jblock)
+      subroutine lodcslmpi (nfile, ncore, jblock)
 
 ! An MPI container of lodcsh2 which loads CSL list of the current block
 ! into memory. It forwards the call together with the same set of
@@ -25,42 +25,42 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  BYTE
-      USE parameter_def,   ONLY:  NNNW
-      use mpi_C
-      USE ORB_C,           ONLY: NCF, IQA
-      USE STAT_C,          ONLY: JQSA, JCUPA
+      use vast_kind_param, only:  byte
+      use parameter_def,   only:  nnnw
+      use mpi_c
+      use orb_c,           only: ncf, iqa
+      use stat_c,          only: jqsa, jcupa
 
-      USE lodcsh2_I, ONLY: lodcsh2
-      IMPLICIT NONE
-      INTEGER       :: nfile, ncore, jblock
-      INTEGER :: MPIX_INT1
+      use lodcsh2_i, only: lodcsh2
+      implicit none
+      integer       :: nfile, ncore, jblock
+      integer :: mpix_int1
 
 !-----------------------------------------------------------------------
 
-      IF (myid .EQ. 0) THEN
-         CALL lodcsh2 ((nfile), (ncore), (jblock))
-      ENDIF
+      if (myid .eq. 0) then
+         call lodcsh2 ((nfile), (ncore), (jblock))
+      endif
 
 ! Construct mpi data type for Integer*1 and then broadcast.
 
 !cjb mpix_bytes
 !cjb if your compiler or your MPI does not accept type MPIX_INT1
 !cjb try standard MPI type MPI_INTEGER1
-      CALL mpix_bytes (1, MPIX_INT1, ierr)
+      call mpix_bytes (1, mpix_int1, ierr)
 !     CALL MPI_Type_create_f90_integer (15, MPIX_INT1, ierr)
 
-      CALL MPI_Bcast                                                   &
-               (IQA(:,:),     NNNW*NCF,MPIX_INT1,0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast                                                   &
+               (iqa(:,:),     nnnw*ncf,mpix_int1,0,mpi_comm_world,ierr)
 !cjb mpix_bytes
 !cjb           (IQA(:,:),    NNNW*NCF,MPI_INTEGER1,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast                                                   &
-               (JQSA(:,:,:),3*NNNW*NCF,MPIX_INT1,0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast                                                   &
+               (jqsa(:,:,:),3*nnnw*ncf,mpix_int1,0,mpi_comm_world,ierr)
 !cjb mpix_bytes
 !cjb           (JQSA(:,:,:),3*NNNW*NCF,MPI_INTEGER1,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast                                                   &
-               (JCUPA(:,:),   NNNW*NCF,MPIX_INT1,0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast                                                   &
+               (jcupa(:,:),   nnnw*ncf,mpix_int1,0,mpi_comm_world,ierr)
 !cjb mpix_bytes
 !cjb           (JCUPA(:,:),   NNNW*NCF,MPI_INTEGER1,0,MPI_COMM_WORLD,ierr)
-      RETURN
-      END SUBROUTINE lodcslmpi
+      return
+      end subroutine lodcslmpi

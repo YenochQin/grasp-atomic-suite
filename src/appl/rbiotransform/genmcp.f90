@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GENMCP(NAME, IC, NTESTG, INPCI)
+      subroutine genmcp(name, ic, ntestg, inpci)
 !                                                                      *
 !   Entry routine for GENMCP. Controls the computation of the          *
 !   one-particle coupling coefficients.                                *
@@ -14,44 +14,44 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE setcslb_I
-      USE factt_I
-      USE mcpout_I
-      USE mcpin_I
-      IMPLICIT NONE
+      use setcslb_i
+      use factt_i
+      use mcpout_i
+      use mcpin_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: IC
-      INTEGER  :: NTESTG
-      INTEGER  :: INPCI
-      CHARACTER  :: NAME*24
+      integer  :: ic
+      integer  :: ntestg
+      integer  :: inpci
+      character  :: name*24
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NCORE_NOT_USED
+      integer :: ncore_not_used
 !-----------------------------------------------
 !
-      WRITE (6, *)
-      WRITE (6, *) 'GENMCP: Execution begins for ', NAME
+      write (6, *)
+      write (6, *) 'GENMCP: Execution begins for ', name
 !
 !   Open, check, load data from, and close the  csl  file
 !
-      CALL SETCSLB (NAME, NCORE_NOT_USED,3)
+      call setcslb (name, ncore_not_used,3)
 !
 !   Set up the table of logarithms of factorials for use by
 !   angular modules
 !
-      CALL FACTT
+      call factt
 !
 !   Proceed with the generation of MCP coefficients
 !
-      CALL MCPOUT (NAME, IC, NTESTG, INPCI)
-      CALL MCPIN (NAME, IC, NTESTG, INPCI)
+      call mcpout (name, ic, ntestg, inpci)
+      call mcpin (name, ic, ntestg, inpci)
 !
 !   Print completion message
 !
-      WRITE (6, *)
+      write (6, *)
 !
-      RETURN
-      END SUBROUTINE GENMCP
+      return
+      end subroutine genmcp

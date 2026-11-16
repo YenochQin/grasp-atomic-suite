@@ -1,16 +1,16 @@
 !
 !***********************************************************************
 !                                                                      *
-      MODULE debug_C
+      module debug_c
 !                                                                      *
 !***********************************************************************
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !...Created by Pacific-Sierra Research 77to90  4.3E  14:35:02   1/ 6/07
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      INTEGER :: IBUG1, IBUG2, IBUG3, IBUG4, IBUG5, IBUG6
-      LOGICAL, DIMENSION(5) :: LDBPA
-      LOGICAL, DIMENSION(5) :: LDBPG
-      LOGICAL, DIMENSION(30) :: LDBPR
-      REAL(DOUBLE) :: cutoff  ! used by bioscl
-      END MODULE debug_C
+      integer :: ibug1, ibug2, ibug3, ibug4, ibug5, ibug6
+      logical, dimension(5) :: ldbpa
+      logical, dimension(5) :: ldbpg
+      logical, dimension(30) :: ldbpr
+      real(double) :: cutoff  ! used by bioscl
+      end module debug_c

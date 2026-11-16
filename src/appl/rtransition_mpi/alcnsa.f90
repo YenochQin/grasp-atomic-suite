@@ -1,7 +1,7 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ALCNSA(JJA, JJB, HB1, HB2, HC1, HC2, HM1, &
-          HM2, LAB, NPTR, NSDIM, IMODE)
+      subroutine alcnsa(jja, jjb, hb1, hb2, hc1, hc2, hm1, &
+          hm2, lab, nptr, nsdim, imode)
 !                                                                      *
 !   This  subprogram allocates (IMODE = 1), reallocates (IMODE = 2),   *
 !   and deallocates (IMODE = 3) storage for  certain arrays that are   *
@@ -18,81 +18,81 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE memory_man
-      IMPLICIT NONE
+      use memory_man
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NSDIM
-      INTEGER, INTENT(IN) :: IMODE
-      INTEGER, DIMENSION(:), pointer :: JJA, JJB, LAB, NPTR
-      REAL(DOUBLE), DIMENSION(:), POINTER :: HB1, HB2, HC1, HC2, HM1, HM2
+      integer  :: nsdim
+      integer, intent(in) :: imode
+      integer, dimension(:), pointer :: jja, jjb, lab, nptr
+      real(double), dimension(:), pointer :: hb1, hb2, hc1, hc2, hm1, hm2
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NEWSIZ
+      integer :: newsiz
 !-----------------------------------------------
 !
-      SELECT CASE (IMODE)
-      CASE (1)
+      select case (imode)
+      case (1)
 !
 !   Initial array dimension
 !
-         NSDIM = 1
+         nsdim = 1
 !
 !   Allocate storage for arrays
 !
-         CALL ALLOC (JJA, NSDIM, 'JJA', 'ALCNSA')
-         CALL ALLOC (JJB, NSDIM, 'JJB', 'ALCNSA' )
-         CALL ALLOC (HB1, NSDIM, 'HB1', 'ALCNSA')
-         CALL ALLOC (HB2, NSDIM, 'HB2', 'ALCNSA')
-         CALL ALLOC (HC1, NSDIM, 'HC1', 'ALCNSA')
-         CALL ALLOC (HC2, NSDIM, 'HC2', 'ALCNSA')
-         CALL ALLOC (HM1, NSDIM, 'HM1', 'ALCNSA')
-         CALL ALLOC (HM2, NSDIM, 'HM2', 'ALCNSA')
-         CALL ALLOC (LAB, NSDIM, 'LAB', 'ALCNSA' )
-         CALL ALLOC (NPTR, NSDIM, 'NPTR', 'ALCNSA' )
+         call alloc (jja, nsdim, 'JJA', 'ALCNSA')
+         call alloc (jjb, nsdim, 'JJB', 'ALCNSA' )
+         call alloc (hb1, nsdim, 'HB1', 'ALCNSA')
+         call alloc (hb2, nsdim, 'HB2', 'ALCNSA')
+         call alloc (hc1, nsdim, 'HC1', 'ALCNSA')
+         call alloc (hc2, nsdim, 'HC2', 'ALCNSA')
+         call alloc (hm1, nsdim, 'HM1', 'ALCNSA')
+         call alloc (hm2, nsdim, 'HM2', 'ALCNSA')
+         call alloc (lab, nsdim, 'LAB', 'ALCNSA' )
+         call alloc (nptr, nsdim, 'NPTR', 'ALCNSA' )
 !
-      CASE (2)
+      case (2)
 !
 !   Double the allocation of storage for the arrays
 !
-         NEWSIZ = 2*NSDIM
+         newsiz = 2*nsdim
 !
-         CALL RALLOC (JJA, NEWSIZ, 'JJA', 'ALCNSA')
-         CALL RALLOC (JJB, NEWSIZ, 'JJB', 'ALCNSA' )
-         CALL RALLOC (HB1, NEWSIZ, 'HB1', 'ALCNSA')
-         CALL RALLOC (HB2, NEWSIZ, 'HB2', 'ALCNSA')
-         CALL RALLOC (HC1, NEWSIZ, 'HC1', 'ALCNSA')
-         CALL RALLOC (HC2, NEWSIZ, 'HC2', 'ALCNSA')
-         CALL RALLOC (HM1, NEWSIZ, 'HM1', 'ALCNSA')
-         CALL RALLOC (HM2, NEWSIZ, 'HM2', 'ALCNSA')
-         CALL RALLOC (LAB, NEWSIZ, 'LAB', 'ALCNSA' )
-         CALL RALLOC (NPTR, NEWSIZ, 'NPTR', 'ALCNSA' )
+         call ralloc (jja, newsiz, 'JJA', 'ALCNSA')
+         call ralloc (jjb, newsiz, 'JJB', 'ALCNSA' )
+         call ralloc (hb1, newsiz, 'HB1', 'ALCNSA')
+         call ralloc (hb2, newsiz, 'HB2', 'ALCNSA')
+         call ralloc (hc1, newsiz, 'HC1', 'ALCNSA')
+         call ralloc (hc2, newsiz, 'HC2', 'ALCNSA')
+         call ralloc (hm1, newsiz, 'HM1', 'ALCNSA')
+         call ralloc (hm2, newsiz, 'HM2', 'ALCNSA')
+         call ralloc (lab, newsiz, 'LAB', 'ALCNSA' )
+         call ralloc (nptr, newsiz, 'NPTR', 'ALCNSA' )
 !
-         NSDIM = NEWSIZ
+         nsdim = newsiz
 !
-      CASE (3)
+      case (3)
 !
 !   Deallocate the storage for the arrays
 !
-         CALL DALLOC (JJA, 'JJA', 'ALCNSA')
-         CALL DALLOC (JJB, 'JJB', 'ALCNSA' )
-         CALL DALLOC (HB1, 'HB1', 'ALCNSA')
-         CALL DALLOC (HB2, 'HB2', 'ALCNSA')
-         CALL DALLOC (HC1, 'HC1', 'ALCNSA')
-         CALL DALLOC (HC2, 'HC2', 'ALCNSA')
-         CALL DALLOC (HM1, 'HM1', 'ALCNSA')
-         CALL DALLOC (HM2, 'HM2', 'ALCNSA')
-         CALL DALLOC (LAB, 'LAB', 'ALCNSA' )
-         CALL DALLOC (NPTR, 'NPTR', 'ALCNSA' )
+         call dalloc (jja, 'JJA', 'ALCNSA')
+         call dalloc (jjb, 'JJB', 'ALCNSA' )
+         call dalloc (hb1, 'HB1', 'ALCNSA')
+         call dalloc (hb2, 'HB2', 'ALCNSA')
+         call dalloc (hc1, 'HC1', 'ALCNSA')
+         call dalloc (hc2, 'HC2', 'ALCNSA')
+         call dalloc (hm1, 'HM1', 'ALCNSA')
+         call dalloc (hm2, 'HM2', 'ALCNSA')
+         call dalloc (lab, 'LAB', 'ALCNSA' )
+         call dalloc (nptr, 'NPTR', 'ALCNSA' )
 !
-      CASE DEFAULT
+      case default
 !
-         WRITE (6, *) 'ALCNSA: Invalid argument IMODE = ', IMODE
-         STOP
+         write (6, *) 'ALCNSA: Invalid argument IMODE = ', imode
+         stop
 !
-      END SELECT
+      end select
 !
-      RETURN
-      END SUBROUTINE ALCNSA
+      return
+      end subroutine alcnsa

@@ -3,7 +3,7 @@
 !     C O P V E C
 !     ------------------------------------------------------------------
 !
-      SUBROUTINE COPVEC(FROM, TO, NDIM)
+      subroutine copvec(from, to, ndim)
 !************************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:04:58   1/ 3/07
 !...Modified by Charlotte Froese Fischer
@@ -11,16 +11,16 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NDIM
-      REAL(DOUBLE), DIMENSION(NDIM), INTENT(IN)  :: FROM
-      REAL(DOUBLE), DIMENSION(NDIM), INTENT(OUT) :: TO
+      integer, intent(in) :: ndim
+      real(double), dimension(ndim), intent(in)  :: from
+      real(double), dimension(ndim), intent(out) :: to
 !
-      TO(:NDIM) = FROM(:NDIM)
+      to(:ndim) = from(:ndim)
 !
-      RETURN
-      END SUBROUTINE COPVEC
+      return
+      end subroutine copvec

@@ -1,11 +1,11 @@
-      MODULE brint2_I
-      INTERFACE
+      module brint2_i
+      interface
 !...Translated by Charlotte Froese Fischer
 !                       Gediminas Gaigalas  10/05/17
-      SUBROUTINE BRINT2 (IA,IB,IC,ID,K,TEGRAL)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER, INTENT(IN) :: ia, ib, ic, id, k
-      REAL(DOUBLE), INTENT(out) :: tegral
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine brint2 (ia,ib,ic,id,k,tegral)
+      use vast_kind_param, only:  double
+      integer, intent(in) :: ia, ib, ic, id, k
+      real(double), intent(out) :: tegral
+      end subroutine
+      end interface
+      end module

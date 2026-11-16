@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GETHFD(NAME)
+      subroutine gethfd(name)
 !                                                                      *
 !   Interactively determines the data governing the HFS problem.       *
 !                                                                      *
@@ -16,137 +16,137 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW
-      USE decide_C
-      USE def_C
-      USE defaulT_C
-      USE foparm_C
-      USE grid_C,          ONLY: rnt, h, n, hp
-      USE npar_C
-      USE orb_C
-      USE wave_C
-      USE wfac_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw
+      use decide_c
+      use def_c
+      use default_c
+      use foparm_c
+      use grid_c,          only: rnt, h, n, hp
+      use npar_c
+      use orb_c
+      use wave_c
+      use wfac_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setiso_I
-      USE setqic_I
-      USE radgrd_I
-      USE nucpot_I
-      USE setrwfa_I
-      IMPLICIT NONE
+      use getyn_i
+      use setiso_i
+      use setqic_i
+      use radgrd_i
+      use nucpot_i
+      use setrwfa_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER(LEN=24), INTENT(IN) :: NAME
+      character(len=24), intent(in) :: name
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL            :: YES
-      CHARACTER(LEN=128) :: ISOFILE
+      logical            :: yes
+      character(len=128) :: isofile
 !-----------------------------------------------
 !
 !   Open, check, load data from, and close the  .iso  file
 !
-      ISOFILE = 'isodata'
-      CALL SETISO (ISOFILE)
+      isofile = 'isodata'
+      call setiso (isofile)
 !
 !   Determine the physical effects specifications
 !
-      IF (NDEF /= 0) THEN
-         WRITE (6, *) 'The physical speed of light in'
-         WRITE (6, *) ' atomic units is', CVAC, ';'
-         WRITE (6, *) ' revise this value?'
-         YES = GETYN()
-         IF (YES) THEN
-            WRITE (6, *) 'Enter the revised value:'
-            READ (5, *) C
-         ELSE
-            C = CVAC
-         ENDIF
-      ELSE
-         C = CVAC
-      ENDIF
+      if (ndef /= 0) then
+         write (6, *) 'The physical speed of light in'
+         write (6, *) ' atomic units is', cvac, ';'
+         write (6, *) ' revise this value?'
+         yes = getyn()
+         if (yes) then
+            write (6, *) 'Enter the revised value:'
+            read (5, *) c
+         else
+            c = cvac
+         endif
+      else
+         c = cvac
+      endif
 !
-      IF (NDEF /= 0) THEN
+      if (ndef /= 0) then
 !
-         WRITE (6, *) 'Treat contributions of some CSFs'
-         WRITE (6, *) ' as first-order perturbations?'
-         YES = GETYN()
-         IF (YES) THEN
-            LFORDR = .TRUE.
-            WRITE (6, *) 'The contribution of CSFs'
-            WRITE (6, *) ' 1 -- ICCUT will be treated'
-            WRITE (6, *) ' variationally; the remainder'
-            WRITE (6, *) ' perturbatively; enter ICCUT:'
-            READ (5, *) ICCUT
-         ELSE
-            LFORDR = .FALSE.
-            ICCUT = 0
-         ENDIF
-      ELSE
-         LFORDR = .FALSE.
-         ICCUT = 0
-      ENDIF
+         write (6, *) 'Treat contributions of some CSFs'
+         write (6, *) ' as first-order perturbations?'
+         yes = getyn()
+         if (yes) then
+            lfordr = .true.
+            write (6, *) 'The contribution of CSFs'
+            write (6, *) ' 1 -- ICCUT will be treated'
+            write (6, *) ' variationally; the remainder'
+            write (6, *) ' perturbatively; enter ICCUT:'
+            read (5, *) iccut
+         else
+            lfordr = .false.
+            iccut = 0
+         endif
+      else
+         lfordr = .false.
+         iccut = 0
+      endif
 !
 !   Determine the parameters controlling the radial grid
 !
-      IF (NPARM == 0) THEN
-         RNT = EXP((-65.0D00/16.0D00))/Z
-         H = 0.5D00**4
-         N = MIN(220,NNNP)
-      ELSE
+      if (nparm == 0) then
+         rnt = exp((-65.0d00/16.0d00))/z
+         h = 0.5d00**4
+         n = min(220,nnnp)
+      else
 !CFF     .. should be Z-dependent
-         RNT = 2.0D-06/Z
-         H = 5.0D-02
-         N = NNNP
-      ENDIF
-      HP = 0.0D00
-      IF (NDEF /= 0) THEN
-         WRITE (6, *) 'The default radial grid parameters'
-         WRITE (6, *) ' for this case are:'
-         WRITE (6, *) ' RNT = ', RNT, ';'
-         WRITE (6, *) ' H = ', H, ';'
-         WRITE (6, *) ' HP = ', HP, ';'
-         WRITE (6, *) ' N = ', N, ';'
-         WRITE (6, *) ' revise these values?'
-         YES = GETYN()
-         IF (YES) THEN
-            WRITE (6, *) 'Enter RNT:'
-            READ (5, *) RNT
-            WRITE (6, *) 'Enter H:'
-            READ (5, *) H
-            WRITE (6, *) 'Enter HP:'
-            READ (5, *) HP
-            WRITE (6, *) 'Enter N:'
-            READ (5, *) N
-         ENDIF
-      ENDIF
+         rnt = 2.0d-06/z
+         h = 5.0d-02
+         n = nnnp
+      endif
+      hp = 0.0d00
+      if (ndef /= 0) then
+         write (6, *) 'The default radial grid parameters'
+         write (6, *) ' for this case are:'
+         write (6, *) ' RNT = ', rnt, ';'
+         write (6, *) ' H = ', h, ';'
+         write (6, *) ' HP = ', hp, ';'
+         write (6, *) ' N = ', n, ';'
+         write (6, *) ' revise these values?'
+         yes = getyn()
+         if (yes) then
+            write (6, *) 'Enter RNT:'
+            read (5, *) rnt
+            write (6, *) 'Enter H:'
+            read (5, *) h
+            write (6, *) 'Enter HP:'
+            read (5, *) hp
+            write (6, *) 'Enter N:'
+            read (5, *) n
+         endif
+      endif
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
-      ACCY = H**6
+      accy = h**6
 !
 !   Set up the coefficients for the numerical procedures
 !
-      CALL SETQIC
+      call setqic
 !
 !   Generate the radial grid and all associated arrays
 !
-      CALL RADGRD
+      call radgrd
 !
 !   Generate $- r \times V_nuc (r)$
 !
-      CALL NUCPOT
+      call nucpot
 !
 !   Load the radial wavefunctions
 !
 !      CALL SETRWFA(NAME)
 
-      CALL SETRWFA (TRIM(NAME)//'.w')
+      call setrwfa (trim(name)//'.w')
 
 !
-      RETURN
-      END SUBROUTINE GETHFD
+      return
+      end subroutine gethfd

@@ -1,12 +1,12 @@
-      MODULE diaga3_I
-      INTERFACE
+      module diaga3_i
+      interface
 !
-      SUBROUTINE DIAGA3(JA1,JA2,KA,IRE,IAT,RECC)
-      USE vast_kind_param,  ONLY:  DOUBLE
-      INTEGER, INTENT(IN)       :: JA1,JA2,KA,IRE
+      subroutine diaga3(ja1,ja2,ka,ire,iat,recc)
+      use vast_kind_param,  only:  double
+      integer, intent(in)       :: ja1,ja2,ka,ire
 !      INTEGER, INTENT(OUT)      :: IAT
-      INTEGER, INTENT(INOUT)      :: IAT
-      REAL(DOUBLE), INTENT(OUT) :: RECC
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      integer, intent(inout)      :: iat
+      real(double), intent(out) :: recc
+      end subroutine
+      end interface
+      end module

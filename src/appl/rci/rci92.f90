@@ -23,7 +23,7 @@
 !***********************************************************************
 !***********************************************************************
 !                                                                      *
-      PROGRAM RCI92
+      program rci92
 !                                                                      *
 !   Entry routine for RCI92. Controls the entire computation.          *
 !                                                                      *
@@ -43,59 +43,59 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE default_C
-      USE blim_C
-      USE where_C
-      USE cons_C
-      USE def_C
-      USE hblock_C
-      USE blk_C
-      USE iccu_C
-      USE iounit_C
-      USE terms_C
-      USE decide_C
+      use default_c
+      use blim_c
+      use where_c
+      use cons_c
+      use def_c
+      use hblock_c
+      use blk_c
+      use iccu_c
+      use iounit_c
+      use terms_c
+      use decide_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setdbg_I
-      USE setmc_I
-      USE setcon_I
-      USE setsum_I
-      USE setcsl_I
-      USE setres_I
-      USE setmix_I
-      USE strsum_I
-      USE factt_I
-      USE matrix_I
-      USE genintbreit1_I, ONLY: genintbreit1
-      USE genintbreit2_I, ONLY: genintbreit2
-      USE genintrk_I, ONLY: genintrk
-      USE starttime_I, ONLY: starttime
-      USE stoptime_I, ONLY: stoptime
-      IMPLICIT NONE
+      use getyn_i
+      use setdbg_i
+      use setmc_i
+      use setcon_i
+      use setsum_i
+      use setcsl_i
+      use setres_i
+      use setmix_i
+      use strsum_i
+      use factt_i
+      use matrix_i
+      use genintbreit1_i, only: genintbreit1
+      use genintbreit2_i, only: genintbreit2
+      use genintrk_i, only: genintrk
+      use starttime_i, only: starttime
+      use stoptime_i, only: stoptime
+      implicit none
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: NBLK0 = 50
+      integer, parameter :: nblk0 = 50
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: nblk=50
-      INTEGER :: NCOUNT1, NCOUNT2, NCOUNT_RATE, NCOUNT_MAX
-      INTEGER, DIMENSION(8) :: NYMDUHMSM
-      INTEGER :: MYID, NPROCS, K, LENNAME, NCORE, NDUM, J2MAX, NSECONDS
-      LOGICAL :: YES
-      CHARACTER(LEN=128) :: NAME, TMPDIR, PERMDIR, ISOFILE
-      CHARACTER(LEN=8), DIMENSION(NBLK0) :: IDBLK
-      CHARACTER :: CHDATE*8, CHTIME*10, CHZONE*5, STR*8, MSG*128
+      integer, parameter :: nblk=50
+      integer :: ncount1, ncount2, ncount_rate, ncount_max
+      integer, dimension(8) :: nymduhmsm
+      integer :: myid, nprocs, k, lenname, ncore, ndum, j2max, nseconds
+      logical :: yes
+      character(len=128) :: name, tmpdir, permdir, isofile
+      character(len=8), dimension(nblk0) :: idblk
+      character :: chdate*8, chtime*10, chzone*5, str*8, msg*128
 !-----------------------------------------------
 !
 
-      IMCDF = 26                                 ! Unit for rci.res file
-      IPRERUN = 0
-      MYID = 0
-      NPROCS = 1
+      imcdf = 26                                 ! Unit for rci.res file
+      iprerun = 0
+      myid = 0
+      nprocs = 1
 
       write(*,*)
       write(*,*) 'RCI'
@@ -109,29 +109,29 @@
 !
 ! Start timing
 !
-      CALL STARTTIME (ncount1, 'RCI')
+      call starttime (ncount1, 'RCI')
 !
 ! Get NDEF
 !
 !      WRITE (ISTDE, *) 'RCI2: Execution begins ...'
 !      WRITE (ISTDE, *)
-      WRITE (ISTDE, '(A)') 'Default settings? '
-      YES = GETYN()
-      IF (YES) THEN
-         NDEF = 0
-      ELSE
-         NDEF = 1
-      ENDIF
+      write (istde, '(A)') 'Default settings? '
+      yes = getyn()
+      if (yes) then
+         ndef = 0
+      else
+         ndef = 1
+      endif
 !
 ! Get name of the state (used in files like <name>.c, <name>.s)
 !
-      DO WHILE(.TRUE.)
-         WRITE (ISTDE, '(A)') 'Name of state: '
-         READ (*, '(A)') NAME
-         K = INDEX(NAME,' ')
-         IF (K > 1) EXIT
-         WRITE (ISTDE, *) 'Name may not start with a blank. redo...'
-      END DO
+      do while(.true.)
+         write (istde, '(A)') 'Name of state: '
+         read (*, '(A)') name
+         k = index(name,' ')
+         if (k > 1) exit
+         write (istde, *) 'Name may not start with a blank. redo...'
+      end do
 
 ! Now the name of the state is known, open the log file
 
@@ -141,91 +141,91 @@
 
 !         ...Form the full name of the files used on node-0
 
-      LENNAME = LEN_TRIM(NAME)
-      ISOFILE = 'isodata'
+      lenname = len_trim(name)
+      isofile = 'isodata'
 !      WRITE (6, *) 'isofile = ', ISOFILE(1:LEN_TRIM(ISOFILE))
 !      WRITE (6, *) 'name = ', NAME(1:LEN_TRIM(NAME))
 
-   99 CONTINUE
+   99 continue
 
 !
 ! In SETDBG of this version all control logicals are set to
 ! false thus no debug output will be made
 !
 !      WRITE (6, *) 'Calling SETDBG...'
-      CALL SETDBG
+      call setdbg
 !
 ! Perform machine- and installation-dependent setup
 !
 !      WRITE (6, *) 'Calling SETMC...'
-      CALL SETMC
+      call setmc
 !
 ! Set up the physical constants
 !
 !      WRITE (6, *) 'Calling SETCON...'
-      CALL SETCON
+      call setcon
 !
 ! Open summary file
 !
 !      WRITE (6, *) 'Calling SETSUM...'
-      CALL SETSUM (NAME)
+      call setsum (name)
 
 !      WRITE (6, *) 'Calling setcsl...'
-      CALL SETCSL (NAME(1:LENNAME)//'.c', NCORE, NBLK0, IDBLK)
+      call setcsl (name(1:lenname)//'.c', ncore, nblk0, idblk)
 !
 ! Set up the  .res  file; determine if this is a restart.
 !
 !      WRITE (6, *) 'Calling SETRES...'
-      CALL SETRES (ISOFILE, NAME(1:LENNAME)//'.w', IDBLK)
+      call setres (isofile, name(1:lenname)//'.w', idblk)
 !
 !   Open the  .mix  file; determine the eigenpairs required
 !
 !      WRITE (6, *) 'Calling SETMIX...'
-      CALL SETMIX (NAME, IDBLK)
+      call setmix (name, idblk)
 !
 !   Append a summary of the inputs to the  .sum  file
 !
-      WRITE (6, *) 'Calling STRSUM...'
-      CALL STRSUM
+      write (6, *) 'Calling STRSUM...'
+      call strsum
 !
 !   Set up the table of logarithms of factorials
 !
-      WRITE (6, *) 'Calling FACTT...'
-      CALL FACTT
+      write (6, *) 'Calling FACTT...'
+      call factt
 !
 !   Calculate all the needed Rk integrals
 !
-      WRITE (6, *) 'Calling GENINTRK...'
-      CALL GENINTRK (MYID, NPROCS, NDUM, J2MAX)
+      write (6, *) 'Calling GENINTRK...'
+      call genintrk (myid, nprocs, ndum, j2max)
 !
 !   If transverse interaction comput Breit integrals of type 1 and 2
 !
-      IF (LTRANS) THEN
-         PRINT *, 'Calling GENINTBREIT1...'
-         CALL GENINTBREIT1 (myid, nprocs, ndum, j2max)
-         PRINT *, 'Calling GENINTBREIT2...'
-         CALL GENINTBREIT2 (myid, nprocs, ndum, j2max)
-      END IF
+      if (ltrans) then
+         print *, 'Calling GENINTBREIT1...'
+         call genintbreit1 (myid, nprocs, ndum, j2max)
+         print *, 'Calling GENINTBREIT2...'
+         call genintbreit2 (myid, nprocs, ndum, j2max)
+      end if
 !
 !   Proceed with the CI calculation
 !
-      WRITE (6, *) 'Calling MATRIX...'
+      write (6, *) 'Calling MATRIX...'
 
-      CALL MATRIX (NCORE, J2MAX)
+      call matrix (ncore, j2max)
 
-      IF (IPRERUN == 1) THEN
-         IPRERUN = 2
-         GO TO 99
-      ENDIF
+      if (iprerun == 1) then
+         iprerun = 2
+         go to 99
+      endif
 
-      IF (MYID == 0) THEN
-         WRITE (6, *)
-         WRITE (6, *)
-         WRITE (6, *) 'Finish time, Statistics'
-         WRITE (6, *)
-      ENDIF
+      if (myid == 0) then
+         write (6, *)
+         write (6, *)
+         write (6, *) 'Finish time, Statistics'
+         write (6, *)
+      endif
       close(734)
-      CALL STOPTIME (ncount1, 'RCI')
+      call stoptime (ncount1, 'RCI')
 !      CALL SYSTEM_CLOCK (NCOUNT2, NCOUNT_RATE, NCOUNT_MAX)
 !      NCOUNT2 = NCOUNT2 - NCOUNT1
 !      NSECONDS = NCOUNT2/NCOUNT_RATE
@@ -242,5 +242,5 @@
 !
 !      WRITE (6, *) 'RCI2: Execution complete.'
 !
-      STOP
-      END PROGRAM RCI92
+      stop
+      end program rci92

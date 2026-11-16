@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE RADPAR
+      subroutine radpar
 !                                                                      *
 !   This subroutine sets the parameters controlling the radial grid    *
 !                                                                      *
@@ -12,85 +12,85 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE def_C,           ONLY: c, cvac, z, accy
-      USE default_C
-      USE grid_C
-      USE npar_C
-      USE mpi_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use def_c,           only: c, cvac, z, accy
+      use default_c
+      use grid_c
+      use npar_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      IMPLICIT NONE
+      use getyn_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL   :: YES
-      CHARACTER :: ANSWER
+      logical   :: yes
+      character :: answer
 !-----------------------------------------------
 !
-      IF (NPARM == 0) THEN
-         RNT = EXP((-65.0D00/16.0D00))/Z
-         H = 0.5D00**4
-         N = MIN(220,NNNP)
-      ELSE
+      if (nparm == 0) then
+         rnt = exp((-65.0d00/16.0d00))/z
+         h = 0.5d00**4
+         n = min(220,nnnp)
+      else
 !CFF     .. should be Z-dependent
-         RNT = 2.0D-06/Z
-         H = 5.0D-02
-         N = NNNP
-      ENDIF
-      HP = 0.0D00
-      IF (NDEF /= 0) THEN
+         rnt = 2.0d-06/z
+         h = 5.0d-02
+         n = nnnp
+      endif
+      hp = 0.0d00
+      if (ndef /= 0) then
         if (myid == 0) then
-         WRITE (6, *) 'The default radial grid parameters'
-         WRITE (6, *) ' for this case are:'
-         WRITE (6, *) ' RNT = ', RNT, ';'
-         WRITE (6, *) ' H = ', H, ';'
-         WRITE (6, *) ' HP = ', HP, ';'
-         WRITE (6, *) ' N = ', N, ';'
-         WRITE (6, *) ' revise these values?'
-         YES = GETYN()
-         IF (YES) THEN
-            WRITE (6, *) 'Enter RNT:'
-            READ (5, *) RNT
-            WRITE (6, *) 'Enter H:'
-            READ (5, *) H
-            WRITE (6, *) 'Enter HP:'
-            READ (5, *) HP
-            WRITE (6, *) 'Enter N:'
-            READ (5, *) N
-         ENDIF
+         write (6, *) 'The default radial grid parameters'
+         write (6, *) ' for this case are:'
+         write (6, *) ' RNT = ', rnt, ';'
+         write (6, *) ' H = ', h, ';'
+         write (6, *) ' HP = ', hp, ';'
+         write (6, *) ' N = ', n, ';'
+         write (6, *) ' revise these values?'
+         yes = getyn()
+         if (yes) then
+            write (6, *) 'Enter RNT:'
+            read (5, *) rnt
+            write (6, *) 'Enter H:'
+            read (5, *) h
+            write (6, *) 'Enter HP:'
+            read (5, *) hp
+            write (6, *) 'Enter N:'
+            read (5, *) n
+         endif
         endif !myid=0
-        CALL MPI_Bcast(RNT,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
-        CALL MPI_Bcast(H,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
-        CALL MPI_Bcast(HP,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
-        CALL MPI_Bcast (N, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-      ENDIF
+        call mpi_bcast(rnt,1,mpi_double_precision,0,mpi_comm_world,ierr)
+        call mpi_bcast(h,1,mpi_double_precision,0,mpi_comm_world,ierr)
+        call mpi_bcast(hp,1,mpi_double_precision,0,mpi_comm_world,ierr)
+        call mpi_bcast (n, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      endif
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
-      ACCY = H**6
+      accy = h**6
 !
 
-      IF (NDEF /= 0) THEN
-       if(myid .EQ. 0) then
-         WRITE (6, *) 'The physical speed of light in'
-         WRITE (6, *) ' atomic units is', CVAC, ';'
-         WRITE (6, *) ' revise this value?'
-         YES = GETYN()
-         IF (YES) THEN
-            WRITE (6, *) 'Enter the revised value:'
-            READ (5, *) C
-         ELSE
-            C = CVAC
-         ENDIF
+      if (ndef /= 0) then
+       if(myid .eq. 0) then
+         write (6, *) 'The physical speed of light in'
+         write (6, *) ' atomic units is', cvac, ';'
+         write (6, *) ' revise this value?'
+         yes = getyn()
+         if (yes) then
+            write (6, *) 'Enter the revised value:'
+            read (5, *) c
+         else
+            c = cvac
+         endif
        endif !myid=0
-       CALL MPI_Bcast(C,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
-      ELSE
-         C = CVAC
-      ENDIF
+       call mpi_bcast(c,1,mpi_double_precision,0,mpi_comm_world,ierr)
+      else
+         c = cvac
+      endif
 
-      RETURN
-      END SUBROUTINE RADPAR
+      return
+      end subroutine radpar

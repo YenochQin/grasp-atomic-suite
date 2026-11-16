@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETMC
+      subroutine setmc
 !                                                                      *
 !   This subprogram sets machine-dependent parameters.                 *
 !                                                                      *
@@ -15,18 +15,18 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE DEBUG_C
-      USE DEF_C
+      use vast_kind_param, only:  double
+      use debug_c
+      use def_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE suite_linear_algebra, ONLY: dlamch
-      IMPLICIT NONE
+      use suite_linear_algebra, only: dlamch
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE) :: DNUM
+      real(double) :: dnum
 !-----------------------------------------------
 !
 !
@@ -34,32 +34,32 @@
 !
 !   TENMAX - Maximum size of exponent of 10
 !
-      TENMAX = DLAMCH('L')
+      tenmax = dlamch('L')
 !
 !   EXPMAX - Maximum size of exponent of e
 !
-      DNUM = DLAMCH('O')
-      EXPMAX = LOG(DNUM)
+      dnum = dlamch('O')
+      expmax = log(dnum)
 !
 !   EXPMIN - Minimum size of exponent of e
 !
-      DNUM = DLAMCH('U')
-      EXPMIN = LOG(DNUM)
+      dnum = dlamch('U')
+      expmin = log(dnum)
 !
 !   PRECIS - Machine precision
 !
-      PRECIS = DLAMCH('E')
+      precis = dlamch('E')
 !
 !   Debug printout
 !
-      IF (LDBPG(1)) WRITE (99, 300) TENMAX, EXPMAX, EXPMIN, PRECIS
+      if (ldbpg(1)) write (99, 300) tenmax, expmax, expmin, precis
 !
-      RETURN
+      return
 !
-  300 FORMAT(/,'From SUBROUTINE SETMC:'/,' TENMAX (maximum exponent of 10): ',&
-         F5.0,/,' EXPMAX (maximum exponent of e): ',1P,1D19.12,/,&
-         ' EXPMIN (minimum exponent of e): ',1D19.12,/,&
-         ' PRECIS (machine precision): ',1D19.12)
-      RETURN
+  300 format(/,'From SUBROUTINE SETMC:'/,' TENMAX (maximum exponent of 10): ',&
+         f5.0,/,' EXPMAX (maximum exponent of e): ',1p,1d19.12,/,&
+         ' EXPMIN (minimum exponent of e): ',1d19.12,/,&
+         ' PRECIS (machine precision): ',1d19.12)
+      return
 !
-      END SUBROUTINE SETMC
+      end subroutine setmc

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SPEAK(JA, JB, IA1, IB1, IA2, IB2, K, X)
+      subroutine speak(ja, jb, ia1, ib1, ia2, ib2, k, x)
 !                                                                      *
 !   Output MCP  coefficients and integral parameters to COMMON block   *
 !   /BUFFER/. Also print these if  IBUG1 = 1 .                         *
@@ -14,53 +14,53 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE BUFFER_C,        ONLY: LABEL, COEFF, NBDIM, NVCOEF
-      USE DEBUG_C ,        ONLY: IBUG1
-      USE ORB_C,           ONLY: NP, NH
+      use vast_kind_param, only: double
+      use buffer_c,        only: label, coeff, nbdim, nvcoef
+      use debug_c ,        only: ibug1
+      use orb_c,           only: np, nh
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE alcbuf_I
-      IMPLICIT NONE
+      use alcbuf_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: JA
-      INTEGER, INTENT(IN) :: JB
-      INTEGER, INTENT(IN) :: IA1
-      INTEGER, INTENT(IN) :: IB1
-      INTEGER, INTENT(IN) :: IA2
-      INTEGER, INTENT(IN) :: IB2
-      INTEGER, INTENT(IN) :: K
-      REAL(DOUBLE), INTENT(IN) :: X
+      integer, intent(in) :: ja
+      integer, intent(in) :: jb
+      integer, intent(in) :: ia1
+      integer, intent(in) :: ib1
+      integer, intent(in) :: ia2
+      integer, intent(in) :: ib2
+      integer, intent(in) :: k
+      real(double), intent(in) :: x
 !-----------------------------------------------
 !
 !
-      IF (IBUG1 /= 0) WRITE (99, 300) JA, JB, NP(IA1), NH(IA1), NP(IB1), NH(IB1&
-         ), NP(IA2), NH(IA2), NP(IB2), NH(IB2), K, X
+      if (ibug1 /= 0) write (99, 300) ja, jb, np(ia1), nh(ia1), np(ib1), nh(ib1&
+         ), np(ia2), nh(ia2), np(ib2), nh(ib2), k, x
 !
 !   Increment counter
 !
-      NVCOEF = NVCOEF + 1
+      nvcoef = nvcoef + 1
 !
 !   Ensure that arrays are of adequate size; reallocate if necessary
 !
-      IF (NVCOEF > NBDIM) CALL ALCBUF (2)
+      if (nvcoef > nbdim) call alcbuf (2)
 !
 !   Store integral indices and coefficient in COMMON/BUFFER/
 !
-      LABEL(1,NVCOEF) = IA1
-      LABEL(2,NVCOEF) = IB1
-      LABEL(3,NVCOEF) = IA2
-      LABEL(4,NVCOEF) = IB2
-      LABEL(5,NVCOEF) = K
-      COEFF(NVCOEF) = X
+      label(1,nvcoef) = ia1
+      label(2,nvcoef) = ib1
+      label(3,nvcoef) = ia2
+      label(4,nvcoef) = ib2
+      label(5,nvcoef) = k
+      coeff(nvcoef) = x
 !
-      RETURN
+      return
 !
-  300 FORMAT(2(1X,1I2),4(1X,I2,A2),1X,I2,1X,1P,D19.12)
-      RETURN
+  300 format(2(1x,1i2),4(1x,i2,a2),1x,i2,1x,1p,d19.12)
+      return
 !
-      END SUBROUTINE SPEAK
+      end subroutine speak

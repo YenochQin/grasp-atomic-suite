@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE INTRPQ(PA, QA, MA, RA, J, DNORM)
+      subroutine intrpq(pa, qa, ma, ra, j, dnorm)
 !                                                                      *
 !   This  subprogram  interpolates  the  arrays  PA(1:MA), QA(1:MA),   *
 !   tabulated on grid RA(1:MA) into the COMMON arrays PF(1:MF(J),J),   *
@@ -19,40 +19,40 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE DEBUG_C
-      USE DEF_C,           ONLY: ACCY
-      USE GRID_C
-      USE WAVE_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use debug_c
+      use def_c,           only: accy
+      use grid_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rint_I
-      IMPLICIT NONE
+      use rint_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: MA
-      INTEGER  :: J
-      REAL(DOUBLE), INTENT(OUT) :: DNORM
-      REAL(DOUBLE), DIMENSION(*), INTENT(IN) :: PA, QA, RA
+      integer, intent(in) :: ma
+      integer  :: j
+      real(double), intent(out) :: dnorm
+      real(double), dimension(*), intent(in) :: pa, qa, ra
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: MXORD = 13
+      integer, parameter :: mxord = 13
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, MFJ, NRSTLO, KOUNT, IROW, K, NRSTHI, LLO, LHI, LOCNXT, &
-         ILIROK, ILDIAG, ILOTHR, MFJP1
-      REAL(DOUBLE) :: RAMA
-      REAL(DOUBLE), DIMENSION(MXORD) :: X, DX
-      REAL(DOUBLE), DIMENSION((MXORD*(MXORD + 1))/2) :: POLYP, POLYQ
-      REAL(DOUBLE) :: RN, XBAR, PESTL, QESTL, DIFF, DIFFT, DXKMN1, DXIROW, &
-         FACTOR, PESTT, QESTT, DPBP, DQBQ, DNFAC
-      LOGICAL :: SET
-      LOGICAL, DIMENSION(NNNP) :: USED
+      integer :: i, mfj, nrstlo, kount, irow, k, nrsthi, llo, lhi, locnxt, &
+         ilirok, ildiag, ilothr, mfjp1
+      real(double) :: rama
+      real(double), dimension(mxord) :: x, dx
+      real(double), dimension((mxord*(mxord + 1))/2) :: polyp, polyq
+      real(double) :: rn, xbar, pestl, qestl, diff, difft, dxkmn1, dxirow, &
+         factor, pestt, qestt, dpbp, dqbq, dnfac
+      logical :: set
+      logical, dimension(nnnp) :: used
 !-----------------------------------------------
 !
 !
@@ -62,178 +62,178 @@
 !
 !   Initialization
 !
-      RAMA = RA(MA)
-      RN = R(N)
+      rama = ra(ma)
+      rn = r(n)
 !
 !   This is always true in GRASP
 !
-      PF(1,J) = 0.0D00
-      QF(1,J) = 0.0D00
+      pf(1,j) = 0.0d00
+      qf(1,j) = 0.0d00
 !
 !   Checks
 !
-      IF (RAMA > RN) THEN
-         WRITE (*, 300) RN, RAMA
-         PRINT*, "N =",N,"MA =",MA
-         STOP
-      ENDIF
+      if (rama > rn) then
+         write (*, 300) rn, rama
+         print*, "N =",n,"MA =",ma
+         stop
+      endif
 !
 !   Determine end of grid
 !
-      I = N
-    1 CONTINUE
-      I = I - 1
-      IF (R(I) <= RAMA) THEN
-         MFJ = I
-      ELSE
-         GO TO 1
-      ENDIF
-      MF(J) = MFJ
+      i = n
+    1 continue
+      i = i - 1
+      if (r(i) <= rama) then
+         mfj = i
+      else
+         go to 1
+      endif
+      mf(j) = mfj
 !
 !   Overall initialization for interpolation
 !
-      NRSTLO = 0
-      KOUNT = 0
+      nrstlo = 0
+      kount = 0
 !
 !   Perform interpolation
 !
-      DO I = 2, MFJ
+      do i = 2, mfj
 !
 !   Initialization for interpolation
 !
-         XBAR = R(I)
-         IROW = 0
-         PESTL = 0.0D00
-         QESTL = 0.0D00
+         xbar = r(i)
+         irow = 0
+         pestl = 0.0d00
+         qestl = 0.0d00
 !
 !   Determine the nearest two grid points bounding the present
 !   grid point
 !
-    2    CONTINUE
-         K = NRSTLO + 1
-         IF (RA(K) < XBAR) THEN
-            NRSTLO = K
-            GO TO 2
-         ELSE
-            NRSTHI = K
-         ENDIF
+    2    continue
+         k = nrstlo + 1
+         if (ra(k) < xbar) then
+            nrstlo = k
+            go to 2
+         else
+            nrsthi = k
+         endif
 !
 !   Clear relevant piece of use-indicator array
 !
-         LLO = MAX(NRSTLO - MXORD,1)
-         LHI = MIN(NRSTHI + MXORD,MA)
-         USED(LLO:LHI) = .FALSE.
+         llo = max(nrstlo - mxord,1)
+         lhi = min(nrsthi + mxord,ma)
+         used(llo:lhi) = .false.
 !
 !   Determine next-nearest grid point
 !
-    4    CONTINUE
-         IROW = IROW + 1
-         LLO = MAX(NRSTLO - IROW + 1,1)
-         LHI = MIN(NRSTHI + IROW - 1,MA)
-         SET = .FALSE.
-         DO K = LLO, LHI
-            IF (USED(K)) CYCLE
-            IF (.NOT.SET) THEN
-               DIFF = RA(K) - XBAR
-               LOCNXT = K
-               SET = .TRUE.
-            ELSE
-               DIFFT = RA(K) - XBAR
-               IF (ABS(DIFFT) < ABS(DIFF)) THEN
-                  DIFF = DIFFT
-                  LOCNXT = K
-               ENDIF
-            ENDIF
-         END DO
-         USED(LOCNXT) = .TRUE.
-         X(IROW) = RA(LOCNXT)
-         DX(IROW) = DIFF
+    4    continue
+         irow = irow + 1
+         llo = max(nrstlo - irow + 1,1)
+         lhi = min(nrsthi + irow - 1,ma)
+         set = .false.
+         do k = llo, lhi
+            if (used(k)) cycle
+            if (.not.set) then
+               diff = ra(k) - xbar
+               locnxt = k
+               set = .true.
+            else
+               difft = ra(k) - xbar
+               if (abs(difft) < abs(diff)) then
+                  diff = difft
+                  locnxt = k
+               endif
+            endif
+         end do
+         used(locnxt) = .true.
+         x(irow) = ra(locnxt)
+         dx(irow) = diff
 !
 !   Fill table for this row
 !
-         DO K = 1, IROW
-            ILIROK = ILOC(IROW,K)
-            IF (K == 1) THEN
-               POLYP(ILIROK) = PA(LOCNXT)
-               POLYQ(ILIROK) = QA(LOCNXT)
-            ELSE
-               ILDIAG = ILOC(K - 1,K - 1)
-               ILOTHR = ILOC(IROW,K - 1)
-               DXKMN1 = DX(K-1)
-               DXIROW = DX(IROW)
-               FACTOR = 1.0D00/(X(IROW)-X(K-1))
-               POLYP(ILIROK) = (POLYP(ILDIAG)*DXIROW-POLYP(ILOTHR)*DXKMN1)*&
-                  FACTOR
-               POLYQ(ILIROK) = (POLYQ(ILDIAG)*DXIROW-POLYQ(ILOTHR)*DXKMN1)*&
-                  FACTOR
-            ENDIF
-         END DO
+         do k = 1, irow
+            ilirok = iloc(irow,k)
+            if (k == 1) then
+               polyp(ilirok) = pa(locnxt)
+               polyq(ilirok) = qa(locnxt)
+            else
+               ildiag = iloc(k - 1,k - 1)
+               ilothr = iloc(irow,k - 1)
+               dxkmn1 = dx(k-1)
+               dxirow = dx(irow)
+               factor = 1.0d00/(x(irow)-x(k-1))
+               polyp(ilirok) = (polyp(ildiag)*dxirow-polyp(ilothr)*dxkmn1)*&
+                  factor
+               polyq(ilirok) = (polyq(ildiag)*dxirow-polyq(ilothr)*dxkmn1)*&
+                  factor
+            endif
+         end do
 !
 !   Check for convergence
 !
-         ILDIAG = ILOC(IROW,IROW)
-         PESTT = POLYP(ILDIAG)
-         QESTT = POLYQ(ILDIAG)
-         IF (PESTT==0.0D00 .OR. QESTT==0.0D00) THEN
-            IF (IROW < MXORD) THEN
-               GO TO 4
-            ELSE
-               PF(I,J) = PESTT
-               QF(I,J) = QESTT
-            ENDIF
-         ELSE
-            DPBP = ABS((PESTT - PESTL)/PESTT)
-            DQBQ = ABS((QESTT - QESTL)/QESTT)
-            IF (DQBQ<ACCY .AND. DPBP<ACCY) THEN
-               PF(I,J) = PESTT
-               QF(I,J) = QESTT
-            ELSE
-               PESTL = PESTT
-               QESTL = QESTT
-               IF (IROW < MXORD) THEN
-                  GO TO 4
-               ELSE
-                  PF(I,J) = PESTT
-                  QF(I,J) = QESTT
-                  KOUNT = KOUNT + 1
-               ENDIF
-            ENDIF
-         ENDIF
+         ildiag = iloc(irow,irow)
+         pestt = polyp(ildiag)
+         qestt = polyq(ildiag)
+         if (pestt==0.0d00 .or. qestt==0.0d00) then
+            if (irow < mxord) then
+               go to 4
+            else
+               pf(i,j) = pestt
+               qf(i,j) = qestt
+            endif
+         else
+            dpbp = abs((pestt - pestl)/pestt)
+            dqbq = abs((qestt - qestl)/qestt)
+            if (dqbq<accy .and. dpbp<accy) then
+               pf(i,j) = pestt
+               qf(i,j) = qestt
+            else
+               pestl = pestt
+               qestl = qestt
+               if (irow < mxord) then
+                  go to 4
+               else
+                  pf(i,j) = pestt
+                  qf(i,j) = qestt
+                  kount = kount + 1
+               endif
+            endif
+         endif
 !
-      END DO
+      end do
 !
 !   Ensure that all points of the array are defined by setting the
 !   tail to zero
 !
-      MFJP1 = MFJ + 1
-      PF(MFJP1:N,J) = 0.0D00
-      QF(MFJP1:N,J) = 0.0D00
+      mfjp1 = mfj + 1
+      pf(mfjp1:n,j) = 0.0d00
+      qf(mfjp1:n,j) = 0.0d00
 !
-      IF (LDBPR(3) .AND. KOUNT>0) WRITE (99, 301) ACCY, KOUNT, MFJ
+      if (ldbpr(3) .and. kount>0) write (99, 301) accy, kount, mfj
 !
 !   Normalization
 !
-      DNORM = RINT(J,J,0)
-      DNFAC = 1.0D00/SQRT(DNORM)
-      PF(:MFJ,J) = PF(:MFJ,J)*DNFAC
-      QF(:MFJ,J) = QF(:MFJ,J)*DNFAC
+      dnorm = rint(j,j,0)
+      dnfac = 1.0d00/sqrt(dnorm)
+      pf(:mfj,j) = pf(:mfj,j)*dnfac
+      qf(:mfj,j) = qf(:mfj,j)*dnfac
 !
-      RETURN
+      return
 !
-  300 FORMAT(/,'INTRPQ: Grid of insufficient extent:'/,&
-         ' Present grid has R(N) = ',1P,1D19.12,' Bohr radii'/,&
-         '          Require R(N) = ',1D19.12,' Bohr radii')
-  301 FORMAT(/,'INTRPQ: Interpolation procedure not converged to',1P,1D19.12,&
-         ' for ',1I3,' of ',1I3,' tabulation points')
-      RETURN
-      CONTAINS
+  300 format(/,'INTRPQ: Grid of insufficient extent:'/,&
+         ' Present grid has R(N) = ',1p,1d19.12,' Bohr radii'/,&
+         '          Require R(N) = ',1d19.12,' Bohr radii')
+  301 format(/,'INTRPQ: Interpolation procedure not converged to',1p,1d19.12,&
+         ' for ',1i3,' of ',1i3,' tabulation points')
+      return
+      contains
 
 
-      INTEGER FUNCTION ILOC (IND1, IND2)
-      INTEGER, INTENT(IN) :: IND1
-      INTEGER, INTENT(IN) :: IND2
-      ILOC = (IND1*(IND1 - 1))/2 + IND2
-      RETURN
-      END FUNCTION ILOC
+      integer function iloc (ind1, ind2)
+      integer, intent(in) :: ind1
+      integer, intent(in) :: ind2
+      iloc = (ind1*(ind1 - 1))/2 + ind2
+      return
+      end function iloc
 !
-      END SUBROUTINE INTRPQ
+      end subroutine intrpq

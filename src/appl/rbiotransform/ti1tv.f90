@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE TI1TV(CIIN,NCSF,NCIV,I,L,T,NSHL,CIOUT,NTESTG)
+      subroutine ti1tv(ciin,ncsf,nciv,i,l,t,nshl,ciout,ntestg)
 !                                                                      *
 !   Calculate the action of the  operator                              *
 !   Sum( j) T(jl) E(jl,il) on a set of vectors                         *
@@ -34,75 +34,75 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE parameter_def,   ONLY: KEYORB
-      USE mcpdata_C
-      USE sbdat1_C
-      USE orbord_C
+      use vast_kind_param, only:  double
+      use parameter_def,   only: keyorb
+      use mcpdata_c
+      use sbdat1_c
+      use orbord_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE setvec_I
-      USE wrtmat_I
-      IMPLICIT NONE
+      use setvec_i
+      use wrtmat_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: ncsf, nciv, nshl, i, L, ntestg
-      REAL(DOUBLE), DIMENSION(ncsf, nciv), INTENT(IN) :: ciin
-      REAL(DOUBLE), DIMENSION(nshl), INTENT(IN) :: t
-      REAL(DOUBLE), DIMENSION(ncsf, nciv), INTENT(OUT) :: ciout
+      integer, intent(in) :: ncsf, nciv, nshl, i, l, ntestg
+      real(double), dimension(ncsf, nciv), intent(in) :: ciin
+      real(double), dimension(nshl), intent(in) :: t
+      real(double), dimension(ncsf, nciv), intent(out) :: ciout
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY=KEYORB
-      INTEGER :: ntestL, ntest, nfound, k, ia, ib, ir, ira, irb, ifirst, &
+      integer, parameter :: key=keyorb
+      integer :: ntestl, ntest, nfound, k, ia, ib, ir, ira, irb, ifirst, &
                  j, ileft, iright, ivec, ielmnt
-      REAL(DOUBLE) :: racah, x
+      real(double) :: racah, x
 !
-      NTESTL = 00
-      NTEST = MAX(NTESTL,NTESTG)
-      NTEST = 000
+      ntestl = 00
+      ntest = max(ntestl,ntestg)
+      ntest = 000
 !
-      IF(NTEST.GE.10) WRITE(6,*) ' Entering TI1TV'
+      if(ntest.ge.10) write(6,*) ' Entering TI1TV'
 
-      CALL SETVEC(CIOUT,0.0D0,NCIV*NCSF)
+      call setvec(ciout,0.0d0,nciv*ncsf)
 !
 !.  Obtain address of first coupling coefficient for h(jl,il) :  IFIRST
 !.  Obtain number of        coupling coefficient for h(jl,il) :  NFOUND
 !
 !        NFOUND : Number of coefficients obtained
 !
-      NFOUND = 0
-      DO K = 1,NINTG
-        IA = INTGRL(K)/KEY
-        IB = MOD(INTGRL(K),KEY)
+      nfound = 0
+      do k = 1,nintg
+        ia = intgrl(k)/key
+        ib = mod(intgrl(k),key)
 !
 !   Determine the ordernumber of the orbitals I, IA and IB within the
 !   shell with symmetry L
 !
-        IR = NSHLPP(L,NSHLP(L,I))
-        IRA = NSHLPP(L,IA)
-        IRB = NSHLPP(L,IB)
+        ir = nshlpp(l,nshlp(l,i))
+        ira = nshlpp(l,ia)
+        irb = nshlpp(l,ib)
 
-        IF (IR.EQ.IRB.AND.IRA.LT.IRB) THEN
-          IF (K.EQ.1) THEN
-            IFIRST = 1
-          ELSE
-            IFIRST = INTPTR(K-1) + 1
-          ENDIF
-          NFOUND = INTPTR(K) - IFIRST + 1
+        if (ir.eq.irb.and.ira.lt.irb) then
+          if (k.eq.1) then
+            ifirst = 1
+          else
+            ifirst = intptr(k-1) + 1
+          endif
+          nfound = intptr(k) - ifirst + 1
 
-   15     DO IELMNT = 1, NFOUND
-            RACAH = CNN(IFIRST-1+IELMNT)
-            J = IRA
-            X = T(J)*RACAH
+   15     do ielmnt = 1, nfound
+            racah = cnn(ifirst-1+ielmnt)
+            j = ira
+            x = t(j)*racah
 !ww            IF (NORDII.EQ.0.AND.NORDFF.EQ.0) THEN
 !
 !  Expression for normal orbital ordering
 !
-              ILEFT = JANN(IFIRST-1+IELMNT)
-              IRIGHT = JBNN(IFIRST-1+IELMNT)
+              ileft = jann(ifirst-1+ielmnt)
+              iright = jbnn(ifirst-1+ielmnt)
 !ww            ELSEIF (NORDII.EQ.1.AND.NORDFF.EQ.1) THEN
 !
 !  Expression for reverse orbital ordering
@@ -113,24 +113,24 @@
 !ww              WRITE(*,*) 'SOMETHING WRONG'
 !ww              STOP
 !ww            ENDIF
-            DO IVEC =1, NCIV
-              CIOUT(ILEFT,IVEC) =                                       &
-     &        CIOUT(ILEFT,IVEC) + X*CIIN(IRIGHT,IVEC)
-            ENDDO
-          ENDDO
-        ENDIF
-      ENDDO
+            do ivec =1, nciv
+              ciout(ileft,ivec) =                                       &
+     &        ciout(ileft,ivec) + x*ciin(iright,ivec)
+            enddo
+          enddo
+        endif
+      enddo
 !
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' Input and output vectors from TI1TV I,L',I,L
-        CALL WRTMAT(CIIN,NCSF,NCIV,NCSF,NCIV)
-        WRITE(6,*)
-        CALL WRTMAT(CIOUT,NCSF,NCIV,NCSF,NCIV)
-        WRITE(6,*)
-      END IF
+      if(ntest.ge.100) then
+        write(6,*)
+        write(6,*) ' Input and output vectors from TI1TV I,L',i,l
+        call wrtmat(ciin,ncsf,nciv,ncsf,nciv)
+        write(6,*)
+        call wrtmat(ciout,ncsf,nciv,ncsf,nciv)
+        write(6,*)
+      end if
 !
-      IF(NTEST.GE.10) WRITE(6,*) ' LEAVING TI1TV'
+      if(ntest.ge.10) write(6,*) ' LEAVING TI1TV'
 
-      RETURN
-      END
+      return
+      end

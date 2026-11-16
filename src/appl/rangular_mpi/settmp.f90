@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETTMP(NB, KMAX, FILEHEAD)
+      subroutine settmp(nb, kmax, filehead)
 !***********************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  11:01:42   1/ 5/07
 !...Modified by Charlotte Froese Fischer
@@ -8,43 +8,43 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE convrt_I
-      USE openfl_I
+      use convrt_i
+      use openfl_i
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      USE iounit_C
+      use iounit_c
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: NB
-      INTEGER , INTENT(IN) :: KMAX
-      CHARACTER , INTENT(IN) :: FILEHEAD*(*)
+      integer , intent(in) :: nb
+      integer , intent(in) :: kmax
+      character , intent(in) :: filehead*(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K, LCK, IERR, I, LNG
-      CHARACTER :: CK*2
+      integer :: k, lck, ierr, i, lng
+      character :: ck*2
 !-----------------------------------------------
 !
 ! All files  filehead.XX  are UNFORMATTED;
 !
-      LNG = LEN_TRIM(FILEHEAD)
-      DO K = 30, 32 + KMAX
-         CALL CONVRT (K, CK, LCK)
-         CALL OPENFL (K, FILEHEAD(1:LNG)//'.'//CK(1:2), 'UNFORMATTED', &
-            'UNKNOWN', IERR)
-         IF (IERR == 0) CYCLE
-         DO I = 30, K
-            CLOSE(I)
-         END DO
-         WRITE (ISTDE, *) 'Error when opening the tmp files'
-         STOP
-      END DO
+      lng = len_trim(filehead)
+      do k = 30, 32 + kmax
+         call convrt (k, ck, lck)
+         call openfl (k, filehead(1:lng)//'.'//ck(1:2), 'UNFORMATTED', &
+            'UNKNOWN', ierr)
+         if (ierr == 0) cycle
+         do i = 30, k
+            close(i)
+         end do
+         write (istde, *) 'Error when opening the tmp files'
+         stop
+      end do
 
-      DO K = 30, 32 + KMAX
-         WRITE (K) 'MCP', NB
-      END DO
+      do k = 30, 32 + kmax
+         write (k) 'MCP', nb
+      end do
 
-      RETURN
-      END SUBROUTINE SETTMP
+      return
+      end subroutine settmp

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      LOGICAL FUNCTION TRIANGRK (LA, K, LB)
+      logical function triangrk (la, k, lb)
 !                                                                      *
 !   Written by Per Jonsson                                             *
 !                                                                      *
@@ -11,30 +11,30 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: LA
-      INTEGER, INTENT(IN) :: K
-      INTEGER, INTENT(IN) :: LB
+      integer, intent(in) :: la
+      integer, intent(in) :: k
+      integer, intent(in) :: lb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !
 !   Perform the triangularity check
 !
-      IF (MOD(K + LA + LB,2) /= 0) THEN
-         TRIANGRK = .FALSE.
-      ELSE
-         IF (ABS(LA - LB) > K) THEN
-            TRIANGRK = .FALSE.
-         ELSE IF (LA + LB < K) THEN
-            TRIANGRK = .FALSE.
-         ELSE
-            TRIANGRK = .TRUE.
-         ENDIF
-      ENDIF
+      if (mod(k + la + lb,2) /= 0) then
+         triangrk = .false.
+      else
+         if (abs(la - lb) > k) then
+            triangrk = .false.
+         else if (la + lb < k) then
+            triangrk = .false.
+         else
+            triangrk = .true.
+         endif
+      endif
 
-      RETURN
-      END FUNCTION TRIANGRK
+      return
+      end function triangrk

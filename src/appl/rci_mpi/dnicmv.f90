@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE DNICMV(N, M, B, C)
+      subroutine dnicmv(n, m, b, c)
 !                                                                      *
 !   Matrix-matrix product: C = AB.  The lower triangle of the  (NxN)   *
 !   matrix is assumed available in packed form in the array EMT. The   *
@@ -22,60 +22,60 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE hmat_C,          ONLY: EMT
-      USE mpi_C
+      use vast_kind_param, only: double
+      use hmat_c,          only: emt
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dinit_I
+      use dinit_i
 !      USE dmerge_dnicmv_I
-      USE dmerge_dnicmv_I, ONLY: dmerge_dnicmv
-      USE mpiu_I, ONLY: gdsummpi
-      IMPLICIT NONE
+      use dmerge_dnicmv_i, only: dmerge_dnicmv
+      use mpiu_i, only: gdsummpi
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: N
-      INTEGER, INTENT(IN) :: M
-      REAL(DOUBLE), DIMENSION(N,M) :: B
-      REAL(DOUBLE), DIMENSION(N,M) :: C
+      integer, intent(in) :: n
+      integer, intent(in) :: m
+      real(double), dimension(n,m) :: b
+      real(double), dimension(n,m) :: c
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: IBEG, IEND, ICOL, NELC, IV
-      REAL(DOUBLE) :: DIAG, DL
+      integer      :: ibeg, iend, icol, nelc, iv
+      real(double) :: diag, dl
 !-----------------------------------------------
 
 !   Initialise the result matrix; note that this is specific to the
 !   data structure of DVDSON --- there is no overdimensioning
 
-      CALL DINIT (N*M, 0.0D00, C, 1)
+      call dinit (n*m, 0.0d00, c, 1)
 
-      IBEG = 1
-      IEND = 0
-      DO ICOL = MYID + 1, N, NPROCS
-         IEND = IEND + ICOL
-         NELC = IEND - IBEG + 1
-         DO IV = 1, M
-            DIAG = C(ICOL,IV) + EMT(IEND)*B(ICOL,IV)
-            CALL DMERGE_DNICMV (NELC - 1, B(1:N,IV), C(1:N,IV), &
-                                EMT(IBEG:IEND), B(ICOL,IV), DL)
-            C(ICOL,IV) = DIAG + DL
-         END DO
-         IBEG = IEND + 1
-      END DO
+      ibeg = 1
+      iend = 0
+      do icol = myid + 1, n, nprocs
+         iend = iend + icol
+         nelc = iend - ibeg + 1
+         do iv = 1, m
+            diag = c(icol,iv) + emt(iend)*b(icol,iv)
+            call dmerge_dnicmv (nelc - 1, b(1:n,iv), c(1:n,iv), &
+                                emt(ibeg:iend), b(icol,iv), dl)
+            c(icol,iv) = diag + dl
+         end do
+         ibeg = iend + 1
+      end do
 
-      CALL gdsummpi (C,N*M)
+      call gdsummpi (c,n*m)
 
-      RETURN
-      END SUBROUTINE DNICMV
+      return
+      end subroutine dnicmv
 
 
 
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE DMERGE_DNICMV(N, DB, DC, DA, DCONST, DL)
+      subroutine dmerge_dnicmv(n, db, dc, da, dconst, dl)
 !
 !  Used by dnimcv
 !  Developed from dmerge. The only diff is: idy not needed here
@@ -85,28 +85,28 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: N
-      REAL(DOUBLE), INTENT(IN) :: DCONST
-      REAL(DOUBLE), INTENT(OUT) :: DL
-      REAL(DOUBLE), DIMENSION(*), INTENT(IN) :: DB
-      REAL(DOUBLE), DIMENSION(*), INTENT(INOUT) :: DC
-      REAL(DOUBLE), DIMENSION(N), INTENT(IN) :: DA
+      integer, intent(in) :: n
+      real(double), intent(in) :: dconst
+      real(double), intent(out) :: dl
+      real(double), dimension(*), intent(in) :: db
+      real(double), dimension(*), intent(inout) :: dc
+      real(double), dimension(n), intent(in) :: da
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE) :: DSUM
+      integer :: i
+      real(double) :: dsum
 !-----------------------------------------------
 
-      DSUM = 0.D0
-      DSUM = DOT_PRODUCT(DA,DB(:N))
-      DC(:N) = DC(:N) + DCONST*DA
-      DL = DSUM
+      dsum = 0.d0
+      dsum = dot_product(da,db(:n))
+      dc(:n) = dc(:n) + dconst*da
+      dl = dsum
 
-      RETURN
-      END SUBROUTINE DMERGE_DNICMV
+      return
+      end subroutine dmerge_dnicmv

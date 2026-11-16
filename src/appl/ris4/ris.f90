@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      PROGRAM RIS
+      program ris
 !                                                                      *
 !   Entry routine for RIS. Controls the entire computation.       *
 !                                                                      *
@@ -18,69 +18,69 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE default_C
-      USE iounit_C
-      USE debug_C,         ONLY: CUTOFF
+      use vast_kind_param, only: double
+      use default_c
+      use iounit_c
+      use debug_c,         only: cutoff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setdbg_I
-      USE setmc_I
-      USE setcon_I
-      USE setsum_I
-      USE setcsla_I
-      USE getmixblock_I
-      USE strsum_I
-      USE factt_I
-      USE ris_cal_I
-      USE getsmd_I, ONLY: getsmd
-      IMPLICIT NONE
+      use getyn_i
+      use setdbg_i
+      use setmc_i
+      use setcon_i
+      use setsum_i
+      use setcsla_i
+      use getmixblock_i
+      use strsum_i
+      use factt_i
+      use ris_cal_i
+      use getsmd_i, only: getsmd
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE) :: DR2
-      LOGICAL   :: YES
-      CHARACTER :: NAME*24
-      INTEGER :: K, NCI, ncore_not_used, NOPAR
+      real(double) :: dr2
+      logical   :: yes
+      character :: name*24
+      integer :: k, nci, ncore_not_used, nopar
 !-----------------------------------------------
 !
 !   Matrix elements smaller than CUTOFF are not accumulated
 !
-      CUTOFF = 1.0D-10
+      cutoff = 1.0d-10
 !
-      WRITE (ISTDE, *)
-      WRITE (ISTDE, *) 'RIS: Execution begins ...'
+      write (istde, *)
+      write (istde, *) 'RIS: Execution begins ...'
 !      CALL STARTTIME (ncount1, 'RIS')
 
-      WRITE (ISTDE, *)
-      WRITE (ISTDE, *) 'Default settings?'
-      YES = GETYN ()
-      WRITE (ISTDE, *)
-      IF (YES) THEN
-         NDEF = 0
-      ELSE
-         NDEF = 1
-      ENDIF
+      write (istde, *)
+      write (istde, *) 'Default settings?'
+      yes = getyn ()
+      write (istde, *)
+      if (yes) then
+         ndef = 0
+      else
+         ndef = 1
+      endif
 
-    9 WRITE (ISTDE, *) 'Name of state'
-      READ(*,'(A)') NAME
-      K=INDEX(NAME,' ')
-      IF (K.EQ.1) THEN
-         WRITE (ISTDE, *) 'Names may not start with a blank'
-         GOTO 9
-      ENDIF
-      PRINT *
+    9 write (istde, *) 'Name of state'
+      read(*,'(A)') name
+      k=index(name,' ')
+      if (k.eq.1) then
+         write (istde, *) 'Names may not start with a blank'
+         goto 9
+      endif
+      print *
 
-      WRITE (ISTDE, *) 'Mixing coefficients from a CI calc.?'
-      YES = GETYN ()
-      IF (YES) THEN
-         NCI = 0
-      ELSE
-         NCI = 1
-      ENDIF
-      WRITE (ISTDE, *)
+      write (istde, *) 'Mixing coefficients from a CI calc.?'
+      yes = getyn ()
+      if (yes) then
+         nci = 0
+      else
+         nci = 1
+      endif
+      write (istde, *)
 
 !
 !   Check compatibility of plant substitutions
@@ -90,27 +90,27 @@
 !   Determine if there is to be any debug printout; this will be
 !   made on the  .dbg  file
 !
-      CALL SETDBG
+      call setdbg
 !
 !   Perform machine- and installation-dependent setup
 !
-      CALL SETMC
+      call setmc
 !
 !   Set up the physical constants
 !
-      CALL SETCON
+      call setcon
 !
 !   Open the  .i  file
 !
-      CALL SETSUM(NAME,NCI)
+      call setsum(name,nci)
 !
 !   Open, check, load data from, and close, the  .csl  file
 !
-      CALL SETCSLA(NAME,ncore_not_used)
+      call setcsla(name,ncore_not_used)
 !
 !   Get the remaining information
 !
-      CALL GETSMD(NAME)
+      call getsmd(name)
 !
 !   Get the eigenvectors
 !
@@ -119,7 +119,7 @@
 !      PRINT *
 
 !      IF (YES) THEN
-         CALL GETMIXBLOCK(NAME,NCI)
+         call getmixblock(name,nci)
 !      ELSE
 !         IF (NCI.EQ.0) THEN
 !            CALL GETMIXC(NAME)
@@ -134,17 +134,17 @@
 !
 !   Set up the table of logarithms of factorials
 !
-      CALL FACTT
+      call factt
 !
 !   Proceed with the RIS calculation
 !
-      CALL RIS_CAL(NAME)
+      call ris_cal(name)
 !
 !   Print completion message
 !
-      WRITE (ISTDE, *)
+      write (istde, *)
 !      CALL STOPTIME (ncount1, 'RIS')
-      WRITE (ISTDE, *) 'RIS: Execution complete.'
+      write (istde, *) 'RIS: Execution complete.'
 !
-      STOP
-      END  PROGRAM RIS
+      stop
+      end  program ris

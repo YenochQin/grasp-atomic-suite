@@ -2,7 +2,7 @@
 
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GETINF
+      subroutine getinf
 !                                                                      *
 !   Interactively determines data useful for generating estimates of   *
 !   the subshell radial wavefunctions.                                 *
@@ -18,109 +18,109 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE IOUNIT_C
-      USE DEF_C
-      USE DEFAULT_C
-      USE GRID_C, ONLY: RNT, H, HP, N
-      USE NPAR_C
+      use vast_kind_param, only:  double
+      use iounit_c
+      use def_c
+      use default_c
+      use grid_c, only: rnt, h, hp, n
+      use npar_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setiso_I
-      USE setqic_I
-      USE radgrd_I
-      USE nucpot_I
-      IMPLICIT NONE
+      use getyn_i
+      use setiso_i
+      use setqic_i
+      use radgrd_i
+      use nucpot_i
+      implicit none
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: YES
+      logical :: yes
 !-----------------------------------------------
 !
 !
 !
 !   Open, check, load data from, and close the  .iso  file
 !
-      CALL SETISO ('isodata')
+      call setiso ('isodata')
 !
 !   Set defaults
 !
-      C = CVAC
+      c = cvac
 !
-      IF (NPARM == 0) THEN
-         RNT = EXP((-65.0D00/16.0D00))/Z
-         H = 0.5D00**4
-         N = MIN(220,NNNP)
-      ELSE
+      if (nparm == 0) then
+         rnt = exp((-65.0d00/16.0d00))/z
+         h = 0.5d00**4
+         n = min(220,nnnp)
+      else
 !CFF     .. should be Z-dependent
-         RNT = 2.0D-06/Z
-         H = 5.0D-02
-         N = NNNP
-      ENDIF
-      HP = 0.0D00
+         rnt = 2.0d-06/z
+         h = 5.0d-02
+         n = nnnp
+      endif
+      hp = 0.0d00
 !
-      IF (NDEF /= 0) THEN
-         WRITE (ISTDE, *) 'Change the default speed of light ', &
+      if (ndef /= 0) then
+         write (istde, *) 'Change the default speed of light ', &
             'or radial grid parameters?'
 !
-         YES = GETYN()
-         IF (YES) THEN
+         yes = getyn()
+         if (yes) then
 !
 !   Modify the speed of light
 !
-            WRITE (ISTDE, *) 'The physical speed of light in ', &
-               'atomic units is', CVAC, ';'
-            WRITE (ISTDE, *) 'revise this value?'
-            YES = GETYN()
-            IF (YES) THEN
-               WRITE (ISTDE, *) 'Enter the revised value:'
-               READ (5, *) C
-            ENDIF
+            write (istde, *) 'The physical speed of light in ', &
+               'atomic units is', cvac, ';'
+            write (istde, *) 'revise this value?'
+            yes = getyn()
+            if (yes) then
+               write (istde, *) 'Enter the revised value:'
+               read (5, *) c
+            endif
 !
 !   Modify the parameters controlling the radial grid
 !
-            WRITE (ISTDE, *) 'The default radial grid parameters ', &
+            write (istde, *) 'The default radial grid parameters ', &
                'for this case are:'
-            WRITE (ISTDE, *) ' RNT = ', RNT, ';'
-            WRITE (ISTDE, *) ' H = ', H, ';'
-            WRITE (ISTDE, *) ' HP = ', HP, ';'
-            WRITE (ISTDE, *) ' N = ', N, ';'
-            WRITE (ISTDE, *) 'revise these values?'
-            YES = GETYN()
-            IF (YES) THEN
-               WRITE (ISTDE, *) 'Enter RNT:'
-               READ (5, *) RNT
-               WRITE (ISTDE, *) 'Enter H:'
-               READ (5, *) H
-               WRITE (ISTDE, *) 'Enter HP:'
-               READ (5, *) HP
-               WRITE (ISTDE, *) 'Enter N:'
-               READ (5, *) N
-            ENDIF
+            write (istde, *) ' RNT = ', rnt, ';'
+            write (istde, *) ' H = ', h, ';'
+            write (istde, *) ' HP = ', hp, ';'
+            write (istde, *) ' N = ', n, ';'
+            write (istde, *) 'revise these values?'
+            yes = getyn()
+            if (yes) then
+               write (istde, *) 'Enter RNT:'
+               read (5, *) rnt
+               write (istde, *) 'Enter H:'
+               read (5, *) h
+               write (istde, *) 'Enter HP:'
+               read (5, *) hp
+               write (istde, *) 'Enter N:'
+               read (5, *) n
+            endif
 !
-         ENDIF
-      ENDIF
+         endif
+      endif
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
-      ACCY = H**6
+      accy = h**6
 !
 !   Set up the coefficients for the numerical procedures
 !
-      CALL SETQIC
+      call setqic
 !
 !   Generate the radial grid and all associated arrays
 !
-      CALL RADGRD
+      call radgrd
 !
 !   Generate $- r \times V_ (r)$
 !
-      CALL NUCPOT
+      call nucpot
 !
-      RETURN
-      END SUBROUTINE GETINF
+      return
+      end subroutine getinf

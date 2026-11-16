@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE MCTIN(IOPAR, JKP, NAME)
+      subroutine mctin(iopar, jkp, name)
 !                                                                      *
 !   This routine loads  coefficients with parity and  rank specified   *
 !   by KP(JKP) into the arrays ISLDR and XSLDR.  IOPAR is the parity   *
@@ -16,74 +16,74 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: KEYORB, NNNW
-      USE debug_C
-      USE decide_C
-      USE def_C
-      USE foparm_C
-      USE OFFD_C
-      USE orb_C
-      USE OSC_C
-      USE mpi_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: keyorb, nnnw
+      use debug_c
+      use decide_c
+      use def_c
+      use foparm_c
+      use offd_c
+      use orb_c
+      use osc_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE alcnsa_I
-      USE alcnta_I
-      IMPLICIT NONE
+      use alcnsa_i
+      use alcnta_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: IOPAR
-      INTEGER, INTENT(IN) :: JKP
-      CHARACTER  :: NAME(2)*24
+      integer  :: iopar
+      integer, intent(in) :: jkp
+      character  :: name(2)*24
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: NFILE = 93
-      INTEGER, PARAMETER :: NFILE1 = 237
+      integer, parameter :: nfile = 93
+      integer, parameter :: nfile1 = 237
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NFILE2,M,K,IBLKI,IBLKF,I,LABL,NCSF,J,nprocsd,myidd
-      REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL
-      LOGICAL :: AVAIL
+      integer :: nfile2,m,k,iblki,iblkf,i,labl,ncsf,j,nprocsd,myidd
+      real(double), dimension(nnnw) :: tshell
+      logical :: avail
 !-----------------------------------------------
 !
 !   Read the data back as required by OSCL conventions
 !
-      NFILE2 = NFILE1 + JKP
+      nfile2 = nfile1 + jkp
 
-      M = 0
-      K = 0
+      m = 0
+      k = 0
 !
-      READ (NFILE2) IBLKI,IBLKF,NW,NKP,nprocsd,myidd
-      READ (NFILE2) NINT
+      read (nfile2) iblki,iblkf,nw,nkp,nprocsd,myidd
+      read (nfile2) nint
 !
-      DO I = 1, NINT
+      do i = 1, nint
 !
-         READ (NFILE2) LABL, NCSF
+         read (nfile2) labl, ncsf
 !
-         M = M + 1
+         m = m + 1
 !bieron
-         IF (M >= NSDIM) CALL ALCNSA (JJA, JJB, HB1, HB2, HC1, &
-            HC2, HM1, HM2, LAB, NPTR, NSDIM, 2)
-         LAB(M) = LABL
+         if (m >= nsdim) call alcnsa (jja, jjb, hb1, hb2, hc1, &
+            hc2, hm1, hm2, lab, nptr, nsdim, 2)
+         lab(m) = labl
 !
 !   Read configuration pairs and coefficients for this integral
 !
-    4    CONTINUE
-         IF (NCSF + K > NTDIM) THEN
-            CALL ALCNTA (ISLDR, ISLDR1, XSLDR, NTDIM, 2)
-            GO TO 4
-         ENDIF
-         NPTR(M) = K
-         READ (NFILE2) (ISLDR(J + K),ISLDR1(J + K),XSLDR(J + K),J=1,NCSF)
+    4    continue
+         if (ncsf + k > ntdim) then
+            call alcnta (isldr, isldr1, xsldr, ntdim, 2)
+            go to 4
+         endif
+         nptr(m) = k
+         read (nfile2) (isldr(j + k),isldr1(j + k),xsldr(j + k),j=1,ncsf)
 !          write(*,*) (ISLDR(J+K),XSLDR(J+K),J = 1,NCSF)
-         K = K + NCSF
+         k = k + ncsf
 !
-      END DO
+      end do
 !
 !   Close (and hence release) the scratch file
 !
@@ -92,13 +92,13 @@
 !        CLOSE (unit=NFILE,status="DELETE")
 !      ENDIF
 !
-      NPTR(M+1) = K
-      NINTEG = M
+      nptr(m+1) = k
+      ninteg = m
 !
-      RETURN
+      return
 !
-  301 FORMAT(/,/,/,1X,I8,' MCT coefficients generated for rank ',I2,&
-         ' and parity ',I2,/,/)
-      RETURN
+  301 format(/,/,/,1x,i8,' MCT coefficients generated for rank ',i2,&
+         ' and parity ',i2,/,/)
+      return
 !
-      END SUBROUTINE MCTIN
+      end subroutine mctin

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE TRSORT(NAME, NFILE, NFILE2, LPRINT, JKP, IBLKI, IBLKF)
+      subroutine trsort(name, nfile, nfile2, lprint, jkp, iblki, iblkf)
 !                                                                      *
 !   Routine to sort angular coefficients into list based on integral   *
 !   labels rather than CSF.  A tree sort is used. To save space, the   *
@@ -21,44 +21,44 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: KEYORB
-      USE memory_man
-      USE default_C
-      USE Orb_C
-      USE osc_C, ONLY: nkp, kp
+      use vast_kind_param, only: double
+      use parameter_def,   only: keyorb
+      use memory_man
+      use default_c
+      use orb_c
+      use osc_c, only: nkp, kp
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE alclla_I
-      USE alcnma_I
-      IMPLICIT NONE
+      use alclla_i
+      use alcnma_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NFILE
-      INTEGER, INTENT(IN) :: NFILE2
-      INTEGER  :: JKP
-      INTEGER, INTENT(IN) :: IBLKI
-      INTEGER, INTENT(IN) :: IBLKF
-      LOGICAL, INTENT(IN) :: LPRINT
-      CHARACTER, INTENT(IN) :: NAME(2)*24
+      integer, intent(in) :: nfile
+      integer, intent(in) :: nfile2
+      integer  :: jkp
+      integer, intent(in) :: iblki
+      integer, intent(in) :: iblkf
+      logical, intent(in) :: lprint
+      character, intent(in) :: name(2)*24
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: NCA = 65536
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: nca = 65536
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, DIMENSION(:), pointer :: ILAB, IRIGHT, ILEFT, IBEG, IPTR, &
-                    ILAST, IBLINT, IPTCSF, LBLINT, JLABL, ISLDR, ISLDR1
-      REAL(DOUBLE), DIMENSION(:), pointer :: XSLDR, XL
-      INTEGER :: NMCP, NINT, NLABEL, LLDIM, NMDIM, IR, IS, NI, I, M, J, &
-                 ICOUNT, JLAB, K, L, IMCP, J1, J2, MLR, MUP, INTS, IA, IB
-      REAL(DOUBLE) :: X
-      LOGICAL :: FIRST
-      CHARACTER(LEN=2), DIMENSION(-9:9) :: S
+      integer, dimension(:), pointer :: ilab, iright, ileft, ibeg, iptr, &
+                    ilast, iblint, iptcsf, lblint, jlabl, isldr, isldr1
+      real(double), dimension(:), pointer :: xsldr, xl
+      integer :: nmcp, nint, nlabel, lldim, nmdim, ir, is, ni, i, m, j, &
+                 icount, jlab, k, l, imcp, j1, j2, mlr, mup, ints, ia, ib
+      real(double) :: x
+      logical :: first
+      character(len=2), dimension(-9:9) :: s
 !-----------------------------------------------
 !
 !
@@ -68,300 +68,300 @@
 !     POINTER (PIPTR,IPTR(1))
 !
 !
-      S((-9)) = '-9'
-      S((-8)) = '-8'
-      S((-7)) = '-7'
-      S((-6)) = '-6'
-      S((-5)) = '-5'
-      S((-4)) = '-4'
-      S((-3)) = '-3'
-      S((-2)) = '-2'
-      S((-1)) = '-1'
-      S(0) = '+0'
-      S(1) = '+1'
-      S(2) = '+2'
-      S(3) = '+3'
-      S(4) = '+4'
-      S(5) = '+5'
-      S(6) = '+6'
-      S(7) = '+7'
-      S(8) = '+8'
-      S(9) = '+9'
+      s((-9)) = '-9'
+      s((-8)) = '-8'
+      s((-7)) = '-7'
+      s((-6)) = '-6'
+      s((-5)) = '-5'
+      s((-4)) = '-4'
+      s((-3)) = '-3'
+      s((-2)) = '-2'
+      s((-1)) = '-1'
+      s(0) = '+0'
+      s(1) = '+1'
+      s(2) = '+2'
+      s(3) = '+3'
+      s(4) = '+4'
+      s(5) = '+5'
+      s(6) = '+6'
+      s(7) = '+7'
+      s(8) = '+8'
+      s(9) = '+9'
 !
 !   Position file at beginning of list of integrals
 !
-      REWIND (NFILE)
+      rewind (nfile)
 !
 !   Initialize
 !
-      FIRST = .TRUE.
-      NMCP = 0
-      NINT = 0
+      first = .true.
+      nmcp = 0
+      nint = 0
 !
 !   Initial allocation of storage to local arrays
 !
-      NLABEL = 1
-      CALL ALLOC (JLABL, NLABEL, 'JLABL', 'TRSORT')
-      CALL ALLOC (XL, NLABEL, 'XL', 'TRSORT')
+      nlabel = 1
+      call alloc (jlabl, nlabel, 'JLABL', 'TRSORT')
+      call alloc (xl, nlabel, 'XL', 'TRSORT')
 !
-      CALL ALCLLA (IBEG, ILAB, ILAST, ILEFT, IPTCSF, IRIGHT, LBLINT, &
-          LLDIM, 1)
-      CALL ALCNMA (IPTR, ISLDR, ISLDR1, XSLDR, NMDIM, 1)
+      call alclla (ibeg, ilab, ilast, ileft, iptcsf, iright, lblint, &
+          lldim, 1)
+      call alcnma (iptr, isldr, isldr1, xsldr, nmdim, 1)
 !
 !   Now the rest of the elements
 !
-    1 CONTINUE
-      READ (NFILE, END=12) IR, IS, NI
-      IF (NI > NLABEL) THEN
-         CALL RALLOC (JLABL, NI, 'JLABL', 'TRSORT')
-         CALL RALLOC (XL, NI, 'XL', 'TRSORT')
-         NLABEL = NI
-      ENDIF
-      READ (NFILE, END=99, ERR=99) (JLABL(I),XL(I),I=1,NI)
-      IF (IR==0 .OR. IS==0 .OR. NI==0) GO TO 1
+    1 continue
+      read (nfile, end=12) ir, is, ni
+      if (ni > nlabel) then
+         call ralloc (jlabl, ni, 'JLABL', 'TRSORT')
+         call ralloc (xl, ni, 'XL', 'TRSORT')
+         nlabel = ni
+      endif
+      read (nfile, end=99, err=99) (jlabl(i),xl(i),i=1,ni)
+      if (ir==0 .or. is==0 .or. ni==0) go to 1
 !
-      IF (FIRST) THEN
+      if (first) then
 !
 !   List is empty
 !
-         M = 0
-         J = 0
+         m = 0
+         j = 0
 !
 !   Set up list pointers and insert first element
 !
-         ICOUNT = 0
-    3    CONTINUE
-         ICOUNT = ICOUNT + 1
-         IF (ICOUNT > NI) GO TO 1
-         IF (JLABL(ICOUNT) == 0) GO TO 3
-         ILAB(1) = JLABL(ICOUNT)
+         icount = 0
+    3    continue
+         icount = icount + 1
+         if (icount > ni) go to 1
+         if (jlabl(icount) == 0) go to 3
+         ilab(1) = jlabl(icount)
 !
-         IRIGHT(1) = 0
-         ILEFT(1) = 0
-         IBEG(1) = 1
-         IPTR(1) = 0
-         ILAST(1) = 0
+         iright(1) = 0
+         ileft(1) = 0
+         ibeg(1) = 1
+         iptr(1) = 0
+         ilast(1) = 0
 !
-         M = 1
-         J = 1
+         m = 1
+         j = 1
 !
-         FIRST = .FALSE.
+         first = .false.
 !
-      ELSE
+      else
 !
-         ICOUNT = 0
+         icount = 0
 !
-      ENDIF
+      endif
 !
 !   Sort integral list using tree sort
 !
 !   Take next nonzero element
 !
-    4 CONTINUE
-      ICOUNT = ICOUNT + 1
-      IF (ICOUNT > NI) GO TO 1
-      JLAB = JLABL(ICOUNT)
-      IF (JLAB == 0) GO TO 4
-      X = XL(ICOUNT)
+    4 continue
+      icount = icount + 1
+      if (icount > ni) go to 1
+      jlab = jlabl(icount)
+      if (jlab == 0) go to 4
+      x = xl(icount)
 !
-      M = M + 1
-      IF (M > NMDIM) CALL ALCNMA (IPTR, ISLDR, ISLDR1, XSLDR, NMDIM, 2)
-      I = 1
+      m = m + 1
+      if (m > nmdim) call alcnma (iptr, isldr, isldr1, xsldr, nmdim, 2)
+      i = 1
 !
 !   Search for place in tree
 !
-    5 CONTINUE
-      IF (JLAB - ILAB(I) > 0) GO TO 8
-      IF (JLAB - ILAB(I) == 0) GO TO 10
-      K = IRIGHT(I)
-      IF (K /= 0) GO TO 7
-      J = J + 1
-      IF (J > LLDIM) CALL ALCLLA (IBEG, ILAB, ILAST, ILEFT, IPTCSF, &
-                    IRIGHT, LBLINT, LLDIM, 2)
-      IRIGHT(I) = J
-      GO TO 9
-    7 CONTINUE
-      I = K
-      GO TO 5
-    8 CONTINUE
-      K = ILEFT(I)
-      IF (K /= 0) GO TO 7
-      J = J + 1
-      IF (J > LLDIM) CALL ALCLLA (IBEG, ILAB, ILAST, ILEFT, IPTCSF, &
-                          IRIGHT, LBLINT, LLDIM, 2)
-      ILEFT(I) = J
+    5 continue
+      if (jlab - ilab(i) > 0) go to 8
+      if (jlab - ilab(i) == 0) go to 10
+      k = iright(i)
+      if (k /= 0) go to 7
+      j = j + 1
+      if (j > lldim) call alclla (ibeg, ilab, ilast, ileft, iptcsf, &
+                    iright, lblint, lldim, 2)
+      iright(i) = j
+      go to 9
+    7 continue
+      i = k
+      go to 5
+    8 continue
+      k = ileft(i)
+      if (k /= 0) go to 7
+      j = j + 1
+      if (j > lldim) call alclla (ibeg, ilab, ilast, ileft, iptcsf, &
+                          iright, lblint, lldim, 2)
+      ileft(i) = j
 !
 !   When found, update list.
 !
-    9 CONTINUE
-      ILAST(J) = I
-      IRIGHT(J) = 0
-      ILEFT(J) = 0
-      IBEG(J) = M
-      ILAB(J) = JLAB
-      IPTR(M) = 0
-      GO TO 4
-   10 CONTINUE
-      K = IBEG(I)
-      L = K
-      K = IPTR(L)
-      DO WHILE(K /= 0)
-         L = K
-         K = IPTR(L)
-      END DO
-      IPTR(L) = M
-      IPTR(M) = 0
-      GO TO 4
+    9 continue
+      ilast(j) = i
+      iright(j) = 0
+      ileft(j) = 0
+      ibeg(j) = m
+      ilab(j) = jlab
+      iptr(m) = 0
+      go to 4
+   10 continue
+      k = ibeg(i)
+      l = k
+      k = iptr(l)
+      do while(k /= 0)
+         l = k
+         k = iptr(l)
+      end do
+      iptr(l) = m
+      iptr(m) = 0
+      go to 4
 !
 !   The end of the CSF-based file has been reached
 !
-   12 CONTINUE
-      IF (.NOT.(FIRST .OR. M==0)) THEN
+   12 continue
+      if (.not.(first .or. m==0)) then
 !
 !  Sort is complete. Unpack list
 !
-         NMCP = M
-         NINT = J
-         L = 0
-         M = 0
-         I = 1
+         nmcp = m
+         nint = j
+         l = 0
+         m = 0
+         i = 1
 !
 !   Search for smallest element
 !
-   13    CONTINUE
-         K = IRIGHT(I)
-         DO WHILE(K /= 0)
-            I = K
-            K = IRIGHT(I)
-         END DO
+   13    continue
+         k = iright(i)
+         do while(k /= 0)
+            i = k
+            k = iright(i)
+         end do
 !
 !   Insert in sorted list
 !
-   14    CONTINUE
-         IF (ILAB(I) == 0) GO TO 16
-         L = L + 1
-         LBLINT(L) = ILAB(I)
-         K = IBEG(I)
+   14    continue
+         if (ilab(i) == 0) go to 16
+         l = l + 1
+         lblint(l) = ilab(i)
+         k = ibeg(i)
 !
 !   Copy list of pointers to CSF/coefficients into new list
 !
-         M = M + 1
-         ISLDR(M) = K
-         K = IPTR(K)
-         DO WHILE(K /= 0)
-            M = M + 1
-            ISLDR(M) = K
-            K = IPTR(K)
-         END DO
-         IPTCSF(L) = M
-         ILAB(I) = 0
+         m = m + 1
+         isldr(m) = k
+         k = iptr(k)
+         do while(k /= 0)
+            m = m + 1
+            isldr(m) = k
+            k = iptr(k)
+         end do
+         iptcsf(l) = m
+         ilab(i) = 0
 !
 !   Next smallest element is on left of last element
 !
-         K = ILEFT(I)
-         IF (K == 0) GO TO 16
-         I = K
-         GO TO 13
+         k = ileft(i)
+         if (k == 0) go to 16
+         i = k
+         go to 13
 !
 !   If no element on left, next smallest is previous element
 !
-   16    CONTINUE
-         I = ILAST(I)
-         IF (I /= 0) GO TO 14
+   16    continue
+         i = ilast(i)
+         if (i /= 0) go to 14
 !
 !   List is unpacked. Invert CSF/coefficient pointer list to give
 !   position list for CSF/coefficients as they are read in
 !
-         DO I = 1, NMCP
-            K = ISLDR(I)
-            IPTR(K) = I
-         END DO
+         do i = 1, nmcp
+            k = isldr(i)
+            iptr(k) = i
+         end do
 !
 !   Now read CSF pairs and coefficients into correct positions in
 !   sorted list
 !
-         IMCP = 0
-         REWIND (NFILE)
-   18    CONTINUE
-         READ (NFILE, END=20) IR, IS, NI
-         IF (IR==0 .OR. IS==0 .OR. NI==0) GO TO 18
-         READ (NFILE) (JLABL(I),XL(I),I=1,NI)
-         DO I = 1, NI
-            IF (JLABL(I) == 0) CYCLE
-            IMCP = IMCP + 1
-            K = IPTR(IMCP)
-            ISLDR(K) = IR
-            ISLDR1(K) = IS
+         imcp = 0
+         rewind (nfile)
+   18    continue
+         read (nfile, end=20) ir, is, ni
+         if (ir==0 .or. is==0 .or. ni==0) go to 18
+         read (nfile) (jlabl(i),xl(i),i=1,ni)
+         do i = 1, ni
+            if (jlabl(i) == 0) cycle
+            imcp = imcp + 1
+            k = iptr(imcp)
+            isldr(k) = ir
+            isldr1(k) = is
 !           ISLDR(K) = IR*NCA+IS
-            XSLDR(K) = XL(I)
-         END DO
-         GO TO 18
+            xsldr(k) = xl(i)
+         end do
+         go to 18
 !
 !   The integral-based list is completely known
 !
-      ENDIF
-   20 CONTINUE
-      REWIND (NFILE)
+      endif
+   20 continue
+      rewind (nfile)
 !
 !  If first set of data open the file and print
 !  some data to later be able to identify the file
 !
-      IF (IBLKI==1 .AND. IBLKF==1) THEN
-         J1 = INDEX(NAME(1),' ')
-         J2 = INDEX(NAME(2),' ')
-         OPEN(UNIT=NFILE2,FILE=NAME(1)(1:J1-1)//'.'//NAME(2)(1:J2-1)//'.'//S(&
-            KP(JKP))//'T', STATUS='UNKNOWN', FORM='UNFORMATTED', POSITION=&
+      if (iblki==1 .and. iblkf==1) then
+         j1 = index(name(1),' ')
+         j2 = index(name(2),' ')
+         open(unit=nfile2,file=name(1)(1:j1-1)//'.'//name(2)(1:j2-1)//'.'//s(&
+            kp(jkp))//'T', status='UNKNOWN', form='UNFORMATTED', position=&
             'asis')
-      ENDIF
-      WRITE (NFILE2) IBLKI, IBLKF, NW, NKP
-      WRITE (NFILE2) NINT
-      IF (NMCP /= 0) THEN
-         IF (LPRINT) WRITE (99, 301)
-         MLR = 1
-         DO I = 1, NINT
-            MUP = IPTCSF(I)
-            INTS = MUP - MLR + 1
-            WRITE (NFILE2) LBLINT(I), INTS
-            IF (LPRINT) THEN
-               IA = LBLINT(I)/KEY
-               IB = MOD(LBLINT(I),KEY)
-               WRITE (99, 302) NP(IA), NH(IA), NP(IB), NH(IB)
-            ENDIF
-            WRITE (NFILE2) (ISLDR(M),ISLDR1(M),XSLDR(M),M=MLR,MUP)
-            IF (LPRINT) THEN
-               DO M = MLR, MUP
+      endif
+      write (nfile2) iblki, iblkf, nw, nkp
+      write (nfile2) nint
+      if (nmcp /= 0) then
+         if (lprint) write (99, 301)
+         mlr = 1
+         do i = 1, nint
+            mup = iptcsf(i)
+            ints = mup - mlr + 1
+            write (nfile2) lblint(i), ints
+            if (lprint) then
+               ia = lblint(i)/key
+               ib = mod(lblint(i),key)
+               write (99, 302) np(ia), nh(ia), np(ib), nh(ib)
+            endif
+            write (nfile2) (isldr(m),isldr1(m),xsldr(m),m=mlr,mup)
+            if (lprint) then
+               do m = mlr, mup
 !                  IS = MOD (ISLDR(M),NCA)
-                  IS = ISLDR1(M)
+                  is = isldr1(m)
 !                 IR = ISLDR(M)/NCA
-                  IR = ISLDR(M)
-                  WRITE (99, 303) IR, IS, XSLDR(M)
-               END DO
-            ENDIF
-            MLR = MUP + 1
-         END DO
+                  ir = isldr(m)
+                  write (99, 303) ir, is, xsldr(m)
+               end do
+            endif
+            mlr = mup + 1
+         end do
 !
-      ENDIF
+      endif
 !
 !   Deallocate storage for local arrays
 !
-      CALL DALLOC (JLABL, 'JLABJ', 'TRSORT')
-      CALL DALLOC (XL, 'XL', 'TRSORT')
-      CALL ALCLLA (IBEG, ILAB, ILAST, ILEFT, IPTCSF, IRIGHT, LBLINT, &
-                    LLDIM, 3)
-      CALL ALCNMA (IPTR, ISLDR, ISLDR1, XSLDR, NMDIM, 3)
+      call dalloc (jlabl, 'JLABJ', 'TRSORT')
+      call dalloc (xl, 'XL', 'TRSORT')
+      call alclla (ibeg, ilab, ilast, ileft, iptcsf, iright, lblint, &
+                    lldim, 3)
+      call alcnma (iptr, isldr, isldr1, xsldr, nmdim, 3)
 !
-      RETURN
+      return
 !
 !   Error handling
 !
-   99 CONTINUE
-      WRITE (6, *) 'TRSORT: Error reading CSF-based file.'
-      STOP
+   99 continue
+      write (6, *) 'TRSORT: Error reading CSF-based file.'
+      stop
 !
-  301 FORMAT(/,/,'  k'/,' d  (rs)  Coefficients:'/,'  ab'/,/,/,&
+  301 format(/,/,'  k'/,' d  (rs)  Coefficients:'/,'  ab'/,/,/,&
          '    a     b          r         s  Coefficient'/)
-  302 FORMAT(2(2X,I2,A2))
-  303 FORMAT(14X,1I6,2X,1I6,2X,1P,1D22.15)
-      RETURN
+  302 format(2(2x,i2,a2))
+  303 format(14x,1i6,2x,1i6,2x,1p,1d22.15)
+      return
 !
-      END SUBROUTINE TRSORT
+      end subroutine trsort

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE CONVRT2(INTNUM, CNUM, LENTH, FROM)
+      subroutine convrt2(intnum, cnum, lenth, from)
 !                                                                      *
 !   Converts the  INTEGER number  INTNUM  into the  CHARACTER string   *
 !   CNUM of length LENTH. INTEGER lengths of up to 64 bits are acco-   *
@@ -15,50 +15,50 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE IOUNIT_C
-      IMPLICIT NONE
+      use iounit_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: INTNUM
-      INTEGER, INTENT(OUT) :: LENTH
-      CHARACTER, INTENT(INOUT) :: CNUM*(*)
-      CHARACTER, INTENT(IN) :: FROM*(*)
+      integer, intent(in) :: intnum
+      integer, intent(out) :: lenth
+      character, intent(inout) :: cnum*(*)
+      character, intent(in) :: from*(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER :: FORM*6
-      CHARACTER, DIMENSION(0:10) :: C1020*2
-      CHARACTER, DIMENSION(9) :: C19
+      character :: form*6
+      character, dimension(0:10) :: c1020*2
+      character, dimension(9) :: c19
 !
 !
-      DATA C19/ '1', '2', '3', '4', '5', '6', '7', '8', '9'/
-      DATA C1020/ '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', &
+      data c19/ '1', '2', '3', '4', '5', '6', '7', '8', '9'/
+      data c1020/ '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', &
          '20'/
 !
-      IF (INTNUM < 0) THEN
-         LENTH = LOG10(DBLE((-INTNUM))) + 2
-      ELSE IF (INTNUM == 0) THEN
-         LENTH = 1
-      ELSE
-         LENTH = LOG10(DBLE(INTNUM)) + 1
-      ENDIF
+      if (intnum < 0) then
+         lenth = log10(dble((-intnum))) + 2
+      else if (intnum == 0) then
+         lenth = 1
+      else
+         lenth = log10(dble(intnum)) + 1
+      endif
 !
 !   Ensure that the length of CNUM as dimensioned is adequate;
 !   stop with an error message if it isn't
 !
-      IF (LENTH > LEN(CNUM)) THEN
-         WRITE (ISTDE, *) 'CONVRT: Length of CNUM inadeuate. (from:', FROM, ')'
-         ERROR STOP
-      ELSE
-         IF (LENTH <= 9) THEN
-            FORM = '(1I'//C19(LENTH)//')'
-            WRITE (CNUM(1:LENTH), FORM(1:5)) INTNUM
-         ELSE
-            FORM = '(1I'//C1020(LENTH-10)//')'
-            WRITE (CNUM(1:LENTH), FORM(1:6)) INTNUM
-         ENDIF
-      ENDIF
+      if (lenth > len(cnum)) then
+         write (istde, *) 'CONVRT: Length of CNUM inadeuate. (from:', from, ')'
+         error stop
+      else
+         if (lenth <= 9) then
+            form = '(1I'//c19(lenth)//')'
+            write (cnum(1:lenth), form(1:5)) intnum
+         else
+            form = '(1I'//c1020(lenth-10)//')'
+            write (cnum(1:lenth), form(1:6)) intnum
+         endif
+      endif
 !
-      RETURN
-      END SUBROUTINE CONVRT2
+      return
+      end subroutine convrt2

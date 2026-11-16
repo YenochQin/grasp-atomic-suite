@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SKRC(IS, KAPS, KS, KD1, KD2, KE1, KE2)
+      subroutine skrc(is, kaps, ks, kd1, kd2, ke1, ke2)
 !                                                                      *
 !   Determines the range of the tensor rank k for Coulomb integral.    *
 !                                                                      *
@@ -10,67 +10,67 @@
 !...Translated by Pacific-Sierra Research 77to90  4.3E  10:50:43   2/14/04
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(OUT) :: KD1
-      INTEGER, INTENT(OUT) :: KD2
-      INTEGER, INTENT(OUT) :: KE1
-      INTEGER, INTENT(OUT) :: KE2
-      INTEGER, DIMENSION(4), INTENT(IN) :: IS
-      INTEGER, DIMENSION(4), INTENT(IN) :: KAPS
-      INTEGER, DIMENSION(4), INTENT(IN) :: KS
+      integer, intent(out) :: kd1
+      integer, intent(out) :: kd2
+      integer, intent(out) :: ke1
+      integer, intent(out) :: ke2
+      integer, dimension(4), intent(in) :: is
+      integer, dimension(4), intent(in) :: kaps
+      integer, dimension(4), intent(in) :: ks
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ISD1, ISD2, KD1A, KD1B, KD2A, KD2B, ISE1, ISE2, KE1A, &
-         KE1B, KE2A, KE2B
+      integer :: isd1, isd2, kd1a, kd1b, kd2a, kd2b, ise1, ise2, ke1a, &
+         ke1b, ke2a, ke2b
 !-----------------------------------------------
 !
 !
-      KD2 = 0
-      KE2 = 0
+      kd2 = 0
+      ke2 = 0
 !
 !   Direct terms --- KD1 = minimum k , KD2 = number of terms
 !
-      ISD1 = 1
-      IF (KAPS(1)*KAPS(3) < 0) ISD1 = -1
-      ISD2 = 1
-      IF (KAPS(2)*KAPS(4) < 0) ISD2 = -1
-      KD1A = ABS(KS(1)-KS(3))
-      IF (ISD1 < 0) KD1A = KD1A + 2
-      KD1B = ABS(KS(2)-KS(4))
-      IF (ISD2 < 0) KD1B = KD1B + 2
-      IF (MOD((KD1A - KD1B)/2,2) == 0) THEN
-         KD2A = KS(1) + KS(3) - 2
-         IF (ISD1 > 0) KD2A = KD2A - 2
-         KD2B = KS(2) + KS(4) - 2
-         IF (ISD2 > 0) KD2B = KD2B - 2
-         KD1 = MAX(KD1A,KD1B)/2
-         KD2 = MIN(KD2A,KD2B)/2
-         KD2 = (KD2 - KD1)/2 + 1
-      ENDIF
+      isd1 = 1
+      if (kaps(1)*kaps(3) < 0) isd1 = -1
+      isd2 = 1
+      if (kaps(2)*kaps(4) < 0) isd2 = -1
+      kd1a = abs(ks(1)-ks(3))
+      if (isd1 < 0) kd1a = kd1a + 2
+      kd1b = abs(ks(2)-ks(4))
+      if (isd2 < 0) kd1b = kd1b + 2
+      if (mod((kd1a - kd1b)/2,2) == 0) then
+         kd2a = ks(1) + ks(3) - 2
+         if (isd1 > 0) kd2a = kd2a - 2
+         kd2b = ks(2) + ks(4) - 2
+         if (isd2 > 0) kd2b = kd2b - 2
+         kd1 = max(kd1a,kd1b)/2
+         kd2 = min(kd2a,kd2b)/2
+         kd2 = (kd2 - kd1)/2 + 1
+      endif
 !
 !   Exchange terms --- KE1 = minimum k , KE2 = number of terms
 !
-      IF (IS(1)==IS(2) .OR. IS(3)==IS(4)) RETURN
-      ISE1 = 1
-      IF (KAPS(1)*KAPS(4) < 0) ISE1 = -1
-      ISE2 = 1
-      IF (KAPS(2)*KAPS(3) < 0) ISE2 = -1
-      KE1A = ABS(KS(1)-KS(4))
-      IF (ISE1 < 0) KE1A = KE1A + 2
-      KE1B = ABS(KS(2)-KS(3))
-      IF (ISE2 < 0) KE1B = KE1B + 2
-      IF (MOD((KE1A - KE1B)/2,2) /= 0) RETURN
-      KE2A = KS(1) + KS(4) - 2
-      IF (ISE1 > 0) KE2A = KE2A - 2
-      KE2B = KS(2) + KS(3) - 2
-      IF (ISE2 > 0) KE2B = KE2B - 2
-      KE1 = MAX(KE1A,KE1B)/2
-      KE2 = MIN(KE2A,KE2B)/2
-      KE2 = (KE2 - KE1)/2 + 1
+      if (is(1)==is(2) .or. is(3)==is(4)) return
+      ise1 = 1
+      if (kaps(1)*kaps(4) < 0) ise1 = -1
+      ise2 = 1
+      if (kaps(2)*kaps(3) < 0) ise2 = -1
+      ke1a = abs(ks(1)-ks(4))
+      if (ise1 < 0) ke1a = ke1a + 2
+      ke1b = abs(ks(2)-ks(3))
+      if (ise2 < 0) ke1b = ke1b + 2
+      if (mod((ke1a - ke1b)/2,2) /= 0) return
+      ke2a = ks(1) + ks(4) - 2
+      if (ise1 > 0) ke2a = ke2a - 2
+      ke2b = ks(2) + ks(3) - 2
+      if (ise2 > 0) ke2b = ke2b - 2
+      ke1 = max(ke1a,ke1b)/2
+      ke2 = min(ke2a,ke2b)/2
+      ke2 = (ke2 - ke1)/2 + 1
 !
-      RETURN
-      END SUBROUTINE SKRC
+      return
+      end subroutine skrc

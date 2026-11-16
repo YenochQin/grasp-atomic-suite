@@ -3,8 +3,8 @@
 !     M A T M L 4
 !     ------------------------------------------------------------------
 !
-      SUBROUTINE MATML4(C, A, B, NCROW, NCCOL, NAROW, NACOL, NBROW, NBCOL, &
-         ITRNSP)
+      subroutine matml4(c, a, b, ncrow, nccol, narow, nacol, nbrow, nbcol, &
+         itrnsp)
 !
 ! MULTIPLY A AND B TO GIVE C
 !
@@ -23,83 +23,83 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE wrtmat_I
-      USE setvec_I
-      IMPLICIT NONE
+      use wrtmat_i
+      use setvec_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NCROW
-      INTEGER  :: NCCOL
-      INTEGER  :: NAROW
-      INTEGER  :: NACOL
-      INTEGER  :: NBROW
-      INTEGER  :: NBCOL
-      INTEGER , INTENT(IN) :: ITRNSP
-      REAL(DOUBLE)  :: C(NCROW,NCCOL)
-      REAL(DOUBLE)  :: A(NAROW,NACOL)
-      REAL(DOUBLE)  :: B(NBROW,NBCOL)
+      integer  :: ncrow
+      integer  :: nccol
+      integer  :: narow
+      integer  :: nacol
+      integer  :: nbrow
+      integer  :: nbcol
+      integer , intent(in) :: itrnsp
+      real(double)  :: c(ncrow,nccol)
+      real(double)  :: a(narow,nacol)
+      real(double)  :: b(nbrow,nbcol)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NTEST, J, K, I
-      REAL(DOUBLE) :: BKJ, BJK
+      integer :: ntest, j, k, i
+      real(double) :: bkj, bjk
 !-----------------------------------------------
 !
-      NTEST = 0
-      IF (NTEST /= 0) THEN
-         WRITE (6, *)
-         WRITE (6, *) ' A AND B MATRIX FROM MATML4 '
-         WRITE (6, *)
-         CALL WRTMAT (A, NAROW, NACOL, NAROW, NACOL)
-         CALL WRTMAT (B, NBROW, NBCOL, NBROW, NBCOL)
-         WRITE (6, *) ' NCROW NCCOL NAROW NACOL NBROW NBCOL '
-         WRITE (6, '(6I6)') NCROW, NCCOL, NAROW, NACOL, NBROW, NBCOL
-      ENDIF
+      ntest = 0
+      if (ntest /= 0) then
+         write (6, *)
+         write (6, *) ' A AND B MATRIX FROM MATML4 '
+         write (6, *)
+         call wrtmat (a, narow, nacol, narow, nacol)
+         call wrtmat (b, nbrow, nbcol, nbrow, nbcol)
+         write (6, *) ' NCROW NCCOL NAROW NACOL NBROW NBCOL '
+         write (6, '(6I6)') ncrow, nccol, narow, nacol, nbrow, nbcol
+      endif
 !
-      CALL SETVEC (C, 0.0D0, NCROW*NCCOL)
+      call setvec (c, 0.0d0, ncrow*nccol)
 !
-      IF (ITRNSP == 0) THEN
-         DO J = 1, NCCOL
-            DO K = 1, NBROW
-               BKJ = B(K,J)
-               C(:NCROW,J) = C(:NCROW,J) + A(:NCROW,K)*BKJ
-            END DO
-         END DO
-      ENDIF
+      if (itrnsp == 0) then
+         do j = 1, nccol
+            do k = 1, nbrow
+               bkj = b(k,j)
+               c(:ncrow,j) = c(:ncrow,j) + a(:ncrow,k)*bkj
+            end do
+         end do
+      endif
 !
 !
-      IF (ITRNSP == 1) THEN
+      if (itrnsp == 1) then
 !... C = A(T) * B
-         DO J = 1, NCCOL
-            DO K = 1, NBROW
-               BKJ = B(K,J)
-               C(:NCROW,J) = C(:NCROW,J) + A(K,:NCROW)*BKJ
-            END DO
-         END DO
-      ENDIF
+         do j = 1, nccol
+            do k = 1, nbrow
+               bkj = b(k,j)
+               c(:ncrow,j) = c(:ncrow,j) + a(k,:ncrow)*bkj
+            end do
+         end do
+      endif
 !
-      IF (ITRNSP == 2) THEN
+      if (itrnsp == 2) then
 !... C = A*B(T)
-         DO J = 1, NCCOL
-            DO K = 1, NBCOL
-               BJK = B(J,K)
-               C(:NCROW,J) = C(:NCROW,J) + A(:NCROW,K)*BJK
-            END DO
-         END DO
-      ENDIF
+         do j = 1, nccol
+            do k = 1, nbcol
+               bjk = b(j,k)
+               c(:ncrow,j) = c(:ncrow,j) + a(:ncrow,k)*bjk
+            end do
+         end do
+      endif
 !
 !
-      IF (NTEST /= 0) THEN
-         WRITE (6, *)
-         WRITE (6, *) ' C MATRIX FROM MATML4 '
-         WRITE (6, *)
-         CALL WRTMAT (C, NCROW, NCCOL, NCROW, NCCOL)
-      ENDIF
+      if (ntest /= 0) then
+         write (6, *)
+         write (6, *) ' C MATRIX FROM MATML4 '
+         write (6, *)
+         call wrtmat (c, ncrow, nccol, ncrow, nccol)
+      endif
 !
-      RETURN
-      END SUBROUTINE MATML4
+      return
+      end subroutine matml4

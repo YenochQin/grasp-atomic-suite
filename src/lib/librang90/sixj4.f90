@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE SIXJ4(JC,JE,JD,JB,JF,ITIK,SI)
+      subroutine sixj4(jc,je,jd,jb,jf,itik,si)
 !                                                                  *
 !     THIS PACKAGE DETERMINES THE VALUES OF 6j COEFFICIENT         *
 !                                                                  *
@@ -18,64 +18,64 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, HALF, ONE, TWO, THREE, EPS
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, half, one, two, three, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ixjtik_I
-      USE dracah_I
-      USE sixj2_I
-      USE sixj3_I
-      IMPLICIT NONE
+      use ixjtik_i
+      use dracah_i
+      use sixj2_i
+      use sixj3_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER             :: JC, JE, JD, JB, JF
-      INTEGER, INTENT(IN) :: ITIK
-      REAL(DOUBLE)        :: SI
+      integer             :: jc, je, jd, jb, jf
+      integer, intent(in) :: itik
+      real(double)        :: si
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE) :: A, C, E, D, B, F, X1, X2, X3, S2, S3
+      real(double) :: a, c, e, d, b, f, x1, x2, x3, s2, s3
 !-----------------------------------------------
-      SI = ZERO
-      IF (ITIK /= 0) THEN
+      si = zero
+      if (itik /= 0) then
 !
 !     CHESKED TRIANGULAR CONDITIONS
 !
-         IF (IXJTIK(JC,JE,JD,JB,JF,8) == 0) RETURN
-      ENDIF
-      IF (IXJTIK(JC,JE,JD,JB,JF,6) == 0) THEN
-         CALL DRACAH (JC, JE, JF, JB, JD, 8, SI)
-         IF (MOD(JC + JE + JF + JB,4) /= 0) SI = -SI
-      ELSE
-         A = THREE
-         C = DBLE(JC)*HALF
-         E = DBLE(JE)*HALF
-         D = DBLE(JD)*HALF
-         B = DBLE(JB)*HALF
-         F = DBLE(JF)*HALF
-         X1 = A*DSQRT((A+B+E+TWO)*(A-B+E+ONE)*(A+B-E+ONE)*((-         &
-            A)+B+E)*(A+C+F+TWO)*(A-C+F+ONE)*(A+C-F+ONE)*(             &
-            (-A)+C+F))
-         X2 = (A+ONE)*DSQRT((A+B+E+ONE)*(A-B+E)*(A+B-E)*((-A)         &
-             + B+E+ONE)*(A+C+F+ONE)*(A-C+F)*(A+C-F)*((-A)+C           &
-             + F+ONE))
-         X3 = (TWO*A+ONE)*(TWO*(A*(A+ONE)*D*(D+ONE)-B*(B+ONE)*C*(C+   &
-            ONE)-E*(E+ONE)*F*(F+ONE))+(A*(A+ONE)-B*(B+ONE)-E*(E       &
-             +ONE))*(A*(A+ONE)-C*(C+ONE)-F*(F+ONE)))
-         IF (DABS(X2) < EPS) THEN
-            S2 = ZERO
-         ELSE
-            CALL SIXJ2 (JC, JE, JD, JB, JF, 0, S2)
-         ENDIF
-         IF (DABS(X3) < EPS) THEN
-            S3 = ZERO
-         ELSE
-            CALL SIXJ3 (JC, JE, JD, JB, JF, 0, S3)
-         ENDIF
-         SI = (X3*S3 - X2*S2)/X1
-      ENDIF
-      RETURN
-      END SUBROUTINE SIXJ4
+         if (ixjtik(jc,je,jd,jb,jf,8) == 0) return
+      endif
+      if (ixjtik(jc,je,jd,jb,jf,6) == 0) then
+         call dracah (jc, je, jf, jb, jd, 8, si)
+         if (mod(jc + je + jf + jb,4) /= 0) si = -si
+      else
+         a = three
+         c = dble(jc)*half
+         e = dble(je)*half
+         d = dble(jd)*half
+         b = dble(jb)*half
+         f = dble(jf)*half
+         x1 = a*dsqrt((a+b+e+two)*(a-b+e+one)*(a+b-e+one)*((-         &
+            a)+b+e)*(a+c+f+two)*(a-c+f+one)*(a+c-f+one)*(             &
+            (-a)+c+f))
+         x2 = (a+one)*dsqrt((a+b+e+one)*(a-b+e)*(a+b-e)*((-a)         &
+             + b+e+one)*(a+c+f+one)*(a-c+f)*(a+c-f)*((-a)+c           &
+             + f+one))
+         x3 = (two*a+one)*(two*(a*(a+one)*d*(d+one)-b*(b+one)*c*(c+   &
+            one)-e*(e+one)*f*(f+one))+(a*(a+one)-b*(b+one)-e*(e       &
+             +one))*(a*(a+one)-c*(c+one)-f*(f+one)))
+         if (dabs(x2) < eps) then
+            s2 = zero
+         else
+            call sixj2 (jc, je, jd, jb, jf, 0, s2)
+         endif
+         if (dabs(x3) < eps) then
+            s3 = zero
+         else
+            call sixj3 (jc, je, jd, jb, jf, 0, s3)
+         endif
+         si = (x3*s3 - x2*s2)/x1
+      endif
+      return
+      end subroutine sixj4

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-        SUBROUTINE genintbreit1wrap (myid, nprocs, j2max)
+        subroutine genintbreit1wrap (myid, nprocs, j2max)
 
 !   Written by Per Jonsson                Last revision: October 2014  *
 !                                                                      *
@@ -10,31 +10,31 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE bilst_C
+      use bilst_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE genintbreit1_I
-      USE mpiu_I, ONLY: gdsummpi
-      USE mpiu_I, ONLY: gisummpi
-      IMPLICIT NONE
+      use genintbreit1_i
+      use mpiu_i, only: gdsummpi
+      use mpiu_i, only: gisummpi
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: myid, nprocs
-      INTEGER             :: j2max
+      integer, intent(in) :: myid, nprocs
+      integer             :: j2max
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: N
+      integer :: n
 !-----------------------------------------------
 !
-      CALL genintbreit1 ((myid), (nprocs), N, j2max)
+      call genintbreit1 ((myid), (nprocs), n, j2max)
 
 ! Gather integrals (and their indeces) from- and send to- all nodes
 
-      CALL gisummpi (INDTP1, N)
-      CALL gdsummpi (VALTP1, N)
+      call gisummpi (indtp1, n)
+      call gdsummpi (valtp1, n)
 
-      RETURN
-      END SUBROUTINE genintbreit1wrap
+      return
+      end subroutine genintbreit1wrap

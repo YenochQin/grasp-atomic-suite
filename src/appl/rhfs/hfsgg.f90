@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE HFSGG
+      subroutine hfsgg
 !                                                                      *
 !   This routine controls the main sequence of routine calls for the   *
 !   calculation  of the  hyperfine structure parameters.               *
@@ -24,54 +24,54 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW
-      USE memory_man
-      USE decide_C
-      USE DEF_C,           ONLY: AUMAMU, CVAC, EMPAM, RBCM, AUCM,     &
-                                 CCMS, B1=>AUMAMU
-      USE EIGV_C
-      USE foparm_C
-      USE jlabl_C,               LABJ=>JLBR, LABP=>JLBP
-      USE nsmdat_C,        ONLY: SQN, DMOMNM, QMOMB,                  &
-                                 HFSI=>SQN, HFSD=>DMOMNM, HFSQ=>QMOMB
-      USE orb_C
-      USE prnt_C
-      USE OPT6_C
-      USE syma_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw
+      use memory_man
+      use decide_c
+      use def_c,           only: aumamu, cvac, empam, rbcm, aucm,     &
+                                 ccms, b1=>aumamu
+      use eigv_c
+      use foparm_c
+      use jlabl_c,               labj=>jlbr, labp=>jlbp
+      use nsmdat_c,        only: sqn, dmomnm, qmomb,                  &
+                                 hfsi=>sqn, hfsd=>dmomnm, hfsq=>qmomb
+      use orb_c
+      use prnt_c
+      use opt6_c
+      use syma_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rinthf_I
-      USE rint_I
-      USE matelt_I
-      USE convrt_I
-      USE ispar_I
-      USE itjpo_I
-      USE oneparticlejj_I
-      USE gracah1_I
-      IMPLICIT NONE
+      use rinthf_i
+      use rint_i
+      use matelt_i
+      use convrt_i
+      use ispar_i
+      use itjpo_i
+      use oneparticlejj_i
+      use gracah1_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-10
+      real(double), parameter :: cutoff = 1.0d-10
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: FFMIN, FFMAX, FF, I, J, KT, IPT, IC, LCNUM, IR, ITJPOC, ITJPOR&
-         , IDIFF, IA, IB, K, KK, LOC1, LOC2, II, JJ, JJII, JB, JA, JJB, JJA, IFLAG
-      REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL
-      REAL(DOUBLE), DIMENSION(2,NNNW,NNNW) :: RINTME, AMELT
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: RINTGJ, RINTDGJ, GJMELT, DGJMELT
+      integer :: ffmin, ffmax, ff, i, j, kt, ipt, ic, lcnum, ir, itjpoc, itjpor&
+         , idiff, ia, ib, k, kk, loc1, loc2, ii, jj, jjii, jb, ja, jjb, jja, iflag
+      real(double), dimension(nnnw) :: tshell
+      real(double), dimension(2,nnnw,nnnw) :: rintme, amelt
+      real(double), dimension(nnnw,nnnw) :: rintgj, rintdgj, gjmelt, dgjmelt
 !     .. Local pointer arrays
-      REAL(DOUBLE), DIMENSION(:,:), pointer :: HFC
-      REAL(DOUBLE),  DIMENSION(:), pointer :: GJC, DGJC
-      REAL(DOUBLE) ::  APART, GJPART, DGJPART, ELEMNT,  ELEMNTGJ, ELEMNTDGJ,&
-         CONTR, CONTRGJ, CONTRDGJ, AUMHZ, BARNAU, DNMAU, GFAC, HFAC, FJ, &
-         GJA1, AFA1, AFA2, BFA1, BFA2, BFA3, GJ, DGJ, TILDE1, &
-         TILDE2, FACTOR1, FACTOR2, RAC1, RAC2, HFSELT1, HFSELT2, EVECIC1, EVECIR1,&
-         EVECIC2, EVECIR2
-      CHARACTER :: CNUM*11
+      real(double), dimension(:,:), pointer :: hfc
+      real(double),  dimension(:), pointer :: gjc, dgjc
+      real(double) ::  apart, gjpart, dgjpart, elemnt,  elemntgj, elemntdgj,&
+         contr, contrgj, contrdgj, aumhz, barnau, dnmau, gfac, hfac, fj, &
+         gja1, afa1, afa2, bfa1, bfa2, bfa3, gj, dgj, tilde1, &
+         tilde2, factor1, factor2, rac1, rac2, hfselt1, hfselt2, evecic1, evecir1,&
+         evecic2, evecir2
+      character :: cnum*11
 !-----------------------------------------------
 !
 !
@@ -80,77 +80,77 @@
 !
 !   Allocate storage for local arrays
 !
-      CALL ALLOC (HFC, 5, NVEC*NVEC, 'HFC', 'HFS')
-      CALL ALLOC (GJC, NVEC*NVEC, 'GJC', 'HFS')
-      CALL ALLOC (DGJC, NVEC*NVEC, 'DGLC', 'HFS')
+      call alloc (hfc, 5, nvec*nvec, 'HFC', 'HFS')
+      call alloc (gjc, nvec*nvec, 'GJC', 'HFS')
+      call alloc (dgjc, nvec*nvec, 'DGLC', 'HFS')
 !
 !   Initialise
 !
-      HFC(:,:NVEC*NVEC) = 0.0D00
+      hfc(:,:nvec*nvec) = 0.0d00
 !
-      GJC(:NVEC*NVEC) = 0.0D00
-      DGJC(:NVEC*NVEC) = 0.0D00
+      gjc(:nvec*nvec) = 0.0d00
+      dgjc(:nvec*nvec) = 0.0d00
 
 !
 !   Calculate and save the radial integrals and angular
 !   matrix elements for the two multipolarities
 !
-      DO KT = 1, 2
-         DO I = 1, NW
-            DO J = 1, NW
-               IF (KT == 1) THEN
-                  RINTME(KT,I,J) = RINTHF(I,J,-2)
-                  RINTGJ(I,J) = RINTHF(I,J,1)
-               ELSE
-                  RINTME(KT,I,J) = RINT(I,J,-3)
-                  RINTDGJ(I,J) = RINT(I,J,0)
-               ENDIF
-               CALL MATELT (I, KT, J, APART, GJPART, DGJPART)
-               AMELT(KT,I,J) = APART
-               IF (KT /= 1) CYCLE
-               GJMELT(I,J) = GJPART
-               DGJMELT(I,J) = DGJPART
-            END DO
-         END DO
-      END DO
+      do kt = 1, 2
+         do i = 1, nw
+            do j = 1, nw
+               if (kt == 1) then
+                  rintme(kt,i,j) = rinthf(i,j,-2)
+                  rintgj(i,j) = rinthf(i,j,1)
+               else
+                  rintme(kt,i,j) = rint(i,j,-3)
+                  rintdgj(i,j) = rint(i,j,0)
+               endif
+               call matelt (i, kt, j, apart, gjpart, dgjpart)
+               amelt(kt,i,j) = apart
+               if (kt /= 1) cycle
+               gjmelt(i,j) = gjpart
+               dgjmelt(i,j) = dgjpart
+            end do
+         end do
+      end do
 !
 !   Set the parity of the one-body operators
 !
-      IPT = 1
+      ipt = 1
 !
 !   Sweep through the Hamiltonian matrix to determine the
 !   diagonal and off-diagonal hyperfine constants
 !
-      DO IC = 1, NCF
-         ITJPOC = ITJPO(IC)
+      do ic = 1, ncf
+         itjpoc = itjpo(ic)
 !
 !   Output IC on the screen to show how far the calculation has preceede
 !
-         IF (MOD(IC,100) == 0) THEN
-            CALL CONVRT (IC, CNUM, LCNUM)
-            WRITE (6, *) 'Column '//CNUM(1:LCNUM)//' complete;'
-         ENDIF
+         if (mod(ic,100) == 0) then
+            call convrt (ic, cnum, lcnum)
+            write (6, *) 'Column '//cnum(1:lcnum)//' complete;'
+         endif
 !
-         DO IR = 1, NCF
+         do ir = 1, ncf
 !
 !   If LFORDR is .TRUE., a `first order' calculation is indicated;
 !   only the CSFs with serial numbers exceeding IC are treated specially
 !   only diagonal elements are evaluated for the `first order' CSFs
 !
-            IF (LFORDR .AND. IC>ICCUT .AND. IC/=IR) CYCLE
+            if (lfordr .and. ic>iccut .and. ic/=ir) cycle
 !
-            ITJPOR = ITJPO(IR)
-            IDIFF = ITJPOC - ITJPOR
+            itjpor = itjpo(ir)
+            idiff = itjpoc - itjpor
 !
 !   Loop over the multipolarities
 !
-            DO KT = 1, 2
+            do kt = 1, 2
 !
 !   Initialise the accumulator
 !
-               ELEMNT = 0.0D00
-               ELEMNTGJ = 0.0D00
-               ELEMNTDGJ = 0.0D00
+               elemnt = 0.0d00
+               elemntgj = 0.0d00
+               elemntdgj = 0.0d00
 !
 !   Consider 3 cases
 !               (k)
@@ -162,303 +162,303 @@
 !               (k)
 !   (3) < J || T   || J-2 >  , k = 2
 !
-               IF (.NOT.(IDIFF==0 .AND. IR>=IC .OR. IDIFF==2 .OR. IDIFF==4&
-                   .AND. KT==2)) CYCLE
+               if (.not.(idiff==0 .and. ir>=ic .or. idiff==2 .or. idiff==4&
+                   .and. kt==2)) cycle
 !
-                CALL ONEPARTICLEJJ(KT,IPT,IC,IR,IA,IB,TSHELL)
+                call oneparticlejj(kt,ipt,ic,ir,ia,ib,tshell)
 !GG               CALL TNSRJJ (KT, IPT, IC, IR, IA, IB, TSHELL)
 !
 !   Accumulate the contribution from the one-body operators;
 !
-               IF (IA /= 0) THEN
-                  IF (IA == IB) THEN
-                     IF (KT/=1 .OR. IDIFF/=0) THEN
-                        DO IA = 1, NW
-                           IF (ABS(TSHELL(IA)) <= CUTOFF) CYCLE
-                           ELEMNT = ELEMNT + AMELT(KT,IA,IA)*RINTME(KT,IA,IA)*&
-                              TSHELL(IA)
-                           CYCLE
-                        END DO
-                     ELSE
-                        DO IA = 1, NW
-                           IF (ABS(TSHELL(IA)) <= CUTOFF) CYCLE
-                           ELEMNT = ELEMNT + AMELT(KT,IA,IA)*RINTME(KT,IA,IA)*&
-                              TSHELL(IA)
-                           ELEMNTGJ = ELEMNTGJ + GJMELT(IA,IA)*RINTGJ(IA,IA)*&
-                              TSHELL(IA)
-                           ELEMNTDGJ = ELEMNTDGJ + DGJMELT(IA,IA)*RINTDGJ(IA,IA&
-                              )*TSHELL(IA)
-                        END DO
-                     ENDIF
-                  ELSE
-                     IF (ABS(TSHELL(1)) > CUTOFF) THEN
-                        ELEMNT = ELEMNT + AMELT(KT,IA,IB)*RINTME(KT,IA,IB)*&
-                           TSHELL(1)
-                        IF (KT==1 .AND. IDIFF==0) THEN
-                           ELEMNTGJ = ELEMNTGJ + GJMELT(IA,IB)*RINTGJ(IA,IB)*&
-                              TSHELL(1)
-                           ELEMNTDGJ = ELEMNTDGJ + DGJMELT(IA,IB)*RINTDGJ(IA,IB&
-                              )*TSHELL(1)
-                        ENDIF
-                     ENDIF
-                  ENDIF
-               ENDIF
+               if (ia /= 0) then
+                  if (ia == ib) then
+                     if (kt/=1 .or. idiff/=0) then
+                        do ia = 1, nw
+                           if (abs(tshell(ia)) <= cutoff) cycle
+                           elemnt = elemnt + amelt(kt,ia,ia)*rintme(kt,ia,ia)*&
+                              tshell(ia)
+                           cycle
+                        end do
+                     else
+                        do ia = 1, nw
+                           if (abs(tshell(ia)) <= cutoff) cycle
+                           elemnt = elemnt + amelt(kt,ia,ia)*rintme(kt,ia,ia)*&
+                              tshell(ia)
+                           elemntgj = elemntgj + gjmelt(ia,ia)*rintgj(ia,ia)*&
+                              tshell(ia)
+                           elemntdgj = elemntdgj + dgjmelt(ia,ia)*rintdgj(ia,ia&
+                              )*tshell(ia)
+                        end do
+                     endif
+                  else
+                     if (abs(tshell(1)) > cutoff) then
+                        elemnt = elemnt + amelt(kt,ia,ib)*rintme(kt,ia,ib)*&
+                           tshell(1)
+                        if (kt==1 .and. idiff==0) then
+                           elemntgj = elemntgj + gjmelt(ia,ib)*rintgj(ia,ib)*&
+                              tshell(1)
+                           elemntdgj = elemntdgj + dgjmelt(ia,ib)*rintdgj(ia,ib&
+                              )*tshell(1)
+                        endif
+                     endif
+                  endif
+               endif
 !
 !   Multiply with the configuration expansion coefficients and add the
 !   contributions from the matrix elements to obtain total contributions
 !
-               IF (ABS(ELEMNT) <= CUTOFF .AND. ABS(ELEMNTGJ) <= CUTOFF .AND. &
-                   ABS(ELEMNTDGJ) <= CUTOFF) CYCLE
-               DO K = 1, NVEC
-                  LOC1 = (K - 1)*NCF
-                  EVECIC1 = EVEC(IC + LOC1)
-                  EVECIR1 = EVEC(IR + LOC1)
-                  DO KK = 1, NVEC
-                     LOC2 = (KK - 1)*NCF
-                     EVECIC2 = EVEC(IC + LOC2)
-                     EVECIR2 = EVEC(IR + LOC2)
-                     IF (IDIFF==0 .AND. IR/=IC) THEN
-                        CONTR = ELEMNT*(EVECIC1*EVECIR2 + EVECIR1*EVECIC2)
-                        CONTRGJ = ELEMNTGJ*(EVECIC1*EVECIR2 + EVECIR1*EVECIC2)
-                        CONTRDGJ = ELEMNTDGJ*(EVECIC1*EVECIR2 + EVECIR1*EVECIC2)
-                     ELSE
-                        CONTR = ELEMNT*EVECIC1*EVECIR2
-                        CONTRGJ = ELEMNTGJ*EVECIC1*EVECIR2
-                        CONTRDGJ = ELEMNTDGJ*EVECIC1*EVECIR2
-                     ENDIF
+               if (abs(elemnt) <= cutoff .and. abs(elemntgj) <= cutoff .and. &
+                   abs(elemntdgj) <= cutoff) cycle
+               do k = 1, nvec
+                  loc1 = (k - 1)*ncf
+                  evecic1 = evec(ic + loc1)
+                  evecir1 = evec(ir + loc1)
+                  do kk = 1, nvec
+                     loc2 = (kk - 1)*ncf
+                     evecic2 = evec(ic + loc2)
+                     evecir2 = evec(ir + loc2)
+                     if (idiff==0 .and. ir/=ic) then
+                        contr = elemnt*(evecic1*evecir2 + evecir1*evecic2)
+                        contrgj = elemntgj*(evecic1*evecir2 + evecir1*evecic2)
+                        contrdgj = elemntdgj*(evecic1*evecir2 + evecir1*evecic2)
+                     else
+                        contr = elemnt*evecic1*evecir2
+                        contrgj = elemntgj*evecic1*evecir2
+                        contrdgj = elemntdgj*evecic1*evecir2
+                     endif
 !
 !   Magnetic dipole and the two operators of the g_j factor
 !
-                     IF (KT == 1) THEN
-                        IF (IDIFF == 0) THEN
-                           HFC(1,NVEC*(K-1)+KK) = HFC(1,NVEC*(K-1)+KK) + CONTR
-                           GJC(NVEC*(K-1)+KK) = GJC(NVEC*(K-1)+KK) + CONTRGJ
-                           DGJC(NVEC*(K-1)+KK) = DGJC(NVEC*(K-1)+KK) + CONTRDGJ
-                        ELSE IF (ITJPOC - ITJPOR == 2) THEN
-                           HFC(2,NVEC*(K-1)+KK) = HFC(2,NVEC*(K-1)+KK) + CONTR
-                        ENDIF
+                     if (kt == 1) then
+                        if (idiff == 0) then
+                           hfc(1,nvec*(k-1)+kk) = hfc(1,nvec*(k-1)+kk) + contr
+                           gjc(nvec*(k-1)+kk) = gjc(nvec*(k-1)+kk) + contrgj
+                           dgjc(nvec*(k-1)+kk) = dgjc(nvec*(k-1)+kk) + contrdgj
+                        else if (itjpoc - itjpor == 2) then
+                           hfc(2,nvec*(k-1)+kk) = hfc(2,nvec*(k-1)+kk) + contr
+                        endif
 !
 !   Electric quadrupole
 !
-                     ELSE IF (KT == 2) THEN
-                        SELECT CASE (IDIFF)
-                        CASE (0)
-                           HFC(3,NVEC*(K-1)+KK) = HFC(3,NVEC*(K-1)+KK) + CONTR
-                        CASE (2)
-                           HFC(4,NVEC*(K-1)+KK) = HFC(4,NVEC*(K-1)+KK) + CONTR
-                        CASE (4)
-                           HFC(5,NVEC*(K-1)+KK) = HFC(5,NVEC*(K-1)+KK) + CONTR
-                        END SELECT
-                     ENDIF
-                  END DO
-               END DO
+                     else if (kt == 2) then
+                        select case (idiff)
+                        case (0)
+                           hfc(3,nvec*(k-1)+kk) = hfc(3,nvec*(k-1)+kk) + contr
+                        case (2)
+                           hfc(4,nvec*(k-1)+kk) = hfc(4,nvec*(k-1)+kk) + contr
+                        case (4)
+                           hfc(5,nvec*(k-1)+kk) = hfc(5,nvec*(k-1)+kk) + contr
+                        end select
+                     endif
+                  end do
+               end do
 !
-            END DO
+            end do
 !
-         END DO
-      END DO
+         end do
+      end do
 !
 !   These are the conversion factors to obtain the hyperfine
 !   constants in MHz
 !
-      AUMHZ = AUCM*CCMS*1.0D-06
-      BARNAU = 1.0D-24/RBCM**2
-      DNMAU = B1/(2.0D00*CVAC*EMPAM)
+      aumhz = aucm*ccms*1.0d-06
+      barnau = 1.0d-24/rbcm**2
+      dnmau = b1/(2.0d00*cvac*empam)
 !
-      GFAC = AUMHZ*DNMAU*HFSD/HFSI
-      HFAC = AUMHZ*2.0D00*HFSQ*BARNAU
+      gfac = aumhz*dnmau*hfsd/hfsi
+      hfac = aumhz*2.0d00*hfsq*barnau
 !
 !   Output the hyperfine interaction constants
 !
-      WRITE (24, 302)
-      WRITE (29, 402)
+      write (24, 302)
+      write (29, 402)
 !
-      DO I = 1, NVEC
-         DO II = 1, NVEC
+      do i = 1, nvec
+         do ii = 1, nvec
 !
-            JJ = IATJPO(I)
-            JJII = IATJPO(II)
+            jj = iatjpo(i)
+            jjii = iatjpo(ii)
 !
-            IF (.NOT.(JJ==JJII .AND. JJII>1 .OR. JJ>JJII)) CYCLE
+            if (.not.(jj==jjii .and. jjii>1 .or. jj>jjii)) cycle
 !
-            FJ = 0.5D00*DBLE(JJ - 1)
+            fj = 0.5d00*dble(jj - 1)
 !
-            GJA1 = SQRT(1.0D00/(FJ*(FJ + 1.0D00)))
+            gja1 = sqrt(1.0d00/(fj*(fj + 1.0d00)))
 
-            AFA1 = GFAC*GJA1
+            afa1 = gfac*gja1
 
-            IF (JJ == 2) THEN
-               AFA2 = 0.D000
-            ELSE
-               AFA2 = GFAC*SQRT(1.0D00/(FJ*(2.0D00*FJ - 1.0D00)))
-            ENDIF
-            BFA1 = HFAC*SQRT((FJ*(2.0D00*FJ - 1.0D00))/((FJ + 1.0D00)*(2.0D00*&
-               FJ + 3.0D00)))
-            IF (JJ == 2) THEN
-               BFA2 = 0.0D00
-            ELSE
-               BFA2 = 0.25D00*HFAC*SQRT((FJ*(FJ - 1.0D00))/((FJ + 1.0D00)*(&
-                  2.0D00*FJ - 1.0D00)))
-            ENDIF
-            IF (JJ == 4) THEN
-               BFA3 = 0.0D00
-            ELSE
-               BFA3 = 0.125D00*HFAC*SQRT((FJ*(FJ - 1.0D000)*(2.0D00*FJ - 1.0D00&
-                  ))/(2.0D00*FJ - 3.0D00))
-            ENDIF
+            if (jj == 2) then
+               afa2 = 0.d000
+            else
+               afa2 = gfac*sqrt(1.0d00/(fj*(2.0d00*fj - 1.0d00)))
+            endif
+            bfa1 = hfac*sqrt((fj*(2.0d00*fj - 1.0d00))/((fj + 1.0d00)*(2.0d00*&
+               fj + 3.0d00)))
+            if (jj == 2) then
+               bfa2 = 0.0d00
+            else
+               bfa2 = 0.25d00*hfac*sqrt((fj*(fj - 1.0d00))/((fj + 1.0d00)*(&
+                  2.0d00*fj - 1.0d00)))
+            endif
+            if (jj == 4) then
+               bfa3 = 0.0d00
+            else
+               bfa3 = 0.125d00*hfac*sqrt((fj*(fj - 1.0d000)*(2.0d00*fj - 1.0d00&
+                  ))/(2.0d00*fj - 3.0d00))
+            endif
 !
 !   Diagonal (J,J) A and B factors
 !
-            SELECT CASE (JJ - JJII)
-            CASE (0)
-               IF (I <= II) THEN
+            select case (jj - jjii)
+            case (0)
+               if (i <= ii) then
 !                GJ = CVAC*GJA1*GJC(NVEC*(I-1)+II)
 !                DGJ = 0.001160D0*GJA1*DGJC(NVEC*(I-1)+II)
 
-                  WRITE (24, 303) IVEC(I), LABJ(JJ), LABP((IASPAR(I)+3)/2), &
-                     IVEC(II), LABJ(JJII), LABP((IASPAR(II)+3)/2), AFA1*HFC(1,&
-                     NVEC*(I-1)+II), BFA1*HFC(3,NVEC*(I-1)+II)
+                  write (24, 303) ivec(i), labj(jj), labp((iaspar(i)+3)/2), &
+                     ivec(ii), labj(jjii), labp((iaspar(ii)+3)/2), afa1*hfc(1,&
+                     nvec*(i-1)+ii), bfa1*hfc(3,nvec*(i-1)+ii)
 !
 !   Output diagonal hfs and g_j factors to file <name>.h or <name>.ch
 !
-                  IF (I == II) THEN
-                     GJ = CVAC*GJA1*GJC(NVEC*(I-1)+II)
-                     DGJ = 0.001160D0*GJA1*DGJC(NVEC*(I-1)+II)
-                     WRITE (29, 403) IVEC(I), LABJ(JJ), LABP((IASPAR(I)+3)/2), &
-                        AFA1*HFC(1,NVEC*(I-1)+II), BFA1*HFC(3,NVEC*(I-1)+II), &
-                        GJ, DGJ, GJ + DGJ
-                  ENDIF
-               ENDIF
+                  if (i == ii) then
+                     gj = cvac*gja1*gjc(nvec*(i-1)+ii)
+                     dgj = 0.001160d0*gja1*dgjc(nvec*(i-1)+ii)
+                     write (29, 403) ivec(i), labj(jj), labp((iaspar(i)+3)/2), &
+                        afa1*hfc(1,nvec*(i-1)+ii), bfa1*hfc(3,nvec*(i-1)+ii), &
+                        gj, dgj, gj + dgj
+                  endif
+               endif
 !
 !   Off diagonal (J,J-1) A and B factors
 !
-            CASE (2)
-               WRITE (24, 303) IVEC(I), LABJ(JJ), LABP((IASPAR(I)+3)/2), IVEC(&
-                  II), LABJ(JJII), LABP((IASPAR(II)+3)/2), AFA2*HFC(2,NVEC*(I-1&
-                  )+II), BFA2*HFC(4,NVEC*(I-1)+II)
+            case (2)
+               write (24, 303) ivec(i), labj(jj), labp((iaspar(i)+3)/2), ivec(&
+                  ii), labj(jjii), labp((iaspar(ii)+3)/2), afa2*hfc(2,nvec*(i-1&
+                  )+ii), bfa2*hfc(4,nvec*(i-1)+ii)
 !
 !   Off diagonal (J,J-2) B factor
 !
-            CASE (4)
-               WRITE (24, 303) IVEC(I), LABJ(JJ), LABP((IASPAR(I)+3)/2), IVEC(&
-                  II), LABJ(JJII), LABP((IASPAR(II)+3)/2), 0.0D00, BFA3*HFC(5,&
-                  NVEC*(I-1)+II)
-            END SELECT
+            case (4)
+               write (24, 303) ivec(i), labj(jj), labp((iaspar(i)+3)/2), ivec(&
+                  ii), labj(jjii), labp((iaspar(ii)+3)/2), 0.0d00, bfa3*hfc(5,&
+                  nvec*(i-1)+ii)
+            end select
 !
-         END DO
-      END DO
+         end do
+      end do
 !
 !   These are the factors needed to obtain the F-dependent hyperfine
 !   matrix elements in Hartrees
 !
-      TILDE1 = SQRT((HFSI + 1.0D00)/HFSI)*HFSD*0.5D00*B1/(EMPAM*CVAC)
-      IF (HFSI > 0.6D00) THEN
-         TILDE2 = SQRT((HFSI + 1.0D00)*(2.0D00*HFSI + 3.D0)/((2.0D00*HFSI - &
-            1.0D00)*HFSI))
-         TILDE2 = TILDE2*HFSQ*0.5D00*BARNAU
-      ELSE
-         TILDE2 = 0.0D00
-      ENDIF
+      tilde1 = sqrt((hfsi + 1.0d00)/hfsi)*hfsd*0.5d00*b1/(empam*cvac)
+      if (hfsi > 0.6d00) then
+         tilde2 = sqrt((hfsi + 1.0d00)*(2.0d00*hfsi + 3.d0)/((2.0d00*hfsi - &
+            1.0d00)*hfsi))
+         tilde2 = tilde2*hfsq*0.5d00*barnau
+      else
+         tilde2 = 0.0d00
+      endif
 !
 !     II = 2*I
 !
-      II = NINT(2.0D00*HFSI)
+      ii = nint(2.0d00*hfsi)
 !
 !   Calculate the F-dependent matrix elemnts
 !
 !   Loop over the states
 !
-      DO JB = 1, NVEC
-         DO JA = 1, NVEC
-            JJB = IATJPO(JB) - 1
-            JJA = IATJPO(JA) - 1
-            IF (.NOT.(JJA==JJB .AND. JJA>0 .OR. JJB>JJA)) CYCLE
+      do jb = 1, nvec
+         do ja = 1, nvec
+            jjb = iatjpo(jb) - 1
+            jja = iatjpo(ja) - 1
+            if (.not.(jja==jjb .and. jja>0 .or. jjb>jja)) cycle
 !
 !   Determine the possible F quantum numbers for the matrix element
 !
-            FFMIN = MAX(ABS(JJA - II),ABS(JJB - II))
-            FFMAX = MIN(JJA + II,JJB + II)
+            ffmin = max(abs(jja - ii),abs(jjb - ii))
+            ffmax = min(jja + ii,jjb + ii)
 !
 !   Loop over the possible F quantum numbers
 !
-            IFLAG = 0
-            DO FF = FFMIN, FFMAX, 2
+            iflag = 0
+            do ff = ffmin, ffmax, 2
 !
 !   Phase factor
 !
-               IF (MOD((II + JJA - FF)/2,2) == 1) THEN
-                  FACTOR1 = -1.0D00
-               ELSE
-                  FACTOR1 = 1.0D00
-               ENDIF
-               FACTOR2 = FACTOR1*SQRT((DBLE(JJB) + 1.0D00)*(DBLE(II) + 1.0D00))
+               if (mod((ii + jja - ff)/2,2) == 1) then
+                  factor1 = -1.0d00
+               else
+                  factor1 = 1.0d00
+               endif
+               factor2 = factor1*sqrt((dble(jjb) + 1.0d00)*(dble(ii) + 1.0d00))
 !
 !   Determine the Racah W coefficients.
 !
 !GG               CALL DRACAH (II, JJA, II, JJB, FF, 2, RAC1)
-              CALL GRACAH1 (II,JJA,II,JJB,FF,2,RAC1)
+              call gracah1 (ii,jja,ii,jjb,ff,2,rac1)
 !GG               CALL DRACAH (II, JJA, II, JJB, FF, 4, RAC2)
-              CALL GRACAH1 (II,JJA,II,JJB,FF,4,RAC2)
+              call gracah1 (ii,jja,ii,jjb,ff,4,rac2)
 !
 !   Obtain and output matrix elements for J,J
 !
-               IF (JJA - JJB == 0) THEN
-                  HFSELT1 = FACTOR2*RAC1*HFC(1,NVEC*(JB-1)+JA)*TILDE1
-                  HFSELT2 = FACTOR2*RAC2*HFC(3,NVEC*(JB-1)+JA)*TILDE2
-                  IF (ABS(HFSELT1 + HFSELT2) > CUTOFF*10.0D-05) THEN
-                     IF (IFLAG == 0) WRITE (24, 304)
-                     IFLAG = 1
-                     WRITE (24, 305) IVEC(JB), LABJ(JJB+1), LABP((IASPAR(JB)+3)&
-                        /2), IVEC(JA), LABJ(JJA+1), LABP((IASPAR(JA)+3)/2), &
-                        LABJ(FF+1), HFSELT1 + HFSELT2
-                  ENDIF
+               if (jja - jjb == 0) then
+                  hfselt1 = factor2*rac1*hfc(1,nvec*(jb-1)+ja)*tilde1
+                  hfselt2 = factor2*rac2*hfc(3,nvec*(jb-1)+ja)*tilde2
+                  if (abs(hfselt1 + hfselt2) > cutoff*10.0d-05) then
+                     if (iflag == 0) write (24, 304)
+                     iflag = 1
+                     write (24, 305) ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
+                        /2), ivec(ja), labj(jja+1), labp((iaspar(ja)+3)/2), &
+                        labj(ff+1), hfselt1 + hfselt2
+                  endif
 !
 !   Obtain and output matrix elements for J,J-1
 !
-               ELSE IF (ABS(JJA - JJB) == 2) THEN
-                  HFSELT1 = FACTOR2*RAC1*HFC(2,NVEC*(JB-1)+JA)*TILDE1
-                  HFSELT2 = FACTOR2*RAC2*HFC(4,NVEC*(JB-1)+JA)*TILDE2
-                  IF (ABS(HFSELT1 + HFSELT2) > CUTOFF*10.0D-05) THEN
-                     IF (IFLAG == 0) WRITE (24, 304)
-                     IFLAG = 1
-                     WRITE (24, 305) IVEC(JB), LABJ(JJB+1), LABP((IASPAR(JB)+3)&
-                        /2), IVEC(JA), LABJ(JJA+1), LABP((IASPAR(JA)+3)/2), &
-                        LABJ(FF+1), HFSELT1 + HFSELT2
-                  ENDIF
+               else if (abs(jja - jjb) == 2) then
+                  hfselt1 = factor2*rac1*hfc(2,nvec*(jb-1)+ja)*tilde1
+                  hfselt2 = factor2*rac2*hfc(4,nvec*(jb-1)+ja)*tilde2
+                  if (abs(hfselt1 + hfselt2) > cutoff*10.0d-05) then
+                     if (iflag == 0) write (24, 304)
+                     iflag = 1
+                     write (24, 305) ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
+                        /2), ivec(ja), labj(jja+1), labp((iaspar(ja)+3)/2), &
+                        labj(ff+1), hfselt1 + hfselt2
+                  endif
 !
 !   Obtain and output matrix elements for J,J-2
 !
-               ELSE IF (ABS(JJA - JJB) == 4) THEN
-                  HFSELT1 = 0.0D00
-                  HFSELT2 = FACTOR2*RAC2*HFC(5,NVEC*(JB-1)+JA)*TILDE2
-                  IF (ABS(HFSELT1 + HFSELT2) > CUTOFF*10.0D-05) THEN
-                     IF (IFLAG == 0) WRITE (24, 304)
-                     IFLAG = 1
-                     WRITE (24, 305) IVEC(JB), LABJ(JJB+1), LABP((IASPAR(JB)+3)&
-                        /2), IVEC(JA), LABJ(JJA+1), LABP((IASPAR(JA)+3)/2), &
-                        LABJ(FF+1), HFSELT1 + HFSELT2
-                  ENDIF
-               ELSE
-                  HFSELT1 = 0.0D00
-                  HFSELT2 = 0.0D00
-               ENDIF
-            END DO
-         END DO
-      END DO
+               else if (abs(jja - jjb) == 4) then
+                  hfselt1 = 0.0d00
+                  hfselt2 = factor2*rac2*hfc(5,nvec*(jb-1)+ja)*tilde2
+                  if (abs(hfselt1 + hfselt2) > cutoff*10.0d-05) then
+                     if (iflag == 0) write (24, 304)
+                     iflag = 1
+                     write (24, 305) ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
+                        /2), ivec(ja), labj(jja+1), labp((iaspar(ja)+3)/2), &
+                        labj(ff+1), hfselt1 + hfselt2
+                  endif
+               else
+                  hfselt1 = 0.0d00
+                  hfselt2 = 0.0d00
+               endif
+            end do
+         end do
+      end do
 !
-      CALL DALLOC (HFC, 'HFC', 'HFS')
-      RETURN
+      call dalloc (hfc, 'HFC', 'HFS')
+      return
 !
-  302 FORMAT(/,/,' Interaction constants:'/,/,&
-         ' Level1  J Parity  Level2  J Parity',8X,'A (MHz)',13X,'B (MHz)'/)
-  402 FORMAT(/,/,' Interaction constants:'/,/,' Level1  J Parity ',8X,'A (MHz)'&
-         ,13X,'B (MHz)',13X,'g_J',14X,'delta g_J',11X,'total g_J'/)
-  303 FORMAT(1X,1I3,5X,2A4,2X,1I3,5X,2A4,1P,2D20.10)
-  403 FORMAT(1X,1I3,5X,2A4,1P,5D20.10)
-  304 FORMAT(/,/,' Matrix elements:'/,/,&
-         ' Level1  J Parity  Level2  J Parity    F ',4X,'Matrix element (a.u.)'&
+  302 format(/,/,' Interaction constants:'/,/,&
+         ' Level1  J Parity  Level2  J Parity',8x,'A (MHz)',13x,'B (MHz)'/)
+  402 format(/,/,' Interaction constants:'/,/,' Level1  J Parity ',8x,'A (MHz)'&
+         ,13x,'B (MHz)',13x,'g_J',14x,'delta g_J',11x,'total g_J'/)
+  303 format(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)
+  403 format(1x,1i3,5x,2a4,1p,5d20.10)
+  304 format(/,/,' Matrix elements:'/,/,&
+         ' Level1  J Parity  Level2  J Parity    F ',4x,'Matrix element (a.u.)'&
          /)
-  305 FORMAT(1X,1I3,5X,2A4,2X,1I3,5X,2A4,1X,A4,4X,1P,1D20.10)
-      RETURN
+  305 format(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)
+      return
 !
-      END SUBROUTINE HFSGG
+      end subroutine hfsgg

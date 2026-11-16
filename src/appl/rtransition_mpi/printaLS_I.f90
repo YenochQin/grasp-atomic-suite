@@ -1,12 +1,12 @@
-      MODULE printaLS_I
-      INTERFACE
-      SUBROUTINE PRINTALS (INUM_II,INUM_FF,ASFA,ASFB,I,J,OMEGA,FACTOR)
+      module printals_i
+      interface
+      subroutine printals (inum_ii,inum_ff,asfa,asfb,i,j,omega,factor)
 !...Translated by Charlotte Froese Fischer
 !                       Gediminas Gaigalas  10/05/17
-      USE vast_kind_param,ONLY: DOUBLE
-      INTEGER  :: I, J, INUM_II, INUM_FF
-      REAL(DOUBLE), INTENT(IN) :: ASFA, ASFB
-      REAL(DOUBLE), INTENT(IN) :: OMEGA, FACTOR
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      use vast_kind_param,only: double
+      integer  :: i, j, inum_ii, inum_ff
+      real(double), intent(in) :: asfa, asfb
+      real(double), intent(in) :: omega, factor
+      end subroutine
+      end interface
+      end module

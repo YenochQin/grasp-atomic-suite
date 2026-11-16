@@ -1,5 +1,5 @@
 !***********************************************************************
-      SUBROUTINE CSFWGT(LSTDIO)
+      subroutine csfwgt(lstdio)
 !                                                                      *
 !   Print  the  weights of the largest five CSF contributors to each   *
 !   ASF.                                                               *
@@ -19,115 +19,115 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE def_C
-      USE eigv_C
-      USE jlabl_C, LABJ=>JLBR, LABP=>JLBP
-      USE syma_C,          ONLY: JPGG
-      USE iounit_C
-      USE hblock_C
-      USE pos_C
-      USE blkidx_C
-      IMPLICIT NONE
+      use vast_kind_param, only: double
+      use def_c
+      use eigv_c
+      use jlabl_c, labj=>jlbr, labp=>jlbp
+      use syma_c,          only: jpgg
+      use iounit_c
+      use hblock_c
+      use pos_c
+      use blkidx_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      LOGICAL, INTENT(IN) :: LSTDIO
+      logical, intent(in) :: lstdio
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, DIMENSION(5) :: ICONF
-      INTEGER :: IV, JBLOCK, NCF, NCFPAT, NCMINPAT, NEVECPAT, NEVECOFF, NELT, &
-         ICF, IVTJPO, IVSPAR, I, J, ITEMP, IREM, IP
-      REAL(DOUBLE) :: TEMP, W
-      REAL(DOUBLE), DIMENSION(5) :: COEFF
-      CHARACTER :: RECORD*256, CNUM*8
+      integer, dimension(5) :: iconf
+      integer :: iv, jblock, ncf, ncfpat, ncminpat, nevecpat, nevecoff, nelt, &
+         icf, ivtjpo, ivspar, i, j, itemp, irem, ip
+      real(double) :: temp, w
+      real(double), dimension(5) :: coeff
+      character :: record*256, cnum*8
 !-----------------------------------------------
 !
 !
 !     POINTER (idxblk(:))   ! idx(i= 1,ncmin) is the block where
 !
 
-      IF (LSTDIO) THEN
-         WRITE (ISTDO, 300)
-      ELSE
-         WRITE (24, 300)
-      ENDIF
+      if (lstdio) then
+         write (istdo, 300)
+      else
+         write (24, 300)
+      endif
 
-      DO IV = 1, NCMIN
+      do iv = 1, ncmin
 !         loop over eigenvectors
 
-         JBLOCK = IDXBLK(IV)
-         NCF = NCFBLK(JBLOCK)
-         NCFPAT = NCFPAST(JBLOCK)
-         NCMINPAT = NCMINPAST(JBLOCK)
-         NEVECPAT = NEVECPAST(JBLOCK)
-         NEVECOFF = NEVECPAT + (IV - NCMINPAT - 1)*NCF
-         NELT = MIN(5,NCF)                       !Find maximum 5 ... within block
-         ICF = ICCMIN(IV)
+         jblock = idxblk(iv)
+         ncf = ncfblk(jblock)
+         ncfpat = ncfpast(jblock)
+         ncminpat = ncminpast(jblock)
+         nevecpat = nevecpast(jblock)
+         nevecoff = nevecpat + (iv - ncminpat - 1)*ncf
+         nelt = min(5,ncf)                       !Find maximum 5 ... within block
+         icf = iccmin(iv)
 !GGGG
-         ivtjpo = IABS(JPGG(jblock))
-         IF(JPGG(jblock) >= 0) THEN
+         ivtjpo = iabs(jpgg(jblock))
+         if(jpgg(jblock) >= 0) then
             ivspar = 2
-         ELSE
+         else
             ivspar = 1
-         END IF
+         end if
 !GG         IVTJPO = IATJPO(IV)                     ! j-value related
 !GG         IVSPAR = IASPAR(IV)                     ! parity related
 
 
-         DO I = 1, NELT
-            COEFF(I) = EVEC(NEVECOFF + I)
-            ICONF(I) = I
-         END DO
+         do i = 1, nelt
+            coeff(i) = evec(nevecoff + i)
+            iconf(i) = i
+         end do
 
 !         sort the first nelt in decreasing order
-         DO I = 1, NELT
-            DO J = I + 1, NELT
-               IF (ABS(COEFF(J)) <= ABS(COEFF(I))) CYCLE
-               TEMP = COEFF(I)
-               COEFF(I) = COEFF(J)
-               COEFF(J) = TEMP
-               ITEMP = ICONF(I)
-               ICONF(I) = ICONF(J)
-               ICONF(J) = ITEMP
-            END DO
-         END DO
+         do i = 1, nelt
+            do j = i + 1, nelt
+               if (abs(coeff(j)) <= abs(coeff(i))) cycle
+               temp = coeff(i)
+               coeff(i) = coeff(j)
+               coeff(j) = temp
+               itemp = iconf(i)
+               iconf(i) = iconf(j)
+               iconf(j) = itemp
+            end do
+         end do
 
-         L20: DO I = NELT + 1, NCF
-            W = EVEC(NEVECOFF + I)
-            IF (W==0.D0 .OR. ABS(W)<=ABS(COEFF(NELT))) CYCLE  L20
+         l20: do i = nelt + 1, ncf
+            w = evec(nevecoff + i)
+            if (w==0.d0 .or. abs(w)<=abs(coeff(nelt))) cycle  l20
 !               we have a non-zero value larger than the largest so far
-            DO J = 1, NELT
-               IF (ABS(W) <= ABS(COEFF(J))) CYCLE
-               COEFF(NELT:1+J:(-1)) = COEFF(NELT-1:J:(-1))
-               ICONF(NELT:1+J:(-1)) = ICONF(NELT-1:J:(-1))
-               COEFF(J) = W
-               ICONF(J) = I
-               CYCLE  L20
-            END DO
-         END DO L20
+            do j = 1, nelt
+               if (abs(w) <= abs(coeff(j))) cycle
+               coeff(nelt:1+j:(-1)) = coeff(nelt-1:j:(-1))
+               iconf(nelt:1+j:(-1)) = iconf(nelt-1:j:(-1))
+               coeff(j) = w
+               iconf(j) = i
+               cycle  l20
+            end do
+         end do l20
 
 !GG         IP = (IASPAR(IV) + 3)/2
            ip =  ivspar
 
-         IF (LSTDIO) THEN
-            WRITE (ISTDO, 320) JBLOCK, ICF, LABJ(IVTJPO), LABP(IP), (COEFF(I),I&
-               =1,NELT)
-            WRITE (ISTDO, 330) (ICONF(I),I=1,NELT)
-         ELSE
+         if (lstdio) then
+            write (istdo, 320) jblock, icf, labj(ivtjpo), labp(ip), (coeff(i),i&
+               =1,nelt)
+            write (istdo, 330) (iconf(i),i=1,nelt)
+         else
 
-            WRITE (24, 320) JBLOCK, ICF, LABJ(IVTJPO), LABP(IP), (COEFF(I),I=1,&
-               NELT)
-            WRITE (24, 330) (ICONF(I),I=1,NELT)
-         ENDIF
-      END DO
+            write (24, 320) jblock, icf, labj(ivtjpo), labp(ip), (coeff(i),i=1,&
+               nelt)
+            write (24, 330) (iconf(i),i=1,nelt)
+         endif
+      end do
 
-  300 FORMAT(/,'Weights of major contributors to ASF:'/,/,&
+  300 format(/,'Weights of major contributors to ASF:'/,/,&
          'Block Level J Parity      CSF contributions'/)
-  310 FORMAT(1X,A14,80A)
-  320 FORMAT(I3,1X,I5,2X,2A4,5(3X,F8.4))
-  330 FORMAT(19X,5(3X,I8))
+  310 format(1x,a14,80a)
+  320 format(i3,1x,i5,2x,2a4,5(3x,f8.4))
+  330 format(19x,5(3x,i8))
 
-      RETURN
-      END SUBROUTINE CSFWGT
+      return
+      end subroutine csfwgt

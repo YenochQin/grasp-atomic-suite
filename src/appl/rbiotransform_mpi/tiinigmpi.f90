@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE TIINIG(CIIN, NCSF, NCIV, I, L, CONST, CIOUT, NTESTG)
+      subroutine tiinig(ciin, ncsf, nciv, i, l, const, ciout, ntestg)
 !                                                                      *
 !   Calculates the action of the operator                              *
 !   Const ** E(li,li) on a set of vectors                              *
@@ -32,50 +32,50 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: KEYORB
-      USE mcpdata_C
-      USE sbdat1_C
-      USE mpi_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: keyorb
+      use mcpdata_c
+      use sbdat1_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE setvec_I
-      USE wrtmat_I
-      USE copvec_I, ONLY: copvec
-      IMPLICIT NONE
+      use setvec_i
+      use wrtmat_i
+      use copvec_i, only: copvec
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NCSF
-      INTEGER  :: NCIV
-      INTEGER, INTENT(IN) :: I
-      INTEGER, INTENT(IN) :: L
-      INTEGER, INTENT(IN) :: NTESTG
-      REAL(DOUBLE), INTENT(IN) :: CONST
-      REAL(DOUBLE), DIMENSION(NCSF,NCIV), INTENT(IN)    :: CIIN
-      REAL(DOUBLE), DIMENSION(NCSF,NCIV), INTENT(INOUT) :: CIOUT
+      integer  :: ncsf
+      integer  :: nciv
+      integer, intent(in) :: i
+      integer, intent(in) :: l
+      integer, intent(in) :: ntestg
+      real(double), intent(in) :: const
+      real(double), dimension(ncsf,nciv), intent(in)    :: ciin
+      real(double), dimension(ncsf,nciv), intent(inout) :: ciout
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NTESTL, NTEST, NFOUND, K, IA, IB, IFIRST, IELMNT, IVAL, ILEFT&
-         , IVEC
-      REAL(DOUBLE), DIMENSION(NCSF,NCIV) :: CIOUTtmp
-      REAL(DOUBLE) :: CONSTN
+      integer :: ntestl, ntest, nfound, k, ia, ib, ifirst, ielmnt, ival, ileft&
+         , ivec
+      real(double), dimension(ncsf,nciv) :: ciouttmp
+      real(double) :: constn
 !-----------------------------------------------
 !
 !
-      NTESTL = 0
-      NTEST = MAX(NTESTL,NTESTG)
+      ntestl = 0
+      ntest = max(ntestl,ntestg)
 
-      IF (NTEST >= 10) WRITE (6, *) ' Entering TIINI'
+      if (ntest >= 10) write (6, *) ' Entering TIINI'
 
-      CALL SETVEC (CIOUT, 0.0D0, NCSF*NCIV)
-      if (NCOEFF .EQ. 0) goto 200
+      call setvec (ciout, 0.0d0, ncsf*nciv)
+      if (ncoeff .eq. 0) goto 200
 !
 !.  Obtain address of first coupling coefficient for h(il,il) :  IFIRST
 !.  Obtain number of        coupling coefficient for h(il,il) :  NFOUND
@@ -84,53 +84,53 @@
 !     IVAL   : actual RACAH coefficient <CSF(L)!E(il,il)!CSF(R)>
 !     ILEFT  = CSF(L) ?
 !
-      NFOUND = 0
-      DO K = 1, NINTG
-         IA = INTGRL(K)/KEY
-         IB = MOD(INTGRL(K),KEY)
-         IF (NSHLP(L,I)/=IA .OR. IA/=IB) CYCLE
-         IF (K == 1) THEN
-            IFIRST = 1
-         ELSE
-            IFIRST = INTPTR(K - 1) + 1
-         ENDIF
-         NFOUND = INTPTR(K) - IFIRST + 1
-         EXIT
-      END DO
+      nfound = 0
+      do k = 1, nintg
+         ia = intgrl(k)/key
+         ib = mod(intgrl(k),key)
+         if (nshlp(l,i)/=ia .or. ia/=ib) cycle
+         if (k == 1) then
+            ifirst = 1
+         else
+            ifirst = intptr(k - 1) + 1
+         endif
+         nfound = intptr(k) - ifirst + 1
+         exit
+      end do
 
-      DO IELMNT = 1, NFOUND
+      do ielmnt = 1, nfound
 ! Bug 2011-08-18 Per Jonsson        IVAL = CNN(IFIRST-1+IELMNT)
 !GG         IVAL = IDNINT(CNN(IFIRST-1+IELMNT))
-         IVAL = CNN(IFIRST-1+IELMNT)
-         CONSTN = CONST**IVAL
-         ILEFT = JANN(IFIRST - 1 + IELMNT)
-         CIOUT(ILEFT,:NCIV) = CONSTN*CIIN(ILEFT,:NCIV)
-      END DO
- 200  CONTINUE
-      call copvec(CIOUT, CIOUTtmp, NCIV*NCSF)
+         ival = cnn(ifirst-1+ielmnt)
+         constn = const**ival
+         ileft = jann(ifirst - 1 + ielmnt)
+         ciout(ileft,:nciv) = constn*ciin(ileft,:nciv)
+      end do
+ 200  continue
+      call copvec(ciout, ciouttmp, nciv*ncsf)
 !GG      call MPI_ALLREDUCE(CIOUTtmp(1,1), CIOUT(1,1), NCIV*NCSF,      &
-      call MPI_ALLREDUCE(CIOUTtmp, CIOUT, NCIV*NCSF,      &
-           MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, ierr)
+      call mpi_allreduce(ciouttmp, ciout, nciv*ncsf,      &
+           mpi_double_precision, mpi_sum, mpi_comm_world, ierr)
 !
 !.  The previous provided us with all
 !   terms with nonvanishing occupation.
 !   For terms with vanishing occupation of il,
 !   just copy coefficients, since (x) ** 0 = 1
 !
-      WHERE (CIOUT(:NCSF,:NCIV) == 0.0D0)
-         CIOUT(:NCSF,:NCIV) = CIIN(:NCSF,:NCIV)
-      END WHERE
+      where (ciout(:ncsf,:nciv) == 0.0d0)
+         ciout(:ncsf,:nciv) = ciin(:ncsf,:nciv)
+      end where
 !
-      IF (NTEST >= 100) THEN
-         WRITE (6, *)
-         WRITE (6, *) ' Input and output vectors from TIINI I,L', I, L
-         CALL WRTMAT (CIIN, NCSF, NCIV, NCSF, NCIV)
-         WRITE (6, *)
-         CALL WRTMAT (CIOUT, NCSF, NCIV, NCSF, NCIV)
-         WRITE (6, *)
-      ENDIF
+      if (ntest >= 100) then
+         write (6, *)
+         write (6, *) ' Input and output vectors from TIINI I,L', i, l
+         call wrtmat (ciin, ncsf, nciv, ncsf, nciv)
+         write (6, *)
+         call wrtmat (ciout, ncsf, nciv, ncsf, nciv)
+         write (6, *)
+      endif
 !
-      IF (NTEST >= 10) WRITE (6, *) ' Leaving  TIINI'
+      if (ntest >= 10) write (6, *) ' Leaving  TIINI'
 
-      RETURN
-      END SUBROUTINE TIINIG
+      return
+      end subroutine tiinig

@@ -3,7 +3,7 @@
 !     U L L A
 !     ------------------------------------------------------------------
 !
-      SUBROUTINE ULLA(A, U, L, NDIM, SCR)
+      subroutine ulla(a, u, l, ndim, scr)
 !
 ! Obtain U L decomposition of matrix A
 !   A = U L
@@ -18,26 +18,26 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE lulu_I
-      USE setvec_I
-      USE wrtmat_I
-      IMPLICIT NONE
+      use lulu_i
+      use setvec_i
+      use wrtmat_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NDIM
-      REAL(DOUBLE), INTENT(IN) :: A(NDIM,NDIM)
-      REAL(DOUBLE)  :: U(NDIM,NDIM)
-      REAL(DOUBLE)  :: L(NDIM,NDIM)
-      REAL(DOUBLE)  :: SCR(*)
+      integer  :: ndim
+      real(double), intent(in) :: a(ndim,ndim)
+      real(double)  :: u(ndim,ndim)
+      real(double)  :: l(ndim,ndim)
+      real(double)  :: scr(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: KLFREE, KLPAP, I, J, KLL, KLU, IMAX, IMIN, NTEST
+      integer :: klfree, klpap, i, j, kll, klu, imax, imin, ntest
 !-----------------------------------------------
 !
 !
@@ -50,45 +50,45 @@
 !
 ! 1 : PAP in scr(klPAP)
 !
-      KLFREE = 1
-      KLPAP = KLFREE
-      KLFREE = KLFREE + NDIM**2
+      klfree = 1
+      klpap = klfree
+      klfree = klfree + ndim**2
 !
-      DO I = 1, NDIM
-         SCR(KLPAP-1+I:NDIM*(NDIM-1)+KLPAP-1+I:NDIM) = A(NDIM+1-I,NDIM:1:(-1))
-      END DO
+      do i = 1, ndim
+         scr(klpap-1+i:ndim*(ndim-1)+klpap-1+i:ndim) = a(ndim+1-i,ndim:1:(-1))
+      end do
 ! 2 : Lu decompose PAP
-      KLL = KLFREE
-      KLFREE = KLFREE + NDIM*(NDIM + 1)/2
+      kll = klfree
+      klfree = klfree + ndim*(ndim + 1)/2
 !
-      KLU = KLFREE
-      KLFREE = KLFREE + NDIM*(NDIM + 1)/2
-      CALL LULU (SCR(KLPAP), SCR(KLL), SCR(KLU), NDIM)
+      klu = klfree
+      klfree = klfree + ndim*(ndim + 1)/2
+      call lulu (scr(klpap), scr(kll), scr(klu), ndim)
 !          LULU(A,L,U,NDIM)
 ! Storage modes
 !   L(I,J) = L(I*(I-1)/2 + J ) ( I .GE. J )
 !   U(I,J) = U(J*(J-1)/2 + I ) ( J .GE. I )
 !
 !. 3 : Obtain U as PLP and L as PUP
-      CALL SETVEC (U, 0.0D0, NDIM**2)
-      CALL SETVEC (L, 0.0D0, NDIM**2)
+      call setvec (u, 0.0d0, ndim**2)
+      call setvec (l, 0.0d0, ndim**2)
 !
-      DO IMAX = 1, NDIM
-         DO IMIN = 1, IMAX
-            U(IMIN,IMAX) = SCR(KLL-1+(NDIM+1-IMIN)*(NDIM+1-IMIN-1)/2+(NDIM+1-&
-               IMAX))
-            L(IMAX,IMIN) = SCR(KLU-1+(NDIM+1-IMIN)*(NDIM+1-IMIN-1)/2+(NDIM+1-&
-               IMAX))
-         END DO
-      END DO
+      do imax = 1, ndim
+         do imin = 1, imax
+            u(imin,imax) = scr(kll-1+(ndim+1-imin)*(ndim+1-imin-1)/2+(ndim+1-&
+               imax))
+            l(imax,imin) = scr(klu-1+(ndim+1-imin)*(ndim+1-imin-1)/2+(ndim+1-&
+               imax))
+         end do
+      end do
 !
-      NTEST = 0
-      IF (NTEST /= 0) THEN
-         WRITE (6, *) ' U and L from Ulla '
-         CALL WRTMAT (U, NDIM, NDIM, NDIM, NDIM)
-         CALL WRTMAT (L, NDIM, NDIM, NDIM, NDIM)
-      ENDIF
+      ntest = 0
+      if (ntest /= 0) then
+         write (6, *) ' U and L from Ulla '
+         call wrtmat (u, ndim, ndim, ndim, ndim)
+         call wrtmat (l, ndim, ndim, ndim, ndim)
+      endif
 !
 
-      RETURN
-      END SUBROUTINE ULLA
+      return
+      end subroutine ulla

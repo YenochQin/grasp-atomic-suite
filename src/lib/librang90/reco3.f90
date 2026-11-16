@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE RECO3(JA1,JA2,JA3,K1,K2,KA,IRE,IAT,RECC)
+      subroutine reco3(ja1,ja2,ja3,k1,k2,ka,ire,iat,recc)
 !                                                                  *
 !   ---------------  SECTION REC    SUBPROGRAM 08  --------------  *
 !                                                                  *
@@ -15,70 +15,70 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ONE
-      USE m_C,             ONLY: JLIST, JJQ1, JJQ2
+      use vast_kind_param, only: double
+      use cons_c,          only: one
+      use m_c,             only: jlist, jjq1, jjq2
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE diaga1_I
-      USE diaga2_I
-      USE diaga3_I
-      USE diaga4_I
-      IMPLICIT NONE
+      use diaga1_i
+      use diaga2_i
+      use diaga3_i
+      use diaga4_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)       :: JA1,JA2,JA3,K1,K2,KA,IRE
-      INTEGER, INTENT(OUT)      :: IAT
-      REAL(DOUBLE), INTENT(OUT) :: RECC
+      integer, intent(in)       :: ja1,ja2,ja3,k1,k2,ka,ire
+      integer, intent(out)      :: iat
+      real(double), intent(out) :: recc
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: IA3, IB3, IJ1, IJ2, IJ3, ISKR
-      REAL(DOUBLE) :: S, S1, S2, S3, RE
+      integer      :: ia3, ib3, ij1, ij2, ij3, iskr
+      real(double) :: s, s1, s2, s3, re
 !-----------------------------------------------
-      IJ1=JLIST(JA1)
-      IJ2=JLIST(JA2)
-      IJ3=JLIST(JA3)
-      S1=JJQ1(3,IJ1)
-      S2=JJQ1(3,IJ2)
-      S3=JJQ1(3,IJ3)
-      S=S1*S2*S3
-      RECC=ONE/DSQRT(S)
-      IA3=JJQ1(3,IJ3)-1
-      IB3=JJQ2(3,IJ3)-1
-      RECC=RECC*DSQRT(DBLE(IA3+1))/DSQRT(DBLE((KA+1)*(IB3+1)))
+      ij1=jlist(ja1)
+      ij2=jlist(ja2)
+      ij3=jlist(ja3)
+      s1=jjq1(3,ij1)
+      s2=jjq1(3,ij2)
+      s3=jjq1(3,ij3)
+      s=s1*s2*s3
+      recc=one/dsqrt(s)
+      ia3=jjq1(3,ij3)-1
+      ib3=jjq2(3,ij3)-1
+      recc=recc*dsqrt(dble(ia3+1))/dsqrt(dble((ka+1)*(ib3+1)))
 !
-      IAT=0
-      ISKR=JA3-JA2
-      IF(ISKR > 1) THEN
-        CALL DIAGA3(JA2,JA3,KA,IRE,IAT,RE)
-        IF(IAT == 0)RETURN
-        RECC=RE*RECC
-      END IF
+      iat=0
+      iskr=ja3-ja2
+      if(iskr > 1) then
+        call diaga3(ja2,ja3,ka,ire,iat,re)
+        if(iat == 0)return
+        recc=re*recc
+      end if
 !
-      IAT=0
-      CALL DIAGA2(JA1,JA3,KA,IRE,IAT,RE)
-      IF(IAT == 0)RETURN
-      RECC=RE*RECC
+      iat=0
+      call diaga2(ja1,ja3,ka,ire,iat,re)
+      if(iat == 0)return
+      recc=re*recc
 !
-      IAT=0
-      CALL DIAGA4(JA1,JA2,K1,K2,KA,IRE,IAT,RE)
-      IF(IAT == 0)RETURN
-      RECC=RE*RECC
-      IF(JA1 == 1.AND.JA2 == 2)RETURN
+      iat=0
+      call diaga4(ja1,ja2,k1,k2,ka,ire,iat,re)
+      if(iat == 0)return
+      recc=re*recc
+      if(ja1 == 1.and.ja2 == 2)return
 !
-      IAT=0
-      CALL DIAGA1(JA1,K1,IRE,IAT,RE)
-      IF(IAT == 0)RETURN
-      RECC=RE*RECC
+      iat=0
+      call diaga1(ja1,k1,ire,iat,re)
+      if(iat == 0)return
+      recc=re*recc
 !
-      ISKR=JA2-JA1
-      IF(JA1 == 1)ISKR=JA2-1-JA1
-      IF(ISKR <= 1)RETURN
-      IAT=0
-      CALL DIAGA3(JA1,JA2,K1,IRE,IAT,RE)
-      RECC=RE*RECC
-      RETURN
-      END SUBROUTINE RECO3
+      iskr=ja2-ja1
+      if(ja1 == 1)iskr=ja2-1-ja1
+      if(iskr <= 1)return
+      iat=0
+      call diaga3(ja1,ja2,k1,ire,iat,re)
+      recc=re*recc
+      return
+      end subroutine reco3

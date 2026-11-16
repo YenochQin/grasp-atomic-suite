@@ -1,22 +1,22 @@
-      MODULE densnew_seltz_I
-      INTERFACE
+      module densnew_seltz_i
+      interface
 !...Translated by Gediminas Gaigalas 11/18/19
-      SUBROUTINE densnew_seltz (DOIT,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,    &
-                          DINT7,DINT1VEC,DENS1VEC,NRNUC)
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW, NNNP
-      USE prnt_C,          ONLY : NVEC
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT1
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT2
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT3
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT4
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT5
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT6
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT7
-      INTEGER, INTENT(IN) :: NRNUC
-      REAL(DOUBLE), DIMENSION(NVEC,NRNUC), INTENT(OUT) :: DENS1VEC
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW,NRNUC), INTENT(IN) :: DINT1VEC
-      INTEGER, INTENT(IN) :: DOIT
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine densnew_seltz (doit,dint1,dint2,dint3,dint4,dint5,dint6,    &
+                          dint7,dint1vec,dens1vec,nrnuc)
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw, nnnp
+      use prnt_c,          only : nvec
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint1
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint2
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint3
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint4
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint5
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint6
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint7
+      integer, intent(in) :: nrnuc
+      real(double), dimension(nvec,nrnuc), intent(out) :: dens1vec
+      real(double), dimension(nnnw,nnnw,nrnuc), intent(in) :: dint1vec
+      integer, intent(in) :: doit
+      end subroutine
+      end interface
+      end module

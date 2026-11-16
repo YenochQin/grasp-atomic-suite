@@ -1,5 +1,5 @@
 !************************************************************************
-     SUBROUTINE AUXBLK(J2MAX, ATWINV)
+     subroutine auxblk(j2max, atwinv)
 !************************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:04:58   1/ 3/07
 !...Modified by Charlotte Froese Fischer
@@ -7,104 +7,104 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW
-      USE decide_C
-      USE def_C
-      USE grid_C
-      USE ncdist_C
-      USE tatb_C
-      USE coeils_C
-      USE vpilst_C,indoei=>indvpi, valoei=>valvpi
-      USE bilst_C
-      USE keilst_C
-      USE vinlst_C
-      USE orb_C, ONLY: ncf, nw, iqa
-      USE iounit_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw
+      use decide_c
+      use def_c
+      use grid_c
+      use ncdist_c
+      use tatb_c
+      use coeils_c
+      use vpilst_c,indoei=>indvpi, valoei=>valvpi
+      use bilst_c
+      use keilst_c
+      use vinlst_c
+      use orb_c, only: ncf, nw, iqa
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ncharg_I
-      USE vacpol_I
-      IMPLICIT NONE
+      use ncharg_i
+      use vacpol_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: J2MAX
-      REAL(DOUBLE), INTENT(OUT) :: ATWINV
+      integer, intent(in) :: j2max
+      real(double), intent(out) :: atwinv
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, K
-      LOGICAL :: LDBPG
+      integer :: i, k
+      logical :: ldbpg
 !-----------------------------------------------
 !
-      FRSTCO = .TRUE.
-      NCOEI = 0
+      frstco = .true.
+      ncoei = 0
 
-      IF (LTRANS) THEN
+      if (ltrans) then
 !        ...Check the maximum numbers of orbtitals allowed in brint.f
-         I = NNNW
-         SELECT CASE (J2MAX)
-         CASE (11)
-            I = 114
-         CASE (12)
-            I = 112
-         CASE (13)
-            I = 110
-         CASE (14)
-            I = 108
-         CASE (15)
-            I = 106
-         CASE (16)
-            I = 105
-         CASE (17)
-            I = 103
-         CASE (18)
-            I = 101
-         CASE (19)
-            I = 100
-         CASE (21:)
-            I = 90
-         END SELECT
+         i = nnnw
+         select case (j2max)
+         case (11)
+            i = 114
+         case (12)
+            i = 112
+         case (13)
+            i = 110
+         case (14)
+            i = 108
+         case (15)
+            i = 106
+         case (16)
+            i = 105
+         case (17)
+            i = 103
+         case (18)
+            i = 101
+         case (19)
+            i = 100
+         case (21:)
+            i = 90
+         end select
 
-         IF (I < NW) THEN
-            WRITE (ISTDE, *) 'In setham. The number of orbitals is too'
-            WRITE (ISTDE, *) 'large for the brint routine'
-            STOP
-         ENDIF
+         if (i < nw) then
+            write (istde, *) 'In setham. The number of orbitals is too'
+            write (istde, *) 'large for the brint routine'
+            stop
+         endif
 
-         FIRST = .TRUE.
-         NTPI = 0
-      ENDIF
+         first = .true.
+         ntpi = 0
+      endif
 !
 !   Initialisations for the vacuum polarisation corrections
 !
-      IF (LVP) THEN
-         CALL NCHARG
-         CALL VACPOL
-         ZDIST(2:N) = TB(2:N)*RP(2:N)
-         FRSTVP = .TRUE.
-         NVPI = 0
-      ENDIF
+      if (lvp) then
+         call ncharg
+         call vacpol
+         zdist(2:n) = tb(2:n)*rp(2:n)
+         frstvp = .true.
+         nvpi = 0
+      endif
 !
 !   Initialisations for nuclear translational energy corrections
 !
-      IF (EMN > 0.D0) THEN
-         ATWINV = 1.D0/EMN
-         IF (LNMS) THEN
-            FRSTKI = .TRUE.
-            NKEI = 0
-         ENDIF
-         IF (LSMS) THEN
-            FRSTVI = .TRUE.
-            NVINTI = 0
-         ENDIF
-      ELSE
+      if (emn > 0.d0) then
+         atwinv = 1.d0/emn
+         if (lnms) then
+            frstki = .true.
+            nkei = 0
+         endif
+         if (lsms) then
+            frstvi = .true.
+            nvinti = 0
+         endif
+      else
          ! atwinv will not be used
-         LNMS = .FALSE.
-         LSMS = .FALSE.
-      ENDIF
+         lnms = .false.
+         lsms = .false.
+      endif
 
-      RETURN
-      END SUBROUTINE AUXBLK
+      return
+      end subroutine auxblk

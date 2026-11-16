@@ -1,19 +1,19 @@
 !
 !***********************************************************************
 !                                                                      *
-      MODULE blk_C
+      module blk_c
 !                                                                      *
 !***********************************************************************
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !...Created by Pacific-Sierra Research 77to90  4.3E  14:35:02   1/ 6/07
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      INTEGER, DIMENSION(20) :: NCFBLK, NEVINBLK, NCFINBLK, TWO_J
-      INTEGER :: NBLOCK
-      REAL(DOUBLE), DIMENSION(:), pointer :: IDXBLK
-      INTEGER :: NELECTOT, NCFTOT, NWTOT, NVECTOT, NVECSIZTOT, NBLOCK1
-      INTEGER :: NBLOCKI
-      INTEGER :: NBLOCKF
-      INTEGER, DIMENSION(10) :: NCFI
-      INTEGER, DIMENSION(10) :: NCFF
-      END MODULE blk_C
+      integer, dimension(20) :: ncfblk, nevinblk, ncfinblk, two_j
+      integer :: nblock
+      real(double), dimension(:), pointer :: idxblk
+      integer :: nelectot, ncftot, nwtot, nvectot, nvecsiztot, nblock1
+      integer :: nblocki
+      integer :: nblockf
+      integer, dimension(10) :: ncfi
+      integer, dimension(10) :: ncff
+      end module blk_c

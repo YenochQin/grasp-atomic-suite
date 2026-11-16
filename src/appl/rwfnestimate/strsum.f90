@@ -2,7 +2,7 @@
 
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE STRSUM
+      subroutine strsum
 !                                                                      *
 !   Generates the first part of  erwf.sum  (on stream 24).             *
 !                                                                      *
@@ -16,26 +16,26 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE DEF_C
-      USE GRID_C
-      USE NPAR_C
-      USE NPOT_C, ONLY: NNUC
-      USE ORB_C
+      use vast_kind_param, only:  double
+      use def_c
+      use grid_c
+      use npar_c
+      use npot_c, only: nnuc
+      use orb_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE calen_I
-      USE convrt_I
-      IMPLICIT NONE
+      use calen_i
+      use convrt_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: LENTH
-      CHARACTER(LEN=10) :: CTIME
-      CHARACTER(LEN=8) :: CDATE
-      CHARACTER(LEN=256) :: RECORD
-      CHARACTER(LEN=26)  :: CDATA
+      integer :: lenth
+      character(len=10) :: ctime
+      character(len=8) :: cdate
+      character(len=256) :: record
+      character(len=26)  :: cdata
 
 !-----------------------------------------------
 !
@@ -43,64 +43,64 @@
 !   Get the date and time of day; make this information the
 !   header of the summary file
 !
-      CALL CALEN (CTIME, CDATE)
-      WRITE (24, *) 'ERWF run at ', CTIME, ' on ', CDATE, '.'
+      call calen (ctime, cdate)
+      write (24, *) 'ERWF run at ', ctime, ' on ', cdate, '.'
 !
 !   Write out the basic dimensions of the electron cloud
 !
-      WRITE (24, *)
-      CALL CONVRT (NELEC, RECORD, LENTH)
-      WRITE (24, *) 'There are '//RECORD(1:LENTH)//' electrons in the cloud'
-      CALL CONVRT (NCF, RECORD, LENTH)
-      WRITE (24, *) ' in '//RECORD(1:LENTH)//' relativistic CSFs'
-      CALL CONVRT (NW, RECORD, LENTH)
-      WRITE (24, *) ' based on '//RECORD(1:LENTH)//' relativistic subshells.'
+      write (24, *)
+      call convrt (nelec, record, lenth)
+      write (24, *) 'There are '//record(1:lenth)//' electrons in the cloud'
+      call convrt (ncf, record, lenth)
+      write (24, *) ' in '//record(1:lenth)//' relativistic CSFs'
+      call convrt (nw, record, lenth)
+      write (24, *) ' based on '//record(1:lenth)//' relativistic subshells.'
 !
 !   Write out the nuclear parameters
 !
-      WRITE (24, *)
-      WRITE (24, 300) Z
-      IF (NPARM == 2) THEN
-         WRITE (24, *) ' Fermi nucleus:'
-         WRITE (24, 302) PARM(1), PARM(2)
-         CALL CONVRT (NNUC, RECORD, LENTH)
-         WRITE (24, *) ' there are '//RECORD(1:LENTH)//&
+      write (24, *)
+      write (24, 300) z
+      if (nparm == 2) then
+         write (24, *) ' Fermi nucleus:'
+         write (24, 302) parm(1), parm(2)
+         call convrt (nnuc, record, lenth)
+         write (24, *) ' there are '//record(1:lenth)//&
             ' tabulation points in the nucleus.'
-      ELSE
-         WRITE (24, *) ' point nucleus.'
-      ENDIF
+      else
+         write (24, *) ' point nucleus.'
+      endif
 !
 !   Write out the physical effects specifications
 !
-      WRITE (24, *)
-      WRITE (24, 303) C
+      write (24, *)
+      write (24, 303) c
 !
 !   Write out the parameters of the radial grid
 !
-      WRITE (24, *)
-      IF (HP == 0.0D00) THEN
-         WRITE (24, 305) RNT, H, N
-      ELSE
-         WRITE (24, 306) RNT, H, HP, N
-      ENDIF
-      WRITE (24, 307) R(1), R(2), R(N)
+      write (24, *)
+      if (hp == 0.0d00) then
+         write (24, 305) rnt, h, n
+      else
+         write (24, 306) rnt, h, hp, n
+      endif
+      write (24, 307) r(1), r(2), r(n)
 !
-      WRITE (24, *)
+      write (24, *)
 !
-      RETURN
+      return
 !
-  300 FORMAT('The atomic number is ',1F14.10,';')
-  302 FORMAT('  c =',1P,1D19.12,' Bohr radii,'/,'  a =',1D19.12,' Bohr radii;')
-  303 FORMAT('Speed of light = ',1P,D19.12,' atomic units.')
-  305 FORMAT('Radial grid: R(I) = RNT*(exp((I-1)*H)-1),',' I = 1, ..., N;'/,/,&
-         ' RNT  = ',1P,D19.12,' Bohr radii;'/,' H    = ',D19.12,' Bohr radii;'/&
-         ,' N    = ',1I4,';')
-  306 FORMAT('Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,',&
-         ' I = 1, ..., N;'/,/,' RNT  = ',1P,D19.12,' Bohr radii;'/,' H    = ',D&
-         19.12,' Bohr radii;'/,' HP   = ',D19.12,' Bohr radii;'/,' N    = ',1I4&
+  300 format('The atomic number is ',1f14.10,';')
+  302 format('  c =',1p,1d19.12,' Bohr radii,'/,'  a =',1d19.12,' Bohr radii;')
+  303 format('Speed of light = ',1p,d19.12,' atomic units.')
+  305 format('Radial grid: R(I) = RNT*(exp((I-1)*H)-1),',' I = 1, ..., N;'/,/,&
+         ' RNT  = ',1p,d19.12,' Bohr radii;'/,' H    = ',d19.12,' Bohr radii;'/&
+         ,' N    = ',1i4,';')
+  306 format('Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,',&
+         ' I = 1, ..., N;'/,/,' RNT  = ',1p,d19.12,' Bohr radii;'/,' H    = ',d&
+         19.12,' Bohr radii;'/,' HP   = ',d19.12,' Bohr radii;'/,' N    = ',1i4&
          ,';')
-  307 FORMAT(' R(1) = ',1P,1D19.12,' Bohr radii;'/,' R(2) = ',1D19.12,&
-         ' Bohr radii;'/,' R(N) = ',1D19.12,' Bohr radii.')
-      RETURN
+  307 format(' R(1) = ',1p,1d19.12,' Bohr radii;'/,' R(2) = ',1d19.12,&
+         ' Bohr radii;'/,' R(N) = ',1d19.12,' Bohr radii.')
+      return
 !
-      END SUBROUTINE STRSUM
+      end subroutine strsum

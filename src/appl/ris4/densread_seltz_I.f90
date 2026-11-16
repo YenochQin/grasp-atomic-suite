@@ -1,18 +1,18 @@
-      MODULE densread_seltz_I
-      INTERFACE
+      module densread_seltz_i
+      interface
 !...Translated by Gediminas Gaigalas 11/18/19
-      SUBROUTINE densread_seltz (DINT1,DINT2,DINT3,                    &
-                           DINT4,DINT5,DINT6,                          &
-                           DINT7,DINT1VEC,DENS1VEC,NRNUC)
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNW, NNNP
-      USE prnt_C,           ONLY: NVEC
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: DINT1, DINT2,  &
-                                          DINT3, DINT4, DINT5, DINT6,  &
-                                          DINT7
-      INTEGER, INTENT(IN) :: NRNUC
-      REAL(DOUBLE), DIMENSION(NVEC,NRNUC), INTENT(OUT)     :: DENS1VEC
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW,NRNUC), INTENT(IN) :: DINT1VEC
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine densread_seltz (dint1,dint2,dint3,                    &
+                           dint4,dint5,dint6,                          &
+                           dint7,dint1vec,dens1vec,nrnuc)
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnw, nnnp
+      use prnt_c,           only: nvec
+      real(double), dimension(nnnw,nnnw), intent(in) :: dint1, dint2,  &
+                                          dint3, dint4, dint5, dint6,  &
+                                          dint7
+      integer, intent(in) :: nrnuc
+      real(double), dimension(nvec,nrnuc), intent(out)     :: dens1vec
+      real(double), dimension(nnnw,nnnw,nrnuc), intent(in) :: dint1vec
+      end subroutine
+      end interface
+      end module

@@ -1,7 +1,7 @@
 module npol_input
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use vast_kind_param, only: double
-    use npol_C, only: npol_config, NPOL_MODEL
+    use npol_c, only: npol_config, npol_model
     implicit none
     private
     public :: npol_read_config, npol_validate_config
@@ -188,8 +188,8 @@ contains
         if (.not.(cfg%use_e1 .or. cfg%use_e2)) return
         message = 'npol: units must be atomic'
         if (cfg%units /= 'atomic') return
-        message = 'npol: model_id must be '//NPOL_MODEL
-        if (cfg%model_id /= NPOL_MODEL) return
+        message = 'npol: model_id must be '//npol_model
+        if (cfg%model_id /= npol_model) return
         message = 'npol: parameter_source is required'
         if (len_trim(cfg%parameter_source) == 0) return
         message = 'npol: isotope_z must be positive and match the running nuclear charge'

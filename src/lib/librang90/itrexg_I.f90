@@ -1,9 +1,9 @@
-      MODULE itrexg_I
-      INTERFACE
+      module itrexg_i
+      interface
 !
-      INTEGER FUNCTION ITREXG(I1,I2,I3,I4,K)
-      INTEGER, INTENT(IN)  :: I1, I2, I3, I4
-      INTEGER, INTENT(OUT) :: K
-      END FUNCTION
-      END INTERFACE
-      END MODULE
+      integer function itrexg(i1,i2,i3,i4,k)
+      integer, intent(in)  :: i1, i2, i3, i4
+      integer, intent(out) :: k
+      end function
+      end interface
+      end module

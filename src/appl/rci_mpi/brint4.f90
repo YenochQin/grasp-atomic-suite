@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE BRINT4 (IA,IB,IC,ID,NU,TEGRAL)
+      subroutine brint4 (ia,ib,ic,id,nu,tegral)
 !                                                                      *
 !   Returns integrals for the transverse photon interaction.           *
 !      Integrals are stored in ordered lists. If the integral cannot   *
@@ -22,158 +22,158 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE memory_man
-      USE bilst_C
-      USE orb_C,           ONLY: ncf, nw, iqa
+      use vast_kind_param, only: double
+      use memory_man
+      use bilst_c
+      use orb_c,           only: ncf, nw, iqa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE brintf_I
-      IMPLICIT NONE
+      use brintf_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: ia, ib, ic, id, nu
-      REAL(DOUBLE), INTENT(out) :: tegral
+      integer, intent(in) :: ia, ib, ic, id, nu
+      real(double), intent(out) :: tegral
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      LOGICAL :: FOUND
-      INTEGER :: key, index, loc, ju, jl, jm, newsiz, i
+      logical :: found
+      integer :: key, index, loc, ju, jl, jm, newsiz, i
 !-----------------------------------------------
 !
-      KEY = NW + 1
+      key = nw + 1
 !
 !   Compute the integral label
 !
-      INDEX = (((NU*KEY+IA)*KEY+IB)*KEY+IC)*KEY+ID
+      index = (((nu*key+ia)*key+ib)*key+ic)*key+id
 !
-      IF (.NOT. FIRST(4)) THEN
+      if (.not. first(4)) then
 !
 !   This branch is executed on all entries except the first
 !
-         IF (INDEX .GT. INDTP4(NTPI(4))) THEN
+         if (index .gt. indtp4(ntpi(4))) then
 !
 !   The index is greater than the largest stored
 !
-            FOUND = .FALSE.
-            LOC = NTPI(4)
+            found = .false.
+            loc = ntpi(4)
 !
-         ELSEIF (INDEX .LT. INDTP4(1)) THEN
+         elseif (index .lt. indtp4(1)) then
 !
 !   The index is less than the smallest stored
 !
-            FOUND = .FALSE.
-            LOC = 0
+            found = .false.
+            loc = 0
 !
-         ELSE
+         else
 !
 !   The index is within the range of the indices stored; search
 !   for it in the list of indices
 !
-            JU = NTPI(4)
-            JL = 1
-    1       IF (JU-JL .GT. 1) THEN
-               JM = (JU+JL)/2
-               IF (INDTP4(JM) .GT. INDEX) THEN
-                  JU = JM
-               ELSE
-                  JL = JM
-               ENDIF
-               GOTO 1
+            ju = ntpi(4)
+            jl = 1
+    1       if (ju-jl .gt. 1) then
+               jm = (ju+jl)/2
+               if (indtp4(jm) .gt. index) then
+                  ju = jm
+               else
+                  jl = jm
+               endif
+               goto 1
 !
-            ELSE
+            else
 !
 !   The range is bracketed to the extent possible
 !
-               IF (INDEX .EQ. INDTP4(JU)) THEN
+               if (index .eq. indtp4(ju)) then
 !
-                  FOUND = .TRUE.
-                  LOC = JU
+                  found = .true.
+                  loc = ju
 !
-               ELSEIF (INDEX .EQ. INDTP4(JL)) THEN
+               elseif (index .eq. indtp4(jl)) then
 !
-                  FOUND = .TRUE.
-                  LOC = JL
+                  found = .true.
+                  loc = jl
 !
-               ELSE
+               else
 !
-                  FOUND = .FALSE.
-                  LOC = JL
+                  found = .false.
+                  loc = jl
 !
-               ENDIF
+               endif
 !
-            ENDIF
+            endif
 !
-         ENDIF
+         endif
 !
-         IF (FOUND) THEN
+         if (found) then
 !
 !   Found the index in the list; return the value of the integral
 !   from storage
 !
-            TEGRAL = VALTP4(LOC)
+            tegral = valtp4(loc)
 !
-         ELSE
+         else
 !
 !   Index not found; compute the integral
 !
-            TEGRAL = BRINTF (4,IA,IB,IC,ID,NU)
+            tegral = brintf (4,ia,ib,ic,id,nu)
 !
 !   Increment the integral counter
 !
-            NTPI(4) = NTPI(4)+1
+            ntpi(4) = ntpi(4)+1
 !
 !   Increase array length by half the present length if the latter
 !   is inadequate to store another pair
 !
 !
-            IF (NTPI(4) .GT. NDTPA(4)) THEN
-               NEWSIZ = NDTPA(4)+NDTPA(4)/2
-               CALL RALLOC (INDTP4,NEWSIZ,'INDTP4', 'BRINT4')
-               CALL RALLOC (VALTP4,NEWSIZ,'VALTP4', 'BRINT4')
-               NDTPA(4)= NEWSIZ
-            ENDIF
-            DO 4 I = NTPI(4),LOC+2,-1
-               INDTP4(I) = INDTP4(I-1)
-               VALTP4(I) = VALTP4(I-1)
-    4       CONTINUE
+            if (ntpi(4) .gt. ndtpa(4)) then
+               newsiz = ndtpa(4)+ndtpa(4)/2
+               call ralloc (indtp4,newsiz,'INDTP4', 'BRINT4')
+               call ralloc (valtp4,newsiz,'VALTP4', 'BRINT4')
+               ndtpa(4)= newsiz
+            endif
+            do 4 i = ntpi(4),loc+2,-1
+               indtp4(i) = indtp4(i-1)
+               valtp4(i) = valtp4(i-1)
+    4       continue
 !
 !   Put the new index and value into storage
 !
-            INDTP4(LOC+1) = INDEX
-            VALTP4(LOC+1) = TEGRAL
+            indtp4(loc+1) = index
+            valtp4(loc+1) = tegral
 !
-         ENDIF
+         endif
 !
-      ELSE
+      else
 !
 !   This branch is executed only once per type of integral
 !
-         FIRST(4) = .FALSE.
+         first(4) = .false.
 !
 !   Designate the initial storage for arrays INDTPx and VALTPx;
 !   Array NDTPA stores the array dimensions
 !
-         NDTPA(4) = 10000
+         ndtpa(4) = 10000
 !
 !   Compute the integral's value
 !
-         TEGRAL = BRINTF (4,IA,IB,IC,ID,NU)
+         tegral = brintf (4,ia,ib,ic,id,nu)
 !
 !   Initialise the integral counter
 !
-         NTPI(4) = 1
+         ntpi(4) = 1
 !
 !   Store the integral and its value
 !
-         CALL ALLOC (INDTP4,NDTPA(4),'INDTP4', 'BRINT4')
-         CALL ALLOC (VALTP4,NDTPA(4),'VALTP4', 'BRINT4')
-         INDTP4(1) = INDEX
-         VALTP4(1) = TEGRAL
+         call alloc (indtp4,ndtpa(4),'INDTP4', 'BRINT4')
+         call alloc (valtp4,ndtpa(4),'VALTP4', 'BRINT4')
+         indtp4(1) = index
+         valtp4(1) = tegral
 !
-      ENDIF
+      endif
 !
-      RETURN
-      END
+      return
+      end

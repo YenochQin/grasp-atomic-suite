@@ -2,7 +2,7 @@
 
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE WRTRWF
+      subroutine wrtrwf
 !                                                                      *
 !   Open, write a header and all subshell radial wavefunctions, and    *
 !   close the  .rwf  file.                                             *
@@ -17,67 +17,67 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE GRID_C
-      USE ORB_C
-      USE WAVE_C, ONLY: PZ, PF, QF, MF
-      USE IOUNIT_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use grid_c
+      use orb_c
+      use wave_c, only: pz, pf, qf, mf
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      IMPLICIT NONE
+      use openfl_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NEWUNIT, IERR, J, MFJ, I
-      LOGICAL :: IMOPENED
-      CHARACTER :: FILNAM*128
+      integer :: newunit, ierr, j, mfj, i
+      logical :: imopened
+      character :: filnam*128
 !-----------------------------------------------
 !
 !
 
-      FILNAM = 'rwfn.inp'
+      filnam = 'rwfn.inp'
 
-      DO NEWUNIT = 23, 99                        ! 23 is a historical value
-         INQUIRE(UNIT=NEWUNIT, OPENED=IMOPENED)
-         IF (IMOPENED) CYCLE
-         EXIT                                    ! should be the normal exit point
-      END DO
+      do newunit = 23, 99                        ! 23 is a historical value
+         inquire(unit=newunit, opened=imopened)
+         if (imopened) cycle
+         exit                                    ! should be the normal exit point
+      end do
 
-      IF (NEWUNIT == 100) THEN
-         WRITE (ISTDE, *) 'All unit numbers from 23 to 99 are BUSY!'
-         STOP
-      ENDIF
+      if (newunit == 100) then
+         write (istde, *) 'All unit numbers from 23 to 99 are BUSY!'
+         stop
+      endif
 
-      CALL OPENFL (NEWUNIT, FILNAM, 'UNFORMATTED', 'NEW', IERR)
-      IF (IERR == 1) THEN
-         WRITE (ISTDE, *) 'Error when opening "', FILNAM(1:LEN_TRIM(FILNAM)), &
+      call openfl (newunit, filnam, 'UNFORMATTED', 'NEW', ierr)
+      if (ierr == 1) then
+         write (istde, *) 'Error when opening "', filnam(1:len_trim(filnam)), &
             '"'
 
-         STOP
-      ENDIF
+         stop
+      endif
 !
 !   Write the file header
 !
-      WRITE (NEWUNIT) 'G92RWF'
+      write (newunit) 'G92RWF'
 !
 !   Write out the radial wavefunctions
 !
-      DO J = 1, NW
-         MFJ = MF(J)
-         WRITE (NEWUNIT) NP(J), NAK(J), E(J), MFJ
-         WRITE (NEWUNIT) PZ(J), (PF(I,J),I=1,MFJ), (QF(I,J),I=1,MFJ)
-         WRITE (NEWUNIT) (R(I),I=1,MFJ)
-      END DO
+      do j = 1, nw
+         mfj = mf(j)
+         write (newunit) np(j), nak(j), e(j), mfj
+         write (newunit) pz(j), (pf(i,j),i=1,mfj), (qf(i,j),i=1,mfj)
+         write (newunit) (r(i),i=1,mfj)
+      end do
 
-      CLOSE(NEWUNIT)
+      close(newunit)
 !
 !   Deallocate the storage for the radial wavefunctions
 !
-      CALL DALLOC (PF, 'PF', 'WRTRWF')
-      CALL DALLOC (QF, 'QF', 'WQRTRWF')
+      call dalloc (pf, 'PF', 'WRTRWF')
+      call dalloc (qf, 'QF', 'WQRTRWF')
 !
-      RETURN
-      END SUBROUTINE WRTRWF
+      return
+      end subroutine wrtrwf

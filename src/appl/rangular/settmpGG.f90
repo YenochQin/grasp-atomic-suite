@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETTMPGG(NB, K, FILEHEAD)
+      subroutine settmpgg(nb, k, filehead)
 !***********************************************************************
 !   Modified by Gediminas Gaigalas:                         Feb 2017   *
 !                               1) for new spin-angular integration,   *
@@ -9,36 +9,36 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE convrt_I
-      USE openfl_I
+      use convrt_i
+      use openfl_i
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      USE iounit_C
+      use iounit_c
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NB
-      INTEGER, INTENT(IN) :: K
-      CHARACTER, INTENT(IN) :: FILEHEAD*(*)
+      integer, intent(in) :: nb
+      integer, intent(in) :: k
+      character, intent(in) :: filehead*(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER   :: LCK, IERR, LNG
-      CHARACTER :: CK*2
+      integer   :: lck, ierr, lng
+      character :: ck*2
 !-----------------------------------------------
 !
 ! All files  filehead.XX  are UNFORMATTED;
 !
-      LNG = LEN_TRIM(FILEHEAD)
-      CALL CONVRT (K, CK, LCK)
-      CALL OPENFL (K, FILEHEAD(1:LNG)//'.'//CK(1:2), 'UNFORMATTED', &
-            'UNKNOWN', IERR)
-      IF (IERR /= 0) THEN
-         CLOSE(K)
-         WRITE (ISTDE, *) 'Error when opening the tmp files'
-         STOP
-      END IF
-      WRITE (K) 'MCP', NB
-      RETURN
-      END SUBROUTINE SETTMPGG
+      lng = len_trim(filehead)
+      call convrt (k, ck, lck)
+      call openfl (k, filehead(1:lng)//'.'//ck(1:2), 'UNFORMATTED', &
+            'UNKNOWN', ierr)
+      if (ierr /= 0) then
+         close(k)
+         write (istde, *) 'Error when opening the tmp files'
+         stop
+      end if
+      write (k) 'MCP', nb
+      return
+      end subroutine settmpgg

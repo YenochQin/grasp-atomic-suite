@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE PRINTA(ASFA, ASFB, I, J, OMEGA, FACTOR, LINES, LSAME)
+      subroutine printa(asfa, asfb, i, j, omega, factor, lines, lsame)
 !                                                                      *
 !   This  routine  prints the basic oscillator strength  information   *
 !   for transitions between level I and level J.                       *
@@ -14,215 +14,215 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE CUTO_C
-      USE JLABL_C, LABJ=>JLBR, LABP=> JLBP
-      USE OSC_C
-      USE SYMA_C
-      USE PRNT_C
+      use vast_kind_param, only:  double
+      use def_c
+      use cuto_c
+      use jlabl_c, labj=>jlbr, labp=> jlbp
+      use osc_c
+      use syma_c
+      use prnt_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      LOGICAL, INTENT(IN) :: LSAME
-      INTEGER  :: I, J
-      INTEGER, INTENT(INOUT) :: LINES
-      REAL(DOUBLE), INTENT(IN) :: ASFA, ASFB
-      REAL(DOUBLE), INTENT(IN) :: OMEGA, FACTOR
+      logical, intent(in) :: lsame
+      integer  :: i, j
+      integer, intent(inout) :: lines
+      real(double), intent(in) :: asfa, asfb
+      real(double), intent(in) :: omega, factor
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IPAR, JPAR, ISIGNA, ISIGNB
-      REAL(DOUBLE), DIMENSION(10) :: DBLFAC
-      REAL(DOUBLE) :: STFAC, DLL1, OMC, FAAU, FOSC, FBAU, ENG, GGFACTOR, &
-         ACSQ, ABSQ, AC, AB, BC, BB, OSCC, OSCB, SA, SB, AMS, AM, BM, OSCM
-      CHARACTER(LEN=4) :: JLABI, JLABJ, JPARI, JPARJ
-      CHARACTER(LEN=2) :: F1,F2
+      integer :: ipar, jpar, isigna, isignb
+      real(double), dimension(10) :: dblfac
+      real(double) :: stfac, dll1, omc, faau, fosc, fbau, eng, ggfactor, &
+         acsq, absq, ac, ab, bc, bb, oscc, oscb, sa, sb, ams, am, bm, oscm
+      character(len=4) :: jlabi, jlabj, jpari, jparj
+      character(len=2) :: f1,f2
 !-----------------------------------------------
 !
 !
-      DATA DBLFAC/ 3.0000000000D00, 1.5000000000D01, 1.0500000000D02, &
-         9.4500000000D02, 1.0395000000D04, 1.3513500000D05, 2.0270250000D06, &
-         3.4459425000D07, 6.5472907500D08, 1.3749310575D10/
+      data dblfac/ 3.0000000000d00, 1.5000000000d01, 1.0500000000d02, &
+         9.4500000000d02, 1.0395000000d04, 1.3513500000d05, 2.0270250000d06, &
+         3.4459425000d07, 6.5472907500d08, 1.3749310575d10/
 !
 !   Evaluate statistical factors and constants
 !
-      STFAC = IATJPOII(I)
-      DLL1 = DBLE(LK + LK + 1)
-      STFAC = STFAC/DLL1
+      stfac = iatjpoii(i)
+      dll1 = dble(lk + lk + 1)
+      stfac = stfac/dll1
 !
-      OMC = OMEGA/CVAC
+      omc = omega/cvac
 !     OMC = OMEGA/C
-      FAAU = 2.0D00*OMC*STFAC/DBLE(IATJPOFF(J))
-      FOSC = CVAC*STFAC/OMC
+      faau = 2.0d00*omc*stfac/dble(iatjpoff(j))
+      fosc = cvac*stfac/omc
 !     FOSC = C*STFAC/OMC
-      FBAU = PI*FOSC/OMEGA
-      ENG = OMEGA*FACTOR
-      IF (LTC(1)) ENG = FACTOR/OMEGA
+      fbau = pi*fosc/omega
+      eng = omega*factor
+      if (ltc(1)) eng = factor/omega
 !
 !   J/pi labels for levels
 !
-      JLABI = LABJ(IATJPOII(I))
-      JLABJ = LABJ(IATJPOFF(J))
-      IPAR = (IASPARII(I) + 3)/2
-      JPAR = (IASPARFF(J) + 3)/2
-      JPARI = LABP(IPAR)
-      JPARJ = LABP(JPAR)
+      jlabi = labj(iatjpoii(i))
+      jlabj = labj(iatjpoff(j))
+      ipar = (iasparii(i) + 3)/2
+      jpar = (iasparff(j) + 3)/2
+      jpari = labp(ipar)
+      jparj = labp(jpar)
 !GG
-      GGFACTOR = CVAC**(2*LK - 2)*DBLE(LK)*DBLFAC(LK)**2/((2.0D00*DBLE(LK) + &
-         1.0D00)*(DBLE(LK) + 1.0D00)*ABS(OMEGA)**(2*LK - 1))
+      ggfactor = cvac**(2*lk - 2)*dble(lk)*dblfac(lk)**2/((2.0d00*dble(lk) + &
+         1.0d00)*(dble(lk) + 1.0d00)*abs(omega)**(2*lk - 1))
 !GG-end
 !
 !   Calculate Einstein A and B coefficients and oscillator strengths
 !
-      IF (KK == 0) THEN
+      if (kk == 0) then
 !
 !   Electric multipoles
 !
 !   In atomic units
 !
-         IF (ASFA < 0) THEN
-            ISIGNA = -1
-         ELSE
-            ISIGNA = 1
-         ENDIF
-         IF (ASFB < 0) THEN
-            ISIGNB = -1
-         ELSE
-            ISIGNB = 1
-         ENDIF
+         if (asfa < 0) then
+            isigna = -1
+         else
+            isigna = 1
+         endif
+         if (asfb < 0) then
+            isignb = -1
+         else
+            isignb = 1
+         endif
 
-         ACSQ = ASFA**2
-         ABSQ = ASFB**2
-         AC = ACSQ*FAAU
-         AB = ABSQ*FAAU
-         BC = ACSQ*FBAU
-         BB = ABSQ*FBAU
-         OSCC = ACSQ*FOSC
-         OSCB = ABSQ*FOSC
-         SA = OSCC*GGFACTOR
-         SB = OSCB*GGFACTOR
+         acsq = asfa**2
+         absq = asfb**2
+         ac = acsq*faau
+         ab = absq*faau
+         bc = acsq*fbau
+         bb = absq*fbau
+         oscc = acsq*fosc
+         oscb = absq*fosc
+         sa = oscc*ggfactor
+         sb = oscb*ggfactor
 !GG-end
 !
 !   Convert to SI units if option 5 not set
 !
-         IF (.NOT.LTC(7)) THEN
-            AC = AC*FASI
-            AB = AB*FASI
-            BC = BC*FBSI
-            BB = BB*FBSI
-         ENDIF
+         if (.not.ltc(7)) then
+            ac = ac*fasi
+            ab = ab*fasi
+            bc = bc*fbsi
+            bb = bb*fbsi
+         endif
 !
 !   Accumulate total of A coefficients
 !
-         TOTC(J) = TOTC(J) + AC
-         TOTB(J) = TOTB(J) + AB
+         totc(j) = totc(j) + ac
+         totb(j) = totb(j) + ab
 !
 !   Print information if both AC and AB are greater than CUTOFF
 !
-         IF (ABS(AC)>=CUTOFF .AND. ABS(AB)>=CUTOFF) THEN
-            IF (ENG .LT. -1.0d-9) THEN
-               IF (LSAME) THEN
-                  F1 = 'f '
-                  F2 = 'f '
-               ELSE
-                  F1 = 'f2'
-                  F2 = 'f1'
-               END IF
+         if (abs(ac)>=cutoff .and. abs(ab)>=cutoff) then
+            if (eng .lt. -1.0d-9) then
+               if (lsame) then
+                  f1 = 'f '
+                  f2 = 'f '
+               else
+                  f1 = 'f2'
+                  f2 = 'f1'
+               end if
 !
-               WRITE (24, 300) F1,IVECFF(J),JLABJ,JPARJ,F2,IVECII(I),JLABI,JPARI, &
-               -ENG, -AC, -OSCC, -SA !, ASFA
-               WRITE (24, 301) -AB, -OSCB, -SB !, ASFB
-            ELSE IF (ENG .GT. 1.D-9) THEN
-               IF (LSAME) THEN
-                  F1 = 'f '
-                  F2 = 'f '
-               ELSE
-                  F1 = 'f1'
-                  F2 = 'f2'
-               END IF
-               WRITE (24,300) F1,IVECII(I),JLABI,JPARI,F2,IVECFF(J), &
-                     JLABJ,JPARJ,ENG,AC*IATJPOFF(J)/IATJPOII(I),     &
-                     OSCC,SA
-               WRITE (24,301) AB*IATJPOFF(J)/IATJPOII(I),OSCB,SB
-            END IF
-            LINES = LINES + 3
-         ENDIF
+               write (24, 300) f1,ivecff(j),jlabj,jparj,f2,ivecii(i),jlabi,jpari, &
+               -eng, -ac, -oscc, -sa !, ASFA
+               write (24, 301) -ab, -oscb, -sb !, ASFB
+            else if (eng .gt. 1.d-9) then
+               if (lsame) then
+                  f1 = 'f '
+                  f2 = 'f '
+               else
+                  f1 = 'f1'
+                  f2 = 'f2'
+               end if
+               write (24,300) f1,ivecii(i),jlabi,jpari,f2,ivecff(j), &
+                     jlabj,jparj,eng,ac*iatjpoff(j)/iatjpoii(i),     &
+                     oscc,sa
+               write (24,301) ab*iatjpoff(j)/iatjpoii(i),oscb,sb
+            end if
+            lines = lines + 3
+         endif
 !
-      ELSE
+      else
 !
 !   Magnetic multipoles
 !
 !   In atomic units
 !
-         IF (ASFA < 0) THEN
-            ISIGNA = -1
-         ELSE
-            ISIGNA = 1
-         ENDIF
-         AMS = ASFA**2
-         AM = AMS*FAAU
-         BM = AMS*FBAU
-         OSCM = AMS*FOSC
-         SA = OSCM*GGFACTOR*CVAC*CVAC*4
+         if (asfa < 0) then
+            isigna = -1
+         else
+            isigna = 1
+         endif
+         ams = asfa**2
+         am = ams*faau
+         bm = ams*fbau
+         oscm = ams*fosc
+         sa = oscm*ggfactor*cvac*cvac*4
 !
 !   Convert to SI units if option 5 not set
 !
-         IF (.NOT.LTC(7)) THEN
-            AM = AM*FASI
-            BM = AM*FBSI
-         ENDIF
+         if (.not.ltc(7)) then
+            am = am*fasi
+            bm = am*fbsi
+         endif
 !
 !   Accumulate total of A coefficients
 !
-         TOTC(J) = TOTC(J) + AM
-         TOTB(J) = TOTB(J) + AM
+         totc(j) = totc(j) + am
+         totb(j) = totb(j) + am
 !
 !   Print information if AM is greater than CUTOFF
 !
-         IF (ABS(AM) >= CUTOFF) THEN
-            IF (ENG .LE. -1.0D-9) THEN
-               IF (LSAME) THEN
-                  F1 = 'f '
-                  F2 = 'f '
-               ELSE
-                  F1 = 'f2'
-                  F2 = 'f1'
-               END IF
-               WRITE (24,302) F1,IVECFF(J),JLABJ,JPARJ,F2,IVECII(I),&
-                     JLABI,JPARI,-ENG,-AM,-OSCM,-SA
-            ELSE IF (ENG .GT. 1.D-09) THEN
-               IF (LSAME) THEN
-                  F1 = 'f '
-                  F2 = 'f '
-               ELSE
-                  F1 = 'f1'
-                  F2 = 'f2'
-               END IF
-               WRITE (24,302) F1,IVECII(I),JLABI,JPARI,F2,IVECFF(J),&
-                     JLABJ,JPARJ,ENG,AM*IATJPOFF(J)/IATJPOII(I),    &
-                     OSCM,SA
-            END IF
-            LINES = LINES+2
-         ENDIF
+         if (abs(am) >= cutoff) then
+            if (eng .le. -1.0d-9) then
+               if (lsame) then
+                  f1 = 'f '
+                  f2 = 'f '
+               else
+                  f1 = 'f2'
+                  f2 = 'f1'
+               end if
+               write (24,302) f1,ivecff(j),jlabj,jparj,f2,ivecii(i),&
+                     jlabi,jpari,-eng,-am,-oscm,-sa
+            else if (eng .gt. 1.d-09) then
+               if (lsame) then
+                  f1 = 'f '
+                  f2 = 'f '
+               else
+                  f1 = 'f1'
+                  f2 = 'f2'
+               end if
+               write (24,302) f1,ivecii(i),jlabi,jpari,f2,ivecff(j),&
+                     jlabj,jparj,eng,am*iatjpoff(j)/iatjpoii(i),    &
+                     oscm,sa
+            end if
+            lines = lines+2
+         endif
 !
-      ENDIF
+      endif
 !
-      RETURN
+      return
 !
 !cjb  format for highly charged ions         F11.2 -> F13.2
 ! 300 FORMAT(1X,A2,I3,1X,2A4,A2,I3,1X,2A4,0P,F11.2,' C',1P,  &
-  300 FORMAT(1X,A2,I3,1X,2A4,A2,I3,1X,2A4,0P,F13.2,' C',1P,  &
-           3D13.5)
-  301 FORMAT(42X,' B',1P,3D13.5)
+  300 format(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2,' C',1p,  &
+           3d13.5)
+  301 format(42x,' B',1p,3d13.5)
 !cjb  format for highly charged ions         F11.2 -> F13.2
 ! 302 FORMAT(1X,A2,I3,1X,2A4,A2,I3,1X,2A4,0P,F11.2,' M',1P,  &
-  302 FORMAT(1X,A2,I3,1X,2A4,A2,I3,1X,2A4,0P,F13.2,' M',1P,  &
-           3D13.5)
-      RETURN
+  302 format(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2,' M',1p,  &
+           3d13.5)
+      return
 !
-      END SUBROUTINE PRINTA
+      end subroutine printa

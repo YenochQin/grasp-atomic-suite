@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETCSLB(NAME, NCORE, IGG)
+      subroutine setcslb(name, ncore, igg)
 !-----------------------------------------------
 !                                                                      *
 !   Open, check, load data from and close the  .csl  file. This file   *
@@ -15,51 +15,51 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      USE lodcslBio_I
-      IMPLICIT NONE
+      use openfl_i
+      use lodcslbio_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NCORE, IGG
-      CHARACTER, INTENT(IN) :: NAME*128
+      integer  :: ncore, igg
+      character, intent(in) :: name*128
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K, IERR, IOS
-      LOGICAL :: FOUND
-      CHARACTER :: FILNAM*256, RECORD*15, DEFNAM*11, FORM*11, STATUS*3
+      integer :: k, ierr, ios
+      logical :: found
+      character :: filnam*256, record*15, defnam*11, form*11, status*3
 !
 !
 !   The  .csl  file is FORMATTED; it must exist
 !
-      K = INDEX(NAME,' ')
-      FILNAM = NAME(1:K-1)//'.c'
-      FORM = 'FORMATTED'
-      STATUS = 'OLD'
+      k = index(name,' ')
+      filnam = name(1:k-1)//'.c'
+      form = 'FORMATTED'
+      status = 'OLD'
 
 !
-      CALL OPENFL (21, FILNAM, FORM, STATUS, IERR)
-      IF (IERR == 1) THEN
-         WRITE (6, *) 'Error when opening', FILNAM
-         STOP
-      ENDIF
+      call openfl (21, filnam, form, status, ierr)
+      if (ierr == 1) then
+         write (6, *) 'Error when opening', filnam
+         stop
+      endif
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      READ (21, '(1A15)', IOSTAT=IOS) RECORD
-      IF (IOS/=0 .OR. RECORD(1:15)/='Core subshells:') THEN
-         WRITE (6, *) 'Not a Configuration Symmetry List File;'
-         CLOSE(21)
-      ENDIF
+      read (21, '(1A15)', iostat=ios) record
+      if (ios/=0 .or. record(1:15)/='Core subshells:') then
+         write (6, *) 'Not a Configuration Symmetry List File;'
+         close(21)
+      endif
 !
 !   Load data from the  .csl  file
 !
-      CALL LODCSLBio (NCORE,IGG)
+      call lodcslbio (ncore,igg)
 !
 !   Close the  .csl  file
 !
-      CLOSE(21)
+      close(21)
 !
-      RETURN
-      END SUBROUTINE SETCSLB
+      return
+      end subroutine setcslb

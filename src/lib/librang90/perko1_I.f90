@@ -1,11 +1,11 @@
-      MODULE perko1_I
-      INTERFACE
+      module perko1_i
+      interface
 !
-      SUBROUTINE PERKO1(JA,BK,IK,BD,ID)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER,      INTENT(IN)                :: JA
-      INTEGER,      INTENT(OUT), DIMENSION(7) :: IK, ID
-      REAL(DOUBLE), INTENT(OUT), DIMENSION(3) :: BK, BD
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine perko1(ja,bk,ik,bd,id)
+      use vast_kind_param, only:  double
+      integer,      intent(in)                :: ja
+      integer,      intent(out), dimension(7) :: ik, id
+      real(double), intent(out), dimension(3) :: bk, bd
+      end subroutine
+      end interface
+      end module

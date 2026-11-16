@@ -1,12 +1,12 @@
-      MODULE diaga5_I
-      INTERFACE
+      module diaga5_i
+      interface
 !
-      SUBROUTINE DIAGA5(NPEELGG,JA1,KA,IRE,IAT,RECC)
-      USE vast_kind_param,  ONLY:  DOUBLE
-      INTEGER, INTENT(IN)       :: NPEELGG,JA1,KA,IRE
+      subroutine diaga5(npeelgg,ja1,ka,ire,iat,recc)
+      use vast_kind_param,  only:  double
+      integer, intent(in)       :: npeelgg,ja1,ka,ire
 !      INTEGER, INTENT(OUT)      :: IAT
-      INTEGER, INTENT(INOUT)      :: IAT
-      REAL(DOUBLE), INTENT(OUT) :: RECC
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      integer, intent(inout)      :: iat
+      real(double), intent(out) :: recc
+      end subroutine
+      end interface
+      end module

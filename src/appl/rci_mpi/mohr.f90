@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE MOHR(N, KAPPA, Z, FZALFA)
+      subroutine mohr(n, kappa, z, fzalfa)
 !                                                                      *
 !   The  function  F (Z*alpha)  for the  1s  2s  2p-  2p  symmetries   *
 !   is computed here.    A value is obtained by interpolating in, or   *
@@ -18,103 +18,103 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE interp_I
-      IMPLICIT NONE
+      use interp_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: N
-      INTEGER , INTENT(IN) :: KAPPA
-      REAL(DOUBLE)  :: Z
-      REAL(DOUBLE) , INTENT(OUT) :: FZALFA
+      integer , intent(in) :: n
+      integer , intent(in) :: kappa
+      real(double)  :: z
+      real(double) , intent(out) :: fzalfa
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !   Number of data points
-      INTEGER, PARAMETER :: NUMVAL = 12
+      integer, parameter :: numval = 12
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE), DIMENSION(NUMVAL) :: VAL1S, VAL2S, VAL2P1, VAL2P3, ARG
-      REAL(DOUBLE) :: ACCY, VALUE
+      real(double), dimension(numval) :: val1s, val2s, val2p1, val2p3, arg
+      real(double) :: accy, value
 !-----------------------------------------------
 !
 !
 !   1s data :
 !
-      DATA VAL1S/ 10.3168D00, 4.6540D00, 3.2460D00, 2.5519D00, 2.1351D00, &
-         1.8644D00, 1.6838D00, 1.5675D00, 1.5032D00, 1.4880D00, 1.5317D00, &
-         1.6614D00/
+      data val1s/ 10.3168d00, 4.6540d00, 3.2460d00, 2.5519d00, 2.1351d00, &
+         1.8644d00, 1.6838d00, 1.5675d00, 1.5032d00, 1.4880d00, 1.5317d00, &
+         1.6614d00/
 !
 !   2s data:
 !
-      DATA VAL2S/ 10.5468D00, 4.8930D00, 3.5063D00, 2.8391D00, 2.4550D00, &
-         2.2244D00, 2.0948D00, 2.0435D00, 2.0650D00, 2.1690D00, 2.3870D00, &
-         2.7980D00/
+      data val2s/ 10.5468d00, 4.8930d00, 3.5063d00, 2.8391d00, 2.4550d00, &
+         2.2244d00, 2.0948d00, 2.0435d00, 2.0650d00, 2.1690d00, 2.3870d00, &
+         2.7980d00/
 !
 !   2p- data:
 !
-      DATA VAL2P1/ -0.1264D00, -0.1145D00, -0.0922D00, -0.0641D00, -0.0308D00, &
-         0.0082D00, 0.0549D00, 0.1129D00, 0.1884D00, 0.2934D00, 0.4530D00, &
-         0.7250D00/
+      data val2p1/ -0.1264d00, -0.1145d00, -0.0922d00, -0.0641d00, -0.0308d00, &
+         0.0082d00, 0.0549d00, 0.1129d00, 0.1884d00, 0.2934d00, 0.4530d00, &
+         0.7250d00/
 !
 !   2p data:
 !
-      DATA VAL2P3/ 0.1235D00, 0.1303D00, 0.1436D00, 0.1604D00, 0.1794D00, &
-         0.1999D00, 0.2215D00, 0.2440D00, 0.2671D00, 0.2906D00, 0.3141D00, &
-         0.3367D00/
+      data val2p3/ 0.1235d00, 0.1303d00, 0.1436d00, 0.1604d00, 0.1794d00, &
+         0.1999d00, 0.2215d00, 0.2440d00, 0.2671d00, 0.2906d00, 0.3141d00, &
+         0.3367d00/
 !
 !   Z data:
 !
-      DATA ARG/ 1.0D00, 10.0D00, 20.0D00, 30.0D00, 40.0D00, 50.0D00, 60.0D00, &
-         70.0D00, 80.0D00, 90.0D00, 100.0D00, 110.0D00/
+      data arg/ 1.0d00, 10.0d00, 20.0d00, 30.0d00, 40.0d00, 50.0d00, 60.0d00, &
+         70.0d00, 80.0d00, 90.0d00, 100.0d00, 110.0d00/
 !
 !----------------------------------------------------------------------*
 !
 !   Convergence criterion for interpolation
 !
-      DATA ACCY/ 1.0D-03/
+      data accy/ 1.0d-03/
 !
 !   Interpolate or issue error message as appropriate
 !
-      IF (N == 1) THEN
-         IF (KAPPA == (-1)) THEN
-            CALL INTERP (ARG, VAL1S, NUMVAL, Z, VALUE, ACCY)
-         ELSE
-            WRITE (*, 300)
-            WRITE (*, 301) N, KAPPA
-            STOP
-         ENDIF
-      ELSE IF (N == 2) THEN
-         SELECT CASE (KAPPA)
-         CASE (-1)
-            CALL INTERP (ARG, VAL2S, NUMVAL, Z, VALUE, ACCY)
-         CASE (1)
-            CALL INTERP (ARG, VAL2P1, NUMVAL, Z, VALUE, ACCY)
-         CASE (-2)
-            CALL INTERP (ARG, VAL2P3, NUMVAL, Z, VALUE, ACCY)
-         CASE DEFAULT
-            WRITE (*, 300)
-            WRITE (*, 301) N, KAPPA
-            STOP
-         END SELECT
-      ELSE
-         WRITE (*, 300)
-         WRITE (*, 302) N
-         STOP
-      ENDIF
+      if (n == 1) then
+         if (kappa == (-1)) then
+            call interp (arg, val1s, numval, z, value, accy)
+         else
+            write (*, 300)
+            write (*, 301) n, kappa
+            stop
+         endif
+      else if (n == 2) then
+         select case (kappa)
+         case (-1)
+            call interp (arg, val2s, numval, z, value, accy)
+         case (1)
+            call interp (arg, val2p1, numval, z, value, accy)
+         case (-2)
+            call interp (arg, val2p3, numval, z, value, accy)
+         case default
+            write (*, 300)
+            write (*, 301) n, kappa
+            stop
+         end select
+      else
+         write (*, 300)
+         write (*, 302) n
+         stop
+      endif
 !
-      FZALFA = VALUE
+      fzalfa = value
 !
-      RETURN
+      return
 !
-  300 FORMAT('MOHR:')
-  301 FORMAT(' Principal quantum number, ',I12,', kappa, ',1I3,'.')
-  302 FORMAT(' Principal quantum number, ',1I2,', Should be either 1 or 2.')
-      RETURN
+  300 format('MOHR:')
+  301 format(' Principal quantum number, ',i12,', kappa, ',1i3,'.')
+  302 format(' Principal quantum number, ',1i2,', Should be either 1 or 2.')
+      return
 !
-      END SUBROUTINE MOHR
+      end subroutine mohr

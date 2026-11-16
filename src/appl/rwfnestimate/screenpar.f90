@@ -1,7 +1,7 @@
 
 
 !***********************************************************************
-      SUBROUTINE SCREENPAR(NCORE)
+      subroutine screenpar(ncore)
 !
 ! Purpose:
 !   Compute hydrogenic screen parameters
@@ -18,29 +18,29 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE ORB_C
-      USE HYDPAR_C, ONLY: SIGMA
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use orb_c
+      use hydpar_c, only: sigma
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: NCORE
+      integer , intent(in) :: ncore
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NELECTRON, I
+      integer :: nelectron, i
 !-----------------------------------------------
 
        !...Core orbitals
-      NELECTRON = 0
-      DO I = 1, NCORE
-         SIGMA(I) = NELECTRON + (NKJ(I)+1)/2
-         NELECTRON = NELECTRON + NKJ(I) + 1
-      END DO
+      nelectron = 0
+      do i = 1, ncore
+         sigma(i) = nelectron + (nkj(i)+1)/2
+         nelectron = nelectron + nkj(i) + 1
+      end do
 
        !...Peel orbitals
-      SIGMA(NCORE+1:NW) = NELECTRON
+      sigma(ncore+1:nw) = nelectron
 
-      RETURN
-      END SUBROUTINE SCREENPAR
+      return
+      end subroutine screenpar

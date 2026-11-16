@@ -1,9 +1,9 @@
-      MODULE ldlbl1_I
-      INTERFACE
+      module ldlbl1_i
+      interface
 !...Translated by Charlotte Froese Fischer
 !                       Gediminas Gaigalas  10/05/17
-      SUBROUTINE LDLBL1 (NAME)
-      CHARACTER(LEN=24) :: name
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine ldlbl1 (name)
+      character(len=24) :: name
+      end subroutine
+      end interface
+      end module

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE DCBSRW(N, KAPPA, Z, E, RG0, RG, RF, MTP)
+      subroutine dcbsrw(n, kappa, z, e, rg0, rg, rf, mtp)
 !                                                                      *
 !   This subroutine computes the  Dirac-Coulomb  bound-state orbital   *
 !   radial wavefunction.   Equations (13.5) and (13.5') of  Akhiezer   *
@@ -33,218 +33,218 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE parameter_def, ONLY: NNNP
-      USE DEF_C ,          ONLY: C, ACCY
-      USE GRID_C, ONLY: R, NTP=>N
-      USE TATB_C, ONLY: TA, TB
+      use vast_kind_param, only:  double
+      use parameter_def, only: nnnp
+      use def_c ,          only: c, accy
+      use grid_c, only: r, ntp=>n
+      use tatb_c, only: ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE cgamma_I
-      IMPLICIT NONE
+      use cgamma_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: N
-      INTEGER, INTENT(IN) :: KAPPA
-      INTEGER, INTENT(OUT) :: MTP
-      REAL(DOUBLE), INTENT(IN) :: Z
-      REAL(DOUBLE), INTENT(OUT) :: E
-      REAL(DOUBLE), INTENT(OUT) :: RG0
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(INOUT) :: RG
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(OUT) :: RF
+      integer, intent(in) :: n
+      integer, intent(in) :: kappa
+      integer, intent(out) :: mtp
+      real(double), intent(in) :: z
+      real(double), intent(out) :: e
+      real(double), intent(out) :: rg0
+      real(double), dimension(nnnp), intent(inout) :: rg
+      real(double), dimension(nnnp), intent(out) :: rf
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K, NR, NRFAC, I, IORDR1, IORDR2
-      REAL(DOUBLE) :: ALFA, FN, FKAPPA, FK, FNR, ZALFA, GAMMA, TWOGP1, BIGN, &
-         EPS, ARGR, ARGI, RGAMM1, DUMMY, RGAMM2, FAC, FG, FF, FACN, A, AN1, AN2&
-         , B, BN, FDEN, BIGNMK, RHO, RHON, F1, F2, OVLFAC, CUTOFF
+      integer :: k, nr, nrfac, i, iordr1, iordr2
+      real(double) :: alfa, fn, fkappa, fk, fnr, zalfa, gamma, twogp1, bign, &
+         eps, argr, argi, rgamm1, dummy, rgamm2, fac, fg, ff, facn, a, an1, an2&
+         , b, bn, fden, bignmk, rho, rhon, f1, f2, ovlfac, cutoff
 !-----------------------------------------------
 !
 !
 !
 !   Ensure that the principal quantum number is physical
 !
-      IF (N <= 0) THEN
-         WRITE (*, 300)
-         WRITE (*, 301) N
-         STOP
-      ENDIF
+      if (n <= 0) then
+         write (*, 300)
+         write (*, 301) n
+         stop
+      endif
 !
 !   Ensure that the angular quantum number is physical
 !
-      IF (KAPPA == 0) THEN
-         WRITE (*, 300)
-         WRITE (*, 302)
-         STOP
-      ELSE IF (KAPPA == N) THEN
-         WRITE (*, 300)
-         WRITE (*, 303) KAPPA, N
-         STOP
-      ELSE IF (ABS(KAPPA) > N) THEN
-         WRITE (*, 300)
-         WRITE (*, 303) KAPPA, N
-         STOP
-      ENDIF
+      if (kappa == 0) then
+         write (*, 300)
+         write (*, 302)
+         stop
+      else if (kappa == n) then
+         write (*, 300)
+         write (*, 303) kappa, n
+         stop
+      else if (abs(kappa) > n) then
+         write (*, 300)
+         write (*, 303) kappa, n
+         stop
+      endif
 !
 !   Ensure that the charge is physical
 !
-      IF (Z <= 0.0D00) THEN
-         WRITE (*, 300)
-         WRITE (*, 304) Z
-         STOP
-      ELSE IF (Z > C) THEN
-         WRITE (*, 300)
-         WRITE (*, 305) Z, C
-         STOP
-      ENDIF
+      if (z <= 0.0d00) then
+         write (*, 300)
+         write (*, 304) z
+         stop
+      else if (z > c) then
+         write (*, 300)
+         write (*, 305) z, c
+         stop
+      endif
 !
 !   Atomic units
 !
-      ALFA = 1.0D00/C
+      alfa = 1.0d00/c
 !
 !   Now determine all the parameters
 !
-      FN = DBLE(N)
-      FKAPPA = DBLE(KAPPA)
-      K = ABS(KAPPA)
-      FK = DBLE(K)
-      NR = N - K
-      FNR = DBLE(NR)
-      ZALFA = Z*ALFA
-      GAMMA = SQRT(FK*FK - ZALFA*ZALFA)
-      TWOGP1 = GAMMA + GAMMA + 1.0D00
-      BIGN = SQRT(FN*FN - 2.0D00*FNR*(FK - GAMMA))
-      EPS = 1.0D00/SQRT(1.0D00 + (ZALFA/(GAMMA + FNR))**2)
+      fn = dble(n)
+      fkappa = dble(kappa)
+      k = abs(kappa)
+      fk = dble(k)
+      nr = n - k
+      fnr = dble(nr)
+      zalfa = z*alfa
+      gamma = sqrt(fk*fk - zalfa*zalfa)
+      twogp1 = gamma + gamma + 1.0d00
+      bign = sqrt(fn*fn - 2.0d00*fnr*(fk - gamma))
+      eps = 1.0d00/sqrt(1.0d00 + (zalfa/(gamma + fnr))**2)
 !
 !   EPS is the total energy divided by C*C; this must be converted
 !   to the units and reference energy of GRASP
 !
-      E = (1.0D00 - EPS)*C*C
+      e = (1.0d00 - eps)*c*c
 !
 !   Now the normalization constants
 !
-      NRFAC = 1
-      DO I = 1, NR
-         NRFAC = NRFAC*I
-      END DO
+      nrfac = 1
+      do i = 1, nr
+         nrfac = nrfac*i
+      end do
 !
-      ARGR = TWOGP1 + FNR
-      ARGI = 0.0D00
-      CALL CGAMMA (ARGR, ARGI, RGAMM1, DUMMY)
-      ARGR = TWOGP1
-      CALL CGAMMA (ARGR, ARGI, RGAMM2, DUMMY)
+      argr = twogp1 + fnr
+      argi = 0.0d00
+      call cgamma (argr, argi, rgamm1, dummy)
+      argr = twogp1
+      call cgamma (argr, argi, rgamm2, dummy)
 !
-      FAC = -SQRT(RGAMM1)/(RGAMM2*SQRT(DBLE(NRFAC)))*SQRT(Z/(2.0D00*BIGN*BIGN*(&
-         BIGN - FKAPPA)))
+      fac = -sqrt(rgamm1)/(rgamm2*sqrt(dble(nrfac)))*sqrt(z/(2.0d00*bign*bign*(&
+         bign - fkappa)))
 !
 !   Ensure that the slope of the large-component function is
 !   positive at the origin
 !
-      IF (KAPPA > 0) FAC = -FAC
+      if (kappa > 0) fac = -fac
 !
-      FG = FAC*SQRT(1.0D00 + EPS)
-      FF = FAC*SQRT(1.0D00 - EPS)
+      fg = fac*sqrt(1.0d00 + eps)
+      ff = fac*sqrt(1.0d00 - eps)
 !
 !   Now set up the coefficients of the confluent hypergeometric
 !   functions  F (-NR+1,2*GAMMA+1;RHO)  and  F (-NR,2*GAMMA+1;RHO)
 !   in the workspace arrays  TA  and  TB , respectively
 !
-      IF (NR == 0) THEN
-         IORDR1 = 0
-         IORDR2 = 0
-      ELSE
-         IORDR1 = NR - 1
-         IORDR2 = NR
-      ENDIF
+      if (nr == 0) then
+         iordr1 = 0
+         iordr2 = 0
+      else
+         iordr1 = nr - 1
+         iordr2 = nr
+      endif
 !
-      FAC = 1.0D00
-      FACN = 1.0D00
-      A = -FNR
-      AN1 = A + 1.0D00
-      AN2 = A
-      B = TWOGP1
-      BN = B
+      fac = 1.0d00
+      facn = 1.0d00
+      a = -fnr
+      an1 = a + 1.0d00
+      an2 = a
+      b = twogp1
+      bn = b
 !
-      K = 0
-    2 CONTINUE
-      K = K + 1
-      FDEN = 1.0D00/(FACN*BN)
-      IF (K <= IORDR1) TA(K) = AN1*FDEN
-      IF (K <= IORDR2) THEN
-         TB(K) = AN2*FDEN
-         A = A + 1.0D00
-         AN1 = AN1*(A + 1.0D00)
-         AN2 = AN2*A
-         B = B + 1.0D00
-         BN = BN*B
-         FAC = FAC + 1.0D00
-         FACN = FACN*FAC
-         GO TO 2
-      ENDIF
+      k = 0
+    2 continue
+      k = k + 1
+      fden = 1.0d00/(facn*bn)
+      if (k <= iordr1) ta(k) = an1*fden
+      if (k <= iordr2) then
+         tb(k) = an2*fden
+         a = a + 1.0d00
+         an1 = an1*(a + 1.0d00)
+         an2 = an2*a
+         b = b + 1.0d00
+         bn = bn*b
+         fac = fac + 1.0d00
+         facn = facn*fac
+         go to 2
+      endif
 !
 !   Now tabulate the function over the entire grid
 !
-      RG(1) = 0.0D00
-      RF(1) = 0.0D00
-      FAC = (Z + Z)/BIGN
-      BIGNMK = BIGN - FKAPPA
-      DO I = 2, NTP
-         RHO = FAC*R(I)
-         RHON = RHO
-         K = 0
-         F1 = 1.0D00
-         F2 = 1.0D00
-    3    CONTINUE
-         K = K + 1
-         IF (K <= IORDR1) F1 = F1 + TA(K)*RHON
-         IF (K <= IORDR2) THEN
-            F2 = F2 + TB(K)*RHON
-            RHON = RHON*RHO
-            GO TO 3
-         ENDIF
-         F1 = FNR*F1
-         F2 = BIGNMK*F2
-         OVLFAC = EXP((-0.5D00*RHO))*RHO**GAMMA
-         RG(I) = FG*OVLFAC*(F1 - F2)
-         RF(I) = FF*OVLFAC*(F1 + F2)
-      END DO
+      rg(1) = 0.0d00
+      rf(1) = 0.0d00
+      fac = (z + z)/bign
+      bignmk = bign - fkappa
+      do i = 2, ntp
+         rho = fac*r(i)
+         rhon = rho
+         k = 0
+         f1 = 1.0d00
+         f2 = 1.0d00
+    3    continue
+         k = k + 1
+         if (k <= iordr1) f1 = f1 + ta(k)*rhon
+         if (k <= iordr2) then
+            f2 = f2 + tb(k)*rhon
+            rhon = rhon*rho
+            go to 3
+         endif
+         f1 = fnr*f1
+         f2 = bignmk*f2
+         ovlfac = exp((-0.5d00*rho))*rho**gamma
+         rg(i) = fg*ovlfac*(f1 - f2)
+         rf(i) = ff*ovlfac*(f1 + f2)
+      end do
 !
 !   Determine the effective maximum tabulation point based on the
 !   cutoff; define the cutoff conservatively
 !
-      CUTOFF = ACCY*0.1D00
+      cutoff = accy*0.1d00
 !
-      MTP = NTP + 1
-    5 CONTINUE
-      MTP = MTP - 1
+      mtp = ntp + 1
+    5 continue
+      mtp = mtp - 1
 !      IF (ABS(RG(MTP)) < CUTOFF) THEN
-      IF ((ABS(RG(MTP)) < CUTOFF).OR.(ABS(R(MTP)) > 1.D+50)) THEN ! JE: APPLY BOX (R<1.D+50)
-         RG(MTP) = 0.0D00
-         RF(MTP) = 0.0D00
-         GO TO 5
-      ENDIF
+      if ((abs(rg(mtp)) < cutoff).or.(abs(r(mtp)) > 1.d+50)) then ! JE: APPLY BOX (R<1.D+50)
+         rg(mtp) = 0.0d00
+         rf(mtp) = 0.0d00
+         go to 5
+      endif
 !
-      IF (MTP == NTP) WRITE (*, 306) NTP, RG(NTP), CUTOFF
+      if (mtp == ntp) write (*, 306) ntp, rg(ntp), cutoff
 !
 !   Compute the coefficient of R**GAMMA at the origin
 !
-      RG0 = FG*FAC**GAMMA*(FNR - BIGNMK)
+      rg0 = fg*fac**gamma*(fnr - bignmk)
 !
-      RETURN
+      return
 !
-  300 FORMAT('DCBSRW:')
-  301 FORMAT(' Principal quantum number is ',1I3)
-  302 FORMAT(' Angular quantum number is 0')
-  303 FORMAT(' Angular quantum number (',1I3,') is out of range for',&
-         ' principal quantum number (',1I3,')')
-  304 FORMAT(' Nuclear charge (',3P,1D16.7,') is too small')
-  305 FORMAT(' Nuclear charge (',3P,1D16.7,') exceeds C (',1D16.7,')')
-  306 FORMAT(/,/,/,' ***** Warning in SUBROUTINE DCBSRW *****'/,/,&
-         ' Radial grid of insufficient extent:'/,' P(',1I4,') = ',1P,1D10.3,&
-         ', Exceeds cutoff (',1D10.3,')')
-      RETURN
+  300 format('DCBSRW:')
+  301 format(' Principal quantum number is ',1i3)
+  302 format(' Angular quantum number is 0')
+  303 format(' Angular quantum number (',1i3,') is out of range for',&
+         ' principal quantum number (',1i3,')')
+  304 format(' Nuclear charge (',3p,1d16.7,') is too small')
+  305 format(' Nuclear charge (',3p,1d16.7,') exceeds C (',1d16.7,')')
+  306 format(/,/,/,' ***** Warning in SUBROUTINE DCBSRW *****'/,/,&
+         ' Radial grid of insufficient extent:'/,' P(',1i4,') = ',1p,1d10.3,&
+         ', Exceeds cutoff (',1d10.3,')')
+      return
 !
-      END SUBROUTINE DCBSRW
+      end subroutine dcbsrw

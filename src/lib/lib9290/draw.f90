@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE DRAW(P, SP, Q, SQ, MF)
+      subroutine draw(p, sp, q, sq, mf)
 !                                                                      *
 !   This  subroutine  generates  a  printer plot. P and Q are radial   *
 !   functions with the maximum tabulation point MF. SP is the factor   *
@@ -16,139 +16,139 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE GRID_C
-      IMPLICIT NONE
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use grid_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: MF
-      REAL(DOUBLE), INTENT(IN) :: SP
-      REAL(DOUBLE), INTENT(IN) :: SQ
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(IN) :: P
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(IN) :: Q
+      integer, intent(in) :: mf
+      real(double), intent(in) :: sp
+      real(double), intent(in) :: sq
+      real(double), dimension(nnnp), intent(in) :: p
+      real(double), dimension(nnnp), intent(in) :: q
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, IOFFST, IXLOCQ, IXLOCP, IYLOC
-      REAL(DOUBLE) :: SIXTY, FIFT4, OHTHT, DMX, DMN, SPI, SQI, RMX, XSCAL, &
-         YSCAL, SQX, SPX
-      LOGICAL :: FIRST
-      CHARACTER :: CBLANK*132, CDASH*132
+      integer :: i, ioffst, ixlocq, ixlocp, iyloc
+      real(double) :: sixty, fift4, ohtht, dmx, dmn, spi, sqi, rmx, xscal, &
+         yscal, sqx, spx
+      logical :: first
+      character :: cblank*132, cdash*132
 !cjb
 !     CHARACTER , DIMENSION(60) :: CPLOT*132
-      CHARACTER , DIMENSION(MF) :: CPLOT*132
+      character , dimension(mf) :: cplot*132
 !cjb
-      CHARACTER :: CP, CQ
+      character :: cp, cq
 !-----------------------------------------------
-      DATA SIXTY/ 60.0D00/
-      DATA FIFT4/ 54.0D00/
-      DATA OHTHT/ 131.0D00/
+      data sixty/ 60.0d00/
+      data fift4/ 54.0d00/
+      data ohtht/ 131.0d00/
 !
-      DATA FIRST/ .TRUE./
+      data first/ .true./
 
 
 !
 !   This initialization is carried out once per run
 !
-      IF (FIRST) THEN
-         CBLANK(1:1) = '|'
-         CDASH(1:1) = '-'
-         DO I = 2, 131
-            CBLANK(I:I) = ' '
-            CDASH(I:I) = '-'
-         END DO
-         CBLANK(132:132) = '|'
-         CDASH(132:132) = '-'
-         FIRST = .FALSE.
-      ENDIF
+      if (first) then
+         cblank(1:1) = '|'
+         cdash(1:1) = '-'
+         do i = 2, 131
+            cblank(i:i) = ' '
+            cdash(i:i) = '-'
+         end do
+         cblank(132:132) = '|'
+         cdash(132:132) = '-'
+         first = .false.
+      endif
 !
 !   Initialization
 !
-      IF (SQ == 0.0D00) THEN
-         CP = 'X'
-         CQ = '-'
-      ELSE
-         CP = 'P'
-         CQ = 'Q'
-      ENDIF
+      if (sq == 0.0d00) then
+         cp = 'X'
+         cq = '-'
+      else
+         cp = 'P'
+         cq = 'Q'
+      endif
 !
 !   Determine the range of amplitude
 !
-      DMX = MAX(SP*P(1),SQ*Q(1))
-      DMN = MIN(SP*P(1),SQ*Q(1))
-      DO I = 2, MF
-         SPI = SP*P(I)
-         SQI = SQ*Q(I)
-         DMX = MAX(MAX(DMX,SPI),SQI)
-         DMN = MIN(MIN(DMN,SPI),SQI)
-      END DO
+      dmx = max(sp*p(1),sq*q(1))
+      dmn = min(sp*p(1),sq*q(1))
+      do i = 2, mf
+         spi = sp*p(i)
+         sqi = sq*q(i)
+         dmx = max(max(dmx,spi),sqi)
+         dmn = min(min(dmn,spi),sqi)
+      end do
 !
 !   Determine the radial extent of the function
 !
-      RMX = R(MF)
+      rmx = r(mf)
 !
 !   Determine the scale factors
 !
-      IF (DMX==0.0D00 .AND. DMN==0.0D00) THEN
-         WRITE (99, 300)
-         RETURN
-      ELSE
-         XSCAL = FIFT4/ABS(DMX - DMN)
-      ENDIF
-      YSCAL = OHTHT/DBLE(N)
+      if (dmx==0.0d00 .and. dmn==0.0d00) then
+         write (99, 300)
+         return
+      else
+         xscal = fift4/abs(dmx - dmn)
+      endif
+      yscal = ohtht/dble(n)
 !
 !   Locate x = 0 if this is in the range
 !
-      IF (DMX>0.0D00 .AND. DMN<0.0D00) THEN
-         IOFFST = 4 + XSCAL*ABS(DMN)
-      ELSE
-         IOFFST = 1
-      ENDIF
+      if (dmx>0.0d00 .and. dmn<0.0d00) then
+         ioffst = 4 + xscal*abs(dmn)
+      else
+         ioffst = 1
+      endif
 !
 !   Initialize the array CPLOT
 !
-      DO I = 1, 60
-         IF (I==1 .OR. I==IOFFST .OR. I==60) THEN
-            CPLOT(I) = CDASH
-         ELSE
-            CPLOT(I) = CBLANK
-         ENDIF
-      END DO
+      do i = 1, 60
+         if (i==1 .or. i==ioffst .or. i==60) then
+            cplot(i) = cdash
+         else
+            cplot(i) = cblank
+         endif
+      end do
 !
 !   Generate the plot
 !
 !   Note that 'P' is the dominant character
 !
-      SQX = SQ*XSCAL
-      SPX = SP*XSCAL
-      DO I = 1, MF
-         IXLOCQ = NINT(SQX*Q(I)) + IOFFST
-         IXLOCP = NINT(SPX*P(I)) + IOFFST
-         IYLOC = MAX(1,NINT(DBLE(I)*YSCAL))
-         CPLOT(IXLOCQ)(IYLOC:IYLOC) = CQ
-         CPLOT(IXLOCP)(IYLOC:IYLOC) = CP
-      END DO
+      sqx = sq*xscal
+      spx = sp*xscal
+      do i = 1, mf
+         ixlocq = nint(sqx*q(i)) + ioffst
+         ixlocp = nint(spx*p(i)) + ioffst
+         iyloc = max(1,nint(dble(i)*yscal))
+         cplot(ixlocq)(iyloc:iyloc) = cq
+         cplot(ixlocp)(iyloc:iyloc) = cp
+      end do
 !
 !   Print plot
 !
-      WRITE (99, 301)
-      DO I = 60, 1, -1
-         WRITE (99, 302) CPLOT(I)
-      END DO
+      write (99, 301)
+      do i = 60, 1, -1
+         write (99, 302) cplot(i)
+      end do
 !
 !   Plot-information line
 !
-      WRITE (99, 303) RMX, DMX
+      write (99, 303) rmx, dmx
 !
-      RETURN
+      return
 !
-  300 FORMAT(' No plot: function is identically zero')
-  301 FORMAT('1')
-  302 FORMAT(1X,1A132)
-  303 FORMAT(/,50X,1P,' r (max) = ',1D10.3,'Bohr radii,',&
-         ' Maximum of functions = ',1D10.3)
-      RETURN
+  300 format(' No plot: function is identically zero')
+  301 format('1')
+  302 format(1x,1a132)
+  303 format(/,50x,1p,' r (max) = ',1d10.3,'Bohr radii,',&
+         ' Maximum of functions = ',1d10.3)
+      return
 !
-      END SUBROUTINE DRAW
+      end subroutine draw

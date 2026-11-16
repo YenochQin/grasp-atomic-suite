@@ -1,5 +1,5 @@
 !***********************************************************************
-      SUBROUTINE SETMIX(NAME)
+      subroutine setmix(name)
 !
 !   Opens the  .mix  file on stream 25; writes a header to this file.  *
 !                                                                      *
@@ -15,27 +15,27 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE foparm_C
-      USE mcpa_C
-      USE mcpB_C
-      USE orb_C
-      USE hblock_C
-      USE iounit_C
+      use vast_kind_param, only:  double
+      use def_c
+      use foparm_c
+      use mcpa_c
+      use mcpb_c
+      use orb_c
+      use hblock_c
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      IMPLICIT NONE
+      use openfl_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER  :: NAME*(*)
+      character  :: name*(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IERR
+      integer :: ierr
 !-----------------------------------------------
 !     POINTER (PCCMIN,ICCMIN(1))
 !     POINTER (PNTRIQ,RIQDUM)
@@ -45,19 +45,19 @@
 !     POINTER (pncfblk,ncfblk(0:*))
 !
 !-----------------------------------------------------------------------
-      CALL OPENFL (25, NAME, 'UNFORMATTED', 'NEW', IERR)
-      IF (IERR /= 0) THEN
-         WRITE (ISTDE, *) 'Error when opening ', NAME(1:LEN_TRIM(NAME))
-         STOP
-      ENDIF
+      call openfl (25, name, 'UNFORMATTED', 'NEW', ierr)
+      if (ierr /= 0) then
+         write (istde, *) 'Error when opening ', name(1:len_trim(name))
+         stop
+      endif
 !
 !   Write the file header
 !
-      WRITE (25) 'G92MIX'
-      WRITE (25) NELEC, NCF, NW, 0, 0, NBLOCK
+      write (25) 'G92MIX'
+      write (25) nelec, ncf, nw, 0, 0, nblock
 !     ...The above record will be overidden in matrix.f
 !        with the final form of
 !     WRITE (25)  NELEC, NCF, NW, nvectot, nvecsiz, nblock
 
-      RETURN
-      END SUBROUTINE SETMIX
+      return
+      end subroutine setmix

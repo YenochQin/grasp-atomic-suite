@@ -1,14 +1,14 @@
-      MODULE oneparticlejj_I
-      INTERFACE
+      module oneparticlejj_i
+      interface
 !
-      SUBROUTINE ONEPARTICLEJJ(KA,IOPAR,JA,JB,IA1,IA2,VSHELL)
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE parameter_def,   ONLY:  NNNW
+      subroutine oneparticlejj(ka,iopar,ja,jb,ia1,ia2,vshell)
+      use vast_kind_param, only:  double
+      use parameter_def,   only:  nnnw
 !GG      INTEGER NNNW
 !GG      PARAMETER (NNNW = 214)
-      INTEGER, INTENT(IN)  :: KA,IOPAR,JA,JB
-      INTEGER, INTENT(OUT) :: IA1,IA2
-      REAL(DOUBLE), DIMENSION(NNNW), INTENT(OUT) :: VSHELL
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      integer, intent(in)  :: ka,iopar,ja,jb
+      integer, intent(out) :: ia1,ia2
+      real(double), dimension(nnnw), intent(out) :: vshell
+      end subroutine
+      end interface
+      end module

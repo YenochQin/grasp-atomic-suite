@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE TALK(JA, JB, NU, IA, IB, IC, ID, ITYPE, COEF)
+      subroutine talk(ja, jb, nu, ia, ib, ic, id, itype, coef)
 !                                                                      *
 !   Print  coefficients  and  integral  parameters  if IBUG1 > 0 and   *
 !   write to disk.                                                     *
@@ -14,52 +14,52 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE parameter_def,   ONLY:  KEYORB
-      USE BUFFER_C
-      USE debug_C
-      USE orb_C
+      use vast_kind_param, only:  double
+      use parameter_def,   only:  keyorb
+      use buffer_c
+      use debug_c
+      use orb_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE alcbuf_I
-      IMPLICIT NONE
+      use alcbuf_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: JA, JB, NU, IA, IB, IC, ID, ITYPE
-      REAL(DOUBLE), INTENT(IN) :: COEF
+      integer, intent(in) :: ja, jb, nu, ia, ib, ic, id, itype
+      real(double), intent(in) :: coef
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   Print coefficient if requested
 !
-      IF (IBUG1 /= 0) WRITE (99, 300) JA, JB, NP(IA), NH(IA), NP(IB), NH(IB), &
-         NP(IC), NH(IC), NP(ID), NH(ID), NU, ITYPE, COEF
+      if (ibug1 /= 0) write (99, 300) ja, jb, np(ia), nh(ia), np(ib), nh(ib), &
+         np(ic), nh(ic), np(id), nh(id), nu, itype, coef
 !
 !   Increment counter
 !
-      NVCOEF = NVCOEF + 1
+      nvcoef = nvcoef + 1
 !
 !   Ensure that arrays are of adequate size; reallocate if necessary
 !
-      IF (NVCOEF > NBDIM) CALL ALCBUF (2)
+      if (nvcoef > nbdim) call alcbuf (2)
 !
 !   Store integral indices and coefficient in COMMON/BUFFER/
 !
-      LABEL(1,NVCOEF) = IA
-      LABEL(2,NVCOEF) = IB
-      LABEL(3,NVCOEF) = IC
-      LABEL(4,NVCOEF) = ID
-      LABEL(5,NVCOEF) = NU
-      LABEL(6,NVCOEF) = ITYPE
-      COEFF(NVCOEF) = COEF
+      label(1,nvcoef) = ia
+      label(2,nvcoef) = ib
+      label(3,nvcoef) = ic
+      label(4,nvcoef) = id
+      label(5,nvcoef) = nu
+      label(6,nvcoef) = itype
+      coeff(nvcoef) = coef
 !
-      RETURN
+      return
 !
-  300 FORMAT(2(1X,1I2),4(1X,I2,A2),1X,1I2,1X,1I2,1X,1P,D19.12)
-      RETURN
+  300 format(2(1x,1i2),4(1x,i2,a2),1x,1i2,1x,1i2,1x,1p,d19.12)
+      return
 !
-      END SUBROUTINE TALK
+      end subroutine talk

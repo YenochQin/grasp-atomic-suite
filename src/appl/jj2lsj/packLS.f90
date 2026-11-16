@@ -1,7 +1,7 @@
 !
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE PACKLS(M, EL, Q, COUPLE, STR)
+      subroutine packls(m, el, q, couple, str)
 !                                                                      *
 !   Subroutine written by Bin LIU                                      *
 !                                                                      *
@@ -22,444 +22,444 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE lval_I
-      IMPLICIT NONE
+      use lval_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)            :: M
+      integer, intent(in)            :: m
 !GG      CHARACTER(LEN=64), INTENT(OUT) :: STR
-      CHARACTER(LEN=164), INTENT(OUT) :: STR
-      INTEGER, INTENT(IN)            :: Q(*)
-      CHARACTER(LEN=3), INTENT(IN)   :: EL(*), COUPLE(*)
+      character(len=164), intent(out) :: str
+      integer, intent(in)            :: q(*)
+      character(len=3), intent(in)   :: el(*), couple(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER          :: FULL1, FULL, CONST, J, I, K, N, N1, NN, ICORE
-      INTEGER          :: L, PREVIOUS_Q
-      CHARACTER(LEN=1) :: CH1
-      CHARACTER(LEN=3) :: CH3
+      integer          :: full1, full, const, j, i, k, n, n1, nn, icore
+      integer          :: l, previous_q
+      character(len=1) :: ch1
+      character(len=3) :: ch3
 !-----------------------------------------------
 !  FULL   :  4l+2
 !  CONST  :   constant for converting lowercase to uppercase
 !  CH*    :  temporary variables
 !
-      CONST = ICHAR('a') - ICHAR('A')
-      STR = ' '
-      J = 1
-      ICORE = 0
-      FULL = 0; N = 0; FULL1 = 0; N1 = 0
+      const = ichar('a') - ichar('A')
+      str = ' '
+      j = 1
+      icore = 0
+      full = 0; n = 0; full1 = 0; n1 = 0
 !
 !   -----  begin to encode  -----
 !
-      DO I = 1, M
+      do i = 1, m
 !        Fortran does not guarantee short-circuit evaluation of .AND.;
 !        never reference Q(0), even when a condition starts with I /= 1.
-         PREVIOUS_Q = 0
-         IF (I > 1) PREVIOUS_Q = Q(I-1)
-         IF (Q(I) == 0) CYCLE
-         IF (EL(I)(1:1) == ' ') THEN
-            STR(J:J+1) = EL(I)(2:3)
-            K = 2
-         ELSE
-            STR(J:J+2) = EL(I)
-            K = 3
-            IF (EL(I)(3:3) == ' ') K = 2
-         ENDIF
-         CH1 = STR(J+1:J+1)
-         IF (CH1>='A' .AND. CH1<='Z') STR(J+1:J+1) = CHAR(ICHAR(CH1) + CONST)
-         IF(I /= 1) FULL1 = FULL
-         IF(I /= 1) N1 = N
-         L = LVAL(CH1)
-         FULL = 4*L + 2
+         previous_q = 0
+         if (i > 1) previous_q = q(i-1)
+         if (q(i) == 0) cycle
+         if (el(i)(1:1) == ' ') then
+            str(j:j+1) = el(i)(2:3)
+            k = 2
+         else
+            str(j:j+2) = el(i)
+            k = 3
+            if (el(i)(3:3) == ' ') k = 2
+         endif
+         ch1 = str(j+1:j+1)
+         if (ch1>='A' .and. ch1<='Z') str(j+1:j+1) = char(ichar(ch1) + const)
+         if(i /= 1) full1 = full
+         if(i /= 1) n1 = n
+         l = lval(ch1)
+         full = 4*l + 2
 !
 !  -----  convert Qi into character  -----
 !
-         J = J + K
-         N = Q(I)
-         IF (N > 14) STOP 'Too many electrons'
-         IF(I /= 1 .AND. FULL1 /= N1) ICORE = ICORE + FULL1 - N1
+         j = j + k
+         n = q(i)
+         if (n > 14) stop 'Too many electrons'
+         if(i /= 1 .and. full1 /= n1) icore = icore + full1 - n1
 !
 !  -----  If Qi<>1, add Qi
 !           If Qi<4l+1, add TERMi for the shell -----
 !
-         IF (N /= 1) THEN
-            STR(J:J) = '('
-            J = J + 1
-            NN = N
-            IF (N > 9) THEN
-               STR(J:J) = '1'
-               J = J + 1
-               NN = N - 10
-            ENDIF
-            STR(J:J+1) = CHAR(ICHAR('0') + NN)//')'
-            J = J + 2
-            IF(I/=1 .AND. ICORE<2 .AND. PREVIOUS_Q<=1 .AND. N==2) THEN
-               CONTINUE
-            ELSE IF(I/=1 .AND. ICORE==0 .AND. PREVIOUS_Q==FULL1 .AND. N<3  &
-                                                      .AND. M==I) THEN
-               CONTINUE
-            ELSE IF(I/=1 .AND. ICORE==0 .AND. PREVIOUS_Q==FULL1 .AND. L<2  &
-                                                      .AND. M==I) THEN
-               CONTINUE
-            ELSE IF(I/=1 .AND. ICORE==0 .AND. PREVIOUS_Q==FULL1 .AND. L==2 &
-                                          .AND. N > 7 .AND. M==I) THEN
-               CONTINUE
-            ELSE IF(I/=1 .AND. ICORE==0 .AND. PREVIOUS_Q==FULL1 .AND. L==3 &
-                                         .AND. N > 11 .AND. M==I) THEN
-               CONTINUE
-            ELSE IF (N<(FULL-1) .AND. M/=1) THEN
-               CH3 = COUPLE(I)
-               CH1 = CH3(2:2)
-               IF (CH1>='a' .AND. CH1<='z') CH3(2:2) = CHAR(ICHAR(CH1) - CONST)
-               IF(Len_Trim(CH3) == 2) THEN
-                  STR(J:J+1) = TRIM(CH3)
-                  J = J + 2
-               ELSE IF(L == 2 .AND. N < 3) THEN
-                  STR(J:J+1) = CH3(1:2)
-                  J = J + 2
-               ELSE IF(L == 2 .AND. N > 7) THEN
-                  STR(J:J+1) = CH3(1:2)
-                  J = J + 2
-               ELSE IF(L == 2 .AND. N == 3) THEN
-                  IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE
-                    STR(J:J+1) = CH3(1:2)
-                    J = J + 2
-                  END IF
-               ELSE IF(L == 2 .AND. N == 7) THEN
-                  IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE
-                    STR(J:J+1) = CH3(1:2)
-                    J = J + 2
-                  END IF
-               ELSE IF(L == 2 .AND. N == 4) THEN
-                  IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'F') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'P') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'S') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE
-                    STR(J:J+1) = CH3(1:2)
-                    J = J + 2
-                  END IF
-               ELSE IF(L == 2 .AND. N == 6) THEN
-                  IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'F') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'P') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'S') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE
-                    STR(J:J+1) = CH3(1:2)
-                    J = J + 2
-                  END IF
-               ELSE IF(L == 2 .AND. N == 5) THEN
-                  IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'F') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE
-                    STR(J:J+1) = CH3(1:2)
-                    J = J + 2
-                  END IF
-               ELSE IF(L == 3 .AND. N < 3) THEN
-                  STR(J:J+1) = CH3(1:2)
-                  J = J + 2
-               ELSE IF(L == 3 .AND. N > 11) THEN
-                  STR(J:J+1) = CH3(1:2)
-                  J = J + 2
-               ELSE IF(L == 3 .AND. N == 3) THEN
-                  IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'H') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'F') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE
-                    STR(J:J+1) = CH3(1:2)
-                    J = J + 2
-                  END IF
-               ELSE IF(L == 3 .AND. N == 11) THEN
-                  IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'H') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'F') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE
-                    STR(J:J+1) = CH3(1:2)
-                    J = J + 2
-                  END IF
-               ELSE IF(L == 3 .AND. N == 4) THEN
-                  IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'K') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'I') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'H') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'F') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'P') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'L') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'I') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'H') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'S') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE
-                    STR(J:J+1) = CH3(1:2)
-                    J = J + 2
-                  END IF
-               ELSE IF(L == 3 .AND. N == 10) THEN
-                  IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'K') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'I') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'H') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'F') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '3' .AND. CH3(2:2) == 'P') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'L') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'I') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'H') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '1' .AND. CH3(2:2) == 'S') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE
-                    STR(J:J+1) = CH3(1:2)
-                    J = J + 2
-                  END IF
-               ELSE IF(L == 3 .AND. N == 5) THEN
-                  IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'K') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'I') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'H') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'F') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'P') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'M') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'L') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'K') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'I') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'H') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'F') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'P') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE
-                    STR(J:J+1) = CH3(1:2)
-                    J = J + 2
-                  END IF
-               ELSE IF(L == 3 .AND. N == 9) THEN
-                  IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'K') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'I') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'H') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'F') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '4' .AND. CH3(2:2) == 'P') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'M') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'L') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'K') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'I') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'H') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'G') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'F') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'D') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE IF(CH3(1:1) == '2' .AND. CH3(2:2) == 'P') THEN
-                    STR(J:J+2) = CH3
-                    J = J + 3
-                  ELSE
-                    STR(J:J+1) = CH3(1:2)
-                    J = J + 2
-                  END IF
-               ELSE
-                  STR(J:J+2) = CH3
-                  J = J + 3
-               END IF
-            ENDIF
-         ENDIF
+         if (n /= 1) then
+            str(j:j) = '('
+            j = j + 1
+            nn = n
+            if (n > 9) then
+               str(j:j) = '1'
+               j = j + 1
+               nn = n - 10
+            endif
+            str(j:j+1) = char(ichar('0') + nn)//')'
+            j = j + 2
+            if(i/=1 .and. icore<2 .and. previous_q<=1 .and. n==2) then
+               continue
+            else if(i/=1 .and. icore==0 .and. previous_q==full1 .and. n<3  &
+                                                      .and. m==i) then
+               continue
+            else if(i/=1 .and. icore==0 .and. previous_q==full1 .and. l<2  &
+                                                      .and. m==i) then
+               continue
+            else if(i/=1 .and. icore==0 .and. previous_q==full1 .and. l==2 &
+                                          .and. n > 7 .and. m==i) then
+               continue
+            else if(i/=1 .and. icore==0 .and. previous_q==full1 .and. l==3 &
+                                         .and. n > 11 .and. m==i) then
+               continue
+            else if (n<(full-1) .and. m/=1) then
+               ch3 = couple(i)
+               ch1 = ch3(2:2)
+               if (ch1>='a' .and. ch1<='z') ch3(2:2) = char(ichar(ch1) - const)
+               if(len_trim(ch3) == 2) then
+                  str(j:j+1) = trim(ch3)
+                  j = j + 2
+               else if(l == 2 .and. n < 3) then
+                  str(j:j+1) = ch3(1:2)
+                  j = j + 2
+               else if(l == 2 .and. n > 7) then
+                  str(j:j+1) = ch3(1:2)
+                  j = j + 2
+               else if(l == 2 .and. n == 3) then
+                  if(ch3(1:1) == '2' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else
+                    str(j:j+1) = ch3(1:2)
+                    j = j + 2
+                  end if
+               else if(l == 2 .and. n == 7) then
+                  if(ch3(1:1) == '2' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else
+                    str(j:j+1) = ch3(1:2)
+                    j = j + 2
+                  end if
+               else if(l == 2 .and. n == 4) then
+                  if(ch3(1:1) == '3' .and. ch3(2:2) == 'F') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'P') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'S') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else
+                    str(j:j+1) = ch3(1:2)
+                    j = j + 2
+                  end if
+               else if(l == 2 .and. n == 6) then
+                  if(ch3(1:1) == '3' .and. ch3(2:2) == 'F') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'P') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'S') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else
+                    str(j:j+1) = ch3(1:2)
+                    j = j + 2
+                  end if
+               else if(l == 2 .and. n == 5) then
+                  if(ch3(1:1) == '2' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'F') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else
+                    str(j:j+1) = ch3(1:2)
+                    j = j + 2
+                  end if
+               else if(l == 3 .and. n < 3) then
+                  str(j:j+1) = ch3(1:2)
+                  j = j + 2
+               else if(l == 3 .and. n > 11) then
+                  str(j:j+1) = ch3(1:2)
+                  j = j + 2
+               else if(l == 3 .and. n == 3) then
+                  if(ch3(1:1) == '2' .and. ch3(2:2) == 'H') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'F') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else
+                    str(j:j+1) = ch3(1:2)
+                    j = j + 2
+                  end if
+               else if(l == 3 .and. n == 11) then
+                  if(ch3(1:1) == '2' .and. ch3(2:2) == 'H') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'F') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else
+                    str(j:j+1) = ch3(1:2)
+                    j = j + 2
+                  end if
+               else if(l == 3 .and. n == 4) then
+                  if(ch3(1:1) == '3' .and. ch3(2:2) == 'K') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'I') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'H') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'F') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'P') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'L') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'I') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'H') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'S') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else
+                    str(j:j+1) = ch3(1:2)
+                    j = j + 2
+                  end if
+               else if(l == 3 .and. n == 10) then
+                  if(ch3(1:1) == '3' .and. ch3(2:2) == 'K') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'I') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'H') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'F') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '3' .and. ch3(2:2) == 'P') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'L') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'I') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'H') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '1' .and. ch3(2:2) == 'S') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else
+                    str(j:j+1) = ch3(1:2)
+                    j = j + 2
+                  end if
+               else if(l == 3 .and. n == 5) then
+                  if(ch3(1:1) == '4' .and. ch3(2:2) == 'K') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '4' .and. ch3(2:2) == 'I') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '4' .and. ch3(2:2) == 'H') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '4' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '4' .and. ch3(2:2) == 'F') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '4' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '4' .and. ch3(2:2) == 'P') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'M') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'L') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'K') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'I') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'H') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'F') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'P') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else
+                    str(j:j+1) = ch3(1:2)
+                    j = j + 2
+                  end if
+               else if(l == 3 .and. n == 9) then
+                  if(ch3(1:1) == '4' .and. ch3(2:2) == 'K') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '4' .and. ch3(2:2) == 'I') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '4' .and. ch3(2:2) == 'H') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '4' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '4' .and. ch3(2:2) == 'F') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '4' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '4' .and. ch3(2:2) == 'P') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'M') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'L') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'K') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'I') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'H') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'G') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'F') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'D') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else if(ch3(1:1) == '2' .and. ch3(2:2) == 'P') then
+                    str(j:j+2) = ch3
+                    j = j + 3
+                  else
+                    str(j:j+1) = ch3(1:2)
+                    j = j + 2
+                  end if
+               else
+                  str(j:j+2) = ch3
+                  j = j + 3
+               end if
+            endif
+         endif
 !
 !  -----  If i=1 or Qi=4l+2 and i<>m,
 !           insert '.'; else _RESULTANTi.  -----
 !
-         IF(I/=1 .AND. PREVIOUS_Q==FULL1 .AND. N==1 .AND. M/=I .AND.      &
-                                                       ICORE<2) THEN
-            CONTINUE
-         ELSE IF(I/=1 .AND. PREVIOUS_Q==FULL1 .AND. N==FULL-1 .AND.       &
-                                            M/=I .AND. ICORE<2) THEN
-            CONTINUE
-         ELSE IF(I/=1 .AND. PREVIOUS_Q==FULL1 .AND. ICORE==0 .AND.        &
-                                                          M/=I) THEN
-            CONTINUE
-         ELSE IF (I/=1 .AND. N/=FULL .OR. M==I) THEN
-            CH3 = COUPLE(M+I-1)
-            CH1 = CH3(2:2)
-            IF (CH1>='a' .AND. CH1<='z') CH3(2:2)=CHAR(ICHAR(CH1)-CONST)
-            K = 2
-            IF (M == 1) K = 3
-            STR(J:J+K) = '_'//CH3(1:K)
-            J = J + K + 1
-         ENDIF
-         IF (I == M) CYCLE
-         STR(J:J) = '.'
-         J = J + 1
-      END DO
+         if(i/=1 .and. previous_q==full1 .and. n==1 .and. m/=i .and.      &
+                                                       icore<2) then
+            continue
+         else if(i/=1 .and. previous_q==full1 .and. n==full-1 .and.       &
+                                            m/=i .and. icore<2) then
+            continue
+         else if(i/=1 .and. previous_q==full1 .and. icore==0 .and.        &
+                                                          m/=i) then
+            continue
+         else if (i/=1 .and. n/=full .or. m==i) then
+            ch3 = couple(m+i-1)
+            ch1 = ch3(2:2)
+            if (ch1>='a' .and. ch1<='z') ch3(2:2)=char(ichar(ch1)-const)
+            k = 2
+            if (m == 1) k = 3
+            str(j:j+k) = '_'//ch3(1:k)
+            j = j + k + 1
+         endif
+         if (i == m) cycle
+         str(j:j) = '.'
+         j = j + 1
+      end do
 !
 !>>>>>    Because of a compiler error on the SUN, the following is
 !         needed to have the string printed correctly.
 !         STR = STR(1:J)
-      RETURN
-      END SUBROUTINE PACKLS
+      return
+      end subroutine packls

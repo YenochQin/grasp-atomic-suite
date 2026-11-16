@@ -23,7 +23,7 @@
 !***********************************************************************
 !***********************************************************************
 !                                                                      *
-      PROGRAM RSCFmpiVU
+      program rscfmpivu
 !                                                                      *
 !   Entry routine for RSCFVU. Controls the entire computation.      *
 !                                                                      *
@@ -45,48 +45,48 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-       USE default_C
-       USE core_C
-       USE iounit_C
-       USE mpi_C
+       use default_c
+       use core_c
+       use iounit_c
+       use mpi_c
 !GG po to isimti
-       USE TATB_C
+       use tatb_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setdbgmpi_I
-      USE setmc_I
-      USE setcon_I
-      USE setsum_I
-      USE setmcp_I
-      USE setcslmpi_I
-      USE getscdmpi_I
-      USE strsum_I
-      USE setmix_I
-      USE factt_I
-      USE scfmpi_I
-      USE npol_mpi, ONLY: NPOL_ABORT_MPI
-      USE mpiu_I, ONLY: startmpi2
-      USE mpiu_I, ONLY: stopmpi2
-      IMPLICIT NONE
+      use getyn_i
+      use setdbgmpi_i
+      use setmc_i
+      use setcon_i
+      use setsum_i
+      use setmcp_i
+      use setcslmpi_i
+      use getscdmpi_i
+      use strsum_i
+      use setmix_i
+      use factt_i
+      use scfmpi_i
+      use npol_mpi, only: npol_abort_mpi
+      use mpiu_i, only: startmpi2
+      use mpiu_i, only: stopmpi2
+      implicit none
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: NBLK0 = 50  ! Maximum number of blocks
+      integer, parameter :: nblk0 = 50  ! Maximum number of blocks
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NCORE1, NCOUNT1, lenperm, lentmp
-      LOGICAL :: EOL, YES
-      CHARACTER, DIMENSION(NBLK0) :: IDBLK*8
+      integer :: ncore1, ncount1, lenperm, lentmp
+      logical :: eol, yes
+      character, dimension(nblk0) :: idblk*8
 !      CHARACTER (LEN = *) :: host
-      CHARACTER(:), ALLOCATABLE :: npfile
-      CHARACTER (LEN = 3) :: idstring
-      CHARACTER (LEN = 128) :: startdir,permdir,tmpdir,file_rcsl,file1,file2
+      character(:), allocatable :: npfile
+      character (len = 3) :: idstring
+      character (len = 128) :: startdir,permdir,tmpdir,file_rcsl,file1,file2
 !-----------------------------------------------
 !
-      OPEN(UNIT=734,FILE='rmcdhf.log',STATUS='UNKNOWN')
+      open(unit=734,file='rmcdhf.log',status='UNKNOWN')
 
 !=======================================================================
 !  Start mpi --- get processor info: myid, nprocs, host name; and print
@@ -94,29 +94,29 @@
       startdir = '  '  ;    file_rcsl = '  '
       permdir = '  '   ;    file1     = '  '
       tmpdir = '  '    ;    file2     = '  '
-      CALL startmpi2 (myid, nprocs, host, lenhost, ncount1,       &
+      call startmpi2 (myid, nprocs, host, lenhost, ncount1,       &
                       startdir, permdir, tmpdir, 'RMCDHF_MPI')
-      WRITE (idstring, '(I3.3)') myid
-      lenperm = LEN_TRIM (permdir)
-      lentmp = LEN_TRIM (tmpdir)
+      write (idstring, '(I3.3)') myid
+      lenperm = len_trim (permdir)
+      lentmp = len_trim (tmpdir)
 
 !=======================================================================
 !  Get NDEF
 !=======================================================================
 
-      IF (MYID == 0) THEN
-         WRITE (istde,*)
-         WRITE (ISTDE, '(A)') 'Default settings?  (y/n) '
-         YES = GETYN()
-         IF (YES) THEN
-            NDEF = 0
+      if (myid == 0) then
+         write (istde,*)
+         write (istde, '(A)') 'Default settings?  (y/n) '
+         yes = getyn()
+         if (yes) then
+            ndef = 0
 !cjb fort.734
 !cjb        WRITE(734,'(A)') 'y            ! Default settings'
-         ELSE
-            NDEF = 1
-         ENDIF
-      ENDIF
-     CALL MPI_Bcast (NDEF,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+         else
+            ndef = 1
+         endif
+      endif
+     call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,ierr)
 
 !=======================================================================
 !
@@ -133,16 +133,16 @@
 !    SETMIX - mixing coefficients file setup
 !    FACTT - table of logarithms of factorials setup
 !=======================================================================
-      CALL SETDBGmpi (permdir(1:lenperm) // '/rscf92.dbg')
-      CALL SETMC
-      CALL SETCON
+      call setdbgmpi (permdir(1:lenperm) // '/rscf92.dbg')
+      call setmc
+      call setcon
 
-      IF (myid .EQ. 0) CALL SETSUM (permdir(1:lenperm) // '/rmcdhf.sum')
+      if (myid .eq. 0) call setsum (permdir(1:lenperm) // '/rmcdhf.sum')
 
-      CALL SETMCP (NCORE, NBLK0, IDBLK, 'mcp' // idstring)
+      call setmcp (ncore, nblk0, idblk, 'mcp' // idstring)
       if(myid == 0) file_rcsl = permdir(1:lenperm)//'/rcsf.inp'
-      CALL SETCSLmpi (file_rcsl, ncore1, idblk)
-      IF (NCORE /= NCORE1) STOP 'rscfmpivu: ncore'
+      call setcslmpi (file_rcsl, ncore1, idblk)
+      if (ncore /= ncore1) stop 'rscfmpivu: ncore'
 
 !=======================================================================
 !  Gather all remaining information and perform some setup. This
@@ -152,22 +152,22 @@
       if(myid == 0) file1 = permdir(1:lenperm) // '/isodata'
       if(myid == 0) file2 = permdir(1:lenperm) // '/rwfn.inp'
       npfile = ''
-      IF (myid == 0) THEN
-         IF (lenperm == LEN(permdir)) CALL NPOL_ABORT_MPI(MPI_COMM_WORLD, &
+      if (myid == 0) then
+         if (lenperm == len(permdir)) call npol_abort_mpi(mpi_comm_world, &
               'npol: permanent input directory reaches the legacy path limit')
-         npfile = TRIM(permdir) // '/npol.inp'
-      END IF
-      CALL GETSCDmpi (EOL, idblk, file1, file2, npfile)
+         npfile = trim(permdir) // '/npol.inp'
+      end if
+      call getscdmpi (eol, idblk, file1, file2, npfile)
 !     &            permdir(1:lenperm) // '/isodata',
 !     &            permdir(1:lenperm) // '/rwfn.inp')
       file1 = '  '
       if(myid == 0) file1 = permdir(1:lenperm) // '/rmix.out'
-      IF (myid .EQ. 0) THEN
-         CALL STRSUM
-         IF (EOL) CALL SETMIX (file1)
-      ENDIF
+      if (myid .eq. 0) then
+         call strsum
+         if (eol) call setmix (file1)
+      endif
 
-      CALL FACTT
+      call factt
 
 !=======================================================================
 !  Proceed with the SCF calculation close all files except
@@ -177,12 +177,12 @@
       file1 = '  '
       if(myid == 0) file1 = permdir(1:lenperm) // '/rwfn.out'
 
-      CALL scfmpi (EOL, file1)
+      call scfmpi (eol, file1)
 
 !=======================================================================
 !  Execution finished; Statistics output
 !=======================================================================
 
-      CALL stopmpi2 (myid, nprocs, host, lenhost, ncount1, 'RMCDHF_MPI')
+      call stopmpi2 (myid, nprocs, host, lenhost, ncount1, 'RMCDHF_MPI')
 
-      END PROGRAM RSCFmpiVU
+      end program rscfmpivu

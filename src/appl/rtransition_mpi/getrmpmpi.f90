@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GETRMP
+      subroutine getrmp
 !                                                                      *
 !   Interactively  determines the  list of radiation multipolarities   *
 !   and parities. This is loadad into COMMON/OSC6/.                    *
@@ -16,136 +16,136 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE memory_man
-      USE OFFD_C
-      USE osc_C, ONLY: NKP, KP
-      USE mpi_C
+      use memory_man
+      use offd_c
+      use osc_c, only: nkp, kp
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      IMPLICIT NONE
+      use getyn_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NDKP, ISTART, I, IEND, LENTH, IOS, MULT
-      REAL, DIMENSION(3) :: CNUM
-      LOGICAL :: LELEC, LMAGN, YES
-      CHARACTER :: RECORD*256, RECI
+      integer :: ndkp, istart, i, iend, lenth, ios, mult
+      real, dimension(3) :: cnum
+      logical :: lelec, lmagn, yes
+      character :: record*256, reci
 !-----------------------------------------------
 !
 !
 !   Initial allocation for PNTRKP
 !
-      NDKP = 1
-      CALL ALLOC (KP, NDKP, 'KP', 'GETRMP' )
-      IF (myid .EQ. 0) THEN
+      ndkp = 1
+      call alloc (kp, ndkp, 'KP', 'GETRMP' )
+      if (myid .eq. 0) then
 !
 !   Entry message
 !
-    1    CONTINUE
-         WRITE (6, *) 'Enter the list of transition specifications'
-         WRITE (6, *) ' e.g.,  E1,M2  or  E1 M2  or  E1;M2 :'
+    1    continue
+         write (6, *) 'Enter the list of transition specifications'
+         write (6, *) ' e.g.,  E1,M2  or  E1 M2  or  E1;M2 :'
 !
 !   Initialise NKP
 !
-    2    CONTINUE
-         READ (*, '(A)') RECORD
-         NKP = 0
+    2    continue
+         read (*, '(A)') record
+         nkp = 0
 !
 !   Parse RECORD from left to right
 !
-         ISTART = 0
-         I = 1
-    3    CONTINUE
-         RECI = RECORD(I:I)
-         IF (RECI/=' ' .AND. RECI/=',' .AND. RECI/=';') THEN
-            IF (ISTART == 0) ISTART = I
-         ELSE
-            IF (ISTART /= 0) THEN
-               IEND = I - 1
-               RECI = RECORD(ISTART:ISTART)
-               IF (RECI == 'E') THEN
-                  LELEC = .TRUE.
-                  LMAGN = .FALSE.
-               ELSE IF (RECI == 'M') THEN
-                  LELEC = .FALSE.
-                  LMAGN = .TRUE.
-               ELSE
-                  WRITE (6, *) 'GETRMP: Transitions must be of type'
-                  WRITE (6, *) ' E or type M; reenter ...'
-                  GO TO 2
-               ENDIF
-               LENTH = IEND - ISTART
-               IF (LENTH /= 1) THEN
-                  WRITE (6, *) 'GETRMP: Transition multipolarities'
-                  WRITE (6, *) ' must be integers between 1 and 9;'
-                  WRITE (6, *) ' reenter ...'
-                  GO TO 2
-               ENDIF
-               RECI = RECORD(IEND:IEND)
-               READ (RECI, '(1I1)', IOSTAT=IOS) MULT
-               IF (IOS /= 0) THEN
-                  WRITE (6, *) 'GETRMP: Unable to decode multipolarity'
-                  WRITE (6, *) ' '//RECI//'; reenter ...'
-                  GO TO 2
-               ENDIF
-               NKP = NKP + 1
-               IF (NKP > NDKP) THEN
-                  CALL RALLOC (KP, NKP, 'KP', 'GETRMP' )
-                  NDKP = NKP
-               ENDIF
-               IF (LELEC) THEN
-                  KP(NKP) = MULT*(-1)**MULT
-               ELSE IF (LMAGN) THEN
-                  KP(NKP) = MULT*(-1)**(MULT + 1)
-               ENDIF
-               ISTART = 0
-            ENDIF
-         ENDIF
+         istart = 0
+         i = 1
+    3    continue
+         reci = record(i:i)
+         if (reci/=' ' .and. reci/=',' .and. reci/=';') then
+            if (istart == 0) istart = i
+         else
+            if (istart /= 0) then
+               iend = i - 1
+               reci = record(istart:istart)
+               if (reci == 'E') then
+                  lelec = .true.
+                  lmagn = .false.
+               else if (reci == 'M') then
+                  lelec = .false.
+                  lmagn = .true.
+               else
+                  write (6, *) 'GETRMP: Transitions must be of type'
+                  write (6, *) ' E or type M; reenter ...'
+                  go to 2
+               endif
+               lenth = iend - istart
+               if (lenth /= 1) then
+                  write (6, *) 'GETRMP: Transition multipolarities'
+                  write (6, *) ' must be integers between 1 and 9;'
+                  write (6, *) ' reenter ...'
+                  go to 2
+               endif
+               reci = record(iend:iend)
+               read (reci, '(1I1)', iostat=ios) mult
+               if (ios /= 0) then
+                  write (6, *) 'GETRMP: Unable to decode multipolarity'
+                  write (6, *) ' '//reci//'; reenter ...'
+                  go to 2
+               endif
+               nkp = nkp + 1
+               if (nkp > ndkp) then
+                  call ralloc (kp, nkp, 'KP', 'GETRMP' )
+                  ndkp = nkp
+               endif
+               if (lelec) then
+                  kp(nkp) = mult*(-1)**mult
+               else if (lmagn) then
+                  kp(nkp) = mult*(-1)**(mult + 1)
+               endif
+               istart = 0
+            endif
+         endif
 !
-         IF (I < 256) THEN
-            I = I + 1
-            GO TO 3
-         ENDIF
+         if (i < 256) then
+            i = i + 1
+            go to 3
+         endif
 !
-         IF (NKP == 0) GO TO 1
-       ENDIF !myid=0
-       CALL MPI_Bcast(NKP,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+         if (nkp == 0) go to 1
+       endif !myid=0
+       call mpi_bcast(nkp,1,mpi_integer,0,mpi_comm_world,ierr)
 !
 !   Trim array to the exact size
 !
-      IF (NDKP /= NKP) CALL RALLOC (KP, NKP, 'KP', 'GETRMP')
-      CALL MPI_Bcast(KP(1),NKP,MPI_INTEGER,0,MPI_COMM_WORLD, ierr)
+      if (ndkp /= nkp) call ralloc (kp, nkp, 'KP', 'GETRMP')
+      call mpi_bcast(kp(1),nkp,mpi_integer,0,mpi_comm_world, ierr)
 !
 !   If M1 or E2 inquire if the transitions are between levels
 !   with different J quantum numbers.
 !
-      IF(myid == 0) THEN
-         DO I = 1, NKP
-            IF (KP(I) == 1) THEN
-               WRITE (*, *)                                         &
+      if(myid == 0) then
+         do i = 1, nkp
+            if (kp(i) == 1) then
+               write (*, *)                                         &
                'M1 transitions only between levels with different J?'
-               YES = GETYN()
-               IF (YES) THEN
-                  NOFFD1 = 1
-               ELSE
-                  NOFFD1 = 0
-               ENDIF
-            ENDIF
-            IF (KP(I) /= 2) CYCLE
-            WRITE (*, *)                                            &
+               yes = getyn()
+               if (yes) then
+                  noffd1 = 1
+               else
+                  noffd1 = 0
+               endif
+            endif
+            if (kp(i) /= 2) cycle
+            write (*, *)                                            &
             'E2 transitions only between levels with different J?'
-            YES = GETYN()
-            IF (YES) THEN
-               NOFFD2 = 1
-            ELSE
-               NOFFD2 = 0
-            ENDIF
-         END DO
-      ENDIF !myid=0
-      CALL MPI_Bcast(NOFFD1,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(NOFFD2,1,MPI_INTEGER,0,MPI_COMM_WORLD, ierr)
+            yes = getyn()
+            if (yes) then
+               noffd2 = 1
+            else
+               noffd2 = 0
+            endif
+         end do
+      endif !myid=0
+      call mpi_bcast(noffd1,1,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast(noffd2,1,mpi_integer,0,mpi_comm_world, ierr)
 !
-      RETURN
-      END SUBROUTINE GETRMP
+      return
+      end subroutine getrmp

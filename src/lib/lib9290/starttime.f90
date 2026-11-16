@@ -11,7 +11,7 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: ncount1
-      CHARACTER (LEN = *), INTENT(IN) :: PROGNAME
+      character (len = *), intent(in) :: progname
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE LDCSL2(NCORE, NAME)
+      subroutine ldcsl2(ncore, name)
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -18,26 +18,26 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE orb_C
-      USE biorb_C
+      use vast_kind_param, only:  double
+      use def_c
+      use orb_c
+      use biorb_c
 
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE lodcsl_I
-      IMPLICIT NONE
+      use lodcsl_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(OUT) :: NCORE
-      CHARACTER , INTENT(IN) :: NAME*24
+      integer , intent(out) :: ncore
+      character , intent(in) :: name*24
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, IOS, NCORER, I
-      CHARACTER :: RECORD*15
+      integer :: j, ios, ncorer, i
+      character :: record*15
 !-----------------------------------------------
 !
 !
@@ -46,30 +46,30 @@
 !
 !   The  .csl  file is FORMATTED; it must exist
 !
-      J = INDEX(NAME,' ')
-      OPEN(UNIT=21, FILE=NAME(1:J-1)//'.c', FORM='FORMATTED', STATUS='OLD', &
-         POSITION='asis')
+      j = index(name,' ')
+      open(unit=21, file=name(1:j-1)//'.c', form='FORMATTED', status='OLD', &
+         position='asis')
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      READ (21, '(1A15)', IOSTAT=IOS) RECORD
-      IF (IOS/=0 .OR. RECORD(1:15)/='Core subshells:') THEN
-         WRITE (6, *) 'Not a Configuration Symmetry List File;'
-         CLOSE(21)
-         STOP
-      ENDIF
+      read (21, '(1A15)', iostat=ios) record
+      if (ios/=0 .or. record(1:15)/='Core subshells:') then
+         write (6, *) 'Not a Configuration Symmetry List File;'
+         close(21)
+         stop
+      endif
 !
 !   Load data from the  .csl  file
 !
-      CALL LODCSL (NCORER)
+      call lodcsl (ncorer)
 !
 !   Close the  .csl  file
 !
-      CLOSE(21)
+      close(21)
 !
 !   Check if the core should be redefined
 !
-      NCORE = NCORER
+      ncore = ncorer
 !      DO 3 I = NCORER+1,NW
 !         IFULLI = NKJ(I)+1
 !         DO 2 J = 1,NCF
@@ -82,13 +82,13 @@
 !         NCORE = NCORE+1
 !    3 CONTINUE
 !
-      NELECFF = NELEC
-      NWFF = NW
-      NCFFF = NCF
-      NHFF(:NW) = NH(:NW)
-      NPFF(:NW) = NP(:NW)
-      NAKFF(:NW) = NAK(:NW)
-      NKLFF(:NW) = NKL(:NW)
-      NKJFF(:NW) = NKJ(:NW)
-      RETURN
-      END SUBROUTINE LDCSL2
+      nelecff = nelec
+      nwff = nw
+      ncfff = ncf
+      nhff(:nw) = nh(:nw)
+      npff(:nw) = np(:nw)
+      nakff(:nw) = nak(:nw)
+      nklff(:nw) = nkl(:nw)
+      nkjff(:nw) = nkj(:nw)
+      return
+      end subroutine ldcsl2

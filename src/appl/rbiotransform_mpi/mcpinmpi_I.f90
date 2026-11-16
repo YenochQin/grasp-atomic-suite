@@ -1,13 +1,13 @@
-      MODULE mcpin_I
-      INTERFACE
+      module mcpin_i
+      interface
 !...Translated by Charlotte Froese Fischer
 !                       Gediminas Gaigalas  10/05/17
-      SUBROUTINE mcpin (NAME, startdir, IK, NTESTG, INPCI)
-      CHARACTER (LEN = 24), INTENT(IN) :: NAME
-      CHARACTER(LEN=128), INTENT(IN) :: startdir
-      INTEGER, INTENT(IN) :: IK
-      INTEGER, INTENT(IN) :: NTESTG
-      INTEGER :: INPCI
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine mcpin (name, startdir, ik, ntestg, inpci)
+      character (len = 24), intent(in) :: name
+      character(len=128), intent(in) :: startdir
+      integer, intent(in) :: ik
+      integer, intent(in) :: ntestg
+      integer :: inpci
+      end subroutine
+      end interface
+      end module

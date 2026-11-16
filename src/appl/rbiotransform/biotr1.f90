@@ -1,7 +1,7 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE BIOTR1(PI, QI, NLI, NINSHLI, PF, QF, NLF, NINSHLF, &
-             NGRID, MXL, SCR, LSCR, NTESTG, CISHL, CICI, CFSHL, CFCI)
+      subroutine biotr1(pi, qi, nli, ninshli, pf, qf, nlf, ninshlf, &
+             ngrid, mxl, scr, lscr, ntestg, cishl, cici, cfshl, cfci)
 !                                                                      *
 ! Generate Matrices for rotating radial functions and                  *
 ! for counter rotating CI coefficients                                 *
@@ -64,12 +64,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ifnmnx_I
-      USE ielsum_I
+      use ifnmnx_i
+      use ielsum_i
 !      USE gets_I
 !      USE wrtmat_I
 !      USE copvec_I
@@ -80,159 +80,159 @@
 !      USE scalve_I
 !      USE setvec_I
 !      USE pamtmt_I
-      USE copvec_I, ONLY: copvec
-      USE gets_I, ONLY: gets
-      USE invmat_I, ONLY: invmat
-      USE matml4_I, ONLY: matml4
-      USE pamtmt_I, ONLY: pamtmt
-      USE scalve_I, ONLY: scalve
-      USE setvec_I, ONLY: setvec
-      USE trpmat_I, ONLY: trpmat
-      USE ulla_I, ONLY: ulla
-      USE wrtmat_I, ONLY: wrtmat
-      IMPLICIT NONE
+      use copvec_i, only: copvec
+      use gets_i, only: gets
+      use invmat_i, only: invmat
+      use matml4_i, only: matml4
+      use pamtmt_i, only: pamtmt
+      use scalve_i, only: scalve
+      use setvec_i, only: setvec
+      use trpmat_i, only: trpmat
+      use ulla_i, only: ulla
+      use wrtmat_i, only: wrtmat
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NGRID,  MXL
-      INTEGER, INTENT(IN) :: LSCR,  NTESTG
-      INTEGER, DIMENSION(MXL)  :: NLI, NINSHLI, NLF, NINSHLF
+      integer, intent(in) :: ngrid,  mxl
+      integer, intent(in) :: lscr,  ntestg
+      integer, dimension(mxl)  :: nli, ninshli, nlf, ninshlf
 !     The following have dimensions (NGRID:*)
 !GG      REAL(DOUBLE), DIMENSION(:,:), pointer :: PI, QI, PF, QF
-      REAL(DOUBLE), DIMENSION(NGRID,*) :: PI, QI, PF, QF
+      real(double), dimension(ngrid,*) :: pi, qi, pf, qf
 !     The following have fixed dimensions (NGRID, NLMAX)
-      REAL(DOUBLE), DIMENSION(*)  :: CISHL, CFSHL
+      real(double), dimension(*)  :: cishl, cfshl
 !     The work array
 !     REAL(DOUBLE), DIMENSION(LWORK1) :: work
 !     Th following have fixed dimensions (20*NLMAX*NLMAX)
-      REAL(DOUBLE), DIMENSION(*) :: cici, cfci
-      REAL(DOUBLE), DIMENSION(*) :: SCR
+      real(double), dimension(*) :: cici, cfci
+      real(double), dimension(*) :: scr
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NTESTL, NTEST, ILI, ILF, NLIMX, NLFMX, NLIFMX, NLTI, &
-                 NLTF, KFREE, KLPI, KLPF, KLPIF, KLSTOT, KLSIF, KLSIFI, &
-                 KLCI, KLCF, KLSCR, L, IIOFF, IFOFF, NI, NF, NIFMN, III,&
-                 JJJ, KLPMX, KLPMN, NMX, NMN, KLCMX, KLCMN, NDIFF, J, &
-                 KLTI, I, KLTF
-      REAL(DOUBLE) :: TII, TIII
+      integer :: ntestl, ntest, ili, ilf, nlimx, nlfmx, nlifmx, nlti, &
+                 nltf, kfree, klpi, klpf, klpif, klstot, klsif, klsifi, &
+                 klci, klcf, klscr, l, iioff, ifoff, ni, nf, nifmn, iii,&
+                 jjj, klpmx, klpmn, nmx, nmn, klcmx, klcmn, ndiff, j, &
+                 klti, i, kltf
+      real(double) :: tii, tiii
 !-----------------------------------------------
 !
-      NTESTL = 0
-      NTEST = MAX(NTESTL,NTESTG)
-      IF (NTEST >= 1) THEN
-         WRITE (6, *)
-         WRITE (6, *) '                   *************************'
-         WRITE (6, *) '                   *   Entering BIOTR1     *'
-         WRITE (6, *) '                   *************************'
-         WRITE (6, *)
-      ENDIF
+      ntestl = 0
+      ntest = max(ntestl,ntestg)
+      if (ntest >= 1) then
+         write (6, *)
+         write (6, *) '                   *************************'
+         write (6, *) '                   *   Entering BIOTR1     *'
+         write (6, *) '                   *************************'
+         write (6, *)
+      endif
 !
 !. Scratch should at least be of length
 !
-      ILI = 1
-      ILF = 1
+      ili = 1
+      ilf = 1
 !
 !. Largest number of shells of a given symmetry
 !
-      NLIMX = IFNMNX(NLI,MXL,1)
-      NLFMX = IFNMNX(NLF,MXL,1)
-      NLIFMX = MAX(NLIMX,NLFMX)
-      IF (NTEST >= 10) WRITE (6, *) ' NLIMX,NLFMX NLIFMX ', NLIMX, NLFMX, &
-         NLIFMX
+      nlimx = ifnmnx(nli,mxl,1)
+      nlfmx = ifnmnx(nlf,mxl,1)
+      nlifmx = max(nlimx,nlfmx)
+      if (ntest >= 10) write (6, *) ' NLIMX,NLFMX NLIFMX ', nlimx, nlfmx, &
+         nlifmx
 !
 !. Total numner of shells
 !
-      NLTI = IELSUM(NLI,MXL)
-      NLTF = IELSUM(NLF,MXL)
-      IF (NTEST >= 10) WRITE (6, *) ' NLTI NLTF', NLTI, NLTF
+      nlti = ielsum(nli,mxl)
+      nltf = ielsum(nlf,mxl)
+      if (ntest >= 10) write (6, *) ' NLTI NLTF', nlti, nltf
 !
 ! Scratch space for orbital rotations
-      KFREE = 1
+      kfree = 1
 !
-      KLPI = KFREE
-      KFREE = KFREE + NLIMX*NGRID
-      WRITE (6, *) ' In biotrn: KLPI    = ', KLPI
-      WRITE (6, *) '            KFREE   = ', KFREE
+      klpi = kfree
+      kfree = kfree + nlimx*ngrid
+      write (6, *) ' In biotrn: KLPI    = ', klpi
+      write (6, *) '            KFREE   = ', kfree
 !
-      KLPF = KFREE
-      KFREE = KFREE + NLFMX*NGRID
-      WRITE (6, *) ' In biotrn: KLPF    = ', KLPF
-      WRITE (6, *) '            KFREE   = ', KFREE
+      klpf = kfree
+      kfree = kfree + nlfmx*ngrid
+      write (6, *) ' In biotrn: KLPF    = ', klpf
+      write (6, *) '            KFREE   = ', kfree
 !
-      KLPIF = KFREE
-      KFREE = KFREE + NLIFMX*NGRID
-      WRITE (6, *) ' In biotrn: KLPIF   = ', KLPIF
-      WRITE (6, *) '            KFREE   = ', KFREE
+      klpif = kfree
+      kfree = kfree + nlifmx*ngrid
+      write (6, *) ' In biotrn: KLPIF   = ', klpif
+      write (6, *) '            KFREE   = ', kfree
 !
 !. Total overlap matrix
 !
-      KLSTOT = KFREE
-      KFREE = KFREE + NLTI*NLTF
-      WRITE (6, *) ' In biotrn: KLSTOT  = ', KLSTOT
-      WRITE (6, *) '            KFREE   = ', KFREE
+      klstot = kfree
+      kfree = kfree + nlti*nltf
+      write (6, *) ' In biotrn: KLSTOT  = ', klstot
+      write (6, *) '            KFREE   = ', kfree
 !
-      KLSIF = KFREE
-      KFREE = KFREE + NLIFMX**2
-      WRITE (6, *) ' In biotrn: KLSIF   = ', KLSIF
-      WRITE (6, *) '            KFREE   = ', KFREE
+      klsif = kfree
+      kfree = kfree + nlifmx**2
+      write (6, *) ' In biotrn: KLSIF   = ', klsif
+      write (6, *) '            KFREE   = ', kfree
 !
-      KLSIFI = KFREE
-      KFREE = KFREE + NLIFMX**2
-      WRITE (6, *) ' In biotrn: KLSIFI  = ', KLSIFI
-      WRITE (6, *) '            KFREE   = ', KFREE
+      klsifi = kfree
+      kfree = kfree + nlifmx**2
+      write (6, *) ' In biotrn: KLSIFI  = ', klsifi
+      write (6, *) '            KFREE   = ', kfree
 !
-      KLCI = KFREE
-      KFREE = KFREE + NLIFMX**2
-      WRITE (6, *) ' In biotrn: KLCI    = ', KLCI
-      WRITE (6, *) '            KFREE   = ', KFREE
+      klci = kfree
+      kfree = kfree + nlifmx**2
+      write (6, *) ' In biotrn: KLCI    = ', klci
+      write (6, *) '            KFREE   = ', kfree
 !
-      KLCF = KFREE
-      KFREE = KFREE + NLIFMX**2
-      WRITE (6, *) ' In biotrn: KLCF    = ', KLCF
-      WRITE (6, *) '            KFREE   = ', KFREE
+      klcf = kfree
+      kfree = kfree + nlifmx**2
+      write (6, *) ' In biotrn: KLCF    = ', klcf
+      write (6, *) '            KFREE   = ', kfree
 !
-      KLSCR = KFREE
-      KFREE = KFREE + NLIFMX**2 + NLIFMX*(NLIFMX + 1)
-      WRITE (6, *) ' In biotrn: KLSCR   = ', KLSCR
-      WRITE (6, *) '            KFREE   = ', KFREE
-      WRITE (6, *) '         =>  FREE =     ', KFREE
+      klscr = kfree
+      kfree = kfree + nlifmx**2 + nlifmx*(nlifmx + 1)
+      write (6, *) ' In biotrn: KLSCR   = ', klscr
+      write (6, *) '            KFREE   = ', kfree
+      write (6, *) '         =>  FREE =     ', kfree
 !
 !. Check length of scratch
 !
-      IF (LSCR <= KFREE - 1) THEN
-       WRITE (6,*)' BIOTR1 in trouble ! '
-       WRITE (6,*)' Increase dimension of scratch before call to BIOTR1'
-       WRITE (6,*)' Current and required length (LSCR,KFREE-1)', LSCR, &
-            KFREE - 1
-       STOP 'Increase LWORK before call to BIOTR1'
-       ENDIF
+      if (lscr <= kfree - 1) then
+       write (6,*)' BIOTR1 in trouble ! '
+       write (6,*)' Increase dimension of scratch before call to BIOTR1'
+       write (6,*)' Current and required length (LSCR,KFREE-1)', lscr, &
+            kfree - 1
+       stop 'Increase LWORK before call to BIOTR1'
+       endif
 !
 !. Obtain overlap matrix
 !
-      CALL GETS (SCR(KLSTOT), NLTI,NLTF)
+      call gets (scr(klstot), nlti,nltf)
 
-      DO L = 1, MXL
-         IF (NTEST >= 5) THEN
-            WRITE (6, *) '   L = ', L
-            WRITE (6, *) '       Orbital rotation...'
-         ENDIF
+      do l = 1, mxl
+         if (ntest >= 5) then
+            write (6, *) '   L = ', l
+            write (6, *) '       Orbital rotation...'
+         endif
 !
 !. Offsets for given L in shell matrices
 !
-         IF (L == 1) THEN
-            IIOFF = 1
-            IFOFF = 1
-         ELSE
-            IIOFF = IIOFF + NLI(L-1)**2
-            IFOFF = IFOFF + NLF(L-1)**2
-         ENDIF
-         IF (NTEST >= 1) THEN
-           WRITE (6, *)
-           WRITE (6, *) &
-           ' BIOTRN : Information on transformations of shells with L =',L
-           WRITE (6, *)
-         ENDIF
+         if (l == 1) then
+            iioff = 1
+            ifoff = 1
+         else
+            iioff = iioff + nli(l-1)**2
+            ifoff = ifoff + nlf(l-1)**2
+         endif
+         if (ntest >= 1) then
+           write (6, *)
+           write (6, *) &
+           ' BIOTRN : Information on transformations of shells with L =',l
+           write (6, *)
+         endif
 !
 ! =========================================================
 ! 1 : Obtain Biorthogonal forms of initial and final shells
@@ -263,220 +263,220 @@
 !
 ! With Y = -S-1*X
 !
-         NI = NLI(L)
-         NF = NLF(L)
+         ni = nli(l)
+         nf = nlf(l)
 !
 !.1.1 : Obtain shells of given L in proper order for
 !       biorthogonal treatment
 !
-         IF (L == 1) THEN
-            ILI = 1
-            ILF = 1
-         ELSE
-            ILI = ILI + NLI(L-1)
-            ILF = ILF + NLF(L-1)
-         ENDIF
+         if (l == 1) then
+            ili = 1
+            ilf = 1
+         else
+            ili = ili + nli(l-1)
+            ilf = ilf + nlf(l-1)
+         endif
 
 !
 ! 1.2 obtain biorthogonal of the first min(ni,nf) shells
 !
-         NIFMN = MIN(NI,NF)
+         nifmn = min(ni,nf)
 !
 !. Overlap matrix SIF = Integral (PI(I)*PF(J))
 !
 !ww Per change to support cases like 3s2p1d 3s2p. The belonging endif
 !ww Is just at the end
 
-         IF (NIFMN <= 0) CYCLE
+         if (nifmn <= 0) cycle
 
-         DO III = 1, NIFMN
-            DO JJJ = 1, NIFMN
-               SCR(KLSIF+(JJJ-1)*NIFMN+III-1) = SCR(KLSTOT-1+(JJJ+ILF-1-1)*NLTI&
-                  +III+ILI-1)
-            END DO
-         END DO
-         IF (NTEST >= 15) THEN
-            WRITE (6, *) ' Overlap matrix '
-            CALL WRTMAT (SCR(KLSIF), NIFMN, NIFMN, NIFMN, NIFMN)
-         ENDIF
+         do iii = 1, nifmn
+            do jjj = 1, nifmn
+               scr(klsif+(jjj-1)*nifmn+iii-1) = scr(klstot-1+(jjj+ilf-1-1)*nlti&
+                  +iii+ili-1)
+            end do
+         end do
+         if (ntest >= 15) then
+            write (6, *) ' Overlap matrix '
+            call wrtmat (scr(klsif), nifmn, nifmn, nifmn, nifmn)
+         endif
 !
 ! Obtain upper triangular CI and CF so CI(T) S CF = 1
 ! or CF CI(T) = S-1, which corresponds to an UL decomposition
 !
 !. Invert S
 !
-         CALL COPVEC (SCR(KLSIF), SCR(KLSIFI), NIFMN**2)
-         CALL INVMAT (SCR(KLSIFI), SCR(KLCI), NIFMN, NIFMN)
+         call copvec (scr(klsif), scr(klsifi), nifmn**2)
+         call invmat (scr(klsifi), scr(klci), nifmn, nifmn)
 
 !. UL decompose
-         CALL COPVEC (SCR(KLSIFI), SCR(KLSIF), NIFMN**2)
-         CALL ULLA (SCR(KLSIF), SCR(KLCF), SCR(KLCI), NIFMN, SCR(KLSCR))
-         CALL TRPMAT (SCR(KLCI), NIFMN, NIFMN, SCR(KLSCR))
-         CALL COPVEC (SCR(KLSCR), SCR(KLCI), NIFMN**2)
+         call copvec (scr(klsifi), scr(klsif), nifmn**2)
+         call ulla (scr(klsif), scr(klcf), scr(klci), nifmn, scr(klscr))
+         call trpmat (scr(klci), nifmn, nifmn, scr(klscr))
+         call copvec (scr(klscr), scr(klci), nifmn**2)
 !
 !. The transformation matrix between the first NIFMX
 !. shells is now known, biorthogonalize remaining orbitals
 !
-         IF (NI/=NF .AND. NI/=0 .AND. NF/=0) THEN
-            IF (NI > NF) THEN
-               KLPMX = KLPI
-               KLPMN = KLPF
-               NMX = NI
-               NMN = NF
-               KLCMX = KLCI
-               KLCMN = KLCF
-            ELSE
-               KLPMX = KLPF
-               KLPMN = KLPI
-               NMX = NF
-               NMN = NI
-               KLCMX = KLCF
-               KLCMN = KLCI
-            ENDIF
-            NDIFF = NMX - NMN
+         if (ni/=nf .and. ni/=0 .and. nf/=0) then
+            if (ni > nf) then
+               klpmx = klpi
+               klpmn = klpf
+               nmx = ni
+               nmn = nf
+               klcmx = klci
+               klcmn = klcf
+            else
+               klpmx = klpf
+               klpmn = klpi
+               nmx = nf
+               nmn = ni
+               klcmx = klcf
+               klcmn = klci
+            endif
+            ndiff = nmx - nmn
 !
 ! Y = -S-1 * X
 !. overlap X between remaining orbitals and the other set
 !
-            IF (NI > NF) THEN
+            if (ni > nf) then
 !
 ! I columns F rows
 !
-               DO III = NMN + 1, NMX
-                  DO JJJ = 1, NF
-                     SCR(KLSIF+(III-NMN-1)*NF+JJJ-1) = SCR(KLSTOT-1+(JJJ+ILF-1-&
-                        1)*NLTI+III+ILI-1)
-                  END DO
-               END DO
-            ELSE IF (NF > NI) THEN
+               do iii = nmn + 1, nmx
+                  do jjj = 1, nf
+                     scr(klsif+(iii-nmn-1)*nf+jjj-1) = scr(klstot-1+(jjj+ilf-1-&
+                        1)*nlti+iii+ili-1)
+                  end do
+               end do
+            else if (nf > ni) then
 ! F columns I rows
-               DO JJJ = NMN + 1, NMX
-                  DO III = 1, NI
-                     SCR(KLSIF+(JJJ-NMN-1)*NI+III-1) = SCR(KLSTOT-1+(JJJ+ILF-1-&
-                        1)*NLTI+III+ILI-1)
-                  END DO
-               END DO
-            ENDIF
+               do jjj = nmn + 1, nmx
+                  do iii = 1, ni
+                     scr(klsif+(jjj-nmn-1)*ni+iii-1) = scr(klstot-1+(jjj+ilf-1-&
+                        1)*nlti+iii+ili-1)
+                  end do
+               end do
+            endif
 !
-            IF (NI > NF) THEN
-               CALL TRPMAT (SCR(KLSIFI), NMN, NMN, SCR(KLSCR))
-               CALL COPVEC (SCR(KLSCR), SCR(KLSIFI), NMN**2)
-            ENDIF
-            CALL MATML4 (SCR(KLSCR), SCR(KLSIFI), SCR(KLSIF), NMN, NDIFF, NMN, &
-               NMN, NMN, NDIFF, 0)
-            CALL SCALVE (SCR(KLSCR), -1.0D0, NMN*NDIFF)
-            CALL COPVEC (SCR(KLSCR), SCR(KLSIF), NMN*NDIFF)
+            if (ni > nf) then
+               call trpmat (scr(klsifi), nmn, nmn, scr(klscr))
+               call copvec (scr(klscr), scr(klsifi), nmn**2)
+            endif
+            call matml4 (scr(klscr), scr(klsifi), scr(klsif), nmn, ndiff, nmn, &
+               nmn, nmn, ndiff, 0)
+            call scalve (scr(klscr), -1.0d0, nmn*ndiff)
+            call copvec (scr(klscr), scr(klsif), nmn*ndiff)
 !
 ! Construct complete CMX
 !
-            CALL SETVEC (SCR(KLSCR), 0.0D0, NMX**2)
-            DO J = 1, NMX
-               IF (J <= NIFMN) THEN
-                  CALL COPVEC (SCR(KLCMX+(J-1)*NIFMN), SCR(KLSCR+(J-1)*NMX), &
-                     NMN)
-               ELSE
-                  CALL COPVEC (SCR(KLSIF+(J-NMN-1)*NMN), SCR(KLSCR+(J-1)*NMX), &
-                     NMN)
-                  SCR(KLSCR-1+(J-1)*NMX+J) = 1.0D0
-               ENDIF
-            END DO
+            call setvec (scr(klscr), 0.0d0, nmx**2)
+            do j = 1, nmx
+               if (j <= nifmn) then
+                  call copvec (scr(klcmx+(j-1)*nifmn), scr(klscr+(j-1)*nmx), &
+                     nmn)
+               else
+                  call copvec (scr(klsif+(j-nmn-1)*nmn), scr(klscr+(j-1)*nmx), &
+                     nmn)
+                  scr(klscr-1+(j-1)*nmx+j) = 1.0d0
+               endif
+            end do
 !
-            CALL COPVEC (SCR(KLSCR), SCR(KLCMX), NMX**2)
-         ENDIF
+            call copvec (scr(klscr), scr(klcmx), nmx**2)
+         endif
 !ww Pertest
 !         ENDIF
 !
 !. The two upper triangular matrices CI and CF are now known
 !. Transfer to permanent arrays
 !
-         CALL COPVEC (SCR(KLCI), CISHL(IIOFF), NI**2)
-         CALL COPVEC (SCR(KLCF), CFSHL(IFOFF), NF**2)
+         call copvec (scr(klci), cishl(iioff), ni**2)
+         call copvec (scr(klcf), cfshl(ifoff), nf**2)
 !
 !. Rotate the large component of the shells
 !
-         CALL COPVEC (PI(1,ILI), SCR(KLPI), NI*NGRID)
-         CALL COPVEC (PF(1,ILF), SCR(KLPF), NF*NGRID)
+         call copvec (pi(1,ili), scr(klpi), ni*ngrid)
+         call copvec (pf(1,ilf), scr(klpf), nf*ngrid)
 !
-         WRITE (*, *) 'Transformation matrices initial'
-         CALL WRTMAT (SCR(KLCI), NI, NI, NI, NI)
-         CALL MATML4 (SCR(KLPIF), SCR(KLPI), SCR(KLCI), NGRID, NI, NGRID, NI, &
-            NI, NI, 0)
-         CALL COPVEC (SCR(KLPIF), PI(1,ILI), NI*NGRID)
-         WRITE (*, *) 'Transformation matrices final'
-         CALL WRTMAT (SCR(KLCF), NF, NF, NF, NF)
-         CALL MATML4 (SCR(KLPIF), SCR(KLPF), SCR(KLCF), NGRID, NF, NGRID, NF, &
-            NF, NF, 0)
-         CALL COPVEC (SCR(KLPIF), PF(1,ILF), NF*NGRID)
+         write (*, *) 'Transformation matrices initial'
+         call wrtmat (scr(klci), ni, ni, ni, ni)
+         call matml4 (scr(klpif), scr(klpi), scr(klci), ngrid, ni, ngrid, ni, &
+            ni, ni, 0)
+         call copvec (scr(klpif), pi(1,ili), ni*ngrid)
+         write (*, *) 'Transformation matrices final'
+         call wrtmat (scr(klcf), nf, nf, nf, nf)
+         call matml4 (scr(klpif), scr(klpf), scr(klcf), ngrid, nf, ngrid, nf, &
+            nf, nf, 0)
+         call copvec (scr(klpif), pf(1,ilf), nf*ngrid)
 !
 !. Rotate the small component of the shells
 !
-         CALL COPVEC (QI(1,ILI), SCR(KLPI), NI*NGRID)
-         CALL COPVEC (QF(1,ILF), SCR(KLPF), NF*NGRID)
+         call copvec (qi(1,ili), scr(klpi), ni*ngrid)
+         call copvec (qf(1,ilf), scr(klpf), nf*ngrid)
 !
-         CALL MATML4 (SCR(KLPIF), SCR(KLPI), SCR(KLCI), NGRID, NI, NGRID, NI, &
-            NI, NI, 0)
-         CALL COPVEC (SCR(KLPIF), QI(1,ILI), NI*NGRID)
-         CALL MATML4 (SCR(KLPIF), SCR(KLPF), SCR(KLCF), NGRID, NF, NGRID, NF, &
-            NF, NF, 0)
-         CALL COPVEC (SCR(KLPIF), QF(1,ILF), NF*NGRID)
+         call matml4 (scr(klpif), scr(klpi), scr(klci), ngrid, ni, ngrid, ni, &
+            ni, ni, 0)
+         call copvec (scr(klpif), qi(1,ili), ni*ngrid)
+         call matml4 (scr(klpif), scr(klpf), scr(klcf), ngrid, nf, ngrid, nf, &
+            nf, nf, 0)
+         call copvec (scr(klpif), qf(1,ilf), nf*ngrid)
 !
-         IF (NTEST >= 1) THEN
-            WRITE (6, *) ' Test of overlap of biorthonormal functions'
+         if (ntest >= 1) then
+            write (6, *) ' Test of overlap of biorthonormal functions'
 ! F columns I rows
-            DO JJJ = 1, NF
-               DO III = 1, NI
-                  SCR(KLSIF+(JJJ-1)*NI+III-1) = SCR(KLSTOT-1+(JJJ+ILF-1-1)*NLTI&
-                     +III+ILI-1)
-               END DO
-            END DO
-            CALL MATML4 (SCR(KLSCR), SCR(KLCI), SCR(KLSIF), NI, NF, NI, NI, NI&
-               , NF, 1)
-            CALL MATML4 (SCR(KLSIF), SCR(KLSCR), SCR(KLCF), NI, NF, NI, NF, NF&
-               , NF, 0)
-            WRITE (6, *) &
+            do jjj = 1, nf
+               do iii = 1, ni
+                  scr(klsif+(jjj-1)*ni+iii-1) = scr(klstot-1+(jjj+ilf-1-1)*nlti&
+                     +iii+ili-1)
+               end do
+            end do
+            call matml4 (scr(klscr), scr(klci), scr(klsif), ni, nf, ni, ni, ni&
+               , nf, 1)
+            call matml4 (scr(klsif), scr(klscr), scr(klcf), ni, nf, ni, nf, nf&
+               , nf, 0)
+            write (6, *) &
               ' new overlap matrix ( should be 1 on diag, 0 elsewhere )'
-            CALL WRTMAT (SCR(KLSIF), NI, NF, NI, NF)
-         ENDIF
+            call wrtmat (scr(klsif), ni, nf, ni, nf)
+         endif
 
-         IF (NTEST >= 1) THEN
-            WRITE (6, *)
-            WRITE (6, *) ' Orbital Rotation matrix for I state'
-            CALL WRTMAT (CISHL(IIOFF), NI, NI, NI, NI)
-            WRITE (6, *) ' Orbital Rotation matrix for F state'
-            CALL WRTMAT (CFSHL(IFOFF), NF, NF, NF, NF)
-            WRITE (6, *)
-         ENDIF
+         if (ntest >= 1) then
+            write (6, *)
+            write (6, *) ' Orbital Rotation matrix for I state'
+            call wrtmat (cishl(iioff), ni, ni, ni, ni)
+            write (6, *) ' Orbital Rotation matrix for F state'
+            call wrtmat (cfshl(ifoff), nf, nf, nf, nf)
+            write (6, *)
+         endif
 !
 !. Matrix for counterrotation of CI coefficients, initial state
 !
-         KLTI = KLSIF
-         CALL PAMTMT (SCR(KLCI), SCR(KLTI), SCR(KLSCR), NI)
-         DO I = 1, NI
-            TII = SCR(KLTI-1+(I-1)*NI+I)
-            TIII = 1.0D0/TII
-            CALL SCALVE (SCR(KLTI+(I-1)*NI), TIII, I - 1)
-         END DO
-         CALL COPVEC (SCR(KLTI), CICI(IIOFF), NI*NI)
+         klti = klsif
+         call pamtmt (scr(klci), scr(klti), scr(klscr), ni)
+         do i = 1, ni
+            tii = scr(klti-1+(i-1)*ni+i)
+            tiii = 1.0d0/tii
+            call scalve (scr(klti+(i-1)*ni), tiii, i - 1)
+         end do
+         call copvec (scr(klti), cici(iioff), ni*ni)
 !
 !. Matrix for counterrotation of CI coefficients, Final state
 !
-         KLTF = KLSIF
-         CALL PAMTMT (SCR(KLCF), SCR(KLTF), SCR(KLSCR), NF)
-         DO I = 1, NF
-            TII = SCR(KLTF-1+(I-1)*NF+I)
-            TIII = 1.0D0/TII
-            CALL SCALVE (SCR(KLTF+(I-1)*NF), TIII, I - 1)
-         END DO
-         CALL COPVEC (SCR(KLTF), CFCI(IFOFF), NF*NF)
-         IF (NTEST < 1) CYCLE
-         WRITE (6, *)
-         WRITE (6, *) ' CI-Rotation matrix for I state'
-         CALL WRTMAT (CICI(IIOFF), NI, NI, NI, NI)
-         WRITE (6, *) ' CI-Rotation matrix for F state'
-         CALL WRTMAT (CFCI(IFOFF), NF, NF, NF, NF)
-         WRITE (6, *)
+         kltf = klsif
+         call pamtmt (scr(klcf), scr(kltf), scr(klscr), nf)
+         do i = 1, nf
+            tii = scr(kltf-1+(i-1)*nf+i)
+            tiii = 1.0d0/tii
+            call scalve (scr(kltf+(i-1)*nf), tiii, i - 1)
+         end do
+         call copvec (scr(kltf), cfci(ifoff), nf*nf)
+         if (ntest < 1) cycle
+         write (6, *)
+         write (6, *) ' CI-Rotation matrix for I state'
+         call wrtmat (cici(iioff), ni, ni, ni, ni)
+         write (6, *) ' CI-Rotation matrix for F state'
+         call wrtmat (cfci(ifoff), nf, nf, nf, nf)
+         write (6, *)
 
-      END DO
+      end do
 !
-      RETURN
-      END SUBROUTINE BIOTR1
+      return
+      end subroutine biotr1

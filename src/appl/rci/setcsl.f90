@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      SUBROUTINE SETCSL(NAME, NCORE, NBLKIN, IDBLK)
+      subroutine setcsl(name, ncore, nblkin, idblk)
 !
 !  A container which calls setcsll to open, read <name>.c file to get
 !     nblock, ncfblk(), idblk(), ncf (it is ncftot here).
@@ -17,42 +17,42 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE memory_man
-      USE hblock_C
-      USE def_C
-      USE orb_C, ONLY: ncftot=>ncf
+      use memory_man
+      use hblock_c
+      use def_c
+      use orb_c, only: ncftot=>ncf
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
 !      USE setcsll_I
-      USE lodcsh_I
-      USE setcsll_I, ONLY: setcsll
-      IMPLICIT NONE
+      use lodcsh_i
+      use setcsll_i, only: setcsll
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NCORE
-      INTEGER  :: NBLKIN
-      CHARACTER  :: NAME*(*)
-      CHARACTER(LEN=8), DIMENSION(*) :: IDBLK
+      integer  :: ncore
+      integer  :: nblkin
+      character  :: name*(*)
+      character(len=8), dimension(*) :: idblk
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IQADUM
+      integer :: iqadum
 !-----------------------------------------------
 !
 !     POINTER (ncfblk, ncfblk(0:*))
 !-----------------------------------------------------------------------
 
-      CALL ALLOC (NCFBLK, 0,  NBLKIN, 'NCFBLK', 'SETCSL' )
-      CALL SETCSLL (21, NAME, NBLKIN, NBLOCK, NCFBLK(1:), NCFTOT, IDBLK)
-      CALL RALLOC (NCFBLK, 0, NBLOCK, 'NCFBLK', 'SETCSL' )
+      call alloc (ncfblk, 0,  nblkin, 'NCFBLK', 'SETCSL' )
+      call setcsll (21, name, nblkin, nblock, ncfblk(1:), ncftot, idblk)
+      call ralloc (ncfblk, 0, nblock, 'NCFBLK', 'SETCSL' )
 
-      REWIND (21)
-      READ (21, *)
+      rewind (21)
+      read (21, *)
 
       !..Load header of <name>.c file
-      CALL LODCSH (21, NCORE)
+      call lodcsh (21, ncore)
 
-      RETURN
-      END SUBROUTINE SETCSL
+      return
+      end subroutine setcsl

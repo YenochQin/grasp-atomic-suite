@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE LODMIXmpi (idblk)
+      subroutine lodmixmpi (idblk)
 !                                                                      *
 !   Determines the eigenpairs required;  this information is written   *
 !   to the head of the  .mix  file.                                    *
@@ -17,27 +17,27 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE def_C
-      USE hblock_C
-      USE blk_C,           ONLY: idxblk
-      USE orb_C,           ONLY: ncf, nw, iqa
-      USE mpi_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use def_c
+      use hblock_c
+      use blk_c,           only: idxblk
+      use orb_c,           only: ncf, nw, iqa
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE lodstate_I
-      IMPLICIT NONE
+      use lodstate_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER(LEN=8),DIMENSION(*), INTENT(IN):: idblk
+      character(len=8),dimension(*), intent(in):: idblk
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ncftot, noffset, nvecsiz, jb, j
-      INTEGER :: NELEC4, ncftot4, NW4, ncmin4, nvecsiz4, nblock4
+      integer :: ncftot, noffset, nvecsiz, jb, j
+      integer :: nelec4, ncftot4, nw4, ncmin4, nvecsiz4, nblock4
 !-----------------------------------------------
 
 ! lodstate generates
@@ -45,29 +45,29 @@
 !    ncmin, iccmin(1:ncmin) -- via items (memories allocated there)
 ! Thus we let node-0 do it and then broadcast here
 
-      CALL alloc (ncmaxblk, nblock, 'NCMAXBLK', 'LODMIXmpi')
-      CALL alloc (nevblk, nblock, 'NEVBLK', 'LODMIXmpi')
+      call alloc (ncmaxblk, nblock, 'NCMAXBLK', 'LODMIXmpi')
+      call alloc (nevblk, nblock, 'NEVBLK', 'LODMIXmpi')
 
 !      print *, ' LODMIX: change lodstate arg-list - see rscf2/getold.f90 '
 !      stop
-      IF (myid .EQ. 0) THEN
-         CALL LODSTATE (IDBLK)
-      ENDIF
+      if (myid .eq. 0) then
+         call lodstate (idblk)
+      endif
 
-      CALL MPI_Bcast (nevblk, nblock, MPI_INTEGER, 0,               &
-                                       MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast (ncmaxblk, nblock, MPI_INTEGER, 0,             &
-                                       MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast (ncmin, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+      call mpi_bcast (nevblk, nblock, mpi_integer, 0,               &
+                                       mpi_comm_world, ierr)
+      call mpi_bcast (ncmaxblk, nblock, mpi_integer, 0,             &
+                                       mpi_comm_world, ierr)
+      call mpi_bcast (ncmin, 1, mpi_integer, 0, mpi_comm_world, ierr)
 
-      IF (ncmin .NE. 0) THEN
-         IF (myid .NE. 0) THEN   ! lodstate allocated it from node-0
-            CALL alloc (iccmin, ncmin, 'ICCMIN', 'LODMIXmpi')
-         ENDIF
+      if (ncmin .ne. 0) then
+         if (myid .ne. 0) then   ! lodstate allocated it from node-0
+            call alloc (iccmin, ncmin, 'ICCMIN', 'LODMIXmpi')
+         endif
 
-         CALL MPI_Bcast (iccmin, ncmin, MPI_INTEGER4, 0,            &
-                                       MPI_COMM_WORLD, ierr)
-      ENDIF
+         call mpi_bcast (iccmin, ncmin, mpi_integer4, 0,            &
+                                       mpi_comm_world, ierr)
+      endif
 
 !
 !   Determine other auxiliary arrays, parameters
@@ -75,31 +75,31 @@
 !    idxblk() is the block number of an eigenstate
 !    nvecsiz  is the total size of the eigenvector array
 !
-      CALL alloc (idxblk, ncmin, 'IDXBLK', 'LODMIXmpi')
+      call alloc (idxblk, ncmin, 'IDXBLK', 'LODMIXmpi')
       ncftot = 0
       noffset = 0
       nvecsiz = 0
-      DO jb = 1, nblock
-         DO j = 1, nevblk(jb)
+      do jb = 1, nblock
+         do j = 1, nevblk(jb)
             idxblk(j + noffset) = jb
-         ENDDO
+         enddo
          ncftot = ncftot + ncfblk(jb)
          noffset = noffset + nevblk(jb)
          nvecsiz = nvecsiz + ncfblk(jb) * nevblk(jb)
-      ENDDO
-      IF (noffset .NE. ncmin) STOP 'lodmixmpi: ncmin trouble'
+      enddo
+      if (noffset .ne. ncmin) stop 'lodmixmpi: ncmin trouble'
 !
 !   Write header data to the  .mix  file
 !
-      IF (myid .EQ. 0) THEN
-         NELEC4 = NELEC
+      if (myid .eq. 0) then
+         nelec4 = nelec
          ncftot4 = ncftot
-         NW4 = NW
+         nw4 = nw
          ncmin4 = ncmin
          nvecsiz4 = nvecsiz
          nblock4 = nblock
-         WRITE (25) NELEC4, ncftot4, NW4, ncmin4, nvecsiz4, nblock4
-      ENDIF
+         write (25) nelec4, ncftot4, nw4, ncmin4, nvecsiz4, nblock4
+      endif
 !
-      RETURN
-      END SUBROUTINE LODMIXmpi
+      return
+      end subroutine lodmixmpi

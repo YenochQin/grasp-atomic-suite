@@ -1,10 +1,10 @@
-      MODULE coulom_I
-      INTERFACE
+      module coulom_i
+      interface
 !
-      SUBROUTINE COULOM(J1,J2,J3,J4,L1,L2,L3,L4,K,AA)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER, INTENT(IN) :: J1, J2, J3, J4, L1, L2, L3, L4, K
-      REAL(DOUBLE),INTENT(OUT)  :: AA
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine coulom(j1,j2,j3,j4,l1,l2,l3,l4,k,aa)
+      use vast_kind_param, only:  double
+      integer, intent(in) :: j1, j2, j3, j4, l1, l2, l3, l4, k
+      real(double),intent(out)  :: aa
+      end subroutine
+      end interface
+      end module

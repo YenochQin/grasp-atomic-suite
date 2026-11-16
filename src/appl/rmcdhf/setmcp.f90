@@ -1,6 +1,6 @@
 !***********************************************************************
 
-      SUBROUTINE SETMCP(NCORE, NBLKIN, IDBLK, FILEHEAD)
+      subroutine setmcp(ncore, nblkin, idblk, filehead)
 !
 !   Open, read, check the header of all .mcp files. Info for each
 !   block is not accessed here.
@@ -35,115 +35,115 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE DEF_C
-      USE FOPARM_C
-      USE MCPA_C
-      USE MCPB_C
-      USE mpi_s
-      USE orb_C
-      USE iounit_C
-      USE hblock_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use def_c
+      use foparm_c
+      use mcpa_c
+      use mcpb_c
+      use mpi_s
+      use orb_c
+      use iounit_c
+      use hblock_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE convrt_I
-      USE openfl_I
-      IMPLICIT NONE
+      use convrt_i
+      use openfl_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NCORE
-      INTEGER , INTENT(IN) :: NBLKIN
-      CHARACTER , INTENT(IN) :: FILEHEAD*(*)
-      CHARACTER  :: IDBLK(*)*8
+      integer  :: ncore
+      integer , intent(in) :: nblkin
+      character , intent(in) :: filehead*(*)
+      character  :: idblk(*)*8
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: LENFH, IERROR, IOS, I, K, LCK, MYIDD, NPROCSS
-      LOGICAL :: FOUND, FOUND1
-      CHARACTER :: CK*2, MCPLAB*3
-      CHARACTER(LEN=120) :: FILNAM
+      integer :: lenfh, ierror, ios, i, k, lck, myidd, nprocss
+      logical :: found, found1
+      character :: ck*2, mcplab*3
+      character(len=120) :: filnam
 !-----------------------------------------------
 !
-      LENFH = LEN_TRIM(FILEHEAD)
+      lenfh = len_trim(filehead)
 
-      FILNAM = FILEHEAD(1:LENFH)//'.30'
-      OPEN(30, FILE=FILNAM, FORM='UNFORMATTED', STATUS='OLD', IOSTAT=IERROR, &
-         POSITION='asis')
+      filnam = filehead(1:lenfh)//'.30'
+      open(30, file=filnam, form='UNFORMATTED', status='OLD', iostat=ierror, &
+         position='asis')
 
 !  Parameter ierror carries through mcp.30,... mcp.kmax
 
-      READ (30, IOSTAT=IOS) NCORE, NBLOCK, KMAXF
-      IERROR = IERROR + ABS(IOS)
-      IF (NBLOCK>NBLKIN .OR. NBLOCK<1) THEN
-         WRITE (ISTDE, *) 'setmcp: nblock = ', NBLOCK
-         ERROR STOP
-      ENDIF
+      read (30, iostat=ios) ncore, nblock, kmaxf
+      ierror = ierror + abs(ios)
+      if (nblock>nblkin .or. nblock<1) then
+         write (istde, *) 'setmcp: nblock = ', nblock
+         error stop
+      endif
 
 !cjb allocate ncfblk(0:*)
 !cjb  CALL ALLOC (NCFBLK, NBLOCK + 1, 'NCFBLK', 'SETMCP')
-      CALL ALLOC (NCFBLK, 0, NBLOCK , 'NCFBLK', 'SETMCP')
+      call alloc (ncfblk, 0, nblock , 'NCFBLK', 'SETMCP')
 !cjb
-      NCFBLK(0) = 0
+      ncfblk(0) = 0
 
-      READ (30, IOSTAT=IOS) (NCFBLK(I),I=1,NBLOCK)
-      IERROR = IERROR + ABS(IOS)
-      READ (30, IOSTAT=IOS) (IDBLK(I),I=1,NBLOCK)
-      IERROR = IERROR + ABS(IOS)
+      read (30, iostat=ios) (ncfblk(i),i=1,nblock)
+      ierror = ierror + abs(ios)
+      read (30, iostat=ios) (idblk(i),i=1,nblock)
+      ierror = ierror + abs(ios)
 
 !  Look for other mcp files
 
-      FOUND = .TRUE.
-      DO K = 31, 32 + KMAXF
-         CALL CONVRT (K, CK, LCK)
-         FILNAM = FILEHEAD(1:LENFH)//'.'//CK(1:2)
-         INQUIRE(FILE=FILNAM, EXIST=FOUND1)
-         FOUND = FOUND .AND. FOUND1
-      END DO
+      found = .true.
+      do k = 31, 32 + kmaxf
+         call convrt (k, ck, lck)
+         filnam = filehead(1:lenfh)//'.'//ck(1:2)
+         inquire(file=filnam, exist=found1)
+         found = found .and. found1
+      end do
 
-      IF (.NOT.FOUND) THEN
-         WRITE (ISTDE, *) 'The mcp files do not exist'
-         ERROR STOP
-      ENDIF
+      if (.not.found) then
+         write (istde, *) 'The mcp files do not exist'
+         error stop
+      endif
 
 !  Open the files; check file headers
 
-      DO K = 30, 32 + KMAXF
+      do k = 30, 32 + kmaxf
 
-         IF (K /= 30) THEN
-            CALL CONVRT (K, CK, LCK)
-            FILNAM = FILEHEAD(1:LENFH)//'.'//CK(1:2)
-            CALL OPENFL (K, FILNAM, 'UNFORMATTED', 'OLD', IERROR)
-         ENDIF
+         if (k /= 30) then
+            call convrt (k, ck, lck)
+            filnam = filehead(1:lenfh)//'.'//ck(1:2)
+            call openfl (k, filnam, 'UNFORMATTED', 'OLD', ierror)
+         endif
 
-         READ (K, IOSTAT=IOS) MCPLAB, NBLOCK, MYIDD, NPROCSS
+         read (k, iostat=ios) mcplab, nblock, myidd, nprocss
 
-         IERROR = IERROR + ABS(IOS)
-         IF (MYID/=MYIDD .OR. NPROCS/=NPROCSS) THEN
-            WRITE (ISTDE, *) 'mcp files were generated under different', &
+         ierror = ierror + abs(ios)
+         if (myid/=myidd .or. nprocs/=nprocss) then
+            write (istde, *) 'mcp files were generated under different', &
                ' processor configuration.'
-            ERROR STOP
-         ENDIF
+            error stop
+         endif
 
-         IF (MCPLAB /= 'MCP') THEN
-            WRITE (ISTDE, *) 'Not a sorted GRASP92 MCP File;'
-            IERROR = IERROR + 1
-         ENDIF
+         if (mcplab /= 'MCP') then
+            write (istde, *) 'Not a sorted GRASP92 MCP File;'
+            ierror = ierror + 1
+         endif
 
-         READ (K, IOSTAT=IOS) NELEC, NCF, NW
-         IERROR = IERROR + ABS(IOS)
-         READ (K, IOSTAT=IOS) DIAG, ICCUT, LFORDR
-         IERROR = IERROR + ABS(IOS)
+         read (k, iostat=ios) nelec, ncf, nw
+         ierror = ierror + abs(ios)
+         read (k, iostat=ios) diag, iccut, lfordr
+         ierror = ierror + abs(ios)
 
-         IF (IERROR == 0) CYCLE
-         WRITE (ISTDE, *) 'setmcp: Error accumulated , stopping...'
-         DO I = 30, K
-            CLOSE(I)
-         END DO
-         ERROR STOP
-      END DO
+         if (ierror == 0) cycle
+         write (istde, *) 'setmcp: Error accumulated , stopping...'
+         do i = 30, k
+            close(i)
+         end do
+         error stop
+      end do
 
-      RETURN
-      END SUBROUTINE SETMCP
+      return
+      end subroutine setmcp

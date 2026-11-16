@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETDBG(DBGFILE)
+      subroutine setdbg(dbgfile)
 !                                                                      *
 !   This subroutine sets the arrays that control debug printout from   *
 !   the radial and angular modules of the GRASP92 suite.               *
@@ -17,133 +17,133 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE DEBUG_C
-      USE default_C
-      USE iounit_C
+      use debug_c
+      use default_c
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE openfl_I
-      IMPLICIT NONE
+      use getyn_i
+      use openfl_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER(LEN=*) , INTENT(IN) :: DBGFILE
+      character(len=*) , intent(in) :: dbgfile
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      CHARACTER*9, PARAMETER :: FORM = 'FORMATTED'
-      CHARACTER*3, PARAMETER :: STATUS = 'NEW'
+      character*9, parameter :: form = 'FORMATTED'
+      character*3, parameter :: status = 'NEW'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, LENDBG, LENFIL, IERR
+      integer :: i, lendbg, lenfil, ierr
 !GG      CHARACTER(LEN=120) :: FILNAM
-      CHARACTER(LEN = LEN (dbgfile)) :: FILNAM
+      character(len = len (dbgfile)) :: filnam
 !-----------------------------------------------
 !
 !   Initialise the arrays that control the debug printout
 !   These serve as the default settings.
 !
-      LDBPA = .FALSE.
-      LDBPG = .FALSE.
+      ldbpa = .false.
+      ldbpg = .false.
 
-      LDBPR = .FALSE.
+      ldbpr = .false.
 !
-      IF (NDEF == 0) RETURN
+      if (ndef == 0) return
 
 !   Even in non-default, the user can choose not to have debug
 !   print-out
 
-      WRITE (ISTDE, '(A)', ADVANCE='NO') 'Generate debug output?  (y/n) '
-      IF (.NOT.GETYN()) RETURN
+      write (istde, '(A)', advance='NO') 'Generate debug output?  (y/n) '
+      if (.not.getyn()) return
 
-      LENDBG = LEN_TRIM(DBGFILE)
+      lendbg = len_trim(dbgfile)
 
-      WRITE (ISTDE, *) 'File  ', DBGFILE(1:LENDBG), &
+      write (istde, *) 'File  ', dbgfile(1:lendbg), &
       '  will be                           created as the RSCF92 DeBuG Printout&
       & File;'
-      WRITE (ISTDE, *) 'enter another file name if this is not', &
+      write (istde, *) 'enter another file name if this is not', &
          ' acceptable; null otherwise:'
 
-  123 CONTINUE
-      READ (*, '(A)') FILNAM
+  123 continue
+      read (*, '(A)') filnam
 
-      FILNAM = ADJUSTL(FILNAM)
-      LENFIL = LEN_TRIM(FILNAM)
-      IF (LENFIL == 0) THEN
-         FILNAM = DBGFILE
-      ELSE IF (LENFIL > LENDBG) THEN
-         WRITE (ISTDE, *) 'File name too long, (> ', LENDBG, '); redo...'
-         GO TO 123
-      ENDIF
+      filnam = adjustl(filnam)
+      lenfil = len_trim(filnam)
+      if (lenfil == 0) then
+         filnam = dbgfile
+      else if (lenfil > lendbg) then
+         write (istde, *) 'File name too long, (> ', lendbg, '); redo...'
+         go to 123
+      endif
 
-      CALL OPENFL (99, FILNAM, FORM, STATUS, IERR)
-      IF (IERR /= 0) THEN
-         WRITE (ISTDE, *) 'File name not accepted; redo...'
-         GO TO 123
-      ENDIF
+      call openfl (99, filnam, form, status, ierr)
+      if (ierr /= 0) then
+         write (istde, *) 'File name not accepted; redo...'
+         go to 123
+      endif
 !
 !   Set options for general printout
 !
-      WRITE (ISTDE, *) 'Print out the machine constants used?'
-      LDBPG(1) = GETYN()
-      WRITE (ISTDE, *) 'Print out the physical constants used?'
-      LDBPG(2) = GETYN()
-      WRITE (ISTDE, *) 'Printout from FNDBLK?'
-      LDBPG(3) = GETYN()
-      WRITE (ISTDE, *) 'Print out the Hamiltonian matrix?'
-      LDBPG(4) = GETYN()
-      WRITE (ISTDE, *) 'Print out the eigenvectors?'
-      LDBPG(5) = GETYN()
-      LDBPG(1:5) = .TRUE.
+      write (istde, *) 'Print out the machine constants used?'
+      ldbpg(1) = getyn()
+      write (istde, *) 'Print out the physical constants used?'
+      ldbpg(2) = getyn()
+      write (istde, *) 'Printout from FNDBLK?'
+      ldbpg(3) = getyn()
+      write (istde, *) 'Print out the Hamiltonian matrix?'
+      ldbpg(4) = getyn()
+      write (istde, *) 'Print out the eigenvectors?'
+      ldbpg(5) = getyn()
+      ldbpg(1:5) = .true.
 !
 !   Set options for printout from radial modules
 !
-      WRITE (ISTDE, *) 'Printout from RADGRD?'
-      LDBPR(1) = GETYN()
-      WRITE (ISTDE, *) 'Printout from NUCPOT?'
-      LDBPR(2) = GETYN()
-      WRITE (ISTDE, *) 'Printout from LODRWF?'
-      LDBPR(3) = GETYN()
-      WRITE (ISTDE, *) 'Print out I(ab) integrals?'
-      LDBPR(4) = GETYN()
-      WRITE (ISTDE, *) 'Print out Slater integrals?'
-      LDBPR(10) = GETYN()
-      WRITE (ISTDE, *) 'Make summary printout on progress', &
+      write (istde, *) 'Printout from RADGRD?'
+      ldbpr(1) = getyn()
+      write (istde, *) 'Printout from NUCPOT?'
+      ldbpr(2) = getyn()
+      write (istde, *) 'Printout from LODRWF?'
+      ldbpr(3) = getyn()
+      write (istde, *) 'Print out I(ab) integrals?'
+      ldbpr(4) = getyn()
+      write (istde, *) 'Print out Slater integrals?'
+      ldbpr(10) = getyn()
+      write (istde, *) 'Make summary printout on progress', &
          ' of each iteration in SOLVE?'
-      LDBPR(22) = GETYN()
-      WRITE (ISTDE, *) 'Tabulate and make printer plots', &
+      ldbpr(22) = getyn()
+      write (istde, *) 'Tabulate and make printer plots', &
          ' of subshell radial functions on', ' each iteration in SOLVE?'
-      LDBPR(23) = GETYN()
-      WRITE (ISTDE, *) 'Tabulate and make printer plots', &
+      ldbpr(23) = getyn()
+      write (istde, *) 'Tabulate and make printer plots', &
          ' of subshell radial functions', ' after each SCF cycle?'
-      LDBPR(24) = GETYN()
-      WRITE (ISTDE, *) 'Tabulate and make printer plots', &
+      ldbpr(24) = getyn()
+      write (istde, *) 'Tabulate and make printer plots', &
          ' of subshell radial functions on', ' convergence?'
-      LDBPR(25) = GETYN()
-      WRITE (ISTDE, *) 'List compositions of exchange', ' potentials?'
-      LDBPR(27) = GETYN()
-      WRITE (ISTDE, *) 'Tabulate and make printer plots', &
+      ldbpr(25) = getyn()
+      write (istde, *) 'List compositions of exchange', ' potentials?'
+      ldbpr(27) = getyn()
+      write (istde, *) 'Tabulate and make printer plots', &
          ' of exchange potentials?'
-      LDBPR(28) = GETYN()
-      WRITE (ISTDE, *) 'List compositions of direct', ' potentials?'
-      LDBPR(29) = GETYN()
-      WRITE (ISTDE, *) 'Tabulate and make printer plots', &
+      ldbpr(28) = getyn()
+      write (istde, *) 'List compositions of direct', ' potentials?'
+      ldbpr(29) = getyn()
+      write (istde, *) 'Tabulate and make printer plots', &
          ' of direct potentials?'
-      LDBPR(30) = GETYN()
-      LDBPR(1:30) = .TRUE.
+      ldbpr(30) = getyn()
+      ldbpr(1:30) = .true.
 !
 !   Set options for printout of angular coefficients
 !
-      WRITE (ISTDE, *) ' Printout from LODCSL?'
-      LDBPA(1) = GETYN()
-      WRITE (ISTDE, *) ' Print out T coefficients?'
-      LDBPA(2) = GETYN()
-      WRITE (ISTDE, *) ' Print out V coefficients?'
-      LDBPA(3) = GETYN()
-      LDBPA(1:3) = .TRUE.
+      write (istde, *) ' Printout from LODCSL?'
+      ldbpa(1) = getyn()
+      write (istde, *) ' Print out T coefficients?'
+      ldbpa(2) = getyn()
+      write (istde, *) ' Print out V coefficients?'
+      ldbpa(3) = getyn()
+      ldbpa(1:3) = .true.
 
-      RETURN
-      END SUBROUTINE SETDBG
+      return
+      end subroutine setdbg

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SORTMEM(NFILE,IGGMAX_K,NCOEFF,NTGRAL,LPRINT,NB,FHEAD)
+      subroutine sortmem(nfile,iggmax_k,ncoeff,ntgral,lprint,nb,fhead)
 !                                                                      *
 !   This routine sorts lists                                           *
 !                                                                      *
@@ -23,267 +23,267 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: KEYORB
-      USE memory_man
-      USE ORB_C,           ONLY: NP, NCF, NH
-      USE IOUNIT_C
-      USE sacoef_C, COEFF=>TCOEFF,LABEL=>ILABEL,ICLMN=>IICLMN,INDEX=>IINDEX
+      use vast_kind_param, only: double
+      use parameter_def,   only: keyorb
+      use memory_man
+      use orb_c,           only: np, ncf, nh
+      use iounit_c
+      use sacoef_c, coeff=>tcoeff,label=>ilabel,iclmn=>iiclmn,index=>iindex
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE convrt_I
-      IMPLICIT NONE
+      use convrt_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NFILE
-      INTEGER  :: NCOEFF
-      INTEGER, INTENT(OUT)  :: NTGRAL
-      INTEGER, INTENT(IN)   :: NB,IGGMAX_K
-      LOGICAL, INTENT(IN)   :: LPRINT
-      CHARACTER, INTENT(IN) :: FHEAD*(*)
+      integer  :: nfile
+      integer  :: ncoeff
+      integer, intent(out)  :: ntgral
+      integer, intent(in)   :: nb,iggmax_k
+      logical, intent(in)   :: lprint
+      character, intent(in) :: fhead*(*)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !      INTEGER, DIMENSION(:), pointer :: ICLMN, INDEX, LABEL, NSWAP
-      INTEGER, DIMENSION(:), pointer :: NSWAP
+      integer, dimension(:), pointer :: nswap
 !      REAL(DOUBLE), DIMENSION(:), pointer :: COEFF
-      INTEGER :: LCNUM, LCK, IERR, MB, I, L, IR, ICL, IND, LAB, NSW, J,&
-         LAST, IBEG, IEND, NCONTR, IA, IB, K, ID, IC, IGG
-      REAL(DOUBLE) :: COF
-      CHARACTER :: CNUM*20, SRTLAB*8, MCPLAB*3, CK*2
-      CHARACTER (LEN = LEN (fhead) + 3):: fullname
+      integer :: lcnum, lck, ierr, mb, i, l, ir, icl, ind, lab, nsw, j,&
+         last, ibeg, iend, ncontr, ia, ib, k, id, ic, igg
+      real(double) :: cof
+      character :: cnum*20, srtlab*8, mcplab*3, ck*2
+      character (len = len (fhead) + 3):: fullname
 !-----------------------------------------------
 !
-      IF(NFILE .EQ. 31) THEN
-         IGG = 1
-      ELSE
-         IGG = NFILE - 30
-      END IF
+      if(nfile .eq. 31) then
+         igg = 1
+      else
+         igg = nfile - 30
+      end if
 !      IGG = IGGMAX_K*(IGG-1)
 !   Message
 !
-      CALL CONVRT (NCOEFF, CNUM, LCNUM)
-      IF (NFILE > 31) THEN
-         CALL CONVRT (NFILE - 32, CK, LCK)
-         WRITE (6, *) 'Sorting '//CNUM(1:LCNUM)//' V(k='//CK(1:LCK)//&
-            ') coefficients ...', NFILE
-      ELSE
-         WRITE (6, *) 'Sorting '//CNUM(1:LCNUM)//' T coefficients ...', NFILE
-      ENDIF
+      call convrt (ncoeff, cnum, lcnum)
+      if (nfile > 31) then
+         call convrt (nfile - 32, ck, lck)
+         write (6, *) 'Sorting '//cnum(1:lcnum)//' V(k='//ck(1:lck)//&
+            ') coefficients ...', nfile
+      else
+         write (6, *) 'Sorting '//cnum(1:lcnum)//' T coefficients ...', nfile
+      endif
 !
-      CALL CONVRT (NFILE, CK, LCK)
-      IF (LCK > 2) THEN
-         WRITE (ISTDE, *) 'sort: nfile > 99; check fullname'
-         STOP
-      ENDIF
+      call convrt (nfile, ck, lck)
+      if (lck > 2) then
+         write (istde, *) 'sort: nfile > 99; check fullname'
+         stop
+      endif
 
-      FULLNAME = FHEAD//'.'//CK(1:2)
+      fullname = fhead//'.'//ck(1:2)
 
-      OPEN(29,FILE=FULLNAME,STATUS='OLD',FORM='UNFORMATTED', &
-         IOSTAT=IERR, POSITION='APPEND')
-      IF (IERR /= 0) THEN
-         WRITE (ISTDE, *) ' Error when opening the file ', FULLNAME
-         STOP
-      ENDIF
+      open(29,file=fullname,status='OLD',form='UNFORMATTED', &
+         iostat=ierr, position='APPEND')
+      if (ierr /= 0) then
+         write (istde, *) ' Error when opening the file ', fullname
+         stop
+      endif
 !
 !   Sort the list
 !
-      IF (NCOEFF > 0) THEN
+      if (ncoeff > 0) then
 !
 !   Allocate storage for all required arrays
 !
-         IF (NFILE == 33) CALL ALLOC (NSWAP, NCOEFF,'NSWAP', 'SORTMEM')
-      ENDIF
+         if (nfile == 33) call alloc (nswap, ncoeff,'NSWAP', 'SORTMEM')
+      endif
 !
 !   Sort LABEL into ascending order using the heapsort algorithm;
 !   move the associated members of COEFF and INDEX in the same
 !   manner; the code below is adapted from Press et al.
 !
-      IF (NFILE==33 .AND. NCOEFF>1) THEN
+      if (nfile==33 .and. ncoeff>1) then
 
-         L = NCOEFF/2 + 1
-         IR = NCOEFF
-  234    CONTINUE
-         IF (L > 1) THEN
-            L = L - 1
-            COF = COEFF(L,IGG)
-            ICL = ICLMN(L,IGG)
-            IND = INDEX(L,IGG)
-            LAB = LABEL(L,IGG)
-            NSW = NSWAP(L)
-         ELSE
-            COF = COEFF(IR,IGG)
-            ICL = ICLMN(IR,IGG)
-            IND = INDEX(IR,IGG)
-            LAB = LABEL(IR,IGG)
-            NSW = NSWAP(IR)
-            COEFF(IR,IGG) = COEFF(1,IGG)
-            ICLMN(IR,IGG) = ICLMN(1,IGG)
-            INDEX(IR,IGG) = INDEX(1,IGG)
-            LABEL(IR,IGG) = LABEL(1,IGG)
-            NSWAP(IR) = NSWAP(1)
-            IR = IR - 1
-            IF (IR == 1) THEN
-               COEFF(1,IGG) = COF
-               ICLMN(1,IGG) = ICL
-               INDEX(1,IGG) = IND
-               LABEL(1,IGG) = LAB
-               NSWAP(1) = NSW
-               GO TO 456
-            ENDIF
-         ENDIF
-         I = L
-         J = L + L
-  345    CONTINUE
-         IF (J <= IR) THEN
-            IF (J < IR) THEN
-               IF (LABEL(J,IGG) < LABEL(J+1,IGG)) J = J + 1
-            ENDIF
-            IF (LAB < LABEL(J,IGG)) THEN
-               COEFF(I,IGG) = COEFF(J,IGG)
-               ICLMN(I,IGG) = ICLMN(J,IGG)
-               INDEX(I,IGG) = INDEX(J,IGG)
-               LABEL(I,IGG) = LABEL(J,IGG)
-               NSWAP(I) = NSWAP(J)
-               I = J
-               J = J + J
-            ELSE
-               J = IR + 1
-            ENDIF
-            GO TO 345
-         ENDIF
-         COEFF(I,IGG) = COF
-         ICLMN(I,IGG) = ICL
-         INDEX(I,IGG) = IND
-         LABEL(I,IGG) = LAB
-         NSWAP(I) = NSW
-         GO TO 234
+         l = ncoeff/2 + 1
+         ir = ncoeff
+  234    continue
+         if (l > 1) then
+            l = l - 1
+            cof = coeff(l,igg)
+            icl = iclmn(l,igg)
+            ind = index(l,igg)
+            lab = label(l,igg)
+            nsw = nswap(l)
+         else
+            cof = coeff(ir,igg)
+            icl = iclmn(ir,igg)
+            ind = index(ir,igg)
+            lab = label(ir,igg)
+            nsw = nswap(ir)
+            coeff(ir,igg) = coeff(1,igg)
+            iclmn(ir,igg) = iclmn(1,igg)
+            index(ir,igg) = index(1,igg)
+            label(ir,igg) = label(1,igg)
+            nswap(ir) = nswap(1)
+            ir = ir - 1
+            if (ir == 1) then
+               coeff(1,igg) = cof
+               iclmn(1,igg) = icl
+               index(1,igg) = ind
+               label(1,igg) = lab
+               nswap(1) = nsw
+               go to 456
+            endif
+         endif
+         i = l
+         j = l + l
+  345    continue
+         if (j <= ir) then
+            if (j < ir) then
+               if (label(j,igg) < label(j+1,igg)) j = j + 1
+            endif
+            if (lab < label(j,igg)) then
+               coeff(i,igg) = coeff(j,igg)
+               iclmn(i,igg) = iclmn(j,igg)
+               index(i,igg) = index(j,igg)
+               label(i,igg) = label(j,igg)
+               nswap(i) = nswap(j)
+               i = j
+               j = j + j
+            else
+               j = ir + 1
+            endif
+            go to 345
+         endif
+         coeff(i,igg) = cof
+         iclmn(i,igg) = icl
+         index(i,igg) = ind
+         label(i,igg) = lab
+         nswap(i) = nsw
+         go to 234
 
-      ELSE IF (NFILE/=33 .AND. NCOEFF>1) THEN
+      else if (nfile/=33 .and. ncoeff>1) then
 !
 !   Sort LABEL into ascending order using the heapsort algorithm;
 !   move the associated members of COEFF and INDEX in the same
 !   manner; the code below is adapted from Press et al.
 !
-         L = NCOEFF/2 + 1
-         IR = NCOEFF
-   92    CONTINUE
-         IF (L > 1) THEN
-            L = L - 1
-            COF = COEFF(L,IGG)
-            ICL = ICLMN(L,IGG)
-            IND = INDEX(L,IGG)
-            LAB = LABEL(L,IGG)
-         ELSE
-            COF = COEFF(IR,IGG)
-            ICL = ICLMN(IR,IGG)
-            IND = INDEX(IR,IGG)
-            LAB = LABEL(IR,IGG)
-            COEFF(IR,IGG) = COEFF(1,IGG)
-            ICLMN(IR,IGG) = ICLMN(1,IGG)
-            INDEX(IR,IGG) = INDEX(1,IGG)
-            LABEL(IR,IGG) = LABEL(1,IGG)
-            IR = IR - 1
-            IF (IR == 1) THEN
-               COEFF(1,IGG) = COF
-               ICLMN(1,IGG) = ICL
-               INDEX(1,IGG) = IND
-               LABEL(1,IGG) = LAB
-               GO TO 456
-            ENDIF
-         ENDIF
-         I = L
-         J = L + L
-   93    CONTINUE
-         IF (J <= IR) THEN
-            IF (J < IR) THEN
-               IF (LABEL(J,IGG) < LABEL(J+1,IGG)) J = J + 1
-            ENDIF
-            IF (LAB < LABEL(J,IGG)) THEN
-               COEFF(I,IGG) = COEFF(J,IGG)
-               ICLMN(I,IGG) = ICLMN(J,IGG)
-               INDEX(I,IGG) = INDEX(J,IGG)
-               LABEL(I,IGG) = LABEL(J,IGG)
-               I = J
-               J = J + J
-            ELSE
-               J = IR + 1
-            ENDIF
-            GO TO 93
-         ENDIF
-         COEFF(I,IGG) = COF
-         ICLMN(I,IGG) = ICL
-         INDEX(I,IGG) = IND
-         LABEL(I,IGG) = LAB
-         GO TO 92
+         l = ncoeff/2 + 1
+         ir = ncoeff
+   92    continue
+         if (l > 1) then
+            l = l - 1
+            cof = coeff(l,igg)
+            icl = iclmn(l,igg)
+            ind = index(l,igg)
+            lab = label(l,igg)
+         else
+            cof = coeff(ir,igg)
+            icl = iclmn(ir,igg)
+            ind = index(ir,igg)
+            lab = label(ir,igg)
+            coeff(ir,igg) = coeff(1,igg)
+            iclmn(ir,igg) = iclmn(1,igg)
+            index(ir,igg) = index(1,igg)
+            label(ir,igg) = label(1,igg)
+            ir = ir - 1
+            if (ir == 1) then
+               coeff(1,igg) = cof
+               iclmn(1,igg) = icl
+               index(1,igg) = ind
+               label(1,igg) = lab
+               go to 456
+            endif
+         endif
+         i = l
+         j = l + l
+   93    continue
+         if (j <= ir) then
+            if (j < ir) then
+               if (label(j,igg) < label(j+1,igg)) j = j + 1
+            endif
+            if (lab < label(j,igg)) then
+               coeff(i,igg) = coeff(j,igg)
+               iclmn(i,igg) = iclmn(j,igg)
+               index(i,igg) = index(j,igg)
+               label(i,igg) = label(j,igg)
+               i = j
+               j = j + j
+            else
+               j = ir + 1
+            endif
+            go to 93
+         endif
+         coeff(i,igg) = cof
+         iclmn(i,igg) = icl
+         index(i,igg) = ind
+         label(i,igg) = lab
+         go to 92
 
-      ENDIF
+      endif
 !
 !   Sorting complete; rewrite the file header
 !
 !
-  456 CONTINUE
-      WRITE (29) 'MCP', NB, NCF, NCOEFF
+  456 continue
+      write (29) 'MCP', nb, ncf, ncoeff
 !GG      WRITE (9999,*) 'MCP', NB, NCF, NCOEFF, NFILE
 !
 !   Write the sorted list to mcp.xx
 !
-      IF (NCOEFF > 0) THEN
+      if (ncoeff > 0) then
 !
-         LAST = LABEL(1,IGG)
-         IBEG = 1
-         IEND = 1
-         NTGRAL = 1
+         last = label(1,igg)
+         ibeg = 1
+         iend = 1
+         ntgral = 1
 !
-         DO I = 2, NCOEFF
-            IF (LABEL(I,IGG) == LAST) THEN
-               IEND = IEND + 1
-            ELSE
-               WRITE (29) LAST, IEND - IBEG + 1
+         do i = 2, ncoeff
+            if (label(i,igg) == last) then
+               iend = iend + 1
+            else
+               write (29) last, iend - ibeg + 1
 !GG               WRITE (9999,*) LAST, IEND - IBEG + 1
-               WRITE (29) (ICLMN(J,IGG),INDEX(J,IGG),COEFF(J,IGG),     &
-                                                          J=IBEG,IEND)
+               write (29) (iclmn(j,igg),index(j,igg),coeff(j,igg),     &
+                                                          j=ibeg,iend)
 !cjb-GG              DO J = IBEG,IEND
 !GG               WRITE (9999,'(2I12,E25.15)') ICLMN(J),INDEX(J),COEFF(J)
 !cjb-GG              END DO
 
 !              IF (NFILE.EQ.33) WRITE (20) (NSWAP(J),J = IBEG,IEND)
-               NTGRAL = NTGRAL + 1
-               LAST = LABEL(I,IGG)
-               IBEG = IEND + 1
-               IEND = IBEG
-            ENDIF
-         END DO
+               ntgral = ntgral + 1
+               last = label(i,igg)
+               ibeg = iend + 1
+               iend = ibeg
+            endif
+         end do
 !
-         IF (IBEG <= NCOEFF) THEN
-            WRITE (29) LAST, NCOEFF - IBEG + 1
+         if (ibeg <= ncoeff) then
+            write (29) last, ncoeff - ibeg + 1
 !GG            WRITE (9999,*) LAST, NCOEFF - IBEG + 1
-            WRITE (29) (ICLMN(J,IGG),INDEX(J,IGG),COEFF(J,IGG),       &
-                                                       J=IBEG,NCOEFF)
+            write (29) (iclmn(j,igg),index(j,igg),coeff(j,igg),       &
+                                                       j=ibeg,ncoeff)
 !GG          DO J=IBEG,NCOEFF
 !GG            WRITE (9999,'(2I12,E25.15)') ICLMN(J),INDEX(J),COEFF(J)
 !GG          END DO
 
 !           IF (NFILE.EQ.33) WRITE (20) (NSWAP(J),J = IBEG,NCOEFF)
-         ENDIF
+         endif
 !
-      ELSE
+      else
 !
-         NTGRAL = 0
+         ntgral = 0
 !
-      ENDIF
+      endif
 !
 !     write the terminator record for this block
 !
-      WRITE (29) 0, 0
+      write (29) 0, 0
 !GG      WRITE (9999,*) 0, 0
-      CLOSE(29)
+      close(29)
 !
 !   Completion message
 !
@@ -291,66 +291,66 @@
 !
 !   Debug printout
 !
-      IF (LPRINT) THEN
-         WRITE (99, 300)
-         WRITE (6, 300)
-         IF (NCOEFF > 0) THEN
+      if (lprint) then
+         write (99, 300)
+         write (6, 300)
+         if (ncoeff > 0) then
 !
-            LAST = LABEL(1,IGG)
-            IBEG = 1
-            IEND = 1
+            last = label(1,igg)
+            ibeg = 1
+            iend = 1
 !
-            DO I = 2, NCOEFF
-               IF (LABEL(I,IGG) == LAST) IEND = IEND + 1
-  567          CONTINUE
-               IF (LABEL(I,IGG)==LAST .AND. I/=NCOEFF) CYCLE
-               LAB = LAST
-               NCONTR = IEND - IBEG + 1
-               IF (NFILE == 31) THEN
-                  IA = MOD(LAB,KEY)
-                  IB = LAB/KEY
-                  WRITE (99, 301) NP(IA), NH(IA), NP(IB), NH(IB)
-                  DO J = IBEG, IEND
-                     WRITE (99, 302) ICLMN(J,IGG),INDEX(J,IGG),       &
-                                                        COEFF(J,IGG)
-                  END DO
-               ELSE
-                  K = NFILE - 32
-                  ID = MOD(LAB,KEY)
-                  LAB = LAB/KEY
-                  IB = MOD(LAB,KEY)
-                  LAB = LAB/KEY
-                  IC = MOD(LAB,KEY)
-                  IA = LAB/KEY
-                  WRITE (99, 304) K, NP(IA), NH(IA), NP(IB), NH(IB), NP(IC), NH&
-                     (IC), NP(ID), NH(ID)
-                  DO J = IBEG, IEND
-                     WRITE (99, 305) K,ICLMN(J,IGG),INDEX(J,IGG),     &
-                                                          COEFF(J,IGG)
-                  END DO
-               ENDIF
-               LAST = LABEL(I,IGG)
-               IBEG = IEND + 1
-               IEND = IBEG
-               IF (IEND == NCOEFF) GO TO 567
-            END DO
-         ENDIF
-         WRITE (99, 303) NTGRAL
-      ENDIF
+            do i = 2, ncoeff
+               if (label(i,igg) == last) iend = iend + 1
+  567          continue
+               if (label(i,igg)==last .and. i/=ncoeff) cycle
+               lab = last
+               ncontr = iend - ibeg + 1
+               if (nfile == 31) then
+                  ia = mod(lab,key)
+                  ib = lab/key
+                  write (99, 301) np(ia), nh(ia), np(ib), nh(ib)
+                  do j = ibeg, iend
+                     write (99, 302) iclmn(j,igg),index(j,igg),       &
+                                                        coeff(j,igg)
+                  end do
+               else
+                  k = nfile - 32
+                  id = mod(lab,key)
+                  lab = lab/key
+                  ib = mod(lab,key)
+                  lab = lab/key
+                  ic = mod(lab,key)
+                  ia = lab/key
+                  write (99, 304) k, np(ia), nh(ia), np(ib), nh(ib), np(ic), nh&
+                     (ic), np(id), nh(id)
+                  do j = ibeg, iend
+                     write (99, 305) k,iclmn(j,igg),index(j,igg),     &
+                                                          coeff(j,igg)
+                  end do
+               endif
+               last = label(i,igg)
+               ibeg = iend + 1
+               iend = ibeg
+               if (iend == ncoeff) go to 567
+            end do
+         endif
+         write (99, 303) ntgral
+      endif
 !
 !   Deallocate storage
 !
-      IF (NCOEFF > 0) THEN
-         IF (NFILE == 33) CALL DALLOC (NSWAP, 'NSWAP', 'SORTMEM')
-      ENDIF
+      if (ncoeff > 0) then
+         if (nfile == 33) call dalloc (nswap, 'NSWAP', 'SORTMEM')
+      endif
 
-  300 FORMAT(/,'From SORT:')
-  301 FORMAT(' I(',1I2,1A2,',',1I2,1A2,'):')
-  302 FORMAT('  T_[',1I2,',',1I4,'] = ',1P,D19.12)
-  303 FORMAT('  Number of integrals is ',1I4)
-  304 FORMAT(' R^[(',1I2,')] (',1I2,1A2,',',1I2,1A2,';',1I2,1A2,',',1I2,1A2,&
+  300 format(/,'From SORT:')
+  301 format(' I(',1i2,1a2,',',1i2,1a2,'):')
+  302 format('  T_[',1i2,',',1i4,'] = ',1p,d19.12)
+  303 format('  Number of integrals is ',1i4)
+  304 format(' R^[(',1i2,')] (',1i2,1a2,',',1i2,1a2,';',1i2,1a2,',',1i2,1a2,&
          '):')
-  305 FORMAT('  V^[(',1I2,')]_[',1I8,',',1I8,'] = ',1P,D19.12)
+  305 format('  V^[(',1i2,')]_[',1i8,',',1i8,'] = ',1p,d19.12)
 
-      RETURN
-      END SUBROUTINE SORTMEM
+      return
+      end subroutine sortmem

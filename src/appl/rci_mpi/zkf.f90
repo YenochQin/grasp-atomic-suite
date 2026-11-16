@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ZKF(K, I, J)
+      subroutine zkf(k, i, j)
 !                                                                      *
 !   This subroutine evaluates Hartree Z-functionals:                   *
 !                                                                      *
@@ -20,91 +20,91 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNN1
-      USE cnc_C, ONLY: cnc5c
-      USE grid_C, ONLY: n, r, rp
-      USE ncc_C
-      USE tatb_C, ZK=>TB
-      IMPLICIT NONE
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnn1
+      use cnc_c, only: cnc5c
+      use grid_c, only: n, r, rp
+      use ncc_c
+      use tatb_c, zk=>tb
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: K
-      INTEGER  :: I
-      INTEGER  :: J    !!!! Arument not referenced !!!
+      integer, intent(in) :: k
+      integer  :: i
+      integer  :: j    !!!! Arument not referenced !!!
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: II, MTPP1, MTPP3, MTPP4, KK
-      REAL(DOUBLE), DIMENSION(NNN1) :: RHOP, RTTK, TEMP
-      REAL(DOUBLE) :: SUM, ZKLIM
+      integer :: ii, mtpp1, mtpp3, mtpp4, kk
+      real(double), dimension(nnn1) :: rhop, rttk, temp
+      real(double) :: sum, zklim
 !-----------------------------------------------
 !
-      IF (K > 0) THEN
-         RTTK(2:N) = R(2:N)**K
-      ENDIF
+      if (k > 0) then
+         rttk(2:n) = r(2:n)**k
+      endif
 !
 !   MTP is fed in through  COMMON/TATB/
 !
-      MTPP1 = MTP + 1
-      MTPP3 = MTP + 3
-      MTPP4 = MTP + 4
+      mtpp1 = mtp + 1
+      mtpp3 = mtp + 3
+      mtpp4 = mtp + 4
 !
 !   Compute  RP(S)*F(S)  and store it in  RHOP
 !
-      RHOP(2:MTP) = RP(2:MTP)*TA(2:MTP)
+      rhop(2:mtp) = rp(2:mtp)*ta(2:mtp)
 !
 !   Fill array TEMP with r**k * RHOP
 !
-      TEMP(1) = 0.0D00
-      IF (K == 0) THEN
-         TEMP(2:MTP) = RHOP(2:MTP)
-      ELSE
-         TEMP(2:MTP) = RTTK(2:MTP)*RHOP(2:MTP)
-      ENDIF
+      temp(1) = 0.0d00
+      if (k == 0) then
+         temp(2:mtp) = rhop(2:mtp)
+      else
+         temp(2:mtp) = rttk(2:mtp)*rhop(2:mtp)
+      endif
 !
 !   Set an additional four points to zero
 !
-      TEMP(MTPP1:MTPP4) = 0.0D00
+      temp(mtpp1:mtpp4) = 0.0d00
 !
 !                                     k
 !   Compute the first few values of  r  * ZK  using semi-open
 !   Newton-Cotes formulae
 !
-      ZK(1) = 0.0D00
-      DO II = 2, 4
-         SUM = 0.0D00
-         DO KK = 2, 5
-            SUM = SUM + CNC5C(KK,II)*TEMP(KK)
-         END DO
-         ZK(II) = SUM
-      END DO
+      zk(1) = 0.0d00
+      do ii = 2, 4
+         sum = 0.0d00
+         do kk = 2, 5
+            sum = sum + cnc5c(kk,ii)*temp(kk)
+         end do
+         zk(ii) = sum
+      end do
 !                         k
 !   Compute remainder of r  * ZK: march out to MTP+3
 !
-      DO II = 5, MTPP3
-         ZK(II) = ZK(II-4) + C1*(TEMP(II-4)+TEMP(II)) + C2*(TEMP(II-3)+TEMP(II-&
-            1)) + C3*TEMP(II-2)
-      END DO
+      do ii = 5, mtpp3
+         zk(ii) = zk(ii-4) + c1*(temp(ii-4)+temp(ii)) + c2*(temp(ii-3)+temp(ii-&
+            1)) + c3*temp(ii-2)
+      end do
 !                                       k   (k)
 !   Determine the asymptotic value of  r * Z
 !
 !   Compute ZK
 !
-      ZKLIM = ZK(MTPP3)
+      zklim = zk(mtpp3)
 !
-      IF (K == 0) THEN
+      if (k == 0) then
 !
-         ZK(MTPP4:N) = ZKLIM
+         zk(mtpp4:n) = zklim
 !
-      ELSE
+      else
 !
-         ZK(2:MTPP3) = ZK(2:MTPP3)/RTTK(2:MTPP3)
+         zk(2:mtpp3) = zk(2:mtpp3)/rttk(2:mtpp3)
 !
-         ZK(MTPP4:N) = ZKLIM/RTTK(MTPP4:N)
+         zk(mtpp4:n) = zklim/rttk(mtpp4:n)
 !
-      ENDIF
+      endif
 !
-      RETURN
-      END SUBROUTINE ZKF
+      return
+      end subroutine zkf

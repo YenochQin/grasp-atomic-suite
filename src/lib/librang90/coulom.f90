@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE COULOM(J1,J2,J3,J4,L1,L2,L3,L4,K,AA)
+      subroutine coulom(j1,j2,j3,j4,l1,l2,l3,l4,k,aa)
 !                                                                  *
 !   --------------  SECTION METWO    SUBPROGRAM 01  ------------   *
 !                                                                  *
@@ -22,33 +22,33 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE CONS_C,          ONLY:  EPS, ZERO
+      use vast_kind_param, only:  double
+      use cons_c,          only:  eps, zero
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ittk_I
-      USE cre_I
-      IMPLICIT NONE
+      use ittk_i
+      use cre_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)        :: J1,J2,J3,J4,L1,L2,L3,L4,K
-      REAL(DOUBLE), INTENT(OUT)  :: AA
+      integer, intent(in)        :: j1,j2,j3,j4,l1,l2,l3,l4,k
+      real(double), intent(out)  :: aa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, IFAZ
+      integer :: i, ifaz
 !-----------------------------------------------
-      AA=ZERO
-      IF(ITTK(L1,L3,K) == 0)RETURN
-      IF(ITTK(L2,L4,K) == 0)RETURN
-      I=(2*K+1)/2
-      AA=CRE (J1,I,J3)
-      IF(DABS(AA) < EPS)RETURN
-      AA=AA*CRE (J2,I,J4)
-      IF(DABS(AA) < EPS)RETURN
-      IFAZ=L3-2*K-L1+L4-L2
-      IF((IFAZ/4)*4 /= IFAZ)AA=-AA
-      RETURN
-      END SUBROUTINE COULOM
+      aa=zero
+      if(ittk(l1,l3,k) == 0)return
+      if(ittk(l2,l4,k) == 0)return
+      i=(2*k+1)/2
+      aa=cre (j1,i,j3)
+      if(dabs(aa) < eps)return
+      aa=aa*cre (j2,i,j4)
+      if(dabs(aa) < eps)return
+      ifaz=l3-2*k-l1+l4-l2
+      if((ifaz/4)*4 /= ifaz)aa=-aa
+      return
+      end subroutine coulom

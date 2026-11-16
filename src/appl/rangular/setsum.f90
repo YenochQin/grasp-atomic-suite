@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETSUM(FULLNAME)
+      subroutine setsum(fullname)
 !                                                                      *
 !   Open the  .sum  file on stream 24.                                 *
 !                                                                      *
@@ -18,47 +18,47 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE IOUNIT_C
+      use vast_kind_param, only:  double
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      IMPLICIT NONE
+      use openfl_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER(LEN=*), INTENT(IN) :: FULLNAME
+      character(len=*), intent(in) :: fullname
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IERR
-      CHARACTER(LEN=120) :: FILNAM  ! The original did not compile
-      CHARACTER(LEN=11) :: FORM
-      CHARACTER(LEN=3)  :: STATUS
+      integer :: ierr
+      character(len=120) :: filnam  ! The original did not compile
+      character(len=11) :: form
+      character(len=3)  :: status
 !-----------------------------------------------
 
-      FORM = 'FORMATTED'
-      STATUS = 'NEW'
+      form = 'FORMATTED'
+      status = 'NEW'
 !
-      WRITE (ISTDE, *) 'File ', FULLNAME, ' will be created as the', &
+      write (istde, *) 'File ', fullname, ' will be created as the', &
          ' GENMCP SUMmary File;'
-      WRITE (ISTDE, *) 'enter another file name if this is not ', &
+      write (istde, *) 'enter another file name if this is not ', &
          'acceptable; null otherwise:'
-      READ (*, '(A)') FILNAM
+      read (*, '(A)') filnam
 !
-      IF (LEN_TRIM(FILNAM) == 0) FILNAM = FULLNAME
+      if (len_trim(filnam) == 0) filnam = fullname
 !
-    1 CONTINUE
-      CALL OPENFL (24, FILNAM, FORM, STATUS, IERR)
-      IF (IERR /= 0) THEN
-    2    CONTINUE
-         WRITE (ISTDE, *) 'Enter a name for the GENMCP SUMmary', &
+    1 continue
+      call openfl (24, filnam, form, status, ierr)
+      if (ierr /= 0) then
+    2    continue
+         write (istde, *) 'Enter a name for the GENMCP SUMmary', &
             ' File that is to be created:'
-         READ (*, '(A)') FILNAM
-         IF (LEN_TRIM(FILNAM) == 0) GO TO 2
-         GO TO 1
-      ENDIF
+         read (*, '(A)') filnam
+         if (len_trim(filnam) == 0) go to 2
+         go to 1
+      endif
 !
-      RETURN
-      END SUBROUTINE SETSUM
+      return
+      end subroutine setsum

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION GCO (K, IR, IA, IB)
+      real(kind(0.0d0)) function gco (k, ir, ia, ib)
 !                                                                      *
 !   This routine evaluates a coefficient                               *
 !                                                                      *
@@ -25,40 +25,40 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE debug_C
-      USE orb_C, IIQA=>IQA
+      use vast_kind_param, only:  double
+      use debug_c
+      use orb_c, iiqa=>iqa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE clrx_I
-      USE IQ_I
-      IMPLICIT NONE
+      use clrx_i
+      use iq_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: K
-      INTEGER  :: IR
-      INTEGER , INTENT(IN) :: IA
-      INTEGER , INTENT(IN) :: IB
+      integer  :: k
+      integer  :: ir
+      integer , intent(in) :: ia
+      integer , intent(in) :: ib
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IQA, IQB
-      REAL(DOUBLE) :: FAC
+      integer :: iqa, iqb
+      real(double) :: fac
 !      LOGICAL :: FULLA, FULLB
 !-----------------------------------------------
 !
-         IQA = IQ (IA,IR)
-         IQB = IQ (IB,IR)
+         iqa = iq (ia,ir)
+         iqb = iq (ib,ir)
 !GG      IQA = IBITS(IIQA((IA - 1)/4 + 1,IR),8*MOD(IA - 1,4),8)
 !GG      IQB = IBITS(IIQA((IB - 1)/4 + 1,IR),8*MOD(IB - 1,4),8)
-      IF (IQA==NKJ(IA) + 1 .OR. IQB==NKJ(IB)+1) THEN
-         FAC = CLRX(NAK(IA),K,NAK(IB))
-         GCO = -DBLE(IQA*IQB)*FAC*FAC
-      ELSE
-         GCO = 0.0D00
-      ENDIF
+      if (iqa==nkj(ia) + 1 .or. iqb==nkj(ib)+1) then
+         fac = clrx(nak(ia),k,nak(ib))
+         gco = -dble(iqa*iqb)*fac*fac
+      else
+         gco = 0.0d00
+      endif
 
-      RETURN
-      END FUNCTION GCO
+      return
+      end function gco

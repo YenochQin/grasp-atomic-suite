@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      INTEGER FUNCTION ITREXG(I1,I2,I3,I4,K)
+      integer function itrexg(i1,i2,i3,i4,k)
 !
 !   Written by G. Gaigalas,                                        *
 !   Vanderbilt University,  Nashville               October  1996  *
@@ -9,19 +9,19 @@
 !                                                                  *
 !*******************************************************************
 !
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)  :: I1, I2, I3, I4
-      INTEGER, INTENT(OUT) :: K
+      integer, intent(in)  :: i1, i2, i3, i4
+      integer, intent(out) :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J
+      integer :: j
 !-----------------------------------------------
-      J=MAX0(IABS(I1-I2),IABS(I3-I4))
-      K=MIN0(IABS(I1+I2),IABS(I3+I4))-J+1
-      ITREXG=J
-      RETURN
-      END FUNCTION ITREXG
+      j=max0(iabs(i1-i2),iabs(i3-i4))
+      k=min0(iabs(i1+i2),iabs(i3+i4))-j+1
+      itrexg=j
+      return
+      end function itrexg

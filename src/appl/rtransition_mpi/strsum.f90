@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE STRSUM(NAME, INPCI, ILBL)
+      subroutine strsum(name, inpci, ilbl)
 !                                                                      *
 !   Generates the first part of  oscl92.sum  (on stream 24).           *
 !                                                                      *
@@ -15,57 +15,57 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE biorb_C
-      USE decide_C
-      USE def_C
-      USE foparm_C
-      USE grid_C
-      USE eigv_C
-      USE npar_C
-      USE orb_C
-      USE prnt_C
-      USE syma_C
-      USE wave_C
-      USE jj2lsjbio_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use biorb_c
+      use decide_c
+      use def_c
+      use foparm_c
+      use grid_c
+      use eigv_c
+      use npar_c
+      use orb_c
+      use prnt_c
+      use syma_c
+      use wave_c
+      use jj2lsjbio_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: INPCI
-      INTEGER :: ILBL
-      CHARACTER, INTENT(IN) :: NAME(2)*24
+      integer, intent(in) :: inpci
+      integer :: ilbl
+      character, intent(in) :: name(2)*24
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, J
-      CHARACTER :: RECORD*15, CTIME*8, CDATE*8
+      integer :: i, j
+      character :: record*15, ctime*8, cdate*8
 !-----------------------------------------------
 
 
-      I = INDEX(NAME(1),' ')
-      J = INDEX(NAME(2),' ')
-      IF(ILBL == 0) THEN
-         IF (INPCI == 0) THEN
-            OPEN(UNIT=24,FILE=NAME(1)(1:I-1)//'.'//NAME(2)(1:J-1)//'.ct',FORM=&
-            'FORMATTED', STATUS='UNKNOWN',POSITION='asis')
-         ELSE
-            OPEN(UNIT=24,FILE=NAME(1)(1:I-1)//'.'//NAME(2)(1:J-1)//'.t',FORM=&
-            'FORMATTED',STATUS='UNKNOWN',POSITION='asis')
-         ENDIF
-      ELSE IF(ILBL == 1) THEN
-         IF(IOPEN_STATUS1.EQ.0 .AND. IOPEN_STATUS2 .EQ.0) THEN
-            IF (INPCI == 0) THEN
-               OPEN(UNIT=32,                                           &
-                   FILE=NAME(1)(1:I-1)//'.'//NAME(2)(1:J-1)//'.ct.lsj',&
-                   FORM='FORMATTED',STATUS='UNKNOWN')
-            ELSE
-               OPEN(UNIT=32,                                           &
-                   FILE=NAME(1)(1:I-1)//'.'//NAME(2)(1:J-1)//'.t.lsj', &
-                   FORM='FORMATTED',STATUS='UNKNOWN')
-            ENDIF
-         END IF
-      END IF
+      i = index(name(1),' ')
+      j = index(name(2),' ')
+      if(ilbl == 0) then
+         if (inpci == 0) then
+            open(unit=24,file=name(1)(1:i-1)//'.'//name(2)(1:j-1)//'.ct',form=&
+            'FORMATTED', status='UNKNOWN',position='asis')
+         else
+            open(unit=24,file=name(1)(1:i-1)//'.'//name(2)(1:j-1)//'.t',form=&
+            'FORMATTED',status='UNKNOWN',position='asis')
+         endif
+      else if(ilbl == 1) then
+         if(iopen_status1.eq.0 .and. iopen_status2 .eq.0) then
+            if (inpci == 0) then
+               open(unit=32,                                           &
+                   file=name(1)(1:i-1)//'.'//name(2)(1:j-1)//'.ct.lsj',&
+                   form='FORMATTED',status='UNKNOWN')
+            else
+               open(unit=32,                                           &
+                   file=name(1)(1:i-1)//'.'//name(2)(1:j-1)//'.t.lsj', &
+                   form='FORMATTED',status='UNKNOWN')
+            endif
+         end if
+      end if
 !
 !   Get the date and time of day; make this information the
 !   header of the summary file
@@ -167,30 +167,30 @@
 !     WRITE (24,*)
 !     CALL ENGOUT1 (EAVFF,EVALFF,IATJPOFF,IASPARFF,IVECFF,NVECFF,3,2)
 !
-      RETURN
+      return
 !
-  300 FORMAT ('The atomic number is ',1F14.10,';')
-  301 FORMAT ('  c =',1P,1D19.12,' Bohr radii,'            &
-             /'  a =',   1D19.12,' Bohr radii;')
-  305 FORMAT ('Speed of light = ',1PD19.12,' atomic units.')
-  306 FORMAT ( 'Radial grid: R(I) = RNT*(exp((I-1)*H)-1),',&
+  300 format ('The atomic number is ',1f14.10,';')
+  301 format ('  c =',1p,1d19.12,' Bohr radii,'            &
+             /'  a =',   1d19.12,' Bohr radii;')
+  305 format ('Speed of light = ',1pd19.12,' atomic units.')
+  306 format ( 'Radial grid: R(I) = RNT*(exp((I-1)*H)-1),',&
                ' I = 1, ..., N;'                           &
-             //' RNT  = ',1P,D19.12,' Bohr radii;'         &
-              /' H    = ',   D19.12,' Bohr radii;'         &
-              /' N    = ',1I4,';')
-  307 FORMAT ( 'Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,',&
+             //' RNT  = ',1p,d19.12,' Bohr radii;'         &
+              /' H    = ',   d19.12,' Bohr radii;'         &
+              /' N    = ',1i4,';')
+  307 format ( 'Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,',&
                ' I = 1, ..., N;'                           &
-             //' RNT  = ',1P,D19.12,' Bohr radii;'         &
-              /' H    = ',   D19.12,' Bohr radii;'         &
-              /' HP   = ',   D19.12,' Bohr radii;'         &
-              /' N    = ',1I4,';')
-  308 FORMAT ( ' R(1) = ',1P,1D19.12,' Bohr radii;'        &
-              /' R(2) = ',   1D19.12,' Bohr radii;'        &
-              /' R(N) = ',   1D19.12,' Bohr radii.')
-  309 FORMAT (' Subshell',11X,'e',20X,'p0',18X,            &
-              'gamma',19X,'P(2)',18X,'Q(2)',10X,'MTP')
-  310 FORMAT (3X,1I2,1A2,1X,1P,5(3X,1D19.12),3X,1I3)
+             //' RNT  = ',1p,d19.12,' Bohr radii;'         &
+              /' H    = ',   d19.12,' Bohr radii;'         &
+              /' HP   = ',   d19.12,' Bohr radii;'         &
+              /' N    = ',1i4,';')
+  308 format ( ' R(1) = ',1p,1d19.12,' Bohr radii;'        &
+              /' R(2) = ',   1d19.12,' Bohr radii;'        &
+              /' R(N) = ',   1d19.12,' Bohr radii.')
+  309 format (' Subshell',11x,'e',20x,'p0',18x,            &
+              'gamma',19x,'P(2)',18x,'Q(2)',10x,'MTP')
+  310 format (3x,1i2,1a2,1x,1p,5(3x,1d19.12),3x,1i3)
 
-      RETURN
+      return
 !
-      END SUBROUTINE STRSUM
+      end subroutine strsum

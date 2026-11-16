@@ -1,4 +1,4 @@
-      SUBROUTINE INIEST(N, NB, NIV, HMX, JCOL, IROW, BASIS, IBLOCK, JBLOCK)
+      subroutine iniest(n, nb, niv, hmx, jcol, irow, basis, iblock, jblock)
 !-----------------------------------------------------------------------
 !     Routine for providing initial estimates from the diagonal
 !     of the matrix. This way was used by Dvdson in atomic structure
@@ -12,34 +12,34 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dinit_I
+      use dinit_i
       !USE dspevx_I
       !USE vec_I
       !USE dcopy_I
-      USE suite_linear_algebra, ONLY: dcopy, dspevx
-      IMPLICIT NONE
+      use suite_linear_algebra, only: dcopy, dspevx
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: N
-      INTEGER, INTENT(IN) :: NB
-      INTEGER  :: NIV
-      INTEGER, INTENT(IN) :: JBLOCK
-      INTEGER, INTENT(IN) :: JCOL(0:*)
-      INTEGER, INTENT(IN) :: IROW(*)
-      INTEGER, INTENT(IN) :: IBLOCK(*)
-      REAL(DOUBLE), INTENT(IN) :: HMX(*)
-      REAL(DOUBLE)  :: BASIS(*)
+      integer, intent(in) :: n
+      integer, intent(in) :: nb
+      integer  :: niv
+      integer, intent(in) :: jblock
+      integer, intent(in) :: jcol(0:*)
+      integer, intent(in) :: irow(*)
+      integer, intent(in) :: iblock(*)
+      real(double), intent(in) :: hmx(*)
+      real(double)  :: basis(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      INTEGER :: NS, ICOUNT, &
-         J, ISTART, ISH, II, NFOUND, INFO, IERR, IC
+      integer :: ns, icount, &
+         j, istart, ish, ii, nfound, info, ierr, ic
       !REAL(DOUBLE) :: EIGVAL, WORK
 
       integer, dimension(:), pointer :: iqiwork,iqif,iqjsh
@@ -55,35 +55,35 @@
 !******************************************************************
 
 !***** alloc space for 100*100 lower triangular
-      NS = MIN(1000,NB)
+      ns = min(1000,nb)
 !once here        NS = min(800, NB)
         !print*, 'NS=',NS,' NIV=',NIV
       !CALL ALLOC (IQAP, NS*(NS + 1)/2, 8)
-      allocate (ap(NS*(NS + 1)/2),stat=ierr)
-      if (ierr.ne.0) call mem_fail(6,NS*(NS + 1)/2,'iniest::ap',ierr);
+      allocate (ap(ns*(ns + 1)/2),stat=ierr)
+      if (ierr.ne.0) call mem_fail(6,ns*(ns + 1)/2,'iniest::ap',ierr);
       iqap=>ap
 
-      CALL DINIT (NS*(NS + 1)/2, 0.D0, AP, 1)
+      call dinit (ns*(ns + 1)/2, 0.d0, ap, 1)
 
       !CALL ALLOC (IQEIG, NS, 8)
-      allocate (eigval(NS),stat=ierr)
+      allocate (eigval(ns),stat=ierr)
       if (ierr.ne.0) call mem_fail(6,ns,'iniest::eigval',ierr);
-      IQEIG=>eigval
+      iqeig=>eigval
 
       !CALL ALLOC (IQVEC, NS*NIV, 8)
-      allocate (vec(NS*NIV),stat=ierr)
+      allocate (vec(ns*niv),stat=ierr)
       if (ierr.ne.0) call mem_fail(6,ns*niv,'iniest::vec',ierr);
-      IQVEC=>vec
+      iqvec=>vec
 
       !CALL ALLOC (IQWORK, 8*NS, 8)
-      allocate (work(8*NS),stat=ierr)
-      if (ierr.ne.0) call mem_fail(6,8*NS,'iniest::work',ierr);
-      IQWORK=>work
+      allocate (work(8*ns),stat=ierr)
+      if (ierr.ne.0) call mem_fail(6,8*ns,'iniest::work',ierr);
+      iqwork=>work
 
       !CALL ALLOC (IQIWORK, 5*NS, 4)
-      allocate (iwork(5*NS),stat=ierr)
-      if (ierr.ne.0) call mem_fail(6,5*NS,'iniest::iwork',ierr);
-      IQIWORK=>iwork
+      allocate (iwork(5*ns),stat=ierr)
+      if (ierr.ne.0) call mem_fail(6,5*ns,'iniest::iwork',ierr);
+      iqiwork=>iwork
 
       !CALL ALLOC (IQIF, NS, 4)
       allocate (ifail(ns),stat=ierr)
@@ -91,37 +91,37 @@
       iqif=>ifail
 
       !CALL ALLOC (IQJSH, NS, 4)
-      allocate (jsh(NS),stat=ierr)
+      allocate (jsh(ns),stat=ierr)
       if (ierr.ne.0) call mem_fail(6,ns,'iniest::jsh',ierr);
       iqjsh=>jsh
 
-      ICOUNT = 0
+      icount = 0
 
 !**** separate upper left block of size NS*NS
-      DO J = 1, N
-         IF (ICOUNT >= NS) EXIT
-         IF (IBLOCK(J) /= JBLOCK) CYCLE
-         ICOUNT = ICOUNT + 1
-         JSH(ICOUNT) = J
-         ISTART = JCOL(J-1) + 1
-         ISH = J - ICOUNT
-  100    CONTINUE
-         AP(IROW(ISTART)-ISH+(ICOUNT-1)*(2*NS-ICOUNT)/2) = HMX(ISTART)
+      do j = 1, n
+         if (icount >= ns) exit
+         if (iblock(j) /= jblock) cycle
+         icount = icount + 1
+         jsh(icount) = j
+         istart = jcol(j-1) + 1
+         ish = j - icount
+  100    continue
+         ap(irow(istart)-ish+(icount-1)*(2*ns-icount)/2) = hmx(istart)
 !           print*, 'ic = ',icount, ' i=', irow(istart)-ish
-         ISTART = ISTART + 1
+         istart = istart + 1
 ! check the block structure for zero elements
-         IF (ISTART > JCOL(J)) GO TO 102
-         ISH = ISH + COUNT(IBLOCK(IROW(ISTART-1):IROW(ISTART))/=JBLOCK)
-         IF (ISTART > JCOL(J)) GO TO 102
-         IF (IROW(ISTART) - ISH <= NS) GO TO 100
+         if (istart > jcol(j)) go to 102
+         ish = ish + count(iblock(irow(istart-1):irow(istart))/=jblock)
+         if (istart > jcol(j)) go to 102
+         if (irow(istart) - ish <= ns) go to 100
 !           goto 100
-  102    CONTINUE
-      END DO
-      CALL DSPEVX ('Vectors also', 'In a range', 'Lower triangular', NS, AP, &
-         -1.D0, -1.D0, 1, NIV, 0.D0, NFOUND, EIGVAL, VEC, NS, WORK, IWORK, IFAIL, &
-         INFO)
-      IERR = -ABS(INFO)
-      IF (IERR /= 0) WRITE (6, *) 'iniest ierr =', IERR
+  102    continue
+      end do
+      call dspevx ('Vectors also', 'In a range', 'Lower triangular', ns, ap, &
+         -1.d0, -1.d0, 1, niv, 0.d0, nfound, eigval, vec, ns, work, iwork, ifail, &
+         info)
+      ierr = -abs(info)
+      if (ierr /= 0) write (6, *) 'iniest ierr =', ierr
 !           print '(D14.7,X,I2)', (eigval(i),i, i=1,NIV)
 
 !******************************************************************
@@ -130,17 +130,17 @@
 !
 !       ..Build the Basis.
 !
-      CALL DINIT (N*NIV, 0.D0, BASIS, 1)
-      ISTART = 0
-      DO J = 1, NIV
+      call dinit (n*niv, 0.d0, basis, 1)
+      istart = 0
+      do j = 1, niv
 !scatter the vectors
-         DO IC = 1, NS
-            BASIS(ISTART+JSH(IC)) = VEC((J - 1)*NS + IC)
-         END DO
+         do ic = 1, ns
+            basis(istart+jsh(ic)) = vec((j - 1)*ns + ic)
+         end do
 !              call dcopy(NS,vec((J-1)*NS+1),1,BASIS(istart+ish(j)),1)
-         ISTART = ISTART + N
-      END DO
-      CALL DCOPY (NIV, EIGVAL, 1, BASIS(NIV*N+1), 1)
+         istart = istart + n
+      end do
+      call dcopy (niv, eigval, 1, basis(niv*n+1), 1)
       deallocate(ap) !CALL DALLOC (IQAP)
       deallocate(eigval) !CALL DALLOC (IQEIG)
       deallocate(vec) !CALL DALLOC (IQVEC)
@@ -149,14 +149,14 @@
       deallocate(ifail) !CALL DALLOC (IQIF)
       deallocate(jsh) !CALL DALLOC (IQJSH)
 
-      RETURN
-      CONTAINS
-      SUBROUTINE mem_fail(unit, count, variable, status)
+      return
+      contains
+      subroutine mem_fail(unit, count, variable, status)
 !     The legacy external MEM_FAIL had no implementation in this suite.
-      INTEGER, INTENT(IN) :: unit, count, status
-      CHARACTER(*), INTENT(IN) :: variable
-      WRITE(unit, '(A,A,A,I0,A,I0)') 'Unable to allocate ', variable, &
+      integer, intent(in) :: unit, count, status
+      character(*), intent(in) :: variable
+      write(unit, '(A,A,A,I0,A,I0)') 'Unable to allocate ', variable, &
          ': elements=', count, ', status=', status
-      ERROR STOP 'INIEST allocation failed'
-      END SUBROUTINE mem_fail
-      END SUBROUTINE INIEST
+      error stop 'INIEST allocation failed'
+      end subroutine mem_fail
+      end subroutine iniest

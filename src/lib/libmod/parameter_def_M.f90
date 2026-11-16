@@ -21,7 +21,7 @@
 
 !    Compatibility interface: all limits are defined in suite_parameters.
 !    Keep existing USE parameter_def callers without duplicate definitions.
-      use suite_parameters, only: KEYORB, NNNP, NNN1, NNNW, NNNWM1, NNNWM2
+      use suite_parameters, only: keyorb, nnnp, nnn1, nnnw, nnnwm1, nnnwm2
       implicit none
       end module parameter_def
 !======================================================================

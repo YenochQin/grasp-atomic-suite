@@ -1,10 +1,10 @@
 ! This is the only NP module with an MPI dependency.
 module npol_mpi
-    use mpi, only: MPI_Comm_rank, MPI_Bcast, MPI_Allreduce, MPI_Abort, &
-        MPI_INTEGER, MPI_DOUBLE_PRECISION, MPI_LOGICAL, MPI_CHARACTER, MPI_MIN
+    use mpi, only: mpi_comm_rank, mpi_bcast, mpi_allreduce, mpi_abort, &
+        mpi_integer, mpi_double_precision, mpi_logical, mpi_character, mpi_min
     use vast_kind_param, only: double
-    use parameter_def, only: NNNP
-    use npol_C
+    use parameter_def, only: nnnp
+    use npol_c
     use npol_input, only: npol_read_config, npol_validate_config
     use npol_kernel, only: npol_check_grid, npol_build_grid, npol_compose
     use npol_initialization, only: npol_write_summary, npol_summary_path
@@ -20,11 +20,11 @@ contains
         integer, intent(out) :: status
         character(*), intent(out) :: message
         type(npol_config) :: cfg
-        real(double) :: a(NNNP), b(NNNP), v(NNNP), candidate(NNNP)
+        real(double) :: a(nnnp), b(nnnp), v(nnnp), candidate(nnnp)
         integer :: rank, ierr, root_n
         ! Fixed-size wire message, independent of caller's character length.
-        character(NPOL_MESSAGE_LEN) :: detail
-        call MPI_Comm_rank(comm, rank, ierr)
+        character(npol_message_len) :: detail
+        call mpi_comm_rank(comm, rank, ierr)
         call npol_reset()
         call npol_check_grid(n, r, status, detail)
         if (size(zz) < n) then
@@ -35,7 +35,7 @@ contains
         message = detail
         if (status /= 0) return
         root_n = n
-        call MPI_Bcast(root_n, 1, MPI_INTEGER, 0, comm, ierr)
+        call mpi_bcast(root_n, 1, mpi_integer, 0, comm, ierr)
         if (root_n /= n) then
             status = 1
             detail = 'npol: inconsistent active grid length across ranks'
@@ -62,9 +62,9 @@ contains
         call sync_status(comm, rank, status, detail)
         message = detail
         if (status /= 0) return
-        call MPI_Bcast(a, n, MPI_DOUBLE_PRECISION, 0, comm, ierr)
-        call MPI_Bcast(b, n, MPI_DOUBLE_PRECISION, 0, comm, ierr)
-        call MPI_Bcast(v, n, MPI_DOUBLE_PRECISION, 0, comm, ierr)
+        call mpi_bcast(a, n, mpi_double_precision, 0, comm, ierr)
+        call mpi_bcast(b, n, mpi_double_precision, 0, comm, ierr)
+        call mpi_bcast(v, n, mpi_double_precision, 0, comm, ierr)
         call npol_compose(n, r, zz_coul, v, candidate, status, detail)
         call sync_status(comm, rank, status, detail)
         message = detail
@@ -82,45 +82,45 @@ contains
     subroutine sync_status(comm, rank, status, message)
         integer, intent(in) :: comm, rank
         integer, intent(inout) :: status
-        character(NPOL_MESSAGE_LEN), intent(inout) :: message
+        character(npol_message_len), intent(inout) :: message
         integer :: failed_rank, first_rank, ierr
         failed_rank = huge(0)
         if (status /= 0) failed_rank = rank
-        call MPI_Allreduce(failed_rank, first_rank, 1, MPI_INTEGER, MPI_MIN, comm, ierr)
+        call mpi_allreduce(failed_rank, first_rank, 1, mpi_integer, mpi_min, comm, ierr)
         status = 0
         if (first_rank == huge(0)) then
             message = ''
             return
         end if
         status = 1
-        call MPI_Bcast(message, len(message), MPI_CHARACTER, first_rank, comm, ierr)
+        call mpi_bcast(message, len(message), mpi_character, first_rank, comm, ierr)
     end subroutine
 
     subroutine broadcast_config(cfg, comm)
         type(npol_config), intent(inout) :: cfg
         integer, intent(in) :: comm
         integer :: ierr
-        call MPI_Bcast(cfg%schema_version, 1, MPI_INTEGER, 0, comm, ierr)
-        call MPI_Bcast(cfg%isotope_z, 1, MPI_INTEGER, 0, comm, ierr)
-        call MPI_Bcast(cfg%isotope_a, 1, MPI_INTEGER, 0, comm, ierr)
-        call MPI_Bcast(cfg%enabled, 1, MPI_LOGICAL, 0, comm, ierr)
-        call MPI_Bcast(cfg%use_e1, 1, MPI_LOGICAL, 0, comm, ierr)
-        call MPI_Bcast(cfg%use_e2, 1, MPI_LOGICAL, 0, comm, ierr)
-        call MPI_Bcast(cfg%k1, 1, MPI_DOUBLE_PRECISION, 0, comm, ierr)
-        call MPI_Bcast(cfg%b1, 1, MPI_DOUBLE_PRECISION, 0, comm, ierr)
-        call MPI_Bcast(cfg%k2, 1, MPI_DOUBLE_PRECISION, 0, comm, ierr)
-        call MPI_Bcast(cfg%b2, 1, MPI_DOUBLE_PRECISION, 0, comm, ierr)
-        call MPI_Bcast(cfg%units, len(cfg%units), MPI_CHARACTER, 0, comm, ierr)
-        call MPI_Bcast(cfg%model_id, len(cfg%model_id), MPI_CHARACTER, 0, comm, ierr)
-        call MPI_Bcast(cfg%parameter_source, len(cfg%parameter_source), MPI_CHARACTER, 0, comm, ierr)
+        call mpi_bcast(cfg%schema_version, 1, mpi_integer, 0, comm, ierr)
+        call mpi_bcast(cfg%isotope_z, 1, mpi_integer, 0, comm, ierr)
+        call mpi_bcast(cfg%isotope_a, 1, mpi_integer, 0, comm, ierr)
+        call mpi_bcast(cfg%enabled, 1, mpi_logical, 0, comm, ierr)
+        call mpi_bcast(cfg%use_e1, 1, mpi_logical, 0, comm, ierr)
+        call mpi_bcast(cfg%use_e2, 1, mpi_logical, 0, comm, ierr)
+        call mpi_bcast(cfg%k1, 1, mpi_double_precision, 0, comm, ierr)
+        call mpi_bcast(cfg%b1, 1, mpi_double_precision, 0, comm, ierr)
+        call mpi_bcast(cfg%k2, 1, mpi_double_precision, 0, comm, ierr)
+        call mpi_bcast(cfg%b2, 1, mpi_double_precision, 0, comm, ierr)
+        call mpi_bcast(cfg%units, len(cfg%units), mpi_character, 0, comm, ierr)
+        call mpi_bcast(cfg%model_id, len(cfg%model_id), mpi_character, 0, comm, ierr)
+        call mpi_bcast(cfg%parameter_source, len(cfg%parameter_source), mpi_character, 0, comm, ierr)
     end subroutine
 
     subroutine npol_abort_mpi(comm, message)
         integer, intent(in) :: comm
         character(*), intent(in) :: message
         integer :: rank, ierr
-        call MPI_Comm_rank(comm, rank, ierr)
+        call mpi_comm_rank(comm, rank, ierr)
         if (rank == 0) write(*,'(A)') trim(message)
-        call MPI_Abort(comm, 1, ierr)
+        call mpi_abort(comm, 1, ierr)
     end subroutine
 end module npol_mpi

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE LODRWFI(NAME, NTESTG)
+      subroutine lodrwfi(name, ntestg)
 !                                                                      *
 !   This subroutine loads  radial wavefunctions from the  .rwf  file   *
 !   and performs some related setup.                                   *
@@ -16,176 +16,176 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW, NNNP
-      USE memory_man
-      USE biorb_C
-      USE def_C,           ONLY: z, c
-      USE DEBUG_C
-      USE grid_C
-      USE npar_C
-      USE sbdat_C,         ONLY: kamax, nshlii, nshlpii
-      USE wave_C,          ONLY: pfii, qfii, pzii, mfii
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw, nnnp
+      use memory_man
+      use biorb_c
+      use def_c,           only: z, c
+      use debug_c
+      use grid_c
+      use npar_c
+      use sbdat_c,         only: kamax, nshlii, nshlpii
+      use wave_c,          only: pfii, qfii, pzii, mfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE intrpqi_I
-      IMPLICIT NONE
+      use intrpqi_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: NTESTG
-      CHARACTER , INTENT(IN) :: NAME*24
+      integer , intent(in) :: ntestg
+      character , intent(in) :: name*24
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER , DIMENSION(NNNW) :: NAK, NP
-      INTEGER :: NTESTL, NTEST, J, K, I, NWIN, IOS, NPY, NAKY, MY, JJ, KK, JJJ&
-         , KKK, IERR
-      REAL(DOUBLE), DIMENSION(NNNW) :: E, GAMA
-      REAL(DOUBLE) :: CON, FKK, EY, PZY, DNORM
-      REAL(DOUBLE), DIMENSION(:), pointer :: pa, qa, ra
-      CHARACTER , DIMENSION(NNNW) :: NH*2
-      CHARACTER :: G92RWF*6
+      integer , dimension(nnnw) :: nak, np
+      integer :: ntestl, ntest, j, k, i, nwin, ios, npy, naky, my, jj, kk, jjj&
+         , kkk, ierr
+      real(double), dimension(nnnw) :: e, gama
+      real(double) :: con, fkk, ey, pzy, dnorm
+      real(double), dimension(:), pointer :: pa, qa, ra
+      character , dimension(nnnw) :: nh*2
+      character :: g92rwf*6
 !-----------------------------------------------
 !
 !  Common relevant for the initial state
 !
 !
-      NTESTL = 0
-      NTEST = MAX0(NTESTL,NTESTG)
-      NTEST = 0
+      ntestl = 0
+      ntest = max0(ntestl,ntestg)
+      ntest = 0
 
 !
 !   Write entry message
 !
-      WRITE (6, *) 'Loading Radial WaveFunction File for initial state...'
+      write (6, *) 'Loading Radial WaveFunction File for initial state...'
 !
 !   Open the radial wave function file
 !
-      J = INDEX(NAME,' ')
-      OPEN(UNIT=21, FILE=NAME(1:J-1)//'.w', FORM='UNFORMATTED', STATUS='OLD', &
-         POSITION='asis')
+      j = index(name,' ')
+      open(unit=21, file=name(1:j-1)//'.w', form='UNFORMATTED', status='OLD', &
+         position='asis')
 !
 !   Save NAK, NP and NH
 !
-      NAK(:NWII) = NAKII(:NWII)
-      NP(:NWII) = NPII(:NWII)
-      NH(:NWII) = NHII(:NWII)
+      nak(:nwii) = nakii(:nwii)
+      np(:nwii) = npii(:nwii)
+      nh(:nwii) = nhii(:nwii)
 !
 !   Allocate storage to orbital arrays
 !
-      CALL ALLOC (PFII, NNNP,NWII, 'PFII', 'LODRWII')
-      CALL ALLOC (QFII, NNNP,NWII, 'QFII', 'LODRWII')
+      call alloc (pfii, nnnp,nwii, 'PFII', 'LODRWII')
+      call alloc (qfii, nnnp,nwii, 'QFII', 'LODRWII')
 
 !
-      CON = Z/C
-      CON = CON*CON
+      con = z/c
+      con = con*con
 !
-      DO J = 1, NWII
-         PFII(:NNNP,J) = 0.0D00
-         QFII(:NNNP,J) = 0.0D00
+      do j = 1, nwii
+         pfii(:nnnp,j) = 0.0d00
+         qfii(:nnnp,j) = 0.0d00
 !
-         K = ABS(NAK(J))
-         IF (NPARM /= 0) CYCLE
-         FKK = DBLE(K*K)
-         IF (FKK >= CON) THEN
-            GAMA(J) = SQRT(FKK - CON)
-         ELSE
-            WRITE (6, *) 'LODRWF: Imaginary gamma parameter'
-            WRITE (6, *) ' for ', NP(J), NH(J), ' orbital; the'
-            WRITE (6, *) ' point model for the nucleus'
-            WRITE (6, *) ' is inappropriate for Z > ', C, '.'
-            STOP
-         ENDIF
+         k = abs(nak(j))
+         if (nparm /= 0) cycle
+         fkk = dble(k*k)
+         if (fkk >= con) then
+            gama(j) = sqrt(fkk - con)
+         else
+            write (6, *) 'LODRWF: Imaginary gamma parameter'
+            write (6, *) ' for ', np(j), nh(j), ' orbital; the'
+            write (6, *) ' point model for the nucleus'
+            write (6, *) ' is inappropriate for Z > ', c, '.'
+            stop
+         endif
 !
-      END DO
+      end do
 !
 !   Read orbital information from Read Orbitals File;
 !
-      NWIN = 0
-      READ (21, IOSTAT=IOS) G92RWF
-      IF (IOS/=0 .OR. G92RWF/='G92RWF') THEN
-         WRITE (6, *) 'This is not a Radial WaveFunction File;'
-         CLOSE(21)
-      ENDIF
+      nwin = 0
+      read (21, iostat=ios) g92rwf
+      if (ios/=0 .or. g92rwf/='G92RWF') then
+         write (6, *) 'This is not a Radial WaveFunction File;'
+         close(21)
+      endif
 
-      IF (NTEST >= 100) THEN
-         WRITE (*, *) '******************'
-         WRITE (*, *) ' Entering lodrwfi'
-         WRITE (*, *) '******************'
-      ENDIF
+      if (ntest >= 100) then
+         write (*, *) '******************'
+         write (*, *) ' Entering lodrwfi'
+         write (*, *) '******************'
+      endif
 
-    3 CONTINUE
-      READ (21, IOSTAT=IOS) NPY, NAKY, EY, MY
-      IF (IOS == 0) THEN
-         CALL ALLOC (PA, MY, 'PA', 'LODRWFII')
-         CALL ALLOC (QA, MY, 'QA', 'LODRWFII')
-         CALL ALLOC (RA, MY, 'RA', 'LODRWFII')
-         READ (21) PZY, (PA(I),I=1,MY), (QA(I),I=1,MY)
-         READ (21) (RA(I),I=1,MY)
+    3 continue
+      read (21, iostat=ios) npy, naky, ey, my
+      if (ios == 0) then
+         call alloc (pa, my, 'PA', 'LODRWFII')
+         call alloc (qa, my, 'QA', 'LODRWFII')
+         call alloc (ra, my, 'RA', 'LODRWFII')
+         read (21) pzy, (pa(i),i=1,my), (qa(i),i=1,my)
+         read (21) (ra(i),i=1,my)
 !
 !    Orbital order as defined in kapdata
 !
-         JJ = 0
-         DO K = 1, KAMAX
-            IF (K > 1) JJ = NSHLII(K-1) + JJ
-            DO J = 1, NSHLII(K)
-               KK = NSHLPII(K,J)
-               IF (NPY/=NP(KK) .OR. NAKY/=NAK(KK)) CYCLE
-               JJJ = JJ + J
-               PZII(JJJ) = PZY
-               EII(JJJ) = EY
-               NAKII(JJJ) = NAK(KK)
-               NPII(JJJ) = NP(KK)
-               NHII(JJJ) = NH(KK)
-               GAMAII(JJJ) = GAMA(KK)
-               CALL INTRPQI (PA, QA, MY, RA, JJJ, DNORM)
-               IF (NTEST >= 100) WRITE (*, 301) NPII(JJJ), NHII(JJJ), EII(JJJ)&
-                  , DNORM
-               IF (NTEST > 1000) THEN
-                  WRITE (*, *) 'PF              QF             RA'
-                  DO KKK = 1, MFII(JJJ)
-                     WRITE (*, *) PFII(KKK,JJJ), QFII(KKK,JJJ), RA(KKK)
-                  END DO
-               ENDIF
-               NWIN = NWIN + 1
-            END DO
-         END DO
-         CALL DALLOC (PA, 'PA', 'LODRWII')
-         CALL DALLOC (QA, 'QA', 'LODRWII')
-         CALL DALLOC (RA, 'RA', 'LODRWII')
-         GO TO 3
-      ENDIF
-      IF (LDBPR(3)) WRITE (99, *) ' orbitals renormalised;'
+         jj = 0
+         do k = 1, kamax
+            if (k > 1) jj = nshlii(k-1) + jj
+            do j = 1, nshlii(k)
+               kk = nshlpii(k,j)
+               if (npy/=np(kk) .or. naky/=nak(kk)) cycle
+               jjj = jj + j
+               pzii(jjj) = pzy
+               eii(jjj) = ey
+               nakii(jjj) = nak(kk)
+               npii(jjj) = np(kk)
+               nhii(jjj) = nh(kk)
+               gamaii(jjj) = gama(kk)
+               call intrpqi (pa, qa, my, ra, jjj, dnorm)
+               if (ntest >= 100) write (*, 301) npii(jjj), nhii(jjj), eii(jjj)&
+                  , dnorm
+               if (ntest > 1000) then
+                  write (*, *) 'PF              QF             RA'
+                  do kkk = 1, mfii(jjj)
+                     write (*, *) pfii(kkk,jjj), qfii(kkk,jjj), ra(kkk)
+                  end do
+               endif
+               nwin = nwin + 1
+            end do
+         end do
+         call dalloc (pa, 'PA', 'LODRWII')
+         call dalloc (qa, 'QA', 'LODRWII')
+         call dalloc (ra, 'RA', 'LODRWII')
+         go to 3
+      endif
+      if (ldbpr(3)) write (99, *) ' orbitals renormalised;'
 !
 !   Stop with an error message if all orbitals are not known
 !
-      IF (NWIN < NWII) THEN
-         WRITE (6, *) 'LODRWF: All required orbitals not'
-         WRITE (6, *) ' found.'
-         IERR = 1
-         GO TO 5
-      ENDIF
+      if (nwin < nwii) then
+         write (6, *) 'LODRWF: All required orbitals not'
+         write (6, *) ' found.'
+         ierr = 1
+         go to 5
+      endif
 !
-      WRITE (6, *) ' ... load complete;'
+      write (6, *) ' ... load complete;'
 !
-    5 CONTINUE
-      CLOSE(21)
-      IF (NTEST >= 100) THEN
-         WRITE (*, *) 'Sorted order should be the same as from kapdat'
-         DO J = 1, NWII
-            WRITE (*, 301) NPII(J), NHII(J), EII(J), DNORM
-         END DO
-         WRITE (*, *)
-         WRITE (*, *) '*****************'
-         WRITE (*, *) ' Leaving lodrwfi'
-         WRITE (*, *) '*****************'
-      ENDIF
+    5 continue
+      close(21)
+      if (ntest >= 100) then
+         write (*, *) 'Sorted order should be the same as from kapdat'
+         do j = 1, nwii
+            write (*, 301) npii(j), nhii(j), eii(j), dnorm
+         end do
+         write (*, *)
+         write (*, *) '*****************'
+         write (*, *) ' Leaving lodrwfi'
+         write (*, *) '*****************'
+      endif
 
-      RETURN
+      return
 !
-  301 FORMAT(2X,I2,A2,4X,1P,1D22.15,4X,1D22.15)
-      RETURN
+  301 format(2x,i2,a2,4x,1p,1d22.15,4x,1d22.15)
+      return
 !
-      END SUBROUTINE LODRWFI
+      end subroutine lodrwfi

@@ -23,7 +23,7 @@
 !***********************************************************************
 !***********************************************************************
 !                                                                      *
-      PROGRAM RCI_MPI
+      program rci_mpi
 !                                                                      *
 !   Entry routine for RCI92. Controls the entire computation.          *
 !                                                                      *
@@ -43,87 +43,87 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE default_C
-      USE blim_C
-      USE where_C
-      USE cons_C
-      USE def_C
-      USE hblock_C
-      USE blk_C
-      USE iccu_C
-      USE iounit_C
-      USE terms_C
-      USE mpi_C
-      USE decide_C
+      use default_c
+      use blim_c
+      use where_c
+      use cons_c
+      use def_c
+      use hblock_c
+      use blk_c
+      use iccu_c
+      use iounit_c
+      use terms_c
+      use mpi_c
+      use decide_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE cslhmpi_I
-      USE setdbg_I
-      USE setmc_I
-      USE setcon_I
-      USE setsum_I
-      USE setres_I
-      USE setmixmpi_I
-      USE strsum_I
-      USE factt_I
-      USE matrix_I
-      USE genintbreit1wrap_I, ONLY: genintbreit1wrap
-      USE genintbreit2wrap_I, ONLY: genintbreit2wrap
-      USE genintrkwrap_I, ONLY: genintrkwrap
-      USE mpiu_I, ONLY: startmpi2
-      USE mpiu_I, ONLY: stopmpi2
-      IMPLICIT NONE
+      use getyn_i
+      use cslhmpi_i
+      use setdbg_i
+      use setmc_i
+      use setcon_i
+      use setsum_i
+      use setres_i
+      use setmixmpi_i
+      use strsum_i
+      use factt_i
+      use matrix_i
+      use genintbreit1wrap_i, only: genintbreit1wrap
+      use genintbreit2wrap_i, only: genintbreit2wrap
+      use genintrkwrap_i, only: genintrkwrap
+      use mpiu_i, only: startmpi2
+      use mpiu_i, only: stopmpi2
+      implicit none
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: NBLK0 = 50
+      integer, parameter :: nblk0 = 50
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: nblk=50
-      INTEGER            :: lenperm, lentmp
-      INTEGER :: NCOUNT1, NCOUNT2, NCOUNT_RATE, NCOUNT_MAX
-      INTEGER, DIMENSION(8) :: NYMDUHMSM
-      INTEGER :: K, LENNAME, NCORE, NDUM, J2MAX, NSECONDS
-      LOGICAL :: YES
-      CHARACTER (LEN = 3) :: idstring
+      integer, parameter :: nblk=50
+      integer            :: lenperm, lentmp
+      integer :: ncount1, ncount2, ncount_rate, ncount_max
+      integer, dimension(8) :: nymduhmsm
+      integer :: k, lenname, ncore, ndum, j2max, nseconds
+      logical :: yes
+      character (len = 3) :: idstring
 !      CHARACTER(LEN=128) :: NAME, TMPDIR, PERMDIR, ISOFILE
-      CHARACTER(LEN=128) :: STARTDIR, NAME, ISOFILE, NAMESAVE,TMPDIR, PERMDIR
-      CHARACTER(LEN=8), DIMENSION(NBLK0) :: IDBLK
-      CHARACTER :: CHDATE*8, CHTIME*10, CHZONE*5, STR*8, MSG*128
+      character(len=128) :: startdir, name, isofile, namesave,tmpdir, permdir
+      character(len=8), dimension(nblk0) :: idblk
+      character :: chdate*8, chtime*10, chzone*5, str*8, msg*128
 !-----------------------------------------------
 !=======================================================================
 !  Start mpi --- get processor info: myid, nprocs, host name; and print
 !=======================================================================
 
-      CALL startmpi2 (myid, nprocs, host, lenhost, ncount1,       &
+      call startmpi2 (myid, nprocs, host, lenhost, ncount1,       &
                            startdir, permdir, tmpdir, 'RCI_MPI')
-      WRITE (idstring, '(I3.3)') myid
+      write (idstring, '(I3.3)') myid
 
-      lenperm = LEN_TRIM (permdir)
-      lentmp = LEN_TRIM (tmpdir)
+      lenperm = len_trim (permdir)
+      lentmp = len_trim (tmpdir)
 
 !=======================================================================
 !  Get NDEF on node-0 and then send to all nodes
 !=======================================================================
 
-      IF (myid .EQ. 0) THEN
-         WRITE (istde,*)
-         WRITE (ISTDE, *) 'Default settings? '
-         YES = GETYN()
-         IF (YES) THEN
-            NDEF = 0
+      if (myid .eq. 0) then
+         write (istde,*)
+         write (istde, *) 'Default settings? '
+         yes = getyn()
+         if (yes) then
+            ndef = 0
 !cjb fort.734
 !cjb        write(734,'(A)') 'y            ! Default settings'
-         ELSE
-            NDEF = 1
+         else
+            ndef = 1
 !cjb fort.734
 !cjb        write(734,'(A)') 'n            ! Default settings'
-         ENDIF
-      ENDIF
-      CALL MPI_Bcast (NDEF,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+         endif
+      endif
+      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,ierr)
 !     CALL MPI_Bcast (imethod,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 
 
@@ -133,40 +133,40 @@
 !=======================================================================
 
       lenname = 0     ! Otherwise it might cause trouble for myid!=0
-      IF (myid .EQ. 0) THEN
-         DO
-            WRITE (istde,*) 'Name of state: '
-            READ (*,'(A)') NAME
-            K = INDEX (NAME,' ')
-            IF (K .GT. 1) EXIT
-            WRITE (istde,*) 'Name may not start with a blank. redo...'
-         ENDDO
-         NAMESAVE = NAME
+      if (myid .eq. 0) then
+         do
+            write (istde,*) 'Name of state: '
+            read (*,'(A)') name
+            k = index (name,' ')
+            if (k .gt. 1) exit
+            write (istde,*) 'Name may not start with a blank. redo...'
+         enddo
+         namesave = name
 
-         IF (myid .EQ. 0) THEN
+         if (myid .eq. 0) then
             open(unit=734,file=trim(name)//'.clog',status='unknown')
             write(734,'(a)') 'y            ! Default settings'
             write(734,'(a)') trim(name)
-         ENDIF
+         endif
 
          !...Form the full name of the files used on node-0
 
-         lenname = LEN_TRIM (NAME)
+         lenname = len_trim (name)
          isofile = permdir(1:lenperm) // '/isodata '
-         NAME    = permdir(1:lenperm) // '/' // NAME(1:lenname) // ' '
+         name    = permdir(1:lenperm) // '/' // name(1:lenname) // ' '
          lenname = lenperm + lenname + 1
 !CFF     .. already open
 !        open(unit=734,file=trim(name)//'.clog',status='unknown')
 !        write(734,'(a)') 'y            ! Default settings'
 !        write(734,'(a)') trim(namesave)
-      ENDIF
+      endif
 
 !=======================================================================
-   99 CONTINUE
+   99 continue
 
 
       imcdf = 26        ! Unit for rci.res file
-      IPRERUN = 0
+      iprerun = 0
 !=======================================================================
 
 !=======================================================================
@@ -184,15 +184,15 @@
 !    SETCSLmpi - open, check, load data from, and close the  .csl  file
 !=======================================================================
 
-      CALL SETDBG
-      CALL SETMC
-      CALL SETCON
-      IF (myid .EQ. 0)  CALL SETSUM (NAME)
-      CALL cslhmpi (name(1:lenname) // '.c', ncore, nblk0, idblk)
-      CALL SETRES (isofile, name(1:lenname) // '.w', idblk)
-      CALL SETMIXmpi (NAME, idblk)
-      IF (myid .EQ. 0)  CALL STRSUM
-      CALL FACTT
+      call setdbg
+      call setmc
+      call setcon
+      if (myid .eq. 0)  call setsum (name)
+      call cslhmpi (name(1:lenname) // '.c', ncore, nblk0, idblk)
+      call setres (isofile, name(1:lenname) // '.w', idblk)
+      call setmixmpi (name, idblk)
+      if (myid .eq. 0)  call strsum
+      call factt
 
 !=======================================================================
 !   Calculate all the needed Rk integrals - genintrkwrap calls genintrk
@@ -201,33 +201,33 @@
 !   "MPI_Allreduce" stuff.
 !=======================================================================
 
-      CALL GENINTRKwrap (myid, nprocs, j2max)
+      call genintrkwrap (myid, nprocs, j2max)
 
 !
 !   If transverse interaction comput Breit integrals of type 1 and 2
 !
-      IF (LTRANS) THEN
-         CALL GENINTBREIT1WRAP (myid, nprocs, j2max)
-         CALL GENINTBREIT2WRAP (myid, nprocs, j2max)
-      END IF
+      if (ltrans) then
+         call genintbreit1wrap (myid, nprocs, j2max)
+         call genintbreit2wrap (myid, nprocs, j2max)
+      end if
 
 !=======================================================================
 !   Proceed with the CI calculation
 !=======================================================================
-      WRITE (6, *) 'Calling MATRIX...'
+      write (6, *) 'Calling MATRIX...'
 
-      CALL MATRIX (NCORE, J2MAX)
+      call matrix (ncore, j2max)
 
-      IF (IPRERUN == 1) THEN
-         IPRERUN = 2
-         GO TO 99
-      ENDIF
+      if (iprerun == 1) then
+         iprerun = 2
+         go to 99
+      endif
 !=======================================================================
 !  Execution finished; Statistics output
 !=======================================================================
 
-      CALL stopmpi2 (myid, nprocs, host, lenhost,          &
+      call stopmpi2 (myid, nprocs, host, lenhost,          &
                            ncount1, 'RCI_MPI')
 
-      STOP
-      END PROGRAM RCI_MPI
+      stop
+      end program rci_mpi

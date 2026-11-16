@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE PERKO1(JA,BK,IK,BD,ID)
+      subroutine perko1(ja,bk,ik,bd,id)
 !                                                                  *
 !     ------------  SECTION METWO    SUBPROGRAM 22  -------------  *
 !                                                                  *
@@ -18,47 +18,47 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: HALF
-      USE m_C,             ONLY: JLIST, NQ1, NQ2, JJQ1, JJQ2
-      USE orb_C,           ONLY: NP, NAK
+      use vast_kind_param, only: double
+      use cons_c,          only: half
+      use m_c,             only: jlist, nq1, nq2, jjq1, jjq2
+      use orb_c,           only: np, nak
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE nmtejj_I
-      IMPLICIT NONE
+      use nmtejj_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN)                :: JA
-      INTEGER,      INTENT(OUT), DIMENSION(7) :: IK, ID
-      REAL(DOUBLE), INTENT(OUT), DIMENSION(3) :: BK, BD
+      integer,      intent(in)                :: ja
+      integer,      intent(out), dimension(7) :: ik, id
+      real(double), intent(out), dimension(3) :: bk, bd
 !      DIMENSION BK(3),IK(7),BD(3),ID(7)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IJ
+      integer :: ij
 !-----------------------------------------------
-      IJ=JLIST(JA)
-      IK(2)=NP(IJ)
-      ID(2)=IK(2)
-      IK(3)=(IABS(NAK(IJ))*2)-1
-      ID(3)=IK(3)
-      IK(4)=NQ1(IJ)
-      ID(4)=NQ2(IJ)
-      IK(5)=(IK(3)+NAK(IJ)/IABS(NAK(IJ)))/2
-      ID(5)=IK(5)
-      IK(6)=JJQ1(3,IJ)-1
-      ID(6)=JJQ2(3,IJ)-1
-      IK(7)=IABS(NAK(IJ))-JJQ1(1,IJ)
-      ID(7)=IABS(NAK(IJ))-JJQ2(1,IJ)
-      BK(1)=HALF*DBLE(IK(7))
-      BD(1)=HALF*DBLE(ID(7))
-      BK(2)=HALF*DBLE(IK(6))
-      BD(2)=HALF*DBLE(ID(6))
-      BK(3)=-HALF*DBLE(IABS(NAK(IJ))-IK(4))
-      BD(3)=-HALF*DBLE(IABS(NAK(IJ))-ID(4))
-      IK(1)=NMTEJJ(IK(7),IK(6),IK(3),ID(4),IK(4))
-      ID(1)=NMTEJJ(ID(7),ID(6),ID(3),ID(4),IK(4))
-      RETURN
-      END SUBROUTINE PERKO1
+      ij=jlist(ja)
+      ik(2)=np(ij)
+      id(2)=ik(2)
+      ik(3)=(iabs(nak(ij))*2)-1
+      id(3)=ik(3)
+      ik(4)=nq1(ij)
+      id(4)=nq2(ij)
+      ik(5)=(ik(3)+nak(ij)/iabs(nak(ij)))/2
+      id(5)=ik(5)
+      ik(6)=jjq1(3,ij)-1
+      id(6)=jjq2(3,ij)-1
+      ik(7)=iabs(nak(ij))-jjq1(1,ij)
+      id(7)=iabs(nak(ij))-jjq2(1,ij)
+      bk(1)=half*dble(ik(7))
+      bd(1)=half*dble(id(7))
+      bk(2)=half*dble(ik(6))
+      bd(2)=half*dble(id(6))
+      bk(3)=-half*dble(iabs(nak(ij))-ik(4))
+      bd(3)=-half*dble(iabs(nak(ij))-id(4))
+      ik(1)=nmtejj(ik(7),ik(6),ik(3),id(4),ik(4))
+      id(1)=nmtejj(id(7),id(6),id(3),id(4),ik(4))
+      return
+      end subroutine perko1

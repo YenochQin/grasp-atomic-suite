@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GETSCDmpi(EOL, IDBLK, ISOFILE, RWFFILE)
+      subroutine getscdmpi(eol, idblk, isofile, rwffile)
 !                                                                      *
 !   Interactively determines the data governing the SCF problem.       *
 !                                                                      *
@@ -19,515 +19,515 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNW, NNNP
-      USE COUN_C
-      USE damp_C, ONLY: odamp, cdamp
-      USE DEF_C
-      USE default_C
-      USE fixd_C, ONLY: lfix
-      USE iounit_C
-      USE grid_C, ONLY: h, hp, n, rnt
-      USE invt_C, ONLY: noinvt
-      USE mcpb_C
-      USE mpi_C
-      USE node_C, ONLY: nnodep
-      USE npar_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnw, nnnp
+      use coun_c
+      use damp_c, only: odamp, cdamp
+      use def_c
+      use default_c
+      use fixd_c, only: lfix
+      use iounit_c
+      use grid_c, only: h, hp, n, rnt
+      use invt_c, only: noinvt
+      use mcpb_c
+      use mpi_c
+      use node_c, only: nnodep
+      use npar_c
       !USE npot_C
-      USE ORB_C , ONLY: nak, nh, np, nw, PED
-      USE orthct_C
-      USE scf_C, ONLY: scnsty, method
-      USE wave_C
+      use orb_c , only: nak, nh, np, nw, ped
+      use orthct_c
+      use scf_c, only: scnsty, method
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setisompi_I
-      USE setqic_I
-      USE radgrd_I
-      USE nucpot_I
-      USE setrwfmpi_I
-      USE getaldmpi_I
-      USE getoldmpi_I
-      USE convrt_I
-      USE getrsl_I
-      IMPLICIT NONE
+      use getyn_i
+      use setisompi_i
+      use setqic_i
+      use radgrd_i
+      use nucpot_i
+      use setrwfmpi_i
+      use getaldmpi_i
+      use getoldmpi_i
+      use convrt_i
+      use getrsl_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      LOGICAL, INTENT(OUT) :: EOL
-      CHARACTER  :: ISOFILE*(*)
-      CHARACTER  :: RWFFILE*(*)
-      CHARACTER  :: IDBLK(*)*8
+      logical, intent(out) :: eol
+      character  :: isofile*(*)
+      character  :: rwffile*(*)
+      character  :: idblk(*)*8
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      CHARACTER*6, PARAMETER :: MYNAME = 'GETSCD'
+      character*6, parameter :: myname = 'GETSCD'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IQADUM
-      INTEGER , DIMENSION(NNNW) :: INDX
-      INTEGER :: I, J, IEND, IBEG, LENTH, NSUBS, LOC
-      REAL(DOUBLE) :: ODAMPU, CDAMPU
-      LOGICAL :: YES
-      CHARACTER :: RECORD*80, CNUM*20
+      integer :: iqadum
+      integer , dimension(nnnw) :: indx
+      integer :: i, j, iend, ibeg, lenth, nsubs, loc
+      real(double) :: odampu, cdampu
+      logical :: yes
+      character :: record*80, cnum*20
 !-----------------------------------------------
 !
 !   Open, check, load data from, and close the  .iso  file
 !
-      CALL SETISOMPI (ISOFILE)  ! NOW ALSO GETS THE RADIAL PARAMETERS, Jon CGrumer (Lund, 2013)
+      call setisompi (isofile)  ! NOW ALSO GETS THE RADIAL PARAMETERS, Jon CGrumer (Lund, 2013)
 !
 !   Set default speed of light and grid parameters
 !
-      C = CVAC
+      c = cvac
 ! DEFAULT IS SET ABOVE IN SETISO (from isodata), JG (Lund, 2013)
-      IF (NPARM == 0) THEN
-         RNT = EXP((-65.D0/16.D0))/Z
-         H = 0.5D0**4
-         N = MIN(220,NNNP)
-      ELSE
+      if (nparm == 0) then
+         rnt = exp((-65.d0/16.d0))/z
+         h = 0.5d0**4
+         n = min(220,nnnp)
+      else
 !         default comes here
 !CFF     ... RNT should be Z-dependent
-         RNT = 2.0D-06/Z
-         H = 5.D-2
-         N = NNNP
-      ENDIF
-      HP = 0.D0
+         rnt = 2.0d-06/z
+         h = 5.d-2
+         n = nnnp
+      endif
+      hp = 0.d0
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
-      ACCY = H**6
-      IF (NDEF /= 0) THEN
+      accy = h**6
+      if (ndef /= 0) then
 
-                        IF (myid .EQ. 0) THEN
+                        if (myid .eq. 0) then
                         !--------------------
-         WRITE (ISTDE,'(A)')'Change the default speed of',&
+         write (istde,'(A)')'Change the default speed of',&
             ' light or radial grid parameters?  (y/n) '
-         YES = GETYN()
-         IF (YES) THEN
-            WRITE (istde,*) 'Speed of light = ',CVAC,';', ' revise ?'
-            YES = GETYN()
-            IF (YES) THEN
-               WRITE (ISTDE, *) 'Enter the revised value:'
-               READ (5, *) C
-            ENDIF
+         yes = getyn()
+         if (yes) then
+            write (istde,*) 'Speed of light = ',cvac,';', ' revise ?'
+            yes = getyn()
+            if (yes) then
+               write (istde, *) 'Enter the revised value:'
+               read (5, *) c
+            endif
 !
 !   Determine the parameters controlling the radial grid
 !
-            WRITE (ISTDE, *) 'The default radial grid parameters for ',&
+            write (istde, *) 'The default radial grid parameters for ',&
                'this case are:'
-            WRITE (ISTDE, *) ' RNT = ', RNT
-            WRITE (ISTDE, *) ' H = ', H
-            WRITE (ISTDE, *) ' HP = ', HP
-            WRITE (ISTDE, *) ' N = ', N
-            WRITE (ISTDE, *) ' revise these values?'
-            YES = GETYN()
-            IF (YES) THEN
-               WRITE (ISTDE, *) 'Enter RNT:'
-               READ (5, *) RNT
-               WRITE (ISTDE, *) 'Enter H:'
-               READ (5, *) H
-               WRITE (ISTDE, *) 'Enter HP:'
-               READ (5, *) HP
-               WRITE (ISTDE, *) 'Enter N:'
-               READ (5, *) N
+            write (istde, *) ' RNT = ', rnt
+            write (istde, *) ' H = ', h
+            write (istde, *) ' HP = ', hp
+            write (istde, *) ' N = ', n
+            write (istde, *) ' revise these values?'
+            yes = getyn()
+            if (yes) then
+               write (istde, *) 'Enter RNT:'
+               read (5, *) rnt
+               write (istde, *) 'Enter H:'
+               read (5, *) h
+               write (istde, *) 'Enter HP:'
+               read (5, *) hp
+               write (istde, *) 'Enter N:'
+               read (5, *) n
 !b Revised grid
-               WRITE (istde,*) 'Revised RNT = ', RNT
-               WRITE (istde,*) 'Revised H   = ', H
-               WRITE (istde,*) 'Revised HP  = ', HP
-               WRITE (istde,*) 'Revised N   = ', N
-            ENDIF
-         ENDIF
+               write (istde,*) 'Revised RNT = ', rnt
+               write (istde,*) 'Revised H   = ', h
+               write (istde,*) 'Revised HP  = ', hp
+               write (istde,*) 'Revised N   = ', n
+            endif
+         endif
 !
 !b
 !b read ACCY on input
 !b
-         WRITE (istde,*) 'Revise the default ACCY = ', ACCY
-         YES = GETYN ()
-            IF (YES) THEN
-               WRITE (istde,*) 'Enter ACCY:'
-               READ *, ACCY
+         write (istde,*) 'Revise the default ACCY = ', accy
+         yes = getyn ()
+            if (yes) then
+               write (istde,*) 'Enter ACCY:'
+               read *, accy
 !b Revised ACCY
-               WRITE (istde,*) 'Revised ACCY = ', ACCY
-         ENDIF
-                        ENDIF ! (myid .EQ. 0)
+               write (istde,*) 'Revised ACCY = ', accy
+         endif
+                        endif ! (myid .EQ. 0)
                         !--------------------
 
-         CALL MPI_Bcast (c,   1, MPI_DOUBLE_PRECISION, 0,    &
-                                 MPI_COMM_WORLD, ierr)
-         CALL MPI_Bcast (rnt, 1, MPI_DOUBLE_PRECISION, 0,    &
-                                 MPI_COMM_WORLD, ierr)
-         CALL MPI_Bcast (h,   1, MPI_DOUBLE_PRECISION, 0,    &
-                                 MPI_COMM_WORLD, ierr)
-         CALL MPI_Bcast (hp,  1, MPI_DOUBLE_PRECISION, 0,    &
-                                 MPI_COMM_WORLD, ierr)
-         CALL MPI_Bcast (n,   1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+         call mpi_bcast (c,   1, mpi_double_precision, 0,    &
+                                 mpi_comm_world, ierr)
+         call mpi_bcast (rnt, 1, mpi_double_precision, 0,    &
+                                 mpi_comm_world, ierr)
+         call mpi_bcast (h,   1, mpi_double_precision, 0,    &
+                                 mpi_comm_world, ierr)
+         call mpi_bcast (hp,  1, mpi_double_precision, 0,    &
+                                 mpi_comm_world, ierr)
+         call mpi_bcast (n,   1, mpi_integer, 0, mpi_comm_world, ierr)
 !b ACCY
-         CALL MPI_Bcast (ACCY,  1, MPI_DOUBLE_PRECISION, 0,  &
-                                 MPI_COMM_WORLD, ierr)
-      ENDIF
+         call mpi_bcast (accy,  1, mpi_double_precision, 0,  &
+                                 mpi_comm_world, ierr)
+      endif
 !
 !   Set up the coefficients for the numerical procedures
 !
-      CALL SETQIC
+      call setqic
 !
 !   Generate the radial grid and all associated arrays
 !
-      CALL RADGRD
+      call radgrd
 !
 !   Generate $- r \times V_ (r)$
 !
-      CALL NUCPOT
+      call nucpot
 !
 !   Load the subshell radial wavefunction estimates
 !
-      CALL SETRWFMPI (RWFFILE)
+      call setrwfmpi (rwffile)
 !
 !   Set some defaults
 !
-      THRESH = 0.05D0
+      thresh = 0.05d0
 
 !      IORDER(I) = I    ! Completely determined in GETOLDMPI
-      METHOD(:NW) = 3
-      NOINVT(:NW) = .TRUE.
+      method(:nw) = 3
+      noinvt(:nw) = .true.
 !FF      ... Revised Sep. 2014
 !CFF      ODAMP(:NW) = 1.D0
-      ODAMP(:NW) = 0.0D0
-      SCNSTY(:NW) = 0.0D0
+      odamp(:nw) = 0.0d0
+      scnsty(:nw) = 0.0d0
 
-      WHERE (NAK(:NW) < 0)
-         NNODEP(:NW) = NP(:NW) + NAK(:NW)
-      ELSEWHERE
-         NNODEP(:NW) = NP(:NW) - NAK(:NW) - 1
-      END WHERE
+      where (nak(:nw) < 0)
+         nnodep(:nw) = np(:nw) + nak(:nw)
+      elsewhere
+         nnodep(:nw) = np(:nw) - nak(:nw) - 1
+      end where
 
-      IF (DIAG) THEN
-         EOL = .FALSE.
-         CALL GETALDMPI       ! (E)AL type calculation,
+      if (diag) then
+         eol = .false.
+         call getaldmpi       ! (E)AL type calculation,
                               ! H(DC) will not be diagonalised
-      ELSE IF (LFORDR) THEN
-         EOL = .TRUE.
-         CALL GETOLDMPI (IDBLK)   ! EOL type calculation
-      ELSE
-         IF (MYID == 0) THEN
-            EOL = .true.
-         END IF
-         CALL MPI_Bcast (EOL, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-         IF (EOL) THEN
-            CALL GETOLDmpi (IDBLK)
-         ELSE
-            CALL GETALDmpi    ! (E)AL type calculation,
+      else if (lfordr) then
+         eol = .true.
+         call getoldmpi (idblk)   ! EOL type calculation
+      else
+         if (myid == 0) then
+            eol = .true.
+         end if
+         call mpi_bcast (eol, 1, mpi_logical, 0, mpi_comm_world, ierr)
+         if (eol) then
+            call getoldmpi (idblk)
+         else
+            call getaldmpi    ! (E)AL type calculation,
                               ! H(DC) will not be diagonalised
-         ENDIF
-      ENDIF
+         endif
+      endif
 
-      IF(MYID == 0) THEN
-         WRITE (istde,*) 'Enter the maximum number of SCF cycles:'
-         READ (*,*) NSCF
-         IF (NDEF.EQ.0) THEN
-            WRITE(734,*) NSCF,'! Number of SCF cycles'
-          END IF
-      END IF
-      CALL MPI_Bcast (NSCF, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+      if(myid == 0) then
+         write (istde,*) 'Enter the maximum number of SCF cycles:'
+         read (*,*) nscf
+         if (ndef.eq.0) then
+            write(734,*) nscf,'! Number of SCF cycles'
+          end if
+      end if
+      call mpi_bcast (nscf, 1, mpi_integer, 0, mpi_comm_world, ierr)
 !
 !   Allow the user to modify other defaults
 !
-      IF (NDEF /= 0) THEN
-         IF(MYID == 0) THEN
-            WRITE (ISTDE, '(A)') 'Modify other defaults?  (y/n) '
-            YES = GETYN()
-         END IF
-         CALL MPI_Bcast (yes, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-      ELSE
-         YES = .FALSE.
-      ENDIF
+      if (ndef /= 0) then
+         if(myid == 0) then
+            write (istde, '(A)') 'Modify other defaults?  (y/n) '
+            yes = getyn()
+         end if
+         call mpi_bcast (yes, 1, mpi_logical, 0, mpi_comm_world, ierr)
+      else
+         yes = .false.
+      endif
 
-      IF (.NOT.YES) RETURN
+      if (.not.yes) return
 !=======================================================================
 ! From here to end, "other defaults" are handled. For simplicity
 ! We'll let node-0 do the job and then broadcast results to all
 ! nodes.
 !=======================================================================
                   !-------------------------------------------
-      IF (MYID == 0) THEN                        ! This is a _big_ IF
+      if (myid == 0) then                        ! This is a _big_ IF
                   !-------------------------------------------
 !
 !   THRESH
 !
-         WRITE (ISTDE,*)'An oscillation in the large-component of the ',&
+         write (istde,*)'An oscillation in the large-component of the ',&
             'radial wavefunction is diregarded'
-         WRITE (ISTDE, *) 'for the purposes of node counting if its ', &
+         write (istde, *) 'for the purposes of node counting if its ', &
             'amplitude is less than 1/20 the'
-         WRITE (ISTDE, *) 'maximum amplitude.   Revise this?'
-         YES = GETYN()
-         IF (YES) THEN
-    3       CONTINUE
-            WRITE (ISTDE, *) 'Enter the new threshold value:'
-            READ (*, *) THRESH
-            IF (THRESH <= 0.D0) THEN
-               WRITE (ISTDE, *) MYNAME, ': This must exceed 0;'
-               GO TO 3
-            ENDIF
-         ENDIF
-         YES = .FALSE.
+         write (istde, *) 'maximum amplitude.   Revise this?'
+         yes = getyn()
+         if (yes) then
+    3       continue
+            write (istde, *) 'Enter the new threshold value:'
+            read (*, *) thresh
+            if (thresh <= 0.d0) then
+               write (istde, *) myname, ': This must exceed 0;'
+               go to 3
+            endif
+         endif
+         yes = .false.
 !
 !   METHOD
 !
 
 ! Piece only for printing...
 
-         DO I = 1, 4
+         do i = 1, 4
 
-            DO J = 1, NW
-               IF (.NOT.(METHOD(J)==I .AND. .NOT.LFIX(J))) CYCLE
-               WRITE (ISTDE, *) 'Method ', I, ' is used for ', &
+            do j = 1, nw
+               if (.not.(method(j)==i .and. .not.lfix(j))) cycle
+               write (istde, *) 'Method ', i, ' is used for ', &
                   'integrating the radial differential ', &
                   'equation for subshells'
-               GO TO 9
-            END DO
+               go to 9
+            end do
 
-            CYCLE
+            cycle
 
-    9       CONTINUE
-            IEND = 0
-            DO J = 1, NW
-               IF (METHOD(J)==I .AND. .NOT.LFIX(J)) THEN
-                  IBEG = IEND + 1
-                  IEND = IBEG
-                  RECORD(IBEG:IEND) = ' '
-                  CALL CONVRT (NP(J), CNUM, LENTH)
-                  IBEG = IEND + 1
-                  IEND = IBEG + LENTH - 1
-                  RECORD(IBEG:IEND) = CNUM(1:LENTH)
-                  IBEG = IEND + 1
-                  IF (NAK(J) < 0) THEN
-                     IEND = IBEG
-                     RECORD(IBEG:IEND) = NH(J)(1:1)
-                  ELSE
-                     IEND = IBEG + 1
-                     RECORD(IBEG:IEND) = NH(J)(1:2)
-                  ENDIF
-               ENDIF
-               IF (IEND <= 76) CYCLE
-               WRITE (ISTDE, *) RECORD(1:IEND)
-               IEND = 0
-            END DO
-            IF (IEND<=0 .OR. MYID/=0) CYCLE
-            WRITE (ISTDE, *) RECORD(1:IEND)
-         END DO
+    9       continue
+            iend = 0
+            do j = 1, nw
+               if (method(j)==i .and. .not.lfix(j)) then
+                  ibeg = iend + 1
+                  iend = ibeg
+                  record(ibeg:iend) = ' '
+                  call convrt (np(j), cnum, lenth)
+                  ibeg = iend + 1
+                  iend = ibeg + lenth - 1
+                  record(ibeg:iend) = cnum(1:lenth)
+                  ibeg = iend + 1
+                  if (nak(j) < 0) then
+                     iend = ibeg
+                     record(ibeg:iend) = nh(j)(1:1)
+                  else
+                     iend = ibeg + 1
+                     record(ibeg:iend) = nh(j)(1:2)
+                  endif
+               endif
+               if (iend <= 76) cycle
+               write (istde, *) record(1:iend)
+               iend = 0
+            end do
+            if (iend<=0 .or. myid/=0) cycle
+            write (istde, *) record(1:iend)
+         end do
 
 ! Reads user inputs and fills array indx(1:nsubs) where nsubs itself
 ! is an output from getrsl.
 ! METHOD(1:4) is the only output. indx() and nsubs are discarded
 
-         WRITE (ISTDE, *) 'Select a different integration method for ',&
+         write (istde, *) 'Select a different integration method for ',&
             'any subshell radial wavefunction?'
-         YES = GETYN()
-         IF (YES) THEN
-            DO I = 1, 4
-               WRITE (ISTDE, *) 'Method ', I, ':'
-               CALL GETRSL (INDX, NSUBS)
-               DO J = 1, NSUBS
-                  LOC = INDX(J)
-                  IF (LFIX(LOC)) CYCLE
-                  METHOD(LOC) = I
-               END DO
-            END DO
-         ENDIF
+         yes = getyn()
+         if (yes) then
+            do i = 1, 4
+               write (istde, *) 'Method ', i, ':'
+               call getrsl (indx, nsubs)
+               do j = 1, nsubs
+                  loc = indx(j)
+                  if (lfix(loc)) cycle
+                  method(loc) = i
+               end do
+            end do
+         endif
 !
 !   NOINVT
 !
-         WRITE (ISTDE, *) 'The first oscillation of the large component'
+         write (istde, *) 'The first oscillation of the large component'
 
-         DO I = 1, NW
-            IF (.NOT.(NOINVT(I) .AND. .NOT.LFIX(I))) CYCLE
-            WRITE (ISTDE, *) 'of the following radial wavefunctions ', &
+         do i = 1, nw
+            if (.not.(noinvt(i) .and. .not.lfix(i))) cycle
+            write (istde, *) 'of the following radial wavefunctions ', &
                'will be required to be positive'
-            GO TO 15
-         END DO
+            go to 15
+         end do
 
-         WRITE(ISTDE,*)'of all radial wavefunctions will be required ',&
+         write(istde,*)'of all radial wavefunctions will be required ',&
             'to be positive.   Revise this?'
-         YES = GETYN()
-         GO TO 17
-   15    CONTINUE
-         IEND = 0
-         DO I = 1, NW
-            IF (NOINVT(I) .AND. .NOT.LFIX(I)) THEN
-               IBEG = IEND + 1
-               IEND = IBEG
-               RECORD(IBEG:IEND) = ' '
-               CALL CONVRT (NP(I), CNUM, LENTH)
-               IBEG = IEND + 1
-               IEND = IBEG + LENTH - 1
-               RECORD(IBEG:IEND) = CNUM(1:LENTH)
-               IBEG = IEND + 1
-               IF (NAK(I) < 0) THEN
-                  IEND = IBEG
-                  RECORD(IBEG:IEND) = NH(I)(1:1)
-               ELSE
-                  IEND = IBEG + 1
-                  RECORD(IBEG:IEND) = NH(I)(1:2)
-               ENDIF
-            ENDIF
-            IF (IEND <= 76) CYCLE
-            WRITE (ISTDE, *) RECORD(1:IEND)
-            IEND = 0
-         END DO
-         IF (IEND > 0) WRITE (ISTDE, *) RECORD(1:IEND)
-         WRITE (ISTDE, *) 'Revise this?'
-         YES = GETYN()
-   17    CONTINUE
-         IF (YES) THEN
-            WRITE(ISTDE,*)'Suppressing enforcement of positive first ',&
+         yes = getyn()
+         go to 17
+   15    continue
+         iend = 0
+         do i = 1, nw
+            if (noinvt(i) .and. .not.lfix(i)) then
+               ibeg = iend + 1
+               iend = ibeg
+               record(ibeg:iend) = ' '
+               call convrt (np(i), cnum, lenth)
+               ibeg = iend + 1
+               iend = ibeg + lenth - 1
+               record(ibeg:iend) = cnum(1:lenth)
+               ibeg = iend + 1
+               if (nak(i) < 0) then
+                  iend = ibeg
+                  record(ibeg:iend) = nh(i)(1:1)
+               else
+                  iend = ibeg + 1
+                  record(ibeg:iend) = nh(i)(1:2)
+               endif
+            endif
+            if (iend <= 76) cycle
+            write (istde, *) record(1:iend)
+            iend = 0
+         end do
+         if (iend > 0) write (istde, *) record(1:iend)
+         write (istde, *) 'Revise this?'
+         yes = getyn()
+   17    continue
+         if (yes) then
+            write(istde,*)'Suppressing enforcement of positive first ',&
                'oscillation:'
-            CALL GETRSL (INDX, NSUBS)
-            DO I = 1, NSUBS
-               LOC = INDX(I)
-               IF (LFIX(LOC)) CYCLE
-               NOINVT(LOC) = .TRUE.
-            END DO
-         ENDIF
+            call getrsl (indx, nsubs)
+            do i = 1, nsubs
+               loc = indx(i)
+               if (lfix(loc)) cycle
+               noinvt(loc) = .true.
+            end do
+         endif
 !
 !   ODAMP
 !
-         DO I = 1, NW
-            IF (.NOT.(ODAMP(I)/=0.D0 .AND. .NOT.LFIX(I))) CYCLE
-            WRITE (ISTDE, *) 'Subshell accelerating parameters have ', &
+         do i = 1, nw
+            if (.not.(odamp(i)/=0.d0 .and. .not.lfix(i))) cycle
+            write (istde, *) 'Subshell accelerating parameters have ', &
                'been set.   Revise these?'
-            YES = GETYN()
-            GO TO 20
-         END DO
-         WRITE (ISTDE, *) 'Set accelerating parameters for subshell ', &
+            yes = getyn()
+            go to 20
+         end do
+         write (istde, *) 'Set accelerating parameters for subshell ', &
             'radial wavefunctions?'
-         YES = GETYN()
-   20    CONTINUE
-         IF (YES) THEN
-            WRITE (ISTDE, *) 'Different accelerating parameters for ', &
+         yes = getyn()
+   20    continue
+         if (yes) then
+            write (istde, *) 'Different accelerating parameters for ', &
                'different subshell radial wavefunction?'
-            YES = GETYN()
-            IF (YES) THEN
-   21          CONTINUE
-               WRITE (ISTDE, *) 'Enter an accelerating parameter'
-               WRITE (ISTDE, *) ' (0< ODAMP < 1 allows ODAMP to be ', &
+            yes = getyn()
+            if (yes) then
+   21          continue
+               write (istde, *) 'Enter an accelerating parameter'
+               write (istde, *) ' (0< ODAMP < 1 allows ODAMP to be ', &
                   'reduced as convergence is approached;'
-               WRITE (ISTDE, *) ' -1 < ODAMP < 0 implies |ODAMP| is ', &
+               write (istde, *) ' -1 < ODAMP < 0 implies |ODAMP| is ', &
                   'held constant):'
-               READ (*, *) ODAMPU
-               IF (ABS(ODAMPU)==0.D0 .OR. ABS(ODAMPU)>=1.D0) THEN
-                  WRITE (ISTDE, *) MYNAME, ': Value out of range ...'
-                  GO TO 21
-               ELSE
-                  CALL GETRSL (INDX, NSUBS)
-                  DO I = 1, NSUBS
-                     LOC = INDX(I)
-                     IF (LFIX(LOC)) CYCLE
-                     ODAMP(LOC) = ODAMPU
-                  END DO
-               ENDIF
-            ELSE
-   23          CONTINUE
-               WRITE (ISTDE, *) 'Enter the accelerating parameter'
-               WRITE (ISTDE, *) ' (0< ODAMP < 1 allows ODAMP to be ', &
+               read (*, *) odampu
+               if (abs(odampu)==0.d0 .or. abs(odampu)>=1.d0) then
+                  write (istde, *) myname, ': Value out of range ...'
+                  go to 21
+               else
+                  call getrsl (indx, nsubs)
+                  do i = 1, nsubs
+                     loc = indx(i)
+                     if (lfix(loc)) cycle
+                     odamp(loc) = odampu
+                  end do
+               endif
+            else
+   23          continue
+               write (istde, *) 'Enter the accelerating parameter'
+               write (istde, *) ' (0< ODAMP < 1 allows ODAMP to be ', &
                   'reduced as convergence is approached;'
-               WRITE (ISTDE, *) ' -1 < ODAMP < 0 implies |ODAMP| is ', &
+               write (istde, *) ' -1 < ODAMP < 0 implies |ODAMP| is ', &
                   'held constant):'
-               READ (*, *) ODAMPU
-               IF (ABS(ODAMPU)==0.D0 .OR. ABS(ODAMPU)>=1.D0) THEN
-                  WRITE (ISTDE, *) MYNAME, ': Value out of range ...'
-                  GO TO 23
-               ELSE
-                  WHERE (.NOT.LFIX(:NW))
-                     ODAMP(:NW) = ODAMPU
-                  END WHERE
-               ENDIF
-            ENDIF
-         ENDIF
+               read (*, *) odampu
+               if (abs(odampu)==0.d0 .or. abs(odampu)>=1.d0) then
+                  write (istde, *) myname, ': Value out of range ...'
+                  go to 23
+               else
+                  where (.not.lfix(:nw))
+                     odamp(:nw) = odampu
+                  end where
+               endif
+            endif
+         endif
 !
 !   CDAMP
 !
-         WRITE (ISTDE, *) 'Set accelerating parameters for the ', &
+         write (istde, *) 'Set accelerating parameters for the ', &
             'eigenvectors?'
-         YES = GETYN()
-         IF (YES) THEN
-            WRITE (ISTDE, *) 'Different accelerating parameters ', &
+         yes = getyn()
+         if (yes) then
+            write (istde, *) 'Different accelerating parameters ', &
                'for each eigenvector?'
-            YES = GETYN()
-            IF (YES) THEN
-               WRITE (ISTDE, *) 'Enter an accelerating parameter for'
-               CALL CONVRT (NCMIN, RECORD, LENTH)
-               WRITE (ISTDE, *) ' each of the '//RECORD(1:LENTH)//' levels :'
-               READ (*, *) (CDAMP(I),I=1,NCMIN)
-            ELSE
-               WRITE (ISTDE, *) 'Enter the accelerating parameter:'
-               READ (*, *) CDAMPU
-               CDAMP(:NCMIN) = CDAMPU
-            ENDIF
-         ENDIF
+            yes = getyn()
+            if (yes) then
+               write (istde, *) 'Enter an accelerating parameter for'
+               call convrt (ncmin, record, lenth)
+               write (istde, *) ' each of the '//record(1:lenth)//' levels :'
+               read (*, *) (cdamp(i),i=1,ncmin)
+            else
+               write (istde, *) 'Enter the accelerating parameter:'
+               read (*, *) cdampu
+               cdamp(:ncmin) = cdampu
+            endif
+         endif
 !
 !   NSIC
 !
-         WRITE (ISTDE, *) 'Following the improvement of each of the ', &
+         write (istde, *) 'Following the improvement of each of the ', &
             'subshell radial wavefunctions in turn, '
-         WRITE (ISTDE, *) 'the ', NSIC, ' least self-consistent', &
+         write (istde, *) 'the ', nsic, ' least self-consistent', &
             ' functions will be improved at the'
-         WRITE (ISTDE, *) 'end of the first SCF cycle. Revise this ', &
+         write (istde, *) 'end of the first SCF cycle. Revise this ', &
             'setting?'
-         YES = GETYN()
-         IF (YES) THEN
-            WRITE (ISTDE, *) 'Enter the number of additional ', 'improvements:'
-            READ (*, *) NSIC
-         ENDIF
+         yes = getyn()
+         if (yes) then
+            write (istde, *) 'Enter the number of additional ', 'improvements:'
+            read (*, *) nsic
+         endif
 !
 !   NSOLV
 !
-         WRITE (ISTDE, *) 'The maximum number of cycles in attempting ', &
+         write (istde, *) 'The maximum number of cycles in attempting ', &
             'to solve each radial equation is '
-         WRITE (ISTDE, *) NSOLV, ' times the principal quantum', &
+         write (istde, *) nsolv, ' times the principal quantum', &
             ' number of the radial'
-         WRITE (ISTDE, *) 'wave-function to be estimated.   ', &
+         write (istde, *) 'wave-function to be estimated.   ', &
             'Revise this setting?'
-         YES = GETYN()
-         IF (YES) THEN
-            WRITE (ISTDE, *) 'Enter the factor that multiplies the ', &
+         yes = getyn()
+         if (yes) then
+            write (istde, *) 'Enter the factor that multiplies the ', &
                'principal quantum number:'
-            READ (*, *) NSOLV
-         ENDIF
+            read (*, *) nsolv
+         endif
 !
 !   Orthogonalisation
 !
-         IF (ORTHST) THEN
-            WRITE (ISTDE, *) 'Subshell radial wavefunctions will be ', &
+         if (orthst) then
+            write (istde, *) 'Subshell radial wavefunctions will be ', &
                'Schmidt orthogonalised immediately'
-            WRITE (ISTDE, *) 'following their estimation to all ', &
+            write (istde, *) 'following their estimation to all ', &
                'functions with poorer self-consistency.'
-            WRITE (ISTDE, *) ' Revise this?'
-            YES = GETYN()
-            IF (YES) ORTHST = .FALSE.
-         ELSE
-            WRITE (ISTDE, *) 'Subshell radial wavefunctions will be ', &
+            write (istde, *) ' Revise this?'
+            yes = getyn()
+            if (yes) orthst = .false.
+         else
+            write (istde, *) 'Subshell radial wavefunctions will be ', &
                'Schmidt orthogonalised at the end of'
-            WRITE (ISTDE, *) 'each SCF cycle.   Revise this?'
-            YES = GETYN()
-            IF (YES) ORTHST = .TRUE.
-         ENDIF
+            write (istde, *) 'each SCF cycle.   Revise this?'
+            yes = getyn()
+            if (yes) orthst = .true.
+         endif
                   !-------------------------------------------
-      ENDIF                                      ! end of the _big_ IF
+      endif                                      ! end of the _big_ IF
                   !-------------------------------------------
 
-      CALL MPI_Bcast (thresh,  1, MPI_DOUBLE_PRECISION, 0,            &
-                                  MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast (method, nw, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast (noinvt, nw, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast (odamp,  nw, MPI_DOUBLE_PRECISION, 0,            &
-                                  MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast (cdamp, ncmin, MPI_DOUBLE_PRECISION, 0,          &
-                                    MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast (nsic, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast (nsolv, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+      call mpi_bcast (thresh,  1, mpi_double_precision, 0,            &
+                                  mpi_comm_world, ierr)
+      call mpi_bcast (method, nw, mpi_integer, 0, mpi_comm_world, ierr)
+      call mpi_bcast (noinvt, nw, mpi_logical, 0, mpi_comm_world, ierr)
+      call mpi_bcast (odamp,  nw, mpi_double_precision, 0,            &
+                                  mpi_comm_world, ierr)
+      call mpi_bcast (cdamp, ncmin, mpi_double_precision, 0,          &
+                                    mpi_comm_world, ierr)
+      call mpi_bcast (nsic, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      call mpi_bcast (nsolv, 1, mpi_integer, 0, mpi_comm_world, ierr)
 !cjb  CALL MPI_Bcast (orthst, nw, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast (orthst, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+      call mpi_bcast (orthst, 1, mpi_logical, 0, mpi_comm_world, ierr)
 
-      RETURN
-      END SUBROUTINE GETSCDmpi
+      return
+      end subroutine getscdmpi

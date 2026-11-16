@@ -1,8 +1,8 @@
-      MODULE AME_C
-      USE vast_kind_param, ONLY:  DOUBLE
+      module ame_c
+      use vast_kind_param, only:  double
 !...Translated by Charlotte Froese Fischer
 !                       Gediminas Gaigalas  10/05/17
-      INTEGER                       :: INUMB_Int1, INUMB_Int2
-      INTEGER, DIMENSION(2000)      :: Int1, Int2
-      REAL(DOUBLE), DIMENSION(2000) :: AInt1, AInt2
-      END MODULE AME_C
+      integer                       :: inumb_int1, inumb_int2
+      integer, dimension(2000)      :: int1, int2
+      real(double), dimension(2000) :: aint1, aint2
+      end module ame_c

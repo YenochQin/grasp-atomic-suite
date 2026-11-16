@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE VINT (IA,IB,TEGRAL)
+      subroutine vint (ia,ib,tegral)
 !                                                                      *
 !   This routine returns Vinti integrals.                              *
 !      A list of previously computed integrals is maintained. If the   *
@@ -16,162 +16,162 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: KEYORB
-      USE memory_man
-      USE vinlst_C, FIRST=>FRSTVI
+      use vast_kind_param, only: double
+      use parameter_def,   only: keyorb
+      use memory_man
+      use vinlst_c, first=>frstvi
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE vinti_I
-      IMPLICIT NONE
+      use vinti_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: IA, IB
-      REAl(DOUBLE), INTENT(OUT) :: TEGRAL
+      integer, intent(in) :: ia, ib
+      real(double), intent(out) :: tegral
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: FOUND
-      INTEGER :: index, loc, ju, jl, jm, newsiz, i
+      logical :: found
+      integer :: index, loc, ju, jl, jm, newsiz, i
 !------------------------------------------------
 !
 !   Compute the composite (packed) index
 !
-      INDEX = IA*KEYORB+IB
+      index = ia*keyorb+ib
 !
-      IF (.NOT. FIRST) THEN
+      if (.not. first) then
 !
 !   This branch is executed on all entries except the first
 !
-         IF (INDEX .GT. INDTEI(NVINTI)) THEN
+         if (index .gt. indtei(nvinti)) then
 !
 !   The index is greater than the largest stored
 !
-            FOUND = .FALSE.
-            LOC = NVINTI
+            found = .false.
+            loc = nvinti
 !
-         ELSEIF (INDEX .LT. INDTEI(1)) THEN
+         elseif (index .lt. indtei(1)) then
 !
 !   The index is less than the smallest stored
 !
-            FOUND = .FALSE.
-            LOC = 0
+            found = .false.
+            loc = 0
 !
-         ELSE
+         else
 !
 !   The index is within the range of the indices stored; search
 !   for it in the list of indices
 !
-            JU = NVINTI
-            JL = 1
+            ju = nvinti
+            jl = 1
 !
-    1       IF (JU-JL .GT. 1) THEN
+    1       if (ju-jl .gt. 1) then
 !
-               JM = (JU+JL)/2
-               IF (INDTEI(JM) .GT. INDEX) THEN
-                  JU = JM
-               ELSE
-                  JL = JM
-               ENDIF
-               GOTO 1
+               jm = (ju+jl)/2
+               if (indtei(jm) .gt. index) then
+                  ju = jm
+               else
+                  jl = jm
+               endif
+               goto 1
 !
-            ELSE
+            else
 !
 !   The range is bracketed to the extent possible
 !
-               IF (INDEX .EQ. INDTEI(JU)) THEN
+               if (index .eq. indtei(ju)) then
 !
-                  FOUND = .TRUE.
-                  LOC = JU
+                  found = .true.
+                  loc = ju
 !
-               ELSEIF (INDEX .EQ. INDTEI(JL)) THEN
+               elseif (index .eq. indtei(jl)) then
 !
-                  FOUND = .TRUE.
-                  LOC = JL
+                  found = .true.
+                  loc = jl
 !
-               ELSE
+               else
 !
-                  FOUND = .FALSE.
-                  LOC = JL
+                  found = .false.
+                  loc = jl
 !
-               ENDIF
+               endif
 !
-            ENDIF
+            endif
 !
-         ENDIF
+         endif
 !
-         IF (FOUND) THEN
+         if (found) then
 !
 !   Found the index in the list; return the value of the integral
 !   from storage
 !
-            TEGRAL = VALTEI(LOC)
+            tegral = valtei(loc)
 !
-         ELSE
+         else
 !
 !   Index not found; compute the integral
 !
-            TEGRAL = VINTI (IA,IB)
+            tegral = vinti (ia,ib)
 !
 !   Increment the integral counter
 !
-            NVINTI = NVINTI+1
+            nvinti = nvinti+1
 !
 !   Increase array length by half the present length if the latter
 !   is inadequate to store another pair
 !
-            IF (NVINTI .GT. NDVIN) THEN
-               NEWSIZ = NDVIN+NDVIN/2
-               CALL RALLOC (INDTEI,NEWSIZ, 'INDTEI', 'VINT')
-               CALL RALLOC (VALTEI,NEWSIZ, 'VALTEI', 'VINT')
-               NDVIN = NEWSIZ
-            ENDIF
+            if (nvinti .gt. ndvin) then
+               newsiz = ndvin+ndvin/2
+               call ralloc (indtei,newsiz, 'INDTEI', 'VINT')
+               call ralloc (valtei,newsiz, 'VALTEI', 'VINT')
+               ndvin = newsiz
+            endif
 !
-            DO 2 I = NVINTI,LOC+2,-1
-               INDTEI(I) = INDTEI(I-1)
-               VALTEI(I) = VALTEI(I-1)
-    2       CONTINUE
+            do 2 i = nvinti,loc+2,-1
+               indtei(i) = indtei(i-1)
+               valtei(i) = valtei(i-1)
+    2       continue
 !
 !   Put the new index and value into storage
 !
-            INDTEI(LOC+1) = INDEX
-            VALTEI(LOC+1) = TEGRAL
+            indtei(loc+1) = index
+            valtei(loc+1) = tegral
 !
-         ENDIF
+         endif
 !
-      ELSE
+      else
 !
 !   This branch is executed only once
 !
-         FIRST = .FALSE.
+         first = .false.
 !
 !   Allocate the initial storage for arrays INDTEI and VALTEI;
 !   NDVIN stores the array dimension
 !
-         NDVIN = 2
-         CALL ALLOC (INDTEI,NDVIN, 'INDTEI', 'VINT')
-         CALL ALLOC (VALTEI,NDVIN, 'VALTEI', 'VINT')
+         ndvin = 2
+         call alloc (indtei,ndvin, 'INDTEI', 'VINT')
+         call alloc (valtei,ndvin, 'VALTEI', 'VINT')
 !
 !   Compute the integral's value
 !
-         TEGRAL = VINTI (IA,IB)
+         tegral = vinti (ia,ib)
 !
 !   Initialise the integral counter
 !
-         NVINTI = 1
+         nvinti = 1
 !
 !   Store the integral and its value
 !
-         INDTEI(1) = INDEX
-         VALTEI(1) = TEGRAL
+         indtei(1) = index
+         valtei(1) = tegral
 !
-      ENDIF
+      endif
 !
-      RETURN
-      END SUBROUTINE vint
+      return
+      end subroutine vint

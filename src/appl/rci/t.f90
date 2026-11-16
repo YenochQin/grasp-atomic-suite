@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      function relci_qed_F_Klarsfeld(n,kappa,Z)                   result(F)
+      function relci_qed_f_klarsfeld(n,kappa,z)                   result(f)
 !--------------------------------------------------------------------
 ! Estimates the function  F (Z*\alpha) by using a series expansion
 ! from S Klarsfeld and A Maquet, Physics Letters  43B (1973) 201,
@@ -15,12 +15,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
       !
       integer, intent(in)               :: n, kappa
-      real(double), intent(in)         :: Z
-      real(double)                     :: F
+      real(double), intent(in)         :: z
+      real(double)                     :: f
       !
       real(double), dimension(36), parameter :: bethe = &
          (/ 2.9841285_dp,   2.8117699_dp,  -0.0300167_dp,   2.7676636_dp, &
@@ -33,8 +33,8 @@
             2.7302673_dp,  -0.0467413_dp,  -0.0087850_dp,  -0.0028591_dp, &
            -0.0011904_dp,  -0.0005665_dp,  -0.0002904_dp,  -0.0001539_dp /)
       !
-      real(double), parameter :: C401 = 11.0_dp/24.0_dp,                 &
-                               C402 = 3.0_dp/8.0_dp, ovlfac = 4.0_dp/3.0_dp
+      real(double), parameter :: c401 = 11.0_dp/24.0_dp,                 &
+                               c402 = 3.0_dp/8.0_dp, ovlfac = 4.0_dp/3.0_dp
       !
       integer       :: l, loc
       real(double) :: bethel, factor, term
@@ -64,12 +64,12 @@
       else
          term = term + c402 / ((l+one)*(l+l+one))
          if (kappa == -1) then
-            factor = log (Z/c)
+            factor = log (z/c)
             factor = - (factor + factor)
             term   = term + factor + c401
          end if
       end if
       !
-      F = ovlfac * term
+      f = ovlfac * term
       !
-   end function relci_qed_F_Klarsfeld
+   end function relci_qed_f_klarsfeld

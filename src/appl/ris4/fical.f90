@@ -14,7 +14,7 @@ program fical
   double precision :: f0, f2, f4, f6, f0res, f2res, linfac
   double precision :: fieldshiftres, fieldshift22res, linfac2
 
-  double precision :: drms, au2Kays
+  double precision :: drms, au2kays
   double precision :: z
 
   character(len=100) :: state1, state2, file1, file2, file3, file4, file5, file6
@@ -23,68 +23,68 @@ program fical
   character(len=3) :: unit
   character(len=1) :: def,ci,rel,efac,corr,soph,par1(500),par2(500),parlsj1(500),parlsj2(500)
   character(len=200) :: csflabel1(500),csflabel2(500),csflabel1scal,csflabel2scal
-  character(len=200) :: headermpGHz,headermpMHz,headermpmeV
-  character(len=200) :: headermpGHzlsj,headermpMHzlsj,headermpmeVlsj
-  character(len=200) :: headerfpGHz,headerfpMHz,headerfpmeV
-  character(len=200) :: headerfpGHzlsj,headerfpMHzlsj,headerfpmeVlsj
-  character(len=200) :: headerfp2GHz,headerfp2MHz,headerfp2meV
-  character(len=200) :: headerfp2GHzlsj,headerfp2MHzlsj,headerfp2mevlsj
-  character(len=200) :: headereGHz,headereMHz,headeremeV
-  character(len=200) :: headereGHzlsj,headereMHzlsj,headeremeVlsj
+  character(len=200) :: headermpghz,headermpmhz,headermpmev
+  character(len=200) :: headermpghzlsj,headermpmhzlsj,headermpmevlsj
+  character(len=200) :: headerfpghz,headerfpmhz,headerfpmev
+  character(len=200) :: headerfpghzlsj,headerfpmhzlsj,headerfpmevlsj
+  character(len=200) :: headerfp2ghz,headerfp2mhz,headerfp2mev
+  character(len=200) :: headerfp2ghzlsj,headerfp2mhzlsj,headerfp2mevlsj
+  character(len=200) :: headereghz,headeremhz,headeremev
+  character(len=200) :: headereghzlsj,headeremhzlsj,headeremevlsj
   character(len=50) :: format1a,format1b,format1b2,format1c,format1c2,format2
   character(len=50) :: format1alsj,format1blsj,format1b2lsj,format1clsj,format1c2lsj,format2lsj
   character(len=200) :: uplevel,lowlevel
 
   logical :: exist1,exist2
-  parameter (au2Kays = 219474.63136320d0)   ! CODATA 2018
+  parameter (au2kays = 219474.63136320d0)   ! CODATA 2018
 
-  headermpGHz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (GHz u)" &
+  headermpghz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (GHz u)" &
        ,6X,"NMS (GHz u)",6X,"SMS (GHz u)"8X,"MS (GHz u)")'
-  headermpGHzlsj = '(X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (GHz u)" &
+  headermpghzlsj = '(X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (GHz u)" &
        ,6X,"NMS (GHz u)",6X,"SMS (GHz u)"8X,"MS (GHz u)")'
-  headermpMHz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (MHz u)" &
+  headermpmhz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (MHz u)" &
        ,6X,"NMS (MHz u)",6X,"SMS (MHz u)"8X,"MS (MHz u)")'
-  headermpMHzlsj = '(X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (MHz u)" &
+  headermpmhzlsj = '(X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (MHz u)" &
        ,6X,"NMS (MHz u)",6X,"SMS (MHz u)"8X,"MS (MHz u)")'
-  headermpmeV = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (meV u)" &
+  headermpmev = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (meV u)" &
        ,6X,"NMS (meV u)",6X,"SMS (meV u)"8X,"MS (meV u)")'
-  headermpmeVlsj = '(X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (meV u)" &
+  headermpmevlsj = '(X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (meV u)" &
        ,6X,"NMS (meV u)",6X,"SMS (meV u)"8X,"MS (meV u)")'
 
-  headerfpGHz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
+  headerfpghz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
        ,3X,"F0 (GHz fm-2)",5X,"F2 (GHz fm-4)",5X,"F4 (GHz fm-6)",5X,"F6 (GHz fm-8)",5X,"Lin. dep. (per mille)")'
-  headerfpGHzlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
+  headerfpghzlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
        ,3X,"F0 (GHz fm-2)",5X,"F2 (GHz fm-4)",5X,"F4 (GHz fm-6)",5X,"F6 (GHz fm-8)",5X,"Lin. dep. (per mille)")'
-  headerfpMHz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
+  headerfpmhz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
        ,3X,"F0 (MHz fm-2)",5X,"F2 (MHz fm-4)",5X,"F4 (MHz fm-6)",5X,"F6 (MHz fm-8)")'
-  headerfpMHzlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
+  headerfpmhzlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
        ,3X,"F0 (MHz fm-2)",5X,"F2 (MHz fm-4)",5X,"F4 (MHz fm-6)",5X,"F6 (MHz fm-8)")'
-  headerfpmeV = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
+  headerfpmev = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
        ,3X,"F0 (meV fm-2)",5X,"F2 (meV fm-4)",5X,"F4 (meV fm-6)",5X,"F6 (meV fm-8)")'
-  headerfpmeVlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
+  headerfpmevlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
        ,3X,"F0 (meV fm-2)",5X,"F2 (meV fm-4)",5X,"F4 (meV fm-6)",5X,"F6 (meV fm-8)")'
 
 
-  headerfp2GHz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
+  headerfp2ghz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
        ,1X,"F0VED0 (GHz fm-2)",1X,"F0VED1 (GHz fm-4)",3X,"Lin. dep. (per mille)")'
-  headerfp2GHzlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
+  headerfp2ghzlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
        ,1X,"F0VED0 (GHz fm-2)",1X,"F0VED1 (GHz fm-4)",3X,"Lin. dep. (per mille)")'
-  headerfp2MHz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
+  headerfp2mhz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
        ,1X,"F0VED0 (MHz fm-2)",1X,"F0VED1 (MHz fm-4)")'
-  headerfp2MHzlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
+  headerfp2mhzlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
        ,1X,"F0VED0 (MHz fm-2)",1X,"F0VED1 (MHz fm-4)")'
-  headerfp2meV = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
+  headerfp2mev = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
        ,1X,"F0VED0 (meV fm-2)",1X,"F0VED1 (meV fm-4)")'
-  headerfp2meVlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
+  headerfp2mevlsj = '(X,a,5X,a,5X,"Energy (cm-1)" &
        ,1X,"F0VED0 (meV fm-2)",1X,"F0VED1 (meV fm-4)")'
 
 
-  headereGHz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (GHz)",9X,"FS (GHz)",10X,"IS (GHz)")'
-  headereGHzlsj = '(X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (GHz)",9X,"FS (GHz)",10X,"IS (GHz)")'
-  headereMHz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (MHz)",9X,"FS (MHz)",10X,"IS (MHz)")'
-  headereMHzlsj = '(X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (MHz)",9X,"FS (MHz)",10X,"IS (MHz)")'
-  headeremeV = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (meV)",9X,"FS (meV)",10X,"IS (meV)")'
-  headeremeVlsj = '(X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (meV)",9X,"FS (meV)",10X,"IS (meV)")'
+  headereghz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (GHz)",9X,"FS (GHz)",10X,"IS (GHz)")'
+  headereghzlsj = '(X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (GHz)",9X,"FS (GHz)",10X,"IS (GHz)")'
+  headeremhz = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (MHz)",9X,"FS (MHz)",10X,"IS (MHz)")'
+  headeremhzlsj = '(X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (MHz)",9X,"FS (MHz)",10X,"IS (MHz)")'
+  headeremev = '(X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (meV)",9X,"FS (meV)",10X,"IS (meV)")'
+  headeremevlsj = '(X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (meV)",9X,"FS (meV)",10X,"IS (meV)")'
 
 !  format1a = '(i4,a13,i3,a12,f12.2,1P,4d16.7)'
 !  format1b = '(i4,a13,i3,a12,f12.2,1P,4d16.7)'
@@ -282,14 +282,14 @@ program fical
      fshift22(:) = fs2(6,:)
   else
      if(unit.eq.'GHz') then
-        fs1(1,:) = fs1(1,:)*z*4.9210908105D-3
-        fs2(1,:) = fs2(1,:)*z*4.9210908105D-3
+        fs1(1,:) = fs1(1,:)*z*4.9210908105d-3
+        fs2(1,:) = fs2(1,:)*z*4.9210908105d-3
      else if(unit.eq.'MHz') then
         fs1(1,:) = fs1(1,:)*z*4.9210908105d0
         fs2(1,:) = fs2(1,:)*z*4.9210908105d0
      else if(unit.eq.'meV') then
-        fs1(1,:) = fs1(1,:)*z*4.9210908105D-3/241.7989348d0
-        fs2(1,:) = fs2(1,:)*z*4.9210908105D-3/241.7989348d0
+        fs1(1,:) = fs1(1,:)*z*4.9210908105d-3/241.7989348d0
+        fs2(1,:) = fs2(1,:)*z*4.9210908105d-3/241.7989348d0
      end if
      fshift1(:) = fs1(1,:)
      fshift2(:) = fs2(1,:)
@@ -338,23 +338,23 @@ program fical
      if(unit.eq.'GHz') then
         nmsconst = 29.9792458d0/1822.888485d0
         if(lsjpresent.eq.0) then
-           write(7,headermpGHz)
+           write(7,headermpghz)
         else
-           write(7,headermpGHzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(7,headermpghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit.eq.'MHz') then
         nmsconst = 29979.2458d0/1822.888485d0
         if(lsjpresent.eq.0) then
-           write(7,headermpMHz)
+           write(7,headermpmhz)
         else
-           write(7,headermpMHzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(7,headermpmhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit.eq.'meV') then
         nmsconst = 0.12398419739d0/1822.888485d0
         if(lsjpresent.eq.0) then
-           write(7,headermpmeV)
+           write(7,headermpmev)
         else
-           write(7,headermpmeVlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(7,headermpmevlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      end if
      write(7,*)
@@ -371,7 +371,7 @@ program fical
               end if
            end do
            if(energy1(i).gt.energy2(j)) then
-              tenergy = (energy1(i)-energy2(j))*Au2kays
+              tenergy = (energy1(i)-energy2(j))*au2kays
               nmslaw = -1.d0*tenergy*nmsconst
               if(state1.eq.state2.and.j.gt.i) then
                  if(lsjpresent.eq.0) then
@@ -391,7 +391,7 @@ program fical
                  end if
               end if
            else
-              tenergy = (energy2(j)-energy1(i))*au2Kays
+              tenergy = (energy2(j)-energy1(i))*au2kays
               nmslaw = -1.d0*tenergy*nmsconst
               if(state1.eq.state2.and.j.gt.i) then
                  if(lsjpresent.eq.0) then
@@ -419,21 +419,21 @@ program fical
      write(7,*)
      if(unit.eq.'GHz') then
         if(lsjpresent.eq.0) then
-           write(7,headerfpGHz)
+           write(7,headerfpghz)
         else
-           write(7,headerfpGHzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(7,headerfpghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit.eq.'MHz') then
         if(lsjpresent.eq.0) then
-           write(7,headerfpMHz)
+           write(7,headerfpmhz)
         else
-           write(7,headerfpMHzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(7,headerfpmhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit.eq.'meV') then
         if(lsjpresent.eq.0) then
-           write(7,headerfpmeV)
+           write(7,headerfpmev)
         else
-           write(7,headerfpmeVlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(7,headerfpmevlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      end if
      write(7,*)
@@ -450,7 +450,7 @@ program fical
               end if
            end do
            if(energy1(i).gt.energy2(j)) then
-              tenergy = (energy1(i)-energy2(j))*au2Kays
+              tenergy = (energy1(i)-energy2(j))*au2kays
               f0 = fs1(1,i)-fs2(1,j)
               f2 = fs1(2,i)-fs2(2,j)
               f4 = fs1(3,i)-fs2(3,j)
@@ -481,7 +481,7 @@ program fical
                  end if
               end if
            else
-              tenergy = (energy2(j)-energy1(i))*au2Kays
+              tenergy = (energy2(j)-energy1(i))*au2kays
               f0 = fs2(1,j)-fs1(1,i)
               f2 = fs2(2,j)-fs1(2,i)
               f4 = fs2(3,j)-fs1(3,i)
@@ -524,21 +524,21 @@ program fical
      write(7,*)
      if(unit.eq.'GHz') then
         if(lsjpresent.eq.0) then
-           write(7,headerfp2GHz)
+           write(7,headerfp2ghz)
         else
-           write(7,headerfp2GHzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(7,headerfp2ghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit.eq.'MHz') then
         if(lsjpresent.eq.0) then
-           write(7,headerfp2MHz)
+           write(7,headerfp2mhz)
         else
-           write(7,headerfp2MHzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(7,headerfp2mhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit.eq.'meV') then
         if(lsjpresent.eq.0) then
-           write(7,headerfp2meV)
+           write(7,headerfp2mev)
         else
-           write(7,headerfp2meVlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(7,headerfp2mevlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      end if
      write(7,*)
@@ -555,7 +555,7 @@ program fical
               end if
            end do
            if(energy1(i).gt.energy2(j)) then
-              tenergy = (energy1(i)-energy2(j))*au2Kays
+              tenergy = (energy1(i)-energy2(j))*au2kays
               f0 = fs1(1,i)-fs2(1,j)
               f2 = fs1(2,i)-fs2(2,j)
               f4 = fs1(3,i)-fs2(3,j)
@@ -586,7 +586,7 @@ program fical
                  end if
               end if
            else
-              tenergy = (energy2(j)-energy1(i))*au2Kays
+              tenergy = (energy2(j)-energy1(i))*au2kays
               f0 = fs2(1,j)-fs1(1,i)
               f2 = fs2(2,j)-fs1(2,i)
               f4 = fs2(3,j)-fs1(3,i)
@@ -631,21 +631,21 @@ program fical
      write(7,*)
      if(unit.eq.'GHz') then
         if(lsjpresent.eq.0) then
-           write(7,headereGHz)
+           write(7,headereghz)
         else
-           write(7,headereGHzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(7,headereghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit.eq.'MHz') then
         if(lsjpresent.eq.0) then
-           write(7,headereMHz)
+           write(7,headeremhz)
         else
-           write(7,headereMHzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(7,headeremhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit.eq.'meV') then
         if(lsjpresent.eq.0) then
-           write(7,headeremeV)
+           write(7,headeremev)
         else
-           write(7,headeremeVlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(7,headeremevlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      end if
 
@@ -663,7 +663,7 @@ program fical
               end if
            end do
            if(energy1(i).gt.energy2(j)) then
-              tenergy = (energy1(i)-energy2(j))*au2Kays
+              tenergy = (energy1(i)-energy2(j))*au2kays
               if(m1.gt.m2) then
                  masshift = (ms1(i)-ms2(j))*(m2-m1)/(m1*m2)
                  if(soph.eq.'y') then
@@ -698,7 +698,7 @@ program fical
                  end if
               end if
            else
-              tenergy = (energy2(j)-energy1(i))*au2Kays
+              tenergy = (energy2(j)-energy1(i))*au2kays
               if(m1.gt.m2) then
                  masshift = (ms2(j)-ms1(i))*(m2-m1)/(m1*m2)
                  if(soph.eq.'y') then
@@ -796,7 +796,7 @@ subroutine openfile(name,unit,eflag,rflag,nvec,level,spinpar,fspin,par,energy,nm
   double precision :: sms(500),smscorr(500),smsrel(500)
   double precision :: ms(500),mscorr(500),msrel(500)
   double precision :: fs(6,500),fspin(500)
-  double precision :: meV2GHz
+  double precision :: mev2ghz
   character(len=200) :: string
   character(len=100) :: name
   character(len=24) :: dummy24
@@ -807,7 +807,7 @@ subroutine openfile(name,unit,eflag,rflag,nvec,level,spinpar,fspin,par,energy,nm
   character(len=3) :: unit
   character(len=1) :: par(500)
 
-  parameter (meV2GHz = 241.798926d0)
+  parameter (mev2ghz = 241.798926d0)
 
   open (7,file=name,status='unknown',form='formatted')
   read(7,'(a24,i3)') dummy24,nvec
@@ -859,9 +859,9 @@ subroutine openfile(name,unit,eflag,rflag,nvec,level,spinpar,fspin,par,energy,nm
         nmscorr(i) = nmscorr(i)*1000.d0
         nmsrel(i) = nmsrel(i)*1000.d0
      else if(unit.eq.'meV') then
-        nms(i) = nms(i)/meV2Ghz
-        nmscorr(i) = nmscorr(i)/meV2Ghz
-        nmsrel(i) = nmsrel(i)/meV2Ghz
+        nms(i) = nms(i)/mev2ghz
+        nmscorr(i) = nmscorr(i)/mev2ghz
+        nmsrel(i) = nmsrel(i)/mev2ghz
      end if
      if(i.lt.nvec) then
         read(7,'(a)') string
@@ -889,9 +889,9 @@ subroutine openfile(name,unit,eflag,rflag,nvec,level,spinpar,fspin,par,energy,nm
         mscorr(i) = nmscorr(i) + smscorr(i)
         msrel(i) = nmsrel(i) + smsrel(i)
      else if(unit.eq.'meV') then
-        sms(i) = sms(i)/meV2Ghz
-        smscorr(i) = smscorr(i)/meV2Ghz
-        smsrel(i) = smsrel(i)/meV2Ghz
+        sms(i) = sms(i)/mev2ghz
+        smscorr(i) = smscorr(i)/mev2ghz
+        smsrel(i) = smsrel(i)/mev2ghz
         ms(i) = nms(i) + sms(i)
         mscorr(i) = nmscorr(i) + smscorr(i)
         msrel(i) = nmsrel(i) + smsrel(i)
@@ -915,7 +915,7 @@ subroutine openfile(name,unit,eflag,rflag,nvec,level,spinpar,fspin,par,energy,nm
         if(unit.eq.'MHz') then
            fs(1:4,i) = fs(1:4,i)*1000.d0
         else if(unit.eq.'meV') then
-           fs(1:4,i) = fs(1:4,i)/meV2Ghz
+           fs(1:4,i) = fs(1:4,i)/mev2ghz
            !write(*,*) fs(1,i), fs(2,i), fs(3,i), fs(4,i), fs(5,i)
         end if
      end do
@@ -930,8 +930,8 @@ subroutine openfile(name,unit,eflag,rflag,nvec,level,spinpar,fspin,par,energy,nm
            fs(5,i) = fs(5,i)*1000.d0
            fs(6,i) = fs(6,i)*1000.d0
         else if(unit.eq.'meV') then
-           fs(5,i) = fs(5,i)/meV2Ghz
-           fs(6,i) = fs(6,i)/meV2Ghz
+           fs(5,i) = fs(5,i)/mev2ghz
+           fs(6,i) = fs(6,i)/mev2ghz
            !write(*,*) fs(1,i), fs(2,i), fs(3,i), fs(4,i), fs(5,i), fs(6,i)
         end if
      end do
@@ -972,15 +972,15 @@ subroutine openfile(name,unit,eflag,rflag,nvec,level,spinpar,fspin,par,energy,nm
   return
 end subroutine openfile
 
-SUBROUTINE fermidist(trms,t,w,b20,b40,flag, radmom)
-  IMPLICIT NONE
-  INTEGER :: m, m2, i, j, k, flag
+subroutine fermidist(trms,t,w,b20,b40,flag, radmom)
+  implicit none
+  integer :: m, m2, i, j, k, flag
   double precision :: c0, a, t, w, b20, b40
   double precision :: rmax, h, h2, pi, pi2, rms, trms, drms
   double precision :: dnorm, norm, dinte, inte
   double precision :: dr2, r2, dr4, r4, dr6, r6, dr8, r8, radmom(4)
   double precision :: cv(0:2000), th(0:2000)
-  double precision, ALLOCATABLE :: r(:), rho(:)
+  double precision, allocatable :: r(:), rho(:)
 
   parameter (pi = 3.14159265359d0)
   parameter (pi2 = 9.86960440108936d0)
@@ -991,9 +991,9 @@ SUBROUTINE fermidist(trms,t,w,b20,b40,flag, radmom)
 !  h = 0.1d0
   h = 0.01d0
   m = int(rmax/h)
-  m = m + MOD(m,2)
+  m = m + mod(m,2)
 
-  ALLOCATE ( r(0:m), rho(0:m) )
+  allocate ( r(0:m), rho(0:m) )
 
   c0 = trms
   k = 1
@@ -1002,12 +1002,12 @@ SUBROUTINE fermidist(trms,t,w,b20,b40,flag, radmom)
      if(k>1) then
         c0 = trms/rms*c0
      end if
-     DO i=0, m
+     do i=0, m
         r(i) = h*i;
         if(abs(b20)<0.001d0.and.abs(b40)<0.001d0) then
            rho(i) = 4.0d0*pi*(1.0d0 + w*r(i)**2.0d0/c0**2.0d0)/(1.0d0+exp((r(i)-c0)/a))
         end if
-     END DO
+     end do
 
      if(abs(b20) > 0.0d0.or.abs(b40) > 0.0d0) then
         m2 = 360
@@ -1037,7 +1037,7 @@ SUBROUTINE fermidist(trms,t,w,b20,b40,flag, radmom)
      r4 = 0.0d0
      r6 = 0.0d0
      r8 = 0.0d0
-     DO i=1, m-1, 2
+     do i=1, m-1, 2
         dnorm = (h/3.0d0)*(rho(i-1)*r(i-1)**2.0d0 + 4.0d0*rho(i)*r(i)**2.0d0 + rho(i+1)*r(i+1)**2.0d0)
         dr2 = (h/3.0d0)*(rho(i-1)*r(i-1)**4.0d0 + 4.0d0*rho(i)*r(i)**4.0d0 + rho(i+1)*r(i+1)**4.0d0)
         dr4 = (h/3.0d0)*(rho(i-1)*r(i-1)**6.0d0 + 4.0d0*rho(i)*r(i)**6.0d0 + rho(i+1)*r(i+1)**6.0d0)
@@ -1063,11 +1063,11 @@ SUBROUTINE fermidist(trms,t,w,b20,b40,flag, radmom)
      end if
   end do
 
-  DEALLOCATE ( r, rho )
+  deallocate ( r, rho )
 
   return
 
-END SUBROUTINE fermidist
+end subroutine fermidist
 
 subroutine openlsj(name,nvec,level,spin,par,csflabel,lmax)
   implicit none

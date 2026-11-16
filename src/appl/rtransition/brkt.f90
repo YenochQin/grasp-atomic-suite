@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE BRKT
+      subroutine brkt
 !                                                                      *
 !   This subroutine calculates the initial and final state             *
 !   radial overlap matrix                                              *
@@ -14,54 +14,54 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW
-      USE grid_C
-      USE tatb_C
-      USE biorb_C
-      USE wave_C, ONLY: mfii, pfii, qfii, mfff, pfff, qfff
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw
+      use grid_c
+      use tatb_c
+      use biorb_c
+      use wave_c, only: mfii, pfii, qfii, mfff, pfff, qfff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE quad_I
-      IMPLICIT NONE
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, J, L
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: BRAKET
-      REAL(DOUBLE) :: RESULT
+      integer :: i, j, l
+      real(double), dimension(nnnw,nnnw) :: braket
+      real(double) :: result
 !-----------------------------------------------
 
 !
-      DO I = 1, NWII
-         DO J = 1, NWFF
-            IF (NAKII(I) /= NAKFF(J)) CYCLE
+      do i = 1, nwii
+         do j = 1, nwff
+            if (nakii(i) /= nakff(j)) cycle
 !
 !   Determine the maximum tabulation point for the integrand
 !
-            MTP = MIN(MFII(I),MFFF(J))
+            mtp = min(mfii(i),mfff(j))
 !
 !   Tabulate the integrand as required for SUBROUTINE QUAD; the
 !   value at the first tabulation point is arbitrary
 !
-            TA(1) = 0.D0
-            DO L = 2, MTP
-               TA(L) = (PFII(L,I)*PFFF(L,J) + QFII(L,I)*QFFF(L,J))*RP(L)
-            END DO
+            ta(1) = 0.d0
+            do l = 2, mtp
+               ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*rp(l)
+            end do
 !
 !   Perform the quadrature
 !
-            CALL QUAD (RESULT)
+            call quad (result)
 
-            BRAKET(I,J) = RESULT
+            braket(i,j) = result
 
-            WRITE (*,9) '<',NPII(I),NHII(I),'|',NPFF(J),NHFF(J),'> =', &
-               BRAKET(I,J)
-         END DO
-      END DO
+            write (*,9) '<',npii(i),nhii(i),'|',npff(j),nhff(j),'> =', &
+               braket(i,j)
+         end do
+      end do
 !
-    9 FORMAT(A,I2,A,A,I2,A,A,E20.13)
+    9 format(a,i2,a,a,i2,a,a,e20.13)
 
-      RETURN
-      END SUBROUTINE BRKT
+      return
+      end subroutine brkt

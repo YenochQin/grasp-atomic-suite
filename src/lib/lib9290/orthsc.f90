@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ORTHSC
+      subroutine orthsc
 !                                                                      *
 !   This routine Schmidt orthogonalises radial wavefunctions.          *
 !                                                                      *
@@ -17,26 +17,26 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE parameter_def,   ONLY:  NNNW
-      USE DEBUG_C
-      USE DEF_C
-      USE GRID_C
-      USE ORB_C
-      USE WAVE_C, ONLY: PZ, MF, PF, QF
+      use vast_kind_param, only:  double
+      use parameter_def,   only:  nnnw
+      use debug_c
+      use def_c
+      use grid_c
+      use orb_c
+      use wave_c, only: pz, mf, pf, qf
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rint_I
-      IMPLICIT NONE
+      use rint_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, DIMENSION(NNNW) :: J
-      INTEGER :: L, NAKL, KOUNT, MTP0, K, MTP, I
-      REAL(DOUBLE), DIMENSION(NNNW) :: OVLAP
-      REAL(DOUBLE) :: EPS, OVRLAP, DNORM, FACTOR
-      LOGICAL :: CHANGED
+      integer, dimension(nnnw) :: j
+      integer :: l, nakl, kount, mtp0, k, mtp, i
+      real(double), dimension(nnnw) :: ovlap
+      real(double) :: eps, ovrlap, dnorm, factor
+      logical :: changed
 !-----------------------------------------------
 !
 !XHH
@@ -44,7 +44,7 @@
 !   Set tabulated values of the radial wavefunction to zero
 !   if they are less than EPS
 !
-      EPS = 0.01D00*ACCY
+      eps = 0.01d00*accy
 !
 !   Determine the number of interesting overlaps
 !
@@ -59,40 +59,40 @@
 !
 !      IF (NOVL .EQ. 0) RETURN
 !
-      DO L = 2, NW
+      do l = 2, nw
 !
-         NAKL = NAK(L)
-         KOUNT = 0
+         nakl = nak(l)
+         kount = 0
 !XHH MTP0 introduced to count the maximum number of points during
 !    orthogonalization of the L-th orbital to other orbitals
 !    The logical variable changed is initialized to .F.
 
-         MTP0 = MF(L)
-         CHANGED = .FALSE.
+         mtp0 = mf(l)
+         changed = .false.
 !
-         DO K = 1, L - 1
+         do k = 1, l - 1
 !
-            IF (NAK(K) /= NAKL) CYCLE
+            if (nak(k) /= nakl) cycle
 !XHH
-            CHANGED = .TRUE.
+            changed = .true.
 !
 !   Compute overlap
 !
-            OVRLAP = RINT(L,K,0)
+            ovrlap = rint(l,k,0)
 !
 !   Schmidt orthogonalise
 !
-            KOUNT = KOUNT + 1
-            J(KOUNT) = K
-            OVLAP(KOUNT) = OVRLAP
+            kount = kount + 1
+            j(kount) = k
+            ovlap(kount) = ovrlap
 !
-            PZ(L) = PZ(L) - OVRLAP*PZ(K)
-            MTP = MAX(MF(L),MF(K))
-            MTP0 = MAX(MTP0,MF(K))
+            pz(l) = pz(l) - ovrlap*pz(k)
+            mtp = max(mf(l),mf(k))
+            mtp0 = max(mtp0,mf(k))
 
-            PF(:MTP,L) = PF(:MTP,L) - OVRLAP*PF(:MTP,K)
-            QF(:MTP,L) = QF(:MTP,L) - OVRLAP*QF(:MTP,K)
-         END DO
+            pf(:mtp,l) = pf(:mtp,l) - ovrlap*pf(:mtp,k)
+            qf(:mtp,l) = qf(:mtp,l) - ovrlap*qf(:mtp,k)
+         end do
 !
 !   Normalise
 !
@@ -100,39 +100,39 @@
 !    This is in accordance with the original version which had the
 !    normalization etc within the inner K loop.
 
-         IF (CHANGED) THEN
-            MTP = MTP0
+         if (changed) then
+            mtp = mtp0
 
-            MF(L) = MTP
-            DNORM = RINT(L,L,0)
-            FACTOR = 1.0D00/SQRT(DNORM)
+            mf(l) = mtp
+            dnorm = rint(l,l,0)
+            factor = 1.0d00/sqrt(dnorm)
 !
-            PZ(L) = FACTOR*PZ(L)
-            PF(2:MTP,L) = FACTOR*PF(2:MTP,L)
-            QF(2:MTP,L) = FACTOR*QF(2:MTP,L)
+            pz(l) = factor*pz(l)
+            pf(2:mtp,l) = factor*pf(2:mtp,l)
+            qf(2:mtp,l) = factor*qf(2:mtp,l)
 !
 !   Find new MF(L)
 !
-            MTP = MTP + 1
-    7       CONTINUE
-            MTP = MTP - 1
+            mtp = mtp + 1
+    7       continue
+            mtp = mtp - 1
 !cjb       print *, '    MTP    = ',    MTP
 !          print *, '        L  = ',        L
 !          print *, ' PF(MTP,L) = ', PF(MTP,L)
 !cjb Subscript out of range for array pf
-           if ( MTP .GE. 1 ) then
+           if ( mtp .ge. 1 ) then
 !cjb
-            IF (ABS(PF(MTP,L)) < EPS) THEN
-               PF(MTP,L) = 0.0D00
-               QF(MTP,L) = 0.0D00
-               GO TO 7
-            ELSE
-               MF(L) = MTP
-            ENDIF
+            if (abs(pf(mtp,l)) < eps) then
+               pf(mtp,l) = 0.0d00
+               qf(mtp,l) = 0.0d00
+               go to 7
+            else
+               mf(l) = mtp
+            endif
 !cjb endif
            endif
-         ENDIF
-         IF (.NOT.(LDBPR(3) .AND. KOUNT>0)) CYCLE
+         endif
+         if (.not.(ldbpr(3) .and. kount>0)) cycle
 
 !XHH Moved ahead
 !            ENDIF
@@ -157,13 +157,13 @@
 !      WRITE (*,301)
 !     :      (OVLAP(I),NP(L),NH(L),NP(J(I)),NH(J(I)),I = 1,KOUNT)
 !---------------------------------------------------------------
-         WRITE (99, 301) (OVLAP(I),NP(L),NH(L),NP(J(I)),NH(J(I)),I=1,KOUNT)
+         write (99, 301) (ovlap(i),np(l),nh(l),np(j(i)),nh(j(i)),i=1,kount)
 !
-      END DO
+      end do
 !
-      RETURN
+      return
 !
-  301 FORMAT(1P,5(2X,1D10.3,' = <',1I2,1A2,'|',1I2,1A2,'>'))
-      RETURN
+  301 format(1p,5(2x,1d10.3,' = <',1i2,1a2,'|',1i2,1a2,'>'))
+      return
 !
-      END SUBROUTINE ORTHSC
+      end subroutine orthsc

@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE read03_mem(JBLOCK)
+      subroutine read03_mem(jblock)
 !                                                                  *
 !   Written by  G. Gaigalas               Vilnius, September 2021  *
 !                                                                  *
@@ -9,29 +9,29 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE hmat_C,     ONLY: IROW, IENDC
-      USE rmcdhf_mem_C
-      USE mpi_C
+      use hmat_c,     only: irow, iendc
+      use rmcdhf_mem_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER :: JBLOCK
+      integer :: jblock
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER :: I
+      integer :: i
 !-----------------------------------------------
 
-      DO I = IMIN1_30(JBLOCK)+1+MYID, IMAX1_30(JBLOCK), NPROCS
-         IENDC(I-IMIN1_30(JBLOCK)) = IENDC_30(I)
-      END DO
-      DO I = IMIN2_30(JBLOCK)+1, IMAX2_30(JBLOCK)
-         IROW(I-IMIN2_30(JBLOCK)) = IROW_30(I)
-      END DO
+      do i = imin1_30(jblock)+1+myid, imax1_30(jblock), nprocs
+         iendc(i-imin1_30(jblock)) = iendc_30(i)
+      end do
+      do i = imin2_30(jblock)+1, imax2_30(jblock)
+         irow(i-imin2_30(jblock)) = irow_30(i)
+      end do
 
-      RETURN
-      END SUBROUTINE read03_mem
+      return
+      end subroutine read03_mem

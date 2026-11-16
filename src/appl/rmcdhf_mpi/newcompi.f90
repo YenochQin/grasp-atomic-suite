@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE NEWCOmpi(SUM)
+      subroutine newcompi(sum)
 !                                                                      *
 !   This routine computes the level weights, the generalized occupa-   *
 !   tion numbers,  and average energy for  EOL calculations;  this     *
@@ -21,118 +21,118 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE DEBUG_C
-      USE def_C
-      USE eigv_C
-      USE orb_C
-      USE scf_C
-      USE syma_C,          ONLY: JPGG
-      USE iounit_C
-      USE hblock_C
-      USE pos_C
-      USE peav_C
-      USE blkidx_C
-      USE mpi_C
+      use vast_kind_param, only: double
+      use debug_c
+      use def_c
+      use eigv_c
+      use orb_c
+      use scf_c
+      use syma_c,          only: jpgg
+      use iounit_c
+      use hblock_c
+      use pos_c
+      use peav_c
+      use blkidx_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dsubrs_I
-      USE iq_I
-      USE csfwgt_I
-      IMPLICIT NONE
+      use dsubrs_i
+      use iq_i
+      use csfwgt_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE) , INTENT(OUT) :: SUM
+      real(double) , intent(out) :: sum
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, NB, I, NOFF, JALL, JBLOCK
-      REAL(DOUBLE) :: WEITJ, EE
-      LOGICAL :: EOL
+      integer :: j, nb, i, noff, jall, jblock
+      real(double) :: weitj, ee
+      logical :: eol
 !-----------------------------------------------
 !   Compute weighting factors
 !
-      SUM = 0.D0
-      DO J = 1, NCMIN
-         WEITJ = WEIGHT(J)
-         IF (WEITJ == (-2.D0)) THEN
-            WT(J) = 1.D0
-         ELSE IF (WEITJ == (-1.D0)) THEN
+      sum = 0.d0
+      do j = 1, ncmin
+         weitj = weight(j)
+         if (weitj == (-2.d0)) then
+            wt(j) = 1.d0
+         else if (weitj == (-1.d0)) then
 !GG            WT(J) = IATJPO(J)
-            jblock = idxblk(J)     ! Block number of this state
-            WT(J) = ABS(JPGG(jblock))
-         ELSE
-            WT(J) = WEIGHT(J)
-         ENDIF
-         SUM = SUM + WT(J)
-      END DO
+            jblock = idxblk(j)     ! Block number of this state
+            wt(j) = abs(jpgg(jblock))
+         else
+            wt(j) = weight(j)
+         endif
+         sum = sum + wt(j)
+      end do
 
-      WT(:NCMIN) = WT(:NCMIN)/SUM
+      wt(:ncmin) = wt(:ncmin)/sum
 !
 !   Compute generalised occupation numbers
 !   <----- Distributed ----->
 !
-      EOL = .TRUE.
+      eol = .true.
 
-      DO J = 1, NW
-         SUM = 0.D0
-         DO NB = 1, NBLOCK
-            DO I = MYID + 1, NCFBLK(NB), NPROCS
-               SUM = SUM + DSUBRS(EOL,I,I,NB)*IQ(J,I + NCFPAST(NB))
-            END DO
-         END DO
+      do j = 1, nw
+         sum = 0.d0
+         do nb = 1, nblock
+            do i = myid + 1, ncfblk(nb), nprocs
+               sum = sum + dsubrs(eol,i,i,nb)*iq(j,i + ncfpast(nb))
+            end do
+         end do
 !         UCF(J) = SUM
-         CALL MPI_Allreduce (SUM, UCF(J), 1, MPI_DOUBLE_PRECISION, &
-                             MPI_SUM, MPI_COMM_WORLD, ierr)
-      END DO
+         call mpi_allreduce (sum, ucf(j), 1, mpi_double_precision, &
+                             mpi_sum, mpi_comm_world, ierr)
+      end do
 !
 !   Write out level energies and weights
 !
-      IF(MYID == 0) WRITE (*, 300)
-      SUM = 0.D0
-      NOFF = 0
-      DO JALL = 1, NCMIN
-         NB = IDXBLK(JALL)                       ! Block number of this state
-         EE = EAVBLK(NB) + EVAL(JALL)
+      if(myid == 0) write (*, 300)
+      sum = 0.d0
+      noff = 0
+      do jall = 1, ncmin
+         nb = idxblk(jall)                       ! Block number of this state
+         ee = eavblk(nb) + eval(jall)
          if (myid .eq. 0) then
-            WRITE (*, 301) ICCMIN(JALL), EE, WT(JALL)
-            IF (LDBPG(5)) THEN
-               WRITE (99, *) JALL, NB, NCFBLK(NB), NEVECPAST(NB)
-               WRITE (99, 302)
-               WRITE (99, 303) (EVEC(I + NOFF),I=1,NCFBLK(NB))
-               NOFF = NOFF + NCFBLK(NB)
-            ENDIF
-         ENDIF
-         SUM = SUM + WT(JALL)*EE
-      END DO
+            write (*, 301) iccmin(jall), ee, wt(jall)
+            if (ldbpg(5)) then
+               write (99, *) jall, nb, ncfblk(nb), nevecpast(nb)
+               write (99, 302)
+               write (99, 303) (evec(i + noff),i=1,ncfblk(nb))
+               noff = noff + ncfblk(nb)
+            endif
+         endif
+         sum = sum + wt(jall)*ee
+      end do
             !~~~~~~~~~
-            IF (myid .EQ. 0) THEN
+            if (myid .eq. 0) then
             !~~~~~~~~~
 
-      CALL CSFWGT (.TRUE.)
+      call csfwgt (.true.)
 !
 !   Write out average energy
 !
-      IF (NCMIN > 1) WRITE (*, 304) SUM
-      WRITE (0,'(A25,1PD18.10)') 'Weighted average energy: ', SUM
+      if (ncmin > 1) write (*, 304) sum
+      write (0,'(A25,1PD18.10)') 'Weighted average energy: ', sum
 !
 !   Write out generalized occupation numbers
 !
-      WRITE (*, 305)
-      WRITE (*, 303) (UCF(I),I=1,NW)
+      write (*, 305)
+      write (*, 303) (ucf(i),i=1,nw)
 
             !~~~~~~~~~
-            ENDIF
+            endif
             !~~~~~~~~~
 
-  300 FORMAT(/,'Optimise on the following level(s):'/)
-  301 FORMAT('Level ',1I2,4X,'Energy = ',1P,1D19.12,4X,'Weight = ',1D12.5)
-  302 FORMAT(/,'Configuration mixing coefficients:')
-  303 FORMAT(1X,1P,6D12.4)
-  304 FORMAT(/,'Weighted average energy of these levels = ',1P,D18.10)
-  305 FORMAT(/,'Generalised occupation numbers:'/)
+  300 format(/,'Optimise on the following level(s):'/)
+  301 format('Level ',1i2,4x,'Energy = ',1p,1d19.12,4x,'Weight = ',1d12.5)
+  302 format(/,'Configuration mixing coefficients:')
+  303 format(1x,1p,6d12.4)
+  304 format(/,'Weighted average energy of these levels = ',1p,d18.10)
+  305 format(/,'Generalised occupation numbers:'/)
 
-      RETURN
-      END SUBROUTINE NEWCOmpi
+      return
+      end subroutine newcompi

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION CLRX (KAPPAA, K, KAPPAB)
+      real(kind(0.0d0)) function clrx (kappaa, k, kappab)
 !                                                                      *
 !   The value of CLRX is the 3-j symbol:                               *
 !                                                                      *
@@ -25,97 +25,97 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE FACTS_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use facts_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: KAPPAA, K, KAPPAB
+      integer, intent(in) :: kappaa, k, kappab
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: KA, KB, KAPKB, KABKP, KAMKB, KBMKA
-      REAL(DOUBLE) :: EXPTRM
+      integer :: ka, kb, kapkb, kabkp, kamkb, kbmka
+      real(double) :: exptrm
 !-----------------------------------------------
 !
 !
 !   Determine the absolute values of the kappas
 !
-      KA = ABS(KAPPAA)
-      KB = ABS(KAPPAB)
+      ka = abs(kappaa)
+      kb = abs(kappab)
 !
 !   Perform the triangularity check
 !
-      IF (ABS(KA - KB)<=K .AND. KA+KB-1>=K) THEN
+      if (abs(ka - kb)<=k .and. ka+kb-1>=k) then
 !
 !   Triangularity satisfied; compute the 3j coefficient
 !
 !   Begin with the logarithm of the square of the leading term
 !
-         EXPTRM = -LOG(DBLE(KA*KB))
+         exptrm = -log(dble(ka*kb))
 !
 !   Compute the logarithm of the square root of the leading term
 !   and the factorial part that doesn't depend on the parity of
 !   KA+KB+K (the delta factor)
 !
-         KAPKB = KA + KB
-         KABKP = KAPKB + K
-         KAMKB = KA - KB
-         KBMKA = KB - KA
-         EXPTRM = 0.5D00*(EXPTRM + GAM(KAPKB-K)+GAM(KAMKB+K+1)+GAM(KBMKA+K+1)-&
-            GAM(KABKP+1))
+         kapkb = ka + kb
+         kabkp = kapkb + k
+         kamkb = ka - kb
+         kbmka = kb - ka
+         exptrm = 0.5d00*(exptrm + gam(kapkb-k)+gam(kamkb+k+1)+gam(kbmka+k+1)-&
+            gam(kabkp+1))
 !
 !   The remainder depends on the parity of KA+KB+K
 !
-         IF (MOD(KABKP,2) == 0) THEN
+         if (mod(kabkp,2) == 0) then
 !
 !   Computation for even parity case
 !
 !   Include the phase factor: a minus sign if necessary
 !
-            IF (MOD(3*KABKP/2,2) == 0) THEN
-               CLRX = 1.0D00
-            ELSE
-               CLRX = -1.0D00
-            ENDIF
+            if (mod(3*kabkp/2,2) == 0) then
+               clrx = 1.0d00
+            else
+               clrx = -1.0d00
+            endif
 !
 !   Include the contribution from the factorials
 !
-            EXPTRM = EXPTRM + GAM((KABKP+2)/2) - GAM((KAPKB-K)/2) - GAM((KAMKB+&
-               K+2)/2) - GAM((KBMKA+K+2)/2)
+            exptrm = exptrm + gam((kabkp+2)/2) - gam((kapkb-k)/2) - gam((kamkb+&
+               k+2)/2) - gam((kbmka+k+2)/2)
 !
-         ELSE
+         else
 !
 !   Computation for odd parity case
 !
 !   Include the phase factor: a minus sign if necessary
 !
-            IF (MOD((3*KABKP - 1)/2,2) == 0) THEN
-               CLRX = 1.0D00
-            ELSE
-               CLRX = -1.0D00
-            ENDIF
+            if (mod((3*kabkp - 1)/2,2) == 0) then
+               clrx = 1.0d00
+            else
+               clrx = -1.0d00
+            endif
 !
 !   Include the contribution from the factorials
 !
-            EXPTRM = EXPTRM + GAM((KABKP+1)/2) - GAM((KAPKB-K+1)/2) - GAM((&
-               KAMKB+K+1)/2) - GAM((KBMKA+K+1)/2)
+            exptrm = exptrm + gam((kabkp+1)/2) - gam((kapkb-k+1)/2) - gam((&
+               kamkb+k+1)/2) - gam((kbmka+k+1)/2)
 !
-         ENDIF
+         endif
 !
 !   Final assembly
 !
-         CLRX = CLRX*EXP(EXPTRM)
+         clrx = clrx*exp(exptrm)
 !
-      ELSE
+      else
 !
 !   Triangularity violated; set the coefficient to zero
 !
-         CLRX = 0.0D00
+         clrx = 0.0d00
 !
-      ENDIF
+      endif
 !
-      RETURN
+      return
 !
-      END FUNCTION CLRX
+      end function clrx

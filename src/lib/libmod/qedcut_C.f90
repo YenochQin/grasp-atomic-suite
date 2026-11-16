@@ -1,3 +1,3 @@
-      MODULE qedcut_C
-      INTEGER :: NQEDCUT, NQEDMAX
-      END MODULE qedcut_C
+      module qedcut_c
+      integer :: nqedcut, nqedmax
+      end module qedcut_c

@@ -1,30 +1,30 @@
 !***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION IDIGIT (CST)
+      integer function idigit (cst)
 !                                                                      *
 !                                                                      *
 !                                                                      *
 !***********************************************************************
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER , INTENT(IN) :: CST
+      character , intent(in) :: cst
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      CHARACTER, DIMENSION(0:9) :: CDGT
+      integer :: i
+      character, dimension(0:9) :: cdgt
 !-----------------------------------------------
 !
-      DATA CDGT/ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'/
+      data cdgt/ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'/
 !
-      DO I = 0, 9
-         IF (CST /= CDGT(I)) CYCLE
-         IDIGIT = I
-         EXIT
-      END DO
+      do i = 0, 9
+         if (cst /= cdgt(i)) cycle
+         idigit = i
+         exit
+      end do
 !
-      RETURN
-      END FUNCTION IDIGIT
+      return
+      end function idigit

@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE RUMTJJ(KNT,JJ,LQ,LV,L)
+      subroutine rumtjj(knt,jj,lq,lv,l)
 !                                                                  *
 !   ---------------  SECTION SQJJ  SUBPROGRAM 16  --------------   *
 !                                                                  *
@@ -15,41 +15,41 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE mtjj_C
-      USE mtjj2_C
+      use mtjj_c
+      use mtjj2_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE jthn_I
-      IMPLICIT NONE
+      use jthn_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)  :: JJ, KNT
-      INTEGER, INTENT(OUT) :: LQ, LV, L
+      integer, intent(in)  :: jj, knt
+      integer, intent(out) :: lq, lv, l
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: KT, KNTMIN
+      integer :: kt, kntmin
 !-----------------------------------------------
 
-      IF(JJ < 9) THEN
-        KT=MT(KNT)
-      ELSE IF(JJ == 9) THEN
-        IF(KNT > 300) THEN
-          KNTMIN=KNT-300
-          KT=MT9(KNTMIN)
-        ELSE
-          PRINT*, "ERROR in RUMTJJ"
-          STOP
+      if(jj < 9) then
+        kt=mt(knt)
+      else if(jj == 9) then
+        if(knt > 300) then
+          kntmin=knt-300
+          kt=mt9(kntmin)
+        else
+          print*, "ERROR in RUMTJJ"
+          stop
 !GG          CALL RUMT67(KNT,NR,LQ,LS,L)
 !GG          RETURN
-        ENDIF
-      ELSE
-        KT=MT11(KNT)
-      ENDIF
-      LQ=JTHN(KT,3,100)
-      LV=JTHN(KT,2,100)
-      L=JTHN(KT,1,100)
-      RETURN
-      END SUBROUTINE RUMTJJ
+        endif
+      else
+        kt=mt11(knt)
+      endif
+      lq=jthn(kt,3,100)
+      lv=jthn(kt,2,100)
+      l=jthn(kt,1,100)
+      return
+      end subroutine rumtjj

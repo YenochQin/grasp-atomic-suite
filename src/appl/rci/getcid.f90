@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GETCID (isofile, rwffile, idblk)
+      subroutine getcid (isofile, rwffile, idblk)
 !                                                                      *
 !   Interactively determines the data governing the CI problem.        *
 !   iccut is replaced by an array iccutblk(1:nblock)
@@ -18,44 +18,44 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE decide_C
-      USE def_C,           ONLY: cvac, c, z, accy, nelec, emn
-      USE default_C
-      USE grid_C
-      USE hblock_C
-      USE iccu_C
-      USE iounit_C
-      USE npar_C
-      USE npot_C,          ONLY: zz, nnuc
-      USE nsmdat_C
-      USE orb_C
-      USE wave_C
-      USE wfac_C
-      USE blim_C
-      USE where_C
-      USE qedcut_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use decide_c
+      use def_c,           only: cvac, c, z, accy, nelec, emn
+      use default_c
+      use grid_c
+      use hblock_c
+      use iccu_c
+      use iounit_c
+      use npar_c
+      use npot_c,          only: zz, nnuc
+      use nsmdat_c
+      use orb_c
+      use wave_c
+      use wfac_c
+      use blim_c
+      use where_c
+      use qedcut_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I, ONLY: getyn
-      USE nucpot_I, ONLY: nucpot
-      USE radgrd_I, ONLY: radgrd
-      USE setiso_I, ONLY: setiso
-      USE setqic_I, ONLY: setqic
-      USE setrwfa_I, ONLY: setrwfa
-      IMPLICIT NONE
+      use getyn_i, only: getyn
+      use nucpot_i, only: nucpot
+      use radgrd_i, only: radgrd
+      use setiso_i, only: setiso
+      use setqic_i, only: setqic
+      use setrwfa_i, only: setrwfa
+      implicit none
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      CHARACTER(LEN=*) :: isofile, rwffile
-      CHARACTER(LEN=8), DIMENSION(*) ::  idblk
+      character(len=*) :: isofile, rwffile
+      character(len=8), dimension(*) ::  idblk
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-       LOGICAL :: yes
-       INTEGER :: i, jblock, ntmp, np10, j
+       logical :: yes
+       integer :: i, jblock, ntmp, np10, j
 !-----------------------------------------------------------------------
 !
 ! Open, check, load data from, and close the  .iso  file
@@ -63,69 +63,69 @@
 ! common block.
 !
 !      PRINT *, 'Calling SETISO ...'
-      CALL SETISO (isofile)
+      call setiso (isofile)
 !
 ! The speed of light, if non-default then spread from node-0
 ! Quantities to be obtained: C
 !
-      IF (NDEF .NE. 0) THEN
-         WRITE (istde,*) 'Revise the physical speed of light (',CVAC,   &
+      if (ndef .ne. 0) then
+         write (istde,*) 'Revise the physical speed of light (',cvac,   &
                            ' in a.u.) ?'
-         YES = GETYN ()
-         IF (YES) THEN
-            WRITE (istde,*) 'Enter the revised value:'
-            READ *,C
-         ELSE
-            C = CVAC
-         ENDIF
-      ELSE
-         C = CVAC
-      ENDIF
+         yes = getyn ()
+         if (yes) then
+            write (istde,*) 'Enter the revised value:'
+            read *,c
+         else
+            c = cvac
+         endif
+      else
+         c = cvac
+      endif
 !
 ! Treat some CSF's as perturbation ? Broadcasting is used only in
 ! non-default mode, as the above case for speed of light.
 ! Quantities to be obtained: LFORDR
 !
-      IF (NDEF .NE. 0) THEN
-         WRITE (istde,*) 'Treat contributions of some CSFs',            &
+      if (ndef .ne. 0) then
+         write (istde,*) 'Treat contributions of some CSFs',            &
                            ' as first-order perturbations?'
-         LFORDR = GETYN ()
-      ELSE
-         LFORDR = .FALSE.
-      ENDIF
+         lfordr = getyn ()
+      else
+         lfordr = .false.
+      endif
 
 ! Get iccutblk() from the user-input
 
-      IF (.NOT. LFORDR) THEN
+      if (.not. lfordr) then
          !...Default first
-         DO i = 1, nblock
+         do i = 1, nblock
            iccutblk(i) = ncfblk(i)
-         ENDDO
-      ELSE
+         enddo
+      else
 
       ! Let master do the i/o, then broadcast
-            WRITE (istde,*) 'There are ', nblock, 'blocks. They are:'
-            WRITE (istde,*) '  block     J Parity     No of CSFs'
-            DO i = 1, nblock
-               WRITE (istde,*) i, idblk(i)(1:5), ncfblk(i)
-            ENDDO
+            write (istde,*) 'There are ', nblock, 'blocks. They are:'
+            write (istde,*) '  block     J Parity     No of CSFs'
+            do i = 1, nblock
+               write (istde,*) i, idblk(i)(1:5), ncfblk(i)
+            enddo
 
-            WRITE (istde,*)
-            WRITE (istde,*) 'Enter iccut for each block'
-            DO jblock = 1, nblock
-               WRITE (istde,*) 'Block ', jblock, '   ncf = ',           &
+            write (istde,*)
+            write (istde,*) 'Enter iccut for each block'
+            do jblock = 1, nblock
+               write (istde,*) 'Block ', jblock, '   ncf = ',           &
                               ncfblk(jblock)                            &
                       , ' id = ', idblk(jblock)(1:5)
-  123          READ (istdi,*) ntmp
-               IF (ntmp .GE. 0 .AND. ntmp .LE. ncfblk(jblock)) THEN
+  123          read (istdi,*) ntmp
+               if (ntmp .ge. 0 .and. ntmp .le. ncfblk(jblock)) then
                   iccutblk(jblock) = ntmp
-               ELSE
-                  WRITE (istde,*) 'ICCUT out of range, re-enter:'
-                  GOTO 123
-               ENDIF
+               else
+                  write (istde,*) 'ICCUT out of range, re-enter:'
+                  goto 123
+               endif
                write(734,*) ntmp,'! ICCUT for block',jblock
-            ENDDO
-      ENDIF
+            enddo
+      endif
 
 !*****************************************************************
 !
@@ -158,72 +158,72 @@
 ! Include transverse ?
 ! Quantities to be obtained: LTRANS, WFACT
 !
-      WRITE (istde,*) 'Include contribution of H (Transverse)?'
-      LTRANS = GETYN ()
-      WRITE (istde,*) 'Modify all transverse photon frequencies?'
-      YES = GETYN ()
-      IF (YES) THEN
-         WRITE (istde,*) 'Enter the scale factor:'
-         READ *, WFACT
-      ELSE
-         WFACT = 1.0D00
-      ENDIF
+      write (istde,*) 'Include contribution of H (Transverse)?'
+      ltrans = getyn ()
+      write (istde,*) 'Modify all transverse photon frequencies?'
+      yes = getyn ()
+      if (yes) then
+         write (istde,*) 'Enter the scale factor:'
+         read *, wfact
+      else
+         wfact = 1.0d00
+      endif
 !
 ! Other interactions ? One logical for each case. Done altogether
 !
-      WRITE (istde,*) 'Include H (Vacuum Polarisation)?'
-      LVP = GETYN ()
+      write (istde,*) 'Include H (Vacuum Polarisation)?'
+      lvp = getyn ()
 
-      WRITE (istde,*) 'Include H (Normal Mass Shift)?'
-      LNMS = GETYN ()
+      write (istde,*) 'Include H (Normal Mass Shift)?'
+      lnms = getyn ()
 
-      WRITE (istde,*) 'Include H (Specific Mass Shift)?'
-      LSMS = GETYN ()
+      write (istde,*) 'Include H (Specific Mass Shift)?'
+      lsms = getyn ()
 
-      WRITE (istde,*) 'Estimate self-energy?'
-      LSE = GETYN ()
-      IF (LSE.EQV..TRUE.) THEN
-         NQEDCUT = 1
-         WRITE (istde,*)                                             &
+      write (istde,*) 'Estimate self-energy?'
+      lse = getyn ()
+      if (lse.eqv..true.) then
+         nqedcut = 1
+         write (istde,*)                                             &
       'Largest n quantum number for including self-energy for orbital'
-         WRITE (istde,*) 'n should be less or equal 8'
-         READ *, NQEDMAX
-      ELSE
-         NQEDCUT = 0
-      END IF
+         write (istde,*) 'n should be less or equal 8'
+         read *, nqedmax
+      else
+         nqedcut = 0
+      end if
 
-      IF (LTRANS) THEN
-        WRITE(734,'(a)') 'y            ! Contribution of H Transverse?'
-      ELSE
-        WRITE(734,'(a)') 'n            ! Contribution of H Transverse?'
-      END IF
-      IF (YES) THEN
-        WRITE(734,'(a)') 'y            ! Modify photon frequencies?'
-        WRITE(734,*) WFACT,'! Scale factor'
-      ELSE
-        WRITE(734,'(a)') 'n            ! Modify photon frequencies?'
-      END IF
-      IF (LVP) THEN
-        WRITE(734,'(a)') 'y            ! Vacuum polarization?'
-      ELSE
-        WRITE(734,'(a)') 'n            ! Vacuum polarization?'
-      END IF
-      IF (LNMS) THEN
-        WRITE(734,'(a)') 'y            ! Normal mass shift?'
-      ELSE
-        WRITE(734,'(a)') 'n            ! Normal mass shift?'
-      END IF
-      IF (LSMS) THEN
-        WRITE(734,'(a)') 'y            ! Specific mass shift?'
-      ELSE
-        WRITE(734,'(a)') 'n            ! Specific mass shift?'
-      END IF
-      IF (LSE) THEN
-        WRITE(734,'(a)') 'y            ! Self energy?'
-        WRITE(734,*) NQEDMAX, '! Max n for including self energy'
-      ELSE
-        WRITE(734,'(a)') 'n            ! Self energy?'
-      END IF
+      if (ltrans) then
+        write(734,'(a)') 'y            ! Contribution of H Transverse?'
+      else
+        write(734,'(a)') 'n            ! Contribution of H Transverse?'
+      end if
+      if (yes) then
+        write(734,'(a)') 'y            ! Modify photon frequencies?'
+        write(734,*) wfact,'! Scale factor'
+      else
+        write(734,'(a)') 'n            ! Modify photon frequencies?'
+      end if
+      if (lvp) then
+        write(734,'(a)') 'y            ! Vacuum polarization?'
+      else
+        write(734,'(a)') 'n            ! Vacuum polarization?'
+      end if
+      if (lnms) then
+        write(734,'(a)') 'y            ! Normal mass shift?'
+      else
+        write(734,'(a)') 'n            ! Normal mass shift?'
+      end if
+      if (lsms) then
+        write(734,'(a)') 'y            ! Specific mass shift?'
+      else
+        write(734,'(a)') 'n            ! Specific mass shift?'
+      end if
+      if (lse) then
+        write(734,'(a)') 'y            ! Self energy?'
+        write(734,*) nqedmax, '! Max n for including self energy'
+      else
+        write(734,'(a)') 'n            ! Self energy?'
+      end if
 !
 ! Parameters controlling the radial grid
 !
@@ -236,11 +236,11 @@
 !        N = MIN (220,NNNP)
 !     ELSE
 !CFF     .. should be Z-dependent
-         RNT = 2.0D-06/Z
-         H = 5.D-2
-         N = NNNP
+         rnt = 2.0d-06/z
+         h = 5.d-2
+         n = nnnp
 !     ENDIF
-      HP = 0.D0
+      hp = 0.d0
 !     IF ( NDEF.NE.0) THEN
 !        WRITE (istde,*) 'The default radial grid parameters',         &
 !                       ' for this case are:'
@@ -265,60 +265,60 @@
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
-      ACCY = H**6
+      accy = h**6
 !
 !   Set up the coefficients for the numerical procedures
 !
-      CALL SETQIC
+      call setqic
 !
 !   Generate the radial grid and all associated arrays
 !
-      CALL RADGRD
+      call radgrd
 !
 !   Generate $- r \times V_ (r)$
 !
-      CALL NUCPOT
+      call nucpot
 !
 !   Load the radial wavefunctions
 !
-      CALL SETRWFA (rwffile)
+      call setrwfa (rwffile)
 !
 !   Write the basic parameters of the model electron cloud to the
 !   .res  file; this is the second record on the file --- the
 !   first is the header (see SUBROUTINE SETRES)
 !
-      WRITE (imcdf) NELEC, NCF, NW, nblock ! ncf is ncftot, from setcsll
+      write (imcdf) nelec, ncf, nw, nblock ! ncf is ncftot, from setcsll
 !
 !   Write the nuclear parameters and $- r \times V_ (r)$
 !   to the  .res  file; these are the third, fourth, and fifth
 !   records on the file
 !
-      WRITE (imcdf) Z, EMN
-      WRITE (imcdf) NPARM,(PARM(I), I = 1, NPARM)
-      WRITE (imcdf) N, (ZZ(I), I = 1, N), NNUC
+      write (imcdf) z, emn
+      write (imcdf) nparm,(parm(i), i = 1, nparm)
+      write (imcdf) n, (zz(i), i = 1, n), nnuc
 !
 !   Write the physical effects specification to the  .res  file.
 !   iccutblk() is now an array of length nblock.
 !   This is the sixth record on the file
 !
-      WRITE (imcdf) C, LFORDR, (ICCUTblk(i), i = 1, nblock),            &
-                    LTRANS, WFACT, LVP, LNMS, LSMS
+      write (imcdf) c, lfordr, (iccutblk(i), i = 1, nblock),            &
+                    ltrans, wfact, lvp, lnms, lsms
 !
 !   Write the grid data to the  .res  file; this is the seventh
 !   record on the file
 !
-      NP10 = N + 10
-      WRITE (imcdf) RNT, H, HP, (R(I), I = 1, NP10),                    &
-                 (RP(I), I = 1, NP10), (RPOR(I), I = 1, NP10) ! (imcdf)
+      np10 = n + 10
+      write (imcdf) rnt, h, hp, (r(i), i = 1, np10),                    &
+                 (rp(i), i = 1, np10), (rpor(i), i = 1, np10) ! (imcdf)
 !
 !   Write out the interpolated radial wavefunctions; there are
 !   2*NW such records; thus the total number of records written
 !   at this point is 7+2*NW
 !
-      DO J = 1, NW
-         WRITE (imcdf) E(J), GAMA(J), PZ(J), MF(J)
-         WRITE (imcdf) (PF(I,J), I = 1, MF(J)), (QF(I,J), I = 1, MF(J))
-      ENDDO
+      do j = 1, nw
+         write (imcdf) e(j), gama(j), pz(j), mf(j)
+         write (imcdf) (pf(i,j), i = 1, mf(j)), (qf(i,j), i = 1, mf(j))
+      enddo
 !
-      RETURN
-      END
+      return
+      end

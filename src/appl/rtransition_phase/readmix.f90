@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE READMIX(NAME, INPCI, INIT)
+      subroutine readmix(name, inpci, init)
 !                                                                      *
 !   Open and read the mixing coefficent files                          *
 !                                                                      *
@@ -13,72 +13,72 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE biorb_C
-      USE def_C
-      USE orb_C
-      USE eigv_C
-      USE prnt_C
-      USE syma_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use biorb_c
+      use def_c
+      use orb_c
+      use eigv_c
+      use prnt_c
+      use syma_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: INPCI
-      INTEGER , INTENT(IN) :: INIT
-      CHARACTER  :: NAME(2)*24
+      integer  :: inpci
+      integer , intent(in) :: init
+      character  :: name(2)*24
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IB, IATJP, IASPA, I, J
-      CHARACTER :: G92MIX*6
+      integer :: ib, iatjp, iaspa, i, j
+      character :: g92mix*6
 !-----------------------------------------------
 !
-      IF (INIT == 1) THEN
+      if (init == 1) then
 !
 !   Read the initial state mixing file
 !
-         READ (68) IB, NCFII, NVECII, IATJP, IASPA
-         CALL ALLOC (EVALII, NVECII, 'EVALII', 'READMIX')
-         CALL ALLOC (EVECII, NCFII*NVECII, 'EVECII', 'READMIX')
-         CALL ALLOC (IVECII, NVECII,'IVECII', 'READMIX' )
-         CALL ALLOC (IATJPOII, NVECII, 'IATJPOII', 'READMIX')
-         CALL ALLOC (IASPARII, NVECII, 'ISPARII', 'READMIX')
-         READ (68) (IVECII(I),I=1,NVECII)
-         IATJPOII(:NVECII) = IATJP
-         IASPARII(:NVECII) = IASPA
-         READ (68) EAVII, (EVALII(I),I=1,NVECII)
+         read (68) ib, ncfii, nvecii, iatjp, iaspa
+         call alloc (evalii, nvecii, 'EVALII', 'READMIX')
+         call alloc (evecii, ncfii*nvecii, 'EVECII', 'READMIX')
+         call alloc (ivecii, nvecii,'IVECII', 'READMIX' )
+         call alloc (iatjpoii, nvecii, 'IATJPOII', 'READMIX')
+         call alloc (iasparii, nvecii, 'ISPARII', 'READMIX')
+         read (68) (ivecii(i),i=1,nvecii)
+         iatjpoii(:nvecii) = iatjp
+         iasparii(:nvecii) = iaspa
+         read (68) eavii, (evalii(i),i=1,nvecii)
 
-         READ (68) ((EVECII(I + (J - 1)*NCFII),I=1,NCFII),J=1,NVECII)
+         read (68) ((evecii(i + (j - 1)*ncfii),i=1,ncfii),j=1,nvecii)
 !
 !     CLOSE(68)
 !
-      ELSE
+      else
 !
 !   Read the final state mixing file
 !
 
-         READ (78) IB, NCFFF, NVECFF, IATJP, IASPA
-         CALL ALLOC (EVALFF, NVECFF, 'EVALFF', 'READMIX')
-         CALL ALLOC (EVECFF, NCFFF*NVECFF, 'EVECFF', 'READMIX')
-         CALL ALLOC (IVECFF, NVECFF,'IVECFF', 'READMIX' )
-         CALL ALLOC (IATJPOFF, NVECFF, 'IATJPOFF', 'READMIX')
-         CALL ALLOC (IASPARFF, NVECFF, 'ISPARFF', 'READMIX')
-         READ (78) (IVECFF(I),I=1,NVECFF)
-         IATJPOFF(:NVECFF) = IATJP
-         IASPARFF(:NVECFF) = IASPA
-         READ (78) EAVFF, (EVALFF(I),I=1,NVECFF)
+         read (78) ib, ncfff, nvecff, iatjp, iaspa
+         call alloc (evalff, nvecff, 'EVALFF', 'READMIX')
+         call alloc (evecff, ncfff*nvecff, 'EVECFF', 'READMIX')
+         call alloc (ivecff, nvecff,'IVECFF', 'READMIX' )
+         call alloc (iatjpoff, nvecff, 'IATJPOFF', 'READMIX')
+         call alloc (iasparff, nvecff, 'ISPARFF', 'READMIX')
+         read (78) (ivecff(i),i=1,nvecff)
+         iatjpoff(:nvecff) = iatjp
+         iasparff(:nvecff) = iaspa
+         read (78) eavff, (evalff(i),i=1,nvecff)
 
-         READ (78) ((EVECFF(I + (J - 1)*NCFFF),I=1,NCFFF),J=1,NVECFF)
+         read (78) ((evecff(i + (j - 1)*ncfff),i=1,ncfff),j=1,nvecff)
 !
 !   Close the initial state mixing  file
 !
 !      CLOSE(78)
-      ENDIF
+      endif
 
-      RETURN
-      END SUBROUTINE READMIX
+      return
+      end subroutine readmix

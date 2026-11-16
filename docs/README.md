@@ -33,6 +33,8 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 已统一大小写，软件回归通过 | [non_csfg_lowercase_2026-11-16.md](reviews/non_csfg_lowercase_2026-11-16.md) | 排除 CSFG，1,880 份 Fortran 文本中修改 1,872 份；保留字符串、注释、宏和排版。GNU 15 Release/Check 编译通过，各 67 项回归通过（Release 含三个维护检查的定向重跑）；44 对附加输出逐字节一致。记录既有告警预算覆盖缺口和行尾空白，未做语义重命名。 |
+| 变量清单已整理，语义重命名待实施 | [non_csfg_variable_inventory_2026-11-16.md](plans/non_csfg_variable_inventory_2026-11-16.md) | 基准 caaf3a5；排除 CSFG 构建边界，覆盖 1,880 份 Fortran 文本、20,108 个按文件/作用域区分的实体，另列构建标识符与 USE 别名；529 项有候选命名，其余语义待核实。保留转换前拼写与哈希，后续小写化记录见上条。 |
 | 已实施，串行专项回归通过 | [rangular_angular_reuse.md](implemented/rangular_angular_reuse.md) | 默认关闭的有界 CSF 对缓存；保留顺序、占据/耦合及轨道共享关系，复用原始 T/V 系数，普通 MCP 写出不变；包含命中率、缓存容量与 RSS 测量，OpenMP/MPI 未接入。 |
 | 已完成输出与性能对照 | [rangular_reuse_benchmark_2026-11-14.md](reviews/rangular_reuse_benchmark_2026-11-14.md) | 独立构建修改前基准，两组数据各三轮，文本/描述符 MCP 零容差及字节一致；合成样本命中 99.93%、整程 1.21×，现有 14,551-CSF 样本几乎不命中、慢约 37%；默认保持关闭。 |
 | 已实施，GNU 15 专项回归通过 | [rwfnestimate_header_input.md](implemented/rwfnestimate_header_input.md) | 普通 rwfnestimate 原生读取 rCSFs header.toml 的轨道表和含 core 总电子数；保留文本入口和 header 字节；Ni/Zn 及 TOML Release/Check 专项各 3/3，原生描述符配对哈希不变。 |

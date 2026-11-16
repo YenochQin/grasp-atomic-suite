@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE INTERP(XARR, YARR, NARR, XVAL, YVAL, ACCY)
+      subroutine interp(xarr, yarr, narr, xval, yval, accy)
 !                                                                      *
 !   This routine returns  YVAL  given a value  XVAL by interpolating   *
 !   using a pair of arrays XARR(1:NARR), YARR(1:NARR), that tabulate   *
@@ -19,30 +19,30 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NARR
-      REAL(DOUBLE), INTENT(IN) :: XVAL
-      REAL(DOUBLE), INTENT(OUT) :: YVAL
-      REAL(DOUBLE), INTENT(IN) :: ACCY
-      REAL(DOUBLE), DIMENSION(NARR), INTENT(IN) :: XARR
-      REAL(DOUBLE), DIMENSION(NARR), INTENT(IN) :: YARR
+      integer, intent(in) :: narr
+      real(double), intent(in) :: xval
+      real(double), intent(out) :: yval
+      real(double), intent(in) :: accy
+      real(double), dimension(narr), intent(in) :: xarr
+      real(double), dimension(narr), intent(in) :: yarr
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: MXORD = 11
+      integer, parameter :: mxord = 11
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NRSTLO, NRSTHI, K, LLO, LHI, LLR, IROW, LOCNXT, ILIROK, ILDIAG&
-         , ILOTHR, IBEST, NORDER
-      REAL(DOUBLE), DIMENSION(MXORD) :: DX, X, EST
-      REAL(DOUBLE), DIMENSION((MXORD*(MXORD + 1))/2) :: POLY
-      REAL(DOUBLE) :: DIFF, DIFFT, DEBEB, DEBE
-      LOGICAL, DIMENSION(2*MXORD + 2) :: USED
+      integer :: nrstlo, nrsthi, k, llo, lhi, llr, irow, locnxt, ilirok, ildiag&
+         , ilothr, ibest, norder
+      real(double), dimension(mxord) :: dx, x, est
+      real(double), dimension((mxord*(mxord + 1))/2) :: poly
+      real(double) :: diff, difft, debeb, debe
+      logical, dimension(2*mxord + 2) :: used
 !-----------------------------------------------
 !
 !
@@ -55,96 +55,96 @@
 !
 !   Determine the nearest two XARR entries bounding XVAL
 !
-      IF (NARR < 1) ERROR STOP 'INTERP: empty table'
-      NORDER = MIN(MXORD,NARR)
-      NRSTLO = 1
-      IF (XVAL < XARR(1)) THEN
-         NRSTLO = 1
-         NRSTHI = 1
-         WRITE (*, 300)
-      ELSE IF (XVAL > XARR(NARR)) THEN
-         NRSTLO = NARR
-         NRSTHI = NARR
-         WRITE (*, 300)
-      ELSE
-         K = 0
-    1    CONTINUE
-         K = K + 1
-         IF (XARR(K) < XVAL) THEN
-            NRSTLO = K
-            GO TO 1
-         ELSE
-            NRSTHI = K
-         ENDIF
-      ENDIF
-      IF (XVAL == XARR(NRSTHI)) THEN
-         YVAL = YARR(NRSTHI)
-         RETURN
-      ENDIF
+      if (narr < 1) error stop 'INTERP: empty table'
+      norder = min(mxord,narr)
+      nrstlo = 1
+      if (xval < xarr(1)) then
+         nrstlo = 1
+         nrsthi = 1
+         write (*, 300)
+      else if (xval > xarr(narr)) then
+         nrstlo = narr
+         nrsthi = narr
+         write (*, 300)
+      else
+         k = 0
+    1    continue
+         k = k + 1
+         if (xarr(k) < xval) then
+            nrstlo = k
+            go to 1
+         else
+            nrsthi = k
+         endif
+      endif
+      if (xval == xarr(nrsthi)) then
+         yval = yarr(nrsthi)
+         return
+      endif
 !
 !   Clear relevant piece of use-indicator array
 !
-      LLO = MAX(NRSTLO - MXORD,1)
-      LHI = MIN(NRSTHI + MXORD,NARR)
-      LLR = LLO - 1
-      USED(LLO-LLR:LHI-LLR) = .FALSE.
+      llo = max(nrstlo - mxord,1)
+      lhi = min(nrsthi + mxord,narr)
+      llr = llo - 1
+      used(llo-llr:lhi-llr) = .false.
 !
 !   Determine next-nearest XARR entry
 !
-      DO IROW = 1, NORDER
-         LLO = MAX(NRSTLO - IROW + 1,1)
-         LHI = MIN(NRSTHI + IROW - 1,NARR)
+      do irow = 1, norder
+         llo = max(nrstlo - irow + 1,1)
+         lhi = min(nrsthi + irow - 1,narr)
 ! Start from an actual unused sample, never from an undefined index.
-         LOCNXT = LLO
-         DO WHILE (LOCNXT <= LHI)
-            IF (.NOT.USED(LOCNXT-LLR)) EXIT
-            LOCNXT = LOCNXT + 1
-         END DO
-         IF (LOCNXT > LHI) ERROR STOP 'INTERP: exhausted stencil'
-         DIFF = XARR(LOCNXT) - XVAL
-         DO K = LOCNXT + 1, LHI
-            IF (USED(K-LLR)) CYCLE
-            DIFFT = XARR(K) - XVAL
-            IF (ABS(DIFFT) < ABS(DIFF)) THEN
-               DIFF = DIFFT
-               LOCNXT = K
-            ENDIF
-         END DO
-         USED(LOCNXT-LLR) = .TRUE.
-         X(IROW) = XARR(LOCNXT)
-         DX(IROW) = DIFF
+         locnxt = llo
+         do while (locnxt <= lhi)
+            if (.not.used(locnxt-llr)) exit
+            locnxt = locnxt + 1
+         end do
+         if (locnxt > lhi) error stop 'INTERP: exhausted stencil'
+         diff = xarr(locnxt) - xval
+         do k = locnxt + 1, lhi
+            if (used(k-llr)) cycle
+            difft = xarr(k) - xval
+            if (abs(difft) < abs(diff)) then
+               diff = difft
+               locnxt = k
+            endif
+         end do
+         used(locnxt-llr) = .true.
+         x(irow) = xarr(locnxt)
+         dx(irow) = diff
 !
 !   Fill table for this row
 !
-         POLY(ILOC(IROW,1)) = YARR(LOCNXT)
-         DO K = 2, IROW
-            ILIROK = ILOC(IROW,K)
-            ILDIAG = ILOC(K - 1,K - 1)
-            ILOTHR = ILOC(IROW,K - 1)
-            POLY(ILIROK) = (POLY(ILDIAG)*DX(IROW)-POLY(ILOTHR)*DX(K-1))/(X(&
-               IROW)-X(K-1))
-         END DO
+         poly(iloc(irow,1)) = yarr(locnxt)
+         do k = 2, irow
+            ilirok = iloc(irow,k)
+            ildiag = iloc(k - 1,k - 1)
+            ilothr = iloc(irow,k - 1)
+            poly(ilirok) = (poly(ildiag)*dx(irow)-poly(ilothr)*dx(k-1))/(x(&
+               irow)-x(k-1))
+         end do
 !
 !   Pick off the diagonal element
 !
-         ILDIAG = ILOC(IROW,IROW)
-         EST(IROW) = POLY(ILDIAG)
+         ildiag = iloc(irow,irow)
+         est(irow) = poly(ildiag)
 !
-      END DO
+      end do
 !
 !   Now the estimate vector is filled in, so obtain the
 !   best estimate
 !
-      IF (NORDER == 1) THEN
-         YVAL = EST(1)
-         WRITE (*,'(A)') 'INTERP: One-point extrapolation; accuracy cannot be estimated.'
-         RETURN
-      ENDIF
-      DEBEB = RELATIVE_CHANGE(EST(2),EST(1))
+      if (norder == 1) then
+         yval = est(1)
+         write (*,'(A)') 'INTERP: One-point extrapolation; accuracy cannot be estimated.'
+         return
+      endif
+      debeb = relative_change(est(2),est(1))
 
-      IBEST = 2
-      DO IROW = 3, NORDER
-         DEBE = RELATIVE_CHANGE(EST(IROW),EST(IROW-1))
+      ibest = 2
+      do irow = 3, norder
+         debe = relative_change(est(irow),est(irow-1))
 
 !ps 13/12/2017
 !ps If NARR is small, the EST array sometimes contains the NaN values.
@@ -156,42 +156,42 @@
         !ps IF (DEBE >= DEBEB) CYCLE
         !ps DEBEB = DEBE
         !ps IBEST = IROW
-        IF (DEBE < DEBEB) THEN
-            DEBEB = DEBE
-            IBEST = IROW
-        END IF
+        if (debe < debeb) then
+            debeb = debe
+            ibest = irow
+        end if
 
-      END DO
-      YVAL = EST(IBEST)
+      end do
+      yval = est(ibest)
 !
-      IF (DEBEB > ACCY) WRITE (*, 301) DEBEB, ACCY
+      if (debeb > accy) write (*, 301) debeb, accy
 !
-      RETURN
+      return
 !
-  300 FORMAT('INTERP: Extrapolating, not interpolating.')
-  301 FORMAT('INTERP: Accuracy of interpolation (',1P,1D10.3,') is',&
-         ' below input criterion (',1D10.3,').')
-      RETURN
-      CONTAINS
+  300 format('INTERP: Extrapolating, not interpolating.')
+  301 format('INTERP: Accuracy of interpolation (',1p,1d10.3,') is',&
+         ' below input criterion (',1d10.3,').')
+      return
+      contains
 
 ! Keep the original relative criterion for nonzero estimates. Identical
 ! zero estimates have zero change; a new zero after a nonzero estimate has
 ! no finite relative accuracy estimate, so it must not silently pass.
-      REAL(DOUBLE) FUNCTION RELATIVE_CHANGE(CURRENT, PREVIOUS) RESULT(CHANGE)
-      REAL(DOUBLE), INTENT(IN) :: CURRENT, PREVIOUS
-      IF (CURRENT == 0.D0) THEN
-         CHANGE = HUGE(1.D0)
-         IF (PREVIOUS == 0.D0) CHANGE = 0.D0
-      ELSE
-         CHANGE = ABS((CURRENT-PREVIOUS)/CURRENT)
-      ENDIF
-      END FUNCTION RELATIVE_CHANGE
+      real(double) function relative_change(current, previous) result(change)
+      real(double), intent(in) :: current, previous
+      if (current == 0.d0) then
+         change = huge(1.d0)
+         if (previous == 0.d0) change = 0.d0
+      else
+         change = abs((current-previous)/current)
+      endif
+      end function relative_change
 
-      INTEGER FUNCTION ILOC (IND1, IND2)
-      INTEGER, INTENT(IN) :: IND1
-      INTEGER, INTENT(IN) :: IND2
-      ILOC = (IND1*(IND1 - 1))/2 + IND2
-      RETURN
-      END FUNCTION ILOC
+      integer function iloc (ind1, ind2)
+      integer, intent(in) :: ind1
+      integer, intent(in) :: ind2
+      iloc = (ind1*(ind1 - 1))/2 + ind2
+      return
+      end function iloc
 !
-      END SUBROUTINE INTERP
+      end subroutine interp

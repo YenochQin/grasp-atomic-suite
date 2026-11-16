@@ -1,9 +1,9 @@
-      MODULE smsread_mpi_I
-      INTERFACE
-      SUBROUTINE smsread_mpi (VINT,VINT2)
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def, ONLY: NNNW
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW), INTENT(IN) :: VINT, VINT2
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      module smsread_mpi_i
+      interface
+      subroutine smsread_mpi (vint,vint2)
+      use vast_kind_param, only: double
+      use parameter_def, only: nnnw
+      real(double), dimension(nnnw,nnnw), intent(in) :: vint, vint2
+      end subroutine
+      end interface
+      end module

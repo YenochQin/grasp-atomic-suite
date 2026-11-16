@@ -1,4 +1,4 @@
-      SUBROUTINE ONEPARTICLEJJ2(NS,KA,JA,JB,COEFF)
+      subroutine oneparticlejj2(ns,ka,ja,jb,coeff)
 !                                                                  *
 !   --------------  SECTION METWO    SUBPROGRAM 03  -------------  *
 !                                                                  *
@@ -17,77 +17,77 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, TENTH, HALF, EPS
-      USE m_C,             ONLY: NQ1, JLIST
-      USE orb_C,           ONLY: NAK
-      USE trk_C
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, tenth, half, eps
+      use m_c,             only: nq1, jlist
+      use orb_c,           only: nak
+      use trk_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE recop00_I
-      USE recop2_I
-      USE c0t5s_I
-      USE rmeajj_I
-      USE wj1_I
-      USE perko2_I, ONLY: perko2
-      IMPLICIT NONE
+      use recop00_i
+      use recop2_i
+      use c0t5s_i
+      use rmeajj_i
+      use wj1_i
+      use perko2_i, only: perko2
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)       :: NS,KA,JA,JB
-      REAL(DOUBLE), INTENT(OUT) :: COEFF
+      integer, intent(in)       :: ns,ka,ja,jb
+      real(double), intent(out) :: coeff
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: I,IA,IB,IAT,IJ,IFAZ,IQMM1,IQMM2,JIBKS1,JIB, &
-                      KS1,KS2
-      REAL(DOUBLE) :: REC,A1,A2,A3,S1,S2,QM1,QM2
+      integer      :: i,ia,ib,iat,ij,ifaz,iqmm1,iqmm2,jibks1,jib, &
+                      ks1,ks2
+      real(double) :: rec,a1,a2,a3,s1,s2,qm1,qm2
 !-----------------------------------------------
 !
 !     THE CASE 12   + -
 !
-      COEFF=ZERO
-      IA=MIN0(JA,JB)
-      IB=MAX0(JA,JB)
-      CALL RECOP00(NS,IA,IB,KA,IAT)
-      IF(IAT == 0)RETURN
-      IJ=JLIST(IA)
-      KS1=(IABS(NAK(IJ))*2)-1
-      IJ=JLIST(IB)
-      KS2=(IABS(NAK(IJ))*2)-1
-      CALL RECOP2(NS,IA,IB,KS1,KS2,KA,0,IAT,REC)
-      IF(IAT == 0)RETURN
-      CALL PERKO2(JA,JB,JA,JA,2)
-      QM1=HALF
-      QM2=-HALF
-      IQMM1=QM1+QM1+TENTH*QM1
-      IF(IK1(4) /= (ID1(4)+IQMM1)) RETURN
-      IQMM2=QM2+QM2+TENTH*QM2
-      IF(IK2(4) /= (ID2(4)+IQMM2)) RETURN
-      CALL C0T5S(BD1(1),BD1(3),QM1,BK1(1),BK1(3),A2)
-      IF(DABS(A2) < EPS) RETURN
-      CALL C0T5S(BD2(1),BD2(3),QM2,BK2(1),BK2(3),A3)
-      IF(DABS(A3) < EPS) RETURN
-      CALL RMEAJJ(IK1(3),IK1(1),IK1(7),IK1(6),ID1(1),ID1(7),ID1(6),S1)
-      IF(DABS(S1) < EPS) RETURN
-      CALL RMEAJJ(IK2(3),IK2(1),IK2(7),IK2(6),ID2(1),ID2(7),ID2(6),S2)
-      IF(DABS(S2) < EPS) RETURN
-      A1=S1*S2*A2*A3
-      CALL RECOP2(NS,IA,IB,KS1,KS2,KA,1,IAT,REC)
-      COEFF=A1*REC/DSQRT(DBLE((2*KA+1)*(IK1(7)+1)*(IK2(7)+1)))
-      JIB=IB-1
-      IFAZ=0
-      DO  I=IA,JIB
-        IJ=JLIST(I)
-        IFAZ=IFAZ+NQ1(IJ)
-      END DO
-      IFAZ=IFAZ+1
-      IF(MOD(IFAZ,2) /= 0)COEFF=-COEFF
-      IF(IA.NE.JA) THEN
-        IFAZ = IK1(3)+IK2(3)-2*KA+2
-        IF(MOD(IFAZ,4) /= 0)COEFF=-COEFF
-      ENDIF
-      COEFF=-COEFF*SQRT(DBLE(ID1(3)+1))
-      RETURN
-      END SUBROUTINE ONEPARTICLEJJ2
+      coeff=zero
+      ia=min0(ja,jb)
+      ib=max0(ja,jb)
+      call recop00(ns,ia,ib,ka,iat)
+      if(iat == 0)return
+      ij=jlist(ia)
+      ks1=(iabs(nak(ij))*2)-1
+      ij=jlist(ib)
+      ks2=(iabs(nak(ij))*2)-1
+      call recop2(ns,ia,ib,ks1,ks2,ka,0,iat,rec)
+      if(iat == 0)return
+      call perko2(ja,jb,ja,ja,2)
+      qm1=half
+      qm2=-half
+      iqmm1=qm1+qm1+tenth*qm1
+      if(ik1(4) /= (id1(4)+iqmm1)) return
+      iqmm2=qm2+qm2+tenth*qm2
+      if(ik2(4) /= (id2(4)+iqmm2)) return
+      call c0t5s(bd1(1),bd1(3),qm1,bk1(1),bk1(3),a2)
+      if(dabs(a2) < eps) return
+      call c0t5s(bd2(1),bd2(3),qm2,bk2(1),bk2(3),a3)
+      if(dabs(a3) < eps) return
+      call rmeajj(ik1(3),ik1(1),ik1(7),ik1(6),id1(1),id1(7),id1(6),s1)
+      if(dabs(s1) < eps) return
+      call rmeajj(ik2(3),ik2(1),ik2(7),ik2(6),id2(1),id2(7),id2(6),s2)
+      if(dabs(s2) < eps) return
+      a1=s1*s2*a2*a3
+      call recop2(ns,ia,ib,ks1,ks2,ka,1,iat,rec)
+      coeff=a1*rec/dsqrt(dble((2*ka+1)*(ik1(7)+1)*(ik2(7)+1)))
+      jib=ib-1
+      ifaz=0
+      do  i=ia,jib
+        ij=jlist(i)
+        ifaz=ifaz+nq1(ij)
+      end do
+      ifaz=ifaz+1
+      if(mod(ifaz,2) /= 0)coeff=-coeff
+      if(ia.ne.ja) then
+        ifaz = ik1(3)+ik2(3)-2*ka+2
+        if(mod(ifaz,4) /= 0)coeff=-coeff
+      endif
+      coeff=-coeff*sqrt(dble(id1(3)+1))
+      return
+      end subroutine oneparticlejj2

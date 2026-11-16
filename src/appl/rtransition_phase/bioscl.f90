@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      PROGRAM BIOSCL
+      program bioscl
 !                                                                      *
 !     This program calculates the transition parameters for a          *
 !     transition between an initial and a final state                  *
@@ -22,37 +22,37 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE default_C
-      USE debug_C, ONLY: LDBPR, CUTOFF
+      use vast_kind_param, only:  double
+      use default_c
+      use debug_c, only: ldbpr, cutoff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setmc_I
-      USE setcon_I
-      USE fname_I
-      USE mrgcsl_I
-      USE setcslm_I
-      USE getosd_I
-      USE strsum_I
-      USE factt_I
-      USE oscl_I
-      USE starttime_I, ONLY: starttime
-      USE stoptime_I, ONLY: stoptime
-      IMPLICIT NONE
+      use getyn_i
+      use setmc_i
+      use setcon_i
+      use fname_i
+      use mrgcsl_i
+      use setcslm_i
+      use getosd_i
+      use strsum_i
+      use factt_i
+      use oscl_i
+      use starttime_i, only: starttime
+      use stoptime_i, only: stoptime
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NTEST, NCOUNT1, ILBL
-      LOGICAL :: YES
-      CHARACTER, DIMENSION(2) :: NAME*24
-      CHARACTER(LEN=128) :: ISOFILE
+      integer :: ntest, ncount1, ilbl
+      logical :: yes
+      character, dimension(2) :: name*24
+      character(len=128) :: isofile
 !-----------------------------------------------
 !
-      ISOFILE = 'isodata'
-      NTEST = 1001
-      CALL STARTTIME (ncount1, 'RTRANSITION')
+      isofile = 'isodata'
+      ntest = 1001
+      call starttime (ncount1, 'RTRANSITION')
       write(*,*)
       write(*,*) 'RTRANSITION'
       write(*,*) 'This program computes transition parameters from'
@@ -69,34 +69,34 @@
 
 
 
-      WRITE (6, *)
-      WRITE (6, *) ' Default settings?'
-      YES = GETYN()
-      WRITE (6, *)
-      IF (YES) THEN
-         NDEF = 0
-         NDUMP = 1
-      ELSE
-         NDEF = 1
-         WRITE (6, *) ' Dump angular data to file?'
-         YES = GETYN()
-         IF (YES) THEN
-            NDUMP = 1
-         ELSE
-            NDUMP = 0
-         ENDIF
-      ENDIF
-      WRITE (6, *)
-      WRITE (6, *) ' Input from a CI calculation?'
-      YES = GETYN()
-      WRITE (6, *)
-      IF (YES) THEN
-         INPCI = 0
-      ELSE
-         INPCI = 1
-      ENDIF
+      write (6, *)
+      write (6, *) ' Default settings?'
+      yes = getyn()
+      write (6, *)
+      if (yes) then
+         ndef = 0
+         ndump = 1
+      else
+         ndef = 1
+         write (6, *) ' Dump angular data to file?'
+         yes = getyn()
+         if (yes) then
+            ndump = 1
+         else
+            ndump = 0
+         endif
+      endif
+      write (6, *)
+      write (6, *) ' Input from a CI calculation?'
+      yes = getyn()
+      write (6, *)
+      if (yes) then
+         inpci = 0
+      else
+         inpci = 1
+      endif
 !Rasa -- start
-      LDBPR = .FALSE.
+      ldbpr = .false.
 !      WRITE (6, *) ' Generate debug output?'
 !      YES = GETYN()
 !      WRITE (6, *)
@@ -109,24 +109,24 @@
 !
 !   Perform machine- and installation-dependent setup
 !
-      CALL SETMC
+      call setmc
 !
 !   Set up the physical constants
 !
-      CALL SETCON
+      call setcon
 !
 !   Obtain the names of the initial and final state files
 !
-      CALL FNAME (NAME)
+      call fname (name)
 !
 !   Open, check, load data from, and close, the initial and final state
 !   .csl  files. These files are then merged to one file.
 !
-      CALL MRGCSL (NAME)
+      call mrgcsl (name)
 !
 !   Open, check, load data from, and close, the merged .csl  file
 !
-      CALL SETCSLM
+      call setcslm
 !
 !   Read mixing coefficients
 !
@@ -138,24 +138,24 @@
 !
 !   Get the remaining information
 !
-      CALL GETOSD (ISOFILE,NAME)
+      call getosd (isofile,name)
 !
 !   Open and append a summary of the inputs to the  .sum  file
 !
-      ILBL = 0
-      CALL STRSUM (NAME, INPCI,ILBL)
+      ilbl = 0
+      call strsum (name, inpci,ilbl)
 !
 !   Set up the table of logarithms of factorials
 !
-      CALL FACTT
+      call factt
 !
 !   Proceed with the transition calculation
 !
-      CALL OSCL (NAME)
+      call oscl (name)
 !
 !   Print completion message
 !
-      CALL STOPTIME (ncount1, 'RTRANSITION')
+      call stoptime (ncount1, 'RTRANSITION')
 !
-      STOP
-      END PROGRAM BIOSCL
+      stop
+      end program bioscl

@@ -1,4 +1,4 @@
-"""Verify the snapshot after reversing reviewed F2018 edits and NP hooks.
+"""Verify imported sources against reviewed upstream and lowercase snapshots.
 
 This check is independent of the external grasp checkout and never executes SCF.
 It protects SOLVE/IMPROV/SCF/orthogonalization and the other imported routines from
@@ -59,10 +59,23 @@ def original_bytes(path: Path, edits: list[dict[str, str | int]] | None = None) 
 
 
 def main(root: Path) -> None:
-    manifest = json.loads((root / "docs/reference/rmcdhf_upstream_snapshot.json").read_text())
+    upstream_path = root / "docs/reference/rmcdhf_upstream_snapshot.json"
+    compatibility_path = root / "docs/reference/rmcdhf_f2018_compatibility.json"
+    manifest = json.loads(upstream_path.read_text())
     expected = manifest["files"]
-    compatibility = json.loads((root / "docs/reference/rmcdhf_f2018_compatibility.json").read_text())["files"]
+    compatibility = json.loads(compatibility_path.read_text())["files"]
     assert set(compatibility).issubset(expected), "F2018 edits must refer to imported files"
+    # Each before-suite identity was checked through original_bytes before the
+    # case-only conversion. Pin the exact resulting bytes, not a relaxed hash
+    # that would also ignore changes to string literals or comments.
+    lowercase = json.loads((root / "docs/reference/rmcdhf_lowercase_snapshot.json").read_text())
+    assert lowercase["schema_version"] == 1, "Unknown lowercase snapshot schema"
+    assert hashlib.sha256(upstream_path.read_bytes()).hexdigest() == lowercase["upstream_manifest_sha256"], \
+        "Upstream manifest changed; review lowercase provenance"
+    assert hashlib.sha256(compatibility_path.read_bytes()).hexdigest() == lowercase["f2018_compatibility_sha256"], \
+        "F2018 edits changed; review lowercase provenance"
+    assert set(lowercase["files"]) == {name for name in expected if name.endswith(".f90")}, \
+        "Lowercase snapshot must cover exactly the imported Fortran files"
     actual = {
         str(path.relative_to(root))
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")
@@ -71,10 +84,16 @@ def main(root: Path) -> None:
     }
     assert actual == set(expected), (actual - set(expected), set(expected) - actual)
     for relative, record in expected.items():
+        if relative in lowercase["files"]:
+            digest = hashlib.sha256((root / relative).read_bytes()).hexdigest()
+            assert digest == lowercase["files"][relative]["after_suite_sha256"], \
+                f"Unreviewed deviation from lowercase GRASP snapshot: {relative}"
+            continue
         edits = compatibility.get(relative, {}).get("edits", [])
         digest = hashlib.sha256(original_bytes(root / relative, edits)).hexdigest()
         assert digest == record["sha256"], f"Unreviewed deviation from GRASP source: {relative}"
-    print(f"PASS: {len(expected)} imported files match after reversing reviewed F2018 edits and NP hooks")
+    print(f"PASS: {len(expected)} imported files match reviewed snapshots "
+          f"({len(lowercase['files'])} exact lowercase Fortran identities)")
 
 
 if __name__ == "__main__":

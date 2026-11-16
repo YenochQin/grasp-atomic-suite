@@ -1,31 +1,31 @@
 !
 !***********************************************************************
 !                                                                      *
-      MODULE def_C
+      module def_c
 !                                                                      *
 !***********************************************************************
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE parameter_def,   ONLY:  NNNP
+      use vast_kind_param, only:  double
+      use parameter_def,   only:  nnnp
 !...Created by Pacific-Sierra Research 77to90  4.3E  11:02:52   1/ 2/07
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      REAL(DOUBLE) :: TENMAX, EXPMAX, EXPMIN, PRECIS
-      REAL(DOUBLE) :: AUCM, AUEV, CCMS, FASI, FBSI
-      REAL(DOUBLE) :: FMTOAU, AUMAMU, B1
-      INTEGER :: IONCTY, NELEC
-      REAL(DOUBLE) :: EMN, Z
-      INTEGER :: IONCTYFF, NELECFF
-      REAL(DOUBLE) :: EMNFF, ZFF
-      INTEGER :: IONCTYII, NELECII
-      REAL(DOUBLE) :: EMNII, ZII
-      INTEGER :: NELECR
-      REAL(DOUBLE) :: C
-      REAL(DOUBLE) :: EMPAM, RBCM
-      INTEGER :: NSCF, NSIC, NSOLV
-      REAL(DOUBLE) :: ACCY
-      REAL(DOUBLE), DIMENSION(:), pointer :: wt, weight
-      INTEGER :: NCMIN, NCMAX
-      INTEGER, DIMENSION(:), pointer :: iccmin
-      REAL(DOUBLE) :: CVAC, PI
-      REAL(DOUBLE), DIMENSION(NNNP) :: DP, DQ
-      END MODULE def_C
+      real(double) :: tenmax, expmax, expmin, precis
+      real(double) :: aucm, auev, ccms, fasi, fbsi
+      real(double) :: fmtoau, aumamu, b1
+      integer :: ioncty, nelec
+      real(double) :: emn, z
+      integer :: ionctyff, nelecff
+      real(double) :: emnff, zff
+      integer :: ionctyii, nelecii
+      real(double) :: emnii, zii
+      integer :: nelecr
+      real(double) :: c
+      real(double) :: empam, rbcm
+      integer :: nscf, nsic, nsolv
+      real(double) :: accy
+      real(double), dimension(:), pointer :: wt, weight
+      integer :: ncmin, ncmax
+      integer, dimension(:), pointer :: iccmin
+      real(double) :: cvac, pi
+      real(double), dimension(nnnp) :: dp, dq
+      end module def_c

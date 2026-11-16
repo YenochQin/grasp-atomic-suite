@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      SUBROUTINE GETOLDWT(NDEF, NCMIN, WT)
+      subroutine getoldwt(ndef, ncmin, wt)
 !
 !   Interactively determines the weights for EOL calculation.
 !   It's modified to always ask the question for the weight
@@ -16,79 +16,79 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE iounit_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use iounit_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NDEF
-      INTEGER , INTENT(IN) :: NCMIN
-      REAL(DOUBLE)  :: WT(NCMIN)
+      integer  :: ndef
+      integer , intent(in) :: ncmin
+      real(double)  :: wt(ncmin)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, N159
-      REAL(DOUBLE) :: SUMWGT
+      integer :: i, n159
+      real(double) :: sumwgt
 !-----------------------------------------------
 
 ! Standard weights: ncmin=1, OL calculation
 
-      IF (NCMIN == 1) THEN
-         WT(1) = -1.D0
-         RETURN
-      ENDIF
+      if (ncmin == 1) then
+         wt(1) = -1.d0
+         return
+      endif
 
 ! Select a method to assign level weights for ncmin > 1 case
 
-      WRITE (ISTDE, *) 'level weights (1 equal;  5 standard;  9 user)'
+      write (istde, *) 'level weights (1 equal;  5 standard;  9 user)'
 
       ! Let user try 10 times to get the correct input. 10 is BIG
       ! enough since the idea here is to allow user mistakes and
       ! at the same time to avoid an infinity loop.
 
-      DO I = 1, 10
-         READ (ISTDI, *) N159
-         IF (N159==1 .OR. N159==5 .OR. N159==9) EXIT
-         WRITE (ISTDE, *) 'Input not correct, do it again. tried=', I
-      END DO
+      do i = 1, 10
+         read (istdi, *) n159
+         if (n159==1 .or. n159==5 .or. n159==9) exit
+         write (istde, *) 'Input not correct, do it again. tried=', i
+      end do
 
-      IF (NDEF.EQ.0) THEN
-        WRITE(734,*) n159,'! level weights'
-      END IF
+      if (ndef.eq.0) then
+        write(734,*) n159,'! level weights'
+      end if
 
-      IF (I > 10) STOP
+      if (i > 10) stop
 
 !------------------------------------------------------------------
 
-      SELECT CASE (N159)                         ! Equal weight
-      CASE (1)
-         WT = -2.D0
-      CASE (5)                                   ! Standard weight
-         WT = -1.D0
-      CASE (9)                                   ! User-input weight
+      select case (n159)                         ! Equal weight
+      case (1)
+         wt = -2.d0
+      case (5)                                   ! Standard weight
+         wt = -1.d0
+      case (9)                                   ! User-input weight
 
-  123    CONTINUE
-         WRITE (ISTDE, *) 'Enter the (relative) weights of the', NCMIN, &
+  123    continue
+         write (istde, *) 'Enter the (relative) weights of the', ncmin, &
             ' levels :'
-         READ (ISTDI, *) (WT(I),I=1,NCMIN)
+         read (istdi, *) (wt(i),i=1,ncmin)
 
-         SUMWGT = 0.D0
-         DO I = 1, NCMIN
-            IF (WT(I) <= 0.D0) THEN
-               WRITE (ISTDE, *) 'Weights must exceed 0;'
-               GO TO 123
-            ELSE
-               SUMWGT = SUMWGT + WT(I)
-            ENDIF
-         END DO
-         SUMWGT = 1.D0/SUMWGT
-         WT = SUMWGT*WT
+         sumwgt = 0.d0
+         do i = 1, ncmin
+            if (wt(i) <= 0.d0) then
+               write (istde, *) 'Weights must exceed 0;'
+               go to 123
+            else
+               sumwgt = sumwgt + wt(i)
+            endif
+         end do
+         sumwgt = 1.d0/sumwgt
+         wt = sumwgt*wt
 
-      CASE DEFAULT
-         WRITE (ISTDE, *) 'Impossible ! Because it was guarded'
-         STOP
-      END SELECT
+      case default
+         write (istde, *) 'Impossible ! Because it was guarded'
+         stop
+      end select
 
-      RETURN
-      END SUBROUTINE GETOLDWT
+      return
+      end subroutine getoldwt

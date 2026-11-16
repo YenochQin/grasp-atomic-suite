@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE GG12(IK1,IK2,BK1,BK2,ID1,ID2,BD1,BD2,QM1,QM2,WW)
+      subroutine gg12(ik1,ik2,bk1,bk2,id1,id2,bd1,bd2,qm1,qm2,ww)
 !                                                                  *
 ! ----------------  SECTION METWO    SUBPROGRAM 18  -------------  *
 !                                                                  *
@@ -18,50 +18,50 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, TENTH, EPS
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, tenth, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE mes_I
-      USE c0t5s_I
-      USE rmeajj_I
-      IMPLICIT NONE
+      use mes_i
+      use c0t5s_i
+      use rmeajj_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN), DIMENSION(7) :: IK1, IK2, ID1, ID2
-      REAL(DOUBLE), INTENT(IN)               :: QM1, QM2
-      REAL(DOUBLE), INTENT(IN), DIMENSION(3) :: BK1, BK2, BD1, BD2
-      REAL(DOUBLE), INTENT(OUT)              :: WW
+      integer,      intent(in), dimension(7) :: ik1, ik2, id1, id2
+      real(double), intent(in)               :: qm1, qm2
+      real(double), intent(in), dimension(3) :: bk1, bk2, bd1, bd2
+      real(double), intent(out)              :: ww
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IQMM1, IQMM2
-      REAL(DOUBLE) :: A1, C, C1, S
+      integer :: iqmm1, iqmm2
+      real(double) :: a1, c, c1, s
 !-----------------------------------------------
-      WW=ZERO
-      IF(IK1(3) > 9) THEN
-        IF(IK1(4) > 2) CALL MES(32)
-        IF(ID1(4) > 2) CALL MES(32)
-      ENDIF
-      IF(IK2(3) > 9) THEN
-        IF(IK2(4) > 2) CALL MES(32)
-        IF(ID2(4) > 2) CALL MES(32)
-      ENDIF
-      IQMM1=QM1+QM1+TENTH*QM1
-      IF(IK1(4) /= (ID1(4)+IQMM1))RETURN
-      IQMM2=QM2+QM2+TENTH*QM2
-      IF(IK2(4) /= (ID2(4)+IQMM2))RETURN
-      CALL C0T5S(BD1(1),BD1(3),QM1,BK1(1),BK1(3),A1)
-      IF(DABS(A1) < EPS)RETURN
-      CALL C0T5S(BD2(1),BD2(3),QM2,BK2(1),BK2(3),C1)
-      IF(DABS(C1) < EPS)RETURN
-      A1=A1*C1
-      CALL RMEAJJ(IK1(3),IK1(1),IK1(7),IK1(6),ID1(1),ID1(7),ID1(6),S)
-      IF(DABS(S) < EPS)RETURN
-      CALL RMEAJJ(IK2(3),IK2(1),IK2(7),IK2(6),ID2(1),ID2(7),ID2(6),C)
-      IF(DABS(C) < EPS)RETURN
-      WW=A1*S*C/DSQRT(DBLE((IK1(7)+1)*(IK2(7)+1)))
-      RETURN
-      END
+      ww=zero
+      if(ik1(3) > 9) then
+        if(ik1(4) > 2) call mes(32)
+        if(id1(4) > 2) call mes(32)
+      endif
+      if(ik2(3) > 9) then
+        if(ik2(4) > 2) call mes(32)
+        if(id2(4) > 2) call mes(32)
+      endif
+      iqmm1=qm1+qm1+tenth*qm1
+      if(ik1(4) /= (id1(4)+iqmm1))return
+      iqmm2=qm2+qm2+tenth*qm2
+      if(ik2(4) /= (id2(4)+iqmm2))return
+      call c0t5s(bd1(1),bd1(3),qm1,bk1(1),bk1(3),a1)
+      if(dabs(a1) < eps)return
+      call c0t5s(bd2(1),bd2(3),qm2,bk2(1),bk2(3),c1)
+      if(dabs(c1) < eps)return
+      a1=a1*c1
+      call rmeajj(ik1(3),ik1(1),ik1(7),ik1(6),id1(1),id1(7),id1(6),s)
+      if(dabs(s) < eps)return
+      call rmeajj(ik2(3),ik2(1),ik2(7),ik2(6),id2(1),id2(7),id2(6),c)
+      if(dabs(c) < eps)return
+      ww=a1*s*c/dsqrt(dble((ik1(7)+1)*(ik2(7)+1)))
+      return
+      end

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE CGAMMA(ARGR, ARGI, RESR, RESI)
+      subroutine cgamma(argr, argi, resr, resi)
 !                                                                      *
 !   This subroutine returns in RES the complex Gamma function of the   *
 !   complex argument ARG.  The suffixes R and I respectively distin-   *
@@ -22,197 +22,197 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE DEF_C
-      USE arctan_I
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use def_c
+      use arctan_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE), INTENT(IN) :: ARGI, ARGR
-      REAL(DOUBLE), INTENT(OUT) :: RESR, RESI
+      real(double), intent(in) :: argi, argr
+      real(double), intent(out) :: resr, resi
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE), DIMENSION(7) :: FN, FD
-      REAL(DOUBLE) :: HLNTPI, TWOI, DIFF, ARGUM, CLNGI, FACNEG, ARGUR, OVLFAC, &
-         CLNGR, FAC, OBASQ, ARGUI, ARGUI2, OVLFR, OVLFI, TERMR, TERMI, ARGUR2, &
-         OBASQR, OBASQI, ZFACR, ZFACI
-      LOGICAL,SAVE :: FIRST, NEGARG
+      integer :: i
+      real(double), dimension(7) :: fn, fd
+      real(double) :: hlntpi, twoi, diff, argum, clngi, facneg, argur, ovlfac, &
+         clngr, fac, obasq, argui, argui2, ovlfr, ovlfi, termr, termi, argur2, &
+         obasqr, obasqi, zfacr, zfaci
+      logical,save :: first, negarg
 !----------------------------------------------------------------------*
 !                                                                      *
 !   These are the Bernoulli numbers B02, B04, ..., B14, expressed as   *
 !   rational numbers. From abramowitz and stegun, p. 810.              *
 !
-      DATA FN/ 1.0D00, -1.0D00, 1.0D00, -1.0D00, 5.0D00, -691.0D00, 7.0D00/
-      DATA FD/ 6.0D00, 30.0D00, 42.0D00, 30.0D00, 66.0D00, 2730.0D00, 6.0D00/
+      data fn/ 1.0d00, -1.0d00, 1.0d00, -1.0d00, 5.0d00, -691.0d00, 7.0d00/
+      data fd/ 6.0d00, 30.0d00, 42.0d00, 30.0d00, 66.0d00, 2730.0d00, 6.0d00/
 !
 !----------------------------------------------------------------------*
 !
-      DATA HLNTPI/ 1.0D00/
+      data hlntpi/ 1.0d00/
 !
-      DATA FIRST/ .TRUE./
+      data first/ .true./
 !
 !   On the first entry to this routine, set up the constants required
 !   for the reflection formula (cf. Abramowitz and Stegun 6.1.17) and
 !   Stirling's approximation (cf. Abramowitz and Stegun 6.1.40).
 !
-      IF (FIRST) THEN
+      if (first) then
 !
-         HLNTPI = 0.5D00*LOG(PI + PI)
+         hlntpi = 0.5d00*log(pi + pi)
 !
-         DO I = 1, 7
-            FN(I) = FN(I)/FD(I)
-            TWOI = DBLE(I + I)
-            FN(I) = FN(I)/(TWOI*(TWOI - 1.0D00))
-         END DO
+         do i = 1, 7
+            fn(i) = fn(i)/fd(i)
+            twoi = dble(i + i)
+            fn(i) = fn(i)/(twoi*(twoi - 1.0d00))
+         end do
 !
-         FIRST = .FALSE.
+         first = .false.
 !
-      ENDIF
+      endif
 !
 !   Cases where the argument is real
 !
-      IF (ARGI == 0.0D00) THEN
+      if (argi == 0.0d00) then
 !
 !   Cases where the argument is real and negative
 !
-         IF (ARGR <= 0.0D00) THEN
+         if (argr <= 0.0d00) then
 !
 !   Stop with an error message if the argument is too near a pole
 !
-            DIFF = ABS(DBLE(NINT(ARGR)) - ARGR)
-            IF (DIFF <= PRECIS + PRECIS) THEN
-               WRITE (*, 300) ARGR, ARGI
-               STOP
-            ELSE
+            diff = abs(dble(nint(argr)) - argr)
+            if (diff <= precis + precis) then
+               write (*, 300) argr, argi
+               stop
+            else
 !
 !   Otherwise use the reflection formula (Abramowitz and Stegun 6.1.17)
 !   to ensure that the argument is suitable for Stirling's formula
 !
-               ARGUM = PI/(-ARGR*SIN(PI*ARGR))
-               IF (ARGUM < 0.0D00) THEN
-                  ARGUM = -ARGUM
-                  CLNGI = PI
-               ELSE
-                  CLNGI = 0.0D00
-               ENDIF
-               FACNEG = LOG(ARGUM)
-               ARGUR = -ARGR
-               NEGARG = .TRUE.
+               argum = pi/(-argr*sin(pi*argr))
+               if (argum < 0.0d00) then
+                  argum = -argum
+                  clngi = pi
+               else
+                  clngi = 0.0d00
+               endif
+               facneg = log(argum)
+               argur = -argr
+               negarg = .true.
 !
-            ENDIF
+            endif
 !
 !   Cases where the argument is real and positive
 !
-         ELSE
+         else
 !
-            CLNGI = 0.0D00
-            ARGUR = ARGR
-            NEGARG = .FALSE.
+            clngi = 0.0d00
+            argur = argr
+            negarg = .false.
 !
-         ENDIF
+         endif
 !
 !   Use Abramowitz and Stegun formula 6.1.15 to ensure that
 !   the argument in Stirling's formula is greater than 10
 !
-         OVLFAC = 1.0D00
-    2    CONTINUE
-         IF (ARGUR < 10.0D00) THEN
-            OVLFAC = OVLFAC*ARGUR
-            ARGUR = ARGUR + 1.0D00
-            GO TO 2
-         ENDIF
+         ovlfac = 1.0d00
+    2    continue
+         if (argur < 10.0d00) then
+            ovlfac = ovlfac*argur
+            argur = argur + 1.0d00
+            go to 2
+         endif
 !
 !   Now use Stirling's formula to compute Log (Gamma (ARGUM))
 !
-         CLNGR = (ARGUR - 0.5D00)*LOG(ARGUR) - ARGUR + HLNTPI
-         FAC = ARGUR
-         OBASQ = 1.0D00/(ARGUR*ARGUR)
-         DO I = 1, 7
-            FAC = FAC*OBASQ
-            CLNGR = CLNGR + FN(I)*FAC
-         END DO
+         clngr = (argur - 0.5d00)*log(argur) - argur + hlntpi
+         fac = argur
+         obasq = 1.0d00/(argur*argur)
+         do i = 1, 7
+            fac = fac*obasq
+            clngr = clngr + fn(i)*fac
+         end do
 !
 !   Include the contributions from the recurrence and reflection
 !   formulae
 !
-         CLNGR = CLNGR - LOG(OVLFAC)
-         IF (NEGARG) CLNGR = FACNEG - CLNGR
+         clngr = clngr - log(ovlfac)
+         if (negarg) clngr = facneg - clngr
 !
-      ELSE
+      else
 !
 !   Cases where the argument is complex
 !
-         ARGUR = ARGR
-         ARGUI = ARGI
-         ARGUI2 = ARGUI*ARGUI
+         argur = argr
+         argui = argi
+         argui2 = argui*argui
 !
 !   Use the recurrence formula (Abramowitz and Stegun 6.1.15)
 !   to ensure that the magnitude of the argument in Stirling's
 !   formula is greater than 10
 !
-         OVLFR = 1.0D00
-         OVLFI = 0.0D00
-    4    CONTINUE
-         ARGUM = SQRT(ARGUR*ARGUR + ARGUI2)
-         IF (ARGUM < 10.0D00) THEN
-            TERMR = OVLFR*ARGUR - OVLFI*ARGUI
-            TERMI = OVLFR*ARGUI + OVLFI*ARGUR
-            OVLFR = TERMR
-            OVLFI = TERMI
-            ARGUR = ARGUR + 1.0D00
-            GO TO 4
-         ENDIF
+         ovlfr = 1.0d00
+         ovlfi = 0.0d00
+    4    continue
+         argum = sqrt(argur*argur + argui2)
+         if (argum < 10.0d00) then
+            termr = ovlfr*argur - ovlfi*argui
+            termi = ovlfr*argui + ovlfi*argur
+            ovlfr = termr
+            ovlfi = termi
+            argur = argur + 1.0d00
+            go to 4
+         endif
 !
 !   Now use Stirling's formula to compute Log (Gamma (ARGUM))
 !
-         ARGUR2 = ARGUR*ARGUR
-         TERMR = 0.5D00*LOG(ARGUR2 + ARGUI2)
-         TERMI = ARCTAN(ARGUI,ARGUR)
-         CLNGR = (ARGUR - 0.5D00)*TERMR - ARGUI*TERMI - ARGUR + HLNTPI
-         CLNGI = (ARGUR - 0.5D00)*TERMI + ARGUI*TERMR - ARGUI
-         FAC = (ARGUR2 + ARGUI2)**(-2)
-         OBASQR = (ARGUR2 - ARGUI2)*FAC
-         OBASQI = -2.0D00*ARGUR*ARGUI*FAC
-         ZFACR = ARGUR
-         ZFACI = ARGUI
-         DO I = 1, 7
-            TERMR = ZFACR*OBASQR - ZFACI*OBASQI
-            TERMI = ZFACR*OBASQI + ZFACI*OBASQR
-            FAC = FN(I)
-            CLNGR = CLNGR + TERMR*FAC
-            CLNGI = CLNGI + TERMI*FAC
-            ZFACR = TERMR
-            ZFACI = TERMI
-         END DO
+         argur2 = argur*argur
+         termr = 0.5d00*log(argur2 + argui2)
+         termi = arctan(argui,argur)
+         clngr = (argur - 0.5d00)*termr - argui*termi - argur + hlntpi
+         clngi = (argur - 0.5d00)*termi + argui*termr - argui
+         fac = (argur2 + argui2)**(-2)
+         obasqr = (argur2 - argui2)*fac
+         obasqi = -2.0d00*argur*argui*fac
+         zfacr = argur
+         zfaci = argui
+         do i = 1, 7
+            termr = zfacr*obasqr - zfaci*obasqi
+            termi = zfacr*obasqi + zfaci*obasqr
+            fac = fn(i)
+            clngr = clngr + termr*fac
+            clngi = clngi + termi*fac
+            zfacr = termr
+            zfaci = termi
+         end do
 !
 !   Add in the relevant pieces from the recurrence formula
 !
-         CLNGR = CLNGR - 0.5D00*LOG(OVLFR*OVLFR + OVLFI*OVLFI)
-         CLNGI = CLNGI - ARCTAN(OVLFI,OVLFR)
+         clngr = clngr - 0.5d00*log(ovlfr*ovlfr + ovlfi*ovlfi)
+         clngi = clngi - arctan(ovlfi,ovlfr)
 !
-      ENDIF
+      endif
 !
 !   Now exponentiate the complex Log Gamma function to get
 !   the complex Gamma function
 !
-      IF (CLNGR<=EXPMAX .AND. CLNGR>=EXPMIN) THEN
-         FAC = EXP(CLNGR)
-      ELSE
-         WRITE (*, 301) CLNGR
-         STOP
-      ENDIF
-      RESR = FAC*COS(CLNGI)
-      RESI = FAC*SIN(CLNGI)
+      if (clngr<=expmax .and. clngr>=expmin) then
+         fac = exp(clngr)
+      else
+         write (*, 301) clngr
+         stop
+      endif
+      resr = fac*cos(clngi)
+      resi = fac*sin(clngi)
 !
-      RETURN
+      return
 !
-  300 FORMAT('CGAMMA: Argument (',1P,1D19.12,',',1D19.12,')',&
+  300 format('CGAMMA: Argument (',1p,1d19.12,',',1d19.12,')',&
          ' too close to a pole.')
-  301 FORMAT('CGAMMA: Argument to exponential function',' (',1P,1D19.12,&
+  301 format('CGAMMA: Argument to exponential function',' (',1p,1d19.12,&
          ') out of range.')
-      RETURN
+      return
 !
-      END SUBROUTINE CGAMMA
+      end subroutine cgamma

@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE NINE(J1,J2,J3,L1,L2,L3,K1,K2,K3,I,INN,AA)
+      subroutine nine(j1,j2,j3,l1,l2,l3,k1,k2,k3,i,inn,aa)
 !
 !                                                                  *
 !     THIS PACKAGE DETERMINES THE VALUES OF 9j COEFFICIENT         *
@@ -19,67 +19,67 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO
+      use vast_kind_param, only: double
+      use cons_c,          only: zero
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ittk_I
-      USE nine0_I
-      USE sixj_I
-      IMPLICIT NONE
+      use ittk_i
+      use nine0_i
+      use sixj_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J1, J2, J3, L1, L2, L3, K1, K2, K3
-      INTEGER, INTENT(IN)  :: I
-      INTEGER, INTENT(OUT) :: INN
-      REAL(DOUBLE)  :: AA
+      integer  :: j1, j2, j3, l1, l2, l3, k1, k2, k3
+      integer, intent(in)  :: i
+      integer, intent(out) :: inn
+      real(double)  :: aa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: N1, N2, N3, N4, N5, N6, MAX_, MIN_, IX
-      REAL(DOUBLE) :: S1, S2, S3, X
+      integer :: n1, n2, n3, n4, n5, n6, max_, min_, ix
+      real(double) :: s1, s2, s3, x
 !-----------------------------------------------
-      IF (I == 1) THEN
-         INN = 0
-         IF (ITTK(J1,J2,J3) == 0) RETURN
-         IF (ITTK(L1,L2,L3) == 0) RETURN
-         IF (ITTK(K1,K2,K3) == 0) RETURN
-         IF (ITTK(J1,L1,K1) == 0) RETURN
-         IF (ITTK(J2,L2,K2) == 0) RETURN
-         IF (ITTK(J3,L3,K3) == 0) RETURN
-         INN = 1
-         RETURN
-      ENDIF
-      IF (J1*J2*J3*L1*L2*L3*K1*K2*K3 == 0) THEN
-         INN = 1
-         CALL NINE0 (J1, J2, J3, L1, L2, L3, K1, K2, K3, AA)
-      ELSE
-         N1 = IABS(J1 - K3)
-         N2 = IABS(L3 - J2)
-         N3 = IABS(L1 - K2)
-         N4 = IABS(J2 - L3)
-         N5 = IABS(K2 - L1)
-         N6 = IABS(J1 - K3)
-         MAX_ = MAX0(N1,N2,N3,N4,N5,N6)
-         N1 = J1 + K3
-         N2 = L3 + J2
-         N3 = J2 + L3
-         N4 = K2 + L1
-         N5 = J1 + K3
-         N6 = L1 + K2
-         MIN_ = MIN0(N1,N2,N3,N4,N5,N6)
-         INN = 1
-         AA = ZERO
-         DO IX = MAX_, MIN_, 2
-            CALL SIXJ (J1, J2, J3, L3, K3, IX, 0, S1)
-            CALL SIXJ (L1, L2, L3, J2, IX, K2, 0, S2)
-            CALL SIXJ (K1, K2, K3, IX, J1, L1, 0, S3)
-            X = S1*S2*S3*DBLE(IX + 1)
-            IF (MOD(IX,2) /= 0) X = -X
-            AA = X + AA
-         END DO
-      ENDIF
-      RETURN
-      END SUBROUTINE NINE
+      if (i == 1) then
+         inn = 0
+         if (ittk(j1,j2,j3) == 0) return
+         if (ittk(l1,l2,l3) == 0) return
+         if (ittk(k1,k2,k3) == 0) return
+         if (ittk(j1,l1,k1) == 0) return
+         if (ittk(j2,l2,k2) == 0) return
+         if (ittk(j3,l3,k3) == 0) return
+         inn = 1
+         return
+      endif
+      if (j1*j2*j3*l1*l2*l3*k1*k2*k3 == 0) then
+         inn = 1
+         call nine0 (j1, j2, j3, l1, l2, l3, k1, k2, k3, aa)
+      else
+         n1 = iabs(j1 - k3)
+         n2 = iabs(l3 - j2)
+         n3 = iabs(l1 - k2)
+         n4 = iabs(j2 - l3)
+         n5 = iabs(k2 - l1)
+         n6 = iabs(j1 - k3)
+         max_ = max0(n1,n2,n3,n4,n5,n6)
+         n1 = j1 + k3
+         n2 = l3 + j2
+         n3 = j2 + l3
+         n4 = k2 + l1
+         n5 = j1 + k3
+         n6 = l1 + k2
+         min_ = min0(n1,n2,n3,n4,n5,n6)
+         inn = 1
+         aa = zero
+         do ix = max_, min_, 2
+            call sixj (j1, j2, j3, l3, k3, ix, 0, s1)
+            call sixj (l1, l2, l3, j2, ix, k2, 0, s2)
+            call sixj (k1, k2, k3, ix, j1, l1, 0, s3)
+            x = s1*s2*s3*dble(ix + 1)
+            if (mod(ix,2) /= 0) x = -x
+            aa = x + aa
+         end do
+      endif
+      return
+      end subroutine nine

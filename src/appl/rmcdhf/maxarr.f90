@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE MAXARR(J)
+      subroutine maxarr(j)
 !                                                                      *
 !   This subroutine finds the least self-consistent orbital            *
 !                                                                      *
@@ -15,31 +15,31 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE fixd_C
-      USE orb_C
-      USE scf_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use fixd_c
+      use orb_c
+      use scf_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(OUT) :: J
+      integer , intent(out) :: j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE) :: DLRGST
+      integer :: i
+      real(double) :: dlrgst
 !-----------------------------------------------
 !
 !
-      J = 0
-      DLRGST = 0.D0
-      DO I = 1, NW
-         IF (LFIX(I)) CYCLE
-         IF (SCNSTY(I) <= DLRGST) CYCLE
-         DLRGST = SCNSTY(I)
-         J = I
-      END DO
+      j = 0
+      dlrgst = 0.d0
+      do i = 1, nw
+         if (lfix(i)) cycle
+         if (scnsty(i) <= dlrgst) cycle
+         dlrgst = scnsty(i)
+         j = i
+      end do
 !
-      RETURN
-      END SUBROUTINE MAXARR
+      return
+      end subroutine maxarr

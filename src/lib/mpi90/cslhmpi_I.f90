@@ -1,13 +1,13 @@
-      MODULE cslhmpi_I
-      INTERFACE
+      module cslhmpi_i
+      interface
 !
-      SUBROUTINE cslhmpi (NAME, NCORE, NBLKIN, IDBLK)
+      subroutine cslhmpi (name, ncore, nblkin, idblk)
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      CHARACTER (LEN = *) :: NAME
-      INTEGER :: NCORE
-      INTEGER, INTENT(IN) :: NBLKIN
-      CHARACTER (LEN = 8), DIMENSION(*) :: IDBLK
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      character (len = *) :: name
+      integer :: ncore
+      integer, intent(in) :: nblkin
+      character (len = 8), dimension(*) :: idblk
+      end subroutine
+      end interface
+      end module

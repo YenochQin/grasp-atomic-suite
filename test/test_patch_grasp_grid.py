@@ -8,6 +8,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -379,8 +380,8 @@ class PatchGridTests(unittest.TestCase):
                 for relative, before in originals.items():
                     after = before
                     if relative in capacity_files:
-                        after = after.replace(b"NNNP = 590", b"NNNP = 1990")
-                        after = after.replace(b"NNN1 = 600", b"NNN1 = 2000")
+                        after = re.sub(rb"\bNNNP = 590\b", b"NNNP = 1990", after, flags=re.IGNORECASE)
+                        after = re.sub(rb"\bNNN1 = 600\b", b"NNN1 = 2000", after, flags=re.IGNORECASE)
                     elif relative in grid_files and not relative.endswith(
                         "rwfnrelabel.f90"
                     ):
@@ -493,7 +494,7 @@ class PatchGridTests(unittest.TestCase):
         capacity_only = grid.plan(root, grid.Settings(nnnp=2990), "atomic-suite")
         self.assertEqual([c.relative for c in capacity_only], [grid.SUITE_CONFIG_FILE])
         self.assertIn(b"NNNP = 2990", capacity_only[0].after)
-        self.assertIn(b"NNN1 = NNNP + 10", capacity_only[0].after)
+        self.assertIn(b"nnn1 = nnnp + 10", capacity_only[0].after.lower())
         settings = grid.Settings(nnnp=1990, n=1179, h=0.025)
         changes = grid.plan(root, settings, "atomic-suite")
         self.assertEqual(len(changes), 1 + len(grid.SUITE_GRID_FILES))
@@ -562,7 +563,9 @@ class PatchGridTests(unittest.TestCase):
         fixture(root, "atomic-suite")
         wrapper = root / grid.CAPACITY_FILES[0]
         original = wrapper.read_text()
-        wrapper.write_text(original.replace("NNNWM1, NNNWM2", "NNNWM1"))
+        incomplete, count = re.subn(r"\bNNNWM1, NNNWM2\b", "NNNWM1", original, flags=re.IGNORECASE)
+        self.assertEqual(count, 1, "fixture must remove exactly one required re-export")
+        wrapper.write_text(incomplete)
         with self.assertRaisesRegex(ValueError, "must re-export all six"):
             grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
         wrapper.write_text(original)

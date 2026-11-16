@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      SUBROUTINE SETCSH(NFILE, NAME, NCORE)
+      subroutine setcsh(nfile, name, ncore)
 !
 !   Open, check the CSL file and load the load (via lodcsh) data from
 !   the header lines. It is designed to replace all kinds of "setcsl"
@@ -19,61 +19,61 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE IOUNIT_C
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE lodcsh_I
-      IMPLICIT NONE
+      use lodcsh_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NFILE
-      INTEGER  :: NCORE
-      CHARACTER (LEN = *), INTENT(IN) :: NAME
+      integer  :: nfile
+      integer  :: ncore
+      character (len = *), intent(in) :: name
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: LENGTH, IOS
-      LOGICAL :: FOUND
-      CHARACTER :: RECORD*15
+      integer :: length, ios
+      logical :: found
+      character :: record*15
 !-----------------------------------------------
 !
 !     ...Locals
 
-      LENGTH = LEN_TRIM(NAME)
+      length = len_trim(name)
 
-      INQUIRE(FILE=NAME, EXIST=FOUND)
-      IF (.NOT.FOUND) THEN
-         WRITE (ISTDE, *) NAME(1:LENGTH), ' does not exist'
-         STOP
-      ENDIF
+      inquire(file=name, exist=found)
+      if (.not.found) then
+         write (istde, *) name(1:length), ' does not exist'
+         stop
+      endif
 
-      INQUIRE(UNIT=NFILE, OPENED=FOUND)
-      IF (FOUND) THEN
-         WRITE (ISTDE, *) 'Unit ', NFILE, ' has been used elsewhere'
-         STOP
-      ENDIF
+      inquire(unit=nfile, opened=found)
+      if (found) then
+         write (istde, *) 'Unit ', nfile, ' has been used elsewhere'
+         stop
+      endif
 
-      OPEN(NFILE, FILE=NAME, STATUS='OLD', IOSTAT=IOS, POSITION='asis')
-      IF (IOS /= 0) THEN
-         WRITE (ISTDE, *) 'Error when opening ', NAME
-         STOP
-      ENDIF
+      open(nfile, file=name, status='OLD', iostat=ios, position='asis')
+      if (ios /= 0) then
+         write (istde, *) 'Error when opening ', name
+         stop
+      endif
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      READ (NFILE, '(1A15)', IOSTAT=IOS) RECORD
+      read (nfile, '(1A15)', iostat=ios) record
 
-      IF (IOS/=0 .OR. RECORD(1:15)/='Core subshells:') THEN
-         WRITE (ISTDE, *) 'Not a Configuration Symmetry List File;'
-         CLOSE(NFILE)
-         STOP
-      ENDIF
+      if (ios/=0 .or. record(1:15)/='Core subshells:') then
+         write (istde, *) 'Not a Configuration Symmetry List File;'
+         close(nfile)
+         stop
+      endif
 !
 !   Load data from the  .csl  file
 !
-      CALL LODCSH (NFILE, NCORE)
+      call lodcsh (nfile, ncore)
 
-      RETURN
-      END SUBROUTINE SETCSH
+      return
+      end subroutine setcsh

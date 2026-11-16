@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      MODULE ribojj9_C
+      module ribojj9_c
 !                                                                  *
 !   This module is need for librang90.                             *
 !                                                                  *
@@ -9,10 +9,10 @@
 !                                                                  *
 !*******************************************************************
 !
-      IMPLICIT NONE
-      INTEGER, DIMENSION(6) :: IMPTJJ9, IMGTJJ9, IMPNJJ9, IMGNJJ9
-      DATA IMPTJJ9/301,5*302/
-      DATA IMGTJJ9/301,5*306/
-      DATA IMPNJJ9/302,5*301/
-      DATA IMGNJJ9/306,5*301/
-      END MODULE ribojj9_C
+      implicit none
+      integer, dimension(6) :: imptjj9, imgtjj9, impnjj9, imgnjj9
+      data imptjj9/301,5*302/
+      data imgtjj9/301,5*306/
+      data impnjj9/302,5*301/
+      data imgnjj9/306,5*301/
+      end module ribojj9_c

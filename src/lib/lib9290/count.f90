@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE COUNT(FR, MTPFR, NNCFF, SGN)
+      subroutine count(fr, mtpfr, nncff, sgn)
 !                                                                      *
 !   This subroutine counts the nodes in the radial function FR using   *
 !   the criteria  given by C Froese Fischer, Comp Phys Rep, 3 (1986)   *
@@ -17,103 +17,103 @@
 !-----------------------------------------------                       *
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNP
-      USE COUN_C
-      USE DEF_C, ONLY: ACCY
-      USE GRID_C
-      IMPLICIT NONE
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnp
+      use coun_c
+      use def_c, only: accy
+      use grid_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: MTPFR
-      INTEGER, INTENT(OUT) :: NNCFF
-      REAL(DOUBLE), INTENT(OUT) :: SGN
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(IN) :: FR
+      integer, intent(in) :: mtpfr
+      integer, intent(out) :: nncff
+      real(double), intent(out) :: sgn
+      real(double), dimension(nnnp), intent(in) :: fr
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, DIMENSION(NNNP) :: LCEXT
-      INTEGER :: NEXT, I, LOC, NSTPS
-      INTEGER :: TRACE_STATUS
-      CHARACTER(LEN=8) :: TRACE_ENV
-      LOGICAL, SAVE :: TRACE_COUNT = .FALSE., TRACE_INIT = .FALSE.
-      REAL(DOUBLE) :: EXT, EMX, ABFRI, TEST, THRESE, ABLCL
-      IF (.NOT. TRACE_INIT) THEN
-         CALL GET_ENVIRONMENT_VARIABLE('GRASP_TRACE_COUNT', TRACE_ENV, STATUS=TRACE_STATUS)
-         TRACE_COUNT = TRACE_STATUS == 0 .AND. (TRACE_ENV(1:1) == '1' .OR. TRACE_ENV(1:1) == 'y')
-         TRACE_INIT = .TRUE.
-      END IF
+      integer, dimension(nnnp) :: lcext
+      integer :: next, i, loc, nstps
+      integer :: trace_status
+      character(len=8) :: trace_env
+      logical, save :: trace_count = .false., trace_init = .false.
+      real(double) :: ext, emx, abfri, test, threse, ablcl
+      if (.not. trace_init) then
+         call get_environment_variable('GRASP_TRACE_COUNT', trace_env, status=trace_status)
+         trace_count = trace_status == 0 .and. (trace_env(1:1) == '1' .or. trace_env(1:1) == 'y')
+         trace_init = .true.
+      end if
 !-----------------------------------------------
 !
 !
 !   (1) Find all extrema in FR
 !   (2) Find the maximum amplitudes of FR
 !
-      NEXT = 1
-      EXT = 0.0D00
-      LCEXT(1) = 1
-      EMX = 0.0D00
-      DO I = 2, MTPFR
-         ABFRI = ABS(FR(I))
-         TEST = ABS(SIGN(1.0D00,FR(I))+SIGN(1.0D00,FR(I-1)))
-         IF (TEST <= ACCY) THEN
-            NEXT = NEXT + 1
-            LCEXT(NEXT) = 0
-            EXT = 0.0D00
-         ENDIF
-         IF (ABFRI > EXT) THEN
-            EXT = ABFRI
-            LCEXT(NEXT) = I
-         ENDIF
-         IF (ABFRI <= EMX) CYCLE
-         EMX = ABFRI
-      END DO
+      next = 1
+      ext = 0.0d00
+      lcext(1) = 1
+      emx = 0.0d00
+      do i = 2, mtpfr
+         abfri = abs(fr(i))
+         test = abs(sign(1.0d00,fr(i))+sign(1.0d00,fr(i-1)))
+         if (test <= accy) then
+            next = next + 1
+            lcext(next) = 0
+            ext = 0.0d00
+         endif
+         if (abfri > ext) then
+            ext = abfri
+            lcext(next) = i
+         endif
+         if (abfri <= emx) cycle
+         emx = abfri
+      end do
 !
 !   Eliminate oscillations with amplitude less than THRESH times
 !   the maximum
 !
-      LOC = 0
-      THRESE = THRESH*EMX
-    4 CONTINUE
-      LOC = LOC + 1
-      IF (LOC <= NEXT) THEN
-         IF (LCEXT(LOC) == 0) THEN
-            ABLCL = 0.0D00
-         ELSE
-            ABLCL = ABS(FR(LCEXT(LOC)))
-         ENDIF
-         IF (ABLCL < THRESE) THEN
-            NEXT = NEXT - 1
-            NSTPS = NEXT - LOC
-            LCEXT(LOC:NSTPS+LOC) = LCEXT(LOC+1:NSTPS+1+LOC)
-            LOC = LOC - 1
-         ENDIF
-         GO TO 4
-      ENDIF
+      loc = 0
+      threse = thresh*emx
+    4 continue
+      loc = loc + 1
+      if (loc <= next) then
+         if (lcext(loc) == 0) then
+            ablcl = 0.0d00
+         else
+            ablcl = abs(fr(lcext(loc)))
+         endif
+         if (ablcl < threse) then
+            next = next - 1
+            nstps = next - loc
+            lcext(loc:nstps+loc) = lcext(loc+1:nstps+1+loc)
+            loc = loc - 1
+         endif
+         go to 4
+      endif
 !
 !   Count changes of sign using the remaining oscillations
 !
-      NNCFF = 0
-      DO I = 2, NEXT
-         TEST = ABS(SIGN(1.0D00,FR(LCEXT(I)))+SIGN(1.0D00,FR(LCEXT(I-1))))
-         IF (TEST > ACCY) CYCLE
-         NNCFF = NNCFF + 1
-      END DO
+      nncff = 0
+      do i = 2, next
+         test = abs(sign(1.0d00,fr(lcext(i)))+sign(1.0d00,fr(lcext(i-1))))
+         if (test > accy) cycle
+         nncff = nncff + 1
+      end do
 !
 !   Determine the position of the first oscillation, and the
 !   sign of the function at this location
 !
-      SGN = SIGN(1.0D00,FR(LCEXT(1)))
-      IF (TRACE_COUNT .AND. MTPFR > 300 .AND. COUNT_TRACE_RANK == 0) THEN
-         WRITE (734,'(A,I0,A,I0,A,ES16.8,A,ES16.8,A,I0)') 'COUNT_TRACE orbital=', &
-              COUNT_CONTEXT, ' mtp=', MTPFR, ' emx=', EMX, ' thre=', THRESE, ' nodes=', NNCFF
-         WRITE (734,'(A,I0)') 'COUNT_EXTREMA orbital=', COUNT_CONTEXT
-         DO I = 1, NEXT
-            IF (LCEXT(I) > 0) WRITE (734,'(I0,A,I0,A,ES16.8,A,ES16.8)') &
-                 I, ',', LCEXT(I), ',', R(LCEXT(I)), ',', ABS(FR(LCEXT(I)))
-         END DO
-      END IF
+      sgn = sign(1.0d00,fr(lcext(1)))
+      if (trace_count .and. mtpfr > 300 .and. count_trace_rank == 0) then
+         write (734,'(A,I0,A,I0,A,ES16.8,A,ES16.8,A,I0)') 'COUNT_TRACE orbital=', &
+              count_context, ' mtp=', mtpfr, ' emx=', emx, ' thre=', threse, ' nodes=', nncff
+         write (734,'(A,I0)') 'COUNT_EXTREMA orbital=', count_context
+         do i = 1, next
+            if (lcext(i) > 0) write (734,'(I0,A,I0,A,ES16.8,A,ES16.8)') &
+                 i, ',', lcext(i), ',', r(lcext(i)), ',', abs(fr(lcext(i)))
+         end do
+      end if
 !
-      RETURN
-      END SUBROUTINE COUNT
+      return
+      end subroutine count

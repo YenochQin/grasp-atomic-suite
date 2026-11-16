@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE NEWE(J, SGN, NPRIME, MX, DELEPS, FAIL, INV)
+      subroutine newe(j, sgn, nprime, mx, deleps, fail, inv)
 !                                                                      *
 !   This  subroutine implements Part 2 of Algorithm 7.1 in  C Froese   *
 !   Fischer,  Comput  Phys  Rep, 3 (1986) 273-326. (The present code   *
@@ -18,110 +18,110 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE int_C
-      USE orb_C
-      USE scf_C
+      use vast_kind_param, only:  double
+      use int_c
+      use orb_c
+      use scf_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE outbnd_I
-      IMPLICIT NONE
+      use outbnd_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: J
-      INTEGER , INTENT(IN) :: NPRIME
-      INTEGER , INTENT(IN) :: MX
-      INTEGER , INTENT(OUT) :: INV
-      REAL(DOUBLE) , INTENT(IN) :: SGN
-      REAL(DOUBLE) , INTENT(INOUT) :: DELEPS
-      LOGICAL , INTENT(OUT) :: FAIL
+      integer , intent(in) :: j
+      integer , intent(in) :: nprime
+      integer , intent(in) :: mx
+      integer , intent(out) :: inv
+      real(double) , intent(in) :: sgn
+      real(double) , intent(inout) :: deleps
+      logical , intent(out) :: fail
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      REAL(DOUBLE), PARAMETER :: P02 = 2.0D-02
-      REAL(DOUBLE), PARAMETER :: P05 = 5.0D-02
-      REAL(DOUBLE), PARAMETER :: P001 = 1.0D-03
-      REAL(DOUBLE), PARAMETER :: P00001 = 1.0D-05
-      REAL(DOUBLE), PARAMETER :: D2P5 = 2.5D00
+      real(double), parameter :: p02 = 2.0d-02
+      real(double), parameter :: p05 = 5.0d-02
+      real(double), parameter :: p001 = 1.0d-03
+      real(double), parameter :: p00001 = 1.0d-05
+      real(double), parameter :: d2p5 = 2.5d00
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE) :: EPS, ABDELE, DELEBE, DN, DNPRME, DNPN25, ETRY, DELTA
+      integer :: i
+      real(double) :: eps, abdele, delebe, dn, dnprme, dnpn25, etry, delta
 !-----------------------------------------------
 !
 !
 !   Determine if the iterative process has succeeded
 !
-      IF (SGN>0.0D00 .AND. MX==0) THEN
-         FAIL = .FALSE.
-      ELSE
-         FAIL = .TRUE.
-      ENDIF
+      if (sgn>0.0d00 .and. mx==0) then
+         fail = .false.
+      else
+         fail = .true.
+      endif
 !
 !   Inversion counter
 !
-      INV = 0
+      inv = 0
 !
 !   If unsuccessful, obtain a new estimate of the eigenvalue
 !
-      IF (FAIL) THEN
+      if (fail) then
 !
 !   Define quantities used later
 !
-         EPS = E(J)
-         ABDELE = ABS(DELEPS)
-         DELEBE = ABS(DELEPS/EPS)
-         DN = DBLE(NP(J))
-         DNPRME = DBLE(NPRIME)
-         DNPN25 = (DNPRME/DN)**D2P5
+         eps = e(j)
+         abdele = abs(deleps)
+         delebe = abs(deleps/eps)
+         dn = dble(np(j))
+         dnprme = dble(nprime)
+         dnpn25 = (dnprme/dn)**d2p5
 !
-         IF (ABS(MX)==1 .AND. DELEBE>P02 .OR. MX==0 .AND. DELEBE>=P00001 .AND. &
-            ABDELE>=P001) THEN
-    1       CONTINUE
-            ETRY = EPS + DELEPS
-            IF (OUTBND(ETRY) .AND. MX/=0) ETRY = EPS*DNPN25
-            IF (OUTBND(ETRY)) ETRY = EPS - DELEPS
-            IF (OUTBND(ETRY)) THEN
-               DELEPS = 0.5D00*DELEPS
-               GO TO 1
-            ENDIF
-         ELSE IF (MX == 0) THEN
-            ETRY = EPS
-            INV = 1
-            P0 = -P0
-            P(:MTP0) = -P(:MTP0)
-            Q(:MTP0) = -Q(:MTP0)
-            FAIL = .FALSE.
-         ELSE IF (SGN < 0.0D00) THEN
-            ETRY = EPS*DNPN25
-            IF (OUTBND(ETRY)) ETRY = 0.5D00*(EPSMAX + EPS)
-            IF (OUTBND(ETRY)) ETRY = 0.5D00*(EPSMIN + EPS)
-         ELSE IF (MX < 0) THEN
-            DELTA = 1.0D00 - EPS/EPSMAX
-            EPSMAX = EPS
-            IF (DELTA < P05) THEN
-               EMAX = EMAX*DNPN25
-            ELSE
-               EMAX = EPS*DNPN25
-            ENDIF
-            ETRY = EMAX
-            IF (OUTBND(ETRY)) ETRY = 0.5D00*(EPSMAX + EPSMIN)
-         ELSE IF (MX > 0) THEN
-            DELTA = 1.0D00 - EPSMIN/EPS
-            EPSMIN = EPS
-            IF (DELTA < P05) THEN
-               EMIN = EMIN*DNPN25
-            ELSE
-               EMIN = EPS*DNPN25
-            ENDIF
-            ETRY = EMIN
-            IF (OUTBND(ETRY)) ETRY = 0.5D00*(EPSMAX + EPSMIN)
-         ENDIF
-         E(J) = ETRY
-      ENDIF
+         if (abs(mx)==1 .and. delebe>p02 .or. mx==0 .and. delebe>=p00001 .and. &
+            abdele>=p001) then
+    1       continue
+            etry = eps + deleps
+            if (outbnd(etry) .and. mx/=0) etry = eps*dnpn25
+            if (outbnd(etry)) etry = eps - deleps
+            if (outbnd(etry)) then
+               deleps = 0.5d00*deleps
+               go to 1
+            endif
+         else if (mx == 0) then
+            etry = eps
+            inv = 1
+            p0 = -p0
+            p(:mtp0) = -p(:mtp0)
+            q(:mtp0) = -q(:mtp0)
+            fail = .false.
+         else if (sgn < 0.0d00) then
+            etry = eps*dnpn25
+            if (outbnd(etry)) etry = 0.5d00*(epsmax + eps)
+            if (outbnd(etry)) etry = 0.5d00*(epsmin + eps)
+         else if (mx < 0) then
+            delta = 1.0d00 - eps/epsmax
+            epsmax = eps
+            if (delta < p05) then
+               emax = emax*dnpn25
+            else
+               emax = eps*dnpn25
+            endif
+            etry = emax
+            if (outbnd(etry)) etry = 0.5d00*(epsmax + epsmin)
+         else if (mx > 0) then
+            delta = 1.0d00 - epsmin/eps
+            epsmin = eps
+            if (delta < p05) then
+               emin = emin*dnpn25
+            else
+               emin = eps*dnpn25
+            endif
+            etry = emin
+            if (outbnd(etry)) etry = 0.5d00*(epsmax + epsmin)
+         endif
+         e(j) = etry
+      endif
 !
-      RETURN
-      END SUBROUTINE NEWE
+      return
+      end subroutine newe

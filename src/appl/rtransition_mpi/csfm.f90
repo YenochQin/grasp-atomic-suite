@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE CSFM (ASFA,ASFB,LEV1,LEV2)
+      subroutine csfm (asfa,asfb,lev1,lev2)
 !                                                                      *
 !   This routine calculates  the CSF Coulomb, Babuskin, and magnetic   *
 !   matrix elements for  a transition  between  levels  separated by   *
@@ -15,135 +15,135 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: KEYORB
-      USE biorb_C
-      USE debug_C
-      USE eigv_C
-      USE jlabl_C, LABJ=>JLBR, LABP=>JLBP
-      USE orb_C
-      USE osc_C
-      USE prnt_C
-      USE syma_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: keyorb
+      use biorb_c
+      use debug_c
+      use eigv_c
+      use jlabl_c, labj=>jlbr, labp=>jlbp
+      use orb_c
+      use osc_c
+      use prnt_c
+      use syma_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE spme_I
-      IMPLICIT NONE
+      use spme_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE), INTENT(OUT) :: asfa, asfb
-      INTEGER, INTENT(IN) :: lev1, lev2
+      real(double), intent(out) :: asfa, asfb
+      integer, intent(in) :: lev1, lev2
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: key=KEYORB, nca=65536
-      INTEGER :: ja, jb, m, nclr, ncup, ncount, nfi, ipar, jpar, &
+      integer, parameter :: key=keyorb, nca=65536
+      integer :: ja, jb, m, nclr, ncup, ncount, nfi, ipar, jpar, &
                  ia, ib, j
-      REAL(DOUBLE) :: hcoul1, hbab1, hmag1, eps, couvx, coeff, contr
-      CHARACTER(LEN=4) :: jlabi, jlabj, jpari, jparj
+      real(double) :: hcoul1, hbab1, hmag1, eps, couvx, coeff, contr
+      character(len=4) :: jlabi, jlabj, jpari, jparj
 !-----------------------------------------------------------------------
 !
-      EPS = 1.0D-10
+      eps = 1.0d-10
 !
-      ASFA = 0.0D00
-      ASFB = 0.0D00
-      NCOUNT = 0
-      NFI = 0
+      asfa = 0.0d00
+      asfb = 0.0d00
+      ncount = 0
+      nfi = 0
 !
 !Rasa -- start
 !
 !   J/pi labels for levels
 !
-      JLABI = LABJ(IATJPOII(LEV1))
-      JLABJ = LABJ(IATJPOFF(LEV2))
-      IPAR = (IASPARII(LEV1)+3)/2
-      JPAR = (IASPARFF(LEV2)+3)/2
-      JPARI = LABP(IPAR)
-      JPARJ = LABP(JPAR)
+      jlabi = labj(iatjpoii(lev1))
+      jlabj = labj(iatjpoff(lev2))
+      ipar = (iasparii(lev1)+3)/2
+      jpar = (iasparff(lev2)+3)/2
+      jpari = labp(ipar)
+      jparj = labp(jpar)
 
-      IF (LDBPR(18)) THEN
-          WRITE (*,302) IVECFF(LEV2), JLABJ, JPARJ, IVECII(LEV1),    &
-       JLABI, JPARI
-          WRITE (*,301)
-      ENDIF
+      if (ldbpr(18)) then
+          write (*,302) ivecff(lev2), jlabj, jparj, ivecii(lev1),    &
+       jlabi, jpari
+          write (*,301)
+      endif
 ! Rasa -- end
-      DO M = 1,NINTEG
-        JA = LAB(M)
-        JB = MOD (JA,KEY)
-        JA = JA/KEY
-        NCLR = NPTR(M)+1
-        NCUP = NPTR(M+1)
-        IF (NCLR .GT. NCUP) GOTO 4
-        IF (MOD(NKL(JA)+NKL(JB)+KK+LK,2) .NE. 0) GOTO 4
-        CALL SPME (JA,JB,HCOUL1,HBAB1,HMAG1)
+      do m = 1,ninteg
+        ja = lab(m)
+        jb = mod (ja,key)
+        ja = ja/key
+        nclr = nptr(m)+1
+        ncup = nptr(m+1)
+        if (nclr .gt. ncup) goto 4
+        if (mod(nkl(ja)+nkl(jb)+kk+lk,2) .ne. 0) goto 4
+        call spme (ja,jb,hcoul1,hbab1,hmag1)
 !
-        DO J = NCLR,NCUP
+        do j = nclr,ncup
 !
-          IA = ISLDR(J)
-          IB = ISLDR1(J)
+          ia = isldr(j)
+          ib = isldr1(j)
 !         IB = MOD (IA,NCA)
 !         IA = IA/NCA
 !
 !  Check on consistency
 !
-          IF (IA.GT.NCFII) THEN
-            GOTO 131
-          ELSEIF (IB.GT.NCFFF) THEN
-            GOTO 131
-          ENDIF
+          if (ia.gt.ncfii) then
+            goto 131
+          elseif (ib.gt.ncfff) then
+            goto 131
+          endif
 !
 !  Observ that IA and IB refer to the merged list
 !  whereas EVECII and EVECFF refers to the initial and
 !  final state lists. Therefore we have IB -> IB-NCFII
 !
-          COUVX =EVECII(IA+(LEV1-1)*NCFII)*                          &
-                 EVECFF(IB+(LEV2-1)*NCFFF)
+          couvx =evecii(ia+(lev1-1)*ncfii)*                          &
+                 evecff(ib+(lev2-1)*ncfff)
 !     :           EVECFF(IB-NCFII+(LEV2-1)*NCFFF)
-          COEFF = XSLDR(J)
-          IF (ABS(COUVX) .GT. EPS) THEN
-            IF (KK .EQ. 0) THEN
-              ASFA = ASFA+HCOUL1*COEFF*COUVX
-              ASFB = ASFB+HBAB1*COEFF*COUVX
+          coeff = xsldr(j)
+          if (abs(couvx) .gt. eps) then
+            if (kk .eq. 0) then
+              asfa = asfa+hcoul1*coeff*couvx
+              asfb = asfb+hbab1*coeff*couvx
 !Rasa -- start
-              IF (LDBPR(18) .and. (dabs(HCOUL1*COEFF*COUVX)          &
-                .gt. cutoff)) THEN
-                  WRITE (*,300) IA, EVECII(IA+(LEV1-1)*NCFII),       &
-                      IB, EVECFF(IB+(LEV2-1)*NCFFF),                 &
-                      NP(JA),NH(JA),NP(JB),NH(JB),COEFF,HCOUL1,'C',  &
-                      HCOUL1*COEFF*COUVX
-                  WRITE(*,303) HBAB1,'B',HBAB1*COEFF*COUVX
-              ENDIF
+              if (ldbpr(18) .and. (dabs(hcoul1*coeff*couvx)          &
+                .gt. cutoff)) then
+                  write (*,300) ia, evecii(ia+(lev1-1)*ncfii),       &
+                      ib, evecff(ib+(lev2-1)*ncfff),                 &
+                      np(ja),nh(ja),np(jb),nh(jb),coeff,hcoul1,'C',  &
+                      hcoul1*coeff*couvx
+                  write(*,303) hbab1,'B',hbab1*coeff*couvx
+              endif
 !Rasa -- end
-            ELSE
-              contr=HMAG1*COEFF*COUVX
-              ASFA = ASFA+HMAG1*COEFF*COUVX
+            else
+              contr=hmag1*coeff*couvx
+              asfa = asfa+hmag1*coeff*couvx
 !Rasa -- start
-              IF (LDBPR(18) .and. (abs(contr) .gt. CUTOFF)) THEN
-                  WRITE (*,300) IA, EVECII(IA+(LEV1-1)*NCFII),       &
-                      IB, EVECFF(IB-(LEV2-1)*NCFFF),                 &
-                      NP(JA),NH(JA),NP(JB),NH(JB),COEFF,HMAG1,' ',   &
+              if (ldbpr(18) .and. (abs(contr) .gt. cutoff)) then
+                  write (*,300) ia, evecii(ia+(lev1-1)*ncfii),       &
+                      ib, evecff(ib-(lev2-1)*ncfff),                 &
+                      np(ja),nh(ja),np(jb),nh(jb),coeff,hmag1,' ',   &
                       contr
-              ENDIF
+              endif
 !Rasa -- end
-            ENDIF
-          ENDIF
- 131    CONTINUE
-        ENDDO
-    4 ENDDO
+            endif
+          endif
+ 131    continue
+        enddo
+    4 enddo
 !
-      RETURN
+      return
 !
-  300 FORMAT (I5,2X,D12.5,I5,2X,D12.5, 2(1X,1I2,1A2),1P,D15.6,1X,D15.6, &
-      1X,1A,1X,D15.6)
-  301 FORMAT (4X,'i',3X,'Coeff.(i)',5X,'f',2X,'Coeff.(f)',2X,            &
-      'Orb(i)',1X,'Orb(f)',2X,'MCT coeff.',4X,'Radial Factor',          &
-      5X,'Contribution')
-  302 FORMAT ('Upper level ',I3,A4,A4,10X,' Lower level',I3,A4,A4)
-          WRITE (*,302) IVECFF(LEV2), JLABJ, JPARJ, LEV1, JLABI, JPARI
-  303 FORMAT (62X,1P,D15.6,1X,1A,1X,D15.6)
-  304 FORMAT(65X,'Total:')
-  305 FORMAT (62X,1P,16X,1A,1X,D15.6)
+  300 format (i5,2x,d12.5,i5,2x,d12.5, 2(1x,1i2,1a2),1p,d15.6,1x,d15.6, &
+      1x,1a,1x,d15.6)
+  301 format (4x,'i',3x,'Coeff.(i)',5x,'f',2x,'Coeff.(f)',2x,            &
+      'Orb(i)',1x,'Orb(f)',2x,'MCT coeff.',4x,'Radial Factor',          &
+      5x,'Contribution')
+  302 format ('Upper level ',i3,a4,a4,10x,' Lower level',i3,a4,a4)
+          write (*,302) ivecff(lev2), jlabj, jparj, lev1, jlabi, jpari
+  303 format (62x,1p,d15.6,1x,1a,1x,d15.6)
+  304 format(65x,'Total:')
+  305 format (62x,1p,16x,1a,1x,d15.6)
 !
-      END
+      end

@@ -1,11 +1,11 @@
 ! NP state is published only after parsing, construction and output succeed.
-module npol_C
+module npol_c
     use vast_kind_param, only: double
-    use parameter_def, only: NNNP
+    use parameter_def, only: nnnp
     implicit none
     private
-    integer, parameter, public :: NPOL_MESSAGE_LEN = 512
-    character(*), parameter, public :: NPOL_MODEL = 'flambaum2021_scalar_e1_e2'
+    integer, parameter, public :: npol_message_len = 512
+    character(*), parameter, public :: npol_model = 'flambaum2021_scalar_e1_e2'
     type, public :: npol_config
         integer :: schema_version = 1, isotope_z = 0, isotope_a = 0
         logical :: enabled = .false., use_e1 = .false., use_e2 = .false.
@@ -17,8 +17,8 @@ module npol_C
     type(npol_config), protected, public :: npol_settings
     logical, protected, public :: npol_ready = .false.
     integer, protected, public :: npol_n = 0
-    real(double), protected, public :: zz_coul(NNNP) = 0
-    real(double), protected, public :: vnp_e1(NNNP) = 0, vnp_e2(NNNP) = 0, vnp_total(NNNP) = 0
+    real(double), protected, public :: zz_coul(nnnp) = 0
+    real(double), protected, public :: vnp_e1(nnnp) = 0, vnp_e2(nnnp) = 0, vnp_total(nnnp) = 0
     public :: npol_reset, npol_capture, npol_publish
 contains
     subroutine npol_reset()
@@ -36,7 +36,7 @@ contains
     subroutine npol_capture(n, coul)
         integer, intent(in) :: n
         real(double), intent(in) :: coul(n)
-        if (n < 1 .or. n > NNNP) return
+        if (n < 1 .or. n > nnnp) return
         npol_n = n
         zz_coul(:n) = coul
     end subroutine
@@ -46,11 +46,11 @@ contains
         type(npol_config), intent(in) :: cfg
         integer, intent(in) :: n
         real(double), intent(in) :: e1(n), e2(n), total(n)
-        if (n /= npol_n .or. n < 1 .or. n > NNNP) return
+        if (n /= npol_n .or. n < 1 .or. n > nnnp) return
         npol_settings = cfg
         vnp_e1(:n) = e1
         vnp_e2(:n) = e2
         vnp_total(:n) = total
         npol_ready = .true.
     end subroutine
-end module npol_C
+end module npol_c

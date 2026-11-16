@@ -1,4 +1,4 @@
-      SUBROUTINE COFPOTmpi(EOL, J, NPTS)
+      subroutine cofpotmpi(eol, j, npts)
 !************************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:04:58   1/ 3/07
 !...Modified by Charlotte Froese Fischer
@@ -6,46 +6,46 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE pote_C
-      USE mpi_C
+      use vast_kind_param, only:  double
+      use pote_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE setcof_I
-      USE ypot_I
-      USE xpot_I
-      USE lagcon_I
-      USE dacon_I
-      USE POTE_C
-      USE suite_linear_algebra, ONLY: dcopy
-      IMPLICIT NONE
+      use setcof_i
+      use ypot_i
+      use xpot_i
+      use lagcon_i
+      use dacon_i
+      use pote_c
+      use suite_linear_algebra, only: dcopy
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
-      INTEGER  :: NPTS
-      LOGICAL  :: EOL
-      REAL(DOUBLE), DIMENSION(NPTS) :: TMPMPI
+      integer  :: j
+      integer  :: npts
+      logical  :: eol
+      real(double), dimension(npts) :: tmpmpi
 !-----------------------------------------------------------------------
 
-      CALL SETCOF (EOL, J)
-      CALL YPOT (J)
-      CALL XPOT (J)
-      CALL LAGCON (J, NPROCS)
-      CALL DACON
+      call setcof (eol, j)
+      call ypot (j)
+      call xpot (j)
+      call lagcon (j, nprocs)
+      call dacon
 
-      CALL MPI_Allreduce (YP, tmpmpi, npts, MPI_DOUBLE_PRECISION,  &
-                          MPI_SUM, MPI_COMM_WORLD, ierr)
-      CALL dcopy (npts, tmpmpi, 1, YP, 1)
+      call mpi_allreduce (yp, tmpmpi, npts, mpi_double_precision,  &
+                          mpi_sum, mpi_comm_world, ierr)
+      call dcopy (npts, tmpmpi, 1, yp, 1)
 
-      CALL MPI_Allreduce (XP, tmpmpi, npts, MPI_DOUBLE_PRECISION,  &
-                          MPI_SUM, MPI_COMM_WORLD, ierr)
-      CALL dcopy (npts, tmpmpi, 1, XP, 1)
+      call mpi_allreduce (xp, tmpmpi, npts, mpi_double_precision,  &
+                          mpi_sum, mpi_comm_world, ierr)
+      call dcopy (npts, tmpmpi, 1, xp, 1)
 
-      CALL MPI_Allreduce (XQ, tmpmpi, npts, MPI_DOUBLE_PRECISION,  &
-                          MPI_SUM, MPI_COMM_WORLD, ierr)
-      CALL dcopy (npts, tmpmpi, 1, XQ, 1)
+      call mpi_allreduce (xq, tmpmpi, npts, mpi_double_precision,  &
+                          mpi_sum, mpi_comm_world, ierr)
+      call dcopy (npts, tmpmpi, 1, xq, 1)
 
-      RETURN
-      END SUBROUTINE COFPOTmpi
+      return
+      end subroutine cofpotmpi

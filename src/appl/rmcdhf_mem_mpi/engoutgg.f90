@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ENGOUTGG(E,ILEV,NN,MODE)
+      subroutine engoutgg(e,ilev,nn,mode)
 !                                                                      *
 !   This  subroutine prints  energy levels, splittings, and energies   *
 !   relative to the lowest in  Hartrees, Kaysers, and  eV, using the   *
@@ -22,110 +22,110 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE def_C
-      USE jlabl_C, LABJ=>JLBR, LABP=>JLBP
-      USE blkidx_C
-      USE peav_C
-      USE syma_C,          ONLY: JPGG
+      use vast_kind_param, only: double
+      use def_c
+      use jlabl_c, labj=>jlbr, labp=>jlbp
+      use blkidx_c
+      use peav_c
+      use syma_c,          only: jpgg
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NN
-      INTEGER, INTENT(IN) :: MODE
-      INTEGER, INTENT(IN) :: ILEV(NN)
-      REAL(DOUBLE), INTENT(IN) :: E(NN)
+      integer, intent(in) :: nn
+      integer, intent(in) :: mode
+      integer, intent(in) :: ilev(nn)
+      real(double), intent(in) :: e(nn)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, JBLOCK, I, IP, JTOT
-      REAL(DOUBLE) :: EAV, EAU, ECM, EEV
+      integer :: j, jblock, i, ip, jtot
+      real(double) :: eav, eau, ecm, eev
 !-----------------------------------------------
 !
 !
 !   Always print the eigenenergies
 !
-      WRITE (24, 300)
-      WRITE (24, 301)
-      DO J = 1, NN
-         JBLOCK = IDXBLK(J)
-         EAV = EAVBLK(JBLOCK)
-         I = ILEV(J)
-         EAU = E(J) + EAV
-         ECM = EAU*AUCM
-         EEV = EAU*AUEV
+      write (24, 300)
+      write (24, 301)
+      do j = 1, nn
+         jblock = idxblk(j)
+         eav = eavblk(jblock)
+         i = ilev(j)
+         eau = e(j) + eav
+         ecm = eau*aucm
+         eev = eau*auev
 !GG         IP = (IPAR(J)+3)/2
-         JTOT = IABS(JPGG(jblock))
-         IF(JPGG(jblock) >= 0) THEN
+         jtot = iabs(jpgg(jblock))
+         if(jpgg(jblock) >= 0) then
             ip = 2
-         ELSE
+         else
             ip = 1
-         END IF
-         WRITE (24, 302) I, LABJ(JTOT), LABP(IP), EAU, ECM, EEV
+         end if
+         write (24, 302) i, labj(jtot), labp(ip), eau, ecm, eev
 !GG         WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
-      END DO
+      end do
 !
-      IF (NN > 1) THEN
+      if (nn > 1) then
 !
 !   Energy separations
 !
-         IF (MODE==1 .OR. MODE==3) THEN
-            WRITE (24, 303)
-            WRITE (24, 301)
-            DO J = 2, NN
-               I = ILEV(J)
-               EAU = E(J) - E(J-1)
-               ECM = EAU*AUCM
-               EEV = EAU*AUEV
+         if (mode==1 .or. mode==3) then
+            write (24, 303)
+            write (24, 301)
+            do j = 2, nn
+               i = ilev(j)
+               eau = e(j) - e(j-1)
+               ecm = eau*aucm
+               eev = eau*auev
 !GG               IP = (IPAR(J)+3)/2
                jblock = idxblk(j)
-               JTOT = IABS(JPGG(jblock))
-               IF(JPGG(jblock) >= 0) THEN
+               jtot = iabs(jpgg(jblock))
+               if(jpgg(jblock) >= 0) then
                   ip = 2
-               ELSE
+               else
                   ip = 1
-               END IF
-               WRITE (24, 302) I, LABJ(JTOT), LABP(IP), EAU, ECM, EEV
+               end if
+               write (24, 302) i, labj(jtot), labp(ip), eau, ecm, eev
 !GG               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
-            END DO
-         ENDIF
+            end do
+         endif
 !
 !   Energies relative to level 1
 !
-         IF (MODE==2 .OR. MODE==3) THEN
-            WRITE (24, 304)
-            WRITE (24, 301)
-            DO J = 2, NN
-               I = ILEV(J)
-               EAU = E(J) - E(1)
-               ECM = EAU*AUCM
-               EEV = EAU*AUEV
+         if (mode==2 .or. mode==3) then
+            write (24, 304)
+            write (24, 301)
+            do j = 2, nn
+               i = ilev(j)
+               eau = e(j) - e(1)
+               ecm = eau*aucm
+               eev = eau*auev
 !GG               IP = (IPAR(J)+3)/2
                jblock = idxblk(j)
-               JTOT = IABS(JPGG(jblock))
-               IF(JPGG(jblock) >= 0) THEN
+               jtot = iabs(jpgg(jblock))
+               if(jpgg(jblock) >= 0) then
                   ip = 2
-               ELSE
+               else
                   ip = 1
-               END IF
-               WRITE (24, 302) I, LABJ(JTOT), LABP(IP), EAU, ECM, EEV
+               end if
+               write (24, 302) i, labj(jtot), labp(ip), eau, ecm, eev
 !GG               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
-            END DO
-         ENDIF
+            end do
+         endif
 !
-      ENDIF
+      endif
 !
-      RETURN
+      return
 !
-  300 FORMAT(/,'Eigenenergies:')
-  301 FORMAT(/,'Level  J Parity',7X,'Hartrees',14X,'Kaysers',16X,'eV'/)
-  302 FORMAT(1I3,4X,2A4,1P,3D21.12)
-  303 FORMAT(/,'Energy of each level relative to immediately lower',' level:')
-  304 FORMAT(/,'Energy of each level relative to lowest level:')
-      RETURN
+  300 format(/,'Eigenenergies:')
+  301 format(/,'Level  J Parity',7x,'Hartrees',14x,'Kaysers',16x,'eV'/)
+  302 format(1i3,4x,2a4,1p,3d21.12)
+  303 format(/,'Energy of each level relative to immediately lower',' level:')
+  304 format(/,'Energy of each level relative to lowest level:')
+      return
 !
-      END SUBROUTINE ENGOUTGG
+      end subroutine engoutgg

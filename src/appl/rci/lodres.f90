@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE LODRES
+      subroutine lodres
 !                                                                      *
 !   Loads the data from the  .res  file. A number of checks are made   *
 !   to ensure correctness and consistency.                             *
@@ -17,32 +17,32 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE memory_man
-      USE decide_C
-      USE def_C, ONLY: nelecr, nelec, z, emn, c, accy
-      USE grid_C
-      USE npar_C
-      USE npot_C, ONLY: zz, nnuc
-      USE orb_C
-      USE wave_C
-      USE wfac_C
-      USE where_C
-      USE hblock_C
-      USE iccu_C
-      USE iounit_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use memory_man
+      use decide_c
+      use def_c, only: nelecr, nelec, z, emn, c, accy
+      use grid_c
+      use npar_c
+      use npot_c, only: zz, nnuc
+      use orb_c
+      use wave_c
+      use wfac_c
+      use where_c
+      use hblock_c
+      use iccu_c
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setqic_I
-      IMPLICIT NONE
+      use getyn_i
+      use setqic_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NCFRES, NWRES, NBLOCKRES, I, NP10, J
-      LOGICAL :: YES
+      integer :: ncfres, nwres, nblockres, i, np10, j
+      logical :: yes
 !-----------------------------------------------
 !
 !     POINTER (pncfblk, ncfblk(0:*))
@@ -50,66 +50,66 @@
 !     POINTER (piccutblk, iccutblk(1))
 !
 !-----------------------------------------------------------------------
-      WRITE (6, *) 'Calling lodres ...'
+      write (6, *) 'Calling lodres ...'
 !
 !   Read the basic parameters of the electron cloud; check these
 !   against those deduced from the  .csl file
 !
-      READ (IMCDF) NELECR, NCFRES, NWRES, NBLOCKRES
+      read (imcdf) nelecr, ncfres, nwres, nblockres
 
-      IF (NELECR/=NELEC .OR. NCFRES/=NCF .OR. NWRES/=NW .OR. NBLOCKRES/=NBLOCK&
-         ) STOP 'lodres: NELEC/NCF/NW does not match'
+      if (nelecr/=nelec .or. ncfres/=ncf .or. nwres/=nw .or. nblockres/=nblock&
+         ) stop 'lodres: NELEC/NCF/NW does not match'
 !
 !   Read the nuclear parameters
 !
-      READ (IMCDF) Z, EMN
-      READ (IMCDF) NPARM, (PARM(I),I=1,NPARM)
-      READ (IMCDF) N, (ZZ(I),I=1,N), NNUC
+      read (imcdf) z, emn
+      read (imcdf) nparm, (parm(i),i=1,nparm)
+      read (imcdf) n, (zz(i),i=1,n), nnuc
 
-      IF (N > NNNP) STOP 'lodres: N greater than NNNP'
+      if (n > nnnp) stop 'lodres: N greater than NNNP'
 !
 !   Read the physical effects specifications
 !   iccutblk() is now an array of length nblock.
 !
-      READ (IMCDF) C, LFORDR, (ICCUTBLK(I),I=1,NBLOCK), LTRANS, WFACT, LVP, &
-         LNMS, LSMS
+      read (imcdf) c, lfordr, (iccutblk(i),i=1,nblock), ltrans, wfact, lvp, &
+         lnms, lsms
 !
 !   Read the remaining parameters controlling the radial grid and the
 !   grid arrays
 !
-      NP10 = N + 10
-      READ (IMCDF) RNT, H, HP, (R(I),I=1,NP10), (RP(I),I=1,NP10), (RPOR(I),I=1,&
-         NP10)
+      np10 = n + 10
+      read (imcdf) rnt, h, hp, (r(i),i=1,np10), (rp(i),i=1,np10), (rpor(i),i=1,&
+         np10)
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
-      ACCY = H**6
+      accy = h**6
 !
 !   Set up the coefficients for the numerical procedures
 !
-      CALL SETQIC
+      call setqic
 !
 !   Allocate storage for the radial wavefunction arrays
 !
-      CALL ALLOC (PF, NNNP,NW, 'PF', 'LODMIX')
-      CALL ALLOC (QF, NNNP,NW, 'QF', 'LODMIX')
+      call alloc (pf, nnnp,nw, 'PF', 'LODMIX')
+      call alloc (qf, nnnp,nw, 'QF', 'LODMIX')
 !
 !   Read the orbital wavefunctions and the associated arrays
 !
-      DO J = 1, NW
-         READ (IMCDF) E(J), GAMA(J), PZ(J), MF(J)
-         READ (IMCDF) (PF(I,J),I=1,MF(J)), (QF(I,J),I=1,MF(J))
-      END DO
+      do j = 1, nw
+         read (imcdf) e(j), gama(j), pz(j), mf(j)
+         read (imcdf) (pf(i,j),i=1,mf(j)), (qf(i,j),i=1,mf(j))
+      end do
 !
 !   Determine if the self-energy contribution is to be estimated
 !
-      WRITE (ISTDE, *) 'Estimate contributions from the self-energy?'
-      LSE = GETYN()
-      IF (LSE) THEN
-        WRITE(734,'(a)') 'y            ! Estimate contributions from the self-energy?'
-      ELSE
-        WRITE(734,'(a)') 'n            ! Estimate contributions from the self-energy?'
-      END IF
+      write (istde, *) 'Estimate contributions from the self-energy?'
+      lse = getyn()
+      if (lse) then
+        write(734,'(a)') 'y            ! Estimate contributions from the self-energy?'
+      else
+        write(734,'(a)') 'n            ! Estimate contributions from the self-energy?'
+      end if
 
-      RETURN
-      END SUBROUTINE LODRES
+      return
+      end subroutine lodres

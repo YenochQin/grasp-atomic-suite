@@ -1,11 +1,11 @@
-      MODULE SUWJJ_I
-      INTERFACE
+      module suwjj_i
+      interface
 !
-      SUBROUTINE SUWJJ(K1,K2,LL,J1,J2,SUW)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER,      INTENT(IN)  :: K1, K2, J1, J2
-      INTEGER,      INTENT(OUT) :: LL
-      REAL(DOUBLE), INTENT(OUT) :: SUW
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine suwjj(k1,k2,ll,j1,j2,suw)
+      use vast_kind_param, only:  double
+      integer,      intent(in)  :: k1, k2, j1, j2
+      integer,      intent(out) :: ll
+      real(double), intent(out) :: suw
+      end subroutine
+      end interface
+      end module

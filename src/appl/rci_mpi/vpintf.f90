@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-    REAL(KIND(0.0D0))  FUNCTION VPINTF (IA,IB)
+    real(kind(0.0d0))  function vpintf (ia,ib)
 !                                                                      *
 !   Computes nuclear vacuum polarization integrals.                    *
 !                                                                      *
@@ -13,46 +13,46 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-     USE vast_kind_param, ONLY: DOUBLE
-     USE parameter_def,   ONLY: KEYORB
-     USE debug_C
-     USE grid_C
-     USE ncdist_C
-     USE orb_C
-     USE tatb_C, ONLY: mtp, ta, tb
-     USE wave_C
+     use vast_kind_param, only: double
+     use parameter_def,   only: keyorb
+     use debug_c
+     use grid_c
+     use ncdist_c
+     use orb_c
+     use tatb_c, only: mtp, ta, tb
+     use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-     USE quad_I
-     IMPLICIT NONE
+     use quad_i
+     implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: IA, IB
+      integer , intent(in) :: ia, ib
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-       INTEGER :: k
+       integer :: k
 !------------------------------------------------
 !
-      MTP = MIN (MF(IA),MF(IB))
+      mtp = min (mf(ia),mf(ib))
       !TA(1) = 0.0D 00  !! Why would this be wrong?!!
-      TA(1)  = 0
-      DO 1 K = 2,MTP
-         TA(K) = (PF(K,IA)*PF(K,IB)+QF(K,IA)*QF(K,IB))                  &
-                 *ZDIST(K)
-    1 CONTINUE
-      CALL QUAD (VPINTF)
+      ta(1)  = 0
+      do 1 k = 2,mtp
+         ta(k) = (pf(k,ia)*pf(k,ib)+qf(k,ia)*qf(k,ib))                  &
+                 *zdist(k)
+    1 continue
+      call quad (vpintf)
 !
-      IF (LDBPR(9)) WRITE (99,300) NP(IA),NH(IA),NP(IB),NH(IB),VPINTF
+      if (ldbpr(9)) write (99,300) np(ia),nh(ia),np(ib),nh(ib),vpintf
 !
-      RETURN
+      return
 !
-  300 FORMAT (/'VPINTF: V (',1I2,1A2,',',1I2,1A2,') = ',1PD19.12)
+  300 format (/'VPINTF: V (',1i2,1a2,',',1i2,1a2,') = ',1pd19.12)
 !
-      END FUNCTION VPINTF
+      end function vpintf

@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE GRACAH1(I,J,K,L,M,N,RAC)
+      subroutine gracah1(i,j,k,l,m,n,rac)
 !                                                                  *
 !   SUBROUTINE TO CALCULATE RACAH COEFFICIENTS.                    *
 !   THE ARGUMENTS I,J,K,L,M,N SHOULD BE TWICE THEIR ACTUAL VALUE.  *
@@ -17,64 +17,64 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, ONE, TWO
-      USE FACTS_C
-      IMPLICIT NONE
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, one, two
+      use facts_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: I
-      INTEGER , INTENT(IN) :: J
-      INTEGER , INTENT(IN) :: K
-      INTEGER , INTENT(IN) :: L
-      INTEGER , INTENT(IN) :: M
-      INTEGER , INTENT(IN) :: N
-      REAL(DOUBLE) , INTENT(OUT) :: RAC
+      integer , intent(in) :: i
+      integer , intent(in) :: j
+      integer , intent(in) :: k
+      integer , intent(in) :: l
+      integer , intent(in) :: m
+      integer , intent(in) :: n
+      real(double) , intent(out) :: rac
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J1,J2,J3,J4,J5,J6,J7,NUMIN,NUMAX,ICOUNT,KK,KI
+      integer :: j1,j2,j3,j4,j5,j6,j7,numin,numax,icount,kk,ki
 !-----------------------------------------------
-      J1 = I+J+M
-      J2 = K+L+M
-      J3 = I+K+N
-      J4 = J+L+N
-      IF (MOD(J1,2) == 0  .AND.  MOD(J2,2) == 0   .AND. &
-          MOD(J3,2) == 0  .AND.  MOD(J4,2) == 0 )  THEN
-          J1 = J1/2
-          J2 = J2/2
-          J3 = J3/2
-          J4 = J4/2
-          IF (MAX(I,J,M) <= J1 .AND.  MAX(K,L,M) <= J2  .AND. &
-              MAX(I,K,N) <= J3 .AND.  MAX(J,L,N) <= J4  )  THEN
-              J5 = (I+J+K+L)/2
-              J6 = (I+L+M+N)/2
-              J7 = (J+K+M+N)/2
-              NUMIN = MAX(J1, J2, J3, J4) + 1
-              NUMAX = MIN(J5, J6, J7)     + 1
-              RAC = ONE
-              ICOUNT = 0
-              DO KK = NUMIN+1,NUMAX
-                KI = NUMAX - ICOUNT
-                RAC = ONE - (RAC*(KI*(J5-KI+2)*(J6-KI+2)*(J7-KI+2)))/ &
-                         ((KI-1-J1)*(KI-1-J2)*(KI-1-J3)*(KI-1-J4))
-                ICOUNT = ICOUNT+1
-              END DO
-              RAC = RAC*EXP(                                          &
-                    (GAM(NUMIN+1) - GAM(NUMIN-J1) - GAM(NUMIN-J2) -   &
-                     GAM(NUMIN-J3) - GAM(NUMIN-J4) - GAM(J5+2-NUMIN)- &
-                     GAM(J6+2-NUMIN)-GAM(J7+2-NUMIN)) +               &
-                    (GAM(J1+1-I)+GAM(J1+1-J)+GAM(J1+1-M)-GAM(J1+2) +  &
-                     GAM(J2+1-K)+GAM(J2+1-L)+GAM(J2+1-M)-GAM(J2+2) +  &
-                     GAM(J3+1-I)+GAM(J3+1-K)+GAM(J3+1-N)-GAM(J3+2) +  &
-                     GAM(J4+1-J)+GAM(J4+1-L)+GAM(J4+1-N)-GAM(J4+2))/TWO)
-              IF (MOD(J5+NUMIN,2) == 0) RAC = -RAC
-          ELSE
-             RAC = ZERO
-          END IF
-      ELSE
-         RAC = ZERO
-      END IF
-      RETURN
-      END
+      j1 = i+j+m
+      j2 = k+l+m
+      j3 = i+k+n
+      j4 = j+l+n
+      if (mod(j1,2) == 0  .and.  mod(j2,2) == 0   .and. &
+          mod(j3,2) == 0  .and.  mod(j4,2) == 0 )  then
+          j1 = j1/2
+          j2 = j2/2
+          j3 = j3/2
+          j4 = j4/2
+          if (max(i,j,m) <= j1 .and.  max(k,l,m) <= j2  .and. &
+              max(i,k,n) <= j3 .and.  max(j,l,n) <= j4  )  then
+              j5 = (i+j+k+l)/2
+              j6 = (i+l+m+n)/2
+              j7 = (j+k+m+n)/2
+              numin = max(j1, j2, j3, j4) + 1
+              numax = min(j5, j6, j7)     + 1
+              rac = one
+              icount = 0
+              do kk = numin+1,numax
+                ki = numax - icount
+                rac = one - (rac*(ki*(j5-ki+2)*(j6-ki+2)*(j7-ki+2)))/ &
+                         ((ki-1-j1)*(ki-1-j2)*(ki-1-j3)*(ki-1-j4))
+                icount = icount+1
+              end do
+              rac = rac*exp(                                          &
+                    (gam(numin+1) - gam(numin-j1) - gam(numin-j2) -   &
+                     gam(numin-j3) - gam(numin-j4) - gam(j5+2-numin)- &
+                     gam(j6+2-numin)-gam(j7+2-numin)) +               &
+                    (gam(j1+1-i)+gam(j1+1-j)+gam(j1+1-m)-gam(j1+2) +  &
+                     gam(j2+1-k)+gam(j2+1-l)+gam(j2+1-m)-gam(j2+2) +  &
+                     gam(j3+1-i)+gam(j3+1-k)+gam(j3+1-n)-gam(j3+2) +  &
+                     gam(j4+1-j)+gam(j4+1-l)+gam(j4+1-n)-gam(j4+2))/two)
+              if (mod(j5+numin,2) == 0) rac = -rac
+          else
+             rac = zero
+          end if
+      else
+         rac = zero
+      end if
+      return
+      end

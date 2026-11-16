@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE LAGCON(J, NPROCS)
+      subroutine lagcon(j, nprocs)
 !                                                                      *
 !   This  routine  includes  the Lagrange multiplier contribution in   *
 !   the 'exchange' term.                                               *
@@ -18,69 +18,69 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: KEYORB
-      USE def_C
-      USE grid_C
-      USE lagr_C
-      USE pote_C
-      USE scf_C
-      USE wave_C
-      IMPLICIT NONE
+      use vast_kind_param,  only: double
+      use parameter_def,    only: keyorb
+      use def_c
+      use grid_c
+      use lagr_c
+      use pote_c
+      use scf_c
+      use wave_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: J
-      INTEGER , INTENT(IN) :: NPROCS
+      integer , intent(in) :: j
+      integer , intent(in) :: nprocs
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K, IECCK, L1, L2, M, MFM, I
-      REAL(DOUBLE) :: EPS, WB, WA, WARI
+      integer :: k, iecck, l1, l2, m, mfm, i
+      real(double) :: eps, wb, wa, wari
 !-----------------------------------------------
 !
 !
-      IF (NEC == 0) RETURN
+      if (nec == 0) return
 !
 !ww      EPS = ACCY*0.1D 00
-      EPS = ACCY*0.01D00
+      eps = accy*0.01d00
 !
 !   Add contributions from off-diagonal parameters to exchange
 !
-      WB = 1.0D00/(UCF(J)*C)/NPROCS
-      DO K = 1, NEC
+      wb = 1.0d00/(ucf(j)*c)/nprocs
+      do k = 1, nec
 !
 !   Decode index
 !
-         IECCK = IECC(K)
-         L1 = IECCK/KEY
-         L2 = IECCK - KEY*L1
+         iecck = iecc(k)
+         l1 = iecck/key
+         l2 = iecck - key*l1
 !
-         IF (J == L1) THEN
-            M = L2
-         ELSE IF (J == L2) THEN
-            M = L1
-         ELSE
-            CYCLE
-         ENDIF
+         if (j == l1) then
+            m = l2
+         else if (j == l2) then
+            m = l1
+         else
+            cycle
+         endif
 !
-         WA = ECV(K)*WB
-         IF (ABS(WA) < EPS) CYCLE
+         wa = ecv(k)*wb
+         if (abs(wa) < eps) cycle
 !
 !   ADD CONTRIBUTIONS TO EXCHANGE TERMS
 !
-         MFM = MF(M)
-         DO I = 1, MFM
-            WARI = WA*R(I)
-            XP(I) = XP(I) + WARI*QF(I,M)
-            XQ(I) = XQ(I) - WARI*PF(I,M)
-         END DO
+         mfm = mf(m)
+         do i = 1, mfm
+            wari = wa*r(i)
+            xp(i) = xp(i) + wari*qf(i,m)
+            xq(i) = xq(i) - wari*pf(i,m)
+         end do
 !
-      END DO
+      end do
 !
-      RETURN
-      END SUBROUTINE LAGCON
+      return
+      end subroutine lagcon

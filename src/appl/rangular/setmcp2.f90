@@ -1,5 +1,5 @@
 !***********************************************************************
-      SUBROUTINE SETMCP2(MYID, NPROCS, NCORE, IDBLK, FILEHEAD)
+      subroutine setmcp2(myid, nprocs, ncore, idblk, filehead)
 !
 ! A wrapper for setmcp/getinf. setmcp/getinf are then shared by serial
 ! and MPI programs.
@@ -13,46 +13,46 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
+      use vast_kind_param, only: double
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      USE def_C
-      USE iccu_C
-      USE mcp_C
-      USE orb_C
+      use def_c
+      use iccu_c
+      use mcp_c
+      use orb_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE setmcp_I
-      USE getinf_I
+      use setmcp_i
+      use getinf_i
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: MYID
-      INTEGER  :: NPROCS
-      INTEGER  :: NCORE
-      CHARACTER  :: FILEHEAD*(*)
-      CHARACTER  :: IDBLK(*)*8
+      integer  :: myid
+      integer  :: nprocs
+      integer  :: ncore
+      character  :: filehead*(*)
+      character  :: idblk(*)*8
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K
+      integer :: k
 
-      CALL SETMCP (MYID, NPROCS, NCORE, IDBLK, FILEHEAD)
+      call setmcp (myid, nprocs, ncore, idblk, filehead)
 
 ! DIAG, ICCUTblk, LFORDR are set in GETINF
 
-      IF (MYID == 0) CALL GETINF
+      if (myid == 0) call getinf
 
-      DO K = 30, 32 + KMAX
-         WRITE (K) NELEC, NCF, NW
-         WRITE (K) DIAG, ICCUT(1), LFORDR
-      END DO
+      do k = 30, 32 + kmax
+         write (k) nelec, ncf, nw
+         write (k) diag, iccut(1), lfordr
+      end do
 
-      DO K = 30, 32 + KMAX
-         CLOSE(K)
-      END DO
+      do k = 30, 32 + kmax
+         close(k)
+      end do
 
-      RETURN
-      END SUBROUTINE SETMCP2
+      return
+      end subroutine setmcp2

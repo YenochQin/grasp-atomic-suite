@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE EL32(JJJA,JJJB,JA,JB,JJA,JJB,JJC,JJD,ICOLBREI)
+      subroutine el32(jjja,jjjb,ja,jb,jja,jjb,jjc,jjd,icolbrei)
 !                                                                  *
 !   --------------  SECTION METWO    SUBPROGRAM 07  -------------  *
 !                                                                  *
@@ -21,149 +21,149 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, HALF, EPS
-      USE m_C,             ONLY: NQ1, JLIST, NPEEL
-      USE orb_C,           ONLY: NAK
-      USE trk_C
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, half, eps
+      use m_c,             only: nq1, jlist, npeel
+      use orb_c,           only: nak
+      use trk_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE reco_I
-      USE reco2_I
-      USE perko2_I
-      USE coulom_I
-      USE snrc_I
-      USE ixjtik_I
-      USE itrexg_I
-      USE gg1112_I
-      USE sixj_I
-      USE speak_I
-      USE cxk_I
-      USE talk_I
-      IMPLICIT NONE
+      use reco_i
+      use reco2_i
+      use perko2_i
+      use coulom_i
+      use snrc_i
+      use ixjtik_i
+      use itrexg_i
+      use gg1112_i
+      use sixj_i
+      use speak_i
+      use cxk_i
+      use talk_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: JJJA,JJJB,JA,JB,JJA,JJB,JJC,JJD,ICOLBREI
+      integer, intent(in) :: jjja,jjjb,ja,jb,jja,jjb,jjc,jjd,icolbrei
 !      DIMENSION J(2)
 !      DIMENSION S(12),IS(4),KAPS(4),KS(4)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IIA,IIB,IIC,IID,IATIKK,IP1,IG1,II,I2,I3,IBRD,IBRE,    &
-                 IA,IB,IAT,IFAZ,IFAZFRCS,IKK,INN,JB1,JAA,JBB,J12,KRA,  &
-                 L1,L2,N,NN,ND1,ND2,NE1,NE2
-      INTEGER, DIMENSION(2) :: J
-      INTEGER, DIMENSION(4) :: IS,KAPS,KS
-      REAL(DOUBLE)          :: AA,AB,A1,BB,QM1,QM2,QM3,QM4,SI,RECC
-      REAL(DOUBLE), DIMENSION(12) :: S
+      integer :: iia,iib,iic,iid,iatikk,ip1,ig1,ii,i2,i3,ibrd,ibre,    &
+                 ia,ib,iat,ifaz,ifazfrcs,ikk,inn,jb1,jaa,jbb,j12,kra,  &
+                 l1,l2,n,nn,nd1,nd2,ne1,ne2
+      integer, dimension(2) :: j
+      integer, dimension(4) :: is,kaps,ks
+      real(double)          :: aa,ab,a1,bb,qm1,qm2,qm3,qm4,si,recc
+      real(double), dimension(12) :: s
 !-----------------------------------------------
-      IF(NPEEL <= 1)RETURN
-      IIA=JLIST(JJA)
-      IIB=JLIST(JJB)
-      IIC=JLIST(JJC)
-      IID=JLIST(JJD)
-      IF(JA > JB) THEN
-        JAA=JB
-        JBB=JA
-      ELSE
-        JAA=JA
-        JBB=JB
-      END IF
-      CALL RECO(JAA,JBB,JBB,JBB,1,IAT)
-      IF(IAT == 0)RETURN
-      IA=JLIST(JA)
-      IB=JLIST(JB)
-      QM1=HALF
-      QM2=HALF
-      QM3=-HALF
-      QM4=-HALF
-      CALL PERKO2(JA,JB,JA,JA,2)
-      J(1)=ID1(3)
-      J(2)=ID2(3)
-      L1=(J(1)+1)/2
-      L2=(J(2)+1)/2
-      CALL RECO2(JAA,JBB,J(1),0,IAT,RECC)
-      IF(IAT == 0)RETURN
-      IP1=ITREXG(J(2),J(2),J(1),J(2),IKK)+1
-      IF(IKK <= 0)RETURN
-      IG1=IP1+IKK-1
-      IF (ICOLBREI == 2) THEN
-        IS(1)=IIA
-        IS(2)=IIB
-        IS(3)=IIC
-        IS(4)=IID
-        KAPS(1)=2*NAK(IS(1))
-        KAPS(2)=2*NAK(IS(2))
-        KAPS(3)=2*NAK(IS(3))
-        KAPS(4)=2*NAK(IS(4))
-        KS(1)=IABS(KAPS(1))
-        KS(2)=IABS(KAPS(2))
-        KS(3)=IABS(KAPS(3))
-        KS(4)=IABS(KAPS(4))
-        CALL SNRC(IS,KAPS,KS,ND1,ND2,NE1,NE2,IBRD,IBRE)
-        IF(IBRD <= 0)RETURN
-      END IF
-      CALL RECO2(JAA,JBB,J(1),1,IAT,RECC)
+      if(npeel <= 1)return
+      iia=jlist(jja)
+      iib=jlist(jjb)
+      iic=jlist(jjc)
+      iid=jlist(jjd)
+      if(ja > jb) then
+        jaa=jb
+        jbb=ja
+      else
+        jaa=ja
+        jbb=jb
+      end if
+      call reco(jaa,jbb,jbb,jbb,1,iat)
+      if(iat == 0)return
+      ia=jlist(ja)
+      ib=jlist(jb)
+      qm1=half
+      qm2=half
+      qm3=-half
+      qm4=-half
+      call perko2(ja,jb,ja,ja,2)
+      j(1)=id1(3)
+      j(2)=id2(3)
+      l1=(j(1)+1)/2
+      l2=(j(2)+1)/2
+      call reco2(jaa,jbb,j(1),0,iat,recc)
+      if(iat == 0)return
+      ip1=itrexg(j(2),j(2),j(1),j(2),ikk)+1
+      if(ikk <= 0)return
+      ig1=ip1+ikk-1
+      if (icolbrei == 2) then
+        is(1)=iia
+        is(2)=iib
+        is(3)=iic
+        is(4)=iid
+        kaps(1)=2*nak(is(1))
+        kaps(2)=2*nak(is(2))
+        kaps(3)=2*nak(is(3))
+        kaps(4)=2*nak(is(4))
+        ks(1)=iabs(kaps(1))
+        ks(2)=iabs(kaps(2))
+        ks(3)=iabs(kaps(3))
+        ks(4)=iabs(kaps(4))
+        call snrc(is,kaps,ks,nd1,nd2,ne1,ne2,ibrd,ibre)
+        if(ibrd <= 0)return
+      end if
+      call reco2(jaa,jbb,j(1),1,iat,recc)
 ! * * *                      * * *                      * * *
 !     CASES 2221   + + - -        TRANSFORM TO  1222   - + + -
 !           2212                                1222
 !
-      DO I2=IP1,IG1,2
-        KRA=(I2-1)/2
-        IF (ICOLBREI == 1) THEN
-          CALL COULOM(L2,L2,L2,L1,ID2(5),ID2(5),ID2(5),ID1(5),KRA,A1)
-          IF(DABS(A1) < EPS) CYCLE
-          A1=-A1
-        END IF
+      do i2=ip1,ig1,2
+        kra=(i2-1)/2
+        if (icolbrei == 1) then
+          call coulom(l2,l2,l2,l1,id2(5),id2(5),id2(5),id1(5),kra,a1)
+          if(dabs(a1) < eps) cycle
+          a1=-a1
+        end if
 !
-        AB=ZERO
-        DO I3=IP1,IG1,2
-          J12=(I3-1)/2
-          IFAZ=J(1)-J12+1
-          IF((IFAZ/2)*2 /= IFAZ) CYCLE
-          IF(IXJTIK(J(2),J(2),KRA*2,J(1),J(2),J12*2) == 0) CYCLE
-          CALL GG1112(IK2,IK1,BK2,BK1,ID2,ID1,BD2,     &
-                      BD1,J12,QM1,QM2,QM3,QM4,AA)
-          IF(DABS(AA) < EPS) CYCLE
-          CALL SIXJ(J(2),J(2),KRA*2,J(1),J(2),J12*2,0,SI)
-          AA=AA*SI*DSQRT(DBLE(I3))
-          IFAZ=2*J(2)+KRA*2+J12*2
-          IF((IFAZ/4)*4 /= IFAZ)AA=-AA
-          AB=AB+AA
-        END DO
-        AB=AB*RECC
-        IF(DABS(AB) < EPS) CYCLE
+        ab=zero
+        do i3=ip1,ig1,2
+          j12=(i3-1)/2
+          ifaz=j(1)-j12+1
+          if((ifaz/2)*2 /= ifaz) cycle
+          if(ixjtik(j(2),j(2),kra*2,j(1),j(2),j12*2) == 0) cycle
+          call gg1112(ik2,ik1,bk2,bk1,id2,id1,bd2,     &
+                      bd1,j12,qm1,qm2,qm3,qm4,aa)
+          if(dabs(aa) < eps) cycle
+          call sixj(j(2),j(2),kra*2,j(1),j(2),j12*2,0,si)
+          aa=aa*si*dsqrt(dble(i3))
+          ifaz=2*j(2)+kra*2+j12*2
+          if((ifaz/4)*4 /= ifaz)aa=-aa
+          ab=ab+aa
+        end do
+        ab=ab*recc
+        if(dabs(ab) < eps) cycle
 !
 !       TRANSFORM FANO & RACAH PHASE CONVENTION
 !       TO CONDON & SHORTLEY PHASE CONVENTION
 !
-        IFAZFRCS=1
-        IFAZ=IK1(5)*IK1(4)+IK2(5)*IK2(4)-ID1(5)*ID1(4)-ID2(5)*ID2(4)
-        IF((IFAZ/4)*4 /= IFAZ)IFAZFRCS=-IFAZFRCS
+        ifazfrcs=1
+        ifaz=ik1(5)*ik1(4)+ik2(5)*ik2(4)-id1(5)*id1(4)-id2(5)*id2(4)
+        if((ifaz/4)*4 /= ifaz)ifazfrcs=-ifazfrcs
 !
-        NN=0
-        JB1=JBB-1
-        DO II=JAA,JB1
-          INN=JLIST(II)
-          NN=NQ1(INN)+NN
-        END DO
-        IF((NN/2)*2 == NN)AB=-AB
-        IF (ICOLBREI == 1) THEN
-          BB=AB*A1*DBLE(IFAZFRCS)
-          CALL SPEAK(JJJA,JJJB,IIA,IIB,IIC,IID,KRA,BB)
-        ELSE IF (ICOLBREI == 2) THEN
-          N=(KRA-ND1)/2+1
-          IF(((KRA-ND1)/2)*2 == (KRA-ND1)) THEN
-            CALL CXK(S,IS,KAPS,KRA,KRA,IBRD,1)
-            IF(DABS(S(1)) > EPS) THEN
-              BB=-S(1)*AB
-              IF(DABS(BB) > EPS)                              &
-              CALL TALK(JJJA,JJJB,KRA,IS(1),IS(3),IS(2),IS(4),3,BB)
-            END IF
-          END IF
-        END IF
-      END DO
-      RETURN
-      END SUBROUTINE EL32
+        nn=0
+        jb1=jbb-1
+        do ii=jaa,jb1
+          inn=jlist(ii)
+          nn=nq1(inn)+nn
+        end do
+        if((nn/2)*2 == nn)ab=-ab
+        if (icolbrei == 1) then
+          bb=ab*a1*dble(ifazfrcs)
+          call speak(jjja,jjjb,iia,iib,iic,iid,kra,bb)
+        else if (icolbrei == 2) then
+          n=(kra-nd1)/2+1
+          if(((kra-nd1)/2)*2 == (kra-nd1)) then
+            call cxk(s,is,kaps,kra,kra,ibrd,1)
+            if(dabs(s(1)) > eps) then
+              bb=-s(1)*ab
+              if(dabs(bb) > eps)                              &
+              call talk(jjja,jjjb,kra,is(1),is(3),is(2),is(4),3,bb)
+            end if
+          end if
+        end if
+      end do
+      return
+      end subroutine el32

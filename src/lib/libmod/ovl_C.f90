@@ -1,7 +1,7 @@
-      MODULE ovl_C
-      USE vast_kind_param, ONLY:  DOUBLE
+      module ovl_c
+      use vast_kind_param, only:  double
 !...Created by Pacific-Sierra Research 77to90  4.3E  16:54:29   1/ 6/07
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      INTEGER :: NOVL
-      END MODULE ovl_C
+      integer :: novl
+      end module ovl_c

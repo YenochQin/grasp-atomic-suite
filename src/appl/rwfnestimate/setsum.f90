@@ -2,8 +2,8 @@
 
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETSUM
-      USE IOUNIT_C
+      subroutine setsum
+      use iounit_c
 !                                                                      *
 !   Open the  .sum  file on stream 24.                                 *
 !                                                                      *
@@ -16,44 +16,44 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      IMPLICIT NONE
+      use openfl_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IERR
-      CHARACTER :: FILNAM*256, DEFNAM*11, FORM*11, STATUS*3
+      integer :: ierr
+      character :: filnam*256, defnam*11, form*11, status*3
 !-----------------------------------------------
 !
 !   File  erwf.sum  is FORMATTED
 !
-      DEFNAM = 'erwf.sum'
-      FORM = 'FORMATTED'
-      STATUS = 'NEW'
+      defnam = 'erwf.sum'
+      form = 'FORMATTED'
+      status = 'NEW'
 !
-      WRITE (ISTDE, *) 'File  erwf.sum  will be created as the ', &
+      write (istde, *) 'File  erwf.sum  will be created as the ', &
          'ERWF SUMmary File; '
-      WRITE (ISTDE, *) 'enter another file name if this is not ', &
+      write (istde, *) 'enter another file name if this is not ', &
          'acceptable; null otherwise:'
-      READ (*, '(A)') FILNAM
+      read (*, '(A)') filnam
 !
-      IF (LEN_TRIM(FILNAM) == 0) FILNAM = DEFNAM
+      if (len_trim(filnam) == 0) filnam = defnam
 !
-    1 CONTINUE
-      CALL OPENFL (24, FILNAM, FORM, STATUS, IERR)
-      IF (IERR /= 0) THEN
-    2    CONTINUE
-         WRITE (ISTDE, *) 'Enter a name for the ERWF SUMmary File ', &
+    1 continue
+      call openfl (24, filnam, form, status, ierr)
+      if (ierr /= 0) then
+    2    continue
+         write (istde, *) 'Enter a name for the ERWF SUMmary File ', &
             'that is to be created:'
-         READ (*, '(A)') FILNAM
-         IF (LEN_TRIM(FILNAM) == 0) GO TO 2
-         GO TO 1
-      ENDIF
+         read (*, '(A)') filnam
+         if (len_trim(filnam) == 0) go to 2
+         go to 1
+      endif
 !
-      RETURN
-      END SUBROUTINE SETSUM
+      return
+      end subroutine setsum

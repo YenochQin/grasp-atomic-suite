@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION IQR (ISUBSH, ICSF)
+      integer function iqr (isubsh, icsf)
 !                                                                      *
 !   IQR is the occupation of subshell ISUBSH in CSF  ICSF.             *
 !                                                                      *
@@ -14,17 +14,17 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ORB_C,         ONLY: IQA
-      IMPLICIT NONE
+      use orb_c,         only: iqa
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: ISUBSH
-      INTEGER  :: ICSF
+      integer, intent(in) :: isubsh
+      integer  :: icsf
 !-----------------------------------------------
 !
 !
-            IQR = IQA(isubsh,icsf)
+            iqr = iqa(isubsh,icsf)
 !
-      RETURN
-      END FUNCTION IQR
+      return
+      end function iqr

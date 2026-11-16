@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION FCO (K, IR, IA, IB)
+      real(kind(0.0d0)) function fco (k, ir, ia, ib)
 !                                                                      *
 !   This routine evaluates a coefficient                               *
 !                                                                      *
@@ -32,62 +32,62 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE debug_C
-      USE orb_C, IIQA=>IQA
+      use vast_kind_param, only:  double
+      use debug_c
+      use orb_c, iiqa=>iqa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE clrx_I
-      USE IQ_I
-      IMPLICIT NONE
+      use clrx_i
+      use iq_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: K
-      INTEGER  :: IR
-      INTEGER , INTENT(IN) :: IA
-      INTEGER , INTENT(IN) :: IB
+      integer  :: k
+      integer  :: ir
+      integer , intent(in) :: ia
+      integer , intent(in) :: ib
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IQA, IQF, KAPPA
-      REAL(DOUBLE) :: FAC
+      integer :: iqa, iqf, kappa
+      real(double) :: fac
 !-----------------------------------------------
 !
-      IF (IA == IB) THEN
+      if (ia == ib) then
 !
-         IQA = IQ (IA,IR)
+         iqa = iq (ia,ir)
 !         IQA = IBITS(IIQA((IA - 1)/4 + 1,IR),8*MOD(IA - 1,4),8)
 !
-         IF (K == 0) THEN
-            FCO = DBLE((IQA*(IQA - 1))/2)
-         ELSE
-            IQF = NKJ(IA) + 1
-            IF (IQA == IQF) THEN
-               KAPPA = NAK(IA)
-               FAC = CLRX(KAPPA,K,KAPPA)*DBLE(IQA)
-               FCO = -0.5D0*FAC*FAC
-            ELSE
-               FCO = 0.D0
-            ENDIF
-         ENDIF
+         if (k == 0) then
+            fco = dble((iqa*(iqa - 1))/2)
+         else
+            iqf = nkj(ia) + 1
+            if (iqa == iqf) then
+               kappa = nak(ia)
+               fac = clrx(kappa,k,kappa)*dble(iqa)
+               fco = -0.5d0*fac*fac
+            else
+               fco = 0.d0
+            endif
+         endif
 !
-      ELSE
+      else
 !
-         IF (K == 0) THEN
-            FCO = DBLE (IQ (IA,IR)*IQ (IB,IR))
+         if (k == 0) then
+            fco = dble (iq (ia,ir)*iq (ib,ir))
 !            FCO = DBLE(IBITS(IIQA((IA - 1)/4 + 1,IR),8*MOD(IA - 1,4),8)*IBITS(&
 !               IIQA((IB - 1)/4 + 1,IR),8*MOD(IB - 1,4),8))
-         ELSE
-            FCO = 0.D0
-         ENDIF
+         else
+            fco = 0.d0
+         endif
 !
-      ENDIF
-      RETURN
+      endif
+      return
 !*
 !  300 FORMAT (/'  ',1I2
 !     :        /' f    (',1I2,1A2,',',1I2,1A2,') = ',1PD21.14,
 !     :        /'  ',1I3/)
 !*
-      END FUNCTION FCO
+      end function fco

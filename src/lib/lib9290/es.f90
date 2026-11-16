@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ES(F, S2F, S3F)
+      subroutine es(f, s2f, s3f)
 !                                                                      *
 !   Evaluate the sum of the series                                     *
 !                                                                      *
@@ -20,47 +20,47 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE), INTENT(IN) :: F
-      REAL(DOUBLE), INTENT(OUT) :: S2F
-      REAL(DOUBLE), INTENT(OUT) :: S3F
+      real(double), intent(in) :: f
+      real(double), intent(out) :: s2f
+      real(double), intent(out) :: s3f
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: N
-      REAL(DOUBLE) :: FASE, EN, OBN, ENF, TERM2, TERM3, S2LAST
+      integer :: n
+      real(double) :: fase, en, obn, enf, term2, term3, s2last
 !-----------------------------------------------
 !
-      N = 0
-      S2F = 0.0D00
-      S3F = 0.0D00
-      FASE = 1.0D00
-      N = N + 1
-      EN = DBLE(N)
-      OBN = 1.0D00/EN
-      FASE = -FASE
-      ENF = EXP(EN*F)
-      TERM2 = FASE*ENF*OBN*OBN
-      TERM3 = TERM2*OBN
-      S2LAST = S2F
-      S2F = S2F + TERM2
-      S3F = S3F + TERM3
-      DO WHILE(ABS(S2F) /= ABS(S2LAST))
-         N = N + 1
-         EN = DBLE(N)
-         OBN = 1.0D00/EN
-         FASE = -FASE
-         ENF = EXP(EN*F)
-         TERM2 = FASE*ENF*OBN*OBN
-         TERM3 = TERM2*OBN
-         S2LAST = S2F
-         S2F = S2F + TERM2
-         S3F = S3F + TERM3
-      END DO
+      n = 0
+      s2f = 0.0d00
+      s3f = 0.0d00
+      fase = 1.0d00
+      n = n + 1
+      en = dble(n)
+      obn = 1.0d00/en
+      fase = -fase
+      enf = exp(en*f)
+      term2 = fase*enf*obn*obn
+      term3 = term2*obn
+      s2last = s2f
+      s2f = s2f + term2
+      s3f = s3f + term3
+      do while(abs(s2f) /= abs(s2last))
+         n = n + 1
+         en = dble(n)
+         obn = 1.0d00/en
+         fase = -fase
+         enf = exp(en*f)
+         term2 = fase*enf*obn*obn
+         term3 = term2*obn
+         s2last = s2f
+         s2f = s2f + term2
+         s3f = s3f + term3
+      end do
 !
-      RETURN
-      END SUBROUTINE ES
+      return
+      end subroutine es

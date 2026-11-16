@@ -3,12 +3,12 @@
 module suite_parameters
     implicit none
     private
-    public :: KEYORB, NNNP, NNN1, NNNW, NNNWM1, NNNWM2
+    public :: keyorb, nnnp, nnn1, nnnw, nnnwm1, nnnwm2
 
-    integer, parameter :: KEYORB = 215
-    integer, parameter :: NNNP = 590
-    integer, parameter :: NNN1 = NNNP + 10
-    integer, parameter :: NNNW = 127
-    integer, parameter :: NNNWM1 = NNNW - 1
-    integer, parameter :: NNNWM2 = NNNW - 2
+    integer, parameter :: keyorb = 215
+    integer, parameter :: nnnp = 590
+    integer, parameter :: nnn1 = nnnp + 10
+    integer, parameter :: nnnw = 127
+    integer, parameter :: nnnwm1 = nnnw - 1
+    integer, parameter :: nnnwm2 = nnnw - 2
 end module suite_parameters

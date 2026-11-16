@@ -1,11 +1,11 @@
-      MODULE GG1122_I
-      INTERFACE
+      module gg1122_i
+      interface
 !
-      SUBROUTINE GG1122(K1,K2,QM1,QM2,QM3,QM4,AA)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER,      INTENT(IN)               :: K1, K2
-      REAL(DOUBLE), INTENT(IN)               :: QM1, QM2, QM3, QM4
-      REAL(DOUBLE), INTENT(OUT)              :: AA
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine gg1122(k1,k2,qm1,qm2,qm3,qm4,aa)
+      use vast_kind_param, only:  double
+      integer,      intent(in)               :: k1, k2
+      real(double), intent(in)               :: qm1, qm2, qm3, qm4
+      real(double), intent(out)              :: aa
+      end subroutine
+      end interface
+      end module

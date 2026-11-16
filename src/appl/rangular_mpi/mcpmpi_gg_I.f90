@@ -1,15 +1,15 @@
-      MODULE mcpmpi_I
-      INTERFACE
+      module mcpmpi_i
+      interface
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:04:58   1/ 3/07
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
 !cjb  myid, nprocs = NOT args
-      SUBROUTINE mcpmpi (nb, RESTRT, fhead)
-      INTEGER  :: NB
+      subroutine mcpmpi (nb, restrt, fhead)
+      integer  :: nb
 !     INTEGER  :: MYID
 !     INTEGER  :: NPROCS
-      LOGICAL, INTENT(IN) :: RESTRT
-      CHARACTER(len=*), INTENT(IN) :: FHEAD
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      logical, intent(in) :: restrt
+      character(len=*), intent(in) :: fhead
+      end subroutine
+      end interface
+      end module

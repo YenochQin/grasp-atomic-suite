@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE LODRWF(IIERR)
+      subroutine lodrwf(iierr)
 !                                                                      *
 !   This subroutine loads  radial wavefunctions from the  .rwf  file   *
 !   and performs some related setup.                                   *
@@ -17,129 +17,129 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE memory_man
-      USE DEBUG_C
-      USE DEF_C,           ONLY: C, Z
-      USE GRID_C
-      USE NPAR_C
-      USE ORB_C
-      USE WAVE_C,          ONLY: PZ, PF,QF
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use memory_man
+      use debug_c
+      use def_c,           only: c, z
+      use grid_c
+      use npar_c
+      use orb_c
+      use wave_c,          only: pz, pf,qf
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE intrpq_I
-      USE orthsc_I
-      IMPLICIT NONE
+      use intrpq_i
+      use orthsc_i
+      implicit none
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(OUT) :: IIERR
+      integer, intent(out) :: iierr
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, I, K, NWIN, IOS, NPY, NAKY, MY
+      integer :: j, i, k, nwin, ios, npy, naky, my
       integer :: ierr
-      REAL(DOUBLE) :: CON, FKK, EY, PZY, DNORM
-      real(double), dimension(:), pointer :: PA, QA, RA
+      real(double) :: con, fkk, ey, pzy, dnorm
+      real(double), dimension(:), pointer :: pa, qa, ra
 !-----------------------------------------------
 !
 !
 !   Write entry message
 !
-      WRITE (6, *) 'Loading Radial WaveFunction File ...'
+      write (6, *) 'Loading Radial WaveFunction File ...'
 !
 !   Allocate storage to orbital arrays
 !
-      CALL ALLOC(PF, NNNP, NW, 'PF', 'LODRWF')
-      CALL ALLOC(QF, NNNP, NW, 'QF', 'LODRWF')
+      call alloc(pf, nnnp, nw, 'PF', 'LODRWF')
+      call alloc(qf, nnnp, nw, 'QF', 'LODRWF')
 
 !
 !   Setup: (1) Orbital arrays to zero
 !          (2) Array E to -1 (no orbitals estimated)
 !          (3) Parameters GAMMA for each orbital
 !
-      CON = Z/C
-      CON = CON*CON
+      con = z/c
+      con = con*con
 !
-      DO J = 1, NW
+      do j = 1, nw
 !
-         PF(:N,J) = 0.0D00
-         QF(:N,J) = 0.0D00
+         pf(:n,j) = 0.0d00
+         qf(:n,j) = 0.0d00
 !
-         E(J) = -1.0D00
+         e(j) = -1.0d00
 !
-         K = ABS(NAK(J))
-         IF (NPARM > 0) THEN
-            GAMA(J) = DBLE(K)
-         ELSE IF (NPARM == 0) THEN
-            FKK = DBLE(K*K)
-            IF (FKK >= CON) THEN
-               GAMA(J) = SQRT(FKK - CON)
-            ELSE
+         k = abs(nak(j))
+         if (nparm > 0) then
+            gama(j) = dble(k)
+         else if (nparm == 0) then
+            fkk = dble(k*k)
+            if (fkk >= con) then
+               gama(j) = sqrt(fkk - con)
+            else
                !WRITE (istde,*) 'LODRWF: Imaginary gamma parameter'
                !WRITE (istde,*) ' for ',NP(J),NH(J),' orbital; the'
                !WRITE (istde,*) ' point model for the nucleus'
                !WRITE (istde,*) ' is inappropriate for Z > ',C,'.'
-               STOP 'lodrwf: Inappropriate gamma'
-            ENDIF
-         ENDIF
+               stop 'lodrwf: Inappropriate gamma'
+            endif
+         endif
 !
-      END DO
+      end do
 !
 !   Read orbital information from Read Orbitals File; write summary
 !   to  .dbg  file if option set
 !
-      IF (LDBPR(3)) WRITE (99, 300)
-      NWIN = 0
-    3 CONTINUE
-      READ (23, IOSTAT=IOS) NPY, NAKY, EY, MY
+      if (ldbpr(3)) write (99, 300)
+      nwin = 0
+    3 continue
+      read (23, iostat=ios) npy, naky, ey, my
 
-      IF (IOS == 0) THEN
-         CALL ALLOC (PA,MY, 'PA', 'LODRWF')
-         CALL ALLOC (QA,MY, 'QA', 'LODRWF')
-         CALL ALLOC (RA,MY, 'RA', 'LODRWF')
+      if (ios == 0) then
+         call alloc (pa,my, 'PA', 'LODRWF')
+         call alloc (qa,my, 'QA', 'LODRWF')
+         call alloc (ra,my, 'RA', 'LODRWF')
 
-         READ (23) PZY, (PA(I),I=1,MY), (QA(I),I=1,MY)
-         READ (23) (RA(I),I=1,MY)
+         read (23) pzy, (pa(i),i=1,my), (qa(i),i=1,my)
+         read (23) (ra(i),i=1,my)
 
-         DO J = 1, NW
-            IF (.NOT.(E(J)<0.0D00 .AND. NPY==NP(J) .AND. NAKY==NAK(J))) CYCLE
-            PZ(J) = PZY
-            E(J) = EY
-            CALL INTRPQ(PA, QA, MY, RA, J, DNORM)
-            IF (LDBPR(3)) WRITE (99, 301) NP(J), NH(J), E(J), DNORM
-            NWIN = NWIN + 1
-         END DO
-         CALL DALLOC (PA, 'PA', 'LODRWF' )
-         CALL DALLOC (QA, 'QA', 'LODRWF')
-         CALL DALLOC (RA, 'RA', 'LODRWF')
-         GO TO 3
-      ENDIF
-      IF (LDBPR(3)) WRITE (99, *) ' orbitals renormalised;'
+         do j = 1, nw
+            if (.not.(e(j)<0.0d00 .and. npy==np(j) .and. naky==nak(j))) cycle
+            pz(j) = pzy
+            e(j) = ey
+            call intrpq(pa, qa, my, ra, j, dnorm)
+            if (ldbpr(3)) write (99, 301) np(j), nh(j), e(j), dnorm
+            nwin = nwin + 1
+         end do
+         call dalloc (pa, 'PA', 'LODRWF' )
+         call dalloc (qa, 'QA', 'LODRWF')
+         call dalloc (ra, 'RA', 'LODRWF')
+         go to 3
+      endif
+      if (ldbpr(3)) write (99, *) ' orbitals renormalised;'
 !
 !   Stop with an error message if all orbitals are not known
 !
-      IF (NWIN < NW) THEN
-         IIERR = 1
-         GO TO 5
-      ENDIF
+      if (nwin < nw) then
+         iierr = 1
+         go to 5
+      endif
 !
 !   Schmidt orthogonalise the orbitals
 !
-      CALL ORTHSC
-      IF (LDBPR(3)) WRITE (99, *) ' orbitals orthogonalised and renormalised;'
+      call orthsc
+      if (ldbpr(3)) write (99, *) ' orbitals orthogonalised and renormalised;'
 !
-      IIERR = 0
-    5 CONTINUE
-      RETURN
+      iierr = 0
+    5 continue
+      return
 !
-  300 FORMAT(/,'From SUBROUTINE LODRWF:'/,' Orbital',8X,'Eigenvalue',19X,'Norm')
-  301 FORMAT(2X,I2,A2,4X,1P,1D22.15,4X,1D22.15)
-      RETURN
+  300 format(/,'From SUBROUTINE LODRWF:'/,' Orbital',8x,'Eigenvalue',19x,'Norm')
+  301 format(2x,i2,a2,4x,1p,1d22.15,4x,1d22.15)
+      return
 !
-      END SUBROUTINE LODRWF
+      end subroutine lodrwf

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETCSLA(NAME, NCORE)
+      subroutine setcsla(name, ncore)
 !                                                                      *
 !   Open, check, load data from and close the  .csl  file. This file   *
 !   is always attached to stream 21.                                   *
@@ -17,57 +17,57 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE IOUNIT_C
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      USE lodcsl_I
-      IMPLICIT NONE
+      use openfl_i
+      use lodcsl_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NCORE
-      CHARACTER (LEN = 24), INTENT(IN) :: NAME
+      integer  :: ncore
+      character (len = 24), intent(in) :: name
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER   :: K, IERR, IOS
-      CHARACTER(LEN=3)   :: STATUS
-      CHARACTER(LEN=9)   :: FORM
-      CHARACTER(LEN=15)  :: RECORD
-      CHARACTER(LEN=256) :: FILNAM
+      integer   :: k, ierr, ios
+      character(len=3)   :: status
+      character(len=9)   :: form
+      character(len=15)  :: record
+      character(len=256) :: filnam
 !-----------------------------------------------
 !
 !   The  .csl  file is FORMATTED; it must exist
 !
-      K = INDEX(NAME,' ')
-      FILNAM = NAME(1:K-1)//'.c'
-      FORM = 'FORMATTED'
-      STATUS = 'OLD'
+      k = index(name,' ')
+      filnam = name(1:k-1)//'.c'
+      form = 'FORMATTED'
+      status = 'OLD'
 
 !
-      CALL OPENFL (21, FILNAM, FORM, STATUS, IERR)
-      IF (IERR == 1) THEN
-         WRITE (ISTDE, *) 'Error when opening', FILNAM
-         STOP
-      ENDIF
+      call openfl (21, filnam, form, status, ierr)
+      if (ierr == 1) then
+         write (istde, *) 'Error when opening', filnam
+         stop
+      endif
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      READ (21, '(1A15)', IOSTAT=IOS) RECORD
-      IF (IOS/=0 .OR. RECORD(1:15)/='Core subshells:') THEN
-         WRITE (ISTDE, *) 'Not a Configuration Symmetry List File;'
-         CLOSE(21)
-      ENDIF
+      read (21, '(1A15)', iostat=ios) record
+      if (ios/=0 .or. record(1:15)/='Core subshells:') then
+         write (istde, *) 'Not a Configuration Symmetry List File;'
+         close(21)
+      endif
 !
 !   Load data from the  .csl  file
 !
-      CALL LODCSL (NCORE)
+      call lodcsl (ncore)
 !
 !   Close the  .csl  file
 !
-      CLOSE(21)
+      close(21)
 !
-      RETURN
-      END SUBROUTINE SETCSLA
+      return
+      end subroutine setcsla

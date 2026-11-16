@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE GG1122(K1,K2,QM1,QM2,QM3,QM4,AA)
+      subroutine gg1122(k1,k2,qm1,qm2,qm3,qm4,aa)
 !                                                                  *
 ! ----------------  SECTION METWO    SUBPROGRAM 16  -------------  *
 !                                                                  *
@@ -22,48 +22,48 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, TENTH, EPS
-      USE trk_C
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, tenth, eps
+      use trk_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE mes_I
-      USE wj1_I
-      IMPLICIT NONE
+      use mes_i
+      use wj1_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN)               :: K1, K2
-      REAL(DOUBLE), INTENT(IN)               :: QM1, QM2, QM3, QM4
-      REAL(DOUBLE), INTENT(OUT)              :: AA
+      integer,      intent(in)               :: k1, k2
+      real(double), intent(in)               :: qm1, qm2, qm3, qm4
+      real(double), intent(out)              :: aa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IQMM1, IQMM2, IQMM3, IQMM4, IQMM12, IQMM34
-      REAL(DOUBLE) :: A1, W
+      integer :: iqmm1, iqmm2, iqmm3, iqmm4, iqmm12, iqmm34
+      real(double) :: a1, w
 !-----------------------------------------------
-      AA=ZERO
-      IF(IK1(3) > 9) THEN
-        IF(IK1(4) > 2) CALL MES(35)
-        IF(ID1(4) > 2) CALL MES(35)
-      ENDIF
-      IF(IK2(3) > 9) THEN
-        IF(IK2(4) > 2) CALL MES(35)
-        IF(ID2(4) > 2) CALL MES(35)
-      ENDIF
-      IQMM1=QM1+QM1+TENTH*QM1
-      IQMM2=QM2+QM2+TENTH*QM2
-      IQMM12=IQMM1+IQMM2
-      IF(IK1(4) /= (ID1(4)+IQMM12))RETURN
-      IQMM3=QM3+QM3+TENTH*QM3
-      IQMM4=QM4+QM4+TENTH*QM4
-      IQMM34=IQMM3+IQMM4
-      IF(IK2(4) /= (ID2(4)+IQMM34))RETURN
-      CALL WJ1(IK1,BK1,ID1,BD1,K1,QM1,QM2,A1)
-      IF(DABS(A1) < EPS)RETURN
-      CALL WJ1(IK2,BK2,ID2,BD2,K2,QM3,QM4,W)
-      IF(DABS(W) < EPS)RETURN
-      AA=A1*W
-      RETURN
-      END SUBROUTINE GG1122
+      aa=zero
+      if(ik1(3) > 9) then
+        if(ik1(4) > 2) call mes(35)
+        if(id1(4) > 2) call mes(35)
+      endif
+      if(ik2(3) > 9) then
+        if(ik2(4) > 2) call mes(35)
+        if(id2(4) > 2) call mes(35)
+      endif
+      iqmm1=qm1+qm1+tenth*qm1
+      iqmm2=qm2+qm2+tenth*qm2
+      iqmm12=iqmm1+iqmm2
+      if(ik1(4) /= (id1(4)+iqmm12))return
+      iqmm3=qm3+qm3+tenth*qm3
+      iqmm4=qm4+qm4+tenth*qm4
+      iqmm34=iqmm3+iqmm4
+      if(ik2(4) /= (id2(4)+iqmm34))return
+      call wj1(ik1,bk1,id1,bd1,k1,qm1,qm2,a1)
+      if(dabs(a1) < eps)return
+      call wj1(ik2,bk2,id2,bd2,k2,qm3,qm4,w)
+      if(dabs(w) < eps)return
+      aa=a1*w
+      return
+      end subroutine gg1122

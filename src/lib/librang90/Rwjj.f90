@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE RWJJ(J,J1,J2,K1,K2,COEF)
+      subroutine rwjj(j,j1,j2,k1,k2,coef)
 !                                                                  *
 !   Written by  G. Gaigalas                                        *
 !   Transform to fortran 90/95 by G. Gaigalas       December 2012  *
@@ -11,36 +11,36 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE CONS_C
-      USE ribojj_C
+      use vast_kind_param, only:  double
+      use cons_c
+      use ribojj_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rmew1jj_I
-      USE rmew3jj_I
-      USE rmew5jj_I
-      USE rmew7jj_I
-      IMPLICIT NONE
+      use rmew1jj_i
+      use rmew3jj_i
+      use rmew5jj_i
+      use rmew7jj_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN)  :: J, J1, J2, K1, K2
-      REAL(DOUBLE), INTENT(OUT) :: COEF
+      integer,      intent(in)  :: j, j1, j2, k1, k2
+      real(double), intent(out) :: coef
 !-----------------------------------------------
-      IF(J == 1) THEN
-         CALL RMEW1JJ(J1,J2,K1,K2,COEF)
-      ELSEIF(J == 3) THEN
-         CALL RMEW3JJ(J1,J2,K1,K2,COEF)
-      ELSEIF(J == 5) THEN
-         CALL RMEW5JJ(J1,J2,K1,K2,COEF)
-      ELSEIF(J == 7) THEN
-         CALL RMEW7JJ(J1,J2,K1,K2,COEF)
+      if(j == 1) then
+         call rmew1jj(j1,j2,k1,k2,coef)
+      elseif(j == 3) then
+         call rmew3jj(j1,j2,k1,k2,coef)
+      elseif(j == 5) then
+         call rmew5jj(j1,j2,k1,k2,coef)
+      elseif(j == 7) then
+         call rmew7jj(j1,j2,k1,k2,coef)
 !GG        ELSEIF(J.EQ.9) THEN
 !GG          CALL SUWJJ(K1,K2,J,J1,J2,COEF)
-      ELSE
-         WRITE(0,'(A,I5)') ' KLAIDA SUB. RWJJ J=',J
-         STOP
-      ENDIF
-      RETURN
-      END SUBROUTINE RWJJ
+      else
+         write(0,'(A,I5)') ' KLAIDA SUB. RWJJ J=',j
+         stop
+      endif
+      return
+      end subroutine rwjj

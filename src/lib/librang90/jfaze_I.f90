@@ -1,8 +1,8 @@
-      MODULE jfaze_I
-      INTERFACE
+      module jfaze_i
+      interface
 !
-      INTEGER FUNCTION JFAZE(I1,I2,I3,I4)
-      INTEGER, INTENT(IN) :: I1, I2, I3, I4
-      END FUNCTION
-      END INTERFACE
-      END MODULE
+      integer function jfaze(i1,i2,i3,i4)
+      integer, intent(in) :: i1, i2, i3, i4
+      end function
+      end interface
+      end module

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE WGHTD5(iatjpo, iaspar)
+      subroutine wghtd5(iatjpo, iaspar)
 !                                                                      *
 !   Print  the  weights of the largest five CSF contributors to each   *
 !   ASF.                                                               *
@@ -15,33 +15,33 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE eigv_C
-      USE jlabl_C, LABJ=>JLBR, LABP=>JLBP
-      USE orb_C, ONLY: ncf, nw, iqa
-      USE prnt_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use eigv_c
+      use jlabl_c, labj=>jlbr, labp=>jlbp
+      use orb_c, only: ncf, nw, iqa
+      use prnt_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
 !      USE ispar_I
 !      USE itjpo_I
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: iatjpo, iaspar
+      integer  :: iatjpo, iaspar
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      INTEGER, DIMENSION(5) :: ICONF
+      integer, dimension(5) :: iconf
 !      REAL(DOUBLE), DIMENSION(5) :: WGHT(5)
-      REAL(DOUBLE), DIMENSION(5) :: WT(5)
+      real(double), dimension(5) :: wt(5)
 !      REAL(DOUBLE), DIMENSION(:), pointer :: wt
 !      INTEGER, DIMENSION(:), pointer :: next
-      REAL(DOUBLE) :: awt
-      INTEGER :: i, j, jj, ibegin, iend, nelt, iv, icf, ip
+      real(double) :: awt
+      integer :: i, j, jj, ibegin, iend, nelt, iv, icf, ip
 !
 !   Allocate storage for local arrays
 !
@@ -49,21 +49,21 @@
 !      CALL ALLOC (WT, NCF,'WT', 'WGHTD5')
 !      CALL ALLOC (NEXT,NCF,'NEXT', 'WGHTD5')
 !
-      WRITE (24,300)
+      write (24,300)
 !
 !CFF  Initialized NELT for NCF >5
-      NELT = 5
-      IF (NCF .LT. 5) NELT = NCF
-      DO 7 IV = 1,NVEC
+      nelt = 5
+      if (ncf .lt. 5) nelt = ncf
+      do 7 iv = 1,nvec
 !
-         ICF = IVEC(IV)
+         icf = ivec(iv)
 !        .., initialize for a new eigenvector
          wt = 0.d0;  iconf = 0
-         ibegin = (IV-1)*NCF
-         iend   = IV*NCF
+         ibegin = (iv-1)*ncf
+         iend   = iv*ncf
 !
-         DO 4 I = ibegin+1, iend
-            awt = abs(EVEC(i))
+         do 4 i = ibegin+1, iend
+            awt = abs(evec(i))
             if (awt > wt(5)) then
 !              ... the weight needs to be inserted
                do j = 1,5
@@ -82,27 +82,27 @@
                   end if
                end do
             end if
-    4    CONTINUE
+    4    continue
 !
 !   Print first five elements of list.
 !
-         IP = (iaspar + 3 ) / 2
+         ip = (iaspar + 3 ) / 2
 !        NELT = MIN (I,5)
-         WRITE (24,301) ICF,LABJ(IATJPO),LABP(IP),      &
-               (EVEC(iconf(j)),j = 1,NELT)
-         WRITE (24,302) (ICONF(j)-ibegin,j = 1,NELT)
-    7 CONTINUE
+         write (24,301) icf,labj(iatjpo),labp(ip),      &
+               (evec(iconf(j)),j = 1,nelt)
+         write (24,302) (iconf(j)-ibegin,j = 1,nelt)
+    7 continue
 !
 !   Deallocate storage for local arrays
 !
 !      CALL DALLOC (WT, 'WT', 'WGHTD5')
 !      CALL DALLOC (NEXT, 'NEXT', 'WGHTD5')
 !
-      RETURN
+      return
 !
-  300 FORMAT (/'Weights of major contributors to ASF:'                  &
+  300 format (/'Weights of major contributors to ASF:'                  &
              //'Level J Parity      CSF contributions'/)
-  301 FORMAT (I3,2X,2A4,5(3X,F8.5))
-  302 FORMAT (13X,5(I11))
+  301 format (i3,2x,2a4,5(3x,f8.5))
+  302 format (13x,5(i11))
 !
-      END SUBROUTINE WGHTD5
+      end subroutine wghtd5

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION SKINT (RAC, IA, IC, RBD, IB, ID, K, IW)
+      real(kind(0.0d0)) function skint (rac, ia, ic, rbd, ib, id, k, iw)
 !                                                                      *
 !   This routine evaluates transverse interaction integrals:           *
 !                                                                      *
@@ -20,97 +20,97 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE bess_C
-      USE debug_C
-      USE grid_C, ONLY: r, rp, rpor
-      USE orb_C
-      USE tatb_C, ONLY: mtp, ta, tb
-      USE wave_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use bess_c
+      use debug_c
+      use grid_c, only: r, rp, rpor
+      use orb_c
+      use tatb_c, only: mtp, ta, tb
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE zkf_I
-      USE quad_I
-      IMPLICIT NONE
+      use zkf_i
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: IA, IB, IC, ID
-      INTEGER, INTENT(IN) :: K, IW
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(IN) :: RAC
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(IN) :: RBD
+      integer  :: ia, ib, ic, id
+      integer, intent(in) :: k, iw
+      real(double), dimension(nnnp), intent(in) :: rac
+      real(double), dimension(nnnp), intent(in) :: rbd
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: MXRAC, MXRBD, I
-      REAL(DOUBLE), DIMENSION(NNNP) :: TKEEP
-      REAL(DOUBLE) :: EPSI, W, WK, VALU
+      integer :: mxrac, mxrbd, i
+      real(double), dimension(nnnp) :: tkeep
+      real(double) :: epsi, w, wk, valu
 !-----------------------------------------------
 !
 !
-      EPSI = 1.0D-10
+      epsi = 1.0d-10
 !
-      W = WIJ(IW)
-      WK = DBLE(K + K + 1)
-      MXRAC = MIN(MF(IA),MF(IC))
-      MXRBD = MIN(MF(IB),MF(ID))
+      w = wij(iw)
+      wk = dble(k + k + 1)
+      mxrac = min(mf(ia),mf(ic))
+      mxrbd = min(mf(ib),mf(id))
 !
 !           (k-1)
 !  Compute Z     (rho  ; s)
 !                    ac
 !
-      TA(:MXRAC) = RAC(:MXRAC)
-      MTP = MXRAC
-      CALL ZKF (K - 1, IA, IC)
+      ta(:mxrac) = rac(:mxrac)
+      mtp = mxrac
+      call zkf (k - 1, ia, ic)
 !
-      IF (ABS(W) < EPSI) THEN
+      if (abs(w) < epsi) then
 !
 !   W = 0 case
 !
-         TKEEP(:MTP) = TB(:MTP)
-         CALL ZKF (K + 1, IA, IC)
-         MTP = MIN(MTP,MXRBD)
-         TA(1) = 0.0D00
-         TA(2:MTP) = RBD(2:MTP)*RPOR(2:MTP)*(TB(2:MTP)-TKEEP(2:MTP))
-         CALL QUAD (VALU)
-         SKINT = WK*VALU*0.5D00
+         tkeep(:mtp) = tb(:mtp)
+         call zkf (k + 1, ia, ic)
+         mtp = min(mtp,mxrbd)
+         ta(1) = 0.0d00
+         ta(2:mtp) = rbd(2:mtp)*rpor(2:mtp)*(tb(2:mtp)-tkeep(2:mtp))
+         call quad (valu)
+         skint = wk*valu*0.5d00
 !
-      ELSE
+      else
 !
 !   Finite w: see I P Grant and B J McKenzie, J Phys B: At Mol Phys,
 !   13 (1980) 2671-2681
 !
-         TKEEP(:MTP) = TB(:MTP)
-         TA(:MTP) = -TA(:MTP)*BESSJ(1,IW,:MTP)
-         CALL ZKF (K - 1, IA, IC)
+         tkeep(:mtp) = tb(:mtp)
+         ta(:mtp) = -ta(:mtp)*bessj(1,iw,:mtp)
+         call zkf (k - 1, ia, ic)
 !
-         MTP = MIN(MTP,MXRBD)
-         TA(1) = 0.0D00
-         TA(2:MTP) = ((1.0D00 + BESSN(2,IW,2:MTP))*TB(2:MTP)-TKEEP(2:MTP)*BESSN&
-            (2,IW,2:MTP))*RBD(2:MTP)/R(2:MTP)**2*RPOR(2:MTP)
-         CALL QUAD (VALU)
-         SKINT = (WK/W)**2*VALU
-         TA(:MXRBD) = RBD(:MXRBD)*(1.0D00 + BESSJ(2,IW,:MXRBD))
-         MTP = MXRBD
-         CALL ZKF (K + 1, IB, ID)
-         MTP = MIN(MTP,MXRAC)
-         TA(1) = 0.0D00
-         TA(2:MTP) = RAC(2:MTP)*(1.0D00 + BESSN(1,IW,2:MTP))*TB(2:MTP)*R(2:MTP)&
-            *RP(2:MTP)
-         CALL QUAD (VALU)
-         SKINT = SKINT - VALU*W*W/DBLE((2*K + 3)*(2*K - 1))
+         mtp = min(mtp,mxrbd)
+         ta(1) = 0.0d00
+         ta(2:mtp) = ((1.0d00 + bessn(2,iw,2:mtp))*tb(2:mtp)-tkeep(2:mtp)*bessn&
+            (2,iw,2:mtp))*rbd(2:mtp)/r(2:mtp)**2*rpor(2:mtp)
+         call quad (valu)
+         skint = (wk/w)**2*valu
+         ta(:mxrbd) = rbd(:mxrbd)*(1.0d00 + bessj(2,iw,:mxrbd))
+         mtp = mxrbd
+         call zkf (k + 1, ib, id)
+         mtp = min(mtp,mxrac)
+         ta(1) = 0.0d00
+         ta(2:mtp) = rac(2:mtp)*(1.0d00 + bessn(1,iw,2:mtp))*tb(2:mtp)*r(2:mtp)&
+            *rp(2:mtp)
+         call quad (valu)
+         skint = skint - valu*w*w/dble((2*k + 3)*(2*k - 1))
 !
-      ENDIF
+      endif
 !
-      IF (LDBPR(11)) WRITE (99, 300) K, NP(IA), NH(IA), NP(IC), NH(IC), NP(IB)&
-         , NH(IB), NP(ID), NH(ID), IW, VALU
+      if (ldbpr(11)) write (99, 300) k, np(ia), nh(ia), np(ic), nh(ic), np(ib)&
+         , nh(ib), np(id), nh(id), iw, valu
 !
-      RETURN
+      return
 !
-  300 FORMAT('  (',1I2,')'/,'S     (',1I2,1A2,',',1I2,1A2,'|',1I2,1A2,',',1I2,&
-         1A2,';',1I2,') = ',1P,D19.12)
-      RETURN
+  300 format('  (',1i2,')'/,'S     (',1i2,1a2,',',1i2,1a2,'|',1i2,1a2,',',1i2,&
+         1a2,';',1i2,') = ',1p,d19.12)
+      return
 !
-      END FUNCTION SKINT
+      end function skint

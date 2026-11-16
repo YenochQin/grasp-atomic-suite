@@ -1,13 +1,13 @@
-      MODULE AWP1JJG_I
-      INTERFACE
+      module awp1jjg_i
+      interface
 !
-      SUBROUTINE AWP1JJG(K1,BK2,QM1,QM2,QM3,IK,BK,ID,BD,AW)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER,      INTENT(IN)               :: K1
-      INTEGER,      INTENT(IN), DIMENSION(7) :: IK, ID
-      REAL(DOUBLE), INTENT(IN)               :: BK2, QM1, QM2, QM3
-      REAL(DOUBLE), INTENT(IN), DIMENSION(3) :: BK, BD
-      REAL(DOUBLE), INTENT(OUT)              :: AW
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine awp1jjg(k1,bk2,qm1,qm2,qm3,ik,bk,id,bd,aw)
+      use vast_kind_param, only:  double
+      integer,      intent(in)               :: k1
+      integer,      intent(in), dimension(7) :: ik, id
+      real(double), intent(in)               :: bk2, qm1, qm2, qm3
+      real(double), intent(in), dimension(3) :: bk, bd
+      real(double), intent(out)              :: aw
+      end subroutine
+      end interface
+      end module

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SCF(EOL, RWFFILE2)
+      subroutine scf(eol, rwffile2)
 !                                                                      *
 !   This  subroutine  performs  the SCF iterations. The procedure is   *
 !   essentially algorithm 5.1 of C Froese Fischer, Comput Phys Rep 3   *
@@ -22,79 +22,79 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE blkidx_C
-      USE default_C
-      USE def_C
-      USE debug_C
-      USE eigv_C
-      USE fixd_C
-      USE hblock_C
-      USE iounit_C
-      USE lagr_C
-      USE MCPA_C
-      USE mpi_s
-      USE pos_c
-      USE peav_C
-      USE ORB_C
-      USE orba_C
-      USE SCF_C
-      USE ORTHCT_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use blkidx_c
+      use default_c
+      use def_c
+      use debug_c
+      use eigv_c
+      use fixd_c
+      use hblock_c
+      use iounit_c
+      use lagr_c
+      use mcpa_c
+      use mpi_s
+      use pos_c
+      use peav_c
+      use orb_c
+      use orba_c
+      use scf_c
+      use orthct_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE matrix_I
-      USE newco_I
-      USE setlag_I
-      USE improv_I
-      USE maxarr_I
-      USE prwf_I
-      USE orthsc_I
-      USE orbout_I
-      USE endsum_I
-      IMPLICIT NONE
+      use matrix_i
+      use newco_i
+      use setlag_i
+      use improv_i
+      use maxarr_i
+      use prwf_i
+      use orthsc_i
+      use orbout_i
+      use endsum_i
+      implicit none
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      LOGICAL  :: EOL
-      CHARACTER  :: RWFFILE2*(*)
+      logical  :: eol
+      character  :: rwffile2*(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, I, NIT, JSEQ, KOUNT, K
-      REAL(DOUBLE) :: WTAEV, WTAEV0, DAMPMX
-      LOGICAL :: CONVG, LSORT, dvdfirst
+      integer :: j, i, nit, jseq, kount, k
+      real(double) :: wtaev, wtaev0, dampmx
+      logical :: convg, lsort, dvdfirst
 !-----------------------------------------------
 
 
-      NCFTOT = NCF
+      ncftot = ncf
       !IF (myid .EQ. 0) PRINT *, '===SCF==='
 
 !=======================================================================
 !   Determine Orthonomalization order --- lsort
 !=======================================================================
 
-      IF (NDEF == 0) THEN
-         LSORT = .FALSE.
-      ELSE
-  123    CONTINUE
-         WRITE (ISTDE, *) 'Orthonomalization order? '
-         WRITE (ISTDE, *) '     1 -- Update order'
-         WRITE (ISTDE, *) '     2 -- Self consistency connected'
-         READ (ISTDI, *) J
-         IF (J == 1) THEN
-            LSORT = .FALSE.
-         ELSE IF (J == 2) THEN
-            LSORT = .TRUE.
-         ELSE
-            WRITE (ISTDE, *) 'Input is wrong, redo...'
-            GO TO 123
-         ENDIF
-      ENDIF
+      if (ndef == 0) then
+         lsort = .false.
+      else
+  123    continue
+         write (istde, *) 'Orthonomalization order? '
+         write (istde, *) '     1 -- Update order'
+         write (istde, *) '     2 -- Self consistency connected'
+         read (istdi, *) j
+         if (j == 1) then
+            lsort = .false.
+         else if (j == 2) then
+            lsort = .true.
+         else
+            write (istde, *) 'Input is wrong, redo...'
+            go to 123
+         endif
+      endif
 
 !=======================================================================
 !   Deallocate storage that will no longer be used
@@ -106,36 +106,36 @@
 !   Allocate and fill in auxiliary arrays
 !=======================================================================
 
-      CALL ALLOC (NCFPAST, NBLOCK, 'NCFPAST', 'SCF')
-      CALL ALLOC (NCMINPAST, NBLOCK, 'NCMINPAST', 'SCF')
-      CALL ALLOC (NEVECPAST, NBLOCK, 'NEVECPAST', 'SCF')
-      CALL ALLOC (EAVBLK, NBLOCK, 'EAVBLK', 'SCF')
+      call alloc (ncfpast, nblock, 'NCFPAST', 'SCF')
+      call alloc (ncminpast, nblock, 'NCMINPAST', 'SCF')
+      call alloc (nevecpast, nblock, 'NEVECPAST', 'SCF')
+      call alloc (eavblk, nblock, 'EAVBLK', 'SCF')
 
-      NCFPAST(1) = 0
-      NCMINPAST(1) = 0
-      NEVECPAST(1) = 0
-      DO I = 2, NBLOCK
-         NCFPAST(I) = NCFPAST(I-1) + NCFBLK(I - 1)
-         NCMINPAST(I) = NCMINPAST(I-1) + NEVBLK(I - 1)
-         NEVECPAST(I) = NEVECPAST(I-1) + NEVBLK(I - 1)*NCFBLK(I - 1)
-      END DO
+      ncfpast(1) = 0
+      ncminpast(1) = 0
+      nevecpast(1) = 0
+      do i = 2, nblock
+         ncfpast(i) = ncfpast(i-1) + ncfblk(i - 1)
+         ncminpast(i) = ncminpast(i-1) + nevblk(i - 1)
+         nevecpast(i) = nevecpast(i-1) + nevblk(i - 1)*ncfblk(i - 1)
+      end do
 
       !*** Size of the eigenvector array for all blocks
-      NVECSIZ = NEVECPAST(NBLOCK) + NEVBLK(NBLOCK)*NCFBLK(NBLOCK)
+      nvecsiz = nevecpast(nblock) + nevblk(nblock)*ncfblk(nblock)
 
-      IF (EOL) THEN
-         CALL ALLOC (EVAL, NCMIN, 'EVAL', 'SCF')
-         CALL ALLOC (EVEC, NVECSIZ, 'EVEC', 'SCF')
+      if (eol) then
+         call alloc (eval, ncmin, 'EVAL', 'SCF')
+         call alloc (evec, nvecsiz, 'EVEC', 'SCF')
 !GG         CALL ALLOC (IATJPO, NCMIN, 'IATJPO', 'SCF')
 !GG         CALL ALLOC (IASPAR, NCMIN, 'IASPAR', 'SCF')
-      ENDIF
+      endif
 
 !=======================================================================
 !
 !=======================================================================
-      NDDIM = 0
-      NXDIM = 0
-      NYDIM = 0
+      nddim = 0
+      nxdim = 0
+      nydim = 0
 
 !     This call should only be made AFTER the call to newco
 !     CALL setlag (EOL)
@@ -145,76 +145,76 @@
 
 !CFF   .. set the logical variable dvdfirst
       dvdfirst = .true.
-      IF (EOL) THEN
-         CALL MATRIX (dvdfirst)
-         CALL NEWCO (WTAEV)
-      ENDIF
-      WTAEV0 = 0.0
+      if (eol) then
+         call matrix (dvdfirst)
+         call newco (wtaev)
+      endif
+      wtaev0 = 0.0
       dvdfirst = .false.
-      DO NIT = 1, NSCF
-         IF (MYID == 0) WRITE (*, 301) NIT
+      do nit = 1, nscf
+         if (myid == 0) write (*, 301) nit
 
 !   For all pairs constrained through a Lagrange multiplier, compute
 !   the Lagrange multiplier
 
-         CALL SETLAG (EOL)
+         call setlag (eol)
 
 !   Improve all orbitals in turn
 
-         DAMPMX = 0.0
-         IF (MYID == 0) WRITE (*, 302)
-         DO J = 1, NW
-            JSEQ = IORDER(J)
-            IF (LFIX(JSEQ)) CYCLE
-            CALL IMPROV (EOL, JSEQ, LSORT, DAMPMX)
-         END DO
+         dampmx = 0.0
+         if (myid == 0) write (*, 302)
+         do j = 1, nw
+            jseq = iorder(j)
+            if (lfix(jseq)) cycle
+            call improv (eol, jseq, lsort, dampmx)
+         end do
 !
 !   For KOUNT = 1 to NSIC: find the least self-consistent orbital;
 !   improve it
 !
 !         write(istde,*) 'nsic=',nsic
-         DO KOUNT = 1, NSIC
-            CALL MAXARR (K)
-            IF (K == 0) THEN
-               CONVG = .TRUE.
-               GO TO 3
-            ELSE
-               IF (SCNSTY(K) <= ACCY) THEN
-                  CONVG = .TRUE.
-                  GO TO 3
-               ENDIF
-            ENDIF
-            CALL IMPROV (EOL, K, LSORT, DAMPMX)
-         END DO
+         do kount = 1, nsic
+            call maxarr (k)
+            if (k == 0) then
+               convg = .true.
+               go to 3
+            else
+               if (scnsty(k) <= accy) then
+                  convg = .true.
+                  go to 3
+               endif
+            endif
+            call improv (eol, k, lsort, dampmx)
+         end do
 
-         CALL MAXARR (K)
+         call maxarr (k)
 
-         IF (K == 0) THEN
-            CONVG = .TRUE.
-         ELSE
-            IF (SCNSTY(K) <= ACCY) THEN
-               CONVG = .TRUE.
-            ELSE
-               CONVG = .FALSE.
-            ENDIF
-         ENDIF
+         if (k == 0) then
+            convg = .true.
+         else
+            if (scnsty(k) <= accy) then
+               convg = .true.
+            else
+               convg = .false.
+            endif
+         endif
 
-    3    CONTINUE
-         IF (LDBPR(24) .AND. MYID==0) CALL PRWF (0)
+    3    continue
+         if (ldbpr(24) .and. myid==0) call prwf (0)
 
 !   Perform Gram-Schmidt process
 !   For OL calculation, orthst is true and orbitals are orthonormalized
 !   in subroutine improv. For AL calculation, orthst is false.
-         IF (.NOT.ORTHST) CALL ORTHSC
+         if (.not.orthst) call orthsc
 
 !   Write the subshell radial wavefunctions to the .rwf file
 
-         IF (MYID == 0) CALL ORBOUT (RWFFILE2)
+         if (myid == 0) call orbout (rwffile2)
 
-         IF (EOL) THEN
-            CALL MATRIX(dvdfirst)
-            CALL NEWCO (WTAEV)
-         ENDIF
+         if (eol) then
+            call matrix(dvdfirst)
+            call newco (wtaev)
+         endif
 !        Make this a relative convergence test
 !        IF(ABS(WTAEV-WTAEV0).LT.1.0D-9.and.
 !    &   DAMPMX.LT.1.0D-4) CONVG=.true.
@@ -223,76 +223,76 @@
 !cjb unified convergence criteria in RMCDHF and RMCDHF_MPI
 !cjb     IF(DABS(WTAEV-WTAEV0).LT.1.0D-8.and.              &
 !cjb                   DAMPMX.LT.1.0D-2) CONVG=.true.
-         IF (ABS((WTAEV - WTAEV0)/WTAEV) < 0.001*ACCY) CONVG = .TRUE.
-         WTAEV0 = WTAEV
-         IF (.NOT.CONVG) CYCLE
-         IF (LDBPR(25) .AND. .NOT.LDBPR(24) .AND. MYID==0) CALL PRWF (0)
+         if (abs((wtaev - wtaev0)/wtaev) < 0.001*accy) convg = .true.
+         wtaev0 = wtaev
+         if (.not.convg) cycle
+         if (ldbpr(25) .and. .not.ldbpr(24) .and. myid==0) call prwf (0)
             !IF (EOL) CALL matrix (dvdfirst)
-         GO TO 5
+         go to 5
 
-      END DO
+      end do
 
-      IF (MYID == 0) WRITE (ISTDE, *) ' Maximum iterations in SCF Exceeded.'
+      if (myid == 0) write (istde, *) ' Maximum iterations in SCF Exceeded.'
 
-    5 CONTINUE
-      DO I = 31, 32 + KMAXF
-         CLOSE(I)                                ! The MCP coefficient files
-      END DO
+    5 continue
+      do i = 31, 32 + kmaxf
+         close(i)                                ! The MCP coefficient files
+      end do
 
-      IF (MYID == 0) THEN
+      if (myid == 0) then
          !CLOSE (23)     ! The .rwf file
-         CLOSE(25)                               ! The .mix file
+         close(25)                               ! The .mix file
 !
 !   Complete the summary - moved from rscf92 for easier alloc/dalloc
 !
-         CALL ENDSUM
-      ENDIF
+         call endsum
+      endif
 !
 !   Deallocate storage
 !
-      CALL DALLOC (WT, 'WT', 'SCF')                       !Either getold or getald
+      call dalloc (wt, 'WT', 'SCF')                       !Either getold or getald
 
-      IF (NEC > 0) THEN
-         CALL DALLOC (IECC, 'IECC', 'SCF')
-         CALL DALLOC (ECV, 'ECV', 'SCF')
+      if (nec > 0) then
+         call dalloc (iecc, 'IECC', 'SCF')
+         call dalloc (ecv, 'ECV', 'SCF')
 !GG         CALL DALLOC (IQAR, 'IQAR', 'SCF')
-         CALL DALLOC (IQA, 'IQA', 'SCF')
-      ENDIF
+         call dalloc (iqa, 'IQA', 'SCF')
+      endif
 
-      IF (NDDIM > 0) THEN
-         CALL DALLOC (DA, 'DA', 'SCF')
-         CALL DALLOC (NDA, 'NDA', 'SCF')
-      ENDIF
+      if (nddim > 0) then
+         call dalloc (da, 'DA', 'SCF')
+         call dalloc (nda, 'NDA', 'SCF')
+      endif
 
-      IF (NXDIM > 0) THEN
-         CALL DALLOC (XA, 'XA', 'SCF')
-         CALL DALLOC (NXA, 'NXA', 'SCF')
-      ENDIF
+      if (nxdim > 0) then
+         call dalloc (xa, 'XA', 'SCF')
+         call dalloc (nxa, 'NXA', 'SCF')
+      endif
 
-      IF (NYDIM > 0) THEN
-         CALL DALLOC (YA, 'YA', 'SCF')
-         CALL DALLOC (NYA, 'NYA', 'SCF')
-      ENDIF
+      if (nydim > 0) then
+         call dalloc (ya, 'YA', 'SCF')
+         call dalloc (nya, 'NYA', 'SCF')
+      endif
 
-      IF (EOL) THEN
-         CALL DALLOC (EVAL, 'EVAL', 'SCF')
-         CALL DALLOC (EVEC, 'EvEC', 'SCF')
+      if (eol) then
+         call dalloc (eval, 'EVAL', 'SCF')
+         call dalloc (evec, 'EvEC', 'SCF')
 !GG         CALL DALLOC (IATJPO, 'IATJPO', 'SCF')
 !GG         CALL DALLOC (IASPAR, 'IASPAR', 'SCF')
-         CALL DALLOC (NCMAXBLK, 'NCMAXBLK', 'SCF') ! getold.f
-         CALL DALLOC (EAVBLK, 'EAVBLK', 'SCF')     ! getold.f
-         CALL DALLOC (IDXBLK, 'IDXBLK', 'SCF')     ! Allocated in getold.f
-         CALL DALLOC (ICCMIN, 'ICCMIN', 'SCF')       ! Allocated in items.f<-getold.f
-      ENDIF
+         call dalloc (ncmaxblk, 'NCMAXBLK', 'SCF') ! getold.f
+         call dalloc (eavblk, 'EAVBLK', 'SCF')     ! getold.f
+         call dalloc (idxblk, 'IDXBLK', 'SCF')     ! Allocated in getold.f
+         call dalloc (iccmin, 'ICCMIN', 'SCF')       ! Allocated in items.f<-getold.f
+      endif
 !
-      CALL DALLOC (NCFPAST, 'NCFPAST', 'SCF')
-      CALL DALLOC (NCMINPAST, 'NCMINPAST', 'SCF')
-      CALL DALLOC (NEVECPAST, 'NEVECPAST', 'SCF')
+      call dalloc (ncfpast, 'NCFPAST', 'SCF')
+      call dalloc (ncminpast, 'NCMINPAST', 'SCF')
+      call dalloc (nevecpast, 'NEVECPAST', 'SCF')
 
-  301 FORMAT(/,' Iteration number ',1I3,/,' --------------------')
-  302 FORMAT(41X,'Self-            Damping'/,&
+  301 format(/,' Iteration number ',1i3,/,' --------------------')
+  302 format(41x,'Self-            Damping'/,&
          'Subshell    Energy    Method   P0    ',&
          'consistency  Norm-1  factor  JP',' MTP INV NNP'/)
 
-      RETURN
-      END SUBROUTINE SCF
+      return
+      end subroutine scf

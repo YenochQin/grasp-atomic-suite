@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE genintbreit1 (myid, nprocs, NB, j2max)
+      subroutine genintbreit1 (myid, nprocs, nb, j2max)
 !                                                                      *
 !  Input:
 !     myid, nprocs
@@ -22,87 +22,87 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE memory_man
-      USE bilst_C
-      USE orb_C, ONLY: nkj, nw
-      USE kkstartbreit_C
+      use memory_man
+      use bilst_c
+      use orb_c, only: nkj, nw
+      use kkstartbreit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE brintf_I
-      USE triangbreit1_I
-      IMPLICIT NONE
+      use brintf_i
+      use triangbreit1_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: myid, nprocs
-      INTEGER             :: NB, j2max
+      integer, intent(in) :: myid, nprocs
+      integer             :: nb, j2max
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: GEN
-      INTEGER :: I, KEY, K, IA, IB, IC, ID
+      logical :: gen
+      integer :: i, key, k, ia, ib, ic, id
 !-----------------------------------------------
 !
-      KEY = NW + 1
-      KSTARTBREIT1(0) = 1
+      key = nw + 1
+      kstartbreit1(0) = 1
 !
 !   Find 2*JMAX; it should not be greater than PARAMETER KMAX
 !
-      J2MAX = NKJ(1)
-      DO I = 2, NW
-         IF (NKJ(I) .GT. J2MAX) J2MAX = NKJ(I)
-      ENDDO
+      j2max = nkj(1)
+      do i = 2, nw
+         if (nkj(i) .gt. j2max) j2max = nkj(i)
+      enddo
 
-      IF (J2MAX .GT. KMAX) THEN
-         STOP 'genintbreit1: KMAX too small'
-      ENDIF
+      if (j2max .gt. kmax) then
+         stop 'genintbreit1: KMAX too small'
+      endif
 !
 !   Make the breit integrals. Note that there are no symmetry relations that
 !   can be utilized. See paper by Grasnt.
 !   When GEN is false, sweep through to find dimension
 !
-      GEN = .FALSE.
+      gen = .false.
 
-  999 NB = 0
-      DO K = 0, J2MAX
-         DO IA = 1, NW
-            DO IB = 1, NW
-               DO IC = 1, NW
-                  DO ID = 1, NW
-                     IF (TRIANGBREIT1(IA,IB,IC,ID,K)) THEN
-                        NB = NB + 1
-                        IF (GEN .AND.(MOD(NB,nprocs) .EQ. myid)) THEN
-                           INDTP1(NB) = ((IA*KEY+IB)*KEY+IC)*KEY+ID
-                           VALTP1(NB) = BRINTF (1,IA,IB,IC,ID,K)
-                        ENDIF
-                     ENDIF
-                  ENDDO
-               ENDDO
-            ENDDO
-         ENDDO
-         KSTARTBREIT1(K+1) = NB + 1
-      ENDDO
+  999 nb = 0
+      do k = 0, j2max
+         do ia = 1, nw
+            do ib = 1, nw
+               do ic = 1, nw
+                  do id = 1, nw
+                     if (triangbreit1(ia,ib,ic,id,k)) then
+                        nb = nb + 1
+                        if (gen .and.(mod(nb,nprocs) .eq. myid)) then
+                           indtp1(nb) = ((ia*key+ib)*key+ic)*key+id
+                           valtp1(nb) = brintf (1,ia,ib,ic,id,k)
+                        endif
+                     endif
+                  enddo
+               enddo
+            enddo
+         enddo
+         kstartbreit1(k+1) = nb + 1
+      enddo
 !
 !     Allocate memory for integral book keeping
 !
-      IF (.NOT. GEN) THEN
-         CALL ALLOC (INDTP1,NB,'INDT1','genintbreit1')
-         CALL ALLOC (VALTP1,NB,'VALT1','genintbreit1')
+      if (.not. gen) then
+         call alloc (indtp1,nb,'INDT1','genintbreit1')
+         call alloc (valtp1,nb,'VALT1','genintbreit1')
 
 ! Initialization is necessary in the mpi version
 
-         DO i = 1, NB
-            INDTP1(i) = 0
-            VALTP1(i) = 0.d0
-         ENDDO
+         do i = 1, nb
+            indtp1(i) = 0
+            valtp1(i) = 0.d0
+         enddo
 
-         IF (myid .EQ. 0)                                         &
-            PRINT *, 'Computing',NB,' Breit integrals of type 1'
+         if (myid .eq. 0)                                         &
+            print *, 'Computing',nb,' Breit integrals of type 1'
 
-         GEN = .TRUE.
-         GOTO 999
-      ENDIF
+         gen = .true.
+         goto 999
+      endif
 
-      RETURN
-      END SUBROUTINE genintbreit1
+      return
+      end subroutine genintbreit1

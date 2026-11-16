@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE VAC4
+      subroutine vac4
 !                                                                      *
 !   This routine sets up the fourth-order vacuum polarization poten-   *
 !   tial using equations (11) and (12) of L Wayne Fullerton and  G A   *
@@ -20,119 +20,119 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE debug_C
-      USE def_C
-      USE grid_C, ONLY: r, n
-      USE npar_C
-      USE ncdist_C, ONLY: zdist
-      USE tatb_C, ONLY: mtp, ta, tb
+      use vast_kind_param, only:  double
+      use parameter_def,   only: nnnp
+      use debug_c
+      use def_c
+      use grid_c, only: r, n
+      use npar_c
+      use ncdist_c, only: zdist
+      use tatb_c, only: mtp, ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE funl_I
-      USE quad_I
-      IMPLICIT NONE
+      use funl_i
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, K, NB2, NROWS, II, II1, II2
-      REAL(DOUBLE), DIMENSION(NNNP) :: TC
-      REAL(DOUBLE) :: EPSI, TWOCV, FACTOR, RI, X, TCI, RK, XK, XI, XM, XP
+      integer :: i, k, nb2, nrows, ii, ii1, ii2
+      real(double), dimension(nnnp) :: tc
+      real(double) :: epsi, twocv, factor, ri, x, tci, rk, xk, xi, xm, xp
 !-----------------------------------------------
 !
 !   Overall initialization
 !
-      EPSI = PRECIS*PRECIS
-      TWOCV = CVAC + CVAC
+      epsi = precis*precis
+      twocv = cvac + cvac
 !
 !   Potential for point nucleus: equation (12)
 !
-      FACTOR = -Z/(PI*CVAC)**2
+      factor = -z/(pi*cvac)**2
 !
-      TC(1) = 0.0D00
+      tc(1) = 0.0d00
 !
-      I = 1
-    1 CONTINUE
-      I = I + 1
-      RI = R(I)
-      X = TWOCV*RI
-      TCI = (FACTOR/RI)*FUNL(X,1)
-      IF (DABS(TCI) >= EPSI) THEN
-         TC(I) = TCI
-         IF (I < N) GO TO 1
-      ELSE
-         TC(I:N) = 0.0D00
-      ENDIF
+      i = 1
+    1 continue
+      i = i + 1
+      ri = r(i)
+      x = twocv*ri
+      tci = (factor/ri)*funl(x,1)
+      if (dabs(tci) >= epsi) then
+         tc(i) = tci
+         if (i < n) go to 1
+      else
+         tc(i:n) = 0.0d00
+      endif
 !
 !   Potential for finite nucleus: equation (11)
 !
-      IF (NPARM == 2) THEN
+      if (nparm == 2) then
 !
-         FACTOR = -1.0D00/(PI*CVAC**3)
+         factor = -1.0d00/(pi*cvac**3)
 !
-         TC(1) = 0.0D00
+         tc(1) = 0.0d00
 !
-         K = 1
-    3    CONTINUE
-         K = K + 1
+         k = 1
+    3    continue
+         k = k + 1
 !
-         RK = R(K)
-         XK = TWOCV*RK
-         TA(1) = 0.0D00
+         rk = r(k)
+         xk = twocv*rk
+         ta(1) = 0.0d00
 !
-         DO I = 2, MTP
-            XI = TWOCV*R(I)
-            XM = DABS(XK - XI)
-            XP = XK + XI
-            TA(I) = (FUNL(XM,0) - FUNL(XP,0))*ZDIST(I)
-         END DO
+         do i = 2, mtp
+            xi = twocv*r(i)
+            xm = dabs(xk - xi)
+            xp = xk + xi
+            ta(i) = (funl(xm,0) - funl(xp,0))*zdist(i)
+         end do
 !
-         CALL QUAD (X)
+         call quad (x)
 !
-         X = X*FACTOR/RK
+         x = x*factor/rk
 !
 !   Get out of the loop if the asymptotic region has been reached
 !
-         IF (DABS(X) >= EPSI) THEN
-            IF (DABS((TC(K)-X)/X) > 1.0D-03) THEN
-               TC(K) = X
-               IF (K < N) GO TO 3
-            ENDIF
-         ENDIF
+         if (dabs(x) >= epsi) then
+            if (dabs((tc(k)-x)/x) > 1.0d-03) then
+               tc(k) = x
+               if (k < n) go to 3
+            endif
+         endif
 !
-      ENDIF
+      endif
 !
-      IF (LDBPR(8)) THEN
-         WRITE (99, 300)
-         NB2 = N/2
-         IF (2*NB2 == N) THEN
-            NROWS = NB2
-         ELSE
-            NROWS = NB2 + 1
-         ENDIF
-         DO II = 1, NROWS
-            II1 = II
-            II2 = II1 + NROWS
-            IF (II2 <= N) THEN
-               WRITE (99, 301) R(II1), TB(II1), TC(II1), R(II2), TB(II2), TC(&
-                  II2)
-            ELSE IF (II1 <= N) THEN
-               WRITE (99, 301) R(II1), TB(II1), TC(II1)
-            ENDIF
-         END DO
-      ENDIF
+      if (ldbpr(8)) then
+         write (99, 300)
+         nb2 = n/2
+         if (2*nb2 == n) then
+            nrows = nb2
+         else
+            nrows = nb2 + 1
+         endif
+         do ii = 1, nrows
+            ii1 = ii
+            ii2 = ii1 + nrows
+            if (ii2 <= n) then
+               write (99, 301) r(ii1), tb(ii1), tc(ii1), r(ii2), tb(ii2), tc(&
+                  ii2)
+            else if (ii1 <= n) then
+               write (99, 301) r(ii1), tb(ii1), tc(ii1)
+            endif
+         end do
+      endif
 !
 !   Generate total vacuum-polarization potential
 !
-      TB(:N) = TC(:N) + TB(:N)
+      tb(:n) = tc(:n) + tb(:n)
 !
-      RETURN
+      return
 !
-  300 FORMAT(/,/,/,' ++++++++++ VAC4 ++++++++++'/,/,2(&
+  300 format(/,/,/,' ++++++++++ VAC4 ++++++++++'/,/,2(&
          ' -------- r -------- ----- VV2 (r) -----',' ----- VV4 (r) -----'))
-  301 FORMAT(1P,6(1X,1D19.12))
-      RETURN
+  301 format(1p,6(1x,1d19.12))
+      return
 !
-      END SUBROUTINE VAC4
+      end subroutine vac4

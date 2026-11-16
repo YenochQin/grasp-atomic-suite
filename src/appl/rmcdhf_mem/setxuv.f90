@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETXUV(J)
+      subroutine setxuv(j)
 !                                                                      *
 !   This  SUBROUTINE  sets  up the arrays XU and XV, for use by  the   *
 !   subprograms IN and  OUT.                                           *
@@ -14,41 +14,41 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE grid_C
-      USE int_C
-      USE pote_C
-      USE scf_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use def_c
+      use grid_c
+      use int_c
+      use pote_c
+      use scf_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
+      integer  :: j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NM1, I
-      REAL(DOUBLE) :: DMHH
+      integer :: nm1, i
+      real(double) :: dmhh
 !-----------------------------------------------
 !
 !   Define constants
 !
-      DMHH = -H*0.5D00
+      dmhh = -h*0.5d00
 !
 !   Set up arrays XU and XV; since XU(1), XV(1) are never used,
 !   set them to some arbitrary value
 !
-      NM1 = N - 1
-      XU(1) = 0.0D00
-      XV(1) = 0.0D00
-      XU(2:NM1) = DMHH*(XP(3:NM1+1)*RPOR(3:NM1+1)+XP(2:NM1)*RPOR(2:NM1)) + DP(2&
-         :NM1)
-      XV(2:NM1) = DMHH*(XQ(3:NM1+1)*RPOR(3:NM1+1)+XQ(2:NM1)*RPOR(2:NM1)) + DQ(2&
-         :NM1)
+      nm1 = n - 1
+      xu(1) = 0.0d00
+      xv(1) = 0.0d00
+      xu(2:nm1) = dmhh*(xp(3:nm1+1)*rpor(3:nm1+1)+xp(2:nm1)*rpor(2:nm1)) + dp(2&
+         :nm1)
+      xv(2:nm1) = dmhh*(xq(3:nm1+1)*rpor(3:nm1+1)+xq(2:nm1)*rpor(2:nm1)) + dq(2&
+         :nm1)
 !
-      XU(N) = DMHH*XP(N)*RPOR(N) + DP(N)
-      XV(N) = DMHH*XP(N)*RPOR(N) + DQ(N)
+      xu(n) = dmhh*xp(n)*rpor(n) + dp(n)
+      xv(n) = dmhh*xp(n)*rpor(n) + dq(n)
 !
-      RETURN
-      END SUBROUTINE SETXUV
+      return
+      end subroutine setxuv

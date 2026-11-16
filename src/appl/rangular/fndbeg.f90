@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE FNDBEG(JASTRT, JBSTRT, INDEX, LLISTT, LLISTV)
+      subroutine fndbeg(jastrt, jbstrt, index, llistt, llistv)
 !***********************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  11:01:42   1/ 5/07
 !...Modified by Charlotte Froese Fischer
@@ -8,27 +8,27 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
+      use vast_kind_param, only: double
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      USE mcp_C
-      USE orb_C
-      IMPLICIT NONE
+      use mcp_c
+      use orb_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(INOUT) :: JASTRT
-      INTEGER, INTENT(INOUT) :: JBSTRT
-      INTEGER, INTENT(INOUT) :: INDEX
-      INTEGER, INTENT(OUT) :: LLISTT
-      INTEGER, DIMENSION(:), pointer :: LLISTV
+      integer, intent(inout) :: jastrt
+      integer, intent(inout) :: jbstrt
+      integer, intent(inout) :: index
+      integer, intent(out) :: llistt
+      integer, dimension(:), pointer :: llistv
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K, IOS, ICREAD, IRREAD, INDX, NREC, I, LABEL
-      REAL(DOUBLE) :: COEFF
-      CHARACTER :: SRTLAB*8, MCPLAB*3
+      integer :: k, ios, icread, irread, indx, nrec, i, label
+      real(double) :: coeff
+      character :: srtlab*8, mcplab*3
 !-----------------------------------------------
 !
 !   Begin by examining file 30; this is the last to be updated by
@@ -36,91 +36,91 @@
 !
 !   Read and check the character part of the file header
 !
-      REWIND (30)
-      READ (30) MCPLAB, SRTLAB
-      IF (SRTLAB == '  SORTED') THEN
-         JASTRT = NCF + 1
-         JBSTRT = NCF + 1
-         LLISTT = 0
-         LLISTV(:KMAX) = 0
-         GO TO 8
-      ENDIF
+      rewind (30)
+      read (30) mcplab, srtlab
+      if (srtlab == '  SORTED') then
+         jastrt = ncf + 1
+         jbstrt = ncf + 1
+         llistt = 0
+         llistv(:kmax) = 0
+         go to 8
+      endif
 !
-      READ (30)
-      READ (30)
+      read (30)
+      read (30)
 !
 !   Read as many records as possible
 !
-    2 CONTINUE
-      READ (30, IOSTAT=IOS) ICREAD, IRREAD, INDX
+    2 continue
+      read (30, iostat=ios) icread, irread, indx
 !
-      IF (IOS == 0) THEN
+      if (ios == 0) then
 !
 !   No errors or end-of-file; keep reading
 !
-         JASTRT = ICREAD
-         JBSTRT = IRREAD
-         INDEX = INDX
-         GO TO 2
+         jastrt = icread
+         jbstrt = irread
+         index = indx
+         go to 2
 !
-      ELSE
+      else
 !
-         IF (JASTRT==NCF .AND. JBSTRT==NCF) THEN
+         if (jastrt==ncf .and. jbstrt==ncf) then
 !
 !   All coefficients have been generated; sorting may still
 !   be necessary; force this option
 !
-            JASTRT = NCF + 1
-            JBSTRT = NCF + 1
+            jastrt = ncf + 1
+            jbstrt = ncf + 1
 !
-         ELSE
+         else
 !
 !   Some coefficients remain to be generated; reposition all files
 !   for augmentation of lists by SUBROUTINE MCP; update JBSTRT and,
 !   if appropriate, JASTRT
 !
-            DO K = 31, 32 + KMAX
-               REWIND (K)
-               NREC = 3
-               DO I = 1, NREC
-                  READ (K)
-               END DO
-    4          CONTINUE
-               READ (K, IOSTAT=IOS) INDX, LABEL, COEFF
-               IF (IOS==0 .AND. INDX<=INDEX) THEN
-                  NREC = NREC + 1
-                  GO TO 4
-               ELSE
-                  REWIND (K)
-                  DO I = 1, NREC
-                     READ (K)
-                  END DO
-                  IF (K > 31) THEN
-                     LLISTV(K-32) = NREC - 3
-                  ELSE
-                     LLISTT = NREC - 3
-                  ENDIF
-               ENDIF
-            END DO
+            do k = 31, 32 + kmax
+               rewind (k)
+               nrec = 3
+               do i = 1, nrec
+                  read (k)
+               end do
+    4          continue
+               read (k, iostat=ios) indx, label, coeff
+               if (ios==0 .and. indx<=index) then
+                  nrec = nrec + 1
+                  go to 4
+               else
+                  rewind (k)
+                  do i = 1, nrec
+                     read (k)
+                  end do
+                  if (k > 31) then
+                     llistv(k-32) = nrec - 3
+                  else
+                     llistt = nrec - 3
+                  endif
+               endif
+            end do
 !
 !  Now, reposition the sms file. This file should contain the
 !  same number of data records as file 33.
 
-            REWIND (20)
-            DO I = 1, LLISTV(1)
-               READ (20)
-            END DO
+            rewind (20)
+            do i = 1, llistv(1)
+               read (20)
+            end do
 
-            JBSTRT = JBSTRT + 1
-            IF (JBSTRT > NCF) THEN
-               JASTRT = JASTRT + 1
-               JBSTRT = JASTRT
-            ENDIF
+            jbstrt = jbstrt + 1
+            if (jbstrt > ncf) then
+               jastrt = jastrt + 1
+               jbstrt = jastrt
+            endif
 !
-         ENDIF
+         endif
 !
-      ENDIF
+      endif
 !
-    8 CONTINUE
-      RETURN
-      END SUBROUTINE FNDBEG
+    8 continue
+      return
+      end subroutine fndbeg

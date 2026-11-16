@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GENMAT2(IRESTART, NELMNT_A, ELSTO)
+      subroutine genmat2(irestart, nelmnt_a, elsto)
 !
 !   Get eav and do writings to the summary file .csum
 !   The mpi version (genmat2mpi) also gets nelmnt_a and elsto
@@ -14,22 +14,22 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE, LONG
-      USE hmat_C  !! rather than setham_to_genmat2
-      USE decide_C
-      USE eigv_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double, long
+      use hmat_c  !! rather than setham_to_genmat2
+      use decide_c
+      use eigv_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)        :: IRESTART
-      INTEGER(LONG), INTENT(OUT) :: NELMNT_A
-      REAL(DOUBLE), INTENT(IN)   :: ELSTO
+      integer, intent(in)        :: irestart
+      integer(long), intent(out) :: nelmnt_a
+      real(double), intent(in)   :: elsto
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, DIMENSION(6) :: NTPI_A
-      REAL(DOUBLE)          :: DENSTY
+      integer, dimension(6) :: ntpi_a
+      real(double)          :: densty
 !-----------------------------------------------
 !-----------------------------------------------------------------------
 ! Transfer parameters around and print out on node-0.
@@ -39,23 +39,23 @@
 ! The following parameters are accumulated in setham which will not
 ! contain the correct values in restart mode. And thus is skipped.
 !-----------------------------------------------------------------------
-      IF (IRESTART /= 0) THEN                    ! non-restart mode
-         WRITE (24, 301) CUTOFFTMP
-         WRITE (24, 302) NCOEITMP
-         WRITE (24, 303) NCOECTMP
-         WRITE (24, 304) NCTEITMP
-         WRITE (24, 305) NCTECTMP
-         IF (LTRANS) THEN
-            WRITE (24, 306) NTPITMP
-            WRITE (24, 307) NMCBPTMP
-            WRITE (24, 308) NCORETMP
-         ENDIF
-         IF (LVP) WRITE (24, 309) NVPITMP
-         IF (LNMS) WRITE (24, 310) NKEITMP
-         IF (LSMS) WRITE (24, 311) NVINTITMP
-      ELSE
-         WRITE (24, *) 'Restart mode --- no report on radial integrals'
-      ENDIF                                      !(irestart .NE. 0) ! non-restart mode
+      if (irestart /= 0) then                    ! non-restart mode
+         write (24, 301) cutofftmp
+         write (24, 302) ncoeitmp
+         write (24, 303) ncoectmp
+         write (24, 304) ncteitmp
+         write (24, 305) nctectmp
+         if (ltrans) then
+            write (24, 306) ntpitmp
+            write (24, 307) nmcbptmp
+            write (24, 308) ncoretmp
+         endif
+         if (lvp) write (24, 309) nvpitmp
+         if (lnms) write (24, 310) nkeitmp
+         if (lsms) write (24, 311) nvintitmp
+      else
+         write (24, *) 'Restart mode --- no report on radial integrals'
+      endif                                      !(irestart .NE. 0) ! non-restart mode
 
 
 !-----------------------------------------------------------------------
@@ -66,33 +66,33 @@
 !  later with EAV.
 !-----------------------------------------------------------------------
 
-      NELMNT_A = NELMNTTMP
+      nelmnt_a = nelmnttmp
 
-      DENSTY = DBLE(NELMNTTMP)/DBLE((NCFTMP*(NCFTMP + 1))/2)
+      densty = dble(nelmnttmp)/dble((ncftmp*(ncftmp + 1))/2)
 
-      EAV = EAV/DBLE(NCFTMP) + ELSTO
+      eav = eav/dble(ncftmp) + elsto
 
-      WRITE (24, 312) NELMNTTMP
-      WRITE (24, 313) DENSTY
-      WRITE (24, *)
-      WRITE (24, 300) EAV
-      WRITE (24, *) EAV, ELSTO, NCFTMP
+      write (24, 312) nelmnttmp
+      write (24, 313) densty
+      write (24, *)
+      write (24, 300) eav
+      write (24, *) eav, elsto, ncftmp
 
-  300 FORMAT('Average energy = ',1P,D19.12,' Hartrees.')
-  301 FORMAT('CUTOFF set to ',1P,D17.10)
-  302 FORMAT('Dirac-Coulomb one-e radial integrals:',1I8)
-  303 FORMAT('One-e angular integrals that exceed CUTOFF: ',1I8)
-  304 FORMAT('Coulomb two-e radial integrals: ',1I8)
-  305 FORMAT('Two-e angular integrals that exceed CUTOFF: ',1I8)
-  306 FORMAT('Transverse two-e radial integrals: '/,6I8)
-  307 FORMAT('MCBP coefficients that exceed CUTOFF: ',1I8)
-  308 FORMAT('Core coefficients that exceed CUTOFF: ',1I8)
-  309 FORMAT('Vacuum polarisation integrals: ',1I8)
-  310 FORMAT('Kinetic energy integrals: ',1I8)
-  311 FORMAT('Vinti integrals: ',1I8)
-  312 FORMAT('Elements that exceed CUTOFF in the lower',&
-         ' triangle of the H matrix: ',1I8)
-  313 FORMAT('Density of the H(amiltonian) matrix: ',1P,D22.15)
+  300 format('Average energy = ',1p,d19.12,' Hartrees.')
+  301 format('CUTOFF set to ',1p,d17.10)
+  302 format('Dirac-Coulomb one-e radial integrals:',1i8)
+  303 format('One-e angular integrals that exceed CUTOFF: ',1i8)
+  304 format('Coulomb two-e radial integrals: ',1i8)
+  305 format('Two-e angular integrals that exceed CUTOFF: ',1i8)
+  306 format('Transverse two-e radial integrals: '/,6i8)
+  307 format('MCBP coefficients that exceed CUTOFF: ',1i8)
+  308 format('Core coefficients that exceed CUTOFF: ',1i8)
+  309 format('Vacuum polarisation integrals: ',1i8)
+  310 format('Kinetic energy integrals: ',1i8)
+  311 format('Vinti integrals: ',1i8)
+  312 format('Elements that exceed CUTOFF in the lower',&
+         ' triangle of the H matrix: ',1i8)
+  313 format('Density of the H(amiltonian) matrix: ',1p,d22.15)
 
-      RETURN
-      END SUBROUTINE GENMAT2
+      return
+      end subroutine genmat2

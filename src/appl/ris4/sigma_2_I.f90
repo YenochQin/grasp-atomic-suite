@@ -1,9 +1,9 @@
-      MODULE sigma_2_I
-      INTERFACE
-      SUBROUTINE sigma_2 (IPAR,I1,I2,APART)
-      USE vast_kind_param, ONLY: DOUBLE
-      INTEGER, INTENT(IN) :: IPAR, I1, I2
-      REAL(DOUBLE), INTENT(OUT) :: APART
-      END SUBROUTINE sigma_2
-      END INTERFACE
-      END MODULE
+      module sigma_2_i
+      interface
+      subroutine sigma_2 (ipar,i1,i2,apart)
+      use vast_kind_param, only: double
+      integer, intent(in) :: ipar, i1, i2
+      real(double), intent(out) :: apart
+      end subroutine sigma_2
+      end interface
+      end module

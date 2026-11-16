@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GETMIX(NAME, INPCI, IBLK)
+      subroutine getmix(name, inpci, iblk)
 !                                                                      *
 !   Open, check, load data from and close the rscf.mix file.           *
 !                                                                      *
@@ -15,85 +15,85 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE def_C
-      USE orb_C, ONLY: ncf, nw, iqa
-      USE EIGV_C
-      USE PRNT_C
-      USE SYMA_C
-      USE BLK_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use def_c
+      use orb_c, only: ncf, nw, iqa
+      use eigv_c
+      use prnt_c
+      use syma_c
+      use blk_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: INPCI
-      INTEGER, INTENT(IN) :: IBLK
-      CHARACTER, INTENT(IN) :: NAME*128
+      integer, intent(in) :: inpci
+      integer, intent(in) :: iblk
+      character, intent(in) :: name*128
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IK, J, IOS, NB, IATJP, IASPA, I
-      CHARACTER :: G92MIX*6
+      integer :: ik, j, ios, nb, iatjp, iaspa, i
+      character :: g92mix*6
 !-----------------------------------------------
 
-      IK = 30
-      IF (IBLK == 1) THEN
-         J = INDEX(NAME,' ')
-         IF (INPCI == 0) THEN
-            OPEN(UNIT=IK, FILE=NAME(1:J-1)//'.cm', FORM='UNFORMATTED', STATUS=&
+      ik = 30
+      if (iblk == 1) then
+         j = index(name,' ')
+         if (inpci == 0) then
+            open(unit=ik, file=name(1:j-1)//'.cm', form='UNFORMATTED', status=&
                'OLD')
-         ELSE
-            OPEN(UNIT=IK, FILE=NAME(1:J-1)//'.m', FORM='UNFORMATTED', STATUS=&
+         else
+            open(unit=ik, file=name(1:j-1)//'.m', form='UNFORMATTED', status=&
                'OLD')
-         ENDIF
+         endif
 
-         READ (IK, IOSTAT=IOS) G92MIX
-         IF (IOS/=0 .OR. G92MIX/='G92MIX') THEN
-            WRITE (6, *)                                              &
-                    'File', IK, 'Not a GRASP MIXing Coefficients File;'
-            CLOSE(IK)
-            STOP
-         ENDIF
+         read (ik, iostat=ios) g92mix
+         if (ios/=0 .or. g92mix/='G92MIX') then
+            write (6, *)                                              &
+                    'File', ik, 'Not a GRASP MIXing Coefficients File;'
+            close(ik)
+            stop
+         endif
 !
-         READ (IK) NELECTOT, NCFTOT, NWTOT, NVECTOT, NVECSIZTOT, NBLOCK1
-         IF (NELEC/=NELECTOT .OR. NW/=NWTOT) THEN
+         read (ik) nelectot, ncftot, nwtot, nvectot, nvecsiztot, nblock1
+         if (nelec/=nelectot .or. nw/=nwtot) then
 !     :    (NCF .NE. NCFT) .OR.
-            WRITE (6, *) 'File', IK, 'is not an'
-            WRITE (6, *) ' appropriate to Coefficients file'
-            CLOSE(IK)
-            STOP
-         ENDIF
-      ENDIF
+            write (6, *) 'File', ik, 'is not an'
+            write (6, *) ' appropriate to Coefficients file'
+            close(ik)
+            stop
+         endif
+      endif
 !
 !   Load data from the  rscf.mix  file
 !
-      WRITE (6, *) 'Loading MIXing Coefficients File ...'
+      write (6, *) 'Loading MIXing Coefficients File ...'
 !
-      READ (IK) NB, NCF, NVEC, IATJP, IASPA
-      CALL ALLOC (EVAL, NVEC, 'EVAL', 'GETMIX')
-      CALL ALLOC (EVEC, NCF*NVEC, 'EVEC', 'GETMIX')
-      CALL ALLOC (IVEC, NVEC, 'IVEC', 'GETMIX')
-      CALL ALLOC (IATJPO, NVEC, 'IATJPO', 'GETMIX')
-      CALL ALLOC (IASPAR, NVEC, 'IASPAR', 'GETMIX')
+      read (ik) nb, ncf, nvec, iatjp, iaspa
+      call alloc (eval, nvec, 'EVAL', 'GETMIX')
+      call alloc (evec, ncf*nvec, 'EVEC', 'GETMIX')
+      call alloc (ivec, nvec, 'IVEC', 'GETMIX')
+      call alloc (iatjpo, nvec, 'IATJPO', 'GETMIX')
+      call alloc (iaspar, nvec, 'IASPAR', 'GETMIX')
 !
 !   These arrays are deallocated in mcp
 !
-      READ (IK) (IVEC(I),I=1,NVEC)
+      read (ik) (ivec(i),i=1,nvec)
 !     READ (IK) (IATJPO(I),IASPAR(I),I = 1,NVEC)
-      IATJPO(:NVEC) = IATJP
-      IASPAR(:NVEC) = IASPA
-      READ (IK) EAV, (EVAL(I),I=1,NVEC)
-      READ (IK) ((EVEC(I + (J - 1)*NCF),I=1,NCF),J=1,NVEC)
+      iatjpo(:nvec) = iatjp
+      iaspar(:nvec) = iaspa
+      read (ik) eav, (eval(i),i=1,nvec)
+      read (ik) ((evec(i + (j - 1)*ncf),i=1,ncf),j=1,nvec)
 !
-      WRITE (6, *) ' ... load complete;'
+      write (6, *) ' ... load complete;'
 !
 !   Close the  rscf.mix  file
 !
 !     CLOSE (IK)
 !
-      RETURN
-      END SUBROUTINE GETMIX
+      return
+      end subroutine getmix

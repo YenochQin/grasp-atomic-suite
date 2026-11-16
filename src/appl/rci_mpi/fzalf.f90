@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION FZALF (N, KAPPA, Z)
+      real(kind(0.0d0)) function fzalf (n, kappa, z)
 !                                                                      *
 !   An estimate of the function  F (Z*\alpha) is computed here.        *
 !                                                                      *
@@ -15,38 +15,38 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE mohr_I
-      USE klamaq_I
-      IMPLICIT NONE
+      use mohr_i
+      use klamaq_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: N
-      INTEGER  :: KAPPA
-      REAL(DOUBLE)  :: Z
+      integer  :: n
+      integer  :: kappa
+      real(double)  :: z
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NEFF
-      REAL(DOUBLE) :: VALUE
+      integer :: neff
+      real(double) :: value
 !-----------------------------------------------
 !
-      IF (N <= 2) THEN
-         CALL MOHR (N, KAPPA, Z, VALUE)
-      ELSE
-         IF (KAPPA==(-1) .OR. KAPPA==1 .OR. KAPPA==(-2)) THEN
-            NEFF = 2
-            CALL MOHR (NEFF, KAPPA, Z, VALUE)
-         ELSE
-            CALL KLAMAQ (N, KAPPA, Z, VALUE)
-         ENDIF
-      ENDIF
+      if (n <= 2) then
+         call mohr (n, kappa, z, value)
+      else
+         if (kappa==(-1) .or. kappa==1 .or. kappa==(-2)) then
+            neff = 2
+            call mohr (neff, kappa, z, value)
+         else
+            call klamaq (n, kappa, z, value)
+         endif
+      endif
 !
-      FZALF = VALUE
+      fzalf = value
 !
-      RETURN
-      END FUNCTION FZALF
+      return
+      end function fzalf

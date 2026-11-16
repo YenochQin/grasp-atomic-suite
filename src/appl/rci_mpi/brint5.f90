@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE BRINT5 (IA,IB,IC,ID,NU,TEGRAL)
+      subroutine brint5 (ia,ib,ic,id,nu,tegral)
 !                                                                      *
 !   Returns integrals for the transverse photon interaction.           *
 !      Integrals are stored in ordered lists. If the integral cannot   *
@@ -22,158 +22,158 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE bilst_C
-      USE orb_C,           ONLY: ncf, nw, iqa
+      use vast_kind_param, only:  double
+      use memory_man
+      use bilst_c
+      use orb_c,           only: ncf, nw, iqa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE brintf_I
-      IMPLICIT NONE
+      use brintf_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: ia, ib, ic, id, nu
-      REAL(DOUBLE), INTENT(out) :: tegral
+      integer, intent(in) :: ia, ib, ic, id, nu
+      real(double), intent(out) :: tegral
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      LOGICAL :: FOUND
-      INTEGER :: key, index, loc, ju, jl, jm, newsiz, i
+      logical :: found
+      integer :: key, index, loc, ju, jl, jm, newsiz, i
 !-----------------------------------------------
 !
-      KEY = NW + 1
+      key = nw + 1
 !
 !   Compute the integral label
 !
-      INDEX = (((NU*KEY+IA)*KEY+IB)*KEY+IC)*KEY+ID
+      index = (((nu*key+ia)*key+ib)*key+ic)*key+id
 !
-      IF (.NOT. FIRST(5)) THEN
+      if (.not. first(5)) then
 !
 !   This branch is executed on all entries except the first
 !
-         IF (INDEX .GT. INDTP5(NTPI(5))) THEN
+         if (index .gt. indtp5(ntpi(5))) then
 !
 !   The index is greater than the largest stored
 !
-            FOUND = .FALSE.
-            LOC = NTPI(5)
+            found = .false.
+            loc = ntpi(5)
 !
-         ELSEIF (INDEX .LT. INDTP5(1)) THEN
+         elseif (index .lt. indtp5(1)) then
 !
 !   The index is less than the smallest stored
 !
-            FOUND = .FALSE.
-            LOC = 0
+            found = .false.
+            loc = 0
 !
-         ELSE
+         else
 !
 !   The index is within the range of the indices stored; search
 !   for it in the list of indices
 !
-            JU = NTPI(5)
-            JL = 1
-    1       IF (JU-JL .GT. 1) THEN
-               JM = (JU+JL)/2
-               IF (INDTP5(JM) .GT. INDEX) THEN
-                  JU = JM
-               ELSE
-                  JL = JM
-               ENDIF
-               GOTO 1
+            ju = ntpi(5)
+            jl = 1
+    1       if (ju-jl .gt. 1) then
+               jm = (ju+jl)/2
+               if (indtp5(jm) .gt. index) then
+                  ju = jm
+               else
+                  jl = jm
+               endif
+               goto 1
 !
-            ELSE
+            else
 !
 !   The range is bracketed to the extent possible
 !
-               IF (INDEX .EQ. INDTP5(JU)) THEN
+               if (index .eq. indtp5(ju)) then
 !
-                  FOUND = .TRUE.
-                  LOC = JU
+                  found = .true.
+                  loc = ju
 !
-               ELSEIF (INDEX .EQ. INDTP5(JL)) THEN
+               elseif (index .eq. indtp5(jl)) then
 !
-                  FOUND = .TRUE.
-                  LOC = JL
+                  found = .true.
+                  loc = jl
 !
-               ELSE
+               else
 !
-                  FOUND = .FALSE.
-                  LOC = JL
+                  found = .false.
+                  loc = jl
 !
-               ENDIF
+               endif
 !
-            ENDIF
+            endif
 !
-         ENDIF
+         endif
 !
-         IF (FOUND) THEN
+         if (found) then
 !
 !   Found the index in the list; return the value of the integral
 !   from storage
 !
-            TEGRAL = VALTP5(LOC)
+            tegral = valtp5(loc)
 !
-         ELSE
+         else
 !
 !   Index not found; compute the integral
 !
-            TEGRAL = BRINTF (5,IA,IB,IC,ID,NU)
+            tegral = brintf (5,ia,ib,ic,id,nu)
 !
 !   Increment the integral counter
 !
-            NTPI(5) = NTPI(5)+1
+            ntpi(5) = ntpi(5)+1
 !
 !   Increase array length by half the present length if the latter
 !   is inadequate to store another pair
 !
 !
-            IF (NTPI(5) .GT. NDTPA(5)) THEN
-               NEWSIZ = NDTPA(5)+NDTPA(5)/2
-               CALL RALLOC (INDTP5,NEWSIZ,'INDTP5', 'BRINT5')
-               CALL RALLOC (VALTP5,NEWSIZ,'VALTP5', 'BRINT5')
-               NDTPA(5)= NEWSIZ
-            ENDIF
-            DO 4 I = NTPI(5),LOC+2,-1
-               INDTP5(I) = INDTP5(I-1)
-               VALTP5(I) = VALTP5(I-1)
-    4       CONTINUE
+            if (ntpi(5) .gt. ndtpa(5)) then
+               newsiz = ndtpa(5)+ndtpa(5)/2
+               call ralloc (indtp5,newsiz,'INDTP5', 'BRINT5')
+               call ralloc (valtp5,newsiz,'VALTP5', 'BRINT5')
+               ndtpa(5)= newsiz
+            endif
+            do 4 i = ntpi(5),loc+2,-1
+               indtp5(i) = indtp5(i-1)
+               valtp5(i) = valtp5(i-1)
+    4       continue
 !
 !   Put the new index and value into storage
 !
-            INDTP5(LOC+1) = INDEX
-            VALTP5(LOC+1) = TEGRAL
+            indtp5(loc+1) = index
+            valtp5(loc+1) = tegral
 !
-         ENDIF
+         endif
 !
-      ELSE
+      else
 !
 !   This branch is executed only once per type of integral
 !
-         FIRST(5) = .FALSE.
+         first(5) = .false.
 !
 !   Designate the initial storage for arrays INDTPx and VALTPx;
 !   Array NDTPA stores the array dimensions
 !
-         NDTPA(5) = 10000
+         ndtpa(5) = 10000
 !
 !   Compute the integral's value
 !
-         TEGRAL = BRINTF (5,IA,IB,IC,ID,NU)
+         tegral = brintf (5,ia,ib,ic,id,nu)
 !
 !   Initialise the integral counter
 !
-         NTPI(5) = 1
+         ntpi(5) = 1
 !
 !   Store the integral and its value
 !
-         CALL ALLOC (INDTP5,NDTPA(5),'INDTP5', 'BRINT5')
-         CALL ALLOC (VALTP5,NDTPA(5),'VALTP5', 'BRINT5')
-         INDTP5(1) = INDEX
-         VALTP5(1) = TEGRAL
+         call alloc (indtp5,ndtpa(5),'INDTP5', 'BRINT5')
+         call alloc (valtp5,ndtpa(5),'VALTP5', 'BRINT5')
+         indtp5(1) = index
+         valtp5(1) = tegral
 !
-      ENDIF
+      endif
 !
-      RETURN
-      END
+      return
+      end

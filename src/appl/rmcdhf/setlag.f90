@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETLAG(EOL)
+      subroutine setlag(eol)
 !                                                                      *
 !   Sets up the data structure  pertaining to the Lagrange multipli-   *
 !   ers  on the first entry;  on subsequent calls it  determines new   *
@@ -19,55 +19,55 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: KEYORB
-      USE memory_man
-      USE ORBA_C
-      USE core_C
-      USE def_C
-      USE fixd_C
-      USE grid_C, ONLY: n, rpor
-      USE lagr_C
-      USE orb_C
-      USE mpi_s
-      USE pote_C, ONLY: yp, xp, xq
-      USE scf_C
-      USE tatb_C, ONLY: mtp, ta
-      USE wave_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: keyorb
+      use memory_man
+      use orba_c
+      use core_c
+      use def_c
+      use fixd_c
+      use grid_c, only: n, rpor
+      use lagr_c
+      use orb_c
+      use mpi_s
+      use pote_c, only: yp, xp, xq
+      use scf_c
+      use tatb_c, only: mtp, ta
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE setcof_I
-      USE ypot_I
-      USE xpot_I
-      USE dacon_I
-      USE quad_I
-      USE rinti_I
-      IMPLICIT NONE
+      use setcof_i
+      use ypot_i
+      use xpot_i
+      use dacon_i
+      use quad_i
+      use rinti_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      LOGICAL  :: EOL
+      logical  :: eol
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      REAL(DOUBLE), PARAMETER :: P001 = 1.0D-01
-      INTEGER, PARAMETER :: KEY = KEYORB
+      real(double), parameter :: p001 = 1.0d-01
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ITWICE, LIRAW, LI, LIP1, NAKLJ, LJRAW, LJ, IECCLI, L1, L2, &
-         JLAST, MLAST, M, J, I
-      REAL(DOUBLE), DIMENSION(NNNP) :: YPJ, YPM, XPJ, XPM, XQJ, XQM
-      REAL(DOUBLE) :: EPS, UCFJ, UCFM, RESULT, RIJM, QDIF, OBQDIF, OBQSUM
-      LOGICAL :: FIRST, FIXLI, FIXLJ, FULLI, FULLJ, VLI, VLJ
+      integer :: itwice, liraw, li, lip1, naklj, ljraw, lj, ieccli, l1, l2, &
+         jlast, mlast, m, j, i
+      real(double), dimension(nnnp) :: ypj, ypm, xpj, xpm, xqj, xqm
+      real(double) :: eps, ucfj, ucfm, result, rijm, qdif, obqdif, obqsum
+      logical :: first, fixli, fixlj, fulli, fullj, vli, vlj
 !-----------------------------------------------
 !
-      DATA FIRST/ .TRUE./
+      data first/ .true./
 !
 !-----------------------------------------------------------------------
 
-      IF (FIRST) THEN
+      if (first) then
 
 !=======================================================================
 !   Determine the total number of Lagrange multipliers and store
@@ -82,111 +82,111 @@
 !   This part is not distributed.
 !=======================================================================
 
-         EPS = ACCY*0.01D0      ! criterion to see if an orb is occupied
-         DO ITWICE = 1, 2
-            NEC = 0
-         DO LJraw = NCORE+1, NW
-               LJ = iorder(LJraw)
-            NAKLJ = NAK(LJ)
-            VLJ = .NOT. LFIX(LJ)
-               FULLJ = ABS ( UCF(LJ)-DBLE (NKJ(LJ)+1) ) .LT. EPS
-            DO LIraw = 1, LJraw-1
-               LI = iorder(LIraw)
-               VLI = .NOT. LFIX(LI)
-               FULLI = ABS ( UCF(LI)-DBLE (NKJ(LI)+1) ) .LT. EPS
-               IF  (NAK(LI) .EQ. NAKLJ) then
-                  If  (VLI  .OR. VLJ ) then       ! at least one orbital varied
+         eps = accy*0.01d0      ! criterion to see if an orb is occupied
+         do itwice = 1, 2
+            nec = 0
+         do ljraw = ncore+1, nw
+               lj = iorder(ljraw)
+            naklj = nak(lj)
+            vlj = .not. lfix(lj)
+               fullj = abs ( ucf(lj)-dble (nkj(lj)+1) ) .lt. eps
+            do liraw = 1, ljraw-1
+               li = iorder(liraw)
+               vli = .not. lfix(li)
+               fulli = abs ( ucf(li)-dble (nkj(li)+1) ) .lt. eps
+               if  (nak(li) .eq. naklj) then
+                  if  (vli  .or. vlj ) then       ! at least one orbital varied
 !                                                   but not both (varied and full)
-                     If (.NOT. ((VLI .AND. VLJ) .AND. (FULLI .AND. FULLJ))) THEN 
-                  NEC = NEC + 1
+                     if (.not. ((vli .and. vlj) .and. (fulli .and. fullj))) then 
+                  nec = nec + 1
                   !*** Encode index at 2nd round ***
-                  IF (itwice == 2) IECC(NEC) = LI + KEY * LJ
-               ENDIF
-                  ENDIF
-               ENDIF
-            ENDDO
-         ENDDO
+                  if (itwice == 2) iecc(nec) = li + key * lj
+               endif
+                  endif
+               endif
+            enddo
+         enddo
 
-            IF (ITWICE==1 .AND. NEC>0) THEN
-               CALL ALLOC (ECV, NEC, 'ECV', 'SETLAG')
-               CALL ALLOC (IECC, NEC, 'IECC', 'SETLAG')
-            ELSE
-               EXIT
-            ENDIF
-         END DO                                  !itwice
+            if (itwice==1 .and. nec>0) then
+               call alloc (ecv, nec, 'ECV', 'SETLAG')
+               call alloc (iecc, nec, 'IECC', 'SETLAG')
+            else
+               exit
+            endif
+         end do                                  !itwice
 
 !=======================================================================
 !   Print information about Lagrange multipliers
 !=======================================================================
 
-         IF (MYID == 0) THEN
-            IF (NEC == 0) THEN
-               WRITE (*, 302)
-            ELSE
-               WRITE (*, 304)
-               DO LI = 1, NEC
+         if (myid == 0) then
+            if (nec == 0) then
+               write (*, 302)
+            else
+               write (*, 304)
+               do li = 1, nec
                !*** Decode index ***
-                  IECCLI = IECC(LI)
-                  L1 = IECCLI/KEY
-                  L2 = IECCLI - KEY*L1
-                  WRITE (*, 305) NP(L2), NH(L2), NP(L1), NH(L1)
-               END DO
-            ENDIF
-         ENDIF
-         FIRST = .FALSE.
-      ENDIF
+                  ieccli = iecc(li)
+                  l1 = ieccli/key
+                  l2 = ieccli - key*l1
+                  write (*, 305) np(l2), nh(l2), np(l1), nh(l1)
+               end do
+            endif
+         endif
+         first = .false.
+      endif
 
 !     Lagrange multipliers need to be computed also on the first call
 !     RETURN
 
-      IF (NEC == 0) RETURN
-      IF (MYID == 0) WRITE (*, 306)
-      JLAST = 0
-      MLAST = 0
+      if (nec == 0) return
+      if (myid == 0) write (*, 306)
+      jlast = 0
+      mlast = 0
 
-      DO LI = 1, NEC
+      do li = 1, nec
          !*** Decode index ***
-         IECCLI = IECC(LI)
-         M = IECCLI/KEY
-         J = IECCLI - KEY*M
+         ieccli = iecc(li)
+         m = ieccli/key
+         j = ieccli - key*m
 !
-         IF (J /= JLAST) THEN
-            UCFJ = UCF(J)
-            CALL SETCOF (EOL, J)
-            CALL YPOT (J)
-            CALL XPOT (J)
-            CALL DACON
-            YPJ(:N) = YP(:N)
-            XPJ(:N) = XP(:N)
-            XQJ(:N) = XQ(:N)
-            JLAST = J
-         ENDIF
+         if (j /= jlast) then
+            ucfj = ucf(j)
+            call setcof (eol, j)
+            call ypot (j)
+            call xpot (j)
+            call dacon
+            ypj(:n) = yp(:n)
+            xpj(:n) = xp(:n)
+            xqj(:n) = xq(:n)
+            jlast = j
+         endif
 !
-         IF (M /= MLAST) THEN
-            UCFM = UCF(M)
-            CALL SETCOF (EOL, M)
-            CALL YPOT (M)
-            CALL XPOT (M)
-            CALL DACON
-            YPM(:N) = YP(:N)
-            XPM(:N) = XP(:N)
-            XQM(:N) = XQ(:N)
-            MLAST = M
-         ENDIF
+         if (m /= mlast) then
+            ucfm = ucf(m)
+            call setcof (eol, m)
+            call ypot (m)
+            call xpot (m)
+            call dacon
+            ypm(:n) = yp(:n)
+            xpm(:n) = xp(:n)
+            xqm(:n) = xq(:n)
+            mlast = m
+         endif
 !
-         MTP = MAX(MF(J),MF(M))
+         mtp = max(mf(j),mf(m))
 !
-         IF (LFIX(M)) THEN
-            TA(1) = 0.D0
-            DO I = 2, MTP
-               TA(I) = RPOR(I)*((PF(I,M)*XQJ(I)-QF(I,M)*XPJ(I))*C+       &
-                                (PF(I,M)*PF(I,J)+QF(I,M)*QF(I,J))*YPJ(I)) 
-            END DO
+         if (lfix(m)) then
+            ta(1) = 0.d0
+            do i = 2, mtp
+               ta(i) = rpor(i)*((pf(i,m)*xqj(i)-qf(i,m)*xpj(i))*c+       &
+                                (pf(i,m)*pf(i,j)+qf(i,m)*qf(i,j))*ypj(i)) 
+            end do
 
-            CALL QUAD (RESULT)
+            call quad (result)
 ! note      ..rinti(m,j,1) is symmetric in (j,m)
-            RIJM = RINTI(M,J,1)
-            ECV(LI) = (RESULT - RIJM)*UCFJ
+            rijm = rinti(m,j,1)
+            ecv(li) = (result - rijm)*ucfj
 
 ! start dbg
 !           WRITE (81,*)'1, RESULT, RIJM, UCFJ, ECV, TA' ! dbg
@@ -196,12 +196,12 @@
 !           ENDDO ! dbg
 ! end dbg
 
-         ELSE IF (LFIX(J)) THEN
-            TA(1) = 0.D0
-            DO I = 2, MTP
-               TA(I) = RPOR(I)*((PF(I,J)*XQM(I)-QF(I,J)*XPM(I))*C+      &
-                                (PF(I,J)*PF(I,M)+QF(I,J)*QF(I,M))*YPM(I)) 
-            END DO
+         else if (lfix(j)) then
+            ta(1) = 0.d0
+            do i = 2, mtp
+               ta(i) = rpor(i)*((pf(i,j)*xqm(i)-qf(i,j)*xpm(i))*c+      &
+                                (pf(i,j)*pf(i,m)+qf(i,j)*qf(i,m))*ypm(i)) 
+            end do
 
 !start dbg
 !           DO i = 1, MTP
@@ -212,30 +212,30 @@
 !              write(86,*)i,xpm(i),xqm(i)
 !           ENDDO
 ! end dbg
-            CALL QUAD (RESULT)
+            call quad (result)
 
-            RIJM = RINTI(J,M,1)                  !/ nprocs
-            ECV(LI) = (RESULT - RIJM)*UCFM
+            rijm = rinti(j,m,1)                  !/ nprocs
+            ecv(li) = (result - rijm)*ucfm
 !start dbg
 !           WRITE (81,*)'2, RESULT, RIJM, UCFM, ECV, TA'
 !           WRITE (81,*)RESULT, RIJM, UCFJ, ECV, r(i), rp(i)
 !end dbg
 
-         ELSE
+         else
             
-            QDIF = ABS((UCFJ - UCFM)/MAX(UCFJ,UCFM))
+            qdif = abs((ucfj - ucfm)/max(ucfj,ucfm))
             
-            IF (QDIF > P001) THEN
-               OBQDIF = 1.D0/UCFJ - 1.D0/UCFM
-               TA(1) = 0.D0
-               DO I = 2, MTP
-                  TA(I) = RPOR(I)*((PF(I,M)*XQJ(I)-QF(I,M)*XPJ(I)          &
-                                   -PF(I,J)*XQM(I)+QF(I,J)*XPM(I))*C       &
-                          +(YPJ(I)-YPM(I))*(PF(I,M)*PF(I,J)+QF(I,M)*QF(I,J))) 
-               END DO
+            if (qdif > p001) then
+               obqdif = 1.d0/ucfj - 1.d0/ucfm
+               ta(1) = 0.d0
+               do i = 2, mtp
+                  ta(i) = rpor(i)*((pf(i,m)*xqj(i)-qf(i,m)*xpj(i)          &
+                                   -pf(i,j)*xqm(i)+qf(i,j)*xpm(i))*c       &
+                          +(ypj(i)-ypm(i))*(pf(i,m)*pf(i,j)+qf(i,m)*qf(i,j))) 
+               end do
 
-               CALL QUAD (RESULT)
-               ECV(LI) = RESULT/OBQDIF
+               call quad (result)
+               ecv(li) = result/obqdif
 
 !start dbg
 !           WRITE (81,*)'3, RESULT, OBQDIF, ECV, TA'
@@ -245,20 +245,20 @@
 !           ENDDO
 !end dbg
 
-            ELSE
+            else
  
-               OBQSUM = 1.D0/UCFJ + 1.D0/UCFM
+               obqsum = 1.d0/ucfj + 1.d0/ucfm
 
-               TA(1) = 0.D0
-               DO I = 2, MTP
-                  TA(I) = RPOR(I)*((PF(I,M)*XQJ(I)-QF(I,M)*XPJ(I)         &
-                                   +PF(I,J)*XQM(I)-QF(I,J)*XPM(I))*C      &
-                         +(YPJ(I)+YPM(I))*(PF(I,M)*PF(I,J)+QF(I,M)*QF(I,J))) 
-               END DO
+               ta(1) = 0.d0
+               do i = 2, mtp
+                  ta(i) = rpor(i)*((pf(i,m)*xqj(i)-qf(i,m)*xpj(i)         &
+                                   +pf(i,j)*xqm(i)-qf(i,j)*xpm(i))*c      &
+                         +(ypj(i)+ypm(i))*(pf(i,m)*pf(i,j)+qf(i,m)*qf(i,j))) 
+               end do
 
-               CALL QUAD (RESULT)
-               RIJM = RINTI(M,J,1)               
-               ECV(LI) = (RESULT - 2.0*RIJM)/OBQSUM 
+               call quad (result)
+               rijm = rinti(m,j,1)               
+               ecv(li) = (result - 2.0*rijm)/obqsum 
 
 
 !start dbg
@@ -269,18 +269,18 @@
 !           ENDDO
 !end dbg
 
-            ENDIF
-         ENDIF
+            endif
+         endif
 
-         WRITE (*, 307) NP(J), NH(J), NP(M), NH(M), ECV(LI)
+         write (*, 307) np(j), nh(j), np(m), nh(m), ecv(li)
 
-      END DO
+      end do
 
-  302 FORMAT(/,'Lagrange multipliers are not required')
-  304 FORMAT(/,'Include Lagrange multipliers between:'/)
-  305 FORMAT(13X,2(2X,1I2,1A2))
-  306 FORMAT(/,'Lagrange multipliers:'/)
-  307 FORMAT(13X,2(2X,1I2,1A2),2X,1P,D16.9)
+  302 format(/,'Lagrange multipliers are not required')
+  304 format(/,'Include Lagrange multipliers between:'/)
+  305 format(13x,2(2x,1i2,1a2))
+  306 format(/,'Lagrange multipliers:'/)
+  307 format(13x,2(2x,1i2,1a2),2x,1p,d16.9)
 
-      RETURN
-      END SUBROUTINE SETLAG
+      return
+      end subroutine setlag

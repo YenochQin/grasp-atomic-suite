@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE STRSUM
+      subroutine strsum
 !                                                                      *
 !***********************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  11:01:42   1/ 5/07
@@ -9,57 +9,57 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      Use hblock_C
-      USE def_C
-      USE iccu_C
-      USE mcp_C
-      USE orb_C
+      use hblock_c
+      use def_c
+      use iccu_c
+      use mcp_c
+      use orb_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE calen_I
-      USE convrt_I
+      use calen_i
+      use convrt_i
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: LENTH, I
-      Character :: CTIME*10, CDATE*8
-      CHARACTER :: RECORD*256, CDATA*26
+      integer :: lenth, i
+      character :: ctime*10, cdate*8
+      character :: record*256, cdata*26
 !-----------------------------------------------
 !
 !
 !   Get the date and time of day; make this information the
 !   header of the summary file
 !
-      CALL CALEN (CTIME, CDATE)
-      WRITE (24, *) 'GENMCP run at ', CTIME, ' on ', CDATE, '.'
+      call calen (ctime, cdate)
+      write (24, *) 'GENMCP run at ', ctime, ' on ', cdate, '.'
 !
 !   Write out the basic dimensions of the electron cloud
 !
-      WRITE (24, *)
-      CALL CONVRT (NELEC, RECORD, LENTH)
-      WRITE (24, *) 'There are '//RECORD(1:LENTH)//' electrons in the cloud'
-      CALL CONVRT (NCF, RECORD, LENTH)
-      WRITE (24, *) ' in '//RECORD(1:LENTH)//' relativistic CSFs'
-      CALL CONVRT (NW, RECORD, LENTH)
-      WRITE (24, *) ' based on '//RECORD(1:LENTH)//' relativistic subshells.'
+      write (24, *)
+      call convrt (nelec, record, lenth)
+      write (24, *) 'There are '//record(1:lenth)//' electrons in the cloud'
+      call convrt (ncf, record, lenth)
+      write (24, *) ' in '//record(1:lenth)//' relativistic CSFs'
+      call convrt (nw, record, lenth)
+      write (24, *) ' based on '//record(1:lenth)//' relativistic subshells.'
 !
 !   If the CSFs are not treated uniformly, write out an
 !   informative message
 !
-      IF (DIAG) THEN
-         WRITE (24, *)
-         WRITE (24, *) 'Only diagonal matrix elements are computed.'
-      ELSE
-         IF (LFORDR) THEN
-            DO I = 1, NBLOCK
-               WRITE (24, *)
-               CALL CONVRT (ICCUT(I), RECORD, LENTH)
-               WRITE (24, *) 'CSFs 1--'//RECORD(1:LENTH)//' constitute'//&
+      if (diag) then
+         write (24, *)
+         write (24, *) 'Only diagonal matrix elements are computed.'
+      else
+         if (lfordr) then
+            do i = 1, nblock
+               write (24, *)
+               call convrt (iccut(i), record, lenth)
+               write (24, *) 'CSFs 1--'//record(1:lenth)//' constitute'//&
                   ' the zero-order space.'
-            END DO
-         ENDIF
-      ENDIF
+            end do
+         endif
+      endif
 !
-      RETURN
-      END SUBROUTINE STRSUM
+      return
+      end subroutine strsum

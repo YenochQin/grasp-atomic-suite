@@ -1,6 +1,6 @@
 !******************************************************************
 !                                                                  *
-      INTEGER FUNCTION ITJJ3(IK,ID,KG1,BK,BD,IBT,BT,ITP,ITG,IQ)
+      integer function itjj3(ik,id,kg1,bk,bd,ibt,bt,itp,itg,iq)
 !                                                                  *
 !   ---------------  SECTION SQJJ  SUBPROGRAM 08  --------------   *
 !                                                                  *
@@ -15,73 +15,73 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: HALF
-      USE ribojj_C
-      USE ribojj9_C
-      USE ribojj11_C
+      use vast_kind_param, only: double
+      use cons_c,          only: half
+      use ribojj_c
+      use ribojj9_c
+      use ribojj11_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE mes_I
-      USE ittk_I
-      IMPLICIT NONE
+      use mes_i
+      use ittk_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN)                :: KG1, IQ
-      INTEGER,      INTENT(OUT)               :: ITP, ITG
-      INTEGER,      INTENT(IN),  DIMENSION(7) :: IK, ID
-      INTEGER,      INTENT(OUT), DIMENSION(7) :: IBT
-      REAL(DOUBLE), INTENT(IN),  DIMENSION(3) :: BK, BD
-      REAL(DOUBLE), INTENT(OUT), DIMENSION(3) :: BT
+      integer,      intent(in)                :: kg1, iq
+      integer,      intent(out)               :: itp, itg
+      integer,      intent(in),  dimension(7) :: ik, id
+      integer,      intent(out), dimension(7) :: ibt
+      real(double), intent(in),  dimension(3) :: bk, bd
+      real(double), intent(out), dimension(3) :: bt
 !      DIMENSION ID(7),IK(7),IBT(7),BT(3),BD(3),BK(3)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ITK, ITD, ITP1, ITG1
+      integer :: itk, itd, itp1, itg1
 !-----------------------------------------------
-      ITJJ3=0
-      IF(ID(3) > 37) RETURN
-      IF(ITTK(ID(6),IK(6),KG1) == 0)RETURN
-      ITK=IK(1)
-      ITD=ID(1)
-      IF(ID(3) < 9) THEN
-        ITP1=IMPTJJ(ITK)
-        ITP=IMPNJJ(ITD)
-        IF(ITP1 /= ITP)RETURN
-        ITG1=IMGTJJ(ITK)
-        ITG=IMGNJJ(ITD)
-      ELSEIF(ID(3) == 9) THEN
-        IF(ITK > 300) THEN
-          IF(ITD < 300) CALL MES(53)
-          IF(ID(4) > 2) CALL MES(13)
-          IF(IK(4) > 2) CALL MES(13)
-          ITK=ITK-300
-          ITD=ITD-300
-          ITP1=IMPTJJ9(ITK)
-          ITP=IMPNJJ9(ITD)
-          IF(ITP1 /= ITP)RETURN
-          ITG1=IMGTJJ9(ITK)
-          ITG=IMGNJJ9(ITD)
-        ELSE
-          PRINT*, "ERROR in ITJJ3"
-          STOP
-        ENDIF
-      ELSE
-        IF(ID(4) > 2) CALL MES(13)
-        IF(IK(4) > 2) CALL MES(13)
-        ITP1=IMPTJJ11(ITK)
-        ITP=IMPNJJ11(ITD)
-        IF(ITP1 /= ITP)RETURN
-        ITG1=IMGTJJ11(ITK)
-        ITG=IMGNJJ11(ITD)
-      ENDIF
-      IF(ITG1 /= ITG)RETURN
-      ITJJ3=1
-      IBT(2)=ID(2)
-      IBT(3)=ID(3)
-      IBT(4)=ID(4)+IQ
-      BT(3)=BD(3)+HALF*DBLE(IQ)
-      RETURN
-      END FUNCTION ITJJ3
+      itjj3=0
+      if(id(3) > 37) return
+      if(ittk(id(6),ik(6),kg1) == 0)return
+      itk=ik(1)
+      itd=id(1)
+      if(id(3) < 9) then
+        itp1=imptjj(itk)
+        itp=impnjj(itd)
+        if(itp1 /= itp)return
+        itg1=imgtjj(itk)
+        itg=imgnjj(itd)
+      elseif(id(3) == 9) then
+        if(itk > 300) then
+          if(itd < 300) call mes(53)
+          if(id(4) > 2) call mes(13)
+          if(ik(4) > 2) call mes(13)
+          itk=itk-300
+          itd=itd-300
+          itp1=imptjj9(itk)
+          itp=impnjj9(itd)
+          if(itp1 /= itp)return
+          itg1=imgtjj9(itk)
+          itg=imgnjj9(itd)
+        else
+          print*, "ERROR in ITJJ3"
+          stop
+        endif
+      else
+        if(id(4) > 2) call mes(13)
+        if(ik(4) > 2) call mes(13)
+        itp1=imptjj11(itk)
+        itp=impnjj11(itd)
+        if(itp1 /= itp)return
+        itg1=imgtjj11(itk)
+        itg=imgnjj11(itd)
+      endif
+      if(itg1 /= itg)return
+      itjj3=1
+      ibt(2)=id(2)
+      ibt(3)=id(3)
+      ibt(4)=id(4)+iq
+      bt(3)=bd(3)+half*dble(iq)
+      return
+      end function itjj3

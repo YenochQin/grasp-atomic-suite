@@ -3,15 +3,15 @@
 module rangular_reuse
    use iso_fortran_env, only: int64
    use vast_kind_param, only: double
-   use parameter_def, only: NNNW
-   use orb_C, only: NW, NCF, IQA, NAK
-   use stat_C, only: JQSA, JCUPA
-   use buffer_C, only: NVCOEF, NBDIM, LABEL, COEFF
-   use debug_C, only: IBUG1, IBUG2, IBUG3, LDBPA, LDBPG
-   use onescalar_I, only: onescalar
-   use rkco_GG_I, only: rkco_gg
-   use cord_I, only: cord
-   use alcbuf_I, only: alcbuf
+   use parameter_def, only: nnnw
+   use orb_c, only: nw, ncf, iqa, nak
+   use stat_c, only: jqsa, jcupa
+   use buffer_c, only: nvcoef, nbdim, label, coeff
+   use debug_c, only: ibug1, ibug2, ibug3, ldbpa, ldbpg
+   use onescalar_i, only: onescalar
+   use rkco_gg_i, only: rkco_gg
+   use cord_i, only: cord
+   use alcbuf_i, only: alcbuf
    implicit none
    private
    public :: configure_angular_reuse, begin_reuse_block, end_reuse_block, load_reused_pair, reuse_requested
@@ -67,19 +67,19 @@ contains
       active = .false.
       if (.not. reuse_requested) return
       ! Debug printouts require execution of the original kernels for each pair.
-      if (IBUG1 /= 0 .or. IBUG2 /= 0 .or. IBUG3 /= 0 .or. any(LDBPA) .or. any(LDBPG)) return
-      available = byte_limit - 8_int64*NCF
+      if (ibug1 /= 0 .or. ibug2 /= 0 .or. ibug3 /= 0 .or. any(ldbpa) .or. any(ldbpg)) return
+      available = byte_limit - 8_int64*ncf
       if (available < 1024) return
       entry_capacity = int(min(available/512, 1048576_int64))
       table_capacity = 2
       do while (table_capacity < 2*entry_capacity)
          table_capacity = 2*table_capacity
       end do
-      fixed_bytes = 8_int64*NCF + 4_int64*table_capacity
+      fixed_bytes = 8_int64*ncf + 4_int64*table_capacity
       remaining = byte_limit - fixed_bytes - entry_bytes*entry_capacity
       key_capacity = int(remaining/2/8)
       term_capacity = int((remaining - 8_int64*key_capacity)/28)
-      allocate(coupling_hash(NCF), buckets(table_capacity), entries(entry_capacity), &
+      allocate(coupling_hash(ncf), buckets(table_capacity), entries(entry_capacity), &
          keys(key_capacity), term_labels(5,term_capacity), values(term_capacity), stat=status)
       if (status /= 0) then
          call release_cache()
@@ -88,10 +88,10 @@ contains
       end if
       reserved_bytes = fixed_bytes + entry_bytes*entry_capacity + 8_int64*key_capacity + 28_int64*term_capacity
       buckets = 0
-      do j = 1, NCF
+      do j = 1, ncf
          hash = 1
-         do i = 1, NNNW
-            hash = mix(hash, int(JCUPA(i,j),int64))
+         do i = 1, nnnw
+            hash = mix(hash, int(jcupa(i,j),int64))
          end do
          coupling_hash(j) = hash
       end do
@@ -102,30 +102,30 @@ contains
       integer, intent(in) :: orbital, csf
       integer(int64) :: word
       integer :: i
-      word = iand(int(IQA(orbital,csf),int64),255_int64)
+      word = iand(int(iqa(orbital,csf),int64),255_int64)
       do i = 1, 3
-         word = ior(word,shiftl(iand(int(JQSA(orbital,i,csf),int64),255_int64),8*i))
+         word = ior(word,shiftl(iand(int(jqsa(orbital,i,csf),int64),255_int64),8*i))
       end do
    end function shell_word
 
    subroutine pair_key(ja, jb, key, length, orbital_map, inverse_map, hash)
       integer, intent(in) :: ja, jb
-      integer(int64), intent(out) :: key(3+2*NNNW), hash
-      integer, intent(out) :: length, orbital_map(0:NNNW), inverse_map(NNNW)
+      integer(int64), intent(out) :: key(3+2*nnnw), hash
+      integer, intent(out) :: length, orbital_map(0:nnnw), inverse_map(nnnw)
       integer :: orbital, slot, i
       key(1:3) = [coupling_hash(ja), coupling_hash(jb), int(merge(1,0,ja==jb),int64)]
       slot = 0
       orbital_map = 0
       inverse_map = 0
       length = 3
-      do orbital = 1, NW
+      do orbital = 1, nw
          ! Removing only jointly empty shells preserves the union's ordering,
          ! bra/ket equality pattern, fermion phases and every coupling chain.
-         if (IQA(orbital,ja) == 0 .and. IQA(orbital,jb) == 0) cycle
+         if (iqa(orbital,ja) == 0 .and. iqa(orbital,jb) == 0) cycle
          slot = slot + 1
          orbital_map(slot) = orbital
          inverse_map(orbital) = slot
-         key(length+1) = ior(shiftl(int(NAK(orbital),int64),32),shell_word(orbital,ja))
+         key(length+1) = ior(shiftl(int(nak(orbital),int64),32),shell_word(orbital,ja))
          key(length+2) = shell_word(orbital,jb)
          length = length + 2
       end do
@@ -140,7 +140,7 @@ contains
       integer, intent(in) :: ja, jb
       integer, intent(out) :: first, second
       real(double), intent(out) :: scalar
-      real(double) :: tshell(NNNW)
+      real(double) :: tshell(nnnw)
       first = 0; second = 0; tshell = 0
       if (ja /= jb) call onescalar(ja,jb,first,second,tshell)
       ! ONESCALAR leaves its other outputs undefined on some early returns.
@@ -150,7 +150,7 @@ contains
       else
          second = 0
       end if
-      NVCOEF = 0
+      nvcoef = 0
       call rkco_gg(ja,jb,cord,0,1)
    end subroutine original_pair
 
@@ -158,8 +158,8 @@ contains
       integer, intent(in) :: ja, jb
       integer, intent(out) :: first, second
       real(double), intent(out) :: scalar
-      integer(int64) :: key(3+2*NNNW), hash
-      integer :: length, orbital_map(0:NNNW), inverse_map(NNNW)
+      integer(int64) :: key(3+2*nnnw), hash
+      integer :: length, orbital_map(0:nnnw), inverse_map(nnnw)
       integer :: bucket, entry, start, count, i, j
       pairs = pairs + 1
       if (.not. active) then
@@ -176,23 +176,23 @@ contains
          if (entries(entry)%hash == hash .and. entries(entry)%key_size == length) then
             start = entries(entry)%key_start
             if (all(keys(start:start+length-1) == key(1:length))) then
-               if (all(JCUPA(:,ja) == JCUPA(:,entries(entry)%bra)) .and. &
-                   all(JCUPA(:,jb) == JCUPA(:,entries(entry)%ket))) then
+               if (all(jcupa(:,ja) == jcupa(:,entries(entry)%bra)) .and. &
+                   all(jcupa(:,jb) == jcupa(:,entries(entry)%ket))) then
                   hits = hits + 1
                   first = orbital_map(entries(entry)%first)
                   second = orbital_map(entries(entry)%second)
                   scalar = entries(entry)%scalar
-                  NVCOEF = entries(entry)%term_count
-                  do while (NBDIM < NVCOEF)
+                  nvcoef = entries(entry)%term_count
+                  do while (nbdim < nvcoef)
                      call alcbuf(2)
                   end do
                   start = entries(entry)%term_start
-                  do i = 1, NVCOEF
+                  do i = 1, nvcoef
                      do j = 1, 4
-                        LABEL(j,i) = orbital_map(term_labels(j,start+i-1))
+                        label(j,i) = orbital_map(term_labels(j,start+i-1))
                      end do
-                     LABEL(5,i) = term_labels(5,start+i-1)
-                     COEFF(i) = values(start+i-1)
+                     label(5,i) = term_labels(5,start+i-1)
+                     coeff(i) = values(start+i-1)
                   end do
                   return
                end if
@@ -202,7 +202,7 @@ contains
       end do
       misses = misses + 1
       call original_pair(ja,jb,first,second,scalar)
-      count = NVCOEF
+      count = nvcoef
       if (entry_count == size(entries) .or. key_count+length > size(keys) .or. &
           int(term_count,int64)+count > size(values,kind=int64)) then
          not_stored = not_stored + 1
@@ -210,7 +210,7 @@ contains
       end if
       ! A future kernel producing an orbital outside the occupied union falls
       ! back without caching. Never infer an extra mapping or recoupling phase.
-      if (first < 0 .or. first > NW .or. second < 0 .or. second > NW) then
+      if (first < 0 .or. first > nw .or. second < 0 .or. second > nw) then
          not_stored = not_stored + 1
          return
       end if
@@ -228,11 +228,11 @@ contains
       end if
       do i = 1, count
          do j = 1, 4
-            if (LABEL(j,i) < 1 .or. LABEL(j,i) > NW) then
+            if (label(j,i) < 1 .or. label(j,i) > nw) then
                not_stored = not_stored + 1
                return
             end if
-            if (inverse_map(LABEL(j,i)) == 0) then
+            if (inverse_map(label(j,i)) == 0) then
                not_stored = not_stored + 1
                return
             end if
@@ -257,10 +257,10 @@ contains
       key_count = key_count + length
       do i = 1, count
          do j = 1, 4
-            term_labels(j,term_count+i) = inverse_map(LABEL(j,i))
+            term_labels(j,term_count+i) = inverse_map(label(j,i))
          end do
-         term_labels(5,term_count+i) = LABEL(5,i)
-         values(term_count+i) = COEFF(i)
+         term_labels(5,term_count+i) = label(5,i)
+         values(term_count+i) = coeff(i)
       end do
       term_count = term_count + count
    end subroutine load_reused_pair

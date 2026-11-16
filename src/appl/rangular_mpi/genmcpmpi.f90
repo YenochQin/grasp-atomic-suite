@@ -21,7 +21,7 @@
 !***********************************************************************
 !***********************************************************************
 !                                                                      *
-      PROGRAM GENMCPMPI
+      program genmcpmpi
 !                                                                      *
 !   Written by Farid A. Parpia            Last revision: 11 Dec 1992   *
 !   MPI version by Xinghong He            Last revision: 29 Jun 1998   *
@@ -34,91 +34,91 @@
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
-      USE parameter_def,   ONLY:  NNNW
-      USE iso_fortran_env, ONLY: int64
-      USE rangular_mpi_input, ONLY: mpi_angular_input_options, parse_mpi_angular_options, &
+      use parameter_def,   only:  nnnw
+      use iso_fortran_env, only: int64
+      use rangular_mpi_input, only: mpi_angular_input_options, parse_mpi_angular_options, &
            open_mpi_angular_profile, load_mpi_angular_header, load_mpi_angular_block, close_mpi_angular_input
-      USE rangular_profile, ONLY: stage_clock, record_stage, close_stage_profile
-      USE memory_man
+      use rangular_profile, only: stage_clock, record_stage, close_stage_profile
+      use memory_man
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      USE mpi_C
-      USE default_C
-      Use hblock_c
-      Use orb_C
-      Use stat_c
-      Use mcp_c
-      Use iounit_c
+      use mpi_c
+      use default_c
+      use hblock_c
+      use orb_c
+      use stat_c
+      use mcp_c
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setdbg_I
-      USE setmc_I
-      USE setsum_I
-      USE cslh_I
-      USE strsum_I
-      USE factt_I
-      USE settmp_I
-      USE mpiu_I, ONLY: startmpi2
-      USE mpiu_I, ONLY: stopmpi2
-      USE setdbgmpi_I, ONLY: setdbgmpi
-      USE setmcpmpi_I, ONLY: setmcpmpi
-      USE mcpmpi_I, ONLY: mcpmpi
-      IMPLICIT NONE
+      use getyn_i
+      use setdbg_i
+      use setmc_i
+      use setsum_i
+      use cslh_i
+      use strsum_i
+      use factt_i
+      use settmp_i
+      use mpiu_i, only: startmpi2
+      use mpiu_i, only: stopmpi2
+      use setdbgmpi_i, only: setdbgmpi
+      use setmcpmpi_i, only: setmcpmpi
+      use mcpmpi_i, only: mcpmpi
+      implicit none
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER NBLK0, NCOUNT1, NCORE, NB
-      PARAMETER (NBLK0 = 50)
+      integer nblk0, ncount1, ncore, nb
+      parameter (nblk0 = 50)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL ::  DEBUG, RESTRT, YES
-      CHARACTER(LEN=128) :: STARTDIR, PERMDIR, TMPDIR
-      CHARACTER(LEN=8), DIMENSION(NBLK0):: IDBLK
-      CHARACTER(LEN=3) :: IDSTRING
-      INTEGER :: LENPERM, LENTMP
-      TYPE(mpi_angular_input_options) :: input_options
-      INTEGER(int64) :: program_start_count, stage_start_count
-      CHARACTER(len=16) :: input_format_name
+      logical ::  debug, restrt, yes
+      character(len=128) :: startdir, permdir, tmpdir
+      character(len=8), dimension(nblk0):: idblk
+      character(len=3) :: idstring
+      integer :: lenperm, lentmp
+      type(mpi_angular_input_options) :: input_options
+      integer(int64) :: program_start_count, stage_start_count
+      character(len=16) :: input_format_name
 !-----------------------------------------------
-      CALL parse_mpi_angular_options(input_options)
-      OPEN(UNIT=739,FILE='rangular.log',STATUS='UNKNOWN')
+      call parse_mpi_angular_options(input_options)
+      open(unit=739,file='rangular.log',status='UNKNOWN')
       startdir = ' '
       permdir = ' '
       tmpdir = ' '
 !=======================================================================
 !  Start mpi --- get processor info: myid, nprocs, host name; and print
 !=======================================================================
-      CALL startmpi2 (myid, nprocs, host, lenhost, ncount1, &
+      call startmpi2 (myid, nprocs, host, lenhost, ncount1, &
                            startdir, permdir, tmpdir, 'RANGULAR_MPI')
-      WRITE (idstring, '(I3.3)') myid
-      lenperm = LEN_TRIM (permdir)
-      lentmp = LEN_TRIM (tmpdir)
-      CALL open_mpi_angular_profile(input_options)
+      write (idstring, '(I3.3)') myid
+      lenperm = len_trim (permdir)
+      lentmp = len_trim (tmpdir)
+      call open_mpi_angular_profile(input_options)
       input_format_name = 'text'
-      IF (input_options%use_descriptors) input_format_name = 'descriptors'
+      if (input_options%use_descriptors) input_format_name = 'descriptors'
       program_start_count = stage_clock()
 !=======================================================================
 !  Get NDEF on node-0 and then send to all nodes
 !=======================================================================
-      IF (myid == 0) THEN
-         WRITE (istde,*)
+      if (myid == 0) then
+         write (istde,*)
 !         WRITE (istde,'(A)') ' Default settings?  (y/n) '
-         WRITE (istde,'(A)') ' Full interaction?  (y/n) '
-         YES = GETYN ()
-         IF (YES) THEN
-            NDEF = 0
+         write (istde,'(A)') ' Full interaction?  (y/n) '
+         yes = getyn ()
+         if (yes) then
+            ndef = 0
             write(739,'(A)') 'y            ! Full interaction'
-         ELSE
-            NDEF = 1
+         else
+            ndef = 1
             write(739,'(A)') 'n            ! Full interaction'
-         ENDIF
-      ENDIF
-      CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (NDEF,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+         endif
+      endif
+      call mpi_barrier(mpi_comm_world,ierr)
+      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,ierr)
 
 !=======================================================================
 !
@@ -133,56 +133,56 @@
 !    factt - table of logarithms of factorials setup
 !=======================================================================
 
-      CALL setdbgmpi (DEBUG, permdir(1:lenperm) // '/genmcp.dbg')
-      CALL SETMC
+      call setdbgmpi (debug, permdir(1:lenperm) // '/genmcp.dbg')
+      call setmc
       stage_start_count = stage_clock()
-      CALL load_mpi_angular_header(input_options,permdir,ncore,nblk0,idblk)
-      CALL record_stage('input_header_and_broadcast',0,stage_start_count,storage=input_format_name)
+      call load_mpi_angular_header(input_options,permdir,ncore,nblk0,idblk)
+      call record_stage('input_header_and_broadcast',0,stage_start_count,storage=input_format_name)
       stage_start_count = stage_clock()
-      RESTRT = .FALSE.
+      restrt = .false.
 !cjb  myid, nprocs = NOT args
 !cjb  CALL setmcpmpi (myid, nprocs, ncore, idblk, 'mcp' // idstring)
-      CALL setmcpmpi (ncore, idblk, 'mcp' // idstring)
-      IF (NDEF/=0 .AND. MYID==0) CALL STRSUM
-      CALL FACTT
-      CALL record_stage('mcp_setup_including_interaction_input',0,stage_start_count)
+      call setmcpmpi (ncore, idblk, 'mcp' // idstring)
+      if (ndef/=0 .and. myid==0) call strsum
+      call factt
+      call record_stage('mcp_setup_including_interaction_input',0,stage_start_count)
 
 !=======================================================================
 !     For each block, generate and sort the data
 !=======================================================================
 
-      DO NB = 1, NBLOCK
-         NCF = NCFBLK(NB)                        ! This ncf goes to common
-         IF (MYID == 0) THEN
-            WRITE (6, *)
-            WRITE (6, *) 'Block ', NB, ',  ncf = ', NCF
-         ENDIF
+      do nb = 1, nblock
+         ncf = ncfblk(nb)                        ! This ncf goes to common
+         if (myid == 0) then
+            write (6, *)
+            write (6, *) 'Block ', nb, ',  ncf = ', ncf
+         endif
             !*** Load current CSL block. Memories de-allocated in mcp ***
          stage_start_count = stage_clock()
-         CALL ALLOC (iqa, NNNW, NCF, 'IQA', 'GENMCP')
-         CALL ALLOC (jqsa, NNNW,3,NCF, 'JQSA', 'GENMCP')
-         CALL ALLOC (jcupa, NNNW, NCF, 'JCUPA', 'GENMCP')
-         CALL record_stage('csf_allocation',nb,stage_start_count,int(ncf,int64))
+         call alloc (iqa, nnnw, ncf, 'IQA', 'GENMCP')
+         call alloc (jqsa, nnnw,3,ncf, 'JQSA', 'GENMCP')
+         call alloc (jcupa, nnnw, ncf, 'JCUPA', 'GENMCP')
+         call record_stage('csf_allocation',nb,stage_start_count,int(ncf,int64))
 !
          stage_start_count = stage_clock()
-         CALL load_mpi_angular_block(input_options,ncore,nb)
-         CALL record_stage('csf_load_and_broadcast',nb,stage_start_count,int(ncf,int64),storage=input_format_name)
+         call load_mpi_angular_block(input_options,ncore,nb)
+         call record_stage('csf_load_and_broadcast',nb,stage_start_count,int(ncf,int64),storage=input_format_name)
          !*** Open tmp.xx files for block nb ***
-         CALL SETTMP (NB, KMAX, 'tmp' // idstring)
+         call settmp (nb, kmax, 'tmp' // idstring)
          !*** Generation of MCP coefficients ***
 !cjb  myid, nprocs = NOT args
 !cjb     CALL MCPmpi (NB, RESTRT, MYID, NPROCS, 'mcp' // idstring)
-         CALL MCPmpi (NB, RESTRT, 'mcp' // idstring)
-      END DO
-      CALL close_mpi_angular_input(input_options)
-      CLOSE(24)                                  ! Summary file
-      CLOSE(739)                                 ! rangular.log
-      IF (DEBUG) CLOSE(99)                       ! Debug file
-      CALL record_stage('program_before_finalize_including_interaction_input',0,program_start_count)
-      CALL close_stage_profile()
+         call mcpmpi (nb, restrt, 'mcp' // idstring)
+      end do
+      call close_mpi_angular_input(input_options)
+      close(24)                                  ! Summary file
+      close(739)                                 ! rangular.log
+      if (debug) close(99)                       ! Debug file
+      call record_stage('program_before_finalize_including_interaction_input',0,program_start_count)
+      call close_stage_profile()
 !=======================================================================
 !  Execution finished; Statistics output
 !=======================================================================
-      CALL stopmpi2 (myid,nprocs,host,lenhost,ncount1,'RANGULAR_MPI')
-      STOP
-      END PROGRAM GENMCPMPI
+      call stopmpi2 (myid,nprocs,host,lenhost,ncount1,'RANGULAR_MPI')
+      stop
+      end program genmcpmpi

@@ -1,11 +1,11 @@
-      MODULE read3_mem_I
-      INTERFACE
+      module read3_mem_i
+      interface
 !   Written by  G. Gaigalas               Vilnius, September 2021
-      SUBROUTINE read3_mem(NFILE,NCONTR_tot,NCONTR)
-      USE vast_kind_param, ONLY: LONG
-      INTEGER(LONG), INTENT(IN) :: NCONTR_tot
-      INTEGER, INTENT(IN)       :: NFILE
-      INTEGER, INTENT(OUT)      :: NCONTR
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine read3_mem(nfile,ncontr_tot,ncontr)
+      use vast_kind_param, only: long
+      integer(long), intent(in) :: ncontr_tot
+      integer, intent(in)       :: nfile
+      integer, intent(out)      :: ncontr
+      end subroutine
+      end interface
+      end module

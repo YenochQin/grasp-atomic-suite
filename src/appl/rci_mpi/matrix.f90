@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE MATRIX (ncore, j2max)
+      subroutine matrix (ncore, j2max)
 !                                                                      *
 !   This SUBROUTINE calls routines to  form the  Hamiltonian  matrix   *
 !   and to diagonalise it.   The total angular momenta and parity of   *
@@ -22,74 +22,74 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE, LONG
-      USE parameter_def,   ONLY: NNNW
-      USE memory_man
-      USE decide_C
-      USE DEBUG_C
-      USE def_C
-      USE eigv_C
-      USE hblock_C
-      USE hmat_C
-      USE iounit_C
-      USE jlabl_C, LABJ=>JLBR, LABP=>JLBP
-      USE orb_C, ONLY: ncf, nw, iqa
-      USE prnt_C
-      USE stat_C
-      USE wave_C
-      USE where_C
-      USE blim_C
-      USE eigvec1_C
-      USE iccu_C
-      USE cteilsrk_C
-      USE coeils_C
-      USE bilst_C
-      USE vpilst_C
-      USE keilst_C
-      USE vinlst_C
-      USE fposition_C
+      use vast_kind_param, only: double, long
+      use parameter_def,   only: nnnw
+      use memory_man
+      use decide_c
+      use debug_c
+      use def_c
+      use eigv_c
+      use hblock_c
+      use hmat_c
+      use iounit_c
+      use jlabl_c, labj=>jlbr, labp=>jlbp
+      use orb_c, only: ncf, nw, iqa
+      use prnt_c
+      use stat_c
+      use wave_c
+      use where_c
+      use blim_c
+      use eigvec1_c
+      use iccu_c
+      use cteilsrk_c
+      use coeils_c
+      use bilst_c
+      use vpilst_c
+      use keilst_c
+      use vinlst_c
+      use fposition_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE auxblk_I
-      USE lodcslmpi_I
-      USE qed_slfen_I
-      USE genmat_I
-      USE genmat2_I
-      USE hmout_I
-      USE iq_I
-      USE maneig_I
-      USE engout_I
-      USE wghtd5_I
-      USE qed_I
-      USE mpi_C
-      USE mpiu_I, ONLY: stopmpi
-      IMPLICIT NONE
+      use auxblk_i
+      use lodcslmpi_i
+      use qed_slfen_i
+      use genmat_i
+      use genmat2_i
+      use hmout_i
+      use iq_i
+      use maneig_i
+      use engout_i
+      use wghtd5_i
+      use qed_i
+      use mpi_c
+      use mpiu_i, only: stopmpi
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: ncore
-      INTEGER,  INTENT(IN):: j2max
+      integer  :: ncore
+      integer,  intent(in):: j2max
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE), DIMENSION(NNNW) :: slfint
-      CHARACTER(LEN=8) :: CNUM
-      REAL(DOUBLE) :: atwinv, elsto, eau, ecm, eev, elemnt
-      REAL(DOUBLE), DIMENSION(:), pointer :: slf_en, ucf, etot
-      INTEGER(LONG) :: nelmnt_a
-      INTEGER :: iiatjpo, iiaspar
-      INTEGER :: i, j, irestart, ncminpas, jblock, ic, ip, mode
+      real(double), dimension(nnnw) :: slfint
+      character(len=8) :: cnum
+      real(double) :: atwinv, elsto, eau, ecm, eev, elemnt
+      real(double), dimension(:), pointer :: slf_en, ucf, etot
+      integer(long) :: nelmnt_a
+      integer :: iiatjpo, iiaspar
+      integer :: i, j, irestart, ncminpas, jblock, ic, ip, mode
 !-----------------------------------------------
 !     ...Common to all blocks - place here to save CPU time
-      CALL auxblk (j2max, atwinv)
+      call auxblk (j2max, atwinv)
 
 !***************************************************************
 !      Loop over blocks
 !***************************************************************
       ncminpas = 0
 
-      DO 100 jblock = 1, nblock
+      do 100 jblock = 1, nblock
          ncf    =   ncfblk(jblock)
          nvec   =   nevblk(jblock)
          nvecmx = ncmaxblk(jblock)
@@ -98,90 +98,90 @@
 
          nposition = 7 + nw + nw  ! File position of the previous block
                                   ! in the .res file
-         DO i = 1, jblock - 1
+         do i = 1, jblock - 1
             j = (ncfblk(i) - myid - 1 + nprocs) / nprocs
-            IF (ncfblk(i) .LT. nprocs) j = ncfblk(i) / (myid+1)
+            if (ncfblk(i) .lt. nprocs) j = ncfblk(i) / (myid+1)
             nposition = nposition + j + 1
-         ENDDO
+         enddo
 
          !.. SETHAM does not handle this extrem case
-         IF (nprocs .GT. NCF)                                          &
-                         CALL stopmpi ('matrix: too many nodes', myid)
+         if (nprocs .gt. ncf)                                          &
+                         call stopmpi ('matrix: too many nodes', myid)
 
 !        ...Obtain ivec() from iccmin()
-         IF (nvec .GT. 0) THEN
-            CALL alloc (ivec, nvec, 'IVEC', 'MATRIX')
-            DO i = 1, nvec
+         if (nvec .gt. 0) then
+            call alloc (ivec, nvec, 'IVEC', 'MATRIX')
+            do i = 1, nvec
                ivec(i) = iccmin(i+ncminpas)
-            ENDDO
+            enddo
             ncminpas = ncminpas + nvec
-         ENDIF
+         endif
 
 !        ...These 3 were allocated in lodcsh2 and deallocated at the end
 !        ... of this routine and in the setham. In this block version,
 !        ... both allocation and deallocation are placed here. See the
 !        ... following goto 80 for reason.
-         CALL ALLOC (IQA, NNNW, ncf, 'IQA', 'MATRIX')
-         CALL ALLOC (JQSA, NNNW, 3, ncf, 'JQSA', 'MATRIX')
-         CALL ALLOC (JCUPA, NNNW, ncf, 'JCUPA', 'MATRIX')
-         CALL ALLOC (SLF_EN,ncf,'SLF_EN', 'MATRIX')
-         CALL ALLOC (UCF, nw,'UCF', 'MATRIX')
+         call alloc (iqa, nnnw, ncf, 'IQA', 'MATRIX')
+         call alloc (jqsa, nnnw, 3, ncf, 'JQSA', 'MATRIX')
+         call alloc (jcupa, nnnw, ncf, 'JCUPA', 'MATRIX')
+         call alloc (slf_en,ncf,'SLF_EN', 'MATRIX')
+         call alloc (ucf, nw,'UCF', 'MATRIX')
           do ic=1,ncf
-               SLF_EN(IC) = 0.0
+               slf_en(ic) = 0.0
           enddo
 
 !      ...Load CSF list of the current block
-        CALL lodcslmpi (21, ncore, jblock)
+        call lodcslmpi (21, ncore, jblock)
 ! zou
 
-         IF (LSE) THEN
-            IF (myid .EQ. 0) THEN
-              PRINT *, 'Entering QED ...'
+         if (lse) then
+            if (myid .eq. 0) then
+              print *, 'Entering QED ...'
 
-              WRITE (24,*)
-              WRITE (24,*) ' Self Energy Corrections: '
-              WRITE (24,*)
+              write (24,*)
+              write (24,*) ' Self Energy Corrections: '
+              write (24,*)
             endif
-            CALL QED_SLFEN (SLFINT)
-            DO IC = 1, NCF
-               ELEMNT = 0.0D00
-               DO I = 1,NW
-                  ELEMNT = ELEMNT+IQ (I,IC)*SLFINT(I)
-               ENDDO
-               SLF_EN(IC) = ELEMNT
-            ENDDO
+            call qed_slfen (slfint)
+            do ic = 1, ncf
+               elemnt = 0.0d00
+               do i = 1,nw
+                  elemnt = elemnt+iq (i,ic)*slfint(i)
+               enddo
+               slf_en(ic) = elemnt
+            enddo
 
-            IF (myid .EQ. 0) THEN
-               WRITE (24,*)
-               WRITE (24,*) 'Self-energy corrections estimated'       &
+            if (myid .eq. 0) then
+               write (24,*)
+               write (24,*) 'Self-energy corrections estimated'       &
                        //' --- these will influence the data'
-               WRITE (24,*) ' in the RCI92 MIXing coefficients File.'
+               write (24,*) ' in the RCI92 MIXing coefficients File.'
                endif
-            ENDIF
+            endif
 
 ! zou
-         IF (nvec <= 0) THEN
-            IF (myid .EQ. 0) WRITE (25) jblock, ncf, nvec, 999, 999
+         if (nvec <= 0) then
+            if (myid .eq. 0) write (25) jblock, ncf, nvec, 999, 999
 !           ...Generate H matrix of the current block and write to disk
 !           ...eav, nelmnt are also obtained from genmat
-            CALL genmat (atwinv, jblock, myid, nprocs, elsto, irestart,&
+            call genmat (atwinv, jblock, myid, nprocs, elsto, irestart,&
            slf_en)
              ! This call is optional, meaning the matrix of this block
                ! does not need to be computed. But don't comment it out
                ! since other programs may assume thet existence of them.
-            CALL genmat2 (irestart, nelmnt_a, elsto)
-            GOTO 80 ! need to clear memory
-         ENDIF
+            call genmat2 (irestart, nelmnt_a, elsto)
+            goto 80 ! need to clear memory
+         endif
 !        ------------------------
-         CALL genmat (atwinv, jblock, myid, nprocs, elsto, irestart,   &
+         call genmat (atwinv, jblock, myid, nprocs, elsto, irestart,   &
            slf_en)
-         CALL genmat2 (irestart, nelmnt_a, elsto)
+         call genmat2 (irestart, nelmnt_a, elsto)
 !
 !   Allocate and deallocate memory for the mixing coefficients
 !   from the prerun
 !
-      IF (IPRERUN.EQ.1) CALL ALLOC (EVEC1,NCF*NVEC, 'EVEC1', 'MATRIX')
-      IF (IPRERUN.EQ.2) CALL DALLOC (EVEC1, 'EVEC1', 'MATRIX')
+      if (iprerun.eq.1) call alloc (evec1,ncf*nvec, 'EVEC1', 'MATRIX')
+      if (iprerun.eq.2) call dalloc (evec1, 'EVEC1', 'MATRIX')
 
 ! Since maneig needs both nelmnt and nelmnt_a, # of non-zero
 ! matrix elements computed by current node and the total #
@@ -189,7 +189,7 @@
 ! using the one in the common block.
 
 !        write (*,*) 'Matrix61,myid=',myid
-        CALL MANEIG (iiatjpo, iiaspar, nelmnt_a)
+        call maneig (iiatjpo, iiaspar, nelmnt_a)
 !GG        CALL MANEIG (iiatjpo, iiaspar, nelmnt_a, imethod)
 !GG         CALL MANEIG (iiatjpo, iiaspar)
 !
@@ -198,185 +198,185 @@
 !   eigenvalues  and eigenvectors to RCI92 mixing coefficients file.
 !   EAV and ELSTO are added back to energy here
 !
-        IF (myid .EQ. 0) THEN
+        if (myid .eq. 0) then
 ! ELSTO has never been in Hamiltonian matrix, yet it was
 ! added to EAV which was later substracted from H. Thus at
 ! this point, EAV is correct (it has ELSTO added), EVAL()
 ! need ELSTO and the correct EAV.
-           IF (NCF > 1) then
-              DO i = 1, NVEC
-                 EVAL(i) = EVAL(i) + ELSTO
-              ENDDO
-           END IF
+           if (ncf > 1) then
+              do i = 1, nvec
+                 eval(i) = eval(i) + elsto
+              enddo
+           end if
 
-           CALL ENGOUT (EAV,EVAL,IiATJPO,iIASPAR,IVEC,NVEC,3)
-           CALL WGHTD5 (iiatjpo, iiaspar)
+           call engout (eav,eval,iiatjpo,iiaspar,ivec,nvec,3)
+           call wghtd5 (iiatjpo, iiaspar)
 
 !          ...Write ASF symmetries, eigenvalues, and eigenvectors to RCI92
 !          ...MIXing coefficients File; close the file; print a report
-           WRITE (25) jblock, ncf, nvec, iiatjpo, iiaspar
-           WRITE (25) (ivec(i), i = 1, nvec)
-           WRITE (25) EAV,(EVAL(I),I = 1,NVEC)
-           WRITE (25) ((EVEC(I+(J-1)*NCF),I = 1,NCF),J = 1,NVEC)
+           write (25) jblock, ncf, nvec, iiatjpo, iiaspar
+           write (25) (ivec(i), i = 1, nvec)
+           write (25) eav,(eval(i),i = 1,nvec)
+           write (25) ((evec(i+(j-1)*ncf),i = 1,ncf),j = 1,nvec)
 
-           PRINT *, 'RCI90 MIXing coefficients File generated.'
-        ENDIF
+           print *, 'RCI90 MIXing coefficients File generated.'
+        endif
 !
 !   Save the mixing coefficients from the prerun
 !
-      IF (IPRERUN .EQ. 1) THEN
-         DO J = 1, NVEC
-            DO I = 1, NCF
-               EVEC1(I+(J-1)*NCF) = EVEC(I+(J-1)*NCF)
-            ENDDO
-         ENDDO
-      ENDIF
+      if (iprerun .eq. 1) then
+         do j = 1, nvec
+            do i = 1, ncf
+               evec1(i+(j-1)*ncf) = evec(i+(j-1)*ncf)
+            enddo
+         enddo
+      endif
 !
 !   Estimate diagonal self-energy corrections; the stored
 !   eigenvalues and eigenvectors are not modified by these
 !   estimates
 !
-      IF (.not.LSE) THEN
-         IF (myid .EQ. 0)            PRINT *, 'Entering QED ...'
-            CALL ALLOC (ETOT,NVEC,'ETOT', 'MATRIX')
-         IF (myid .EQ. 0) THEN
-            WRITE (24,*)
-            WRITE (24,*) ' Self Energy Corrections: '
-            WRITE (24,*)
-            WRITE (24,301)
-            WRITE (24,*)
-         END IF
-  301 FORMAT (' Level  J Parity',7X,'Hartrees',14X,'Kaysers',          &
-               16X,'eV' )
-  302 FORMAT (1I3,2X,2A4,1P,3D22.14)
-         DO J = 1, nvec
-            CALL QED (j,SLFINT,UCF)
-            ELEMNT = 0.0D00
-            IC = IVEC(J)
-            DO I = 1,NW
-               ELEMNT = ELEMNT+UCF(I)*SLFINT(I)
+      if (.not.lse) then
+         if (myid .eq. 0)            print *, 'Entering QED ...'
+            call alloc (etot,nvec,'ETOT', 'MATRIX')
+         if (myid .eq. 0) then
+            write (24,*)
+            write (24,*) ' Self Energy Corrections: '
+            write (24,*)
+            write (24,301)
+            write (24,*)
+         end if
+  301 format (' Level  J Parity',7x,'Hartrees',14x,'Kaysers',          &
+               16x,'eV' )
+  302 format (1i3,2x,2a4,1p,3d22.14)
+         do j = 1, nvec
+            call qed (j,slfint,ucf)
+            elemnt = 0.0d00
+            ic = ivec(j)
+            do i = 1,nw
+               elemnt = elemnt+ucf(i)*slfint(i)
 !              ELEMNT = ELEMNT+IQ (I,IC)*SLFINT(I)
-            ENDDO
-            ETOT(J) = EVAL(J)+ELEMNT
+            enddo
+            etot(j) = eval(j)+elemnt
 !
-            EAU = ELEMNT
-            ECM = EAU*AUCM
-            EEV = EAU*AUEV
-            IP = (IIASPAR+3)/2
-            IF (myid .EQ. 0)                                           &
-               WRITE (24,302) j,LABJ(IiATJPO),LABP(IP),EAU,ECM,EEV
+            eau = elemnt
+            ecm = eau*aucm
+            eev = eau*auev
+            ip = (iiaspar+3)/2
+            if (myid .eq. 0)                                           &
+               write (24,302) j,labj(iiatjpo),labp(ip),eau,ecm,eev
 !
-         ENDDO
-         IF (myid .EQ. 0) THEN
-            WRITE (24,*)
-            WRITE (24,*) 'Self-energy corrections estimated'           &
+         enddo
+         if (myid .eq. 0) then
+            write (24,*)
+            write (24,*) 'Self-energy corrections estimated'           &
                     //' --- these do not influence the data'
-            WRITE (24,*) ' in the RCI92 MIXing coefficients File.'
-            CALL ENGOUT (EAV,ETOT,IiATJPO,iIASPAR,IVEC,NVEC,MODE)
+            write (24,*) ' in the RCI92 MIXing coefficients File.'
+            call engout (eav,etot,iiatjpo,iiaspar,ivec,nvec,mode)
 ! zou       CALL ENGOUT (EAV+elsto,ETOT,IiATJPO,iIASPAR,IVEC,NVEC,MODE)
-         ENDIF
-         CALL dalloc (ETOT, 'ETOT', 'MATRIX')
-      ENDIF
+         endif
+         call dalloc (etot, 'ETOT', 'MATRIX')
+      endif
 
 !        ...Locals
-         CALL dalloc (ivec, 'IVEC', 'MATRIX')
+         call dalloc (ivec, 'IVEC', 'MATRIX')
 !        ...Allocated in maneig
-         CALL dalloc (eval, 'EVAL', 'MATRIX')
-         CALL dalloc (evec, 'EVEC', 'MATRIX')
+         call dalloc (eval, 'EVAL', 'MATRIX')
+         call dalloc (evec, 'EVEC', 'MATRIX')
 
-   80    CONTINUE
+   80    continue
 
 !        ...Locals
-         CALL dalloc (IQA, 'IQA', 'MATRIX')
-         CALL dalloc (JQSA, 'JQSA', 'MATRIX')
-         CALL dalloc (JCUPA, 'JCUPA', 'MATRIX')
-         CALL dalloc (SLF_EN, 'SLF_EN', 'MATRIX')
-         CALL dalloc (UCF, 'UCF', 'MATRIX')
+         call dalloc (iqa, 'IQA', 'MATRIX')
+         call dalloc (jqsa, 'JQSA', 'MATRIX')
+         call dalloc (jcupa, 'JCUPA', 'MATRIX')
+         call dalloc (slf_en, 'SLF_EN', 'MATRIX')
+         call dalloc (ucf, 'UCF', 'MATRIX')
 
-  100 CONTINUE
+  100 continue
 !
 !   Close the restart files; nothing will be added to them now
 !
-      CLOSE (imcdf)
+      close (imcdf)
 !     ...Clean up
-      CALL dalloc (ncfblk, 'NCFBLK', 'MATRIX')
-      CALL dalloc (nevblk, 'NEVBLK', 'MATRIX')
-      CALL dalloc (ncmaxblk, 'NCMAXBLK', 'MATRIX')
-      CALL dalloc (iccutblk, 'ICUTTBLK', 'MATRIX')
-      CALL dalloc (iccmin, 'ICCMIN', 'MATRIX') ! allocated in items as pnccmin
+      call dalloc (ncfblk, 'NCFBLK', 'MATRIX')
+      call dalloc (nevblk, 'NEVBLK', 'MATRIX')
+      call dalloc (ncmaxblk, 'NCMAXBLK', 'MATRIX')
+      call dalloc (iccutblk, 'ICUTTBLK', 'MATRIX')
+      call dalloc (iccmin, 'ICCMIN', 'MATRIX') ! allocated in items as pnccmin
 
-      CALL dalloc (VALTEIRK, 'VALTEIRK', 'MATRIX') ! allocated in genintrk
-      CALL dalloc (INDTEIRK, 'INDTEIRK', 'MATRIX') ! allocated in genintrk
+      call dalloc (valteirk, 'VALTEIRK', 'MATRIX') ! allocated in genintrk
+      call dalloc (indteirk, 'INDTEIRK', 'MATRIX') ! allocated in genintrk
 !
 !   Deallocate storage for the integral lists from the
 !   Dirac-Coulomb operator; the storage was allocated
 !   in IABINT and RKINTC
 !
-      IF (NCOEI .GT. 0) THEN
-         CALL DALLOC (INDOEI, 'INDOEI', 'MATRIX')
-         CALL DALLOC (VALOEI, 'VALOEI', 'MATRIX')
-      ENDIF
+      if (ncoei .gt. 0) then
+         call dalloc (indoei, 'INDOEI', 'MATRIX')
+         call dalloc (valoei, 'VALOEI', 'MATRIX')
+      endif
 !
 !   Deallocate storage for the integral lists from the
 !   transverse photon interaction operator; this storage
 !   was allocated in BRINT1, brint2,...brint6
 !
-      IF (LTRANS) THEN
-         IF (NTPI(1) .GT. 0) THEN
-            CALL DALLOC (INDTP1, 'INDTP1', 'MATRIX')
-            CALL DALLOC (VALTP1, 'VALTP1', 'MATRIX')
-         ENDIF
-         IF (NTPI(2) .GT. 0) THEN
-            CALL DALLOC (INDTP2, 'INDTP2', 'MATRIX')
-            CALL DALLOC (VALTP2, 'VALTP2', 'MATRIX')
-         ENDIF
-         IF (NTPI(3) .GT. 0) THEN
-            CALL DALLOC (INDTP3, 'INDTP3', 'MATRIX')
-            CALL DALLOC (VALTP3, 'VALTP3', 'MATRIX')
-         ENDIF
-         IF (NTPI(4) .GT. 0) THEN
-            CALL DALLOC (INDTP4, 'INDTP4', 'MATRIX')
-            CALL DALLOC (VALTP4, 'VALTP4', 'MATRIX')
-         ENDIF
-         IF (NTPI(5) .GT. 0) THEN
-            CALL DALLOC (INDTP5, 'INDTP5', 'MATRIX')
-            CALL DALLOC (VALTP5, 'VALTP5', 'MATRIX')
-         ENDIF
-         IF (NTPI(6) .GT. 0) THEN
-            CALL DALLOC (INDTP6, 'INDTP6', 'MATRIX')
-            CALL DALLOC (VALTP6, 'VALTP6', 'MATRIX')
-         ENDIF
-      ENDIF
+      if (ltrans) then
+         if (ntpi(1) .gt. 0) then
+            call dalloc (indtp1, 'INDTP1', 'MATRIX')
+            call dalloc (valtp1, 'VALTP1', 'MATRIX')
+         endif
+         if (ntpi(2) .gt. 0) then
+            call dalloc (indtp2, 'INDTP2', 'MATRIX')
+            call dalloc (valtp2, 'VALTP2', 'MATRIX')
+         endif
+         if (ntpi(3) .gt. 0) then
+            call dalloc (indtp3, 'INDTP3', 'MATRIX')
+            call dalloc (valtp3, 'VALTP3', 'MATRIX')
+         endif
+         if (ntpi(4) .gt. 0) then
+            call dalloc (indtp4, 'INDTP4', 'MATRIX')
+            call dalloc (valtp4, 'VALTP4', 'MATRIX')
+         endif
+         if (ntpi(5) .gt. 0) then
+            call dalloc (indtp5, 'INDTP5', 'MATRIX')
+            call dalloc (valtp5, 'VALTP5', 'MATRIX')
+         endif
+         if (ntpi(6) .gt. 0) then
+            call dalloc (indtp6, 'INDTP6', 'MATRIX')
+            call dalloc (valtp6, 'VALTP6', 'MATRIX')
+         endif
+      endif
 !
 !   Deallocate storage for the nuclear motional energy integral
 !   lists; this was allocated in KEINT and VINT
 !
-      IF (LNMS) THEN
-         IF (NKEI .GT. 0) THEN
-            CALL DALLOC (INDKEI, 'INDKEI', 'MATRIX')
-            CALL DALLOC (VALKEI, 'VALKEI', 'MATRIX')
-         ENDIF
-      ENDIF
-      IF (LSMS) THEN
-         IF (NVINTI .GT. 0) THEN
-            CALL DALLOC (INDTEI, 'INDTEI', 'MATRIX')
-            CALL DALLOC (VALTEI, 'VALTIE', 'MATRIX')
-         ENDIF
-      ENDIF
+      if (lnms) then
+         if (nkei .gt. 0) then
+            call dalloc (indkei, 'INDKEI', 'MATRIX')
+            call dalloc (valkei, 'VALKEI', 'MATRIX')
+         endif
+      endif
+      if (lsms) then
+         if (nvinti .gt. 0) then
+            call dalloc (indtei, 'INDTEI', 'MATRIX')
+            call dalloc (valtei, 'VALTIE', 'MATRIX')
+         endif
+      endif
 !
 !   Deallocate storage for the vacuum-polarisation integral list;
 !   this was allocated in VPINT
 !
-      IF (LVP) THEN
-         IF (NVPI .GT. 0) THEN
-            CALL DALLOC (INDVPI, 'INDVPI', 'MATRIX')
-            CALL DALLOC (VALVPI, 'VALVPI', 'MATRIX')
-         ENDIF
-      ENDIF
+      if (lvp) then
+         if (nvpi .gt. 0) then
+            call dalloc (indvpi, 'INDVPI', 'MATRIX')
+            call dalloc (valvpi, 'VALVPI', 'MATRIX')
+         endif
+      endif
 
-      CALL dalloc (PF, 'PF', 'MATRIX') ! lodrwf or lodres
-      CALL dalloc (QF, 'QF', 'MATRIX') ! lodrwf or lodres
+      call dalloc (pf, 'PF', 'MATRIX') ! lodrwf or lodres
+      call dalloc (qf, 'QF', 'MATRIX') ! lodrwf or lodres
 
-      RETURN
+      return
 
-      END
+      end

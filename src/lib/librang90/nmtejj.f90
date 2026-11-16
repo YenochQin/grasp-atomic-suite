@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      INTEGER FUNCTION NMTEJJ(I2Q,I2J,J,NK,ND)
+      integer function nmtejj(i2q,i2j,j,nk,nd)
 !                                                                  *
 !     ------------  SECTION METWO    SUBPROGRAM 21  -------------  *
 !                                                                  *
@@ -16,66 +16,66 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE mtjj_C
-      USE mtjj2_C
-      IMPLICIT NONE
+      use mtjj_c
+      use mtjj2_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: I2Q, I2J, J, NK, ND
+      integer, intent(in) :: i2q, i2j, j, nk, nd
 !      DIMENSION LP(9),LG(9),LP3(27),LG3(27)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER                :: I2V, INN, IL, JP, JG, JJ
-      INTEGER, DIMENSION(9)  :: LP, LG
-      INTEGER, DIMENSION(27) :: LP3, LG3
+      integer                :: i2v, inn, il, jp, jg, jj
+      integer, dimension(9)  :: lp, lg
+      integer, dimension(27) :: lp3, lg3
 !-----------------------------------------------
-      DATA LP/1,0,3,0,6,0,12,0,26/
-      DATA LG/2,0,5,0,11,0,25,0,63/
-      DATA LP3/1,0,8,0,16,0,25,0,35,0,46,0,58,0,71,0,85,0,100,0, &
+      data lp/1,0,3,0,6,0,12,0,26/
+      data lg/2,0,5,0,11,0,25,0,63/
+      data lp3/1,0,8,0,16,0,25,0,35,0,46,0,58,0,71,0,85,0,100,0, &
       116,0,133,0,151,0,170/
-      DATA LG3/7,0,15,0,24,0,34,0,45,0,57,0,70,0,84,0,99,0,115,0,&
+      data lg3/7,0,15,0,24,0,34,0,45,0,57,0,70,0,84,0,99,0,115,0,&
       132,0,150,0,169,0,189/
-      NMTEJJ=0
-      IF(J > 37)RETURN
-      I2V=J+1-2*I2Q
-      INN=(I2Q*100+I2V)*100+I2J
-      IF(J < 9) THEN
-         JP=LP(J)
-         IF(JP == 0)RETURN
-         JG=LG(J)
-         IF(JG == 0)RETURN
-         JJ=JP
-    2    IF (INN == MT(JJ)) GO TO 1
-    3    JJ=JJ+1
-         IF(JJ > JG)RETURN
-         GO TO 2
-    1    NMTEJJ=JJ
-      ELSEIF(J == 9) THEN
-        IF(MAX0(NK,ND) < 3) THEN
-          JP=1
-          JG=6
-          JJ=JP
-    6     IF (INN == MT9(JJ)) GO TO 5
-    4     JJ=JJ+1
-          IF(JJ > JG)RETURN
-          GO TO 6
-    5     NMTEJJ=JJ+300
-        ELSE
-          PRINT*, "ERROR in FUNCTION NMTEJJ"
-          STOP
-        END IF
-      ELSE
-        IL=J-10
-        JP=LP3(IL)
-        JG=LG3(IL)
-        JJ=JP
-   22   IF (INN == MT11(JJ)) GO TO 21
-   23   JJ=JJ+1
-        IF(JJ > JG)RETURN
-        GO TO 22
-   21   NMTEJJ=JJ
-      ENDIF
-      RETURN
-      END FUNCTION NMTEJJ
+      nmtejj=0
+      if(j > 37)return
+      i2v=j+1-2*i2q
+      inn=(i2q*100+i2v)*100+i2j
+      if(j < 9) then
+         jp=lp(j)
+         if(jp == 0)return
+         jg=lg(j)
+         if(jg == 0)return
+         jj=jp
+    2    if (inn == mt(jj)) go to 1
+    3    jj=jj+1
+         if(jj > jg)return
+         go to 2
+    1    nmtejj=jj
+      elseif(j == 9) then
+        if(max0(nk,nd) < 3) then
+          jp=1
+          jg=6
+          jj=jp
+    6     if (inn == mt9(jj)) go to 5
+    4     jj=jj+1
+          if(jj > jg)return
+          go to 6
+    5     nmtejj=jj+300
+        else
+          print*, "ERROR in FUNCTION NMTEJJ"
+          stop
+        end if
+      else
+        il=j-10
+        jp=lp3(il)
+        jg=lg3(il)
+        jj=jp
+   22   if (inn == mt11(jj)) go to 21
+   23   jj=jj+1
+        if(jj > jg)return
+        go to 22
+   21   nmtejj=jj
+      endif
+      return
+      end function nmtejj

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETCSL
+      subroutine setcsl
 !                                                                      *
 !   Open, check, load data from and close the  .csl  file. This file   *
 !   is always attached to stream 21.                                   *
@@ -16,56 +16,56 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      USE lodcsl_I
-      IMPLICIT NONE
+      use openfl_i
+      use lodcsl_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IERR, IOS, NCORE
-      LOGICAL :: FOUND
-      CHARACTER :: FILNAM*256, RECORD*15, DEFNAM*11, FORM*11, STATUS*3
+      integer :: ierr, ios, ncore
+      logical :: found
+      character :: filnam*256, record*15, defnam*11, form*11, status*3
 !-----------------------------------------------
 !
 !
 !   The  .csl  file is FORMATTED; it must exist
 !
-      DEFNAM = 'rcsl.inp'
-      FORM = 'FORMATTED'
-      STATUS = 'OLD'
+      defnam = 'rcsl.inp'
+      form = 'FORMATTED'
+      status = 'OLD'
 !
 !   Look for  grasp92.csl
 !
-      INQUIRE(FILE=DEFNAM, EXIST=FOUND)
+      inquire(file=defnam, exist=found)
 !
-      IF (FOUND) THEN
-         FILNAM = DEFNAM
-      ELSE
-         WRITE (6, *) 'rcsl.inp does not exist'
-         STOP
-      ENDIF
+      if (found) then
+         filnam = defnam
+      else
+         write (6, *) 'rcsl.inp does not exist'
+         stop
+      endif
 !
-      CALL OPENFL (21, FILNAM, FORM, STATUS, IERR)
-      IF (IERR == 1) THEN
-         WRITE (6, *) 'Error when opening rcsl.inp'
-         STOP
-      ENDIF
+      call openfl (21, filnam, form, status, ierr)
+      if (ierr == 1) then
+         write (6, *) 'Error when opening rcsl.inp'
+         stop
+      endif
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      READ (21, '(1A15)', IOSTAT=IOS) RECORD
-      IF (IOS/=0 .OR. RECORD(1:15)/='Core subshells:') THEN
-         WRITE (6, *) 'Not a Configuration Symmetry List File;'
-         CLOSE(21)
-      ENDIF
+      read (21, '(1A15)', iostat=ios) record
+      if (ios/=0 .or. record(1:15)/='Core subshells:') then
+         write (6, *) 'Not a Configuration Symmetry List File;'
+         close(21)
+      endif
 !
 !   Load data from the  .csl  file
 !
-      CALL LODCSL (NCORE)
+      call lodcsl (ncore)
 !
 !   Close the  .csl  file
 !
-      CLOSE(21)
+      close(21)
 !
-      RETURN
-      END SUBROUTINE SETCSL
+      return
+      end subroutine setcsl

@@ -1,8 +1,8 @@
 !***********************************************************************
 !                                                                      *
 
-      SUBROUTINE DSPEVX(JOBZ, RANGE, UPLO, N, AP, VL, VU, IL, IU, ABSTOL, M, W&
-         , Z, LDZ, WORK, IWORK, IFAIL, INFO)
+      subroutine dspevx(jobz, range, uplo, n, ap, vl, vu, il, iu, abstol, m, w&
+         , z, ldz, work, iwork, ifail, info)
 !***********************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:04:58   1/ 3/07
 !...Modified by Charlotte Froese Fischer
@@ -10,60 +10,60 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE cons_C
+      use vast_kind_param, only:  double
+      use cons_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE lsame_I
-      USE dlamch_I
-      USE dlansp_I
-      USE dcopy_I
-      USE dopgtr_I
-      USE dopmtr_I
-      USE dscal_I
-      USE dsptrd_I
-      USE dstebz_I
-      USE dstein_I
-      USE dsteqr_I
-      USE dsterf_I
-      USE dswap_I
-      USE xerbla_I
-      IMPLICIT NONE
+      use lsame_i
+      use dlamch_i
+      use dlansp_i
+      use dcopy_i
+      use dopgtr_i
+      use dopmtr_i
+      use dscal_i
+      use dsptrd_i
+      use dstebz_i
+      use dstein_i
+      use dsteqr_i
+      use dsterf_i
+      use dswap_i
+      use xerbla_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: N
-      INTEGER  :: IL
-      INTEGER  :: IU
-      INTEGER  :: M
-      INTEGER  :: LDZ
-      INTEGER  :: INFO
-      REAL(DOUBLE), INTENT(IN) :: VL
-      REAL(DOUBLE), INTENT(IN) :: VU
-      REAL(DOUBLE), INTENT(IN) :: ABSTOL
-      CHARACTER  :: JOBZ
-      CHARACTER  :: RANGE
-      CHARACTER  :: UPLO
-      INTEGER, DIMENSION(*)  :: IWORK
-      INTEGER, DIMENSION(*)  :: IFAIL
-      REAL(DOUBLE), DIMENSION(*)  :: AP
-      REAL(DOUBLE), DIMENSION(*)  :: W
-      REAL(DOUBLE), DIMENSION(LDZ,*)  :: Z
-      REAL(DOUBLE), DIMENSION(*)  :: WORK
+      integer  :: n
+      integer  :: il
+      integer  :: iu
+      integer  :: m
+      integer  :: ldz
+      integer  :: info
+      real(double), intent(in) :: vl
+      real(double), intent(in) :: vu
+      real(double), intent(in) :: abstol
+      character  :: jobz
+      character  :: range
+      character  :: uplo
+      integer, dimension(*)  :: iwork
+      integer, dimension(*)  :: ifail
+      real(double), dimension(*)  :: ap
+      real(double), dimension(*)  :: w
+      real(double), dimension(ldz,*)  :: z
+      real(double), dimension(*)  :: work
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, IINFO, IMAX, INDD, INDE, INDEE, INDIBL, INDISP, INDIWO, &
-         INDTAU, INDWRK, ISCALE, ITMP1, J, JJ, NSPLIT
-      REAL(DOUBLE) :: ABSTLL, ANRM, BIGNUM, EPS, RMAX, RMIN, SAFMIN, SIGMA, &
-         SMLNUM, TMP1, VLL, VUU
-      LOGICAL :: ALLEIG, INDEIG, VALEIG, WANTZ
-      CHARACTER :: ORDER
+      integer :: i, iinfo, imax, indd, inde, indee, indibl, indisp, indiwo, &
+         indtau, indwrk, iscale, itmp1, j, jj, nsplit
+      real(double) :: abstll, anrm, bignum, eps, rmax, rmin, safmin, sigma, &
+         smlnum, tmp1, vll, vuu
+      logical :: alleig, indeig, valeig, wantz
+      character :: order
 !-----------------------------------------------
 !   I n t r i n s i c  F u n c t i o n s
 !-----------------------------------------------
-      INTRINSIC MIN, SQRT
+      intrinsic min, sqrt
 !-----------------------------------------------
 !
 !  -- LAPACK driver routine (version 2.0) --
@@ -210,188 +210,188 @@
 !
 !     Test the input parameters.
 !
-      WANTZ = LSAME(JOBZ,'V')
-      ALLEIG = LSAME(RANGE,'A')
-      VALEIG = LSAME(RANGE,'V')
-      INDEIG = LSAME(RANGE,'I')
+      wantz = lsame(jobz,'V')
+      alleig = lsame(range,'A')
+      valeig = lsame(range,'V')
+      indeig = lsame(range,'I')
 !
-      INFO = 0
-      IF (.NOT.(WANTZ .OR. LSAME(JOBZ,'N'))) THEN
-         INFO = -1
-      ELSE IF (.NOT.(ALLEIG .OR. VALEIG .OR. INDEIG)) THEN
-         INFO = -2
-      ELSE IF (.NOT.(LSAME(UPLO,'L') .OR. LSAME(UPLO,'U'))) THEN
-         INFO = -3
-      ELSE IF (N < 0) THEN
-         INFO = -4
-      ELSE IF (VALEIG .AND. N>0 .AND. VU<=VL) THEN
-         INFO = -7
-      ELSE IF (INDEIG .AND. IL<1) THEN
-         INFO = -8
-      ELSE IF (INDEIG .AND. (IU<MIN(N,IL) .OR. IU>N)) THEN
-         INFO = -9
-      ELSE IF (LDZ<1 .OR. WANTZ .AND. LDZ<N) THEN
-         INFO = -14
-      ENDIF
+      info = 0
+      if (.not.(wantz .or. lsame(jobz,'N'))) then
+         info = -1
+      else if (.not.(alleig .or. valeig .or. indeig)) then
+         info = -2
+      else if (.not.(lsame(uplo,'L') .or. lsame(uplo,'U'))) then
+         info = -3
+      else if (n < 0) then
+         info = -4
+      else if (valeig .and. n>0 .and. vu<=vl) then
+         info = -7
+      else if (indeig .and. il<1) then
+         info = -8
+      else if (indeig .and. (iu<min(n,il) .or. iu>n)) then
+         info = -9
+      else if (ldz<1 .or. wantz .and. ldz<n) then
+         info = -14
+      endif
 !
-      IF (INFO /= 0) THEN
-         CALL XERBLA ('DSPEVX', (-INFO))
-         RETURN
-      ENDIF
+      if (info /= 0) then
+         call xerbla ('DSPEVX', (-info))
+         return
+      endif
 !
 !     Quick return if possible
 !
-      M = 0
-      IF (N == 0) RETURN
+      m = 0
+      if (n == 0) return
 !
-      IF (N == 1) THEN
-         IF (ALLEIG .OR. INDEIG) THEN
-            M = 1
-            W(1) = AP(1)
-         ELSE
-            IF (VL<AP(1) .AND. VU>=AP(1)) THEN
-               M = 1
-               W(1) = AP(1)
-            ENDIF
-         ENDIF
-         IF (WANTZ) Z(1,1) = ONE
-         RETURN
-      ENDIF
+      if (n == 1) then
+         if (alleig .or. indeig) then
+            m = 1
+            w(1) = ap(1)
+         else
+            if (vl<ap(1) .and. vu>=ap(1)) then
+               m = 1
+               w(1) = ap(1)
+            endif
+         endif
+         if (wantz) z(1,1) = one
+         return
+      endif
 !
 !     Get machine constants.
 !
-      SAFMIN = DLAMCH('Safe minimum')
-      EPS = DLAMCH('Precision')
-      SMLNUM = SAFMIN/EPS
-      BIGNUM = ONE/SMLNUM
-      RMIN = SQRT(SMLNUM)
-      RMAX = MIN(SQRT(BIGNUM),ONE/SQRT(SQRT(SAFMIN)))
+      safmin = dlamch('Safe minimum')
+      eps = dlamch('Precision')
+      smlnum = safmin/eps
+      bignum = one/smlnum
+      rmin = sqrt(smlnum)
+      rmax = min(sqrt(bignum),one/sqrt(sqrt(safmin)))
 !
 !     Scale matrix to allowable range, if necessary.
 !
-      ISCALE = 0
-      ABSTLL = ABSTOL
-      IF (VALEIG) THEN
-         VLL = VL
-         VUU = VU
-      ENDIF
-      ANRM = DLANSP('M',UPLO,N,AP,WORK)
-      IF (ANRM>ZERO .AND. ANRM<RMIN) THEN
-         ISCALE = 1
-         SIGMA = RMIN/ANRM
-      ELSE IF (ANRM > RMAX) THEN
-         ISCALE = 1
-         SIGMA = RMAX/ANRM
-      ENDIF
-      IF (ISCALE == 1) THEN
-         CALL DSCAL ((N*(N + 1))/2, SIGMA, AP, 1)
-         IF (ABSTOL > 0) ABSTLL = ABSTOL*SIGMA
-         IF (VALEIG) THEN
-            VLL = VL*SIGMA
-            VUU = VU*SIGMA
-         ENDIF
-      ENDIF
+      iscale = 0
+      abstll = abstol
+      if (valeig) then
+         vll = vl
+         vuu = vu
+      endif
+      anrm = dlansp('M',uplo,n,ap,work)
+      if (anrm>zero .and. anrm<rmin) then
+         iscale = 1
+         sigma = rmin/anrm
+      else if (anrm > rmax) then
+         iscale = 1
+         sigma = rmax/anrm
+      endif
+      if (iscale == 1) then
+         call dscal ((n*(n + 1))/2, sigma, ap, 1)
+         if (abstol > 0) abstll = abstol*sigma
+         if (valeig) then
+            vll = vl*sigma
+            vuu = vu*sigma
+         endif
+      endif
 !
 !     Call DSPTRD to reduce symmetric packed matrix to tridiagonal form.
 !
-      INDTAU = 1
-      INDE = INDTAU + N
-      INDD = INDE + N
-      INDWRK = INDD + N
-      CALL DSPTRD (UPLO, N, AP, WORK(INDD), WORK(INDE), WORK(INDTAU), IINFO)
+      indtau = 1
+      inde = indtau + n
+      indd = inde + n
+      indwrk = indd + n
+      call dsptrd (uplo, n, ap, work(indd), work(inde), work(indtau), iinfo)
 !
 !     If all eigenvalues are desired and ABSTOL is less than or equal
 !     to zero, then call DSTERF or DOPGTR and SSTEQR.  If this fails
 !     for some eigenvalue, then try DSTEBZ.
 !
-      IF ((ALLEIG .OR. INDEIG .AND. IL==1 .AND. IU==N) .AND. ABSTOL<=ZERO) THEN
-         CALL DCOPY (N, WORK(INDD), 1, W, 1)
-         INDEE = INDWRK + 2*N
-         IF (.NOT.WANTZ) THEN
-            CALL DCOPY (N - 1, WORK(INDE), 1, WORK(INDEE), 1)
-            CALL DSTERF (N, W, WORK(INDEE), INFO)
-         ELSE
-            CALL DOPGTR (UPLO, N, AP, WORK(INDTAU), Z, LDZ, WORK(INDWRK), IINFO&
+      if ((alleig .or. indeig .and. il==1 .and. iu==n) .and. abstol<=zero) then
+         call dcopy (n, work(indd), 1, w, 1)
+         indee = indwrk + 2*n
+         if (.not.wantz) then
+            call dcopy (n - 1, work(inde), 1, work(indee), 1)
+            call dsterf (n, w, work(indee), info)
+         else
+            call dopgtr (uplo, n, ap, work(indtau), z, ldz, work(indwrk), iinfo&
                )
-            CALL DCOPY (N - 1, WORK(INDE), 1, WORK(INDEE), 1)
-            CALL DSTEQR (JOBZ, N, W, WORK(INDEE), Z, LDZ, WORK(INDWRK), INFO)
-            IF (INFO == 0) THEN
-               IFAIL(:N) = 0
-            ENDIF
-         ENDIF
-         IF (INFO == 0) THEN
-            M = N
-            GO TO 20
-         ENDIF
-         INFO = 0
-      ENDIF
+            call dcopy (n - 1, work(inde), 1, work(indee), 1)
+            call dsteqr (jobz, n, w, work(indee), z, ldz, work(indwrk), info)
+            if (info == 0) then
+               ifail(:n) = 0
+            endif
+         endif
+         if (info == 0) then
+            m = n
+            go to 20
+         endif
+         info = 0
+      endif
 !
 !     Otherwise, call DSTEBZ and, if eigenvectors are desired, SSTEIN.
 !
-      IF (WANTZ) THEN
-         ORDER = 'B'
-      ELSE
-         ORDER = 'E'
-      ENDIF
-      INDIBL = 1
-      INDISP = INDIBL + N
-      INDIWO = INDISP + N
-      CALL DSTEBZ (RANGE, ORDER, N, VLL, VUU, IL, IU, ABSTLL, WORK(INDD), WORK(&
-         INDE), M, NSPLIT, W, IWORK(INDIBL), IWORK(INDISP), WORK(INDWRK), IWORK&
-         (INDIWO), INFO)
+      if (wantz) then
+         order = 'B'
+      else
+         order = 'E'
+      endif
+      indibl = 1
+      indisp = indibl + n
+      indiwo = indisp + n
+      call dstebz (range, order, n, vll, vuu, il, iu, abstll, work(indd), work(&
+         inde), m, nsplit, w, iwork(indibl), iwork(indisp), work(indwrk), iwork&
+         (indiwo), info)
 !
-      IF (WANTZ) THEN
-         CALL DSTEIN (N, WORK(INDD), WORK(INDE), M, W, IWORK(INDIBL), IWORK(&
-            INDISP), Z, LDZ, WORK(INDWRK), IWORK(INDIWO), IFAIL, INFO)
+      if (wantz) then
+         call dstein (n, work(indd), work(inde), m, w, iwork(indibl), iwork(&
+            indisp), z, ldz, work(indwrk), iwork(indiwo), ifail, info)
 !
 !        Apply orthogonal matrix used in reduction to tridiagonal
 !        form to eigenvectors returned by DSTEIN.
 !
-         CALL DOPMTR ('L', UPLO, 'N', N, M, AP, WORK(INDTAU), Z, LDZ, WORK(&
-            INDWRK), INFO)
-      ENDIF
+         call dopmtr ('L', uplo, 'N', n, m, ap, work(indtau), z, ldz, work(&
+            indwrk), info)
+      endif
 !
 !     If matrix was scaled, then rescale eigenvalues appropriately.
 !
-   20 CONTINUE
-      IF (ISCALE == 1) THEN
-         IF (INFO == 0) THEN
-            IMAX = M
-         ELSE
-            IMAX = INFO - 1
-         ENDIF
-         CALL DSCAL (IMAX, ONE/SIGMA, W, 1)
-      ENDIF
+   20 continue
+      if (iscale == 1) then
+         if (info == 0) then
+            imax = m
+         else
+            imax = info - 1
+         endif
+         call dscal (imax, one/sigma, w, 1)
+      endif
 !
 !     If eigenvalues are not in order, then sort them, along with
 !     eigenvectors.
 !
-      IF (WANTZ) THEN
-         DO J = 1, M - 1
-            I = 0
-            TMP1 = W(J)
-            DO JJ = J + 1, M
-               IF (W(JJ) >= TMP1) CYCLE
-               I = JJ
-               TMP1 = W(JJ)
-            END DO
+      if (wantz) then
+         do j = 1, m - 1
+            i = 0
+            tmp1 = w(j)
+            do jj = j + 1, m
+               if (w(jj) >= tmp1) cycle
+               i = jj
+               tmp1 = w(jj)
+            end do
 !
-            IF (I == 0) CYCLE
-            ITMP1 = IWORK(INDIBL+I-1)
-            W(I) = W(J)
-            IWORK(INDIBL+I-1) = IWORK(INDIBL+J-1)
-            W(J) = TMP1
-            IWORK(INDIBL+J-1) = ITMP1
-            CALL DSWAP (N, Z(1,I), 1, Z(1,J), 1)
-            IF (INFO == 0) CYCLE
-            ITMP1 = IFAIL(I)
-            IFAIL(I) = IFAIL(J)
-            IFAIL(J) = ITMP1
-         END DO
-      ENDIF
+            if (i == 0) cycle
+            itmp1 = iwork(indibl+i-1)
+            w(i) = w(j)
+            iwork(indibl+i-1) = iwork(indibl+j-1)
+            w(j) = tmp1
+            iwork(indibl+j-1) = itmp1
+            call dswap (n, z(1,i), 1, z(1,j), 1)
+            if (info == 0) cycle
+            itmp1 = ifail(i)
+            ifail(i) = ifail(j)
+            ifail(j) = itmp1
+         end do
+      endif
 !
-      RETURN
+      return
 !
 !     End of DSPEVX
 !
-      END SUBROUTINE DSPEVX
+      end subroutine dspevx

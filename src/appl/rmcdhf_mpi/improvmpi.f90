@@ -1,5 +1,5 @@
 !***********************************************************************
-      SUBROUTINE IMPROVmpi (EOL, J, LSORT, DAMPMX)
+      subroutine improvmpi (eol, j, lsort, dampmx)
 !   The difference from the serial version is that it calls MPI        *
 !   version subroutines (setlagmpi, cofpotmpi, matrixmpi, newcompi).   *
 !                                                                      *
@@ -21,79 +21,79 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE CORRE_C
-      USE damp_C
-      USE def_C
-      USE grid_C
-      USE int_C
-      USE mpi_C
-      USE orb_C
-      USE orthct_C
-      USE scf_C
-      USE tatb_C
-      USE wave_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use corre_c
+      use damp_c
+      use def_c
+      use grid_c
+      use int_c
+      use mpi_c
+      use orb_c
+      use orthct_c
+      use scf_c
+      use tatb_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE cofpotmpi_I
-      USE defcor_I
-      USE solve_I
-      USE orthsc_I
+      use cofpotmpi_i
+      use defcor_i
+      use solve_i
+      use orthsc_i
 !GG      USE matrixmpi_I
 !GG      USE newcompi_I
-      USE setlagmpi_I
-      USE quad_I
-      USE consis_I
-      USE dampck_I
-      USE dampor_I
-      USE orthy_I
-      IMPLICIT NONE
+      use setlagmpi_i
+      use quad_i
+      use consis_i
+      use dampck_i
+      use dampor_i
+      use orthy_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
-      REAL(DOUBLE), INTENT(INOUT) :: DAMPMX
-      LOGICAL  :: EOL, LSORT
+      integer  :: j
+      real(double), intent(inout) :: dampmx
+      logical  :: eol, lsort
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      REAL(DOUBLE), PARAMETER :: P2 = 2.0D-01
-      REAL(DOUBLE), PARAMETER :: P005 = 5.0D-03
-      REAL(DOUBLE), PARAMETER :: P0001 = 1.0D-04
+      real(double), parameter :: p2 = 2.0d-01
+      real(double), parameter :: p005 = 5.0d-03
+      real(double), parameter :: p0001 = 1.0d-04
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IPR, NPTS, INV, JP, NNP, I, NWWW
-      INTEGER :: I_MPI, ndcof_max, ntot, i_last, iproc, ndcip, jproc
-      INTEGER :: ifound, ind_buf, K
-      REAL(DOUBLE) :: ED1, GAMAJ, ED2, WTAEV, DNORM, DNFAC, DEL1, DEL2, ODAMPJ
-      LOGICAL :: FAIL, FIRST
-      REAL(DOUBLE), DIMENSION(:), POINTER :: da_buffer
-      INTEGER, DIMENSION(:), POINTER :: nda_buffer,ndcof_buffer
+      integer :: ipr, npts, inv, jp, nnp, i, nwww
+      integer :: i_mpi, ndcof_max, ntot, i_last, iproc, ndcip, jproc
+      integer :: ifound, ind_buf, k
+      real(double) :: ed1, gamaj, ed2, wtaev, dnorm, dnfac, del1, del2, odampj
+      logical :: fail, first
+      real(double), dimension(:), pointer :: da_buffer
+      integer, dimension(:), pointer :: nda_buffer,ndcof_buffer
 !-----------------------------------------------
 !
 !   C Froese Fischer's IPR and ED1 parameter
 !
-      DATA IPR/ 0/
-      DATA ED1/ 0.D0/
-      DATA FIRST/ .FALSE./
+      data ipr/ 0/
+      data ed1/ 0.d0/
+      data first/ .false./
 !
 !
 !-----------------------------------------------------------------------
 !AK Handling the -i8 option of ifort and -fdefault-integer-8 option of gfortran
 !      ISIZE = sizeof(NCF)
-      I_MPI = MPI_INTEGER
+      i_mpi = mpi_integer
 !      if (ISIZE.EQ.8) I_MPI = MPI_INTEGER8
 !
-      GAMAJ = GAMA(J)
+      gamaj = gama(j)
 !
 !   C Froese Fischer's parameters IPR, ED1, ED2 are set and
 !   used in this routine and in DAMPCK
 !
-    1 CONTINUE
-      ED2 = E(J)
+    1 continue
+      ed2 = e(j)
 !
 !   Set up the exchange potential and arrays XU, XV as appropriate
 !
@@ -102,12 +102,12 @@
 !   Add in Lagrange-multiplier contribution
 !   Add in derivative-terms contribution
 !
-      NPTS = N
-      CALL COFPOTmpi (EOL, J, NPTS)
+      npts = n
+      call cofpotmpi (eol, j, npts)
 !
 !   Calculate deferred corrections
 !
-      CALL DEFCOR (J)
+      call defcor (j)
 !
 !   Solve the Dirac equation
 !
@@ -127,7 +127,7 @@
 !        enddo
 !        ndcof = ndcof_buffer
 !      endif
-      INV = 0
+      inv = 0
 !cjb MPI_ALLREDUCE DA
 !      if (ndcof.gt.0) then
 !         call alloc(pda_buffer, ndcof, 8)
@@ -142,27 +142,27 @@
 !AK      Consolidate NDA and DA from all nodes
       if (nprocs.gt.1) then
          call alloc(ndcof_buffer,nprocs,'ndcof_buffer','IMPROVmpi')
-         call MPI_GATHER(ndcof, 1, I_MPI, ndcof_buffer,            &
-              1, I_MPI, 0, MPI_COMM_WORLD, ierr)
-         CALL MPI_Bcast (ndcof_buffer, nprocs, I_MPI, 0,           &
-                               MPI_COMM_WORLD, ierr)
+         call mpi_gather(ndcof, 1, i_mpi, ndcof_buffer,            &
+              1, i_mpi, 0, mpi_comm_world, ierr)
+         call mpi_bcast (ndcof_buffer, nprocs, i_mpi, 0,           &
+                               mpi_comm_world, ierr)
          ndcof_max = 0
          do i = 1, nprocs
             if (ndcof_buffer(i).gt.ndcof_max) ndcof_max=ndcof_buffer(i)
-         ENDDO
+         enddo
          if (ndcof_max.gt.0) then
             ntot = ndcof_max*nprocs
             call alloc(nda_buffer,ntot,'nda_buffer','IMPROVmpi')
-            call MPI_GATHER(nda, ndcof_max, I_MPI, nda_buffer,     &
-                 ndcof_max, I_MPI, 0, MPI_COMM_WORLD, ierr)
-            CALL MPI_Bcast (nda_buffer, ntot, I_MPI, 0,            &
-                               MPI_COMM_WORLD, ierr)
+            call mpi_gather(nda, ndcof_max, i_mpi, nda_buffer,     &
+                 ndcof_max, i_mpi, 0, mpi_comm_world, ierr)
+            call mpi_bcast (nda_buffer, ntot, i_mpi, 0,            &
+                               mpi_comm_world, ierr)
             call alloc(da_buffer, ntot, 'da_buffer','IMPROVmpi')
-            call MPI_GATHER(da, ndcof_max, MPI_DOUBLE_PRECISION,   &
-              da_buffer, ndcof_max, MPI_DOUBLE_PRECISION, 0,       &
-              MPI_COMM_WORLD, ierr)
-            CALL MPI_Bcast (da_buffer, ntot, MPI_DOUBLE_PRECISION, &
-                               0, MPI_COMM_WORLD, ierr)
+            call mpi_gather(da, ndcof_max, mpi_double_precision,   &
+              da_buffer, ndcof_max, mpi_double_precision, 0,       &
+              mpi_comm_world, ierr)
+            call mpi_bcast (da_buffer, ntot, mpi_double_precision, &
+                               0, mpi_comm_world, ierr)
             i_last = 0
             do iproc = 1, nprocs
                ndcip = ndcof_buffer(iproc)
@@ -170,130 +170,130 @@
                   ifound = 0
                   ind_buf = (iproc - 1)*ndcof_max + jproc
                   do k = 1, i_last
-                     if (nda_buffer(ind_buf) .eq. NDA(k)) THEN
-                        DA(k) = DA(k) + da_buffer(ind_buf)
+                     if (nda_buffer(ind_buf) .eq. nda(k)) then
+                        da(k) = da(k) + da_buffer(ind_buf)
                         ifound = k
                         exit
                      endif
                   enddo
                   if (ifound.eq.0) then
                      i_last = i_last + 1
-                     do while (i_last .GT. NDDIM)
-                        IF (NDDIM .GT. 0) THEN
-                           NDDIM = 2*NDDIM
+                     do while (i_last .gt. nddim)
+                        if (nddim .gt. 0) then
+                           nddim = 2*nddim
 !GG                           CALL alcsca (PNTNDA, PNTRDA, NDDIM, 2)
-                           CALL RALLOC(NDA,NDDIM,'NDA','IMPROVmpi')
-                        ELSE
-                          NDDIM = 64
+                           call ralloc(nda,nddim,'NDA','IMPROVmpi')
+                        else
+                          nddim = 64
 !GG                           CALL alcsca (PNTNDA, PNTRDA, NDDIM, 1)
-                           CALL ALLOC(NDA,NDDIM,'NDA','IMPROVmpi')
-                        ENDIF
-                     ENDdo
-                     NDA(i_last) = nda_buffer(ind_buf)
-                     DA(i_last) = da_buffer(ind_buf)
+                           call alloc(nda,nddim,'NDA','IMPROVmpi')
+                        endif
+                     enddo
+                     nda(i_last) = nda_buffer(ind_buf)
+                     da(i_last) = da_buffer(ind_buf)
                   endif
                enddo
             enddo
-            NDCOF = ndcof_max
+            ndcof = ndcof_max
             call dalloc(nda_buffer,'nda_buffer','IMPROVmpi')
             call dalloc(da_buffer,'da_buffer','IMPROVMPI')
          endif
          call dalloc(ndcof_buffer,'ndcof_buffer','IMPROVmpi')
       endif
 
-      CALL SOLVE (J, FAIL, INV, JP, NNP)
+      call solve (j, fail, inv, jp, nnp)
 !
 !   Upon failure issue message; take corrective action if possible
 !
-      IF (FAIL) THEN
-         IF (MYID == 0) WRITE (*, 300) NP(J), NH(J), METHOD(J)
-         IF (METHOD(J) /= 2) THEN
-            METHOD(J) = 2
+      if (fail) then
+         if (myid == 0) write (*, 300) np(j), nh(j), method(j)
+         if (method(j) /= 2) then
+            method(j) = 2
 !XHH orthsc does not have any argument
 !    Orbital J [PF() and QF()]is not updated, why redo orthogonalization
-            CALL ORTHSC
+            call orthsc
 !CFF        ... avoid rediagonalization
 !            IF (EOL) THEN
 !               CALL MATRIXMPI
 !               CALL NEWCOMPI (WTAEV)
 !            ENDIF
-            CALL SETLAGmpi (EOL)
-            GO TO 1
-         ELSE
-            IF (MYID == 0) WRITE (*, 301)
+            call setlagmpi (eol)
+            go to 1
+         else
+            if (myid == 0) write (*, 301)
             !CALL TIMER (0)
-            ERROR STOP
-         ENDIF
-      ENDIF
+            error stop
+         endif
+      endif
 !
 !   Compute norm of radial function
 !
-      TA(1) = 0.D0
-      TA(2:MTP0) = (P(2:MTP0)**2+Q(2:MTP0)**2)*RP(2:MTP0)
-      MTP = MTP0
+      ta(1) = 0.d0
+      ta(2:mtp0) = (p(2:mtp0)**2+q(2:mtp0)**2)*rp(2:mtp0)
+      mtp = mtp0
 
-      CALL QUAD (DNORM)
+      call quad (dnorm)
 
 !   Determine self-consistency [multiplied by SQRT(UCF(J))]
 
-      CALL CONSIS (J)
+      call consis (j)
 !
 !   Normalize
 !
-      DNFAC = 1.D0/DSQRT(DNORM)
-      P0 = P0*DNFAC
-      P(:MTP0) = P(:MTP0)*DNFAC
-      Q(:MTP0) = Q(:MTP0)*DNFAC
+      dnfac = 1.d0/dsqrt(dnorm)
+      p0 = p0*dnfac
+      p(:mtp0) = p(:mtp0)*dnfac
+      q(:mtp0) = q(:mtp0)*dnfac
 !
 !   Check if different method should be used or if improvement
 !   count should be reduced
 !
-      DEL1 = DABS(1.D0 - ED2/E(J))
-      IF (METHOD(J) == 1) THEN
-         DEL2 = DMAX1(DABS(1.D0 - DSQRT(DNORM)),DABS(DNFAC - 1.D0))
-         IF (DEL1<P005 .AND. DEL2>P2) THEN
-            METHOD(J) = 2
-            GO TO 1
-         ENDIF
-      ELSE
-         IF (DEL1<P0001 .AND. NSIC>1) NSIC = NSIC - 1
-      ENDIF
+      del1 = dabs(1.d0 - ed2/e(j))
+      if (method(j) == 1) then
+         del2 = dmax1(dabs(1.d0 - dsqrt(dnorm)),dabs(dnfac - 1.d0))
+         if (del1<p005 .and. del2>p2) then
+            method(j) = 2
+            go to 1
+         endif
+      else
+         if (del1<p0001 .and. nsic>1) nsic = nsic - 1
+      endif
 !
 !   Damp the orbital --- if not converged
 !
-      IF (SCNSTY(J) > ACCY) THEN
-         CALL DAMPCK (IPR, J, ED1, ED2)
-         ODAMPJ = DABS(ODAMP(J))
-      ELSE
-         ODAMPJ = 0.D0                           ! take the whole new orbital
-      ENDIF
-      CALL DAMPOR (J, INV, ODAMPJ)
+      if (scnsty(j) > accy) then
+         call dampck (ipr, j, ed1, ed2)
+         odampj = dabs(odamp(j))
+      else
+         odampj = 0.d0                           ! take the whole new orbital
+      endif
+      call dampor (j, inv, odampj)
 
 !   Orthogonalize all orbitals of the same kappa in the order
 !   fixed, spectroscopic, correlation orbitals. The order of
 !   orbitals in the latter two classes are sorted according
 !   to their self-consistency and energy.
 
-      IF (ORTHST) THEN
+      if (orthst) then
          !CALL orthor (J, inv)
-         NWWW = NW
-         CALL ORTHY (NWWW, J, LSORT)
-      ENDIF
+         nwww = nw
+         call orthy (nwww, j, lsort)
+      endif
 !
 !   Print details of iteration
 !
-      IF (MYID == 0)                                                &
-         WRITE (*, 302) NP(J),NH(J),E(J),METHOD(J),PZ(J),SCNSTY(J), &
+      if (myid == 0)                                                &
+         write (*, 302) np(j),nh(j),e(j),method(j),pz(j),scnsty(j), &
 !cjb DNORM-1 -> SQRT(DNORM)-1
 !cjb                    DNORM - 1, ODAMPJ, JP, MF(J), INV, NNP
-                        SQRT(DNORM)-1, ODAMPJ, JP, MF(J), INV, NNP
-      DAMPMX = DMAX1(DAMPMX,DABS(ODAMPJ))
+                        sqrt(dnorm)-1, odampj, jp, mf(j), inv, nnp
+      dampmx = dmax1(dampmx,dabs(odampj))
 
-  300 FORMAT(/,' Failure; equation for orbital ',1I2,1A2,&
-         ' could not be solved using method ',1I1)
-  301 FORMAT(/,/,' ****** Error in SUBROUTINE IMPROV ******'/,&
+  300 format(/,' Failure; equation for orbital ',1i2,1a2,&
+         ' could not be solved using method ',1i1)
+  301 format(/,/,' ****** Error in SUBROUTINE IMPROV ******'/,&
          ' Convergence not obtained'/)
-  302 FORMAT (1X,1I2,1A2,1P,1D16.7,1x,1I2,D11.3,1D10.2,1D10.2,&
-              0P,F6.3,1x,1I5,1x,1I5,1x,1I2,1x,1I2)
-      RETURN
-      END SUBROUTINE IMPROVmpi
+  302 format (1x,1i2,1a2,1p,1d16.7,1x,1i2,d11.3,1d10.2,1d10.2,&
+              0p,f6.3,1x,1i5,1x,1i5,1x,1i2,1x,1i2)
+      return
+      end subroutine improvmpi

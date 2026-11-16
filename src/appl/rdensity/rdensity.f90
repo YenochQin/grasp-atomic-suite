@@ -1,17 +1,17 @@
 ! Shared entry point for rdensity and rdensity_mpi.
 program rdensity
-    use default_C, only: NDEF
-    use debug_C, only: CUTOFF
+    use default_c, only: ndef
+    use debug_c, only: cutoff
     use density_parallel
     use density_calculation
-    use getyn_I
-    use setdbg_I
-    use setmc_I
-    use setcon_I
-    use setcsla_I
-    use getsmd_I
-    use getmixblock_I
-    use factt_I
+    use getyn_i
+    use setdbg_i
+    use setmc_i
+    use setcon_i
+    use setcsla_i
+    use getsmd_i
+    use getmixblock_i
+    use factt_i
     implicit none
     character(24) :: name
     character(256) :: arg
@@ -24,7 +24,7 @@ program rdensity
     ndef = 0
     ordering = 2
     status = 0
-    CUTOFF = 1.0D-10
+    cutoff = 1.0d-10
     interactive = command_argument_count() == 0
     if (rank == 0) then
         if (interactive) then

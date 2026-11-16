@@ -1,7 +1,7 @@
 module npol_initialization
     use vast_kind_param, only: double
-    use parameter_def, only: NNNP
-    use npol_C
+    use parameter_def, only: nnnp
+    use npol_c
     use npol_input, only: npol_read_config, npol_validate_config
     use npol_kernel, only: npol_check_grid, npol_build_grid, npol_compose
     implicit none
@@ -17,7 +17,7 @@ contains
         integer, intent(out) :: status
         character(*), intent(out) :: message
         type(npol_config) :: cfg
-        real(double) :: a(NNNP), b(NNNP), v(NNNP), candidate(NNNP)
+        real(double) :: a(nnnp), b(nnnp), v(nnnp), candidate(nnnp)
         call npol_reset()
         call npol_check_grid(n, r, status, message)
         if (status /= 0) return

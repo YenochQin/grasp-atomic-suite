@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SPME(I, J, HCOUL, HBAB, HMAG)
+      subroutine spme(i, j, hcoul, hbab, hmag)
 !                                                                      *
 !   This routine calculates the reduced matrix elements for pair I,J   *
 !   in either Coulomb/Babuskin gauge or for magnetic case.             *
@@ -16,266 +16,266 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE bess_C
-      USE biorb_C
-      USE debug_C
-      USE def_C
-      USE grid_C
-      USE orb_C
-      USE osc_C
-      USE tatb_C
-      USE wave_C
+      use vast_kind_param, only:  double
+      use bess_c
+      use biorb_c
+      use debug_c
+      use def_c
+      use grid_c
+      use orb_c
+      use osc_c
+      use tatb_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE clrx_I
-      USE quad_I
-      IMPLICIT NONE
+      use clrx_i
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: I,J
-      REAL(DOUBLE), INTENT(OUT) :: HCOUL, HBAB, HMAG
+      integer, intent(in) :: i,j
+      real(double), intent(out) :: hcoul, hbab, hmag
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NKJI, NKJJ, IPJ, NAKI, NAKJ, II, LP, LM
-      REAL(DOUBLE) :: EPS, HGAUGE, TJI, TJJ, FACT, FORM, FL, FLP, DFKI, DFKJ, &
-         CLP, CLM, CIPLP, CIMLP, CIPLM, CIMLM, VALUE, CJL, CIP, TAROM, ESTHER, &
-         TEKEL, PERES, TAMAR, ENOCH, SETH, SHEM, DARIUS, CYRUS, DANIEL, BOAZ, &
-         ESAU, AARON, GIMEL
+      integer :: nkji, nkjj, ipj, naki, nakj, ii, lp, lm
+      real(double) :: eps, hgauge, tji, tjj, fact, form, fl, flp, dfki, dfkj, &
+         clp, clm, ciplp, cimlp, ciplm, cimlm, value, cjl, cip, tarom, esther, &
+         tekel, peres, tamar, enoch, seth, shem, darius, cyrus, daniel, boaz, &
+         esau, aaron, gimel
 !-----------------------------------------------
 
 !
-      EPS = 1.0D-10
+      eps = 1.0d-10
 !
-      IF (LDBPR(12) .OR. LDBPR(13) .OR. LDBPR(14) .OR. LDBPR(15)) WRITE (99, &
-         303) I, J
+      if (ldbpr(12) .or. ldbpr(13) .or. ldbpr(14) .or. ldbpr(15)) write (99, &
+         303) i, j
 !
-      HMAG = 0.0D00
-      HCOUL = 0.0D00
-      HGAUGE = 0.0D00
-      HBAB = 0.0D00
+      hmag = 0.0d00
+      hcoul = 0.0d00
+      hgauge = 0.0d00
+      hbab = 0.0d00
 !
 !  Evaluate factor multiplying Mbar(a,b)
 !
-      NKJI = NKJ(I)
-      NKJJ = NKJ(J)
-      TJI = DBLE(NKJI)
-      TJJ = DBLE(NKJJ)
-      FACT = 1.0D00
-      IPJ = (NKJI + 1)/2 + NKJJ
-      IF (MOD(IPJ,2) /= 0) FACT = -FACT
-      NAKI = NAK(I)
-      NAKJ = NAK(J)
-      FORM = FACT*SQRT(TJJ + 1.0D00)*CLRX(NAKJ,LK,NAKI)
-      FL = DBLE(LK)
-      FLP = FL + 1.0D00
-      DFKI = DBLE(NAKI)
-      DFKJ = DBLE(NAKJ)
+      nkji = nkj(i)
+      nkjj = nkj(j)
+      tji = dble(nkji)
+      tjj = dble(nkjj)
+      fact = 1.0d00
+      ipj = (nkji + 1)/2 + nkjj
+      if (mod(ipj,2) /= 0) fact = -fact
+      naki = nak(i)
+      nakj = nak(j)
+      form = fact*sqrt(tjj + 1.0d00)*clrx(nakj,lk,naki)
+      fl = dble(lk)
+      flp = fl + 1.0d00
+      dfki = dble(naki)
+      dfkj = dble(nakj)
 !
-      MTP = MIN(MFII(NNII(I)),MFFF(NNFF(J)))
+      mtp = min(mfii(nnii(i)),mfff(nnff(j)))
 !
-      IF (KK == 0) THEN
+      if (kk == 0) then
 !
-         IF (ABS(FORM) > EPS) THEN
+         if (abs(form) > eps) then
 !
 !  To pick the right initial and final state radial functions convert
 !  from orbital order of the merged list to the orbital orders of the
 !  initial and final state lists, respectively.
 !  N(I) -> NNII(I), N(J) -> NNFF(J)
 !
-            DO II = 1, N
-               TB(II) = PFII(II,NNII(I))*QFFF(II,NNFF(J)) + QFII(II,NNII(I))*&
-                  PFFF(II,NNFF(J))
-               TC(II) = PFII(II,NNII(I))*QFFF(II,NNFF(J)) - QFII(II,NNII(I))*&
-                  PFFF(II,NNFF(J))
+            do ii = 1, n
+               tb(ii) = pfii(ii,nnii(i))*qfff(ii,nnff(j)) + qfii(ii,nnii(i))*&
+                  pfff(ii,nnff(j))
+               tc(ii) = pfii(ii,nnii(i))*qfff(ii,nnff(j)) - qfii(ii,nnii(i))*&
+                  pfff(ii,nnff(j))
 ! zou
-               TB(II) = TB(II)*C/CVAC
-               TC(II) = TC(II)*C/CVAC
-               TD(II) = PFII(II,NNII(I))*PFFF(II,NNFF(J)) + QFII(II,NNII(I))*&
-                  QFFF(II,NNFF(J))*(C/CVAC)**2
+               tb(ii) = tb(ii)*c/cvac
+               tc(ii) = tc(ii)*c/cvac
+               td(ii) = pfii(ii,nnii(i))*pfff(ii,nnff(j)) + qfii(ii,nnii(i))*&
+                  qfff(ii,nnff(j))*(c/cvac)**2
 !           TD(II) = PFII(II,NNII(I))*PFFF(II,NNFF(J)) +
 !    :               QFII(II,NNII(I))*QFFF(II,NNFF(J))
 ! zou
-            END DO
-            LP = LK + 1
-            LM = LK - 1
+            end do
+            lp = lk + 1
+            lm = lk - 1
 !
 !  Calculate Coulomb coefficients
 !
-            CLP = SQRT(FL/FLP)
-            CLM = -SQRT(FLP/FL)
-            CIPLP = CLP*(DFKI - DFKJ)
-            CIMLP = CLP*FLP
-            CIPLM = CLM*(DFKI - DFKJ)
-            CIMLM = -CLM*FL
+            clp = sqrt(fl/flp)
+            clm = -sqrt(flp/fl)
+            ciplp = clp*(dfki - dfkj)
+            cimlp = clp*flp
+            ciplm = clm*(dfki - dfkj)
+            cimlm = -clm*fl
 !
 !  Tabulate Coulomb integrand
 !
-            TA(1) = 0.0D00
-            TA(2:MTP) = RP(2:MTP)*(BJ(2:MTP,3)*(CIPLP*TB(2:MTP)+CIMLP*TC(2:MTP)&
-               )+BJ(2:MTP,1)*(CIPLM*TB(2:MTP)+CIMLM*TC(2:MTP)))
-            CALL QUAD (VALUE)
-            HCOUL = FORM*VALUE
+            ta(1) = 0.0d00
+            ta(2:mtp) = rp(2:mtp)*(bj(2:mtp,3)*(ciplp*tb(2:mtp)+cimlp*tc(2:mtp)&
+               )+bj(2:mtp,1)*(ciplm*tb(2:mtp)+cimlm*tc(2:mtp)))
+            call quad (value)
+            hcoul = form*value
 !
 !  Calculate gauge dependent coefficients
 !
-            CJL = -(FL + FLP)
-            CIP = DFKI - DFKJ
+            cjl = -(fl + flp)
+            cip = dfki - dfkj
 !
 !  Tabulate gauge dependent integrand
 !
-            TA(1) = 0.0D00
-            TA(2:MTP) = RP(2:MTP)*(BJ(2:MTP,2)*(CJL*TD(2:MTP))+BJ(2:MTP,3)*(CIP&
-               *TB(2:MTP)+FLP*TC(2:MTP))+BJ(2:MTP,1)*(CIP*TB(2:MTP)-FL*TC(2:MTP&
+            ta(1) = 0.0d00
+            ta(2:mtp) = rp(2:mtp)*(bj(2:mtp,2)*(cjl*td(2:mtp))+bj(2:mtp,3)*(cip&
+               *tb(2:mtp)+flp*tc(2:mtp))+bj(2:mtp,1)*(cip*tb(2:mtp)-fl*tc(2:mtp&
                )))
 !
 !  Print gauge dependent integrand if requested
 !
-            IF (LDBPR(13)) WRITE (99, 300) I, J, (II,TA(II),II=1,N)
-            CALL QUAD (VALUE)
-            HGAUGE = FORM*VALUE
-            HBAB = HCOUL + SQRT(FLP/FL)*HGAUGE
+            if (ldbpr(13)) write (99, 300) i, j, (ii,ta(ii),ii=1,n)
+            call quad (value)
+            hgauge = form*value
+            hbab = hcoul + sqrt(flp/fl)*hgauge
 !
 !  Print Coulomb and gauge dependent integrals if requested
 !
-            IF (LDBPR(12)) WRITE (99, 301) I, J, HCOUL, HGAUGE, HBAB
+            if (ldbpr(12)) write (99, 301) i, j, hcoul, hgauge, hbab
 !
 !  Calculate the contibutions from various terms if requested
 !
-            IF (LDBPR(14) .OR. LDBPR(15)) THEN
+            if (ldbpr(14) .or. ldbpr(15)) then
 !
-               TA(1) = 0.0D00
-               TA(2:MTP) = TD(2:MTP)*BJ(2:MTP,2)*RP(2:MTP)
-               IF (LDBPR(15)) WRITE (99, 304) (II,TA(II),II=1,N)
-               CALL QUAD (TAROM)
-               IF (LDBPR(14)) WRITE (99, 305) TAROM
-               ESTHER = -CJL
-               IF (LDBPR(14)) WRITE (99, 306) ESTHER
-               TEKEL = ESTHER*TAROM
-               IF (LDBPR(14)) WRITE (99, 307) TEKEL
+               ta(1) = 0.0d00
+               ta(2:mtp) = td(2:mtp)*bj(2:mtp,2)*rp(2:mtp)
+               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,n)
+               call quad (tarom)
+               if (ldbpr(14)) write (99, 305) tarom
+               esther = -cjl
+               if (ldbpr(14)) write (99, 306) esther
+               tekel = esther*tarom
+               if (ldbpr(14)) write (99, 307) tekel
 !
-               TA(1) = 0.0D00
-               TA(2:MTP) = -TB(2:MTP)*BJ(2:MTP,3)*RP(2:MTP)
-               IF (LDBPR(15)) WRITE (99, 304) (II,TA(II),II=1,N)
-               CALL QUAD (PERES)
-               IF (LDBPR(14)) THEN
-                  WRITE (99, 308) PERES
-                  WRITE (99, 306) CIP
-               ENDIF
-               TAMAR = CIP*PERES
-               IF (LDBPR(14)) WRITE (99, 307) TAMAR
+               ta(1) = 0.0d00
+               ta(2:mtp) = -tb(2:mtp)*bj(2:mtp,3)*rp(2:mtp)
+               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,n)
+               call quad (peres)
+               if (ldbpr(14)) then
+                  write (99, 308) peres
+                  write (99, 306) cip
+               endif
+               tamar = cip*peres
+               if (ldbpr(14)) write (99, 307) tamar
 !
-               TA(1) = 0.0D00
-               TA(2:MTP) = -TB(2:MTP)*BJ(2:MTP,1)*RP(2:MTP)
-               IF (LDBPR(15)) WRITE (99, 304) (II,TA(II),II=1,N)
-               CALL QUAD (ENOCH)
-               IF (LDBPR(14)) THEN
-                  WRITE (99, 309) ENOCH
-                  WRITE (99, 306) CIP
-               ENDIF
-               SETH = CIP*ENOCH
-               IF (LDBPR(14)) WRITE (99, 307) SETH
+               ta(1) = 0.0d00
+               ta(2:mtp) = -tb(2:mtp)*bj(2:mtp,1)*rp(2:mtp)
+               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,n)
+               call quad (enoch)
+               if (ldbpr(14)) then
+                  write (99, 309) enoch
+                  write (99, 306) cip
+               endif
+               seth = cip*enoch
+               if (ldbpr(14)) write (99, 307) seth
 !
-               TA(1) = 0.0D00
-               TA(2:MTP) = BJ(2:MTP,1)*TC(2:MTP)*RP(2:MTP)
-               IF (LDBPR(15)) WRITE (99, 304) (II,TA(II),II=1,N)
-               CALL QUAD (SHEM)
-               IF (LDBPR(14)) THEN
-                  WRITE (99, 310) SHEM
-                  WRITE (99, 306) FL
-               ENDIF
-               DARIUS = FL*SHEM
-               IF (LDBPR(14)) WRITE (99, 307) DARIUS
+               ta(1) = 0.0d00
+               ta(2:mtp) = bj(2:mtp,1)*tc(2:mtp)*rp(2:mtp)
+               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,n)
+               call quad (shem)
+               if (ldbpr(14)) then
+                  write (99, 310) shem
+                  write (99, 306) fl
+               endif
+               darius = fl*shem
+               if (ldbpr(14)) write (99, 307) darius
 !
-               TA(1) = 0.0D00
-               TA(2:MTP) = -BJ(2:MTP,3)*TC(2:MTP)*RP(2:MTP)
-               IF (LDBPR(15)) WRITE (99, 304) (II,TA(II),II=1,N)
-               CALL QUAD (CYRUS)
-               IF (LDBPR(14)) WRITE (99, 311) CYRUS
-               DANIEL = FLP
-               IF (LDBPR(14)) WRITE (99, 306) DANIEL
-               BOAZ = DANIEL*CYRUS
-               IF (LDBPR(14)) WRITE (99, 307) BOAZ
+               ta(1) = 0.0d00
+               ta(2:mtp) = -bj(2:mtp,3)*tc(2:mtp)*rp(2:mtp)
+               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,n)
+               call quad (cyrus)
+               if (ldbpr(14)) write (99, 311) cyrus
+               daniel = flp
+               if (ldbpr(14)) write (99, 306) daniel
+               boaz = daniel*cyrus
+               if (ldbpr(14)) write (99, 307) boaz
 !
-               ESAU = TAMAR + SETH + DARIUS + BOAZ
-               IF (LDBPR(14)) WRITE (99, 312) ESAU, TEKEL
-               AARON = ESAU + TEKEL
-               GIMEL = -VALUE
-               IF (LDBPR(14)) THEN
-                  WRITE (99, 313) AARON, GIMEL
-                  WRITE (99, 314)
-                  WRITE (99, 315) PERES, CIP, TAMAR
-                  WRITE (99, 316) ENOCH, CIP, SETH
-                  WRITE (99, 317) SHEM, FL, DARIUS
-                  WRITE (99, 318) CYRUS, DANIEL, BOAZ
-                  WRITE (99, 319) ESAU
-                  WRITE (99, 320) TAROM, ESTHER, TEKEL
-                  WRITE (99, 321) GIMEL, AARON
-               ENDIF
+               esau = tamar + seth + darius + boaz
+               if (ldbpr(14)) write (99, 312) esau, tekel
+               aaron = esau + tekel
+               gimel = -value
+               if (ldbpr(14)) then
+                  write (99, 313) aaron, gimel
+                  write (99, 314)
+                  write (99, 315) peres, cip, tamar
+                  write (99, 316) enoch, cip, seth
+                  write (99, 317) shem, fl, darius
+                  write (99, 318) cyrus, daniel, boaz
+                  write (99, 319) esau
+                  write (99, 320) tarom, esther, tekel
+                  write (99, 321) gimel, aaron
+               endif
 !
-            ENDIF
+            endif
 !
-         ENDIF
+         endif
 !
-         IF (LDBPR(12)) WRITE (99, 301) I, J, HCOUL, HGAUGE, HBAB
+         if (ldbpr(12)) write (99, 301) i, j, hcoul, hgauge, hbab
 !
-      ELSE
+      else
 !
 !   Tabulate magnetic integrand
 !
-         IF (ABS(FORM) > EPS) THEN
+         if (abs(form) > eps) then
 !
-            TA(1) = 0.0D00
-            DO II = 2, MTP
+            ta(1) = 0.0d00
+            do ii = 2, mtp
 !zou
-               TA(II) = (PFII(II,NNII(I))*QFFF(II,NNFF(J))+QFII(II,NNII(I))*&
-                  PFFF(II,NNFF(J)))*BJ(II,2)*RP(II)*C/CVAC
+               ta(ii) = (pfii(ii,nnii(i))*qfff(ii,nnff(j))+qfii(ii,nnii(i))*&
+                  pfff(ii,nnff(j)))*bj(ii,2)*rp(ii)*c/cvac
 !           TA(II) =  (PFII(II,NNII(I))*QFFF(II,NNFF(J)) +
 !    :      QFII(II,NNII(I))*PFFF(II,NNFF(J)))*BJ(II,2)*RP(II)
 !zou
-            END DO
-            CALL QUAD (VALUE)
-            IF (LDBPR(14)) WRITE (99, 322) VALUE
-            HMAG = -VALUE*(FL + FLP)*(DFKI + DFKJ)*FORM/SQRT(FL*FLP)
+            end do
+            call quad (value)
+            if (ldbpr(14)) write (99, 322) value
+            hmag = -value*(fl + flp)*(dfki + dfkj)*form/sqrt(fl*flp)
 !
-         ENDIF
+         endif
 !
-         IF (LDBPR(12)) WRITE (99, 302) HMAG
+         if (ldbpr(12)) write (99, 302) hmag
 !
-      ENDIF
+      endif
 !
-      RETURN
+      return
 !
-  300 FORMAT(/,1X,20X,'Local form of gauge dependent integral for',' orbitals',&
-         I3,' and',I3,/,/,100(1X,7(I3,2X,1P,D11.3,2X),/))
-  301 FORMAT(/,1X,'Orbital pair (',I2,',',I2,') integrals:','Coul. gauge ',1P,D&
-         13.3,3X,'Gauge contribution',D13.3,3X,'Bab.gauge',D13.3)
-  302 FORMAT(/,1X,'Magnetic single particle matrix element ',1P,D13.3)
-  303 FORMAT(/,1X,30('+'),'   SPME called for orbitals ',I4,'   and',I4,3X,30(&
+  300 format(/,1x,20x,'Local form of gauge dependent integral for',' orbitals',&
+         i3,' and',i3,/,/,100(1x,7(i3,2x,1p,d11.3,2x),/))
+  301 format(/,1x,'Orbital pair (',i2,',',i2,') integrals:','Coul. gauge ',1p,d&
+         13.3,3x,'Gauge contribution',d13.3,3x,'Bab.gauge',d13.3)
+  302 format(/,1x,'Magnetic single particle matrix element ',1p,d13.3)
+  303 format(/,1x,30('+'),'   SPME called for orbitals ',i4,'   and',i4,3x,30(&
          '+'))
-  304 FORMAT(/,100(1X,7(I3,2X,1P,D11.3,2X),/),/)
-  305 FORMAT(/,' Integral J(L)  =  ',1P,D28.12)
-  306 FORMAT(' Factor multiplying this ',1P,D20.12)
-  307 FORMAT(' Resultant contribution  ',1P,D20.12,/)
-  308 FORMAT(' I + (L+1) integral  = ',1P,D24.12)
-  309 FORMAT(' I + (L-1) integral  = ',1P,D24.12)
-  310 FORMAT(' I - (L-1) integral  = ',1P,D24.12)
-  311 FORMAT(' I - (L+1) integral  = ',1P,D24.12)
-  312 FORMAT(' These last four add up to ',1P,D20.12,&
-         '    compared to the first which is ',D20.12)
-  313 FORMAT(' These all add up to ',1P,D20.12,' which should equal ',D20.12)
-  314 FORMAT(/,18X,'Integral',11X,'Coefficient',8X,'Contribution')
-  315 FORMAT(' I + (L+1)',1P,3D20.10)
-  316 FORMAT(' I + (L-1)',1P,3D20.10)
-  317 FORMAT(' I - (L-1)',1P,3D20.10)
-  318 FORMAT(' I - (L+1)',1P,3D20.10)
-  319 FORMAT(54X,16('-'),/,50X,1P,D20.10)
-  320 FORMAT(' J (L)',4X,1P,3D20.10)
-  321 FORMAT(54X,16('-'),/,' Correct figure',1P,D20.10,15X,D20.10)
-  322 FORMAT(' I + (L)  integral',1P,D20.10)
-      RETURN
+  304 format(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)
+  305 format(/,' Integral J(L)  =  ',1p,d28.12)
+  306 format(' Factor multiplying this ',1p,d20.12)
+  307 format(' Resultant contribution  ',1p,d20.12,/)
+  308 format(' I + (L+1) integral  = ',1p,d24.12)
+  309 format(' I + (L-1) integral  = ',1p,d24.12)
+  310 format(' I - (L-1) integral  = ',1p,d24.12)
+  311 format(' I - (L+1) integral  = ',1p,d24.12)
+  312 format(' These last four add up to ',1p,d20.12,&
+         '    compared to the first which is ',d20.12)
+  313 format(' These all add up to ',1p,d20.12,' which should equal ',d20.12)
+  314 format(/,18x,'Integral',11x,'Coefficient',8x,'Contribution')
+  315 format(' I + (L+1)',1p,3d20.10)
+  316 format(' I + (L-1)',1p,3d20.10)
+  317 format(' I - (L-1)',1p,3d20.10)
+  318 format(' I - (L+1)',1p,3d20.10)
+  319 format(54x,16('-'),/,50x,1p,d20.10)
+  320 format(' J (L)',4x,1p,3d20.10)
+  321 format(54x,16('-'),/,' Correct figure',1p,d20.10,15x,d20.10)
+  322 format(' I + (L)  integral',1p,d20.10)
+      return
 !
-      END SUBROUTINE SPME
+      end subroutine spme

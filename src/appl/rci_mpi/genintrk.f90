@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE genintrk (myid, nprocs, N, j2max)
+      subroutine genintrk (myid, nprocs, n, j2max)
 !                                                                      *
 !  Input:
 !     myid, nprocs
@@ -21,90 +21,90 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE cteilsrk_C
-      USE kkstart_C
-      USE orb_C
-      USE jlabl_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use cteilsrk_c
+      use kkstart_c
+      use orb_c
+      use jlabl_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE slater_I
-      USE triangrk_I, ONLY: triangrk
-      IMPLICIT NONE
+      use slater_i
+      use triangrk_i, only: triangrk
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: myid, nprocs
-      INTEGER, INTENT(OUT) :: N, j2max
+      integer, intent(in) :: myid, nprocs
+      integer, intent(out) :: n, j2max
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: GEN
-      INTEGER :: key, i, k, ia, ib, ic, id
+      logical :: gen
+      integer :: key, i, k, ia, ib, ic, id
 !-----------------------------------------------------------------------
 
-      KEY = NW + 1
-      KSTART(0) = 1
+      key = nw + 1
+      kstart(0) = 1
 !
 !   Find 2*JMAX; it should not be greater than PARAMETER KMAX
 !
-      J2MAX = NKJ(1)
-      DO I = 2, NW
-         IF (NKJ(I) .GT. J2MAX) J2MAX = NKJ(I)
-      ENDDO
+      j2max = nkj(1)
+      do i = 2, nw
+         if (nkj(i) .gt. j2max) j2max = nkj(i)
+      enddo
 
-      IF (J2MAX .GT. KMAX) THEN
-         STOP 'genintrk: KMAX too small'
-      ENDIF
+      if (j2max .gt. kmax) then
+         stop 'genintrk: KMAX too small'
+      endif
 !
 !   Make the RK integrals: IA <= IB, IA <= IC, IA <= ID, IB <= ID
 !   When GEN is false, sweep through to find dimension
 !
-      GEN = .FALSE.
+      gen = .false.
 
-  999 N = 0
-      DO K = 0, J2MAX
-         DO IA = 1, NW
-            DO IB = IA, NW
-               DO IC = IA, NW
-                  IF (TRIANGRK(NKL(IA),K,NKL(IC))) THEN
-                     DO ID = IB, NW
-                        IF (TRIANGRK(NKL(IB),K,NKL(ID))) THEN
-                           N = N + 1
-                           IF (GEN .AND. (MOD(N,nprocs) .EQ. myid)) THEN
-                              INDTEIRK(N) = ((IA*KEY+IB)*KEY+IC)*KEY+ID
-                              VALTEIRK(N) = SLATER (IA,IB,IC,ID,K)
-                           ENDIF
-                        ENDIF
-                     ENDDO
-                  ENDIF
-               ENDDO
-            ENDDO
-         ENDDO
-         KSTART(K+1) = N + 1
-      ENDDO
+  999 n = 0
+      do k = 0, j2max
+         do ia = 1, nw
+            do ib = ia, nw
+               do ic = ia, nw
+                  if (triangrk(nkl(ia),k,nkl(ic))) then
+                     do id = ib, nw
+                        if (triangrk(nkl(ib),k,nkl(id))) then
+                           n = n + 1
+                           if (gen .and. (mod(n,nprocs) .eq. myid)) then
+                              indteirk(n) = ((ia*key+ib)*key+ic)*key+id
+                              valteirk(n) = slater (ia,ib,ic,id,k)
+                           endif
+                        endif
+                     enddo
+                  endif
+               enddo
+            enddo
+         enddo
+         kstart(k+1) = n + 1
+      enddo
 !
 !     Allocate memory for integral book keeping
 !
-      IF (.NOT. GEN) THEN
-         CALL ALLOC (INDTEIRK,N,'INDTEIRK', 'GENINTRK')
-         CALL ALLOC (VALTEIRK,N,'VALTEIRK', 'GENINTRK')
+      if (.not. gen) then
+         call alloc (indteirk,n,'INDTEIRK', 'GENINTRK')
+         call alloc (valteirk,n,'VALTEIRK', 'GENINTRK')
 
 ! Initialization is necessary in the mpi version
 
-         DO i = 1, N
-            INDTEIRK(i) = 0
-            VALTEIRK(i) = 0.d0
-         ENDDO
+         do i = 1, n
+            indteirk(i) = 0
+            valteirk(i) = 0.d0
+         enddo
 
-         IF (myid .EQ. 0)                                          &
-            PRINT *, 'Allocating space for ',N,' Rk integrals'
+         if (myid .eq. 0)                                          &
+            print *, 'Allocating space for ',n,' Rk integrals'
 
-         GEN = .TRUE.
-         GOTO 999
-      ENDIF
+         gen = .true.
+         goto 999
+      endif
 
-      RETURN
-      END
+      return
+      end

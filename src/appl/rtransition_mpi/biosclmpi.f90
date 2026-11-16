@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      PROGRAM BIOSCL
+      program bioscl
 !                                                                      *
 !     This program calculates the transition parameters for a          *
 !     transition between an initial and a final state                  *
@@ -22,87 +22,87 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE default_C
-      USE debug_C, ONLY: LDBPR, CUTOFF
+      use vast_kind_param, only:  double
+      use default_c
+      use debug_c, only: ldbpr, cutoff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setmc_I
-      USE setcon_I
-      USE fname_I
-      USE mrgcsl_I
-      USE setcslm_I
-      USE getosd_I
-      USE strsum_I
-      USE factt_I
-      USE oscl_I
-      USE mpi_C
+      use getyn_i
+      use setmc_i
+      use setcon_i
+      use fname_i
+      use mrgcsl_i
+      use setcslm_i
+      use getosd_i
+      use strsum_i
+      use factt_i
+      use oscl_i
+      use mpi_c
 
-      USE suite_system, ONLY: EXIT => terminate_process
-      USE mpiu_I, ONLY: startmpi2
-      USE mpiu_I, ONLY: stopmpi2
-      USE setiso_I, ONLY: setiso
-      USE sys_chdir_I, ONLY: sys_chdir
-      IMPLICIT NONE
+      use suite_system, only: exit => terminate_process
+      use mpiu_i, only: startmpi2
+      use mpiu_i, only: stopmpi2
+      use setiso_i, only: setiso
+      use sys_chdir_i, only: sys_chdir
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NTEST,NCOUNT1,ILBL,lenperm,lentmp, iii
-      LOGICAL :: YES
-      CHARACTER, DIMENSION(2) :: NAME*24
-      CHARACTER, DIMENSION(2) :: FULLNAME*128
-      CHARACTER(LEN=3)  ::  idstring
-      CHARACTER(LEN=128) :: ISOFILE,startdir,permdir,tmpdir
+      integer :: ntest,ncount1,ilbl,lenperm,lentmp, iii
+      logical :: yes
+      character, dimension(2) :: name*24
+      character, dimension(2) :: fullname*128
+      character(len=3)  ::  idstring
+      character(len=128) :: isofile,startdir,permdir,tmpdir
 !-----------------------------------------------
 !
 !=======================================================================
 !  Start mpi --- get processor info: myid, nprocs, host name; and print
 !=======================================================================
-      CALL startmpi2 (myid, nprocs, host, lenhost, ncount1,           &
+      call startmpi2 (myid, nprocs, host, lenhost, ncount1,           &
                       startdir, permdir, tmpdir, 'RTRANSITION_MPI')
-      WRITE (idstring, '(I3.3)') myid
+      write (idstring, '(I3.3)') myid
       print*, tmpdir , ' = tmpdir'
 
-      lenperm = LEN_TRIM (permdir)
-      lentmp = LEN_TRIM (tmpdir)
+      lenperm = len_trim (permdir)
+      lentmp = len_trim (tmpdir)
 
 !=======================================================================
-      ISOFILE = trim(startdir)//'/isodata'
-      NTEST = 1001
+      isofile = trim(startdir)//'/isodata'
+      ntest = 1001
 
-      IF (myid .EQ. 0) THEN
-         WRITE (6, *)
-         WRITE (6, *) ' Default settings?'
-         YES = GETYN()
-         WRITE (6, *)
-         IF (YES) THEN
-            NDEF = 0
-            NDUMP = 1
-         ELSE
-            NDEF = 1
-            WRITE (6, *) ' Dump angular data to file?'
-            YES = GETYN()
-            IF (YES) THEN
-               NDUMP = 1
-            ELSE
-               NDUMP = 0
-             ENDIF
-         ENDIF
-         WRITE (6, *)
-         WRITE (6, *) ' Input from a CI calculation?'
-         YES = GETYN()
-         WRITE (6, *)
-         IF (YES) THEN
-            INPCI = 0
-         ELSE
-            INPCI = 1
-         ENDIF
-      ENDIF   !myid=0
-      CALL MPI_Bcast (NDEF,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (NDUMP,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (INPCI,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      if (myid .eq. 0) then
+         write (6, *)
+         write (6, *) ' Default settings?'
+         yes = getyn()
+         write (6, *)
+         if (yes) then
+            ndef = 0
+            ndump = 1
+         else
+            ndef = 1
+            write (6, *) ' Dump angular data to file?'
+            yes = getyn()
+            if (yes) then
+               ndump = 1
+            else
+               ndump = 0
+             endif
+         endif
+         write (6, *)
+         write (6, *) ' Input from a CI calculation?'
+         yes = getyn()
+         write (6, *)
+         if (yes) then
+            inpci = 0
+         else
+            inpci = 1
+         endif
+      endif   !myid=0
+      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (ndump,1,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (inpci,1,mpi_integer,0,mpi_comm_world,ierr)
 !Rasa -- start
 !GG      LDBPR = .FALSE.
 !      WRITE (6, *) ' Generate debug output?'
@@ -117,33 +117,33 @@
 !
 !   Perform machine- and installation-dependent setup
 !
-      CALL SETMC
+      call setmc
 !
 !   Set up the physical constants
 !
-      CALL SETCON
+      call setcon
 !
 !   Obtain the names of the initial and final state files
 !
-      IF (myid .EQ. 0) CALL FNAME(NAME)
-      CALL MPI_Bcast (NAME,48,MPI_CHARACTER,0,MPI_COMM_WORLD,ierr)
-      FULLNAME(1) = TRIM(startdir) // '/' // TRIM(NAME(1))
-      FULLNAME(2) = TRIM(startdir) // '/' // TRIM(NAME(2))
+      if (myid .eq. 0) call fname(name)
+      call mpi_bcast (name,48,mpi_character,0,mpi_comm_world,ierr)
+      fullname(1) = trim(startdir) // '/' // trim(name(1))
+      fullname(2) = trim(startdir) // '/' // trim(name(2))
 !
 !   Open, check, load data from, and close, the initial and final state
 !   .csl  files. These files are then merged to one file.
 !
 !cjb print FULLNAME1= FULLNAME2=
-      IF (myid .EQ. 0) then
-        print*,"FULLNAME1=",FULLNAME(1)
-        print*,"FULLNAME2=",FULLNAME(2)
+      if (myid .eq. 0) then
+        print*,"FULLNAME1=",fullname(1)
+        print*,"FULLNAME2=",fullname(2)
       end if
 
-      CALL MRGCSL (FULLNAME)
+      call mrgcsl (fullname)
 !
 !   Open, check, load data from, and close, the merged .csl  file
 !
-      CALL SETCSLM
+      call setcslm
 !
 !   Read mixing coefficients
 !
@@ -155,12 +155,12 @@
 !
 !   Open, check, load data from, and close the .iso file
 !
-      CALL SETISO(ISOFILE)
+      call setiso(isofile)
 
 !
 !   Get the remaining information
 !
-      CALL GETOSD (FULLNAME)
+      call getosd (fullname)
 !
 !   Open and append a summary of the inputs to the  .sum  file
 !
@@ -171,7 +171,7 @@
               print *, "error changing dir!"
               call exit(1)
           endif
-          CALL STRSUM(NAME,INPCI,ILBL)
+          call strsum(name,inpci,ilbl)
           iii = len_trim(tmpdir)
           call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,ierr)
           if (ierr.ne.0) then
@@ -182,25 +182,25 @@
 !
 !   Set up the table of logarithms of factorials
 !
-      CALL FACTT
+      call factt
 !
 !   Proceed with the transition calculation
 !
-      CALL OSCL (NAME,FULLNAME,tmpdir,startdir,idstring)
+      call oscl (name,fullname,tmpdir,startdir,idstring)
 !
 !   Print completion message
 !
-      IF (myid .EQ. 0) THEN
-          PRINT *
-          PRINT *, 'RTRANSITION_MPI: Execution complete.'
-      ENDIF
+      if (myid .eq. 0) then
+          print *
+          print *, 'RTRANSITION_MPI: Execution complete.'
+      endif
 !=======================================================================
 !  Execution finished; Statistics output
 !=======================================================================
 
-      CALL stopmpi2 (myid, nprocs, host, lenhost,                     &
+      call stopmpi2 (myid, nprocs, host, lenhost,                     &
                            ncount1, 'RTRANSITION_MPI')
 !=======================================================================
 !
-      STOP
-      END PROGRAM BIOSCL
+      stop
+      end program bioscl

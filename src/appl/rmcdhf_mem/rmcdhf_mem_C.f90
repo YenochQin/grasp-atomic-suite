@@ -1,49 +1,49 @@
-      MODULE rmcdhf_mem_C
+      module rmcdhf_mem_c
 !   Written by  G. Gaigalas               Vilnius, September 2021  *
-      USE vast_kind_param, ONLY:  DOUBLE, LONG
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_31
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_32
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_33
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_34
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_35
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_36
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_37
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_38
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_39
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_40
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_41
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_42
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_43
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_44
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_45
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_46
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_47
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_48
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_49
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF_50
-      REAL(DOUBLE), DIMENSION(:), POINTER :: COEFF
-      INTEGER, DIMENSION(:), pointer ::IMIN1_30, IMAX1_30
-      INTEGER, DIMENSION(:), pointer ::IMIN2_30, IMAX2_30
-      INTEGER, DIMENSION(:), pointer ::INDX, ICLMN
-      INTEGER, DIMENSION(:), pointer ::IENDC_30, IROW_30
-      INTEGER, DIMENSION(:), pointer ::LAB_31,NCONTR_31,ICLMN_31,INDX_31
-      INTEGER, DIMENSION(:), pointer ::LAB_32,NCONTR_32,ICLMN_32,INDX_32
-      INTEGER, DIMENSION(:), pointer ::LAB_33,NCONTR_33,ICLMN_33,INDX_33
-      INTEGER, DIMENSION(:), pointer ::LAB_34,NCONTR_34,ICLMN_34,INDX_34
-      INTEGER, DIMENSION(:), pointer ::LAB_35,NCONTR_35,ICLMN_35,INDX_35
-      INTEGER, DIMENSION(:), pointer ::LAB_36,NCONTR_36,ICLMN_36,INDX_36
-      INTEGER, DIMENSION(:), pointer ::LAB_37,NCONTR_37,ICLMN_37,INDX_37
-      INTEGER, DIMENSION(:), pointer ::LAB_38,NCONTR_38,ICLMN_38,INDX_38
-      INTEGER, DIMENSION(:), pointer ::LAB_39,NCONTR_39,ICLMN_39,INDX_39
-      INTEGER, DIMENSION(:), pointer ::LAB_40,NCONTR_40,ICLMN_40,INDX_40
-      INTEGER, DIMENSION(:), pointer ::LAB_41,NCONTR_41,ICLMN_41,INDX_41
-      INTEGER, DIMENSION(:), pointer ::LAB_42,NCONTR_42,ICLMN_42,INDX_42
-      INTEGER, DIMENSION(:), pointer ::LAB_43,NCONTR_43,ICLMN_43,INDX_43
-      INTEGER, DIMENSION(:), pointer ::LAB_44,NCONTR_44,ICLMN_44,INDX_44
-      INTEGER, DIMENSION(:), pointer ::LAB_45,NCONTR_45,ICLMN_45,INDX_45
-      INTEGER, DIMENSION(:), pointer ::LAB_46,NCONTR_46,ICLMN_46,INDX_46
-      INTEGER, DIMENSION(:), pointer ::LAB_47,NCONTR_47,ICLMN_47,INDX_47
-      INTEGER, DIMENSION(:), pointer ::LAB_48,NCONTR_48,ICLMN_48,INDX_48
-      INTEGER, DIMENSION(:), pointer ::LAB_49,NCONTR_49,ICLMN_49,INDX_49
-      INTEGER, DIMENSION(:), pointer ::LAB_50,NCONTR_50,ICLMN_50,INDX_50
-      END MODULE rmcdhf_mem_C
+      use vast_kind_param, only:  double, long
+      real(double), dimension(:), pointer :: coeff_31
+      real(double), dimension(:), pointer :: coeff_32
+      real(double), dimension(:), pointer :: coeff_33
+      real(double), dimension(:), pointer :: coeff_34
+      real(double), dimension(:), pointer :: coeff_35
+      real(double), dimension(:), pointer :: coeff_36
+      real(double), dimension(:), pointer :: coeff_37
+      real(double), dimension(:), pointer :: coeff_38
+      real(double), dimension(:), pointer :: coeff_39
+      real(double), dimension(:), pointer :: coeff_40
+      real(double), dimension(:), pointer :: coeff_41
+      real(double), dimension(:), pointer :: coeff_42
+      real(double), dimension(:), pointer :: coeff_43
+      real(double), dimension(:), pointer :: coeff_44
+      real(double), dimension(:), pointer :: coeff_45
+      real(double), dimension(:), pointer :: coeff_46
+      real(double), dimension(:), pointer :: coeff_47
+      real(double), dimension(:), pointer :: coeff_48
+      real(double), dimension(:), pointer :: coeff_49
+      real(double), dimension(:), pointer :: coeff_50
+      real(double), dimension(:), pointer :: coeff
+      integer, dimension(:), pointer ::imin1_30, imax1_30
+      integer, dimension(:), pointer ::imin2_30, imax2_30
+      integer, dimension(:), pointer ::indx, iclmn
+      integer, dimension(:), pointer ::iendc_30, irow_30
+      integer, dimension(:), pointer ::lab_31,ncontr_31,iclmn_31,indx_31
+      integer, dimension(:), pointer ::lab_32,ncontr_32,iclmn_32,indx_32
+      integer, dimension(:), pointer ::lab_33,ncontr_33,iclmn_33,indx_33
+      integer, dimension(:), pointer ::lab_34,ncontr_34,iclmn_34,indx_34
+      integer, dimension(:), pointer ::lab_35,ncontr_35,iclmn_35,indx_35
+      integer, dimension(:), pointer ::lab_36,ncontr_36,iclmn_36,indx_36
+      integer, dimension(:), pointer ::lab_37,ncontr_37,iclmn_37,indx_37
+      integer, dimension(:), pointer ::lab_38,ncontr_38,iclmn_38,indx_38
+      integer, dimension(:), pointer ::lab_39,ncontr_39,iclmn_39,indx_39
+      integer, dimension(:), pointer ::lab_40,ncontr_40,iclmn_40,indx_40
+      integer, dimension(:), pointer ::lab_41,ncontr_41,iclmn_41,indx_41
+      integer, dimension(:), pointer ::lab_42,ncontr_42,iclmn_42,indx_42
+      integer, dimension(:), pointer ::lab_43,ncontr_43,iclmn_43,indx_43
+      integer, dimension(:), pointer ::lab_44,ncontr_44,iclmn_44,indx_44
+      integer, dimension(:), pointer ::lab_45,ncontr_45,iclmn_45,indx_45
+      integer, dimension(:), pointer ::lab_46,ncontr_46,iclmn_46,indx_46
+      integer, dimension(:), pointer ::lab_47,ncontr_47,iclmn_47,indx_47
+      integer, dimension(:), pointer ::lab_48,ncontr_48,iclmn_48,indx_48
+      integer, dimension(:), pointer ::lab_49,ncontr_49,iclmn_49,indx_49
+      integer, dimension(:), pointer ::lab_50,ncontr_50,iclmn_50,indx_50
+      end module rmcdhf_mem_c

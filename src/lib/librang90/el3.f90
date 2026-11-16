@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE EL3(JJA,JJB,JA,JB,JC,JD,ICOLBREI)
+      subroutine el3(jja,jjb,ja,jb,jc,jd,icolbrei)
 !                                                                  *
 !   --------------  SECTION METWO    SUBPROGRAM 05  -------------  *
 !                                                                  *
@@ -19,70 +19,70 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE m_C,         ONLY:  NPEEL
+      use m_c,         only:  npeel
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE el31_I
-      USE el32_I
-      USE el33_I
-      IMPLICIT NONE
+      use el31_i
+      use el32_i
+      use el33_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: JJA,JJB,JA,JB,JC,JD,ICOLBREI
+      integer, intent(in) :: jja,jjb,ja,jb,jc,jd,icolbrei
 !-----------------------------------------------
-      IF(NPEEL <= 1)RETURN
-      IF(JB == JD) THEN
-        IF(JA == JB.OR.JC == JB) THEN
-          IF(JA == JC)GO TO 10
-          IF(JC /= JB) THEN
-            CALL EL32(JJA,JJB,JC,JA,JA,JB,JC,JD,ICOLBREI)
-          ELSE
-            CALL EL31(JJA,JJB,JC,JA,JA,JB,JC,JD,ICOLBREI)
-          END IF
-        ELSE
-          CALL EL33(JJA,JJB,JC,JA,JB,1,JA,JB,JC,JD,ICOLBREI)
-        END IF
-        RETURN
-      ELSE IF(JA == JC) THEN
-        IF(JB == JA.OR.JD == JA) THEN
-          IF(JB == JD)GO TO 10
-          IF(JD /= JA) THEN
-            CALL EL32(JJA,JJB,JD,JB,JA,JB,JC,JD,ICOLBREI)
-          ELSE
-            CALL EL31(JJA,JJB,JD,JB,JA,JB,JC,JD,ICOLBREI)
-          END IF
-        ELSE
-          CALL EL33(JJA,JJB,JD,JB,JA,1,JA,JB,JC,JD,ICOLBREI)
-        END IF
-        RETURN
-      ELSE IF(JA == JD) THEN
-        IF(JB == JA.OR.JC == JA) THEN
-          IF(JB == JC)GO TO 10
-          IF(JC /= JD) THEN
-             CALL EL32(JJA,JJB,JC,JB,JA,JB,JC,JD,ICOLBREI)
-          ELSE
-             CALL EL31(JJA,JJB,JC,JB,JA,JB,JC,JD,ICOLBREI)
-          END IF
-        ELSE
-          CALL EL33(JJA,JJB,JC,JB,JA,2,JA,JB,JD,JC,ICOLBREI)
-        END IF
-        RETURN
-      ELSE IF(JB == JC) THEN
-        IF(JA == JB.OR.JD == JB) THEN
-          IF(JA == JD)GO TO 10
-          IF(JD /= JB) THEN
-            CALL EL32(JJA,JJB,JD,JA,JA,JB,JC,JD,ICOLBREI)
-          ELSE
-            CALL EL31(JJA,JJB,JD,JA,JA,JB,JC,JD,ICOLBREI)
-          END IF
-        ELSE
-          CALL EL33(JJA,JJB,JD,JA,JB,2,JA,JB,JD,JC,ICOLBREI)
-        END IF
-        RETURN
-      END IF
-   10 WRITE(99,100)
-  100 FORMAT(5X,'ERRO IN EL3  PMGG RAGG')
-      STOP
-      END SUBROUTINE EL3
+      if(npeel <= 1)return
+      if(jb == jd) then
+        if(ja == jb.or.jc == jb) then
+          if(ja == jc)go to 10
+          if(jc /= jb) then
+            call el32(jja,jjb,jc,ja,ja,jb,jc,jd,icolbrei)
+          else
+            call el31(jja,jjb,jc,ja,ja,jb,jc,jd,icolbrei)
+          end if
+        else
+          call el33(jja,jjb,jc,ja,jb,1,ja,jb,jc,jd,icolbrei)
+        end if
+        return
+      else if(ja == jc) then
+        if(jb == ja.or.jd == ja) then
+          if(jb == jd)go to 10
+          if(jd /= ja) then
+            call el32(jja,jjb,jd,jb,ja,jb,jc,jd,icolbrei)
+          else
+            call el31(jja,jjb,jd,jb,ja,jb,jc,jd,icolbrei)
+          end if
+        else
+          call el33(jja,jjb,jd,jb,ja,1,ja,jb,jc,jd,icolbrei)
+        end if
+        return
+      else if(ja == jd) then
+        if(jb == ja.or.jc == ja) then
+          if(jb == jc)go to 10
+          if(jc /= jd) then
+             call el32(jja,jjb,jc,jb,ja,jb,jc,jd,icolbrei)
+          else
+             call el31(jja,jjb,jc,jb,ja,jb,jc,jd,icolbrei)
+          end if
+        else
+          call el33(jja,jjb,jc,jb,ja,2,ja,jb,jd,jc,icolbrei)
+        end if
+        return
+      else if(jb == jc) then
+        if(ja == jb.or.jd == jb) then
+          if(ja == jd)go to 10
+          if(jd /= jb) then
+            call el32(jja,jjb,jd,ja,ja,jb,jc,jd,icolbrei)
+          else
+            call el31(jja,jjb,jd,ja,ja,jb,jc,jd,icolbrei)
+          end if
+        else
+          call el33(jja,jjb,jd,ja,jb,2,ja,jb,jd,jc,icolbrei)
+        end if
+        return
+      end if
+   10 write(99,100)
+  100 format(5x,'ERRO IN EL3  PMGG RAGG')
+      stop
+      end subroutine el3

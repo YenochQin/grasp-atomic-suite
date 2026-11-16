@@ -1,10 +1,10 @@
-      MODULE ldcsl1_I
-      INTERFACE
+      module ldcsl1_i
+      interface
 !...Translated by Charlotte Froese Fischer
 !                       Gediminas Gaigalas  10/05/17
-      SUBROUTINE LDCSL1 (NCORER,NAME)
-      INTEGER :: ncorer
-      CHARACTER(LEN=128) :: name
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine ldcsl1 (ncorer,name)
+      integer :: ncorer
+      character(len=128) :: name
+      end subroutine
+      end interface
+      end module

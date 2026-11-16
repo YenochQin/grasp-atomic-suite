@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE KEINT (IA,IB,TEGRAL)
+      subroutine keint (ia,ib,tegral)
 !                                                                      *
 !   This routine returns kinetic energy integrals.                     *
 !      A list of previously computed integrals is maintained. If the   *
@@ -19,166 +19,166 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: KEYORB
-      USE memory_man
-      USE keilst_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: keyorb
+      use memory_man
+      use keilst_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rinti_I
-      IMPLICIT NONE
+      use rinti_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(INOUT) :: ia, ib
-      REAL(DOUBLE), INTENT(out) :: tegral
+      integer, intent(inout) :: ia, ib
+      real(double), intent(out) :: tegral
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL ::  FOUND
-      INTEGER ::  i, index, loc, ju, jl, jm, key, newsiz, iswap
+      logical ::  found
+      integer ::  i, index, loc, ju, jl, jm, key, newsiz, iswap
 !-----------------------------------------------
 !
 !   Ensure that the indices are in `canonical' order
 !
-      IF (IA .GT. IB) THEN
-         ISWAP = IB
-         IB = IA
-         IA = ISWAP
-      ENDIF
+      if (ia .gt. ib) then
+         iswap = ib
+         ib = ia
+         ia = iswap
+      endif
 !
 !   Compute the composite (packed) index
 !
-      INDEX = IA*KEYORB+IB
+      index = ia*keyorb+ib
 !
-      IF (.NOT. FRSTKI) THEN
+      if (.not. frstki) then
 !
 !   This branch is executed on all entries except the first
 !
-         IF (INDEX .GT. INDKEI(NKEI)) THEN
+         if (index .gt. indkei(nkei)) then
 !
 !   The index is greater than the largest stored
 !
-            FOUND = .FALSE.
-            LOC = NKEI
+            found = .false.
+            loc = nkei
 !
-         ELSEIF (INDEX .LT. INDKEI(1)) THEN
+         elseif (index .lt. indkei(1)) then
 !
 !   The index is less than the smallest stored
 !
-            FOUND = .FALSE.
-            LOC = 0
+            found = .false.
+            loc = 0
 !
-         ELSE
+         else
 !
 !   The index is within the range of the indices stored; search
 !   for it in the list of indices
 !
-            JU = NKEI
-            JL = 1
+            ju = nkei
+            jl = 1
 !
-    1       IF (JU-JL .GT. 1) THEN
+    1       if (ju-jl .gt. 1) then
 !
-               JM = (JU+JL)/2
-               IF (INDKEI(JM) .GT. INDEX) THEN
-                  JU = JM
-               ELSE
-                  JL = JM
-               ENDIF
-               GOTO 1
+               jm = (ju+jl)/2
+               if (indkei(jm) .gt. index) then
+                  ju = jm
+               else
+                  jl = jm
+               endif
+               goto 1
 !
-            ELSE
+            else
 !
 !   The range is bracketed to the extent possible
 !
-               IF (INDEX .EQ. INDKEI(JU)) THEN
+               if (index .eq. indkei(ju)) then
 !
-                  FOUND = .TRUE.
-                  LOC = JU
+                  found = .true.
+                  loc = ju
 !
-               ELSEIF (INDEX .EQ. INDKEI(JL)) THEN
+               elseif (index .eq. indkei(jl)) then
 !
-                  FOUND = .TRUE.
-                  LOC = JL
+                  found = .true.
+                  loc = jl
 !
-               ELSE
+               else
 !
-                  FOUND = .FALSE.
-                  LOC = JL
+                  found = .false.
+                  loc = jl
 !
-               ENDIF
+               endif
 !
-            ENDIF
+            endif
 !
-         ENDIF
+         endif
 !
-         IF (FOUND) THEN
+         if (found) then
 !
 !   Found the index in the list; return the value of the integral
 !   from storage
 !
-            TEGRAL = VALKEI(LOC)
+            tegral = valkei(loc)
 !
-         ELSE
+         else
 !
 !   Index not found; compute the integral
 !
-            TEGRAL = RINTI (IA,IB,1)
+            tegral = rinti (ia,ib,1)
 !
 !   Increment the integral counter
 !
-            NKEI = NKEI+1
+            nkei = nkei+1
 !
 !   Increase array length by half the present length if the latter
 !   is inadequate to store another pair
 !
-            IF (NKEI .GT. NDKEA) THEN
-               NEWSIZ = NDKEA+NDKEA/2
-               CALL RALLOC (INDKEI,NEWSIZ,'INDKEI', 'KEINT')
-               CALL RALLOC (VALKEI,NEWSIZ,'VALKEI', 'KEINT')
-               NDKEA = NEWSIZ
-            ENDIF
+            if (nkei .gt. ndkea) then
+               newsiz = ndkea+ndkea/2
+               call ralloc (indkei,newsiz,'INDKEI', 'KEINT')
+               call ralloc (valkei,newsiz,'VALKEI', 'KEINT')
+               ndkea = newsiz
+            endif
 !
-            DO 2 I = NKEI,LOC+2,-1
-               INDKEI(I) = INDKEI(I-1)
-               VALKEI(I) = VALKEI(I-1)
-    2       CONTINUE
+            do 2 i = nkei,loc+2,-1
+               indkei(i) = indkei(i-1)
+               valkei(i) = valkei(i-1)
+    2       continue
 !
 !   Put the new index and value into storage
 !
-            INDKEI(LOC+1) = INDEX
-            VALKEI(LOC+1) = TEGRAL
+            indkei(loc+1) = index
+            valkei(loc+1) = tegral
 !
-         ENDIF
+         endif
 !
-      ELSE
+      else
 !
 !   This branch is executed only once
 !
-         FRSTKI = .FALSE.
+         frstki = .false.
 !
 !   Allocate the initial storage for arrays INDOEI and VALOEI;
 !   NDCOEA stores the array dimension
 !
-         NDKEA = 2
-         CALL ALLOC (INDKEI,NDKEA,'INDKEI','KEINT' )
-         CALL ALLOC (VALKEI,NDKEA,'VALKEI','KEINT')
+         ndkea = 2
+         call alloc (indkei,ndkea,'INDKEI','KEINT' )
+         call alloc (valkei,ndkea,'VALKEI','KEINT')
 !
 !   Compute the integral's value
 !
-         TEGRAL = RINTI (IA,IB,1)
+         tegral = rinti (ia,ib,1)
 !
 !   Initialise the integral counter
 !
-         NKEI = 1
+         nkei = 1
 !
 !   Store the integral and its value
 !
-         INDKEI(1) = INDEX
-         VALKEI(1) = TEGRAL
+         indkei(1) = index
+         valkei(1) = tegral
 !
-      ENDIF
+      endif
 !
-      RETURN
-      END SUBROUTINE KEINT
+      return
+      end subroutine keint

@@ -1,5 +1,5 @@
 !************************************************************************
-      SUBROUTINE CPMIX(NAME, INPCI)
+      subroutine cpmix(name, inpci)
 !************************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  13:35:54   1/ 3/07
 !...Modified by Charlotte Froese Fischer
@@ -7,73 +7,73 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
+      use vast_kind_param, only:  double
+      use memory_man
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: INPCI
-      CHARACTER , INTENT(INOUT) :: NAME(2)*24
+      integer , intent(in) :: inpci
+      character , intent(inout) :: name(2)*24
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IOS, NELEC, NCFTOT, NW, NVECTOT, NVECSIZ, NBLOCK, IBLK, IB, &
-         NCF, NVEC, IATJP, IASPA, I, J
-      REAL(DOUBLE),DIMENSION(:), pointer :: EVAL, EVEC
-      INTEGER,DIMENSION(:), pointer :: IVEC
-      REAL(DOUBLE) :: EAV
-      CHARACTER :: G92MIX*6
+      integer :: ios, nelec, ncftot, nw, nvectot, nvecsiz, nblock, iblk, ib, &
+         ncf, nvec, iatjp, iaspa, i, j
+      real(double),dimension(:), pointer :: eval, evec
+      integer,dimension(:), pointer :: ivec
+      real(double) :: eav
+      character :: g92mix*6
 !-----------------------------------------------
 
 
-      NAME(2) = TRIM(NAME(1))//'_CP'
-      IF (INPCI == 0) THEN
-         OPEN(UNIT=78, FILE=TRIM(NAME(2))//'.cbm', FORM='UNFORMATTED', STATUS=&
-            'UNKNOWN', POSITION='asis')
-      ELSE
-         OPEN(UNIT=78, FILE=TRIM(NAME(2))//'.bm', FORM='UNFORMATTED', STATUS=&
-            'UNKNOWN', POSITION='asis')
-      ENDIF
-      IF (INPCI == 0) THEN
-         OPEN(UNIT=68, FILE=TRIM(NAME(1))//'.cbm', FORM='UNFORMATTED', STATUS=&
-            'OLD', POSITION='asis')
-      ELSE
-         OPEN(UNIT=68, FILE=TRIM(NAME(1))//'.bm', FORM='UNFORMATTED', STATUS=&
-            'OLD', POSITION='asis')
-      ENDIF
-      READ (68, IOSTAT=IOS) G92MIX
-      IF (IOS/=0 .OR. G92MIX/='G92MIX') THEN
-         WRITE (*, *) 'Not a GRASP mixing file'
-         STOP
-      ENDIF
-      WRITE (78) G92MIX
-      READ (68) NELEC, NCFTOT, NW, NVECTOT, NVECSIZ, NBLOCK
-      WRITE (78) NELEC, NCFTOT, NW, NVECTOT, NVECSIZ, NBLOCK
+      name(2) = trim(name(1))//'_CP'
+      if (inpci == 0) then
+         open(unit=78, file=trim(name(2))//'.cbm', form='UNFORMATTED', status=&
+            'UNKNOWN', position='asis')
+      else
+         open(unit=78, file=trim(name(2))//'.bm', form='UNFORMATTED', status=&
+            'UNKNOWN', position='asis')
+      endif
+      if (inpci == 0) then
+         open(unit=68, file=trim(name(1))//'.cbm', form='UNFORMATTED', status=&
+            'OLD', position='asis')
+      else
+         open(unit=68, file=trim(name(1))//'.bm', form='UNFORMATTED', status=&
+            'OLD', position='asis')
+      endif
+      read (68, iostat=ios) g92mix
+      if (ios/=0 .or. g92mix/='G92MIX') then
+         write (*, *) 'Not a GRASP mixing file'
+         stop
+      endif
+      write (78) g92mix
+      read (68) nelec, ncftot, nw, nvectot, nvecsiz, nblock
+      write (78) nelec, ncftot, nw, nvectot, nvecsiz, nblock
 
-      DO IBLK = 1, NBLOCK
-         READ (68) IB, NCF, NVEC, IATJP, IASPA
-         WRITE (78) IB, NCF, NVEC, IATJP, IASPA
-         WRITE (*,*) IB, NCF, NVEC, IATJP, IASPA
-         CALL ALLOC (EVAL, NVEC, 'EVAL', 'CPMIX')
-         CALL ALLOC (EVEC, NCF*NVEC, 'EVEC', 'CPMIX')
-         CALL ALLOC (IVEC, NVEC, 'IVEC', 'CPMIX')
-         READ (68) (IVEC(I),I=1,NVEC)
-         READ (68) EAV, (EVAL(I),I=1,NVEC)
-         READ (68) ((EVEC(I + (J - 1)*NCF),I=1,NCF),J=1,NVEC)
+      do iblk = 1, nblock
+         read (68) ib, ncf, nvec, iatjp, iaspa
+         write (78) ib, ncf, nvec, iatjp, iaspa
+         write (*,*) ib, ncf, nvec, iatjp, iaspa
+         call alloc (eval, nvec, 'EVAL', 'CPMIX')
+         call alloc (evec, ncf*nvec, 'EVEC', 'CPMIX')
+         call alloc (ivec, nvec, 'IVEC', 'CPMIX')
+         read (68) (ivec(i),i=1,nvec)
+         read (68) eav, (eval(i),i=1,nvec)
+         read (68) ((evec(i + (j - 1)*ncf),i=1,ncf),j=1,nvec)
 
-         WRITE (78) (IVEC(I),I=1,NVEC)
-         WRITE (78) EAV, (EVAL(I),I=1,NVEC)
-         WRITE (78) ((EVEC(I + (J - 1)*NCF),I=1,NCF),J=1,NVEC)
-         CALL DALLOC (EVAL, 'EVAL', 'CPMIX')
-         CALL DALLOC (EVEC, 'EVEC', 'CPMIX')
-         CALL DALLOC (IVEC, 'IVEC', 'CPMIX')
-      END DO
-      NAME(2) = NAME(1)
-      CLOSE(68)
-      CLOSE(78)
-      RETURN
-      END SUBROUTINE CPMIX
+         write (78) (ivec(i),i=1,nvec)
+         write (78) eav, (eval(i),i=1,nvec)
+         write (78) ((evec(i + (j - 1)*ncf),i=1,ncf),j=1,nvec)
+         call dalloc (eval, 'EVAL', 'CPMIX')
+         call dalloc (evec, 'EVEC', 'CPMIX')
+         call dalloc (ivec, 'IVEC', 'CPMIX')
+      end do
+      name(2) = name(1)
+      close(68)
+      close(78)
+      return
+      end subroutine cpmix

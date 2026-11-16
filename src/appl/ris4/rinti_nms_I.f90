@@ -1,11 +1,11 @@
-      MODULE rinti_nms_I
-      INTERFACE
+      module rinti_nms_i
+      interface
 !...Translated by Gediminas Gaigalas 11/18/19
-      SUBROUTINE rinti_nms (J, K, VALNMSK123,VALNMSK1)
-      USE vast_kind_param,  ONLY: DOUBLE
-      REAL(DOUBLE), INTENT(OUT) :: VALNMSK123, VALNMSK1
-      INTEGER, INTENT(IN) :: J
-      INTEGER, INTENT(IN) :: K
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine rinti_nms (j, k, valnmsk123,valnmsk1)
+      use vast_kind_param,  only: double
+      real(double), intent(out) :: valnmsk123, valnmsk1
+      integer, intent(in) :: j
+      integer, intent(in) :: k
+      end subroutine
+      end interface
+      end module

@@ -1,11 +1,11 @@
-      MODULE vpint_I
-      INTERFACE
+      module vpint_i
+      interface
 !...Translated by Charlotte Froese Fischer
 !                       Gediminas Gaigalas  10/05/17
-      SUBROUTINE VPINT (IA,IB,TEGRAL)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER , INTENT(IN) :: IA, IB
-      REAl(DOUBLE), INTENT(OUT) :: TEGRAL
-      END SUBROUTINE vpint
-      END INTERFACE
-      END MODULE
+      subroutine vpint (ia,ib,tegral)
+      use vast_kind_param, only:  double
+      integer , intent(in) :: ia, ib
+      real(double), intent(out) :: tegral
+      end subroutine vpint
+      end interface
+      end module

@@ -1,11 +1,11 @@
-      MODULE rkco_GG_I
-      INTERFACE
+      module rkco_gg_i
+      interface
 !
-      SUBROUTINE RKCO_GG (JA,JB,CORD,INCOR,ICOLBREI)
+      subroutine rkco_gg (ja,jb,cord,incor,icolbrei)
 !      USE vast_kind_param, ONLY:  DOUBLE
-      USE cord_I, ONLY: cord_callback => cord
-      PROCEDURE(cord_callback) :: CORD
-      INTEGER, INTENT(IN) :: JA,JB,INCOR,ICOLBREI
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      use cord_i, only: cord_callback => cord
+      procedure(cord_callback) :: cord
+      integer, intent(in) :: ja,jb,incor,icolbrei
+      end subroutine
+      end interface
+      end module

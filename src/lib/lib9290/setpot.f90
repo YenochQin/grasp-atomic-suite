@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETPOT(J, JP)
+      subroutine setpot(j, jp)
 !                                                                      *
 !   This  subroutine  sets  up the  arrays TF and TG for use by  the   *
 !   subprograms IN, OUT, and SBSTEP.                                   *
@@ -24,61 +24,61 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE IOUNIT_C
-      USE DEF_C
-      USE GRID_C
-      USE INT_C,           ONLY: TF, TG
-      USE ORB_C
-      USE POTE_C,          ONLY: YP
-      IMPLICIT NONE
+      use vast_kind_param, only: double
+      use iounit_c
+      use def_c
+      use grid_c
+      use int_c,           only: tf, tg
+      use orb_c
+      use pote_c,          only: yp
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: J
-      INTEGER, INTENT(OUT) :: JP
+      integer, intent(in) :: j
+      integer, intent(out) :: jp
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE) :: DMHB2C, ENERGY, ENEFAC, RPI, YPRPOR
-      LOGICAL :: NOTSET
+      integer :: i
+      real(double) :: dmhb2c, energy, enefac, rpi, yprpor
+      logical :: notset
 !-----------------------------------------------
 !
 !
-      NOTSET = .TRUE.
+      notset = .true.
 !
 !   Define constants
 !
-      DMHB2C = -H/(2.0D00*C)
-      ENERGY = E(J)
-      ENEFAC = 2.0D00*C*C - ENERGY
+      dmhb2c = -h/(2.0d00*c)
+      energy = e(j)
+      enefac = 2.0d00*c*c - energy
 !
 !   Set up arrays TF and TG
 !
 !   Since TF(1) and TG(1) are never used, set them
 !   to some arbitrary value
 !
-      JP = 0
-      TF(1) = 0.0D00
-      TG(1) = 0.0D00
-      DO I = 2, N
-         RPI = RP(I)
-         YPRPOR = YP(I)*RPOR(I)
-         TF(I) = DMHB2C*(ENEFAC*RPI + YPRPOR)
-         TG(I) = DMHB2C*(ENERGY*RPI - YPRPOR)
-         IF (.NOT.NOTSET) CYCLE
-         IF (ABS(SIGN(1.0D00,TG(I))+SIGN(1.0D00,TG(1))) >= ACCY) CYCLE
-         JP = I
-         NOTSET = .FALSE.
-      END DO
+      jp = 0
+      tf(1) = 0.0d00
+      tg(1) = 0.0d00
+      do i = 2, n
+         rpi = rp(i)
+         yprpor = yp(i)*rpor(i)
+         tf(i) = dmhb2c*(enefac*rpi + yprpor)
+         tg(i) = dmhb2c*(energy*rpi - yprpor)
+         if (.not.notset) cycle
+         if (abs(sign(1.0d00,tg(i))+sign(1.0d00,tg(1))) >= accy) cycle
+         jp = i
+         notset = .false.
+      end do
 !
 !   Trap for inappropriate grid
 !
-      IF (JP == 0) THEN
-         WRITE (ISTDE, *) 'SETPOT: Join set to NNNP/2 = ', nnnp/2
-         JP = NNNP/2
-      ENDIF
+      if (jp == 0) then
+         write (istde, *) 'SETPOT: Join set to NNNP/2 = ', nnnp/2
+         jp = nnnp/2
+      endif
 !
-      RETURN
-      END SUBROUTINE SETPOT
+      return
+      end subroutine setpot

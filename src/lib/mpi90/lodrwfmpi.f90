@@ -1,5 +1,5 @@
 !***********************************************************************
-      SUBROUTINE LODRWFmpi (ierror)
+      subroutine lodrwfmpi (ierror)
 !     IMPLICIT REAL*8          (A-H, O-Z)
 
 !   This subroutine loads radial wavefunctions from the .rwf  file
@@ -22,145 +22,145 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE parameter_def,   ONLY:  NNNP
-      USE memory_man
-      USE DEBUG_C
-      USE DEF_C, ONLY: C, Z
-      USE GRID_C
-      USE NPAR_C
-      USE ORB_C
-      USE WAVE_C, ONLY: PZ, PF, QF
-      USE MPI_C
+      use vast_kind_param, only:  double
+      use parameter_def,   only:  nnnp
+      use memory_man
+      use debug_c
+      use def_c, only: c, z
+      use grid_c
+      use npar_c
+      use orb_c
+      use wave_c, only: pz, pf, qf
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE intrpq_I
-      USE orthsc_I
-      USE mpiu_I, ONLY: stopmpi
-      IMPLICIT NONE
+      use intrpq_i
+      use orthsc_i
+      use mpiu_i, only: stopmpi
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(OUT) :: ierror
+      integer, intent(out) :: ierror
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, I, K, NWIN, IOS, NPY, NAKY, MY
+      integer :: j, i, k, nwin, ios, npy, naky, my
 !     integer :: ierr
-      REAL(DOUBLE) :: CON, FKK, EY, PZY, DNORM
-      real(double), dimension(:), pointer :: PA, QA, RA
+      real(double) :: con, fkk, ey, pzy, dnorm
+      real(double), dimension(:), pointer :: pa, qa, ra
 !-----------------------------------------------
 !
 !-----------------------------------------------------------------------
 !
 !   Allocate storage to orbital arrays
 !
-      CALL ALLOC(PF, NNNP, NW, 'PF', 'LODRWFMPI')
-      CALL ALLOC(QF, NNNP, NW, 'QF', 'LODRWFMPI')
+      call alloc(pf, nnnp, nw, 'PF', 'LODRWFMPI')
+      call alloc(qf, nnnp, nw, 'QF', 'LODRWFMPI')
 
 !   Setup: (1) Orbital arrays to zero
 !          (2) Array E to -1 (no orbitals estimated)
 !          (3) Parameters GAMMA for each orbital
 !
-      CON = Z / C
-      CON = CON * CON
+      con = z / c
+      con = con * con
 
-      DO J = 1, NW
+      do j = 1, nw
 
-         DO I = 1, N
-            PF(I,J) = 0.D0
-            QF(I,J) = 0.D0
-         ENDDO
+         do i = 1, n
+            pf(i,j) = 0.d0
+            qf(i,j) = 0.d0
+         enddo
 
-         E(J) = -1.D0
-         K = ABS (NAK(J))
-         IF (NPARM .GT. 0) THEN
-            GAMA(J) = DBLE (K)
-         ELSEIF (NPARM .EQ. 0) THEN
-            FKK = DBLE (K*K)
-            IF (FKK .GE. CON) THEN
-               GAMA(J) = SQRT (FKK-CON)
-            ELSE
+         e(j) = -1.d0
+         k = abs (nak(j))
+         if (nparm .gt. 0) then
+            gama(j) = dble (k)
+         elseif (nparm .eq. 0) then
+            fkk = dble (k*k)
+            if (fkk .ge. con) then
+               gama(j) = sqrt (fkk-con)
+            else
                !WRITE (istde,*) 'LODRWF: Imaginary gamma parameter'
                !WRITE (istde,*) ' for ',NP(J),NH(J),' orbital; the'
                !WRITE (istde,*) ' point model for the nucleus'
                !WRITE (istde,*) ' is inappropriate for Z > ',C,'.'
-               CALL stopmpi ('lodrwfmpi: Inappropriate gamma', myid)
-            ENDIF
-         ENDIF
-      ENDDO
+               call stopmpi ('lodrwfmpi: Inappropriate gamma', myid)
+            endif
+         endif
+      enddo
 !
 !   Read orbital information from Read Orbitals File; write summary
 !   to  .dbg  file if option set
 !
-      IF (LDBPR(3) .AND. myid .EQ. 0) WRITE (99,300)
-      NWIN = 0
-    3 CONTINUE
+      if (ldbpr(3) .and. myid .eq. 0) write (99,300)
+      nwin = 0
+    3 continue
 
-      IF (myid .EQ. 0) READ (23,IOSTAT = IOS) NPY,NAKY,EY,MY
-      CALL MPI_Bcast (IOS,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (NPY,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (NAKY,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (MY,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (EY,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
+      if (myid .eq. 0) read (23,iostat = ios) npy,naky,ey,my
+      call mpi_bcast (ios,1,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (npy,1,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (naky,1,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (my,1,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (ey,1,mpi_double_precision,0,mpi_comm_world,ierr)
 
-      IF (IOS .EQ. 0) THEN
-         CALL ALLOC (PA,MY, 'PA', 'LODRWFMPI')
-         CALL ALLOC (QA,MY, 'QA', 'LODRWFMPI')
-         CALL ALLOC (RA,MY, 'RA', 'LODRWFMPI')
+      if (ios .eq. 0) then
+         call alloc (pa,my, 'PA', 'LODRWFMPI')
+         call alloc (qa,my, 'QA', 'LODRWFMPI')
+         call alloc (ra,my, 'RA', 'LODRWFMPI')
 
-         IF (myid .EQ. 0) THEN
-            READ (23) PZY,(PA(I),I = 1,MY),(QA(I),I =1 ,MY)
-            READ (23) (RA(I),I = 1,MY)
-         ENDIF
+         if (myid .eq. 0) then
+            read (23) pzy,(pa(i),i = 1,my),(qa(i),i =1 ,my)
+            read (23) (ra(i),i = 1,my)
+         endif
 
-         CALL MPI_Bcast (PZY,1,MPI_DOUBLE_PRECISION,0, &
-                               MPI_COMM_WORLD,ierr)
-         CALL MPI_Bcast (PA,MY,MPI_DOUBLE_PRECISION,0, &
-                               MPI_COMM_WORLD,ierr)
-         CALL MPI_Bcast (QA,MY,MPI_DOUBLE_PRECISION,0, &
-                               MPI_COMM_WORLD,ierr)
-         CALL MPI_Bcast (RA,MY,MPI_DOUBLE_PRECISION,0, &
-                               MPI_COMM_WORLD,ierr)
+         call mpi_bcast (pzy,1,mpi_double_precision,0, &
+                               mpi_comm_world,ierr)
+         call mpi_bcast (pa,my,mpi_double_precision,0, &
+                               mpi_comm_world,ierr)
+         call mpi_bcast (qa,my,mpi_double_precision,0, &
+                               mpi_comm_world,ierr)
+         call mpi_bcast (ra,my,mpi_double_precision,0, &
+                               mpi_comm_world,ierr)
 
-         DO J = 1, NW
-            IF (.NOT.(E(J)<0.0D00 .AND. NPY==NP(J) .AND. NAKY==NAK(J))) CYCLE
-               PZ(J) = PZY
-               E(J) = EY
-               CALL INTRPQ (PA, QA, MY, RA, J, DNORM)
-               IF (LDBPR(3) .AND. myid .EQ. 0) &
-                     WRITE (99,301) NP(J), NH(J), E(J), DNORM
-               NWIN = NWIN + 1
-         ENDDO
+         do j = 1, nw
+            if (.not.(e(j)<0.0d00 .and. npy==np(j) .and. naky==nak(j))) cycle
+               pz(j) = pzy
+               e(j) = ey
+               call intrpq (pa, qa, my, ra, j, dnorm)
+               if (ldbpr(3) .and. myid .eq. 0) &
+                     write (99,301) np(j), nh(j), e(j), dnorm
+               nwin = nwin + 1
+         enddo
 
-         CALL DALLOC (PA, 'PA', 'LODRWFMPI')
-         CALL DALLOC (QA, 'QA', 'LODRWFMPI')
-         CALL DALLOC (RA, 'RA', 'LODRWFMPI')
+         call dalloc (pa, 'PA', 'LODRWFMPI')
+         call dalloc (qa, 'QA', 'LODRWFMPI')
+         call dalloc (ra, 'RA', 'LODRWFMPI')
 
-         GOTO 3
-      ENDIF
-      IF (LDBPR(3) .AND. myid .EQ. 0) &
-            WRITE (99,*) ' orbitals renormalised;'
+         goto 3
+      endif
+      if (ldbpr(3) .and. myid .eq. 0) &
+            write (99,*) ' orbitals renormalised;'
 !
 !   Return with an error code if all orbitals are not known
 !
-      IF (NWIN .LT. NW) THEN
+      if (nwin .lt. nw) then
          ierror = 1
-         RETURN
-      ENDIF
+         return
+      endif
 !
 !   Schmidt orthogonalise the orbitals
 !
-      CALL ORTHSC
+      call orthsc
 
-      IF (LDBPR(3) .AND. myid .EQ. 0) &
-            WRITE (99,*) 'orbitals orthogonalised and renormalised;'
+      if (ldbpr(3) .and. myid .eq. 0) &
+            write (99,*) 'orbitals orthogonalised and renormalised;'
       ierror = 0
 
-  300 FORMAT (/'From SUBROUTINE LODRWFmpi:' &
-              /' Orbital',8X,'Eigenvalue',19X,'Norm')
-  301 FORMAT (2X,I2,A2,4X,1P,1D22.15,4X,1D22.15)
+  300 format (/'From SUBROUTINE LODRWFmpi:' &
+              /' Orbital',8x,'Eigenvalue',19x,'Norm')
+  301 format (2x,i2,a2,4x,1p,1d22.15,4x,1d22.15)
 
-      RETURN
-      END SUBROUTINE LODRWFmpi
+      return
+      end subroutine lodrwfmpi

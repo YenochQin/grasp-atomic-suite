@@ -1,7 +1,7 @@
 !***********************************************************************
 !                                                                      *
 !                                                                      *
-      SUBROUTINE CITRAG(CIIN, NCSF, NCIV, L, NSHL, T, NIN, NTESTG, CIOUT, SCR)
+      subroutine citrag(ciin, ncsf, nciv, l, nshl, t, nin, ntestg, ciout, scr)
 !                                                                      *
 !   Calculate the action of the  operator                              *
 !                                                                      *
@@ -39,112 +39,112 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE sbdat1_C
-      USE orb_C
+      use vast_kind_param, only:  double
+      use sbdat1_c
+      use orb_c
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE wrtmat_I
-      USE scalve_I
-      USE tiinig_I
-      USE ti1tv_I
-      USE vecsum_I
-      USE copvec_I, ONLY: copvec
-      IMPLICIT NONE
+      use wrtmat_i
+      use scalve_i
+      use tiinig_i
+      use ti1tv_i
+      use vecsum_i
+      use copvec_i, only: copvec
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NCSF
-      INTEGER  :: NCIV
-      INTEGER  :: L
-      INTEGER  :: NSHL
-      INTEGER, INTENT(IN) :: NIN
-      INTEGER  :: NTESTG
-      REAL(DOUBLE)  :: CIIN(NCSF,NCIV)
-      REAL(DOUBLE)  :: T(NSHL,NSHL)
-      REAL(DOUBLE)  :: CIOUT(NCSF,NCIV)
-      REAL(DOUBLE)  :: SCR(NCSF,NCIV)
+      integer  :: ncsf
+      integer  :: nciv
+      integer  :: l
+      integer  :: nshl
+      integer, intent(in) :: nin
+      integer  :: ntestg
+      real(double)  :: ciin(ncsf,nciv)
+      real(double)  :: t(nshl,nshl)
+      real(double)  :: ciout(ncsf,nciv)
+      real(double)  :: scr(ncsf,nciv)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NTESTL, NTEST, IIN, IPOT, I, N
-      REAL(DOUBLE) :: FACTOR, TII, XNFACI
+      integer :: ntestl, ntest, iin, ipot, i, n
+      real(double) :: factor, tii, xnfaci
 !-----------------------------------------------
 !
 
-      NTESTL = 0
-      NTEST = MAX(NTESTG,NTESTL)
-      NTEST = 0
+      ntestl = 0
+      ntest = max(ntestg,ntestl)
+      ntest = 0
 
 !
-      IF (NTEST >= 10) THEN
-         WRITE (6, *)
-         WRITE (6, *) ' ***************'
-         WRITE (6, *) ' Entering CITRAG'
-         WRITE (6, *) ' ***************'
-         WRITE (6, *)
-      ENDIF
-      IF (NTEST >= 100) THEN
-         WRITE (6, *) ' Input CI vectors'
-         CALL WRTMAT (CIIN, NCSF, NCIV, NCSF, NCIV)
-         WRITE (6, *) ' Transformation matrix T'
-         CALL WRTMAT (T, NSHL, NSHL, NSHL, NSHL)
-      ENDIF
+      if (ntest >= 10) then
+         write (6, *)
+         write (6, *) ' ***************'
+         write (6, *) ' Entering CITRAG'
+         write (6, *) ' ***************'
+         write (6, *)
+      endif
+      if (ntest >= 100) then
+         write (6, *) ' Input CI vectors'
+         call wrtmat (ciin, ncsf, nciv, ncsf, nciv)
+         write (6, *) ' Transformation matrix T'
+         call wrtmat (t, nshl, nshl, nshl, nshl)
+      endif
 !
 !. Factor from inactive shells
 !
-      IF (NIN /= 0) THEN
-         FACTOR = 1.0D0
-         DO IIN = 1, NIN
-            FACTOR = FACTOR*T(IIN,IIN)
-         END DO
+      if (nin /= 0) then
+         factor = 1.0d0
+         do iin = 1, nin
+            factor = factor*t(iin,iin)
+         end do
 !
 !       IPOT = 2*(2*L+1)  (number of m_lm_s. This should be replaced
 !                          by (2j+1) corresponding to L)
 !
-         IPOT = 2*IABS(NAK(NSHLP(L,IIN)))
-         FACTOR = FACTOR**IPOT
-         CALL SCALVE (CIIN, FACTOR, NCIV*NCSF)
-      ENDIF
-      IF (NIN == NSHL) CALL COPVEC (CIIN, CIOUT, NCIV*NCSF)
+         ipot = 2*iabs(nak(nshlp(l,iin)))
+         factor = factor**ipot
+         call scalve (ciin, factor, nciv*ncsf)
+      endif
+      if (nin == nshl) call copvec (ciin, ciout, nciv*ncsf)
 !
-      DO I = NIN + 1, NSHL
-         IF (NTEST >= 100) WRITE (6, *) ' Loop I,L = ', I, L
+      do i = nin + 1, nshl
+         if (ntest >= 100) write (6, *) ' Loop I,L = ', i, l
 !
 !. The diagonal contribution
 !
-         TII = T(I,I)
-         CALL TIINIG (CIIN, NCSF, NCIV, I, L, TII, CIOUT, NTESTG)
+         tii = t(i,i)
+         call tiinig (ciin, ncsf, nciv, i, l, tii, ciout, ntestg)
 !        IF (LWORK2.LT.NCIV*NCSF) THEN
 !          WRITE(*,*) 'In CITRAG: Dimension of LWORK2 must be',
 !     &               'increased to at least',NCIV*NCSF
 !        ENDIF
-         CALL COPVEC (CIOUT, SCR, NCIV*NCSF)
+         call copvec (ciout, scr, nciv*ncsf)
 !
 !.  Off diagonal contributions
 !
-         XNFACI = 1.0D0
-         DO N = 1, 2*IABS(NAK(NSHLP(L,I)))
-            IF (NTEST >= 100) WRITE (6, *) ' Loop N = ', N
+         xnfaci = 1.0d0
+         do n = 1, 2*iabs(nak(nshlp(l,i)))
+            if (ntest >= 100) write (6, *) ' Loop N = ', n
 !
 !   T ** (N-1) is supposed to be in SCR, copy to CIIN
 !   and apply S
 !
-            CALL COPVEC (SCR, CIIN, NCIV*NCSF)
-            CALL TI1TV (CIIN, NCSF, NCIV, I, L, T(1,I), NSHL, SCR, NTESTG)
-            XNFACI = XNFACI/FLOAT(N)
-            CALL VECSUM (CIOUT, CIOUT, SCR, 1.0D0, XNFACI, NCIV*NCSF)
-         END DO
-         CALL COPVEC (CIOUT, CIIN, NCIV*NCSF)
+            call copvec (scr, ciin, nciv*ncsf)
+            call ti1tv (ciin, ncsf, nciv, i, l, t(1,i), nshl, scr, ntestg)
+            xnfaci = xnfaci/float(n)
+            call vecsum (ciout, ciout, scr, 1.0d0, xnfaci, nciv*ncsf)
+         end do
+         call copvec (ciout, ciin, nciv*ncsf)
 !
-      END DO
+      end do
 !
-      IF (NTEST >= 100) THEN
-         WRITE (6, *) ' Output CI vectors L = ', L
-         CALL WRTMAT (CIOUT, NCSF, NCIV, NCSF, NCIV)
-      ENDIF
+      if (ntest >= 100) then
+         write (6, *) ' Output CI vectors L = ', l
+         call wrtmat (ciout, ncsf, nciv, ncsf, nciv)
+      endif
 !
-      RETURN
-      END SUBROUTINE CITRAG
+      return
+      end subroutine citrag

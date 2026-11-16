@@ -1,7 +1,7 @@
-      MODULE systemfreemem_I
-      INTERFACE
+      module systemfreemem_i
+      interface
 !   Written by  G. Gaigalas               Vilnius, September 2021
-      REAL(KIND(0.0D0)) FUNCTION systemfreemem ()
-      END FUNCTION
-      END INTERFACE
-      END MODULE
+      real(kind(0.0d0)) function systemfreemem ()
+      end function
+      end interface
+      end module

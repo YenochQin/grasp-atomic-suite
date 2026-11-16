@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE IN(IORB, JP, P, Q, MTP)
+      subroutine in(iorb, jp, p, q, mtp)
 !                                                                      *
 !   This program computes the solution of an  inhomogeneous  pair of   *
 !   radial Dirac equations in the tail region. A simple extension of   *
@@ -41,142 +41,142 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNP
-      USE def_C,            ONLY: accy
-      USE grid_C,           ONLY: h, n, r, rpor
-      USE int_C,            ONLY: TF, TG, XU, XV
-      USE orb_C,            ONLY: nak
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnp
+      use def_c,            only: accy
+      use grid_c,           only: h, n, r, rpor
+      use int_c,            only: tf, tg, xu, xv
+      use orb_c,            only: nak
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE convrt_I
-      IMPLICIT NONE
+      use convrt_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: IORB
-      INTEGER , INTENT(IN) :: JP
-      INTEGER , INTENT(OUT) :: MTP
-      REAL(DOUBLE) , INTENT(INOUT) :: P(NNNP)
-      REAL(DOUBLE) , INTENT(INOUT) :: Q(NNNP)
+      integer , intent(in) :: iorb
+      integer , intent(in) :: jp
+      integer , intent(out) :: mtp
+      real(double) , intent(inout) :: p(nnnp)
+      real(double) , intent(inout) :: q(nnnp)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, J, LCNUM, MTPP1
-      REAL(DOUBLE), DIMENSION(NNNP) :: TH, TI, TJ, XR, XS
-      REAL(DOUBLE) :: EPS, HHK, HHKF, CPJ, CMJ, CPJP1, CMJP1, TEI, TTHIS, TCI, &
-         TDI, TLAST
-      CHARACTER :: CNUM*5
+      integer :: i, j, lcnum, mtpp1
+      real(double), dimension(nnnp) :: th, ti, tj, xr, xs
+      real(double) :: eps, hhk, hhkf, cpj, cmj, cpjp1, cmjp1, tei, tthis, tci, &
+         tdi, tlast
+      character :: cnum*5
 !-----------------------------------------------
 !
 !   Global initializations
 !
 !ww      EPS = 0.1D 00*ACCY
-      EPS = 0.01D00*ACCY
-      HHK = 0.5D00*H*DBLE(NAK(IORB))
+      eps = 0.01d00*accy
+      hhk = 0.5d00*h*dble(nak(iorb))
 !
 !   Initialize counters
 !
-      I = 1
-      J = JP
+      i = 1
+      j = jp
 !
 !   Other initializations
 !
-      HHKF = HHK*RPOR(J)
-      CPJ = 1.0D00 + HHKF
-      CMJ = 1.0D00 - HHKF
-      HHKF = HHK*RPOR(J+1)
-      CPJP1 = 1.0D00 + HHKF
-      CMJP1 = 1.0D00 - HHKF
+      hhkf = hhk*rpor(j)
+      cpj = 1.0d00 + hhkf
+      cmj = 1.0d00 - hhkf
+      hhkf = hhk*rpor(j+1)
+      cpjp1 = 1.0d00 + hhkf
+      cmjp1 = 1.0d00 - hhkf
 !
 !   Compute required elements of first two rows of  L  and  U
 !
-      TH(I) = CPJ
-      TEI = -TF(J)/TH(I)
-      TI(I) = (-CPJP1) + TEI*TG(J+1)
-      TJ(I) = CMJP1*TEI - TF(J+1)
+      th(i) = cpj
+      tei = -tf(j)/th(i)
+      ti(i) = (-cpjp1) + tei*tg(j+1)
+      tj(i) = cmjp1*tei - tf(j+1)
 !
 !   First elements of solution vector Z
 !
-      XR(I) = (-XV(J)) + TG(J)*P(J)
-      XS(I) = (-XU(J)) - CMJ*P(J) - TEI*XR(I)
+      xr(i) = (-xv(j)) + tg(j)*p(j)
+      xs(i) = (-xu(j)) - cmj*p(j) - tei*xr(i)
 !
-      TTHIS = ABS(XS(I)/TI(I))
+      tthis = abs(xs(i)/ti(i))
 !
-    1 CONTINUE
-      I = I + 1
-      J = J + 1
+    1 continue
+      i = i + 1
+      j = j + 1
 !
 !   Failure if tables not long enough
 !
-      IF (J >= N) THEN
-         CALL CONVRT (N, CNUM, LCNUM)
-         WRITE (6, *) 'IN: maximum tabulation point exceeds'
-         WRITE (6, *) ' dimensional limit (currently '//CNUM(1:LCNUM)//');'
-         WRITE (6, *) ' radial wavefunction may indicate a'
-         WRITE (6, *) ' continuum state.'
-         ERROR STOP
-      ENDIF
+      if (j >= n) then
+         call convrt (n, cnum, lcnum)
+         write (6, *) 'IN: maximum tabulation point exceeds'
+         write (6, *) ' dimensional limit (currently '//cnum(1:lcnum)//');'
+         write (6, *) ' radial wavefunction may indicate a'
+         write (6, *) ' continuum state.'
+         error stop
+      endif
 !
 !   Compute required elements of remaining rows of  L  and  U
 !
-      CPJ = CPJP1
-      CMJ = CMJP1
-      HHKF = HHK*RPOR(J+1)
-      CPJP1 = 1.0D00 + HHKF
-      CMJP1 = 1.0D00 - HHKF
+      cpj = cpjp1
+      cmj = cmjp1
+      hhkf = hhk*rpor(j+1)
+      cpjp1 = 1.0d00 + hhkf
+      cmjp1 = 1.0d00 - hhkf
 !
-      TCI = -TG(J)/TI(I-1)
-      TH(I) = CPJ - TCI*TJ(I-1)
-      TDI = CMJ/TI(I-1)
-      TEI = ((-TF(J))-TDI*TJ(I-1))/TH(I)
-      TI(I) = (-CPJP1) + TEI*TG(J+1)
-      TJ(I) = (-TF(J+1)) + CMJP1*TEI
+      tci = -tg(j)/ti(i-1)
+      th(i) = cpj - tci*tj(i-1)
+      tdi = cmj/ti(i-1)
+      tei = ((-tf(j))-tdi*tj(i-1))/th(i)
+      ti(i) = (-cpjp1) + tei*tg(j+1)
+      tj(i) = (-tf(j+1)) + cmjp1*tei
 !
 !   Solution of  L*Z = V
 !
-      XR(I) = (-XV(J)) - TCI*XS(I-1)
-      XS(I) = (-XU(J)) - TDI*XS(I-1) - TEI*XR(I)
+      xr(i) = (-xv(j)) - tci*xs(i-1)
+      xs(i) = (-xu(j)) - tdi*xs(i-1) - tei*xr(i)
 !
 !   Test for outer boundary
 !
-      TLAST = TTHIS
-      TTHIS = ABS(XS(I)/TI(I))
+      tlast = tthis
+      tthis = abs(xs(i)/ti(i))
 !cff  Stop if J=NNNP
-      IF (TTHIS + TLAST <= EPS .OR. J .EQ. NNNP-1 ) THEN 
-         MTP = J
-      ELSE
-         GO TO 1
-      ENDIF
+      if (tthis + tlast <= eps .or. j .eq. nnnp-1 ) then 
+         mtp = j
+      else
+         go to 1
+      endif
 !
 !   Reset counter
 !
-      I = I - 1
+      i = i - 1
 !
 !   Last two rows of solution of  U*W = Z ; evaluation of Q(J)
 !
-      Q(J) = 0.0D00
-      P(J) = XS(I)/TI(I)
-      Q(J-1) = (XR(I)+TG(J)*P(J))/TH(I)
+      q(j) = 0.0d00
+      p(j) = xs(i)/ti(i)
+      q(j-1) = (xr(i)+tg(j)*p(j))/th(i)
 !
 !   Solution of  U*W = Z
 !
-    2 CONTINUE
-      J = J - 1
-      I = I - 1
+    2 continue
+      j = j - 1
+      i = i - 1
 !
-      IF (I > 0) THEN
-         P(J) = (XS(I)-TJ(I)*Q(J))/TI(I)
-         Q(J-1) = (XR(I)+(1.0D00-HHK*RPOR(J))*Q(J)+TG(J)*P(J))/TH(I)
-         GO TO 2
-      ENDIF
+      if (i > 0) then
+         p(j) = (xs(i)-tj(i)*q(j))/ti(i)
+         q(j-1) = (xr(i)+(1.0d00-hhk*rpor(j))*q(j)+tg(j)*p(j))/th(i)
+         go to 2
+      endif
 !
 !   Complete tables with zeroes
 !
-      MTPP1 = MTP + 1
-      P(MTPP1:N) = 0.0D00
-      Q(MTPP1:N) = 0.0D00
+      mtpp1 = mtp + 1
+      p(mtpp1:n) = 0.0d00
+      q(mtpp1:n) = 0.0d00
 !
-      RETURN
-      END SUBROUTINE IN
+      return
+      end subroutine in

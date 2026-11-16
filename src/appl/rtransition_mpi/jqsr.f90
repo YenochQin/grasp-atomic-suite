@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION JQSR (IWHICH, ISUBSH, ICSF)
+      integer function jqsr (iwhich, isubsh, icsf)
 !                                                                      *
 !   JQSR is a subshell quantum number for subshell ISUBSH in configu-  *
 !   ration state function  ICSF:  the seniority if IWHICH is 1;  the   *
@@ -17,22 +17,22 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE parameter_def, ONLY: NNNW
-      USE STAT_C,        ONLY: JQSAR
-      use orb_C,         ONLY: NCFR, NWR
+      use parameter_def, only: nnnw
+      use stat_c,        only: jqsar
+      use orb_c,         only: ncfr, nwr
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: IWHICH
-      INTEGER, INTENT(IN) :: ISUBSH
-      INTEGER  :: ICSF
+      integer  :: iwhich
+      integer, intent(in) :: isubsh
+      integer  :: icsf
 !-----------------------------------------------
 !
              jqsr = jqsar(isubsh,iwhich,icsf)
 !
-      RETURN
-      END FUNCTION JQSR
+      return
+      end function jqsr

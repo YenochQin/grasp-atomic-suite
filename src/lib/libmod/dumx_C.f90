@@ -1,9 +1,9 @@
-      MODULE dumx_C
-      use cons_C
+      module dumx_c
+      use cons_c
 !...Created by Pacific-Sierra Research 77to90  4.3E  10:50:24   2/14/04
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      USE parameter_def,   ONLY:  NNNW
-      INTEGER, DIMENSION(NNNW) :: JLIS, JC1S, JC2S
+      use parameter_def,   only:  nnnw
+      integer, dimension(nnnw) :: jlis, jc1s, jc2s
 !$OMP THREADPRIVATE(JLIS, JC1S, JC2S)
-      END MODULE dumx_C
+      end module dumx_c

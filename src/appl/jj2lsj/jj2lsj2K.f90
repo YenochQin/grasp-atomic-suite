@@ -1,7 +1,7 @@
 !
 !***********************************************************************
 !                                                                      *
-      PROGRAM jj2lsj_omp
+      program jj2lsj_omp
 !                                                                      *
 !     This MAIN program controls the transformation of atomic states,  *
 !     which are given in a jj-coupled CSF basis, into an LS-coupled    *
@@ -30,14 +30,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE jj2lsj_profile
-      USE jj2lsj_code
-      USE factt_I, ONLY: factt
-      USE setiso_I, ONLY: setiso
-      USE starttime_I, ONLY: starttime
-      USE stoptime_I, ONLY: stoptime
-      USE setcon_I, ONLY: setcon
-      IMPLICIT NONE
+      use jj2lsj_profile
+      use jj2lsj_code
+      use factt_i, only: factt
+      use setiso_i, only: setiso
+      use starttime_i, only: starttime
+      use stoptime_i, only: stoptime
+      use setcon_i, only: setcon
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -62,8 +62,8 @@
       call setcon
       call factt
 !
-      CALL setiso('isodata')
-      CALL jj2lsj
+      call setiso('isodata')
+      call jj2lsj
 !
       call profile_finish()
       call stoptime (ncount1, 'jj2lsj_omp')

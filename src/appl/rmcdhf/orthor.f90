@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ORTHOR(J, INV)
+      subroutine orthor(j, inv)
 !
 !                                                                      *
 !   This routine Schmidt orthogonalizes orbital  J  to  all orbitals   *
@@ -24,53 +24,53 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNP
-      USE DEF_C
-      USE GRID_C
-      USE OVL_C
-      USE ORB_C
-      USE ORBA_C
-      USE INVT_C
-      USE SCF_C
-      USE IOUNIT_C
-      USE FIXD_C
-      USE wave_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnp
+      use def_c
+      use grid_c
+      use ovl_c
+      use orb_c
+      use orba_c
+      use invt_c
+      use scf_c
+      use iounit_c
+      use fixd_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rint_I
+      use rint_i
 !      USE count_I
-      USE count_I, ONLY: count
-      IMPLICIT NONE
+      use count_i, only: count
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
-      INTEGER , INTENT(INOUT) :: INV
+      integer  :: j
+      integer , intent(inout) :: inv
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: KRAW, K, MTP, I, NNCFF, JGG
-      REAL(DOUBLE) :: EPS, OVRLAP, DNORM, FACTOR, SGN
-      LOGICAL :: CHECK, CHANGED
+      integer :: kraw, k, mtp, i, nncff, jgg
+      real(double) :: eps, ovrlap, dnorm, factor, sgn
+      logical :: check, changed
 !-----------------------------------------------
 !
 !XHH Added common /orba/ and /iounit/
 
 !
 !ww      EPS = ACCY*0.1D 00
-      EPS = ACCY*0.01D00
+      eps = accy*0.01d00
 !
-      CHECK = .NOT.NOINVT(J)
+      check = .not.noinvt(j)
 !
 !XHH
 ! Bug fixed. Here J is actually IORDER(J_raw), thus K should be
 ! treated the same way.
-      CHANGED = .FALSE.
+      changed = .false.
 !      DO 4 K = 1,NW
-      DO KRAW = 1, NW
-         K = IORDER(KRAW)
+      do kraw = 1, nw
+         k = iorder(kraw)
 !         write(istde,*) '***',kraw,k,np(k),nh(k),scnsty(k),'***'
 !
 !XHH orbitals with higher self-consistency are considered
@@ -81,63 +81,63 @@
 !         IF ( (K .NE. J) .AND.
 !     :        (NAK(K) .EQ. NAK(J)) ) THEN
 !XHH orbitals before the current and unchanged ones are considered
-         IF (.NOT.(NAK(K)==NAK(J) .AND. (K<J .OR. LFIX(K)))) CYCLE
+         if (.not.(nak(k)==nak(j) .and. (k<j .or. lfix(k)))) cycle
 
-         CHANGED = .TRUE.
+         changed = .true.
 !
 !   Compute overlap
 !
-         OVRLAP = RINT(J,K,0)
+         ovrlap = rint(j,k,0)
 !
 !   Schmidt orthogonalise
 !
-         PZ(J) = PZ(J) - OVRLAP*PZ(K)
-         MTP = MAX(MF(J),MF(K))
-         PF(:MTP,J) = PF(:MTP,J) - OVRLAP*PF(:MTP,K)
-         QF(:MTP,J) = QF(:MTP,J) - OVRLAP*QF(:MTP,K)
-      END DO
+         pz(j) = pz(j) - ovrlap*pz(k)
+         mtp = max(mf(j),mf(k))
+         pf(:mtp,j) = pf(:mtp,j) - ovrlap*pf(:mtp,k)
+         qf(:mtp,j) = qf(:mtp,j) - ovrlap*qf(:mtp,k)
+      end do
 !XHH
-      IF (CHANGED) THEN
+      if (changed) then
 !
 !   Normalise
 !
-         MF(J) = MTP
-         DNORM = RINT(J,J,0)
-         FACTOR = 1.0D00/SQRT(DNORM)
+         mf(j) = mtp
+         dnorm = rint(j,j,0)
+         factor = 1.0d00/sqrt(dnorm)
 !
 !   Determine if inversion is necessary
 !
-         IF (CHECK) THEN
-            CALL COUNT (PF(:NNNP,J), MTP, NNCFF, SGN)
-            IF (SGN < 0.0D00) THEN
-               INV = INV + 1
-               FACTOR = -FACTOR
-            ENDIF
-         ENDIF
+         if (check) then
+            call count (pf(:nnnp,j), mtp, nncff, sgn)
+            if (sgn < 0.0d00) then
+               inv = inv + 1
+               factor = -factor
+            endif
+         endif
 !
 !   Perform normalization and/or inversion
 !
-         PZ(J) = FACTOR*PZ(J)
-         PF(2:MTP,J) = FACTOR*PF(2:MTP,J)
-         QF(2:MTP,J) = FACTOR*QF(2:MTP,J)
+         pz(j) = factor*pz(j)
+         pf(2:mtp,j) = factor*pf(2:mtp,j)
+         qf(2:mtp,j) = factor*qf(2:mtp,j)
 !
 !   Find new MF(J)
 !
-         MTP = MTP + 1
-    3    CONTINUE
-         MTP = MTP - 1
-         IF (ABS(PF(MTP,J)) < EPS) THEN
-            PF(MTP,J) = 0.0D00
-            QF(MTP,J) = 0.0D00
-            GO TO 3
-         ELSE
-            MF(J) = MTP
-         ENDIF
+         mtp = mtp + 1
+    3    continue
+         mtp = mtp - 1
+         if (abs(pf(mtp,j)) < eps) then
+            pf(mtp,j) = 0.0d00
+            qf(mtp,j) = 0.0d00
+            go to 3
+         else
+            mf(j) = mtp
+         endif
 !
 !XHH two lines moved forward and added an ENDIF
 !         ENDIF
 !    4 CONTINUE
-      ENDIF
+      endif
 !
-      RETURN
-      END SUBROUTINE ORTHOR
+      return
+      end subroutine orthor

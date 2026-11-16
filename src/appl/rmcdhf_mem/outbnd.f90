@@ -1,7 +1,7 @@
 
 !***********************************************************************
 !                                                                      *
-      LOGICAL FUNCTION OUTBND (ETRY)
+      logical function outbnd (etry)
 !                                                                      *
 !   This  subprogram determines whether the trial eigenvalue etry is   *
 !   within the bounds (EPSMIN,EPSMAX)                                  *
@@ -15,23 +15,23 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE SCF_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use scf_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE) , INTENT(IN) :: ETRY
+      real(double) , intent(in) :: etry
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !
 !
-      IF (ETRY>EPSMIN .AND. ETRY<EPSMAX) THEN
-         OUTBND = .FALSE.
-      ELSE
-         OUTBND = .TRUE.
-      ENDIF
+      if (etry>epsmin .and. etry<epsmax) then
+         outbnd = .false.
+      else
+         outbnd = .true.
+      endif
 !
-      RETURN
-      END FUNCTION OUTBND
+      return
+      end function outbnd

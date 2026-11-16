@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GETMIXBLOCK(NAME, NCI)
+      subroutine getmixblock(name, nci)
 !                                                                      *
 !   Reads mixing coefficient file from block-structured format         *
 !                                                                      *
@@ -20,72 +20,72 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE def_C
-      USE EIGV_C
-      USE orb_C
-      USE prnt_C
-      USE syma_C
-      USE iounit_C
-      USE blk_C,            ONLY: NEVINBLK, NCFINBLK, TWO_J
+      use vast_kind_param, only:  double
+      use memory_man
+      use def_c
+      use eigv_c
+      use orb_c
+      use prnt_c
+      use syma_c
+      use iounit_c
+      use blk_c,            only: nevinblk, ncfinblk, two_j
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      USE vast_kind_param, ONLY: LONG
-      IMPLICIT NONE
+      use openfl_i
+      use vast_kind_param, only: long
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: NCI
-      CHARACTER(LEN=24), INTENT(IN) :: NAME
+      integer , intent(in) :: nci
+      character(len=24), intent(in) :: name
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K, IERR, IOS, NCFTOT, NVECTOT, NVECSIZ, NBLOCK, I, NVECPAT, &
-         NCFPAT, NEAVSUM, JB, NB, NCFBLK, NEVBLK, IATJP, IASPA, J
-      REAL(DOUBLE) :: EAVSUM
-      INTEGER(LONG) NVECSIZPAT, NCFTOT_i8, NVECSIZ_i8
-      CHARACTER(LEN=3)   :: STATUS
-      CHARACTER(LEN=6)   :: G92MIX
-      CHARACTER(LEN=11)  :: FORM
-      CHARACTER(LEN=256) :: FILNAM
+      integer :: k, ierr, ios, ncftot, nvectot, nvecsiz, nblock, i, nvecpat, &
+         ncfpat, neavsum, jb, nb, ncfblk, nevblk, iatjp, iaspa, j
+      real(double) :: eavsum
+      integer(long) nvecsizpat, ncftot_i8, nvecsiz_i8
+      character(len=3)   :: status
+      character(len=6)   :: g92mix
+      character(len=11)  :: form
+      character(len=256) :: filnam
 !-----------------------------------------------
 !
 !   The  .mix  file is UNFORMATTED; it must exist
 !
-      K = INDEX(NAME,' ')
-      IF (NCI == 0) THEN
-         FILNAM = NAME(1:K-1)//'.cm'
-      ELSE
-         FILNAM = NAME(1:K-1)//'.m'
-      ENDIF
-      FORM = 'UNFORMATTED'
-      STATUS = 'OLD'
+      k = index(name,' ')
+      if (nci == 0) then
+         filnam = name(1:k-1)//'.cm'
+      else
+         filnam = name(1:k-1)//'.m'
+      endif
+      form = 'UNFORMATTED'
+      status = 'OLD'
 !
-      CALL OPENFL (25, FILNAM, FORM, STATUS, IERR)
-      IF (IERR == 1) THEN
-         WRITE (ISTDE, *) 'Error when opening', FILNAM
-         STOP
-      ENDIF
+      call openfl (25, filnam, form, status, ierr)
+      if (ierr == 1) then
+         write (istde, *) 'Error when opening', filnam
+         stop
+      endif
 !
 !   Check the header of the file; if not as expected, try again
 !
-      READ (25, IOSTAT=IOS) G92MIX
-      IF (IOS/=0 .OR. G92MIX/='G92MIX') THEN
-         WRITE (ISTDE, *) 'Not a GRASP92 MIXing Coefficients File;'
-         CLOSE(25)
-         STOP
-      ENDIF
+      read (25, iostat=ios) g92mix
+      if (ios/=0 .or. g92mix/='G92MIX') then
+         write (istde, *) 'Not a GRASP92 MIXing Coefficients File;'
+         close(25)
+         stop
+      endif
 
-      READ (25) NELEC, NCFTOT, NW, NVECTOT, NVECSIZ, NBLOCK
-      WRITE (*, *) '   nelec  = ', NELEC
-      WRITE (*, *) '   ncftot = ', NCFTOT
-      WRITE (*, *) '   nw     = ', NW
-      WRITE (*, *) '   nblock = ', NBLOCK
-      WRITE (*, *)
-      NCFTOT_i8 = NCFTOT
+      read (25) nelec, ncftot, nw, nvectot, nvecsiz, nblock
+      write (*, *) '   nelec  = ', nelec
+      write (*, *) '   ncftot = ', ncftot
+      write (*, *) '   nw     = ', nw
+      write (*, *) '   nblock = ', nblock
+      write (*, *)
+      ncftot_i8 = ncftot
 
 !***********************************************************************
 ! Allocate memory for old format data
@@ -96,16 +96,16 @@
 !GG      CALL ALLOC (IVEC, NVECTOT, 'IVEC', 'GETMIXBLOCK')
 !GG      CALL ALLOC (IATJPO, NVECTOT, 'IATJPO', 'GETMIXBLOCK')
 !GG      CALL ALLOC (IASPAR, NVECTOT, 'IASPAR', 'GETMIXBLOCK')
-      allocate (EVAL(NVECTOT))
-      allocate (EVEC(NCFTOT_i8*NVECTOT))
-      allocate (IVEC(NVECTOT))
-      allocate (IATJPO(NVECTOT))
-      allocate (IASPAR(NVECTOT))
+      allocate (eval(nvectot))
+      allocate (evec(ncftot_i8*nvectot))
+      allocate (ivec(nvectot))
+      allocate (iatjpo(nvectot))
+      allocate (iaspar(nvectot))
 
 !***********************************************************************
 ! Initialize mixing coefficients to zero; others are fine
 !***********************************************************************
-      EVEC(:NVECTOT*NCFTOT_i8) = 0.D0
+      evec(:nvectot*ncftot_i8) = 0.d0
 
 !***********************************************************************
 ! Initialize counters and sum registers
@@ -118,64 +118,64 @@
 !    neavsum:    total number CSF contributing to eavsum
 !***********************************************************************
 
-      NVECPAT = 0
-      NCFPAT = 0
-      NVECSIZPAT = 0
-      NEAVSUM = 0
-      EAVSUM = 0.D0
+      nvecpat = 0
+      ncfpat = 0
+      nvecsizpat = 0
+      neavsum = 0
+      eavsum = 0.d0
 
-      WRITE (*, *) '  block     ncf     nev    2j+1  parity'
-      DO JB = 1, NBLOCK
+      write (*, *) '  block     ncf     nev    2j+1  parity'
+      do jb = 1, nblock
 
-         READ (25) NB, NCFBLK, NEVBLK, IATJP, IASPA
-         WRITE (*, '(5I8)') NB, NCFBLK, NEVBLK, IATJP, IASPA
-         NEVINBLK(JB) = NEVBLK
-         NCFINBLK(JB) = NCFBLK
-         TWO_J(JB) = IATJP - 1
-         IF (JB /= NB) STOP 'jb .NE. nb'
+         read (25) nb, ncfblk, nevblk, iatjp, iaspa
+         write (*, '(5I8)') nb, ncfblk, nevblk, iatjp, iaspa
+         nevinblk(jb) = nevblk
+         ncfinblk(jb) = ncfblk
+         two_j(jb) = iatjp - 1
+         if (jb /= nb) stop 'jb .NE. nb'
 
-         IF (NEVBLK > 0) THEN
+         if (nevblk > 0) then
 
-            READ (25) (IVEC(NVECPAT + I),I=1,NEVBLK)
+            read (25) (ivec(nvecpat + i),i=1,nevblk)
                ! ivec(i)   = ivec(i) + ncfpat ! serial # of the state
-            IATJPO(NVECPAT+1:NEVBLK+NVECPAT) = IATJP
-            IASPAR(NVECPAT+1:NEVBLK+NVECPAT) = IASPA
+            iatjpo(nvecpat+1:nevblk+nvecpat) = iatjp
+            iaspar(nvecpat+1:nevblk+nvecpat) = iaspa
 
-            READ (25) EAV, (EVAL(NVECPAT+I),I=1,NEVBLK)
+            read (25) eav, (eval(nvecpat+i),i=1,nevblk)
 
 !           ...Construct the true energy by adding up the average
-            EVAL(NVECPAT+1:NEVBLK+NVECPAT) = EVAL(NVECPAT+1:NEVBLK+NVECPAT) + &
-               EAV
+            eval(nvecpat+1:nevblk+nvecpat) = eval(nvecpat+1:nevblk+nvecpat) + &
+               eav
 !           ...For overal (all blocks) average energy
-            EAVSUM = EAVSUM + EAV*NCFBLK
-            NEAVSUM = NEAVSUM + NCFBLK
+            eavsum = eavsum + eav*ncfblk
+            neavsum = neavsum + ncfblk
 
-            READ (25) ((EVEC(NVECSIZPAT+NCFPAT+I+(J-1)*NCFTOT_i8),I=1,NCFBLK),J=1,&
-               NEVBLK)
-         ENDIF
+            read (25) ((evec(nvecsizpat+ncfpat+i+(j-1)*ncftot_i8),i=1,ncfblk),j=1,&
+               nevblk)
+         endif
 !
-         NVECPAT = NVECPAT + NEVBLK
-         NCFPAT = NCFPAT + NCFBLK
-         NVECSIZPAT = NVECSIZPAT + NEVBLK*NCFTOT_i8
+         nvecpat = nvecpat + nevblk
+         ncfpat = ncfpat + ncfblk
+         nvecsizpat = nvecsizpat + nevblk*ncftot_i8
 !
-      END DO
+      end do
 
 !     ...Here eav is the average energy of the blocks where at least
 !        one eigenstate is calculated. It is not the averge of the
 !        total Hamiltonian.
 
-      EAV = EAVSUM/NEAVSUM
+      eav = eavsum/neavsum
 
-      IF (NCFTOT /= NEAVSUM) WRITE (6, *) &
+      if (ncftot /= neavsum) write (6, *) &
          'Not all blocks are diagonalized --- Average E ', 'not correct'
 
 !     ...Substrct the overal average energy
-      EVAL(:NVECTOT) = EVAL(:NVECTOT) - EAV
+      eval(:nvectot) = eval(:nvectot) - eav
 !
-      CLOSE(25)
+      close(25)
 !
-      NCF = NCFTOT
-      NVEC = NVECTOT
+      ncf = ncftot
+      nvec = nvectot
 !
-      RETURN
-      END SUBROUTINE GETMIXBLOCK
+      return
+      end subroutine getmixblock

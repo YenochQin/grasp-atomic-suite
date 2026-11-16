@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE DAMPOR(J, INV, ODAMPJ)
+      subroutine dampor(j, inv, odampj)
 !                                                                      *
 !   This subroutine damps the orbital wave function with index J. it   *
 !   also  stores  the  previous  determination  of this orbital.       *
@@ -16,43 +16,43 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNP
-      USE damp_C
-      USE def_C
-      USE grid_C
-      USE int_C
-      USE invt_C
-      USE scf_C
-      USE wave_C
-      USE mpi_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnp
+      use damp_c
+      use def_c
+      use grid_c
+      use int_c
+      use invt_c
+      use scf_c
+      use wave_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rint_I
+      use rint_i
 !      USE count_I
-      USE count_I, ONLY: count
-      IMPLICIT NONE
+      use count_i, only: count
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
-      INTEGER, INTENT(INOUT) :: INV
-      REAL(DOUBLE), INTENT(IN) :: ODAMPJ
+      integer  :: j
+      integer, intent(inout) :: inv
+      real(double), intent(in) :: odampj
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: MTPO, MTPN, MTP, I, NNCFF, MFJ
-      REAL(DOUBLE) :: EPS, FACTOR, POLDI, QOLDI, DNORM, DNFAC, SGN
-      LOGICAL :: CHECK
+      integer :: mtpo, mtpn, mtp, i, nncff, mfj
+      real(double) :: eps, factor, poldi, qoldi, dnorm, dnfac, sgn
+      logical :: check
 !-----------------------------------------------
 !
 !
 !   Initialization
 !
 !ww      EPS = 0.1D 00*ACCY
-      EPS = 0.01D00*ACCY
-      CHECK = .NOT.NOINVT(J)
+      eps = 0.01d00*accy
+      check = .not.noinvt(j)
 !
 !   Damp orbital J using the damping factor  ABS (ODAMP(J)):  ODAMP(J)
 !   is restricted to the open interval (-1,1) by  DATSCF ; the meaning
@@ -65,80 +65,80 @@
 !XHH odampj goes to the argument
 !      ODAMPJ = ABS (ODAMP(J))
 !
-      IF (ODAMPJ > EPS) THEN
+      if (odampj > eps) then
 !
-         FACTOR = 1.0D00 - ODAMPJ
+         factor = 1.0d00 - odampj
 !
-         PZ(J) = FACTOR*P0 + ODAMPJ*PZ(J)
+         pz(j) = factor*p0 + odampj*pz(j)
 !
-         MTPO = MF(J)
-         MTPN = MTP0
-         MTP0 = MTPO
+         mtpo = mf(j)
+         mtpn = mtp0
+         mtp0 = mtpo
 !
-         MTP = MAX(MTPN,MTPO)
-         DO I = 1, MTP
-            POLDI = PF(I,J)
-            PF(I,J) = FACTOR*P(I) + ODAMPJ*PF(I,J)
-            P(I) = POLDI
-            QOLDI = QF(I,J)
-            QF(I,J) = FACTOR*Q(I) + ODAMPJ*QF(I,J)
-            Q(I) = QOLDI
-         END DO
+         mtp = max(mtpn,mtpo)
+         do i = 1, mtp
+            poldi = pf(i,j)
+            pf(i,j) = factor*p(i) + odampj*pf(i,j)
+            p(i) = poldi
+            qoldi = qf(i,j)
+            qf(i,j) = factor*q(i) + odampj*qf(i,j)
+            q(i) = qoldi
+         end do
 !
 !   Compute normalization factor
 !
-         MF(J) = MTP
-         DNORM = RINT(J,J,0)
-         DNFAC = 1.0D00/SQRT(DNORM)
+         mf(j) = mtp
+         dnorm = rint(j,j,0)
+         dnfac = 1.0d00/sqrt(dnorm)
 !
 !   Determine if inversion is necessary
 !
-         IF (CHECK) THEN
-            CALL COUNT (PF(:NNNP,J), MTP, NNCFF, SGN)
-            IF (SGN < 0.0D00) THEN
-               INV = INV + 1
-               DNFAC = -DNFAC
-            ENDIF
-         ENDIF
+         if (check) then
+            call count (pf(:nnnp,j), mtp, nncff, sgn)
+            if (sgn < 0.0d00) then
+               inv = inv + 1
+               dnfac = -dnfac
+            endif
+         endif
 !
-         PZ(J) = PZ(J)*DNFAC
-         PF(:MTP,J) = DNFAC*PF(:MTP,J)
-         QF(:MTP,J) = DNFAC*QF(:MTP,J)
+         pz(j) = pz(j)*dnfac
+         pf(:mtp,j) = dnfac*pf(:mtp,j)
+         qf(:mtp,j) = dnfac*qf(:mtp,j)
 !
 !   Find new MF(J)
 !
-         MFJ = MTP + 1
-    3    CONTINUE
-         MFJ = MFJ - 1
-         IF (ABS(PF(MFJ,J)) < EPS) THEN
-            PF(MFJ,J) = 0.0D00
-            QF(MFJ,J) = 0.0D00
-            GO TO 3
-         ELSE
-            MF(J) = MFJ
-         ENDIF
+         mfj = mtp + 1
+    3    continue
+         mfj = mfj - 1
+         if (abs(pf(mfj,j)) < eps) then
+            pf(mfj,j) = 0.0d00
+            qf(mfj,j) = 0.0d00
+            go to 3
+         else
+            mf(j) = mfj
+         endif
 !
-      ELSE
+      else
 !
-         PZ(J) = P0
+         pz(j) = p0
 !
-         MTPO = MF(J)
-         MTPN = MTP0
-         MTP0 = MTPO
+         mtpo = mf(j)
+         mtpn = mtp0
+         mtp0 = mtpo
 !
-         MTP = MAX(MTPN,MTPO)
-         DO I = 1, MTP
-            POLDI = PF(I,J)
-            PF(I,J) = P(I)
-            P(I) = POLDI
-            QOLDI = QF(I,J)
-            QF(I,J) = Q(I)
-            Q(I) = QOLDI
-         END DO
+         mtp = max(mtpn,mtpo)
+         do i = 1, mtp
+            poldi = pf(i,j)
+            pf(i,j) = p(i)
+            p(i) = poldi
+            qoldi = qf(i,j)
+            qf(i,j) = q(i)
+            q(i) = qoldi
+         end do
 !
-         MF(J) = MTP
+         mf(j) = mtp
 !
-      ENDIF
+      endif
 !
-      RETURN
-      END SUBROUTINE DAMPOR
+      return
+      end subroutine dampor

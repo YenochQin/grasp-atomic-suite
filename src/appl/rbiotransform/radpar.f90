@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE RADPAR
+      subroutine radpar
 !                                                                      *
 !   This subroutine sets the parameters controlling the radial grid    *
 !                                                                      *
@@ -12,75 +12,75 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE def_C,           ONLY: c, cvac, z, accy
-      USE default_C
-      USE grid_C
-      USE npar_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use def_c,           only: c, cvac, z, accy
+      use default_c
+      use grid_c
+      use npar_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      IMPLICIT NONE
+      use getyn_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL   :: YES
-      CHARACTER :: ANSWER
+      logical   :: yes
+      character :: answer
 !-----------------------------------------------
 !
-      IF (NPARM == 0) THEN
-         RNT = EXP((-65.0D00/16.0D00))/Z
-         H = 0.5D00**4
-         N = MIN(220,NNNP)
-      ELSE
+      if (nparm == 0) then
+         rnt = exp((-65.0d00/16.0d00))/z
+         h = 0.5d00**4
+         n = min(220,nnnp)
+      else
 !cff     .. Should be Z-dependent
-         RNT = 2.0D-06/Z
-         H = 5.0D-02
-         N = NNNP
-      ENDIF
-      HP = 0.0D00
-      IF (NDEF /= 0) THEN
-         WRITE (6, *) 'The default radial grid parameters'
-         WRITE (6, *) ' for this case are:'
-         WRITE (6, *) ' RNT = ', RNT, ';'
-         WRITE (6, *) ' H = ', H, ';'
-         WRITE (6, *) ' HP = ', HP, ';'
-         WRITE (6, *) ' N = ', N, ';'
-         WRITE (6, *) ' revise these values?'
-         YES = GETYN()
-         IF (YES) THEN
-            WRITE (6, *) 'Enter RNT:'
-            READ (5, *) RNT
-            WRITE (6, *) 'Enter H:'
-            READ (5, *) H
-            WRITE (6, *) 'Enter HP:'
-            READ (5, *) HP
-            WRITE (6, *) 'Enter N:'
-            READ (5, *) N
-         ENDIF
-      ENDIF
+         rnt = 2.0d-06/z
+         h = 5.0d-02
+         n = nnnp
+      endif
+      hp = 0.0d00
+      if (ndef /= 0) then
+         write (6, *) 'The default radial grid parameters'
+         write (6, *) ' for this case are:'
+         write (6, *) ' RNT = ', rnt, ';'
+         write (6, *) ' H = ', h, ';'
+         write (6, *) ' HP = ', hp, ';'
+         write (6, *) ' N = ', n, ';'
+         write (6, *) ' revise these values?'
+         yes = getyn()
+         if (yes) then
+            write (6, *) 'Enter RNT:'
+            read (5, *) rnt
+            write (6, *) 'Enter H:'
+            read (5, *) h
+            write (6, *) 'Enter HP:'
+            read (5, *) hp
+            write (6, *) 'Enter N:'
+            read (5, *) n
+         endif
+      endif
 !
 !   ACCY is an estimate of the accuracy of the numerical procedures
 !
-      ACCY = H**6
+      accy = h**6
 !
 
-      IF (NDEF /= 0) THEN
-         WRITE (6, *) 'The physical speed of light in'
-         WRITE (6, *) ' atomic units is', CVAC, ';'
-         WRITE (6, *) ' revise this value?'
-         YES = GETYN()
-         IF (YES) THEN
-            WRITE (6, *) 'Enter the revised value:'
-            READ (5, *) C
-         ELSE
-            C = CVAC
-         ENDIF
-      ELSE
-         C = CVAC
-      ENDIF
+      if (ndef /= 0) then
+         write (6, *) 'The physical speed of light in'
+         write (6, *) ' atomic units is', cvac, ';'
+         write (6, *) ' revise this value?'
+         yes = getyn()
+         if (yes) then
+            write (6, *) 'Enter the revised value:'
+            read (5, *) c
+         else
+            c = cvac
+         endif
+      else
+         c = cvac
+      endif
 
-      RETURN
-      END SUBROUTINE RADPAR
+      return
+      end subroutine radpar

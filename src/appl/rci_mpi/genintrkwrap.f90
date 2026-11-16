@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GENINTRKWRAP(MYID, NPROCS, J2MAX)
+      subroutine genintrkwrap(myid, nprocs, j2max)
 !
 !   Written by     Xinghong He            Last revision: 12 Jun 1998   *
 !                                                                      *
@@ -11,32 +11,32 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE CTEILSRK_C
+      use cteilsrk_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE genintrk_I
-      USE mpiu_I, ONLY: gdsummpi
-      USE mpiu_I, ONLY: gisummpi
-      IMPLICIT NONE
+      use genintrk_i
+      use mpiu_i, only: gdsummpi
+      use mpiu_i, only: gisummpi
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: MYID
-      INTEGER  :: NPROCS
-      INTEGER  :: J2MAX
+      integer  :: myid
+      integer  :: nprocs
+      integer  :: j2max
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: N
+      integer      :: n
 !-----------------------------------------------
 
-      CALL GENINTRK (MYID, NPROCS, N, J2MAX)
+      call genintrk (myid, nprocs, n, j2max)
 
 ! Gather integrals (and their indeces) from- and send to- all nodes
 
-      CALL GISUMMPI (INDTEIRK, N)
-      CALL GDSUMMPI (VALTEIRK, N)
+      call gisummpi (indteirk, n)
+      call gdsummpi (valteirk, n)
 
-      RETURN
-      END SUBROUTINE GENINTRKWRAP
+      return
+      end subroutine genintrkwrap

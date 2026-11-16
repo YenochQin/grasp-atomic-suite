@@ -2,7 +2,7 @@
 
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE FRMHYD(INDEX, NSUBS, MODIFY, NRADIAL)
+      subroutine frmhyd(index, nsubs, modify, nradial)
 !                                                                      *
 !   This  subroutine  is  used  to  produce  estimates  of  the wave   *
 !   functions from the hydrogenic approximation. The screening cons-   *
@@ -18,60 +18,60 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE parameter_def, ONLY: NNN1
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE DEF_C
-      USE LEFT_C
-      USE ORB_C, ONLY: E, NP, NAK, NH
-      USE WAVE_C, ONLY: PF, QF, PZ, MF
-      USE WHFROM_C, ONLY: SOURCE
-      USE HYDPAR_C, ONLY: SIGMA
-      USE IOUNIT_C
-      USE DEFAULT_C
+      use parameter_def, only: nnn1
+      use vast_kind_param, only:  double
+      use def_c
+      use left_c
+      use orb_c, only: e, np, nak, nh
+      use wave_c, only: pf, qf, pz, mf
+      use whfrom_c, only: source
+      use hydpar_c, only: sigma
+      use iounit_c
+      use default_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dcbsrw_I
-      IMPLICIT NONE
+      use dcbsrw_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: NSUBS
-      LOGICAL , INTENT(IN) :: MODIFY
-      INTEGER , INTENT(IN) :: INDEX(NNNW)
+      integer , intent(in) :: nsubs
+      logical , intent(in) :: modify
+      integer , intent(in) :: index(nnnw)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, LOC, NRADIAL
-      REAL(DOUBLE) :: ZEFF, DelZ
-      LOGICAL :: YES, GETYN
+      integer :: j, loc, nradial
+      real(double) :: zeff, delz
+      logical :: yes, getyn
 !-----------------------------------------------
 !
 !
       delz = 0.d0
-      IF (NRADIal == 4)  THEN
-         WRITE (ISTDE, *) 'Enter increase in Z for correlation orbitals'
-         READ  (5, *) delz
-      END IF
-      WRITE (ISTDE, *) 'Orbital Z_eff for hydrogenic orbitals'
-      DO J = 1, NSUBS
-         LOC = INDEX(J)
-         IF (SET(LOC)) CYCLE
-         IF (MODIFY) THEN
-            WRITE (ISTDE, *) 'Input new value >'
-            READ (5, *) SIGMA(LOC)
-         ENDIF
-         ZEFF = Z - SIGMA(LOC) + delz
-         WRITE (ISTDE, '(I2,A2,F10.2)') NP(LOC), NH(LOC), Zeff
+      if (nradial == 4)  then
+         write (istde, *) 'Enter increase in Z for correlation orbitals'
+         read  (5, *) delz
+      end if
+      write (istde, *) 'Orbital Z_eff for hydrogenic orbitals'
+      do j = 1, nsubs
+         loc = index(j)
+         if (set(loc)) cycle
+         if (modify) then
+            write (istde, *) 'Input new value >'
+            read (5, *) sigma(loc)
+         endif
+         zeff = z - sigma(loc) + delz
+         write (istde, '(I2,A2,F10.2)') np(loc), nh(loc), zeff
 !           ...Calculate radial wavefunctions
-         CALL DCBSRW (NP(LOC), NAK(LOC), ZEFF, E(LOC), PZ(LOC), PF(:,LOC), &
-            QF(:,LOC), MF(LOC))
-         SET(LOC) = .TRUE.
-         SOURCE(LOC) = 'Hyd'
-      END DO
-      WRITE (ISTDE, *)
-      RETURN
-      END SUBROUTINE FRMHYD
+         call dcbsrw (np(loc), nak(loc), zeff, e(loc), pz(loc), pf(:,loc), &
+            qf(:,loc), mf(loc))
+         set(loc) = .true.
+         source(loc) = 'Hyd'
+      end do
+      write (istde, *)
+      return
+      end subroutine frmhyd

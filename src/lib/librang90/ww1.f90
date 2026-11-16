@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE WW1(IK,BK,ID,BD,K2,QM1,QM2,QM3,QM4,WW)
+      subroutine ww1(ik,bk,id,bd,k2,qm1,qm2,qm3,qm4,ww)
 !                                                                  *
 !   ---------------  SECTION SQ    SUBPROGRAM 25  --------------   *
 !                                                                  *
@@ -22,60 +22,60 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, TENTH, TWO, EPS
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, tenth, two, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE izas1_I
-      USE itjj_I
-      USE rumtjj_I
-      USE ixjtik_I
-      USE wj1_I
-      IMPLICIT NONE
+      use izas1_i
+      use itjj_i
+      use rumtjj_i
+      use ixjtik_i
+      use wj1_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN)               :: K2
-      INTEGER,      INTENT(IN), DIMENSION(7) :: IK, ID
-      REAL(DOUBLE), INTENT(IN)               :: QM1, QM2, QM3, QM4
-      REAL(DOUBLE), INTENT(IN), DIMENSION(3) :: BK, BD
-      REAL(DOUBLE), INTENT(OUT)              :: WW
+      integer,      intent(in)               :: k2
+      integer,      intent(in), dimension(7) :: ik, id
+      real(double), intent(in)               :: qm1, qm2, qm3, qm4
+      real(double), intent(in), dimension(3) :: bk, bd
+      real(double), intent(out)              :: ww
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: KK2,KK6,IQ,IQM,IQ3,IQ4,IE,IE1,IT,ITP,ITG,IBTT
-      INTEGER, DIMENSION(7)      :: IBT
-      REAL(DOUBLE)               :: ENQP, D1, W
-      REAL(DOUBLE), DIMENSION(3) :: BT
+      integer :: kk2,kk6,iq,iqm,iq3,iq4,ie,ie1,it,itp,itg,ibtt
+      integer, dimension(7)      :: ibt
+      real(double)               :: enqp, d1, w
+      real(double), dimension(3) :: bt
 !-----------------------------------------------
-      WW=ZERO
-      IF(ID(6) /= IK(6))RETURN
-      IF(IZAS1(ID(7),BD(3),IK(7),BK(3)) == 0)RETURN
-      ENQP=ZERO
-      KK2=K2*2
-      IQ3=QM3*TWO+QM3*TENTH
-      IQ4=QM4*TWO+QM4*TENTH
-      IQ=IQ3+IQ4
-      IF(ITJJ(IK,ID,0,BK,BD,IBT,BT,KK6,ITP,ITG,IQ) == 0)RETURN
-      IE1=KK2-IK(6)
-      IQM=TWO*DABS(BT(3))+TENTH
-      DO IT=ITP,ITG
-        CALL RUMTJJ(IT,IBT(3),IBT(7),IBTT,IBT(6))
-        IF(IQM > IBT(7)) CYCLE
-        IF(IXJTIK(KK2,KK2,0,ID(6),IK(6),IBT(6)) == 0) CYCLE
-        IBT(1)=IT
-        BT(2)=DBLE(IBT(6))/TWO
-        BT(1)=DBLE(IBT(7))/TWO
-        CALL WJ1(IK,BK,IBT,BT,K2,QM1,QM2,D1)
-        IF(DABS(D1) < EPS) CYCLE
-        CALL WJ1(IBT,BT,ID,BD,K2,QM3,QM4,W)
-        IF(DABS(W) < EPS) CYCLE
-        D1=D1*W
-        IE=IE1+IBT(6)
-        IF(((IE/4)*4) /= IE)D1=-D1
-        ENQP=ENQP+D1
-      END DO
-      WW=ENQP/DSQRT(DBLE(KK2+1)*(IK(6)+1))
-      RETURN
-      END SUBROUTINE WW1
+      ww=zero
+      if(id(6) /= ik(6))return
+      if(izas1(id(7),bd(3),ik(7),bk(3)) == 0)return
+      enqp=zero
+      kk2=k2*2
+      iq3=qm3*two+qm3*tenth
+      iq4=qm4*two+qm4*tenth
+      iq=iq3+iq4
+      if(itjj(ik,id,0,bk,bd,ibt,bt,kk6,itp,itg,iq) == 0)return
+      ie1=kk2-ik(6)
+      iqm=two*dabs(bt(3))+tenth
+      do it=itp,itg
+        call rumtjj(it,ibt(3),ibt(7),ibtt,ibt(6))
+        if(iqm > ibt(7)) cycle
+        if(ixjtik(kk2,kk2,0,id(6),ik(6),ibt(6)) == 0) cycle
+        ibt(1)=it
+        bt(2)=dble(ibt(6))/two
+        bt(1)=dble(ibt(7))/two
+        call wj1(ik,bk,ibt,bt,k2,qm1,qm2,d1)
+        if(dabs(d1) < eps) cycle
+        call wj1(ibt,bt,id,bd,k2,qm3,qm4,w)
+        if(dabs(w) < eps) cycle
+        d1=d1*w
+        ie=ie1+ibt(6)
+        if(((ie/4)*4) /= ie)d1=-d1
+        enqp=enqp+d1
+      end do
+      ww=enqp/dsqrt(dble(kk2+1)*(ik(6)+1))
+      return
+      end subroutine ww1

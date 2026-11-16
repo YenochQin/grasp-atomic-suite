@@ -1,8 +1,8 @@
-      MODULE bcore_C
+      module bcore_c
 !                     Gediminas Gaigalas  10/05/17
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE parameter_def,   ONLY:  NNNW
+      use vast_kind_param, only:  double
+      use parameter_def,   only:  nnnw
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:33:54  12/28/06
 !...Modified by Charlotte Froese Fischer
-      INTEGER, DIMENSION(NNNW) :: ICORE
-      END MODULE bcore_C
+      integer, dimension(nnnw) :: icore
+      end module bcore_c

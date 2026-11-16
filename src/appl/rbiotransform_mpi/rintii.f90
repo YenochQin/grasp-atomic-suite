@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION RINTII (I, J, K)
+      real(kind(0.0d0)) function rintii (i, j, k)
 !                                                                      *
 !   The value of RINT is an approximation to:                          *
 !                                                                      *
@@ -22,45 +22,45 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE grid_C
-      USE tatb_C
-      USE wave_C
+      use vast_kind_param, only:  double
+      use grid_c
+      use tatb_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE quad_I
-      IMPLICIT NONE
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: I
-      INTEGER  :: J
-      INTEGER, INTENT(IN) :: K
+      integer  :: i
+      integer  :: j
+      integer, intent(in) :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: L
-      REAL(DOUBLE) :: RESULT
+      integer :: l
+      real(double) :: result
 !-----------------------------------------------
 !
 !   Determine the maximum tabulation point for the integrand
 !
-      MTP = MIN(MFII(I),MFII(J))
+      mtp = min(mfii(i),mfii(j))
 !
 !   Tabulate the integrand as required for SUBROUTINE QUAD; the
 !   value at the first tabulation point is arbitrary
 !
-      TA(1) = 0.0D00
-      DO L = 2, MTP
-         TA(L) = R(L)**K*(PFII(L,I)*PFII(L,J) + QFII(L,I)*QFII(L,J))*RP(L)
-      END DO
+      ta(1) = 0.0d00
+      do l = 2, mtp
+         ta(l) = r(l)**k*(pfii(l,i)*pfii(l,j) + qfii(l,i)*qfii(l,j))*rp(l)
+      end do
 !
 !   Perform the quadrature
 !
-      CALL QUAD (RESULT)
-      RINTII = RESULT
+      call quad (result)
+      rintii = result
 !
-      RETURN
+      return
 !
-      END FUNCTION RINTII
+      end function rintii

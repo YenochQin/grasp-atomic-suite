@@ -1,12 +1,12 @@
-      MODULE A1JJ_I
-      INTERFACE
+      module a1jj_i
+      interface
 !
-      SUBROUTINE A1JJ (IK, BK, ID, BD, QM1, A)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER,      INTENT(IN), DIMENSION(7) :: IK, ID
-      REAL(DOUBLE), INTENT(IN), DIMENSION(3) :: BK, BD
-      REAL(DOUBLE), INTENT(IN)               :: QM1
-      REAL(DOUBLE), INTENT(OUT)              :: A
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine a1jj (ik, bk, id, bd, qm1, a)
+      use vast_kind_param, only:  double
+      integer,      intent(in), dimension(7) :: ik, id
+      real(double), intent(in), dimension(3) :: bk, bd
+      real(double), intent(in)               :: qm1
+      real(double), intent(out)              :: a
+      end subroutine
+      end interface
+      end module

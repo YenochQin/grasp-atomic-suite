@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      PROGRAM HFS92_MPI
+      program hfs92_mpi
 !                                                                      *
 !   Entry routine for the MPI hyperfine-structure program.             *
 !                                                                      *
@@ -8,171 +8,171 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE default_C
-      USE iounit_C
-      USE mpi_C
+      use vast_kind_param, only: double
+      use default_c
+      use iounit_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE getyn_I
-      USE setdbg_I
-      USE setmc_I
-      USE setcon_I
-      USE setsum_I
-      USE setcsla_I
-      USE gethfd_I
-      USE getmixblock_I
-      USE strsum_I
-      USE factt_I
-      USE hfsgg_mpi_I
-      USE mpiu_I, ONLY: gdmaxmpi_root
-      USE mpiu_I, ONLY: mpix_shutdown
-      USE mpiu_I, ONLY: mpix_startup
-      IMPLICIT NONE
+      use getyn_i
+      use setdbg_i
+      use setmc_i
+      use setcon_i
+      use setsum_i
+      use setcsla_i
+      use gethfd_i
+      use getmixblock_i
+      use strsum_i
+      use factt_i
+      use hfsgg_mpi_i
+      use mpiu_i, only: gdmaxmpi_root
+      use mpiu_i, only: mpix_shutdown
+      use mpiu_i, only: mpix_startup
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ARGC, IARG, K, NCI, NCORE_NOT_USED, NCOUNT1
-      INTEGER :: NSTAGE1, NSTAGE2, NCOUNT_RATE, NCOUNT_MAX
-      LOGICAL :: YES, USE_ARGS
-      REAL(DOUBLE) :: TIME_SETCSLA, TIME_GETHFD, TIME_GETMIXBLOCK, TIME_HFSGG
-      REAL(DOUBLE), DIMENSION(1) :: TIMBUF
-      CHARACTER(LEN=24) :: ARG
-      CHARACTER :: NAME*24
+      integer :: argc, iarg, k, nci, ncore_not_used, ncount1
+      integer :: nstage1, nstage2, ncount_rate, ncount_max
+      logical :: yes, use_args
+      real(double) :: time_setcsla, time_gethfd, time_getmixblock, time_hfsgg
+      real(double), dimension(1) :: timbuf
+      character(len=24) :: arg
+      character :: name*24
 !-----------------------------------------------
 !
-      CALL MPIX_STARTUP(MYID, NPROCS, HOST, LENHOST, NCOUNT1, &
+      call mpix_startup(myid, nprocs, host, lenhost, ncount1, &
          'RHFS_MPI', 'This is the MPI hyperfine structure program', &
          'isodata, name.c, name.(c)m, name.w', &
-         'name.(c)h, name.(c)hoffd', .TRUE.)
+         'name.(c)h, name.(c)hoffd', .true.)
 !
-      NAME = ' '
-      NCI = 1
-      NDEF = 0
-      USE_ARGS = .FALSE.
+      name = ' '
+      nci = 1
+      ndef = 0
+      use_args = .false.
 !
-      IF (MYID == 0) THEN
-         ARGC = COMMAND_ARGUMENT_COUNT()
-         IF (ARGC > 0) THEN
-            USE_ARGS = .TRUE.
-            DO IARG = 1, ARGC
-               ARG = ' '
-               CALL GET_COMMAND_ARGUMENT(IARG, ARG)
-               IF (IARG == 1 .AND. ARG(1:2) /= '--') THEN
-                  NAME = ARG
-               ELSE IF (TRIM(ARG) == '--ci') THEN
-                  NCI = 0
-               ELSE IF (TRIM(ARG) == '--nonci') THEN
-                  NCI = 1
-               ELSE IF (TRIM(ARG) == '--help' .OR. TRIM(ARG) == '-h') THEN
-                  WRITE (ISTDE, *) 'Usage: rhfs_mpi [name] [--ci|--nonci]'
-                  WRITE (ISTDE, *) 'If no arguments are given, interactive mode is used.'
-                  NDEF = -1
-               ELSE IF (IARG /= 1 .OR. ARG(1:2) == '--') THEN
-                  WRITE (ISTDE, *) 'Unrecognized argument: ', TRIM(ARG)
-                  WRITE (ISTDE, *) 'Usage: rhfs_mpi [name] [--ci|--nonci]'
-                  NDEF = -1
-               ENDIF
-            END DO
-            IF (NDEF == 0 .AND. LEN_TRIM(NAME) == 0) THEN
-               WRITE (ISTDE, *) 'Usage: rhfs_mpi [name] [--ci|--nonci]'
-               NDEF = -1
-            ENDIF
-         ENDIF
+      if (myid == 0) then
+         argc = command_argument_count()
+         if (argc > 0) then
+            use_args = .true.
+            do iarg = 1, argc
+               arg = ' '
+               call get_command_argument(iarg, arg)
+               if (iarg == 1 .and. arg(1:2) /= '--') then
+                  name = arg
+               else if (trim(arg) == '--ci') then
+                  nci = 0
+               else if (trim(arg) == '--nonci') then
+                  nci = 1
+               else if (trim(arg) == '--help' .or. trim(arg) == '-h') then
+                  write (istde, *) 'Usage: rhfs_mpi [name] [--ci|--nonci]'
+                  write (istde, *) 'If no arguments are given, interactive mode is used.'
+                  ndef = -1
+               else if (iarg /= 1 .or. arg(1:2) == '--') then
+                  write (istde, *) 'Unrecognized argument: ', trim(arg)
+                  write (istde, *) 'Usage: rhfs_mpi [name] [--ci|--nonci]'
+                  ndef = -1
+               endif
+            end do
+            if (ndef == 0 .and. len_trim(name) == 0) then
+               write (istde, *) 'Usage: rhfs_mpi [name] [--ci|--nonci]'
+               ndef = -1
+            endif
+         endif
 !
-         IF (.NOT.USE_ARGS .AND. NDEF == 0) THEN
-            WRITE (ISTDE, *)
-            WRITE (ISTDE, *) 'Default settings?'
-            YES = GETYN()
-            WRITE (ISTDE, *)
-            IF (YES) THEN
-               NDEF = 0
-            ELSE
-               NDEF = 1
-               WRITE (ISTDE, *) 'RHFS_MPI currently supports default settings only.'
-            ENDIF
-         ENDIF
+         if (.not.use_args .and. ndef == 0) then
+            write (istde, *)
+            write (istde, *) 'Default settings?'
+            yes = getyn()
+            write (istde, *)
+            if (yes) then
+               ndef = 0
+            else
+               ndef = 1
+               write (istde, *) 'RHFS_MPI currently supports default settings only.'
+            endif
+         endif
 !
-         IF (NDEF == 0 .AND. .NOT.USE_ARGS) THEN
-   10       CONTINUE
-            WRITE (ISTDE, *) 'Name of state'
-            READ (*, '(A)') NAME
-            K = INDEX(NAME,' ')
-            IF (K == 1) THEN
-               WRITE (ISTDE, *) 'Names may not start with a blank'
-               GO TO 10
-            ENDIF
+         if (ndef == 0 .and. .not.use_args) then
+   10       continue
+            write (istde, *) 'Name of state'
+            read (*, '(A)') name
+            k = index(name,' ')
+            if (k == 1) then
+               write (istde, *) 'Names may not start with a blank'
+               go to 10
+            endif
 !
-            WRITE (ISTDE, *)
-            WRITE (ISTDE, *) 'Mixing coefficients from a CI calc.?'
-            YES = GETYN()
-            IF (YES) THEN
-               NCI = 0
-            ELSE
-               NCI = 1
-            ENDIF
-         ENDIF
-      ENDIF
+            write (istde, *)
+            write (istde, *) 'Mixing coefficients from a CI calc.?'
+            yes = getyn()
+            if (yes) then
+               nci = 0
+            else
+               nci = 1
+            endif
+         endif
+      endif
 !
-      CALL MPI_BCAST(NDEF, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)
-      IF (NDEF /= 0) THEN
-         CALL MPI_FINALIZE(IERR)
-         STOP
-      ENDIF
+      call mpi_bcast(ndef, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      if (ndef /= 0) then
+         call mpi_finalize(ierr)
+         stop
+      endif
 !
-      CALL MPI_BCAST(NAME, LEN(NAME), MPI_CHARACTER, 0, MPI_COMM_WORLD, IERR)
-      CALL MPI_BCAST(NCI, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)
+      call mpi_bcast(name, len(name), mpi_character, 0, mpi_comm_world, ierr)
+      call mpi_bcast(nci, 1, mpi_integer, 0, mpi_comm_world, ierr)
 !
-      CALL SETDBG
-      CALL SETMC
-      CALL SETCON
-      IF (MYID == 0) CALL SETSUM(NAME, NCI)
-      CALL SYSTEM_CLOCK(NSTAGE1, NCOUNT_RATE, NCOUNT_MAX)
-      CALL SETCSLA(NAME, NCORE_NOT_USED)
-      CALL SYSTEM_CLOCK(NSTAGE2, NCOUNT_RATE, NCOUNT_MAX)
-      TIME_SETCSLA = DBLE(NSTAGE2 - NSTAGE1) / DBLE(NCOUNT_RATE)
-      TIMBUF(1) = TIME_SETCSLA
-      CALL GDMAXMPI_ROOT(TIMBUF, 1)
-      IF (MYID == 0) TIME_SETCSLA = TIMBUF(1)
+      call setdbg
+      call setmc
+      call setcon
+      if (myid == 0) call setsum(name, nci)
+      call system_clock(nstage1, ncount_rate, ncount_max)
+      call setcsla(name, ncore_not_used)
+      call system_clock(nstage2, ncount_rate, ncount_max)
+      time_setcsla = dble(nstage2 - nstage1) / dble(ncount_rate)
+      timbuf(1) = time_setcsla
+      call gdmaxmpi_root(timbuf, 1)
+      if (myid == 0) time_setcsla = timbuf(1)
 !
-      CALL SYSTEM_CLOCK(NSTAGE1, NCOUNT_RATE, NCOUNT_MAX)
-      CALL GETHFD(NAME)
-      CALL SYSTEM_CLOCK(NSTAGE2, NCOUNT_RATE, NCOUNT_MAX)
-      TIME_GETHFD = DBLE(NSTAGE2 - NSTAGE1) / DBLE(NCOUNT_RATE)
-      TIMBUF(1) = TIME_GETHFD
-      CALL GDMAXMPI_ROOT(TIMBUF, 1)
-      IF (MYID == 0) TIME_GETHFD = TIMBUF(1)
+      call system_clock(nstage1, ncount_rate, ncount_max)
+      call gethfd(name)
+      call system_clock(nstage2, ncount_rate, ncount_max)
+      time_gethfd = dble(nstage2 - nstage1) / dble(ncount_rate)
+      timbuf(1) = time_gethfd
+      call gdmaxmpi_root(timbuf, 1)
+      if (myid == 0) time_gethfd = timbuf(1)
 !
-      CALL SYSTEM_CLOCK(NSTAGE1, NCOUNT_RATE, NCOUNT_MAX)
-      CALL GETMIXBLOCK(NAME, NCI)
-      CALL SYSTEM_CLOCK(NSTAGE2, NCOUNT_RATE, NCOUNT_MAX)
-      TIME_GETMIXBLOCK = DBLE(NSTAGE2 - NSTAGE1) / DBLE(NCOUNT_RATE)
-      TIMBUF(1) = TIME_GETMIXBLOCK
-      CALL GDMAXMPI_ROOT(TIMBUF, 1)
-      IF (MYID == 0) TIME_GETMIXBLOCK = TIMBUF(1)
-      IF (MYID == 0) CALL STRSUM
-      CALL FACTT
+      call system_clock(nstage1, ncount_rate, ncount_max)
+      call getmixblock(name, nci)
+      call system_clock(nstage2, ncount_rate, ncount_max)
+      time_getmixblock = dble(nstage2 - nstage1) / dble(ncount_rate)
+      timbuf(1) = time_getmixblock
+      call gdmaxmpi_root(timbuf, 1)
+      if (myid == 0) time_getmixblock = timbuf(1)
+      if (myid == 0) call strsum
+      call factt
 !
-      CALL SYSTEM_CLOCK(NSTAGE1, NCOUNT_RATE, NCOUNT_MAX)
-      CALL HFSGG_MPI
-      CALL SYSTEM_CLOCK(NSTAGE2, NCOUNT_RATE, NCOUNT_MAX)
-      TIME_HFSGG = DBLE(NSTAGE2 - NSTAGE1) / DBLE(NCOUNT_RATE)
-      TIMBUF(1) = TIME_HFSGG
-      CALL GDMAXMPI_ROOT(TIMBUF, 1)
-      IF (MYID == 0) TIME_HFSGG = TIMBUF(1)
+      call system_clock(nstage1, ncount_rate, ncount_max)
+      call hfsgg_mpi
+      call system_clock(nstage2, ncount_rate, ncount_max)
+      time_hfsgg = dble(nstage2 - nstage1) / dble(ncount_rate)
+      timbuf(1) = time_hfsgg
+      call gdmaxmpi_root(timbuf, 1)
+      if (myid == 0) time_hfsgg = timbuf(1)
 !
-      IF (MYID == 0) THEN
-         WRITE (6, '(A, F10.3, A)') 'RHFS_MPI setcsla wall time  (max rank): ', &
-            TIME_SETCSLA, ' s'
-         WRITE (6, '(A, F10.3, A)') 'RHFS_MPI gethfd wall time   (max rank): ', &
-            TIME_GETHFD, ' s'
-         WRITE (6, '(A, F10.3, A)') 'RHFS_MPI getmix wall time   (max rank): ', &
-            TIME_GETMIXBLOCK, ' s'
-         WRITE (6, '(A, F10.3, A)') 'RHFS_MPI hfsgg wall time    (max rank): ', &
-            TIME_HFSGG, ' s'
-      ENDIF
+      if (myid == 0) then
+         write (6, '(A, F10.3, A)') 'RHFS_MPI setcsla wall time  (max rank): ', &
+            time_setcsla, ' s'
+         write (6, '(A, F10.3, A)') 'RHFS_MPI gethfd wall time   (max rank): ', &
+            time_gethfd, ' s'
+         write (6, '(A, F10.3, A)') 'RHFS_MPI getmix wall time   (max rank): ', &
+            time_getmixblock, ' s'
+         write (6, '(A, F10.3, A)') 'RHFS_MPI hfsgg wall time    (max rank): ', &
+            time_hfsgg, ' s'
+      endif
 !
-      CALL MPIX_SHUTDOWN(MYID, NCOUNT1, 'RHFS_MPI')
-      STOP
-      END PROGRAM HFS92_MPI
+      call mpix_shutdown(myid, ncount1, 'RHFS_MPI')
+      stop
+      end program hfs92_mpi

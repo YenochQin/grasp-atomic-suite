@@ -1,5 +1,5 @@
 !***********************************************************************
-      SUBROUTINE SETCSLL(NUNIT, NAME, NBLKIN, NBLOCK, NCFBLK, NCFTOT, IDBLK)
+      subroutine setcsll(nunit, name, nblkin, nblock, ncfblk, ncftot, idblk)
 !
 !  Open, read name file to get nblock, ncfblk(), idblk(), ncftot
 !
@@ -12,90 +12,90 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      IMPLICIT NONE
+      use openfl_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NUNIT
-      INTEGER, INTENT(IN) :: NBLKIN
-      INTEGER, INTENT(OUT) :: NBLOCK
-      INTEGER, INTENT(OUT) :: NCFTOT
-      CHARACTER (LEN = *), INTENT(INOUT) :: NAME
-      INTEGER, DIMENSION(*), INTENT(INOUT) :: NCFBLK
-      CHARACTER (LEN = 8), DIMENSION(*), INTENT(OUT) :: IDBLK
+      integer  :: nunit
+      integer, intent(in) :: nblkin
+      integer, intent(out) :: nblock
+      integer, intent(out) :: ncftot
+      character (len = *), intent(inout) :: name
+      integer, dimension(*), intent(inout) :: ncfblk
+      character (len = 8), dimension(*), intent(out) :: idblk
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, NCSF, IOS, IERR
-      LOGICAL :: FOUND
-      CHARACTER :: STR*15, CH*2, LINE3*200
+      integer :: i, ncsf, ios, ierr
+      logical :: found
+      character :: str*15, ch*2, line3*200
 !-----------------------------------------------
 ! Locals
 
 ! Look for  <name>
 
-      INQUIRE(FILE=NAME, EXIST=FOUND)
-      IF (.NOT.FOUND) THEN
-         WRITE (6, *) NAME(1:LEN_TRIM(NAME)), ' does not exist'
-         STOP
-      ENDIF
+      inquire(file=name, exist=found)
+      if (.not.found) then
+         write (6, *) name(1:len_trim(name)), ' does not exist'
+         stop
+      endif
 
 ! Open it
 
-      CALL OPENFL (NUNIT, NAME, 'FORMATTED', 'OLD', IERR)
-      IF (IERR == 1) THEN
-         WRITE (6, *) 'Error when opening ', NAME(1:LEN_TRIM(NAME))
-         STOP
-      ENDIF
+      call openfl (nunit, name, 'FORMATTED', 'OLD', ierr)
+      if (ierr == 1) then
+         write (6, *) 'Error when opening ', name(1:len_trim(name))
+         stop
+      endif
 
 ! Check the first record of the file; if not as expected, stop
 
-      READ (NUNIT, '(1A15)', IOSTAT=IOS) STR
-      IF (IOS/=0 .OR. STR/='Core subshells:') THEN
-         WRITE (6, *) 'Not a Configuration Symmetry List File;'
-         CLOSE(NUNIT)
-         STOP
-      ENDIF
+      read (nunit, '(1A15)', iostat=ios) str
+      if (ios/=0 .or. str/='Core subshells:') then
+         write (6, *) 'Not a Configuration Symmetry List File;'
+         close(nunit)
+         stop
+      endif
 
 ! Skip next 4 records
 
-      DO I = 1, 4
-         READ (NUNIT, *)
-      END DO
+      do i = 1, 4
+         read (nunit, *)
+      end do
 
 ! Determine the number of blocks in this file
 
-      NBLOCK = 0
-      NCSF = 0
+      nblock = 0
+      ncsf = 0
 
-      IOS = 0
-      DO WHILE(IOS == 0)
-         READ (NUNIT, '(1A2)', IOSTAT=IOS) CH
-         IF (CH==' *' .OR. IOS/=0) THEN
+      ios = 0
+      do while(ios == 0)
+         read (nunit, '(1A2)', iostat=ios) ch
+         if (ch==' *' .or. ios/=0) then
             !.. a new block has been found
-            NBLOCK = NBLOCK + 1
-            WRITE (6, *) 'Block ', NBLOCK, ',  ncf = ', NCSF
-            IF (NBLOCK > NBLKIN) THEN
-               WRITE (6, *) 'setcsll: Too many blocks(', NBLOCK, ')'
-               WRITE (6, *) 'Maximum allowed is ', NBLKIN
-               STOP
-            ENDIF
-            I = LEN_TRIM(LINE3)
-            IDBLK(NBLOCK) = LINE3(I-4:I)
-            NCFBLK(NBLOCK) = NCSF
-            NCSF = 0
-            IF (IOS == 0) CYCLE
-         ELSE
-            READ (NUNIT, *)
-            READ (NUNIT, '(A)') LINE3
-            NCSF = NCSF + 1
-         ENDIF
-      END DO
+            nblock = nblock + 1
+            write (6, *) 'Block ', nblock, ',  ncf = ', ncsf
+            if (nblock > nblkin) then
+               write (6, *) 'setcsll: Too many blocks(', nblock, ')'
+               write (6, *) 'Maximum allowed is ', nblkin
+               stop
+            endif
+            i = len_trim(line3)
+            idblk(nblock) = line3(i-4:i)
+            ncfblk(nblock) = ncsf
+            ncsf = 0
+            if (ios == 0) cycle
+         else
+            read (nunit, *)
+            read (nunit, '(A)') line3
+            ncsf = ncsf + 1
+         endif
+      end do
 
 ! Obtain ncftot
 
-      NCFTOT = SUM(NCFBLK(:NBLOCK))
+      ncftot = sum(ncfblk(:nblock))
 
-      RETURN
-      END SUBROUTINE SETCSLL
+      return
+      end subroutine setcsll

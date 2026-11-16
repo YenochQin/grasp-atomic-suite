@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE CALEN(JTIME, JDATE)
+      subroutine calen(jtime, jdate)
 !                                                                      *
 !   Loads the character strings JTIME and JDATE with the time of day   *
 !   and the date when called.                                          *
@@ -12,14 +12,14 @@
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER  :: JTIME*10
-      CHARACTER  :: JDATE*8
+      character  :: jtime*10
+      character  :: jdate*8
 
-      CALL DATE_AND_TIME(JDATE, JTIME)
+      call date_and_time(jdate, jtime)
 
-      RETURN
-      END SUBROUTINE CALEN
+      return
+      end subroutine calen

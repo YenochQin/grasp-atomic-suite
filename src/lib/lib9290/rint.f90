@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION RINT (I, J, K)
+      real(kind(0.0d0)) function rint (i, j, k)
 !                                                                      *
 !   The value of RINT is an approximation to:                          *
 !                                                                      *
@@ -22,49 +22,49 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE GRID_C
-      USE TATB_C, ONLY: TA, MTP
-      USE WAVE_C
+      use vast_kind_param, only:  double
+      use grid_c
+      use tatb_c, only: ta, mtp
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE quad_I
-      IMPLICIT NONE
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: I
-      INTEGER  :: J
-      INTEGER, INTENT(IN) :: K
+      integer  :: i
+      integer  :: j
+      integer, intent(in) :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: L
-      REAL(DOUBLE) :: RESULT
+      integer :: l
+      real(double) :: result
 !-----------------------------------------------
 !
 !
 !   Determine the maximum tabulation point for the integrand
 !
-      MTP = MIN(MF(I),MF(J))
+      mtp = min(mf(i),mf(j))
 !
 !   Tabulate the integrand as required for SUBROUTINE QUAD; the
 !   value at the first tabulation point is arbitrary
 !
-      TA(1) = 0.0D00
-      DO L = 2, MTP
-         TA(L) = R(L)**K*(PF(L,I)*PF(L,J) + QF(L,I)*QF(L,J))*RP(L)
-      END DO
+      ta(1) = 0.0d00
+      do l = 2, mtp
+         ta(l) = r(l)**k*(pf(l,i)*pf(l,j) + qf(l,i)*qf(l,j))*rp(l)
+      end do
 !
 !   Perform the quadrature
 !
-      CALL QUAD (RESULT)
-      RINT = RESULT
+      call quad (result)
+      rint = result
 !
-      RETURN
+      return
 !
-      END FUNCTION RINT
+      end function rint

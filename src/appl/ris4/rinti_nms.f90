@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-       SUBROUTINE RINTI_NMS (J,K,VALNMSK123,VALNMSK1)
+       subroutine rinti_nms (j,k,valnmsk123,valnmsk1)
 !                                                                      *
 !   The value of this  function is the one-electron integral I (J,K)   *
 !   for  orbitals  J, K. The analytical expression for this quantity   *
@@ -17,143 +17,143 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNN1
-      USE def_C
-      USE grid_C
-      USE wave_C
-      USE orb_C
-      USE tatb_C
-      USE debug_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnn1
+      use def_c
+      use grid_c
+      use wave_c
+      use orb_c
+      use tatb_c
+      use debug_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE dpbdt_I
-      USE quad_I
-      IMPLICIT NONE
+      use dpbdt_i
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE), INTENT(OUT) :: VALNMSK123, VALNMSK1
-      INTEGER, INTENT(IN) :: J
-      INTEGER, INTENT(IN) :: K
+      real(double), intent(out) :: valnmsk123, valnmsk1
+      integer, intent(in) :: j
+      integer, intent(in) :: k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE), DIMENSION(NNN1) :: PA, PB, QA, QB
-      REAL(DOUBLE) :: A1, A2, PIECE1, PIECE2, PIECE3, PIECE4
-      INTEGER :: L, KAP1, KAP2, I, L1, L2, J1, J2, L2_TILDA
+      real(double), dimension(nnn1) :: pa, pb, qa, qb
+      real(double) :: a1, a2, piece1, piece2, piece3, piece4
+      integer :: l, kap1, kap2, i, l1, l2, j1, j2, l2_tilda
 !-----------------------------------------------
 !
 !
 !   Set KAP1 and KAP2
 !
 !C*      RINTI_NMS = 0.0D 00
-      VALNMSK1   = 0.0D00
-      VALNMSK123 = 0.0D00
-      KAP1 = NAK(J)
-      KAP2 = NAK(K)
+      valnmsk1   = 0.0d00
+      valnmsk123 = 0.0d00
+      kap1 = nak(j)
+      kap2 = nak(k)
 !
 !   Stop if orbitals J and K have different kappa values
 !
-      IF (KAP1 .NE. KAP2) THEN
-         WRITE (*,300) NP(J),NH(J),NP(K),NH(K)
-         STOP
-      ENDIF
+      if (kap1 .ne. kap2) then
+         write (*,300) np(j),nh(j),np(k),nh(k)
+         stop
+      endif
 !
 !   Determine the l quantum numbers
 !
-      IF (KAP1 .GT. 0) THEN
-         L1 =  KAP1
-      ELSE
-         L1 = -KAP1-1
-      ENDIF
+      if (kap1 .gt. 0) then
+         l1 =  kap1
+      else
+         l1 = -kap1-1
+      endif
 !
-      IF (KAP2 .GT. 0) THEN
-         L2 =  KAP2
-      ELSE
-         L2 = -KAP2-1
-      ENDIF
-      IF (L1 .NE. L2) RETURN
+      if (kap2 .gt. 0) then
+         l2 =  kap2
+      else
+         l2 = -kap2-1
+      endif
+      if (l1 .ne. l2) return
 !
 !   Determine the j quantum numbers and l_2 tilda
 !
-      J1 = 2*IABS(NAK(J))-1
-      J2 = 2*IABS(NAK(K))-1
-      L2_TILDA = J2 - L2
+      j1 = 2*iabs(nak(j))-1
+      j2 = 2*iabs(nak(k))-1
+      l2_tilda = j2 - l2
 !
-      MTP = MAX (MF(J),MF(K))
+      mtp = max (mf(j),mf(k))
 !
 !   Kinetic energy contribution
 !
 !   Piece involving derivatives
 !
-      CALL DPBDT (J)
-      PA(1) = 0.0D00
-      QA(1) = 0.0D00
-      DO 11 I = 2,MTP
-        PA(I) = TA(I)
-        QA(I) = TB(I)
-   11 CONTINUE
-      CALL DPBDT (K)
-      PB(1) = 0.0D00
-      QB(1) = 0.0D00
-      DO 12 I = 2,MTP
-        PB(I) = TA(I)
-        QB(I) = TB(I)
-   12 CONTINUE
-      TA(1) = 0.0D00
-      DO 1 I = 2,MTP
-         TA(I) = (PA(I)*PB(I)+QA(I)*QB(I))/RP(I)
-    1 CONTINUE
-      CALL QUAD (PIECE1)
-      PIECE1 = PIECE1/(H*H)
+      call dpbdt (j)
+      pa(1) = 0.0d00
+      qa(1) = 0.0d00
+      do 11 i = 2,mtp
+        pa(i) = ta(i)
+        qa(i) = tb(i)
+   11 continue
+      call dpbdt (k)
+      pb(1) = 0.0d00
+      qb(1) = 0.0d00
+      do 12 i = 2,mtp
+        pb(i) = ta(i)
+        qb(i) = tb(i)
+   12 continue
+      ta(1) = 0.0d00
+      do 1 i = 2,mtp
+         ta(i) = (pa(i)*pb(i)+qa(i)*qb(i))/rp(i)
+    1 continue
+      call quad (piece1)
+      piece1 = piece1/(h*h)
 !
-      A1 = DBLE(L2*(L2+1))
-      A2 = DBLE(L2_TILDA*(L2_TILDA+1))
-      TA(1) = 0.0D00
-      DO 2 I = 2,MTP
-        TA(I) = RP(I)                                                  &
-              *(A1*PF(I,J)*PF(I,K)+A2*QF(I,J)*QF(I,K))                 &
-              /(R(I)*R(I))
-    2 CONTINUE
-      CALL QUAD (PIECE2)
+      a1 = dble(l2*(l2+1))
+      a2 = dble(l2_tilda*(l2_tilda+1))
+      ta(1) = 0.0d00
+      do 2 i = 2,mtp
+        ta(i) = rp(i)                                                  &
+              *(a1*pf(i,j)*pf(i,k)+a2*qf(i,j)*qf(i,k))                 &
+              /(r(i)*r(i))
+    2 continue
+      call quad (piece2)
 !
 !   Pieces not involving derivatives
 !
-      TA(1) = 0.D0
-      DO 3 I = 2,MTP
-         TA(I) = (QF(I,J)*PB(I)+QF(I,K)*PA(I))/R(I)
-    3 CONTINUE
-      CALL QUAD (PIECE3)
-      PIECE3 = -2.0*Z*PIECE3/(C*H)
+      ta(1) = 0.d0
+      do 3 i = 2,mtp
+         ta(i) = (qf(i,j)*pb(i)+qf(i,k)*pa(i))/r(i)
+    3 continue
+      call quad (piece3)
+      piece3 = -2.0*z*piece3/(c*h)
 !
-      IF (KAP2 .NE. 1) THEN
-        TA(1) = 0.0D00
-        DO 4 I = 2,MTP
-           TA(I) = RP(I)                                               &
-                 * (QF(I,J)*PF(I,K)+PF(I,J)*QF(I,K))                   &
-                 /(R(I)*R(I))
-    4   CONTINUE
-        CALL QUAD (PIECE4)
-        PIECE4 = -PIECE4*Z*(DBLE (KAP2)-1.0)/C
-      ELSE
-        PIECE4 = 0.0D00
-      END IF
-      VALNMSK1 = 0.5*(PIECE1+PIECE2)
-      VALNMSK123 = 0.5*(PIECE1+PIECE2+PIECE3+PIECE4)
+      if (kap2 .ne. 1) then
+        ta(1) = 0.0d00
+        do 4 i = 2,mtp
+           ta(i) = rp(i)                                               &
+                 * (qf(i,j)*pf(i,k)+pf(i,j)*qf(i,k))                   &
+                 /(r(i)*r(i))
+    4   continue
+        call quad (piece4)
+        piece4 = -piece4*z*(dble (kap2)-1.0)/c
+      else
+        piece4 = 0.0d00
+      end if
+      valnmsk1 = 0.5*(piece1+piece2)
+      valnmsk123 = 0.5*(piece1+piece2+piece3+piece4)
 !
 !   Debug printout
 !
 !C*      LDBPR(5)=.TRUE.
-      IF (LDBPR(5))                                                    &
-         WRITE (99,302) NP(J),NH(J),NP(K),NH(K),VALNMSK123
+      if (ldbpr(5))                                                    &
+         write (99,302) np(j),nh(j),np(k),nh(k),valnmsk123
 !
 !C*      RETURN
 !
-  300 FORMAT ('RINTI_NMS: Attempt to calculate I(',                    &
-               1I2,1A2,',',1I2,1A2,')')
-  302 FORMAT (/' K (',1I2,1A2,',',1I2,1A2,') = ',1PD19.12)
+  300 format ('RINTI_NMS: Attempt to calculate I(',                    &
+               1i2,1a2,',',1i2,1a2,')')
+  302 format (/' K (',1i2,1a2,',',1i2,1a2,') = ',1pd19.12)
 !
-      RETURN
-      END SUBROUTINE RINTI_NMS
+      return
+      end subroutine rinti_nms

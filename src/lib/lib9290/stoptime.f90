@@ -20,7 +20,7 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer , intent(in) :: ncount1
-      CHARACTER (LEN = *), INTENT(IN) :: PROGNAME
+      character (len = *), intent(in) :: progname
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -51,11 +51,11 @@
 
       call date_and_time (chdate, chtime, chzone, nymduhmsm)
 
-      Print*, '  Date (Yr/Mon/Day): ',                     &
+      print*, '  Date (Yr/Mon/Day): ',                     &
               chdate(1:4),'/',chdate(5:6),'/',chdate(7:8)
-      Print*, '  Time (Hr/Min/Sec): ',                     &
+      print*, '  Time (Hr/Min/Sec): ',                     &
               chtime(1:2),'/',chtime(3:4),'/',chtime(5:10)
-      Print*, '  Zone: ',chzone
+      print*, '  Zone: ',chzone
 
       write (6, *)
       write (6, *) progname//': Execution complete.'

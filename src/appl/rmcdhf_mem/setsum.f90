@@ -1,5 +1,5 @@
 !***********************************************************************
-      SUBROUTINE SETSUM(FILNAM)
+      subroutine setsum(filnam)
 !***********************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:06:32   1/ 3/07
 !...Modified by Charlotte Froese Fischer
@@ -7,32 +7,32 @@
 !-----------------------------------------------
 !    M O D U L E S
 !-----------------------------------------------
-     USE iounit_C
+     use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      IMPLICIT NONE
+      use openfl_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER  :: FILNAM*(*)
+      character  :: filnam*(*)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      CHARACTER*9, PARAMETER :: FORM = 'FORMATTED'
-      CHARACTER*3, PARAMETER :: STATUS = 'NEW'
+      character*9, parameter :: form = 'FORMATTED'
+      character*3, parameter :: status = 'NEW'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IERR
+      integer :: ierr
 !-----------------------------------------------
 
-      CALL OPENFL (24, FILNAM, FORM, STATUS, IERR)
-      IF (IERR /= 0) THEN
-         WRITE (ISTDE, *) 'Error when opening ', FILNAM
-         STOP
-      ENDIF
+      call openfl (24, filnam, form, status, ierr)
+      if (ierr /= 0) then
+         write (istde, *) 'Error when opening ', filnam
+         stop
+      endif
 
-      RETURN
-      END SUBROUTINE SETSUM
+      return
+      end subroutine setsum

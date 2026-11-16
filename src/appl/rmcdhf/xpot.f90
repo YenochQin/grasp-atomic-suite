@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE XPOT(J)
+      subroutine xpot(j)
 !                                                                      *
 !   This subroutine tabulates the exchange terms (the first terms on   *
 !   the  right-hand  sides of eqs (14), I P Grant, B J McKenzie, P H   *
@@ -19,110 +19,110 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: KEYORB
-      USE debug_C
-      USE def_C
-      USE grid_C
-      USE orb_C
-      USE pote_C
-      USE scf_C
-      USE tatb_C
-      USE wave_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: keyorb
+      use debug_c
+      use def_c
+      use grid_c
+      use orb_c
+      use pote_c
+      use scf_c
+      use tatb_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE yzk_I
-      USE draw_I
-      IMPLICIT NONE
+      use yzk_i
+      use draw_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: J
+      integer , intent(in) :: j
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
+      integer, parameter :: key = keyorb
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, INDEX, LABEL, K, IOY1, IOY2, IORB, NB2, NROWS, II, II1, II2
-      REAL(DOUBLE) :: COEFF, CTB
+      integer :: i, index, label, k, ioy1, ioy2, iorb, nb2, nrows, ii, ii1, ii2
+      real(double) :: coeff, ctb
 !-----------------------------------------------
 !
 !   Debug printout: header
 !
-      IF (LDBPR(27) .OR. LDBPR(28)) WRITE (99, 300) NP(J), NH(J)
+      if (ldbpr(27) .or. ldbpr(28)) write (99, 300) np(j), nh(j)
 !
 !   Clear for accumulation of sums
 !
-      XP(:N) = 0.D0
-      XQ(:N) = 0.D0
+      xp(:n) = 0.d0
+      xq(:n) = 0.d0
 !
 !   Add contributions from exchange terms
 !
-      DO INDEX = 1, NXCOF
+      do index = 1, nxcof
 
          ! Decode information in label
-         LABEL = NXA(INDEX)
-         K = MOD(LABEL,KEY)
-         LABEL = LABEL/KEY
-         IOY1 = MOD(LABEL,KEY)
-         LABEL = LABEL/KEY
-         IOY2 = MOD(LABEL,KEY)
-         IORB = LABEL/KEY
-         COEFF = XA(INDEX)
+         label = nxa(index)
+         k = mod(label,key)
+         label = label/key
+         ioy1 = mod(label,key)
+         label = label/key
+         ioy2 = mod(label,key)
+         iorb = label/key
+         coeff = xa(index)
 
          ! Debug printout: composition
-         IF (LDBPR(27)) WRITE (99, 301) K, COEFF, NP(IOY1), NH(IOY1), NP(IOY2)&
-            , NH(IOY2), NP(IORB), NH(IORB)
+         if (ldbpr(27)) write (99, 301) k, coeff, np(ioy1), nh(ioy1), np(ioy2)&
+            , nh(ioy2), np(iorb), nh(iorb)
 
-         CALL YZK (K, IOY1, IOY2)
+         call yzk (k, ioy1, ioy2)
 !
 !   Accumulate contributions
 !
-         COEFF = COEFF/C
+         coeff = coeff/c
          !DO I = 1, MF(IORB)
-         DO I = 1, N
-            CTB = COEFF*TB(I)
-            XP(I) = XP(I) + CTB*QF(I,IORB)
-            XQ(I) = XQ(I) - CTB*PF(I,IORB)
-         END DO
-      END DO
+         do i = 1, n
+            ctb = coeff*tb(i)
+            xp(i) = xp(i) + ctb*qf(i,iorb)
+            xq(i) = xq(i) - ctb*pf(i,iorb)
+         end do
+      end do
 !
 !   Debug printout: potential functions
 !
-      IF (LDBPR(28)) THEN
-         WRITE (99, 302)
-         NB2 = N/2
-         IF (2*NB2 == N) THEN
-            NROWS = NB2
-         ELSE
-            NROWS = NB2 + 1
-         ENDIF
-         DO II = 1, NROWS
-            II1 = II
-            II2 = II1 + NROWS
-            IF (II2 <= N) THEN
-               WRITE (99, 303) R(II1), XP(II1), XQ(II1), R(II2), XP(II2), XQ(&
-                  II2)
-            ELSE IF (II1 <= N) THEN
-               WRITE (99, 303) R(II1), XP(II1), XQ(II1)
-            ENDIF
-         END DO
-         CALL DRAW (XP, 1.0D00, XQ, C, N)
-      ENDIF
+      if (ldbpr(28)) then
+         write (99, 302)
+         nb2 = n/2
+         if (2*nb2 == n) then
+            nrows = nb2
+         else
+            nrows = nb2 + 1
+         endif
+         do ii = 1, nrows
+            ii1 = ii
+            ii2 = ii1 + nrows
+            if (ii2 <= n) then
+               write (99, 303) r(ii1), xp(ii1), xq(ii1), r(ii2), xp(ii2), xq(&
+                  ii2)
+            else if (ii1 <= n) then
+               write (99, 303) r(ii1), xp(ii1), xq(ii1)
+            endif
+         end do
+         call draw (xp, 1.0d00, xq, c, n)
+      endif
 !
-      RETURN
+      return
 !
-  300 FORMAT(/,/,' Exchange potential contributions (coefficients will ',&
-         ' be divided by C) for ',1I2,1A2,' orbital :'/,/)
-  301 FORMAT(/,25X,'(',1I2,')'/,1X,1P,D21.14,'* Y    (',1I2,1A2,',',1I2,1A2,&
-         ') ','* P (',1I2,1A2,')')
-  302 FORMAT(/,/,31X,'(P)',19X,'(Q)',41X,'(P)',19X,'(Q)'/,2(&
+  300 format(/,/,' Exchange potential contributions (coefficients will ',&
+         ' be divided by C) for ',1i2,1a2,' orbital :'/,/)
+  301 format(/,25x,'(',1i2,')'/,1x,1p,d21.14,'* Y    (',1i2,1a2,',',1i2,1a2,&
+         ') ','* P (',1i2,1a2,')')
+  302 format(/,/,31x,'(P)',19x,'(Q)',41x,'(P)',19x,'(Q)'/,2(&
          ' --------- r --------- ------ X  (r) -------',&
          ' ------ X  (r) -------'))
-  303 FORMAT(1P,6(1X,1D21.14))
-      RETURN
+  303 format(1p,6(1x,1d21.14))
+      return
 !
-      END SUBROUTINE XPOT
+      end subroutine xpot

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
@@ -31,9 +32,11 @@ def main() -> None:
             path = suite / "src" / source
             text = path.read_text()
             if path.name == "suite_parameters_M.f90":
-                if "NNNP = 590" not in text or "NNNW = 127" not in text:
-                    raise AssertionError("alternate-capacity test expects pristine suite defaults")
-                text = text.replace("NNNP = 590", "NNNP = 790").replace("NNNW = 127", "NNNW = 149")
+                for name, original, replacement in (("nnnp", 590, 790), ("nnnw", 127, 149)):
+                    pattern = rf"^(\s*integer\s*,\s*parameter\s*::\s*{name}\s*=\s*){original}\b"
+                    text, count = re.subn(pattern, rf"\g<1>{replacement}", text, flags=re.IGNORECASE | re.MULTILINE)
+                    if count != 1:
+                        raise AssertionError(f"alternate-capacity test expects one pristine {name} declaration")
             copy = work / path.name
             copy.write_text(text)
             copies.append(str(copy))

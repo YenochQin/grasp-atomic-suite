@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETXZ(J)
+      subroutine setxz(j)
 !                                                                      *
 !   This subprogram sets the inhomogeneous terms to zero.              *
 !                                                                      *
@@ -13,18 +13,18 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE grid_C
-      USE int_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use grid_c
+      use int_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
+      integer  :: j
 !-----------------------------------------------
 !
-      XU(:N) = 0.0D00
-      XV(:N) = 0.0D00
+      xu(:n) = 0.0d00
+      xv(:n) = 0.0d00
 !
-      RETURN
-      END SUBROUTINE SETXZ
+      return
+      end subroutine setxz

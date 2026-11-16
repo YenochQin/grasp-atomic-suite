@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE FACTT
+      subroutine factt
 !                                                                      *
 !   Calculates the logs  of factorials required by the Racah coeffi-   *
 !   cient routine DRACAH.                                              *
@@ -15,38 +15,38 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE FACTS_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use facts_c
+      implicit none
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE) :: X
+      integer :: i
+      real(double) :: x
 !-----------------------------------------------
 !
-      GAM(1) = 1.0D00
-      GAM(2) = 1.0D00
-      X = 2.0D00
+      gam(1) = 1.0d00
+      gam(2) = 1.0d00
+      x = 2.0d00
 !
-      DO I = 3, 30
-         GAM(I) = GAM(I-1)*X
-         X = X + 1.0D00
-      END DO
+      do i = 3, 30
+         gam(i) = gam(i-1)*x
+         x = x + 1.0d00
+      end do
 !
-      DO I = 1, 30
-         GAM(I) = LOG(GAM(I))
-      END DO
+      do i = 1, 30
+         gam(i) = log(gam(i))
+      end do
 !
-      X = 3.0D01
+      x = 3.0d01
 !
-      DO I = 31, MFACT
-         GAM(I) = GAM(I-1) + LOG(X)
-         X = X + 1.0D00
-      END DO
+      do i = 31, mfact
+         gam(i) = gam(i-1) + log(x)
+         x = x + 1.0d00
+      end do
 !
-      RETURN
-      END SUBROUTINE FACTT
+      return
+      end subroutine factt

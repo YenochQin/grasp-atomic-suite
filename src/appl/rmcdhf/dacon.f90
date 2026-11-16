@@ -1,7 +1,7 @@
 
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE DACON
+      subroutine dacon
 !                                                                      *
 !   This  routine  includes  the  contribution from the off-diagonal   *
 !   I(a,b) integrals in the 'exchange' term.                           *
@@ -17,45 +17,45 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE grid_C
-      USE npot_C
-      USE orb_C
-      USE pote_C
-      USE scf_C
-      USE tatb_C
-      USE wave_C
-      USE dpbdt_I
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use def_c
+      use grid_c
+      use npot_c
+      use orb_c
+      use pote_c
+      use scf_c
+      use tatb_c
+      use wave_c
+      use dpbdt_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: K, IORB, MFI, I
-      REAL(DOUBLE) :: TWOC, COEFF, FK, RPORII, PFI, QFI, ZBCI
+      integer :: k, iorb, mfi, i
+      real(double) :: twoc, coeff, fk, rporii, pfi, qfi, zbci
 !-----------------------------------------------
 !
 !
-      TWOC = C + C
+      twoc = c + c
 !
-      DO K = 1, NDCOF
+      do k = 1, ndcof
 !
-         IORB = NDA(K)
-         CALL DPBDT (IORB)
-         MFI = MF(IORB)
-         COEFF = DA(K)
-         FK = DBLE(NAK(IORB))
+         iorb = nda(k)
+         call dpbdt (iorb)
+         mfi = mf(iorb)
+         coeff = da(k)
+         fk = dble(nak(iorb))
 !
-         DO I = 2, MFI
-            RPORII = 1.0D0/(H*RPOR(I))
-            PFI = PF(I,IORB)
-            QFI = QF(I,IORB)
-            ZBCI = ZZ(I)/C
-            XP(I) = XP(I) + COEFF*(TA(I)*RPORII+FK*PFI-(TWOC*R(I)+ZBCI)*QFI)
-            XQ(I) = XQ(I) + COEFF*(TB(I)*RPORII-FK*QFI+ZBCI*PFI)
-         END DO
+         do i = 2, mfi
+            rporii = 1.0d0/(h*rpor(i))
+            pfi = pf(i,iorb)
+            qfi = qf(i,iorb)
+            zbci = zz(i)/c
+            xp(i) = xp(i) + coeff*(ta(i)*rporii+fk*pfi-(twoc*r(i)+zbci)*qfi)
+            xq(i) = xq(i) + coeff*(tb(i)*rporii-fk*qfi+zbci*pfi)
+         end do
 !
-      END DO
+      end do
 !
-      RETURN
-      END SUBROUTINE DACON
+      return
+      end subroutine dacon

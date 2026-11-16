@@ -1,5 +1,5 @@
 !***********************************************************************
-      SUBROUTINE OUTSDAMPI(LPRINT,NNONZ, NCF)
+      subroutine outsdampi(lprint,nnonz, ncf)
 !***********************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  11:01:42   1/ 5/07
 !...Modified by Charlotte Froese Fischer
@@ -7,42 +7,42 @@
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      USE mpi_C
-      IMPLICIT NONE
+      use mpi_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NNONZ
-      INTEGER, INTENT(IN) :: NCF
-      LOGICAL, INTENT(IN) :: LPRINT
+      integer, intent(in) :: nnonz
+      integer, intent(in) :: ncf
+      logical, intent(in) :: lprint
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      CHARACTER(LEN=9), PARAMETER :: MYNAME ='outsdampi'
+      character(len=9), parameter :: myname ='outsdampi'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NNONZ_A
+      integer :: nnonz_a
 !-----------------------------------------------
 !
-      CALL MPI_Reduce (nnonz, nnonz_a, 1, MPI_INTEGER, MPI_SUM, 0,  &
-               MPI_COMM_WORLD, ierr)
-      IF (myid .EQ. 0) &
-      WRITE(6, *)' ... complete; density of non-zero elements of H(DC):', &
-         NNONZ_A, '/', (NCF*(NCF + 1))/2
+      call mpi_reduce (nnonz, nnonz_a, 1, mpi_integer, mpi_sum, 0,  &
+               mpi_comm_world, ierr)
+      if (myid .eq. 0) &
+      write(6, *)' ... complete; density of non-zero elements of H(DC):', &
+         nnonz_a, '/', (ncf*(ncf + 1))/2
 !
 !   Debug printout
 !
-      IF (LPRINT) THEN
-        IF (myid .EQ. 0) THEN
-          WRITE (99, *)
-          WRITE (99, *) 'From ', MYNAME, ' :'
-          WRITE (99, 301) NNONZ_A
-          WRITE (6, *) 'This part not finished. See ', MYNAME
-          WRITE (99, *) 'This part not finished. See ', MYNAME
-        ENDIF
-      ENDIF
-  301 FORMAT(' Number of nonzero elements in H(DC): ',1I4)
-  302 FORMAT(' Column ',1I2,', row ',1I2,', sparse matrix index ',1I4)
-      RETURN
-      END SUBROUTINE OUTSDAMPI
+      if (lprint) then
+        if (myid .eq. 0) then
+          write (99, *)
+          write (99, *) 'From ', myname, ' :'
+          write (99, 301) nnonz_a
+          write (6, *) 'This part not finished. See ', myname
+          write (99, *) 'This part not finished. See ', myname
+        endif
+      endif
+  301 format(' Number of nonzero elements in H(DC): ',1i4)
+  302 format(' Column ',1i2,', row ',1i2,', sparse matrix index ',1i4)
+      return
+      end subroutine outsdampi

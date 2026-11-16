@@ -1,10 +1,10 @@
-      MODULE c1e1sm_I
-      INTERFACE
+      module c1e1sm_i
+      interface
 !
-      SUBROUTINE C1E1SM(Q,QM,SM,C,CM,A)
-      USE vast_kind_param, ONLY:  DOUBLE
-      REAL(DOUBLE), INTENT(IN)  :: Q, QM, SM, C, CM
-      REAL(DOUBLE), INTENT(OUT) :: A
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine c1e1sm(q,qm,sm,c,cm,a)
+      use vast_kind_param, only:  double
+      real(double), intent(in)  :: q, qm, sm, c, cm
+      real(double), intent(out) :: a
+      end subroutine
+      end interface
+      end module

@@ -1,414 +1,414 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE RIS_CAL_MPI (NAME)
+      subroutine ris_cal_mpi (name)
 !                                                                      *
 !   MPI version of RIS_CAL. Each rank accumulates a strided subset of  *
 !   configuration-pair contributions and the partial sums are reduced   *
 !   before the root rank writes the final output.                       *
 !                                                                      *
 !***********************************************************************
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNW
-      USE memory_man
-      USE debug_C
-      USE decide_c
-      USE def_C
-      USE grid_C
-      USE npar_C
-      USE prnt_C
-      USE syma_C
-      USE orb_C
-      USE teilst_C
-      USE buffer_C
-      USE ris_C
-      USE jlabl_C, LABJ=> JLBR, LABP=>JLBP
-      USE eigv_C
-      USE mpi_C
-      USE rintdens_I
-      USE rinti_I
-      USE rint_I
-      USE rintdensvec_I
-      USE rinti_nms_I
-      USE cre_I
-      USE vinti_I
-      USE rint_sms2_I
-      USE rint_sms3_I
-      USE angdata_I
-      USE getyn_I
-      USE densread_I
-      USE densread_seltz_I
-      USE densnew_seltz_I
-      USE densread_mpi_I
-      USE densread_seltz_mpi_I
-      USE densnew_I
-      USE densnew_mpi_I
-      USE densnew_seltz_mpi_I
-      USE smsread_I
-      USE smsread_mpi_I
-      USE smsnew_I
-      USE smsnew_mpi_I
-      USE edensityfit_I
-      USE mpiu_I, ONLY: gdrsummpi_root
-      USE starttime_I, ONLY: starttime
-      USE stoptime_I, ONLY: stoptime
-      IMPLICIT NONE
-      CHARACTER*24, INTENT(IN) :: NAME
-      REAL(DOUBLE), DIMENSION(:,:,:), pointer :: DINT1VEC
-      REAL(DOUBLE), DIMENSION(:,:), pointer   :: DENS1VEC
-      REAL(DOUBLE), DIMENSION(:), pointer     :: DENSFIT
-      REAL(DOUBLE), DIMENSION(:,:), pointer   :: FMAT
-      REAL(DOUBLE), DIMENSION(:), pointer     :: RHO
-      REAL(DOUBLE), DIMENSION(:), pointer     :: RES
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: VINT, VINT2
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: DINT1, DINT2, DINT3, &
-                                            DINT4, DINT5, DINT6, &
-                                            DINT7
-      REAL(DOUBLE) :: AU2FM, RCRE, HzSMSu, HzNMSu, FO90
-      LOGICAL :: AVAIL_TB, AVAIL_OB, YES2, SAVEYES, SERIAL_SAVE
-      INTEGER :: I, J, ncount1, DOIT_OB, DOIT_TB, NRNUC, YES2_MPI
-      INTEGER :: AVAIL_OB_MPI, AVAIL_TB_MPI, SERIAL_SAVE_MPI
-      IF (MYID .EQ. 0) THEN
-         WRITE(*,*) '-------------------------------'
-         WRITE(*,*) 'RIS_CAL_MPI: Execution Begins ...'
-         WRITE(*,*) '-------------------------------'
-      ENDIF
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnw
+      use memory_man
+      use debug_c
+      use decide_c
+      use def_c
+      use grid_c
+      use npar_c
+      use prnt_c
+      use syma_c
+      use orb_c
+      use teilst_c
+      use buffer_c
+      use ris_c
+      use jlabl_c, labj=> jlbr, labp=>jlbp
+      use eigv_c
+      use mpi_c
+      use rintdens_i
+      use rinti_i
+      use rint_i
+      use rintdensvec_i
+      use rinti_nms_i
+      use cre_i
+      use vinti_i
+      use rint_sms2_i
+      use rint_sms3_i
+      use angdata_i
+      use getyn_i
+      use densread_i
+      use densread_seltz_i
+      use densnew_seltz_i
+      use densread_mpi_i
+      use densread_seltz_mpi_i
+      use densnew_i
+      use densnew_mpi_i
+      use densnew_seltz_mpi_i
+      use smsread_i
+      use smsread_mpi_i
+      use smsnew_i
+      use smsnew_mpi_i
+      use edensityfit_i
+      use mpiu_i, only: gdrsummpi_root
+      use starttime_i, only: starttime
+      use stoptime_i, only: stoptime
+      implicit none
+      character*24, intent(in) :: name
+      real(double), dimension(:,:,:), pointer :: dint1vec
+      real(double), dimension(:,:), pointer   :: dens1vec
+      real(double), dimension(:), pointer     :: densfit
+      real(double), dimension(:,:), pointer   :: fmat
+      real(double), dimension(:), pointer     :: rho
+      real(double), dimension(:), pointer     :: res
+      real(double), dimension(nnnw,nnnw) :: vint, vint2
+      real(double), dimension(nnnw,nnnw) :: dint1, dint2, dint3, &
+                                            dint4, dint5, dint6, &
+                                            dint7
+      real(double) :: au2fm, rcre, hzsmsu, hznmsu, fo90
+      logical :: avail_tb, avail_ob, yes2, saveyes, serial_save
+      integer :: i, j, ncount1, doit_ob, doit_tb, nrnuc, yes2_mpi
+      integer :: avail_ob_mpi, avail_tb_mpi, serial_save_mpi
+      if (myid .eq. 0) then
+         write(*,*) '-------------------------------'
+         write(*,*) 'RIS_CAL_MPI: Execution Begins ...'
+         write(*,*) '-------------------------------'
+      endif
 
-      DOIT_OB = 0
-      DOIT_TB = 0
-      YES2_MPI = 0
-      AVAIL_OB_MPI = 0
-      AVAIL_TB_MPI = 0
-      SERIAL_SAVE_MPI = 0
+      doit_ob = 0
+      doit_tb = 0
+      yes2_mpi = 0
+      avail_ob_mpi = 0
+      avail_tb_mpi = 0
+      serial_save_mpi = 0
 
-      FO90 = PARM(1)+2.d0*LOG(3.d0)*PARM(2)
-      DO I=1,NNNP
-         IF(R(I+1).GT.FO90.AND.R(I).LE.FO90) THEN
-            NRNUC = I+1
-            EXIT
-         END IF
-      END DO
+      fo90 = parm(1)+2.d0*log(3.d0)*parm(2)
+      do i=1,nnnp
+         if(r(i+1).gt.fo90.and.r(i).le.fo90) then
+            nrnuc = i+1
+            exit
+         end if
+      end do
 
-      ALLOCATE( DENS1VEC(NVEC,NRNUC),DINT1VEC(NNNW,NNNW,NRNUC) )
-      ALLOCATE( DENSFIT(NRNUC) )
-      DINT1VEC(:,:,:) = 0.D0
-      DENS1VEC(:,:) = 0.D0
-      ALLOCATE( FMAT(6,NVEC),RHO(NVEC),RES(NVEC) )
+      allocate( dens1vec(nvec,nrnuc),dint1vec(nnnw,nnnw,nrnuc) )
+      allocate( densfit(nrnuc) )
+      dint1vec(:,:,:) = 0.d0
+      dens1vec(:,:) = 0.d0
+      allocate( fmat(6,nvec),rho(nvec),res(nvec) )
 
-      CALL ALLOC (SMSC1, NVEC,'SMSC1', 'RIS_CAL_MPI')
-      CALL ALLOC (SMSC2, NVEC,'SMSC2', 'RIS_CAL_MPI')
-      CALL ALLOC (DENS1, NVEC,'DENS1','RIS_CAL_MPI')
-      CALL ALLOC (DENS2, NVEC,'DENS2','RIS_CAL_MPI')
-      CALL ALLOC (DENS3, NVEC,'DENS3','RIS_CAL_MPI')
-      CALL ALLOC (DENS4, NVEC,'DENS4','RIS_CAL_MPI')
-      CALL ALLOC (DENS5, NVEC,'DENS5','RIS_CAL_MPI')
-      CALL ALLOC (DENS6, NVEC,'DENS6','RIS_CAL_MPI')
-      CALL ALLOC (DENS7, NVEC,'DENS7','RIS_CAL_MPI')
+      call alloc (smsc1, nvec,'SMSC1', 'RIS_CAL_MPI')
+      call alloc (smsc2, nvec,'SMSC2', 'RIS_CAL_MPI')
+      call alloc (dens1, nvec,'DENS1','RIS_CAL_MPI')
+      call alloc (dens2, nvec,'DENS2','RIS_CAL_MPI')
+      call alloc (dens3, nvec,'DENS3','RIS_CAL_MPI')
+      call alloc (dens4, nvec,'DENS4','RIS_CAL_MPI')
+      call alloc (dens5, nvec,'DENS5','RIS_CAL_MPI')
+      call alloc (dens6, nvec,'DENS6','RIS_CAL_MPI')
+      call alloc (dens7, nvec,'DENS7','RIS_CAL_MPI')
 
-      CALL STARTTIME (ncount1, 'RIS_CAL_MPI')
+      call starttime (ncount1, 'RIS_CAL_MPI')
 
-      DO I = 1,NVEC
-         SMSC1(I)  = 0.0D00
-         SMSC2(I)  = 0.0D00
-         DENS1(I) = 0.0D00
-         DENS2(I) = 0.0D00
-         DENS3(I) = 0.0D00
-         DENS4(I) = 0.0D00
-         DENS5(I) = 0.0D00
-         DENS6(I) = 0.0D00
-         DENS7(I) = 0.0D00
-      ENDDO
+      do i = 1,nvec
+         smsc1(i)  = 0.0d00
+         smsc2(i)  = 0.0d00
+         dens1(i) = 0.0d00
+         dens2(i) = 0.0d00
+         dens3(i) = 0.0d00
+         dens4(i) = 0.0d00
+         dens5(i) = 0.0d00
+         dens6(i) = 0.0d00
+         dens7(i) = 0.0d00
+      enddo
 
-      IF (MYID .EQ. 0) THEN
-         WRITE(*,*) ' Compute higher order field shift electronic factors?'
-         YES2 = GETYN ()
-         IF (YES2) THEN
-            YES2_MPI = 1
-         ELSE
-            YES2_MPI = 0
-         ENDIF
-      ENDIF
-      CALL MPI_BCAST(YES2_MPI, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)
-      YES2 = YES2_MPI .EQ. 1
+      if (myid .eq. 0) then
+         write(*,*) ' Compute higher order field shift electronic factors?'
+         yes2 = getyn ()
+         if (yes2) then
+            yes2_mpi = 1
+         else
+            yes2_mpi = 0
+         endif
+      endif
+      call mpi_bcast(yes2_mpi, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      yes2 = yes2_mpi .eq. 1
 
-      DO I = 1,NW
-         DO J = 1,NW
-            IF (NAK(I).EQ.NAK(J)) THEN
-               DINT1(I,J) = RINTDENS(I,J)
-               IF(YES2) THEN
-                  CALL RINTDENSVEC(I,J,DINT1VEC,NRNUC)
-               END IF
-               CALL RINTI_NMS(I,J,DINT2(I,J),DINT7(I,J))
-               DINT3(I,J) = RINT(I,J,1)
-               DINT4(I,J) = RINT(I,J,2)
-               DINT5(I,J) = RINT(I,J,-1)
-               DINT6(I,J) = RINT(I,J,-2)
-            ELSE
-               DINT1(I,J) = 0.0D00
-               DINT1VEC(I,J,:) = 0.0D00
-               DINT2(I,J) = 0.0D00
-               DINT3(I,J) = 0.0D00
-               DINT4(I,J) = 0.0D00
-               DINT5(I,J) = 0.0D00
-               DINT6(I,J) = 0.0D00
-               DINT7(I,J) = 0.0D00
-            ENDIF
-         END DO
-      END DO
+      do i = 1,nw
+         do j = 1,nw
+            if (nak(i).eq.nak(j)) then
+               dint1(i,j) = rintdens(i,j)
+               if(yes2) then
+                  call rintdensvec(i,j,dint1vec,nrnuc)
+               end if
+               call rinti_nms(i,j,dint2(i,j),dint7(i,j))
+               dint3(i,j) = rint(i,j,1)
+               dint4(i,j) = rint(i,j,2)
+               dint5(i,j) = rint(i,j,-1)
+               dint6(i,j) = rint(i,j,-2)
+            else
+               dint1(i,j) = 0.0d00
+               dint1vec(i,j,:) = 0.0d00
+               dint2(i,j) = 0.0d00
+               dint3(i,j) = 0.0d00
+               dint4(i,j) = 0.0d00
+               dint5(i,j) = 0.0d00
+               dint6(i,j) = 0.0d00
+               dint7(i,j) = 0.0d00
+            endif
+         end do
+      end do
 
-      DO I = 1,NW
-         DO J = 1,NW
-            IF (I.NE.J) THEN
-               RCRE = CRE(NAK(I),1,NAK(J))
-               IF (DABS(RCRE) .GT. CUTOFF) THEN
-                  VINT  (I,J) = VINTI(I,J)
-                  VINT2(I,J) = VINT(I,J)                                  &
-                     + RINT_SMS2(I,J)/RCRE                                &
-                     + RINT_SMS3(I,J)
-               ELSE
-                  VINT (I,J) = 0.0D00
-                  VINT2(I,J) = 0.0D00
-               ENDIF
-            ELSE
-               VINT (I,J) = 0.0D00
-               VINT2(I,J) = 0.0D00
-            ENDIF
-         END DO
-      END DO
+      do i = 1,nw
+         do j = 1,nw
+            if (i.ne.j) then
+               rcre = cre(nak(i),1,nak(j))
+               if (dabs(rcre) .gt. cutoff) then
+                  vint  (i,j) = vinti(i,j)
+                  vint2(i,j) = vint(i,j)                                  &
+                     + rint_sms2(i,j)/rcre                                &
+                     + rint_sms3(i,j)
+               else
+                  vint (i,j) = 0.0d00
+                  vint2(i,j) = 0.0d00
+               endif
+            else
+               vint (i,j) = 0.0d00
+               vint2(i,j) = 0.0d00
+            endif
+         end do
+      end do
 
-      IF (MYID .EQ. 0) THEN
-         CALL ANGDATA(NAME,AVAIL_OB,1)
-         IF (AVAIL_OB) CLOSE(50)
-         CALL ANGDATA(NAME,AVAIL_TB,2)
-         IF (AVAIL_TB) CLOSE(51)
-         AVAIL_OB_MPI = MERGE(1, 0, AVAIL_OB)
-         AVAIL_TB_MPI = MERGE(1, 0, AVAIL_TB)
-         IF ((.NOT. AVAIL_OB) .AND. (.NOT. AVAIL_TB)) THEN
-            PRINT *,' Save ang. coefficients of one- and two-body op.?'
-            SAVEYES = GETYN ()
-            PRINT *
-            IF(SAVEYES) THEN
-               DOIT_OB = 1
-               DOIT_TB = 1
-            ENDIF
-         ELSEIF (.NOT. AVAIL_OB) THEN
-            PRINT *,' Save ang. coefficients of one-body op. ?'
-            SAVEYES = GETYN ()
-            PRINT *
-            IF(SAVEYES) DOIT_OB = 1
-         ELSEIF (.NOT. AVAIL_TB) THEN
-            PRINT *,' Save ang. coefficients of two-body op. ?'
-            SAVEYES = GETYN ()
-            PRINT *
-            IF(SAVEYES) DOIT_TB = 1
-         ENDIF
-      ENDIF
-      CALL MPI_BCAST(AVAIL_OB_MPI, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)
-      CALL MPI_BCAST(AVAIL_TB_MPI, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)
-      CALL MPI_BCAST(DOIT_OB, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)
-      CALL MPI_BCAST(DOIT_TB, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)
-      AVAIL_OB = AVAIL_OB_MPI .EQ. 1
-      AVAIL_TB = AVAIL_TB_MPI .EQ. 1
-      IF (MYID .EQ. 0) THEN
+      if (myid .eq. 0) then
+         call angdata(name,avail_ob,1)
+         if (avail_ob) close(50)
+         call angdata(name,avail_tb,2)
+         if (avail_tb) close(51)
+         avail_ob_mpi = merge(1, 0, avail_ob)
+         avail_tb_mpi = merge(1, 0, avail_tb)
+         if ((.not. avail_ob) .and. (.not. avail_tb)) then
+            print *,' Save ang. coefficients of one- and two-body op.?'
+            saveyes = getyn ()
+            print *
+            if(saveyes) then
+               doit_ob = 1
+               doit_tb = 1
+            endif
+         elseif (.not. avail_ob) then
+            print *,' Save ang. coefficients of one-body op. ?'
+            saveyes = getyn ()
+            print *
+            if(saveyes) doit_ob = 1
+         elseif (.not. avail_tb) then
+            print *,' Save ang. coefficients of two-body op. ?'
+            saveyes = getyn ()
+            print *
+            if(saveyes) doit_tb = 1
+         endif
+      endif
+      call mpi_bcast(avail_ob_mpi, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      call mpi_bcast(avail_tb_mpi, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      call mpi_bcast(doit_ob, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      call mpi_bcast(doit_tb, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      avail_ob = avail_ob_mpi .eq. 1
+      avail_tb = avail_tb_mpi .eq. 1
+      if (myid .eq. 0) then
          ! Saving angular coefficients still has to stay on the root
          ! process because the serial file format is shared.
-         SERIAL_SAVE = ((.NOT. AVAIL_OB .AND. DOIT_OB .EQ. 1) .OR.      &
-                        (.NOT. AVAIL_TB .AND. DOIT_TB .EQ. 1))
-         SERIAL_SAVE_MPI = MERGE(1, 0, SERIAL_SAVE)
-      ENDIF
-      CALL MPI_BCAST(SERIAL_SAVE_MPI, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)
-      SERIAL_SAVE = SERIAL_SAVE_MPI .EQ. 1
+         serial_save = ((.not. avail_ob .and. doit_ob .eq. 1) .or.      &
+                        (.not. avail_tb .and. doit_tb .eq. 1))
+         serial_save_mpi = merge(1, 0, serial_save)
+      endif
+      call mpi_bcast(serial_save_mpi, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      serial_save = serial_save_mpi .eq. 1
 
-      IF (SERIAL_SAVE) THEN
-         CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
-         IF (MYID .EQ. 0) THEN
-            J = INDEX(NAME,' ')
-            IF (AVAIL_OB) THEN
-               OPEN(UNIT=50,FILE = NAME(1:J-1)//'.IOB',STATUS='OLD',FORM='UNFORMATTED')
-               IF (YES2) THEN
-                  CALL DENSREAD_SELTZ(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6, &
-                       DINT7,DINT1VEC,DENS1VEC,NRNUC)
-               ELSE
-                  CALL DENSREAD(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
-               ENDIF
-               CLOSE(50)
-            ELSE
-               IF (DOIT_OB .EQ. 1) THEN
-                  OPEN(UNIT=50,FILE = NAME(1:J-1)//'.IOB',STATUS='UNKNOWN',FORM='UNFORMATTED')
-               ENDIF
-               IF (YES2) THEN
-                  CALL DENSNEW_SELTZ(DOIT_OB,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6, &
-                       DINT7,DINT1VEC,DENS1VEC,NRNUC)
-               ELSE
-                  CALL DENSNEW(DOIT_OB,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
-               ENDIF
-            ENDIF
+      if (serial_save) then
+         call mpi_barrier(mpi_comm_world, ierr)
+         if (myid .eq. 0) then
+            j = index(name,' ')
+            if (avail_ob) then
+               open(unit=50,file = name(1:j-1)//'.IOB',status='OLD',form='UNFORMATTED')
+               if (yes2) then
+                  call densread_seltz(dint1,dint2,dint3,dint4,dint5,dint6, &
+                       dint7,dint1vec,dens1vec,nrnuc)
+               else
+                  call densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
+               endif
+               close(50)
+            else
+               if (doit_ob .eq. 1) then
+                  open(unit=50,file = name(1:j-1)//'.IOB',status='UNKNOWN',form='UNFORMATTED')
+               endif
+               if (yes2) then
+                  call densnew_seltz(doit_ob,dint1,dint2,dint3,dint4,dint5,dint6, &
+                       dint7,dint1vec,dens1vec,nrnuc)
+               else
+                  call densnew(doit_ob,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
+               endif
+            endif
 
-            IF (AVAIL_TB) THEN
-               OPEN(UNIT=51,FILE = NAME(1:J-1)//'.ITB',STATUS='OLD',FORM='UNFORMATTED')
-               CALL SMSREAD(VINT,VINT2)
-               CLOSE(51)
-            ELSE
-               IF (DOIT_TB .EQ. 1) THEN
-                  OPEN(UNIT=51,FILE = NAME(1:J-1)//'.ITB',STATUS='UNKNOWN',FORM='UNFORMATTED')
-               ENDIF
-               CALL SMSNEW(DOIT_TB,VINT,VINT2)
-            ENDIF
-         ENDIF
-         CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
-         GO TO 800
-      ENDIF
+            if (avail_tb) then
+               open(unit=51,file = name(1:j-1)//'.ITB',status='OLD',form='UNFORMATTED')
+               call smsread(vint,vint2)
+               close(51)
+            else
+               if (doit_tb .eq. 1) then
+                  open(unit=51,file = name(1:j-1)//'.ITB',status='UNKNOWN',form='UNFORMATTED')
+               endif
+               call smsnew(doit_tb,vint,vint2)
+            endif
+         endif
+         call mpi_barrier(mpi_comm_world, ierr)
+         go to 800
+      endif
 
-      IF (AVAIL_OB) THEN
-         J = INDEX(NAME,' ')
-         OPEN(UNIT=50,FILE = NAME(1:J-1)//'.IOB',STATUS='OLD',FORM='UNFORMATTED')
-         IF (YES2) THEN
-            CALL DENSREAD_SELTZ_MPI(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6, &
-                 DINT7,DINT1VEC,DENS1VEC,NRNUC)
-         ELSE
-            CALL DENSREAD_MPI(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
-         END IF
-         CLOSE(50)
-      ELSE
-         IF(YES2) THEN
-            CALL DENSNEW_SELTZ_MPI(DOIT_OB,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6, &
-                 DINT7,DINT1VEC,DENS1VEC,NRNUC)
-         ELSE
-            CALL DENSNEW_MPI(DOIT_OB,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
-         END IF
-      ENDIF
+      if (avail_ob) then
+         j = index(name,' ')
+         open(unit=50,file = name(1:j-1)//'.IOB',status='OLD',form='UNFORMATTED')
+         if (yes2) then
+            call densread_seltz_mpi(dint1,dint2,dint3,dint4,dint5,dint6, &
+                 dint7,dint1vec,dens1vec,nrnuc)
+         else
+            call densread_mpi(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
+         end if
+         close(50)
+      else
+         if(yes2) then
+            call densnew_seltz_mpi(doit_ob,dint1,dint2,dint3,dint4,dint5,dint6, &
+                 dint7,dint1vec,dens1vec,nrnuc)
+         else
+            call densnew_mpi(doit_ob,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
+         end if
+      endif
 
-      IF (AVAIL_TB) THEN
-         J = INDEX(NAME,' ')
-         OPEN(UNIT=51,FILE = NAME(1:J-1)//'.ITB',STATUS='OLD',FORM='UNFORMATTED')
-         CALL SMSREAD_MPI(VINT,VINT2)
-         CLOSE(51)
-      ELSE
-         CALL SMSNEW_MPI(DOIT_TB,VINT,VINT2)
-      ENDIF
+      if (avail_tb) then
+         j = index(name,' ')
+         open(unit=51,file = name(1:j-1)//'.ITB',status='OLD',form='UNFORMATTED')
+         call smsread_mpi(vint,vint2)
+         close(51)
+      else
+         call smsnew_mpi(doit_tb,vint,vint2)
+      endif
 
-      CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
+      call mpi_barrier(mpi_comm_world, ierr)
 
-      CALL GDRSUMMPI_ROOT(SMSC1(:), NVEC)
-      CALL GDRSUMMPI_ROOT(SMSC2(:), NVEC)
-      CALL GDRSUMMPI_ROOT(DENS1(:), NVEC)
-      CALL GDRSUMMPI_ROOT(DENS2(:), NVEC)
-      CALL GDRSUMMPI_ROOT(DENS3(:), NVEC)
-      CALL GDRSUMMPI_ROOT(DENS4(:), NVEC)
-      CALL GDRSUMMPI_ROOT(DENS5(:), NVEC)
-      CALL GDRSUMMPI_ROOT(DENS6(:), NVEC)
-      CALL GDRSUMMPI_ROOT(DENS7(:), NVEC)
-      IF (YES2) CALL GDRSUMMPI_ROOT(DENS1VEC(:,:), NVEC*NRNUC)
+      call gdrsummpi_root(smsc1(:), nvec)
+      call gdrsummpi_root(smsc2(:), nvec)
+      call gdrsummpi_root(dens1(:), nvec)
+      call gdrsummpi_root(dens2(:), nvec)
+      call gdrsummpi_root(dens3(:), nvec)
+      call gdrsummpi_root(dens4(:), nvec)
+      call gdrsummpi_root(dens5(:), nvec)
+      call gdrsummpi_root(dens6(:), nvec)
+      call gdrsummpi_root(dens7(:), nvec)
+      if (yes2) call gdrsummpi_root(dens1vec(:,:), nvec*nrnuc)
 
-  800 CONTINUE
-      IF (MYID .NE. 0) GO TO 900
+  800 continue
+      if (myid .ne. 0) go to 900
 
-      WRITE (24,'(a24,i3)') 'Number of eigenvalues: ',NVEC
-      WRITE(24,*)
-      WRITE(24,*)
-      WRITE (24,309)
-      DO I = 1, NVEC
-         WRITE (24,323) IVEC(I),LABJ(IATJPO(I)),LABP((IASPAR(I)+3)/2), &
-              EAV+EVAL(I)
-      END DO
-      WRITE (24,308)
-      DO I = 1,NVEC
-         WRITE(24,314)
-         WRITE (24,313) IVEC(I),LABJ(IATJPO(I)),LABP((IASPAR(I)+3)/2), &
-              DENS7(I),(DENS2(I)-DENS7(I)),DENS2(I)
-         HzNMSu=DENS7(I)*AUMAMU*AUCM*CCMS
-         WRITE (24,316) HzNMSu*(1.0D-09), &
-              (DENS2(I)-DENS7(I))*AUMAMU*AUCM*CCMS*(1.0D-09), &
-              DENS2(I)*AUMAMU*AUCM*CCMS*(1.0D-09)
-      END DO
+      write (24,'(a24,i3)') 'Number of eigenvalues: ',nvec
+      write(24,*)
+      write(24,*)
+      write (24,309)
+      do i = 1, nvec
+         write (24,323) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
+              eav+eval(i)
+      end do
+      write (24,308)
+      do i = 1,nvec
+         write(24,314)
+         write (24,313) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
+              dens7(i),(dens2(i)-dens7(i)),dens2(i)
+         hznmsu=dens7(i)*aumamu*aucm*ccms
+         write (24,316) hznmsu*(1.0d-09), &
+              (dens2(i)-dens7(i))*aumamu*aucm*ccms*(1.0d-09), &
+              dens2(i)*aumamu*aucm*ccms*(1.0d-09)
+      end do
 
-      WRITE (24,302)
-      DO I = 1,NVEC
-         WRITE(24,314)
-         WRITE (24,313) IVEC(I),LABJ(IATJPO(I)),LABP((IASPAR(I)+3)/2), &
-              SMSC1(I),SMSC2(I)-SMSC1(I),SMSC2(I)
-         HzSMSu=SMSC1(I)*AUMAMU*AUCM*CCMS
-         IF (DABS(HzSMSu) .LE. (10**8)) THEN
-            WRITE (24,315) HzSMSu*(1.0D-06), &
-                 (SMSC2(I)-SMSC1(I))*AUMAMU*AUCM*CCMS*(1.0D-06), &
-                 SMSC2(I)*AUMAMU*AUCM*CCMS*(1.0D-06)
-         ELSE
-            WRITE (24,316) HzSMSu*(1.0D-09), &
-                 (SMSC2(I)-SMSC1(I))*AUMAMU*AUCM*CCMS*(1.0D-09), &
-                 SMSC2(I)*AUMAMU*AUCM*CCMS*(1.0D-09)
-         ENDIF
-      END DO
-      IF(YES2) THEN
-         WRITE (24,307)
-         DO I = 1,NVEC
-            CALL EDENSITYFIT(R,DENS1VEC(I,:),Z,PARM,NRNUC,FMAT(:,I),RHO(I),RES(I))
-            WRITE (24,303) IVEC(I),LABJ(IATJPO(I)), &
-                 LABP((IASPAR(I)+3)/2),RHO(I)
-         END DO
-         WRITE (24,317)
-         DO I = 1,NVEC
-            WRITE (24,324) IVEC(I),LABJ(IATJPO(I)), &
-                 LABP((IASPAR(I)+3)/2),FMAT(1,I),FMAT(2,I), &
-                 FMAT(3,I),FMAT(4,I),RES(I)
-         END DO
-         WRITE (24,327)
-         DO I = 1,NVEC
-            WRITE (24,334) IVEC(I),LABJ(IATJPO(I)), &
-                 LABP((IASPAR(I)+3)/2),FMAT(5,I),FMAT(6,I)
-         END DO
-         WRITE(24,*)
-      ELSE
-         WRITE (24,306)
-         DO I = 1,NVEC
-            WRITE (24,303) IVEC(I),LABJ(IATJPO(I)), &
-                 LABP((IASPAR(I)+3)/2),DENS1(I)
-         END DO
-      END IF
+      write (24,302)
+      do i = 1,nvec
+         write(24,314)
+         write (24,313) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
+              smsc1(i),smsc2(i)-smsc1(i),smsc2(i)
+         hzsmsu=smsc1(i)*aumamu*aucm*ccms
+         if (dabs(hzsmsu) .le. (10**8)) then
+            write (24,315) hzsmsu*(1.0d-06), &
+                 (smsc2(i)-smsc1(i))*aumamu*aucm*ccms*(1.0d-06), &
+                 smsc2(i)*aumamu*aucm*ccms*(1.0d-06)
+         else
+            write (24,316) hzsmsu*(1.0d-09), &
+                 (smsc2(i)-smsc1(i))*aumamu*aucm*ccms*(1.0d-09), &
+                 smsc2(i)*aumamu*aucm*ccms*(1.0d-09)
+         endif
+      end do
+      if(yes2) then
+         write (24,307)
+         do i = 1,nvec
+            call edensityfit(r,dens1vec(i,:),z,parm,nrnuc,fmat(:,i),rho(i),res(i))
+            write (24,303) ivec(i),labj(iatjpo(i)), &
+                 labp((iaspar(i)+3)/2),rho(i)
+         end do
+         write (24,317)
+         do i = 1,nvec
+            write (24,324) ivec(i),labj(iatjpo(i)), &
+                 labp((iaspar(i)+3)/2),fmat(1,i),fmat(2,i), &
+                 fmat(3,i),fmat(4,i),res(i)
+         end do
+         write (24,327)
+         do i = 1,nvec
+            write (24,334) ivec(i),labj(iatjpo(i)), &
+                 labp((iaspar(i)+3)/2),fmat(5,i),fmat(6,i)
+         end do
+         write(24,*)
+      else
+         write (24,306)
+         do i = 1,nvec
+            write (24,303) ivec(i),labj(iatjpo(i)), &
+                 labp((iaspar(i)+3)/2),dens1(i)
+         end do
+      end if
 
-  900 CONTINUE
-      CALL DALLOC (SMSC1,'SMSC1','RIS_CAL_MPI')
-      CALL DALLOC (SMSC2,'SMSC2','RIS_CAL_MPI')
-      CALL DALLOC (DENS1,'DENS1','RIS_CAL_MPI')
-      CALL DALLOC (DENS2,'DENS2','RIS_CAL_MPI')
-      CALL DALLOC (DENS3,'DENS3','RIS_CAL_MPI')
-      CALL DALLOC (DENS4,'DENS4','RIS_CAL_MPI')
-      CALL DALLOC (DENS5,'DENS5','RIS_CAL_MPI')
-      CALL DALLOC (DENS6,'DENS6','RIS_CAL_MPI')
-      CALL DALLOC (DENS7,'DENS7','RIS_CAL_MPI')
+  900 continue
+      call dalloc (smsc1,'SMSC1','RIS_CAL_MPI')
+      call dalloc (smsc2,'SMSC2','RIS_CAL_MPI')
+      call dalloc (dens1,'DENS1','RIS_CAL_MPI')
+      call dalloc (dens2,'DENS2','RIS_CAL_MPI')
+      call dalloc (dens3,'DENS3','RIS_CAL_MPI')
+      call dalloc (dens4,'DENS4','RIS_CAL_MPI')
+      call dalloc (dens5,'DENS5','RIS_CAL_MPI')
+      call dalloc (dens6,'DENS6','RIS_CAL_MPI')
+      call dalloc (dens7,'DENS7','RIS_CAL_MPI')
 
-      IF (MYID .EQ. 0) THEN
-         WRITE(*,*) '-------------------------------'
-         WRITE(*,*) 'RIS_CAL_MPI: Execution Finished ...'
-         WRITE(*,*) '-------------------------------'
-      ENDIF
-      CALL STOPTIME (ncount1, 'RIS_CAL_MPI')
-      RETURN
-301   FORMAT (//' CUTOFF set to ',1PD22.15)
-302   FORMAT (//' Level  J Parity  Specific mass shift parameter')
-303   FORMAT (1X,I3,5X,2A4,3X,D20.10)
-304   FORMAT (1X,I3,5X,2A4,3X,2D20.10)
-324   FORMAT (1X,I3,5X,2A4,3X,4D20.10,F10.4)
-334   FORMAT (1X,I3,5X,2A4,3X,2D20.10)
-306   FORMAT (//' Electron density in atomic units' &
-           //' Level  J Parity',8X,'DENS (a.u.)'/)
-307   FORMAT (//' Level  J Parity  Electron density in atomic units' &
-           //24X,'Dens. (a.u.)')
-317   FORMAT (//' Level  J Parity  Field shift electronic factors and av&
+      if (myid .eq. 0) then
+         write(*,*) '-------------------------------'
+         write(*,*) 'RIS_CAL_MPI: Execution Finished ...'
+         write(*,*) '-------------------------------'
+      endif
+      call stoptime (ncount1, 'RIS_CAL_MPI')
+      return
+301   format (//' CUTOFF set to ',1pd22.15)
+302   format (//' Level  J Parity  Specific mass shift parameter')
+303   format (1x,i3,5x,2a4,3x,d20.10)
+304   format (1x,i3,5x,2a4,3x,2d20.10)
+324   format (1x,i3,5x,2a4,3x,4d20.10,f10.4)
+334   format (1x,i3,5x,2a4,3x,2d20.10)
+306   format (//' Electron density in atomic units' &
+           //' Level  J Parity',8x,'DENS (a.u.)'/)
+307   format (//' Level  J Parity  Electron density in atomic units' &
+           //24x,'Dens. (a.u.)')
+317   format (//' Level  J Parity  Field shift electronic factors and av&
            &erage point discrepancy in fit' &
-           //24X, &
-           'F0 (GHz/fm^2)',6X,' F2 (GHz/fm^4)', &
-           6X,' F4 (GHz/fm^6)',6X,' F6 (GHz/fm^8)', &
-           6X,' Disc. (per mille)')
-327   FORMAT (//' Level  J Parity  Field shift electronic factors (corre&
+           //24x, &
+           'F0 (GHz/fm^2)',6x,' F2 (GHz/fm^4)', &
+           6x,' F4 (GHz/fm^6)',6x,' F6 (GHz/fm^8)', &
+           6x,' Disc. (per mille)')
+327   format (//' Level  J Parity  Field shift electronic factors (corre&
            &cted for varying density inside nucleus)' &
-           //24X, &
+           //24x, &
            'F0VED0 (GHz/fm^2)   F0VED1 (GHz/fm^4)')
-308   FORMAT (//' Level  J Parity  Normal mass shift parameter')
-309   FORMAT (' Level  J Parity  Energy')
-313   FORMAT (1X,I3,5X,2A4,3x,3D20.10,'  (a.u.)')
-333   FORMAT (1X,I3,5X,2A4,3x,3D20.10,'  (GHz u)')
-323   FORMAT (1X,I3,5X,2A4,3x,D20.10,'  (a.u.)')
-314   FORMAT (/,29X,'<K^1>',13X,'<K^2+K^3>',9X,'<K^1+K^2+K^3>')
-315   FORMAT (20X,3D20.10 ,2X,'(MHz u)')
-316   FORMAT (20X,3D20.10,2X,'(GHz u)')
-      RETURN
-      END SUBROUTINE RIS_CAL_MPI
+308   format (//' Level  J Parity  Normal mass shift parameter')
+309   format (' Level  J Parity  Energy')
+313   format (1x,i3,5x,2a4,3x,3d20.10,'  (a.u.)')
+333   format (1x,i3,5x,2a4,3x,3d20.10,'  (GHz u)')
+323   format (1x,i3,5x,2a4,3x,d20.10,'  (a.u.)')
+314   format (/,29x,'<K^1>',13x,'<K^2+K^3>',9x,'<K^1+K^2+K^3>')
+315   format (20x,3d20.10 ,2x,'(MHz u)')
+316   format (20x,3d20.10,2x,'(GHz u)')
+      return
+      end subroutine ris_cal_mpi

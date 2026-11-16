@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      LOGICAL FUNCTION TRIANGBREIT1 (IA,IB,IC,ID,K)
+      logical function triangbreit1 (ia,ib,ic,id,k)
 !                                                                      *
 !     Evaluate the triangular relation for the Breit integral of       *
 !     See paper by I. Grant and B McKenzie, JPB 13, (1980) 2671-2681   *
@@ -14,39 +14,39 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE orb_C, ONLY: NKL, NKJ
-      IMPLICIT NONE
+      use orb_c, only: nkl, nkj
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: IA,IB,IC,ID,K
+      integer, intent(in) :: ia,ib,ic,id,k
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: LA,LB,LC,LD,JA,JB,JC,JD,L
+      integer :: la,lb,lc,ld,ja,jb,jc,jd,l
 !-----------------------------------------------
 !
-      LA = NKL(IA)
-      LB = NKL(IB)
-      LC = NKL(IC)
-      LD = NKL(ID)
-      JA = NKJ(IA)
-      JB = NKJ(IB)
-      JC = NKJ(IC)
-      JD = NKJ(ID)
+      la = nkl(ia)
+      lb = nkl(ib)
+      lc = nkl(ic)
+      ld = nkl(id)
+      ja = nkj(ia)
+      jb = nkj(ib)
+      jc = nkj(ic)
+      jd = nkj(id)
 
-      TRIANGBREIT1 = .FALSE.
+      triangbreit1 = .false.
 
-      DO L = K-1,K+1
-         IF ((MOD(K+LA+LB,2).EQ.1).AND.(ABS(JA-JB).LE.2*L).AND.     &
-            (ABS(JA+JB).GE.2*L)) THEN
-            IF ((MOD(K+LC+LD,2).EQ.1).AND.(ABS(JC-JD).LE.2*L).AND.  &
-               (ABS(JC+JD).GE.2*L)) THEN
-               TRIANGBREIT1 = .TRUE.
-               RETURN
-            END IF
-         END IF
-      END DO
+      do l = k-1,k+1
+         if ((mod(k+la+lb,2).eq.1).and.(abs(ja-jb).le.2*l).and.     &
+            (abs(ja+jb).ge.2*l)) then
+            if ((mod(k+lc+ld,2).eq.1).and.(abs(jc-jd).le.2*l).and.  &
+               (abs(jc+jd).ge.2*l)) then
+               triangbreit1 = .true.
+               return
+            end if
+         end if
+      end do
 
-      RETURN
-      END FUNCTION TRIANGBREIT1
+      return
+      end function triangbreit1

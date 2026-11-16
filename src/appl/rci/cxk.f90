@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE CXK(S, IS, KAPS, NU, K, IBR, IEX)
+      subroutine cxk(s, is, kaps, nu, k, ibr, iex)
 !                                                                      *
 !   Computes  the  coefficients of radial integrals in the expansion   *
 !   of the effective interaction strength: X(K,IA1,IB1,IA2,IB2).       *
@@ -47,235 +47,235 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE cre_I
-      IMPLICIT NONE
+      use cre_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NU
-      INTEGER  :: K
-      INTEGER, INTENT(IN) :: IBR
-      INTEGER, INTENT(IN) :: IEX
-      INTEGER, INTENT(IN) :: IS(4)
-      INTEGER, INTENT(IN) :: KAPS(4)
-      REAL(DOUBLE), INTENT(INOUT) :: S(12)
+      integer, intent(in) :: nu
+      integer  :: k
+      integer, intent(in) :: ibr
+      integer, intent(in) :: iex
+      integer, intent(in) :: is(4)
+      integer, intent(in) :: kaps(4)
+      real(double), intent(inout) :: s(12)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: MU, IA, IB, IC, ID, KA, KB, KC, KD, KK, IK, IP
-      REAL(DOUBLE) :: D, H, DK1, DK2, FK, GK, G1, G2, G3, G4, A, F1, F2, F3, F4&
-         , B, DK
+      integer :: mu, ia, ib, ic, id, ka, kb, kc, kd, kk, ik, ip
+      real(double) :: d, h, dk1, dk2, fk, gk, g1, g2, g3, g4, a, f1, f2, f3, f4&
+         , b, dk
 !-----------------------------------------------
 !
 !
 !   1.0  Initialization
 !
-      S = 0.0D00
+      s = 0.0d00
 !
-      IA = IS(1)
-      IB = IS(2)
-      IC = IS(3)
-      ID = IS(4)
-      KA = KAPS(1)/2
-      KB = KAPS(2)/2
-      KC = KAPS(3)/2
-      KD = KAPS(4)/2
-      IF (IEX == 2) THEN
-         KK = KD
-         IK = ID
-         KD = KC
-         ID = IC
-         KC = KK
-         IC = IK
-      ENDIF
-      SELECT CASE (IBR)
-      CASE DEFAULT
-         GO TO 17
+      ia = is(1)
+      ib = is(2)
+      ic = is(3)
+      id = is(4)
+      ka = kaps(1)/2
+      kb = kaps(2)/2
+      kc = kaps(3)/2
+      kd = kaps(4)/2
+      if (iex == 2) then
+         kk = kd
+         ik = id
+         kd = kc
+         id = ic
+         kc = kk
+         ic = ik
+      endif
+      select case (ibr)
+      case default
+         go to 17
 !
 !   2.0  IBR = 1 --- The general case
 !
-      CASE (1)
-         IF (NU - K >= 0) THEN
-            IF (NU - K <= 0) THEN
-               S(1) = -(KA + KC)*(KD + KB)
-               IF (K == 0) GO TO 16
-               D = K*(K + 1)
-               H = CRE(KA,K,KC)*CRE(KB,K,KD)
-               IF (MOD(K,2) /= 0) H = -H
-               S(1) = S(1)*H/D
-               S(2:4) = S(1)
-               RETURN
-            ENDIF
+      case (1)
+         if (nu - k >= 0) then
+            if (nu - k <= 0) then
+               s(1) = -(ka + kc)*(kd + kb)
+               if (k == 0) go to 16
+               d = k*(k + 1)
+               h = cre(ka,k,kc)*cre(kb,k,kd)
+               if (mod(k,2) /= 0) h = -h
+               s(1) = s(1)*h/d
+               s(2:4) = s(1)
+               return
+            endif
 !
 !   2.2  NU = K+1
 !
-            DK1 = KC - KA
-            DK2 = KD - KB
-            FK = K
-            GK = K + 1
-            G1 = DK1 - GK
-            G2 = DK1 + GK
-            G3 = DK2 - GK
-            G4 = DK2 + GK
-            KK = K + K + 1
-            H = CRE(KA,K,KC)*CRE(KB,K,KD)
-            IF (MOD(K,2) /= 0) H = -H
-            A = H*FK/GK/DBLE(KK*(KK + 2))
-            S(1) = A*G1*G3
-            S(2) = A*G2*G4
-            S(3) = A*G1*G4
-            S(4) = A*G2*G3
-            RETURN
-         ENDIF
+            dk1 = kc - ka
+            dk2 = kd - kb
+            fk = k
+            gk = k + 1
+            g1 = dk1 - gk
+            g2 = dk1 + gk
+            g3 = dk2 - gk
+            g4 = dk2 + gk
+            kk = k + k + 1
+            h = cre(ka,k,kc)*cre(kb,k,kd)
+            if (mod(k,2) /= 0) h = -h
+            a = h*fk/gk/dble(kk*(kk + 2))
+            s(1) = a*g1*g3
+            s(2) = a*g2*g4
+            s(3) = a*g1*g4
+            s(4) = a*g2*g3
+            return
+         endif
 !
 !   2.2  NU = K-1
 !
-         DK1 = KC - KA
-         DK2 = KD - KB
-         FK = K
-         GK = K + 1
-         F1 = DK1 - FK
-         F2 = DK1 + FK
-         F3 = DK2 - FK
-         F4 = DK2 + FK
-         G1 = DK1 - GK
-         G2 = DK1 + GK
-         G3 = DK2 - GK
-         G4 = DK2 + GK
-         KK = K + K + 1
-         H = CRE(KA,K,KC)*CRE(KB,K,KD)
-         IF (MOD(K,2) /= 0) H = -H
-         A = H*GK/FK/DBLE(KK*(KK - 2))
-         S(1) = A*F2*F4
-         S(2) = A*F1*F3
-         S(3) = A*F2*F3
-         S(4) = A*F1*F4
-         B = H/DBLE(KK*KK)
-         S(5) = B*F2*G3
-         S(6) = B*F4*G1
-         S(7) = B*F1*G4
-         S(8) = B*F3*G2
-         S(9) = B*F2*G4
-         S(10) = B*F3*G1
-         S(11) = B*F1*G3
-         S(12) = B*F4*G2
-         RETURN
+         dk1 = kc - ka
+         dk2 = kd - kb
+         fk = k
+         gk = k + 1
+         f1 = dk1 - fk
+         f2 = dk1 + fk
+         f3 = dk2 - fk
+         f4 = dk2 + fk
+         g1 = dk1 - gk
+         g2 = dk1 + gk
+         g3 = dk2 - gk
+         g4 = dk2 + gk
+         kk = k + k + 1
+         h = cre(ka,k,kc)*cre(kb,k,kd)
+         if (mod(k,2) /= 0) h = -h
+         a = h*gk/fk/dble(kk*(kk - 2))
+         s(1) = a*f2*f4
+         s(2) = a*f1*f3
+         s(3) = a*f2*f3
+         s(4) = a*f1*f4
+         b = h/dble(kk*kk)
+         s(5) = b*f2*g3
+         s(6) = b*f4*g1
+         s(7) = b*f1*g4
+         s(8) = b*f3*g2
+         s(9) = b*f2*g4
+         s(10) = b*f3*g1
+         s(11) = b*f1*g3
+         s(12) = b*f4*g2
+         return
 !
 !   3.0  IBR = 2  Degenerate case: only one non-zero R-integral
 !
-      CASE (2)
-         IF (IA/=IC .OR. IB==ID) THEN
-            IF (IA==IC .OR. IB/=ID) GO TO 17
+      case (2)
+         if (ia/=ic .or. ib==id) then
+            if (ia==ic .or. ib/=id) go to 17
 !
-            IK = IB
-            IB = IA
-            IA = IK
-            IK = ID
-            ID = IC
-            IC = IK
+            ik = ib
+            ib = ia
+            ia = ik
+            ik = id
+            id = ic
+            ic = ik
 !
-            KK = KB
-            KB = KA
-            KA = KK
-            KK = KD
-            KD = KC
-            KC = KK
-         ENDIF
+            kk = kb
+            kb = ka
+            ka = kk
+            kk = kd
+            kd = kc
+            kc = kk
+         endif
 !
-         IF (MOD(K,2) /= 1) RETURN
-         DK = K*(K + 1)
-         H = CRE(KA,K,KC)*CRE(KB,K,KD)/DK
-         S(1) = H*DBLE(4*KA*(KB + KD))
-         RETURN
+         if (mod(k,2) /= 1) return
+         dk = k*(k + 1)
+         h = cre(ka,k,kc)*cre(kb,k,kd)/dk
+         s(1) = h*dble(4*ka*(kb + kd))
+         return
 !
 !   4.0  IBR = 3. Direct magnetic F-integrals
 !
-      CASE (3)
-         IF (IA/=IC .OR. IB/=ID) GO TO 17
-         IF (MOD(K,2) /= 1) RETURN
-         DK = K*(K + 1)
-         H = CRE(KA,K,KA)*CRE(KB,K,KB)/DK
-         S(1) = H*DBLE(16*KA*KB)
-         RETURN
+      case (3)
+         if (ia/=ic .or. ib/=id) go to 17
+         if (mod(k,2) /= 1) return
+         dk = k*(k + 1)
+         h = cre(ka,k,ka)*cre(kb,k,kb)/dk
+         s(1) = h*dble(16*ka*kb)
+         return
 !
 !   5.0   IBR = 4. Exchange magnetic G- and H-integrals
 !
-      CASE (4)
-         IF (IA/=ID .OR. IB/=IC) GO TO 17
-         IF (NU - K >= 0) THEN
-            IF (NU - K <= 0) THEN
-               S(1) = DBLE(KA + KB)*CRE(KA,K,KB)
-               IP = ABS(KA) - ABS(KB) + K + 1
-               S(1) = S(1)*S(1)/DBLE(K*(K + 1))
-               IF (MOD(IP,2) /= 0) S(1) = -S(1)
-               S(3) = S(1)
-               S(2) = S(1) + S(1)
-               RETURN
-            ENDIF
+      case (4)
+         if (ia/=id .or. ib/=ic) go to 17
+         if (nu - k >= 0) then
+            if (nu - k <= 0) then
+               s(1) = dble(ka + kb)*cre(ka,k,kb)
+               ip = abs(ka) - abs(kb) + k + 1
+               s(1) = s(1)*s(1)/dble(k*(k + 1))
+               if (mod(ip,2) /= 0) s(1) = -s(1)
+               s(3) = s(1)
+               s(2) = s(1) + s(1)
+               return
+            endif
 !
 !   5.2  NU = K+1
 !
-            DK = KB - KA
-            GK = K + 1
-            FK = K
-            G1 = DK + GK
-            G2 = DK - GK
-            KK = K + K + 1
-            H = CRE(KA,K,KB)**2
-            IF (KA*KB < 0) H = -H
-            A = H*FK/GK/DBLE(KK*(KK + 2))
-            S(1) = -A*G1*G1
-            S(2) = -2.0D00*A*G1*G2
-            S(3) = -A*G2*G2
-            RETURN
-         ENDIF
+            dk = kb - ka
+            gk = k + 1
+            fk = k
+            g1 = dk + gk
+            g2 = dk - gk
+            kk = k + k + 1
+            h = cre(ka,k,kb)**2
+            if (ka*kb < 0) h = -h
+            a = h*fk/gk/dble(kk*(kk + 2))
+            s(1) = -a*g1*g1
+            s(2) = -2.0d00*a*g1*g2
+            s(3) = -a*g2*g2
+            return
+         endif
 !
 !   5.3  NU = K-1
 !
-         DK = KB - KA
-         FK = K
-         GK = K + 1
-         F1 = DK + FK
-         F2 = DK - FK
-         G1 = DK + GK
-         G2 = DK - GK
-         KK = K + K + 1
-         H = CRE(KA,K,KB)**2
-         IF (KA*KB < 0) H = -H
-         A = H*GK/FK/DBLE(KK*(KK - 2))
-         S(1) = -A*F2*F2
-         S(2) = -2.0D00*A*F1*F2
-         S(3) = -A*F1*F1
-         B = H/DBLE(KK*KK)
-         B = B + B
-         S(4) = -B*F1*G2
+         dk = kb - ka
+         fk = k
+         gk = k + 1
+         f1 = dk + fk
+         f2 = dk - fk
+         g1 = dk + gk
+         g2 = dk - gk
+         kk = k + k + 1
+         h = cre(ka,k,kb)**2
+         if (ka*kb < 0) h = -h
+         a = h*gk/fk/dble(kk*(kk - 2))
+         s(1) = -a*f2*f2
+         s(2) = -2.0d00*a*f1*f2
+         s(3) = -a*f1*f1
+         b = h/dble(kk*kk)
+         b = b + b
+         s(4) = -b*f1*g2
 !     S(5) = S(4)
-         S(5) = -B*F2*G1
-         S(6) = -B*F1*G1
-         S(7) = -B*F2*G2
-         RETURN
-      END SELECT
+         s(5) = -b*f2*g1
+         s(6) = -b*f1*g1
+         s(7) = -b*f2*g2
+         return
+      end select
 !
 !   6.0  Special cases and errors
 !
 !   Illegal zero value of K in Type 1
 !
-   16 CONTINUE
-      WRITE (*, 300) IS(1), IS(2), IS(3), IS(4), NU, IBR, IEX
-      STOP
+   16 continue
+      write (*, 300) is(1), is(2), is(3), is(4), nu, ibr, iex
+      stop
 !
 !   Illegal combination of states in Type 3 or 4
 !
-   17 CONTINUE
-      WRITE (*, 301) IBR, IS(1), IS(2), IS(3), IS(4), NU, K, IEX
-      STOP
+   17 continue
+      write (*, 301) ibr, is(1), is(2), is(3), is(4), nu, k, iex
+      stop
 !
-  300 FORMAT('CXK: Illegal value K = 0 -'/,1X,4I3,2X,I3,2X,2I2)
-  301 FORMAT('CXK: Type ',I2,'-'/,1X,I2,3X,4I3,2X,2I3,2X,I2)
-      RETURN
+  300 format('CXK: Illegal value K = 0 -'/,1x,4i3,2x,i3,2x,2i2)
+  301 format('CXK: Type ',i2,'-'/,1x,i2,3x,4i3,2x,2i3,2x,i2)
+      return
 !
-      END SUBROUTINE CXK
+      end subroutine cxk

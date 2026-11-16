@@ -1,11 +1,11 @@
-       MODULE cpath_I
-       INTERFACE
+       module cpath_i
+       interface
 !
-       SUBROUTINE CPATH(startdir, permdir, tmpdir)
+       subroutine cpath(startdir, permdir, tmpdir)
 !      USE vast_kind_param, ONLY:  DOUBLE
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-       CHARACTER(len=*), INTENT(IN) :: startdir, permdir, tmpdir
-       END SUBROUTINE
-       END INTERFACE
-       END MODULE
+       character(len=*), intent(in) :: startdir, permdir, tmpdir
+       end subroutine
+       end interface
+       end module

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE VAC2
+      subroutine vac2
 !                                                                      *
 !   This routine sets up the second-order vacuum polarization poten-   *
 !   tial using  equations (1) and (4) of  L Wayne Fullerton and  G A   *
@@ -20,91 +20,91 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE grid_C
-      USE npar_C
-      USE ncdist_C
-      USE tatb_C
+      use vast_kind_param, only:  double
+      use def_c
+      use grid_c
+      use npar_c
+      use ncdist_c
+      use tatb_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE funk_I
-      USE quad_I
-      IMPLICIT NONE
+      use funk_i
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, K
-      REAL(DOUBLE) :: EPSI, TWOCV, FACTOR, RI, X, TBI, RK, XK, XI, XM, XP
+      integer :: i, k
+      real(double) :: epsi, twocv, factor, ri, x, tbi, rk, xk, xi, xm, xp
 !-----------------------------------------------
 !
 !   Overall initialization
 !
-      EPSI = PRECIS*PRECIS
-      TWOCV = CVAC + CVAC
+      epsi = precis*precis
+      twocv = cvac + cvac
 !
 !   Potential for a point nucleus: equation (1)
 !   (this is also the asymptotoc form for a finite nucleus)
 !
-      FACTOR = -(2.0D00*Z)/(3.0D00*PI*CVAC)
+      factor = -(2.0d00*z)/(3.0d00*pi*cvac)
 !
-      TB(1) = 0.0D00
+      tb(1) = 0.0d00
 !
-      I = 1
-    1 CONTINUE
-      I = I + 1
+      i = 1
+    1 continue
+      i = i + 1
 !
-      RI = R(I)
-      X = TWOCV*RI
-      TBI = (FACTOR/RI)*FUNK(X,1)
+      ri = r(i)
+      x = twocv*ri
+      tbi = (factor/ri)*funk(x,1)
 !
-      IF (DABS(TBI) >= EPSI) THEN
-         TB(I) = TBI
-         IF (I < N) GO TO 1
-      ELSE
-         TB(I:N) = 0.0D00
-      ENDIF
+      if (dabs(tbi) >= epsi) then
+         tb(i) = tbi
+         if (i < n) go to 1
+      else
+         tb(i:n) = 0.0d00
+      endif
 !
 !   Potential for a finite nucleus: equation (4)
 !
-      IF (NPARM == 2) THEN
+      if (nparm == 2) then
 !
-         FACTOR = -2.0D00/(3.0D00*CVAC**2)
+         factor = -2.0d00/(3.0d00*cvac**2)
 !
 !   Set up integrand
 !
-         TB(1) = 0.0D00
+         tb(1) = 0.0d00
 !
-         K = 1
-    3    CONTINUE
-         K = K + 1
+         k = 1
+    3    continue
+         k = k + 1
 !
-         RK = R(K)
-         XK = TWOCV*RK
+         rk = r(k)
+         xk = twocv*rk
 !
-         TA(1) = 0.0D00
-         DO I = 2, MTP
-            XI = TWOCV*R(I)
-            XM = DABS(XK - XI)
-            XP = XK + XI
-            TA(I) = (FUNK(XM,0) - FUNK(XP,0))*ZDIST(I)
-         END DO
+         ta(1) = 0.0d00
+         do i = 2, mtp
+            xi = twocv*r(i)
+            xm = dabs(xk - xi)
+            xp = xk + xi
+            ta(i) = (funk(xm,0) - funk(xp,0))*zdist(i)
+         end do
 !
-         CALL QUAD (X)
+         call quad (x)
 !
-         X = X*FACTOR/RK
+         x = x*factor/rk
 !
 !   Get out of loop if the asymptotic value has been attained
 !
-         IF (DABS(X) >= EPSI) THEN
-            IF (DABS((X - TB(K))/X) > 1.0D-05) THEN
-               TB(K) = X
-               IF (K < N) GO TO 3
-            ENDIF
-         ENDIF
+         if (dabs(x) >= epsi) then
+            if (dabs((x - tb(k))/x) > 1.0d-05) then
+               tb(k) = x
+               if (k < n) go to 3
+            endif
+         endif
 !
-      ENDIF
+      endif
 !
-      RETURN
-      END SUBROUTINE VAC2
+      return
+      end subroutine vac2

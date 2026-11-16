@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE MCTOUT(IOPAR, JKP, NAME)
+      subroutine mctout(iopar, jkp, name)
 !                                                                      *
 !   This routine loads  coefficients with parity and  rank specified   *
 !   by KP(JKP) into the arrays ISLDR and XSLDR.  IOPAR is the parity   *
@@ -16,46 +16,46 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: KEYORB, NNNW
-      USE memory_man
-      USE blk_C
-      USE debug_C,         ONLY: LDBPA
-      USE decide_C
-      USE foparm_C
-      USE orb_C
-      USE OFFD_C
-      USE OSC_C
-      USE mpi_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: keyorb, nnnw
+      use memory_man
+      use blk_c
+      use debug_c,         only: ldbpa
+      use decide_c
+      use foparm_c
+      use orb_c
+      use offd_c
+      use osc_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE angdata_I
-      USE itjpo_I
-      USE oneparticlejj_I
-      USE trsort_I
-      IMPLICIT NONE
+      use angdata_i
+      use itjpo_i
+      use oneparticlejj_i
+      use trsort_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: IOPAR
-      INTEGER  :: JKP
-      CHARACTER  :: NAME(2)*24
+      integer  :: iopar
+      integer  :: jkp
+      character  :: name(2)*24
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-10
-      INTEGER, PARAMETER :: NFILE = 93
-      INTEGER, PARAMETER :: NFILE1 = 237
+      real(double), parameter :: cutoff = 1.0d-10
+      integer, parameter :: nfile = 93
+      integer, parameter :: nfile1 = 237
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NFILE2, IBLKI, IBLKF, NMCT, NLABEL, NCFI0, NCFF0, IC, IR, NCR&
-         , IA, IB, NEWSIZ, I
-      LOGICAL :: AVAIL
-      INTEGER, DIMENSION(:), pointer :: label
-      REAL(DOUBLE), DIMENSION(:), pointer:: coeff
-      REAL(DOUBLE), DIMENSION(NNNW) :: tshell
+      integer :: nfile2, iblki, iblkf, nmct, nlabel, ncfi0, ncff0, ic, ir, ncr&
+         , ia, ib, newsiz, i
+      logical :: avail
+      integer, dimension(:), pointer :: label
+      real(double), dimension(:), pointer:: coeff
+      real(double), dimension(nnnw) :: tshell
 !-----------------------------------------------
 !
 !
@@ -65,8 +65,8 @@
 !
 !   Check if angular data is available on file
 !
-      NFILE2 = NFILE1 + JKP
-      CALL ANGDATA (NAME, AVAIL, JKP, NFILE2)
+      nfile2 = nfile1 + jkp
+      call angdata (name, avail, jkp, nfile2)
 
 !
 !   If angular data is not available open the scratch file to store the
@@ -74,20 +74,20 @@
 !   to beginning
 !
 !
-      LK = ABS(KP(JKP))
-      IOPAR = ISIGN(1,KP(JKP))
-      IF (AVAIL) RETURN
+      lk = abs(kp(jkp))
+      iopar = isign(1,kp(jkp))
+      if (avail) return
 !      WRITE (6, *) 'LK,IOPAR,from MCTOUT'
 !      WRITE (6, *) LK, IOPAR
 !
 ! Start of the block loops
-      DO IBLKI = 1, NBLOCKI
-         DO IBLKF = 1, NBLOCKF
+      do iblki = 1, nblocki
+         do iblkf = 1, nblockf
 !        OPEN (NFILE,STATUS = 'new', FORM = 'UNFORMATTED')
 !        Sometimes, when there has been an error, status need to be "unknown"
 !CFF
-            OPEN(NFILE,STATUS='unknown',FORM='UNFORMATTED')
-            NMCT = 0
+            open(nfile,status='unknown',form='UNFORMATTED')
+            nmct = 0
 !
 !
 !   If angular data is not available
@@ -97,103 +97,103 @@
 !
 !   Allocate storage to buffer arrays
 !
-            NLABEL = 32
-            CALL ALLOC (LABEL, NLABEL, 'LABEL', 'MCTOUT')
-            CALL ALLOC (COEFF, NLABEL, 'COEFF', 'MCTOUT')
+            nlabel = 32
+            call alloc (label, nlabel, 'LABEL', 'MCTOUT')
+            call alloc (coeff, nlabel, 'COEFF', 'MCTOUT')
 
-            IF (IBLKI == 1) THEN
-               NCFI0 = 1
-            ELSE
-               NCFI0 = NCFI(IBLKI-1) + 1
-            ENDIF
+            if (iblki == 1) then
+               ncfi0 = 1
+            else
+               ncfi0 = ncfi(iblki-1) + 1
+            endif
 !
-            IF (IBLKF == 1) THEN
-               NCFF0 = NCFI(NBLOCKI) + 1
-            ELSE
-               NCFF0 = NCFI(NBLOCKI) + NCFF(IBLKF-1) + 1
-            ENDIF
-            DO IC = myid+NCFI0, NCFI(IBLKI), nprocs
-               DO IR = NCFF0, NCFI(NBLOCKI) + NCFF(IBLKF)
+            if (iblkf == 1) then
+               ncff0 = ncfi(nblocki) + 1
+            else
+               ncff0 = ncfi(nblocki) + ncff(iblkf-1) + 1
+            endif
+            do ic = myid+ncfi0, ncfi(iblki), nprocs
+               do ir = ncff0, ncfi(nblocki) + ncff(iblkf)
 !
 !           IR = IC
 !
-                  NCR = 0
+                  ncr = 0
 
 !
 !   In many case one is interested only in M1 and E2 transitions between
 !   levels with different J values. If this is the case then the do check
 !   on the J quantum numbers of the CSFs before calling TNSRJJ.
 !
-                  IF (KP(JKP)==1 .AND. NOFFD1==1) THEN
-                     IF (ITJPO(IC) == ITJPO(IR)) CYCLE
-                  ENDIF
-                  IF (KP(JKP)==2 .AND. NOFFD2==1) THEN
-                     IF (ITJPO(IC) == ITJPO(IR)) CYCLE
-                  ENDIF
+                  if (kp(jkp)==1 .and. noffd1==1) then
+                     if (itjpo(ic) == itjpo(ir)) cycle
+                  endif
+                  if (kp(jkp)==2 .and. noffd2==1) then
+                     if (itjpo(ic) == itjpo(ir)) cycle
+                  endif
 !          if(ispar(ic)*ispar(ir)*iopar.ne.1.
 !    &        or.itrig(itjpo(ic),itjpo(ir),2*lk+1).ne.1) go to 13
 !          if(ichkq1(IC,IR).eq.0) go to 13
-                  CALL ONEPARTICLEJJ(LK,IOPAR,IC,IR,IA,IB,TSHELL)
-                  IF (IA /= 0) THEN
-                     IF (IA == IB) THEN
-                        DO IA = 1, NW
-                           IF (ABS(TSHELL(IA)) <= CUTOFF) CYCLE
-                           NCR = NCR + 1
-                           IF (NCR > NLABEL) THEN
-                              NEWSIZ = 2*NLABEL
-                              CALL RALLOC (LABEL,  NEWSIZ, 'LABEL', 'MCTOUT')
-                              CALL RALLOC (COEFF,  NEWSIZ, 'COEFF', 'MCTOUT')
-                              NLABEL = NEWSIZ
-                           ENDIF
-                           LABEL(NCR) = IA*KEYORB + IA
-                           COEFF(NCR) = TSHELL(IA)
-                        END DO
-                     ELSE
-                        IF (ABS(TSHELL(1)) > CUTOFF) THEN
-                           NCR = NCR + 1
-                           IF (NCR > NLABEL) THEN
-                              NEWSIZ = 2*NLABEL
-                              CALL RALLOC (LABEL,  NEWSIZ, 'LABEL', 'MCTOUT')
-                              CALL RALLOC (COEFF,  NEWSIZ, 'COEFF', 'MCTOUT')
-                              NLABEL = NEWSIZ
-                           ENDIF
-                           LABEL(NCR) = IA*KEYORB + IB
-                           COEFF(NCR) = TSHELL(1)
-                        ENDIF
-                     ENDIF
-                  ENDIF
-                  IF (NCR <= 0) CYCLE
+                  call oneparticlejj(lk,iopar,ic,ir,ia,ib,tshell)
+                  if (ia /= 0) then
+                     if (ia == ib) then
+                        do ia = 1, nw
+                           if (abs(tshell(ia)) <= cutoff) cycle
+                           ncr = ncr + 1
+                           if (ncr > nlabel) then
+                              newsiz = 2*nlabel
+                              call ralloc (label,  newsiz, 'LABEL', 'MCTOUT')
+                              call ralloc (coeff,  newsiz, 'COEFF', 'MCTOUT')
+                              nlabel = newsiz
+                           endif
+                           label(ncr) = ia*keyorb + ia
+                           coeff(ncr) = tshell(ia)
+                        end do
+                     else
+                        if (abs(tshell(1)) > cutoff) then
+                           ncr = ncr + 1
+                           if (ncr > nlabel) then
+                              newsiz = 2*nlabel
+                              call ralloc (label,  newsiz, 'LABEL', 'MCTOUT')
+                              call ralloc (coeff,  newsiz, 'COEFF', 'MCTOUT')
+                              nlabel = newsiz
+                           endif
+                           label(ncr) = ia*keyorb + ib
+                           coeff(ncr) = tshell(1)
+                        endif
+                     endif
+                  endif
+                  if (ncr <= 0) cycle
 
-                  WRITE (NFILE) IC - NCFI0 + 1, IR - NCFF0 + 1, NCR
-                  WRITE (NFILE) (LABEL(I),COEFF(I),I=1,NCR)
-                  NMCT = NMCT + NCR
+                  write (nfile) ic - ncfi0 + 1, ir - ncff0 + 1, ncr
+                  write (nfile) (label(i),coeff(i),i=1,ncr)
+                  nmct = nmct + ncr
 
 !
-               END DO
-            END DO
+               end do
+            end do
 !
 !   Deallocate storage for buffer arrays
 !
-            CALL DALLOC (LABEL,  'LABEL', 'MCTOUT')
-            CALL DALLOC (COEFF,  'COEFF', 'MCTOUT')
+            call dalloc (label,  'LABEL', 'MCTOUT')
+            call dalloc (coeff,  'COEFF', 'MCTOUT')
 !
 !            WRITE (*, 301) NMCT, LK, IOPAR
 !
 !   Sort the MCT coefficients by integral labels
 !
-            CALL TRSORT (NAME, NFILE, NFILE2, LDBPA(2), JKP, IBLKI, IBLKF)
-            CLOSE(NFILE, STATUS='delete')
+            call trsort (name, nfile, nfile2, ldbpa(2), jkp, iblki, iblkf)
+            close(nfile, status='delete')
 ! end of the loops for blocks
-         END DO
-      END DO
+         end do
+      end do
 !
 !   Read the data back as required by OSCL conventions
 !
-      REWIND (NFILE2)
-      RETURN
+      rewind (nfile2)
+      return
 !
-  301 FORMAT(/,/,/,1X,I8,' MCT coefficients generated for rank ',I2,&
-         ' and parity ',I2,/,/)
-      RETURN
+  301 format(/,/,/,1x,i8,' MCT coefficients generated for rank ',i2,&
+         ' and parity ',i2,/,/)
+      return
 !
-      END SUBROUTINE MCTOUT
+      end subroutine mctout

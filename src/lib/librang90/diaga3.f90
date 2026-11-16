@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE DIAGA3(JA1,JA2,KA,IRE,IAT,REC)
+      subroutine diaga3(ja1,ja2,ka,ire,iat,rec)
 !                                                                  *
 !   ---------------  SECTION REC    SUBPROGRAM 03  --------------  *
 !                                                                  *
@@ -15,83 +15,83 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, ONE
-      USE m_C,             ONLY: JLIST, JJQ1, JJC1, JJC2
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, one
+      use m_c,             only: jlist, jjq1, jjc1, jjc2
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ixjtik_I
-      USE sixj_I
-      IMPLICIT NONE
+      use ixjtik_i
+      use sixj_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)  :: JA1, JA2, KA, IRE
+      integer, intent(in)  :: ja1, ja2, ka, ire
 !      INTEGER, INTENT(OUT) :: IAT
-      INTEGER, INTENT(INOUT)      :: IAT
-      REAL(DOUBLE), INTENT(OUT) :: REC
+      integer, intent(inout)      :: iat
+      real(double), intent(out) :: rec
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I,LL1,JI,KK1,KK2,ITI,ITI1,ITIS,ITI1S,IFAZ
-      REAL(DOUBLE) :: AA, A3
+      integer :: i,ll1,ji,kk1,kk2,iti,iti1,itis,iti1s,ifaz
+      real(double) :: aa, a3
 !-----------------------------------------------
-      REC = ZERO
-      I=JA1+1
-      IF(JA1 == 1)I=I+1
-      IF(IRE == 0) THEN
-        IF(I >= JA2) THEN
-          REC=ONE
-          IAT=1
-          RETURN
-        END IF
-        DO
-          LL1=JLIST(I)
-          JI=JJQ1(3,LL1)-1
-          KK2=I-2
-          ITI=JJC1(KK2)-1
-          ITIS=JJC2(KK2)-1
-          KK1=I-1
-          ITI1=JJC1(KK1)-1
-          ITI1S=JJC2(KK1)-1
-          IF(IXJTIK(KA,ITIS,ITI,JI,ITI1,ITI1S) == 0)RETURN
-          I=I+1
-          IF(I == JA2) EXIT
-        END DO
-        REC=ONE
-        IAT=1
-        RETURN
-      END IF
-      AA=ONE
-      IF(I >= JA2) THEN
-        REC=AA
-        IAT=1
-      ELSE
-    1   LL1=JLIST(I)
-        JI=JJQ1(3,LL1)-1
-        KK2=I-2
-        ITI=JJC1(KK2)-1
-        ITIS=JJC2(KK2)-1
-        KK1=I-1
-        ITI1=JJC1(KK1)-1
-        ITI1S=JJC2(KK1)-1
-        IF(IRE /= 0) THEN
-          CALL SIXJ(KA,ITIS,ITI,JI,ITI1,ITI1S,0,A3)
-          A3=A3*SQRT(DBLE((ITI+1)*(ITI1S+1)))
-          IFAZ=KA+JI+ITI+ITI1S
-          IF((IFAZ/4)*4 /= IFAZ)A3=-A3
-          AA=AA*A3
-        ELSE
-          IF(IXJTIK(KA,ITIS,ITI,JI,ITI1,ITI1S) == 0)RETURN
-        END IF
-        I=I+1
-        IF(I == JA2) THEN
-          REC=AA
-          IAT=1
-        ELSE
-          GO TO 1
-        END IF
-      END IF
-      RETURN
-      END SUBROUTINE DIAGA3
+      rec = zero
+      i=ja1+1
+      if(ja1 == 1)i=i+1
+      if(ire == 0) then
+        if(i >= ja2) then
+          rec=one
+          iat=1
+          return
+        end if
+        do
+          ll1=jlist(i)
+          ji=jjq1(3,ll1)-1
+          kk2=i-2
+          iti=jjc1(kk2)-1
+          itis=jjc2(kk2)-1
+          kk1=i-1
+          iti1=jjc1(kk1)-1
+          iti1s=jjc2(kk1)-1
+          if(ixjtik(ka,itis,iti,ji,iti1,iti1s) == 0)return
+          i=i+1
+          if(i == ja2) exit
+        end do
+        rec=one
+        iat=1
+        return
+      end if
+      aa=one
+      if(i >= ja2) then
+        rec=aa
+        iat=1
+      else
+    1   ll1=jlist(i)
+        ji=jjq1(3,ll1)-1
+        kk2=i-2
+        iti=jjc1(kk2)-1
+        itis=jjc2(kk2)-1
+        kk1=i-1
+        iti1=jjc1(kk1)-1
+        iti1s=jjc2(kk1)-1
+        if(ire /= 0) then
+          call sixj(ka,itis,iti,ji,iti1,iti1s,0,a3)
+          a3=a3*sqrt(dble((iti+1)*(iti1s+1)))
+          ifaz=ka+ji+iti+iti1s
+          if((ifaz/4)*4 /= ifaz)a3=-a3
+          aa=aa*a3
+        else
+          if(ixjtik(ka,itis,iti,ji,iti1,iti1s) == 0)return
+        end if
+        i=i+1
+        if(i == ja2) then
+          rec=aa
+          iat=1
+        else
+          go to 1
+        end if
+      end if
+      return
+      end subroutine diaga3

@@ -1,7 +1,7 @@
 !***********************************************************************
 !                                                                      *
 !cjb  myid, nprocs = NOT args
-      SUBROUTINE SETMCPmpi(NCORE, IDBLK, FILEHEAD)
+      subroutine setmcpmpi(ncore, idblk, filehead)
 !                                                                      *
 ! A wrapper for setmcp/getinf. setmcp/getinf are then shared by serial *
 ! and MPI programs.                                                    *
@@ -20,56 +20,56 @@
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      USE iccu_C
-      USE mcp_C
-      USE orb_C
-      USE def_C
-      USE hblock_C
+      use iccu_c
+      use mcp_c
+      use orb_c
+      use def_c
+      use hblock_c
 !cjb mpi_C
-      USE mpi_C
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE setmcp_I
+      use setmcp_i
 !     USE setmcpmpi_I
-      USE getinf_I
-      IMPLICIT NONE
+      use getinf_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !      INTEGER , INTENT(IN) :: MYID
 !      INTEGER , INTENT(IN) :: NPROCS
-       INTEGER , INTENT(IN) :: NCORE
-      CHARACTER , INTENT(IN) :: FILEHEAD*(*)
-       CHARACTER , INTENT(IN) :: IDBLK(*)*8
+       integer , intent(in) :: ncore
+      character , intent(in) :: filehead*(*)
+       character , intent(in) :: idblk(*)*8
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !cjb mpi_C
 !cjb  INTEGER :: K, ierr
-      INTEGER :: K
+      integer :: k
 !-----------------------------------------------
 
-      CALL SETMCP (ncore, idblk, filehead)
+      call setmcp (ncore, idblk, filehead)
 
 ! DIAG, ICCUT, LFORDR are set in GETINF
 
-      IF (myid .EQ. 0) THEN
-         CALL GETINF
-      ENDIF
+      if (myid .eq. 0) then
+         call getinf
+      endif
 
-      CALL MPI_Bcast (ICCUT(1),100,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (DIAG,  1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast (LFORDR,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast (iccut(1),100,mpi_integer,0,mpi_comm_world,ierr)
+      call mpi_bcast (diag,  1,mpi_logical,0,mpi_comm_world,ierr)
+      call mpi_bcast (lfordr,1,mpi_logical,0,mpi_comm_world,ierr)
 
-      DO K = 30, 32+KMAX
-         WRITE (K) NELEC,NCF,NW
-         WRITE (K) DIAG,ICCUT(1),LFORDR
-      ENDDO
+      do k = 30, 32+kmax
+         write (k) nelec,ncf,nw
+         write (k) diag,iccut(1),lfordr
+      enddo
 
-      DO K = 30, 32+KMAX
-         CLOSE (K)
-      ENDDO
+      do k = 30, 32+kmax
+         close (k)
+      enddo
 
-      RETURN
-      END SUBROUTINE SETMCPmpi
+      return
+      end subroutine setmcpmpi

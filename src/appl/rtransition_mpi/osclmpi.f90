@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE OSCL(NAME,FULLNAME,tmpdir,startdir,idstring)
+      subroutine oscl(name,fullname,tmpdir,startdir,idstring)
 !   This routine controls the main sequence of routine calls for the   *
 !   calculation  of  data for transitions between multiconfiguration   *
 !   Dirac-Fock energy levels.                                          *
@@ -12,73 +12,73 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE blk_C
-      USE biorb_C
-      USE def_C, CCMPS=>CCMS
-      USE default_C
-      USE EIGV_C
-      USE orb_C
-      USE OSC_C
-      USE PRNT_C
-      USE SYMA_C
-      USE TITL_C
-      USE WAVE_C
-      USE jj2lsjbio_C
-      USE mpi_C
+      use vast_kind_param, only:  double
+      use memory_man
+      use blk_c
+      use biorb_c
+      use def_c, ccmps=>ccms
+      use default_c
+      use eigv_c
+      use orb_c
+      use osc_c
+      use prnt_c
+      use syma_c
+      use titl_c
+      use wave_c
+      use jj2lsjbio_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE cpmix_I
-      USE alcnsa_I
-      USE alcnta_I
-      USE connect_I
-      USE mctout_I
-      USE readmix_I
-      USE mctin_I
-      USE itrig_I
-      USE bessj_I
-      USE csfm_I
-      USE printa_I
-      USE printals_I
+      use cpmix_i
+      use alcnsa_i
+      use alcnta_i
+      use connect_i
+      use mctout_i
+      use readmix_i
+      use mctin_i
+      use itrig_i
+      use bessj_i
+      use csfm_i
+      use printa_i
+      use printals_i
 
-      USE suite_system, ONLY: EXIT => terminate_process
-      USE ldlbl1_I, ONLY: ldlbl1
-      USE ldlbl2_I, ONLY: ldlbl2
-      USE strsum_I, ONLY: strsum
-      USE sys_chdir_I, ONLY: sys_chdir
-      IMPLICIT NONE
+      use suite_system, only: exit => terminate_process
+      use ldlbl1_i, only: ldlbl1
+      use ldlbl2_i, only: ldlbl2
+      use strsum_i, only: strsum
+      use sys_chdir_i, only: sys_chdir
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER (LEN = 24), DIMENSION(2), INTENT(INOUT) :: NAME
-      CHARACTER(LEN=3)  ::  idstring
-      CHARACTER (LEN = 128), DIMENSION(2), INTENT(INOUT) :: FULLNAME
-      CHARACTER(LEN=128) :: startdir,tmpdir
+      character (len = 24), dimension(2), intent(inout) :: name
+      character(len=3)  ::  idstring
+      character (len = 128), dimension(2), intent(inout) :: fullname
+      character(len=128) :: startdir,tmpdir
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      CHARACTER*4, PARAMETER :: IAU = 'Hart'
-      CHARACTER*4, PARAMETER :: IEV = ' eV '
-      CHARACTER*4, PARAMETER :: ICM = 'Kays'
-      CHARACTER*4, PARAMETER :: IHZ = ' Hz '
-      CHARACTER*4, PARAMETER :: IANG = ' A  '
-      INTEGER, PARAMETER :: NCA = 65536
-      INTEGER, PARAMETER :: NFILE = 93
-      INTEGER, PARAMETER :: NFILE1 = 237
+      character*4, parameter :: iau = 'Hart'
+      character*4, parameter :: iev = ' eV '
+      character*4, parameter :: icm = 'Kays'
+      character*4, parameter :: ihz = ' Hz '
+      character*4, parameter :: iang = ' A  '
+      integer, parameter :: nca = 65536
+      integer, parameter :: nfile = 93
+      integer, parameter :: nfile1 = 237
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: KKA, JKP, NFILE2, IOS, my_NELEC, NCFTOTI, NWI, &
-                 NVECSIZI, IOPAR, IBLKI, NCFTOTF, NWF,&
-                 NVECSIZF, IBLKF, NVECPR, I, M,       &
-                 IELEC, LEVII, LEVFF, ITKPO, ITEST, NLP, LINES, &
-                 ILBL, INUM_II, INUM_FF, ICOUNT1, ICOUNT2, iii
-      REAL(DOUBLE) :: FACTOR, OMEGA, ARGU, ASFA, ASFB, ASFAtmp, ASFBtmp
-      REAL(DOUBLE), DIMENSION(:), pointer :: et, et1, ipr, ipr1, next
-      LOGICAL :: AVAIL, LSAME
-      CHARACTER :: ANSW*1, IUNITS*4, G92MIX*6
+      integer :: kka, jkp, nfile2, ios, my_nelec, ncftoti, nwi, &
+                 nvecsizi, iopar, iblki, ncftotf, nwf,&
+                 nvecsizf, iblkf, nvecpr, i, m,       &
+                 ielec, levii, levff, itkpo, itest, nlp, lines, &
+                 ilbl, inum_ii, inum_ff, icount1, icount2, iii
+      real(double) :: factor, omega, argu, asfa, asfb, asfatmp, asfbtmp
+      real(double), dimension(:), pointer :: et, et1, ipr, ipr1, next
+      logical :: avail, lsame
+      character :: answ*1, iunits*4, g92mix*6
 !-----------------------------------------------
 !
 ! NCFI(I): the end position of the Ith block for the initial states in the globle CSF list
@@ -86,15 +86,15 @@
 !
 ! for the case that the inital file and final file are same
 !
-      LSAME = TRIM(FULLNAME(1)) == TRIM(FULLNAME(2))
-      IF (LSAME.and.myid.eq.0) CALL CPMIX (FULLNAME, INPCI)
-      call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+      lsame = trim(fullname(1)) == trim(fullname(2))
+      if (lsame.and.myid.eq.0) call cpmix (fullname, inpci)
+      call mpi_barrier(mpi_comm_world,ierr)
 !
 ! write header for the result file
 !
 !cjb fort.24
-        if (myid .EQ. 0) then
-      if (LSAME) then
+        if (myid .eq. 0) then
+      if (lsame) then
          write(24,*) 'Transition in file:'
          write(24,*) 'f = ',trim(name(1))
       else
@@ -104,55 +104,55 @@
       end if
         end if ! myid .EQ. 0
 !
-      CALL ALCNSA (JJA, JJB, HB1, HB2, HC1, HC2, HM1, &
-         HM2, LAB, NPTR, NSDIM, 1)
-      CALL ALCNTA (ISLDR, ISLDR1, XSLDR, NTDIM, 1)
+      call alcnsa (jja, jjb, hb1, hb2, hc1, hc2, hm1, &
+         hm2, lab, nptr, nsdim, 1)
+      call alcnta (isldr, isldr1, xsldr, ntdim, 1)
 !
 !   Make a connection between the orbitals of the
 !   merged list and the initial and final state lists
 !
-      CALL CONNECT
+      call connect
 !
 !   Set up units for printing transition energy
 !
-      IF (LTC(1)) THEN
+      if (ltc(1)) then
 !
 !   Print transition energies in Angstroms
 !
-         FACTOR = AUCM
-         FACTOR = 1.0D08/FACTOR
-         IUNITS = IANG
+         factor = aucm
+         factor = 1.0d08/factor
+         iunits = iang
 !
-      ELSE IF (LTC(2)) THEN
+      else if (ltc(2)) then
 !
 !   Print energies in eV
 !
-         FACTOR = AUEV
-         IUNITS = IEV
+         factor = auev
+         iunits = iev
 !
-      ELSE IF (LTC(3)) THEN
+      else if (ltc(3)) then
 !
 !   Print transition energies in Hartree Atomic Units
 !
-         FACTOR = 1.0D00
-         IUNITS = IAU
+         factor = 1.0d00
+         iunits = iau
 !
-      ELSE IF (LTC(4)) THEN
+      else if (ltc(4)) then
 !
 !   Print transition energies in Hz
 !
-         FACTOR = AUCM
-         FACTOR = FACTOR*CCMPS
-         IUNITS = IHZ
+         factor = aucm
+         factor = factor*ccmps
+         iunits = ihz
 !
-      ELSE IF (LTC(5)) THEN
+      else if (ltc(5)) then
 !
 !   Print transition energies in Kaysers
 !
-         FACTOR = AUCM
-         IUNITS = ICM
+         factor = aucm
+         iunits = icm
 !
-      ENDIF
+      endif
 !
 !   Select type of transition
 !
@@ -163,74 +163,74 @@
 !               =  (-1)**(N+1)  Magnetic N-pole.
 !                               N > 0
 !
-      KKA = 1
-      DO JKP = 1, NKP
-         NFILE2 = NFILE1 + JKP
+      kka = 1
+      do jkp = 1, nkp
+         nfile2 = nfile1 + jkp
 !
 ! read the head of the file of mixing coef. for initial
 !
-         IF (LSAME) FULLNAME(1) = TRIM(FULLNAME(2))//'_CP'
-         IF (INPCI == 0) THEN
-            OPEN(UNIT=68,FILE=TRIM(FULLNAME(1))//'.cbm',              &
-               FORM='UNFORMATTED',STATUS='OLD')
-         ELSE
-            OPEN(UNIT=68, FILE=TRIM(FULLNAME(1))//'.bm',              &
-               FORM='UNFORMATTED',STATUS='OLD')
-         ENDIF
-         IF (LSAME) FULLNAME(1) = FULLNAME(2)
-         READ (68, IOSTAT=IOS) G92MIX
-         IF (IOS/=0 .OR. G92MIX/='G92MIX') THEN
-            WRITE (*, *) 'Not a GRASP mixing file'
-            STOP
-         ENDIF
-         READ (68) NELEC, NCFTOTI, NWI, NVECTOTI, NVECSIZI, NBLOCKI
-         WRITE (*, *) '   nelec  = ', my_NELEC
-         WRITE (*, *) '   ncftoti = ', NCFTOTI
-         WRITE (*, *) '   nwi     = ', NWI
-         WRITE (*, *) '   nblocki = ', NBLOCKI
-         WRITE (*, *)
+         if (lsame) fullname(1) = trim(fullname(2))//'_CP'
+         if (inpci == 0) then
+            open(unit=68,file=trim(fullname(1))//'.cbm',              &
+               form='UNFORMATTED',status='OLD')
+         else
+            open(unit=68, file=trim(fullname(1))//'.bm',              &
+               form='UNFORMATTED',status='OLD')
+         endif
+         if (lsame) fullname(1) = fullname(2)
+         read (68, iostat=ios) g92mix
+         if (ios/=0 .or. g92mix/='G92MIX') then
+            write (*, *) 'Not a GRASP mixing file'
+            stop
+         endif
+         read (68) nelec, ncftoti, nwi, nvectoti, nvecsizi, nblocki
+         write (*, *) '   nelec  = ', my_nelec
+         write (*, *) '   ncftoti = ', ncftoti
+         write (*, *) '   nwi     = ', nwi
+         write (*, *) '   nblocki = ', nblocki
+         write (*, *)
 !   lbl
-         ICOUNT1 = 0
-         CALL LDLBL1 (FULLNAME(1))
+         icount1 = 0
+         call ldlbl1 (fullname(1))
 ! If not available generate angular coefficients for all pares of blocks
-         CALL MCTOUT (IOPAR, JKP, NAME)
-         DO IBLKI = 1, NBLOCKI
-            CALL READMIX (NAME, INPCI, 1)
+         call mctout (iopar, jkp, name)
+         do iblki = 1, nblocki
+            call readmix (name, inpci, 1)
 !   lbl
-            ICOUNT1 = NVECII + ICOUNT1
+            icount1 = nvecii + icount1
 !
 ! read the head of the file of mixing coef. for final
 !
-            IF (INPCI == 0) THEN
-               OPEN(UNIT=78,FILE=TRIM(FULLNAME(2))//'.cbm',          &
-                  FORM='UNFORMATTED',STATUS='OLD')
-            ELSE
-               OPEN(UNIT=78, FILE=TRIM(FULLNAME(2))//'.bm',          &
-                  FORM='UNFORMATTED',STATUS='OLD')
-            ENDIF
-            READ (78, IOSTAT=IOS) G92MIX
-            IF (IOS/=0 .OR. G92MIX/='G92MIX') THEN
-               WRITE (*, *) 'Not a GRASP mixing file'
-               STOP
-            ENDIF
-            READ (78) NELEC, NCFTOTF, NWF, NVECTOTF, NVECSIZF, NBLOCKF
-            WRITE (*, *) '   nelec  = ', my_NELEC
-            WRITE (*, *) '   ncftotf = ', NCFTOTF
-            WRITE (*, *) '   nwf     = ', NWF
-            WRITE (*, *) '   nblockf = ', NBLOCKF
-            WRITE (*, *)
+            if (inpci == 0) then
+               open(unit=78,file=trim(fullname(2))//'.cbm',          &
+                  form='UNFORMATTED',status='OLD')
+            else
+               open(unit=78, file=trim(fullname(2))//'.bm',          &
+                  form='UNFORMATTED',status='OLD')
+            endif
+            read (78, iostat=ios) g92mix
+            if (ios/=0 .or. g92mix/='G92MIX') then
+               write (*, *) 'Not a GRASP mixing file'
+               stop
+            endif
+            read (78) nelec, ncftotf, nwf, nvectotf, nvecsizf, nblockf
+            write (*, *) '   nelec  = ', my_nelec
+            write (*, *) '   ncftotf = ', ncftotf
+            write (*, *) '   nwf     = ', nwf
+            write (*, *) '   nblockf = ', nblockf
+            write (*, *)
 !GG  lbl
-            IF(IBLKI .EQ. 1) THEN
-               CALL LDLBL2 (FULLNAME(2))
-               IF(MYID.EQ.0.AND.IOPEN_STATUS1.EQ.0.AND.IOPEN_STATUS2.EQ.0) THEN
+            if(iblki .eq. 1) then
+               call ldlbl2 (fullname(2))
+               if(myid.eq.0.and.iopen_status1.eq.0.and.iopen_status2.eq.0) then
                   iii = len_trim(startdir)
                   call sys_chdir(trim(startdir),iii,ierr)
                   if (ierr.ne.0) then
                      print *, "error changing dir!"
                     call exit(1)
                   endif
-                  ILBL = 1
-                  CALL STRSUM(NAME,INPCI,ILBL)
+                  ilbl = 1
+                  call strsum(name,inpci,ilbl)
                   iii = len_trim(tmpdir)
                   call sys_chdir(trim(tmpdir)//'/'//idstring,iii+4,ierr)
                   if (ierr.ne.0) then
@@ -240,169 +240,169 @@
                   write(32,*) 'Transition between files:'
                   write(32,*) trim(name(1))
                   write(32,*) trim(name(2))
-               END IF
-            END IF
-            ICOUNT2 = 0
+               end if
+            end if
+            icount2 = 0
 !GG   lbl end
-            DO IBLKF = 1, NBLOCKF
-               CALL READMIX (NAME, INPCI, 2)
+            do iblkf = 1, nblockf
+               call readmix (name, inpci, 2)
 !   lbl
-               ICOUNT2 = NVECFF + ICOUNT2
+               icount2 = nvecff + icount2
 !
 !   Allocate storage
 !
-               CALL ALLOC (TOTB, NVECFF, 'TOTB', 'OSCL')
-               CALL ALLOC (TOTC, NVECFF, 'TOTC', 'OSCL')
+               call alloc (totb, nvecff, 'TOTB', 'OSCL')
+               call alloc (totc, nvecff, 'TOTC', 'OSCL')
 !
-               NVECPR = NVECII*NVECFF
-               CALL ALLOC (ET, NVECPR, 'ET', 'OSCL' )
-               CALL ALLOC (ET1, NVECPR, 'ET1','OSCL' )
-               CALL ALLOC (IPR, NVECPR, 'IPR', 'OSCL' )
-               CALL ALLOC (IPR1, NVECPR,'IPR1', 'OSCL' )
-               CALL ALLOC (NEXT, NVECPR, 'NEXT', 'OSCL')
+               nvecpr = nvecii*nvecff
+               call alloc (et, nvecpr, 'ET', 'OSCL' )
+               call alloc (et1, nvecpr, 'ET1','OSCL' )
+               call alloc (ipr, nvecpr, 'IPR', 'OSCL' )
+               call alloc (ipr1, nvecpr,'IPR1', 'OSCL' )
+               call alloc (next, nvecpr, 'NEXT', 'OSCL')
 !
 !   Initialization for total decay rate
 !
-               TOTC(:NVECFF) = 0.0D00
-               TOTB(:NVECFF) = 0.0D00
+               totc(:nvecff) = 0.0d00
+               totb(:nvecff) = 0.0d00
 !
-               CALL MCTIN (IOPAR, JKP, NAME)
+               call mctin (iopar, jkp, name)
 !
-               IF (LK > 0) THEN
-                  IELEC = (-1)**LK
-                  IF (IELEC == IOPAR) THEN
-                     KK = 0
-                     KKA = 0
-                  ELSE
-                     KK = 1
-                     IELEC = -IELEC
-                  ENDIF
+               if (lk > 0) then
+                  ielec = (-1)**lk
+                  if (ielec == iopar) then
+                     kk = 0
+                     kka = 0
+                  else
+                     kk = 1
+                     ielec = -ielec
+                  endif
 !
 !   Set up list of levels for calculation of oscillator strengths
 !   sort list into increasing order of energy if option 6 set
 !
-                  IF (myid.EQ.0.AND.IBLKI==1.AND.IBLKF==1) THEN
-                     IF (KK == 0) THEN
-                        WRITE (24, 308) LK
-                     ELSE
-                        WRITE (24, 309) LK
-                     ENDIF
-                     WRITE (24, 310)
-                     IF (LTC(1)) THEN
-                        WRITE (24, 311)
-                        IF (.NOT.LTC(7)) THEN
-                           WRITE (24, 312)
-                        ELSE
-                           WRITE (24, 313)
-                        ENDIF
-                     ELSE
-                        WRITE (24, 314)
-                        IF (.NOT.LTC(7)) THEN
-                           WRITE (24, 315) IUNITS
-                        ELSE
-                           WRITE (24, 316) IUNITS
-                        ENDIF
-                     ENDIF
-                  ENDIF !myid=0
+                  if (myid.eq.0.and.iblki==1.and.iblkf==1) then
+                     if (kk == 0) then
+                        write (24, 308) lk
+                     else
+                        write (24, 309) lk
+                     endif
+                     write (24, 310)
+                     if (ltc(1)) then
+                        write (24, 311)
+                        if (.not.ltc(7)) then
+                           write (24, 312)
+                        else
+                           write (24, 313)
+                        endif
+                     else
+                        write (24, 314)
+                        if (.not.ltc(7)) then
+                           write (24, 315) iunits
+                        else
+                           write (24, 316) iunits
+                        endif
+                     endif
+                  endif !myid=0
 !
-                  DO LEVII = 1, NVECII
+                  do levii = 1, nvecii
 !   lbl
-                     INUM_II = ICOUNT1 - NVECII + LEVII
-                     DO LEVFF = 1, NVECFF
+                     inum_ii = icount1 - nvecii + levii
+                     do levff = 1, nvecff
 !   lbl
-                        INUM_FF = ICOUNT2 - NVECFF + LEVFF
+                        inum_ff = icount2 - nvecff + levff
 !
 !   Check for consistent parity and J
 !
-                        ITKPO = LK + LK + 1
-                        IF (ITRIG(IATJPOII(LEVII),IATJPOFF(LEVFF),ITKPO) == 0) &
-                           CYCLE
-                        ITEST = IASPARII(LEVII)*IASPARFF(LEVFF)*IELEC
-                        IF (ITEST < 0) CYCLE
+                        itkpo = lk + lk + 1
+                        if (itrig(iatjpoii(levii),iatjpoff(levff),itkpo) == 0) &
+                           cycle
+                        itest = iasparii(levii)*iasparff(levff)*ielec
+                        if (itest < 0) cycle
 !
 !   Calculate and print transition probability data
 !
-                        NLP = 70 - 8
-                        LINES = NLP
+                        nlp = 70 - 8
+                        lines = nlp
 !
-                        IF (LINES >= NLP) LINES = 0
+                        if (lines >= nlp) lines = 0
 !
-                        M = LEVFF + NVECFF*(LEVII - 1)
+                        m = levff + nvecff*(levii - 1)
 !             M = LEVFF+NVECII*(LEVII-1)
-                        ET(M) = EVALFF(LEVFF) + EAVFF - EVALII(LEVII) - EAVII
-                        IF (LSAME .AND. ET(M)<=0.0) CYCLE
-                        OMEGA = -ET(M)
-                        ARGU = OMEGA/C
-                        CALL BESSJ (ARGU)
+                        et(m) = evalff(levff) + eavff - evalii(levii) - eavii
+                        if (lsame .and. et(m)<=0.0) cycle
+                        omega = -et(m)
+                        argu = omega/c
+                        call bessj (argu)
 !
 !  Calculate oscillator strength between the ASFs
 !
-                        CALL CSFM (ASFAtmp,ASFBtmp,LEVII,LEVFF)
-                        CALL MPI_ALLREDUCE(ASFAtmp,ASFA,1,MPI_DOUBLE_PRECISION, &
-                             MPI_SUM, MPI_COMM_WORLD, ierr)
-                        CALL MPI_ALLREDUCE(ASFBtmp,ASFB,1,MPI_DOUBLE_PRECISION, &
-                             MPI_SUM, MPI_COMM_WORLD, ierr)
-                        if (myid .EQ. 0) THEN
-                           CALL PRINTA(ASFA,ASFB,LEVII,LEVFF,OMEGA,FACTOR, &
-                               LINES,LSAME)
-                           IF(IOPEN_STATUS1.EQ.0 .AND. IOPEN_STATUS2 .EQ.0) THEN
-                              CALL PRINTALS (INUM_II,INUM_FF,ASFA,ASFB,LEVII,LEVFF,&
-                              OMEGA,FACTOR)
-                           END IF
-                        END IF
+                        call csfm (asfatmp,asfbtmp,levii,levff)
+                        call mpi_allreduce(asfatmp,asfa,1,mpi_double_precision, &
+                             mpi_sum, mpi_comm_world, ierr)
+                        call mpi_allreduce(asfbtmp,asfb,1,mpi_double_precision, &
+                             mpi_sum, mpi_comm_world, ierr)
+                        if (myid .eq. 0) then
+                           call printa(asfa,asfb,levii,levff,omega,factor, &
+                               lines,lsame)
+                           if(iopen_status1.eq.0 .and. iopen_status2 .eq.0) then
+                              call printals (inum_ii,inum_ff,asfa,asfb,levii,levff,&
+                              omega,factor)
+                           end if
+                        end if
 !              WRITE (24,317)
-                     END DO
-                  END DO
-               ENDIF
+                     end do
+                  end do
+               endif
 !
 !   Deallocate storage; this is local to OSCL
 !
-               CALL DALLOC (TOTB, 'TOTB', 'OSCL')
-               CALL DALLOC (TOTC, 'TOTC', 'OSCL')
+               call dalloc (totb, 'TOTB', 'OSCL')
+               call dalloc (totc, 'TOTC', 'OSCL')
 !
-               CALL DALLOC (ET, 'ET', 'OSCL')
-               CALL DALLOC (ET1, 'ET!', 'OSCL')
-               CALL DALLOC (IPR, 'IPR', 'OSCL')
-               CALL DALLOC (IPR1, 'IPR1', 'OSCL')
-               CALL DALLOC (NEXT, 'NEXT', 'OSCL')
-!
-!   Deallocate storage; this is allocated in READMIX
-!
-               CALL DALLOC (EVALFF, 'EVALFF', 'OSCL')
-               CALL DALLOC (EVECFF, 'EVECFF', 'OSCL')
-               CALL DALLOC (IVECFF, 'IVECFF', 'OSCL')
-               CALL DALLOC (IATJPOFF, 'IATJPOFF', 'OSCL')
-               CALL DALLOC (IASPARFF, 'IASPARFF', 'OSCL')
-
-            END DO
-            CLOSE(78)
+               call dalloc (et, 'ET', 'OSCL')
+               call dalloc (et1, 'ET!', 'OSCL')
+               call dalloc (ipr, 'IPR', 'OSCL')
+               call dalloc (ipr1, 'IPR1', 'OSCL')
+               call dalloc (next, 'NEXT', 'OSCL')
 !
 !   Deallocate storage; this is allocated in READMIX
 !
-            CALL DALLOC (EVALII, 'EVALII', 'OSCL')
-            CALL DALLOC (EVECII, 'EVECII', 'OSCL')
-            CALL DALLOC (IVECII, 'IVECII', 'OSCL')
-            CALL DALLOC (IATJPOII, 'IATJPOII', 'OSCL')
-            CALL DALLOC (IASPARII, 'IASPARII', 'OSCL')
+               call dalloc (evalff, 'EVALFF', 'OSCL')
+               call dalloc (evecff, 'EVECFF', 'OSCL')
+               call dalloc (ivecff, 'IVECFF', 'OSCL')
+               call dalloc (iatjpoff, 'IATJPOFF', 'OSCL')
+               call dalloc (iasparff, 'IASPARFF', 'OSCL')
 
-         END DO
-         CLOSE(68)
-         CLOSE(NFILE2)
-      END DO
-      CALL DALLOC (KP, 'KP', 'OSCL')
+            end do
+            close(78)
+!
+!   Deallocate storage; this is allocated in READMIX
+!
+            call dalloc (evalii, 'EVALII', 'OSCL')
+            call dalloc (evecii, 'EVECII', 'OSCL')
+            call dalloc (ivecii, 'IVECII', 'OSCL')
+            call dalloc (iatjpoii, 'IATJPOII', 'OSCL')
+            call dalloc (iasparii, 'IASPARII', 'OSCL')
+
+         end do
+         close(68)
+         close(nfile2)
+      end do
+      call dalloc (kp, 'KP', 'OSCL')
 !
 ! close and delete duplicated mixing file
-      IF (LSAME) THEN
-         IF (INPCI == 0) THEN
-            OPEN(68, FILE=TRIM(FULLNAME(2))//'_CP.cbm')
-         ELSE
-            OPEN(68, FILE=TRIM(FULLNAME(2))//'_CP.bm')
-         ENDIF
+      if (lsame) then
+         if (inpci == 0) then
+            open(68, file=trim(fullname(2))//'_CP.cbm')
+         else
+            open(68, file=trim(fullname(2))//'_CP.bm')
+         endif
 !GG         CLOSE(68, STATUS='delete')
-      ENDIF
+      endif
 !
-      CALL ALCNSA (jja, jjb, hb1, hb2, hc1, hc2, hm1, hm2, lab, nptr, nsdim, 3)
-      CALL ALCNTA (isldr, isldr1, xsldr, ntdim, 3)
+      call alcnsa (jja, jjb, hb1, hb2, hc1, hc2, hm1, hm2, lab, nptr, nsdim, 3)
+      call alcnta (isldr, isldr1, xsldr, ntdim, 3)
 !
 !   This was allocated in LOAD
 !
@@ -416,34 +416,34 @@
 !
 !   Close all files
 !
-      if (myid .EQ. 0) CLOSE(24)
+      if (myid .eq. 0) close(24)
 !
-      RETURN
+      return
 !
-  302 FORMAT(/,' ***** Warning *****')
-  303 FORMAT(/,/,' ***** Error in OSCL *****')
-  307 FORMAT(/,' Dynamic allocation computed incorrectly: Bug.')
-  308 FORMAT(/,/,' Electric 2**(',I2,')-pole transitions')
-  309 FORMAT(/,/,' Magnetic 2**(',I2,')-pole transitions')
-  310 FORMAT(1X,33('='))
-  311 FORMAT(/,'   Upper state        Lower state  ',8X,'Gauge',8X,'Wavelength'&
-         ,13X,'Einstein coefficients',13X,'Oscillator')
-  312 FORMAT(81X,'-1',15X,'3 -2 -1',/,' Level  J Parity',4X,'Level  J ',&
-         'Parity',21X,'(Angstroms)',10X,'A (s  )',9X,'gB (m s  J  )',7X,&
+  302 format(/,' ***** Warning *****')
+  303 format(/,/,' ***** Error in OSCL *****')
+  307 format(/,' Dynamic allocation computed incorrectly: Bug.')
+  308 format(/,/,' Electric 2**(',i2,')-pole transitions')
+  309 format(/,/,' Magnetic 2**(',i2,')-pole transitions')
+  310 format(1x,33('='))
+  311 format(/,'   Upper state        Lower state  ',8x,'Gauge',8x,'Wavelength'&
+         ,13x,'Einstein coefficients',13x,'Oscillator')
+  312 format(81x,'-1',15x,'3 -2 -1',/,' Level  J Parity',4x,'Level  J ',&
+         'Parity',21x,'(Angstroms)',10x,'A (s  )',9x,'gB (m s  J  )',7x,&
          'strength gf'/)
-  313 FORMAT(' Level  J Parity',4X,'Level  J Parity',21X,'(Angstroms)',10X,&
-         'A (au)',13X,'gB (au)',10X,'strength gf'/)
-  314 FORMAT(/,' Upper       Lower ')
-  315 FORMAT(' Lev  J P',3X,'Lev  J P',7X,'E (',A4,')',9X,'A (s-1)',10X,'gf',&
-         12X,'S')
-  316 FORMAT(' Level  J Parity',4X,'Level  J Parity',23X,'(',A4,')',13X,&
-         'A (au)',13X,'gB (au)',10X,'strength gf'/)
-  317 FORMAT(/,1X,124('+'))
-  318 FORMAT(/,/,' Radiative lifetimes '/,' ======================='/,/,&
+  313 format(' Level  J Parity',4x,'Level  J Parity',21x,'(Angstroms)',10x,&
+         'A (au)',13x,'gB (au)',10x,'strength gf'/)
+  314 format(/,' Upper       Lower ')
+  315 format(' Lev  J P',3x,'Lev  J P',7x,'E (',a4,')',9x,'A (s-1)',10x,'gf',&
+         12x,'S')
+  316 format(' Level  J Parity',4x,'Level  J Parity',23x,'(',a4,')',13x,&
+         'A (au)',13x,'gB (au)',10x,'strength gf'/)
+  317 format(/,1x,124('+'))
+  318 format(/,/,' Radiative lifetimes '/,' ======================='/,/,&
          ' Level      Lifetime  s (-1)')
-  319 FORMAT(1X,I4,6X,'Coulomb: ',1P,1D20.7)
-  320 FORMAT(10X,'Babushkin:',1P,1D20.7,/)
-  321 FORMAT(1X,I4,5X,'Magnetic: ',1P,1D20.7,/)
-      RETURN
+  319 format(1x,i4,6x,'Coulomb: ',1p,1d20.7)
+  320 format(10x,'Babushkin:',1p,1d20.7,/)
+  321 format(1x,i4,5x,'Magnetic: ',1p,1d20.7,/)
+      return
 !
-      END SUBROUTINE OSCL
+      end subroutine oscl

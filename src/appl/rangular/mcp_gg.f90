@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE mcp (nb, RESTRT, myid, nprocs, fhead)
+      subroutine mcp (nb, restrt, myid, nprocs, fhead)
 !                                                                      *
 !   This routine controls the computation  and storage of the values   *
 !   and all indices of the angular coefficients                        *
@@ -30,73 +30,73 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE iso_fortran_env, ONLY: int64
-      USE rangular_profile, ONLY: stage_clock, record_stage
-      USE rangular_parallel, ONLY: parallel_pairs_available, begin_pair_block, end_pair_block, load_parallel_pair
-      USE rangular_reuse, ONLY: reuse_requested, begin_reuse_block, end_reuse_block, load_reused_pair
-      USE parameter_def,   ONLY:  NNNW, KEYORB
-      USE memory_man
+      use vast_kind_param, only:  double
+      use iso_fortran_env, only: int64
+      use rangular_profile, only: stage_clock, record_stage
+      use rangular_parallel, only: parallel_pairs_available, begin_pair_block, end_pair_block, load_parallel_pair
+      use rangular_reuse, only: reuse_requested, begin_reuse_block, end_reuse_block, load_reused_pair
+      use parameter_def,   only:  nnnw, keyorb
+      use memory_man
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE outsda_I
-      USE fndbeg_I
-      USE alcbuf_I
-      USE rkco_GG_I
-      USE setsda_I
-      USE sort_I
-      USE sortmem_I
-      USE allocCheck_I
+      use outsda_i
+      use fndbeg_i
+      use alcbuf_i
+      use rkco_gg_i
+      use setsda_i
+      use sort_i
+      use sortmem_i
+      use alloccheck_i
 !-----------------------------------------------
 !   C O M M O N  B L O C K S
 !-----------------------------------------------
-      USE BUFFER_C,  ONLY: NVCOEF, LABEL, COEFF
-      USE DEBUG_C,   ONLY: LDBPA
-      USE DEFAULT_C, ONLY: NDEF
-      USE iccu_C,    ONLY: ICCUT
-      USE MCP_C,     ONLY: KMAX, DIAG, LFORDR
-      USE ORB_C,     ONLY: NCF, IQA
-      USE STAT_C,    ONLY: JQSA, JCUPA
-      USE sacoef_C
-      USE onescalar_I, ONLY: onescalar
-      USE settmpgg_I, ONLY: settmpgg
-      IMPLICIT NONE
-      EXTERNAL CORD
+      use buffer_c,  only: nvcoef, label, coeff
+      use debug_c,   only: ldbpa
+      use default_c, only: ndef
+      use iccu_c,    only: iccut
+      use mcp_c,     only: kmax, diag, lfordr
+      use orb_c,     only: ncf, iqa
+      use stat_c,    only: jqsa, jcupa
+      use sacoef_c
+      use onescalar_i, only: onescalar
+      use settmpgg_i, only: settmpgg
+      implicit none
+      external cord
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NB
-      INTEGER  :: MYID
-      INTEGER  :: NPROCS
-      LOGICAL, INTENT(IN) :: RESTRT
-      CHARACTER(len=*), INTENT(IN) :: FHEAD
+      integer  :: nb
+      integer  :: myid
+      integer  :: nprocs
+      logical, intent(in) :: restrt
+      character(len=*), intent(in) :: fhead
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      INTEGER, PARAMETER :: KEY = KEYORB
-      INTEGER, PARAMETER :: KEYSQ = KEYORB*KEYORB
-      REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-10
+      integer, parameter :: key = keyorb
+      integer, parameter :: keysq = keyorb*keyorb
+      real(double), parameter :: cutoff = 1.0d-10
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 ! GG begin
 !     2^(23)
-      INTEGER, PARAMETER :: NGGMAX = 8388608
+      integer, parameter :: nggmax = 8388608
 !     2^(24)
 !        PARAMETER (NGGMAX = 16777216)
 !     2^(27)
 !        PARAMETER (NGGMAX   = 134217728)
 !        PARAMETER (NGGMAX = 536870912)
 ! GG end
-      INTEGER, DIMENSION(:), pointer :: LLISTV, MARK
-      INTEGER :: JASTRT,JBSTRT,NPOS,LLISTT,K,JA,JB,IA,IB,LAB,I,IC, &
-         ID, NSWAP, ISWAP, LAC, LBD, NTGI
-      REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL
-      REAL(DOUBLE) :: VCOEFF
-      LOGICAL :: F0INT, LINCR
-      INTEGER :: IREZ, IGGMAX, IGGMAX_K, MARKT, NEWSIZ, JJ
-      INTEGER(int64) :: stage_start_count
+      integer, dimension(:), pointer :: llistv, mark
+      integer :: jastrt,jbstrt,npos,llistt,k,ja,jb,ia,ib,lab,i,ic, &
+         id, nswap, iswap, lac, lbd, ntgi
+      real(double), dimension(nnnw) :: tshell
+      real(double) :: vcoeff
+      logical :: f0int, lincr
+      integer :: irez, iggmax, iggmax_k, markt, newsiz, jj
+      integer(int64) :: stage_start_count
 !-----------------------------------------------
 !
 !   Allocate storage to the array that stores the lengths
@@ -104,19 +104,19 @@
 !
 ! GG begin
       stage_start_count = stage_clock()
-      IREZ = 1
-      IGGMAX = NGGMAX
-      IGGMAX_K = IGGMAX/(2+KMAX)
-      IGGMAX = IGGMAX_K*(2+KMAX)
+      irez = 1
+      iggmax = nggmax
+      iggmax_k = iggmax/(2+kmax)
+      iggmax = iggmax_k*(2+kmax)
 !GG      PRINT*, "The program alloc Memory for sorting:",IGGMAX
-      CALL ALLOC(LLISTV, 0, kmax, 'LLISTV', 'MCP')
-      CALL ALLOC (MARK, KMAX + 1,'MARK', 'MCP')
-      CALL ALLOC (TCOEFF,IGGMAX_K,KMAX+2,'TCOEFF','MCP')
-      CALL ALLOC (IICLMN,IGGMAX_K,KMAX+2,'TICLMN','MCP')
-      CALL ALLOC (IINDEX,IGGMAX_K,KMAX+2,'TINDEX','MCP')
-      CALL ALLOC (ILABEL,IGGMAX_K,KMAX+2,'TLABEL','MCP')
-      MARKT = 0
-      MARK = 0
+      call alloc(llistv, 0, kmax, 'LLISTV', 'MCP')
+      call alloc (mark, kmax + 1,'MARK', 'MCP')
+      call alloc (tcoeff,iggmax_k,kmax+2,'TCOEFF','MCP')
+      call alloc (iiclmn,iggmax_k,kmax+2,'TICLMN','MCP')
+      call alloc (iindex,iggmax_k,kmax+2,'TINDEX','MCP')
+      call alloc (ilabel,iggmax_k,kmax+2,'TLABEL','MCP')
+      markt = 0
+      mark = 0
 ! GG end
 !
 !   If this is a restart, determine the pair of CSFs with which
@@ -124,284 +124,284 @@
 !   If not restart, initialize the counters for the total number of
 !   T coefficients and V coefficients of each multipolarity.
 !
-      IF (RESTRT) THEN
-         PRINT *, 'Not ready for RESTART'
-         STOP
-         CALL FNDBEG (JASTRT, JBSTRT, npos, LLISTT, LLISTV)
-      ELSE
-         JASTRT = 1 + myid
+      if (restrt) then
+         print *, 'Not ready for RESTART'
+         stop
+         call fndbeg (jastrt, jbstrt, npos, llistt, llistv)
+      else
+         jastrt = 1 + myid
          npos = 0
-         LLISTT = 0
-         DO K = 0, KMAX
-            LLISTV(K) = 0
-         ENDDO
-      ENDIF
+         llistt = 0
+         do k = 0, kmax
+            llistv(k) = 0
+         enddo
+      endif
 !
 !   Allocate storage for the arrays in BUFFER
 !
-      CALL ALCBUF (1)
-      IF (parallel_pairs_available) CALL begin_pair_block(NB)
-      IF (reuse_requested) CALL begin_reuse_block()
-      CALL record_stage('coefficient_buffer_allocation', NB, stage_start_count)
+      call alcbuf (1)
+      if (parallel_pairs_available) call begin_pair_block(nb)
+      if (reuse_requested) call begin_reuse_block()
+      call record_stage('coefficient_buffer_allocation', nb, stage_start_count)
       stage_start_count = stage_clock()
 !
 !   Write header to  .dbg  file if appropriate
 !
-      IF (LDBPA(2) .OR. LDBPA(3)) WRITE (99,300)
+      if (ldbpa(2) .or. ldbpa(3)) write (99,300)
 !
 !   JA and JB respectively refer to the initial and final states
 !   in the list of NCF configurations
 !
-      DO 5 JA = JASTRT, NCF, nprocs
-         JBSTRT = 1
-         DO 4 JB = JBSTRT, JA
-            IF (DIAG .OR. (LFORDR .AND. (JB .GT. ICCUT(nb))) ) THEN
-               IF (JB.NE.JA) CYCLE
-            END IF
+      do 5 ja = jastrt, ncf, nprocs
+         jbstrt = 1
+         do 4 jb = jbstrt, ja
+            if (diag .or. (lfordr .and. (jb .gt. iccut(nb))) ) then
+               if (jb.ne.ja) cycle
+            end if
 !   LINCR is .TRUE. if npos is to be incremented by 1; there
 !   is always a diagonal element in each column
-            IF (JB .NE. JA) THEN
-               LINCR = .TRUE.
-            ELSE
+            if (jb .ne. ja) then
+               lincr = .true.
+            else
                npos = npos + 1
-               LINCR = .FALSE.
-            ENDIF
-            IF (parallel_pairs_available) CALL load_parallel_pair(JA,JB,IA,IB,TSHELL(1))
-            IF (reuse_requested) CALL load_reused_pair(JA,JB,IA,IB,TSHELL(1))
-            IF (JB .NE. JA) THEN
-               IF (.NOT. parallel_pairs_available .AND. .NOT. reuse_requested) CALL ONESCALAR(JA,JB,IA,IB,TSHELL)
-               IF (IA .NE. 0 .AND. IA .NE. IB .AND.       &
-                      ABS (TSHELL(1)) .GT. CUTOFF) THEN
+               lincr = .false.
+            endif
+            if (parallel_pairs_available) call load_parallel_pair(ja,jb,ia,ib,tshell(1))
+            if (reuse_requested) call load_reused_pair(ja,jb,ia,ib,tshell(1))
+            if (jb .ne. ja) then
+               if (.not. parallel_pairs_available .and. .not. reuse_requested) call onescalar(ja,jb,ia,ib,tshell)
+               if (ia .ne. 0 .and. ia .ne. ib .and.       &
+                      abs (tshell(1)) .gt. cutoff) then
                   npos = npos + 1
-                  LINCR = .FALSE.
-                  LLISTT = LLISTT + 1
-                  LAB = MIN (IA,IB) * KEY + MAX (IA,IB)
+                  lincr = .false.
+                  llistt = llistt + 1
+                  lab = min (ia,ib) * key + max (ia,ib)
 ! GG begin
-                  IF(MARKT .EQ. 0) THEN
-                    IF(LLISTT .GT. IGGMAX_K) THEN
+                  if(markt .eq. 0) then
+                    if(llistt .gt. iggmax_k) then
 !   Increase array length by half the present length if the latter
 !   is inadequate to store another pair
 !
-                      NEWSIZ = (IGGMAX_K+IGGMAX_K/2)*(2+KMAX)
-                      CALL ALLOCCHECK (NEWSIZ,IREZ)
-                      IF(IREZ .EQ. 1) THEN
-                        IGGMAX = NEWSIZ
-                        IGGMAX_K = IGGMAX/(2+KMAX)
-                        CALL RALLOC                                    &
-                             (TCOEFF,IGGMAX_K,KMAX+2,'TCOEFF','MCP')
-                        CALL RALLOC                                    &
-                             (IICLMN,IGGMAX_K,KMAX+2,'TICLMN','MCP')
-                        CALL RALLOC                                    &
-                             (IINDEX,IGGMAX_K,KMAX+2,'TINDEX','MCP')
-                        CALL RALLOC                                    &
-                             (ILABEL,IGGMAX_K,KMAX+2,'TLABEL','MCP')
-                        IICLMN(LLISTT,1) = JA
-                        IINDEX(LLISTT,1) = npos
-                        ILABEL(LLISTT,1) = LAB
-                        TCOEFF(LLISTT,1) = TSHELL(1)
-                      ELSE
+                      newsiz = (iggmax_k+iggmax_k/2)*(2+kmax)
+                      call alloccheck (newsiz,irez)
+                      if(irez .eq. 1) then
+                        iggmax = newsiz
+                        iggmax_k = iggmax/(2+kmax)
+                        call ralloc                                    &
+                             (tcoeff,iggmax_k,kmax+2,'TCOEFF','MCP')
+                        call ralloc                                    &
+                             (iiclmn,iggmax_k,kmax+2,'TICLMN','MCP')
+                        call ralloc                                    &
+                             (iindex,iggmax_k,kmax+2,'TINDEX','MCP')
+                        call ralloc                                    &
+                             (ilabel,iggmax_k,kmax+2,'TLABEL','MCP')
+                        iiclmn(llistt,1) = ja
+                        iindex(llistt,1) = npos
+                        ilabel(llistt,1) = lab
+                        tcoeff(llistt,1) = tshell(1)
+                      else
 !GG                        print*,"LLISTT =",LLISTT
 !GG                        print*,
 !GG     :             "The program switches to the disk version of
 !sorting"
-                        CALL SETTMPGG (nb, 31, 'tmp')
-                        MARKT = 1
-                        DO JJ = 1, LLISTT-1
-                          WRITE (31) IICLMN(JJ,1), IINDEX(JJ,1),       &
-                                     ILABEL(JJ,1), TCOEFF(JJ,1)
-                        END DO
-                        WRITE (31) JA, npos, LAB, TSHELL(1)
-                      END IF
-                    ELSE
-                      IICLMN(LLISTT,1) = JA
-                      IINDEX(LLISTT,1) = npos
-                      ILABEL(LLISTT,1) = LAB
-                      TCOEFF(LLISTT,1) = TSHELL(1)
-                    END IF
-                  ELSE
-                    WRITE (31) JA, npos, LAB, TSHELL(1)
-                  END IF
+                        call settmpgg (nb, 31, 'tmp')
+                        markt = 1
+                        do jj = 1, llistt-1
+                          write (31) iiclmn(jj,1), iindex(jj,1),       &
+                                     ilabel(jj,1), tcoeff(jj,1)
+                        end do
+                        write (31) ja, npos, lab, tshell(1)
+                      end if
+                    else
+                      iiclmn(llistt,1) = ja
+                      iindex(llistt,1) = npos
+                      ilabel(llistt,1) = lab
+                      tcoeff(llistt,1) = tshell(1)
+                    end if
+                  else
+                    write (31) ja, npos, lab, tshell(1)
+                  end if
 ! GG end
-               ENDIF
-            ENDIF
+               endif
+            endif
 !
 !   Call the MCP package to generate V coefficients; ac and bd
 !   are the density pairs. NVCOEF is initialized here but changed
 !   in /rkco/cor[d] via COMMON.
 !
-            IF (.NOT. parallel_pairs_available .AND. .NOT. reuse_requested) THEN
-               NVCOEF = 0
-               CALL RKCO_GG (JA, JB, CORD, 0, 1)
-            END IF
-            DO 2 I = 1, NVCOEF
-               VCOEFF = COEFF(I)
-               IF (ABS (VCOEFF) .GT. CUTOFF) THEN
-                  IA = LABEL(1,I)
-                  IB = LABEL(2,I)
-                  IC = LABEL(3,I)
-                  ID = LABEL(4,I)
-                  K  = LABEL(5,I)
-                  F0INT=(K.EQ.0).AND.(IA.EQ.IC).AND.(IB.EQ.ID)
-                  IF (.NOT. F0INT) THEN
+            if (.not. parallel_pairs_available .and. .not. reuse_requested) then
+               nvcoef = 0
+               call rkco_gg (ja, jb, cord, 0, 1)
+            end if
+            do 2 i = 1, nvcoef
+               vcoeff = coeff(i)
+               if (abs (vcoeff) .gt. cutoff) then
+                  ia = label(1,i)
+                  ib = label(2,i)
+                  ic = label(3,i)
+                  id = label(4,i)
+                  k  = label(5,i)
+                  f0int=(k.eq.0).and.(ia.eq.ic).and.(ib.eq.id)
+                  if (.not. f0int) then
 ! Swap index to make sure IA <= IC, IB <= ID and record the number
 ! of swaps
-                     NSWAP = 0
-                     IF (IA .GT. IC) THEN
-                        ISWAP = IC
-                        IC = IA
-                        IA = ISWAP
-                        NSWAP = NSWAP + 1
-                     ENDIF
-                     IF (IB .GT. ID) THEN
-                        ISWAP = ID
-                        ID = IB
-                        IB = ISWAP
-                        NSWAP = NSWAP + 1
-                     ENDIF
-                     IF (LINCR) THEN
+                     nswap = 0
+                     if (ia .gt. ic) then
+                        iswap = ic
+                        ic = ia
+                        ia = iswap
+                        nswap = nswap + 1
+                     endif
+                     if (ib .gt. id) then
+                        iswap = id
+                        id = ib
+                        ib = iswap
+                        nswap = nswap + 1
+                     endif
+                     if (lincr) then
                         npos = npos + 1
-                        LINCR = .FALSE.
-                     ENDIF
-                     LLISTV(K) = LLISTV(K) + 1
-                     LAC = IA * KEY + IC
-                     LBD = IB * KEY + ID
-                     IF (LAC .LT. LBD) THEN
-                        LAB = LAC * KEYSQ + LBD
-                     ELSE
-                        LAB = LBD * KEYSQ + LAC
-                     ENDIF
+                        lincr = .false.
+                     endif
+                     llistv(k) = llistv(k) + 1
+                     lac = ia * key + ic
+                     lbd = ib * key + id
+                     if (lac .lt. lbd) then
+                        lab = lac * keysq + lbd
+                     else
+                        lab = lbd * keysq + lac
+                     endif
 ! GG begin
-                  IF(MARK(K+1) .EQ. 0) THEN
-                    IF(LLISTV(K) .GT. IGGMAX_K) THEN
+                  if(mark(k+1) .eq. 0) then
+                    if(llistv(k) .gt. iggmax_k) then
 !   Increase array length by half the present length if the latter
 !   is inadequate to store another pair
 !
-                      NEWSIZ = (IGGMAX_K+IGGMAX_K/2)*(2+KMAX)
-                      CALL ALLOCCHECK (NEWSIZ,IREZ)
-                      IF(IREZ .EQ. 1) THEN
-                        IGGMAX = NEWSIZ
-                        IGGMAX_K = IGGMAX/(2+KMAX)
-                        CALL RALLOC                                    &
-                             (TCOEFF,IGGMAX_K,KMAX+2,'TCOEFF','MCP')
-                        CALL RALLOC                                    &
-                             (IICLMN,IGGMAX_K,KMAX+2,'TICLMN','MCP')
-                        CALL RALLOC                                    &
-                             (IINDEX,IGGMAX_K,KMAX+2,'TINDEX','MCP')
-                        CALL RALLOC                                    &
-                             (ILABEL,IGGMAX_K,KMAX+2,'TLABEL','MCP')
-                        IICLMN(LLISTV(K),K+2) = JA
-                        IINDEX(LLISTV(K),K+2) = npos
-                        ILABEL(LLISTV(K),K+2) = LAB
-                        TCOEFF(LLISTV(K),K+2) = VCOEFF
-                      ELSE
+                      newsiz = (iggmax_k+iggmax_k/2)*(2+kmax)
+                      call alloccheck (newsiz,irez)
+                      if(irez .eq. 1) then
+                        iggmax = newsiz
+                        iggmax_k = iggmax/(2+kmax)
+                        call ralloc                                    &
+                             (tcoeff,iggmax_k,kmax+2,'TCOEFF','MCP')
+                        call ralloc                                    &
+                             (iiclmn,iggmax_k,kmax+2,'TICLMN','MCP')
+                        call ralloc                                    &
+                             (iindex,iggmax_k,kmax+2,'TINDEX','MCP')
+                        call ralloc                                    &
+                             (ilabel,iggmax_k,kmax+2,'TLABEL','MCP')
+                        iiclmn(llistv(k),k+2) = ja
+                        iindex(llistv(k),k+2) = npos
+                        ilabel(llistv(k),k+2) = lab
+                        tcoeff(llistv(k),k+2) = vcoeff
+                      else
 !GG                        print*,"K=",K," LLISTV =",LLISTV(K)
 !GG                        print*,
 !GG     :             "The program switches to the disk version of
 !sorting"
-                        CALL SETTMPGG (nb, 32+K, 'tmp')
-                        MARK(K+1) = 1
-                        DO JJ = 1,IGGMAX_K
-                          WRITE (32+K) IICLMN(JJ,K+2),IINDEX(JJ,K+2),  &
-                                       ILABEL(JJ,K+2),TCOEFF(JJ,K+2)
-                        END DO
-                        WRITE (32+K) JA, npos, LAB, VCOEFF
-                      END IF
-                    ELSE
-                      IICLMN(LLISTV(K),K+2) = JA
-                      IINDEX(LLISTV(K),K+2) = npos
-                      ILABEL(LLISTV(K),K+2) = LAB
-                      TCOEFF(LLISTV(K),K+2) = VCOEFF
-                    END IF
-                  ELSE
-                    WRITE (32+K) JA, npos, LAB, VCOEFF
-                  END IF
+                        call settmpgg (nb, 32+k, 'tmp')
+                        mark(k+1) = 1
+                        do jj = 1,iggmax_k
+                          write (32+k) iiclmn(jj,k+2),iindex(jj,k+2),  &
+                                       ilabel(jj,k+2),tcoeff(jj,k+2)
+                        end do
+                        write (32+k) ja, npos, lab, vcoeff
+                      end if
+                    else
+                      iiclmn(llistv(k),k+2) = ja
+                      iindex(llistv(k),k+2) = npos
+                      ilabel(llistv(k),k+2) = lab
+                      tcoeff(llistv(k),k+2) = vcoeff
+                    end if
+                  else
+                    write (32+k) ja, npos, lab, vcoeff
+                  end if
 ! GG end
 
 
-                  ENDIF
-               ENDIF
-    2       CONTINUE
+                  endif
+               endif
+    2       continue
 !
 !   All angular coefficients for this pair of CSFs have been
 !   generated; update file 30
 !
-            IF ((JB .EQ. JA) .OR. (.NOT. LINCR))   &
-               WRITE (30) JA, JB, npos
-    4    CONTINUE
+            if ((jb .eq. ja) .or. (.not. lincr))   &
+               write (30) ja, jb, npos
+    4    continue
       if (mod(ja,100) == 0) then
-         IF (JA .EQ. 1 .OR. JA .EQ. NCF .OR. MOD (JA,100) .EQ. 0) THEN
-            PRINT *, 'Row ', JA, '; nnonz = ', npos,';  block = ', nb
-         ENDIF
+         if (ja .eq. 1 .or. ja .eq. ncf .or. mod (ja,100) .eq. 0) then
+            print *, 'Row ', ja, '; nnonz = ', npos,';  block = ', nb
+         endif
       end if
-    5 CONTINUE
-      CALL record_stage('pair_generation_and_buffering', NB, stage_start_count, &
-                        int(LLISTT,int64) + SUM(int(LLISTV,int64)), storage='memory_or_spill')
-      IF (parallel_pairs_available) CALL end_pair_block(NB)
-      IF (reuse_requested) CALL end_reuse_block(NB)
+    5 continue
+      call record_stage('pair_generation_and_buffering', nb, stage_start_count, &
+                        int(llistt,int64) + sum(int(llistv,int64)), storage='memory_or_spill')
+      if (parallel_pairs_available) call end_pair_block(nb)
+      if (reuse_requested) call end_reuse_block(nb)
       stage_start_count = stage_clock()
 !
 !   Deallocate storage that is no longer required
 !
-      CALL DALLOC (iqa, 'IQA', 'MCP')
-      CALL DALLOC (jqsa, 'JQSA', 'MCP')
-      CALL DALLOC (jcupa, 'JCUPA', 'MCP')
-      CALL ALCBUF (3)
-      CALL record_stage('csf_and_pair_buffer_release', NB, stage_start_count)
+      call dalloc (iqa, 'IQA', 'MCP')
+      call dalloc (jqsa, 'JQSA', 'MCP')
+      call dalloc (jcupa, 'JCUPA', 'MCP')
+      call alcbuf (3)
+      call record_stage('csf_and_pair_buffer_release', nb, stage_start_count)
 !
 !   Write out a report for this run
 !
-      IF (NDEF .NE. 0 .AND. myid .EQ. 0) THEN
-         WRITE (24,*)
-         WRITE (24,*) LLISTT, ' T coefficients generated;'
-         DO K = 0, KMAX
-            WRITE (24,*) LLISTV(K),' V(k=',K,') coefficients generated;'
-         ENDDO
-      ENDIF
+      if (ndef .ne. 0 .and. myid .eq. 0) then
+         write (24,*)
+         write (24,*) llistt, ' T coefficients generated;'
+         do k = 0, kmax
+            write (24,*) llistv(k),' V(k=',k,') coefficients generated;'
+         enddo
+      endif
 !
 !   Set up sparse structure definition arrays in file 30
 !
       stage_start_count = stage_clock()
-      REWIND (30)
-      CALL SETSDA (outsda, npos, LDBPA(4), nb, myid, nprocs, fhead)
-      CLOSE (30, STATUS = 'DELETE')
-      CALL record_stage('sparse_structure_and_output', NB, stage_start_count, int(npos,int64), storage='disk')
+      rewind (30)
+      call setsda (outsda, npos, ldbpa(4), nb, myid, nprocs, fhead)
+      close (30, status = 'DELETE')
+      call record_stage('sparse_structure_and_output', nb, stage_start_count, int(npos,int64), storage='disk')
 !
 !   Sort MCP coefficients into integral-based lists
 !
 ! 1) the T coefficient
       stage_start_count = stage_clock()
-      IF(MARKT .EQ. 0) THEN
-         CALL SORTMEM(31,IGGMAX_K,(LLISTT), ntgi, LDBPA(2), nb, fhead)
-         CALL record_stage('sort_and_output', NB, stage_start_count, int(LLISTT,int64), 31, 'memory')
-      ELSE
-         REWIND (31)
-         CALL SORT (31, (LLISTT), ntgi, LDBPA(2), nb, fhead)
-         CLOSE (31, STATUS = 'DELETE')
-         CALL record_stage('sort_and_output', NB, stage_start_count, int(LLISTT,int64), 31, 'disk')
-      END IF
-      IF (NDEF .NE. 0 .AND. myid .EQ. 0)                   &
-                       WRITE (24,*) ntgi, ' I(ab) integrals;'
+      if(markt .eq. 0) then
+         call sortmem(31,iggmax_k,(llistt), ntgi, ldbpa(2), nb, fhead)
+         call record_stage('sort_and_output', nb, stage_start_count, int(llistt,int64), 31, 'memory')
+      else
+         rewind (31)
+         call sort (31, (llistt), ntgi, ldbpa(2), nb, fhead)
+         close (31, status = 'DELETE')
+         call record_stage('sort_and_output', nb, stage_start_count, int(llistt,int64), 31, 'disk')
+      end if
+      if (ndef .ne. 0 .and. myid .eq. 0)                   &
+                       write (24,*) ntgi, ' I(ab) integrals;'
 ! 2) the V coefficient
-      DO k = 0, KMAX
+      do k = 0, kmax
         stage_start_count = stage_clock()
-        IF(MARK(K+1) .EQ. 0) THEN
-         CALL SORTMEM(k+32,IGGMAX_K,(LLISTV(k)),ntgi,LDBPA(3),nb,fhead)
-         CALL record_stage('sort_and_output', NB, stage_start_count, int(LLISTV(k),int64), k+32, 'memory')
-        ELSE
-          REWIND (k+32)
-          CALL SORT (k+32, (LLISTV(k)), ntgi, LDBPA(3), nb, fhead)
-          CLOSE (k+32, STATUS = 'DELETE')
-          CALL record_stage('sort_and_output', NB, stage_start_count, int(LLISTV(k),int64), k+32, 'disk')
-        END IF
-          IF (NDEF .NE. 0 .AND. myid .EQ. 0)               &
-            WRITE (24,*) ' k = ', k, ': ', ntgi, ' Slater integrals;'
-      ENDDO
-      CALL DALLOC (MARK, 'MARK','MCP')
-      CALL DALLOC (TCOEFF,'TCOEFF','MCP')
-      CALL DALLOC (IICLMN,'TICLMN','MCP')
-      CALL DALLOC (IINDEX,'TINDEX','MCP')
-      CALL DALLOC (ILABEL,'TLABLE','MCP')
-      CALL DALLOC(LLISTV, 'LLISTV', 'MCP')
-  300 FORMAT (/'From MCP:')
-      RETURN
-      END SUBROUTINE mcp
+        if(mark(k+1) .eq. 0) then
+         call sortmem(k+32,iggmax_k,(llistv(k)),ntgi,ldbpa(3),nb,fhead)
+         call record_stage('sort_and_output', nb, stage_start_count, int(llistv(k),int64), k+32, 'memory')
+        else
+          rewind (k+32)
+          call sort (k+32, (llistv(k)), ntgi, ldbpa(3), nb, fhead)
+          close (k+32, status = 'DELETE')
+          call record_stage('sort_and_output', nb, stage_start_count, int(llistv(k),int64), k+32, 'disk')
+        end if
+          if (ndef .ne. 0 .and. myid .eq. 0)               &
+            write (24,*) ' k = ', k, ': ', ntgi, ' Slater integrals;'
+      enddo
+      call dalloc (mark, 'MARK','MCP')
+      call dalloc (tcoeff,'TCOEFF','MCP')
+      call dalloc (iiclmn,'TICLMN','MCP')
+      call dalloc (iindex,'TINDEX','MCP')
+      call dalloc (ilabel,'TLABLE','MCP')
+      call dalloc(llistv, 'LLISTV', 'MCP')
+  300 format (/'From MCP:')
+      return
+      end subroutine mcp

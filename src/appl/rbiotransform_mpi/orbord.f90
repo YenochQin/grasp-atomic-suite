@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ORBORD(N)
+      subroutine orbord(n)
 !                                                                      *
 !   THIS ROUTINE DOES NOTHING!
 
@@ -17,18 +17,18 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE orb_C
-      USE biorb_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use orb_c
+      use biorb_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: N
+      integer  :: n
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !-----------------------------------------------
 
-      RETURN
-      END SUBROUTINE ORBORD
+      return
+      end subroutine orbord

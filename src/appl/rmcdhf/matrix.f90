@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE MATRIX(dvdfirst)
+      subroutine matrix(dvdfirst)
 !                                                                      *
 !   Calls routines to form the Hamiltonian matrix and to diagonalise   *
 !   it. The total angular momenta and parity of each  ASF  is found;   *
@@ -24,94 +24,94 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE, LONG
-      USE memory_man
-      USE damp_C
-      USE def_C,           ONLY: iccmin, ncmin, ncmax
-      USE DEBUG_C
-      USE eigv_C
-      USE hblock_C
-      USE hmat_C
-      USE iounit_C
-      USE MCPA_C
-      USE mpi_s
-      USE orb_C
-      USE pos_C
-      USE peav_C
-      USE syma_C,          ONLY: JPGG
+      use vast_kind_param, only: double, long
+      use memory_man
+      use damp_c
+      use def_c,           only: iccmin, ncmin, ncmax
+      use debug_c
+      use eigv_c
+      use hblock_c
+      use hmat_c
+      use iounit_c
+      use mcpa_c
+      use mpi_s
+      use orb_c
+      use pos_c
+      use peav_c
+      use syma_c,          only: jpgg
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE setham_I
-      USE maneig_I
-      USE suite_linear_algebra, ONLY: dcopy, ddot, dscal
-      IMPLICIT NONE
+      use setham_i
+      use maneig_i
+      use suite_linear_algebra, only: dcopy, ddot, dscal
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      logical, INTENT(IN) ::  dvdfirst
+      logical, intent(in) ::  dvdfirst
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NFILE, NELEC, NTMP, JBLOCK, JBLOCKT, I, NCFPAT, NCMINPAT, &
-         NEVECPAT, NCFT, NCOEFF, LAB, NCONTR, ITMP, IR, IDIAG, J, IOFSET, &
-         JOTHER, IA, JOFSET, IATTMP, IASTMP, NELMNTGG
-      REAL(DOUBLE), DIMENSION(:), POINTER :: CMVL
-      REAL(DOUBLE) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa
-      LOGICAL :: FIRST
-      CHARACTER :: MCPLAB*3
+      integer :: nfile, nelec, ntmp, jblock, jblockt, i, ncfpat, ncminpat, &
+         nevecpat, ncft, ncoeff, lab, ncontr, itmp, ir, idiag, j, iofset, &
+         jother, ia, jofset, iattmp, iastmp, nelmntgg
+      real(double), dimension(:), pointer :: cmvl
+      real(double) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa
+      logical :: first
+      character :: mcplab*3
 
-      SAVE FIRST
+      save first
 !
-      DATA FIRST/ .TRUE./
+      data first/ .true./
 !
 !     POINTER (cmvl(1))
 !
 !-----------------------------------------------------------------------
 
-      IF (MYID == 0) WRITE (6, *)
+      if (myid == 0) write (6, *)
 
 !   Allocate memory for CMVL once (the maximum size)
 !   Save previous estimate of eigenvectors
 
-      IF (.NOT.FIRST) THEN
-         CALL ALLOC (CMVL, NVECSIZ, 'CMVL', 'MATRIX')
-         CALL DCOPY (NVECSIZ, EVEC, 1, CMVL, 1)
-      ENDIF
+      if (.not.first) then
+         call alloc (cmvl, nvecsiz, 'CMVL', 'MATRIX')
+         call dcopy (nvecsiz, evec, 1, cmvl, 1)
+      endif
 
 !=======================================================================
 !   Position the files - MCP files (unit NFILE) for reading
 !   and mixing coefficients file (unit 25) for writing
 !=======================================================================
 
-      DO NFILE = 30, 32 + KMAXF
-         REWIND (NFILE)
-         IF (NFILE == 30) THEN
-            READ (NFILE)
-            READ (NFILE)
-            READ (NFILE)
-         ENDIF
-         READ (NFILE)
-         READ (NFILE)
-         READ (NFILE)
-      END DO
+      do nfile = 30, 32 + kmaxf
+         rewind (nfile)
+         if (nfile == 30) then
+            read (nfile)
+            read (nfile)
+            read (nfile)
+         endif
+         read (nfile)
+         read (nfile)
+         read (nfile)
+      end do
 
       ! To put in ncmin and nvecsiz. Values read here are the same
       ! as those from elsewhere (shch as common blocks)
-      IF (MYID == 0) THEN
-         REWIND (25)
-         READ (25)                               ! 'G92MIX'
-         READ (25) NELEC, NCFTOT, NW, NTMP, NTMP, NBLOCK
-         BACKSPACE (25)
-         WRITE (25) NELEC, NCFTOT, NW, NCMIN, NVECSIZ, NBLOCK
-      ENDIF
+      if (myid == 0) then
+         rewind (25)
+         read (25)                               ! 'G92MIX'
+         read (25) nelec, ncftot, nw, ntmp, ntmp, nblock
+         backspace (25)
+         write (25) nelec, ncftot, nw, ncmin, nvecsiz, nblock
+      endif
 
 !=======================================================================
 !   Do the job block by block
 !=======================================================================
 
                !------------------------------------------------
-      DO JBLOCK = 1, NBLOCK                      ! block do-loop
+      do jblock = 1, nblock                      ! block do-loop
                !------------------------------------------------
 
 !=======================================================================
@@ -120,199 +120,199 @@
 ! Length of iendc can be reduced
 !=======================================================================
 
-         READ (30) MCPLAB, JBLOCKT, NCF
-         IF (JBLOCKT/=JBLOCK .OR. NCF/=NCFBLK(JBLOCK)) ERROR STOP &
+         read (30) mcplab, jblockt, ncf
+         if (jblockt/=jblock .or. ncf/=ncfblk(jblock)) error stop &
             'matrx: jblockt .NE. jblock .OR. ncf1 .NE. ncf2'
-         READ (30) NELMNTGG
-         NELMNT = INT(NELMNTGG,KIND=LONG)
-         CALL ALLOC (IROW, NELMNT, 'IROW', 'MATRIX')
-         CALL ALLOC (EMT, NELMNT, 'EMT', 'MATRIX')
+         read (30) nelmntgg
+         nelmnt = int(nelmntgg,kind=long)
+         call alloc (irow, nelmnt, 'IROW', 'MATRIX')
+         call alloc (emt, nelmnt, 'EMT', 'MATRIX')
 !cjb          ALLOC (IENDC, NCF + 1,...)  ->  ALLOC (IENDC, 0, NCF,...)
 !cjb     CALL ALLOC (IENDC, NCF + 1, 'IENDC', 'MATRIX' )
-         CALL ALLOC (IENDC, 0, NCF, 'IENDC', 'MATRIX' )
+         call alloc (iendc, 0, ncf, 'IENDC', 'MATRIX' )
 
 !        ! may not be necessary if iendc is ALWAYS used
-         IENDC(0:NCF) = 0                        ! the way it is assigned here.
+         iendc(0:ncf) = 0                        ! the way it is assigned here.
 
       !...EMT will be accumulated in setham
-         EMT(:NELMNT) = 0.D0
+         emt(:nelmnt) = 0.d0
 
-         READ (30) (IENDC(I),I=MYID + 1,NCF,NPROCS), (IROW(I),I=1,NELMNT)
+         read (30) (iendc(i),i=myid + 1,ncf,nprocs), (irow(i),i=1,nelmnt)
 
-         NCFPAT = NCFPAST(JBLOCK)
-         NCMINPAT = NCMINPAST(JBLOCK)
-         NEVECPAT = NEVECPAST(JBLOCK)
+         ncfpat = ncfpast(jblock)
+         ncminpat = ncminpast(jblock)
+         nevecpat = nevecpast(jblock)
 
 !=======================================================================
 !   Skip current block if no eigenlaue is required
 !=======================================================================
 
-         IF (NEVBLK(JBLOCK) == 0) THEN
-            DO NFILE = 31, 32 + KMAXF
-               READ (NFILE) MCPLAB, JBLOCKT, NCFT, NCOEFF
-               IF (JBLOCKT /= JBLOCK) ERROR STOP 'matrx: jblockt .NE. jblock'
-               IF (NCFT /= NCF) ERROR STOP 'matrx: ncft .NE. ncf'
+         if (nevblk(jblock) == 0) then
+            do nfile = 31, 32 + kmaxf
+               read (nfile) mcplab, jblockt, ncft, ncoeff
+               if (jblockt /= jblock) error stop 'matrx: jblockt .NE. jblock'
+               if (ncft /= ncf) error stop 'matrx: ncft .NE. ncf'
 
-               READ (NFILE) LAB, NCONTR
-               DO WHILE(LAB/=0 .OR. NCONTR/=0)
-                  READ (NFILE) (ITMP,ITMP,TMP,I=1,NCONTR)
-                  READ (NFILE) LAB, NCONTR
-               END DO
-            END DO
+               read (nfile) lab, ncontr
+               do while(lab/=0 .or. ncontr/=0)
+                  read (nfile) (itmp,itmp,tmp,i=1,ncontr)
+                  read (nfile) lab, ncontr
+               end do
+            end do
 
-            CALL DALLOC (IENDC, 'IENDC', 'MATRIX')
-            CALL DALLOC (IROW, 'IROW', 'MATRIX')
+            call dalloc (iendc, 'IENDC', 'MATRIX')
+            call dalloc (irow, 'IROW', 'MATRIX')
 
-            CYCLE
+            cycle
 
-         ENDIF
+         endif
 
 !=======================================================================
 !   Generate the Hamiltonian matrix - average energy is removed here
 !=======================================================================
 
-         CALL SETHAM (JBLOCK, MYID, NPROCS)
+         call setham (jblock, myid, nprocs)
 !
 !   Determine average energy
 !
-         EAV = 0.D0
-         DO IR = myid + 1, ncf, nprocs
-            EAV = EAV + EMT(IENDC(IR))
-         END DO
+         eav = 0.d0
+         do ir = myid + 1, ncf, nprocs
+            eav = eav + emt(iendc(ir))
+         end do
 !         DO IR = 1, (NCF - (MYID + 1) + NPROCS)/NPROCS
 !            EAV = EAV + EMT(IENDC(NPROCS*(IR-1)+MYID+1))
 !         END DO
 
-         EAV = EAV/NCF
-         EAVBLK(JBLOCK) = EAV
+         eav = eav/ncf
+         eavblk(jblock) = eav
 
       ! Print Hamiltonian matrix and average energy
       ! hmout is not general
       !call hmout (0, 1, ncf)
 
-         IF (MYID == 0) WRITE (*, 302) EAV
+         if (myid == 0) write (*, 302) eav
 
       ! Subtract the average energy from the diagonal elements
       ! to reduce the condition number of the matrix
 !         DO I = 1, (NCF - (MYID + 1) + NPROCS)/NPROCS
 !            EMT(IENDC(NPROCS*(I-1)+MYID+1)) = EMT(IENDC(NPROCS*(I-1)+MYID+1))&
 !                - EAV
-         DO i = myid + 1, ncf, nprocs
+         do i = myid + 1, ncf, nprocs
             idiag = iendc(i)     ! new mode: each row ends in diagonal
             emt(idiag) = emt(idiag) - eav
-         END DO
+         end do
 
 !=======================================================================
 !   Compute and store eigenpairs
 !=======================================================================
 
-         CALL MANEIG (dvdfirst, LDBPG(3),                      &
-                   JBLOCK, NCFPAT, NCMINPAT, NEVECPAT, NCFTOT)
+         call maneig (dvdfirst, ldbpg(3),                      &
+                   jblock, ncfpat, ncminpat, nevecpat, ncftot)
 
 !=======================================================================
 !   Damp and Schmidt orthogonalise eigenvectors for OL calculations
 !=======================================================================
 
-         IF (.NOT.FIRST) THEN
+         if (.not.first) then
 
-            DO J = 1, NEVBLK(JBLOCK)
+            do j = 1, nevblk(jblock)
 
-               IOFSET = (J - 1)*NCF + NEVECPAT
-               JOTHER = J
+               iofset = (j - 1)*ncf + nevecpat
+               jother = j
 
             ! cdamp has the original non-block feature
-               CDAMPJ = CDAMP(J + NCMINPAT)
-               IF (CDAMPJ == 0.D0) CYCLE         ! So SURE ???
+               cdampj = cdamp(j + ncminpat)
+               if (cdampj == 0.d0) cycle         ! So SURE ???
 
-               OMCDAJ = 1.D0 - CDAMPJ
+               omcdaj = 1.d0 - cdampj
 
            !...Damp eigenvector and determine the new dominant component
-  123          CONTINUE
-               AMAX = 0.D0
-               DO I = 1, NCF
-                  EVECIJ = OMCDAJ*EVEC(I+IOFSET) + CDAMPJ*CMVL(I + IOFSET)
-                  EVEC(I+IOFSET) = EVECIJ
-                  WA = ABS(EVECIJ)
-                  IF (WA <= AMAX) CYCLE
-                  AMAX = WA
-                  IA = I
-               END DO
+  123          continue
+               amax = 0.d0
+               do i = 1, ncf
+                  evecij = omcdaj*evec(i+iofset) + cdampj*cmvl(i + iofset)
+                  evec(i+iofset) = evecij
+                  wa = abs(evecij)
+                  if (wa <= amax) cycle
+                  amax = wa
+                  ia = i
+               end do
 
             !...compute the normalization factor
-               SUM = 0.D0
-               DO I = 1, NCF
-                  SUM = SUM + EVEC(I+IOFSET)**2
-               END DO
-               DNFAC = 1.D0/SQRT(SUM)
+               sum = 0.d0
+               do i = 1, ncf
+                  sum = sum + evec(i+iofset)**2
+               end do
+               dnfac = 1.d0/sqrt(sum)
 
             !...Renormalize and invert as necessary
-               IF (EVEC(IA+IOFSET) < 0.D0) DNFAC = -DNFAC
-               CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)
+               if (evec(ia+iofset) < 0.d0) dnfac = -dnfac
+               call dscal (ncf, dnfac, evec(iofset+1:iofset+(ncf)), 1)
 
             !...Schmidt orthogonalise
-  234          CONTINUE
-               JOTHER = JOTHER - 1
-               IF (JOTHER < 1) CYCLE
-               JOFSET = (JOTHER - 1)*NCF + NEVECPAT
-               OVRLAP = DDOT(NCF,EVEC(IOFSET+1:IOFSET+(NCF)),1,EVEC(JOFSET+1:JOFSET+(NCF)),1)
-               IF (OVRLAP /= 0.D0) THEN          ! So SURE ???
-                  OMCDAJ = 1.D0
-                  CDAMPJ = -OVRLAP
-                  CALL DCOPY (NCF, EVEC(JOFSET+1:JOFSET+(NCF)), 1, CMVL(IOFSET + 1:IOFSET+(NCF)), 1)
-                  GO TO 123
-               ELSE
-                  GO TO 234
-               ENDIF
-            END DO
-         ENDIF
+  234          continue
+               jother = jother - 1
+               if (jother < 1) cycle
+               jofset = (jother - 1)*ncf + nevecpat
+               ovrlap = ddot(ncf,evec(iofset+1:iofset+(ncf)),1,evec(jofset+1:jofset+(ncf)),1)
+               if (ovrlap /= 0.d0) then          ! So SURE ???
+                  omcdaj = 1.d0
+                  cdampj = -ovrlap
+                  call dcopy (ncf, evec(jofset+1:jofset+(ncf)), 1, cmvl(iofset + 1:iofset+(ncf)), 1)
+                  go to 123
+               else
+                  go to 234
+               endif
+            end do
+         endif
 
 !   Write out the eigenpair information: ASF symmetries, eigenvalues,
 !   and eigenvectors to GRASP92 mixing coefficients File
 
-         IF (NEVBLK(JBLOCK) == 0) THEN
-            IATTMP = 999
-            IASTMP = 999
-         ELSE
+         if (nevblk(jblock) == 0) then
+            iattmp = 999
+            iastmp = 999
+         else
 !GGGG
-            iattmp = IABS(JPGG(jblock))
-            IF(JPGG(jblock) >= 0) THEN
+            iattmp = iabs(jpgg(jblock))
+            if(jpgg(jblock) >= 0) then
 !cjb iastmp error corrected by Pawel Syty
 !PS            iastmp = 2
                iastmp = 1
-            ELSE
+            else
 !cjb iastmp error corrected by Pawel Syty
 !PS            iastmp = 1
                iastmp = -1
-            END IF
+            end if
 !GG            IATTMP = IATJPO(NCMINPAT + 1)
 !GG            IASTMP = IASPAR(NCMINPAT + 1)
-         ENDIF
+         endif
 
-         IF (MYID == 0) THEN
-            WRITE (25) JBLOCK, NCF, NEVBLK(JBLOCK), IATTMP, IASTMP
-            WRITE (25) (ICCMIN(I + NCMINPAT),I=1,NEVBLK(JBLOCK))
-            WRITE (25) EAV, (EVAL(I + NCMINPAT),I=1,NEVBLK(JBLOCK))
-            WRITE (25) ((EVEC(I+(J-1)*NCF+NEVECPAT),I=1,NCF),J=1,NEVBLK(JBLOCK)&
+         if (myid == 0) then
+            write (25) jblock, ncf, nevblk(jblock), iattmp, iastmp
+            write (25) (iccmin(i + ncminpat),i=1,nevblk(jblock))
+            write (25) eav, (eval(i + ncminpat),i=1,nevblk(jblock))
+            write (25) ((evec(i+(j-1)*ncf+nevecpat),i=1,ncf),j=1,nevblk(jblock)&
                )
-         ENDIF
+         endif
 
-         CALL DALLOC (EMT, 'EMT', 'MATRIX')
-         CALL DALLOC (IENDC, 'IENDC', 'MATRIX')
-         CALL DALLOC (IROW, 'IROW', 'MATRIX')
+         call dalloc (emt, 'EMT', 'MATRIX')
+         call dalloc (iendc, 'IENDC', 'MATRIX')
+         call dalloc (irow, 'IROW', 'MATRIX')
 
 !----------------------
-      END DO
+      end do
 !----------------------
 !
 !   Deallocate the temporary storage
 !
-      IF (.NOT.FIRST) THEN
-         CALL DALLOC (CMVL, 'CMVL', 'MATRIX')
-      ELSE
-         FIRST = .FALSE.
-      ENDIF
+      if (.not.first) then
+         call dalloc (cmvl, 'CMVL', 'MATRIX')
+      else
+         first = .false.
+      endif
 
-  302 FORMAT(' Average energy = ',1P,D18.10,' Hartrees')
+  302 format(' Average energy = ',1p,d18.10,' Hartrees')
 
-      RETURN
-      END SUBROUTINE MATRIX
+      return
+      end subroutine matrix

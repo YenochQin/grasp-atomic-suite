@@ -1,14 +1,14 @@
-      MODULE scf_C
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNW
+      module scf_c
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnw
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:38:40  12/28/06
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      REAL(DOUBLE), DIMENSION(NNNW) :: UCF
-      INTEGER, DIMENSION(NNNW) :: METHOD
-      REAL(DOUBLE), DIMENSION(NNNW) :: SCNSTY
-      REAL(DOUBLE) :: EPSMIN, EPSMAX, EMIN, EMAX, ZINF
-      INTEGER :: NDCOF, NXCOF, NYCOF, NDDIM, NXDIM, NYDIM
-      REAL(DOUBLE), DIMENSION(:), pointer :: da, xa, ya
-      INTEGER, DIMENSION(:), pointer :: nda, nxa, nya
-      END MODULE scf_C
+      real(double), dimension(nnnw) :: ucf
+      integer, dimension(nnnw) :: method
+      real(double), dimension(nnnw) :: scnsty
+      real(double) :: epsmin, epsmax, emin, emax, zinf
+      integer :: ndcof, nxcof, nycof, nddim, nxdim, nydim
+      real(double), dimension(:), pointer :: da, xa, ya
+      integer, dimension(:), pointer :: nda, nxa, nya
+      end module scf_c

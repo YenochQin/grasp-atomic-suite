@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETRWFA(NAME)
+      subroutine setrwfa(name)
 !                                                                      *
 !   Open, check, load data from and close the  .rwf  file.             *
 !                                                                      *
@@ -16,52 +16,52 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE IOUNIT_C
+      use vast_kind_param, only:  double
+      use iounit_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE openfl_I
-      USE lodrwf_I
-      IMPLICIT NONE
+      use openfl_i
+      use lodrwf_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER (LEN = *), INTENT(IN) :: NAME
+      character (len = *), intent(in) :: name
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IERR, IOS
-      CHARACTER :: G92RWF*6
+      integer :: ierr, ios
+      character :: g92rwf*6
 
 
-      CALL OPENFL (23, NAME, 'UNFORMATTED', 'OLD', IERR)
-      IF (IERR == 1) THEN
-         WRITE (ISTDE, *) 'Error when opening', NAME(1:LEN_TRIM(NAME))
-         STOP
-      ENDIF
+      call openfl (23, name, 'UNFORMATTED', 'OLD', ierr)
+      if (ierr == 1) then
+         write (istde, *) 'Error when opening', name(1:len_trim(name))
+         stop
+      endif
 !
 !   Check the file; if not as expected, stop.
 !
-      READ (23, IOSTAT=IOS) G92RWF
-      IF (IOS/=0 .OR. G92RWF/='G92RWF') THEN
-         WRITE (ISTDE, *) 'This is not a Radial WaveFunction File;'
-         CLOSE(23)
-         STOP
-      ENDIF
+      read (23, iostat=ios) g92rwf
+      if (ios/=0 .or. g92rwf/='G92RWF') then
+         write (istde, *) 'This is not a Radial WaveFunction File;'
+         close(23)
+         stop
+      endif
 !
 !   Attempt to load the radial wavefunctions; if this fails, stop
 !
-      CALL LODRWF (IERR)
+      call lodrwf (ierr)
 
-      IF (IERR /= 0) THEN
-         WRITE (ISTDE, *) 'Radial wavefunctions defined in CSL file', &
+      if (ierr /= 0) then
+         write (istde, *) 'Radial wavefunctions defined in CSL file', &
             ' not found in Radial WaveFunction File'
-         CLOSE(23)
-         STOP
-      ENDIF
+         close(23)
+         stop
+      endif
 
-      CLOSE(23)
+      close(23)
 
-      RETURN
-      END SUBROUTINE SETRWFA
+      return
+      end subroutine setrwfa

@@ -1,10 +1,10 @@
-      MODULE pos_C
-      USE vast_kind_param, ONLY:  DOUBLE
+      module pos_c
+      use vast_kind_param, only:  double
 !...Created by Pacific-Sierra Research 77to90  4.3E  06:38:40  12/28/06
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      INTEGER :: NCFTOT, NVECSIZ
-      INTEGER, DIMENSION(:), pointer :: ncfpast
-      INTEGER, DIMENSION(:), pointer :: ncminpast, nevecpast
+      integer :: ncftot, nvecsiz
+      integer, dimension(:), pointer :: ncfpast
+      integer, dimension(:), pointer :: ncminpast, nevecpast
 
-      END MODULE pos_C
+      end module pos_c

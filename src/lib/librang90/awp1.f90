@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE AWP1(IK,BK,ID,BD,K1,BK2,QM1,QM2,QM3,AW)
+      subroutine awp1(ik,bk,id,bd,k1,bk2,qm1,qm2,qm3,aw)
 !                                                                  *
 !   ---------------  SECTION SQ    SUBPROGRAM 01  --------------   *
 !                                                                  *
@@ -23,82 +23,82 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, TWO, TENTH, EPS
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, two, tenth, eps
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE itjj2_I
-      USE ixjtik_I
-      USE izas1_I
-      USE awp1jjg_I, ONLY: awp1jjg
-      USE c0t5s_I, ONLY: c0t5s
-      USE mes_I, ONLY: mes
-      USE rmeajj_I, ONLY: rmeajj
-      USE rumtjj_I, ONLY: rumtjj
-      USE sixj_I, ONLY: sixj
-      USE wj1_I, ONLY: wj1
-      IMPLICIT NONE
+      use itjj2_i
+      use ixjtik_i
+      use izas1_i
+      use awp1jjg_i, only: awp1jjg
+      use c0t5s_i, only: c0t5s
+      use mes_i, only: mes
+      use rmeajj_i, only: rmeajj
+      use rumtjj_i, only: rumtjj
+      use sixj_i, only: sixj
+      use wj1_i, only: wj1
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN)               :: K1
-      INTEGER,      INTENT(IN), DIMENSION(7) :: IK, ID
-      REAL(DOUBLE), INTENT(IN)               :: BK2, QM1, QM2, QM3
-      REAL(DOUBLE), INTENT(IN), DIMENSION(3) :: BK, BD
-      REAL(DOUBLE), INTENT(OUT)              :: AW
+      integer,      intent(in)               :: k1
+      integer,      intent(in), dimension(7) :: ik, id
+      real(double), intent(in)               :: bk2, qm1, qm2, qm3
+      real(double), intent(in), dimension(3) :: bk, bd
+      real(double), intent(out)              :: aw
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: KK1, KK2, IE, IQ, IQ2, IQ3, IQM, IT, ITP, ITG, IBTT
-      INTEGER,      DIMENSION(7) :: IBT
-      REAL(DOUBLE)               :: ENQP, D1, S, SI, W
-      REAL(DOUBLE), DIMENSION(3) :: BT
+      integer :: kk1, kk2, ie, iq, iq2, iq3, iqm, it, itp, itg, ibtt
+      integer,      dimension(7) :: ibt
+      real(double)               :: enqp, d1, s, si, w
+      real(double), dimension(3) :: bt
 !-----------------------------------------------
-      AW=ZERO
-      IF(ID(3) == 9) THEN
-        IF(MAX0(IK(4),ID(4)) < 3) THEN
-          IF(IK(1) < 300) CALL MES(54)
-          IF(ID(1) < 300) CALL MES(54)
-          CALL AWP1JJG(K1,BK2,QM1,QM2,QM3,IK,BK,ID,BD,AW)
-          RETURN
-        ELSE
-          PRINT*, "ERROR in AWP1"
-          STOP
-        ENDIF
-      ELSEIF(ID(3) > 9) THEN
-        CALL AWP1JJG(K1,BK2,QM1,QM2,QM3,IK,BK,ID,BD,AW)
-        RETURN
-      ENDIF
-      IF(IZAS1(ID(7),BD(3),IK(7),BK(3)) == 0)RETURN
-      ENQP=ZERO
-      IQ2=QM2*TWO+QM2*TENTH
-      IQ3=QM3*TWO+QM3*TENTH
-      IQ=IQ2+IQ3
-      KK1=K1*2
-      KK2=BK2+BK2+TENTH*BK2
-      IF(ITJJ2(IK,ID,KK2,BK,BD,IBT,BT,ITP,ITG,IQ) == 0)RETURN
-      IQM=TWO*DABS(BT(3))+TENTH
-      DO IT=ITP,ITG
-        CALL RUMTJJ(IT,IBT(3),IBT(7),IBTT,IBT(6))
-        IF(IQM > IBT(7)) CYCLE
-        IF(IXJTIK(IK(3),KK1,KK2,ID(6),IK(6),IBT(6)) == 0) CYCLE
-        IBT(1)=IT
-        BT(2)=DBLE(IBT(6))/TWO
-        BT(1)=DBLE(IBT(7))/TWO
-        CALL C0T5S(BT(1),BT(3),QM1,BK(1),BK(3),D1)
-        IF(DABS(D1) < EPS) CYCLE
-        CALL RMEAJJ(IK(3),IK(1),IK(7),IK(6),IBT(1),IBT(7),IBT(6),S)
-        IF(DABS(S) < EPS) CYCLE
-        CALL WJ1(IBT,BT,ID,BD,K1,QM2,QM3,W)
-        D1=D1*W*S
-        IF(DABS(D1) < EPS) CYCLE
-        CALL SIXJ(IK(3),KK1,KK2,ID(6),IK(6),IBT(6),0,SI)
-        D1=D1*SI/DSQRT(DBLE(IK(7)+1))
-        ENQP=ENQP+D1
-      END DO
-      AW=ENQP*DSQRT(DBLE(KK2+1))
-      IE=KK2+IK(6)+ID(6)+2
-      IF(((IE/4)*4) /= IE)AW=-AW
-      RETURN
-      END SUBROUTINE AWP1
+      aw=zero
+      if(id(3) == 9) then
+        if(max0(ik(4),id(4)) < 3) then
+          if(ik(1) < 300) call mes(54)
+          if(id(1) < 300) call mes(54)
+          call awp1jjg(k1,bk2,qm1,qm2,qm3,ik,bk,id,bd,aw)
+          return
+        else
+          print*, "ERROR in AWP1"
+          stop
+        endif
+      elseif(id(3) > 9) then
+        call awp1jjg(k1,bk2,qm1,qm2,qm3,ik,bk,id,bd,aw)
+        return
+      endif
+      if(izas1(id(7),bd(3),ik(7),bk(3)) == 0)return
+      enqp=zero
+      iq2=qm2*two+qm2*tenth
+      iq3=qm3*two+qm3*tenth
+      iq=iq2+iq3
+      kk1=k1*2
+      kk2=bk2+bk2+tenth*bk2
+      if(itjj2(ik,id,kk2,bk,bd,ibt,bt,itp,itg,iq) == 0)return
+      iqm=two*dabs(bt(3))+tenth
+      do it=itp,itg
+        call rumtjj(it,ibt(3),ibt(7),ibtt,ibt(6))
+        if(iqm > ibt(7)) cycle
+        if(ixjtik(ik(3),kk1,kk2,id(6),ik(6),ibt(6)) == 0) cycle
+        ibt(1)=it
+        bt(2)=dble(ibt(6))/two
+        bt(1)=dble(ibt(7))/two
+        call c0t5s(bt(1),bt(3),qm1,bk(1),bk(3),d1)
+        if(dabs(d1) < eps) cycle
+        call rmeajj(ik(3),ik(1),ik(7),ik(6),ibt(1),ibt(7),ibt(6),s)
+        if(dabs(s) < eps) cycle
+        call wj1(ibt,bt,id,bd,k1,qm2,qm3,w)
+        d1=d1*w*s
+        if(dabs(d1) < eps) cycle
+        call sixj(ik(3),kk1,kk2,id(6),ik(6),ibt(6),0,si)
+        d1=d1*si/dsqrt(dble(ik(7)+1))
+        enqp=enqp+d1
+      end do
+      aw=enqp*dsqrt(dble(kk2+1))
+      ie=kk2+ik(6)+id(6)+2
+      if(((ie/4)*4) /= ie)aw=-aw
+      return
+      end subroutine awp1

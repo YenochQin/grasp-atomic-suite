@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE RIS_CAL (NAME)
+      subroutine ris_cal (name)
 !                                                                      *
 !   This routine controls the main sequence of routine calls for the   *
 !   calculation  of the MS parameters, the electron density at the     *
@@ -21,74 +21,74 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNW
-      USE memory_man
-      USE debug_C
-      USE decide_c
-      USE def_C
-      USE grid_C
-      USE npar_C
-      USE prnt_C
-      USE syma_C
-      USE orb_C
-      USE teilst_C
-      USE buffer_C
-      USE ris_C
-      USE jlabl_C, LABJ=> JLBR, LABP=>JLBP
-      USE ris_C
-      USE eigv_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnw
+      use memory_man
+      use debug_c
+      use decide_c
+      use def_c
+      use grid_c
+      use npar_c
+      use prnt_c
+      use syma_c
+      use orb_c
+      use teilst_c
+      use buffer_c
+      use ris_c
+      use jlabl_c, labj=> jlbr, labp=>jlbp
+      use ris_c
+      use eigv_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rintdens_I
-      USE rinti_I
-      USE rint_I
-      USE rintdensvec_I
-      USE rinti_nms_I
-      USE cre_I
-      USE vinti_I
-      USE rint_sms2_I
-      USE rint_sms3_I
-      USE angdata_I
-      USE getyn_I
-      USE densread_I
-      USE densnew_I
-      USE smsread_I
-      USE smsnew_I
-      USE edensityfit_I
-      USE densnew_seltz_I, ONLY: densnew_seltz
-      USE densread_seltz_I, ONLY: densread_seltz
-      USE starttime_I, ONLY: starttime
-      USE stoptime_I, ONLY: stoptime
-      IMPLICIT NONE
+      use rintdens_i
+      use rinti_i
+      use rint_i
+      use rintdensvec_i
+      use rinti_nms_i
+      use cre_i
+      use vinti_i
+      use rint_sms2_i
+      use rint_sms3_i
+      use angdata_i
+      use getyn_i
+      use densread_i
+      use densnew_i
+      use smsread_i
+      use smsnew_i
+      use edensityfit_i
+      use densnew_seltz_i, only: densnew_seltz
+      use densread_seltz_i, only: densread_seltz
+      use starttime_i, only: starttime
+      use stoptime_i, only: stoptime
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER*24, INTENT(IN) :: NAME
+      character*24, intent(in) :: name
 !      REAL(DOUBLE), INTENT(IN) :: DR2
 !      INTEGER, INTENT(IN)      :: NOPAR
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      REAL(DOUBLE), DIMENSION(:,:,:), pointer :: DINT1VEC
-      REAL(DOUBLE), DIMENSION(:,:), pointer   :: DENS1VEC
-      REAL(DOUBLE), DIMENSION(:), pointer     :: DENSFIT
-      REAL(DOUBLE), DIMENSION(:,:), pointer     :: FMAT
-      REAL(DOUBLE), DIMENSION(:), pointer     :: RHO
-      REAL(DOUBLE), DIMENSION(:), pointer     :: RES
+      real(double), dimension(:,:,:), pointer :: dint1vec
+      real(double), dimension(:,:), pointer   :: dens1vec
+      real(double), dimension(:), pointer     :: densfit
+      real(double), dimension(:,:), pointer     :: fmat
+      real(double), dimension(:), pointer     :: rho
+      real(double), dimension(:), pointer     :: res
 
 
-      REAL(DOUBLE), DIMENSION(NNNW)      :: TSHELL
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: VINT, VINT2
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: DINT1, DINT2, DINT3, &
-                                            DINT4, DINT5, DINT6, &
-                                            DINT7
-      REAL(DOUBLE) :: AU2FM, RCRE, HzSMSu, HzNMSu, FO90
-      CHARACTER*11 :: CNUM
-      CHARACTER*2  :: CK
-      LOGICAL :: VSH, NUCDE, SMSSH, YES, YES2, AVAIL_TB, AVAIL_OB
-      INTEGER :: I, J, L, ncount1, DOIT_OB, DOIT_TB, NRNUC
+      real(double), dimension(nnnw)      :: tshell
+      real(double), dimension(nnnw,nnnw) :: vint, vint2
+      real(double), dimension(nnnw,nnnw) :: dint1, dint2, dint3, &
+                                            dint4, dint5, dint6, &
+                                            dint7
+      real(double) :: au2fm, rcre, hzsmsu, hznmsu, fo90
+      character*11 :: cnum
+      character*2  :: ck
+      logical :: vsh, nucde, smssh, yes, yes2, avail_tb, avail_ob
+      integer :: i, j, l, ncount1, doit_ob, doit_tb, nrnuc
 !-----------------------------------------------
 !
 
@@ -102,56 +102,56 @@
       write(*,*) '-------------------------------'
 
 !     Determine point end point NRNUC for density fit
-      FO90 = PARM(1)+2.d0*LOG(3.d0)*PARM(2)
+      fo90 = parm(1)+2.d0*log(3.d0)*parm(2)
       !PARM(1) - Fermi parameter c
       !PARM(2) - Fermi parameter a
-      DO I=1,NNNP
-         IF(R(I+1).GT.FO90.AND.R(I).LE.FO90) THEN
-            NRNUC = I+1
+      do i=1,nnnp
+         if(r(i+1).gt.fo90.and.r(i).le.fo90) then
+            nrnuc = i+1
             exit
-         END IF
-      END DO
+         end if
+      end do
 
 
 !   Allocate memory
 
-      ALLOCATE( DENS1VEC(NVEC,NRNUC),DINT1VEC(NNNW,NNNW,NRNUC) )    ! JE ADD
-      ALLOCATE( DENSFIT(NRNUC) )                                   ! JE ADD
+      allocate( dens1vec(nvec,nrnuc),dint1vec(nnnw,nnnw,nrnuc) )    ! JE ADD
+      allocate( densfit(nrnuc) )                                   ! JE ADD
 
-      DINT1VEC(:,:,:) = 0.D0                                      ! JE ADD
-      DENS1VEC(:,:) = 0.D0                                        ! JE ADD
+      dint1vec(:,:,:) = 0.d0                                      ! JE ADD
+      dens1vec(:,:) = 0.d0                                        ! JE ADD
 
-      ALLOCATE( FMAT(6,NVEC),RHO(NVEC),RES(NVEC) )                ! JE ADD
+      allocate( fmat(6,nvec),rho(nvec),res(nvec) )                ! JE ADD
 
 !
 !   Allocate storage for local arrays
 !
-      CALL ALLOC (SMSC1, NVEC,'SMSC1', 'RIS_CAL')
-      CALL ALLOC (SMSC2, NVEC,'SMSC2', 'RIS_CAL')
-      CALL ALLOC (DENS1,NVEC,'DENS1','RIS_CAL')
-      CALL ALLOC (DENS2,NVEC,'DENS2','RIS_CAL')
-      CALL ALLOC (DENS3,NVEC,'DENS3','RIS_CAL')
-      CALL ALLOC (DENS4,NVEC,'DENS4','RIS_CAL')
-      CALL ALLOC (DENS5,NVEC,'DENS5','RIS_CAL')
-      CALL ALLOC (DENS6,NVEC,'DENS6','RIS_CAL')
-      CALL ALLOC (DENS7,NVEC,'DENS7','RIS_CAL')
+      call alloc (smsc1, nvec,'SMSC1', 'RIS_CAL')
+      call alloc (smsc2, nvec,'SMSC2', 'RIS_CAL')
+      call alloc (dens1,nvec,'DENS1','RIS_CAL')
+      call alloc (dens2,nvec,'DENS2','RIS_CAL')
+      call alloc (dens3,nvec,'DENS3','RIS_CAL')
+      call alloc (dens4,nvec,'DENS4','RIS_CAL')
+      call alloc (dens5,nvec,'DENS5','RIS_CAL')
+      call alloc (dens6,nvec,'DENS6','RIS_CAL')
+      call alloc (dens7,nvec,'DENS7','RIS_CAL')
 
-      CALL STARTTIME (ncount1, 'RIS_CAL')
+      call starttime (ncount1, 'RIS_CAL')
 
 !
 !   Initialise
 !
-      DO I = 1,NVEC
-         SMSC1(I)  = 0.0D00
-         SMSC2(I)  = 0.0D00
-         DENS1(I) = 0.0D00
-         DENS2(I) = 0.0D00
-         DENS3(I) = 0.0D00
-         DENS4(I) = 0.0D00
-         DENS5(I) = 0.0D00
-         DENS6(I) = 0.0D00
-         DENS7(I) = 0.0D00
-      ENDDO
+      do i = 1,nvec
+         smsc1(i)  = 0.0d00
+         smsc2(i)  = 0.0d00
+         dens1(i) = 0.0d00
+         dens2(i) = 0.0d00
+         dens3(i) = 0.0d00
+         dens4(i) = 0.0d00
+         dens5(i) = 0.0d00
+         dens6(i) = 0.0d00
+         dens7(i) = 0.0d00
+      enddo
 
 !      VSH   = .TRUE.
 !      SMSSH = .TRUE.
@@ -161,71 +161,71 @@
       !      IF (VSH) THEN
 
       write(*,*) ' Compute higher order field shift electronic factors?'
-      YES2 = GETYN ()
+      yes2 = getyn ()
 
-      DO 5 I = 1,NW
-        DO 4 J = 1,NW
-          IF (NAK(I).EQ.NAK(J)) THEN
-            DINT1(I,J) = RINTDENS(I,J)
+      do 5 i = 1,nw
+        do 4 j = 1,nw
+          if (nak(i).eq.nak(j)) then
+            dint1(i,j) = rintdens(i,j)
             !GG                 DINT2(I,J) = RINTI(I,J,1)
-            IF(YES2) THEN
-               CALL RINTDENSVEC(I,J,DINT1VEC,NRNUC)
-            END IF
-            CALL RINTI_NMS(I,J,DINT2(I,J),DINT7(I,J))
-            DINT3(I,J) = RINT(I,J,1)
-            DINT4(I,J) = RINT(I,J,2)
-            DINT5(I,J) = RINT(I,J,-1)
-            DINT6(I,J) = RINT(I,J,-2)
-          ELSE
-            DINT1(I,J) = 0.0D00
-            DINT1VEC(I,J,:) = 0.0D00
-            DINT2(I,J) = 0.0D00
-            DINT3(I,J) = 0.0D00
-            DINT4(I,J) = 0.0D00
-            DINT5(I,J) = 0.0D00
-            DINT6(I,J) = 0.0D00
-            DINT7(I,J) = 0.0D00
-          ENDIF
-    4   CONTINUE
-    5 CONTINUE
+            if(yes2) then
+               call rintdensvec(i,j,dint1vec,nrnuc)
+            end if
+            call rinti_nms(i,j,dint2(i,j),dint7(i,j))
+            dint3(i,j) = rint(i,j,1)
+            dint4(i,j) = rint(i,j,2)
+            dint5(i,j) = rint(i,j,-1)
+            dint6(i,j) = rint(i,j,-2)
+          else
+            dint1(i,j) = 0.0d00
+            dint1vec(i,j,:) = 0.0d00
+            dint2(i,j) = 0.0d00
+            dint3(i,j) = 0.0d00
+            dint4(i,j) = 0.0d00
+            dint5(i,j) = 0.0d00
+            dint6(i,j) = 0.0d00
+            dint7(i,j) = 0.0d00
+          endif
+    4   continue
+    5 continue
 !      ENDIF
 !
 !   Calculate and save the Vinti integrals
 !
 !      IF (SMSSH) THEN
-      DO 7 I = 1,NW
-        DO 6 J = 1,NW
-          IF (I.NE.J) THEN
-            RCRE = CRE(NAK(I),1,NAK(J))
-            IF (DABS(RCRE) .GT. CUTOFF) THEN
-              VINT  (I,J) = VINTI(I,J)
-              VINT2(I,J) = VINT(I,J)                                   &
-                         + RINT_SMS2(I,J)/RCRE                         &
-                         + RINT_SMS3(I,J)
-            ELSE
-             VINT (I,J) = 0.0D00
-             VINT2(I,J) = 0.0D00
-            ENDIF
-          ELSE
-            VINT (I,J) = 0.0D00
-            VINT2(I,J) = 0.0D00
-          ENDIF
-    6   CONTINUE
-    7 CONTINUE
+      do 7 i = 1,nw
+        do 6 j = 1,nw
+          if (i.ne.j) then
+            rcre = cre(nak(i),1,nak(j))
+            if (dabs(rcre) .gt. cutoff) then
+              vint  (i,j) = vinti(i,j)
+              vint2(i,j) = vint(i,j)                                   &
+                         + rint_sms2(i,j)/rcre                         &
+                         + rint_sms3(i,j)
+            else
+             vint (i,j) = 0.0d00
+             vint2(i,j) = 0.0d00
+            endif
+          else
+            vint (i,j) = 0.0d00
+            vint2(i,j) = 0.0d00
+          endif
+    6   continue
+    7 continue
 !      ENDIF
 !
 !   See if the appropriate angular data is available. If so,
 !   then read the angular files and perform the calculation.
 !   If not, the user can choose to save them or not
 !
-      DOIT_OB = 0
-      DOIT_TB = 0
-      CALL ANGDATA(NAME,AVAIL_OB,1)
-      CALL ANGDATA(NAME,AVAIL_TB,2)
-      IF ((.NOT. AVAIL_OB) .AND. (.NOT. AVAIL_TB)) THEN
-        PRINT *,' Save ang. coefficients of one- and two-body op.?'
-        YES = GETYN ()
-        PRINT *
+      doit_ob = 0
+      doit_tb = 0
+      call angdata(name,avail_ob,1)
+      call angdata(name,avail_tb,2)
+      if ((.not. avail_ob) .and. (.not. avail_tb)) then
+        print *,' Save ang. coefficients of one- and two-body op.?'
+        yes = getyn ()
+        print *
 !C        IF(.NOT. YES) THEN
 !C          PRINT *,' Save ang. coefficients of one-body op. ONLY?'
 !C          YES = GETYN ()
@@ -239,148 +239,148 @@
 !C            DOIT_OB = 1
 !C          ENDIF
 !C        ELSE
-       IF(YES) THEN
-          DOIT_OB = 1
-          DOIT_TB = 1
-        ENDIF
-      ELSEIF (.NOT. AVAIL_OB) THEN
-        PRINT *,' Save ang. coefficients of one-body op. ?'
-        YES = GETYN ()
-        PRINT *
-        IF(YES) DOIT_OB = 1
-      ELSEIF (.NOT. AVAIL_TB) THEN
-        PRINT *,' Save ang. coefficients of two-body op. ?'
-        YES = GETYN ()
-        PRINT *
-        IF(YES) DOIT_TB = 1
-      ENDIF
-      IF (AVAIL_OB) THEN
-        J = INDEX(NAME,' ')
-        OPEN(UNIT=50,FILE = NAME(1:J-1)//'.IOB',STATUS='UNKNOWN'       &
-            ,FORM='UNFORMATTED')
+       if(yes) then
+          doit_ob = 1
+          doit_tb = 1
+        endif
+      elseif (.not. avail_ob) then
+        print *,' Save ang. coefficients of one-body op. ?'
+        yes = getyn ()
+        print *
+        if(yes) doit_ob = 1
+      elseif (.not. avail_tb) then
+        print *,' Save ang. coefficients of two-body op. ?'
+        yes = getyn ()
+        print *
+        if(yes) doit_tb = 1
+      endif
+      if (avail_ob) then
+        j = index(name,' ')
+        open(unit=50,file = name(1:j-1)//'.IOB',status='UNKNOWN'       &
+            ,form='UNFORMATTED')
 !    Read angular data from file and compute matrix elements
-        IF(YES2) THEN
-           CALL DENSREAD_SELTZ(DINT1,DINT2,DINT3, & ! JE ADD
-                DINT4,DINT5,DINT6, & ! JE ADD
-                DINT7,DINT1VEC,DENS1VEC,NRNUC) ! JE ADD
-        ELSE
-           CALL DENSREAD(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
-        END IF
+        if(yes2) then
+           call densread_seltz(dint1,dint2,dint3, & ! JE ADD
+                dint4,dint5,dint6, & ! JE ADD
+                dint7,dint1vec,dens1vec,nrnuc) ! JE ADD
+        else
+           call densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
+        end if
 
         !        CALL DENSREAD(DINT1,DINT2,DINT3,             &   ! JE ADD
         !                      DINT4,DINT5,DINT6,             &   ! JE ADD
         !                      DINT7,DINT1VEC,DENS1VEC)           ! JE ADD
-     ELSE
+     else
 !Check if the user wants to save one-body ang. coeff.
-        IF(DOIT_OB .EQ.1) THEN
-          J = INDEX(NAME,' ')
-          OPEN(UNIT=50,FILE = NAME(1:J-1)//'.IOB',STATUS='UNKNOWN'     &
-            ,FORM='UNFORMATTED')
-        ENDIF
-        IF(YES2) THEN
-           CALL DENSNEW_SELTZ(DOIT_OB,DINT1,DINT2,DINT3, & ! JE ADD
-                DINT4,DINT5,DINT6,DINT7, & ! JE ADD
-                DINT1VEC,DENS1VEC,NRNUC) ! JE ADD
-        ELSE
-           CALL DENSNEW(DOIT_OB,DINT1,DINT2,DINT3,DINT4, &
-                DINT5,DINT6,DINT7)
-        END IF
+        if(doit_ob .eq.1) then
+          j = index(name,' ')
+          open(unit=50,file = name(1:j-1)//'.IOB',status='UNKNOWN'     &
+            ,form='UNFORMATTED')
+        endif
+        if(yes2) then
+           call densnew_seltz(doit_ob,dint1,dint2,dint3, & ! JE ADD
+                dint4,dint5,dint6,dint7, & ! JE ADD
+                dint1vec,dens1vec,nrnuc) ! JE ADD
+        else
+           call densnew(doit_ob,dint1,dint2,dint3,dint4, &
+                dint5,dint6,dint7)
+        end if
 
 !        CALL NATORBNEW(NAME)                            ! JE ADD
 !        CALL DENSNEW(DOIT_OB,DINT1,DINT2,DINT3,     &   ! JE ADD
 !             DINT4,DINT5,DINT6,DINT7,               &   ! JE ADD
 !             DINT1VEC,DENS1VEC)                         ! JE ADD
-      ENDIF
+      endif
 !
 !
 !
-      IF (AVAIL_TB) THEN
-        J = INDEX(NAME,' ')
-        OPEN(UNIT=51,FILE = NAME(1:J-1)//'.ITB',STATUS='UNKNOWN'       &
-          ,FORM='UNFORMATTED')
-        CALL SMSREAD(VINT,VINT2)
-      ELSE
+      if (avail_tb) then
+        j = index(name,' ')
+        open(unit=51,file = name(1:j-1)//'.ITB',status='UNKNOWN'       &
+          ,form='UNFORMATTED')
+        call smsread(vint,vint2)
+      else
 ! Check if the user wants to save two-body ang. coeff.
-        IF(DOIT_TB.EQ.1) THEN
-          J = INDEX(NAME,' ')
-          OPEN(UNIT=51,FILE = NAME(1:J-1)//'.ITB',STATUS='UNKNOWN'     &
-             ,FORM='UNFORMATTED')
-        ENDIF
-         CALL SMSNEW(DOIT_TB,VINT,VINT2)
-      ENDIF
+        if(doit_tb.eq.1) then
+          j = index(name,' ')
+          open(unit=51,file = name(1:j-1)//'.ITB',status='UNKNOWN'     &
+             ,form='UNFORMATTED')
+        endif
+         call smsnew(doit_tb,vint,vint2)
+      endif
 !
 !   Printouts
       !
 
-      WRITE (24,'(a24,i3)') 'Number of eigenvalues: ',NVEC
-      WRITE(24,*)
-      WRITE(24,*)
-      WRITE (24,309)
-      DO I = 1, NVEC
-         WRITE (24,323) IVEC(I),LABJ(IATJPO(I)),LABP((IASPAR(I)+3)/2), &
-              EAV+EVAL(I)
-      END DO
-      WRITE (24,308)
-      DO 18 I = 1,NVEC
-         WRITE(24,314)
-         WRITE (24,313) IVEC(I),LABJ(IATJPO(I)),LABP((IASPAR(I)+3)/2), &
-              DENS7(I),(DENS2(I)-DENS7(I)),DENS2(I)
-         HzNMSu=DENS7(I)*AUMAMU*AUCM*CCMS
+      write (24,'(a24,i3)') 'Number of eigenvalues: ',nvec
+      write(24,*)
+      write(24,*)
+      write (24,309)
+      do i = 1, nvec
+         write (24,323) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
+              eav+eval(i)
+      end do
+      write (24,308)
+      do 18 i = 1,nvec
+         write(24,314)
+         write (24,313) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
+              dens7(i),(dens2(i)-dens7(i)),dens2(i)
+         hznmsu=dens7(i)*aumamu*aucm*ccms
 !         if (dabs(HzNMSu) .LE. (10**8)) THEN
 !             WRITE (24,315) HzNMSu*(1.0D-06),
 !     :      (DENS2(I)-DENS7(I))*AUMAMU*AUCM*CCMS*(1.0D-06),
 !     :       DENS2(I)*AUMAMU*AUCM*CCMS*(1.0D-06)
 !         else
-         WRITE (24,316) HzNMSu*(1.0D-09), &
-              (DENS2(I)-DENS7(I))*AUMAMU*AUCM*CCMS*(1.0D-09), &
-              DENS2(I)*AUMAMU*AUCM*CCMS*(1.0D-09)
+         write (24,316) hznmsu*(1.0d-09), &
+              (dens2(i)-dens7(i))*aumamu*aucm*ccms*(1.0d-09), &
+              dens2(i)*aumamu*aucm*ccms*(1.0d-09)
 !         endif
- 18   CONTINUE
+ 18   continue
 
-      WRITE (24,302)
-      DO 14 I = 1,NVEC
-         WRITE(24,314)
-         WRITE (24,313) IVEC(I),LABJ(IATJPO(I)),LABP((IASPAR(I)+3)/2), &
-              SMSC1(I),SMSC2(I)-SMSC1(I),SMSC2(I)
-         HzSMSu=SMSC1(I)*AUMAMU*AUCM*CCMS
-         if (dabs(HzSMSu) .LE. (10**8)) THEN
-            WRITE (24,315) HzSMSu*(1.0D-06), &
-                 (SMSC2(I)-SMSC1(I))*AUMAMU*AUCM*CCMS*(1.0D-06), &
-                 SMSC2(I)*AUMAMU*AUCM*CCMS*(1.0D-06)
+      write (24,302)
+      do 14 i = 1,nvec
+         write(24,314)
+         write (24,313) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
+              smsc1(i),smsc2(i)-smsc1(i),smsc2(i)
+         hzsmsu=smsc1(i)*aumamu*aucm*ccms
+         if (dabs(hzsmsu) .le. (10**8)) then
+            write (24,315) hzsmsu*(1.0d-06), &
+                 (smsc2(i)-smsc1(i))*aumamu*aucm*ccms*(1.0d-06), &
+                 smsc2(i)*aumamu*aucm*ccms*(1.0d-06)
          else
-            WRITE (24,316) HzSMSu*(1.0D-09), &
-                 (SMSC2(I)-SMSC1(I))*AUMAMU*AUCM*CCMS*(1.0D-09), &
-                 SMSC2(I)*AUMAMU*AUCM*CCMS*(1.0D-09)
+            write (24,316) hzsmsu*(1.0d-09), &
+                 (smsc2(i)-smsc1(i))*aumamu*aucm*ccms*(1.0d-09), &
+                 smsc2(i)*aumamu*aucm*ccms*(1.0d-09)
          endif
- 14   CONTINUE
-      IF(YES2) THEN
-         WRITE (24,307)
-         DO 16 I = 1,NVEC
-            CALL EDENSITYFIT(R,DENS1VEC(I,:),Z,PARM,NRNUC,FMAT(:,I),RHO(I),RES(I))  ! JE ADD
-            WRITE (24,303) IVEC(I),LABJ(IATJPO(I)), &
-                 LABP((IASPAR(I)+3)/2),RHO(I)
- 16      CONTINUE
-         WRITE (24,317)
-         DO 17 I = 1,NVEC
+ 14   continue
+      if(yes2) then
+         write (24,307)
+         do 16 i = 1,nvec
+            call edensityfit(r,dens1vec(i,:),z,parm,nrnuc,fmat(:,i),rho(i),res(i))  ! JE ADD
+            write (24,303) ivec(i),labj(iatjpo(i)), &
+                 labp((iaspar(i)+3)/2),rho(i)
+ 16      continue
+         write (24,317)
+         do 17 i = 1,nvec
             !CALL EDENSITYFIT(R,DENS1VEC(I,:),Z,PARM,NRNUC,FMAT,RHO,RES)  ! JE ADD
-            WRITE (24,324) IVEC(I),LABJ(IATJPO(I)), &
-                 LABP((IASPAR(I)+3)/2),FMAT(1,I),FMAT(2,I), &
-                 FMAT(3,I),FMAT(4,I),RES(I)
- 17      CONTINUE
-         WRITE (24,327)
-         DO 19 I = 1,NVEC
+            write (24,324) ivec(i),labj(iatjpo(i)), &
+                 labp((iaspar(i)+3)/2),fmat(1,i),fmat(2,i), &
+                 fmat(3,i),fmat(4,i),res(i)
+ 17      continue
+         write (24,327)
+         do 19 i = 1,nvec
             !CALL EDENSITYFIT(R,DENS1VEC(I,:),Z,PARM,NRNUC,FMAT,RHO,RES)  ! JE ADD
-            WRITE (24,334) IVEC(I),LABJ(IATJPO(I)), &
-                 LABP((IASPAR(I)+3)/2),FMAT(5,I),FMAT(6,I)
- 19      CONTINUE
+            write (24,334) ivec(i),labj(iatjpo(i)), &
+                 labp((iaspar(i)+3)/2),fmat(5,i),fmat(6,i)
+ 19      continue
          write(24,*)
-      ELSE
-         WRITE (24,306)
-         DO 36 I = 1,NVEC
-            WRITE (24,303) IVEC(I),LABJ(IATJPO(I)), &
-                 LABP((IASPAR(I)+3)/2),DENS1(I)
- 36      CONTINUE
-      END IF
+      else
+         write (24,306)
+         do 36 i = 1,nvec
+            write (24,303) ivec(i),labj(iatjpo(i)), &
+                 labp((iaspar(i)+3)/2),dens1(i)
+ 36      continue
+      end if
 !     WRITE (24,309)
 !      DO 20 I = 1,NVEC
 !     WRITE (24,303) IVEC(I),LABJ(IATJPO(I)),LABP((IASPAR(I)+3)/2),
@@ -404,60 +404,60 @@
 !
 !   Dealloc
 !
-      CALL DALLOC (SMSC1,'SMSC1','RIS_CAL')
-      CALL DALLOC (SMSC2,'SMSC2','RIS_CAL')
-      CALL DALLOC (DENS1,'DENS1','RIS_CAL')
-      CALL DALLOC (DENS2,'DENS2','RIS_CAL')
-      CALL DALLOC (DENS3,'DENS3','RIS_CAL')
-      CALL DALLOC (DENS4,'DENS4','RIS_CAL')
-      CALL DALLOC (DENS5,'DENS5','RIS_CAL')
-      CALL DALLOC (DENS6,'DENS6','RIS_CAL')
-      CALL DALLOC (DENS7,'DENS7','RIS_CAL')
+      call dalloc (smsc1,'SMSC1','RIS_CAL')
+      call dalloc (smsc2,'SMSC2','RIS_CAL')
+      call dalloc (dens1,'DENS1','RIS_CAL')
+      call dalloc (dens2,'DENS2','RIS_CAL')
+      call dalloc (dens3,'DENS3','RIS_CAL')
+      call dalloc (dens4,'DENS4','RIS_CAL')
+      call dalloc (dens5,'DENS5','RIS_CAL')
+      call dalloc (dens6,'DENS6','RIS_CAL')
+      call dalloc (dens7,'DENS7','RIS_CAL')
 
       write(*,*) '-------------------------------'
       write(*,*) 'RIS_CAL: Execution Finished ...'
       write(*,*) '-------------------------------'
 
-      CALL STOPTIME (ncount1, 'RIS_CAL')
-      RETURN
+      call stoptime (ncount1, 'RIS_CAL')
+      return
 !
-301   FORMAT (//' CUTOFF set to ',1PD22.15)
-302   FORMAT (//' Level  J Parity  Specific mass shift parameter')
+301   format (//' CUTOFF set to ',1pd22.15)
+302   format (//' Level  J Parity  Specific mass shift parameter')
 
 !     Electron density values
-303   FORMAT (1X,I3,5X,2A4,3X,D20.10)
-304   FORMAT (1X,I3,5X,2A4,3X,2D20.10)
+303   format (1x,i3,5x,2a4,3x,d20.10)
+304   format (1x,i3,5x,2a4,3x,2d20.10)
 
 !     Electronic factor values
-324   FORMAT (1X,I3,5X,2A4,3X,4D20.10,F10.4)
+324   format (1x,i3,5x,2a4,3x,4d20.10,f10.4)
 
 !     Field shift values
-334   FORMAT (1X,I3,5X,2A4,3X,2D20.10)
+334   format (1x,i3,5x,2a4,3x,2d20.10)
 
       !     Electron density header
-306   FORMAT (//' Electron density in atomic units' &
-           //' Level  J Parity',8X,'DENS (a.u.)'/)
+306   format (//' Electron density in atomic units' &
+           //' Level  J Parity',8x,'DENS (a.u.)'/)
 
-307   FORMAT (//' Level  J Parity  Electron density in atomic units' &
-           //24X,'Dens. (a.u.)')
+307   format (//' Level  J Parity  Electron density in atomic units' &
+           //24x,'Dens. (a.u.)')
 
 !     Electronic factors header
-317   FORMAT (//' Level  J Parity  Field shift electronic factors and av&
+317   format (//' Level  J Parity  Field shift electronic factors and av&
            &erage point discrepancy in fit' &
-           //24X, &
-           'F0 (GHz/fm^2)',6X,' F2 (GHz/fm^4)', &
-           6X,' F4 (GHz/fm^6)',6X,' F6 (GHz/fm^8)', &
-           6X,' Disc. (per mille)')
+           //24x, &
+           'F0 (GHz/fm^2)',6x,' F2 (GHz/fm^4)', &
+           6x,' F4 (GHz/fm^6)',6x,' F6 (GHz/fm^8)', &
+           6x,' Disc. (per mille)')
 
 !     Electronic field shift header
-327   FORMAT (//' Level  J Parity  Field shift electronic factors (corre&
+327   format (//' Level  J Parity  Field shift electronic factors (corre&
            &cted for varying density inside nucleus)' &
-           //24X, &
+           //24x, &
            'F0VED0 (GHz/fm^2)   F0VED1 (GHz/fm^4)')
 
-308   FORMAT (//' Level  J Parity  Normal mass shift parameter')
+308   format (//' Level  J Parity  Normal mass shift parameter')
 
-309   FORMAT (' Level  J Parity  Energy')
+309   format (' Level  J Parity  Energy')
 
 !     309 FORMAT (//' Radial expectationvalue'
 !     :        //' Level  J Parity',8X,'<r> (a.u.)'/)
@@ -467,12 +467,12 @@
 !     :        //' Level  J Parity',8X,'<r-1> (a.u.)'/)
 !     312 FORMAT (//' Radial expectationvalue'
 !     :        //' Level  J Parity',8X,'<r-2> (a.u.)'/)
-313   FORMAT (1X,I3,5X,2A4,3x,3D20.10,'  (a.u.)')
-333   FORMAT (1X,I3,5X,2A4,3x,3D20.10,'  (GHz u)')
-323   FORMAT (1X,I3,5X,2A4,3x,D20.10,'  (a.u.)')
-314   FORMAT (/,29X,'<K^1>',13X,'<K^2+K^3>',9X,'<K^1+K^2+K^3>')
-315   FORMAT (20X,3D20.10 ,2X,'(MHz u)')
-316   FORMAT (20X,3D20.10,2X,'(GHz u)')
+313   format (1x,i3,5x,2a4,3x,3d20.10,'  (a.u.)')
+333   format (1x,i3,5x,2a4,3x,3d20.10,'  (GHz u)')
+323   format (1x,i3,5x,2a4,3x,d20.10,'  (a.u.)')
+314   format (/,29x,'<K^1>',13x,'<K^2+K^3>',9x,'<K^1+K^2+K^3>')
+315   format (20x,3d20.10 ,2x,'(MHz u)')
+316   format (20x,3d20.10,2x,'(GHz u)')
       !
-      RETURN
-    END SUBROUTINE RIS_CAL
+      return
+    end subroutine ris_cal

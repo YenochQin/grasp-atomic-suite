@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE RECOP2(NS,JA1,JA2,K1,K2,KA,IRE,IAT,RECC)
+      subroutine recop2(ns,ja1,ja2,k1,k2,ka,ire,iat,recc)
 !                                                                  *
 !   ---------------  SECTION REC    SUBPROGRAM 06  --------------  *
 !                                                                  *
@@ -15,70 +15,70 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ONE
-      USE m_C,             ONLY: JLIST, JJQ1, JJQ2, NPEEL
+      use vast_kind_param, only: double
+      use cons_c,          only: one
+      use m_c,             only: jlist, jjq1, jjq2, npeel
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE diaga1_I
-      USE diaga3_I
-      USE diaga4_I
-      USE diaga5_I
-      IMPLICIT NONE
+      use diaga1_i
+      use diaga3_i
+      use diaga4_i
+      use diaga5_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN)       :: NS, JA1, JA2, K1, K2, KA, IRE
-      INTEGER, INTENT(OUT)      :: IAT
-      REAL(DOUBLE), INTENT(OUT) :: RECC
+      integer, intent(in)       :: ns, ja1, ja2, k1, k2, ka, ire
+      integer, intent(out)      :: iat
+      real(double), intent(out) :: recc
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: IJ, ISKR, NPEELGG
-      REAL(DOUBLE) :: S, SS, RE
+      integer :: ij, iskr, npeelgg
+      real(double) :: s, ss, re
 !-----------------------------------------------
-      IAT=1
-      IJ=JLIST(JA1)
-      S=DBLE(JJQ1(3,IJ))
-      IJ=JLIST(JA2)
-      SS=DBLE(JJQ1(3,IJ))
-      SS=S*SS
-      RECC=ONE/DSQRT(SS)
-      IF(NPEEL == 1 .AND. NS == -1)RETURN
-      IF(NS == -1) THEN
-         NPEELGG = NPEEL
-      ELSE
-         NPEELGG = NS
-      END IF
-      IAT=0
-      ISKR=NPEELGG-JA2
-      IF(ISKR > 1) THEN
-        CALL DIAGA3(JA2,NPEELGG,2*KA,IRE,IAT,RE)
-        IF(IAT == 0)RETURN
-        RECC=RE*RECC
-        IAT=0
-      END IF
-      IF(JA2 /= NPEELGG) THEN
-        CALL DIAGA5(NPEELGG,JA2,2*KA,IRE,IAT,RE)
-        IF(IAT == 0)RETURN
-        RECC=RE*RECC
-        IAT=0
-      ENDIF
-      CALL DIAGA4(JA1,JA2,K1,K2,2*KA,IRE,IAT,RE)
-      IF(IAT == 0)RETURN
-      RECC=RE*RECC
-      IF(JA1 == 1.AND.JA2 == 2)RETURN
-      IAT=0
-      CALL DIAGA1(JA1,K1,IRE,IAT,RE)
-      IF(IAT == 0)RETURN
-      RECC=RE*RECC
-      ISKR=JA2-JA1
-      IF(JA1 == 1)ISKR=JA2-1-JA1
-      IF(ISKR <= 1)RETURN
-      IAT=0
-      CALL DIAGA3(JA1,JA2,K1,IRE,IAT,RE)
-      IF(IAT == 0)RETURN
-      RECC=RE*RECC
-      RETURN
-      END SUBROUTINE RECOP2
+      iat=1
+      ij=jlist(ja1)
+      s=dble(jjq1(3,ij))
+      ij=jlist(ja2)
+      ss=dble(jjq1(3,ij))
+      ss=s*ss
+      recc=one/dsqrt(ss)
+      if(npeel == 1 .and. ns == -1)return
+      if(ns == -1) then
+         npeelgg = npeel
+      else
+         npeelgg = ns
+      end if
+      iat=0
+      iskr=npeelgg-ja2
+      if(iskr > 1) then
+        call diaga3(ja2,npeelgg,2*ka,ire,iat,re)
+        if(iat == 0)return
+        recc=re*recc
+        iat=0
+      end if
+      if(ja2 /= npeelgg) then
+        call diaga5(npeelgg,ja2,2*ka,ire,iat,re)
+        if(iat == 0)return
+        recc=re*recc
+        iat=0
+      endif
+      call diaga4(ja1,ja2,k1,k2,2*ka,ire,iat,re)
+      if(iat == 0)return
+      recc=re*recc
+      if(ja1 == 1.and.ja2 == 2)return
+      iat=0
+      call diaga1(ja1,k1,ire,iat,re)
+      if(iat == 0)return
+      recc=re*recc
+      iskr=ja2-ja1
+      if(ja1 == 1)iskr=ja2-1-ja1
+      if(iskr <= 1)return
+      iat=0
+      call diaga3(ja1,ja2,k1,ire,iat,re)
+      if(iat == 0)return
+      recc=re*recc
+      return
+      end subroutine recop2

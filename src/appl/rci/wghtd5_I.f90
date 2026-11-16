@@ -1,9 +1,9 @@
-      MODULE wghtd5_I
-      INTERFACE
+      module wghtd5_i
+      interface
 !...Translated by Charlotte Froese Fischer
 !                       Gediminas Gaigalas  10/05/17
-      SUBROUTINE WGHTD5(iatjpo, iaspar)
-      INTEGER, INTENT(IN)  :: iatjpo, iaspar
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine wghtd5(iatjpo, iaspar)
+      integer, intent(in)  :: iatjpo, iaspar
+      end subroutine
+      end interface
+      end module

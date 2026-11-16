@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE LODRWFI(NAME)
+      subroutine lodrwfi(name)
 !                                                                      *
 !   This subroutine loads  radial wavefunctions from the  .rwf  file   *
 !   and performs some related setup.                                   *
@@ -14,28 +14,28 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE memory_man
-      USE def_C
-      USE npar_C
-      USE biorb_C
-      USE wave_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use memory_man
+      use def_c
+      use npar_c
+      use biorb_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER , INTENT(IN) :: NAME*128
+      character , intent(in) :: name*128
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J, I, K, NWIN, IOS, NPYII, NAKYII, MYII, JJ
-      REAL(DOUBLE) :: CON, FKK, EYII, PZY
-      REAL(DOUBLE), DIMENSION(:), pointer :: pa, qa, ra
-      CHARACTER :: G92RWF*6
+      integer :: j, i, k, nwin, ios, npyii, nakyii, myii, jj
+      real(double) :: con, fkk, eyii, pzy
+      real(double), dimension(:), pointer :: pa, qa, ra
+      character :: g92rwf*6
 !-----------------------------------------------
 !
 !   Common relevant for the initial state
@@ -46,91 +46,91 @@
 !
 !   Open the radial wave function file
 !
-      J = INDEX(NAME,' ')
-      OPEN(UNIT=69, FILE=NAME(1:J-1)//'.bw', FORM='UNFORMATTED', STATUS='OLD', &
-         POSITION='asis')
+      j = index(name,' ')
+      open(unit=69, file=name(1:j-1)//'.bw', form='UNFORMATTED', status='OLD', &
+         position='asis')
 !
 !   Allocate storage to orbital arrays
 !
-      CALL ALLOC (PFII, NNNP, NWII, 'PFII', 'LODRWFI')
-      CALL ALLOC (QFII, NNNP, NWII, 'QFII', 'LODRWFI')
+      call alloc (pfii, nnnp, nwii, 'PFII', 'LODRWFI')
+      call alloc (qfii, nnnp, nwii, 'QFII', 'LODRWFI')
 !
-      CON = Z/C
-      CON = CON*CON
+      con = z/c
+      con = con*con
 !
-      WRITE (*, *) 'NWII', NWII
-      DO J = 1, NWII
-         WRITE (*, *) NAKII(J), NPII(J), NHII(J)
-         PFII(:NNNP,J) = 0.0D00
-         QFII(:NNNP,J) = 0.0D00
+      write (*, *) 'NWII', nwii
+      do j = 1, nwii
+         write (*, *) nakii(j), npii(j), nhii(j)
+         pfii(:nnnp,j) = 0.0d00
+         qfii(:nnnp,j) = 0.0d00
 !
-         EII(J) = -1.0D00
+         eii(j) = -1.0d00
 !
-         K = ABS(NAKII(J))
-         IF (NPARM > 0) THEN
-            GAMAII(J) = DBLE(K)
-         ELSE IF (NPARM == 0) THEN
-            FKK = DBLE(K*K)
-            IF (FKK >= CON) THEN
-               GAMAII(J) = SQRT(FKK - CON)
-            ELSE
-               WRITE (6, *) 'LODRWF: Imaginary gamma parameter'
-               WRITE (6, *) ' for ', NPII(J), NHII(J), ' orbital; the'
-               WRITE (6, *) ' point model for the nucleus'
-               WRITE (6, *) ' is inappropriate for Z > ', C, '.'
-               STOP
-            ENDIF
-         ENDIF
+         k = abs(nakii(j))
+         if (nparm > 0) then
+            gamaii(j) = dble(k)
+         else if (nparm == 0) then
+            fkk = dble(k*k)
+            if (fkk >= con) then
+               gamaii(j) = sqrt(fkk - con)
+            else
+               write (6, *) 'LODRWF: Imaginary gamma parameter'
+               write (6, *) ' for ', npii(j), nhii(j), ' orbital; the'
+               write (6, *) ' point model for the nucleus'
+               write (6, *) ' is inappropriate for Z > ', c, '.'
+               stop
+            endif
+         endif
 !
-      END DO
+      end do
 !
 !   Read orbital information from Read Orbitals File;
 !
-      NWIN = 0
-      READ (69, IOSTAT=IOS) G92RWF
-      IF (IOS/=0 .OR. G92RWF/='G92RWF') THEN
-         WRITE (6, *) 'This is not a Radial WaveFunction File;'
-         CLOSE(69)
-      ENDIF
+      nwin = 0
+      read (69, iostat=ios) g92rwf
+      if (ios/=0 .or. g92rwf/='G92RWF') then
+         write (6, *) 'This is not a Radial WaveFunction File;'
+         close(69)
+      endif
 
-    3 CONTINUE
-      READ (69, IOSTAT=IOS) NPYII, NAKYII, EYII, MYII
-      IF (IOS == 0) THEN
-         CALL ALLOC (PA, MYII, 'PA', 'LODRWFI')
-         CALL ALLOC (QA, MYII, 'QA', 'LODRWFI')
-         CALL ALLOC (RA, MYII, 'RA', 'LODRWFI')
-         READ (69) PZY, (PA(I),I=1,MYII), (QA(I),I=1,MYII)
-         READ (69) (RA(I),I=1,MYII)
+    3 continue
+      read (69, iostat=ios) npyii, nakyii, eyii, myii
+      if (ios == 0) then
+         call alloc (pa, myii, 'PA', 'LODRWFI')
+         call alloc (qa, myii, 'QA', 'LODRWFI')
+         call alloc (ra, myii, 'RA', 'LODRWFI')
+         read (69) pzy, (pa(i),i=1,myii), (qa(i),i=1,myii)
+         read (69) (ra(i),i=1,myii)
 
-         DO J = 1, NWII
-            IF (.NOT.(EII(J)<0.0D00 .AND. NPYII==NPII(J) .AND. NAKYII==NAKII(J)&
-               )) CYCLE
-            PZII(J) = PZY
-            EII(J) = EYII
-            MFII(J) = MYII
-            DO JJ = 1, MFII(J)
-               PFII(JJ,J) = PA(JJ)
-               QFII(JJ,J) = QA(JJ)
-            END DO
-            NWIN = NWIN + 1
-         END DO
-         CALL DALLOC (PA, 'PA', 'LODRWFI')
-         CALL DALLOC (QA, 'QA', 'LODRWFI')
-         CALL DALLOC (RA, 'RA', 'LODRWFI')
-         GO TO 3
-      ENDIF
+         do j = 1, nwii
+            if (.not.(eii(j)<0.0d00 .and. npyii==npii(j) .and. nakyii==nakii(j)&
+               )) cycle
+            pzii(j) = pzy
+            eii(j) = eyii
+            mfii(j) = myii
+            do jj = 1, mfii(j)
+               pfii(jj,j) = pa(jj)
+               qfii(jj,j) = qa(jj)
+            end do
+            nwin = nwin + 1
+         end do
+         call dalloc (pa, 'PA', 'LODRWFI')
+         call dalloc (qa, 'QA', 'LODRWFI')
+         call dalloc (ra, 'RA', 'LODRWFI')
+         go to 3
+      endif
 !
 !   Stop with an error message if all orbitals are not known
 !
-      IF (NWIN < NWII) THEN
-         WRITE (6, *) 'LODRWF: All required orbitals not'
-         WRITE (6, *) ' found.'
-         STOP
-      ENDIF
+      if (nwin < nwii) then
+         write (6, *) 'LODRWF: All required orbitals not'
+         write (6, *) ' found.'
+         stop
+      endif
 !
 !      WRITE (6, *) ' ... load complete;'
 !
-      CLOSE(69)
+      close(69)
 
-      RETURN
-      END SUBROUTINE LODRWFI
+      return
+      end subroutine lodrwfi

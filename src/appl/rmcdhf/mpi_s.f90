@@ -1,7 +1,7 @@
-      MODULE mpi_s
-      USE vast_kind_param, ONLY:  DOUBLE
+      module mpi_s
+      use vast_kind_param, only:  double
 !...Created by Pacific-Sierra Research 77to90  4.3E  20:12:31   2/12/04
 !...Modified by Charlotte Froese Fischer
 !                     Gediminas Gaigalas  10/05/17
-      INTEGER :: MYID, NPROCS
-      END MODULE mpi_s
+      integer :: myid, nprocs
+      end module mpi_s

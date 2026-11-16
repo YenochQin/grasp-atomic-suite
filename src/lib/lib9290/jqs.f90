@@ -1,6 +1,6 @@
 !!***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION JQS (IWHICH, ISUBSH, ICSF)
+      integer function jqs (iwhich, isubsh, icsf)
 !                                                                      *
 !   JQS is a subshell quantum number for subshell ISUBSH in configu-   *
 !   ration state function  ICSF:  the seniority if IWHICH is 1;  the   *
@@ -16,20 +16,20 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE parameter_def, ONLY: NNNW
-      USE STAT_C,        ONLY: JQSA
-      USE IOUNIT_C,      ONLY: istde
-      use orb_C,         ONLY: NCF
-      IMPLICIT NONE
+      use parameter_def, only: nnnw
+      use stat_c,        only: jqsa
+      use iounit_c,      only: istde
+      use orb_c,         only: ncf
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER             :: IWHICH
-      INTEGER, INTENT(IN) :: ISUBSH
-      INTEGER             :: ICSF
+      integer             :: iwhich
+      integer, intent(in) :: isubsh
+      integer             :: icsf
 !-----------------------------------------------
 !
       jqs = jqsa(isubsh,iwhich,icsf)
 !
-      RETURN
-      END FUNCTION JQS
+      return
+      end function jqs

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION ITJPOR (ICSF)
+      integer function itjpor (icsf)
 !                                                                      *
 !   ITJPOR is the value of 2J+1 for CSF number ICSF.                   *
 !                                                                      *
@@ -14,28 +14,28 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE parameter_def, ONLY: NNNW
-      USE STAT_C,        ONLY: JCUPAR
-      USE IOUNIT_C,      ONLY: ISTDE
-      USE orb_C,         ONLY: NCFR
+      use parameter_def, only: nnnw
+      use stat_c,        only: jcupar
+      use iounit_c,      only: istde
+      use orb_c,         only: ncfr
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: ICSF
+      integer  :: icsf
 !-----------------------------------------------
 !
-      IF (ICSF>=1 .AND. ICSF<=NCFR) THEN
-        itjpor = jcupar(NNNW,icsf)
-         IF (ITJPOR > 127) ITJPOR = 256 - ITJPOR
-         ITJPOR = IABS (ITJPOR)
-      ELSE
-         WRITE (6, *) 'ITJPOR: Argument ICSF is out of range.'
-         STOP
-      ENDIF
+      if (icsf>=1 .and. icsf<=ncfr) then
+        itjpor = jcupar(nnnw,icsf)
+         if (itjpor > 127) itjpor = 256 - itjpor
+         itjpor = iabs (itjpor)
+      else
+         write (6, *) 'ITJPOR: Argument ICSF is out of range.'
+         stop
+      endif
 !
-      RETURN
-      END FUNCTION ITJPOR
+      return
+      end function itjpor

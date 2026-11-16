@@ -1,6 +1,6 @@
 !***********************************************************************
 !
-      SUBROUTINE ORTHY(NW, JP, LSORT)
+      subroutine orthy(nw, jp, lsort)
 !
 ! nw     - input, total number of orbitals
 ! jp     - input, orbital jp, usually updated from  solve. It is
@@ -32,59 +32,59 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNW
-      USE DEF_C
-      USE ORB_C, ONLY: nak, e
-      USE ORBA_C, ONLY: iorder
-      USE CORRE_C, ONLY: LCORRE
-      USE FIXD_C, ONLY: lfix
-      USE INVT_C, ONLY: noinvt
-      USE IOUNIT_C
-      USE SCF_C, ONLY: scnsty
-      USE WAVE_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnw
+      use def_c
+      use orb_c, only: nak, e
+      use orba_c, only: iorder
+      use corre_c, only: lcorre
+      use fixd_c, only: lfix
+      use invt_c, only: noinvt
+      use iounit_c
+      use scf_c, only: scnsty
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rint_I
-      IMPLICIT NONE
+      use rint_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER , INTENT(IN) :: NW
-      INTEGER , INTENT(IN) :: JP
-      LOGICAL , INTENT(IN) :: LSORT
+      integer , intent(in) :: nw
+      integer , intent(in) :: jp
+      logical , intent(in) :: lsort
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: J1
-      INTEGER , DIMENSION(NNNW) :: KINDX
-      INTEGER :: KFIXED, NAKJ, KTOTAL, I, KI, J, KNON, ISHIFT, KJ, LRAW, L, &
-         NAKL, MTP0, KRAW, K, MTP
-      REAL(DOUBLE) :: EPS, OVRLAP, DNORM, FACTOR
-      LOGICAL :: CHECK
+      integer :: j1
+      integer , dimension(nnnw) :: kindx
+      integer :: kfixed, nakj, ktotal, i, ki, j, knon, ishift, kj, lraw, l, &
+         nakl, mtp0, kraw, k, mtp
+      real(double) :: eps, ovrlap, dnorm, factor
+      logical :: check
 !-----------------------------------------------
 !
 ! For inverse - taken from orthor.f which was not used anywhere
 ! Not used currently
 !-----------------------------------------------------------------------
-      CHECK = .NOT.NOINVT(JP)
+      check = .not.noinvt(jp)
 
-      EPS = 0.01D0*ACCY
-      KFIXED = 0
-      NAKJ = NAK(JP)
+      eps = 0.01d0*accy
+      kfixed = 0
+      nakj = nak(jp)
 
 !-----------------------------------------------------------------------
 ! Find orbitals of the same kappa as orbital jp.
 !-----------------------------------------------------------------------
-      KTOTAL = 0
-      DO I = 1, NW
+      ktotal = 0
+      do i = 1, nw
 !         Orbital jp is supposed to be an ordered one, so should be k
-         KI = IORDER(I)
-         IF (NAK(KI) /= NAKJ) CYCLE
-         KTOTAL = KTOTAL + 1
-         KINDX(KTOTAL) = KI
-      END DO
+         ki = iorder(i)
+         if (nak(ki) /= nakj) cycle
+         ktotal = ktotal + 1
+         kindx(ktotal) = ki
+      end do
 
 !-----------------------------------------------------------------------
 ! Find fixed orbitals and separate them from the rest.
@@ -94,45 +94,45 @@
 !      sorting is done here. And find the number of non-correlation
 !      orbitals.
 
-      J = 0
-      KNON = 0
-      DO I = 1, KTOTAL
-         KI = KINDX(I)
-         IF (LFIX(KI)) THEN
+      j = 0
+      knon = 0
+      do i = 1, ktotal
+         ki = kindx(i)
+         if (lfix(ki)) then
 
-            J = J + 1
+            j = j + 1
 
              ! Shift array elements rather than exchanging
-            KINDX(I:1+J:(-1)) = KINDX(I-1:J:(-1))
+            kindx(i:1+j:(-1)) = kindx(i-1:j:(-1))
 !            kindx(i) = kindx(j)
 
-            KINDX(J) = KI
+            kindx(j) = ki
 
-         ELSE IF (.NOT.LCORRE(KI)) THEN
-            KNON = KNON + 1
-         ENDIF
-      END DO
-      KFIXED = J
+         else if (.not.lcorre(ki)) then
+            knon = knon + 1
+         endif
+      end do
+      kfixed = j
 
-      IF (LSORT) THEN
+      if (lsort) then
 
 !-----------------------------------------------------------------------
 ! Separate correlation from non-correlation orbitals
 !-----------------------------------------------------------------------
 
-         J = KFIXED
-         DO I = KFIXED + 1, KTOTAL
-            KI = KINDX(I)
-            IF (LCORRE(KI)) CYCLE
+         j = kfixed
+         do i = kfixed + 1, ktotal
+            ki = kindx(i)
+            if (lcorre(ki)) cycle
 
-            J = J + 1
+            j = j + 1
 
                 ! Shift array elements rather than exchanging
-            KINDX(I:1+J:(-1)) = KINDX(I-1:J:(-1))
+            kindx(i:1+j:(-1)) = kindx(i-1:j:(-1))
 !               kindx(i) = kindx(j)
 
-            KINDX(J) = KI
-         END DO
+            kindx(j) = ki
+         end do
 
 !-----------------------------------------------------------------------
 ! Sort non-correlation and correlation orbitals separately
@@ -141,89 +141,89 @@
 
 !           non-correlation, using criteria scnsty/E^2
 
-         DO I = KFIXED + 1, KFIXED + KNON
-            KI = KINDX(I)
-            DO J = I + 1, KFIXED + KNON
-               KJ = KINDX(J)
-               IF (SCNSTY(KJ)/E(KJ)**2 >= SCNSTY(KI)/E(KI)**2) CYCLE
+         do i = kfixed + 1, kfixed + knon
+            ki = kindx(i)
+            do j = i + 1, kfixed + knon
+               kj = kindx(j)
+               if (scnsty(kj)/e(kj)**2 >= scnsty(ki)/e(ki)**2) cycle
 
                    ! No need to do shifting, exchanging is fine
-               KINDX(J) = KI
-               KI = KJ
-            END DO
-            KINDX(I) = KI
-         END DO
+               kindx(j) = ki
+               ki = kj
+            end do
+            kindx(i) = ki
+         end do
 
 !           correlation orbitals, using criteria scnsty
 
-         DO I = KFIXED + KNON + 1, KTOTAL
-            KI = KINDX(I)
-            DO J = I + 1, KTOTAL
-               KJ = KINDX(J)
-               IF (SCNSTY(KJ) >= SCNSTY(KI)) CYCLE
+         do i = kfixed + knon + 1, ktotal
+            ki = kindx(i)
+            do j = i + 1, ktotal
+               kj = kindx(j)
+               if (scnsty(kj) >= scnsty(ki)) cycle
 
                    ! No need to do shifting, exchanging is fine
-               KINDX(J) = KI
-               KI = KJ
-            END DO
-            KINDX(I) = KI
-         END DO
+               kindx(j) = ki
+               ki = kj
+            end do
+            kindx(i) = ki
+         end do
 
-      ENDIF
+      endif
 
 ! Finished sorting.
 ! Schmidt orthogonalize all orbitals of the same kappa
 ! The fixed orbitals are not changed
 
-      DO LRAW = KFIXED + 1, KTOTAL
-         L = KINDX(LRAW)
+      do lraw = kfixed + 1, ktotal
+         l = kindx(lraw)
 
-         NAKL = NAK(L)
+         nakl = nak(l)
 
-         MTP0 = MF(L)
+         mtp0 = mf(l)
 
-         DO KRAW = 1, LRAW - 1
-            K = KINDX(KRAW)
-            OVRLAP = RINT(L,K,0)
+         do kraw = 1, lraw - 1
+            k = kindx(kraw)
+            ovrlap = rint(l,k,0)
 
 !   Schmidt orthogonalise
 
-            PZ(L) = PZ(L) - OVRLAP*PZ(K)
-            MTP = MAX(MF(L),MF(K))
-            MTP0 = MAX(MTP0,MF(K))
+            pz(l) = pz(l) - ovrlap*pz(k)
+            mtp = max(mf(l),mf(k))
+            mtp0 = max(mtp0,mf(k))
 
-            PF(:MTP,L) = PF(:MTP,L) - OVRLAP*PF(:MTP,K)
-            QF(:MTP,L) = QF(:MTP,L) - OVRLAP*QF(:MTP,K)
-         END DO
+            pf(:mtp,l) = pf(:mtp,l) - ovrlap*pf(:mtp,k)
+            qf(:mtp,l) = qf(:mtp,l) - ovrlap*qf(:mtp,k)
+         end do
 
 !   Normalise
 
-         MTP = MTP0
+         mtp = mtp0
 
-         MF(L) = MTP
-         DNORM = RINT(L,L,0)
-         FACTOR = 1.D0/SQRT(DNORM)
+         mf(l) = mtp
+         dnorm = rint(l,l,0)
+         factor = 1.d0/sqrt(dnorm)
 
-         IF (PZ(L) < 0.D0) FACTOR = -FACTOR
+         if (pz(l) < 0.d0) factor = -factor
 
-         PZ(L) = FACTOR*PZ(L)
-         PF(2:MTP,L) = FACTOR*PF(2:MTP,L)
-         QF(2:MTP,L) = FACTOR*QF(2:MTP,L)
+         pz(l) = factor*pz(l)
+         pf(2:mtp,l) = factor*pf(2:mtp,l)
+         qf(2:mtp,l) = factor*qf(2:mtp,l)
 
 !   Find new MF(L)
 
-         MTP = MTP + 1
-   20    CONTINUE
-         MTP = MTP - 1
-         IF (ABS(PF(MTP,L)) < EPS) THEN
-            PF(MTP,L) = 0.D0
-            QF(MTP,L) = 0.D0
-            GO TO 20
-         ELSE
-            MF(L) = MTP
-         ENDIF
+         mtp = mtp + 1
+   20    continue
+         mtp = mtp - 1
+         if (abs(pf(mtp,l)) < eps) then
+            pf(mtp,l) = 0.d0
+            qf(mtp,l) = 0.d0
+            go to 20
+         else
+            mf(l) = mtp
+         endif
 
-      END DO
+      end do
 
-      RETURN
-      END SUBROUTINE ORTHY
+      return
+      end subroutine orthy

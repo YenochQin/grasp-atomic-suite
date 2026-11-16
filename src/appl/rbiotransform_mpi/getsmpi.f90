@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE GETS(S, NSHLI, NSHLF)
+      subroutine gets(s, nshli, nshlf)
 !                                                                      *
 !   This subroutine calculates the initial and final state             *
 !   radial overlap matrix                                              *
@@ -14,53 +14,53 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE grid_C
-      USE tatb_C
-      USE orb_C
-      USE biorb_C
-      USE wave_C
-      USE mpi_C
+      use vast_kind_param, only:  double
+      use grid_c
+      use tatb_c
+      use orb_c
+      use biorb_c
+      use wave_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE quad_I
-      USE wrtmat_I
-      IMPLICIT NONE
+      use quad_i
+      use wrtmat_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER       :: NSHLI
-      INTEGER       :: NSHLF
-      REAL(DOUBLE)  :: S(NSHLI,NSHLF)
+      integer       :: nshli
+      integer       :: nshlf
+      real(double)  :: s(nshli,nshlf)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: I, J, L
-      REAL(DOUBLE) :: RESULT
+      integer      :: i, j, l
+      real(double) :: result
 !-----------------------------------------------
 !
-      DO I = 1, NSHLI
-         DO J = 1, NSHLF
+      do i = 1, nshli
+         do j = 1, nshlf
 !
 !   Determine the maximum tabulation point for the integrand
 !
-            MTP = MIN(MFII(I),MFFF(J))
+            mtp = min(mfii(i),mfff(j))
 !
 !   Tabulate the integrand as required for SUBROUTINE QUAD; the
 !   value at the first tabulation point is arbitrary
 !
-            TA(1) = 0.D0
-            DO L = 2, MTP
-               TA(L) = (PFII(L,I)*PFFF(L,J) + QFII(L,I)*QFFF(L,J))*RP(L)
-            END DO
+            ta(1) = 0.d0
+            do l = 2, mtp
+               ta(l) = (pfii(l,i)*pfff(l,j) + qfii(l,i)*qfff(l,j))*rp(l)
+            end do
 !
 !   Perform the quadrature
 !
-            CALL QUAD (RESULT)
-            S(I,J) = RESULT
-         END DO
-      END DO
+            call quad (result)
+            s(i,j) = result
+         end do
+      end do
 !
 !   Print out
 !
@@ -69,8 +69,8 @@
 !      WRITE (*, *) ' S matrix from GETS'
 !      WRITE (*, *) '********************'
 
-         CALL WRTMAT (S, NSHLI, NSHLF, NSHLI, NSHLF)
+         call wrtmat (s, nshli, nshlf, nshli, nshlf)
       endif
 !
-      RETURN
-      END SUBROUTINE GETS
+      return
+      end subroutine gets

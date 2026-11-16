@@ -1,7 +1,7 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE MANEIGmpi(dvdfirst, LPRINT, JBLOCK, &
-                        NCFPAT, NCMINPAT, NEVECPAT, NCFTOT)
+      subroutine maneigmpi(dvdfirst, lprint, jblock, &
+                        ncfpat, ncminpat, nevecpat, ncftot)
 !                                                                      *
 !   This module  manages the  operation of the  eigensolvers and the   *
 !   storage of the eigenpairs.  There are two principal branches:      *
@@ -38,61 +38,61 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE memory_man
-      USE DEF_C
-      USE eigv_C
-      USE hblock_C
-      USE hmat_C
-      USE mpi_C
-      USE orb_C
-      USE symA_C,          ONLY: JPGG
-      USE WCHBLK_C, JBLOCKK=>JBLOCK
+      use vast_kind_param, only:  double
+      use memory_man
+      use def_c
+      use eigv_c
+      use hblock_c
+      use hmat_c
+      use mpi_c
+      use orb_c
+      use syma_c,          only: jpgg
+      use wchblk_c, jblockk=>jblock
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE spicmvmpi_I
-      USE iniestmpi_I
-      USE gdvd_I
-      USE itjpo_I
-      USE ispar_I
-      USE suite_linear_algebra, ONLY: dcopy, dscal
-      IMPLICIT NONE
+      use spicmvmpi_i
+      use iniestmpi_i
+      use gdvd_i
+      use itjpo_i
+      use ispar_i
+      use suite_linear_algebra, only: dcopy, dscal
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      logical, INTENT(IN) ::  dvdfirst
-      INTEGER             :: JBLOCK
-      INTEGER, INTENT(IN) :: NCFPAT
-      INTEGER, INTENT(IN) :: NCMINPAT
-      INTEGER, INTENT(IN) :: NEVECPAT
-      INTEGER             :: NCFTOT
-      LOGICAL             :: LPRINT
+      logical, intent(in) ::  dvdfirst
+      integer             :: jblock
+      integer, intent(in) :: ncfpat
+      integer, intent(in) :: ncminpat
+      integer, intent(in) :: nevecpat
+      integer             :: ncftot
+      logical             :: lprint
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NVECT, LIM, LWORK, NVEX, NIV, MAXITR, N1000, MBLOCK, &
-         ILOW, IHIGH, LIWORK, IC, NLOOPS, NMV, NEND, J, JSTATE, &
-         IOFSET, I, IA
-      INTEGER, DIMENSION(:), POINTER :: IWORK, JWORK
-      REAL(DOUBLE) :: PNWORK, CRITE, CRITC, CRITR, ORTHO, AMAX, WA, DNFAC
-      REAL(DOUBLE), DIMENSION(:), POINTER :: WORK, DIAG, atmp
-      LOGICAL :: HIEND
+      integer :: nvect, lim, lwork, nvex, niv, maxitr, n1000, mblock, &
+         ilow, ihigh, liwork, ic, nloops, nmv, nend, j, jstate, &
+         iofset, i, ia
+      integer, dimension(:), pointer :: iwork, jwork
+      real(double) :: pnwork, crite, critc, critr, ortho, amax, wa, dnfac
+      real(double), dimension(:), pointer :: work, diag, atmp
+      logical :: hiend
 !-----------------------------------------------
 
       !PRINT *, 'maneig ...'
 
 !      ...spicmvmpi needs this COMMON /WCHBLK/JBLOCKK
-      JBLOCKK = JBLOCK
+      jblockk = jblock
 !
 !=======================================================================
 !   Trivial case
 !=======================================================================
-      IF (NCF == 1) THEN
-         EVAL(NCMINPAT+1) = 0.D0
-         EVEC(NEVECPAT+1) = 1.D0
-         GO TO 123                               ! Don't like big ELSE
-      ENDIF
+      if (ncf == 1) then
+         eval(ncminpat+1) = 0.d0
+         evec(nevecpat+1) = 1.d0
+         go to 123                               ! Don't like big ELSE
+      endif
 !
 !=======================================================================
 !   Non-trivial case - Use Davidson eigensolver
@@ -102,123 +102,123 @@
 !   the expression below; the value of LIM can be reduced to NVECT
 !   plus a smaller number if storage is severely constrained
 !
-      NVECT = NCMAXBLK(JBLOCK)
+      nvect = ncmaxblk(jblock)
 !CFF   ... make this more like rscf
-      lim   = MIN (ncf, 2*nvect + 80)
+      lim   = min (ncf, 2*nvect + 80)
 !GG      lim   = MIN (ncf, 2*nvect + 40)
 !      LIM = MIN(NCF,2*NVECT + 20)
-      LWORK = 2*NCF*LIM + LIM*LIM*2 + 11*LIM + NVECT
-      CALL ALLOC (WORK, LWORK, 'WORK', 'MANEIGmpi')
+      lwork = 2*ncf*lim + lim*lim*2 + 11*lim + nvect
+      call alloc (work, lwork, 'WORK', 'MANEIGmpi')
 
       !...At most 14 ? restriction removed xhh 98-05-19
       !nvex = MIN (nvect,ncfblk(jblock),14)
-      NVEX = MIN(NVECT,NCFBLK(JBLOCK))
-      NIV = NVEX
-      MAXITR = MIN(NVECT*200,NCF)
+      nvex = min(nvect,ncfblk(jblock))
+      niv = nvex
+      maxitr = min(nvect*200,ncf)
 !      N1000 = 2000
-      N1000 = 4000
+      n1000 = 4000
 !
 !   Initial estimates for eigenvectors
 !
 !CFF
-      if (dvdfirst .or. (ncf .LE. n1000) ) then
+      if (dvdfirst .or. (ncf .le. n1000) ) then
 !GG         CALL INIESTmpi (N1000, NCF, NIV, WORK, EMT, IENDC, IROW)
-         CALL INIESTmpi (N1000, NCF, NIV, WORK, EMT, IENDC(0:NCF), IROW)
+         call iniestmpi (n1000, ncf, niv, work, emt, iendc(0:ncf), irow)
       else
 !CFF        .. use current estimates
       nend = ncf * nvex
-         DO j = 1, nevblk(jblock)
+         do j = 1, nevblk(jblock)
             work( nend + iccmin(j+ncminpat) ) = eval(ncminpat+j)
-            CALL dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1:nevecpat + ncf*(j-1)+(ncf)),    1,    &
+            call dcopy (ncf, evec( nevecpat + ncf*(j-1) + 1:nevecpat + ncf*(j-1)+(ncf)),    1,    &
                           work( ncf*(iccmin(j+ncminpat)-1) + 1 :( ncf*(iccmin(j+ncminpat)-1) + 1 )+((ncf)-1)), 1)
-         ENDDO
-      ENDIF
+         enddo
+      endif
 
 ! iniest looks for eigenvectors of n1000*n1000 matrix so there
 ! is no need to call dvdson if block size <= n1000
 
-      IF (NCF > N1000) THEN
-         IF (myid == 0) WRITE (*,*) 'Calling dvdson!!!', maxitr,nvect
+      if (ncf > n1000) then
+         if (myid == 0) write (*,*) 'Calling dvdson!!!', maxitr,nvect
 
          ! Call Davidson eigensolver
 
-         MBLOCK = 1
-         ILOW = 1
-         IHIGH = NVEX
-         LIWORK = 6*LIM + NVECT
-         CRITE = 1.0D-17
+         mblock = 1
+         ilow = 1
+         ihigh = nvex
+         liwork = 6*lim + nvect
+         crite = 1.0d-17
 !         CRITC = 1.0D-08
 !         CRITR = 1.0D-08
 !         ORTHO = MAX(1D-8,CRITR)
-         critc = 1.0D-09
-         critr = 1.0D-09
-         ortho = MAX (1D-9, critr)
+         critc = 1.0d-09
+         critr = 1.0d-09
+         ortho = max (1d-9, critr)
 !
 !   Store the diagonals in a separate array and make it global
 !
-         CALL ALLOC (DIAG, NCF, 'DIAG', 'MANEIGmpi')
-         CALL ALLOC (atmp, NCF, 'ATMP', 'MANEIGmpi')
-         DO i = 1, ncf
-            atmp(i) = 0.D0
-            diag(i) = 0.D0    ! this one may not be necessary
-         ENDDO
+         call alloc (diag, ncf, 'DIAG', 'MANEIGmpi')
+         call alloc (atmp, ncf, 'ATMP', 'MANEIGmpi')
+         do i = 1, ncf
+            atmp(i) = 0.d0
+            diag(i) = 0.d0    ! this one may not be necessary
+         enddo
 
-         DO IC = MYID + 1, NCF, NPROCS
+         do ic = myid + 1, ncf, nprocs
 !GG            DIAG(IC) = EMT(IENDC(IC))
             atmp(ic) = emt(iendc(ic))
-         END DO
-         CALL MPI_Allreduce (atmp, diag, ncf, MPI_DOUBLE_PRECISION,  &
-                             MPI_SUM, MPI_COMM_WORLD, ierr)
-         CALL DALLOC(atmp,'ATMP', 'MANEIGmpi')
+         end do
+         call mpi_allreduce (atmp, diag, ncf, mpi_double_precision,  &
+                             mpi_sum, mpi_comm_world, ierr)
+         call dalloc(atmp,'ATMP', 'MANEIGmpi')
 
-         CALL ALLOC (IWORK, LIWORK, 'IWORK', 'MANEIGmpi')
-         CALL ALLOC (JWORK, LIM, 'JWORK', 'MANEIGmpi')
+         call alloc (iwork, liwork, 'IWORK', 'MANEIGmpi')
+         call alloc (jwork, lim, 'JWORK', 'MANEIGmpi')
          if (ncf.gt.1000) then
-            CALL GDVD (SPICMVMPI,NCF,LIM,DIAG,ILOW,IHIGH,JWORK,NIV,MBLOCK, &
-            CRITE, CRITC, CRITR, ORTHO, MAXITR, WORK, LWORK, IWORK, LIWORK, &
-            HIEND, NLOOPS, NMV, IERR)
+            call gdvd (spicmvmpi,ncf,lim,diag,ilow,ihigh,jwork,niv,mblock, &
+            crite, critc, critr, ortho, maxitr, work, lwork, iwork, liwork, &
+            hiend, nloops, nmv, ierr)
          end if
-         CALL DALLOC (DIAG, 'DIAG', 'MANEIGmpi')
-         CALL DALLOC (IWORK, 'IWORK', 'MANEIGmpi')
-         CALL DALLOC (JWORK, 'JWORK', 'MANEIGmpi')
+         call dalloc (diag, 'DIAG', 'MANEIGmpi')
+         call dalloc (iwork, 'IWORK', 'MANEIGmpi')
+         call dalloc (jwork, 'JWORK', 'MANEIGmpi')
 
-         IF (myid .EQ. 0) THEN
-            WRITE (*,301) nloops, nmv
-            IF (ierr .NE. 0) THEN
-               WRITE (*,302) ierr
-            ENDIF
-         ENDIF
-      ENDIF
+         if (myid .eq. 0) then
+            write (*,301) nloops, nmv
+            if (ierr .ne. 0) then
+               write (*,302) ierr
+            endif
+         endif
+      endif
 !
 !   Pick up the eigen pairs and store in EVAL and EVEC
 !
-      NEND = NCF*NVEX
-      DO J = 1, NEVBLK(JBLOCK)
-         EVAL(NCMINPAT+J) = WORK(NEND + ICCMIN(J + NCMINPAT))
-         CALL DCOPY (NCF, WORK(NCF*(ICCMIN(J + NCMINPAT) - 1) + 1:NCF*(ICCMIN(J + NCMINPAT) - 1)+(NCF)), 1, &
-      & EVEC( NEVECPAT+NCF*(J-1)+1:NEVECPAT+NCF*(J-1)+(NCF)), 1)
-      END DO
+      nend = ncf*nvex
+      do j = 1, nevblk(jblock)
+         eval(ncminpat+j) = work(nend + iccmin(j + ncminpat))
+         call dcopy (ncf, work(ncf*(iccmin(j + ncminpat) - 1) + 1:ncf*(iccmin(j + ncminpat) - 1)+(ncf)), 1, &
+      & evec( nevecpat+ncf*(j-1)+1:nevecpat+ncf*(j-1)+(ncf)), 1)
+      end do
 !     print *, ncminpat,(eval(ncminpat+j),j=1,nevblk(jblock)),
 !    1 'zou,from maneig'
 !
 !   Deallocate storage
 !
-      CALL DALLOC (WORK, 'WORK', 'MANEIGmpi')
+      call dalloc (work, 'WORK', 'MANEIGmpi')
 
-  123 CONTINUE
-      DO JSTATE = 1, NEVBLK(JBLOCK)
+  123 continue
+      do jstate = 1, nevblk(jblock)
 !
 !   Find the dominant component of each eigenvector
 !
-         IOFSET = NEVECPAT + NCF*(JSTATE - 1)
+         iofset = nevecpat + ncf*(jstate - 1)
 
-         AMAX = 0.D0
-         DO I = 1, NCF
-            WA = ABS(EVEC(I+IOFSET))
-            IF (WA <= AMAX) CYCLE
-            AMAX = WA
-            IA = I
-         END DO
+         amax = 0.d0
+         do i = 1, ncf
+            wa = abs(evec(i+iofset))
+            if (wa <= amax) cycle
+            amax = wa
+            ia = i
+         end do
 !
 !   Find the angular momentum and parity of the dominant component
 !
@@ -228,19 +228,19 @@
 !   Redefine eigenvectors so that the dominant component
 !   is positive
 !
-         IF (EVEC(IA+IOFSET) >= 0.D0) CYCLE
-         DNFAC = -1.D0
-         CALL DSCAL (NCF, DNFAC, EVEC(IOFSET+1:IOFSET+(NCF)), 1)
+         if (evec(ia+iofset) >= 0.d0) cycle
+         dnfac = -1.d0
+         call dscal (ncf, dnfac, evec(iofset+1:iofset+(ncf)), 1)
 !===============================================================
 
-      END DO
+      end do
 
-  301 FORMAT('DVDSON: ',1I3,' loops; ',1I3,' matrix-vector multiplies.')
-  302 FORMAT(' Returned from DVDSON with IERR = ',1I4)
-  303 FORMAT(/,' ***** WARNING *****'/,/,&
-         ' The angular momentum and parity of level ',1I2,' have changed:'/,&
-         ' Last iteration: (2J+1) = ',1I2,', parity = ',1I2,';'/,&
-         ' this iteration: (2J+1) = ',1I2,', parity = ',1I2,'.')
+  301 format('DVDSON: ',1i3,' loops; ',1i3,' matrix-vector multiplies.')
+  302 format(' Returned from DVDSON with IERR = ',1i4)
+  303 format(/,' ***** WARNING *****'/,/,&
+         ' The angular momentum and parity of level ',1i2,' have changed:'/,&
+         ' Last iteration: (2J+1) = ',1i2,', parity = ',1i2,';'/,&
+         ' this iteration: (2J+1) = ',1i2,', parity = ',1i2,'.')
 
-      RETURN
-      END SUBROUTINE MANEIGmpi
+      return
+      end subroutine maneigmpi

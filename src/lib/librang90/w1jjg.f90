@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE W1JJG(K1,QM1,QM2,IK,BK,ID,BD,WW)
+      subroutine w1jjg(k1,qm1,qm2,ik,bk,id,bd,ww)
 !                                                                  *
 !   Written by  G. Gaigalas                                        *
 !   Transform to fortran 90/95 by G. Gaigalas       December 2012  *
@@ -11,93 +11,93 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO, TENTH, HALF, TWO, EPS
-      USE ribojj_C
-      USE ribojj9_C
-      USE ribojj11_C
+      use vast_kind_param, only: double
+      use cons_c,          only: zero, tenth, half, two, eps
+      use ribojj_c
+      use ribojj9_c
+      use ribojj11_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE mes_I
-      USE rumtjj_I
-      USE ixjtik_I
-      USE ittk_I
-      USE a1jj_I
-      USE sixj_I
-      USE izas1_I
-      IMPLICIT NONE
+      use mes_i
+      use rumtjj_i
+      use ixjtik_i
+      use ittk_i
+      use a1jj_i
+      use sixj_i
+      use izas1_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN)               :: K1
-      INTEGER,      INTENT(IN), DIMENSION(7) :: IK, ID
-      REAL(DOUBLE), INTENT(IN)               :: QM1, QM2
-      REAL(DOUBLE), INTENT(IN), DIMENSION(3) :: BK, BD
-      REAL(DOUBLE), INTENT(OUT)              :: WW
+      integer,      intent(in)               :: k1
+      integer,      intent(in), dimension(7) :: ik, id
+      real(double), intent(in)               :: qm1, qm2
+      real(double), intent(in), dimension(3) :: bk, bd
+      real(double), intent(out)              :: ww
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: KK1,IQ,IQM,IE,IT,ITK,ITD,ITP,ITP1,ITG,ITG1,IBTT
-      INTEGER,      DIMENSION(7) :: IBT
-      REAL(DOUBLE)               :: ENQP, D1, SI1, W
-      REAL(DOUBLE), DIMENSION(3) :: BT
+      integer :: kk1,iq,iqm,ie,it,itk,itd,itp,itp1,itg,itg1,ibtt
+      integer,      dimension(7) :: ibt
+      real(double)               :: enqp, d1, si1, w
+      real(double), dimension(3) :: bt
 !-----------------------------------------------
-      WW=ZERO
-      IF(IZAS1(ID(7),BD(3),IK(7),BK(3)) == 0)RETURN
-      ENQP=ZERO
-      KK1=K1*2
-      IQ=QM2*TWO+QM2*TENTH
-      IF(ID(3) > 37) RETURN
-      IF(ITTK(ID(6),IK(6),KK1) == 0)RETURN
-      ITK=IK(1)
-      ITD=ID(1)
-      IF(ID(3) == 9) THEN
-        IF(ID(4) > 2) CALL MES(1)
-        IF(IK(4) > 2) CALL MES(1)
-        ITK=ITK-300
-        ITD=ITD-300
-        ITP1=IMPNJJ9(ITK)
-        ITP=IMPNJJ9(ITD)
-        IF(ITP1 /= ITP)RETURN
-        ITG1=IMGNJJ9(ITK)
-        ITG=IMGNJJ9(ITD)
-       ELSE
-        IF(ID(4) > 2) CALL MES(1)
-        IF(IK(4) > 2) CALL MES(1)
-        ITP1=IMPNJJ11(ITK)
-        ITP=IMPNJJ11(ITD)
-        IF(ITP1 /= ITP)RETURN
-        ITG1=IMGNJJ11(ITK)
-        ITG=IMGNJJ11(ITD)
-      ENDIF
-      IF(ITG1 /= ITG)RETURN
-      IBT(2)=ID(2)
-      IBT(3)=ID(3)
-      IBT(4)=ID(4)+IQ
-      BT(3)=BD(3)+HALF*DBLE(IQ)
-      IQM=TWO*DABS(BT(3))+TENTH
-      DO IT=ITP,ITG
-        CALL RUMTJJ(IT,IBT(3),IBT(7),IBTT,IBT(6))
-        IF(IQM <= IBT(7)) THEN
-          IF(IXJTIK(IK(3),IK(3),KK1,ID(6),IK(6),IBT(6)) /= 0) THEN
-            IBT(1)=IT
-            BT(2)=DBLE(IBT(6))/TWO
-            BT(1)=DBLE(IBT(7))/TWO
-            CALL A1JJ(IK,BK,IBT,BT,QM1,D1)
-            IF(DABS(D1) > EPS) THEN
-              CALL A1JJ(IBT,BT,ID,BD,QM2,W)
-              IF(DABS(W) > EPS) THEN
-                D1=D1*W
-                CALL SIXJ(IK(3),IK(3),KK1,ID(6),IK(6),IBT(6),0,SI1)
-                ENQP=ENQP+D1*SI1
-              ENDIF
-            ENDIF
-          ENDIF
-        ENDIF
-      END DO
-      WW=ENQP*DSQRT(DBLE((KK1+1)))
-      IE=KK1+IK(6)+ID(6)
-      IF(((IE/4)*4) /= IE)WW=-WW
-      RETURN
-      END SUBROUTINE W1JJG
+      ww=zero
+      if(izas1(id(7),bd(3),ik(7),bk(3)) == 0)return
+      enqp=zero
+      kk1=k1*2
+      iq=qm2*two+qm2*tenth
+      if(id(3) > 37) return
+      if(ittk(id(6),ik(6),kk1) == 0)return
+      itk=ik(1)
+      itd=id(1)
+      if(id(3) == 9) then
+        if(id(4) > 2) call mes(1)
+        if(ik(4) > 2) call mes(1)
+        itk=itk-300
+        itd=itd-300
+        itp1=impnjj9(itk)
+        itp=impnjj9(itd)
+        if(itp1 /= itp)return
+        itg1=imgnjj9(itk)
+        itg=imgnjj9(itd)
+       else
+        if(id(4) > 2) call mes(1)
+        if(ik(4) > 2) call mes(1)
+        itp1=impnjj11(itk)
+        itp=impnjj11(itd)
+        if(itp1 /= itp)return
+        itg1=imgnjj11(itk)
+        itg=imgnjj11(itd)
+      endif
+      if(itg1 /= itg)return
+      ibt(2)=id(2)
+      ibt(3)=id(3)
+      ibt(4)=id(4)+iq
+      bt(3)=bd(3)+half*dble(iq)
+      iqm=two*dabs(bt(3))+tenth
+      do it=itp,itg
+        call rumtjj(it,ibt(3),ibt(7),ibtt,ibt(6))
+        if(iqm <= ibt(7)) then
+          if(ixjtik(ik(3),ik(3),kk1,id(6),ik(6),ibt(6)) /= 0) then
+            ibt(1)=it
+            bt(2)=dble(ibt(6))/two
+            bt(1)=dble(ibt(7))/two
+            call a1jj(ik,bk,ibt,bt,qm1,d1)
+            if(dabs(d1) > eps) then
+              call a1jj(ibt,bt,id,bd,qm2,w)
+              if(dabs(w) > eps) then
+                d1=d1*w
+                call sixj(ik(3),ik(3),kk1,id(6),ik(6),ibt(6),0,si1)
+                enqp=enqp+d1*si1
+              endif
+            endif
+          endif
+        endif
+      end do
+      ww=enqp*dsqrt(dble((kk1+1)))
+      ie=kk1+ik(6)+id(6)
+      if(((ie/4)*4) /= ie)ww=-ww
+      return
+      end subroutine w1jjg

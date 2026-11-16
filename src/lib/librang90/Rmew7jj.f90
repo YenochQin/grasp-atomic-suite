@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE RMEW7JJ(J1,J2,K1,K2,COEF)
+      subroutine rmew7jj(j1,j2,k1,k2,coef)
 !                                                                  *
 !   Written by  G. Gaigalas                                        *
 !   Transform to fortran 90/95 by G. Gaigalas       December 2012  *
@@ -11,41 +11,41 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE CONS_C,          ONLY: ZERO
-      USE ribojj_C
+      use vast_kind_param, only: double
+      use cons_c,          only: zero
+      use ribojj_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE rmew7bjj_I
-      IMPLICIT NONE
+      use rmew7bjj_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER,      INTENT(IN)  :: J1, J2, K1, K2
-      REAL(DOUBLE), INTENT(OUT) :: COEF
+      integer,      intent(in)  :: j1, j2, k1, k2
+      real(double), intent(out) :: coef
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, DIMENSION(14) :: I00, I10, I01
+      integer, dimension(14) :: i00, i10, i01
 !-----------------------------------------------
-      DATA I00/32,48,128,80,96,128,20,60,20,108,36,44,156,68/
-      DATA I10/6,9,120,15,18,24,2*30,0,54,2*0,78,0/
-      DATA I01/10,35,168,165,286,680,0,30,10,180,60,110,546,408/
-      COEF=ZERO
-      IF(IMPTJJ(J1) /= IMPTJJ(J2)) RETURN
-      IF(J1 < 12 .OR. J1 > 25) RETURN
-      IF(K1 == 0 .AND. K2 == 0) THEN
-        IF(J1 /= J2) RETURN
-        COEF=-DSQRT(DBLE(I00(J1-11)))
-      ELSEIF(K1 == 1 .AND. K2 == 0) THEN
-        IF(J1 /= J2) RETURN
-        COEF=-DSQRT(DBLE(I10(J1-11)))
-      ELSEIF(K1 == 0 .AND. K2 == 1) THEN
-        IF(J1 /= J2) RETURN
-        COEF=-DSQRT(DBLE(I01(J1-11))/DBLE(7))
-      ELSE
-        CALL RMEW7BJJ(J1,J2,K1,K2,COEF)
-      ENDIF
-      RETURN
-      END SUBROUTINE RMEW7JJ
+      data i00/32,48,128,80,96,128,20,60,20,108,36,44,156,68/
+      data i10/6,9,120,15,18,24,2*30,0,54,2*0,78,0/
+      data i01/10,35,168,165,286,680,0,30,10,180,60,110,546,408/
+      coef=zero
+      if(imptjj(j1) /= imptjj(j2)) return
+      if(j1 < 12 .or. j1 > 25) return
+      if(k1 == 0 .and. k2 == 0) then
+        if(j1 /= j2) return
+        coef=-dsqrt(dble(i00(j1-11)))
+      elseif(k1 == 1 .and. k2 == 0) then
+        if(j1 /= j2) return
+        coef=-dsqrt(dble(i10(j1-11)))
+      elseif(k1 == 0 .and. k2 == 1) then
+        if(j1 /= j2) return
+        coef=-dsqrt(dble(i01(j1-11))/dble(7))
+      else
+        call rmew7bjj(j1,j2,k1,k2,coef)
+      endif
+      return
+      end subroutine rmew7jj

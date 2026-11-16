@@ -1,6 +1,6 @@
 !*******************************************************************
 !                                                                  *
-      INTEGER FUNCTION IXJTIK (I, J, K, L, M, N)
+      integer function ixjtik (i, j, k, l, m, n)
 !                                                                  *
 !     CHESKED TRIANGULAR CONDITIONS FOR 6j COEFFICIENT             *
 !                                                                  *
@@ -17,18 +17,18 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE ittk_I
-      IMPLICIT NONE
+      use ittk_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: I, J, K, L, M, N
+      integer  :: i, j, k, l, m, n
 !-----------------------------------------------
-      IXJTIK = 0
-      IF (ITTK(I,J,K) == 0) RETURN
-      IF (ITTK(I,M,N) == 0) RETURN
-      IF (ITTK(L,J,N) == 0) RETURN
-      IF (ITTK(L,M,K) == 0) RETURN
-      IXJTIK = 1
-      RETURN
-      END FUNCTION IXJTIK
+      ixjtik = 0
+      if (ittk(i,j,k) == 0) return
+      if (ittk(i,m,n) == 0) return
+      if (ittk(l,j,n) == 0) return
+      if (ittk(l,m,k) == 0) return
+      ixjtik = 1
+      return
+      end function ixjtik

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION RINT_SMS2 (I, J)
+      real(kind(0.0d0)) function rint_sms2 (i, j)
 !                                                                      *
 !   The value of RINT_SMS2 is an approximation to:                     *
 !                                                                      *
@@ -20,48 +20,48 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE grid_C
-      USE tatb_C
-      USE wave_C
-      USE def_C
+      use vast_kind_param, only:  double
+      use grid_c
+      use tatb_c
+      use wave_c
+      use def_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE sigma_1_I
-      USE sigma_2_I
-      USE quad_I
-      IMPLICIT NONE
+      use sigma_1_i
+      use sigma_2_i
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER ,INTENT(IN)  :: I, J
+      integer ,intent(in)  :: i, j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER      :: L
-      REAL(DOUBLE) :: RESULT, APART1, APART2
+      integer      :: l
+      real(double) :: result, apart1, apart2
 !-----------------------------------------------
 !
 !   Tabulate integrand as required for SUBROUTINE QUAD
 !
-      MTP = MIN (MF(I),MF(J))
+      mtp = min (mf(i),mf(j))
 !
 !   Value at first tabulation point is arbitrary
 !
-      CALL SIGMA_1(2,I,J,APART1)
-      CALL SIGMA_2(2,I,J,APART2)
-      TA(1) = 0.0D00
-      DO 1 L = 2,MTP
+      call sigma_1(2,i,j,apart1)
+      call sigma_2(2,i,j,apart2)
+      ta(1) = 0.0d00
+      do 1 l = 2,mtp
 !HFS        TA(L) = (R(L)**K)*(PF(L,I)*QF(L,J)+QF(L,I)*PF(L,J))*RP(L)
-        TA(L) =  RP(L)*(APART1*QF(L,I)*PF(L,J)                         &
-              -         APART2*PF(L,I)*QF(L,J))/R(L)
-    1 CONTINUE
+        ta(l) =  rp(l)*(apart1*qf(l,i)*pf(l,j)                         &
+              -         apart2*pf(l,i)*qf(l,j))/r(l)
+    1 continue
 !
 !   Perform integration
 !
-      CALL QUAD (RESULT)
-      RINT_SMS2 = -RESULT*Z/C
+      call quad (result)
+      rint_sms2 = -result*z/c
 !
-      RETURN
-      END FUNCTION RINT_SMS2
+      return
+      end function rint_sms2

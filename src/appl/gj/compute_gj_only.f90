@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE COMPUTE_GJ_ONLY(GJC_DIAG, DGJC_DIAG)
+      subroutine compute_gj_only(gjc_diag, dgjc_diag)
 !                                                                      *
 !   This routine evaluates only the diagonal ASF contributions needed  *
 !   for g_J, delta g_J, and total g_J.                                 *
@@ -9,115 +9,115 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNW
-      USE decide_C
-      USE EIGV_C
-      USE foparm_C,        ONLY: ICCUT
-      USE iounit_C,        ONLY: ISTDE
-      USE orb_C,           ONLY: NCF, NW
-      USE prnt_C,          ONLY: NVEC
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnw
+      use decide_c
+      use eigv_c
+      use foparm_c,        only: iccut
+      use iounit_c,        only: istde
+      use orb_c,           only: ncf, nw
+      use prnt_c,          only: nvec
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE convrt_I
-      USE itjpo_I
-      USE matelt_I
-      USE oneparticlejj_I
-      USE rint_I
-      USE rinthf_I
-      IMPLICIT NONE
+      use convrt_i
+      use itjpo_i
+      use matelt_i
+      use oneparticlejj_i
+      use rint_i
+      use rinthf_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE), INTENT(OUT) :: GJC_DIAG(NVEC), DGJC_DIAG(NVEC)
+      real(double), intent(out) :: gjc_diag(nvec), dgjc_diag(nvec)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-10
+      real(double), parameter :: cutoff = 1.0d-10
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, J, IPT, IC, LCNUM, IR, ITJPOC, ITJPOR, IDIFF, IA, IB, &
-         K, LOC
-      REAL(DOUBLE), DIMENSION(NNNW) :: TSHELL
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW) :: RINTGJ, RINTDGJ, GJMELT, DGJMELT
-      REAL(DOUBLE) :: APART, GJPART, DGJPART, ELEMNTGJ, ELEMNTDGJ, CONTRGJ, &
-         CONTRDGJ
-      CHARACTER :: CNUM*11
+      integer :: i, j, ipt, ic, lcnum, ir, itjpoc, itjpor, idiff, ia, ib, &
+         k, loc
+      real(double), dimension(nnnw) :: tshell
+      real(double), dimension(nnnw,nnnw) :: rintgj, rintdgj, gjmelt, dgjmelt
+      real(double) :: apart, gjpart, dgjpart, elemntgj, elemntdgj, contrgj, &
+         contrdgj
+      character :: cnum*11
 !-----------------------------------------------
 !
-      GJC_DIAG(:NVEC) = 0.0D00
-      DGJC_DIAG(:NVEC) = 0.0D00
+      gjc_diag(:nvec) = 0.0d00
+      dgjc_diag(:nvec) = 0.0d00
 !
 !   Precompute the radial integrals and angular factors required by
 !   the two one-body operators contributing to the Landé factor.
 !
-      DO I = 1, NW
-         DO J = 1, NW
-            RINTGJ(I,J) = RINTHF(I,J,1)
-            RINTDGJ(I,J) = RINT(I,J,0)
-            CALL MATELT(I, 1, J, APART, GJPART, DGJPART)
-            GJMELT(I,J) = GJPART
-            DGJMELT(I,J) = DGJPART
-         END DO
-      END DO
+      do i = 1, nw
+         do j = 1, nw
+            rintgj(i,j) = rinthf(i,j,1)
+            rintdgj(i,j) = rint(i,j,0)
+            call matelt(i, 1, j, apart, gjpart, dgjpart)
+            gjmelt(i,j) = gjpart
+            dgjmelt(i,j) = dgjpart
+         end do
+      end do
 !
-      IPT = 1
+      ipt = 1
 !
 !   Sweep over the CSF pairs. Only the diagonal-in-J branch from HFSGG
 !   is required, and only ASF diagonal matrix elements are accumulated.
 !
-      DO IC = 1, NCF
-         IF (MOD(IC,100) == 0) THEN
-            CALL CONVRT(IC, CNUM, LCNUM)
-            WRITE (ISTDE, *) 'Column '//CNUM(1:LCNUM)//' complete;'
-         ENDIF
+      do ic = 1, ncf
+         if (mod(ic,100) == 0) then
+            call convrt(ic, cnum, lcnum)
+            write (istde, *) 'Column '//cnum(1:lcnum)//' complete;'
+         endif
 !
-         DO IR = 1, NCF
-            IF (LFORDR .AND. IC>ICCUT .AND. IC/=IR) CYCLE
+         do ir = 1, ncf
+            if (lfordr .and. ic>iccut .and. ic/=ir) cycle
 !
-            ITJPOC = ITJPO(IC)
-            ITJPOR = ITJPO(IR)
-            IDIFF = ITJPOC - ITJPOR
-            IF (.NOT.(IDIFF == 0 .AND. IR >= IC)) CYCLE
+            itjpoc = itjpo(ic)
+            itjpor = itjpo(ir)
+            idiff = itjpoc - itjpor
+            if (.not.(idiff == 0 .and. ir >= ic)) cycle
 !
-            ELEMNTGJ = 0.0D00
-            ELEMNTDGJ = 0.0D00
+            elemntgj = 0.0d00
+            elemntdgj = 0.0d00
 !
-            CALL ONEPARTICLEJJ(1, IPT, IC, IR, IA, IB, TSHELL)
-            IF (IA == 0) CYCLE
+            call oneparticlejj(1, ipt, ic, ir, ia, ib, tshell)
+            if (ia == 0) cycle
 !
-            IF (IA == IB) THEN
-               DO I = 1, NW
-                  IF (ABS(TSHELL(I)) <= CUTOFF) CYCLE
-                  ELEMNTGJ = ELEMNTGJ + GJMELT(I,I)*RINTGJ(I,I)*TSHELL(I)
-                  ELEMNTDGJ = ELEMNTDGJ + DGJMELT(I,I)*RINTDGJ(I,I)*TSHELL(I)
-               END DO
-            ELSE
-               IF (ABS(TSHELL(1)) <= CUTOFF) CYCLE
-               ELEMNTGJ = ELEMNTGJ + GJMELT(IA,IB)*RINTGJ(IA,IB)*TSHELL(1)
-               ELEMNTDGJ = ELEMNTDGJ + DGJMELT(IA,IB)*RINTDGJ(IA,IB)*TSHELL(1)
-            ENDIF
+            if (ia == ib) then
+               do i = 1, nw
+                  if (abs(tshell(i)) <= cutoff) cycle
+                  elemntgj = elemntgj + gjmelt(i,i)*rintgj(i,i)*tshell(i)
+                  elemntdgj = elemntdgj + dgjmelt(i,i)*rintdgj(i,i)*tshell(i)
+               end do
+            else
+               if (abs(tshell(1)) <= cutoff) cycle
+               elemntgj = elemntgj + gjmelt(ia,ib)*rintgj(ia,ib)*tshell(1)
+               elemntdgj = elemntdgj + dgjmelt(ia,ib)*rintdgj(ia,ib)*tshell(1)
+            endif
 !
-            IF (ABS(ELEMNTGJ) <= CUTOFF .AND. ABS(ELEMNTDGJ) <= CUTOFF) CYCLE
+            if (abs(elemntgj) <= cutoff .and. abs(elemntdgj) <= cutoff) cycle
 !
-            DO K = 1, NVEC
-               LOC = (K - 1)*NCF
-               IF (IR /= IC) THEN
-                  CONTRGJ = ELEMNTGJ*(EVEC(IC + LOC)*EVEC(IR + LOC) + EVEC(IR &
-                     + LOC)*EVEC(IC + LOC))
-                  CONTRDGJ = ELEMNTDGJ*(EVEC(IC + LOC)*EVEC(IR + LOC) + EVEC(IR&
-                      + LOC)*EVEC(IC + LOC))
-               ELSE
-                  CONTRGJ = ELEMNTGJ*EVEC(IC + LOC)*EVEC(IR + LOC)
-                  CONTRDGJ = ELEMNTDGJ*EVEC(IC + LOC)*EVEC(IR + LOC)
-               ENDIF
-               GJC_DIAG(K) = GJC_DIAG(K) + CONTRGJ
-               DGJC_DIAG(K) = DGJC_DIAG(K) + CONTRDGJ
-            END DO
-         END DO
-      END DO
+            do k = 1, nvec
+               loc = (k - 1)*ncf
+               if (ir /= ic) then
+                  contrgj = elemntgj*(evec(ic + loc)*evec(ir + loc) + evec(ir &
+                     + loc)*evec(ic + loc))
+                  contrdgj = elemntdgj*(evec(ic + loc)*evec(ir + loc) + evec(ir&
+                      + loc)*evec(ic + loc))
+               else
+                  contrgj = elemntgj*evec(ic + loc)*evec(ir + loc)
+                  contrdgj = elemntdgj*evec(ic + loc)*evec(ir + loc)
+               endif
+               gjc_diag(k) = gjc_diag(k) + contrgj
+               dgjc_diag(k) = dgjc_diag(k) + contrdgj
+            end do
+         end do
+      end do
 !
-      RETURN
-      END SUBROUTINE COMPUTE_GJ_ONLY
+      return
+      end subroutine compute_gj_only

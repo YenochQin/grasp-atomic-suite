@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION RKINT (RAC, IA, IC, RBD, IB, ID, K, IW)
+      real(kind(0.0d0)) function rkint (rac, ia, ic, rbd, ib, id, k, iw)
 !                                                                      *
 !   This routine evaluates the transverse interaction integrals.  If   *
 !   IW = 0, it calulates the U(r1,r2) integral; otherwise, it calcu-   *
@@ -18,76 +18,76 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: NNNP
-      USE bess_C
-      USE debug_C
-      USE grid_C, ONLY: rpor
-      USE orb_C
-      USE tatb_C,  ONLY: mtp, ta, tb
-      USE wave_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: nnnp
+      use bess_c
+      use debug_c
+      use grid_c, only: rpor
+      use orb_c
+      use tatb_c,  only: mtp, ta, tb
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE zkf_I
-      USE quad_I
-      IMPLICIT NONE
+      use zkf_i
+      use quad_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: IA, IC
-      INTEGER, INTENT(IN) :: IB, ID
-      INTEGER  :: K
-      INTEGER, INTENT(IN) :: IW
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(IN) :: RAC
-      REAL(DOUBLE), DIMENSION(NNNP), INTENT(IN) :: RBD
+      integer  :: ia, ic
+      integer, intent(in) :: ib, id
+      integer  :: k
+      integer, intent(in) :: iw
+      real(double), dimension(nnnp), intent(in) :: rac
+      real(double), dimension(nnnp), intent(in) :: rbd
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: MXRBD, MXRAC, I
-      REAL(DOUBLE) :: RESULT
+      integer :: mxrbd, mxrac, i
+      real(double) :: result
 !-----------------------------------------------
 !
-      MXRBD = MIN (MF(IB),MF(ID))
-      MXRAC = MIN (MF(IA),MF(IC))
+      mxrbd = min (mf(ib),mf(id))
+      mxrac = min (mf(ia),mf(ic))
 !
-      IF (IW == 0) THEN
+      if (iw == 0) then
 !
 !   IW = 0
 !
-         TA(:MXRAC) = RAC(:MXRAC)
-         MTP = MXRAC
-         CALL ZKF (K, IA, IC)
-         MTP = MIN(MTP,MXRBD)
-         TA(1) = 0.0D00
-         TA(2:MTP) = RBD(2:MTP)*TB(2:MTP)*RPOR(2:MTP)
+         ta(:mxrac) = rac(:mxrac)
+         mtp = mxrac
+         call zkf (k, ia, ic)
+         mtp = min(mtp,mxrbd)
+         ta(1) = 0.0d00
+         ta(2:mtp) = rbd(2:mtp)*tb(2:mtp)*rpor(2:mtp)
 !
-      ELSE
+      else
 !
 !   IW = 1,2
 !
-         TA(:MXRAC) = RAC(:MXRAC)*(1.0D00 + BESSJ(1,IW,:MXRAC))
-         MTP = MXRAC
-         CALL ZKF (K, IA, IC)
-         MTP = MIN(MTP,MXRBD)
-         TA(1) = 0.0D00
-         TA(2:MTP) = RBD(2:MTP)*(1.0D00 + BESSN(1,IW,2:MTP))*TB(2:MTP)*RPOR(2:&
-            MTP)
+         ta(:mxrac) = rac(:mxrac)*(1.0d00 + bessj(1,iw,:mxrac))
+         mtp = mxrac
+         call zkf (k, ia, ic)
+         mtp = min(mtp,mxrbd)
+         ta(1) = 0.0d00
+         ta(2:mtp) = rbd(2:mtp)*(1.0d00 + bessn(1,iw,2:mtp))*tb(2:mtp)*rpor(2:&
+            mtp)
 !
-      ENDIF
+      endif
 !
-      CALL QUAD (RESULT)
-      RKINT = RESULT
+      call quad (result)
+      rkint = result
 !
 !   Debug printout if option set
 !
-      IF (LDBPR(11)) WRITE (99, 300) K, NP(IA), NH(IA), NP(IC), NH(IC), NP(IB)&
-         , NH(IB), NP(ID), NH(ID), IW, RESULT
+      if (ldbpr(11)) write (99, 300) k, np(ia), nh(ia), np(ic), nh(ic), np(ib)&
+         , nh(ib), np(id), nh(id), iw, result
 !
-      RETURN
+      return
 !
-  300 FORMAT('_ (',1I2,')'/,'R     (',1I2,1A2,',',1I2,1A2,'|',1I2,1A2,',',1I2,&
-         1A2,';',1I2,') = ',1P,D19.12)
-      RETURN
+  300 format('_ (',1i2,')'/,'R     (',1i2,1a2,',',1i2,1a2,'|',1i2,1a2,',',1i2,&
+         1a2,';',1i2,') = ',1p,d19.12)
+      return
 !
-      END FUNCTION RKINT
+      end function rkint

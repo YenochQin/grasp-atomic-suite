@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE CONSIS(J)
+      subroutine consis(j)
 !                                                                      *
 !   This routine computes the weighted self-consistency of orbital J   *
 !                                                                      *
@@ -13,31 +13,31 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE grid_C
-      USE int_C
-      USE scf_C
-      USE wave_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use grid_c
+      use int_c
+      use scf_c
+      use wave_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
+      integer  :: j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: MTP, I
-      REAL(DOUBLE) :: SCMEA, DELTAO
+      integer :: mtp, i
+      real(double) :: scmea, deltao
 !-----------------------------------------------
 !
 !
-      SCMEA = 0.0D00
-      MTP = MIN(MTP0,MF(J))
-      DO I = 1, MTP
-         DELTAO = ABS(P(I)-PF(I,J)) + ABS(Q(I)-QF(I,J))
-         SCMEA = DMAX1(DELTAO,SCMEA)
-      END DO
-      SCNSTY(J) = SCMEA*SQRT(UCF(J))
+      scmea = 0.0d00
+      mtp = min(mtp0,mf(j))
+      do i = 1, mtp
+         deltao = abs(p(i)-pf(i,j)) + abs(q(i)-qf(i,j))
+         scmea = dmax1(deltao,scmea)
+      end do
+      scnsty(j) = scmea*sqrt(ucf(j))
 !
-      RETURN
-      END SUBROUTINE CONSIS
+      return
+      end subroutine consis

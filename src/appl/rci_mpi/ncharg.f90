@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE NCHARG
+      subroutine ncharg
 !                                                                      *
 !   This routine evaluates the nuclear charge density, and stores it   *
 !   in the  common  array  ZDIST .                                     *
@@ -16,66 +16,66 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE def_C,           ONLY: pi,  z, precis
-      USE grid_C
-      USE npar_C
-      USE ncdist_C
-      USE tatb_C
+      use vast_kind_param, only: double
+      use def_c,           only: pi,  z, precis
+      use grid_c
+      use npar_c
+      use ncdist_c
+      use tatb_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE es_I
-      IMPLICIT NONE
+      use es_i
+      implicit none
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE) :: C, A, CBA, PI2, ABC, ABC2, ABC3, S2MCBA, S3MCBA, EN,&
-         ZNORM, EXTRM, ZDISTI
-      LOGICAL :: FORM1, FORM2
+      integer :: i
+      real(double) :: c, a, cba, pi2, abc, abc2, abc3, s2mcba, s3mcba, en,&
+         znorm, extrm, zdisti
+      logical :: form1, form2
 !-----------------------------------------------
 !
 !
 !   Initialize array to zero
 !
-      ZDIST(:N) = 0.0D00
+      zdist(:n) = 0.0d00
 !
 !   Fermi charge distribution
 !
-      IF (NPARM == 2) THEN
-         C = PARM(1)
-         A = PARM(2)
-         CBA = C/A
-         PI2 = PI*PI
-         ABC = A/C
-         ABC2 = ABC*ABC
-         ABC3 = ABC2*ABC
-         CALL ES ((-CBA), S2MCBA, S3MCBA)
-         EN = 1.0D00 + PI2*ABC2 - 6.0D00*ABC3*S3MCBA
-         ZNORM = 3.0D00*Z/(4.0D00*PI*EN*C**3)
-         FORM1 = .TRUE.
-         FORM2 = .FALSE.
-         DO I = 1, N
-            IF (FORM1) THEN
-               EXTRM = DEXP((R(I)-C)/A)
-               ZDIST(I) = ZNORM/(1.0D00 + EXTRM)
-               IF (1.0D00/EXTRM <= PRECIS) THEN
-                  FORM1 = .FALSE.
-                  FORM2 = .TRUE.
-               ENDIF
-            ELSE IF (FORM2) THEN
-               ZDISTI = ZNORM*DEXP((-(R(I)-C)/A))
-               IF (DABS(ZDISTI) > 0.0D00) THEN
-                  ZDIST(I) = ZDISTI
-               ELSE
-                  MTP = I
-                  EXIT
-               ENDIF
-            ENDIF
-         END DO
-      ENDIF
+      if (nparm == 2) then
+         c = parm(1)
+         a = parm(2)
+         cba = c/a
+         pi2 = pi*pi
+         abc = a/c
+         abc2 = abc*abc
+         abc3 = abc2*abc
+         call es ((-cba), s2mcba, s3mcba)
+         en = 1.0d00 + pi2*abc2 - 6.0d00*abc3*s3mcba
+         znorm = 3.0d00*z/(4.0d00*pi*en*c**3)
+         form1 = .true.
+         form2 = .false.
+         do i = 1, n
+            if (form1) then
+               extrm = dexp((r(i)-c)/a)
+               zdist(i) = znorm/(1.0d00 + extrm)
+               if (1.0d00/extrm <= precis) then
+                  form1 = .false.
+                  form2 = .true.
+               endif
+            else if (form2) then
+               zdisti = znorm*dexp((-(r(i)-c)/a))
+               if (dabs(zdisti) > 0.0d00) then
+                  zdist(i) = zdisti
+               else
+                  mtp = i
+                  exit
+               endif
+            endif
+         end do
+      endif
 !
-      RETURN
+      return
 !
-      END SUBROUTINE NCHARG
+      end subroutine ncharg

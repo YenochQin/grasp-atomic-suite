@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE MCPIN (NAME,startdir,IK,NTESTG,INPCI)
+      subroutine mcpin (name,startdir,ik,ntestg,inpci)
 !                                                                      *
 !   This routine controls the computation  and storage of the values   *
 !   and all indices of the angular coefficients                        *
@@ -25,27 +25,27 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY: DOUBLE
-      USE parameter_def,   ONLY: KEYORB, NNNW
-      USE memory_man
-      USE def_C
-      USE eigv_C
-      USE foparm_C
-      USE mcp_C
-      USE orb_C,           ONLY: ncf, nw
-      USE prnt_C
-      USE syma_C
-      USE stat_C
-      USE jqjc_C
-      USE orbord_C
-      USE mcpdata_C
-      USE sbdat_C,         ONLY: KAMAX,NSHLII,NSHLFF,NSHLPPII,NSHLPPFF,&
-                                 NINII,NINFF,NSHLPII,NSHLPFF,NAKINVII, &
-                                 NAKINVFF,NLMAX
-      USE sbdat1_C,        ONLY: nshlp, nshlpp
-      USE cimat_C,         ONLY: cici, cfci
-      USE blk_C
-      USE mpi_C
+      use vast_kind_param, only: double
+      use parameter_def,   only: keyorb, nnnw
+      use memory_man
+      use def_c
+      use eigv_c
+      use foparm_c
+      use mcp_c
+      use orb_c,           only: ncf, nw
+      use prnt_c
+      use syma_c
+      use stat_c
+      use jqjc_c
+      use orbord_c
+      use mcpdata_c
+      use sbdat_c,         only: kamax,nshlii,nshlff,nshlppii,nshlppff,&
+                                 ninii,ninff,nshlpii,nshlpff,nakinvii, &
+                                 nakinvff,nlmax
+      use sbdat1_c,        only: nshlp, nshlpp
+      use cimat_c,         only: cici, cfci
+      use blk_c
+      use mpi_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -54,149 +54,149 @@
 !      USE cord_I
 !      USE qqsort_I
 !      USE itjpo_I
-      USE citrag_I, ONLY: citrag
-      USE getmix_I, ONLY: getmix
-      IMPLICIT NONE
+      use citrag_i, only: citrag
+      use getmix_i, only: getmix
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      CHARACTER(LEN=24), INTENT(IN)  :: name
-      CHARACTER(LEN=128), INTENT(IN) :: startdir
-      INTEGER, INTENT(IN) :: ik, ntestg, inpci
+      character(len=24), intent(in)  :: name
+      character(len=128), intent(in) :: startdir
+      integer, intent(in) :: ik, ntestg, inpci
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !   Set the encoding key and its square
-      INTEGER, PARAMETER :: KEY = KEYORB, KEYSQ = KEY*KEY, nvmax=100
-      REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-10
-      INTEGER, PARAMETER :: NF = 200
+      integer, parameter :: key = keyorb, keysq = key*key, nvmax=100
+      real(double), parameter :: cutoff = 1.0d-10
+      integer, parameter :: nf = 200
 
-      LOGICAL ::  F0INT,LINCR,RESTRT,COMP,AVAIL
-      CHARACTER(LEN=20) :: CNUM
-      CHARACTER(LEN=2)  :: CK
+      logical ::  f0int,lincr,restrt,comp,avail
+      character(len=20) :: cnum
+      character(len=2)  :: ck
 !
-      REAL(DOUBLE), DIMENSION(NNNW) :: tshell
-      REAL(DOUBLE), DIMENSION(NVMAX) ::SC
-      INTEGER, DIMENSION(NNNW) :: nakinv
-      INTEGER, DIMENSION(NLMAX) :: llistt, nshl, ninl
-      REAL(DOUBLE), DIMENSION(20*NLMAX*NLMAX) :: cirot
-      REAL(DOUBLE), DIMENSION(10000) :: EVSC
+      real(double), dimension(nnnw) :: tshell
+      real(double), dimension(nvmax) ::sc
+      integer, dimension(nnnw) :: nakinv
+      integer, dimension(nlmax) :: llistt, nshl, ninl
+      real(double), dimension(20*nlmax*nlmax) :: cirot
+      real(double), dimension(10000) :: evsc
 !
-      REAL(DOUBLE), DIMENSION(:), pointer :: scr, ciout
-      INTEGER :: ntest, ntestL, i, j, iblk, ncfd, nwd, kamaxd,  &
+      real(double), dimension(:), pointer :: scr, ciout
+      integer :: ntest, ntestl, i, j, iblk, ncfd, nwd, kamaxd,  &
                  l, iioff, nvecsize
 !
-      NTESTL = 00
-      NTEST = MAX(NTESTG,NTESTL)
-      NTEST = 00
+      ntestl = 00
+      ntest = max(ntestg,ntestl)
+      ntest = 00
 
 !
 !   Set up data for the initial and final state case respectively
 !
-      IF (IK.EQ.1) THEN
-        DO I = 1,NLMAX
-          NSHL(I) = NSHLII(I)
-          NINL(I) = NINII(I)
-        ENDDO
+      if (ik.eq.1) then
+        do i = 1,nlmax
+          nshl(i) = nshlii(i)
+          ninl(i) = ninii(i)
+        enddo
 
-        DO I = 1,NNNW
-          NAKINV(I) = NAKINVII(I)
-        ENDDO
+        do i = 1,nnnw
+          nakinv(i) = nakinvii(i)
+        enddo
 
-        DO J = 1,NLMAX
-          DO I = 1,NLMAX
-            NSHLP(I,J) = NSHLPII(I,J)
-          ENDDO
-        ENDDO
+        do j = 1,nlmax
+          do i = 1,nlmax
+            nshlp(i,j) = nshlpii(i,j)
+          enddo
+        enddo
 
-        DO J = 1,NNNW
-          DO I = 1,NLMAX
-            NSHLPP(I,J) = NSHLPPII(I,J)
-          ENDDO
-        ENDDO
+        do j = 1,nnnw
+          do i = 1,nlmax
+            nshlpp(i,j) = nshlppii(i,j)
+          enddo
+        enddo
 
-        DO I = 1,20*NLMAX*NLMAX
-          CIROT(I) = CICI(I)
-        ENDDO
+        do i = 1,20*nlmax*nlmax
+          cirot(i) = cici(i)
+        enddo
 
-      ELSEIF (IK.EQ.2) THEN
+      elseif (ik.eq.2) then
 
-        DO I = 1,NLMAX
-          NSHL(I) = NSHLFF(I)
-          NINL(I) = NINFF(I)
-        ENDDO
+        do i = 1,nlmax
+          nshl(i) = nshlff(i)
+          ninl(i) = ninff(i)
+        enddo
 
-        DO I = 1,NNNW
-          NAKINV(I) = NAKINVFF(I)
-        ENDDO
+        do i = 1,nnnw
+          nakinv(i) = nakinvff(i)
+        enddo
 
-        DO J = 1,NLMAX
-          DO I = 1,NLMAX
-            NSHLP(I,J) = NSHLPFF(I,J)
-          ENDDO
-        ENDDO
+        do j = 1,nlmax
+          do i = 1,nlmax
+            nshlp(i,j) = nshlpff(i,j)
+          enddo
+        enddo
 
-        DO J = 1,NNNW
-          DO I = 1,NLMAX
-            NSHLPP(I,J) = NSHLPPFF(I,J)
-          ENDDO
-        ENDDO
+        do j = 1,nnnw
+          do i = 1,nlmax
+            nshlpp(i,j) = nshlppff(i,j)
+          enddo
+        enddo
 
-        DO I = 1,20*NLMAX*NLMAX
-          CIROT(I) = CFCI(I)
-        ENDDO
-      ENDIF
+        do i = 1,20*nlmax*nlmax
+          cirot(i) = cfci(i)
+        enddo
+      endif
 
-      REWIND (NF)
-      DO 1000 IBLK = 1, NBLOCK
+      rewind (nf)
+      do 1000 iblk = 1, nblock
 !
 !   Read the CI vectors
 !
-      CALL GETMIX(trim(startdir)//'/'//NAME,INPCI,IBLK)
+      call getmix(trim(startdir)//'/'//name,inpci,iblk)
 !
 !   Allocate memory for use in CITRAG
 !
-      CALL alloc (scr, ncf*nvec, 'scr', 'MCPIN')
-      CALL alloc (ciout, ncf*nvec, 'CIOUT', 'MCPIN')
+      call alloc (scr, ncf*nvec, 'scr', 'MCPIN')
+      call alloc (ciout, ncf*nvec, 'CIOUT', 'MCPIN')
 !
 !   if data available on file read the datafile. Else sort the
 !   MCP data into inegral based lists.
 !
-      READ(NF) NCFD,NWD,KAMAXD
-      DO L = 1,KAMAX
+      read(nf) ncfd,nwd,kamaxd
+      do l = 1,kamax
 
 !************
 !
 !. Offset for given L in shell matrices
 !
-          IF (L.EQ.1) THEN
-            IIOFF = 1
-          ELSE
-            IIOFF = IIOFF + NSHL(L-1)** 2
-          END IF
+          if (l.eq.1) then
+            iioff = 1
+          else
+            iioff = iioff + nshl(l-1)** 2
+          end if
 !  Corrected PER J
 
 !**************
 
-          READ(NF) NINTG,NCOEFF
-          IF(NCOEFF*NINTG.EQ.0) CYCLE
+          read(nf) nintg,ncoeff
+          if(ncoeff*nintg.eq.0) cycle
 !
 !   Allocate memory. Note that in this case we can,
 !   since the data is sorted, allocate less
 !   memory than is done in qqsort.
 !
-          CALL ALLOC (JANN,NCOEFF, 'JANN', 'MCPIN')
-          CALL ALLOC (JBNN,NCOEFF, 'JBNN', 'MCPIN')
-          CALL ALLOC (INTGRL,NINTG, 'INTGRL', 'MCPIN')
-          CALL ALLOC (CNN,NCOEFF, 'CNN', 'MCPIN')
-          CALL ALLOC (INTPTR,NINTG, 'INTPTR', 'MCPIN')
+          call alloc (jann,ncoeff, 'JANN', 'MCPIN')
+          call alloc (jbnn,ncoeff, 'JBNN', 'MCPIN')
+          call alloc (intgrl,nintg, 'INTGRL', 'MCPIN')
+          call alloc (cnn,ncoeff, 'CNN', 'MCPIN')
+          call alloc (intptr,nintg, 'INTPTR', 'MCPIN')
 
-          DO I = 1,NINTG
-            READ(NF) INTGRL(I),INTPTR(I)
-          ENDDO
-          DO I = 1,NCOEFF
-            READ(NF) CNN(I),JANN(I),JBNN(I)
-          ENDDO
+          do i = 1,nintg
+            read(nf) intgrl(i),intptr(i)
+          enddo
+          do i = 1,ncoeff
+            read(nf) cnn(i),jann(i),jbnn(i)
+          enddo
 !*
 !*. Offset for given L in shell matrices
 !*
@@ -209,58 +209,58 @@
 !
 ! Transform for given L
 !
-        IF (NSHL(L).GT.0)                                             &
+        if (nshl(l).gt.0)                                             &
 !        CALL CITRAG(EVEC,NCF,NVEC,L,NSHL(L),                   &
-        CALL CITRAG(EVEC(1:500),NCF,NVEC,L,NSHL(L),                   &
-                    CIROT(IIOFF),NINL(L),NTESTL,CIOUT, SCR )
+        call citrag(evec(1:500),ncf,nvec,l,nshl(l),                   &
+                    cirot(iioff),ninl(l),ntestl,ciout, scr )
 !
 !   Deallocate storage for this kappa.
 !
-        CALL DALLOC (JANN, 'JANN', 'MCPIN')
-        CALL DALLOC (JBNN, 'JBNN', 'MCPIN')
-        CALL DALLOC (INTGRL, 'INTGRL', 'MCPIN')
-        CALL DALLOC (CNN, 'CNN', 'MCPIN')
-        CALL DALLOC (INTPTR, 'INTPRT', 'MCPIN')
+        call dalloc (jann, 'JANN', 'MCPIN')
+        call dalloc (jbnn, 'JBNN', 'MCPIN')
+        call dalloc (intgrl, 'INTGRL', 'MCPIN')
+        call dalloc (cnn, 'CNN', 'MCPIN')
+        call dalloc (intptr, 'INTPRT', 'MCPIN')
 
-      ENDDO
+      enddo
 
-      CALL dalloc (scr, 'SCR', 'MCPIN')
-      CALL dalloc (ciout, 'CIOUT', 'MCPIN')
+      call dalloc (scr, 'SCR', 'MCPIN')
+      call dalloc (ciout, 'CIOUT', 'MCPIN')
 !
 !   Write the rotated CI vectors on file
 !
-      IF(myid .eq. 0) THEN
-      IF(IBLK.EQ.1) THEN
-        J = INDEX(NAME,' ')
-        IF (INPCI.EQ.0) THEN
-          OPEN (UNIT=31,FILE=trim(startdir)//'/'//NAME(1:J-1)//'.cbm', &
-                FORM='UNFORMATTED',STATUS='UNKNOWN')
-        ELSE
-          OPEN (UNIT=31,FILE=trim(startdir)//'/'//NAME(1:J-1)//'.bm',  &
-                FORM='UNFORMATTED',STATUS='UNKNOWN')
-        ENDIF
+      if(myid .eq. 0) then
+      if(iblk.eq.1) then
+        j = index(name,' ')
+        if (inpci.eq.0) then
+          open (unit=31,file=trim(startdir)//'/'//name(1:j-1)//'.cbm', &
+                form='UNFORMATTED',status='UNKNOWN')
+        else
+          open (unit=31,file=trim(startdir)//'/'//name(1:j-1)//'.bm',  &
+                form='UNFORMATTED',status='UNKNOWN')
+        endif
 
-        WRITE(31) 'G92MIX'
-        WRITE(31) NELEC,NCFTOT,NW,NVECTOT,NVECSIZE,NBLOCK
-      ENDIF
-         WRITE(31) IBLK,NCF,NVEC,IATJPO(1),IASPAR(1)
-         WRITE(31) (IVEC(I),I = 1,NVEC)
-         WRITE(31) EAV,(EVAL(I),I = 1,NVEC)
-         WRITE(31) ((EVEC(I+(J-1)*NCF),I = 1,NCF),J = 1,NVEC)
+        write(31) 'G92MIX'
+        write(31) nelec,ncftot,nw,nvectot,nvecsize,nblock
+      endif
+         write(31) iblk,ncf,nvec,iatjpo(1),iaspar(1)
+         write(31) (ivec(i),i = 1,nvec)
+         write(31) eav,(eval(i),i = 1,nvec)
+         write(31) ((evec(i+(j-1)*ncf),i = 1,ncf),j = 1,nvec)
       endif !myid=0
 
-      CALL DALLOC (EVAL, 'EVAL', 'MCPIN')
-      CALL DALLOC (EVEC, 'EVEC', 'MCPIN')
-      CALL DALLOC (IVEC, 'IVEC', 'MCPIN')
-      CALL DALLOC (IATJPO, 'IATJPO', 'MCPIN')
-      CALL DALLOC (IASPAR, 'IASPAR', 'MCPIN')
- 1000 CONTINUE
-      CLOSE (NF)
+      call dalloc (eval, 'EVAL', 'MCPIN')
+      call dalloc (evec, 'EVEC', 'MCPIN')
+      call dalloc (ivec, 'IVEC', 'MCPIN')
+      call dalloc (iatjpo, 'IATJPO', 'MCPIN')
+      call dalloc (iaspar, 'IASPAR', 'MCPIN')
+ 1000 continue
+      close (nf)
 !
 !   Close the  mixing  file
 !
-      CLOSE (30)
-      CLOSE (31)
+      close (30)
+      close (31)
 !
-      RETURN
-      END SUBROUTINE MCPIN
+      return
+      end subroutine mcpin

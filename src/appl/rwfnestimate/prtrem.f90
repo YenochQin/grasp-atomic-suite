@@ -2,7 +2,7 @@
 
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE PRTREM(ALL)
+      subroutine prtrem(all)
 !                                                                      *
 !   Prints a list of subshells that remain to be estimated.  ALL  is   *
 !   .TRUE.  if all subshells have been estimated and  .FALSE. other-   *
@@ -16,19 +16,19 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE LEFT_C
-      USE ORB_C, ONLY: NW,  NP, NAK, NH
-      USE IOUNIT_C
+      use left_c
+      use orb_c, only: nw,  np, nak, nh
+      use iounit_c
 !...Translated by Pacific-Sierra Research 77to90  4.3E  11:06:21   1/ 2/07
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE convrt_I
-      IMPLICIT NONE
+      use convrt_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      LOGICAL , INTENT(OUT) :: ALL
+      logical , intent(out) :: all
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
@@ -38,56 +38,56 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I, IEND, IBEG, LENTH
-      CHARACTER(LEN=12) :: CNUM
-      CHARACTER(LEN=80) :: RECORD*80
+      integer :: i, iend, ibeg, lenth
+      character(len=12) :: cnum
+      character(len=80) :: record*80
 !-----------------------------------------------
 !
 !     Print *, ' Entering PRTREM'
 !   Determine if there are any subshell radial wavefunctions that
 !   remain to be estimated
 !
-      DO I = 1, NW
-         IF (SET(I)) CYCLE
-         ALL = .FALSE.
-         GO TO 2
-      END DO
-      ALL = .TRUE.
-      GO TO 4
+      do i = 1, nw
+         if (set(i)) cycle
+         all = .false.
+         go to 2
+      end do
+      all = .true.
+      go to 4
 !
 !   Print a list of subshell radial wavefunctions that remain to
 !   be estimated; this list is no more than 80 characters wide
 !
-    2 CONTINUE
-      WRITE (ISTDE, *) 'The following subshell radial wavefunctions ', &
+    2 continue
+      write (istde, *) 'The following subshell radial wavefunctions ', &
          'remain to be estimated:'
-      IEND = 0
-      DO I = 1, NW
-         IF (SET(I)) CYCLE
-         IF (IEND > 75) THEN
-            WRITE (ISTDE, *) RECORD(1:IEND)
-            IEND = 0
-         ENDIF
-         IF (IEND > 0) THEN
-            IBEG = IEND + 1
-            IEND = IBEG
-            RECORD(IBEG:IEND) = ' '
-         ENDIF
-         IBEG = IEND + 1
-         CALL CONVRT (NP(I), CNUM, LENTH)
-         IEND = IBEG + LENTH - 1
-         RECORD(IBEG:IEND) = CNUM(1:LENTH)
-         IF (NAK(I) < 0) THEN
-            LENTH = 1
-         ELSE
-            LENTH = 2
-         ENDIF
-         IBEG = IEND + 1
-         IEND = IBEG + LENTH - 1
-         RECORD(IBEG:IEND) = NH(I)(1:LENTH)
-      END DO
-      IF (IEND > 1) WRITE (ISTDE, *) RECORD(1:IEND)
+      iend = 0
+      do i = 1, nw
+         if (set(i)) cycle
+         if (iend > 75) then
+            write (istde, *) record(1:iend)
+            iend = 0
+         endif
+         if (iend > 0) then
+            ibeg = iend + 1
+            iend = ibeg
+            record(ibeg:iend) = ' '
+         endif
+         ibeg = iend + 1
+         call convrt (np(i), cnum, lenth)
+         iend = ibeg + lenth - 1
+         record(ibeg:iend) = cnum(1:lenth)
+         if (nak(i) < 0) then
+            lenth = 1
+         else
+            lenth = 2
+         endif
+         ibeg = iend + 1
+         iend = ibeg + lenth - 1
+         record(ibeg:iend) = nh(i)(1:lenth)
+      end do
+      if (iend > 1) write (istde, *) record(1:iend)
 !
-    4 CONTINUE
-      RETURN
-      END SUBROUTINE PRTREM
+    4 continue
+      return
+      end subroutine prtrem

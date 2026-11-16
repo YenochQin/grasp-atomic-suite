@@ -1,9 +1,9 @@
-      MODULE TRIANGBREIT2_I
-      INTERFACE
+      module triangbreit2_i
+      interface
 !...Translated by Charlotte Froese Fischer
 !                       Gediminas Gaigalas  10/05/17
-      LOGICAL FUNCTION TRIANGBREIT2 (IA,IB,IC,ID,L)
-      INTEGER, INTENT(IN) :: IA,IB,IC,ID,L
-      END FUNCTION
-      END INTERFACE
-      END MODULE
+      logical function triangbreit2 (ia,ib,ic,id,l)
+      integer, intent(in) :: ia,ib,ic,id,l
+      end function
+      end interface
+      end module

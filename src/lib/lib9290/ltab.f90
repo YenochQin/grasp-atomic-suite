@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE LTAB(IS, NQS, KS, IROWS)
+      subroutine ltab(is, nqs, ks, irows)
 !                                                                      *
 !   locates rows of possible parents of active shell states for acc-   *
 !   essing  NTAB. It is assumed that empty shells have been elimina-   *
@@ -15,55 +15,55 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE TERMS_C
-      IMPLICIT NONE
+      use terms_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, DIMENSION(4), INTENT(IN) :: IS
-      INTEGER, DIMENSION(4), INTENT(INOUT) :: NQS
-      INTEGER, DIMENSION(4), INTENT(IN) :: KS
-      INTEGER, DIMENSION(4), INTENT(INOUT) :: IROWS
+      integer, dimension(4), intent(in) :: is
+      integer, dimension(4), intent(inout) :: nqs
+      integer, dimension(4), intent(in) :: ks
+      integer, dimension(4), intent(inout) :: irows
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, DIMENSION(4) :: KQ
-      INTEGER :: KQ1, KQ2
-      INTEGER  :: I
+      integer, dimension(4) :: kq
+      integer :: kq1, kq2
+      integer  :: i
 !-----------------------------------------------
 !
 !
-      IF (IS(1) == IS(2)) NQS(1) = NQS(2) - 1
-      IF (IS(3) == IS(4)) NQS(3) = NQS(4) - 1
+      if (is(1) == is(2)) nqs(1) = nqs(2) - 1
+      if (is(3) == is(4)) nqs(3) = nqs(4) - 1
 !
-      DO I = 1, 4
+      do i = 1, 4
 !
 !   Check that input data are consistent
 !
-         IF (NQS(I)<=0 .OR. NQS(I)>KS(I)) THEN
-            WRITE (*, 300) NQS(I), IS(I), KS(I)
-            STOP
-         ENDIF
+         if (nqs(i)<=0 .or. nqs(i)>ks(i)) then
+            write (*, 300) nqs(i), is(i), ks(i)
+            stop
+         endif
 !
-         KQ1 = NQS(I) - 1
-         KQ2 = KS(I) - KQ1
-         KQ(I) = MIN(KQ1,KQ2) + 1
-         IF (KQ(I) /= 1) THEN
-            IROWS(I) = (KS(I)*(KS(I)-2))/8 + KQ(I)
-         ELSE
-            IROWS(I) = 1
-         ENDIF
+         kq1 = nqs(i) - 1
+         kq2 = ks(i) - kq1
+         kq(i) = min(kq1,kq2) + 1
+         if (kq(i) /= 1) then
+            irows(i) = (ks(i)*(ks(i)-2))/8 + kq(i)
+         else
+            irows(i) = 1
+         endif
 !
-         IF (IROWS(I) <= NROWS) CYCLE
-         WRITE (*, 301)
-         STOP
+         if (irows(i) <= nrows) cycle
+         write (*, 301)
+         stop
 !
-      END DO
+      end do
 !
-      RETURN
+      return
 !
-  300 FORMAT('LTAB: ',1I3,' Electrons in shell ',1I3,' with 2j+1 = ',1I3)
-  301 FORMAT('LTAB: Extend COMMON block TERMS')
-      RETURN
+  300 format('LTAB: ',1i3,' Electrons in shell ',1i3,' with 2j+1 = ',1i3)
+  301 format('LTAB: Extend COMMON block TERMS')
+      return
 !
-      END SUBROUTINE LTAB
+      end subroutine ltab

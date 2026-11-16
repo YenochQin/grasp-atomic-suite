@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ALCBUF(MODE)
+      subroutine alcbuf(mode)
 !                                                                      *
 !   The arrays in  MODULE BUFFER_C are allocated (MODE = 1), realloca-   *
 !   ted (MODE = 2), and deallocated (MODE = 3) in this routine.        *
@@ -19,53 +19,53 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE memory_man
-      use buffer_C,       ONLY: LABEL, COEFF, NBDIM
-      IMPLICIT NONE
+      use memory_man
+      use buffer_c,       only: label, coeff, nbdim
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: MODE
+      integer, intent(in) :: mode
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NEWSIZ, IERR
+      integer :: newsiz, ierr
 !
 !
-      SELECT CASE (MODE)
-      CASE (1)
+      select case (mode)
+      case (1)
 !
 !   Allocation
 !
-         NBDIM = 10
-         CALL ALLOC (LABEL, 6,NBDIM, 'LABEL', 'ALCBUF')
-         CALL ALLOC (COEFF, NBDIM, 'COEFF', 'ALCBUF')
+         nbdim = 10
+         call alloc (label, 6,nbdim, 'LABEL', 'ALCBUF')
+         call alloc (coeff, nbdim, 'COEFF', 'ALCBUF')
 !
-      CASE (2)
+      case (2)
 !
 !   Reallocation to double storage
 !
-         NEWSIZ = NBDIM + NBDIM
-         CALL RALLOC(LABEL,6,NEWSIZ, 'LABEL', 'ALCBUF')
-         CALL RALLOC(COEFF,NEWSIZ, 'COEFF', 'ALCBUF')
-         NBDIM = NEWSIZ
+         newsiz = nbdim + nbdim
+         call ralloc(label,6,newsiz, 'LABEL', 'ALCBUF')
+         call ralloc(coeff,newsiz, 'COEFF', 'ALCBUF')
+         nbdim = newsiz
 !
-      CASE (3)
+      case (3)
 !
 !   Deallocation
 !
-          CALL DALLOC(label, 'LABEL', 'ALCBUF')
-          CALL DALLOC(coeff, 'COEFF', 'ALCBUF')
+          call dalloc(label, 'LABEL', 'ALCBUF')
+          call dalloc(coeff, 'COEFF', 'ALCBUF')
 !
-      CASE DEFAULT
+      case default
 !
 !   Argument error
 !
-         WRITE (6, *) 'ALCBUF: Invalid argument MODE = ', MODE
-         STOP
+         write (6, *) 'ALCBUF: Invalid argument MODE = ', mode
+         stop
 !
-      END SELECT
+      end select
 !
-      RETURN
+      return
 !
-      END SUBROUTINE ALCBUF
+      end subroutine alcbuf

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE RINTDENSVEC (I,J,DINT1VEC,NRNUC)
+      subroutine rintdensvec (i,j,dint1vec,nrnuc)
 !                                                                      *
 !   The value of DINT1VEC is an approximation to:                      *
 !                                                                      *
@@ -18,30 +18,30 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNW
-      USE def_C,            ONLY: pi
-      USE grid_C
-      USE wave_C
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnw
+      use def_c,            only: pi
+      use grid_c
+      use wave_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW,N), INTENT(OUT) :: DINT1VEC
-      INTEGER  :: I, J
+      real(double), dimension(nnnw,nnnw,n), intent(out) :: dint1vec
+      integer  :: i, j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: L, NRNUC
+      integer :: l, nrnuc
 !-----------------------------------------------
 !
-      DO L = 2, NRNUC
-         DINT1VEC(I,J,L) = (PF(L,I)*PF(L,J)+QF(L,I)*QF(L,J))/          &
-                   (4.0D00*PI*R(L)*R(L))
-      END DO
+      do l = 2, nrnuc
+         dint1vec(i,j,l) = (pf(l,i)*pf(l,j)+qf(l,i)*qf(l,j))/          &
+                   (4.0d00*pi*r(l)*r(l))
+      end do
 !
-      RETURN
-      END SUBROUTINE RINTDENSVEC
+      return
+      end subroutine rintdensvec

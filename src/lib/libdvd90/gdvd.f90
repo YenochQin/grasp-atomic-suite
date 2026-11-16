@@ -1,9 +1,9 @@
 
 !***************************************************************************
 
-      SUBROUTINE GDVD(OP, N, LIM, DIAG, ILOW, IHIGH, ISELEC, NIV, MBLOCK, CRITE&
-         , CRITC, CRITR, ORTHO, MAXITER, WORK, IWRSZ, IWORK, IIWSZ, HIEND, &
-         NLOOPS, NMV, IERR)
+      subroutine gdvd(op, n, lim, diag, ilow, ihigh, iselec, niv, mblock, crite&
+         , critc, critr, ortho, maxiter, work, iwrsz, iwork, iiwsz, hiend, &
+         nloops, nmv, ierr)
 !      Written by M. Saparov
 !
 ! Note:
@@ -15,134 +15,134 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
+      use vast_kind_param, only:  double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE gdvd_I, ONLY: dvd_operator
-      USE dvdson_I
-      IMPLICIT NONE
+      use gdvd_i, only: dvd_operator
+      use dvdson_i
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      PROCEDURE(dvd_operator) :: OP
-      INTEGER  :: N
-      INTEGER  :: LIM
-      INTEGER  :: ILOW
-      INTEGER  :: IHIGH
-      INTEGER  :: NIV
-      INTEGER  :: MBLOCK
-      INTEGER  :: MAXITER
-      INTEGER  :: IWRSZ
-      INTEGER  :: IIWSZ
-      INTEGER  :: NLOOPS
-      INTEGER, INTENT(OUT) :: NMV
-      INTEGER  :: IERR
-      REAL(DOUBLE)  :: CRITE
-      REAL(DOUBLE)  :: CRITC
-      REAL(DOUBLE)  :: CRITR
-      REAL(DOUBLE)  :: ORTHO
-      LOGICAL  :: HIEND
-      INTEGER  :: ISELEC(LIM)
-      INTEGER  :: IWORK(IIWSZ)
-      real(DOUBLE), DIMENSION(N), INTENT(INOUT) :: DIAG
-      REAL(DOUBLE)  :: WORK(IWRSZ)
+      procedure(dvd_operator) :: op
+      integer  :: n
+      integer  :: lim
+      integer  :: ilow
+      integer  :: ihigh
+      integer  :: niv
+      integer  :: mblock
+      integer  :: maxiter
+      integer  :: iwrsz
+      integer  :: iiwsz
+      integer  :: nloops
+      integer, intent(out) :: nmv
+      integer  :: ierr
+      real(double)  :: crite
+      real(double)  :: critc
+      real(double)  :: critr
+      real(double)  :: ortho
+      logical  :: hiend
+      integer  :: iselec(lim)
+      integer  :: iwork(iiwsz)
+      real(double), dimension(n), intent(inout) :: diag
+      real(double)  :: work(iwrsz)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER, DIMENSION(7) :: IREV
-      INTEGER :: NOC, IRC, NB, IW1, IW2, IW3, IIW, IIN, IW4, ICUR, I, INDX, J
-      REAL(DOUBLE) :: VALUE, OVALUE, RNORM, EPSIL
+      integer, dimension(7) :: irev
+      integer :: noc, irc, nb, iw1, iw2, iw3, iiw, iin, iw4, icur, i, indx, j
+      real(double) :: value, ovalue, rnorm, epsil
 !
 !**********************************************************************
 !  NOC = number of orthogonalization constraints
 !  IRC = reverse communication switch
 
-      NOC = 0
-      IRC = 0
+      noc = 0
+      irc = 0
 
 !***********************************************************************
 ! CALLING DAVIDSON with reverse communication
 !***********************************************************************
 ! Initial estimates
 !
-      IF (NIV == 0) THEN
-         WRITE (6, *) 'GDVD Error : No initial estimate!!!'
-         IERR = -1000
-         RETURN
-      ENDIF
+      if (niv == 0) then
+         write (6, *) 'GDVD Error : No initial estimate!!!'
+         ierr = -1000
+         return
+      endif
 
       !ttt=etime_(tarray)
-      NMV = 0
+      nmv = 0
       !xhh print*, 'MBLOCK = ', mblock
       !xhh print *, ' gdvd:  niv = ', niv
-   99 CONTINUE
-      CALL DVDSON (IRC, IREV, N, LIM, NOC, ILOW, IHIGH, ISELEC, NIV, MBLOCK, &
-         CRITE, CRITC, CRITR, MAXITER, WORK, IWRSZ, IWORK, IIWSZ, HIEND, NLOOPS&
-         , IERR)
+   99 continue
+      call dvdson (irc, irev, n, lim, noc, ilow, ihigh, iselec, niv, mblock, &
+         crite, critc, critr, maxiter, work, iwrsz, iwork, iiwsz, hiend, nloops&
+         , ierr)
 !
 ! * * Start Reverse Communication * * * * * * * * * * * * * * * * * * *
 !
-      NB = IREV(1)
-      IW1 = IREV(2)
-      IW2 = IREV(3)
-      IW3 = IREV(4)
-      IIW = IREV(5)
-      IIN = IREV(6)
-      IW4 = IREV(7)
+      nb = irev(1)
+      iw1 = irev(2)
+      iw2 = irev(3)
+      iw3 = irev(4)
+      iiw = irev(5)
+      iin = irev(6)
+      iw4 = irev(7)
 
-      IF (IRC == 1) THEN
+      if (irc == 1) then
 !********* ..Preconditioning. Solve NB times(M work(iw2)=work(iw1))
 !          ..Results always on work(iw2)
 
-         ICUR = 0
-         DO I = 1, NB
-            INDX = IWORK(IIW+I-1) - 1
-            VALUE = WORK(IW3+INDX)
-            OVALUE = WORK(IW4+INDX)
-            RNORM = WORK(IIN+INDX)
-            EPSIL = WORK(IIN+LIM+INDX)
+         icur = 0
+         do i = 1, nb
+            indx = iwork(iiw+i-1) - 1
+            value = work(iw3+indx)
+            ovalue = work(iw4+indx)
+            rnorm = work(iin+indx)
+            epsil = work(iin+lim+indx)
 ! The current approximation of the eigenvector is x=Bc
 ! If needed it should be saved e.g: call dcopy(N,work(iw2),1,curx,1)
 
 !            write(*,11) nloops,value,rnorm
-   11       FORMAT('It ',I4,'  Dl',D10.3,' Res:',D10.3)
+   11       format('It ',i4,'  Dl',d10.3,' Res:',d10.3)
 !
 !-------------
 ! (M-lI)      .. Compute temporarily (M-valueI) (M preconditioner)
 !             .. Needed for (M-valueI)^-1 res
 !             .. Here M is the DIAG
-            DIAG(:N) = DIAG(:N) - VALUE
+            diag(:n) = diag(:n) - value
 !-------------
 !* Choice of Diagonal preconditioning
-            DO J = 1, N
-               IF (ABS(DIAG(J)) > 1.0D-06) THEN
-                  WORK(IW2+ICUR+J-1) = WORK(IW1+ICUR+J-1)/DIAG(J)
-               ELSE
-                  WORK(IW2+ICUR+J-1) = WORK(IW1+ICUR+J-1)*1.0D06
-               ENDIF
-            END DO
+            do j = 1, n
+               if (abs(diag(j)) > 1.0d-06) then
+                  work(iw2+icur+j-1) = work(iw1+icur+j-1)/diag(j)
+               else
+                  work(iw2+icur+j-1) = work(iw1+icur+j-1)*1.0d06
+               endif
+            end do
 !*-------------
 !* e.g: For No preconditioner: Lanczos
 !*            call dcopy(N,WORK(iw1+icur),1,WORK(iw2+icur),1)
 !*-------------
 !* (M+lI)      .. Restore (M+valueI)
-            DIAG(:N) = DIAG(:N) + VALUE
+            diag(:n) = diag(:n) + value
 
-            ICUR = ICUR + N
-         END DO
+            icur = icur + n
+         end do
 
-         GO TO 99
+         go to 99
 
 !*********
-      ELSE IF (IRC==2 .OR. IRC==3) THEN
+      else if (irc==2 .or. irc==3) then
 !********* ..Matrix-vector multiply.
-         CALL OP (N, NB, WORK(IW1), WORK(IW2))
-         NMV = NMV + NB
+         call op (n, nb, work(iw1), work(iw2))
+         nmv = nmv + nb
 
-         GO TO 99
-      ENDIF
+         go to 99
+      endif
 ! * * * * End of Reverse Communication * * * * * * * * * * * * * * * * *
 
-      RETURN
-      END SUBROUTINE GDVD
+      return
+      end subroutine gdvd

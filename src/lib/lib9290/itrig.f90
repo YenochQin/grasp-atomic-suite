@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      INTEGER FUNCTION ITRIG (I1, I2, I3)
+      integer function itrig (i1, i2, i3)
 !                                                                      *
 !   The  triangular delta. Input: Values of 2*J+1; Output: 1, IF J'S   *
 !   form a triangle; 0, otherwise.                                     *
@@ -13,25 +13,25 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: I1
-      INTEGER, INTENT(IN) :: I2
-      INTEGER, INTENT(IN) :: I3
+      integer, intent(in) :: i1
+      integer, intent(in) :: i2
+      integer, intent(in) :: i3
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I4
+      integer :: i4
 !-----------------------------------------------
 !
-      I4 = I2 - I3
-      IF (I1>=ABS(I4) + 1 .AND. I1<=I2+I3-1) THEN
-         ITRIG = 1
-      ELSE
-         ITRIG = 0
-      ENDIF
+      i4 = i2 - i3
+      if (i1>=abs(i4) + 1 .and. i1<=i2+i3-1) then
+         itrig = 1
+      else
+         itrig = 0
+      endif
 !
-      RETURN
-      END FUNCTION ITRIG
+      return
+      end function itrig

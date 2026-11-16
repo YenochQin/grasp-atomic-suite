@@ -1,14 +1,14 @@
-      MODULE rintdensvec_I
-      INTERFACE
+      module rintdensvec_i
+      interface
 !...Translated by Gediminas Gaigalas 11/18/19
-      SUBROUTINE rintdensvec (I, J, DINT1VEC, NRNUC)
-      USE vast_kind_param,  ONLY: DOUBLE
-      USE parameter_def,    ONLY: NNNW
-      USE grid_C,           ONLY: N
-      REAL(DOUBLE), DIMENSION(NNNW,NNNW,N), INTENT(OUT) :: DINT1VEC
-      INTEGER, INTENT(IN) :: I
-      INTEGER, INTENT(IN) :: J
-      INTEGER, INTENT(IN) :: NRNUC
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine rintdensvec (i, j, dint1vec, nrnuc)
+      use vast_kind_param,  only: double
+      use parameter_def,    only: nnnw
+      use grid_c,           only: n
+      real(double), dimension(nnnw,nnnw,n), intent(out) :: dint1vec
+      integer, intent(in) :: i
+      integer, intent(in) :: j
+      integer, intent(in) :: nrnuc
+      end subroutine
+      end interface
+      end module

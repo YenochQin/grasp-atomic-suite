@@ -3,7 +3,7 @@
 !     I N P R O D
 !     ------------------------------------------------------------------
 !
-      REAL(KIND(0.0D0)) FUNCTION INPROD (A, B, NDIM)
+      real(kind(0.0d0)) function inprod (a, b, ndim)
 !      CALCULATE SCALAR PRODUCT BETWEEN TO VECTORS A,B
 !************************************************************************
 !...Translated by Pacific-Sierra Research 77to90  4.3E  14:08:49   1/ 6/07
@@ -12,21 +12,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER, INTENT(IN) :: NDIM
-      REAL(DOUBLE), INTENT(IN) :: A(*)
-      REAL(DOUBLE), INTENT(IN) :: B(*)
+      integer, intent(in) :: ndim
+      real(double), intent(in) :: a(*)
+      real(double), intent(in) :: b(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
+      integer :: i
 !-----------------------------------------------
 !
-      INPROD = DOT_PRODUCT(A(:NDIM),B(:NDIM))
+      inprod = dot_product(a(:ndim),b(:ndim))
 !
-      RETURN
-      END FUNCTION INPROD
+      return
+      end function inprod

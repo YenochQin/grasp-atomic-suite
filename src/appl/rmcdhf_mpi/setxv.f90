@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SETXV(J)
+      subroutine setxv(j)
 !                                                                      *
 !   This  subprogram  sets up the inhomogeneous terms for the varia-   *
 !   tion equations.                                                    *
@@ -14,35 +14,35 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE def_C
-      USE grid_C
-      USE int_C
-      USE wave_C
-      IMPLICIT NONE
+      use vast_kind_param, only:  double
+      use def_c
+      use grid_c
+      use int_c
+      use wave_c
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: J
+      integer  :: j
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: I
-      REAL(DOUBLE) :: HHC
+      integer :: i
+      real(double) :: hhc
 !-----------------------------------------------
 !
-      HHC = 0.5D00*H/C
+      hhc = 0.5d00*h/c
 !
 !   Set up arrays TF and TG
 !
-      DO I = 1, N
-         XU(I) = -QF(I,J)*HHC*RP(I)
-         XV(I) = PF(I,J)*HHC*RP(I)
-      END DO
+      do i = 1, n
+         xu(i) = -qf(i,j)*hhc*rp(i)
+         xv(i) = pf(i,j)*hhc*rp(i)
+      end do
 !
-      XU(:N-1) = XU(2:N) + XU(:N-1)
-      XV(:N-1) = XV(2:N) + XV(:N-1)
+      xu(:n-1) = xu(2:n) + xu(:n-1)
+      xv(:n-1) = xv(2:n) + xv(:n-1)
 !
-      RETURN
+      return
 !
-      END SUBROUTINE SETXV
+      end subroutine setxv

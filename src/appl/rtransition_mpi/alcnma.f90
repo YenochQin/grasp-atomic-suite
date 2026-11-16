@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE ALCNMA(IPTR, ISLDR, ISLDR1, XSLDR, NMDIM, IMODE)
+      subroutine alcnma(iptr, isldr, isldr1, xsldr, nmdim, imode)
 !                                                                      *
 !   This  subprogram allocates (IMODE = 1), reallocates (IMODE = 2),   *
 !   and deallocates (IMODE = 3) storage for  certain arrays that are   *
@@ -17,63 +17,63 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      USE memory_man
-      IMPLICIT NONE
+      use memory_man
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER  :: NMDIM
-      INTEGER , INTENT(IN) :: IMODE
-      INTEGER, DIMENSION(:), pointer :: IPTR, ISLDR, ISLDR1
-      REAL(DOUBLE), DIMENSION(:), pointer :: XSLDR
+      integer  :: nmdim
+      integer , intent(in) :: imode
+      integer, dimension(:), pointer :: iptr, isldr, isldr1
+      real(double), dimension(:), pointer :: xsldr
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NEWSIZ
+      integer :: newsiz
 !-----------------------------------------------
 !
-      SELECT CASE (IMODE)
-      CASE (1)
+      select case (imode)
+      case (1)
 !
 !   Initial array dimension
 !
-         NMDIM = 64
+         nmdim = 64
 !
 !   Allocate storage for arrays
 !
-         CALL ALLOC (IPTR, NMDIM, 'IPTR', 'ALCNMA')
-         CALL ALLOC (ISLDR, NMDIM, 'ISLDR', 'ALCNMA')
-         CALL ALLOC (ISLDR1, NMDIM, 'ISLDR1', 'ALCNMA')
-         CALL ALLOC (XSLDR, NMDIM, 'XSLDR', 'ALCNMA')
+         call alloc (iptr, nmdim, 'IPTR', 'ALCNMA')
+         call alloc (isldr, nmdim, 'ISLDR', 'ALCNMA')
+         call alloc (isldr1, nmdim, 'ISLDR1', 'ALCNMA')
+         call alloc (xsldr, nmdim, 'XSLDR', 'ALCNMA')
 !
-      CASE (2)
+      case (2)
 !
 !   Double the allocation of storage for the arrays
 !
-         NEWSIZ = 2*NMDIM
+         newsiz = 2*nmdim
 !
-         CALL RALLOC (IPTR, NEWSIZ, 'IPTR', 'ALCNMA')
-         CALL RALLOC (ISLDR, NEWSIZ, 'ISLDR', 'ALCNMA')
-         CALL RALLOC (ISLDR1, NEWSIZ, 'ISLDR1', 'ALCNMA')
-         CALL RALLOC (XSLDR, NEWSIZ, 'XSLDR', 'ALCNMA')
+         call ralloc (iptr, newsiz, 'IPTR', 'ALCNMA')
+         call ralloc (isldr, newsiz, 'ISLDR', 'ALCNMA')
+         call ralloc (isldr1, newsiz, 'ISLDR1', 'ALCNMA')
+         call ralloc (xsldr, newsiz, 'XSLDR', 'ALCNMA')
 !
-         NMDIM = NEWSIZ
+         nmdim = newsiz
 !
-      CASE (3)
+      case (3)
 !
 !   Deallocate the storage for the arrays
 !
-         CALL DALLOC (IPTR,  'IPTR', 'ALCNMA')
-         CALL DALLOC (ISLDR, 'ISLDR', 'ALCNMA')
-         CALL DALLOC (ISLDR1, 'ISLDR1', 'ALCNMA')
-         CALL DALLOC (XSLDR,  'XSLDR', 'ALCNMA')
+         call dalloc (iptr,  'IPTR', 'ALCNMA')
+         call dalloc (isldr, 'ISLDR', 'ALCNMA')
+         call dalloc (isldr1, 'ISLDR1', 'ALCNMA')
+         call dalloc (xsldr,  'XSLDR', 'ALCNMA')
 !
-      CASE DEFAULT
+      case default
 !
-         WRITE (6, *) 'ALCNMA: Invalid argument IMODE = ', IMODE
-         STOP
+         write (6, *) 'ALCNMA: Invalid argument IMODE = ', imode
+         stop
 !
-      END SELECT
+      end select
 !
-      RETURN
-      END SUBROUTINE ALCNMA
+      return
+      end subroutine alcnma

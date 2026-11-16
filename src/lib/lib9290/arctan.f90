@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      REAL(KIND(0.0D0)) FUNCTION ARCTAN (ARG1, ARG2)
+      real(kind(0.0d0)) function arctan (arg1, arg2)
 !-----------------------------------------------
 !                                                                      *
 !                   -1                                                 *
@@ -16,47 +16,47 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE vast_kind_param, ONLY:  DOUBLE
-      USE DEF_C
+      use vast_kind_param, only:  double
+      use def_c
 !
-      IMPLICIT NONE
+      implicit none
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      REAL(DOUBLE), INTENT(IN) :: ARG1
-      REAL(DOUBLE), INTENT(IN) :: ARG2
+      real(double), intent(in) :: arg1
+      real(double), intent(in) :: arg2
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL, SAVE :: FIRST = .TRUE., INTRIN = .TRUE.
+      logical, save :: first = .true., intrin = .true.
 !-----------------------------------------------
 !
 !
 !   Determine whether the FORTRAN intrinsic function ATAN2 always
 !   returns a positive value
 !
-      IF (FIRST) THEN
-         ARCTAN = ATAN2(-1.0D00,-1.0D00)
-         IF (ARCTAN > 0.0D00) THEN
-            INTRIN = .TRUE.
-         ELSE
-            INTRIN = .FALSE.
-         ENDIF
-         FIRST = .FALSE.
-      ENDIF
+      if (first) then
+         arctan = atan2(-1.0d00,-1.0d00)
+         if (arctan > 0.0d00) then
+            intrin = .true.
+         else
+            intrin = .false.
+         endif
+         first = .false.
+      endif
 !
 !   Use the intrinsic function if it passes the above test; otherwise
 !   add 2*PI to the negative values returned by the intrinsic function
 !
-      IF (INTRIN) THEN
-         ARCTAN = ATAN2(ARG1,ARG2)
-      ELSE
-         IF (ARG1 >= 0.0D00) THEN
-            ARCTAN = ATAN2(ARG1,ARG2)
-         ELSE
-            ARCTAN = PI + PI + ATAN2(ARG1,ARG2)
-         ENDIF
-      ENDIF
+      if (intrin) then
+         arctan = atan2(arg1,arg2)
+      else
+         if (arg1 >= 0.0d00) then
+            arctan = atan2(arg1,arg2)
+         else
+            arctan = pi + pi + atan2(arg1,arg2)
+         endif
+      endif
 !
-      RETURN
-      END FUNCTION ARCTAN
+      return
+      end function arctan

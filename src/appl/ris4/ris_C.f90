@@ -1,7 +1,7 @@
-      MODULE ris_C
-      USE vast_kind_param, ONLY:  DOUBLE
+      module ris_c
+      use vast_kind_param, only:  double
 !...Translated by Gediminas Gaigalas 11/18/19
-      REAL(DOUBLE), DIMENSION(:), pointer :: DENS1, DENS2, DENS3,  &
-                                             DENS4, DENS5, DENS6,  &
-                                             DENS7, SMSC1, SMSC2
-      END MODULE ris_C
+      real(double), dimension(:), pointer :: dens1, dens2, dens3,  &
+                                             dens4, dens5, dens6,  &
+                                             dens7, smsc1, smsc2
+      end module ris_c

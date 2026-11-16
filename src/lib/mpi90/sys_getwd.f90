@@ -15,15 +15,15 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use mpi_C
+      use mpi_c
       use suite_system, only: working_directory
 
-      USE mpiu_I, ONLY: stopmpi
+      use mpiu_i, only: stopmpi
       implicit none
       character(len=*), intent(out):: dir
       integer, intent(out):: lcwd
 
-      INTEGER status
+      integer status
 
 
       status = working_directory(dir)
@@ -32,7 +32,7 @@
       if (status.ne.0) then
 !        print*, 'couldn''t get the current directory, exiting...'
 !cjb myid =
-         CALL stopmpi ('sys_getwd: status.ne.0; myid = ', myid)
+         call stopmpi ('sys_getwd: status.ne.0; myid = ', myid)
 
       end if
       return

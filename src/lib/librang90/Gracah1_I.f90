@@ -1,17 +1,17 @@
-      MODULE gracah1_I
-      INTERFACE
+      module gracah1_i
+      interface
 !
-      SUBROUTINE GRACAH1(I,J,K,L,M,N,RAC)
-      USE vast_kind_param, ONLY:  DOUBLE
-      INTEGER MFACT
-      PARAMETER (MFACT = 500)
-      INTEGER , INTENT(IN) :: I
-      INTEGER , INTENT(IN) :: J
-      INTEGER , INTENT(IN) :: K
-      INTEGER , INTENT(IN) :: L
-      INTEGER , INTENT(IN) :: M
-      INTEGER , INTENT(IN) :: N
-      REAL(DOUBLE) , INTENT(OUT) :: RAC
-      END SUBROUTINE
-      END INTERFACE
-      END MODULE
+      subroutine gracah1(i,j,k,l,m,n,rac)
+      use vast_kind_param, only:  double
+      integer mfact
+      parameter (mfact = 500)
+      integer , intent(in) :: i
+      integer , intent(in) :: j
+      integer , intent(in) :: k
+      integer , intent(in) :: l
+      integer , intent(in) :: m
+      integer , intent(in) :: n
+      real(double) , intent(out) :: rac
+      end subroutine
+      end interface
+      end module
