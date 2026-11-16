@@ -1,9 +1,12 @@
 # 普通 rangular 的 OpenMP CSF 对计算
 
+> 2026-11-16 状态更新（基于 `9d6ee31` 的移除改动）：rangular OpenMP 实现、构建目标、线程选项及专用回归已移除。
+> 下文保留历史实现与验证记录，命令不再适用于当前树；串行、MPI 和 jj2lsj OpenMP 保留。
+
 日期：2026-11-10。基于 `e568a45` 的工作树增量。
 状态：首版 `rangular_omp` 已实施；串行 `rangular` 保留。Check/Release 小型回归和
 23,459-CSF 单机对照通过，未完成全部态空间、所有平台或完整 SCF/RCI 物理验收。
-当前生产 flags 已精简，CSFG 已隔离；现行配置以[构建策略](build_profiles.md)为准。
+当前生产 flags 已精简，CSFG 已隔离；现行配置以[构建策略](../implemented/build_profiles.md)为准。
 
 基于 `c5f36d2` 的 [2026-11-11 本机性能对照](../reviews/rangular_mpi_openmp_benchmark_2026-11-11.md)
 补充 14,551-CSF 样本的三轮 MPI/OpenMP 及文本/描述符测量：33 次运行全部通过输出验证，
@@ -48,7 +51,7 @@ set -gx OPENBLAS_NUM_THREADS 1
 ```
 
 不指定 `--csf-descriptors` 时默认读当前目录 `rcsf.inp`，也可使用 `--csf-text FILE`。
-原有路径校验与新建计时文件规则见[输入说明](rangular_descriptor_input.md)。
+原有路径校验与新建计时文件规则见[输入说明](../implemented/rangular_descriptor_input.md)。
 
 | 选项 | 默认与含义 |
 | --- | --- |
@@ -59,7 +62,7 @@ set -gx OPENBLAS_NUM_THREADS 1
 缓冲预算不包括共享 CSF 数组、每线程当前对工作区、任务元数据、原 block 系数累积和排序数组。
 它不是进程 RSS 上限。普通 `rangular` 拒绝大于 1 的 `--threads` 或并行缓冲定制，避免误以为已启用并行。
 
-用[版本对照运行器](rangular_version_comparison.md)时，显式指定候选线程数：
+用[版本对照运行器](../implemented/rangular_version_comparison.md)时，显式指定候选线程数：
 
 ```fish
 ../graspkit-tools/.venv/bin/python scripts/compare_rangular_versions.py \
@@ -77,8 +80,8 @@ set -gx OPENBLAS_NUM_THREADS 1
 ## 3. 状态与构建边界
 
 并发闭包从 `ONESCALAR`、`RKCO_GG` 和实际 `CORD` 回调展开，共 97 个过程，
-清单为 [concurrent_sources.cmake](../../src/appl/rangular/openmp/concurrent_sources.cmake)。
-[机械审计](../../test/rangular/audit_thread_closure.py)检查调用覆盖、模块依赖和实际编译命令；它不是形式化线程安全证明。
+清单为 `src/appl/rangular/openmp/concurrent_sources.cmake`（历史concurrent_sources.cmake，已移除）。
+`test/rangular/audit_thread_closure.py`（历史机械审计，已移除）检查调用覆盖、模块依赖和实际编译命令；它不是形式化线程安全证明。
 
 | 数据 | 所有权 |
 | --- | --- |
@@ -106,7 +109,7 @@ RACA 的持久缓存语义用源码 SAVE 明确表达，在 OpenMP 对象中保�
 
 ## 4. 任务、内存及输出
 
-[并行控制器](../../src/appl/rangular/openmp/rangular_parallel.f90)按当前 JA 列切分 JB 范围，
+`src/appl/rangular/openmp/rangular_parallel.f90`（历史并行控制器，已移除）按当前 JA 列切分 JB 范围，
 每批最多四倍线程数个任务，使用 `schedule(dynamic,1)` 分配。选定一阶限制时，先处理参考区间，再处理对角项。
 任务数和结果缓冲不随全部三角区域预分配，不建立 NCF² 大小的任务表。
 
@@ -126,7 +129,7 @@ GNU runtime 的并发调用边界见[线程安全说明](https://gcc.gnu.org/onl
 
 ## 5. 验证与实测
 
-[七项线程回归](../../test/rangular/test_openmp.py)覆盖：
+`test/rangular/test_openmp.py`（历史七项线程回归，已移除）覆盖：
 
 - 1/2/4/8 线程、真实多 worker 工作量、多 block 工作区重建，完整和一阶限制。
 - 文本/描述符输入、不同 chunk 大小、强制结果流回退。
@@ -161,7 +164,7 @@ audit 复核曾捕获 `--help` 字符串从函数返回后长度变零，以及�
 五次运行 MCP 均逐字节一致。8 线程的成对生成与缓冲约 14.72 s，其中并行批次约 11.38 s；
 串行排序/输出约 8.72 s，结构整理约 1.02 s，限制了整程扩展。
 1 线程与原串行还有调用组织/编译差异，因此另外给出相对 OpenMP 1 线程的扩展性。
-本表为精简 flags 前的首轮实测；精简后的三轮 8 线程对照见[构建策略](build_profiles.md)。
+本表为精简 flags 前的首轮实测；精简后的三轮 8 线程对照见[构建策略](../implemented/build_profiles.md)。
 本机结果不能直接外推其他 CPU、NUMA、线程数或更大基组。
 
 可追溯记录位于忽略的 `build-rangular-omp-release/audit/scaling-23459-v1/`，包含 summary、
@@ -206,4 +209,4 @@ rangular OpenMP 关闭的配置；候选来自相反的开关组合。两个配�
 记录全部 MCP 文件哈希，各运行目录保留输入、输出、日志及阶段计时。
 运行期间有其他编译/测试活动，因此耗时不作为扩展性结论。
 本次未验证完整 SCF/RCI 或物理收敛；完整 MPI 验收仍需在 Linux 补跑
-[构建策略](build_profiles.md)所列的四项平台专属测试。
+[构建策略](../implemented/build_profiles.md)所列的四项平台专属测试。

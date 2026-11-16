@@ -2,7 +2,6 @@ module rangular_input
    use csf_descriptor_input, only: descriptor_source, open_descriptor_source, close_descriptor_source, &
                                    install_descriptor_header, read_descriptor_block
    use rangular_profile, only: open_stage_profile
-   use rangular_parallel, only: configure_pair_engine, parallel_pairs_available
    use rangular_reuse, only: configure_angular_reuse
    use cslh_i, only: cslh
    use lodcsh2_i, only: lodcsh2
@@ -41,7 +40,7 @@ contains
    subroutine parse_angular_options(options)
       type(angular_input_options), intent(out) :: options
       integer :: argument_index
-      integer :: requested_threads, pair_chunk_size, result_memory_mib, integer_status, option_value
+      integer :: integer_status, option_value
       integer :: reuse_memory_mib
       logical :: input_selected, timings_selected, reuse_selected, reuse_stats_selected
       character(len=:), allocatable :: option_name, reuse_filename
@@ -53,9 +52,6 @@ contains
       reuse_stats_selected = .false.
       reuse_memory_mib = 0
       reuse_filename = ''
-      requested_threads = 0
-      pair_chunk_size = 256
-      result_memory_mib = 64
       argument_index = 1
       do while (argument_index <= command_argument_count())
          call read_argument_text(argument_index, option_name)
@@ -73,37 +69,21 @@ contains
             if (reuse_stats_selected) error stop 'Duplicate --reuse-stats option'
             call read_argument_text(argument_index+1, reuse_filename)
             reuse_stats_selected = .true.
-         case ('--threads', '--pair-chunk', '--pair-buffer-mib', '--reuse-cache-mib')
+         case ('--reuse-cache-mib')
             block
                character(len=:), allocatable :: argument_value
                call read_argument_text(argument_index+1, argument_value)
                read(argument_value, *, iostat=integer_status) option_value
             end block
-            if (integer_status /= 0) error stop 'Memory/thread option requires an integer'
-            select case (option_name)
-            case ('--threads')
-               if (option_value < 1) error stop '--threads must be positive'
-               requested_threads = option_value
-            case ('--pair-chunk')
-               if (option_value < 1) error stop '--pair-chunk must be positive'
-               pair_chunk_size = option_value
-            case ('--pair-buffer-mib')
-               if (option_value < 0) error stop '--pair-buffer-mib must be nonnegative'
-               result_memory_mib = option_value
-            case ('--reuse-cache-mib')
-               if (reuse_selected) error stop 'Duplicate --reuse-cache-mib option'
-               if (option_value < 0 .or. option_value > 4096) error stop '--reuse-cache-mib must be in 0..4096'
-               reuse_memory_mib = option_value
-               reuse_selected = .true.
-            end select
+            if (integer_status /= 0) error stop '--reuse-cache-mib requires an integer'
+            if (reuse_selected) error stop 'Duplicate --reuse-cache-mib option'
+            if (option_value < 0 .or. option_value > 4096) error stop '--reuse-cache-mib must be in 0..4096'
+            reuse_memory_mib = option_value
+            reuse_selected = .true.
          case ('--help')
             print '(A)', 'rangular [--csf-text FILE | --csf-descriptors FILE] [--timings NEW_FILE.csv]'
             print '(A)', 'Default: original rcsf.inp text input; interactive scientific settings are unchanged.'
             print '(A)', 'Serial only: --reuse-cache-mib N [--reuse-stats NEW_FILE.csv]; default 0 (off).'
-            if (parallel_pairs_available) then
-               print '(A)', 'rangular_omp: --threads N --pair-chunk N --pair-buffer-mib N'
-               print '(A)', 'Defaults: OMP_NUM_THREADS, 256 pairs/chunk, 64 MiB result buffers (0 forces spill).'
-            end if
             stop
          case default
             error stop 'Unknown rangular option; use --help'
@@ -117,9 +97,6 @@ contains
          if (reuse_filename == options%input_filename .or. reuse_filename == options%timings_filename) &
             error stop 'Reuse statistics must use a separate filename'
       end if
-      if (parallel_pairs_available .and. (reuse_selected .or. reuse_stats_selected)) &
-         error stop 'Angular reuse is currently supported by serial rangular only'
-      call configure_pair_engine(requested_threads, pair_chunk_size, result_memory_mib)
       call configure_angular_reuse(reuse_memory_mib,reuse_filename)
       call open_stage_profile(options%timings_filename)
    end subroutine parse_angular_options

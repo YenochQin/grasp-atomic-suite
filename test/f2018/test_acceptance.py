@@ -69,16 +69,12 @@ class AcceptanceTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     check_junit(path, {"a"})
 
-    def test_rangular_openmp_is_independent_and_does_not_leak_into_shared_libraries(self) -> None:
-        command = {"file": "setqna.f90", "arguments": ["gfortran-15", "-fopenmp", "-c", "setqna.f90",
-                   "-o", "CMakeFiles/rangular_thread_kernels.dir/setqna.f90.o"]}
-        check_feature_commands([command], {"openmp": False, "rangular_openmp": True})
-        with self.assertRaises(ValueError):
-            check_feature_commands([command], {"openmp": True, "rangular_openmp": False})
-        leaked = {**command, "arguments": [argument.replace("rangular_thread_kernels", "9290")
-                                           for argument in command["arguments"]]}
-        with self.assertRaises(ValueError):
-            check_feature_commands([leaked], {"openmp": True, "rangular_openmp": True})
+    def test_openmp_does_not_leak_into_angular_or_shared_libraries(self) -> None:
+        for target in ("rangular", "rangular_mpi", "9290", "mod", "rang90"):
+            command = {"file": "source.f90", "arguments": ["gfortran-15", "-fopenmp", "-c", "source.f90",
+                       "-o", f"CMakeFiles/{target}.dir/source.f90.o"]}
+            with self.subTest(target=target), self.assertRaises(ValueError):
+                check_feature_commands([command], {"openmp": True})
 
     def test_minimal_production_flags_and_csfg_boundary(self) -> None:
         compiler = Path("/compiler/gfortran-15")

@@ -84,7 +84,6 @@ def check_feature_commands(commands: list[dict], features: dict) -> None:
         raise ValueError("CSFG support has been removed")
     openmp_targets = {"jj2lsj_conversion", "jj2lsj_thread_kernels", "jj2lsj_omp",
                       "test.jj2lsj_coefficients", "test.jj2lsj_ranking"}
-    angular_targets = {"rangular_omp", "rangular_thread_state", "rangular_thread_kernels"}
     for entry in commands:
         if Path(entry["file"]).suffix.lower() not in {".f90", ".f", ".for", ".f95"}:
             continue
@@ -92,8 +91,7 @@ def check_feature_commands(commands: list[dict], features: dict) -> None:
             raise ValueError(f"CSFG source leaked into the ordinary build: {entry['file']}")
         args = entry.get("arguments") or shlex.split(entry["command"])
         targets = set(re.findall(r"CMakeFiles/([^/]+)\.dir/", " ".join(args)))
-        enabled = bool(targets & openmp_targets and features["openmp"] or
-                       targets & angular_targets and features.get("rangular_openmp", False))
+        enabled = bool(targets & openmp_targets and features["openmp"])
         if "-fopenmp" in args and not enabled:
             raise ValueError(f"OpenMP flag leaked into a disabled configuration: {entry['file']}")
         if enabled and "-fopenmp" not in args:

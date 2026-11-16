@@ -185,7 +185,6 @@ add_subdirectory("src/appl/rhfs")
 add_subdirectory("src/appl/rdensity")
 add_subdirectory("src/appl/ris4")
 add_subdirectory("src/appl/jj2lsj")
-option(GRASP_RANGULAR_OPENMP "Build the audited rangular_omp pair engine" ${GRASP_JJ2LSJ_OPENMP})
 # add_subdirectory("src/appl/rhfszeeman95")
 
 # Ordinary GRASP programs and fresh rmcdhf copies use the suite numerical libraries.

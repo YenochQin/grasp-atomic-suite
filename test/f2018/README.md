@@ -138,13 +138,12 @@ is `<build>/install`, or the explicit prefix. Validation does not install.
 ## Complete configuration matrix and warning baseline
 
 `matrix.py` enumerates Check, Audit and production Release over
-`GRASP_BUILD_SERIAL_APPS`, `GRASP_ENABLE_MPI`, `GRASP_JJ2LSJ_OPENMP`, and the
-independent `GRASP_RANGULAR_OPENMP` switch: **36 ordinary builds**. Each profile
-has eight serial-enabled combinations (MPI and both OpenMP switches independent)
-and four serial-disabled combinations (MPI and jj2lsj OpenMP independent).
-The angular target requires serial applications, so its actual feature is always
-off in the serial-disabled cases. Existing case IDs are unchanged; `-a0`/`-a1`
-identify angular settings that differ from the jj2lsj-based default.
+`GRASP_BUILD_SERIAL_APPS`, `GRASP_ENABLE_MPI` and `GRASP_JJ2LSJ_OPENMP`:
+**24 ordinary builds**, with eight combinations per profile. The rangular OpenMP
+implementation and its matrix axis were removed on 2026-11-16. Warning budgets
+retain their historical IDs with angular OpenMP disabled (`-a0` where needed).
+Historical enabled-angular budgets remain as evidence, outside the active matrix;
+their source coverage is not a current warning acceptance result.
 `GRASP_BUILD_CSFG=OFF` in every active matrix case. Serial/MPI both disabled still
 builds the shared libraries, jj2lsj and their applicable tests. A partial
 `--case` selection never reports full-matrix acceptance.

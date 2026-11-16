@@ -3,22 +3,6 @@
   "scope": "Current supported targets; not P9/F00-F10 certification",
   "groups": [
     {
-      "name": "rangular_openmp",
-      "requires": [
-        "serial",
-        "rangular_openmp"
-      ],
-      "targets": [
-        "rangular_omp",
-        "rangular_thread_state",
-        "rangular_thread_kernels"
-      ],
-      "tests": [
-        "rangular_openmp_regression",
-        "rangular_openmp_closure"
-      ]
-    },
-    {
       "name": "common",
       "requires": [],
       "targets": [

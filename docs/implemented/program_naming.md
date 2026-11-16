@@ -9,7 +9,7 @@
 | `gj90` | `gj` | **`gj`、`gj_mpi`**，原名 `gj90`、`gj90_mpi` |
 | `rhfs90` | `rhfs` | `rhfs`、`rhfs_mpi` |
 | `jj2lsj90` | `jj2lsj` | `jj2lsj_omp` |
-| `rangular90` | `rangular` | `rangular`、`rangular_omp` |
+| `rangular90` | `rangular` | `rangular` |
 | `rangular90_mpi` | `rangular_mpi` | `rangular_mpi` |
 | `rwfnestimate90` | `rwfnestimate` | `rwfnestimate` |
 | `rci90` | `rci` | `rci` |
@@ -49,7 +49,7 @@ cmake -S . -B build-f2018-programs \
     -DCMAKE_BUILD_TYPE=Release -DGRASP_FORTRAN_PROFILE=f2018-release \
     -DGRASP_BUILD_SERIAL_APPS=ON -DGRASP_ENABLE_MPI=ON \
     -DGRASP_BUILD_CSFG=OFF \
-    -DGRASP_JJ2LSJ_OPENMP=ON -DGRASP_RANGULAR_OPENMP=ON
+    -DGRASP_JJ2LSJ_OPENMP=ON
 cmake --build build-f2018-programs -j4
 ```
 

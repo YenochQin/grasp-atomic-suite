@@ -29,9 +29,7 @@ def cases() -> list[dict]:
     return [{"id": case_id(profile, features), "profile": profile, "features": features}
             for profile in ("f2018-check", "f2018-audit", "f2018-release")
             for serial, mpi, openmp in product((True, False), repeat=3)
-            for angular_openmp in ((True, False) if serial else (False,))
-            for features in [{"serial": serial, "mpi": mpi, "csfg": False, "openmp": openmp,
-                              "rangular_openmp": angular_openmp}]]
+            for features in [{"serial": serial, "mpi": mpi, "csfg": False, "openmp": openmp}]]
 
 
 def configure_command(case: dict, build: Path, compiler: Path, mpi_compiler: Path, mpiexec: Path) -> list[str]:
@@ -41,7 +39,6 @@ def configure_command(case: dict, build: Path, compiler: Path, mpi_compiler: Pat
             "-DGRASP_CAPTURE_WARNINGS=" + ("OFF" if case["profile"] == "f2018-release" else "ON"),
             "-DCMAKE_BUILD_TYPE=" + ("Debug" if case["profile"] == "f2018-check" else "Release")]
     args += [f"-D{OPTIONS[axis]}={'ON' if case['features'][axis] else 'OFF'}" for axis in AXES]
-    args += [f"-DGRASP_RANGULAR_OPENMP={'ON' if case['features']['rangular_openmp'] else 'OFF'}"]
     if case["features"]["mpi"]:
         args += [f"-DMPI_Fortran_COMPILER={mpi_compiler}", f"-DMPIEXEC_EXECUTABLE={mpiexec}"]
     return args

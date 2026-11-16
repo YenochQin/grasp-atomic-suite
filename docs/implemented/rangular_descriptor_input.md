@@ -4,7 +4,7 @@
 描述符契约核对 rCSFs `6e4fcff1439fb1b56d4891908c5bd58722ddf64a`，实际兼容性检查使用已安装的原生 rCSFs 3.0.0。
 
 状态：普通串行 `rangular` 已接入；原文本入口保留。预处理、原文本/新输入数组对照、小型 MCP 回归和阶段计时已实施。
-后续增加了独立的 [rangular_omp](rangular_openmp.md)；本文仍描述两种输入的公共契约。
+独立 rangular OpenMP 实现已于 2026-11-16 移除；[历史说明](../archive/rangular_openmp.md)仅用于追溯。本文描述保留的两种输入契约。
 2026-11-11 已增加普通 [rangular_mpi 描述符入口](rangular_mpi_descriptor_input.md)，由 rank 0 解码并广播。
 CSFG/RMCDHF/RCI 的输入入口未改造。
 这些结果验证软件和输入表示，不建立生产规模性能、活性空间收敛或物理精度。

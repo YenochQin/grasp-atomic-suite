@@ -5,7 +5,7 @@ build_directory="build"
 # The default command configures every retained ordinary application, including
 # rwfnestimate. Explicit options below may select a smaller or extended scope.
 cmake_args=(-DGRASP_BUILD_SERIAL_APPS=ON -DGRASP_ENABLE_MPI=ON
-            -DGRASP_JJ2LSJ_OPENMP=ON -DGRASP_RANGULAR_OPENMP=ON
+            -DGRASP_JJ2LSJ_OPENMP=ON
             -DGRASP_BUILD_CSFG=OFF)
 
 # Quote command arguments for the fish commands displayed to the user.
@@ -21,7 +21,7 @@ cache_value() {
 }
 
 show_next_steps() {
-    local build_arg python_executable install_prefix rangular_openmp=OFF
+    local build_arg python_executable install_prefix
     local build_scope="CUSTOM: compile only the selected program groups listed below"
     local compile_description="Compile the selected program groups"
     local rwfnestimate_status="not selected"
@@ -31,17 +31,12 @@ show_next_steps() {
         python_executable=$(cache_value _Python3_EXECUTABLE)
     fi
     install_prefix=$(cache_value CMAKE_INSTALL_PREFIX)
-    if [[ -f "$build_abspath/f2018-targets.txt" ]] &&
-       grep -qx rangular_omp "$build_abspath/f2018-targets.txt"; then
-        rangular_openmp=ON
-    fi
     if grep -qx rwfnestimate "$build_abspath/f2018-targets.txt"; then
         rwfnestimate_status="included"
     fi
     if [[ $(cache_value GRASP_BUILD_SERIAL_APPS) == ON &&
           $(cache_value GRASP_ENABLE_MPI) == ON &&
           $(cache_value GRASP_JJ2LSJ_OPENMP) == ON &&
-          "$rangular_openmp" == ON &&
           $(cache_value GRASP_BUILD_CSFG) == OFF ]]; then
         build_scope="ALL NON-CSFG PROGRAMS: serial + MPI + OpenMP"
         compile_description="Compile ALL non-CSFG programs, including rwfnestimate"
@@ -57,7 +52,7 @@ Build configuration
   rwfnestimate:    $rwfnestimate_status
   Serial applications:            $(cache_value GRASP_BUILD_SERIAL_APPS)
   MPI applications:               $(cache_value GRASP_ENABLE_MPI)
-  OpenMP: jj2lsj=$(cache_value GRASP_JJ2LSJ_OPENMP), rangular=$rangular_openmp
+  OpenMP: jj2lsj=$(cache_value GRASP_JJ2LSJ_OPENMP)
   CSFG extension:                 removed
 
 Output locations
@@ -99,14 +94,14 @@ show_help() {
         python_option=" -DPython3_EXECUTABLE=$(fish_quote "$shared_python")"
     fi
     cat <<EOF
-Configure ALL non-CSFG programs: serial, MPI and both OpenMP targets.
+Configure ALL non-CSFG programs: serial, MPI and jj2lsj OpenMP.
 This includes rwfnestimate. Compilation is the next step shown after configuration.
 
 Usage: ./configure.sh [options] [-DNAME=VALUE ...]
   --serial          Enable serial applications (already enabled by default)
   --no-serial       Explicitly omit ordinary serial applications, including rwfnestimate
   --no-mpi          Disable MPI programs (enabled by default)
-  --no-openmp       Disable both jj2lsj and rangular OpenMP support
+  --no-openmp       Disable jj2lsj OpenMP support
   --no-csfg         Compatibility option; CSFG source and targets have been removed
   --debug           Use a Debug build; default directory becomes build-debug
   --profile NAME    f2018-release (production), f2018-check or f2018-audit
@@ -115,7 +110,7 @@ Usage: ./configure.sh [options] [-DNAME=VALUE ...]
   --pic             Enable position-independent code
   -h, --help        Show this help
 
-All ordinary programs, with MPI and both OpenMP targets (fish):
+All ordinary programs, with MPI and jj2lsj OpenMP (fish):
   set -gx FC /usr/bin/gfortran-15
   set -gx OMPI_FC /usr/bin/gfortran-15
   ./configure.sh$python_option
@@ -139,7 +134,7 @@ while (($#)); do
         --serial) cmake_args+=(-DGRASP_BUILD_SERIAL_APPS=ON); shift ;;
         --no-serial) cmake_args+=(-DGRASP_BUILD_SERIAL_APPS=OFF); shift ;;
         --no-csfg) cmake_args+=(-DGRASP_BUILD_CSFG=OFF); shift ;;
-        --no-openmp) cmake_args+=(-DGRASP_JJ2LSJ_OPENMP=OFF -DGRASP_RANGULAR_OPENMP=OFF); shift ;;
+        --no-openmp) cmake_args+=(-DGRASP_JJ2LSJ_OPENMP=OFF); shift ;;
         --profile|--prefix|--build-dir)
             if (($# < 2)) || [[ -z "$2" ]]; then echo "Missing value for $1; see ./configure.sh --help" >&2; exit 2; fi
             case "$1" in

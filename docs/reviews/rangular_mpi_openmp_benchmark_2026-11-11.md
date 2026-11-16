@@ -104,5 +104,5 @@ OpenMP 生成普通 `mcp.*`，MPI 生成 rank 分片；本实验比较各自原�
 - `configure.log`、`build.log`、`binaries/`：构建记录和实际测量程序的冻结副本。
 
 输入数据、机器路径、二进制及完整运行产物不纳入提交。此目录不随克隆提供；
-可按[输入说明](../implemented/rangular_descriptor_input.md)、[OpenMP 说明](../implemented/rangular_openmp.md)
+可按[输入说明](../implemented/rangular_descriptor_input.md)、[OpenMP 说明](../archive/rangular_openmp.md)
 及 [MCP 比较说明](../implemented/mcp_compare.md)，结合上述设置和原输入复测。

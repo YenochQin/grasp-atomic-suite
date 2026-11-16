@@ -33,7 +33,6 @@
       use vast_kind_param, only:  double
       use iso_fortran_env, only: int64
       use rangular_profile, only: stage_clock, record_stage
-      use rangular_parallel, only: parallel_pairs_available, begin_pair_block, end_pair_block, load_parallel_pair
       use rangular_reuse, only: reuse_requested, begin_reuse_block, end_reuse_block, load_reused_pair
       use parameter_def,   only:  max_orbitals, orbital_index_radix
       use memory_man
@@ -142,7 +141,6 @@
 !   Allocate storage for the arrays in BUFFER
 !
       call alcbuf (1)
-      if (parallel_pairs_available) call begin_pair_block(symmetry_block_index)
       if (reuse_requested) call begin_reuse_block()
       call record_stage('coefficient_buffer_allocation', symmetry_block_index, stage_start_count)
       stage_start_count = stage_clock()
@@ -168,12 +166,10 @@
                matrix_element_position = matrix_element_position + 1
                increment_matrix_position = .false.
             endif
-            if (parallel_pairs_available) call load_parallel_pair(csf_column_index,csf_row_index,orbital_a,orbital_b, &
-               & one_electron_shell_coefficients(1))
             if (reuse_requested) call load_reused_pair(csf_column_index,csf_row_index,orbital_a,orbital_b, &
                & one_electron_shell_coefficients(1))
             if (csf_row_index .ne. csf_column_index) then
-               if (.not. parallel_pairs_available .and. .not. reuse_requested) call onescalar(csf_column_index, &
+               if (.not. reuse_requested) call onescalar(csf_column_index, &
                   & csf_row_index,orbital_a,orbital_b,one_electron_shell_coefficients)
                if (orbital_a .ne. 0 .and. orbital_a .ne. orbital_b .and.       &
                       abs (one_electron_shell_coefficients(1)) .gt. angular_coefficient_cutoff) then
@@ -235,7 +231,7 @@
 !   are the density pairs. NVCOEF is initialized here but changed
 !   in /rkco/cor[d] via COMMON.
 !
-            if (.not. parallel_pairs_available .and. .not. reuse_requested) then
+            if (.not. reuse_requested) then
                angular_coefficient_count = 0
                call rkco_gg (csf_column_index, csf_row_index, cord, 0, 1)
             end if
@@ -349,7 +345,6 @@
       call record_stage('pair_generation_and_buffering', symmetry_block_index, stage_start_count, &
                         int(one_electron_coefficient_count,int64) + sum(int(two_electron_counts_by_rank,int64)), &
                            & storage='memory_or_spill')
-      if (parallel_pairs_available) call end_pair_block(symmetry_block_index)
       if (reuse_requested) call end_reuse_block(symmetry_block_index)
       stage_start_count = stage_clock()
 !

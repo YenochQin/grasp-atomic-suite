@@ -56,7 +56,7 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 The rejected strict/diagnostic RMCDHF variants have been [removed](docs/implemented/rejected_rmcdhf_variants.md), together with their dedicated tests and runtime entry points.
 
 `./configure.sh` enables all retained non-CSFG applications by default: serial,
-MPI and both OpenMP targets, including `rwfnestimate`. MPI requires a compatible
+MPI and jj2lsj OpenMP, including `rwfnestimate`. MPI requires a compatible
 Fortran MPI environment. Direct CMake configuration still requires
 `-DGRASP_BUILD_SERIAL_APPS=ON` to include ordinary serial applications.
 `OMP_NUM_THREADS` selects the OpenMP thread count; transformation-file modes in
@@ -78,7 +78,7 @@ The default install prefix is `<build>/install`; use `--prefix PATH` or
 install or overwrite source `bin/`. See the [strict validation runner](test/f2018/README.md).
 
 The resulting executables are in `build/bin`, including `rwfnestimate`, the four
-ordinary RMCDHF programs, MPI property programs, `rangular_omp` and `jj2lsj_omp`.
+ordinary RMCDHF programs, MPI property programs, `rangular`, `rangular_mpi` and `jj2lsj_omp`.
 CSFG stays off by default. Explicit `--no-serial`, `--no-mpi` or `--no-openmp`
 options select a smaller build; `--serial` remains accepted for compatibility.
 

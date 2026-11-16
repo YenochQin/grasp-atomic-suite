@@ -1,4 +1,4 @@
-set(rangular_common_sources
+add_executable(rangular
     rangular_profile.f90
     rangular_reuse.f90
     rangular_input.f90
@@ -32,7 +32,6 @@ set(rangular_common_sources
     strsum_I.f90
     genmcp.f90
 )
-add_executable(rangular rangular_parallel_serial.f90 ${rangular_common_sources})
 setup_fortran_modules(rangular)
 target_link_libraries_Fortran(rangular PUBLIC rang90 mcp90 9290 mod)
 install(TARGETS rangular DESTINATION bin/)
@@ -40,9 +39,3 @@ install(TARGETS rangular DESTINATION bin/)
 add_executable(csf_descriptor_verify csf_descriptor_verify.f90)
 target_link_libraries_Fortran(csf_descriptor_verify PRIVATE 9290 mod)
 install(TARGETS csf_descriptor_verify DESTINATION bin/)
-
-# Default follows the suite's existing OpenMP switch; it can be selected alone.
-if(GRASP_RANGULAR_OPENMP)
-    find_package(OpenMP REQUIRED COMPONENTS Fortran)
-    add_subdirectory(openmp)
-endif()

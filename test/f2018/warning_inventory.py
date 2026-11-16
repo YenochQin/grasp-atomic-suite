@@ -36,7 +36,8 @@ def case_id(profile: str, features: dict) -> str:
     result = profile.removeprefix("f2018-") + "-" + "-".join(
         f"{axis[0]}{int(bool(features[axis]))}" for axis in AXES)
     default_angular = bool(features["serial"] and features["openmp"])
-    actual_angular = bool(features.get("rangular_openmp", default_angular))
+    # Historical budgets include the retired angular axis; current builds omit it.
+    actual_angular = bool(features.get("rangular_openmp", False))
     if actual_angular != default_angular:
         result += f"-a{int(actual_angular)}"
     return result

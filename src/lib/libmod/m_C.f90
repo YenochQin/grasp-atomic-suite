@@ -12,5 +12,4 @@
       integer, dimension(3,max_orbitals) :: jjq1, jjq2
       integer, dimension(max_orbitals) :: jlist, klist
       integer :: npeel, ncore
-!$OMP THREADPRIVATE(NQ1, NQ2, JJC1, JJC2, JJQ1, JJQ2, JLIST, KLIST, NPEEL, NCORE)
       end module m_c

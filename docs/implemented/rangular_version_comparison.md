@@ -50,13 +50,9 @@ Parquet 预处理只执行一次，额外需要 PyArrow；其耗时单列，不�
 这个动作在 `execution.json` 中标为 `text_provenance_added_after_execution`。
 交换格式及支持态范围见[描述符输入说明](rangular_descriptor_input.md)。
 
-使用 [rangular_omp](rangular_openmp.md) 时，将 `--candidate` 指向它并增加 `--candidate-threads 8`。
-该选项同时设置候选的 OpenMP 环境和 `--threads` 参数；原版及数学库仍单线程。
-省略此选项时，运行器保持原有单线程默认，不能仅设置父 shell 的 OMP_NUM_THREADS 就认定候选已多线程运行。
-
 串行[角向系数复用](rangular_angular_reuse.md)通过 `--candidate-reuse-cache-mib 64`
-开启，自动收集每块 `reuse.csv` 和汇总命中率/缓存数组字节数；不能同时指定
-`--candidate-threads`。支持计时参数的 suite 基准可加 `--reference-timings`，
+开启，自动收集每块 `reuse.csv` 和汇总命中率/缓存数组字节数。
+支持计时参数的 suite 基准可加 `--reference-timings`，
 以对照双方的系数生成阶段。默认仍不向原版传入新增选项。
 
 ## 3. 一阶相互作用、超时与判据
@@ -112,8 +108,8 @@ Linux/macOS 另外用当前子进程的 `wait4.ru_maxrss` 记录 `peak_rss_bytes
 其他平台为 unavailable。RSS 包括整个进程，不能当作缓存自身占用。
 子进程退出轮询最多约 10 ms，因此非常短的运行不适合做速度结论。
 
-默认将 OpenMP/OpenBLAS/MKL/BLIS/Accelerate/NumExpr 的线程环境设为 1；
-`--candidate-threads` 仅覆盖候选的 OpenMP 线程数，实际每次环境记录在 execution JSON 中。
+运行器将 OpenMP/OpenBLAS/MKL/BLIS/Accelerate/NumExpr 的线程环境设为 1，
+实际每次环境记录在 execution JSON 中。
 不修改绑定、CPU 频率或系统缓存。输入复制和验证可能预热页缓存，因此这些结果不是冷缓存测试。
 建议使用相同工具链、优化等级、容量及科学设置；尤其不要把旧 Debug 与新 Release 的比值当成改造收益。
 大量 MCP 文件的校验可能耗时，但不会计入可执行程序墙钟。

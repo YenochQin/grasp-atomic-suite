@@ -40,14 +40,14 @@ docs/
 | 明确候选已处理，其余待核实 | [non_csfg_variable_inventory_2026-11-16.md](plans/non_csfg_variable_inventory_2026-11-16.md) | 原始采集基准 caaf3a5；1,880 份 Fortran 文本、20,108 个实体。529 项明确候选已逐项标记（528 改名、pi 保留），其余 19,579 项待核实；原名、原声明行及哈希作为历史快照，当前名称与位置另有 JSON 映射。 |
 | 已完成依赖与预收缩分析 | [rmcdhf_mcp_precontraction_2026-11-16.md](reviews/rmcdhf_mcp_precontraction_2026-11-16.md) | 普通 RMCDHF 的矩阵/势两条 MCP 消费路径；EOL 动态密度限制、全冻结积分收缩为 H_fixed、角向模板和迭代期收缩缓存。数学可行性与现行支持分开，未改代码或运行收缩/SCF 实验。 |
 | 已完成源码分析与文件压缩实验 | [rangular_mpi_mcp_storage_2026-11-16.md](reviews/rangular_mpi_mcp_storage_2026-11-16.md) | 普通 MCP 的 rank/通道拆分、记录布局、临时峰值及 RMCDHF 读取约束；已有串行样本 Zstd 无损缩减 49.6%–64.5%，逐文件 SHA-256 一致。容器、分块压缩和冗余列号消除均未实施，生产 MPI/SCF 性能待测。 |
-| 已实施，串行专项回归通过 | [rangular_angular_reuse.md](implemented/rangular_angular_reuse.md) | 默认关闭的有界 CSF 对缓存；保留顺序、占据/耦合及轨道共享关系，复用原始 T/V 系数，普通 MCP 写出不变；包含命中率、缓存容量与 RSS 测量，OpenMP/MPI 未接入。 |
+| 已实施，串行专项回归通过 | [rangular_angular_reuse.md](implemented/rangular_angular_reuse.md) | 默认关闭的有界 CSF 对缓存；保留顺序、占据/耦合及轨道共享关系，复用原始 T/V 系数，普通 MCP 写出不变；包含命中率、缓存容量与 RSS 测量，MPI 未接入；rangular OpenMP 已移除。 |
 | 已完成输出与性能对照 | [rangular_reuse_benchmark_2026-11-14.md](reviews/rangular_reuse_benchmark_2026-11-14.md) | 独立构建修改前基准，两组数据各三轮，文本/描述符 MCP 零容差及字节一致；合成样本命中 99.93%、整程 1.21×，现有 14,551-CSF 样本几乎不命中、慢约 37%；默认保持关闭。 |
 | 已实施，GNU 15 专项回归通过 | [rwfnestimate_header_input.md](implemented/rwfnestimate_header_input.md) | 普通 rwfnestimate 原生读取 rCSFs header.toml 的轨道表和含 core 总电子数；保留文本入口和 header 字节；Ni/Zn 及 TOML Release/Check 专项各 3/3，原生描述符配对哈希不变。 |
 | 根因已复现并修复，物理优化待验证 | [rwfnestimate_nan_header_2026-11-12.md](reviews/rwfnestimate_nan_header_2026-11-12.md) | Ni/Zn 首次 h/i 的搜索上界变负，导致 SETPOT/TAIL 警告及 NaN 误报成功；记录数值链、suite 迁移、上游恢复；同步命名迁移及退役更新后，Release 全量 66/66 通过。 |
 | 已移除被否决变体 | [rejected_rmcdhf_variants.md](implemented/rejected_rmcdhf_variants.md) | 删除 strict/diag 两个独立求解器、专用测试、构建/安装入口及当前二进制；普通四种 RMCDHF 和共享库保持原流程。 |
 | 已统一普通程序命名 | [program_naming.md](implemented/program_naming.md) | 13 个保留的普通应用目录去掉 90；GJ 可执行文件改为 gj/gj_mpi，CMake、网格工具、验收和源码链接同步；重命名阶段的构建与验证记录见说明；CSFG、共享库及上游来源路径保留。 |
-| 现行构建策略 | [build_profiles.md](implemented/build_profiles.md) | CSFG 默认隔离；生产默认 -O2 与目标所需 OpenMP；标准/接口/运行时诊断放 Check/Audit；独立 OpenMP 开关组成 36 个有效配置，24 个诊断配置均有警告预算；记录三轮数值与耗时对照。 |
-| 首版已实施并回归 | [rangular_openmp.md](implemented/rangular_openmp.md) | 独立 rangular_omp、线程私有角动量工作区、有界结果块与有序提交；1/2/4/8 线程及回退路径字节一致；保留 23,459-CSF 历史测量，并链接 14,551-CSF 三轮 MPI/OpenMP 对照；排序/输出仍串行，非全套 GRASP 或物理验收。 |
+| 现行构建策略 | [build_profiles.md](implemented/build_profiles.md) | CSFG 已移除；生产默认 -O2，OpenMP 仅保留 jj2lsj；标准/接口/运行时诊断放 Check/Audit；serial、MPI 和 jj2lsj OpenMP 组成 24 个有效配置，16 个诊断配置沿用历史关闭 angular OpenMP 的预算 ID；历史预算范围不代表当前告警验收。 |
+| 已移除，历史归档 | [rangular_openmp.md](archive/rangular_openmp.md) | 2026-11-16 基于 9d6ee31 移除 rangular_omp、并行接口、专用线程状态、构建及测试入口；串行/MPI、描述符输入和串行系数复用保留，jj2lsj OpenMP 保留。历史测量不代表当前支持范围。 |
 | 已完成单机性能与输出对照 | [rangular_mpi_openmp_benchmark_2026-11-11.md](reviews/rangular_mpi_openmp_benchmark_2026-11-11.md) | 基于 c5f36d2，M4 上 14,551 CSFs、33 次 Release 运行；8 并发 MPI 4.06 秒、OpenMP 10.56 秒；描述符主要加快输入，整程收益较小；串行/线程字节一致，MPI 零容差等价。 |
 | 已完成 x86 性能诊断 | [rangular_mpi_openmp_x86_diagnosis_2026-11-11.md](reviews/rangular_mpi_openmp_x86_diagnosis_2026-11-11.md) | 基于 c47f4d4，23,459 CSFs 三轮：OMP 8 线程中位数 27.06 秒、MPI 8 进程 13.49 秒；38,461,197 项贡献零差异。隔离阶段探针确认并行范围、逐列批次等待和串行结果处理的限制；未修改生产计算代码。 |
 | 已实施 MPI 输入适配 | [rangular_mpi_descriptor_input.md](implemented/rangular_mpi_descriptor_input.md) | 普通 rangular_mpi 支持 rank 0 二进制加载、元数据/数组广播及逐 rank 阶段计时；保留文本入口和原 MCP 分片。Release/Check 六项 MPI 专项回归通过，提供交替重复对照脚本；不涉及 CSFG。 |

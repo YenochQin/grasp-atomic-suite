@@ -3,8 +3,8 @@
 日期：2026-11-10。源码基准：suite `e229657d8a32b851da9c130928545bcb3ac209f1`；
 rCSFs `6e4fcff1439fb1b56d4891908c5bd58722ddf64a`。
 
-现行状态：**描述符输入适配和计时已实施；普通 rangular 的首版 OpenMP 现已实施并完成所述回归**，
-见 [OpenMP 现行说明](../implemented/rangular_openmp.md)。采用审计后的 threadprivate 过渡适配；全库显式 context 尚未完成。
+现行状态：**描述符输入适配和计时保留；普通 rangular 的 OpenMP 实现已于 2026-11-16 移除**，
+见 [OpenMP 历史说明](../archive/rangular_openmp.md)。下文 OpenMP 方案仅作历史分析。
 实现、命令、已通过的软件回归及支持范围见[描述符输入说明](../implemented/rangular_descriptor_input.md)。
 下文保留最初的设计分析及后续方案，不能将其每项候选均视为已实施；最初研究仅新增本文和索引，当时已有的 MCP 工具记录不算作该次运行结果。
 

@@ -6,6 +6,4 @@
       integer :: angular_buffer_capacity, angular_coefficient_count
       integer, dimension(:,:), pointer :: angular_coefficient_labels
       real(double), dimension(:), pointer :: angular_coefficients
-!     Active only in the audited rangular OpenMP object build.
-!$OMP THREADPRIVATE(angular_buffer_capacity, angular_coefficient_count, angular_coefficient_labels, angular_coefficients)
       end module buffer_c

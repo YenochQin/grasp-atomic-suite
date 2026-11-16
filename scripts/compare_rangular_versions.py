@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare ordinary rangular outputs with a serial reference and optional OpenMP candidate."""
+"""Compare serial rangular versions using text and optional descriptor inputs."""
 
 from __future__ import annotations
 
@@ -85,14 +85,11 @@ def run_logged(
     timeout_seconds: float | None,
     *,
     input_csf: Path | None = None,
-    openmp_threads: int | None = None,
 ) -> dict[str, Any]:
     directory.mkdir()
     if input_csf is not None:
         shutil.copyfile(input_csf, directory / "rcsf.inp")
-    thread_environment = THREAD_ENVIRONMENT | (
-        {"OMP_NUM_THREADS": str(openmp_threads)} if openmp_threads else {}
-    )
+    thread_environment = THREAD_ENVIRONMENT.copy()
     execution: dict[str, Any] = {
         "command": command,
         "directory": str(directory),
@@ -268,7 +265,6 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
         "platform": {"system": platform.system(), "machine": platform.machine()},
         "thread_environment": THREAD_ENVIRONMENT,
         "repetitions": arguments.repeat,
-        "candidate_threads": arguments.candidate_threads,
         "candidate_reuse_cache_mib": arguments.candidate_reuse_cache_mib,
         "reference_timings": arguments.reference_timings,
         "atol": arguments.atol,
@@ -354,8 +350,6 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                 if mode != "reference_text" or arguments.reference_timings:
                     command += ["--timings", "timings.csv"]
                 if mode != "reference_text":
-                    if arguments.candidate_threads is not None:
-                        command += ["--threads", str(arguments.candidate_threads)]
                     if arguments.candidate_reuse_cache_mib is not None:
                         command += [
                             "--reuse-cache-mib", str(arguments.candidate_reuse_cache_mib),
@@ -369,9 +363,6 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                     input_csf=None
                     if mode == "candidate_descriptors"
                     else snapshots / "rcsf.inp",
-                    openmp_threads=arguments.candidate_threads
-                    if mode != "reference_text"
-                    else None,
                 )
                 if (
                     file_identity(executable)["sha256"]
@@ -561,11 +552,6 @@ def main() -> int:
         help="also pass --timings to a suite reference (older upstream binaries may not support it)",
     )
     parser.add_argument(
-        "--candidate-threads",
-        type=positive_integer,
-        help="OpenMP threads for rangular_omp; reference and mathematical libraries stay single-threaded",
-    )
-    parser.add_argument(
         "--timeout",
         type=positive_seconds,
         help="seconds per child process; default: unlimited",
@@ -588,8 +574,6 @@ def main() -> int:
     if arguments.candidate_reuse_cache_mib is not None:
         if arguments.candidate_reuse_cache_mib > 4096:
             parser.error("--candidate-reuse-cache-mib must be <= 4096")
-        if arguments.candidate_threads is not None:
-            parser.error("angular reuse is currently serial only; omit --candidate-threads")
     try:
         return execute_comparison(arguments)
     except (OSError, ValueError) as error:

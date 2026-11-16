@@ -2,7 +2,7 @@
 
 日期：2026-11-14。基于 `3f82922d2caa4de061c7f62c1b604770d0092847` 的工作树实现。
 范围：普通串行 `rangular`，文本与 rCSFs 描述符入口共用；默认关闭。
-OpenMP/MPI 与 CSFG 不启用此缓存。实现入口为
+MPI 不启用此缓存；rangular OpenMP 与 CSFG 已移除。实现入口为
 [rangular_reuse.f90](../../src/appl/rangular/rangular_reuse.f90)，
 接入点为 [mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90)。
 
@@ -17,8 +17,7 @@ OpenMP/MPI 与 CSFG 不启用此缓存。实现入口为
 
 文本输入可用 `--csf-text /path/to/rcsf.inp`，或使用工作目录的 `rcsf.inp`。
 `--reuse-cache-mib` 接受 0–4096，0 保留原计算路径；正值启用复用。
-统计与计时文件必须尚不存在。`rangular_omp` 显式拒绝复用选项，不能把此串行
-缓存跨线程共享。MPI 保留原入口，不接受这些选项。
+统计与计时文件必须尚不存在。MPI 保留原入口，不接受这些选项。
 
 ## 精确等价条件
 

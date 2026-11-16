@@ -40,7 +40,7 @@ cmake -S . -B build-mpi-descriptor \
     -DCMAKE_Fortran_COMPILER=/usr/bin/gfortran-15 \
     -DCMAKE_BUILD_TYPE=Release -DGRASP_FORTRAN_PROFILE=f2018-release \
     -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON \
-    -DGRASP_BUILD_CSFG=OFF -DGRASP_RANGULAR_OPENMP=OFF -DGRASP_JJ2LSJ_OPENMP=OFF
+    -DGRASP_BUILD_CSFG=OFF -DGRASP_JJ2LSJ_OPENMP=OFF
 cmake --build build-mpi-descriptor --target rangular_mpi csf_descriptor_verify -j4
 ```
 

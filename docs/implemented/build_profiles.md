@@ -32,37 +32,37 @@ CMake 的范围核查与测试设施需要 Python；生成的 Fortran 数值程�
 ## 使用
 
 `./configure.sh` 默认配置全部保留的非 CSFG 程序：普通串行目标（包括
-`rwfnestimate`）、MPI 目标及两个 OpenMP 目标。随后执行
+`rwfnestimate`）、MPI 目标及 jj2lsj OpenMP 目标。随后执行
 `cmake --build build --parallel 4`，可执行文件统一输出到 `build/bin`。
 同一源码与编译器的已有 `build` 会更新配置，因此旧缓存中的串行关闭状态也会被纠正。
 若需要精简范围，显式传入 `--no-serial`、`--no-mpi` 或 `--no-openmp`，每次重配均需保留
 这些选项。`--serial` 继续兼容；直接调用 CMake 时仍需设置
 `-DGRASP_BUILD_SERIAL_APPS=ON`。
 
-生产 OpenMP 构建，使用新目录：
+生产串行 rangular 构建，使用新目录：
 
 ```fish
 set -gx FC /usr/bin/gfortran-15
 set -gx OMPI_FC $FC
 ./configure.sh --serial --no-mpi --no-csfg \
     --profile f2018-release --build-dir build-rangular-production \
-    -DGRASP_JJ2LSJ_OPENMP=OFF -DGRASP_RANGULAR_OPENMP=ON
+    -DGRASP_JJ2LSJ_OPENMP=OFF
 cmake --build build-rangular-production \
-    --target rangular rangular_omp csf_descriptor_verify -j4
+    --target rangular csf_descriptor_verify -j4
 ```
 
 检查配置可用 `--debug --profile f2018-check`，优化诊断配置用 `--profile f2018-audit`。
 旧目录中缓存的 profile/警告采集设置不会被当作新配置的默认值；尤其旧 Release 曾启用的
 `GRASP_CAPTURE_WARNINGS=ON` 不属于当前生产配置。优先用独立目录。
 
-普通验证矩阵独立覆盖 serial、MPI、jj2lsj OpenMP 和 rangular OpenMP。
-serial 开启时，每种 profile 有 MPI 与两个 OpenMP 开关的 8 种组合；serial 关闭时
-rangular 目标不存在，只保留 MPI 与 jj2lsj OpenMP 的 4 种组合。三种 profile 共 36 种配置；
-CSFG 始终关闭。24 个 Check/Audit 组合均须有各自的警告预算，回归测试检查基线覆盖。
+普通验证矩阵独立覆盖 serial、MPI 和 jj2lsj OpenMP，每种 profile 有 8 种组合，
+三种 profile 共 24 种配置；CSFG 始终关闭。rangular OpenMP 已于 2026-11-16 移除。
+16 个 Check/Audit 组合沿用历史基线中关闭 angular OpenMP 的预算 ID（部分带 `-a0`），
+回归测试检查保留配置的预算覆盖；历史预算及其旧源码范围不代表当前代码通过告警验收。
 生产结果明确标记未采集警告，不能以生产构建
 没有诊断输出宣称告警已清零。矩阵工具仍需实际运行全部组合后才能报告完整矩阵验收。
 
-独立开关补齐保留了已有 18 个预算，新增 6 个配置由本机 GNU 15.3.0 实际编译采集，
+历史上的独立开关补齐保留了已有 18 个预算，新增 6 个配置由本机 GNU 15.3.0 实际编译采集，
 记录在基线的 `independent_openmp_budget_update`。GNU 15.3 在 macOS arm64 上将
 `rci/qed.f90` 和 `rci_mpi/qed.f90` 中既有的 K 未初始化警告定位到使用处，
 Linux 基线定位在声明处；新增 Audit 预算为同一警告保留这两种确切身份，各限一次。
@@ -72,7 +72,7 @@ Linux 基线定位在声明处；新增 Audit 预算为同一警告保留这两�
 
 ## 本次 flag 对照
 
-当前环境的 GNU 15 默认目标为通用 x86-64，FMA 默认关闭。对同一 23,459-CSF 二进制输入，
+以下为移除 rangular OpenMP 之前的历史测量。测量环境的 GNU 15 默认目标为通用 x86-64，FMA 默认关闭。对同一 23,459-CSF 二进制输入，
 用相同的 8 个线程交替运行整理前的构建与精简生产构建，每种三次。
 目标是确认 MCP 完全一致并观察耗时，不预设精简会加速。
 
@@ -86,7 +86,7 @@ Linux 基线定位在声明处；新增 Audit 预算为同一警告保留这两�
 记录在忽略的 `build-rangular-production/audit/flags-23459-v1/`。
 不同 ISA/编译器默认值仍需重新验证数值与性能；没有据此启用本机专属指令或激进浮点选项。
 
-当前选定配置的回归：普通 Check/Audit/生产 Release 各 44 项，关闭 OpenMP 的 Check 42 项，
+当时选定配置的回归：普通 Check/Audit/生产 Release 各 44 项，关闭 OpenMP 的 Check 42 项，
 普通 MPI 生产配置 78 项，均通过。这些是独立开关补齐前的记录，未运行完整 36 组合矩阵。
 
 ## 独立开关的本机验证（2026-11-11）
