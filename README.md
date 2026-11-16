@@ -55,15 +55,20 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 
 The rejected strict/diagnostic RMCDHF variants have been [removed](docs/implemented/rejected_rmcdhf_variants.md), together with their dedicated tests and runtime entry points.
 
-The default CMake configuration attempts to build MPI versions. If no MPI Fortran toolchain is found, MPI targets are skipped. Serial orbital/property targets must be enabled explicitly. `jj2lsj_omp` is always built; `GRASP_JJ2LSJ_OPENMP=ON` enables OpenMP when available, and `OMP_NUM_THREADS` selects the thread count. Transformation-file modes retain the serial backend.
+`./configure.sh` enables all retained non-CSFG applications by default: serial,
+MPI and both OpenMP targets, including `rwfnestimate`. MPI requires a compatible
+Fortran MPI environment. Direct CMake configuration still requires
+`-DGRASP_BUILD_SERIAL_APPS=ON` to include ordinary serial applications.
+`OMP_NUM_THREADS` selects the OpenMP thread count; transformation-file modes in
+`jj2lsj_omp` retain the serial backend.
 
 ## Build
 
 The recommended build flow is out-of-source CMake with GNU Fortran 15:
 
-```sh
-export FC="$(command -v gfortran-15)"
-export OMPI_FC="$FC"
+```fish
+set -gx FC /usr/bin/gfortran-15
+set -gx OMPI_FC $FC
 ./configure.sh
 cmake --build build --parallel 4
 ```
@@ -72,11 +77,14 @@ The default install prefix is `<build>/install`; use `--prefix PATH` or
 `-DCMAKE_INSTALL_PREFIX=PATH` for another destination. A normal build does not
 install or overwrite source `bin/`. See the [strict validation runner](test/f2018/README.md).
 
-`configure.sh` passes `-DGRASP_ENABLE_MPI=ON` by default. If MPI Fortran is available, installation produces `bin/gj_mpi`, `bin/rhfs_mpi`, `bin/ris4_mpi`, `rmcdhf_mpi`, `rmcdhf_mem_mpi`, and the associated libraries.
+The resulting executables are in `build/bin`, including `rwfnestimate`, the four
+ordinary RMCDHF programs, MPI property programs, `rangular_omp` and `jj2lsj_omp`.
+CSFG stays off by default. Explicit `--no-serial`, `--no-mpi` or `--no-openmp`
+options select a smaller build; `--serial` remains accepted for compatibility.
 
 To build the four original RMCDHF programs and all property programs together:
 
-```sh
+```fish
 cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON
 cmake --build build-all --parallel 4
 ctest --test-dir build-all --output-on-failure
@@ -85,22 +93,26 @@ cmake --install build-all
 
 Debug build:
 
-```sh
+```fish
 ./configure.sh --debug
 cmake --build build-debug --target install -j4
 ```
 
 To disable MPI and build the serial applications, configure CMake directly:
 
-```sh
+```fish
 mkdir build-serial
 cmake -S . -B build-serial -DGRASP_ENABLE_MPI=OFF -DGRASP_BUILD_SERIAL_APPS=ON
 cmake --build build-serial --target install -j4
 ```
 
-Remove an existing build directory before reconfiguring, or run:
+Rerunning `./configure.sh` updates an existing build from the same source tree
+and compiler, including old caches where serial applications were disabled.
+Defaults are applied again, so repeat opt-out options for a reduced build.
+Use a new `--build-dir` when changing compilers or source trees. To remove build
+artifacts explicitly, run:
 
-```sh
+```fish
 ./scripts/clean-build-artifacts.sh
 ```
 
@@ -225,7 +237,7 @@ This repository is distributed under the [MIT License](LICENSE).
 
 ## GRASPG / CSFG extension
 
-`GRASP_BUILD_CSFG=ON` (default) adds 12 serial Fortran utilities, four MPI calculation
+`GRASP_BUILD_CSFG=ON` (opt-in; default is OFF) adds 12 serial Fortran utilities, four MPI calculation
 programs when MPI is available, and the installed `rsave_csfg` script. They reuse
 this suite's base libraries and shared capacities. Set `GRASP_BUILD_CSFG=OFF` to
 exclude the extension, or `GRASP_ENABLE_MPI=OFF` to retain its serial utilities only.
