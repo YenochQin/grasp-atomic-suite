@@ -1,3 +1,8 @@
+module lodcsh2_i
+    implicit none (type, external)
+    private
+    public :: lodcsh2
+contains
 !***********************************************************************
 !                                                                      *
       subroutine lodcsh2(nfile, ncore, jb)
@@ -449,3 +454,4 @@
 
       stop
       end subroutine lodcsh2
+end module lodcsh2_i

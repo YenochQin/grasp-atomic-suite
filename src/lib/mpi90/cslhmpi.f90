@@ -1,3 +1,8 @@
+module cslhmpi_i
+    implicit none (type, external)
+    private
+    public :: cslhmpi
+contains
 !***********************************************************************
 !
       subroutine cslhmpi(name, ncore, nblkin, idblk)
@@ -79,3 +84,4 @@
 
       return
       end subroutine cslhmpi
+end module cslhmpi_i

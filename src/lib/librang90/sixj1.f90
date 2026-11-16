@@ -1,3 +1,8 @@
+module sixj1_i
+    implicit none (type, external)
+    private
+    public :: sixj1
+contains
 !*******************************************************************
 !                                                                  *
       subroutine sixj1(i,j,k,l,m,itik,si)
@@ -97,3 +102,4 @@
       endif
       return
       end subroutine sixj1
+end module sixj1_i

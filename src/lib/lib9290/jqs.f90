@@ -1,3 +1,8 @@
+module jqs_i
+    implicit none (type, external)
+    private
+    public :: jqs
+contains
 !!***********************************************************************
 !                                                                      *
       integer function jqs (iwhich, isubsh, icsf)
@@ -30,3 +35,4 @@
 !
       return
       end function jqs
+end module jqs_i

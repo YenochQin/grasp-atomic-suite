@@ -1,3 +1,8 @@
+module ldigit_i
+    implicit none (type, external)
+    private
+    public :: ldigit
+contains
 !***********************************************************************
 !                                                                      *
       logical function ldigit (cst)
@@ -35,3 +40,4 @@
     2 continue
       return
       end function ldigit
+end module ldigit_i

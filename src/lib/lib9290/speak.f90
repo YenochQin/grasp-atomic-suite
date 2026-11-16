@@ -1,3 +1,8 @@
+module speak_i
+    implicit none (type, external)
+    private
+    public :: speak
+contains
 !***********************************************************************
 !                                                                      *
       subroutine speak(ja, jb, ia1, ib1, ia2, ib2, k, x)
@@ -63,3 +68,4 @@
       return
 !
       end subroutine speak
+end module speak_i

@@ -1,6 +1,11 @@
+module nine_i
+    implicit none (type, external)
+    private
+    public :: nine
+contains
 !*******************************************************************
 !                                                                  *
-      subroutine nine(j1,j2,j3,l1,l2,l3,k1,k2,k3,i,inn,aa)
+      subroutine nine(j1,j2,j3,l1,l2,l3,k1,k2,k3,i,in,aa)
 !
 !                                                                  *
 !     THIS PACKAGE DETERMINES THE VALUES OF 9j COEFFICIENT         *
@@ -31,10 +36,10 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: j1, j2, j3, l1, l2, l3, k1, k2, k3
+      integer, intent(in) :: j1, j2, j3, l1, l2, l3, k1, k2, k3
       integer, intent(in)  :: i
-      integer, intent(out) :: inn
-      real(real64)  :: aa
+      integer, intent(out) :: in
+      real(real64), intent(inout) :: aa
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -42,18 +47,18 @@
       real(real64) :: s1, s2, s3, x
 !-----------------------------------------------
       if (i == 1) then
-         inn = 0
+         in = 0
          if (ittk(j1,j2,j3) == 0) return
          if (ittk(l1,l2,l3) == 0) return
          if (ittk(k1,k2,k3) == 0) return
          if (ittk(j1,l1,k1) == 0) return
          if (ittk(j2,l2,k2) == 0) return
          if (ittk(j3,l3,k3) == 0) return
-         inn = 1
+         in = 1
          return
       endif
       if (j1*j2*j3*l1*l2*l3*k1*k2*k3 == 0) then
-         inn = 1
+         in = 1
          call nine0 (j1, j2, j3, l1, l2, l3, k1, k2, k3, aa)
       else
          n1 = iabs(j1 - k3)
@@ -70,7 +75,7 @@
          n5 = j1 + k3
          n6 = l1 + k2
          min_ = min0(n1,n2,n3,n4,n5,n6)
-         inn = 1
+         in = 1
          aa = zero
          do ix = max_, min_, 2
             call sixj (j1, j2, j3, l3, k3, ix, 0, s1)
@@ -83,3 +88,4 @@
       endif
       return
       end subroutine nine
+end module nine_i

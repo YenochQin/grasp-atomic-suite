@@ -21,10 +21,11 @@
       use itjpo_i
       use convrt_i, only: convrt
       use rkco_gg_i, only: rkco_gg
+      use cord_i, only: cord
       implicit none (type, external)
       real(real64), intent(in) :: vint(max_orbitals, max_orbitals), vint2(max_orbitals, max_orbitals)
       integer, intent(in) :: doit
-      external :: cord
+
       integer, parameter :: key = orbital_index_radix
       character(len=11) :: cnum
       real(real64) :: evpair(nvec)

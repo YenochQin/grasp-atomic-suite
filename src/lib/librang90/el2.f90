@@ -1,3 +1,8 @@
+module el2_i
+    implicit none (type, external)
+    private
+    public :: el2
+contains
 !*******************************************************************
 !                                                                  *
       subroutine el2(jja,jjb,ja,jb,icolbrei)
@@ -222,3 +227,4 @@
       end if
       return
       end subroutine el2
+end module el2_i

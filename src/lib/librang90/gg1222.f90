@@ -1,3 +1,8 @@
+module gg1222_i
+    implicit none (type, external)
+    private
+    public :: gg1222
+contains
 !*******************************************************************
 !                                                                  *
       subroutine gg1222(ik1,ik2,bk1,bk2,id1,id2,bd1,bd2,k1, &
@@ -77,3 +82,4 @@
       ww=-a1*aw*s/dsqrt(dble(ik1(7)+1))
       return
       end subroutine gg1222
+end module gg1222_i

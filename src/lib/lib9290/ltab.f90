@@ -1,3 +1,8 @@
+module ltab_i
+    implicit none (type, external)
+    private
+    public :: ltab
+contains
 !***********************************************************************
 !                                                                      *
       subroutine ltab(is, nqs, ks, irows)
@@ -64,3 +69,4 @@
       return
 !
       end subroutine ltab
+end module ltab_i

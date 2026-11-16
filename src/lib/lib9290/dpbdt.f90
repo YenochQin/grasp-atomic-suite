@@ -1,3 +1,8 @@
+module dpbdt_i
+    implicit none (type, external)
+    private
+    public :: dpbdt
+contains
 !***********************************************************************
 !                                                                      *
       subroutine dpbdt(j)
@@ -104,3 +109,4 @@
       end do
       return
       end subroutine dpbdt
+end module dpbdt_i

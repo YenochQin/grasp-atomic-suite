@@ -1,3 +1,8 @@
+module ispar_i
+    implicit none (type, external)
+    private
+    public :: ispar
+contains
 !***********************************************************************
 !                                                                      *
       integer function ispar (icsf)
@@ -36,3 +41,4 @@
 !
       return
       end function ispar
+end module ispar_i

@@ -1,3 +1,8 @@
+module starttime_i
+    implicit none (type, external)
+    private
+    public :: starttime
+contains
 !***********************************************************************
       subroutine starttime(ncount1, progname)
 !-----------------------------------------------
@@ -50,3 +55,4 @@
 
       return
       end subroutine starttime
+end module starttime_i

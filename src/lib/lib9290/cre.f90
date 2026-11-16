@@ -1,3 +1,8 @@
+module cre_i
+    implicit none (type, external)
+    private
+    public :: cre
+contains
 !***********************************************************************
 !                                                                      *
       real(real64) function cre (kap1, k, kap2)
@@ -45,3 +50,4 @@
 !
       return
       end function cre
+end module cre_i

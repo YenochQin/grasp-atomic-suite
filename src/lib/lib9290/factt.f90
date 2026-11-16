@@ -1,3 +1,8 @@
+module factt_i
+    implicit none (type, external)
+    private
+    public :: factt
+contains
 !***********************************************************************
 !                                                                      *
       subroutine factt
@@ -47,3 +52,4 @@
 !
       return
       end subroutine factt
+end module factt_i

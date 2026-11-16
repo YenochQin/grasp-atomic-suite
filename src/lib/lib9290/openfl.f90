@@ -1,3 +1,8 @@
+module openfl_i
+    implicit none (type, external)
+    private
+    public :: openfl
+contains
 !***********************************************************************
 !                                                                      *
       subroutine openfl(nfile, filnam, rform, rstat, ierr)
@@ -48,3 +53,4 @@
 !
       return
       end subroutine openfl
+end module openfl_i

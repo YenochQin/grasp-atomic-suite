@@ -1,3 +1,8 @@
+module onescalar_i
+    implicit none (type, external)
+    private
+    public :: onescalar
+contains
 !*******************************************************************
 !                                                                  *
       subroutine onescalar(ja,jb,ia1,ia2,vshell)
@@ -211,3 +216,4 @@
       goto 9
       return
       end subroutine onescalar
+end module onescalar_i

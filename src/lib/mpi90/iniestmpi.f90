@@ -1,3 +1,8 @@
+module iniestmpi_i
+    implicit none (type, external)
+    private
+    public :: iniestmpi
+contains
 !***********************************************************************
 !
       subroutine iniestmpi (nmax, ncf, niv, basis, hmx, jcol, irow)
@@ -109,3 +114,4 @@
 
       return
       end subroutine iniestmpi
+end module iniestmpi_i

@@ -1,3 +1,8 @@
+module sys_mkdir_i
+    implicit none (type, external)
+    private
+    public :: sys_mkdir
+contains
 !***********************************************************************
       subroutine sys_mkdir (dir, lendir, ierr)
 !
@@ -48,3 +53,4 @@
       endif
       return
       end subroutine sys_mkdir
+end module sys_mkdir_i

@@ -1,3 +1,8 @@
+module setisompi_i
+    implicit none (type, external)
+    private
+    public :: setisompi
+contains
 !***********************************************************************
       subroutine setisompi (isofile)
 
@@ -49,3 +54,4 @@
 
       return
       end
+end module setisompi_i

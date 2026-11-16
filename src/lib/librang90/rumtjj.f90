@@ -1,3 +1,8 @@
+module rumtjj_i
+    implicit none (type, external)
+    private
+    public :: rumtjj
+contains
 !*******************************************************************
 !                                                                  *
       subroutine rumtjj(knt,jj,lq,lv,l)
@@ -53,3 +58,4 @@
       l=jthn(kt,1,100)
       return
       end subroutine rumtjj
+end module rumtjj_i

@@ -1,3 +1,8 @@
+module coulom_i
+    implicit none (type, external)
+    private
+    public :: coulom
+contains
 !*******************************************************************
 !                                                                  *
       subroutine coulom(j1,j2,j3,j4,l1,l2,l3,l4,k,aa)
@@ -52,3 +57,4 @@
       if((ifaz/4)*4 /= ifaz)aa=-aa
       return
       end subroutine coulom
+end module coulom_i

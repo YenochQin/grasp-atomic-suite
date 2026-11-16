@@ -1,3 +1,8 @@
+module setmc_i
+    implicit none (type, external)
+    private
+    public :: setmc
+contains
 !***********************************************************************
 !                                                                      *
       subroutine setmc
@@ -60,3 +65,4 @@
       return
 !
       end subroutine setmc
+end module setmc_i

@@ -47,6 +47,7 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 共享库过程已模块化 | [library_module_migration_2026-11-16.md](reviews/library_module_migration_2026-11-16.md) | 188 份独立接口中的 200 个过程迁入模块，保留公开 API；记录原接口属性差异、MPI 依赖拆分、测试替身和串行/MPI/OpenMP 行为回归。 |
 | 剩余非风格项已分级，未实施 | [remaining_nonstyle_static_analysis_2026-11-16.md](reviews/remaining_nonstyle_static_analysis_2026-11-16.md) | 基准 9d6ee31；复核剩余输入、精度、接口与解析诊断。35 个受控输入场景定位 CSF 错误接受/零退出码、RIS4 截断缓存问题；1,107 个加强隐式类型检查的编译上下文区分声明顺序与漏声明。给出 P1–P3 建议，未修改代码。 |
 | 三类优先问题已修复并回归 | [priority_input_safety_fixes_2026-11-16.md](reviews/priority_input_safety_fixes_2026-11-16.md) | MCP 状态即时检查、单 rank 故障 MPI_Abort、相关 CSF 记录检查、CPATH 分配保护及四个 EPS 的 DOUBLE 声明。Release/Check 最终各 77 项通过，非 MPI 专项 5 项通过；EPS 当前未用于执行判断，未启用阈值筛选。纯风格未改，历史告警预算缺口保留。 |
 | 静态分析基线，优先项已跟进 | [fortls_fortitude_analysis_2026-11-16.md](reviews/fortls_fortitude_analysis_2026-11-16.md) | 基准 e47c59d；fortls 3.2.2 / Fortitude 0.10.1 覆盖 1,902 份文本。保留 35,361 条 Fortitude 和 57 条 fortls 的原始口径、误报与工具限制记录。三类优先项已按上条修复，其余规范和风格建议未批量处理。 |

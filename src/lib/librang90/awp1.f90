@@ -1,3 +1,8 @@
+module awp1_i
+    implicit none (type, external)
+    private
+    public :: awp1
+contains
 !*******************************************************************
 !                                                                  *
       subroutine awp1(ik,bk,id,bd,k1,bk2,qm1,qm2,qm3,aw)
@@ -102,3 +107,4 @@
       if(((ie/4)*4) /= ie)aw=-aw
       return
       end subroutine awp1
+end module awp1_i

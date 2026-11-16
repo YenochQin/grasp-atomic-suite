@@ -1,3 +1,8 @@
+module oneparticlejj2_i
+    implicit none (type, external)
+    private
+    public :: oneparticlejj2
+contains
       subroutine oneparticlejj2(ns,ka,ja,jb,coeff)
 !                                                                  *
 !   --------------  SECTION METWO    SUBPROGRAM 03  -------------  *
@@ -91,3 +96,4 @@
       coeff=-coeff*sqrt(dble(id1(3)+1))
       return
       end subroutine oneparticlejj2
+end module oneparticlejj2_i

@@ -1,3 +1,8 @@
+module izas1_i
+    implicit none (type, external)
+    private
+    public :: izas1
+contains
 !*******************************************************************
 !                                                                  *
       integer function izas1(ib,qb,ik,qk)
@@ -35,3 +40,4 @@
       izas1=1
       return
       end  function izas1
+end module izas1_i

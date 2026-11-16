@@ -68,8 +68,9 @@
       use vpint_i
       use onescalar_i, only: onescalar
       use rkco_gg_i, only: rkco_gg
+      use cord_i, only: cord
       implicit none (type, external)
-      external breid,cord
+      external :: breid
 !----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

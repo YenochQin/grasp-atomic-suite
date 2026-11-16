@@ -1,3 +1,8 @@
+module snrc_i
+    implicit none (type, external)
+    private
+    public :: snrc
+contains
 !***********************************************************************
 !                                                                      *
       subroutine snrc(is, kaps, ks, nd1, nd2, ne1, ne2, ibrd, ibre)
@@ -116,3 +121,4 @@
       return
 !
       end subroutine snrc
+end module snrc_i

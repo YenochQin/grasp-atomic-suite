@@ -1,3 +1,8 @@
+module ixjtik_i
+    implicit none (type, external)
+    private
+    public :: ixjtik
+contains
 !*******************************************************************
 !                                                                  *
       integer function ixjtik (i, j, k, l, m, n)
@@ -32,3 +37,4 @@
       ixjtik = 1
       return
       end function ixjtik
+end module ixjtik_i

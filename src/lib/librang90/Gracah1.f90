@@ -1,3 +1,8 @@
+module gracah1_i
+    implicit none (type, external)
+    private
+    public :: gracah1
+contains
 !*******************************************************************
 !                                                                  *
       subroutine gracah1(i,j,k,l,m,n,rac)
@@ -78,3 +83,4 @@
       end if
       return
       end
+end module gracah1_i

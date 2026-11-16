@@ -1,3 +1,8 @@
+module el31_i
+    implicit none (type, external)
+    private
+    public :: el31
+contains
 !*******************************************************************
 !                                                                  *
       subroutine el31(jjja,jjjb,ja,jb,jja,jjb,jjc,jjd,icolbrei)
@@ -166,3 +171,4 @@
       end do
       return
       end subroutine el31
+end module el31_i

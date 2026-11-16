@@ -1,3 +1,8 @@
+module jcup_i
+    implicit none (type, external)
+    private
+    public :: jcup
+contains
 !***********************************************************************
 !                                                                      *
       integer function jcup (loc, icsf)
@@ -38,3 +43,4 @@
 !
       return
       end function jcup
+end module jcup_i

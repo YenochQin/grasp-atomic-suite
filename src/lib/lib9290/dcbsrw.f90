@@ -1,3 +1,8 @@
+module dcbsrw_i
+    implicit none (type, external)
+    private
+    public :: dcbsrw
+contains
 !***********************************************************************
 !                                                                      *
       subroutine dcbsrw(n, kappa, z, e, rg0, rg, rf, mtp)
@@ -245,3 +250,4 @@
       return
 !
       end subroutine dcbsrw
+end module dcbsrw_i

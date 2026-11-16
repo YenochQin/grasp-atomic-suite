@@ -1,3 +1,8 @@
+module rint_i
+    implicit none (type, external)
+    private
+    public :: rint
+contains
 !***********************************************************************
 !                                                                      *
       real(real64) function rint (i, j, k)
@@ -66,3 +71,4 @@
       return
 !
       end function rint
+end module rint_i

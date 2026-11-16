@@ -1,3 +1,8 @@
+module yzk_i
+    implicit none (type, external)
+    private
+    public :: yzk
+contains
 !***********************************************************************
 !                                                                      *
       subroutine yzk(k, i, j)
@@ -223,3 +228,4 @@
 !
       return
       end subroutine yzk
+end module yzk_i

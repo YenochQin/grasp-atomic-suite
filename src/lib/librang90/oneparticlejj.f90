@@ -1,3 +1,8 @@
+module oneparticlejj_i
+    implicit none (type, external)
+    private
+    public :: oneparticlejj
+contains
 !*******************************************************************
 !                                                                  *
       subroutine oneparticlejj(ka,iopar,ja,jb,ia1,ia2,vshell)
@@ -209,3 +214,4 @@
       goto 9
       return
       end subroutine oneparticlejj
+end module oneparticlejj_i

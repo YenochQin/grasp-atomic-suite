@@ -1,3 +1,8 @@
+module cord_i
+    implicit none (type, external)
+    private
+    public :: cord
+contains
 !***********************************************************************
 !                                                                      *
       subroutine cord(ja, jb, ja1, ipca, jb1)
@@ -108,3 +113,4 @@
 !
       return
       end subroutine cord
+end module cord_i

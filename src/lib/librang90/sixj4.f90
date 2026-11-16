@@ -1,3 +1,8 @@
+module sixj4_i
+    implicit none (type, external)
+    private
+    public :: sixj4
+contains
 !*******************************************************************
 !                                                                  *
       subroutine sixj4(jc,je,jd,jb,jf,itik,si)
@@ -33,7 +38,7 @@
 !-----------------------------------------------
       integer, intent(in) :: jc, je, jd, jb, jf
       integer, intent(in) :: itik
-      real(real64)        :: si
+      real(real64), intent(out) :: si
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -79,3 +84,4 @@
       endif
       return
       end subroutine sixj4
+end module sixj4_i

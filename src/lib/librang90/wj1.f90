@@ -1,3 +1,8 @@
+module wj1_i
+    implicit none (type, external)
+    private
+    public :: wj1
+contains
 !*******************************************************************
 !                                                                  *
       subroutine wj1(ik,bk,id,bd,k2,qm1,qm2,wj)
@@ -100,3 +105,4 @@
       end if
       return
       end subroutine wj1
+end module wj1_i

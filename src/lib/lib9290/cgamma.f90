@@ -1,3 +1,8 @@
+module cgamma_i
+    implicit none (type, external)
+    private
+    public :: cgamma
+contains
 !***********************************************************************
 !                                                                      *
       subroutine cgamma(argr, argi, resr, resi)
@@ -213,3 +218,4 @@
       return
 !
       end subroutine cgamma
+end module cgamma_i

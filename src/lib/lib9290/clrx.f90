@@ -1,3 +1,8 @@
+module clrx_i
+    implicit none (type, external)
+    private
+    public :: clrx
+contains
 !***********************************************************************
 !                                                                      *
       real(real64) function clrx (kappaa, k, kappab)
@@ -116,3 +121,4 @@
       return
 !
       end function clrx
+end module clrx_i

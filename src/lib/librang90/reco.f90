@@ -1,3 +1,8 @@
+module reco_i
+    implicit none (type, external)
+    private
+    public :: reco
+contains
 !*******************************************************************
 !                                                                  *
       subroutine reco(ja1,ja2,ja3,ja4,ka,iat)
@@ -77,3 +82,4 @@
       end do
       return
       end subroutine reco
+end module reco_i

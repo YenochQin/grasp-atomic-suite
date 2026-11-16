@@ -1,3 +1,8 @@
+module lodrwfmpi_i
+    implicit none (type, external)
+    private
+    public :: lodrwfmpi
+contains
 !***********************************************************************
       subroutine lodrwfmpi (ierror)
 !     IMPLICIT REAL*8          (A-H, O-Z)
@@ -161,3 +166,4 @@
 
       return
       end subroutine lodrwfmpi
+end module lodrwfmpi_i

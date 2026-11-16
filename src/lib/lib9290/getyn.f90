@@ -1,3 +1,8 @@
+module getyn_i
+    implicit none (type, external)
+    private
+    public :: getyn
+contains
 !***********************************************************************
 !                                                                      *
       logical function getyn ()
@@ -33,3 +38,4 @@
 !
       return
       end function getyn
+end module getyn_i

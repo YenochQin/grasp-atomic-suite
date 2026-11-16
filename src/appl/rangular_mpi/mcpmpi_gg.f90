@@ -53,8 +53,9 @@
       use orb_c,     only: csf_count, csf_subshell_occupations
       use stat_c,    only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
       use onescalar_i, only: onescalar
+      use cord_i, only: cord
       implicit none (type, external)
-      external cord
+
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

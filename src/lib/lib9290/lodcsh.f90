@@ -1,3 +1,8 @@
+module lodcsh_i
+    implicit none (type, external)
+    private
+    public :: lodcsh
+contains
 !***********************************************************************
 !                                                                      *
       subroutine lodcsh(nfile, ncore)
@@ -98,3 +103,4 @@
       electron_count = electron_count + sum(orbital_two_j(:ncore)+1)
       return
       end subroutine lodcsh
+end module lodcsh_i

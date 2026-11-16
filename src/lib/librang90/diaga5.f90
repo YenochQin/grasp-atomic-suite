@@ -1,3 +1,8 @@
+module diaga5_i
+    implicit none (type, external)
+    private
+    public :: diaga5
+contains
 !*******************************************************************
 !                                                                  *
       subroutine diaga5(npeelgg,ja1,ka,ire,iat,recc)
@@ -62,3 +67,4 @@
       end if
       return
       end subroutine diaga5
+end module diaga5_i

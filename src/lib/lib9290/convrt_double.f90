@@ -1,3 +1,8 @@
+module convrt_double_i
+    implicit none (type, external)
+    private
+    public :: convrt_double
+contains
 !***********************************************************************
 !                                                                      *
       subroutine convrt_double(intnum, cnum, lenth)
@@ -70,3 +75,4 @@
       endif
       return
       end subroutine convrt_double
+end module convrt_double_i

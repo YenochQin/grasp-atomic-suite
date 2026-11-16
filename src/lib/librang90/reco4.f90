@@ -1,3 +1,8 @@
+module reco4_i
+    implicit none (type, external)
+    private
+    public :: reco4
+contains
 !*******************************************************************
 !                                                                  *
       subroutine reco4(ja1,ja2,ja3,ja4,k1,k2,k3,k4,ka,ire,iat,recc)
@@ -97,3 +102,4 @@
       recc=re*recc
       return
       end subroutine reco4
+end module reco4_i

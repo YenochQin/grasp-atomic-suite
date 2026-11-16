@@ -1,3 +1,8 @@
+module sys_chdir_i
+    implicit none (type, external)
+    private
+    public :: sys_chdir
+contains
 !***********************************************************************
       subroutine sys_chdir (dir, lendir, ierr)
 !
@@ -22,3 +27,4 @@
 
       return
       end subroutine sys_chdir
+end module sys_chdir_i

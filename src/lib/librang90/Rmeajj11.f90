@@ -1,3 +1,8 @@
+module rmeajj11_i
+    implicit none (type, external)
+    private
+    public :: rmeajj11
+contains
 !*******************************************************************
 !                                                                  *
       subroutine rmeajj11(j1,j2,ll,s)
@@ -47,3 +52,4 @@
       if((inn/2)*2 /= inn)s=-s
       return
       end subroutine rmeajj11
+end module rmeajj11_i

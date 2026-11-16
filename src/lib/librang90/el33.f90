@@ -1,3 +1,8 @@
+module el33_i
+    implicit none (type, external)
+    private
+    public :: el33
+contains
 !*******************************************************************
 !                                                                  *
       subroutine el33(jjja,jjjb,ja,jb,jc,irez,jja,jjb,jjc,jjd   &
@@ -300,3 +305,4 @@
   100 format(5x,'ERRO IN EL33  PMGG RAGG')
       stop
       end subroutine el33
+end module el33_i

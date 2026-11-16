@@ -1,3 +1,8 @@
+module perko2_i
+    implicit none (type, external)
+    private
+    public :: perko2
+contains
 !*******************************************************************
 !                                                                  *
       subroutine perko2(ja1,ja2,ja3,ja4,i)
@@ -38,3 +43,4 @@
       call perko1(ja4,bk4,ik4,bd4,id4)
       return
       end subroutine perko2
+end module perko2_i

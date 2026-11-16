@@ -1,3 +1,8 @@
+module skrc_i
+    implicit none (type, external)
+    private
+    public :: skrc
+contains
 !***********************************************************************
 !                                                                      *
       subroutine skrc(is, kaps, ks, kd1, kd2, ke1, ke2)
@@ -71,3 +76,4 @@
 !
       return
       end subroutine skrc
+end module skrc_i

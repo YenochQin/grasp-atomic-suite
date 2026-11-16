@@ -1,3 +1,8 @@
+module radgrd_i
+    implicit none (type, external)
+    private
+    public :: radgrd
+contains
 !***********************************************************************
 !                                                                      *
       subroutine radgrd
@@ -136,3 +141,4 @@
       return
 !
       end subroutine radgrd
+end module radgrd_i

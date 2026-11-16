@@ -1,3 +1,8 @@
+module c1e1sm_i
+    implicit none (type, external)
+    private
+    public :: c1e1sm
+contains
 !*******************************************************************
 !                                                                  *
       subroutine c1e1sm(q,qm,sm,c,cm,a)
@@ -64,3 +69,4 @@
       end if
       return
       end subroutine c1e1sm
+end module c1e1sm_i

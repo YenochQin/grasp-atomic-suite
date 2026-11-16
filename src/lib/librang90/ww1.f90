@@ -1,3 +1,8 @@
+module ww1_i
+    implicit none (type, external)
+    private
+    public :: ww1
+contains
 !*******************************************************************
 !                                                                  *
       subroutine ww1(ik,bk,id,bd,k2,qm1,qm2,qm3,qm4,ww)
@@ -79,3 +84,4 @@
       ww=enqp/dsqrt(dble(kk2+1)*(ik(6)+1))
       return
       end subroutine ww1
+end module ww1_i

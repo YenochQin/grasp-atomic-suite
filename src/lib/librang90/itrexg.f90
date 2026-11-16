@@ -1,3 +1,8 @@
+module itrexg_i
+    implicit none (type, external)
+    private
+    public :: itrexg
+contains
 !*******************************************************************
 !                                                                  *
       integer function itrexg(i1,i2,i3,i4,k)
@@ -25,3 +30,4 @@
       itrexg=j
       return
       end function itrexg
+end module itrexg_i

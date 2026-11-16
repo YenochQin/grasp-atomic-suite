@@ -37,6 +37,7 @@
       use itjpo_i
       use convrt_i, only: convrt
       use rkco_gg_i, only: rkco_gg
+      use cord_i, only: cord
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -46,7 +47,7 @@
 !-----------------------------------------------
 !  E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      external     :: cord
+
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------

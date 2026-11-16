@@ -1,3 +1,8 @@
+module setcsla_i
+    implicit none (type, external)
+    private
+    public :: setcsla
+contains
 !***********************************************************************
 !                                                                      *
       subroutine setcsla(name, ncore)
@@ -68,3 +73,4 @@
 !
       return
       end subroutine setcsla
+end module setcsla_i

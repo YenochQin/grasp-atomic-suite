@@ -1,3 +1,8 @@
+module iq_i
+    implicit none (type, external)
+    private
+    public :: iq
+contains
 !***********************************************************************
 !                                                                      *
       integer function iq (isubsh, icsf)
@@ -26,3 +31,4 @@
 !
       return
       end function iq
+end module iq_i

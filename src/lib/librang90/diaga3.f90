@@ -1,8 +1,13 @@
+module diaga3_i
+    implicit none (type, external)
+    private
+    public :: diaga3
+contains
 !*******************************************************************
 !                                                                  *
-      subroutine diaga3(ja1,ja2,ka,ire,iat,rec)
+      subroutine diaga3(ja1,ja2,ka,ire,iat,recc)
 !                                                                  *
-!   ---------------  SECTION REC    SUBPROGRAM 03  --------------  *
+!   ---------------  SECTION recc    SUBPROGRAM 03  --------------  *
 !                                                                  *
 !     SUBROUTINE CALLED:  IXJTIK, SIXJ                             *
 !                                                                  *
@@ -30,19 +35,19 @@
       integer, intent(in)  :: ja1, ja2, ka, ire
 !      INTEGER, INTENT(OUT) :: IAT
       integer, intent(inout)      :: iat
-      real(real64), intent(out) :: rec
+      real(real64), intent(out) :: recc
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i,ll1,ji,kk1,kk2,iti,iti1,itis,iti1s,ifaz
       real(real64) :: aa, a3
 !-----------------------------------------------
-      rec = zero
+      recc = zero
       i=ja1+1
       if(ja1 == 1)i=i+1
       if(ire == 0) then
         if(i >= ja2) then
-          rec=one
+          recc=one
           iat=1
           return
         end if
@@ -59,13 +64,13 @@
           i=i+1
           if(i == ja2) exit
         end do
-        rec=one
+        recc=one
         iat=1
         return
       end if
       aa=one
       if(i >= ja2) then
-        rec=aa
+        recc=aa
         iat=1
       else
     1   ll1=jlist(i)
@@ -87,7 +92,7 @@
         end if
         i=i+1
         if(i == ja2) then
-          rec=aa
+          recc=aa
           iat=1
         else
           go to 1
@@ -95,3 +100,4 @@
       end if
       return
       end subroutine diaga3
+end module diaga3_i

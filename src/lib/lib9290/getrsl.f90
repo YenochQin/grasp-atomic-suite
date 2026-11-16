@@ -1,3 +1,8 @@
+module getrsl_i
+    implicit none (type, external)
+    private
+    public :: getrsl
+contains
 !***********************************************************************
 !                                                                      *
       subroutine getrsl(indx, nsubs)
@@ -164,3 +169,4 @@
 !
       return
       end subroutine getrsl
+end module getrsl_i

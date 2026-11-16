@@ -1,3 +1,8 @@
+module el32_i
+    implicit none (type, external)
+    private
+    public :: el32
+contains
 !*******************************************************************
 !                                                                  *
       subroutine el32(jjja,jjjb,ja,jb,jja,jjb,jjc,jjd,icolbrei)
@@ -167,3 +172,4 @@
       end do
       return
       end subroutine el32
+end module el32_i

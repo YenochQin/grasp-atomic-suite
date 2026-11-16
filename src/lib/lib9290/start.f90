@@ -1,3 +1,8 @@
+module start_i
+    implicit none (type, external)
+    private
+    public :: start
+contains
 !***********************************************************************
 !                                                                      *
       subroutine start(orbital_index, radial_equation_type, origin_slope_parameter, large_component_values, &
@@ -234,3 +239,4 @@
       return
 !
       end subroutine start
+end module start_i

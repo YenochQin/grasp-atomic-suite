@@ -1,3 +1,8 @@
+module setrwfa_i
+    implicit none (type, external)
+    private
+    public :: setrwfa
+contains
 !***********************************************************************
 !                                                                      *
       subroutine setrwfa(name)
@@ -61,3 +66,4 @@
 
       return
       end subroutine setrwfa
+end module setrwfa_i

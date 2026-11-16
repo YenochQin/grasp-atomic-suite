@@ -1,6 +1,11 @@
+module pack_implementation
+    implicit none (type, external)
+    private
+    public :: pack_impl
+contains
 !***********************************************************************
 !                                                                      *
-      subroutine pack(iunpkd, isubsh, ipackd)
+      subroutine pack_impl(iunpkd, isubsh, ipackd)
 !                                                                      *
 !   Subshell occupation numbers and all angular momenta 2J+1 are not   *
 !   likely to exceed 127 in any application of the GRASP92 suite. It   *
@@ -48,4 +53,14 @@
       ipackd(isubsh) = iunpkd
 !
       return
-      end subroutine pack
+      end subroutine pack_impl
+end module pack_implementation
+
+! GNU Fortran 15 confuses intrinsic names with module procedure pointers.
+! Re-export the implementation under the established public name.
+module pack_i
+    use pack_implementation, only: pack => pack_impl
+    implicit none (type, external)
+    private
+    public :: pack
+end module pack_i

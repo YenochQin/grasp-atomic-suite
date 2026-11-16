@@ -1,3 +1,8 @@
+module arctan_i
+    implicit none (type, external)
+    private
+    public :: arctan
+contains
 !***********************************************************************
 !                                                                      *
       real(real64) function arctan (arg1, arg2)
@@ -57,3 +62,4 @@
 !
       return
       end function arctan
+end module arctan_i

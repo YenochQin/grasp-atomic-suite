@@ -1,3 +1,8 @@
+module el1_i
+    implicit none (type, external)
+    private
+    public :: el1
+contains
 !*******************************************************************
 !                                                                  *
       subroutine el1(jja,jjb,ja,jb,iire,icolbrei)
@@ -322,3 +327,4 @@
   100 format(5x,'ERRO IN EL1  PMGG RAGG')
       stop
       end subroutine el1
+end module el1_i

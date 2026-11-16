@@ -1,3 +1,8 @@
+module recop00_i
+    implicit none (type, external)
+    private
+    public :: recop00
+contains
 !*******************************************************************
 !                                                                  *
       subroutine recop00(ns,ja1,ja2,ka,iat)
@@ -81,3 +86,4 @@
       endif
       return
       end subroutine recop00
+end module recop00_i

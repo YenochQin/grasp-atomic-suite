@@ -1,3 +1,8 @@
+module dmerge_i
+    implicit none (type, external)
+    private
+    public :: dmerge
+contains
 !**************************************************************************
 !
       subroutine dmerge(n, db, dc, idy, da, dconst, dl)
@@ -38,3 +43,4 @@
 
       return
       end subroutine dmerge
+end module dmerge_i

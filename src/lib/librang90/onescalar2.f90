@@ -1,3 +1,8 @@
+module onescalar2_i
+    implicit none (type, external)
+    private
+    public :: onescalar2
+contains
 !*******************************************************************
 !                                                                  *
       subroutine onescalar2(jja,jjb,ja,jb,coeff)
@@ -83,3 +88,4 @@
       end if
       return
       end subroutine onescalar2
+end module onescalar2_i

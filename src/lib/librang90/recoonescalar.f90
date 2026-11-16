@@ -1,3 +1,8 @@
+module recoonescalar_i
+    implicit none (type, external)
+    private
+    public :: recoonescalar
+contains
 !*******************************************************************
 !                                                                  *
       subroutine recoonescalar(ns,ja1,ja2,ja3,ja4,ka,iat)
@@ -81,3 +86,4 @@
       end do
       return
       end subroutine recoonescalar
+end module recoonescalar_i

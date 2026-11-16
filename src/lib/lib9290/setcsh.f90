@@ -1,3 +1,8 @@
+module setcsh_i
+    implicit none (type, external)
+    private
+    public :: setcsh
+contains
 !***********************************************************************
 !
       subroutine setcsh(nfile, name, ncore)
@@ -74,3 +79,4 @@
 
       return
       end subroutine setcsh
+end module setcsh_i

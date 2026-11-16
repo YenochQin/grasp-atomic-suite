@@ -1,3 +1,8 @@
+module spicmvmpi_i
+    implicit none (type, external)
+    private
+    public :: spicmvmpi
+contains
 !***********************************************************************
       subroutine spicmvmpi (n,m,b,c)
 !     IMPLICIT REAL*8          (A-H,O-Z)
@@ -41,7 +46,7 @@
       integer, intent(in) :: n
       integer, intent(in) :: m
       real(real64), intent(in) :: b(n,m)
-      real(real64) :: c(n,m)
+      real(real64), intent(inout) :: c(n,m)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -75,3 +80,4 @@
 
       return
       end subroutine spicmvmpi
+end module spicmvmpi_i

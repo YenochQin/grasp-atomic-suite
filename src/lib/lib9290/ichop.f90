@@ -1,3 +1,8 @@
+module ichop_i
+    implicit none (type, external)
+    private
+    public :: ichop
+contains
 !***********************************************************************
 !                                                                      *
       integer function ichop (isubsh, icsf)
@@ -56,3 +61,4 @@
 !
       return
       end function ichop
+end module ichop_i

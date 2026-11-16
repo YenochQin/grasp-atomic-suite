@@ -1,3 +1,8 @@
+module posfile_i
+    implicit none (type, external)
+    private
+    public :: posfile
+contains
 !***********************************************************************
       subroutine posfile(mode, nunit, nrec)
 !    Position the file
@@ -39,3 +44,4 @@
 
       return
       end subroutine posfile
+end module posfile_i

@@ -1,3 +1,8 @@
+module lodcslmpi_i
+    implicit none (type, external)
+    private
+    public :: lodcslmpi
+contains
 !***********************************************************************
       subroutine lodcslmpi (nfile, ncore, jblock)
 
@@ -60,3 +65,4 @@
 !cjb           (JCUPA(:,:),   NNNW*NCF,MPI_INTEGER1,0,MPI_COMM_WORLD,ierr)
       return
       end subroutine lodcslmpi
+end module lodcslmpi_i

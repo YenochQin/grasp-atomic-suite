@@ -1,3 +1,8 @@
+module el51_i
+    implicit none (type, external)
+    private
+    public :: el51
+contains
 !*******************************************************************
 !                                                                  *
       subroutine el51(jja,jjb,ja,jb,jc,jd,irez,icolbrei)
@@ -418,3 +423,4 @@
   100 format(5x,'ERRO IN EL51  PMGG RAGG')
       stop
       end subroutine el51
+end module el51_i

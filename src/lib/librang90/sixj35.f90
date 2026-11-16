@@ -1,3 +1,8 @@
+module sixj35_i
+    implicit none (type, external)
+    private
+    public :: sixj35
+contains
 !*******************************************************************
 !                                                                  *
       subroutine sixj35(j,k,l,m,n,itik,si)
@@ -145,3 +150,4 @@
       endif
       return
       end subroutine sixj35
+end module sixj35_i

@@ -1,3 +1,8 @@
+module dracah_i
+    implicit none (type, external)
+    private
+    public :: dracah
+contains
 !***********************************************************************
 !                                                                      *
       subroutine dracah(i, j, k, l, m, n, rac)
@@ -80,3 +85,4 @@
 !
       return
       end subroutine dracah
+end module dracah_i

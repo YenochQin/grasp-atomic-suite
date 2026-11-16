@@ -1,3 +1,8 @@
+module lodiso_i
+    implicit none (type, external)
+    private
+    public :: lodiso
+contains
 !***********************************************************************
 !                                                                      *
       subroutine lodiso
@@ -80,3 +85,4 @@
 
       return
       end subroutine lodiso
+end module lodiso_i

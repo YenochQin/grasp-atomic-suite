@@ -1,3 +1,8 @@
+module oneparticlejj1_i
+    implicit none (type, external)
+    private
+    public :: oneparticlejj1
+contains
 !*******************************************************************
 !                                                                  *
       subroutine oneparticlejj1(ns,ka,jja,jjb,ja,jb,coeff)
@@ -65,3 +70,4 @@
       end if
       return
       end subroutine oneparticlejj1
+end module oneparticlejj1_i

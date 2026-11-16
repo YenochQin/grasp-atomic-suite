@@ -33,6 +33,12 @@ contains
     end subroutine check_reduction
 end module sparse_reduction_check
 
+module mpiu_i
+    implicit none (type, external)
+    private
+    public :: gdsummpi
+contains
+
 subroutine gdsummpi(x, n)
     use sparse_reduction_check, only: double, check_reduction
     use, intrinsic :: iso_fortran_env, only: real64
@@ -41,6 +47,9 @@ subroutine gdsummpi(x, n)
     real(real64), intent(inout) :: x(n)
     call check_reduction(x, n)
 end subroutine gdsummpi
+end module mpiu_i
+
+
 
 program mpi90_local_sparse
     use sparse_reduction_check

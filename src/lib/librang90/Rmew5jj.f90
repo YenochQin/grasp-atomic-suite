@@ -1,3 +1,8 @@
+module rmew5jj_i
+    implicit none (type, external)
+    private
+    public :: rmew5jj
+contains
 !*******************************************************************
 !                                                                  *
       subroutine rmew5jj(j1,j2,k1,k2,coef)
@@ -138,3 +143,4 @@
       endif
       return
       end subroutine rmew5jj
+end module rmew5jj_i

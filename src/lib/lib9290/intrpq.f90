@@ -1,3 +1,8 @@
+module intrpq_i
+    implicit none (type, external)
+    private
+    public :: intrpq
+contains
 !***********************************************************************
 !                                                                      *
       subroutine intrpq(pa, qa, ma, ra, j, dnorm)
@@ -234,3 +239,4 @@
       end function iloc
 !
       end subroutine intrpq
+end module intrpq_i

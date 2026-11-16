@@ -1,3 +1,8 @@
+module convrt_i
+    implicit none (type, external)
+    private
+    public :: convrt
+contains
 !***********************************************************************
 !                                                                      *
       subroutine convrt(intnum, cnum, lenth)
@@ -54,3 +59,4 @@
 !
       return
       end subroutine convrt
+end module convrt_i

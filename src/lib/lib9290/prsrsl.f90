@@ -1,3 +1,8 @@
+module prsrsl_i
+    implicit none (type, external)
+    private
+    public :: prsrsl
+contains
 !***********************************************************************
 !                                                                      *
       subroutine prsrsl(nfile, id)
@@ -141,3 +146,4 @@
 !
       return
       end subroutine prsrsl
+end module prsrsl_i

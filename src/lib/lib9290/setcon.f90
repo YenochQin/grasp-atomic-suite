@@ -1,3 +1,8 @@
+module setcon_i
+    implicit none (type, external)
+    private
+    public :: setcon
+contains
 !***********************************************************************
 !                                                                      *
       subroutine setcon
@@ -127,3 +132,4 @@
       return
 !
       end subroutine setcon
+end module setcon_i

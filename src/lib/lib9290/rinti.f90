@@ -1,3 +1,8 @@
+module rinti_i
+    implicit none (type, external)
+    private
+    public :: rinti
+contains
 !***********************************************************************
 !                                                                      *
       real(real64) function rinti (j, k, mode)
@@ -118,3 +123,4 @@
       return
 !
       end function rinti
+end module rinti_i

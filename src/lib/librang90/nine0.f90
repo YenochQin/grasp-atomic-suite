@@ -1,3 +1,8 @@
+module nine0_i
+    implicit none (type, external)
+    private
+    public :: nine0
+contains
 !*******************************************************************
 !                                                                  *
       subroutine nine0(j1,j2,j3,l1,l2,l3,k1,k2,k3,aa)
@@ -80,3 +85,4 @@
       if (mod(ifa,4) /= 0) aa = -aa
       return
       end subroutine nine0
+end module nine0_i

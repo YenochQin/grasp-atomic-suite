@@ -1,3 +1,8 @@
+module draw_i
+    implicit none (type, external)
+    private
+    public :: draw
+contains
 !***********************************************************************
 !                                                                      *
       subroutine draw(p, sp, q, sq, mf)
@@ -149,3 +154,4 @@
       return
 !
       end subroutine draw
+end module draw_i

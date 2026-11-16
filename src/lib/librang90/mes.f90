@@ -1,3 +1,8 @@
+module mes_i
+    implicit none (type, external)
+    private
+    public :: mes
+contains
 !*******************************************************************
 !                                                                  *
       subroutine mes(i)
@@ -60,3 +65,4 @@
       write(6,'(A)') ' Contact to   G. Gediminas please ! ! ! '
       stop
       end subroutine mes
+end module mes_i

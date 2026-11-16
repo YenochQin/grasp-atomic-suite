@@ -1,3 +1,8 @@
+module ichkq1_i
+    implicit none (type, external)
+    private
+    public :: ichkq1
+contains
 !***********************************************************************
 !                                                                      *
       integer function ichkq1 (ja, jb)
@@ -47,3 +52,4 @@
       if (k==2 .or. k==0) ichkq1 = 1
       return
       end function ichkq1
+end module ichkq1_i

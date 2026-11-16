@@ -1,3 +1,8 @@
+module interp_i
+    implicit none (type, external)
+    private
+    public :: interp
+contains
 !***********************************************************************
 !                                                                      *
       subroutine interp(xarr, yarr, narr, xval, yval, accy)
@@ -192,3 +197,4 @@
       end function iloc
 !
       end subroutine interp
+end module interp_i

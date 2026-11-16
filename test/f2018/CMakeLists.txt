@@ -1,3 +1,7 @@
+add_executable(test.f2018_library_modules library_modules.f90)
+target_link_libraries_Fortran(test.f2018_library_modules PRIVATE 9290 mod)
+add_test(NAME f2018_library_modules COMMAND test.f2018_library_modules)
+
 add_executable(test.f2018_davidson davidson_contracts.F90)
 target_link_libraries_Fortran(test.f2018_davidson PRIVATE dvd90 9290 mod)
 target_link_libraries(test.f2018_davidson PRIVATE ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
@@ -7,7 +11,7 @@ set_tests_properties(f2018_davidson_contracts f2018_davidson_early PROPERTIES TI
 foreach(variant rci rci_mpi)
     set(app "${PROJECT_SOURCE_DIR}/src/appl/${variant}")
     set(target test.f2018_rk_count_${variant})
-    add_executable(${target} rk_count.F90 "${app}/genintrk.f90" "${app}/genintrk_I.f90"
+    add_executable(${target} rk_count.F90 rk_count_doubles.f90 "${app}/genintrk.f90" "${app}/genintrk_I.f90"
         "${app}/triangrk.f90" "${app}/triangrk_I.f90")
     target_link_libraries_Fortran(${target} PRIVATE 9290 mod)
     add_test(NAME f2018_rk_count_${variant} COMMAND ${target})
@@ -30,8 +34,7 @@ endif()
 
 if(Python3_Interpreter_FOUND)
     add_executable(test.f2018_interp interp_contracts.f90
-        "${PROJECT_SOURCE_DIR}/src/lib/lib9290/interp.f90"
-        "${PROJECT_SOURCE_DIR}/src/lib/lib9290/interp_I.f90")
+        "${PROJECT_SOURCE_DIR}/src/lib/lib9290/interp.f90")
     target_link_libraries_Fortran(test.f2018_interp PRIVATE mod)
     target_compile_options(test.f2018_interp PRIVATE -finit-integer=999999 -fcheck=all)
     add_test(NAME f2018_interp_contracts COMMAND ${Python3_EXECUTABLE}
@@ -40,7 +43,7 @@ if(Python3_Interpreter_FOUND)
     foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
         set(target test.f2018_weights_${variant})
         set(app "${PROJECT_SOURCE_DIR}/src/appl/${variant}")
-        add_executable(${target} level_weights.f90 "${app}/getaldwt.f90" "${app}/getaldwt_I.f90")
+        add_executable(${target} level_weights.f90 level_weights_doubles.f90 "${app}/getaldwt.f90" "${app}/getaldwt_I.f90")
         target_link_libraries_Fortran(${target} PRIVATE 9290 mod)
         # Diagnostic poison exposes the former uninitialized read extent;
         # no production target receives default-initialization options.

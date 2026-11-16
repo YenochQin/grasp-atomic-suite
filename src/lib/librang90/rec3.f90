@@ -1,3 +1,8 @@
+module rec3_i
+    implicit none (type, external)
+    private
+    public :: rec3
+contains
 !*******************************************************************
 !                                                                  *
       subroutine rec3(ja1,ja2,ja3,k1,k2,k3,ire,iat,recc)
@@ -70,3 +75,4 @@
   100 format(5x,'ERRO IN REC')
       stop
       end subroutine rec3
+end module rec3_i

@@ -1,3 +1,8 @@
+module parsjl_i
+    implicit none (type, external)
+    private
+    public :: parsjl
+contains
 !***********************************************************************
 !                                                                      *
       subroutine parsjl(mode, ncore, record, loc, jx, njx, ierr)
@@ -187,3 +192,4 @@
     3 continue
       return
       end subroutine parsjl
+end module parsjl_i

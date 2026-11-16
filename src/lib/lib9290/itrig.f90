@@ -1,3 +1,8 @@
+module itrig_i
+    implicit none (type, external)
+    private
+    public :: itrig
+contains
 !***********************************************************************
 !                                                                      *
       integer function itrig (i1, i2, i3)
@@ -32,3 +37,4 @@
 !
       return
       end function itrig
+end module itrig_i

@@ -1,3 +1,8 @@
+module setiso_i
+    implicit none (type, external)
+    private
+    public :: setiso
+contains
 !***********************************************************************
 !                                                                      *
       subroutine setiso(fname)
@@ -75,3 +80,4 @@
 
       return
       end subroutine setiso
+end module setiso_i

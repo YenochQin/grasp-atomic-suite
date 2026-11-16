@@ -1,3 +1,8 @@
+module items_i
+    implicit none (type, external)
+    private
+    public :: items
+contains
 !***********************************************************************
 !
       subroutine items(ncmin, ncf, record, ierr)
@@ -44,7 +49,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer  :: ncmin
+      integer, intent(inout) :: ncmin
       integer, intent(in) :: ncf
       integer, intent(out) :: ierr
       character (len = *), intent(in) :: record
@@ -173,3 +178,4 @@
       ierr = 0
       return
       end subroutine items
+end module items_i

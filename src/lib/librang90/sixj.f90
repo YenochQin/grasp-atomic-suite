@@ -1,3 +1,8 @@
+module sixj_i
+    implicit none (type, external)
+    private
+    public :: sixj
+contains
 !*******************************************************************
 !                                                                  *
       subroutine sixj(two_j1,two_j2,two_j3,two_j4,two_j5,two_j6,check_triangle_conditions,six_j_value)
@@ -37,7 +42,7 @@
 !-----------------------------------------------
       integer, intent(in) :: two_j1, two_j2, two_j3, two_j4, two_j5, two_j6
       integer, intent(in) :: check_triangle_conditions
-      real(real64)        :: six_j_value
+      real(real64), intent(out) :: six_j_value
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -227,3 +232,4 @@
       if (store_in_six_j_cache) small_six_j_cache(two_j1,two_j2,two_j3,two_j4,two_j5,two_j6) = six_j_value
       return
       end subroutine sixj
+end module sixj_i

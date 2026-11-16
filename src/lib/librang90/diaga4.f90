@@ -1,3 +1,8 @@
+module diaga4_i
+    implicit none (type, external)
+    private
+    public :: diaga4
+contains
 !*******************************************************************
 !                                                                  *
       subroutine diaga4(ja1,ja2,k1,k2,ka,ire,iat,recc)
@@ -72,3 +77,4 @@
       recc=a2*dsqrt(dble((it2+1)*(ka+1)*(ia2+1)*(j2s+1)))
       return
       end subroutine diaga4
+end module diaga4_i

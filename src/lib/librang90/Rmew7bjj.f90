@@ -1,3 +1,8 @@
+module rmew7bjj_i
+    implicit none (type, external)
+    private
+    public :: rmew7bjj
+contains
 !*******************************************************************
 !                                                                  *
       subroutine rmew7bjj(j1,j2,k1,k2,coef)
@@ -203,3 +208,4 @@
       if(mod(ifaz,4) /= 0)coef=-coef
       return
       end
+end module rmew7bjj_i

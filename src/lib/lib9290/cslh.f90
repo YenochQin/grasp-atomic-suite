@@ -1,3 +1,8 @@
+module cslh_i
+    implicit none (type, external)
+    private
+    public :: cslh
+contains
 !***********************************************************************
 !
       subroutine cslh(name, ncore, nblkin, idblk)
@@ -54,3 +59,4 @@
 
       return
       end subroutine cslh
+end module cslh_i

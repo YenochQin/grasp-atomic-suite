@@ -1,3 +1,8 @@
+module spicmv2_i
+    implicit none (type, external)
+    private
+    public :: spicmv2
+contains
 !***********************************************************************
       subroutine spicmv2(n, m, b, c)
 !
@@ -55,3 +60,4 @@
 
       return
       end subroutine spicmv2
+end module spicmv2_i

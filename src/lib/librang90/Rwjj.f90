@@ -1,3 +1,8 @@
+module rwjj_i
+    implicit none (type, external)
+    private
+    public :: rwjj
+contains
 !*******************************************************************
 !                                                                  *
       subroutine rwjj(j,j1,j2,k1,k2,coef)
@@ -44,3 +49,4 @@
       endif
       return
       end subroutine rwjj
+end module rwjj_i

@@ -1,3 +1,8 @@
+module cxk_i
+    implicit none (type, external)
+    private
+    public :: cxk
+contains
 !***********************************************************************
 !                                                                      *
       subroutine cxk (s,is,kaps,nu,k,ibr,iex)
@@ -23,3 +28,4 @@
 !
       stop 'CXK: Error '
       end
+end module cxk_i

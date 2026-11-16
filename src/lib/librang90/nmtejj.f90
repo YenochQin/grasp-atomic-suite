@@ -1,3 +1,8 @@
+module nmtejj_i
+    implicit none (type, external)
+    private
+    public :: nmtejj
+contains
 !*******************************************************************
 !                                                                  *
       integer function nmtejj(i2q,i2j,j,nk,nd)
@@ -79,3 +84,4 @@
       endif
       return
       end function nmtejj
+end module nmtejj_i

@@ -1,6 +1,11 @@
+module count_implementation
+    implicit none (type, external)
+    private
+    public :: count_impl
+contains
 !***********************************************************************
 !                                                                      *
-      subroutine count(fr, mtpfr, nncff, sgn)
+      subroutine count_impl(fr, mtpfr, nncff, sgn)
 !                                                                      *
 !   This subroutine counts the nodes in the radial function FR using   *
 !   the criteria  given by C Froese Fischer, Comp Phys Rep, 3 (1986)   *
@@ -113,4 +118,14 @@
       end if
 !
       return
-      end subroutine count
+      end subroutine count_impl
+end module count_implementation
+
+! GNU Fortran 15 confuses intrinsic names with module procedure pointers.
+! Re-export the implementation under the established public name.
+module count_i
+    use count_implementation, only: count => count_impl
+    implicit none (type, external)
+    private
+    public :: count
+end module count_i

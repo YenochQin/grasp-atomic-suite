@@ -1,3 +1,8 @@
+module eile_i
+    implicit none (type, external)
+    private
+    public :: eile
+contains
 !*******************************************************************
 !                                                                  *
       subroutine eile(ja,jb,jc,jaa,jbb,jcc)
@@ -30,3 +35,4 @@
       if((jc > jaa).and.(jc < jcc))jbb=jc
       return
       end subroutine eile
+end module eile_i

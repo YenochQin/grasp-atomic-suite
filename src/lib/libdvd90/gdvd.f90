@@ -1,3 +1,19 @@
+module gdvd_i
+    implicit none (type, external)
+    private
+    public :: gdvd
+    public :: dvd_operator
+
+      abstract interface
+      subroutine dvd_operator(n, m, b, c)
+      use, intrinsic :: iso_fortran_env, only: real64
+      implicit none (type, external)
+      integer, intent(in) :: n, m
+      real(real64), intent(in) :: b(n,m)
+      real(real64), intent(inout) :: c(n,m)
+      end subroutine
+      end interface
+contains
 
 !***************************************************************************
 
@@ -16,7 +32,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use gdvd_i, only: dvd_operator
+
       use dvdson_i
       implicit none (type, external)
 !-----------------------------------------------
@@ -34,7 +50,7 @@
       integer, intent(in) :: iiwsz
       integer  :: nloops
       integer, intent(out) :: nmv
-      integer  :: ierr
+      integer, intent(out) :: ierr
       real(real64)  :: crite
       real(real64)  :: critc
       real(real64)  :: critr
@@ -143,3 +159,4 @@
 
       return
       end subroutine gdvd
+end module gdvd_i

@@ -1,3 +1,8 @@
+module gg1122_i
+    implicit none (type, external)
+    private
+    public :: gg1122
+contains
 !*******************************************************************
 !                                                                  *
       subroutine gg1122(k1,k2,qm1,qm2,qm3,qm4,aa)
@@ -67,3 +72,4 @@
       aa=a1*w
       return
       end subroutine gg1122
+end module gg1122_i

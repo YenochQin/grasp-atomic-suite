@@ -1,3 +1,8 @@
+module el52_i
+    implicit none (type, external)
+    private
+    public :: el52
+contains
 !*******************************************************************
 !                                                                  *
       subroutine el52(jja,jjb,ja,jb,jc,jd,irez,icolbrei)
@@ -403,3 +408,4 @@
   100 format(5x,'ERRO IN EL52  PMGG RAGG')
       stop
       end subroutine el52
+end module el52_i

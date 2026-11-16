@@ -1,3 +1,8 @@
+module stoptime_i
+    implicit none (type, external)
+    private
+    public :: stoptime
+contains
 !***********************************************************************
       subroutine stoptime(ncount1, progname)
 !
@@ -59,3 +64,4 @@
 
       return
       end subroutine stoptime
+end module stoptime_i

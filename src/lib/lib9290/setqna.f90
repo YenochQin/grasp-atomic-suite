@@ -1,3 +1,8 @@
+module setqna_i
+    implicit none (type, external)
+    private
+    public :: setqna
+contains
 !***********************************************************************
 !                                                                      *
       subroutine setqna(ja, jb)
@@ -140,3 +145,4 @@
 !
       return
       end subroutine setqna
+end module setqna_i

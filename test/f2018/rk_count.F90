@@ -1,7 +1,5 @@
-module rk_fixture
-    implicit none (type, external)
-    integer :: calls=0
-end module
+
+
 
 program rk_count
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
@@ -47,14 +45,3 @@ program rk_count
     if(large_total/=int(huge(0),int64)) error stop 'Count arithmetic overflow'
     print *, 'PASS production integral partition, empty ranks, repeated calls and count boundary'
 end program
-
-function slater(ia,ib,ic,id,k) result(value)
-    use, intrinsic :: iso_fortran_env, only: real64
-    use rk_fixture, only: calls
-    implicit none (type, external)
-    integer,intent(in) :: ia,ib,ic,id,k
-    real(real64) :: value
-    if(min(ia,ib,ic,id)<1.or.k<0) error stop 'Invalid Slater fixture indices'
-    calls=calls+1
-    value=1.0_real64
-end function

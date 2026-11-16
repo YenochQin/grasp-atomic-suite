@@ -1,3 +1,8 @@
+module setcsll_i
+    implicit none (type, external)
+    private
+    public :: setcsll
+contains
 !***********************************************************************
       subroutine setcsll(nunit, name, nblkin, nblock, ncfblk, ncftot, idblk)
 !
@@ -96,3 +101,4 @@
 
       return
       end subroutine setcsll
+end module setcsll_i

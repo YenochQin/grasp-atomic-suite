@@ -1,3 +1,8 @@
+module cpath_i
+    implicit none (type, external)
+    private
+    public :: cpath
+contains
 !***********************************************************************
       subroutine cpath (startdir, permdir, tmpdir)
 !
@@ -48,7 +53,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      use mpiu_i, only: stopmpi
+      use mpi_runtime_i, only: stopmpi
       use sys_chdir_i, only: sys_chdir
       use sys_getwd_i, only: sys_getwd
       use sys_mkdir_i, only: sys_mkdir
@@ -370,3 +375,4 @@ contains
     end
 
 end
+end module cpath_i

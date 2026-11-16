@@ -1,3 +1,8 @@
+module icopy_i
+    implicit none (type, external)
+    private
+    public :: icopy
+contains
       subroutine icopy(n, ix, incx, iy, incy)
 !
 !     copies a vector, x, to a vector, y.
@@ -42,3 +47,4 @@
       iy(mp1:((n-mp1+7)/7)*7-1+mp1) = ix(mp1:((n-mp1+7)/7)*7-1+mp1)
       return
       end subroutine icopy
+end module icopy_i

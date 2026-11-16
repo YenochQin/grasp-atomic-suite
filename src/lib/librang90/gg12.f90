@@ -1,3 +1,8 @@
+module gg12_i
+    implicit none (type, external)
+    private
+    public :: gg12
+contains
 !*******************************************************************
 !                                                                  *
       subroutine gg12(ik1,ik2,bk1,bk2,id1,id2,bd1,bd2,qm1,qm2,ww)
@@ -65,3 +70,4 @@
       ww=a1*s*c/dsqrt(dble((ik1(7)+1)*(ik2(7)+1)))
       return
       end
+end module gg12_i

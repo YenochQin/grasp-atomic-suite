@@ -2,32 +2,13 @@
 module density_parallel
     use, intrinsic :: iso_fortran_env, only: real64
     use mpi
+    use mpiu_i, only: mpix_startup, mpix_shutdown, gdrsummpi_root
     use mpi_c, only: rank => mpi_rank, workers => mpi_process_count, processor_name, processor_name_length
     implicit none (type, external)
     private
     public :: rank, workers, parallel_start, parallel_finish
     public :: broadcast_options, sum_density, density_fail
     integer :: start_count
-    interface
-        subroutine mpix_startup(myid, nprocs, host, lenhost, ncount1, &
-                progname, description, infiledesc, outfiledesc, quiet_workers)
-            implicit none (type, external)
-            integer :: myid, nprocs, lenhost, ncount1
-            character(*), intent(in) :: host, progname, description, infiledesc, outfiledesc
-            logical, intent(in) :: quiet_workers
-        end subroutine
-        subroutine mpix_shutdown(myid, ncount1, progname)
-            implicit none (type, external)
-            integer, intent(in) :: myid, ncount1
-            character(*), intent(in) :: progname
-        end subroutine
-        subroutine gdrsummpi_root(x, n)
-            import real64
-            implicit none (type, external)
-            integer, intent(in) :: n
-            real(real64), intent(inout) :: x(n)
-        end subroutine
-    end interface
 contains
     subroutine parallel_start
         call mpix_startup(rank, workers, processor_name, processor_name_length, start_count, &

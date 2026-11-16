@@ -1,3 +1,8 @@
+module ittk_i
+    implicit none (type, external)
+    private
+    public :: ittk
+contains
 !*******************************************************************
 !                                                                  *
       integer function ittk (i, j, k)
@@ -28,3 +33,4 @@
       ittk = 1
       return
       end function ittk
+end module ittk_i

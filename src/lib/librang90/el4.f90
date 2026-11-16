@@ -1,3 +1,8 @@
+module el4_i
+    implicit none (type, external)
+    private
+    public :: el4
+contains
 !*******************************************************************
 !                                                                  *
       subroutine el4(jja,jjb,ja,jb,jc,jd,icolbrei)
@@ -43,3 +48,4 @@
       return
   100 format(5x,'ERRO IN EL4 ')
       end subroutine el4
+end module el4_i

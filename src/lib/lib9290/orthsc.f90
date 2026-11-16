@@ -1,3 +1,8 @@
+module orthsc_i
+    implicit none (type, external)
+    private
+    public :: orthsc
+contains
 !***********************************************************************
 !                                                                      *
       subroutine orthsc
@@ -165,3 +170,4 @@
       return
 !
       end subroutine orthsc
+end module orthsc_i

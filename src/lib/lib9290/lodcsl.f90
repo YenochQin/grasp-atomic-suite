@@ -1,3 +1,8 @@
+module lodcsl_i
+    implicit none (type, external)
+    private
+    public :: lodcsl
+contains
 !***********************************************************************
 !                                                                      *
       subroutine lodcsl(ncore)
@@ -563,3 +568,4 @@
       stop
 !
       end subroutine lodcsl
+end module lodcsl_i

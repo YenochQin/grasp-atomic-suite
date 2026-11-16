@@ -1,3 +1,8 @@
+module cle0sm_i
+    implicit none (type, external)
+    private
+    public :: cle0sm
+contains
 !*******************************************************************
 !                                                                  *
       subroutine cle0sm(q,qm,s,c,cm,a)
@@ -53,3 +58,4 @@
       end if
       return
       end subroutine cle0sm
+end module cle0sm_i

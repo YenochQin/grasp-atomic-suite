@@ -1,3 +1,8 @@
+module itjj_i
+    implicit none (type, external)
+    private
+    public :: itjj
+contains
 !*******************************************************************
 !                                                                  *
       integer function itjj(ik,id,kg,bk,bd,ibt,bt,kg1,itp,itg,iq)
@@ -86,3 +91,4 @@
       bt(3)=bd(3)+half*dble(iq)
       return
       end function itjj
+end module itjj_i

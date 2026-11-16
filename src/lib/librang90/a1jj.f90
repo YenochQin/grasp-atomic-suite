@@ -1,3 +1,8 @@
+module a1jj_i
+    implicit none (type, external)
+    private
+    public :: a1jj
+contains
 !*******************************************************************
 !                                                                  *
       subroutine a1jj(ik,bk,id,bd,qm1,a)
@@ -42,3 +47,4 @@
       endif
       return
       end subroutine a1jj
+end module a1jj_i

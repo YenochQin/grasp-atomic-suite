@@ -1,3 +1,8 @@
+module setrwfmpi_i
+    implicit none (type, external)
+    private
+    public :: setrwfmpi
+contains
 !***********************************************************************
       subroutine setrwfmpi (name)
 
@@ -66,3 +71,4 @@
 
       return
       end
+end module setrwfmpi_i

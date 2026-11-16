@@ -57,8 +57,9 @@
       use sacoef_c
       use onescalar_i, only: onescalar
       use settmpgg_i, only: settmpgg
+      use cord_i, only: cord
       implicit none (type, external)
-      external cord
+
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------

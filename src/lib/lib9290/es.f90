@@ -1,3 +1,8 @@
+module es_i
+    implicit none (type, external)
+    private
+    public :: es
+contains
 !***********************************************************************
 !                                                                      *
       subroutine es(f, s2f, s3f)
@@ -61,3 +66,4 @@
 !
       return
       end subroutine es
+end module es_i

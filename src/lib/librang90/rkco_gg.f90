@@ -1,3 +1,8 @@
+module rkco_gg_i
+    implicit none (type, external)
+    private
+    public :: rkco_gg
+contains
 !***********************************************************************
 !                                                                      *
       subroutine rkco_gg (ja,jb,coefficient_consumer,incor,icolbrei)
@@ -389,3 +394,4 @@
   995 format('   rie zymes 38 atv N=N-N  !!!!!!')
   996 format('   rie zymes 45 atv N=N-N  !!!!!!')
       end subroutine rkco_gg
+end module rkco_gg_i

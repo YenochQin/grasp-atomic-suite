@@ -1,3 +1,8 @@
+module calen_i
+    implicit none (type, external)
+    private
+    public :: calen
+contains
 !***********************************************************************
 !                                                                      *
       subroutine calen(jtime, jdate)
@@ -20,3 +25,4 @@
 
       return
       end subroutine calen
+end module calen_i

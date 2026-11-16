@@ -4,7 +4,7 @@
 ! remain the public convention of this legacy module; choice buffers are
 ! described by the MPI module rather than unchecked external declarations.
       use mpi
-      use mpiu_i, only: startmpi, mpix_bytes
+      use mpi_runtime_i, only: startmpi, mpix_bytes
       implicit none (type, external)
 
       character(len=mpi_max_processor_name) :: processor_name

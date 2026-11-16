@@ -1,3 +1,8 @@
+module setpot_i
+    implicit none (type, external)
+    private
+    public :: setpot
+contains
 !***********************************************************************
 !                                                                      *
       subroutine setpot(j, jp)
@@ -79,3 +84,4 @@
 !
       return
       end subroutine setpot
+end module setpot_i

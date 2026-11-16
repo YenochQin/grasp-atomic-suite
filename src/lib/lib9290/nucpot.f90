@@ -1,3 +1,8 @@
+module nucpot_i
+    implicit none (type, external)
+    private
+    public :: nucpot
+contains
 !***********************************************************************
 !                                                                      *
       subroutine nucpot
@@ -115,3 +120,4 @@
       return
 !
       end subroutine nucpot
+end module nucpot_i

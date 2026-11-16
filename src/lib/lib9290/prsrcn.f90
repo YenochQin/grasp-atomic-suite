@@ -1,3 +1,8 @@
+module prsrcn_i
+    implicit none (type, external)
+    private
+    public :: prsrcn
+contains
 !***********************************************************************
 !                                                                      *
       subroutine prsrcn(record, ncore, ioccs, ierr)
@@ -122,3 +127,4 @@
     6 continue
       return
       end subroutine prsrcn
+end module prsrcn_i

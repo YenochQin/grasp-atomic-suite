@@ -1,3 +1,8 @@
+module iniest_i
+    implicit none (type, external)
+    private
+    public :: iniest
+contains
       subroutine iniest(n, nb, niv, hmx, jcol, irow, basis, iblock, jblock)
 !-----------------------------------------------------------------------
 !     Routine for providing initial estimates from the diagonal
@@ -157,3 +162,4 @@
       error stop 'INIEST allocation failed'
       end subroutine mem_fail
       end subroutine iniest
+end module iniest_i

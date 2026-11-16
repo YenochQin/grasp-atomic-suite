@@ -1,3 +1,8 @@
+module rmeajj_i
+    implicit none (type, external)
+    private
+    public :: rmeajj
+contains
 !*******************************************************************
 !                                                                  *
       subroutine rmeajj(ll,it,lq,j,its,lqs,j1s,coef)
@@ -116,3 +121,4 @@
       endif
       return
       end subroutine rmeajj
+end module rmeajj_i

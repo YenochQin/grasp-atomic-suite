@@ -1,3 +1,8 @@
+module iniest2_i
+    implicit none (type, external)
+    private
+    public :: iniest2
+contains
 !***********************************************************************
 !
       subroutine iniest2(nmax, ncf, niv, basis, hmx, jcol, irow)
@@ -95,3 +100,4 @@
 
       return
       end subroutine iniest2
+end module iniest2_i

@@ -1,3 +1,8 @@
+module jthn_i
+    implicit none (type, external)
+    private
+    public :: jthn
+contains
 !*******************************************************************
 !                                                                  *
       integer function jthn(k,n,i)
@@ -31,3 +36,4 @@
       endif
       return
       end function jthn
+end module jthn_i

@@ -1,3 +1,8 @@
+module dinit_i
+    implicit none (type, external)
+    private
+    public :: dinit
+contains
       subroutine dinit(n, a, x, incx)
 !     ==================================================================
 !
@@ -49,3 +54,4 @@
       return
 !
       end subroutine dinit
+end module dinit_i

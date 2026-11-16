@@ -26,9 +26,3 @@ program level_weights
 end program
 
 ! Controlled J labels: 2J+1 = 1,3,5. GETALDWT itself is the production body.
-integer function itjpo(index)
-    implicit none (type, external)
-    integer,intent(in) :: index
-    if(index<1.or.index>3) error stop 'Unexpected level index'
-    itjpo=2*index-1
-end function

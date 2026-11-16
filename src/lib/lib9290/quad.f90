@@ -1,3 +1,8 @@
+module quad_i
+    implicit none (type, external)
+    private
+    public :: quad
+contains
 !***********************************************************************
 !                                                                      *
       subroutine quad(result)
@@ -105,3 +110,4 @@
       return
 !
       end subroutine quad
+end module quad_i

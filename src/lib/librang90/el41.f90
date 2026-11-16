@@ -1,3 +1,8 @@
+module el41_i
+    implicit none (type, external)
+    private
+    public :: el41
+contains
 !*******************************************************************
 !                                                                  *
       subroutine el41(jjja,jjjb,ja,jb,jc,irez,jja,jjb,jjc,jjd,    &
@@ -274,3 +279,4 @@
   100 format(5x,'ERRO IN EL41  PMGG RAGG')
       stop
       end subroutine el41
+end module el41_i

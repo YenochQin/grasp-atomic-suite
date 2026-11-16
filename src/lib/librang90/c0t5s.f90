@@ -1,3 +1,8 @@
+module c0t5s_i
+    implicit none (type, external)
+    private
+    public :: c0t5s
+contains
 !*******************************************************************
 !                                                                  *
       subroutine c0t5s(q,qm,sm,c,cm,a)
@@ -57,3 +62,4 @@
       endif
       return
       end subroutine c0t5s
+end module c0t5s_i

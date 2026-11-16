@@ -1,3 +1,8 @@
+module lodstate_i
+    implicit none (type, external)
+    private
+    public :: lodstate
+contains
 !***********************************************************************
 !
       subroutine lodstate(idblk)
@@ -89,3 +94,4 @@
 
       return
       end subroutine lodstate
+end module lodstate_i

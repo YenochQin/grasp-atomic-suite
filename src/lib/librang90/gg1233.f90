@@ -1,3 +1,8 @@
+module gg1233_i
+    implicit none (type, external)
+    private
+    public :: gg1233
+contains
 !*******************************************************************
 !                                                                  *
       subroutine gg1233(ik1,ik2,ik3,bk1,bk2,bk3,id1,id2,id3,bd1,  &
@@ -85,3 +90,4 @@
       ww=a1*w*s*c/dsqrt(dble((ik1(7)+1)*(ik2(7)+1)))
       return
       end subroutine gg1233
+end module gg1233_i

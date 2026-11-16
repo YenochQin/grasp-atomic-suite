@@ -1,3 +1,8 @@
+module lodrwf_i
+    implicit none (type, external)
+    private
+    public :: lodrwf
+contains
 !***********************************************************************
 !                                                                      *
       subroutine lodrwf(iierr)
@@ -140,3 +145,4 @@
       return
 !
       end subroutine lodrwf
+end module lodrwf_i

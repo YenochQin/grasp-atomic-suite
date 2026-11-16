@@ -1,3 +1,8 @@
+module jfaze_i
+    implicit none (type, external)
+    private
+    public :: jfaze
+contains
 !*******************************************************************
 !                                                                  *
       integer function jfaze(i1,i2,i3,i4)
@@ -30,3 +35,4 @@
       if(i3 > i4)jfaze=-jfaze
       return
       end function jfaze
+end module jfaze_i

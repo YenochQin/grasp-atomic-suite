@@ -1,3 +1,8 @@
+module slater_i
+    implicit none (type, external)
+    private
+    public :: slater
+contains
 !***********************************************************************
 !                                                                      *
       real(real64) function slater (ia, ib, ic, id, k)
@@ -78,3 +83,4 @@
       return
 !
       end function slater
+end module slater_i

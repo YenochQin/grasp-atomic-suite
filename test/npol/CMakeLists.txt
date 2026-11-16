@@ -41,7 +41,7 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mem_mpi)
     endif()
     set(app "${PROJECT_SOURCE_DIR}/src/appl/${variant}")
     set(target npol_consumers_${variant})
-    add_executable(${target} consumers.F90 "${app}/ypot.f90" "${app}/ypot_I.f90"
+    add_executable(${target} consumers.F90 consumers_doubles.f90 "${app}/ypot.f90" "${app}/ypot_I.f90"
         "${app}/dacon.f90" "${app}/dacon_I.f90" "${PROJECT_SOURCE_DIR}/src/lib/lib9290/rinti.f90")
     setup_fortran_modules(${target})
     target_link_libraries_Fortran(${target} PRIVATE npol_test_support mod 9290)

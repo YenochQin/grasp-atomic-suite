@@ -1,3 +1,8 @@
+module setj_i
+    implicit none (type, external)
+    private
+    public :: setj
+contains
 !***********************************************************************
 !                                                                      *
       subroutine setj(is, js, ks, ns, kj23)
@@ -150,3 +155,4 @@
       return
 !
       end subroutine setj
+end module setj_i

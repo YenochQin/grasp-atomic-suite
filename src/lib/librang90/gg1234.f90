@@ -1,3 +1,8 @@
+module gg1234_i
+    implicit none (type, external)
+    private
+    public :: gg1234
+contains
 !*******************************************************************
 !                                                                  *
       subroutine gg1234(ik1,ik2,ik3,ik4,bk1,bk2,bk3,bk4,id1,id2,  &
@@ -99,3 +104,4 @@
       ww=a1*s*c*v*z/dsqrt(dble((ik1(7)+1)*(ik2(7)+1)*(ik3(7)+1)*(ik4(7)+1)))
       return
       end subroutine gg1234
+end module gg1234_i

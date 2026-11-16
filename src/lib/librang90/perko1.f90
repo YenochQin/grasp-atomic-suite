@@ -1,3 +1,8 @@
+module perko1_i
+    implicit none (type, external)
+    private
+    public :: perko1
+contains
 !*******************************************************************
 !                                                                  *
       subroutine perko1(ja,bk,ik,bd,id)
@@ -62,3 +67,4 @@
       id(1)=nmtejj(id(7),id(6),id(3),id(4),ik(4))
       return
       end subroutine perko1
+end module perko1_i

@@ -1,3 +1,8 @@
+module suwjj_i
+    implicit none (type, external)
+    private
+    public :: suwjj
+contains
 !*******************************************************************
 !                                                                  *
       subroutine suwjj(k1,k2,ll,j1,j2,suw)
@@ -67,3 +72,4 @@
       if(mod(l2q1+l2j1+l2q2+l2j2+kk1+kk2,4) /= 0)suw=-suw
       return
       end subroutine suwjj
+end module suwjj_i

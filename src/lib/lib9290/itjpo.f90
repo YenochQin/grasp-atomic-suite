@@ -1,3 +1,8 @@
+module itjpo_i
+    implicit none (type, external)
+    private
+    public :: itjpo
+contains
 !***********************************************************************
 !                                                                      *
       integer function itjpo (icsf)
@@ -32,3 +37,4 @@
 !
       return
       end function itjpo
+end module itjpo_i

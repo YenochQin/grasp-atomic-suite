@@ -1,3 +1,8 @@
+module sys_getwd_i
+    implicit none (type, external)
+    private
+    public :: sys_getwd
+contains
 !***********************************************************************
       subroutine sys_getwd (dir,lcwd)
 !
@@ -15,7 +20,7 @@
       use mpi_c
       use suite_system, only: working_directory
 
-      use mpiu_i, only: stopmpi
+      use mpi_runtime_i, only: stopmpi
       implicit none (type, external)
       character(len=*), intent(out):: dir
       integer, intent(out):: lcwd
@@ -34,3 +39,4 @@
       end if
       return
       end subroutine sys_getwd
+end module sys_getwd_i

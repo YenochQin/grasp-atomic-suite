@@ -1,3 +1,8 @@
+module alcbuf_i
+    implicit none (type, external)
+    private
+    public :: alcbuf
+contains
 !***********************************************************************
 !                                                                      *
       subroutine alcbuf(mode)
@@ -66,3 +71,4 @@
       return
 !
       end subroutine alcbuf
+end module alcbuf_i

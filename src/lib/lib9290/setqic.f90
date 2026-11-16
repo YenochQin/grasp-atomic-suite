@@ -1,3 +1,8 @@
+module setqic_i
+    implicit none (type, external)
+    private
+    public :: setqic
+contains
 !***********************************************************************
 !                                                                      *
       subroutine setqic
@@ -197,3 +202,4 @@
       return
 !
       end subroutine setqic
+end module setqic_i
