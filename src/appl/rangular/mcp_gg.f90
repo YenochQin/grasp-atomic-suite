@@ -34,6 +34,7 @@
       USE iso_fortran_env, ONLY: int64
       USE rangular_profile, ONLY: stage_clock, record_stage
       USE rangular_parallel, ONLY: parallel_pairs_available, begin_pair_block, end_pair_block, load_parallel_pair
+      USE rangular_reuse, ONLY: reuse_requested, begin_reuse_block, end_reuse_block, load_reused_pair
       USE parameter_def,   ONLY:  NNNW, KEYORB
       USE memory_man
 !-----------------------------------------------
@@ -140,6 +141,7 @@
 !
       CALL ALCBUF (1)
       IF (parallel_pairs_available) CALL begin_pair_block(NB)
+      IF (reuse_requested) CALL begin_reuse_block()
       CALL record_stage('coefficient_buffer_allocation', NB, stage_start_count)
       stage_start_count = stage_clock()
 !
@@ -165,8 +167,9 @@
                LINCR = .FALSE.
             ENDIF
             IF (parallel_pairs_available) CALL load_parallel_pair(JA,JB,IA,IB,TSHELL(1))
+            IF (reuse_requested) CALL load_reused_pair(JA,JB,IA,IB,TSHELL(1))
             IF (JB .NE. JA) THEN
-               IF (.NOT. parallel_pairs_available) CALL ONESCALAR(JA,JB,IA,IB,TSHELL)
+               IF (.NOT. parallel_pairs_available .AND. .NOT. reuse_requested) CALL ONESCALAR(JA,JB,IA,IB,TSHELL)
                IF (IA .NE. 0 .AND. IA .NE. IB .AND.       &
                       ABS (TSHELL(1)) .GT. CUTOFF) THEN
                   npos = npos + 1
@@ -226,7 +229,7 @@
 !   are the density pairs. NVCOEF is initialized here but changed
 !   in /rkco/cor[d] via COMMON.
 !
-            IF (.NOT. parallel_pairs_available) THEN
+            IF (.NOT. parallel_pairs_available .AND. .NOT. reuse_requested) THEN
                NVCOEF = 0
                CALL RKCO_GG (JA, JB, CORD, 0, 1)
             END IF
@@ -334,6 +337,7 @@
       CALL record_stage('pair_generation_and_buffering', NB, stage_start_count, &
                         int(LLISTT,int64) + SUM(int(LLISTV,int64)), storage='memory_or_spill')
       IF (parallel_pairs_available) CALL end_pair_block(NB)
+      IF (reuse_requested) CALL end_reuse_block(NB)
       stage_start_count = stage_clock()
 !
 !   Deallocate storage that is no longer required

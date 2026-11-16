@@ -60,6 +60,24 @@ def stop_process(process: subprocess.Popen[bytes]) -> None:
     process.wait()
 
 
+def wait_measured(
+    process: subprocess.Popen[bytes], timeout_seconds: float | None
+) -> tuple[int, int | None]:
+    """Collect this child's OS high-water RSS, never a cumulative children maximum."""
+    if not hasattr(os, "wait4") or sys.platform not in {"darwin", "linux"}:
+        return process.wait(timeout=timeout_seconds), None
+    deadline = None if timeout_seconds is None else time.monotonic() + timeout_seconds
+    while True:
+        pid, status, usage = os.wait4(process.pid, os.WNOHANG)
+        if pid:
+            process.returncode = os.waitstatus_to_exitcode(status)
+            unit = 1 if sys.platform == "darwin" else 1024
+            return process.returncode, int(usage.ru_maxrss * unit)
+        if deadline is not None and time.monotonic() >= deadline:
+            raise subprocess.TimeoutExpired(process.args, timeout_seconds)
+        time.sleep(0.01)
+
+
 def run_logged(
     command: list[str],
     directory: Path,
@@ -100,7 +118,12 @@ def run_logged(
                 env=os.environ | thread_environment,
                 start_new_session=os.name == "posix",
             )
-            execution["returncode"] = process.wait(timeout=timeout_seconds)
+            execution["returncode"], execution["peak_rss_bytes"] = wait_measured(
+                process, timeout_seconds
+            )
+            execution["peak_rss_method"] = (
+                "wait4.ru_maxrss" if execution["peak_rss_bytes"] is not None else "unavailable"
+            )
         execution["status"] = "exited" if execution["returncode"] == 0 else "failed"
     except subprocess.TimeoutExpired:
         execution["status"] = "timeout"
@@ -120,6 +143,37 @@ def run_logged(
             f"{directory.name} exited {execution['returncode']}; see its stdout.log/stderr.log"
         )
     return execution
+
+
+def reuse_statistics(path: Path) -> dict[str, Any]:
+    with path.open(newline="") as stream:
+        reader = csv.DictReader(stream)
+        expected = [
+            "block", "pairs", "hits", "misses", "bypasses", "not_stored", "entries",
+            "probes", "cache_reserved_bytes", "cache_used_bytes", "cache_limit_bytes",
+        ]
+        if reader.fieldnames != expected:
+            raise ValueError(f"invalid reuse statistics header: {path}")
+        blocks = [{key: int(value) for key, value in row.items()} for row in reader]
+    if not blocks:
+        raise ValueError(f"empty reuse statistics: {path}")
+    for block in blocks:
+        if (
+            any(value < 0 for value in block.values())
+            or block["pairs"] != block["hits"] + block["misses"] + block["bypasses"]
+            or block["entries"] + block["not_stored"] != block["misses"]
+            or not block["cache_used_bytes"] <= block["cache_reserved_bytes"] <= block["cache_limit_bytes"]
+        ):
+            raise ValueError(f"inconsistent reuse statistics: {path}")
+    totals = {key: sum(block[key] for block in blocks) for key in expected[1:8]}
+    return {
+        "blocks": blocks,
+        "totals": totals,
+        "hit_rate": totals["hits"] / totals["pairs"] if totals["pairs"] else 0.0,
+        "peak_cache_reserved_bytes": max(block["cache_reserved_bytes"] for block in blocks),
+        "peak_cache_used_bytes": max(block["cache_used_bytes"] for block in blocks),
+        "memory_scope": "Cache array storage only; process peak RSS includes all allocations and runtime overhead.",
+    }
 
 
 def stage_timings(path: Path) -> dict[str, float]:
@@ -215,6 +269,8 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
         "thread_environment": THREAD_ENVIRONMENT,
         "repetitions": arguments.repeat,
         "candidate_threads": arguments.candidate_threads,
+        "candidate_reuse_cache_mib": arguments.candidate_reuse_cache_mib,
+        "reference_timings": arguments.reference_timings,
         "atol": arguments.atol,
         "rtol": arguments.rtol,
         "keyorb": arguments.keyorb,
@@ -295,10 +351,16 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                 command = [str(executable)]
                 if mode == "candidate_descriptors":
                     command += ["--csf-descriptors", str(snapshots / "csfs.bin")]
-                if mode != "reference_text":
+                if mode != "reference_text" or arguments.reference_timings:
                     command += ["--timings", "timings.csv"]
+                if mode != "reference_text":
                     if arguments.candidate_threads is not None:
                         command += ["--threads", str(arguments.candidate_threads)]
+                    if arguments.candidate_reuse_cache_mib is not None:
+                        command += [
+                            "--reuse-cache-mib", str(arguments.candidate_reuse_cache_mib),
+                            "--reuse-stats", "reuse.csv",
+                        ]
                 execution = run_logged(
                     command,
                     directory,
@@ -340,10 +402,12 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                 execution["mcp_inspection"] = mcp_compare.inspect(
                     dataset, arguments.keyorb
                 )
-                if mode != "reference_text":
+                if mode != "reference_text" or arguments.reference_timings:
                     execution["stage_wall_seconds"] = stage_timings(
                         directory / "timings.csv"
                     )
+                if mode != "reference_text" and arguments.candidate_reuse_cache_mib is not None:
+                    execution["angular_reuse"] = reuse_statistics(directory / "reuse.csv")
                 execution.update(mode=mode, trial=trial_index + 1, status="validated")
                 summary["runs"].append(execution)
                 save_json(directory / "execution.json", execution)
@@ -394,6 +458,23 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
             for mode in modes
         }
         summary["median_wall_seconds"] = medians
+        summary["median_peak_rss_bytes"] = {
+            mode: statistics.median(
+                run["peak_rss_bytes"] for run in summary["runs"]
+                if run["mode"] == mode and run["peak_rss_bytes"] is not None
+            )
+            for mode in modes
+            if any(run["mode"] == mode and run["peak_rss_bytes"] is not None for run in summary["runs"])
+        }
+        summary["median_stage_wall_seconds"] = {
+            mode: {
+                stage: statistics.median(
+                    run["stage_wall_seconds"][stage] for run in summary["runs"] if run["mode"] == mode
+                )
+                for stage in next(run for run in summary["runs"] if run["mode"] == mode).get("stage_wall_seconds", {})
+            }
+            for mode in modes
+        }
         if not mismatch_found:
             summary["reference_over_candidate_wall_ratio"] = {
                 mode: medians["reference_text"] / medians[mode]
@@ -472,6 +553,14 @@ def main() -> int:
     )
     parser.add_argument("--repeat", type=positive_integer, default=1)
     parser.add_argument(
+        "--candidate-reuse-cache-mib", type=positive_integer,
+        help="enable conservative serial angular reuse and collect reuse.csv for each candidate run",
+    )
+    parser.add_argument(
+        "--reference-timings", action="store_true",
+        help="also pass --timings to a suite reference (older upstream binaries may not support it)",
+    )
+    parser.add_argument(
         "--candidate-threads",
         type=positive_integer,
         help="OpenMP threads for rangular_omp; reference and mathematical libraries stay single-threaded",
@@ -496,6 +585,11 @@ def main() -> int:
         parser.error("--verifier requires --binary or --descriptors")
     if arguments.keyorb < 2:
         parser.error("--keyorb must be >= 2")
+    if arguments.candidate_reuse_cache_mib is not None:
+        if arguments.candidate_reuse_cache_mib > 4096:
+            parser.error("--candidate-reuse-cache-mib must be <= 4096")
+        if arguments.candidate_threads is not None:
+            parser.error("angular reuse is currently serial only; omit --candidate-threads")
     try:
         return execute_comparison(arguments)
     except (OSError, ValueError) as error:

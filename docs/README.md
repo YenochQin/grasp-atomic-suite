@@ -33,6 +33,8 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 已实施，串行专项回归通过 | [rangular_angular_reuse.md](implemented/rangular_angular_reuse.md) | 默认关闭的有界 CSF 对缓存；保留顺序、占据/耦合及轨道共享关系，复用原始 T/V 系数，普通 MCP 写出不变；包含命中率、缓存容量与 RSS 测量，OpenMP/MPI 未接入。 |
+| 已完成输出与性能对照 | [rangular_reuse_benchmark_2026-11-14.md](reviews/rangular_reuse_benchmark_2026-11-14.md) | 独立构建修改前基准，两组数据各三轮，文本/描述符 MCP 零容差及字节一致；合成样本命中 99.93%、整程 1.21×，现有 14,551-CSF 样本几乎不命中、慢约 37%；默认保持关闭。 |
 | 已实施，GNU 15 专项回归通过 | [rwfnestimate_header_input.md](implemented/rwfnestimate_header_input.md) | 普通 rwfnestimate 原生读取 rCSFs header.toml 的轨道表和含 core 总电子数；保留文本入口和 header 字节；Ni/Zn 及 TOML Release/Check 专项各 3/3，原生描述符配对哈希不变。 |
 | 根因已复现并修复，物理优化待验证 | [rwfnestimate_nan_header_2026-11-12.md](reviews/rwfnestimate_nan_header_2026-11-12.md) | Ni/Zn 首次 h/i 的搜索上界变负，导致 SETPOT/TAIL 警告及 NaN 误报成功；记录数值链、suite 迁移、上游恢复；同步命名迁移及退役更新后，Release 全量 66/66 通过。 |
 | 已移除被否决变体 | [rejected_rmcdhf_variants.md](implemented/rejected_rmcdhf_variants.md) | 删除 strict/diag 两个独立求解器、专用测试、构建/安装入口及当前二进制；普通四种 RMCDHF 和共享库保持原流程。 |

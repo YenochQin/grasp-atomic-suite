@@ -100,6 +100,12 @@ if(Python3_Interpreter_FOUND)
         set_tests_properties(rangular_version_comparison PROPERTIES TIMEOUT 180
             LABELS "f2018_io;f2018_serial"
             ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1")
+        add_test(NAME rangular_angular_reuse
+            COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rangular/test_reuse.py"
+            --rangular $<TARGET_FILE:rangular> --verifier $<TARGET_FILE:csf_descriptor_verify>)
+        set_tests_properties(rangular_angular_reuse PROPERTIES TIMEOUT 180
+            LABELS "f2018_io;f2018_serial"
+            ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1")
         if(TARGET rangular_omp)
             add_test(NAME rangular_openmp_regression
                 COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rangular/test_openmp.py"

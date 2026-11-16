@@ -54,6 +54,11 @@ Parquet 预处理只执行一次，额外需要 PyArrow；其耗时单列，不�
 该选项同时设置候选的 OpenMP 环境和 `--threads` 参数；原版及数学库仍单线程。
 省略此选项时，运行器保持原有单线程默认，不能仅设置父 shell 的 OMP_NUM_THREADS 就认定候选已多线程运行。
 
+串行[角向系数复用](rangular_angular_reuse.md)通过 `--candidate-reuse-cache-mib 64`
+开启，自动收集每块 `reuse.csv` 和汇总命中率/缓存数组字节数；不能同时指定
+`--candidate-threads`。支持计时参数的 suite 基准可加 `--reference-timings`，
+以对照双方的系数生成阶段。默认仍不向原版传入新增选项。
+
 ## 3. 一阶相互作用、超时与判据
 
 将完整交互输入放入文本文件。例如三个 block 各使用 `ICCUT=1`：
@@ -102,6 +107,10 @@ n
 重复运行按轮次轮换执行顺序，汇总中位数。只有所有对照通过才报告
 `reference_over_candidate_wall_ratio`，含义为原版墙钟中位数除以对应新版中位数。
 新版阶段时间保存在各次 CSV 及 `stage_wall_seconds`，整体区间包含子阶段，不能再次求和。
+双方阶段时间中位数保存在 `median_stage_wall_seconds`。
+Linux/macOS 另外用当前子进程的 `wait4.ru_maxrss` 记录 `peak_rss_bytes` 与各模式中位数；
+其他平台为 unavailable。RSS 包括整个进程，不能当作缓存自身占用。
+子进程退出轮询最多约 10 ms，因此非常短的运行不适合做速度结论。
 
 默认将 OpenMP/OpenBLAS/MKL/BLIS/Accelerate/NumExpr 的线程环境设为 1；
 `--candidate-threads` 仅覆盖候选的 OpenMP 线程数，实际每次环境记录在 execution JSON 中。

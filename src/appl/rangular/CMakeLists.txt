@@ -1,5 +1,6 @@
 set(rangular_common_sources
     rangular_profile.f90
+    rangular_reuse.f90
     rangular_input.f90
     allocCheck.f90
     allocCheck_I.f90
