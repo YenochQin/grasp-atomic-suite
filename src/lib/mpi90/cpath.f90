@@ -358,7 +358,9 @@ contains
             return
         endif
         ! Will allocate or re-allocate value, unless it already has the correct length.
-        if(allocated(value) .and. len(value) /= length) deallocate(value)
+        if(allocated(value)) then
+            if(len(value) /= length) deallocate(value)
+        endif
         if(.not.allocated(value)) allocate(character(length) :: value)
         ! Can't pass a length 0 string to get_environment_variable.
         if(length > 0) then

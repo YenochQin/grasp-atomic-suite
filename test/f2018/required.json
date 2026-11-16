@@ -64,7 +64,8 @@
         "f2018_weights_rmcdhf",
         "f2018_weights_rmcdhf_mem",
         "f2018_weights_rmcdhf_mpi",
-        "f2018_weights_rmcdhf_mem_mpi"
+        "f2018_weights_rmcdhf_mem_mpi",
+        "f2018_input_precision"
       ]
     },
     {
@@ -165,6 +166,44 @@
         "f2018_ci_damping_rmcdhf_mem_mpi_1",
         "f2018_ci_damping_rmcdhf_mem_mpi_2",
         "f2018_ci_damping_rmcdhf_mem_mpi_4"
+      ]
+    },
+    {
+      "name": "input_io_serial",
+      "requires": [
+        "serial"
+      ],
+      "targets": [
+        "test.mcp_io_rmcdhf",
+        "test.mcp_io_rmcdhf_mem",
+        "test.mcp_memory_rmcdhf_mem",
+        "test.csf_record_rbiotransform"
+      ],
+      "tests": [
+        "f2018_mcp_io_rmcdhf",
+        "f2018_mcp_io_rmcdhf_mem",
+        "f2018_mcp_memory_rmcdhf_mem",
+        "f2018_csf_record_rbiotransform"
+      ]
+    },
+    {
+      "name": "input_io_mpi",
+      "requires": [
+        "mpi"
+      ],
+      "targets": [
+        "test.mcp_io_rmcdhf_mpi",
+        "test.mcp_io_rmcdhf_mem_mpi",
+        "test.mcp_memory_rmcdhf_mem_mpi",
+        "test.csf_record_rbiotransform_mpi",
+        "test.cpath_io"
+      ],
+      "tests": [
+        "f2018_mcp_io_rmcdhf_mpi",
+        "f2018_mcp_io_rmcdhf_mem_mpi",
+        "f2018_mcp_memory_rmcdhf_mem_mpi",
+        "f2018_csf_record_rbiotransform_mpi",
+        "f2018_cpath_io_mpi"
       ]
     }
   ]

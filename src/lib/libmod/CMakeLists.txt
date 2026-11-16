@@ -1,4 +1,5 @@
 add_library(mod STATIC
+    input_io.f90
     npol_C.f90
     suite_parameters_M.f90
     parameter_def_M.f90

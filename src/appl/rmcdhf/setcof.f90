@@ -23,6 +23,7 @@
       use vast_kind_param,  only: double, long
       use parameter_def,    only: orbital_index_radix
       use memory_man
+      use input_io, only: fail_input_io
       use orb_c
       use hblock_c
       use hmat_c
@@ -49,7 +50,7 @@
 !-----------------------------------------------
       integer, parameter :: key = orbital_index_radix
       character*6, parameter :: myname = 'SETCOF'
-      real, parameter :: eps = 1.0d-10
+      real(double), parameter :: eps = 1.0d-10
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -237,16 +238,20 @@
 !=======================================================================
 
       do nfile = 30, 32 + max_mcp_file_multipole_rank
-         rewind (nfile)
+         rewind (nfile, iostat=ios)
+         if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof rewind')
          if (nfile /= 30) then
             do i = 1, 3
-               read (nfile)
+               read (nfile, iostat=ios)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof skip header or payload')
                cycle
             end do
          else
             do i = 1, 3
-               read (nfile)
-               read (nfile)
+               read (nfile, iostat=ios)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof skip header or payload')
+               read (nfile, iostat=ios)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof skip header or payload')
             end do
          endif
       end do
@@ -259,22 +264,26 @@
       do jblock = 1, symmetry_block_count
 
          !*** Read in IROW from file mcp.30 ***
-         read (30) mcplab, jblockt, csf_count
+         read (30, iostat=ios) mcplab, jblockt, csf_count
+         if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof block or channel header')
          if (jblockt /= jblock) then
             write (stderr_unit, *) myname, '1: jblockt .NE. jblock'
-            error stop
+            call fail_input_io(0, 30, 'MCP setcof inconsistent block header')
          endif
-         read (30) nelmntgg
+         read (30, iostat=ios) nelmntgg
+         if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof sparse element count')
          stored_matrix_element_count = int(nelmntgg,kind=long)
          call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'SETCOF')
-         read (30) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), (matrix_partner_indices(i),i=1, &
+         read (30, iostat=ios) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), (matrix_partner_indices(i),i=1, &
             & stored_matrix_element_count)
+         if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof sparse indices')
 
          !*** Block info file mcp.31 ***
-         read (31) mcplab, jblockt, csf_count, ncoeff
+         read (31, iostat=ios) mcplab, jblockt, csf_count, ncoeff
+         if (ios /= 0) call fail_input_io(ios, 31, 'MCP setcof block or channel header')
          if (jblockt /= jblock) then
             write (stderr_unit, *) myname, '2: jblockt .NE. jblock'
-            error stop
+            call fail_input_io(0, 31, 'MCP setcof inconsistent block header')
          endif
 
          !*** Loop over labels having non-zero coefficients
@@ -282,6 +291,7 @@
 
          l123: do while(.true.)
             read (31, iostat=ios) lab, ncontr
+            if (ios /= 0) call fail_input_io(ios, 31, 'MCP setcof label/count')
 
             ! 0, 0 marks the end of a block. This is the normal exit
 
@@ -298,7 +308,8 @@
             ! non-zero value; otherwise, goto next label.
 
             if (ia/=j .and. ib/=j) then
-               read (31)                         ! No contributions from this integral; skip
+               read (31, iostat=ios)                         ! No contributions from this integral; skip
+               if (ios /= 0) call fail_input_io(ios, 31, 'MCP setcof skip header or payload')
                cycle                             ! to next label
             endif
 
@@ -315,7 +326,8 @@
             ! Read the column index, the sparse matrix index, and the
             ! coefficient for all contributions from this integral
 
-            read (31) (iclmn(i),indx(i),coeff(i),i=1,ncontr)
+            read (31, iostat=ios) (iclmn(i),indx(i),coeff(i),i=1,ncontr)
+            if (ios /= 0) call fail_input_io(ios, 31, 'MCP setcof coefficient payload')
 
             ! Add up all the contributions from this integral;
             ! off-diagonal contributions have double the weight
@@ -386,9 +398,11 @@
 
 !         ...Re-position file mcp.30
 
-         rewind (30)
+         rewind (30, iostat=ios)
+         if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof rewind')
          do i = 1, 6
-            read (30)
+            read (30, iostat=ios)
+            if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof skip header or payload')
          end do
 
 !=======================================================================
@@ -397,21 +411,25 @@
 
          do jblock = 1, symmetry_block_count
 !           ...Read in IROW from file mcp.30
-            read (30) mcplab, jblockt, csf_count
+            read (30, iostat=ios) mcplab, jblockt, csf_count
+            if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof block or channel header')
             if (jblockt /= jblock) then
                write (stderr_unit, *) myname, ':3 jblockt .NE. jblock'
-               error stop
+               call fail_input_io(0, 30, 'MCP setcof inconsistent block header')
             endif
-            read (30) nelmntgg
+            read (30, iostat=ios) nelmntgg
+            if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof sparse element count')
             stored_matrix_element_count = int(nelmntgg,kind=long)
             call alloc (matrix_partner_indices, stored_matrix_element_count, 'IROW', 'SETCOF')
-            read (30) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), (matrix_partner_indices(i),i=1, &
+            read (30, iostat=ios) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), (matrix_partner_indices(i),i=1, &
                & stored_matrix_element_count)
+            if (ios /= 0) call fail_input_io(ios, 30, 'MCP setcof sparse indices')
 
-            read (nfile) mcplab, jblockt, csf_count, ncoeff
+            read (nfile, iostat=ios) mcplab, jblockt, csf_count, ncoeff
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof block or channel header')
             if (jblockt /= jblock) then
                write (stderr_unit, *) myname, ':4 jblockt .NE. jblock'
-               error stop
+               call fail_input_io(0, nfile, 'MCP setcof inconsistent block header')
             endif
 
             k = nfile - 32                       ! multipolarity of the integral
@@ -422,6 +440,7 @@
 
   999       continue
             read (nfile, iostat=ios) lab, ncontr
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof label/count')
 !
             if (lab==0 .and. ncontr==0) then
                call dalloc (matrix_partner_indices, 'IROW', 'SETCOF')
@@ -441,7 +460,8 @@
             irank = irank + count(indexs==j)
 
             if (irank == 0) then
-               read (nfile)
+               read (nfile, iostat=ios)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof skip header or payload')
                go to 999
             endif
 
@@ -459,7 +479,8 @@
 
             !*** Read column index, sparse matrix index, and
             !*** coefficient for all contributions from this integral
-            read (nfile) (iclmn(i),indx(i),coeff(i),i=1,ncontr)
+            read (nfile, iostat=ios) (iclmn(i),indx(i),coeff(i),i=1,ncontr)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setcof coefficient payload')
 
             !*** Add up all the contributions from this integral;
             !*** off-diagonal contributions have double the weight

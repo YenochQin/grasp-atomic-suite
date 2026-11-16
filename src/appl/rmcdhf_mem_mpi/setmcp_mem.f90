@@ -11,6 +11,7 @@
 !-----------------------------------------------
       use vast_kind_param, only: double, long
       use memory_man
+      use input_io_mpi, only: fail_input_io => fail_input_io_mpi
       use rmcdhf_mem_c
       use iounit_c
       use mpi_c
@@ -42,12 +43,14 @@
       do jblock = 1, nblock
         if(nfile == 30) then
           !*** Read in IROW from file mcp.30 ***
-          read (30) mcplab, jblockt, ncf
+          read (30, iostat=ios) mcplab, jblockt, ncf
+          if (ios /= 0) call fail_input_io(ios, 30, 'MCP setmcp_mem block or channel header')
           if (jblockt /= jblock) then
             write (stderr_unit, *) 'setmcp_mem', '1: jblockt .NE. jblock'
-            stop
+            call fail_input_io(0, nfile, 'MCP setmcp_mem invalid block or channel')
           endif
-          read (30) nelmntgg
+          read (30, iostat=ios) nelmntgg
+          if (ios /= 0) call fail_input_io(ios, 30, 'MCP setmcp_mem sparse element count')
           stored_matrix_element_count = int(nelmntgg,kind=long)
           if(jblock == 1) then
             call alloc (imin1_30,nblock,'IMIN1_30','setmcp_mem')
@@ -64,25 +67,30 @@
             imin2_30(jblock) = imax2_30(jblock-1) + 0
             imax2_30(jblock) = imax2_30(jblock-1) + stored_matrix_element_count
           end if
-          read (30) (iendcdum,i=mpi_rank + 1,ncf,mpi_process_count),                  &
+          read (30, iostat=ios) (iendcdum,i=mpi_rank + 1,ncf,mpi_process_count),                  &
                                                  (irow_dumm,i=1,stored_matrix_element_count)
+          if (ios /= 0) call fail_input_io(ios, 30, 'MCP setmcp_mem sparse indices')
         else
-          read (nfile) mcplab, jblockt, ncft, ncoeff
+          read (nfile, iostat=ios) mcplab, jblockt, ncft, ncoeff
+          if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem block or channel header')
           if (jblockt /= jblock) then
             write (stderr_unit, *) 'setmcp_mem', ':2 jblockt .NE. jblock'
-            stop
+            call fail_input_io(0, nfile, 'MCP setmcp_mem invalid block or channel')
           endif
 
           ncontr_tot2 = ncontr_tot2 + 1
           read (nfile, iostat=ios) lab_dumm, ncontr_dumm
+          if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem count-pass label/count')
           do while (lab_dumm /= 0 .or. ncontr_dumm /= 0)
             !*** Read column index, sparse matrix index, and
             !*** coefficient for all contributions from this integral
-            read (nfile) (iclmn_dumm,indx_dumm,coeff_dumm,             &
+            read (nfile, iostat=ios) (iclmn_dumm,indx_dumm,coeff_dumm,             &
                                                        i=1,ncontr_dumm)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem count-pass coefficients')
             ncontr_tot = ncontr_tot + ncontr_dumm
             ncontr_tot2 = ncontr_tot2 + 1
             read (nfile, iostat=ios) lab_dumm, ncontr_dumm
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem count-pass label/count')
           end do
         end if
       end do
@@ -248,366 +256,437 @@
          call alloc (coeff_50, ncontr_tot, 'COEFF_50', 'setmcp_mem')
       else
          print*, "Error in setmcp_mem"
-         stop
+         call fail_input_io(0, nfile, 'MCP setmcp_mem invalid block or channel')
       end if
-      rewind (nfile)
+      rewind (nfile, iostat=ios)
+      if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem rewind')
       if(nfile == 30) then
-         read (nfile)
-         read (nfile)
-         read (nfile)
+         read (nfile, iostat=ios)
+         if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem skip header or payload')
+         read (nfile, iostat=ios)
+         if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem skip header or payload')
+         read (nfile, iostat=ios)
+         if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem skip header or payload')
       end if
-      read (nfile)
-      read (nfile)
-      read (nfile)
+      read (nfile, iostat=ios)
+      if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem skip header or payload')
+      read (nfile, iostat=ios)
+      if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem skip header or payload')
+      read (nfile, iostat=ios)
+      if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem skip header or payload')
 !
       ncontr_tot = 0
       ncontr_tot2 = 0
       do jblock = 1, nblock
         if(nfile == 30) then
           !*** Read in IROW from file mcp.30 ***
-          read (30) mcplab, jblockt, ncf
+          read (30, iostat=ios) mcplab, jblockt, ncf
+          if (ios /= 0) call fail_input_io(ios, 30, 'MCP setmcp_mem block or channel header')
           if (jblockt /= jblock) then
             write (stderr_unit, *) 'setmcp_mem', '3: jblockt .NE. jblock'
-            stop
+            call fail_input_io(0, nfile, 'MCP setmcp_mem invalid block or channel')
           endif
         else
-          read (nfile) mcplab, jblockt, ncft, ncoeff
+          read (nfile, iostat=ios) mcplab, jblockt, ncft, ncoeff
+          if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem block or channel header')
           if (jblockt /= jblock) then
             write (stderr_unit, *) 'setmcp_mem', ':4 jblockt .NE. jblock'
-            stop
+            call fail_input_io(0, nfile, 'MCP setmcp_mem invalid block or channel')
           endif
           ncontr_tot2 = ncontr_tot2 + 1
         endif
 
          if(nfile == 30) then
-            read (30) nelmntgg
+            read (30, iostat=ios) nelmntgg
+            if (ios /= 0) call fail_input_io(ios, 30, 'MCP setmcp_mem sparse element count')
             stored_matrix_element_count = int(nelmntgg,kind=long)
-            read (30) (iendc_30(i),i=                                  &
+            read (30, iostat=ios) (iendc_30(i),i=                                  &
                      imin1_30(jblock)+mpi_rank+1,imax1_30(jblock),mpi_process_count), &
                      (irow_30(i),i=imin2_30(jblock)+1,imax2_30(jblock))
+            if (ios /= 0) call fail_input_io(ios, 30, 'MCP setmcp_mem sparse indices')
          else if(nfile == 31) then
             read (nfile, iostat=ios) lab_31(ncontr_tot2),              &
                                   ncontr_31(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_31(ncontr_tot2) /= 0 .or.                    &
                    ncontr_31(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_31(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_31(ncontr_tot+i),                   &
                               indx_31(ncontr_tot+i),                   &
                              coeff_31(ncontr_tot+i),                   &
                         i=1,ncontr_31(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_31(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_31(ncontr_tot2),           &
                                      ncontr_31(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 32) then
             read (nfile, iostat=ios) lab_32(ncontr_tot2),              &
                                   ncontr_32(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_32(ncontr_tot2) /= 0 .or.                    &
                    ncontr_32(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_32(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_32(ncontr_tot+i),                   &
                               indx_32(ncontr_tot+i),                   &
                              coeff_32(ncontr_tot+i),                   &
                         i=1,ncontr_32(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_32(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_32(ncontr_tot2),           &
                                      ncontr_32(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 33) then
             read (nfile, iostat=ios) lab_33(ncontr_tot2),              &
                                   ncontr_33(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_33(ncontr_tot2) /= 0 .or.                    &
                    ncontr_33(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_33(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_33(ncontr_tot+i),                   &
                               indx_33(ncontr_tot+i),                   &
                              coeff_33(ncontr_tot+i),                   &
                         i=1,ncontr_33(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_33(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_33(ncontr_tot2),           &
                                      ncontr_33(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 34) then
             read (nfile, iostat=ios) lab_34(ncontr_tot2),              &
                                   ncontr_34(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_34(ncontr_tot2) /= 0 .or.                    &
                    ncontr_34(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_34(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_34(ncontr_tot+i),                   &
                               indx_34(ncontr_tot+i),                   &
                              coeff_34(ncontr_tot+i),                   &
                         i=1,ncontr_34(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_34(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_34(ncontr_tot2),           &
                                      ncontr_34(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 35) then
             read (nfile, iostat=ios) lab_35(ncontr_tot2),              &
                                   ncontr_35(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_35(ncontr_tot2) /= 0 .or.                    &
                    ncontr_35(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_35(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_35(ncontr_tot+i),                   &
                               indx_35(ncontr_tot+i),                   &
                              coeff_35(ncontr_tot+i),                   &
                         i=1,ncontr_35(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_35(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_35(ncontr_tot2),           &
                                      ncontr_35(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 36) then
             read (nfile, iostat=ios) lab_36(ncontr_tot2),              &
                                   ncontr_36(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_36(ncontr_tot2) /= 0 .or.                    &
                    ncontr_36(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_36(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_36(ncontr_tot+i),                   &
                               indx_36(ncontr_tot+i),                   &
                              coeff_36(ncontr_tot+i),                   &
                         i=1,ncontr_36(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_36(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_36(ncontr_tot2),           &
                                      ncontr_36(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 37) then
             read (nfile, iostat=ios) lab_37(ncontr_tot2),              &
                                   ncontr_37(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_37(ncontr_tot2) /= 0 .or.                    &
                    ncontr_37(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_37(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_37(ncontr_tot+i),                   &
                               indx_37(ncontr_tot+i),                   &
                              coeff_37(ncontr_tot+i),                   &
                         i=1,ncontr_37(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_37(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_37(ncontr_tot2),           &
                                      ncontr_37(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 38) then
             read (nfile, iostat=ios) lab_38(ncontr_tot2),              &
                                   ncontr_38(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_38(ncontr_tot2) /= 0 .or.                    &
                    ncontr_38(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_38(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_38(ncontr_tot+i),                   &
                               indx_38(ncontr_tot+i),                   &
                              coeff_38(ncontr_tot+i),                   &
                         i=1,ncontr_38(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_38(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_38(ncontr_tot2),           &
                                      ncontr_38(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 39) then
             read (nfile, iostat=ios) lab_39(ncontr_tot2),              &
                                   ncontr_39(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_39(ncontr_tot2) /= 0 .or.                    &
                    ncontr_39(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_39(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_39(ncontr_tot+i),                   &
                               indx_39(ncontr_tot+i),                   &
                              coeff_39(ncontr_tot+i),                   &
                         i=1,ncontr_39(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_39(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_39(ncontr_tot2),           &
                                      ncontr_39(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 40) then
             read (nfile, iostat=ios) lab_40(ncontr_tot2),              &
                                   ncontr_40(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_40(ncontr_tot2) /= 0 .or.                    &
                    ncontr_40(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_40(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_40(ncontr_tot+i),                   &
                               indx_40(ncontr_tot+i),                   &
                              coeff_40(ncontr_tot+i),                   &
                         i=1,ncontr_40(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_40(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_40(ncontr_tot2),           &
                                      ncontr_40(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 41) then
             read (nfile, iostat=ios) lab_41(ncontr_tot2),              &
                                   ncontr_41(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_41(ncontr_tot2) /= 0 .or.                    &
                    ncontr_41(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_41(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_41(ncontr_tot+i),                   &
                               indx_41(ncontr_tot+i),                   &
                              coeff_41(ncontr_tot+i),                   &
                         i=1,ncontr_41(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_41(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_41(ncontr_tot2),           &
                                      ncontr_41(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 42) then
             read (nfile, iostat=ios) lab_42(ncontr_tot2),              &
                                   ncontr_42(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_42(ncontr_tot2) /= 0 .or.                    &
                    ncontr_42(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_42(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_42(ncontr_tot+i),                   &
                               indx_42(ncontr_tot+i),                   &
                              coeff_42(ncontr_tot+i),                   &
                         i=1,ncontr_42(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_42(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_42(ncontr_tot2),           &
                                      ncontr_42(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 43) then
             read (nfile, iostat=ios) lab_43(ncontr_tot2),              &
                                   ncontr_43(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_43(ncontr_tot2) /= 0 .or.                    &
                    ncontr_43(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_43(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_43(ncontr_tot+i),                   &
                               indx_43(ncontr_tot+i),                   &
                              coeff_43(ncontr_tot+i),                   &
                         i=1,ncontr_43(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_43(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_43(ncontr_tot2),           &
                                      ncontr_43(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 44) then
             read (nfile, iostat=ios) lab_44(ncontr_tot2),              &
                                   ncontr_44(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_44(ncontr_tot2) /= 0 .or.                    &
                    ncontr_44(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_44(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_44(ncontr_tot+i),                   &
                               indx_44(ncontr_tot+i),                   &
                              coeff_44(ncontr_tot+i),                   &
                         i=1,ncontr_44(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_44(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_44(ncontr_tot2),           &
                                      ncontr_44(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 45) then
             read (nfile, iostat=ios) lab_45(ncontr_tot2),              &
                                   ncontr_45(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_45(ncontr_tot2) /= 0 .or.                    &
                    ncontr_45(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_45(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_45(ncontr_tot+i),                   &
                               indx_45(ncontr_tot+i),                   &
                              coeff_45(ncontr_tot+i),                   &
                         i=1,ncontr_45(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_45(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_45(ncontr_tot2),           &
                                      ncontr_45(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 46) then
             read (nfile, iostat=ios) lab_46(ncontr_tot2),              &
                                   ncontr_46(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_46(ncontr_tot2) /= 0 .or.                    &
                    ncontr_46(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_46(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_46(ncontr_tot+i),                   &
                               indx_46(ncontr_tot+i),                   &
                              coeff_46(ncontr_tot+i),                   &
                         i=1,ncontr_46(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_46(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_46(ncontr_tot2),           &
                                      ncontr_46(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 47) then
             read (nfile, iostat=ios) lab_47(ncontr_tot2),              &
                                   ncontr_47(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_47(ncontr_tot2) /= 0 .or.                    &
                    ncontr_47(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_47(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_47(ncontr_tot+i),                   &
                               indx_47(ncontr_tot+i),                   &
                              coeff_47(ncontr_tot+i),                   &
                         i=1,ncontr_47(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_47(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_47(ncontr_tot2),           &
                                      ncontr_47(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 48) then
             read (nfile, iostat=ios) lab_48(ncontr_tot2),              &
                                   ncontr_48(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_48(ncontr_tot2) /= 0 .or.                    &
                    ncontr_48(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_48(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_48(ncontr_tot+i),                   &
                               indx_48(ncontr_tot+i),                   &
                              coeff_48(ncontr_tot+i),                   &
                         i=1,ncontr_48(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_48(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_48(ncontr_tot2),           &
                                      ncontr_48(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 49) then
             read (nfile, iostat=ios) lab_49(ncontr_tot2),              &
                                   ncontr_49(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_49(ncontr_tot2) /= 0 .or.                    &
                    ncontr_49(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_49(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_49(ncontr_tot+i),                   &
                               indx_49(ncontr_tot+i),                   &
                              coeff_49(ncontr_tot+i),                   &
                         i=1,ncontr_49(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_49(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_49(ncontr_tot2),           &
                                      ncontr_49(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else if(nfile == 50) then
             read (nfile, iostat=ios) lab_50(ncontr_tot2),              &
                                   ncontr_50(ncontr_tot2)
+            if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             do while (lab_50(ncontr_tot2) /= 0 .or.                    &
                    ncontr_50(ncontr_tot2) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile) (iclmn_50(ncontr_tot+i),                   &
+               read (nfile, iostat=ios) (iclmn_50(ncontr_tot+i),                   &
                               indx_50(ncontr_tot+i),                   &
                              coeff_50(ncontr_tot+i),                   &
                         i=1,ncontr_50(ncontr_tot2))
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem coefficient payload')
                ncontr_tot  = ncontr_tot + ncontr_50(ncontr_tot2)
                ncontr_tot2 = ncontr_tot2 + 1
                read (nfile, iostat=ios) lab_50(ncontr_tot2),           &
                                      ncontr_50(ncontr_tot2)
+               if (ios /= 0) call fail_input_io(ios, nfile, 'MCP setmcp_mem load-pass label/count')
             end do
          else
             print*, "Error in setmcp_mem"
-            stop
+            call fail_input_io(0, nfile, 'MCP setmcp_mem invalid block or channel')
          end if
 
       end do

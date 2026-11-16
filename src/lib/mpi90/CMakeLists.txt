@@ -1,4 +1,5 @@
 add_library(mpiu90 STATIC
+    input_io_mpi.f90
     npol_init_mpi.f90
     mpi_C.f90
     mpiu_I.f90

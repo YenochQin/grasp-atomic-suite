@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "source_revision": "e47c59df12c5ad694629bf972f63f8244e245e26",
+  "scope": "Immediate MCP input-status rejection, MPI-safe failure paths, and DOUBLE declarations for the four currently unused EPS constants.",
+  "previous_manifest_sha256": "a3e3408db6bb6fd467d5c755d3ff147ba809bfa21de46a8859cfde59195b1fa9",
+  "files": {
+    "src/appl/rmcdhf/setcof.f90": {
+      "before_suite_sha256": "1bd6bce9859e6fbcf965aea0a20bf7a7c6d915bb7bbef7f65955d4145509aaa5",
+      "after_suite_sha256": "3c201c548ac78c53a6a53ff7b51fc0fe2dfadbe70a08507acbffff31b792c8ca"
+    },
+    "src/appl/rmcdhf/setmcp.f90": {
+      "before_suite_sha256": "d88b2a92cdb82767422667d47d8bca39e60e9f47ded5b6a57e795517ae4dae0d",
+      "after_suite_sha256": "6c37ac045dd193179dded9ab00a56edd2746bda239a1e6cfe90a42cd8c1fa20e"
+    },
+    "src/appl/rmcdhf_mem/setcof.f90": {
+      "before_suite_sha256": "ea683be762395eba0a43e1a90b7451f5d5c88689707558850ac780d203f515ea",
+      "after_suite_sha256": "15ee141f1088a8c75fe68a098b3c51c53766263cf995f03e452868f6bf9bccee"
+    },
+    "src/appl/rmcdhf_mem/setmcp.f90": {
+      "before_suite_sha256": "10b26e43b3314420f995c173e375cb3ac0a3a2238bd537331f2318ba01ef8a9a",
+      "after_suite_sha256": "8bde182893ad7b68c2afa1e5f87fad75bed20a8ae7d6bc4d500da75643e7cad5"
+    },
+    "src/appl/rmcdhf_mem/setmcp_mem.f90": {
+      "before_suite_sha256": "28a866864da5a0b931cd50515ad58ff7de0474b1f37495b57ffe94199b8f19e0",
+      "after_suite_sha256": "454b3e83833047bf04d93931b3ec9d6c630ff390c061bc36571f504a1447817b"
+    },
+    "src/appl/rmcdhf_mpi/setcof.f90": {
+      "before_suite_sha256": "75f38bd3867e4195a33af6b96bcd9d59c6bb28f584a1af3b3ddf58f69b3cbbea",
+      "after_suite_sha256": "f5d3b69a279336f9f23e16d7fbb610be177895006087dc7b5fa792801bf27b40"
+    },
+    "src/appl/rmcdhf_mpi/setmcp.f90": {
+      "before_suite_sha256": "09412a7b4a9894ff164b401b7c3092f31447be17d2c66cd0fb5269a4dbe8e887",
+      "after_suite_sha256": "68e75b7662f35064e31e3b21ef0f65bae7d280fae66708e9a8f1c0a24dc8bede"
+    },
+    "src/appl/rmcdhf_mem_mpi/setcof.f90": {
+      "before_suite_sha256": "65d58d55ce16fe0c268fa1eb850b5a31987e9142c6b42cf938051551dea6e9d4",
+      "after_suite_sha256": "b3925816035b37c4bbc945cc4543aa720854b8a28e27039e27a7c56655b75deb"
+    },
+    "src/appl/rmcdhf_mem_mpi/setmcp.f90": {
+      "before_suite_sha256": "7b784f3e8ea8f31d053dd84e067b708cd8876b2f9582b45b2784d69c646e20e2",
+      "after_suite_sha256": "a8ee205ba2b45fe8b7757b7a6aa31aef95488050d7d74f3fe3f0ef565a2c2a73"
+    },
+    "src/appl/rmcdhf_mem_mpi/setmcp_mem.f90": {
+      "before_suite_sha256": "1c77efb06e2382a3dacbf12b79236a2200cb871ea987184f4c4808e5218953c3",
+      "after_suite_sha256": "83e968135e4b12a6eafd7524e0350040a30778d88496571052b8648318887650"
+    }
+  }
+}

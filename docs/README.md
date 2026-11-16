@@ -33,6 +33,8 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 三类优先问题已修复并回归 | [priority_input_safety_fixes_2026-11-16.md](reviews/priority_input_safety_fixes_2026-11-16.md) | MCP 状态即时检查、单 rank 故障 MPI_Abort、相关 CSF 记录检查、CPATH 分配保护及四个 EPS 的 DOUBLE 声明。Release/Check 最终各 77 项通过，非 MPI 专项 5 项通过；EPS 当前未用于执行判断，未启用阈值筛选。纯风格未改，历史告警预算缺口保留。 |
+| 静态分析基线，优先项已跟进 | [fortls_fortitude_analysis_2026-11-16.md](reviews/fortls_fortitude_analysis_2026-11-16.md) | 基准 e47c59d；fortls 3.2.2 / Fortitude 0.10.1 覆盖 1,902 份文本。保留 35,361 条 Fortitude 和 57 条 fortls 的原始口径、误报与工具限制记录。三类优先项已按上条修复，其余规范和风格建议未批量处理。 |
 | 明确候选已实施，CSFG 已移除 | [variable_rename_csfg_removal_2026-11-16.md](reviews/variable_rename_csfg_removal_2026-11-16.md) | 529 项候选中 528 项改名、pi 保留；746 份普通源码同步引用，原容量名保持兼容别名；移除 948 份 CSFG 源码及专用构建/测试。Release/Check 编译和各 67 项回归通过（Release 含两个维护检查的定向重跑），44 对输出字节一致；历史告警预算缺口保留。 |
 | 已统一大小写，软件回归通过 | [non_csfg_lowercase_2026-11-16.md](reviews/non_csfg_lowercase_2026-11-16.md) | 排除 CSFG，1,880 份 Fortran 文本中修改 1,872 份；保留字符串、注释、宏和排版。GNU 15 Release/Check 编译通过，各 67 项回归通过（Release 含三个维护检查的定向重跑）；44 对附加输出逐字节一致。记录既有告警预算覆盖缺口和行尾空白，未做语义重命名。 |
 | 明确候选已处理，其余待核实 | [non_csfg_variable_inventory_2026-11-16.md](plans/non_csfg_variable_inventory_2026-11-16.md) | 原始采集基准 caaf3a5；1,880 份 Fortran 文本、20,108 个实体。529 项明确候选已逐项标记（528 改名、pi 保留），其余 19,579 项待核实；原名、原声明行及哈希作为历史快照，当前名称与位置另有 JSON 映射。 |

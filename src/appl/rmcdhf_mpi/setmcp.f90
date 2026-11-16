@@ -37,6 +37,7 @@
 !-----------------------------------------------
       use vast_kind_param, only:  double
       use memory_man
+      use input_io_mpi, only: fail_input_io => fail_input_io_mpi
       use def_c
       use foparm_c
       use mcpa_c
@@ -72,14 +73,15 @@
       filnam = filehead(1:lenfh)//'.30'
       open(30, file=filnam, form='UNFORMATTED', status='OLD', iostat=ierror, &
          position='asis')
+      if (ierror /= 0) call fail_input_io(ierror, 30, 'MCP setmcp open '//trim(filnam))
 
-!  Parameter ierror carries through mcp.30,... mcp.kmax
+!  Check each record before using its contents.
 
       read (30, iostat=ios) ncore, symmetry_block_count, max_mcp_file_multipole_rank
-      ierror = ierror + abs(ios)
+      if (ios /= 0) call fail_input_io(ios, 30, 'MCP setmcp global header')
       if (symmetry_block_count>nblkin .or. symmetry_block_count<1) then
          write (stderr_unit, *) 'setmcp: nblock = ', symmetry_block_count
-         error stop
+         call fail_input_io(0, 30, 'MCP setmcp invalid block count')
       endif
 
 !cjb allocate ncfblk(0:*)
@@ -89,9 +91,9 @@
       csf_counts_by_block(0) = 0
 
       read (30, iostat=ios) (csf_counts_by_block(i),i=1,symmetry_block_count)
-      ierror = ierror + abs(ios)
+      if (ios /= 0) call fail_input_io(ios, 30, 'MCP setmcp block sizes')
       read (30, iostat=ios) (idblk(i),i=1,symmetry_block_count)
-      ierror = ierror + abs(ios)
+      if (ios /= 0) call fail_input_io(ios, 30, 'MCP setmcp block labels')
 
 !  Look for other mcp files
 
@@ -105,7 +107,7 @@
 
       if (.not.found) then
          write (stderr_unit, *) 'The mcp files do not exist'
-         error stop
+         call fail_input_io(0, 30, 'MCP setmcp missing channel file')
       endif
 
 !  Open the files; check file headers
@@ -116,33 +118,27 @@
             call convrt (k, ck, lck)
             filnam = filehead(1:lenfh)//'.'//ck(1:2)
             call openfl (k, filnam, 'UNFORMATTED', 'OLD', ierror)
+            if (ierror /= 0) call fail_input_io(ierror, k, 'MCP setmcp open '//trim(filnam))
          endif
 
          read (k, iostat=ios) mcplab, symmetry_block_count, myidd, nprocss
-
-         ierror = ierror + abs(ios)
+         if (ios /= 0) call fail_input_io(ios, k, 'MCP setmcp block or channel header')
          if (mpi_rank/=myidd .or. mpi_process_count/=nprocss) then
             write (stderr_unit, *) 'mcp files were generated under different', &
                ' processor configuration.'
-            error stop
+            call fail_input_io(0, k, 'MCP setmcp incompatible rank layout')
          endif
 
          if (mcplab /= 'MCP') then
             write (stderr_unit, *) 'Not a sorted GRASP92 MCP File;'
-            ierror = ierror + 1
+            call fail_input_io(0, k, 'MCP setmcp invalid file tag')
          endif
 
          read (k, iostat=ios) electron_count, csf_count, orbital_count
-         ierror = ierror + abs(ios)
+         if (ios /= 0) call fail_input_io(ios, k, 'MCP setmcp basis dimensions')
          read (k, iostat=ios) diag, iccut, lfordr
-         ierror = ierror + abs(ios)
+         if (ios /= 0) call fail_input_io(ios, k, 'MCP setmcp channel flags')
 
-         if (ierror == 0) cycle
-         write (stderr_unit, *) 'setmcp: Error accumulated , stopping...'
-         do i = 30, k
-            close(i)
-         end do
-         error stop
       end do
 
       return

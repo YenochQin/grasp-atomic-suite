@@ -31,6 +31,8 @@
       use iounit_c
       use blk_c,            only: nblock,ncfblk
       use memory_man
+      use, intrinsic :: iso_fortran_env, only: iostat_end
+      use input_io_mpi, only: fail_input_io => fail_input_io_mpi
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -192,11 +194,15 @@
 !blk*
 !   To skip the border line added to mark the end of a block
 !
-      if (record(1:2) == ' *') then
-         nblock = nblock + 1
-         ncfblk(nblock) = csf_count -1
-         read (21, '(A)', iostat=ios) record
+      if (ios == 0) then
+         if (record(1:2) == ' *') then
+            nblock = nblock + 1
+            ncfblk(nblock) = csf_count -1
+            read (21, '(A)', iostat=ios) record
+         endif
       endif
+      if (ios /= 0 .and. ios /= iostat_end) &
+         call fail_input_io(ios, 21, 'CSF lodcslbio occupation record')
 !**********************************************************************
 
       if (ios == 0) then
@@ -213,7 +219,7 @@
          if (ios /= 0) then
             write (stderr_unit, *) 'LODCSL: Expecting subshell quantum', &
                ' number specification;'
-            go to 26
+            call fail_input_io(ios, 21, 'CSF lodcslbio subshell quantum numbers')
          endif
          loc = len_trim(record)
          call parsjl (1, ncore, record, loc, iqsub, nqs, ierr)
@@ -227,7 +233,7 @@
                'and final angular momentum'
             write (stderr_unit, *) 'quantum number and final parity ', &
                'specification;'
-            go to 26
+            call fail_input_io(ios, 21, 'CSF lodcslbio coupling quantum numbers')
          endif
 !
 !   Allocate additional storage if necessary

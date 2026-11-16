@@ -56,7 +56,7 @@
 !-----------------------------------------------
       integer, parameter :: key = orbital_index_radix
       character*6, parameter :: myname = 'SETCOF'
-      real, parameter :: eps = 1.0d-10
+      real(double), parameter :: eps = 1.0d-10
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
