@@ -1,0 +1,43 @@
+# Suite CSF descriptor reader
+
+This directory owns the suite's native Parquet/header reader. CMake builds it
+from these local sources and places `libcsf_descriptor.a` beside the other
+suite libraries in `<build>/lib/`; installation copies it to `<prefix>/lib/`.
+Neither an rCSFs checkout nor a prebuilt rCSFs library is used by this build.
+
+The initial implementation was copied from
+[rCSFs](https://github.com/YenochQin/rCSFs), revision
+`f17a862d77c45164a6d31ae1e9cfeb4efbd04cf6` (2026-11-17):
+
+- `src/descriptor_transport.rs` and `src/descriptor_ffi.rs` retain the source
+  bytes from that revision. `src/descriptor_reader.rs` retains the production
+  implementation; its tests are extracted into `src/tests.rs` and use the
+  current Parquet row-group setter to pass Clippy without deprecated APIs.
+- `include/rcsfs_descriptor.h` retains ABI 1 and its original symbol names for
+  compatibility with `lib9290/csf_rust_ffi.f90`.
+- The manifest and lockfile originate from `native-reader/`; only the local
+  package/library identity, source entry point, and library kinds are changed.
+- The original MIT copyright and permission notice are retained in `LICENSE`.
+
+Future reader fixes belong here and are tested with the suite. Upstream changes
+must be reviewed before being copied; building never synchronizes external
+source. The V2 format remains interoperable with rCSFs producers. The suite
+Fortran adapter continues to own physical state validation and array assembly.
+
+Rust/Cargo 1.99.0 and a C compiler are needed at build time. The lockfile pins
+third-party dependencies; CMake defaults to Cargo `--locked --offline`, so the
+Cargo dependency cache must already be populated. With an empty cache, use
+`-DGRASP_CSF_READER_OFFLINE=OFF` to allow Cargo to download locked dependencies.
+This does not fetch rCSFs. Runtime needs neither Python nor Rust tools.
+
+The Rust format, FFI, and lifecycle tests are registered as
+`csf_descriptor_rust` in CTest. They can also be run independently, from the
+suite root:
+
+```fish
+cargo test --manifest-path src/lib/libcsf_descriptor/Cargo.toml \
+    --target-dir build-reader-tests --release --locked --offline --jobs 4
+```
+
+The default and extended reader contracts are documented in
+[native CSF inputs](../../../docs/implemented/native_csf_descriptors.md).

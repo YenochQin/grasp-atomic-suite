@@ -2,7 +2,8 @@
 
 All retained CSF consumers now use native descriptor Parquet + matching header TOML.
 See [native input and build requirements](docs/implemented/native_csf_descriptors.md).
-Supply an explicit rCSFs source directory or prebuilt reader library; Python is only used for developer tests.
+The reader source is bundled in this repository and builds into `build/lib/libcsf_descriptor.a`;
+no external rCSFs checkout or reader library is needed. Python is only used for developer tests.
 
 [中文](README_ZH.md) | English
 
@@ -74,9 +75,13 @@ The recommended build flow is out-of-source CMake with GNU Fortran 15:
 ```fish
 set -gx FC /usr/bin/gfortran-15
 set -gx OMPI_FC $FC
-./configure.sh -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs
+./configure.sh
 cmake --build build --parallel 4
 ```
+
+The bundled reader requires Rust/Cargo 1.99.0 and a C compiler. Cargo uses locked,
+cached dependencies by default; set `-DGRASP_CSF_READER_OFFLINE=OFF` if dependencies
+must be downloaded. `RCSFS_TEST_CLI` is only an offline test-fixture producer.
 
 The default install prefix is `<build>/install`; use `--prefix PATH` or
 `-DCMAKE_INSTALL_PREFIX=PATH` for another destination. A normal build does not
@@ -91,7 +96,7 @@ To build the four original RMCDHF programs and all property programs together:
 
 ```fish
 cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON \
-  -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs -DRCSFS_TEST_CLI=/path/to/rcsfs
+  -DRCSFS_TEST_CLI=/path/to/rcsfs
 cmake --build build-all --parallel 4
 ctest --test-dir build-all --output-on-failure
 cmake --install build-all
@@ -100,7 +105,7 @@ cmake --install build-all
 Debug build:
 
 ```fish
-./configure.sh --debug -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs
+./configure.sh --debug
 cmake --build build-debug --target install -j4
 ```
 
@@ -109,7 +114,7 @@ To disable MPI and build the serial applications, configure CMake directly:
 ```fish
 mkdir build-serial
 cmake -S . -B build-serial -DGRASP_ENABLE_MPI=OFF -DGRASP_BUILD_SERIAL_APPS=ON \
-  -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs -DRCSFS_TEST_CLI=/path/to/rcsfs
+  -DRCSFS_TEST_CLI=/path/to/rcsfs
 cmake --build build-serial --target install -j4
 ```
 

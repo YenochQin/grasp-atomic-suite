@@ -113,10 +113,11 @@ Usage: ./configure.sh [options] [-DNAME=VALUE ...]
 All ordinary programs, with MPI and jj2lsj OpenMP (fish):
   set -gx FC /usr/bin/gfortran-15
   set -gx OMPI_FC /usr/bin/gfortran-15
-  ./configure.sh -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs$python_option
+  ./configure.sh$python_option
 
-GNU Fortran 15, CMake >= 3.31 and BLAS/LAPACK are required.
-Supply RCSFS_DESCRIPTOR_SOURCE_DIR (Rust/Cargo build) or RCSFS_DESCRIPTOR_LIBRARY.
+GNU Fortran 15, Rust/Cargo 1.99.0, CMake >= 3.31 and BLAS/LAPACK are required.
+The bundled CSF reader builds into lib/libcsf_descriptor.a with the other libraries.
+Cargo uses cached dependencies by default; GRASP_CSF_READER_OFFLINE=OFF permits downloads.
 Python is used for development tests, not production CSF input.
 MPI programs also require a compatible MPI Fortran environment.
 Load the compiler/MPI environment before configuring.

@@ -23,7 +23,7 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
-| [native_csf_descriptors.md](implemented/native_csf_descriptors.md) | 现行生产 CSF 输入；所有保留消费者直接读取 Rust 原生 Parquet/header；构建、MPI、双基组、低内存及错误传播契约。 |
+| [native_csf_descriptors.md](implemented/native_csf_descriptors.md) | 现行生产 CSF 输入；reader 已内置于 suite 并构建到 lib/，无需外部 rCSFs reader；所有保留消费者直接读取 Parquet/header，含 MPI、双基组、低内存及错误传播契约。 |
 | [rangular_angular_reuse.md](implemented/rangular_angular_reuse.md) | 已实施，串行专项回归通过；默认关闭的有界 CSF 对缓存；保留顺序、占据/耦合及轨道共享关系，复用原始 T/V 系数，普通 MCP 写出不变；包含命中率、缓存容量与 RSS 测量，MPI 未接入；rangular OpenMP 已移除。 |
 | [rwfnestimate_header_input.md](implemented/rwfnestimate_header_input.md) | header 输入说明；保留 header 轨道表、电子数和初猜检查背景；当前仅 header 输入，无旧文本回退。 |
 | [rejected_rmcdhf_variants.md](implemented/rejected_rmcdhf_variants.md) | 已移除被否决变体；删除 strict/diag 两个独立求解器、专用测试、构建/安装入口及当前二进制；普通四种 RMCDHF 和共享库保持原流程。 |

@@ -1,7 +1,8 @@
 # Rust 原生 CSF 描述符输入
 
-2026-11-17。实现基于 suite `5806884`、rCSFs `fea061f`；未覆盖安装目录。
-rCSFs reader 实现提交为 `f17a862d77c45164a6d31ae1e9cfeb4efbd04cf6`，源码构建应使用包含该实现的版本。
+2026-11-17。原迁移基于 suite `5806884`、rCSFs `fea061f`。
+本地库构建调整基于 suite `80f6e76`：reader 源码复制自 rCSFs
+`f17a862d77c45164a6d31ae1e9cfeb4efbd04cf6`，现由 suite 自己保存、编译和维护。
 生产迁移已提交为 `8cf6b1d`，rdensity 输入补全为 `80f6e76`；已完成的迁移计划由 Git 历史保存。
 
 ## 生产输入契约
@@ -34,9 +35,9 @@ Parquet 为逻辑 Int8 使用物理 INT32 编码是合法的。纯闭核有明�
 
 | 层 | 归属/实现 |
 | --- | --- |
-| V2 格式 | rCSFs 的 `descriptor_transport.rs`；原 `descriptor_schema` 重导出相同接口，生产者和 reader 共用源码 |
-| Rust I/O | rCSFs `descriptor_reader.rs`：同一 header 字节快照的哈希和 TOML 解析、footer/schema/空值检查、有界批次读取、电子数/宇称/块表预扫描 |
-| C ABI 1 | rCSFs `descriptor_ffi.rs`、`include/rcsfs_descriptor.h`：独立句柄、明确容量的调用方缓冲、状态码及 UTF-8 错误信息 |
+| V2 格式 | suite `src/lib/libcsf_descriptor/src/descriptor_transport.rs`；复制的 V2 契约与 rCSFs 生产者兼容 |
+| Rust I/O | 同目录 `descriptor_reader.rs`：同一 header 字节快照的哈希和 TOML 解析、footer/schema/空值检查、有界批次读取、电子数/宇称/块表预扫描 |
+| C ABI 1 | 同目录 `descriptor_ffi.rs`、库内 `include/rcsfs_descriptor.h`：独立句柄、明确容量的调用方缓冲、状态码及 UTF-8 错误信息；保留原符号名 |
 | Fortran 适配 | [csf_rust_ffi.f90](../../src/lib/lib9290/csf_rust_ffi.f90)、[csf_descriptor_input.f90](../../src/lib/lib9290/csf_descriptor_input.f90)：`ISO_C_BINDING`、物理态/J/K 校验与补全、三数组或仅占据数组 |
 | 应用状态 | `csf_basis_input`、`csf_block_input`、`rmcdhf_descriptor_input`；区分性质程序、RCI、MCP 已安装状态的生命周期 |
 | 双基组 | [csf_basis_merge.f90](../../src/lib/lib9290/csf_basis_merge.f90)：保持两个轨道序列的稳定合并，直接映射数组；顺序冲突明确拒绝，不写/重读 `SLASK` |
@@ -61,9 +62,13 @@ Rust panic 不跨 C/Fortran 边界；正常格式/I/O 错误返回状态。abort
 
 ## 构建和运行
 
-推荐使用 rCSFs 的 `native-reader` 小型 crate。它直接引用三份共享格式/reader/FFI 源码，
-没有 Python、CLI 或 CSF 生成器依赖。构建需要完整的 rCSFs Git 源码目录，不能只复制 `native-reader/`。
-主 crate 归档不包含嵌套构建目录；预编译库模式也可采用主 crate 的无 Python `descriptor-ffi` 构建。
+reader 的完整构建源码位于 [src/lib/libcsf_descriptor](../../src/lib/libcsf_descriptor/README.md)，
+包含三份 Rust 实现、C 头文件、Cargo manifest/lockfile、测试及原 MIT 许可。
+CMake 将它与其他共享库一起构建，最终链接的归档为 `<build>/lib/libcsf_descriptor.a`，
+安装后位于 `<prefix>/lib/libcsf_descriptor.a`。Cargo 中间产物保存在构建目录内。
+构建不读取相邻 rCSFs checkout，不接收外部 reader 静态库，也不自动同步上游源码。
+原有 ABI 符号名 `rcsfs_descriptor_*` 保留，使 Fortran 适配无需变动。
+该库没有 Python、CLI 或 CSF 生成器依赖。
 当前验证工具链为 GNU Fortran 15.3.0、Rust/Cargo 1.99.0，锁文件选择 Arrow/Parquet 59.3.2。
 压缩支持包括 ZSTD、Snappy、GZIP、Brotli、LZ4；ZSTD 后端构建使用 C 编译器。
 
@@ -73,24 +78,26 @@ Rust panic 不跨 C/Fortran 边界；正常格式/I/O 错误返回状态。abort
 set -gx FC /usr/bin/gfortran-15
 set -gx OMPI_FC /usr/bin/gfortran-15
 set -gx CARGO_BUILD_JOBS 4
-./configure.sh --debug --profile f2018-check --build-dir build-native \
-    -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs
+./configure.sh --debug --profile f2018-check --build-dir build-native
 cmake --build build-native --parallel 4
 ```
 
-源码来源必须显式指定，不自动探测兄弟仓库或隐式下载源码。CMake 默认用 Cargo `--locked --offline`；
-依赖缓存须提前准备。源码构建核对 `RCSFS_RUST_VERSION`，默认 1.99.0；切换工具链应明确指定并重新验证。
-也可先独立构建 reader，然后用 `-DRCSFS_DESCRIPTOR_LIBRARY=/path/to/librcsfs_descriptor.a` 链接。
-这个模式不需要在 suite 构建机器上安装 Rust。生产二进制静态包含 reader，运行时不需要 Python、
+CMake 默认用 Cargo `--locked --offline`；依赖缓存须提前准备。
+缺少缓存时可用 `-DGRASP_CSF_READER_OFFLINE=OFF` 允许 Cargo 下载锁定的第三方依赖。
+构建核对 `GRASP_RUST_VERSION`，默认 1.99.0；切换工具链应明确指定并重新验证。
+旧的 `RCSFS_DESCRIPTOR_SOURCE_DIR` / `RCSFS_DESCRIPTOR_LIBRARY` 非空配置会被明确拒绝，
+迁移现有缓存时移除这两项，或选择新构建目录。
+生产二进制静态包含 reader，运行时不需要 Python、
 Rust 工具链或 Arrow C++；仍使用原有 Fortran、MPI、BLAS 和系统运行库。
 当前构建/部署验证范围为本机 Linux，未声称跨平台分发验收。
 
 ```fish
-cargo build --manifest-path /path/to/rCSFs/native-reader/Cargo.toml --release --locked --offline
+cmake --build build-native --target csf_descriptor_build --parallel 4
+ctest --test-dir build-native -R '^csf_descriptor_rust$' --output-on-failure
 ```
 
 开发测试使用 Python；需要原始 CSF 的测试在测试准备阶段调用独立原生 CLI，计算程序不调用它。
-配置测试时指定当前源码构建的 `rcsfs`：
+配置这些夹具测试时指定可用的原生 `rcsfs`；该选项不影响库的来源或链接：
 
 ```fish
 cmake -S . -B build-native -DRCSFS_TEST_CLI=/path/to/rcsfs
@@ -124,3 +131,17 @@ RMCDHF 的实际 SETMCP/加载链路与标准权重，MPI 1/2/4 ranks、单列�
 
 完整回归结果、基线修正、源码身份和验证边界见
 [本次迁移验收记录](../reviews/native_csf_descriptor_validation_2026-11-17.md)。
+
+### 内置 reader 构建验证（2026-11-17）
+
+基于 suite `80f6e76` 的建库调整已完成以下检查：
+
+- GNU Fortran 15 Check，串行 + MPI + JJ2LSJ OpenMP：全量编译成功，108/108 CTest 通过。
+  新增的 `csf_descriptor_rust` 包含 4 项 Rust 格式、FFI 和生命周期测试。
+- Rust fmt、Clippy 全 targets（`-D warnings`）通过；矩阵驱动 8 项测试及 Python Ruff 通过。
+- 仅复制 `libcsf_descriptor/` 到隔离源码目录，在没有 rCSFs 源码/库的配置中离线构建成功。
+- 新 archive 与普通库同在构建 `lib/`，链接命令使用该文件；独立安装前缀下的 `lib/`、
+  C 头文件和 MIT 许可均已验证，重复构建不会无故重编译。
+- 旧外部 reader 库选项明确拒绝；构建不再依赖外部 reader 路径。
+
+本次未执行完整 24 配置矩阵，也未更新或宣称通过全局历史 Fortran 告警预算。

@@ -76,8 +76,7 @@ add_library(9290 STATIC
     stoptime.f90
 )
 setup_fortran_modules(9290)
-include(${PROJECT_SOURCE_DIR}/cmake/RustDescriptors.cmake)
-target_link_libraries(9290 PUBLIC rcsfs_descriptor_native)
+target_link_libraries(9290 PUBLIC csf_descriptor)
 target_link_libraries_Fortran(9290 PRIVATE mod)
 target_link_libraries(9290 PRIVATE ${BLAS_LIBRARIES} ${BLAS_LINKER_FLAGS})
 target_link_libraries(9290 PRIVATE ${LAPACK_LIBRARIES} ${LAPACK_LINKER_FLAGS})

@@ -2,7 +2,8 @@
 
 全部保留的 CSF 消费程序现已使用原生描述符 Parquet + 配套 header TOML。
 输入约定、Rust 依赖与测试方式见[原生输入说明](docs/implemented/native_csf_descriptors.md)。
-构建须显式指定 rCSFs 源码或预编译 reader 库，计算运行不依赖 Python 转换。
+reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descriptor.a`，
+无需外部 rCSFs 源码或预编译 reader 库，计算运行不依赖 Python 转换。
 
 中文 | [English](README.md)
 
@@ -65,12 +66,16 @@
 
 推荐使用 out-of-source CMake 流程（GNU Fortran 15）：
 
-```sh
-export FC="$(command -v gfortran-15)"
-export OMPI_FC="$FC"
-./configure.sh -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs
+```fish
+set -gx FC /usr/bin/gfortran-15
+set -gx OMPI_FC $FC
+./configure.sh
 cmake --build build --parallel 4
 ```
+
+内置 reader 需要 Rust/Cargo 1.99.0 和 C 编译器。Cargo 默认使用锁定的缓存依赖；
+首次构建缺少依赖缓存时，可用 `-DGRASP_CSF_READER_OFFLINE=OFF` 下载依赖。
+`RCSFS_TEST_CLI` 只用于开发测试离线生成夹具，不参与 reader 构建和生产读取。
 
 默认安装前缀为 `<build>/install`；可用 `--prefix PATH` 或 `-DCMAKE_INSTALL_PREFIX=PATH` 指定独立位置。
 普通构建不安装，也不覆盖源码 `bin/`。严格验收入口见 [F2018 测试说明](test/f2018/README.md)。
@@ -79,9 +84,9 @@ cmake --build build --parallel 4
 
 同时构建四个原版 RMCDHF 和性质计算程序：
 
-```sh
+```fish
 cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON \
-  -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs -DRCSFS_TEST_CLI=/path/to/rcsfs
+  -DRCSFS_TEST_CLI=/path/to/rcsfs
 cmake --build build-all --parallel 4
 ctest --test-dir build-all --output-on-failure
 cmake --install build-all
@@ -89,23 +94,25 @@ cmake --install build-all
 
 调试构建：
 
-```sh
-./configure.sh --debug -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs
+```fish
+./configure.sh --debug
 cmake --build build-debug --target install -j4
 ```
 
 禁用 MPI 且构建串行应用时，直接使用 CMake：
 
-```sh
+```fish
 mkdir build-serial
 cmake -S . -B build-serial -DGRASP_ENABLE_MPI=OFF -DGRASP_BUILD_SERIAL_APPS=ON \
-  -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs -DRCSFS_TEST_CLI=/path/to/rcsfs
+  -DRCSFS_TEST_CLI=/path/to/rcsfs
 cmake --build build-serial --target install -j4
 ```
 
-重新配置前需要删除已有构建目录，或运行清理脚本：
+相同源码和编译器可以更新现有配置。迁移前配置了外部 reader 的缓存需要删除
+`RCSFS_DESCRIPTOR_SOURCE_DIR`、`RCSFS_DESCRIPTOR_LIBRARY`，或改用新构建目录。
+需要清理构建产物时运行：
 
-```sh
+```fish
 ./scripts/clean-build-artifacts.sh
 ```
 
@@ -141,7 +148,7 @@ CMake 会自动查找 BLAS/LAPACK，工具链要求 GNU Fortran 15。
 
 `gj_mpi` 支持命令行方式：
 
-```sh
+```fish
 mpiexec -n 2 ./bin/gj_mpi test --nonci
 mpiexec -n 2 ./bin/gj_mpi test --ci
 ```
@@ -162,7 +169,7 @@ data/test.gj
 
 这些文件可用于核对 `gj` 的 `g_J` 输出。CTest 已接入公共库积分、MPI 稀疏缓冲区、轨道事务/轮次逻辑和网格修改脚本测试：
 
-```sh
+```fish
 ctest --test-dir build-all --output-on-failure
 ```
 
