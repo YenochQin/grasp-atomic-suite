@@ -106,4 +106,4 @@ MPI 包装器和库必须核实，不能只由 `gfortran-15` 的名称推断整�
 GNU 15.3.0 完成全量构建和独立 serial-only 构建；35 项补丁器测试与非默认容量测试通过。
 CTest 合并结果为 28/39 通过，11 项 NP/strict 重启失败已在未修改基线和原版准备工具上复现。
 全量并行构建另触发既有 gj90 模块输出冲突，改用单任务构建完成。
-详细范围、失败信息及对照方法见[验证记录](../reviews/standard_grasp_integration_validation_2026-11-08.md)。
+该批接入报告由 Git 历史保存；后续接口与构建约束见[兼容性说明](f2018_compatibility.md)。

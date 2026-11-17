@@ -212,7 +212,6 @@ MPI 启动失败和超时不会被当作预期错误测试通过。
 本轮筛选测试日志保存在各新构建目录的 `npol-code-ctest.log` 和 `related-code-ctest.log`。
 此前 `build-npol-serial` / `build-npol-mpi` 中的旧产物不作为本轮验证或运行入口。
 
-详细测试结构见 [test/npol/README.md](../../test/npol/README.md)，设计依据见
-[原实施计划](../plans/rmcdhf_nuclear_polarization_implementation.md)。
+详细测试结构见 [test/npol/README.md](../../test/npol/README.md)；已完成的代码实施计划由 Git 历史保存。
 这些结果支持软件契约与接入正确性，不支持物理精度结论。下一阶段需要另行设计并授权
 目标核素参数、SCF/轨道响应、目标可观测量与收敛验证。

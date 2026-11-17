@@ -1,115 +1,94 @@
-# F2018 标准兼容性首轮修复
+# F2018 兼容性与共享接口
 
-2026-11-11：已否决的 strict/diag 独立求解器及其专用验收已[移除](rejected_rmcdhf_variants.md)。
-下文涉及这些变体的修改、轮数和测试总数仅为历史记录，不属于当前支持范围。
+更新：2026-11-17，文档整理核对基准 `80f6e76`。本页汇总已实施约束；
+逐批审查、编译探查和修改报告由 Git 历史保存。当前构建以
+[构建策略](build_profiles.md)及 [Rust 原生输入构建说明](native_csf_descriptors.md)为准。
+未完成的数值、状态与平台验收见 [F2018 后续计划](../plans/f2018_migration_gfortran15_2026-11-08.md)。
 
-2026-11-10 构建范围已收敛为普通 GRASP，CSFG 隔离；旧兼容 flags 已移除。
-当前命令和 profile 以[构建策略](build_profiles.md)为准，以下数值记录保留原验证范围。
+## 标准、存储与平台接口
 
-2026-11-09 更新：严格内部接口/NP、MPI Davidson 早收敛、普通 RANGULAR_MPI 空 rank
-及四个 memory SETHAM 的 IOS 修复后，完成 strict 时序修复、32 配置矩阵及警告基线；
-最新为[优先警告修复第一批](../reviews/f2018_warning_repairs_2026-11-09.md)。
-默认 `f2018-audit` 保留静态存储；`f2018-check/release` 不保留，两者全量构建通过，
-Linux 32/32 配置、累计 1,960 次 CTest 全通过；全开各 93/93。
-3,046 文件基线及防新增检查通过；正确性复核 515→475，报告的 INTENT 不一致 9→0，完整 P0–P9 未完成。
-strict 比较改为归一化后、阻尼前，原公式/阈值保持；1/2-rank 重启均 11 轮收敛。
-同 O0/O2 的普通及 memory 一轮对照证据和此前 71/73 见
-[Linux 历史报告](../reviews/f2018_linux_davidson_restart_2026-11-09.md)。此前 macOS 64/68 见
-[上一轮报告](../reviews/f2018_strict_interfaces_npol_2026-11-09.md)。下面首轮结果属于 2026-11-08 的 Linux 基线。
+- GNU Fortran 15 是仓库工具链。默认生产配置为 `f2018-release`；
+  `f2018-check` 和 `f2018-audit` 分别用于运行时及优化后诊断。
+  所有配置已移除 legacy、隐式 SAVE 和参数不匹配放行选项。
+- 声明使用 `iso_fortran_env` 的标准 kind，保留旧精度/容量别名的兼容接口。
+  默认整数未全局扩宽；先以默认整数相乘再转换为 int64 仍可能溢出，大计数需单独核查。
+- [suite_system](../../src/lib/lib9290/suite_system.f90) 使用 C 互操作连接 POSIX 服务，
+  保留目录操作、访问检查及退出状态契约；这是已验证平台范围内的实现，不代表所有系统兼容。
+- [suite_storage](../../src/lib/libmod/storage_bytes.f90) 通过 assumed-rank、
+  `STORAGE_SIZE` 和 `SIZE` 计算有效对象的 payload 字节数。
+- CSFG、orbopt、strict/diag 变体已退役；历史修复或验收记录不授权恢复这些目标。
+  现行范围见[退役说明](rejected_rmcdhf_variants.md)。
 
-日期：2026-11-08。修改前基线：`d1260ba404833d20d709b34d9f26b05c32a3b615`。
-状态：当前 CMake 配置的全量目标已通过 GNU 15.3.0 的 F2018 编译和链接。
-当前仅保留 `-fno-automatic`；后续接口批次已移除 `-fallow-argument-mismatch`，见
-[接口验证记录](../reviews/argument_interfaces_2026-11-08.md)。本文其余批次表保留首轮实现记录。
-数值与已知失败范围见[验证记录](../reviews/f2018_gfortran15_batches_2026-11-08.md)。
+## 共享库过程与导入约束
 
-## 批次与保持的行为
+`3e02e0f` 将共享库原 188 份独立接口中的 200 个具体过程迁入实现模块：
+`9290` 74 个、`dvd90` 11 个、`mcp90` 2 个、`rang90` 89 个、`mpiu90` 24 个。
 
-| 批次 | 实施内容 | 保持范围 |
-| --- | --- | --- |
-| A，共享库与测试基础 | 普通/CSFG `nmtejj` 算术 IF 改为等值分支；CSFG `MIN(SIZE(...),n)` 统一 kind；重启计数及 QUAD 测试改为标准精度声明 | 表内容、匹配顺序、分配/复制顺序、64 位记录宽度与原测试容差 |
-| B，平台服务 | 用标准 `iso_c_binding` 连接现有 POSIX 服务；保留 `sys_*` 入口，显式导入 SYSTEM/ACCESS/EXIT 的实现 | shell 返回状态、当前进程 cwd、成功/失败分支；新增对 mkdir 路径的正确引用 |
-| C，计算程序标准语法 | 44 处 INT8 转为标准 INT；旧 kind 声明、维度声明顺序、已删除 DO、FORMAT、命令行 intrinsic 与内存统计转换 | 原计算次序、表达式、输入/记录格式和 solver 差异；不改变 SCF/RCI 算法 |
-| D，验证与来源保护 | 新增五个单元/回归检查、固定一轮 SCF 对照脚本，以及可逆的来源适配清单 | 原始源码哈希和既有数值门槛不放宽 |
+- 实现默认 private，显式公开原 `*_i` 模块 API；已删除的共享库 `*_I.f90` 不再维护副本。
+  形参名保留关键字调用兼容性。原接口中 `itjj::kg1`、`cpath` 路径参数的 INTENT
+  已按实际写入行为改为 OUT。
+- [count](../../src/lib/lib9290/count.f90) 和 [pack](../../src/lib/lib9290/pack.f90)
+  以 `count_impl`/`pack_impl` 实现，再重导出原公开名，避开 GNU 15 的 intrinsic 同名过程指针问题。
+- [mpi_runtime_i](../../src/lib/mpi90/mpi_runtime.f90) 提供无套件状态依赖的
+  `startmpi`、`mpix_bytes`、`stopmpi`；`mpiu_i` 保留重导出，避免模块依赖环。
+- `gdvd_i::dvd_operator` 和 `rkco_gg` 的回调接口仍是契约的一部分；
+  测试替身使用相同模块 API，不能通过另一个外部符号替换模块过程。
+- 这次模块化改变 Fortran 链接符号。依赖旧静态库的外部项目需要重新编译和链接，
+  不能将保留源码 API 理解为保留旧二进制 ABI。
 
-首轮语法批次未修改 `suite_parameters` 容量、网格初始化时序、EOL 权重、阻尼、停止规则、
-NP 模型与物理常数。后续接口批次单独修正了 DDOT 返回类型、MPI handle 和数组实参；
-本轮 strict SCNSTY 的归一化时序属于独立 F 类语义修复，保留原数值阈值。
-大计数与其余内部接口问题仍需后续验收，不将这些问题混同于首轮语法等价变更。
+`0cb432b`、`5806884` 已完成分批显式导入。
+[mpi_c](../../src/lib/mpi90/mpi_C.f90) 的模块级 `use mpi` 保留为已复核例外：
+它公开转发所用 MPI 实现的符号，不能为清零 C121 而随意收窄接口。
+后续调整 ONLY 列表仍须检查重命名、重导出、泛型、回调和条件编译分支。
 
-## 平台服务接口
+## 已实施的输入、数值及接口修复
 
-新模块 [suite_system](../../src/lib/lib9290/suite_system.f90) 归现有 `9290` 库所有，
-现有 [sys_chdir](../../src/lib/mpi90/sys_chdir.f90)、[sys_getwd](../../src/lib/mpi90/sys_getwd.f90)、
-[sys_mkdir](../../src/lib/mpi90/sys_mkdir.f90) 继续提供原调用接口。
-这里使用的是标准 Fortran C 互操作加 POSIX 运行时，验证平台为 Linux；不宣称所有操作系统可直接使用。
+- `80992a9` 修复 GETALDWT 的读取长度、RCI 积分统计、Davidson 接口/状态和 INTERP 边界。
+  GETALDWT 使用接口规定的 NCF 读取权重，不能把未定义的旧 NCMIN 随意置零来消除诊断。
+  DGEMVMPI 的非单位步长分支在入口已被拒绝；删除它属于不可达代码清理，
+  不代表修复了有效输入上的数值错误或新增通用步长支持。
+- `9d6ee31` 增加 MCP 读取状态即时检查、MPI 故障终止及 CPATH 分配保护。
+- `bea6655` 的 S1/S2 使 RIS4 缺失/不完整缓存安全降级，读取失败按串行/MPI 协议报告；
+  JJ2LSJ 唯一标签读取拒绝损坏记录，保留正常输出和选择算法。
+- 同批 S3/S4 将限定的 20 个非精确实常量改为 real64，修正两份 BNDINV 接口边界，
+  为 JJ2LSJ 指针成员设默认空关联，并报告 MPI worker 输出重定向失败。
+  `SLAMCH` 的单精度返回 ABI 保留，不能批量提升所有常量或接口。
+- `8cf6b1d`、`80f6e76` 已替换生产 CSF 文本读取入口；
+  当前文件、错误传播及低内存契约见[原生描述符说明](native_csf_descriptors.md)。
 
-- `run_shell` 保留 GNU SYSTEM 的原始 wait status，例如 shell `exit 7` 返回 1792。
-  部分 CSFG 调用方通过 `USE suite_system, ONLY: SYSTEM => run_shell` 使用它；出现 SYSTEM 名称
-  不再意味着隐式使用 GNU intrinsic。
-- `change_directory` 改变当前进程目录；`working_directory` 获取并检查调用方缓冲区。
-  现有调用契约仍为 0 成功、非零失败，不承诺不同运行时的具体 errno 数值相同。
-- `path_access` 保留 POSIX 的存在性及 r/w/x 检查；调用方通过显式模块接口获得结果。
-- `make_directory` 继续执行 `mkdir -p -m 775`，将路径作为单个经过引用的参数，支持空格、
-  单引号和 shell 元字符。它不通过子进程 `cd` 模拟当前进程目录切换。
-- `terminate_process` 保留原退出状态；省略参数为 0。测试覆盖非零退出与缓冲输出落盘。
+“未初始化”诊断需要结合赋值路径、有效输入和可达性判断；
+诊断条数不等于变量数或已复现缺陷数，不能以统一补零或屏蔽告警代替修复。
 
-## 标准 kind 与存储大小
+## 验证入口与边界
 
-计数转换采用现有 `vast_kind_param:LONG`，双精度采用 `DOUBLE`；明确四字节的索引声明
-采用 `iso_fortran_env:INT32`。本机原有 32/64 位数据宽度保持，未使用全局整数扩宽选项。
-将默认整数乘积最后转换为 LONG 并不能防止先前溢出；大计数边界仍需后续独立审计。
+[test/f2018/README.md](../../test/f2018/README.md) 说明强制清单、矩阵、
+警告采集和数值回归。配置好独立构建目录后，按改动范围选择已有测试：
 
-新模块 [suite_storage](../../src/lib/libmod/storage_bytes.f90) 使用 F2018 assumed-rank、
-`STORAGE_SIZE` 和 `SIZE`，以 LONG 返回八位字节的 payload 大小。其调用对象须为有效的
-已分配/已关联 intrinsic 标量或数组。CSFG 的 `report_mem` 继续只作内存诊断，原来注释掉的
-调用点保持关闭；本次未启用该调试流程，也未修改其累计统计策略。
+```fish
+ctest --test-dir build --output-on-failure
+../graspkit-tools/.venv/bin/python scripts/check_explicit_contexts.py build \
+    --output build/explicit-contexts.json
+```
+
+2026-11-17 文档整理未运行新的构建、静态工具扫描或科学计算。
+此前模块化的串行/MPI/OpenMP 回归、S1–S4 的 Release/Check 回归及显式导入验证
+只证明各自提交和夹具范围；当前原生输入的验收见[独立记录](../reviews/native_csf_descriptor_validation_2026-11-17.md)。
+
+S3 数值对照中，普通 RMCDHF 小夹具两边均执行 6 轮，科学输出一致；
+Ni/Zn 初始轨道有浮点末位变化，不能据此宣称所有输出逐字节不变或物理精度提高。
+当时 memory 完整 SCF 对照因 macOS 缺少 `/proc/meminfo` 未进入迭代，
+该对照需在支持环境补做；也未新增完整 RIS4 物理结果或 MPI SCF 收敛对照。
+原实验输入、输出和日志在当时忽略目录 `build-static-numeric-20261117/`，
+其中 `numerical-comparison.json` 汇总结果；这些本地产物不是仓库可移植依赖。
+
+历史告警预算覆盖缺口仍单列，不能以 CTest 通过代替告警门禁或物理验收。
+后续事项见[静态诊断清单](../plans/static_diagnostics_remaining_2026-11-17.md)。
+[警告基线](../reference/f2018/gfortran15-warning-baseline.md)登记风险，不将已有诊断视为安全豁免。
 
 ## 来源校验
 
-原 [RMCDHF 来源清单](../reference/rmcdhf_upstream_snapshot.json) 保持不变。
-[兼容性变更清单](../reference/rmcdhf_f2018_compatibility.json) 记录受保护文件中的
-精确替换、次数和基线哈希；已扩展至 BLAS 声明、数组区段、MPI handle、内部接口和
-SOLVE 参数意图、memory SETHAM 无效 IOS 判断移除，以及 GETALDWT 的输入长度修复，
-逆向恢复后仍核对全部 492 个原始文件。
-[check_upstream.py](../../test/npol/check_upstream.py) 先按行首精确匹配逆向恢复这些修改，
-再剥离原有 NP hook，最后仍核对原始 hash。没有通过删除来源测试或覆盖历史 hash 放行。
-
-负向检查已确认：额外修改阻尼表达式会改变原始 hash；撤回已登记的标准转换会使
-适配清单匹配失败。后续变更必须另行记录其审核依据。
-
-## 构建与验证入口
-
-```sh
-export FC=/usr/bin/gfortran-15
-export OMPI_FC=/usr/bin/gfortran-15
-cmake -S . -B build-gf15-f2018-batch \
-  -DCMAKE_Fortran_COMPILER=/usr/bin/gfortran-15 \
-  -DMPI_Fortran_COMPILER=/usr/bin/mpifort \
-  -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON \
-  -DGRASP_BUILD_CSFG=ON -DGRASP_JJ2LSJ_OPENMP=ON \
-  -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DPython3_EXECUTABLE=../graspkit-tools/.venv/bin/python
-cmake --build build-gf15-f2018-batch --parallel 1
-ctest --test-dir build-gf15-f2018-batch --output-on-failure
-```
-
-2026-11-09 已隔离全部目标的模块输出目录，GNU 15.3 下全量 `--parallel 4` 构建通过；
-上面的单任务命令保留为首轮复现入口。默认安装位置现为 `<build>/install`，支持显式前缀。
-MPI 测试需允许本机进程通信。CMake 中独立编译的容量测试也启用 F2018，网格测试的
-Fortran 编译器由配置中的 `CMAKE_Fortran_COMPILER` 传入。
-
-固定一轮 SCF 的旧新对照入口见 [test/f2018/README.md](../../test/f2018/README.md)。
-参考二进制必须来自独立保存的基线，同编译器和数学库配置；不要用当前源码重新构建后
-覆盖旧基线。完整迁移阶段及后续验收仍以 [plan](../plans/f2018_migration_gfortran15_2026-11-08.md) 为准。
-
-严格构建现在默认使用逐编译单元的 GNU JSON 诊断采集；已有无采集记录的构建需
-新目录或 clean rebuild。`check.py` 核对源码/object/命令、编译器版本和配置独立的
-固定诊断预算，新增/增量/缺记录均失败；不能以其他警告减少抵消。
-见[逐文件索引](../reference/f2018/gfortran15-warning-baseline.md)。基线通过表示无超额，
-`correctness_warnings_clear=false` 保留风险未清零状态，不将已登记警告视为安全豁免。
-
-本批修复包括权重读取长度、预计算 Rk 积分统计、Davidson 接口与部分状态保留、
-CSFG DACON 自有调试开关、INTERP 首点/短表/零值边界，以及被入口拒绝的 DGEMVMPI
-非单位步长死代码。普通/memory 一轮对照和 INTERP 正常分支 71 点旧新输出保持一致。
-边界缺陷用独立 oracle 验证；单点外推明确提示无法估计精度，不扩大 ACCY。
+[原始 RMCDHF 清单](../reference/rmcdhf_upstream_snapshot.json)及
+[兼容性清单](../reference/rmcdhf_f2018_compatibility.json)和后续快照链继续由
+[check_upstream.py](../../test/npol/check_upstream.py)使用。
+删除说明性报告不删除这些机器可读来源记录，也不放宽精确范围或哈希检查。
+新增源码修改须按现行校验链登记，不能覆盖旧 manifest。

@@ -1,8 +1,10 @@
 # S1–S4 后 fortls / Fortitude 全量复查
 
 日期：2026-11-17。基准 HEAD：`3e02e0f407d085504d9b2fb8445d50e8d013b37c`；
-检测对象包含尚未提交的 [S1/S2](static_input_fixes_2026-11-17.md) 和
-[S3/S4](static_numeric_interfaces_2026-11-17.md) 源码与测试。
+检测对象包含当时尚未提交的 S1–S4 源码与测试，后续纳入 `bea6655`。
+
+> 本文保留工具解析/编译器对照证据。后续修复及 CSF 输入迁移已实施，
+> 当前待办见[剩余事项](../plans/static_diagnostics_remaining_2026-11-17.md)，下文结论仅对应扫描基准。
 
 结论：本次未发现这些修改新增的已确认功能缺陷，但仍有属于描述符迁移任务的 CSF 输入风险，
 以及大量风格、接口规范和工具解析覆盖问题。本次只检测与记录，没有修改生产源码、自动修复、提交或推送。
@@ -106,6 +108,6 @@ NP 的 INQUIRE 输出引用等仍可作为独立防御性改善；本次没有�
 - `compiler-controls.json`、`cache-*-preprocessed.f90`、`cache-*-lint.json`：编译器和预处理对照；
 - `scan_fortitude.py`、`scan_fortls.py`、`fortls_controls.py`、`compiler_controls.py`：本次执行脚本。
 
-下一步仍是按[描述符迁移计划](../plans/csf_descriptor_migration_2026-11-16.md)处理五处 CSF 输入风险。
+当时建议通过描述符迁移处理五处 CSF 输入风险；该迁移现已完成，见[原生输入说明](../implemented/native_csf_descriptors.md)。
 风格、显式接口规范、无可达缺陷证据的可维护性建议另行分批；不以全库自动修复换取零诊断。
-本轮未重新运行 SCF 或全量 CTest；已有软件/数值验证结果见 S1–S4 报告，工具扫描不能替代这些验证。
+本轮未重新运行 SCF 或全量 CTest；已有软件/数值验证边界见[兼容性汇总](../implemented/f2018_compatibility.md)，工具扫描不能替代这些验证。

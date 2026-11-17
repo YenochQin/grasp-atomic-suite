@@ -84,7 +84,7 @@ The first prioritized warning-repair batch additionally registers:
 
 The existing Davidson tests also check preservation of earlier projected columns
 and another root's convergence flag. A removed unreachable branch is distinguished
-from a demonstrated numerical bug in the [repair report](../../docs/reviews/f2018_warning_repairs_2026-11-09.md).
+from a demonstrated numerical bug in the [compatibility guide](../../docs/implemented/f2018_compatibility.md).
 
 ## Acceptance profiles and mandatory runner (2026-11-09)
 
@@ -123,7 +123,7 @@ reports warning collection as not performed rather than declaring warnings clear
 new/increased warnings, missing tests, failures, and skips fail the run. `--inventory-only`
 does not run a build or tests and reports that limited status. Logs, source,
 compiler and object identities are retained under the build directory;
-see [the current validation report](../../docs/reviews/f2018_warning_repairs_2026-11-09.md).
+see [compatibility and validation limits](../../docs/implemented/f2018_compatibility.md).
 The required list covers current programs/tests, not the still-missing F00–F10
 suite. Labels are `f2018_unit`, `f2018_serial`, `f2018_mpi`,
 `f2018_properties`, and `f2018_io`; no real-case test is registered yet.

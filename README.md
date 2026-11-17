@@ -127,21 +127,15 @@ artifacts explicitly, run:
 
 The build requires a Fortran compiler, CMake 3.31 or newer, BLAS, and LAPACK. MPI targets additionally require an MPI Fortran environment such as `mpifort`.
 
-CMake finds BLAS/LAPACK. The default `f2018-audit` profile uses:
-
-- `-std=f2018`
-- `-fno-automatic`
-
-The current configuration builds and links with gfortran 15.3.0 in F2018 mode; see
-[compatibility repairs and validation](docs/implemented/f2018_compatibility.md).
-`-fallow-argument-mismatch` has been removed after MPI/numerical-library interface
-and array-argument repairs; see the [interface validation](docs/reviews/argument_interfaces_2026-11-08.md).
-Static storage remains in audit/legacy profiles. The 36/47 result is the historical
-2026-11-08 Linux run. On 2026-11-09 macOS, strict Check/Release builds pass;
-each has 64 passing tests and 4 Linux-only skips out of 68. Full acceptance
-therefore still fails. Matched O0/O2 RMCDHF first-sweep comparisons pass; an
-additional MPI Davidson early-convergence probe remains unresolved.
-See the [current validation](docs/reviews/f2018_strict_interfaces_npol_2026-11-09.md).
+CMake finds BLAS/LAPACK. GNU Fortran 15 is required. The default
+`f2018-release` profile uses O2; `f2018-check` and `f2018-audit` provide
+standard, interface and runtime or optimized diagnostics. Legacy profiles,
+implicit-SAVE flags and argument-mismatch allowances have been removed.
+See the [build policy](docs/implemented/build_profiles.md) and
+[implemented compatibility and interface contracts](docs/implemented/f2018_compatibility.md).
+Current native input requirements and validation limits are documented in
+[the descriptor guide](docs/implemented/native_csf_descriptors.md).
+Historical test counts do not certify the current source or physical accuracy.
 
 ## Inputs And Outputs
 

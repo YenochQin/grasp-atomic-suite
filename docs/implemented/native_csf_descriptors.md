@@ -2,7 +2,7 @@
 
 2026-11-17。实现基于 suite `5806884`、rCSFs `fea061f`；未覆盖安装目录。
 rCSFs reader 实现提交为 `f17a862d77c45164a6d31ae1e9cfeb4efbd04cf6`，源码构建应使用包含该实现的版本。
-实施范围来自[迁移计划](../plans/csf_descriptor_migration_2026-11-16.md)。
+生产迁移已提交为 `8cf6b1d`，rdensity 输入补全为 `80f6e76`；已完成的迁移计划由 Git 历史保存。
 
 ## 生产输入契约
 

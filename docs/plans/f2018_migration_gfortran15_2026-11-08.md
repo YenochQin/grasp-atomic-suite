@@ -1,5 +1,11 @@
 # Fortran 2018 迁移实施计划：gfortran 15 验证基线
 
+> 2026-11-17 整理：本文保留尚未完成的数值、状态、平台和发布验收设计；
+> 下文 2026-11-08/09 的实施状态、目标及数量均为历史快照。已完成的逐批报告已移除，
+> 现行实现和接口见[兼容性汇总](../implemented/f2018_compatibility.md)，
+> 后续静态工作见[接续清单](static_diagnostics_remaining_2026-11-17.md)。
+> 不按历史计划恢复已退役目标、旧输入或构建 flags。
+
 > 2026-11-11 状态更新：文中 strict/diag 独立求解器已按用户决定[移除](../implemented/rejected_rmcdhf_variants.md)；相关目标、命令和测试数量仅作对应版本的历史记录。
 
 **2026-11-10 范围更新**：CSFG 隔离，当前只推进普通程序；生产与诊断配置分离，移除 legacy/
@@ -10,17 +16,11 @@
 目标仓库：`grasp-atomic-suite`；计划创建基线：`179ca9ecfd96d54a5617d811b888299a611c13b3`；
 本轮修复基线：`d1260ba404833d20d709b34d9f26b05c32a3b615`。
 此前设施实施基线：`56769d91eae1e00889144e162458aceba0bdfe2a`，严格接口修复已提交为 `b8d6faf`。
-本轮 Linux 基线：`f395146`；结果对应其上的工作树，见[Linux 修复与验收](../reviews/f2018_linux_davidson_restart_2026-11-09.md)。
-其后的 [strict SCNSTY 时序修复与 74/74 验收（已移除）](../implemented/rejected_rmcdhf_variants.md)保留为阶段证据。
-矩阵与初始基线见[设施报告](../reviews/f2018_matrix_warning_baseline_2026-11-09.md)；
-最新结果为[优先警告修复第一批](../reviews/f2018_warning_repairs_2026-11-09.md)。旧 71/73、100 轮平台及初始基线继续保留。
-累计修复/回归已提交为 `80992a9`，矩阵与警告基线设施为 `f26e1bc`；
-各报告仍保留实际验证时的基线与逐文件 hash，不将提交动作视为新增数值验证。
-[严格接口与 NP 验证](../reviews/f2018_strict_interfaces_npol_2026-11-09.md)和[设施初始记录](../reviews/f2018_acceptance_facilities_2026-11-09.md)保留此前证据。未注明已实现者仍为计划。
-
-五类普通程序已导入并接入共享参数，见[导入记录](../implemented/standard_grasp_integration.md)。
-随后按首轮编译诊断完成共享库、平台服务及应用标准语法的分批修复，见
-[现行实现](../implemented/f2018_compatibility.md)和[本轮验证](../reviews/f2018_gfortran15_batches_2026-11-08.md)。
+本轮 Linux 基线：`f395146`；累计修复/回归提交为 `80992a9`，
+矩阵与警告基线设施为 `f26e1bc`。原批次报告、验证基准及逐文件 hash 由 Git 历史保存；
+旧 71/73、strict 重启和 32 配置结果仅作为当时证据，不是当前验收。
+五类普通程序的接入见[导入说明](../implemented/standard_grasp_integration.md)，
+已实施标准及接口约束见[兼容性汇总](../implemented/f2018_compatibility.md)。
 
 | 计划项 | 当前状态 | 已有证据 / 尚缺内容 |
 | --- | --- | --- |
@@ -117,7 +117,7 @@ P1 已增加 [FortranProfiles.cmake](../../cmake/FortranProfiles.cmake) 和 `GRA
 `-Wmaybe-uninitialized` 也可能源于编译器无法证明赋值路径或分支不可达，必须逐项复核。
 当前剩余 174 条属于该类诊断，并非 174 个变量或已确认缺陷；同一问题可能在不同目标或位置
 产生多条记录。初始化或改写必须符合实际数据契约，不能统一补零来消除告警，参见
-[GETALDWT 反例及诊断解释](../reviews/f2018_warning_repairs_2026-11-09.md#告警差分与剩余范围)。
+[兼容性与历史验证汇总](../implemented/f2018_compatibility.md)。
 
 正式 `f2018-check/release` 不允许 `-std=legacy`、`-fallow-argument-mismatch`、`-fall-intrinsics` 或全局默认整数/实数扩宽。不依靠 `CMAKE_Fortran_STANDARD` 自动设置标准；检查 `compile_commands.json` 中每个实际编译命令。
 
@@ -132,10 +132,10 @@ P1 已增加 [FortranProfiles.cmake](../../cmake/FortranProfiles.cmake) 和 `GRA
 以下从 suite 根目录执行。`GF15`、`MPI15_FC`、`MPI15_EXEC` 由已验证的本地工具链提供，
 显式设置 `FC/OMPI_FC`；macOS 可解析本机已安装的版本化编译器，不复用其他版本的构建目录。
 
-```sh
-set -eu
-export FC="$GF15" OMPI_FC="$GF15"
-test "$("$GF15" -dumpversion | cut -d. -f1)" = 15
+```fish
+set -gx FC $GF15
+set -gx OMPI_FC $GF15
+$GF15 -dumpversion
 cmake -S . -B build-gf15-check \
   -DCMAKE_Fortran_COMPILER="$GF15" \
   -DMPI_Fortran_COMPILER="$MPI15_FC" \
@@ -164,8 +164,9 @@ Check/Release 分别覆盖 `GRASP_BUILD_SERIAL_APPS`、`GRASP_ENABLE_MPI`、
 s=m=0 仍编译共享库、jj2lsj 和适用测试。使用默认容量和构建内准备工具；
 任意其他用户 CMake 参数组合、外部准备工具及其他平台不在本轮矩阵声明内。
 
-```sh
-export FC=/usr/bin/gfortran-15 OMPI_FC=/usr/bin/gfortran-15
+```fish
+set -gx FC /usr/bin/gfortran-15
+set -gx OMPI_FC /usr/bin/gfortran-15
 ../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix-20261109 \
   --parallel-configs 2 --jobs 3
 ```
@@ -173,9 +174,8 @@ export FC=/usr/bin/gfortran-15 OMPI_FC=/usr/bin/gfortran-15
 最新结果为 32/32 通过、累计 1,960 次 CTest 全通过、零失败/skip；全开配置各 93/93，
 所有实际 OpenMP 编译选项与开关一致。`matrix-validate.json` 的
 `full_matrix_acceptance=true` 仅指当前目标/测试与固定警告预算。
-基线采集和负向验证见[矩阵报告](../reviews/f2018_matrix_warning_baseline_2026-11-09.md)，
-本次显式更新及诊断差分见[修复报告](../reviews/f2018_warning_repairs_2026-11-09.md)
-和[测试入口](../../test/f2018/README.md#complete-configuration-matrix-and-warning-baseline)。
+历史基线采集和诊断差分保存在提交 `f26e1bc`、`80992a9`；
+现行执行方法见[测试入口](../../test/f2018/README.md#complete-configuration-matrix-and-warning-baseline)。
 旧的未采集 object 需新目录或 clean rebuild，不以增量日志的“没有 warning”代替完整记录。
 
 ## 4. 基准、夹具和数值验收协议
@@ -309,7 +309,7 @@ P7 的串行开发可在 P4/P5 后进行，MPI 退出门槛必须等待 P6。阶
 
 ### P1：构建配置和强制验收设施
 
-**执行状态（2026-11-09）**：profiles、required 清单、fail-closed、模块/安装隔离和 JSON 警告采集保留。本批修复后重新验证全部 32 配置，1,960 次 CTest 全通过，全开各 93/93；基线显式收紧到 475 条正确性复核诊断。P1 的矩阵/基线设施完成；正确性告警清零、F00–F10 和全部数值退出条件未完成。详见[设施报告](../reviews/f2018_matrix_warning_baseline_2026-11-09.md)及[本批修复](../reviews/f2018_warning_repairs_2026-11-09.md)。历史结果保留。
+**执行状态（2026-11-09）**：profiles、required 清单、fail-closed、模块/安装隔离和 JSON 警告采集保留。本批修复后重新验证全部 32 配置，1,960 次 CTest 全通过，全开各 93/93；基线显式收紧到 475 条正确性复核诊断。P1 的矩阵/基线设施完成；正确性告警清零、F00–F10 和全部数值退出条件未完成。已实施约束见[兼容性汇总](../implemented/f2018_compatibility.md)，原始验收由 Git 历史追溯。
 
 **修改范围**：顶层及测试 CMake、profiles 模块、`configure.sh` 必要透传、验收脚本/CI；不改科学算法。
 
@@ -330,7 +330,7 @@ P7 的串行开发可在 P4/P5 后进行，MPI 退出门槛必须等待 P6。阶
 ### P3：共享库、接口与标准清理
 
 **执行状态（更新 2026-11-09）**：既有修复保留；本批修复七套 GETALDWT、四套 RCI 未定义统计、Davidson 接口/状态、DACON 调试边界和 INTERP 边界；DGEMVMPI 的 JX 诊断确认为不可达步长分支并清理。32 配置全通过，全开各 93/93；普通/memory 一轮完整旧新对照重新通过，INTERP 正常分支 71 点同 O0/O2 输出逐字节一致。
-详见[本批报告](../reviews/f2018_warning_repairs_2026-11-09.md)及[当前警告清单](../reference/f2018/gfortran15-warning-baseline.md)。诊断数减少不等于相同数量的真实缺陷；仍有 180 文件、475 条正确性复核项，包括 174 条未初始化和 36 条边界诊断。其他手写接口、mpi_f08、大计数及状态语义待审计，不满足完整 P3 的退出条件。
+详见[兼容性与历史验证汇总](../implemented/f2018_compatibility.md)及[当前警告清单](../reference/f2018/gfortran15-warning-baseline.md)。诊断数减少不等于相同数量的真实缺陷；仍有 180 文件、475 条正确性复核项，包括 174 条未初始化和 36 条边界诊断。其他手写接口、mpi_f08、大计数及状态语义待审计，不满足完整 P3 的退出条件。
 
 **修改范围**：`libmod`、`lib9290`、`librang90`、`libmcp90`、`libdvd90`，以及必要的 `*_csfg`/`libdvd90mpi` 接口边界；新增明确的 kind、BLAS/LAPACK 和平台适配模块，仍归现有库所有。
 
