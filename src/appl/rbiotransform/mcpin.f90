@@ -27,9 +27,10 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix, max_orbitals
-      use memory_man
-      use def_c
-      use eigv_c
+      use memory_man, only: alloc, dalloc, byte, double
+      use def_c, only: double, electron_count
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
       use foparm_c, only: iccut
       use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
       use orb_c,           only: csf_count, orbital_count
@@ -44,7 +45,8 @@
                                  nakinvff,nlmax
       use sbdat1_c,        only: nshlp, nshlpp
       use cimat_c,         only: cici, cfci
-      use blk_c
+      use blk_c, only: double, ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
+          nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

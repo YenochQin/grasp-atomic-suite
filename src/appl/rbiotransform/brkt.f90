@@ -12,9 +12,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use grid_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
-      use biorb_c
+      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+          nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
       use wave_c, only:  mfii, pfii, qfii, mfff, pfff, qfff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

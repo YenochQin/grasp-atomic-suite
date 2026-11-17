@@ -18,19 +18,23 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix, max_radial_points
-      use memory_man
+      use memory_man, only: alloc, double
       use orba_c, only: double, iorder, max_orbitals
       use core_c, only: closed_core_subshell_count
-      use def_c
+      use def_c, only: accy, double, max_radial_points, speed_of_light_au
       use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
       use grid_c, only: radial_point_count, radial_derivative_over_radius
       use lagr_c, only: double, ecv, iecc, nec
-      use orb_c
-      use mpi_c
+      use orb_c, only: double, max_orbitals, orbital_count, orbital_kappa, orbital_principal_n, &
+          orbital_symmetry_labels, orbital_two_j
+      use mpi_c, only: double, mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &
+         & mpi_process_count, mpi_rank, mpi_sum
       use pote_c, only: yp, xp, xq
-      use scf_c
+      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+          nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
       use tatb_c, only: mtp, ta
-      use wave_c
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

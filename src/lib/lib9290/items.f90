@@ -38,7 +38,7 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man
+      use memory_man, only: alloc, ralloc
       use def_c, only: iccmin
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------

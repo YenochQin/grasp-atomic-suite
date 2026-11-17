@@ -4,7 +4,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use pote_c, only: double, max_radial_points, xp, xq, yp
-      use mpi_s
+      use mpi_s, only: double, mpi_process_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

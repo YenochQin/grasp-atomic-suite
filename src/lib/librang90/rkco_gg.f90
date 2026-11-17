@@ -28,8 +28,8 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use m_c, only: double, jjc1, jjc2, jjq1, jjq2, jlist, klist, max_orbitals, ncore, npeel, nq1, nq2
-      use orb_c
-      use dumx_c
+      use orb_c, only: double, max_orbitals, orbital_count, orbital_kappa
+      use dumx_c, only: double, jc1s, jc2s, jlis, max_orbitals
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

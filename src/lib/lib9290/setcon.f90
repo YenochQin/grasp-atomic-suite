@@ -18,7 +18,9 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c
+      use def_c, only: bohr_radius_cm, double, einstein_a_au_to_si, einstein_b_au_to_si, electron_mass_u, &
+          femtometer_to_bohr, hartree_to_ev, hartree_to_wavenumber_cm, pi, proton_mass_u, speed_of_light_cm_per_s, &
+          vacuum_speed_of_light_au
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

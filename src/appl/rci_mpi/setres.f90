@@ -13,13 +13,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man
+      use memory_man, only: alloc, double
       use default_c, only: double, inpci, ndef, ndump
       use where_c, only: double, imcdf
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use iccu_c, only: iccut, iccutblk
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use mpi_c
+      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

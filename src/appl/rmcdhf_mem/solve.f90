@@ -31,10 +31,13 @@
       use int_c, only: p, q, p0, q0, mtp0
       use invt_c, only: double, max_orbitals, noinvt
       use node_c, only: max_orbitals, nnodep
-      use orb_c
-      use scf_c
+      use orb_c, only: double, max_orbitals, orbital_energy_parameters, orbital_kappa, orbital_l, orbital_principal_n, &
+          orbital_symmetry_labels
+      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+          nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
       use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
-      use wave_c
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -50,7 +53,7 @@
       use quad_i, only: quad
       use setxv_i, only: setxv
       use prwf_i, only: prwf
-      use count_i
+      use count_i, only: count
       use newe_i, only: newe
       implicit none (type, external)
 !-----------------------------------------------

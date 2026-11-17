@@ -10,11 +10,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man
-      use biorb_c
-      use def_c
-      use orb_c
-      use eigv_c
+      use memory_man, only: alloc, byte, double
+      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+          nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
+      use def_c, only: double
+      use orb_c, only: byte, double, max_orbitals
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
 !-----------------------------------------------

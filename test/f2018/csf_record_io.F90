@@ -3,7 +3,7 @@ program csf_record_io
     use blk_c, only: nblock
     use lodcslBio_I, only: lodcslbio
 #ifdef MCP_MPI
-    use mpi_c
+    use mpi_c, only: mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize, mpi_init
 #endif
     implicit none (type, external)
     character(32) :: header, scenario

@@ -17,8 +17,9 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use int_c, only: double, max_radial_points, mtp0, p, p0, q, q0, tf, tg, xu, xv
-      use orb_c
-      use scf_c
+      use orb_c, only: double, max_orbitals, orbital_energy_parameters, orbital_principal_n
+      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+          nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

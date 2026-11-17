@@ -11,10 +11,12 @@
       use parameter_def,    only: orbital_index_radix, max_orbitals
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use orb_c
-      use buffer_c
-      use eigv_c
-      use ris_c
+      use orb_c, only: byte, csf_count, csf_subshell_occupations, double, max_orbitals, orbital_count
+      use buffer_c, only: double, angular_buffer_capacity, angular_coefficient_count, &
+          angular_coefficient_labels, angular_coefficients
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
+      use ris_c, only: double, dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
       use mpi_c,            only: mpi_rank, mpi_process_count
       use alcbuf_i, only: alcbuf
       use ispar_i, only: ispar

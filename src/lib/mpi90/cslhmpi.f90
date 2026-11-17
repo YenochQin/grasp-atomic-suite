@@ -21,11 +21,12 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man
-      use mpi_c
+      use memory_man, only: alloc, ralloc, double
+      use mpi_c, only: double, mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_integer, mpi_rank
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use def_c, only: emn,ioncty,electron_count,nuclear_charge
-      use orb_c, ncftot=>csf_count
+      use orb_c, only: ncftot => csf_count, double, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, &
+          orbital_symmetry_labels, orbital_two_j
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

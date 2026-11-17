@@ -17,8 +17,8 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use mpi_c
-      use def_c
+      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, mpi_rank
+      use def_c, only: double, emn, nuclear_charge
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use nsmdat_c, only: sqn, dmomnm, qmomb
 !-----------------------------------------------

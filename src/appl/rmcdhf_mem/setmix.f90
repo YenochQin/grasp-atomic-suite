@@ -12,11 +12,11 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use def_c
+      use def_c, only: double, electron_count
       use foparm_c, only: iccut
       use mcpa_c, only: double, max_mcp_file_multipole_rank
       use mcpb_c, only: diag, double, lfordr
-      use orb_c
+      use orb_c, only: csf_count, double, orbital_count
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------

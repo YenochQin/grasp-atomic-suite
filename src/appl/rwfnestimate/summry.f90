@@ -17,9 +17,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use grid_c
-      use orb_c
-      use wave_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+      use orb_c, only: double, max_orbitals, orbital_count, orbital_energy_parameters, orbital_origin_exponents, &
+          orbital_principal_n, orbital_symmetry_labels
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
       use whfrom_c, only: source
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

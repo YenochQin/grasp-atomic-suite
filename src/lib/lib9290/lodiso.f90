@@ -16,7 +16,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c
+      use def_c, only: double, electron_mass_u, emn, femtometer_to_bohr, nuclear_charge
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use nsmdat_c,        only: sqn, dmomnm, qmomb
       implicit none (type, external)

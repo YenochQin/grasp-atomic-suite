@@ -19,11 +19,14 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use biorb_c
-      use orb_c
+      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+          nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
+      use orb_c, only: double, max_orbitals
       use def_c,           only:accy
-      use grid_c
-      use wave_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

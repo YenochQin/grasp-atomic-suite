@@ -19,10 +19,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man
+      use memory_man, only: alloc, double
       use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
       use kkstart_c, only: double, kmax, kstart
-      use orb_c
+      use orb_c, only: double, orbital_count, orbital_l, orbital_two_j
       use jlabl_c, only: jlbl, jlbp, jlbr
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

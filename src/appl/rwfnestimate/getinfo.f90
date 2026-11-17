@@ -19,7 +19,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use def_c
+      use def_c, only: accy, double, max_radial_points, nuclear_charge, speed_of_light_au, vacuum_speed_of_light_au
       use default_c, only: double, inpci, ndef, ndump
       use grid_c, only: radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters

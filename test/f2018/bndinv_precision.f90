@@ -1,6 +1,6 @@
 program bndinv_precision
     use iso_fortran_env, only: real32, real64
-    use bndinv_i
+    use bndinv_i, only: bndinv
     implicit none (type, external)
     real(real64) :: a(2,2), work(2,2), original(2,2), determinant, values(5), x
     integer :: i, status

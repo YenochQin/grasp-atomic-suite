@@ -22,8 +22,8 @@
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
       use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
-      use orb_c
-      use def_c
+      use orb_c, only: double, orbital_count, orbital_two_j
+      use def_c, only: double
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------

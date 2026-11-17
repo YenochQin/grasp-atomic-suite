@@ -36,20 +36,23 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man
-      use def_c
-      use eigv_c
+      use memory_man, only: alloc, dalloc, double, long
+      use def_c, only: double, iccmin
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use hmat_c
-      use mpi_s
-      use orb_c
-      use wchblk_c, jblockk=>jblock
+      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+          matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
+          nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
+      use mpi_s, only: double, mpi_process_count, mpi_rank
+      use orb_c, only: csf_count, double
+      use wchblk_c, only: jblockk => jblock, double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use spicmv2_i, only: spicmv2
       use iniest2_i, only: iniest2
-      use gdvd_i
+      use gdvd_i, only: dvd_operator, gdvd
       use itjpo_i, only: itjpo
       use ispar_i, only: ispar
       use suite_linear_algebra, only: dcopy, dscal

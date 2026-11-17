@@ -20,7 +20,7 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c
+      use def_c, only: double, max_radial_points, nuclear_charge, pi, precis, vacuum_speed_of_light_au
       use grid_c, only: radial_grid, radial_point_count
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use ncdist_c, only: zdist

@@ -44,13 +44,15 @@
       use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
       use where_c, only: double, imcdf
       use cons_c, only: double, eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
-      use def_c
+      use def_c, only: double
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use blk_c
+      use blk_c, only: double, ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
+          nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
       use iccu_c, only: iccut, iccutblk
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use terms_c, only: itab, jtab, nrows, ntab
-      use mpi_c
+      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
+         & processor_name, processor_name_length
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

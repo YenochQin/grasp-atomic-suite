@@ -9,7 +9,8 @@
       use default_c, only: double, inpci, ndef, ndump
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use debug_c,         only: cutoff
-      use mpi_c
+      use mpi_c, only: double, mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_finalize, mpi_integer, &
+         & mpi_process_count, mpi_rank, processor_name, processor_name_length
       use getyn_i, only: getyn
       use setdbg_i, only: setdbg
       use setmc_i, only: setmc

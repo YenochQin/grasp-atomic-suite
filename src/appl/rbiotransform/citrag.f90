@@ -38,7 +38,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use sbdat1_c, only: double, max_orbitals, nlmax, nshlp, nshlpp
-      use orb_c
+      use orb_c, only: double, max_orbitals, orbital_kappa
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

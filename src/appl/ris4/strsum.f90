@@ -16,18 +16,22 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c
-      use grid_c
+      use def_c, only: double, electron_count, max_radial_points, nuclear_charge, speed_of_light_au
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use npot_c, only: double, first_grid_index_beyond_fermi_c, max_radial_points, negative_radius_times_potential
-      use orb_c
+      use orb_c, only: byte, csf_count, double, max_orbitals, orbital_count, orbital_energy_parameters, &
+          orbital_origin_exponents, orbital_principal_n, orbital_symmetry_labels
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use wave_c
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
       use wfac_c, only: double, wfact
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use eigv_c
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

@@ -1,9 +1,9 @@
 program npol_consumers
     use, intrinsic :: iso_fortran_env, only: real64
     use parameter_def, only: NNNP
-    use npol_test_support
-    use npol_C
-    use npol_initialization
+    use npol_test_support, only: near, require, write_fixture
+    use npol_C, only: npol_message_len
+    use npol_initialization, only: npol_init
     use debug_C, only: LDBPR
     use def_c, only: C => speed_of_light_au
     use grid_c, only: N => radial_point_count, R => radial_grid, RP => radial_grid_derivative, RPOR => &
@@ -13,11 +13,12 @@ program npol_consumers
     use pote_c, only: YP, XP, XQ
     use scf_c, only: NYCOF, NDCOF, NDA, DA
     use wave_c, only: MF => orbital_last_grid_index, PF => radial_large_components, QF => radial_small_components
-    use ypot_I
-    use dacon_I
-    use rinti_I
+    use ypot_I, only: ypot
+    use dacon_I, only: dacon
+    use rinti_I, only: rinti
 #ifdef NPOL_MPI
-    use mpi
+    use mpi, only: mpi_allreduce, mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_double_precision, &
+       & mpi_finalize, mpi_init, mpi_sum
     use mpi_c, only: myid => mpi_rank, nprocs => mpi_process_count
     use npol_mpi, only: npol_init_mpi
 #endif

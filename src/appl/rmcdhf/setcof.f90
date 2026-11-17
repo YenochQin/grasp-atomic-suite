@@ -19,16 +19,20 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
       use parameter_def,    only: orbital_index_radix
-      use memory_man
+      use memory_man, only: alloc, dalloc, ralloc, double, long
       use input_io, only: fail_input_io
-      use orb_c
+      use orb_c, only: csf_count, double, max_orbitals, orbital_count, orbital_kappa, orbital_two_j
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use hmat_c
+      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+          matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
+          nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use mcpa_c, only: double, max_mcp_file_multipole_rank
-      use mpi_s
-      use pos_c
-      use scf_c
+      use mpi_s, only: double, mpi_process_count, mpi_rank
+      use pos_c, only: double, total_csf_count, mixing_coefficient_storage_size, &
+          csf_offsets_by_block, eigenvalue_offsets_by_block, mixing_offsets_by_block
+      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+          nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
 !      USE cons_C,           ONLY: EPS
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

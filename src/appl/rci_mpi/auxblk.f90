@@ -7,13 +7,15 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c
-      use grid_c
+      use def_c, only: double, emn, max_radial_points
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use ncdist_c, only: double, max_radial_points, zdist
       use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use coeils_c, only: double, frstco, indoei, ncoei, ndcoea, valoei
-      use vpilst_c,indoei=>indvpi, valoei=>valvpi
-      use bilst_c
+      use vpilst_c, only: indoei => indvpi, valoei => valvpi, double, frstvp, nvpi
+      use bilst_c, only: double, ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
+          valtp1, valtp2, valtp3, valtp4, valtp5, valtp6, first
       use keilst_c, only: double, frstki, indkei, ndkea, nkei, valkei
       use vinlst_c, only: double, frstvi, indtei, ndvin, nvinti, valtei
       use orb_c, only: csf_count, orbital_count, csf_subshell_occupations

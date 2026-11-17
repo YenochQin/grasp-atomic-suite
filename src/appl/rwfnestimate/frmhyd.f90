@@ -19,7 +19,7 @@
 !-----------------------------------------------
       use parameter_def, only: radial_workspace_capacity
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c
+      use def_c, only: double, nuclear_charge
       use left_c, only: double, max_orbitals, set
       use orb_c, only: orbital_energy_parameters, orbital_principal_n, orbital_kappa, orbital_symmetry_labels
       use wave_c, only: radial_large_components, radial_small_components, orbital_origin_parameters, orbital_last_grid_index

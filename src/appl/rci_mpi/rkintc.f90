@@ -13,7 +13,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
-      use orb_c
+      use orb_c, only: double, orbital_count
       use kkstart_c, only: double, kmax, kstart
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

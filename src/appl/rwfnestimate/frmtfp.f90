@@ -22,7 +22,8 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use left_c, only: set
       use orb_c, only: orbital_principal_n, orbital_symmetry_labels
-      use wave_c
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
       use whfrom_c, only: source
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

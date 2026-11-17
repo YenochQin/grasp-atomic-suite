@@ -19,14 +19,16 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man
+      use memory_man, only: alloc, double
       use coun_c, only: count_context, count_trace_rank, double, thresh
       use def_c, only: nuclear_charge, speed_of_light_au, max_radial_points
       use default_c, only: double, inpci, ndef, ndump
-      use grid_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use left_c, only: set
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use orb_c
+      use orb_c, only: double, max_orbitals, orbital_count, orbital_kappa, orbital_origin_exponents, &
+          orbital_principal_n, orbital_symmetry_labels
       use wave_c, only: radial_large_components, radial_small_components
       use whfrom_c, only: source
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit

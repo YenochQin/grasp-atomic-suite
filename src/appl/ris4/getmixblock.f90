@@ -16,10 +16,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man
-      use def_c
-      use eigv_c
-      use orb_c
+      use memory_man, only: alloc, byte, double
+      use def_c, only: double, electron_count
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
+      use orb_c, only: byte, csf_count, double, orbital_count
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit

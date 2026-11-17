@@ -26,8 +26,8 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use parameter_def,   only: max_orbitals
-      use def_c
-      use orb_c
+      use def_c, only: electron_count
+      use orb_c, only: max_orbitals, orbital_count, orbital_kappa, orbital_principal_n, orbital_two_j
       use terms_c, only: itab, jtab, nrows, ntab
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------

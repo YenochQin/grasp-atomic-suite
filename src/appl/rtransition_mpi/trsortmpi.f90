@@ -20,11 +20,11 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
-      use memory_man
+      use memory_man, only: alloc, dalloc, ralloc, double
       use default_c, only: double, inpci, ndef, ndump
-      use orb_c
+      use orb_c, only: double, orbital_count, orbital_principal_n, orbital_symmetry_labels
       use osc_c, only: nkp, kp
-      use mpi_c
+      use mpi_c, only: double, mpi_process_count, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

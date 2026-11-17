@@ -13,7 +13,8 @@
       use parameter_def,   only: max_radial_points
       use def_c,           only: speed_of_light_au, vacuum_speed_of_light_au, nuclear_charge, accy
       use default_c, only: double, inpci, ndef, ndump
-      use grid_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

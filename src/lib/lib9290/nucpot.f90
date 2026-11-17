@@ -20,7 +20,8 @@ contains
       use, intrinsic :: iso_fortran_env, only: real64
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use def_c,           only: nuclear_charge, pi
-      use grid_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use npot_c,          only: negative_radius_times_potential, first_grid_index_beyond_fermi_c
 !-----------------------------------------------

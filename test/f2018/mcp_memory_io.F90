@@ -92,11 +92,13 @@ program mcp_memory_io
     use, intrinsic :: iso_fortran_env, only: real64
     use rmcdhf_mem_c, only: lab_32, ncontr_32, coeff_32, indx_32, iclmn_32
     use setmcp_mem_I, only: setmcp_mem
-    use memory_io_injection
+    use memory_io_injection, only: double, inject, injected_case, injected_file, injected_rank, injected_ranks, &
+       & rewrite_input
 #ifdef MCP_MPI
-    use mpi_c
+    use mpi_c, only: double, mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize, mpi_init, &
+       & mpi_process_count, mpi_rank
 #else
-    use mpi_s
+    use mpi_s, only: double, mpi_process_count, mpi_rank
 #endif
     implicit none (type, external)
     character(40) :: scenario

@@ -20,10 +20,10 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man
+      use memory_man, only: alloc, ralloc, double
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use def_c
-      use orb_c, ncftot=>csf_count
+      use def_c, only: double
+      use orb_c, only: ncftot => csf_count, double
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

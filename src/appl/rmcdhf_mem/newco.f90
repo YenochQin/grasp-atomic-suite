@@ -20,17 +20,20 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c
-      use eigv_c
-      use orb_c
-      use scf_c
+      use def_c, only: double, iccmin, ncmin, weight, wt
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
+      use orb_c, only: double, max_orbitals, orbital_count
+      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+          nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
       use syma_c,          only: jpgg
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use pos_c
+      use pos_c, only: double, total_csf_count, mixing_coefficient_storage_size, &
+          csf_offsets_by_block, eigenvalue_offsets_by_block, mixing_offsets_by_block
       use peav_c, only: double, eavblk
       use blkidx_c, only: double, idxblk
-      use mpi_s
+      use mpi_s, only: double, mpi_process_count, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

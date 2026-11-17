@@ -12,10 +12,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c
+      use def_c, only: double, einstein_a_au_to_si, einstein_b_au_to_si, pi, vacuum_speed_of_light_au
       use cuto_c, only: cutoff, double
-      use jlabl_c, labj=>jlbr, labp=> jlbp
-      use osc_c
+      use jlabl_c, only: labj => jlbr, labp => jlbp
+      use osc_c, only: double, nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
+          xsldr, totc, totb, isldr, isldr1, nint, ninteg, nptr, lab, nkp, kp, ltc
       use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
 !-----------------------------------------------

@@ -16,9 +16,10 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man
-      use grid_c
-      use orb_c
+      use memory_man, only: dalloc, double
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+      use orb_c, only: double, orbital_count, orbital_energy_parameters, orbital_kappa, orbital_principal_n
       use wave_c, only: orbital_origin_parameters, radial_large_components, radial_small_components, orbital_last_grid_index
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------

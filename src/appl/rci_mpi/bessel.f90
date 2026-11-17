@@ -44,9 +44,10 @@
       use parameter_def,   only: orbital_index_radix
       use bess_c, only: bessj, bessn, bj, double, max_radial_points, tc, td, wij
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c
-      use grid_c
-      use orb_c
+      use def_c, only: accy, double, max_radial_points, speed_of_light_au
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+      use orb_c, only: double, orbital_energy_parameters, orbital_principal_n, orbital_symmetry_labels
       use stor_c, only: double, keep
       use wfac_c, only: double, wfact
       implicit none (type, external)

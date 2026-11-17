@@ -26,8 +26,8 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man
-      use def_c
+      use memory_man, only: dalloc, double
+      use def_c, only: double, iccmin, ncmin
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------

@@ -9,21 +9,25 @@
 !***********************************************************************
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_orbitals
-      use memory_man
+      use memory_man, only: alloc, dalloc, byte, double
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c
-      use grid_c
+      use def_c, only: double, electron_mass_u, hartree_to_wavenumber_cm, max_radial_points, nuclear_charge, &
+          speed_of_light_cm_per_s
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-      use orb_c
+      use orb_c, only: byte, double, max_orbitals, orbital_count, orbital_kappa
       use teilst_c, only: ndtea, ntei, pindte, pvalte, firstt
-      use buffer_c
-      use ris_c
-      use jlabl_c, labj=> jlbr, labp=>jlbp
-      use eigv_c
-      use mpi_c
+      use buffer_c, only: double, angular_buffer_capacity, angular_coefficient_count, &
+          angular_coefficient_labels, angular_coefficients
+      use ris_c, only: double, dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
+      use jlabl_c, only: labj => jlbr, labp => jlbp
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
+      use mpi_c, only: double, mpi_barrier, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_rank
       use rintdens_i, only: rintdens
       use rinti_i, only: rinti
       use rint_i, only: rint

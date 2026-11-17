@@ -24,7 +24,7 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use orb_c
+      use orb_c, only: orbital_count, orbital_principal_n, orbital_symmetry_labels
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

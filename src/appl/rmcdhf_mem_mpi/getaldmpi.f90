@@ -17,15 +17,16 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man
+      use memory_man, only: alloc, double
 
-      use def_c
+      use def_c, only: double, ncmin, nscf, nsic, wt
       use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
-      use orb_c
+      use orb_c, only: csf_count, double, max_orbitals, orbital_count
       use orthct_c, only: orthst
-      use scf_c
+      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+          nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use mpi_c
+      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

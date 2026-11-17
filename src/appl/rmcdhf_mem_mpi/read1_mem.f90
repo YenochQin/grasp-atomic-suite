@@ -10,7 +10,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: int64
-      use rmcdhf_mem_c
+      use rmcdhf_mem_c, only: lab_31, lab_32, lab_33, lab_34, lab_35, lab_36, lab_37, lab_38, lab_39, lab_40, &
+         & lab_41, lab_42, lab_43, lab_44, lab_45, lab_46, lab_47, lab_48, lab_49, lab_50, ncontr_31, ncontr_32, &
+         & ncontr_33, ncontr_34, ncontr_35, ncontr_36, ncontr_37, ncontr_38, ncontr_39, ncontr_40, ncontr_41, &
+         & ncontr_42, ncontr_43, ncontr_44, ncontr_45, ncontr_46, ncontr_47, ncontr_48, ncontr_49, ncontr_50
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

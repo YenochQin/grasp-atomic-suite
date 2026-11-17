@@ -1,12 +1,13 @@
 program npol_unit_driver
-    use, intrinsic :: ieee_arithmetic
+    use, intrinsic :: ieee_arithmetic, only: ieee_positive_inf, ieee_quiet_nan, ieee_value
     use, intrinsic :: iso_fortran_env, only: real64
     use parameter_def, only: NNNP
-    use npol_C
-    use npol_input
-    use npol_kernel
-    use npol_initialization
-    use npol_test_support
+    use npol_C, only: npol_config, npol_message_len, npol_n, npol_ready, npol_reset, npol_settings, vnp_total, &
+       & zz_coul
+    use npol_input, only: npol_read_config, npol_validate_config
+    use npol_kernel, only: npol_build_grid, npol_compose
+    use npol_initialization, only: npol_init, npol_summary_path
+    use npol_test_support, only: fixture, near, npol_config, require, write_fixture
     implicit none (type, external)
     type(npol_config) :: cfg
     real(real64) :: r(NNNP+1), a(NNNP+1), b(NNNP+1), v(NNNP+1)

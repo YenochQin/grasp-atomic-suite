@@ -34,7 +34,8 @@
       use biorb_c,         only: nwii, nwff
       use wave_c,          only: pfii, qfii, pfff, qfff
       use cimat_c,         only: cici, cfci
-      use mpi_c
+      use mpi_c, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, &
+         & mpi_rank, processor_name, processor_name_length
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

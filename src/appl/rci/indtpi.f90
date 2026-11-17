@@ -5,7 +5,8 @@
 !   Written by Farid A Parpia             Last revision: 09 Oct 1992   *
 !                                                                      *
 !***********************************************************************
-      use bilst_c
+      use bilst_c, only: double, ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
+          valtp1, valtp2, valtp3, valtp4, valtp5, valtp6, first
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

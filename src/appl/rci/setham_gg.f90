@@ -20,21 +20,27 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
       use parameter_def,   only: max_radial_points, orbital_index_radix
-      use memory_man
+      use memory_man, only: alloc, dalloc, byte, double, long
 !-----------------------------------------------
 !   C O M M O N    B l o c k s
 !-----------------------------------------------
       use bcore_c, only: icore
-      use bilst_c
-      use buffer_c
+      use bilst_c, only: double, ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
+          valtp1, valtp2, valtp3, valtp4, valtp5, valtp6, first
+      use buffer_c, only: double, angular_buffer_capacity, angular_coefficient_count, &
+          angular_coefficient_labels, angular_coefficients
       use coeils_c, only: double, frstco, indoei, ncoei, ndcoea, valoei
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c
-      use eigv_c
+      use def_c, only: double, emn, max_radial_points
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
       use iccu_c, only: iccut, iccutblk
-      use grid_c
-      use hmat_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+          matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
+          nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
       use keilst_c, only: double, frstki, indkei, ndkea, nkei, valkei
       use ncdist_c, only: double, max_radial_points, zdist
       use orb_c, only: csf_count,  orbital_count
@@ -44,7 +50,8 @@
       use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use vinlst_c, only: double, frstvi, indtei, ndvin, nvinti, valtei
       use vpilst_c, only: double, frstvp, indvpi, ndvpa, nvpi, valvpi
-      use wave_c
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
       use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
       use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
       use where_c, only: double, imcdf

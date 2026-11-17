@@ -12,7 +12,8 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use eigv_c
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
       use nsmdat_c,        only: sqn, dmomnm, qmomb,                  &
                                  hfsi=>sqn, hfsd=>dmomnm, hfsq=>qmomb
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii

@@ -13,9 +13,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use parameter_def,   only: max_orbitals
-      use def_c
-      use orb_c
-      use blk_c
+      use def_c, only: double, electron_count, nelecr
+      use orb_c, only: double, max_orbitals, nakr, nhr, npr, nwr, orbital_count, orbital_kappa, orbital_l, &
+          orbital_principal_n, orbital_symmetry_labels, orbital_two_j
+      use blk_c, only: double, ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
+          nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

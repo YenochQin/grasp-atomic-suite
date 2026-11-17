@@ -31,7 +31,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_orbitals
-      use def_c
+      use def_c, only: accy, double
       use orb_c, only: orbital_kappa, orbital_energy_parameters
       use orba_c, only: iorder
       use corre_c, only: lcorre
@@ -39,7 +39,8 @@
       use invt_c, only: noinvt
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use scf_c, only: scnsty
-      use wave_c
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

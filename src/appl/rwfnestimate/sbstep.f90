@@ -18,9 +18,10 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def, only: max_radial_points, radial_workspace_capacity, max_orbitals
       !USE DEF_C
-      use grid_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use int_c, only: tf, tg
-      use orb_c
+      use orb_c, only: double, max_orbitals, orbital_kappa
       use sbc_c, only: c, double
       implicit none (type, external)
 !-----------------------------------------------

@@ -17,7 +17,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use orb_c
+      use orb_c, only: orbital_count, orbital_two_j
       use hydpar_c, only: sigma
       implicit none (type, external)
 !-----------------------------------------------

@@ -17,13 +17,15 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c
-      use eigv_c
-      use jlabl_c, labj=>jlbr, labp=>jlbp
+      use def_c, only: double, iccmin, ncmin
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
+      use jlabl_c, only: labj => jlbr, labp => jlbp
       use syma_c,          only: jpgg
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use pos_c
+      use pos_c, only: double, total_csf_count, mixing_coefficient_storage_size, &
+          csf_offsets_by_block, eigenvalue_offsets_by_block, mixing_offsets_by_block
       use blkidx_c, only: double, idxblk
       implicit none (type, external)
 !-----------------------------------------------

@@ -13,7 +13,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man
+      use memory_man, only: alloc, double
       use default_c, only: double, inpci, ndef, ndump
       use where_c, only: double, imcdf
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count

@@ -23,7 +23,8 @@ contains
 !-----------------------------------------------
       use parameter_def, only: max_orbitals
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use orb_c
+      use orb_c, only: max_orbitals, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, &
+          orbital_symmetry_labels, orbital_two_j
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

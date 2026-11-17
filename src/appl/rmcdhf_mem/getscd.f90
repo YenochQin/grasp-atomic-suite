@@ -20,14 +20,15 @@
       use parameter_def,    only: max_orbitals
       use coun_c, only: count_context, count_trace_rank, double, thresh
       use damp_c, only: orbital_damping_factors, mixing_damping_factors
-      use def_c
+      use def_c, only: accy, double, max_radial_points, ncmin, nscf, nsic, nsolv, nuclear_charge, speed_of_light_au, &
+          vacuum_speed_of_light_au
       use default_c, only: double, inpci, ndef, ndump
       use fixd_c, only: is_orbital_fixed
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use grid_c, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale, radial_grid
       use invt_c, only: noinvt
       use mcpb_c, only: diag, double, lfordr
-      use mpi_s
+      use mpi_s, only: double, mpi_rank
       use node_c, only: nnodep
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use npot_c, only: negative_radius_times_potential
@@ -36,7 +37,8 @@
       use orb_c , only: orbital_kappa, orbital_symmetry_labels, orbital_principal_n, orbital_count, ped
       use orthct_c, only: orthst
       use scf_c, only: scnsty, method
-      use wave_c
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

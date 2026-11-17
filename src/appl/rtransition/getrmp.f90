@@ -13,7 +13,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man
+      use memory_man, only: alloc, ralloc
       use offd_c, only: noffd1, noffd2
       use osc_c, only: nkp, kp
 !-----------------------------------------------

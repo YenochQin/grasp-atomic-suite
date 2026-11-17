@@ -25,7 +25,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c
+      use def_c, only: expmax, expmin, pi, precis
       use arctan_i, only: arctan
       implicit none (type, external)
 !-----------------------------------------------

@@ -13,14 +13,15 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals, max_radial_points
-      use def_c
+      use def_c, only: accy, double, max_radial_points, nuclear_charge, speed_of_light_au, vacuum_speed_of_light_au
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use default_c, only: double, inpci, ndef, ndump
       use foparm_c, only: iccut
       use grid_c, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use osc_c, only: ltc
-      use mpi_c
+      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, &
+         & mpi_logical, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

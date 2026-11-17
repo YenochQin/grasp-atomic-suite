@@ -19,11 +19,11 @@
 !-----------------------------------------------
       use iccu_c, only: iccut, iccutblk
       use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
-      use orb_c
-      use def_c
+      use orb_c, only: csf_count, double, orbital_count
+      use def_c, only: double, electron_count
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
 !cjb mpi_C
-      use mpi_c
+      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_logical, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

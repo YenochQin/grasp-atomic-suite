@@ -13,9 +13,10 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
-      use buffer_c
+      use buffer_c, only: double, angular_buffer_capacity, angular_coefficient_count, &
+          angular_coefficient_labels, angular_coefficients
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use orb_c
+      use orb_c, only: double, orbital_principal_n, orbital_symmetry_labels
       use cons_c, only: double, eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

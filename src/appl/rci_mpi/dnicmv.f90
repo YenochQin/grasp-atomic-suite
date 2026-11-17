@@ -21,7 +21,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use hmat_c,          only: hamiltonian_values
-      use mpi_c
+      use mpi_c, only: mpi_process_count, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

@@ -16,12 +16,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man
-      use def_c
+      use memory_man, only: alloc, double
+      use def_c, only: double, ncmin, nscf, nsic, wt
       use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
-      use orb_c
+      use orb_c, only: csf_count, double, max_orbitals, orbital_count
       use orthct_c, only: orthst
-      use scf_c
+      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+          nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   M o d u l e s

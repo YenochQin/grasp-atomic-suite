@@ -13,7 +13,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals, max_radial_points
-      use def_c
+      use def_c, only: accy, double, max_radial_points, nuclear_charge, speed_of_light_au, vacuum_speed_of_light_au
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use default_c, only: double, inpci, ndef, ndump
       use foparm_c, only: iccut

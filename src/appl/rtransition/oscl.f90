@@ -10,19 +10,26 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man
-      use blk_c
-      use biorb_c
-      use def_c, ccmps=>speed_of_light_cm_per_s
+      use memory_man, only: alloc, dalloc, byte, double
+      use blk_c, only: double, ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
+          nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
+      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+          nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
+      use def_c, only: ccmps => speed_of_light_cm_per_s, double, electron_count, hartree_to_ev, &
+          hartree_to_wavenumber_cm, speed_of_light_au
       use default_c, only: double, inpci, ndef, ndump
-      use eigv_c
-      use orb_c
-      use osc_c
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
+      use orb_c, only: byte, double, max_orbitals
+      use osc_c, only: double, nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
+          xsldr, totc, totb, isldr, isldr1, nint, ninteg, nptr, lab, nkp, kp, ltc
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use titl_c, only: double, idate, ihed, itime
-      use wave_c
-      use jj2lsjbio_c
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
+      use jj2lsjbio_c, only: double, rlev_ener_1, rlev_ener_2, string_csf1, string_csf2, nvectoti, nvectotf, &
+          iopen_status1, iopen_status2, lev_pos_1, lev_j_1, lev_par_1, lev_pos_2, lev_j_2, lev_par_2
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

@@ -14,12 +14,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man
-      use def_c
+      use memory_man, only: alloc, double
+      use def_c, only: double, electron_count, iccmin, ncmin
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use blk_c,           only: idxblk
       use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
-      use mpi_c
+      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_integer4, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

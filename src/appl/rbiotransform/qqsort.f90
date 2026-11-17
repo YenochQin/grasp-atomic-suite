@@ -26,8 +26,8 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
-      use memory_man
-      use orb_c
+      use memory_man, only: alloc, dalloc, double
+      use orb_c, only: csf_count, double, orbital_count
       use default_c, only: double, inpci, ndef, ndump
       use mcpdata_c, only: cnn, double, intgrl, intptr, jann, jbnn, ncoeff, nintg
 !-----------------------------------------------

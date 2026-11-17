@@ -16,7 +16,8 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use bess_c, only: bj, tc, td
       use debug_c, only: ldbpr
-      use grid_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use osc_c, only: lk, kk, l=>lk
       use def_c, only: speed_of_light_au, vacuum_speed_of_light_au, pi
       implicit none (type, external)

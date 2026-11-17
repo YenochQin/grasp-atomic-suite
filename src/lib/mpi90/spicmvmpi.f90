@@ -30,7 +30,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use mpi_c
+      use mpi_c, only: mpi_process_count, mpi_rank
       use hmat_c,          only: hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices, stored_matrix_element_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

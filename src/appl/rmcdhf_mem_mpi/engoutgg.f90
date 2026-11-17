@@ -20,8 +20,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c
-      use jlabl_c, labj=>jlbr, labp=>jlbp
+      use def_c, only: double, hartree_to_ev, hartree_to_wavenumber_cm
+      use jlabl_c, only: labj => jlbr, labp => jlbp
       use blkidx_c, only: double, idxblk
       use peav_c, only: double, eavblk
       use syma_c,          only: jpgg

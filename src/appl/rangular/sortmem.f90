@@ -24,11 +24,11 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
-      use memory_man
+      use memory_man, only: alloc, dalloc
       use orb_c,           only: orbital_principal_n, csf_count, orbital_symmetry_labels
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use sacoef_c, coeff=>channel_coefficients,label=>channel_packed_orbital_labels,iclmn=>channel_csf_columns, &
-         & index=>channel_matrix_positions
+      use sacoef_c, only: coeff => channel_coefficients, label => channel_packed_orbital_labels, &
+         & iclmn => channel_csf_columns, index => channel_matrix_positions
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

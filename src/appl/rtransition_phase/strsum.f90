@@ -12,18 +12,23 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use biorb_c
+      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+          nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c
+      use def_c, only: double
       use foparm_c, only: iccut
-      use grid_c
-      use eigv_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use orb_c
+      use orb_c, only: byte, double, max_orbitals
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-      use wave_c
-      use jj2lsjbio_c
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
+      use jj2lsjbio_c, only: double, rlev_ener_1, rlev_ener_2, string_csf1, string_csf2, nvectoti, nvectotf, &
+          iopen_status1, iopen_status2, lev_pos_1, lev_j_1, lev_par_1, lev_pos_2, lev_j_2, lev_par_2
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

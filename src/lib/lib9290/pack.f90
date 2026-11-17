@@ -28,7 +28,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: int8
-      use iounit_c
+      use iounit_c, only: stderr_unit
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

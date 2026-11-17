@@ -17,9 +17,10 @@
 !-----------------------------------------------
      use, intrinsic :: iso_fortran_env, only: real64
      use parameter_def,   only: orbital_index_radix
-     use memory_man
-     use grid_c
-     use vpilst_c, indoei=>indvpi, valoei=>valvpi, first=>frstvp
+     use memory_man, only: alloc, ralloc, double
+     use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+         radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+     use vpilst_c, only: indoei => indvpi, valoei => valvpi, first => frstvp, double, ndvpa, nvpi
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

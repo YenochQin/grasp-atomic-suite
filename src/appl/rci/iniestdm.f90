@@ -14,12 +14,13 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man
-      use eigv_c
+      use memory_man, only: alloc, dalloc, double
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dspevx_i
+      use dspevx_i, only: dspevx
       use suite_linear_algebra, only: dcopy, dspevx
       use dinit_i, only: dinit
       implicit none (type, external)

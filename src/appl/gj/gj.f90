@@ -11,7 +11,7 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use default_c, only: double, inpci, ndef, ndump
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use memory_man
+      use memory_man, only: alloc, dalloc, double
       use prnt_c,          only: nvec
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

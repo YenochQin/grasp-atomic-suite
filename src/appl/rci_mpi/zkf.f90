@@ -22,7 +22,7 @@
       use cnc_c, only: cnc5c
       use grid_c, only: radial_point_count, radial_grid, radial_grid_derivative
       use ncc_c, only: c1, c2, c3, c4, double
-      use tatb_c, zk=>tb
+      use tatb_c, only: zk => tb, double, mtp, radial_workspace_capacity, ta
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

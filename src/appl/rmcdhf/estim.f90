@@ -11,10 +11,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use def_c
-      use grid_c
-      use orb_c
-      use scf_c
+      use def_c, only: double, electron_count, nuclear_charge, speed_of_light_au
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+      use orb_c, only: double, max_orbitals, orbital_kappa, orbital_principal_n
+      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+          nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
       use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
 !-----------------------------------------------

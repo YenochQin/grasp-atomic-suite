@@ -21,12 +21,14 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
-      use memory_man
+      use memory_man, only: alloc, dalloc, double
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use def_c,           only: speed_of_light_au, nuclear_charge
-      use grid_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use orb_c
+      use orb_c, only: double, orbital_count, orbital_energy_parameters, orbital_kappa, orbital_origin_exponents, &
+          orbital_principal_n, orbital_symmetry_labels
       use wave_c,          only: orbital_origin_parameters, radial_large_components,radial_small_components
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

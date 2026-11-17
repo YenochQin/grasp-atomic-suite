@@ -5,7 +5,8 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use pote_c, only: double, max_radial_points, xp, xq, yp
-      use mpi_c
+      use mpi_c, only: double, mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &
+         & mpi_process_count, mpi_sum
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

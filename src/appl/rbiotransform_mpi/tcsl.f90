@@ -11,8 +11,10 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use biorb_c
-      use orb_c
+      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+          nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
+      use orb_c, only: csf_count, double, max_orbitals, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, &
+          orbital_symmetry_labels, orbital_two_j
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -4,7 +4,7 @@
 program rk_count
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use, intrinsic :: iso_fortran_env, only: real64, int64
-    use rk_fixture
+    use rk_fixture, only: calls
     use cteilsrk_C, only: indteirk,valteirk,rk_local_count
     use orb_c, only: nw => orbital_count, nkl => orbital_l, nkj => orbital_two_j
     use genintrk_I, only: genintrk

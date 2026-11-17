@@ -18,7 +18,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
-      use memory_man
+      use memory_man, only: alloc, ralloc, double
       use keilst_c, only: double, frstki, indkei, ndkea, nkei, valkei
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

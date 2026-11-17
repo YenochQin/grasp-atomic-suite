@@ -16,14 +16,16 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_radial_points
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c
+      use def_c, only: accy, double, max_radial_points, nuclear_charge, speed_of_light_au, vacuum_speed_of_light_au
       use default_c, only: double, inpci, ndef, ndump
       use foparm_c, only: iccut
-      use grid_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use npot_c, only: double, first_grid_index_beyond_fermi_c, max_radial_points, negative_radius_times_potential
-      use orb_c
-      use wave_c
+      use orb_c, only: double, max_orbitals
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
       use wfac_c, only: double, wfact
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

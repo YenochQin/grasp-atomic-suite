@@ -1,5 +1,5 @@
 program cpath_io
-    use mpi_c
+    use mpi_c, only: mpi_finalize, mpi_process_count, mpi_rank, processor_name, processor_name_length, startmpi
     use cpath_I, only: cpath
     use sys_chdir_I, only: sys_chdir
     use sys_getwd_I, only: sys_getwd

@@ -27,8 +27,8 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man
-      use mpi_c
+      use memory_man, only: alloc, dalloc
+      use mpi_c, only: mpi_error_code, mpi_process_count, mpi_rank
 
       use suite_linear_algebra, only: dcopy, dspevx
       use dinit_i, only: dinit

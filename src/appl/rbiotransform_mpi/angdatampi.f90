@@ -11,7 +11,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use orb_c,           only: csf_count, orbital_count
-      use mpi_c
+      use mpi_c, only: mpi_process_count, mpi_rank
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

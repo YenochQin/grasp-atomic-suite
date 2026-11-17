@@ -14,8 +14,8 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man
-      use def_c
+      use memory_man, only: alloc, double
+      use def_c, only: double, electron_count, ncmin
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use blk_c, only: idxblk
       use orb_c, only: csf_count, orbital_count, csf_subshell_occupations

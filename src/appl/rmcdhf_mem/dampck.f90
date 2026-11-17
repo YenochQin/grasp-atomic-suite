@@ -14,7 +14,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use damp_c, only: double, max_orbitals, mixing_damping_factors, orbital_damping_factors
-      use orb_c
+      use orb_c, only: double, max_orbitals, orbital_energy_parameters, ped
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

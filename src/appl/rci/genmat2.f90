@@ -12,9 +12,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
-      use hmat_c  !! rather than setham_to_genmat2
+      use hmat_c, only: cutofftmp, double, ncftmp, ncoectmp, ncoeitmp, ncoretmp, nctectmp, ncteitmp, nelmnttmp, &
+         & nkeitmp, nmcbptmp, ntpitmp, nvintitmp, nvpitmp  !! rather than setham_to_genmat2
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use eigv_c
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

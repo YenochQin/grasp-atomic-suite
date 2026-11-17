@@ -10,7 +10,12 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: int64
-      use rmcdhf_mem_c
+      use rmcdhf_mem_c, only: coeff, coeff_31, coeff_32, coeff_33, coeff_34, coeff_35, coeff_36, coeff_37, coeff_38, &
+         & coeff_39, coeff_40, coeff_41, coeff_42, coeff_43, coeff_44, coeff_45, coeff_46, coeff_47, coeff_48, &
+         & coeff_49, coeff_50, iclmn_31, iclmn_32, iclmn_33, iclmn_34, iclmn_35, iclmn_36, iclmn_37, iclmn_38, &
+         & iclmn_39, iclmn_40, iclmn_41, iclmn_42, iclmn_43, iclmn_44, iclmn_45, iclmn_46, iclmn_47, iclmn_48, &
+         & iclmn_49, iclmn_50, indx, indx_31, indx_32, indx_33, indx_34, indx_35, indx_36, indx_37, indx_38, &
+         & indx_39, indx_40, indx_41, indx_42, indx_43, indx_44, indx_45, indx_46, indx_47, indx_48, indx_49, indx_50
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

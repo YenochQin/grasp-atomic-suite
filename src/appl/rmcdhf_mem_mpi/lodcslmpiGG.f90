@@ -25,7 +25,7 @@
       use parameter_def,   only: max_orbitals
       use orb_c,           only: csf_count, csf_subshell_occupations
       use syma_c,          only: jpgg, nblk0
-      use mpi_c
+      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_rank, mpix_bytes
       use lodcsh2gg_i, only: lodcsh2gg
       implicit none (type, external)
 !-----------------------------------------------

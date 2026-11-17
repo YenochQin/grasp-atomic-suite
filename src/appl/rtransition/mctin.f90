@@ -17,11 +17,12 @@
       use parameter_def,   only: orbital_index_radix, max_orbitals
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c
+      use def_c, only: double
       use foparm_c, only: iccut
       use offd_c, only: noffd1, noffd2
-      use orb_c
-      use osc_c
+      use orb_c, only: double, max_orbitals, orbital_count
+      use osc_c, only: double, nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
+          xsldr, totc, totb, isldr, isldr1, nint, ninteg, nptr, lab, nkp, kp, ltc
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

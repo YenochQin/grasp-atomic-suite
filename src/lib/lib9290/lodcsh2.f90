@@ -36,8 +36,9 @@ contains
 !-----------------------------------------------
       use parameter_def,   only: max_orbitals
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c
-      use orb_c, ncfblock => csf_count
+      use def_c, only: double, electron_count
+      use orb_c, only: ncfblock => csf_count, byte, csf_subshell_occupations, double, max_orbitals, orbital_count, &
+          orbital_l, orbital_principal_n, orbital_symmetry_labels, orbital_two_j
       use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
       use terms_c,         only: jtab, ntab
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit

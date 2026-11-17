@@ -33,7 +33,7 @@
       use parameter_def,   only: orbital_index_radix
       use mcpdata_c, only: cnn, double, intgrl, intptr, jann, jbnn, ncoeff, nintg
       use sbdat1_c, only: double, max_orbitals, nlmax, nshlp, nshlpp
-      use mpi_c
+      use mpi_c, only: double, mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_sum
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

@@ -39,9 +39,10 @@ contains
       use parameter_def,   only: radial_workspace_capacity
       use cnc_c,           only: cnc5c
       use def_c,           only: accy
-      use grid_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use ncc_c, only: c1, c2, c3, c4, double
-      use orb_c
+      use orb_c, only: double
       use tatb_c,          only: zk=>ta, yk=>tb, mtp
       use wave_c,          only: orbital_last_grid_index , radial_large_components, radial_small_components
 !-----------------------------------------------

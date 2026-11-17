@@ -31,9 +31,10 @@ contains
       use parameter_def,   only: max_radial_points
       use cnc_c, only: cnc5c, cnc6c, double
       use def_c,           only: speed_of_light_au, nuclear_charge, accy
-      use grid_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use orb_c
+      use orb_c, only: double, orbital_energy_parameters, orbital_kappa, orbital_origin_exponents
       use pote_c,          only: yp, xp, xq
       use scf_c,           only: ndcof, nda, da
       use wave_c,          only: orbital_origin_parameters,radial_large_components,radial_small_components

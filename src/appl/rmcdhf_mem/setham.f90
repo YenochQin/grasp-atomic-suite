@@ -11,14 +11,17 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
       use parameter_def,    only: orbital_index_radix
-      use memory_man
+      use memory_man, only: alloc, dalloc, double, long
 !-----------------------------------------------
 !   C O M M O N    B l o c k s
 !-----------------------------------------------
-      use hmat_c
+      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+          matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
+          nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
       use mcpa_c, only: double, max_mcp_file_multipole_rank
-      use orb_c
-      use pos_c
+      use orb_c, only: csf_count, double, orbital_count, orbital_kappa, orbital_two_j
+      use pos_c, only: double, total_csf_count, mixing_coefficient_storage_size, &
+          csf_offsets_by_block, eigenvalue_offsets_by_block, mixing_offsets_by_block
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use rmcdhf_mem_c,     only: indx, coeff
 !-----------------------------------------------

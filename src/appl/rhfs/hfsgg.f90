@@ -23,19 +23,20 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals
-      use memory_man
+      use memory_man, only: alloc, dalloc, byte, double
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use def_c,           only: electron_mass_u, vacuum_speed_of_light_au, proton_mass_u, bohr_radius_cm, &
          & hartree_to_wavenumber_cm,     &
                                  speed_of_light_cm_per_s, b1=>electron_mass_u
-      use eigv_c
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
       use foparm_c, only: iccut
-      use jlabl_c,               labj=>jlbr, labp=>jlbp
+      use jlabl_c, only: labj => jlbr, labp => jlbp
       use nsmdat_c,        only: sqn, dmomnm, qmomb,                  &
                                  hfsi=>sqn, hfsd=>dmomnm, hfsq=>qmomb
-      use orb_c
+      use orb_c, only: byte, csf_count, double, max_orbitals, orbital_count
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use opt6_c
+      use opt6_c, only: double
       use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

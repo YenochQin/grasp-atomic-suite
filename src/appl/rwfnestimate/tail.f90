@@ -19,8 +19,9 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def, only: max_radial_points
       use def_c, only: accy, speed_of_light_au, expmax
-      use grid_c
-      use orb_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+      use orb_c, only: double, orbital_energy_parameters, orbital_kappa
       use pote_c, only: yp
       implicit none (type, external)
 !-----------------------------------------------

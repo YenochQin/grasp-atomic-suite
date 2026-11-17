@@ -36,14 +36,15 @@
       use rangular_mpi_input, only: mpi_angular_input_options, parse_mpi_angular_options, &
            open_mpi_angular_profile, load_mpi_angular_header, load_mpi_angular_block, close_mpi_angular_input
       use rangular_profile, only: stage_clock, record_stage, close_stage_profile
-      use memory_man
+      use memory_man, only: alloc, byte, double
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use mpi_c
+      use mpi_c, only: double, mpi_barrier, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, &
+         & mpi_process_count, mpi_rank, processor_name, processor_name_length
       use default_c, only: double, inpci, ndef, ndump
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use orb_c
+      use orb_c, only: byte, csf_count, csf_subshell_occupations, double, max_orbitals
       use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
       use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit

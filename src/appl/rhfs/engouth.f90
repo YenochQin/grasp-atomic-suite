@@ -18,7 +18,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use def_c, only: hartree_to_wavenumber_cm, hartree_to_ev, speed_of_light_cm_per_s, einstein_a_au_to_si, einstein_b_au_to_si
-      use jlabl_c, labj=> jlbr, labp=>jlbp
+      use jlabl_c, only: labj => jlbr, labp => jlbp
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -12,9 +12,10 @@
       use parameter_def,    only: orbital_index_radix, max_orbitals, max_radial_points
       use debug_c,          only: cutoff
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use ris_c
-      use orb_c
-      use eigv_c
+      use ris_c, only: double, dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
+      use orb_c, only: byte, csf_count, double, max_orbitals
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
       use mpi_c,            only: mpi_rank, mpi_process_count
       implicit none (type, external)
       integer, intent(in) :: nrnuc

@@ -24,7 +24,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals, orbital_index_radix
-      use memory_man
+      use memory_man, only: dalloc, byte, double
 !      USE def_C
 !      USE EIGV_C
       use foparm_c, only: iccut
@@ -32,13 +32,14 @@
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
-      use blk_c
+      use blk_c, only: double, ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
+          nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
       use orb_c,           only: csf_count, orbital_count,orbital_kappa, csf_subshell_occupations
       use jqjc_c, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
       use orbord_c, only: nordff, nordii
       use mcpdata_c, only: cnn, double, intgrl, intptr, jann, jbnn, ncoeff, nintg
       use sbdat_c,         only: kamax,nlmax,nakinvii,nakinvff
-      use mpi_c
+      use mpi_c, only: double, mpi_process_count, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

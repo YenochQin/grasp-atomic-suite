@@ -13,9 +13,10 @@ program mcp_reader_io
     use setcof_I, only: setcof
 #endif
 #ifdef MCP_MPI
-    use mpi_c
+    use mpi_c, only: mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize, mpi_init, &
+       & mpi_process_count, mpi_rank
 #else
-    use mpi_s
+    use mpi_s, only: mpi_process_count, mpi_rank
 #endif
     implicit none (type, external)
     character(40) :: scenario, prefix

@@ -47,7 +47,8 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
 !     COMMON /mpi/ myid, nprocs, ierr
-      use mpi_c
+      use mpi_c, only: mpi_abort, mpi_allreduce, mpi_barrier, mpi_character, mpi_comm_world, mpi_error_code, &
+         & mpi_in_place, mpi_integer, mpi_process_count, mpi_rank, mpi_recv, mpi_send, mpi_status_buffer, mpi_sum
 !     include 'mpif.h'
 !     integer  myid, nprocs, ierr, istat(MPI_STATUS_SIZE)
 !-----------------------------------------------

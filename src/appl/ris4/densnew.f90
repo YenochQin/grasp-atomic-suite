@@ -29,18 +29,22 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
       use parameter_def,    only: orbital_index_radix, max_orbitals, max_radial_points
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c
-      use eigv_c
+      use def_c, only: double, max_radial_points
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
       use foparm_c, only: iccut
-      use grid_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use jlabl_c, only: jlbl, jlbp, jlbr
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use orb_c
-      use blk_c
+      use orb_c, only: byte, csf_count, double, max_orbitals, orbital_count, orbital_kappa
+      use blk_c, only: double, ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
+          nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use teilst_c, only: ndtea, ntei, pindte, pvalte, firstt
-      use buffer_c
-      use ris_c
+      use buffer_c, only: double, angular_buffer_capacity, angular_coefficient_count, &
+          angular_coefficient_labels, angular_coefficients
+      use ris_c, only: double, dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
       use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use prnt_c,           only : nvec
 !-----------------------------------------------

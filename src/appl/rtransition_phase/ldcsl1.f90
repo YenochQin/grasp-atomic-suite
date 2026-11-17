@@ -15,10 +15,12 @@
 !   M o d u l e s
 !-----------------------------------------------
       use parameter_def,   only: max_orbitals
-      use memory_man
-      use def_c
-      use biorb_c
-      use orb_c
+      use memory_man, only: alloc, dalloc, byte, double
+      use def_c, only: double, electron_count, nelecii, nelecr
+      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+          nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
+      use orb_c, only: byte, csf_count, csf_subshell_occupations, double, iqar, max_orbitals, nakr, ncfr, nhr, npr, &
+          nwr, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, orbital_symmetry_labels, orbital_two_j
       use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

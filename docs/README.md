@@ -49,6 +49,22 @@ docs/
 | --- | --- | --- |
 | USE ONLY 第十批：PACK 接口 | [use_only_pack_2026-11-17.md](reviews/use_only_pack_2026-11-17.md) | 11 份源码明确导入重导出的 pack 过程，保留实现绑定；剩余 C121 为 1,746。 |
 | USE ONLY 第十一批：RCI 与 RIS4 状态模块 | [use_only_state5_2026-11-17.md](reviews/use_only_state5_2026-11-17.md) | 29 份源码补充 33 处 ONLY，保留全部公开符号；剩余 C121 为 1,713。 |
+| USE ONLY 第十二批：RIS 状态模块 | [use_only_ris_2026-11-17.md](reviews/use_only_ris_2026-11-17.md) | 14 份源码补充 15 处 ONLY；剩余 C121 为 1,698。 |
+| USE ONLY 第十三批：BILST 状态模块 | [use_only_bilst_2026-11-17.md](reviews/use_only_bilst_2026-11-17.md) | 26 份源码补充 26 处 ONLY；剩余 C121 为 1,672。 |
+| USE ONLY 第十四批：POS 状态模块 | [use_only_pos_2026-11-17.md](reviews/use_only_pos_2026-11-17.md) | 28 份源码补充 28 处 ONLY；剩余 C121 为 1,644。 |
+| USE ONLY 第十五批：角系数缓冲区 | [use_only_buffer_2026-11-17.md](reviews/use_only_buffer_2026-11-17.md) | 15 份源码补充 15 处 ONLY；剩余 C121 为 1,629。 |
+| USE ONLY 第十六批：跃迁振子强度状态模块 | [use_only_osc_2026-11-17.md](reviews/use_only_osc_2026-11-17.md) | 21 份源码补充 21 处 ONLY，剩余 C121 为 1,608。 |
+| USE ONLY 第十七批：跃迁程序的 JJ2LSJ 数据导入 | [use_only_jj2lsjbio_2026-11-17.md](reviews/use_only_jj2lsjbio_2026-11-17.md) | 15 份源码补充 15 处 ONLY，剩余 C121 为 1,593。 |
+| USE ONLY 第十八批：轨道变换、分块和本征解模块 | [use_only_transition_state_2026-11-17.md](reviews/use_only_transition_state_2026-11-17.md) | 138 份源码补充 164 处 ONLY，剩余 C121 为 1,429。 |
+| USE ONLY 第十九批：径向网格和波函数模块 | [use_only_radial_2026-11-17.md](reviews/use_only_radial_2026-11-17.md) | 106 份源码补充 152 处 ONLY，剩余 C121 为 1,277。 |
+| USE ONLY 第二十批：RMCDHF 和模块内的径向数据导入 | [use_only_radial2_2026-11-17.md](reviews/use_only_radial2_2026-11-17.md) | 107 份文件补充 163 处 ONLY，剩余 C121 为 1,114。 |
+| USE ONLY 第二十一批：SCF、哈密顿矩阵和过程接口 | [use_only_scf_2026-11-17.md](reviews/use_only_scf_2026-11-17.md) | 116 份源码处理 153 处导入，剩余 C121 为 961。 |
+| USE ONLY 第二十二批：分配模块与测试替身 | [use_only_memory_2026-11-17.md](reviews/use_only_memory_2026-11-17.md) | 182 份源码补充 182 处 ONLY，剩余 C121 为 779。 |
+| USE ONLY 第二十三批：物理参数和轨道状态 | [use_only_def_orb_2026-11-17.md](reviews/use_only_def_orb_2026-11-17.md) | 149 份源码补充 181 处 ONLY，剩余 C121 为 598。 |
+| USE ONLY 第二十四批：RMCDHF 物理参数和轨道状态 | [use_only_rmcdhf_def_orb_2026-11-17.md](reviews/use_only_rmcdhf_def_orb_2026-11-17.md) | 136 份源码补充 180 处 ONLY，剩余 C121 为 418。 |
+| USE ONLY 第二十五批：轨道状态和角动量标签 | [use_only_orb_label_2026-11-17.md](reviews/use_only_orb_label_2026-11-17.md) | 174 份源码处理 180 处导入，剩余 C121 为 238。 |
+| USE ONLY 第二十六批：MPI 和串行模块导入 | [use_only_mpi_2026-11-17.md](reviews/use_only_mpi_2026-11-17.md) | 143 份文件处理 166 处导入，剩余 C121 为 72。 |
+| USE ONLY 第二十七批及保留例外 | [use_only_final_2026-11-17.md](reviews/use_only_final_2026-11-17.md) | 31 份文件补充 71 处 ONLY，剩余 1 条为 mpi_c 的公开 MPI 重导出。 |
 | USE ONLY 第九批：数组状态 | [use_only_state_arrays_2026-11-17.md](reviews/use_only_state_arrays_2026-11-17.md) | 146 份文件补齐 193 条 ONLY，保留八个模块的完整公开实体；剩余 C121 为 1,757。 |
 | USE ONLY 第八批：应用选项 | [use_only_application_flags_2026-11-17.md](reviews/use_only_application_flags_2026-11-17.md) | 138 份应用源码补齐 151 条调试/计算选项导入，剩余 C121 为 1,950。 |
 | USE ONLY 第七批：调试状态 | [use_only_debug_2026-11-17.md](reviews/use_only_debug_2026-11-17.md) | 15 份共享库源码补齐 debug_c 完整导入列表，剩余 C121 为 2,101。 |

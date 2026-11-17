@@ -29,7 +29,6 @@ contains
 ! Shared-filesystem-safe MPI startup for the post-processing programs.
 ! Unlike startmpi2, this variant does not change the working directory.
 !***********************************************************************
-      use mpi
       use, intrinsic :: iso_fortran_env, only: error_unit
 
       implicit none (type, external)
@@ -175,7 +174,7 @@ contains
       subroutine mpix_shutdown (myid, ncount1, progname)
 ! Shared-filesystem-safe MPI shutdown companion to mpix_startup.
 !***********************************************************************
-      use mpi
+      use mpi, only: mpi_finalize
       implicit none (type, external)
       integer, intent(in) :: myid, ncount1
       character(len=*), intent(in) :: progname
@@ -219,7 +218,7 @@ contains
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      use mpi
+      use mpi, only: mpi_barrier, mpi_comm_world
 
 
       implicit none (type, external)
@@ -287,7 +286,7 @@ contains
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      use mpi
+      use mpi, only: mpi_character, mpi_comm_world, mpi_integer, mpi_recv, mpi_send, mpi_status_size
       implicit none (type, external)
       integer, intent(in)  ::  myid, nprocs
       character(len=*), intent(inout) :: msg
@@ -324,7 +323,7 @@ contains
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      use mpi
+      use mpi, only: mpi_barrier, mpi_comm_world
       implicit none (type, external)
       integer, intent(in) :: myid
       character(len=*), intent(in) :: what
@@ -354,7 +353,7 @@ contains
 !     Sum x over all nodes and in y, then copy y to  x
 !***********************************************************************
       use, intrinsic :: iso_fortran_env, only: real64
-      use mpi
+      use mpi, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_sum
       use suite_linear_algebra, only: dcopy
       use dinit_i, only: dinit
       implicit none (type, external)
@@ -380,7 +379,7 @@ contains
 !***********************************************************************
       use, intrinsic :: iso_fortran_env, only: real64
       use mpi_c, only: mpi_rank
-      use mpi
+      use mpi, only: mpi_comm_world, mpi_double_precision, mpi_reduce, mpi_sum
       use suite_linear_algebra, only: dcopy
       use dinit_i, only: dinit
       implicit none (type, external)
@@ -411,7 +410,7 @@ contains
 !***********************************************************************
       use, intrinsic :: iso_fortran_env, only: real64
       use mpi_c, only: mpi_rank
-      use mpi
+      use mpi, only: mpi_comm_world, mpi_double_precision, mpi_max, mpi_reduce
       use suite_linear_algebra, only: dcopy
       implicit none (type, external)
 
@@ -437,7 +436,7 @@ contains
       subroutine gisummpi (ix, n)
 !     Sum x over all nodes and in iy, then copy iy to  ix
 !***********************************************************************
-      use mpi
+      use mpi, only: mpi_allreduce, mpi_comm_world, mpi_integer, mpi_sum
       use icopy_i, only: icopy
       implicit none (type, external)
 

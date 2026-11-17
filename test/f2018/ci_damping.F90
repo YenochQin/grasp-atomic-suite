@@ -19,7 +19,7 @@ end subroutine eigenpairs
 end module ci_fixture
 
 program ci_damping
-    use ci_fixture
+    use ci_fixture, only: double, eigenpairs, eval, evec, long, solves
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use damp_c, only: cdamp => mixing_damping_factors
     use def_c, only: iccmin, ncmin, ncmax
@@ -34,12 +34,13 @@ program ci_damping
     use peav_C, only: eavblk
     use syma_C, only: jpgg
 #ifdef CI_MPI
-    use mpi_c, host => processor_name, ierr => mpi_error_code, istat => mpi_status_buffer, lenhost => &
-       & processor_name_length, myid => mpi_rank, nprocs => mpi_process_count
-    use matrixmpi_I
+    use mpi_c, only: host => processor_name, ierr => mpi_error_code, istat => mpi_status_buffer, &
+       & lenhost => processor_name_length, myid => mpi_rank, nprocs => mpi_process_count, double, mpi_finalize, &
+       & startmpi
+    use matrixmpi_I, only: matrixmpi
 #else
-    use mpi_s, myid => mpi_rank, nprocs => mpi_process_count
-    use matrix_I
+    use mpi_s, only: myid => mpi_rank, nprocs => mpi_process_count, double
+    use matrix_I, only: matrix
 #endif
 #ifdef CI_MEM
     use rmcdhf_mem_C, only: imin1_30, imax1_30, imin2_30, imax2_30

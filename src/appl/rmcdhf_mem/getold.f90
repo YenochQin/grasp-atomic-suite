@@ -6,17 +6,17 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_orbitals
-      use memory_man
+      use memory_man, only: alloc, double
       use blkidx_c, only: double, idxblk
       use damp_c, only: mixing_damping_factors, orbital_damping_factors
-      use def_c, rwtdum=>wt
+      use def_c, only: rwtdum => wt, double, ncmin, nscf, nsic, nsolv, weight
       use default_c, only: double, inpci, ndef, ndump
       use fixd_c, only: is_orbital_fixed, fixed_orbital_count
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use invt_c, only: noinvt
       use orthct_c, only: orthst
-      use orb_c
+      use orb_c, only: double, max_orbitals, orbital_count
       use orba_c, only: iorder
       use corre_c, only: lcorre
       use scf_c, only: scnsty,method

@@ -4,7 +4,7 @@
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use mpi_c
+      use mpi_c, only: mpi_comm_world, mpi_error_code, mpi_integer, mpi_rank, mpi_reduce, mpi_sum
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

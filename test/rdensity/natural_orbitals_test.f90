@@ -1,6 +1,6 @@
 program natural_orbitals_test
     use, intrinsic :: iso_fortran_env, only: real64
-    use natural_orbitals
+    use natural_orbitals, only: diagonalize_density, transform_radial_block
     implicit none (type, external)
     real(real64) :: matrix(23,23), occupation(23), rotation(23,23), diagonal(23,23)
     real(real64) :: p(2,23), q(2,23), origin(23), before(2,23), original_origin(23)

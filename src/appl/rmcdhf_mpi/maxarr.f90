@@ -14,8 +14,9 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
-      use orb_c
-      use scf_c
+      use orb_c, only: double, max_orbitals, orbital_count
+      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+          nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -37,7 +37,15 @@ def main() -> None:
                          "docs/reference/rmcdhf_use_only_state2_snapshot.json",
                          "docs/reference/rmcdhf_use_only_state3_snapshot.json",
                          "docs/reference/rmcdhf_use_only_debug_snapshot.json",
-                         "docs/reference/rmcdhf_use_only_state4_snapshot.json"):
+                         "docs/reference/rmcdhf_use_only_state4_snapshot.json",
+                         "docs/reference/rmcdhf_use_only_pack_snapshot.json",
+                         "docs/reference/rmcdhf_use_only_pos_snapshot.json",
+                         "docs/reference/rmcdhf_use_only_eigv_snapshot.json",
+                         "docs/reference/rmcdhf_use_only_radial_snapshot.json",
+                         "docs/reference/rmcdhf_use_only_scf_snapshot.json",
+                         "docs/reference/rmcdhf_use_only_memory_snapshot.json",
+                         "docs/reference/rmcdhf_use_only_def_orb_snapshot.json",
+                         "docs/reference/rmcdhf_use_only_orb_label_snapshot.json"):
             target = work / relative
             original = target.read_bytes()
             target.write_bytes(original + b"\n")

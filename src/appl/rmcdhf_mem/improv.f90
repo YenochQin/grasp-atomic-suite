@@ -7,15 +7,19 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use corre_c, only: double, lcorre, max_orbitals
       use damp_c, only: double, max_orbitals, mixing_damping_factors, orbital_damping_factors
-      use def_c
-      use grid_c
+      use def_c, only: accy, double, max_radial_points, nsic
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use int_c, only: double, max_radial_points, mtp0, p, p0, q, q0, tf, tg, xu, xv
-      use mpi_s
-      use orb_c
+      use mpi_s, only: double, mpi_rank
+      use orb_c, only: double, max_orbitals, orbital_count, orbital_energy_parameters, orbital_origin_exponents, &
+          orbital_principal_n, orbital_symmetry_labels, ped
       use orthct_c, only: orthst
-      use scf_c
+      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+          nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
       use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
-      use wave_c
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

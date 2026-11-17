@@ -31,7 +31,7 @@
       use iso_fortran_env, only: int64
       use rangular_profile, only: stage_clock, record_stage
       use parameter_def,   only:  max_orbitals, orbital_index_radix
-      use memory_man
+      use memory_man, only: alloc, dalloc
       use mpi_c,           only:  mpi_rank, mpi_process_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

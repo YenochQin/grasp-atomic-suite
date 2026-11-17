@@ -34,7 +34,8 @@
       use strsum_i, only: strsum
       use factt_i, only: factt
       use oscl_i, only: oscl
-      use mpi_c
+      use mpi_c, only: double, mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_integer, &
+         & mpi_process_count, mpi_rank, processor_name, processor_name_length
 
       use suite_system, only: exit => terminate_process
       use mpiu_i, only: startmpi2

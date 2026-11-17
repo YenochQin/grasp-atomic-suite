@@ -24,8 +24,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c
-      use orb_c
+      use def_c, only: nuclear_charge, speed_of_light_au
+      use orb_c, only: orbital_energy_parameters, orbital_kappa, orbital_principal_n
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

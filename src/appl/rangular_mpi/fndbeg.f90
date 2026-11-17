@@ -10,7 +10,7 @@
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
       use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
-      use orb_c
+      use orb_c, only: csf_count, double
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

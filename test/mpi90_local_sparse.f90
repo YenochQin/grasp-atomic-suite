@@ -52,7 +52,8 @@ end module mpiu_i
 
 
 program mpi90_local_sparse
-    use sparse_reduction_check
+    use sparse_reduction_check, only: check_reduction, dense, double, matrix_size, myid, nprocs, packed_error, &
+       & packed_size
     use hmat_c, only: emt => hamiltonian_values, irow => matrix_partner_indices, iendc => stored_segment_end_offsets, &
        & nelmnt => stored_matrix_element_count
     use mpi_c, only: ierr => mpi_error_code

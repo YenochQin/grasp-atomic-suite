@@ -17,7 +17,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use parameter_def, only: max_orbitals
-      use orb_c
+      use orb_c, only: max_orbitals, orbital_count, orbital_principal_n, orbital_symmetry_labels, orbital_two_j
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

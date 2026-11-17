@@ -32,7 +32,7 @@
       use rangular_profile, only: stage_clock, record_stage
       use rangular_reuse, only: reuse_requested, begin_reuse_block, end_reuse_block, load_reused_pair
       use parameter_def,   only:  max_orbitals, orbital_index_radix
-      use memory_man
+      use memory_man, only: alloc, dalloc, ralloc, double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

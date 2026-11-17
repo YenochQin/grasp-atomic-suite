@@ -220,6 +220,62 @@ def main(root: Path) -> None:
     for name, record in use_pack["files"].items():
         assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
     reviewed_fortran |= use_pack["files"]
+    use_pos = json.loads((root / "docs/reference/rmcdhf_use_only_pos_snapshot.json").read_text())
+    assert use_pos["schema_version"] == 1
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_pack_snapshot.json").read_bytes()).hexdigest() == use_pos["previous_manifest_sha256"]
+    assert set(use_pos["files"]).issubset(reviewed_fortran)
+    for name, record in use_pos["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
+    reviewed_fortran |= use_pos["files"]
+    use_eigv = json.loads((root / "docs/reference/rmcdhf_use_only_eigv_snapshot.json").read_text())
+    assert use_eigv["schema_version"] == 1
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_pos_snapshot.json").read_bytes()).hexdigest() == use_eigv["previous_manifest_sha256"]
+    assert set(use_eigv["files"]).issubset(reviewed_fortran)
+    for name, record in use_eigv["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
+    reviewed_fortran |= use_eigv["files"]
+    use_radial = json.loads((root / "docs/reference/rmcdhf_use_only_radial_snapshot.json").read_text())
+    assert use_radial["schema_version"] == 1
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_eigv_snapshot.json").read_bytes()).hexdigest() == use_radial["previous_manifest_sha256"]
+    assert set(use_radial["files"]).issubset(reviewed_fortran)
+    for name, record in use_radial["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
+    reviewed_fortran |= use_radial["files"]
+    use_scf = json.loads((root / "docs/reference/rmcdhf_use_only_scf_snapshot.json").read_text())
+    assert use_scf["schema_version"] == 1
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_radial_snapshot.json").read_bytes()).hexdigest() == use_scf["previous_manifest_sha256"]
+    assert set(use_scf["files"]).issubset(reviewed_fortran)
+    for name, record in use_scf["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
+    reviewed_fortran |= use_scf["files"]
+    use_memory = json.loads((root / "docs/reference/rmcdhf_use_only_memory_snapshot.json").read_text())
+    assert use_memory["schema_version"] == 1
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_scf_snapshot.json").read_bytes()).hexdigest() == use_memory["previous_manifest_sha256"]
+    assert set(use_memory["files"]).issubset(reviewed_fortran)
+    for name, record in use_memory["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
+    reviewed_fortran |= use_memory["files"]
+    use_def_orb = json.loads((root / "docs/reference/rmcdhf_use_only_def_orb_snapshot.json").read_text())
+    assert use_def_orb["schema_version"] == 1
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_memory_snapshot.json").read_bytes()).hexdigest() == use_def_orb["previous_manifest_sha256"]
+    assert set(use_def_orb["files"]).issubset(reviewed_fortran)
+    for name, record in use_def_orb["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
+    reviewed_fortran |= use_def_orb["files"]
+    use_orb_label = json.loads((root / "docs/reference/rmcdhf_use_only_orb_label_snapshot.json").read_text())
+    assert use_orb_label["schema_version"] == 1
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_def_orb_snapshot.json").read_bytes()).hexdigest() == use_orb_label["previous_manifest_sha256"]
+    assert set(use_orb_label["files"]).issubset(reviewed_fortran)
+    for name, record in use_orb_label["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
+    reviewed_fortran |= use_orb_label["files"]
+    use_mpi = json.loads((root / "docs/reference/rmcdhf_use_only_mpi_snapshot.json").read_text())
+    assert use_mpi["schema_version"] == 1
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_orb_label_snapshot.json").read_bytes()).hexdigest() == use_mpi["previous_manifest_sha256"]
+    assert set(use_mpi["files"]).issubset(reviewed_fortran)
+    for name, record in use_mpi["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
+    reviewed_fortran |= use_mpi["files"]
     actual = {
         str(path.relative_to(root))
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")

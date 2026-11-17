@@ -18,8 +18,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, double => real64
-      use jj2lsj_profile
-      use jj2lsj_postprocess
+      use jj2lsj_profile, only: profile_emit, profile_file_size, profile_finish, profile_start, profile_time
+      use jj2lsj_postprocess, only: ls_ranking, post_worker_count, rank_ls
       implicit none (type, external)
       private :: real64
 !-----------------------------------------------
@@ -256,8 +256,8 @@ contains
                                            ncfmin,ncfmax,values,active)
       use eigv_c, only: csf_mixing_coefficients
       use orb_c, only: csf_count
-      use itjpo_i
-      use ispar_i
+      use itjpo_i, only: itjpo
+      use ispar_i, only: ispar
       use, intrinsic :: iso_fortran_env, only: int64
       implicit none (type, external)
       integer, intent(in) :: ls, iw1, ncfmin, ncfmax
@@ -315,8 +315,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjpo_i
-      use ispar_i
+      use itjpo_i, only: itjpo
+      use ispar_i, only: ispar
 !      USE idigit_I
 !      USE ittk_I
 !      USE ixjtik_I
@@ -569,10 +569,22 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use jj2lsj_c
-      use jj2lsj_data_1_c
-      use jj2lsj_data_2_c
-      use jj2lsj_data_3_c
+      use jj2lsj_c, only: ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, ls_jj_number_d5, ls_jj_number_d6, &
+         & ls_jj_number_d7, ls_jj_number_d8, ls_jj_number_d9, ls_jj_number_f3, ls_jj_number_f4, ls_jj_number_f5, &
+         & ls_jj_number_f6, ls_jj_number_f7, ls_jj_number_p3, ls_jj_number_p4, ls_jj_number_p5, ls_jj_number_p6
+      use jj2lsj_data_1_c, only: ls_jj_d_10, ls_jj_d_3, ls_jj_d_4, ls_jj_d_5, ls_jj_d_6, ls_jj_d_7, ls_jj_d_8, &
+         & ls_jj_d_9, ls_jj_f_3, ls_jj_f_4, ls_jj_f_5, ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, &
+         & ls_jj_number_d5, ls_jj_number_d6, ls_jj_number_d7, ls_jj_number_d8, ls_jj_number_d9, ls_jj_number_f3, &
+         & ls_jj_number_f4, ls_jj_number_f5, ls_jj_number_f6, ls_jj_number_f7, ls_jj_number_p3, ls_jj_number_p4, &
+         & ls_jj_number_p5, ls_jj_number_p6, ls_jj_p_3, ls_jj_p_4, ls_jj_p_5, ls_jj_p_6
+      use jj2lsj_data_2_c, only: ls_jj_f_6, ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, ls_jj_number_d5, &
+         & ls_jj_number_d6, ls_jj_number_d7, ls_jj_number_d8, ls_jj_number_d9, ls_jj_number_f3, ls_jj_number_f4, &
+         & ls_jj_number_f5, ls_jj_number_f6, ls_jj_number_f7, ls_jj_number_p3, ls_jj_number_p4, ls_jj_number_p5, &
+         & ls_jj_number_p6
+      use jj2lsj_data_3_c, only: ls_jj_f_7, ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, ls_jj_number_d5, &
+         & ls_jj_number_d6, ls_jj_number_d7, ls_jj_number_d8, ls_jj_number_d9, ls_jj_number_f3, ls_jj_number_f4, &
+         & ls_jj_number_f5, ls_jj_number_f6, ls_jj_number_f7, ls_jj_number_p3, ls_jj_number_p4, ls_jj_number_p5, &
+         & ls_jj_number_p6
       use cons_c,          only: zero, one
       implicit none (type, external)
 !-----------------------------------------------
@@ -859,7 +871,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjpo_i
+      use itjpo_i, only: itjpo
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -1146,9 +1158,9 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use jqs_i
-      use ichop_i
-      use jcup_i
+      use jqs_i, only: jqs
+      use ichop_i, only: ichop
+      use jcup_i, only: jcup
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -1241,7 +1253,9 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use jj2lsj_c
+      use jj2lsj_c, only: subshell_term_ls, term_ls_d, term_ls_f, term_ls_g1, term_ls_g2, term_ls_h1, term_ls_h2, &
+         & term_ls_i1, term_ls_i2, term_ls_k1, term_ls_k2, term_ls_l1, term_ls_l2, term_ls_m1, term_ls_m2, &
+         & term_ls_p, term_ls_s
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -1839,7 +1853,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use idigit_i
+      use idigit_i, only: idigit
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -1944,8 +1958,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjpo_i
-      use ispar_i
+      use itjpo_i, only: itjpo
+      use ispar_i, only: ispar
       use convrt_double_i, only: convrt_double
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
@@ -2391,9 +2405,9 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjpo_i
-      use iq_i
-      use jqs_i
+      use itjpo_i, only: itjpo
+      use iq_i, only: iq
+      use jqs_i, only: jqs
       use convrt_double_i, only: convrt_double
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
@@ -2624,8 +2638,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjpo_i
-      use iq_i
+      use itjpo_i, only: itjpo
+      use iq_i, only: iq
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -2867,7 +2881,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ispar_i
+      use ispar_i, only: ispar
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -2918,11 +2932,11 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use jj2lsj_c
+      use jj2lsj_c, only: subshell_term_ls
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ittk_i
+      use ittk_i, only: ittk
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -3030,9 +3044,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjpo_i
-      use ispar_i
-      use iq_i
+      use ispar_i, only: ispar
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -3091,8 +3103,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use iq_i
-      use jqs_i
+      use iq_i, only: iq
+      use jqs_i, only: jqs
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -3192,9 +3204,9 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ixjtik_i
-      use iq_i
-      use jqs_i
+      use ixjtik_i, only: ixjtik
+      use iq_i, only: iq
+      use jqs_i, only: jqs
       use nine_i, only: nine
       use sixj_i, only: sixj
       implicit none (type, external)

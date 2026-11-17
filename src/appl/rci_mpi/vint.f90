@@ -17,8 +17,8 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
-      use memory_man
-      use vinlst_c, first=>frstvi
+      use memory_man, only: alloc, ralloc
+      use vinlst_c, only: first => frstvi, indtei, ndvin, nvinti, valtei
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

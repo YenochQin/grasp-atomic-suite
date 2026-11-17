@@ -19,7 +19,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use cons_c, only: double, eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
-      use orb_c
+      use orb_c, only: double
       use iccu_c, only: iccut, iccutblk
       use default_c, only: double, inpci, ndef, ndump
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit

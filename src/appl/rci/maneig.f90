@@ -44,10 +44,13 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
-      use memory_man
-      use eigv_c
+      use memory_man, only: alloc, dalloc, ralloc, byte, double, long
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
       use fposition_c, only: nposition
-      use hmat_c
+      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+          matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
+          nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
       use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use where_c, only: double, imcdf
@@ -61,9 +64,9 @@
       use spodmv_i, only: spodmv
       use posfile_i, only: posfile
       use dinit_i, only: dinit
-      use dspevx_i
+      use dspevx_i, only: dspevx
       use iniestsd_i, only: iniestsd
-      use gdvd_i
+      use gdvd_i, only: dvd_operator, gdvd
       use iniest2_i, only: iniest2
       use iniestdm_i, only: iniestdm
       use itjpo_i, only: itjpo

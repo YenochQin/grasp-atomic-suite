@@ -21,20 +21,24 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
       use parameter_def,   only: max_orbitals
-      use memory_man
+      use memory_man, only: alloc, dalloc, byte, double, long
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c
-      use eigv_c
+      use def_c, only: double, hartree_to_ev, hartree_to_wavenumber_cm, iccmin
+      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+          csf_mixing_coefficients, evecff, evecii
 !      USE foparm_C
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use hmat_c
+      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+          matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
+          nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use jlabl_c, labj=>jlbr, labp=>jlbp
+      use jlabl_c, only: labj => jlbr, labp => jlbp
       use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
       use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
-      use wave_c
+      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
       use where_c, only: double, imcdf
       use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
       use eigvec1_c, only: double, evec1
@@ -42,7 +46,8 @@
       use iccu_c, only: iccut, iccutblk
       use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
       use coeils_c, only: double, frstco, indoei, ncoei, ndcoea, valoei
-      use bilst_c
+      use bilst_c, only: double, ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
+          valtp1, valtp2, valtp3, valtp4, valtp5, valtp6, first
       use vpilst_c, only: double, frstvp, indvpi, ndvpa, nvpi, valvpi
       use keilst_c, only: double, frstki, indkei, ndkea, nkei, valkei
       use vinlst_c, only: double, frstvi, indtei, ndvin, nvinti, valtei

@@ -19,7 +19,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c
+      use def_c, only: pi
 !
       implicit none (type, external)
 !-----------------------------------------------

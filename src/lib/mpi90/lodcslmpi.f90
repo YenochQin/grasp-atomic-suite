@@ -28,7 +28,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use parameter_def,   only:  max_orbitals
-      use mpi_c
+      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_rank, mpix_bytes
       use orb_c,           only: csf_count, csf_subshell_occupations
       use stat_c,          only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
 

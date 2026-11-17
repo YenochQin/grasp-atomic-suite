@@ -7,12 +7,12 @@ program lib9290_quad
 contains
 
     subroutine runtest
-        use parameter_def
-        use grid_c, h => transformed_grid_step, hp => asymptotic_grid_step, n => radial_point_count, nnn1 => &
-           & radial_workspace_capacity, r => radial_grid, rnt => radial_grid_scale, rp => radial_grid_derivative, rpor &
-           & => radial_derivative_over_radius
-        use tatb_c, nnn1 => radial_workspace_capacity
-        use quad_I
+        use parameter_def, only: nnn1, radial_workspace_capacity
+        use grid_c, only: double, h => transformed_grid_step, hp => asymptotic_grid_step, n => radial_point_count, &
+           & nnn1 => radial_workspace_capacity, r => radial_grid, rnt => radial_grid_scale, rp => radial_grid_derivative, &
+           & rpor => radial_derivative_over_radius
+        use tatb_c, only: nnn1 => radial_workspace_capacity, double, mtp, ta
+        use quad_I, only: quad
         use, intrinsic :: iso_fortran_env, only: real64
 
 
@@ -35,13 +35,13 @@ contains
     end subroutine runtest
 
     subroutine setup
-        use parameter_def
-        use grid_c, h => transformed_grid_step, hp => asymptotic_grid_step, n => radial_point_count, nnn1 => &
-           & radial_workspace_capacity, r => radial_grid, rnt => radial_grid_scale, rp => radial_grid_derivative, rpor &
-           & => radial_derivative_over_radius
-        use tatb_c, nnn1 => radial_workspace_capacity
-        use setqic_I
-        use radgrd_I
+        use parameter_def, only: nnn1, nnnp, radial_workspace_capacity
+        use grid_c, only: double, h => transformed_grid_step, hp => asymptotic_grid_step, n => radial_point_count, &
+           & nnn1 => radial_workspace_capacity, r => radial_grid, rnt => radial_grid_scale, rp => radial_grid_derivative, &
+           & rpor => radial_derivative_over_radius
+        use tatb_c, only: nnn1 => radial_workspace_capacity, double, mtp, ta
+        use setqic_I, only: setqic
+        use radgrd_I, only: radgrd
         use, intrinsic :: iso_fortran_env, only: real64
 
         H = 5.0e-2_real64

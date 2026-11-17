@@ -21,7 +21,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use memory_man
+      use memory_man, only: alloc, dalloc, ralloc
       use buffer_c,       only: angular_coefficient_labels, angular_coefficients, angular_buffer_capacity
       implicit none (type, external)
 !-----------------------------------------------

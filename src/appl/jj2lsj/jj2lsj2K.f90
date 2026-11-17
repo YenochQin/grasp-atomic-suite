@@ -30,8 +30,8 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use jj2lsj_profile
-      use jj2lsj_code
+      use jj2lsj_profile, only: profile_finish, profile_start
+      use jj2lsj_code, only: jj2lsj, profile_finish, profile_start
       use factt_i, only: factt
       use setiso_i, only: setiso
       use starttime_i, only: starttime

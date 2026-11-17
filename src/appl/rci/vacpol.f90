@@ -17,7 +17,8 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use grid_c
+      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use ncdist_c, only: double, max_radial_points, zdist
       use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb

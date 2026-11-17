@@ -17,7 +17,7 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use mpi_c
+      use mpi_c, only: mpi_rank
       use suite_system, only: working_directory
 
       use mpi_runtime_i, only: stopmpi

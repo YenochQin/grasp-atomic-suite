@@ -22,7 +22,7 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use dinit_i, only: dinit
-      use memory_man
+      use memory_man, only: alloc, dalloc
       use suite_linear_algebra, only: dcopy, dspevx
       implicit none (type, external)
 !-----------------------------------------------

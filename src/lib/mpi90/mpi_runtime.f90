@@ -14,7 +14,7 @@ contains
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      use mpi
+      use mpi, only: mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_get_processor_name, mpi_init, mpi_success
       implicit none (type, external)
       integer, intent(out)  :: myid,  nprocs, lenhost
       character(len=*), intent(out) :: host
@@ -40,7 +40,7 @@ contains
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      use mpi
+      use mpi, only: mpi_byte, mpi_type_commit, mpi_type_contiguous
       implicit none (type, external)
       integer, intent(in) :: n
       integer, intent(out) :: newtype, ierr
@@ -69,7 +69,7 @@ contains
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      use mpi
+      use mpi, only: mpi_barrier, mpi_comm_world, mpi_finalize
       implicit none (type, external)
       integer, intent(in)  ::  myid
       character(len=*), intent(in) :: what

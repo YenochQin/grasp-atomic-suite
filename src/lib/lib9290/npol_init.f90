@@ -1,6 +1,6 @@
 module npol_initialization
     use parameter_def, only: max_radial_points
-    use npol_c
+    use npol_c, only: npol_capture, npol_config, npol_publish, npol_reset, zz_coul
     use npol_input, only: npol_read_config, npol_validate_config
     use npol_kernel, only: npol_check_grid, npol_build_grid, npol_compose
     implicit none (type, external)

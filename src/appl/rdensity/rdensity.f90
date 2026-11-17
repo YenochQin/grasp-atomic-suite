@@ -2,8 +2,8 @@
 program rdensity
     use default_c, only: ndef
     use debug_c, only: cutoff
-    use density_parallel
-    use density_calculation
+    use density_parallel, only: broadcast_options, density_fail, parallel_finish, parallel_start, rank, workers
+    use density_calculation, only: calculate_density
     use getyn_i, only: getyn
     use setdbg_i, only: setdbg
     use setmc_i, only: setmc

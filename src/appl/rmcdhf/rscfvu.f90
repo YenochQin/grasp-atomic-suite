@@ -45,7 +45,7 @@
        use default_c, only: double, inpci, ndef, ndump
        use core_c, only: closed_core_subshell_count
        use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-       use mpi_s
+       use mpi_s, only: double, mpi_process_count, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

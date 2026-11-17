@@ -24,7 +24,7 @@
       use parameter_def,    only: max_radial_points
       use grid_c,           only: transformed_grid_step, radial_derivative_over_radius
       use int_c,            only: tf ,tg ,xu, xv
-      use orb_c
+      use orb_c, only: orbital_kappa
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
