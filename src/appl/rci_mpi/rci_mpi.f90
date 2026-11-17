@@ -58,7 +58,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use getyn_i, only: getyn
-      use cslhmpi_i, only: cslhmpi
+      use csf_block_mpi_input, only: open_csf_blocks_mpi
       use setdbg_i, only: setdbg
       use setmc_i, only: setmc
       use setcon_i, only: setcon
@@ -187,7 +187,7 @@
       call setmc
       call setcon
       if (mpi_rank == 0)  call setsum (name)
-      call cslhmpi (name(1:lenname) // ".c", ncore, nblk0, idblk)
+      call open_csf_blocks_mpi (name(1:lenname) // "_descriptors.parquet", ncore, idblk)
       call setres (isofile, name(1:lenname) // ".w", idblk)
       call setmixmpi (name, idblk)
       if (mpi_rank == 0)  call strsum

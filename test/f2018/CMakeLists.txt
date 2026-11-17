@@ -225,9 +225,11 @@ if(Python3_Interpreter_FOUND)
         endif()
         set(app "${PROJECT_SOURCE_DIR}/src/appl/${variant}")
         set(target test.csf_record_${variant})
-        add_executable(${target} csf_record_io.F90 "${app}/lodcslBio.f90" "${app}/lodcslBio_I.f90")
+        add_executable(${target} csf_record_io.F90
+            "${PROJECT_SOURCE_DIR}/test/descriptor_oracle/${variant}/lodcslBio.f90"
+            "${PROJECT_SOURCE_DIR}/test/descriptor_oracle/${variant}/lodcslBio_I.f90")
         setup_fortran_modules(${target})
-        target_link_libraries_Fortran(${target} PRIVATE mod 9290)
+        target_link_libraries_Fortran(${target} PRIVATE csf_text_oracle mod 9290)
         target_compile_options(${target} PRIVATE -fcheck=all -fbacktrace)
         set(mpi_arguments)
         if(variant MATCHES "_mpi$")

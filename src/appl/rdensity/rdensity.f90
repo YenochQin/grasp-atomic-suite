@@ -8,7 +8,7 @@ program rdensity
     use setdbg_i, only: setdbg
     use setmc_i, only: setmc
     use setcon_i, only: setcon
-    use setcsla_i, only: setcsla
+    use density_parallel, only: setcsla => load_density_basis
     use getsmd_i, only: getsmd
     use getmixblock_i, only: getmixblock
     use factt_i, only: factt

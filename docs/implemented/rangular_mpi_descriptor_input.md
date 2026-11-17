@@ -1,5 +1,8 @@
 # MPI rangular 描述符输入与性能对照
 
+> 2026-11-17 更新：本文的旧文本/GCSDESC1 入口为历史记录；当前生产输入已统一为
+> [Rust 原生描述符或配套 header](native_csf_descriptors.md)。历史测量不代表新路径的性能。
+
 日期：2026-11-11。实现基于 `c47f4d42b1f60bd77eb04dd3a243f545d124f481` 的工作树增量。
 普通 `rangular_mpi` 已支持与串行/OpenMP 相同的 GCSDESC1 二进制；默认仍使用文本 `rcsf.inp`。
 本次未改变角系数内核、MPI 列分工、系数排序及 MCP 分片格式。CSFG、RMCDHF 和 RCI 的输入入口不在本次范围内。

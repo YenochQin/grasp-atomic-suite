@@ -20,6 +20,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
+      use csf_descriptor_collectives, only: allocate_descriptor_arrays
       use parameter_def,   only: max_orbitals
       use memory_man, only: alloc, dalloc, byte, double, long
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
@@ -54,7 +55,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use auxblk_i, only: auxblk
-      use lodcslmpi_i, only: lodcslmpi
+      use csf_block_mpi_input, only: load_csf_block_mpi
       use qed_slfen_i, only: qed_slfen
       use genmat_i, only: genmat
       use genmat2_i, only: genmat2
@@ -65,7 +66,7 @@
       use wghtd5_i, only: wghtd5
       use qed_i, only: qed
       use mpi_c, only: double, mpi_process_count, mpi_rank
-      use mpiu_i, only: stopmpi
+      use input_io_mpi, only: fail_input_io_mpi
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -108,7 +109,7 @@
 
          !.. SETHAM does not handle this extrem case
          if (mpi_process_count > csf_count)                                          &
-                         call stopmpi ("matrix: too many nodes", mpi_rank)
+                         call fail_input_io_mpi(0,0,"RCI requires at least one CSF per rank in every block")
 
 !        ...Obtain ivec() from iccmin()
          if (nvec > 0) then
@@ -123,9 +124,8 @@
 !        ... of this routine and in the setham. In this block version,
 !        ... both allocation and deallocation are placed here. See the
 !        ... following goto 80 for reason.
-         call alloc (csf_subshell_occupations, max_orbitals, csf_count, "IQA", "MATRIX")
-         call alloc (csf_subshell_quantum_codes, max_orbitals, 3, csf_count, "JQSA", "MATRIX")
-         call alloc (csf_coupling_quantum_codes, max_orbitals, csf_count, "JCUPA", "MATRIX")
+         call allocate_descriptor_arrays(csf_count,csf_subshell_occupations, &
+                                         csf_subshell_quantum_codes,csf_coupling_quantum_codes)
          call alloc (slf_en,csf_count,"SLF_EN", "MATRIX")
          call alloc (ucf, orbital_count,"UCF", "MATRIX")
           do ic=1,csf_count
@@ -133,7 +133,7 @@
           end do
 
 !      ...Load CSF list of the current block
-        call lodcslmpi (21, ncore, jblock)
+        call load_csf_block_mpi (jblock)
 ! zou
 
          if (lse) then

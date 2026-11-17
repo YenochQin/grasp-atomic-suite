@@ -35,8 +35,6 @@ add_executable(rbiotransform
     invmat_I.f90
     kapdata.f90
     kapdata_I.f90
-    lodcslBio.f90
-    lodcslBio_I.f90
     lodrwff.f90
     lodrwff_I.f90
     lodrwfi.f90

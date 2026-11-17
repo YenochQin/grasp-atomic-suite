@@ -5,14 +5,12 @@ module rwfnestimate_input
    use parameter_def, only: max_orbitals
    use orb_c, only: orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, orbital_symmetry_labels
    use def_c, only: electron_count
-   use setcsh_i, only: setcsh
    implicit none (type, external)
    private
    public :: radial_input_options, parse_radial_options, load_radial_header
 
    type :: radial_input_options
       character(len=:), allocatable :: filename
-      logical :: use_header = .false.
    end type radial_input_options
 
 contains
@@ -42,20 +40,19 @@ contains
       character(len=:), allocatable :: argument, basename
       logical :: selected
       integer :: position
-      options%filename = "rcsf.inp"
+      options%filename = "rcsf_header.toml"
       selected = .false.
       position = 1
       do while (position <= command_argument_count())
          call read_argument(position, argument)
          select case (argument)
-         case ("--header", "--csf-text")
-            call require_input(.not. selected, "select only one of --header and --csf-text")
-            options%use_header = argument == "--header"
+         case ("--header")
+            call require_input(.not. selected, "duplicate --header")
             call read_argument(position+1, options%filename)
             selected = .true.
          case ("--help")
-            print "(A)", "rwfnestimate [--header FILE.toml | --csf-text FILE]"
-            print "(A)", "Default: rcsf.inp. Header mode requires header_info.electron_count including core electrons."
+            print "(A)", "rwfnestimate [--header FILE.toml]"
+            print "(A)", "Default: rcsf_header.toml. Header mode requires header_info.electron_count including core electrons."
             print "(A)", "isodata and the interactive initial-orbital choices are required in either mode."
             stop
          case default
@@ -73,11 +70,7 @@ contains
    subroutine load_radial_header(options, core_count)
       type(radial_input_options), intent(in) :: options
       integer, intent(out) :: core_count
-      if (options%use_header) then
-         call load_toml_header(options%filename, core_count)
-      else
-         call setcsh(21, options%filename, core_count)
-      end if
+      call load_toml_header(options%filename, core_count)
    end subroutine load_radial_header
 
    subroutine load_toml_header(filename, core_count)

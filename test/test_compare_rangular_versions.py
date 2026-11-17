@@ -41,6 +41,8 @@ class ComparisonRunnerTests(unittest.TestCase):
         candidate: Path | None = None,
         csf_path: Path | None = None,
     ) -> subprocess.CompletedProcess[str]:
+        if "--descriptors" not in additional and "--binary" not in additional:
+            additional = (*additional, "--legacy-text-oracle")
         return subprocess.run(
             [
                 sys.executable,
@@ -104,7 +106,7 @@ if '--timings' in sys.argv:
         self.assertEqual(len(report["runs"]), 6)
         self.assertEqual(len(report["comparisons"]), 5)
         self.assertEqual(report["array_verification"]["status"], "verified")
-        self.assertEqual(report["preparation"]["rows"], 10)
+        self.assertNotIn("preparation", report)
         self.assertTrue(
             all(
                 comparison.get("byte_identical", True)
@@ -112,7 +114,7 @@ if '--timings' in sys.argv:
             )
         )
         self.assertTrue(all(run["wall_seconds"] > 0 for run in report["runs"]))
-        self.assertEqual(report["runs"][3]["mode"], "candidate_text")
+        self.assertEqual(report["runs"][3]["mode"], "candidate_default")
         for run in report["runs"]:
             self.assertTrue((Path(run["directory"]) / "stdout.log").exists())
             if run["mode"] == "candidate_descriptors":
@@ -122,31 +124,12 @@ if '--timings' in sys.argv:
         self.assertEqual(repeated.returncode, 2)
         self.assertEqual(previous_report, (self.output / "summary.json").read_bytes())
 
-    def test_prepared_binary_and_first_order_transcript(self) -> None:
-        from prepare_csf_descriptors import prepare_descriptors
-
-        binary_path = self.root / "prepared input.bin"
-        prepare_descriptors(self.parquet_path, self.header_path, binary_path)
-        stdin_path = self.root / "answers.txt"
-        stdin_path.write_text("n\n1\n1\n1\n")
-        original_digest = hashlib.sha256(self.csf_path.read_bytes()).hexdigest()
-        result = self.run_runner(
-            "--binary",
-            str(binary_path),
-            "--verifier",
-            str(ARGUMENTS.verifier),
-            "--stdin-file",
-            str(stdin_path),
-        )
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        report = self.report()
-        self.assertNotIn("preparation", report)
-        self.assertEqual(
-            original_digest, hashlib.sha256(self.csf_path.read_bytes()).hexdigest()
-        )
-        self.assertTrue(
-            all(run["mcp_inspection"]["header"]["lfordr"] for run in report["runs"])
-        )
+    def test_retired_binary_is_rejected(self) -> None:
+        binary_path = self.root / "retired.bin"
+        binary_path.write_bytes(b"GCSDESC1")
+        result = self.run_runner("--binary", str(binary_path))
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("retired", result.stderr)
 
     def test_coefficient_difference_is_failure_and_has_no_speed_ratio(self) -> None:
         reference_data = self.root / "reference_data"
@@ -193,7 +176,7 @@ if '--timings' in sys.argv:
         fake_binary.write_bytes(b"not used by deliberately broken verifier")
         verifier = self.executable("broken_verifier", "raise SystemExit(0)\n")
         result = self.run_runner(
-            "--binary", str(fake_binary), "--verifier", str(verifier)
+            "--descriptors", str(self.parquet_path), "--header", str(self.header_path), "--verifier", str(verifier)
         )
         self.assertEqual(result.returncode, 2)
         self.assertIn("without its success marker", self.report()["error"])

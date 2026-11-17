@@ -152,6 +152,7 @@ builds the shared libraries, jj2lsj and their applicable tests. A partial
 set -gx FC /usr/bin/gfortran-15
 set -gx OMPI_FC /usr/bin/gfortran-15
 ../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix \
+    --rcsfs-source /path/to/rCSFs --rcsfs-cli /path/to/rcsfs \
   --parallel-configs 2 --jobs 3
 ```
 
@@ -198,10 +199,12 @@ overwrite an existing baseline:
 
 ```fish
 ../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix \
+    --rcsfs-source /path/to/rCSFs --rcsfs-cli /path/to/rcsfs \
   --stage build --parallel-configs 2 --jobs 3
 ../graspkit-tools/.venv/bin/python test/f2018/warning_inventory.py record \
   build-gf15-matrix --output build-gf15-matrix/candidate-warnings.json
 ../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix \
+    --rcsfs-source /path/to/rCSFs --rcsfs-cli /path/to/rcsfs \
   --baseline build-gf15-matrix/candidate-warnings.json
 ```
 

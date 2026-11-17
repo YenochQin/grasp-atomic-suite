@@ -96,10 +96,6 @@ add_executable(rmcdhf_mem_mpi
     ispar_I.f90
     itjpo.f90
     itjpo_I.f90
-    lodcslmpiGG.f90
-    lodcslmpiGG_I.f90
-    lodcsh2GG.f90
-    lodcsh2GG_I.f90
     maxarr.f90
     maxarr_I.f90
     newcompi.f90

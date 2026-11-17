@@ -37,7 +37,7 @@ docs/
 | 任务 | 入口文档 | 起步范围 |
 | --- | --- | --- |
 | 变量语义重命名 | [variable_renaming_followup_2026-11-16.md](plans/variable_renaming_followup_2026-11-16.md) | 第一批 529 项已处理，原有 19,579 项待重新对齐核实；优先保留数值过程，避免大改将退役的 CSF reader |
-| CSF 描述符读取迁移 | [csf_descriptor_migration_2026-11-16.md](plans/csf_descriptor_migration_2026-11-16.md) | 公共 reader、低内存 RMCDHF 入口和 MPI 错误传播，再分程序完成全迁移；拥有旧 CSF reader 的过渡保护 |
+| CSF 描述符读取迁移 | [csf_descriptor_migration_2026-11-16.md](plans/csf_descriptor_migration_2026-11-16.md) | 2026-11-17 生产迁移与功能回归已完成；Rust 原生 Parquet/header + C ABI，全配置 CTest 通过，历史告警门禁既有失配单列 |
 | 剩余非风格诊断修复 | [static_diagnostics_fixes_2026-11-16.md](plans/static_diagnostics_fixes_2026-11-16.md) | 优先 RIS4 缓存和 JJ2LSJ 唯一标签，精度/接口独立分批；CSF P1 由迁移任务承接，纯风格不动 |
 
 各对话开始时重新核对工作树。交接时 HEAD 为 `6f96222`，已包含另一任务的 rangular OpenMP 移除；历史目标、测试数和行号不代表当前状态。
@@ -47,6 +47,7 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| 原生 CSF 输入 | [native_csf_descriptors.md](implemented/native_csf_descriptors.md) | 全部保留消费者直接读 Parquet/header；无 Python 转换和旧文本入口，含构建方式、MPI/双基组/低内存契约及验收记录。 |
 | USE ONLY 第十批：PACK 接口 | [use_only_pack_2026-11-17.md](reviews/use_only_pack_2026-11-17.md) | 11 份源码明确导入重导出的 pack 过程，保留实现绑定；剩余 C121 为 1,746。 |
 | USE ONLY 第十一批：RCI 与 RIS4 状态模块 | [use_only_state5_2026-11-17.md](reviews/use_only_state5_2026-11-17.md) | 29 份源码补充 33 处 ONLY，保留全部公开符号；剩余 C121 为 1,713。 |
 | USE ONLY 第十二批：RIS 状态模块 | [use_only_ris_2026-11-17.md](reviews/use_only_ris_2026-11-17.md) | 14 份源码补充 15 处 ONLY；剩余 C121 为 1,698。 |

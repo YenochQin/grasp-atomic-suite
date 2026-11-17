@@ -16,7 +16,7 @@
       use setmc_i, only: setmc
       use setcon_i, only: setcon
       use setsum_i, only: setsum
-      use setcsla_i, only: setcsla
+      use csf_basis_mpi, only: setcsla => load_csf_basis_mpi
       use getmixblock_i, only: getmixblock
       use getsmd_i, only: getsmd
       use factt_i, only: factt
@@ -31,7 +31,7 @@
 
       call mpix_startup(mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1, &
          "RIS4_MPI", "This is the MPI RIS program", &
-         "isodata, name.c, name.(c)m, name.w", &
+         "isodata, descriptor Parquet/header, name.(c)m, name.w", &
          "name.i or name.ci", .true.)
 
       name = " "

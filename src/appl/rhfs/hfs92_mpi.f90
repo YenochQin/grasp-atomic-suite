@@ -21,7 +21,7 @@
       use setmc_i, only: setmc
       use setcon_i, only: setcon
       use setsum_i, only: setsum
-      use setcsla_i, only: setcsla
+      use csf_basis_mpi, only: setcsla => load_csf_basis_mpi
       use gethfd_i, only: gethfd
       use getmixblock_i, only: getmixblock
       use strsum_i, only: strsum
@@ -45,7 +45,7 @@
 !
       call mpix_startup(mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1, &
          "RHFS_MPI", "This is the MPI hyperfine structure program", &
-         "isodata, name.c, name.(c)m, name.w", &
+         "isodata, descriptor Parquet/header, name.(c)m, name.w", &
          "name.(c)h, name.(c)hoffd", .true.)
 !
       name = " "

@@ -1,5 +1,6 @@
 ! MPI processes isolate the mutable angular-library module state.
 module density_parallel
+    use csf_basis_mpi, only: load_density_basis => load_csf_basis_mpi
     use, intrinsic :: iso_fortran_env, only: real64
     use mpi, only: mpi_abort, mpi_bcast, mpi_character, mpi_comm_world, mpi_integer
     use mpiu_i, only: mpix_startup, mpix_shutdown, gdrsummpi_root
@@ -8,12 +9,13 @@ module density_parallel
     private
     public :: rank, workers, parallel_start, parallel_finish
     public :: broadcast_options, sum_density, density_fail
+    public :: load_density_basis
     integer :: start_count
 contains
     subroutine parallel_start
         call mpix_startup(rank, workers, processor_name, processor_name_length, start_count, &
             "RDENSITY_MPI", "MPI density and natural orbitals", &
-            "isodata, name.c, name.w, name.(c)m", "name.nw, name.(c)d", .true.)
+            "isodata, descriptor Parquet/header, name.w, name.(c)m", "name.nw, name.(c)d", .true.)
     end subroutine parallel_start
 
     subroutine parallel_finish

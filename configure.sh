@@ -113,9 +113,11 @@ Usage: ./configure.sh [options] [-DNAME=VALUE ...]
 All ordinary programs, with MPI and jj2lsj OpenMP (fish):
   set -gx FC /usr/bin/gfortran-15
   set -gx OMPI_FC /usr/bin/gfortran-15
-  ./configure.sh$python_option
+  ./configure.sh -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs$python_option
 
-GNU Fortran 15, CMake >= 3.31, BLAS/LAPACK and Python are required.
+GNU Fortran 15, CMake >= 3.31 and BLAS/LAPACK are required.
+Supply RCSFS_DESCRIPTOR_SOURCE_DIR (Rust/Cargo build) or RCSFS_DESCRIPTOR_LIBRARY.
+Python is used for development tests, not production CSF input.
 MPI programs also require a compatible MPI Fortran environment.
 Load the compiler/MPI environment before configuring.
 Use --debug with --profile f2018-check. Release/audit use Release builds.

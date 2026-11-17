@@ -26,7 +26,8 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use iq_i, only: iq
-      use lodcsl_i, only: lodcsl
+      use csf_basis_input, only: load_csf_basis
+      use blk_c, only: nblock, ncfblk, nblocki, nblockf, ncfi, ncff
       use openfl_i, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
@@ -42,25 +43,12 @@
 !
 !   Check the first record of the file; if not as expected, try again
 !
-      j = index(name," ")
-      open (unit = 21,file=name(1:j-1)//".c",form="FORMATTED",          &
-     &     status="OLD")
-
-      read (21,"(1A15)",iostat = ios) record
-      if ((ios /= 0) .or.                                             &
-     &    (record(1:15) /= "Core subshells:")) then
-         print *, "Not a Configuration Symmetry List File;"
-         close (21)
-         stop
-      end if
-!
-!   Load data from the  .csl  file
-!
-      call lodcsl (ncore)
-!
-!   Close the  .csl  file
-!
-      close (21)
+      call load_csf_basis(trim(name),ncore,ios)
+      if (ios /= 0) error stop "Transition descriptor load failed"
+      if (nblock > size(ncfi)) error stop "Transition block capacity exceeded"
+      nblocki=nblock
+      ncfi=0
+      ncfi(:nblock)=ncfblk(:nblock)
 !
 !   Check if the core should be redefined
 !
@@ -117,7 +105,7 @@
       call dalloc (csf_subshell_quantum_codes, "JQSA", "LDCSL1")
       call dalloc (csf_coupling_quantum_codes, "JCUPA", "LDCSL1")
 !
-      close (21)
+
 
       return
       end subroutine ldcsl1

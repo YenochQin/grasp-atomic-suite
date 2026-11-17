@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 import subprocess
+import shutil
 import sys
 import tempfile
 import unittest
@@ -58,6 +59,13 @@ class AngularReuseTests(unittest.TestCase):
         self.root = Path(temporary.name)
 
     def compare(self, csf: Path, *options: str, memory: int = 8) -> dict:
+        if "--descriptors" not in options:
+            from native_fixture import descriptors
+            fixture = self.root / "input.c"
+            shutil.copyfile(csf, fixture)
+            descriptors(fixture)
+            options = (*options, "--descriptors", str(self.root / "input_descriptors.parquet"),
+                       "--header", str(self.root / "input_header.toml"), "--verifier", str(ARGUMENTS.verifier))
         output = self.root / "comparison"
         result = subprocess.run(
             [sys.executable, str(ROOT / "scripts/compare_rangular_versions.py"),
@@ -73,11 +81,11 @@ class AngularReuseTests(unittest.TestCase):
         self.assertTrue(all(item.get("byte_identical", True) for item in report["comparisons"]))
         return report
 
-    def test_descriptor_and_text_reuse_with_overlap_and_coupling_changes(self) -> None:
+    def test_default_and_explicit_descriptor_reuse_with_overlap_and_coupling_changes(self) -> None:
         parquet, header, csf = reuse_fixture(self.root / "input")
         report = self.compare(csf, "--descriptors", str(parquet), "--header", str(header),
                               "--verifier", str(ARGUMENTS.verifier), "--repeat", "2")
-        stats = [run["angular_reuse"] for run in report["runs"] if run["mode"] != "reference_text"]
+        stats = [run["angular_reuse"] for run in report["runs"] if run["mode"] != "reference_default"]
         self.assertTrue(all(item["totals"]["hits"] > 0 for item in stats))
         self.assertTrue(all(item["totals"]["misses"] > 0 for item in stats))
         self.assertTrue(all(item == stats[0] for item in stats))
@@ -95,7 +103,7 @@ class AngularReuseTests(unittest.TestCase):
 
     def test_full_cache_falls_back_without_changing_output(self) -> None:
         report = self.compare(ROOT / "data/test.c", memory=1)
-        stats = next(run["angular_reuse"] for run in report["runs"] if run["mode"] == "candidate_text")
+        stats = next(run["angular_reuse"] for run in report["runs"] if run["mode"] == "candidate_default")
         self.assertGreater(stats["totals"]["not_stored"], 0)
         self.assertLessEqual(stats["peak_cache_reserved_bytes"], 1048576)
 

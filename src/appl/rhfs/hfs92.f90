@@ -86,7 +86,7 @@
       write (stderr_unit, *)
       write (stderr_unit, *) "RHFS"
       write (stderr_unit, *) "This is the hyperfine structure program"
-      write (stderr_unit, *) "Input files:  isodata, name.c, name.(c)m, name.w"
+      write (stderr_unit, *) "Input files:  isodata, name_descriptors.parquet, name_header.toml, name.(c)m, name.w"
       write (stderr_unit, *) "Output files: name.(c)h, name.(c)hoffd"
 
       write (stderr_unit, *)

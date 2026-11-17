@@ -1,5 +1,9 @@
 # grasp-atomic-suite
 
+All retained CSF consumers now use native descriptor Parquet + matching header TOML.
+See [native input and build requirements](docs/implemented/native_csf_descriptors.md).
+Supply an explicit rCSFs source directory or prebuilt reader library; Python is only used for developer tests.
+
 [中文](README_ZH.md) | English
 
 `grasp-atomic-suite` is a Fortran research and development repository for relativistic atomic-structure and atomic-property calculations. It combines original RMCDHF programs with `rhfs`, `ris4`, `rdensity`, `gj`, and their MPI support for hyperfine-structure, isotope-shift, and Landé `g_J` calculations.
@@ -70,7 +74,7 @@ The recommended build flow is out-of-source CMake with GNU Fortran 15:
 ```fish
 set -gx FC /usr/bin/gfortran-15
 set -gx OMPI_FC $FC
-./configure.sh
+./configure.sh -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs
 cmake --build build --parallel 4
 ```
 
@@ -86,7 +90,8 @@ options select a smaller build; `--serial` remains accepted for compatibility.
 To build the four original RMCDHF programs and all property programs together:
 
 ```fish
-cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON
+cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON \
+  -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs -DRCSFS_TEST_CLI=/path/to/rcsfs
 cmake --build build-all --parallel 4
 ctest --test-dir build-all --output-on-failure
 cmake --install build-all
@@ -95,7 +100,7 @@ cmake --install build-all
 Debug build:
 
 ```fish
-./configure.sh --debug
+./configure.sh --debug -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs
 cmake --build build-debug --target install -j4
 ```
 
@@ -103,7 +108,8 @@ To disable MPI and build the serial applications, configure CMake directly:
 
 ```fish
 mkdir build-serial
-cmake -S . -B build-serial -DGRASP_ENABLE_MPI=OFF -DGRASP_BUILD_SERIAL_APPS=ON
+cmake -S . -B build-serial -DGRASP_ENABLE_MPI=OFF -DGRASP_BUILD_SERIAL_APPS=ON \
+  -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs -DRCSFS_TEST_CLI=/path/to/rcsfs
 cmake --build build-serial --target install -j4
 ```
 

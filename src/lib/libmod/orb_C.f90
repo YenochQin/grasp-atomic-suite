@@ -14,8 +14,8 @@
       character(len=2) :: nhr(max_orbitals)
       real(real64) :: orbital_energy_parameters(max_orbitals), orbital_origin_exponents(max_orbitals), ped(max_orbitals)
       integer :: csf_count, orbital_count, ncfr, nwr
-      integer(int8), pointer :: csf_subshell_occupations(:, :)
-      integer, pointer :: iqar(:, :)
+      integer(int8), pointer :: csf_subshell_occupations(:, :) => null()
+      integer, pointer :: iqar(:, :) => null()
       integer :: orbital_principal_n(max_orbitals), orbital_kappa(max_orbitals), npr(max_orbitals), nakr(max_orbitals)
       integer :: orbital_l(max_orbitals), orbital_two_j(max_orbitals)
       end module orb_c

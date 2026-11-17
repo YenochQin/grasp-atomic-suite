@@ -35,7 +35,3 @@ add_executable(rangular
 setup_fortran_modules(rangular)
 target_link_libraries_Fortran(rangular PUBLIC rang90 mcp90 9290 mod)
 install(TARGETS rangular DESTINATION bin/)
-
-add_executable(csf_descriptor_verify csf_descriptor_verify.f90)
-target_link_libraries_Fortran(csf_descriptor_verify PRIVATE 9290 mod)
-install(TARGETS csf_descriptor_verify DESTINATION bin/)

@@ -73,7 +73,7 @@
       write (stderr_unit, *) "RWFNESTIMATE"
       write (stderr_unit, *) "This program estimates radial wave functions"
       write (stderr_unit, *) "for orbitals"
-      write (stderr_unit, *) "Input files: isodata, selected CSF text/header, optional rwfn file"
+      write (stderr_unit, *) "Input files: isodata, descriptor header TOML, optional rwfn file"
       write (stderr_unit, *) "Selected input: ", input_options%filename
       write (stderr_unit, *) "Output file: rwfn.inp"
 

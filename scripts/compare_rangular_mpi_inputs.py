@@ -49,11 +49,14 @@ def run_mode(arguments: argparse.Namespace, inputs: Path, mode: str, repetition:
     if len(os.fsencode(str(directory))) > 100:
         raise ValueError("MPI scratch path is too long; choose a shorter --scratch-root")
     environment["MPI_TMP"] = str(directory)
+    if mode == "default":
+        shutil.copyfile(inputs / "csfs_descriptors.parquet", directory / "rcsf_descriptors.parquet")
+        shutil.copyfile(inputs / "csfs_header.toml", directory / "rcsf_header.toml")
     command = [str(arguments.mpiexec), *arguments.mpiexec_arg, arguments.numproc_flag,
-               str(arguments.ranks), str(arguments.executable),
-               "--csf-descriptors" if mode == "descriptors" else "--csf-text",
-               str(inputs / ("csfs.bin" if mode == "descriptors" else "rcsf.inp")),
-               "--timings", "timings.csv"]
+               str(arguments.ranks), str(arguments.executable)]
+    if mode == "descriptors":
+        command += ["--csf-descriptors", str(inputs / "csfs_descriptors.parquet")]
+    command += ["--timings", "timings.csv"]
     execution: dict[str, Any] = {
         "mode": mode, "repetition": repetition, "command": command, "directory": str(destination),
         "scratch_directory": str(directory), "thread_environment": THREAD_ENVIRONMENT,
@@ -100,7 +103,7 @@ def run_mode(arguments: argparse.Namespace, inputs: Path, mode: str, repetition:
 
 def summarize(runs: list[dict[str, Any]]) -> dict[str, Any]:
     statistics_by_mode = {}
-    for mode in ("text", "descriptors"):
+    for mode in ("default", "descriptors"):
         selected = [run for run in runs if run["mode"] == mode]
         statistics_by_mode[mode] = {}
         for quantity in ("wall_seconds", "root_input_seconds"):
@@ -110,9 +113,9 @@ def summarize(runs: list[dict[str, Any]]) -> dict[str, Any]:
             }
     ratios = {}
     for quantity in ("wall_seconds", "root_input_seconds"):
-        reference = statistics_by_mode["text"][quantity]["median"]
+        reference = statistics_by_mode["default"][quantity]["median"]
         candidate = statistics_by_mode["descriptors"][quantity]["median"]
-        ratios[quantity] = {"text_over_descriptors": reference / candidate,
+        ratios[quantity] = {"default_over_descriptors": reference / candidate,
                             "median_reduction_fraction": 1 - candidate / reference}
     return {"by_mode": statistics_by_mode, "ratios": ratios}
 
@@ -122,6 +125,7 @@ def main() -> int:
     parser.add_argument("--executable", type=Path, required=True)
     parser.add_argument("--csf", type=Path, required=True)
     parser.add_argument("--descriptors", type=Path, required=True)
+    parser.add_argument("--header", type=Path, required=True)
     parser.add_argument("--verifier", type=Path, required=True)
     parser.add_argument("--mpiexec", type=Path, default=Path(shutil.which("mpirun") or "mpirun"))
     parser.add_argument("--numproc-flag", default="-np")
@@ -132,7 +136,7 @@ def main() -> int:
     parser.add_argument("--scratch-root", type=Path, default=Path(tempfile.gettempdir()))
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
-    for name in ("executable", "csf", "descriptors", "verifier", "mpiexec", "output", "scratch_root"):
+    for name in ("executable", "csf", "descriptors", "header", "verifier", "mpiexec", "output", "scratch_root"):
         setattr(arguments, name, getattr(arguments, name).resolve())
     if not 1 <= arguments.ranks <= 999 or arguments.repeat < 1 or not arguments.timeout > 0:
         parser.error("Require 1..999 ranks, a positive repeat count and timeout")
@@ -145,19 +149,20 @@ def main() -> int:
         inputs = arguments.output / "inputs"
         inputs.mkdir()
         shutil.copyfile(arguments.csf, inputs / "rcsf.inp")
-        shutil.copyfile(arguments.descriptors, inputs / "csfs.bin")
+        shutil.copyfile(arguments.descriptors, inputs / "csfs_descriptors.parquet")
+        shutil.copyfile(arguments.header, inputs / "csfs_header.toml")
         report["identity"] = {"executable": file_identity(arguments.executable),
                               "verifier": file_identity(arguments.verifier),
                               "text": file_identity(inputs / "rcsf.inp"),
-                              "descriptors": file_identity(inputs / "csfs.bin"),
+                              "descriptors": file_identity(inputs / "csfs_descriptors.parquet"),
                               "platform": platform.platform(), "scratch_root": str(arguments.scratch_root),
                               "affinity": sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None}
-        verified = verify_descriptors(arguments.verifier, inputs / "csfs.bin", inputs / "rcsf.inp")
+        verified = verify_descriptors(arguments.verifier, inputs / "csfs_descriptors.parquet", inputs / "rcsf.inp")
         (arguments.output / "array-verification.log").write_text(verified.stdout + verified.stderr)
         report["array_verification"] = "passed"
         expected_outputs = None
         for repetition in range(1, arguments.repeat + 1):
-            modes = ("text", "descriptors") if repetition % 2 else ("descriptors", "text")
+            modes = ("default", "descriptors") if repetition % 2 else ("descriptors", "default")
             for mode in modes:
                 execution = run_mode(arguments, inputs, mode, repetition)
                 report["runs"].append(execution)

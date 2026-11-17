@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare serial rangular versions using text and optional descriptor inputs."""
+"""Compare native rangular inputs, with explicit offline support for historical binaries."""
 
 from __future__ import annotations
 
@@ -85,10 +85,14 @@ def run_logged(
     timeout_seconds: float | None,
     *,
     input_csf: Path | None = None,
+    input_descriptors: Path | None = None,
 ) -> dict[str, Any]:
     directory.mkdir()
     if input_csf is not None:
         shutil.copyfile(input_csf, directory / "rcsf.inp")
+    if input_descriptors is not None:
+        shutil.copyfile(input_descriptors, directory / "rcsf_descriptors.parquet")
+        shutil.copyfile(input_descriptors.with_name("csfs_header.toml"), directory / "rcsf_header.toml")
     thread_environment = THREAD_ENVIRONMENT.copy()
     execution: dict[str, Any] = {
         "command": command,
@@ -240,7 +244,9 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
         value = getattr(arguments, option)
         if value is not None:
             paths[option] = value.resolve()
-    descriptor_mode = arguments.binary is not None or arguments.descriptors is not None
+    if arguments.binary is not None:
+        raise ValueError("GCSDESC1 is retired; supply --descriptors and --header")
+    descriptor_mode = arguments.descriptors is not None
     if descriptor_mode:
         paths["verifier"] = (
             arguments.verifier or paths["candidate"].with_name("csf_descriptor_verify")
@@ -287,8 +293,8 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                     "csf": "rcsf.inp",
                     "stdin_file": "rangular.stdin",
                     "binary": "csfs.bin",
-                    "descriptors": "descriptors.parquet",
-                    "header": "header.toml",
+                    "descriptors": "csfs_descriptors.parquet",
+                    "header": "csfs_header.toml",
                 }[name]
             )
             shutil.copyfile(paths[name], snapshot)
@@ -298,21 +304,13 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
         if "stdin_file" not in paths:
             stdin_path.write_bytes(b"y\n")
         summary["effective_stdin"] = file_identity(stdin_path)
-        if arguments.descriptors:
-            from prepare_csf_descriptors import prepare_descriptors
-
-            summary["preparation"] = prepare_descriptors(
-                snapshots / "descriptors.parquet",
-                snapshots / "header.toml",
-                snapshots / "csfs.bin",
-            )
         if descriptor_mode:
-            summary["effective_binary"] = file_identity(snapshots / "csfs.bin")
+            summary["effective_binary"] = file_identity(snapshots / "csfs_descriptors.parquet")
             verification_directory = output / "array_verification"
             summary["array_verification"] = run_logged(
                 [
                     str(paths["verifier"]),
-                    str(snapshots / "csfs.bin"),
+                    str(snapshots / "csfs_descriptors.parquet"),
                     str(snapshots / "rcsf.inp"),
                 ],
                 verification_directory,
@@ -325,7 +323,8 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                         "array verifier exited without its success marker (possible legacy STOP)"
                     )
             summary["array_verification"]["status"] = "verified"
-        modes = ["reference_text", "candidate_text"]
+        modes = (["reference_text" if arguments.reference_text_oracle else "reference_default", "candidate_default"]
+                 if descriptor_mode else ["reference_text", "candidate_text"])
         if descriptor_mode:
             modes.append("candidate_descriptors")
         mismatch_found = False
@@ -335,7 +334,7 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
             trial_directories: dict[str, Path] = {}
             for mode in execution_order:
                 directory = output / f"trial_{trial_index + 1:03d}_{mode}"
-                binary_name = "reference" if mode == "reference_text" else "candidate"
+                binary_name = "reference" if mode in ("reference_text", "reference_default") else "candidate"
                 executable = paths[binary_name]
                 if (
                     file_identity(executable)["sha256"]
@@ -346,10 +345,10 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                     )
                 command = [str(executable)]
                 if mode == "candidate_descriptors":
-                    command += ["--csf-descriptors", str(snapshots / "csfs.bin")]
-                if mode != "reference_text" or arguments.reference_timings:
+                    command += ["--csf-descriptors", str(snapshots / "csfs_descriptors.parquet")]
+                if mode not in ("reference_text", "reference_default") or arguments.reference_timings:
                     command += ["--timings", "timings.csv"]
-                if mode != "reference_text":
+                if mode not in ("reference_text", "reference_default"):
                     if arguments.candidate_reuse_cache_mib is not None:
                         command += [
                             "--reuse-cache-mib", str(arguments.candidate_reuse_cache_mib),
@@ -361,8 +360,9 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                     stdin_path,
                     arguments.timeout,
                     input_csf=None
-                    if mode == "candidate_descriptors"
+                    if descriptor_mode and mode != "reference_text"
                     else snapshots / "rcsf.inp",
+                    input_descriptors=(snapshots / "csfs_descriptors.parquet") if descriptor_mode and mode in ("reference_default", "candidate_default") else None,
                 )
                 if (
                     file_identity(executable)["sha256"]
@@ -371,7 +371,7 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                     raise ValueError(
                         f"{binary_name} executable changed during execution"
                     )
-                if mode == "candidate_descriptors":
+                if descriptor_mode and mode != "reference_text":
                     if (directory / "rcsf.inp").exists():
                         raise ValueError("descriptor run unexpectedly created rcsf.inp")
                     shutil.copyfile(snapshots / "rcsf.inp", directory / "rcsf.inp")
@@ -393,11 +393,11 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                 execution["mcp_inspection"] = mcp_compare.inspect(
                     dataset, arguments.keyorb
                 )
-                if mode != "reference_text" or arguments.reference_timings:
+                if mode not in ("reference_text", "reference_default") or arguments.reference_timings:
                     execution["stage_wall_seconds"] = stage_timings(
                         directory / "timings.csv"
                     )
-                if mode != "reference_text" and arguments.candidate_reuse_cache_mib is not None:
+                if mode not in ("reference_text", "reference_default") and arguments.candidate_reuse_cache_mib is not None:
                     execution["angular_reuse"] = reuse_statistics(directory / "reuse.csv")
                 execution.update(mode=mode, trial=trial_index + 1, status="validated")
                 summary["runs"].append(execution)
@@ -406,7 +406,7 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                 trial_directories[mode] = directory
             for mode in modes[1:]:
                 comparison = compare_outputs(
-                    trial_directories["reference_text"],
+                    trial_directories[modes[0]],
                     trial_directories[mode],
                     arguments,
                 )
@@ -424,8 +424,8 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                 )
             if trial_index:
                 comparison = compare_outputs(
-                    output / "trial_001_reference_text",
-                    trial_directories["reference_text"],
+                    output / f"trial_001_{modes[0]}",
+                    trial_directories[modes[0]],
                     arguments,
                 )
                 report_path = (
@@ -468,7 +468,7 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
         }
         if not mismatch_found:
             summary["reference_over_candidate_wall_ratio"] = {
-                mode: medians["reference_text"] / medians[mode]
+                mode: medians[modes[0]] / medians[mode]
                 for mode in modes[1:]
                 if medians[mode] > 0
             }
@@ -529,10 +529,14 @@ def main() -> int:
         type=Path,
         help="interactive answers; default is full interaction: y",
     )
+    parser.add_argument("--reference-text-oracle", action="store_true",
+                        help="Use original text only for an explicitly selected historical reference executable")
+    parser.add_argument("--legacy-text-oracle", action="store_true",
+                        help="Offline comparison of two historical text-only executables")
     descriptors = parser.add_mutually_exclusive_group()
-    descriptors.add_argument("--binary", type=Path, help="prepared GCSDESC1 input")
+    descriptors.add_argument("--binary", type=Path, help=argparse.SUPPRESS)
     descriptors.add_argument(
-        "--descriptors", type=Path, help="V2 Parquet to prepare once"
+        "--descriptors", type=Path, help="native V2 descriptor Parquet; no conversion"
     )
     parser.add_argument(
         "--header", type=Path, help="matching header, required with --descriptors"
@@ -565,6 +569,12 @@ def main() -> int:
         help="common integral-label radix of both builds",
     )
     arguments = parser.parse_args()
+    if not (arguments.descriptors or arguments.binary or arguments.legacy_text_oracle):
+        parser.error("Current programs require --descriptors and --header")
+    if arguments.reference_text_oracle and not arguments.descriptors:
+        parser.error("--reference-text-oracle requires --descriptors and --header")
+    if arguments.legacy_text_oracle and (arguments.descriptors or arguments.binary):
+        parser.error("--legacy-text-oracle cannot be combined with descriptor inputs")
     if bool(arguments.descriptors) != bool(arguments.header):
         parser.error("--descriptors and --header must be provided together")
     if arguments.verifier and not (arguments.binary or arguments.descriptors):

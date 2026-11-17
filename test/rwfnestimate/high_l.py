@@ -14,6 +14,7 @@ from pathlib import Path
 import shutil
 import struct
 import subprocess
+import json
 import tempfile
 
 
@@ -116,7 +117,7 @@ def main() -> None:
     print(f"Inputs, logs and orbitals: {directory}", flush=True)
     z = {"Ni": 28, "Zn": 30}[args.element]
     content, expected = header(z)
-    (directory / "rcsf.inp").write_text(content)
+    (directory / "rcsf_header.toml").write_text("[header_info]\nheader_lines = " + json.dumps(content.splitlines()[:5]) + "\nelectron_count = " + str(z) + "\n")
     # Static, spin-zero finite nuclei generated with upstream rnucleus.
     shutil.copyfile(Path(__file__).parent / "fixtures" / f"{args.element}.isodata",
                     directory / "isodata")

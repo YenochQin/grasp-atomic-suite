@@ -136,7 +136,7 @@
       if (mpi_rank == 0) call setsum (permdir(1:lenperm) // "/rmcdhf.sum")
 
       call setmcp (closed_core_subshell_count, nblk0, idblk, "mcp" // idstring)
-      if(mpi_rank == 0) file_rcsl = permdir(1:lenperm)//"/rcsf.inp"
+      if(mpi_rank == 0) file_rcsl = permdir(1:lenperm)//"/rcsf_descriptors.parquet"
       call setcslmpi (file_rcsl, ncore1, idblk)
       if (closed_core_subshell_count /= ncore1) error stop "rscfmpivu: ncore"
 

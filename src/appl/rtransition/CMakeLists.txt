@@ -51,8 +51,6 @@ add_executable(rtransition
     ldlbl1_I.f90
     ldlbl2.f90
     ldlbl2_I.f90
-    lodcslm.f90
-    lodcslm_I.f90
     mctin.f90
     mctin_I.f90
     trsort.f90
@@ -71,8 +69,6 @@ add_executable(rtransition
     printa_I.f90
     oscl.f90
     oscl_I.f90
-    setcslm.f90
-    setcslm_I.f90
     strsum.f90
     strsum_I.f90
     testmix.f90

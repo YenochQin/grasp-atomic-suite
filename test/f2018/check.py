@@ -83,7 +83,7 @@ def check_feature_commands(commands: list[dict], features: dict) -> None:
     if features.get("csfg", False):
         raise ValueError("CSFG support has been removed")
     openmp_targets = {"jj2lsj_conversion", "jj2lsj_thread_kernels", "jj2lsj_omp",
-                      "test.jj2lsj_coefficients", "test.jj2lsj_ranking"}
+                      "test.jj2lsj_coefficients", "test.jj2lsj_ranking", "test.jj2lsj_pointer_defaults"}
     for entry in commands:
         if Path(entry["file"]).suffix.lower() not in {".f90", ".f", ".for", ".f95"}:
             continue

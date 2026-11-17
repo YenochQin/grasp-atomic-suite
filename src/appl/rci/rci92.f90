@@ -98,7 +98,7 @@
       write(*,*)
       write(*,*) "RCI"
       write(*,*) "This is the configuration interaction program "
-      write(*,*) "Input file:  isodata, name.c, name.w"
+      write(*,*) "Input file:  isodata, name_descriptors.parquet, name_header.toml, name.w"
       write(*,*) "Outputfiles: name.cm, name.csum, name.clog "
       write(*,*) "             rci.res (can be used for restart)"
       write(*,*)
@@ -169,7 +169,7 @@
       call setsum (name)
 
 !      WRITE (6, *) 'Calling setcsl...'
-      call setcsl (name(1:lenname)//".c", ncore, nblk0, idblk)
+      call setcsl (name(1:lenname)//"_descriptors.parquet", ncore, nblk0, idblk)
 !
 ! Set up the  .res  file; determine if this is a restart.
 !

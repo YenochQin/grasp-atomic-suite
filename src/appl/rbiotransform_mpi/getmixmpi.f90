@@ -30,7 +30,7 @@
 !-----------------------------------------------
       integer, intent(in) :: inpci
       integer, intent(in) :: iblk
-      character, intent(in) :: name*128
+      character(len=*), intent(in) :: name
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

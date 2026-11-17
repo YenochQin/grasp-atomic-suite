@@ -25,8 +25,6 @@ add_executable(rmcdhf_mem
     gco_I.f90
     setcof.f90
     setcof_I.f90
-    lodcsh2GG.f90
-    lodcsh2GG_I.f90
     setcsl.f90
     setcsl_I.f90
     setdbg.f90

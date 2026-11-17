@@ -39,7 +39,7 @@
       write (stderr_unit, *)
       write (stderr_unit, *) "GJ"
       write (stderr_unit, *) "This is the serial Lande-factor program"
-      write (stderr_unit, *) "Input files:  isodata, name.c, name.(c)m, name.w"
+      write (stderr_unit, *) "Input files:  isodata, name_descriptors.parquet, name_header.toml, name.(c)m, name.w"
       write (stderr_unit, *) "Output files: name.gj or name.cgj"
 !
       write (stderr_unit, *)

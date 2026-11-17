@@ -56,7 +56,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use auxblk_i, only: auxblk
-      use lodcsh2_i, only: lodcsh2
+      use csf_block_input, only: load_csf_block
       use qed_slfen_i, only: qed_slfen
       use genmat_i, only: genmat
       use genmat2_i, only: genmat2
@@ -136,7 +136,11 @@
          call alloc (csf_coupling_quantum_codes, max_orbitals, csf_count, "JCUPA", "MATRIX")
 
 !      ...Load CSF list of the current block
-        call lodcsh2 (21, ncore, jblock)
+        block
+           integer :: input_status
+           call load_csf_block(jblock,input_status)
+           if (input_status /= 0) error stop "RCI descriptor block failed"
+        end block
 ! zou
 
          if (lse) then

@@ -37,7 +37,7 @@
 !-----------------------------------------------
       integer, intent(in) :: jstate
       real(real64), intent(out) :: slfint(max_orbitals)
-      real(real64), intent(out) :: ucf(1)
+      real(real64), intent(out) :: ucf(:)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------

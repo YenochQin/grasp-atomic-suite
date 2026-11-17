@@ -51,8 +51,6 @@ add_executable(rtransition_mpi
     ldlbl1_I.f90
     ldlbl2.f90
     ldlbl2_I.f90
-    lodcslm.f90
-    lodcslm_I.f90
     trsortmpi.f90
     trsortmpi_I.f90
     mctinmpi.f90
@@ -71,8 +69,6 @@ add_executable(rtransition_mpi
     printa_I.f90
     osclmpi.f90
     osclmpi_I.f90
-    setcslm.f90
-    setcslm_I.f90
     strsum.f90
     strsum_I.f90
     testmix.f90

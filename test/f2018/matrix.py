@@ -53,7 +53,14 @@ def run_case(case: dict, args: argparse.Namespace, baseline: dict | None) -> dic
     env = os.environ | {"FC": str(args.compiler), "OMPI_FC": str(args.compiler), "LC_ALL": "C",
                         "OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_DYNAMIC": "FALSE"}
     try:
-        run_logged(configure_command(case, build, args.compiler, args.mpi_compiler, args.mpiexec),
+        configure = configure_command(case, build, args.compiler, args.mpi_compiler, args.mpiexec)
+        if args.rcsfs_source:
+            configure.append(f"-DRCSFS_DESCRIPTOR_SOURCE_DIR={args.rcsfs_source.resolve()}")
+        else:
+            configure.append(f"-DRCSFS_DESCRIPTOR_LIBRARY={args.rcsfs_library.resolve()}")
+        if args.rcsfs_cli:
+            configure.append(f"-DRCSFS_TEST_CLI={args.rcsfs_cli.resolve()}")
+        run_logged(configure,
                    audit / "matrix-configure.log", env)
         features = json.loads((build / "f2018-features.json").read_text())
         if features.pop("profile") != case["profile"] or features != case["features"]:
@@ -104,6 +111,10 @@ def main() -> int:
     parser.add_argument("--parallel-configs", type=int, default=2)
     parser.add_argument("--case", action="append", choices=[case["id"] for case in cases()])
     parser.add_argument("--baseline", type=Path, default=BASELINE)
+    reader = parser.add_mutually_exclusive_group(required=True)
+    reader.add_argument("--rcsfs-source", type=Path, help="Explicit rCSFs Git source root")
+    reader.add_argument("--rcsfs-library", type=Path, help="Prebuilt native descriptor static library")
+    parser.add_argument("--rcsfs-cli", type=Path, help="Native CLI used only for test fixture preparation")
     args = parser.parse_args()
     if args.jobs < 1 or args.parallel_configs < 1:
         parser.error("Parallelism must be positive")

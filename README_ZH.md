@@ -1,5 +1,9 @@
 # grasp-atomic-suite
 
+全部保留的 CSF 消费程序现已使用原生描述符 Parquet + 配套 header TOML。
+输入约定、Rust 依赖与测试方式见[原生输入说明](docs/implemented/native_csf_descriptors.md)。
+构建须显式指定 rCSFs 源码或预编译 reader 库，计算运行不依赖 Python 转换。
+
 中文 | [English](README.md)
 
 `grasp-atomic-suite` 是一个面向相对论原子结构与原子性质计算的 Fortran 研究开发仓库。它保留原版 RMCDHF，并与 `rhfs`、`ris4`、`gj` 共享 GRASP 数值库，用于轨道优化、超精细结构、同位素位移和 Landé `g_J` 因子的计算、验证与性能优化。
@@ -64,7 +68,7 @@
 ```sh
 export FC="$(command -v gfortran-15)"
 export OMPI_FC="$FC"
-./configure.sh
+./configure.sh -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs
 cmake --build build --parallel 4
 ```
 
@@ -76,7 +80,8 @@ cmake --build build --parallel 4
 同时构建四个原版 RMCDHF 和性质计算程序：
 
 ```sh
-cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON
+cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON \
+  -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs -DRCSFS_TEST_CLI=/path/to/rcsfs
 cmake --build build-all --parallel 4
 ctest --test-dir build-all --output-on-failure
 cmake --install build-all
@@ -85,7 +90,7 @@ cmake --install build-all
 调试构建：
 
 ```sh
-./configure.sh --debug
+./configure.sh --debug -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs
 cmake --build build-debug --target install -j4
 ```
 
@@ -93,7 +98,8 @@ cmake --build build-debug --target install -j4
 
 ```sh
 mkdir build-serial
-cmake -S . -B build-serial -DGRASP_ENABLE_MPI=OFF -DGRASP_BUILD_SERIAL_APPS=ON
+cmake -S . -B build-serial -DGRASP_ENABLE_MPI=OFF -DGRASP_BUILD_SERIAL_APPS=ON \
+  -DRCSFS_DESCRIPTOR_SOURCE_DIR=/path/to/rCSFs -DRCSFS_TEST_CLI=/path/to/rcsfs
 cmake --build build-serial --target install -j4
 ```
 

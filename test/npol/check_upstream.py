@@ -276,13 +276,27 @@ def main(root: Path) -> None:
     for name, record in use_mpi["files"].items():
         assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
     reviewed_fortran |= use_mpi["files"]
+    migration = json.loads((root / "docs/reference/rmcdhf_descriptor_snapshot.json").read_text())
+    assert migration["schema_version"] == 1
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_mpi_snapshot.json").read_bytes()).hexdigest() == migration["previous_manifest_sha256"]
+    for name, record in migration["removed"].items():
+        assert name in expected
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"]
+        assert not (root / name).exists(), f"Retired text loader restored: {name}"
+        del expected[name]
+    for name, record in migration["files"].items():
+        assert name in expected
+        if name in reviewed_fortran:
+            assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"]
+        assert hashlib.sha256((root / name).read_bytes()).hexdigest() == record["after_suite_sha256"], name
+        del expected[name]
     actual = {
         str(path.relative_to(root))
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")
         for path in (root / "src/appl" / name).iterdir()
         if path.suffix in (".f90", ".sh", ".txt") or path.name == "Makefile"
     }
-    assert actual == set(expected), (actual - set(expected), set(expected) - actual)
+    assert actual == set(expected) | set(migration["files"]), (actual - set(expected), set(expected) - actual)
     for relative, record in expected.items():
         if relative in lowercase["files"]:
             digest = hashlib.sha256((root / relative).read_bytes()).hexdigest()

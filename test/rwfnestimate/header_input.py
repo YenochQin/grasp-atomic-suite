@@ -51,6 +51,17 @@ class HeaderInput(unittest.TestCase):
             command += ["--header", filename]
         if csf is not None:
             (directory / "rcsf.inp").write_text(csf)
+        if toml is None and csf is not None and arguments is None:
+            import re
+            lines = csf.splitlines()[:5]
+            def capacity(label: str) -> int:
+                symbol = label.rstrip("-")[-1]
+                l = "spdfghiklm".index(symbol)
+                return 2 * (l if label.endswith("-") else l + 1)
+            electrons = sum(capacity(label) for label in lines[1].split())
+            if len(csf.splitlines()) > 5:
+                electrons += sum(int(n) for n in re.findall(r"\(\s*(\d+)\)", csf.splitlines()[5]))
+            (directory / "rcsf_header.toml").write_text(encode_header(lines, electrons))
         if arguments is not None:
             command += arguments
         result = subprocess.run(command, cwd=directory, input=stdin, text=True,
@@ -71,7 +82,7 @@ class HeaderInput(unittest.TestCase):
         self.assertIn(message, result.stderr)
         self.assertFalse((directory / "rwfn.inp").exists())
 
-    def test_text_and_header_are_byte_identical_for_all_estimation_modes(self) -> None:
+    def test_default_and_explicit_header_are_byte_identical_for_all_estimation_modes(self) -> None:
         for mode, stdin in [("tf", "y\n2\n*\n"), ("hyd", "y\n3\n*\n"),
                             ("custom", "y\n4\n*\n2\n")]:
             with self.subTest(mode=mode):
@@ -171,8 +182,8 @@ class HeaderInput(unittest.TestCase):
         self.assertFalse((directory / "rwfn.inp").exists())
         for arguments, diagnostic in [(["--header"], "missing command argument"),
                                       (["--unknown"], "unknown option"),
-                                      (["--csf-text", "a", "--header", "b"], "select only one"),
-                                      (["--header", "a", "--header", "b"], "select only one"),
+                                      (["--csf-text", "a", "--header", "b"], "unknown option"),
+                                      (["--header", "a", "--header", "b"], "duplicate --header"),
                                       (["--header", "missing.toml"], "cannot parse TOML header"),
                                       (["--header", "rwfn.inp"], "reserved output name")]:
             with self.subTest(arguments=arguments):
@@ -180,9 +191,9 @@ class HeaderInput(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn(diagnostic, result.stderr)
 
-    def test_explicit_text_filename(self) -> None:
+    def test_retired_text_filename_option_is_rejected(self) -> None:
         result, _ = self.run_case(csf=self.csf, arguments=["--csf-text", "rcsf.inp"])
-        self.assert_success(result)
+        self.assertNotEqual(result.returncode, 0)
 
 
 if __name__ == "__main__":

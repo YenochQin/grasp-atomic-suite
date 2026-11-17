@@ -1,13 +1,15 @@
 add_library(mpiu90 STATIC
+    csf_block_mpi_input.f90
+    csf_descriptor_collectives.f90
+    csf_basis_mpi.f90
+    rmcdhf_descriptor_mpi.f90
     input_io_mpi.f90
     npol_init_mpi.f90
     mpi_C.f90
     mpi_runtime.f90
     mpiu.f90
     cpath.f90
-    cslhmpi.f90
     iniestmpi.f90
-    lodcslmpi.f90
     lodrwfmpi.f90
     setisompi.f90
     setrwfmpi.f90

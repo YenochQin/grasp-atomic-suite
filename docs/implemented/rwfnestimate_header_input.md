@@ -1,5 +1,8 @@
 # rwfnestimate 的 header.toml 输入与 TF 初猜保护
 
+> 2026-11-17 更新：本文的旧文本/GCSDESC1 入口为历史记录；当前生产输入已统一为
+> [Rust 原生描述符或配套 header](native_csf_descriptors.md)。历史测量不代表新路径的性能。
+
 状态：已实施；2026-11-12，初次实现提交为 `1edcfd6`，基于 suite `c47f4d4`。
 同步远程更新后沿用[普通程序命名](program_naming.md)，源码位于 `src/appl/rwfnestimate/`。
 适用目标为普通串行 `rwfnestimate`；独立的 `rwfnestimate_csfg` 不在本次范围内。

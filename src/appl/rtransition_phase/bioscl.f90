@@ -29,7 +29,7 @@
       use setcon_i, only: setcon
       use fname_i, only: fname
       use mrgcsl_i, only: mrgcsl
-      use setcslm_i, only: setcslm
+
       use getosd_i, only: getosd
       use strsum_i, only: strsum
       use factt_i, only: factt
@@ -53,8 +53,8 @@
       write(*,*) "RTRANSITION"
       write(*,*) "This program computes transition parameters from"
       write(*,*) "transformed wave functions"
-      write(*,*) "Input files:  isodata, name1.c, name1.bw, name1.(c)bm"
-      write(*,*) "              name2.c, name2.bw, name2.(c)bm         "
+      write(*,*) "Input files:  isodata, name1_descriptors.parquet, name1.bw, name1.(c)bm"
+      write(*,*) "              name2_descriptors.parquet, name2.bw, name2.(c)bm         "
       write(*,*) "              optional, name1.lsj.lbl, name2.lsj.lbl"
       write(*,*) "              name1.name2.KT (optional angular files)"
       write(*,*) "Output files: name1.name2.(c)t                       "
@@ -122,7 +122,7 @@
 !
 !   Open, check, load data from, and close, the merged .csl  file
 !
-      call setcslm
+      ! The descriptor bases were merged directly in memory by MRGCSL.
 !
 !   Read mixing coefficients
 !

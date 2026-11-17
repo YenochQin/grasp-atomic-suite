@@ -8,19 +8,16 @@
 只读附着到指定 Linux PID 树，记录线程状态、等待位置、I/O、缺页和系统压力。
 用法、原版流程对照及验证边界见 [RMCDHF MPI 诊断](../docs/implemented/rmcdhf_mpi_diagnostics.md)。
 
-原版/新版 `rangular` 的一键运行、计时和 MCP 对照见
-[版本对照脚本](../docs/implemented/rangular_version_comparison.md)，入口为
-[compare_rangular_versions.py](compare_rangular_versions.py)。可同时比较新版文本和描述符输入，保留日志及 JSON 报告。
+当前生产 CSF 输入与构建方式见[原生描述符说明](../docs/implemented/native_csf_descriptors.md)。
+计算程序直接链接 Rust reader，不调用下列开发/对照脚本。
 
-普通 MPI 版的文本/描述符输入对照使用
-[compare_rangular_mpi_inputs.py](compare_rangular_mpi_inputs.py)：同一可执行文件交替重复运行、
-逐 rank 阶段计时、数组验证及完整 MCP 哈希对照，使用说明见
-[MPI 描述符输入](../docs/implemented/rangular_mpi_descriptor_input.md)。
-
-rCSFs 描述符预处理及原文本数组验证见
-[rangular 描述符输入](../docs/implemented/rangular_descriptor_input.md)，入口为
-[prepare_csf_descriptors.py](prepare_csf_descriptors.py) 和
-[verify_csf_descriptors.py](verify_csf_descriptors.py)。预处理需要 NumPy/PyArrow；Fortran 构建与运行不链接 rCSFs。
+- [compare_rangular_versions.py](compare_rangular_versions.py) 比较默认和显式描述符路径及不同程序版本；
+  `--descriptors` 与 `--header` 配套提供。历史参考程序可显式选择 `--reference-text-oracle`；
+  两个历史程序的离线文本对照使用 `--legacy-text-oracle`。
+- [compare_rangular_mpi_inputs.py](compare_rangular_mpi_inputs.py) 对照同一 MPI 程序的默认/显式原生输入，
+  要求 `--descriptors`、`--header`；保留逐 rank 计时和 MCP 哈希。
+- [verify_csf_descriptors.py](verify_csf_descriptors.py) 调用不安装的测试 oracle，核对原文本与原生数组。
+- [旧 GCSDESC1 转换器](archive/prepare_csf_descriptors.py) 已归档，仅服务历史格式夹具；当前程序拒绝其输出。
 
 角系数文件的解析、统计和原版/候选程序对比见
 [MCP 解析与比较工具](../docs/implemented/mcp_compare.md)，入口为

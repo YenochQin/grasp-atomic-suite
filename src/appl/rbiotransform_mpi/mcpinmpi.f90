@@ -181,7 +181,7 @@
 !**************
 
           read(nf) nintg,ncoeff
-          if(ncoeff*nintg==0) cycle
+          ! Empty ranks still participate in CITRAG's collective zero contributions.
 !
 !   Allocate memory. Note that in this case we can,
 !   since the data is sorted, allocate less
@@ -213,7 +213,7 @@
 !
         if (nshl(l)>0)                                             &
 !        CALL CITRAG(EVEC,NCF,NVEC,L,NSHL(L),                   &
-        call citrag(csf_mixing_coefficients(1:500),csf_count,nvec,l,nshl(l),                   &
+        call citrag(csf_mixing_coefficients(:),csf_count,nvec,l,nshl(l),                   &
                     cirot(iioff),ninl(l),ntestl,ciout, scr )
 !
 !   Deallocate storage for this kappa.

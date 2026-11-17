@@ -1,5 +1,8 @@
 # rangular 描述符输入、数组对照及阶段计时
 
+> 2026-11-17 更新：本文的旧文本/GCSDESC1 入口为历史记录；当前生产输入已统一为
+> [Rust 原生描述符或配套 header](native_csf_descriptors.md)。历史测量不代表新路径的性能。
+
 日期：2026-11-10。实现基于 suite `e229657d8a32b851da9c130928545bcb3ac209f1` 的工作树增量；
 描述符契约核对 rCSFs `6e4fcff1439fb1b56d4891908c5bd58722ddf64a`，实际兼容性检查使用已安装的原生 rCSFs 3.0.0。
 
@@ -17,10 +20,10 @@ CSFG/RMCDHF/RCI 的输入入口未改造。
 
 | 文件 | 职责 |
 | --- | --- |
-| [prepare_csf_descriptors.py](../../scripts/prepare_csf_descriptors.py) | 分批读取 Parquet 与 header TOML，校验版本/类型/绑定/分块/基本范围，输出版本化二进制。 |
+| [prepare_csf_descriptors.py](../../scripts/archive/prepare_csf_descriptors.py) | 分批读取 Parquet 与 header TOML，校验版本/类型/绑定/分块/基本范围，输出版本化二进制。 |
 | [csf_descriptor_input.f90](../../src/lib/lib9290/csf_descriptor_input.f90) | 解码交换格式；复用 `terms_C` 校验物理态；补全 J/K、组织数组；提供头部及逐 block 加载接口。 |
 | [rangular_input.f90](../../src/appl/rangular/rangular_input.f90) | 选择原 `CSLH/LODCSH2` 或描述符路径；连接现有程序状态。 |
-| [csf_descriptor_verify.f90](../../src/appl/rangular/csf_descriptor_verify.f90) | 独立调用两条加载路径，逐项比较元数据及全部三个 byte 数组。 |
+| [csf_descriptor_verify.f90](../../test/descriptor_oracle/csf_descriptor_verify.f90) | 独立调用两条加载路径，逐项比较元数据及全部三个 byte 数组。 |
 | [verify_csf_descriptors.py](../../scripts/verify_csf_descriptors.py) | 运行原生验证器并要求成功标记，防止旧文本 reader 的 `STOP` 返回零时被误判通过。 |
 | [rangular_profile.f90](../../src/appl/rangular/rangular_profile.f90) | 可选的 SYSTEM_CLOCK 墙钟计时，按阶段写 CSV。 |
 
@@ -63,7 +66,7 @@ cmake --build build-descriptor-check --target rangular csf_descriptor_verify -j4
 从已有、与 header 绑定的完整 V2 描述符生成输入；路径只是使用示例：
 
 ```fish
-../graspkit-tools/.venv/bin/python scripts/prepare_csf_descriptors.py \
+../graspkit-tools/.venv/bin/python scripts/archive/prepare_csf_descriptors.py \
   /path/to/descriptors.parquet /path/to/csfs.bin \
   --header /path/to/source_header.toml
 

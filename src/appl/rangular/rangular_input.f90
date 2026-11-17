@@ -3,14 +3,11 @@ module rangular_input
                                    install_descriptor_header, read_descriptor_block
    use rangular_profile, only: open_stage_profile
    use rangular_reuse, only: configure_angular_reuse
-   use cslh_i, only: cslh
-   use lodcsh2_i, only: lodcsh2
    implicit none (type, external)
    private
    public :: angular_input_options, parse_angular_options, load_angular_header, load_angular_block, close_angular_input
    type :: angular_input_options
-      character(len=:), allocatable :: input_filename, timings_filename
-      logical :: use_descriptors = .false.
+      character(len=:), allocatable :: input_filename, timings_filename, header_filename
       type(descriptor_source) :: descriptors
    end type angular_input_options
 contains
@@ -44,8 +41,9 @@ contains
       integer :: reuse_memory_mib
       logical :: input_selected, timings_selected, reuse_selected, reuse_stats_selected
       character(len=:), allocatable :: option_name, reuse_filename
-      options%input_filename = "rcsf.inp"
+      options%input_filename = "rcsf_descriptors.parquet"
       options%timings_filename = ""
+      options%header_filename = ""
       input_selected = .false.
       timings_selected = .false.
       reuse_selected = .false.
@@ -56,11 +54,13 @@ contains
       do while (argument_index <= command_argument_count())
          call read_argument_text(argument_index, option_name)
          select case (option_name)
-         case ("--csf-text", "--csf-descriptors")
+         case ("--csf-descriptors")
             if (input_selected) error stop "Select exactly one CSF input option"
             call read_argument_text(argument_index+1, options%input_filename)
-            options%use_descriptors = option_name == "--csf-descriptors"
             input_selected = .true.
+         case ("--header")
+            if (len(options%header_filename) > 0) error stop "Duplicate --header option"
+            call read_argument_text(argument_index+1,options%header_filename)
          case ("--timings")
             if (timings_selected) error stop "Duplicate --timings option"
             call read_argument_text(argument_index+1, options%timings_filename)
@@ -81,8 +81,8 @@ contains
             reuse_memory_mib = option_value
             reuse_selected = .true.
          case ("--help")
-            print "(A)", "rangular [--csf-text FILE | --csf-descriptors FILE] [--timings NEW_FILE.csv]"
-            print "(A)", "Default: original rcsf.inp text input; interactive scientific settings are unchanged."
+            print "(A)", "rangular [--csf-descriptors FILE] [--header FILE.toml] [--timings NEW_FILE.csv]"
+            print "(A)", "Default: rcsf_descriptors.parquet with matching rcsf_header.toml."
             print "(A)", "Serial only: --reuse-cache-mib N [--reuse-stats NEW_FILE.csv]; default 0 (off)."
             stop
          case default
@@ -90,6 +90,7 @@ contains
          end select
          argument_index = argument_index + 2
       end do
+      call reject_output_filename(options%header_filename)
       call reject_output_filename(options%input_filename)
       call reject_output_filename(options%timings_filename)
       call reject_output_filename(reuse_filename)
@@ -106,12 +107,8 @@ contains
       integer, intent(out) :: core_count
       integer, intent(in) :: maximum_blocks
       character(len=8), intent(out) :: block_labels(:)
-      if (options%use_descriptors) then
-         call open_descriptor_source(options%descriptors, options%input_filename, maximum_blocks)
-         call install_descriptor_header(options%descriptors, core_count, block_labels)
-      else
-         call cslh(options%input_filename, core_count, maximum_blocks, block_labels)
-      end if
+      call open_descriptor_source(options%descriptors, options%input_filename, maximum_blocks,options%header_filename)
+      call install_descriptor_header(options%descriptors, core_count, block_labels)
    end subroutine load_angular_header
 
    subroutine load_angular_block(options, core_count, block_index)
@@ -119,19 +116,11 @@ contains
       use stat_c, only: subshell_quantum_numbers => csf_subshell_quantum_codes, couplings => csf_coupling_quantum_codes
       type(angular_input_options), intent(inout) :: options
       integer, intent(in) :: core_count, block_index
-      if (options%use_descriptors) then
-         call read_descriptor_block(options%descriptors, block_index, occupations, subshell_quantum_numbers, couplings)
-      else
-         call lodcsh2(21, core_count, block_index)
-      end if
+      call read_descriptor_block(options%descriptors, block_index, occupations, subshell_quantum_numbers, couplings)
    end subroutine load_angular_block
 
    subroutine close_angular_input(options)
       type(angular_input_options), intent(inout) :: options
-      if (options%use_descriptors) then
-         call close_descriptor_source(options%descriptors)
-      else
-         close(21)
-      end if
+      call close_descriptor_source(options%descriptors)
    end subroutine close_angular_input
 end module rangular_input

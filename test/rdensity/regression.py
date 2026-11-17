@@ -11,6 +11,9 @@ import argparse
 import math
 import os
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from native_fixture import descriptors
 import shutil
 import struct
 import subprocess
@@ -116,6 +119,8 @@ def run(
         OPENBLAS_NUM_THREADS="1",
         VECLIB_MAXIMUM_THREADS="1",
     )
+    for text_fixture in folder.glob("*.c"):
+        descriptors(text_fixture)
     result = subprocess.run(
         command,
         cwd=folder,

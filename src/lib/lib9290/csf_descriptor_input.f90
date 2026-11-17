@@ -1,7 +1,9 @@
 ! Versioned descriptor transport and ordinary-CSF semantic adapter.
 ! The physical state table remains owned by terms_C; no table is duplicated.
 module csf_descriptor_input
-   use iso_fortran_env, only: int8, int64, error_unit, file_storage_size
+   use iso_fortran_env, only: int8, int64, error_unit
+   use iso_c_binding, only: c_ptr, c_null_ptr, c_null_char, c_char, c_size_t, c_int32_t, c_int64_t
+   use csf_rust_ffi
    use parameter_def, only: orbital_capacity => max_orbitals
    use terms_c, only: state_counts => itab, state_offsets => jtab, state_values => ntab
    implicit none (type, external)
@@ -10,151 +12,139 @@ module csf_descriptor_input
    public :: read_descriptor_block, install_descriptor_header, descriptor_block_label
 
    type :: descriptor_source
-      integer :: unit_number = 0
-      logical :: is_open = .false.
+      type(c_ptr) :: handle = c_null_ptr
+      logical :: is_open = .false., header_loaded = .false.
       integer :: core_count = 0, peel_count = 0, orbital_count = 0, block_count = 0
       integer :: row_width = 0, total_csf_count = 0, electron_count = 0, next_block_index = 1
       integer, allocatable :: principal_numbers(:), relativistic_kappas(:)
       integer, allocatable :: orbital_momenta(:), single_electron_two_j(:)
       character(len=2), allocatable :: orbital_labels(:)
       integer, allocatable :: block_lengths(:), block_two_j(:), block_parities(:)
-      character(len=64) :: header_sha256 = ""
    end type descriptor_source
 
 contains
 
-   subroutine require_descriptor(condition, message)
+   logical function failed(status)
+      integer, intent(in), optional :: status
+      failed = .false.
+      if (present(status)) failed = status /= 0
+   end function failed
+
+   logical function require_descriptor(condition, message, status) result(ok)
       logical, intent(in) :: condition
       character(len=*), intent(in) :: message
+      integer, intent(out), optional :: status
+      ok = condition
+      if (present(status)) status = 0
       if (.not. condition) then
          write(error_unit, "(A)") "CSF descriptor input: "//message
-         error stop 1
+         if (present(status)) then
+            status = 1
+         else
+            error stop 1
+         end if
       end if
-   end subroutine require_descriptor
+   end function require_descriptor
 
-   function read_unsigned_integer(unit_number, byte_count) result(value)
-      integer, intent(in) :: unit_number, byte_count
-      integer(int64) :: value
-      integer(int8) :: encoded_bytes(8)
-      integer :: byte_index, read_status
-      read(unit_number, iostat=read_status) encoded_bytes(:byte_count)
-      call require_descriptor(read_status == 0, "truncated binary header")
-      value = 0_int64
-      do byte_index = 1, byte_count
-         value = ior(value, ishft(iand(int(encoded_bytes(byte_index), int64), 255_int64), 8*(byte_index-1)))
-      end do
-      call require_descriptor(value >= 0_int64, "unsigned count exceeds signed int64 range")
-   end function read_unsigned_integer
-
-   function read_default_integer(unit_number, signed_value) result(value)
-      integer, intent(in) :: unit_number
-      logical, intent(in), optional :: signed_value
-      integer :: value
-      integer(int64) :: wide_value
-      wide_value = read_unsigned_integer(unit_number, 4)
-      if (present(signed_value)) then
-         if (signed_value .and. wide_value >= 2147483648_int64) wide_value = wide_value - 4294967296_int64
-      end if
-      call require_descriptor(abs(wide_value) <= int(huge(value), int64), "integer exceeds suite default-integer range")
-      value = int(wide_value)
-   end function read_default_integer
-
-   subroutine open_descriptor_source(source, filename, maximum_blocks)
+   subroutine open_descriptor_source(source, filename, maximum_blocks, header_filename, status)
       type(descriptor_source), intent(inout) :: source
       character(len=*), intent(in) :: filename
       integer, intent(in) :: maximum_blocks
-      character(len=8) :: file_magic
-      character(len=*), parameter :: orbital_letters = "spdfghiklm"
-      integer :: read_status, orbital_index, previous_index, block_index, file_version, byte_marker
-      integer :: allocation_status, relativistic_kappa, orbital_momentum, hash_index
-      integer(int64) :: total_rows, row_count, counted_rows, file_bytes, expected_bytes
+      character(len=*), intent(in), optional :: header_filename
+      integer, intent(out), optional :: status
+      integer :: result
+      call open_descriptor_source_impl(source, filename, maximum_blocks, header_filename, result)
+      if (result /= 0) then
+         call close_descriptor_source(source)
+         source = descriptor_source()
+      end if
+      if (present(status)) then
+         status = result
+      else if (result /= 0) then
+         error stop "Cannot open descriptor source"
+      end if
+   end subroutine open_descriptor_source
 
+   subroutine open_descriptor_source_impl(source, filename, maximum_blocks, header_filename, status)
+      type(descriptor_source), intent(inout) :: source
+      character(len=*), intent(in) :: filename
+      integer, intent(in) :: maximum_blocks
+      character(len=*), intent(in), optional :: header_filename
+      integer, intent(out), optional :: status
+      character(len=:), allocatable :: header, stem
+      character(kind=c_char,len=1024) :: message
+      integer(c_int64_t) :: info(5)
+      integer(c_int64_t), allocatable :: lengths(:)
+      integer(c_int32_t), allocatable :: orbitals(:,:), symmetries(:,:)
+      integer :: read_status, i, k, l, n, allocation_status
+      character(len=*), parameter :: letters = "spdfghiklm"
+      message = c_null_char
       call close_descriptor_source(source)
       source = descriptor_source()
-      call require_descriptor(file_storage_size == 8 .and. storage_size(0_int8) == 8, &
-                              "this transport requires eight-bit file storage units and int8")
-      open(newunit=source%unit_number, file=filename, access="stream", form="unformatted", &
-           status="old", action="read", iostat=read_status)
-      call require_descriptor(read_status == 0, "cannot open "//filename)
+      if (.not. require_descriptor(rust_descriptor_version() == 1, "unsupported Rust ABI", status)) return
+      n = len_trim(filename)
+      if (.not. require_descriptor(n > 8, "expected descriptor Parquet path", status)) return
+      if (.not. require_descriptor(filename(n-7:n) == ".parquet", "only descriptor Parquet input is supported", status)) return
+      stem = filename(:n-8)
+      n = len(stem)
+      if (n > 12) then
+         if (stem(n-11:) == "_descriptors") stem = stem(:n-12)
+      end if
+      header = stem//"_header.toml"
+      if (present(header_filename)) then
+         if (len_trim(header_filename) > 0) header = header_filename
+      end if
+      read_status = rust_descriptor_open(trim(filename)//c_null_char, header//c_null_char, &
+                                    source%handle, message, 1024_c_size_t)
+      if (.not. require_descriptor(read_status == 0, message(:max(0,index(message,c_null_char)-1)), status)) return
       source%is_open = .true.
-      inquire(unit=source%unit_number, size=file_bytes)
-      read(source%unit_number, iostat=read_status) file_magic
-      call require_descriptor(read_status == 0, "missing binary magic")
-      call require_descriptor(file_magic == "GCSDESC1", "unrecognized binary magic")
-      file_version = read_default_integer(source%unit_number)
-      byte_marker = read_default_integer(source%unit_number)
-      call require_descriptor(file_version == 1, "unsupported binary version")
-      call require_descriptor(byte_marker == 16909060, "invalid little-endian marker")
-      source%core_count = read_default_integer(source%unit_number)
-      source%peel_count = read_default_integer(source%unit_number)
-      call require_descriptor(source%core_count <= orbital_capacity .and. source%peel_count <= orbital_capacity, &
-                              "orbital table exceeds configured capacity")
-      source%orbital_count = source%core_count + source%peel_count
-      call require_descriptor(source%orbital_count > 0 .and. source%orbital_count <= orbital_capacity, &
-                              "orbital table exceeds configured capacity or is empty")
-      source%block_count = read_default_integer(source%unit_number)
-      call require_descriptor(source%block_count > 0 .and. source%block_count <= maximum_blocks, &
-                              "block count exceeds caller capacity or is empty")
-      source%row_width = read_default_integer(source%unit_number)
-      call require_descriptor(source%row_width == 4*source%peel_count + 2, "incorrect descriptor row width")
-      total_rows = read_unsigned_integer(source%unit_number, 8)
-      call require_descriptor(total_rows > 0 .and. total_rows <= int(huge(source%total_csf_count), int64), &
-                              "CSF count exceeds current suite integer range or is empty")
-      source%total_csf_count = int(total_rows)
-      source%electron_count = read_default_integer(source%unit_number)
-      call require_descriptor(source%electron_count > 0, "electron count must be positive")
-      read(source%unit_number, iostat=read_status) source%header_sha256
-      call require_descriptor(read_status == 0, "missing source header digest")
-      do hash_index = 1, len(source%header_sha256)
-         call require_descriptor(index("0123456789abcdef", source%header_sha256(hash_index:hash_index)) > 0, &
-                                 "invalid source header digest")
-      end do
-      expected_bytes = 108_int64 + 8_int64*source%orbital_count + 16_int64*source%block_count &
-                       + int(source%row_width, int64)*total_rows
-      call require_descriptor(file_bytes == expected_bytes, "binary length mismatch (truncation or trailing data)")
-      allocate(source%principal_numbers(source%orbital_count), source%relativistic_kappas(source%orbital_count), &
+      read_status = rust_descriptor_info(source%handle, info, message, 1024_c_size_t)
+      if (.not. require_descriptor(read_status == 0, message(:max(0,index(message,c_null_char)-1)), status)) return
+      if (.not. require_descriptor(all(info >= 0) .and. all(info <= int(huge(0),int64)), "header integer overflow",  &
+         & status)) return
+      source%core_count = int(info(1))
+      source%peel_count = int(info(2))
+      if (.not. require_descriptor(info(1)+info(2) <= orbital_capacity, "orbital capacity exceeded", status)) return
+      source%orbital_count = int(info(1)+info(2))
+      source%block_count = int(info(3))
+      source%total_csf_count = int(info(4))
+      source%electron_count = int(info(5))
+      source%row_width = 4*source%peel_count+2
+      if (.not. require_descriptor(source%block_count > 0 .and. source%block_count < huge(0) .and. &
+                              source%block_count <= maximum_blocks, &
+                              "invalid block count", status)) return
+      allocate(orbitals(2,source%orbital_count), lengths(source%block_count), &
+               symmetries(2,source%block_count), &
+               source%principal_numbers(source%orbital_count), source%relativistic_kappas(source%orbital_count), &
                source%orbital_momenta(source%orbital_count), source%single_electron_two_j(source%orbital_count), &
                source%orbital_labels(source%orbital_count), source%block_lengths(source%block_count), &
                source%block_two_j(source%block_count), source%block_parities(source%block_count), stat=allocation_status)
-      call require_descriptor(allocation_status == 0, "cannot allocate header arrays")
-      do orbital_index = 1, source%orbital_count
-         source%principal_numbers(orbital_index) = read_default_integer(source%unit_number)
-         relativistic_kappa = read_default_integer(source%unit_number, .true.)
-         call require_descriptor(relativistic_kappa /= 0 .and. abs(relativistic_kappa) <= 10, &
-                                 "unsupported relativistic kappa")
-         orbital_momentum = relativistic_kappa
-         if (relativistic_kappa < 0) orbital_momentum = -relativistic_kappa - 1
-         call require_descriptor(orbital_momentum < len(orbital_letters), "unsupported orbital letter")
-         call require_descriptor(source%principal_numbers(orbital_index) > orbital_momentum, &
-                                 "invalid principal quantum number")
-         source%relativistic_kappas(orbital_index) = relativistic_kappa
-         source%orbital_momenta(orbital_index) = orbital_momentum
-         source%single_electron_two_j(orbital_index) = 2*abs(relativistic_kappa) - 1
-         source%orbital_labels(orbital_index) = orbital_letters(orbital_momentum+1:orbital_momentum+1)//" "
-         if (relativistic_kappa > 0) source%orbital_labels(orbital_index)(2:2) = "-"
-         do previous_index = 1, orbital_index - 1
-            call require_descriptor(source%principal_numbers(previous_index) /= source%principal_numbers(orbital_index) &
-                                    .or. source%relativistic_kappas(previous_index) /= relativistic_kappa, &
-                                    "duplicate orbital in core/peel table")
-         end do
+      if (.not. require_descriptor(allocation_status == 0, "cannot allocate header arrays", status)) return
+      read_status = rust_descriptor_tables(source%handle, orbitals, int(source%orbital_count,c_size_t), &
+         lengths, symmetries, int(source%block_count,c_size_t), message, 1024_c_size_t)
+      if (.not. require_descriptor(read_status == 0, message(:max(0,index(message,c_null_char)-1)), status)) return
+      if (.not. require_descriptor(all(lengths > 0) .and. all(lengths <= huge(0)), "invalid block lengths", status)) return
+      source%block_lengths = int(lengths)
+      source%block_two_j = int(symmetries(1,:))
+      source%block_parities = int(symmetries(2,:))
+      source%principal_numbers = int(orbitals(1,:))
+      source%relativistic_kappas = int(orbitals(2,:))
+      do i = 1, source%orbital_count
+         k = source%relativistic_kappas(i)
+         l = k
+         if (k < 0) l = -k-1
+         if (.not. require_descriptor(k /= 0 .and. l >= 0 .and. l < len(letters), "unsupported orbital", status)) return
+         source%orbital_momenta(i) = l
+         source%single_electron_two_j(i) = 2*abs(k)-1
+         source%orbital_labels(i) = letters(l+1:l+1)//" "
+         if (k > 0) source%orbital_labels(i)(2:2) = "-"
       end do
-      counted_rows = 0_int64
-      do block_index = 1, source%block_count
-         row_count = read_unsigned_integer(source%unit_number, 8)
-         call require_descriptor(row_count > 0 .and. row_count <= total_rows - counted_rows, "invalid block length")
-         counted_rows = counted_rows + row_count
-         source%block_lengths(block_index) = int(row_count)
-         source%block_two_j(block_index) = read_default_integer(source%unit_number)
-         source%block_parities(block_index) = read_default_integer(source%unit_number, .true.)
-         call require_descriptor(source%block_two_j(block_index) <= 126, "block angular momentum exceeds byte limit")
-         call require_descriptor(abs(source%block_parities(block_index)) == 1, "invalid block parity")
-      end do
-      call require_descriptor(counted_rows == total_rows, "block lengths do not cover all rows")
-   end subroutine open_descriptor_source
+      source%header_loaded = .true.
+   end subroutine open_descriptor_source_impl
 
    subroutine close_descriptor_source(source)
       type(descriptor_source), intent(inout) :: source
-      if (source%is_open) close(source%unit_number)
+      call rust_descriptor_close(source%handle)
       source%is_open = .false.
    end subroutine close_descriptor_source
 
@@ -177,7 +167,7 @@ contains
       label = padded_text(16:20)
    end function descriptor_block_label
 
-   subroutine install_descriptor_header(source, core_count, block_labels)
+   subroutine install_descriptor_header(source, core_count, block_labels, status)
       use orb_c, only: current_csf_count => csf_count, current_orbital_count => orbital_count, &
                        principal_numbers => orbital_principal_n, relativistic_kappas => orbital_kappa, orbital_momenta &
                           & => orbital_l, &
@@ -187,8 +177,17 @@ contains
       type(descriptor_source), intent(in) :: source
       integer, intent(out) :: core_count
       character(len=8), intent(out) :: block_labels(:)
+      integer, intent(out), optional :: status
       integer :: block_index, allocation_status
-      call require_descriptor(size(block_labels) >= source%block_count, "insufficient block label capacity")
+      integer, pointer :: prepared_lengths(:)
+      if (.not. require_descriptor(source%header_loaded, "descriptor header is not loaded", status)) return
+      if (.not. require_descriptor(size(block_labels) >= source%block_count, "insufficient block label capacity", status)) return
+      allocate(prepared_lengths(source%block_count+1), stat=allocation_status)
+      if (.not. require_descriptor(allocation_status == 0, "cannot allocate block lengths", status)) return
+      prepared_lengths=0
+      prepared_lengths(:source%block_count)=source%block_lengths
+      if (associated(block_lengths)) deallocate(block_lengths)
+      block_lengths=>prepared_lengths
       core_count = source%core_count
       current_orbital_count = source%orbital_count
       current_csf_count = source%total_csf_count
@@ -199,8 +198,6 @@ contains
       orbital_momenta(:current_orbital_count) = source%orbital_momenta
       single_electron_two_j(:current_orbital_count) = source%single_electron_two_j
       orbital_labels(:current_orbital_count) = source%orbital_labels
-      allocate(block_lengths(block_count+1), stat=allocation_status)
-      call require_descriptor(allocation_status == 0, "cannot allocate block lengths")
       block_lengths = 0
       block_lengths(:block_count) = source%block_lengths
       block_labels = ""
@@ -210,26 +207,28 @@ contains
       end do
    end subroutine install_descriptor_header
 
-   function resolve_subshell_state(single_two_j, occupation, physical_seniority, printed_two_j, block_index, row_index) &
+   function resolve_subshell_state(single_two_j, occupation, physical_seniority, printed_two_j, block_index, row_index, status) &
       result(subshell_two_j)
       integer, intent(in) :: single_two_j, occupation, physical_seniority, printed_two_j
       integer, intent(in) :: block_index, row_index
+      integer, intent(out), optional :: status
       integer :: subshell_two_j
       integer :: capacity, population, table_row, table_entry, table_offset, match_count, matching_j_count
       integer :: candidate_two_j, candidate_seniority, candidate_label
+      subshell_two_j = -1
       capacity = single_two_j + 1
       population = min(occupation, capacity - occupation)
       if (population == 0) then
-         call require_state(physical_seniority == 0 .and. (printed_two_j == -1 .or. printed_two_j == 0), &
-                                 "empty/closed shell must have seniority zero and J=0 or omitted J")
+         if (.not. require_state(physical_seniority == 0 .and. (printed_two_j == -1 .or. printed_two_j == 0), &
+                                 "empty/closed shell must have seniority zero and J=0 or omitted J")) return
          subshell_two_j = 0
          return
       end if
-      call require_state(single_two_j <= 17, "unsupported open-shell state table for single-electron 2j > 17")
-      if (single_two_j > 9) call require_state(population <= 2, "unsupported high-j occupation")
+      if (.not. require_state(single_two_j <= 17, "unsupported open-shell state table for single-electron 2j > 17")) return
+      if (.not. require_state(single_two_j <= 9 .or. population <= 2, "unsupported high-j occupation")) return
       table_row = (capacity-2)/2
       table_row = table_row*(table_row+1)/2 + population + 1
-      call require_state(table_row >= 1 .and. table_row <= size(state_counts), "unsupported subshell table row")
+      if (.not. require_state(table_row >= 1 .and. table_row <= size(state_counts), "unsupported subshell table row")) return
       match_count = 0
       subshell_two_j = -1
       do table_entry = 1, state_counts(table_row)
@@ -240,35 +239,42 @@ contains
          if (candidate_seniority /= physical_seniority) cycle
          if (printed_two_j /= -1 .and. printed_two_j /= candidate_two_j) cycle
          match_count = match_count + 1
-         call require_state(candidate_label == 0, "unsupported state requires an additional w label")
+         if (.not. require_state(candidate_label == 0, "unsupported state requires an additional w label")) return
          subshell_two_j = candidate_two_j
       end do
-      call require_state(match_count == 1, "invalid or ambiguous subshell (occupation, seniority, J)")
+      if (.not. require_state(match_count == 1, "invalid or ambiguous subshell (occupation, seniority, J)")) return
       ! Ordinary LODCSH2 only distinguishes repeated J by v for j=7/2,q=4.
       matching_j_count = 0
       do table_entry = 1, state_counts(table_row)
          table_offset = state_offsets(table_row) + 3*(table_entry-1)
          if (state_values(table_offset+3) == subshell_two_j+1) matching_j_count = matching_j_count + 1
       end do
-      call require_state(matching_j_count == 1 .or. (single_two_j == 7 .and. occupation == 4), &
-                              "unsupported state is ambiguous in the ordinary text reader")
+      if (.not. require_state(matching_j_count == 1 .or. (single_two_j == 7 .and. occupation == 4), &
+                              "unsupported state is ambiguous in the ordinary text reader")) return
    contains
-      subroutine require_state(condition, message)
+      logical function require_state(condition, message) result(ok)
          logical, intent(in) :: condition
          character(len=*), intent(in) :: message
+         ok = condition
+         if (present(status)) status = 0
          if (.not. condition) then
             write(error_unit, "(A,I0,A,I0,2A)") "CSF descriptor input: block ", block_index, &
                                                 ", CSF ", row_index, ": ", message
-            error stop 1
+            if (present(status)) then
+               status = 1
+            else
+               error stop 1
+            end if
          end if
-      end subroutine require_state
+      end function require_state
    end function resolve_subshell_state
 
-   subroutine decode_descriptor_row(source, block_index, row_index, row, occupations, subshell_quantum_numbers, couplings)
+   subroutine decode_descriptor_row(source, block_index, row_index, row, occupations, subshell_quantum_numbers, couplings, status)
       type(descriptor_source), intent(in) :: source
       integer, intent(in) :: block_index, row_index
       integer(int8), intent(in) :: row(:)
       integer(int8), intent(out) :: occupations(:), subshell_quantum_numbers(:,:), couplings(:)
+      integer, intent(out), optional :: status
       integer :: shell_two_j(orbital_capacity), printed_two_k(orbital_capacity)
       integer :: peel_index, orbital_index, channel_offset, occupation, seniority, printed_two_j
       integer :: occupied_count, occupied_position, open_count, capacity, previous_two_j, coupled_two_j
@@ -296,17 +302,18 @@ contains
          seniority = int(row(channel_offset+3))
          printed_two_k(orbital_index) = int(row(channel_offset+4))
          capacity = source%single_electron_two_j(orbital_index) + 1
-         call require_row(occupation >= 0 .and. occupation <= capacity, "occupation outside shell capacity")
-         call require_row(seniority >= 0, "negative physical seniority")
-         call require_row(printed_two_j >= -1 .and. printed_two_j <= 126, "invalid subshell 2J")
-         call require_row(printed_two_k(orbital_index) >= -1 .and. printed_two_k(orbital_index) <= 126, &
-                                 "invalid intermediate 2K")
+         if (.not. require_row(occupation >= 0 .and. occupation <= capacity, "occupation outside shell capacity")) return
+         if (.not. require_row(seniority >= 0, "negative physical seniority")) return
+         if (.not. require_row(printed_two_j >= -1 .and. printed_two_j <= 126, "invalid subshell 2J")) return
+         if (.not. require_row(printed_two_k(orbital_index) >= -1 .and. printed_two_k(orbital_index) <= 126, &
+                                 "invalid intermediate 2K")) return
          if (occupation == 0) then
-            call require_row(printed_two_j == -1 .and. seniority == 0 .and. &
-                                    printed_two_k(orbital_index) == -1, "noncanonical empty shell descriptor")
+            if (.not. require_row(printed_two_j == -1 .and. seniority == 0 .and. &
+                                    printed_two_k(orbital_index) == -1, "noncanonical empty shell descriptor")) return
          end if
          shell_two_j(orbital_index) = resolve_subshell_state(source%single_electron_two_j(orbital_index), &
-                                                            occupation, seniority, printed_two_j, block_index, row_index)
+                                                            occupation, seniority, printed_two_j, block_index, row_index, status)
+         if (failed(status)) return
          occupations(orbital_index) = int(occupation, int8)
          subshell_quantum_numbers(orbital_index,1) = int(seniority, int8)
          subshell_quantum_numbers(orbital_index,3) = int(shell_two_j(orbital_index)+1, int8)
@@ -316,10 +323,10 @@ contains
       end do
       total_two_j = int(row(source%row_width-1))
       parity = int(row(source%row_width))
-      call require_row(total_two_j == source%block_two_j(block_index) .and. &
-                              parity == source%block_parities(block_index), "row/block symmetry mismatch")
-      call require_row(parity == (-1)**parity_exponent, "incorrect row parity")
-      call require_row(electron_count == source%electron_count, "incorrect row electron count")
+      if (.not. require_row(total_two_j == source%block_two_j(block_index) .and. &
+                              parity == source%block_parities(block_index), "row/block symmetry mismatch")) return
+      if (.not. require_row(parity == (-1)**parity_exponent, "incorrect row parity")) return
+      if (.not. require_row(electron_count == source%electron_count, "incorrect row electron count")) return
       occupied_count = count(occupations(source%core_count+1:source%orbital_count) > 0)
       occupied_position = 0
       open_count = 0
@@ -331,8 +338,8 @@ contains
          capacity = source%single_electron_two_j(orbital_index) + 1
          coupled_two_j = printed_two_k(orbital_index)
          if (coupled_two_j >= 0) then
-            call require_row(occupied_position >= 2 .and. occupied_position < occupied_count, &
-                                    "intermediate coupling at invalid occupied-shell boundary")
+            if (.not. require_row(occupied_position >= 2 .and. occupied_position < occupied_count, &
+                                    "intermediate coupling at invalid occupied-shell boundary")) return
          else if (orbital_index >= last_nonzero_shell) then
             coupled_two_j = total_two_j
          else if (shell_two_j(orbital_index) == 0) then
@@ -340,62 +347,103 @@ contains
          else if (previous_two_j == 0) then
             coupled_two_j = shell_two_j(orbital_index)
          else
-            call require_row(.false., "missing nontrivial intermediate coupling")
+            if (.not. require_row(.false., "missing nontrivial intermediate coupling")) return
          end if
-         call require_row(coupled_two_j >= abs(previous_two_j-shell_two_j(orbital_index)) .and. &
+         if (.not. require_row(coupled_two_j >= abs(previous_two_j-shell_two_j(orbital_index)) .and. &
                                  coupled_two_j <= previous_two_j+shell_two_j(orbital_index) .and. &
                                  mod(previous_two_j+shell_two_j(orbital_index)-coupled_two_j, 2) == 0, &
-                                 "coupling violates angular momentum triangle/parity")
+                                 "coupling violates angular momentum triangle/parity")) return
          previous_two_j = coupled_two_j
          if (occupation < capacity) then
             open_count = open_count + 1
             if (open_count > 1) couplings(open_count-1) = int(coupled_two_j+1, int8)
          end if
       end do
-      call require_row(previous_two_j == total_two_j, "incorrect final angular momentum")
+      if (.not. require_row(previous_two_j == total_two_j, "incorrect final angular momentum")) return
       couplings(orbital_capacity) = int((total_two_j+1)*parity, int8)
    contains
-      subroutine require_row(condition, message)
+      logical function require_row(condition, message) result(ok)
          logical, intent(in) :: condition
          character(len=*), intent(in) :: message
+         ok = condition
+         if (present(status)) status = 0
          if (.not. condition) then
             write(error_unit, "(A,I0,A,I0,2A)") "CSF descriptor input: block ", block_index, &
                                                 ", CSF ", row_index, ": ", message
-            error stop 1
+            if (present(status)) then
+               status = 1
+            else
+               error stop 1
+            end if
          end if
-      end subroutine require_row
+      end function require_row
    end subroutine decode_descriptor_row
 
-   subroutine read_descriptor_block(source, block_index, occupations, subshell_quantum_numbers, couplings)
+   subroutine read_descriptor_block(source, block_index, occupations, subshell_quantum_numbers, couplings, status)
       type(descriptor_source), intent(inout) :: source
       integer, intent(in) :: block_index
-      integer(int8), intent(out) :: occupations(:,:), subshell_quantum_numbers(:,:,:), couplings(:,:)
+      integer(int8), intent(out) :: occupations(:,:)
+      integer(int8), intent(out), optional :: subshell_quantum_numbers(:,:,:), couplings(:,:)
+      integer, intent(out), optional :: status
+      integer :: result
+      call read_descriptor_block_impl(source,block_index,occupations,subshell_quantum_numbers,couplings,result)
+      if (result /= 0) then
+         occupations=0_int8
+         if (present(subshell_quantum_numbers)) subshell_quantum_numbers=0_int8
+         if (present(couplings)) couplings=0_int8
+         call close_descriptor_source(source)
+      end if
+      if (present(status)) then
+         status=result
+      else if (result /= 0) then
+         error stop "Descriptor block validation failed"
+      end if
+   end subroutine read_descriptor_block
+
+   subroutine read_descriptor_block_impl(source, block_index, occupations, subshell_quantum_numbers, couplings, status)
+      type(descriptor_source), intent(inout) :: source
+      integer, intent(in) :: block_index
+      integer(int8), intent(out) :: occupations(:,:)
+      integer(int8), intent(out), optional :: subshell_quantum_numbers(:,:,:), couplings(:,:)
+      integer(int8) :: row_quantum(orbital_capacity,3), row_couplings(orbital_capacity)
+      integer, intent(out), optional :: status
       integer(int8), allocatable :: batch_values(:,:)
+      character(kind=c_char,len=1024) :: message
       integer :: batch_capacity, batch_count, row_offset, batch_row, read_status, allocation_status
-      call require_descriptor(source%is_open, "descriptor source is not open")
-      call require_descriptor(block_index == source%next_block_index .and. block_index <= source%block_count, &
-                              "blocks must be loaded once in original order")
-      call require_descriptor(size(occupations,1) == orbital_capacity .and. &
-                              size(occupations,2) == source%block_lengths(block_index), "occupation array shape mismatch")
-      call require_descriptor(all(shape(couplings) == shape(occupations)), "coupling array shape mismatch")
-      call require_descriptor(size(subshell_quantum_numbers,1) == orbital_capacity .and. &
-                              size(subshell_quantum_numbers,2) == 3 .and. &
-                              size(subshell_quantum_numbers,3) == size(occupations,2), "quantum number array shape mismatch")
+      message = c_null_char
+      if (.not. require_descriptor(source%is_open .and. source%header_loaded, "descriptor source is not open", status)) return
+      if (.not. require_descriptor(block_index == source%next_block_index .and. block_index <= source%block_count, &
+                              "blocks must be loaded once in original order", status)) return
+      if (.not. require_descriptor(size(occupations,1) == orbital_capacity .and. &
+                              size(occupations,2) == source%block_lengths(block_index),  &
+         & "occupation array shape mismatch", status)) return
+      if (present(couplings)) then
+         if (.not. require_descriptor(all(shape(couplings) == shape(occupations)), "coupling shape", status)) return
+      end if
+      if (present(subshell_quantum_numbers)) then
+         if (.not. require_descriptor(size(subshell_quantum_numbers,1) == orbital_capacity .and. &
+              size(subshell_quantum_numbers,2) == 3 .and. &
+              size(subshell_quantum_numbers,3) == size(occupations,2), "quantum shape", status)) return
+      end if
       batch_capacity = min(8192, source%block_lengths(block_index))
       allocate(batch_values(source%row_width,batch_capacity), stat=allocation_status)
-      call require_descriptor(allocation_status == 0, "cannot allocate descriptor batch")
+      if (.not. require_descriptor(allocation_status == 0, "cannot allocate descriptor batch", status)) return
       row_offset = 0
       do while (row_offset < source%block_lengths(block_index))
          batch_count = min(batch_capacity, source%block_lengths(block_index)-row_offset)
-         read(source%unit_number, iostat=read_status) batch_values(:,:batch_count)
-         call require_descriptor(read_status == 0, "truncated descriptor payload")
+         read_status = rust_descriptor_read(source%handle, batch_values, &
+            int(source%row_width,c_size_t)*int(batch_count,c_size_t), int(batch_count,c_size_t), &
+            message, 1024_c_size_t)
+         if (.not. require_descriptor(read_status == 0, message(:max(0,index(message,c_null_char)-1)), status)) return
          do batch_row = 1, batch_count
             call decode_descriptor_row(source, block_index, row_offset+batch_row, batch_values(:,batch_row), &
-                                       occupations(:,row_offset+batch_row), &
-                                       subshell_quantum_numbers(:,:,row_offset+batch_row), couplings(:,row_offset+batch_row))
+                                       occupations(:,row_offset+batch_row), row_quantum, row_couplings, status)
+            if (failed(status)) return
+            if (present(subshell_quantum_numbers)) subshell_quantum_numbers(:,:,row_offset+batch_row) = row_quantum
+            if (present(couplings)) couplings(:,row_offset+batch_row) = row_couplings
          end do
          row_offset = row_offset + batch_count
       end do
       source%next_block_index = source%next_block_index + 1
-   end subroutine read_descriptor_block
+   end subroutine read_descriptor_block_impl
 end module csf_descriptor_input

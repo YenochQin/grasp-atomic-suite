@@ -1,26 +1,6 @@
-!***********************************************************************
-!                                                                      *
-      integer function itjpo (icsf)
-!                                                                      *
-!   ITJPO is the value of 2J+1 for CSF number ICSF.                    *
-!                                                                      *
-!   Written by Farid A. Parpia            Last revision: 02 Nov 1992   *
-!   Modified by G. Gaigalas                                 May 2011   *
-!                                                                      *
-!***********************************************************************
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      use parameter_def, only: max_orbitals
-      use stat_c,        only: csf_coupling_quantum_codes
-      implicit none (type, external)
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      integer, intent(in) :: icsf
-!-----------------------------------------------
-      itjpo = csf_coupling_quantum_codes(max_orbitals,icsf)
-      if (itjpo > 127) itjpo = 256 - itjpo
-      itjpo = iabs (itjpo)
-      return
-      end function itjpo
+integer function itjpo(icsf)
+   use rmcdhf_descriptor_input, only: rmcdhf_csf_symmetry
+   implicit none (type, external)
+   integer, intent(in) :: icsf
+   itjpo = abs(rmcdhf_csf_symmetry(icsf))
+end function itjpo

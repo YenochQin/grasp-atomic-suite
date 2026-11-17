@@ -16,7 +16,8 @@ def main() -> None:
     manifest = json.loads((root / "docs/reference/rmcdhf_upstream_snapshot.json").read_text())
     with tempfile.TemporaryDirectory(prefix="upstream-tamper-") as temporary:
         work = Path(temporary)
-        paths = [root / name for name in manifest["files"]]
+        migration = json.loads((root / "docs/reference/rmcdhf_descriptor_snapshot.json").read_text())
+        paths = [root / name for name in manifest["files"] if name not in migration["removed"]]
         paths += list((root / "docs/reference").glob("rmcdhf_*.json"))
         for source in paths:
             target = work / source.relative_to(root)
@@ -24,7 +25,7 @@ def main() -> None:
             shutil.copyfile(source, target)
         with contextlib.redirect_stdout(io.StringIO()):
             verify(work)
-        for relative in ("src/appl/rmcdhf/scf.f90", "src/appl/rmcdhf/solve.f90",
+        for relative in ("src/appl/rmcdhf/itjpo.f90", "src/appl/rmcdhf/setcsl.f90", "src/appl/rmcdhf/scf.f90", "src/appl/rmcdhf/solve.f90",
                          "docs/reference/rmcdhf_declarations_snapshot.json",
                          "docs/reference/rmcdhf_numeric_kind_snapshot.json",
                          "docs/reference/rmcdhf_spacing_snapshot.json",

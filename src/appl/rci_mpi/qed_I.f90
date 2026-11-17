@@ -7,7 +7,7 @@
       implicit none (type, external)
       integer, intent(in) :: jstate
       real(real64), intent(out) :: slfint(max_orbitals)
-      real(real64), intent(out) :: ucf(1)
+      real(real64), intent(out) :: ucf(:)
       end subroutine qed
       end interface
       end module qed_i

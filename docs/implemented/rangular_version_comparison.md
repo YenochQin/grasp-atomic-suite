@@ -1,5 +1,8 @@
 # 原版与新版 rangular 对照运行脚本
 
+> 2026-11-17 更新：本文的旧文本/GCSDESC1 入口为历史记录；当前生产输入已统一为
+> [Rust 原生描述符或配套 header](native_csf_descriptors.md)。历史测量不代表新路径的性能。
+
 日期：2026-11-10。入口：[compare_rangular_versions.py](../../scripts/compare_rangular_versions.py)。
 范围：**普通 rangular 的串行原版与串行/OpenMP 候选**。脚本接受两个已构建可执行文件，不自动编译，不运行 MPI 或提交 SLURM。
 新版是已接入 `--csf-descriptors` / `--timings` 的 suite 版本。

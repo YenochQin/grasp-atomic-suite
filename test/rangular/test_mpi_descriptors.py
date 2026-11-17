@@ -16,7 +16,6 @@ sys.path.insert(0, str(SUITE / "test"))
 sys.path.insert(0, str(SUITE / "scripts"))
 from test_csf_descriptors import basic_blocks, write_fixture
 import mcp_compare
-from prepare_csf_descriptors import prepare_descriptors
 
 ARGUMENTS: argparse.Namespace
 
@@ -29,8 +28,7 @@ class MpiDescriptorTests(unittest.TestCase):
         parquet_path, header_path, self.text_path = write_fixture(
             self.root / "inputs", ["1s"], ["2s", "2p-", "2p", "3s", "3p-", "3p"], basic_blocks()
         )
-        self.binary_path = self.root / "inputs" / "csfs.bin"
-        prepare_descriptors(parquet_path, header_path, self.binary_path)
+        self.binary_path = parquet_path
 
     def execute(
         self, label: str, ranks: int, options: list[str], *,
@@ -39,7 +37,8 @@ class MpiDescriptorTests(unittest.TestCase):
         directory = self.root / label
         directory.mkdir()
         if default_text:
-            shutil.copyfile(self.text_path, directory / "rcsf.inp")
+            shutil.copyfile(self.binary_path, directory / "rcsf_descriptors.parquet")
+            shutil.copyfile(self.binary_path.parent / "csfs_header.toml", directory / "rcsf_header.toml")
         environment = os.environ | {
             "MPI_TMP": str(directory), "OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1",
             "OMPI_ALLOW_RUN_AS_ROOT": "1", "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM": "1",
@@ -109,10 +108,9 @@ class MpiDescriptorTests(unittest.TestCase):
             self.root / "first-inputs", ["1s"], ["2s", "2p-", "2p", "3s", "3p-", "3p"],
             [basic_blocks()[0]],
         )
-        binary_path = self.root / "first-inputs" / "csfs.bin"
-        prepare_descriptors(parquet_path, header_path, binary_path)
+        binary_path = parquet_path
         reference = self.successful_run(
-            "first-text", 2, ["--csf-text", str(text_path)], interactive_input="n\n2\n"
+            "first-text", 2, ["--csf-descriptors", str(parquet_path)], interactive_input="n\n2\n"
         )
         candidate = self.successful_run(
             "first-binary", 2,
@@ -125,23 +123,26 @@ class MpiDescriptorTests(unittest.TestCase):
 
     def test_relative_inputs_use_serial_directory(self) -> None:
         # Relative paths are resolved before access from the rank-specific cwd.
-        relative_binary = "../inputs/csfs.bin"
-        reference = self.successful_run("relative-text", 2, ["--csf-text", "../inputs/rcsf.inp"])
+        relative_binary = "../inputs/csfs_descriptors.parquet"
+        reference = self.successful_run("relative-text", 2, ["--csf-descriptors", str(self.binary_path)])
         candidate = self.successful_run("relative-binary", 2, ["--csf-descriptors", relative_binary])
         self.assertEqual(self.outputs(reference), self.outputs(candidate))
 
     def test_invalid_descriptor_stops_mpi_job(self) -> None:
-        malformed_files = {
-            "truncated": self.binary_path.read_bytes()[:-1],
-            "bad-state": self.binary_path.read_bytes(),
-        }
-        bad_state = bytearray(malformed_files["bad-state"])
-        bad_state[108 + 8 * 7 + 16 * 3] = 127
-        malformed_files["bad-state"] = bytes(bad_state)
-        for label, contents in malformed_files.items():
+        import pyarrow as arrow
+        from pyarrow import parquet
+        for label in ("truncated", "bad-state"):
             with self.subTest(case=label):
-                path = self.root / f"{label}.bin"
-                path.write_bytes(contents)
+                path = self.root / f"{label}_descriptors.parquet"
+                shutil.copyfile(self.binary_path.parent / "csfs_header.toml", self.root / f"{label}_header.toml")
+                if label == "truncated":
+                    path.write_bytes(self.binary_path.read_bytes()[:-1])
+                else:
+                    table = parquet.read_table(self.binary_path)
+                    columns = [c.to_pylist() for c in table.columns]
+                    columns[2][0] = 1  # invalid full-shell seniority: reaches deep Fortran validation
+                    parquet.write_table(arrow.Table.from_arrays(
+                        [arrow.array(v, type=arrow.int8()) for v in columns], schema=table.schema), path)
                 result, _ = self.execute(label, 2, ["--csf-descriptors", str(path)])
                 self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.assertIn("CSF descriptor", result.stderr)

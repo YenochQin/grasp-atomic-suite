@@ -27,7 +27,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use lodcsl_i, only: lodcsl
+      use csf_basis_mpi, only: load_csf_basis_mpi
+      use blk_c, only: nblock, ncfblk, nblocki, nblockf, ncfi, ncff
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -47,26 +48,13 @@
 !
 !   The  .csl  file is FORMATTED; it must exist
 !
-      j = index(name," ")
-      open(unit=21, file=name(1:j-1)//".c", form="FORMATTED", status="OLD", &
-         position="asis")
-!
-!   Check the first record of the file; if not as expected, try again
-!
-      read (21, "(1A15)", iostat=ios) record
-      if (ios/=0 .or. record(1:15)/="Core subshells:") then
-         write (6, *) "Not a Configuration Symmetry List File;"
-         close(21)
-         stop
-      end if
-!
-!   Load data from the  .csl  file
-!
-      call lodcsl (ncorer)
-!
-!   Close the  .csl  file
-!
-      close(21)
+      call load_csf_basis_mpi(trim(name),ncorer)
+      ios=0
+      if (ios /= 0) error stop "Transition descriptor load failed"
+      if (nblock > size(ncff)) error stop "Transition block capacity exceeded"
+      nblockf=nblock
+      ncff=0
+      ncff(:nblock)=ncfblk(:nblock)
 !
 !   Check if the core should be redefined
 !

@@ -87,7 +87,7 @@
       write(*,*) "This program determines the radial orbitals   "
       write(*,*) "and the expansion coefficients of the CSFs         "
       write(*,*) "in a self-onsistent field proceedure               "
-      write(*,*) "Input file:  isodata, rcsf.inp, rwfn.inp, mcp.30, ..."
+      write(*,*) "Input file:  isodata, rcsf_descriptors.parquet + rcsf_header.toml, rwfn.inp, mcp.30, ..."
       write(*,*)                                                       &
                "Outputfiles: rwfn.out, rmix.out, rmcdhf.sum, rmcdhf.log"
       write(*,*)
@@ -133,7 +133,7 @@
       call setsum ("rmcdhf.sum")
 
       call setmcp (closed_core_subshell_count, nblk0, idblk, "mcp")
-      call setcsl ("rcsf.inp", ncore1, idblk)
+      call setcsl ("rcsf_descriptors.parquet", ncore1, idblk)
       if (closed_core_subshell_count /= ncore1) error stop "rscfvu: ncore"
 
 !=======================================================================

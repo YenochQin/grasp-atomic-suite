@@ -208,7 +208,7 @@
 ! Transform for given L
 !
         if (nshl(l)>0)                                              &
-     &  call citrag(csf_mixing_coefficients(1:500),csf_count,nvec,l,nshl(l),                    &
+     &  call citrag(csf_mixing_coefficients(:),csf_count,nvec,l,nshl(l),                    &
      &              cirot(iioff),ninl(l),ntestl,ciout, scr )
 !
 !   Deallocate storage for this kappa.

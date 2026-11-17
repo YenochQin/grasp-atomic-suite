@@ -1,4 +1,9 @@
 add_library(9290 STATIC
+    csf_rust_ffi.f90
+    rmcdhf_descriptor_input.f90
+    csf_basis_input.f90
+    csf_basis_merge.f90
+    csf_block_input.f90
     csf_descriptor_input.f90
     suite_system.f90
     npol_input.f90
@@ -17,11 +22,6 @@ add_library(9290 STATIC
     count.f90
     cre.f90
     openfl.f90
-    setcsll.f90
-    prsrsl.f90
-    prsrcn.f90
-    lodcsh.f90
-    cslh.f90
     dcbsrw.f90
     dinit.f90
     dmerge.f90
@@ -48,10 +48,7 @@ add_library(9290 STATIC
     itrig.f90
     jcup.f90
     jqs.f90
-    parsjl.f90
     pack.f90
-    lodcsh2.f90
-    lodcsl.f90
     lodiso.f90
     orthsc.f90
     lodrwf.f90
@@ -62,7 +59,6 @@ add_library(9290 STATIC
     radgrd.f90
     rinti.f90
     setcon.f90
-    setcsh.f90
     setcsla.f90
     setiso.f90
     setj.f90
@@ -80,6 +76,8 @@ add_library(9290 STATIC
     stoptime.f90
 )
 setup_fortran_modules(9290)
+include(${PROJECT_SOURCE_DIR}/cmake/RustDescriptors.cmake)
+target_link_libraries(9290 PUBLIC rcsfs_descriptor_native)
 target_link_libraries_Fortran(9290 PRIVATE mod)
 target_link_libraries(9290 PRIVATE ${BLAS_LIBRARIES} ${BLAS_LINKER_FLAGS})
 target_link_libraries(9290 PRIVATE ${LAPACK_LIBRARIES} ${LAPACK_LINKER_FLAGS})

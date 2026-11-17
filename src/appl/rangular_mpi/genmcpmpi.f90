@@ -31,6 +31,7 @@
 !                                                                      *
 !***********************************************************************
 !-----------------------------------------------
+      use csf_descriptor_collectives, only: allocate_descriptor_arrays
       use parameter_def,   only:  max_orbitals
       use iso_fortran_env, only: int64
       use rangular_mpi_input, only: mpi_angular_input_options, parse_mpi_angular_options, &
@@ -55,7 +56,7 @@
       use setdbg_i, only: setdbg
       use setmc_i, only: setmc
       use setsum_i, only: setsum
-      use cslh_i, only: cslh
+
       use strsum_i, only: strsum
       use factt_i, only: factt
       use settmp_i, only: settmp
@@ -95,8 +96,7 @@
       lenperm = len_trim (permdir)
       lentmp = len_trim (tmpdir)
       call open_mpi_angular_profile(input_options)
-      input_format_name = "text"
-      if (input_options%use_descriptors) input_format_name = "descriptors"
+      input_format_name = "descriptors"
       program_start_count = stage_clock()
 !=======================================================================
 !  Get NDEF on node-0 and then send to all nodes
@@ -156,9 +156,8 @@
          end if
             !*** Load current CSL block. Memories de-allocated in mcp ***
          stage_start_count = stage_clock()
-         call alloc (csf_subshell_occupations, max_orbitals, csf_count, "IQA", "GENMCP")
-         call alloc (csf_subshell_quantum_codes, max_orbitals,3,csf_count, "JQSA", "GENMCP")
-         call alloc (csf_coupling_quantum_codes, max_orbitals, csf_count, "JCUPA", "GENMCP")
+         call allocate_descriptor_arrays(csf_count,csf_subshell_occupations, &
+                                         csf_subshell_quantum_codes,csf_coupling_quantum_codes)
          call record_stage("csf_allocation",nb,stage_start_count,int(csf_count,int64))
 !
          stage_start_count = stage_clock()

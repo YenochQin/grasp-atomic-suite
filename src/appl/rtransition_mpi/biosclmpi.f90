@@ -29,7 +29,7 @@
       use setcon_i, only: setcon
       use fname_i, only: fname
       use mrgcsl_i, only: mrgcsl
-      use setcslm_i, only: setcslm
+
       use getosd_i, only: getosd
       use strsum_i, only: strsum
       use factt_i, only: factt
@@ -140,7 +140,7 @@
 !
 !   Open, check, load data from, and close, the merged .csl  file
 !
-      call setcslm
+      ! The descriptor bases were merged directly in memory by MRGCSL.
 !
 !   Read mixing coefficients
 !
@@ -168,6 +168,7 @@
               print *, "error changing dir!"
               call exit(1)
           end if
+          ilbl = 0
           call strsum(name,inpci,ilbl)
           iii = len_trim(tmpdir)
           call sys_chdir(trim(tmpdir)//"/"//idstring,iii+4,mpi_error_code)

@@ -11,6 +11,9 @@ from fractions import Fraction
 import math
 import os
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from native_fixture import descriptors
 import re
 import shutil
 import struct
@@ -24,6 +27,7 @@ FIXTURES = Path(__file__).resolve().parent
 def prepare(work: Path, case: str, identity: bool = False) -> None:
     work.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(FIXTURES / f"{case}.c", work / "test.c")
+    descriptors(work / "test.c")
     text = (work / "test.c").read_text().splitlines()
     groups: list[list[str]] = [[]]
     for line in text[5:]:

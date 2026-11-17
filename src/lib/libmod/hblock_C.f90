@@ -4,6 +4,6 @@
       integer :: symmetry_block_count  !! NCFBLK as an integer needs to be renamed
 !     REAL(DOUBLE) :: PNCFBLK
 !     REAL(DOUBLE) :: PNEVBLK, PNCMAXBLK
-      integer, pointer :: csf_counts_by_block(:)  !! this is a problem
+      integer, pointer :: csf_counts_by_block(:) => null()  !! this is a problem
       integer, pointer :: eigenvector_counts_by_block(:), ncmaxblk(:)
       end module hblock_c

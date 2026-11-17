@@ -59,14 +59,14 @@
       use setdbg_i, only: setdbg
       use setmc_i, only: setmc
       use setsum_i, only: setsum
-      use cslh_i, only: cslh
+
       use setmcp2_i, only: setmcp2
       use strsum_i, only: strsum
       use factt_i, only: factt
 !      USE settmp_I
       use settmpgg_i, only: settmpgg
       use stoptime_i, only: stoptime
-      use lodcsh2_i, only: lodcsh2
+
       use mcp_i, only: mcp
       implicit none (type, external)
 !-----------------------------------------------
@@ -86,8 +86,7 @@
 !-----------------------------------------------------------------------
 !
       call parse_angular_options(input_options)
-      input_format_name = "text"
-      if (input_options%use_descriptors) input_format_name = "descriptors"
+      input_format_name = "descriptors"
       program_start_count = stage_clock()
       write(*,*)
       write(*,*) "RANGULAR"

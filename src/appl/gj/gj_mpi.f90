@@ -23,7 +23,7 @@
       use getmixblock_i, only: getmixblock
       use getyn_i, only: getyn
       use setcon_i, only: setcon
-      use setcsla_i, only: setcsla
+      use csf_basis_mpi, only: setcsla => load_csf_basis_mpi
       use setdbg_i, only: setdbg
       use setmc_i, only: setmc
       use setout_gj_i, only: setout_gj
@@ -43,7 +43,7 @@
 !
       call mpix_startup(mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1, &
          "GJ_MPI", "This is the MPI Lande-factor program", &
-         "isodata, name.c, name.(c)m, name.w", &
+         "isodata, descriptor Parquet/header, name.(c)m, name.w", &
          "name.gj or name.cgj", .true.)
 !
       name = " "

@@ -50,7 +50,7 @@
       print *, "        into an LS-coupled CSF basis  (Fortran 95 version)"
       print *, "        (C) Copyright by   G. Gaigalas and Ch. F. Fischer,"
       print *, "        (2025)."
-      print *, "        Input files: name.c, name.(c)m"
+      print *, "        Input files: name_descriptors.parquet, name_header.toml, name.(c)m"
       print *, "         (optional)  name.lsj.T"
       print *, "        Ouput files: name.lsj.lbl,"
       print *, "         (optional)  name.lsj.c, name.lsj.j,"

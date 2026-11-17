@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts/archive"))
 import prepare_csf_descriptors as prepare
 import pyarrow as arrow
 from pyarrow import parquet
@@ -149,7 +150,7 @@ def write_fixture(
         ],
         schema=schema,
     )
-    parquet_path = root / "descriptors.parquet"
+    parquet_path = root / "csfs_descriptors.parquet"
     parquet.write_table(
         table, parquet_path, row_group_size=2, compression="zstd", use_dictionary=True
     )
@@ -196,7 +197,7 @@ class DescriptorTests(unittest.TestCase):
         return subprocess.run(
             [
                 str(ARGUMENTS.verifier),
-                str(binary or self.binary_path),
+                str(binary or self.parquet_path),
                 str(self.text_path),
             ],
             text=True,
@@ -285,7 +286,7 @@ class DescriptorTests(unittest.TestCase):
     def test_text_array_equality(self) -> None:
         self.convert()
         result = verify_descriptors(
-            ARGUMENTS.verifier, self.binary_path, self.text_path
+            ARGUMENTS.verifier, self.parquet_path, self.text_path
         )
         self.assertIn("Verified array values: 6350", result.stdout)
 
@@ -299,7 +300,7 @@ class DescriptorTests(unittest.TestCase):
             writer.write_table(unbound_schema_table)
         self.assertIsNone(parquet.ParquetFile(self.parquet_path).schema_arrow.metadata)
         self.convert()
-        verify_descriptors(ARGUMENTS.verifier, self.binary_path, self.text_path)
+        verify_descriptors(ARGUMENTS.verifier, self.parquet_path, self.text_path)
 
     def test_array_mismatch_is_localized(self) -> None:
         self.parquet_path, self.header_path, self.text_path = write_fixture(
@@ -309,9 +310,12 @@ class DescriptorTests(unittest.TestCase):
             [[Record((Shell("4f", 4, 4, 2, printed_seniority=2),), 4)]],
         )
         self.convert()
-        encoded = bytearray(self.binary_path.read_bytes())
-        encoded[108 + 8 + 16 + 2] = 4
-        self.binary_path.write_bytes(encoded)
+        table = parquet.read_table(self.parquet_path)
+        columns = [column.to_pylist() for column in table.columns]
+        columns[2][0] = 4
+        parquet.write_table(arrow.Table.from_arrays(
+            [arrow.array(values, type=arrow.int8()) for values in columns], schema=table.schema
+        ), self.parquet_path)
         result = self.native()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("array mismatch", result.stderr)
@@ -339,7 +343,7 @@ class DescriptorTests(unittest.TestCase):
             [[Record(tuple(shells), 126)]],
         )
         self.convert()
-        verify_descriptors(ARGUMENTS.verifier, self.binary_path, self.text_path)
+        verify_descriptors(ARGUMENTS.verifier, self.parquet_path, self.text_path)
 
     def test_missing_single_shell_j_is_inferred(self) -> None:
         self.parquet_path, self.header_path, self.text_path = write_fixture(
@@ -349,7 +353,7 @@ class DescriptorTests(unittest.TestCase):
         encoded = bytearray(self.binary_path.read_bytes())
         encoded[108 + 8 * 2 + 16 + 1] = 255
         self.binary_path.write_bytes(encoded)
-        verify_descriptors(ARGUMENTS.verifier, self.binary_path, self.text_path)
+        verify_descriptors(ARGUMENTS.verifier, self.parquet_path, self.text_path)
 
     def test_open_zero_j_closed_shells_and_printed_zero_coupling(self) -> None:
         blocks = [
@@ -382,7 +386,7 @@ class DescriptorTests(unittest.TestCase):
             self.root, ["1s"], ["2s", "2p-", "2p", "3s", "3p-"], blocks
         )
         self.convert()
-        verify_descriptors(ARGUMENTS.verifier, self.binary_path, self.text_path)
+        verify_descriptors(ARGUMENTS.verifier, self.parquet_path, self.text_path)
 
     def test_seniority_and_adjacent_equal_symmetry_blocks(self) -> None:
         blocks = [
@@ -396,22 +400,18 @@ class DescriptorTests(unittest.TestCase):
             self.root, [], ["4f"], blocks
         )
         self.convert()
-        verify_descriptors(ARGUMENTS.verifier, self.binary_path, self.text_path)
+        verify_descriptors(ARGUMENTS.verifier, self.parquet_path, self.text_path)
 
     def test_semantic_corruption_and_unsupported_states(self) -> None:
         self.convert()
-        original = self.binary_path.read_bytes()
-        payload_offset = 108 + 8 * 7 + 16 * 3
-        mutations = [
-            (payload_offset + 2, 1),  # closed shell seniority
-            (payload_offset + 4 + 1, 0),  # empty shell printed J
-            (payload_offset + 26 * 5 + 4 * 2 + 1, 2),
-        ]  # impossible p^2 J=1
-        for byte_offset, byte_value in mutations:
-            with self.subTest(offset=byte_offset):
-                encoded = bytearray(original)
-                encoded[byte_offset] = byte_value
-                self.binary_path.write_bytes(encoded)
+        original = parquet.read_table(self.parquet_path)
+        for column, row, value in [(2, 0, 1), (5, 0, 0), (9, 5, 2)]:
+            with self.subTest(column=column, row=row):
+                columns = [c.to_pylist() for c in original.columns]
+                columns[column][row] = value
+                parquet.write_table(arrow.Table.from_arrays(
+                    [arrow.array(v, type=arrow.int8()) for v in columns], schema=original.schema
+                ), self.parquet_path)
                 self.assertNotEqual(self.native().returncode, 0)
         # j=9/2, q=4, v=4, J=4 needs a w label absent from descriptors.
         self.parquet_path, self.header_path, self.text_path = write_fixture(
@@ -420,7 +420,7 @@ class DescriptorTests(unittest.TestCase):
         self.binary_path.unlink()
         self.convert()
         result = subprocess.run(
-            [str(ARGUMENTS.rangular), "--csf-descriptors", str(self.binary_path)],
+            [str(ARGUMENTS.rangular), "--csf-descriptors", str(self.parquet_path)],
             cwd=self.root,
             input="y\n",
             text=True,
@@ -450,13 +450,13 @@ class DescriptorTests(unittest.TestCase):
         for sequence, encoded in enumerate(mutations):
             with self.subTest(sequence=sequence):
                 self.binary_path.write_bytes(encoded)
-                self.assertNotEqual(self.native().returncode, 0)
+                self.assertNotEqual(self.native(self.binary_path).returncode, 0)
 
     def test_verify_wrapper_rejects_legacy_stop_without_success(self) -> None:
         self.convert()
         self.text_path.write_text("not a CSF file\n")
         with self.assertRaisesRegex(ValueError, "verification failed"):
-            verify_descriptors(ARGUMENTS.verifier, self.binary_path, self.text_path)
+            verify_descriptors(ARGUMENTS.verifier, self.parquet_path, self.text_path)
 
     def test_rangular_outputs_and_stage_timing(self) -> None:
         self.convert()
@@ -465,17 +465,18 @@ class DescriptorTests(unittest.TestCase):
             ("first_order", "n\n1\n1\n1\n"),
         ]:
             generated_directories = []
-            for input_mode in ("text", "descriptors"):
+            for input_mode in ("default", "descriptors"):
                 for timing_enabled in (False, True):
                     run_directory = (
                         self.root / f"{interaction_name}_{input_mode}_{timing_enabled}"
                     )
                     run_directory.mkdir()
-                    if input_mode == "text":
-                        shutil.copyfile(self.text_path, run_directory / "rcsf.inp")
+                    if input_mode == "default":
+                        shutil.copyfile(self.parquet_path, run_directory / "rcsf_descriptors.parquet")
+                        shutil.copyfile(self.header_path, run_directory / "rcsf_header.toml")
                     command = [str(ARGUMENTS.rangular)]
                     if input_mode == "descriptors":
-                        command += ["--csf-descriptors", str(self.binary_path)]
+                        command += ["--csf-descriptors", str(self.parquet_path)]
                     if timing_enabled:
                         command += ["--timings", "timings.csv"]
                     result = subprocess.run(
@@ -496,9 +497,8 @@ class DescriptorTests(unittest.TestCase):
                         result.returncode, 0, result.stdout + result.stderr
                     )
                     # Supply provenance for the independent comparator only after the binary-only run.
-                    if input_mode == "descriptors":
-                        self.assertFalse((run_directory / "rcsf.inp").exists())
-                        shutil.copyfile(self.text_path, run_directory / "rcsf.inp")
+                    self.assertFalse((run_directory / "rcsf.inp").exists())
+                    shutil.copyfile(self.text_path, run_directory / "rcsf.inp")
                     outputs = {
                         path.name: path.read_bytes()
                         for path in run_directory.glob("mcp.*")
