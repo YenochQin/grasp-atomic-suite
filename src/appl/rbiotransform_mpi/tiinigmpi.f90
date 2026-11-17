@@ -31,7 +31,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix
-      use mcpdata_c
+      use mcpdata_c, only: cnn, double, intgrl, intptr, jann, jbnn, ncoeff, nintg
       use sbdat1_c, only: double, max_orbitals, nlmax, nshlp, nshlpp
       use mpi_c
 !-----------------------------------------------

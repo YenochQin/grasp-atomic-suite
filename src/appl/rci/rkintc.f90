@@ -12,7 +12,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use cteilsrk_c
+      use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
       use orb_c
       use kkstart_c, only: double, kmax, kstart
 !-----------------------------------------------

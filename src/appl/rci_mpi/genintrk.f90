@@ -20,7 +20,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
-      use cteilsrk_c
+      use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
       use kkstart_c, only: double, kmax, kstart
       use orb_c
       use jlabl_c, only: jlbl, jlbp, jlbr

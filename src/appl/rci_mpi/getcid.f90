@@ -17,7 +17,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
-      use decide_c
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use def_c,           only: vacuum_speed_of_light_au, speed_of_light_au, nuclear_charge, accy, electron_count, emn
       use default_c, only: double, inpci, ndef, ndump
       use grid_c
@@ -31,7 +31,7 @@
       use wave_c
       use wfac_c, only: double, wfact
       use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
-      use where_c
+      use where_c, only: double, imcdf
       use qedcut_c, only: nqedcut, nqedmax
       use mpi_c
 !-----------------------------------------------

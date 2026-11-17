@@ -21,7 +21,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix, max_orbitals, max_radial_points
-      use prnt_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use ris_c
       use orb_c
       use eigv_c

@@ -13,7 +13,7 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals
       use memory_man
-      use decide_c
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use def_c,           only: electron_mass_u, vacuum_speed_of_light_au, proton_mass_u, bohr_radius_cm, &
          & hartree_to_wavenumber_cm,     &
                                  speed_of_light_cm_per_s, b1=>electron_mass_u
@@ -24,9 +24,9 @@
       use nsmdat_c,        only: sqn, dmomnm, qmomb,                  &
                                  hfsi=>sqn, hfsd=>dmomnm, hfsq=>qmomb
       use orb_c
-      use prnt_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use opt6_c
-      use syma_c
+      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

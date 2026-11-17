@@ -16,8 +16,8 @@
       use cuto_c, only: cutoff, double
       use jlabl_c, labj=>jlbr, labp=> jlbp
       use osc_c
-      use syma_c
-      use prnt_c
+      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

@@ -41,7 +41,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use default_c, only: double, inpci, ndef, ndump
-      use cons_c
+      use cons_c, only: double, eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use rwfnestimate_input, only: radial_input_options, parse_radial_options, load_radial_header
 !-----------------------------------------------

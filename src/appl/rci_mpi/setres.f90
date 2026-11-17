@@ -15,7 +15,7 @@
 !-----------------------------------------------
       use memory_man
       use default_c, only: double, inpci, ndef, ndump
-      use where_c
+      use where_c, only: double, imcdf
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use iccu_c, only: iccut, iccutblk
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit

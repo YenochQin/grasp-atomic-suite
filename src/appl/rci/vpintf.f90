@@ -15,7 +15,7 @@
 !-----------------------------------------------
      use, intrinsic :: iso_fortran_env, only: real64
      use parameter_def,   only: orbital_index_radix
-     use debug_c
+     use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
      use grid_c
      use ncdist_c, only: double, max_radial_points, zdist
      use orb_c

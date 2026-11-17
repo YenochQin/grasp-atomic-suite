@@ -16,7 +16,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use debug_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use default_c, only: ndef
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------

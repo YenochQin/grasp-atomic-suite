@@ -16,7 +16,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use int_c
+      use int_c, only: double, max_radial_points, mtp0, p, p0, q, q0, tf, tg, xu, xv
       use orb_c
       use scf_c
 !-----------------------------------------------

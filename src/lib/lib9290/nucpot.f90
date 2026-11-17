@@ -18,7 +18,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use debug_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use def_c,           only: nuclear_charge, pi
       use grid_c
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters

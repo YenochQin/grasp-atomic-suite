@@ -34,7 +34,10 @@ def main() -> None:
                          "docs/reference/rmcdhf_operator_style_snapshot.json",
                          "docs/reference/rmcdhf_use_only_snapshot.json",
                          "docs/reference/rmcdhf_use_only_state_snapshot.json",
-                         "docs/reference/rmcdhf_use_only_state2_snapshot.json"):
+                         "docs/reference/rmcdhf_use_only_state2_snapshot.json",
+                         "docs/reference/rmcdhf_use_only_state3_snapshot.json",
+                         "docs/reference/rmcdhf_use_only_debug_snapshot.json",
+                         "docs/reference/rmcdhf_use_only_state4_snapshot.json"):
             target = work / relative
             original = target.read_bytes()
             target.write_bytes(original + b"\n")

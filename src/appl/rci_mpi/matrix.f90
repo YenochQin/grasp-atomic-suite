@@ -22,8 +22,8 @@
       use, intrinsic :: iso_fortran_env, only: real64, int64
       use parameter_def,   only: max_orbitals
       use memory_man
-      use decide_c
-      use debug_c
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use def_c
       use eigv_c
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
@@ -31,14 +31,14 @@
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use jlabl_c, labj=>jlbr, labp=>jlbp
       use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
-      use prnt_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
       use wave_c
-      use where_c
+      use where_c, only: double, imcdf
       use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
       use eigvec1_c, only: double, evec1
       use iccu_c, only: iccut, iccutblk
-      use cteilsrk_c
+      use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
       use coeils_c, only: double, frstco, indoei, ncoei, ndcoea, valoei
       use bilst_c
       use vpilst_c, only: double, frstvp, indvpi, ndvpa, nvpi, valvpi

@@ -29,7 +29,7 @@
       use memory_man
       use orb_c
       use default_c, only: double, inpci, ndef, ndump
-      use mcpdata_c
+      use mcpdata_c, only: cnn, double, intgrl, intptr, jann, jbnn, ncoeff, nintg
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

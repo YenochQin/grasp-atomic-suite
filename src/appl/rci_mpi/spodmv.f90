@@ -20,7 +20,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use eigv_c
-      use where_c
+      use where_c, only: double, imcdf
       use fposition_c, only: nposition
       use mpi_c,           only:  mpi_rank, mpi_process_count
 !-----------------------------------------------

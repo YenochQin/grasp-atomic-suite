@@ -26,7 +26,7 @@ contains
       use cons_c,          only: zero, tenth, half, eps
       use m_c,             only: nq1, jlist
       use orb_c,           only: orbital_kappa
-      use trk_c
+      use trk_c, only: bd1, bd2, bd3, bd4, bk1, bk2, bk3, bk4, double, id1, id2, id3, id4, ik1, ik2, ik3, ik4
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

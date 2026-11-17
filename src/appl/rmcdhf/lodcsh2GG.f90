@@ -34,7 +34,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use parameter_def,   only: max_orbitals
-      use debug_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use def_c
       use orb_c, ncfblock => csf_count
       use syma_c,          only: jpgg
@@ -45,7 +45,7 @@
 !-----------------------------------------------
       use prsrcn_i, only: prsrcn
       use parsjl_i, only: parsjl
-      use pack_i
+      use pack_i, only: pack
       use convrt_i, only: convrt
       use iq_i, only: iq
       use jqs_i, only: jqs

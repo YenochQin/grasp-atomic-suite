@@ -47,6 +47,11 @@ docs/
 
 | 分类 | 文档 | 实施状态与适用范围 |
 | --- | --- | --- |
+| USE ONLY 第十批：PACK 接口 | [use_only_pack_2026-11-17.md](reviews/use_only_pack_2026-11-17.md) | 11 份源码明确导入重导出的 pack 过程，保留实现绑定；剩余 C121 为 1,746。 |
+| USE ONLY 第十一批：RCI 与 RIS4 状态模块 | [use_only_state5_2026-11-17.md](reviews/use_only_state5_2026-11-17.md) | 29 份源码补充 33 处 ONLY，保留全部公开符号；剩余 C121 为 1,713。 |
+| USE ONLY 第九批：数组状态 | [use_only_state_arrays_2026-11-17.md](reviews/use_only_state_arrays_2026-11-17.md) | 146 份文件补齐 193 条 ONLY，保留八个模块的完整公开实体；剩余 C121 为 1,757。 |
+| USE ONLY 第八批：应用选项 | [use_only_application_flags_2026-11-17.md](reviews/use_only_application_flags_2026-11-17.md) | 138 份应用源码补齐 151 条调试/计算选项导入，剩余 C121 为 1,950。 |
+| USE ONLY 第七批：调试状态 | [use_only_debug_2026-11-17.md](reviews/use_only_debug_2026-11-17.md) | 15 份共享库源码补齐 debug_c 完整导入列表，剩余 C121 为 2,101。 |
 | 当前静态诊断接续入口 | [static_diagnostics_remaining_2026-11-17.md](plans/static_diagnostics_remaining_2026-11-17.md) | 提交前复查默认 6,172 条、扩展 13,604 条；USE ONLY 剩余 2,116 条（637 份文件），附位置/哈希清单，区分规范、CSF 风险和工具限制。 |
 | USE ONLY 第一批：接口模块 | [use_only_interfaces_2026-11-17.md](reviews/use_only_interfaces_2026-11-17.md) | 普通四种 RMCDHF 的 142 份文件补齐 524 条 ONLY，编译器导出表确认单过程接口范围；剩余 4,365 条按依赖与重导出继续分批。 |
 | USE ONLY 第二批：其他应用接口 | [use_only_app_interfaces_2026-11-17.md](reviews/use_only_app_interfaces_2026-11-17.md) | 其他 15 个应用目录的 275 份文件补齐 906 条 ONLY，247 个模块名的导出过程核对一致；剩余 3,459 条。 |

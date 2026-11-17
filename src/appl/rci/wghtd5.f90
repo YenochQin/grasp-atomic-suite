@@ -20,7 +20,7 @@
       use eigv_c
       use jlabl_c, labj=>jlbr, labp=>jlbp
       use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
-      use prnt_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

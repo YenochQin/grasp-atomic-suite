@@ -21,7 +21,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
-      use cons_c
+      use cons_c, only: double, eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
       use grid_c
       use wave_c
 !-----------------------------------------------

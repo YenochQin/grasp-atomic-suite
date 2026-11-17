@@ -19,7 +19,7 @@
       use def_c
       use cuto_c, only: cutoff, double
       use osc_c
-      use syma_c
+      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use jj2lsjbio_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

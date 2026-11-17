@@ -14,13 +14,13 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use decide_c
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use def_c
       use grid_c
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use npot_c, only: double, first_grid_index_beyond_fermi_c, max_radial_points, negative_radius_times_potential
       use orb_c
-      use prnt_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use wave_c
       use wfac_c, only: double, wfact
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit

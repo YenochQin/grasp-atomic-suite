@@ -10,15 +10,15 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_orbitals
       use memory_man
-      use debug_c
-      use decide_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use def_c
       use grid_c
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use prnt_c
-      use syma_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use orb_c
-      use teilst_c
+      use teilst_c, only: ndtea, ntei, pindte, pvalte, firstt
       use buffer_c
       use ris_c
       use jlabl_c, labj=> jlbr, labp=>jlbp

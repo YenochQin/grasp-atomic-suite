@@ -199,6 +199,27 @@ def main(root: Path) -> None:
         assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], \
             f"State3 USE ONLY snapshot has a different predecessor: {name}"
     reviewed_fortran |= use_state3["files"]
+    use_debug = json.loads((root / "docs/reference/rmcdhf_use_only_debug_snapshot.json").read_text())
+    assert use_debug["schema_version"] == 1
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_state3_snapshot.json").read_bytes()).hexdigest() == use_debug["previous_manifest_sha256"]
+    assert set(use_debug["files"]).issubset(reviewed_fortran)
+    for name, record in use_debug["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
+    reviewed_fortran |= use_debug["files"]
+    use_state4 = json.loads((root / "docs/reference/rmcdhf_use_only_state4_snapshot.json").read_text())
+    assert use_state4["schema_version"] == 1
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_debug_snapshot.json").read_bytes()).hexdigest() == use_state4["previous_manifest_sha256"]
+    assert set(use_state4["files"]).issubset(reviewed_fortran)
+    for name, record in use_state4["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
+    reviewed_fortran |= use_state4["files"]
+    use_pack = json.loads((root / "docs/reference/rmcdhf_use_only_pack_snapshot.json").read_text())
+    assert use_pack["schema_version"] == 1
+    assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_state4_snapshot.json").read_bytes()).hexdigest() == use_pack["previous_manifest_sha256"]
+    assert set(use_pack["files"]).issubset(reviewed_fortran)
+    for name, record in use_pack["files"].items():
+        assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
+    reviewed_fortran |= use_pack["files"]
     actual = {
         str(path.relative_to(root))
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")

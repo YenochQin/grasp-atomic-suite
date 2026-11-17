@@ -15,8 +15,8 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: orbital_index_radix, max_orbitals
-      use debug_c
-      use decide_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use def_c
       use foparm_c, only: iccut
       use offd_c, only: noffd1, noffd2

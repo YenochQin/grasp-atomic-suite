@@ -14,7 +14,7 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals, max_radial_points
       use def_c
-      use decide_c
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use default_c, only: double, inpci, ndef, ndump
       use foparm_c, only: iccut
       use grid_c, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale

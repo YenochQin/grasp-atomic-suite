@@ -16,8 +16,8 @@
       use def_c
       use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
       use eigv_c
-      use prnt_c
-      use syma_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use blk_c
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

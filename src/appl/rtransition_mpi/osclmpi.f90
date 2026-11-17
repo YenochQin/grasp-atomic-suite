@@ -19,8 +19,8 @@
       use eigv_c
       use orb_c
       use osc_c
-      use prnt_c
-      use syma_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use titl_c, only: double, idate, ihed, itime
       use wave_c
       use jj2lsjbio_c

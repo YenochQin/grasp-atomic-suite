@@ -20,7 +20,7 @@
       use eigv_c
       use iccu_c, only: iccut, iccutblk
       use orb_c
-      use where_c
+      use where_c, only: double, imcdf
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use hmat_c
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit

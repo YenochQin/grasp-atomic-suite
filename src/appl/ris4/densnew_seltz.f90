@@ -28,8 +28,8 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: orbital_index_radix, max_orbitals, max_radial_points
       use blk_c
-      use debug_c
-      use decide_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use def_c
       use eigv_c
       use foparm_c, only: iccut
@@ -37,11 +37,11 @@
       use jlabl_c, only: jlbl, jlbp, jlbr
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use orb_c
-      use prnt_c
-      use teilst_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use teilst_c, only: ndtea, ntei, pindte, pvalte, firstt
       use buffer_c
       use ris_c
-      use syma_c
+      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use prnt_c,           only : nvec
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

@@ -49,8 +49,8 @@
       use fposition_c, only: nposition
       use hmat_c
       use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
-      use prnt_c
-      use where_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use where_c, only: double, imcdf
       use wchblk_c, only: double, jblock
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------

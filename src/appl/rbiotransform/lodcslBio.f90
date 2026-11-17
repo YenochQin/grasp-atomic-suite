@@ -19,7 +19,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use parameter_def,   only: max_orbitals
-      use debug_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use def_c
       use orb_c
       use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
@@ -36,7 +36,7 @@
       use convrt_i, only: convrt
       use prsrcn_i, only: prsrcn
       use parsjl_i, only: parsjl
-      use pack_i
+      use pack_i, only: pack
       use iq_i, only: iq
       use jqs_i, only: jqs
       use jcup_i, only: jcup

@@ -17,8 +17,8 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_radial_points
-      use bess_c
-      use debug_c
+      use bess_c, only: bessj, bessn, bj, double, max_radial_points, tc, td, wij
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use grid_c, only: radial_derivative_over_radius
       use orb_c
       use tatb_c,  only: mtp, ta, tb

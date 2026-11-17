@@ -13,15 +13,15 @@
 !   M o d u l e s
 !-----------------------------------------------
       use biorb_c
-      use decide_c
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use def_c
       use foparm_c, only: iccut
       use grid_c
       use eigv_c
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use orb_c
-      use prnt_c
-      use syma_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use wave_c
       use jj2lsjbio_c
       implicit none (type, external)

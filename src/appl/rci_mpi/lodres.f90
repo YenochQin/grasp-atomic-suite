@@ -20,7 +20,7 @@
 !-----------------------------------------------
       use parameter_def,   only: max_radial_points
       use memory_man
-      use decide_c
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use def_c, only: nelecr, electron_count, nuclear_charge, emn, speed_of_light_au, accy
       use grid_c
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
@@ -28,7 +28,7 @@
       use orb_c
       use wave_c
       use wfac_c, only: double, wfact
-      use where_c
+      use where_c, only: double, imcdf
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use iccu_c, only: iccut, iccutblk
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit

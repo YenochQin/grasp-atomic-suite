@@ -24,7 +24,7 @@
       use blkidx_c, only: double, idxblk
       use default_c, only: double, inpci, ndef, ndump
       use def_c
-      use debug_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use eigv_c
       use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count

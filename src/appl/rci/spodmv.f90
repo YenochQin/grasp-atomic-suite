@@ -20,7 +20,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use eigv_c
-      use where_c
+      use where_c, only: double, imcdf
       use fposition_c, only: nposition
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

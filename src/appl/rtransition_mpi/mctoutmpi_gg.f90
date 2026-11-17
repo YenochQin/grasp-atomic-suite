@@ -18,7 +18,7 @@
       use memory_man
       use blk_c
       use debug_c,         only: ldbpa
-      use decide_c
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use foparm_c, only: iccut
       use orb_c
       use offd_c, only: noffd1, noffd2

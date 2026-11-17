@@ -24,8 +24,8 @@ contains
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only:  max_orbitals
-      use cons_c
-      use m_c
+      use cons_c, only: double, eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
+      use m_c, only: double, jjc1, jjc2, jjq1, jjq2, jlist, klist, max_orbitals, ncore, npeel, nq1, nq2
       use orb_c,   only: orbital_count, orbital_kappa
       use dumx_c,  only: jlis, jc1s, jc2s
 !-----------------------------------------------

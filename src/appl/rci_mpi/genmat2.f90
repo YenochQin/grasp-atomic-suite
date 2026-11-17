@@ -13,7 +13,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
       use hmat_c  !! rather than setham_to_genmat2
-      use decide_c
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use eigv_c
       use mpi_c
       implicit none (type, external)

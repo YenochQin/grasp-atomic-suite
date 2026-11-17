@@ -17,7 +17,7 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use cons_c
+      use cons_c, only: double, eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
       use ribojj_c, only: imgnjj, imgtjj, impnjj, imptjj
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

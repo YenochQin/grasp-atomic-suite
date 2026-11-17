@@ -24,8 +24,8 @@
       use def_c
       use eigv_c
       use orb_c
-      use prnt_c
-      use syma_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use blk_c,            only: nevinblk, ncfinblk, two_j
 !-----------------------------------------------

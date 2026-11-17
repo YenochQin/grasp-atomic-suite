@@ -24,7 +24,7 @@
       use damp_c, only: double, max_orbitals, mixing_damping_factors, orbital_damping_factors
       use def_c
       use grid_c
-      use int_c
+      use int_c, only: double, max_radial_points, mtp0, p, p0, q, q0, tf, tg, xu, xv
       use mpi_c
       use orb_c
       use orthct_c, only: orthst

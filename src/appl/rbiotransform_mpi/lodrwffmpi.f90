@@ -18,7 +18,7 @@
       use memory_man
       use biorb_c
       use def_c,           only: nuclear_charge, speed_of_light_au
-      use debug_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use grid_c
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use sbdat_c,         only: kamax, nshlff, nshlpff

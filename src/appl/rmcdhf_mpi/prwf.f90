@@ -21,7 +21,7 @@
       use parameter_def,    only: max_radial_points
       use def_c
       use grid_c
-      use int_c
+      use int_c, only: double, max_radial_points, mtp0, p, p0, q, q0, tf, tg, xu, xv
       use orb_c
       use wave_c
 !-----------------------------------------------

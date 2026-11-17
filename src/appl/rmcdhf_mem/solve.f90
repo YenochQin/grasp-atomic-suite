@@ -25,7 +25,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,    only: max_radial_points
-      use debug_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use def_c, only: speed_of_light_au, nsolv
       use grid_c, only: radial_grid_derivative
       use int_c, only: p, q, p0, q0, mtp0

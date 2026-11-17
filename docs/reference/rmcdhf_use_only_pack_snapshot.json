@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "previous_manifest_sha256": "25da7d877872fe4e5314a7f080cd78300349473a01d1c2bca06e2a422d33d7a0",
+  "description": "Explicit ONLY retains the pack procedure re-export and its pack_impl binding.",
+  "files": {
+    "src/appl/rmcdhf_mem/lodcsh2GG.f90": {
+      "before_suite_sha256": "0062ea656ae800b97b58bede529c6b04445a1bcf5c6bef0b7b592cd7ddf906fa",
+      "after_suite_sha256": "717b6db73b69ce68b2dd235e94f332b58418c4a5e17e8edb6c1fd7d0a39841f7"
+    },
+    "src/appl/rmcdhf/lodcsh2GG.f90": {
+      "before_suite_sha256": "a2741aa676312687d693f7ba3cfbdfe8f863d8a04ba5a44535d8e15ee156d7d7",
+      "after_suite_sha256": "03bf284b0ec3c482a5d46b77b5d98dd9042dcdee5a6072f9f1c907534e9ed13f"
+    },
+    "src/appl/rmcdhf_mem_mpi/lodcsh2GG.f90": {
+      "before_suite_sha256": "91b507e346480824bf946146be0dea73e91861169c9b18731c9581320e463c03",
+      "after_suite_sha256": "9455ce44e46315701876a372d229f2c36f07a174d40a419e64917f0feebf2819"
+    },
+    "src/appl/rmcdhf_mpi/lodcsh2GG.f90": {
+      "before_suite_sha256": "7335dc048cc74c1d4d92cc13a6c4bc20425aa6bd81e049fe95bb61ddea691af3",
+      "after_suite_sha256": "a7faac79cf4f58235122e99a0c5ab7006077149fde83fbad4b06046d1d511ac8"
+    }
+  }
+}

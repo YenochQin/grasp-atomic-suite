@@ -25,7 +25,7 @@
       use wave_c
       use orb_c
       use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
-      use debug_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

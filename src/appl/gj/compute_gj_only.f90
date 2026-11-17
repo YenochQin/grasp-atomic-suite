@@ -11,7 +11,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use parameter_def,   only: max_orbitals
-      use decide_c
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use eigv_c
       use foparm_c,        only: iccut
       use iounit_c,        only: stderr_unit

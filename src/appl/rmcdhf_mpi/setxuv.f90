@@ -14,7 +14,7 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use def_c
       use grid_c
-      use int_c
+      use int_c, only: double, max_radial_points, mtp0, p, p0, q, q0, tf, tg, xu, xv
       use pote_c, only: double, max_radial_points, xp, xq, yp
       use scf_c
       implicit none (type, external)

@@ -25,7 +25,7 @@
       use memory_man
       use damp_c, only: double, max_orbitals, mixing_damping_factors, orbital_damping_factors
       use def_c,           only: iccmin, ncmin, ncmax
-      use debug_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use eigv_c
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use hmat_c

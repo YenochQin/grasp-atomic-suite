@@ -15,7 +15,7 @@
       use memory_man
       use eigv_c
       use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
-      use prnt_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V A R I A B L E S

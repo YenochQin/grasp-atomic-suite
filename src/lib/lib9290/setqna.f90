@@ -19,7 +19,7 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use m_c
+      use m_c, only: double, jjc1, jjc2, jjq1, jjq2, jlist, klist, max_orbitals, ncore, npeel, nq1, nq2
       use orb_c,           only: csf_count, orbital_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

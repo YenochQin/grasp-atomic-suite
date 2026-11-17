@@ -23,7 +23,7 @@
       !USE horb_C
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use orb_c, only: orbital_count, csf_count, orbital_principal_n, orbital_kappa
-      use prnt_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       !USE tatb_C
       use wave_c
 !-----------------------------------------------

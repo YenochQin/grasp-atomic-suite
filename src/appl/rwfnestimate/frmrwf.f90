@@ -17,7 +17,7 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use memory_man
-      use debug_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use grid_c
       use left_c, only: double, max_orbitals, set
       use orb_c, only: orbital_energy_parameters, orbital_principal_n, orbital_kappa, orbital_symmetry_labels

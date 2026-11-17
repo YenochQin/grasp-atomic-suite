@@ -30,8 +30,8 @@
       use bilst_c
       use buffer_c
       use coeils_c, only: double, frstco, indoei, ncoei, ndcoea, valoei
-      use decide_c
-      use debug_c
+      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       use def_c
       use eigv_c
       use iccu_c, only: iccut, iccutblk
@@ -40,16 +40,16 @@
       use keilst_c, only: double, frstki, indkei, ndkea, nkei, valkei
       use ncdist_c, only: double, max_radial_points, zdist
       use orb_c, only: csf_count,  orbital_count
-      use prnt_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
       use stor_c, only: double, keep
       use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
       use vinlst_c, only: double, frstvi, indtei, ndvin, nvinti, valtei
       use vpilst_c, only: double, frstvp, indvpi, ndvpa, nvpi, valvpi
       use wave_c
-      use cteilsrk_c
+      use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
       use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
-      use where_c
+      use where_c, only: double, imcdf
       use eigvec1_c, only: double, evec1
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

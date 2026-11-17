@@ -20,7 +20,7 @@
       use eigv_c
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use orb_c, only: orbital_count, orbital_principal_n, orbital_kappa
-      use prnt_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use wave_c
       use qedcut_c, only: nqedcut, nqedmax
       use mpi_c

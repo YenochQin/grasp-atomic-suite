@@ -10,7 +10,7 @@
 !                                                                      *
 !***********************************************************************
 !-----------------------------------------------
-      use debug_c
+      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       implicit none (type, external)
 !
       ldbpa = .false.

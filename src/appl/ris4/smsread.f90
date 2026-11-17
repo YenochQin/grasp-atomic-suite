@@ -12,7 +12,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use parameter_def,    only: orbital_index_radix, max_orbitals
-      use prnt_c
+      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use ris_c
       use orb_c
       use eigv_c
