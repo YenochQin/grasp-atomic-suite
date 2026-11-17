@@ -15,7 +15,7 @@ program rdensity
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
     character(24) :: name
-    character(256) :: arg
+    character(256) :: arg, io_message
     integer :: nci, ordering, status, i, ios, length, ncore
     logical :: yes, exists, interactive
 
@@ -37,19 +37,25 @@ program rdensity
                 status = 2
             else
                 write(*,*) "Name of state"
-                read(*,"(a)",iostat=ios) arg
-                if (ios /= 0) status = 2
-                call accept_name(arg)
-                write(*,*) "Mixing coefficients from a CI calc.?"
-                yes = getyn()
-                if (yes) nci = 0
+                read(*,"(a)",iostat=ios,iomsg=io_message) arg
+                if (ios /= 0) then
+                    write(*,*) "Cannot read state name: ", trim(io_message)
+                    status = 2
+                else
+                    call accept_name(arg)
+                    if (status == 0) then
+                        write(*,*) "Mixing coefficients from a CI calc.?"
+                        yes = getyn()
+                        if (yes) nci = 0
+                    end if
+                end if
             end if
         else
-            do i = 1,command_argument_count()
+            argument_loop: do i = 1,command_argument_count()
                 call get_command_argument(i, arg, length=length, status=ios)
                 if (ios /= 0 .or. length > len(arg)) then
                     status = 2
-                    exit
+                    exit argument_loop
                 end if
                 select case(trim(arg))
                 case("--ci")
@@ -62,7 +68,7 @@ program rdensity
                     ordering = 2
                 case("--help","-h")
                     status = 1
-                    exit
+                    exit argument_loop
                 case default
                     if (i == 1 .and. arg(1:1) /= "-") then
                         call accept_name(arg)
@@ -71,7 +77,7 @@ program rdensity
                         status = 2
                     end if
                 end select
-            end do
+            end do argument_loop
         end if
         if (status == 0 .and. len_trim(name) == 0) status = 2
         if (status /= 0) write(*,*) "Usage: rdensity[_mpi] name [--ci|--nonci] [--order=1|--order=2]"
@@ -84,7 +90,6 @@ program rdensity
     if (status /= 0) call density_fail("Invalid command line or interactive input")
 
     call require_file("isodata")
-    call require_file(trim(name)//".c")
     call require_file(trim(name)//".w")
     if (nci == 0) then
         call require_file(trim(name)//".cm")
@@ -108,9 +113,13 @@ program rdensity
     if (rank == 0 .and. interactive) then
         write(*,*) "How do you want to order your eigenvectors?"
         write(*,*) "1) Dominant component; 2) Decreasing occupation (preserving pure orbitals)"
-        read(*,*,iostat=ios) ordering
-        if (ios /= 0) status = 2
-        if (ordering /= 1 .and. ordering /= 2) status = 2
+        read(*,*,iostat=ios,iomsg=io_message) ordering
+        if (ios /= 0) then
+            write(*,*) "Cannot read orbital ordering: ", trim(io_message)
+            status = 2
+        else if (ordering /= 1 .and. ordering /= 2) then
+            status = 2
+        end if
     end if
     call broadcast_options(name, nci, ndef, ordering, status)
     if (status /= 0) call density_fail("Orbital ordering must be 1 or 2")

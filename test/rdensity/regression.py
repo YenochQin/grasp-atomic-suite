@@ -1,8 +1,9 @@
 """Exercise real GRASP readers/angular algebra with analytic one-electron states.
 
-All generated inputs/outputs live in a disposable directory. No upstream tools
-or Python scientific packages are needed. MPI mode also checks the repository's
-multi-level Ni fixture against the serial executable on the same suite grid.
+All generated inputs/outputs live in a disposable directory. The native rCSFs
+CLI prepares descriptors offline; legacy CSF text is removed before every run.
+MPI mode also checks the repository's multi-level Ni fixture against the serial
+executable on the same suite grid.
 """
 
 from __future__ import annotations
@@ -10,14 +11,15 @@ from __future__ import annotations
 import argparse
 import math
 import os
-from pathlib import Path
-import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from native_fixture import descriptors
 import shutil
 import struct
 import subprocess
+import sys
 import tempfile
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from native_fixture import descriptors
 
 
 def records(path: Path) -> list[bytes]:
@@ -121,8 +123,15 @@ def run(
     )
     for text_fixture in folder.glob("*.c"):
         descriptors(text_fixture)
+        assert text_fixture.with_name(
+            f"{text_fixture.stem}_descriptors.parquet"
+        ).is_file()
+        assert text_fixture.with_name(f"{text_fixture.stem}_header.toml").is_file()
+        text_fixture.unlink()
+    assert not list(folder.glob("*.c")), "rdensity must use descriptor-only CSF inputs"
     result = subprocess.run(
         command,
+        check=False,
         cwd=folder,
         input=stdin,
         text=True,
@@ -156,6 +165,24 @@ def read_blocks(output: str, title: str) -> dict[int, list[list[float]]]:
     return result
 
 
+def run_interactive_failure(command: list[str], folder: Path, answers: str) -> str:
+    """Give each process a finite stdin without relying on MPI EOF forwarding."""
+    input_path = folder / "interactive.inp"
+    input_path.write_text(answers)
+    launcher = (
+        "import os, sys\n"
+        "with open(sys.argv[1], 'rb') as stream:\n"
+        "    os.dup2(stream.fileno(), 0)\n"
+        "os.execv(sys.argv[2], sys.argv[2:])\n"
+    )
+    # Interactive commands end with the executable and have no application args.
+    return run(
+        [*command[:-1], sys.executable, "-c", launcher, str(input_path), command[-1]],
+        folder,
+        success=False,
+    )
+
+
 def close(a: float, b: float, tolerance: float = 2e-10) -> None:
     assert math.isfinite(a) and math.isfinite(b)
     assert abs(a - b) <= tolerance * max(1.0, abs(a), abs(b)), (a, b)
@@ -166,7 +193,9 @@ def check_analytic(output: str, folder: Path, multiblock: bool) -> None:
     occupations = read_blocks(output, "occupations in output orbital order:")
     scale = 1 / 3 if multiblock else 1.0
     for actual, expected in zip(
-        sum(matrices[-1], []), [0.64, 0.48, 0.48, 0.36], strict=True
+        [value for row in matrices[-1] for value in row],
+        [0.64, 0.48, 0.48, 0.36],
+        strict=True,
     ):
         close(actual, scale * expected)
     close(occupations[-1][0][0], scale)
@@ -300,6 +329,18 @@ def main() -> None:
         run(parallel + ["--help"], root)
         run(parallel + ["--unknown"], root, success=False)
         run(parallel + ["missing"], root, success=False)
+        # Interactive READ failures must report the runtime message and reach
+        # the shared failure path without consuming invalid input or hanging MPI.
+        output = run_interactive_failure(parallel, root, "y\n")
+        assert "Cannot read state name:" in output, output
+        assert "Mixing coefficients from a CI calc.?" not in output, output
+        for case, answer in [("missing-order", ""), ("invalid-order", "invalid\n")]:
+            target = root / case
+            fixture(target, False, False)
+            output = run_interactive_failure(parallel, target, "y\ncase\nn\n" + answer)
+            assert "Cannot read orbital ordering:" in output, output
+            assert not (target / "case.d").exists()
+            assert not (target / "case.nw").exists()
         # All ranks must terminate on malformed mixing data instead of waiting
         # indefinitely for a collective. Subprocess timeout checks this too.
         target = root / "truncated"
