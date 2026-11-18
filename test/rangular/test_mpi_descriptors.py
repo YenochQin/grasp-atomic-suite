@@ -14,7 +14,7 @@ import unittest
 SUITE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(SUITE / "test"))
 sys.path.insert(0, str(SUITE / "scripts"))
-from rdensity.regression import fixture
+from rdensity.regression import fixture, floats, records
 from test_csf_descriptors import Record, Shell, basic_blocks, write_fixture
 import mcp_compare
 
@@ -151,6 +151,7 @@ class MpiDescriptorTests(unittest.TestCase):
     def test_rci_zero_first_prompt_is_independent_of_default_settings(self) -> None:
         if ARGUMENTS.rci is None:
             self.skipTest("rci_mpi is needed for the shared partition test")
+        energies: dict[str, float] = {}
         for name, prefix, answer, counts in [
             ("default-full", "y\ncase\n", "n", None),
             ("default-partition", "y\ncase\n", "y", [1]),
@@ -158,10 +159,16 @@ class MpiDescriptorTests(unittest.TestCase):
         ]:
             with self.subTest(case=name):
                 directory = self.root / name
-                fixture(directory, False, False)
+                fixture(directory, True, True)
+                # Two first-order CSFs with nonzero Coulomb coupling. The
+                # partition removes their off-diagonal term from the CI matrix.
                 parquet, header, _ = write_fixture(
-                    directory, [], ["1s", "2s"],
-                    [[Record((Shell("1s", 1, 1, 1),), 1), Record((Shell("2s", 1, 1, 1),), 1)]],
+                    directory, [], ["1s", "3s", "2p"],
+                    [[
+                        Record((Shell("1s", 2),), 0),
+                        Record((Shell("3s", 2),), 0),
+                        Record((Shell("2p", 2, 0, 0),), 0),
+                    ]],
                     zero_order_counts=counts,
                 )
                 parquet.rename(directory / "case_descriptors.parquet")
@@ -176,6 +183,11 @@ class MpiDescriptorTests(unittest.TestCase):
                 self.assertTrue((directory / "case.cm").is_file())
                 summary = (directory / "case.csum").read_text()
                 self.assertEqual("CSFs 1--1 constitute the zero-order space" in summary, answer == "y")
+                shift, shifted_energy = floats(records(directory / "case.cm")[-2])
+                energies[name] = shift + shifted_energy
+        if len(energies) == 3:
+            self.assertNotAlmostEqual(energies["default-full"], energies["default-partition"])
+            self.assertAlmostEqual(energies["default-partition"], energies["nondefault-partition"])
 
     def test_relative_inputs_use_serial_directory(self) -> None:
         # Relative paths are resolved before access from the rank-specific cwd.
