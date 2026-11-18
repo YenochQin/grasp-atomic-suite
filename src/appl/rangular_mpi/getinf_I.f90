@@ -1,8 +1,12 @@
-      module getinf_i
-      implicit none (type, external)
-      interface
-      subroutine getinf
-      implicit none (type, external)
+module getinf_i
+   use csf_descriptor_input, only: descriptor_source
+   implicit none (type, external)
+   interface
+      subroutine getinf(source, status)
+         import descriptor_source
+         implicit none (type, external)
+         type(descriptor_source), intent(in) :: source
+         integer, intent(out) :: status
       end subroutine getinf
-      end interface
-      end module getinf_i
+   end interface
+end module getinf_i

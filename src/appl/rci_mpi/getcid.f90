@@ -16,6 +16,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
+      use csf_block_input, only: read_csf_zero_order_counts
+      use csf_descriptor_collectives, only: check_descriptor_status
       use parameter_def,   only: max_radial_points
       use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
       use def_c,           only: vacuum_speed_of_light_au, speed_of_light_au, nuclear_charge, accy, electron_count, emn
@@ -23,7 +25,7 @@
       use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
       use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use iccu_c, only: iccut, iccutblk
+      use iccu_c, only: iccutblk
       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
       use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
       use npot_c,          only: negative_radius_times_potential, first_grid_index_beyond_fermi_c
@@ -57,7 +59,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
        logical :: yes
-       integer :: i, jblock, ntmp, np10, j
+       integer :: i, input_status, np10, j
 !-----------------------------------------------------------------------
 !
 ! Open, check, load data from, and close the  .iso  file
@@ -89,58 +91,21 @@
          speed_of_light_au = vacuum_speed_of_light_au
       end if
 !
-! Treat some CSF's as perturbation ? Broadcasting is used only in
-! non-default mode, as the above case for speed of light.
-! Quantities to be obtained: LFORDR
-!
-      if (ndef /= 0) then
-         if (mpi_rank == 0) then
-            write (stderr_unit,*) "Treat contributions of some CSFs",       &
-                            " as first-order perturbations?"
-            lfordr = getyn ()
-         end if
-         call mpi_bcast (lfordr,1,mpi_logical,0,mpi_comm_world,mpi_error_code)
-      else
-         lfordr = .false.
+! Select the CSF partition independently of the default physical settings.
+      input_status = 0
+      if (mpi_rank == 0) then
+         write (stderr_unit,"(A)") "Use zero-first partition from descriptor header? (y/n)"
+         lfordr = getyn ()
+         write (734,"(A)") merge("y", "n", lfordr)//"            ! Use zero-first partition from descriptor header"
+         if (lfordr) call read_csf_zero_order_counts(iccutblk, input_status)
       end if
-
-! Get iccutblk() from the user-input
-
-      if (.not. lfordr) then
-         !...Default first
-         do i = 1, symmetry_block_count
-           iccutblk(i) = csf_counts_by_block(i)
-         end do
+      call check_descriptor_status(input_status)
+      call mpi_bcast (lfordr, 1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
+      if (lfordr) then
+         call mpi_bcast (iccutblk, symmetry_block_count, mpi_integer, 0, mpi_comm_world, mpi_error_code)
       else
-
-      ! Let master do the i/o, then broadcast
-         if (mpi_rank == 0) then
-            write (stderr_unit,*) "There are ", symmetry_block_count, "blocks. They are:"
-            write (stderr_unit,*) "  block     J Parity     No of CSFs"
-            do i = 1, symmetry_block_count
-               write (stderr_unit,*) i, idblk(i)(1:5), csf_counts_by_block(i)
-            end do
-
-            write (stderr_unit,*)
-            write (stderr_unit,*) "Enter iccut for each block"
-            do jblock = 1, symmetry_block_count
-               write (stderr_unit,*) "Block ", jblock, "   ncf = ",        &
-                              csf_counts_by_block(jblock)                         &
-                      , " id = ", idblk(jblock)(1:5)
-  123          read (stdin_unit,*) ntmp
-               if (ntmp >= 0 .and. ntmp <= csf_counts_by_block(jblock)) then
-                  iccutblk(jblock) = ntmp
-               else
-                  write (stderr_unit,*) "ICCUT out of range, re-enter:"
-                  goto 123
-               end if
-               write(734,*) ntmp,"! ICCUT for block",jblock
-            end do
-         end if
-
-         call mpi_bcast (iccutblk,symmetry_block_count,mpi_integer,0,            &
-                                               mpi_comm_world,mpi_error_code)
-      end if ! .NOT. LFORDR
+         iccutblk = csf_counts_by_block(1:symmetry_block_count)
+      end if
 
 !*****************************************************************
 !

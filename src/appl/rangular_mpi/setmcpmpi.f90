@@ -1,10 +1,9 @@
 !***********************************************************************
 !                                                                      *
 !cjb  myid, nprocs = NOT args
-      subroutine setmcpmpi(ncore, idblk, filehead)
+      subroutine setmcpmpi(ncore, idblk, filehead, descriptors)
 !                                                                      *
-! A wrapper for setmcp/getinf. setmcp/getinf are then shared by serial *
-! and MPI programs.                                                    *
+! Set interaction options and write the MPI MCP file headers.          *
 !                                                                      *
 !   Written by Xinghong He                Last revision: 30 Jun 1998   *
 !                                                                      *
@@ -17,7 +16,9 @@
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use iccu_c, only: iccut, iccutblk
+      use csf_descriptor_input, only: descriptor_source
+      use csf_descriptor_collectives, only: check_descriptor_status
+      use iccu_c, only: iccut
       use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
       use orb_c, only: csf_count, double, orbital_count
       use def_c, only: double, electron_count
@@ -39,23 +40,22 @@
        integer , intent(in) :: ncore
       character , intent(in) :: filehead*(*)
        character , intent(in) :: idblk(*)*8
+      type(descriptor_source), intent(in) :: descriptors
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !cjb mpi_C
 !cjb  INTEGER :: K, ierr
-      integer :: k
+      integer :: k, input_status
 !-----------------------------------------------
+
+      input_status = 0
+      if (mpi_rank == 0) call getinf(descriptors, input_status)
+      call check_descriptor_status(input_status)
 
       call setmcp (ncore, idblk, filehead)
 
-! DIAG, ICCUT, LFORDR are set in GETINF
-
-      if (mpi_rank == 0) then
-         call getinf
-      end if
-
-      call mpi_bcast (iccut(1),100,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      call mpi_bcast (iccut, size(iccut), mpi_integer, 0, mpi_comm_world, mpi_error_code)
       call mpi_bcast (diagonal_only,  1,mpi_logical,0,mpi_comm_world,mpi_error_code)
       call mpi_bcast (use_first_order_restriction,1,mpi_logical,0,mpi_comm_world,mpi_error_code)
 

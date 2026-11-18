@@ -113,7 +113,8 @@ if(Python3_Interpreter_FOUND)
     if(TARGET rangular_mpi AND MPIEXEC_EXECUTABLE)
         add_test(NAME rangular_mpi_descriptors
             COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rangular/test_mpi_descriptors.py"
-            --rangular $<TARGET_FILE:rangular_mpi> --mpiexec "${MPIEXEC_EXECUTABLE}"
+            --rangular $<TARGET_FILE:rangular_mpi> --rci $<TARGET_FILE:rci_mpi>
+            --mpiexec "${MPIEXEC_EXECUTABLE}"
             --numproc-flag=${MPIEXEC_NUMPROC_FLAG})
         set_tests_properties(rangular_mpi_descriptors PROPERTIES TIMEOUT 180 PROCESSORS 4
             LABELS "f2018_io;f2018_mpi")

@@ -14,7 +14,8 @@ import unittest
 SUITE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(SUITE / "test"))
 sys.path.insert(0, str(SUITE / "scripts"))
-from test_csf_descriptors import basic_blocks, write_fixture
+from rdensity.regression import fixture
+from test_csf_descriptors import Record, Shell, basic_blocks, write_fixture
 import mcp_compare
 
 ARGUMENTS: argparse.Namespace
@@ -32,28 +33,33 @@ class MpiDescriptorTests(unittest.TestCase):
 
     def execute(
         self, label: str, ranks: int, options: list[str], *,
-        interactive_input: str = "y\n", default_text: bool = False,
+        interactive_input: str = "n\n", default_text: bool = False,
     ) -> tuple[subprocess.CompletedProcess[str], Path]:
         directory = self.root / label
         directory.mkdir()
         if default_text:
             shutil.copyfile(self.binary_path, directory / "rcsf_descriptors.parquet")
             shutil.copyfile(self.binary_path.parent / "csfs_header.toml", directory / "rcsf_header.toml")
+        return self.run_mpi(ARGUMENTS.rangular, directory, ranks, options, interactive_input), directory
+
+    @staticmethod
+    def run_mpi(
+        executable: Path, directory: Path, ranks: int, options: list[str], stdin: str
+    ) -> subprocess.CompletedProcess[str]:
         environment = os.environ | {
             "MPI_TMP": str(directory), "OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1",
             "OMPI_ALLOW_RUN_AS_ROOT": "1", "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM": "1",
             "OMPI_MCA_rmaps_base_oversubscribe": "1",
         }
-        result = subprocess.run(
-            [str(ARGUMENTS.mpiexec), ARGUMENTS.numproc_flag, str(ranks), str(ARGUMENTS.rangular), *options],
-            cwd=directory, input=interactive_input, text=True, capture_output=True,
+        return subprocess.run(
+            [str(ARGUMENTS.mpiexec), ARGUMENTS.numproc_flag, str(ranks), str(executable), *options],
+            cwd=directory, input=stdin, text=True, capture_output=True,
             env=environment, timeout=30, check=False,
         )
-        return result, directory
 
     def successful_run(
         self, label: str, ranks: int, options: list[str], *,
-        interactive_input: str = "y\n", default_text: bool = False,
+        interactive_input: str = "n\n", default_text: bool = False,
     ) -> Path:
         result, directory = self.execute(
             label, ranks, options, interactive_input=interactive_input, default_text=default_text
@@ -103,23 +109,73 @@ class MpiDescriptorTests(unittest.TestCase):
                 self.assertGreater(sum(channel["compared"] for channel in comparison["channels"]), 0)
 
     def test_first_order_and_absolute_profile_paths(self) -> None:
-        # MPI GETINF requires 1 < ICCUT < block length, unlike the serial prompt.
-        parquet_path, header_path, text_path = write_fixture(
+        parquet_path, _, _ = write_fixture(
             self.root / "first-inputs", ["1s"], ["2s", "2p-", "2p", "3s", "3p-", "3p"],
-            [basic_blocks()[0]],
+            basic_blocks(), zero_order_counts=[1, 2, 2],
         )
-        binary_path = parquet_path
-        reference = self.successful_run(
-            "first-text", 2, ["--csf-descriptors", str(parquet_path)], interactive_input="n\n2\n"
+        full = self.successful_run(
+            "full", 2, ["--csf-descriptors", str(parquet_path)], interactive_input="n\n"
         )
         candidate = self.successful_run(
-            "first-binary", 2,
-            ["--csf-descriptors", str(binary_path), "--timings", str(self.root / "profile.csv")],
-            interactive_input="n\n2\n",
+            "first", 2,
+            ["--csf-descriptors", str(parquet_path), "--timings", str(self.root / "profile.csv")],
+            interactive_input="y\n",
         )
-        self.assertEqual(self.outputs(reference), self.outputs(candidate))
+        self.assertNotEqual(self.outputs(full), self.outputs(candidate))
+        summary = (candidate / "000" / "fort.24").read_text()
+        self.assertEqual(
+            [line.strip() for line in summary.splitlines() if "zero-order space" in line],
+            [f"CSFs 1--{count} constitute the zero-order space." for count in [1, 2, 2]],
+        )
         self.assertTrue((self.root / "profile.rank000.csv").is_file())
         self.assertTrue((self.root / "profile.rank001.csv").is_file())
+
+    def test_invalid_or_missing_zero_first_counts_stop_mpi_job(self) -> None:
+        for case, counts, message in (
+            ("missing", None, "missing block_info.zero_order_counts"),
+            ("wrong-length", [1], "length does not match block count"),
+            ("outside-block", [1, 3, 1], "invalid zero-order CSF count for block 2"),
+        ):
+            with self.subTest(case=case):
+                parquet, _, _ = write_fixture(
+                    self.root / f"inputs-{case}", ["1s"], ["2s", "2p-", "2p", "3s", "3p-", "3p"],
+                    basic_blocks(), zero_order_counts=counts,
+                )
+                result, directory = self.execute(
+                    case, 2, ["--csf-descriptors", str(parquet)], interactive_input="y\n"
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(message, result.stderr)
+                self.assertFalse(self.outputs(directory))
+
+    def test_rci_zero_first_prompt_is_independent_of_default_settings(self) -> None:
+        if ARGUMENTS.rci is None:
+            self.skipTest("rci_mpi is needed for the shared partition test")
+        for name, prefix, answer, counts in [
+            ("default-full", "y\ncase\n", "n", None),
+            ("default-partition", "y\ncase\n", "y", [1]),
+            ("nondefault-partition", "n\ncase\nn\nn\n", "y", [1]),
+        ]:
+            with self.subTest(case=name):
+                directory = self.root / name
+                fixture(directory, False, False)
+                parquet, header, _ = write_fixture(
+                    directory, [], ["1s", "2s"],
+                    [[Record((Shell("1s", 1, 1, 1),), 1), Record((Shell("2s", 1, 1, 1),), 1)]],
+                    zero_order_counts=counts,
+                )
+                parquet.rename(directory / "case_descriptors.parquet")
+                header.rename(directory / "case_header.toml")
+                for filename in ("case.c", "case.cm", "rcsf.inp"):
+                    (directory / filename).unlink()
+                result = self.run_mpi(
+                    ARGUMENTS.rci, directory, 2, [],
+                    prefix + answer + "\nn\nn\nn\nn\nn\nn\n1\n",
+                )
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertTrue((directory / "case.cm").is_file())
+                summary = (directory / "case.csum").read_text()
+                self.assertEqual("CSFs 1--1 constitute the zero-order space" in summary, answer == "y")
 
     def test_relative_inputs_use_serial_directory(self) -> None:
         # Relative paths are resolved before access from the rank-specific cwd.
@@ -174,6 +230,7 @@ class MpiDescriptorTests(unittest.TestCase):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rangular", type=lambda value: Path(value).resolve(), required=True)
+    parser.add_argument("--rci", type=lambda value: Path(value).resolve())
     parser.add_argument("--mpiexec", type=lambda value: Path(value).resolve(), required=True)
     parser.add_argument("--numproc-flag", default="-np")
     ARGUMENTS, remaining = parser.parse_known_args()

@@ -19,6 +19,8 @@ int32_t rcsfs_descriptor_abi_version(void);
 int32_t rcsfs_descriptor_open(const char*, const char*, void**, char*, size_t);
 int32_t rcsfs_descriptor_info(void*, int64_t*, char*, size_t);
 int32_t rcsfs_descriptor_tables(void*, int32_t*, size_t, int64_t*, int32_t*, size_t, char*, size_t);
+/* One count per block. Returns an error if the header has no partition. */
+int32_t rcsfs_descriptor_zero_order_counts(void*, int64_t*, size_t, char*, size_t);
 int32_t rcsfs_descriptor_read(void*, int8_t*, size_t, size_t, char*, size_t);
 void rcsfs_descriptor_close(void**);
 #ifdef __cplusplus

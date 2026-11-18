@@ -12,6 +12,7 @@ pub struct DescriptorReader {
     reader: ParquetRecordBatchReader,
     pub header_lines: [String; 5],
     pub block_lengths: Vec<u64>,
+    pub zero_order_counts: Option<Vec<i64>>,
     pub layout: DescriptorLayout,
     remaining: u64,
     failed: bool,
@@ -109,6 +110,22 @@ impl DescriptorReader {
             })
             .collect::<Result<Vec<_>>>()?;
         ensure!(!block_lengths.is_empty(), "no blocks");
+        let zero_order_counts = document
+            .get("block_info")
+            .and_then(|v| v.get("zero_order_counts"))
+            .map(|v| {
+                let counts = v.as_array().context("block_info.zero_order_counts must be an array")?;
+                ensure!(
+                    counts.len() == block_lengths.len(),
+                    "block_info.zero_order_counts length does not match block count"
+                );
+                counts.iter().zip(&block_lengths).enumerate().map(|(i, (value, &length))| {
+                    value.as_integer()
+                        .filter(|&n| n > 0 && (n as u64) <= length)
+                        .with_context(|| format!("invalid zero-order CSF count for block {} (expected 1..={length})", i + 1))
+                }).collect::<Result<Vec<_>>>()
+            })
+            .transpose()?;
         let total = block_lengths.iter().try_fold(0u64, |sum, n| {
             sum.checked_add(*n).context("row count overflow")
         })?;
@@ -186,6 +203,7 @@ impl DescriptorReader {
             reader,
             header_lines,
             block_lengths,
+            zero_order_counts,
             layout,
             remaining: total,
             failed: false,

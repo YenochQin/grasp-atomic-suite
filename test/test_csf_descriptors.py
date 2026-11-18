@@ -80,7 +80,8 @@ def text_record(record: Record) -> str:
 
 
 def write_fixture(
-    root: Path, core: list[str], peel: list[str], blocks: list[list[Record]]
+    root: Path, core: list[str], peel: list[str], blocks: list[list[Record]],
+    *, zero_order_counts: list[int] | None = None,
 ) -> tuple[Path, Path, Path]:
     root.mkdir(parents=True, exist_ok=True)
     header_lines = [
@@ -106,6 +107,11 @@ def write_fixture(
         + "\n[block_info]\nblock_lengths = "
         + json.dumps([len(block) for block in blocks])
         + "\n"
+        + (
+            "zero_order_counts = " + json.dumps(zero_order_counts) + "\n"
+            if zero_order_counts is not None
+            else ""
+        )
     )
     names = [
         f"sub{shell_index}_{channel}"

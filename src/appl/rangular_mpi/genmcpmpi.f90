@@ -103,16 +103,10 @@
 !=======================================================================
       if (mpi_rank == 0) then
          write (stderr_unit,*)
-!         WRITE (istde,'(A)') ' Default settings?  (y/n) '
-         write (stderr_unit,"(A)") " Full interaction?  (y/n) "
+         write (stderr_unit,"(A)") "Use zero-first partition from descriptor header? (y/n)"
          yes = getyn ()
-         if (yes) then
-            ndef = 0
-            write(739,"(A)") "y            ! Full interaction"
-         else
-            ndef = 1
-            write(739,"(A)") "n            ! Full interaction"
-         end if
+         ndef = merge(1, 0, yes)
+         write(739,"(A)") merge("y", "n", yes)//"            ! Use zero-first partition from descriptor header"
       end if
       call mpi_barrier(mpi_comm_world,mpi_error_code)
       call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
@@ -139,7 +133,7 @@
       restrt = .false.
 !cjb  myid, nprocs = NOT args
 !cjb  CALL setmcpmpi (myid, nprocs, ncore, idblk, 'mcp' // idstring)
-      call setmcpmpi (ncore, idblk, "mcp" // idstring)
+      call setmcpmpi (ncore, idblk, "mcp" // idstring, input_options%descriptors)
       if (ndef/=0 .and. mpi_rank==0) call strsum
       call factt
       call record_stage("mcp_setup_including_interaction_input",0,stage_start_count)

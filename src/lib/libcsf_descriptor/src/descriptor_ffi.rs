@@ -148,6 +148,36 @@ pub unsafe extern "C" fn rcsfs_descriptor_tables(
 }
 
 /// # Safety
+/// Handle must be live; counts has `block_capacity` writable i64 entries.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rcsfs_descriptor_zero_order_counts(
+    handle: *mut c_void,
+    counts: *mut i64,
+    block_capacity: usize,
+    error: *mut c_char,
+    capacity: usize,
+) -> i32 {
+    unsafe {
+        invoke(error, capacity, || {
+            ensure!(
+                !handle.is_null() && !counts.is_null(),
+                "null zero-order counts argument"
+            );
+            let reader = &(*(handle as *mut Handle)).reader;
+            let values = reader.zero_order_counts.as_deref().ok_or_else(|| {
+                anyhow::anyhow!("missing block_info.zero_order_counts; regenerate the dataset with rcsfs zero-first")
+            })?;
+            ensure!(
+                block_capacity >= values.len(),
+                "zero-order counts buffer too small"
+            );
+            ptr::copy_nonoverlapping(values.as_ptr(), counts, values.len());
+            Ok(())
+        })
+    }
+}
+
+/// # Safety
 /// Handle must be live and exclusively borrowed. Output has `size` writable
 /// bytes. Reads exactly rows; a failure invalidates the output buffer.
 #[unsafe(no_mangle)]

@@ -10,6 +10,7 @@ module csf_descriptor_input
    private
    public :: descriptor_source, open_descriptor_source, close_descriptor_source
    public :: read_descriptor_block, install_descriptor_header, descriptor_block_label
+   public :: read_descriptor_zero_order_counts
 
    type :: descriptor_source
       type(c_ptr) :: handle = c_null_ptr
@@ -141,6 +142,20 @@ contains
       end do
       source%header_loaded = .true.
    end subroutine open_descriptor_source_impl
+
+   subroutine read_descriptor_zero_order_counts(source, counts, status)
+      type(descriptor_source), intent(in) :: source
+      integer, intent(out) :: counts(:), status
+      integer(c_int64_t) :: values(size(counts))
+      character(kind=c_char,len=1024) :: message
+      integer :: read_status
+      if (.not. require_descriptor(source%is_open .and. size(counts) == source%block_count, &
+                                   "invalid source or buffer for zero-order counts", status)) return
+      read_status = rust_descriptor_zero_order_counts(source%handle, values, int(size(counts),c_size_t), &
+                                                     message, 1024_c_size_t)
+      if (.not. require_descriptor(read_status == 0, message(:max(0,index(message,c_null_char)-1)), status)) return
+      counts = int(values)
+   end subroutine read_descriptor_zero_order_counts
 
    subroutine close_descriptor_source(source)
       type(descriptor_source), intent(inout) :: source

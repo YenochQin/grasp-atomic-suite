@@ -74,7 +74,7 @@ def pipeline(
     execute(
         binaries / ("rci" + suffix),
         rci_work,
-        "y\ncase\nn\nn\nn\nn\nn\nn\n1\n",
+        "y\ncase\n" + ("n\n" if launcher and native else "") + "n\nn\nn\nn\nn\nn\n1\n",
         launcher,
     )
     outputs["rci.cm"] = (rci_work / "case.cm").read_bytes()

@@ -1,7 +1,7 @@
 ! A sequential block reader for the RCI matrix construction lifecycle.
 module csf_block_input
    use csf_descriptor_input, only: descriptor_source, open_descriptor_source, close_descriptor_source, &
-                                  install_descriptor_header, read_descriptor_block
+                                  install_descriptor_header, read_descriptor_block, read_descriptor_zero_order_counts
    use rmcdhf_descriptor_input, only: descriptor_path
    use hblock_c, only: csf_counts_by_block
    use orb_c, only: csf_subshell_occupations
@@ -10,6 +10,7 @@ module csf_block_input
    private
    type(descriptor_source), save :: source
    public :: open_csf_blocks, load_csf_block
+   public :: read_csf_zero_order_counts
 contains
    subroutine open_csf_blocks(name,ncore,labels,status)
       character(len=*), intent(in) :: name
@@ -28,6 +29,11 @@ contains
       end if
       if (status /= 0) call close_descriptor_source(source)
    end subroutine open_csf_blocks
+
+   subroutine read_csf_zero_order_counts(counts,status)
+      integer, intent(out) :: counts(:), status
+      call read_descriptor_zero_order_counts(source,counts,status)
+   end subroutine read_csf_zero_order_counts
 
    subroutine load_csf_block(block_index,status)
       integer, intent(in) :: block_index

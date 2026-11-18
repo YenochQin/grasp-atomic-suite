@@ -63,7 +63,7 @@ def run_mode(arguments: argparse.Namespace, inputs: Path, mode: str, repetition:
         "status": "running",
     }
     print(f"Running {mode}, repetition {repetition}", flush=True)
-    (directory / "stdin.txt").write_text("y\n")
+    (directory / "stdin.txt").write_text("n\n")
     process: subprocess.Popen[bytes] | None = None
     started = time.perf_counter()
     try:

@@ -27,6 +27,12 @@ serial I/O 目录为基准。其他应用原有状态名及 MPI CPATH 长度限�
 配套产物，不能修改 header 后继续搭配旧 Parquet：注释、空白及换行变化也会改变绑定哈希。
 完整 CSF reader 可在未声明电子数的旧 header 上从实际描述符行确定电子数，并核对所有行。
 
+`rangular_mpi` 和新启动的 `rci_mpi` 通过标准输入询问
+`Use zero-first partition from descriptor header? (y/n)`。回答 `y` 时，rank 0 读取
+`[block_info].zero_order_counts`，按显式块顺序广播为 `ICCUT`。每个计数必须为正且
+不超过该块总数。回答 `n` 时计算完整相互作用。缺少计数的基组可用 `rcsfs zero-first`
+重新生成。RCI 在新算例的速度选项之后询问分区，续算沿用 `.res` 中的设置。
+
 原三行字符串 CSF Parquet、旧 printed-seniority/V1/归一化描述符、Int32 逻辑列、空值列均拒绝。
 Parquet 为逻辑 Int8 使用物理 INT32 编码是合法的。纯闭核有明确的一个 `[0,+1]` CSF 行，
 不再从 EOF 推测一个 CSF。轨道、行及显式块顺序保持不变，包括相邻同 J/宇称块。
@@ -67,7 +73,7 @@ reader 的完整构建源码位于 [src/lib/libcsf_descriptor](../../src/lib/lib
 CMake 将它与其他共享库一起构建，最终链接的归档为 `<build>/lib/libcsf_descriptor.a`，
 安装后位于 `<prefix>/lib/libcsf_descriptor.a`。Cargo 中间产物保存在构建目录内。
 构建不读取相邻 rCSFs checkout，不接收外部 reader 静态库，也不自动同步上游源码。
-原有 ABI 符号名 `rcsfs_descriptor_*` 保留，使 Fortran 适配无需变动。
+原有 ABI 符号名 `rcsfs_descriptor_*` 保留，零阶计数由额外的查询函数取得。
 该库没有 Python、CLI 或 CSF 生成器依赖。
 当前验证工具链为 GNU Fortran 15.3.0、Rust/Cargo 1.99.0，锁文件选择 Arrow/Parquet 59.3.2。
 压缩支持包括 ZSTD、Snappy、GZIP、Brotli、LZ4；ZSTD 后端构建使用 C 编译器。

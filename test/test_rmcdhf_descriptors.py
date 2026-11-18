@@ -37,7 +37,7 @@ def main() -> None:
             result = subprocess.run(
                 [*prefix, str(angular)],
                 cwd=work,
-                input="y\n",
+                input="n\n" if args.mpiexec else "y\n",
                 check=False,
                 capture_output=True,
                 text=True,

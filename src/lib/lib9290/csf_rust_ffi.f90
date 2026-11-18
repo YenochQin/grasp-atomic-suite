@@ -5,6 +5,7 @@ module csf_rust_ffi
    private
    public :: rust_descriptor_version, rust_descriptor_open, rust_descriptor_info
    public :: rust_descriptor_tables, rust_descriptor_read, rust_descriptor_close
+   public :: rust_descriptor_zero_order_counts
    interface
       function rust_descriptor_version() bind(C, name="rcsfs_descriptor_abi_version") result(status)
          import c_int32_t
@@ -36,6 +37,15 @@ module csf_rust_ffi
          integer(c_int64_t), intent(out) :: lengths(*)
          character(kind=c_char), intent(out) :: message(*)
          integer(c_size_t), value :: capacity, orbital_capacity, block_capacity
+         integer(c_int32_t) :: status
+      end function
+      function rust_descriptor_zero_order_counts(handle, counts, block_capacity, message, capacity) &
+         bind(C, name="rcsfs_descriptor_zero_order_counts") result(status)
+         import c_ptr, c_char, c_size_t, c_int32_t, c_int64_t
+         type(c_ptr), value :: handle
+         integer(c_int64_t), intent(out) :: counts(*)
+         character(kind=c_char), intent(out) :: message(*)
+         integer(c_size_t), value :: capacity, block_capacity
          integer(c_int32_t) :: status
       end function
       function rust_descriptor_read(handle, values, size, rows, message, capacity) &
