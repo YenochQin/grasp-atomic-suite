@@ -117,7 +117,8 @@ All ordinary programs, with MPI and jj2lsj OpenMP (fish):
 
 GNU Fortran >= 15, Rust >= 1.99.0, Cargo, CMake >= 3.31 and BLAS/LAPACK are required.
 The bundled CSF reader builds into lib/libcsf_descriptor.a with the other libraries.
-Cargo uses cached dependencies by default; GRASP_CSF_READER_OFFLINE=OFF permits downloads.
+Cargo uses --locked and downloads missing dependencies by default.
+Set -DGRASP_CSF_READER_OFFLINE=ON to use only cached dependencies.
 Python is used for development tests, not production CSF input.
 MPI programs also require a compatible MPI Fortran environment.
 Load the compiler/MPI environment before configuring.

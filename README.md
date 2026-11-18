@@ -80,8 +80,8 @@ cmake --build build --parallel 4
 ```
 
 The bundled reader requires Rust 1.99.0 or a newer release, Cargo, and a C
-compiler. Cargo uses locked, cached dependencies by default. Set
-`-DGRASP_CSF_READER_OFFLINE=OFF` if dependencies must be downloaded.
+compiler. Cargo uses `--locked` and downloads missing dependencies by default.
+Set `-DGRASP_CSF_READER_OFFLINE=ON` to build from the local cache.
 `RCSFS_TEST_CLI` is only an offline test-fixture producer.
 
 The default install prefix is `<build>/install`; use `--prefix PATH` or

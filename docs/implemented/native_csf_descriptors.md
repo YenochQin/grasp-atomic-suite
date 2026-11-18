@@ -88,8 +88,9 @@ set -gx CARGO_BUILD_JOBS 4
 cmake --build build-native --parallel 4
 ```
 
-CMake 默认用 Cargo `--locked --offline`；依赖缓存须提前准备。
-缺少缓存时可用 `-DGRASP_CSF_READER_OFFLINE=OFF` 允许 Cargo 下载锁定的第三方依赖。
+CMake 始终以 `--locked` 调用 Cargo，默认允许下载缺失的依赖。
+提前准备好依赖缓存后，可用 `-DGRASP_CSF_READER_OFFLINE=ON` 启用 `--offline`。
+已有构建目录保留缓存中的选项值。要切换到联网模式，重新配置时传入 `-DGRASP_CSF_READER_OFFLINE=OFF`。
 `GRASP_RUST_VERSION` 指定 Rust 发行版的最低版本，默认 1.99.0。
 切换工具链时使用新构建目录，并通过 `GRASP_RUSTC` 和 `GRASP_CARGO` 指定对应的编译器和 Cargo。
 CTest 优先使用 `rustc` 同目录的 `rustdoc`，也可通过 `GRASP_RUSTDOC` 显式指定。

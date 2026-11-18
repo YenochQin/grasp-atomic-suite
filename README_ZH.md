@@ -74,7 +74,8 @@ cmake --build build --parallel 4
 ```
 
 内置 reader 需要 Rust 1.99.0 或更新的发行版、Cargo 和 C 编译器。
-Cargo 默认使用锁定的缓存依赖。首次构建缺少依赖缓存时，可用 `-DGRASP_CSF_READER_OFFLINE=OFF` 下载依赖。
+Cargo 始终使用 `--locked`，默认允许下载缺失的依赖。设置
+`-DGRASP_CSF_READER_OFFLINE=ON` 可仅使用本地缓存构建。
 `RCSFS_TEST_CLI` 只用于开发测试离线生成夹具，不参与 reader 构建和生产读取。
 
 默认安装前缀为 `<build>/install`；可用 `--prefix PATH` 或 `-DCMAKE_INSTALL_PREFIX=PATH` 指定独立位置。
