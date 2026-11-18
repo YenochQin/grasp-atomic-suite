@@ -132,7 +132,8 @@ artifacts explicitly, run:
 
 The build requires a Fortran compiler, CMake 3.31 or newer, BLAS, and LAPACK. MPI targets additionally require an MPI Fortran environment such as `mpifort`.
 
-CMake finds BLAS/LAPACK. GNU Fortran 15 is required. The default
+CMake finds BLAS/LAPACK and requires GNU Fortran 15 or newer. The formal
+validation baseline uses GNU Fortran 15.3.0. The default
 `f2018-release` profile uses O2; `f2018-check` and `f2018-audit` provide
 standard, interface and runtime or optimized diagnostics. Legacy profiles,
 implicit-SAVE flags and argument-mismatch allowances have been removed.

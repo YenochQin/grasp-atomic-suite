@@ -9,9 +9,8 @@ if(NOT GRASP_FORTRAN_PROFILE MATCHES "^f2018-(check|audit|release)$")
     message(FATAL_ERROR "Unsupported/retired profile ${GRASP_FORTRAN_PROFILE}; use f2018-release, f2018-check or f2018-audit")
 endif()
 if(NOT CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" OR
-   NOT CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 15 OR
-   CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 16)
-    message(FATAL_ERROR "The supported toolchain is GNU Fortran 15.x; use a fresh build directory.")
+   CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 15)
+    message(FATAL_ERROR "GNU Fortran 15 or newer is required. Use a fresh build directory when changing compilers.")
 endif()
 string(CONCAT supplied_flags "${CMAKE_Fortran_FLAGS} "
     "${CMAKE_Fortran_FLAGS_DEBUG} ${CMAKE_Fortran_FLAGS_RELEASE}")

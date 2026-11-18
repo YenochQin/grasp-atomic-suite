@@ -120,7 +120,8 @@ cmake --build build-serial --target install -j4
 
 构建需要 Fortran 编译器、CMake 3.31 或更新版本、BLAS 和 LAPACK。MPI 目标还需要 MPI Fortran 编译环境，例如 `mpifort`。
 
-CMake 会自动查找 BLAS/LAPACK，工具链要求 GNU Fortran 15。
+CMake 会自动查找 BLAS/LAPACK，并要求 GNU Fortran 15 或更新版本。
+正式验收基线使用 GNU Fortran 15.3.0。
 默认 `f2018-release` 使用 O2；`f2018-check` 和 `f2018-audit` 分别提供
 标准/接口/运行时检查与优化后诊断。legacy、隐式 SAVE 及参数不匹配放行选项已移除。
 现行约束见[构建策略](docs/implemented/build_profiles.md)和

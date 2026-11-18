@@ -7,7 +7,7 @@
 
 ## 标准、存储与平台接口
 
-- GNU Fortran 15 是仓库工具链。默认生产配置为 `f2018-release`；
+- 正式验收基线为 GNU Fortran 15.3.0。默认生产配置为 `f2018-release`。
   `f2018-check` 和 `f2018-audit` 分别用于运行时及优化后诊断。
   所有配置已移除 legacy、隐式 SAVE 和参数不匹配放行选项。
 - 声明使用 `iso_fortran_env` 的标准 kind，保留旧精度/容量别名的兼容接口。

@@ -17,7 +17,8 @@ OFF 和 `--no-csfg` 仅保留旧命令兼容性。普通构建检查继续拒绝
 | `f2018-check` | Debug | 标准/接口/边界等验证：`-std=f2018 -pedantic-errors -Wall -Wextra -Werror=implicit-interface -Werror=implicit-procedure -O0 -g -fcheck=all -fbacktrace -ffpe-trap=invalid,zero,overflow`。 |
 | `f2018-audit` | Release | 优化后诊断：上述标准/接口/警告选项配 `-O2`；无隐式 SAVE、无运行时检查。 |
 
-源码和所有配置仍要求 GNU Fortran 15。`legacy` 配置已移除，所有配置拒绝
+所有构建配置的 CMake 门槛为 GNU Fortran 15 或更新版本。正式验收使用 GNU Fortran 15.3.0。
+`legacy` 配置已移除，所有配置拒绝
 `-std=legacy`、`-fno-automatic`、`-fallow-argument-mismatch`、`-fall-intrinsics` 及全局默认 kind 扩宽。
 没有引入 `-ffast-math` 或 `-Ofast` 等会改变数值假设的选项。
 
