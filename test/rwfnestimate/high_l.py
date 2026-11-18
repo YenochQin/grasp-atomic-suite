@@ -1,7 +1,7 @@
 """Regress neutral Ni/Zn TF estimates, including first h and i orbitals.
 
 Uses the default finite-nucleus grid and all orbitals through n=10, l=6.
-Only a header and the first occupation record are needed by rwfnestimate.
+rwfnestimate reads orbital metadata from the header TOML.
 Requires Python 3.8+ and no third-party packages.
 """
 

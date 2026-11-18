@@ -44,6 +44,7 @@ Parquet 为逻辑 Int8 使用物理 INT32 编码是合法的。纯闭核有明�
 | V2 格式 | suite `src/lib/libcsf_descriptor/src/descriptor_transport.rs`；复制的 V2 契约与 rCSFs 生产者兼容 |
 | Rust I/O | 同目录 `descriptor_reader.rs`：同一 header 字节快照的哈希和 TOML 解析、footer/schema/空值检查、有界批次读取、电子数/宇称/块表预扫描 |
 | C ABI 1 | 同目录 `descriptor_ffi.rs`、库内 `include/rcsfs_descriptor.h`：独立句柄、明确容量的调用方缓冲、状态码及 UTF-8 错误信息；保留原符号名 |
+| 径向初猜 | [rwfnestimate](rwfnestimate_header_input.md) 复用 Rust 的 TOML 解析，通过只读 header 的 C 接口获取轨道表和总电子数 |
 | Fortran 适配 | [csf_rust_ffi.f90](../../src/lib/lib9290/csf_rust_ffi.f90)、[csf_descriptor_input.f90](../../src/lib/lib9290/csf_descriptor_input.f90)：`ISO_C_BINDING`、物理态/J/K 校验与补全、三数组或仅占据数组 |
 | 应用状态 | `csf_basis_input`、`csf_block_input`、`rmcdhf_descriptor_input`；区分性质程序、RCI、MCP 已安装状态的生命周期 |
 | 双基组 | [csf_basis_merge.f90](../../src/lib/lib9290/csf_basis_merge.f90)：保持两个轨道序列的稳定合并，直接映射数组；顺序冲突明确拒绝，不写/重读 `SLASK` |

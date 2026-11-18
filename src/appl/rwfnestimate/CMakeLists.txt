@@ -1,5 +1,3 @@
-add_subdirectory(${PROJECT_SOURCE_DIR}/vendor/toml-f
-    ${PROJECT_BINARY_DIR}/vendor/toml-f)
 add_executable(rwfnestimate
     rwfnestimate_input.f90
     tail.f90
@@ -36,5 +34,18 @@ add_executable(rwfnestimate
     getinf_I.f90
     erwf.f90
 )
-target_link_libraries_Fortran(rwfnestimate PUBLIC rang90 9290 mod suite_tomlf)
+target_link_libraries_Fortran(rwfnestimate PUBLIC rang90 9290 mod)
+
+# Keep the header parser and discard the unused Parquet code in the Rust archive.
+include(CheckLinkerFlag)
+if(APPLE)
+    set(rwfnestimate_dead_strip "LINKER:-dead_strip")
+else()
+    set(rwfnestimate_dead_strip "LINKER:--gc-sections")
+endif()
+check_linker_flag(Fortran "${rwfnestimate_dead_strip}" GRASP_RWFNESTIMATE_DEAD_STRIP)
+if(GRASP_RWFNESTIMATE_DEAD_STRIP)
+    target_link_options(rwfnestimate PRIVATE "${rwfnestimate_dead_strip}")
+endif()
+
 install(TARGETS rwfnestimate DESTINATION bin/)

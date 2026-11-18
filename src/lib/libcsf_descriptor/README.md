@@ -9,12 +9,11 @@ The initial implementation was copied from
 [rCSFs](https://github.com/YenochQin/rCSFs), revision
 `f17a862d77c45164a6d31ae1e9cfeb4efbd04cf6` (2026-11-17):
 
-- `src/descriptor_transport.rs` and `src/descriptor_ffi.rs` retain the source
-  bytes from that revision. `src/descriptor_reader.rs` retains the production
-  implementation; its tests are extracted into `src/tests.rs` and use the
-  current Parquet row-group setter to pass Clippy without deprecated APIs.
-- `include/rcsfs_descriptor.h` retains ABI 1 and its original symbol names for
-  compatibility with `lib9290/csf_rust_ffi.f90`.
+- The descriptor transport, reader, and C interface originate from that
+  revision. The suite reader's tests are in `src/tests.rs`.
+- `include/rcsfs_descriptor.h` retains ABI 1 and its original symbol names.
+  The suite adds `rcsfs_descriptor_read_radial_header` for `rwfnestimate`.
+  It shares the TOML parser and returns orbital metadata from the header alone.
 - The manifest and lockfile originate from `native-reader/`; only the local
   package/library identity, source entry point, and library kinds are changed.
 - The original MIT copyright and permission notice are retained in `LICENSE`.

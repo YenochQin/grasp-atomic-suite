@@ -1,6 +1,6 @@
 //! C ABI v1. All buffers and live handles must be valid for the stated sizes.
 //! Each handle is single-threaded; separate handles are independent.
-use crate::descriptor_reader::DescriptorReader;
+use crate::descriptor_reader::{DescriptorReader, RadialHeader};
 use anyhow::{Result, ensure};
 use std::{
     ffi::{CStr, c_char, c_void},
@@ -39,6 +39,47 @@ unsafe fn invoke(error: *mut c_char, capacity: usize, action: impl FnOnce() -> R
 #[unsafe(no_mangle)]
 pub extern "C" fn rcsfs_descriptor_abi_version() -> i32 {
     1
+}
+
+/// Read radial input metadata from TOML. No descriptor file or handle is used.
+///
+/// # Safety
+/// The path must be NUL terminated. The caller must supply writable storage for
+/// `2 * orbital_capacity` i32 orbital entries and three i32 info entries.
+/// The error buffer, if non-null, must be writable for `capacity` bytes.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rcsfs_descriptor_read_radial_header(
+    header: *const c_char,
+    orbitals: *mut i32,
+    orbital_capacity: usize,
+    info: *mut i32,
+    error: *mut c_char,
+    capacity: usize,
+) -> i32 {
+    unsafe {
+        invoke(error, capacity, || {
+            ensure!(
+                !header.is_null() && !orbitals.is_null() && !info.is_null(),
+                "null radial header argument"
+            );
+            let header = RadialHeader::read(Path::new(CStr::from_ptr(header).to_str()?))?;
+            ensure!(
+                header.orbitals.len() <= orbital_capacity,
+                "orbital table exceeds configured NNNW capacity"
+            );
+            let values = [
+                i32::try_from(header.orbitals.len())?,
+                i32::try_from(header.core_count)?,
+                header.electron_count,
+            ];
+            for (i, (n, kappa)) in header.orbitals.into_iter().enumerate() {
+                *orbitals.add(2 * i) = n;
+                *orbitals.add(2 * i + 1) = kappa;
+            }
+            ptr::copy_nonoverlapping(values.as_ptr(), info, values.len());
+            Ok(())
+        })
+    }
 }
 
 /// # Safety

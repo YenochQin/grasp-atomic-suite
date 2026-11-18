@@ -26,20 +26,145 @@ pub struct DescriptorReader {
 
 fn orbital(label: &str) -> Result<(i32, i32)> {
     ensure!(label.is_ascii(), "non-ASCII orbital label");
-    let (base, lower) = label
-        .strip_suffix('-')
-        .map_or((label, false), |s| (s, true));
-    ensure!(base.len() >= 2, "invalid orbital label");
-    let (n, letter) = base.split_at(base.len() - 1);
-    let l = "spdfghiklmno"
-        .find(letter)
-        .context("invalid orbital letter")? as i32;
-    let n: i32 = n.parse()?;
+    let suffix_start = label
+        .bytes()
+        .position(|b| b.is_ascii_alphabetic())
+        .unwrap_or(label.len());
+    let (n, suffix) = label.split_at(suffix_start);
     ensure!(
-        n > l && (!lower || l > 0),
-        "invalid orbital quantum numbers"
+        !n.is_empty() && !suffix.is_empty(),
+        "invalid subshell label {label}"
     );
-    Ok((n, if lower { l } else { -l - 1 }))
+    ensure!(suffix.len() <= 2, "invalid subshell suffix in {label}");
+    let l = "spdfghiklmno"
+        .find(&suffix[..1])
+        .with_context(|| format!("unsupported orbital letter in {label}"))? as i32;
+    let n: i32 = n
+        .parse()
+        .with_context(|| format!("invalid principal quantum number in {label}"))?;
+    ensure!(n > l, "principal quantum number must exceed l in {label}");
+    let kappa = match suffix.as_bytes().get(1) {
+        None => -l - 1,
+        Some(b'-') if l > 0 => l,
+        _ => anyhow::bail!("invalid relativistic suffix in {label}"),
+    };
+    Ok((n, kappa))
+}
+
+fn read_header(header: &Path) -> Result<(Vec<u8>, toml::Value)> {
+    let read = || -> Result<_> {
+        let bytes = std::fs::read(header)?;
+        let document = toml::from_str(std::str::from_utf8(&bytes)?)?;
+        Ok((bytes, document))
+    };
+    read().with_context(|| format!("cannot parse TOML header {}", header.display()))
+}
+
+fn header_info(document: &toml::Value) -> Result<&toml::Table> {
+    document
+        .get("header_info")
+        .and_then(toml::Value::as_table)
+        .context("missing or invalid [header_info] table")
+}
+
+fn declared_electrons(info: &toml::Table) -> Result<Option<i32>> {
+    info.get("electron_count")
+        .map(|value| {
+            let number = value.as_integer().context(
+                "header_info.electron_count must be an integer including core electrons",
+            )?;
+            i32::try_from(number)
+                .ok()
+                .filter(|&n| n > 0)
+                .context("electron_count must be positive and fit a suite integer")
+        })
+        .transpose()
+}
+
+fn header_lines(info: &toml::Table) -> Result<[&str; 5]> {
+    let lines = info
+        .get("header_lines")
+        .and_then(toml::Value::as_array)
+        .context("header_info.header_lines must be an array")?;
+    ensure!(
+        lines.len() == 5,
+        "header_info.header_lines must contain five strings"
+    );
+    let mut result = [""; 5];
+    for (slot, value) in result.iter_mut().zip(lines) {
+        let line = value
+            .as_str()
+            .context("header_info.header_lines must contain strings only")?;
+        ensure!(
+            !line.contains(['\n', '\r', '\0']),
+            "header_lines entries must not contain newline, carriage return or NUL"
+        );
+        *slot = line;
+    }
+    Ok(result)
+}
+
+const HEADER_LABELS: [(usize, &str); 3] = [
+    (0, "Core subshells:"),
+    (2, "Peel subshells:"),
+    (4, "CSF(s):"),
+];
+
+fn header_orbitals(core: &[&str], peel: &[&str]) -> Result<Vec<(i32, i32)>> {
+    let orbitals = core
+        .iter()
+        .chain(peel)
+        .map(|s| orbital(s))
+        .collect::<Result<Vec<_>>>()?;
+    ensure!(!orbitals.is_empty(), "empty orbital table");
+    let unique: std::collections::HashSet<_> = orbitals.iter().copied().collect();
+    ensure!(
+        unique.len() == orbitals.len(),
+        "duplicate orbital across core/peel lists"
+    );
+    Ok(orbitals)
+}
+
+#[cfg(feature = "descriptor-ffi")]
+pub(crate) struct RadialHeader {
+    pub orbitals: Vec<(i32, i32)>,
+    pub core_count: usize,
+    pub electron_count: i32,
+}
+
+#[cfg(feature = "descriptor-ffi")]
+impl RadialHeader {
+    pub fn read(path: &Path) -> Result<Self> {
+        let (_, document) = read_header(path)?;
+        let info = header_info(&document)?;
+        let electron_count = declared_electrons(info)?
+            .context("header_info.electron_count is required; regenerate old headers with rCSFs")?;
+        let lines = header_lines(info)?;
+        for (i, expected) in HEADER_LABELS {
+            ensure!(
+                lines[i].trim_end_matches(' ') == expected,
+                "invalid header label"
+            );
+        }
+        // Preserve the separators accepted by the radial input, including commas.
+        let [core, peel] = [1, 3].map(|i| {
+            lines[i]
+                .split([' ', ',', '\t'])
+                .filter(|s| !s.is_empty())
+                .collect::<Vec<_>>()
+        });
+        for label in core.iter().chain(&peel) {
+            ensure!(
+                label.as_bytes()[0].is_ascii_digit(),
+                "invalid subshell label {label}"
+            );
+        }
+        Ok(Self {
+            orbitals: header_orbitals(&core, &peel)?,
+            core_count: core.len(),
+            electron_count,
+        })
+    }
 }
 
 impl DescriptorReader {
@@ -50,50 +175,16 @@ impl DescriptorReader {
             batch_size > 0 && batch_size <= 8192,
             "batch size must be in 1..=8192"
         );
-        let bytes = std::fs::read(header)?;
+        let (bytes, document) = read_header(header)?;
         let digest = format!("{:x}", Sha256::digest(&bytes));
-        let document: toml::Value = toml::from_str(std::str::from_utf8(&bytes)?)?;
-        let lines = document
-            .get("header_info")
-            .and_then(|v| v.get("header_lines"))
-            .and_then(toml::Value::as_array)
-            .context("missing header lines")?;
-        let header_lines: [String; 5] = lines
-            .iter()
-            .map(|v| {
-                Ok(v.as_str()
-                    .context("header line is not a string")?
-                    .to_owned())
-            })
-            .collect::<Result<Vec<_>>>()?
-            .try_into()
-            .map_err(|_| anyhow::anyhow!("expected five header lines"))?;
-        ensure!(
-            header_lines
-                .iter()
-                .all(|line| !line.contains(['\n', '\r', '\0'])),
-            "header lines must not contain embedded newline or NUL"
-        );
-        for (i, expected) in [
-            (0, "Core subshells:"),
-            (2, "Peel subshells:"),
-            (4, "CSF(s):"),
-        ] {
+        let info = header_info(&document)?;
+        let header_lines = header_lines(info)?;
+        for (i, expected) in HEADER_LABELS {
             ensure!(header_lines[i].trim() == expected, "invalid header label");
         }
         let peel: Vec<_> = header_lines[3].split_whitespace().collect();
         let core: Vec<_> = header_lines[1].split_whitespace().collect();
-        let orbitals = core
-            .iter()
-            .chain(peel.iter())
-            .map(|s| orbital(s))
-            .collect::<Result<Vec<_>>>()?;
-        ensure!(!orbitals.is_empty(), "empty orbital table");
-        let unique: std::collections::HashSet<_> = orbitals.iter().copied().collect();
-        ensure!(
-            unique.len() == orbitals.len(),
-            "duplicate core/peel orbital"
-        );
+        let orbitals = header_orbitals(&core, &peel)?;
         let core_count = core.len();
         let layout = DescriptorLayout::new(DescriptorVersion::V2, peel.len());
         let lengths = document
@@ -188,20 +279,11 @@ impl DescriptorReader {
                 "invalid {key}"
             );
         }
-        let declared_electrons = document
-            .get("header_info")
-            .and_then(|v| v.get("electron_count"))
-            .map(|v| {
-                v.as_integer()
-                    .and_then(|n| i32::try_from(n).ok())
-                    .filter(|n| *n > 0)
-                    .context("invalid electron_count")
-            })
-            .transpose()?;
+        let declared_electrons = declared_electrons(info)?;
         let reader = builder.with_batch_size(batch_size).build()?;
         let mut source = Self {
             reader,
-            header_lines,
+            header_lines: header_lines.map(str::to_owned),
             block_lengths,
             zero_order_counts,
             layout,

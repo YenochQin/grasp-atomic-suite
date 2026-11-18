@@ -1,12 +1,7 @@
 # rwfnestimate 的 header.toml 输入与 TF 初猜保护
 
-> 2026-11-17 更新：本文的旧文本/GCSDESC1 入口为历史记录；当前生产输入已统一为
-> [Rust 原生描述符或配套 header](native_csf_descriptors.md)。历史测量不代表新路径的性能。
-
-状态：已实施；2026-11-12，初次实现提交为 `1edcfd6`，基于 suite `c47f4d4`。
-同步远程更新后沿用[普通程序命名](program_naming.md)，源码位于 `src/appl/rwfnestimate/`。
-适用目标为普通串行 `rwfnestimate`；独立的 `rwfnestimate_csfg` 不在本次范围内。
-数值复现、实际测试状态和物理验证边界见
+普通串行 `rwfnestimate` 通过 suite 的 [Rust 描述符库](native_csf_descriptors.md)
+读取 rCSFs header TOML。初次实现及 TF 初猜保护的来由见
 [故障与迁移记录](../reviews/rwfnestimate_nan_header_2026-11-12.md)。
 
 ## 使用方式
@@ -14,22 +9,17 @@
 在包含 `isodata` 的计算目录中运行；以下可执行文件路径按安装位置调整：
 
 ```fish
-# 原文本路径，默认文件名 rcsf.inp
+# 默认读取 rcsf_header.toml
 rwfnestimate
 
-# 显式指定文本文件
-rwfnestimate --csf-text "configuration.c"
-
-# 直接读取 rCSFs 导出的 header，不需要 rcsf.inp 或描述符数据行
+# 显式指定 rCSFs 导出的 header
 rwfnestimate --header "configuration_header.toml"
 
 rwfnestimate --help
 ```
 
-两种输入选项互斥，不能重复指定。文件路径支持空格和 Unicode，不经 shell 拼接或
-外部命令解释。无参数时保留原来的交互输入顺序；之后的默认网格、旧波函数读取、
-Thomas–Fermi、屏蔽氢样、自定义 Z、正交化和 `rwfn.inp` 写出流程相同。
-初猜方式仍通过原来的交互菜单选择。
+`--header` 只能指定一次，文件路径支持空格和 Unicode。通过交互菜单选择初猜方式，
+可读取旧波函数或生成 Thomas–Fermi、屏蔽氢样、自定义 Z 初猜，正交化后写入 `rwfn.inp`。
 
 ## Header 契约
 
@@ -95,25 +85,17 @@ cmake --build build-rwfn-header-release --target rwfnestimate -j4
 ctest --test-dir build-rwfn-header-release -R rwfnestimate --output-on-failure
 ```
 
-[toml-f 0.5.2](https://github.com/toml-f/toml-f/releases/tag/v0.5.2) 的解析源码随仓库
-放在 `vendor/toml-f`，以 MIT 许可使用，静态链接到普通 `rwfnestimate`。
-只增加私有的 `suite_tomlf` 构建目标；不引入第二份 suite 数值库。
-版本、发行归档 SHA-256 和逐文件哈希见
-[UPSTREAM.json](../../vendor/toml-f/UPSTREAM.json)，
-[许可文本](../../vendor/toml-f/LICENSE-MIT) 随安装保留。
-编译时不下载依赖，程序运行时不调用 Python、rCSFs 或外部 TOML 转换器。
-
-macOS 验证使用本机 Homebrew GNU Fortran **15.3.0** 并显式设置 MPI 的 Fortran 后端；
-该平台没有 Linux 的 `/usr/bin/gfortran-15` 路径。这是路径差异，不能用此前 GNU 16 的
-上游试验代替本次 suite/GNU 15 的验证。
+`rwfnestimate` 通过 `lib9290` 链接现有的 `libcsf_descriptor.a`，复用 Rust 的 TOML
+解析。只读 header 的 C 接口把有序的 `(n, kappa)`、core 轨道数和总电子数返回给 Fortran。
+构建使用 suite 已锁定的 Cargo 依赖，运行时只需提供 header 和初猜所需的常规输入文件。
 
 ## 维护测试
 
 - `rwfnestimate_Ni_high_l`、`rwfnestimate_Zn_high_l`：默认有限核网格上，各生成
   `n<=10, l<=6` 的 88 个 TF 轨道；检查有限性、正束缚能、归一化和首次 h/i 无节点。
-- `rwfnestimate_header_input`：文本与 TOML 的 TF/氢样/自定义 Z 输出逐字节比较；
-  空 core、纯 core、长轨道行、长/Unicode/带空格路径、TOML 语法及输入错误；
-  每次读取均检查 header 哈希不变。
+- `rwfnestimate_header_input` 比较默认与显式 header 路径下的 TF、氢样和自定义 Z 输出；
+  覆盖空 core、纯 core、长轨道行、长路径、Unicode 和空格、TOML 语法及输入错误。
+  测试也检查 header 哈希，并验证损坏的配套 Parquet 不影响初猜。
 - 测试核数据为静态、零自旋的 Ni-58 和 Zn-64，保存于
   [fixtures](../../test/rwfnestimate/fixtures)。它们由上游 `rnucleus` 默认有限核参数生成，
   不需要在 suite 之外安装预处理程序才能运行回归测试。

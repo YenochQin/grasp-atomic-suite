@@ -105,7 +105,7 @@
 !
       if (ndef /= 0) call setsum
 !
-!   Load orbital metadata from the selected CSF text or rCSFs header.
+!   Load orbital metadata from the selected rCSFs header.
 !
       call load_radial_header(input_options, ncore)
 !

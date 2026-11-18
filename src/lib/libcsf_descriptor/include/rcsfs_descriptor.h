@@ -16,6 +16,9 @@ extern "C" {
  * Read buffer: channel + row_width*row. On failure output is invalid.
  * All pointers and sizes must describe valid caller-owned storage. */
 int32_t rcsfs_descriptor_abi_version(void);
+/* Header-only radial input. Orbitals are (n,kappa) pairs in core/peel order.
+ * Info contains orbital count, core count, and total electrons. */
+int32_t rcsfs_descriptor_read_radial_header(const char*, int32_t*, size_t, int32_t*, char*, size_t);
 int32_t rcsfs_descriptor_open(const char*, const char*, void**, char*, size_t);
 int32_t rcsfs_descriptor_info(void*, int64_t*, char*, size_t);
 int32_t rcsfs_descriptor_tables(void*, int32_t*, size_t, int64_t*, int32_t*, size_t, char*, size_t);

@@ -6,9 +6,19 @@ module csf_rust_ffi
    public :: rust_descriptor_version, rust_descriptor_open, rust_descriptor_info
    public :: rust_descriptor_tables, rust_descriptor_read, rust_descriptor_close
    public :: rust_descriptor_zero_order_counts
+   public :: rust_descriptor_read_radial_header
    interface
       function rust_descriptor_version() bind(C, name="rcsfs_descriptor_abi_version") result(status)
          import c_int32_t
+         integer(c_int32_t) :: status
+      end function
+      function rust_descriptor_read_radial_header(header, orbitals, orbital_capacity, info, message, capacity) &
+         bind(C, name="rcsfs_descriptor_read_radial_header") result(status)
+         import c_char, c_size_t, c_int32_t
+         character(kind=c_char), intent(in) :: header(*)
+         integer(c_int32_t), intent(out) :: orbitals(*), info(3)
+         character(kind=c_char), intent(out) :: message(*)
+         integer(c_size_t), value :: orbital_capacity, capacity
          integer(c_int32_t) :: status
       end function
       function rust_descriptor_open(path, header, handle, message, capacity) &

@@ -1,4 +1,4 @@
-"""Exercise the native TOML reader against the ordinary text input path."""
+"""Exercise rwfnestimate's header-only input."""
 
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ class HeaderInput(unittest.TestCase):
     def run_case(
         self, *, toml: str | None = None, csf: str | None = None,
         stdin: str = "y\n2\n*\n", arguments: list[str] | None = None,
-        filename: str = "header.toml",
+        filename: str = "header.toml", descriptor: bytes | None = None,
     ) -> tuple[subprocess.CompletedProcess[str], Path]:
         self.counter += 1
         directory = self.root / str(self.counter)
@@ -51,6 +51,8 @@ class HeaderInput(unittest.TestCase):
             command += ["--header", filename]
         if csf is not None:
             (directory / "rcsf.inp").write_text(csf)
+        if descriptor is not None:
+            (directory / "rcsf_descriptors.parquet").write_bytes(descriptor)
         if toml is None and csf is not None and arguments is None:
             import re
             lines = csf.splitlines()[:5]
@@ -122,14 +124,22 @@ class HeaderInput(unittest.TestCase):
         escaped = encode_header(self.lines).replace("Core subshells:", r"Core\u0020subshells:")
         inline = "header_info = {electron_count=28, header_lines=" + json.dumps(self.lines) + "}\n"
         literal = "[header_info]\nelectron_count=28\nheader_lines=[" + ",".join("'" + s + "'" for s in self.lines) + "]\n"
-        for encoding in [multiline, escaped, inline, literal]:
+        comma_separated = self.lines.copy()
+        for index in [1, 3]:
+            comma_separated[index] = ",\t".join(comma_separated[index].split())
+        for encoding in [multiline, escaped, inline, literal, encode_header(comma_separated)]:
             with self.subTest(encoding=encoding[:50]):
                 result, directory = self.run_case(toml=encoding, filename="输入 with spaces " + "x" * 140 + ".toml")
                 self.assert_success(result)
                 self.assertEqual((baseline_dir / "rwfn.inp").read_bytes(), (directory / "rwfn.inp").read_bytes())
 
-    def test_explicit_header_does_not_read_csf_text(self) -> None:
-        result, _ = self.run_case(toml=encode_header(self.lines), csf="deliberately invalid text\n")
+    def test_header_ignores_csf_files_and_block_metadata(self) -> None:
+        result, _ = self.run_case(
+            toml=encode_header(self.lines) + '\n[block_info]\nblock_lengths = "invalid"\n',
+            filename="rcsf_header.toml",
+            csf="deliberately invalid text\n",
+            descriptor=b"deliberately invalid Parquet",
+        )
         self.assert_success(result)
 
     def test_missing_and_invalid_electron_counts(self) -> None:
@@ -164,6 +174,7 @@ class HeaderInput(unittest.TestCase):
     def test_invalid_orbital_tables(self) -> None:
         for label, diagnostic in [("1s", "duplicate orbital"), ("0s", "must exceed l"),
                                   ("1p", "must exceed l"), ("4z", "unsupported orbital letter"),
+                                  ("12n", "unsupported orbital letter"), ("+12s", "invalid subshell label"),
                                   ("4s-", "invalid relativistic suffix"), ("6h--", "invalid subshell suffix"),
                                   ("p", "invalid subshell label"), ("12", "invalid subshell label")]:
             with self.subTest(label=label):
