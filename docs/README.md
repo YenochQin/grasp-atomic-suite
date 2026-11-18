@@ -39,6 +39,7 @@
 | [orbopt_retirement.md](implemented/orbopt_retirement.md) | 已移除旧程序；2026-11-08 删除四个 rmcdhf_orbopt 目标/源码和专用驱动，记录 2026-11-08 的 orbopt 退役；strict/diag 后续也已移除，当前网格范围以共同参数说明为准。 |
 | [f2018_compatibility.md](implemented/f2018_compatibility.md) | 现行兼容性与接口；汇总标准 kind、共享库模块 API、MPI 重导出例外、输入/数值修复、来源校验与验证限制。 |
 | [standard_grasp_integration.md](implemented/standard_grasp_integration.md) | 普通程序接入；普通角系数、初猜、RCI 和跃迁程序复用套件共享库；历史接入检查不代表完整科学验收。 |
+| [rlevels.md](implemented/rlevels.md) | 原版 `rlevels` 的 Suite 接入，含 `.m`、`.cm`、LSJ 标签匹配规则和回归入口。 |
 | [jj2lsj_postprocessing.md](implemented/jj2lsj_postprocessing.md) | 已实施；2026-11-04 分阶段计时、稳定归并排序及 ASF 排序并行；唯一标签和输出按序执行，跨 block 流水线经计时评估暂缓。 |
 | [jj2lsj_openmp.md](implemented/jj2lsj_openmp.md) | 已实施；2026-11-02 `jj2lsj_omp` 普通 CSF 的 OpenMP LS 行转换，保留默认提前停止与串行 `.lsj.T`；数值/文件回归及 Debug、无 OpenMP 构建通过；Gd I 真实输入兼容性通过，已有单次性能观测。 |
 | [rdensity_mpi.md](implemented/rdensity_mpi.md) | 已实施；2026-10-09 新增串行/MPI 自然轨道程序；CSF 分工、矩阵归约、解析小模型及 Ni 对照测试。大规模性能与物理收敛仍待验证。 |

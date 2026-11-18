@@ -186,6 +186,7 @@ add_subdirectory("src/appl/rhfs")
 add_subdirectory("src/appl/rdensity")
 add_subdirectory("src/appl/ris4")
 add_subdirectory("src/appl/jj2lsj")
+add_subdirectory("src/appl/rlevels")
 # add_subdirectory("src/appl/rhfszeeman95")
 
 # Ordinary GRASP programs and fresh rmcdhf copies use the suite numerical libraries.

@@ -51,6 +51,10 @@ else()
     find_package(Python3 COMPONENTS Interpreter)
 endif()
 if(Python3_Interpreter_FOUND)
+    add_test(NAME rlevels_file_output
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rlevels/regression.py"
+            $<TARGET_FILE:rlevels> "${PROJECT_SOURCE_DIR}/data")
+    set_tests_properties(rlevels_file_output PROPERTIES TIMEOUT 30)
     foreach(variant serial mpi)
         if(variant STREQUAL "mpi" AND NOT TARGET mpiu90)
             continue()

@@ -12,6 +12,7 @@
         "mcp90",
         "rang90",
         "jj2lsj_omp",
+        "rlevels",
         "fical"
       ],
       "tests": [
@@ -61,6 +62,7 @@
         "f2018_weights_rmcdhf_mpi",
         "f2018_weights_rmcdhf_mem_mpi",
         "f2018_input_precision",
+        "rlevels_file_output",
         "fical_mixed_mass_shift_units"
       ]
     },
