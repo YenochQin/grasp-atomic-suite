@@ -24,9 +24,9 @@ must be reviewed before being copied; building never synchronizes external
 source. The V2 format remains interoperable with rCSFs producers. The suite
 Fortran adapter continues to own physical state validation and array assembly.
 
-Rust/Cargo 1.99.0 and a C compiler are needed at build time. The lockfile pins
-third-party dependencies; CMake defaults to Cargo `--locked --offline`, so the
-Cargo dependency cache must already be populated. With an empty cache, use
+Rust 1.99.0 or a newer release, Cargo, and a C compiler are needed at build time.
+The lockfile pins third-party dependencies. CMake runs Cargo with
+`--locked --offline` by default and uses the local dependency cache. With an empty cache, use
 `-DGRASP_CSF_READER_OFFLINE=OFF` to allow Cargo to download locked dependencies.
 This does not fetch rCSFs. Runtime needs neither Python nor Rust tools.
 

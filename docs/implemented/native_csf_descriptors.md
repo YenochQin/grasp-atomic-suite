@@ -75,7 +75,7 @@ CMake 将它与其他共享库一起构建，最终链接的归档为 `<build>/l
 构建不读取相邻 rCSFs checkout，不接收外部 reader 静态库，也不自动同步上游源码。
 原有 ABI 符号名 `rcsfs_descriptor_*` 保留，零阶计数由额外的查询函数取得。
 该库没有 Python、CLI 或 CSF 生成器依赖。
-当前验证工具链为 GNU Fortran 15.3.0、Rust/Cargo 1.99.0，锁文件选择 Arrow/Parquet 59.3.2。
+验证基线为 GNU Fortran 15.3.0 和 Rust/Cargo 1.99.0，锁文件选择 Arrow/Parquet 59.3.2。
 压缩支持包括 ZSTD、Snappy、GZIP、Brotli、LZ4；ZSTD 后端构建使用 C 编译器。
 
 从 suite 根目录（不安装）：
@@ -90,7 +90,9 @@ cmake --build build-native --parallel 4
 
 CMake 默认用 Cargo `--locked --offline`；依赖缓存须提前准备。
 缺少缓存时可用 `-DGRASP_CSF_READER_OFFLINE=OFF` 允许 Cargo 下载锁定的第三方依赖。
-构建核对 `GRASP_RUST_VERSION`，默认 1.99.0；切换工具链应明确指定并重新验证。
+`GRASP_RUST_VERSION` 指定 Rust 发行版的最低版本，默认 1.99.0。
+切换工具链时使用新构建目录，并通过 `GRASP_RUSTC` 和 `GRASP_CARGO` 指定对应的编译器和 Cargo。
+CTest 优先使用 `rustc` 同目录的 `rustdoc`，也可通过 `GRASP_RUSTDOC` 显式指定。
 旧的 `RCSFS_DESCRIPTOR_SOURCE_DIR` / `RCSFS_DESCRIPTOR_LIBRARY` 非空配置会被明确拒绝，
 迁移现有缓存时移除这两项，或选择新构建目录。
 生产二进制静态包含 reader，运行时不需要 Python、

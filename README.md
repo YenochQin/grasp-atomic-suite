@@ -79,9 +79,10 @@ set -gx OMPI_FC $FC
 cmake --build build --parallel 4
 ```
 
-The bundled reader requires Rust/Cargo 1.99.0 and a C compiler. Cargo uses locked,
-cached dependencies by default; set `-DGRASP_CSF_READER_OFFLINE=OFF` if dependencies
-must be downloaded. `RCSFS_TEST_CLI` is only an offline test-fixture producer.
+The bundled reader requires Rust 1.99.0 or a newer release, Cargo, and a C
+compiler. Cargo uses locked, cached dependencies by default. Set
+`-DGRASP_CSF_READER_OFFLINE=OFF` if dependencies must be downloaded.
+`RCSFS_TEST_CLI` is only an offline test-fixture producer.
 
 The default install prefix is `<build>/install`; use `--prefix PATH` or
 `-DCMAKE_INSTALL_PREFIX=PATH` for another destination. A normal build does not
