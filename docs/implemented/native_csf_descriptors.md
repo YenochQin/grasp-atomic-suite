@@ -97,7 +97,7 @@ ctest --test-dir build-native -R '^csf_descriptor_rust$' --output-on-failure
 ```
 
 开发测试使用 Python；需要原始 CSF 的测试在测试准备阶段调用独立原生 CLI，计算程序不调用它。
-配置这些夹具测试时指定可用的原生 `rcsfs`；该选项不影响库的来源或链接：
+配置这些夹具测试时指定原生 `rcsfs` 3.1 CLI；该选项不影响库的来源或链接：
 
 ```fish
 cmake -S . -B build-native -DRCSFS_TEST_CLI=/path/to/rcsfs
@@ -107,8 +107,7 @@ ctest --test-dir build-native --output-on-failure
 旧数据可以离线转换，之后直接运行程序：
 
 ```fish
-rcsfs convert original.c rcsf.parquet --num-workers 1
-rcsfs gen-descriptors rcsf.parquet rcsf_descriptors.parquet --header rcsf_header.toml --num-workers 1
+rcsfs convert original.c rcsf_descriptors.parquet
 /path/to/suite/build-native/bin/rangular
 ```
 
