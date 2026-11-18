@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import math
 import os
 from pathlib import Path
 import shutil
@@ -154,6 +155,7 @@ class MpiDescriptorTests(unittest.TestCase):
         energies: dict[str, float] = {}
         for name, prefix, answer, counts in [
             ("default-full", "y\ncase\n", "n", None),
+            ("default-full-with-counts", "y\ncase\n", "n", [1]),
             ("default-partition", "y\ncase\n", "y", [1]),
             ("nondefault-partition", "n\ncase\nn\nn\n", "y", [1]),
         ]:
@@ -184,10 +186,13 @@ class MpiDescriptorTests(unittest.TestCase):
                 summary = (directory / "case.csum").read_text()
                 self.assertEqual("CSFs 1--1 constitute the zero-order space" in summary, answer == "y")
                 shift, shifted_energy = floats(records(directory / "case.cm")[-2])
-                energies[name] = shift + shifted_energy
-        if len(energies) == 3:
-            self.assertNotAlmostEqual(energies["default-full"], energies["default-partition"])
-            self.assertAlmostEqual(energies["default-partition"], energies["nondefault-partition"])
+                energy = shift + shifted_energy
+                self.assertTrue(math.isfinite(energy), f"{name}: nonfinite CI energy {energy}")
+                energies[name] = energy
+        self.assertEqual(len(energies), 4, f"RCI cases with finite energies: {list(energies)}")
+        self.assertAlmostEqual(energies["default-full"], energies["default-full-with-counts"])
+        self.assertNotAlmostEqual(energies["default-full-with-counts"], energies["default-partition"])
+        self.assertAlmostEqual(energies["default-partition"], energies["nondefault-partition"])
 
     def test_relative_inputs_use_serial_directory(self) -> None:
         # Relative paths are resolved before access from the rank-specific cwd.
