@@ -123,6 +123,14 @@ if(Python3_Interpreter_FOUND)
         set_tests_properties(rangular_mpi_descriptors PROPERTIES TIMEOUT 180 PROCESSORS 4
             LABELS "f2018_io;f2018_mpi")
     endif()
+    if(TARGET rci_mpi AND MPIEXEC_EXECUTABLE)
+        add_test(NAME rci_mpi_breit
+            COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rci_breit.py"
+            --rci $<TARGET_FILE:rci_mpi> --mpiexec "${MPIEXEC_EXECUTABLE}"
+            --numproc-flag=${MPIEXEC_NUMPROC_FLAG})
+        set_tests_properties(rci_mpi_breit PROPERTIES TIMEOUT 120 PROCESSORS 2
+            LABELS "f2018_mpi")
+    endif()
     if(TARGET csf_descriptor_verify)
         add_test(NAME csf_descriptor_input
             COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_csf_descriptors.py"

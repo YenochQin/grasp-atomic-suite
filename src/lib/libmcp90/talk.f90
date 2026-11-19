@@ -1,8 +1,3 @@
-module talk_i
-    implicit none (type, external)
-    private
-    public :: talk
-contains
 !***********************************************************************
 !                                                                      *
       subroutine talk(ja, jb, nu, ia, ib, ic, id, itype, coef)
@@ -67,4 +62,3 @@ contains
       return
 !
       end subroutine talk
-end module talk_i

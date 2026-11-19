@@ -1,5 +1,7 @@
       module talk_i
       implicit none (type, external)
+      private
+      public :: talk
       interface
       subroutine talk (ja, jb, nu, ia, ib, ic, id, itype, coef)
       use, intrinsic :: iso_fortran_env, only: real64

@@ -4,9 +4,7 @@ add_executable(rci
     ratden_I.f90
     where_C.f90
     talk.f90
-    talk_I.f90
     cxk.f90
-    cxk_I.f90
     bessel.f90
     bessel_I.f90
     dmerge_dnicmv_I.f90
@@ -134,5 +132,5 @@ add_executable(rci
     matrix_I.f90
     rci92.f90
 )
-target_link_libraries_Fortran(rci PUBLIC rang90 9290 dvd90 mod)
+target_link_libraries_Fortran(rci PUBLIC rang90 9290 dvd90 mod mcp90)
 install(TARGETS rci DESTINATION bin/)

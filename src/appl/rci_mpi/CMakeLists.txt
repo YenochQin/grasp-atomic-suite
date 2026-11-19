@@ -18,9 +18,7 @@ add_executable(rci_mpi
     brintf.f90
     brintf_I.f90
     talk.f90
-    talk_I.f90
     cxk.f90
-    cxk_I.f90
     breid.f90
     breid_I.f90
     brint1.f90
@@ -136,5 +134,5 @@ add_executable(rci_mpi
     matrix_I.f90
     rci_mpi.f90
 )
-target_link_libraries_Fortran(rci_mpi PUBLIC mpiu90 rang90 9290 dvd90 mod)
+target_link_libraries_Fortran(rci_mpi PUBLIC mpiu90 rang90 9290 dvd90 mod mcp90)
 install(TARGETS rci_mpi DESTINATION bin/)

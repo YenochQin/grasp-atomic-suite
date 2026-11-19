@@ -1,5 +1,7 @@
       module cxk_i
       implicit none (type, external)
+      private
+      public :: cxk
       interface
       subroutine cxk (s, is, kaps, nu, k, ibr, iex)
       use, intrinsic :: iso_fortran_env, only: real64
