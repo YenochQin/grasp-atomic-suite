@@ -2,23 +2,23 @@ EXE=rwfnestimate
 LIBRARIES="spin_angular core grasp_shared"
 LAPACK=true
 FILES="
-tail.f90 tail_I.f90
-sbstep.f90 sbstep_I.f90
-solvh.f90 solvh_I.f90
-frmhyd.f90 frmhyd_I.f90
-frmrwf.f90 frmrwf_I.f90
-frmtfp.f90 frmtfp_I.f90
-tfpot.f90 tfpot_I.f90
-prtrem.f90 prtrem_I.f90
-screenpar.f90 screenpar_I.f90
-setdbg.f90 setdbg_I.f90
-setsum.f90 setsum_I.f90
-strsum.f90 strsum_I.f90
-summry.f90 summry_I.f90
-wrtrwf.f90 wrtrwf_I.f90
-genrwf.f90 genrwf_I.f90
-getinfo.f90 getinf_I.f90 # subroutine GETINF, implementation in getinfo.f90
-erwf.f90
+integrate_radial_tail.f90 integrate_radial_tail_interface.f90
+integrate_homogeneous_radial_segment.f90 integrate_homogeneous_radial_segment_interface.f90
+solve_homogeneous_radial_equation.f90 solve_homogeneous_radial_equation_interface.f90
+estimate_hydrogenic_orbitals.f90 estimate_hydrogenic_orbitals_interface.f90
+estimate_from_saved_orbitals.f90 estimate_from_saved_orbitals_interface.f90
+estimate_thomas_fermi_orbitals.f90 estimate_thomas_fermi_orbitals_interface.f90
+build_thomas_fermi_potential.f90 build_thomas_fermi_potential_interface.f90
+print_uninitialized_orbitals.f90 print_uninitialized_orbitals_interface.f90
+set_hydrogenic_screening.f90 set_hydrogenic_screening_interface.f90
+configure_debug_output.f90 configure_debug_output_interface.f90
+open_summary_file.f90 open_summary_file_interface.f90
+write_input_summary.f90 write_input_summary_interface.f90
+write_initial_wavefunction_summary.f90 write_initial_wavefunction_summary_interface.f90
+write_initial_radial_wavefunctions.f90 write_initial_radial_wavefunctions_interface.f90
+generate_initial_radial_wavefunctions.f90 generate_initial_radial_wavefunctions_interface.f90
+read_calculation_options.f90 read_calculation_options_interface.f90 # subroutine GETINF, implementation in read_calculation_options.f90
+rwfnestimate_main.f90
 "
 generate-makefile > ${MAKEFILE}
 generate-cmakelists > ${CMAKELISTSTXT}

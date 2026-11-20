@@ -2,7 +2,7 @@ program test_ranking
     use, intrinsic :: iso_fortran_env, only: real64
     use iso_fortran_env, only: int64
     use ieee_arithmetic, only: ieee_value, ieee_quiet_nan
-    use jj2lsj_postprocess, only: ls_ranking, rank_ls
+    use jj2lsj_postprocessing, only: ls_ranking, rank_ls_components
     implicit none (type, external)
     type(ls_ranking) :: ranked
     real(real64), allocatable :: values(:), old_weights(:), old_squares(:)
@@ -12,7 +12,7 @@ program test_ranking
     character(len=16) :: argument
     call get_command_argument(1,argument)
     if (trim(argument)=="nonfinite") then
-        call rank_ls([ieee_value(0.0_real64,ieee_quiet_nan)],ranked)
+        call rank_ls_components([ieee_value(0.0_real64,ieee_quiet_nan)],ranked)
         stop 0
     end if
     do case_no=1,6
@@ -53,7 +53,7 @@ program test_ranking
             end do
             old_weights(j)=wa; old_squares(j)=wa*wa; old_order(j)=i
         end do
-        call rank_ls(values,ranked)
+        call rank_ls_components(values,ranked)
         if (any(ranked%order/=old_order(:n))) error stop "unstable or incorrect ordering"
         if (transfer(ranked%norm,0_int64)/=transfer(old_norm,0_int64)) error stop "norm order changed"
         do i=1,n
@@ -66,7 +66,7 @@ program test_ranking
     allocate(values(84000))
     values=0.0_real64
     values(2)=-0.5_real64; values(84000)=0.5_real64
-    call rank_ls(values,ranked)
+    call rank_ls_components(values,ranked)
     if (any(ranked%order(:3)/=[2,84000,1])) error stop "large tie ordering"
     do i=4,84000
         if (ranked%order(i)/=i-1) error stop "zero plateau order"

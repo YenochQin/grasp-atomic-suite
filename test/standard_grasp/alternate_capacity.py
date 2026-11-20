@@ -18,11 +18,11 @@ def main() -> None:
         "lib/grasp_shared/radial_grid_state.f90",
         "lib/grasp_shared/scf_radial_potentials.f90",
         "lib/grasp_shared/radial_quadrature_workspace.f90",
-        "apps/rwfnestimate/tail_I.f90",
-        "apps/rwfnestimate/solvh_I.f90",
-        "apps/rwfnestimate/frmtfp_I.f90",
-        "apps/rwfnestimate/frmrwf_I.f90",
-        "apps/rwfnestimate/summry_I.f90",
+        "apps/rwfnestimate/integrate_radial_tail_interface.f90",
+        "apps/rwfnestimate/solve_homogeneous_radial_equation_interface.f90",
+        "apps/rwfnestimate/estimate_thomas_fermi_orbitals_interface.f90",
+        "apps/rwfnestimate/estimate_from_saved_orbitals_interface.f90",
+        "apps/rwfnestimate/write_initial_wavefunction_summary_interface.f90",
     ]
     with tempfile.TemporaryDirectory(prefix="standard-grasp-capacity-") as temporary:
         work = Path(temporary)

@@ -2,35 +2,35 @@ add_executable(rangular
     rangular_profile.f90
     rangular_reuse.f90
     rangular_input.f90
-    allocCheck.f90
-    allocCheck_I.f90
-    fndbeg.f90
-    fndbeg_I.f90
-    getinf.f90
-    getinf_I.f90
-    sort.f90
-    sort_I.f90
-    sortmem.f90
-    sortmem_I.f90
-    outsda.f90
-    outsda_I.f90
-    setsda.f90
-    setsda_I.f90
-    mcp_gg.f90
-    mcp_gg_I.f90
-    setdbg.f90
-    setdbg_I.f90
-    setmcp.f90
-    setmcp_I.f90
-    setmcp2.f90
-    setmcp2_I.f90
-    setsum.f90
-    setsum_I.f90
-    settmpGG.f90
-    settmpGG_I.f90
-    strsum.f90
-    strsum_I.f90
-    genmcp.f90
+    try_allocate_sort_buffers.f90
+    try_allocate_sort_buffers_interface.f90
+    locate_mcp_restart_position.f90
+    locate_mcp_restart_position_interface.f90
+    read_calculation_options.f90
+    read_calculation_options_interface.f90
+    sort_mcp_coefficients.f90
+    sort_mcp_coefficients_interface.f90
+    sort_mcp_coefficients_in_memory.f90
+    sort_mcp_coefficients_in_memory_interface.f90
+    write_mcp_sparsity_summary.f90
+    write_mcp_sparsity_summary_interface.f90
+    write_mcp_sparsity.f90
+    write_mcp_sparsity_interface.f90
+    compute_mcp_angular_coefficients.f90
+    compute_mcp_angular_coefficients_interface.f90
+    configure_debug_output.f90
+    configure_debug_output_interface.f90
+    connect_mcp_files.f90
+    connect_mcp_files_interface.f90
+    open_mcp_outputs.f90
+    open_mcp_outputs_interface.f90
+    open_summary_file.f90
+    open_summary_file_interface.f90
+    open_temporary_mcp_channels.f90
+    open_temporary_mcp_channels_interface.f90
+    write_input_summary.f90
+    write_input_summary_interface.f90
+    rangular_main.f90
 )
 setup_fortran_modules(rangular)
 target_link_libraries_Fortran(rangular PUBLIC spin_angular breit_angular_support core grasp_shared)

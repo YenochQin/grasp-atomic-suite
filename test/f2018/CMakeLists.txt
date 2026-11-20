@@ -11,8 +11,8 @@ set_tests_properties(f2018_davidson_contracts f2018_davidson_early PROPERTIES TI
 foreach(variant rci rci_mpi)
     set(app "${PROJECT_SOURCE_DIR}/src/apps/${variant}")
     set(target test.f2018_rk_count_${variant})
-    add_executable(${target} rk_count.F90 rk_count_doubles.f90 "${app}/genintrk.f90" "${app}/genintrk_I.f90"
-        "${app}/triangrk.f90" "${app}/triangrk_I.f90")
+    add_executable(${target} rk_count.F90 rk_count_doubles.f90 "${app}/tabulate_slater_integrals.f90" "${app}/tabulate_slater_integrals_interface.f90"
+        "${app}/satisfies_coulomb_triangle.f90" "${app}/satisfies_coulomb_triangle_interface.f90")
     target_link_libraries_Fortran(${target} PRIVATE core grasp_shared)
     add_test(NAME f2018_rk_count_${variant} COMMAND ${target})
     set_tests_properties(f2018_rk_count_${variant} PROPERTIES TIMEOUT 30)
@@ -24,14 +24,16 @@ target_link_libraries(test.f2018_linear_algebra PRIVATE ${LAPACK_LIBRARIES} ${BL
 add_test(NAME f2018_linear_algebra_contracts COMMAND test.f2018_linear_algebra)
 foreach(variant rbiotransform rbiotransform_mpi)
     add_executable(test.bndinv_${variant} bndinv_precision.f90
-        "${PROJECT_SOURCE_DIR}/src/apps/${variant}/bndinv.f90"
-        "${PROJECT_SOURCE_DIR}/src/apps/${variant}/bndinv_I.f90")
+        "${PROJECT_SOURCE_DIR}/src/apps/${variant}/invert_banded_matrix.f90"
+        "${PROJECT_SOURCE_DIR}/src/apps/${variant}/invert_banded_matrix_interface.f90")
     setup_fortran_modules(test.bndinv_${variant})
     add_test(NAME f2018_bndinv_${variant} COMMAND test.bndinv_${variant})
 endforeach()
 if(Python3_Interpreter_FOUND)
     add_test(NAME f2018_library_source_style COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/check_fortran_source_style.py lib)
+    add_test(NAME f2018_application_source_style COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/check_fortran_source_style.py apps)
     add_test(NAME f2018_numeric_literals COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/check_numeric_literals.py ${CMAKE_Fortran_COMPILER})
     add_test(NAME f2018_bndinv_interfaces COMMAND ${Python3_EXECUTABLE}
@@ -64,7 +66,7 @@ if(Python3_Interpreter_FOUND)
     foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
         set(target test.f2018_weights_${variant})
         set(app "${PROJECT_SOURCE_DIR}/src/apps/${variant}")
-        add_executable(${target} level_weights.f90 level_weights_doubles.f90 "${app}/getaldwt.f90" "${app}/getaldwt_I.f90")
+        add_executable(${target} level_weights.f90 level_weights_doubles.f90 "${app}/read_al_level_weights.f90" "${app}/read_al_level_weights_interface.f90")
         target_link_libraries_Fortran(${target} PRIVATE core grasp_shared)
         # Diagnostic poison exposes the former uninitialized read extent;
         # no production target receives default-initialization options.
@@ -87,22 +89,22 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
     endif()
     set(directory ${variant})
     set(app "${PROJECT_SOURCE_DIR}/src/apps/${directory}")
-    set(matrix matrix)
-    set(eigen maneig)
+    set(matrix solve_hamiltonian_blocks)
+    set(eigen diagonalize_hamiltonian_block)
     if(variant MATCHES "_mpi$")
-        set(matrix matrixmpi)
-        set(eigen maneigmpi)
+        set(matrix solve_hamiltonian_blocks_mpi)
+        set(eigen diagonalize_hamiltonian_block_mpi)
     endif()
     set(target test.f2018_ci_${variant})
-    add_executable(${target} ci_damping.F90 "${app}/${matrix}.f90" "${app}/${matrix}_I.f90"
-        "${app}/${eigen}_I.f90" "${app}/setham_I.f90")
+    add_executable(${target} ci_damping.F90 "${app}/${matrix}.f90" "${app}/${matrix}_interface.f90"
+        "${app}/${eigen}_interface.f90" "${app}/assemble_hamiltonian_block_interface.f90")
     set_property(TARGET ${target} PROPERTY Fortran_MODULE_DIRECTORY "${Fortran_MODULE_DIRECTORY_root}/${target}")
     target_link_libraries_Fortran(${target} PRIVATE grasp_shared)
     target_link_libraries(${target} PRIVATE ${BLAS_LIBRARIES})
     target_compile_options(${target} PRIVATE -fcheck=all -fbacktrace)
     if(variant MATCHES "mem")
         target_compile_definitions(${target} PRIVATE CI_MEM)
-        target_sources(${target} PRIVATE "${app}/rmcdhf_mem_C.f90" "${app}/read03_mem_I.f90" "${app}/read1_mem_I.f90")
+        target_sources(${target} PRIVATE "${app}/rmcdhf_mcp_memory.f90" "${app}/read_mcp_coefficients_from_memory_interface.f90" "${app}/load_mcp_records_into_memory_interface.f90")
     endif()
     if(variant MATCHES "_mpi$")
         target_compile_definitions(${target} PRIVATE CI_MPI)
@@ -114,7 +116,7 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
             set_tests_properties(f2018_ci_damping_${variant}_${ranks} PROPERTIES TIMEOUT 60 PROCESSORS ${ranks})
         endforeach()
     else()
-        target_sources(${target} PRIVATE "${app}/mpi_s.f90")
+        target_sources(${target} PRIVATE "${app}/serial_mpi_context.f90")
         add_test(NAME f2018_ci_damping_${variant} COMMAND ${target})
         set_tests_properties(f2018_ci_damping_${variant} PROPERTIES TIMEOUT 30)
     endif()
@@ -127,7 +129,7 @@ if(TARGET grasp_mpi AND Python3_Interpreter_FOUND)
     set_tests_properties(f2018_worker_output PROPERTIES TIMEOUT 90 PROCESSORS 2)
     set(angular_app "${PROJECT_SOURCE_DIR}/src/apps/rangular_mpi")
     add_executable(test.f2018_sparse_empty_rank sparse_empty_rank.f90
-        "${angular_app}/setsda.f90" "${angular_app}/setsda_I.f90" "${angular_app}/outsdampi_I.f90")
+        "${angular_app}/write_mcp_sparsity.f90" "${angular_app}/write_mcp_sparsity_interface.f90" "${angular_app}/write_mcp_sparsity_summary_mpi_interface.f90")
     target_link_libraries_Fortran(test.f2018_sparse_empty_rank PRIVATE core grasp_shared)
     # Poison uninitialized local integers only in this diagnostic fixture.
     # A zero default would hide SETSDA's former empty-rank IC access.
@@ -172,7 +174,7 @@ if(Python3_Interpreter_FOUND)
         endif()
         set(app "${PROJECT_SOURCE_DIR}/src/apps/${variant}")
         set(target test.mcp_io_${variant})
-        add_executable(${target} mcp_reader_io.F90 "${app}/setmcp.f90" "${app}/setmcp_I.f90")
+        add_executable(${target} mcp_reader_io.F90 "${app}/connect_mcp_files.f90" "${app}/connect_mcp_files_interface.f90")
         setup_fortran_modules(${target})
         target_link_libraries_Fortran(${target} PRIVATE grasp_shared core)
         target_compile_options(${target} PRIVATE -fcheck=all -fbacktrace -finit-integer=0)
@@ -182,15 +184,15 @@ if(Python3_Interpreter_FOUND)
             target_link_libraries_Fortran(${target} PRIVATE grasp_mpi)
             set(mpi_arguments --mpiexec "${MPIEXEC_EXECUTABLE}")
         else()
-            target_sources(${target} PRIVATE "${app}/mpi_s.f90")
+            target_sources(${target} PRIVATE "${app}/serial_mpi_context.f90")
         endif()
         if(variant MATCHES "mem")
             target_compile_definitions(${target} PRIVATE MCP_MEM)
-            target_sources(${target} PRIVATE "${app}/setmcp_mem.f90" "${app}/setmcp_mem_I.f90"
-                "${app}/rmcdhf_mem_C.f90" "${app}/systemmem_I.f90" "${app}/systemfreemem_I.f90")
+            target_sources(${target} PRIVATE "${app}/cache_mcp_files.f90" "${app}/cache_mcp_files_interface.f90"
+                "${app}/rmcdhf_mcp_memory.f90" "${app}/query_total_system_memory_interface.f90" "${app}/query_available_system_memory_interface.f90")
         else()
-            target_sources(${target} PRIVATE "${app}/setcof.f90" "${app}/setcof_I.f90"
-                "${app}/dsubrs_I.f90" "${app}/fco_I.f90" "${app}/gco_I.f90")
+            target_sources(${target} PRIVATE "${app}/assemble_orbital_potential_coefficients.f90" "${app}/assemble_orbital_potential_coefficients_interface.f90"
+                "${app}/csf_density_matrix_element_interface.f90" "${app}/direct_angular_coefficient_interface.f90" "${app}/exchange_angular_coefficient_interface.f90")
         endif()
         add_test(NAME f2018_mcp_io_${variant}
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_mcp_io.py
@@ -201,8 +203,8 @@ if(Python3_Interpreter_FOUND)
         endif()
         if(variant MATCHES "mem")
             set(target test.mcp_memory_${variant})
-            add_executable(${target} mcp_memory_io.F90 "${app}/setmcp_mem.f90" "${app}/setmcp_mem_I.f90"
-                "${app}/rmcdhf_mem_C.f90" "${app}/systemmem_I.f90" "${app}/systemfreemem_I.f90")
+            add_executable(${target} mcp_memory_io.F90 "${app}/cache_mcp_files.f90" "${app}/cache_mcp_files_interface.f90"
+                "${app}/rmcdhf_mcp_memory.f90" "${app}/query_total_system_memory_interface.f90" "${app}/query_available_system_memory_interface.f90")
             setup_fortran_modules(${target})
             target_link_libraries_Fortran(${target} PRIVATE grasp_shared)
             target_compile_options(${target} PRIVATE -fcheck=all -fbacktrace -finit-integer=0)
@@ -210,7 +212,7 @@ if(Python3_Interpreter_FOUND)
                 target_compile_definitions(${target} PRIVATE MCP_MPI)
                 target_link_libraries_Fortran(${target} PRIVATE grasp_mpi)
             else()
-                target_sources(${target} PRIVATE "${app}/mpi_s.f90")
+                target_sources(${target} PRIVATE "${app}/serial_mpi_context.f90")
             endif()
             add_test(NAME f2018_mcp_memory_${variant}
                 COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_mcp_io.py

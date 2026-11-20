@@ -1,12 +1,12 @@
-module itjpo_i
+module basis_csf_two_j_plus_one_interface
     implicit none (type, external)
     private
-    public :: itjpo
+    public :: basis_csf_two_j_plus_one
 contains
-integer function itjpo(index)
+integer function basis_csf_two_j_plus_one(index)
     implicit none (type, external)
     integer,intent(in) :: index
     if(index<1.or.index>3) error stop "Unexpected level index"
-    itjpo=2*index-1
-end function itjpo
-end module itjpo_i
+    basis_csf_two_j_plus_one=2*index-1
+end function basis_csf_two_j_plus_one
+end module basis_csf_two_j_plus_one_interface

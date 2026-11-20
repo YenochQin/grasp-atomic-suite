@@ -3,13 +3,13 @@
 program standard_interface_capacity
     use grasp_parameters, only: NNNP, NNN1, NNNW
     use, intrinsic :: iso_fortran_env, only: real64
-    use tail_I, only: tail
-    use frmtfp_I, only: frmtfp
-    use frmrwf_I, only: frmrwf
+    use integrate_radial_tail_interface, only: integrate_radial_tail
+    use estimate_thomas_fermi_orbitals_interface, only: estimate_thomas_fermi_orbitals
+    use estimate_from_saved_orbitals_interface, only: estimate_from_saved_orbitals
     implicit none (type, external)
-    procedure(tail), pointer :: radial
-    procedure(frmtfp), pointer :: estimate
-    procedure(frmrwf), pointer :: imported
+    procedure(integrate_radial_tail), pointer :: radial
+    procedure(estimate_thomas_fermi_orbitals), pointer :: estimate
+    procedure(estimate_from_saved_orbitals), pointer :: imported
     real(real64) :: p(NNNP), q(NNNP)
     integer :: indices(NNNW), mtp
 

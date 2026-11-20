@@ -14,16 +14,16 @@ import tempfile
 
 def candidates() -> list[tuple[str, str, int]]:
     cases = [(f"src/apps/{name}/{routine}.f90", "0.001", 1)
-             for name, routine in (("rmcdhf", "scf"), ("rmcdhf_mem", "scf"),
-                                   ("rmcdhf_mpi", "scfmpi"), ("rmcdhf_mem_mpi", "scfmpi"))]
-    cases += [("src/apps/rwfnestimate/genrwf.f90", "0.05", 1),
-              ("src/apps/rwfnestimate/solvh.f90", "0.1e00", 1),
-              ("src/apps/rwfnestimate/solvh.f90", "0.2e00", 2)]
-    cases += [(f"src/apps/{name}/qed.f90", "0.0219", 1) for name in ("rci", "rci_mpi")]
-    cases += [(f"src/apps/{name}/bndinv.f90", "1.0e-8", 1) for name in ("rbiotransform", "rbiotransform_mpi")]
-    cases += [("src/apps/jj2lsj/jj2lsj_code.f90", literal, 1)
+             for name, routine in (("rmcdhf", "run_scf_iterations"), ("rmcdhf_mem", "run_scf_iterations"),
+                                   ("rmcdhf_mpi", "run_scf_iterations_mpi"), ("rmcdhf_mem_mpi", "run_scf_iterations_mpi"))]
+    cases += [("src/apps/rwfnestimate/generate_initial_radial_wavefunctions.f90", "0.05", 1),
+              ("src/apps/rwfnestimate/solve_homogeneous_radial_equation.f90", "0.1e00", 1),
+              ("src/apps/rwfnestimate/solve_homogeneous_radial_equation.f90", "0.2e00", 2)]
+    cases += [(f"src/apps/{name}/build_qed_self_energy.f90", "0.0219", 1) for name in ("rci", "rci_mpi")]
+    cases += [(f"src/apps/{name}/invert_banded_matrix.f90", "1.0e-8", 1) for name in ("rbiotransform", "rbiotransform_mpi")]
+    cases += [("src/apps/jj2lsj/jj2lsj_conversion.f90", literal, 1)
               for literal in ("0.01", "1.0001", "0.00001", "1.001", ".998")]
-    cases += [(f"src/apps/{name}/printaLS.f90", "0.00000001", 1)
+    cases += [(f"src/apps/{name}/write_lsj_transition_probability.f90", "0.00000001", 1)
               for name in ("rtransition", "rtransition_mpi", "rtransition_phase")]
     return cases
 

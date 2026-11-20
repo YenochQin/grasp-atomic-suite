@@ -55,11 +55,11 @@
 OpenMP 1、2 线程均慢于普通串行，不能只用 OpenMP 自身的 1 线程时间描述相对原程序的收益。
 
 [OpenMP 控制器](../../src/appl/rangular/openmp/rangular_parallel.f90)按批计算 CSF 对、缓存结果并按原顺序提交，
-包含结果复制和批次同步；[原 MCP 控制路径](../../src/apps/rangular/mcp_gg.f90)仍串行整理稀疏结构及排序输出。
+包含结果复制和批次同步；[原 MCP 控制路径](../../src/apps/rangular/compute_mcp_angular_coefficients.f90)仍串行整理稀疏结构及排序输出。
 8 线程文本输入的阶段中位数为：成对生成及缓冲 7.63 秒、排序及输出 2.34 秒、稀疏结构及输出 0.31 秒。
 其中并行批次 6.40 秒是成对生成阶段的子区间，不能再次相加。
 
-[MPI 控制路径](../../src/apps/rangular_mpi/mcpmpi_gg.f90)按列循环分配给各 rank，各自执行计算、临时 I/O、排序和输出。
+[MPI 控制路径](../../src/apps/rangular_mpi/compute_mcp_angular_coefficients_mpi.f90)按列循环分配给各 rank，各自执行计算、临时 I/O、排序和输出。
 它还承担 launcher、数组广播及分片 I/O 成本。上述实现差异解释了可能的开销与扩展性限制，
 本次没有通过低层性能分析逐项量化它们对两者耗时差的贡献。
 

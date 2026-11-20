@@ -22,7 +22,7 @@ write (24, '("The atomic number is ",1f14.10,";")') nuclear_charge
 
 - 扫描 `src/` 下全部 1,654 个 Fortran 源文件，并按 Release 和 Check 的实际编译参数各预处理、扫描 2,010 条 Fortran 编译命令。两个配置均启用串行应用和 MPI，Release 启用 jj2lsj OpenMP，Check 关闭。204 个改动文件均参与构建，源码和预处理结果中没有剩余数字格式引用或悬空格式标签。
 - GNU Fortran 15.3.0 构建通过。逐语句对照保留了每处 I/O 的格式及其余参数。对 275 种不同格式执行 1,225 个修改前后对照用例，共 384,168 字节完全一致，覆盖表头、普通数值、负数、零、极小和极大值、字段溢出、数组、重复组、非推进输出、多行和格式回退。
-- Release 的 CTest 通过 110/110，Check 通过 109/110。`rci_mpi_breit` 在迁移前后的 Check 构建均于同一 Breit 径向积分语句触发 `SIGFPE`，该项在 Release 通过。[ZKF 语句](../../src/apps/rci_mpi/zkf.f90#L102)
+- Release 的 CTest 通过 110/110，Check 通过 109/110。`rci_mpi_breit` 在迁移前后的 Check 构建均于同一 Breit 径向积分语句触发 `SIGFPE`，该项在 Release 通过。[ZKF 语句](../../src/apps/rci_mpi/evaluate_breit_hartree_z.f90#L102)
 - Release 基准、迁移后 Release 和 Check 产生的八份应用报告逐字节一致，覆盖 `gj`、两进程 `gj_mpi`、`jj2lsj_omp` 的标签和摘要以及 FICAL 的三种输出单位。全部 480 个导入文件通过来源校验，修改受保护源码或历史快照的负面检查通过。
 
 验证覆盖现有回归和格式行为。生产规模的科学精度与收敛结论仍以各计算的独立验证为准。

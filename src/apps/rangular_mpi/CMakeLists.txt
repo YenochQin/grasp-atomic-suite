@@ -1,33 +1,33 @@
 add_executable(rangular_mpi
     rangular_mpi_input.f90
     ../rangular/rangular_profile.f90
-    fndbeg.f90
-    fndbeg_I.f90
-    getinf.f90
-    getinf_I.f90
-    outsdampi.f90
-    outsdampi_I.f90
-    setdbg.f90
-    setdbg_I.f90
-    setdbgmpi.f90
-    setdbgmpi_I.f90
-    setmcp.f90
-    setmcp_I.f90
-    setmcpmpi.f90
-    setmcpmpi_I.f90
-    setsda.f90
-    setsda_I.f90
-    setsum.f90
-    setsum_I.f90
-    settmp.f90
-    settmp_I.f90
-    sort.f90
-    sort_I.f90
-    strsum.f90
-    strsum_I.f90
-    mcpmpi_gg.f90
-    mcpmpi_gg_I.f90
-    genmcpmpi.f90
+    locate_mcp_restart_position.f90
+    locate_mcp_restart_position_interface.f90
+    read_calculation_options.f90
+    read_calculation_options_interface.f90
+    write_mcp_sparsity_summary_mpi.f90
+    write_mcp_sparsity_summary_mpi_interface.f90
+    configure_debug_output.f90
+    configure_debug_output_interface.f90
+    configure_debug_output_mpi.f90
+    configure_debug_output_mpi_interface.f90
+    connect_mcp_files.f90
+    connect_mcp_files_interface.f90
+    open_mcp_outputs_mpi.f90
+    open_mcp_outputs_mpi_interface.f90
+    write_mcp_sparsity.f90
+    write_mcp_sparsity_interface.f90
+    open_summary_file.f90
+    open_summary_file_interface.f90
+    open_temporary_mcp_channel.f90
+    open_temporary_mcp_channel_interface.f90
+    sort_mcp_coefficients.f90
+    sort_mcp_coefficients_interface.f90
+    write_input_summary.f90
+    write_input_summary_interface.f90
+    compute_mcp_angular_coefficients_mpi.f90
+    compute_mcp_angular_coefficients_mpi_interface.f90
+    rangular_mpi_main.f90
 )
 target_link_libraries_Fortran(rangular_mpi PUBLIC spin_angular breit_angular_support grasp_mpi core grasp_shared)
 install(TARGETS rangular_mpi DESTINATION bin/)

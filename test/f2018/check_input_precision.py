@@ -17,22 +17,21 @@ def main() -> None:
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
 
-    def source(relative: str, historical_path: str | None = None) -> str:
+    def source(relative: str, *historical_paths: str) -> str:
         if args.baseline_ref:
-            command = ["git", "show", f"{args.baseline_ref}:{relative}"]
-            if historical_path is not None:
+            for candidate in (relative, *historical_paths):
+                command = ["git", "show", f"{args.baseline_ref}:{candidate}"]
                 result = subprocess.run(command, cwd=root, capture_output=True, text=True)
                 if result.returncode == 0:
                     return result.stdout
-                command[-1] = f"{args.baseline_ref}:{historical_path}"
-            return subprocess.check_output(command, cwd=root, text=True)
+            raise ValueError(f"{relative} missing in baseline {args.baseline_ref}")
         return (root/relative).read_text()
 
     with tempfile.TemporaryDirectory(prefix="input-contract-") as temporary:
         work = Path(temporary)
         for variant in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi"):
-            text = source(f"src/apps/{variant}/setcof.f90",
-                          historical_path=f"src/appl/{variant}/setcof.f90")
+            text = source(f"src/apps/{variant}/assemble_orbital_potential_coefficients.f90",
+                          f"src/apps/{variant}/setcof.f90", f"src/appl/{variant}/setcof.f90")
             statements = re.findall(r"^\s*real[^\n]*,\s*parameter\s*::\s*eps\s*=[^\n]+", text, re.I | re.M)
             assert len(statements) == 1
             declaration = statements[0]
@@ -52,7 +51,7 @@ def main() -> None:
             assert result.returncode == 0, (variant, result.stdout+result.stderr)
             print(variant + ": working-precision EPS verified")
 
-        text = source("src/lib/mpi/mpi_work_paths.f90", historical_path="src/lib/mpi90/cpath.f90")
+        text = source("src/lib/mpi/mpi_work_paths.f90", "src/lib/mpi90/cpath.f90")
         helper = re.search(
             r"^\s*function getenv_allocating\([^\n]+\n.*?^\s*end"
             r"(?:[ \t]+function(?:[ \t]+getenv_allocating)?)?[ \t]*$", text, re.M | re.S)

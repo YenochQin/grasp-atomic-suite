@@ -7,7 +7,7 @@ program rk_count
     use rk_fixture, only: calls
     use distributed_slater_integrals, only: indteirk,valteirk,rk_local_count
     use orbital_csf_basis, only: nw => orbital_count, nkl => orbital_l, nkj => orbital_two_j
-    use genintrk_I, only: genintrk
+    use tabulate_slater_integrals_interface, only: tabulate_slater_integrals
     implicit none (type, external)
     integer :: ranks, rank, count_total, jmax, total_calls, orbitals, i
     integer(int64) :: large_total
@@ -20,7 +20,7 @@ program rk_count
             total_calls=0
             do rank=0,ranks-1
                 calls=0
-                call genintrk(rank,ranks,count_total,jmax)
+                call tabulate_slater_integrals(rank,ranks,count_total,jmax)
                 if(.not.all(ieee_is_finite(valteirk))) error stop "Nonfinite integral cache"
                 if(calls/=rk_local_count(count_total,rank,ranks)) error stop "Local Slater evaluation count"
                 if(count(abs(valteirk)>0.0_real64)/=calls) error stop "Local integral cache ownership"

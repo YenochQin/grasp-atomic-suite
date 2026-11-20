@@ -19,8 +19,8 @@ Fortran 源码共有 33 个声明实体。`TALK` 的 9 个形参和 `CXK` 的 7 
 
 映射适用于 [库模块及接口](../../src/lib/breit_angular_support/breit_angular_coefficient_buffer.f90)、
 [外部兼容入口](../../src/lib/breit_angular_support/breit_angular_coefficient_buffer_external.f90)、
-[串行 RCI 实现](../../src/apps/rci/talk.f90)和 [MPI RCI 实现](../../src/apps/rci_mpi/talk.f90)。
-轨道命名沿用 [SPEAK](../../src/lib/core/mcp_coefficient_output.f90) 的左右态约定。[RCI 矩阵组装](../../src/apps/rci/setham_gg.f90)
+[串行 RCI 实现](../../src/apps/rci/collect_breit_angular_coefficient.f90)和 [MPI RCI 实现](../../src/apps/rci_mpi/collect_breit_angular_coefficient.f90)。
+轨道命名沿用 [SPEAK](../../src/lib/core/mcp_coefficient_output.f90) 的左右态约定。[RCI 矩阵组装](../../src/apps/rci/assemble_hamiltonian_block.f90)
 按以下顺序读取缓冲区标签，并按类型码选用相应的 Breit 径向积分。
 
 | 原名 | 迁移后 | 含义 |
@@ -39,8 +39,8 @@ Fortran 源码共有 33 个声明实体。`TALK` 的 9 个形参和 `CXK` 的 7 
 
 映射适用于 [库模块及接口](../../src/lib/breit_angular_support/breit_radial_integral_coefficients.f90)、
 [外部兼容入口](../../src/lib/breit_angular_support/breit_radial_integral_coefficients_external.f90)、
-[串行 RCI 实现](../../src/apps/rci/cxk.f90)和 [MPI RCI 实现](../../src/apps/rci_mpi/cxk.f90)。
-形参的含义来自实际计算系数的 RCI 过程，以及构造轨道索引和 `2κ` 数组的 [BREID](../../src/apps/rci/breid.f90)。
+[串行 RCI 实现](../../src/apps/rci/breit_radial_integral_factors.f90)和 [MPI RCI 实现](../../src/apps/rci_mpi/breit_radial_integral_factors.f90)。
+形参的含义来自实际计算系数的 RCI 过程，以及构造轨道索引和 `2κ` 数组的 [BREID](../../src/apps/rci/accumulate_closed_shell_breit.f90)。
 
 | 原名 | 迁移后 | 含义 |
 | --- | --- | --- |
@@ -92,7 +92,7 @@ RCI 版 `TALK` 只登记绝对值大于 `eps` 的系数。该差异与调试输�
 ## 命名迁移验证
 
 - 使用 GNU Fortran 15.3.0 构建启用 MPI 的 Release 和 Check 配置。Release 全部 110 项 CTest 通过。
-  Check 通过 109 项，`rci_mpi_breit` 在 [ZKF](../../src/apps/rci_mpi/zkf.f90#L102) 触发 `SIGFPE`。
+  Check 通过 109 项，`rci_mpi_breit` 在 [ZKF](../../src/apps/rci_mpi/evaluate_breit_hartree_z.f90#L102) 触发 `SIGFPE`。
   用同一 Check 配置重新链接迁移前的 RCI MPI `TALK` 和 `CXK` 后，复现相同位置的异常。
 - 使用现有 7 个 Ni I `J=0+` CSF 的回归夹具，对照迁移前后的 Release 串行和双进程 MPI 程序。
   Breit 启用和关闭的四组对照中，各自的 `case.cm` 逐字节一致。

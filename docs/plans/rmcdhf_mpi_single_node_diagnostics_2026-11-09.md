@@ -39,16 +39,16 @@ Linux 的 D 表示不可中断等待，常见于 I/O 路径；仅看此状态不
 
 ### 2.1 诊断必须覆盖完整计算链
 
-[SCFmpi](../../src/apps/rmcdhf_mpi/scfmpi.f90) 在 EOL 路径先执行 MATRIX/NEWCO，
+[SCFmpi](../../src/apps/rmcdhf_mpi/run_scf_iterations_mpi.f90) 在 EOL 路径先执行 MATRIX/NEWCO，
 每轮再执行 SETLAG、按顺序更新未冻结轨道、输出轨道，随后重新构造矩阵和更新 CI。
-[IMPROVmpi](../../src/apps/rmcdhf_mpi/improvmpi.f90) 包含系数/势构造、系数收集及径向求解。
+[IMPROVmpi](../../src/apps/rmcdhf_mpi/improve_orbital_mpi.f90) 包含系数/势构造、系数收集及径向求解。
 因此应覆盖加载 MCP、矩阵构造、初猜/对角化、SETLAG、轨道更新和输出，
 不能把最后一行 stdout 当作所有 rank 的当前执行位置，也不能仅围绕一次观察加计时。
 
 ### 2.2 SETLAG 的冻结侧势构造是独立优化候选
 
-[普通 SETLAGmpi](../../src/apps/rmcdhf_mpi/setlagmpi.f90) 与
-[memory SETLAGmpi](../../src/apps/rmcdhf_mem_mpi/setlagmpi.f90) 都先为轨道对 J、M
+[普通 SETLAGmpi](../../src/apps/rmcdhf_mpi/calculate_lagrange_multipliers_mpi.f90) 与
+[memory SETLAGmpi](../../src/apps/rmcdhf_mem_mpi/calculate_lagrange_multipliers_mpi.f90) 都先为轨道对 J、M
 执行 `SETCOF → YPOT → XPOT → DACON`，保存两侧势，再根据 `LFIX` 选择公式。
 
 - 当 J 冻结、M 可变时，最终分支只使用 M 侧势；J 侧势已经构造，但不参与该分支的最终表达式。
@@ -67,11 +67,11 @@ Linux 的 D 表示不可中断等待，常见于 I/O 路径；仅看此状态不
 
 ### 2.3 普通版文件扫描与 memory 版内存扫描
 
-[普通 SETCOF](../../src/apps/rmcdhf_mpi/setcof.f90) 会 rewind 并扫描 MCP 记录，
+[普通 SETCOF](../../src/apps/rmcdhf_mpi/assemble_orbital_potential_coefficients.f90) 会 rewind 并扫描 MCP 记录，
 按轨道筛选贡献、读取 IROW/系数并调用 DSUBRS 收缩。
-[memory SETCOF](../../src/apps/rmcdhf_mem_mpi/setcof.f90) 仍有重复标签扫描、IROW 分配、
-系数复制和收缩；[read1_mem](../../src/apps/rmcdhf_mem_mpi/read1_mem.f90) 与
-[read3_mem](../../src/apps/rmcdhf_mem_mpi/read3_mem.f90) 从内存数组取数，名称中的 read 不代表这里执行磁盘读。
+[memory SETCOF](../../src/apps/rmcdhf_mem_mpi/assemble_orbital_potential_coefficients.f90) 仍有重复标签扫描、IROW 分配、
+系数复制和收缩；[read1_mem](../../src/apps/rmcdhf_mem_mpi/load_mcp_records_into_memory.f90) 与
+[read3_mem](../../src/apps/rmcdhf_mem_mpi/read_mcp_coefficients_into_memory.f90) 从内存数组取数，名称中的 read 不代表这里执行磁盘读。
 
 memory 版消除了这部分运行期文件读取，不等于消除了全程序 I/O、内存复制、分配或页等待。
 两种程序都出现 D，不能直接归因于普通版 SETCOF 的 MCP 读取。
@@ -81,8 +81,8 @@ memory 版消除了这部分运行期文件读取，不等于消除了全程序 
 
 | 源码事实 | 含义及待验证边界 |
 | --- | --- |
-| [MANEIGmpi](../../src/apps/rmcdhf_mpi/maneigmpi.f90) 每 rank 分配 `LWORK = 2*NCF*LIM + 2*LIM*LIM + 11*LIM + NVECT`，`LIM=min(NCF,2*NVECT+80)` | 工作区不随 rank 数自动均分；NCF 是当前 block 的规模，NVECT 是该 block 所选根的最高编号。不能把总 CSF 数和根数量直接代入 |
-| [MATRIXmpi](../../src/apps/rmcdhf_mpi/matrixmpi.f90) 的 EMT/IROW 按本 rank 的 NELMNT 分配 | 不能说每个 rank 都保存完整稀疏 Hamiltonian；向量/工作区复制和矩阵分片是两回事 |
+| [MANEIGmpi](../../src/apps/rmcdhf_mpi/diagonalize_hamiltonian_block_mpi.f90) 每 rank 分配 `LWORK = 2*NCF*LIM + 2*LIM*LIM + 11*LIM + NVECT`，`LIM=min(NCF,2*NVECT+80)` | 工作区不随 rank 数自动均分；NCF 是当前 block 的规模，NVECT 是该 block 所选根的最高编号。不能把总 CSF 数和根数量直接代入 |
+| [MATRIXmpi](../../src/apps/rmcdhf_mpi/solve_hamiltonian_blocks_mpi.f90) 的 EMT/IROW 按本 rank 的 NELMNT 分配 | 不能说每个 rank 都保存完整稀疏 Hamiltonian；向量/工作区复制和矩阵分片是两回事 |
 | [SPICMVmpi](../../src/lib/mpi/mpi_sparse_matrix_product.f90) 按列轮转分工，但每次清零完整结果并归约 `N*M` 个 double | N=200 万、M=1 时应用缓冲区为 16 MB；这不是实际互连传输总量。列数相近也不保证非零元/计算量相近 |
 | [gdsummpi](../../src/lib/mpi/mpi_utilities.f90) 分配临时 y、初始化、Allreduce 后复制回 x | 可测量临时缓冲与拷贝开销；原位归约等改写需独立回归，不能预先承诺收益 |
 | [INIESTmpi](../../src/lib/mpi/mpi_initial_eigenvectors.f90) 合并初猜矩阵后各 rank 分别调用 DSPEVX；调用方上限为 4000 | 有重复求解候选，可评估单 rank 求解后广播，保留状态/错误传播；只解释相关初猜阶段，不能外推全程 |
@@ -156,7 +156,7 @@ collective 内的时间包含等待慢 rank 的可能性，不能全记成通信
 在核实实际线程控制后，可比较 12/24/48 ranks 或先做 24/48 ranks；该矩阵尚未执行。
 
 **每个 rank 配置须重新生成或使用经验证的工具重新分片 MCP，并核对内容。**
-[SETMCP](../../src/apps/rmcdhf_mpi/setmcp.f90) 检查文件头的 MYID/NPROCS，
+[SETMCP](../../src/apps/rmcdhf_mpi/connect_mcp_files.f90) 检查文件头的 MYID/NPROCS，
 不能直接复用 48-rank 文件测试 24 ranks。
 固定输入与初始轨道，记录初次读取和缓存已热的运行条件，分别报告，避免靠清系统缓存制造对照。
 

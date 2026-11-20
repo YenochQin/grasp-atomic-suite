@@ -61,8 +61,8 @@ if(Python3_Interpreter_FOUND)
         endif()
         set(target test.ris4_cache_${variant})
         add_executable(${target} ris4/cache_io.F90
-            "${PROJECT_SOURCE_DIR}/src/apps/ris4/angdata.f90"
-            "${PROJECT_SOURCE_DIR}/src/apps/ris4/angdata_I.f90")
+            "${PROJECT_SOURCE_DIR}/src/apps/ris4/open_isotope_shift_angular_cache.f90"
+            "${PROJECT_SOURCE_DIR}/src/apps/ris4/open_isotope_shift_angular_cache_interface.f90")
         setup_fortran_modules(${target})
         target_link_libraries_Fortran(${target} PRIVATE grasp_shared)
         set(cache_mpi_arguments)
@@ -184,8 +184,8 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
     if(TARGET ${variant})
         set(app "${PROJECT_SOURCE_DIR}/src/apps/${variant}")
         add_executable(test.descriptor_weights_${variant} descriptor_weights.f90
-            "${app}/getaldwt.f90" "${app}/getaldwt_I.f90"
-            "${app}/itjpo.f90" "${app}/itjpo_I.f90")
+            "${app}/read_al_level_weights.f90" "${app}/read_al_level_weights_interface.f90"
+            "${app}/basis_csf_two_j_plus_one.f90" "${app}/basis_csf_two_j_plus_one_interface.f90")
         setup_fortran_modules(test.descriptor_weights_${variant})
         target_link_libraries_Fortran(test.descriptor_weights_${variant} PRIVATE core grasp_shared)
         add_test(NAME descriptor_weights_${variant} COMMAND test.descriptor_weights_${variant})
@@ -202,14 +202,14 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
         set(target test.descriptor_input_${variant})
         set(mpi_arguments)
         if(variant MATCHES "_mpi$")
-            set(loader setcslmpi)
+            set(loader load_csf_basis_data_mpi)
             set(angular rangular_mpi)
         else()
-            set(loader setcsl)
+            set(loader load_csf_basis_data)
             set(angular rangular)
         endif()
         add_executable(${target} descriptor_rmcdhf.F90 "${app}/${loader}.f90"
-            "${app}/${loader}_I.f90" "${app}/setmcp.f90" "${app}/setmcp_I.f90")
+            "${app}/${loader}_interface.f90" "${app}/connect_mcp_files.f90" "${app}/connect_mcp_files_interface.f90")
         setup_fortran_modules(${target})
         target_link_libraries_Fortran(${target} PRIVATE core grasp_shared)
         if(variant MATCHES "_mpi$")
@@ -218,12 +218,12 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
             set(mpi_arguments --mpiexec "${MPIEXEC_EXECUTABLE}")
         endif()
         if(NOT variant MATCHES "_mpi$")
-            target_sources(${target} PRIVATE "${app}/mpi_s.f90")
+            target_sources(${target} PRIVATE "${app}/serial_mpi_context.f90")
         endif()
         if(variant MATCHES "mem")
-            target_sources(${target} PRIVATE "${app}/setmcp_mem.f90" "${app}/setmcp_mem_I.f90"
-                "${app}/rmcdhf_mem_C.f90" "${app}/systemmem.f90" "${app}/systemmem_I.f90"
-                "${app}/systemfreemem.f90" "${app}/systemfreemem_I.f90")
+            target_sources(${target} PRIVATE "${app}/cache_mcp_files.f90" "${app}/cache_mcp_files_interface.f90"
+                "${app}/rmcdhf_mcp_memory.f90" "${app}/query_total_system_memory.f90" "${app}/query_total_system_memory_interface.f90"
+                "${app}/query_available_system_memory.f90" "${app}/query_available_system_memory_interface.f90")
         endif()
         add_test(NAME descriptor_input_${variant} COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/test_rmcdhf_descriptors.py
@@ -262,16 +262,11 @@ foreach(variant rtransition rtransition_phase rtransition_mpi)
     if(TARGET ${variant})
         set(app "${PROJECT_SOURCE_DIR}/src/apps/${variant}")
         set(target test.descriptor_merge_${variant})
-        if(variant MATCHES "_mpi$")
-            set(suffix mpi)
-        else()
-            set(suffix "")
-        endif()
         add_executable(${target} descriptor_merge.F90
-            "${app}/mrgcsl${suffix}.f90" "${app}/mrgcsl${suffix}_I.f90"
-            "${app}/ldcsl1${suffix}.f90" "${app}/ldcsl1${suffix}_I.f90"
-            "${app}/ldcsl2${suffix}.f90" "${app}/ldcsl2${suffix}_I.f90"
-            "${app}/merg12${suffix}.f90" "${app}/merg12${suffix}_I.f90")
+            "${app}/merge_transition_csf_bases.f90" "${app}/merge_transition_csf_bases_interface.f90"
+            "${app}/load_initial_transition_basis.f90" "${app}/load_initial_transition_basis_interface.f90"
+            "${app}/load_final_transition_basis.f90" "${app}/load_final_transition_basis_interface.f90"
+            "${app}/merge_transition_basis_records.f90" "${app}/merge_transition_basis_records_interface.f90")
         setup_fortran_modules(${target})
         target_link_libraries_Fortran(${target} PRIVATE core grasp_shared)
         set(mpi_arguments)

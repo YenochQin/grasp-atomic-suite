@@ -13,8 +13,8 @@ program npol_consumers
     use scf_radial_potentials, only: YP, XP, XQ
     use scf_iteration_state, only: NYCOF, NDCOF, NDA, DA
     use radial_wavefunctions, only: MF => orbital_last_grid_index, PF => radial_large_components, QF => radial_small_components
-    use ypot_I, only: ypot
-    use dacon_I, only: dacon
+    use build_direct_radial_potential_interface, only: build_direct_radial_potential
+    use apply_off_diagonal_integrals_interface, only: apply_off_diagonal_integrals
     use one_electron_radial_integral, only: rinti
 #ifdef NPOL_MPI
     use mpi, only: mpi_allreduce, mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_double_precision, &
@@ -70,11 +70,11 @@ program npol_consumers
     call npol_init("missing.inp", 2.0_real64, N, R, ZZ, status, message)
 #endif
     call require(status == 0 .and. all(ZZ == coul), "disabled preserves full ZZ exactly")
-    call YPOT(1)
+    call build_direct_radial_potential(1)
     call require(all(YP(:N) == base_yp(:N)), "disabled YPOT unchanged")
     XP = 0
     XQ = 0
-    call DACON()
+    call apply_off_diagonal_integrals()
     call require(all(XP == base_xp) .and. all(XQ == base_xq), "disabled DACON unchanged")
     do j = 1, 2
         do mode = 0, 1
@@ -90,7 +90,7 @@ program npol_consumers
     call npol_init("npol.inp", 2.0_real64, N, R, ZZ, status, message)
 #endif
     call require(status == 0, message)
-    call YPOT(1)
+    call build_direct_radial_potential(1)
     call require(all(YP(:N) == ZZ(:N)/ranks), "production YPOT contribution")
 #ifdef NPOL_MPI
     call MPI_Allreduce(YP, reduced, N, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, ierr)
@@ -102,7 +102,7 @@ program npol_consumers
     end do
     XP = 0
     XQ = 0
-    call DACON()
+    call apply_off_diagonal_integrals()
     do i = 2, N
         delta = ZZ(i)-coul(i)
         call near(XP(i)-base_xp(i), -q*delta*QF(i,2)/C, "production DACON XP sign and scale")
@@ -140,11 +140,11 @@ program npol_consumers
 contains
     subroutine snapshot()
         integer :: jj, mm
-        call YPOT(1)
+        call build_direct_radial_potential(1)
         base_yp = YP
         XP = 0
         XQ = 0
-        call DACON()
+        call apply_off_diagonal_integrals()
         base_xp = XP
         base_xq = XQ
         do jj = 1, 2

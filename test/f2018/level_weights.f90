@@ -1,7 +1,7 @@
 program level_weights
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use, intrinsic :: iso_fortran_env, only: real64
-    use getaldwt_I, only: getaldwt
+    use read_al_level_weights_interface, only: read_al_level_weights
     implicit none (type, external)
     real(real64) :: guarded(5), expected(3)
     character(16) :: scenario
@@ -17,7 +17,7 @@ program level_weights
         error stop "Unknown weight fixture"
     end select
     guarded=-99
-    call getaldwt(3,guarded(2:4))
+    call read_al_level_weights(3,guarded(2:4))
     if(.not.all(ieee_is_finite(guarded))) error stop "Nonfinite weights"
     if(maxval(abs(guarded(2:4)-expected))>1e-14_real64) error stop "Level weight values"
     if(abs(sum(guarded(2:4))-1.0_real64)>1e-14_real64) error stop "Level weight normalization"

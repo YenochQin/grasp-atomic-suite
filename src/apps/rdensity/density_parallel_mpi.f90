@@ -1,15 +1,20 @@
 ! MPI processes isolate the mutable angular-library module state.
 module density_parallel
+    ! Module dependencies
     use mpi_csf_basis_input, only: load_density_basis => load_csf_basis_mpi
     use, intrinsic :: iso_fortran_env, only: real64
     use mpi, only: mpi_abort, mpi_bcast, mpi_character, mpi_comm_world, mpi_integer
     use mpi_utilities, only: mpix_startup, mpix_shutdown, gdrsummpi_root
     use mpi_state, only: rank => mpi_rank, workers => mpi_process_count, processor_name, processor_name_length
     implicit none (type, external)
+
+    ! Module interface
     private
     public :: rank, workers, parallel_start, parallel_finish
     public :: broadcast_options, sum_density, density_fail
     public :: load_density_basis
+
+    ! Module state
     integer :: start_count
 contains
     subroutine parallel_start
@@ -23,8 +28,11 @@ contains
     end subroutine parallel_finish
 
     subroutine broadcast_options(name, nci, ndef, ordering, status)
+        ! Arguments
         character(*), intent(inout) :: name
         integer, intent(inout) :: nci, ndef, ordering, status
+
+        ! Local declarations
         integer :: mpi_status
         call mpi_bcast(name, len(name), mpi_character, 0, mpi_comm_world, mpi_status)
         call mpi_bcast(nci, 1, mpi_integer, 0, mpi_comm_world, mpi_status)
@@ -34,13 +42,17 @@ contains
     end subroutine broadcast_options
 
     subroutine sum_density(matrix)
+        ! Arguments
         real(real64), contiguous, intent(inout) :: matrix(:,:)
         ! Reduce one state's NW*NW block at a time, using the suite helper.
         call gdrsummpi_root(matrix, size(matrix))
     end subroutine sum_density
 
     subroutine density_fail(message)
+        ! Arguments
         character(*), intent(in) :: message
+
+        ! Local declarations
         integer :: mpi_status
         write(*,*) "RDENSITY rank ", rank, ": ", message
         call mpi_abort(mpi_comm_world, 1, mpi_status)

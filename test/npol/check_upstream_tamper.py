@@ -9,7 +9,7 @@ import shutil
 import tempfile
 
 from check_upstream import main as verify
-from check_upstream import suite_source_path
+from check_upstream import APP_SYMBOLS_SNAPSHOT, suite_source_path
 
 
 def main() -> None:
@@ -18,7 +18,12 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="upstream-tamper-") as temporary:
         work = Path(temporary)
         migration = json.loads((root / "docs/reference/rmcdhf_descriptor_snapshot.json").read_text())
-        paths = [suite_source_path(root, name) for name in manifest["files"] if name not in migration["removed"]]
+        app_symbols = json.loads((root / APP_SYMBOLS_SNAPSHOT).read_text())
+        renamed_paths = {name: record["suite_path"] for name, record in app_symbols["files"].items()}
+        paths = [
+            suite_source_path(root, name, renamed_paths)
+            for name in manifest["files"] if name not in migration["removed"]
+        ]
         paths += list((root / "docs/reference").glob("rmcdhf_*.json"))
         for source in paths:
             target = work / source.relative_to(root)
@@ -26,16 +31,18 @@ def main() -> None:
             shutil.copyfile(source, target)
         with contextlib.redirect_stdout(io.StringIO()):
             verify(work)
-        for relative in ("src/apps/rmcdhf/itjpo.f90", "src/apps/rmcdhf/setcsl.f90", "src/apps/rmcdhf/scf.f90", "src/apps/rmcdhf/solve.f90",
-                         "src/apps/rmcdhf/fco.f90",
-                         "src/apps/rmcdhf/mpi_s.f90",
-                         "src/apps/rmcdhf/rscfvu.f90",
-                         "src/apps/rmcdhf/maneig.f90",
+        for relative in ("src/apps/rmcdhf/basis_csf_two_j_plus_one.f90", "src/apps/rmcdhf/load_csf_basis_data.f90", "src/apps/rmcdhf/run_scf_iterations.f90", "src/apps/rmcdhf/solve_radial_orbital.f90",
+                         "src/apps/rmcdhf/direct_angular_coefficient.f90",
+                         "src/apps/rmcdhf/serial_mpi_context.f90",
+                         "src/apps/rmcdhf/rmcdhf_main.f90",
+                         "src/apps/rmcdhf/diagonalize_hamiltonian_block.f90",
                          "src/apps/rmcdhf/CMakeLists.txt",
                          "src/apps/rmcdhf_mpi/Makefile",
-                         "src/apps/rmcdhf_mpi/getaldmpi.f90",
-                         "src/apps/rmcdhf/strsum.f90",
+                         "src/apps/rmcdhf_mpi/read_al_average_options_mpi.f90",
+                         "src/apps/rmcdhf/write_input_summary.f90",
                          "docs/reference/rmcdhf_io_units_snapshot.json",
+                         "docs/reference/rmcdhf_app_variable_names_snapshot.json",
+                         "docs/reference/rmcdhf_app_symbols_snapshot.json",
                          "docs/reference/rmcdhf_grasp_mpi_naming_snapshot.json",
                          "docs/reference/rmcdhf_grasp_shared_naming_snapshot.json",
                          "docs/reference/rmcdhf_davidson_naming_snapshot.json",

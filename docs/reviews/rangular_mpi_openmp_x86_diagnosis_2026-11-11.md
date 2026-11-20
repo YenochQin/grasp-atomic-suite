@@ -86,8 +86,8 @@ MPI 输出为 rank 分片；比较器按 CSF 对及系数内容进行语义对�
 
 对应实现为 [rangular_parallel.f90](../../src/appl/rangular/openmp/rangular_parallel.f90) 的
 `prepare_batch` / `load_parallel_pair`，以及
-[mcp_gg.f90](../../src/apps/rangular/mcp_gg.f90) 和
-[mcpmpi_gg.f90](../../src/apps/rangular_mpi/mcpmpi_gg.f90)。
+[mcp_gg.f90](../../src/apps/rangular/compute_mcp_angular_coefficients.f90) 和
+[mcpmpi_gg.f90](../../src/apps/rangular_mpi/compute_mcp_angular_coefficients_mpi.f90)。
 MPI 在输入、block 切换和结束时仍有协调，不能把它描述为完全没有同步。
 
 为验证并行范围，提取原输入第 4 个完整 block：6,276 CSFs、19,697,226 候选对、11,881,459 项最终贡献。
@@ -201,7 +201,7 @@ Open MPI 支持 [同节点共享内存通信](https://docs.open-mpi.org/en/v5.0.
 2. **让 worker 完成更多结果处理。** 在 worker 内过滤并生成紧凑贡献，设计确定性的列计数/前缀位置编号，
    减少原始结果双重复制和主线程逐对重放。需要明确最终 MCP 的顺序、位置号和重复贡献契约。
 3. **并行化排序及输出阶段。** 可按系数通道或分片安排独立任务，再完成确定性输出。
-   现有 [sortmem.f90](../../src/apps/rangular/sortmem.f90) 使用固定文件 unit 29 和共享数组接口，
+   现有 [sortmem.f90](../../src/apps/rangular/sort_mcp_coefficients_in_memory.f90) 使用固定文件 unit 29 和共享数组接口，
    不能直接在外层添加 OpenMP directive；先显式传入独立数据和文件上下文。
 4. **再优化运行参数和内核。** PASSIVE 可作为减少忙等的候选，但不是解决串行尾部的方法。
    TLS、缓存未命中、false sharing、NUMA 等要有新的针对性证据后再处理。

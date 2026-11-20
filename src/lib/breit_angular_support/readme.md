@@ -17,4 +17,4 @@
 
 ## 链接与数值实现
 
-两个 `_external.f90` 文件各自产生一个独立的静态库成员。串行和 MPI RCI 在链接时提供自己的 `TALK` 和 `CXK`。RCI 的 `TALK` 只记录绝对值大于 `eps` 的系数，`CXK` 在应用目录中计算 Breit 有效相互作用展开中各径向积分项的系数。 [串行 RCI 的 CXK](../../apps/rci/cxk.f90) · [MPI RCI 的 CXK](../../apps/rci_mpi/cxk.f90)
+两个 `_external.f90` 文件各自产生一个独立的静态库成员。串行和 MPI RCI 在链接时提供自己的 `TALK` 和 `CXK`。RCI 的 `TALK` 只记录绝对值大于 `eps` 的系数，`CXK` 在应用目录中计算 Breit 有效相互作用展开中各径向积分项的系数。 [串行 RCI 的 CXK](../../apps/rci/breit_radial_integral_factors.f90) · [MPI RCI 的 CXK](../../apps/rci_mpi/breit_radial_integral_factors.f90)

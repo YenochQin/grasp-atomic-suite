@@ -1,8 +1,0 @@
-      module ncharg_i
-      implicit none (type, external)
-      interface
-      subroutine ncharg
-      implicit none (type, external)
-      end subroutine ncharg
-      end interface
-      end module ncharg_i

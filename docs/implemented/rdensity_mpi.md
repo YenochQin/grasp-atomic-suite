@@ -62,7 +62,7 @@ new mixing coefficients are needed.
   Only rank zero reads interactive options, then broadcasts them. Each rank
   independently loads the read-only CSFs, nuclear data, wavefunctions and mixing
   coefficients using the existing suite libraries. No library was copied.
-- [natorbnew.f90](../../src/apps/rdensity/natorbnew.f90) assigns columns cyclically,
+- [natorbnew.f90](../../src/apps/rdensity/density_calculation.f90) assigns columns cyclically,
   `IC=rank+1,NCF,workers`, as in RHFS/RIS. Each process has its own mutable angular
   workspace. Exact J/parity and one-body occupation selection rules reject zero
   contributions before `ONESCALAR`; the coefficient cutoff remains `1D-10`.

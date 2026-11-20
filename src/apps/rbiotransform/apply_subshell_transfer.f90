@@ -1,0 +1,135 @@
+!***********************************************************************
+!                                                                      *
+subroutine apply_subshell_transfer(input_mixing_coefficients,csf_count,level_count,i,l,t,subshell_count, &
+    & transformed_mixing_coefficients,ntestg)
+    ! Module dependencies
+    use, intrinsic :: iso_fortran_env, only: output_unit
+    !                                                                      *
+    !   Calculate the action of the  operator                              *
+    !   Sum( j) T(jl) E(jl,il) on a set of vectors                         *
+    !                                                                      *
+    !   only j<i terms ! included
+    !                                                                      *
+    !   Modification of the TI1TV program for MCHF                         *
+    !                                                                      *
+    !   Written by Per Jonsson                                             *
+    !                                                                      *
+    !   =====                                                              *
+    !   Input                                                              *
+    !   =====                                                              *
+    !   CIIN  : Input CI vectors                                           *
+    !   NCSCF : Length of CI expansion                                     *
+    !   NCIV  : Number of CI vectors                                       *
+    !   I     : Shell number                                               *
+    !   L     : L value of shells of this excitation                       *
+    !   NSHL  : Number of shells with this L                               *
+    !   T     : The integrals T(*,il)                                      *
+    !                                                                      *
+    !   ======                                                             *
+    !   Output                                                             *
+    !   ======                                                             *
+    !                                                                      *
+    !   CIOUT : List of output CI vectors                                  *
+    !                                                                      *
+    !***********************************************************************
+    !...Translated by Charlotte Froese Fischer
+    !                       Gediminas Gaigalas  10/05/17
+    use, intrinsic :: iso_fortran_env, only: real64
+    use grasp_parameters,   only: orbital_index_radix
+    use mcp_coefficient_storage, only: cnn, intgrl, intptr, jann, jbnn, ncoeff, nintg
+    use biorthogonal_subshell_mapping, only: max_orbitals, nlmax, nshlp, nshlpp
+    use biorthogonal_orbital_order, only: nordff, nordii
+
+    ! Procedure interfaces
+    use fill_vector_interface, only: fill_vector
+    use write_matrix_interface, only: write_matrix
+    implicit none (type, external)
+
+    ! Arguments
+    integer, intent(in) :: csf_count, level_count, subshell_count, i, l, ntestg
+    real(real64), intent(in) :: input_mixing_coefficients(csf_count, level_count)
+    real(real64), intent(in) :: t(subshell_count)
+    real(real64), intent(out) :: transformed_mixing_coefficients(csf_count, level_count)
+
+    ! Local constants
+    integer, parameter :: orbital_label_radix=orbital_index_radix
+
+    ! Local declarations
+    integer :: ntestl, ntest, nfound, k, ia, ib, ir, ira, irb, ifirst, &
+        j, ileft, iright, ivec, ielmnt
+    real(real64) :: racah, x
+    !
+    ntestl = 00
+    ntest = max(ntestl,ntestg)
+    ntest = 000
+    !
+    if(ntest>=10) write(output_unit,*) " Entering TI1TV"
+
+    call fill_vector(transformed_mixing_coefficients,0.0_real64,level_count*csf_count)
+    !
+    !.  Obtain address of first coupling coefficient for h(jl,il) :  IFIRST
+    !.  Obtain number of        coupling coefficient for h(jl,il) :  NFOUND
+    !
+    !        NFOUND : Number of coefficients obtained
+    !
+    nfound = 0
+    do k = 1,nintg
+        ia = intgrl(k)/orbital_label_radix
+        ib = mod(intgrl(k),orbital_label_radix)
+        !
+        !   Determine the ordernumber of the orbitals I, IA and IB within the
+        !   shell with symmetry L
+        !
+        ir = nshlpp(l,nshlp(l,i))
+        ira = nshlpp(l,ia)
+        irb = nshlpp(l,ib)
+
+        if (ir==irb.and.ira<irb) then
+            if (k==1) then
+                ifirst = 1
+            else
+                ifirst = intptr(k-1) + 1
+            end if
+            nfound = intptr(k) - ifirst + 1
+
+            do ielmnt = 1, nfound
+                racah = cnn(ifirst-1+ielmnt)
+                j = ira
+                x = t(j)*racah
+                !ww            IF (NORDII.EQ.0.AND.NORDFF.EQ.0) THEN
+                !
+                !  Expression for normal orbital ordering
+                !
+                ileft = jann(ifirst-1+ielmnt)
+                iright = jbnn(ifirst-1+ielmnt)
+                !ww            ELSEIF (NORDII.EQ.1.AND.NORDFF.EQ.1) THEN
+                !
+                !  Expression for reverse orbital ordering
+                !
+                !ww              IRIGHT = JANN(IFIRST-1+IELMNT)
+                !ww              ILEFT = JBNN(IFIRST-1+IELMNT)
+                !ww            ELSE
+                !ww              WRITE(*,*) 'SOMETHING WRONG'
+                !ww              STOP
+                !ww            ENDIF
+                do ivec =1, level_count
+                    transformed_mixing_coefficients(ileft,ivec) =                                       &
+                        &        transformed_mixing_coefficients(ileft,ivec) + x*input_mixing_coefficients(iright,ivec)
+                end do
+            end do
+        end if
+    end do
+    !
+    if(ntest>=100) then
+        write(output_unit,*)
+        write(output_unit,*) " Input and output vectors from TI1TV I,L",i,l
+        call write_matrix(input_mixing_coefficients,csf_count,level_count,csf_count,level_count)
+        write(output_unit,*)
+        call write_matrix(transformed_mixing_coefficients,csf_count,level_count,csf_count,level_count)
+        write(output_unit,*)
+    end if
+    !
+    if(ntest>=10) write(output_unit,*) " LEAVING TI1TV"
+
+    return
+end subroutine apply_subshell_transfer

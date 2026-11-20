@@ -130,7 +130,7 @@ Shell      e           p0        gamma        <r>      MTP  SRC
 
 ## 修复与仓库边界
 
-[SOLVH](../../src/apps/rwfnestimate/solvh.f90) 保留 TF 势、节点目标、精度阈值和
+[SOLVH](../../src/apps/rwfnestimate/solve_homogeneous_radial_equation.f90) 保留 TF 势、节点目标、精度阈值和
 迭代上限，修改搜索边界更新：
 
 ```fortran

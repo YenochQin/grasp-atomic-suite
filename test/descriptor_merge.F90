@@ -1,6 +1,6 @@
 program descriptor_merge
    use iso_fortran_env, only: int8
-   use mrgcsl_i, only: mrgcsl
+   use merge_transition_csf_bases_interface, only: merge_transition_csf_bases
    use orbital_csf_basis, only: orbital_count, csf_count, csf_subshell_occupations, orbital_principal_n, orbital_kappa
    use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
    use transition_basis_blocks, only: nblocki, nblockf, ncfi, ncff
@@ -25,7 +25,7 @@ program descriptor_merge
    call get_command_argument(1,scenario)
    names(1)="left"
    names(2)="right"
-   call mrgcsl(names)
+   call merge_transition_csf_bases(names)
    if (trim(scenario) == "multi") then
       if (orbital_count /= 6 .or. csf_count /= 5) error stop "Merged dimensions"
       if (any(orbital_principal_n(:6) /= [1,2,3,4,5,2])) error stop "Merged principal numbers"

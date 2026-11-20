@@ -14,9 +14,12 @@ from pathlib import Path
 import sys
 
 
-def suite_source_path(root: Path, upstream_path: str) -> Path:
-    # Historical snapshot keys keep the original source directory.
-    return root / upstream_path.replace("src/appl/", "src/apps/", 1)
+APP_SYMBOLS_SNAPSHOT = Path("docs/reference/rmcdhf_app_symbols_snapshot.json")
+
+
+def suite_source_path(root: Path, upstream_path: str, renamed_paths: dict[str, str]) -> Path:
+    # Historical snapshot keys keep the original source directory and filenames.
+    return root / renamed_paths.get(upstream_path, upstream_path.replace("src/appl/", "src/apps/", 1))
 
 
 def reverse_reviewed_edits(text: str, path: Path, edits: list[dict[str, str | int]]) -> str:
@@ -391,7 +394,8 @@ def main(root: Path) -> None:
     for name, record in state_files["files"].items():
         assert record["before_suite_sha256"] == io_units["files"][name]["after_suite_sha256"], name
     reviewed_io = io_units["files"] | state_files["files"]
-    app_names = json.loads((root / "docs/reference/rmcdhf_app_variable_names_snapshot.json").read_text())
+    app_names_path = root / "docs/reference/rmcdhf_app_variable_names_snapshot.json"
+    app_names = json.loads(app_names_path.read_text())
     assert app_names["schema_version"] == 1, "Unknown app variable names snapshot schema"
     assert hashlib.sha256(state_files_path.read_bytes()).hexdigest() == app_names["previous_manifest_sha256"], \
         "State-name snapshot changed; review app variable naming provenance"
@@ -401,23 +405,55 @@ def main(root: Path) -> None:
         assert record["before_suite_sha256"] == previous[name]["after_suite_sha256"], \
             f"App variable names snapshot has a different predecessor: {name}"
     reviewed_migration = reviewed_io | app_names["files"]
+    app_symbols_path = root / APP_SYMBOLS_SNAPSHOT
+    app_symbols = json.loads(app_symbols_path.read_text())
+    assert app_symbols["schema_version"] == 1, "Unknown app symbols snapshot schema"
+    assert hashlib.sha256(app_names_path.read_bytes()).hexdigest() == app_symbols["previous_manifest_sha256"], \
+        "App variable names snapshot changed; review app symbol naming provenance"
+    assert app_symbols["files"].keys() <= expected.keys()
+    renamed_paths = {}
+    previous = reviewed_files | reviewed_migration
+    for name, record in app_symbols["files"].items():
+        prior = previous[name]["after_suite_sha256"] if name in previous else expected[name]["sha256"]
+        assert record["before_suite_sha256"] == prior, f"App symbols snapshot has a different predecessor: {name}"
+        suite_path = Path(record["suite_path"])
+        previous_path = Path(name.replace("src/appl/", "src/apps/", 1))
+        assert suite_path.parent == previous_path.parent, f"Unexpected app sources directory: {name}"
+        renamed_paths[name] = suite_path.as_posix()
+    reviewed_migration |= app_symbols["files"]
+
+    app_style = json.loads((root / "docs/reference/rmcdhf_app_source_style_snapshot.json").read_text())
+    assert app_style["schema_version"] == 1, "Unknown app source style snapshot schema"
+    assert hashlib.sha256(app_symbols_path.read_bytes()).hexdigest() == app_style["previous_manifest_sha256"], \
+        "App symbols snapshot changed; review app source style provenance"
+    assert set(app_style["files"]).issubset(
+        name for name in app_symbols["files"] if name.endswith(".f90")
+    )
+    for name, record in app_style["files"].items():
+        assert record["before_suite_sha256"] == app_symbols["files"][name]["after_suite_sha256"], \
+            f"App source style snapshot has a different predecessor: {name}"
+    reviewed_migration |= app_style["files"]
+
     actual = {
-        path.relative_to(root).as_posix().replace("src/apps/", "src/appl/", 1)
+        path
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")
         for path in (root / "src/apps" / name).iterdir()
         if path.suffix in (".f90", ".sh", ".txt") or path.name == "Makefile"
     }
-    assert actual == set(expected), (actual - set(expected), set(expected) - actual)
+    expected_paths = {name: suite_source_path(root, name, renamed_paths) for name in expected}
+    paths = set(expected_paths.values())
+    assert len(paths) == len(expected), "App source paths must be unique"
+    assert actual == paths, (actual - paths, paths - actual)
     for relative, record in expected.items():
-        path = suite_source_path(root, relative)
+        path = expected_paths[relative]
+        if relative in reviewed_migration:
+            assert reviewed_migration[relative]["after_suite_sha256"] == hashlib.sha256(path.read_bytes()).hexdigest(), \
+                f"Unreviewed deviation from app migration snapshot: {relative}"
+            continue
         if relative in reviewed_files:
             source = path.read_bytes()
             reviewed = reviewed_files[relative]
             digests = {hashlib.sha256(source).hexdigest()}
-            if relative in reviewed_migration:
-                assert reviewed_migration[relative]["after_suite_sha256"] in digests, \
-                    f"Unreviewed deviation from app migration snapshot: {relative}"
-                continue
             if relative in mpi_naming["files"]:
                 # Check each renamed import or build reference, then compare the
                 # original spelling with the reviewed source digest.

@@ -63,7 +63,7 @@ CSV 列为 `phase,block,level,items,seconds`；`block`、`level` 为 0 表示不
 
 ## 数值和线程契约
 
-[jj2lsj_postprocess.f90](../../src/apps/jj2lsj/jj2lsj_postprocess.f90) 对 LS 索引进行迭代归并排序：
+[jj2lsj_postprocess.f90](../../src/apps/jj2lsj/jj2lsj_postprocessing.f90) 对 LS 索引进行迭代归并排序：
 
 - 按系数平方降序排列，只有右项严格大于左项时才先取右项，保留相等权重的原始 LS 顺序。
 - 正负系数和正负零均从原向量按索引读取，不对原向量进行重排或筛选。

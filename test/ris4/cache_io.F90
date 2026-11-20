@@ -1,5 +1,5 @@
 program cache_io
-    use angdata_i, only: angdata
+    use open_isotope_shift_angular_cache_interface, only: open_isotope_shift_angular_cache
     use input_error_handling, only: fail_input_io
     use iso_fortran_env, only: real64
 #ifdef CACHE_MPI
@@ -25,7 +25,7 @@ program cache_io
     do i = 1, 2
         if (rank == 0) then
 #ifdef CACHE_BASELINE
-            call angdata(name, available, whichone)
+            call open_isotope_shift_angular_cache(name, available, whichone)
             ! The external baseline reader owns the connection.
             if (whichone == 1) then
                 inquire(file="cache.IOB", number=cache_unit)
@@ -34,7 +34,7 @@ program cache_io
             end if
             status = 0
 #else
-            call angdata(name, available, whichone, status, cache_unit)
+            call open_isotope_shift_angular_cache(name, available, whichone, status, cache_unit)
 #endif
             if (status /= 0) then
 #ifdef CACHE_MPI

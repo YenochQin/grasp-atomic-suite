@@ -23,11 +23,11 @@ add_library(jj2lsj_thread_kernels OBJECT ${jj2lsj_kernels})
 target_link_libraries_Fortran(jj2lsj_thread_kernels PRIVATE spin_angular core grasp_shared)
 
 add_library(jj2lsj_conversion STATIC
-    jj2lsj_profile.f90 jj2lsj_postprocess.f90
-    getmixblock.f90 getmixblock_I.f90
-    idigit.f90 idigit_I.f90 lval.f90 lval_I.f90 packLS.f90 packLS_I.f90
-    jj2lsj_data_1_C.f90 jj2lsj_data_2_C.f90 jj2lsj_data_3_C.f90
-    jj2lsj_code.f90)
+    jj2lsj_profile.f90 jj2lsj_postprocessing.f90
+    read_mixing_blocks.f90 read_mixing_blocks_interface.f90
+    ascii_digit_value.f90 ascii_digit_value_interface.f90 orbital_letter_to_l.f90 orbital_letter_to_l_interface.f90 pack_ls_subshell_label.f90 pack_ls_subshell_label_interface.f90
+    ls_jj_coefficients_low_j.f90 ls_jj_coefficients_table_2.f90 ls_jj_coefficients_table_3.f90
+    jj2lsj_conversion.f90)
 setup_fortran_modules(jj2lsj_conversion)
 target_include_directories(jj2lsj_conversion PRIVATE
     "${Fortran_MODULE_DIRECTORY_root}/jj2lsj_conversion")
@@ -41,6 +41,6 @@ elseif(GRASP_JJ2LSJ_OPENMP)
     message(WARNING "OpenMP Fortran unavailable: jj2lsj_omp uses its serial backend")
 endif()
 
-add_executable(jj2lsj_omp jj2lsj2K.f90)
+add_executable(jj2lsj_omp jj2lsj_main.f90)
 target_link_libraries_Fortran(jj2lsj_omp PRIVATE jj2lsj_conversion)
 install(TARGETS jj2lsj_omp DESTINATION bin/ COMPONENT jj2lsj_omp)

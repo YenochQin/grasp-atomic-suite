@@ -147,7 +147,7 @@ def entrypoints(root: Path) -> None:
     for variant in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi"):
         directory = root / "src" / "apps" / variant
         mpi = variant.endswith("_mpi")
-        stem = "getscdmpi" if mpi else "getscd"
+        stem = "read_scf_options_mpi" if mpi else "read_scf_options"
         hook = "npol_init_mpi" if mpi else "npol_init"
         text = (directory / f"{stem}.f90").read_text().lower()
         # Ignore comments when checking code ordering and call counts.
@@ -159,7 +159,7 @@ def entrypoints(root: Path) -> None:
             assert calls.index("nucpot") < calls.index(hook) < calls.index("setrwfmpi" if mpi else "setrwfa")
         else:
             assert calls[calls.index("nucpot") + 1] == "setrwfmpi"
-        for filename in (f"{stem}.f90", f"{stem}_I.f90"):
+        for filename in (f"{stem}.f90", f"{stem}_interface.f90"):
             declaration = (directory / filename).read_text().lower()
             declaration = re.sub(r"[ \t]*&\n[ \t]*&?[ \t]*", " ", declaration)
             arguments = "extended_optimal_level, block_labels, isotope_file_path, radial_file_path"
@@ -168,9 +168,9 @@ def entrypoints(root: Path) -> None:
             assert re.search(r"subroutine\s+" + stem + r"\s*\(" + arguments + r"\)", declaration)
             if not enabled:
                 assert "npol" not in declaration and "nuclear_polarization_file_path" not in declaration
-        main = (directory / ("rscfmpivu.f90" if mpi else "rscfvu.f90")).read_text().lower()
+        main = (directory / ("rmcdhf_mpi_main.f90" if mpi else "rmcdhf_main.f90")).read_text().lower()
         main = re.sub(r"[ \t]*&\n[ \t]*&?[ \t]*", " ", main)
-        call_mpi = r"call getscdmpi\s*\(extended_optimal_level, block_labels, file1, file2"
+        call_mpi = r"call read_scf_options_mpi\s*\(extended_optimal_level, block_labels, file1, file2"
         if not enabled:
             assert "npol" not in main and "nuclear_polarization_file_path" not in main
             assert re.search(call_mpi + r"\s*\)", main)
@@ -180,10 +180,10 @@ def entrypoints(root: Path) -> None:
             assert re.search(call_mpi + r", nuclear_polarization_file_path\)", main)
         else:
             assert re.search(
-                r"call getscd \(extended_optimal_level, block_labels, (['\"])isodata\1, "
+                r"call read_scf_options\s*\(extended_optimal_level, block_labels, (['\"])isodata\1, "
                 r"files%initial_orbitals, (['\"])npol\.inp\2\)", main)
         # No second matrix contribution and MODE=0 retained in both layouts.
-        setham = (directory / "setham.f90").read_text().lower()
+        setham = (directory / "assemble_hamiltonian_block.f90").read_text().lower()
         assert "npol" not in setham and re.search(r"rinti\s*\([^\n]*,\s*0\s*\)", setham)
     assert "npol" not in (root / "src/lib/core/nuclear_coulomb_potential.f90").read_text().lower()
     # Rejected solver variants remain absent from the supported source tree.

@@ -44,7 +44,7 @@ OMP_NUM_THREADS=8 /path/to/grasp-atomic-suite/bin/jj2lsj_omp < jj2lsj.inp > jj2l
 
 ## 并行与数值契约
 
-实现位于 [jj2lsj_code.f90](../../src/apps/jj2lsj/jj2lsj_code.f90)：
+实现位于 [jj2lsj_code.f90](../../src/apps/jj2lsj/jj2lsj_conversion.f90)：
 
 - `asf2ls_serial` 保留原来的变换循环，作为单线程及变换文件路径。
 - `transform_ls_row` 完整计算一行 LS-CSF 的所有所选能级系数。每行保持原来的
@@ -74,7 +74,7 @@ OpenMP 专用对象中的惰性缓存由各线程独占，普通 suite 构建将
 `FACTT` 在启动线程前初始化的阶乘表，以及输入数组、常量表，只读共享。
 
 导入时同时处理三处局部生命周期/边界问题：释放 LS-CSF 的 `w` 数组；显式初始化
-唯一标签循环的 `New_J`；在 [packLS.f90](../../src/apps/jj2lsj/packLS.f90) 中使用有边界保护的
+唯一标签循环的 `New_J`；在 [packLS.f90](../../src/apps/jj2lsj/pack_ls_subshell_label.f90) 中使用有边界保护的
 前一个占据数，避免 Fortran 非短路逻辑表达式访问 `Q(0)`。
 后者由 `-fcheck=all` 检查发现；修复后的参考输出保持不变。
 

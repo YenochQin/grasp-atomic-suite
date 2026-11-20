@@ -4,85 +4,85 @@ LAPACK=true
 ISMPI=true
 FILES="
 # Missing interface
-evcout.f90
+write_ci_eigenvectors.f90
 
 # DSPEVX is supplied by LAPACK
-dspevx_I.f90
+dspevx_interface.f90
 
 # Missing implementation & not referenced in the original makefile
-#gdsummpi_I.f90
-ratden_I.f90
+#tabulate_slater_integrals_interface.f90
+radial_density_ratio_interface.f90
 
 # Common block remnants
-where_C.f90
+ci_restart_units.f90
 
-bessel.f90 bessel_I.f90
-zkf.f90 zkf_I.f90
-rkintc.f90 rkintc_I.f90
-rkint.f90 rkint_I.f90
-skint.f90 skint_I.f90
-brra.f90 brra_I.f90
-brintf.f90 brintf_I.f90
-talk.f90
-cxk.f90
-breid.f90 breid_I.f90
-brint1.f90 brint1_I.f90
-brint2.f90 brint2_I.f90
-brint3.f90 brint3_I.f90
-brint4.f90 brint4_I.f90
-brint5.f90 brint5_I.f90
-brint6.f90 brint6_I.f90
-dnicmv.f90 dnicmv_I.f90
-engout.f90 engout_I.f90
-funk.f90 funk_I.f90
-funl.f90 funl_I.f90
-mohr.f90 mohr_I.f90
-klamaq.f90 klamaq_I.f90
-fzalf.f90 fzalf_I.f90
-triangbreit1.f90 triangbreit1_I.f90
-triangbreit2.f90 triangbreit2_I.f90
-triangrk.f90 triangrk_I.f90
-genintbreit1.f90 genintbreit1_I.f90
-genintbreit1wrap.f90 genintbreit1wrap_I.f90
-genintbreit2.f90 genintbreit2_I.f90
-genintbreit2wrap.f90 genintbreit2wrap_I.f90
-genintrk.f90 genintrk_I.f90
-genintrkwrap.f90 genintrkwrap_I.f90
-getcid.f90 getcid_I.f90
-hmout.f90 hmout_I.f90
-hovlap.f90 hovlap_I.f90
-iabint.f90 iabint_I.f90
-indtpi.f90 indtpi_I.f90
-iniestdm.f90 iniestdm_I.f90
-iniestsd.f90 iniestsd_I.f90
-keint.f90 keint_I.f90
-lodmixmpi.f90 lodmixmpi_I.f90
-lodres.f90 lodres_I.f90
-spodmv.f90 spodmv_I.f90
-maneigmpi.f90 maneigmpi_I.f90
-ncharg.f90 ncharg_I.f90
-qed_slfen.f90 qed_slfen_I.f90
-qed.f90 qed_I.f90
-setdbg.f90 setdbg_I.f90
-setmixmpi.f90 setmixmpi_I.f90
-setres.f90 setres_I.f90
-setsum.f90 setsum_I.f90
-strsum.f90 strsum_I.f90
-vac2.f90 vac2_I.f90
-vac4.f90 vac4_I.f90
-vacpol.f90 vacpol_I.f90
-vinti.f90 vinti_I.f90
-vint.f90 vint_I.f90
-vpintf.f90 vpintf_I.f90
-vpint.f90 vpint_I.f90
-wghtd5.f90 wghtd5_I.f90
-auxblk.f90 auxblk_I.f90
-setham_gg.f90 setham_gg_I.f90
-genmat.f90 genmat_I.f90
-genmat2.f90 genmat2_I.f90
-matrix.f90 matrix_I.f90
+build_breit_bessel_kernels.f90 build_breit_bessel_kernels_interface.f90
+evaluate_breit_hartree_z.f90 evaluate_breit_hartree_z_interface.f90
+lookup_slater_integral.f90 lookup_slater_integral_interface.f90
+coulomb_radial_integral.f90 coulomb_radial_integral_interface.f90
+transverse_radial_integral.f90 transverse_radial_integral_interface.f90
+breit_radial_integral.f90 breit_radial_integral_interface.f90
+lookup_breit_radial_integral.f90 lookup_breit_radial_integral_interface.f90
+collect_breit_angular_coefficient.f90
+breit_radial_integral_factors.f90
+accumulate_closed_shell_breit.f90 accumulate_closed_shell_breit_interface.f90
+breit_radial_integral_1.f90 breit_radial_integral_1_interface.f90
+breit_radial_integral_2.f90 breit_radial_integral_2_interface.f90
+breit_radial_integral_3.f90 breit_radial_integral_3_interface.f90
+breit_radial_integral_4.f90 breit_radial_integral_4_interface.f90
+breit_radial_integral_5.f90 breit_radial_integral_5_interface.f90
+breit_radial_integral_6.f90 breit_radial_integral_6_interface.f90
+multiply_sparse_hamiltonian.f90 multiply_sparse_hamiltonian_interface.f90
+write_level_energies.f90 write_level_energies_interface.f90
+fullerton_rinker_k_function.f90 fullerton_rinker_k_function_interface.f90
+fullerton_rinker_l_function.f90 fullerton_rinker_l_function_interface.f90
+mohr_self_energy_factor.f90 mohr_self_energy_factor_interface.f90
+klarsfeld_maquet_self_energy_factor.f90 klarsfeld_maquet_self_energy_factor_interface.f90
+hydrogenic_self_energy_factor.f90 hydrogenic_self_energy_factor_interface.f90
+satisfies_breit_group1_triangle.f90 satisfies_breit_group1_triangle_interface.f90
+satisfies_breit_group2_triangle.f90 satisfies_breit_group2_triangle_interface.f90
+satisfies_coulomb_triangle.f90 satisfies_coulomb_triangle_interface.f90
+tabulate_breit_integrals_1.f90 tabulate_breit_integrals_1_interface.f90
+tabulate_breit_integrals_1_mpi.f90 tabulate_breit_integrals_1_mpi_interface.f90
+tabulate_breit_integrals_2.f90 tabulate_breit_integrals_2_interface.f90
+tabulate_breit_integrals_2_mpi.f90 tabulate_breit_integrals_2_mpi_interface.f90
+tabulate_slater_integrals.f90 tabulate_slater_integrals_interface.f90
+tabulate_slater_integrals_mpi.f90 tabulate_slater_integrals_mpi_interface.f90
+read_ci_options.f90 read_ci_options_interface.f90
+write_hamiltonian_records.f90 write_hamiltonian_records_interface.f90
+hydrogenic_radial_overlap.f90 hydrogenic_radial_overlap_interface.f90
+one_electron_integral.f90 one_electron_integral_interface.f90
+find_breit_integral_index.f90 find_breit_integral_index_interface.f90
+initialize_dense_eigenvectors.f90 initialize_dense_eigenvectors_interface.f90
+initialize_sparse_eigenvectors.f90 initialize_sparse_eigenvectors_interface.f90
+kinetic_energy_integral.f90 kinetic_energy_integral_interface.f90
+read_ci_mixing_coefficients_mpi.f90 read_ci_mixing_coefficients_mpi_interface.f90
+read_ci_restart.f90 read_ci_restart_interface.f90
+multiply_restart_hamiltonian.f90 multiply_restart_hamiltonian_interface.f90
+diagonalize_hamiltonian_block.f90 diagonalize_hamiltonian_block_interface.f90
+build_nuclear_charge_distribution.f90 build_nuclear_charge_distribution_interface.f90
+tabulate_self_energy_integrals.f90 tabulate_self_energy_integrals_interface.f90
+build_qed_self_energy.f90 build_qed_self_energy_interface.f90
+configure_ci_debug_output.f90 configure_ci_debug_output_interface.f90
+open_mixing_output_mpi.f90 open_mixing_output_mpi_interface.f90
+connect_ci_restart_file.f90 connect_ci_restart_file_interface.f90
+open_summary_file.f90 open_summary_file_interface.f90
+write_input_summary.f90 write_input_summary_interface.f90
+build_second_order_vacuum_polarization.f90 build_second_order_vacuum_polarization_interface.f90
+build_fourth_order_vacuum_polarization.f90 build_fourth_order_vacuum_polarization_interface.f90
+build_vacuum_polarization.f90 build_vacuum_polarization_interface.f90
+vinti_radial_integral.f90 vinti_radial_integral_interface.f90
+calculate_vinti_integral.f90 calculate_vinti_integral_interface.f90
+vacuum_polarization_integral.f90 vacuum_polarization_integral_interface.f90
+calculate_vacuum_polarization_integral.f90 calculate_vacuum_polarization_integral_interface.f90
+read_ci_level_selection.f90 read_ci_level_selection_interface.f90
+prepare_correction_integral_tables.f90 prepare_correction_integral_tables_interface.f90
+assemble_hamiltonian_block.f90 assemble_hamiltonian_block_interface.f90
+assemble_ci_matrix.f90 assemble_ci_matrix_interface.f90
+assemble_ci_matrix_from_restart.f90 assemble_ci_matrix_from_restart_interface.f90
+solve_hamiltonian_blocks.f90 solve_hamiltonian_blocks_interface.f90
 
-rci_mpi.f90
+rci_mpi_main.f90
 "
 generate-makefile > ${MAKEFILE}
 generate-cmakelists > ${CMAKELISTSTXT}

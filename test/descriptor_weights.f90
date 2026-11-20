@@ -5,7 +5,7 @@ program descriptor_weights
    use level_symmetry_metadata, only: jpgg
    use csf_coupling_data, only: csf_coupling_quantum_codes
    use standard_io_units, only: stdin_unit, stderr_unit
-   use getaldwt_i, only: getaldwt
+   use read_al_level_weights_interface, only: read_al_level_weights
    implicit none (type, external)
    real(real64) :: weights(3)
    integer :: input_unit
@@ -20,7 +20,7 @@ program descriptor_weights
    rewind(input_unit)
    stdin_unit=input_unit
    stderr_unit=standard_output_unit
-   call getaldwt(3,weights)
+   call read_al_level_weights(3,weights)
    if (maxval(abs(weights-[0.2_real64,0.2_real64,0.6_real64])) > 1.0e-15_real64) &
       error stop "Standard weights disagree with 2J+1"
    if (associated(csf_coupling_quantum_codes)) error stop "Unexpected coupling allocation"

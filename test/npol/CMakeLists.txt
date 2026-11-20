@@ -41,8 +41,8 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mem_mpi)
     endif()
     set(app "${PROJECT_SOURCE_DIR}/src/apps/${variant}")
     set(target npol_consumers_${variant})
-    add_executable(${target} consumers.F90 consumers_doubles.f90 "${app}/ypot.f90" "${app}/ypot_I.f90"
-        "${app}/dacon.f90" "${app}/dacon_I.f90" "${PROJECT_SOURCE_DIR}/src/lib/core/one_electron_radial_integral.f90")
+    add_executable(${target} consumers.F90 consumers_doubles.f90 "${app}/build_direct_radial_potential.f90" "${app}/build_direct_radial_potential_interface.f90"
+        "${app}/apply_off_diagonal_integrals.f90" "${app}/apply_off_diagonal_integrals_interface.f90" "${PROJECT_SOURCE_DIR}/src/lib/core/one_electron_radial_integral.f90")
     setup_fortran_modules(${target})
     target_link_libraries_Fortran(${target} PRIVATE npol_test_support grasp_shared core)
     npol_checked(${target})

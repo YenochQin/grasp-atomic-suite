@@ -1,15 +1,23 @@
 ! Density eigensystem and radial transformation, shared by serial/MPI targets.
 ! Algorithm derived from GRASP rdensity/natorbnew.f90 (488e875d).
 module natural_orbitals
+    ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: real64
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     implicit none (type, external)
+
+    ! Module interface
     private
     public :: diagonalize_density, transform_radial_block
+
+    ! Procedure interfaces
     interface
         recursive subroutine dsyev(jobz, uplo, n, a, lda, w, work, lwork, info)
+            ! Module dependencies
             import real64
             implicit none (type, external)
+
+            ! Arguments
             character, intent(in) :: jobz, uplo
             integer, intent(in) :: n, lda, lwork
             real(real64), intent(inout) :: a(lda,*), work(*)
@@ -19,10 +27,13 @@ module natural_orbitals
     end interface
 contains
     recursive subroutine diagonalize_density(matrix, ordering, occupation, rotation, error)
+        ! Arguments
         real(real64), intent(in) :: matrix(:,:)
         integer, intent(in) :: ordering
         real(real64), intent(out) :: occupation(:), rotation(:,:)
         character(*), intent(out) :: error
+
+        ! Local declarations
         real(real64), allocatable :: values(:), vectors(:,:), work(:)
         real(real64) :: query(1)
         integer, allocatable :: order(:)
@@ -32,7 +43,7 @@ contains
         error = ""
         n = size(matrix,1)
         if (n < 1 .or. size(matrix,2) /= n .or. &
-                size(occupation) /= n .or. any(shape(rotation) /= [n,n])) then
+            size(occupation) /= n .or. any(shape(rotation) /= [n,n])) then
             error = "Invalid density block dimensions"
             return
         end if
@@ -96,7 +107,10 @@ contains
     end subroutine diagonalize_density
 
     recursive subroutine transform_radial_block(rotation, p, q, pz)
+        ! Arguments
         real(real64), intent(inout) :: rotation(:,:), p(:,:), q(:,:), pz(:)
+
+        ! Local declarations
         integer :: i
 
         p = matmul(p, rotation)

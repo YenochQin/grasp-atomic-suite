@@ -1,16 +1,22 @@
 ! Optional wall-clock diagnostics. Calls to profile_emit are coordinator-only.
 module jj2lsj_profile
+    ! Module dependencies
     use iso_fortran_env, only: int64, real64, error_unit
     implicit none (type, external)
+
+    ! Module interface
     private
     public :: profile_start, profile_finish, profile_time, profile_emit
     public :: profile_file_size
+
+    ! Module state
     logical :: enabled = .false.
     integer :: stream
     integer(int64) :: rate
     real(real64) :: beginning
 contains
     subroutine profile_start()
+        ! Local declarations
         character(len=16) :: setting
         integer :: status
         call get_environment_variable("JJ2LSJ_PROFILE", setting, status=status)
@@ -29,7 +35,10 @@ contains
     end subroutine profile_start
 
     function profile_time() result(seconds)
+        ! Arguments
         real(real64) :: seconds
+
+        ! Local declarations
         integer(int64) :: count
         seconds = 0.0_real64
         if (.not. enabled) return
@@ -38,10 +47,13 @@ contains
     end function profile_time
 
     subroutine profile_emit(phase, started, block, level, items, elapsed)
+        ! Arguments
         character(len=*), intent(in) :: phase
         real(real64), intent(in) :: started
         integer, intent(in), optional :: block, level, items
         real(real64), intent(in), optional :: elapsed
+
+        ! Local declarations
         integer :: b, l, n
         real(real64) :: duration
         if (.not. enabled) return
@@ -56,8 +68,11 @@ contains
     end subroutine profile_emit
 
     subroutine profile_file_size(phase, unit)
+        ! Arguments
         character(len=*), intent(in) :: phase
         integer, intent(in) :: unit
+
+        ! Local declarations
         integer(int64) :: bytes
         integer :: status
         real(real64) :: started

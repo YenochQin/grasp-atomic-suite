@@ -33,6 +33,7 @@
         "jj2lsj_stable_ranking",
         "jj2lsj_pointer_defaults",
         "f2018_library_source_style",
+        "f2018_application_source_style",
         "f2018_numeric_literals",
         "f2018_bndinv_interfaces",
         "f2018_numeric_provenance",

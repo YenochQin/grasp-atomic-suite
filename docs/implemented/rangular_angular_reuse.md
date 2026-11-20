@@ -4,7 +4,7 @@
 范围：普通串行 `rangular`，文本与 rCSFs 描述符入口共用；默认关闭。
 MPI 不启用此缓存；rangular OpenMP 与 CSFG 已移除。实现入口为
 [rangular_reuse.f90](../../src/apps/rangular/rangular_reuse.f90)，
-接入点为 [mcp_gg.f90](../../src/apps/rangular/mcp_gg.f90)。
+接入点为 [mcp_gg.f90](../../src/apps/rangular/compute_mcp_angular_coefficients.f90)。
 
 ## 使用
 

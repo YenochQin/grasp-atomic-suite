@@ -31,11 +31,11 @@
 | YPOT/XPOT/DACON | 已收缩的 DA/YA/XA，不再直接读 MCP | 当前径向函数及其导数 | 网格上的势和非齐次项 |
 | SETLAG | 经 SETCOF 等取得的势 | 轨道、冻结选择、占据 | 正交约束的乘子 |
 
-依据：[SETHAM](../../src/apps/rmcdhf_mpi/setham.f90)、
-[SETCOF](../../src/apps/rmcdhf_mpi/setcof.f90)、
-[COFPOTMPI](../../src/apps/rmcdhf_mpi/cofpotmpi.f90)、
-[YPOT](../../src/apps/rmcdhf_mpi/ypot.f90)、[XPOT](../../src/apps/rmcdhf_mpi/xpot.f90)、
-[DACON](../../src/apps/rmcdhf_mpi/dacon.f90)、[SETLAGMPI](../../src/apps/rmcdhf_mpi/setlagmpi.f90)。
+依据：[SETHAM](../../src/apps/rmcdhf_mpi/assemble_hamiltonian_block.f90)、
+[SETCOF](../../src/apps/rmcdhf_mpi/assemble_orbital_potential_coefficients.f90)、
+[COFPOTMPI](../../src/apps/rmcdhf_mpi/build_orbital_potential_mpi.f90)、
+[YPOT](../../src/apps/rmcdhf_mpi/build_direct_radial_potential.f90)、[XPOT](../../src/apps/rmcdhf_mpi/build_exchange_radial_potential.f90)、
+[DACON](../../src/apps/rmcdhf_mpi/apply_off_diagonal_integrals.f90)、[SETLAGMPI](../../src/apps/rmcdhf_mpi/calculate_lagrange_multipliers_mpi.f90)。
 
 `.30` 提供的稀疏结构用于矩阵装配/对角化，也将系数的 `INDEX` 映射为 CSF 对。
 SETHAM 丢弃读入的 `ICLMN`，但 SETCOF 用 `ICLMN` 和 `IROW(INDEX)` 得到两个 CSF 编号。
@@ -55,7 +55,7 @@ H[p] = H_analytic[p] + Σq A[p,q] R[q;P,Q]
 `H_analytic` 包含由占据和 FCO/GCO 等直接计算、不需要显式 MCP 的对角贡献，
 并非固定不变的矩阵。SETHAM 当前实际执行 `EMT(INDX) += TEGRAL*COEFF`。
 RINTI/SLATER 读取当前 PF/QF；不能在 rangular 时用初始轨道算一次、以后一直沿用所有积分。
-依据：[SETHAM](../../src/apps/rmcdhf_mpi/setham.f90)、
+依据：[SETHAM](../../src/apps/rmcdhf_mpi/assemble_hamiltonian_block.f90)、
 [RINTI](../../src/lib/core/one_electron_radial_integral.f90)、[SLATER](../../src/lib/core/slater_radial_integral.f90)。
 
 EOL 的 CSF 密度权重由 DSUBRS 给出：
@@ -68,8 +68,8 @@ S[q] = Σb Σr≥s (2-δrs) D[b,r,s] A[b,r,s,q]
 WT 在 NEWCO 中归一化。SETCOF 对每个标签先算上式的收缩，再乘 `0.5/UCF(J)`，
 按目标轨道 J 在积分标签中出现的位置/次数分配到 DA、YA、XA，并合并不同 block 的同类项。
 FCO/GCO 产生的隐式对角项另行按 D 的对角元素求和，不能漏掉。
-依据：[DSUBRS](../../src/apps/rmcdhf_mpi/dsubrs.f90)、
-[NEWCOMPI](../../src/apps/rmcdhf_mpi/newcompi.f90)、[SETCOF](../../src/apps/rmcdhf_mpi/setcof.f90)。
+依据：[DSUBRS](../../src/apps/rmcdhf_mpi/csf_density_matrix_element.f90)、
+[NEWCOMPI](../../src/apps/rmcdhf_mpi/update_scf_mixing_mpi.f90)、[SETCOF](../../src/apps/rmcdhf_mpi/assemble_orbital_potential_coefficients.f90)。
 
 这说明 A 有两种用途：给定径向积分计算 H；给定密度权重计算 S。
 保存 S 一般不能恢复 A，也不能计算下一轮所需的 H 或不同 D 对应的 S。
@@ -86,7 +86,7 @@ H = R × diag(1,-1)
 
 ## 3. 一般 EOL 为何不能一次预收缩到底
 
-[SCFMPI](../../src/apps/rmcdhf_mpi/scfmpi.f90) 在开始时及每轮轨道更新后调用
+[SCFMPI](../../src/apps/rmcdhf_mpi/run_scf_iterations_mpi.f90) 在开始时及每轮轨道更新后调用
 `MATRIXMPI → NEWCOMPI`。矩阵对角化更新 EVEC，NEWCO 重算 UCF；
 这些量随后进入 SETCOF。即使优化态的**权重 WT 固定，C 仍在变化，所以 D 不固定**。
 冻结径向轨道也不意味着冻结 ASF 的 CSF 混合系数。
@@ -138,10 +138,10 @@ H_fixed 不依赖 C，因此 **EOL 继续更新混合系数并不使它失效**�
 所以不能仅凭“冻结侧也调用 SETCOF”就判定全冻结积分必须永久保留；
 固定侧的部分工作目前是冗余的。但是直接删旧文件中的条目也不是现有程序已支持的路径。
 将来必须调整或兼容这些访问，且先核对固定/可变分支、原占据因子和 MPI 归约。
-依据：[普通 SETLAGMPI](../../src/apps/rmcdhf_mpi/setlagmpi.f90)、
-[内存 SETLAGMPI](../../src/apps/rmcdhf_mem_mpi/setlagmpi.f90)、
-[串行 SETLAG](../../src/apps/rmcdhf/setlag.f90)、
-[内存串行 SETLAG](../../src/apps/rmcdhf_mem/setlag.f90)。
+依据：[普通 SETLAGMPI](../../src/apps/rmcdhf_mpi/calculate_lagrange_multipliers_mpi.f90)、
+[内存 SETLAGMPI](../../src/apps/rmcdhf_mem_mpi/calculate_lagrange_multipliers_mpi.f90)、
+[串行 SETLAG](../../src/apps/rmcdhf/calculate_lagrange_multipliers.f90)、
+[内存串行 SETLAG](../../src/apps/rmcdhf_mem/calculate_lagrange_multipliers.f90)。
 
 ### 收益怎样估算
 
@@ -154,15 +154,15 @@ H_fixed 不依赖 C，因此 **EOL 继续更新混合系数并不使它失效**�
 对逐层优化、以前各层径向轨道全部冻结的阶段，这种任务专用收缩值得优先统计。
 若之后解冻轨道、换 rwfn、网格、核势或算符设置，相关 H_fixed 必须失效并重建。
 轨道相位/归一化及积分精度约定也须固定；不能只凭 `LFIX` 标记断言函数不变。
-标准 EOL 的 [ORTHY](../../src/apps/rmcdhf_mpi/orthy.f90) 按固定/可变轨道分段处理，
+标准 EOL 的 [ORTHY](../../src/apps/rmcdhf_mpi/orthogonalize_same_kappa_orbitals.f90) 按固定/可变轨道分段处理，
 而 `ORTHST=false` 时调用的 [ORTHSC](../../src/lib/core/radial_orbital_orthogonalization.f90) 没有 LFIX 过滤，
 可能通过正交化改变标为固定的函数；这种路径必须另外检查。
 重新求和可能引入舍入差异：需验证矩阵和完整 SCF 行为，不能称为已通过逐位一致验证。
 
 ### 应放在哪一步
 
-当前 [rangular_mpi](../../src/apps/rangular_mpi/genmcpmpi.f90) 不读取 rwfn 和 RMCDHF 的冻结选择；
-这些信息在 [GETSCDMPI](../../src/apps/rmcdhf_mpi/getscdmpi.f90) 等 RMCDHF 输入阶段才确定。
+当前 [rangular_mpi](../../src/apps/rangular_mpi/rangular_mpi_main.f90) 不读取 rwfn 和 RMCDHF 的冻结选择；
+这些信息在 [GETSCDMPI](../../src/apps/rmcdhf_mpi/read_scf_options_mpi.f90) 等 RMCDHF 输入阶段才确定。
 因此有两种不同设计：
 
 1. 保留通用 rangular，在 RMCDHF 启动时流式构造 H_fixed，之后使用缩减存储。
@@ -204,9 +204,9 @@ CSF 列表都能直接套用完整族规则；缺失成员必须准确表达。
 当前程序已经把一些简单对角项排除在 MCP 外：生成端调用 `RKCO_GG(...,INCOR=0,...)`、
 排除 F0，消费端用占据及 FCO/GCO 计算相应部分。
 不能再次把“所有闭壳层项都改成公式”当成未利用的新容量收益。
-依据：[MCPMPI](../../src/apps/rangular_mpi/mcpmpi_gg.f90)、
+依据：[MCPMPI](../../src/apps/rangular_mpi/compute_mcp_angular_coefficients_mpi.f90)、
 [RKCO_GG](../../src/lib/spin_angular/two_electron_angular_coefficients.f90)、
-[FCO](../../src/apps/rmcdhf_mpi/fco.f90)、[GCO](../../src/apps/rmcdhf_mpi/gco.f90)。
+[FCO](../../src/apps/rmcdhf_mpi/direct_angular_coefficient.f90)、[GCO](../../src/apps/rmcdhf_mpi/exchange_angular_coefficient.f90)。
 
 只冻结二电子积分中的一对轨道，可预先计算相应径向核，或在额外证明完全闭壳层条件下构造有效算符；
 但剩余可变轨道仍决定积分，不能直接变成一个静态矩阵数值。
@@ -224,10 +224,10 @@ EAL 的理论形式为 `D_rs=δ_rs*w_r`，这是比一般 EOL 强得多的约束
 特别是 DSUBRS 的 EAL 分支直接取 `WT(I)`，未使用 block 偏移；GETALD 未走 GETOLD 的 NEVBLK
 等初始化，而 SCF 在 EOL 条件分配之前使用这些 block 数组。
 这些是静态风险，不是本轮运行复现的失败，不能据此推销切到 EAL 作为压缩办法。
-依据：[GETSCDMPI](../../src/apps/rmcdhf_mpi/getscdmpi.f90)、
-[GETALDMPI](../../src/apps/rmcdhf_mpi/getaldmpi.f90)、
-[GETOLDMPI](../../src/apps/rmcdhf_mpi/getoldmpi.f90)、
-[SCFMPI](../../src/apps/rmcdhf_mpi/scfmpi.f90)、[DSUBRS](../../src/apps/rmcdhf_mpi/dsubrs.f90)。
+依据：[GETSCDMPI](../../src/apps/rmcdhf_mpi/read_scf_options_mpi.f90)、
+[GETALDMPI](../../src/apps/rmcdhf_mpi/read_al_average_options_mpi.f90)、
+[GETOLDMPI](../../src/apps/rmcdhf_mpi/read_eol_average_options_mpi.f90)、
+[SCFMPI](../../src/apps/rmcdhf_mpi/run_scf_iterations_mpi.f90)、[DSUBRS](../../src/apps/rmcdhf_mpi/csf_density_matrix_element.f90)。
 
 ## 7. 每次混合系数更新后的收缩：省读取但不替代通用 MCP
 

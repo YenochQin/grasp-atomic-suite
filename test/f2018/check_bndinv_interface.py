@@ -12,8 +12,8 @@ def main() -> None:
     root = Path(__file__).resolve().parents[2]
     for variant in ("rbiotransform", "rbiotransform_mpi"):
         app = root / "src/apps" / variant
-        implementation = (app / "bndinv.f90").read_text()
-        interface = (app / "bndinv_I.f90").read_text()
+        implementation = (app / "invert_banded_matrix.f90").read_text()
+        interface = (app / "invert_banded_matrix_interface.f90").read_text()
         # GNU's procedure association check does not compare explicit bounds.
         # Check these separately instead of treating compilation as proof.
         for name in ("a", "el"):
@@ -22,14 +22,14 @@ def main() -> None:
             declared = re.search(pattern, interface, re.I)
             assert actual is not None and declared is not None
             assert actual.group(1).replace(" ", "") == declared.group(1).replace(" ", ""), (variant, name)
-        source = ("module implementation_contract\nuse bndinv_i, only: contract => bndinv\ncontains\n"
+        source = ("module implementation_contract\nuse invert_banded_matrix_interface, only: contract => invert_banded_matrix\ncontains\n"
                   + implementation + "\nsubroutine verify\nprocedure(contract), pointer :: p\n"
-                  "p => bndinv\nend subroutine\nend module\n")
+                  "p => invert_banded_matrix\nend subroutine\nend module\n")
         with tempfile.TemporaryDirectory(prefix="bndinv-interface-") as temporary:
             work = Path(temporary)
             (work / "implementation.f90").write_text(source)
             subprocess.run([sys.argv[1], "-std=f2018", "-pedantic-errors", "-fimplicit-none",
-                            "-fsyntax-only", str(app / "bndinv_I.f90"), "implementation.f90"],
+                            "-fsyntax-only", str(app / "invert_banded_matrix_interface.f90"), "implementation.f90"],
                            cwd=work, check=True, capture_output=True, text=True)
         print(f"{variant}: actual implementation matches public BNDINV procedure contract")
 

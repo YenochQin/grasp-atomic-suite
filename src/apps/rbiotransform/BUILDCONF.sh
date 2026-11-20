@@ -2,53 +2,53 @@ EXE=rbiotransform
 LIBRARIES="spin_angular core grasp_shared"
 LAPACK=true
 FILES="
-angdata.f90 angdata_I.f90
-bndinv.f90 bndinv_I.f90
-brkt.f90 brkt_I.f90
-wrtmat.f90 wrtmat_I.f90
-scalve.f90 scalve_I.f90
-copvec.f90 copvec_I.f90
-fname.f90 fname_I.f90
-getmix.f90 getmix_I.f90
-gets.f90 gets_I.f90
-ielsum.f90 ielsum_I.f90
-ifnmnx.f90 ifnmnx_I.f90
-rintff.f90 rintff_I.f90
-rintii.f90 rintii_I.f90
-inprod.f90 inprod_I.f90
-intrpqf.f90 intrpqf_I.f90
-intrpqi.f90 intrpqi_I.f90
-invmat.f90 invmat_I.f90
-kapdata.f90 kapdata_I.f90
+open_biorthogonal_angular_cache.f90 open_biorthogonal_angular_cache_interface.f90
+invert_banded_matrix.f90 invert_banded_matrix_interface.f90
+calculate_orbital_overlap_matrix.f90 calculate_orbital_overlap_matrix_interface.f90
+write_matrix.f90 write_matrix_interface.f90
+scale_vector.f90 scale_vector_interface.f90
+copy_vector.f90 copy_vector_interface.f90
+read_state_filenames.f90 read_state_filenames_interface.f90
+read_state_mixing_coefficients.f90 read_state_mixing_coefficients_interface.f90
+calculate_subshell_overlap.f90 calculate_subshell_overlap_interface.f90
+sum_integer_vector.f90 sum_integer_vector_interface.f90
+find_integer_extremum.f90 find_integer_extremum_interface.f90
+final_state_radial_integral.f90 final_state_radial_integral_interface.f90
+initial_state_radial_integral.f90 initial_state_radial_integral_interface.f90
+vector_inner_product.f90 vector_inner_product_interface.f90
+interpolate_final_orbital.f90 interpolate_final_orbital_interface.f90
+interpolate_initial_orbital.f90 interpolate_initial_orbital_interface.f90
+invert_dense_submatrix.f90 invert_dense_submatrix_interface.f90
+prepare_biorthogonal_subshells.f90 prepare_biorthogonal_subshells_interface.f90
 lodcslBio.f90 lodcslBio_I.f90
-lodrwff.f90 lodrwff_I.f90
-lodrwfi.f90 lodrwfi_I.f90
-prsym.f90 prsym_I.f90
-lulu.f90 lulu_I.f90
-setvec.f90 setvec_I.f90
-matml4.f90 matml4_I.f90
-qqsort.f90 qqsort_I.f90
-mcpin.f90 mcpin_I.f90
-mcpout_gg.f90 mcpout_gg_I.f90
-pamtmt.f90 pamtmt_I.f90
-radfile.f90 radfile_I.f90
-radpar.f90 radpar_I.f90
-setcslb.f90 setcslb_I.f90
-tcsl.f90 tcsl_I.f90
-ti1tv.f90 ti1tv_I.f90
-tiinig.f90 tiinig_I.f90
-trpmat.f90 trpmat_I.f90
-ulla.f90 ulla_I.f90
-vecsum.f90 vecsum_I.f90
-genmcp.f90 genmcp_I.f90
-citrag.f90 citrag_I.f90
-biotr1.f90 biotr1_I.f90
-biotr.f90
+read_final_radial_wavefunctions.f90 read_final_radial_wavefunctions_interface.f90
+read_initial_radial_wavefunctions.f90 read_initial_radial_wavefunctions_interface.f90
+print_matrix_symmetry.f90 print_matrix_symmetry_interface.f90
+factor_lower_upper.f90 factor_lower_upper_interface.f90
+fill_vector.f90 fill_vector_interface.f90
+multiply_submatrices.f90 multiply_submatrices_interface.f90
+sort_biorthogonal_mcp.f90 sort_biorthogonal_mcp_interface.f90
+read_biorthogonal_mcp.f90 read_biorthogonal_mcp_interface.f90
+write_biorthogonal_mcp.f90 write_biorthogonal_mcp_interface.f90
+build_subshell_transformation_matrix.f90 build_subshell_transformation_matrix_interface.f90
+write_transformed_radial_wavefunctions.f90 write_transformed_radial_wavefunctions_interface.f90
+configure_radial_grid.f90 configure_radial_grid_interface.f90
+load_merged_csf_basis.f90 load_merged_csf_basis_interface.f90
+copy_state_csf_data.f90 copy_state_csf_data_interface.f90
+apply_subshell_transfer.f90 apply_subshell_transfer_interface.f90
+apply_occupation_factor.f90 apply_occupation_factor_interface.f90
+transpose_matrix.f90 transpose_matrix_interface.f90
+combine_upper_lower_factors.f90 combine_upper_lower_factors_interface.f90
+combine_vectors.f90 combine_vectors_interface.f90
+prepare_biorthogonal_mcp.f90 prepare_biorthogonal_mcp_interface.f90
+transform_ci_coefficients.f90 transform_ci_coefficients_interface.f90
+transform_orbital_sets.f90 transform_orbital_sets_interface.f90
+rbiotransform_main.f90
 
 # The _implementations_ for these routines were not being compiled in the
 # original makefile. The interface files were still linked though.
-#ichkq1.f90 ichkq1_I.f90
-#orbord.f90 orbord_I.f90
+#one_electron_occupation_allowed.f90 one_electron_occupation_allowed_interface.f90
+#check_orbital_order.f90 check_orbital_order_interface.f90
 "
 generate-makefile > ${MAKEFILE}
 generate-cmakelists > ${CMAKELISTSTXT}

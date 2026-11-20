@@ -8,7 +8,7 @@
 
 ### 每个 MPI rank 负责的 Slater 积分数
 
-[distributed_slater_integrals.f90](distributed_slater_integrals.f90) 的 `rk_local_count(n, myid, nprocs)` 计算当前 rank 负责求值的条目数。[GENINTRK](../../apps/rci_mpi/genintrk.f90) 将 $N$ 个积分条目按 $i=1,\ldots,N$ 编号，并将第 $i$ 个条目分配给 $\operatorname{mod}(i,P)$，其中 $P$ 是 MPI 进程数。令 $N=qP+s$，$0\le s<P$，则 rank $r$ 的任务数为
+[distributed_slater_integrals.f90](distributed_slater_integrals.f90) 的 `rk_local_count(n, myid, nprocs)` 计算当前 rank 负责求值的条目数。[GENINTRK](../../apps/rci_mpi/tabulate_slater_integrals.f90) 将 $N$ 个积分条目按 $i=1,\ldots,N$ 编号，并将第 $i$ 个条目分配给 $\operatorname{mod}(i,P)$，其中 $P$ 是 MPI 进程数。令 $N=qP+s$，$0\le s<P$，则 rank $r$ 的任务数为
 
 $$
 N_r=q+
@@ -108,7 +108,7 @@ $$
 
 ### LS–jj 变换系数
 
-[ls_jj_subshell_terms.f90](ls_jj_subshell_terms.f90) 定义 LS 子壳层项及系数记录 `ls_jj_me`。具体的系数表在 [jj2lsj 的数据模块](../../apps/jj2lsj/jj2lsj_data_1_C.f90)等文件中。[coeflsjjs](../../apps/jj2lsj/jj2lsj_code.f90) 匹配记录中的量子数，再将整数域 `factor`、`nom`、`denom` 转为实数系数。
+[ls_jj_subshell_terms.f90](ls_jj_subshell_terms.f90) 定义 LS 子壳层项及系数记录 `ls_jj_me`。具体的系数表在 [jj2lsj 的数据模块](../../apps/jj2lsj/ls_jj_coefficients_low_j.f90)等文件中。[coeflsjjs](../../apps/jj2lsj/jj2lsj_conversion.f90) 匹配记录中的量子数，再将整数域 `factor`、`nom`、`denom` 转为实数系数。
 
 $$
 C_{\mathrm{LS},jj}=\texttt{factor}\sqrt{\frac{\texttt{nom}}{\texttt{denom}}}.

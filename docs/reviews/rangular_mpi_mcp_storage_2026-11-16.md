@@ -35,9 +35,9 @@ MCP 保存的是构造 Dirac–Coulomb 矩阵所需的**角系数及其稀疏位
 | `mcprrr.31` | 显式一电子 T 角系数，按轨道对标签分组 | 径向积分 I(a,b) 的数值 |
 | `mcprrr.(32+k)` | 显式二电子 V(k) 角系数，按四轨道标签分组，`k=0…KMAX` | Slater 径向积分数值 |
 
-依据：[SETMCP](../../src/apps/rangular_mpi/setmcp.f90)，
-[MCPMPI](../../src/apps/rangular_mpi/mcpmpi_gg.f90)，
-[SETHAM](../../src/apps/rmcdhf_mpi/setham.f90)。
+依据：[SETMCP](../../src/apps/rangular_mpi/connect_mcp_files.f90)，
+[MCPMPI](../../src/apps/rangular_mpi/compute_mcp_angular_coefficients_mpi.f90)，
+[SETHAM](../../src/apps/rmcdhf_mpi/assemble_hamiltonian_block.f90)。
 
 生成端按 `JA=rank+1, rank+1+P, …` 分配 CSF 列，内层只遍历 `JB=1…JA`。
 `npos` 是当前 rank、当前 block 的稀疏位置编号；每列保留对角位置，非对角位置只在有保存贡献时出现。
@@ -52,9 +52,9 @@ MCP 保存的是构造 Dirac–Coulomb 矩阵所需的**角系数及其稀疏位
 `KMAX=max(NKJ)`，其中 `NKJ=2j`；实际创建 `.30…(32+KMAX)`，故每 rank 有 `KMAX+3` 个文件。
 例如 `KMAX=9` 时，8/64/128 ranks 分别有 96/768/1536 个最终文件。
 无贡献的 k 也写合法空 block；不能直接删除。最高 k 是否为空取决于实际轨道集合，不能一律减掉 KMAX。
-源码依据：[SETMCP](../../src/apps/rangular_mpi/setmcp.f90)、
+源码依据：[SETMCP](../../src/apps/rangular_mpi/connect_mcp_files.f90)、
 [轨道量子数解析](../../src/lib/lib9290/prsrsl.f90)、
-[block 主循环](../../src/apps/rangular_mpi/genmcpmpi.f90)。
+[block 主循环](../../src/apps/rangular_mpi/rangular_mpi_main.f90)。
 
 ## 2. 二进制布局
 
@@ -85,8 +85,8 @@ DIAG, ICCUT(1), LFORDR
 
 注意公共头只记录第一个 block 的 `ICCUT`；它不是全部交互设置的完整 provenance。
 `KEYORB` 也未写入文件；当前标签基数为 215。源码：
-[SETMCP](../../src/apps/rangular_mpi/setmcp.f90)、
-[SETMCPMPI](../../src/apps/rangular_mpi/setmcpmpi.f90)。
+[SETMCP](../../src/apps/rangular_mpi/connect_mcp_files.f90)、
+[SETMCPMPI](../../src/apps/rangular_mpi/open_mcp_outputs_mpi.f90)。
 
 `.30` 随后为每个 block 追加：
 
@@ -98,7 +98,7 @@ IENDC(本 rank 的列), IROW(1:NNONZ_local)
 
 `IENDC` 是累计终点，不是每列长度；列编号由 rank 和 P 隐含给出。
 `IROW(index)` 给出另一 CSF 编号。默认 4 字节整数下，主要大小为
-`4 × (local_columns + NNONZ_local)`。源码：[SETSDA](../../src/apps/rangular_mpi/setsda.f90)。
+`4 × (local_columns + NNONZ_local)`。源码：[SETSDA](../../src/apps/rangular_mpi/write_mcp_sparsity.f90)。
 
 `.31` 和 `.32+k` 为每个 block 追加：
 
@@ -113,8 +113,8 @@ LABEL, NCONTR
 `ICLMN=JA`，`INDEX=npos`，`COEFF` 为 double。T 的标签是 `min(a,b)*KEYORB+max(a,b)`；
 V 的标签把规范化后的四轨道号以 KEYORB 为基数打包。k 在文件编号中，不再逐项保存。
 排序仅保证 LABEL 递增，**不保证同一 LABEL 中 INDEX 有序**。
-源码：[MCPMPI](../../src/apps/rangular_mpi/mcpmpi_gg.f90)、
-[SORT](../../src/apps/rangular_mpi/sort.f90)。
+源码：[MCPMPI](../../src/apps/rangular_mpi/compute_mcp_angular_coefficients_mpi.f90)、
+[SORT](../../src/apps/rangular_mpi/sort_mcp_coefficients.f90)。
 
 以 4 字节整数/标记为例，n 个贡献的 payload 是 `16n` 字节；
 每个非空积分组另有 24 字节（标签/计数记录 16，贡献记录两端标记 8）。
@@ -136,8 +136,8 @@ V 的标签把规范化后的四轨道号以 KEYORB 为基数打包。k 在文�
 批量写临时记录可将主数据从 28 降到接近 20 字节/贡献，约少 28.6%，还减少 I/O 调用；
 但这是修改临时读写接口后的理论收益，尚未实现或测量。
 大模型可考虑有界缓冲与分段外排序；只改最终输出容器不会消除此瓶颈。
-依据：[SETTMP](../../src/apps/rangular_mpi/settmp.f90)、
-[MCPMPI](../../src/apps/rangular_mpi/mcpmpi_gg.f90)、[SORT](../../src/apps/rangular_mpi/sort.f90)。
+依据：[SETTMP](../../src/apps/rangular_mpi/open_temporary_mcp_channel.f90)、
+[MCPMPI](../../src/apps/rangular_mpi/compute_mcp_angular_coefficients_mpi.f90)、[SORT](../../src/apps/rangular_mpi/sort_mcp_coefficients.f90)。
 
 ## 4. 本轮已有文件测量
 
@@ -183,8 +183,8 @@ Zstd 为无损算法；等级是压缩速度/体积的取舍，并非保留浮�
 
 普通 `rmcdhf_mpi` 每次装配矩阵重绕 MCP；为每个待优化轨道构造系数时又反复扫描，
 并按标签跳过不需要的贡献记录，二电子各 k 还会重绕 `.30`。
-依据：[MATRIXMPI](../../src/apps/rmcdhf_mpi/matrixmpi.f90)、
-[SETCOF](../../src/apps/rmcdhf_mpi/setcof.f90)。因此：
+依据：[MATRIXMPI](../../src/apps/rmcdhf_mpi/solve_hamiltonian_blocks_mpi.f90)、
+[SETCOF](../../src/apps/rmcdhf_mpi/assemble_orbital_potential_coefficients.f90)。因此：
 
 - `.zst/.gz` 改名为 MCP 不能读取；旧 Fortran READ 没有解码器。
 - 普通解压管道不能无修改支持 `REWIND`；每次从头解压还可能抵消 I/O 收益。
@@ -194,18 +194,18 @@ Zstd 为无损算法；等级是压缩速度/体积的取舍，并非保留浮�
 
 当前 `SETMCP` 强制要求文件头 `MYID/NPROCS` 与运行相同，结构也按同样列分工读取。
 所以不能直接改头、改文件名、拼接文件来改变 rank 数。
-[检查位置](../../src/apps/rmcdhf_mpi/setmcp.f90)。
+[检查位置](../../src/apps/rmcdhf_mpi/connect_mcp_files.f90)。
 
 `rmcdhf_mem_mpi` 启动时通过 `SETMCP_MEM` 两遍读取后缓存数据，适合先验证启动解码接口；
 但现有内存版本身不减少磁盘 MCP，且 RAM 要容纳所有角系数。
 它与普通版还有其他代码差异，不能把切换求解器当作已经验证的纯存储优化。
-依据：[SETMCP_MEM](../../src/apps/rmcdhf_mem_mpi/setmcp_mem.f90)、
+依据：[SETMCP_MEM](../../src/apps/rmcdhf_mem_mpi/cache_mcp_files.f90)、
 [现有四版本比较](rmcdhf_mem_comparison_2026-11-11.md)。
 
 普通 RCI/RCI_MPI 直接调用 `ONESCALAR/RKCO_GG` 构造角系数，不消费这套 rangular MCP；
 此次格式适配重点是四个普通 RMCDHF 版本，不必据此修改 RCI `.res`。
-依据：[RCI SETHAM](../../src/apps/rci/setham_gg.f90)、
-[RCI_MPI SETHAM](../../src/apps/rci_mpi/setham_gg.f90)。
+依据：[RCI SETHAM](../../src/apps/rci/assemble_hamiltonian_block.f90)、
+[RCI_MPI SETHAM](../../src/apps/rci_mpi/assemble_hamiltonian_block.f90)。
 
 ## 6. 可选措施及边界
 

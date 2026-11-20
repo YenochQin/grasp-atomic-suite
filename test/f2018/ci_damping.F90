@@ -38,13 +38,13 @@ program ci_damping
     use mpi_state, only: host => processor_name, ierr => mpi_error_code, istat => mpi_status_buffer, &
        & lenhost => processor_name_length, myid => mpi_rank, nprocs => mpi_process_count, mpi_finalize, &
        & startmpi
-    use matrixmpi_I, only: matrixmpi
+    use solve_hamiltonian_blocks_mpi_interface, only: solve_hamiltonian_blocks_mpi
 #else
-    use mpi_s, only: myid => mpi_rank, nprocs => mpi_process_count
-    use matrix_I, only: matrix
+    use serial_mpi_context, only: myid => mpi_rank, nprocs => mpi_process_count
+    use solve_hamiltonian_blocks_interface, only: solve_hamiltonian_blocks
 #endif
 #ifdef CI_MEM
-    use rmcdhf_mem_C, only: imin1_30, imax1_30, imin2_30, imax2_30
+    use rmcdhf_mcp_memory, only: imin1_30, imax1_30, imin2_30, imax2_30
 #endif
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
@@ -121,17 +121,17 @@ contains
     subroutine matrix_step(first)
         logical,intent(in)::first
 #ifdef CI_MPI
-        call matrixmpi(first)
+        call solve_hamiltonian_blocks_mpi(first)
 #else
-        call matrix(first)
+        call solve_hamiltonian_blocks(first)
 #endif
 end subroutine matrix_step
 end program ci_damping
 
 #ifdef CI_MPI
-subroutine maneigmpi(dvdfirst,lprint,jblock,ncfpat,ncminpat,nevecpat,ncftot)
+subroutine diagonalize_hamiltonian_block_mpi(dvdfirst,lprint,jblock,ncfpat,ncminpat,nevecpat,ncftot)
 #else
-subroutine maneig(dvdfirst,lprint,jblock,ncfpat,ncminpat,nevecpat,ncftot)
+subroutine diagonalize_hamiltonian_block(dvdfirst,lprint,jblock,ncfpat,ncminpat,nevecpat,ncftot)
 #endif
     use ci_fixture
     implicit none (type, external)
@@ -142,15 +142,15 @@ subroutine maneig(dvdfirst,lprint,jblock,ncfpat,ncminpat,nevecpat,ncftot)
     if(jblock/=1.or.nevecpat/=2.or.ncftot/=2) error stop "eigensolver seam arguments"
     call eigenpairs()
 #ifdef CI_MPI
-end subroutine maneigmpi
+end subroutine diagonalize_hamiltonian_block_mpi
 #else
-end subroutine maneig
+end subroutine diagonalize_hamiltonian_block
 #endif
 
 #ifdef CI_MEM
-subroutine setham(jblock,myid,nprocs,ncontr_tot,ncontr_tot2)
+subroutine assemble_hamiltonian_block(jblock,myid,nprocs,ncontr_tot,ncontr_tot2)
 #else
-subroutine setham(jblock,myid,nprocs)
+subroutine assemble_hamiltonian_block(jblock,myid,nprocs)
 #endif
     use, intrinsic :: iso_fortran_env, only: real64, int64
     use sparse_hamiltonian_storage, only: emt => hamiltonian_values
@@ -161,15 +161,15 @@ subroutine setham(jblock,myid,nprocs)
 #endif
     if(jblock/=1) error stop "Hamiltonian seam block"
     emt=0.0_real64
-end subroutine setham
+end subroutine assemble_hamiltonian_block
 
 #ifdef CI_MEM
-subroutine read03_mem(jblock)
+subroutine read_mcp_coefficients_from_memory(jblock)
     use sparse_hamiltonian_storage, only: irow => matrix_partner_indices, iendc => stored_segment_end_offsets
 #ifdef CI_MPI
     use mpi_state, only: myid => mpi_rank, nprocs => mpi_process_count
 #else
-    use mpi_s, only: myid => mpi_rank, nprocs => mpi_process_count
+    use serial_mpi_context, only: myid => mpi_rank, nprocs => mpi_process_count
 #endif
     implicit none (type, external)
     integer,intent(in)::jblock
@@ -181,13 +181,13 @@ subroutine read03_mem(jblock)
         iendc(i)=k
         irow(k)=i
     end do
-end subroutine read03_mem
-subroutine read1_mem(nfile,ncontr_tot2,lab,ncontr)
+end subroutine read_mcp_coefficients_from_memory
+subroutine load_mcp_records_into_memory(nfile,ncontr_tot2,lab,ncontr)
     use, intrinsic :: iso_fortran_env, only: int64
     implicit none (type, external)
     integer,intent(in)::nfile
     integer(int64),intent(in)::ncontr_tot2
     integer,intent(out)::lab,ncontr
     error stop "unexpected empty block seam"
-end subroutine read1_mem
+end subroutine load_mcp_records_into_memory
 #endif

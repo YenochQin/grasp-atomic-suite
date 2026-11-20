@@ -16,6 +16,34 @@ Fortran 调用方应以当前接口声明为准。
 Release 二进制，串行和双进程 MPI 各有 16 个波函数、混合系数和 MCP 文件逐字节一致。
 RCI 的 Coulomb 和 Breit 路径各自生成的混合系数文件也逐字节一致。
 
+## 应用文件、模块与过程
+
+应用源码使用小写 snake_case。独立过程文件以过程命名，显式接口文件和模块使用
+`<procedure>_interface`。模块文件采用模块名。串行、MPI 和内存版采用同一术语，并用
+`_mpi` 区分需要独立符号的 MPI 过程。旧缩写程序入口源码改用 `*_main.f90`。
+
+| 原名称 | 现名称 |
+| --- | --- |
+| `rscfvu.f90` | [rmcdhf_main.f90](../../src/apps/rmcdhf/rmcdhf_main.f90) |
+| `setcof`、`setcof_i` | `assemble_orbital_potential_coefficients`、`assemble_orbital_potential_coefficients_interface` |
+| `bndinv`、`bndinv_i` | `invert_banded_matrix`、`invert_banded_matrix_interface` |
+| `rmcdhf_mem_c` | `rmcdhf_mcp_memory` |
+| `jj2lsj_code` | `jj2lsj_conversion` |
+| `mrgcsl` | `merge_transition_csf_bases` |
+
+Fortran 源码调用方需更新 `USE`、过程调用和回调绑定，再重新编译。CMake 的程序目标和
+命令行入口沿用下表名称。RCI 的 [Breit 系数收集](../../src/apps/rci/collect_breit_angular_coefficient.f90)
+和 [Breit 径向因子](../../src/apps/rci/breit_radial_integral_factors.f90) 使用描述性文件名，
+并以链接时选择的 `talk` 和 `cxk` 作为外部符号。
+[RMCDHF 来源清单](../reference/rmcdhf_app_symbols_snapshot.json)记录当前路径与历史源码键的对应关系。
+应用文件迁移涉及 1,335 个原路径和 1,333 个新路径，其中 650 个是接口文件。
+两个未参与 CMake 构建的字节相同的接口副本已合并，另移除了一个使用旧签名的 RCI 接口副本。
+
+命名迁移以 `bb0a2c7` 和当时的工作树为基线。GNU Fortran 15.3.0 的 Release 和 Check 各通过
+114 项 CTest。最后校正径向密度输入和单电子占据检查的名称后，两套配置各复验相关 7 项测试。
+同一组夹具迁移前后的串行和双进程 MPI 输出各有 16 个文件逐字节一致，RCI 的 Coulomb 和
+Breit 混合系数文件也分别逐字节一致。
+
 ## 程序目录与可执行文件
 
 日期：2026-11-11。基于 `c47f4d4` 及后续 MPI 描述符输入的工作树修改。

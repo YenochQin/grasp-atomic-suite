@@ -6,17 +6,17 @@ program mcp_reader_io
     use hamiltonian_symmetry_blocks, only: symmetry_block_count, csf_counts_by_block
     use symmetry_block_offsets, only: csf_offsets_by_block
     use scf_iteration_state, only: ucf, nddim, nxdim, nydim, ndcof, da
-    use setmcp_I, only: setmcp
+    use connect_mcp_files_interface, only: connect_mcp_files
 #ifdef MCP_MEM
-    use rmcdhf_mem_c, only: lab_31, ncontr_31, coeff_31
+    use rmcdhf_mcp_memory, only: lab_31, ncontr_31, coeff_31
 #else
-    use setcof_I, only: setcof
+    use assemble_orbital_potential_coefficients_interface, only: assemble_orbital_potential_coefficients
 #endif
 #ifdef MCP_MPI
     use mpi_state, only: mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize, mpi_init, &
        & mpi_process_count, mpi_rank
 #else
-    use mpi_s, only: mpi_process_count, mpi_rank
+    use serial_mpi_context, only: mpi_process_count, mpi_rank
 #endif
     use mcp_file_metadata, only: mcp_input_units
     implicit none (type, external)
@@ -109,7 +109,7 @@ program mcp_reader_io
         end if
         close(fixture_output_unit)
     end do
-    call setmcp(ncore, 1, labels, trim(prefix))
+    call connect_mcp_files(ncore, 1, labels, trim(prefix))
 #ifndef MCP_MEM
     orbital_kappa(1) = -1
     orbital_two_j(1) = 1
@@ -119,7 +119,7 @@ program mcp_reader_io
     nddim = 0
     nxdim = 0
     nydim = 0
-    call setcof(.true., 1)
+    call assemble_orbital_potential_coefficients(.true., 1)
 #endif
     if (corrupt) error stop "Corrupt MCP was accepted"
     if (ncore /= 0 .or. symmetry_block_count /= 1) error stop "Global MCP header"
@@ -149,7 +149,7 @@ program mcp_reader_io
     print *, "PASS MCP reader input"
 end program mcp_reader_io
 
-function dsubrs(eol, i, j, jblock) result(value)
+function csf_density_matrix_element(eol, i, j, jblock) result(value)
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
     logical, intent(in) :: eol
@@ -157,36 +157,36 @@ function dsubrs(eol, i, j, jblock) result(value)
     integer :: jblock
     real(real64) :: value
     value = 1.0_real64
-end function dsubrs
+end function csf_density_matrix_element
 
-function fco(k, ir, ia, ib) result(value)
+function direct_angular_coefficient(k, ir, ia, ib) result(value)
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
     integer, intent(in) :: k, ia, ib
     integer :: ir
     real(real64) :: value
     value = 0.0_real64
-end function fco
+end function direct_angular_coefficient
 
-function gco(k, ir, ia, ib) result(value)
+function exchange_angular_coefficient(k, ir, ia, ib) result(value)
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
     integer :: k, ir
     integer, intent(in) :: ia, ib
     real(real64) :: value
     value = 0.0_real64
-end function gco
+end function exchange_angular_coefficient
 
-function systemmem() result(value)
+function query_total_system_memory() result(value)
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
     real(real64) :: value
     value = 1.0_real64
-end function systemmem
+end function query_total_system_memory
 
-function systemfreemem() result(value)
+function query_available_system_memory() result(value)
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
     real(real64) :: value
     value = 1.0_real64
-end function systemfreemem
+end function query_available_system_memory

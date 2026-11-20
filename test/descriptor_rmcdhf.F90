@@ -6,13 +6,13 @@ program descriptor_rmcdhf
    use hamiltonian_symmetry_blocks, only: csf_counts_by_block, symmetry_block_count
    use level_symmetry_metadata, only: jpgg, nblk0
    use standard_io_units, only: stderr_unit
-   use setmcp_i, only: setmcp
+   use connect_mcp_files_interface, only: connect_mcp_files
 #ifdef DESCRIPTOR_MPI
    use mpi_state, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_rank, mpi_process_count, mpi_finalize
-   use setcslmpi_i, only: setcslmpi
+   use load_csf_basis_data_mpi_interface, only: load_csf_basis_data_mpi
 #else
-   use mpi_s, only: mpi_rank, mpi_process_count
-   use setcsl_i, only: setcsl
+   use serial_mpi_context, only: mpi_rank, mpi_process_count
+   use load_csf_basis_data_interface, only: load_csf_basis_data
 #endif
    implicit none (type, external)
    integer :: ncore, status, output_unit
@@ -33,11 +33,11 @@ program descriptor_rmcdhf
    rank_text="000"
    mcp_prefix="mcp"
 #endif
-   call setmcp(closed_core_subshell_count,nblk0,labels,trim(mcp_prefix))
+   call connect_mcp_files(closed_core_subshell_count,nblk0,labels,trim(mcp_prefix))
 #ifdef DESCRIPTOR_MPI
-   call setcslmpi("rcsf_descriptors.parquet",ncore,labels)
+   call load_csf_basis_data_mpi("rcsf_descriptors.parquet",ncore,labels)
 #else
-   call setcsl("rcsf_descriptors.parquet",ncore,labels)
+   call load_csf_basis_data("rcsf_descriptors.parquet",ncore,labels)
 #endif
    if (ncore /= 1 .or. csf_count /= 10 .or. orbital_count /= 7) error stop "basis dimensions"
    if (symmetry_block_count /= 3 .or. lbound(csf_counts_by_block,1) /= 0) error stop "block bounds"

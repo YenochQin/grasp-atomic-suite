@@ -58,25 +58,25 @@ CAPACITY_FILES = (
 )
 RESTART_FILES = ("src/appl/rci90/lodres.f90", "src/appl/rci90_mpi/lodres.f90")
 SUITE_GRID_FILES = (
-    "src/apps/rwfnestimate/getinfo.f90",
-    "src/apps/rci/getcid.f90",
-    "src/apps/rci_mpi/getcid.f90",
-    "src/apps/rbiotransform/radpar.f90",
-    "src/apps/rbiotransform_mpi/radparmpi.f90",
-    "src/apps/rtransition/getosd.f90",
-    "src/apps/rtransition_phase/getosd.f90",
-    "src/apps/rtransition_mpi/getosdmpi.f90",
-    "src/apps/rmcdhf/getscd.f90",
-    "src/apps/rmcdhf_mpi/getscdmpi.f90",
-    "src/apps/rmcdhf_mem/getscd.f90",
-    "src/apps/rmcdhf_mem_mpi/getscdmpi.f90",
-    "src/apps/rhfs/gethfd.f90",  # also compiled into gj and gj_mpi
-    "src/apps/ris4/getsmd.f90",
-    "src/apps/rdensity/getsmd.f90",
+    "src/apps/rwfnestimate/read_calculation_options.f90",
+    "src/apps/rci/read_ci_options.f90",
+    "src/apps/rci_mpi/read_ci_options.f90",
+    "src/apps/rbiotransform/configure_radial_grid.f90",
+    "src/apps/rbiotransform_mpi/configure_radial_grid.f90",
+    "src/apps/rtransition/read_transition_options.f90",
+    "src/apps/rtransition_phase/read_transition_options.f90",
+    "src/apps/rtransition_mpi/read_transition_options.f90",
+    "src/apps/rmcdhf/read_scf_options.f90",
+    "src/apps/rmcdhf_mpi/read_scf_options_mpi.f90",
+    "src/apps/rmcdhf_mem/read_scf_options.f90",
+    "src/apps/rmcdhf_mem_mpi/read_scf_options_mpi.f90",
+    "src/apps/rhfs/read_hyperfine_options.f90",  # also compiled into gj and gj_mpi
+    "src/apps/ris4/prepare_isotope_calculation.f90",
+    "src/apps/rdensity/read_radial_density_input.f90",
 )
 SUITE_RESTART_FILES = (
-    "src/apps/rci/lodres.f90",
-    "src/apps/rci_mpi/lodres.f90",
+    "src/apps/rci/read_ci_restart.f90",
+    "src/apps/rci_mpi/read_ci_restart.f90",
 )
 SUITE_CONFIG_FILE = "src/lib/grasp_shared/compile_time_capacities.f90"
 SUITE_EXPORT_FILE = "src/lib/grasp_shared/grasp_parameters.f90"

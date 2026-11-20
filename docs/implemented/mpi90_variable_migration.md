@@ -570,4 +570,4 @@ Fortran 标识符不区分大小写，表中采用小写。现行文件与模块
 - GNU Fortran 15.3.0 与 Open MPI 的 Release 和 Debug 均构建通过，构建包含串行和 MPI 程序。
   109 项 Fortran 与集成测试中，Release 通过 109 项，Debug 通过 108 项。
 - Debug 的 `rci_mpi_breit` 在迁移前后均于同一径向积分语句触发浮点异常。该测试在 Release 通过。
-  [zkf.f90 第 102 行](../../src/apps/rci_mpi/zkf.f90#L102)
+  [zkf.f90 第 102 行](../../src/apps/rci_mpi/evaluate_breit_hartree_z.f90#L102)

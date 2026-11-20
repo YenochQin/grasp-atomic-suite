@@ -1,5 +1,6 @@
 """Exercise the complete production uniquelsj workspace, without resizing it."""
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
@@ -19,15 +20,19 @@ def main() -> None:
         root = Path(__file__).resolve().parents[2]
         work = Path(destination).resolve()
         work.mkdir(parents=True, exist_ok=True)
-        source = (root / "src/apps/jj2lsj/jj2lsj_code.f90").read_text()
-        start = source.index("      subroutine uniquelsj(")
-        end = source.index("      end subroutine uniquelsj", start) + len("      end subroutine uniquelsj")
+        source = (root / "src/apps/jj2lsj/jj2lsj_conversion.f90").read_text()
+        routine = re.search(
+            r"^[ \t]*subroutine assign_unique_lsj_labels\b.*?"
+            r"^[ \t]*end subroutine assign_unique_lsj_labels\b",
+            source, re.MULTILINE | re.DOTALL,
+        )
+        assert routine is not None, "Cannot find the unique LSJ label routine"
         # Only the private routine's host is reduced. The entire procedure,
         # including its production capacities and algorithm, is copied verbatim.
         (work / "unique.f90").write_text(
-            "module jj2lsj_code\nuse iso_fortran_env, only: real64\n"
+            "module jj2lsj_conversion\nuse iso_fortran_env, only: real64\n"
             "use jj2lsj_profile\nimplicit none\ncontains\n"
-            + source[start:end] + "\nend module\n")
+            + routine[0] + "\nend module\n")
         subprocess.run([compiler, "-std=f2018", "-fcheck=all", "-fbacktrace",
                         str(root / "src/lib/grasp_shared/input_error_handling.f90"),
                         str(root / "src/apps/jj2lsj/jj2lsj_profile.f90"),

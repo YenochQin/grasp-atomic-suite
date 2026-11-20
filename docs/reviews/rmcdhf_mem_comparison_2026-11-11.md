@@ -23,10 +23,10 @@ MPI 两版有 113 个共同文件，其中 97 个相同、16 个不同。每个 
 17 个文件，包含缓存模块、加载/读取例程、内存查询及接口文件。
 文件统计包含接口文件，不能直接解释为算法差异数量。
 
-依据：[串行 SCF](../../src/apps/rmcdhf/scf.f90)、
-[内存版串行 SCF](../../src/apps/rmcdhf_mem/scf.f90)、
-[MPI SCF](../../src/apps/rmcdhf_mpi/scfmpi.f90)、
-[内存版 MPI SCF](../../src/apps/rmcdhf_mem_mpi/scfmpi.f90)。
+依据：[串行 SCF](../../src/apps/rmcdhf/run_scf_iterations.f90)、
+[内存版串行 SCF](../../src/apps/rmcdhf_mem/run_scf_iterations.f90)、
+[MPI SCF](../../src/apps/rmcdhf_mpi/run_scf_iterations_mpi.f90)、
+[内存版 MPI SCF](../../src/apps/rmcdhf_mem_mpi/run_scf_iterations_mpi.f90)。
 
 ## MCP 存储与读取
 
@@ -49,12 +49,12 @@ MPI 入口按 `'mcp' // idstring` 读取各 rank 的文件，并检查文件中�
 `MYID/NPROCS` 与运行配置一致。它没有让每个 rank 加载一份完整的全局角系数；
 也不能由此假定所有数组都按 rank 数等比例缩小。
 
-依据：[SETMCP](../../src/apps/rmcdhf_mem/setmcp.f90)、
-[SETMCP_MEM](../../src/apps/rmcdhf_mem/setmcp_mem.f90)、
-[缓存数组](../../src/apps/rmcdhf_mem/rmcdhf_mem_C.f90)、
-[READ2_MEM](../../src/apps/rmcdhf_mem/read2_mem.f90)、
-[READ3_MEM](../../src/apps/rmcdhf_mem/read3_mem.f90)、
-[MPI 入口](../../src/apps/rmcdhf_mem_mpi/rscfmpivu.f90)。
+依据：[SETMCP](../../src/apps/rmcdhf_mem/connect_mcp_files.f90)、
+[SETMCP_MEM](../../src/apps/rmcdhf_mem/cache_mcp_files.f90)、
+[缓存数组](../../src/apps/rmcdhf_mem/rmcdhf_mcp_memory.f90)、
+[READ2_MEM](../../src/apps/rmcdhf_mem/read_mcp_structure_into_memory.f90)、
+[READ3_MEM](../../src/apps/rmcdhf_mem/read_mcp_coefficients_into_memory.f90)、
+[MPI 入口](../../src/apps/rmcdhf_mem_mpi/rmcdhf_mpi_main.f90)。
 
 ## 拉格朗日乘子轨道对筛选
 
@@ -81,10 +81,10 @@ FULLI = ABS(UCF(LI)-DBLE(NKJ(LI)+1)) < EPS
 此外，两类版本的嵌套遍历顺序不同，所列轨道对的顺序也可能不同。
 筛选条件差异会改变实际建立的乘子集合，不能归因于缓存或浮点舍入。
 
-依据：[普通版 SETLAG](../../src/apps/rmcdhf/setlag.f90)、
-[内存版 SETLAG](../../src/apps/rmcdhf_mem/setlag.f90)、
-[普通版 SETLAGMPI](../../src/apps/rmcdhf_mpi/setlagmpi.f90)、
-[内存版 SETLAGMPI](../../src/apps/rmcdhf_mem_mpi/setlagmpi.f90)。
+依据：[普通版 SETLAG](../../src/apps/rmcdhf/calculate_lagrange_multipliers.f90)、
+[内存版 SETLAG](../../src/apps/rmcdhf_mem/calculate_lagrange_multipliers.f90)、
+[普通版 SETLAGMPI](../../src/apps/rmcdhf_mpi/calculate_lagrange_multipliers_mpi.f90)、
+[内存版 SETLAGMPI](../../src/apps/rmcdhf_mem_mpi/calculate_lagrange_multipliers_mpi.f90)。
 
 ## MPI 拉格朗日乘子公式选择
 
@@ -111,8 +111,8 @@ QDIF = ABS((UCFJ - UCFM)/MAX(UCFJ,UCFM))
 也存在同样的公式分支差异，也不能把 MPI 两版的全部迭代差异都归为归约舍入。
 静态对比本身不裁定哪种处理在某个体系中更合适。
 
-依据：[普通 MPI 公式](../../src/apps/rmcdhf_mpi/setlagmpi.f90)、
-[内存 MPI 公式](../../src/apps/rmcdhf_mem_mpi/setlagmpi.f90)，
+依据：[普通 MPI 公式](../../src/apps/rmcdhf_mpi/calculate_lagrange_multipliers_mpi.f90)、
+[内存 MPI 公式](../../src/apps/rmcdhf_mem_mpi/calculate_lagrange_multipliers_mpi.f90)，
 以及上一节的两个串行 `SETLAG`。
 
 ## 径向积分外边界
@@ -141,10 +141,10 @@ IF (TTHIS + TLAST <= EPS) THEN
 当 `N < NNNP` 时，不能假定普通版总能靠 `NNNP-1` 条件继续运行。
 普通版没有报错也不足以证明轨道尾部已充分衰减。
 
-依据：[普通串行 IN](../../src/apps/rmcdhf/in.f90)、
-[内存串行 IN](../../src/apps/rmcdhf_mem/in.f90)、
-[普通 MPI IN](../../src/apps/rmcdhf_mpi/in.f90)、
-[内存 MPI IN](../../src/apps/rmcdhf_mem_mpi/in.f90)。
+依据：[普通串行 IN](../../src/apps/rmcdhf/integrate_radial_inward.f90)、
+[内存串行 IN](../../src/apps/rmcdhf_mem/integrate_radial_inward.f90)、
+[普通 MPI IN](../../src/apps/rmcdhf_mpi/integrate_radial_inward.f90)、
+[内存 MPI IN](../../src/apps/rmcdhf_mem_mpi/integrate_radial_inward.f90)。
 
 ## 资源开销和异常处理
 
@@ -165,11 +165,11 @@ IF (TTHIS + TLAST <= EPS) THEN
 `STOP`；内存版 `SETMCP` 的累积错误分支关闭文件后，缺少普通版对应的立即终止
 语句。异常输入下的退出和后续行为需要单独验证，不能由正常输入路径推断。
 
-依据：[缓存分配](../../src/apps/rmcdhf_mem/setmcp_mem.f90)、
-[系统总内存查询](../../src/apps/rmcdhf_mem/systemmem.f90)、
-[系统空闲内存查询](../../src/apps/rmcdhf_mem/systemfreemem.f90)、
-[普通 SETMCP](../../src/apps/rmcdhf/setmcp.f90)、
-[内存 SETMCP](../../src/apps/rmcdhf_mem/setmcp.f90)。
+依据：[缓存分配](../../src/apps/rmcdhf_mem/cache_mcp_files.f90)、
+[系统总内存查询](../../src/apps/rmcdhf_mem/query_total_system_memory.f90)、
+[系统空闲内存查询](../../src/apps/rmcdhf_mem/query_available_system_memory.f90)、
+[普通 SETMCP](../../src/apps/rmcdhf/connect_mcp_files.f90)、
+[内存 SETMCP](../../src/apps/rmcdhf_mem/connect_mcp_files.f90)。
 
 ## 验证范围与后续对照
 

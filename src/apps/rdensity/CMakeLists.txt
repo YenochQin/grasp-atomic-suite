@@ -1,8 +1,8 @@
 set(RDENSITY_SOURCES
-    getmixblock.f90 getmixblock_I.f90
-    getsmd.f90 getsmd_I.f90
-    setdbg.f90 setdbg_I.f90
-    natural_orbitals.f90 natorbnew.f90 rdensity.f90
+    read_mixing_blocks.f90 read_mixing_blocks_interface.f90
+    read_radial_density_input.f90 read_radial_density_input_interface.f90
+    configure_debug_output.f90 configure_debug_output_interface.f90
+    natural_orbitals.f90 density_calculation.f90 rdensity.f90
 )
 
 if(GRASP_BUILD_SERIAL_APPS)

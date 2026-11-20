@@ -1,17 +1,26 @@
 ! Shared entry point for rdensity and rdensity_mpi.
 program rdensity
+    ! Module dependencies
     use calculation_state_files, only: orbital_input_path, mixing_input_path, read_state_name, property_state_arguments
     use calculation_input_defaults, only: ndef
     use debug_output_settings, only: cutoff
     use density_parallel, only: broadcast_options, density_fail, parallel_finish, parallel_start, rank, workers
     use density_calculation, only: calculate_density
     use yes_no_input, only: getyn
-    use setdbg_i, only: setdbg
+
+    ! Procedure interfaces
+    use configure_debug_output_interface, only: configure_debug_output
+
+    ! Module dependencies
     use machine_constants, only: setmc
     use physical_constants, only: setcon
     use density_parallel, only: setcsla => load_density_basis
-    use getsmd_i, only: getsmd
-    use getmixblock_i, only: getmixblock
+
+    ! Procedure interfaces
+    use read_radial_density_input_interface, only: read_radial_density_input
+    use read_mixing_blocks_interface, only: read_mixing_blocks
+
+    ! Module dependencies
     use log_factorial_table, only: factt
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
@@ -67,13 +76,13 @@ program rdensity
         inquire(file=trim(arg), exist=exists)
         if (exists) call density_fail("Density output already exists: "//trim(arg))
     end if
-    call setdbg
+    call configure_debug_output
     call setmc
     call setcon
     ! Read-only inputs are shared; angular and orbital state is rank-local.
     call setcsla(name, core_subshell_count)
-    call getsmd(name)
-    call getmixblock(name, nci)
+    call read_radial_density_input(name)
+    call read_mixing_blocks(name, nci)
     call factt
     if (rank == 0 .and. interactive) then
         write(*,*) "How do you want to order your eigenvectors?"
@@ -92,7 +101,10 @@ program rdensity
     call parallel_finish
 contains
     subroutine require_file(filename)
+        ! Arguments
         character(*), intent(in) :: filename
+
+        ! Local declarations
         logical :: found
         inquire(file=filename, exist=found)
         if (.not.found) call density_fail("Missing input file: "//filename)

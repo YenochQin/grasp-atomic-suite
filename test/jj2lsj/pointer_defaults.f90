@@ -1,5 +1,5 @@
 program pointer_defaults
-    use jj2lsj_code, only: cs_function_ls, csf_basis_ls, as_function_ls, asf_basis_ls, lsj_list
+    use jj2lsj_conversion, only: cs_function_ls, csf_basis_ls, as_function_ls, asf_basis_ls, lsj_list
     implicit none (type, external)
     type(csf_basis_ls) :: basis
     type(as_function_ls) :: state

@@ -1,7 +1,7 @@
 ! Exercise the production MPI sparse-file writer without launching MPI.
 program sparse_empty_rank
     use orbital_csf_basis, only: ncf => csf_count
-    use setsda_I, only: setsda
+    use write_mcp_sparsity_interface, only: write_mcp_sparsity
     use mcp_generation_options, only: mcp_temporary_units
     implicit none (type, external)
     integer :: mcp_output_unit
@@ -20,7 +20,7 @@ program sparse_empty_rank
         write(mcp_temporary_units(30)) "MCP", 1
         if (rank == 0) write(mcp_temporary_units(30)) 1, 1, 1
         rewind(mcp_temporary_units(30))
-        call setsda(check_callback,1-rank,printing,1,rank,2,"sparse-rank")
+        call write_mcp_sparsity(check_callback,1-rank,printing,1,rank,2,"sparse-rank")
         close(mcp_temporary_units(30))
 
         open(newunit=mcp_output_unit, file="sparse-rank.30", status="old", form="unformatted")
