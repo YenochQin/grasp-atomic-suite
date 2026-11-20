@@ -4,14 +4,14 @@ module scalar_interaction_recoupling_selection
 
     ! Module interface
     private
-    public :: reco
+    public :: select_scalar_interaction_recoupling
 contains
-    subroutine reco(first_shell_position,second_shell_position,third_shell_position,fourth_shell_position, &
+    subroutine select_scalar_interaction_recoupling(first_shell_position,second_shell_position,third_shell_position, &
+        & fourth_shell_position, &
         interaction_case,coupling_allowed)
         ! Module dependencies
-        use csf_pair_angular_state,             only: peel_orbital_count => npeel, peel_orbital_indices => jlist, &
-            bra_intermediate_couplings => jjc1, ket_intermediate_couplings => jjc2, &
-            bra_subshell_quantum_codes => jjq1, ket_subshell_quantum_codes => jjq2
+        use csf_pair_angular_state,             only: peel_orbital_count, peel_orbital_indices, bra_intermediate_couplings, &
+            ket_intermediate_couplings, bra_subshell_quantum_codes, ket_subshell_quantum_codes
         implicit none (type, external)
 
         ! Arguments
@@ -68,5 +68,5 @@ contains
             end do
         end do
         return
-    end subroutine reco
+    end subroutine select_scalar_interaction_recoupling
 end module scalar_interaction_recoupling_selection

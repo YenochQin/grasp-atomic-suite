@@ -4,32 +4,31 @@ module two_electron_angular_coefficients
 
     ! Module interface
     private
-    public :: rkco_gg
+    public :: calculate_two_electron_angular_coefficients
 contains
-    subroutine rkco_gg (bra_csf_index,ket_csf_index,coefficient_consumer,include_closed_shell_terms, &
+    subroutine calculate_two_electron_angular_coefficients (bra_csf_index,ket_csf_index,coefficient_consumer, &
+        & include_closed_shell_terms, &
         interaction_type)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        use csf_pair_angular_state, only: bra_intermediate_couplings => jjc1, ket_intermediate_couplings => jjc2, &
-            bra_subshell_quantum_codes => jjq1, ket_subshell_quantum_codes => jjq2, peel_orbital_indices => jlist, &
-            core_orbital_indices => klist, max_orbitals, core_orbital_count => ncore, peel_orbital_count => npeel, &
-            bra_occupations => nq1, ket_occupations => nq2
-        use orbital_csf_basis, only: max_orbitals, orbital_count, orbital_kappa
-        use angular_recoupling_backup, only: saved_bra_j_weights => jc1s, saved_ket_j_weights => jc2s, &
-            saved_peel_orbitals => jlis, max_orbitals
-        use csf_quantum_queries, only: itjpo, ispar
-        use two_electron_csf_filter, only: ichkq2
-        use csf_pair_quantum_numbers, only: setqna
-        use two_electron_unchanged_occupations, only: el1
-        use two_electron_pair_transfer, only: el2
-        use two_electron_single_transfer, only: el3
-        use two_electron_three_shell_transfer, only: el4
-        use two_electron_four_shell_transfer, only: el5
-        use closed_shell_mcp, only: cord_callback => cord
+        use csf_pair_angular_state, only: bra_intermediate_couplings, ket_intermediate_couplings, bra_subshell_quantum_codes, &
+            ket_subshell_quantum_codes, peel_orbital_indices, core_orbital_indices, core_orbital_count, peel_orbital_count, &
+            bra_occupations, ket_occupations
+        use orbital_csf_basis, only: orbital_count, orbital_kappa
+        use angular_recoupling_backup, only: saved_bra_j_weights, saved_ket_j_weights, saved_peel_orbitals
+        use csf_quantum_queries, only: csf_total_j_code, csf_parity_code
+        use two_electron_csf_filter, only: check_two_electron_csf_pair
+        use csf_pair_quantum_numbers, only: prepare_csf_pair_quantum_numbers
+        use two_electron_unchanged_occupations, only: accumulate_two_electron_unchanged_occupations
+        use two_electron_pair_transfer, only: accumulate_two_electron_pair_transfer
+        use two_electron_single_transfer, only: accumulate_two_electron_single_transfer
+        use two_electron_three_shell_transfer, only: accumulate_three_shell_transfers
+        use two_electron_four_shell_transfer, only: accumulate_four_shell_transfers
+        use closed_shell_mcp, only: calculate_closed_shell_mcp
         implicit none (type, external)
 
         ! Arguments
-        procedure(cord_callback) :: coefficient_consumer
+        procedure(calculate_closed_shell_mcp) :: coefficient_consumer
         integer, intent(in) :: bra_csf_index,ket_csf_index,include_closed_shell_terms,interaction_type
 
         ! Local declarations
@@ -42,12 +41,12 @@ contains
             second_shell_position,first_shell_position,peel_coupling_count
 
         ! Coulomb and Breit are even scalars, so the two CSFs must have equal J and parity.
-        if (itjpo (bra_csf_index) /= itjpo (ket_csf_index)) return
-        if (ispar (bra_csf_index) /= ispar (ket_csf_index)) return
-        if (ichkq2(bra_csf_index,ket_csf_index) == 0) return
-        call setqna (bra_csf_index,ket_csf_index)
+        if (csf_total_j_code (bra_csf_index) /= csf_total_j_code (ket_csf_index)) return
+        if (csf_parity_code (bra_csf_index) /= csf_parity_code (ket_csf_index)) return
+        if (check_two_electron_csf_pair(bra_csf_index,ket_csf_index) == 0) return
+        call prepare_csf_pair_quantum_numbers (bra_csf_index,ket_csf_index)
         if (orbital_count < 1) then
-            print *, "RKCO_GG: No subshells."
+            print *, "No subshells for two-electron angular coefficients."
             stop
         end if
         if (peel_orbital_count /= 0 .and. peel_orbital_count /= 1) then
@@ -113,12 +112,14 @@ contains
                 end if
                 if(occupation_pattern_code/=40) then
                     if(occupation_pattern_code/=22) then
-                        call el5(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2,ket_shell_1,ket_shell_2,interaction_type)
+                        call accumulate_four_shell_transfers(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2,ket_shell_1, &
+                            & ket_shell_2,interaction_type)
                     else
-                        call el4(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2,ket_shell_1,ket_shell_2,interaction_type)
+                        call accumulate_three_shell_transfers(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2,ket_shell_1, &
+                            & ket_shell_2,interaction_type)
                     end if
                 else
-                    call el2(bra_csf_index,ket_csf_index,bra_shell_1,ket_shell_1,interaction_type)
+                    call accumulate_two_electron_pair_transfer(bra_csf_index,ket_csf_index,bra_shell_1,ket_shell_1,interaction_type)
                 end if
                 return
             end if
@@ -131,7 +132,7 @@ contains
                 ! The changed shell pair is already known. Loop only over occupied partners.
                 last_outer_position = 1
             case default
-                write (*,'("RKCO_GG: Error.")')
+                write (*,'(A,I0)') "Unexpected total occupation difference: ", total_occupation_difference
                 stop
             end select
             do outer_peel_position = 1,last_outer_position
@@ -167,9 +168,11 @@ contains
                         if (ket_occupations(ket_orbital) <= 1) cycle
                     end if
                     if(total_occupation_difference/=0) then
-                        call el3(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2,ket_shell_1,ket_shell_2,interaction_type)
+                        call accumulate_two_electron_single_transfer(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2, &
+                            & ket_shell_1,ket_shell_2,interaction_type)
                     else
-                        call el1(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2,1,interaction_type)
+                        call accumulate_two_electron_unchanged_occupations(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2, &
+                            & 1,interaction_type)
                     end if
                 end do
                 if ((total_occupation_difference == 0) .and. (core_orbital_count == 0)) cycle
@@ -234,7 +237,8 @@ contains
                                 write(angular_debug_unit,'("   rie zymes 38 atv N=N-N  !!!!!!")')
                                 return
                             else
-                                call el3(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2,ket_shell_1,ket_shell_2, &
+                                call accumulate_two_electron_single_transfer(bra_csf_index,ket_csf_index,bra_shell_1, &
+                                    & bra_shell_2,ket_shell_1,ket_shell_2, &
                                     interaction_type)
                             end if
                         else
@@ -243,7 +247,8 @@ contains
                             return
                         end if
                     else
-                        call el1(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2,1,interaction_type)
+                        call accumulate_two_electron_unchanged_occupations(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2, &
+                            & 1,interaction_type)
                     end if
                     peel_orbital_count = peel_orbital_count-1
                     peel_coupling_count = peel_orbital_count-1
@@ -272,7 +277,8 @@ contains
                 if(bra_csf_index /= ket_csf_index) then
                     if(peel_orbital_count == 1 .and. bra_occupations(partner_orbital) == ket_occupations(partner_orbital) &
                         ) then
-                        call el1(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2,1,interaction_type)
+                        call accumulate_two_electron_unchanged_occupations(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2, &
+                            & 1,interaction_type)
                     else if(occupation_pattern_code/=2) then
                         call ensure_debug_output()
                         write(angular_debug_unit,'("   rie zymes 45 atv N=N-N  !!!!!!")')
@@ -282,11 +288,13 @@ contains
                         write(angular_debug_unit,*)"IDQG IDQ",occupation_pattern_code,total_occupation_difference
                         return
                     else
-                        call el3(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2,ket_shell_1,ket_shell_2, &
+                        call accumulate_two_electron_single_transfer(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2, &
+                            & ket_shell_1,ket_shell_2, &
                             interaction_type)
                     end if
                 else
-                    call el1(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2,0,interaction_type)
+                    call accumulate_two_electron_unchanged_occupations(bra_csf_index,ket_csf_index,bra_shell_1,bra_shell_2,0, &
+                        & interaction_type)
                 end if
             end do
         end do
@@ -313,5 +321,5 @@ contains
             end do
         end do
         return
-    end subroutine rkco_gg
+    end subroutine calculate_two_electron_angular_coefficients
 end module two_electron_angular_coefficients

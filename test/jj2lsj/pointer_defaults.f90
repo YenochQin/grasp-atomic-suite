@@ -24,7 +24,7 @@ contains
     subroutine check_row(row)
         type(cs_function_ls), intent(in) :: row
         if (associated(row%occupation).or.associated(row%seniority).or.associated(row%w).or. &
-            associated(row%shelll).or.associated(row%shells).or.associated(row%shelllx).or. &
-            associated(row%shellsx)) error stop "CSF component defaults"
+            associated(row%shell_two_l).or.associated(row%shell_two_s).or.associated(row%intermediate_two_l).or. &
+            associated(row%intermediate_two_s)) error stop "CSF component defaults"
     end subroutine check_row
 end program pointer_defaults

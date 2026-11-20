@@ -1,75 +1,84 @@
-!***********************************************************************
-!                                                                      *
-subroutine read_transition_mixing_coefficients(name, inpci, init)
-    ! Module dependencies
-    use transition_matrix_workspace, only: final_mixing_unit, initial_mixing_unit
-    !                                                                      *
-    !   Open and read the mixing coefficent files                          *
-    !                                                                      *
-    !   Written by Per Jonsson                                             *
-    !                                                                      *
-    !***********************************************************************
-    use array_memory_management, only: alloc
-    use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
-        nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
-    use orbital_csf_basis, only: max_orbitals
-    use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
-        csf_mixing_coefficients, evecff, evecii
-    use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-    use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+module read_transition_mixing_coefficients_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer  :: inpci
-    integer , intent(in) :: init
-    character  :: name(2)*24
+    ! Module interface
+    private
+    public :: read_transition_mixing_coefficients
+contains
 
-    ! Local declarations
-    integer :: ib, iatjp, iaspa, i, j
-    character :: mixing_file_signature*6
-    !-----------------------------------------------
-    !
-    if (init == 1) then
-        !
-        !   Read the initial state mixing file
-        !
-        read (initial_mixing_unit) ib, ncfii, nvecii, iatjp, iaspa
-        call alloc (evalii, nvecii, "EVALII", "READMIX")
-        call alloc (evecii, ncfii*nvecii, "EVECII", "READMIX")
-        call alloc (ivecii, nvecii,"IVECII", "READMIX" )
-        call alloc (iatjpoii, nvecii, "IATJPOII", "READMIX")
-        call alloc (iasparii, nvecii, "ISPARII", "READMIX")
-        read (initial_mixing_unit) (ivecii(i),i=1,nvecii)
-        iatjpoii(:nvecii) = iatjp
-        iasparii(:nvecii) = iaspa
-        read (initial_mixing_unit) eavii, (evalii(i),i=1,nvecii)
+    !***********************************************************************
+    !                                                                      *
+    subroutine read_transition_mixing_coefficients(name, inpci, init)
+        ! Module dependencies
+        use transition_matrix_workspace, only: final_mixing_unit, initial_mixing_unit
+        !                                                                      *
+        !   Open and read the mixing coefficent files                          *
+        !                                                                      *
+        !   Written by Per Jonsson                                             *
+        !                                                                      *
+        !***********************************************************************
+        use array_memory_management, only: alloc
+        use biorthogonal_orbital_sets, only: final_csf_count, initial_csf_count
+        use eigenstate_expansions, only: final_hamiltonian_energy_shift, initial_hamiltonian_energy_shift, &
+            final_shifted_eigenvalues, initial_shifted_eigenvalues, final_csf_mixing_coefficients, initial_csf_mixing_coefficients
+        use selected_level_indices, only: final_level_indices, initial_level_indices, final_level_count, initial_level_count
+        use level_symmetry_metadata, only: final_level_parity_signs, initial_level_parity_signs, final_level_two_j_plus_one, &
+            initial_level_two_j_plus_one
+        implicit none (type, external)
 
-        read (initial_mixing_unit) ((evecii(i + (j - 1)*ncfii),i=1,ncfii),j=1,nvecii)
-    !
-    !     CLOSE(68)
-    !
-    else
-        !
-        !   Read the final state mixing file
-        !
+        ! Arguments
+        integer  :: inpci
+        integer , intent(in) :: init
+        character  :: name(2)*24
 
-        read (final_mixing_unit) ib, ncfff, nvecff, iatjp, iaspa
-        call alloc (evalff, nvecff, "EVALFF", "READMIX")
-        call alloc (evecff, ncfff*nvecff, "EVECFF", "READMIX")
-        call alloc (ivecff, nvecff,"IVECFF", "READMIX" )
-        call alloc (iatjpoff, nvecff, "IATJPOFF", "READMIX")
-        call alloc (iasparff, nvecff, "ISPARFF", "READMIX")
-        read (final_mixing_unit) (ivecff(i),i=1,nvecff)
-        iatjpoff(:nvecff) = iatjp
-        iasparff(:nvecff) = iaspa
-        read (final_mixing_unit) eavff, (evalff(i),i=1,nvecff)
-
-        read (final_mixing_unit) ((evecff(i + (j - 1)*ncfff),i=1,ncfff),j=1,nvecff)
+        ! Local declarations
+        integer :: ib, iatjp, iaspa, i, j
+        !-----------------------------------------------
         !
-        !   Close the initial state mixing  file
-        !
-        !      CLOSE(78)
-    end if
+        if (init == 1) then
+            !
+            !   Read the initial state mixing file
+            !
+            read (initial_mixing_unit) ib, initial_csf_count, initial_level_count, iatjp, iaspa
+            call alloc (initial_shifted_eigenvalues, initial_level_count, "EVALII", "READMIX")
+            call alloc (initial_csf_mixing_coefficients, initial_csf_count*initial_level_count, "EVECII", "READMIX")
+            call alloc (initial_level_indices, initial_level_count,"IVECII", "READMIX" )
+            call alloc (initial_level_two_j_plus_one, initial_level_count, "IATJPOII", "READMIX")
+            call alloc (initial_level_parity_signs, initial_level_count, "ISPARII", "READMIX")
+            read (initial_mixing_unit) (initial_level_indices(i),i=1,initial_level_count)
+            initial_level_two_j_plus_one(:initial_level_count) = iatjp
+            initial_level_parity_signs(:initial_level_count) = iaspa
+            read (initial_mixing_unit) initial_hamiltonian_energy_shift, (initial_shifted_eigenvalues(i),i=1,initial_level_count)
 
-    return
-end subroutine read_transition_mixing_coefficients
+            read (initial_mixing_unit) ((initial_csf_mixing_coefficients(i + (j - 1)*initial_csf_count),i=1, &
+                initial_csf_count),j=1,initial_level_count)
+        !
+        !     CLOSE(68)
+        !
+        else
+            !
+            !   Read the final state mixing file
+            !
+
+            read (final_mixing_unit) ib, final_csf_count, final_level_count, iatjp, iaspa
+            call alloc (final_shifted_eigenvalues, final_level_count, "EVALFF", "READMIX")
+            call alloc (final_csf_mixing_coefficients, final_csf_count*final_level_count, "EVECFF", "READMIX")
+            call alloc (final_level_indices, final_level_count,"IVECFF", "READMIX" )
+            call alloc (final_level_two_j_plus_one, final_level_count, "IATJPOFF", "READMIX")
+            call alloc (final_level_parity_signs, final_level_count, "ISPARFF", "READMIX")
+            read (final_mixing_unit) (final_level_indices(i),i=1,final_level_count)
+            final_level_two_j_plus_one(:final_level_count) = iatjp
+            final_level_parity_signs(:final_level_count) = iaspa
+            read (final_mixing_unit) final_hamiltonian_energy_shift, (final_shifted_eigenvalues(i),i=1,final_level_count)
+
+            read (final_mixing_unit) ((final_csf_mixing_coefficients(i + (j - 1)*final_csf_count),i=1,final_csf_count),j=1, &
+                final_level_count)
+            !
+            !   Close the initial state mixing  file
+            !
+            !      CLOSE(78)
+        end if
+
+        return
+    end subroutine read_transition_mixing_coefficients
+end module read_transition_mixing_coefficients_interface

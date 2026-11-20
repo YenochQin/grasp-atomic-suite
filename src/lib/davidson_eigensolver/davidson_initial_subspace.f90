@@ -3,17 +3,17 @@ module davidson_initial_subspace
 
     ! Module interface
     private
-    public :: initdvd
+    public :: initialize_davidson_subspace
 contains
-    subroutine initdvd(operation_code, request_slots, matrix_order, constraint_count, initial_vector_count, &
+    subroutine initialize_davidson_subspace(operation_code, request_slots, matrix_order, constraint_count, initial_vector_count, &
         minimum_initial_basis_size, subspace_limit, solve_high_end, orthogonalization_work, &
         basis_with_constraints, basis_vectors, operator_basis, projected_matrix)
         ! Module dependencies
         ! Extend the supplied basis with orthogonalized matrix-vector products and build its projection.
         use, intrinsic :: iso_fortran_env, only: real64
-        use real_vector_initialization, only: dinit
-        use davidson_orthonormalization, only: mgs_nrm
-        use davidson_projected_matrix, only: adds
+        use real_vector_initialization, only: initialize_real_vector
+        use davidson_orthonormalization, only: orthonormalize_davidson_vectors
+        use davidson_projected_matrix, only: update_davidson_projected_matrix
         use blas_lapack_interfaces, only: dcopy, dscal
         implicit none (type, external)
 
@@ -39,7 +39,7 @@ contains
         save first_batch_vector, last_basis_vector, batch_vector_count, subspace_size
         if (operation_code /= 2) then
             if (initial_vector_count == 0) then
-                call dinit (matrix_order, 1.0_real64/sqrt(dble(matrix_order)), basis_vectors, 1)
+                call initialize_real_vector (matrix_order, 1.0_real64/sqrt(dble(matrix_order)), basis_vectors, 1)
                 initial_vector_count = 1
             end if
             first_batch_vector = 1
@@ -51,7 +51,7 @@ contains
                 last_basis_vector - first_batch_vector + 1)
             call dcopy (matrix_order*batch_vector_count, operator_basis((first_batch_vector-1)*matrix_order+1), 1, &
                 basis_vectors(1+last_basis_vector*matrix_order), 1)
-            call mgs_nrm (matrix_order, constraint_count + last_basis_vector, batch_vector_count, &
+            call orthonormalize_davidson_vectors (matrix_order, constraint_count + last_basis_vector, batch_vector_count, &
                 orthogonalization_work, basis_with_constraints)
             first_batch_vector = last_basis_vector + 1
             last_basis_vector = last_basis_vector + batch_vector_count
@@ -60,7 +60,8 @@ contains
             ! Apply the spectral sign to the completed products before forming the first projection.
             if (solve_high_end) call dscal (matrix_order*initial_vector_count, -1.0_real64, operator_basis, 1)
             subspace_size = 0
-            call adds (matrix_order, subspace_limit, subspace_size, initial_vector_count, basis_vectors, &
+            call update_davidson_projected_matrix (matrix_order, subspace_limit, subspace_size, initial_vector_count, &
+                & basis_vectors, &
                 operator_basis, projected_matrix)
 
             operation_code = 0
@@ -71,5 +72,5 @@ contains
         request_slots(1) = batch_vector_count
         request_slots(2) = first_batch_vector
         request_slots(3) = first_batch_vector
-    end subroutine initdvd
+    end subroutine initialize_davidson_subspace
 end module davidson_initial_subspace

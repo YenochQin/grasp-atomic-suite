@@ -6,7 +6,7 @@ module rwfnestimate_input
     use csf_descriptor_c_bindings, only: rust_descriptor_read_radial_header
     use grasp_parameters, only: max_orbitals
     use orbital_csf_basis, only: orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, &
-        & orbital_symmetry_labels
+        orbital_symmetry_labels
     use atomic_calculation_state, only: electron_count
     implicit none (type, external)
 

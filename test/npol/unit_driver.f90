@@ -1,17 +1,17 @@
 program npol_unit_driver
     use, intrinsic :: ieee_arithmetic, only: ieee_positive_inf, ieee_quiet_nan, ieee_value
     use, intrinsic :: iso_fortran_env, only: real64
-    use grasp_parameters, only: NNNP
-    use nuclear_polarization_state, only: npol_config, npol_message_len, npol_n, npol_ready, npol_reset, npol_settings, vnp_total, &
-       & zz_coul
+    use grasp_parameters, only: max_radial_points
+    use nuclear_polarization_state, only: npol_config, npol_message_len, npol_n, npol_ready, npol_reset, npol_settings, &
+        vnp_total, coulomb_potential_baseline
     use nuclear_polarization_input, only: npol_read_config, npol_validate_config
     use nuclear_polarization_potential, only: npol_build_grid, npol_compose
     use nuclear_polarization_initialization, only: npol_init, npol_summary_path
     use npol_test_support, only: fixture, near, npol_config, require, write_fixture
     implicit none (type, external)
     type(npol_config) :: cfg
-    real(real64) :: r(NNNP+1), a(NNNP+1), b(NNNP+1), v(NNNP+1)
-    real(real64) :: coul(NNNP+1), zz(NNNP+1), saved(NNNP+1), nan, inf
+    real(real64) :: r(max_radial_points+1), a(max_radial_points+1), b(max_radial_points+1), v(max_radial_points+1)
+    real(real64) :: coul(max_radial_points+1), zz(max_radial_points+1), saved(max_radial_points+1), nan, inf
     integer :: status, n, i, u
     character(32) :: mode
     character(4096) :: path
@@ -55,7 +55,7 @@ program npol_unit_driver
             stop 1
         end if
         call require(npol_ready .and. npol_n == 3, "initialization committed")
-        call require(all(zz_coul(:3) == coul(:3)), "baseline captured")
+        call require(all(coulomb_potential_baseline(:3) == coul(:3)), "baseline captured")
         call require(all(zz(:3) == coul(:3)-r(:3)*vnp_total(:3)), "initialization composition")
         call require(all(zz(4:) == coul(4:)), "init preserves tail")
         if (.not.npol_settings%enabled) call require(all(zz == coul), "disabled exact copy")
@@ -111,7 +111,7 @@ program npol_unit_driver
         call require(status == 0, message)
         saved = zz
         do i = 1, 2
-            call npol_compose(3, r, zz_coul, vnp_total, zz, status, message)
+            call npol_compose(3, r, coulomb_potential_baseline, vnp_total, zz, status, message)
             call require(status == 0 .and. all(zz == saved), "recomposition is idempotent")
         end do
         call near(zz(2), 10.0_real64, "minus r*V sign")
@@ -124,13 +124,14 @@ program npol_unit_driver
         call require(all(vnp_total == 0), "disabled clears previous NP")
         call npol_reset()
         call require(npol_n == 0 .and. .not.npol_ready, "reset state")
-        call require(all(zz_coul == 0), "reset baseline")
+        call require(all(coulomb_potential_baseline == 0), "reset baseline")
         call write_fixture("npol.inp")
         r(:2) = [0.0_real64, 1.0_real64]
         zz = 11
         call npol_init("npol.inp", 2.0_real64, 2, r, zz, status, message)
         call require(status == 0 .and. npol_n == 2, "new grid length")
-        call require(all(zz_coul(:2) == 11) .and. all(zz_coul(3:) == 0), "new baseline, no stale tail")
+        call require(all(coulomb_potential_baseline(:2) == 11) .and. all(coulomb_potential_baseline(3:) == 0), &
+            "new baseline, no stale tail")
         call near(zz(2), 11.0_real64+16.0_real64/17+128.0_real64/65, "new grid potential")
         open(newunit=u, file="npol.inp", status="replace")
         write(u,"(A)") "&npol schema_version=99 /"
@@ -140,7 +141,7 @@ program npol_unit_driver
         call require(status /= 0 .and. all(zz == coul), "reinit failure preserves fresh Coulomb")
         call require(.not.npol_settings%enabled .and. .not.npol_ready, "reinit failure clears published state")
     case ("bounds")
-        do n = 1, NNNP, NNNP-1
+        do n = 1, max_radial_points, max_radial_points-1
             call npol_build_grid(cfg, n, r, a, b, v, status, message)
             call require(status == 0, message)
             call require(all(a(n+1:) == 123), "kernel leaves inactive tail")
@@ -155,7 +156,7 @@ program npol_unit_driver
             case(2)
                 n = -1
             case(3)
-                n = NNNP+1
+                n = max_radial_points+1
             end select
             call npol_build_grid(cfg, n, r, a, b, v, status, message)
             call require(status /= 0, "invalid N rejected by kernel")

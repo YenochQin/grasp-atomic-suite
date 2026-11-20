@@ -1,25 +1,34 @@
-! Verify that separately compiled shared modules agree on the radial capacity.
-! This catches legacy .mod files shadowing a newly compiled parameter_def.
+! Use an independent module so the expected values come directly from the central definitions.
+module shared_grid_capacity_reference
+    use compile_time_capacities, only: max_radial_points, radial_workspace_capacity, orbital_index_radix, max_orbitals, &
+        max_orbitals_minus_one, max_orbitals_minus_two
+    implicit none (type, external)
+    private
+    integer, parameter, public :: reference_capacities(*) = &
+        [max_radial_points, radial_workspace_capacity, orbital_index_radix, max_orbitals, &
+         max_orbitals_minus_one, max_orbitals_minus_two]
+end module shared_grid_capacity_reference
+
 program shared_grid_capacity
-    use grasp_parameters, only: NNNP, NNN1, KEYORB, NNNW, NNNWM1, NNNWM2
-    use compile_time_capacities, only: CONFIG_NNNP => max_radial_points, CONFIG_NNN1 => radial_workspace_capacity, &
-       & CONFIG_KEYORB => orbital_index_radix, CONFIG_NNNW => max_orbitals, CONFIG_NNNWM1 => max_orbitals_minus_one, &
-       & CONFIG_NNNWM2 => max_orbitals_minus_two
-    use radial_grid_state, only: R => radial_grid, RP => radial_grid_derivative, RPOR => radial_derivative_over_radius
-    use scf_radial_potentials, only: XP, XQ, YP
-    use radial_quadrature_workspace, only: TA, TB
+    use shared_grid_capacity_reference, only: reference_capacities
+    use grasp_parameters, only: max_radial_points, radial_workspace_capacity, orbital_index_radix, max_orbitals, &
+        max_orbitals_minus_one, max_orbitals_minus_two
+    use radial_grid_state, only: radial_grid, radial_grid_derivative, radial_derivative_over_radius
+    use scf_radial_potentials, only: large_exchange_source, small_exchange_source, orbital_y_potential
+    use radial_quadrature_workspace, only: radial_workspace_a, radial_workspace_b
     implicit none (type, external)
 
-    if (any([NNNP, NNN1, KEYORB, NNNW, NNNWM1, NNNWM2] /= &
-            [CONFIG_NNNP, CONFIG_NNN1, CONFIG_KEYORB, CONFIG_NNNW, CONFIG_NNNWM1, CONFIG_NNNWM2])) &
-        error stop "parameter_def does not re-export the configured limits"
-    if (NNN1 /= NNNP + 10) error stop "inconsistent radial capacity parameters"
-    if (NNNWM1 /= NNNW - 1 .or. NNNWM2 /= NNNW - 2) error stop "inconsistent orbital capacities"
-    if (size(R) /= NNN1 .or. size(RP) /= NNN1 .or. size(RPOR) /= NNN1) &
-        error stop "grid_C was compiled with a different radial capacity"
-    if (size(XP) /= NNNP .or. size(XQ) /= NNNP .or. size(YP) /= NNNP) &
-        error stop "pote_C was compiled with a different radial capacity"
-    if (size(TA) /= NNN1 .or. size(TB) /= NNN1) &
-        error stop "tatb_C was compiled with a different radial capacity"
-    print *, "Shared radial capacity:", NNNP, NNN1
+    if (any([max_radial_points, radial_workspace_capacity, orbital_index_radix, max_orbitals, &
+             max_orbitals_minus_one, max_orbitals_minus_two] /= reference_capacities)) &
+        error stop "grasp_parameters does not re-export the configured limits"
+    if (radial_workspace_capacity /= max_radial_points + 10) error stop "inconsistent radial capacity parameters"
+    if (max_orbitals_minus_one /= max_orbitals - 1 .or. max_orbitals_minus_two /= max_orbitals - 2) &
+        error stop "inconsistent orbital capacities"
+    if (any([size(radial_grid), size(radial_grid_derivative), size(radial_derivative_over_radius)] &
+            /= radial_workspace_capacity)) error stop "radial_grid_state was compiled with a different radial capacity"
+    if (any([size(large_exchange_source), size(small_exchange_source), size(orbital_y_potential)] /= max_radial_points)) &
+        error stop "scf_radial_potentials was compiled with a different radial capacity"
+    if (size(radial_workspace_a) /= radial_workspace_capacity .or. size(radial_workspace_b) /= radial_workspace_capacity) &
+        error stop "radial_quadrature_workspace was compiled with a different radial capacity"
+    print *, "Shared radial capacity:", max_radial_points, radial_workspace_capacity
 end program shared_grid_capacity

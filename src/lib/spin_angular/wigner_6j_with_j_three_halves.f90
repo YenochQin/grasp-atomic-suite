@@ -4,13 +4,13 @@ module wigner_6j_with_j_three_halves
 
     ! Module interface
     private
-    public :: sixj35
+    public :: wigner_6j_j_three_halves
 contains
-    subroutine sixj35(two_j_1,two_j_2,two_j_3,two_j_4,two_j_5,check_triangle_conditions,six_j_value)
+    subroutine wigner_6j_j_three_halves(two_j_1,two_j_2,two_j_3,two_j_4,two_j_5,check_triangle_conditions,six_j_value)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: zero, one, two, three, four
-        use wigner_6j_triangle_selection, only: ixjtik
+        use wigner_6j_triangle_selection, only: allows_wigner_6j_triangles
         implicit none (type, external)
 
         ! Arguments
@@ -23,7 +23,7 @@ contains
         real(real64) :: real_triangle_sum, two_j_3_real, two_j_1_real, two_j_2_real, phase_sign
         six_j_value = zero
         if (check_triangle_conditions /= 0) then
-            if (ixjtik(two_j_1,two_j_2,two_j_3,two_j_4,two_j_5,3) == 0) return
+            if (allows_wigner_6j_triangles(two_j_1,two_j_2,two_j_3,two_j_4,two_j_5,3) == 0) return
         end if
         triangle_sum = (two_j_1 + two_j_2 + two_j_3)/2
         real_triangle_sum = dble(triangle_sum)
@@ -139,5 +139,5 @@ contains
             end if
         end if
         return
-    end subroutine sixj35
+    end subroutine wigner_6j_j_three_halves
 end module wigner_6j_with_j_three_halves

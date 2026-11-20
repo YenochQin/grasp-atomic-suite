@@ -4,8 +4,8 @@ module mpi_nuclear_polarization
     use mpi, only: mpi_comm_rank, mpi_bcast, mpi_allreduce, mpi_abort, &
         mpi_integer, mpi_double_precision, mpi_logical, mpi_character, mpi_min
     use grasp_parameters, only: max_radial_points
-    use nuclear_polarization_state, only: &
-        npol_capture, npol_config, npol_message_len, npol_publish, npol_reset, coulomb_potential_baseline => zz_coul
+    use nuclear_polarization_state, only: npol_capture, npol_config, npol_message_len, npol_publish, npol_reset, &
+        coulomb_potential_baseline
     use nuclear_polarization_input, only: npol_read_config, npol_validate_config
     use nuclear_polarization_potential, only: npol_check_grid, npol_build_grid, npol_compose
     use nuclear_polarization_initialization, only: npol_write_summary, npol_summary_path

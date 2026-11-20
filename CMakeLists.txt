@@ -13,9 +13,7 @@
 # Require the supported server baseline and its CMake policy defaults.
 cmake_minimum_required(VERSION 3.31)
 
-project(grasp)
-
-enable_language(Fortran)
+project(grasp LANGUAGES Fortran)
 enable_testing()
 
 # GNU Fortran also searches beside the source file for modules. Old in-source
@@ -89,9 +87,22 @@ unset(_grasp_target_fortran_flags)
 #     target_link_libraries_Fortran(rcsfsplit PRIVATE grasp_shared core)
 #
 set(Fortran_MODULE_DIRECTORY_root ${CMAKE_CURRENT_BINARY_DIR}/modules)
+# Retire the former interfaces when upgrading an existing build or installation.
+foreach(obsolete_module IN ITEMS core/csf_byte_packing_impl.mod core/radial_node_count_impl.mod
+        breit_angular_support/breit_angular_coefficient_dispatch.mod)
+    file(REMOVE "${Fortran_MODULE_DIRECTORY_root}/${obsolete_module}")
+    install(CODE "file(REMOVE \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib/${obsolete_module}\")")
+endforeach()
+file(REMOVE
+    "${Fortran_MODULE_DIRECTORY_root}/core/csf_byte_packing.smod"
+    "${Fortran_MODULE_DIRECTORY_root}/core/csf_byte_packing@csf_byte_packing_compatibility.smod"
+    "${Fortran_MODULE_DIRECTORY_root}/core/radial_node_count.smod"
+    "${Fortran_MODULE_DIRECTORY_root}/core/radial_node_count@radial_node_count_compatibility.smod"
+    "${Fortran_MODULE_DIRECTORY_root}/rci/dspevx_interface.mod"
+    "${Fortran_MODULE_DIRECTORY_root}/rci_mpi/dspevx_interface.mod")
 function(setup_fortran_modules target)
     set_property(TARGET ${target} PROPERTY Fortran_MODULE_DIRECTORY "${Fortran_MODULE_DIRECTORY_root}/${target}")
-    install(DIRECTORY "${Fortran_MODULE_DIRECTORY_root}/${target}" DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+    install(DIRECTORY "${Fortran_MODULE_DIRECTORY_root}/${target}" DESTINATION lib
         FILES_MATCHING PATTERN "*.mod")
 endfunction()
 function(target_link_libraries_Fortran target mode)

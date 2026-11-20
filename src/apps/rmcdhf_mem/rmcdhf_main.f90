@@ -41,20 +41,19 @@ program rmcdhf_main
     !                                  JCUPA(NNNW*NCF)                     *
     !                                                                      *
     !***********************************************************************
-    use calculation_input_defaults, only: inpci, ndef, ndump
+    use calculation_input_defaults, only: nondefault_options_flag
     use closed_core_subshells, only: closed_core_subshell_count
-    use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
     use serial_mpi_context, only: mpi_process_count, mpi_rank
     use calculation_state_files, only: check_orbital_output
     use calculation_state_files, only: state_files, state_name_length, files_for_state, select_state
-    use run_timer_start, only: starttime
+    use run_timer_start, only: begin_run_timer
 
     ! Procedure interfaces
     use configure_debug_output_interface, only: configure_debug_output
 
     ! Module dependencies
-    use machine_constants, only: setmc
-    use physical_constants, only: setcon
+    use machine_constants, only: initialize_machine_constants
+    use physical_constants, only: initialize_physical_constants
 
     ! Procedure interfaces
     use open_summary_file_interface, only: open_summary_file
@@ -65,20 +64,20 @@ program rmcdhf_main
     use open_mixing_output_interface, only: open_mixing_output
 
     ! Module dependencies
-    use log_factorial_table, only: factt
+    use log_factorial_table, only: initialize_log_factorial_table
 
     ! Procedure interfaces
     use run_scf_iterations_interface, only: run_scf_iterations
 
     ! Module dependencies
-    use run_timer_finish, only: stoptime
+    use run_timer_finish, only: finish_run_timer
     implicit none (type, external)
-    integer, parameter :: nblk0 = 50  ! Maximum number of blocks
-    integer :: ncore1, start_clock_count
+    integer, parameter :: maximum_input_symmetry_blocks = 50  ! Maximum number of blocks
+    integer :: core_subshell_count, start_clock_count
     type(state_files) :: files
     character(state_name_length) :: state
     logical :: extended_optimal_level, yes
-    character :: block_labels(nblk0)*8
+    character :: block_labels(maximum_input_symmetry_blocks)*8
     !-----------------------------------------------
     !
     !
@@ -98,7 +97,7 @@ program rmcdhf_main
     write(*,*) "Input files: isodata, ", files%descriptors, ", ", files%header, ", ", files%initial_orbitals
     write(*,*) "Output files: ", files%orbitals, ", ", files%mixing, ", ", files%scf_summary, ", ", files%scf_log
 
-    call starttime (start_clock_count, "RMCDHF")
+    call begin_run_timer (start_clock_count, "RMCDHF")
 
     open(newunit=calculation_log_unit,file=files%scf_log,status="UNKNOWN")
     if (state /= "") write(calculation_log_unit,"(A)") trim(state)
@@ -109,10 +108,10 @@ program rmcdhf_main
 
     if (mpi_rank == 0) then
         if (yes) then
-            ndef = 0
+            nondefault_options_flag = 0
             write(calculation_log_unit,"(A)") "y            ! Default settings"
         else
-            ndef = 1
+            nondefault_options_flag = 1
             if (state /= "") write(calculation_log_unit,"(A)") "n            ! Default settings"
         end if
     end if
@@ -133,14 +132,14 @@ program rmcdhf_main
     !=======================================================================
 
     call configure_debug_output (files%scf_debug)
-    call setmc
-    call setcon
+    call initialize_machine_constants
+    call initialize_physical_constants
 
     call open_summary_file (files%scf_summary)
 
-    call connect_mcp_files (closed_core_subshell_count, nblk0, block_labels, files%mcp)
-    call load_csf_basis_data (files%descriptors, ncore1, block_labels)
-    if (closed_core_subshell_count /= ncore1) stop "rscfvu: ncore"
+    call connect_mcp_files (closed_core_subshell_count, maximum_input_symmetry_blocks, block_labels, files%mcp)
+    call load_csf_basis_data (files%descriptors, core_subshell_count, block_labels)
+    if (closed_core_subshell_count /= core_subshell_count) stop "rscfvu: ncore"
 
     !=======================================================================
     !  Gather all remaining information and perform some setup. This
@@ -154,7 +153,7 @@ program rmcdhf_main
         if (extended_optimal_level) call open_mixing_output (files%mixing)
     end if
 
-    call factt
+    call initialize_log_factorial_table
 
     !=======================================================================
     !  Proceed with the SCF calculation close all files except
@@ -168,7 +167,7 @@ program rmcdhf_main
     !  Execution finished; Statistics output
     !=======================================================================
 
-    call stoptime (start_clock_count, "RMCDHF")
+    call finish_run_timer (start_clock_count, "RMCDHF")
 
     stop
 end program rmcdhf_main

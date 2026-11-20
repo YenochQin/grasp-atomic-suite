@@ -4,9 +4,9 @@ module angular_momentum_triangle
 
     ! Module interface
     private
-    public :: itrig
+    public :: satisfies_angular_triangle
 contains
-    integer function itrig (first_two_j_plus_one, second_two_j_plus_one, third_two_j_plus_one)
+    integer function satisfies_angular_triangle (first_two_j_plus_one, second_two_j_plus_one, third_two_j_plus_one)
         implicit none (type, external)
 
         ! Arguments
@@ -19,10 +19,10 @@ contains
         second_minus_third = second_two_j_plus_one - third_two_j_plus_one
         if (first_two_j_plus_one>=abs(second_minus_third) + 1 .and. &
             & first_two_j_plus_one<=second_two_j_plus_one+third_two_j_plus_one-1) then
-            itrig = 1
+            satisfies_angular_triangle = 1
         else
-            itrig = 0
+            satisfies_angular_triangle = 0
         end if
         return
-    end function itrig
+    end function satisfies_angular_triangle
 end module angular_momentum_triangle

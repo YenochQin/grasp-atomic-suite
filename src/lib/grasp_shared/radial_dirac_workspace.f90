@@ -8,8 +8,9 @@ module radial_dirac_workspace
     private :: real64
 
     ! Module state
-    integer :: mtp0
-    real(real64) :: p(max_radial_points), q(max_radial_points)
-    real(real64) :: p0, q0
-    real(real64) :: tf(max_radial_points), tg(max_radial_points), xu(max_radial_points), xv(max_radial_points)
+    integer :: trial_orbital_last_grid_index
+    real(real64) :: trial_large_component(max_radial_points), trial_small_component(max_radial_points)
+    real(real64) :: trial_large_origin_parameter, trial_small_origin_parameter
+    real(real64) :: large_equation_coefficients(max_radial_points), small_equation_coefficients(max_radial_points), &
+        large_radial_source(max_radial_points), small_radial_source(max_radial_points)
 end module radial_dirac_workspace

@@ -4,9 +4,9 @@ module run_timer_start
 
     ! Module interface
     private
-    public :: starttime
+    public :: begin_run_timer
 contains
-    subroutine starttime(start_clock_count, program_name)
+    subroutine begin_run_timer(start_clock_count, program_name)
         implicit none (type, external)
 
         ! Arguments
@@ -14,12 +14,10 @@ contains
         character (len = *), intent(in) :: program_name
 
         ! Local declarations
-        integer :: nymduhmsm(8)
         integer :: clock_tick_rate, maximum_clock_count
-        character :: chdate*8, chtime*10, chzone*5, msg*80
 
         call system_clock (start_clock_count, clock_tick_rate, maximum_clock_count)
 
         return
-    end subroutine starttime
+    end subroutine begin_run_timer
 end module run_timer_start

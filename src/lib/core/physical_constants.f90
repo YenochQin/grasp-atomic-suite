@@ -4,13 +4,13 @@ module physical_constants
 
     ! Module interface
     private
-    public :: setcon
+    public :: initialize_physical_constants
 contains
-    subroutine setcon
+    subroutine initialize_physical_constants
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
-        use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+        use debug_output_settings, only: ldbpg
         use atomic_calculation_state, only: bohr_radius_cm, einstein_a_au_to_si, einstein_b_au_to_si, electron_mass_u, &
             femtometer_to_bohr, hartree_to_ev, hartree_to_wavenumber_cm, pi, proton_mass_u, speed_of_light_cm_per_s, &
             vacuum_speed_of_light_au
@@ -53,5 +53,5 @@ contains
         end if
         return
         return
-    end subroutine setcon
+    end subroutine initialize_physical_constants
 end module physical_constants

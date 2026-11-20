@@ -1,188 +1,210 @@
-!***********************************************************************
-!                                                                      *
-subroutine calculate_field_shift_factors_mpi(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
-    ! Module dependencies
-    use calculation_file_units, only: one_body_cache_unit
-    !                                                                      *
-    !   MPI version of DENSNEW. Each rank handles a strided subset of the  *
-    !   outer IC loop and can optionally write a per-rank angular-data      *
-    !   fragment that the root process later merges into name.IOB.          *
-    !                                                                      *
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use grasp_parameters,    only: orbital_index_radix, max_orbitals, max_radial_points
-    use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-    use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
-    use atomic_calculation_state, only: max_radial_points
-    use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
-        csf_mixing_coefficients, evecff, evecii
-    use first_order_csf_cutoffs, only: iccut
-    use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-        radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-    use angular_symmetry_labels, only: left_justified_j_labels => jlbl, parity_labels => jlbp, right_justified_j_labels => jlbr
-    use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
-    use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count, orbital_kappa
-    use transition_basis_blocks, only: ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
-        nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
-    use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-    use isotope_shift_integral_tables, only: ndtea, ntei, pindte, pvalte, firstt
-    use angular_coefficient_buffer_state, only: angular_buffer_capacity, angular_coefficient_count, &
-        angular_coefficient_labels, angular_coefficients
-    use isotope_shift_options, only: dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
-    use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-    use mpi_state,            only: mpi_rank, mpi_process_count
-    use selected_level_indices,           only : nvec
-    use angular_coefficient_buffer, only: alcbuf
-    use integer_format, only: convrt
-    use csf_quantum_queries, only: ispar, itjpo
-    use one_electron_scalar_coefficients, only: onescalar
+module calculate_field_shift_factors_mpi_interface
     implicit none (type, external)
 
-    ! Arguments
-    real(real64), intent(in) :: dint1(max_orbitals, max_orbitals), dint2(max_orbitals, max_orbitals), &
-        dint3(max_orbitals, max_orbitals), dint4(max_orbitals, max_orbitals), &
-        dint5(max_orbitals, max_orbitals), dint6(max_orbitals, max_orbitals), &
-        dint7(max_orbitals, max_orbitals)
-    integer, intent(in) :: doit
+    ! Module interface
+    private
+    public :: calculate_field_shift_factors_mpi
+contains
 
-    ! Local constants
-    integer, parameter :: orbital_label_radix = orbital_index_radix
+    !***********************************************************************
+    !                                                                      *
+    subroutine calculate_field_shift_factors_mpi(angular_cache_write_mode,contact_density_integrals,total_nms_integrals, &
+        & radius_integrals, &
+        & radius_squared_integrals,inverse_radius_integrals,inverse_radius_squared_integrals,leading_nms_integrals)
+        ! Module dependencies
+        use calculation_file_units, only: one_body_cache_unit
+        !                                                                      *
+        !   MPI version of DENSNEW. Each rank handles a strided subset of the  *
+        !   outer IC loop and can optionally write a per-rank angular-data      *
+        !   fragment that the root process later merges into name.IOB.          *
+        !                                                                      *
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use grasp_parameters, only: orbital_index_radix, max_orbitals
+        use debug_output_settings, only: cutoff
+        use eigenstate_expansions, only: csf_mixing_coefficients
+        use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count, orbital_kappa
+        use selected_level_indices, only: active_level_count
+        use isotope_shift_options, only: contact_density_by_level, total_nms_by_level, radius_by_level, &
+            & radius_squared_by_level, inverse_radius_by_level, inverse_radius_squared_by_level, leading_nms_by_level, &
+            & leading_sms_by_level, total_sms_by_level
+        use mpi_state,            only: mpi_rank, mpi_process_count
+        use angular_coefficient_buffer, only: manage_angular_coefficient_buffer
+        use integer_format, only: format_integer
+        use csf_quantum_queries, only: csf_parity_code, csf_total_j_code
+        use one_electron_scalar_coefficients, only: calculate_one_electron_scalar_coefficients
+        implicit none (type, external)
 
-    ! Local declarations
-    real(real64) :: shell_coefficients(max_orbitals)
-    real(real64) :: tshell_s(max_orbitals)
-    real(real64) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5,     &
-        elemnt6, elemnt7, contri1, contri2, contri3,     &
-        contri4, contri5, contri6, contri7, evpair,      &
-        pair_scale
-    logical :: has_contr
-    character :: number_text*11, ck*2
-    integer :: ia_s(max_orbitals)
-    integer :: ka, iopar, include_closed_shell_terms, csf_index, text_length, itjpoc, ir, orbital_index, ket_orbital_index, i, j
-    integer :: loc, ncontr, lab, occ_ic, occ_ir, ndiff
+        ! Arguments
+        real(real64), intent(in) :: contact_density_integrals(max_orbitals, max_orbitals), &
+            & total_nms_integrals(max_orbitals, max_orbitals), &
+            radius_integrals(max_orbitals, max_orbitals), radius_squared_integrals(max_orbitals, max_orbitals), &
+            inverse_radius_integrals(max_orbitals, max_orbitals), inverse_radius_squared_integrals(max_orbitals, max_orbitals), &
+            leading_nms_integrals(max_orbitals, max_orbitals)
+        integer, intent(in) :: angular_cache_write_mode
 
-    ka = 0
-    iopar = 1
-    include_closed_shell_terms = 1
+        ! Local constants
 
-    call alcbuf (1)
+        ! Local declarations
+        real(real64) :: shell_coefficients(max_orbitals)
+        real(real64) :: stored_shell_coefficients(max_orbitals)
+        real(real64) :: contact_density_element, total_nms_element, radius_element, radius_squared_element, &
+            & inverse_radius_element,     &
+            inverse_radius_squared_element, leading_nms_element, contact_density_contribution, total_nms_contribution, &
+                & radius_contribution,     &
+            radius_squared_contribution, inverse_radius_contribution, inverse_radius_squared_contribution, &
+                & leading_nms_contribution, weighted_mixing_product,      &
+            pair_scale
+        logical :: has_contr
+        character :: number_text*11
+        integer :: contributing_orbitals(max_orbitals)
+        integer :: operator_rank, operator_parity, include_closed_shell_terms, csf_index, text_length, &
+            & column_two_j_plus_one, row_csf, orbital_index, &
+            & ket_orbital_index, i, level_index
+        integer :: level_mixing_offset, coefficient_count, packed_orbital_label, column_csf_occupation, row_csf_occupation, &
+            & differing_subshell_count
 
-    do csf_index = mpi_rank + 1, csf_count, mpi_process_count
-        if (mpi_rank == 0 .and. mod(csf_index,100) == 1) then
-            call convrt (csf_index,number_text,text_length)
-            print *, "Column "//number_text(1:text_length)//" complete on root;"
-        end if
+        operator_rank = 0
+        operator_parity = 1
+        include_closed_shell_terms = 1
 
-        itjpoc = itjpo (csf_index)
+        call manage_angular_coefficient_buffer (1)
 
-        do ir = csf_index,csf_count
-            if (itjpo(ir) == itjpoc) then
-                if (ispar(csf_index) /= ispar(ir)) cycle
-                ndiff = 0
-                do i = 1,orbital_count
-                    occ_ic = csf_subshell_occupations(i,csf_index)
-                    occ_ir = csf_subshell_occupations(i,ir)
-                    if (occ_ic == occ_ir) cycle
-                    if (iabs(occ_ic - occ_ir) > 1) then
-                        ndiff = 3
-                        exit
-                    end if
-                    ndiff = ndiff + 1
-                    if (ndiff > 2) exit
-                end do
-                if (ndiff /= 0 .and. ndiff /= 2) cycle
-                if (ndiff == 0 .and. csf_index /= ir) cycle
-
-                elemnt1 = 0.0_real64
-                elemnt2 = 0.0_real64
-                elemnt3 = 0.0_real64
-                elemnt4 = 0.0_real64
-                elemnt5 = 0.0_real64
-                elemnt6 = 0.0_real64
-                elemnt7 = 0.0_real64
-                has_contr = .false.
-
-                call onescalar(csf_index,ir,orbital_index,ket_orbital_index,shell_coefficients)
-                if (orbital_index /= 0) then
-                    if (orbital_index == ket_orbital_index) then
-                        ncontr = 0
-                        do orbital_index = 1,orbital_count
-                            if (abs (shell_coefficients(orbital_index)) > cutoff) then
-                                ncontr = ncontr + 1
-                                tshell_s(ncontr) = shell_coefficients(orbital_index)
-                                ia_s(ncontr) = orbital_index
-                                elemnt1 = elemnt1 + dint1(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                elemnt2 = elemnt2 + dint2(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                elemnt3 = elemnt3 + dint3(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                elemnt4 = elemnt4 + dint4(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                elemnt5 = elemnt5 + dint5(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                elemnt6 = elemnt6 + dint6(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                elemnt7 = elemnt7 + dint7(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                has_contr = .true.
-                            end if
-                        end do
-                        if (doit==1) write(one_body_cache_unit) csf_index,ir,ncontr
-                        if (doit==1) then
-                            do i = 1,ncontr
-                                lab = ia_s(i)*(orbital_label_radix + 1)
-                                write(one_body_cache_unit) tshell_s(i),lab
-                            end do
-                        end if
-                    else
-                        if (abs (shell_coefficients(1)) > cutoff) then
-                            if (orbital_kappa(orbital_index)==orbital_kappa(ket_orbital_index)) then
-                                if (doit==1) write(one_body_cache_unit) csf_index,ir,1
-                                if (doit==1) then
-                                    lab = orbital_index*orbital_label_radix + ket_orbital_index
-                                    write(one_body_cache_unit) shell_coefficients(1),lab
-                                end if
-                                elemnt1 = elemnt1 + dint1(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                elemnt2 = elemnt2 + dint2(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                elemnt3 = elemnt3 + dint3(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                elemnt4 = elemnt4 + dint4(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                elemnt5 = elemnt5 + dint5(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                elemnt6 = elemnt6 + dint6(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                elemnt7 = elemnt7 + dint7(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                has_contr = .true.
-                            end if
-                        end if
-                    end if
-                end if
-                if (.not. has_contr) cycle
-                if (abs(elemnt1) <= cutoff .and. &
-                    abs(elemnt2) <= cutoff .and. &
-                    abs(elemnt3) <= cutoff .and. &
-                    abs(elemnt4) <= cutoff .and. &
-                    abs(elemnt5) <= cutoff .and. &
-                    abs(elemnt6) <= cutoff .and. &
-                    abs(elemnt7) <= cutoff) cycle
-                if (ir == csf_index) then
-                    pair_scale = 1.0_real64
-                else
-                    pair_scale = 2.0_real64
-                end if
-                do j = 1,nvec
-                    loc = (j-1)*csf_count
-                    evpair = pair_scale * csf_mixing_coefficients(csf_index+loc)*csf_mixing_coefficients(ir+loc)
-                    contri1 = evpair*elemnt1
-                    contri2 = evpair*elemnt2
-                    contri3 = evpair*elemnt3
-                    contri4 = evpair*elemnt4
-                    contri5 = evpair*elemnt5
-                    contri6 = evpair*elemnt6
-                    contri7 = evpair*elemnt7
-                    dens1(j) = dens1(j) + contri1
-                    dens2(j) = dens2(j) + contri2
-                    dens3(j) = dens3(j) + contri3
-                    dens4(j) = dens4(j) + contri4
-                    dens5(j) = dens5(j) + contri5
-                    dens6(j) = dens6(j) + contri6
-                    dens7(j) = dens7(j) + contri7
-                end do
+        do csf_index = mpi_rank + 1, csf_count, mpi_process_count
+            if (mpi_rank == 0 .and. mod(csf_index,100) == 1) then
+                call format_integer (csf_index,number_text,text_length)
+                print *, "Column "//number_text(1:text_length)//" complete on root;"
             end if
-        end do
-    end do
 
-    call alcbuf (3)
-    return
-end subroutine calculate_field_shift_factors_mpi
+            column_two_j_plus_one = csf_total_j_code (csf_index)
+
+            do row_csf = csf_index,csf_count
+                if (csf_total_j_code(row_csf) == column_two_j_plus_one) then
+                    if (csf_parity_code(csf_index) /= csf_parity_code(row_csf)) cycle
+                    differing_subshell_count = 0
+                    do i = 1,orbital_count
+                        column_csf_occupation = csf_subshell_occupations(i,csf_index)
+                        row_csf_occupation = csf_subshell_occupations(i,row_csf)
+                        if (column_csf_occupation == row_csf_occupation) cycle
+                        if (iabs(column_csf_occupation - row_csf_occupation) > 1) then
+                            differing_subshell_count = 3
+                            exit
+                        end if
+                        differing_subshell_count = differing_subshell_count + 1
+                        if (differing_subshell_count > 2) exit
+                    end do
+                    if (differing_subshell_count /= 0 .and. differing_subshell_count /= 2) cycle
+                    if (differing_subshell_count == 0 .and. csf_index /= row_csf) cycle
+
+                    contact_density_element = 0.0_real64
+                    total_nms_element = 0.0_real64
+                    radius_element = 0.0_real64
+                    radius_squared_element = 0.0_real64
+                    inverse_radius_element = 0.0_real64
+                    inverse_radius_squared_element = 0.0_real64
+                    leading_nms_element = 0.0_real64
+                    has_contr = .false.
+
+                    call calculate_one_electron_scalar_coefficients(csf_index,row_csf,orbital_index,ket_orbital_index, &
+                        & shell_coefficients)
+                    if (orbital_index /= 0) then
+                        if (orbital_index == ket_orbital_index) then
+                            coefficient_count = 0
+                            do orbital_index = 1,orbital_count
+                                if (abs (shell_coefficients(orbital_index)) > cutoff) then
+                                    coefficient_count = coefficient_count + 1
+                                    stored_shell_coefficients(coefficient_count) = shell_coefficients(orbital_index)
+                                    contributing_orbitals(coefficient_count) = orbital_index
+                                    contact_density_element = contact_density_element + &
+                                        & contact_density_integrals(orbital_index,orbital_index)*shell_coefficients(orbital_index)
+                                    total_nms_element = total_nms_element + total_nms_integrals(orbital_index, &
+                                        & orbital_index)*shell_coefficients(orbital_index)
+                                    radius_element = radius_element + radius_integrals(orbital_index,orbital_index)* &
+                                        & shell_coefficients(orbital_index)
+                                    radius_squared_element = radius_squared_element + &
+                                        & radius_squared_integrals(orbital_index,orbital_index)*shell_coefficients(orbital_index)
+                                    inverse_radius_element = inverse_radius_element + &
+                                        & inverse_radius_integrals(orbital_index,orbital_index)*shell_coefficients(orbital_index)
+                                    inverse_radius_squared_element = inverse_radius_squared_element + &
+                                        & inverse_radius_squared_integrals(orbital_index,orbital_index)* &
+                                        & shell_coefficients(orbital_index)
+                                    leading_nms_element = leading_nms_element + leading_nms_integrals(orbital_index, &
+                                        & orbital_index)*shell_coefficients(orbital_index)
+                                    has_contr = .true.
+                                end if
+                            end do
+                            if (angular_cache_write_mode==1) write(one_body_cache_unit) csf_index,row_csf,coefficient_count
+                            if (angular_cache_write_mode==1) then
+                                do i = 1,coefficient_count
+                                    packed_orbital_label = contributing_orbitals(i)*(orbital_index_radix + 1)
+                                    write(one_body_cache_unit) stored_shell_coefficients(i),packed_orbital_label
+                                end do
+                            end if
+                        else
+                            if (abs (shell_coefficients(1)) > cutoff) then
+                                if (orbital_kappa(orbital_index)==orbital_kappa(ket_orbital_index)) then
+                                    if (angular_cache_write_mode==1) write(one_body_cache_unit) csf_index,row_csf,1
+                                    if (angular_cache_write_mode==1) then
+                                        packed_orbital_label = orbital_index*orbital_index_radix + ket_orbital_index
+                                        write(one_body_cache_unit) shell_coefficients(1),packed_orbital_label
+                                    end if
+                                    contact_density_element = contact_density_element + &
+                                        & contact_density_integrals(orbital_index,ket_orbital_index)*shell_coefficients(1)
+                                    total_nms_element = total_nms_element + total_nms_integrals(orbital_index, &
+                                        & ket_orbital_index)*shell_coefficients(1)
+                                    radius_element = radius_element + radius_integrals(orbital_index,ket_orbital_index)* &
+                                        & shell_coefficients(1)
+                                    radius_squared_element = radius_squared_element + &
+                                        & radius_squared_integrals(orbital_index,ket_orbital_index)*shell_coefficients(1)
+                                    inverse_radius_element = inverse_radius_element + &
+                                        & inverse_radius_integrals(orbital_index,ket_orbital_index)*shell_coefficients(1)
+                                    inverse_radius_squared_element = inverse_radius_squared_element + &
+                                        & inverse_radius_squared_integrals(orbital_index,ket_orbital_index)*shell_coefficients(1)
+                                    leading_nms_element = leading_nms_element + leading_nms_integrals(orbital_index, &
+                                        & ket_orbital_index)*shell_coefficients(1)
+                                    has_contr = .true.
+                                end if
+                            end if
+                        end if
+                    end if
+                    if (.not. has_contr) cycle
+                    if (abs(contact_density_element) <= cutoff .and. &
+                        abs(total_nms_element) <= cutoff .and. &
+                        abs(radius_element) <= cutoff .and. &
+                        abs(radius_squared_element) <= cutoff .and. &
+                        abs(inverse_radius_element) <= cutoff .and. &
+                        abs(inverse_radius_squared_element) <= cutoff .and. &
+                        abs(leading_nms_element) <= cutoff) cycle
+                    if (row_csf == csf_index) then
+                        pair_scale = 1.0_real64
+                    else
+                        pair_scale = 2.0_real64
+                    end if
+                    do level_index = 1,active_level_count
+                        level_mixing_offset = (level_index-1)*csf_count
+                        weighted_mixing_product = pair_scale * csf_mixing_coefficients(csf_index+level_mixing_offset)* &
+                            & csf_mixing_coefficients(row_csf+level_mixing_offset)
+                        contact_density_contribution = weighted_mixing_product*contact_density_element
+                        total_nms_contribution = weighted_mixing_product*total_nms_element
+                        radius_contribution = weighted_mixing_product*radius_element
+                        radius_squared_contribution = weighted_mixing_product*radius_squared_element
+                        inverse_radius_contribution = weighted_mixing_product*inverse_radius_element
+                        inverse_radius_squared_contribution = weighted_mixing_product*inverse_radius_squared_element
+                        leading_nms_contribution = weighted_mixing_product*leading_nms_element
+                        contact_density_by_level(level_index) = contact_density_by_level(level_index) + contact_density_contribution
+                        total_nms_by_level(level_index) = total_nms_by_level(level_index) + total_nms_contribution
+                        radius_by_level(level_index) = radius_by_level(level_index) + radius_contribution
+                        radius_squared_by_level(level_index) = radius_squared_by_level(level_index) + radius_squared_contribution
+                        inverse_radius_by_level(level_index) = inverse_radius_by_level(level_index) + inverse_radius_contribution
+                        inverse_radius_squared_by_level(level_index) = inverse_radius_squared_by_level(level_index) + &
+                            & inverse_radius_squared_contribution
+                        leading_nms_by_level(level_index) = leading_nms_by_level(level_index) + leading_nms_contribution
+                    end do
+                end if
+            end do
+        end do
+
+        call manage_angular_coefficient_buffer (3)
+        return
+    end subroutine calculate_field_shift_factors_mpi
+end module calculate_field_shift_factors_mpi_interface

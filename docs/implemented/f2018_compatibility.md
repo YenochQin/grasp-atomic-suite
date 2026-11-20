@@ -12,7 +12,7 @@
   所有配置已移除 legacy、隐式 SAVE 和参数不匹配放行选项。
 - 显式数值 kind 直接从 `iso_fortran_env` 导入，例如 `real64`、`int64` 和 `int8`。
   套件已移除 `vast_kind_param` 和其他共享模块重导出的旧 kind 名。
-  外部 Fortran 调用方需改用标准名，再重新编译。`grasp_parameters` 继续提供原容量别名。
+  外部 Fortran 调用方需改用标准名，再重新编译。`grasp_parameters` 导出六个语义容量常量。
 - 默认整数保持原有宽度。先以默认整数相乘再转换为 `int64` 仍可能溢出，大计数需单独核查。
 - [posix_services](../../src/lib/core/posix_services.f90) 使用 C 互操作连接 POSIX 服务，
   保留目录操作、访问检查及退出状态契约；这是已验证平台范围内的实现，不代表所有系统兼容。
@@ -28,13 +28,14 @@
 `mcp90` 后续更名为 [`breit_angular_support`](breit_angular_support_migration.md)。
 
 - 实现默认 private，显式公开原 `*_i` 模块 API；已删除的共享库 `*_I.f90` 不再维护副本。
-  形参名保留关键字调用兼容性。原接口中 `itjj::kg1`、`cpath` 路径参数的 INTENT
+  使用关键字的调用方按当前过程声明传参。原接口中 `itjj::kg1`、`cpath` 路径参数的 INTENT
   已按实际写入行为改为 OUT。
-- [count](../../src/lib/core/radial_node_count.f90) 和 [pack](../../src/lib/core/csf_byte_packing.f90)
-  以 `count_impl`/`pack_impl` 实现，再重导出原公开名，避开 GNU 15 的 intrinsic 同名过程指针问题。
+- [count_radial_nodes](../../src/lib/core/radial_node_count.f90) 和
+  [pack_csf_subshell_byte](../../src/lib/core/csf_byte_packing.f90) 是各自模块的具体过程。
+  接口回归覆盖过程指针、过程实参和关键字调用。
 - [mpi_runtime](../../src/lib/mpi/mpi_runtime.f90) 提供无套件状态依赖的
-  `startmpi`、`mpix_bytes`、`stopmpi`；`mpi_utilities` 保留重导出，避免模块依赖环。
-- `davidson_eigensolver::dvd_operator` 和 `rkco_gg` 的回调接口仍是契约的一部分；
+  `initialize_mpi_runtime`、`mpix_bytes`、`finalize_mpi_runtime`；`mpi_utilities` 保留重导出，避免模块依赖环。
+- `davidson_eigensolver::dvd_operator` 和 `calculate_two_electron_angular_coefficients` 的回调接口仍是契约的一部分；
   测试替身使用相同模块 API，不能通过另一个外部符号替换模块过程。
 - Davidson 求解库的现行模块和关键字形参见[命名对照](davidson_eigensolver_migration.md)。
 - 这次模块化改变 Fortran 链接符号。依赖旧静态库的外部项目需要重新编译和链接，
@@ -44,6 +45,12 @@
 [mpi_state](../../src/lib/mpi/mpi_state.f90) 的模块级 `use mpi` 保留为已复核例外：
 它公开转发所用 MPI 实现的符号，不能为清零 C121 而随意收窄接口。
 后续调整 ONLY 列表仍须检查重命名、重导出、泛型、回调和条件编译分支。
+
+现行过程名见[共享库过程对照](shared_library_procedure_names.md)。
+
+两个 Biotransform 实现通过 `invert_banded_matrix` 接收 `matrix`、`inverse_workspace`、
+`matrix_order`、`determinant`、`singularity_tolerance`、`inversion_status` 和 `leading_dimension`。
+矩阵与工作区的显式形状均为 `(leading_dimension, leading_dimension)`。
 
 ## 已实施的输入、数值及接口修复
 

@@ -4,9 +4,9 @@ module davidson_solver_control
 
     ! Module interface
     private
-    public :: dvdson
+    public :: control_davidson_solver
 contains
-    subroutine dvdson(operation_code, request_slots, matrix_order, subspace_limit, constraint_count, &
+    subroutine control_davidson_solver(operation_code, request_slots, matrix_order, subspace_limit, constraint_count, &
         lowest_pair_index, highest_pair_index, selected_pair_indices, initial_vector_count, &
         expansion_block_size, eigenvalue_tolerance, coefficient_tolerance, residual_tolerance, &
         iteration_limit, real_workspace, real_workspace_size, integer_workspace, integer_workspace_size, &
@@ -15,8 +15,8 @@ contains
         use, intrinsic :: iso_fortran_env, only: output_unit
         ! Set up the target pairs and work arrays, then dispatch reverse-communication requests.
         use, intrinsic :: iso_fortran_env, only: real64
-        use davidson_initial_subspace, only: initdvd
-        use davidson_iteration, only: dvdrvr
+        use davidson_initial_subspace, only: initialize_davidson_subspace
+        use davidson_iteration, only: iterate_davidson_solver
         use blas_lapack_interfaces, only: dcopy, dscal
         implicit none (type, external)
 
@@ -138,7 +138,8 @@ contains
                 convergence_flags_start = pending_indices_start + subspace_limit
             end if
 
-            call initdvd (operation_code, request_slots, matrix_order, constraint_count, initial_vector_count, &
+            call initialize_davidson_subspace (operation_code, request_slots, matrix_order, constraint_count, &
+                & initial_vector_count, &
                 extreme_pair_count + 1, subspace_limit, solve_high_end, real_workspace(real_scratch_start), &
                 real_workspace(constrained_basis_start), real_workspace(basis_start), &
                 real_workspace(operator_basis_start), real_workspace(projected_matrix_start))
@@ -152,7 +153,7 @@ contains
             iteration_count = 1
         end if
 
-        call dvdrvr (operation_code, request_slots, matrix_order, solve_high_end, subspace_limit, &
+        call iterate_davidson_solver (operation_code, request_slots, matrix_order, solve_high_end, subspace_limit, &
             expansion_block_size, constraint_count, extreme_pair_count, initial_vector_count, selected_pair_count, &
             selected_pair_indices, eigenvalue_tolerance, coefficient_tolerance, residual_tolerance, &
             iteration_limit, real_workspace(ritz_values_start), real_workspace(basis_start), &
@@ -188,5 +189,5 @@ contains
             real_workspace(basis_start+(matrix_order+2)*extreme_pair_count), 1)
         operation_code = 0
         return
-    end subroutine dvdson
+    end subroutine control_davidson_solver
 end module davidson_solver_control

@@ -9,6 +9,6 @@ module angular_matrix_element_workspace
 
     ! Module state
     integer                       :: inumb_int1, inumb_int2
-    integer      :: int1(2000), int2(2000)
-    real(real64) :: aint1(2000), aint2(2000)
+    integer      :: first_angular_element_indices(2000), second_angular_element_indices(2000)
+    real(real64) :: first_angular_element_values(2000), second_angular_element_values(2000)
 end module angular_matrix_element_workspace

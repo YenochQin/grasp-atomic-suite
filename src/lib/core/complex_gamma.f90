@@ -4,14 +4,13 @@ module complex_gamma
 
     ! Module interface
     private
-    public :: cgamma
+    public :: complex_gamma_value
 contains
-    subroutine cgamma(argument_real, argument_imaginary, gamma_real, gamma_imaginary)
+    subroutine complex_gamma_value(argument_real, argument_imaginary, gamma_real, gamma_imaginary)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use atomic_calculation_state, only: &
-            maximum_exp_argument => expmax, minimum_exp_argument => expmin, pi, machine_precision => precis
-        use nonnegative_atan2, only: arctan
+        use atomic_calculation_state, only: maximum_exp_argument, minimum_exp_argument, pi, machine_precision
+        use nonnegative_atan2, only: nonnegative_angle
         implicit none (type, external)
 
         ! Arguments
@@ -105,7 +104,7 @@ contains
             end do
             real_part_squared = shifted_argument_real*shifted_argument_real
             term_real = 0.5_real64*log(real_part_squared + imaginary_part_squared)
-            term_imaginary = arctan(shifted_argument_imaginary,shifted_argument_real)
+            term_imaginary = nonnegative_angle(shifted_argument_imaginary,shifted_argument_real)
             log_gamma_real = (shifted_argument_real - 0.5_real64)*term_real - shifted_argument_imaginary*term_imaginary - &
                 & shifted_argument_real + half_log_two_pi
             log_gamma_imaginary = (shifted_argument_real - 0.5_real64)*term_imaginary + shifted_argument_imaginary*term_real &
@@ -126,7 +125,7 @@ contains
             end do
             log_gamma_real = log_gamma_real - 0.5_real64*log(recurrence_product_real*recurrence_product_real + &
                 & recurrence_product_imaginary*recurrence_product_imaginary)
-            log_gamma_imaginary = log_gamma_imaginary - arctan(recurrence_product_imaginary,recurrence_product_real)
+            log_gamma_imaginary = log_gamma_imaginary - nonnegative_angle(recurrence_product_imaginary,recurrence_product_real)
         end if
         if (log_gamma_real<=maximum_exp_argument .and. log_gamma_real>=minimum_exp_argument) then
             scale_factor = exp(log_gamma_real)
@@ -138,5 +137,5 @@ contains
         gamma_imaginary = scale_factor*sin(log_gamma_imaginary)
         return
         return
-    end subroutine cgamma
+    end subroutine complex_gamma_value
 end module complex_gamma

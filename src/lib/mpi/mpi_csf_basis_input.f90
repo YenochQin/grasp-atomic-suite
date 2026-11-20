@@ -1,7 +1,7 @@
 ! Load the complete CSF basis on rank 0 and replicate it across ranks.
 module mpi_csf_basis_input
     ! Module dependencies
-    use mpi_csf_collectives, only: broadcast_descriptor_arrays, check_all => check_descriptor_status
+    use mpi_csf_collectives, only: broadcast_descriptor_arrays, require_collective_success
     use mpi
     use mpi_state, only: mpi_rank
     use csf_full_basis_reader, only: load_csf_basis
@@ -10,7 +10,7 @@ module mpi_csf_basis_input
         orbital_l, orbital_two_j, orbital_symmetry_labels
     use atomic_calculation_state, only: electron_count
     use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
-    use transition_basis_blocks, only: symmetry_block_count => nblock, cumulative_csf_counts => ncfblk
+    use transition_basis_blocks, only: transition_block_count, cumulative_csf_counts
     implicit none (type, external)
 
     ! Module interface
@@ -27,13 +27,13 @@ contains
         integer :: descriptor_status, mpi_return_code, basis_counts(5)
         descriptor_status = 0
         if (mpi_rank == 0) call load_csf_basis(descriptor_path,core_subshell_count,descriptor_status)
-        call check_all(descriptor_status)
-        if (mpi_rank == 0) basis_counts=[csf_count,orbital_count,electron_count,symmetry_block_count,core_subshell_count]
+        call require_collective_success(descriptor_status)
+        if (mpi_rank == 0) basis_counts=[csf_count,orbital_count,electron_count,transition_block_count,core_subshell_count]
         call MPI_Bcast(basis_counts,5,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_return_code)
         csf_count=basis_counts(1)
         orbital_count=basis_counts(2)
         electron_count=basis_counts(3)
-        symmetry_block_count=basis_counts(4)
+        transition_block_count=basis_counts(4)
         core_subshell_count=basis_counts(5)
         call MPI_Bcast(cumulative_csf_counts,size(cumulative_csf_counts),MPI_INTEGER,0,MPI_COMM_WORLD,mpi_return_code)
         ! Worker ranks allocate storage after receiving the basis dimensions.
@@ -42,7 +42,7 @@ contains
             if (descriptor_status == 0) allocate(csf_subshell_quantum_codes(max_orbitals,3,csf_count),stat=descriptor_status)
             if (descriptor_status == 0) allocate(csf_coupling_quantum_codes(max_orbitals,csf_count),stat=descriptor_status)
         end if
-        call check_all(descriptor_status)
+        call require_collective_success(descriptor_status)
         call MPI_Bcast(orbital_principal_n,orbital_count,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_return_code)
         call MPI_Bcast(orbital_kappa,orbital_count,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_return_code)
         call MPI_Bcast(orbital_l,orbital_count,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_return_code)

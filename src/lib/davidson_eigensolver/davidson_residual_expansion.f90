@@ -3,9 +3,9 @@ module davidson_residual_expansion
 
     ! Module interface
     private
-    public :: newvec
+    public :: expand_davidson_residuals
 contains
-    subroutine newvec(matrix_order, extreme_pair_count, subspace_limit, expansion_block_size, subspace_size, &
+    subroutine expand_davidson_residuals(matrix_order, extreme_pair_count, subspace_limit, expansion_block_size, subspace_size, &
         residual_tolerance, candidate_count, pending_pair_indices, ritz_coefficients, ritz_values, &
         previous_ritz_values, operator_basis, basis_vectors, convergence_flags, residual_norms, &
         preconditioner_shifts, targets_converged)
@@ -103,5 +103,5 @@ contains
         candidate_count = added_vector_count
 
         return
-    end subroutine newvec
+    end subroutine expand_davidson_residuals
 end module davidson_residual_expansion

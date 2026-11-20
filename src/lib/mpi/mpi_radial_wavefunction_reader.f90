@@ -3,17 +3,17 @@ module mpi_radial_wavefunction_reader
 
     ! Module interface
     private
-    public :: lodrwfmpi
+    public :: read_mpi_radial_wavefunction_records
 contains
     ! Read orbital records on rank 0 and interpolate the broadcast wavefunctions on each rank.
-    subroutine lodrwfmpi (wavefunction_input_unit, load_status)
+    subroutine read_mpi_radial_wavefunction_records (wavefunction_input_unit, load_status)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only:  max_radial_points
         use array_memory_management, only: alloc, dalloc
-        use debug_output_settings, only: rmcdhf_debug_flags => ldbpr
+        use debug_output_settings, only: rmcdhf_debug_flags
         use atomic_calculation_state, only: speed_of_light_au, nuclear_charge
         use radial_grid_state, only: radial_point_count
         use nuclear_model_parameters_state, only: nuclear_model_parameter_count
@@ -21,9 +21,9 @@ contains
             orbital_principal_n, orbital_symmetry_labels
         use radial_wavefunctions, only: orbital_origin_parameters, radial_large_components, radial_small_components
         use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, mpi_rank
-        use radial_orbital_interpolation, only: intrpq
-        use radial_orbital_orthogonalization, only: orthsc
-        use mpi_utilities, only: stopmpi
+        use radial_orbital_interpolation, only: interpolate_radial_orbital
+        use radial_orbital_orthogonalization, only: orthogonalize_radial_orbitals
+        use mpi_utilities, only: finalize_mpi_runtime
         implicit none (type, external)
 
         ! Arguments
@@ -60,7 +60,7 @@ contains
                 if (kappa_squared >= squared_charge_to_light_speed_ratio) then
                     orbital_origin_exponents(orbital_index) = sqrt (kappa_squared-squared_charge_to_light_speed_ratio)
                 else
-                    call stopmpi ("lodrwfmpi: Inappropriate gamma", mpi_rank)
+                    call finalize_mpi_runtime ("lodrwfmpi: Inappropriate gamma", mpi_rank)
                 end if
             end if
         end do
@@ -108,7 +108,7 @@ contains
                     file_kappa == orbital_kappa(orbital_index))) cycle
                 orbital_origin_parameters(orbital_index) = file_origin_coefficient
                 orbital_energy_parameters(orbital_index) = file_energy_parameter
-                call intrpq (file_large_component, file_small_component, file_grid_size, file_radial_grid, &
+                call interpolate_radial_orbital (file_large_component, file_small_component, file_grid_size, file_radial_grid, &
                     orbital_index, original_norm_squared)
                 if (rmcdhf_debug_flags(3) .and. mpi_rank == 0) then
                     call ensure_debug_output()
@@ -133,7 +133,7 @@ contains
             return
         end if
         ! Orthogonalize loaded orbitals within each kappa symmetry.
-        call orthsc
+        call orthogonalize_radial_orbitals
 
         if (rmcdhf_debug_flags(3) .and. mpi_rank == 0) then
             call ensure_debug_output()
@@ -142,5 +142,5 @@ contains
         load_status = 0
 
         return
-    end subroutine lodrwfmpi
+    end subroutine read_mpi_radial_wavefunction_records
 end module mpi_radial_wavefunction_reader

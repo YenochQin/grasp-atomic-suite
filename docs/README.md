@@ -23,6 +23,7 @@
 | --- | --- |
 | [inline_output_formats.md](implemented/inline_output_formats.md) | 数字标签 `FORMAT` 内联，覆盖共享库和应用的 903 处 `WRITE`、2 处 `PRINT`；源码、预处理和字节对照已验证。 |
 | [shared_library_naming.md](implemented/shared_library_naming.md) | 共享状态与基础接口库的命名约定、Fortran 调用方迁移和完整模块对照。 |
+| [shared_library_procedure_names.md](implemented/shared_library_procedure_names.md) | 共享库过程名称迁移表与现行 Fortran 调用入口。 |
 | [native_csf_descriptors.md](implemented/native_csf_descriptors.md) | 现行生产 CSF 输入；reader 已内置于 suite 并构建到 lib/，无需外部 rCSFs reader；所有保留消费者直接读取 Parquet/header，含 MPI、双基组、低内存及错误传播契约。 |
 | [rangular_angular_reuse.md](implemented/rangular_angular_reuse.md) | 已实施，串行专项回归通过；默认关闭的有界 CSF 对缓存；保留顺序、占据/耦合及轨道共享关系，复用原始 T/V 系数，普通 MCP 写出不变；包含命中率、缓存容量与 RSS 测量，MPI 未接入；rangular OpenMP 已移除。 |
 | [rwfnestimate_header_input.md](implemented/rwfnestimate_header_input.md) | header 输入说明；保留 header 轨道表、电子数和初猜检查背景；当前仅 header 输入，无旧文本回退。 |
@@ -41,7 +42,7 @@
 | [core_naming.md](implemented/core_naming.md) | 公共基础库的目录、静态库、Fortran 文件与模块命名对照。 |
 | [Core 计算公式](../src/lib/core/readme.md) | 公共基础库中的径向网格、求积、轨道、核势、角动量和矩阵运算公式。 |
 | [core_variable_migration.md](implemented/core_variable_migration.md) | `libcore` 变量与常量的逐作用域对应表，包含形参、保留名称与共享状态别名。 |
-| [breit_angular_support_migration.md](implemented/breit_angular_support_migration.md) | Breit 角系数支持库的目录、目标、模块、文件及变量命名迁移，含串行和 MPI RCI 链接接口。 |
+| [breit_angular_support_migration.md](implemented/breit_angular_support_migration.md) | Breit 角系数支持库的命名迁移、共享径向积分系数过程和角系数收集接口。 |
 | [spin_angular_naming.md](implemented/spin_angular_naming.md) | 自旋–角向库的目录、库目标、89 个源文件和 Fortran 模块命名对照。 |
 | [librang90_variable_migration.md](implemented/librang90_variable_migration.md) | `spin_angular` 变量与常量的逐过程对照，涵盖子壳层位置、角动量编码、张量矩阵元和 Breit 角向系数。 |
 | [standard_grasp_integration.md](implemented/standard_grasp_integration.md) | 普通程序接入；普通角系数、初猜、RCI 和跃迁程序复用套件共享库；历史接入检查不代表完整科学验收。 |
@@ -72,6 +73,7 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
+| [fortran_arrow_audit_2026-11-20.md](reviews/fortran_arrow_audit_2026-11-20.md) | Fortran 导入重命名与旧命名兼容入口已清除，含迁移对照、旧接口拒绝验证及运行结果比较。 |
 | [native_csf_descriptor_validation_2026-11-17.md](reviews/native_csf_descriptor_validation_2026-11-17.md) | 原生 CSF 输入的功能回归、矩阵及告警门禁边界；保留独立验收证据。 |
 | [fortls_fortitude_current_audit_2026-11-17.md](reviews/fortls_fortitude_current_audit_2026-11-17.md) | 迁移前工具审查；基准 5806884；保留原静态扫描及解析边界。之后生产 CSF reader 已替换，不能将旧风险与计数当作当前状态。 |
 | [fortls_fortitude_rescan_2026-11-17.md](reviews/fortls_fortitude_rescan_2026-11-17.md) | 工具对照证据；保留 S1–S4 后的解析器/编译器对照与检查边界；旧计数和 CSF 输入风险已由后续修改覆盖，不能直接作为当前执行清单。 |

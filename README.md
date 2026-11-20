@@ -80,8 +80,10 @@ set -gx OMPI_FC $FC
 cmake --build build --parallel 4
 ```
 
-The bundled reader requires Rust 1.99.0 or a newer release, Cargo, and a C
-compiler. Cargo uses `--locked` and downloads missing dependencies by default.
+CMake enables only Fortran and uses it to find BLAS and LAPACK.
+Cargo builds the bundled reader with Rust 1.99.0 or newer and uses a C
+compiler for its Zstd dependency.
+Cargo uses `--locked` and downloads missing dependencies by default.
 Set `-DGRASP_CSF_READER_OFFLINE=ON` to build from the local cache.
 `RCSFS_TEST_CLI` is only an offline test-fixture producer.
 
@@ -154,12 +156,12 @@ accept a state directly. [Shared state input](src/lib/core/calculation_state_fil
 
 Run `rwfnestimate`, `rangular` and `rmcdhf` in the calculation directory and
 enter the same name at each `Name of state:` prompt. For example, the state
-`Zn_odd_AS1` uses `Zn_odd_AS1_descriptors.parquet` and `Zn_odd_AS1_header.toml`.
+`Zn_odd_AS1` uses `Zn_odd_AS1_desc.parquet` and `Zn_odd_AS1_header.toml`.
 
 | Step | State files read | State files written |
 | --- | --- | --- |
 | `rwfnestimate` | `name_header.toml` | `name.initial.wfn` (initial radial orbitals) |
-| `rangular` | `name_descriptors.parquet` and its header | `mcp.NN`, `name.rangular.log` |
+| `rangular` | `name_desc.parquet` and its header | `mcp.NN`, `name.rangular.log` |
 | `rmcdhf` and `rmcdhf_mem` | Same descriptor pair, `name.initial.wfn`, `mcp.NN` | `name.wfn` (optimized orbitals), `name.mix` (OL/EOL mixing), `name.rmcdhf.summary`, `name.rmcdhf.log` |
 | `rci` | Same descriptor pair and `name.wfn` | `name.cimix` (CI mixing), `name.csum`, `name.clog` |
 
@@ -176,8 +178,10 @@ directories. States named `A` and `A.initial` also share the path `A.initial.wfn
 and need separate directories. State readers prefer `.wfn`, `.mix` and `.cimix`
 and can open archived `.w`, `.m` and `.cm` files when the corresponding new file is absent.
 
-An empty state selects the traditional `rcsf_*`, `rwfn.inp`, `rwfn.out` and
-`rmix.out` filenames. Existing answer files starting with a y/n settings
+An empty state selects `rcsf_desc.parquet`, `rcsf_header.toml`, `rwfn.inp`,
+`rwfn.out` and `rmix.out`. When the short descriptor filename is absent,
+the suite also accepts the previous `*_descriptors.parquet` filename.
+Existing answer files starting with a y/n settings
 response still work. For a single-letter state `Y` or `N` (either case), the
 matching header in the input directory takes precedence. An (E)AL rerun leaves any existing mixing file for that state untouched. Fixed-name runs can
 still be archived with [save_rmcdhf](scripts/README.md#保存-rmcdhf-计算结果).
@@ -185,7 +189,7 @@ still be archived with [save_rmcdhf](scripts/README.md#保存-rmcdhf-计算结�
 Common input files:
 
 - `isodata`: nuclear and isotope data.
-- `name_descriptors.parquet` and `name_header.toml`: CSF descriptors and matching header.
+- `name_desc.parquet` and `name_header.toml`: CSF descriptors and matching header.
 - `name.wfn`: radial orbital wavefunctions.
 - `name.mix`: MCDHF/non-CI mixing-coefficient file.
 - `name.cimix`: CI mixing-coefficient file.
@@ -231,11 +235,10 @@ Orbital regression runners live in [test/rmcdhf](test/rmcdhf/README.md). Large c
 Shared limits live in [`compile_time_capacities.f90`](src/lib/grasp_shared/compile_time_capacities.f90)
 and are re-exported by [`grasp_parameters.f90`](src/lib/grasp_shared/grasp_parameters.f90).
 See [shared library naming](docs/implemented/shared_library_naming.md) for the library and module mapping.
-The default values match upstream GRASP:
-`NNNP=590`, `NNN1=600`, `NNNW=127`, `NNNWM1=126`, `NNNWM2=125`, and `KEYORB=215`.
-Each grid entry point retains its upstream defaults: finite nuclei use `N=NNNP=590`.
-Programs with a point-nucleus branch use `N=MIN(220,NNNP)`; the two CSFG RCI
-programs retain their common grid initialization without a separate point branch.
+The Suite defaults are `max_radial_points=590`, `radial_workspace_capacity=600`, `max_orbitals=127`,
+`max_orbitals_minus_one=126`, `max_orbitals_minus_two=125`, and `orbital_index_radix=215`.
+Finite nuclei use `radial_point_count=max_radial_points`. Programs with a point-nucleus branch start at
+`min(220,max_radial_points)`.
 Input orbitals are interpolated onto the current calculation grid. Upstream RMCDHF initializes `ACCY=H**6` before optional
 interactive grid changes; explicitly supply ACCY if you change H.
 Copy [scripts/config.example.toml](scripts/config.example.toml) to `scripts/config.toml`,
@@ -249,8 +252,8 @@ full rebuild and numerical convergence checks.
 
 See [shared parameter guide](docs/implemented/common_parameters.md) for the parameter table,
 initialization order, and validation. The suite layout edits the central capacity configuration
-and the seventeen individual grid entry points as needed. Explicit ACCY changes also cover
-the two CSFG RCI restart paths; `grasp_parameters` remains a re-export interface.
+and the fifteen individual grid entry points as needed. Explicit changes to `working_tolerance`
+also cover the serial and MPI RCI restart paths.
 For candidate values, their rationale, test datasets, and convergence criteria,
 see [GRASP grid parameter tuning](docs/plans/grasp_grid_parameter_tuning.md) (Chinese).
 

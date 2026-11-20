@@ -4,19 +4,18 @@ module nuclear_coulomb_potential
 
     ! Module interface
     private
-    public :: nucpot
+    public :: calculate_nuclear_coulomb_potential
 contains
-    subroutine nucpot
+    subroutine calculate_nuclear_coulomb_potential
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
-        use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+        use debug_output_settings, only: rmcdhf_debug_flags
         use atomic_calculation_state,           only: nuclear_charge, pi
-        use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-            radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+        use radial_grid_state, only: radial_point_count, radial_grid
         use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
         use nuclear_potential_state,          only: negative_radius_times_potential, first_grid_index_beyond_fermi_c
-        use alternating_exponential_series, only: es
+        use alternating_exponential_series, only: evaluate_alternating_exponential_series
         implicit none (type, external)
 
         ! Local declarations
@@ -43,7 +42,8 @@ contains
             pi_squared = pi*pi
             half_pi_squared_a_over_c_squared = 0.5_real64*pi_squared*a_over_c_squared
             interior_linear_factor = 1.5_real64 + half_pi_squared_a_over_c_squared
-            call es ((-radius_over_diffuseness), origin_inverse_square_sum, origin_inverse_cube_sum)
+            call evaluate_alternating_exponential_series ((-radius_over_diffuseness), origin_inverse_square_sum, &
+                & origin_inverse_cube_sum)
             six_a_over_c_cubed = 6.0_real64*a_over_c_cubed
             origin_series_correction = -six_a_over_c_cubed*origin_inverse_cube_sum
             fermi_normalization = 1.0_real64 + a_over_c_squared*pi_squared + origin_series_correction
@@ -56,7 +56,8 @@ contains
                 radius_over_half_density = radius/half_density_radius
                 ! Split at the half-density radius to keep the exponential-series argument nonpositive.
                 if (radius_over_half_density <= 1.0_real64) then
-                    call es (scaled_radius_offset, radius_inverse_square_sum, radius_inverse_cube_sum)
+                    call evaluate_alternating_exponential_series (scaled_radius_offset, radius_inverse_square_sum, &
+                        & radius_inverse_cube_sum)
                     negative_radius_times_potential(radial_index) = normalized_nuclear_charge*(origin_series_correction + &
                         & six_a_over_c_cubed*radius_inverse_cube_sum + radius_over_half_density*(interior_linear_factor - &
                         & three_a_over_c_squared*radius_inverse_square_sum&
@@ -66,14 +67,15 @@ contains
                         first_grid_index_beyond_fermi_c = radial_index
                         found_first_exterior_point = .true.
                     end if
-                    call es ((-scaled_radius_offset), radius_inverse_square_sum, radius_inverse_cube_sum)
+                    call evaluate_alternating_exponential_series ((-scaled_radius_offset), radius_inverse_square_sum, &
+                        & radius_inverse_cube_sum)
                     negative_radius_times_potential(radial_index) = nuclear_charge*(1.0_real64 + &
                         & three_a_over_c_squared*(radius_over_half_density*radius_inverse_square_sum + &
                         & twice_a_over_c*radius_inverse_cube_sum)/fermi_normalization)
                 end if
             end do
         end if
-        if (ldbpr(2)) then
+        if (rmcdhf_debug_flags(2)) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,"From SUBROUTINE NUCPOT:"/,3(" -------- r -------- ----- -r*V(r) -----"))')
             points_per_column = radial_point_count/3
@@ -109,5 +111,5 @@ contains
         end if
         return
         return
-    end subroutine nucpot
+    end subroutine calculate_nuclear_coulomb_potential
 end module nuclear_coulomb_potential

@@ -3,9 +3,9 @@ module davidson_iteration
 
     ! Module interface
     private
-    public :: dvdrvr
+    public :: iterate_davidson_solver
 contains
-    subroutine dvdrvr(operation_code, request_slots, matrix_order, solve_high_end, subspace_limit, &
+    subroutine iterate_davidson_solver(operation_code, request_slots, matrix_order, solve_high_end, subspace_limit, &
         expansion_block_size, constraint_count, extreme_pair_count, initial_vector_count, selected_pair_count, &
         selected_pair_indices, eigenvalue_tolerance, coefficient_tolerance, residual_tolerance, &
         iteration_limit, ritz_values, basis_vectors, basis_with_constraints, operator_basis, projected_matrix, &
@@ -15,12 +15,12 @@ contains
         ! Solve the projected eigenproblem and expand or restart the Davidson subspace.
         use, intrinsic :: iso_fortran_env, only: real64
         use blas_lapack_interfaces, only: slamch
-        use davidson_subspace_restart, only: ovflow
-        use davidson_convergence, only: tstsel
-        use davidson_residual_expansion, only: newvec
-        use davidson_orthonormalization, only: mgs_nrm
-        use davidson_projected_matrix, only: adds
-        use davidson_basis_transform, only: multbc
+        use davidson_subspace_restart, only: restart_davidson_subspace
+        use davidson_convergence, only: check_davidson_convergence
+        use davidson_residual_expansion, only: expand_davidson_residuals
+        use davidson_orthonormalization, only: orthonormalize_davidson_vectors
+        use davidson_projected_matrix, only: update_davidson_projected_matrix
+        use davidson_basis_transform, only: transform_davidson_basis
         use blas_lapack_interfaces, only: daxpy, dcopy, ddot, dscal, dspevx
         implicit none (type, external)
 
@@ -74,7 +74,7 @@ contains
             end do
             expansion_start = subspace_size*matrix_order + 1
 
-            call mgs_nrm (matrix_order, constraint_count + subspace_size, expansion_count, &
+            call orthonormalize_davidson_vectors (matrix_order, constraint_count + subspace_size, expansion_count, &
                 real_scratch(subspace_limit+1), basis_with_constraints)
             request_slots(1) = expansion_count
             request_slots(2) = subspace_size + 1
@@ -85,7 +85,8 @@ contains
             ! Apply the spectral sign to the new products and append the projection columns.
             if (solve_high_end) call dscal (matrix_order*expansion_count, -1.0_real64, &
                 operator_basis(expansion_start), 1)
-            call adds (matrix_order, subspace_limit, subspace_size, expansion_count, basis_vectors, operator_basis, &
+            call update_davidson_projected_matrix (matrix_order, subspace_limit, subspace_size, expansion_count, basis_vectors, &
+                & operator_basis, &
                 projected_matrix)
 
             subspace_size = subspace_size + expansion_count
@@ -128,15 +129,17 @@ contains
                 operation_code = 0
                 return
             end if
-            targets_converged = tstsel(subspace_size, extreme_pair_count, selected_pair_count, selected_pair_indices, &
+            targets_converged = check_davidson_convergence(subspace_size, extreme_pair_count, selected_pair_count, &
+                & selected_pair_indices, &
                 ritz_coefficients, ritz_values, convergence_flags, eigenvalue_tolerance, coefficient_tolerance, &
                 real_scratch, integer_scratch, previous_ritz_values, expansion_count, pending_pair_indices)
             if (.not. targets_converged .and. subspace_size < matrix_order) then
                 if (subspace_size == subspace_limit) then
-                    call ovflow (matrix_order, restart_size, subspace_size, real_scratch, basis_vectors, &
+                    call restart_davidson_subspace (matrix_order, restart_size, subspace_size, real_scratch, basis_vectors, &
                         operator_basis, projected_matrix, ritz_coefficients, ritz_values)
                 end if
-                call newvec (matrix_order, extreme_pair_count, subspace_limit, expansion_block_size, subspace_size, &
+                call expand_davidson_residuals (matrix_order, extreme_pair_count, subspace_limit, expansion_block_size, &
+                    & subspace_size, &
                     residual_tolerance, expansion_count, pending_pair_indices, ritz_coefficients, ritz_values, &
                     previous_ritz_values, operator_basis, basis_vectors, convergence_flags, real_scratch, &
                     real_scratch(subspace_limit+1), targets_converged)
@@ -165,9 +168,9 @@ contains
         end do
 
         ! Form full-space Ritz vectors and their images with the same coefficients.
-        call multbc (matrix_order, subspace_size, extreme_pair_count, ritz_coefficients, real_scratch, &
+        call transform_davidson_basis (matrix_order, subspace_size, extreme_pair_count, ritz_coefficients, real_scratch, &
             basis_vectors)
-        call multbc (matrix_order, subspace_size, extreme_pair_count, ritz_coefficients, real_scratch, &
+        call transform_davidson_basis (matrix_order, subspace_size, extreme_pair_count, ritz_coefficients, real_scratch, &
             operator_basis)
         ! Use the first column after the returned products as scratch for the final residuals.
         do pair_position = 1, extreme_pair_count
@@ -182,5 +185,5 @@ contains
         end do
         operation_code = 0
         return
-    end subroutine dvdrvr
+    end subroutine iterate_davidson_solver
 end module davidson_iteration

@@ -1,20 +1,19 @@
 # Breit 角系数支持库
 
-`breit_angular_support` 为双电子 Breit 角积分提供共享缓冲区的写入例程，以及 `TALK` 和 `CXK` 的外部过程接口。
+`breit_angular_support` 提供双电子 Breit 相互作用的径向积分系数计算和角系数缓冲区写入例程。
 
 | 源文件 | 职责 |
 | --- | --- |
-| [breit_angular_coefficient_buffer.f90](breit_angular_coefficient_buffer.f90) | 定义 `TALK` 的显式接口。`talk_fallback` 将调用方传入的角系数和径向积分标签追加到共享缓冲区。 |
-| [breit_radial_integral_coefficients.f90](breit_radial_integral_coefficients.f90) | 定义 `CXK` 的显式接口。`cxk_fallback` 被调用时以 `CXK: Error` 停止。 |
-| [breit_angular_coefficient_buffer_external.f90](breit_angular_coefficient_buffer_external.f90) | 将外部 `TALK` 调用转发给 `talk_fallback`。 |
-| [breit_radial_integral_coefficients_external.f90](breit_radial_integral_coefficients_external.f90) | 将外部 `CXK` 调用转发给 `cxk_fallback`。 |
+| [breit_angular_coefficient_buffer.f90](breit_angular_coefficient_buffer.f90) | 定义外部 `collect_breit_angular_coefficient` 的显式接口和无筛选的模块存储过程。 |
+| [breit_radial_integral_coefficients.f90](breit_radial_integral_coefficients.f90) | 模块过程 `calculate_breit_radial_integral_coefficients` 计算 Breit 有效相互作用展开中各径向积分的权重。 |
+| [collect_breit_angular_coefficient.f90](collect_breit_angular_coefficient.f90) | 默认外部收集过程，调用 `store_breit_angular_coefficient`。 |
 
 ## 角系数缓冲
 
-`talk_fallback` 每次调用追加一条记录，包括系数为零的情况。计数超过当前容量时，调用 `alcbuf(2)` 将容量翻倍并保留已有记录。每条记录由一个实数系数和六个整数标签组成，标签依次是左态的两个轨道索引、右态的两个轨道索引、径向积分阶数和有符号的积分类型码。 [缓冲区扩容实现](../core/angular_coefficient_buffer.f90)
+`store_breit_angular_coefficient` 每次调用追加一条记录，包括系数为零的情况。计数超过当前容量时，调用 `manage_angular_coefficient_buffer(2)` 将容量翻倍并保留已有记录。每条记录由一个实数系数和六个整数标签组成，标签依次是左态的两个轨道索引、右态的两个轨道索引、径向积分阶数和有符号的积分类型码。 [缓冲区扩容实现](../core/angular_coefficient_buffer.f90)
 
-调试标志 `ibug1` 非零时，例程还向 Fortran 单元 99 写出 CSF 对、轨道主量子数及对称性标签、积分阶数、类型码和系数。两个 CSF 索引仅用于这一行调试输出。
+调试标志 `angular_coefficient_debug_flag` 非零时，例程还向角系数调试单元写出 CSF 对、轨道主量子数及对称性标签、积分阶数、类型码和系数。两个 CSF 索引仅用于这一行调试输出。
 
 ## 链接与数值实现
 
-两个 `_external.f90` 文件各自产生一个独立的静态库成员。串行和 MPI RCI 在链接时提供自己的 `TALK` 和 `CXK`。RCI 的 `TALK` 只记录绝对值大于 `eps` 的系数，`CXK` 在应用目录中计算 Breit 有效相互作用展开中各径向积分项的系数。 [串行 RCI 的 CXK](../../apps/rci/breit_radial_integral_factors.f90) · [MPI RCI 的 CXK](../../apps/rci_mpi/breit_radial_integral_factors.f90)
+`collect_breit_angular_coefficient.f90` 单独编译为静态归档成员。自旋角库和 RCI 闭芯路径直接调用外部收集过程。串行和 MPI RCI 在链接时各自提供实现，只记录绝对值大于阈值的系数。两条路径都用共享的径向积分系数模块过程计算权重。

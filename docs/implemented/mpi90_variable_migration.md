@@ -16,7 +16,7 @@ Fortran 标识符不区分大小写，表中采用小写。现行文件与模块
   工作区沿用 [Davidson 求解库命名](davidson_eigensolver_migration.md)。`—` 表示移除无引用的局部声明。
 - Fortran 与 MPI 标准符号沿用公开名称，例如 `real64`、`int8`、`int64`、`error_unit`、
   `MPI_COMM_WORLD`、`MPI_INTEGER1`、`MPI_STATUS_SIZE`。`mpi_state` 继续重导出 MPI 接口。
-  `ierrtotal` 是无引用的历史公开变量，沿用其接口名称。
+  历史公开变量 `ierrtotal` 已随旧命名接口移除。
 - [CMakeLists.txt](../../src/lib/mpi/CMakeLists.txt) 无本地命名变量或常量声明。`MPI_Fortran_INCLUDE_PATH`、
   `MPI_Fortran_LIBRARIES`、`MPI_Fortran_COMPILE_FLAGS`、`MPI_Fortran_LINK_FLAGS` 由 FindMPI 提供，
   `CMAKE_Fortran_COMPILER_ID` 由 CMake 提供。
@@ -214,7 +214,7 @@ Fortran 标识符不区分大小写，表中采用小写。现行文件与模块
 | `mpi_process_count` | `mpi_process_count` | MPI_COMM_WORLD 中的进程数。 |
 | `processor_name_length` | `processor_name_length` | 处理器名称的有效字符数。 |
 | `mpi_error_code` | `mpi_error_code` | 套件程序共用的整型状态槽。 |
-| `ierrtotal` | `ierrtotal` | 库的历史公开变量，库内和现有调用方均未引用，沿用公开名。 |
+| `ierrtotal` | — | 已移除，仅用于旧接口的公开变量。 |
 | `mpi_status_buffer` | `mpi_status_buffer` | MPI_Recv 的整数状态缓冲区。 |
 
 ## [mpi_runtime.f90](../../src/lib/mpi/mpi_runtime.f90)

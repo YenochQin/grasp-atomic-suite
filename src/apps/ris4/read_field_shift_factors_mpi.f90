@@ -1,104 +1,120 @@
-!***********************************************************************
-!                                                                      *
-subroutine read_field_shift_factors_mpi(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
-    ! Module dependencies
-    use calculation_file_units, only: one_body_cache_unit
-    !                                                                      *
-    !   MPI version of DENSREAD. Each rank scans the full angular file but *
-    !   only accumulates records whose IC belongs to its strided subset.    *
-    !                                                                      *
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use grasp_parameters,    only: orbital_index_radix, max_orbitals
-    use debug_output_settings,          only: cutoff
-    use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-    use isotope_shift_options, only: dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
-    use orbital_csf_basis, only: csf_count, max_orbitals
-    use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
-        csf_mixing_coefficients, evecff, evecii
-    use mpi_state,            only: mpi_rank, mpi_process_count
+module read_field_shift_factors_mpi_interface
     implicit none (type, external)
 
-    ! Arguments
-    real(real64), intent(in) :: dint1(max_orbitals, max_orbitals), dint2(max_orbitals, max_orbitals),  &
-        dint3(max_orbitals, max_orbitals), dint4(max_orbitals, max_orbitals), &
-        dint5(max_orbitals, max_orbitals), dint6(max_orbitals, max_orbitals),  &
-        dint7(max_orbitals, max_orbitals)
+    ! Module interface
+    private
+    public :: read_field_shift_factors_mpi
+contains
 
-    ! Local constants
-    integer, parameter :: orbital_label_radix = orbital_index_radix
+    !***********************************************************************
+    !                                                                      *
+    subroutine read_field_shift_factors_mpi(contact_density_integrals,total_nms_integrals,radius_integrals, &
+        & radius_squared_integrals,inverse_radius_integrals,inverse_radius_squared_integrals,leading_nms_integrals)
+        ! Module dependencies
+        use calculation_file_units, only: one_body_cache_unit
+        !                                                                      *
+        !   MPI version of DENSREAD. Each rank scans the full angular file but *
+        !   only accumulates records whose IC belongs to its strided subset.    *
+        !                                                                      *
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use grasp_parameters,    only: orbital_index_radix, max_orbitals
+        use debug_output_settings,          only: cutoff
+        use selected_level_indices, only: active_level_count
+        use isotope_shift_options, only: contact_density_by_level, total_nms_by_level, radius_by_level, &
+            & radius_squared_by_level, inverse_radius_by_level, inverse_radius_squared_by_level, leading_nms_by_level, &
+            & leading_sms_by_level, total_sms_by_level
+        use orbital_csf_basis, only: csf_count, max_orbitals
+        use eigenstate_expansions, only: csf_mixing_coefficients
+        use mpi_state,            only: mpi_rank, mpi_process_count
+        implicit none (type, external)
 
-    ! Local declarations
-    real(real64) :: tshell_r(max_orbitals)
-    real(real64) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5
-    real(real64) :: elemnt6, elemnt7
-    real(real64) :: contri1, contri2, contri3, contri4, contri5
-    real(real64) :: contri6, contri7
-    real(real64) :: evpair, pair_scale
-    integer :: io_status, ia, ib, ic, ir, i, j, loc, lab, ncount
-    logical :: ownrec
+        ! Arguments
+        real(real64), intent(in) :: contact_density_integrals(max_orbitals, max_orbitals), &
+            & total_nms_integrals(max_orbitals, max_orbitals),  &
+            radius_integrals(max_orbitals, max_orbitals), radius_squared_integrals(max_orbitals, max_orbitals), &
+            inverse_radius_integrals(max_orbitals, max_orbitals), inverse_radius_squared_integrals(max_orbitals, max_orbitals),  &
+            leading_nms_integrals(max_orbitals, max_orbitals)
 
-    rewind (one_body_cache_unit)
-    do
-        read (one_body_cache_unit,iostat = io_status) ic,ir,ncount
-        if (io_status /= 0) exit
-        ownrec = mod(ic-1, mpi_process_count) == mpi_rank
-        elemnt1 = 0.0_real64
-        elemnt2 = 0.0_real64
-        elemnt3 = 0.0_real64
-        elemnt4 = 0.0_real64
-        elemnt5 = 0.0_real64
-        elemnt6 = 0.0_real64
-        elemnt7 = 0.0_real64
+        ! Local constants
 
-        do i= 1,ncount
-            read(one_body_cache_unit) tshell_r(i),lab
-            if (.not. ownrec) cycle
-            ia = lab/orbital_label_radix
-            ib = mod(lab,orbital_label_radix)
-            elemnt1 = elemnt1 + dint1(ia,ib)*tshell_r(i)
-            elemnt2 = elemnt2 + dint2(ia,ib)*tshell_r(i)
-            elemnt3 = elemnt3 + dint3(ia,ib)*tshell_r(i)
-            elemnt4 = elemnt4 + dint4(ia,ib)*tshell_r(i)
-            elemnt5 = elemnt5 + dint5(ia,ib)*tshell_r(i)
-            elemnt6 = elemnt6 + dint6(ia,ib)*tshell_r(i)
-            elemnt7 = elemnt7 + dint7(ia,ib)*tshell_r(i)
+        ! Local declarations
+        real(real64) :: cached_shell_coefficients(max_orbitals)
+        real(real64) :: contact_density_element, total_nms_element, radius_element, radius_squared_element, inverse_radius_element
+        real(real64) :: inverse_radius_squared_element, leading_nms_element
+        real(real64) :: contact_density_contribution, total_nms_contribution, radius_contribution, &
+            & radius_squared_contribution, inverse_radius_contribution
+        real(real64) :: inverse_radius_squared_contribution, leading_nms_contribution
+        real(real64) :: weighted_mixing_product, pair_scale
+        integer :: io_status, ia, ib, column_csf, row_csf, i, level_index, level_mixing_offset, packed_orbital_label, &
+            & coefficient_count
+        logical :: rank_owns_record
+
+        rewind (one_body_cache_unit)
+        do
+            read (one_body_cache_unit,iostat = io_status) column_csf,row_csf,coefficient_count
+            if (io_status /= 0) exit
+            rank_owns_record = mod(column_csf-1, mpi_process_count) == mpi_rank
+            contact_density_element = 0.0_real64
+            total_nms_element = 0.0_real64
+            radius_element = 0.0_real64
+            radius_squared_element = 0.0_real64
+            inverse_radius_element = 0.0_real64
+            inverse_radius_squared_element = 0.0_real64
+            leading_nms_element = 0.0_real64
+
+            do i= 1,coefficient_count
+                read(one_body_cache_unit) cached_shell_coefficients(i),packed_orbital_label
+                if (.not. rank_owns_record) cycle
+                ia = packed_orbital_label/orbital_index_radix
+                ib = mod(packed_orbital_label,orbital_index_radix)
+                contact_density_element = contact_density_element + contact_density_integrals(ia,ib)*cached_shell_coefficients(i)
+                total_nms_element = total_nms_element + total_nms_integrals(ia,ib)*cached_shell_coefficients(i)
+                radius_element = radius_element + radius_integrals(ia,ib)*cached_shell_coefficients(i)
+                radius_squared_element = radius_squared_element + radius_squared_integrals(ia,ib)*cached_shell_coefficients(i)
+                inverse_radius_element = inverse_radius_element + inverse_radius_integrals(ia,ib)*cached_shell_coefficients(i)
+                inverse_radius_squared_element = inverse_radius_squared_element + inverse_radius_squared_integrals(ia,ib)* &
+                    & cached_shell_coefficients(i)
+                leading_nms_element = leading_nms_element + leading_nms_integrals(ia,ib)*cached_shell_coefficients(i)
+            end do
+
+            if (rank_owns_record) then
+                if (abs(contact_density_element) <= cutoff .and. &
+                    abs(total_nms_element) <= cutoff .and. &
+                    abs(radius_element) <= cutoff .and. &
+                    abs(radius_squared_element) <= cutoff .and. &
+                    abs(inverse_radius_element) <= cutoff .and. &
+                    abs(inverse_radius_squared_element) <= cutoff .and. &
+                    abs(leading_nms_element) <= cutoff) cycle
+                if (row_csf == column_csf) then
+                    pair_scale = 1.0_real64
+                else
+                    pair_scale = 2.0_real64
+                end if
+                do level_index = 1,active_level_count
+                    level_mixing_offset = (level_index-1)*csf_count
+                    weighted_mixing_product = pair_scale * csf_mixing_coefficients(column_csf+level_mixing_offset)* &
+                        & csf_mixing_coefficients(row_csf+level_mixing_offset)
+                    contact_density_contribution = weighted_mixing_product*contact_density_element
+                    total_nms_contribution = weighted_mixing_product*total_nms_element
+                    radius_contribution = weighted_mixing_product*radius_element
+                    radius_squared_contribution = weighted_mixing_product*radius_squared_element
+                    inverse_radius_contribution = weighted_mixing_product*inverse_radius_element
+                    inverse_radius_squared_contribution = weighted_mixing_product*inverse_radius_squared_element
+                    leading_nms_contribution = weighted_mixing_product*leading_nms_element
+                    contact_density_by_level(level_index) = contact_density_by_level(level_index) + contact_density_contribution
+                    total_nms_by_level(level_index) = total_nms_by_level(level_index) + total_nms_contribution
+                    radius_by_level(level_index) = radius_by_level(level_index) + radius_contribution
+                    radius_squared_by_level(level_index) = radius_squared_by_level(level_index) + radius_squared_contribution
+                    inverse_radius_by_level(level_index) = inverse_radius_by_level(level_index) + inverse_radius_contribution
+                    inverse_radius_squared_by_level(level_index) = inverse_radius_squared_by_level(level_index) + &
+                        & inverse_radius_squared_contribution
+                    leading_nms_by_level(level_index) = leading_nms_by_level(level_index) + leading_nms_contribution
+                end do
+            end if
+
         end do
 
-        if (ownrec) then
-            if (abs(elemnt1) <= cutoff .and. &
-                abs(elemnt2) <= cutoff .and. &
-                abs(elemnt3) <= cutoff .and. &
-                abs(elemnt4) <= cutoff .and. &
-                abs(elemnt5) <= cutoff .and. &
-                abs(elemnt6) <= cutoff .and. &
-                abs(elemnt7) <= cutoff) cycle
-            if (ir == ic) then
-                pair_scale = 1.0_real64
-            else
-                pair_scale = 2.0_real64
-            end if
-            do j = 1,nvec
-                loc = (j-1)*csf_count
-                evpair = pair_scale * csf_mixing_coefficients(ic+loc)*csf_mixing_coefficients(ir+loc)
-                contri1 = evpair*elemnt1
-                contri2 = evpair*elemnt2
-                contri3 = evpair*elemnt3
-                contri4 = evpair*elemnt4
-                contri5 = evpair*elemnt5
-                contri6 = evpair*elemnt6
-                contri7 = evpair*elemnt7
-                dens1(j) = dens1(j) + contri1
-                dens2(j) = dens2(j) + contri2
-                dens3(j) = dens3(j) + contri3
-                dens4(j) = dens4(j) + contri4
-                dens5(j) = dens5(j) + contri5
-                dens6(j) = dens6(j) + contri6
-                dens7(j) = dens7(j) + contri7
-            end do
-        end if
-
-    end do
-
-    return
-end subroutine read_field_shift_factors_mpi
+        return
+    end subroutine read_field_shift_factors_mpi
+end module read_field_shift_factors_mpi_interface

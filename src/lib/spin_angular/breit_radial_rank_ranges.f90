@@ -4,9 +4,9 @@ module breit_radial_rank_ranges
 
     ! Module interface
     private
-    public :: snrc
+    public :: breit_rank_bounds
 contains
-    subroutine snrc(integral_orbitals, two_kappas, two_j_plus_one, first_direct_nu, direct_nu_count, &
+    subroutine breit_rank_bounds(integral_orbitals, two_kappas, two_j_plus_one, first_direct_nu, direct_nu_count, &
         first_exchange_nu, exchange_nu_count, direct_integral_type, exchange_integral_type)
         implicit none (type, external)
 
@@ -92,5 +92,5 @@ contains
         if (integral_orbitals(1)==integral_orbitals(3) .and. integral_orbitals(2)==integral_orbitals(4)) &
             exchange_integral_type = 4
         return
-    end subroutine snrc
+    end subroutine breit_rank_bounds
 end module breit_radial_rank_ranges

@@ -1,41 +1,30 @@
 ! Store a subshell value in a signed byte after checking its range and the destination index.
-module csf_byte_packing_impl
+module csf_byte_packing
     implicit none (type, external)
 
     ! Module interface
     private
-    public :: pack_impl
+    public :: pack_csf_subshell_byte
 contains
-    subroutine pack_impl(iunpkd, isubsh, ipackd)
+    subroutine pack_csf_subshell_byte(unpacked_value, byte_index, packed_values)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: int8
         use standard_io_units, only: stderr_unit
         implicit none (type, external)
 
         ! Arguments
-        integer, intent(in) :: iunpkd
-        integer, intent(in) :: isubsh
-        integer(int8), intent(inout) :: ipackd(*)
-        if (abs(iunpkd) > 127) then
-            write (stderr_unit, *) "PACK: Argument IUNPKD out of range."
+        integer, intent(in) :: unpacked_value
+        integer, intent(in) :: byte_index
+        integer(int8), intent(inout) :: packed_values(*)
+        if (abs(unpacked_value) > 127) then
+            write (stderr_unit, *) "pack_csf_subshell_byte: value out of range."
             stop
         end if
-        if (isubsh <= 0) then
-            write (stderr_unit, *) "PACK: ISUBSH=", isubsh, " less than 1"
+        if (byte_index <= 0) then
+            write (stderr_unit, *) "pack_csf_subshell_byte: byte index ", byte_index, " less than 1"
             stop
         end if
-        ipackd(isubsh) = iunpkd
+        packed_values(byte_index) = unpacked_value
         return
-    end subroutine pack_impl
-end module csf_byte_packing_impl
-
-! Export PACK as a module procedure to keep it distinct from the Fortran intrinsic in callers.
-module csf_byte_packing
-    ! Module dependencies
-    use csf_byte_packing_impl, only: pack => pack_impl
-    implicit none (type, external)
-
-    ! Module interface
-    private
-    public :: pack
+    end subroutine pack_csf_subshell_byte
 end module csf_byte_packing

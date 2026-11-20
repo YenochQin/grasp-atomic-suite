@@ -8,9 +8,9 @@ module mpi_csf_collectives
 
     ! Module interface
     private
-    public :: check_descriptor_status, allocate_descriptor_arrays, broadcast_descriptor_arrays
+    public :: require_collective_success, allocate_descriptor_arrays, broadcast_descriptor_arrays
 contains
-    subroutine check_descriptor_status(status)
+    subroutine require_collective_success(status)
         ! Arguments
         integer, intent(in) :: status
 
@@ -23,7 +23,7 @@ contains
             call MPI_Abort(MPI_COMM_WORLD,1,mpi_return_code)
             error stop "Descriptor collective failed"
         end if
-    end subroutine check_descriptor_status
+    end subroutine require_collective_success
 
     subroutine allocate_descriptor_arrays(csf_count,subshell_occupations,subshell_quantum_codes,coupling_quantum_codes)
         ! Arguments
@@ -32,11 +32,11 @@ contains
 
         ! Local declarations
         integer :: allocation_status
-        call check_descriptor_status(merge(0,1,csf_count > 0))
+        call require_collective_success(merge(0,1,csf_count > 0))
         allocate(subshell_occupations(max_orbitals,csf_count),stat=allocation_status)
         if (allocation_status == 0) allocate(subshell_quantum_codes(max_orbitals,3,csf_count),stat=allocation_status)
         if (allocation_status == 0) allocate(coupling_quantum_codes(max_orbitals,csf_count),stat=allocation_status)
-        call check_descriptor_status(allocation_status)
+        call require_collective_success(allocation_status)
     end subroutine allocate_descriptor_arrays
 
     subroutine broadcast_descriptor_arrays(subshell_occupations,subshell_quantum_codes,coupling_quantum_codes,csf_batch_limit)
@@ -62,17 +62,17 @@ contains
             if (any(shape(coupling_quantum_codes) /= local_array_layout(:2))) layout_status=1
         end if
         if (local_array_layout(1) <= 0) layout_status=1
-        call check_descriptor_status(layout_status)
+        call require_collective_success(layout_status)
         ! Limit the MPI element count using the widest array per CSF.
         max_elements_per_csf=int(local_array_layout(1),int64)
         if (present(subshell_quantum_codes)) max_elements_per_csf=3_int64*max_elements_per_csf
         csfs_per_batch=int(min(8192_int64,int(huge(0),int64)/max_elements_per_csf))
         if (present(csf_batch_limit)) csfs_per_batch=min(csfs_per_batch,csf_batch_limit)
-        call check_descriptor_status(merge(0,1,csfs_per_batch > 0))
+        call require_collective_success(merge(0,1,csfs_per_batch > 0))
         ! Require every rank to use the same sequence of batch sizes.
         root_array_layout(1)=csfs_per_batch
         call MPI_Bcast(root_array_layout,1,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_return_code)
-        call check_descriptor_status(merge(0,1,csfs_per_batch == root_array_layout(1)))
+        call require_collective_success(merge(0,1,csfs_per_batch == root_array_layout(1)))
         ! Slice batches along the last dimension so each transfer contains complete CSF records.
         first_csf_index=1
         do while (first_csf_index <= local_array_layout(2))

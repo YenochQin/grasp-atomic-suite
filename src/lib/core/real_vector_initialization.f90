@@ -4,9 +4,9 @@ module real_vector_initialization
 
     ! Module interface
     private
-    public :: dinit
+    public :: initialize_real_vector
 contains
-    subroutine dinit(element_count, fill_value, values, stride)
+    subroutine initialize_real_vector(element_count, fill_value, values, stride)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         implicit none (type, external)
@@ -18,7 +18,7 @@ contains
         real(real64), intent(out) :: values(*)
 
         ! Local declarations
-        integer :: first_index, i
+        integer :: first_index
         if (stride == 1) then
             values(:element_count) = fill_value
         else
@@ -27,5 +27,5 @@ contains
             values(first_index:(element_count-1)*stride+first_index:stride) = fill_value
         end if
         return
-    end subroutine dinit
+    end subroutine initialize_real_vector
 end module real_vector_initialization

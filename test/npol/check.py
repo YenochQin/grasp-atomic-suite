@@ -154,23 +154,27 @@ def entrypoints(root: Path) -> None:
         code = "\n".join(line.split("!", 1)[0] for line in text.splitlines())
         calls = re.findall(r"call\s+(\w+)", code)
         enabled = variant != "rmcdhf_mpi"
+        wavefunction_reader = "read_mpi_radial_wavefunction_file" if mpi else "read_radial_wavefunction_file"
+        nuclear_potential = "calculate_nuclear_coulomb_potential"
         if enabled:
             assert calls.count(hook) == 1
-            assert calls.index("nucpot") < calls.index(hook) < calls.index("setrwfmpi" if mpi else "setrwfa")
+            assert calls.index(nuclear_potential) < calls.index(hook) < calls.index(wavefunction_reader)
         else:
-            assert calls[calls.index("nucpot") + 1] == "setrwfmpi"
-        for filename in (f"{stem}.f90", f"{stem}_interface.f90"):
-            declaration = (directory / filename).read_text().lower()
-            declaration = re.sub(r"[ \t]*&\n[ \t]*&?[ \t]*", " ", declaration)
-            arguments = "extended_optimal_level, block_labels, isotope_file_path, radial_file_path"
-            if enabled:
-                arguments += ", nuclear_polarization_file_path"
-            assert re.search(r"subroutine\s+" + stem + r"\s*\(" + arguments + r"\)", declaration)
-            if not enabled:
-                assert "npol" not in declaration and "nuclear_polarization_file_path" not in declaration
+            assert calls[calls.index(nuclear_potential) + 1] == wavefunction_reader
+        declaration = (directory / f"{stem}.f90").read_text().lower()
+        declaration = re.sub(r"[ \t]*&\n[ \t]*&?[ \t]*", " ", declaration)
+        arguments = "extended_optimal_level, block_labels, isotope_file_path, radial_file_path"
+        if enabled:
+            arguments += ", nuclear_polarization_file_path"
+        assert re.search(r"subroutine\s+" + stem + r"\s*\(" + arguments + r"\)", declaration)
+        if not enabled:
+            assert "npol" not in declaration and "nuclear_polarization_file_path" not in declaration
         main = (directory / ("rmcdhf_mpi_main.f90" if mpi else "rmcdhf_main.f90")).read_text().lower()
         main = re.sub(r"[ \t]*&\n[ \t]*&?[ \t]*", " ", main)
-        call_mpi = r"call read_scf_options_mpi\s*\(extended_optimal_level, block_labels, file1, file2"
+        call_mpi = (
+            r"call read_scf_options_mpi\s*\(extended_optimal_level, block_labels, "
+            r"isotope_file_path, initial_radial_file_path"
+        )
         if not enabled:
             assert "npol" not in main and "nuclear_polarization_file_path" not in main
             assert re.search(call_mpi + r"\s*\)", main)
@@ -184,7 +188,7 @@ def entrypoints(root: Path) -> None:
                 r"files%initial_orbitals, (['\"])npol\.inp\2\)", main)
         # No second matrix contribution and MODE=0 retained in both layouts.
         setham = (directory / "assemble_hamiltonian_block.f90").read_text().lower()
-        assert "npol" not in setham and re.search(r"rinti\s*\([^\n]*,\s*0\s*\)", setham)
+        assert "npol" not in setham and re.search(r"integrate_one_electron_radial\s*\([^\n]*,\s*0\s*\)", setham)
     assert "npol" not in (root / "src/lib/core/nuclear_coulomb_potential.f90").read_text().lower()
     # Rejected solver variants remain absent from the supported source tree.
     for variant in ("rmcdhf90", "rmcdhf90_mem", "rmcdhf90_mpi", "rmcdhf90_mem_mpi",

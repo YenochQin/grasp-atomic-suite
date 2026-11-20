@@ -4,13 +4,13 @@ module quasispin_cg_rank_half
 
     ! Module interface
     private
-    public :: c0t5s
+    public :: evaluate_quasispin_cg_rank_half
 contains
-    subroutine c0t5s(ket_q,ket_q_projection,operator_q_projection,bra_q,bra_q_projection,cg_coefficient)
+    subroutine evaluate_quasispin_cg_rank_half(ket_q,ket_q_projection,operator_q_projection,bra_q,bra_q_projection,cg_coefficient)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use numeric_constants,          only: zero, tenth , half, one, two, angular_tolerance => eps
-        use angular_triangle_and_parity, only: ittk
+        use numeric_constants,          only: zero, tenth, half, one, two, angular_tolerance
+        use angular_triangle_and_parity, only: satisfies_angular_triangle_and_parity
         implicit none (type, external)
 
         ! Arguments
@@ -25,7 +25,7 @@ contains
         cg_coefficient=zero
         two_ket_q=two*ket_q+tenth
         two_bra_q=two*bra_q+tenth
-        if(ittk(two_ket_q,two_bra_q,1) == 0)return
+        if(satisfies_angular_triangle_and_parity(two_ket_q,two_bra_q,1) == 0)return
         if(dabs(ket_q_projection+operator_q_projection-bra_q_projection) > angular_tolerance)return
         if((half+tenth) < dabs(operator_q_projection))return
         if((ket_q+tenth) < dabs(ket_q_projection))return
@@ -39,5 +39,5 @@ contains
                 projection_signs(projection_sign_index)*bra_q_projection+one)/(two*bra_q+two))
         end if
         return
-    end subroutine c0t5s
+    end subroutine evaluate_quasispin_cg_rank_half
 end module quasispin_cg_rank_half

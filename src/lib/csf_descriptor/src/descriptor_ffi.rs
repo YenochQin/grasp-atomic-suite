@@ -78,7 +78,7 @@ pub unsafe extern "C" fn rcsfs_descriptor_read_radial_header(
         let header = RadialHeader::read(Path::new(header_path.to_str()?))?;
         ensure!(
             header.orbitals.len() <= orbital_capacity,
-            "orbital table exceeds configured NNNW capacity"
+            "orbital table exceeds configured max_orbitals capacity"
         );
         let values = [
             i32::try_from(header.orbitals.len())?,

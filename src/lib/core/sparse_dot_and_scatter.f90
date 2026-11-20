@@ -4,9 +4,10 @@ module sparse_dot_and_scatter
 
     ! Module interface
     private
-    public :: dmerge
+    public :: sparse_dot_scatter
 contains
-    subroutine dmerge(element_count, source_vector, updated_vector, target_indices, matrix_values, update_scale, dot_product)
+    subroutine sparse_dot_scatter(element_count, source_vector, updated_vector, target_indices, matrix_values, update_scale, &
+        & dot_product)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         implicit none (type, external)
@@ -34,5 +35,5 @@ contains
         dot_product = dot_product_sum
 
         return
-    end subroutine dmerge
+    end subroutine sparse_dot_scatter
 end module sparse_dot_and_scatter

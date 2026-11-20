@@ -4,18 +4,17 @@ module jj_reduced_cfp
 
     ! Module interface
     private
-    public :: rmeajj
+    public :: evaluate_jj_reduced_cfp
 contains
-    subroutine rmeajj(two_orbital_j,bra_term_index,two_bra_q,two_bra_term_j,ket_term_index,two_ket_q, &
+    subroutine evaluate_jj_reduced_cfp(two_orbital_j,bra_term_index,two_bra_q,two_bra_term_j,ket_term_index,two_ket_q, &
         two_ket_term_j,reduced_cfp)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: error_unit, output_unit
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: zero
-        use jj_reduced_coefficients, only: last_opposite_parity_terms_low_j => imgnjj, last_same_parity_terms_low_j => imgtjj, &
-            first_opposite_parity_terms_low_j => impnjj, first_same_parity_terms_low_j => imptjj
-        use jj_reduced_cfp_two_electron_terms, only: rmeajj11
-        use jj_reduced_cfp_j_nine_halves, only: rmeajj9
+        use jj_reduced_coefficients, only: first_opposite_parity_terms_low_j, first_same_parity_terms_low_j
+        use jj_reduced_cfp_two_electron_terms, only: evaluate_two_electron_reduced_cfp
+        use jj_reduced_cfp_j_nine_halves, only: evaluate_reduced_cfp_j_nine_halves
         implicit none (type, external)
 
         ! Arguments
@@ -90,14 +89,15 @@ contains
                     stop
                 end if
                 if(two_orbital_j == two_ket_term_j) then
-                    call rmeajj11(bra_term_index,ket_term_index,two_orbital_j,reduced_cfp)
+                    call evaluate_two_electron_reduced_cfp(bra_term_index,ket_term_index,two_orbital_j,reduced_cfp)
                 else
-                    call rmeajj11(ket_term_index,bra_term_index,two_orbital_j,reduced_cfp)
+                    call evaluate_two_electron_reduced_cfp(ket_term_index,bra_term_index,two_orbital_j,reduced_cfp)
                     twice_phase_exponent=two_bra_q-two_ket_q+two_bra_term_j-two_ket_term_j+two_orbital_j-1
                     if((twice_phase_exponent/4)*4 /= twice_phase_exponent)reduced_cfp=-reduced_cfp
                 end if
             else
-                call rmeajj9(bra_term_index,two_bra_q,two_bra_term_j,ket_term_index,two_ket_q,two_ket_term_j,reduced_cfp)
+                call evaluate_reduced_cfp_j_nine_halves(bra_term_index,two_bra_q,two_bra_term_j,ket_term_index,two_ket_q, &
+                    & two_ket_term_j,reduced_cfp)
                 if(bra_term_index > ket_term_index) then
                     if(mod(two_bra_q+two_bra_term_j-two_ket_q-two_ket_term_j+two_orbital_j-1,4) /= 0) reduced_cfp=-reduced_cfp
                 end if
@@ -106,9 +106,9 @@ contains
             end if
         else
             if(two_orbital_j == two_ket_term_j) then
-                call rmeajj11(bra_term_index,ket_term_index,two_orbital_j,reduced_cfp)
+                call evaluate_two_electron_reduced_cfp(bra_term_index,ket_term_index,two_orbital_j,reduced_cfp)
             else
-                call rmeajj11(ket_term_index,bra_term_index,two_orbital_j,reduced_cfp)
+                call evaluate_two_electron_reduced_cfp(ket_term_index,bra_term_index,two_orbital_j,reduced_cfp)
                 twice_phase_exponent=two_bra_q-two_ket_q+two_bra_term_j-two_ket_term_j+two_orbital_j-1
                 if((twice_phase_exponent/4)*4 /= twice_phase_exponent)reduced_cfp=-reduced_cfp
             end if
@@ -119,5 +119,5 @@ contains
             end if
         end if
         return
-    end subroutine rmeajj
+    end subroutine evaluate_jj_reduced_cfp
 end module jj_reduced_cfp

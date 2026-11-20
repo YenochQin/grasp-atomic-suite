@@ -47,8 +47,38 @@ add_custom_target(csf_descriptor_build DEPENDS "${reader_archive}")
 add_library(csf_descriptor STATIC IMPORTED GLOBAL)
 set_target_properties(csf_descriptor PROPERTIES IMPORTED_LOCATION "${reader_archive}")
 add_dependencies(csf_descriptor csf_descriptor_build)
-find_package(Threads REQUIRED)
-set_property(TARGET csf_descriptor PROPERTY INTERFACE_LINK_LIBRARIES "Threads::Threads;${CMAKE_DL_LIBS};m")
+target_link_libraries(csf_descriptor INTERFACE ${CMAKE_DL_LIBS} m)
+
+# FindThreads requires C or CXX. Test the POSIX symbol with the Fortran
+# linker that will consume the Rust archive. The probe is never executed.
+include(CheckSourceCompiles)
+block()
+    set(CMAKE_TRY_COMPILE_TARGET_TYPE EXECUTABLE)
+    set(pthread_probe [=[
+program check_pthread
+    use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_funptr, c_null_ptr, c_null_funptr
+    implicit none
+    interface
+        integer(c_int) function pthread_create(thread, attr, start_routine, arg) bind(C)
+            import :: c_int, c_ptr, c_funptr
+            type(c_ptr), value :: thread, attr, arg
+            type(c_funptr), value :: start_routine
+        end function pthread_create
+    end interface
+    print *, pthread_create(c_null_ptr, c_null_ptr, c_null_funptr, c_null_ptr)
+end program check_pthread
+]=])
+    check_source_compiles(Fortran "${pthread_probe}" GRASP_PTHREAD_IN_LIBC)
+    if(NOT GRASP_PTHREAD_IN_LIBC)
+        list(APPEND CMAKE_REQUIRED_LINK_OPTIONS -pthread)
+        check_source_compiles(Fortran "${pthread_probe}" GRASP_PTHREAD_WITH_FLAG)
+        if(NOT GRASP_PTHREAD_WITH_FLAG)
+            message(FATAL_ERROR "The Fortran linker could not resolve pthread_create, even with -pthread")
+        endif()
+        target_link_options(csf_descriptor INTERFACE -pthread)
+    endif()
+endblock()
+
 install(FILES "${reader_archive}" DESTINATION lib)
 install(FILES include/rcsfs_descriptor.h DESTINATION include)
 install(FILES LICENSE DESTINATION share/licenses/grasp-csf-descriptor)

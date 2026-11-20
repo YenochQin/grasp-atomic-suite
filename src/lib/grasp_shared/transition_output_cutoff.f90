@@ -7,5 +7,5 @@ module transition_output_cutoff
     private :: real64
 
     ! Module state
-    real(real64) :: cutoff
+    real(real64) :: transition_probability_cutoff
 end module transition_output_cutoff

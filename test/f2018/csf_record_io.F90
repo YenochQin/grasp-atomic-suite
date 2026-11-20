@@ -1,6 +1,6 @@
 program csf_record_io
     use orbital_csf_basis, only: csf_count
-    use transition_basis_blocks, only: nblock
+    use transition_basis_blocks, only: transition_block_count
     use lodcslBio_I, only: lodcslbio
 #ifdef MCP_MPI
     use mpi_state, only: mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize, mpi_init
@@ -28,7 +28,7 @@ program csf_record_io
     if (trim(header) /= "Core subshells:") error stop "CSF fixture header"
     call lodcslbio(ncore,1,csf_input_unit)
     if (corrupt) error stop "Truncated CSF was accepted"
-    if (csf_count /= 1 .or. nblock /= 1 .or. ncore /= 4) error stop "Complete CSF/normal EOF"
+    if (csf_count /= 1 .or. transition_block_count /= 1 .or. ncore /= 4) error stop "Complete CSF/normal EOF"
     close(csf_input_unit)
 #ifdef MCP_MPI
     call MPI_Barrier(MPI_COMM_WORLD, status)

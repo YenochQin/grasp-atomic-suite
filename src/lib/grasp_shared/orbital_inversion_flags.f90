@@ -4,5 +4,5 @@ module orbital_inversion_flags
     implicit none (type, external)
 
     ! Module state
-    logical :: noinvt(max_orbitals)
+    logical :: suppress_radial_inversion(max_orbitals)
 end module orbital_inversion_flags

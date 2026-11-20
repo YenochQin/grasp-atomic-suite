@@ -1,20 +1,19 @@
 ! Count sign changes between significant radial extrema and return the sign of the first retained extremum.
-module radial_node_count_impl
+module radial_node_count
     implicit none (type, external)
 
     ! Module interface
     private
-    public :: count_impl
+    public :: count_radial_nodes
 contains
-    subroutine count_impl(radial_values, last_radial_index, node_count, first_extremum_sign)
+    subroutine count_radial_nodes(radial_values, last_radial_index, node_count, first_extremum_sign)
         ! Module dependencies
         use calculation_file_units, only: calculation_log_unit, ensure_calculation_log
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: max_radial_points
-        use radial_node_count_settings, only: count_context, count_trace_rank, relative_extremum_cutoff => thresh
-        use atomic_calculation_state, only: working_tolerance => accy
-        use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-            radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+        use radial_node_count_settings, only: count_context, count_trace_rank, relative_extremum_cutoff
+        use atomic_calculation_state, only: working_tolerance
+        use radial_grid_state, only: radial_grid
         implicit none (type, external)
 
         ! Arguments
@@ -101,16 +100,5 @@ contains
             end do
         end if
         return
-    end subroutine count_impl
-end module radial_node_count_impl
-
-! Export COUNT as a module procedure to keep it distinct from the Fortran intrinsic in callers.
-module radial_node_count
-    ! Module dependencies
-    use radial_node_count_impl, only: count => count_impl
-    implicit none (type, external)
-
-    ! Module interface
-    private
-    public :: count
+    end subroutine count_radial_nodes
 end module radial_node_count

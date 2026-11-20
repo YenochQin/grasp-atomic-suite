@@ -21,8 +21,9 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use array_memory_management, only: alloc, ralloc
-      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use orbital_csf_basis, only: ncftot => csf_count
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, &
+          highest_selected_level_by_block, symmetry_block_count
+      use orbital_csf_basis, only: csf_count
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -50,7 +51,7 @@ contains
 
       call alloc (csf_counts_by_block, nblkin + 1, "NCFBLK", "CSLH")
 
-      call setcsll (csf_input_unit, name, nblkin, symmetry_block_count, csf_counts_by_block, ncftot, idblk)
+      call setcsll (csf_input_unit, name, nblkin, symmetry_block_count, csf_counts_by_block, csf_count, idblk)
       call ralloc (csf_counts_by_block, symmetry_block_count + 1, "NCFBLK", "CSLH")
       rewind (csf_input_unit)
       read (csf_input_unit, *)

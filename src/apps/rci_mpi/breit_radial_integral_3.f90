@@ -1,169 +1,182 @@
-!***********************************************************************
-!                                                                      *
-subroutine breit_radial_integral_3 (orbital_a,orbital_b,orbital_c,orbital_d,radial_integral_order,radial_integral_value)
-    ! Module dependencies
-    !                                                                      *
-    !   Returns integrals for the transverse photon interaction.           *
-    !      Integrals are stored in ordered lists. If the integral cannot   *
-    !   be read from a list, it is computed by calling BRINTF.             *
-    !                                                                      *
-    !   Observ that it is not possible to use more than 100 orbitals when  *
-    !   the Breit interaction is included. If 100 orbitals are used then   *
-    !   NU <= 19.                                                          *
-    !                                                                      *
-    !   Call(s) to: [LIB92]: ALLOC, RALLOC.                                *
-    !               [RCI92]: BRINTF                                        *
-    !                                                                      *
-    !   Written by Farid A Parpia               Last update: 09 Oct 1992   *
-    !                                                                      *
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use array_memory_management, only: alloc, ralloc
-    use breit_integral_tables, only: ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
-        valtp1, valtp2, valtp3, valtp4, valtp5, valtp6, first
-    use orbital_csf_basis,           only: csf_count, orbital_count, csf_subshell_occupations
-
-    ! Procedure interfaces
-    use lookup_breit_radial_integral_interface, only: lookup_breit_radial_integral
+module breit_radial_integral_3_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(in) :: orbital_a, orbital_b, orbital_c, orbital_d, radial_integral_order
-    real(real64), intent(out) :: radial_integral_value
+    ! Module interface
+    private
+    public :: breit_radial_integral_3
+contains
 
-    ! Local declarations
-    logical :: found
-    integer :: key, index, loc, ju, jl, jm, newsiz, i
-    !-----------------------------------------------
-    !
-    key = orbital_count + 1
-    !
-    !   Compute the integral label
-    !
-    index = (((radial_integral_order*key+orbital_a)*key+orbital_b)*key+orbital_c)*key+orbital_d
-    !
-    if (.not. first(3)) then
+    !***********************************************************************
+    !                                                                      *
+    subroutine breit_radial_integral_3 (orbital_a,orbital_b,orbital_c,orbital_d,radial_integral_order,radial_integral_value)
+        ! Module dependencies
+        !                                                                      *
+        !   Returns integrals for the transverse photon interaction.           *
+        !      Integrals are stored in ordered lists. If the integral cannot   *
+        !   be read from a list, it is computed by calling BRINTF.             *
+        !                                                                      *
+        !   Observ that it is not possible to use more than 100 orbitals when  *
+        !   the Breit interaction is included. If 100 orbitals are used then   *
+        !   NU <= 19.                                                          *
+        !                                                                      *
+        !   Call(s) to: [LIB92]: ALLOC, RALLOC.                                *
+        !               [RCI92]: BRINTF                                        *
+        !                                                                      *
+        !   Written by Farid A Parpia               Last update: 09 Oct 1992   *
+        !                                                                      *
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use array_memory_management, only: alloc, ralloc
+        use breit_integral_tables, only: breit_integral_capacities, breit_integral_counts, breit_integral_indices_3, &
+            breit_integral_values_3, first_breit_integral_lookup
+        use orbital_csf_basis, only: orbital_count
+
+        ! Procedure interfaces
+        use lookup_breit_radial_integral_interface, only: lookup_breit_radial_integral
+        implicit none (type, external)
+
+        ! Arguments
+        integer, intent(in) :: orbital_a, orbital_b, orbital_c, orbital_d, radial_integral_order
+        real(real64), intent(out) :: radial_integral_value
+
+        ! Local declarations
+        logical :: found
+        integer :: packing_radix, packed_integral_index, table_position, search_upper_index, search_lower_index, &
+            & search_midpoint_index, new_integral_capacity, i
+        !-----------------------------------------------
         !
-        !   This branch is executed on all entries except the first
+        packing_radix = orbital_count + 1
         !
-        if (index > indtp3(ntpi(3))) then
-            !
-            !   The index is greater than the largest stored
-            !
-            found = .false.
-            loc = ntpi(3)
+        !   Compute the integral label
         !
-        else if (index < indtp3(1)) then
-            !
-            !   The index is less than the smallest stored
-            !
-            found = .false.
-            loc = 0
+        packed_integral_index = &
+            & (((radial_integral_order*packing_radix+orbital_a)*packing_radix+orbital_b) &
+            & *packing_radix+orbital_c)*packing_radix+orbital_d
         !
-        else
+        if (.not. first_breit_integral_lookup(3)) then
             !
-            !   The index is within the range of the indices stored; search
-            !   for it in the list of indices
+            !   This branch is executed on all entries except the first
             !
-            ju = ntpi(3)
-            jl = 1
-            do while (ju-jl > 1)
-                jm = (ju+jl)/2
-                if (indtp3(jm) > index) then
-                    ju = jm
-                else
-                    jl = jm
-                end if
-            end do
-            !
-            !   The range is bracketed to the extent possible
-            !
-            if (index == indtp3(ju)) then
+            if (packed_integral_index > breit_integral_indices_3(breit_integral_counts(3))) then
                 !
-                found = .true.
-                loc = ju
-            !
-            else if (index == indtp3(jl)) then
+                !   The index is greater than the largest stored
                 !
-                found = .true.
-                loc = jl
+                found = .false.
+                table_position = breit_integral_counts(3)
+            !
+            else if (packed_integral_index < breit_integral_indices_3(1)) then
+                !
+                !   The index is less than the smallest stored
+                !
+                found = .false.
+                table_position = 0
             !
             else
                 !
-                found = .false.
-                loc = jl
+                !   The index is within the range of the indices stored; search
+                !   for it in the list of indices
+                !
+                search_upper_index = breit_integral_counts(3)
+                search_lower_index = 1
+                do while (search_upper_index-search_lower_index > 1)
+                    search_midpoint_index = (search_upper_index+search_lower_index)/2
+                    if (breit_integral_indices_3(search_midpoint_index) > packed_integral_index) then
+                        search_upper_index = search_midpoint_index
+                    else
+                        search_lower_index = search_midpoint_index
+                    end if
+                end do
+                !
+                !   The range is bracketed to the extent possible
+                !
+                if (packed_integral_index == breit_integral_indices_3(search_upper_index)) then
+                    !
+                    found = .true.
+                    table_position = search_upper_index
+                !
+                else if (packed_integral_index == breit_integral_indices_3(search_lower_index)) then
+                    !
+                    found = .true.
+                    table_position = search_lower_index
+                !
+                else
+                    !
+                    found = .false.
+                    table_position = search_lower_index
+                    !
+                end if
+                !
                 !
             end if
             !
+            if (found) then
+                !
+                !   Found the index in the list; return the value of the integral
+                !   from storage
+                !
+                radial_integral_value = breit_integral_values_3(table_position)
             !
-        end if
-        !
-        if (found) then
-            !
-            !   Found the index in the list; return the value of the integral
-            !   from storage
-            !
-            radial_integral_value = valtp3(loc)
+            else
+                !
+                !   Index not found; compute the integral
+                !
+                radial_integral_value = lookup_breit_radial_integral (3,orbital_a,orbital_b,orbital_c,orbital_d, &
+                    & radial_integral_order)
+                !
+                !   Increment the integral counter
+                !
+                breit_integral_counts(3) = breit_integral_counts(3)+1
+                !
+                !   Increase array length by half the present length if the latter
+                !   is inadequate to store another pair
+                !
+                !
+                if (breit_integral_counts(3) > breit_integral_capacities(3)) then
+                    new_integral_capacity = breit_integral_capacities(3)+breit_integral_capacities(3)/2
+                    call ralloc (breit_integral_indices_3,new_integral_capacity,"INDTP3", "BRINT3")
+                    call ralloc (breit_integral_values_3,new_integral_capacity,"VALTP3", "BRINT3")
+                    breit_integral_capacities(3)= new_integral_capacity
+                end if
+                do i = breit_integral_counts(3),table_position+2,-1
+                    breit_integral_indices_3(i) = breit_integral_indices_3(i-1)
+                    breit_integral_values_3(i) = breit_integral_values_3(i-1)
+                end do
+                !
+                !   Put the new index and value into storage
+                !
+                breit_integral_indices_3(table_position+1) = packed_integral_index
+                breit_integral_values_3(table_position+1) = radial_integral_value
+                !
+            end if
         !
         else
             !
-            !   Index not found; compute the integral
+            !   This branch is executed only once per type of integral
+            !
+            first_breit_integral_lookup(3) = .false.
+            !
+            !   Designate the initial storage for arrays INDTPx and VALTPx;
+            !   Array NDTPA stores the array dimensions
+            !
+            breit_integral_capacities(3) = 10000
+            !
+            !   Compute the integral's value
             !
             radial_integral_value = lookup_breit_radial_integral (3,orbital_a,orbital_b,orbital_c,orbital_d,radial_integral_order)
             !
-            !   Increment the integral counter
+            !   Initialise the integral counter
             !
-            ntpi(3) = ntpi(3)+1
+            breit_integral_counts(3) = 1
             !
-            !   Increase array length by half the present length if the latter
-            !   is inadequate to store another pair
+            !   Store the integral and its value
             !
-            !
-            if (ntpi(3) > ndtpa(3)) then
-                newsiz = ndtpa(3)+ndtpa(3)/2
-                call ralloc (indtp3,newsiz,"INDTP3", "BRINT3")
-                call ralloc (valtp3,newsiz,"VALTP3", "BRINT3")
-                ndtpa(3)= newsiz
-            end if
-            do i = ntpi(3),loc+2,-1
-                indtp3(i) = indtp3(i-1)
-                valtp3(i) = valtp3(i-1)
-            end do
-            !
-            !   Put the new index and value into storage
-            !
-            indtp3(loc+1) = index
-            valtp3(loc+1) = radial_integral_value
+            call alloc (breit_integral_indices_3,breit_integral_capacities(3),"INDTP3", "BRINT3")
+            call alloc (breit_integral_values_3,breit_integral_capacities(3),"VALTP3", "BRINT3")
+            breit_integral_indices_3(1) = packed_integral_index
+            breit_integral_values_3(1) = radial_integral_value
             !
         end if
-    !
-    else
         !
-        !   This branch is executed only once per type of integral
-        !
-        first(3) = .false.
-        !
-        !   Designate the initial storage for arrays INDTPx and VALTPx;
-        !   Array NDTPA stores the array dimensions
-        !
-        ndtpa(3) = 10000
-        !
-        !   Compute the integral's value
-        !
-        radial_integral_value = lookup_breit_radial_integral (3,orbital_a,orbital_b,orbital_c,orbital_d,radial_integral_order)
-        !
-        !   Initialise the integral counter
-        !
-        ntpi(3) = 1
-        !
-        !   Store the integral and its value
-        !
-        call alloc (indtp3,ndtpa(3),"INDTP3", "BRINT3")
-        call alloc (valtp3,ndtpa(3),"VALTP3", "BRINT3")
-        indtp3(1) = index
-        valtp3(1) = radial_integral_value
-        !
-    end if
-    !
-    return
-end subroutine breit_radial_integral_3
+        return
+    end subroutine breit_radial_integral_3
+end module breit_radial_integral_3_interface

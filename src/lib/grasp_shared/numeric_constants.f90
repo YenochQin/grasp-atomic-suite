@@ -18,5 +18,5 @@ module numeric_constants
         seven = 7.0_real64, &
         ten   =10.0_real64, &
         eleven=11.0_real64, &
-        eps   = 1.0e-8_real64
+        angular_tolerance   = 1.0e-8_real64
 end module numeric_constants

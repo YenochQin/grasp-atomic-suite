@@ -4,19 +4,19 @@ module one_electron_two_subshell_recoupling
 
     ! Module interface
     private
-    public :: recop2
+    public :: recouple_one_electron_two_subshells
 contains
-    subroutine recop2(active_shell_count,first_shell_position,second_shell_position,two_rank_1,two_rank_2, &
+    subroutine recouple_one_electron_two_subshells(active_shell_count,first_shell_position,second_shell_position,two_rank_1, &
+        & two_rank_2, &
         tensor_rank,evaluate_coefficient,coupling_allowed,recoupling_coefficient)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: one
-        use csf_pair_angular_state,             only: peel_orbital_indices => jlist, bra_subshell_quantum_codes => jjq1, &
-            ket_subshell_quantum_codes => jjq2, peel_orbital_count => npeel
-        use first_active_shell_recoupling, only: diaga1
-        use spectator_shell_chain_recoupling, only: diaga3
-        use pair_tensor_recoupling, only: diaga4
-        use final_shell_recoupling, only: diaga5
+        use csf_pair_angular_state, only: peel_orbital_indices, bra_subshell_quantum_codes, peel_orbital_count
+        use first_active_shell_recoupling, only: recouple_first_active_shell
+        use spectator_shell_chain_recoupling, only: recouple_spectator_shell_chain
+        use pair_tensor_recoupling, only: recouple_pair_tensor
+        use final_shell_recoupling, only: recouple_final_shell
         implicit none (type, external)
 
         ! Arguments
@@ -45,14 +45,16 @@ contains
         coupling_allowed=0
         coupling_step_count=coupled_shell_count-second_shell_position
         if(coupling_step_count > 1) then
-            call diaga3(second_shell_position,coupled_shell_count,2*tensor_rank,evaluate_coefficient,coupling_allowed, &
+            call recouple_spectator_shell_chain(second_shell_position,coupled_shell_count,2*tensor_rank,evaluate_coefficient, &
+                & coupling_allowed, &
                 diagram_factor)
             if(coupling_allowed == 0)return
             recoupling_coefficient=diagram_factor*recoupling_coefficient
             coupling_allowed=0
         end if
         if(second_shell_position /= coupled_shell_count) then
-            call diaga5(coupled_shell_count,second_shell_position,2*tensor_rank,evaluate_coefficient,coupling_allowed, &
+            call recouple_final_shell(coupled_shell_count,second_shell_position,2*tensor_rank,evaluate_coefficient, &
+                & coupling_allowed, &
                 diagram_factor)
             if(coupling_allowed == 0)return
             recoupling_coefficient=diagram_factor*recoupling_coefficient
@@ -60,23 +62,24 @@ contains
         end if
         ! Beyond the second active shell the tensor carries its combined rank. Between the
         ! active shells it carries only the first operator's rank.
-        call diaga4(first_shell_position,second_shell_position,two_rank_1,two_rank_2,2*tensor_rank, &
+        call recouple_pair_tensor(first_shell_position,second_shell_position,two_rank_1,two_rank_2,2*tensor_rank, &
             evaluate_coefficient,coupling_allowed,diagram_factor)
         if(coupling_allowed == 0)return
         recoupling_coefficient=diagram_factor*recoupling_coefficient
         if(first_shell_position == 1.and.second_shell_position == 2)return
         coupling_allowed=0
-        call diaga1(first_shell_position,two_rank_1,evaluate_coefficient,coupling_allowed,diagram_factor)
+        call recouple_first_active_shell(first_shell_position,two_rank_1,evaluate_coefficient,coupling_allowed,diagram_factor)
         if(coupling_allowed == 0)return
         recoupling_coefficient=diagram_factor*recoupling_coefficient
         coupling_step_count=second_shell_position-first_shell_position
         if(first_shell_position == 1)coupling_step_count=second_shell_position-1-first_shell_position
         if(coupling_step_count <= 1)return
         coupling_allowed=0
-        call diaga3(first_shell_position,second_shell_position,two_rank_1,evaluate_coefficient,coupling_allowed, &
+        call recouple_spectator_shell_chain(first_shell_position,second_shell_position,two_rank_1,evaluate_coefficient, &
+            & coupling_allowed, &
             diagram_factor)
         if(coupling_allowed == 0)return
         recoupling_coefficient=diagram_factor*recoupling_coefficient
         return
-    end subroutine recop2
+    end subroutine recouple_one_electron_two_subshells
 end module one_electron_two_subshell_recoupling

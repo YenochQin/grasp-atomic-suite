@@ -1,46 +1,25 @@
-! Compile the unmodified production MATRIX body; only assembly/eigensolution
-! and memory-record input are controlled seams. BLAS is the linked real library.
-module ci_fixture
-    use eigenstate_expansions, only: evec => csf_mixing_coefficients, eval => shifted_eigenvalues
-    implicit none (type, external)
-    integer :: solves = 0
-contains
-    subroutine eigenpairs()
-        use, intrinsic :: iso_fortran_env, only: real64
-        solves = solves + 1
-        eval = [-2.0_real64, -1.0_real64]
-        if (solves == 1) then
-            evec(3:6) = [1.0_real64, 0.0_real64, 0.0_real64, 1.0_real64]
-        else
-            evec(3:6) = [0.6_real64, 0.8_real64, -0.8_real64, 0.6_real64]
-        end if
-end subroutine eigenpairs
-end module ci_fixture
-
 program ci_damping
-    use ci_fixture, only: eigenpairs, eval, evec, solves
+    use ci_fixture, only: shifted_eigenvalues, csf_mixing_coefficients, solves
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
-    use scf_damping_factors, only: cdamp => mixing_damping_factors
-    use atomic_calculation_state, only: iccmin, ncmin, ncmax
+    use scf_damping_factors, only: mixing_damping_factors
+    use atomic_calculation_state, only: requested_level_indices, selected_level_count, highest_requested_level_index
     use debug_output_settings, only: ldbpg
-    use hamiltonian_symmetry_blocks, only: nblock => symmetry_block_count, ncfblk => csf_counts_by_block, nevblk => &
-       & eigenvector_counts_by_block, ncmaxblk
-    use sparse_hamiltonian_storage, only: &
-        emt => hamiltonian_values, irow => matrix_partner_indices, iendc => stored_segment_end_offsets
-    use mcp_file_metadata, only: kmaxf => max_mcp_file_multipole_rank, mcp_input_units
+    use hamiltonian_symmetry_blocks, only: symmetry_block_count, csf_counts_by_block, eigenvector_counts_by_block, &
+        highest_selected_level_by_block
+    use sparse_hamiltonian_storage, only: hamiltonian_values, matrix_partner_indices, stored_segment_end_offsets
+    use mcp_file_metadata, only: max_mcp_file_multipole_rank, mcp_input_units
     use calculation_file_units, only: mixing_output_unit
-    use orbital_csf_basis, only: ncf => csf_count, nw => orbital_count
-    use symmetry_block_offsets, only: ncftot => total_csf_count, nvecsiz => mixing_coefficient_storage_size, ncfpast => &
-       & csf_offsets_by_block, ncminpast => eigenvalue_offsets_by_block, nevecpast => mixing_offsets_by_block
-    use block_mean_energies, only: eavblk
-    use level_symmetry_metadata, only: jpgg
+    use orbital_csf_basis, only: csf_count, orbital_count
+    use symmetry_block_offsets, only: total_csf_count, mixing_coefficient_storage_size, csf_offsets_by_block, &
+        eigenvalue_offsets_by_block, mixing_offsets_by_block
+    use block_mean_energies, only: mean_energy_by_block
+    use level_symmetry_metadata, only: packed_block_symmetries
 #ifdef CI_MPI
-    use mpi_state, only: host => processor_name, ierr => mpi_error_code, istat => mpi_status_buffer, &
-       & lenhost => processor_name_length, myid => mpi_rank, nprocs => mpi_process_count, mpi_finalize, &
-       & startmpi
+    use mpi_state, only: processor_name, mpi_error_code, mpi_status_buffer, processor_name_length, mpi_rank, &
+        mpi_process_count, mpi_finalize, initialize_mpi_runtime
     use solve_hamiltonian_blocks_mpi_interface, only: solve_hamiltonian_blocks_mpi
 #else
-    use serial_mpi_context, only: myid => mpi_rank, nprocs => mpi_process_count
+    use serial_mpi_context, only: mpi_rank, mpi_process_count
     use solve_hamiltonian_blocks_interface, only: solve_hamiltonian_blocks
 #endif
 #ifdef CI_MEM
@@ -51,19 +30,23 @@ program ci_damping
     integer :: channel_suffix, i, records, local_size
     real(real64), parameter :: tol = 1e-12_real64
 #ifdef CI_MPI
-    call startmpi(myid,nprocs,host,lenhost)
+    call initialize_mpi_runtime(mpi_rank,mpi_process_count,processor_name,processor_name_length)
 #else
-    myid = 0
-    nprocs = 1
+    mpi_rank = 0
+    mpi_process_count = 1
 #endif
-    nblock=1; ncf=2; ncftot=2; nw=1; ncmin=2; ncmax=2; nvecsiz=8; kmaxf=1
-    ldbpg=.false.; jpgg=1
-    allocate(ncfblk(1), nevblk(1), ncmaxblk(1), ncfpast(1), ncminpast(1), nevecpast(1), eavblk(1))
-    allocate(iccmin(2), cdamp(2), evec(8), eval(2))
-    ncfblk=2; nevblk=2; ncmaxblk=2; ncfpast=0; ncminpast=0; nevecpast=2
-    iccmin=[1,2]; cdamp=[0.0_real64,0.5_real64]; evec=99.0_real64
-    nullify(emt,irow,iendc)
-    local_size = count([(mod(i-1,nprocs)==myid, i=1,2)])
+    symmetry_block_count=1; csf_count=2; total_csf_count=2; orbital_count=1; selected_level_count=2; &
+        highest_requested_level_index=2; &
+        mixing_coefficient_storage_size=8; max_mcp_file_multipole_rank=1
+    ldbpg=.false.; packed_block_symmetries=1
+    allocate(csf_counts_by_block(1), eigenvector_counts_by_block(1), highest_selected_level_by_block(1), &
+        csf_offsets_by_block(1), eigenvalue_offsets_by_block(1), mixing_offsets_by_block(1), mean_energy_by_block(1))
+    allocate(requested_level_indices(2), mixing_damping_factors(2), csf_mixing_coefficients(8), shifted_eigenvalues(2))
+    csf_counts_by_block=2; eigenvector_counts_by_block=2; highest_selected_level_by_block=2; csf_offsets_by_block=0; &
+        eigenvalue_offsets_by_block=0; mixing_offsets_by_block=2
+    requested_level_indices=[1,2]; mixing_damping_factors=[0.0_real64,0.5_real64]; csf_mixing_coefficients=99.0_real64
+    nullify(hamiltonian_values,matrix_partner_indices,stored_segment_end_offsets)
+    local_size = count([(mod(i-1,mpi_process_count)==mpi_rank, i=1,2)])
 #ifdef CI_MEM
     allocate(imin1_30(1),imax1_30(1),imin2_30(1),imax2_30(1))
     imin1_30=0; imax1_30=2; imin2_30=0; imax2_30=local_size
@@ -83,29 +66,31 @@ program ci_damping
         end if
     end do
 #endif
-    if(myid==0) then
+    if(mpi_rank==0) then
         open(newunit=mixing_output_unit,status="scratch",form="unformatted")
         write(mixing_output_unit) "G92MIX"
         write(mixing_output_unit) 2,2,1,2,8,1
     end if
     call matrix_step(.true.)
     ! With fcheck=all, the production allocation/zeroing must include IENDC(0).
-    if(maxval(abs(evec(3:6)-[1.0_real64,0.0_real64,0.0_real64,1.0_real64]))>tol) &
+    if (maxval(abs(csf_mixing_coefficients(3:6)-[1.0_real64,0.0_real64,0.0_real64,1.0_real64]))>tol) &
         error stop "FIRST must bypass damping"
     call matrix_step(.false.)
-    if(.not.all(ieee_is_finite(evec))) error stop "nonfinite damped roots"
-    if(maxval(abs(evec(3:6)-[0.6_real64,0.8_real64,0.8_real64,-0.6_real64]))>tol) &
+    if(.not.all(ieee_is_finite(csf_mixing_coefficients))) error stop "nonfinite damped roots"
+    if (maxval(abs(csf_mixing_coefficients(3:6)-[0.6_real64,0.8_real64,0.8_real64,-0.6_real64]))>tol) &
         error stop "DDOT damping branch differs from analytic roots"
-    if(abs(dot_product(evec(3:4),evec(5:6)))>tol) error stop "orthogonality"
-    if(abs(sum(evec(3:4)**2)-1.0_real64)>tol.or.abs(sum(evec(5:6)**2)-1.0_real64)>tol) &
+    if(abs(dot_product(csf_mixing_coefficients(3:4),csf_mixing_coefficients(5:6)))>tol) error stop "orthogonality"
+    if(abs(sum(csf_mixing_coefficients(3:4)**2)-1.0_real64)>tol .or. &
+        abs(sum(csf_mixing_coefficients(5:6)**2)-1.0_real64)>tol) &
         error stop "normalization"
-    if(any(evec(1:2)/=99.0_real64).or.any(evec(7:8)/=99.0_real64)) error stop "block offset guards"
-    cdamp=0.0_real64
+    if (any(csf_mixing_coefficients(1:2) /= 99.0_real64) .or. &
+        any(csf_mixing_coefficients(7:8) /= 99.0_real64)) error stop "block offset guards"
+    mixing_damping_factors=0.0_real64
     call matrix_step(.false.)
-    if(maxval(abs(evec(3:6)-[0.6_real64,0.8_real64,-0.8_real64,0.6_real64]))>tol) &
+    if (maxval(abs(csf_mixing_coefficients(3:6)-[0.6_real64,0.8_real64,-0.8_real64,0.6_real64]))>tol) &
         error stop "zero damping control"
     if(solves/=3) error stop "fixture did not execute three production calls"
-    if(myid==0) then
+    if(mpi_rank==0) then
         close(mixing_output_unit)
         print *, "PASS: production FIRST / nonzero multi-root DDOT / zero damping"
     end if
@@ -115,7 +100,7 @@ program ci_damping
     end do
 #endif
 #ifdef CI_MPI
-    call MPI_Finalize(ierr)
+    call MPI_Finalize(mpi_error_code)
 #endif
 contains
     subroutine matrix_step(first)
@@ -127,67 +112,3 @@ contains
 #endif
 end subroutine matrix_step
 end program ci_damping
-
-#ifdef CI_MPI
-subroutine diagonalize_hamiltonian_block_mpi(dvdfirst,lprint,jblock,ncfpat,ncminpat,nevecpat,ncftot)
-#else
-subroutine diagonalize_hamiltonian_block(dvdfirst,lprint,jblock,ncfpat,ncminpat,nevecpat,ncftot)
-#endif
-    use ci_fixture
-    implicit none (type, external)
-    logical,intent(in)::dvdfirst
-    logical::lprint
-    integer,intent(in)::jblock,ncfpat,ncminpat,nevecpat
-    integer::ncftot
-    if(jblock/=1.or.nevecpat/=2.or.ncftot/=2) error stop "eigensolver seam arguments"
-    call eigenpairs()
-#ifdef CI_MPI
-end subroutine diagonalize_hamiltonian_block_mpi
-#else
-end subroutine diagonalize_hamiltonian_block
-#endif
-
-#ifdef CI_MEM
-subroutine assemble_hamiltonian_block(jblock,myid,nprocs,ncontr_tot,ncontr_tot2)
-#else
-subroutine assemble_hamiltonian_block(jblock,myid,nprocs)
-#endif
-    use, intrinsic :: iso_fortran_env, only: real64, int64
-    use sparse_hamiltonian_storage, only: emt => hamiltonian_values
-    implicit none (type, external)
-    integer,intent(in)::jblock,myid,nprocs
-#ifdef CI_MEM
-    integer(int64)::ncontr_tot(20),ncontr_tot2(20)
-#endif
-    if(jblock/=1) error stop "Hamiltonian seam block"
-    emt=0.0_real64
-end subroutine assemble_hamiltonian_block
-
-#ifdef CI_MEM
-subroutine read_mcp_coefficients_from_memory(jblock)
-    use sparse_hamiltonian_storage, only: irow => matrix_partner_indices, iendc => stored_segment_end_offsets
-#ifdef CI_MPI
-    use mpi_state, only: myid => mpi_rank, nprocs => mpi_process_count
-#else
-    use serial_mpi_context, only: myid => mpi_rank, nprocs => mpi_process_count
-#endif
-    implicit none (type, external)
-    integer,intent(in)::jblock
-    integer::i,k
-    if(jblock/=1) error stop "memory seam block"
-    k=0
-    do i=myid+1,2,nprocs
-        k=k+1
-        iendc(i)=k
-        irow(k)=i
-    end do
-end subroutine read_mcp_coefficients_from_memory
-subroutine load_mcp_records_into_memory(nfile,ncontr_tot2,lab,ncontr)
-    use, intrinsic :: iso_fortran_env, only: int64
-    implicit none (type, external)
-    integer,intent(in)::nfile
-    integer(int64),intent(in)::ncontr_tot2
-    integer,intent(out)::lab,ncontr
-    error stop "unexpected empty block seam"
-end subroutine load_mcp_records_into_memory
-#endif

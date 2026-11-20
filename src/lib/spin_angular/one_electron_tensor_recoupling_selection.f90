@@ -4,14 +4,14 @@ module one_electron_tensor_recoupling_selection
 
     ! Module interface
     private
-    public :: recop00
+    public :: select_one_electron_tensor_recoupling
 contains
-    subroutine recop00(active_shell_count,first_shell_position,second_shell_position,tensor_rank,coupling_allowed)
+    subroutine select_one_electron_tensor_recoupling(active_shell_count,first_shell_position,second_shell_position,tensor_rank, &
+        & coupling_allowed)
         ! Module dependencies
-        use csf_pair_angular_state,             only: peel_orbital_count => npeel, bra_intermediate_couplings => jjc1, &
-            ket_intermediate_couplings => jjc2, peel_orbital_indices => jlist, bra_subshell_quantum_codes => jjq1, &
-            ket_subshell_quantum_codes => jjq2
-        use angular_triangle_and_parity, only: ittk
+        use csf_pair_angular_state,             only: peel_orbital_count, bra_intermediate_couplings, &
+            ket_intermediate_couplings, peel_orbital_indices, bra_subshell_quantum_codes, ket_subshell_quantum_codes
+        use angular_triangle_and_parity, only: satisfies_angular_triangle_and_parity
         implicit none (type, external)
 
         ! Arguments
@@ -41,7 +41,7 @@ contains
         end if
 
         ! Reject total-J couplings that cannot accommodate the tensor rank.
-        if(ittk(two_bra_chain_j,two_ket_chain_j,2*tensor_rank) == 0)return
+        if(satisfies_angular_triangle_and_parity(two_bra_chain_j,two_ket_chain_j,2*tensor_rank) == 0)return
         coupling_allowed=1
         if(peel_orbital_count == 1)return
         do shell_position=1,peel_orbital_count
@@ -72,10 +72,10 @@ contains
                 suffix_coupling_position=second_shell_position-2+suffix_step
                 two_bra_chain_j=bra_intermediate_couplings(suffix_coupling_position)-1
                 two_ket_chain_j=ket_intermediate_couplings(suffix_coupling_position)-1
-                if(ittk(two_bra_chain_j,two_ket_chain_j,2*tensor_rank) == 0)coupling_allowed=0
+                if(satisfies_angular_triangle_and_parity(two_bra_chain_j,two_ket_chain_j,2*tensor_rank) == 0)coupling_allowed=0
                 if(coupling_allowed == 0)return
             end do
         end if
         return
-    end subroutine recop00
+    end subroutine select_one_electron_tensor_recoupling
 end module one_electron_tensor_recoupling_selection

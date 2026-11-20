@@ -1,5 +1,7 @@
 # spin_angular 变量与常量命名迁移
 
+下表记录这批迁移当时的名称。后续改动已将重复的共享状态别名移至定义端，并更新了库过程名。[后续实施与回归](../reviews/fortran_arrow_audit_2026-11-20.md#清理后的命名与验证) · [现行过程对照](shared_library_procedure_names.md)
+
 日期 2026-11-20。迁移基准为 suite 的 `2d4c721` 与当前工作树中的 CSF 查询合并及共享 kind
 导入清理。盘点原 `librang90` 中参与构建的 **89 份 Fortran 源码**。
 文件与模块现名见[自旋–角向库命名迁移](spin_angular_naming.md)。

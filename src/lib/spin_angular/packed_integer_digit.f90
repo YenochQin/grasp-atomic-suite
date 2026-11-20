@@ -4,9 +4,9 @@ module packed_integer_digit
 
     ! Module interface
     private
-    public :: jthn
+    public :: extract_packed_integer_digit
 contains
-    integer function jthn(packed_value,digit_position,radix) result(digit_value)
+    integer function extract_packed_integer_digit(packed_value,digit_position,radix) result(digit_value)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         implicit none (type, external)
@@ -28,5 +28,5 @@ contains
             stop
         end if
         return
-    end function jthn
+    end function extract_packed_integer_digit
 end module packed_integer_digit

@@ -16,7 +16,7 @@ CMake prefers the existing Tools Python environment; no packages are installed.
 | `npol_code_input` | Absent/disabled/single/dual-channel input; missing/unknown fields, versions, units, types, invalid charge/mass, missing strengths versus zero, NaN/Inf, cutoffs, string limits, I/O failure, malformed/trailing groups |
 | `npol_code_kernel` | Independent closed values at origin and cutoff, arbitrary radius, switches, zero strength, extreme powers, subnormals, rejected overflow |
 | `npol_code_compose` | Sign, repeated composition, fresh Coulomb capture, reinitialization, reset, failed initialization rollback |
-| `npol_code_bounds` | N=1/NNNP, invalid lengths, short arrays, tail sentinels, bad radii, nonfinite and overflowing composition |
+| `npol_code_bounds` | Point counts 1 and `max_radial_points`, invalid lengths, short arrays, tail sentinels, bad radii, nonfinite and overflowing composition |
 | `npol_code_consumers_<variant>` | Actual production YPOT/DACON/RINTI from the three NP-enabled variants (`rmcdhf`, `rmcdhf_mem`, `rmcdhf_mem_mpi`); deterministic test-only derivative and weighted-quadrature stubs; diagonal/off-diagonal differences and kinetic invariance |
 | `npol_code_upstream_copy` | Exact SHA-256 of all 492 imported files. The chain covers lowercase conversion, variable renames, input-safety updates, and the Fortran declaration migration. |
 | `npol_code_entrypoints` | Three NP call/interface signatures and hook order; ordinary `rmcdhf_mpi` has its original four-argument interface, no NP references and direct NUCPOT-to-SETRWFMPI ordering; no implicit loading in NUCPOT; dynamic production initialization driver |

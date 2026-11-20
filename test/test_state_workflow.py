@@ -61,8 +61,12 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
         text.unlink()
         pair = [
             permanent / f"{name}{ending}"
-            for ending in ("_header.toml", "_descriptors.parquet")
+            for ending in ("_header.toml", "_desc.parquet")
         ]
+        if name == "N":
+            older = permanent / f"{name}_descriptors.parquet"
+            older.write_bytes(b"older descriptor must not shadow the current file")
+            pair.append(older)
         previous_files.update({path: path.read_bytes() for path in pair})
         run("rwfnestimate", f"{name}\ny\n2\n*\n")
         run("rangular" + suffix, name + ("\nn\n" if launcher else "\ny\n"))
@@ -98,6 +102,7 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
     ).read_bytes()
     for generic in (
         "rcsf_header.toml",
+        "rcsf_desc.parquet",
         "rcsf_descriptors.parquet",
         "rwfn.inp",
         "rwfn.out",
@@ -134,7 +139,7 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
         legacy.mkdir()
         for source, target in (
             ("N_header.toml", "rcsf_header.toml"),
-            ("N_descriptors.parquet", "rcsf_descriptors.parquet"),
+            ("N_desc.parquet", "rcsf_descriptors.parquet"),
             ("isodata", "isodata"),
         ):
             (legacy / target).write_bytes((permanent / source).read_bytes())

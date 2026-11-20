@@ -4,9 +4,9 @@ module biorthogonal_subshell_mapping
     implicit none (type, external)
 
     ! Module constants
-    integer, parameter :: nlmax = 20
+    integer, parameter :: active_kappa_group_capacity = 20
 
     ! Module state
-    integer :: nshlp(nlmax, nlmax)
-    integer :: nshlpp(nlmax, max_orbitals)
+    integer :: active_orbitals_by_group(active_kappa_group_capacity, active_kappa_group_capacity)
+    integer :: active_orbital_positions_by_group(active_kappa_group_capacity, max_orbitals)
 end module biorthogonal_subshell_mapping

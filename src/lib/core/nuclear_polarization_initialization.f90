@@ -2,7 +2,7 @@
 module nuclear_polarization_initialization
     ! Module dependencies
     use grasp_parameters, only: max_radial_points
-    use nuclear_polarization_state, only: npol_capture, npol_config, npol_publish, npol_reset, zz_coul
+    use nuclear_polarization_state, only: npol_capture, npol_config, npol_publish, npol_reset, coulomb_potential_baseline
     use nuclear_polarization_input, only: npol_read_config, npol_validate_config
     use nuclear_polarization_potential, only: npol_check_grid, npol_build_grid, npol_compose
     implicit none (type, external)
@@ -43,7 +43,8 @@ contains
         call npol_build_grid(config, grid_point_count, radial_grid, dipole_potential, quadrupole_potential, &
             & polarization_potential, status, message)
         if (status /= 0) return
-        call npol_compose(grid_point_count, radial_grid, zz_coul, polarization_potential, composed_potential, status, message)
+        call npol_compose(grid_point_count, radial_grid, coulomb_potential_baseline, polarization_potential, &
+            composed_potential, status, message)
         if (status /= 0) return
         call npol_write_summary(npol_summary_path(config_path), config, grid_point_count, status, message)
         if (status /= 0) return

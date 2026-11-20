@@ -4,5 +4,5 @@ module scf_orbital_order
     implicit none (type, external)
 
     ! Module state
-    integer :: iorder(max_orbitals)
+    integer :: orbital_update_order(max_orbitals)
 end module scf_orbital_order

@@ -3,9 +3,9 @@ module davidson_projected_matrix
 
     ! Module interface
     private
-    public :: adds
+    public :: update_davidson_projected_matrix
 contains
-    subroutine adds(matrix_order, subspace_limit, subspace_size, new_vector_count, basis_vectors, &
+    subroutine update_davidson_projected_matrix(matrix_order, subspace_limit, subspace_size, new_vector_count, basis_vectors, &
         operator_basis, projected_matrix)
         ! Module dependencies
         ! Append projection columns from the stored operator products in packed upper-triangular form.
@@ -43,5 +43,5 @@ contains
         end do
 
         return
-    end subroutine adds
+    end subroutine update_davidson_projected_matrix
 end module davidson_projected_matrix

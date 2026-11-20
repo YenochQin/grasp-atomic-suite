@@ -1,52 +1,61 @@
-!***********************************************************************
-!                                                                      *
-subroutine open_biorthogonal_angular_cache(name, avail, kamax)
-    ! Module dependencies
-    use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
-    use, intrinsic :: iso_fortran_env, only: output_unit
-    !                                                                      *
-    !   Checks if the angular file name.T is available and appropriate     *
-    !                                                                      *
-    !   Written by Per Jonsson                      6 March 1997           *
-    !                                                                      *
-    !***********************************************************************
-    use orbital_csf_basis,           only: csf_count, orbital_count
-    use mpi_state, only: mpi_process_count, mpi_rank
+module open_biorthogonal_angular_cache_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(in)      :: kamax
-    logical, intent(out)     :: avail
-    character, intent(inout) :: name*24
+    ! Module interface
+    private
+    public :: open_biorthogonal_angular_cache
+contains
 
-    ! Local declarations
-    integer :: j,ncfd,nwd,kamaxd,nprocsd,myidd
-    logical :: found
-    !-----------------------------------------------
-    !
-    j = index(name," ")
-    inquire(file=name(1:j-1)//".TB", exist=found)
-    if (.not.found) then
-        write (output_unit, *) " Angular file not available"
-        avail = .false.
-        return
-    else
+    !***********************************************************************
+    !                                                                      *
+    subroutine open_biorthogonal_angular_cache(name, avail, kamax)
+        ! Module dependencies
+        use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
+        use, intrinsic :: iso_fortran_env, only: output_unit
+        !                                                                      *
+        !   Checks if the angular file name.T is available and appropriate     *
+        !                                                                      *
+        !   Written by Per Jonsson                      6 March 1997           *
+        !                                                                      *
+        !***********************************************************************
+        use orbital_csf_basis,           only: csf_count, orbital_count
+        use mpi_state, only: mpi_process_count, mpi_rank
+        implicit none (type, external)
+
+        ! Arguments
+        integer, intent(in)      :: kamax
+        logical, intent(out)     :: avail
+        character, intent(inout) :: name*24
+
+        ! Local declarations
+        integer :: j,ncfd,nwd,kamaxd,nprocsd,myidd
+        logical :: found
+        !-----------------------------------------------
         !
-        !  Open the file and check if it is appropriate for the present case
-        !
-        open(newunit=biorthogonal_angular_unit, file=name(1:j-1)//".TB", status="OLD", form=&
-            "UNFORMATTED", position="asis")
-        rewind (biorthogonal_angular_unit)
-        read (biorthogonal_angular_unit) ncfd,nwd,kamaxd,nprocsd,myidd
-        if (.not.(ncfd==csf_count .and. nwd==orbital_count .and. kamaxd==kamax     &
-            .and.nprocsd==mpi_process_count.and.myidd==mpi_rank)) then
-            write (output_unit, *) " Angular file not appropriate"
+        j = index(name," ")
+        inquire(file=name(1:j-1)//".TB", exist=found)
+        if (.not.found) then
+            write (output_unit, *) " Angular file not available"
             avail = .false.
             return
         else
-            write (output_unit, *) " Angular data read from file"
-            avail = .true.
+            !
+            !  Open the file and check if it is appropriate for the present case
+            !
+            open(newunit=biorthogonal_angular_unit, file=name(1:j-1)//".TB", status="OLD", form=&
+                "UNFORMATTED", position="asis")
+            rewind (biorthogonal_angular_unit)
+            read (biorthogonal_angular_unit) ncfd,nwd,kamaxd,nprocsd,myidd
+            if (.not.(ncfd==csf_count .and. nwd==orbital_count .and. kamaxd==kamax     &
+                .and.nprocsd==mpi_process_count.and.myidd==mpi_rank)) then
+                write (output_unit, *) " Angular file not appropriate"
+                avail = .false.
+                return
+            else
+                write (output_unit, *) " Angular data read from file"
+                avail = .true.
+            end if
         end if
-    end if
-    return
-end subroutine open_biorthogonal_angular_cache
+        return
+    end subroutine open_biorthogonal_angular_cache
+end module open_biorthogonal_angular_cache_interface

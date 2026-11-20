@@ -3,7 +3,7 @@ module davidson_eigensolver
 
     ! Module interface
     private
-    public :: gdvd
+    public :: solve_davidson_eigenpairs
     public :: dvd_operator
 
     ! Procedure interfaces
@@ -22,9 +22,9 @@ module davidson_eigensolver
     end interface
 contains
 
-    subroutine gdvd(matrix_vector_callback, matrix_order, subspace_limit, matrix_diagonal, lowest_pair_index, &
+    subroutine solve_davidson_eigenpairs(matrix_vector_callback, matrix_order, subspace_limit, matrix_diagonal, lowest_pair_index, &
         highest_pair_index, selected_pair_indices, initial_vector_count, expansion_block_size, &
-        eigenvalue_tolerance, coefficient_tolerance, residual_tolerance, orthogonality_tolerance, &
+        eigenvalue_tolerance, coefficient_tolerance, residual_tolerance, &
         iteration_limit, real_workspace, real_workspace_size, integer_workspace, integer_workspace_size, &
         solve_high_end, iteration_count, matrix_vector_product_count, solver_status)
         ! Module dependencies
@@ -32,7 +32,7 @@ contains
         use, intrinsic :: iso_fortran_env, only: real64
 
         ! Service the solver requests with a matrix callback or diagonal preconditioning.
-        use davidson_solver_control, only: dvdson
+        use davidson_solver_control, only: control_davidson_solver
         implicit none (type, external)
 
         ! Arguments
@@ -52,8 +52,6 @@ contains
         real(real64)  :: eigenvalue_tolerance
         real(real64)  :: coefficient_tolerance
         real(real64)  :: residual_tolerance
-        ! Retain this interface parameter. Orthonormalization uses two fixed passes.
-        real(real64)  :: orthogonality_tolerance
         logical  :: solve_high_end
         integer  :: selected_pair_indices(subspace_limit)
         integer, intent(inout) :: integer_workspace(integer_workspace_size)
@@ -74,14 +72,14 @@ contains
         operation_code = 0
 
         if (initial_vector_count == 0) then
-            write (output_unit, *) "GDVD Error : No initial estimate!!!"
+            write (output_unit, *) "Davidson eigensolver requires an initial estimate."
             solver_status = -1000
             return
         end if
 
         matrix_vector_product_count = 0
         do
-            call dvdson (operation_code, request_slots, matrix_order, subspace_limit, constraint_count, &
+            call control_davidson_solver (operation_code, request_slots, matrix_order, subspace_limit, constraint_count, &
                 lowest_pair_index, highest_pair_index, selected_pair_indices, initial_vector_count, &
                 expansion_block_size, eigenvalue_tolerance, coefficient_tolerance, residual_tolerance, &
                 iteration_limit, real_workspace, real_workspace_size, integer_workspace, integer_workspace_size, &
@@ -128,5 +126,5 @@ contains
                 exit
             end if
         end do
-    end subroutine gdvd
+    end subroutine solve_davidson_eigenpairs
 end module davidson_eigensolver

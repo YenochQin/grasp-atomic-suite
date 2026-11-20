@@ -4,18 +4,18 @@ module jj_w_matrix_element
 
     ! Module interface
     private
-    public :: wj1
+    public :: evaluate_jj_w
 contains
-    subroutine wj1(bra_shell_codes,bra_shell_values,ket_shell_codes,ket_shell_values,w_angular_rank, &
+    subroutine evaluate_jj_w(bra_shell_codes,bra_shell_values,ket_shell_codes,ket_shell_values,w_angular_rank, &
         q_projection_1,q_projection_2,w_matrix_element)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use numeric_constants,          only: zero, tenth, one, two, angular_tolerance => eps
-        use subshell_tensor_diagnostics, only: mes
-        use jj_w_matrix_element_high_j, only: w1jjg
-        use quasispin_cg_zero_projection, only: cle0sm
-        use quasispin_cg_rank_one_unit_projection, only: c1e1sm
-        use jj_reduced_w, only: rwjj
+        use numeric_constants,          only: zero, tenth, one, two, angular_tolerance
+        use subshell_tensor_diagnostics, only: report_subshell_tensor_error
+        use jj_w_matrix_element_high_j, only: evaluate_high_j_w
+        use quasispin_cg_zero_projection, only: evaluate_quasispin_cg_zero_projection
+        use quasispin_cg_rank_one_unit_projection, only: evaluate_quasispin_cg_rank_one_unit_projection
+        use jj_reduced_w, only: evaluate_jj_reduced_w
         implicit none (type, external)
 
         ! Arguments
@@ -31,11 +31,12 @@ contains
         w_matrix_element=zero
         if(ket_shell_codes(3) == 9) then
             if(max0(bra_shell_codes(4),ket_shell_codes(4)) < 3) then
-                if(bra_shell_codes(1) < 300) call mes(56)
-                if(ket_shell_codes(1) < 300) call mes(56)
+                if(bra_shell_codes(1) < 300) call report_subshell_tensor_error(56)
+                if(ket_shell_codes(1) < 300) call report_subshell_tensor_error(56)
                 occupation_change_2=q_projection_2+q_projection_2+q_projection_2*angular_tolerance
-                if((ket_shell_codes(4)+occupation_change_2) > 2) call mes(2)
-                call w1jjg(w_angular_rank,q_projection_1,q_projection_2,bra_shell_codes,bra_shell_values,ket_shell_codes, &
+                if((ket_shell_codes(4)+occupation_change_2) > 2) call report_subshell_tensor_error(2)
+                call evaluate_high_j_w(w_angular_rank,q_projection_1,q_projection_2,bra_shell_codes,bra_shell_values, &
+                    & ket_shell_codes, &
                     ket_shell_values,w_matrix_element)
                 return
             else
@@ -44,8 +45,8 @@ contains
             end if
         else if(ket_shell_codes(3) > 9) then
             occupation_change_2=q_projection_2+q_projection_2+q_projection_2*angular_tolerance
-            if((ket_shell_codes(4)+occupation_change_2) > 2) call mes(2)
-            call w1jjg(w_angular_rank,q_projection_1,q_projection_2,bra_shell_codes,bra_shell_values,ket_shell_codes, &
+            if((ket_shell_codes(4)+occupation_change_2) > 2) call report_subshell_tensor_error(2)
+            call evaluate_high_j_w(w_angular_rank,q_projection_1,q_projection_2,bra_shell_codes,bra_shell_values,ket_shell_codes, &
                 ket_shell_values,w_matrix_element)
             return
         end if
@@ -56,10 +57,11 @@ contains
             if(((w_angular_rank/2)*2) /= w_angular_rank)return
             net_q_projection=combined_q_projection+combined_q_projection*tenth
             if((bra_shell_codes(4)-ket_shell_codes(4)-2*net_q_projection) /= 0)return
-            call c1e1sm(ket_shell_values(1),ket_shell_values(3),combined_q_projection,bra_shell_values(1), &
+            call evaluate_quasispin_cg_rank_one_unit_projection(ket_shell_values(1),ket_shell_values(3),combined_q_projection, &
+                & bra_shell_values(1), &
                 bra_shell_values(3),matrix_element_factor)
             if(dabs(matrix_element_factor) < angular_tolerance)return
-            call rwjj(bra_shell_codes(3),bra_shell_codes(1),ket_shell_codes(1),1,w_angular_rank,reduced_w_element)
+            call evaluate_jj_reduced_w(bra_shell_codes(3),bra_shell_codes(1),ket_shell_codes(1),1,w_angular_rank,reduced_w_element)
             w_matrix_element=matrix_element_factor*reduced_w_element/dsqrt(two*bra_shell_values(1)+one)
         else if(bra_shell_codes(4) /= ket_shell_codes(4))then
             return
@@ -75,10 +77,11 @@ contains
             w_quasispin_rank=1
             if(((w_angular_rank/2)*2) /= w_angular_rank)w_quasispin_rank=0
             real_quasispin_rank=dble(w_quasispin_rank)
-            call cle0sm(ket_shell_values(1),ket_shell_values(3),real_quasispin_rank,bra_shell_values(1), &
+            call evaluate_quasispin_cg_zero_projection(ket_shell_values(1),ket_shell_values(3),real_quasispin_rank, &
+                & bra_shell_values(1), &
                 bra_shell_values(3),matrix_element_factor)
             if(dabs(matrix_element_factor) < angular_tolerance)return
-            call rwjj(bra_shell_codes(3),bra_shell_codes(1),ket_shell_codes(1),w_quasispin_rank,w_angular_rank, &
+            call evaluate_jj_reduced_w(bra_shell_codes(3),bra_shell_codes(1),ket_shell_codes(1),w_quasispin_rank,w_angular_rank, &
                 reduced_w_element)
             matrix_element_factor=matrix_element_factor*reduced_w_element
             w_matrix_element=matrix_element_factor/dsqrt(two*two*bra_shell_values(1)+two)
@@ -86,5 +89,5 @@ contains
             if(((w_angular_rank/2)*2) /= w_angular_rank)w_matrix_element=-w_matrix_element
         end if
         return
-    end subroutine wj1
+    end subroutine evaluate_jj_w
 end module jj_w_matrix_element

@@ -4,16 +4,14 @@ module isotope_data_records
 
     ! Module interface
     private
-    public :: lodiso
+    public :: read_isotope_records
 contains
-    subroutine lodiso(isotope_input_unit)
+    subroutine read_isotope_records(isotope_input_unit)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use atomic_calculation_state, only: &
-            electron_mass_u, nuclear_mass_in_electron_masses => emn, femtometer_to_bohr, nuclear_charge
+        use atomic_calculation_state, only: electron_mass_u, nuclear_mass_in_electron_masses, femtometer_to_bohr, nuclear_charge
         use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
-        use isotope_properties, only: nuclear_spin => sqn, nuclear_magnetic_dipole_moment => dmomnm, &
-            nuclear_electric_quadrupole_moment => qmomb
+        use isotope_properties, only: nuclear_spin, nuclear_magnetic_dipole_moment, nuclear_electric_quadrupole_moment
         implicit none (type, external)
 
         ! Arguments
@@ -52,5 +50,5 @@ contains
         read (isotope_input_unit, *) nuclear_electric_quadrupole_moment
 
         return
-    end subroutine lodiso
+    end subroutine read_isotope_records
 end module isotope_data_records

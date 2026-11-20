@@ -7,8 +7,8 @@ module vinti_integral_table
     private :: real64
 
     ! Module state
-    integer :: ndvin, nvinti
-    integer, pointer :: indtei(:)
-    real(real64), pointer :: valtei(:)
-    logical :: frstvi
+    integer :: vinti_integral_capacity, vinti_integral_count
+    integer, pointer :: vinti_integral_indices(:)
+    real(real64), pointer :: vinti_integral_values(:)
+    logical :: first_vinti_lookup
 end module vinti_integral_table

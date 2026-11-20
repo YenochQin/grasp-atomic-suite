@@ -5,7 +5,8 @@ program mcp_reader_io
     use orbital_csf_basis, only: orbital_kappa, orbital_two_j
     use hamiltonian_symmetry_blocks, only: symmetry_block_count, csf_counts_by_block
     use symmetry_block_offsets, only: csf_offsets_by_block
-    use scf_iteration_state, only: ucf, nddim, nxdim, nydim, ndcof, da
+    use scf_iteration_state, only: orbital_occupation_weights, direct_coefficient_capacity, exchange_coefficient_capacity, &
+        y_potential_coefficient_capacity, direct_coefficient_count, direct_coefficients
     use connect_mcp_files_interface, only: connect_mcp_files
 #ifdef MCP_MEM
     use rmcdhf_mcp_memory, only: lab_31, ncontr_31, coeff_31
@@ -14,7 +15,7 @@ program mcp_reader_io
 #endif
 #ifdef MCP_MPI
     use mpi_state, only: mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize, mpi_init, &
-       & mpi_process_count, mpi_rank
+        mpi_process_count, mpi_rank
 #else
     use serial_mpi_context, only: mpi_process_count, mpi_rank
 #endif
@@ -113,12 +114,12 @@ program mcp_reader_io
 #ifndef MCP_MEM
     orbital_kappa(1) = -1
     orbital_two_j(1) = 1
-    ucf(1) = 1.0_real64
+    orbital_occupation_weights(1) = 1.0_real64
     allocate(csf_offsets_by_block(1))
     csf_offsets_by_block = 0
-    nddim = 0
-    nxdim = 0
-    nydim = 0
+    direct_coefficient_capacity = 0
+    exchange_coefficient_capacity = 0
+    y_potential_coefficient_capacity = 0
     call assemble_orbital_potential_coefficients(.true., 1)
 #endif
     if (corrupt) error stop "Corrupt MCP was accepted"
@@ -134,9 +135,9 @@ program mcp_reader_io
     end if
 #else
     if (scenario=="empty") then
-        if (ndcof/=0) error stop "Empty contraction"
+        if (direct_coefficient_count/=0) error stop "Empty contraction"
     else
-        if (ndcof/=1 .or. da(1)/=0.125_real64) error stop "Contracted coefficient"
+        if (direct_coefficient_count/=1 .or. direct_coefficients(1)/=0.125_real64) error stop "Contracted coefficient"
     end if
 #endif
     do channel_suffix=30,32
@@ -148,45 +149,3 @@ program mcp_reader_io
 #endif
     print *, "PASS MCP reader input"
 end program mcp_reader_io
-
-function csf_density_matrix_element(eol, i, j, jblock) result(value)
-    use, intrinsic :: iso_fortran_env, only: real64
-    implicit none (type, external)
-    logical, intent(in) :: eol
-    integer, intent(in) :: i, j
-    integer :: jblock
-    real(real64) :: value
-    value = 1.0_real64
-end function csf_density_matrix_element
-
-function direct_angular_coefficient(k, ir, ia, ib) result(value)
-    use, intrinsic :: iso_fortran_env, only: real64
-    implicit none (type, external)
-    integer, intent(in) :: k, ia, ib
-    integer :: ir
-    real(real64) :: value
-    value = 0.0_real64
-end function direct_angular_coefficient
-
-function exchange_angular_coefficient(k, ir, ia, ib) result(value)
-    use, intrinsic :: iso_fortran_env, only: real64
-    implicit none (type, external)
-    integer :: k, ir
-    integer, intent(in) :: ia, ib
-    real(real64) :: value
-    value = 0.0_real64
-end function exchange_angular_coefficient
-
-function query_total_system_memory() result(value)
-    use, intrinsic :: iso_fortran_env, only: real64
-    implicit none (type, external)
-    real(real64) :: value
-    value = 1.0_real64
-end function query_total_system_memory
-
-function query_available_system_memory() result(value)
-    use, intrinsic :: iso_fortran_env, only: real64
-    implicit none (type, external)
-    real(real64) :: value
-    value = 1.0_real64
-end function query_available_system_memory

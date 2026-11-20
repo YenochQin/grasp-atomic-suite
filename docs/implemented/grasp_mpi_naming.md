@@ -29,7 +29,7 @@
 
 ## 调用与构建
 
-- Fortran 调用方按对照表更新 `use` 语句，并用新模块重新编译。过程名称和形参沿用现有接口。
+- Fortran 调用方按对照表更新 `use` 语句，并用新模块重新编译。过程名见[共享库过程对照](shared_library_procedure_names.md)。
 - CMake 调用方链接 `grasp_mpi`。模块文件安装到 CMake 配置前缀下的 `lib/grasp_mpi/`，静态库位于 `lib/`。
 - 稀疏矩阵回归测试改名为 `grasp_mpi_local_sparse`。变量、常量及关键字参数见 [变量迁移表](mpi90_variable_migration.md)。
 

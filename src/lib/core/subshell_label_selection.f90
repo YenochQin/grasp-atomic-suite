@@ -4,9 +4,9 @@ module subshell_label_selection
 
     ! Module interface
     private
-    public :: getrsl
+    public :: select_subshell_labels
 contains
-    subroutine getrsl(matched_orbital_indices, matched_subshell_count)
+    subroutine select_subshell_labels(matched_orbital_indices, matched_subshell_count)
         ! Module dependencies
         use calculation_file_units, only: calculation_log_unit, ensure_calculation_log
         use standard_io_units, only: stderr_unit
@@ -31,14 +31,14 @@ contains
             write(calculation_log_unit,"(a)") trim(input_line)
             if (parse_selection(input_line, matched_orbital_indices, matched_subshell_count)) exit
         end do
-    end subroutine getrsl
+    end subroutine select_subshell_labels
 
     logical function parse_selection(input_line, matched_orbital_indices, matched_subshell_count) result(parsed)
         ! Module dependencies
         use orbital_csf_basis, only: orbital_count, orbital_principal_n, orbital_symmetry_labels
         use standard_io_units, only: stderr_unit
-        use decimal_digit_check, only: ldigit
-        use integer_format, only: convrt
+        use decimal_digit_check, only: is_decimal_digit
+        use integer_format, only: format_integer
         implicit none (type, external)
 
         ! Arguments
@@ -68,7 +68,7 @@ contains
                         any_principal_n = .false.
                         principal_digit_count = 0
                         do orbital_index = token_start, token_end
-                            if (.not.ldigit(input_line(orbital_index:orbital_index))) cycle
+                            if (.not.is_decimal_digit(input_line(orbital_index:orbital_index))) cycle
                             principal_digit_count = principal_digit_count + 1
                         end do
                         if (principal_digit_count == 0) then
@@ -76,7 +76,7 @@ contains
                                 "the principal quantum number;"
                             return
                         end if
-                        call convrt (principal_digit_count, width_text, width_text_length)
+                        call format_integer (principal_digit_count, width_text, width_text_length)
                         integer_format = "(1I"//width_text(1:width_text_length)//")"
                         read (input_line(token_start:token_start+principal_digit_count-1), integer_format, &
                             & iostat=read_status) requested_principal_n

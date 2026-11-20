@@ -4,9 +4,9 @@ module three_subshell_ordering
 
     ! Module interface
     private
-    public :: eile
+    public :: order_three_subshells
 contains
-    subroutine eile(shell_position_a,shell_position_b,shell_position_c,first_sorted_shell,middle_sorted_shell, &
+    subroutine order_three_subshells(shell_position_a,shell_position_b,shell_position_c,first_sorted_shell,middle_sorted_shell, &
         last_sorted_shell)
         implicit none (type, external)
 
@@ -26,5 +26,5 @@ contains
         if((shell_position_c > first_sorted_shell).and.(shell_position_c < last_sorted_shell))middle_sorted_shell= &
             shell_position_c
         return
-    end subroutine eile
+    end subroutine order_three_subshells
 end module three_subshell_ordering

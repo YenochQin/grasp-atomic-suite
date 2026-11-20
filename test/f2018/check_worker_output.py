@@ -21,7 +21,7 @@ def main() -> None:
     body = text[start:start + ending.end()] + "\n"
     body, count = re.subn(r"file\s*=\s*(['\"])/dev/null\1", "file=output_path", body)
     assert count == 1, "Expected exactly one worker output filename"
-    source = ("module startup_probe\nuse mpi_runtime, only: startmpi\n"
+    source = ("module startup_probe\nuse mpi_runtime, only: initialize_mpi_runtime\n"
               "implicit none\ncharacter(1024) :: output_path\ncontains\n" + body + "end module\n")
     driver = """program output_probe
 use startup_probe

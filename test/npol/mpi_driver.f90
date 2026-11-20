@@ -4,11 +4,11 @@ program npol_mpi_driver
     use nuclear_polarization_state, only: npol_config, npol_message_len, npol_ready, npol_settings, vnp_e1, vnp_e2
     use mpi_nuclear_polarization, only: npol_abort_mpi, npol_init_mpi
     use npol_test_support, only: fixture, near, npol_config, require
-    use grasp_parameters, only: NNNP
+    use grasp_parameters, only: max_radial_points
     use posix_services, only: change_directory
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
-    real(real64) :: r(NNNP), zz(NNNP), coul(NNNP), reference(3), z
+    real(real64) :: r(max_radial_points), zz(max_radial_points), coul(max_radial_points), reference(3), z
     integer :: rank, ierr, n, status, ios
     character(4096) :: root_path, directory
     character(32) :: mode
@@ -30,7 +30,7 @@ program npol_mpi_driver
     coul = 7
     zz = coul
     z = 2
-    if (mode == "length" .and. rank /= 0) n = NNNP+1
+    if (mode == "length" .and. rank /= 0) n = max_radial_points+1
     if (mode == "mismatch" .and. rank /= 0) n = 2
     if (mode == "charge" .and. rank /= 0) z = 3
     if (mode == "compose" .and. rank /= 0) then

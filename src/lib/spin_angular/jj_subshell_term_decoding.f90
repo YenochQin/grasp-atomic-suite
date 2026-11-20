@@ -4,13 +4,13 @@ module jj_subshell_term_decoding
 
     ! Module interface
     private
-    public :: rumtjj
+    public :: decode_jj_subshell_term
 contains
-    subroutine rumtjj(term_index,two_orbital_j,two_q,two_seniority,two_term_j)
+    subroutine decode_jj_subshell_term(term_index,two_orbital_j,two_q,two_seniority,two_term_j)
         ! Module dependencies
-        use subshell_term_multiplicities, only: packed_term_codes_low_j => mt
-        use high_j_subshell_term_data, only: packed_term_codes_high_j => mt11, packed_term_codes_two_j_9 => mt9
-        use packed_integer_digit, only: jthn
+        use subshell_term_multiplicities, only: packed_term_codes_low_j
+        use high_j_subshell_term_data, only: packed_term_codes_high_j, packed_term_codes_two_j_9
+        use packed_integer_digit, only: extract_packed_integer_digit
         implicit none (type, external)
 
         ! Arguments
@@ -34,9 +34,9 @@ contains
         else
             packed_term_code=packed_term_codes_high_j(term_index)
         end if
-        two_q=jthn(packed_term_code,3,100)
-        two_seniority=jthn(packed_term_code,2,100)
-        two_term_j=jthn(packed_term_code,1,100)
+        two_q=extract_packed_integer_digit(packed_term_code,3,100)
+        two_seniority=extract_packed_integer_digit(packed_term_code,2,100)
+        two_term_j=extract_packed_integer_digit(packed_term_code,1,100)
         return
-    end subroutine rumtjj
+    end subroutine decode_jj_subshell_term
 end module jj_subshell_term_decoding

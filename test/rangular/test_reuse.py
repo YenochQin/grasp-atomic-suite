@@ -64,7 +64,7 @@ class AngularReuseTests(unittest.TestCase):
             fixture = self.root / "input.c"
             shutil.copyfile(csf, fixture)
             descriptors(fixture)
-            options = (*options, "--descriptors", str(self.root / "input_descriptors.parquet"),
+            options = (*options, "--descriptors", str(self.root / "input_desc.parquet"),
                        "--header", str(self.root / "input_header.toml"), "--verifier", str(ARGUMENTS.verifier))
         output = self.root / "comparison"
         result = subprocess.run(

@@ -7,9 +7,9 @@ module biorthogonal_orbital_rotations
     private :: real64
 
     ! Module constants
-    integer, parameter :: nlmax = 20
+    integer, parameter :: rotation_group_capacity = 20
 
     ! Module state
-    real(real64) :: cfci(20*nlmax*nlmax)
-    real(real64) :: cici(20*nlmax*nlmax)
+    real(real64) :: final_orbital_rotation_values(20*rotation_group_capacity*rotation_group_capacity)
+    real(real64) :: initial_orbital_rotation_values(20*rotation_group_capacity*rotation_group_capacity)
 end module biorthogonal_orbital_rotations

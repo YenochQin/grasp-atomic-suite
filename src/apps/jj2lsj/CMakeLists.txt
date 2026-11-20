@@ -24,8 +24,8 @@ target_link_libraries_Fortran(jj2lsj_thread_kernels PRIVATE spin_angular core gr
 
 add_library(jj2lsj_conversion STATIC
     jj2lsj_profile.f90 jj2lsj_postprocessing.f90
-    read_mixing_blocks.f90 read_mixing_blocks_interface.f90
-    ascii_digit_value.f90 ascii_digit_value_interface.f90 orbital_letter_to_l.f90 orbital_letter_to_l_interface.f90 pack_ls_subshell_label.f90 pack_ls_subshell_label_interface.f90
+    read_mixing_blocks.f90
+    ascii_digit_value.f90  orbital_letter_to_l.f90  pack_ls_subshell_label.f90
     ls_jj_coefficients_low_j.f90 ls_jj_coefficients_table_2.f90 ls_jj_coefficients_table_3.f90
     jj2lsj_conversion.f90)
 setup_fortran_modules(jj2lsj_conversion)

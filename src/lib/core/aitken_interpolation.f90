@@ -4,9 +4,9 @@ module aitken_interpolation
 
     ! Module interface
     private
-    public :: interp
+    public :: interpolate_aitken
 contains
-    subroutine interp(tabulated_x, tabulated_y, table_size, target_x, interpolated_y, relative_tolerance)
+    subroutine interpolate_aitken(tabulated_x, tabulated_y, table_size, target_x, interpolated_y, relative_tolerance)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         implicit none (type, external)
@@ -78,16 +78,16 @@ contains
             selected_nodes(nearest_unused_index-stencil_window_offset) = .true.
             stencil_nodes(stencil_row) = tabulated_x(nearest_unused_index)
             node_offsets(stencil_row) = nearest_offset
-            aitken_table(iloc(stencil_row,1)) = tabulated_y(nearest_unused_index)
+            aitken_table(packed_triangle_index(stencil_row,1)) = tabulated_y(nearest_unused_index)
             do search_or_table_index = 2, stencil_row
-                current_cell = iloc(stencil_row,search_or_table_index)
-                diagonal_cell = iloc(search_or_table_index - 1,search_or_table_index - 1)
-                previous_cell = iloc(stencil_row,search_or_table_index - 1)
+                current_cell = packed_triangle_index(stencil_row,search_or_table_index)
+                diagonal_cell = packed_triangle_index(search_or_table_index - 1,search_or_table_index - 1)
+                previous_cell = packed_triangle_index(stencil_row,search_or_table_index - 1)
                 aitken_table(current_cell) = (aitken_table(diagonal_cell)*node_offsets(stencil_row)- &
                     & aitken_table(previous_cell)*node_offsets(search_or_table_index-1))/(stencil_nodes(&
                     stencil_row)-stencil_nodes(search_or_table_index-1))
             end do
-            diagonal_cell = iloc(stencil_row,stencil_row)
+            diagonal_cell = packed_triangle_index(stencil_row,stencil_row)
             estimates(stencil_row) = aitken_table(diagonal_cell)
         end do
         if (stencil_size == 1) then
@@ -126,12 +126,12 @@ contains
             end if
         end function relative_change
 
-        integer function iloc (row_index, column_index)
+        integer function packed_triangle_index (row_index, column_index)
             ! Arguments
             integer, intent(in) :: row_index
             integer, intent(in) :: column_index
-            iloc = (row_index*(row_index - 1))/2 + column_index
+            packed_triangle_index = (row_index*(row_index - 1))/2 + column_index
             return
-        end function iloc
-    end subroutine interp
+        end function packed_triangle_index
+    end subroutine interpolate_aitken
 end module aitken_interpolation

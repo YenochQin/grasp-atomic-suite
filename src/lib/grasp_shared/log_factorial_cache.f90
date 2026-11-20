@@ -8,9 +8,9 @@ module log_factorial_cache
     private :: real64
 
     ! Module constants
-    integer, parameter :: mfact = 500
+    integer, parameter :: log_factorial_table_size = 500
 
     ! Module state
     ! factt initializes gam(i) = log((i-1)!), so the first slot represents 0!.
-    real(real64) :: gam(mfact)
+    real(real64) :: log_factorials(log_factorial_table_size)
 end module log_factorial_cache

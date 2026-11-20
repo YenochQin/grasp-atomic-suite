@@ -4,14 +4,15 @@ module permuted_three_subshell_recoupling
 
     ! Module interface
     private
-    public :: rec3
+    public :: recouple_permuted_three_subshells
 contains
-    subroutine rec3(first_shell_position,second_shell_position,third_shell_position,two_rank_1,two_rank_2, &
+    subroutine recouple_permuted_three_subshells(first_shell_position,second_shell_position,third_shell_position,two_rank_1, &
+        & two_rank_2, &
         two_rank_3,evaluate_coefficient,coupling_allowed,recoupling_coefficient)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
-        use three_subshell_recoupling, only: reco3
+        use three_subshell_recoupling, only: recouple_three_subshells
         implicit none (type, external)
 
         ! Arguments
@@ -32,37 +33,43 @@ contains
         ! Use the ordered three-shell routine and compensate for the tensor order.
         if((third_shell_position > first_shell_position).and.(third_shell_position > second_shell_position)) then
             if(first_shell_position-second_shell_position < 0) then
-                call reco3(first_shell_position,second_shell_position,third_shell_position,two_rank_1,two_rank_2, &
+                call recouple_three_subshells(first_shell_position,second_shell_position,third_shell_position,two_rank_1, &
+                    & two_rank_2, &
                     two_rank_3,evaluate_coefficient,coupling_allowed,recoupling_coefficient)
             else
-                call reco3(second_shell_position,first_shell_position,third_shell_position,two_rank_2,two_rank_1, &
+                call recouple_three_subshells(second_shell_position,first_shell_position,third_shell_position,two_rank_2, &
+                    & two_rank_1, &
                     two_rank_3,evaluate_coefficient,coupling_allowed,recoupling_coefficient)
                 phase_sum=two_rank_1+two_rank_2-two_rank_3
                 if((phase_sum/4)*4 /= phase_sum)recoupling_coefficient=-recoupling_coefficient
             end if
         else if((third_shell_position < first_shell_position).and.(third_shell_position < second_shell_position)) then
             if(first_shell_position-second_shell_position < 0) then
-                call reco3(third_shell_position,first_shell_position,second_shell_position,two_rank_3,two_rank_1, &
+                call recouple_three_subshells(third_shell_position,first_shell_position,second_shell_position,two_rank_3, &
+                    & two_rank_1, &
                     two_rank_2,evaluate_coefficient,coupling_allowed,recoupling_coefficient)
                 if((two_rank_3/2)*2 /= two_rank_3)recoupling_coefficient=-recoupling_coefficient
             else
-                call reco3(third_shell_position,second_shell_position,first_shell_position,two_rank_3,two_rank_2, &
+                call recouple_three_subshells(third_shell_position,second_shell_position,first_shell_position,two_rank_3, &
+                    & two_rank_2, &
                     two_rank_1,evaluate_coefficient,coupling_allowed,recoupling_coefficient)
                 phase_sum=two_rank_1+two_rank_2+two_rank_3
                 if((phase_sum/4)*4 /= phase_sum)recoupling_coefficient=-recoupling_coefficient
             end if
         else
             if(first_shell_position-second_shell_position < 0)then
-                call reco3(first_shell_position,third_shell_position,second_shell_position,two_rank_1,two_rank_3, &
+                call recouple_three_subshells(first_shell_position,third_shell_position,second_shell_position,two_rank_1, &
+                    & two_rank_3, &
                     two_rank_2,evaluate_coefficient,coupling_allowed,recoupling_coefficient)
                 phase_sum=two_rank_1-two_rank_2-two_rank_3
                 if((phase_sum/4)*4 /= phase_sum)recoupling_coefficient=-recoupling_coefficient
             else
-                call reco3(second_shell_position,third_shell_position,first_shell_position,two_rank_2,two_rank_3, &
+                call recouple_three_subshells(second_shell_position,third_shell_position,first_shell_position,two_rank_2, &
+                    & two_rank_3, &
                     two_rank_1,evaluate_coefficient,coupling_allowed,recoupling_coefficient)
                 if((two_rank_1/2)*2 /= two_rank_1)recoupling_coefficient=-recoupling_coefficient
             end if
         end if
         return
-    end subroutine rec3
+    end subroutine recouple_permuted_three_subshells
 end module permuted_three_subshell_recoupling

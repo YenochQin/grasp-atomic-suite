@@ -4,15 +4,15 @@ module radial_ascii_plot
 
     ! Module interface
     private
-    public :: draw
+    public :: plot_radial_orbital_ascii
 contains
-    subroutine draw(large_component, large_component_scale, small_component, small_component_scale, last_radial_index)
+    subroutine plot_radial_orbital_ascii(large_component, large_component_scale, small_component, small_component_scale, &
+        & last_radial_index)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_radial_points
-        use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-            radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+        use radial_grid_state, only: radial_point_count, radial_grid
         implicit none (type, external)
 
         ! Arguments
@@ -105,5 +105,5 @@ contains
             maximum_radius, maximum_amplitude
         return
         return
-    end subroutine draw
+    end subroutine plot_radial_orbital_ascii
 end module radial_ascii_plot

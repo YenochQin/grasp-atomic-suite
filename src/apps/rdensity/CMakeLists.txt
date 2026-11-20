@@ -1,7 +1,7 @@
 set(RDENSITY_SOURCES
-    read_mixing_blocks.f90 read_mixing_blocks_interface.f90
-    read_radial_density_input.f90 read_radial_density_input_interface.f90
-    configure_debug_output.f90 configure_debug_output_interface.f90
+    read_mixing_blocks.f90
+    read_radial_density_input.f90
+    configure_debug_output.f90
     natural_orbitals.f90 density_calculation.f90 rdensity.f90
 )
 

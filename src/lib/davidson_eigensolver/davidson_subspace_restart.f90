@@ -3,15 +3,15 @@ module davidson_subspace_restart
 
     ! Module interface
     private
-    public :: ovflow
+    public :: restart_davidson_subspace
 contains
-    subroutine ovflow(matrix_order, retained_vector_count, subspace_size, row_workspace, basis_vectors, &
+    subroutine restart_davidson_subspace(matrix_order, retained_vector_count, subspace_size, row_workspace, basis_vectors, &
         operator_basis, projected_matrix, ritz_coefficients, ritz_values)
         ! Module dependencies
         ! Restart with the leading Ritz vectors and transform their operator products in the same way.
         use, intrinsic :: iso_fortran_env, only: real64
-        use davidson_basis_transform, only: multbc
-        use real_vector_initialization, only: dinit
+        use davidson_basis_transform, only: transform_davidson_basis
+        use real_vector_initialization, only: initialize_real_vector
         implicit none (type, external)
 
         ! Arguments
@@ -27,13 +27,13 @@ contains
 
         ! Local declarations
         integer :: packed_column_offset, coefficient_column_offset, pair_index
-        call multbc (matrix_order, subspace_size, retained_vector_count, ritz_coefficients, row_workspace, &
+        call transform_davidson_basis (matrix_order, subspace_size, retained_vector_count, ritz_coefficients, row_workspace, &
             basis_vectors)
-        call multbc (matrix_order, subspace_size, retained_vector_count, ritz_coefficients, row_workspace, &
+        call transform_davidson_basis (matrix_order, subspace_size, retained_vector_count, ritz_coefficients, row_workspace, &
             operator_basis)
         ! In the restarted basis the projection is diagonal and its coefficient matrix is the identity.
-        call dinit ((retained_vector_count*(retained_vector_count + 1))/2, 0.0_real64, projected_matrix, 1)
-        call dinit (retained_vector_count*retained_vector_count, 0.0_real64, ritz_coefficients, 1)
+        call initialize_real_vector ((retained_vector_count*(retained_vector_count + 1))/2, 0.0_real64, projected_matrix, 1)
+        call initialize_real_vector (retained_vector_count*retained_vector_count, 0.0_real64, ritz_coefficients, 1)
         packed_column_offset = 0
         coefficient_column_offset = 0
         do pair_index = 1, retained_vector_count
@@ -46,5 +46,5 @@ contains
         subspace_size = retained_vector_count
 
         return
-    end subroutine ovflow
+    end subroutine restart_davidson_subspace
 end module davidson_subspace_restart

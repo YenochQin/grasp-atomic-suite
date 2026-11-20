@@ -4,16 +4,15 @@ module jj_reduced_w_j_seven_halves_higher_ranks
 
     ! Module interface
     private
-    public :: rmew7bjj
+    public :: evaluate_reduced_w_j_seven_halves_high_rank
 contains
-    subroutine rmew7bjj(bra_term_index,ket_term_index,quasispin_rank,angular_rank,reduced_w_element)
+    subroutine evaluate_reduced_w_j_seven_halves_high_rank(bra_term_index,ket_term_index,quasispin_rank,angular_rank, &
+        & reduced_w_element)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: error_unit
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: zero
-        use jj_reduced_coefficients, only: last_opposite_parity_terms_low_j => imgnjj, last_same_parity_terms_low_j => imgtjj, &
-            first_opposite_parity_terms_low_j => impnjj, first_same_parity_terms_low_j => imptjj
-        use jj_subshell_term_decoding, only: rumtjj
+        use jj_subshell_term_decoding, only: decode_jj_subshell_term
         implicit none (type, external)
 
         ! Arguments
@@ -90,8 +89,8 @@ contains
             143,121,1,1859/
         reduced_w_element = zero
         two_orbital_j = 7
-        call rumtjj(bra_term_index,two_orbital_j,two_bra_q,two_bra_seniority,two_bra_term_j)
-        call rumtjj(ket_term_index,two_orbital_j,two_ket_q,two_ket_seniority,two_ket_term_j)
+        call decode_jj_subshell_term(bra_term_index,two_orbital_j,two_bra_q,two_bra_seniority,two_bra_term_j)
+        call decode_jj_subshell_term(ket_term_index,two_orbital_j,two_ket_q,two_ket_seniority,two_ket_term_j)
         if(bra_term_index > ket_term_index) then
             lower_table_index=ket_term_index
             upper_table_index=bra_term_index
@@ -227,5 +226,5 @@ contains
         end if
         if(mod(twice_phase_exponent,4) /= 0)reduced_w_element=-reduced_w_element
         return
-    end subroutine rmew7bjj
+    end subroutine evaluate_reduced_w_j_seven_halves_high_rank
 end module jj_reduced_w_j_seven_halves_higher_ranks

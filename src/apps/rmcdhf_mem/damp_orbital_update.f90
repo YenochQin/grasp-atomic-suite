@@ -1,137 +1,154 @@
-!***********************************************************************
-!                                                                      *
-subroutine damp_orbital_update(orbital_index, orbital_sign_reversal_count, orbital_damping_factor)
-    ! Module dependencies
-    !                                                                      *
-    !   This subroutine damps the orbital wave function with index J. it   *
-    !   also  stores  the  previous  determination  of this orbital.       *
-    !                                                                      *
-    !   Call(s) to: [LIB92]: COUNT, RINT.                                  *
-    !                                                                      *
-    !   Written by Farid A Parpia, at Oxford    Last update: 22 Dec 1992   *
-    !                                                                      *
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use grasp_parameters,    only: max_radial_points
-    use scf_damping_factors, only: max_orbitals, mixing_damping_factors, orbital_damping_factors
-    use atomic_calculation_state, only: accy, max_radial_points
-    use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-        radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-    use radial_dirac_workspace, only: max_radial_points, mtp0, p, p0, q, q0, tf, tg, xu, xv
-    use orbital_inversion_flags, only: max_orbitals, noinvt
-    use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
-        nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-    use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
-        pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-    use weighted_radial_overlap, only: rint
-    !      USE count_I
-    use radial_node_count, only: count
+module damp_orbital_update_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(in) :: orbital_index
-    integer, intent(inout) :: orbital_sign_reversal_count
-    real(real64), intent(in) :: orbital_damping_factor
+    ! Module interface
+    private
+    public :: damp_orbital_update
+contains
 
-    ! Local declarations
-    integer :: mtpo, mtpn, mtp, i, nncff, last_radial_index
-    real(real64) :: eps, factor, poldi, qoldi, original_norm_squared, normalization_factor, sgn
-    logical :: check
-    !-----------------------------------------------
-    !
-    !
-    !   Initialization
-    !
-    !ww      EPS = 0.1D 00*ACCY
-    eps = 0.01_real64*accy
-    check = .not.noinvt(orbital_index)
-    !
-    !   Damp orbital J using the damping factor  ABS (ODAMP(J)):  ODAMP(J)
-    !   is restricted to the open interval (-1,1) by  DATSCF ; the meaning
-    !   of a  negative  ODAMP(J)  is that  ABS (ODAMP(J))  is the constant
-    !   damping factor;  a positive  ODAMP(J)  can be reset by  subroutine
-    !   dampck
-    !
-    !   Store previous determination of this orbital in arrays P, Q
-    !
-    !XHH odampj goes to the argument
-    !      ODAMPJ = ABS (ODAMP(J))
-    !
-    if (orbital_damping_factor > eps) then
+    !***********************************************************************
+    !                                                                      *
+    subroutine damp_orbital_update(orbital_index, orbital_sign_reversal_count, orbital_damping_factor)
+        ! Module dependencies
+        !                                                                      *
+        !   This subroutine damps the orbital wave function with index J. it   *
+        !   also  stores  the  previous  determination  of this orbital.       *
+        !                                                                      *
+        !   Call(s) to: [LIB92]: COUNT, RINT.                                  *
+        !                                                                      *
+        !   Written by Farid A Parpia, at Oxford    Last update: 22 Dec 1992   *
+        !                                                                      *
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use grasp_parameters,    only: max_radial_points
+        use atomic_calculation_state, only: working_tolerance, max_radial_points
+        use radial_dirac_workspace, only: max_radial_points, trial_orbital_last_grid_index, trial_large_component, &
+            trial_large_origin_parameter, trial_small_component
+        use orbital_inversion_flags, only: suppress_radial_inversion
+        use radial_wavefunctions, only: orbital_last_grid_index, orbital_origin_parameters, radial_large_components, &
+            radial_small_components
+        use weighted_radial_overlap, only: integrate_weighted_radial_overlap
+        !      USE count_I
+        use radial_node_count, only: count_radial_nodes
+        implicit none (type, external)
+
+        ! Arguments
+        integer, intent(in) :: orbital_index
+        integer, intent(inout) :: orbital_sign_reversal_count
+        real(real64), intent(in) :: orbital_damping_factor
+
+        ! Local declarations
+        integer :: old_last_grid_index, trial_last_grid_index, common_last_grid_index, radial_index, radial_node_count, &
+            & last_radial_index
+        real(real64) :: damping_threshold, trial_weight, old_large_component, old_small_component, original_norm_squared, &
+            & normalization_factor, first_extremum_sign
+        logical :: allow_sign_reversal
+        !-----------------------------------------------
         !
-        factor = 1.0_real64 - orbital_damping_factor
         !
-        orbital_origin_parameters(orbital_index) = factor*p0 + orbital_damping_factor*orbital_origin_parameters(orbital_index)
+        !   Initialization
         !
-        mtpo = orbital_last_grid_index(orbital_index)
-        mtpn = mtp0
-        mtp0 = mtpo
+        !ww      EPS = 0.1D 00*ACCY
+        damping_threshold = 0.01_real64*working_tolerance
+        allow_sign_reversal = .not.suppress_radial_inversion(orbital_index)
         !
-        mtp = max(mtpn,mtpo)
-        do i = 1, mtp
-            poldi = radial_large_components(i,orbital_index)
-            radial_large_components(i,orbital_index) = factor*p(i) + orbital_damping_factor*radial_large_components(i,orbital_index)
-            p(i) = poldi
-            qoldi = radial_small_components(i,orbital_index)
-            radial_small_components(i,orbital_index) = factor*q(i) + orbital_damping_factor*radial_small_components(i,orbital_index)
-            q(i) = qoldi
-        end do
+        !   Damp orbital J using the damping factor  ABS (ODAMP(J)):  ODAMP(J)
+        !   is restricted to the open interval (-1,1) by  DATSCF ; the meaning
+        !   of a  negative  ODAMP(J)  is that  ABS (ODAMP(J))  is the constant
+        !   damping factor;  a positive  ODAMP(J)  can be reset by  subroutine
+        !   dampck
         !
-        !   Compute normalization factor
+        !   Store previous determination of this orbital in arrays P, Q
         !
-        orbital_last_grid_index(orbital_index) = mtp
-        original_norm_squared = rint(orbital_index,orbital_index,0)
-        normalization_factor = 1.0_real64/sqrt(original_norm_squared)
+        !XHH odampj goes to the argument
+        !      ODAMPJ = ABS (ODAMP(J))
         !
-        !   Determine if inversion is necessary
-        !
-        if (check) then
-            call count (radial_large_components(:max_radial_points,orbital_index), mtp, nncff, sgn)
-            if (sgn < 0.0_real64) then
-                orbital_sign_reversal_count = orbital_sign_reversal_count + 1
-                normalization_factor = -normalization_factor
+        if (orbital_damping_factor > damping_threshold) then
+            !
+            trial_weight = 1.0_real64 - orbital_damping_factor
+            !
+            orbital_origin_parameters(orbital_index) = trial_weight*trial_large_origin_parameter + orbital_damping_factor* &
+                orbital_origin_parameters(orbital_index)
+            !
+            old_last_grid_index = orbital_last_grid_index(orbital_index)
+            trial_last_grid_index = trial_orbital_last_grid_index
+            trial_orbital_last_grid_index = old_last_grid_index
+            !
+            common_last_grid_index = max(trial_last_grid_index,old_last_grid_index)
+            do radial_index = 1, common_last_grid_index
+                old_large_component = radial_large_components(radial_index,orbital_index)
+                radial_large_components(radial_index,orbital_index) = trial_weight*trial_large_component(radial_index) + &
+                    & orbital_damping_factor* &
+                    radial_large_components(radial_index, &
+                    & orbital_index)
+                trial_large_component(radial_index) = old_large_component
+                old_small_component = radial_small_components(radial_index,orbital_index)
+                radial_small_components(radial_index,orbital_index) = trial_weight*trial_small_component(radial_index) + &
+                    & orbital_damping_factor* &
+                    radial_small_components(radial_index, &
+                    & orbital_index)
+                trial_small_component(radial_index) = old_small_component
+            end do
+            !
+            !   Compute normalization factor
+            !
+            orbital_last_grid_index(orbital_index) = common_last_grid_index
+            original_norm_squared = integrate_weighted_radial_overlap(orbital_index,orbital_index,0)
+            normalization_factor = 1.0_real64/sqrt(original_norm_squared)
+            !
+            !   Determine if inversion is necessary
+            !
+            if (allow_sign_reversal) then
+                call count_radial_nodes (radial_large_components(:max_radial_points,orbital_index), common_last_grid_index, &
+                    & radial_node_count, first_extremum_sign)
+                if (first_extremum_sign < 0.0_real64) then
+                    orbital_sign_reversal_count = orbital_sign_reversal_count + 1
+                    normalization_factor = -normalization_factor
+                end if
             end if
+            !
+            orbital_origin_parameters(orbital_index) = orbital_origin_parameters(orbital_index)*normalization_factor
+            radial_large_components(:common_last_grid_index,orbital_index) = normalization_factor* &
+                & radial_large_components(:common_last_grid_index,orbital_index)
+            radial_small_components(:common_last_grid_index,orbital_index) = normalization_factor* &
+                & radial_small_components(:common_last_grid_index,orbital_index)
+            !
+            !   Find new MF(J)
+            !
+            last_radial_index = common_last_grid_index + 1
+            do
+                last_radial_index = last_radial_index - 1
+                if (abs(radial_large_components(last_radial_index,orbital_index)) < damping_threshold) then
+                    radial_large_components(last_radial_index,orbital_index) = 0.0_real64
+                    radial_small_components(last_radial_index,orbital_index) = 0.0_real64
+                else
+                    orbital_last_grid_index(orbital_index) = last_radial_index
+                    exit
+                end if
+            end do
+        !
+        else
+            !
+            orbital_origin_parameters(orbital_index) = trial_large_origin_parameter
+            !
+            old_last_grid_index = orbital_last_grid_index(orbital_index)
+            trial_last_grid_index = trial_orbital_last_grid_index
+            trial_orbital_last_grid_index = old_last_grid_index
+            !
+            common_last_grid_index = max(trial_last_grid_index,old_last_grid_index)
+            do radial_index = 1, common_last_grid_index
+                old_large_component = radial_large_components(radial_index,orbital_index)
+                radial_large_components(radial_index,orbital_index) = trial_large_component(radial_index)
+                trial_large_component(radial_index) = old_large_component
+                old_small_component = radial_small_components(radial_index,orbital_index)
+                radial_small_components(radial_index,orbital_index) = trial_small_component(radial_index)
+                trial_small_component(radial_index) = old_small_component
+            end do
+            !
+            orbital_last_grid_index(orbital_index) = common_last_grid_index
+            !
         end if
         !
-        orbital_origin_parameters(orbital_index) = orbital_origin_parameters(orbital_index)*normalization_factor
-        radial_large_components(:mtp,orbital_index) = normalization_factor*radial_large_components(:mtp,orbital_index)
-        radial_small_components(:mtp,orbital_index) = normalization_factor*radial_small_components(:mtp,orbital_index)
-        !
-        !   Find new MF(J)
-        !
-        last_radial_index = mtp + 1
-        do
-            last_radial_index = last_radial_index - 1
-            if (abs(radial_large_components(last_radial_index,orbital_index)) < eps) then
-                radial_large_components(last_radial_index,orbital_index) = 0.0_real64
-                radial_small_components(last_radial_index,orbital_index) = 0.0_real64
-            else
-                orbital_last_grid_index(orbital_index) = last_radial_index
-                exit
-            end if
-        end do
-    !
-    else
-        !
-        orbital_origin_parameters(orbital_index) = p0
-        !
-        mtpo = orbital_last_grid_index(orbital_index)
-        mtpn = mtp0
-        mtp0 = mtpo
-        !
-        mtp = max(mtpn,mtpo)
-        do i = 1, mtp
-            poldi = radial_large_components(i,orbital_index)
-            radial_large_components(i,orbital_index) = p(i)
-            p(i) = poldi
-            qoldi = radial_small_components(i,orbital_index)
-            radial_small_components(i,orbital_index) = q(i)
-            q(i) = qoldi
-        end do
-        !
-        orbital_last_grid_index(orbital_index) = mtp
-        !
-    end if
-    !
-    return
-end subroutine damp_orbital_update
+        return
+    end subroutine damp_orbital_update
+end module damp_orbital_update_interface

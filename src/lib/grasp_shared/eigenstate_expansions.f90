@@ -8,7 +8,7 @@ module eigenstate_expansions
     private :: real64
 
     ! Module state
-    real(real64) :: hamiltonian_energy_shift, eavff, eavii
-    real(real64), pointer :: shifted_eigenvalues(:), evalff(:), evalii(:)
-    real(real64), pointer :: csf_mixing_coefficients(:), evecff(:), evecii(:)
+    real(real64) :: hamiltonian_energy_shift, final_hamiltonian_energy_shift, initial_hamiltonian_energy_shift
+    real(real64), pointer :: shifted_eigenvalues(:), final_shifted_eigenvalues(:), initial_shifted_eigenvalues(:)
+    real(real64), pointer :: csf_mixing_coefficients(:), final_csf_mixing_coefficients(:), initial_csf_mixing_coefficients(:)
 end module eigenstate_expansions

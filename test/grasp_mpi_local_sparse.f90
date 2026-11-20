@@ -4,7 +4,7 @@
 ! packed matrix to LAPACK.  This tests storage semantics without launching MPI.
 module sparse_reduction_check
     use, intrinsic :: iso_fortran_env, only: real64
-    use mpi_state, only: myid => mpi_rank, nprocs => mpi_process_count
+    use mpi_state, only: mpi_rank, mpi_process_count
     implicit none (type, external)
     private :: real64
     integer, parameter :: matrix_size = 8
@@ -25,7 +25,7 @@ contains
             do i = 1, j
                 k = k + 1
                 expected_local = 0.0_real64
-                if (mod(j - 1, nprocs) == myid) expected_local = dense(i, j)
+                if (mod(j - 1, mpi_process_count) == mpi_rank) expected_local = dense(i, j)
                 packed_error = max(packed_error, abs(x(k) - expected_local))
                 x(k) = dense(i, j)
             end do
@@ -36,30 +36,29 @@ end module sparse_reduction_check
 module mpi_utilities
     implicit none (type, external)
     private
-    public :: gdsummpi
+    public :: allreduce_mpi_real_sum
 contains
 
-subroutine gdsummpi(x, n)
+subroutine allreduce_mpi_real_sum(x, n)
     use sparse_reduction_check, only: check_reduction
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
     integer, intent(in) :: n
     real(real64), intent(inout) :: x(n)
     call check_reduction(x, n)
-end subroutine gdsummpi
+end subroutine allreduce_mpi_real_sum
 end module mpi_utilities
 
 
 
 program grasp_mpi_local_sparse
-    use sparse_reduction_check, only: check_reduction, dense, matrix_size, myid, nprocs, packed_error, &
+    use sparse_reduction_check, only: check_reduction, dense, matrix_size, mpi_rank, mpi_process_count, packed_error, &
        & packed_size
-    use sparse_hamiltonian_storage, only: &
-        emt => hamiltonian_values, irow => matrix_partner_indices, iendc => stored_segment_end_offsets, &
-       & nelmnt => stored_matrix_element_count
-    use mpi_state, only: ierr => mpi_error_code
-    use mpi_sparse_matrix_product, only: spicmvmpi
-    use mpi_initial_eigenvectors, only: iniestmpi
+    use sparse_hamiltonian_storage, only: hamiltonian_values, matrix_partner_indices, stored_segment_end_offsets, &
+        stored_matrix_element_count
+    use mpi_state, only: mpi_error_code
+    use mpi_sparse_matrix_product, only: multiply_mpi_sparse_matrix
+    use mpi_initial_eigenvectors, only: estimate_mpi_initial_eigenvectors
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
     integer, parameter :: rhs_count = 3, root_count = 2
@@ -92,33 +91,33 @@ program grasp_mpi_local_sparse
         end do
     end do
 
-    allocate(iendc(0:matrix_size), irow(matrix_size**2), emt(matrix_size**2))
+    allocate(stored_segment_end_offsets(0:matrix_size), matrix_partner_indices(matrix_size**2), hamiltonian_values(matrix_size**2))
     failures = 0
     do count_index = 1, size(rank_counts)
-        nprocs = rank_counts(count_index)
+        mpi_process_count = rank_counts(count_index)
         total = 0.0_real64
         packed_error = 0.0_real64
         eigen_error = 0.0_real64
-        do myid = 0, nprocs - 1
+        do mpi_rank = 0, mpi_process_count - 1
             ! MATRIXmpi reads endpoints only for the columns owned by this
             ! rank.  Its EMT/IROW contain just those columns, packed together.
-            iendc = 0
-            emt = 0.0_real64
-            irow = 1
+            stored_segment_end_offsets = 0
+            hamiltonian_values = 0.0_real64
+            matrix_partner_indices = 1
             k = 0
-            do j = myid + 1, matrix_size, nprocs
+            do j = mpi_rank + 1, matrix_size, mpi_process_count
                 do i = 1, j
                     if (dense(i, j) == 0.0_real64) cycle
                     k = k + 1
-                    emt(k) = dense(i, j)
-                    irow(k) = i
+                    hamiltonian_values(k) = dense(i, j)
+                    matrix_partner_indices(k) = i
                 end do
-                iendc(j) = k
+                stored_segment_end_offsets(j) = k
             end do
-            nelmnt = k
+            stored_matrix_element_count = k
 
             packed_size = 0
-            call spicmvmpi(matrix_size, rhs_count, rhs, local)
+            call multiply_mpi_sparse_matrix(matrix_size, rhs_count, rhs, local)
             total = total + local
 
             ! Full and truncated initial subspaces, including ranks with no
@@ -128,8 +127,10 @@ program grasp_mpi_local_sparse
                 if (mode == 2) nmax = 5
                 packed_size = nmax
                 niv = root_count
-                call iniestmpi(nmax, matrix_size, niv, basis, emt, iendc, irow)
-                if (ierr /= 0) error stop "INIEST LAPACK failure"
+                call estimate_mpi_initial_eigenvectors(nmax, matrix_size, niv, basis, hamiltonian_values, &
+                    & stored_segment_end_offsets, &
+                    matrix_partner_indices)
+                if (mpi_error_code /= 0) error stop "INIEST LAPACK failure"
                 do root = 1, root_count
                     vector = basis((root - 1) * matrix_size + 1 : root * matrix_size)
                     eigenvalue = basis(root_count * matrix_size + root)
@@ -141,10 +142,10 @@ program grasp_mpi_local_sparse
             end do
         end do
         product_error = maxval(abs(total - matmul(dense, rhs)))
-        write(*, "(A,I0,3(A,ES12.4))") "partitions=", nprocs, &
+        write(*, "(A,I0,3(A,ES12.4))") "partitions=", mpi_process_count, &
             " matmul_error=", product_error, " packed_error=", packed_error, " eigen_residual=", eigen_error
         if (max(product_error, packed_error, eigen_error) > 1.0e-10_real64) failures = failures + 1
     end do
-    deallocate(iendc, irow, emt)
+    deallocate(stored_segment_end_offsets, matrix_partner_indices, hamiltonian_values)
     if (failures > 0) error stop "rank-local sparse storage mismatch"
 end program grasp_mpi_local_sparse

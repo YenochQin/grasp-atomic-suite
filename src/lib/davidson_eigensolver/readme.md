@@ -1,10 +1,10 @@
 # Davidson 本征求解器
 
-`gdvd` 使用分块 Davidson 迭代，求实对称矩阵 $A$ 谱端的若干本征对。调用方给出 $A$ 的对角元、初始向量，以及对一批列向量执行 $AV$ 的回调 `dvd_operator`。完整矩阵的存储由调用方负责。下列公式按 `2d4c721` 基础上的工作树源码核对（2026-11-20）。[入口源码](davidson_eigensolver.f90)
+`solve_davidson_eigenpairs` 使用分块 Davidson 迭代，求实对称矩阵 $A$ 谱端的若干本征对。调用方给出 $A$ 的对角元、初始向量，以及对一批列向量执行 $AV$ 的回调 `dvd_operator`。完整矩阵的存储由调用方负责。下列公式按 `2d4c721` 基础上的工作树源码核对（2026-11-20）。[入口源码](davidson_eigensolver.f90)
 
 | 文件 | 过程 | 职责 |
 | --- | --- | --- |
-| [davidson_eigensolver.f90](davidson_eigensolver.f90) | `gdvd` | 执行矩阵乘法回调和对角预条件 |
+| [davidson_eigensolver.f90](davidson_eigensolver.f90) | `solve_davidson_eigenpairs` | 执行矩阵乘法回调和对角预条件 |
 | [davidson_solver_control.f90](davidson_solver_control.f90) | `dvdson` | 选择谱端、划分工作区、调度并打包结果 |
 | [davidson_sparse_initial_estimates.f90](davidson_sparse_initial_estimates.f90) | `iniest` | 提取稀疏对称性块的主子矩阵并生成初猜 |
 | [davidson_initial_subspace.f90](davidson_initial_subspace.f90) | `initdvd` | 扩充初始子空间并构造首个投影 |
@@ -61,7 +61,7 @@ $$
 B_{\rm new}=\operatorname{MGS}_2(A B_{\rm batch};Q).
 $$
 
-直接初始化时，零初猜对应 $b_1=\mathbf 1/\sqrt N$。公开入口 `gdvd` 要求调用方提供至少一个初猜。初始化结束时，依次应用谱端符号并构造第一份投影。[初始子空间源码](davidson_initial_subspace.f90)
+直接初始化时，零初猜对应 $b_1=\mathbf 1/\sqrt N$。公开入口 `solve_davidson_eigenpairs` 要求调用方提供至少一个初猜。初始化结束时，依次应用谱端符号并构造第一份投影。[初始子空间源码](davidson_initial_subspace.f90)
 
 ### 两遍改进 Gram–Schmidt
 
@@ -73,7 +73,7 @@ v_j\leftarrow v_j-q_i(q_i^{\mathsf T}v_j),
 q_j=\frac{v_j}{\sqrt{v_j^{\mathsf T}v_j}} .
 $$
 
-已有列包括给定约束和当前子空间基。公开入口用零个约束，`orthogonality_tolerance` 是保留的接口形参，迭代使用固定两遍正交化。[正交化源码](davidson_orthonormalization.f90)
+已有列包括给定约束和当前子空间基。公开入口用零个约束，迭代使用固定两遍正交化。[正交化源码](davidson_orthonormalization.f90)
 
 ## 投影和收敛判定
 
@@ -134,7 +134,7 @@ $$
 
 $u_i$ 是预条件右端项。`newvec` 对每轮新增列数同时施加 `expansion_block_size` 和剩余子空间容量 $L-k$ 两个上限。[残差扩展源码](davidson_residual_expansion.f90)
 
-`dvdrvr` 传给对角预条件器的原谱坐标值是 $\lambda_i^{\rm prec}=\sigma(\theta_i-\delta_i)$，其中 $\delta_i$ 是 `preconditioner_shifts(i)`，在当前 `newvec` 中为每个新增候选赋值为零。令 $D$ 为以 $A_{jj}$ 为对角元的对角矩阵。`gdvd` 对第 $j$ 个分量计算
+`dvdrvr` 传给对角预条件器的原谱坐标值是 $\lambda_i^{\rm prec}=\sigma(\theta_i-\delta_i)$，其中 $\delta_i$ 是 `preconditioner_shifts(i)`，在当前 `newvec` 中为每个新增候选赋值为零。令 $D$ 为以 $A_{jj}$ 为对角元的对角矩阵。`solve_davidson_eigenpairs` 对第 $j$ 个分量计算
 
 $$
 t_{ji}=D_{jj}-\lambda_i^{\rm prec},
@@ -146,7 +146,7 @@ t_{ji}=D_{jj}-\lambda_i^{\rm prec},
 \end{cases}
 $$
 
-`gdvd` 在每个向量的预条件步骤结束时把位移加回对角数组。返回迭代后，$z_i$ 相对已有基和约束正交归一化，再由回调计算新增列的算子乘积。[预条件源码](davidson_eigensolver.f90) · [迭代调度](davidson_iteration.f90)
+`solve_davidson_eigenpairs` 在每个向量的预条件步骤结束时把位移加回对角数组。返回迭代后，$z_i$ 相对已有基和约束正交归一化，再由回调计算新增列的算子乘积。[预条件源码](davidson_eigensolver.f90) · [迭代调度](davidson_iteration.f90)
 
 ## 子空间重启与结果
 

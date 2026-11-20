@@ -4,13 +4,13 @@ module racah_coefficients_scott_fischer
 
     ! Module interface
     private
-    public :: gracah1
+    public :: scott_fischer_racah_coefficient
 contains
-    subroutine gracah1(two_j_1,two_j_2,two_j_3,two_j_4,two_j_5,two_j_6,racah_coefficient)
+    subroutine scott_fischer_racah_coefficient(two_j_1,two_j_2,two_j_3,two_j_4,two_j_5,two_j_6,racah_coefficient)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: zero, one, two
-        use log_factorial_cache, only: log_factorials => gam, factorial_table_capacity => mfact
+        use log_factorial_cache, only: log_factorials
         implicit none (type, external)
 
         ! Arguments
@@ -82,5 +82,5 @@ contains
             racah_coefficient = zero
         end if
         return
-    end subroutine gracah1
+    end subroutine scott_fischer_racah_coefficient
 end module racah_coefficients_scott_fischer

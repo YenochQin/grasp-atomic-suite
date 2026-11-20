@@ -8,12 +8,14 @@ module transition_basis_blocks
     private :: real64
 
     ! Module state
-    integer :: ncfblk(20), nevinblk(20), ncfinblk(20), two_j(20)
-    integer :: nblock
-    real(real64), pointer :: idxblk(:)
-    integer :: nelectot, ncftot, nwtot, nvectot, nvecsiztot, nblock1
-    integer :: nblocki
-    integer :: nblockf
-    integer :: ncfi(10)
-    integer :: ncff(10)
+    integer :: cumulative_csf_counts(20), transition_level_counts_by_block(20), transition_csf_counts_by_block(20), &
+        transition_two_j_by_block(20)
+    integer :: transition_block_count
+    real(real64), pointer :: level_block_indices(:)
+    integer :: mixing_file_electron_count, mixing_file_csf_count, mixing_file_orbital_count, mixing_file_level_count, &
+        mixing_file_coefficient_count, mixing_file_block_count
+    integer :: initial_transition_block_count
+    integer :: final_transition_block_count
+    integer :: initial_cumulative_csf_counts(10)
+    integer :: final_cumulative_csf_counts(10)
 end module transition_basis_blocks

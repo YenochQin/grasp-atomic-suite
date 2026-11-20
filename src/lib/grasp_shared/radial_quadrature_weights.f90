@@ -8,5 +8,5 @@ module radial_quadrature_weights
 
     ! Module state
     ! One five-point panel uses (c1,c2,c3,c2,c1). Adjacent panels share an endpoint of weight c4.
-    real(real64) :: c1, c2, c3, c4
+    real(real64) :: endpoint_weight, odd_interior_weight, middle_weight, shared_endpoint_weight
 end module radial_quadrature_weights

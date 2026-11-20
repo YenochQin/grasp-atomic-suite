@@ -43,20 +43,18 @@ program rangular_main
         load_angular_block, close_angular_input
     use rangular_profile, only: stage_clock, record_stage, close_stage_profile
     use array_memory_management, only: alloc
-    use calculation_input_defaults, only: inpci, ndef, ndump
-    use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+    use calculation_input_defaults, only: nondefault_options_flag
+    use hamiltonian_symmetry_blocks, only: csf_counts_by_block, symmetry_block_count
     use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals
-    use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, jcupar, jqsar
-    use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
-    use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
-    use calculation_state_files, only: state_files, state_name_length, files_for_state, select_state
-    use run_timer_start, only: starttime
+    use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes
+    use calculation_state_files, only: state_files, state_name_length, files_for_state, select_state, resolve_descriptor_input
+    use run_timer_start, only: begin_run_timer
 
     ! Procedure interfaces
     use configure_debug_output_interface, only: configure_debug_output
 
     ! Module dependencies
-    use machine_constants, only: setmc
+    use machine_constants, only: initialize_machine_constants
 
     ! Procedure interfaces
     use open_summary_file_interface, only: open_summary_file
@@ -65,23 +63,22 @@ program rangular_main
     use write_input_summary_interface, only: write_input_summary
 
     ! Module dependencies
-    use log_factorial_table, only: factt
+    use log_factorial_table, only: initialize_log_factorial_table
 
     ! Procedure interfaces
     !      USE settmp_I
     use open_temporary_mcp_channels_interface, only: open_temporary_mcp_channels
 
     ! Module dependencies
-    use run_timer_finish, only: stoptime
+    use run_timer_finish, only: finish_run_timer
 
     ! Procedure interfaces
     use compute_mcp_angular_coefficients_interface, only: compute_mcp_angular_coefficients
     implicit none (type, external)
-    integer, parameter :: nblk0 = 50   !-----------------------------------------------
+    integer, parameter :: maximum_input_symmetry_blocks = 50   !-----------------------------------------------
     integer :: start_clock_count, core_subshell_count, symmetry_block_index
     logical ::  debug, is_restart, yes
-    character(len=128) :: startup_directory*128, permdir*128, tmpdir*128
-    character(len=8):: idblk(nblk0)
+    character(len=8):: block_labels(maximum_input_symmetry_blocks)
     integer :: mpi_rank,mpi_process_count
     type(angular_input_options) :: input_options
     type(state_files) :: files
@@ -93,7 +90,7 @@ program rangular_main
     call parse_angular_options(input_options)
     call select_state(state, "Full interaction? (y/n)", yes)
     files = files_for_state(state)
-    if (input_options%input_filename == "") input_options%input_filename = files%descriptors
+    if (input_options%input_filename == "") input_options%input_filename = resolve_descriptor_input(files%descriptors)
     input_format_name = "descriptors"
     program_start_count = stage_clock()
     write(*,*)
@@ -107,17 +104,17 @@ program rangular_main
     if (state /= "") write(angular_log_unit,"(A)") trim(state)
     mpi_rank = 0
     mpi_process_count = 1
-    call starttime (start_clock_count, "RANGULAR")
+    call begin_run_timer (start_clock_count, "RANGULAR")
     !=======================================================================
     !  Get NDEF
     !=======================================================================
     if (mpi_rank == 0) then
         !         WRITE (ISTDE, '(A)', ADVANCE='NO') 'Default settings?  (y/n) '
         if (yes) then
-            ndef = 0
+            nondefault_options_flag = 0
             write(angular_log_unit,"(A)") "y            ! Full interaction"
         else
-            ndef = 1
+            nondefault_options_flag = 1
             write(angular_log_unit,"(A)") "n            ! Full interaction"
         end if
     end if
@@ -137,16 +134,16 @@ program rangular_main
     !CFF  delete chkplt
     !     CALL CHKPLT ('GENMCP')
     call configure_debug_output (debug, files%angular_debug)
-    call setmc
+    call initialize_machine_constants
     !      IF (NDEF/=0 .AND. MYID==0) CALL SETSUM ('genmcp.sum')
     stage_start_count = stage_clock()
-    call load_angular_header(input_options, core_subshell_count, nblk0, idblk)
+    call load_angular_header(input_options, core_subshell_count, maximum_input_symmetry_blocks, block_labels)
     call record_stage("input_header", 0, stage_start_count, int(csf_count,int64), storage=input_format_name)
     is_restart = .false.
     stage_start_count = stage_clock()
-    call open_mcp_outputs (mpi_rank, mpi_process_count, core_subshell_count, idblk, files%mcp)
-    if (ndef/=0 .and. mpi_rank==0) call write_input_summary
-    call factt
+    call open_mcp_outputs (mpi_rank, mpi_process_count, core_subshell_count, block_labels, files%mcp)
+    if (nondefault_options_flag/=0 .and. mpi_rank==0) call write_input_summary
+    call initialize_log_factorial_table
     call record_stage("setup_including_interaction_input", 0, stage_start_count)
     !=======================================================================
     !     For each block, generate and sort the data
@@ -183,6 +180,6 @@ program rangular_main
     !=======================================================================
     !  Execution finished; Statistics output
     !=======================================================================
-    call stoptime (start_clock_count, "RANGULAR")
+    call finish_run_timer (start_clock_count, "RANGULAR")
     stop
 end program rangular_main

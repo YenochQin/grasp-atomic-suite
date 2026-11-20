@@ -4,28 +4,26 @@ module radial_wavefunction_derivatives
 
     ! Module interface
     private
-    public :: dpbdt
+    public :: differentiate_radial_wavefunctions
 contains
-    subroutine dpbdt(orbital_index)
+    subroutine differentiate_radial_wavefunctions(orbital_index)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-            radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-        use radial_derivative_stencil, only: derivative_weights => a
-        use radial_quadrature_workspace, only: scaled_large_derivative_grid => ta, scaled_small_derivative_grid => tb
-        use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
-            pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
+        use radial_grid_state, only: radial_point_count
+        use radial_derivative_stencil, only: derivative_weights
+        use radial_quadrature_workspace, only: radial_workspace_a, radial_workspace_b
+        use radial_wavefunctions, only: radial_large_components, radial_small_components
         implicit none (type, external)
 
         ! Arguments
         integer, intent(in) :: orbital_index
 
         ! Local declarations
-        integer :: radial_index, k, stencil_row, loc
+        integer :: radial_index, stencil_row
         real(real64) :: offset_6_weight, offset_5_weight, offset_4_weight, offset_3_weight, offset_2_weight, &
-            & offset_1_weight, scaled_large_derivative, scaled_small_derivative, aik
+            & offset_1_weight, scaled_large_derivative, scaled_small_derivative
 
-        ! The stencil differentiates on a unit-spaced index grid, yielding h*dP/dt and h*dQ/dt.
+        ! The unit-spaced stencil stores h*dP/dt in workspace A and h*dQ/dt in workspace B.
         offset_6_weight=derivative_weights(7,1)
         offset_5_weight=derivative_weights(7,2)
         offset_4_weight=derivative_weights(7,3)
@@ -38,12 +36,12 @@ contains
             scaled_small_derivative = 0.0_real64
             scaled_large_derivative = sum(derivative_weights(radial_index   ,:)*radial_large_components(:13,orbital_index))
             scaled_small_derivative = sum(derivative_weights(radial_index   ,:)*radial_small_components(:13,orbital_index))
-            scaled_large_derivative_grid(radial_index) = scaled_large_derivative
-            scaled_small_derivative_grid(radial_index) = scaled_small_derivative
+            radial_workspace_a(radial_index) = scaled_large_derivative
+            radial_workspace_b(radial_index) = scaled_small_derivative
         end do
 
         do radial_index = 7, radial_point_count - 6
-            scaled_large_derivative_grid(radial_index) = offset_6_weight*(radial_large_components(radial_index - 6, &
+            radial_workspace_a(radial_index) = offset_6_weight*(radial_large_components(radial_index - 6, &
                 & orbital_index) - radial_large_components(radial_index + 6,orbital_index)) + offset_5_weight* &
                 & (radial_large_components(radial_index - 5,orbital_index) - radial_large_components(radial_index + 5, &
                 & orbital_index)&
@@ -55,7 +53,7 @@ contains
                 & orbital_index) - radial_large_components(radial_index + 2,orbital_index)) + offset_1_weight* &
                 & (radial_large_components(radial_index - 1,orbital_index) - radial_large_components(radial_index + 1, &
                 & orbital_index))
-            scaled_small_derivative_grid(radial_index) = offset_6_weight*(radial_small_components(radial_index - 6, &
+            radial_workspace_b(radial_index) = offset_6_weight*(radial_small_components(radial_index - 6, &
                 & orbital_index) - radial_small_components(radial_index + 6,orbital_index)) + offset_5_weight* &
                 & (radial_small_components(radial_index - 5,orbital_index) - radial_small_components(radial_index + 5, &
                 & orbital_index)&
@@ -74,9 +72,9 @@ contains
                 & :)*radial_large_components(radial_point_count-12:radial_point_count,orbital_index))
             scaled_small_derivative = sum(derivative_weights(stencil_row, &
                 & :)*radial_small_components(radial_point_count-12:radial_point_count,orbital_index))
-            scaled_large_derivative_grid(radial_index) = scaled_large_derivative
-            scaled_small_derivative_grid(radial_index) = scaled_small_derivative
+            radial_workspace_a(radial_index) = scaled_large_derivative
+            radial_workspace_b(radial_index) = scaled_small_derivative
         end do
         return
-    end subroutine dpbdt
+    end subroutine differentiate_radial_wavefunctions
 end module radial_wavefunction_derivatives

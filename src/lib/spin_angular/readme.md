@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | [one_electron_scalar_coefficients.f90](one_electron_scalar_coefficients.f90) | `onescalar` | 单电子偶标量算符的角向系数 |
 | [one_electron_tensor_coefficients.f90](one_electron_tensor_coefficients.f90) | `oneparticlejj` | 给定秩 $K$ 和宇称的单电子张量系数 |
-| [two_electron_angular_coefficients.f90](two_electron_angular_coefficients.f90) | `rkco_gg` | 按 CSF 对、四个轨道标签和阶数输出 Coulomb 或 Breit 角向系数 |
+| [two_electron_angular_coefficients.f90](two_electron_angular_coefficients.f90) | `calculate_two_electron_angular_coefficients` | 按 CSF 对、四个轨道标签和阶数输出 Coulomb 或 Breit 角向系数 |
 
 $L$ 和 $R$ 分别标记 bra 和 ket。$j$ 是单电子角动量，$J$ 是子壳层项、耦合链节点或整个 CSF 的总角动量，$Q$ 是准自旋。本文使用 $[x]=2x+1$；源码用 `two_j_1` 等整数存储 $2j$，`two_j_plus_one` 存储 $[j]$。活跃子壳层的位置通过 `peel_orbital_indices` 转换为完整轨道表中的编号。
 
@@ -22,7 +22,7 @@ H_{LR}^{\mathrm{DC}}=
 +\sum_{abcd,k}V_{LR}^{k}(abcd)\,R^k(abcd).
 $$
 
-$T$ 对应 `shell_coefficients` 输出的单电子权重，$V^k$ 对应传给 `speak` 的 Coulomb 角向贡献。$I$ 是单电子积分，$R^k$ 是 Slater 双电子径向积分。Coulomb 的 $V^k$ 已含单轨道球张量因子。Breit 路径传给 `talk` 的权重按径向积分类型累加。见 [RMCDHF 的矩阵装配](../../apps/rmcdhf/assemble_hamiltonian_block.f90)和 [RCI 的 Coulomb/Breit 装配](../../apps/rci/assemble_hamiltonian_block.f90)。
+$T$ 对应 `shell_coefficients` 输出的单电子权重，$V^k$ 对应传给 `speak` 的 Coulomb 角向贡献。$I$ 是单电子积分，$R^k$ 是 Slater 双电子径向积分。Coulomb 的 $V^k$ 已含单轨道球张量因子。Breit 路径传给 `collect_breit_angular_coefficient` 的权重按径向积分类型累加。见 [RMCDHF 的矩阵装配](../../apps/rmcdhf/assemble_hamiltonian_block.f90)和 [RCI 的 Coulomb/Breit 装配](../../apps/rci/assemble_hamiltonian_block.f90)。
 
 ## 三角选择、Racah 与 Wigner 符号
 
@@ -589,17 +589,17 @@ $$
 
 若 $L_{ab}=-1$，代码取 $L_{ab}=1$。两个下界奇偶不同则拒绝该配对。令 $L$ 为两个下界的较大值，$U$ 为两个上界的较小值，则准许的 $\nu$ 为 $L,L+2,\ldots\le U$。代码返回起点 $L$ 和整数项数 $1+\operatorname{trunc}((U-L)/2)$，对应 `first_direct_nu`、`direct_nu_count` 或交换路径的两项。同侧两个轨道标签相同时跳过交换范围，其余轨道相等关系用于选择积分子类。
 
-对固定多极阶数 $k$，普通多壳层路径对允许的 $\nu\in\{k-1,k,k+1\}$ 调用 [`cxk`](../../apps/rci/breit_radial_integral_factors.f90)。设 $A_k^{D/E}$ 为对应的重耦合结果（例如四壳层表中的 $B_k$），$s_\mu^{D/E}(\nu,k)$ 是 `cxk` 返回的第 $\mu$ 个张量因子。`direct_breit_coefficients` 和 `exchange_breit_coefficients` 实现
+对固定多极阶数 $k$，普通多壳层路径对允许的 $\nu\in\{k-1,k,k+1\}$ 调用 [`calculate_breit_radial_integral_coefficients`](../breit_angular_support/breit_radial_integral_coefficients.f90)。设 $A_k^{D/E}$ 为对应的重耦合结果（例如四壳层表中的 $B_k$），$s_\mu^{D/E}(\nu,k)$ 为该过程返回的第 $\mu$ 个张量因子。`direct_breit_coefficients` 和 `exchange_breit_coefficients` 实现
 
 $$
 B_{\mu,\nu}^{D/E}=\sum_{k:\,|\nu-k|\le1}
 A_k^{D/E}\,s_\mu^{D/E}(\nu,k).
 $$
 
-累加前按各分支检查轨道三角、径向阶数奇偶与下标范围。数组列号为 $1+(\nu-L)/2$。例如四壳层直接路径的 $\mu=1,\ldots,4$ 按径向阶数 $\nu$ 和积分类型 1 传给 `talk`，$\mu=5,\ldots,12$ 按 $\nu+1$ 和类型 2 传给 `talk`，各槽带有自己的轨道排列。单壳层路径直接发出 $-s_1 A_k/(2\sqrt{[J_{L,a}]})$；有三个张量落在同一壳层的单转移分支直接发出 $-s_1 A_k$。具体分支的排列和索引见[单壳层与同占据](two_electron_unchanged_occupations.f90)、[第一壳层三张量](single_transfer_triple_on_first_shell.f90)、[第二壳层三张量](single_transfer_triple_on_second_shell.f90)及[四壳层积分累加](four_shell_transfer_12_34.f90)。
+累加前按各分支检查轨道三角、径向阶数奇偶与下标范围。数组列号为 $1+(\nu-L)/2$。例如四壳层直接路径的 $\mu=1,\ldots,4$ 按径向阶数 $\nu$ 和积分类型 1 传给 `collect_breit_angular_coefficient`，$\mu=5,\ldots,12$ 按 $\nu+1$ 和类型 2 传给 `collect_breit_angular_coefficient`，各槽带有自己的轨道排列。单壳层路径直接发出 $-s_1 A_k/(2\sqrt{[J_{L,a}]})$；有三个张量落在同一壳层的单转移分支直接发出 $-s_1 A_k$。具体分支的排列和索引见[单壳层与同占据](two_electron_unchanged_occupations.f90)、[第一壳层三张量](single_transfer_triple_on_first_shell.f90)、[第二壳层三张量](single_transfer_triple_on_second_shell.f90)及[四壳层积分累加](four_shell_transfer_12_34.f90)。
 
 ## 来源
 
 角向实现源自 GRASP 的 Gaigalas 例程。Racah 求值实现的原始注释记录了 N. S. Scott 与 C. Froese Fischer 的贡献。GRASP 许可证见[仓库 LICENSE](../../../LICENSE)。
 
-G. Gaigalas 于 2009-11-22 记录了 GRASP2K 中两处需要比较 CSF 编号的修正。仅 seniority 不同的两个 CSF 可以有相同的占据数，仍应按非对角元处理。现行 `onescalar` 在这种情况下将同壳层标量系数置零，`rkco_gg` 只在 CSF 对角元调用末段的闭壳层回调。 [单电子标量入口](one_electron_scalar_coefficients.f90) · [双电子角向入口](two_electron_angular_coefficients.f90)
+G. Gaigalas 于 2009-11-22 记录了 GRASP2K 中两处需要比较 CSF 编号的修正。仅 seniority 不同的两个 CSF 可以有相同的占据数，仍应按非对角元处理。现行 `calculate_one_electron_scalar_coefficients` 在这种情况下将同壳层标量系数置零，`calculate_two_electron_angular_coefficients` 只在 CSF 对角元调用末段的闭壳层回调。 [单电子标量入口](one_electron_scalar_coefficients.f90) · [双电子角向入口](two_electron_angular_coefficients.f90)

@@ -7,7 +7,7 @@ module isotope_properties
     private :: real64
 
     ! Module state
-    real(real64) :: sqn,dmomnm,qmomb
+    real(real64) :: nuclear_spin,nuclear_magnetic_dipole_moment,nuclear_electric_quadrupole_moment
     real(real64) :: hfsi, hfsd, hfsq
     real(real64) :: smsi, smsd, smsq
 end module isotope_properties

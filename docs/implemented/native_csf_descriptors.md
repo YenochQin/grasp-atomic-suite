@@ -13,20 +13,22 @@
 
 | 程序 | CSF 输入 |
 | --- | --- |
-| `rangular`、`rangular_mpi` | 输入状态名后读取 `name_descriptors.parquet` 和 `name_header.toml`；`--csf-descriptors FILE.parquet --header FILE.toml` 可显式指定输入路径 |
+| `rangular`、`rangular_mpi` | 输入状态名后读取 `name_desc.parquet` 和 `name_header.toml`；`--csf-descriptors FILE.parquet --header FILE.toml` 可显式指定输入路径 |
 | `rmcdhf{,_mem,_mpi,_mem_mpi}` | 同一状态的描述符文件对、`name.initial.wfn` 和对应 MCP；输出 `name.wfn` 及 OL/EOL 的 `name.mix` |
-| `rci{,_mpi}`、`gj{,_mpi}`、`rhfs{,_mpi}`、`ris4{,_mpi}`、`rdensity{,_mpi}`、JJ2LSJ | 状态名 `name` 对应 `name_descriptors.parquet` + `name_header.toml` |
+| `rci{,_mpi}`、`gj{,_mpi}`、`rhfs{,_mpi}`、`ris4{,_mpi}`、`rdensity{,_mpi}`、JJ2LSJ | 状态名 `name` 对应 `name_desc.parquet` + `name_header.toml` |
 | `rbiotransform{,_mpi}`、`rtransition{,_mpi,_phase}` | 初态、末态分别提供上述状态名对应的两套文件 |
 | `rwfnestimate` | `name_header.toml` 或 `--header FILE.toml`；只读轨道表和含 core 的 `header_info.electron_count`，写出初猜 `name.initial.wfn` |
 
-三步使用同一状态名时，直接以各自的输出文件衔接。角系数一律为 `mcp.NN`；MPI 使用各 rank 的工作目录。状态名留空沿用固定文件名。
+三步使用同一状态名时，直接以各自的输出文件衔接。角系数一律为 `mcp.NN`；MPI 使用各 rank 的工作目录。
+状态名留空时使用 `rcsf_desc.parquet` 和 `rcsf_header.toml`。按状态名或固定文件名查找时，
+优先使用短后缀，缺少短名时可读取旧的 `*_descriptors.parquet`。
 串行与 MPI 的 MCP 位置、日志以及旧输入脚本的选择规则见[状态名计算流程](../../README_ZH.md#输入与输出)。
 命名由 [calculation_state_files](../../src/lib/core/calculation_state_files.f90) 管理。
 [端到端回归](../../test/test_state_workflow.py) 在同一目录使用两个状态名，分别经过普通和内存版
 RMCDHF，再用 RCI 读取结果。串行对照还核对了命名模式与固定文件名模式的一步 SCF 二进制输出。
 
-直接指定 Parquet 时，省略 `--header` 会从文件名推导：`name_descriptors.parquet` 对应
-`name_header.toml`；其他 `name.parquet` 对应 `name_header.toml`。MPI rangular 的相对路径以
+直接指定 Parquet 时，省略 `--header` 会从文件名推导。`name_desc.parquet`、
+`name_descriptors.parquet` 和 `name.parquet` 均对应 `name_header.toml`。MPI rangular 的相对路径以
 serial I/O 目录为基准。其他应用原有状态名及 MPI CPATH 长度限制仍然有效。
 
 `rwfnestimate` 的 header-only 检查不证明 payload 合法。旧 header 没有电子数时，需要重新生成
@@ -123,7 +125,7 @@ ctest --test-dir build-native --output-on-failure
 旧数据可以离线转换，之后直接运行程序：
 
 ```fish
-rcsfs convert original.c Zn_odd_AS1_descriptors.parquet
+rcsfs convert original.c Zn_odd_AS1_desc.parquet
 # 在 Name of state 提示处输入 Zn_odd_AS1
 /path/to/suite/build-native/bin/rangular
 ```

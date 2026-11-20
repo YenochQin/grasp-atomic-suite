@@ -4,9 +4,9 @@ module quasispin_projection_selection
 
     ! Module interface
     private
-    public :: izas1
+    public :: allows_quasispin_projection
 contains
-    integer function izas1(two_ket_q,ket_q_projection,two_bra_q,bra_q_projection) result(projections_allowed)
+    integer function allows_quasispin_projection(two_ket_q,ket_q_projection,two_bra_q,bra_q_projection) result(projections_allowed)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: tenth, two
@@ -27,5 +27,5 @@ contains
         if(mod(two_bra_q+two_abs_bra_projection,2) /= 0)return
         projections_allowed=1
         return
-    end  function izas1
+    end  function allows_quasispin_projection
 end module quasispin_projection_selection

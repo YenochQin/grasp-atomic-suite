@@ -1,50 +1,63 @@
-!***********************************************************************
-!                                                                      *
-subroutine check_transition_mixing_coefficients
-    ! Module dependencies
-    !                                                                      *
-    !   This routine checks the mixing coefficients                        *
-    !                                                                      *
-    !***********************************************************************
-    use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
-        nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
-    use atomic_calculation_state, only: nelecff, nelecii
-    use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
-        csf_mixing_coefficients, evecff, evecii
-    use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-    use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-
+module check_transition_mixing_coefficients_interface
     implicit none (type, external)
 
-    ! Local declarations
-    integer :: i, j
-    !-----------------------------------------------
-    !
-    !
+    ! Module interface
+    private
+    public :: check_transition_mixing_coefficients
+contains
 
-    write (*, *) " ****************"
-    write (*, *) " Entering testmix"
-    write (*, *) " ****************"
-    write (*, *)
-    write (*, *) "Initial state"
-    write (*, *) "EVALII", (eavii + evalii(i),i=1,nvecii)
-    write (*, *) "NELECII,NCFII,NWII,NVECMXII", nelecii, ncfii, nwii, nvecmxii
-    write (*, *) nvecii
-    write (*, *) (ivecii(i),i=1,nvecii)
-    write (*, *) (iatjpoii(i),iasparii(i),i=1,nvecii)
-    write (*, *) ((evecii(i + (j - 1)*ncfii),i=1,ncfii),j=1,nvecii)
+    !***********************************************************************
+    !                                                                      *
+    subroutine check_transition_mixing_coefficients
+        ! Module dependencies
+        !                                                                      *
+        !   This routine checks the mixing coefficients                        *
+        !                                                                      *
+        !***********************************************************************
+        use biorthogonal_orbital_sets, only: final_csf_count, final_orbital_count, initial_csf_count, initial_orbital_count
+        use atomic_calculation_state, only: final_electron_count, initial_electron_count
+        use eigenstate_expansions, only: final_hamiltonian_energy_shift, initial_hamiltonian_energy_shift, &
+            final_shifted_eigenvalues, initial_shifted_eigenvalues, final_csf_mixing_coefficients, initial_csf_mixing_coefficients
+        use selected_level_indices, only: final_level_indices, initial_level_indices, final_level_count, initial_level_count, &
+            highest_final_level_index, highest_initial_level_index
+        use level_symmetry_metadata, only: final_level_parity_signs, initial_level_parity_signs, final_level_two_j_plus_one, &
+            initial_level_two_j_plus_one
 
-    write (*, *) "Final state"
-    write (*, *) "EVALFF", (eavff + evalff(i),i=1,nvecff)
-    write (*, *) "NELECFF,NCFFF,NWFF,NVECMXFF", nelecff, ncfff, nwff, nvecmxff
-    write (*, *) nvecff
-    write (*, *) (ivecff(i),i=1,nvecff)
-    write (*, *) (iatjpoff(i),iasparff(i),i=1,nvecff)
-    write (*, *) ((evecff(i + (j - 1)*ncfff),i=1,ncfff),j=1,nvecff)
-    write (*, *)
-    write (*, *) " ***************"
-    write (*, *) " Leaving testmix"
-    write (*, *) " ***************"
+        implicit none (type, external)
 
-    return
-end subroutine check_transition_mixing_coefficients
+        ! Local declarations
+        integer :: i, j
+        !-----------------------------------------------
+        !
+        !
+
+        write (*, *) " ****************"
+        write (*, *) " Entering testmix"
+        write (*, *) " ****************"
+        write (*, *)
+        write (*, *) "Initial state"
+        write (*, *) "EVALII", (initial_hamiltonian_energy_shift + initial_shifted_eigenvalues(i),i=1,initial_level_count)
+        write (*, *) "NELECII,NCFII,NWII,NVECMXII", initial_electron_count, initial_csf_count, initial_orbital_count, &
+            highest_initial_level_index
+        write (*, *) initial_level_count
+        write (*, *) (initial_level_indices(i),i=1,initial_level_count)
+        write (*, *) (initial_level_two_j_plus_one(i),initial_level_parity_signs(i),i=1,initial_level_count)
+        write (*, *) ((initial_csf_mixing_coefficients(i + (j - 1)*initial_csf_count),i=1,initial_csf_count),j=1, &
+            initial_level_count)
+
+        write (*, *) "Final state"
+        write (*, *) "EVALFF", (final_hamiltonian_energy_shift + final_shifted_eigenvalues(i),i=1,final_level_count)
+        write (*, *) "NELECFF,NCFFF,NWFF,NVECMXFF", final_electron_count, final_csf_count, final_orbital_count, &
+            highest_final_level_index
+        write (*, *) final_level_count
+        write (*, *) (final_level_indices(i),i=1,final_level_count)
+        write (*, *) (final_level_two_j_plus_one(i),final_level_parity_signs(i),i=1,final_level_count)
+        write (*, *) ((final_csf_mixing_coefficients(i + (j - 1)*final_csf_count),i=1,final_csf_count),j=1,final_level_count)
+        write (*, *)
+        write (*, *) " ***************"
+        write (*, *) " Leaving testmix"
+        write (*, *) " ***************"
+
+        return
+    end subroutine check_transition_mixing_coefficients
+end module check_transition_mixing_coefficients_interface

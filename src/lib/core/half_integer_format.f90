@@ -4,9 +4,9 @@ module half_integer_format
 
     ! Module interface
     private
-    public :: convrt_double
+    public :: format_half_integer
 contains
-    subroutine convrt_double(twice_angular_momentum, angular_momentum_text, text_length)
+    subroutine format_half_integer(twice_angular_momentum, angular_momentum_text, text_length)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
 
@@ -60,5 +60,5 @@ contains
             end if
         end if
         return
-    end subroutine convrt_double
+    end subroutine format_half_integer
 end module half_integer_format

@@ -3,12 +3,12 @@ module mpi_runtime
 
     ! Module interface
     private
-    public :: startmpi
+    public :: initialize_mpi_runtime
     public :: mpix_bytes
-    public :: stopmpi
+    public :: finalize_mpi_runtime
 contains
     ! Initialize MPI_COMM_WORLD and return the rank, process count and processor name.
-    subroutine startmpi (rank, process_count, processor_name, processor_name_length)
+    subroutine initialize_mpi_runtime (rank, process_count, processor_name, processor_name_length)
 
         ! Module dependencies
         use mpi, only: mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_get_processor_name, mpi_init, mpi_success
@@ -28,7 +28,7 @@ contains
         if (mpi_return_code /= mpi_success) print *, " ierr=", mpi_return_code, " id=", rank
 
         return
-    end subroutine startmpi
+    end subroutine initialize_mpi_runtime
     ! Create and commit a datatype consisting of byte_count contiguous MPI_BYTE entries.
     subroutine mpix_bytes (byte_count, byte_datatype, mpi_return_code)
 
@@ -52,7 +52,7 @@ contains
     end subroutine mpix_bytes
     ! Print the caller's message, synchronize MPI_COMM_WORLD and finalize MPI.
     ! All ranks must reach this routine to complete the barrier before finalizing.
-    subroutine stopmpi (message, rank)
+    subroutine finalize_mpi_runtime (message, rank)
 
         ! Module dependencies
         use mpi, only: mpi_barrier, mpi_comm_world, mpi_finalize
@@ -70,5 +70,5 @@ contains
         call mpi_finalize (mpi_return_code)
 
         stop
-    end subroutine stopmpi
+    end subroutine finalize_mpi_runtime
 end module mpi_runtime

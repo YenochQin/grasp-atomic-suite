@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-import re
 import subprocess
 import sys
 import tempfile
@@ -16,7 +15,7 @@ use iso_fortran_env, only: real64
 use grasp_parameters, only: max_radial_points
 implicit none
 contains
-subroutine dcbsrw(n,kappa,z,e,rg0,rg,rf,mtp)
+subroutine evaluate_dirac_coulomb_orbital(n,kappa,z,e,rg0,rg,rf,mtp)
 integer,intent(in)::n,kappa
 integer,intent(out)::mtp
 real(real64),intent(in)::z
@@ -27,12 +26,12 @@ end subroutine
 end module
 module radial_quadrature
 use iso_fortran_env, only: real64
-use radial_quadrature_workspace, only: mtp,ta
+use radial_quadrature_workspace, only: integration_last_index, radial_workspace_a
 implicit none
 contains
-subroutine quad(result)
+subroutine integrate_radial_grid(result)
 real(real64),intent(out)::result
-result=sum(ta(1:mtp))
+result=sum(radial_workspace_a(1:integration_last_index))
 end subroutine
 end module
 """
@@ -40,8 +39,8 @@ end module
 use iso_fortran_env, only: real64,real32
 use grasp_parameters, only: max_radial_points
 use radial_grid_state, only: radial_grid_derivative
-use radial_quadrature_workspace, only: mtp
-use radial_density_ratio_probe
+use radial_quadrature_workspace, only: integration_last_index
+use radial_density_ratio_interface, only: radial_density_ratio
 implicit none
 real(real64)::p(max_radial_points),q(max_radial_points),z,value,points(5)
 integer::i,n,k
@@ -54,28 +53,19 @@ radial_grid_derivative=1
 radial_grid_derivative(2)=0.001_real64
 radial_grid_derivative(3)=points(i)
 value=radial_density_ratio(p,q,4,n,k,z)
-if(mtp /= merge(3,2,points(i)<=0.0219_real64)) error stop 'RATDEN cutoff boundary'
+if(integration_last_index /= merge(3,2,points(i)<=0.0219_real64)) error stop 'RATDEN cutoff boundary'
 if(value/=1.0_real64) error stop 'RATDEN controlled ratio'
 enddo
 end program
 """
     for variant in ("rci", "rci_mpi"):
-        text = (root / f"src/apps/{variant}/build_qed_self_energy.f90").read_text()
-        routine = re.search(
-            r"^[ \t]*real\(real64\)\s+function radial_density_ratio\b.*?"
-            r"^[ \t]*end function radial_density_ratio\b",
-            text, re.MULTILINE | re.DOTALL,
-        )
-        assert routine is not None, f"Cannot find the radial density ratio routine for {variant}"
+        source = root / "src/apps" / variant / "radial_density_ratio.f90"
         with tempfile.TemporaryDirectory(prefix="qed-boundary-") as temporary:
             work = Path(temporary)
             (work / "support.f90").write_text(support)
-            (work / "radial_density_ratio.f90").write_text(
-                "module radial_density_ratio_probe\ncontains\n" + routine[0] + "\nend module\n"
-            )
             (work / "driver.f90").write_text(driver)
             subprocess.run([compiler, "-std=f2018", "-fcheck=all", "-ffpe-trap=invalid,zero,overflow",
-                            "-I" + modules, "support.f90", "radial_density_ratio.f90", "driver.f90", library, "-o", "probe"],
+                            "-I" + modules, "support.f90", str(source), "driver.f90", library, "-o", "probe"],
                            cwd=work, check=True, capture_output=True, text=True)
             subprocess.run([work / "probe"], cwd=work, check=True)
         print(f"{variant}: RATDEN exact, adjacent, midpoint and normal grid cutoff passed")

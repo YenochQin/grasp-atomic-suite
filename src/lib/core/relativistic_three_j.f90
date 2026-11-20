@@ -4,12 +4,12 @@ module relativistic_three_j
 
     ! Module interface
     private
-    public :: clrx
+    public :: relativistic_three_j_value
 contains
-    real(real64) function clrx (kappa_a, tensor_rank, kappa_b)
+    real(real64) function relativistic_three_j_value (kappa_a, tensor_rank, kappa_b)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use log_factorial_cache, only: log_factorials => gam, mfact
+        use log_factorial_cache, only: log_factorials
         implicit none (type, external)
 
         ! Arguments
@@ -33,27 +33,27 @@ contains
                 log_factorials(abs_kappa_sum_plus_rank+1))
             if (mod(abs_kappa_sum_plus_rank,2) == 0) then
                 if (mod(3*abs_kappa_sum_plus_rank/2,2) == 0) then
-                    clrx = 1.0_real64
+                    relativistic_three_j_value = 1.0_real64
                 else
-                    clrx = -1.0_real64
+                    relativistic_three_j_value = -1.0_real64
                 end if
                 log_magnitude = log_magnitude + log_factorials((abs_kappa_sum_plus_rank+2)/2) - &
                     & log_factorials((abs_kappa_sum-tensor_rank)/2) - log_factorials((abs_kappa_a_minus_b+&
                     tensor_rank+2)/2) - log_factorials((abs_kappa_b_minus_a+tensor_rank+2)/2)
             else
                 if (mod((3*abs_kappa_sum_plus_rank - 1)/2,2) == 0) then
-                    clrx = 1.0_real64
+                    relativistic_three_j_value = 1.0_real64
                 else
-                    clrx = -1.0_real64
+                    relativistic_three_j_value = -1.0_real64
                 end if
                 log_magnitude = log_magnitude + log_factorials((abs_kappa_sum_plus_rank+1)/2) - &
                     & log_factorials((abs_kappa_sum-tensor_rank+1)/2) - log_factorials((&
                     abs_kappa_a_minus_b+tensor_rank+1)/2) - log_factorials((abs_kappa_b_minus_a+tensor_rank+1)/2)
             end if
-            clrx = clrx*exp(log_magnitude)
+            relativistic_three_j_value = relativistic_three_j_value*exp(log_magnitude)
         else
-            clrx = 0.0_real64
+            relativistic_three_j_value = 0.0_real64
         end if
         return
-    end function clrx
+    end function relativistic_three_j_value
 end module relativistic_three_j

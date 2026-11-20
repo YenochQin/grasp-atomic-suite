@@ -28,7 +28,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use integer_format, only: convrt
+      use integer_format, only: format_integer
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -115,7 +115,7 @@ contains
                   orbital_kappa(orbital_count) = iib2
                   orbital_two_j(orbital_count) = ii - 1
                end if
-               call convrt (iend - istart + 1, cteger, lteger)
+               call format_integer (iend - istart + 1, cteger, lteger)
                form = "(1I"//cteger(1:lteger)//")"
                read (record(istart:iend), fmt=form, iostat=ios) orbital_principal_n(orbital_count)
                if (ios /= 0) then

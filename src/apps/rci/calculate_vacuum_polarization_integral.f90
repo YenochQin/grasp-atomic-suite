@@ -1,178 +1,186 @@
-!***********************************************************************
-!                                                                      *
-subroutine calculate_vacuum_polarization_integral (first_orbital,second_orbital,radial_integral_value)
-    ! Module dependencies
-    !                                                                      *
-    !   This  routine computes nuclear vacuum polarization integrals.      *
-    !                                                                      *
-    !   Call(s) to: [LIB92]: ALLOC, RALLOC.                                *
-    !               [RCI92]: VPINTF.                                       *
-    !                                                                      *
-    !                                           Last update: 09 Oct 1992   *
-    !                                                                      *
-    !***********************************************************************
-    !...Translated by Charlotte Froese Fischer
-    !                       Gediminas Gaigalas  10/05/17
-    use, intrinsic :: iso_fortran_env, only: real64
-    use grasp_parameters,   only: orbital_index_radix
-    use array_memory_management, only: alloc, ralloc
-    use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-        radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-    use vacuum_polarization_integral_table, only: vacuum_polarization_integral_indices => indvpi, &
-        & vacuum_polarization_integral_values => valvpi, first_vacuum_polarization_lookup => frstvp, ndvpa, nvpi
-
-    ! Procedure interfaces
-    use vacuum_polarization_integral_interface, only: vacuum_polarization_integral
+module calculate_vacuum_polarization_integral_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(inout) :: first_orbital, second_orbital
-    real(real64), intent(out) :: radial_integral_value
+    ! Module interface
+    private
+    public :: calculate_vacuum_polarization_integral
+contains
 
-    ! Local constants
-    integer, parameter :: orbital_label_radix = orbital_index_radix
+    !***********************************************************************
+    !                                                                      *
+    subroutine calculate_vacuum_polarization_integral (first_orbital,second_orbital,radial_integral_value)
+        ! Module dependencies
+        !                                                                      *
+        !   This  routine computes nuclear vacuum polarization integrals.      *
+        !                                                                      *
+        !   Call(s) to: [LIB92]: ALLOC, RALLOC.                                *
+        !               [RCI92]: VPINTF.                                       *
+        !                                                                      *
+        !                                           Last update: 09 Oct 1992   *
+        !                                                                      *
+        !***********************************************************************
+        !...Translated by Charlotte Froese Fischer
+        !                       Gediminas Gaigalas  10/05/17
+        use, intrinsic :: iso_fortran_env, only: real64
+        use grasp_parameters,   only: orbital_index_radix
+        use array_memory_management, only: alloc, ralloc
+        use vacuum_polarization_integral_table, only: vacuum_polarization_integral_indices, &
+            vacuum_polarization_integral_values, first_vacuum_polarization_lookup, vacuum_polarization_integral_capacity, &
+            vacuum_polarization_integral_count
 
-    ! Local declarations
-    logical :: found
-    integer :: iswap, index, loc, ju, jl, jm, newsiz, i
-    !------------------------------------------------
-    !
-    !   Ensure that the indices are in `canonical' order
-    !
-    if (first_orbital > second_orbital) then
-        iswap = second_orbital
-        second_orbital = first_orbital
-        first_orbital = iswap
-    end if
-    !
-    !   Compute the composite (packed) index
-    !
-    index = first_orbital*orbital_label_radix+second_orbital
-    !
-    if (.not. first_vacuum_polarization_lookup) then
+        ! Procedure interfaces
+        use vacuum_polarization_integral_interface, only: vacuum_polarization_integral
+        implicit none (type, external)
+
+        ! Arguments
+        integer, intent(inout) :: first_orbital, second_orbital
+        real(real64), intent(out) :: radial_integral_value
+
+        ! Local constants
+
+        ! Local declarations
+        logical :: found
+        integer :: orbital_swap_temp, packed_integral_index, table_position, search_upper_index, search_lower_index, &
+            & search_midpoint_index, new_integral_capacity, i
+        !------------------------------------------------
         !
-        !   This branch is executed on all entries except the first
+        !   Ensure that the indices are in `canonical' order
         !
-        if (index > vacuum_polarization_integral_indices(nvpi)) then
-            !
-            !   The index is greater than the largest stored
-            !
-            found = .false.
-            loc = nvpi
+        if (first_orbital > second_orbital) then
+            orbital_swap_temp = second_orbital
+            second_orbital = first_orbital
+            first_orbital = orbital_swap_temp
+        end if
         !
-        else if (index < vacuum_polarization_integral_indices(1)) then
-            !
-            !   The index is less than the smallest stored
-            !
-            found = .false.
-            loc = 0
+        !   Compute the composite (packed) index
         !
-        else
+        packed_integral_index = first_orbital*orbital_index_radix+second_orbital
+        !
+        if (.not. first_vacuum_polarization_lookup) then
             !
-            !   The index is within the range of the indices stored; search
-            !   for it in the list of indices
+            !   This branch is executed on all entries except the first
             !
-            ju = nvpi
-            jl = 1
-            !
-            do while (ju-jl > 1)
+            if (packed_integral_index > vacuum_polarization_integral_indices(vacuum_polarization_integral_count)) then
                 !
-                jm = (ju+jl)/2
-                if (vacuum_polarization_integral_indices(jm) > index) then
-                    ju = jm
-                else
-                    jl = jm
-                end if
-            end do
-            !
-            !   The range is bracketed to the extent possible
-            !
-            if (index == vacuum_polarization_integral_indices(ju)) then
+                !   The index is greater than the largest stored
                 !
-                found = .true.
-                loc = ju
+                found = .false.
+                table_position = vacuum_polarization_integral_count
             !
-            else if (index == vacuum_polarization_integral_indices(jl)) then
+            else if (packed_integral_index < vacuum_polarization_integral_indices(1)) then
                 !
-                found = .true.
-                loc = jl
+                !   The index is less than the smallest stored
+                !
+                found = .false.
+                table_position = 0
             !
             else
                 !
-                found = .false.
-                loc = jl
+                !   The index is within the range of the indices stored; search
+                !   for it in the list of indices
+                !
+                search_upper_index = vacuum_polarization_integral_count
+                search_lower_index = 1
+                !
+                do while (search_upper_index-search_lower_index > 1)
+                    !
+                    search_midpoint_index = (search_upper_index+search_lower_index)/2
+                    if (vacuum_polarization_integral_indices(search_midpoint_index) > packed_integral_index) then
+                        search_upper_index = search_midpoint_index
+                    else
+                        search_lower_index = search_midpoint_index
+                    end if
+                end do
+                !
+                !   The range is bracketed to the extent possible
+                !
+                if (packed_integral_index == vacuum_polarization_integral_indices(search_upper_index)) then
+                    !
+                    found = .true.
+                    table_position = search_upper_index
+                !
+                else if (packed_integral_index == vacuum_polarization_integral_indices(search_lower_index)) then
+                    !
+                    found = .true.
+                    table_position = search_lower_index
+                !
+                else
+                    !
+                    found = .false.
+                    table_position = search_lower_index
+                    !
+                end if
+                !
                 !
             end if
             !
+            if (found) then
+                !
+                !   Found the index in the list; return the value of the integral
+                !   from storage
+                !
+                radial_integral_value = vacuum_polarization_integral_values(table_position)
             !
-        end if
-        !
-        if (found) then
-            !
-            !   Found the index in the list; return the value of the integral
-            !   from storage
-            !
-            radial_integral_value = vacuum_polarization_integral_values(loc)
+            else
+                !
+                !   Index not found; compute the integral
+                !
+                radial_integral_value = vacuum_polarization_integral (first_orbital,second_orbital)
+                !
+                !   Increment the integral counter
+                !
+                vacuum_polarization_integral_count = vacuum_polarization_integral_count+1
+                !
+                !   Increase array length by half the present length if the latter
+                !   is inadequate to store another pair
+                !
+                if (vacuum_polarization_integral_count > vacuum_polarization_integral_capacity) then
+                    new_integral_capacity = vacuum_polarization_integral_capacity+vacuum_polarization_integral_capacity/2
+                    call ralloc (vacuum_polarization_integral_indices,new_integral_capacity,"INDOEI", "VPINT")
+                    call ralloc (vacuum_polarization_integral_values,new_integral_capacity,"VALOEI", "VPINT")
+                    vacuum_polarization_integral_capacity = new_integral_capacity
+                end if
+                !
+                do i = vacuum_polarization_integral_count,table_position+2,-1
+                    vacuum_polarization_integral_indices(i) = vacuum_polarization_integral_indices(i-1)
+                    vacuum_polarization_integral_values(i) = vacuum_polarization_integral_values(i-1)
+                end do
+                !
+                !   Put the new index and value into storage
+                !
+                vacuum_polarization_integral_indices(table_position+1) = packed_integral_index
+                vacuum_polarization_integral_values(table_position+1) = radial_integral_value
+                !
+            end if
         !
         else
             !
-            !   Index not found; compute the integral
+            !   This branch is executed only once
+            !
+            first_vacuum_polarization_lookup = .false.
+            !
+            !   Allocate the initial storage for arrays INDOEI and VALOEI;
+            !   NDVPA stores the array dimension
+            !
+            vacuum_polarization_integral_capacity = 2
+            call alloc (vacuum_polarization_integral_indices,vacuum_polarization_integral_capacity,"INDOEI", "VPINT")
+            call alloc (vacuum_polarization_integral_values,vacuum_polarization_integral_capacity,"VALOEI", "VPINT")
+            !
+            !   Compute the integral's value
             !
             radial_integral_value = vacuum_polarization_integral (first_orbital,second_orbital)
             !
-            !   Increment the integral counter
+            !   Initialise the integral counter
             !
-            nvpi = nvpi+1
+            vacuum_polarization_integral_count = 1
             !
-            !   Increase array length by half the present length if the latter
-            !   is inadequate to store another pair
+            !   Store the integral and its value
             !
-            if (nvpi > ndvpa) then
-                newsiz = ndvpa+ndvpa/2
-                call ralloc (vacuum_polarization_integral_indices,newsiz,"INDOEI", "VPINT")
-                call ralloc (vacuum_polarization_integral_values,newsiz,"VALOEI", "VPINT")
-                ndvpa = newsiz
-            end if
-            !
-            do i = nvpi,loc+2,-1
-                vacuum_polarization_integral_indices(i) = vacuum_polarization_integral_indices(i-1)
-                vacuum_polarization_integral_values(i) = vacuum_polarization_integral_values(i-1)
-            end do
-            !
-            !   Put the new index and value into storage
-            !
-            vacuum_polarization_integral_indices(loc+1) = index
-            vacuum_polarization_integral_values(loc+1) = radial_integral_value
+            vacuum_polarization_integral_indices(1) = packed_integral_index
+            vacuum_polarization_integral_values(1) = radial_integral_value
             !
         end if
-    !
-    else
         !
-        !   This branch is executed only once
-        !
-        first_vacuum_polarization_lookup = .false.
-        !
-        !   Allocate the initial storage for arrays INDOEI and VALOEI;
-        !   NDVPA stores the array dimension
-        !
-        ndvpa = 2
-        call alloc (vacuum_polarization_integral_indices,ndvpa,"INDOEI", "VPINT")
-        call alloc (vacuum_polarization_integral_values,ndvpa,"VALOEI", "VPINT")
-        !
-        !   Compute the integral's value
-        !
-        radial_integral_value = vacuum_polarization_integral (first_orbital,second_orbital)
-        !
-        !   Initialise the integral counter
-        !
-        nvpi = 1
-        !
-        !   Store the integral and its value
-        !
-        vacuum_polarization_integral_indices(1) = index
-        vacuum_polarization_integral_values(1) = radial_integral_value
-        !
-    end if
-    !
-    return
-end subroutine calculate_vacuum_polarization_integral
+        return
+    end subroutine calculate_vacuum_polarization_integral
+end module calculate_vacuum_polarization_integral_interface

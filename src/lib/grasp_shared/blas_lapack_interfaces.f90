@@ -6,24 +6,11 @@ module blas_lapack_interfaces
 
     ! Module interface
     private
-    public :: dcopy, ddot, daxpy, dscal, dnrm2, dgemv, dgemm, dspevx, dswap, idamax
-    public :: slamch, dlamch, lsame, xerbla
+    public :: dcopy, ddot, daxpy, dscal, dgemv, dspevx, dswap, idamax
+    public :: slamch, dlamch
 
     ! Procedure interfaces
     interface
-        logical function lsame(ca, cb)
-            implicit none (type, external)
-
-            ! Arguments
-            character(1), intent(in) :: ca, cb
-        end function lsame
-        subroutine xerbla(srname, info)
-            implicit none (type, external)
-
-            ! Arguments
-            character(*), intent(in) :: srname
-            integer, intent(in) :: info
-        end subroutine xerbla
         real(real32) function slamch(cmach)
             ! Module dependencies
             use, intrinsic :: iso_fortran_env, only: real32
@@ -100,16 +87,6 @@ module blas_lapack_interfaces
             real(real64), intent(in) :: alpha
             real(real64), intent(inout) :: x(*)
         end subroutine dscal
-        function dnrm2(n, x, incx) result(value)
-            ! Module dependencies
-            import real64
-            implicit none (type, external)
-
-            ! Arguments
-            integer, intent(in) :: n, incx
-            real(real64), intent(in) :: x(*)
-            real(real64) :: value
-        end function dnrm2
         subroutine dgemv(trans, m, n, alpha, a, lda, x, incx, beta, y, incy)
             ! Module dependencies
             import real64
@@ -121,17 +98,6 @@ module blas_lapack_interfaces
             real(real64), intent(in) :: alpha, beta, a(lda,*), x(*)
             real(real64), intent(inout) :: y(*)
         end subroutine dgemv
-        subroutine dgemm(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)
-            ! Module dependencies
-            import real64
-            implicit none (type, external)
-
-            ! Arguments
-            character(1), intent(in) :: transa, transb
-            integer, intent(in) :: m, n, k, lda, ldb, ldc
-            real(real64), intent(in) :: alpha, beta, a(lda,*), b(ldb,*)
-            real(real64), intent(inout) :: c(ldc,*)
-        end subroutine dgemm
         subroutine dspevx(jobz, range, uplo, n, ap, vl, vu, il, iu, abstol, m, w, z, ldz, work, iwork, ifail, info)
             ! Module dependencies
             import real64

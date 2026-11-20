@@ -4,11 +4,11 @@ module integer_format_with_context
 
     ! Module interface
     private
-    public :: convrt2
+    public :: format_integer_with_context
 contains
-    subroutine convrt2(integer_value, number_text, text_length, caller_name)
+    subroutine format_integer_with_context(integer_value, number_text, text_length, caller_name)
         ! Module dependencies
-        use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+        use standard_io_units, only: stderr_unit
         implicit none (type, external)
 
         ! Arguments
@@ -46,5 +46,5 @@ contains
             end if
         end if
         return
-    end subroutine convrt2
+    end subroutine format_integer_with_context
 end module integer_format_with_context

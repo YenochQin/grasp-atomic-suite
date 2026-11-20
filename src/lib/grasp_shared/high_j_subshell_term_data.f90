@@ -3,13 +3,13 @@ module high_j_subshell_term_data
     implicit none (type, external)
 
     ! Module state
-    integer   :: mt9(6)
-    integer :: mt11(189)
+    integer   :: packed_term_codes_two_j_9(6)
+    integer :: packed_term_codes_high_j(189)
 
     ! Initial values
     ! For 2j = 9, subtract 300 from the external term index before accessing mt9.
-    data mt9/40209,50000,30404,30408,30412,30416/
-    data mt11/50211,                                              &
+    data packed_term_codes_two_j_9/40209,50000,30404,30408,30412,30416/
+    data packed_term_codes_high_j/50211,                                              &
         60000,40404,40408,40412,40416,40420,                          &
         60213,                                                        &
         70000,50404,50408,50412,50416,50420,50424,                    &

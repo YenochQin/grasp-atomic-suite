@@ -3,24 +3,24 @@ module breit_angular_coefficient_buffer
 
     ! Module interface
     private
-    public :: talk, talk_fallback
+    public :: collect_breit_angular_coefficient, store_breit_angular_coefficient
 
     ! Procedure interfaces
-    ! Derive the external interface from the fallback. RCI supplies talk at link time.
-    procedure(talk_fallback) :: talk
+    ! Derive the external interface from the default store. RCI supplies the collector at link time.
+    procedure(store_breit_angular_coefficient) :: collect_breit_angular_coefficient
 contains
 
     ! Store every input coefficient, including zero, with its radial-integral labels.
-    subroutine talk_fallback(bra_csf_index, ket_csf_index, radial_integral_order, bra_orbital_1, bra_orbital_2, &
+    subroutine store_breit_angular_coefficient(bra_csf_index, ket_csf_index, radial_integral_order, bra_orbital_1, bra_orbital_2, &
         ket_orbital_1, ket_orbital_2, integral_type_code, coefficient)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
         use angular_coefficient_buffer_state, only: angular_buffer_capacity, angular_coefficient_count, &
             angular_coefficient_labels, angular_coefficients
-        use debug_output_settings, only: angular_coefficient_debug_flag => ibug1
+        use debug_output_settings, only: angular_coefficient_debug_flag
         use orbital_csf_basis, only: orbital_principal_n, orbital_symmetry_labels
-        use angular_coefficient_buffer, only: alcbuf
+        use angular_coefficient_buffer, only: manage_angular_coefficient_buffer
         implicit none (type, external)
 
         ! Arguments
@@ -41,7 +41,7 @@ contains
 
         angular_coefficient_count = angular_coefficient_count + 1
         ! Buffer operation 2 doubles capacity while preserving existing entries.
-        if (angular_coefficient_count > angular_buffer_capacity) call alcbuf (2)
+        if (angular_coefficient_count > angular_buffer_capacity) call manage_angular_coefficient_buffer (2)
 
         ! Consumers read the four orbital indices, then the order and signed integral type.
         angular_coefficient_labels(1,angular_coefficient_count) = bra_orbital_1
@@ -54,5 +54,5 @@ contains
 
         return
         return
-    end subroutine talk_fallback
+    end subroutine store_breit_angular_coefficient
 end module breit_angular_coefficient_buffer

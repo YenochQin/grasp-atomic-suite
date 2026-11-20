@@ -4,5 +4,5 @@ module initial_orbital_selection
     implicit none (type, external)
 
     ! Module state
-    logical :: set(max_orbitals)
+    logical :: orbital_initialized(max_orbitals)
 end module initial_orbital_selection

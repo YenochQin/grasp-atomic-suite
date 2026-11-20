@@ -26,24 +26,26 @@ module natural_orbitals
         end subroutine dsyev
     end interface
 contains
-    recursive subroutine diagonalize_density(matrix, ordering, occupation, rotation, error)
+    recursive subroutine diagonalize_density(matrix, ordering, natural_occupations, natural_orbital_rotation, error)
         ! Arguments
         real(real64), intent(in) :: matrix(:,:)
         integer, intent(in) :: ordering
-        real(real64), intent(out) :: occupation(:), rotation(:,:)
+        real(real64), intent(out) :: natural_occupations(:), natural_orbital_rotation(:,:)
         character(*), intent(out) :: error
 
         ! Local declarations
-        real(real64), allocatable :: values(:), vectors(:,:), work(:)
-        real(real64) :: query(1)
-        integer, allocatable :: order(:)
-        logical, allocatable :: used(:)
-        integer :: n, info, i, j, slot, lwork
+        real(real64), allocatable :: ascending_occupations(:), density_eigenvectors(:,:), diagonalization_workspace(:)
+        real(real64) :: workspace_size_query(1)
+        integer, allocatable :: ordered_eigenvector_indices(:)
+        logical, allocatable :: eigenvector_assigned(:)
+        integer :: orbital_count, lapack_status, eigenvector_index, next_unused_eigenvector, orbital_slot
+        integer :: diagonalization_workspace_size
 
         error = ""
-        n = size(matrix,1)
-        if (n < 1 .or. size(matrix,2) /= n .or. &
-            size(occupation) /= n .or. any(shape(rotation) /= [n,n])) then
+        orbital_count = size(matrix,1)
+        if (orbital_count < 1 .or. size(matrix,2) /= orbital_count .or. &
+            size(natural_occupations) /= orbital_count .or. &
+            any(shape(natural_orbital_rotation) /= [orbital_count, orbital_count])) then
             error = "Invalid density block dimensions"
             return
         end if
@@ -51,78 +53,83 @@ contains
             error = "Non-finite density matrix"
             return
         end if
-        allocate(values(n), vectors(n,n), order(n), used(n))
-        vectors = matrix
-        call dsyev("V", "U", n, vectors, n, values, query, -1, info)
-        if (info /= 0) then
+        allocate(ascending_occupations(orbital_count), density_eigenvectors(orbital_count, orbital_count), &
+            ordered_eigenvector_indices(orbital_count), eigenvector_assigned(orbital_count))
+        density_eigenvectors = matrix
+        call dsyev("V", "U", orbital_count, density_eigenvectors, orbital_count, &
+            ascending_occupations, workspace_size_query, -1, lapack_status)
+        if (lapack_status /= 0) then
             error = "DSYEV workspace query failed"
             return
         end if
-        lwork = max(1, ceiling(query(1)))
-        allocate(work(lwork))
-        call dsyev("V", "U", n, vectors, n, values, work, lwork, info)
-        if (info /= 0) then
+        diagonalization_workspace_size = max(1, ceiling(workspace_size_query(1)))
+        allocate(diagonalization_workspace(diagonalization_workspace_size))
+        call dsyev("V", "U", orbital_count, density_eigenvectors, orbital_count, &
+            ascending_occupations, diagonalization_workspace, diagonalization_workspace_size, lapack_status)
+        if (lapack_status /= 0) then
             error = "DSYEV failed to diagonalize density matrix"
             return
         end if
-        order = 0
-        used = .false.
+        ordered_eigenvector_indices = 0
+        eigenvector_assigned = .false.
         select case(ordering)
         case(1)
-            do i = 1,n
-                slot = maxloc(abs(vectors(:,i)), dim=1)
-                if (order(slot) /= 0) then
+            do eigenvector_index = 1,orbital_count
+                orbital_slot = maxloc(abs(density_eigenvectors(:,eigenvector_index)), dim=1)
+                if (ordered_eigenvector_indices(orbital_slot) /= 0) then
                     error = "Two eigenvectors have the same dominant component; use --order=2"
                     return
                 end if
-                order(slot) = i
+                ordered_eigenvector_indices(orbital_slot) = eigenvector_index
             end do
         case(2)
             ! Preserve pure orbitals first, then fill every other slot in
             ! descending occupation order. Unlike upstream, no slot can be
             ! overwritten or left unassigned by mixed/pure eigenvectors.
-            do i = 1,n
-                slot = maxloc(abs(vectors(:,i)), dim=1)
-                if (abs(vectors(slot,i)) < 1.0_real64-1.0e-12_real64) cycle
-                order(slot) = i
-                used(i) = .true.
+            do eigenvector_index = 1,orbital_count
+                orbital_slot = maxloc(abs(density_eigenvectors(:,eigenvector_index)), dim=1)
+                if (abs(density_eigenvectors(orbital_slot,eigenvector_index)) < 1.0_real64-1.0e-12_real64) cycle
+                ordered_eigenvector_indices(orbital_slot) = eigenvector_index
+                eigenvector_assigned(eigenvector_index) = .true.
             end do
-            j = n
-            do slot = 1,n
-                if (order(slot) /= 0) cycle
-                do while (used(j))
-                    j = j-1
+            next_unused_eigenvector = orbital_count
+            do orbital_slot = 1,orbital_count
+                if (ordered_eigenvector_indices(orbital_slot) /= 0) cycle
+                do while (eigenvector_assigned(next_unused_eigenvector))
+                    next_unused_eigenvector = next_unused_eigenvector-1
                 end do
-                order(slot) = j
-                used(j) = .true.
+                ordered_eigenvector_indices(orbital_slot) = next_unused_eigenvector
+                eigenvector_assigned(next_unused_eigenvector) = .true.
             end do
         case default
             error = "Orbital ordering must be 1 or 2"
             return
         end select
-        do i = 1,n
-            occupation(i) = values(order(i))
-            rotation(:,i) = vectors(:,order(i))
+        do eigenvector_index = 1,orbital_count
+            natural_occupations(eigenvector_index) = ascending_occupations(ordered_eigenvector_indices(eigenvector_index))
+            natural_orbital_rotation(:,eigenvector_index) = density_eigenvectors(:,ordered_eigenvector_indices(eigenvector_index))
         end do
     end subroutine diagonalize_density
 
-    recursive subroutine transform_radial_block(rotation, p, q, pz)
+    recursive subroutine transform_radial_block(natural_orbital_rotation, large_components, small_components, &
+            large_component_origin_coefficients)
         ! Arguments
-        real(real64), intent(inout) :: rotation(:,:), p(:,:), q(:,:), pz(:)
+        real(real64), intent(inout) :: natural_orbital_rotation(:,:), large_components(:,:), small_components(:,:)
+        real(real64), intent(inout) :: large_component_origin_coefficients(:)
 
         ! Local declarations
-        integer :: i
+        integer :: orbital_index
 
-        p = matmul(p, rotation)
-        q = matmul(q, rotation)
-        pz = matmul(pz, rotation)
+        large_components = matmul(large_components, natural_orbital_rotation)
+        small_components = matmul(small_components, natural_orbital_rotation)
+        large_component_origin_coefficients = matmul(large_component_origin_coefficients, natural_orbital_rotation)
         ! Fix the phase after ALL origin coefficients have been transformed.
-        do i = 1,size(pz)
-            if (pz(i) >= 0.0_real64) cycle
-            p(:,i) = -p(:,i)
-            q(:,i) = -q(:,i)
-            pz(i) = -pz(i)
-            rotation(:,i) = -rotation(:,i)
+        do orbital_index = 1,size(large_component_origin_coefficients)
+            if (large_component_origin_coefficients(orbital_index) >= 0.0_real64) cycle
+            large_components(:,orbital_index) = -large_components(:,orbital_index)
+            small_components(:,orbital_index) = -small_components(:,orbital_index)
+            large_component_origin_coefficients(orbital_index) = -large_component_origin_coefficients(orbital_index)
+            natural_orbital_rotation(:,orbital_index) = -natural_orbital_rotation(:,orbital_index)
         end do
     end subroutine transform_radial_block
 end module natural_orbitals

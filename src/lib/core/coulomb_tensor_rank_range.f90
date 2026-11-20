@@ -4,9 +4,9 @@ module coulomb_tensor_rank_range
 
     ! Module interface
     private
-    public :: skrc
+    public :: coulomb_rank_bounds
 contains
-    subroutine skrc(orbital_indices, orbital_kappas, orbital_two_j_plus_one, first_direct_rank, direct_rank_count, &
+    subroutine coulomb_rank_bounds(orbital_indices, orbital_kappas, orbital_two_j_plus_one, first_direct_rank, direct_rank_count, &
         & first_exchange_rank, exchange_rank_count)
         implicit none (type, external)
 
@@ -60,5 +60,5 @@ contains
         exchange_rank_count = min(twice_exchange_upper_a,twice_exchange_upper_b)/2
         exchange_rank_count = (exchange_rank_count - first_exchange_rank)/2 + 1
         return
-    end subroutine skrc
+    end subroutine coulomb_rank_bounds
 end module coulomb_tensor_rank_range

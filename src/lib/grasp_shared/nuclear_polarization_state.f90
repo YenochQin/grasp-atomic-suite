@@ -27,7 +27,7 @@ module nuclear_polarization_state
     type(npol_config), protected, public :: npol_settings
     logical, protected, public :: npol_ready = .false.
     integer, protected, public :: npol_n = 0
-    real(real64), protected, public :: zz_coul(max_radial_points) = 0
+    real(real64), protected, public :: coulomb_potential_baseline(max_radial_points) = 0
     real(real64), protected, public :: vnp_e1(max_radial_points) = 0, vnp_e2(max_radial_points) = 0, &
         & vnp_total(max_radial_points) = 0
 
@@ -38,7 +38,7 @@ contains
         npol_settings = npol_config()
         npol_ready = .false.
         npol_n = 0
-        zz_coul = 0
+        coulomb_potential_baseline = 0
         vnp_e1 = 0
         vnp_e2 = 0
         vnp_total = 0
@@ -51,7 +51,7 @@ contains
         real(real64), intent(in) :: coul(n)
         if (n < 1 .or. n > max_radial_points) return
         npol_n = n
-        zz_coul(:n) = coul
+        coulomb_potential_baseline(:n) = coul
     end subroutine npol_capture
 
     ! Publish the first n grid values after the caller validates and constructs the potentials.

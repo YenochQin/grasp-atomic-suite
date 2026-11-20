@@ -2,7 +2,7 @@
 
 2026-11-16：网格工具同时识别原版及语义变量名，命令行/TOML 参数保持不变。
 `atomic-suite` 现覆盖十五个普通网格入口和两个 RCI 续算入口，CSFG 专用入口已移除。
-集中容量的新名称和 `grasp_parameters` 旧名别名见[共同参数说明](../docs/implemented/common_parameters.md)。
+集中配置及 `grasp_parameters` 转导的正式名称见[共同参数说明](../docs/implemented/common_parameters.md)。
 
 大规模 RMCDHF MPI 停顿采样使用 [sample_rmcdhf_mpi.py](sample_rmcdhf_mpi.py)，
 只读附着到指定 Linux PID 树，记录线程状态、等待位置、I/O、缺页和系统压力。
@@ -36,7 +36,7 @@ save_rmcdhf results/Zn_odd_AS1
 
 | 计算目录中的文件 | 归档目录中的文件 | 内容 |
 | --- | --- | --- |
-| `rcsf_descriptors.parquet`、`rcsf_header.toml` | `name_descriptors.parquet`、`name_header.toml` | 原生 CSF 描述符与头文件按原字节成对复制，保留 header 哈希绑定 |
+| `rcsf_desc.parquet`、`rcsf_header.toml` | `name_desc.parquet`、`name_header.toml` | 原生 CSF 描述符与头文件按原字节成对复制，保留 header 哈希绑定。短名缺失时可归档 `rcsf_descriptors.parquet`。 |
 | `rwfn.out` | `name.wfn` | 径向轨道，保留 Fortran 非格式化记录 |
 | `rmix.out` | `name.mix` | OL/EOL 的 CSF 混合系数，保留 Fortran 非格式化记录 |
 | `rmcdhf.sum` | `name.rmcdhf.summary` | 计算摘要 |
@@ -211,22 +211,21 @@ make -j4 install
 
 修改本仓库时使用显式布局 `--layout atomic-suite`，默认源码路径就是本仓库：
 
-```bash
+```fish
 ../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
   --layout atomic-suite --grasp . --nnnp 2990 --n 1965 --h 0.015 \
   --rnt-scale 2e-6 --hp 0 --accy 1e-10 --diff
 ```
 
-这个布局修改 `src/lib/grasp_shared/compile_time_capacities.f90` 及需要变更的十九个网格入口：
-四个原版轨道程序、
-RHFS、RIS 和 RDENSITY，以及 GRASPG 的波函数估计、SCF 和两个 RCI 入口；g_J 复用 RHFS。
-普通 GRASP 另外包含 `rwfnestimate`、两个 RCI、两个双正交变换和三个跃迁程序的八个入口。
-显式 ACCY 修改还覆盖普通/GRASPG 共四个 RCI 续算入口；`--accy 0` 恢复 `H**6`。
+该布局修改中央容量模块 `src/lib/grasp_shared/compile_time_capacities.f90`。
+网格设置涉及 15 个入口，包含 `rwfnestimate`、四种 RMCDHF、两种 RCI、两种双正交变换、三种跃迁、RHFS、RIS4 和 RDENSITY。g_J 复用 RHFS 入口。
+显式 `--accy` 还修改串行和 MPI 的两个 RCI 续算入口，`--accy 0` 恢复 `transformed_grid_step**6`。
 所有入口都必须存在，不会因某个应用缺失而悄悄跳过。
 默认 `--layout grasp2018` 仍要求完整原版源码树，两种布局都会扫描整个 `src/`
 拒绝未识别的网格初始化或未同步的容量定义。
-本仓库有限核默认 `N=NNNP=590`。`--nnnp` 只修改集中配置中的 NNNP，
-保留 `NNN1=NNNP+10` 的派生关系；`grasp_parameters.f90` 继续转导六个常量，
+本仓库有限核默认 `radial_point_count = max_radial_points = 590`。补丁器的 `--nnnp` 和
+TOML `nnnp` 在 `atomic-suite` 布局中只修改 `max_radial_points`，并保留
+`radial_workspace_capacity = max_radial_points + 10` 的派生关系。`grasp_parameters.f90` 直接转导六个语义名称，
 无需改变各程序的 `USE grasp_parameters`。仅改容量时，脚本只写入一个配置文件。
 显式 `--n` 则修改各入口的有限核实际点数。
 脚本依据公共模块的使用情况区分径向参数和局部同名变量。

@@ -12,10 +12,9 @@ subroutine write_ci_eigenvectors
     !                                                                      *
     !***********************************************************************
     use array_memory_management, only: alloc, dalloc
-    use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
-        csf_mixing_coefficients, evecff, evecii
-    use orbital_csf_basis,           only: csf_count, orbital_count, csf_subshell_occupations
-    use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+    use eigenstate_expansions, only: csf_mixing_coefficients
+    use orbital_csf_basis, only: csf_count
+    use selected_level_indices, only: active_level_indices, active_level_count
     implicit none (type, external)
 
     ! Local declarations
@@ -29,10 +28,10 @@ subroutine write_ci_eigenvectors
     !
     !   Determine which eigenvectors are to be printed out
     !
-    nvex = nvec
-    call alloc (iloc,nvec,"ILOC", "EVCOUT")
-    do i = 1,nvec
-        iloc(i) = ivec(i)
+    nvex = active_level_count
+    call alloc (iloc,active_level_count,"ILOC", "EVCOUT")
+    do i = 1,active_level_count
+        iloc(i) = active_level_indices(i)
     end do
     !
     !   There are eight columns across the width of a page

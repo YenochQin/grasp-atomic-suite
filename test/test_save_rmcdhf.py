@@ -10,7 +10,7 @@ def check_archive(script: Path, run: Path) -> None:
     io_dir = run / "MPI permanent files"
     io_dir.mkdir()
     inputs = {
-        "rcsf_descriptors.parquet": ("case_descriptors.parquet", b"PAR1\0\xffPAR1"),
+        "rcsf_desc.parquet": ("case_desc.parquet", b"PAR1\0\xffPAR1"),
         "rcsf_header.toml": ("case_header.toml", b"# byte-bound header\r\n"),
         "rwfn.out": ("case.wfn", b"G92RWF\0"),
         "rmix.out": ("case.mix", b"G92MIX\0"),
@@ -23,6 +23,7 @@ def check_archive(script: Path, run: Path) -> None:
     (run / "rmcdhf.log").write_text("solver log\n")
     (run / "rangular.log").write_text("angular log\n")
     (io_dir / "rcsf.inp").write_text("unused legacy CSFs\n")
+    (io_dir / "rcsf_descriptors.parquet").write_bytes(b"older descriptor")
 
     archive = run / "saved states" / "case"
     command = [script, "--io-dir", io_dir, archive]
@@ -47,17 +48,20 @@ def check_archive(script: Path, run: Path) -> None:
     (io_dir / "rmcdhf.sum").write_text(" (E)AL calculation.\n")
     (io_dir / "rmcdhf.log").touch()
     (io_dir / "npol.inp").unlink()
+    (io_dir / "rcsf_desc.parquet").replace(io_dir / "rcsf_descriptors.parquet")
     subprocess.run([script, "average"], cwd=io_dir, check=True)
     average = io_dir / "average"
     assert (average / "average.w").is_file()
     assert not (average / "average.m").is_symlink()
     assert not (average / "average.mix").exists()
     assert not (average / "average.rangular.log").exists()
+    assert (average / "average_desc.parquet").read_bytes() == inputs["rcsf_desc.parquet"][1]
+    (io_dir / "rcsf_descriptors.parquet").rename(io_dir / "rcsf_desc.parquet")
 
     # An OL archive needs mixing. A legacy text file cannot replace half of a descriptor pair.
     (io_dir / "rmcdhf.sum").write_text(" OL calculation.\n")
     partial = io_dir / "partial"
-    for source in ("rmix.out", "rcsf_descriptors.parquet", "rcsf_header.toml"):
+    for source in ("rmix.out", "rcsf_desc.parquet", "rcsf_header.toml"):
         (io_dir / source).unlink()
         result = subprocess.run(
             [script, partial], cwd=io_dir, capture_output=True, text=True, check=False

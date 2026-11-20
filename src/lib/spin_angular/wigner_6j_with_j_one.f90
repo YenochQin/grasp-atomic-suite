@@ -4,13 +4,13 @@ module wigner_6j_with_j_one
 
     ! Module interface
     private
-    public :: sixj1
+    public :: wigner_6j_j_one
 contains
-    subroutine sixj1(two_j_1,two_j_2,two_j_3,two_j_4,two_j_5,check_triangle_conditions,six_j_value)
+    subroutine wigner_6j_j_one(two_j_1,two_j_2,two_j_3,two_j_4,two_j_5,check_triangle_conditions,six_j_value)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: zero, half, one, two, three
-        use wigner_6j_triangle_selection, only: ixjtik
+        use wigner_6j_triangle_selection, only: allows_wigner_6j_triangles
         implicit none (type, external)
 
         ! Arguments
@@ -23,7 +23,7 @@ contains
         real(real64) :: real_triangle_sum, phase_sign, two_j_3_real, two_j_2_real, two_j_1_real
         six_j_value = zero
         if (check_triangle_conditions /= 0) then
-            if (ixjtik(two_j_1,two_j_2,two_j_3,two_j_4,two_j_5,2) == 0) return
+            if (allows_wigner_6j_triangles(two_j_1,two_j_2,two_j_3,two_j_4,two_j_5,2) == 0) return
         end if
         triangle_sum = (two_j_1 + two_j_2 + two_j_3)/2
         real_triangle_sum = dble(triangle_sum)
@@ -82,5 +82,5 @@ contains
             end if
         end if
         return
-    end subroutine sixj1
+    end subroutine wigner_6j_j_one
 end module wigner_6j_with_j_one

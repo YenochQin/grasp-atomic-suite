@@ -1,476 +1,544 @@
-!***********************************************************************
-!                                                                      *
-subroutine transform_orbital_sets(pi, qi, nli, ninshli, pf, qf, nlf, ninshlf, &
-    ngrid, mxl, scr, lscr, ntestg, cishl, cici, cfshl, cfci)
-    ! Module dependencies
-    use, intrinsic :: iso_fortran_env, only: output_unit
-    !                                                                      *
-    ! Generate Matrices for rotating radial functions and                  *
-    ! for counter rotating CI coefficients                                 *
-    !                                                                      *
-    ! This subroutine is a modification of the corresponding MCHF          *
-    ! routine                                                              *
-    !                                                                      *
-    ! Per Jonsson,     Lund June 1996                                      *
-    !                                                                      *
-    ! This subroutine has been modified to support transformations         *
-    ! in cases like 3s2p1d 3s2p                                            *
-    !                                                                      *
-    ! Per Jonsson,     Lund Feb  1997                                      *
-    !                                                                      *
-    ! =====                                                                *
-    ! Input                                                                *
-    ! =====                                                                *
-    !                                                                      *
-    ! PI,QI   : Input radial shells for initial state                      *
-    !         : (large and small component)                                *
-    ! NLI     : Number of shells per kappa for initial state               *
-    ! NINSHLI : Number of inactive shells  per kappa for initial state     *
-    !                                                                      *
-    ! PF,QF   : Input radial shells for final   state                      *
-    !         : (large and small component)                                *
-    ! NLF     : Number of shells per kappa for final   state               *
-    ! NINSHLF : Number of inactive shells  per kappa for final state       *
-    !                                                                      *
-    ! NGRID   : Number of gridpoints                                       *
-    ! MXL     : Number of kappa quantum numbers                            *
-    ! SCR     :                                                            *
-    ! LSCR    : Total length of scratch space.                             *
-    ! NTESTG  : Global PRINT flag : = 0 => complete silence                *
-    !                               = 1 => test and PRINT overlap matrices,*
-    !                                      PRINT header and  t matrix      *
-    !                            .gt. 1 => Hope you now what you are doing *
-    !                                                                      *
-    ! ======                                                               *
-    ! Output                                                               *
-    ! ======                                                               *
-    !                                                                      *
-    ! CISHL : Rotation matrix for initial state shells                     *
-    ! CICI  : Rotation matrix for initial state CI coefficients            *
-    ! CFSHL : Rotation matrix for final state shells                       *
-    ! CFCI  : Rotation matrix for final state CI coefficients              *
-    ! PI,QI : Initial shells in biorthogonal basis                         *
-    !         biorthogonal basis                                           *
-    ! PF,QF : Final   shells in biorthogonal basis                         *
-    !                                                                      *
-    !                                                                      *
-    ! Inactive Shells : The functions of the inactive shells must be       *
-    !                   be supplied to the program, and NLI,NLF            *
-    !                   must refer to the total number of                  *
-    !                   occupied shells ( inactive+active)                 *
-    !                                                                      *
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-
-    ! Procedure interfaces
-    use find_integer_extremum_interface, only: find_integer_extremum
-    use sum_integer_vector_interface, only: sum_integer_vector
-    !      USE gets_I
-    !      USE wrtmat_I
-    !      USE copvec_I
-    !      USE invmat_I
-    !      USE ulla_I
-    !      USE trpmat_I
-    !      USE matml4_I
-    !      USE scalve_I
-    !      USE setvec_I
-    !      USE pamtmt_I
-    use copy_vector_interface, only: copy_vector
-    use calculate_subshell_overlap_interface, only: calculate_subshell_overlap
-    use invert_dense_submatrix_interface, only: invert_dense_submatrix
-    use multiply_submatrices_interface, only: multiply_submatrices
-    use build_subshell_transformation_matrix_interface, only: build_subshell_transformation_matrix
-    use scale_vector_interface, only: scale_vector
-    use fill_vector_interface, only: fill_vector
-    use transpose_matrix_interface, only: transpose_matrix
-    use combine_upper_lower_factors_interface, only: combine_upper_lower_factors
-    use write_matrix_interface, only: write_matrix
+module transform_orbital_sets_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(in) :: ngrid,  mxl
-    integer, intent(in) :: lscr,  ntestg
-    integer, intent(in) :: nli(mxl), nlf(mxl)
-    integer :: ninshli(mxl), ninshlf(mxl)
-    !     The following have dimensions (NGRID:*)
-    !GG      REAL(DOUBLE), DIMENSION(:,:), pointer :: PI, QI, PF, QF
-    real(real64) :: pi(ngrid, *), qi(ngrid, *), pf(ngrid, *), qf(ngrid, *)
-    !     The following have fixed dimensions (NGRID, NLMAX)
-    real(real64)  :: cishl(*), cfshl(*)
-    !     The work array
-    !     REAL(DOUBLE), DIMENSION(LWORK1) :: work
-    !     Th following have fixed dimensions (20*NLMAX*NLMAX)
-    real(real64) :: cici(*), cfci(*)
-    real(real64) :: scr(*)
+    ! Module interface
+    private
+    public :: transform_orbital_sets
+contains
 
-    ! Local declarations
-    integer :: ntestl, ntest, ili, ilf, nlimx, nlfmx, nlifmx, nlti, &
-        nltf, kfree, klpi, klpf, klpif, klstot, klsif, klsifi, &
-        klci, klcf, klscr, l, iioff, ifoff, ni, nf, nifmn, iii,&
-        jjj, klpmx, klpmn, nmx, nmn, klcmx, klcmn, ndiff, j, &
-        klti, i, kltf
-    real(real64) :: tii, tiii
-    !-----------------------------------------------
-    !
-    ntestl = 0
-    ntest = max(ntestl,ntestg)
-    if (ntest >= 1) then
-        write (output_unit, *)
-        write (output_unit, *) "                   *************************"
-        write (output_unit, *) "                   *   Entering BIOTR1     *"
-        write (output_unit, *) "                   *************************"
-        write (output_unit, *)
-    end if
-    !
-    !. Scratch should at least be of length
-    !
-    ili = 1
-    ilf = 1
-    !
-    !. Largest number of shells of a given symmetry
-    !
-    nlimx = find_integer_extremum(nli,mxl,1)
-    nlfmx = find_integer_extremum(nlf,mxl,1)
-    nlifmx = max(nlimx,nlfmx)
-    if (ntest >= 10) write (output_unit, *) " NLIMX,NLFMX NLIFMX ", nlimx, nlfmx, &
-        nlifmx
-    !
-    !. Total numner of shells
-    !
-    nlti = sum_integer_vector(nli,mxl)
-    nltf = sum_integer_vector(nlf,mxl)
-    if (ntest >= 10) write (output_unit, *) " NLTI NLTF", nlti, nltf
-    !
-    ! Scratch space for orbital rotations
-    kfree = 1
-    !
-    klpi = kfree
-    kfree = kfree + nlimx*ngrid
-    write (output_unit, *) " In biotrn: KLPI    = ", klpi
-    write (output_unit, *) "            KFREE   = ", kfree
-    !
-    klpf = kfree
-    kfree = kfree + nlfmx*ngrid
-    write (output_unit, *) " In biotrn: KLPF    = ", klpf
-    write (output_unit, *) "            KFREE   = ", kfree
-    !
-    klpif = kfree
-    kfree = kfree + nlifmx*ngrid
-    write (output_unit, *) " In biotrn: KLPIF   = ", klpif
-    write (output_unit, *) "            KFREE   = ", kfree
-    !
-    !. Total overlap matrix
-    !
-    klstot = kfree
-    kfree = kfree + nlti*nltf
-    write (output_unit, *) " In biotrn: KLSTOT  = ", klstot
-    write (output_unit, *) "            KFREE   = ", kfree
-    !
-    klsif = kfree
-    kfree = kfree + nlifmx**2
-    write (output_unit, *) " In biotrn: KLSIF   = ", klsif
-    write (output_unit, *) "            KFREE   = ", kfree
-    !
-    klsifi = kfree
-    kfree = kfree + nlifmx**2
-    write (output_unit, *) " In biotrn: KLSIFI  = ", klsifi
-    write (output_unit, *) "            KFREE   = ", kfree
-    !
-    klci = kfree
-    kfree = kfree + nlifmx**2
-    write (output_unit, *) " In biotrn: KLCI    = ", klci
-    write (output_unit, *) "            KFREE   = ", kfree
-    !
-    klcf = kfree
-    kfree = kfree + nlifmx**2
-    write (output_unit, *) " In biotrn: KLCF    = ", klcf
-    write (output_unit, *) "            KFREE   = ", kfree
-    !
-    klscr = kfree
-    kfree = kfree + nlifmx**2 + nlifmx*(nlifmx + 1)
-    write (output_unit, *) " In biotrn: KLSCR   = ", klscr
-    write (output_unit, *) "            KFREE   = ", kfree
-    write (output_unit, *) "         =>  FREE =     ", kfree
-    !
-    !. Check length of scratch
-    !
-    if (lscr <= kfree - 1) then
-        write (output_unit,*)" BIOTR1 in trouble ! "
-        write (output_unit,*)" Increase dimension of scratch before call to BIOTR1"
-        write (output_unit,*)" Current and required length (LSCR,KFREE-1)", lscr, &
-            kfree - 1
-        stop "Increase LWORK before call to BIOTR1"
-    end if
-    !
-    !. Obtain overlap matrix
-    !
-    call calculate_subshell_overlap (scr(klstot), nlti,nltf)
+    !***********************************************************************
+    !                                                                      *
+    subroutine transform_orbital_sets(initial_large_components, initial_small_components, initial_orbitals_by_symmetry, &
+                & initial_inactive_by_symmetry, final_large_components, final_small_components, final_orbitals_by_symmetry, &
+                & final_inactive_by_symmetry, &
+        radial_point_count, symmetry_count, workspace, workspace_size, global_trace_level, initial_orbital_rotations, &
+                & initial_ci_rotations, final_orbital_rotations, final_ci_rotations)
+        ! Module dependencies
+        use, intrinsic :: iso_fortran_env, only: output_unit
+        !                                                                      *
+        ! Generate Matrices for rotating radial functions and                  *
+        ! for counter rotating CI coefficients                                 *
+        !                                                                      *
+        ! This subroutine is a modification of the corresponding MCHF          *
+        ! routine                                                              *
+        !                                                                      *
+        ! Per Jonsson,     Lund June 1996                                      *
+        !                                                                      *
+        ! This subroutine has been modified to support transformations         *
+        ! in cases like 3s2p1d 3s2p                                            *
+        !                                                                      *
+        ! Per Jonsson,     Lund Feb  1997                                      *
+        !                                                                      *
+        ! =====                                                                *
+        ! Input                                                                *
+        ! =====                                                                *
+        !                                                                      *
+        ! PI,QI   : Input radial shells for initial state                      *
+        !         : (large and small component)                                *
+        ! NLI     : Number of shells per kappa for initial state               *
+        ! NINSHLI : Number of inactive shells  per kappa for initial state     *
+        !                                                                      *
+        ! PF,QF   : Input radial shells for final   state                      *
+        !         : (large and small component)                                *
+        ! NLF     : Number of shells per kappa for final   state               *
+        ! NINSHLF : Number of inactive shells  per kappa for final state       *
+        !                                                                      *
+        ! NGRID   : Number of gridpoints                                       *
+        ! MXL     : Number of kappa quantum numbers                            *
+        ! SCR     :                                                            *
+        ! LSCR    : Total length of scratch space.                             *
+        ! NTESTG  : Global PRINT flag : = 0 => complete silence                *
+        !                               = 1 => test and PRINT overlap matrices,*
+        !                                      PRINT header and  t matrix      *
+        !                            .gt. 1 => Hope you now what you are doing *
+        !                                                                      *
+        ! ======                                                               *
+        ! Output                                                               *
+        ! ======                                                               *
+        !                                                                      *
+        ! CISHL : Rotation matrix for initial state shells                     *
+        ! CICI  : Rotation matrix for initial state CI coefficients            *
+        ! CFSHL : Rotation matrix for final state shells                       *
+        ! CFCI  : Rotation matrix for final state CI coefficients              *
+        ! PI,QI : Initial shells in biorthogonal basis                         *
+        !         biorthogonal basis                                           *
+        ! PF,QF : Final   shells in biorthogonal basis                         *
+        !                                                                      *
+        !                                                                      *
+        ! Inactive Shells : The functions of the inactive shells must be       *
+        !                   be supplied to the program, and NLI,NLF            *
+        !                   must refer to the total number of                  *
+        !                   occupied shells ( inactive+active)                 *
+        !                                                                      *
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
 
-    do l = 1, mxl
-        if (ntest >= 5) then
-            write (output_unit, *) "   L = ", l
-            write (output_unit, *) "       Orbital rotation..."
-        end if
+        ! Procedure interfaces
+        use find_integer_extremum_interface, only: find_integer_extremum
+        use sum_integer_vector_interface, only: sum_integer_vector
+        !      USE gets_I
+        !      USE wrtmat_I
+        !      USE copvec_I
+        !      USE invmat_I
+        !      USE ulla_I
+        !      USE trpmat_I
+        !      USE matml4_I
+        !      USE scalve_I
+        !      USE setvec_I
+        !      USE pamtmt_I
+        use copy_vector_interface, only: copy_vector
+        use calculate_subshell_overlap_interface, only: calculate_subshell_overlap
+        use invert_dense_submatrix_interface, only: invert_dense_submatrix
+        use multiply_submatrices_interface, only: multiply_submatrices
+        use build_subshell_transformation_matrix_interface, only: build_subshell_transformation_matrix
+        use scale_vector_interface, only: scale_vector
+        use fill_vector_interface, only: fill_vector
+        use transpose_matrix_interface, only: transpose_matrix
+        use combine_upper_lower_factors_interface, only: combine_upper_lower_factors
+        use write_matrix_interface, only: write_matrix
+        implicit none (type, external)
+
+        ! Arguments
+        integer, intent(in) :: radial_point_count,  symmetry_count
+        integer, intent(in) :: workspace_size,  global_trace_level
+        integer, intent(in) :: initial_orbitals_by_symmetry(symmetry_count), final_orbitals_by_symmetry(symmetry_count)
+        integer :: initial_inactive_by_symmetry(symmetry_count), final_inactive_by_symmetry(symmetry_count)
+        !     The following have dimensions (NGRID:*)
+        !GG      REAL(DOUBLE), DIMENSION(:,:), pointer :: PI, QI, PF, QF
+        real(real64) :: initial_large_components(radial_point_count, *), initial_small_components(radial_point_count, *), &
+                & final_large_components(radial_point_count, *), final_small_components(radial_point_count, *)
+        !     The following have fixed dimensions (NGRID, NLMAX)
+        real(real64)  :: initial_orbital_rotations(*), final_orbital_rotations(*)
+        !     The work array
+        !     REAL(DOUBLE), DIMENSION(LWORK1) :: work
+        !     Th following have fixed dimensions (20*NLMAX*NLMAX)
+        real(real64) :: initial_ci_rotations(*), final_ci_rotations(*)
+        real(real64), intent(inout) :: workspace(*)
+
+        ! Local declarations
+        integer :: local_trace_level, trace_level, first_initial_orbital, first_final_orbital, max_initial_symmetry_size, &
+                & max_final_symmetry_size, max_symmetry_size, total_initial_orbitals, &
+            total_final_orbitals, next_workspace_index, initial_components_start, final_components_start, &
+                & rotated_components_start, full_overlap_start, overlap_block_start, inverse_overlap_start, &
+            initial_rotation_start, final_rotation_start, auxiliary_workspace_start, symmetry_index, initial_rotation_offset, &
+                & final_rotation_offset, initial_orbital_count, final_orbital_count, paired_orbital_count, initial_orbital,&
+            final_orbital, larger_components_start, smaller_components_start, larger_orbital_count, smaller_orbital_count, &
+                & larger_rotation_start, smaller_rotation_start, unpaired_orbital_count, rotation_column, &
+            initial_ci_rotation_start, orbital_index, final_ci_rotation_start
+        real(real64) :: diagonal_element, inverse_diagonal_element
+        !-----------------------------------------------
         !
-        !. Offsets for given L in shell matrices
-        !
-        if (l == 1) then
-            iioff = 1
-            ifoff = 1
-        else
-            iioff = iioff + nli(l-1)**2
-            ifoff = ifoff + nlf(l-1)**2
-        end if
-        if (ntest >= 1) then
+        local_trace_level = 0
+        trace_level = max(local_trace_level,global_trace_level)
+        if (trace_level >= 1) then
             write (output_unit, *)
-            write (output_unit, *) &
-                " BIOTRN : Information on transformations of shells with L =",l
+            write (output_unit, *) "                   *************************"
+            write (output_unit, *) "                   *   Entering BIOTR1     *"
+            write (output_unit, *) "                   *************************"
             write (output_unit, *)
         end if
         !
-        ! =========================================================
-        ! 1 : Obtain Biorthogonal forms of initial and final shells
-        ! =========================================================
+        !. Scratch should at least be of length
         !
-        !. The overlap matrix can be written
+        first_initial_orbital = 1
+        first_final_orbital = 1
         !
-        !     * * * * * * *
-        !     *       *   *
-        !     *   S   * X *
-        !     *       *   *
-        !     * * * * * * *
+        !. Largest number of shells of a given symmetry
         !
-        ! where S is the quadratic subblock.
-        ! The basis functions corresponding to the quadratic
-        ! subblock are made biorthogonal with an UL decomposition.
-        ! The remaining basis
-        ! functions are made biorthogonal by choosing  the
-        ! transformation
-        !            * * *
-        !            *   *
-        !            * Y *
-        !            *   *
-        !            * * *
-        !            * 1 *
-        !            * * *
+        max_initial_symmetry_size = find_integer_extremum(initial_orbitals_by_symmetry,symmetry_count,1)
+        max_final_symmetry_size = find_integer_extremum(final_orbitals_by_symmetry,symmetry_count,1)
+        max_symmetry_size = max(max_initial_symmetry_size,max_final_symmetry_size)
+        if (trace_level >= 10) write (output_unit, *) " NLIMX,NLFMX NLIFMX ", max_initial_symmetry_size, max_final_symmetry_size, &
+            max_symmetry_size
         !
+        !. Total numner of shells
         !
-        ! With Y = -S-1*X
+        total_initial_orbitals = sum_integer_vector(initial_orbitals_by_symmetry,symmetry_count)
+        total_final_orbitals = sum_integer_vector(final_orbitals_by_symmetry,symmetry_count)
+        if (trace_level >= 10) write (output_unit, *) " NLTI NLTF", total_initial_orbitals, total_final_orbitals
         !
-        ni = nli(l)
-        nf = nlf(l)
+        ! Scratch space for orbital rotations
+        next_workspace_index = 1
         !
-        !.1.1 : Obtain shells of given L in proper order for
-        !       biorthogonal treatment
+        initial_components_start = next_workspace_index
+        next_workspace_index = next_workspace_index + max_initial_symmetry_size*radial_point_count
+        write (output_unit, *) " In biotrn: KLPI    = ", initial_components_start
+        write (output_unit, *) "            KFREE   = ", next_workspace_index
         !
-        if (l == 1) then
-            ili = 1
-            ilf = 1
-        else
-            ili = ili + nli(l-1)
-            ilf = ilf + nlf(l-1)
+        final_components_start = next_workspace_index
+        next_workspace_index = next_workspace_index + max_final_symmetry_size*radial_point_count
+        write (output_unit, *) " In biotrn: KLPF    = ", final_components_start
+        write (output_unit, *) "            KFREE   = ", next_workspace_index
+        !
+        rotated_components_start = next_workspace_index
+        next_workspace_index = next_workspace_index + max_symmetry_size*radial_point_count
+        write (output_unit, *) " In biotrn: KLPIF   = ", rotated_components_start
+        write (output_unit, *) "            KFREE   = ", next_workspace_index
+        !
+        !. Total overlap matrix
+        !
+        full_overlap_start = next_workspace_index
+        next_workspace_index = next_workspace_index + total_initial_orbitals*total_final_orbitals
+        write (output_unit, *) " In biotrn: KLSTOT  = ", full_overlap_start
+        write (output_unit, *) "            KFREE   = ", next_workspace_index
+        !
+        overlap_block_start = next_workspace_index
+        next_workspace_index = next_workspace_index + max_symmetry_size**2
+        write (output_unit, *) " In biotrn: KLSIF   = ", overlap_block_start
+        write (output_unit, *) "            KFREE   = ", next_workspace_index
+        !
+        inverse_overlap_start = next_workspace_index
+        next_workspace_index = next_workspace_index + max_symmetry_size**2
+        write (output_unit, *) " In biotrn: KLSIFI  = ", inverse_overlap_start
+        write (output_unit, *) "            KFREE   = ", next_workspace_index
+        !
+        initial_rotation_start = next_workspace_index
+        next_workspace_index = next_workspace_index + max_symmetry_size**2
+        write (output_unit, *) " In biotrn: KLCI    = ", initial_rotation_start
+        write (output_unit, *) "            KFREE   = ", next_workspace_index
+        !
+        final_rotation_start = next_workspace_index
+        next_workspace_index = next_workspace_index + max_symmetry_size**2
+        write (output_unit, *) " In biotrn: KLCF    = ", final_rotation_start
+        write (output_unit, *) "            KFREE   = ", next_workspace_index
+        !
+        auxiliary_workspace_start = next_workspace_index
+        next_workspace_index = next_workspace_index + max_symmetry_size**2 + max_symmetry_size*(max_symmetry_size + 1)
+        write (output_unit, *) " In biotrn: KLSCR   = ", auxiliary_workspace_start
+        write (output_unit, *) "            KFREE   = ", next_workspace_index
+        write (output_unit, *) "         =>  FREE =     ", next_workspace_index
+        !
+        !. Check length of scratch
+        !
+        if (workspace_size <= next_workspace_index - 1) then
+            write (output_unit,*)" BIOTR1 in trouble ! "
+            write (output_unit,*)" Increase dimension of scratch before call to BIOTR1"
+            write (output_unit,*)" Current and required length (LSCR,KFREE-1)", workspace_size, &
+                next_workspace_index - 1
+            stop "Increase LWORK before call to BIOTR1"
         end if
+        !
+        !. Obtain overlap matrix
+        !
+        call calculate_subshell_overlap (workspace(full_overlap_start), total_initial_orbitals,total_final_orbitals)
 
-        !
-        ! 1.2 obtain biorthogonal of the first min(ni,nf) shells
-        !
-        nifmn = min(ni,nf)
-        !
-        !. Overlap matrix SIF = Integral (PI(I)*PF(J))
-        !
-        !ww Per change to support cases like 3s2p1d 3s2p. The belonging endif
-        !ww Is just at the end
-
-        if (nifmn <= 0) cycle
-
-        do iii = 1, nifmn
-            do jjj = 1, nifmn
-                scr(klsif+(jjj-1)*nifmn+iii-1) = scr(klstot-1+(jjj+ilf-1-1)*nlti&
-                    +iii+ili-1)
-            end do
-        end do
-        if (ntest >= 15) then
-            write (output_unit, *) " Overlap matrix "
-            call write_matrix (scr(klsif), nifmn, nifmn, nifmn, nifmn)
-        end if
-        !
-        ! Obtain upper triangular CI and CF so CI(T) S CF = 1
-        ! or CF CI(T) = S-1, which corresponds to an UL decomposition
-        !
-        !. Invert S
-        !
-        call copy_vector (scr(klsif), scr(klsifi), nifmn**2)
-        call invert_dense_submatrix (scr(klsifi), scr(klci), nifmn, nifmn)
-
-        !. UL decompose
-        call copy_vector (scr(klsifi), scr(klsif), nifmn**2)
-        call combine_upper_lower_factors (scr(klsif), scr(klcf), scr(klci), nifmn, scr(klscr))
-        call transpose_matrix (scr(klci), nifmn, nifmn, scr(klscr))
-        call copy_vector (scr(klscr), scr(klci), nifmn**2)
-        !
-        !. The transformation matrix between the first NIFMX
-        !. shells is now known, biorthogonalize remaining orbitals
-        !
-        if (ni/=nf .and. ni/=0 .and. nf/=0) then
-            if (ni > nf) then
-                klpmx = klpi
-                klpmn = klpf
-                nmx = ni
-                nmn = nf
-                klcmx = klci
-                klcmn = klcf
+        do symmetry_index = 1, symmetry_count
+            if (trace_level >= 5) then
+                write (output_unit, *) "   L = ", symmetry_index
+                write (output_unit, *) "       Orbital rotation..."
+            end if
+            !
+            !. Offsets for given L in shell matrices
+            !
+            if (symmetry_index == 1) then
+                initial_rotation_offset = 1
+                final_rotation_offset = 1
             else
-                klpmx = klpf
-                klpmn = klpi
-                nmx = nf
-                nmn = ni
-                klcmx = klcf
-                klcmn = klci
+                initial_rotation_offset = initial_rotation_offset + initial_orbitals_by_symmetry(symmetry_index-1)**2
+                final_rotation_offset = final_rotation_offset + final_orbitals_by_symmetry(symmetry_index-1)**2
             end if
-            ndiff = nmx - nmn
+            if (trace_level >= 1) then
+                write (output_unit, *)
+                write (output_unit, *) &
+                    " BIOTRN : Information on transformations of shells with L =",symmetry_index
+                write (output_unit, *)
+            end if
             !
-            ! Y = -S-1 * X
-            !. overlap X between remaining orbitals and the other set
+            ! =========================================================
+            ! 1 : Obtain Biorthogonal forms of initial and final shells
+            ! =========================================================
             !
-            if (ni > nf) then
-                !
-                ! I columns F rows
-                !
-                do iii = nmn + 1, nmx
-                    do jjj = 1, nf
-                        scr(klsif+(iii-nmn-1)*nf+jjj-1) = scr(klstot-1+(jjj+ilf-1-&
-                            1)*nlti+iii+ili-1)
-                    end do
+            !. The overlap matrix can be written
+            !
+            !     * * * * * * *
+            !     *       *   *
+            !     *   S   * X *
+            !     *       *   *
+            !     * * * * * * *
+            !
+            ! where S is the quadratic subblock.
+            ! The basis functions corresponding to the quadratic
+            ! subblock are made biorthogonal with an UL decomposition.
+            ! The remaining basis
+            ! functions are made biorthogonal by choosing  the
+            ! transformation
+            !            * * *
+            !            *   *
+            !            * Y *
+            !            *   *
+            !            * * *
+            !            * 1 *
+            !            * * *
+            !
+            !
+            ! With Y = -S-1*X
+            !
+            initial_orbital_count = initial_orbitals_by_symmetry(symmetry_index)
+            final_orbital_count = final_orbitals_by_symmetry(symmetry_index)
+            !
+            !.1.1 : Obtain shells of given L in proper order for
+            !       biorthogonal treatment
+            !
+            if (symmetry_index == 1) then
+                first_initial_orbital = 1
+                first_final_orbital = 1
+            else
+                first_initial_orbital = first_initial_orbital + initial_orbitals_by_symmetry(symmetry_index-1)
+                first_final_orbital = first_final_orbital + final_orbitals_by_symmetry(symmetry_index-1)
+            end if
+
+            !
+            ! 1.2 obtain biorthogonal of the first min(ni,nf) shells
+            !
+            paired_orbital_count = min(initial_orbital_count,final_orbital_count)
+            !
+            !. Overlap matrix SIF = Integral (PI(I)*PF(J))
+            !
+            !ww Per change to support cases like 3s2p1d 3s2p. The belonging endif
+            !ww Is just at the end
+
+            if (paired_orbital_count <= 0) cycle
+
+            do initial_orbital = 1, paired_orbital_count
+                do final_orbital = 1, paired_orbital_count
+                    workspace(overlap_block_start+(final_orbital-1)*paired_orbital_count+initial_orbital- &
+                & 1) = workspace(full_overlap_start-1+(final_orbital+first_final_orbital-1-1)*total_initial_orbitals&
+                        +initial_orbital+first_initial_orbital-1)
                 end do
-            else if (nf > ni) then
-                ! F columns I rows
-                do jjj = nmn + 1, nmx
-                    do iii = 1, ni
-                        scr(klsif+(jjj-nmn-1)*ni+iii-1) = scr(klstot-1+(jjj+ilf-1-&
-                            1)*nlti+iii+ili-1)
-                    end do
-                end do
+            end do
+            if (trace_level >= 15) then
+                write (output_unit, *) " Overlap matrix "
+                call write_matrix (workspace(overlap_block_start), paired_orbital_count, paired_orbital_count, &
+                & paired_orbital_count, paired_orbital_count)
             end if
             !
-            if (ni > nf) then
-                call transpose_matrix (scr(klsifi), nmn, nmn, scr(klscr))
-                call copy_vector (scr(klscr), scr(klsifi), nmn**2)
-            end if
-            call multiply_submatrices (scr(klscr), scr(klsifi), scr(klsif), nmn, ndiff, nmn, &
-                nmn, nmn, ndiff, 0)
-            call scale_vector (scr(klscr), -1.0_real64, nmn*ndiff)
-            call copy_vector (scr(klscr), scr(klsif), nmn*ndiff)
+            ! Obtain upper triangular CI and CF so CI(T) S CF = 1
+            ! or CF CI(T) = S-1, which corresponds to an UL decomposition
             !
-            ! Construct complete CMX
+            !. Invert S
             !
-            call fill_vector (scr(klscr), 0.0_real64, nmx**2)
-            do j = 1, nmx
-                if (j <= nifmn) then
-                    call copy_vector (scr(klcmx+(j-1)*nifmn), scr(klscr+(j-1)*nmx), &
-                        nmn)
+            call copy_vector (workspace(overlap_block_start), workspace(inverse_overlap_start), paired_orbital_count**2)
+            call invert_dense_submatrix (workspace(inverse_overlap_start), workspace(initial_rotation_start), &
+                & paired_orbital_count, paired_orbital_count)
+
+            !. UL decompose
+            call copy_vector (workspace(inverse_overlap_start), workspace(overlap_block_start), paired_orbital_count**2)
+            call combine_upper_lower_factors (workspace(overlap_block_start), workspace(final_rotation_start), &
+                & workspace(initial_rotation_start), paired_orbital_count, workspace(auxiliary_workspace_start))
+            call transpose_matrix (workspace(initial_rotation_start), paired_orbital_count, paired_orbital_count, &
+                & workspace(auxiliary_workspace_start))
+            call copy_vector (workspace(auxiliary_workspace_start), workspace(initial_rotation_start), paired_orbital_count**2)
+            !
+            !. The transformation matrix between the first NIFMX
+            !. shells is now known, biorthogonalize remaining orbitals
+            !
+            if (initial_orbital_count/=final_orbital_count .and. initial_orbital_count/=0 .and. final_orbital_count/=0) then
+                if (initial_orbital_count > final_orbital_count) then
+                    larger_components_start = initial_components_start
+                    smaller_components_start = final_components_start
+                    larger_orbital_count = initial_orbital_count
+                    smaller_orbital_count = final_orbital_count
+                    larger_rotation_start = initial_rotation_start
+                    smaller_rotation_start = final_rotation_start
                 else
-                    call copy_vector (scr(klsif+(j-nmn-1)*nmn), scr(klscr+(j-1)*nmx), &
-                        nmn)
-                    scr(klscr-1+(j-1)*nmx+j) = 1.0_real64
+                    larger_components_start = final_components_start
+                    smaller_components_start = initial_components_start
+                    larger_orbital_count = final_orbital_count
+                    smaller_orbital_count = initial_orbital_count
+                    larger_rotation_start = final_rotation_start
+                    smaller_rotation_start = initial_rotation_start
                 end if
-            end do
-            !
-            call copy_vector (scr(klscr), scr(klcmx), nmx**2)
-        end if
-        !ww Pertest
-        !         ENDIF
-        !
-        !. The two upper triangular matrices CI and CF are now known
-        !. Transfer to permanent arrays
-        !
-        call copy_vector (scr(klci), cishl(iioff), ni**2)
-        call copy_vector (scr(klcf), cfshl(ifoff), nf**2)
-        !
-        !. Rotate the large component of the shells
-        !
-        call copy_vector (pi(1,ili), scr(klpi), ni*ngrid)
-        call copy_vector (pf(1,ilf), scr(klpf), nf*ngrid)
-        !
-        write (*, *) "Transformation matrices initial"
-        call write_matrix (scr(klci), ni, ni, ni, ni)
-        call multiply_submatrices (scr(klpif), scr(klpi), scr(klci), ngrid, ni, ngrid, ni, &
-            ni, ni, 0)
-        call copy_vector (scr(klpif), pi(1,ili), ni*ngrid)
-        write (*, *) "Transformation matrices final"
-        call write_matrix (scr(klcf), nf, nf, nf, nf)
-        call multiply_submatrices (scr(klpif), scr(klpf), scr(klcf), ngrid, nf, ngrid, nf, &
-            nf, nf, 0)
-        call copy_vector (scr(klpif), pf(1,ilf), nf*ngrid)
-        !
-        !. Rotate the small component of the shells
-        !
-        call copy_vector (qi(1,ili), scr(klpi), ni*ngrid)
-        call copy_vector (qf(1,ilf), scr(klpf), nf*ngrid)
-        !
-        call multiply_submatrices (scr(klpif), scr(klpi), scr(klci), ngrid, ni, ngrid, ni, &
-            ni, ni, 0)
-        call copy_vector (scr(klpif), qi(1,ili), ni*ngrid)
-        call multiply_submatrices (scr(klpif), scr(klpf), scr(klcf), ngrid, nf, ngrid, nf, &
-            nf, nf, 0)
-        call copy_vector (scr(klpif), qf(1,ilf), nf*ngrid)
-        !
-        if (ntest >= 1) then
-            write (output_unit, *) " Test of overlap of biorthonormal functions"
-            ! F columns I rows
-            do jjj = 1, nf
-                do iii = 1, ni
-                    scr(klsif+(jjj-1)*ni+iii-1) = scr(klstot-1+(jjj+ilf-1-1)*nlti&
-                        +iii+ili-1)
+                unpaired_orbital_count = larger_orbital_count - smaller_orbital_count
+                !
+                ! Y = -S-1 * X
+                !. overlap X between remaining orbitals and the other set
+                !
+                if (initial_orbital_count > final_orbital_count) then
+                    !
+                    ! I columns F rows
+                    !
+                    do initial_orbital = smaller_orbital_count + 1, larger_orbital_count
+                        do final_orbital = 1, final_orbital_count
+                            workspace(overlap_block_start+(initial_orbital-smaller_orbital_count-1)*final_orbital_count+ &
+                & final_orbital-1) = workspace(full_overlap_start-1+(final_orbital+first_final_orbital-1-&
+                                1)*total_initial_orbitals+initial_orbital+first_initial_orbital-1)
+                        end do
+                    end do
+                else if (final_orbital_count > initial_orbital_count) then
+                    ! F columns I rows
+                    do final_orbital = smaller_orbital_count + 1, larger_orbital_count
+                        do initial_orbital = 1, initial_orbital_count
+                            workspace(overlap_block_start+(final_orbital-smaller_orbital_count-1)*initial_orbital_count+ &
+                & initial_orbital-1) = workspace(full_overlap_start-1+(final_orbital+first_final_orbital-1-&
+                                1)*total_initial_orbitals+initial_orbital+first_initial_orbital-1)
+                        end do
+                    end do
+                end if
+                !
+                if (initial_orbital_count > final_orbital_count) then
+                    call transpose_matrix (workspace(inverse_overlap_start), smaller_orbital_count, smaller_orbital_count, &
+                & workspace(auxiliary_workspace_start))
+                    call copy_vector (workspace(auxiliary_workspace_start), workspace(inverse_overlap_start), &
+                & smaller_orbital_count**2)
+                end if
+                call multiply_submatrices (workspace(auxiliary_workspace_start), workspace(inverse_overlap_start), &
+                & workspace(overlap_block_start), smaller_orbital_count, unpaired_orbital_count, smaller_orbital_count, &
+                    smaller_orbital_count, smaller_orbital_count, unpaired_orbital_count, 0)
+                call scale_vector (workspace(auxiliary_workspace_start), -1.0_real64, smaller_orbital_count* &
+                & unpaired_orbital_count)
+                call copy_vector (workspace(auxiliary_workspace_start), workspace(overlap_block_start), smaller_orbital_count* &
+                & unpaired_orbital_count)
+                !
+                ! Construct complete CMX
+                !
+                call fill_vector (workspace(auxiliary_workspace_start), 0.0_real64, larger_orbital_count**2)
+                do rotation_column = 1, larger_orbital_count
+                    if (rotation_column <= paired_orbital_count) then
+                        call copy_vector (workspace(larger_rotation_start+(rotation_column-1)*paired_orbital_count), &
+                & workspace(auxiliary_workspace_start+(rotation_column-1)*larger_orbital_count), &
+                            smaller_orbital_count)
+                    else
+                        call copy_vector (workspace(overlap_block_start+(rotation_column-smaller_orbital_count-1)* &
+                & smaller_orbital_count), workspace(auxiliary_workspace_start+(rotation_column-1)*larger_orbital_count), &
+                            smaller_orbital_count)
+                        workspace(auxiliary_workspace_start-1+(rotation_column-1)*larger_orbital_count+ &
+                & rotation_column) = 1.0_real64
+                    end if
                 end do
+                !
+                call copy_vector (workspace(auxiliary_workspace_start), workspace(larger_rotation_start), larger_orbital_count**2)
+            end if
+            !ww Pertest
+            !         ENDIF
+            !
+            !. The two upper triangular matrices CI and CF are now known
+            !. Transfer to permanent arrays
+            !
+            call copy_vector (workspace(initial_rotation_start), initial_orbital_rotations(initial_rotation_offset), &
+                & initial_orbital_count**2)
+            call copy_vector (workspace(final_rotation_start), final_orbital_rotations(final_rotation_offset), &
+                & final_orbital_count**2)
+            !
+            !. Rotate the large component of the shells
+            !
+            call copy_vector (initial_large_components(1,first_initial_orbital), workspace(initial_components_start), &
+                & initial_orbital_count*radial_point_count)
+            call copy_vector (final_large_components(1,first_final_orbital), workspace(final_components_start), &
+                & final_orbital_count*radial_point_count)
+            !
+            write (*, *) "Transformation matrices initial"
+            call write_matrix (workspace(initial_rotation_start), initial_orbital_count, initial_orbital_count, &
+                & initial_orbital_count, initial_orbital_count)
+            call multiply_submatrices (workspace(rotated_components_start), workspace(initial_components_start), &
+                & workspace(initial_rotation_start), radial_point_count, initial_orbital_count, radial_point_count, &
+                & initial_orbital_count, &
+                initial_orbital_count, initial_orbital_count, 0)
+            call copy_vector (workspace(rotated_components_start), initial_large_components(1,first_initial_orbital), &
+                & initial_orbital_count*radial_point_count)
+            write (*, *) "Transformation matrices final"
+            call write_matrix (workspace(final_rotation_start), final_orbital_count, final_orbital_count, final_orbital_count, &
+                & final_orbital_count)
+            call multiply_submatrices (workspace(rotated_components_start), workspace(final_components_start), &
+                & workspace(final_rotation_start), radial_point_count, final_orbital_count, radial_point_count, &
+                & final_orbital_count, &
+                final_orbital_count, final_orbital_count, 0)
+            call copy_vector (workspace(rotated_components_start), final_large_components(1,first_final_orbital), &
+                & final_orbital_count*radial_point_count)
+            !
+            !. Rotate the small component of the shells
+            !
+            call copy_vector (initial_small_components(1,first_initial_orbital), workspace(initial_components_start), &
+                & initial_orbital_count*radial_point_count)
+            call copy_vector (final_small_components(1,first_final_orbital), workspace(final_components_start), &
+                & final_orbital_count*radial_point_count)
+            !
+            call multiply_submatrices (workspace(rotated_components_start), workspace(initial_components_start), &
+                & workspace(initial_rotation_start), radial_point_count, initial_orbital_count, radial_point_count, &
+                & initial_orbital_count, &
+                initial_orbital_count, initial_orbital_count, 0)
+            call copy_vector (workspace(rotated_components_start), initial_small_components(1,first_initial_orbital), &
+                & initial_orbital_count*radial_point_count)
+            call multiply_submatrices (workspace(rotated_components_start), workspace(final_components_start), &
+                & workspace(final_rotation_start), radial_point_count, final_orbital_count, radial_point_count, &
+                & final_orbital_count, &
+                final_orbital_count, final_orbital_count, 0)
+            call copy_vector (workspace(rotated_components_start), final_small_components(1,first_final_orbital), &
+                & final_orbital_count*radial_point_count)
+            !
+            if (trace_level >= 1) then
+                write (output_unit, *) " Test of overlap of biorthonormal functions"
+                ! F columns I rows
+                do final_orbital = 1, final_orbital_count
+                    do initial_orbital = 1, initial_orbital_count
+                        workspace(overlap_block_start+(final_orbital-1)*initial_orbital_count+initial_orbital- &
+                & 1) = workspace(full_overlap_start-1+(final_orbital+first_final_orbital-1-1)*total_initial_orbitals&
+                            +initial_orbital+first_initial_orbital-1)
+                    end do
+                end do
+                call multiply_submatrices (workspace(auxiliary_workspace_start), workspace(initial_rotation_start), &
+                & workspace(overlap_block_start), initial_orbital_count, final_orbital_count, initial_orbital_count, &
+                & initial_orbital_count, initial_orbital_count&
+                    , final_orbital_count, 1)
+                call multiply_submatrices (workspace(overlap_block_start), workspace(auxiliary_workspace_start), &
+                & workspace(final_rotation_start), initial_orbital_count, final_orbital_count, initial_orbital_count, &
+                & final_orbital_count, final_orbital_count&
+                    , final_orbital_count, 0)
+                write (output_unit, *) &
+                    " new overlap matrix ( should be 1 on diag, 0 elsewhere )"
+                call write_matrix (workspace(overlap_block_start), initial_orbital_count, final_orbital_count, &
+                & initial_orbital_count, final_orbital_count)
+            end if
+
+            if (trace_level >= 1) then
+                write (output_unit, *)
+                write (output_unit, *) " Orbital Rotation matrix for I state"
+                call write_matrix (initial_orbital_rotations(initial_rotation_offset), initial_orbital_count, &
+                & initial_orbital_count, initial_orbital_count, initial_orbital_count)
+                write (output_unit, *) " Orbital Rotation matrix for F state"
+                call write_matrix (final_orbital_rotations(final_rotation_offset), final_orbital_count, final_orbital_count, &
+                & final_orbital_count, final_orbital_count)
+                write (output_unit, *)
+            end if
+            !
+            !. Matrix for counterrotation of CI coefficients, initial state
+            !
+            initial_ci_rotation_start = overlap_block_start
+            call build_subshell_transformation_matrix (workspace(initial_rotation_start), workspace(initial_ci_rotation_start), &
+                & workspace(auxiliary_workspace_start), initial_orbital_count)
+            do orbital_index = 1, initial_orbital_count
+                diagonal_element = workspace(initial_ci_rotation_start-1+(orbital_index-1)*initial_orbital_count+orbital_index)
+                inverse_diagonal_element = 1.0_real64/diagonal_element
+                call scale_vector (workspace(initial_ci_rotation_start+(orbital_index-1)*initial_orbital_count), &
+                & inverse_diagonal_element, orbital_index - 1)
             end do
-            call multiply_submatrices (scr(klscr), scr(klci), scr(klsif), ni, nf, ni, ni, ni&
-                , nf, 1)
-            call multiply_submatrices (scr(klsif), scr(klscr), scr(klcf), ni, nf, ni, nf, nf&
-                , nf, 0)
-            write (output_unit, *) &
-                " new overlap matrix ( should be 1 on diag, 0 elsewhere )"
-            call write_matrix (scr(klsif), ni, nf, ni, nf)
-        end if
-
-        if (ntest >= 1) then
+            call copy_vector (workspace(initial_ci_rotation_start), initial_ci_rotations(initial_rotation_offset), &
+                & initial_orbital_count*initial_orbital_count)
+            !
+            !. Matrix for counterrotation of CI coefficients, Final state
+            !
+            final_ci_rotation_start = overlap_block_start
+            call build_subshell_transformation_matrix (workspace(final_rotation_start), workspace(final_ci_rotation_start), &
+                & workspace(auxiliary_workspace_start), final_orbital_count)
+            do orbital_index = 1, final_orbital_count
+                diagonal_element = workspace(final_ci_rotation_start-1+(orbital_index-1)*final_orbital_count+orbital_index)
+                inverse_diagonal_element = 1.0_real64/diagonal_element
+                call scale_vector (workspace(final_ci_rotation_start+(orbital_index-1)*final_orbital_count), &
+                & inverse_diagonal_element, orbital_index - 1)
+            end do
+            call copy_vector (workspace(final_ci_rotation_start), final_ci_rotations(final_rotation_offset), final_orbital_count* &
+                & final_orbital_count)
+            if (trace_level < 1) cycle
             write (output_unit, *)
-            write (output_unit, *) " Orbital Rotation matrix for I state"
-            call write_matrix (cishl(iioff), ni, ni, ni, ni)
-            write (output_unit, *) " Orbital Rotation matrix for F state"
-            call write_matrix (cfshl(ifoff), nf, nf, nf, nf)
+            write (output_unit, *) " CI-Rotation matrix for I state"
+            call write_matrix (initial_ci_rotations(initial_rotation_offset), initial_orbital_count, initial_orbital_count, &
+                & initial_orbital_count, initial_orbital_count)
+            write (output_unit, *) " CI-Rotation matrix for F state"
+            call write_matrix (final_ci_rotations(final_rotation_offset), final_orbital_count, final_orbital_count, &
+                & final_orbital_count, final_orbital_count)
             write (output_unit, *)
-        end if
-        !
-        !. Matrix for counterrotation of CI coefficients, initial state
-        !
-        klti = klsif
-        call build_subshell_transformation_matrix (scr(klci), scr(klti), scr(klscr), ni)
-        do i = 1, ni
-            tii = scr(klti-1+(i-1)*ni+i)
-            tiii = 1.0_real64/tii
-            call scale_vector (scr(klti+(i-1)*ni), tiii, i - 1)
-        end do
-        call copy_vector (scr(klti), cici(iioff), ni*ni)
-        !
-        !. Matrix for counterrotation of CI coefficients, Final state
-        !
-        kltf = klsif
-        call build_subshell_transformation_matrix (scr(klcf), scr(kltf), scr(klscr), nf)
-        do i = 1, nf
-            tii = scr(kltf-1+(i-1)*nf+i)
-            tiii = 1.0_real64/tii
-            call scale_vector (scr(kltf+(i-1)*nf), tiii, i - 1)
-        end do
-        call copy_vector (scr(kltf), cfci(ifoff), nf*nf)
-        if (ntest < 1) cycle
-        write (output_unit, *)
-        write (output_unit, *) " CI-Rotation matrix for I state"
-        call write_matrix (cici(iioff), ni, ni, ni, ni)
-        write (output_unit, *) " CI-Rotation matrix for F state"
-        call write_matrix (cfci(ifoff), nf, nf, nf, nf)
-        write (output_unit, *)
 
-    end do
-    !
-    return
-end subroutine transform_orbital_sets
+        end do
+        !
+        return
+    end subroutine transform_orbital_sets
+end module transform_orbital_sets_interface

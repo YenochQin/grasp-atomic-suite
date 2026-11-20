@@ -19,7 +19,7 @@
 
 库名和模块名是链接接口的一部分。外部 Fortran 调用方需要按下表更新 `USE`，
 使用新的 `.mod` 文件重新编译，并链接 `libgrasp_shared.a`。原模块中的数据和过程接口继续使用原有名称。
-`grasp_parameters` 转导 `compile_time_capacities` 中的容量，并继续提供 `NNNP`、`NNNW` 等六个兼容别名。
+`grasp_parameters` 转导 `compile_time_capacities` 中的六个语义容量常量。
 `npar_C.f90` 中的两个独立模块各自迁移到同名文件。
 备用的内存分析源码沿用新模块名，文件为 `array_memory_management.f90_PROFILING`。
 
@@ -110,7 +110,7 @@ GNU Fortran 15.3 构建通过。Release 启用串行、MPI 和 jj2lsj OpenMP，1
 | `orthct_C.f90` | `orthct_c` | [`scf_orthogonality_control`](../../src/lib/grasp_shared/scf_orthogonality_control.f90) | SCF orthogonality enforcement flag |
 | `osc_C.f90` | `osc_c` | [`transition_matrix_workspace`](../../src/lib/grasp_shared/transition_matrix_workspace.f90) | Angular, radial, and matrix arrays for transition calculations |
 | `ovl_C.f90` | `ovl_c` | [`orbital_overlap_control`](../../src/lib/grasp_shared/orbital_overlap_control.f90) | Orbital overlap control flag |
-| `parameter_def_M.f90` | `parameter_def` | [`grasp_parameters`](../../src/lib/grasp_shared/grasp_parameters.f90) | Public capacity parameters and aliases of the six historical names |
+| `parameter_def_M.f90` | `parameter_def` | [`grasp_parameters`](../../src/lib/grasp_shared/grasp_parameters.f90) | Public re-export of the six centrally defined capacity parameters |
 | `peav_C.f90` | `peav_c` | [`block_mean_energies`](../../src/lib/grasp_shared/block_mean_energies.f90) | Mean energy array by symmetry block |
 | `pos_C.f90` | `pos_c` | [`symmetry_block_offsets`](../../src/lib/grasp_shared/symmetry_block_offsets.f90) | Offsets into CSF, eigenvalue, and mixing coefficient arrays |
 | `pote_C.f90` | `pote_c` | [`scf_radial_potentials`](../../src/lib/grasp_shared/scf_radial_potentials.f90) | Direct and exchange radial potential arrays |

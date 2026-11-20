@@ -1,80 +1,93 @@
-!***********************************************************************
-!                                                                      *
-subroutine multiply_restart_hamiltonian(n, m, b, c)
-    ! Module dependencies
-    use, intrinsic :: iso_fortran_env, only: output_unit
-    !                                                                      *
-    !   Matrix-matrix product: C = AB.  A  sparse  representation of the   *
-    !   lower triangle of the  (NxN)  matrix  A  is read from the disk     *
-    !                                                                      *
-    !   This is an adaptation of  Andreas Stathopulos'  routine  SPSBMV,   *
-    !   and is specific to GRASP2 derivatives.                             *
-    !                                                                      *
-    !   Call(s) to: [AUXBLAS]: DINIT/SINIT;                                *
-    !               [SPBLAS]: DAXPYI/SAXPYI, DDOTI/SDOTI.                  *
-    !                                                                      *
-    !   F A Parpia and A Stathopoulos         Last revision: 13 Oct 1992   *
-    !   Block Version by Xinghong He          Last revision: 18 Jun 1998   *
-    !                                                                      *
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
-        csf_mixing_coefficients, evecff, evecii
-    use ci_restart_units, only: restart_matrix_unit
-    use rci_matrix_file_position, only: nposition
-    use mpi_state,           only:  mpi_rank, mpi_process_count
-    use real_vector_initialization, only: dinit
-    use file_positioning, only: posfile
-    use sparse_dot_and_scatter, only: dmerge
-    use mpi_utilities, only: gdsummpi
+module multiply_restart_hamiltonian_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(in) :: n
-    integer, intent(in) :: m
-    real(real64), intent(in) :: b(n, m)
-    real(real64), intent(inout) :: c(n, m)
+    ! Module interface
+    private
+    public :: multiply_restart_hamiltonian
+contains
 
-    ! Local declarations
-    integer :: irow(n)
-    !cjb  INTEGER :: MYID, NPROCS, NCF, NCFDUM, ICCUTDUM, MYIDDUM, NPROCSDUM, ICOL&
-    integer ::               csf_count, file_csf_count, file_first_order_cutoff, file_mpi_rank, file_mpi_process_count, icol&
-        , nelc, ir, iv
-    real(real64) :: emt(n)
-    real(real64) :: elsto, diag, dl
-    !-----------------------------------------------
-    !
-    !     !...nposition+1 is the current position of the .res file
-    !     !...It is set in matrix and used in maneig, spodmv
-    !
-    !-----------------------------------------------------------------------
-    write (output_unit, *) "Calling spodmv..."
-    csf_count = n
+    !***********************************************************************
+    !                                                                      *
+    subroutine multiply_restart_hamiltonian(n, m, b, c)
+        ! Module dependencies
+        use, intrinsic :: iso_fortran_env, only: output_unit
+        !                                                                      *
+        !   Matrix-matrix product: C = AB.  A  sparse  representation of the   *
+        !   lower triangle of the  (NxN)  matrix  A  is read from the disk     *
+        !                                                                      *
+        !   This is an adaptation of  Andreas Stathopulos'  routine  SPSBMV,   *
+        !   and is specific to GRASP2 derivatives.                             *
+        !                                                                      *
+        !   Call(s) to: [AUXBLAS]: DINIT/SINIT;                                *
+        !               [SPBLAS]: DAXPYI/SAXPYI, DDOTI/SDOTI.                  *
+        !                                                                      *
+        !   F A Parpia and A Stathopoulos         Last revision: 13 Oct 1992   *
+        !   Block Version by Xinghong He          Last revision: 18 Jun 1998   *
+        !                                                                      *
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use eigenstate_expansions, only: hamiltonian_energy_shift
+        use ci_restart_units, only: restart_matrix_unit
+        use rci_matrix_file_position, only: nposition
+        use mpi_state,           only:  mpi_rank, mpi_process_count
+        use real_vector_initialization, only: initialize_real_vector
+        use file_positioning, only: position_calculation_file
+        use sparse_dot_and_scatter, only: sparse_dot_scatter
+        use mpi_utilities, only: allreduce_mpi_real_sum
+        implicit none (type, external)
 
-    !   Initialise the result matrix; note that this is specific to the
-    !   data structure of DVDSON
+        ! Arguments
+        integer, intent(in) :: n
+        integer, intent(in) :: m
+        real(real64), intent(in) :: b(n, m)
+        real(real64), intent(inout) :: c(n, m)
 
-    call dinit (n*m, 0.0_real64, c, 1)
+        ! Local declarations
+        integer :: stored_row_indices(n)
+        !cjb  INTEGER :: MYID, NPROCS, NCF, NCFDUM, ICCUTDUM, MYIDDUM, NPROCSDUM, ICOL&
+        integer ::               csf_count, file_csf_count, file_first_order_cutoff, file_mpi_rank, file_mpi_process_count, &
+            & stored_column_index&
+            , stored_entry_count, stored_entry_index, rhs_vector_index
+        real(real64) :: stored_column_values(n)
+        real(real64) :: stored_column_energy, output_with_diagonal, off_diagonal_dot_product
+        !-----------------------------------------------
+        !
+        !     !...nposition+1 is the current position of the .res file
+        !     !...It is set in matrix and used in maneig, spodmv
+        !
+        !-----------------------------------------------------------------------
+        write (output_unit, *) "Calling spodmv..."
+        csf_count = n
 
-    !...moved from maneig before "CALL GDVD (SPODMV..."
-    call posfile (0, restart_matrix_unit, nposition)
+        !   Initialise the result matrix; note that this is specific to the
+        !   data structure of DVDSON
 
-    read (restart_matrix_unit) file_csf_count, file_first_order_cutoff, file_mpi_rank, file_mpi_process_count
-    if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) stop &
-        "spodmv: ncf read wrong"
+        call initialize_real_vector (n*m, 0.0_real64, c, 1)
+
+        !...moved from maneig before "CALL GDVD (SPODMV..."
+        call position_calculation_file (0, restart_matrix_unit, nposition)
+
+        read (restart_matrix_unit) file_csf_count, file_first_order_cutoff, file_mpi_rank, file_mpi_process_count
+        if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) stop &
+            "spodmv: ncf read wrong"
 
 
-    do icol = mpi_rank + 1, n, mpi_process_count
-        read (restart_matrix_unit) nelc, elsto, (emt(ir),ir=1,nelc), (irow(ir),ir=1,nelc)
-        do iv = 1, m
-            diag = c(icol,iv) + (emt(nelc)-hamiltonian_energy_shift)*b(icol,iv)
-            call dmerge (nelc - 1, b(1:n,iv), c(1:n,iv), irow(1:n), &
-                emt(1:n), b(icol,iv), dl)
-            c(icol,iv) = diag + dl
+        do stored_column_index = mpi_rank + 1, n, mpi_process_count
+            read (restart_matrix_unit) stored_entry_count, stored_column_energy, (stored_column_values(stored_entry_index), &
+                & stored_entry_index=1,stored_entry_count), (stored_row_indices(stored_entry_index),stored_entry_index=1, &
+                & stored_entry_count)
+            do rhs_vector_index = 1, m
+                output_with_diagonal = c(stored_column_index,rhs_vector_index) + (stored_column_values(stored_entry_count)- &
+                    & hamiltonian_energy_shift)*b(stored_column_index,rhs_vector_index)
+                call sparse_dot_scatter (stored_entry_count - 1, b(1:n,rhs_vector_index), c(1:n,rhs_vector_index), &
+                    & stored_row_indices(1:n), &
+                    stored_column_values(1:n), b(stored_column_index,rhs_vector_index), off_diagonal_dot_product)
+                c(stored_column_index,rhs_vector_index) = output_with_diagonal + off_diagonal_dot_product
+            end do
         end do
-    end do
 
-    call gdsummpi (c, n*m)
+        call allreduce_mpi_real_sum (c, n*m)
 
-    return
-end subroutine multiply_restart_hamiltonian
+        return
+    end subroutine multiply_restart_hamiltonian
+end module multiply_restart_hamiltonian_interface

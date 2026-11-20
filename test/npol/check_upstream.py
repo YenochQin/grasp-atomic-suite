@@ -15,6 +15,7 @@ import sys
 
 
 APP_SYMBOLS_SNAPSHOT = Path("docs/reference/rmcdhf_app_symbols_snapshot.json")
+APP_MODULES_SNAPSHOT = Path("docs/reference/rmcdhf_app_modules_snapshot.json")
 
 
 def suite_source_path(root: Path, upstream_path: str, renamed_paths: dict[str, str]) -> Path:
@@ -422,7 +423,8 @@ def main(root: Path) -> None:
         renamed_paths[name] = suite_path.as_posix()
     reviewed_migration |= app_symbols["files"]
 
-    app_style = json.loads((root / "docs/reference/rmcdhf_app_source_style_snapshot.json").read_text())
+    app_style_path = root / "docs/reference/rmcdhf_app_source_style_snapshot.json"
+    app_style = json.loads(app_style_path.read_text())
     assert app_style["schema_version"] == 1, "Unknown app source style snapshot schema"
     assert hashlib.sha256(app_symbols_path.read_bytes()).hexdigest() == app_style["previous_manifest_sha256"], \
         "App symbols snapshot changed; review app source style provenance"
@@ -433,6 +435,35 @@ def main(root: Path) -> None:
         assert record["before_suite_sha256"] == app_symbols["files"][name]["after_suite_sha256"], \
             f"App source style snapshot has a different predecessor: {name}"
     reviewed_migration |= app_style["files"]
+
+    app_modules = json.loads((root / APP_MODULES_SNAPSHOT).read_text())
+    assert app_modules["schema_version"] == 1, "Unknown app modules snapshot schema"
+    assert hashlib.sha256(app_style_path.read_bytes()).hexdigest() == app_modules["previous_manifest_sha256"], \
+        "App source style snapshot changed; review app module provenance"
+    merged_interfaces = app_modules["merged_interfaces"]
+    assert merged_interfaces.keys() <= expected.keys()
+    assert set(merged_interfaces.values()) <= app_modules["files"].keys()
+    assert app_modules["files"].keys() <= expected.keys() - merged_interfaces.keys()
+    for interface, implementation in merged_interfaces.items():
+        former = Path(renamed_paths[interface])
+        retained = Path(renamed_paths[implementation])
+        assert former.name.endswith("_interface.f90") and former.parent == retained.parent, interface
+    for name, record in app_modules["files"].items():
+        assert record["before_suite_sha256"] == reviewed_migration[name]["after_suite_sha256"], \
+            f"App modules snapshot has a different predecessor: {name}"
+    reviewed_migration |= app_modules["files"]
+    expected = {name: record for name, record in expected.items() if name not in merged_interfaces}
+
+    semantic_names = json.loads((root / "docs/reference/rmcdhf_semantic_names_snapshot.json").read_text())
+    assert semantic_names["schema_version"] == 1, "Unknown semantic names snapshot schema"
+    assert semantic_names["previous_manifest_sha256"] == hashlib.sha256((root / APP_MODULES_SNAPSHOT).read_bytes()).hexdigest(), \
+        "App modules snapshot changed; review semantic naming provenance"
+    previous = reviewed_files | reviewed_migration
+    for name, record in semantic_names["files"].items():
+        assert name in expected and name.endswith(".f90") and name in previous, name
+        assert record["before_suite_sha256"] == previous[name]["after_suite_sha256"], \
+            f"Semantic names snapshot has a different predecessor: {name}"
+    reviewed_migration |= semantic_names["files"]
 
     actual = {
         path

@@ -46,7 +46,8 @@ LP64 BLAS/LAPACK values, rejected invalid call patterns, and actual MPI payloads
 The orbopt programs are retired; their old binaries are not current test targets.
 
 `f2018_davidson_contracts` and `f2018_davidson_mpi_1/2/4` call production
-DINIT, INIEST/INIEST2, SPICMV2 and GDVD. They check stride/guard values, diagonal
+`initialize_real_vector`, `estimate_davidson_sparse_eigenpairs`, `estimate_sparse_initial_basis`,
+`multiply_sparse_symmetric_matrix`, and `solve_davidson_eigenpairs`. They check stride/guard values, diagonal
 initial estimates, sparse multiplication, and the lowest eigenpair of a fully
 coupled 6-by-6 tridiagonal matrix against its analytic eigenvalue and residual
 (1e-12). These protect the callback interfaces and the MGS zero-column boundary.

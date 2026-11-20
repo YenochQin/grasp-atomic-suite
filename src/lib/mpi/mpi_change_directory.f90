@@ -3,10 +3,10 @@ module mpi_change_directory
 
     ! Module interface
     private
-    public :: sys_chdir
+    public :: change_mpi_directory
 contains
     ! Change the working directory using the first path_length characters.
-    subroutine sys_chdir (directory_path, path_length, directory_status)
+    subroutine change_mpi_directory (directory_path, path_length, directory_status)
         ! Module dependencies
         use posix_services, only: change_directory
         implicit none (type, external)
@@ -19,5 +19,5 @@ contains
         directory_status = change_directory (directory_path(1:path_length))
 
         return
-    end subroutine sys_chdir
+    end subroutine change_mpi_directory
 end module mpi_change_directory

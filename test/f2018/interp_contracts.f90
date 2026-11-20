@@ -1,7 +1,7 @@
 program interp_contracts
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use, intrinsic :: iso_fortran_env, only: real64, int64
-    use aitken_interpolation, only: interp
+    use aitken_interpolation, only: interpolate_aitken
     implicit none (type, external)
     real(real64) :: x(12),y(12),value,point,expected
     integer :: i,n
@@ -33,7 +33,7 @@ program interp_contracts
     case default
         error stop "Unknown interpolation fixture"
     end select
-    call interp(x(:n),y(:n),n,point,value,1e-12_real64)
+    call interpolate_aitken(x(:n),y(:n),n,point,value,1e-12_real64)
     if(scenario=="empty") error stop "Empty interpolation table accepted"
     if(.not.ieee_is_finite(value)) error stop "Nonfinite interpolation"
     if(abs(value-expected)>1e-12_real64) error stop "Interpolation analytic oracle"
@@ -57,7 +57,7 @@ contains
             end do
             do i=0,n
                 point=points(i)
-                call interp(nodes(:n),values(:n),n,point,result,1e-12_real64)
+                call interpolate_aitken(nodes(:n),values(:n),n,point,result,1e-12_real64)
                 expected=2+point+point**3/7
                 if(.not.ieee_is_finite(result)) error stop "Nonfinite regular interpolation"
                 if(abs(result-expected)>1e-12_real64) error stop "Regular interpolation polynomial"

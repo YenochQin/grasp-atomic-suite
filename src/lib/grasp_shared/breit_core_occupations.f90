@@ -5,5 +5,5 @@ module breit_core_occupations
     implicit none (type, external)
 
     ! Module state
-    integer :: icore(max_orbitals)
+    integer :: breit_core_orbital_occupations(max_orbitals)
 end module breit_core_occupations

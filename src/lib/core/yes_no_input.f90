@@ -4,9 +4,9 @@ module yes_no_input
 
     ! Module interface
     private
-    public :: getyn
+    public :: read_yes_no
 contains
-    logical function getyn ()
+    logical function read_yes_no ()
         ! Module dependencies
         use standard_io_units,     only: stdin_unit, stderr_unit
         implicit none (type, external)
@@ -17,14 +17,14 @@ contains
             read (stdin_unit, "(A)") response_character
             select case (response_character)
             case ("y", "Y")
-                getyn = .true.
+                read_yes_no = .true.
                 return
             case ("n", "N")
-                getyn = .false.
+                read_yes_no = .false.
                 return
             case default
                 write (stderr_unit, *) "Expecting <y><cr> or <n><cr> ..."
             end select
         end do
-    end function getyn
+    end function read_yes_no
 end module yes_no_input

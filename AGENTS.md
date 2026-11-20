@@ -25,12 +25,12 @@ introduce a second copy of these libraries. Preserve suite MPI helpers.
 For shared module names and external migration, see [shared library naming](docs/implemented/shared_library_naming.md).
 In `src/lib/grasp_shared/`, use one lowercase module per matching `.f90` filename.
 Keep `grasp_parameters` as the public capacity re-export interface.
-Define shared capacities only in `compile_time_capacities.f90` under their descriptive
-names; `grasp_parameters` also exports the six old names as aliases. Preserve upstream defaults:
-`KEYORB=215`, `NNNP=590`, `NNN1=NNNP+10`, `NNNW=127`, `NNNWM1=NNNW-1`, and
-`NNNWM2=NNNW-2`. The grid patcher edits this configuration module for capacity
-changes; existing applications continue to `USE grasp_parameters`.
-For capacity edits, use the primary-name mapping in [common parameters](docs/implemented/common_parameters.md).
+Define shared capacities only in `compile_time_capacities.f90` and re-export their
+descriptive names unchanged through `grasp_parameters`. Preserve upstream defaults
+of 215 for `orbital_index_radix`, 590 for `max_radial_points`, and 127 for
+`max_orbitals`. Derive `radial_workspace_capacity` by adding 10 and derive the two
+reduced orbital capacities by subtracting 1 or 2. The grid patcher edits the central
+module for capacity changes. Applications continue to `USE grasp_parameters`.
 Each grid entry point registered in the patcher keeps its upstream point/finite-nucleus
 settings and ACCY initialization order, including RDENSITY. Finite nuclei default to
 `radial_point_count=max_radial_points=590`.
@@ -73,7 +73,7 @@ set; compilation is a separate step from applying the patch.
 ## Coding Style & Naming Conventions
 Under `src/lib/` and `src/apps/`, indent Fortran by four spaces per level. Use comments to group module dependencies, explicit interfaces, arguments, and important declarations. Use structured control flow with unlabeled statements and unnamed constructs.
 
-Use lowercase snake_case for application source files and Fortran symbols. Name module files after their modules and keep standalone procedure declarations in companion `*_interface.f90` modules. Serial and MPI alternatives can share a module name when each executable selects one implementation. Ordinary program directories and targets use lowercase functional names like `rangular`, `rhfs`, and `gj`; use the build profile to identify the Fortran standard. For renamed paths and executable names, see [program naming](docs/implemented/program_naming.md).
+Use lowercase snake_case for application source files and Fortran symbols. Keep application procedure definitions in modules so a single set of dummy declarations supplies the explicit interface. Use the implementation filename for migrated modules that retain their established `*_interface` module name. Serial and MPI alternatives can share a module name when each executable selects one implementation. Ordinary program directories and targets use lowercase functional names like `rangular`, `rhfs`, and `gj`; use the build profile to identify the Fortran standard. For renamed paths and executable names, see [program naming](docs/implemented/program_naming.md).
 
 ## Testing Guidelines
 CI uses the CMake workflow. Run tests covering the affected programs, using a

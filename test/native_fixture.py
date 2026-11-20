@@ -15,7 +15,7 @@ from pathlib import Path
 
 def descriptors(text: Path, stem: str | None = None) -> None:
     stem = stem or text.stem
-    output = text.parent / f"{stem}_descriptors.parquet"
+    output = text.parent / f"{stem}_desc.parquet"
     header = text.parent / f"{stem}_header.toml"
     if output.is_file() and header.is_file():
         return

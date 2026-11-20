@@ -21,26 +21,29 @@
 !   M o d u l e s
 !-----------------------------------------------
       use grasp_parameters,   only: max_orbitals
-      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use debug_output_settings, only: cutoff, angular_coefficient_debug_flag, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, &
+          ldbpg, rmcdhf_debug_flags
       use atomic_calculation_state, only: electron_count
       use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count, orbital_kappa, &
           orbital_l, orbital_principal_n, orbital_symmetry_labels, orbital_two_j
-      use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, jcupar, jqsar
-      use subshell_term_table,          only: jtab, ntab
+      use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, left_coupling_codes, &
+          left_subshell_quantum_codes
+      use subshell_term_table,          only: state_offsets, state_values
       use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
-      use transition_basis_blocks,            only: nblock,ncfblk
+      use transition_basis_blocks,            only: transition_block_count, cumulative_csf_counts
       use array_memory_management, only: alloc, dalloc, ralloc
       use, intrinsic :: iso_fortran_env, only: iostat_end
-      use mpi_io_errors, only: fail_input_io => fail_input_io_mpi
+      use mpi_io_errors, only: fail_input_io_mpi
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use prsrsl_i, only: prsrsl
-      use integer_format, only: convrt
+      use integer_format, only: format_integer
       use prsrcn_i, only: prsrcn
       use parsjl_i, only: parsjl
-      use csf_byte_packing, only: pack
-      use csf_quantum_queries, only: iq, jqs, jcup, itjpo, ispar
+      use csf_byte_packing, only: pack_csf_subshell_byte
+      use csf_quantum_queries, only: csf_occupation, csf_subshell_quantum_code, csf_intermediate_coupling, csf_total_j_code, &
+          & csf_parity_code
       implicit none (type, external)
       integer, intent(in) :: csf_input_unit
 !-----------------------------------------------
@@ -109,7 +112,7 @@
 !   Print the number of relativistic subshells
 !
       if (orbital_count > 1) then
-         call convrt (orbital_count, record, lenth)
+         call format_integer (orbital_count, record, lenth)
          write (output_unit, *) "There are "//record(1:lenth)// &
                       " relativistic subshells;"
       else
@@ -181,7 +184,7 @@
 !   specifications easily interpreted by the user
 !
       csf_count = 0
-      nblock = 0
+      transition_block_count = 0
     3 continue
       csf_count = csf_count + 1
 !
@@ -192,13 +195,13 @@
 !
       if (ios == 0) then
          if (record(1:2) == " *") then
-            nblock = nblock + 1
-            ncfblk(nblock) = csf_count -1
+            transition_block_count = transition_block_count + 1
+            cumulative_csf_counts(transition_block_count) = csf_count -1
             read (csf_input_unit, "(A)", iostat=ios) record
          end if
       end if
       if (ios /= 0 .and. ios /= iostat_end) &
-         call fail_input_io(ios, csf_input_unit, "CSF lodcslbio occupation record")
+         call fail_input_io_mpi(ios, csf_input_unit, "CSF lodcslbio occupation record")
 !**********************************************************************
 
       if (ios == 0) then
@@ -215,7 +218,7 @@
          if (ios /= 0) then
             write (stderr_unit, *) "LODCSL: Expecting subshell quantum", &
                " number specification;"
-            call fail_input_io(ios, csf_input_unit, "CSF lodcslbio subshell quantum numbers")
+            call fail_input_io_mpi(ios, csf_input_unit, "CSF lodcslbio subshell quantum numbers")
          end if
          loc = len_trim(record)
          call parsjl (1, ncore, record, loc, iqsub, nqs, ierr)
@@ -229,7 +232,7 @@
                "and final angular momentum"
             write (stderr_unit, *) "quantum number and final parity ", &
                "specification;"
-            call fail_input_io(ios, csf_input_unit, "CSF lodcslbio coupling quantum numbers")
+            call fail_input_io_mpi(ios, csf_input_unit, "CSF lodcslbio coupling quantum numbers")
          end if
 !
 !   Allocate additional storage if necessary
@@ -281,10 +284,10 @@
 !   in IQ, JQS for the core subshells
 !
          do i = 1, ncore
-            call pack (orbital_two_j(i) + 1, i, csf_subshell_occupations(1:max_orbitals,csf_count))
-            call pack (0, i, csf_subshell_quantum_codes(1:max_orbitals,1,csf_count))
-            call pack (0, i, csf_subshell_quantum_codes(1:max_orbitals,2,csf_count))
-            call pack (1, i, csf_subshell_quantum_codes(1:max_orbitals,3,csf_count))
+            call pack_csf_subshell_byte (orbital_two_j(i) + 1, i, csf_subshell_occupations(1:max_orbitals,csf_count))
+            call pack_csf_subshell_byte (0, i, csf_subshell_quantum_codes(1:max_orbitals,1,csf_count))
+            call pack_csf_subshell_byte (0, i, csf_subshell_quantum_codes(1:max_orbitals,2,csf_count))
+            call pack_csf_subshell_byte (1, i, csf_subshell_quantum_codes(1:max_orbitals,3,csf_count))
          end do
 !
 !   Check all subshell, intermediate and final angular momentum
@@ -357,18 +360,18 @@
                iqt = min(iocci,ifulli - iocci)
                loc = (ifulli - 2)/2
                loc = (loc*(loc + 1))/2 + iqt
-               nbeg = jtab(loc+1) + 1
-               nend = jtab(loc+2)
+               nbeg = state_offsets(loc+1) + 1
+               nend = state_offsets(loc+2)
                do j = nbeg, nend, 3
-                  if (ntab(j+2) /= jsub + 1) cycle
+                  if (state_values(j+2) /= jsub + 1) cycle
                   if (nu == 0) then
-                     nu = ntab(j)
+                     nu = state_values(j)
                      goto 9
                   else
-                     if (ntab(j) == nu) goto 9
+                     if (state_values(j) == nu) goto 9
                   end if
                end do
-               call convrt (orbital_principal_n(i), record, lenth)
+               call format_integer (orbital_principal_n(i), record, lenth)
                write (stderr_unit, *) "LODCSL: Subshell quantum numbers ", &
                   "specified incorrectly for "//record(1:lenth)//orbital_symmetry_labels(i)//&
                   " subshell."
@@ -393,27 +396,27 @@
                      do j = abs(jlast - jsub), jlast + jsub, 2
                         if (jxn == j) goto 11
                      end do
-                     call convrt (orbital_principal_n(i), record, lenth)
+                     call format_integer (orbital_principal_n(i), record, lenth)
                      write (stderr_unit, *) &
                         "LODCSL: coupling of "//record(1:lenth)//orbital_symmetry_labels(i),&
                         " subshell to previous subshells is incorrect."
                      goto 26
                   end if
    11             continue
-                  call pack (jxn + 1, nopen - 1, csf_coupling_quantum_codes(1:max_orbitals,csf_count))
+                  call pack_csf_subshell_byte (jxn + 1, nopen - 1, csf_coupling_quantum_codes(1:max_orbitals,csf_count))
                   jlast = jxn
                else
                   jlast = jsub
                end if
             end if
-            call pack (iocci, i, csf_subshell_occupations(1:max_orbitals,csf_count))
-            call pack (nu, i, csf_subshell_quantum_codes(1:max_orbitals,1,csf_count))
-            call pack (0, i, csf_subshell_quantum_codes(1:max_orbitals,2,csf_count))
-            call pack (jsub + 1, i, csf_subshell_quantum_codes(1:max_orbitals,3,csf_count))
+            call pack_csf_subshell_byte (iocci, i, csf_subshell_occupations(1:max_orbitals,csf_count))
+            call pack_csf_subshell_byte (nu, i, csf_subshell_quantum_codes(1:max_orbitals,1,csf_count))
+            call pack_csf_subshell_byte (0, i, csf_subshell_quantum_codes(1:max_orbitals,2,csf_count))
+            call pack_csf_subshell_byte (jsub + 1, i, csf_subshell_quantum_codes(1:max_orbitals,3,csf_count))
          end do
 !
          do i = max(1,nopen), orbital_count
-            call pack (0, i, csf_coupling_quantum_codes(1:max_orbitals,csf_count))
+            call pack_csf_subshell_byte (0, i, csf_coupling_quantum_codes(1:max_orbitals,csf_count))
          end do
 !
          if (nqsn /= nqs) then
@@ -442,7 +445,7 @@
          end if
 !
          jpi = (jlast + 1)*ipty
-         call pack (jpi, max_orbitals, csf_coupling_quantum_codes(1:max_orbitals,csf_count))
+         call pack_csf_subshell_byte (jpi, max_orbitals, csf_coupling_quantum_codes(1:max_orbitals,csf_count))
 !
          if (csf_count > 1) then
             if (npeeln /= npeel) then
@@ -460,13 +463,13 @@
          if (csf_count > 1) then
             do j = 1, csf_count - 1
                do i = ncorp1, orbital_count
-                  if (iq(i,j) /= iq(i,csf_count)) goto 17
-                  if (jqs(1,i,j) /= jqs(1,i,csf_count)) goto 17
-                  if (jqs(2,i,j) /= jqs(2,i,csf_count)) goto 17
-                  if (jqs(3,i,j) /= jqs(3,i,csf_count)) goto 17
+                  if (csf_occupation(i,j) /= csf_occupation(i,csf_count)) goto 17
+                  if (csf_subshell_quantum_code(1,i,j) /= csf_subshell_quantum_code(1,i,csf_count)) goto 17
+                  if (csf_subshell_quantum_code(2,i,j) /= csf_subshell_quantum_code(2,i,csf_count)) goto 17
+                  if (csf_subshell_quantum_code(3,i,j) /= csf_subshell_quantum_code(3,i,csf_count)) goto 17
                end do
                do i = 1, nopen - 1
-                  if (jcup(i,j) /= jcup(i,csf_count)) goto 17
+                  if (csf_intermediate_coupling(i,j) /= csf_intermediate_coupling(i,csf_count)) goto 17
                end do
             end do
             write (stderr_unit, *) "LODCSL: Repeated CSF;"
@@ -485,13 +488,13 @@
 !
          if (csf_count == 1) then
             do i = 1, ncore
-               call pack (orbital_two_j(i) + 1, i, csf_subshell_occupations(1:max_orbitals,1))
-               call pack (0, i, csf_subshell_quantum_codes(1:max_orbitals,1,1))
-               call pack (0, i, csf_subshell_quantum_codes(1:max_orbitals,2,1))
-               call pack (1, i, csf_subshell_quantum_codes(1:max_orbitals,3,1))
+               call pack_csf_subshell_byte (orbital_two_j(i) + 1, i, csf_subshell_occupations(1:max_orbitals,1))
+               call pack_csf_subshell_byte (0, i, csf_subshell_quantum_codes(1:max_orbitals,1,1))
+               call pack_csf_subshell_byte (0, i, csf_subshell_quantum_codes(1:max_orbitals,2,1))
+               call pack_csf_subshell_byte (1, i, csf_subshell_quantum_codes(1:max_orbitals,3,1))
             end do
-            call pack (0, 1, csf_coupling_quantum_codes(1:max_orbitals,1))
-            call pack (1, max_orbitals, csf_coupling_quantum_codes(1:max_orbitals,1))
+            call pack_csf_subshell_byte (0, 1, csf_coupling_quantum_codes(1:max_orbitals,1))
+            call pack_csf_subshell_byte (1, max_orbitals, csf_coupling_quantum_codes(1:max_orbitals,1))
          else
             csf_count = csf_count - 1
          end if
@@ -505,9 +508,9 @@
    19 continue
       if (i <= orbital_count) then
          do j = 1, csf_count
-            if (iq(i,j) /= 0) goto 23
+            if (csf_occupation(i,j) /= 0) goto 23
          end do
-         call convrt (orbital_principal_n(i), record, lenth)
+         call format_integer (orbital_principal_n(i), record, lenth)
          write (output_unit, *) "Subshell "//record(1:lenth)//orbital_symmetry_labels(i)//" is empty", &
             " in all CSFs; eliminating this", " subshell from the list;"
          orbital_count = orbital_count - 1
@@ -518,14 +521,14 @@
             orbital_two_j(ii) = orbital_two_j(ii+1)
             orbital_symmetry_labels(ii) = orbital_symmetry_labels(ii+1)
             do j = 1, csf_count
-               itemp = iq(ii + 1,j)
-               call pack (itemp, ii, csf_subshell_occupations(1:max_orbitals,j))
-               itemp = jqs(1,ii + 1,j)
-               call pack (itemp, ii, csf_subshell_quantum_codes(ii:max_orbitals,1,j))
-               itemp = jqs(2,ii + 1,j)
-               call pack (itemp, ii, csf_subshell_quantum_codes(ii:max_orbitals,2,j))
-               itemp = jqs(3,ii + 1,j)
-               call pack (itemp, ii, csf_subshell_quantum_codes(ii:max_orbitals,3,j))
+               itemp = csf_occupation(ii + 1,j)
+               call pack_csf_subshell_byte (itemp, ii, csf_subshell_occupations(1:max_orbitals,j))
+               itemp = csf_subshell_quantum_code(1,ii + 1,j)
+               call pack_csf_subshell_byte (itemp, ii, csf_subshell_quantum_codes(ii:max_orbitals,1,j))
+               itemp = csf_subshell_quantum_code(2,ii + 1,j)
+               call pack_csf_subshell_byte (itemp, ii, csf_subshell_quantum_codes(ii:max_orbitals,2,j))
+               itemp = csf_subshell_quantum_code(3,ii + 1,j)
+               call pack_csf_subshell_byte (itemp, ii, csf_subshell_quantum_codes(ii:max_orbitals,3,j))
             end do
          end do
    23    continue
@@ -541,7 +544,7 @@
 !
 !   All done; report
 !
-      call convrt (csf_count, record, lenth)
+      call format_integer (csf_count, record, lenth)
       write (output_unit, *) "There are "//record(1:lenth)//" relativistic CSFs;"
       write (output_unit, *) " ... load complete;"
 !
@@ -554,30 +557,30 @@
             call ensure_debug_output()
             write (angular_debug_unit, *) "CSF ", i
             call ensure_debug_output()
-            write (angular_debug_unit, *) "ITJPO: ", itjpo(i)
+            write (angular_debug_unit, *) "ITJPO: ", csf_total_j_code(i)
             call ensure_debug_output()
-            write (angular_debug_unit, *) "ISPAR: ", ispar(i)
+            write (angular_debug_unit, *) "ISPAR: ", csf_parity_code(i)
             call ensure_debug_output()
-            write (angular_debug_unit, *) "IQ: ", (iq(j,i),j=1,orbital_count)
+            write (angular_debug_unit, *) "IQ: ", (csf_occupation(j,i),j=1,orbital_count)
             call ensure_debug_output()
-            write (angular_debug_unit, *) "JQS(1): ", (jqs(1,j,i),j=1,orbital_count)
+            write (angular_debug_unit, *) "JQS(1): ", (csf_subshell_quantum_code(1,j,i),j=1,orbital_count)
             call ensure_debug_output()
-            write (angular_debug_unit, *) "JQS(2): ", (jqs(2,j,i),j=1,orbital_count)
+            write (angular_debug_unit, *) "JQS(2): ", (csf_subshell_quantum_code(2,j,i),j=1,orbital_count)
             call ensure_debug_output()
-            write (angular_debug_unit, *) "JQS(3): ", (jqs(3,j,i),j=1,orbital_count)
+            write (angular_debug_unit, *) "JQS(3): ", (csf_subshell_quantum_code(3,j,i),j=1,orbital_count)
             call ensure_debug_output()
-            write (angular_debug_unit, *) "JCUP: ", (jcup(j,i),j=1,orbital_count - 1)
+            write (angular_debug_unit, *) "JCUP: ", (csf_intermediate_coupling(j,i),j=1,orbital_count - 1)
          end do
       end if
 
 
-      nblock = nblock + 1
-      ncfblk(nblock) = csf_count
+      transition_block_count = transition_block_count + 1
+      cumulative_csf_counts(transition_block_count) = csf_count
 !
       return
 !
    26 continue
-      call convrt (csf_count, record, lenth)
+      call format_integer (csf_count, record, lenth)
       write (stderr_unit, *) " CSF sequence number: "//record(1:lenth)//":"
       rewind (csf_input_unit)
       do i = 1, nrec

@@ -8,5 +8,5 @@ module hydrogenic_radial_components
     private :: real64
 
     ! Module state
-    real(real64) :: ph(max_radial_points), qh(max_radial_points)
+    real(real64) :: hydrogenic_large_component(max_radial_points), hydrogenic_small_component(max_radial_points)
 end module hydrogenic_radial_components

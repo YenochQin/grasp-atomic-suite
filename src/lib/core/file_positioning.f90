@@ -4,9 +4,9 @@ module file_positioning
 
     ! Module interface
     private
-    public :: posfile
+    public :: position_calculation_file
 contains
-    subroutine posfile(position_mode, file_unit, record_count)
+    subroutine position_calculation_file(position_mode, file_unit, record_count)
         implicit none (type, external)
 
         ! Arguments
@@ -35,5 +35,5 @@ contains
         end select
 
         return
-    end subroutine posfile
+    end subroutine position_calculation_file
 end module file_positioning

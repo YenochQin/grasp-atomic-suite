@@ -8,18 +8,19 @@ module distributed_slater_integrals
     private :: real64
 
     ! Module state
-    integer, pointer :: indteirk(:)
-    real(real64), pointer :: valteirk(:)
+    integer, pointer :: local_slater_integral_indices(:)
+    real(real64), pointer :: local_slater_integral_values(:)
 
 contains
 
-    ! GENINTRK assigns entry i (starting at 1) to MOD(i, nprocs).
-    pure integer function rk_local_count(n, myid, nprocs) result(nlocal)
+    ! Slater integral tabulation assigns one-based entry i to rank mod(i, mpi_process_count).
+    pure integer function rk_local_count(integral_count, mpi_rank, mpi_process_count) result(local_integral_count)
         ! Arguments
-        integer, intent(in) :: n, myid, nprocs
-        if (n < 0 .or. nprocs < 1) error stop "RK_LOCAL_COUNT: invalid rank layout"
-        if (myid < 0 .or. myid >= nprocs) error stop "RK_LOCAL_COUNT: invalid rank layout"
-        nlocal = n/nprocs
-        if (myid > 0 .and. myid <= mod(n,nprocs)) nlocal = nlocal + 1
+        integer, intent(in) :: integral_count, mpi_rank, mpi_process_count
+        if (integral_count < 0 .or. mpi_process_count < 1) error stop "RK_LOCAL_COUNT: invalid rank layout"
+        if (mpi_rank < 0 .or. mpi_rank >= mpi_process_count) error stop "RK_LOCAL_COUNT: invalid rank layout"
+        local_integral_count = integral_count/mpi_process_count
+        if (mpi_rank > 0 .and. mpi_rank <= mod(integral_count, mpi_process_count)) &
+            local_integral_count = local_integral_count + 1
     end function rk_local_count
 end module distributed_slater_integrals

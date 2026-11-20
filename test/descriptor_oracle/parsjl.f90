@@ -20,7 +20,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use integer_format, only: convrt
+      use integer_format, only: format_integer
       use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations
       implicit none (type, external)
 !-----------------------------------------------
@@ -97,7 +97,7 @@ contains
                end if
                iend = i - 1
                if (ifrac == 0) then
-                  call convrt (iend - istart + 1, cteger, lteger)
+                  call format_integer (iend - istart + 1, cteger, lteger)
                   form = "(1I"//cteger(1:lteger)//")"
                   read (record(istart:iend), fmt=form) j
                   if (j < 0) then
@@ -108,7 +108,7 @@ contains
                   end if
                   jx(njx) = 2*j
                else
-                  call convrt (iend - ifrac, cteger, lteger)
+                  call format_integer (iend - ifrac, cteger, lteger)
                   form = "(1I"//cteger(1:lteger)//")"
                   read (record(ifrac+1:iend), fmt=form) j
                   if (j /= 2) then
@@ -117,7 +117,7 @@ contains
                      ierr = 3
                      goto 3
                   end if
-                  call convrt (ifrac - istart, cteger, lteger)
+                  call format_integer (ifrac - istart, cteger, lteger)
                   form = "(1I"//cteger(1:lteger)//")"
                   read (record(istart:ifrac-1), fmt=form) j
                   if (j < 0) then
@@ -153,7 +153,7 @@ contains
          end if
          iend = i - 1
          if (ifrac == 0) then
-            call convrt (iend - istart + 1, cteger, lteger)
+            call format_integer (iend - istart + 1, cteger, lteger)
             form = "(1I"//cteger(1:lteger)//")"
             read (record(istart:iend), fmt=form) j
             if (j < 0) then
@@ -164,7 +164,7 @@ contains
             end if
             jx(njx) = 2*j
          else
-            call convrt (iend - ifrac, cteger, lteger)
+            call format_integer (iend - ifrac, cteger, lteger)
             form = "(1I"//cteger(1:lteger)//")"
             read (record(ifrac+1:iend), fmt=form) j
             if (j /= 2) then
@@ -173,7 +173,7 @@ contains
                ierr = 3
                goto 3
             end if
-            call convrt (ifrac - istart, cteger, lteger)
+            call format_integer (ifrac - istart, cteger, lteger)
             form = "(1I"//cteger(1:lteger)//")"
             read (record(istart:ifrac-1), fmt=form) j
             if (j < 0) then

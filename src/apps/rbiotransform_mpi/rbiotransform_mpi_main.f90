@@ -28,24 +28,26 @@ program rbiotransform_mpi_main
     !***********************************************************************
     use, intrinsic :: iso_fortran_env, only: real64
     use grasp_parameters,   only: max_orbitals, max_radial_points
-    use calculation_input_defaults,       only: ndef, ndump
-    use biorthogonal_subshell_layout,         only: nlmax, kamax, nshlii, nshlff
-    use biorthogonal_orbital_sets,         only: nwii, nwff
-    use radial_wavefunctions,          only: pfii, qfii, pfff, qfff
-    use biorthogonal_orbital_rotations,         only: cici, cfci
-    use mpi_state, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, &
-        & mpi_rank, processor_name, processor_name_length
-    use yes_no_input, only: getyn
-    use machine_constants, only: setmc
-    use physical_constants, only: setcon
-    use isotope_data_input, only: setiso
+    use calculation_input_defaults,       only: nondefault_options_flag, angular_output_dump_flag
+    use biorthogonal_subshell_layout,         only: max_biorthogonal_kappa_groups, kappa_group_count, &
+        initial_orbital_counts_by_group, final_orbital_counts_by_group
+    use biorthogonal_orbital_sets,         only: initial_orbital_count, final_orbital_count
+    use radial_wavefunctions,          only: initial_radial_large_components, initial_radial_small_components, &
+        final_radial_large_components, final_radial_small_components
+    use biorthogonal_orbital_rotations,         only: initial_orbital_rotation_values, final_orbital_rotation_values
+    use mpi_state, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
+        processor_name, processor_name_length
+    use yes_no_input, only: read_yes_no
+    use machine_constants, only: initialize_machine_constants
+    use physical_constants, only: initialize_physical_constants
+    use isotope_data_input, only: read_isotope_data
 
     ! Procedure interfaces
     use configure_radial_grid_interface, only: configure_radial_grid
 
     ! Module dependencies
-    use radial_grid_setup, only: radgrd
-    use radial_stencil_weights, only: setqic
+    use radial_grid_setup, only: initialize_radial_grid
+    use radial_stencil_weights, only: initialize_radial_stencil_weights
 
     ! Procedure interfaces
     use read_state_filenames_interface, only: read_state_filenames
@@ -60,33 +62,33 @@ program rbiotransform_mpi_main
     use write_transformed_radial_wavefunctions_interface, only: write_transformed_radial_wavefunctions
 
     ! Module dependencies
-    use log_factorial_table, only: factt
+    use log_factorial_table, only: initialize_log_factorial_table
 
     ! Procedure interfaces
     use read_biorthogonal_mcp_interface, only: read_biorthogonal_mcp
 
     ! Module dependencies
-    use mpi_utilities, only: startmpi2
-    use mpi_utilities, only: stopmpi2
+    use mpi_utilities, only: initialize_mpi_runtime_with_status
+    use mpi_utilities, only: finalize_mpi_runtime_with_status
 
     ! Procedure interfaces
     use load_biorthogonal_csf_basis_mpi_interface, only: load_biorthogonal_csf_basis_mpi
 
     ! Module dependencies
-    use mpi_change_directory, only: sys_chdir
+    use mpi_change_directory, only: change_mpi_directory
 
     ! Procedure interfaces
     use write_biorthogonal_mcp_interface, only: write_biorthogonal_mcp
     implicit none (type, external)
     !GG      INTEGER, PARAMETER :: LWORK1 = 100000
-    integer, parameter :: lwork1 = 10000000
-    integer :: ninshli(nlmax), ninshlf(nlmax)
-    integer :: ntestg, ntestl, ntest, inpci, ncore1, ncore2, mxl, k
-    integer :: start_clock_count,lenperm,lentmp,iii,unused_core_subshell_count
-    real(real64) :: work(lwork1)
-    real(real64) :: cishl(nlmax*nlmax)
+    integer, parameter :: orbital_transformation_workspace_size = 10000000
+    integer :: ninshli(max_biorthogonal_kappa_groups), ninshlf(max_biorthogonal_kappa_groups)
+    integer :: ntestg, ntestl, ntest, mixing_file_kind, initial_core_subshell_count, final_core_subshell_count, mxl
+    integer :: start_clock_count,permanent_directory_length,scratch_directory_length,iii,unused_core_subshell_count
+    real(real64) :: orbital_transformation_workspace(orbital_transformation_workspace_size)
+    real(real64) :: cishl(max_biorthogonal_kappa_groups*max_biorthogonal_kappa_groups)
     real(real64)   :: s(max_orbitals, max_orbitals)
-    real(real64) :: cfshl(nlmax*nlmax)
+    real(real64) :: cfshl(max_biorthogonal_kappa_groups*max_biorthogonal_kappa_groups)
     logical :: yes
     character :: name(2)*24
     character(len=3)  ::  block_label_text
@@ -98,14 +100,15 @@ program rbiotransform_mpi_main
     !=======================================================================
     !  Start mpi --- get processor info: myid, nprocs, host name; and print
     !=======================================================================
-    call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count,            &
+    call initialize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length, &
+        & start_clock_count,            &
         startup_directory, permdir, tmpdir, "RBIOTRANSFORM_MPI")
     write (block_label_text, "(I3.3)") mpi_rank
     print*, tmpdir , " = tmpdir"
 
     isotope_file_path = trim(startup_directory)//"/isodata"
-    lenperm = len_trim (permdir)
-    lentmp = len_trim (tmpdir)
+    permanent_directory_length = len_trim (permdir)
+    scratch_directory_length = len_trim (tmpdir)
 
     !=======================================================================
 
@@ -120,46 +123,46 @@ program rbiotransform_mpi_main
         print *
 
         write (output_unit, *) "Default settings?"
-        yes = getyn()
+        yes = read_yes_no()
         write (output_unit, *)
         if (yes) then
-            ndef = 0
-            ndump = 1
+            nondefault_options_flag = 0
+            angular_output_dump_flag = 1
         else
-            ndef = 1
+            nondefault_options_flag = 1
             write (output_unit, *) "Dump angular data on file?"
-            yes = getyn()
+            yes = read_yes_no()
             write (output_unit, *)
             if (yes) then
-                ndump = 1
+                angular_output_dump_flag = 1
             else
-                ndump = 0
+                angular_output_dump_flag = 0
             end if
         end if
         write (output_unit, *) "Input from a CI calculation?"
-        yes = getyn()
+        yes = read_yes_no()
         write (output_unit, *)
         if (yes) then
-            inpci = 0
+            mixing_file_kind = 0
         else
-            inpci = 1
+            mixing_file_kind = 1
         end if
     end if !myid=0
-    call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
-    call mpi_bcast (ndump,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
-    call mpi_bcast (inpci,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+    call mpi_bcast (nondefault_options_flag,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+    call mpi_bcast (angular_output_dump_flag,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+    call mpi_bcast (mixing_file_kind,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
     !
     !   Perform machine- and installation-dependent setup
     !
-    call setmc
+    call initialize_machine_constants
     !
     !   Set up the physical constants
     !
-    call setcon
+    call initialize_physical_constants
     !
     !   Open, check, load data from, and close the  .iso  file
     !
-    call setiso (isotope_file_path)
+    call read_isotope_data (isotope_file_path)
     !
     !   Determine the parameters controlling the radial grid
     !
@@ -167,11 +170,11 @@ program rbiotransform_mpi_main
     !
     !   Generate the radial grid
     !
-    call radgrd
+    call initialize_radial_grid
     !
     !   Set up the coefficients for the numerical procedures
     !
-    call setqic
+    call initialize_radial_stencil_weights
     !
     !   Obtain the names of the initial and final state files
     !   and open files where the transformed orbitals and CI
@@ -189,7 +192,7 @@ program rbiotransform_mpi_main
     !
     !   Open, check, load data from and close the initial state CSL file.
     !
-    call load_merged_csf_basis (fullname(1), ncore1,1)
+    call load_merged_csf_basis (fullname(1), initial_core_subshell_count,1)
     !
     !   Transfer the data to the initial state COMMON
     !
@@ -197,7 +200,7 @@ program rbiotransform_mpi_main
     !
     !   Open, check, load data from and close the final state CSL file.
     !
-    call load_merged_csf_basis (fullname(2), ncore2,2)
+    call load_merged_csf_basis (fullname(2), final_core_subshell_count,2)
     !
     !   Transfer the data to the final state COMMON
     !
@@ -207,7 +210,7 @@ program rbiotransform_mpi_main
     !   the number of orbitals for each kappa quantum number
     !   for the initial state and final states
     !
-    call prepare_biorthogonal_subshells (ntestg, ncore1, ncore2)
+    call prepare_biorthogonal_subshells (ntestg, initial_core_subshell_count, final_core_subshell_count)
     !
     !   Read the the radial orbitals for the initial state
     !
@@ -229,20 +232,24 @@ program rbiotransform_mpi_main
 
     call calculate_orbital_overlap_matrix
 
-    call calculate_subshell_overlap (s, nwii, nwff)
+    call calculate_subshell_overlap (s, initial_orbital_count, final_orbital_count)
 
     !
     !   Once we have the overlap matrices
     !   we can manipulate the initial and final state separately.
     !
-    mxl = kamax
+    mxl = kappa_group_count
     !
     !. Calculate biorthonormal orbitals, and orbital matrix
     !. for counter transformation of CI coefficients.
     !
-    call transform_orbital_sets (pfii, qfii, nshlii, ninshli, pfff, qfff, &
-        nshlff, ninshlf, max_radial_points, kamax, work, lwork1, ntestg, &
-        cishl, cici, cfshl, cfci)
+    call transform_orbital_sets (initial_radial_large_components, initial_radial_small_components, &
+        initial_orbital_counts_by_group, ninshli, &
+        final_radial_large_components, final_radial_small_components, &
+        final_orbital_counts_by_group, ninshlf, max_radial_points, kappa_group_count, orbital_transformation_workspace, &
+            orbital_transformation_workspace_size, &
+            & ntestg, &
+        cishl, initial_orbital_rotation_values, cfshl, final_orbital_rotation_values)
     if (mpi_rank == 0) then
         write (*, *)
         write (*, *) " ****************************************"
@@ -263,14 +270,14 @@ program rbiotransform_mpi_main
     !   The interface with the transformation part is in the routine mcp
     !
     iii = len_trim(startup_directory)
-    call sys_chdir(trim(startup_directory),iii,mpi_error_code)
+    call change_mpi_directory(trim(startup_directory),iii,mpi_error_code)
     !GG      CALL SETCSLA(NAME(1), ncore_not_used)
     call load_biorthogonal_csf_basis_mpi(name(1), unused_core_subshell_count,3)
     iii = len_trim(tmpdir)
-    call sys_chdir(trim(tmpdir)//"/"//block_label_text,iii+4,mpi_error_code)
-    call factt
-    call write_biorthogonal_mcp(name(1),startup_directory,1,ntestg,inpci)
-    call read_biorthogonal_mcp(name(1),startup_directory,1,ntestg,inpci)
+    call change_mpi_directory(trim(tmpdir)//"/"//block_label_text,iii+4,mpi_error_code)
+    call initialize_log_factorial_table
+    call write_biorthogonal_mcp(name(1),startup_directory,1,ntestg,mixing_file_kind)
+    call read_biorthogonal_mcp(name(1),startup_directory,1,ntestg,mixing_file_kind)
 
     !***** added by Yu Zou, Feb.18,2000 ***********
     !R      DO K = 1,KAMAX
@@ -284,13 +291,13 @@ program rbiotransform_mpi_main
     !   The interface with the transformation part is in the routine mcp
     !
     iii = len_trim(startup_directory)
-    call sys_chdir(trim(startup_directory),iii,mpi_error_code)
+    call change_mpi_directory(trim(startup_directory),iii,mpi_error_code)
     !GG      CALL SETCSLA(NAME(2), ncore_not_used)
     call load_biorthogonal_csf_basis_mpi(name(2), unused_core_subshell_count,3)
     iii = len_trim(tmpdir)
-    call sys_chdir(trim(tmpdir)//"/"//block_label_text,iii+4,mpi_error_code)
-    call write_biorthogonal_mcp(name(2),startup_directory,2,ntestg,inpci)
-    call read_biorthogonal_mcp(name(2),startup_directory,2,ntestg,inpci)
+    call change_mpi_directory(trim(tmpdir)//"/"//block_label_text,iii+4,mpi_error_code)
+    call write_biorthogonal_mcp(name(2),startup_directory,2,ntestg,mixing_file_kind)
+    call read_biorthogonal_mcp(name(2),startup_directory,2,ntestg,mixing_file_kind)
 
     !R      DO K = 1,KAMAX
     !R        close(UNIT=80+K,STATUS="DELETE")
@@ -300,7 +307,7 @@ program rbiotransform_mpi_main
     !  Execution finished; Statistics output
     !=======================================================================
 
-    call stopmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length,             &
+    call finalize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length,             &
         start_clock_count, "RBIOTRANSFORM_MPI")
     !=======================================================================
     stop

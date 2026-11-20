@@ -4,13 +4,13 @@ module radial_wavefunction_input
 
     ! Module interface
     private
-    public :: setrwfa
+    public :: read_radial_wavefunction_file
 contains
-    subroutine setrwfa(radial_file_path)
+    subroutine read_radial_wavefunction_file(radial_file_path)
         ! Module dependencies
-        use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
-        use file_open, only: openfl
-        use radial_wavefunction_records, only: lodrwf
+        use standard_io_units, only: stderr_unit
+        use file_open, only: open_calculation_file
+        use radial_wavefunction_records, only: read_radial_wavefunction_records
         implicit none (type, external)
 
         ! Arguments and local declarations
@@ -19,7 +19,7 @@ contains
         integer :: load_status, read_status
         character :: file_signature*6
 
-        call openfl (wavefunction_input_unit, radial_file_path, "UNFORMATTED", "OLD", load_status)
+        call open_calculation_file (wavefunction_input_unit, radial_file_path, "UNFORMATTED", "OLD", load_status)
         if (load_status == 1) then
             write (stderr_unit, *) "Error when opening", radial_file_path(1:len_trim(radial_file_path))
             stop
@@ -30,7 +30,7 @@ contains
             close(wavefunction_input_unit)
             stop
         end if
-        call lodrwf (wavefunction_input_unit, load_status)
+        call read_radial_wavefunction_records (wavefunction_input_unit, load_status)
 
         if (load_status /= 0) then
             write (stderr_unit, *) "Radial wavefunctions defined in CSL file", &
@@ -42,5 +42,5 @@ contains
         close(wavefunction_input_unit)
 
         return
-    end subroutine setrwfa
+    end subroutine read_radial_wavefunction_file
 end module radial_wavefunction_input

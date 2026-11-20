@@ -7,5 +7,5 @@ module radial_stepping_coefficients
     private :: real64
 
     ! Module state
-    real(real64) :: c(6)
+    real(real64) :: starting_step_weights(6)
 end module radial_stepping_coefficients

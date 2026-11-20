@@ -1,57 +1,67 @@
-!***********************************************************************
-!                                                                      *
-real(real64) function hyperfine_radial_integral (first_orbital, second_orbital, k)
-    ! Module dependencies
-    !                                                                      *
-    !   The value of RINTHF is an approximation to:                        *
-    !                                                                      *
-    !              K                                                       *
-    !         I ( r  * ( P (r)*Q (r) + Q (r)*P (r) ; 0 to infinity)        *
-    !                     I     J       I     J                            *
-    !                                                                      *
-    !   where   I ( G(r) ; Range )  denotes  the  integral  of G(r) over   *
-    !   Range. This is a modification of RINT for the Type B operator.     *
-    !                                                                      *
-    !   Call(s) to: [LIB92]: QUAD.                                         *
-    !                                                                      *
-    !   Written by Per O. Jonsson             Last revision: 24 Dec 1992   *
-    !                                                                      *
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-        radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-    use radial_quadrature_workspace, only: mtp, radial_workspace_capacity, ta, tb
-    use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
-        pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-    use radial_quadrature, only: quad
+module hyperfine_radial_integral_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(in) :: first_orbital
-    integer, intent(in) :: second_orbital
-    integer, intent(in) :: k
+    ! Module interface
+    private
+    public :: hyperfine_radial_integral
+contains
 
-    ! Local declarations
-    integer :: l
-    real(real64) :: result
-    !-----------------------------------------------
-    !
-    !   Tabulate integrand as required for SUBROUTINE QUAD
-    !
-    mtp = min(orbital_last_grid_index(first_orbital),orbital_last_grid_index(second_orbital))
-    !
-    !   Value at first tabulation point is arbitrary
-    !
-    ta(1) = 0.0_real64
-    do l = 2, mtp
-        ta(l) = radial_grid(l)**k*(radial_large_components(l,first_orbital)*radial_small_components(l,second_orbital) + &
-            & radial_small_components(l,first_orbital)*radial_large_components(l,second_orbital))*radial_grid_derivative(l)
-    end do
-    !
-    !   Perform integration
-    !
-    call quad (result)
-    hyperfine_radial_integral = result
-    !
-    return
-end function hyperfine_radial_integral
+    !***********************************************************************
+    !                                                                      *
+    real(real64) function hyperfine_radial_integral (first_orbital, second_orbital, radial_power)
+        ! Module dependencies
+        !                                                                      *
+        !   The value of RINTHF is an approximation to:                        *
+        !                                                                      *
+        !              K                                                       *
+        !         I ( r  * ( P (r)*Q (r) + Q (r)*P (r) ; 0 to infinity)        *
+        !                     I     J       I     J                            *
+        !                                                                      *
+        !   where   I ( G(r) ; Range )  denotes  the  integral  of G(r) over   *
+        !   Range. This is a modification of RINT for the Type B operator.     *
+        !                                                                      *
+        !   Call(s) to: [LIB92]: QUAD.                                         *
+        !                                                                      *
+        !   Written by Per O. Jonsson             Last revision: 24 Dec 1992   *
+        !                                                                      *
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use radial_grid_state, only: radial_grid, radial_grid_derivative
+        use radial_quadrature_workspace, only: integration_last_index, radial_workspace_a
+        use radial_wavefunctions, only: orbital_last_grid_index, radial_large_components, radial_small_components
+        use radial_quadrature, only: integrate_radial_grid
+        implicit none (type, external)
+
+        ! Arguments
+        integer, intent(in) :: first_orbital
+        integer, intent(in) :: second_orbital
+        integer, intent(in) :: radial_power
+
+        ! Local declarations
+        integer :: radial_index
+        real(real64) :: radial_integral
+        !-----------------------------------------------
+        !
+        !   Tabulate integrand as required for SUBROUTINE QUAD
+        !
+        integration_last_index = min(orbital_last_grid_index(first_orbital),orbital_last_grid_index(second_orbital))
+        !
+        !   Value at first tabulation point is arbitrary
+        !
+        radial_workspace_a(1) = 0.0_real64
+        do radial_index = 2, integration_last_index
+            radial_workspace_a(radial_index) = radial_grid(radial_index)**radial_power*(radial_large_components(radial_index, &
+                & first_orbital)*radial_small_components(radial_index, &
+                second_orbital) + &
+                & radial_small_components(radial_index,first_orbital)*radial_large_components(radial_index,second_orbital))* &
+                & radial_grid_derivative(radial_index)
+        end do
+        !
+        !   Perform integration
+        !
+        call integrate_radial_grid (radial_integral)
+        hyperfine_radial_integral = radial_integral
+        !
+        return
+    end function hyperfine_radial_integral
+end module hyperfine_radial_integral_interface

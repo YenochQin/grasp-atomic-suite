@@ -1,233 +1,255 @@
-!***********************************************************************
-!                                                                      *
-!JE   SUBROUTINE DENSNEW(DOIT,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
-subroutine calculate_seltzer_field_shift_factors(doit,dint1,dint2,dint3,                &
-    dint4,dint5,dint6,dint7,                     &
-    dint1vec,dens1vec,nrnuc)
-    ! Module dependencies
-    use calculation_file_units, only: one_body_cache_unit
-    !                                                                      *
-    !   IF angular coefficients must be calculated                         *
-    !   This routine controls combines the radial and angular parts for the*
-    !   calculation of the NMS parameter, the electron density at the      *
-    !   origin and radial expectation values.
-    !                                                                      *
-    !   Call(s) to: [LIB92]: ALCBUF, CONVRT, GETYN                         *
-    !                        ITJPO, ONESCALAR                              *
-    !                                                                      *
-    !   Written by Per Jonsson                                             *
-    !                                                                      *
-    !                                         Last revision: 10 Nov 1995   *
-    !                                                                      *
-    !   Modified by C. Naz\'e  Feb. 2012                                   *
-    !   Modified by J. Ekman   Nov. 2013                                   *
-    !                                                                      *
-    !***********************************************************************
-    !...Translated by Gediminas Gaigalas 11/18/19
-    use, intrinsic :: iso_fortran_env, only: real64
-    use grasp_parameters,    only: orbital_index_radix, max_orbitals, max_radial_points
-    use transition_basis_blocks, only: ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
-        nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
-    use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-    use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
-    use atomic_calculation_state, only: max_radial_points
-    use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
-        csf_mixing_coefficients, evecff, evecii
-    use first_order_csf_cutoffs, only: iccut
-    use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-        radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-    use angular_symmetry_labels, only: left_justified_j_labels => jlbl, parity_labels => jlbp, right_justified_j_labels => jlbr
-    use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
-    use orbital_csf_basis, only: csf_count, max_orbitals, orbital_count, orbital_kappa
-    use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-    use isotope_shift_integral_tables, only: ndtea, ntei, pindte, pvalte, firstt
-    use angular_coefficient_buffer_state, only: angular_buffer_capacity, angular_coefficient_count, &
-        angular_coefficient_labels, angular_coefficients
-    use isotope_shift_options, only: dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
-    use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-    use selected_level_indices,           only : nvec
-    use angular_coefficient_buffer, only: alcbuf
-    use integer_format, only: convrt
-    use yes_no_input, only: getyn
-    use csf_quantum_queries, only: itjpo
-    use one_electron_scalar_coefficients, only: onescalar
+module calculate_seltzer_field_shift_factors_interface
     implicit none (type, external)
 
-    ! Local declarations
-    integer :: l, loc, ncontr, lab
+    ! Module interface
+    private
+    public :: calculate_seltzer_field_shift_factors
+contains
 
-    ! Arguments
-    integer, intent(in) :: nrnuc
-    real(real64), intent(in) :: dint1(max_orbitals, max_orbitals), dint2(max_orbitals, max_orbitals), &
-        dint3(max_orbitals, max_orbitals), dint4(max_orbitals, max_orbitals), &
-        dint5(max_orbitals, max_orbitals), dint6(max_orbitals, max_orbitals), &
-        dint7(max_orbitals, max_orbitals)
-    real(real64), intent(out)     :: dens1vec(nvec, nrnuc) !  JE ADD
-    real(real64), intent(in) :: dint1vec(max_orbitals, max_orbitals, nrnuc) !  JE ADD
-    integer, intent(in) :: doit
+    !***********************************************************************
+    !                                                                      *
+    !JE   SUBROUTINE DENSNEW(DOIT,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
+    subroutine calculate_seltzer_field_shift_factors(angular_cache_write_mode,contact_density_integrals, &
+        & total_nms_integrals,radius_integrals, &
+        radius_squared_integrals,inverse_radius_integrals,inverse_radius_squared_integrals,leading_nms_integrals, &
+        orbital_density_profiles,level_density_profiles,nuclear_density_point_count)
+        ! Module dependencies
+        use calculation_file_units, only: one_body_cache_unit
+        !                                                                      *
+        !   IF angular coefficients must be calculated                         *
+        !   This routine controls combines the radial and angular parts for the*
+        !   calculation of the NMS parameter, the electron density at the      *
+        !   origin and radial expectation values.
+        !                                                                      *
+        !   Call(s) to: [LIB92]: ALCBUF, CONVRT, GETYN                         *
+        !                        ITJPO, ONESCALAR                              *
+        !                                                                      *
+        !   Written by Per Jonsson                                             *
+        !                                                                      *
+        !                                         Last revision: 10 Nov 1995   *
+        !                                                                      *
+        !   Modified by C. Naz\'e  Feb. 2012                                   *
+        !   Modified by J. Ekman   Nov. 2013                                   *
+        !                                                                      *
+        !***********************************************************************
+        !...Translated by Gediminas Gaigalas 11/18/19
+        use, intrinsic :: iso_fortran_env, only: real64
+        use grasp_parameters, only: orbital_index_radix, max_orbitals
+        use debug_output_settings, only: cutoff
+        use eigenstate_expansions, only: csf_mixing_coefficients
+        use orbital_csf_basis, only: csf_count, max_orbitals, orbital_count, orbital_kappa
+        use selected_level_indices, only: active_level_count
+        use isotope_shift_options, only: contact_density_by_level, total_nms_by_level, radius_by_level, &
+            & radius_squared_by_level, inverse_radius_by_level, inverse_radius_squared_by_level, leading_nms_by_level, &
+            & leading_sms_by_level, total_sms_by_level
+        use angular_coefficient_buffer, only: manage_angular_coefficient_buffer
+        use integer_format, only: format_integer
+        use yes_no_input, only: read_yes_no
+        use csf_quantum_queries, only: csf_total_j_code
+        use one_electron_scalar_coefficients, only: calculate_one_electron_scalar_coefficients
+        implicit none (type, external)
 
-    ! Local constants
-    integer, parameter :: orbital_label_radix = orbital_index_radix
+        ! Local declarations
+        integer :: l, level_mixing_offset, coefficient_count, packed_orbital_label
 
-    ! Local declarations
-    real(real64) :: shell_coefficients(max_orbitals), tshell_s(max_orbitals)
-    real(real64) :: contri1vec(nrnuc), elemnt1vec(nrnuc)
-    real(real64), pointer :: emt1(:), emt2(:), emt3(:), emt4(:),   &
-        emt5(:), emt6(:)
-    real(real64) :: elemnt1, elemnt2, elemnt3, elemnt4, elemnt5,     &
-        elemnt6, elemnt7, contri1, contri2, contri3,     &
-        contri4, contri5, contri6, contri7
-    logical :: vsh, nucde, smssh, yes
-    character :: number_text*11, ck*2
-    integer :: ia_s(max_orbitals)
-    integer :: ka, iopar, include_closed_shell_terms, csf_index, text_length, itjpoc, ir, orbital_index, ket_orbital_index, &
-        & i, ii, j
-    !-----------------------------------------------
-    !
-    ! DOIT: IF DOIT=1 angular coefficients will be stored after creation
-    ! DINT1 contain the density
-    ! DINT2 contain the uncorrected NMS parameter: K^1_NMS
-    ! DINT3 contain the expect. value <r>
-    ! DINT4 contain the expect. value <r2>
-    ! DINT5 contain the expect. value <r-1>
-    ! DINT6 contain the expect. value <r-2>
-    ! DINT7 contain the sum of NMS parameters: K^1_NMS+K^2_NMS+K^3_NMS
-    !
-    dens1vec(:,:) = 0.0_real64                                     ! JE ADD
-    !
-    !   Set the rank (zero) and parity (even) for the one-particle
-    !   coefficients
-    !
-    ka = 0
-    iopar = 1
-    include_closed_shell_terms = 1
-    !
-    !   Allocate storage for the arrays in BUFFER
-    !
-    call alcbuf (1)
-    !
-    !   Sweep through the Hamiltonian matrix to determine the
-    !   sms parameter
-    !
-    do csf_index = 1,csf_count
+        ! Arguments
+        integer, intent(in) :: nuclear_density_point_count
+        real(real64), intent(in) :: contact_density_integrals(max_orbitals, max_orbitals), &
+            & total_nms_integrals(max_orbitals, max_orbitals), &
+            radius_integrals(max_orbitals, max_orbitals), radius_squared_integrals(max_orbitals, max_orbitals), &
+            inverse_radius_integrals(max_orbitals, max_orbitals), inverse_radius_squared_integrals(max_orbitals, max_orbitals), &
+            leading_nms_integrals(max_orbitals, max_orbitals)
+        real(real64), intent(out)     :: level_density_profiles(active_level_count, nuclear_density_point_count) !  JE ADD
+        real(real64), intent(in) :: orbital_density_profiles(max_orbitals, max_orbitals, nuclear_density_point_count) !  JE ADD
+        integer, intent(in) :: angular_cache_write_mode
+
+        ! Local constants
+
+        ! Local declarations
+        real(real64) :: shell_coefficients(max_orbitals), stored_shell_coefficients(max_orbitals)
+        real(real64) :: contri1vec(nuclear_density_point_count), elemnt1vec(nuclear_density_point_count)
+        real(real64) :: contact_density_element, total_nms_element, radius_element, radius_squared_element, &
+            & inverse_radius_element,     &
+            inverse_radius_squared_element, leading_nms_element, contact_density_contribution, total_nms_contribution, &
+                & radius_contribution,     &
+            radius_squared_contribution, inverse_radius_contribution, inverse_radius_squared_contribution, leading_nms_contribution
+        character :: number_text*11
+        integer :: contributing_orbitals(max_orbitals)
+        integer :: operator_rank, operator_parity, include_closed_shell_terms, csf_index, text_length, &
+            & column_two_j_plus_one, row_csf, orbital_index, &
+            ket_orbital_index, i, level_index
+        !-----------------------------------------------
         !
-        !   Output IC on the screen to show how far the calculation has preceede
+        ! DOIT: IF DOIT=1 angular coefficients will be stored after creation
         !
-        call convrt (csf_index,number_text,text_length)
-        if (mod(csf_index,100)==0) then
-            print *, "Column "//number_text(1:text_length)//" complete;"
-        end if
+        level_density_profiles(:,:) = 0.0_real64                                     ! JE ADD
         !
-        itjpoc = itjpo (csf_index)
-
-        do ir = csf_index,csf_count
+        !   Set the rank (zero) and parity (even) for the one-particle
+        !   coefficients
+        !
+        operator_rank = 0
+        operator_parity = 1
+        include_closed_shell_terms = 1
+        !
+        !   Allocate storage for the arrays in BUFFER
+        !
+        call manage_angular_coefficient_buffer (1)
+        !
+        !   Sweep through the Hamiltonian matrix to determine the
+        !   sms parameter
+        !
+        do csf_index = 1,csf_count
             !
-            !   Matrix elements are diagonal in J
+            !   Output IC on the screen to show how far the calculation has preceede
             !
-            if (itjpo(ir) == itjpoc) then
+            call format_integer (csf_index,number_text,text_length)
+            if (mod(csf_index,100)==0) then
+                print *, "Column "//number_text(1:text_length)//" complete;"
+            end if
+            !
+            column_two_j_plus_one = csf_total_j_code (csf_index)
+
+            do row_csf = csf_index,csf_count
                 !
-                !   Initialise the accumulator
+                !   Matrix elements are diagonal in J
                 !
-                elemnt1 = 0.0_real64
-                elemnt2 = 0.0_real64
-                elemnt3 = 0.0_real64
-                elemnt4 = 0.0_real64
-                elemnt5 = 0.0_real64
-                elemnt6 = 0.0_real64
-                elemnt7 = 0.0_real64
-                elemnt1vec(:) = 0.0_real64                                      ! JE ADD
-                !
-                !   Call the MCT package to compute T coefficients
-                !
-                call onescalar(csf_index,ir,orbital_index,ket_orbital_index,shell_coefficients)
-                !GG            CALL TNSRJJ (KA,IOPAR,IC,IR,IA,IB,TSHELL)
-                if (orbital_index /= 0) then
-                    if (orbital_index == ket_orbital_index) then
-                        ncontr = 0
-                        do orbital_index = 1,orbital_count
-                            if (abs (shell_coefficients(orbital_index)) > cutoff) then
-                                ncontr = ncontr + 1
-                                tshell_s(ncontr) = shell_coefficients(orbital_index)
-                                ia_s(ncontr) = orbital_index
-                                elemnt1 = elemnt1 + dint1(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                do l = 2,nrnuc                                    ! JE ADD
-                                    elemnt1vec(l) = elemnt1vec(l)+dint1vec(orbital_index,orbital_index,l)*& ! JE ADD
-                                        shell_coefficients(orbital_index)                        ! JE ADD
-                                end do  ! JE ADD
-                                elemnt2 = elemnt2 + dint2(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                elemnt3 = elemnt3 + dint3(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                elemnt4 = elemnt4 + dint4(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                elemnt5 = elemnt5 + dint5(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                elemnt6 = elemnt6 + dint6(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                                elemnt7 = elemnt7 + dint7(orbital_index,orbital_index)*shell_coefficients(orbital_index)
-                            end if
-                        end do
-                        if (doit==1) write(one_body_cache_unit) csf_index,ir,ncontr
-                        do i = 1,ncontr
-                            lab = ia_s(i)*(orbital_label_radix + 1)
-                            if (doit==1) write(one_body_cache_unit) tshell_s(i),lab
-                        end do
-                    else
-                        if (abs (shell_coefficients(1)) > cutoff) then
-                            if (orbital_kappa(orbital_index)==orbital_kappa(ket_orbital_index)) then
-                                if (doit==1) write(one_body_cache_unit) csf_index,ir,1
-                                lab = orbital_index*orbital_label_radix + ket_orbital_index
-                                if (doit==1) write(one_body_cache_unit) shell_coefficients(1),lab
-                                elemnt1 = elemnt1 + dint1(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                do l = 2,nrnuc                                   ! JE ADD
-                                    elemnt1vec(l) = elemnt1vec(l)+dint1vec(orbital_index,ket_orbital_index,l)*& ! JE ADD
-                                        shell_coefficients(1)                         ! JE ADD
-                                end do  ! JE ADD
-                                elemnt2 = elemnt2 + dint2(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                elemnt3 = elemnt3 + dint3(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                elemnt4 = elemnt4 + dint4(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                elemnt5 = elemnt5 + dint5(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                elemnt6 = elemnt6 + dint6(orbital_index,ket_orbital_index)*shell_coefficients(1)
-                                elemnt7 = elemnt7 + dint7(orbital_index,ket_orbital_index)*shell_coefficients(1)
+                if (csf_total_j_code(row_csf) == column_two_j_plus_one) then
+                    !
+                    !   Initialise the accumulator
+                    !
+                    contact_density_element = 0.0_real64
+                    total_nms_element = 0.0_real64
+                    radius_element = 0.0_real64
+                    radius_squared_element = 0.0_real64
+                    inverse_radius_element = 0.0_real64
+                    inverse_radius_squared_element = 0.0_real64
+                    leading_nms_element = 0.0_real64
+                    elemnt1vec(:) = 0.0_real64                                      ! JE ADD
+                    !
+                    !   Call the MCT package to compute T coefficients
+                    !
+                    call calculate_one_electron_scalar_coefficients(csf_index,row_csf,orbital_index,ket_orbital_index, &
+                        & shell_coefficients)
+                    !GG            CALL TNSRJJ (KA,IOPAR,IC,IR,IA,IB,TSHELL)
+                    if (orbital_index /= 0) then
+                        if (orbital_index == ket_orbital_index) then
+                            coefficient_count = 0
+                            do orbital_index = 1,orbital_count
+                                if (abs (shell_coefficients(orbital_index)) > cutoff) then
+                                    coefficient_count = coefficient_count + 1
+                                    stored_shell_coefficients(coefficient_count) = shell_coefficients(orbital_index)
+                                    contributing_orbitals(coefficient_count) = orbital_index
+                                    contact_density_element = contact_density_element + &
+                                        & contact_density_integrals(orbital_index,orbital_index)*shell_coefficients(orbital_index)
+                                    do l = 2,nuclear_density_point_count                                    ! JE ADD
+                                        elemnt1vec(l) = elemnt1vec(l)+orbital_density_profiles(orbital_index,orbital_index,l)*& ! JE ADD
+                                            shell_coefficients(orbital_index)                        ! JE ADD
+                                    end do  ! JE ADD
+                                    total_nms_element = total_nms_element + total_nms_integrals(orbital_index, &
+                                        & orbital_index)*shell_coefficients(orbital_index)
+                                    radius_element = radius_element + radius_integrals(orbital_index,orbital_index)* &
+                                        & shell_coefficients(orbital_index)
+                                    radius_squared_element = radius_squared_element + &
+                                        & radius_squared_integrals(orbital_index,orbital_index)*shell_coefficients(orbital_index)
+                                    inverse_radius_element = inverse_radius_element + &
+                                        & inverse_radius_integrals(orbital_index,orbital_index)*shell_coefficients(orbital_index)
+                                    inverse_radius_squared_element = inverse_radius_squared_element + &
+                                        & inverse_radius_squared_integrals(orbital_index,orbital_index)* &
+                                        & shell_coefficients(orbital_index)
+                                    leading_nms_element = leading_nms_element + leading_nms_integrals(orbital_index, &
+                                        & orbital_index)*shell_coefficients(orbital_index)
+                                end if
+                            end do
+                            if (angular_cache_write_mode==1) write(one_body_cache_unit) csf_index,row_csf,coefficient_count
+                            do i = 1,coefficient_count
+                                packed_orbital_label = contributing_orbitals(i)*(orbital_index_radix + 1)
+                                if (angular_cache_write_mode==1) write(one_body_cache_unit) stored_shell_coefficients(i), &
+                                    & packed_orbital_label
+                            end do
+                        else
+                            if (abs (shell_coefficients(1)) > cutoff) then
+                                if (orbital_kappa(orbital_index)==orbital_kappa(ket_orbital_index)) then
+                                    if (angular_cache_write_mode==1) write(one_body_cache_unit) csf_index,row_csf,1
+                                    packed_orbital_label = orbital_index*orbital_index_radix + ket_orbital_index
+                                    if (angular_cache_write_mode==1) write(one_body_cache_unit) shell_coefficients(1), &
+                                        & packed_orbital_label
+                                    contact_density_element = contact_density_element + &
+                                        & contact_density_integrals(orbital_index,ket_orbital_index)*shell_coefficients(1)
+                                    do l = 2,nuclear_density_point_count                                   ! JE ADD
+                                        elemnt1vec(l) = elemnt1vec(l)+orbital_density_profiles(orbital_index,ket_orbital_index,l)*& ! JE ADD
+                                            shell_coefficients(1)                         ! JE ADD
+                                    end do  ! JE ADD
+                                    total_nms_element = total_nms_element + total_nms_integrals(orbital_index, &
+                                        & ket_orbital_index)*shell_coefficients(1)
+                                    radius_element = radius_element + radius_integrals(orbital_index,ket_orbital_index)* &
+                                        & shell_coefficients(1)
+                                    radius_squared_element = radius_squared_element + &
+                                        & radius_squared_integrals(orbital_index,ket_orbital_index)*shell_coefficients(1)
+                                    inverse_radius_element = inverse_radius_element + &
+                                        & inverse_radius_integrals(orbital_index,ket_orbital_index)*shell_coefficients(1)
+                                    inverse_radius_squared_element = inverse_radius_squared_element + &
+                                        & inverse_radius_squared_integrals(orbital_index,ket_orbital_index)*shell_coefficients(1)
+                                    leading_nms_element = leading_nms_element + leading_nms_integrals(orbital_index, &
+                                        & ket_orbital_index)*shell_coefficients(1)
+                                end if
                             end if
                         end if
                     end if
+                    do level_index = 1,active_level_count
+                        level_mixing_offset = (level_index-1)*csf_count
+                        contact_density_contribution = csf_mixing_coefficients(csf_index+level_mixing_offset)* &
+                            & csf_mixing_coefficients(row_csf+ &
+                            & level_mixing_offset)*contact_density_element
+                        contri1vec(:) = csf_mixing_coefficients(csf_index+level_mixing_offset)* &
+                            & csf_mixing_coefficients(row_csf+level_mixing_offset)*elemnt1vec(:)   ! JE ADD
+                        total_nms_contribution = csf_mixing_coefficients(csf_index+level_mixing_offset)* &
+                            & csf_mixing_coefficients(row_csf+level_mixing_offset)* &
+                            & total_nms_element
+                        radius_contribution = csf_mixing_coefficients(csf_index+level_mixing_offset)* &
+                            & csf_mixing_coefficients(row_csf+level_mixing_offset)*radius_element
+                        radius_squared_contribution = csf_mixing_coefficients(csf_index+level_mixing_offset)* &
+                            & csf_mixing_coefficients(row_csf+ &
+                            & level_mixing_offset)*radius_squared_element
+                        inverse_radius_contribution = csf_mixing_coefficients(csf_index+level_mixing_offset)* &
+                            & csf_mixing_coefficients(row_csf+ &
+                            & level_mixing_offset)*inverse_radius_element
+                        inverse_radius_squared_contribution = csf_mixing_coefficients(csf_index+level_mixing_offset)* &
+                            & csf_mixing_coefficients(row_csf+level_mixing_offset)*inverse_radius_squared_element
+                        leading_nms_contribution = csf_mixing_coefficients(csf_index+level_mixing_offset)* &
+                            & csf_mixing_coefficients(row_csf+level_mixing_offset)* &
+                            & leading_nms_element
+                        if (row_csf/=csf_index) then
+                            contact_density_contribution = 2.0_real64 * contact_density_contribution
+                            contri1vec(:) = 2.0_real64 * contri1vec(:)                  ! JE ADD
+                            total_nms_contribution = 2.0_real64 * total_nms_contribution
+                            radius_contribution = 2.0_real64 * radius_contribution
+                            radius_squared_contribution = 2.0_real64 * radius_squared_contribution
+                            inverse_radius_contribution = 2.0_real64 * inverse_radius_contribution
+                            inverse_radius_squared_contribution = 2.0_real64 * inverse_radius_squared_contribution
+                            leading_nms_contribution = 2.0_real64 * leading_nms_contribution
+                        end if
+                        contact_density_by_level(level_index) = contact_density_by_level(level_index) + contact_density_contribution
+                        do l = 2,nuclear_density_point_count                                         ! JE ADD
+                            level_density_profiles(level_index,l) = level_density_profiles(level_index,l) + contri1vec(l)           ! JE ADD
+                        end do  ! JE ADD
+                        total_nms_by_level(level_index) = total_nms_by_level(level_index) + total_nms_contribution
+                        radius_by_level(level_index) = radius_by_level(level_index) + radius_contribution
+                        radius_squared_by_level(level_index) = radius_squared_by_level(level_index) + radius_squared_contribution
+                        inverse_radius_by_level(level_index) = inverse_radius_by_level(level_index) + inverse_radius_contribution
+                        inverse_radius_squared_by_level(level_index) = inverse_radius_squared_by_level(level_index) + &
+                            & inverse_radius_squared_contribution
+                        leading_nms_by_level(level_index) = leading_nms_by_level(level_index) + leading_nms_contribution
+                    end do
                 end if
-                do j = 1,nvec
-                    loc = (j-1)*csf_count
-                    contri1 = csf_mixing_coefficients(csf_index+loc)*csf_mixing_coefficients(ir+loc)*elemnt1
-                    contri1vec(:) = csf_mixing_coefficients(csf_index+loc)*csf_mixing_coefficients(ir+loc)*elemnt1vec(:)   ! JE ADD
-                    contri2 = csf_mixing_coefficients(csf_index+loc)*csf_mixing_coefficients(ir+loc)*elemnt2
-                    contri3 = csf_mixing_coefficients(csf_index+loc)*csf_mixing_coefficients(ir+loc)*elemnt3
-                    contri4 = csf_mixing_coefficients(csf_index+loc)*csf_mixing_coefficients(ir+loc)*elemnt4
-                    contri5 = csf_mixing_coefficients(csf_index+loc)*csf_mixing_coefficients(ir+loc)*elemnt5
-                    contri6 = csf_mixing_coefficients(csf_index+loc)*csf_mixing_coefficients(ir+loc)*elemnt6
-                    contri7 = csf_mixing_coefficients(csf_index+loc)*csf_mixing_coefficients(ir+loc)*elemnt7
-                    if (ir/=csf_index) then
-                        contri1 = 2.0_real64 * contri1
-                        contri1vec(:) = 2.0_real64 * contri1vec(:)                  ! JE ADD
-                        contri2 = 2.0_real64 * contri2
-                        contri3 = 2.0_real64 * contri3
-                        contri4 = 2.0_real64 * contri4
-                        contri5 = 2.0_real64 * contri5
-                        contri6 = 2.0_real64 * contri6
-                        contri7 = 2.0_real64 * contri7
-                    end if
-                    dens1(j) = dens1(j) + contri1
-                    do l = 2,nrnuc                                         ! JE ADD
-                        dens1vec(j,l) = dens1vec(j,l) + contri1vec(l)           ! JE ADD
-                    end do  ! JE ADD
-                    dens2(j) = dens2(j) + contri2
-                    dens3(j) = dens3(j) + contri3
-                    dens4(j) = dens4(j) + contri4
-                    dens5(j) = dens5(j) + contri5
-                    dens6(j) = dens6(j) + contri6
-                    dens7(j) = dens7(j) + contri7
-                end do
-            end if
+            end do
         end do
-    end do
-    if (doit==1) write(one_body_cache_unit) -1
-    !
-    ! Empty the buffer and close file
-    if (doit==1) close(one_body_cache_unit)
-    !
-    !   Deallocate storage for the arrays in BUFFER
-    call alcbuf (3)
-    return
-end subroutine calculate_seltzer_field_shift_factors
+        if (angular_cache_write_mode==1) write(one_body_cache_unit) -1
+        !
+        ! Empty the buffer and close file
+        if (angular_cache_write_mode==1) close(one_body_cache_unit)
+        !
+        !   Deallocate storage for the arrays in BUFFER
+        call manage_angular_coefficient_buffer (3)
+        return
+    end subroutine calculate_seltzer_field_shift_factors
+end module calculate_seltzer_field_shift_factors_interface

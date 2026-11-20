@@ -1,55 +1,68 @@
-!***********************************************************************
-!                                                                      *
-subroutine write_transformed_radial_wavefunctions(name)
-    ! Module dependencies
-    !                                                                      *
-    !  This subroutine outputs the transformed radial orbitals             *
-    !                                                                      *
-    !  Written by Per Jonsson                                              *
-    !                                                                      *
-    !***********************************************************************
-    use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
-        nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
-    use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-        radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-    use orbital_csf_basis, only: max_orbitals
-    use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
-        pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
+module write_transformed_radial_wavefunctions_interface
     implicit none (type, external)
 
-    ! Arguments and local declarations
-    integer :: wavefunction_output_unit
-    character, intent(in) :: name(2)*24
-    integer :: j, k, i
-    !-----------------------------------------------
-    !
-    j = index(name(1)," ")
-    open(newunit=wavefunction_output_unit, file=name(1)(1:j-1)//".bw", form="UNFORMATTED", status=&
-        "UNKNOWN", position="asis")
+    ! Module interface
+    private
+    public :: write_transformed_radial_wavefunctions
+contains
 
-    write (wavefunction_output_unit) "G92RWF"
-    write (*, *) "NWII", nwii
-    do k = 1, nwii
-        write (wavefunction_output_unit) npii(k), nakii(k), eii(k), mfii(k)
-        write (wavefunction_output_unit) pzii(k), (pfii(i,k),i=1,mfii(k)), (qfii(i,k),i=1,mfii(k))
-        write (wavefunction_output_unit) (radial_grid(i),i=1,mfii(k))
-    end do
+    !***********************************************************************
+    !                                                                      *
+    subroutine write_transformed_radial_wavefunctions(name)
+        ! Module dependencies
+        !                                                                      *
+        !  This subroutine outputs the transformed radial orbitals             *
+        !                                                                      *
+        !  Written by Per Jonsson                                              *
+        !                                                                      *
+        !***********************************************************************
+        use biorthogonal_orbital_sets, only: final_orbital_energy_parameters, initial_orbital_energy_parameters, &
+            final_orbital_count, initial_orbital_count, final_orbital_principal_n, final_orbital_kappa, &
+            initial_orbital_principal_n, initial_orbital_kappa
+        use radial_grid_state, only: radial_grid
+        use radial_wavefunctions, only: final_orbital_last_grid_index, final_orbital_origin_parameters, &
+            initial_orbital_last_grid_index, initial_orbital_origin_parameters, final_radial_large_components, &
+            final_radial_small_components, initial_radial_large_components, initial_radial_small_components
+        implicit none (type, external)
 
-    close(wavefunction_output_unit)
+        ! Arguments and local declarations
+        integer :: wavefunction_output_unit
+        character, intent(in) :: name(2)*24
+        integer :: j, k, i
+        !-----------------------------------------------
+        !
+        j = index(name(1)," ")
+        open(newunit=wavefunction_output_unit, file=name(1)(1:j-1)//".bw", form="UNFORMATTED", status=&
+            "UNKNOWN", position="asis")
 
-    j = index(name(2)," ")
-    open(newunit=wavefunction_output_unit, file=name(2)(1:j-1)//".bw", form="UNFORMATTED", status=&
-        "UNKNOWN", position="asis")
+        write (wavefunction_output_unit) "G92RWF"
+        write (*, *) "NWII", initial_orbital_count
+        do k = 1, initial_orbital_count
+            write (wavefunction_output_unit) initial_orbital_principal_n(k), initial_orbital_kappa(k), &
+                initial_orbital_energy_parameters(k), initial_orbital_last_grid_index(k)
+            write (wavefunction_output_unit) initial_orbital_origin_parameters(k), (initial_radial_large_components(i,k),i=1, &
+                initial_orbital_last_grid_index(k)), (initial_radial_small_components(i,k),i=1,initial_orbital_last_grid_index(k))
+            write (wavefunction_output_unit) (radial_grid(i),i=1,initial_orbital_last_grid_index(k))
+        end do
 
-    write (wavefunction_output_unit) "G92RWF"
-    write (*, *) "NWFF", nwff
-    do k = 1, nwff
-        write (wavefunction_output_unit) npff(k), nakff(k), eff(k), mfff(k)
-        write (wavefunction_output_unit) pzff(k),(pfff(i,k),i=1,mfff(k)),(qfff(i,k),i=1,mfff(k))
-        write (wavefunction_output_unit) (radial_grid(i),i=1,mfff(k))
-    end do
+        close(wavefunction_output_unit)
 
-    close(wavefunction_output_unit)
+        j = index(name(2)," ")
+        open(newunit=wavefunction_output_unit, file=name(2)(1:j-1)//".bw", form="UNFORMATTED", status=&
+            "UNKNOWN", position="asis")
 
-    return
-end subroutine write_transformed_radial_wavefunctions
+        write (wavefunction_output_unit) "G92RWF"
+        write (*, *) "NWFF", final_orbital_count
+        do k = 1, final_orbital_count
+            write (wavefunction_output_unit) final_orbital_principal_n(k), final_orbital_kappa(k), &
+                final_orbital_energy_parameters(k), final_orbital_last_grid_index(k)
+            write (wavefunction_output_unit) final_orbital_origin_parameters(k),(final_radial_large_components(i,k),i=1, &
+                final_orbital_last_grid_index(k)),(final_radial_small_components(i,k),i=1,final_orbital_last_grid_index(k))
+            write (wavefunction_output_unit) (radial_grid(i),i=1,final_orbital_last_grid_index(k))
+        end do
+
+        close(wavefunction_output_unit)
+
+        return
+    end subroutine write_transformed_radial_wavefunctions
+end module write_transformed_radial_wavefunctions_interface

@@ -74,7 +74,8 @@ set -gx OMPI_FC $FC
 cmake --build build --parallel 4
 ```
 
-内置 reader 需要 Rust 1.99.0 或更新的发行版、Cargo 和 C 编译器。
+CMake 只启用 Fortran，并用它探测 BLAS 和 LAPACK。
+Cargo 使用 Rust 1.99.0 或更新版本构建内置 reader，并调用 C 编译器构建其 Zstd 依赖。
 Cargo 始终使用 `--locked`，默认允许下载缺失的依赖。设置
 `-DGRASP_CSF_READER_OFFLINE=ON` 可仅使用本地缓存构建。
 `RCSFS_TEST_CLI` 只用于开发测试离线生成夹具，不参与 reader 构建和生产读取。
@@ -140,7 +141,7 @@ CMake 会自动查找 BLAS/LAPACK，并要求 GNU Fortran 15 或更新版本。
 | 步骤 | 按状态名读取 | 按状态名写出 |
 | --- | --- | --- |
 | `rwfnestimate` | `name_header.toml` | 初猜轨道 `name.initial.wfn` |
-| `rangular` | `name_descriptors.parquet` 和配套头文件 | 角系数 `mcp.NN`、`name.rangular.log` |
+| `rangular` | `name_desc.parquet` 和配套头文件 | 角系数 `mcp.NN`、`name.rangular.log` |
 | `rmcdhf`、`rmcdhf_mem` | 同一描述符文件对、初猜轨道和 MCP | 优化轨道 `name.wfn`、OL/EOL 混合系数 `name.mix`、`name.rmcdhf.summary`、`name.rmcdhf.log` |
 | `rci` | 同一描述符文件对和 `name.wfn` | CI 混合系数 `name.cimix`、`name.csum`、`name.clog` |
 
@@ -148,12 +149,12 @@ MPI 版本由 rank 0 询问状态名。各 rank 在各自的临时目录交接 `
 
 每个工作目录共用一套 `mcp.NN`。应先完成本基组的 RMCDHF，再在同一目录为下一基组生成角系数。并行计算不同基组时，分别使用独立的工作目录和 MPI scratch 目录。`A` 和 `A.initial` 两个状态也应分目录保存，因为两者都会写 `A.initial.wfn`。下游程序优先读取新后缀，对应新文件缺失时可读取归档中的 `.w`、`.m`、`.cm`。
 
-状态名留空会使用传统的 `rcsf_*`、`rwfn.inp`、`rwfn.out` 和 `rmix.out`。以 y/n 回答设置开头的旧输入脚本仍可使用。若状态名恰为单字母 Y 或 N（含小写），相应输入目录里的同名头文件优先。同名重算时，(E)AL 不更新该状态已有的混合系数文件。固定文件名的已有计算仍可通过 [save_rmcdhf 归档](scripts/README.md#保存-rmcdhf-计算结果)。
+状态名留空会使用 `rcsf_desc.parquet`、`rcsf_header.toml`、`rwfn.inp`、`rwfn.out` 和 `rmix.out`。描述符短文件名缺失时，仍可读取旧的 `*_descriptors.parquet`。以 y/n 回答设置开头的旧输入脚本仍可使用。若状态名恰为单字母 Y 或 N（含小写），相应输入目录里的同名头文件优先。同名重算时，(E)AL 不更新该状态已有的混合系数文件。固定文件名的已有计算仍可通过 [save_rmcdhf 归档](scripts/README.md#保存-rmcdhf-计算结果)。
 
 常用输入文件：
 
 - `isodata`：核参数和同位素相关数据。
-- `name_descriptors.parquet` 和 `name_header.toml`：CSF 描述符及其配套头文件。
+- `name_desc.parquet` 和 `name_header.toml`：CSF 描述符及其配套头文件。
 - `name.wfn`：径向轨道波函数。
 - `name.mix`：MCDHF/非 CI 混合系数文件。
 - `name.cimix`：CI 混合系数文件。
@@ -196,10 +197,10 @@ ctest --test-dir build-all --output-on-failure
 ## 径向网格与仓库迁移
 
 公共容量集中定义在 [`compile_time_capacities.f90`](src/lib/grasp_shared/compile_time_capacities.f90)，
-经 [`grasp_parameters.f90`](src/lib/grasp_shared/grasp_parameters.f90) 转导。库名及模块名的完整对照见[共享库命名](docs/implemented/shared_library_naming.md)。默认值与原版一致：
-`NNNP=590`、`NNN1=600`、`NNNW=127`、`NNNWM1=126`、`NNNWM2=125`、`KEYORB=215`。
-各入口保留自身的原版网格初始化：有限核默认 `N=NNNP=590`；提供点核分支的程序使用
-`N=MIN(220,NNNP)`。两个 CSFG RCI 程序沿用公共网格初始化，没有独立点核分支。
+经 [`grasp_parameters.f90`](src/lib/grasp_shared/grasp_parameters.f90) 转导。库名及模块名的完整对照见[共享库命名](docs/implemented/shared_library_naming.md)。Suite 的默认值为
+`max_radial_points=590`、`radial_workspace_capacity=600`、`max_orbitals=127`、
+`max_orbitals_minus_one=126`、`max_orbitals_minus_two=125` 和 `orbital_index_radix=215`。
+有限核默认使用 `radial_point_count=max_radial_points`，点核分支初值为 `min(220,max_radial_points)`。
 输入轨道会插值到当前计算网格。原版 RMCDHF 在网格交互之前计算 `ACCY=H**6`；
 交互改变 H 时应随后明确设置 ACCY。
 
@@ -215,8 +216,8 @@ ctest --test-dir build-all --output-on-failure
 需先将旧生成文件移出源码目录。
 
 参数列表、调用顺序和验证见[公共参数说明](docs/implemented/common_parameters.md)。
-本仓库的脚本布局按需修改集中容量配置和十七个独立网格入口；显式 ACCY 修改还覆盖
-两个 CSFG RCI 续算入口，保留转导接口。
+本仓库的脚本布局按需修改集中容量配置和十五个独立网格入口。显式修改 `working_tolerance` 还覆盖
+串行和 MPI 两个 RCI 续算入口。
 参数调整的具体数值、原因、测试数据及验收标准见
 [径向网格参数调整与验证规程](docs/plans/grasp_grid_parameter_tuning.md)。
 

@@ -8,7 +8,7 @@ module csf_full_basis_reader
         orbital_l, orbital_two_j, orbital_symmetry_labels
     use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
     use atomic_calculation_state, only: electron_count
-    use transition_basis_blocks, only: symmetry_block_count => nblock, cumulative_csf_counts => ncfblk
+    use transition_basis_blocks, only: transition_block_count, cumulative_csf_counts
     use grasp_parameters, only: max_orbitals
     implicit none (type, external)
 
@@ -67,10 +67,10 @@ contains
         csf_count=basis_reader%total_csf_count
         core_subshell_count=basis_reader%core_count
         electron_count=basis_reader%electron_count
-        symmetry_block_count=basis_reader%block_count
+        transition_block_count=basis_reader%block_count
         cumulative_csf_counts=0
         last_csf=0
-        do block_index=1,symmetry_block_count
+        do block_index=1,transition_block_count
             last_csf=last_csf+basis_reader%block_lengths(block_index)
             cumulative_csf_counts(block_index)=last_csf
         end do

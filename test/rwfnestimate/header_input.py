@@ -184,7 +184,7 @@ class HeaderInput(unittest.TestCase):
         empty = ["Core subshells:", "", "Peel subshells:", "", "CSF(s):"]
         self.assert_rejected(encode_header(empty), "empty orbital table")
         empty[3] = " ".join(f"{n}s" for n in range(1, 129))
-        self.assert_rejected(encode_header(empty), "NNNW capacity")
+        self.assert_rejected(encode_header(empty), "max_orbitals capacity")
 
     def test_cli_errors_and_help(self) -> None:
         help_result, directory = self.run_case(arguments=["--help"], stdin="")

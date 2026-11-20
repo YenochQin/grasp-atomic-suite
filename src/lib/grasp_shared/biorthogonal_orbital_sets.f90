@@ -8,10 +8,13 @@ module biorthogonal_orbital_sets
     private :: real64
 
     ! Module state
-    character :: nhff(max_orbitals)*2, nhii(max_orbitals)*2
-    real(real64) :: eff(max_orbitals), gamaff(max_orbitals) , eii(max_orbitals), gamaii(max_orbitals)
-    integer :: ncfff, nwff, ncfii, nwii
-    integer :: npff(max_orbitals), nakff(max_orbitals), npii(max_orbitals), nakii(max_orbitals)
-    integer :: nklff(max_orbitals), nkjff(max_orbitals), nklii(max_orbitals), nkjii(max_orbitals)
-    integer :: nnff(max_orbitals), nnii(max_orbitals)
+    character :: final_orbital_symmetry_labels(max_orbitals)*2, initial_orbital_symmetry_labels(max_orbitals)*2
+    real(real64) :: final_orbital_energy_parameters(max_orbitals), final_orbital_origin_exponents(max_orbitals) , &
+        initial_orbital_energy_parameters(max_orbitals), initial_orbital_origin_exponents(max_orbitals)
+    integer :: final_csf_count, final_orbital_count, initial_csf_count, initial_orbital_count
+    integer :: final_orbital_principal_n(max_orbitals), final_orbital_kappa(max_orbitals), &
+        initial_orbital_principal_n(max_orbitals), initial_orbital_kappa(max_orbitals)
+    integer :: final_orbital_l(max_orbitals), final_orbital_two_j(max_orbitals), initial_orbital_l(max_orbitals), &
+        initial_orbital_two_j(max_orbitals)
+    integer :: merged_to_final_orbital_index(max_orbitals), merged_to_initial_orbital_index(max_orbitals)
 end module biorthogonal_orbital_sets

@@ -4,15 +4,14 @@ module machine_constants
 
     ! Module interface
     private
-    public :: setmc
+    public :: initialize_machine_constants
 contains
-    subroutine setmc
+    subroutine initialize_machine_constants
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
-        use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-        use atomic_calculation_state, only: maximum_exp_argument => expmax, minimum_exp_argument => expmin, &
-            & machine_precision => precis, maximum_decimal_exponent => tenmax
+        use debug_output_settings, only: ldbpg
+        use atomic_calculation_state, only: maximum_exp_argument, minimum_exp_argument, machine_precision, maximum_decimal_exponent
         use blas_lapack_interfaces, only: dlamch
         implicit none (type, external)
 
@@ -33,5 +32,5 @@ contains
         end if
         return
         return
-    end subroutine setmc
+    end subroutine initialize_machine_constants
 end module machine_constants

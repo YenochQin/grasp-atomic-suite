@@ -2,7 +2,7 @@
 module calculation_state_files
     ! Module dependencies
     use iso_fortran_env, only: input_unit, error_unit, iostat_eor, iostat_end
-    use yes_no_input, only: getyn
+    use yes_no_input, only: read_yes_no
     implicit none (type, external)
 
     ! Module interface
@@ -11,6 +11,7 @@ module calculation_state_files
     public :: read_state_entry, read_state_pair, property_state_arguments, resolve_mixing_file
     public :: named_angular_output
     public :: orbital_input_path, mixing_input_path, ci_mixing_suffix
+    public :: descriptor_input_path, resolve_descriptor_input
     public :: check_orbital_output
 
     ! Module constants
@@ -18,6 +19,7 @@ module calculation_state_files
     integer, parameter :: state_name_length = 127
     character(*), parameter :: orbital_suffix = ".wfn", mixing_suffix = ".mix", ci_mixing_suffix = ".cimix"
     character(*), parameter :: initial_orbital_suffix = ".initial.wfn"
+    character(*), parameter :: descriptor_suffix = "_desc.parquet", legacy_descriptor_suffix = "_descriptors.parquet"
 
     ! Derived types
     type :: state_files
@@ -31,7 +33,7 @@ contains
         ! Arguments
         character(*), intent(in) :: name
         type(state_files) :: files
-        files%descriptors      = filename("rcsf_descriptors.parquet", "_descriptors.parquet")
+        files%descriptors      = filename("rcsf"//descriptor_suffix, descriptor_suffix)
         files%header           = filename("rcsf_header.toml", "_header.toml")
         files%initial_orbitals = filename("rwfn.inp", initial_orbital_suffix)
         files%orbitals         = filename("rwfn.out", orbital_suffix)
@@ -77,7 +79,7 @@ contains
         if (has_ci .and. has_scf) then
             if (.not. interactive) error stop "Both mixing files exist: specify "//scf_path//" or "//ci_path
             write(error_unit,"(A)") "Mixing coefficients from a CI calc.? (y/n)"
-            has_ci = getyn()
+            has_ci = read_yes_no()
         end if
         if (has_scf) path = scf_path
         if (has_ci) path = ci_path
@@ -101,12 +103,36 @@ contains
         peer = path(:stem_length)
         if (writing_initial) peer = peer//".initial"
         inquire(file=peer//"_header.toml", exist=peer_header)
-        inquire(file=peer//"_descriptors.parquet", exist=peer_descriptors)
+        inquire(file=descriptor_input_path(peer), exist=peer_descriptors)
         if (peer_header .or. peer_descriptors) then
             write(error_unit,"(A)") "Orbital path also belongs to state "//peer//": "//trim(path)
             error stop "Use separate calculation directories for these states"
         end if
     end subroutine
+
+    function descriptor_input_path(name) result(path)
+        character(*), intent(in) :: name
+        character(:), allocatable :: path
+
+        path = existing_input(name, descriptor_suffix, legacy_descriptor_suffix)
+    end function
+
+    ! Resolve an implicitly named descriptor, optionally relative to the MPI serial I/O directory.
+    function resolve_descriptor_input(filename, directory) result(path)
+        character(*), intent(in) :: filename
+        character(*), optional, intent(in) :: directory
+        character(:), allocatable :: path, prefix
+        integer :: stem_length
+
+        path = trim(filename)
+        stem_length = len(path) - len(descriptor_suffix)
+        if (stem_length < 1) return
+        if (path(stem_length+1:) /= descriptor_suffix) return
+        prefix = ""
+        if (present(directory)) prefix = trim(directory)//"/"
+        path = descriptor_input_path(prefix//path(:stem_length))
+        path = path(len(prefix)+1:)
+    end function
 
     function orbital_input_path(name) result(path)
         ! Arguments
@@ -281,7 +307,7 @@ contains
         name = trim(padded_name)
         if (legacy_answer == " ") then
             write(error_unit,"(A)") question
-            answer = getyn()
+            answer = read_yes_no()
         else
             answer = index("Yy", legacy_answer) > 0
         end if

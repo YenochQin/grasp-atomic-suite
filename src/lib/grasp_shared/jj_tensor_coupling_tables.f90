@@ -8,7 +8,9 @@ module jj_tensor_coupling_tables
     private :: real64
 
     ! Module state
-    ! perko1 defines the slot layouts. The d arrays hold ket data and the k arrays hold bra data.
-    integer      :: id1(7),id2(7),ik1(7),ik2(7),id3(7),id4(7),ik3(7),ik4(7)
-    real(real64) :: bd1(3),bd2(3),bk1(3),bk2(3),bd3(3),bd4(3),bk3(3),bk4(3)
+    ! The shell indices are positions in the current tensor coupling.
+    integer :: bra_shell_codes_1(7), bra_shell_codes_2(7), bra_shell_codes_3(7), bra_shell_codes_4(7)
+    integer :: ket_shell_codes_1(7), ket_shell_codes_2(7), ket_shell_codes_3(7), ket_shell_codes_4(7)
+    real(real64) :: bra_shell_values_1(3), bra_shell_values_2(3), bra_shell_values_3(3), bra_shell_values_4(3)
+    real(real64) :: ket_shell_values_1(3), ket_shell_values_2(3), ket_shell_values_3(3), ket_shell_values_4(3)
 end module jj_tensor_coupling_tables

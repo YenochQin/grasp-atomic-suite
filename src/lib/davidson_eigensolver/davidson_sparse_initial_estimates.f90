@@ -3,15 +3,15 @@ module davidson_sparse_initial_estimates
 
     ! Module interface
     private
-    public :: iniest
+    public :: estimate_davidson_sparse_eigenpairs
 contains
-    subroutine iniest(full_matrix_order, block_order, initial_vector_count, stored_matrix_values, &
+    subroutine estimate_davidson_sparse_eigenpairs(full_matrix_order, block_order, initial_vector_count, stored_matrix_values, &
         column_end_offsets, stored_row_indices, initial_estimates, csf_block_indices, target_block)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         ! Diagonalize a leading principal submatrix of the requested sparse symmetry block for initial guesses.
         use, intrinsic :: iso_fortran_env, only: real64
-        use real_vector_initialization, only: dinit
+        use real_vector_initialization, only: initialize_real_vector
         use blas_lapack_interfaces, only: dcopy, dspevx
         implicit none (type, external)
 
@@ -28,47 +28,36 @@ contains
 
         ! Local declarations
         integer :: estimate_matrix_order, block_column, column_index, storage_index, row_index_shift, &
-            unused_index, computed_pair_count, lapack_status, status_code, block_row
+            computed_pair_count, lapack_status, status_code, block_row
 
-        integer, pointer :: lapack_integer_work_alias(:),failed_vector_indices_alias(:), &
-            block_to_full_index_alias(:)
-        integer, allocatable, target :: lapack_integer_work(:), failed_vector_indices(:), block_to_full_index(:)
-        real(real64), pointer :: packed_estimate_matrix_alias(:),initial_eigenvalues_alias(:), &
-            initial_block_vectors_alias(:),lapack_real_work_alias(:)
-        real(real64), allocatable, target :: packed_estimate_matrix(:), initial_eigenvalues(:), &
+        integer, allocatable :: lapack_integer_work(:), failed_vector_indices(:), block_to_full_index(:)
+        real(real64), allocatable :: packed_estimate_matrix(:), initial_eigenvalues(:), &
             initial_block_vectors(:), lapack_real_work(:)
 
         estimate_matrix_order = min(1000,block_order)
         allocate (packed_estimate_matrix(estimate_matrix_order*(estimate_matrix_order + 1)/2),stat=status_code)
         if (status_code/=0) call mem_fail(6,estimate_matrix_order*(estimate_matrix_order + 1)/2,"iniest::ap", &
             status_code)
-        packed_estimate_matrix_alias=>packed_estimate_matrix
 
-        call dinit (estimate_matrix_order*(estimate_matrix_order + 1)/2, 0.0_real64, packed_estimate_matrix, 1)
+        call initialize_real_vector (estimate_matrix_order*(estimate_matrix_order + 1)/2, 0.0_real64, packed_estimate_matrix, 1)
 
         allocate (initial_eigenvalues(estimate_matrix_order),stat=status_code)
         if (status_code/=0) call mem_fail(6,estimate_matrix_order,"iniest::eigval",status_code)
-        initial_eigenvalues_alias=>initial_eigenvalues
 
         allocate (initial_block_vectors(estimate_matrix_order*initial_vector_count),stat=status_code)
         if (status_code/=0) call mem_fail(6,estimate_matrix_order*initial_vector_count,"iniest::vec",status_code)
-        initial_block_vectors_alias=>initial_block_vectors
 
         allocate (lapack_real_work(8*estimate_matrix_order),stat=status_code)
         if (status_code/=0) call mem_fail(6,8*estimate_matrix_order,"iniest::work",status_code)
-        lapack_real_work_alias=>lapack_real_work
 
         allocate (lapack_integer_work(5*estimate_matrix_order),stat=status_code)
         if (status_code/=0) call mem_fail(6,5*estimate_matrix_order,"iniest::iwork",status_code)
-        lapack_integer_work_alias=>lapack_integer_work
 
         allocate (failed_vector_indices(estimate_matrix_order),stat=status_code)
         if (status_code/=0) call mem_fail(6,estimate_matrix_order,"iniest::IFAIL",status_code)
-        failed_vector_indices_alias=>failed_vector_indices
 
         allocate (block_to_full_index(estimate_matrix_order),stat=status_code)
         if (status_code/=0) call mem_fail(6,estimate_matrix_order,"iniest::jsh",status_code)
-        block_to_full_index_alias=>block_to_full_index
 
         ! Extract the block columns in lower packed storage and retain the full-space index map.
         block_column = 0
@@ -99,7 +88,7 @@ contains
         if (status_code /= 0) write (output_unit, *) "iniest ierr =", status_code
 
         ! Scatter the small eigenvectors into zero-filled full-space columns.
-        call dinit (full_matrix_order*initial_vector_count, 0.0_real64, initial_estimates, 1)
+        call initialize_real_vector (full_matrix_order*initial_vector_count, 0.0_real64, initial_estimates, 1)
         storage_index = 0
         do column_index = 1, initial_vector_count
             do block_row = 1, estimate_matrix_order
@@ -129,5 +118,5 @@ contains
                 ": elements=", element_count, ", status=", allocation_status
             error stop "INIEST allocation failed"
         end subroutine mem_fail
-    end subroutine iniest
+    end subroutine estimate_davidson_sparse_eigenpairs
 end module davidson_sparse_initial_estimates

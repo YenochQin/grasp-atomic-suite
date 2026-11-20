@@ -4,5 +4,5 @@ module correlation_orbital_flags
     implicit none (type, external)
 
     ! Module state
-    logical :: lcorre(max_orbitals)
+    logical :: is_correlation_orbital(max_orbitals)
 end module correlation_orbital_flags

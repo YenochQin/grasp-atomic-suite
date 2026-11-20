@@ -1,129 +1,67 @@
 add_executable(rmcdhf_mem_mpi
     rmcdhf_mcp_memory.f90
     read_mcp_structure_from_memory.f90
-    read_mcp_structure_from_memory_interface.f90
     read_mcp_coefficients_from_memory.f90
-    read_mcp_coefficients_from_memory_interface.f90
     load_mcp_records_into_memory.f90
-    load_mcp_records_into_memory_interface.f90
     read_mcp_structure_into_memory.f90
-    read_mcp_structure_into_memory_interface.f90
     read_mcp_coefficients_into_memory.f90
-    read_mcp_coefficients_into_memory_interface.f90
     query_total_system_memory.f90
-    query_total_system_memory_interface.f90
     query_available_system_memory.f90
-    query_available_system_memory_interface.f90
     cache_mcp_files.f90
-    cache_mcp_files_interface.f90
     csf_density_matrix_element.f90
-    csf_density_matrix_element_interface.f90
     direct_angular_coefficient.f90
-    direct_angular_coefficient_interface.f90
     exchange_angular_coefficient.f90
-    exchange_angular_coefficient_interface.f90
     assemble_orbital_potential_coefficients.f90
-    assemble_orbital_potential_coefficients_interface.f90
     build_exchange_radial_potential.f90
-    build_exchange_radial_potential_interface.f90
     build_direct_radial_potential.f90
-    build_direct_radial_potential_interface.f90
     apply_lagrange_constraints.f90
-    apply_lagrange_constraints_interface.f90
     apply_off_diagonal_integrals.f90
-    apply_off_diagonal_integrals_interface.f90
     build_orbital_potential_mpi.f90
-    build_orbital_potential_mpi_interface.f90
     evaluate_radial_self_consistency.f90
-    evaluate_radial_self_consistency_interface.f90
     write_csf_weights.f90
-    write_csf_weights_interface.f90
     check_orbital_damping.f90
-    check_orbital_damping_interface.f90
     damp_orbital_update.f90
-    damp_orbital_update_interface.f90
     calculate_deferred_corrections.f90
-    calculate_deferred_corrections_interface.f90
     solve_radial_eigenvalue.f90
-    solve_radial_eigenvalue_interface.f90
     write_scf_energies.f90
-    write_scf_energies_interface.f90
     finish_summary.f90
-    finish_summary_interface.f90
     estimate_orbital_energy.f90
-    estimate_orbital_energy_interface.f90
     read_al_level_weights.f90
-    read_al_level_weights_interface.f90
     read_al_average_options_mpi.f90
-    read_al_average_options_mpi_interface.f90
     print_scf_results.f90
-    print_scf_results_interface.f90
     read_eol_level_weights.f90
-    read_eol_level_weights_interface.f90
     read_eol_average_options_mpi.f90
-    read_eol_average_options_mpi_interface.f90
     read_scf_options_mpi.f90
-    read_scf_options_mpi_interface.f90
     write_hamiltonian_records_mpi.f90
-    write_hamiltonian_records_mpi_interface.f90
     build_radial_inhomogeneous_terms.f90
-    build_radial_inhomogeneous_terms_interface.f90
     build_variation_source_term.f90
-    build_variation_source_term_interface.f90
     clear_radial_inhomogeneous_terms.f90
-    clear_radial_inhomogeneous_terms_interface.f90
     integrate_radial_outward.f90
-    integrate_radial_outward_interface.f90
     integrate_radial_inward.f90
-    integrate_radial_inward_interface.f90
     print_radial_wavefunction.f90
-    print_radial_wavefunction_interface.f90
     energy_outside_bounds.f90
-    energy_outside_bounds_interface.f90
     update_trial_orbital_energy.f90
-    update_trial_orbital_energy_interface.f90
     solve_radial_orbital.f90
-    solve_radial_orbital_interface.f90
     calculate_lagrange_multipliers_mpi.f90
-    calculate_lagrange_multipliers_mpi_interface.f90
     orthogonalize_to_more_consistent_orbitals.f90
-    orthogonalize_to_more_consistent_orbitals_interface.f90
     orthogonalize_same_kappa_orbitals.f90
-    orthogonalize_same_kappa_orbitals_interface.f90
     improve_orbital_mpi.f90
-    improve_orbital_mpi_interface.f90
     basis_csf_parity.f90
-    basis_csf_parity_interface.f90
     basis_csf_two_j_plus_one.f90
-    basis_csf_two_j_plus_one_interface.f90
     find_least_consistent_orbital.f90
-    find_least_consistent_orbital_interface.f90
     update_scf_mixing_mpi.f90
-    update_scf_mixing_mpi_interface.f90
     write_scf_radial_wavefunctions.f90
-    write_scf_radial_wavefunctions_interface.f90
     load_csf_basis_data_mpi.f90
-    load_csf_basis_data_mpi_interface.f90
     configure_debug_output.f90
-    configure_debug_output_interface.f90
     configure_debug_output_mpi.f90
-    configure_debug_output_mpi_interface.f90
     assemble_hamiltonian_block.f90
-    assemble_hamiltonian_block_interface.f90
     connect_mcp_files.f90
-    connect_mcp_files_interface.f90
     open_mixing_output.f90
-    open_mixing_output_interface.f90
     open_summary_file.f90
-    open_summary_file_interface.f90
     write_input_summary.f90
-    write_input_summary_interface.f90
     diagonalize_hamiltonian_block_mpi.f90
-    diagonalize_hamiltonian_block_mpi_interface.f90
     solve_hamiltonian_blocks_mpi.f90
-    solve_hamiltonian_blocks_mpi_interface.f90
     run_scf_iterations_mpi.f90
-    run_scf_iterations_mpi_interface.f90
     rmcdhf_mpi_main.f90
 )
 target_link_libraries_Fortran(rmcdhf_mem_mpi PUBLIC davidson_eigensolver grasp_mpi core grasp_shared)

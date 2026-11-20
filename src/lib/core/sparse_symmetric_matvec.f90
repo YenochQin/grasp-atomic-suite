@@ -4,16 +4,14 @@ module sparse_symmetric_matvec
 
     ! Module interface
     private
-    public :: spicmv2
+    public :: multiply_sparse_symmetric_matrix
 contains
-    subroutine spicmv2(matrix_order, vector_count, input_vectors, product_vectors)
+    subroutine multiply_sparse_symmetric_matrix(matrix_order, vector_count, input_vectors, product_vectors)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
-            matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
-            nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
-        use real_vector_initialization, only: dinit
-        use sparse_dot_and_scatter, only: dmerge
+        use sparse_hamiltonian_storage, only: hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices
+        use real_vector_initialization, only: initialize_real_vector
+        use sparse_dot_and_scatter, only: sparse_dot_scatter
         implicit none (type, external)
 
         ! Arguments
@@ -25,7 +23,7 @@ contains
         ! Local declarations
         integer :: column_start, column_index, column_end, column_entry_count, vector_index
         real(real64) :: diagonal_plus_previous_terms, off_diagonal_dot_product
-        call dinit (matrix_order*vector_count, 0.0_real64, product_vectors, 1)
+        call initialize_real_vector (matrix_order*vector_count, 0.0_real64, product_vectors, 1)
 
         column_start = 1
         do column_index = 1, matrix_order
@@ -36,7 +34,8 @@ contains
             do vector_index = 1, vector_count
                 diagonal_plus_previous_terms = product_vectors(column_index, &
                     & vector_index) + hamiltonian_values(column_end)*input_vectors(column_index,vector_index)
-                call dmerge (column_entry_count-1, input_vectors(:matrix_order,vector_index), product_vectors(:matrix_order, &
+                call sparse_dot_scatter (column_entry_count-1, input_vectors(:matrix_order,vector_index), &
+                    & product_vectors(:matrix_order, &
                     & vector_index), matrix_partner_indices(column_start:column_end-1), &
                     & hamiltonian_values(column_start:column_end-1), input_vectors(&
                     column_index,vector_index), off_diagonal_dot_product)
@@ -46,5 +45,5 @@ contains
         end do
 
         return
-    end subroutine spicmv2
+    end subroutine multiply_sparse_symmetric_matrix
 end module sparse_symmetric_matvec

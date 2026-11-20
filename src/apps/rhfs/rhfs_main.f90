@@ -55,23 +55,23 @@ program rhfs_main
     !                                         Last revision:    Nov 2017   *
     !                                                                      *
     !***********************************************************************
-    use calculation_input_defaults, only: inpci, ndef, ndump
-    use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+    use calculation_input_defaults, only: nondefault_options_flag
+    use standard_io_units, only: stderr_unit
     use calculation_state_files, only: read_state_name
-    use yes_no_input, only: getyn
+    use yes_no_input, only: read_yes_no
 
     ! Procedure interfaces
     use configure_debug_output_interface, only: configure_debug_output
 
     ! Module dependencies
-    use machine_constants, only: setmc
-    use physical_constants, only: setcon
+    use machine_constants, only: initialize_machine_constants
+    use physical_constants, only: initialize_physical_constants
 
     ! Procedure interfaces
     use open_summary_file_interface, only: open_summary_file
 
     ! Module dependencies
-    use csf_basis_loader, only: setcsla
+    use csf_basis_loader, only: load_angular_csf_basis
 
     ! Procedure interfaces
     use read_hyperfine_options_interface, only: read_hyperfine_options
@@ -79,13 +79,13 @@ program rhfs_main
     use write_input_summary_interface, only: write_input_summary
 
     ! Module dependencies
-    use log_factorial_table, only: factt
+    use log_factorial_table, only: initialize_log_factorial_table
 
     ! Procedure interfaces
     use calculate_hyperfine_matrix_elements_interface, only: calculate_hyperfine_matrix_elements
     implicit none (type, external)
-    integer   :: nci, unused_core_subshell_count
-    logical   :: yes
+    integer   :: mixing_file_kind, unused_core_subshell_count
+    logical   :: prompt_answer
     character :: name*24
     !-----------------------------------------------
     !
@@ -93,27 +93,27 @@ program rhfs_main
     write (stderr_unit, *)
     write (stderr_unit, *) "RHFS"
     write (stderr_unit, *) "This is the hyperfine structure program"
-    write (stderr_unit, *) "Input files:  isodata, name_descriptors.parquet, name_header.toml, name.mix/name.cimix, name.wfn"
+    write (stderr_unit, *) "Input files:  isodata, name_desc.parquet, name_header.toml, name.mix/name.cimix, name.wfn"
     write (stderr_unit, *) "Output files: name.(c)h, name.(c)hoffd"
 
     write (stderr_unit, *)
     write (stderr_unit, *) "Default settings?"
-    yes = getyn()
+    prompt_answer = read_yes_no()
     write (stderr_unit, *)
-    if (yes) then
-        ndef = 0
+    if (prompt_answer) then
+        nondefault_options_flag = 0
     else
-        ndef = 1
+        nondefault_options_flag = 1
     end if
 
     call read_state_name(name)
     write (stderr_unit, *)
     write (stderr_unit, *) "Mixing coefficients from a CI calc.?"
-    yes = getyn()
-    if (yes) then
-        nci = 0
+    prompt_answer = read_yes_no()
+    if (prompt_answer) then
+        mixing_file_kind = 0
     else
-        nci = 1
+        mixing_file_kind = 1
     end if
     !
     !   Check compatibility of plant substitutions
@@ -127,19 +127,19 @@ program rhfs_main
     !
     !   Perform machine- and installation-dependent setup
     !
-    call setmc
+    call initialize_machine_constants
     !
     !   Set up the physical constants
     !
-    call setcon
+    call initialize_physical_constants
     !
     !   Open the  .sum  file
     !
-    call open_summary_file (name, nci)
+    call open_summary_file (name, mixing_file_kind)
     !
     !   Open, check, load data from, and close, the  .csl  file
     !
-    call setcsla (name, unused_core_subshell_count)
+    call load_angular_csf_basis (name, unused_core_subshell_count)
     !
     !   Get the remaining information
     !
@@ -151,7 +151,7 @@ program rhfs_main
     !GG      YES = GETYN()
     !GG      WRITE (ISTDE, *)
     !GG      IF (YES) THEN
-    call read_mixing_blocks (name, nci)
+    call read_mixing_blocks (name, mixing_file_kind)
     !GG      ELSE
     !GG         IF (NCI == 0) THEN
     !GG            CALL GETMIXC (NAME)
@@ -166,7 +166,7 @@ program rhfs_main
     !
     !   Set up the table of logarithms of factorials
     !
-    call factt
+    call initialize_log_factorial_table
     !
     !   Proceed with the HFS calculation
     !

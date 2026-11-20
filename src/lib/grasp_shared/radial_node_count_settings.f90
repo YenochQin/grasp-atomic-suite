@@ -8,7 +8,7 @@ module radial_node_count_settings
     private :: real64
 
     ! Module state
-    real(real64) :: thresh
+    real(real64) :: relative_extremum_cutoff
     integer :: count_context = 0
     ! The current rank is zero in serial. Only rank zero writes the node trace.
     integer :: count_trace_rank = 0

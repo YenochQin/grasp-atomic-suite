@@ -4,13 +4,14 @@ module sparse_eigensolver_initial_basis
 
     ! Module interface
     private
-    public :: iniest2
+    public :: estimate_sparse_initial_basis
 contains
-    subroutine iniest2(maximum_submatrix_order, csf_count, requested_eigenvector_count, start_vectors_and_eigenvalues, &
+    subroutine estimate_sparse_initial_basis(maximum_submatrix_order, csf_count, requested_eigenvector_count, &
+        & start_vectors_and_eigenvalues, &
         & sparse_matrix_values, column_end_offsets, row_indices)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use real_vector_initialization, only: dinit
+        use real_vector_initialization, only: initialize_real_vector
         use array_memory_management, only: alloc, dalloc
         use blas_lapack_interfaces, only: dcopy, dspevx
         implicit none (type, external)
@@ -34,7 +35,7 @@ contains
         ! Convert the leading sparse block to LAPACK upper-triangle packed storage.
         submatrix_order = min(maximum_submatrix_order,csf_count)
         call alloc (packed_submatrix, (submatrix_order*(submatrix_order + 1))/2, "AP", "INIEST2")
-        call dinit ((submatrix_order*(submatrix_order + 1))/2, 0.0_real64, packed_submatrix, 1)
+        call initialize_real_vector ((submatrix_order*(submatrix_order + 1))/2, 0.0_real64, packed_submatrix, 1)
 
         previous_sparse_column_end = 0
         do column_index = 1, submatrix_order
@@ -57,7 +58,7 @@ contains
             lapack_status)
         negative_lapack_status = -abs(lapack_status)
 
-        call dinit (csf_count*requested_eigenvector_count, 0.0_real64, start_vectors_and_eigenvalues, 1)
+        call initialize_real_vector (csf_count*requested_eigenvector_count, 0.0_real64, start_vectors_and_eigenvalues, 1)
 
         do column_index = 1, requested_eigenvector_count
             call dcopy (submatrix_order, eigenvectors(submatrix_order*(column_index-1)+1:submatrix_order*(column_index-1)+ &
@@ -75,5 +76,5 @@ contains
         call dalloc (failed_eigenvector_indices, "IFAIL", "INIEST2")
 
         return
-    end subroutine iniest2
+    end subroutine estimate_sparse_initial_basis
 end module sparse_eigensolver_initial_basis

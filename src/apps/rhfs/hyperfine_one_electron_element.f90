@@ -1,102 +1,114 @@
-!***********************************************************************
-!                                                                      *
-subroutine hyperfine_one_electron_element(i1, tensor_rank, i2, apart, gjpart, dgjpart)
-    ! Module dependencies
-    !                                                                      *
-    !   This  routine computes  the angular part  of the  reduced matrix   *
-    !   elements of the magnetic and electric multipole operators as       *
-    !   well as for th operators associated with the g_j factor            *
-    !                                                                      *
-    !   Calls to: [LIB92]: CLRX                                            *
-    !                                                                      *
-    !   Written by Per Jonsson                Last revision: 22 Oct 1999   *
-    !                                                                      *
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use grasp_parameters,   only: max_orbitals
-    use orbital_csf_basis,           only: orbital_principal_n, orbital_kappa
-    use relativistic_three_j, only: clrx
+module hyperfine_one_electron_element_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(in) :: i1
-    integer, intent(in) :: tensor_rank
-    integer, intent(in) :: i2
-    real(real64), intent(out) :: apart
-    real(real64), intent(out) :: gjpart
-    real(real64), intent(out) :: dgjpart
+    ! Module interface
+    private
+    public :: hyperfine_one_electron_element
+contains
 
-    ! Local declarations
-    integer      :: kap1, kap2, l1, l2
-    real(real64) :: fase, ovlfac
-    !-----------------------------------------------
-    !
-    !
-    !   Set KAP1 and KAP2
-    !
-    kap1 = orbital_kappa(i1)
-    !
-    if (mod(tensor_rank,2) == 1) then
-        kap2 = -orbital_kappa(i2)
-    else
-        kap2 = orbital_kappa(i2)
-    end if
-    !
-    !   Determine the l quantum numbers
-    !
-    if (kap1 > 0) then
-        l1 = kap1
-    else
-        l1 = (-kap1) - 1
-    end if
-    !
-    if (kap2 > 0) then
-        l2 = kap2
-    else
-        l2 = (-kap2) - 1
-    end if
-    !
-    if (mod(l1 + tensor_rank + l2,2) == 0) then
+    !***********************************************************************
+    !                                                                      *
+    subroutine hyperfine_one_electron_element(bra_orbital_index, tensor_rank, ket_orbital_index, hyperfine_angular_factor, &
+                & lande_g_angular_factor, lande_g_correction_angular_factor)
+        ! Module dependencies
+        !                                                                      *
+        !   This  routine computes  the angular part  of the  reduced matrix   *
+        !   elements of the magnetic and electric multipole operators as       *
+        !   well as for th operators associated with the g_j factor            *
+        !                                                                      *
+        !   Calls to: [LIB92]: CLRX                                            *
+        !                                                                      *
+        !   Written by Per Jonsson                Last revision: 22 Oct 1999   *
+        !                                                                      *
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use orbital_csf_basis, only: orbital_kappa
+        use relativistic_three_j, only: relativistic_three_j_value
+        implicit none (type, external)
+
+        ! Arguments
+        integer, intent(in) :: bra_orbital_index
+        integer, intent(in) :: tensor_rank
+        integer, intent(in) :: ket_orbital_index
+        real(real64), intent(out) :: hyperfine_angular_factor
+        real(real64), intent(out) :: lande_g_angular_factor
+        real(real64), intent(out) :: lande_g_correction_angular_factor
+
+        ! Local declarations
+        integer      :: bra_kappa, tensor_ket_kappa, bra_orbital_l, tensor_ket_orbital_l
+        real(real64) :: angular_phase, phase_times_sqrt_ket_multiplicity
+        !-----------------------------------------------
         !
-        !   Parity selection rule satisfied
         !
-        !   Determine the phase factor
+        !   Set KAP1 and KAP2
         !
-        if (mod(kap1 + 1,2) == 0) then
-            fase = 1.0_real64
-        else
-            fase = -1.0_real64
-        end if
-        !
-        !   The other factor is \sqrt (2 j_2 + 1); since j = | \kappa | - 1/2,
-        !   we have 2 j_2 + 1 = 2 | \kappa |; the factor \sqrt (2 j_2 + 1)
-        !   has been accounted for in MCT
-        !
-        ovlfac = fase*sqrt(dble(2*abs(kap2)))
+        bra_kappa = orbital_kappa(bra_orbital_index)
         !
         if (mod(tensor_rank,2) == 1) then
+            tensor_ket_kappa = -orbital_kappa(ket_orbital_index)
+        else
+            tensor_ket_kappa = orbital_kappa(ket_orbital_index)
+        end if
+        !
+        !   Determine the l quantum numbers
+        !
+        if (bra_kappa > 0) then
+            bra_orbital_l = bra_kappa
+        else
+            bra_orbital_l = (-bra_kappa) - 1
+        end if
+        !
+        if (tensor_ket_kappa > 0) then
+            tensor_ket_orbital_l = tensor_ket_kappa
+        else
+            tensor_ket_orbital_l = (-tensor_ket_kappa) - 1
+        end if
+        !
+        if (mod(bra_orbital_l + tensor_rank + tensor_ket_orbital_l,2) == 0) then
             !
-            !   These are for the magnetic multipole moments and the two operators of the g_j factor
+            !   Parity selection rule satisfied
             !
-            apart = (kap1 + orbital_kappa(i2))*clrx(kap1,tensor_rank,kap2)*ovlfac
+            !   Determine the phase factor
             !
-            gjpart = apart
-            dgjpart = -(kap1 + orbital_kappa(i2)-1.0_real64)*clrx(kap1,tensor_rank,kap2)*ovlfac
+            if (mod(bra_kappa + 1,2) == 0) then
+                angular_phase = 1.0_real64
+            else
+                angular_phase = -1.0_real64
+            end if
+            !
+            !   The other factor is \sqrt (2 j_2 + 1); since j = | \kappa | - 1/2,
+            !   we have 2 j_2 + 1 = 2 | \kappa |; the factor \sqrt (2 j_2 + 1)
+            !   has been accounted for in MCT
+            !
+            phase_times_sqrt_ket_multiplicity = angular_phase*sqrt(dble(2*abs(tensor_ket_kappa)))
+            !
+            if (mod(tensor_rank,2) == 1) then
+                !
+                !   These are for the magnetic multipole moments and the two operators of the g_j factor
+                !
+                hyperfine_angular_factor = (bra_kappa + orbital_kappa(ket_orbital_index))*relativistic_three_j_value(bra_kappa, &
+                & tensor_rank,tensor_ket_kappa)*phase_times_sqrt_ket_multiplicity
+                !
+                lande_g_angular_factor = hyperfine_angular_factor
+                lande_g_correction_angular_factor = -(bra_kappa + orbital_kappa(ket_orbital_index)-1.0_real64)* &
+                & relativistic_three_j_value(bra_kappa,tensor_rank,tensor_ket_kappa)*phase_times_sqrt_ket_multiplicity
+            else
+                !
+                !   These are for the electric multipole moments
+                !
+                hyperfine_angular_factor = relativistic_three_j_value(bra_kappa,tensor_rank,tensor_ket_kappa)* &
+                & phase_times_sqrt_ket_multiplicity
+                !
+            end if
+        !
         else
             !
-            !   These are for the electric multipole moments
-            !
-            apart = clrx(kap1,tensor_rank,kap2)*ovlfac
+            hyperfine_angular_factor = 0.0_real64
+            lande_g_angular_factor = 0.0_real64
+            lande_g_correction_angular_factor = 0.0_real64
             !
         end if
-    !
-    else
         !
-        apart = 0.0_real64
-        gjpart = 0.0_real64
-        dgjpart = 0.0_real64
-        !
-    end if
-    !
-    return
-end subroutine hyperfine_one_electron_element
+        return
+    end subroutine hyperfine_one_electron_element
+end module hyperfine_one_electron_element_interface

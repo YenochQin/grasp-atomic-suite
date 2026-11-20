@@ -40,25 +40,19 @@ program rci_main
     !   Modified by Gediminas Gaigalas for new spin-angular integration.   *
     !                                                                      *
     !***********************************************************************
-    use calculation_input_defaults, only: inpci, ndef, ndump
-    use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
-    use numeric_constants, only: eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
-    use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-    use transition_basis_blocks, only: ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
-        nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
-    use csf_block_cutoffs, only: iccut, iccutblk
-    use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
-    use subshell_term_table, only: itab, jtab, nrows, ntab
-    use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
-    use calculation_state_files, only: read_state_name, orbital_input_path
-    use yes_no_input, only: getyn
+    use calculation_input_defaults, only: nondefault_options_flag
+    use rci_prerun_settings, only: prerun_stage
+    use standard_io_units, only: stderr_unit
+    use hamiltonian_correction_flags, only: include_transverse_interaction
+    use calculation_state_files, only: read_state_name, orbital_input_path, descriptor_input_path
+    use yes_no_input, only: read_yes_no
 
     ! Procedure interfaces
     use configure_ci_debug_output_interface, only: configure_ci_debug_output
 
     ! Module dependencies
-    use machine_constants, only: setmc
-    use physical_constants, only: setcon
+    use machine_constants, only: initialize_machine_constants
+    use physical_constants, only: initialize_physical_constants
 
     ! Procedure interfaces
     use open_summary_file_interface, only: open_summary_file
@@ -68,7 +62,7 @@ program rci_main
     use write_input_summary_interface, only: write_input_summary
 
     ! Module dependencies
-    use log_factorial_table, only: factt
+    use log_factorial_table, only: initialize_log_factorial_table
 
     ! Procedure interfaces
     use solve_hamiltonian_blocks_interface, only: solve_hamiltonian_blocks
@@ -77,29 +71,27 @@ program rci_main
     use tabulate_slater_integrals_interface, only: tabulate_slater_integrals
 
     ! Module dependencies
-    use run_timer_start, only: starttime
-    use run_timer_finish, only: stoptime
+    use run_timer_start, only: begin_run_timer
+    use run_timer_finish, only: finish_run_timer
     implicit none (type, external)
-    integer, parameter :: nblk0 = 50
+    integer, parameter :: maximum_input_symmetry_blocks = 50
     integer, parameter :: nblk=50
-    integer :: start_clock_count, finish_clock_count, ncount_rate, ncount_max
-    integer :: nymduhmsm(8)
-    integer :: mpi_rank, mpi_process_count, lenname, core_subshell_count, ndum, max_orbital_two_j, nseconds
+    integer :: start_clock_count
+    integer :: mpi_rank, mpi_process_count, core_subshell_count, ndum, max_orbital_two_j
     logical :: yes
-    character(len=128) :: name, tmpdir, permdir, isotope_file_path
-    character(len=8) :: idblk(nblk0)
-    character :: chdate*8, chtime*10, chzone*5, str*8, msg*128
+    character(len=128) :: name, isotope_file_path
+    character(len=8) :: block_labels(maximum_input_symmetry_blocks)
     !-----------------------------------------------
     !
 
-    iprerun = 0
+    prerun_stage = 0
     mpi_rank = 0
     mpi_process_count = 1
 
     write(*,*)
     write(*,*) "RCI"
     write(*,*) "This is the configuration interaction program "
-    write(*,*) "Input file:  isodata, name_descriptors.parquet, name_header.toml, name.wfn"
+    write(*,*) "Input file:  isodata, name_desc.parquet, name_header.toml, name.wfn"
     write(*,*) "Outputfiles: name.cimix, name.csum, name.clog "
     write(*,*) "             rci.res (can be used for restart)"
     write(*,*)
@@ -108,18 +100,18 @@ program rci_main
     !
     ! Start timing
     !
-    call starttime (start_clock_count, "RCI")
+    call begin_run_timer (start_clock_count, "RCI")
     !
     ! Get NDEF
     !
     !      WRITE (ISTDE, *) 'RCI2: Execution begins ...'
     !      WRITE (ISTDE, *)
     write (stderr_unit, "(A)") "Default settings? "
-    yes = getyn()
+    yes = read_yes_no()
     if (yes) then
-        ndef = 0
+        nondefault_options_flag = 0
     else
-        ndef = 1
+        nondefault_options_flag = 1
     end if
     !
     ! Get name of the state (used in files like <name>.c, <name>.s)
@@ -134,7 +126,6 @@ program rci_main
 
     !         ...Form the full name of the files used on node-0
 
-    lenname = len_trim(name)
     isotope_file_path = "isodata"
     !      WRITE (6, *) 'isofile = ', ISOFILE(1:LEN_TRIM(ISOFILE))
     !      WRITE (6, *) 'name = ', NAME(1:LEN_TRIM(NAME))
@@ -151,12 +142,12 @@ program rci_main
         ! Perform machine- and installation-dependent setup
         !
         !      WRITE (6, *) 'Calling SETMC...'
-        call setmc
+        call initialize_machine_constants
         !
         ! Set up the physical constants
         !
         !      WRITE (6, *) 'Calling SETCON...'
-        call setcon
+        call initialize_physical_constants
         !
         ! Open summary file
         !
@@ -164,17 +155,17 @@ program rci_main
         call open_summary_file (name)
 
         !      WRITE (6, *) 'Calling setcsl...'
-        call load_csf_basis_data (name(1:lenname)//"_descriptors.parquet", core_subshell_count, nblk0, idblk)
+        call load_csf_basis_data (descriptor_input_path(name), core_subshell_count, maximum_input_symmetry_blocks, block_labels)
         !
         ! Set up the  .res  file; determine if this is a restart.
         !
         !      WRITE (6, *) 'Calling SETRES...'
-        call connect_ci_restart_file (isotope_file_path, orbital_input_path(name), idblk)
+        call connect_ci_restart_file (isotope_file_path, orbital_input_path(name), block_labels)
         !
         !   Open the  .mix  file; determine the eigenpairs required
         !
         !      WRITE (6, *) 'Calling SETMIX...'
-        call open_mixing_output (name, idblk)
+        call open_mixing_output (name, block_labels)
         !
         !   Append a summary of the inputs to the  .sum  file
         !
@@ -184,7 +175,7 @@ program rci_main
         !   Set up the table of logarithms of factorials
         !
         write (output_unit, *) "Calling FACTT..."
-        call factt
+        call initialize_log_factorial_table
         !
         !   Calculate all the needed Rk integrals
         !
@@ -193,7 +184,7 @@ program rci_main
         !
         !   If transverse interaction comput Breit integrals of type 1 and 2
         !
-        if (ltrans) then
+        if (include_transverse_interaction) then
             print *, "Calling GENINTBREIT1..."
             call tabulate_breit_integrals_1 (mpi_rank, mpi_process_count, ndum, max_orbital_two_j)
             print *, "Calling GENINTBREIT2..."
@@ -206,8 +197,8 @@ program rci_main
 
         call solve_hamiltonian_blocks (core_subshell_count, max_orbital_two_j)
 
-        if (iprerun /= 1) exit
-        iprerun = 2
+        if (prerun_stage /= 1) exit
+        prerun_stage = 2
     end do
 
     if (mpi_rank == 0) then
@@ -217,7 +208,7 @@ program rci_main
         write (output_unit, *)
     end if
     close(calculation_log_unit)
-    call stoptime (start_clock_count, "RCI")
+    call finish_run_timer (start_clock_count, "RCI")
     !      CALL SYSTEM_CLOCK (NCOUNT2, NCOUNT_RATE, NCOUNT_MAX)
     !      NCOUNT2 = NCOUNT2 - NCOUNT1
     !      NSECONDS = NCOUNT2/NCOUNT_RATE

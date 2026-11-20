@@ -4,9 +4,10 @@ module jj_reduced_cfp_j_nine_halves
 
     ! Module interface
     private
-    public :: rmeajj9
+    public :: evaluate_reduced_cfp_j_nine_halves
 contains
-    subroutine rmeajj9(bra_term_index,two_bra_q,two_bra_term_j,ket_term_index,two_ket_q,two_ket_term_j,reduced_cfp)
+    subroutine evaluate_reduced_cfp_j_nine_halves(bra_term_index,two_bra_q,two_bra_term_j,ket_term_index,two_ket_q, &
+        & two_ket_term_j,reduced_cfp)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: error_unit
         use, intrinsic :: iso_fortran_env, only: real64
@@ -187,5 +188,5 @@ contains
             stop
         end if
         return
-    end subroutine rmeajj9
+    end subroutine evaluate_reduced_cfp_j_nine_halves
 end module jj_reduced_cfp_j_nine_halves

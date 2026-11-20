@@ -8,8 +8,8 @@ module radial_quadrature_workspace
     private :: real64
 
     ! Module state
-    ! quad reads ta as f(r)*dr/dt through mtp and uses the next three entries as padding.
-    ! Other radial routines reuse ta and tb for intermediate arrays between integrations.
-    integer :: mtp
-    real(real64) :: ta(radial_workspace_capacity), tb(radial_workspace_capacity)
+    ! Radial quadrature reads f(r)*dr/dt from radial_workspace_a through integration_last_index.
+    ! It uses the next three entries as padding. Other radial routines reuse both arrays for intermediate terms.
+    integer :: integration_last_index
+    real(real64) :: radial_workspace_a(radial_workspace_capacity), radial_workspace_b(radial_workspace_capacity)
 end module radial_quadrature_workspace

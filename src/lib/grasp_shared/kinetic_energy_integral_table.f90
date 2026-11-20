@@ -7,8 +7,8 @@ module kinetic_energy_integral_table
     private :: real64
 
     ! Module state
-    integer :: ndkea, nkei
-    integer, pointer :: indkei(:)
-    real(real64), pointer :: valkei(:)
-    logical :: frstki
+    integer :: kinetic_integral_capacity, kinetic_integral_count
+    integer, pointer :: kinetic_integral_indices(:)
+    real(real64), pointer :: kinetic_integral_values(:)
+    logical :: first_kinetic_integral_lookup
 end module kinetic_energy_integral_table

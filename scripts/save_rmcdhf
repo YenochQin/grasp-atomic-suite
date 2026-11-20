@@ -64,8 +64,12 @@ case $mode in
     *) fail "unrecognized calculation mode in $io_dir/rmcdhf.sum" ;;
 esac
 
+descriptor=$io_dir/rcsf_desc.parquet
+if [ ! -e "$descriptor" ] && [ ! -L "$descriptor" ] && [ -e "$io_dir/rcsf_descriptors.parquet" ]; then
+    descriptor=$io_dir/rcsf_descriptors.parquet
+fi
 copy_data "$io_dir/rcsf_header.toml" "${state}_header.toml"
-copy_data "$io_dir/rcsf_descriptors.parquet" "${state}_descriptors.parquet"
+copy_data "$descriptor" "${state}_desc.parquet"
 copy_data "$io_dir/rwfn.out" "$state.wfn"
 ln -s -- "$state.wfn" "$staging/$state.w"
 

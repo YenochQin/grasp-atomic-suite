@@ -80,7 +80,14 @@ SUITE_RESTART_FILES = (
 )
 SUITE_CONFIG_FILE = "src/lib/grasp_shared/compile_time_capacities.f90"
 SUITE_EXPORT_FILE = "src/lib/grasp_shared/grasp_parameters.f90"
-SUITE_PARAMETER_NAMES = ("KEYORB", "NNNP", "NNN1", "NNNW", "NNNWM1", "NNNWM2")
+SUITE_PARAMETER_NAMES = (
+    "orbital_index_radix",
+    "max_radial_points",
+    "radial_workspace_capacity",
+    "max_orbitals",
+    "max_orbitals_minus_one",
+    "max_orbitals_minus_two",
+)
 SEMANTIC_NAMES = {
     "KEYORB": "orbital_index_radix",
     "NNNP": "max_radial_points",
@@ -95,6 +102,7 @@ SEMANTIC_NAMES = {
     "HP": "asymptotic_grid_step",
     "Z": "nuclear_charge",
     "NPARM": "nuclear_model_parameter_count",
+    "ACCY": "working_tolerance",
 }
 LEGACY_NAMES = {value.upper(): key for key, value in SEMANTIC_NAMES.items()}
 FORTRAN_WORD_RE = re.compile(r"'(?:[^']|'')*'|\"(?:[^\"]|\"\")*\"|\b[A-Za-z_][A-Za-z_0-9]*\b")
@@ -374,26 +382,42 @@ def source_path(root: Path, relative: str) -> Path:
 
 
 def validate_suite_exports(config: str, wrapper: str) -> None:
-    """Require one definition per shared limit and the legacy re-export API."""
-    config_code = "\n".join(active(line) for line in config.splitlines())
-    wrapper_code = "\n".join(line.split("!", 1)[0].strip() for line in wrapper.splitlines())
+    """Require the suite's central definitions and six direct public imports."""
+    names = set(SUITE_PARAMETER_NAMES)
+    config_code = "\n".join(line.partition("!")[0].lower() for line in config.splitlines())
+    lines = (line.partition("!")[0].strip().lower() for line in wrapper.splitlines())
+    wrapper_code = re.sub(r"&\n&?", " ", "\n".join(line for line in lines if line))
     imported: set[str] = set()
-    for match in re.finditer(
-        r"^USE\s+compile_time_capacities\s*,\s*ONLY\s*:\s*([^\n]+)$",
-        wrapper_code,
-        re.IGNORECASE | re.MULTILINE,
-    ):
-        for item in match[1].split(","):
-            parts = [part.strip().upper() for part in item.split("=>")]
-            local = parts[0]
-            if len(parts) == 2 and local in SUITE_PARAMETER_NAMES:
-                if parts[1] != SEMANTIC_NAMES[local].upper():
-                    raise ValueError(f"incorrect compatibility alias for {local}")
-            imported.add(local)
-    if not set(SUITE_PARAMETER_NAMES).issubset(imported):
+    explicit_public: set[str] = set()
+    explicit_private: set[str] = set()
+    default_public = True
+    for line in wrapper_code.splitlines():
+        if re.fullmatch(r"(?:module\s+grasp_parameters|end(?:\s*module(?:\s+grasp_parameters)?)?"
+                        r"|implicit\s+none(?:\s*\([\w\s,]+\))?)", line):
+            continue
+        if line in {"public", "private"}:
+            default_public = line == "public"
+            continue
+        access = re.fullmatch(r"(public|private)\s*(?:::\s*|\s+)(.+)", line)
+        if access:
+            visible = explicit_public if access[1] == "public" else explicit_private
+            visible.update(item.strip() for item in access[2].split(","))
+            continue
+        match = re.fullmatch(r"use\s*(?:::\s*|\s+)compile_time_capacities\s*,\s*only\s*:\s*(.+)", line)
+        if not match:
+            raise ValueError("grasp_parameters may contain only direct capacity re-exports")
+        imported.update(item.strip() for item in match[1].split(","))
+    if not (imported | explicit_public | explicit_private) <= names:
+        raise ValueError("grasp_parameters must use the semantic capacity names directly")
+    exported = (imported if default_public else explicit_public) - explicit_private
+    if imported != names or exported != names:
         raise ValueError("grasp_parameters must re-export all six compile_time_capacities limits")
+
     for name in SUITE_PARAMETER_NAMES:
-        if len(re.findall(rf"\b{name}\s*=", config_code, re.IGNORECASE)) != 1:
+        legacy_name = LEGACY_NAMES[name.upper()].lower()
+        if re.search(rf"\b{legacy_name}\b", config_code):
+            raise ValueError(f"legacy capacity name {legacy_name} in compile_time_capacities")
+        if len(re.findall(rf"\b{name}\s*=(?!>)", config_code)) != 1:
             raise ValueError(f"expected one central definition of {name}")
 
 
@@ -743,7 +767,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--nnnp",
         type=int,
-        help="compiled capacity; also sets every duplicate NNN1 to NNNP+10",
+        help="maximum radial points (atomic-suite: max_radial_points, GRASP2018: NNNP)",
     )
     parser.add_argument("--n", type=int, help="finite-nucleus runtime point count")
     parser.add_argument(
@@ -876,8 +900,12 @@ def main(argv: list[str] | None = None) -> int:
             )
         if not args.restore:
             if args.capacity_only:
+                capacities = (
+                    "max_radial_points/radial_workspace_capacity"
+                    if args.layout == "atomic-suite" else "NNNP/NNN1"
+                )
                 print(
-                    "Capacity-only: edit NNNP/NNN1 and finite-nucleus N; "
+                    f"Capacity-only: update {capacities} and the finite-nucleus grid size; "
                     "preserve existing grid initialization and ACCY timing. "
                     "Earlier patches are not reverted."
                 )

@@ -99,7 +99,7 @@ contains
                 reuse_selected = .true.
             case ("--help")
                 print "(A)", "rangular [--csf-descriptors FILE] [--header FILE.toml] [--timings NEW_FILE.csv]"
-                print "(A)", "Enter a state to read NAME_descriptors.parquet and write mcp.NN."
+                print "(A)", "Enter a state to read NAME_desc.parquet and write mcp.NN."
                 print "(A)", "Serial only: --reuse-cache-mib N [--reuse-stats NEW_FILE.csv]; default 0 (off)."
                 stop
             case default

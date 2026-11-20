@@ -4,21 +4,18 @@ module one_electron_scalar_same_subshell
 
     ! Module interface
     private
-    public :: onescalar1
+    public :: calculate_scalar_same_subshell_coefficient
 contains
-    subroutine onescalar1(active_shell_count,bra_csf_index,ket_csf_index,bra_shell_position,ket_shell_position, &
+    subroutine calculate_scalar_same_subshell_coefficient(active_shell_count,bra_csf_index,ket_csf_index,bra_shell_position, &
+        & ket_shell_position, &
         angular_coefficient)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use numeric_constants,          only: zero, half, one, angular_tolerance => eps
-        use jj_tensor_coupling_tables, only: ket_shell_values_1 => bd1, ket_shell_values_2 => bd2, ket_shell_values_3 => bd3, &
-            ket_shell_values_4 => bd4, bra_shell_values_1 => bk1, bra_shell_values_2 => bk2, &
-            bra_shell_values_3 => bk3, bra_shell_values_4 => bk4, ket_shell_codes_1 => id1, ket_shell_codes_2 => id2, &
-            ket_shell_codes_3 => id3, ket_shell_codes_4 => id4, bra_shell_codes_1 => ik1, bra_shell_codes_2 => ik2, &
-            bra_shell_codes_3 => ik3, bra_shell_codes_4 => ik4
-        use one_electron_scalar_recoupling_selection, only: recoonescalar
-        use jj_active_subshell_states, only: perko2
-        use jj_w_matrix_element, only: wj1
+        use numeric_constants,          only: zero, half, one, angular_tolerance
+        use jj_tensor_coupling_tables, only: ket_shell_values_1, bra_shell_values_1, ket_shell_codes_1, bra_shell_codes_1
+        use one_electron_scalar_recoupling_selection, only: select_one_electron_scalar_recoupling
+        use jj_active_subshell_states, only: prepare_jj_active_subshell_states
+        use jj_w_matrix_element, only: evaluate_jj_w
         implicit none (type, external)
 
         ! Arguments
@@ -32,14 +29,15 @@ contains
         angular_coefficient=zero
         if(bra_shell_position == ket_shell_position) then
             if(bra_csf_index /= ket_csf_index) then
-                call recoonescalar(active_shell_count,bra_shell_position,bra_shell_position,bra_shell_position, &
+                call select_one_electron_scalar_recoupling(active_shell_count,bra_shell_position,bra_shell_position, &
+                    & bra_shell_position, &
                     bra_shell_position,0,coupling_allowed)
                 if(coupling_allowed == 0)return
             end if
-            call perko2(bra_shell_position,bra_shell_position,bra_shell_position,bra_shell_position,1)
+            call prepare_jj_active_subshell_states(bra_shell_position,bra_shell_position,bra_shell_position,bra_shell_position,1)
             q_projection_1=half
             q_projection_2=-half
-            call wj1(bra_shell_codes_1,bra_shell_values_1,ket_shell_codes_1,ket_shell_values_1,0,q_projection_1, &
+            call evaluate_jj_w(bra_shell_codes_1,bra_shell_values_1,ket_shell_codes_1,ket_shell_values_1,0,q_projection_1, &
                 q_projection_2,w_matrix_element)
             if(dabs(w_matrix_element) > angular_tolerance) then
                 recoupling_factor=one/dsqrt(dble(bra_shell_codes_1(6)+1))
@@ -48,5 +46,5 @@ contains
             end if
         end if
         return
-    end subroutine onescalar1
+    end subroutine calculate_scalar_same_subshell_coefficient
 end module one_electron_scalar_same_subshell

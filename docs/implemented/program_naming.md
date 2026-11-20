@@ -16,7 +16,7 @@ Fortran 调用方应以当前接口声明为准。
 Release 二进制，串行和双进程 MPI 各有 16 个波函数、混合系数和 MCP 文件逐字节一致。
 RCI 的 Coulomb 和 Breit 路径各自生成的混合系数文件也逐字节一致。
 
-## 应用文件、模块与过程
+## 应用文件、模块与过程的命名迁移
 
 应用源码使用小写 snake_case。独立过程文件以过程命名，显式接口文件和模块使用
 `<procedure>_interface`。模块文件采用模块名。串行、MPI 和内存版采用同一术语，并用
@@ -32,9 +32,9 @@ RCI 的 Coulomb 和 Breit 路径各自生成的混合系数文件也逐字节一
 | `mrgcsl` | `merge_transition_csf_bases` |
 
 Fortran 源码调用方需更新 `USE`、过程调用和回调绑定，再重新编译。CMake 的程序目标和
-命令行入口沿用下表名称。RCI 的 [Breit 系数收集](../../src/apps/rci/collect_breit_angular_coefficient.f90)
-和 [Breit 径向因子](../../src/apps/rci/breit_radial_integral_factors.f90) 使用描述性文件名，
-并以链接时选择的 `talk` 和 `cxk` 作为外部符号。
+命令行入口沿用下表名称。RCI 在链接时选择应用自己的 [Breit 系数收集过程 `collect_breit_angular_coefficient`](../../src/apps/rci/collect_breit_angular_coefficient.f90)。
+串行和 MPI 的 Breit 径向积分系数由共享模块过程
+[`calculate_breit_radial_integral_coefficients`](../../src/lib/breit_angular_support/breit_radial_integral_coefficients.f90) 计算。
 [RMCDHF 来源清单](../reference/rmcdhf_app_symbols_snapshot.json)记录当前路径与历史源码键的对应关系。
 应用文件迁移涉及 1,335 个原路径和 1,333 个新路径，其中 650 个是接口文件。
 两个未参与 CMake 构建的字节相同的接口副本已合并，另移除了一个使用旧签名的 RCI 接口副本。
@@ -43,6 +43,39 @@ Fortran 源码调用方需更新 `USE`、过程调用和回调绑定，再重新
 114 项 CTest。最后校正径向密度输入和单电子占据检查的名称后，两套配置各复验相关 7 项测试。
 同一组夹具迁移前后的串行和双进程 MPI 输出各有 16 个文件逐字节一致，RCI 的 Coulomb 和
 Breit 混合系数文件也分别逐字节一致。
+
+## 应用过程模块化
+
+以 `e8a15a9` 为基线，将 647 个应用过程放入原显式接口模块的 `contains` 下。
+过程定义提供显式接口，原 `use …, only: …` 调用保留。模块使用实现文件名，
+例如 `invert_banded_matrix_interface` 定义在
+[invert_banded_matrix.f90](../../src/apps/rbiotransform/invert_banded_matrix.f90)。
+RCI 的径向密度比和稀疏矩阵乘积规约分别移到自己的实现文件，MPI 版使用自身的规约实现。
+完整的过程、实现文件和原接口对应关系见[迁移清单](../reference/application_procedure_modules.json)。
+
+CMake 目标继续编译实现文件。MCP、CI 和权重测试以同名测试模块提供替身，
+并为各测试目标隔离模块输出目录。径向网格容量测试在 790／800／149 的配置下编译
+实际的波函数模块。跃迁标签数组的分配过程按用途命名形参，例如 `coefficient_end_offsets`、`right_child_nodes` 和 `sorted_integral_labels`。
+
+最后合并的 13 个过程采用现场调用和实现所需的接口。
+
+| 范围 | 实现提供的接口 |
+| --- | --- |
+| rbiotransform 和 MPI 版的 `print_matrix_symmetry`、MPI 版的 `write_transformed_radial_wavefunctions` | 用假定大小数组读取打包矩阵，用 128 字符接收两个文件名。 |
+| RIS4 的 `fit_electron_density`，rtransition 串行和 phase 版的 `load_initial_lsj_labels` | 输出六项场移电子因子，按假定长度读取 LSJ 文件名。 |
+| RCI 串行的 `calculate_vacuum_polarization_integral`、四个 RMCDHF 内存装载过程 | 将会交换的轨道索引定义为 `INTENT(INOUT)`，将用作循环上界的 `ncontr` 定义为 `INTENT(IN)`。 |
+| RCI 串行及 MPI 的 `accumulate_closed_shell_breit` | 计算过程保留只读形参。矩阵装配模块通过私有过程适配 `calculate_two_electron_angular_coefficients` 的回调签名。 |
+
+串行和 MPI RCI 直接从 `blas_lapack_interfaces` 导入 `dspevx`。`collect_breit_angular_coefficient` 承担 Breit 系数收集的链接时替换。
+已从跃迁目录清理两份无调用者的占据数接口，其实际实现归入 rbiotransform。
+suite 的 CMake 流程使用新模块。工作区其他源码仓库未发现对已迁移外部符号的调用。
+如有构建树之外的调用方直接链接这些旧外部符号，应改用相应模块并重新编译和链接。
+
+GNU Fortran 15.3.0 的干净 Release 和 Check 构建均启用串行、MPI 和 jj2lsj OpenMP。
+最后一批合并后，两套配置各通过 116 项 CTest。首批合并逐项比较了 742 个按生产目标展开的编译接口，
+并单独编译和核对了 3 个构建清单外的过程。串行和双进程 MPI 夹具各有 16 个波函数、
+混合系数及 MCP 文件逐字节一致。RCI 的 Coulomb 和 Breit 混合系数文件也分别逐字节一致。
+专项对照还确认了串行 RCI 的真空极化混合系数和 RIS4 的六项场移因子逐字节一致。
 
 ## 程序目录与可执行文件
 

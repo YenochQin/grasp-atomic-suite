@@ -3,10 +3,10 @@ module mpi_make_directory
 
     ! Module interface
     private
-    public :: sys_mkdir
+    public :: create_mpi_directory
 contains
     ! Create a directory from the first path_length characters and return the system status.
-    subroutine sys_mkdir (directory_path, path_length, directory_status)
+    subroutine create_mpi_directory (directory_path, path_length, directory_status)
         ! Module dependencies
         use posix_services, only: make_directory
         implicit none (type, external)
@@ -27,5 +27,5 @@ contains
             print*, " sys_mkdir error message = ", trim(mkdir_error_message)
         end if
         return
-    end subroutine sys_mkdir
+    end subroutine create_mpi_directory
 end module mpi_make_directory

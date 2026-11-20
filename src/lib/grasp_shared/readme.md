@@ -63,7 +63,7 @@ N_{\mathrm{work}}=N_{\max}+10,\qquad
 W_1=W_{\max}-1,\qquad W_2=W_{\max}-2.
 $$
 
-[grasp_parameters.f90](grasp_parameters.f90) 转导这些常量及其兼容别名。实际径向网格点数由 [radial_grid_state.f90](radial_grid_state.f90) 中的 `radial_point_count` 保存。
+[grasp_parameters.f90](grasp_parameters.f90) 直接转导这些常量。实际径向网格点数由 [radial_grid_state.f90](radial_grid_state.f90) 中的 `radial_point_count` 保存。
 
 ## 查找表的读取公式
 

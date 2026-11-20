@@ -4,28 +4,22 @@ module jj_w_matrix_element_high_j
 
     ! Module interface
     private
-    public :: w1jjg
+    public :: evaluate_high_j_w
 contains
-    subroutine w1jjg(w_angular_rank,q_projection_1,q_projection_2,bra_shell_codes,bra_shell_values, &
+    subroutine evaluate_high_j_w(w_angular_rank,q_projection_1,q_projection_2,bra_shell_codes,bra_shell_values, &
         ket_shell_codes,ket_shell_values,w_matrix_element)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use numeric_constants,          only: zero, tenth, half, two, angular_tolerance => eps
-        use jj_reduced_coefficients, only: last_opposite_parity_terms_low_j => imgnjj, last_same_parity_terms_low_j => imgtjj, &
-            first_opposite_parity_terms_low_j => impnjj, first_same_parity_terms_low_j => imptjj
-        use jj_reduced_coefficients_9, only: last_opposite_parity_terms_two_j_9 => imgnjj9, &
-            last_same_parity_terms_two_j_9 => imgtjj9, first_opposite_parity_terms_two_j_9 => impnjj9, &
-            first_same_parity_terms_two_j_9 => imptjj9
-        use jj_reduced_coefficients_11, only: last_opposite_parity_terms_high_j => imgnjj11, &
-            last_same_parity_terms_high_j => imgtjj11, first_opposite_parity_terms_high_j => impnjj11, &
-            first_same_parity_terms_high_j => imptjj11
-        use subshell_tensor_diagnostics, only: mes
-        use jj_subshell_term_decoding, only: rumtjj
-        use wigner_6j_triangle_selection, only: ixjtik
-        use angular_triangle_and_parity, only: ittk
-        use jj_a_matrix_element_few_electrons, only: a1jj
-        use wigner_6j, only: sixj
-        use quasispin_projection_selection, only: izas1
+        use numeric_constants,          only: zero, tenth, half, two, angular_tolerance
+        use jj_reduced_coefficients_9, only: last_opposite_parity_terms_two_j_9, first_opposite_parity_terms_two_j_9
+        use jj_reduced_coefficients_11, only: last_opposite_parity_terms_high_j, first_opposite_parity_terms_high_j
+        use subshell_tensor_diagnostics, only: report_subshell_tensor_error
+        use jj_subshell_term_decoding, only: decode_jj_subshell_term
+        use wigner_6j_triangle_selection, only: allows_wigner_6j_triangles
+        use angular_triangle_and_parity, only: satisfies_angular_triangle_and_parity
+        use jj_a_matrix_element_few_electrons, only: evaluate_jj_a_few_electrons
+        use wigner_6j, only: wigner_6j_value
+        use quasispin_projection_selection, only: allows_quasispin_projection
         implicit none (type, external)
 
         ! Arguments
@@ -43,17 +37,17 @@ contains
         real(real64)               :: sum_over_terms, bra_a_matrix_element, six_j_value, ket_a_matrix_element
         real(real64) :: intermediate_shell_values(3)
         w_matrix_element=zero
-        if(izas1(ket_shell_codes(7),ket_shell_values(3),bra_shell_codes(7),bra_shell_values(3)) == 0)return
+        if(allows_quasispin_projection(ket_shell_codes(7),ket_shell_values(3),bra_shell_codes(7),bra_shell_values(3)) == 0)return
         sum_over_terms=zero
         two_w_rank=w_angular_rank*2
         occupation_change_2=q_projection_2*two+q_projection_2*tenth
         if(ket_shell_codes(3) > 37) return
-        if(ittk(ket_shell_codes(6),bra_shell_codes(6),two_w_rank) == 0)return
+        if(satisfies_angular_triangle_and_parity(ket_shell_codes(6),bra_shell_codes(6),two_w_rank) == 0)return
         bra_term_lookup_index=bra_shell_codes(1)
         ket_term_lookup_index=ket_shell_codes(1)
         if(ket_shell_codes(3) == 9) then
-            if(ket_shell_codes(4) > 2) call mes(1)
-            if(bra_shell_codes(4) > 2) call mes(1)
+            if(ket_shell_codes(4) > 2) call report_subshell_tensor_error(1)
+            if(bra_shell_codes(4) > 2) call report_subshell_tensor_error(1)
             bra_term_lookup_index=bra_term_lookup_index-300
             ket_term_lookup_index=ket_term_lookup_index-300
             first_bra_range_term=first_opposite_parity_terms_two_j_9(bra_term_lookup_index)
@@ -62,8 +56,8 @@ contains
             last_bra_range_term=last_opposite_parity_terms_two_j_9(bra_term_lookup_index)
             last_intermediate_term=last_opposite_parity_terms_two_j_9(ket_term_lookup_index)
         else
-            if(ket_shell_codes(4) > 2) call mes(1)
-            if(bra_shell_codes(4) > 2) call mes(1)
+            if(ket_shell_codes(4) > 2) call report_subshell_tensor_error(1)
+            if(bra_shell_codes(4) > 2) call report_subshell_tensor_error(1)
             first_bra_range_term=first_opposite_parity_terms_high_j(bra_term_lookup_index)
             first_intermediate_term=first_opposite_parity_terms_high_j(ket_term_lookup_index)
             if(first_bra_range_term /= first_intermediate_term)return
@@ -79,22 +73,26 @@ contains
 
         ! Sum over admissible intermediate terms at the required occupation and projection.
         do intermediate_term_index=first_intermediate_term,last_intermediate_term
-            call rumtjj(intermediate_term_index,intermediate_shell_codes(3),intermediate_shell_codes(7), &
+            call decode_jj_subshell_term(intermediate_term_index,intermediate_shell_codes(3),intermediate_shell_codes(7), &
                 two_intermediate_seniority,intermediate_shell_codes(6))
             if(two_abs_intermediate_projection <= intermediate_shell_codes(7)) then
-                if(ixjtik(bra_shell_codes(3),bra_shell_codes(3),two_w_rank,ket_shell_codes(6),bra_shell_codes(6), &
+                if(allows_wigner_6j_triangles(bra_shell_codes(3),bra_shell_codes(3),two_w_rank,ket_shell_codes(6), &
+                    & bra_shell_codes(6), &
                     intermediate_shell_codes(6)) /= 0) then
                     intermediate_shell_codes(1)=intermediate_term_index
                     intermediate_shell_values(2)=dble(intermediate_shell_codes(6))/two
                     intermediate_shell_values(1)=dble(intermediate_shell_codes(7))/two
-                    call a1jj(bra_shell_codes,bra_shell_values,intermediate_shell_codes,intermediate_shell_values, &
+                    call evaluate_jj_a_few_electrons(bra_shell_codes,bra_shell_values,intermediate_shell_codes, &
+                        & intermediate_shell_values, &
                         q_projection_1,bra_a_matrix_element)
                     if(dabs(bra_a_matrix_element) > angular_tolerance) then
-                        call a1jj(intermediate_shell_codes,intermediate_shell_values,ket_shell_codes,ket_shell_values, &
+                        call evaluate_jj_a_few_electrons(intermediate_shell_codes,intermediate_shell_values,ket_shell_codes, &
+                            & ket_shell_values, &
                             q_projection_2,ket_a_matrix_element)
                         if(dabs(ket_a_matrix_element) > angular_tolerance) then
                             bra_a_matrix_element=bra_a_matrix_element*ket_a_matrix_element
-                            call sixj(bra_shell_codes(3),bra_shell_codes(3),two_w_rank,ket_shell_codes(6),bra_shell_codes(6), &
+                            call wigner_6j_value(bra_shell_codes(3),bra_shell_codes(3),two_w_rank,ket_shell_codes(6), &
+                                & bra_shell_codes(6), &
                                 intermediate_shell_codes(6),0,six_j_value)
                             sum_over_terms=sum_over_terms+bra_a_matrix_element*six_j_value
                         end if
@@ -106,5 +104,5 @@ contains
         twice_phase_exponent=two_w_rank+bra_shell_codes(6)+ket_shell_codes(6)
         if(((twice_phase_exponent/4)*4) /= twice_phase_exponent)w_matrix_element=-w_matrix_element
         return
-    end subroutine w1jjg
+    end subroutine evaluate_high_j_w
 end module jj_w_matrix_element_high_j

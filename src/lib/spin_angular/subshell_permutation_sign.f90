@@ -4,9 +4,9 @@ module subshell_permutation_sign
 
     ! Module interface
     private
-    public :: jfaze
+    public :: subshell_permutation_phase
 contains
-    integer function jfaze(first_shell_position,second_shell_position,third_shell_position, &
+    integer function subshell_permutation_phase(first_shell_position,second_shell_position,third_shell_position, &
         fourth_shell_position) result(permutation_sign)
         implicit none (type, external)
 
@@ -20,5 +20,5 @@ contains
         if(second_shell_position > fourth_shell_position)permutation_sign=-permutation_sign
         if(third_shell_position > fourth_shell_position)permutation_sign=-permutation_sign
         return
-    end function jfaze
+    end function subshell_permutation_phase
 end module subshell_permutation_sign

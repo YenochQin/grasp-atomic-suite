@@ -38,9 +38,8 @@ program rwfnestimate_main
     !                                                                      *
     !***********************************************************************
     !
-    use calculation_input_defaults, only: inpci, ndef, ndump
-    use numeric_constants, only: eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
-    use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+    use calculation_input_defaults, only: nondefault_options_flag
+    use standard_io_units, only: stderr_unit
     use rwfnestimate_input, only: radial_input_options, parse_radial_options, load_radial_header
     use calculation_state_files, only: check_orbital_output
     use calculation_state_files, only: state_files, state_name_length, select_state, files_for_state, orbital_input_path
@@ -49,8 +48,8 @@ program rwfnestimate_main
     use configure_debug_output_interface, only: configure_debug_output
 
     ! Module dependencies
-    use machine_constants, only: setmc
-    use physical_constants, only: setcon
+    use machine_constants, only: initialize_machine_constants
+    use physical_constants, only: initialize_physical_constants
 
     ! Procedure interfaces
     use open_summary_file_interface, only: open_summary_file
@@ -60,7 +59,7 @@ program rwfnestimate_main
     use generate_initial_radial_wavefunctions_interface, only: generate_initial_radial_wavefunctions
 
     ! Module dependencies
-    use radial_orbital_orthogonalization, only: orthsc
+    use radial_orbital_orthogonalization, only: orthogonalize_radial_orbitals
 
     ! Procedure interfaces
     use write_initial_radial_wavefunctions_interface, only: write_initial_radial_wavefunctions
@@ -96,9 +95,9 @@ program rwfnestimate_main
 
     !
     if (yes) then
-        ndef = 0
+        nondefault_options_flag = 0
     else
-        ndef = 1
+        nondefault_options_flag = 1
     end if
 
     !
@@ -109,15 +108,15 @@ program rwfnestimate_main
     !
     !   Perform machine- and installation-dependent setup
     !
-    call setmc
+    call initialize_machine_constants
     !
     !   Set up the physical constants
     !
-    call setcon
+    call initialize_physical_constants
     !
     !   Open the  .sum  file
     !
-    if (ndef /= 0) call open_summary_file(files%estimate_summary)
+    if (nondefault_options_flag /= 0) call open_summary_file(files%estimate_summary)
     !
     !   Load orbital metadata from the selected rCSFs header.
     !
@@ -133,7 +132,7 @@ program rwfnestimate_main
     !
     !   Write the first part of the  .sum  file
     !
-    if (ndef /= 0) call write_input_summary
+    if (nondefault_options_flag /= 0) call write_input_summary
     !
     !   Generate the subshell radial wavefunctions
     !
@@ -142,7 +141,7 @@ program rwfnestimate_main
     !
     !   Orthogonalize the radial orbitals
     !
-    call orthsc
+    call orthogonalize_radial_orbitals
     !
     !   Write the subshell radial wavefunctions out
     !

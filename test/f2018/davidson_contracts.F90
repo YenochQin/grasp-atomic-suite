@@ -1,32 +1,31 @@
-! Production initial estimates, sparse multiplication and GDVD callback contract.
+! Production initial estimates, sparse multiplication and Davidson solver callback contract.
 program davidson_contracts
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use, intrinsic :: iso_fortran_env, only: real64
-    use real_vector_initialization, only: dinit
-    use davidson_sparse_initial_estimates, only: iniest
-    use sparse_eigensolver_initial_basis, only: iniest2
-    use davidson_eigensolver, only: gdvd
-    use sparse_symmetric_matvec, only: spicmv2
-    use davidson_projected_matrix, only: adds
-    use davidson_residual_expansion, only: newvec
-    use sparse_hamiltonian_storage, only: &
-        emt => hamiltonian_values, irow => matrix_partner_indices, iendc => stored_segment_end_offsets
+    use real_vector_initialization, only: initialize_real_vector
+    use davidson_sparse_initial_estimates, only: estimate_davidson_sparse_eigenpairs
+    use sparse_eigensolver_initial_basis, only: estimate_sparse_initial_basis
+    use davidson_eigensolver, only: solve_davidson_eigenpairs
+    use sparse_symmetric_matvec, only: multiply_sparse_symmetric_matrix
+    use davidson_projected_matrix, only: update_davidson_projected_matrix
+    use davidson_residual_expansion, only: expand_davidson_residuals
+    use sparse_hamiltonian_storage, only: hamiltonian_values, matrix_partner_indices, stored_segment_end_offsets
     implicit none (type, external)
     integer, parameter :: n=3, nd=6, lim=6, lwork=2*nd*lim+2*lim*lim+11*lim+1, liwork=6*lim+1
     integer :: niv, ilow, ihigh, mblock, maxiter, loops, nmv, ierr, i
     integer :: jcol(0:3), rows(3), blocks(3), selected(lim), iwork(liwork)
     real(real64) :: values(3), basis(8), work(lwork), diag(nd), h(n,n), big(nd,nd)
-    real(real64) :: result(n,2), vectors(n,2), crite, critc, critr, ortho, guard(7)
+    real(real64) :: result(n,2), vectors(n,2), crite, critc, critr, guard(7)
     logical :: hiend
     character(16) :: scenario
     real(real64) :: expected
     guard = -99
-    call dinit(3, 2.0_real64, guard(2:6), 2)
+    call initialize_real_vector(3, 2.0_real64, guard(2:6), 2)
     if (any(guard /= [-99.0_real64,2.0_real64,-99.0_real64,2.0_real64, &
                      -99.0_real64,2.0_real64,-99.0_real64])) error stop "DINIT stride/guards"
-    call dinit(3, 4.0_real64, guard(2:6), -2)
+    call initialize_real_vector(3, 4.0_real64, guard(2:6), -2)
     if (any(guard(2:6:2) /= 4.0_real64)) error stop "DINIT negative stride"
-    call dinit(0, 7.0_real64, guard, 1)
+    call initialize_real_vector(0, 7.0_real64, guard, 1)
     if (guard(1) /= -99.0_real64) error stop "DINIT zero count"
 
     values = [1.0_real64,2.0_real64,4.0_real64]
@@ -35,27 +34,27 @@ program davidson_contracts
     blocks = 1
     niv = 2
     basis = -99
-    call iniest(n,n,niv,values,jcol,rows,basis,blocks,1)
+    call estimate_davidson_sparse_eigenpairs(n,n,niv,values,jcol,rows,basis,blocks,1)
     call check_estimates()
     basis = -99
-    call iniest2(n,n,niv,basis,values,jcol,rows)
+    call estimate_sparse_initial_basis(n,n,niv,basis,values,jcol,rows)
     call check_estimates()
 
     h = reshape([2.0_real64,1.0_real64,0.0_real64, &
                  1.0_real64,2.0_real64,0.0_real64, &
                  0.0_real64,0.0_real64,4.0_real64], [n,n])
-    allocate(emt(4),irow(4),iendc(0:n))
-    emt = [2.0_real64,1.0_real64,2.0_real64,4.0_real64]
-    irow = [1,1,2,3]
-    iendc = [0,1,3,4]
+    allocate(hamiltonian_values(4),matrix_partner_indices(4),stored_segment_end_offsets(0:n))
+    hamiltonian_values = [2.0_real64,1.0_real64,2.0_real64,4.0_real64]
+    matrix_partner_indices = [1,1,2,3]
+    stored_segment_end_offsets = [0,1,3,4]
     vectors = reshape([1.0_real64,2.0_real64,3.0_real64,4.0_real64,5.0_real64,6.0_real64],[n,2])
     result = -99
-    call spicmv2(n,2,vectors,result)
+    call multiply_sparse_symmetric_matrix(n,2,vectors,result)
     if (maxval(abs(result-matmul(h,vectors))) > 1e-12_real64) error stop "SPICMV2 sparse result"
-    deallocate(emt,irow,iendc)
+    deallocate(hamiltonian_values,matrix_partner_indices,stored_segment_end_offsets)
     call check_partial_updates()
 
-    ! GDVD reserves three restart slots, so use LIM=6 even for this small block.
+    ! Davidson solver reserves three restart slots, so use LIM=6 even for this small block.
     call get_command_argument(1, scenario)
     big=0
     select case (trim(scenario))
@@ -99,15 +98,14 @@ program davidson_contracts
     crite=1e-14_real64
     critc=1e-12_real64
     critr=1e-12_real64
-    ortho=1e-12_real64
-    call gdvd(multiply,nd,lim,diag,ilow,ihigh,selected,niv,mblock,crite,critc,critr,ortho, &
+    call solve_davidson_eigenpairs(multiply,nd,lim,diag,ilow,ihigh,selected,niv,mblock,crite,critc,critr, &
               maxiter,work,lwork,iwork,liwork,hiend,loops,nmv,ierr)
-    if (ierr /= 0 .or. nmv < 1) error stop "GDVD callback execution"
-    if (.not. all(ieee_is_finite(work(:nd+1)))) error stop "GDVD nonfinite eigenpair"
+    if (ierr /= 0 .or. nmv < 1) error stop "Davidson solver callback execution"
+    if (.not. all(ieee_is_finite(work(:nd+1)))) error stop "Davidson solver nonfinite eigenpair"
     if (abs(work(nd+1)-expected) > 1e-12_real64) &
-        error stop "GDVD eigenvalue"
-    if (maxval(abs(matmul(big,work(:nd))-work(nd+1)*work(:nd))) > 1e-12_real64) error stop "GDVD residual"
-    if (abs(sum(work(:nd)**2)-1.0_real64) > 1e-12_real64) error stop "GDVD normalization"
+        error stop "Davidson solver eigenvalue"
+    if (maxval(abs(matmul(big,work(:nd))-work(nd+1)*work(:nd))) > 1e-12_real64) error stop "Davidson solver residual"
+    if (abs(sum(work(:nd)**2)-1.0_real64) > 1e-12_real64) error stop "Davidson solver normalization"
     print *, "PASS Davidson interfaces and numerical contracts"
 contains
     subroutine check_partial_updates()
@@ -117,11 +115,11 @@ contains
         b=0
         b(1,1)=1; b(2,2)=1; b(3,3)=1
         packed=-99
-        call adds(3,3,0,1,b,h,packed)
+        call update_davidson_projected_matrix(3,3,0,1,b,h,packed)
         if(abs(packed(1)-2.0_real64)>0.or.maxval(abs(packed(2:)+99.0_real64))>0) &
             error stop "ADDS first-column guards"
-        call adds(3,3,1,1,b,h,packed)
-        call adds(3,3,2,1,b,h,packed)
+        call update_davidson_projected_matrix(3,3,1,1,b,h,packed)
+        call update_davidson_projected_matrix(3,3,2,1,b,h,packed)
         if(.not.all(ieee_is_finite(packed))) error stop "Nonfinite projected matrix"
         if(maxval(abs(packed-[2.0_real64,1.0_real64,2.0_real64,0.0_real64,0.0_real64,4.0_real64]))>0) &
             error stop "ADDS must preserve previous projected columns"
@@ -130,7 +128,7 @@ contains
         coeff=[1.0_real64,0.0_real64,0.0_real64,1.0_real64,0.0_real64,0.0_real64]
         eigen=[1.0_real64,2.0_real64,3.0_real64];old=[0.0_real64,0.0_real64]
         flags=[0,1];pending=[1,2];count_new=1;scratch=-99;shifts=-99
-        call newvec(3,2,3,1,2,1e-12_real64,count_new,pending,coeff,eigen,old,ab,b,flags,scratch,shifts,done)
+        call expand_davidson_residuals(3,2,3,1,2,1e-12_real64,count_new,pending,coeff,eigen,old,ab,b,flags,scratch,shifts,done)
         if(.not.done.or.any(flags/=1)) error stop "NEWVEC must retain other roots convergence state"
     end subroutine check_partial_updates
     subroutine check_estimates()

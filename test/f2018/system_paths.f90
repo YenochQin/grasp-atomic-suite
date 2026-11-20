@@ -1,8 +1,8 @@
 program system_paths
     use posix_services, only: path_access, run_shell, terminate_process, working_directory
-    use mpi_change_directory, only: sys_chdir
-    use mpi_current_directory, only: sys_getwd
-    use mpi_make_directory, only: sys_mkdir
+    use mpi_change_directory, only: change_mpi_directory
+    use mpi_current_directory, only: get_mpi_working_directory
+    use mpi_make_directory, only: create_mpi_directory
     implicit none (type, external)
     character(4096) :: before, after
     character(1) :: short
@@ -19,16 +19,16 @@ program system_paths
         error stop "exit returned"
     end if
 
-    call sys_getwd(before,length)
+    call get_mpi_working_directory(before,length)
     if (length /= len_trim(before)) error stop "cwd length"
     if (run_shell("exit 7") /= 1792) error stop "shell wait status changed"
-    call sys_mkdir(nested,len(nested),status)
+    call create_mpi_directory(nested,len(nested),status)
     if (status /= 0) error stop "quoted mkdir failed"
-    call sys_mkdir(nested,len(nested),status)
+    call create_mpi_directory(nested,len(nested),status)
     if (status /= 0) error stop "mkdir not idempotent"
-    call sys_chdir(nested,len(nested),status)
+    call change_mpi_directory(nested,len(nested),status)
     if (status /= 0) error stop "chdir failed"
-    call sys_getwd(after,length)
+    call get_mpi_working_directory(after,length)
     if (trim(after) /= trim(before)//"/"//nested) error stop "cwd changed incorrectly"
     status = working_directory(short)
     if (status == 0) error stop "short cwd buffer accepted"
@@ -36,12 +36,12 @@ program system_paths
     close(unit)
     if (path_access("regular-file","rw") /= 0) error stop "access existing file"
     if (path_access("missing-file"," ") == 0) error stop "access missing file"
-    call sys_mkdir("regular-file/child",len("regular-file/child"),status)
+    call create_mpi_directory("regular-file/child",len("regular-file/child"),status)
     if (status == 0) error stop "mkdir through regular file accepted"
-    call sys_chdir("missing-directory",len("missing-directory"),status)
+    call change_mpi_directory("missing-directory",len("missing-directory"),status)
     if (status == 0) error stop "missing directory accepted"
-    call sys_getwd(after,length)
+    call get_mpi_working_directory(after,length)
     if (trim(after) /= trim(before)//"/"//nested) error stop "failed chdir changed cwd"
-    call sys_chdir(before,len_trim(before),status)
+    call change_mpi_directory(before,len_trim(before),status)
     if (status /= 0) error stop "restore cwd failed"
 end program system_paths

@@ -1,137 +1,170 @@
-!***********************************************************************
-!                                                                      *
-subroutine compute_gj_only_mpi(gjc_diag, dgjc_diag)
-    ! Module dependencies
-    !                                                                      *
-    !   MPI version of the diagonal Landé-factor accumulation. Each rank   *
-    !   processes a strided subset of the outer IC loop and the partial    *
-    !   ASF sums are reduced over all ranks at the end.                    *
-    !                                                                      *
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use grasp_parameters,   only: max_orbitals
-    use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
-    use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
-        csf_mixing_coefficients, evecff, evecii
-    use first_order_csf_cutoffs,        only: iccut
-    use standard_io_units,        only: stderr_unit
-    use mpi_state,           only: mpi_rank, mpi_process_count
-    use orbital_csf_basis,           only: csf_count, orbital_count
-    use selected_level_indices,          only: nvec
-    use integer_format, only: convrt
-    use csf_quantum_queries, only: itjpo
-
-    ! Procedure interfaces
-    use hyperfine_one_electron_element_interface, only: hyperfine_one_electron_element
-
-    ! Module dependencies
-    use one_electron_tensor_coefficients, only: oneparticlejj
-    use weighted_radial_overlap, only: rint
-
-    ! Procedure interfaces
-    use hyperfine_radial_integral_interface, only: hyperfine_radial_integral
-
-    ! Module dependencies
-    use mpi_utilities, only: gdsummpi
+module compute_gj_only_mpi_interface
     implicit none (type, external)
 
-    ! Arguments
-    real(real64), intent(out) :: gjc_diag(nvec), dgjc_diag(nvec)
+    ! Module interface
+    private
+    public :: compute_gj_only_mpi
+contains
 
-    ! Local constants
-    real(real64), parameter :: cutoff = 1.0e-10_real64
+    !***********************************************************************
+    !                                                                      *
+    subroutine compute_gj_only_mpi(lande_g_factors, lande_g_factor_corrections)
+        ! Module dependencies
+        !                                                                      *
+        !   MPI version of the diagonal Landé-factor accumulation. Each rank   *
+        !   processes a strided subset of the outer IC loop and the partial    *
+        !   ASF sums are reduced over all ranks at the end.                    *
+        !                                                                      *
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use grasp_parameters,   only: max_orbitals
+        use hamiltonian_correction_flags, only: use_first_order_csf_perturbation
+        use eigenstate_expansions, only: csf_mixing_coefficients
+        use first_order_csf_cutoffs,        only: first_order_csf_cutoff
+        use standard_io_units,        only: stderr_unit
+        use mpi_state,           only: mpi_rank, mpi_process_count
+        use orbital_csf_basis,           only: csf_count, orbital_count
+        use selected_level_indices,          only: active_level_count
+        use integer_format, only: format_integer
+        use csf_quantum_queries, only: csf_total_j_code
 
-    ! Local declarations
-    integer :: orbital_index, j, operator_parity, csf_index, text_length, ir, itjpoc, itjpor, idiff, bra_orbital_index, &
-        & ket_orbital_index, &
-        k, loc
-    real(real64) :: shell_coefficients(max_orbitals)
-    real(real64) :: rintgj(max_orbitals, max_orbitals), rintdgj(max_orbitals, max_orbitals), &
-        gjmelt(max_orbitals, max_orbitals), dgjmelt(max_orbitals, max_orbitals)
-    real(real64) :: apart, gjpart, dgjpart, elemntgj, elemntdgj, contrgj, &
-        contrdgj
-    character :: number_text*11
-    !-----------------------------------------------
-    !
-    gjc_diag(:nvec) = 0.0_real64
-    dgjc_diag(:nvec) = 0.0_real64
-    !
-    !   Precompute the radial integrals and angular factors required by
-    !   the two one-body operators contributing to the Landé factor.
-    !
-    do orbital_index = 1, orbital_count
-        do j = 1, orbital_count
-            rintgj(orbital_index,j) = hyperfine_radial_integral(orbital_index,j,1)
-            rintdgj(orbital_index,j) = rint(orbital_index,j,0)
-            call hyperfine_one_electron_element(orbital_index, 1, j, apart, gjpart, dgjpart)
-            gjmelt(orbital_index,j) = gjpart
-            dgjmelt(orbital_index,j) = dgjpart
-        end do
-    end do
-    !
-    operator_parity = 1
-    !
-    !   Each rank evaluates a strided subset of the outer IC loop.
-    !
-    do csf_index = mpi_rank + 1, csf_count, mpi_process_count
-        if (mpi_rank == 0 .and. mod(csf_index,100) == 1) then
-            call convrt(csf_index, number_text, text_length)
-            write (stderr_unit, *) "Column "//number_text(1:text_length)//" complete on root;"
-        end if
+        ! Procedure interfaces
+        use hyperfine_one_electron_element_interface, only: hyperfine_one_electron_element
+
+        ! Module dependencies
+        use one_electron_tensor_coefficients, only: calculate_one_electron_tensor_coefficients
+        use weighted_radial_overlap, only: integrate_weighted_radial_overlap
+
+        ! Procedure interfaces
+        use hyperfine_radial_integral_interface, only: hyperfine_radial_integral
+
+        ! Module dependencies
+        use mpi_utilities, only: allreduce_mpi_real_sum
+        implicit none (type, external)
+
+        ! Arguments
+        real(real64), intent(out) :: lande_g_factors(active_level_count), lande_g_factor_corrections(active_level_count)
+
+        ! Local constants
+        real(real64), parameter :: cutoff = 1.0e-10_real64
+
+        ! Local declarations
+        integer :: first_orbital_index, second_orbital_index, operator_parity, column_csf_index, text_length, row_csf_index, &
+                & column_csf_j_code, row_csf_j_code, &
+            & csf_j_code_difference, bra_orbital_index, &
+            & ket_orbital_index, &
+            level_index, mixing_offset
+        real(real64) :: shell_coefficients(max_orbitals)
+        real(real64) :: lande_g_radial_integrals(max_orbitals, max_orbitals), radial_overlap_integrals(max_orbitals, &
+            & max_orbitals), &
+            lande_g_angular_factors(max_orbitals, max_orbitals), lande_g_correction_angular_factors(max_orbitals, max_orbitals)
+        real(real64) :: unused_hyperfine_angular_factor, lande_g_angular_factor, lande_g_correction_angular_factor, &
+            & lande_g_csf_matrix_element, lande_g_correction_csf_matrix_element, lande_g_contribution, &
+            lande_g_correction_contribution
+        character :: number_text*11
+        !-----------------------------------------------
         !
-        do ir = 1, csf_count
-            if (lfordr .and. csf_index>iccut .and. csf_index/=ir) cycle
-            !
-            itjpoc = itjpo(csf_index)
-            itjpor = itjpo(ir)
-            idiff = itjpoc - itjpor
-            if (.not.(idiff == 0 .and. ir >= csf_index)) cycle
-            !
-            elemntgj = 0.0_real64
-            elemntdgj = 0.0_real64
-            !
-            call oneparticlejj(1, operator_parity, csf_index, ir, bra_orbital_index, ket_orbital_index, shell_coefficients)
-            if (bra_orbital_index == 0) cycle
-            !
-            if (bra_orbital_index == ket_orbital_index) then
-                do orbital_index = 1, orbital_count
-                    if (abs(shell_coefficients(orbital_index)) <= cutoff) cycle
-                    elemntgj = elemntgj + gjmelt(orbital_index,orbital_index)*rintgj(orbital_index, &
-                        & orbital_index)*shell_coefficients(orbital_index)
-                    elemntdgj = elemntdgj + dgjmelt(orbital_index,orbital_index)*rintdgj(orbital_index, &
-                        & orbital_index)*shell_coefficients(orbital_index)
-                end do
-            else
-                if (abs(shell_coefficients(1)) <= cutoff) cycle
-                elemntgj = elemntgj + gjmelt(bra_orbital_index,ket_orbital_index)*rintgj(bra_orbital_index, &
-                    & ket_orbital_index)*shell_coefficients(1)
-                elemntdgj = elemntdgj + dgjmelt(bra_orbital_index,ket_orbital_index)*rintdgj(bra_orbital_index, &
-                    & ket_orbital_index)*shell_coefficients(1)
-            end if
-            !
-            if (abs(elemntgj) <= cutoff .and. abs(elemntdgj) <= cutoff) cycle
-            !
-            do k = 1, nvec
-                loc = (k - 1)*csf_count
-                if (ir /= csf_index) then
-                    contrgj = elemntgj*(csf_mixing_coefficients(csf_index + loc)*csf_mixing_coefficients(ir + loc) + &
-                        & csf_mixing_coefficients(ir &
-                        + loc)*csf_mixing_coefficients(csf_index + loc))
-                    contrdgj = elemntdgj*(csf_mixing_coefficients(csf_index + loc)*csf_mixing_coefficients(ir + loc) + &
-                        & csf_mixing_coefficients(ir&
-                        + loc)*csf_mixing_coefficients(csf_index + loc))
-                else
-                    contrgj = elemntgj*csf_mixing_coefficients(csf_index + loc)*csf_mixing_coefficients(ir + loc)
-                    contrdgj = elemntdgj*csf_mixing_coefficients(csf_index + loc)*csf_mixing_coefficients(ir + loc)
-                end if
-                gjc_diag(k) = gjc_diag(k) + contrgj
-                dgjc_diag(k) = dgjc_diag(k) + contrdgj
+        lande_g_factors(:active_level_count) = 0.0_real64
+        lande_g_factor_corrections(:active_level_count) = 0.0_real64
+        !
+        !   Precompute the radial integrals and angular factors required by
+        !   the two one-body operators contributing to the Landé factor.
+        !
+        do first_orbital_index = 1, orbital_count
+            do second_orbital_index = 1, orbital_count
+                lande_g_radial_integrals(first_orbital_index, &
+                & second_orbital_index) = hyperfine_radial_integral(first_orbital_index,second_orbital_index,1)
+                radial_overlap_integrals(first_orbital_index,second_orbital_index) = integrate_weighted_radial_overlap( &
+                & first_orbital_index,second_orbital_index,0)
+                call hyperfine_one_electron_element(first_orbital_index, 1, second_orbital_index, unused_hyperfine_angular_factor, &
+                    & lande_g_angular_factor, lande_g_correction_angular_factor)
+                lande_g_angular_factors(first_orbital_index,second_orbital_index) = lande_g_angular_factor
+                lande_g_correction_angular_factors(first_orbital_index,second_orbital_index) = lande_g_correction_angular_factor
             end do
         end do
-    end do
-    !
-    call gdsummpi(gjc_diag, nvec)
-    call gdsummpi(dgjc_diag, nvec)
-    !
-    return
-end subroutine compute_gj_only_mpi
+        !
+        operator_parity = 1
+        !
+        !   Each rank evaluates a strided subset of the outer IC loop.
+        !
+        do column_csf_index = mpi_rank + 1, csf_count, mpi_process_count
+            if (mpi_rank == 0 .and. mod(column_csf_index,100) == 1) then
+                call format_integer(column_csf_index, number_text, text_length)
+                write (stderr_unit, *) "Column "//number_text(1:text_length)//" complete on root;"
+            end if
+            !
+            do row_csf_index = 1, csf_count
+                if (use_first_order_csf_perturbation .and. column_csf_index>first_order_csf_cutoff .and. column_csf_index/= &
+                & row_csf_index) cycle
+                !
+                column_csf_j_code = csf_total_j_code(column_csf_index)
+                row_csf_j_code = csf_total_j_code(row_csf_index)
+                csf_j_code_difference = column_csf_j_code - row_csf_j_code
+                if (.not.(csf_j_code_difference == 0 .and. row_csf_index >= column_csf_index)) cycle
+                !
+                lande_g_csf_matrix_element = 0.0_real64
+                lande_g_correction_csf_matrix_element = 0.0_real64
+                !
+                call calculate_one_electron_tensor_coefficients(1, operator_parity, column_csf_index, row_csf_index, &
+                & bra_orbital_index, &
+                    & ket_orbital_index, shell_coefficients)
+                if (bra_orbital_index == 0) cycle
+                !
+                if (bra_orbital_index == ket_orbital_index) then
+                    do first_orbital_index = 1, orbital_count
+                        if (abs(shell_coefficients(first_orbital_index)) <= cutoff) cycle
+                        lande_g_csf_matrix_element = lande_g_csf_matrix_element + &
+                            & lande_g_angular_factors(first_orbital_index,first_orbital_index) &
+                            & *lande_g_radial_integrals(first_orbital_index, &
+                            & first_orbital_index)*shell_coefficients(first_orbital_index)
+                        lande_g_correction_csf_matrix_element = lande_g_correction_csf_matrix_element + &
+                            & lande_g_correction_angular_factors(first_orbital_index,first_orbital_index) &
+                            & *radial_overlap_integrals(first_orbital_index, &
+                            & first_orbital_index)*shell_coefficients(first_orbital_index)
+                    end do
+                else
+                    if (abs(shell_coefficients(1)) <= cutoff) cycle
+                    lande_g_csf_matrix_element = lande_g_csf_matrix_element + &
+                        & lande_g_angular_factors(bra_orbital_index,ket_orbital_index) &
+                            & *lande_g_radial_integrals(bra_orbital_index, &
+                        & ket_orbital_index)*shell_coefficients(1)
+                    lande_g_correction_csf_matrix_element = lande_g_correction_csf_matrix_element + &
+                        & lande_g_correction_angular_factors(bra_orbital_index,ket_orbital_index) &
+                            & *radial_overlap_integrals(bra_orbital_index, &
+                        & ket_orbital_index)*shell_coefficients(1)
+                end if
+                !
+                if (abs(lande_g_csf_matrix_element) <= cutoff .and. abs(lande_g_correction_csf_matrix_element) <= cutoff) cycle
+                !
+                do level_index = 1, active_level_count
+                    mixing_offset = (level_index - 1)*csf_count
+                    if (row_csf_index /= column_csf_index) then
+                        lande_g_contribution = lande_g_csf_matrix_element*(csf_mixing_coefficients(column_csf_index + &
+                            & mixing_offset)*csf_mixing_coefficients(row_csf_index + mixing_offset) + &
+                            & csf_mixing_coefficients(row_csf_index &
+                            + mixing_offset)*csf_mixing_coefficients(column_csf_index + mixing_offset))
+                        lande_g_correction_contribution = &
+                            & lande_g_correction_csf_matrix_element*(csf_mixing_coefficients(column_csf_index + &
+                            & mixing_offset)*csf_mixing_coefficients(row_csf_index + mixing_offset) + &
+                            & csf_mixing_coefficients(row_csf_index&
+                            + mixing_offset)*csf_mixing_coefficients(column_csf_index + mixing_offset))
+                    else
+                        lande_g_contribution = lande_g_csf_matrix_element*csf_mixing_coefficients(column_csf_index + &
+                            & mixing_offset)*csf_mixing_coefficients(row_csf_index + mixing_offset)
+                        lande_g_correction_contribution = &
+                            & lande_g_correction_csf_matrix_element*csf_mixing_coefficients(column_csf_index + &
+                            & mixing_offset)*csf_mixing_coefficients(row_csf_index + mixing_offset)
+                    end if
+                    lande_g_factors(level_index) = lande_g_factors(level_index) + lande_g_contribution
+                    lande_g_factor_corrections(level_index) = lande_g_factor_corrections(level_index) + &
+                & lande_g_correction_contribution
+                end do
+            end do
+        end do
+        !
+        call allreduce_mpi_real_sum(lande_g_factors, active_level_count)
+        call allreduce_mpi_real_sum(lande_g_factor_corrections, active_level_count)
+        !
+        return
+    end subroutine compute_gj_only_mpi
+end module compute_gj_only_mpi_interface

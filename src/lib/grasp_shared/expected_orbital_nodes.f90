@@ -4,5 +4,5 @@ module expected_orbital_nodes
     implicit none (type, external)
 
     ! Module state
-    integer :: nnodep(max_orbitals)
+    integer :: expected_radial_node_counts(max_orbitals)
 end module expected_orbital_nodes

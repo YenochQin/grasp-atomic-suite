@@ -8,7 +8,7 @@ module isotope_shift_options
 
     ! Module state
     !...Translated by Gediminas Gaigalas 11/18/19
-    real(real64), pointer :: dens1(:), dens2(:), dens3(:),  &
-        dens4(:), dens5(:), dens6(:),  &
-        dens7(:), smsc1(:), smsc2(:)
+    real(real64), pointer :: contact_density_by_level(:), total_nms_by_level(:), radius_by_level(:),  &
+        radius_squared_by_level(:), inverse_radius_by_level(:), inverse_radius_squared_by_level(:),  &
+        leading_nms_by_level(:), leading_sms_by_level(:), total_sms_by_level(:)
 end module isotope_shift_options

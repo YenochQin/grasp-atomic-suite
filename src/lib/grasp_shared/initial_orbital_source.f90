@@ -4,5 +4,5 @@ module initial_orbital_source
     implicit none (type, external)
 
     ! Module state
-    character :: source(max_orbitals)*256
+    character :: orbital_source_description(max_orbitals)*256
 end module initial_orbital_source

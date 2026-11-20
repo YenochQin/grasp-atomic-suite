@@ -4,8 +4,8 @@ module csf_descriptor_reader
     use iso_fortran_env, only: int8, int64, error_unit
     use iso_c_binding, only: c_ptr, c_null_ptr, c_null_char, c_char, c_size_t, c_int32_t, c_int64_t
     use csf_descriptor_c_bindings
-    use grasp_parameters, only: orbital_capacity => max_orbitals
-    use subshell_term_table, only: state_counts => itab, state_offsets => jtab, state_values => ntab
+    use grasp_parameters, only: max_orbitals
+    use subshell_term_table, only: state_counts, state_offsets, state_values
     implicit none (type, external)
 
     ! Module interface
@@ -103,8 +103,13 @@ contains
             & "only descriptor Parquet input is supported", status)) return
         descriptor_stem = filename(:path_length-8)
         path_length = len(descriptor_stem)
-        if (path_length > 12) then
-            if (descriptor_stem(path_length-11:) == "_descriptors") descriptor_stem = descriptor_stem(:path_length-12)
+        if (path_length >= len("_desc")) then
+            if (descriptor_stem(path_length-len("_desc")+1:) == "_desc") &
+                descriptor_stem = descriptor_stem(:path_length-len("_desc"))
+        end if
+        if (path_length >= len("_descriptors") .and. len(descriptor_stem) == path_length) then
+            if (descriptor_stem(path_length-len("_descriptors")+1:) == "_descriptors") &
+                descriptor_stem = descriptor_stem(:path_length-len("_descriptors"))
         end if
         ! Derive the paired header path unless the caller supplied one.
         header_path = descriptor_stem//"_header.toml"
@@ -124,7 +129,7 @@ contains
             & status)) return
         source%core_count = int(header_counts(1))
         source%peel_count = int(header_counts(2))
-        if (.not. require_descriptor(header_counts(1)+header_counts(2) <= orbital_capacity, "orbital capacity exceeded", &
+        if (.not. require_descriptor(header_counts(1)+header_counts(2) <= max_orbitals, "orbital capacity exceeded", &
             & status)) return
         source%orbital_count = int(header_counts(1)+header_counts(2))
         source%block_count = int(header_counts(3))
@@ -216,12 +221,10 @@ contains
 
     subroutine install_descriptor_header(source, core_count, block_labels, status)
         ! Module dependencies
-        use orbital_csf_basis, only: current_csf_count => csf_count, current_orbital_count => orbital_count, &
-            principal_numbers => orbital_principal_n, relativistic_kappas => orbital_kappa, orbital_momenta &
-            & => orbital_l, &
-            single_electron_two_j => orbital_two_j, orbital_labels => orbital_symmetry_labels
-        use atomic_calculation_state, only: electron_count => electron_count
-        use hamiltonian_symmetry_blocks, only: block_count => symmetry_block_count, block_lengths => csf_counts_by_block
+        use orbital_csf_basis, only: csf_count, orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, &
+            orbital_symmetry_labels
+        use atomic_calculation_state, only: electron_count
+        use hamiltonian_symmetry_blocks, only: symmetry_block_count, csf_counts_by_block
 
         ! Arguments
         type(descriptor_source), intent(in) :: source
@@ -239,22 +242,22 @@ contains
         if (.not. require_descriptor(allocation_status == 0, "cannot allocate block lengths", status)) return
         prepared_lengths=0
         prepared_lengths(:source%block_count)=source%block_lengths
-        if (associated(block_lengths)) deallocate(block_lengths)
-        block_lengths=>prepared_lengths
+        if (associated(csf_counts_by_block)) deallocate(csf_counts_by_block)
+        csf_counts_by_block=>prepared_lengths
         core_count = source%core_count
-        current_orbital_count = source%orbital_count
-        current_csf_count = source%total_csf_count
+        orbital_count = source%orbital_count
+        csf_count = source%total_csf_count
         electron_count = source%electron_count
-        block_count = source%block_count
-        principal_numbers(:current_orbital_count) = source%principal_numbers
-        relativistic_kappas(:current_orbital_count) = source%relativistic_kappas
-        orbital_momenta(:current_orbital_count) = source%orbital_momenta
-        single_electron_two_j(:current_orbital_count) = source%single_electron_two_j
-        orbital_labels(:current_orbital_count) = source%orbital_labels
-        block_lengths = 0
-        block_lengths(:block_count) = source%block_lengths
+        symmetry_block_count = source%block_count
+        orbital_principal_n(:orbital_count) = source%principal_numbers
+        orbital_kappa(:orbital_count) = source%relativistic_kappas
+        orbital_l(:orbital_count) = source%orbital_momenta
+        orbital_two_j(:orbital_count) = source%single_electron_two_j
+        orbital_symmetry_labels(:orbital_count) = source%orbital_labels
+        csf_counts_by_block = 0
+        csf_counts_by_block(:symmetry_block_count) = source%block_lengths
         block_labels = ""
-        do block_index = 1, block_count
+        do block_index = 1, symmetry_block_count
             block_labels(block_index) = descriptor_block_label(source%block_two_j(block_index), &
                 source%block_parities(block_index))
         end do
@@ -340,7 +343,7 @@ contains
         integer, intent(out), optional :: status
 
         ! Local declarations
-        integer :: shell_two_j(orbital_capacity), printed_two_k(orbital_capacity)
+        integer :: shell_two_j(max_orbitals), printed_two_k(max_orbitals)
         integer :: peel_index, orbital_index, channel_offset, occupation, seniority, printed_two_j
         integer :: occupied_count, occupied_position, open_count, subshell_capacity, previous_two_j, coupled_two_j
         integer :: last_nonzero_shell, parity_exponent, total_two_j, parity, electron_count
@@ -431,7 +434,7 @@ contains
         end do
         if (.not. require_row(previous_two_j == total_two_j, "incorrect final angular momentum")) return
         ! Store the total 2J+1 and parity together in the final coupling slot.
-        couplings(orbital_capacity) = int((total_two_j+1)*parity, int8)
+        couplings(max_orbitals) = int((total_two_j+1)*parity, int8)
     contains
         logical function require_row(condition, message) result(ok)
             ! Arguments
@@ -481,7 +484,7 @@ contains
         integer, intent(in) :: block_index
         integer(int8), intent(out) :: occupations(:,:)
         integer(int8), intent(out), optional :: subshell_quantum_numbers(:,:,:), couplings(:,:)
-        integer(int8) :: row_subshell_quantum_numbers(orbital_capacity,3), row_couplings(orbital_capacity)
+        integer(int8) :: row_subshell_quantum_numbers(max_orbitals,3), row_couplings(max_orbitals)
         integer, intent(out), optional :: status
         integer(int8), allocatable :: batch_values(:,:)
         character(kind=c_char,len=1024) :: reader_message
@@ -490,14 +493,14 @@ contains
         if (.not. require_descriptor(source%is_open .and. source%header_loaded, "descriptor source is not open", status)) return
         if (.not. require_descriptor(block_index == source%next_block_index .and. block_index <= source%block_count, &
             "blocks must be loaded once in original order", status)) return
-        if (.not. require_descriptor(size(occupations,1) == orbital_capacity .and. &
+        if (.not. require_descriptor(size(occupations,1) == max_orbitals .and. &
             size(occupations,2) == source%block_lengths(block_index),  &
             & "occupation array shape mismatch", status)) return
         if (present(couplings)) then
             if (.not. require_descriptor(all(shape(couplings) == shape(occupations)), "coupling shape", status)) return
         end if
         if (present(subshell_quantum_numbers)) then
-            if (.not. require_descriptor(size(subshell_quantum_numbers,1) == orbital_capacity .and. &
+            if (.not. require_descriptor(size(subshell_quantum_numbers,1) == max_orbitals .and. &
                 size(subshell_quantum_numbers,2) == 3 .and. &
                 size(subshell_quantum_numbers,3) == size(occupations,2), "quantum shape", status)) return
         end if

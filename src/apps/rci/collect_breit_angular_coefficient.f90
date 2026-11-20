@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-subroutine talk(bra_csf_index, ket_csf_index, radial_integral_order, bra_orbital_1, bra_orbital_2, &
+subroutine collect_breit_angular_coefficient(bra_csf_index, ket_csf_index, radial_integral_order, bra_orbital_1, bra_orbital_2, &
     ket_orbital_1, ket_orbital_2, integral_type_code, coefficient)
     ! Module dependencies
     use debug_output_settings, only: angular_debug_unit, ensure_debug_output
@@ -15,10 +15,10 @@ subroutine talk(bra_csf_index, ket_csf_index, radial_integral_order, bra_orbital
     use grasp_parameters,   only: orbital_index_radix
     use angular_coefficient_buffer_state, only: angular_buffer_capacity, angular_coefficient_count, &
         angular_coefficient_labels, angular_coefficients
-    use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+    use debug_output_settings, only: angular_coefficient_debug_flag
     use orbital_csf_basis, only: orbital_principal_n, orbital_symmetry_labels
-    use numeric_constants, only: eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
-    use angular_coefficient_buffer, only: alcbuf
+    use numeric_constants, only: angular_tolerance
+    use angular_coefficient_buffer, only: manage_angular_coefficient_buffer
     implicit none (type, external)
 
     ! Arguments
@@ -27,11 +27,10 @@ subroutine talk(bra_csf_index, ket_csf_index, radial_integral_order, bra_orbital
     real(real64), intent(in) :: coefficient
 
     ! Local constants
-    integer, parameter :: orbital_label_radix = orbital_index_radix
     !-----------------------------------------------
     !   Print coefficient if requested
     !
-    if (ibug1 /= 0) then
+    if (angular_coefficient_debug_flag /= 0) then
         call ensure_debug_output()
         write (angular_debug_unit, '(2(1x,1i2),4(1x,i2,a2),1x,1i2,1x,1i2,1x,1p,d19.12)') &
             bra_csf_index, ket_csf_index, &
@@ -44,12 +43,12 @@ subroutine talk(bra_csf_index, ket_csf_index, radial_integral_order, bra_orbital
     !
     !   Increment counter
     !
-    if(dabs(coefficient) > eps) then
+    if(dabs(coefficient) > angular_tolerance) then
         angular_coefficient_count = angular_coefficient_count + 1
         !
         !   Ensure that arrays are of adequate size; reallocate if necessary
         !
-        if (angular_coefficient_count > angular_buffer_capacity) call alcbuf (2)
+        if (angular_coefficient_count > angular_buffer_capacity) call manage_angular_coefficient_buffer (2)
         !
         !   Store integral indices and coefficient in COMMON/BUFFER/
         !
@@ -66,4 +65,4 @@ subroutine talk(bra_csf_index, ket_csf_index, radial_integral_order, bra_orbital
     !
     return
     !
-end subroutine talk
+end subroutine collect_breit_angular_coefficient

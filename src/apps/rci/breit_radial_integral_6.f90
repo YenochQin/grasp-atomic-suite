@@ -1,170 +1,183 @@
-!***********************************************************************
-!                                                                      *
-subroutine breit_radial_integral_6 (orbital_a,orbital_b,orbital_c,orbital_d,radial_integral_order,radial_integral_value)
-    ! Module dependencies
-    !                                                                      *
-    !   Returns integrals for the transverse photon interaction.           *
-    !      Integrals are stored in ordered lists. If the integral cannot   *
-    !   be read from a list, it is computed by calling BRINTF.             *
-    !                                                                      *
-    !   Observ that it is not possible to use more than 100 orbitals when  *
-    !   the Breit interaction is included. If 100 orbitals are used then   *
-    !   NU <= 19.                                                          *
-    !                                                                      *
-    !   Call(s) to: [LIB92]: ALLOC, RALLOC.                                *
-    !               [RCI92]: BRINTF                                        *
-    !                                                                      *
-    !   Written by Farid A Parpia               Last update: 09 Oct 1992   *
-    !                                                                      *
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use array_memory_management, only: alloc, ralloc
-    use breit_integral_tables, only: ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
-        valtp1, valtp2, valtp3, valtp4, valtp5, valtp6, first
-    use orbital_csf_basis,           only: csf_count, orbital_count, csf_subshell_occupations
-
-    ! Procedure interfaces
-    use lookup_breit_radial_integral_interface, only: lookup_breit_radial_integral
+module breit_radial_integral_6_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(in) :: orbital_a, orbital_b, orbital_c, orbital_d, radial_integral_order
-    real(real64), intent(out) :: radial_integral_value
+    ! Module interface
+    private
+    public :: breit_radial_integral_6
+contains
 
-    ! Local declarations
-    logical :: found
-    integer :: key, index, loc, ju, jl, jm, newsiz, i
-    !-----------------------------------------------
-    !
-    key = orbital_count + 1
-    !
-    !   Compute the integral label
-    !
-    index = (((radial_integral_order*key+orbital_a)*key+orbital_b)*key+orbital_c)*key+orbital_d
-    !
-    if (.not. first(6)) then
+    !***********************************************************************
+    !                                                                      *
+    subroutine breit_radial_integral_6 (orbital_a,orbital_b,orbital_c,orbital_d,radial_integral_order,radial_integral_value)
+        ! Module dependencies
+        !                                                                      *
+        !   Returns integrals for the transverse photon interaction.           *
+        !      Integrals are stored in ordered lists. If the integral cannot   *
+        !   be read from a list, it is computed by calling BRINTF.             *
+        !                                                                      *
+        !   Observ that it is not possible to use more than 100 orbitals when  *
+        !   the Breit interaction is included. If 100 orbitals are used then   *
+        !   NU <= 19.                                                          *
+        !                                                                      *
+        !   Call(s) to: [LIB92]: ALLOC, RALLOC.                                *
+        !               [RCI92]: BRINTF                                        *
+        !                                                                      *
+        !   Written by Farid A Parpia               Last update: 09 Oct 1992   *
+        !                                                                      *
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use array_memory_management, only: alloc, ralloc
+        use breit_integral_tables, only: breit_integral_capacities, breit_integral_counts, breit_integral_indices_6, &
+            breit_integral_values_6, first_breit_integral_lookup
+        use orbital_csf_basis, only: orbital_count
+
+        ! Procedure interfaces
+        use lookup_breit_radial_integral_interface, only: lookup_breit_radial_integral
+        implicit none (type, external)
+
+        ! Arguments
+        integer, intent(in) :: orbital_a, orbital_b, orbital_c, orbital_d, radial_integral_order
+        real(real64), intent(out) :: radial_integral_value
+
+        ! Local declarations
+        logical :: found
+        integer :: packing_radix, packed_integral_index, table_position, search_upper_index, search_lower_index, &
+            & search_midpoint_index, new_integral_capacity, i
+        !-----------------------------------------------
         !
-        !   This branch is executed on all entries except the first
+        packing_radix = orbital_count + 1
         !
-        if (index > indtp6(ntpi(6))) then
-            !
-            !   The index is greater than the largest stored
-            !
-            found = .false.
-            loc = ntpi(6)
+        !   Compute the integral label
         !
-        else if (index < indtp6(1)) then
-            !
-            !   The index is less than the smallest stored
-            !
-            found = .false.
-            loc = 0
+        packed_integral_index = &
+            & (((radial_integral_order*packing_radix+orbital_a)*packing_radix+orbital_b) &
+            & *packing_radix+orbital_c)*packing_radix+orbital_d
         !
-        else
+        if (.not. first_breit_integral_lookup(6)) then
             !
-            !   The index is within the range of the indices stored; search
-            !   for it in the list of indices
+            !   This branch is executed on all entries except the first
             !
-            ju = ntpi(6)
-            jl = 1
-            do while (ju-jl > 1)
-                jm = (ju+jl)/2
-                if (indtp6(jm) > index) then
-                    ju = jm
-                else
-                    jl = jm
-                end if
-            end do
-            !
-            !   The range is bracketed to the extent possible
-            !
-            if (index == indtp6(ju)) then
+            if (packed_integral_index > breit_integral_indices_6(breit_integral_counts(6))) then
                 !
-                found = .true.
-                loc = ju
-            !
-            else if (index == indtp6(jl)) then
+                !   The index is greater than the largest stored
                 !
-                found = .true.
-                loc = jl
+                found = .false.
+                table_position = breit_integral_counts(6)
+            !
+            else if (packed_integral_index < breit_integral_indices_6(1)) then
+                !
+                !   The index is less than the smallest stored
+                !
+                found = .false.
+                table_position = 0
             !
             else
                 !
-                found = .false.
-                loc = jl
+                !   The index is within the range of the indices stored; search
+                !   for it in the list of indices
+                !
+                search_upper_index = breit_integral_counts(6)
+                search_lower_index = 1
+                do while (search_upper_index-search_lower_index > 1)
+                    search_midpoint_index = (search_upper_index+search_lower_index)/2
+                    if (breit_integral_indices_6(search_midpoint_index) > packed_integral_index) then
+                        search_upper_index = search_midpoint_index
+                    else
+                        search_lower_index = search_midpoint_index
+                    end if
+                end do
+                !
+                !   The range is bracketed to the extent possible
+                !
+                if (packed_integral_index == breit_integral_indices_6(search_upper_index)) then
+                    !
+                    found = .true.
+                    table_position = search_upper_index
+                !
+                else if (packed_integral_index == breit_integral_indices_6(search_lower_index)) then
+                    !
+                    found = .true.
+                    table_position = search_lower_index
+                !
+                else
+                    !
+                    found = .false.
+                    table_position = search_lower_index
+                    !
+                end if
+                !
                 !
             end if
             !
+            if (found) then
+                !
+                !   Found the index in the list; return the value of the integral
+                !   from storage
+                !
+                radial_integral_value = breit_integral_values_6(table_position)
             !
-        end if
-        !
-        if (found) then
-            !
-            !   Found the index in the list; return the value of the integral
-            !   from storage
-            !
-            radial_integral_value = valtp6(loc)
+            else
+                !
+                !   Index not found; compute the integral
+                !
+                radial_integral_value = lookup_breit_radial_integral (6,orbital_a,orbital_b,orbital_c,orbital_d, &
+                    & radial_integral_order)
+                !
+                !   Increment the integral counter
+                !
+                breit_integral_counts(6) = breit_integral_counts(6)+1
+                !
+                !   Increase array length by half the present length if the latter
+                !   is inadequate to store another pair
+                !
+                !
+                if (breit_integral_counts(6) > breit_integral_capacities(6)) then
+                    new_integral_capacity = breit_integral_capacities(6)+breit_integral_capacities(6)/2
+                    call ralloc (breit_integral_indices_6,new_integral_capacity,"INDTP6", "BRINT6")
+                    call ralloc (breit_integral_values_6,new_integral_capacity,"VALTP6", "BRINT6")
+                    breit_integral_capacities(6)= new_integral_capacity
+                end if
+                do i = breit_integral_counts(6),table_position+2,-1
+                    breit_integral_indices_6(i) = breit_integral_indices_6(i-1)
+                    breit_integral_values_6(i) = breit_integral_values_6(i-1)
+                end do
+                !
+                !   Put the new index and value into storage
+                !
+                breit_integral_indices_6(table_position+1) = packed_integral_index
+                breit_integral_values_6(table_position+1) = radial_integral_value
+                !
+            end if
         !
         else
             !
-            !   Index not found; compute the integral
+            !   This branch is executed only once per type of integral
+            !
+            first_breit_integral_lookup(6) = .false.
+            !
+            !   Designate the initial storage for arrays INDTPx and VALTPx;
+            !   Array NDTPA stores the array dimensions
+            !
+            breit_integral_capacities(6) = 10000
+            !
+            !   Compute the integral's value
             !
             radial_integral_value = lookup_breit_radial_integral (6,orbital_a,orbital_b,orbital_c,orbital_d,radial_integral_order)
             !
-            !   Increment the integral counter
+            !   Initialise the integral counter
             !
-            ntpi(6) = ntpi(6)+1
+            breit_integral_counts(6) = 1
             !
-            !   Increase array length by half the present length if the latter
-            !   is inadequate to store another pair
+            !   Store the integral and its value
             !
-            !
-            if (ntpi(6) > ndtpa(6)) then
-                newsiz = ndtpa(6)+ndtpa(6)/2
-                call ralloc (indtp6,newsiz,"INDTP6", "BRINT6")
-                call ralloc (valtp6,newsiz,"VALTP6", "BRINT6")
-                ndtpa(6)= newsiz
-            end if
-            do i = ntpi(6),loc+2,-1
-                indtp6(i) = indtp6(i-1)
-                valtp6(i) = valtp6(i-1)
-            end do
-            !
-            !   Put the new index and value into storage
-            !
-            indtp6(loc+1) = index
-            valtp6(loc+1) = radial_integral_value
+            call alloc (breit_integral_indices_6,breit_integral_capacities(6),"INDTP6", "BRINT6")
+            call alloc (breit_integral_values_6,breit_integral_capacities(6),"VALTP6", "BRINT6")
+
+            breit_integral_indices_6(1) = packed_integral_index
+            breit_integral_values_6(1) = radial_integral_value
             !
         end if
-    !
-    else
         !
-        !   This branch is executed only once per type of integral
-        !
-        first(6) = .false.
-        !
-        !   Designate the initial storage for arrays INDTPx and VALTPx;
-        !   Array NDTPA stores the array dimensions
-        !
-        ndtpa(6) = 10000
-        !
-        !   Compute the integral's value
-        !
-        radial_integral_value = lookup_breit_radial_integral (6,orbital_a,orbital_b,orbital_c,orbital_d,radial_integral_order)
-        !
-        !   Initialise the integral counter
-        !
-        ntpi(6) = 1
-        !
-        !   Store the integral and its value
-        !
-        call alloc (indtp6,ndtpa(6),"INDTP6", "BRINT6")
-        call alloc (valtp6,ndtpa(6),"VALTP6", "BRINT6")
-
-        indtp6(1) = index
-        valtp6(1) = radial_integral_value
-        !
-    end if
-    !
-    return
-end subroutine breit_radial_integral_6
+        return
+    end subroutine breit_radial_integral_6
+end module breit_radial_integral_6_interface

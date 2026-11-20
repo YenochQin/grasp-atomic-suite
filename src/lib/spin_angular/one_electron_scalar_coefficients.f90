@@ -4,26 +4,25 @@ module one_electron_scalar_coefficients
 
     ! Module interface
     private
-    public :: onescalar
+    public :: calculate_one_electron_scalar_coefficients
 contains
-    subroutine onescalar(bra_csf_index,ket_csf_index,bra_orbital_index,ket_orbital_index,shell_coefficients)
+    subroutine calculate_one_electron_scalar_coefficients(bra_csf_index,ket_csf_index,bra_orbital_index,ket_orbital_index, &
+        & shell_coefficients)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only:  max_orbitals
-        use numeric_constants, only: eleven, angular_tolerance => eps, four, half, one, seven, ten, tenth, three, two, zero
-        use csf_pair_angular_state, only: bra_intermediate_couplings => jjc1, ket_intermediate_couplings => jjc2, &
-            bra_subshell_quantum_codes => jjq1, ket_subshell_quantum_codes => jjq2, peel_orbital_indices => jlist, &
-            core_orbital_indices => klist, max_orbitals, core_orbital_count => ncore, peel_orbital_count => npeel, &
-            bra_occupations => nq1, ket_occupations => nq2
+        use numeric_constants, only: zero
+        use csf_pair_angular_state, only: bra_intermediate_couplings, ket_intermediate_couplings, bra_subshell_quantum_codes, &
+            ket_subshell_quantum_codes, peel_orbital_indices, max_orbitals, peel_orbital_count, bra_occupations, ket_occupations
         use orbital_csf_basis,   only: orbital_count, orbital_kappa
-        use angular_recoupling_backup,  only: saved_peel_orbitals => jlis, saved_bra_j_weights => jc1s, saved_ket_j_weights => jc2s
-        use angular_momentum_triangle, only: itrig
-        use one_electron_csf_filter, only: ichkq1
-        use subshell_occupation_class, only: ichop
-        use csf_quantum_queries, only: ispar, itjpo
-        use csf_pair_quantum_numbers, only: setqna
-        use one_electron_scalar_same_subshell, only: onescalar1
-        use one_electron_scalar_between_subshells, only: onescalar2
+        use angular_recoupling_backup,  only: saved_peel_orbitals, saved_bra_j_weights, saved_ket_j_weights
+        use angular_momentum_triangle, only: satisfies_angular_triangle
+        use one_electron_csf_filter, only: check_one_electron_csf_pair
+        use subshell_occupation_class, only: classify_subshell_occupation
+        use csf_quantum_queries, only: csf_parity_code, csf_total_j_code
+        use csf_pair_quantum_numbers, only: prepare_csf_pair_quantum_numbers
+        use one_electron_scalar_same_subshell, only: calculate_scalar_same_subshell_coefficient
+        use one_electron_scalar_between_subshells, only: calculate_scalar_transfer_coefficient
         implicit none (type, external)
 
         ! Arguments
@@ -36,17 +35,16 @@ contains
             ket_shell_position,occupation_difference,active_shell_count,diagonal_orbital,shell_position,shift_step, &
             first_orbital,shift_count, &
             peel_position,two_bra_j_plus_one,two_ket_j_plus_one,orbital_difference,peel_coupling_count,subshell_occupation
-        integer :: unused_orbital_labels(2),unused_orbital_j_weights(2)
         real(real64) ::  angular_coefficient
 
         ! A zero bra orbital index signals that no coefficient channel has been identified.
         bra_orbital_index = 0
         two_rank_plus_one = 1
         operator_parity = 1
-        if(itrig(itjpo (bra_csf_index),itjpo (ket_csf_index),two_rank_plus_one)==0)return
-        if((operator_parity/=0).and.(ispar(bra_csf_index)*ispar(ket_csf_index)*operator_parity/=1))return
-        if(ichkq1(bra_csf_index,ket_csf_index)==0)return
-        call setqna (bra_csf_index,ket_csf_index)
+        if(satisfies_angular_triangle(csf_total_j_code (bra_csf_index),csf_total_j_code (ket_csf_index),two_rank_plus_one)==0)return
+        if((operator_parity/=0).and.(csf_parity_code(bra_csf_index)*csf_parity_code(ket_csf_index)*operator_parity/=1))return
+        if(check_one_electron_csf_pair(bra_csf_index,ket_csf_index)==0)return
+        call prepare_csf_pair_quantum_numbers (bra_csf_index,ket_csf_index)
         do orbital_index = 1,orbital_count
             shell_coefficients(orbital_index) = zero
         end do
@@ -87,7 +85,7 @@ contains
             if (total_occupation_difference /= 2) then
                 diagonal_orbital = diagonal_orbital+1
                 if (diagonal_orbital > orbital_count) return
-                subshell_occupation = ichop(diagonal_orbital,bra_csf_index)
+                subshell_occupation = classify_subshell_occupation(diagonal_orbital,bra_csf_index)
                 if (subshell_occupation == -1) cycle
                 if (subshell_occupation == 0) then
                     active_shell_count = peel_orbital_count
@@ -136,18 +134,20 @@ contains
             ket_orbital_index = peel_orbital_indices(ket_shell_position)
             two_bra_j_plus_one = 2*iabs (orbital_kappa(bra_orbital_index))
             two_ket_j_plus_one = 2*iabs (orbital_kappa(ket_orbital_index))
-            if (itrig(two_bra_j_plus_one,two_ket_j_plus_one,two_rank_plus_one) == 1) then
+            if (satisfies_angular_triangle(two_bra_j_plus_one,two_ket_j_plus_one,two_rank_plus_one) == 1) then
                 if (total_occupation_difference == 0) then
 
                     ! The same-subshell scalar branch contributes only on the CSF diagonal.
                     if(bra_csf_index == ket_csf_index) then
-                        call onescalar1(active_shell_count,bra_csf_index,ket_csf_index,bra_shell_position,ket_shell_position, &
+                        call calculate_scalar_same_subshell_coefficient(active_shell_count,bra_csf_index,ket_csf_index, &
+                            & bra_shell_position,ket_shell_position, &
                             angular_coefficient)
                     else
                         angular_coefficient = zero
                     end if
                 else if (total_occupation_difference == 2) then
-                    call onescalar2(bra_csf_index,ket_csf_index,bra_shell_position,ket_shell_position,angular_coefficient)
+                    call calculate_scalar_transfer_coefficient(bra_csf_index,ket_csf_index,bra_shell_position, &
+                        & ket_shell_position,angular_coefficient)
 
                     ! Store a transfer coefficient in slot 1 and return the orbital indices separately.
                     shell_coefficients(1) = angular_coefficient
@@ -168,5 +168,5 @@ contains
                 ket_intermediate_couplings(shell_position) = saved_ket_j_weights(shell_position)
             end do
         end do
-    end subroutine onescalar
+    end subroutine calculate_one_electron_scalar_coefficients
 end module one_electron_scalar_coefficients

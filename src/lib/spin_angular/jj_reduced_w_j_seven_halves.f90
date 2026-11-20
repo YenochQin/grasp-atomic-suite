@@ -4,15 +4,14 @@ module jj_reduced_w_j_seven_halves
 
     ! Module interface
     private
-    public :: rmew7jj
+    public :: evaluate_reduced_w_j_seven_halves
 contains
-    subroutine rmew7jj(bra_term_index,ket_term_index,quasispin_rank,angular_rank,reduced_w_element)
+    subroutine evaluate_reduced_w_j_seven_halves(bra_term_index,ket_term_index,quasispin_rank,angular_rank,reduced_w_element)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: zero
-        use jj_reduced_coefficients, only: last_opposite_parity_terms_low_j => imgnjj, last_same_parity_terms_low_j => imgtjj, &
-            first_opposite_parity_terms_low_j => impnjj, first_same_parity_terms_low_j => imptjj
-        use jj_reduced_w_j_seven_halves_higher_ranks, only: rmew7bjj
+        use jj_reduced_coefficients, only: first_same_parity_terms_low_j
+        use jj_reduced_w_j_seven_halves_higher_ranks, only: evaluate_reduced_w_j_seven_halves_high_rank
         implicit none (type, external)
 
         ! Arguments
@@ -39,8 +38,9 @@ contains
             if(bra_term_index /= ket_term_index) return
             reduced_w_element=-dsqrt(dble(w_numerators_0_1(bra_term_index-11))/dble(7))
         else
-            call rmew7bjj(bra_term_index,ket_term_index,quasispin_rank,angular_rank,reduced_w_element)
+            call evaluate_reduced_w_j_seven_halves_high_rank(bra_term_index,ket_term_index,quasispin_rank,angular_rank, &
+                & reduced_w_element)
         end if
         return
-    end subroutine rmew7jj
+    end subroutine evaluate_reduced_w_j_seven_halves
 end module jj_reduced_w_j_seven_halves

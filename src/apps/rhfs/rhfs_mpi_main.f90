@@ -8,25 +8,25 @@ program rhfs_mpi_main
     !                                                                      *
     !***********************************************************************
     use, intrinsic :: iso_fortran_env, only: real64
-    use calculation_input_defaults, only: inpci, ndef, ndump
-    use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+    use calculation_input_defaults, only: nondefault_options_flag
+    use standard_io_units, only: stderr_unit
     use mpi_state, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_finalize, mpi_integer, &
-        & mpi_process_count, mpi_rank, processor_name, processor_name_length
+        mpi_process_count, mpi_rank, processor_name, processor_name_length
     use calculation_state_files, only: read_state_name, property_state_arguments
-    use yes_no_input, only: getyn
+    use yes_no_input, only: read_yes_no
 
     ! Procedure interfaces
     use configure_debug_output_interface, only: configure_debug_output
 
     ! Module dependencies
-    use machine_constants, only: setmc
-    use physical_constants, only: setcon
+    use machine_constants, only: initialize_machine_constants
+    use physical_constants, only: initialize_physical_constants
 
     ! Procedure interfaces
     use open_summary_file_interface, only: open_summary_file
 
     ! Module dependencies
-    use mpi_csf_basis_input, only: setcsla => load_csf_basis_mpi
+    use mpi_csf_basis_input, only: load_csf_basis_mpi
 
     ! Procedure interfaces
     use read_hyperfine_options_interface, only: read_hyperfine_options
@@ -34,21 +34,21 @@ program rhfs_mpi_main
     use write_input_summary_interface, only: write_input_summary
 
     ! Module dependencies
-    use log_factorial_table, only: factt
+    use log_factorial_table, only: initialize_log_factorial_table
 
     ! Procedure interfaces
     use calculate_hyperfine_matrix_elements_mpi_interface, only: calculate_hyperfine_matrix_elements_mpi
 
     ! Module dependencies
-    use mpi_utilities, only: gdmaxmpi_root
+    use mpi_utilities, only: reduce_mpi_real_max_to_root
     use mpi_utilities, only: mpix_shutdown
     use mpi_utilities, only: mpix_startup
     implicit none (type, external)
-    integer :: input_status, nci, unused_core_subshell_count, start_clock_count
-    integer :: nstage1, nstage2, ncount_rate, ncount_max
-    logical :: yes, use_args
-    real(real64) :: time_setcsla, time_gethfd, time_getmixblock, time_hfsgg
-    real(real64) :: timbuf(1)
+    integer :: input_status, mixing_file_kind, unused_core_subshell_count, start_clock_count
+    integer :: stage_start_clock_count, stage_finish_clock_count, clock_tick_rate, maximum_clock_count
+    logical :: prompt_answer, use_command_line_arguments
+    real(real64) :: basis_loading_seconds, hyperfine_option_input_seconds, mixing_input_seconds, hyperfine_matrix_element_seconds
+    real(real64) :: elapsed_time_reduction_buffer(1)
     character :: name*24
     !-----------------------------------------------
     !
@@ -58,104 +58,104 @@ program rhfs_mpi_main
         "name.(c)h, name.(c)hoffd", .true.)
     !
     name = " "
-    nci = 1
-    ndef = 0
-    use_args = .false.
+    mixing_file_kind = 1
+    nondefault_options_flag = 0
+    use_command_line_arguments = .false.
     !
     if (mpi_rank == 0) then
-        use_args = command_argument_count() > 0
-        if (use_args) then
-            call property_state_arguments("rhfs_mpi", name, nci, input_status)
-            if (input_status /= 0) ndef = -input_status
+        use_command_line_arguments = command_argument_count() > 0
+        if (use_command_line_arguments) then
+            call property_state_arguments("rhfs_mpi", name, mixing_file_kind, input_status)
+            if (input_status /= 0) nondefault_options_flag = -input_status
         end if
-        if (.not.use_args .and. ndef == 0) then
+        if (.not.use_command_line_arguments .and. nondefault_options_flag == 0) then
             write (stderr_unit, *)
             write (stderr_unit, *) "Default settings?"
-            yes = getyn()
+            prompt_answer = read_yes_no()
             write (stderr_unit, *)
-            if (yes) then
-                ndef = 0
+            if (prompt_answer) then
+                nondefault_options_flag = 0
             else
-                ndef = 1
+                nondefault_options_flag = 1
                 write (stderr_unit, *) "RHFS_MPI currently supports default settings only."
             end if
         end if
         !
-        if (ndef == 0 .and. .not.use_args) then
+        if (nondefault_options_flag == 0 .and. .not.use_command_line_arguments) then
             call read_state_name(name, status=input_status)
             if (input_status /= 0) then
-                ndef = -input_status
+                nondefault_options_flag = -input_status
             else
                 !
                 write (stderr_unit, *)
                 write (stderr_unit, *) "Mixing coefficients from a CI calc.?"
-                yes = getyn()
-                if (yes) then
-                    nci = 0
+                prompt_answer = read_yes_no()
+                if (prompt_answer) then
+                    mixing_file_kind = 0
                 else
-                    nci = 1
+                    mixing_file_kind = 1
                 end if
             end if
         end if
     end if
     !
-    call mpi_bcast(ndef, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
-    if (ndef /= 0) then
+    call mpi_bcast(nondefault_options_flag, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
+    if (nondefault_options_flag /= 0) then
         call mpi_finalize(mpi_error_code)
-        if (ndef == -2) stop 2
+        if (nondefault_options_flag == -2) stop 2
         stop
     end if
     !
     call mpi_bcast(name, len(name), mpi_character, 0, mpi_comm_world, mpi_error_code)
-    call mpi_bcast(nci, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
+    call mpi_bcast(mixing_file_kind, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
     !
     call configure_debug_output
-    call setmc
-    call setcon
-    if (mpi_rank == 0) call open_summary_file(name, nci)
-    call system_clock(nstage1, ncount_rate, ncount_max)
-    call setcsla(name, unused_core_subshell_count)
-    call system_clock(nstage2, ncount_rate, ncount_max)
-    time_setcsla = dble(nstage2 - nstage1) / dble(ncount_rate)
-    timbuf(1) = time_setcsla
-    call gdmaxmpi_root(timbuf, 1)
-    if (mpi_rank == 0) time_setcsla = timbuf(1)
+    call initialize_machine_constants
+    call initialize_physical_constants
+    if (mpi_rank == 0) call open_summary_file(name, mixing_file_kind)
+    call system_clock(stage_start_clock_count, clock_tick_rate, maximum_clock_count)
+    call load_csf_basis_mpi(name, unused_core_subshell_count)
+    call system_clock(stage_finish_clock_count, clock_tick_rate, maximum_clock_count)
+    basis_loading_seconds = dble(stage_finish_clock_count - stage_start_clock_count) / dble(clock_tick_rate)
+    elapsed_time_reduction_buffer(1) = basis_loading_seconds
+    call reduce_mpi_real_max_to_root(elapsed_time_reduction_buffer, 1)
+    if (mpi_rank == 0) basis_loading_seconds = elapsed_time_reduction_buffer(1)
     !
-    call system_clock(nstage1, ncount_rate, ncount_max)
+    call system_clock(stage_start_clock_count, clock_tick_rate, maximum_clock_count)
     call read_hyperfine_options(name)
-    call system_clock(nstage2, ncount_rate, ncount_max)
-    time_gethfd = dble(nstage2 - nstage1) / dble(ncount_rate)
-    timbuf(1) = time_gethfd
-    call gdmaxmpi_root(timbuf, 1)
-    if (mpi_rank == 0) time_gethfd = timbuf(1)
+    call system_clock(stage_finish_clock_count, clock_tick_rate, maximum_clock_count)
+    hyperfine_option_input_seconds = dble(stage_finish_clock_count - stage_start_clock_count) / dble(clock_tick_rate)
+    elapsed_time_reduction_buffer(1) = hyperfine_option_input_seconds
+    call reduce_mpi_real_max_to_root(elapsed_time_reduction_buffer, 1)
+    if (mpi_rank == 0) hyperfine_option_input_seconds = elapsed_time_reduction_buffer(1)
     !
-    call system_clock(nstage1, ncount_rate, ncount_max)
-    call read_mixing_blocks(name, nci)
-    call system_clock(nstage2, ncount_rate, ncount_max)
-    time_getmixblock = dble(nstage2 - nstage1) / dble(ncount_rate)
-    timbuf(1) = time_getmixblock
-    call gdmaxmpi_root(timbuf, 1)
-    if (mpi_rank == 0) time_getmixblock = timbuf(1)
+    call system_clock(stage_start_clock_count, clock_tick_rate, maximum_clock_count)
+    call read_mixing_blocks(name, mixing_file_kind)
+    call system_clock(stage_finish_clock_count, clock_tick_rate, maximum_clock_count)
+    mixing_input_seconds = dble(stage_finish_clock_count - stage_start_clock_count) / dble(clock_tick_rate)
+    elapsed_time_reduction_buffer(1) = mixing_input_seconds
+    call reduce_mpi_real_max_to_root(elapsed_time_reduction_buffer, 1)
+    if (mpi_rank == 0) mixing_input_seconds = elapsed_time_reduction_buffer(1)
     if (mpi_rank == 0) call write_input_summary
-    call factt
+    call initialize_log_factorial_table
     !
-    call system_clock(nstage1, ncount_rate, ncount_max)
+    call system_clock(stage_start_clock_count, clock_tick_rate, maximum_clock_count)
     call calculate_hyperfine_matrix_elements_mpi
-    call system_clock(nstage2, ncount_rate, ncount_max)
-    time_hfsgg = dble(nstage2 - nstage1) / dble(ncount_rate)
-    timbuf(1) = time_hfsgg
-    call gdmaxmpi_root(timbuf, 1)
-    if (mpi_rank == 0) time_hfsgg = timbuf(1)
+    call system_clock(stage_finish_clock_count, clock_tick_rate, maximum_clock_count)
+    hyperfine_matrix_element_seconds = dble(stage_finish_clock_count - stage_start_clock_count) / dble(clock_tick_rate)
+    elapsed_time_reduction_buffer(1) = hyperfine_matrix_element_seconds
+    call reduce_mpi_real_max_to_root(elapsed_time_reduction_buffer, 1)
+    if (mpi_rank == 0) hyperfine_matrix_element_seconds = elapsed_time_reduction_buffer(1)
     !
     if (mpi_rank == 0) then
         write (output_unit, "(A, F10.3, A)") "RHFS_MPI setcsla wall time  (max rank): ", &
-            time_setcsla, " s"
+            basis_loading_seconds, " s"
         write (output_unit, "(A, F10.3, A)") "RHFS_MPI gethfd wall time   (max rank): ", &
-            time_gethfd, " s"
+            hyperfine_option_input_seconds, " s"
         write (output_unit, "(A, F10.3, A)") "RHFS_MPI getmix wall time   (max rank): ", &
-            time_getmixblock, " s"
+            mixing_input_seconds, " s"
         write (output_unit, "(A, F10.3, A)") "RHFS_MPI hfsgg wall time    (max rank): ", &
-            time_hfsgg, " s"
+            hyperfine_matrix_element_seconds, " s"
     end if
     !
     call mpix_shutdown(mpi_rank, start_clock_count, "RHFS_MPI")

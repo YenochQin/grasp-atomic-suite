@@ -9,10 +9,10 @@ module debug_output_settings
 
     ! Module state
     integer :: angular_debug_unit = -1
-    integer :: ibug1, ibug2, ibug3, ibug4, ibug5, ibug6
+    integer :: angular_coefficient_debug_flag, ibug2, ibug3, ibug4, ibug5, ibug6
     logical :: ldbpa(5)
     logical :: ldbpg(5)
-    logical :: ldbpr(30)
+    logical :: rmcdhf_debug_flags(30)
     real(real64) :: cutoff  ! Threshold for the matrix-element trace in BIOSCL.
 contains
 

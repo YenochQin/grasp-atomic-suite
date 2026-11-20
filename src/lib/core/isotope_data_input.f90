@@ -4,13 +4,13 @@ module isotope_data_input
 
     ! Module interface
     private
-    public :: setiso
+    public :: read_isotope_data
 contains
-    subroutine setiso(isotope_file_path)
+    subroutine read_isotope_data(isotope_file_path)
         ! Module dependencies
-        use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
-        use file_open, only: openfl
-        use isotope_data_records, only: lodiso
+        use standard_io_units, only: stderr_unit
+        use file_open, only: open_calculation_file
+        use isotope_data_records, only: read_isotope_records
         implicit none (type, external)
 
         ! Arguments and local declarations
@@ -30,7 +30,7 @@ contains
                 routine_name,"- file: ",isotope_file_path(1:path_length)," does not exist"
             stop
         end if
-        call openfl (isotope_input_unit, isotope_file_path, record_format, requested_status, open_status)
+        call open_calculation_file (isotope_input_unit, isotope_file_path, record_format, requested_status, open_status)
         if (open_status /= 0) then
             write (stderr_unit, *) "Error opening isodata file: ", isotope_file_path(1:path_length)
             stop
@@ -41,9 +41,9 @@ contains
             close(isotope_input_unit)
             stop
         end if
-        call lodiso(isotope_input_unit)
+        call read_isotope_records(isotope_input_unit)
         close(isotope_input_unit)
 
         return
-    end subroutine setiso
+    end subroutine read_isotope_data
 end module isotope_data_input

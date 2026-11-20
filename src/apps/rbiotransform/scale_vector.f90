@@ -1,23 +1,32 @@
-!
-!
-!     ------------------------------------------------------------------
-!     S C A L V E
-!     ------------------------------------------------------------------
-!
-subroutine scale_vector(vector, factor, ndim)
-    ! Module dependencies
-    !
-    ! CALCULATE SCALAR(FACTOR) TIMES VECTOR
-    use, intrinsic :: iso_fortran_env, only: real64
+module scale_vector_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(in) :: ndim
-    real(real64), intent(in) :: factor
-    real(real64), intent(inout) :: vector(ndim)
-    !-----------------------------------------------
+    ! Module interface
+    private
+    public :: scale_vector
+contains
+
     !
-    vector(:ndim) = vector(:ndim)*factor
     !
-    return
-end subroutine scale_vector
+    !     ------------------------------------------------------------------
+    !     S C A L V E
+    !     ------------------------------------------------------------------
+    !
+    subroutine scale_vector(vector, factor, ndim)
+        ! Module dependencies
+        !
+        ! CALCULATE SCALAR(FACTOR) TIMES VECTOR
+        use, intrinsic :: iso_fortran_env, only: real64
+        implicit none (type, external)
+
+        ! Arguments
+        integer, intent(in) :: ndim
+        real(real64), intent(in) :: factor
+        real(real64), intent(inout) :: vector(ndim)
+        !-----------------------------------------------
+        !
+        vector(:ndim) = vector(:ndim)*factor
+        !
+        return
+    end subroutine scale_vector
+end module scale_vector_interface

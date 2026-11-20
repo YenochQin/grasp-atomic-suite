@@ -4,14 +4,14 @@ module level_selection_parser
 
     ! Module interface
     private
-    public :: items
+    public :: parse_level_selection
 contains
-    subroutine items(selected_level_count, maximum_level_index, input_line, parse_status)
+    subroutine parse_level_selection(selected_level_count, maximum_level_index, input_line, parse_status)
         ! Module dependencies
         use array_memory_management, only: alloc, ralloc
-        use atomic_calculation_state, only: selected_level_indices => iccmin
-        use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
-        use integer_format, only: convrt
+        use atomic_calculation_state, only: requested_level_indices
+        use standard_io_units, only: stderr_unit
+        use integer_format, only: format_integer
         implicit none (type, external)
 
         ! Arguments
@@ -34,7 +34,7 @@ contains
 
         if (allocated_level_capacity == 0) then
             allocated_level_capacity = 1
-            call alloc (selected_level_indices, allocated_level_capacity, "ICCMIN", "ITEMS")
+            call alloc (requested_level_indices, allocated_level_capacity, "ICCMIN", "ITEMS")
         end if
         range_start_position = 0
         character_index = 1
@@ -53,7 +53,7 @@ contains
             end do
             token_end = character_index - 1
             token_width = token_end - token_start + 1
-            call convrt (token_width, width_text, width_text_length)
+            call format_integer (token_width, width_text, width_text_length)
             integer_format = "(1i"//width_text(1:width_text_length)//")"
             read (input_line(token_start:token_end), integer_format, iostat=read_status) parsed_level_index
             if (read_status /= 0) then
@@ -65,7 +65,7 @@ contains
             if (range_start_position == 0) then
                 selected_level_count = selected_level_count + 1
                 if (selected_level_count > allocated_level_capacity) then
-                    call ralloc (selected_level_indices, selected_level_count, "ICCMIN", "ITEMS")
+                    call ralloc (requested_level_indices, selected_level_count, "ICCMIN", "ITEMS")
                     allocated_level_capacity = selected_level_count
                 end if
 
@@ -76,11 +76,11 @@ contains
                     return
                 end if
 
-                selected_level_indices(selected_level_count) = parsed_level_index
+                requested_level_indices(selected_level_count) = parsed_level_index
                 character_index = character_index + 1
                 if (current_character == "-") range_start_position = selected_level_count
             else
-                range_start_level = selected_level_indices(selected_level_count)
+                range_start_level = requested_level_indices(selected_level_count)
                 additional_level_count = parsed_level_index - range_start_level
 
                 if (additional_level_count < 0) then
@@ -91,11 +91,11 @@ contains
 
                 selected_level_count = selected_level_count + additional_level_count
                 if (selected_level_count > allocated_level_capacity) then
-                    call ralloc (selected_level_indices, selected_level_count, "ICCMIN", "ITEMS")
+                    call ralloc (requested_level_indices, selected_level_count, "ICCMIN", "ITEMS")
                     allocated_level_capacity = selected_level_count
                 end if
                 do range_offset = 1, additional_level_count
-                    selected_level_indices(range_start_position+range_offset) = range_start_level + range_offset
+                    requested_level_indices(range_start_position+range_offset) = range_start_level + range_offset
                 end do
                 character_index = character_index + 1
                 range_start_position = 0
@@ -109,10 +109,10 @@ contains
         end if
         if (selected_level_count /= allocated_level_capacity) then
             write (stderr_unit, *) "items: ncmin .ne. ncd"
-            call ralloc (selected_level_indices, selected_level_count, "ICCMIN", "ITEMS")
+            call ralloc (requested_level_indices, selected_level_count, "ICCMIN", "ITEMS")
         end if
 
         parse_status = 0
         return
-    end subroutine items
+    end subroutine parse_level_selection
 end module level_selection_parser

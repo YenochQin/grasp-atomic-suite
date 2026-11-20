@@ -3,11 +3,12 @@ module jj_reduced_coefficients_9
     implicit none (type, external)
 
     ! Module state
-    integer :: imptjj9(6), imgtjj9(6), impnjj9(6), imgnjj9(6)
+    integer :: first_same_parity_terms_two_j_9(6), last_same_parity_terms_two_j_9(6), first_opposite_parity_terms_two_j_9(6), &
+        last_opposite_parity_terms_two_j_9(6)
 
     ! Initial values
-    data imptjj9/301,5*302/
-    data imgtjj9/301,5*306/
-    data impnjj9/302,5*301/
-    data imgnjj9/306,5*301/
+    data first_same_parity_terms_two_j_9/301,5*302/
+    data last_same_parity_terms_two_j_9/301,5*306/
+    data first_opposite_parity_terms_two_j_9/302,5*301/
+    data last_opposite_parity_terms_two_j_9/306,5*301/
 end module jj_reduced_coefficients_9

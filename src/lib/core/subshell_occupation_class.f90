@@ -4,13 +4,12 @@ module subshell_occupation_class
 
     ! Module interface
     private
-    public :: ichop
+    public :: classify_subshell_occupation
 contains
-    integer function ichop (subshell_index, csf_index)
+    integer function classify_subshell_occupation (subshell_index, csf_index)
         ! Module dependencies
-        use grasp_parameters, only: max_orbitals
-        use orbital_csf_basis,         only: orbital_l, orbital_two_j
-        use csf_quantum_queries, only: iq
+        use orbital_csf_basis, only: orbital_two_j
+        use csf_quantum_queries, only: csf_occupation
         implicit none (type, external)
 
         ! Arguments
@@ -19,15 +18,15 @@ contains
 
         ! Local declarations
         integer :: occupation, subshell_capacity
-        occupation = iq(subshell_index,csf_index)
+        occupation = csf_occupation(subshell_index,csf_index)
         subshell_capacity = orbital_two_j(subshell_index) + 1
         if (occupation == 0) then
-            ichop = -1
+            classify_subshell_occupation = -1
         else if (occupation == subshell_capacity) then
-            ichop = 1
+            classify_subshell_occupation = 1
         else
-            ichop = 0
+            classify_subshell_occupation = 0
         end if
         return
-    end function ichop
+    end function classify_subshell_occupation
 end module subshell_occupation_class

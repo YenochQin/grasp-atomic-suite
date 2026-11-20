@@ -4,9 +4,10 @@ module angular_triangle_and_parity
 
     ! Module interface
     private
-    public :: ittk
+    public :: satisfies_angular_triangle_and_parity
 contains
-    integer function ittk (first_angular_label, second_angular_label, third_angular_label) result(triangle_allowed)
+    integer function satisfies_angular_triangle_and_parity (first_angular_label, second_angular_label, &
+        & third_angular_label) result(triangle_allowed)
         implicit none (type, external)
 
         ! Arguments
@@ -17,5 +18,5 @@ contains
         if (mod(first_angular_label + second_angular_label + third_angular_label,2) /= 0) return
         triangle_allowed = 1
         return
-    end function ittk
+    end function satisfies_angular_triangle_and_parity
 end module angular_triangle_and_parity

@@ -4,9 +4,9 @@ module subshell_tensor_diagnostics
 
     ! Module interface
     private
-    public :: mes
+    public :: report_subshell_tensor_error
 contains
-    subroutine mes(diagnostic_code)
+    subroutine report_subshell_tensor_error(diagnostic_code)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         implicit none (type, external)
@@ -57,5 +57,5 @@ contains
         end if
         write(output_unit,"(A)") " Contact to   G. Gediminas please ! ! ! "
         stop
-    end subroutine mes
+    end subroutine report_subshell_tensor_error
 end module subshell_tensor_diagnostics

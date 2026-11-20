@@ -4,9 +4,9 @@ module integer_format
 
     ! Module interface
     private
-    public :: convrt
+    public :: format_integer
 contains
-    subroutine convrt(integer_value, number_text, text_length)
+    subroutine format_integer(integer_value, number_text, text_length)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         implicit none (type, external)
@@ -44,5 +44,5 @@ contains
             end if
         end if
         return
-    end subroutine convrt
+    end subroutine format_integer
 end module integer_format

@@ -4,18 +4,16 @@ module radial_stencil_weights
 
     ! Module interface
     private
-    public :: setqic
+    public :: initialize_radial_stencil_weights
 contains
-    subroutine setqic
+    subroutine initialize_radial_stencil_weights
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use radial_difference_coefficients, only: five_point_weights => cnc5c, six_point_weights => cnc6c
-        use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-            radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-        use radial_derivative_stencil, only: derivative_weights => a
-        use radial_quadrature_weights, only: endpoint_weight => c1, odd_interior_weight => c2, middle_weight => c3, &
-            & shared_endpoint_weight => c4
-        use radial_stepping_coefficients, only: starting_step_weights => c
+        use radial_difference_coefficients, only: five_point_weights, six_point_weights
+        use radial_grid_state, only: transformed_grid_step
+        use radial_derivative_stencil, only: derivative_weights
+        use radial_quadrature_weights, only: endpoint_weight, odd_interior_weight, middle_weight, shared_endpoint_weight
+        use radial_stepping_coefficients, only: starting_step_weights
         implicit none (type, external)
 
         ! Local declarations
@@ -146,5 +144,5 @@ contains
             end do
         end do
         return
-    end subroutine setqic
+    end subroutine initialize_radial_stencil_weights
 end module radial_stencil_weights

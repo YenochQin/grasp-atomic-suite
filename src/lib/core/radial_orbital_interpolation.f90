@@ -4,21 +4,19 @@ module radial_orbital_interpolation
 
     ! Module interface
     private
-    public :: intrpq
+    public :: interpolate_radial_orbital
 contains
-    subroutine intrpq(source_large_component, source_small_component, source_grid_size, source_radial_grid, &
+    subroutine interpolate_radial_orbital(source_large_component, source_small_component, source_grid_size, source_radial_grid, &
         & orbital_index, original_norm_squared)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_radial_points
-        use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-        use atomic_calculation_state,           only: working_tolerance => accy
-        use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-            radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-        use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
-            pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-        use weighted_radial_overlap, only: rint
+        use debug_output_settings, only: rmcdhf_debug_flags
+        use atomic_calculation_state,           only: working_tolerance
+        use radial_grid_state, only: radial_point_count, radial_grid
+        use radial_wavefunctions, only: orbital_last_grid_index, radial_large_components, radial_small_components
+        use weighted_radial_overlap, only: integrate_weighted_radial_overlap
         implicit none (type, external)
 
         ! Arguments
@@ -102,13 +100,13 @@ contains
                 stencil_nodes(stencil_row) = source_radial_grid(nearest_unused_index)
                 node_offsets(stencil_row) = nearest_offset
                 do search_or_table_index = 1, stencil_row
-                    current_cell = iloc(stencil_row,search_or_table_index)
+                    current_cell = packed_triangle_index(stencil_row,search_or_table_index)
                     if (search_or_table_index == 1) then
                         large_component_table(current_cell) = source_large_component(nearest_unused_index)
                         small_component_table(current_cell) = source_small_component(nearest_unused_index)
                     else
-                        diagonal_cell = iloc(search_or_table_index - 1,search_or_table_index - 1)
-                        previous_cell = iloc(stencil_row,search_or_table_index - 1)
+                        diagonal_cell = packed_triangle_index(search_or_table_index - 1,search_or_table_index - 1)
+                        previous_cell = packed_triangle_index(stencil_row,search_or_table_index - 1)
                         previous_node_offset = node_offsets(search_or_table_index-1)
                         current_node_offset = node_offsets(stencil_row)
                         inverse_node_separation = 1.0_real64/(stencil_nodes(stencil_row)-stencil_nodes(search_or_table_index-1))
@@ -122,7 +120,7 @@ contains
                             inverse_node_separation
                     end if
                 end do
-                diagonal_cell = iloc(stencil_row,stencil_row)
+                diagonal_cell = packed_triangle_index(stencil_row,stencil_row)
                 large_estimate = large_component_table(diagonal_cell)
                 small_estimate = small_component_table(diagonal_cell)
                 if (large_estimate==0.0_real64 .or. small_estimate==0.0_real64) then
@@ -145,7 +143,7 @@ contains
         first_tail_index = last_target_index + 1
         radial_large_components(first_tail_index:radial_point_count,orbital_index) = 0.0_real64
         radial_small_components(first_tail_index:radial_point_count,orbital_index) = 0.0_real64
-        if (ldbpr(3) .and. unconverged_point_count>0) then
+        if (rmcdhf_debug_flags(3) .and. unconverged_point_count>0) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,&
                 &"INTRPQ: Interpolation procedure not converged to",1p,1d19.12," for ",1i3," of ",1i3,&
@@ -153,7 +151,7 @@ contains
                 & last_target_index
         end if
         ! Return the norm squared before scaling both interpolated components.
-        original_norm_squared = rint(orbital_index,orbital_index,0)
+        original_norm_squared = integrate_weighted_radial_overlap(orbital_index,orbital_index,0)
         normalization_factor = 1.0_real64/sqrt(original_norm_squared)
         radial_large_components(:last_target_index,orbital_index) = radial_large_components(:last_target_index, &
             & orbital_index)*normalization_factor
@@ -163,12 +161,12 @@ contains
         return
     contains
 
-        integer function iloc (row_index, column_index)
+        integer function packed_triangle_index (row_index, column_index)
             ! Arguments
             integer, intent(in) :: row_index
             integer, intent(in) :: column_index
-            iloc = (row_index*(row_index - 1))/2 + column_index
+            packed_triangle_index = (row_index*(row_index - 1))/2 + column_index
             return
-        end function iloc
-    end subroutine intrpq
+        end function packed_triangle_index
+    end subroutine interpolate_radial_orbital
 end module radial_orbital_interpolation

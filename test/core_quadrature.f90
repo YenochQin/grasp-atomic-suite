@@ -7,12 +7,11 @@ program core_quadrature
 contains
 
     subroutine runtest
-        use grasp_parameters, only: nnn1, radial_workspace_capacity
-        use radial_grid_state, only: h => transformed_grid_step, hp => asymptotic_grid_step, n => radial_point_count, &
-           & nnn1 => radial_workspace_capacity, r => radial_grid, rnt => radial_grid_scale, rp => radial_grid_derivative, &
-           & rpor => radial_derivative_over_radius
-        use radial_quadrature_workspace, only: nnn1 => radial_workspace_capacity, mtp, ta
-        use radial_quadrature, only: quad
+        use grasp_parameters, only: radial_workspace_capacity
+        use radial_grid_state, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, &
+            radial_workspace_capacity, radial_grid, radial_grid_scale, radial_grid_derivative, radial_derivative_over_radius
+        use radial_quadrature_workspace, only: radial_workspace_capacity, integration_last_index, radial_workspace_a
+        use radial_quadrature, only: integrate_radial_grid
         use, intrinsic :: iso_fortran_env, only: real64
 
 
@@ -20,10 +19,10 @@ contains
         real(real64) :: result
 
         ! Integrate exp(-2x) from 0 to infinity. Expected result is 1/2.
-        do i = 1, NNN1
-            TA(i) = exp(-2*R(i)) * RP(i)
+        do i = 1, radial_workspace_capacity
+            radial_workspace_a(i) = exp(-2*radial_grid(i)) * radial_grid_derivative(i)
         end do
-        call quad(result)
+        call integrate_radial_grid(result)
 
         print *, "RESULT from QUAD", result
         print *, "expected        ", 0.5_real64
@@ -35,23 +34,22 @@ contains
     end subroutine runtest
 
     subroutine setup
-        use grasp_parameters, only: nnn1, nnnp, radial_workspace_capacity
-        use radial_grid_state, only: h => transformed_grid_step, hp => asymptotic_grid_step, n => radial_point_count, &
-           & nnn1 => radial_workspace_capacity, r => radial_grid, rnt => radial_grid_scale, rp => radial_grid_derivative, &
-           & rpor => radial_derivative_over_radius
-        use radial_quadrature_workspace, only: nnn1 => radial_workspace_capacity, mtp, ta
-        use radial_stencil_weights, only: setqic
-        use radial_grid_setup, only: radgrd
+        use grasp_parameters, only: max_radial_points
+        use radial_grid_state, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, &
+            radial_workspace_capacity, radial_grid, radial_grid_scale, radial_grid_derivative, radial_derivative_over_radius
+        use radial_quadrature_workspace, only: radial_workspace_capacity, integration_last_index, radial_workspace_a
+        use radial_stencil_weights, only: initialize_radial_stencil_weights
+        use radial_grid_setup, only: initialize_radial_grid
         use, intrinsic :: iso_fortran_env, only: real64
 
-        H = 5.0e-2_real64
-        RNT = 2.0e-6_real64
-        HP = 0.0_real64
-        N = NNNP
-        MTP = NNNP
+        transformed_grid_step = 5.0e-2_real64
+        radial_grid_scale = 2.0e-6_real64
+        asymptotic_grid_step = 0.0_real64
+        radial_point_count = max_radial_points
+        integration_last_index = max_radial_points
 
-        call setqic
-        call radgrd
+        call initialize_radial_stencil_weights
+        call initialize_radial_grid
     end subroutine setup
 
 end program core_quadrature

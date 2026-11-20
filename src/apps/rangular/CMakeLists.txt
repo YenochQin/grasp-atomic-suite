@@ -3,33 +3,19 @@ add_executable(rangular
     rangular_reuse.f90
     rangular_input.f90
     try_allocate_sort_buffers.f90
-    try_allocate_sort_buffers_interface.f90
     locate_mcp_restart_position.f90
-    locate_mcp_restart_position_interface.f90
     read_calculation_options.f90
-    read_calculation_options_interface.f90
     sort_mcp_coefficients.f90
-    sort_mcp_coefficients_interface.f90
     sort_mcp_coefficients_in_memory.f90
-    sort_mcp_coefficients_in_memory_interface.f90
     write_mcp_sparsity_summary.f90
-    write_mcp_sparsity_summary_interface.f90
     write_mcp_sparsity.f90
-    write_mcp_sparsity_interface.f90
     compute_mcp_angular_coefficients.f90
-    compute_mcp_angular_coefficients_interface.f90
     configure_debug_output.f90
-    configure_debug_output_interface.f90
     connect_mcp_files.f90
-    connect_mcp_files_interface.f90
     open_mcp_outputs.f90
-    open_mcp_outputs_interface.f90
     open_summary_file.f90
-    open_summary_file_interface.f90
     open_temporary_mcp_channels.f90
-    open_temporary_mcp_channels_interface.f90
     write_input_summary.f90
-    write_input_summary_interface.f90
     rangular_main.f90
 )
 setup_fortran_modules(rangular)

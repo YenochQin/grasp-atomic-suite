@@ -4,15 +4,14 @@ module jj_reduced_w_j_one_half
 
     ! Module interface
     private
-    public :: rmew1jj
+    public :: evaluate_reduced_w_j_one_half
 contains
-    subroutine rmew1jj(bra_term_index,ket_term_index,quasispin_rank,angular_rank,reduced_w_element)
+    subroutine evaluate_reduced_w_j_one_half(bra_term_index,ket_term_index,quasispin_rank,angular_rank,reduced_w_element)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: error_unit
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: zero
-        use jj_reduced_coefficients, only: last_opposite_parity_terms_low_j => imgnjj, last_same_parity_terms_low_j => imgtjj, &
-            first_opposite_parity_terms_low_j => impnjj, first_same_parity_terms_low_j => imptjj
+        use jj_reduced_coefficients, only: first_same_parity_terms_low_j
         implicit none (type, external)
 
         ! Arguments
@@ -40,5 +39,5 @@ contains
             stop
         end if
         return
-    end subroutine rmew1jj
+    end subroutine evaluate_reduced_w_j_one_half
 end module jj_reduced_w_j_one_half

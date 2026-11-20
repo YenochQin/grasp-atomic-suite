@@ -14,6 +14,8 @@
 
 GNU Fortran 15 的干净 Release 构建启用 MPI 和 OpenMP，110 项 CTest 全部通过。关闭 MPI 和 OpenMP 的 Check 构建通过 70 项测试，Rust 读库测试在 Release 中执行。安装验证使用 `libcore.a` 和安装目录中的 `csf_quantum_queries.mod` 编译、链接并运行独立调用程序。
 
+过程名见[共享库过程对照](shared_library_procedure_names.md)。
+
 ## 文件与模块对照
 
 | 原文件 | 原模块 | 现模块与源码 |
@@ -27,7 +29,7 @@ GNU Fortran 15 的干净 Release 构建启用 MPI 和 OpenMP，110 项 CTest 全
 | `convrt2.f90` | `convrt2_i` | `integer_format_with_context` · [integer_format_with_context.f90](../../src/lib/core/integer_format_with_context.f90) |
 | `convrt_double.f90` | `convrt_double_i` | `half_integer_format` · [half_integer_format.f90](../../src/lib/core/half_integer_format.f90) |
 | `cord.f90` | `cord_i` | `closed_shell_mcp` · [closed_shell_mcp.f90](../../src/lib/core/closed_shell_mcp.f90) |
-| `count.f90` | `count_implementation`、`count_i` | `radial_node_count_impl`、`radial_node_count` · [radial_node_count.f90](../../src/lib/core/radial_node_count.f90) |
+| `count.f90` | `count_implementation`、`count_i` | `radial_node_count` · [radial_node_count.f90](../../src/lib/core/radial_node_count.f90) |
 | `cre.f90` | `cre_i` | `reduced_angular_matrix_element` · [reduced_angular_matrix_element.f90](../../src/lib/core/reduced_angular_matrix_element.f90) |
 | `csf_basis_input.f90` | `csf_basis_input` | `csf_full_basis_reader` · [csf_full_basis_reader.f90](../../src/lib/core/csf_full_basis_reader.f90) |
 | `csf_basis_merge.f90` | `csf_basis_merge` | `csf_basis_merging` · [csf_basis_merging.f90](../../src/lib/core/csf_basis_merging.f90) |
@@ -64,7 +66,7 @@ GNU Fortran 15 的干净 Release 构建启用 MPI 和 OpenMP，110 项 CTest 全
 | `nucpot.f90` | `nucpot_i` | `nuclear_coulomb_potential` · [nuclear_coulomb_potential.f90](../../src/lib/core/nuclear_coulomb_potential.f90) |
 | `openfl.f90` | `openfl_i` | `file_open` · [file_open.f90](../../src/lib/core/file_open.f90) |
 | `orthsc.f90` | `orthsc_i` | `radial_orbital_orthogonalization` · [radial_orbital_orthogonalization.f90](../../src/lib/core/radial_orbital_orthogonalization.f90) |
-| `pack.f90` | `pack_implementation`、`pack_i` | `csf_byte_packing_impl`、`csf_byte_packing` · [csf_byte_packing.f90](../../src/lib/core/csf_byte_packing.f90) |
+| `pack.f90` | `pack_implementation`、`pack_i` | `csf_byte_packing` · [csf_byte_packing.f90](../../src/lib/core/csf_byte_packing.f90) |
 | `posfile.f90` | `posfile_i` | `file_positioning` · [file_positioning.f90](../../src/lib/core/file_positioning.f90) |
 | `quad.f90` | `quad_i` | `radial_quadrature` · [radial_quadrature.f90](../../src/lib/core/radial_quadrature.f90) |
 | `radgrd.f90` | `radgrd_i` | `radial_grid_setup` · [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |

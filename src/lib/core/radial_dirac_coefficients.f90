@@ -4,18 +4,18 @@ module radial_dirac_coefficients
 
     ! Module interface
     private
-    public :: setpot
+    public :: calculate_radial_dirac_coefficients
 contains
-    subroutine setpot(orbital_index, matching_grid_index)
+    subroutine calculate_radial_dirac_coefficients(orbital_index, matching_grid_index)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
-        use atomic_calculation_state, only: working_tolerance => accy, max_radial_points, speed_of_light_au
-        use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-            radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-        use radial_dirac_workspace,           only: large_equation_coefficients => tf, small_equation_coefficients => tg
+        use standard_io_units, only: stderr_unit
+        use atomic_calculation_state, only: working_tolerance, max_radial_points, speed_of_light_au
+        use radial_grid_state, only: radial_point_count, radial_grid_derivative, radial_derivative_over_radius, &
+            transformed_grid_step
+        use radial_dirac_workspace,           only: large_equation_coefficients, small_equation_coefficients
         use orbital_csf_basis, only: orbital_energy_parameters
-        use scf_radial_potentials,          only: orbital_y_potential => yp
+        use scf_radial_potentials,          only: orbital_y_potential
         implicit none (type, external)
 
         ! Arguments
@@ -50,9 +50,9 @@ contains
             searching_for_match = .false.
         end do
         if (matching_grid_index == 0) then
-            write (stderr_unit, *) "SETPOT: Join set to NNNP/2 = ", max_radial_points/2
+            write (stderr_unit, *) "SETPOT: Join set to max_radial_points/2 = ", max_radial_points/2
             matching_grid_index = max_radial_points/2
         end if
         return
-    end subroutine setpot
+    end subroutine calculate_radial_dirac_coefficients
 end module radial_dirac_coefficients

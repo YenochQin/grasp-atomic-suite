@@ -1,78 +1,41 @@
 add_executable(rtransition_phase
     resize_transition_label_arrays.f90
-    resize_transition_label_arrays_interface.f90
     resize_transition_coefficient_arrays.f90
-    resize_transition_coefficient_arrays_interface.f90
     resize_transition_matrix_arrays.f90
-    resize_transition_matrix_arrays_interface.f90
     resize_transition_integral_arrays.f90
-    resize_transition_integral_arrays_interface.f90
     open_transition_angular_cache.f90
-    open_transition_angular_cache_interface.f90
     build_transition_bessel_functions.f90
-    build_transition_bessel_functions_interface.f90
     calculate_biorthogonal_overlap.f90
-    calculate_biorthogonal_overlap_interface.f90
     map_merged_orbitals.f90
-    map_merged_orbitals_interface.f90
     prepare_transition_mixing_coefficients.f90
-    prepare_transition_mixing_coefficients_interface.f90
     single_particle_transition_element.f90
-    single_particle_transition_element_interface.f90
     write_transition_csf_weights.f90
-    write_transition_csf_weights_interface.f90
     write_transition_level_energies.f90
-    write_transition_level_energies_interface.f90
     read_state_filenames.f90
-    read_state_filenames_interface.f90
     read_final_radial_wavefunctions.f90
-    read_final_radial_wavefunctions_interface.f90
     read_initial_radial_wavefunctions.f90
-    read_initial_radial_wavefunctions_interface.f90
     read_multipole_options.f90
-    read_multipole_options_interface.f90
     read_transition_options.f90
-    read_transition_options_interface.f90
     right_csf_subshell_occupation.f90
-    right_csf_subshell_occupation_interface.f90
     right_csf_parity.f90
-    right_csf_parity_interface.f90
     right_csf_two_j_plus_one.f90
-    right_csf_two_j_plus_one_interface.f90
     right_csf_intermediate_coupling.f90
-    right_csf_intermediate_coupling_interface.f90
     right_csf_subshell_quantum_number.f90
-    right_csf_subshell_quantum_number_interface.f90
     load_initial_transition_basis.f90
-    load_initial_transition_basis_interface.f90
     load_final_transition_basis.f90
-    load_final_transition_basis_interface.f90
     load_initial_lsj_labels.f90
-    load_initial_lsj_labels_interface.f90
     load_final_lsj_labels.f90
-    load_final_lsj_labels_interface.f90
     read_transition_angular_coefficients.f90
-    read_transition_angular_coefficients_interface.f90
     sort_transition_angular_coefficients.f90
-    sort_transition_angular_coefficients_interface.f90
     write_transition_angular_coefficients.f90
-    write_transition_angular_coefficients_interface.f90
     merge_transition_basis_records.f90
-    merge_transition_basis_records_interface.f90
     merge_transition_csf_bases.f90
-    merge_transition_csf_bases_interface.f90
     read_transition_mixing_coefficients.f90
-    read_transition_mixing_coefficients_interface.f90
     write_lsj_transition_probability.f90
-    write_lsj_transition_probability_interface.f90
     write_transition_probability.f90
-    write_transition_probability_interface.f90
     calculate_oscillator_strengths.f90
-    calculate_oscillator_strengths_interface.f90
     write_input_summary.f90
-    write_input_summary_interface.f90
     check_transition_mixing_coefficients.f90
-    check_transition_mixing_coefficients_interface.f90
     rtransition_main.f90
 )
 target_link_libraries_Fortran(rtransition_phase PUBLIC davidson_eigensolver spin_angular breit_angular_support core grasp_shared)

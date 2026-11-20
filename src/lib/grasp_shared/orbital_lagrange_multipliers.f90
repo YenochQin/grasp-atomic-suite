@@ -7,7 +7,7 @@ module orbital_lagrange_multipliers
     private :: real64
 
     ! Module state
-    integer :: nec
-    real(real64), pointer :: ecv(:)
-    integer, pointer :: iecc(:)
+    integer :: lagrange_multiplier_count
+    real(real64), pointer :: lagrange_multiplier_values(:)
+    integer, pointer :: lagrange_orbital_pair_labels(:)
 end module orbital_lagrange_multipliers

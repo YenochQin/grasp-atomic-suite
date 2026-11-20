@@ -3,10 +3,10 @@ module mpi_initial_eigenvectors
 
     ! Module interface
     private
-    public :: iniestmpi
+    public :: estimate_mpi_initial_eigenvectors
 contains
     ! Build Davidson starting vectors from the leading principal submatrix of the Hamiltonian.
-    subroutine iniestmpi (submatrix_order_limit, csf_count, initial_vector_count, basis_vectors, &
+    subroutine estimate_mpi_initial_eigenvectors (submatrix_order_limit, csf_count, initial_vector_count, basis_vectors, &
         hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
@@ -14,8 +14,8 @@ contains
         use mpi_state, only: mpi_error_code, mpi_process_count, mpi_rank
 
         use blas_lapack_interfaces, only: dcopy, dspevx
-        use real_vector_initialization, only: dinit
-        use mpi_utilities, only: gdsummpi
+        use real_vector_initialization, only: initialize_real_vector
+        use mpi_utilities, only: allreduce_mpi_real_sum
         use blas_lapack_interfaces, only: dlamch
         implicit none (type, external)
 
@@ -38,7 +38,7 @@ contains
 
         submatrix_order = min(submatrix_order_limit,csf_count)
         call alloc (packed_submatrix, (submatrix_order*(submatrix_order + 1))/2, "AP", "INIESTmpi")
-        call dinit ((submatrix_order*(submatrix_order + 1))/2, 0.0_real64, packed_submatrix, 1)
+        call initialize_real_vector ((submatrix_order*(submatrix_order + 1))/2, 0.0_real64, packed_submatrix, 1)
 
         ! Expand the rank-local column segments into LAPACK upper-triangle packed storage.
         sparse_segment_offset = 0
@@ -52,7 +52,7 @@ contains
         end do
 
         ! Sum the packed contributions so each rank diagonalizes the same submatrix.
-        call gdsummpi (packed_submatrix, (submatrix_order*(submatrix_order+1))/2)
+        call allreduce_mpi_real_sum (packed_submatrix, (submatrix_order*(submatrix_order+1))/2)
 
         call alloc(initial_eigenvalues, submatrix_order,     "EIGVAL", "INIESTmpi")
         call alloc (submatrix_eigenvectors,   submatrix_order*initial_vector_count, "VEC",    "INIESTmpi")
@@ -71,7 +71,7 @@ contains
 
         ! Zero-pad each starting vector to the full CSF dimension.
         ! Append the selected eigenvalues after the vector columns in basis_vectors.
-        call dinit (csf_count*initial_vector_count, 0.0_real64, basis_vectors, 1)
+        call initialize_real_vector (csf_count*initial_vector_count, 0.0_real64, basis_vectors, 1)
 
         do column_index = 1, initial_vector_count
             call dcopy (submatrix_order, &
@@ -90,5 +90,5 @@ contains
         call dalloc (failed_vector_indices,  "IFAIL",  "INIESTmpi")
 
         return
-    end subroutine iniestmpi
+    end subroutine estimate_mpi_initial_eigenvectors
 end module mpi_initial_eigenvectors

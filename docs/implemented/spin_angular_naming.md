@@ -13,7 +13,7 @@
 `A` 与 `W` 沿用角向代数公式中的张量记号。`four_shell_transfer_13_24` 等名称的数字指相互配对的子壳层编号。
 
 仓库内的 `use` 语句、库链接、F2018 必需目标清单和 `jj2lsj` 的 OpenMP 源文件清单采用新名称。
-过程名和实参接口沿用原有定义。
+过程名见[共享库过程对照](shared_library_procedure_names.md)。
 外部 Fortran 调用方需要更新 `use` 和库链接名称，并重新编译。
 形参和局部量见[变量与常量对照](librang90_variable_migration.md)。
 角向计算公式见[自旋–角向系数说明](../../src/lib/spin_angular/readme.md)。

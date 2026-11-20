@@ -4,12 +4,12 @@ module log_factorial_table
 
     ! Module interface
     private
-    public :: factt
+    public :: initialize_log_factorial_table
 contains
-    subroutine factt
+    subroutine initialize_log_factorial_table
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use log_factorial_cache, only: log_factorials => gam, log_factorial_table_size => mfact
+        use log_factorial_cache, only: log_factorials, log_factorial_table_size
         implicit none (type, external)
 
         ! Local declarations
@@ -31,5 +31,5 @@ contains
             factorial_multiplier = factorial_multiplier + 1.0_real64
         end do
         return
-    end subroutine factt
+    end subroutine initialize_log_factorial_table
 end module log_factorial_table

@@ -15,7 +15,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use file_open, only: openfl
+      use file_open, only: open_calculation_file
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -46,7 +46,7 @@ contains
 
 ! Open it
 
-      call openfl (nunit, name, "FORMATTED", "OLD", ierr)
+      call open_calculation_file (nunit, name, "FORMATTED", "OLD", ierr)
       if (ierr == 1) then
          write (output_unit, *) "Error when opening ", name(1:len_trim(name))
          stop

@@ -4,9 +4,9 @@ module decimal_digit_check
 
     ! Module interface
     private
-    public :: ldigit
+    public :: is_decimal_digit
 contains
-    logical function ldigit (character_to_test)
+    logical function is_decimal_digit (character_to_test)
         implicit none (type, external)
 
         ! Arguments
@@ -20,9 +20,9 @@ contains
         data decimal_digits/ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"/
         do digit_value = 0, 9
             if (character_to_test /= decimal_digits(digit_value)) cycle
-            ldigit = .true.
+            is_decimal_digit = .true.
             return
         end do
-        ldigit = .false.
-    end function ldigit
+        is_decimal_digit = .false.
+    end function is_decimal_digit
 end module decimal_digit_check

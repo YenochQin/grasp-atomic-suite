@@ -3,10 +3,10 @@ module subshell_term_multiplicities
     implicit none (type, external)
 
     ! Module state
-    integer :: mt(63)
+    integer :: packed_term_codes_low_j(63)
 
     ! Initial values
-    data mt/00201,10000,10203,20000,00404,20205,00603,00609,30000, &
+    data packed_term_codes_low_j/00201,10000,10203,20000,00404,20205,00603,00609,30000, &
         10404,10408,10603,10605,30207,10609,10611,10615,40000,20404,   &
         00804,20408,00808,00810,20412,00816,                           &
         00001001,00020603,00020605,00001005,00020607,00001007,         &

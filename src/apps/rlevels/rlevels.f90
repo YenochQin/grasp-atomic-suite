@@ -29,7 +29,7 @@ program rlevels
 
     type(level), allocatable :: levels(:)
     character(len=:), allocatable :: path
-    integer :: arg, path_length, io_status, level_count
+    integer :: argument_index, path_length, io_status, level_count
     logical :: show_configuration
 
     level_count = 0
@@ -45,17 +45,17 @@ program rlevels
             if (io_status /= 0 .and. io_status /= iostat_end) call fail('standard input', 'cannot read state name or mixing file')
             path = trim(adjustl(path))
             if (len(path) == 0) exit
-            call read_mix(resolve_mixing_file(path, interactive=.true.), levels, level_count, show_configuration)
+            call read_mixing_file(resolve_mixing_file(path, interactive=.true.), levels, level_count, show_configuration)
             if (io_status == iostat_end) exit
         end do
     case default
-        do arg = 1, command_argument_count()
-            call get_command_argument(arg, length=path_length, status=io_status)
+        do argument_index = 1, command_argument_count()
+            call get_command_argument(argument_index, length=path_length, status=io_status)
             if (io_status /= 0 .or. path_length == 0) call fail('command line', 'expected a mixing file name')
             allocate(character(len=path_length) :: path)
-            call get_command_argument(arg, value=path, status=io_status)
+            call get_command_argument(argument_index, value=path, status=io_status)
             if (io_status /= 0) call fail('command line', 'cannot read mixing file name')
-            call read_mix(resolve_mixing_file(path, interactive=.false.), levels, level_count, show_configuration)
+            call read_mixing_file(resolve_mixing_file(path, interactive=.false.), levels, level_count, show_configuration)
             deallocate(path)
         end do
     end select
@@ -64,7 +64,7 @@ program rlevels
 
 contains
 
-    subroutine read_mix(name, entries, used, with_labels)
+    subroutine read_mixing_file(name, entries, used, with_labels)
         ! Arguments
         character(len=*), intent(in) :: name
         type(level), allocatable, intent(inout) :: entries(:)
@@ -157,7 +157,7 @@ contains
         used = file_end
         write (output_unit, *) 'nblock = ', symmetry_block_count, '  ncftot = ', csf_count, '  nw = ', orbital_count, &
             & '  nelec = ', electron_count
-    end subroutine read_mix
+    end subroutine read_mixing_file
 
     function format_j(two_j) result(j_text)
         ! Arguments

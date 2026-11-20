@@ -1,12 +1,21 @@
 ! Serial implementation of the rdensity process boundary.
 module density_parallel
-    ! Module dependencies
-    use csf_basis_loader, only: load_density_basis => setcsla
     implicit none (type, external)
 
     ! Module state
-    integer :: rank = 0, workers = 1
+    integer :: mpi_rank = 0, mpi_process_count = 1
 contains
+    subroutine load_density_basis(state_name, core_subshell_count)
+        ! Module dependencies
+        use csf_basis_loader, only: load_angular_csf_basis
+
+        ! Arguments
+        character(len=24), intent(in) :: state_name
+        integer, intent(out) :: core_subshell_count
+
+        call load_angular_csf_basis(state_name, core_subshell_count)
+    end subroutine load_density_basis
+
     subroutine parallel_start
         write(*,*) "RDENSITY: serial density and natural orbitals"
     end subroutine parallel_start

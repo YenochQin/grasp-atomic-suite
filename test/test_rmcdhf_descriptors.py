@@ -24,7 +24,7 @@ def main() -> None:
             work = Path(temporary)
             peel = ["2s", "2p-", "2p", "3s", "3p-", "3p"]
             parquet, header, text = write_fixture(work, ["1s"], peel, basic_blocks())
-            parquet.rename(work / "rcsf_descriptors.parquet")
+            parquet.rename(work / "rcsf_desc.parquet")
             header.rename(work / "rcsf_header.toml")
             text.unlink()
             environment = os.environ | {

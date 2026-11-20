@@ -4,9 +4,9 @@ module integer_vector_copy
 
     ! Module interface
     private
-    public :: icopy
+    public :: copy_integer_vector
 contains
-    subroutine icopy(element_count, source_values, source_stride, destination_values, destination_stride)
+    subroutine copy_integer_vector(element_count, source_values, source_stride, destination_values, destination_stride)
         implicit none (type, external)
 
         ! Arguments
@@ -17,7 +17,7 @@ contains
         integer, intent(out) :: destination_values(*)
 
         ! Local declarations
-        integer :: i, prefix_length, first_full_block_index
+        integer :: prefix_length, first_full_block_index
         ! The stride arguments are accepted for compatibility. This routine copies contiguous elements.
         if (element_count <= 0) return
         prefix_length = mod(element_count,7)
@@ -29,5 +29,5 @@ contains
         destination_values(first_full_block_index:((element_count-first_full_block_index+7)/7)*7-1+first_full_block_index) = &
             & source_values(first_full_block_index:((element_count-first_full_block_index+7)/7)*7-1+first_full_block_index)
         return
-    end subroutine icopy
+    end subroutine copy_integer_vector
 end module integer_vector_copy

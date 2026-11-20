@@ -4,24 +4,21 @@ module radial_origin_solution
 
     ! Module interface
     private
-    public :: start
+    public :: solve_radial_origin
 contains
-    subroutine start(orbital_index, radial_equation_type, origin_slope_parameter, large_component_values, &
+    subroutine solve_radial_origin(orbital_index, radial_equation_type, origin_slope_parameter, large_component_values, &
         & small_component_origin_coefficient, small_component_values)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_radial_points
-        use radial_difference_coefficients, only: cnc5c, six_point_weights => cnc6c
-        use atomic_calculation_state,           only: speed_of_light_au, nuclear_charge, working_tolerance => accy
-        use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-            radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-        use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+        use radial_difference_coefficients, only: six_point_weights
+        use atomic_calculation_state,           only: speed_of_light_au, nuclear_charge, working_tolerance
+        use radial_grid_state, only: radial_grid, radial_grid_derivative
+        use nuclear_model_parameters_state, only: nuclear_model_parameter_count
         use orbital_csf_basis, only: orbital_energy_parameters, orbital_kappa, orbital_origin_exponents
-        use scf_radial_potentials, only: orbital_y_potential => yp, &
-            large_exchange_source => xp, small_exchange_source => xq
-        use scf_iteration_state,           only: direct_coefficient_count => ndcof, direct_orbital_indices => nda, &
-            & direct_coefficients => da
-        use radial_wavefunctions,          only: orbital_origin_parameters,radial_large_components,radial_small_components
+        use scf_radial_potentials, only: orbital_y_potential, large_exchange_source, small_exchange_source
+        use scf_iteration_state,           only: direct_coefficient_count, direct_orbital_indices, direct_coefficients
+        use radial_wavefunctions,          only: orbital_origin_parameters, radial_large_components, radial_small_components
         implicit none (type, external)
 
         ! Arguments
@@ -38,11 +35,10 @@ contains
         real(real64) :: large_equation_coupling(6), small_equation_coupling(6), large_equation_source(6), small_equation_source(6)
         real(real64) :: large_component_estimates(2:6), small_component_estimates(2:6)
         real(real64) :: inverse_speed_of_light, charge_over_c, origin_exponent, kappa_real, one_minus_origin_exponent, &
-            & one_minus_exponent_minus_kappa, one_minus_exponent_plus_kappa, large_origin_source_sum, &
-            small_origin_source_sum, direct_orbital_origin_parameter, large_origin_value, small_origin_value, large_equation_sum, &
-            & small_equation_sum, factor, c_squared, twice_c_squared, binding_energy, twice_c_squared_minus_energy&
-            , radius, grid_derivative, radius_times_derivative, potential_times_derivative, unscaled_maximum_change, &
-            & maximum_change, coefij, pi, qi, start_grid_radius
+            one_minus_exponent_minus_kappa, one_minus_exponent_plus_kappa, large_origin_source_sum, small_origin_source_sum, &
+            direct_orbital_origin_parameter, large_origin_value, small_origin_value, large_equation_sum, small_equation_sum, &
+            factor, c_squared, twice_c_squared, binding_energy, twice_c_squared_minus_energy, radius, grid_derivative, &
+            radius_times_derivative, potential_times_derivative, unscaled_maximum_change, maximum_change, start_grid_radius
         inverse_speed_of_light = 1.0_real64/speed_of_light_au
         charge_over_c = nuclear_charge*inverse_speed_of_light
         origin_exponent = orbital_origin_exponents(orbital_index)
@@ -192,5 +188,5 @@ contains
         end do
         return
         return
-    end subroutine start
+    end subroutine solve_radial_origin
 end module radial_origin_solution

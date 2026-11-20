@@ -8,6 +8,8 @@ module scf_radial_potentials
     private :: real64
 
     ! Module state
-    ! yp enters the radial Dirac coefficients as yp/r. xp and xq supply the exchange source.
-    real(real64) :: yp(max_radial_points), xp(max_radial_points), xq(max_radial_points)
+    ! Divide the orbital Y potential by radius in the radial Dirac equations.
+    ! The exchange source is stored separately for the large and small components.
+    real(real64) :: orbital_y_potential(max_radial_points), large_exchange_source(max_radial_points), &
+        small_exchange_source(max_radial_points)
 end module scf_radial_potentials

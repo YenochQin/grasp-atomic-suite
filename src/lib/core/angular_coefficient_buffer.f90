@@ -4,9 +4,9 @@ module angular_coefficient_buffer
 
     ! Module interface
     private
-    public :: alcbuf
+    public :: manage_angular_coefficient_buffer
 contains
-    subroutine alcbuf(buffer_operation)
+    subroutine manage_angular_coefficient_buffer(buffer_operation)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
 
@@ -18,7 +18,7 @@ contains
         integer, intent(in) :: buffer_operation
 
         ! Local declarations
-        integer :: new_buffer_capacity, ierr
+        integer :: new_buffer_capacity
         select case (buffer_operation)
         case (1)
             angular_buffer_capacity = 10
@@ -37,5 +37,5 @@ contains
             stop
         end select
         return
-    end subroutine alcbuf
+    end subroutine manage_angular_coefficient_buffer
 end module angular_coefficient_buffer

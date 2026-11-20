@@ -9,7 +9,7 @@ import shutil
 import tempfile
 
 from check_upstream import main as verify
-from check_upstream import APP_SYMBOLS_SNAPSHOT, suite_source_path
+from check_upstream import APP_MODULES_SNAPSHOT, APP_SYMBOLS_SNAPSHOT, suite_source_path
 
 
 def main() -> None:
@@ -19,10 +19,12 @@ def main() -> None:
         work = Path(temporary)
         migration = json.loads((root / "docs/reference/rmcdhf_descriptor_snapshot.json").read_text())
         app_symbols = json.loads((root / APP_SYMBOLS_SNAPSHOT).read_text())
+        app_modules = json.loads((root / APP_MODULES_SNAPSHOT).read_text())
+        removed = set(migration["removed"]) | set(app_modules["merged_interfaces"])
         renamed_paths = {name: record["suite_path"] for name, record in app_symbols["files"].items()}
         paths = [
             suite_source_path(root, name, renamed_paths)
-            for name in manifest["files"] if name not in migration["removed"]
+            for name in manifest["files"] if name not in removed
         ]
         paths += list((root / "docs/reference").glob("rmcdhf_*.json"))
         for source in paths:
@@ -43,6 +45,8 @@ def main() -> None:
                          "docs/reference/rmcdhf_io_units_snapshot.json",
                          "docs/reference/rmcdhf_app_variable_names_snapshot.json",
                          "docs/reference/rmcdhf_app_symbols_snapshot.json",
+                         "docs/reference/rmcdhf_app_source_style_snapshot.json",
+                         "docs/reference/rmcdhf_app_modules_snapshot.json",
                          "docs/reference/rmcdhf_grasp_mpi_naming_snapshot.json",
                          "docs/reference/rmcdhf_grasp_shared_naming_snapshot.json",
                          "docs/reference/rmcdhf_davidson_naming_snapshot.json",

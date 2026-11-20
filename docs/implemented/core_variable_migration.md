@@ -1,5 +1,7 @@
 # libcore 变量与常量命名迁移
 
+下表记录这批迁移当时的名称。后续改动已将重复的共享状态别名移至定义端，并更新了库过程名。[后续实施与回归](../reviews/fortran_arrow_audit_2026-11-20.md#清理后的命名与验证) · [现行过程对照](shared_library_procedure_names.md)
+
 日期 2026-11-20。源码基准为 `2d4c721` 加同一工作树中的 CSF 查询模块合并。
 逐文件盘点 CMake 清单中的 71 份 Fortran 源码，覆盖 1,181 个作用域内的声明实体。改动覆盖 68 份源码，迁移了 885 个原名（含 247 个形参、14 个 `PARAMETER` 常量），另有 100 处共享符号引用使用了更明确的局部名称。
 
@@ -200,7 +202,7 @@
 
 ## [radial_node_count.f90](../../src/lib/core/radial_node_count.f90)
 
-### `radial_node_count_impl → count_impl`
+### `radial_node_count → count_radial_nodes`
 
 | 原名 | 迁移后 | 角色 |
 | --- | --- | --- |
@@ -1371,9 +1373,9 @@
 
 ## [csf_byte_packing.f90](../../src/lib/core/csf_byte_packing.f90)
 
-### `csf_byte_packing_impl → pack_impl`
+### `csf_byte_packing → pack_csf_subshell_byte`
 
-保留 `iunpkd`、`isubsh`、`ipackd`。三者是 `pack` 已有的公开关键字，由 [过程指针回归](../../test/f2018/library_modules.f90) 覆盖。
+`unpacked_value`、`byte_index` 和 `packed_values` 分别表示待写入的值、字节下标和目标数组。现行关键字由[过程指针回归](../../test/f2018/library_modules.f90)覆盖。
 
 ## [file_positioning.f90](../../src/lib/core/file_positioning.f90)
 

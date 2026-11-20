@@ -3,9 +3,9 @@ module davidson_convergence
 
     ! Module interface
     private
-    public :: tstsel
+    public :: check_davidson_convergence
 contains
-    logical function tstsel (subspace_size, extreme_pair_count, selected_pair_count, selected_pair_indices, &
+    logical function check_davidson_convergence (subspace_size, extreme_pair_count, selected_pair_count, selected_pair_indices, &
         ritz_coefficients, ritz_values, convergence_flags, eigenvalue_tolerance, coefficient_tolerance, &
         recent_coefficient_maxima, unsorted_pair_indices, previous_ritz_values, recent_or_pending_count, &
         pending_pair_indices) result (targets_converged)
@@ -87,5 +87,5 @@ contains
 
         targets_converged = coefficients_converged
         return
-    end function tstsel
+    end function check_davidson_convergence
 end module davidson_convergence

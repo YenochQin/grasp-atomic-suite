@@ -7,6 +7,11 @@
 > 本次核对了 RHFS 串行入口、轨道装载、HFSGG 累加和输出公式。本文不替代 gj/MPI 的完整操作说明；当前程序用法见[仓库 README](../../README_ZH.md)。
 > 全部文档状态见[分类索引](../README.md)。
 
+现行源码中的 `lande_g_radial_integrals` 对应下文的 `RINTGJ`，其积分核为
+`r (P_i Q_j + Q_i P_j)`。`hyperfine_radial_integrals(1,:,:)` 对应磁偶极超精细项，
+使用不同的径向幂次 `r^(-2)`。`inverse_j_norm` 对应 `GJA1`，
+即 `1/sqrt(J(J+1))`。下文的其他过程名和变量名沿用报告核查基点。
+
 ## 1. 范围与结论
 
 本报告分析 `src/apps/rhfs` 中 `g_J` 的实现流程。结论是：`rhfs` 并不是直接套用 Landé 因子闭式公式，而是先在 CSF 基底上构造与 `g_J` 相关的单电子约化矩阵元，再用混合系数 `EVEC` 投影到原子态，最后乘上 `J` 相关归一化因子与物理常数，输出 `g_J`、`delta g_J` 和 `total g_J`。

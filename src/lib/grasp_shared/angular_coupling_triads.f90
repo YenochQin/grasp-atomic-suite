@@ -2,8 +2,9 @@ module angular_coupling_triads
     implicit none (type, external)
 
     ! Module constants
-    integer, parameter :: mtriad = 12
+    integer, parameter :: saved_coupling_triad_capacity = 12
 
     ! Module state
-    integer :: j2s(mtriad, 3), j3s(mtriad, 3)
+    integer :: saved_bra_coupling_triads(saved_coupling_triad_capacity, 3), &
+        saved_ket_coupling_triads(saved_coupling_triad_capacity, 3)
 end module angular_coupling_triads

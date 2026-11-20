@@ -3,19 +3,20 @@ module jj_reduced_coefficients_11
     implicit none (type, external)
 
     ! Module state
-    integer :: imptjj11(189), imgtjj11(189), impnjj11(189), imgnjj11(189)
+    integer :: first_same_parity_terms_high_j(189), last_same_parity_terms_high_j(189), &
+        first_opposite_parity_terms_high_j(189), last_opposite_parity_terms_high_j(189)
 
     ! Initial values
-    data imptjj11/1,6*2,8,7*9,16,8*17,25,9*26,35,10*36,  &
+    data first_same_parity_terms_high_j/1,6*2,8,7*9,16,8*17,25,9*26,35,10*36,  &
         46,11*47,58,12*59,71,13*72,85,14*86,100,15*101,      &
         116,16*117,133,17*134,151,18*152,170,19*171/
-    data imgtjj11/1,6*7,8,7*15,16,8*24,25,9*34,35,10*45, &
+    data last_same_parity_terms_high_j/1,6*7,8,7*15,16,8*24,25,9*34,35,10*45, &
         46,11*57,58,12*70,71,13*84,85,14*99,100,15*115,      &
         116,16*132,133,17*150,151,18*169,170,19*189/
-    data impnjj11/2,6*1,9,7*8,17,8*16,26,9*25,36,10*35,  &
+    data first_opposite_parity_terms_high_j/2,6*1,9,7*8,17,8*16,26,9*25,36,10*35,  &
         47,11*46,59,12*58,72,13*71,86,14*85,101,15*100,      &
         117,16*116,134,17*133,152,18*151,171,19*100/
-    data imgnjj11/7,6*1,15,7*8,24,8*16,34,9*25,45,10*35, &
+    data last_opposite_parity_terms_high_j/7,6*1,15,7*8,24,8*16,34,9*25,45,10*35, &
         57,11*46,70,12*58,84,13*71,99,14*85,115,15*100,      &
         132,16*116,150,17*133,169,18*151,189,19*100/
 end module jj_reduced_coefficients_11

@@ -17,40 +17,39 @@ program ris4_main
     !***********************************************************************
     !...Translated by Gediminas Gaigalas 11/18/19
     use, intrinsic :: iso_fortran_env, only: real64
-    use calculation_input_defaults, only: inpci, ndef, ndump
-    use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+    use calculation_input_defaults, only: nondefault_options_flag
+    use standard_io_units, only: stderr_unit
     use debug_output_settings,         only: cutoff
     use calculation_state_files, only: read_state_name
-    use yes_no_input, only: getyn
+    use yes_no_input, only: read_yes_no
 
     ! Procedure interfaces
     use configure_debug_output_interface, only: configure_debug_output
 
     ! Module dependencies
-    use machine_constants, only: setmc
-    use physical_constants, only: setcon
+    use machine_constants, only: initialize_machine_constants
+    use physical_constants, only: initialize_physical_constants
 
     ! Procedure interfaces
     use open_summary_file_interface, only: open_summary_file
 
     ! Module dependencies
-    use csf_basis_loader, only: setcsla
+    use csf_basis_loader, only: load_angular_csf_basis
 
     ! Procedure interfaces
     use read_mixing_blocks_interface, only: read_mixing_blocks
     use write_input_summary_interface, only: write_input_summary
 
     ! Module dependencies
-    use log_factorial_table, only: factt
+    use log_factorial_table, only: initialize_log_factorial_table
 
     ! Procedure interfaces
     use calculate_isotope_shifts_interface, only: calculate_isotope_shifts
     use prepare_isotope_calculation_interface, only: prepare_isotope_calculation
     implicit none (type, external)
-    real(real64) :: dr2
     logical   :: yes
     character :: name*24
-    integer :: nci, unused_core_subshell_count, nopar
+    integer :: mixing_file_kind, unused_core_subshell_count
     !-----------------------------------------------
     !
     !   Matrix elements smaller than CUTOFF are not accumulated
@@ -63,23 +62,23 @@ program ris4_main
 
     write (stderr_unit, *)
     write (stderr_unit, *) "Default settings?"
-    yes = getyn ()
+    yes = read_yes_no ()
     write (stderr_unit, *)
     if (yes) then
-        ndef = 0
+        nondefault_options_flag = 0
     else
-        ndef = 1
+        nondefault_options_flag = 1
     end if
 
     call read_state_name(name)
     print *
 
     write (stderr_unit, *) "Mixing coefficients from a CI calc.?"
-    yes = getyn ()
+    yes = read_yes_no ()
     if (yes) then
-        nci = 0
+        mixing_file_kind = 0
     else
-        nci = 1
+        mixing_file_kind = 1
     end if
     write (stderr_unit, *)
 
@@ -95,19 +94,19 @@ program ris4_main
     !
     !   Perform machine- and installation-dependent setup
     !
-    call setmc
+    call initialize_machine_constants
     !
     !   Set up the physical constants
     !
-    call setcon
+    call initialize_physical_constants
     !
     !   Open the  .i  file
     !
-    call open_summary_file(name,nci)
+    call open_summary_file(name,mixing_file_kind)
     !
     !   Open, check, load data from, and close, the  .csl  file
     !
-    call setcsla(name,unused_core_subshell_count)
+    call load_angular_csf_basis(name,unused_core_subshell_count)
     !
     !   Get the remaining information
     !
@@ -120,7 +119,7 @@ program ris4_main
     !      PRINT *
 
     !      IF (YES) THEN
-    call read_mixing_blocks(name,nci)
+    call read_mixing_blocks(name,mixing_file_kind)
     !      ELSE
     !         IF (NCI.EQ.0) THEN
     !            CALL GETMIXC(NAME)
@@ -135,7 +134,7 @@ program ris4_main
     !
     !   Set up the table of logarithms of factorials
     !
-    call factt
+    call initialize_log_factorial_table
     !
     !   Proceed with the RIS calculation
     !

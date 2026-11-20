@@ -1,131 +1,144 @@
-!***********************************************************************
-!                                                                      *
-subroutine update_scf_mixing(sum)
-    ! Module dependencies
-    use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-    !                                                                      *
-    !   This routine computes the level weights, the generalized occupa-   *
-    !   tion numbers,  and average energy for  EOL calculations;  this     *
-    !   information and the eigenvectors are then printed out.             *
-    !                                                                      *
-    !   Call(s) to: [LIB92]: IQ.                                           *
-    !               [RSCF92]: CSFWGT, DSUBRS.                              *
-    !                                         Last revision: 24 Dec 1992   *
-    !   Block version by Xinghong He          Last revision: 05 Aug 1998   *
-    !   Midified by G. Gaigalas                              05 Feb 2017   *
-    !      It was deleted the arrays:  JQSA(3*NNNW*NCF),                   *
-    !                                  JCUPA(NNNW*NCF)                     *
-    !                                                                      *
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-    use atomic_calculation_state, only: iccmin, ncmin, weight, wt
-    use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
-        csf_mixing_coefficients, evecff, evecii
-    use orbital_csf_basis, only: max_orbitals, orbital_count
-    use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
-        nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-    use level_symmetry_metadata,          only: jpgg
-    use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
-    use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-    use symmetry_block_offsets, only: total_csf_count, mixing_coefficient_storage_size, &
-        csf_offsets_by_block, eigenvalue_offsets_by_block, mixing_offsets_by_block
-    use block_mean_energies, only: eavblk
-    use transition_block_indices, only: idxblk
-    use serial_mpi_context, only: mpi_process_count, mpi_rank
-
-    ! Procedure interfaces
-    use csf_density_matrix_element_interface, only: csf_density_matrix_element
-
-    ! Module dependencies
-    use csf_quantum_queries, only: iq
-
-    ! Procedure interfaces
-    use write_csf_weights_interface, only: write_csf_weights
+module update_scf_mixing_interface
     implicit none (type, external)
 
-    ! Arguments
-    real(real64), intent(out) :: sum
+    ! Module interface
+    private
+    public :: update_scf_mixing
+contains
 
-    ! Local declarations
-    integer :: j, symmetry_block_index, csf_index, noff, jall, jblock
-    real(real64) :: weitj, ee
-    logical :: eol
-    !-----------------------------------------------
-    !
-    !     POINTER (pncfblk, ncfblk(0:*))
-    !
-    !
-    !   Compute weighting factors
-    !
-    sum = 0.0_real64
-    do j = 1, ncmin
-        weitj = weight(j)
-        if (weitj == (-2.0_real64)) then
-            wt(j) = 1.0_real64
-        else if (weitj == (-1.0_real64)) then
-            !GGGG
-            !GG            WT(J) = IATJPO(J)
-            jblock = idxblk(j)     ! Block number of this state
-            wt(j) = abs(jpgg(jblock))
-        else
-            wt(j) = weight(j)
-        end if
-        sum = sum + wt(j)
-    end do
+    !***********************************************************************
+    !                                                                      *
+    subroutine update_scf_mixing(weighted_average_energy)
+        ! Module dependencies
+        use debug_output_settings, only: angular_debug_unit, ensure_debug_output
+        !                                                                      *
+        !   This routine computes the level weights, the generalized occupa-   *
+        !   tion numbers,  and average energy for  EOL calculations;  this     *
+        !   information and the eigenvectors are then printed out.             *
+        !                                                                      *
+        !   Call(s) to: [LIB92]: IQ.                                           *
+        !               [RSCF92]: CSFWGT, DSUBRS.                              *
+        !                                         Last revision: 24 Dec 1992   *
+        !   Block version by Xinghong He          Last revision: 05 Aug 1998   *
+        !   Midified by G. Gaigalas                              05 Feb 2017   *
+        !      It was deleted the arrays:  JQSA(3*NNNW*NCF),                   *
+        !                                  JCUPA(NNNW*NCF)                     *
+        !                                                                      *
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use debug_output_settings, only: ldbpg
+        use atomic_calculation_state, only: requested_level_indices, selected_level_count, requested_level_weights, &
+            level_average_weights
+        use eigenstate_expansions, only: shifted_eigenvalues, csf_mixing_coefficients
+        use orbital_csf_basis, only: orbital_count
+        use scf_iteration_state, only: orbital_occupation_weights
+        use level_symmetry_metadata,          only: packed_block_symmetries
+        use hamiltonian_symmetry_blocks, only: csf_counts_by_block, symmetry_block_count
+        use symmetry_block_offsets, only: csf_offsets_by_block, mixing_offsets_by_block
+        use block_mean_energies, only: mean_energy_by_block
+        use transition_block_indices, only: level_block_indices
+        use serial_mpi_context, only: mpi_process_count, mpi_rank
 
-    wt(:ncmin) = wt(:ncmin)/sum
-    !
-    !   Compute generalised occupation numbers
-    !   <----- Distributed ----->
-    !
-    eol = .true.
+        ! Procedure interfaces
+        use csf_density_matrix_element_interface, only: csf_density_matrix_element
 
-    do j = 1, orbital_count
-        sum = 0.0_real64
-        do symmetry_block_index = 1, symmetry_block_count
-            do csf_index = mpi_rank + 1, csf_counts_by_block(symmetry_block_index), mpi_process_count
-                sum = sum + csf_density_matrix_element(eol,csf_index,csf_index,symmetry_block_index)*iq(j, &
-                    & csf_index + csf_offsets_by_block(symmetry_block_index))
-            end do
+        ! Module dependencies
+        use csf_quantum_queries, only: csf_occupation
+
+        ! Procedure interfaces
+        use write_csf_weights_interface, only: write_csf_weights
+        implicit none (type, external)
+
+        ! Arguments
+        real(real64), intent(out) :: weighted_average_energy
+
+        ! Local declarations
+        integer :: weight_index, orbital_index, symmetry_block_index, csf_index, mixing_coefficient_offset, &
+            & selected_level_index, weight_block_index
+        real(real64) :: requested_weight, level_energy, weight_sum, occupation_sum
+        logical :: use_extended_optimal_level
+        !-----------------------------------------------
+        !
+        !     POINTER (pncfblk, ncfblk(0:*))
+        !
+        !
+        !   Compute weighting factors
+        !
+        weight_sum = 0.0_real64
+        do weight_index = 1, selected_level_count
+            requested_weight = requested_level_weights(weight_index)
+            if (requested_weight == (-2.0_real64)) then
+                level_average_weights(weight_index) = 1.0_real64
+            else if (requested_weight == (-1.0_real64)) then
+                !GGGG
+                !GG            WT(J) = IATJPO(J)
+                weight_block_index = level_block_indices(weight_index)     ! Block number of this state
+                level_average_weights(weight_index) = abs(packed_block_symmetries(weight_block_index))
+            else
+                level_average_weights(weight_index) = requested_level_weights(weight_index)
+            end if
+            weight_sum = weight_sum + level_average_weights(weight_index)
         end do
-        ucf(j) = sum
-    end do
-    !
-    !   Write out level energies and weights
-    !
-    write (*, '(/,"Optimise on the following level(s):"/)')
-    sum = 0.0_real64
-    noff = 0
-    do jall = 1, ncmin
-        symmetry_block_index = idxblk(jall)                       ! Block number of this state
-        ee = eavblk(symmetry_block_index) + shifted_eigenvalues(jall)
-        write (*, '("Level ",1i2,4x,"Energy = ",1p,1d19.12,4x,"Weight = ",1d12.5)') iccmin(jall), ee, wt(jall)
-        if (ldbpg(5)) then
-            call ensure_debug_output()
-            write (angular_debug_unit, *) jall, symmetry_block_index, csf_counts_by_block(symmetry_block_index), &
-                & mixing_offsets_by_block(symmetry_block_index)
-            call ensure_debug_output()
-            write (angular_debug_unit, '(/,"Configuration mixing coefficients:")')
-            call ensure_debug_output()
-            write (angular_debug_unit, '(1x,1p,6d12.4)') (csf_mixing_coefficients(csf_index + noff),csf_index=1, &
-                & csf_counts_by_block(symmetry_block_index))
-            noff = noff + csf_counts_by_block(symmetry_block_index)
-        end if
-        sum = sum + wt(jall)*ee
-    end do
 
-    call write_csf_weights (.true.)
-    !
-    !   Write out average energy
-    !
-    if (ncmin > 1) write (*, '(/,"Weighted average energy of these levels = ",1p,d18.10)') sum
-    !
-    !   Write out generalized occupation numbers
-    !
-    write (*, '(/,"Generalised occupation numbers:"/)')
-    write (*, '(1x,1p,6d12.4)') (ucf(csf_index),csf_index=1,orbital_count)
+        level_average_weights(:selected_level_count) = level_average_weights(:selected_level_count)/weight_sum
+        !
+        !   Compute generalised occupation numbers
+        !   <----- Distributed ----->
+        !
+        use_extended_optimal_level = .true.
+
+        do orbital_index = 1, orbital_count
+            occupation_sum = 0.0_real64
+            do symmetry_block_index = 1, symmetry_block_count
+                do csf_index = mpi_rank + 1, csf_counts_by_block(symmetry_block_index), mpi_process_count
+                    occupation_sum = occupation_sum + csf_density_matrix_element(use_extended_optimal_level, &
+                        & csf_index,csf_index,symmetry_block_index)*csf_occupation(orbital_index, &
+                        & csf_index + csf_offsets_by_block(symmetry_block_index))
+                end do
+            end do
+            orbital_occupation_weights(orbital_index) = occupation_sum
+        end do
+        !
+        !   Write out level energies and weights
+        !
+        write (*, '(/,"Optimise on the following level(s):"/)')
+        weighted_average_energy = 0.0_real64
+        mixing_coefficient_offset = 0
+        do selected_level_index = 1, selected_level_count
+            symmetry_block_index = level_block_indices(selected_level_index)                       ! Block number of this state
+            level_energy = mean_energy_by_block(symmetry_block_index) + shifted_eigenvalues(selected_level_index)
+            write (*, '("Level ",1i2,4x,"Energy = ",1p,1d19.12,4x,"Weight = ",1d12.5)') &
+                & requested_level_indices(selected_level_index), level_energy, &
+                level_average_weights(selected_level_index)
+            if (ldbpg(5)) then
+                call ensure_debug_output()
+                write (angular_debug_unit, *) selected_level_index, symmetry_block_index, &
+                    & csf_counts_by_block(symmetry_block_index), &
+                    & mixing_offsets_by_block(symmetry_block_index)
+                call ensure_debug_output()
+                write (angular_debug_unit, '(/,"Configuration mixing coefficients:")')
+                call ensure_debug_output()
+                write (angular_debug_unit, '(1x,1p,6d12.4)') (csf_mixing_coefficients(csf_index + &
+                    & mixing_coefficient_offset),csf_index=1, &
+                    & csf_counts_by_block(symmetry_block_index))
+                mixing_coefficient_offset = mixing_coefficient_offset + csf_counts_by_block(symmetry_block_index)
+            end if
+            weighted_average_energy = weighted_average_energy + level_average_weights(selected_level_index)*level_energy
+        end do
+
+        call write_csf_weights (.true.)
+        !
+        !   Write out average energy
+        !
+        if (selected_level_count > 1) write (*, '(/,"Weighted average energy of these levels = ",1p,d18.10)') &
+            & weighted_average_energy
+        !
+        !   Write out generalized occupation numbers
+        !
+        write (*, '(/,"Generalised occupation numbers:"/)')
+        write (*, '(1x,1p,6d12.4)') (orbital_occupation_weights(csf_index),csf_index=1,orbital_count)
 
 
-    return
-end subroutine update_scf_mixing
+        return
+    end subroutine update_scf_mixing
+end module update_scf_mixing_interface

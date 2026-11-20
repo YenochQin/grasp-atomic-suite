@@ -1,263 +1,266 @@
-!***********************************************************************
-!                                                                      *
-subroutine read_biorthogonal_mcp (name,ik,ntestg,inpci)
-    ! Module dependencies
-    use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
-    use calculation_file_units, only: mixing_input_unit
-    !                                                                      *
-    !   This routine controls the computation  and storage of the values   *
-    !   and all indices of the angular coefficients                        *
-    !                                                                      *
-    !                                                                      *
-    !                   T  (ab)                                            *
-    !                    rs                                                *
-    !                                                                      *
-    !   k is the multipolarity of a two-particle Coulomb integral. a, b,   *
-    !   are orbital sequence numbers.  r and s are configuration           *
-    !   state function indices.                                            *
-    !                                                                      *
-    !   Call(s) to: [LIB92]: ALLOC, DALLOC, TNSRJJ                         *
-    !               [GENMCP]: QSORT.                                       *
-    !                                                                      *
-    !   Written by Per Jonsson                Last revision: JUne 1996     *
-    !   Bug corrected 2005-10-18                                           *
-    !                                                                      *
-    !***********************************************************************
-    !...Translated by Charlotte Froese Fischer
-    !                       Gediminas Gaigalas  10/05/17
-    use, intrinsic :: iso_fortran_env, only: real64
-    use grasp_parameters,   only: orbital_index_radix, max_orbitals
-    use array_memory_management, only: alloc, dalloc
-    use atomic_calculation_state, only: electron_count
-    use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
-        csf_mixing_coefficients, evecff, evecii
-    use first_order_csf_cutoffs, only: iccut
-    use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
-    use orbital_csf_basis,           only: csf_count, orbital_count
-    use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-    use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-    use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, jcupar, jqsar
-    use biorthogonal_transition_selection, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
-    use biorthogonal_orbital_order, only: nordff, nordii
-    use mcp_coefficient_storage, only: cnn, intgrl, intptr, jann, jbnn, ncoeff, nintg
-    use biorthogonal_subshell_layout,         only: kamax,nshlii,nshlff,nshlppii,nshlppff,&
-        ninii,ninff,nshlpii,nshlpff,nakinvii, &
-        nakinvff,nlmax
-    use biorthogonal_subshell_mapping,        only: nshlp, nshlpp
-    use biorthogonal_orbital_rotations,         only: cici, cfci
-    use transition_basis_blocks, only: ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
-        nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
-
-    ! Procedure interfaces
-    !      USE tnsrjj_I
-    !      USE cor_I
-    !      USE cord_I
-    !      USE itjpo_I
-    use transform_ci_coefficients_interface, only: transform_ci_coefficients
-    use read_state_mixing_coefficients_interface, only: read_state_mixing_coefficients
+module read_biorthogonal_mcp_interface
     implicit none (type, external)
 
-    ! Local declarations
-    integer :: biorthogonal_mixing_output_unit
+    ! Module interface
+    private
+    public :: read_biorthogonal_mcp
+contains
 
-    ! Arguments
-    character(len=24), intent(in) :: name
-    integer, intent(in) :: ik, ntestg, inpci
+    !***********************************************************************
+    !                                                                      *
+    subroutine read_biorthogonal_mcp (name,ik,global_trace_level,inpci)
+        ! Module dependencies
+        use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
+        use calculation_file_units, only: mixing_input_unit
+        !                                                                      *
+        !   This routine controls the computation  and storage of the values   *
+        !   and all indices of the angular coefficients                        *
+        !                                                                      *
+        !                                                                      *
+        !                   T  (ab)                                            *
+        !                    rs                                                *
+        !                                                                      *
+        !   k is the multipolarity of a two-particle Coulomb integral. a, b,   *
+        !   are orbital sequence numbers.  r and s are configuration           *
+        !   state function indices.                                            *
+        !                                                                      *
+        !   Call(s) to: [LIB92]: ALLOC, DALLOC, TNSRJJ                         *
+        !               [GENMCP]: QSORT.                                       *
+        !                                                                      *
+        !   Written by Per Jonsson                Last revision: JUne 1996     *
+        !   Bug corrected 2005-10-18                                           *
+        !                                                                      *
+        !***********************************************************************
+        !...Translated by Charlotte Froese Fischer
+        !                       Gediminas Gaigalas  10/05/17
+        use, intrinsic :: iso_fortran_env, only: real64
+        use grasp_parameters,   only: orbital_index_radix, max_orbitals
+        use array_memory_management, only: alloc, dalloc
+        use atomic_calculation_state, only: electron_count
+        use eigenstate_expansions, only: hamiltonian_energy_shift, shifted_eigenvalues, csf_mixing_coefficients
+        use orbital_csf_basis,           only: csf_count, orbital_count
+        use selected_level_indices, only: active_level_indices, active_level_count
+        use level_symmetry_metadata, only: level_parity_signs, level_two_j_plus_one
+        use mcp_coefficient_storage, only: mcp_coefficient_values, mcp_packed_orbital_pairs, mcp_coefficient_end_offsets, &
+            mcp_bra_csf_indices, mcp_ket_csf_indices, mcp_coefficient_count, mcp_integral_count
+        use biorthogonal_subshell_layout,         only: kappa_group_count, initial_orbital_counts_by_group, &
+            final_orbital_counts_by_group, initial_orbital_positions_by_group, final_orbital_positions_by_group, &
+            initial_core_counts_by_group, final_core_counts_by_group, initial_orbitals_by_group, final_orbitals_by_group, &
+            initial_kappa_group_by_orbital, final_kappa_group_by_orbital, max_biorthogonal_kappa_groups
+        use biorthogonal_subshell_mapping,        only: active_orbitals_by_group, active_orbital_positions_by_group
+        use biorthogonal_orbital_rotations,         only: initial_orbital_rotation_values, final_orbital_rotation_values
+        use transition_basis_blocks, only: transition_block_count, mixing_file_csf_count, mixing_file_level_count
 
-    ! Local constants
-    !   Set the encoding key and its square
-    integer, parameter :: orbital_label_radix = orbital_index_radix, keysq = orbital_label_radix*orbital_label_radix, nvmax=100
-    real(real64), parameter :: cutoff = 1.0e-10_real64
+        ! Procedure interfaces
+        !      USE tnsrjj_I
+        !      USE cor_I
+        !      USE cord_I
+        !      USE itjpo_I
+        use transform_ci_coefficients_interface, only: transform_ci_coefficients
+        use read_state_mixing_coefficients_interface, only: read_state_mixing_coefficients
+        implicit none (type, external)
 
-    ! Local declarations
-    logical ::  f0int,lincr,is_restart,comp,avail
-    character(len=20) :: number_text
-    character(len=2)  :: ck
-    !
-    real(real64) :: shell_coefficients(max_orbitals)
-    real(real64) ::sc(nvmax)
-    integer :: nakinv(max_orbitals)
-    integer :: llistt(nlmax), nshl(nlmax), ninl(nlmax)
-    real(real64) :: cirot(20*nlmax*nlmax)
-    real(real64) :: evsc(10000)
-    !
-    real(real64), pointer :: scr(:), ciout(:)
-    integer :: ntest, ntestl, i, j, iblk, ncfd, nwd, kamaxd,  &
-        l, iioff, nvecsize
-    !
-    ntestl = 00
-    ntest = max(ntestg,ntestl)
-    ntest = 00
-    !
-    !   Set up data for the initial and final state case respectively
-    !
-    if (ik==1) then
-        do i = 1,nlmax
-            nshl(i) = nshlii(i)
-            ninl(i) = ninii(i)
-        end do
+        ! Local declarations
+        integer :: biorthogonal_mixing_output_unit
 
-        do i = 1,max_orbitals
-            nakinv(i) = nakinvii(i)
-        end do
+        ! Arguments
+        character(len=24), intent(in) :: name
+        integer, intent(in) :: ik, global_trace_level, inpci
 
-        do j = 1,nlmax
-            do i = 1,nlmax
-                nshlp(i,j) = nshlpii(i,j)
+        ! Local constants
+        !   Set the encoding key and its square
+        integer, parameter :: orbital_label_radix_squared = orbital_index_radix*orbital_index_radix, nvmax=100
+        real(real64), parameter :: cutoff = 1.0e-10_real64
+
+        ! Local declarations
+        !
+        integer :: nakinv(max_orbitals)
+        integer :: shell_counts(max_biorthogonal_kappa_groups), inactive_shell_counts(max_biorthogonal_kappa_groups)
+        real(real64) :: ci_rotation_matrices(20*max_biorthogonal_kappa_groups*max_biorthogonal_kappa_groups)
+        !
+        real(real64), pointer :: transfer_power_workspace(:), transformed_ci_workspace(:)
+        integer :: trace_level, local_trace_level, i, j, symmetry_block_index, cached_csf_count, cached_orbital_count, &
+                & cached_symmetry_count,  &
+            symmetry_index, ci_rotation_offset, nvecsize
+        !
+        local_trace_level = 00
+        trace_level = max(global_trace_level,local_trace_level)
+        trace_level = 00
+        !
+        !   Set up data for the initial and final state case respectively
+        !
+        if (ik==1) then
+            do i = 1,max_biorthogonal_kappa_groups
+                shell_counts(i) = initial_orbital_counts_by_group(i)
+                inactive_shell_counts(i) = initial_core_counts_by_group(i)
             end do
-        end do
 
-        do j = 1,max_orbitals
-            do i = 1,nlmax
-                nshlpp(i,j) = nshlppii(i,j)
+            do i = 1,max_orbitals
+                nakinv(i) = initial_kappa_group_by_orbital(i)
             end do
-        end do
 
-        do i = 1,20*nlmax*nlmax
-            cirot(i) = cici(i)
-        end do
-
-    else if (ik==2) then
-
-        do i = 1,nlmax
-            nshl(i) = nshlff(i)
-            ninl(i) = ninff(i)
-        end do
-
-        do i = 1,max_orbitals
-            nakinv(i) = nakinvff(i)
-        end do
-
-        do j = 1,nlmax
-            do i = 1,nlmax
-                nshlp(i,j) = nshlpff(i,j)
+            do j = 1,max_biorthogonal_kappa_groups
+                do i = 1,max_biorthogonal_kappa_groups
+                    active_orbitals_by_group(i,j) = initial_orbitals_by_group(i,j)
+                end do
             end do
-        end do
 
-        do j = 1,max_orbitals
-            do i = 1,nlmax
-                nshlpp(i,j) = nshlppff(i,j)
+            do j = 1,max_orbitals
+                do i = 1,max_biorthogonal_kappa_groups
+                    active_orbital_positions_by_group(i,j) = initial_orbital_positions_by_group(i,j)
+                end do
             end do
-        end do
 
-        do i = 1,20*nlmax*nlmax
-            cirot(i) = cfci(i)
-        end do
-    end if
-
-    rewind (biorthogonal_angular_unit)
-    do iblk = 1, nblock
-        !
-        !   Read the CI vectors
-        !
-        call read_state_mixing_coefficients(name,inpci,iblk)
-        !
-        !   Allocate memory for use in CITRAG
-        !
-        call alloc (scr, csf_count*nvec, "scr", "MCPIN")
-        call alloc (ciout, csf_count*nvec, "CIOUT", "MCPIN")
-        !
-        !   if data available on file read the datafile. Else sort the
-        !   MCP data into inegral based lists.
-        !
-        read(biorthogonal_angular_unit) ncfd,nwd,kamaxd
-        do l = 1,kamax
-
-            !************
-            !
-            !. Offset for given L in shell matrices
-            !
-            if (l==1) then
-                iioff = 1
-            else
-                iioff = iioff + nshl(l-1)** 2
-            end if
-            !  Corrected PER J
-
-            !**************
-
-            read(biorthogonal_angular_unit) nintg,ncoeff
-            if(ncoeff*nintg==0) cycle
-            !
-            !   Allocate memory. Note that in this case we can,
-            !   since the data is sorted, allocate less
-            !   memory than is done in qqsort.
-            !
-            call alloc (jann,ncoeff, "JANN", "MCPIN")
-            call alloc (jbnn,ncoeff, "JBNN", "MCPIN")
-            call alloc (intgrl,nintg, "INTGRL", "MCPIN")
-            call alloc (cnn,ncoeff, "CNN", "MCPIN")
-            call alloc (intptr,nintg, "INTPTR", "MCPIN")
-
-            do i = 1,nintg
-                read(biorthogonal_angular_unit) intgrl(i),intptr(i)
+            do i = 1,20*max_biorthogonal_kappa_groups*max_biorthogonal_kappa_groups
+                ci_rotation_matrices(i) = initial_orbital_rotation_values(i)
             end do
-            do i = 1,ncoeff
-                read(biorthogonal_angular_unit) cnn(i),jann(i),jbnn(i)
+
+        else if (ik==2) then
+
+            do i = 1,max_biorthogonal_kappa_groups
+                shell_counts(i) = final_orbital_counts_by_group(i)
+                inactive_shell_counts(i) = final_core_counts_by_group(i)
             end do
-            !*
-            !*. Offset for given L in shell matrices
-            !*
-            !        IF (L.EQ.1) THEN
-            !          IIOFF = 1
-            !        ELSE
-            !          IIOFF = IIOFF + NSHL(L-1)** 2
-            !        END IF
-            !   BUG THE OFFSET SHOULD BE BEFORE THE CYCLE STATEMENT!!
-            !
-            ! Transform for given L
-            !
-            if (nshl(l)>0)                                              &
-                &  call transform_ci_coefficients(csf_mixing_coefficients(:),csf_count,nvec,l,nshl(l),                    &
-                &              cirot(iioff),ninl(l),ntestl,ciout, scr )
-            !
-            !   Deallocate storage for this kappa.
-            !
-            call dalloc (jann, "JANN", "MCPIN")
-            call dalloc (jbnn, "JBNN", "MCPIN")
-            call dalloc (intgrl, "INTGRL", "MCPIN")
-            call dalloc (cnn, "CNN", "MCPIN")
-            call dalloc (intptr, "INTPRT", "MCPIN")
 
-        end do
+            do i = 1,max_orbitals
+                nakinv(i) = final_kappa_group_by_orbital(i)
+            end do
 
-        call dalloc (scr, "SCR", "MCPIN")
-        call dalloc (ciout, "CIOUT", "MCPIN")
-        !
-        !   Write the rotated CI vectors on file
-        !
-        if(iblk==1) then
-            j = index(name," ")
-            if (inpci==0) then
-                open (newunit=biorthogonal_mixing_output_unit,file=name(1:j-1)//".cbm",form="UNFORMATTED",  &
-                    &    status="UNKNOWN")
-            else
-                open (newunit=biorthogonal_mixing_output_unit,file=name(1:j-1)//".bm",form="UNFORMATTED",   &
-                    &    status="UNKNOWN")
-            end if
+            do j = 1,max_biorthogonal_kappa_groups
+                do i = 1,max_biorthogonal_kappa_groups
+                    active_orbitals_by_group(i,j) = final_orbitals_by_group(i,j)
+                end do
+            end do
 
-            write(biorthogonal_mixing_output_unit) "G92MIX"
-            write(biorthogonal_mixing_output_unit) electron_count,ncftot,orbital_count,nvectot,nvecsize,nblock
+            do j = 1,max_orbitals
+                do i = 1,max_biorthogonal_kappa_groups
+                    active_orbital_positions_by_group(i,j) = final_orbital_positions_by_group(i,j)
+                end do
+            end do
+
+            do i = 1,20*max_biorthogonal_kappa_groups*max_biorthogonal_kappa_groups
+                ci_rotation_matrices(i) = final_orbital_rotation_values(i)
+            end do
         end if
 
-        write(biorthogonal_mixing_output_unit) iblk,csf_count,nvec,iatjpo(1),iaspar(1)
-        write(biorthogonal_mixing_output_unit) (ivec(i),i = 1,nvec)
-        !     WRITE(31) (IATJPO(I),IASPAR(I),I = 1,NVEC)
-        write(biorthogonal_mixing_output_unit) hamiltonian_energy_shift,(shifted_eigenvalues(i),i = 1,nvec)
-        write(biorthogonal_mixing_output_unit) ((csf_mixing_coefficients(i+(j-1)*csf_count),i = 1,csf_count),j = 1,nvec)
+        rewind (biorthogonal_angular_unit)
+        do symmetry_block_index = 1, transition_block_count
+            !
+            !   Read the CI vectors
+            !
+            call read_state_mixing_coefficients(name,inpci,symmetry_block_index)
+            !
+            !   Allocate memory for use in CITRAG
+            !
+            call alloc (transfer_power_workspace, csf_count*active_level_count, "scr", "MCPIN")
+            call alloc (transformed_ci_workspace, csf_count*active_level_count, "CIOUT", "MCPIN")
+            !
+            !   if data available on file read the datafile. Else sort the
+            !   MCP data into inegral based lists.
+            !
+            read(biorthogonal_angular_unit) cached_csf_count,cached_orbital_count,cached_symmetry_count
+            do symmetry_index = 1,kappa_group_count
 
-        call dalloc (shifted_eigenvalues, "EVAL", "MCPIN")
-        call dalloc (csf_mixing_coefficients, "EVEC", "MCPIN")
-        call dalloc (ivec, "IVEC", "MCPIN")
-        call dalloc (iatjpo, "IATJPO", "MCPIN")
-        call dalloc (iaspar, "IASPAR", "MCPIN")
-    end do
-    close (biorthogonal_angular_unit)
-    !
-    !   Close the  mixing  file
-    !
-    close (mixing_input_unit)
-    close (biorthogonal_mixing_output_unit)
-    !
-    return
-end subroutine read_biorthogonal_mcp
+                !************
+                !
+                !. Offset for given L in shell matrices
+                !
+                if (symmetry_index==1) then
+                    ci_rotation_offset = 1
+                else
+                    ci_rotation_offset = ci_rotation_offset + shell_counts(symmetry_index-1)** 2
+                end if
+                !  Corrected PER J
+
+                !**************
+
+                read(biorthogonal_angular_unit) mcp_integral_count,mcp_coefficient_count
+                if(mcp_coefficient_count*mcp_integral_count==0) cycle
+                !
+                !   Allocate memory. Note that in this case we can,
+                !   since the data is sorted, allocate less
+                !   memory than is done in qqsort.
+                !
+                call alloc (mcp_bra_csf_indices,mcp_coefficient_count, "JANN", "MCPIN")
+                call alloc (mcp_ket_csf_indices,mcp_coefficient_count, "JBNN", "MCPIN")
+                call alloc (mcp_packed_orbital_pairs,mcp_integral_count, "INTGRL", "MCPIN")
+                call alloc (mcp_coefficient_values,mcp_coefficient_count, "CNN", "MCPIN")
+                call alloc (mcp_coefficient_end_offsets,mcp_integral_count, "INTPTR", "MCPIN")
+
+                do i = 1,mcp_integral_count
+                    read(biorthogonal_angular_unit) mcp_packed_orbital_pairs(i),mcp_coefficient_end_offsets(i)
+                end do
+                do i = 1,mcp_coefficient_count
+                    read(biorthogonal_angular_unit) mcp_coefficient_values(i),mcp_bra_csf_indices(i),mcp_ket_csf_indices(i)
+                end do
+                !*
+                !*. Offset for given L in shell matrices
+                !*
+                !        IF (L.EQ.1) THEN
+                !          IIOFF = 1
+                !        ELSE
+                !          IIOFF = IIOFF + NSHL(L-1)** 2
+                !        END IF
+                !   BUG THE OFFSET SHOULD BE BEFORE THE CYCLE STATEMENT!!
+                !
+                ! Transform for given L
+                !
+                if (shell_counts(symmetry_index) > 0) &
+                    call transform_ci_coefficients(csf_mixing_coefficients(:), csf_count, active_level_count, symmetry_index, &
+                        shell_counts(symmetry_index), ci_rotation_matrices(ci_rotation_offset), &
+                & inactive_shell_counts(symmetry_index), local_trace_level, transformed_ci_workspace, transfer_power_workspace)
+                !
+                !   Deallocate storage for this kappa.
+                !
+                call dalloc (mcp_bra_csf_indices, "JANN", "MCPIN")
+                call dalloc (mcp_ket_csf_indices, "JBNN", "MCPIN")
+                call dalloc (mcp_packed_orbital_pairs, "INTGRL", "MCPIN")
+                call dalloc (mcp_coefficient_values, "CNN", "MCPIN")
+                call dalloc (mcp_coefficient_end_offsets, "INTPRT", "MCPIN")
+
+            end do
+
+            call dalloc (transfer_power_workspace, "SCR", "MCPIN")
+            call dalloc (transformed_ci_workspace, "CIOUT", "MCPIN")
+            !
+            !   Write the rotated CI vectors on file
+            !
+            if(symmetry_block_index==1) then
+                j = index(name," ")
+                if (inpci==0) then
+                    open (newunit=biorthogonal_mixing_output_unit,file=name(1:j-1)//".cbm",form="UNFORMATTED",  &
+                        &    status="UNKNOWN")
+                else
+                    open (newunit=biorthogonal_mixing_output_unit,file=name(1:j-1)//".bm",form="UNFORMATTED",   &
+                        &    status="UNKNOWN")
+                end if
+
+                write(biorthogonal_mixing_output_unit) "G92MIX"
+                write(biorthogonal_mixing_output_unit) electron_count,mixing_file_csf_count,orbital_count, &
+                    mixing_file_level_count,nvecsize,transition_block_count
+            end if
+
+            write(biorthogonal_mixing_output_unit) symmetry_block_index,csf_count,active_level_count,level_two_j_plus_one(1), &
+                & level_parity_signs(1)
+            write(biorthogonal_mixing_output_unit) (active_level_indices(i),i = 1,active_level_count)
+            !     WRITE(31) (IATJPO(I),IASPAR(I),I = 1,NVEC)
+            write(biorthogonal_mixing_output_unit) hamiltonian_energy_shift,(shifted_eigenvalues(i),i = 1,active_level_count)
+            write(biorthogonal_mixing_output_unit) ((csf_mixing_coefficients(i+(j-1)*csf_count),i = 1,csf_count),j = 1, &
+                active_level_count)
+
+            call dalloc (shifted_eigenvalues, "EVAL", "MCPIN")
+            call dalloc (csf_mixing_coefficients, "EVEC", "MCPIN")
+            call dalloc (active_level_indices, "IVEC", "MCPIN")
+            call dalloc (level_two_j_plus_one, "IATJPO", "MCPIN")
+            call dalloc (level_parity_signs, "IASPAR", "MCPIN")
+        end do
+        close (biorthogonal_angular_unit)
+        !
+        !   Close the  mixing  file
+        !
+        close (mixing_input_unit)
+        close (biorthogonal_mixing_output_unit)
+        !
+        return
+    end subroutine read_biorthogonal_mcp
+end module read_biorthogonal_mcp_interface

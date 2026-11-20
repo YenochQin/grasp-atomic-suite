@@ -5,5 +5,5 @@ module hamiltonian_symmetry_blocks
     ! Module state
     integer :: symmetry_block_count
     integer, pointer :: csf_counts_by_block(:) => null()
-    integer, pointer :: eigenvector_counts_by_block(:), ncmaxblk(:)
+    integer, pointer :: eigenvector_counts_by_block(:), highest_selected_level_by_block(:)
 end module hamiltonian_symmetry_blocks

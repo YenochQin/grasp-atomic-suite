@@ -12,12 +12,13 @@ module radial_wavefunctions
     ! from the sampled radial components, which vanish at the origin.
     integer :: orbital_last_grid_index(max_orbitals)
     real(real64) :: orbital_origin_parameters(max_orbitals)
-    ! The ff and ii arrays retain separate final and initial orbitals for transitions.
-    integer :: mfff(max_orbitals)
-    real(real64) :: pzff(max_orbitals)
-    integer :: mfii(max_orbitals)
-    real(real64) :: pzii(max_orbitals)
+    ! Retain separate initial and final orbitals for transition calculations.
+    integer :: final_orbital_last_grid_index(max_orbitals)
+    real(real64) :: final_orbital_origin_parameters(max_orbitals)
+    integer :: initial_orbital_last_grid_index(max_orbitals)
+    real(real64) :: initial_orbital_origin_parameters(max_orbitals)
     ! Radial components are indexed by grid point, then by orbital.
     real(real64), pointer :: radial_large_components(:, :),radial_small_components(:, :)
-    real(real64), pointer :: pfff(:, :),qfff(:, :),pfii(:, :),qfii(:, :)
+    real(real64), pointer :: final_radial_large_components(:, :),final_radial_small_components(:, :), &
+        initial_radial_large_components(:, :),initial_radial_small_components(:, :)
 end module radial_wavefunctions

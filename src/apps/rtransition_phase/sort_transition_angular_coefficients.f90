@@ -1,308 +1,331 @@
-!***********************************************************************
-!                                                                      *
-subroutine sort_transition_angular_coefficients(name, coefficient_scratch_unit, transition_angular_unit, print_details, &
-    & transition_type_index, iblki, iblkf)
-    ! Module dependencies
-    use, intrinsic :: iso_fortran_env, only: iostat_end, output_unit
-    use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-    !                                                                      *
-    !   Routine to sort angular coefficients into list based on integral   *
-    !   labels rather than CSF.  A tree sort is used. To save space, the   *
-    !   CSF pair labels and coefficients  are not read into arrays until   *
-    !   the sorting has been done.                                         *
-    !                                                                      *
-    !   Call(s) to: [OSCL92]: ALCLLA, ALCNMA.                              *
-    !                                                                      *
-    !   Original author(s) unknown. Modifications for dynamic storage by   *
-    !   Farid A. Parpia.                                                   *
-    !                                                                      *
-    !                                           Last update: 28 Dec 1992   *
-    !                                                                      *
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use grasp_parameters,   only: orbital_index_radix
-    use array_memory_management, only: alloc, dalloc, ralloc
-    use calculation_input_defaults, only: inpci, ndef, ndump
-    use orbital_csf_basis, only: orbital_count, orbital_principal_n, orbital_symmetry_labels
-    use transition_matrix_workspace, only: nkp, kp
-
-    ! Procedure interfaces
-    use resize_transition_label_arrays_interface, only: resize_transition_label_arrays
-    use resize_transition_coefficient_arrays_interface, only: resize_transition_coefficient_arrays
+module sort_transition_angular_coefficients_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(in) :: coefficient_scratch_unit
-    integer, intent(inout) :: transition_angular_unit
-    integer  :: transition_type_index
-    integer, intent(in) :: iblki
-    integer, intent(in) :: iblkf
-    logical, intent(in) :: print_details
-    character, intent(in) :: name(2)*24
+    ! Module interface
+    private
+    public :: sort_transition_angular_coefficients
+contains
 
-    ! Local constants
-    integer, parameter :: nca = 65536
-    integer, parameter :: orbital_label_radix = orbital_index_radix
+    !***********************************************************************
+    !                                                                      *
+    subroutine sort_transition_angular_coefficients(name, coefficient_scratch_unit, transition_angular_unit, print_details, &
+        & transition_type_index, initial_block_index, final_block_index)
+        ! Module dependencies
+        use, intrinsic :: iso_fortran_env, only: iostat_end, output_unit
+        use debug_output_settings, only: angular_debug_unit, ensure_debug_output
+        !                                                                      *
+        !   Routine to sort angular coefficients into list based on integral   *
+        !   labels rather than CSF.  A tree sort is used. To save space, the   *
+        !   CSF pair labels and coefficients  are not read into arrays until   *
+        !   the sorting has been done.                                         *
+        !                                                                      *
+        !   Call(s) to: [OSCL92]: ALCLLA, ALCNMA.                              *
+        !                                                                      *
+        !   Original author(s) unknown. Modifications for dynamic storage by   *
+        !   Farid A. Parpia.                                                   *
+        !                                                                      *
+        !                                           Last update: 28 Dec 1992   *
+        !                                                                      *
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use grasp_parameters,   only: orbital_index_radix
+        use array_memory_management, only: alloc, dalloc, ralloc
+        use orbital_csf_basis, only: orbital_count, orbital_principal_n, orbital_symmetry_labels
+        use transition_matrix_workspace, only: requested_multipole_count, requested_multipole_codes
 
-    ! Local declarations
-    integer, pointer :: ilab(:), iright(:), ileft(:), ibeg(:), iptr(:), &
-        ilast(:), iblint(:), iptcsf(:), lblint(:), jlabl(:), isldr(:), isldr1(:)
-    real(real64), pointer :: xsldr(:), xl(:)
-    integer :: nmcp, nint, nlabel, lldim, nmdim, ir, is, ni, i, m, j, &
-        icount, jlab, k, l, imcp, j1, j2, mlr, mup, ints, ia, ib
-    integer :: io_status
-    character(len=256) :: io_message
-    logical :: first
-    character(len=2) :: s(-9:9)
-    !-----------------------------------------------
-    !
-    !
-    !     POINTER (PIBEG,IBEG(1)),(PILAB,ILAB(1)),(PILAST,ILAST(1)),
-    !    :        (PILEFT,ILEFT(1)),(PIPTCS,IPTCSF(1)),(PIRIGH,IRIGHT(1)),
-    !    :        (PLBLIN,LBLINT(1))
-    !     POINTER (PIPTR,IPTR(1))
-    !
-    !
-    s((-9)) = "-9"
-    s((-8)) = "-8"
-    s((-7)) = "-7"
-    s((-6)) = "-6"
-    s((-5)) = "-5"
-    s((-4)) = "-4"
-    s((-3)) = "-3"
-    s((-2)) = "-2"
-    s((-1)) = "-1"
-    s(0) = "+0"
-    s(1) = "+1"
-    s(2) = "+2"
-    s(3) = "+3"
-    s(4) = "+4"
-    s(5) = "+5"
-    s(6) = "+6"
-    s(7) = "+7"
-    s(8) = "+8"
-    s(9) = "+9"
-    !
-    !   Position file at beginning of list of integrals
-    !
-    rewind (coefficient_scratch_unit)
-    !
-    !   Initialize
-    !
-    first = .true.
-    nmcp = 0
-    nint = 0
-    !
-    !   Initial allocation of storage to local arrays
-    !
-    nlabel = 1
-    call alloc (jlabl, nlabel, "JLABL", "TRSORT")
-    call alloc (xl, nlabel, "XL", "TRSORT")
-    !
-    call resize_transition_label_arrays (ibeg, ilab, ilast, ileft, iptcsf, iright, lblint, &
-        lldim, 1)
-    call resize_transition_coefficient_arrays (iptr, isldr, isldr1, xsldr, nmdim, 1)
-    !
-    !   Now the rest of the elements
-    !
-    m = 0
-    do
-        read (coefficient_scratch_unit, iostat=io_status, iomsg=io_message) ir, is, ni
-        if (io_status == iostat_end) exit
-        if (io_status /= 0) error stop trim(io_message)
-        if (ni > nlabel) then
-            call ralloc (jlabl, ni, "JLABL", "TRSORT")
-            call ralloc (xl, ni, "XL", "TRSORT")
-            nlabel = ni
-        end if
-        read (coefficient_scratch_unit, iostat=io_status) (jlabl(i),xl(i),i=1,ni)
-        if (io_status /= 0) then
-            write (output_unit, *) "TRSORT: Error reading CSF-based file."
-            stop
-        end if
-        if (ir==0 .or. is==0 .or. ni==0) cycle
+        ! Procedure interfaces
+        use resize_transition_label_arrays_interface, only: resize_transition_label_arrays
+        use resize_transition_coefficient_arrays_interface, only: resize_transition_coefficient_arrays
+        implicit none (type, external)
 
-        icount = 0
-        if (first) then
-            ! Find the first nonzero element and initialize the tree.
-            do icount = 1, ni
-                if (jlabl(icount) /= 0) exit
-            end do
-            if (icount > ni) cycle
-            ilab(1) = jlabl(icount)
-            iright(1) = 0
-            ileft(1) = 0
-            ibeg(1) = 1
-            iptr(1) = 0
-            ilast(1) = 0
-            m = 1
-            j = 1
-            first = .false.
-        end if
+        ! Arguments
+        integer, intent(in) :: coefficient_scratch_unit
+        integer, intent(inout) :: transition_angular_unit
+        integer  :: transition_type_index
+        integer, intent(in) :: initial_block_index
+        integer, intent(in) :: final_block_index
+        logical, intent(in) :: print_details
+        character, intent(in) :: name(2)*24
 
-        ! Add each remaining nonzero element to the integral tree.
-        do icount = icount + 1, ni
-            jlab = jlabl(icount)
-            if (jlab == 0) cycle
+        ! Local constants
+        integer, parameter :: nca = 65536
 
-            m = m + 1
-            if (m > nmdim) call resize_transition_coefficient_arrays (iptr, isldr, isldr1, xsldr, nmdim, 2)
-            i = 1
-            do while (jlab /= ilab(i))
-                if (jlab > ilab(i)) then
-                    k = ileft(i)
-                else
-                    k = iright(i)
-                end if
-                if (k == 0) exit
-                i = k
-            end do
-
-            if (jlab == ilab(i)) then
-                ! Append this CSF pair to the existing integral.
-                l = ibeg(i)
-                do while (iptr(l) /= 0)
-                    l = iptr(l)
-                end do
-                iptr(l) = m
-            else
-                j = j + 1
-                if (j > lldim) call resize_transition_label_arrays (ibeg, ilab, ilast, ileft, iptcsf, &
-                    iright, lblint, lldim, 2)
-                if (jlab > ilab(i)) then
-                    ileft(i) = j
-                else
-                    iright(i) = j
-                end if
-                ilast(j) = i
-                iright(j) = 0
-                ileft(j) = 0
-                ibeg(j) = m
-                ilab(j) = jlab
-            end if
-            iptr(m) = 0
-        end do
-    end do
-
-    if (.not. first) then
-        ! Unpack the tree in ascending order of integral label.
-        nmcp = m
-        nint = j
-        l = 0
-        m = 0
-        i = 1
-        do while (iright(i) /= 0)
-            i = iright(i)
-        end do
-        do while (i /= 0)
-            if (ilab(i) == 0) then
-                i = ilast(i)
-                cycle
-            end if
-            l = l + 1
-            lblint(l) = ilab(i)
-            k = ibeg(i)
-            do while (k /= 0)
-                m = m + 1
-                isldr(m) = k
-                k = iptr(k)
-            end do
-            iptcsf(l) = m
-            ilab(i) = 0
-
-            if (ileft(i) == 0) then
-                i = ilast(i)
-            else
-                i = ileft(i)
-                do while (iright(i) /= 0)
-                    i = iright(i)
-                end do
-            end if
-        end do
-
-        ! Invert the CSF/coefficient pointers to obtain their sorted positions.
-        do i = 1, nmcp
-            k = isldr(i)
-            iptr(k) = i
-        end do
-
-        ! Read the CSF pairs and coefficients into the sorted list.
-        imcp = 0
+        ! Local declarations
+        integer, pointer :: node_integral_labels(:), right_child_nodes(:), left_child_nodes(:), &
+            & first_coefficient_indices(:), coefficient_sort_links(:), parent_nodes(:), coefficient_end_offsets(:), &
+            & sorted_integral_labels(:), &
+            record_integral_labels(:), initial_csf_index_workspace(:), final_csf_indices(:)
+        real(real64), pointer :: sorted_angular_coefficients(:), record_coefficients(:)
+        integer :: total_coefficient_count, distinct_integral_count, record_capacity, label_capacity, coefficient_capacity, &
+            & initial_csf_index, final_csf_index, record_coefficient_count, i, m, j, &
+            record_coefficient_index, packed_integral_label, k, l, original_coefficient_index, initial_name_end, &
+                & final_name_end, first_coefficient_index, last_coefficient_index, integral_coefficient_count, ia, ib
+        integer :: io_status
+        character(len=256) :: io_message
+        logical :: first
+        character(len=2) :: s(-9:9)
+        !-----------------------------------------------
+        !
+        !
+        !     POINTER (PIBEG,IBEG(1)),(PILAB,ILAB(1)),(PILAST,ILAST(1)),
+        !    :        (PILEFT,ILEFT(1)),(PIPTCS,IPTCSF(1)),(PIRIGH,IRIGHT(1)),
+        !    :        (PLBLIN,LBLINT(1))
+        !     POINTER (PIPTR,IPTR(1))
+        !
+        !
+        s((-9)) = "-9"
+        s((-8)) = "-8"
+        s((-7)) = "-7"
+        s((-6)) = "-6"
+        s((-5)) = "-5"
+        s((-4)) = "-4"
+        s((-3)) = "-3"
+        s((-2)) = "-2"
+        s((-1)) = "-1"
+        s(0) = "+0"
+        s(1) = "+1"
+        s(2) = "+2"
+        s(3) = "+3"
+        s(4) = "+4"
+        s(5) = "+5"
+        s(6) = "+6"
+        s(7) = "+7"
+        s(8) = "+8"
+        s(9) = "+9"
+        !
+        !   Position file at beginning of list of integrals
+        !
         rewind (coefficient_scratch_unit)
+        !
+        !   Initialize
+        !
+        first = .true.
+        total_coefficient_count = 0
+        distinct_integral_count = 0
+        !
+        !   Initial allocation of storage to local arrays
+        !
+        record_capacity = 1
+        call alloc (record_integral_labels, record_capacity, "JLABL", "TRSORT")
+        call alloc (record_coefficients, record_capacity, "XL", "TRSORT")
+        !
+        call resize_transition_label_arrays (first_coefficient_indices, node_integral_labels, parent_nodes, &
+            & left_child_nodes, coefficient_end_offsets, right_child_nodes, sorted_integral_labels, &
+            label_capacity, 1)
+        call resize_transition_coefficient_arrays (coefficient_sort_links, initial_csf_index_workspace, final_csf_indices, &
+            & sorted_angular_coefficients, coefficient_capacity, 1)
+        !
+        !   Now the rest of the elements
+        !
+        m = 0
         do
-            read (coefficient_scratch_unit, iostat=io_status, iomsg=io_message) ir, is, ni
+            read (coefficient_scratch_unit, iostat=io_status, iomsg=io_message) initial_csf_index, final_csf_index, &
+                & record_coefficient_count
             if (io_status == iostat_end) exit
             if (io_status /= 0) error stop trim(io_message)
-            if (ir==0 .or. is==0 .or. ni==0) cycle
-            read (coefficient_scratch_unit) (jlabl(i),xl(i),i=1,ni)
-            do i = 1, ni
-                if (jlabl(i) == 0) cycle
-                imcp = imcp + 1
-                k = iptr(imcp)
-                isldr(k) = ir
-                isldr1(k) = is
-                !              ISLDR(K) = IR*NCA+IS
-                xsldr(k) = xl(i)
+            if (record_coefficient_count > record_capacity) then
+                call ralloc (record_integral_labels, record_coefficient_count, "JLABL", "TRSORT")
+                call ralloc (record_coefficients, record_coefficient_count, "XL", "TRSORT")
+                record_capacity = record_coefficient_count
+            end if
+            read (coefficient_scratch_unit, iostat=io_status) (record_integral_labels(i),record_coefficients(i),i=1, &
+                & record_coefficient_count)
+            if (io_status /= 0) then
+                write (output_unit, *) "TRSORT: Error reading CSF-based file."
+                stop
+            end if
+            if (initial_csf_index==0 .or. final_csf_index==0 .or. record_coefficient_count==0) cycle
+
+            record_coefficient_index = 0
+            if (first) then
+                ! Find the first nonzero element and initialize the tree.
+                do record_coefficient_index = 1, record_coefficient_count
+                    if (record_integral_labels(record_coefficient_index) /= 0) exit
+                end do
+                if (record_coefficient_index > record_coefficient_count) cycle
+                node_integral_labels(1) = record_integral_labels(record_coefficient_index)
+                right_child_nodes(1) = 0
+                left_child_nodes(1) = 0
+                first_coefficient_indices(1) = 1
+                coefficient_sort_links(1) = 0
+                parent_nodes(1) = 0
+                m = 1
+                j = 1
+                first = .false.
+            end if
+
+            ! Add each remaining nonzero element to the integral tree.
+            do record_coefficient_index = record_coefficient_index + 1, record_coefficient_count
+                packed_integral_label = record_integral_labels(record_coefficient_index)
+                if (packed_integral_label == 0) cycle
+
+                m = m + 1
+                if (m > coefficient_capacity) call resize_transition_coefficient_arrays (coefficient_sort_links, &
+                    & initial_csf_index_workspace, final_csf_indices, sorted_angular_coefficients, coefficient_capacity, 2)
+                i = 1
+                do while (packed_integral_label /= node_integral_labels(i))
+                    if (packed_integral_label > node_integral_labels(i)) then
+                        k = left_child_nodes(i)
+                    else
+                        k = right_child_nodes(i)
+                    end if
+                    if (k == 0) exit
+                    i = k
+                end do
+
+                if (packed_integral_label == node_integral_labels(i)) then
+                    ! Append this CSF pair to the existing integral.
+                    l = first_coefficient_indices(i)
+                    do while (coefficient_sort_links(l) /= 0)
+                        l = coefficient_sort_links(l)
+                    end do
+                    coefficient_sort_links(l) = m
+                else
+                    j = j + 1
+                    if (j > label_capacity) call resize_transition_label_arrays (first_coefficient_indices, &
+                        & node_integral_labels, parent_nodes, left_child_nodes, coefficient_end_offsets, &
+                        right_child_nodes, sorted_integral_labels, label_capacity, 2)
+                    if (packed_integral_label > node_integral_labels(i)) then
+                        left_child_nodes(i) = j
+                    else
+                        right_child_nodes(i) = j
+                    end if
+                    parent_nodes(j) = i
+                    right_child_nodes(j) = 0
+                    left_child_nodes(j) = 0
+                    first_coefficient_indices(j) = m
+                    node_integral_labels(j) = packed_integral_label
+                end if
+                coefficient_sort_links(m) = 0
             end do
         end do
-    end if
-    rewind (coefficient_scratch_unit)
-    !
-    !  If first set of data open the file and print
-    !  some data to later be able to identify the file
-    !
-    if (iblki==1 .and. iblkf==1) then
-        j1 = index(name(1)," ")
-        j2 = index(name(2)," ")
-        open(newunit=transition_angular_unit,file=name(1)(1:j1-1)//"."//name(2)(1:j2-1)//"."//s(&
-            kp(transition_type_index))//"T", status="UNKNOWN", form="UNFORMATTED", position=&
-            "asis")
-    end if
-    write (transition_angular_unit) iblki, iblkf, orbital_count, nkp
-    write (transition_angular_unit) nint
-    if (nmcp /= 0) then
-        if (print_details) then
-            call ensure_debug_output()
-            write (angular_debug_unit, '(/,/,"  k"/," d  (rs)  Coefficients:"/,"  ab"/,/,/,&
-                &"    a     b          r         s  Coefficient"/)')
-        end if
-        mlr = 1
-        do i = 1, nint
-            mup = iptcsf(i)
-            ints = mup - mlr + 1
-            write (transition_angular_unit) lblint(i), ints
-            if (print_details) then
-                ia = lblint(i)/orbital_label_radix
-                ib = mod(lblint(i),orbital_label_radix)
-                call ensure_debug_output()
-                write (angular_debug_unit, '(2(2x,i2,a2))') &
-                    orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
-                    & orbital_symmetry_labels(ib)
-            end if
-            write (transition_angular_unit) (isldr(m),isldr1(m),xsldr(m),m=mlr,mup)
-            if (print_details) then
-                do m = mlr, mup
-                    !                  IS = MOD (ISLDR(M),NCA)
-                    is = isldr1(m)
-                    !                 IR = ISLDR(M)/NCA
-                    ir = isldr(m)
-                    call ensure_debug_output()
-                    write (angular_debug_unit, '(14x,1i6,2x,1i6,2x,1p,1d22.15)') ir, is, xsldr(m)
+
+        if (.not. first) then
+            ! Unpack the tree in ascending order of integral label.
+            total_coefficient_count = m
+            distinct_integral_count = j
+            l = 0
+            m = 0
+            i = 1
+            do while (right_child_nodes(i) /= 0)
+                i = right_child_nodes(i)
+            end do
+            do while (i /= 0)
+                if (node_integral_labels(i) == 0) then
+                    i = parent_nodes(i)
+                    cycle
+                end if
+                l = l + 1
+                sorted_integral_labels(l) = node_integral_labels(i)
+                k = first_coefficient_indices(i)
+                do while (k /= 0)
+                    m = m + 1
+                    initial_csf_index_workspace(m) = k
+                    k = coefficient_sort_links(k)
                 end do
-            end if
-            mlr = mup + 1
-        end do
+                coefficient_end_offsets(l) = m
+                node_integral_labels(i) = 0
+
+                if (left_child_nodes(i) == 0) then
+                    i = parent_nodes(i)
+                else
+                    i = left_child_nodes(i)
+                    do while (right_child_nodes(i) /= 0)
+                        i = right_child_nodes(i)
+                    end do
+                end if
+            end do
+
+            ! Invert the CSF/coefficient pointers to obtain their sorted positions.
+            do i = 1, total_coefficient_count
+                k = initial_csf_index_workspace(i)
+                coefficient_sort_links(k) = i
+            end do
+
+            ! Read the CSF pairs and coefficients into the sorted list.
+            original_coefficient_index = 0
+            rewind (coefficient_scratch_unit)
+            do
+                read (coefficient_scratch_unit, iostat=io_status, iomsg=io_message) initial_csf_index, final_csf_index, &
+                    & record_coefficient_count
+                if (io_status == iostat_end) exit
+                if (io_status /= 0) error stop trim(io_message)
+                if (initial_csf_index==0 .or. final_csf_index==0 .or. record_coefficient_count==0) cycle
+                read (coefficient_scratch_unit) (record_integral_labels(i),record_coefficients(i),i=1,record_coefficient_count)
+                do i = 1, record_coefficient_count
+                    if (record_integral_labels(i) == 0) cycle
+                    original_coefficient_index = original_coefficient_index + 1
+                    k = coefficient_sort_links(original_coefficient_index)
+                    initial_csf_index_workspace(k) = initial_csf_index
+                    final_csf_indices(k) = final_csf_index
+                    !              ISLDR(K) = IR*NCA+IS
+                    sorted_angular_coefficients(k) = record_coefficients(i)
+                end do
+            end do
+        end if
+        rewind (coefficient_scratch_unit)
         !
-    end if
-    !
-    !   Deallocate storage for local arrays
-    !
-    call dalloc (jlabl, "JLABJ", "TRSORT")
-    call dalloc (xl, "XL", "TRSORT")
-    call resize_transition_label_arrays (ibeg, ilab, ilast, ileft, iptcsf, iright, lblint, &
-        lldim, 3)
-    call resize_transition_coefficient_arrays (iptr, isldr, isldr1, xsldr, nmdim, 3)
-    !
-    return
-    !
-end subroutine sort_transition_angular_coefficients
+        !  If first set of data open the file and print
+        !  some data to later be able to identify the file
+        !
+        if (initial_block_index==1 .and. final_block_index==1) then
+            initial_name_end = index(name(1)," ")
+            final_name_end = index(name(2)," ")
+            open(newunit=transition_angular_unit,file=name(1)(1:initial_name_end-1)//"."//name(2)(1:final_name_end-1)//"."//s(&
+                requested_multipole_codes(transition_type_index))//"T", status="UNKNOWN", form="UNFORMATTED", position=&
+                "asis")
+        end if
+        write (transition_angular_unit) initial_block_index, final_block_index, orbital_count, requested_multipole_count
+        write (transition_angular_unit) distinct_integral_count
+        if (total_coefficient_count /= 0) then
+            if (print_details) then
+                call ensure_debug_output()
+                write (angular_debug_unit, '(/,/,"  k"/," d  (rs)  Coefficients:"/,"  ab"/,/,/,&
+                    &"    a     b          r         s  Coefficient"/)')
+            end if
+            first_coefficient_index = 1
+            do i = 1, distinct_integral_count
+                last_coefficient_index = coefficient_end_offsets(i)
+                integral_coefficient_count = last_coefficient_index - first_coefficient_index + 1
+                write (transition_angular_unit) sorted_integral_labels(i), integral_coefficient_count
+                if (print_details) then
+                    ia = sorted_integral_labels(i)/orbital_index_radix
+                    ib = mod(sorted_integral_labels(i),orbital_index_radix)
+                    call ensure_debug_output()
+                    write (angular_debug_unit, '(2(2x,i2,a2))') &
+                        orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
+                        & orbital_symmetry_labels(ib)
+                end if
+                write (transition_angular_unit) &
+                    & (initial_csf_index_workspace(m),final_csf_indices(m),sorted_angular_coefficients(m),m= &
+                        & first_coefficient_index,last_coefficient_index)
+                if (print_details) then
+                    do m = first_coefficient_index, last_coefficient_index
+                        !                  IS = MOD (ISLDR(M),NCA)
+                        final_csf_index = final_csf_indices(m)
+                        !                 IR = ISLDR(M)/NCA
+                        initial_csf_index = initial_csf_index_workspace(m)
+                        call ensure_debug_output()
+                        write (angular_debug_unit, '(14x,1i6,2x,1i6,2x,1p,1d22.15)') initial_csf_index, final_csf_index, &
+                            & sorted_angular_coefficients(m)
+                    end do
+                end if
+                first_coefficient_index = last_coefficient_index + 1
+            end do
+            !
+        end if
+        !
+        !   Deallocate storage for local arrays
+        !
+        call dalloc (record_integral_labels, "JLABJ", "TRSORT")
+        call dalloc (record_coefficients, "XL", "TRSORT")
+        call resize_transition_label_arrays (first_coefficient_indices, node_integral_labels, parent_nodes, &
+            & left_child_nodes, coefficient_end_offsets, right_child_nodes, sorted_integral_labels, &
+            label_capacity, 3)
+        call resize_transition_coefficient_arrays (coefficient_sort_links, initial_csf_index_workspace, final_csf_indices, &
+            & sorted_angular_coefficients, coefficient_capacity, 3)
+        !
+        return
+        !
+    end subroutine sort_transition_angular_coefficients
+end module sort_transition_angular_coefficients_interface

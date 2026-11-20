@@ -1,48 +1,57 @@
-!***********************************************************************
-subroutine open_mcp_outputs(mpi_rank, mpi_process_count, core_subshell_count, block_labels, filehead)
-    ! Module dependencies
-    use mcp_generation_options, only: mcp_output_units
-    !
-    ! A wrapper for setmcp/getinf. setmcp/getinf are then shared by serial
-    ! and MPI programs.
-    !
-    !   Written by Xinghong He                Last revision: 30 Jun 1998
-    !
-    !***********************************************************************
-    use atomic_calculation_state, only: electron_count
-    use csf_block_cutoffs, only: iccut, iccutblk
-    use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
-    use orbital_csf_basis, only: csf_count, orbital_count
-
-    ! Procedure interfaces
-    use connect_mcp_files_interface, only: connect_mcp_files
-    use read_calculation_options_interface, only: read_calculation_options
+module open_mcp_outputs_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(in) :: mpi_rank
-    integer  :: mpi_process_count
-    integer  :: core_subshell_count
-    character  :: filehead*(*)
-    character  :: block_labels(*)*8
+    ! Module interface
+    private
+    public :: open_mcp_outputs
+contains
 
-    ! Local declarations
-    integer :: k
+    !***********************************************************************
+    subroutine open_mcp_outputs(mpi_rank, mpi_process_count, core_subshell_count, block_labels, filehead)
+        ! Module dependencies
+        use mcp_generation_options, only: mcp_output_units
+        !
+        ! A wrapper for setmcp/getinf. setmcp/getinf are then shared by serial
+        ! and MPI programs.
+        !
+        !   Written by Xinghong He                Last revision: 30 Jun 1998
+        !
+        !***********************************************************************
+        use atomic_calculation_state, only: electron_count
+        use csf_block_cutoffs, only: active_csf_cutoffs
+        use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
+        use orbital_csf_basis, only: csf_count, orbital_count
 
-    call connect_mcp_files (mpi_rank, mpi_process_count, core_subshell_count, block_labels, filehead)
+        ! Procedure interfaces
+        use connect_mcp_files_interface, only: connect_mcp_files
+        use read_calculation_options_interface, only: read_calculation_options
+        implicit none (type, external)
 
-    ! DIAG, ICCUTblk, LFORDR are set in GETINF
+        ! Arguments
+        integer, intent(in) :: mpi_rank
+        integer  :: mpi_process_count
+        integer  :: core_subshell_count
+        character  :: filehead*(*)
+        character  :: block_labels(*)*8
 
-    if (mpi_rank == 0) call read_calculation_options
+        ! Local declarations
+        integer :: k
 
-    do k = 30, 32 + max_coulomb_multipole_rank
-        write (mcp_output_units(k)) electron_count, csf_count, orbital_count
-        write (mcp_output_units(k)) diagonal_only, iccut(1), use_first_order_restriction
-    end do
+        call connect_mcp_files (mpi_rank, mpi_process_count, core_subshell_count, block_labels, filehead)
 
-    do k = 30, 32 + max_coulomb_multipole_rank
-        close(mcp_output_units(k))
-    end do
+        ! DIAG, ICCUTblk, LFORDR are set in GETINF
 
-    return
-end subroutine open_mcp_outputs
+        if (mpi_rank == 0) call read_calculation_options
+
+        do k = 30, 32 + max_coulomb_multipole_rank
+            write (mcp_output_units(k)) electron_count, csf_count, orbital_count
+            write (mcp_output_units(k)) diagonal_only, active_csf_cutoffs(1), use_first_order_restriction
+        end do
+
+        do k = 30, 32 + max_coulomb_multipole_rank
+            close(mcp_output_units(k))
+        end do
+
+        return
+    end subroutine open_mcp_outputs
+end module open_mcp_outputs_interface

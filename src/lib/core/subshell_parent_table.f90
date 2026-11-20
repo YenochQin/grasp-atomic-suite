@@ -4,11 +4,11 @@ module subshell_parent_table
 
     ! Module interface
     private
-    public :: ltab
+    public :: lookup_subshell_parents
 contains
-    subroutine ltab(orbital_indices, occupations, subshell_capacities, parent_table_rows)
+    subroutine lookup_subshell_parents(orbital_indices, occupations, subshell_capacities, parent_table_rows)
         ! Module dependencies
-        use subshell_term_table, only: itab, jtab, nrows, ntab
+        use subshell_term_table, only: nrows
         implicit none (type, external)
 
         ! Arguments
@@ -47,5 +47,5 @@ contains
         end do
         return
         return
-    end subroutine ltab
+    end subroutine lookup_subshell_parents
 end module subshell_parent_table

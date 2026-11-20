@@ -4,14 +4,14 @@ module one_electron_scalar_recoupling_selection
 
     ! Module interface
     private
-    public :: recoonescalar
+    public :: select_one_electron_scalar_recoupling
 contains
-    subroutine recoonescalar(active_shell_count,first_shell_position,second_shell_position,third_shell_position, &
+    subroutine select_one_electron_scalar_recoupling(active_shell_count,first_shell_position,second_shell_position, &
+        & third_shell_position, &
         fourth_shell_position,interaction_case,coupling_allowed)
         ! Module dependencies
-        use csf_pair_angular_state,          only: peel_orbital_count => npeel, peel_orbital_indices => jlist, &
-            bra_intermediate_couplings => jjc1, ket_intermediate_couplings => jjc2, &
-            bra_subshell_quantum_codes => jjq1, ket_subshell_quantum_codes => jjq2
+        use csf_pair_angular_state,          only: peel_orbital_count, peel_orbital_indices, bra_intermediate_couplings, &
+            ket_intermediate_couplings, bra_subshell_quantum_codes, ket_subshell_quantum_codes
         implicit none (type, external)
 
         ! Arguments
@@ -71,5 +71,5 @@ contains
             end do
         end do
         return
-    end subroutine recoonescalar
+    end subroutine select_one_electron_scalar_recoupling
 end module one_electron_scalar_recoupling_selection

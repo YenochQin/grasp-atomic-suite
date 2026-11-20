@@ -4,11 +4,11 @@ module file_open
 
     ! Module interface
     private
-    public :: openfl
+    public :: open_calculation_file
 contains
-    subroutine openfl(file_unit, file_path, record_format, requested_status, open_status)
+    subroutine open_calculation_file(file_unit, file_path, record_format, requested_status, open_status)
         ! Module dependencies
-        use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+        use standard_io_units, only: stderr_unit
         implicit none (type, external)
 
         ! Arguments
@@ -35,5 +35,5 @@ contains
             open_status = 1
         end if
         return
-    end subroutine openfl
+    end subroutine open_calculation_file
 end module file_open

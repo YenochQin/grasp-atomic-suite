@@ -9,11 +9,11 @@ module rangular_reuse
     use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
     use angular_coefficient_buffer_state, only: &
         angular_coefficient_count, angular_buffer_capacity, angular_coefficient_labels, angular_coefficients
-    use debug_output_settings, only: ibug1, ibug2, ibug3, ldbpa, ldbpg
-    use one_electron_scalar_coefficients, only: onescalar
-    use two_electron_angular_coefficients, only: rkco_gg
-    use closed_shell_mcp, only: cord
-    use angular_coefficient_buffer, only: alcbuf
+    use debug_output_settings, only: angular_coefficient_debug_flag, ibug2, ibug3, ldbpa, ldbpg
+    use one_electron_scalar_coefficients, only: calculate_one_electron_scalar_coefficients
+    use two_electron_angular_coefficients, only: calculate_two_electron_angular_coefficients
+    use closed_shell_mcp, only: calculate_closed_shell_mcp
+    use angular_coefficient_buffer, only: manage_angular_coefficient_buffer
     implicit none (type, external)
 
     ! Module interface
@@ -60,13 +60,13 @@ contains
     ! All arithmetic stays below 2**48; no signed integer overflow is required.
     ! Hashes select buckets only. Both the complete key and coupling arrays are
     ! compared on every hit, including a collision in either coupling hash.
-    pure function mix(hash, word) result(next)
+    pure function mix_hash_word(hash, word) result(next)
         ! Arguments
         integer(int64), intent(in) :: hash, word
         integer(int64) :: next
         next = iand(hash*65599_int64 + ibits(word,0,32), 2147483647_int64)
         next = iand(next*65599_int64 + ibits(word,32,32), 2147483647_int64)
-    end function mix
+    end function mix_hash_word
 
     subroutine begin_reuse_block()
         ! Local declarations
@@ -80,7 +80,7 @@ contains
         active = .false.
         if (.not. reuse_requested) return
         ! Debug printouts require execution of the original kernels for each pair.
-        if (ibug1 /= 0 .or. ibug2 /= 0 .or. ibug3 /= 0 .or. any(ldbpa) .or. any(ldbpg)) return
+        if (angular_coefficient_debug_flag /= 0 .or. ibug2 /= 0 .or. ibug3 /= 0 .or. any(ldbpa) .or. any(ldbpg)) return
         available = byte_limit - 8_int64*csf_count
         if (available < 1024) return
         entry_capacity = int(min(available/512, 1048576_int64))
@@ -104,7 +104,7 @@ contains
         do csf_index = 1, csf_count
             hash = 1
             do i = 1, max_orbitals
-                hash = mix(hash, int(csf_coupling_quantum_codes(i,csf_index),int64))
+                hash = mix_hash_word(hash, int(csf_coupling_quantum_codes(i,csf_index),int64))
             end do
             coupling_hash(csf_index) = hash
         end do
@@ -151,7 +151,7 @@ contains
         end do
         hash = 1
         do i = 1, length
-            hash = mix(hash,key(i))
+            hash = mix_hash_word(hash,key(i))
         end do
         hash = ieor(hash,shiftr(hash,16))
     end subroutine pair_key
@@ -165,7 +165,8 @@ contains
         ! Local declarations
         real(real64) :: shell_coefficients(max_orbitals)
         bra_orbital_index = 0; ket_orbital_index = 0; shell_coefficients = 0
-        if (bra_csf_index /= ket_csf_index) call onescalar(bra_csf_index,ket_csf_index,bra_orbital_index,ket_orbital_index, &
+        if (bra_csf_index /= ket_csf_index) call calculate_one_electron_scalar_coefficients(bra_csf_index,ket_csf_index, &
+            & bra_orbital_index,ket_orbital_index, &
             & shell_coefficients)
         ! ONESCALAR leaves its other outputs undefined on some early returns.
         scalar_coefficient = 0
@@ -175,7 +176,7 @@ contains
             ket_orbital_index = 0
         end if
         angular_coefficient_count = 0
-        call rkco_gg(bra_csf_index,ket_csf_index,cord,0,1)
+        call calculate_two_electron_angular_coefficients(bra_csf_index,ket_csf_index,calculate_closed_shell_mcp,0,1)
     end subroutine original_pair
 
     subroutine load_reused_pair(bra_csf_index, ket_csf_index, bra_orbital_index, ket_orbital_index, scalar_coefficient)
@@ -211,7 +212,7 @@ contains
                         scalar_coefficient = entries(entry)%scalar
                         angular_coefficient_count = entries(entry)%term_count
                         do while (angular_buffer_capacity < angular_coefficient_count)
-                            call alcbuf(2)
+                            call manage_angular_coefficient_buffer(2)
                         end do
                         start = entries(entry)%term_start
                         do i = 1, angular_coefficient_count

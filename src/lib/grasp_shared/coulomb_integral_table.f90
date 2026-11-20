@@ -7,8 +7,8 @@ module coulomb_integral_table
     private :: real64
 
     ! Module state
-    integer :: ndcoea, ncoei
-    integer, pointer :: indoei(:)
-    real(real64), pointer :: valoei(:)
-    logical :: frstco
+    integer :: coulomb_integral_capacity, coulomb_integral_count
+    integer, pointer :: coulomb_integral_indices(:)
+    real(real64), pointer :: coulomb_integral_values(:)
+    logical :: first_coulomb_integral_lookup
 end module coulomb_integral_table

@@ -4,17 +4,17 @@ module block_level_selection
 
     ! Module interface
     private
-    public :: lodstate
+    public :: read_block_level_selection
 contains
-    subroutine lodstate(block_labels)
+    subroutine read_block_level_selection(block_labels)
         ! Module dependencies
         use calculation_file_units, only: calculation_log_unit, ensure_calculation_log
         use array_memory_management, only: dalloc
-        use atomic_calculation_state, only: selected_level_indices => iccmin, selected_level_count => ncmin
+        use atomic_calculation_state, only: requested_level_indices, selected_level_count
         use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, &
-            & highest_selected_level_by_block => ncmaxblk, symmetry_block_count
-        use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
-        use level_selection_parser, only: items
+            highest_selected_level_by_block, symmetry_block_count
+        use standard_io_units, only: stderr_unit
+        use level_selection_parser, only: parse_level_selection
         implicit none (type, external)
 
         ! Arguments
@@ -50,15 +50,15 @@ contains
                     write(calculation_log_unit,"(a)") trim(selection_input)
 
                     previous_selection_count = selected_level_count
-                    call items (selected_level_count, block_csf_count, selection_input, parse_status)
-                    if (selected_level_count == 0) call dalloc (selected_level_indices, "ICCMIN", "LODSTATE" )
+                    call parse_level_selection (selected_level_count, block_csf_count, selection_input, parse_status)
+                    if (selected_level_count == 0) call dalloc (requested_level_indices, "ICCMIN", "LODSTATE" )
                     if (parse_status >= 0) exit
                 end do
                 eigenvector_counts_by_block(block_index) = selected_level_count - previous_selection_count
 
                 highest_selected_level = 0
                 do selection_index = previous_selection_count + 1, selected_level_count
-                    highest_selected_level = max(highest_selected_level,selected_level_indices(selection_index))
+                    highest_selected_level = max(highest_selected_level,requested_level_indices(selection_index))
                 end do
                 highest_selected_level_by_block(block_index) = highest_selected_level
             end do
@@ -66,5 +66,5 @@ contains
             if (selected_level_count /= 0) exit
             write (stderr_unit, *) "At least one state should be selected"
         end do
-    end subroutine lodstate
+    end subroutine read_block_level_selection
 end module block_level_selection

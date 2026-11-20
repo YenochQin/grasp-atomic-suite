@@ -4,16 +4,16 @@ module radial_grid_setup
 
     ! Module interface
     private
-    public :: radgrd
+    public :: initialize_radial_grid
 contains
-    subroutine radgrd
+    subroutine initialize_radial_grid
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
-        use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-        use atomic_calculation_state, only: precis
-        use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-            radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+        use debug_output_settings, only: rmcdhf_debug_flags
+        use atomic_calculation_state, only: machine_precision
+        use radial_grid_state, only: radial_point_count, radial_grid, radial_grid_derivative, radial_derivative_over_radius, &
+            radial_grid_scale, transformed_grid_step, asymptotic_grid_step
         implicit none (type, external)
 
         ! Local declarations
@@ -41,7 +41,7 @@ contains
             end do
         else
             ! Solve t = log(1+r/r0) + (h/hp)*r. The inverse slope is the stored dr/dt.
-            newton_relative_tolerance = 1.0e3_real64*precis
+            newton_relative_tolerance = 1.0e3_real64*machine_precision
             grid_step_ratio = transformed_grid_step/asymptotic_grid_step
             radial_grid_derivative(1) = radial_grid_scale/(grid_step_ratio*radial_grid_scale + 1.0_real64)
             previous_radius_estimate = 0.0_real64
@@ -66,7 +66,7 @@ contains
                 radial_derivative_over_radius(radial_index) = inverse_grid_equation_derivative/radius_estimate
             end do
         end if
-        if (ldbpr(1)) then
+        if (rmcdhf_debug_flags(1)) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,"From SUBROUTINE RADGRD:"/,2(" -------- r -------- -------- r'' -------",&
                 &" ------- r''/r ------"))')
@@ -96,5 +96,5 @@ contains
         end if
         return
         return
-    end subroutine radgrd
+    end subroutine initialize_radial_grid
 end module radial_grid_setup

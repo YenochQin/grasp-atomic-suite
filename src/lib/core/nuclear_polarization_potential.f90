@@ -22,7 +22,7 @@ contains
         integer, intent(out) :: status
         character(*), intent(out) :: message
         status = 1
-        message = "npol: N must be in 1:NNNP and fit the supplied arrays"
+        message = "npol: radial point count must fit max_radial_points and the supplied arrays"
         if (grid_point_count < 1 .or. grid_point_count > max_radial_points .or. grid_point_count > size(radial_grid)) return
         message = "npol: radial grid must be finite and nonnegative"
         if (.not.all(ieee_is_finite(radial_grid(:grid_point_count)))) return

@@ -3,9 +3,9 @@ module davidson_basis_transform
 
     ! Module interface
     private
-    public :: multbc
+    public :: transform_davidson_basis
 contains
-    subroutine multbc(row_count, input_column_count, output_column_count, coefficients, row_workspace, vectors)
+    subroutine transform_davidson_basis(row_count, input_column_count, output_column_count, coefficients, row_workspace, vectors)
         ! Module dependencies
         ! Right-multiply the vector matrix by the coefficients, overwriting its leading columns.
         use, intrinsic :: iso_fortran_env, only: real64
@@ -30,5 +30,5 @@ contains
         end do
 
         return
-    end subroutine multbc
+    end subroutine transform_davidson_basis
 end module davidson_basis_transform

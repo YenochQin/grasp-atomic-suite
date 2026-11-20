@@ -4,17 +4,17 @@ module spectator_shell_chain_recoupling
 
     ! Module interface
     private
-    public :: diaga3
+    public :: recouple_spectator_shell_chain
 contains
-    subroutine diaga3(first_shell_position,second_shell_position,two_tensor_rank,evaluate_coefficient, &
+    subroutine recouple_spectator_shell_chain(first_shell_position,second_shell_position,two_tensor_rank,evaluate_coefficient, &
         coupling_allowed,recoupling_coefficient)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: zero, one
-        use csf_pair_angular_state,             only: peel_orbital_indices => jlist, bra_subshell_quantum_codes => jjq1, &
-            bra_intermediate_couplings => jjc1, ket_intermediate_couplings => jjc2
-        use wigner_6j_triangle_selection, only: ixjtik
-        use wigner_6j, only: sixj
+        use csf_pair_angular_state,             only: peel_orbital_indices, bra_subshell_quantum_codes, &
+            bra_intermediate_couplings, ket_intermediate_couplings
+        use wigner_6j_triangle_selection, only: allows_wigner_6j_triangles
+        use wigner_6j, only: wigner_6j_value
         implicit none (type, external)
 
         ! Arguments
@@ -46,7 +46,7 @@ contains
                 coupled_position=shell_position-1
                 two_bra_coupled_j=bra_intermediate_couplings(coupled_position)-1
                 two_ket_coupled_j=ket_intermediate_couplings(coupled_position)-1
-                if(ixjtik(two_tensor_rank,two_ket_input_j,two_bra_input_j,two_spectator_j,two_bra_coupled_j, &
+                if(allows_wigner_6j_triangles(two_tensor_rank,two_ket_input_j,two_bra_input_j,two_spectator_j,two_bra_coupled_j, &
                     two_ket_coupled_j) == 0)return
                 shell_position=shell_position+1
                 if(shell_position == second_shell_position) exit
@@ -65,7 +65,7 @@ contains
             coupled_position=shell_position-1
             two_bra_coupled_j=bra_intermediate_couplings(coupled_position)-1
             two_ket_coupled_j=ket_intermediate_couplings(coupled_position)-1
-            call sixj(two_tensor_rank,two_ket_input_j,two_bra_input_j,two_spectator_j,two_bra_coupled_j, &
+            call wigner_6j_value(two_tensor_rank,two_ket_input_j,two_bra_input_j,two_spectator_j,two_bra_coupled_j, &
                 two_ket_coupled_j,0,diagram_factor)
             diagram_factor=diagram_factor*sqrt(dble((two_bra_input_j+1)*(two_ket_coupled_j+1)))
             phase_sum=two_tensor_rank+two_spectator_j+two_bra_input_j+two_ket_coupled_j
@@ -76,5 +76,5 @@ contains
         recoupling_coefficient=diagram_product
         coupling_allowed=1
         return
-    end subroutine diaga3
+    end subroutine recouple_spectator_shell_chain
 end module spectator_shell_chain_recoupling

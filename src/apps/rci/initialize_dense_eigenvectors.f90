@@ -1,82 +1,88 @@
-!************************************************************************
-!
-subroutine initialize_dense_eigenvectors (nmax, csf_count, initial_vector_count, basis, hmx)
-
-    ! Module dependencies
-    !     Routine for providing initial estimates from the diagonal
-    !     of the matrix. This way was used by Dvdson in atomic structure
-    !     calculations. It should be used to obtain estimates when nothing
-    !     else is available.
-    !
-    !   Block version by Xinghong He            Last revision: 18 Jun 1998
-    !
-    !************************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use array_memory_management, only: alloc, dalloc
-    use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
-        csf_mixing_coefficients, evecff, evecii
-
-    ! Procedure interfaces
-    use dspevx_interface, only: dspevx
-    use blas_lapack_interfaces, only: dcopy, dspevx
-
-    ! Module dependencies
-    use real_vector_initialization, only: dinit
+module initialize_dense_eigenvectors_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer, intent(in):: nmax, csf_count, initial_vector_count
-    real(real64) :: basis(*), hmx(*)
+    ! Module interface
+    private
+    public :: initialize_dense_eigenvectors
+contains
 
-    ! Local declarations
-    integer :: mpi_rank, mpi_process_count, info, ierr, ns, i, nfound, j
-    real(real64), pointer :: ap(:), eigval(:), vec(:), real_workspace(:)
-    integer, pointer :: integer_workspace(:), ifail(:)
-    !-----------------------------------------------------------------------
+    !************************************************************************
+    !
+    subroutine initialize_dense_eigenvectors (nmax, csf_count, initial_vector_count, basis, hmx)
 
-    mpi_rank = 0
-    mpi_process_count = 1
+        ! Module dependencies
+        !     Routine for providing initial estimates from the diagonal
+        !     of the matrix. This way was used by Dvdson in atomic structure
+        !     calculations. It should be used to obtain estimates when nothing
+        !     else is available.
+        !
+        !   Block version by Xinghong He            Last revision: 18 Jun 1998
+        !
+        !************************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use array_memory_management, only: alloc, dalloc
 
-    ns = min (nmax, csf_count)
+        ! Procedure interfaces
+        use blas_lapack_interfaces, only: dcopy, dspevx
 
-    call alloc (ap, ns*(ns+1)/2, "AP", "INIESTDM")
-    call dinit (ns*(ns+1)/2, 0.0_real64, ap, 1)
+        ! Module dependencies
+        use real_vector_initialization, only: initialize_real_vector
+        implicit none (type, external)
 
-    !  Get the upper left sub-matrix
+        ! Arguments
+        integer, intent(in):: nmax, csf_count, initial_vector_count
+        real(real64) :: basis(*), hmx(*)
 
-    do i = 1, (ns*(ns+1))/2
-        ap(i) = hmx(i)
-    end do
+        ! Local declarations
+        integer :: mpi_rank, mpi_process_count, info, ierr, ns, i, nfound, j
+        real(real64), pointer :: ap(:), eigval(:), vec(:), real_workspace(:)
+        integer, pointer :: integer_workspace(:), ifail(:)
+        !-----------------------------------------------------------------------
 
-    call alloc (eigval,   ns, "EIGVAL", "INIESTDM")
-    call alloc (vec,   ns*initial_vector_count, "VEC", "INIESTDM")
-    call alloc (real_workspace,  8*ns,  "WORK", "INIESTDM")
-    call alloc (integer_workspace, 5*ns,  "IWORK", "INIESTDM")
-    call alloc (ifail,     ns,  "IFAIL", "INIESTDM")
+        mpi_rank = 0
+        mpi_process_count = 1
 
-    call dspevx ("Vectors also","In a range","Upper triangular",      &
-        &          ns,ap,-1.0_real64,-1.0_real64,1,initial_vector_count,0.0_real64,                               &
-        &          nfound,eigval,vec,ns,real_workspace,integer_workspace,ifail,info)
-    ierr = -abs (info)
+        ns = min (nmax, csf_count)
 
-    !  Build the Basis.
+        call alloc (ap, ns*(ns+1)/2, "AP", "INIESTDM")
+        call initialize_real_vector (ns*(ns+1)/2, 0.0_real64, ap, 1)
 
-    call dinit (csf_count*initial_vector_count, 0.0_real64, basis, 1)
+        !  Get the upper left sub-matrix
 
-    !  scatter the vectors
+        do i = 1, (ns*(ns+1))/2
+            ap(i) = hmx(i)
+        end do
 
-    do j = 1, initial_vector_count
-        call dcopy (ns, vec(ns*(j-1)+1:ns*(j-1)+(ns)),1, basis(csf_count*(j-1)+1), 1)
-    end do
+        call alloc (eigval,   ns, "EIGVAL", "INIESTDM")
+        call alloc (vec,   ns*initial_vector_count, "VEC", "INIESTDM")
+        call alloc (real_workspace,  8*ns,  "WORK", "INIESTDM")
+        call alloc (integer_workspace, 5*ns,  "IWORK", "INIESTDM")
+        call alloc (ifail,     ns,  "IFAIL", "INIESTDM")
 
-    call dcopy (initial_vector_count, eigval, 1, basis(initial_vector_count*csf_count+1), 1)
+        call dspevx ("Vectors also","In a range","Upper triangular",      &
+            &          ns,ap,-1.0_real64,-1.0_real64,1,initial_vector_count,0.0_real64,                               &
+            &          nfound,eigval,vec,ns,real_workspace,integer_workspace,ifail,info)
+        ierr = -abs (info)
 
-    call dalloc (ap, "AP", "INIESTDM")
-    call dalloc (eigval, "EIGVAL", "INIESTDM")
-    call dalloc (vec, "VEC", "INIESTDM")
-    call dalloc (real_workspace, "WORK", "INIESTDM")
-    call dalloc (integer_workspace, "IWORK", "INIESTDM")
-    call dalloc (ifail, "IFAIL", "INIESTDM")
+        !  Build the Basis.
 
-    return
-end subroutine initialize_dense_eigenvectors
+        call initialize_real_vector (csf_count*initial_vector_count, 0.0_real64, basis, 1)
+
+        !  scatter the vectors
+
+        do j = 1, initial_vector_count
+            call dcopy (ns, vec(ns*(j-1)+1:ns*(j-1)+(ns)),1, basis(csf_count*(j-1)+1), 1)
+        end do
+
+        call dcopy (initial_vector_count, eigval, 1, basis(initial_vector_count*csf_count+1), 1)
+
+        call dalloc (ap, "AP", "INIESTDM")
+        call dalloc (eigval, "EIGVAL", "INIESTDM")
+        call dalloc (vec, "VEC", "INIESTDM")
+        call dalloc (real_workspace, "WORK", "INIESTDM")
+        call dalloc (integer_workspace, "IWORK", "INIESTDM")
+        call dalloc (ifail, "IFAIL", "INIESTDM")
+
+        return
+    end subroutine initialize_dense_eigenvectors
+end module initialize_dense_eigenvectors_interface

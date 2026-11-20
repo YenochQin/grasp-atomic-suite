@@ -4,12 +4,12 @@ module racah_coefficients
 
     ! Module interface
     private
-    public :: dracah
+    public :: evaluate_racah_coefficient
 contains
-    subroutine dracah(two_j_1, two_j_2, two_j_3, two_j_4, two_j_5, two_j_6, racah_coefficient)
+    subroutine evaluate_racah_coefficient(two_j_1, two_j_2, two_j_3, two_j_4, two_j_5, two_j_6, racah_coefficient)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use log_factorial_cache, only: log_factorials => gam, factorial_table_capacity => mfact
+        use log_factorial_cache, only: log_factorials
         implicit none (type, external)
 
         ! Arguments
@@ -80,5 +80,5 @@ contains
             log_factorials(triangle_sum_4+2))*&
             0.5_real64)
         return
-    end subroutine dracah
+    end subroutine evaluate_racah_coefficient
 end module racah_coefficients

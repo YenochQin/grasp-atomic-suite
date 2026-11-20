@@ -1,39 +1,47 @@
-!***********************************************************************
-!                                                                      *
-subroutine find_least_consistent_orbital(orbital_index)
-    ! Module dependencies
-    !                                                                      *
-    !   This subroutine finds the least self-consistent orbital            *
-    !                                                                      *
-    !   Written by Farid A Parpia, at Oxford    Last update: 10 Dec 1992   *
-    !                                                                      *
-    ! J initialized to zero
-    ! XHH 1997.02.14
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use fixed_orbital_flags, only: fixed_orbital_count, is_orbital_fixed, max_orbitals
-    use orbital_csf_basis, only: max_orbitals, orbital_count
-    use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
-        nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
+module find_least_consistent_orbital_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer , intent(out) :: orbital_index
+    ! Module interface
+    private
+    public :: find_least_consistent_orbital
+contains
 
-    ! Local declarations
-    integer :: i
-    real(real64) :: dlrgst
-    !-----------------------------------------------
-    !
-    !
-    orbital_index = 0
-    dlrgst = 0.0_real64
-    do i = 1, orbital_count
-        if (is_orbital_fixed(i)) cycle
-        if (scnsty(i) <= dlrgst) cycle
-        dlrgst = scnsty(i)
-        orbital_index = i
-    end do
-    !
-    return
-end subroutine find_least_consistent_orbital
+    !***********************************************************************
+    !                                                                      *
+    subroutine find_least_consistent_orbital(orbital_index)
+        ! Module dependencies
+        !                                                                      *
+        !   This subroutine finds the least self-consistent orbital            *
+        !                                                                      *
+        !   Written by Farid A Parpia, at Oxford    Last update: 10 Dec 1992   *
+        !                                                                      *
+        ! J initialized to zero
+        ! XHH 1997.02.14
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use fixed_orbital_flags, only: is_orbital_fixed
+        use orbital_csf_basis, only: orbital_count
+        use scf_iteration_state, only: orbital_self_consistency_errors
+        implicit none (type, external)
+
+        ! Arguments
+        integer , intent(out) :: orbital_index
+
+        ! Local declarations
+        integer :: candidate_orbital_index
+        real(real64) :: largest_self_consistency_error
+        !-----------------------------------------------
+        !
+        !
+        orbital_index = 0
+        largest_self_consistency_error = 0.0_real64
+        do candidate_orbital_index = 1, orbital_count
+            if (is_orbital_fixed(candidate_orbital_index)) cycle
+            if (orbital_self_consistency_errors(candidate_orbital_index) <= largest_self_consistency_error) cycle
+            largest_self_consistency_error = orbital_self_consistency_errors(candidate_orbital_index)
+            orbital_index = candidate_orbital_index
+        end do
+        !
+        return
+    end subroutine find_least_consistent_orbital
+end module find_least_consistent_orbital_interface

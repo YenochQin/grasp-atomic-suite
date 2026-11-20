@@ -4,9 +4,9 @@ module alternating_exponential_series
 
     ! Module interface
     private
-    public :: es
+    public :: evaluate_alternating_exponential_series
 contains
-    subroutine es(exponent_argument, inverse_square_sum, inverse_cube_sum)
+    subroutine evaluate_alternating_exponential_series(exponent_argument, inverse_square_sum, inverse_cube_sum)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         implicit none (type, external)
@@ -48,5 +48,5 @@ contains
             inverse_cube_sum = inverse_cube_sum + inverse_cube_term
         end do
         return
-    end subroutine es
+    end subroutine evaluate_alternating_exponential_series
 end module alternating_exponential_series

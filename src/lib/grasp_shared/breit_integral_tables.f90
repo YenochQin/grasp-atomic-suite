@@ -7,10 +7,12 @@ module breit_integral_tables
     private :: real64
 
     ! Module state
-    integer :: ndtpa(6), ntpi(6)
-    integer, pointer :: indtp1(:), indtp2(:), indtp3(:), indtp4(:), &
-        indtp5(:), indtp6(:)
-    real(real64), pointer :: valtp1(:), valtp2(:), valtp3(:), valtp4(:), &
-        valtp5(:), valtp6(:)
-    logical :: first(6)
+    integer :: breit_integral_capacities(6), breit_integral_counts(6)
+    integer, pointer :: breit_integral_indices_1(:), breit_integral_indices_2(:), breit_integral_indices_3(:), &
+        breit_integral_indices_4(:), &
+        breit_integral_indices_5(:), breit_integral_indices_6(:)
+    real(real64), pointer :: breit_integral_values_1(:), breit_integral_values_2(:), breit_integral_values_3(:), &
+        breit_integral_values_4(:), &
+        breit_integral_values_5(:), breit_integral_values_6(:)
+    logical :: first_breit_integral_lookup(6)
 end module breit_integral_tables

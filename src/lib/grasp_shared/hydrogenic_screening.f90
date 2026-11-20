@@ -8,5 +8,5 @@ module hydrogenic_screening
     private :: real64
 
     ! Module state
-    real(real64) :: sigma(max_orbitals)
+    real(real64) :: orbital_screening_constants(max_orbitals)
 end module hydrogenic_screening

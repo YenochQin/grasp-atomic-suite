@@ -7,5 +7,5 @@ module breit_frequency_scale
     private :: real64
 
     ! Module state
-    real(real64) :: wfact
+    real(real64) :: transverse_photon_frequency_scale
 end module breit_frequency_scale

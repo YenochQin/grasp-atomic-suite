@@ -4,13 +4,14 @@ module quasispin_cg_rank_one_unit_projection
 
     ! Module interface
     private
-    public :: c1e1sm
+    public :: evaluate_quasispin_cg_rank_one_unit_projection
 contains
-    subroutine c1e1sm(ket_q,ket_q_projection,operator_q_projection,bra_q,bra_q_projection,cg_coefficient)
+    subroutine evaluate_quasispin_cg_rank_one_unit_projection(ket_q,ket_q_projection,operator_q_projection,bra_q, &
+        & bra_q_projection,cg_coefficient)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use numeric_constants,          only: zero, tenth, one, two, three, angular_tolerance => eps
-        use angular_triangle_and_parity, only: ittk
+        use numeric_constants,          only: zero, tenth, one, two, three, angular_tolerance
+        use angular_triangle_and_parity, only: satisfies_angular_triangle_and_parity
         implicit none (type, external)
 
         ! Arguments
@@ -25,7 +26,7 @@ contains
         cg_coefficient=zero
         two_ket_q=two*ket_q+tenth
         two_bra_q=two*bra_q+tenth
-        if(ittk(two_ket_q,two_bra_q,2)==0)return
+        if(satisfies_angular_triangle_and_parity(two_ket_q,two_bra_q,2)==0)return
         if(dabs(ket_q_projection+operator_q_projection-bra_q_projection)>angular_tolerance)return
         if((ket_q+tenth)<dabs(ket_q_projection))return
         if((bra_q+tenth)<dabs(bra_q_projection))return
@@ -50,5 +51,5 @@ contains
                 ((two*bra_q+two)*(two*bra_q+three)))
         end if
         return
-    end subroutine c1e1sm
+    end subroutine evaluate_quasispin_cg_rank_one_unit_projection
 end module quasispin_cg_rank_one_unit_projection

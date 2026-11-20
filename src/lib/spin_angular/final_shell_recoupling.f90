@@ -4,17 +4,17 @@ module final_shell_recoupling
 
     ! Module interface
     private
-    public :: diaga5
+    public :: recouple_final_shell
 contains
-    subroutine diaga5(coupled_shell_count,first_shell_position,two_tensor_rank,evaluate_coefficient, &
+    subroutine recouple_final_shell(coupled_shell_count,first_shell_position,two_tensor_rank,evaluate_coefficient, &
         coupling_allowed,recoupling_coefficient)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: zero
-        use csf_pair_angular_state,             only: peel_orbital_indices => jlist, bra_intermediate_couplings => jjc1, &
-            ket_intermediate_couplings => jjc2, bra_subshell_quantum_codes => jjq1, ket_subshell_quantum_codes => jjq2
-        use wigner_6j_triangle_selection, only: ixjtik
-        use wigner_6j, only: sixj
+        use csf_pair_angular_state,             only: peel_orbital_indices, bra_intermediate_couplings, &
+            ket_intermediate_couplings, bra_subshell_quantum_codes, ket_subshell_quantum_codes
+        use wigner_6j_triangle_selection, only: allows_wigner_6j_triangles
+        use wigner_6j, only: wigner_6j_value
         implicit none (type, external)
 
         ! Arguments
@@ -39,10 +39,10 @@ contains
             two_ket_input_j=ket_intermediate_couplings(coupled_shell_count-2)-1
         end if
         if(evaluate_coefficient == 0) then
-            if(ixjtik(two_tensor_rank,two_ket_input_j,two_bra_input_j,two_spectator_j,two_bra_coupled_j, &
+            if(allows_wigner_6j_triangles(two_tensor_rank,two_ket_input_j,two_bra_input_j,two_spectator_j,two_bra_coupled_j, &
                 two_ket_coupled_j) /= 0) coupling_allowed=1
         else
-            call sixj(two_tensor_rank,two_ket_input_j,two_bra_input_j,two_spectator_j,two_bra_coupled_j, &
+            call wigner_6j_value(two_tensor_rank,two_ket_input_j,two_bra_input_j,two_spectator_j,two_bra_coupled_j, &
                 two_ket_coupled_j,0,diagram_factor)
             recoupling_coefficient=diagram_factor*dsqrt(dble((two_bra_input_j+1)*(two_ket_coupled_j+1)))
             if(mod(two_tensor_rank+two_spectator_j+two_ket_input_j+two_bra_coupled_j, &
@@ -53,5 +53,5 @@ contains
                 4) /= 0)recoupling_coefficient=-recoupling_coefficient
         end if
         return
-    end subroutine diaga5
+    end subroutine recouple_final_shell
 end module final_shell_recoupling

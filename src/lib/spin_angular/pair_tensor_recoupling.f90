@@ -4,17 +4,17 @@ module pair_tensor_recoupling
 
     ! Module interface
     private
-    public :: diaga4
+    public :: recouple_pair_tensor
 contains
-    subroutine diaga4(first_shell_position,second_shell_position,two_rank_1,two_rank_2,two_tensor_rank, &
+    subroutine recouple_pair_tensor(first_shell_position,second_shell_position,two_rank_1,two_rank_2,two_tensor_rank, &
         evaluate_coefficient,coupling_allowed,recoupling_coefficient)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: zero
-        use csf_pair_angular_state,             only: peel_orbital_indices => jlist, bra_subshell_quantum_codes => jjq1, &
-            ket_subshell_quantum_codes => jjq2, bra_intermediate_couplings => jjc1, ket_intermediate_couplings => jjc2
-        use angular_triangle_and_parity, only: ittk
-        use wigner_9j, only: nine
+        use csf_pair_angular_state,             only: peel_orbital_indices, bra_subshell_quantum_codes, &
+            ket_subshell_quantum_codes, bra_intermediate_couplings, ket_intermediate_couplings
+        use angular_triangle_and_parity, only: satisfies_angular_triangle_and_parity
+        use wigner_9j, only: wigner_9j_value
         implicit none (type, external)
 
         ! Arguments
@@ -50,19 +50,19 @@ contains
         end if
         if(evaluate_coefficient == 0) then
             coupling_allowed = 0
-            if (ittk(two_ket_prefix_j,two_rank_1,two_bra_prefix_j) == 0) return
-            if (ittk(two_ket_shell_j_2,two_rank_2,two_bra_shell_j_2) == 0) return
-            if (ittk(two_ket_coupled_j,two_tensor_rank,two_bra_coupled_j) == 0) return
-            if (ittk(two_ket_prefix_j,two_ket_shell_j_2,two_ket_coupled_j) == 0) return
-            if (ittk(two_rank_1,two_rank_2,two_tensor_rank) == 0) return
-            if (ittk(two_bra_prefix_j,two_bra_shell_j_2,two_bra_coupled_j) == 0) return
+            if (satisfies_angular_triangle_and_parity(two_ket_prefix_j,two_rank_1,two_bra_prefix_j) == 0) return
+            if (satisfies_angular_triangle_and_parity(two_ket_shell_j_2,two_rank_2,two_bra_shell_j_2) == 0) return
+            if (satisfies_angular_triangle_and_parity(two_ket_coupled_j,two_tensor_rank,two_bra_coupled_j) == 0) return
+            if (satisfies_angular_triangle_and_parity(two_ket_prefix_j,two_ket_shell_j_2,two_ket_coupled_j) == 0) return
+            if (satisfies_angular_triangle_and_parity(two_rank_1,two_rank_2,two_tensor_rank) == 0) return
+            if (satisfies_angular_triangle_and_parity(two_bra_prefix_j,two_bra_shell_j_2,two_bra_coupled_j) == 0) return
             coupling_allowed = 1
             return
         end if
-        call nine(two_ket_prefix_j,two_rank_1,two_bra_prefix_j,two_ket_shell_j_2,two_rank_2,two_bra_shell_j_2, &
+        call wigner_9j_value(two_ket_prefix_j,two_rank_1,two_bra_prefix_j,two_ket_shell_j_2,two_rank_2,two_bra_shell_j_2, &
             two_ket_coupled_j,two_tensor_rank,two_bra_coupled_j,0,coupling_allowed,nine_j_value)
         recoupling_coefficient=nine_j_value*dsqrt(dble((two_bra_prefix_j+1)*(two_tensor_rank+1)*(two_bra_shell_j_2+1) &
             *(two_ket_coupled_j+1)))
         return
-    end subroutine diaga4
+    end subroutine recouple_pair_tensor
 end module pair_tensor_recoupling

@@ -30,22 +30,22 @@ program jj2lsj_main
     !***********************************************************************
     use jj2lsj_profile, only: profile_finish, profile_start
     use jj2lsj_conversion, only: run_ls_coupling_conversion, profile_finish, profile_start
-    use log_factorial_table, only: factt
-    use isotope_data_input, only: setiso
-    use run_timer_start, only: starttime
-    use run_timer_finish, only: stoptime
-    use physical_constants, only: setcon
+    use log_factorial_table, only: initialize_log_factorial_table
+    use isotope_data_input, only: read_isotope_data
+    use run_timer_start, only: begin_run_timer
+    use run_timer_finish, only: finish_run_timer
+    use physical_constants, only: initialize_physical_constants
     implicit none (type, external)
     integer           :: start_clock_count
     !-----------------------------------------------
     call profile_start()
-    call starttime (start_clock_count, "jj2lsj_omp")
+    call begin_run_timer (start_clock_count, "jj2lsj_omp")
     print *, " "
     print *, "jj2lsj_omp: Transformation of ASFs from a jj-coupled CSF basis"
     print *, "        into an LS-coupled CSF basis  (Fortran 95 version)"
     print *, "        (C) Copyright by   G. Gaigalas and Ch. F. Fischer,"
     print *, "        (2025)."
-    print *, "        Input files: name_descriptors.parquet, name_header.toml, name.mix/name.cimix"
+    print *, "        Input files: name_desc.parquet, name_header.toml, name.mix/name.cimix"
     print *, "         (optional)  name.lsj.T"
     print *, "        Ouput files: name.lsj.lbl,"
     print *, "         (optional)  name.lsj.c, name.lsj.j,"
@@ -54,13 +54,13 @@ program jj2lsj_main
     print *, " "
     !
     !  Set up the table of logarithms of factorials
-    call setcon
-    call factt
+    call initialize_physical_constants
+    call initialize_log_factorial_table
     !
-    call setiso("isodata")
+    call read_isotope_data("isodata")
     call run_ls_coupling_conversion
     !
     call profile_finish()
-    call stoptime (start_clock_count, "jj2lsj_omp")
+    call finish_run_timer (start_clock_count, "jj2lsj_omp")
     stop
 end program jj2lsj_main

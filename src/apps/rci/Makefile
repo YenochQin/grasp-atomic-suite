@@ -4,135 +4,131 @@ FC_MODULES= -I ${GRASP}/src/lib/spin_angular -I ${GRASP}/src/lib/breit_angular_s
 
 OBJS= \
 	write_ci_eigenvectors.o \
-	dspevx_interface.o \
-	radial_density_ratio_interface.o \
+	radial_density_ratio.o \
 	ci_restart_units.o \
 	collect_breit_angular_coefficient.o \
-	breit_radial_integral_factors.o \
 	build_breit_bessel_kernels.o \
-	build_breit_bessel_kernels_interface.o \
-	multiply_sparse_hamiltonian.o \
-	multiply_sparse_hamiltonian_interface.o \
+	 \
+	multiply_sparse_hamiltonian.o reduce_sparse_matrix_product.o \
+	 \
 	write_level_energies.o \
-	write_level_energies_interface.o \
+	 \
 	fullerton_rinker_k_function.o \
-	fullerton_rinker_k_function_interface.o \
+	 \
 	fullerton_rinker_l_function.o \
-	fullerton_rinker_l_function_interface.o \
+	 \
 	mohr_self_energy_factor.o \
-	mohr_self_energy_factor_interface.o \
+	 \
 	klarsfeld_maquet_self_energy_factor.o \
-	klarsfeld_maquet_self_energy_factor_interface.o \
+	 \
 	hydrogenic_self_energy_factor.o \
-	hydrogenic_self_energy_factor_interface.o \
+	 \
 	accumulate_closed_shell_breit.o \
-	accumulate_closed_shell_breit_interface.o \
 	evaluate_breit_hartree_z.o \
-	evaluate_breit_hartree_z_interface.o \
+	 \
 	coulomb_radial_integral.o \
-	coulomb_radial_integral_interface.o \
+	 \
 	lookup_slater_integral.o \
-	lookup_slater_integral_interface.o \
+	 \
 	transverse_radial_integral.o \
-	transverse_radial_integral_interface.o \
+	 \
 	breit_radial_integral.o \
-	breit_radial_integral_interface.o \
+	 \
 	lookup_breit_radial_integral.o \
-	lookup_breit_radial_integral_interface.o \
+	 \
 	breit_radial_integral_1.o \
-	breit_radial_integral_1_interface.o \
+	 \
 	breit_radial_integral_2.o \
-	breit_radial_integral_2_interface.o \
+	 \
 	breit_radial_integral_3.o \
-	breit_radial_integral_3_interface.o \
+	 \
 	breit_radial_integral_4.o \
-	breit_radial_integral_4_interface.o \
+	 \
 	breit_radial_integral_5.o \
-	breit_radial_integral_5_interface.o \
+	 \
 	breit_radial_integral_6.o \
-	breit_radial_integral_6_interface.o \
+	 \
 	satisfies_breit_group1_triangle.o \
-	satisfies_breit_group1_triangle_interface.o \
+	 \
 	satisfies_breit_group2_triangle.o \
-	satisfies_breit_group2_triangle_interface.o \
+	 \
 	tabulate_breit_integrals_1.o \
-	tabulate_breit_integrals_1_interface.o \
+	 \
 	tabulate_breit_integrals_2.o \
-	tabulate_breit_integrals_2_interface.o \
+	 \
 	tabulate_slater_integrals.o \
-	tabulate_slater_integrals_interface.o \
+	 \
 	read_ci_options.o \
-	read_ci_options_interface.o \
+	 \
 	write_hamiltonian_records.o \
-	write_hamiltonian_records_interface.o \
+	 \
 	hydrogenic_radial_overlap.o \
-	hydrogenic_radial_overlap_interface.o \
+	 \
 	one_electron_integral.o \
-	one_electron_integral_interface.o \
+	 \
 	find_breit_integral_index.o \
-	find_breit_integral_index_interface.o \
+	 \
 	initialize_dense_eigenvectors.o \
-	initialize_dense_eigenvectors_interface.o \
+	 \
 	initialize_sparse_eigenvectors.o \
-	initialize_sparse_eigenvectors_interface.o \
+	 \
 	kinetic_energy_integral.o \
-	kinetic_energy_integral_interface.o \
+	 \
 	read_ci_mixing_coefficients.o \
-	read_ci_mixing_coefficients_interface.o \
+	 \
 	read_ci_restart.o \
-	read_ci_restart_interface.o \
+	 \
 	multiply_restart_hamiltonian.o \
-	multiply_restart_hamiltonian_interface.o \
+	 \
 	diagonalize_hamiltonian_block.o \
-	diagonalize_hamiltonian_block_interface.o \
+	 \
 	build_nuclear_charge_distribution.o \
-	build_nuclear_charge_distribution_interface.o \
+	 \
 	build_qed_self_energy.o \
-	build_qed_self_energy_interface.o \
+	 \
 	tabulate_self_energy_integrals.o \
-	tabulate_self_energy_integrals_interface.o \
+	 \
 	load_csf_basis_data.o \
-	load_csf_basis_data_interface.o \
+	 \
 	configure_ci_debug_output.o \
-	configure_ci_debug_output_interface.o \
+	 \
 	open_mixing_output.o \
-	open_mixing_output_interface.o \
+	 \
 	connect_ci_restart_file.o \
-	connect_ci_restart_file_interface.o \
+	 \
 	open_summary_file.o \
-	open_summary_file_interface.o \
+	 \
 	electron_screening_factor.o \
-	electron_screening_factor_interface.o \
+	 \
 	write_input_summary.o \
-	write_input_summary_interface.o \
+	 \
 	satisfies_coulomb_triangle.o \
-	satisfies_coulomb_triangle_interface.o \
+	 \
 	build_second_order_vacuum_polarization.o \
-	build_second_order_vacuum_polarization_interface.o \
+	 \
 	build_fourth_order_vacuum_polarization.o \
-	build_fourth_order_vacuum_polarization_interface.o \
+	 \
 	build_vacuum_polarization.o \
-	build_vacuum_polarization_interface.o \
+	 \
 	vinti_radial_integral.o \
-	vinti_radial_integral_interface.o \
+	 \
 	calculate_vinti_integral.o \
-	calculate_vinti_integral_interface.o \
+	 \
 	vacuum_polarization_integral.o \
-	vacuum_polarization_integral_interface.o \
+	 \
 	calculate_vacuum_polarization_integral.o \
-	calculate_vacuum_polarization_integral_interface.o \
 	read_ci_level_selection.o \
-	read_ci_level_selection_interface.o \
+	 \
 	assemble_hamiltonian_block.o \
-	assemble_hamiltonian_block_interface.o \
+	 \
 	assemble_ci_matrix.o \
-	assemble_ci_matrix_interface.o \
+	 \
 	assemble_ci_matrix_from_restart.o \
-	assemble_ci_matrix_from_restart_interface.o \
+	 \
 	prepare_correction_integral_tables.o \
-	prepare_correction_integral_tables_interface.o \
+	 \
 	solve_hamiltonian_blocks.o \
-	solve_hamiltonian_blocks_interface.o \
+	 \
 	rci_main.o
 
 $(EXE): $(OBJS)

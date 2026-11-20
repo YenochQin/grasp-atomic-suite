@@ -4,9 +4,9 @@ module nonnegative_atan2
 
     ! Module interface
     private
-    public :: arctan
+    public :: nonnegative_angle
 contains
-    real(real64) function arctan (y_coordinate, x_coordinate)
+    real(real64) function nonnegative_angle (y_coordinate, x_coordinate)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state, only: pi
@@ -19,8 +19,8 @@ contains
         ! Local declarations
         logical, save :: check_intrinsic_range = .true., intrinsic_returns_nonnegative_angle = .true.
         if (check_intrinsic_range) then
-            arctan = atan2(-1.0_real64,-1.0_real64)
-            if (arctan > 0.0_real64) then
+            nonnegative_angle = atan2(-1.0_real64,-1.0_real64)
+            if (nonnegative_angle > 0.0_real64) then
                 intrinsic_returns_nonnegative_angle = .true.
             else
                 intrinsic_returns_nonnegative_angle = .false.
@@ -28,14 +28,14 @@ contains
             check_intrinsic_range = .false.
         end if
         if (intrinsic_returns_nonnegative_angle) then
-            arctan = atan2(y_coordinate,x_coordinate)
+            nonnegative_angle = atan2(y_coordinate,x_coordinate)
         else
             if (y_coordinate >= 0.0_real64) then
-                arctan = atan2(y_coordinate,x_coordinate)
+                nonnegative_angle = atan2(y_coordinate,x_coordinate)
             else
-                arctan = pi + pi + atan2(y_coordinate,x_coordinate)
+                nonnegative_angle = pi + pi + atan2(y_coordinate,x_coordinate)
             end if
         end if
         return
-    end function arctan
+    end function nonnegative_angle
 end module nonnegative_atan2

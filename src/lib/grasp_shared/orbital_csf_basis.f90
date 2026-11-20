@@ -11,14 +11,16 @@ module orbital_csf_basis
 
     ! Module state
     character(len=2) :: orbital_symmetry_labels(max_orbitals)
-    character(len=2) :: nhr(max_orbitals)
+    character(len=2) :: left_orbital_labels(max_orbitals)
     ! The radial solvers use a positive binding-energy convention for bound orbitals.
-    real(real64) :: orbital_energy_parameters(max_orbitals), orbital_origin_exponents(max_orbitals), ped(max_orbitals)
-    integer :: csf_count, orbital_count, ncfr, nwr
+    real(real64) :: orbital_energy_parameters(max_orbitals), orbital_origin_exponents(max_orbitals), &
+        previous_orbital_energy_changes(max_orbitals)
+    integer :: csf_count, orbital_count, left_csf_count, left_orbital_count
     ! Occupation storage is indexed by orbital, then by CSF.
     integer(int8), pointer :: csf_subshell_occupations(:, :) => null()
     ! The paired left basis uses default-kind occupations in the same index order.
-    integer, pointer :: iqar(:, :) => null()
-    integer :: orbital_principal_n(max_orbitals), orbital_kappa(max_orbitals), npr(max_orbitals), nakr(max_orbitals)
+    integer, pointer :: left_occupations(:, :) => null()
+    integer :: orbital_principal_n(max_orbitals), orbital_kappa(max_orbitals), left_principal_n(max_orbitals), &
+        left_kappa(max_orbitals)
     integer :: orbital_l(max_orbitals), orbital_two_j(max_orbitals)
 end module orbital_csf_basis

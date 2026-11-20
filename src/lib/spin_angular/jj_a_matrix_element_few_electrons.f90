@@ -4,13 +4,14 @@ module jj_a_matrix_element_few_electrons
 
     ! Module interface
     private
-    public :: a1jj
+    public :: evaluate_jj_a_few_electrons
 contains
-    subroutine a1jj(bra_shell_codes,bra_shell_values,ket_shell_codes,ket_shell_values,operator_q_projection_1, &
+    subroutine evaluate_jj_a_few_electrons(bra_shell_codes,bra_shell_values,ket_shell_codes,ket_shell_values, &
+        & operator_q_projection_1, &
         a_matrix_element)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use numeric_constants,          only: zero, angular_tolerance => eps
+        use numeric_constants,          only: zero, angular_tolerance
         implicit none (type, external)
 
         ! Arguments
@@ -36,5 +37,5 @@ contains
             if((bra_shell_codes(4)/2)*2 /= bra_shell_codes(4))a_matrix_element=-a_matrix_element
         end if
         return
-    end subroutine a1jj
+    end subroutine evaluate_jj_a_few_electrons
 end module jj_a_matrix_element_few_electrons

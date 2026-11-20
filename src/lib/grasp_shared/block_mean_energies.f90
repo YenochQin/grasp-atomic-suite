@@ -7,5 +7,5 @@ module block_mean_energies
     private :: real64
 
     ! Module state
-    real(real64), pointer :: eavblk(:)
+    real(real64), pointer :: mean_energy_by_block(:)
 end module block_mean_energies

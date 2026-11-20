@@ -4,12 +4,12 @@ module jj_subshell_term_lookup
 
     ! Module interface
     private
-    public :: nmtejj
+    public :: lookup_jj_subshell_term
 contains
-    integer function nmtejj(two_q,two_term_j,two_orbital_j,ket_occupation,bra_occupation) result(term_index)
+    integer function lookup_jj_subshell_term(two_q,two_term_j,two_orbital_j,ket_occupation,bra_occupation) result(term_index)
         ! Module dependencies
-        use subshell_term_multiplicities, only: packed_term_codes_low_j => mt
-        use high_j_subshell_term_data, only: packed_term_codes_high_j => mt11, packed_term_codes_two_j_9 => mt9
+        use subshell_term_multiplicities, only: packed_term_codes_low_j
+        use high_j_subshell_term_data, only: packed_term_codes_high_j, packed_term_codes_two_j_9
         implicit none (type, external)
 
         ! Arguments
@@ -75,5 +75,5 @@ contains
             term_index=table_index
         end if
         return
-    end function nmtejj
+    end function lookup_jj_subshell_term
 end module jj_subshell_term_lookup

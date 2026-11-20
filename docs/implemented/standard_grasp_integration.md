@@ -93,7 +93,7 @@ MPI 包装器和库必须核实，不能只由 `gfortran-15` 的名称推断整�
 首次配置即可注册，不需要先安装或等待可执行文件出现后再配置。
 显式指定的外部准备目录仍按既有规则检查，不会自动换成别的版本。
 
-新增 `standard_grasp_alternate_capacity`：在临时副本把中央 NNNP/NNNW 改为 790/149，
+新增 `standard_grasp_alternate_capacity`：在临时副本把中央 `max_radial_points` 和 `max_orbitals` 改为 790 和 149，
 用 CMake 选中的 Fortran 编译器检查共享数组的 790/800 容量以及普通波函数接口的形状。
 它使用过程指针关联验证真实接口；若 `tail_I` 仍硬编码 590，编译应失败。
 生产参数文件不受该测试影响。

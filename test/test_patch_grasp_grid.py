@@ -85,11 +85,14 @@ def fixture(root: Path, layout: str = "grasp2018") -> None:
                 + text
                 + "      END SUBROUTINE\n      END PROGRAM\n"
             )
+        if suite:
+            text = grid.code_names(text, grid.SEMANTIC_NAMES)
         path.write_text(text)
     for relative in restart_files:
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("      READ (IMCDF) RNT, H, HP\n      ACCY = H**6\n")
+        text = "      READ (IMCDF) RNT, H, HP\n      ACCY = H**6\n"
+        path.write_text(grid.code_names(text, grid.SEMANTIC_NAMES) if suite else text)
 
 
 class PatchGridTests(unittest.TestCase):
@@ -403,6 +406,9 @@ class PatchGridTests(unittest.TestCase):
                         after = after.replace(
                             b"\n      N = NNNP\n", b"\n      N = 590\n"
                         )
+                        after = after.replace(
+                            b"radial_point_count = max_radial_points", b"radial_point_count = 590"
+                        )
                     expected[relative] = after
                 self.assertEqual(
                     {c.relative: c.after for c in changes},
@@ -513,10 +519,10 @@ class PatchGridTests(unittest.TestCase):
         self.assertNotIn(grid.SUITE_EXPORT_FILE, {c.relative for c in changes})
         output = {c.relative: c.after for c in changes}
         for entry in grid.SUITE_GRID_FILES:
-            self.assertIn(b"N = 1179", output[entry])
-            self.assertIn(b"H = 2.5D-2", output[entry])
+            self.assertIn(b"radial_point_count = 1179", output[entry])
+            self.assertIn(b"transformed_grid_step = 2.5d-2", output[entry])
             if "/rci" not in entry:
-                self.assertIn(b"N = MIN(220,NNNP)", output[entry])
+                self.assertIn(b"radial_point_count = MIN(220,max_radial_points)", output[entry])
         backup = grid.apply(root, changes, Path(self.temporary.name) / "suite-backup")
         self.assertEqual(grid.plan(root, settings, "atomic-suite"), [])
         restored_root, restoration = grid.restore_plan(backup, root)
@@ -555,7 +561,7 @@ class PatchGridTests(unittest.TestCase):
         self.assertNotIn(grid.SUITE_EXPORT_FILE, {c.relative for c in changes})
         for change in changes:
             if "/rmcdhf" in change.relative:
-                self.assertEqual(change.after.lower().count(b"accy = 1d-10"), 2)
+                self.assertEqual(change.after.lower().count(b"working_tolerance = 1d-10"), 2)
         backup = grid.apply(root, changes, Path(self.temporary.name) / "real-backup")
         self.assertEqual(grid.plan(root, settings, "atomic-suite"), [])
         restored_root, restoration = grid.restore_plan(backup, root)
@@ -576,20 +582,48 @@ class PatchGridTests(unittest.TestCase):
         wrapper = root / grid.SUITE_EXPORT_FILE
         original = wrapper.read_text()
         incomplete, count = re.subn(
-            r"^\s*use compile_time_capacities, only: nnnwm2 => max_orbitals_minus_two\n", "", original,
+            r", max_orbitals_minus_two\b", "", original,
             flags=re.IGNORECASE | re.MULTILINE,
         )
         self.assertEqual(count, 1, "fixture must remove exactly one required re-export")
         wrapper.write_text(incomplete)
         with self.assertRaisesRegex(ValueError, "must re-export all six"):
             grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
-        wrapper.write_text(original.replace("nnnp => max_radial_points", "nnnp => max_orbitals"))
-        with self.assertRaisesRegex(ValueError, "incorrect compatibility alias for NNNP"):
+        wrapper.write_text(original.replace("max_radial_points,", "max_radial_points => max_orbitals,"))
+        with self.assertRaisesRegex(ValueError, "must use the semantic capacity names directly"):
             grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
         wrapper.write_text(original)
         config = root / grid.SUITE_CONFIG_FILE
-        config.write_text(config.read_text() + "integer, parameter :: NNN1 = 600\n")
-        with self.assertRaisesRegex(ValueError, "one central definition of NNN1"):
+        config.write_text(config.read_text() + "integer, parameter :: radial_workspace_capacity = 600\n")
+        with self.assertRaisesRegex(ValueError, "one central definition of radial_workspace_capacity"):
+            grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
+
+    def test_suite_rejects_old_capacity_exports(self) -> None:
+        root = Path(self.temporary.name) / "suite"
+        fixture(root, "atomic-suite")
+        wrapper = root / grid.SUITE_EXPORT_FILE
+        original = wrapper.read_text()
+        for obsolete_export, message in (
+            ("use compile_time_capacities, only: nnnp => max_radial_points", "semantic capacity names directly"),
+            ("integer, parameter :: nnnp = max_radial_points", "only direct capacity re-exports"),
+        ):
+            with self.subTest(obsolete_export=obsolete_export):
+                wrapper.write_text(original.replace("end module", f"    {obsolete_export}\nend module"))
+                with self.assertRaisesRegex(ValueError, message):
+                    grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
+
+    def test_suite_capacity_exports_honor_explicit_visibility(self) -> None:
+        root = Path(self.temporary.name) / "suite"
+        fixture(root, "atomic-suite")
+        wrapper = root / grid.SUITE_EXPORT_FILE
+        names = ", &\n        ".join(grid.SUITE_PARAMETER_NAMES)
+        source = wrapper.read_text().replace("implicit none (type, external)", "implicit none(type,external)\n    private")
+        source = source.replace("end module grasp_parameters", f"    public :: {names}\nend module")
+        wrapper.write_text(source)
+        changes = grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
+        self.assertEqual([change.relative for change in changes], [grid.SUITE_CONFIG_FILE])
+        wrapper.write_text(source.replace(f"public :: {names}", "public :: max_radial_points"))
+        with self.assertRaisesRegex(ValueError, "must re-export all six"):
             grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
 
     @unittest.skipUnless(shutil.which(FORTRAN_COMPILER), "Fortran compiler is not available")
@@ -675,9 +709,9 @@ class PatchGridTests(unittest.TestCase):
             {c.relative for c in fixed},
             set(grid.SUITE_GRID_FILES + grid.SUITE_RESTART_FILES),
         )
-        self.assertTrue(all(b"ACCY = 1D-10" in c.after for c in fixed))
+        self.assertTrue(all(b"working_tolerance = 1d-10" in c.after for c in fixed))
         reset = grid.plan(root, grid.Settings(accy=0), "atomic-suite")
-        self.assertTrue(all(b"ACCY = H**6" in c.after for c in reset))
+        self.assertTrue(all(b"working_tolerance = transformed_grid_step**6" in c.after for c in reset))
         grid.write_changes(root, reset)
         self.assertEqual(grid.plan(root, grid.Settings(accy=0), "atomic-suite"), [])
 

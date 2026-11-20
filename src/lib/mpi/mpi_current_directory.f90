@@ -3,16 +3,16 @@ module mpi_current_directory
 
     ! Module interface
     private
-    public :: sys_getwd
+    public :: get_mpi_working_directory
 contains
     ! Return the working directory and its trimmed length. Report errors through stopmpi.
-    subroutine sys_getwd (directory_path,path_length)
+    subroutine get_mpi_working_directory (directory_path,path_length)
 
         ! Module dependencies
         use mpi_state, only: mpi_rank
         use posix_services, only: working_directory
 
-        use mpi_runtime, only: stopmpi
+        use mpi_runtime, only: finalize_mpi_runtime
         implicit none (type, external)
 
         ! Arguments
@@ -26,9 +26,9 @@ contains
         path_length = len_trim(directory_path)
 
         if (getcwd_status/=0) then
-            call stopmpi ("sys_getwd: status.ne.0; myid = ", mpi_rank)
+            call finalize_mpi_runtime ("sys_getwd: status.ne.0; myid = ", mpi_rank)
 
         end if
         return
-    end subroutine sys_getwd
+    end subroutine get_mpi_working_directory
 end module mpi_current_directory

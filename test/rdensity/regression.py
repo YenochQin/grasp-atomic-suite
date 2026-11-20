@@ -124,7 +124,7 @@ def run(
     for text_fixture in folder.glob("*.c"):
         descriptors(text_fixture)
         assert text_fixture.with_name(
-            f"{text_fixture.stem}_descriptors.parquet"
+            f"{text_fixture.stem}_desc.parquet"
         ).is_file()
         assert text_fixture.with_name(f"{text_fixture.stem}_header.toml").is_file()
         text_fixture.unlink()

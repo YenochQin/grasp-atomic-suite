@@ -4,6 +4,6 @@ module csf_pair_subshell_couplings
     implicit none (type, external)
 
     ! Module state
-    integer :: jbq1(3, max_orbitals), jbq2(3, max_orbitals)
-    integer :: jtq1(3), jtq2(3)
+    integer :: bra_background_subshell_codes(3, max_orbitals), ket_background_subshell_codes(3, max_orbitals)
+    integer :: bra_active_pair_codes(3), ket_active_pair_codes(3)
 end module csf_pair_subshell_couplings

@@ -4,19 +4,18 @@ module three_subshell_recoupling
 
     ! Module interface
     private
-    public :: reco3
+    public :: recouple_three_subshells
 contains
-    subroutine reco3(first_shell_position,second_shell_position,third_shell_position,two_rank_1,two_rank_2, &
+    subroutine recouple_three_subshells(first_shell_position,second_shell_position,third_shell_position,two_rank_1,two_rank_2, &
         two_tensor_rank,evaluate_coefficient,coupling_allowed,recoupling_coefficient)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: one
-        use csf_pair_angular_state,             only: peel_orbital_indices => jlist, bra_subshell_quantum_codes => jjq1, &
-            ket_subshell_quantum_codes => jjq2
-        use first_active_shell_recoupling, only: diaga1
-        use later_active_shell_recoupling, only: diaga2
-        use spectator_shell_chain_recoupling, only: diaga3
-        use pair_tensor_recoupling, only: diaga4
+        use csf_pair_angular_state,             only: peel_orbital_indices, bra_subshell_quantum_codes, ket_subshell_quantum_codes
+        use first_active_shell_recoupling, only: recouple_first_active_shell
+        use later_active_shell_recoupling, only: recouple_later_active_shell
+        use spectator_shell_chain_recoupling, only: recouple_spectator_shell_chain
+        use pair_tensor_recoupling, only: recouple_pair_tensor
         implicit none (type, external)
 
         ! Arguments
@@ -44,33 +43,35 @@ contains
         coupling_allowed=0
         coupling_step_count=third_shell_position-second_shell_position
         if(coupling_step_count > 1) then
-            call diaga3(second_shell_position,third_shell_position,two_tensor_rank,evaluate_coefficient, &
+            call recouple_spectator_shell_chain(second_shell_position,third_shell_position,two_tensor_rank,evaluate_coefficient, &
                 coupling_allowed,diagram_factor)
             if(coupling_allowed == 0)return
             recoupling_coefficient=diagram_factor*recoupling_coefficient
         end if
         coupling_allowed=0
-        call diaga2(first_shell_position,third_shell_position,two_tensor_rank,evaluate_coefficient,coupling_allowed, &
+        call recouple_later_active_shell(first_shell_position,third_shell_position,two_tensor_rank,evaluate_coefficient, &
+            & coupling_allowed, &
             diagram_factor)
         if(coupling_allowed == 0)return
         recoupling_coefficient=diagram_factor*recoupling_coefficient
         coupling_allowed=0
-        call diaga4(first_shell_position,second_shell_position,two_rank_1,two_rank_2,two_tensor_rank, &
+        call recouple_pair_tensor(first_shell_position,second_shell_position,two_rank_1,two_rank_2,two_tensor_rank, &
             evaluate_coefficient,coupling_allowed,diagram_factor)
         if(coupling_allowed == 0)return
         recoupling_coefficient=diagram_factor*recoupling_coefficient
         if(first_shell_position == 1.and.second_shell_position == 2)return
         coupling_allowed=0
-        call diaga1(first_shell_position,two_rank_1,evaluate_coefficient,coupling_allowed,diagram_factor)
+        call recouple_first_active_shell(first_shell_position,two_rank_1,evaluate_coefficient,coupling_allowed,diagram_factor)
         if(coupling_allowed == 0)return
         recoupling_coefficient=diagram_factor*recoupling_coefficient
         coupling_step_count=second_shell_position-first_shell_position
         if(first_shell_position == 1)coupling_step_count=second_shell_position-1-first_shell_position
         if(coupling_step_count <= 1)return
         coupling_allowed=0
-        call diaga3(first_shell_position,second_shell_position,two_rank_1,evaluate_coefficient,coupling_allowed, &
+        call recouple_spectator_shell_chain(first_shell_position,second_shell_position,two_rank_1,evaluate_coefficient, &
+            & coupling_allowed, &
             diagram_factor)
         recoupling_coefficient=diagram_factor*recoupling_coefficient
         return
-    end subroutine reco3
+    end subroutine recouple_three_subshells
 end module three_subshell_recoupling

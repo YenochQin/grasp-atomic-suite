@@ -4,9 +4,9 @@ module run_timer_finish
 
     ! Module interface
     private
-    public :: stoptime
+    public :: finish_run_timer
 contains
-    subroutine stoptime(start_clock_count, program_name)
+    subroutine finish_run_timer(start_clock_count, program_name)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         implicit none (type, external)
@@ -45,5 +45,5 @@ contains
         write (output_unit, *) program_name//": Execution complete."
 
         return
-    end subroutine stoptime
+    end subroutine finish_run_timer
 end module run_timer_finish

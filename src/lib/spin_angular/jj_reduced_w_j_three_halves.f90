@@ -4,15 +4,14 @@ module jj_reduced_w_j_three_halves
 
     ! Module interface
     private
-    public :: rmew3jj
+    public :: evaluate_reduced_w_j_three_halves
 contains
-    subroutine rmew3jj(bra_term_index,ket_term_index,quasispin_rank,angular_rank,reduced_w_element)
+    subroutine evaluate_reduced_w_j_three_halves(bra_term_index,ket_term_index,quasispin_rank,angular_rank,reduced_w_element)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: error_unit
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: zero
-        use jj_reduced_coefficients, only: last_opposite_parity_terms_low_j => imgnjj, last_same_parity_terms_low_j => imgtjj, &
-            first_opposite_parity_terms_low_j => impnjj, first_same_parity_terms_low_j => imptjj
+        use jj_reduced_coefficients, only: first_same_parity_terms_low_j
         implicit none (type, external)
 
         ! Arguments
@@ -60,5 +59,5 @@ contains
             stop
         end if
         return
-    end subroutine rmew3jj
+    end subroutine evaluate_reduced_w_j_three_halves
 end module jj_reduced_w_j_three_halves

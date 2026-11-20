@@ -4,17 +4,17 @@ module later_active_shell_recoupling
 
     ! Module interface
     private
-    public :: diaga2
+    public :: recouple_later_active_shell
 contains
-    subroutine diaga2(first_shell_position,second_shell_position,two_tensor_rank,evaluate_coefficient, &
+    subroutine recouple_later_active_shell(first_shell_position,second_shell_position,two_tensor_rank,evaluate_coefficient, &
         coupling_allowed,recoupling_coefficient)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: zero
-        use csf_pair_angular_state,             only: peel_orbital_indices => jlist, bra_subshell_quantum_codes => jjq1, &
-            ket_subshell_quantum_codes => jjq2, bra_intermediate_couplings => jjc1, ket_intermediate_couplings => jjc2
-        use wigner_6j_triangle_selection, only: ixjtik
-        use wigner_6j, only: sixj
+        use csf_pair_angular_state,             only: peel_orbital_indices, bra_subshell_quantum_codes, &
+            ket_subshell_quantum_codes, bra_intermediate_couplings, ket_intermediate_couplings
+        use wigner_6j_triangle_selection, only: allows_wigner_6j_triangles
+        use wigner_6j, only: wigner_6j_value
         implicit none (type, external)
 
         ! Arguments
@@ -46,17 +46,17 @@ contains
             two_ket_prefix_j=ket_intermediate_couplings(preceding_coupling_position)-1
         end if
         if(evaluate_coefficient /= 0) then
-            call sixj(two_tensor_rank,two_ket_shell_j_2,two_bra_shell_j_2,two_bra_coupled_j,two_bra_prefix_j, &
+            call wigner_6j_value(two_tensor_rank,two_ket_shell_j_2,two_bra_shell_j_2,two_bra_coupled_j,two_bra_prefix_j, &
                 two_ket_prefix_j,0,six_j_value)
             recoupling_coefficient=six_j_value*dsqrt(dble((two_ket_shell_j_2+1)*(two_bra_prefix_j+1)))
             phase_sum=two_bra_coupled_j+two_ket_prefix_j+two_bra_shell_j_2+two_tensor_rank
             if((phase_sum/4)*4 /= phase_sum)recoupling_coefficient=-recoupling_coefficient
             coupling_allowed=1
         else
-            if(ixjtik(two_tensor_rank,two_ket_shell_j_2,two_bra_shell_j_2,two_bra_coupled_j,two_bra_prefix_j, &
+            if(allows_wigner_6j_triangles(two_tensor_rank,two_ket_shell_j_2,two_bra_shell_j_2,two_bra_coupled_j,two_bra_prefix_j, &
                 two_ket_prefix_j) == 0)return
             coupling_allowed=1
         end if
         return
-    end subroutine diaga2
+    end subroutine recouple_later_active_shell
 end module later_active_shell_recoupling

@@ -1,89 +1,98 @@
-!***********************************************************************
-!
-subroutine read_eol_level_weights(ndef, ncmin, level_weights)
-    ! Module dependencies
-    use calculation_file_units, only: calculation_log_unit
-    !
-    !   Interactively determines the weights for EOL calculation.
-    !   It's modified to always ask the question for the weight
-    !
-    !   Call(s) to: [LIB92]: GETYN.
-    !
-    !   Written by Xinghong He                Last revision: 19 Mar 1999
-    !
-    !***********************************************************************
-    use, intrinsic :: iso_fortran_env, only: real64
-    use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+module read_eol_level_weights_interface
     implicit none (type, external)
 
-    ! Arguments
-    integer  :: ndef
-    integer , intent(in) :: ncmin
-    real(real64)  :: level_weights(ncmin)
+    ! Module interface
+    private
+    public :: read_eol_level_weights
+contains
 
-    ! Local declarations
-    integer :: i, n159
-    real(real64) :: sumwgt
-    !-----------------------------------------------
+    !***********************************************************************
+    !
+    subroutine read_eol_level_weights(nondefault_options_flag, selected_level_count, level_weights)
+        ! Module dependencies
+        use calculation_file_units, only: calculation_log_unit
+        !
+        !   Interactively determines the weights for EOL calculation.
+        !   It's modified to always ask the question for the weight
+        !
+        !   Call(s) to: [LIB92]: GETYN.
+        !
+        !   Written by Xinghong He                Last revision: 19 Mar 1999
+        !
+        !***********************************************************************
+        use, intrinsic :: iso_fortran_env, only: real64
+        use standard_io_units, only: stderr_unit, stdin_unit
+        implicit none (type, external)
 
-    ! Standard weights: ncmin=1, OL calculation
+        ! Arguments
+        integer  :: nondefault_options_flag
+        integer , intent(in) :: selected_level_count
+        real(real64), intent(inout) :: level_weights(selected_level_count)
 
-    if (ncmin == 1) then
-        level_weights(1) = -1.0_real64
-        return
-    end if
+        ! Local declarations
+        integer :: i, weighting_mode
+        real(real64) :: weight_sum
+        !-----------------------------------------------
 
-    ! Select a method to assign level weights for ncmin > 1 case
+        ! Standard weights: ncmin=1, OL calculation
 
-    write (stderr_unit, *) "level weights (1 equal;  5 standard;  9 user)"
+        if (selected_level_count == 1) then
+            level_weights(1) = -1.0_real64
+            return
+        end if
 
-    ! Let user try 10 times to get the correct input. 10 is BIG
-    ! enough since the idea here is to allow user mistakes and
-    ! at the same time to avoid an infinity loop.
+        ! Select a method to assign level weights for ncmin > 1 case
 
-    do i = 1, 10
-        read (stdin_unit, *) n159
-        if (n159==1 .or. n159==5 .or. n159==9) exit
-        write (stderr_unit, *) "Input not correct, do it again. tried=", i
-    end do
+        write (stderr_unit, *) "level weights (1 equal;  5 standard;  9 user)"
 
-    if (ndef==0) then
-        write(calculation_log_unit,*) n159,"! level weights"
-    end if
+        ! Let user try 10 times to get the correct input. 10 is BIG
+        ! enough since the idea here is to allow user mistakes and
+        ! at the same time to avoid an infinity loop.
 
-    if (i > 10) error stop
-
-    !------------------------------------------------------------------
-
-    select case (n159)                         ! Equal weight
-    case (1)
-        level_weights = -2.0_real64
-    case (5)                                   ! Standard weight
-        level_weights = -1.0_real64
-    case (9)                                   ! User-input weight
-        do
-            write (stderr_unit, *) "Enter the (relative) weights of the", ncmin, &
-                " levels :"
-            read (stdin_unit, *) (level_weights(i),i=1,ncmin)
-
-            sumwgt = 0.0_real64
-            do i = 1, ncmin
-                if (level_weights(i) <= 0.0_real64) then
-                    write (stderr_unit, *) "Weights must exceed 0;"
-                    exit
-                else
-                    sumwgt = sumwgt + level_weights(i)
-                end if
-            end do
-            if (i > ncmin) exit
+        do i = 1, 10
+            read (stdin_unit, *) weighting_mode
+            if (weighting_mode==1 .or. weighting_mode==5 .or. weighting_mode==9) exit
+            write (stderr_unit, *) "Input not correct, do it again. tried=", i
         end do
-        sumwgt = 1.0_real64/sumwgt
-        level_weights = sumwgt*level_weights
 
-    case default
-        write (stderr_unit, *) "Impossible ! Because it was guarded"
-        error stop
-    end select
+        if (nondefault_options_flag==0) then
+            write(calculation_log_unit,*) weighting_mode,"! level weights"
+        end if
 
-    return
-end subroutine read_eol_level_weights
+        if (i > 10) error stop
+
+        !------------------------------------------------------------------
+
+        select case (weighting_mode)                         ! Equal weight
+        case (1)
+            level_weights = -2.0_real64
+        case (5)                                   ! Standard weight
+            level_weights = -1.0_real64
+        case (9)                                   ! User-input weight
+            do
+                write (stderr_unit, *) "Enter the (relative) weights of the", selected_level_count, &
+                    " levels :"
+                read (stdin_unit, *) (level_weights(i),i=1,selected_level_count)
+
+                weight_sum = 0.0_real64
+                do i = 1, selected_level_count
+                    if (level_weights(i) <= 0.0_real64) then
+                        write (stderr_unit, *) "Weights must exceed 0;"
+                        exit
+                    else
+                        weight_sum = weight_sum + level_weights(i)
+                    end if
+                end do
+                if (i > selected_level_count) exit
+            end do
+            weight_sum = 1.0_real64/weight_sum
+            level_weights = weight_sum*level_weights
+
+        case default
+            write (stderr_unit, *) "Impossible ! Because it was guarded"
+            error stop
+        end select
+
+        return
+    end subroutine read_eol_level_weights
+end module read_eol_level_weights_interface

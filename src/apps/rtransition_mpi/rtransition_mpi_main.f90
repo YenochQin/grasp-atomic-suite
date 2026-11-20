@@ -18,11 +18,10 @@ program rtransition_mpi_main
     !     and for reducing usage of CPU memory.        NIST, October 2017  *
     !                                                                      *
     !***********************************************************************
-    use calculation_input_defaults, only: inpci, ndef, ndump
-    use debug_output_settings, only: ldbpr, cutoff
-    use yes_no_input, only: getyn
-    use machine_constants, only: setmc
-    use physical_constants, only: setcon
+    use calculation_input_defaults, only: input_mixing_file_kind, nondefault_options_flag, angular_output_dump_flag
+    use yes_no_input, only: read_yes_no
+    use machine_constants, only: initialize_machine_constants
+    use physical_constants, only: initialize_physical_constants
 
     ! Procedure interfaces
     use read_state_filenames_interface, only: read_state_filenames
@@ -32,39 +31,40 @@ program rtransition_mpi_main
     use write_input_summary_interface, only: write_input_summary
 
     ! Module dependencies
-    use log_factorial_table, only: factt
+    use log_factorial_table, only: initialize_log_factorial_table
 
     ! Procedure interfaces
     use calculate_oscillator_strengths_interface, only: calculate_oscillator_strengths
 
     ! Module dependencies
-    use mpi_state, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_integer, &
-        & mpi_process_count, mpi_rank, processor_name, processor_name_length
+    use mpi_state, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
+        processor_name, processor_name_length
 
-    use posix_services, only: exit => terminate_process
-    use mpi_utilities, only: startmpi2
-    use mpi_utilities, only: stopmpi2
-    use isotope_data_input, only: setiso
-    use mpi_change_directory, only: sys_chdir
+    use posix_services, only: terminate_process
+    use mpi_utilities, only: initialize_mpi_runtime_with_status
+    use mpi_utilities, only: finalize_mpi_runtime_with_status
+    use isotope_data_input, only: read_isotope_data
+    use mpi_change_directory, only: change_mpi_directory
     implicit none (type, external)
-    integer :: ntest,start_clock_count,ilbl,lenperm,lentmp, iii
+    integer :: ntest,start_clock_count,label_output_option,permanent_directory_length,scratch_directory_length, iii
     logical :: yes
     character :: name(2)*24
     character :: fullname(2)*128
     character(len=3)  ::  block_label_text
-    character(len=128) :: isotope_file_path,startup_directory,permdir,tmpdir
+    character(len=128) :: isotope_file_path,startup_directory,permanent_directory,scratch_directory
     !-----------------------------------------------
     !
     !=======================================================================
     !  Start mpi --- get processor info: myid, nprocs, host name; and print
     !=======================================================================
-    call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count,           &
-        startup_directory, permdir, tmpdir, "RTRANSITION_MPI")
+    call initialize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length, &
+        & start_clock_count,           &
+        startup_directory, permanent_directory, scratch_directory, "RTRANSITION_MPI")
     write (block_label_text, "(I3.3)") mpi_rank
-    print*, tmpdir , " = tmpdir"
+    print*, scratch_directory , " = tmpdir"
 
-    lenperm = len_trim (permdir)
-    lentmp = len_trim (tmpdir)
+    permanent_directory_length = len_trim (permanent_directory)
+    scratch_directory_length = len_trim (scratch_directory)
 
     !=======================================================================
     isotope_file_path = trim(startup_directory)//"/isodata"
@@ -73,34 +73,34 @@ program rtransition_mpi_main
     if (mpi_rank == 0) then
         write (output_unit, *)
         write (output_unit, *) " Default settings?"
-        yes = getyn()
+        yes = read_yes_no()
         write (output_unit, *)
         if (yes) then
-            ndef = 0
-            ndump = 1
+            nondefault_options_flag = 0
+            angular_output_dump_flag = 1
         else
-            ndef = 1
+            nondefault_options_flag = 1
             write (output_unit, *) " Dump angular data to file?"
-            yes = getyn()
+            yes = read_yes_no()
             if (yes) then
-                ndump = 1
+                angular_output_dump_flag = 1
             else
-                ndump = 0
+                angular_output_dump_flag = 0
             end if
         end if
         write (output_unit, *)
         write (output_unit, *) " Input from a CI calculation?"
-        yes = getyn()
+        yes = read_yes_no()
         write (output_unit, *)
         if (yes) then
-            inpci = 0
+            input_mixing_file_kind = 0
         else
-            inpci = 1
+            input_mixing_file_kind = 1
         end if
     end if   !myid=0
-    call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
-    call mpi_bcast (ndump,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
-    call mpi_bcast (inpci,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+    call mpi_bcast (nondefault_options_flag,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+    call mpi_bcast (angular_output_dump_flag,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+    call mpi_bcast (input_mixing_file_kind,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
     !Rasa -- start
     !GG      LDBPR = .FALSE.
     !      WRITE (6, *) ' Generate debug output?'
@@ -115,11 +115,11 @@ program rtransition_mpi_main
     !
     !   Perform machine- and installation-dependent setup
     !
-    call setmc
+    call initialize_machine_constants
     !
     !   Set up the physical constants
     !
-    call setcon
+    call initialize_physical_constants
     !
     !   Obtain the names of the initial and final state files
     !
@@ -153,7 +153,7 @@ program rtransition_mpi_main
     !
     !   Open, check, load data from, and close the .iso file
     !
-    call setiso(isotope_file_path)
+    call read_isotope_data(isotope_file_path)
 
     !
     !   Get the remaining information
@@ -164,28 +164,28 @@ program rtransition_mpi_main
     !
     if (mpi_rank == 0) then
         iii = len_trim(startup_directory)
-        call sys_chdir(trim(startup_directory),iii,mpi_error_code)
+        call change_mpi_directory(trim(startup_directory),iii,mpi_error_code)
         if (mpi_error_code/=0) then
             print *, "error changing dir!"
-            call exit(1)
+            call terminate_process(1)
         end if
-        ilbl = 0
-        call write_input_summary(name,inpci,ilbl)
-        iii = len_trim(tmpdir)
-        call sys_chdir(trim(tmpdir)//"/"//block_label_text,iii+4,mpi_error_code)
+        label_output_option = 0
+        call write_input_summary(name,input_mixing_file_kind,label_output_option)
+        iii = len_trim(scratch_directory)
+        call change_mpi_directory(trim(scratch_directory)//"/"//block_label_text,iii+4,mpi_error_code)
         if (mpi_error_code/=0) then
             print *, "Error changing dir!"
-            call exit(1)
+            call terminate_process(1)
         end if
     end if  !myid = 0
     !
     !   Set up the table of logarithms of factorials
     !
-    call factt
+    call initialize_log_factorial_table
     !
     !   Proceed with the transition calculation
     !
-    call calculate_oscillator_strengths (name,fullname,tmpdir,startup_directory,block_label_text)
+    call calculate_oscillator_strengths (name,fullname,scratch_directory,startup_directory,block_label_text)
     !
     !   Print completion message
     !
@@ -197,7 +197,7 @@ program rtransition_mpi_main
     !  Execution finished; Statistics output
     !=======================================================================
 
-    call stopmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length,                     &
+    call finalize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length,                     &
         start_clock_count, "RTRANSITION_MPI")
     !=======================================================================
     !

@@ -2,6 +2,7 @@
 module rmcdhf_csf_input
     ! Module dependencies
     use iso_fortran_env, only: int8, int64
+    use calculation_state_files, only: descriptor_input_path, resolve_descriptor_input
     use csf_descriptor_reader, only: descriptor_source, open_descriptor_source, close_descriptor_source, &
         descriptor_block_label, read_descriptor_block
     use grasp_parameters, only: max_orbitals
@@ -10,7 +11,7 @@ module rmcdhf_csf_input
     use atomic_calculation_state, only: electron_count
     use closed_core_subshells, only: closed_core_subshell_count
     use hamiltonian_symmetry_blocks, only: symmetry_block_count, csf_counts_by_block
-    use level_symmetry_metadata, only: packed_block_symmetries => jpgg
+    use level_symmetry_metadata, only: packed_block_symmetries
     implicit none (type, external)
 
     ! Module interface
@@ -55,7 +56,7 @@ contains
                 return
             end if
         end if
-        path = trimmed_name//"_descriptors.parquet"
+        path = descriptor_input_path(trimmed_name)
     end function descriptor_path
 
     subroutine load_rmcdhf_descriptors(state_name, core_subshell_count, block_labels, status)
@@ -67,7 +68,8 @@ contains
         ! Local declarations
         type(descriptor_source) :: basis_reader
 
-        call open_descriptor_source(basis_reader, descriptor_path(state_name), size(packed_block_symmetries), status=status)
+        call open_descriptor_source(basis_reader, resolve_descriptor_input(descriptor_path(state_name)), &
+            size(packed_block_symmetries), status=status)
         if (status /= 0) return
         call read_rmcdhf_basis(basis_reader, core_subshell_count, block_labels, status)
         call close_descriptor_source(basis_reader)

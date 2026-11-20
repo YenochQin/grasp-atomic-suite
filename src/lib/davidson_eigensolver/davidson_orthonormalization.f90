@@ -3,9 +3,9 @@ module davidson_orthonormalization
 
     ! Module interface
     private
-    public :: mgs_nrm
+    public :: orthonormalize_davidson_vectors
 contains
-    subroutine mgs_nrm(vector_length, existing_vector_count, new_vector_count, projection_coefficients, &
+    subroutine orthonormalize_davidson_vectors(vector_length, existing_vector_count, new_vector_count, projection_coefficients, &
         vectors)
         ! Module dependencies
         ! Apply two passes of modified Gram-Schmidt to the appended columns.
@@ -70,5 +70,5 @@ contains
         end do
 
         return
-    end subroutine mgs_nrm
+    end subroutine orthonormalize_davidson_vectors
 end module davidson_orthonormalization

@@ -1,23 +1,23 @@
 module mpi_utilities
     ! Module dependencies
-    use mpi_runtime, only: startmpi, mpix_bytes, stopmpi
+    use mpi_runtime, only: initialize_mpi_runtime, mpix_bytes, finalize_mpi_runtime
     implicit none (type, external)
 
     ! Module interface
     private
-    public :: startmpi
+    public :: initialize_mpi_runtime
     public :: mpix_startup
-    public :: startmpi2
+    public :: initialize_mpi_runtime_with_status
     public :: mpix_shutdown
-    public :: stopmpi
-    public :: stopmpi2
-    public :: mpix_printmsg
-    public :: mpix_chkpt
+    public :: finalize_mpi_runtime
+    public :: finalize_mpi_runtime_with_status
+    public :: print_mpi_message
+    public :: check_mpi_checkpoint
     public :: mpix_bytes
-    public :: gdsummpi
-    public :: gdrsummpi_root
-    public :: gdmaxmpi_root
-    public :: gisummpi
+    public :: allreduce_mpi_real_sum
+    public :: reduce_mpi_real_sum_to_root
+    public :: reduce_mpi_real_max_to_root
+    public :: allreduce_mpi_integer_sum
 contains
 
     ! Start MPI in the caller's working directory and optionally redirect worker output.
@@ -41,7 +41,7 @@ contains
         integer :: ticks_per_second, clock_count_limit, output_open_status
         character(len=256) :: output_message
 
-        call startmpi (rank, process_count, processor_name, processor_name_length)
+        call initialize_mpi_runtime (rank, process_count, processor_name, processor_name_length)
         call system_clock (start_ticks, ticks_per_second, clock_count_limit)
 
         if (rank == 0) then
@@ -66,11 +66,11 @@ contains
     end subroutine mpix_startup
 
     ! Start MPI, report the participating ranks and set up rank-local working directories.
-    subroutine startmpi2 (rank, process_count, processor_name, processor_name_length, start_ticks, &
+    subroutine initialize_mpi_runtime_with_status (rank, process_count, processor_name, processor_name_length, start_ticks, &
         startup_directory, serial_io_directory, rank_scratch_root, program_name)
 
         ! Module dependencies
-        use mpi_work_paths, only: cpath
+        use mpi_work_paths, only: prepare_mpi_work_directories
 
         implicit none (type, external)
 
@@ -89,7 +89,7 @@ contains
         integer :: ticks_per_second, clock_count_limit
         character(len=80) :: message
 
-        call startmpi (rank, process_count, processor_name, processor_name_length)
+        call initialize_mpi_runtime (rank, process_count, processor_name, processor_name_length)
         write (rank_label, "(I3.3)") rank
         if (rank == 0) then
             print *, "===================================================="
@@ -98,7 +98,7 @@ contains
             print *,        "Participating nodes:"
         end if
         message = "  Host: " // processor_name(1:processor_name_length) // "    ID: " // rank_label
-        call mpix_printmsg (message, rank, process_count)
+        call print_mpi_message (message, rank, process_count)
 
         call date_and_time (date_text, time_text, zone_text, date_time_values)
         if (rank == 0) then
@@ -109,10 +109,10 @@ contains
             "  Date: " // date_text // &
             "  Time: " // time_text // &
             "  Zone: " // zone_text
-        call mpix_printmsg (message, rank, process_count)
+        call print_mpi_message (message, rank, process_count)
 
         ! Keep the serial I/O directory for rank 0 and select a scratch root for each rank.
-        call cpath (startup_directory, serial_io_directory, rank_scratch_root)
+        call prepare_mpi_work_directories (startup_directory, serial_io_directory, rank_scratch_root)
 
         startup_directory_length = len_trim (startup_directory)
         serial_io_directory_length = len_trim (serial_io_directory)
@@ -123,7 +123,7 @@ contains
             print *, "Start Dir:"
         end if
         message = "  " // processor_name(1:processor_name_length) // ": " // startup_directory(1:startup_directory_length)
-        call mpix_printmsg (message, rank, process_count)
+        call print_mpi_message (message, rank, process_count)
 
         if (rank == 0) then
             print *
@@ -136,11 +136,11 @@ contains
             print *, "Work Dir (Parallel I/O):"
         end if
         message = "  " // processor_name(1:processor_name_length) // ": " // rank_scratch_root(1:rank_scratch_root_length)
-        call mpix_printmsg (message, rank, process_count)
+        call print_mpi_message (message, rank, process_count)
 
         call system_clock (start_ticks, ticks_per_second, clock_count_limit)
         return
-    end subroutine startmpi2
+    end subroutine initialize_mpi_runtime_with_status
 
     ! Print elapsed time on rank 0 and finalize MPI.
     subroutine mpix_shutdown (rank, start_ticks, program_name)
@@ -179,7 +179,7 @@ contains
     end subroutine mpix_shutdown
 
     ! Collect elapsed time and completion details on rank 0, then synchronize and stop.
-    subroutine stopmpi2 (rank, process_count, processor_name, processor_name_length, start_ticks, &
+    subroutine finalize_mpi_runtime_with_status (rank, process_count, processor_name, processor_name_length, start_ticks, &
         program_name)
 
         ! Module dependencies
@@ -211,7 +211,7 @@ contains
         elapsed_seconds = elapsed_ticks / ticks_per_second
         write (elapsed_seconds_text, "(i8)") elapsed_seconds
         message = elapsed_seconds_text // " seconds on " // processor_name(1:processor_name_length)
-        call mpix_printmsg (message, rank, process_count)
+        call print_mpi_message (message, rank, process_count)
 
         if (rank == 0) then
             print *
@@ -224,17 +224,17 @@ contains
             "  Date: " // date_text // &
             "  Time: " // time_text // &
             "  Zone: " // zone_text
-        call mpix_printmsg (message, rank, process_count)
+        call print_mpi_message (message, rank, process_count)
 
         if (rank == 0) print *
 
         call mpi_barrier (mpi_comm_world,mpi_return_code)
-        call stopmpi (program_name // ": Execution complete.", rank)
+        call finalize_mpi_runtime (program_name // ": Execution complete.", rank)
         return
-    end subroutine stopmpi2
+    end subroutine finalize_mpi_runtime_with_status
 
     ! Print messages on rank 0 in rank order. Workers send the length before the payload.
-    subroutine mpix_printmsg (message, rank, process_count)
+    subroutine print_mpi_message (message, rank, process_count)
 
         ! Module dependencies
         use mpi, only: mpi_character, mpi_comm_world, mpi_integer, mpi_recv, mpi_send, mpi_status_size
@@ -266,10 +266,10 @@ contains
         end if
 
         return
-    end subroutine mpix_printmsg
+    end subroutine print_mpi_message
 
     ! Pause all ranks until rank 0 receives input.
-    subroutine mpix_chkpt (rank, checkpoint_message)
+    subroutine check_mpi_checkpoint (rank, checkpoint_message)
         ! Module dependencies
         use mpi, only: mpi_barrier, mpi_comm_world
         implicit none (type, external)
@@ -289,16 +289,16 @@ contains
         call mpi_barrier (mpi_comm_world, mpi_return_code)
 
         return
-    end subroutine mpix_chkpt
+    end subroutine check_mpi_checkpoint
 
     ! Sum real values element by element and return the result on every rank.
-    subroutine gdsummpi (values, value_count)
+    subroutine allreduce_mpi_real_sum (values, value_count)
 
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use mpi, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_sum
         use blas_lapack_interfaces, only: dcopy
-        use real_vector_initialization, only: dinit
+        use real_vector_initialization, only: initialize_real_vector
         implicit none (type, external)
 
         ! Arguments
@@ -309,23 +309,23 @@ contains
         integer                                     :: mpi_return_code
         real(real64)                :: summed_values(1:value_count)
 
-        call dinit (value_count, 0.0_real64, summed_values, 1)
+        call initialize_real_vector (value_count, 0.0_real64, summed_values, 1)
         call mpi_allreduce (values, summed_values, value_count, mpi_double_precision, &
             mpi_sum, mpi_comm_world, mpi_return_code)
         call dcopy (value_count, summed_values, 1, values, 1)
 
         return
-    end subroutine gdsummpi
+    end subroutine allreduce_mpi_real_sum
 
     ! Sum real values element by element and return the result on rank 0.
-    subroutine gdrsummpi_root (values, value_count)
+    subroutine reduce_mpi_real_sum_to_root (values, value_count)
 
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use mpi_state, only: mpi_rank
         use mpi, only: mpi_comm_world, mpi_double_precision, mpi_reduce, mpi_sum
         use blas_lapack_interfaces, only: dcopy
-        use real_vector_initialization, only: dinit
+        use real_vector_initialization, only: initialize_real_vector
         implicit none (type, external)
 
         ! Arguments
@@ -337,7 +337,7 @@ contains
         real(real64)                 :: summed_values(1:value_count)
 
         if (mpi_rank == 0) then
-            call dinit (value_count, 0.0_real64, summed_values, 1)
+            call initialize_real_vector (value_count, 0.0_real64, summed_values, 1)
             call mpi_reduce (values, summed_values, value_count, mpi_double_precision, mpi_sum, 0, &
                 mpi_comm_world, mpi_return_code)
             call dcopy (value_count, summed_values, 1, values, 1)
@@ -347,10 +347,10 @@ contains
         end if
 
         return
-    end subroutine gdrsummpi_root
+    end subroutine reduce_mpi_real_sum_to_root
 
     ! Take element-wise maxima of real values and return the result on rank 0.
-    subroutine gdmaxmpi_root (values, value_count)
+    subroutine reduce_mpi_real_max_to_root (values, value_count)
 
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
@@ -377,13 +377,13 @@ contains
         end if
 
         return
-    end subroutine gdmaxmpi_root
+    end subroutine reduce_mpi_real_max_to_root
 
     ! Sum integer values element by element and return the result on every rank.
-    subroutine gisummpi (values, value_count)
+    subroutine allreduce_mpi_integer_sum (values, value_count)
         ! Module dependencies
         use mpi, only: mpi_allreduce, mpi_comm_world, mpi_integer, mpi_sum
-        use integer_vector_copy, only: icopy
+        use integer_vector_copy, only: copy_integer_vector
         implicit none (type, external)
 
         ! Arguments
@@ -398,8 +398,8 @@ contains
 
         call mpi_allreduce (values, summed_values, value_count, mpi_integer, mpi_sum, &
             mpi_comm_world, mpi_return_code)
-        call icopy (value_count, summed_values, 1, values, 1)
+        call copy_integer_vector (value_count, summed_values, 1, values, 1)
 
         return
-    end subroutine gisummpi
+    end subroutine allreduce_mpi_integer_sum
 end module mpi_utilities

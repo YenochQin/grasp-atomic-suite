@@ -4,17 +4,15 @@ module weighted_radial_overlap
 
     ! Module interface
     private
-    public :: rint
+    public :: integrate_weighted_radial_overlap
 contains
-    real(real64) function rint (first_orbital, second_orbital, radial_power)
+    real(real64) function integrate_weighted_radial_overlap (first_orbital, second_orbital, radial_power)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
-            radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-        use radial_quadrature_workspace, only: weighted_integrand => ta, last_radial_index => mtp
-        use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
-            pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-        use radial_quadrature, only: quad
+        use radial_grid_state, only: radial_grid, radial_grid_derivative
+        use radial_quadrature_workspace, only: radial_workspace_a, integration_last_index
+        use radial_wavefunctions, only: orbital_last_grid_index, radial_large_components, radial_small_components
+        use radial_quadrature, only: integrate_radial_grid
         implicit none (type, external)
 
         ! Arguments
@@ -25,16 +23,17 @@ contains
         ! Local declarations
         integer :: radial_index
         real(real64) :: overlap_integral
-        last_radial_index = min(orbital_last_grid_index(first_orbital),orbital_last_grid_index(second_orbital))
-        weighted_integrand(1) = 0.0_real64
-        do radial_index = 2, last_radial_index
-            weighted_integrand(radial_index) = radial_grid(radial_index)**radial_power*(radial_large_components(radial_index, &
+        integration_last_index = min(orbital_last_grid_index(first_orbital),orbital_last_grid_index(second_orbital))
+        ! Fill workspace A with the weighted radial overlap integrand.
+        radial_workspace_a(1) = 0.0_real64
+        do radial_index = 2, integration_last_index
+            radial_workspace_a(radial_index) = radial_grid(radial_index)**radial_power*(radial_large_components(radial_index, &
                 & first_orbital)*radial_large_components(radial_index,second_orbital) + &
                 & radial_small_components(radial_index,first_orbital)*radial_small_components(radial_index, &
                 & second_orbital))*radial_grid_derivative(radial_index)
         end do
-        call quad (overlap_integral)
-        rint = overlap_integral
+        call integrate_radial_grid (overlap_integral)
+        integrate_weighted_radial_overlap = overlap_integral
         return
-    end function rint
+    end function integrate_weighted_radial_overlap
 end module weighted_radial_overlap

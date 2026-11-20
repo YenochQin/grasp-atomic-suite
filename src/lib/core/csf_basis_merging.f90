@@ -3,13 +3,12 @@ module csf_basis_merging
     ! Module dependencies
     use iso_fortran_env, only: int8, int64
     use grasp_parameters, only: max_orbitals
-    use atomic_calculation_state, only: electron_count, left_electron_count => nelecr
-    use orbital_csf_basis, only: csf_count, left_csf_count => ncfr, left_orbital_count => nwr, left_principal_n => npr, &
-        & left_kappa => nakr, left_orbital_labels => nhr, left_occupations => iqar, orbital_count, &
-        orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, &
+    use atomic_calculation_state, only: electron_count, left_electron_count
+    use orbital_csf_basis, only: csf_count, left_csf_count, left_orbital_count, left_principal_n, left_kappa, &
+        left_orbital_labels, left_occupations, orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, &
         orbital_symmetry_labels, csf_subshell_occupations
-    use csf_coupling_data, only: left_subshell_quantum_codes => jqsar, left_coupling_codes => jcupar, csf_subshell_quantum_codes, &
-        & csf_coupling_quantum_codes
+    use csf_coupling_data, only: left_subshell_quantum_codes, left_coupling_codes, csf_subshell_quantum_codes, &
+        csf_coupling_quantum_codes
     implicit none (type, external)
 
     ! Module interface

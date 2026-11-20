@@ -4,16 +4,16 @@ module jj_subshell_state_packing
 
     ! Module interface
     private
-    public :: perko1
+    public :: pack_jj_subshell_state
 contains
-    subroutine perko1(shell_position,bra_shell_values,bra_shell_codes,ket_shell_values,ket_shell_codes)
+    subroutine pack_jj_subshell_state(shell_position,bra_shell_values,bra_shell_codes,ket_shell_values,ket_shell_codes)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use numeric_constants,          only: half
-        use csf_pair_angular_state, only: peel_orbital_indices => jlist, bra_occupations => nq1, ket_occupations => nq2, &
-            bra_subshell_quantum_codes => jjq1, ket_subshell_quantum_codes => jjq2
+        use csf_pair_angular_state, only: peel_orbital_indices, bra_occupations, ket_occupations, bra_subshell_quantum_codes, &
+            ket_subshell_quantum_codes
         use orbital_csf_basis,           only: orbital_principal_n, orbital_kappa
-        use jj_subshell_term_lookup, only: nmtejj
+        use jj_subshell_term_lookup, only: lookup_jj_subshell_term
         implicit none (type, external)
 
         ! Arguments
@@ -47,10 +47,10 @@ contains
         ket_shell_values(2)=half*dble(ket_shell_codes(6))
         bra_shell_values(3)=-half*dble(iabs(orbital_kappa(orbital_index))-bra_shell_codes(4))
         ket_shell_values(3)=-half*dble(iabs(orbital_kappa(orbital_index))-ket_shell_codes(4))
-        bra_shell_codes(1)=nmtejj(bra_shell_codes(7),bra_shell_codes(6),bra_shell_codes(3),ket_shell_codes(4), &
+        bra_shell_codes(1)=lookup_jj_subshell_term(bra_shell_codes(7),bra_shell_codes(6),bra_shell_codes(3),ket_shell_codes(4), &
             bra_shell_codes(4))
-        ket_shell_codes(1)=nmtejj(ket_shell_codes(7),ket_shell_codes(6),ket_shell_codes(3),ket_shell_codes(4), &
+        ket_shell_codes(1)=lookup_jj_subshell_term(ket_shell_codes(7),ket_shell_codes(6),ket_shell_codes(3),ket_shell_codes(4), &
             bra_shell_codes(4))
         return
-    end subroutine perko1
+    end subroutine pack_jj_subshell_state
 end module jj_subshell_state_packing

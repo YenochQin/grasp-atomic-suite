@@ -29,7 +29,7 @@
 | `ovflow.f90` | `ovflow_i` | [`davidson_subspace_restart`](../../src/lib/davidson_eigensolver/davidson_subspace_restart.f90) | 压缩子空间并重启 |
 | `tstsel.f90` | `tstsel_i` | [`davidson_convergence`](../../src/lib/davidson_eigensolver/davidson_convergence.f90) | 检测收敛并排序待处理本征对 |
 
-过程名和参数仍按现有接口使用，例如 `use davidson_eigensolver, only: gdvd, dvd_operator`。
+现行求解入口和矩阵–向量回调分别用 `use davidson_eigensolver, only: solve_davidson_eigenpairs, dvd_operator` 导入。其他过程名见[共享库过程对照](shared_library_procedure_names.md)。
 外部 Fortran 调用方需要更新 `USE` 和链接名称，使用新的 `.mod` 文件重新编译和链接。
 模块名是 Fortran 链接符号的一部分。
 
@@ -220,7 +220,6 @@ Davidson 迭代、收敛与重启。
 | `irc` | `operation_code` | 反向通信请求类型，0 就绪或结束，1 预条件，2 初始化矩阵乘，3 迭代矩阵乘。 |
 | `matrix_vector_callback` | `matrix_vector_callback` | 执行矩阵–向量乘法的过程形参，沿用已有清晰名称。 |
 | `diag` | `matrix_diagonal` | 矩阵对角元，执行每个预条件操作时临时减去相应的 Ritz 值。 |
-| `ortho` | `orthogonality_tolerance` | 历史接口保留参数。此包装过程未读取或向下传递。 |
 | `nmv` | `matrix_vector_product_count` | 计入各批次数量的矩阵–向量乘法总数。 |
 | `irev` | `request_slots` | 求解器返回的操作向量数及工作数组索引。七个槽位的解释见上文。 |
 | `nb` | `vector_count` | 当前反向通信请求中涉及的列向量数。 |
