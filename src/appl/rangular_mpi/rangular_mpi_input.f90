@@ -1,16 +1,17 @@
 ! Rank zero owns the descriptor stream; all ranks retain the ordinary CSF arrays.
 module rangular_mpi_input
-   use csf_descriptor_collectives, only: broadcast_descriptor_arrays, check_input_status => check_descriptor_status
-   use mpi_c, only: mpi_allreduce, mpi_max, mpi_abort
-   use mpi_c, only: rank_index => mpi_rank, mpi_bcast, mpi_integer, mpi_integer1, mpi_character, mpi_comm_world
-   use parameter_def, only: orbital_capacity => max_orbitals
-   use orb_c, only: current_csf_count => csf_count, orbital_count => orbital_count, occupations => csf_subshell_occupations, &
+   use mpi_csf_collectives, only: broadcast_descriptor_arrays, check_input_status => check_descriptor_status
+   use mpi_state, only: mpi_allreduce, mpi_max, mpi_abort
+   use mpi_state, only: rank_index => mpi_rank, mpi_bcast, mpi_integer, mpi_integer1, mpi_character, mpi_comm_world
+   use grasp_parameters, only: orbital_capacity => max_orbitals
+   use orbital_csf_basis, only: &
+       current_csf_count => csf_count, orbital_count => orbital_count, occupations => csf_subshell_occupations, &
                     principal_numbers => orbital_principal_n, relativistic_kappas => orbital_kappa, orbital_momenta => orbital_l, &
                     single_electron_two_j => orbital_two_j, orbital_labels => orbital_symmetry_labels
-   use stat_c, only: subshell_quantum_numbers => csf_subshell_quantum_codes, couplings => csf_coupling_quantum_codes
-   use hblock_c, only: block_count => symmetry_block_count, block_lengths => csf_counts_by_block
-   use def_c, only: electron_count => electron_count
-   use csf_descriptor_input, only: descriptor_source, open_descriptor_source, install_descriptor_header, &
+   use csf_coupling_data, only: subshell_quantum_numbers => csf_subshell_quantum_codes, couplings => csf_coupling_quantum_codes
+   use hamiltonian_symmetry_blocks, only: block_count => symmetry_block_count, block_lengths => csf_counts_by_block
+   use atomic_calculation_state, only: electron_count => electron_count
+   use csf_descriptor_reader, only: descriptor_source, open_descriptor_source, install_descriptor_header, &
                                    read_descriptor_block, close_descriptor_source
    use rangular_profile, only: open_stage_profile
    implicit none (type, external)

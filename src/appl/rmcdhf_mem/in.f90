@@ -39,15 +39,15 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: max_radial_points
-      use def_c,            only: accy
-      use grid_c,           only: transformed_grid_step, radial_point_count, radial_grid, radial_derivative_over_radius
-      use int_c,            only: tf, tg, xu, xv
-      use orb_c,            only: orbital_kappa
+      use grasp_parameters,    only: max_radial_points
+      use atomic_calculation_state,            only: accy
+      use radial_grid_state,           only: transformed_grid_step, radial_point_count, radial_grid, radial_derivative_over_radius
+      use radial_dirac_workspace,            only: tf, tg, xu, xv
+      use orbital_csf_basis,            only: orbital_kappa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i, only: convrt
+      use integer_format, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -14,15 +14,15 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man, only: alloc, double
-      use def_c, only: double, electron_count, ncmin
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use blk_c, only: idxblk
-      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
+      use array_memory_management, only: alloc
+      use atomic_calculation_state, only: electron_count, ncmin
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use transition_basis_blocks, only: idxblk
+      use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use lodstate_i, only: lodstate
+      use block_level_selection, only: lodstate
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

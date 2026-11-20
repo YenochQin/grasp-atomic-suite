@@ -4,7 +4,7 @@
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use mpi_c, only: mpi_comm_world, mpi_error_code, mpi_integer, mpi_rank, mpi_reduce, mpi_sum
+      use mpi_state, only: mpi_comm_world, mpi_error_code, mpi_integer, mpi_rank, mpi_reduce, mpi_sum
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -34,12 +34,10 @@
         if (mpi_rank == 0) then
           write (99, *)
           write (99, *) "From ", myname, " :"
-          write (99, 301) nnonz_a
+          write (99, '(" Number of nonzero elements in H(DC): ",1i4)') nnonz_a
           write (6, *) "This part not finished. See ", myname
           write (99, *) "This part not finished. See ", myname
         end if
       end if
-  301 format(" Number of nonzero elements in H(DC): ",1i4)
-  302 format(" Column ",1i2,", row ",1i2,", sparse matrix index ",1i4)
       return
       end subroutine outsdampi

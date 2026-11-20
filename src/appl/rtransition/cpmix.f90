@@ -5,7 +5,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: alloc, dalloc
+      use array_memory_management, only: alloc, dalloc
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

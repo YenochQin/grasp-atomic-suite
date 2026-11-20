@@ -1,11 +1,11 @@
 ! Real SETMCP and disk SETCOF entry points with controlled angular weights.
 program mcp_reader_io
     use, intrinsic :: iso_fortran_env, only: real64
-    use parameter_def, only: orbital_index_radix
-    use orb_c, only: orbital_kappa, orbital_two_j
-    use hblock_c, only: symmetry_block_count, csf_counts_by_block
-    use pos_c, only: csf_offsets_by_block
-    use scf_c, only: ucf, nddim, nxdim, nydim, ndcof, da
+    use grasp_parameters, only: orbital_index_radix
+    use orbital_csf_basis, only: orbital_kappa, orbital_two_j
+    use hamiltonian_symmetry_blocks, only: symmetry_block_count, csf_counts_by_block
+    use symmetry_block_offsets, only: csf_offsets_by_block
+    use scf_iteration_state, only: ucf, nddim, nxdim, nydim, ndcof, da
     use setmcp_I, only: setmcp
 #ifdef MCP_MEM
     use rmcdhf_mem_c, only: lab_31, ncontr_31, coeff_31
@@ -13,7 +13,7 @@ program mcp_reader_io
     use setcof_I, only: setcof
 #endif
 #ifdef MCP_MPI
-    use mpi_c, only: mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize, mpi_init, &
+    use mpi_state, only: mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize, mpi_init, &
        & mpi_process_count, mpi_rank
 #else
     use mpi_s, only: mpi_process_count, mpi_rank

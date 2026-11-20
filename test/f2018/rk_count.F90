@@ -5,8 +5,8 @@ program rk_count
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use, intrinsic :: iso_fortran_env, only: real64, int64
     use rk_fixture, only: calls
-    use cteilsrk_C, only: indteirk,valteirk,rk_local_count
-    use orb_c, only: nw => orbital_count, nkl => orbital_l, nkj => orbital_two_j
+    use distributed_slater_integrals, only: indteirk,valteirk,rk_local_count
+    use orbital_csf_basis, only: nw => orbital_count, nkl => orbital_l, nkj => orbital_two_j
     use genintrk_I, only: genintrk
     implicit none (type, external)
     integer :: ranks, rank, count_total, jmax, total_calls, orbitals, i

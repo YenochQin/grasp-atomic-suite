@@ -14,12 +14,12 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use bess_c, only: bj, tc, td
-      use debug_c, only: ldbpr
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use bessel_function_workspace, only: bj, tc, td
+      use debug_output_settings, only: ldbpr
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use osc_c, only: lk, kk, l=>lk
-      use def_c, only: speed_of_light_au, vacuum_speed_of_light_au, pi
+      use transition_matrix_workspace, only: lk, kk, l=>lk
+      use atomic_calculation_state, only: speed_of_light_au, vacuum_speed_of_light_au, pi
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -137,7 +137,8 @@
          if (ldbpr(16)) then
             do jj = 1, 3
                jjj = l - 2 + jj
-               write (99, 300) jjj, (bj(ii,jj),ii=1,radial_point_count)
+               write (99, '(/," Bessel function of order ",i3,/(1p,7d18.10))') &
+                  jjj, (bj(ii,jj),ii=1,radial_point_count)
             end do
          end if
 !
@@ -156,7 +157,6 @@
          goto 1
       end if
 !
-  300 format(/," Bessel function of order ",i3,/(1p,7d18.10))
       return
 !
       end subroutine bessj

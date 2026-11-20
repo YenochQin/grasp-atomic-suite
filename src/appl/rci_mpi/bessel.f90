@@ -41,15 +41,15 @@
 !   M O D U L E S
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: orbital_index_radix
-      use bess_c, only: bessj, bessn, bj, double, max_radial_points, tc, td, wij
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c, only: accy, double, max_radial_points, speed_of_light_au
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use grasp_parameters,   only: orbital_index_radix
+      use bessel_function_workspace, only: bessj, bessn, bj, max_radial_points, tc, td, wij
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use atomic_calculation_state, only: accy, max_radial_points, speed_of_light_au
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use orb_c, only: double, orbital_energy_parameters, orbital_principal_n, orbital_symmetry_labels
-      use stor_c, only: double, keep
-      use wfac_c, only: double, wfact
+      use orbital_csf_basis, only: orbital_energy_parameters, orbital_principal_n, orbital_symmetry_labels
+      use breit_bessel_cache_keys, only: keep
+      use breit_frequency_scale, only: wfact
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -93,7 +93,8 @@
 !   Function found move into position
 !
             keep(ik,iw) = icode
-            if (ldbpr(7)) write (99, 302) orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib) &
+            if (ldbpr(7)) write (99, '(93x,i2,a2,2x,i2,a2,2x,i2,2x,"(",i2,",",i2,")",2x,"(",i2,",",i2,")")') &
+               orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib) &
                & , orbital_symmetry_labels(ib), k, &
                ikkp, iwkp, ik, iw
             bessj(ik,iw,:radial_point_count) = bessj(ikkp,iwkp,:radial_point_count)
@@ -104,7 +105,8 @@
 !
 !   Function not found; evaluate it
 !
-      if (ldbpr(7)) write (99, 303) orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
+      if (ldbpr(7)) write (99, '(93x,i2,a2,2x,i2,a2,2x,i2,2x,"New",6x,"(",i2,",",i2,")")') &
+         orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
          & orbital_symmetry_labels(ib), k, ik, iw
 !
       keep(ik,iw) = icode
@@ -233,9 +235,6 @@
       end do
       return
 !
-  303 format(93x,i2,a2,2x,i2,a2,2x,i2,2x,"New",6x,"(",i2,",",i2,")")
-  302 format(93x,i2,a2,2x,i2,a2,2x,i2,2x,"(",i2,",",i2,")",2x,"(",i2,",",i2,")"&
-         )
       return
 !
       end subroutine bessel

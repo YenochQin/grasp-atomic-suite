@@ -1,15 +1,16 @@
 ! Compare both loaders directly, before any angular coefficient calculation.
 program csf_descriptor_verify
    use iso_fortran_env, only: int8, int64, error_unit
-   use parameter_def, only: orbital_capacity => max_orbitals
-   use orb_c, only: occupations => csf_subshell_occupations, current_csf_count => csf_count, orbital_count => orbital_count, &
+   use grasp_parameters, only: orbital_capacity => max_orbitals
+   use orbital_csf_basis, only: &
+       occupations => csf_subshell_occupations, current_csf_count => csf_count, orbital_count => orbital_count, &
                     principal_numbers => orbital_principal_n, relativistic_kappas => orbital_kappa, orbital_momenta => orbital_l, &
                     single_electron_two_j => orbital_two_j, orbital_labels => orbital_symmetry_labels
-   use stat_c, only: subshell_quantum_numbers => csf_subshell_quantum_codes, couplings => csf_coupling_quantum_codes
-   use hblock_c, only: block_count => symmetry_block_count, block_lengths => csf_counts_by_block
-   use def_c, only: electron_count => electron_count
-   use iounit_c, only: standard_error_unit => stderr_unit
-   use csf_descriptor_input, only: descriptor_source, open_descriptor_source, close_descriptor_source, &
+   use csf_coupling_data, only: subshell_quantum_numbers => csf_subshell_quantum_codes, couplings => csf_coupling_quantum_codes
+   use hamiltonian_symmetry_blocks, only: block_count => symmetry_block_count, block_lengths => csf_counts_by_block
+   use atomic_calculation_state, only: electron_count => electron_count
+   use standard_io_units, only: standard_error_unit => stderr_unit
+   use csf_descriptor_reader, only: descriptor_source, open_descriptor_source, close_descriptor_source, &
                                    read_descriptor_block, descriptor_block_label
    use cslh_i, only: cslh
    use lodcsh2_i, only: lodcsh2

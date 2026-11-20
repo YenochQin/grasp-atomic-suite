@@ -6,23 +6,23 @@
 !                                                                      *
 !***********************************************************************
       use, intrinsic :: iso_fortran_env, only: real64
-      use default_c, only: double, inpci, ndef, ndump
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use debug_c,         only: cutoff
-      use mpi_c, only: double, mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_finalize, mpi_integer, &
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use debug_output_settings,         only: cutoff
+      use mpi_state, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_finalize, mpi_integer, &
          & mpi_process_count, mpi_rank, processor_name, processor_name_length
-      use getyn_i, only: getyn
+      use yes_no_input, only: getyn
       use setdbg_i, only: setdbg
-      use setmc_i, only: setmc
-      use setcon_i, only: setcon
+      use machine_constants, only: setmc
+      use physical_constants, only: setcon
       use setsum_i, only: setsum
-      use csf_basis_mpi, only: setcsla => load_csf_basis_mpi
+      use mpi_csf_basis_input, only: setcsla => load_csf_basis_mpi
       use getmixblock_i, only: getmixblock
       use getsmd_i, only: getsmd
-      use factt_i, only: factt
+      use log_factorial_table, only: factt
       use ris_cal_mpi_i, only: ris_cal_mpi
-      use mpiu_i, only: mpix_shutdown
-      use mpiu_i, only: mpix_startup
+      use mpi_utilities, only: mpix_shutdown
+      use mpi_utilities, only: mpix_startup
       implicit none (type, external)
       integer :: argc, iarg, k, nci, ncore_not_used, ncount1
       logical :: yes, use_args

@@ -6,6 +6,11 @@
 2026-11-17 更新：[描述符读取迁移](../implemented/native_csf_descriptors.md)和 S1–S4 修复已完成；
 后续诊断入口为[剩余事项](static_diagnostics_remaining_2026-11-17.md)。下文原交接计数保留历史口径。
 
+2026-11-20 更新：[Davidson 求解库命名迁移](../implemented/davidson_eigensolver_migration.md)记录库、文件、模块、变量和接口形参的命名对照。
+[Breit 角系数支持库命名迁移](../implemented/breit_angular_support_migration.md)记录原 `libmcp90` 的库、文件、模块和变量命名。
+[mpi90 命名迁移](../implemented/mpi90_variable_migration.md)记录 MPI 支持库的变量、常量和关键字参数对应关系。
+[GRASP 共享库命名](../implemented/shared_library_naming.md)记录原 `libmod` 的目录、文件和 Fortran 模块对照。
+
 ## 1. 目标、已完成范围和计数
 
 目标是让保留的普通 Fortran 代码中的变量名称准确表达对象、物理量和计算角色。

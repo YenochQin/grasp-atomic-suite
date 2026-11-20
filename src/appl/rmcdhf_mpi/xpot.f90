@@ -17,23 +17,23 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: orbital_index_radix
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c, only: double, max_radial_points, speed_of_light_au
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use grasp_parameters,    only: orbital_index_radix
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use atomic_calculation_state, only: max_radial_points, speed_of_light_au
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use orb_c, only: double, max_orbitals, orbital_principal_n, orbital_symmetry_labels
-      use pote_c, only: double, max_radial_points, xp, xq, yp
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use orbital_csf_basis, only: max_orbitals, orbital_principal_n, orbital_symmetry_labels
+      use scf_radial_potentials, only: max_radial_points, xp, xq, yp
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use radial_quadrature_workspace, only: mtp, radial_workspace_capacity, ta, tb
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use yzk_i, only: yzk
-      use draw_i, only: draw
+      use hartree_yz_functions, only: yzk
+      use radial_ascii_plot, only: draw
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -52,7 +52,8 @@
 !
 !   Debug printout: header
 !
-      if (ldbpr(27) .or. ldbpr(28)) write (99, 300) orbital_principal_n(j), orbital_symmetry_labels(j)
+      if (ldbpr(27) .or. ldbpr(28)) write (99, '(/,/," Exchange potential contributions (coefficients will ",&
+         &" be divided by C) for ",1i2,1a2," orbital :"/,/)') orbital_principal_n(j), orbital_symmetry_labels(j)
 !
 !   Clear for accumulation of sums
 !
@@ -74,7 +75,8 @@
          coeff = xa(index)
 
          ! Debug printout: composition
-         if (ldbpr(27)) write (99, 301) k, coeff, orbital_principal_n(ioy1), orbital_symmetry_labels(ioy1), &
+         if (ldbpr(27)) write (99, '(/,25x,"(",1i2,")"/,1x,1p,d21.14,"* Y    (",1i2,1a2,",",1i2,1a2,") ","* P (",&
+            &1i2,1a2,")")') k, coeff, orbital_principal_n(ioy1), orbital_symmetry_labels(ioy1), &
             & orbital_principal_n(ioy2)&
             , orbital_symmetry_labels(ioy2), orbital_principal_n(iorb), orbital_symmetry_labels(iorb)
 
@@ -96,7 +98,8 @@
 !   Debug printout: potential functions
 !
       if (ldbpr(28)) then
-         write (99, 302)
+         write (99, '(/,/,31x,"(P)",19x,"(Q)",41x,"(P)",19x,"(Q)"/,&
+            &2(" --------- r --------- ------ X  (r) -------"," ------ X  (r) -------"))')
          nb2 = radial_point_count/2
          if (2*nb2 == radial_point_count) then
             nrows = nb2
@@ -107,10 +110,10 @@
             ii1 = ii
             ii2 = ii1 + nrows
             if (ii2 <= radial_point_count) then
-               write (99, 303) radial_grid(ii1), xp(ii1), xq(ii1), radial_grid(ii2), xp(ii2), xq(&
+               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1), xp(ii1), xq(ii1), radial_grid(ii2), xp(ii2), xq(&
                   ii2)
             else if (ii1 <= radial_point_count) then
-               write (99, 303) radial_grid(ii1), xp(ii1), xq(ii1)
+               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1), xp(ii1), xq(ii1)
             end if
          end do
          call draw (xp, 1.0_real64, xq, speed_of_light_au, radial_point_count)
@@ -118,14 +121,6 @@
 !
       return
 !
-  300 format(/,/," Exchange potential contributions (coefficients will ",&
-         " be divided by C) for ",1i2,1a2," orbital :"/,/)
-  301 format(/,25x,"(",1i2,")"/,1x,1p,d21.14,"* Y    (",1i2,1a2,",",1i2,1a2,&
-         ") ","* P (",1i2,1a2,")")
-  302 format(/,/,31x,"(P)",19x,"(Q)",41x,"(P)",19x,"(Q)"/,2(&
-         " --------- r --------- ------ X  (r) -------",&
-         " ------ X  (r) -------"))
-  303 format(1p,6(1x,1d21.14))
       return
 !
       end subroutine xpot

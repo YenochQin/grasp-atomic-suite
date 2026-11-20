@@ -15,14 +15,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use default_c, only: double, inpci, ndef, ndump
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
-      use openfl_i, only: openfl
+      use yes_no_input, only: getyn
+      use file_open, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

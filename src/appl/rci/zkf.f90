@@ -18,11 +18,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: radial_workspace_capacity
-      use cnc_c, only: cnc5c
-      use grid_c, only: radial_point_count, radial_grid, radial_grid_derivative
-      use ncc_c, only: c1, c2, c3, c4, double
-      use tatb_c, only: zk => tb, double, mtp, radial_workspace_capacity, ta
+      use grasp_parameters,   only: radial_workspace_capacity
+      use radial_difference_coefficients, only: cnc5c
+      use radial_grid_state, only: radial_point_count, radial_grid, radial_grid_derivative
+      use radial_quadrature_weights, only: c1, c2, c3, c4
+      use radial_quadrature_workspace, only: zk => tb, mtp, radial_workspace_capacity, ta
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

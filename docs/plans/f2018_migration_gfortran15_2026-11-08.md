@@ -332,7 +332,7 @@ P7 的串行开发可在 P4/P5 后进行，MPI 退出门槛必须等待 P6。阶
 **执行状态（更新 2026-11-09）**：既有修复保留；本批修复七套 GETALDWT、四套 RCI 未定义统计、Davidson 接口/状态、DACON 调试边界和 INTERP 边界；DGEMVMPI 的 JX 诊断确认为不可达步长分支并清理。32 配置全通过，全开各 93/93；普通/memory 一轮完整旧新对照重新通过，INTERP 正常分支 71 点同 O0/O2 输出逐字节一致。
 详见[兼容性与历史验证汇总](../implemented/f2018_compatibility.md)及[当前警告清单](../reference/f2018/gfortran15-warning-baseline.md)。诊断数减少不等于相同数量的真实缺陷；仍有 180 文件、475 条正确性复核项，包括 174 条未初始化和 36 条边界诊断。其他手写接口、mpi_f08、大计数及状态语义待审计，不满足完整 P3 的退出条件。
 
-**修改范围**：`libmod`、`lib9290`、`librang90`、`libmcp90`、`libdvd90`，以及必要的 `*_csfg`/`libdvd90mpi` 接口边界；新增明确的 kind、BLAS/LAPACK 和平台适配模块，仍归现有库所有。
+**修改范围**：`libmod`、`lib9290`、`librang90`、`breit_angular_support`（原 `libmcp90`）、`libdvd90`，以及必要的 `*_csfg`/`libdvd90mpi` 接口边界；新增明确的 kind、BLAS/LAPACK 和平台适配模块，仍归现有库所有。
 
 **工作**：
 

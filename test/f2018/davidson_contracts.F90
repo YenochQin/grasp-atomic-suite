@@ -2,14 +2,15 @@
 program davidson_contracts
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use, intrinsic :: iso_fortran_env, only: real64
-    use dinit_I, only: dinit
-    use iniest_I, only: iniest
-    use iniest2_I, only: iniest2
-    use gdvd_I, only: gdvd
-    use spicmv2_I, only: spicmv2
-    use adds_I, only: adds
-    use newvec_I, only: newvec
-    use hmat_c, only: emt => hamiltonian_values, irow => matrix_partner_indices, iendc => stored_segment_end_offsets
+    use real_vector_initialization, only: dinit
+    use davidson_sparse_initial_estimates, only: iniest
+    use sparse_eigensolver_initial_basis, only: iniest2
+    use davidson_eigensolver, only: gdvd
+    use sparse_symmetric_matvec, only: spicmv2
+    use davidson_projected_matrix, only: adds
+    use davidson_residual_expansion, only: newvec
+    use sparse_hamiltonian_storage, only: &
+        emt => hamiltonian_values, irow => matrix_partner_indices, iendc => stored_segment_end_offsets
     implicit none (type, external)
     integer, parameter :: n=3, nd=6, lim=6, lwork=2*nd*lim+2*lim*lim+11*lim+1, liwork=6*lim+1
     integer :: niv, ilow, ihigh, mblock, maxiter, loops, nmv, ierr, i

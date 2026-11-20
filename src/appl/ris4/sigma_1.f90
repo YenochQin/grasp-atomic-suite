@@ -16,11 +16,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use orb_c,           only: orbital_principal_n, orbital_kappa
+      use orbital_csf_basis,           only: orbital_principal_n, orbital_kappa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dracah_i, only: dracah
+      use racah_coefficients, only: dracah
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

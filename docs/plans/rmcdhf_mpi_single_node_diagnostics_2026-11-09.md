@@ -83,9 +83,9 @@ memory 版消除了这部分运行期文件读取，不等于消除了全程序 
 | --- | --- |
 | [MANEIGmpi](../../src/appl/rmcdhf_mpi/maneigmpi.f90) 每 rank 分配 `LWORK = 2*NCF*LIM + 2*LIM*LIM + 11*LIM + NVECT`，`LIM=min(NCF,2*NVECT+80)` | 工作区不随 rank 数自动均分；NCF 是当前 block 的规模，NVECT 是该 block 所选根的最高编号。不能把总 CSF 数和根数量直接代入 |
 | [MATRIXmpi](../../src/appl/rmcdhf_mpi/matrixmpi.f90) 的 EMT/IROW 按本 rank 的 NELMNT 分配 | 不能说每个 rank 都保存完整稀疏 Hamiltonian；向量/工作区复制和矩阵分片是两回事 |
-| [SPICMVmpi](../../src/lib/mpi90/spicmvmpi.f90) 按列轮转分工，但每次清零完整结果并归约 `N*M` 个 double | N=200 万、M=1 时应用缓冲区为 16 MB；这不是实际互连传输总量。列数相近也不保证非零元/计算量相近 |
-| [gdsummpi](../../src/lib/mpi90/mpiu.f90) 分配临时 y、初始化、Allreduce 后复制回 x | 可测量临时缓冲与拷贝开销；原位归约等改写需独立回归，不能预先承诺收益 |
-| [INIESTmpi](../../src/lib/mpi90/iniestmpi.f90) 合并初猜矩阵后各 rank 分别调用 DSPEVX；调用方上限为 4000 | 有重复求解候选，可评估单 rank 求解后广播，保留状态/错误传播；只解释相关初猜阶段，不能外推全程 |
+| [SPICMVmpi](../../src/lib/mpi/mpi_sparse_matrix_product.f90) 按列轮转分工，但每次清零完整结果并归约 `N*M` 个 double | N=200 万、M=1 时应用缓冲区为 16 MB；这不是实际互连传输总量。列数相近也不保证非零元/计算量相近 |
+| [gdsummpi](../../src/lib/mpi/mpi_utilities.f90) 分配临时 y、初始化、Allreduce 后复制回 x | 可测量临时缓冲与拷贝开销；原位归约等改写需独立回归，不能预先承诺收益 |
+| [INIESTmpi](../../src/lib/mpi/mpi_initial_eigenvectors.f90) 合并初猜矩阵后各 rank 分别调用 DSPEVX；调用方上限为 4000 | 有重复求解候选，可评估单 rank 求解后广播，保留状态/错误传播；只解释相关初猜阶段，不能外推全程 |
 
 量级示例：若**单个 block** 恰为 200 万 CSF、NVECT=1、double 为 8 字节，
 上述 WORK 约为每 rank 2.44 GiB；假设启动 48 ranks，仅此项约 117.3 GiB。
@@ -105,8 +105,8 @@ Open MPI 的具体 transport 依版本与构建配置而异，不能直接套用
 [Open MPI affinity](https://docs.open-mpi.org/en/v5.0.x/tuning-apps/affinity.html)。
 
 直接把全程序改成 OpenMP 需要重做状态所有权和并发写入，不能只加编译开关：
-[TA/TB 工作区](../../src/lib/libmod/tatb_C.f90) 等模块状态共享，
-[DMERGE](../../src/lib/lib9290/dmerge.f90) 会累加 `DC(IDY(I))`，直接并行外层列循环存在写冲突。
+[TA/TB 工作区](../../src/lib/grasp_shared/radial_quadrature_workspace.f90) 等模块状态共享，
+[DMERGE](../../src/lib/core/sparse_dot_and_scatter.f90) 会累加 `DC(IDY(I))`，直接并行外层列循环存在写冲突。
 轨道更新顺序、归约顺序和 MPI 调用线程约束也须保留或明确重新验收。
 未来可选择局部线程内核、减少 rank 并共享 Davidson 工作区等方案；
 只有实测表明相应阶段占主导、设计解决线程安全后才开展。

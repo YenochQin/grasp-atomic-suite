@@ -3,7 +3,7 @@
       interface
       subroutine smsnew_mpi (doit,vint,vint2)
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def, only: max_orbitals
+      use grasp_parameters, only: max_orbitals
       implicit none (type, external)
       integer, intent(in) :: doit
       real(real64), intent(in) :: vint(max_orbitals, max_orbitals), vint2(max_orbitals, max_orbitals)

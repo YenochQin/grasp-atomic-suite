@@ -11,27 +11,27 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: alloc, dalloc, byte, double
-      use blk_c, only: double, ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
+      use array_memory_management, only: alloc, dalloc
+      use transition_basis_blocks, only: ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
           nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
-      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+      use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
           nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
-      use def_c, only: ccmps => speed_of_light_cm_per_s, double, electron_count, hartree_to_ev, &
+      use atomic_calculation_state, only: ccmps => speed_of_light_cm_per_s, electron_count, hartree_to_ev, &
           hartree_to_wavenumber_cm, speed_of_light_au
-      use default_c, only: double, inpci, ndef, ndump
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use orb_c, only: byte, double, max_orbitals
-      use osc_c, only: double, nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
+      use orbital_csf_basis, only: max_orbitals
+      use transition_matrix_workspace, only: nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
           xsldr, totc, totb, isldr, isldr1, nint, ninteg, nptr, lab, nkp, kp, ltc
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-      use titl_c, only: double, idate, ihed, itime
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+      use calculation_header, only: idate, ihed, itime
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use jj2lsjbio_c, only: double, rlev_ener_1, rlev_ener_2, string_csf1, string_csf2, nvectoti, nvectotf, &
+      use transition_lsj_labels, only: rlev_ener_1, rlev_ener_2, string_csf1, string_csf2, nvectoti, nvectotf, &
           iopen_status1, iopen_status2, lev_pos_1, lev_j_1, lev_par_1, lev_pos_2, lev_j_2, lev_par_2
-      use mpi_c, only: double, mpi_allreduce, mpi_barrier, mpi_comm_world, mpi_double_precision, mpi_error_code, &
+      use mpi_state, only: mpi_allreduce, mpi_barrier, mpi_comm_world, mpi_double_precision, mpi_error_code, &
          & mpi_rank, mpi_sum
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -43,17 +43,17 @@
       use mctout_i, only: mctout
       use readmix_i, only: readmix
       use mctin_i, only: mctin
-      use itrig_i, only: itrig
+      use angular_momentum_triangle, only: itrig
       use bessj_i, only: bessj
       use csfm_i, only: csfm
       use printa_i, only: printa
       use printals_i, only: printals
 
-      use suite_system, only: exit => terminate_process
+      use posix_services, only: exit => terminate_process
       use ldlbl1_i, only: ldlbl1
       use ldlbl2_i, only: ldlbl2
       use strsum_i, only: strsum
-      use sys_chdir_i, only: sys_chdir
+      use mpi_change_directory, only: sys_chdir
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -289,24 +289,29 @@
 !
                   if (mpi_rank==0.and.iblki==1.and.iblkf==1) then
                      if (kk == 0) then
-                        write (24, 308) lk
+                        write (24, '(/,/," Electric 2**(",i2,")-pole transitions")') lk
                      else
-                        write (24, 309) lk
+                        write (24, '(/,/," Magnetic 2**(",i2,")-pole transitions")') lk
                      end if
-                     write (24, 310)
+                     write (24, '(1x,33("="))')
                      if (ltc(1)) then
-                        write (24, 311)
+                        write (24, '(/,"   Upper state        Lower state  ",8x,"Gauge",8x,"Wavelength",13x,&
+                           &"Einstein coefficients",13x,"Oscillator")')
                         if (.not.ltc(7)) then
-                           write (24, 312)
+                           write (24, '(81x,"-1",15x,"3 -2 -1",/," Level  J Parity",4x,"Level  J ","Parity",21x,&
+                              &"(Angstroms)",10x,"A (s  )",9x,"gB (m s  J  )",7x,"strength gf"/)')
                         else
-                           write (24, 313)
+                           write (24, '(" Level  J Parity",4x,"Level  J Parity",21x,"(Angstroms)",10x,"A (au)",13x,&
+                              &"gB (au)",10x,"strength gf"/)')
                         end if
                      else
-                        write (24, 314)
+                        write (24, '(/," Upper       Lower ")')
                         if (.not.ltc(7)) then
-                           write (24, 315) iunits
+                           write (24, '(" Lev  J P",3x,"Lev  J P",7x,"E (",a4,")",9x,"A (s-1)",10x,"gf",12x,"S")') &
+                              iunits
                         else
-                           write (24, 316) iunits
+                           write (24, '(" Level  J Parity",4x,"Level  J Parity",23x,"(",a4,")",13x,"A (au)",13x,&
+                              &"gB (au)",10x,"strength gf"/)') iunits
                         end if
                      end if
                   end if !myid=0
@@ -426,30 +431,6 @@
 !
       return
 !
-  302 format(/," ***** Warning *****")
-  303 format(/,/," ***** Error in OSCL *****")
-  307 format(/," Dynamic allocation computed incorrectly: Bug.")
-  308 format(/,/," Electric 2**(",i2,")-pole transitions")
-  309 format(/,/," Magnetic 2**(",i2,")-pole transitions")
-  310 format(1x,33("="))
-  311 format(/,"   Upper state        Lower state  ",8x,"Gauge",8x,"Wavelength"&
-         ,13x,"Einstein coefficients",13x,"Oscillator")
-  312 format(81x,"-1",15x,"3 -2 -1",/," Level  J Parity",4x,"Level  J ",&
-         "Parity",21x,"(Angstroms)",10x,"A (s  )",9x,"gB (m s  J  )",7x,&
-         "strength gf"/)
-  313 format(" Level  J Parity",4x,"Level  J Parity",21x,"(Angstroms)",10x,&
-         "A (au)",13x,"gB (au)",10x,"strength gf"/)
-  314 format(/," Upper       Lower ")
-  315 format(" Lev  J P",3x,"Lev  J P",7x,"E (",a4,")",9x,"A (s-1)",10x,"gf",&
-         12x,"S")
-  316 format(" Level  J Parity",4x,"Level  J Parity",23x,"(",a4,")",13x,&
-         "A (au)",13x,"gB (au)",10x,"strength gf"/)
-  317 format(/,1x,124("+"))
-  318 format(/,/," Radiative lifetimes "/," ======================="/,/,&
-         " Level      Lifetime  s (-1)")
-  319 format(1x,i4,6x,"Coulomb: ",1p,1d20.7)
-  320 format(10x,"Babushkin:",1p,1d20.7,/)
-  321 format(1x,i4,5x,"Magnetic: ",1p,1d20.7,/)
       return
 !
       end subroutine oscl

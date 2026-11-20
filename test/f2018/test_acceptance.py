@@ -12,9 +12,9 @@ class AcceptanceTests(unittest.TestCase):
             targets, tests = requirements(features)
             check_roster(features, targets, tests)
             with self.assertRaises(ValueError):
-                check_roster(features, targets, tests - {"lib9290_quad"})
+                check_roster(features, targets, tests - {"core_quadrature"})
             with self.assertRaises(ValueError):
-                check_roster(features, targets - {"mod"}, tests)
+                check_roster(features, targets - {"grasp_shared"}, tests)
 
     def test_disabled_targets_and_empty_tests_are_rejected(self) -> None:
         targets, tests = requirements(set())
@@ -70,7 +70,7 @@ class AcceptanceTests(unittest.TestCase):
                     check_junit(path, {"a"})
 
     def test_openmp_does_not_leak_into_angular_or_shared_libraries(self) -> None:
-        for target in ("rangular", "rangular_mpi", "9290", "mod", "rang90"):
+        for target in ("rangular", "rangular_mpi", "core", "grasp_shared", "spin_angular"):
             command = {"file": "source.f90", "arguments": ["gfortran-15", "-fopenmp", "-c", "source.f90",
                        "-o", f"CMakeFiles/{target}.dir/source.f90.o"]}
             with self.subTest(target=target), self.assertRaises(ValueError):

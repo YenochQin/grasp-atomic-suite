@@ -31,37 +31,37 @@
 !                                                                      *
 !***********************************************************************
 !-----------------------------------------------
-      use csf_descriptor_collectives, only: allocate_descriptor_arrays
-      use parameter_def,   only:  max_orbitals
+      use mpi_csf_collectives, only: allocate_descriptor_arrays
+      use grasp_parameters,   only:  max_orbitals
       use iso_fortran_env, only: int64
       use rangular_mpi_input, only: mpi_angular_input_options, parse_mpi_angular_options, &
            open_mpi_angular_profile, load_mpi_angular_header, load_mpi_angular_block, close_mpi_angular_input
       use rangular_profile, only: stage_clock, record_stage, close_stage_profile
-      use memory_man, only: alloc, byte, double
+      use array_memory_management, only: alloc
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use mpi_c, only: double, mpi_barrier, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, &
+      use mpi_state, only: mpi_barrier, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, &
          & mpi_process_count, mpi_rank, processor_name, processor_name_length
-      use default_c, only: double, inpci, ndef, ndump
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use orb_c, only: byte, csf_count, csf_subshell_occupations, double, max_orbitals
-      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
-      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals
+      use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, jcupar, jqsar
+      use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
+      use yes_no_input, only: getyn
       use setdbg_i, only: setdbg
-      use setmc_i, only: setmc
+      use machine_constants, only: setmc
       use setsum_i, only: setsum
 
       use strsum_i, only: strsum
-      use factt_i, only: factt
+      use log_factorial_table, only: factt
       use settmp_i, only: settmp
-      use mpiu_i, only: startmpi2
-      use mpiu_i, only: stopmpi2
+      use mpi_utilities, only: startmpi2
+      use mpi_utilities, only: stopmpi2
       use setdbgmpi_i, only: setdbgmpi
       use setmcpmpi_i, only: setmcpmpi
       use mcpmpi_i, only: mcpmpi

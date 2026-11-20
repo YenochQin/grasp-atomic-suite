@@ -25,11 +25,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: orbital_index_radix
-      use memory_man, only: alloc, dalloc, double
-      use orb_c, only: csf_count, double, orbital_count
-      use default_c, only: double, inpci, ndef, ndump
-      use mcpdata_c, only: cnn, double, intgrl, intptr, jann, jbnn, ncoeff, nintg
+      use grasp_parameters,   only: orbital_index_radix
+      use array_memory_management, only: alloc, dalloc
+      use orbital_csf_basis, only: csf_count, orbital_count
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use mcp_coefficient_storage, only: cnn, intgrl, intptr, jann, jbnn, ncoeff, nintg
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -213,8 +213,6 @@
 !
       return
 !
-  301 format(" T_[",1i2,",",1i2,"]"," (",1i2,1a2,",",1i2,1a2,") = ",1p,d19.12)
-  302 format(" (",1i2,1a2,",",1i2,1a2,")",i6)
       return
 !
       end subroutine qqsort

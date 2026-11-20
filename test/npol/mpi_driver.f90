@@ -1,11 +1,11 @@
 program npol_mpi_driver
     use mpi, only: mpi_barrier, mpi_bcast, mpi_comm_rank, mpi_comm_world, mpi_double_precision, mpi_finalize, &
        & mpi_init
-    use npol_C, only: npol_config, npol_message_len, npol_ready, npol_settings, vnp_e1, vnp_e2
-    use npol_mpi, only: npol_abort_mpi, npol_init_mpi
+    use nuclear_polarization_state, only: npol_config, npol_message_len, npol_ready, npol_settings, vnp_e1, vnp_e2
+    use mpi_nuclear_polarization, only: npol_abort_mpi, npol_init_mpi
     use npol_test_support, only: fixture, near, npol_config, require
-    use parameter_def, only: NNNP
-    use suite_system, only: change_directory
+    use grasp_parameters, only: NNNP
+    use posix_services, only: change_directory
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
     real(real64) :: r(NNNP), zz(NNNP), coul(NNNP), reference(3), z

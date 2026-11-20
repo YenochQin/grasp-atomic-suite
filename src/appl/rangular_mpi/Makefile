@@ -1,6 +1,6 @@
 EXE=${GRASP}/bin/rangular_mpi
-LIBS=-L ${GRASP}/lib/ -lrang90 -lmcp90 -lmpiu90 -l9290 -lmod
-FC_MODULES= -I ${GRASP}/src/lib/librang90 -I ${GRASP}/src/lib/libmcp90 -I ${GRASP}/src/lib/mpi90 -I ${GRASP}/src/lib/lib9290 -I ${GRASP}/src/lib/libmod
+LIBS=-L ${GRASP}/lib/ -lrang90 -lbreit_angular_support -lgrasp_mpi -l9290 -lgrasp_shared
+FC_MODULES= -I ${GRASP}/src/lib/spin_angular -I ${GRASP}/src/lib/breit_angular_support -I ${GRASP}/src/lib/mpi -I ${GRASP}/src/lib/core -I ${GRASP}/src/lib/grasp_shared
 
 OBJS= \
 	fndbeg.o \

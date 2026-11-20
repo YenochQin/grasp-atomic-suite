@@ -44,7 +44,7 @@ y
 These answers select defaults, the state name, CI coefficients, and ordering.
 Multi-rank runs support default settings, following the RHFS/RIS entry points.
 Serial runs retain the upstream debug and custom radial-grid prompts. Both
-targets use the restored upstream `GETSMD` initialization and `parameter_def`:
+targets use the restored upstream `GETSMD` initialization and `grasp_parameters`:
 finite nuclei default to `N=NNNP=590`, with `NNN1=600`. Use the
 [common-parameter contract](common_parameters.md) to configure other grids.
 

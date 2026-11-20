@@ -13,11 +13,11 @@ def main() -> None:
     compiler = sys.argv[1]
     suite = Path(__file__).resolve().parents[2]
     sources = [
-        "lib/libmod/suite_parameters_M.f90",
-        "lib/libmod/parameter_def_M.f90",
-        "lib/libmod/grid_C.f90",
-        "lib/libmod/pote_C.f90",
-        "lib/libmod/tatb_C.f90",
+        "lib/grasp_shared/compile_time_capacities.f90",
+        "lib/grasp_shared/grasp_parameters.f90",
+        "lib/grasp_shared/radial_grid_state.f90",
+        "lib/grasp_shared/scf_radial_potentials.f90",
+        "lib/grasp_shared/radial_quadrature_workspace.f90",
         "appl/rwfnestimate/tail_I.f90",
         "appl/rwfnestimate/solvh_I.f90",
         "appl/rwfnestimate/frmtfp_I.f90",
@@ -30,7 +30,7 @@ def main() -> None:
         for source in sources:
             path = suite / "src" / source
             text = path.read_text()
-            if path.name == "suite_parameters_M.f90":
+            if path.name == "compile_time_capacities.f90":
                 for name, original, replacement in (("max_radial_points", 590, 790), ("max_orbitals", 127, 149)):
                     pattern = rf"^(\s*integer\s*,\s*parameter\s*::\s*{name}\s*=\s*){original}\b"
                     text, count = re.subn(pattern, rf"\g<1>{replacement}", text, flags=re.IGNORECASE | re.MULTILINE)

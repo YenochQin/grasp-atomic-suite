@@ -81,5 +81,5 @@ add_executable(rbiotransform_mpi
     biotr1_I.f90
     biotrmpi.f90
 )
-target_link_libraries_Fortran(rbiotransform_mpi PUBLIC rang90 mpiu90 9290 mod)
+target_link_libraries_Fortran(rbiotransform_mpi PUBLIC spin_angular grasp_mpi core grasp_shared)
 install(TARGETS rbiotransform_mpi DESTINATION bin/)

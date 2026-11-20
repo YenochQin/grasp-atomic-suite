@@ -2,7 +2,7 @@
       implicit none (type, external)
       interface
       subroutine screenpar (ncore)
-      use parameter_def, only: max_orbitals
+      use grasp_parameters, only: max_orbitals
       implicit none (type, external)
       integer, intent(in) :: ncore
       end subroutine screenpar

@@ -3,15 +3,16 @@
 module rangular_reuse
    use iso_fortran_env, only: int64
    use, intrinsic :: iso_fortran_env, only: real64
-   use parameter_def, only: max_orbitals
-   use orb_c, only: orbital_count, csf_count, csf_subshell_occupations, orbital_kappa
-   use stat_c, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
-   use buffer_c, only: angular_coefficient_count, angular_buffer_capacity, angular_coefficient_labels, angular_coefficients
-   use debug_c, only: ibug1, ibug2, ibug3, ldbpa, ldbpg
-   use onescalar_i, only: onescalar
-   use rkco_gg_i, only: rkco_gg
-   use cord_i, only: cord
-   use alcbuf_i, only: alcbuf
+   use grasp_parameters, only: max_orbitals
+   use orbital_csf_basis, only: orbital_count, csf_count, csf_subshell_occupations, orbital_kappa
+   use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
+   use angular_coefficient_buffer_state, only: &
+       angular_coefficient_count, angular_buffer_capacity, angular_coefficient_labels, angular_coefficients
+   use debug_output_settings, only: ibug1, ibug2, ibug3, ldbpa, ldbpg
+   use one_electron_scalar_coefficients, only: onescalar
+   use two_electron_angular_coefficients, only: rkco_gg
+   use closed_shell_mcp, only: cord
+   use angular_coefficient_buffer, only: alcbuf
    implicit none (type, external)
    private
    public :: configure_angular_reuse, begin_reuse_block, end_reuse_block, load_reused_pair, reuse_requested

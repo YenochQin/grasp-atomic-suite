@@ -36,26 +36,26 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: alloc, dalloc, double, long
-      use def_c, only: double, iccmin
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use array_memory_management, only: alloc, dalloc
+      use atomic_calculation_state, only: iccmin
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
           matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
           nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
-      use mpi_s, only: double, mpi_process_count, mpi_rank
-      use orb_c, only: csf_count, double
-      use wchblk_c, only: jblockk => jblock, double
+      use mpi_s, only: mpi_process_count, mpi_rank
+      use orbital_csf_basis, only: csf_count
+      use active_symmetry_block, only: jblockk => jblock
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use spicmv2_i, only: spicmv2
-      use iniest2_i, only: iniest2
-      use gdvd_i, only: dvd_operator, gdvd
+      use sparse_symmetric_matvec, only: spicmv2
+      use sparse_eigensolver_initial_basis, only: iniest2
+      use davidson_eigensolver, only: dvd_operator, gdvd
       use itjpo_i, only: itjpo
       use ispar_i, only: ispar
-      use suite_linear_algebra, only: dcopy, dscal
+      use blas_lapack_interfaces, only: dcopy, dscal
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -168,8 +168,8 @@
          call dalloc (iwork, "IWORK", "MANEIG")
          call dalloc (jwork, "JWORK", "MANEIG")
 
-         write (*, 301) nloops, nmv
-         if (ierr /= 0) write (*, 302) ierr
+         write (*, '("DVDSON: ",1i3," loops; ",1i3," matrix-vector multiplies.")') nloops, nmv
+         if (ierr /= 0) write (*, '(" Returned from DVDSON with IERR = ",1i4)') ierr
       end if
 !
 !   Pick up the eigen pairs and store in EVAL and EVEC
@@ -218,12 +218,6 @@
 
       end do
 
-  301 format("DVDSON: ",1i3," loops; ",1i3," matrix-vector multiplies.")
-  302 format(" Returned from DVDSON with IERR = ",1i4)
-  303 format(/," ***** WARNING *****"/,/,&
-         " The angular momentum and parity of level ",1i2," have changed:"/,&
-         " Last iteration: (2J+1) = ",1i2,", parity = ",1i2,";"/,&
-         " this iteration: (2J+1) = ",1i2,", parity = ",1i2,".")
 
       return
       end subroutine maneig

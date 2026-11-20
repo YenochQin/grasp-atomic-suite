@@ -15,16 +15,16 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_radial_points
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use grasp_parameters,   only: max_radial_points
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use horb_c, only: ph, qh
-      use tatb_c, only: mtp, ta
+      use hydrogenic_radial_components, only: ph, qh
+      use radial_quadrature_workspace, only: mtp, ta
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dcbsrw_i, only: dcbsrw
-      use quad_i, only: quad
+      use dirac_coulomb_radial_orbital, only: dcbsrw
+      use radial_quadrature, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

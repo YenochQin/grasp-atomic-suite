@@ -1,7 +1,7 @@
 program descriptor_collectives
    use iso_fortran_env, only: int8
-   use mpi_c, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_finalize
-   use csf_descriptor_collectives, only: allocate_descriptor_arrays, broadcast_descriptor_arrays, check_descriptor_status
+   use mpi_state, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_finalize
+   use mpi_csf_collectives, only: allocate_descriptor_arrays, broadcast_descriptor_arrays, check_descriptor_status
    implicit none (type, external)
    integer(int8), pointer :: occupations(:,:),quantum(:,:,:),couplings(:,:)
    integer :: rank, status, i, j
@@ -28,9 +28,9 @@ program descriptor_collectives
       quantum(:,3,:)=1_int8
    end if
    if (scenario == "shape" .and. rank == 1) then
-      call broadcast_descriptor_arrays(occupations(:,:2),quantum,couplings,column_limit=1)
+      call broadcast_descriptor_arrays(occupations(:,:2),quantum,couplings,csf_batch_limit=1)
    else
-      call broadcast_descriptor_arrays(occupations,quantum,couplings,column_limit=1)
+      call broadcast_descriptor_arrays(occupations,quantum,couplings,csf_batch_limit=1)
    end if
    do j=1,3
       do i=1,size(occupations,1)

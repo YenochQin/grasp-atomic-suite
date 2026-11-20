@@ -4,8 +4,8 @@
 !...Translated by Gediminas Gaigalas 11/18/19
       subroutine rintdensvec (i, j, dint1vec, nrnuc)
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: max_orbitals
-      use grid_c,           only: radial_point_count
+      use grasp_parameters,    only: max_orbitals
+      use radial_grid_state,           only: radial_point_count
       implicit none (type, external)
       real(real64), intent(out) :: dint1vec(max_orbitals, max_orbitals, radial_point_count)
       integer, intent(in) :: i

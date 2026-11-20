@@ -1,0 +1,137 @@
+! Merge two CSF bases into a common orbital order, with the left basis preceding the right.
+module csf_basis_merging
+   use iso_fortran_env, only: int8, int64
+   use grasp_parameters, only: max_orbitals
+   use atomic_calculation_state, only: electron_count, left_electron_count => nelecr
+   use orbital_csf_basis, only: csf_count, left_csf_count => ncfr, left_orbital_count => nwr, left_principal_n => npr, &
+      & left_kappa => nakr, left_orbital_labels => nhr, left_occupations => iqar, orbital_count, &
+                    orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, &
+                    orbital_symmetry_labels, csf_subshell_occupations
+   use csf_coupling_data, only: left_subshell_quantum_codes => jqsar, left_coupling_codes => jcupar, csf_subshell_quantum_codes, &
+      & csf_coupling_quantum_codes
+   implicit none (type, external)
+   private
+   public :: merge_csf_bases
+contains
+   subroutine merge_csf_bases(left_core_subshell_count,right_core_subshell_count,status,message)
+      integer, intent(in) :: left_core_subshell_count,right_core_subshell_count
+      integer, intent(out) :: status
+      character(len=*), intent(out) :: message
+      integer :: merged_principal_n(max_orbitals), merged_kappa(max_orbitals)
+      character(len=2) :: merged_labels(max_orbitals)
+      integer :: left_orbital_index, right_orbital_index, merge_choice, merged_orbital_count, merged_orbital_index, &
+         & input_orbital_index, merged_csf_count, allocation_status
+      integer(int64) :: wide_merged_csf_count
+      logical :: left_orbital_in_right_tail, right_orbital_in_left_tail
+      integer(int8), pointer :: occupations(:,:), subshell_quantum_codes(:,:,:), couplings(:,:)
+      nullify(occupations,subshell_quantum_codes,couplings)
+      status=1
+      message="left and right electron counts or cores differ"
+      if (electron_count /= left_electron_count .or. left_core_subshell_count /= right_core_subshell_count) return
+      if (left_core_subshell_count < 0 .or. left_core_subshell_count > min(left_orbital_count,orbital_count)) return
+      if (any(left_principal_n(:left_core_subshell_count) /= orbital_principal_n(:right_core_subshell_count)) .or. &
+          any(left_kappa(:left_core_subshell_count) /= orbital_kappa(:right_core_subshell_count))) return
+      message="input basis arrays are not loaded"
+      if (.not.associated(left_occupations) .or. .not.associated(left_subshell_quantum_codes) .or. &
+         & .not.associated(left_coupling_codes)) return
+      if (.not.associated(csf_subshell_occupations) .or. .not.associated(csf_subshell_quantum_codes) .or. &
+          .not.associated(csf_coupling_quantum_codes)) return
+
+      left_orbital_index=1
+      right_orbital_index=1
+      merged_orbital_count=0
+      ! Merge the ordered orbital lists. Prefer the left orbital if neither order constrains the choice.
+      do while (left_orbital_index <= left_orbital_count .or. right_orbital_index <= orbital_count)
+         if (left_orbital_index > left_orbital_count) then
+            merge_choice=2
+         else if (right_orbital_index > orbital_count) then
+            merge_choice=1
+         else if (left_principal_n(left_orbital_index) == orbital_principal_n(right_orbital_index) .and. &
+            & left_kappa(left_orbital_index) == orbital_kappa(right_orbital_index)) then
+            merge_choice=3
+         else
+            left_orbital_in_right_tail=any(left_principal_n(left_orbital_index) == &
+               & orbital_principal_n(right_orbital_index:orbital_count) .and. &
+                            left_kappa(left_orbital_index) == orbital_kappa(right_orbital_index:orbital_count))
+            right_orbital_in_left_tail=any(orbital_principal_n(right_orbital_index) == &
+               & left_principal_n(left_orbital_index:left_orbital_count) .and. &
+                             orbital_kappa(right_orbital_index) == left_kappa(left_orbital_index:left_orbital_count))
+            if (.not.left_orbital_in_right_tail) then
+               merge_choice=1
+            else if (.not.right_orbital_in_left_tail) then
+               merge_choice=2
+            else
+               message="inconsistent orbital order between the two bases"
+               return
+            end if
+         end if
+         message="merged orbital count exceeds configured capacity"
+         if (merged_orbital_count == max_orbitals) return
+         merged_orbital_count=merged_orbital_count+1
+         if (merge_choice == 2) then
+            merged_principal_n(merged_orbital_count)=orbital_principal_n(right_orbital_index)
+            merged_kappa(merged_orbital_count)=orbital_kappa(right_orbital_index)
+            merged_labels(merged_orbital_count)=orbital_symmetry_labels(right_orbital_index)
+         else
+            merged_principal_n(merged_orbital_count)=left_principal_n(left_orbital_index)
+            merged_kappa(merged_orbital_count)=left_kappa(left_orbital_index)
+            merged_labels(merged_orbital_count)=left_orbital_labels(left_orbital_index)
+         end if
+         if (merge_choice /= 2) left_orbital_index=left_orbital_index+1
+         if (merge_choice /= 1) right_orbital_index=right_orbital_index+1
+      end do
+      wide_merged_csf_count=int(left_csf_count,int64)+int(csf_count,int64)
+      message="merged CSF count exceeds suite integer capacity"
+      if (wide_merged_csf_count > int(huge(merged_csf_count),int64) .or. wide_merged_csf_count < 1) return
+      merged_csf_count=int(wide_merged_csf_count)
+      message="cannot allocate merged CSF arrays"
+      allocate(occupations(max_orbitals,merged_csf_count),stat=allocation_status)
+      if (allocation_status /= 0) goto 900
+      allocate(subshell_quantum_codes(max_orbitals,3,merged_csf_count),stat=allocation_status)
+      if (allocation_status /= 0) goto 900
+      allocate(couplings(max_orbitals,merged_csf_count),stat=allocation_status)
+      if (allocation_status /= 0) goto 900
+      occupations=0_int8
+      subshell_quantum_codes=0_int8
+      subshell_quantum_codes(:merged_orbital_count,3,:)=1_int8
+      couplings(:,:left_csf_count)=int(left_coupling_codes(:,:left_csf_count),int8)
+      couplings(:,left_csf_count+1:)=csf_coupling_quantum_codes
+      do merged_orbital_index=1,merged_orbital_count
+         do input_orbital_index=1,left_orbital_count
+            if (merged_principal_n(merged_orbital_index) /= left_principal_n(input_orbital_index) .or. &
+               & merged_kappa(merged_orbital_index) /= left_kappa(input_orbital_index)) cycle
+            occupations(merged_orbital_index,:left_csf_count)=int(left_occupations(input_orbital_index,:left_csf_count),int8)
+            subshell_quantum_codes(merged_orbital_index,:, &
+               & :left_csf_count)=int(left_subshell_quantum_codes(input_orbital_index,:,:left_csf_count),int8)
+         end do
+         do input_orbital_index=1,orbital_count
+            if (merged_principal_n(merged_orbital_index) /= orbital_principal_n(input_orbital_index) .or. &
+               & merged_kappa(merged_orbital_index) /= orbital_kappa(input_orbital_index)) cycle
+            occupations(merged_orbital_index,left_csf_count+1:)=csf_subshell_occupations(input_orbital_index,:)
+            subshell_quantum_codes(merged_orbital_index,:,left_csf_count+1:)=csf_subshell_quantum_codes(input_orbital_index,:,:)
+         end do
+      end do
+      deallocate(csf_subshell_occupations,csf_subshell_quantum_codes,csf_coupling_quantum_codes)
+      csf_subshell_occupations=>occupations
+      csf_subshell_quantum_codes=>subshell_quantum_codes
+      csf_coupling_quantum_codes=>couplings
+      orbital_count=merged_orbital_count
+      csf_count=merged_csf_count
+      orbital_principal_n(:merged_orbital_count)=merged_principal_n(:merged_orbital_count)
+      orbital_kappa(:merged_orbital_count)=merged_kappa(:merged_orbital_count)
+      orbital_symmetry_labels(:merged_orbital_count)=merged_labels(:merged_orbital_count)
+      orbital_two_j(:merged_orbital_count)=2*abs(merged_kappa(:merged_orbital_count))-1
+      where (merged_kappa(:merged_orbital_count) > 0)
+         orbital_l(:merged_orbital_count)=merged_kappa(:merged_orbital_count)
+      elsewhere
+         orbital_l(:merged_orbital_count)=-merged_kappa(:merged_orbital_count)-1
+      end where
+      status=0
+      message=""
+      return
+900   continue
+      if (associated(occupations)) deallocate(occupations)
+      if (associated(subshell_quantum_codes)) deallocate(subshell_quantum_codes)
+      if (associated(couplings)) deallocate(couplings)
+   end subroutine merge_csf_bases
+end module csf_basis_merging

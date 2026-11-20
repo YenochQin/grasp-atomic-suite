@@ -19,20 +19,20 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: radial_workspace_capacity
-      use def_c, only: double, nuclear_charge, speed_of_light_au
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use grasp_parameters,    only: radial_workspace_capacity
+      use atomic_calculation_state, only: nuclear_charge, speed_of_light_au
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use orb_c, only: double, max_orbitals, orbital_kappa, orbital_principal_n, orbital_symmetry_labels
-      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use orbital_csf_basis, only: max_orbitals, orbital_kappa, orbital_principal_n, orbital_symmetry_labels
+      use radial_quadrature_workspace, only: mtp, radial_workspace_capacity, ta, tb
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dpbdt_i, only: dpbdt
-      use quad_i, only: quad
+      use radial_wavefunction_derivatives, only: dpbdt
+      use radial_quadrature, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -61,7 +61,8 @@
 !   Stop if orbitals J and K have different kappa values
 !
       if (kap1 /= kap2) then
-         write (*,300) orbital_principal_n(j),orbital_symmetry_labels(j),orbital_principal_n(k),orbital_symmetry_labels(k)
+         write (*,'("RINTI_NMS: Attempt to calculate I(",1i2,1a2,",",1i2,1a2,")")') &
+            orbital_principal_n(j),orbital_symmetry_labels(j),orbital_principal_n(k),orbital_symmetry_labels(k)
          stop
       end if
 !
@@ -153,14 +154,12 @@
 !
 !C*      LDBPR(5)=.TRUE.
       if (ldbpr(5))                                                    &
-         write (99,302) orbital_principal_n(j),orbital_symmetry_labels(j),orbital_principal_n(k), &
+         write (99,'(/" K (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)') &
+            orbital_principal_n(j),orbital_symmetry_labels(j),orbital_principal_n(k), &
             & orbital_symmetry_labels(k),valnmsk123
 !
 !C*      RETURN
 !
-  300 format ("RINTI_NMS: Attempt to calculate I(",                    &
-               1i2,1a2,",",1i2,1a2,")")
-  302 format (/" K (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)
 !
       return
       end subroutine rinti_nms

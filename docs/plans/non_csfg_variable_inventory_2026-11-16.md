@@ -103,74 +103,74 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 | [src/appl/rmcdhf/mpi_s.f90](#file-0694) / `module:mpi_s` | `NPROCS` | `mpi_process_count` | 统一执行流程中的进程数量；串行模拟路径也使用此状态 | [mpi_s.f90](../../src/appl/rmcdhf/mpi_s.f90)、[matrix.f90](../../src/appl/rmcdhf/matrix.f90) |
 | [src/appl/rmcdhf_mem/mpi_s.f90](#file-0804) / `module:mpi_s` | `MYID` | `mpi_rank` | 统一执行流程中的进程编号；串行模拟路径也使用此状态 | [mpi_s.f90](../../src/appl/rmcdhf/mpi_s.f90)、[matrix.f90](../../src/appl/rmcdhf/matrix.f90) |
 | [src/appl/rmcdhf_mem/mpi_s.f90](#file-0804) / `module:mpi_s` | `NPROCS` | `mpi_process_count` | 统一执行流程中的进程数量；串行模拟路径也使用此状态 | [mpi_s.f90](../../src/appl/rmcdhf/mpi_s.f90)、[matrix.f90](../../src/appl/rmcdhf/matrix.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `I` | `radial_index` | 网格构造循环的径向索引 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `II` | `debug_row_index` | 调试输出的行索引 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `II1` | `left_grid_index` | 调试输出左列的网格索引 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `II2` | `right_grid_index` | 调试输出右列的网格索引 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `NB2` | `half_grid_point_count` | 网格点数整数除以二，供调试排版使用 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `NP10` | `grid_points_with_padding` | 运行时网格点数加 10 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `NROWS` | `debug_row_count` | 调试输出行数 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `A` | `grid_step_ratio` | H/HP | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `DELR` | `radius_correction` | Newton 半径修正量 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `EPH` | `exp_grid_step` | exp(H) | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `EPSLON` | `newton_relative_tolerance` | Newton 网格求解的相对收敛容限 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `ETT` | `exp_grid_coordinate` | 递推得到的 exp(t) | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `ETTM1` | `exp_grid_coordinate_minus_one` | exp(t)-1 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `FOFR` | `grid_equation_residual` | 隐式网格方程的残差 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `FPRI` | `inverse_grid_equation_derivative` | 网格方程导数的倒数；不应命名为普通一阶导数 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `REST` | `radius_estimate` | 当前半径估计 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `RESTS` | `shifted_radius_estimate` | REST+RNT | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `RLAST` | `previous_radius_estimate` | Newton 迭代保存的上一半径估计 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `T` | `transformed_coordinate` | H*(I-1) | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `AINFCM` | `bohr_radius_cm` | Bohr 半径，cm | [setcon.f90](../../src/lib/lib9290/setcon.f90) |
-| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `ALFAI` | `inverse_fine_structure_constant` | 精细结构常数的倒数 | [setcon.f90](../../src/lib/lib9290/setcon.f90) |
-| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `CCMPS` | `speed_of_light_cm_per_s` | 光速，cm/s | [setcon.f90](../../src/lib/lib9290/setcon.f90) |
-| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `EESU` | `electron_charge_esu` | 电子电荷的 esu 数值 | [setcon.f90](../../src/lib/lib9290/setcon.f90) |
-| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `EMEG` | `electron_mass_g` | 电子质量，g | [setcon.f90](../../src/lib/lib9290/setcon.f90) |
-| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `EMEAMU` | `electron_mass_u` | 电子质量，u | [setcon.f90](../../src/lib/lib9290/setcon.f90) |
-| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `EMPAMU` | `proton_mass_u` | 质子质量，u | [setcon.f90](../../src/lib/lib9290/setcon.f90) |
-| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `HBARES` | `reduced_planck_constant_erg_s` | 约化 Planck 常数，erg·s | [setcon.f90](../../src/lib/lib9290/setcon.f90) |
-| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `RINFEV` | `rydberg_energy_ev` | Rydberg 能量，eV | [setcon.f90](../../src/lib/lib9290/setcon.f90) |
-| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `RINFK` | `rydberg_wavenumber_cm` | Rydberg 波数，cm⁻¹ | [setcon.f90](../../src/lib/lib9290/setcon.f90) |
-| [src/lib/lib9290/start.f90](#file-1541) / `subroutine:start` | `IORB` | `orbital_index` | 当前轨道索引 | [start.f90](../../src/lib/lib9290/start.f90) |
-| [src/lib/lib9290/start.f90](#file-1541) / `subroutine:start` | `ITYPE` | `radial_equation_type` | 1 齐次、2 非齐次、3 变分方程 | [start.f90](../../src/lib/lib9290/start.f90) |
-| [src/lib/lib9290/start.f90](#file-1541) / `subroutine:start` | `P0` | `origin_slope_parameter` | 输入的近原点斜率参数 | [start.f90](../../src/lib/lib9290/start.f90) |
-| [src/lib/lib9290/start.f90](#file-1541) / `subroutine:start` | `Q0` | `small_component_origin_coefficient` | 小分量级数展开首项 | [start.f90](../../src/lib/lib9290/start.f90) |
-| [src/lib/lib9290/start.f90](#file-1541) / `subroutine:start` | `P` | `large_component_values` | 大分量起始积分值；首点按原实现使用缩放约定 | [start.f90](../../src/lib/lib9290/start.f90) |
-| [src/lib/lib9290/start.f90](#file-1541) / `subroutine:start` | `Q` | `small_component_values` | 小分量起始积分值；首点按原实现使用缩放约定 | [start.f90](../../src/lib/lib9290/start.f90) |
-| [src/lib/libmod/buffer_C.f90](#file-1576) / `module:buffer_c` | `NBDIM` | `angular_buffer_capacity` | 角系数缓冲区分配容量 | [mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90)、[alcbuf.f90](../../src/lib/lib9290/alcbuf.f90) |
-| [src/lib/libmod/buffer_C.f90](#file-1576) / `module:buffer_c` | `NVCOEF` | `angular_coefficient_count` | 当前 CSF 对产生的有效角系数条数 | [mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90)、[alcbuf.f90](../../src/lib/lib9290/alcbuf.f90) |
-| [src/lib/libmod/buffer_C.f90](#file-1576) / `module:buffer_c` | `label` | `angular_coefficient_labels` | 角系数对应的四个轨道索引与多极秩标签 | [mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90)、[alcbuf.f90](../../src/lib/lib9290/alcbuf.f90) |
-| [src/lib/libmod/buffer_C.f90](#file-1576) / `module:buffer_c` | `coeff` | `angular_coefficients` | 当前缓冲的角系数值 | [mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90)、[alcbuf.f90](../../src/lib/lib9290/alcbuf.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `I` | `radial_index` | 网格构造循环的径向索引 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `II` | `debug_row_index` | 调试输出的行索引 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `II1` | `left_grid_index` | 调试输出左列的网格索引 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `II2` | `right_grid_index` | 调试输出右列的网格索引 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `NB2` | `half_grid_point_count` | 网格点数整数除以二，供调试排版使用 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `NP10` | `grid_points_with_padding` | 运行时网格点数加 10 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `NROWS` | `debug_row_count` | 调试输出行数 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `A` | `grid_step_ratio` | H/HP | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `DELR` | `radius_correction` | Newton 半径修正量 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `EPH` | `exp_grid_step` | exp(H) | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `EPSLON` | `newton_relative_tolerance` | Newton 网格求解的相对收敛容限 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `ETT` | `exp_grid_coordinate` | 递推得到的 exp(t) | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `ETTM1` | `exp_grid_coordinate_minus_one` | exp(t)-1 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `FOFR` | `grid_equation_residual` | 隐式网格方程的残差 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `FPRI` | `inverse_grid_equation_derivative` | 网格方程导数的倒数；不应命名为普通一阶导数 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `REST` | `radius_estimate` | 当前半径估计 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `RESTS` | `shifted_radius_estimate` | REST+RNT | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `RLAST` | `previous_radius_estimate` | Newton 迭代保存的上一半径估计 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/radgrd.f90](#file-1505) / `subroutine:radgrd` | `T` | `transformed_coordinate` | H*(I-1) | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `AINFCM` | `bohr_radius_cm` | Bohr 半径，cm | [physical_constants.f90](../../src/lib/core/physical_constants.f90) |
+| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `ALFAI` | `inverse_fine_structure_constant` | 精细结构常数的倒数 | [physical_constants.f90](../../src/lib/core/physical_constants.f90) |
+| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `CCMPS` | `speed_of_light_cm_per_s` | 光速，cm/s | [physical_constants.f90](../../src/lib/core/physical_constants.f90) |
+| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `EESU` | `electron_charge_esu` | 电子电荷的 esu 数值 | [physical_constants.f90](../../src/lib/core/physical_constants.f90) |
+| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `EMEG` | `electron_mass_g` | 电子质量，g | [physical_constants.f90](../../src/lib/core/physical_constants.f90) |
+| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `EMEAMU` | `electron_mass_u` | 电子质量，u | [physical_constants.f90](../../src/lib/core/physical_constants.f90) |
+| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `EMPAMU` | `proton_mass_u` | 质子质量，u | [physical_constants.f90](../../src/lib/core/physical_constants.f90) |
+| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `HBARES` | `reduced_planck_constant_erg_s` | 约化 Planck 常数，erg·s | [physical_constants.f90](../../src/lib/core/physical_constants.f90) |
+| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `RINFEV` | `rydberg_energy_ev` | Rydberg 能量，eV | [physical_constants.f90](../../src/lib/core/physical_constants.f90) |
+| [src/lib/lib9290/setcon.f90](#file-1511) / `subroutine:setcon` | `RINFK` | `rydberg_wavenumber_cm` | Rydberg 波数，cm⁻¹ | [physical_constants.f90](../../src/lib/core/physical_constants.f90) |
+| [src/lib/lib9290/start.f90](#file-1541) / `subroutine:start` | `IORB` | `orbital_index` | 当前轨道索引 | [radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90) |
+| [src/lib/lib9290/start.f90](#file-1541) / `subroutine:start` | `ITYPE` | `radial_equation_type` | 1 齐次、2 非齐次、3 变分方程 | [radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90) |
+| [src/lib/lib9290/start.f90](#file-1541) / `subroutine:start` | `P0` | `origin_slope_parameter` | 输入的近原点斜率参数 | [radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90) |
+| [src/lib/lib9290/start.f90](#file-1541) / `subroutine:start` | `Q0` | `small_component_origin_coefficient` | 小分量级数展开首项 | [radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90) |
+| [src/lib/lib9290/start.f90](#file-1541) / `subroutine:start` | `P` | `large_component_values` | 大分量起始积分值；首点按原实现使用缩放约定 | [radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90) |
+| [src/lib/lib9290/start.f90](#file-1541) / `subroutine:start` | `Q` | `small_component_values` | 小分量起始积分值；首点按原实现使用缩放约定 | [radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90) |
+| [src/lib/libmod/buffer_C.f90](#file-1576) / `module:buffer_c` | `NBDIM` | `angular_buffer_capacity` | 角系数缓冲区分配容量 | [mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90)、[angular_coefficient_buffer.f90](../../src/lib/core/angular_coefficient_buffer.f90) |
+| [src/lib/libmod/buffer_C.f90](#file-1576) / `module:buffer_c` | `NVCOEF` | `angular_coefficient_count` | 当前 CSF 对产生的有效角系数条数 | [mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90)、[angular_coefficient_buffer.f90](../../src/lib/core/angular_coefficient_buffer.f90) |
+| [src/lib/libmod/buffer_C.f90](#file-1576) / `module:buffer_c` | `label` | `angular_coefficient_labels` | 角系数对应的四个轨道索引与多极秩标签 | [mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90)、[angular_coefficient_buffer.f90](../../src/lib/core/angular_coefficient_buffer.f90) |
+| [src/lib/libmod/buffer_C.f90](#file-1576) / `module:buffer_c` | `coeff` | `angular_coefficients` | 当前缓冲的角系数值 | [mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90)、[angular_coefficient_buffer.f90](../../src/lib/core/angular_coefficient_buffer.f90) |
 | [src/lib/libmod/core_C.f90](#file-1583) / `module:core_c` | `NCORE` | `closed_core_subshell_count` | 闭壳层核心的相对子壳层数；不是核心电子数 | [lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
 | [src/lib/libmod/damp_C.f90](#file-1589) / `module:damp_c` | `ODAMP` | `orbital_damping_factors` | 径向轨道阻尼因子 | [damp_C.f90](../../src/lib/libmod/damp_C.f90) |
 | [src/lib/libmod/damp_C.f90](#file-1589) / `module:damp_c` | `cdamp` | `mixing_damping_factors` | 展开系数阻尼因子 | [damp_C.f90](../../src/lib/libmod/damp_C.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `AUCM` | `hartree_to_wavenumber_cm` | 能量从原子单位换算至 cm⁻¹ 的系数 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `AUEV` | `hartree_to_ev` | 能量从原子单位换算至 eV 的系数 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `CCMS` | `speed_of_light_cm_per_s` | 真空光速，cm/s | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `FASI` | `einstein_a_au_to_si` | Einstein A 系数从原子单位到 SI 的换算因子 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `FBSI` | `einstein_b_au_to_si` | Einstein B 系数从原子单位到 SI 的换算因子 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `AUMAMU` | `electron_mass_u` | 原子质量单位表示的电子质量 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `FMTOAU` | `femtometer_to_bohr` | 长度从 fm 到 Bohr 的换算系数 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `NELEC` | `electron_count` | 当前体系的电子总数 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `Z` | `nuclear_charge` | 核电荷数 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `C` | `speed_of_light_au` | 径向方程使用的原子单位光速参数 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `EMPAM` | `proton_mass_u` | 原子质量单位表示的质子质量 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `RBCM` | `bohr_radius_cm` | 以 cm 表示的 Bohr 半径 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `CVAC` | `vacuum_speed_of_light_au` | SETCON 初始化的真空光速原子单位常数 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
-| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `PI` | `pi` | 圆周率；已具有明确数学含义，可保留 | [setcon.f90](../../src/lib/lib9290/setcon.f90)、[start.f90](../../src/lib/lib9290/start.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `AUCM` | `hartree_to_wavenumber_cm` | 能量从原子单位换算至 cm⁻¹ 的系数 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `AUEV` | `hartree_to_ev` | 能量从原子单位换算至 eV 的系数 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `CCMS` | `speed_of_light_cm_per_s` | 真空光速，cm/s | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `FASI` | `einstein_a_au_to_si` | Einstein A 系数从原子单位到 SI 的换算因子 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `FBSI` | `einstein_b_au_to_si` | Einstein B 系数从原子单位到 SI 的换算因子 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `AUMAMU` | `electron_mass_u` | 原子质量单位表示的电子质量 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `FMTOAU` | `femtometer_to_bohr` | 长度从 fm 到 Bohr 的换算系数 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `NELEC` | `electron_count` | 当前体系的电子总数 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `Z` | `nuclear_charge` | 核电荷数 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `C` | `speed_of_light_au` | 径向方程使用的原子单位光速参数 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `EMPAM` | `proton_mass_u` | 原子质量单位表示的质子质量 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `RBCM` | `bohr_radius_cm` | 以 cm 表示的 Bohr 半径 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `CVAC` | `vacuum_speed_of_light_au` | SETCON 初始化的真空光速原子单位常数 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
+| [src/lib/libmod/def_C.f90](#file-1592) / `module:def_c` | `PI` | `pi` | 圆周率；已具有明确数学含义，可保留 | [physical_constants.f90](../../src/lib/core/physical_constants.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90) |
 | [src/lib/libmod/eigv_C.f90](#file-1595) / `module:eigv_c` | `EAV` | `hamiltonian_energy_shift` | 哈密顿矩阵使用并单独输出的平均能量移位 | [matrix.f90](../../src/appl/rmcdhf/matrix.f90)、[maneig.f90](../../src/appl/rmcdhf/maneig.f90) |
 | [src/lib/libmod/eigv_C.f90](#file-1595) / `module:eigv_c` | `EVAL` | `shifted_eigenvalues` | 与 EAV 分开存储的本征值；各调用路径的能量恢复需联查 | [matrix.f90](../../src/appl/rmcdhf/matrix.f90)、[maneig.f90](../../src/appl/rmcdhf/maneig.f90) |
 | [src/lib/libmod/eigv_C.f90](#file-1595) / `module:eigv_c` | `EVEC` | `csf_mixing_coefficients` | 按块/态存储的 CSF 展开系数 | [matrix.f90](../../src/appl/rmcdhf/matrix.f90)、[maneig.f90](../../src/appl/rmcdhf/maneig.f90) |
 | [src/lib/libmod/fixd_C.f90](#file-1598) / `module:fixd_c` | `NFIX` | `fixed_orbital_count` | 固定轨道数量 | [getscd.f90](../../src/appl/rmcdhf/getscd.f90) |
 | [src/lib/libmod/fixd_C.f90](#file-1598) / `module:fixd_c` | `LFIX` | `is_orbital_fixed` | 各轨道是否固定的标志 | [getscd.f90](../../src/appl/rmcdhf/getscd.f90) |
-| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `N` | `radial_point_count` | 运行时使用的径向网格点数 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `R` | `radial_grid` | 径向网格坐标 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `RP` | `radial_grid_derivative` | 网格坐标对变换变量的导数；不是相邻网格间距 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `RPOR` | `radial_derivative_over_radius` | 网格导数与半径之比；首元素按实现置零 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `H` | `transformed_grid_step` | 变换坐标上的网格步长 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `HP` | `asymptotic_grid_step` | 控制渐近线性网格的步长参数；零表示指数网格 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
-| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `RNT` | `radial_grid_scale` | 径向网格尺度参数 | [radgrd.f90](../../src/lib/lib9290/radgrd.f90) |
+| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `N` | `radial_point_count` | 运行时使用的径向网格点数 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `R` | `radial_grid` | 径向网格坐标 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `RP` | `radial_grid_derivative` | 网格坐标对变换变量的导数；不是相邻网格间距 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `RPOR` | `radial_derivative_over_radius` | 网格导数与半径之比；首元素按实现置零 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `H` | `transformed_grid_step` | 变换坐标上的网格步长 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `HP` | `asymptotic_grid_step` | 控制渐近线性网格的步长参数；零表示指数网格 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
+| [src/lib/libmod/grid_C.f90](#file-1601) / `module:grid_c` | `RNT` | `radial_grid_scale` | 径向网格尺度参数 | [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90) |
 | [src/lib/libmod/hblock_C.f90](#file-1602) / `module:hblock_c` | `NBLOCK` | `symmetry_block_count` | 对称性分块数量 | [setmcp.f90](../../src/appl/rmcdhf/setmcp.f90)、[matrix.f90](../../src/appl/rmcdhf/matrix.f90) |
 | [src/lib/libmod/hblock_C.f90](#file-1602) / `module:hblock_c` | `ncfblk` | `csf_counts_by_block` | 每个对称性块的 CSF 数；注意下标 0 的哨兵 | [setmcp.f90](../../src/appl/rmcdhf/setmcp.f90)、[matrix.f90](../../src/appl/rmcdhf/matrix.f90) |
 | [src/lib/libmod/hblock_C.f90](#file-1602) / `module:hblock_c` | `nevblk` | `eigenvector_counts_by_block` | 每个对称性块的目标本征向量数 | [setmcp.f90](../../src/appl/rmcdhf/setmcp.f90)、[matrix.f90](../../src/appl/rmcdhf/matrix.f90) |
@@ -189,20 +189,20 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 | [src/lib/libmod/mcp_C.f90](#file-1625) / `module:mcp_c` | `DIAG` | `diagonal_only` | 是否只计算对角 CSF 对 | [mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90) |
 | [src/lib/libmod/mcp_C.f90](#file-1625) / `module:mcp_c` | `LFORDR` | `use_first_order_restriction` | 是否使用结合 ICCUT 的一阶空间限制 | [mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90) |
 | [src/lib/libmod/mcpa_C.f90](#file-1626) / `module:mcpa_c` | `KMAXF` | `max_mcp_file_multipole_rank` | 从 MCP 输入文件侧使用的最大多极秩 | [matrix.f90](../../src/appl/rmcdhf/matrix.f90) |
-| [src/lib/libmod/npar_C.f90](#file-1636) / `module:npar_c` | `NPARM` | `nuclear_model_parameter_count` | 核模型参数个数；0 对应点核、2 对应 Fermi 模型 | [nucpot.f90](../../src/lib/lib9290/nucpot.f90) |
-| [src/lib/libmod/npar_C.f90](#file-1636) / `module:npar_c` | `PARM` | `nuclear_model_parameters` | 核模型参数数组；Fermi 分支依次读取 c 与 a | [nucpot.f90](../../src/lib/lib9290/nucpot.f90) |
-| [src/lib/libmod/npot_C.f90](#file-1638) / `module:npot_c` | `NNUC` | `first_grid_index_beyond_fermi_c` | Fermi 分支首次满足 r/c > 1 的网格索引；不可泛称核半径 | [nucpot.f90](../../src/lib/lib9290/nucpot.f90) |
-| [src/lib/libmod/npot_C.f90](#file-1638) / `module:npot_c` | `ZZ` | `negative_radius_times_potential` | 存储的是 -r V(r)；加入核极化后的使用路径也需保持此约定 | [nucpot.f90](../../src/lib/lib9290/nucpot.f90) |
-| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NH` | `orbital_symmetry_labels` | 各相对子壳层的字符标签 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[lodrwf.f90](../../src/lib/lib9290/lodrwf.f90) |
-| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `E` | `orbital_energy_parameters` | 轨道能量参数；保留当前 E 的符号与零点约定 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[lodrwf.f90](../../src/lib/lib9290/lodrwf.f90) |
-| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `GAMA` | `orbital_origin_exponents` | 近原点径向展开使用的 gamma 指数 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[lodrwf.f90](../../src/lib/lib9290/lodrwf.f90) |
-| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NCF` | `csf_count` | 当前所处理 CSF 空间的大小；分块路径中是当前块大小 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[lodrwf.f90](../../src/lib/lib9290/lodrwf.f90) |
-| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NW` | `orbital_count` | 当前轨道/相对子壳层数 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[lodrwf.f90](../../src/lib/lib9290/lodrwf.f90) |
-| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `IQA` | `csf_subshell_occupations` | 轨道与 CSF 对应的占据数表 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[lodrwf.f90](../../src/lib/lib9290/lodrwf.f90) |
-| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NAK` | `orbital_kappa` | 各轨道的相对论量子数 kappa | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[lodrwf.f90](../../src/lib/lib9290/lodrwf.f90) |
-| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NP` | `orbital_principal_n` | 各轨道的主量子数 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[lodrwf.f90](../../src/lib/lib9290/lodrwf.f90) |
-| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NKJ` | `orbital_two_j` | 各轨道的 2j；NKJ+1 是子壳层容量 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[lodrwf.f90](../../src/lib/lib9290/lodrwf.f90) |
-| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NKL` | `orbital_l` | 各轨道的轨道角动量 l | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[lodrwf.f90](../../src/lib/lib9290/lodrwf.f90) |
+| [src/lib/libmod/npar_C.f90](#file-1636) / `module:npar_c` | `NPARM` | `nuclear_model_parameter_count` | 核模型参数个数；0 对应点核、2 对应 Fermi 模型 | [nuclear_coulomb_potential.f90](../../src/lib/core/nuclear_coulomb_potential.f90) |
+| [src/lib/libmod/npar_C.f90](#file-1636) / `module:npar_c` | `PARM` | `nuclear_model_parameters` | 核模型参数数组；Fermi 分支依次读取 c 与 a | [nuclear_coulomb_potential.f90](../../src/lib/core/nuclear_coulomb_potential.f90) |
+| [src/lib/libmod/npot_C.f90](#file-1638) / `module:npot_c` | `NNUC` | `first_grid_index_beyond_fermi_c` | Fermi 分支首次满足 r/c > 1 的网格索引；不可泛称核半径 | [nuclear_coulomb_potential.f90](../../src/lib/core/nuclear_coulomb_potential.f90) |
+| [src/lib/libmod/npot_C.f90](#file-1638) / `module:npot_c` | `ZZ` | `negative_radius_times_potential` | 存储的是 -r V(r)；加入核极化后的使用路径也需保持此约定 | [nuclear_coulomb_potential.f90](../../src/lib/core/nuclear_coulomb_potential.f90) |
+| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NH` | `orbital_symmetry_labels` | 各相对子壳层的字符标签 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90) |
+| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `E` | `orbital_energy_parameters` | 轨道能量参数；保留当前 E 的符号与零点约定 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90) |
+| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `GAMA` | `orbital_origin_exponents` | 近原点径向展开使用的 gamma 指数 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90) |
+| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NCF` | `csf_count` | 当前所处理 CSF 空间的大小；分块路径中是当前块大小 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90) |
+| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NW` | `orbital_count` | 当前轨道/相对子壳层数 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90) |
+| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `IQA` | `csf_subshell_occupations` | 轨道与 CSF 对应的占据数表 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90) |
+| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NAK` | `orbital_kappa` | 各轨道的相对论量子数 kappa | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90) |
+| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NP` | `orbital_principal_n` | 各轨道的主量子数 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90) |
+| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NKJ` | `orbital_two_j` | 各轨道的 2j；NKJ+1 是子壳层容量 | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90) |
+| [src/lib/libmod/orb_C.f90](#file-1640) / `module:orb_c` | `NKL` | `orbital_l` | 各轨道的轨道角动量 l | [prsrsl.f90](../../src/lib/lib9290/prsrsl.f90)、[lodcsh.f90](../../src/lib/lib9290/lodcsh.f90)、[radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90) |
 | [src/lib/libmod/pos_C.f90](#file-1648) / `module:pos_c` | `NCFTOT` | `total_csf_count` | 所有对称性块合计 CSF 数 | [matrix.f90](../../src/appl/rmcdhf/matrix.f90)、[setham.f90](../../src/appl/rmcdhf/setham.f90) |
 | [src/lib/libmod/pos_C.f90](#file-1648) / `module:pos_c` | `NVECSIZ` | `mixing_coefficient_storage_size` | 展开系数存储区的总长度 | [matrix.f90](../../src/appl/rmcdhf/matrix.f90)、[setham.f90](../../src/appl/rmcdhf/setham.f90) |
 | [src/lib/libmod/pos_C.f90](#file-1648) / `module:pos_c` | `ncfpast` | `csf_offsets_by_block` | 当前块之前的 CSF 累计偏移 | [matrix.f90](../../src/appl/rmcdhf/matrix.f90)、[setham.f90](../../src/appl/rmcdhf/setham.f90) |
@@ -220,10 +220,10 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 | [src/lib/libmod/suite_parameters_M.f90](#file-1664) / `module:suite_parameters` | `NNNW` | `max_orbitals` | 编译期轨道/相对子壳层容量 | [suite_parameters_M.f90](../../src/lib/libmod/suite_parameters_M.f90)、[mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90) |
 | [src/lib/libmod/suite_parameters_M.f90](#file-1664) / `module:suite_parameters` | `NNNWM1` | `max_orbitals_minus_one` | 轨道容量减一 | [suite_parameters_M.f90](../../src/lib/libmod/suite_parameters_M.f90)、[mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90) |
 | [src/lib/libmod/suite_parameters_M.f90](#file-1664) / `module:suite_parameters` | `NNNWM2` | `max_orbitals_minus_two` | 轨道容量减二 | [suite_parameters_M.f90](../../src/lib/libmod/suite_parameters_M.f90)、[mcp_gg.f90](../../src/appl/rangular/mcp_gg.f90) |
-| [src/lib/libmod/wave_C.f90](#file-1673) / `module:wave_c` | `MF` | `orbital_last_grid_index` | 每个轨道存储的有效径向范围终点索引 | [lodrwf.f90](../../src/lib/lib9290/lodrwf.f90)、[start.f90](../../src/lib/lib9290/start.f90) |
-| [src/lib/libmod/wave_C.f90](#file-1673) / `module:wave_c` | `PZ` | `orbital_origin_parameters` | 各轨道的近原点展开/斜率参数；不能当作普通网格上的 P(0) | [lodrwf.f90](../../src/lib/lib9290/lodrwf.f90)、[start.f90](../../src/lib/lib9290/start.f90) |
-| [src/lib/libmod/wave_C.f90](#file-1673) / `module:wave_c` | `PF` | `radial_large_components` | 各轨道的径向大分量表 | [lodrwf.f90](../../src/lib/lib9290/lodrwf.f90)、[start.f90](../../src/lib/lib9290/start.f90) |
-| [src/lib/libmod/wave_C.f90](#file-1673) / `module:wave_c` | `QF` | `radial_small_components` | 各轨道的径向小分量表 | [lodrwf.f90](../../src/lib/lib9290/lodrwf.f90)、[start.f90](../../src/lib/lib9290/start.f90) |
+| [src/lib/libmod/wave_C.f90](#file-1673) / `module:wave_c` | `MF` | `orbital_last_grid_index` | 每个轨道存储的有效径向范围终点索引 | [radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90) |
+| [src/lib/libmod/wave_C.f90](#file-1673) / `module:wave_c` | `PZ` | `orbital_origin_parameters` | 各轨道的近原点展开/斜率参数；不能当作普通网格上的 P(0) | [radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90) |
+| [src/lib/libmod/wave_C.f90](#file-1673) / `module:wave_c` | `PF` | `radial_large_components` | 各轨道的径向大分量表 | [radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90) |
+| [src/lib/libmod/wave_C.f90](#file-1673) / `module:wave_c` | `QF` | `radial_small_components` | 各轨道的径向小分量表 | [radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90)、[radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90) |
 | [src/lib/librang90/sixj.f90](#file-1827) / `subroutine:sixj` | `I` | `two_j1` | 6j 符号第一行第 1 个角动量的二倍 | [sixj.f90](../../src/lib/librang90/sixj.f90) |
 | [src/lib/librang90/sixj.f90](#file-1827) / `subroutine:sixj` | `J` | `two_j2` | 6j 符号第一行第 2 个角动量的二倍 | [sixj.f90](../../src/lib/librang90/sixj.f90) |
 | [src/lib/librang90/sixj.f90](#file-1827) / `subroutine:sixj` | `K` | `two_j3` | 6j 符号第一行第 3 个角动量的二倍 | [sixj.f90](../../src/lib/librang90/sixj.f90) |
@@ -235,12 +235,12 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 | [src/lib/librang90/sixj.f90](#file-1827) / `subroutine:sixj` | `RACA` | `small_six_j_cache` | 小角动量参数的 6j 缓存 | [sixj.f90](../../src/lib/librang90/sixj.f90) |
 | [src/lib/librang90/sixj.f90](#file-1827) / `subroutine:sixj` | `UNDEF` | `uncached_six_j_sentinel` | 尚未缓存的标记值 | [sixj.f90](../../src/lib/librang90/sixj.f90) |
 | [src/lib/librang90/sixj.f90](#file-1827) / `subroutine:sixj` | `SAVE` | `store_in_six_j_cache` | 是否将本次结果写入缓存的逻辑变量；不是 SAVE 属性 | [sixj.f90](../../src/lib/librang90/sixj.f90) |
-| [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `host` | `processor_name` | MPI 返回的处理器名称 | [mpiu.f90](../../src/lib/mpi90/mpiu.f90)、[mpi_C.f90](../../src/lib/mpi90/mpi_C.f90) |
-| [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `lenhost` | `processor_name_length` | 处理器名称的有效字符数 | [mpiu.f90](../../src/lib/mpi90/mpiu.f90)、[mpi_C.f90](../../src/lib/mpi90/mpi_C.f90) |
-| [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `myid` | `mpi_rank` | MPI 进程编号，从 0 开始 | [mpiu.f90](../../src/lib/mpi90/mpiu.f90)、[mpi_C.f90](../../src/lib/mpi90/mpi_C.f90) |
-| [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `nprocs` | `mpi_process_count` | MPI 进程总数 | [mpiu.f90](../../src/lib/mpi90/mpiu.f90)、[mpi_C.f90](../../src/lib/mpi90/mpi_C.f90) |
-| [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `ierr` | `mpi_error_code` | MPI 调用返回码 | [mpiu.f90](../../src/lib/mpi90/mpiu.f90)、[mpi_C.f90](../../src/lib/mpi90/mpi_C.f90) |
-| [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `istat` | `mpi_status_buffer` | MPI 状态数组；保留 MPI_STATUS_SIZE | [mpiu.f90](../../src/lib/mpi90/mpiu.f90)、[mpi_C.f90](../../src/lib/mpi90/mpi_C.f90) |
+| [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `host` | `processor_name` | MPI 返回的处理器名称 | [mpiu.f90](../../src/lib/mpi/mpi_utilities.f90)、[mpi_C.f90](../../src/lib/mpi/mpi_state.f90) |
+| [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `lenhost` | `processor_name_length` | 处理器名称的有效字符数 | [mpiu.f90](../../src/lib/mpi/mpi_utilities.f90)、[mpi_C.f90](../../src/lib/mpi/mpi_state.f90) |
+| [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `myid` | `mpi_rank` | MPI 进程编号，从 0 开始 | [mpiu.f90](../../src/lib/mpi/mpi_utilities.f90)、[mpi_C.f90](../../src/lib/mpi/mpi_state.f90) |
+| [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `nprocs` | `mpi_process_count` | MPI 进程总数 | [mpiu.f90](../../src/lib/mpi/mpi_utilities.f90)、[mpi_C.f90](../../src/lib/mpi/mpi_state.f90) |
+| [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `ierr` | `mpi_error_code` | MPI 调用返回码 | [mpiu.f90](../../src/lib/mpi/mpi_utilities.f90)、[mpi_C.f90](../../src/lib/mpi/mpi_state.f90) |
+| [src/lib/mpi90/mpi_C.f90](#file-1865) / `module:mpi_c` | `istat` | `mpi_status_buffer` | MPI 状态数组；保留 MPI_STATUS_SIZE | [mpiu.f90](../../src/lib/mpi/mpi_utilities.f90)、[mpi_C.f90](../../src/lib/mpi/mpi_state.f90) |
 
 ## 4. 提取方式、覆盖检查与限制
 
@@ -30313,7 +30313,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1397"></a>
 
-#### [alcbuf.f90](../../src/lib/lib9290/alcbuf.f90)
+#### [angular_coefficient_buffer.f90](../../src/lib/core/angular_coefficient_buffer.f90)
 
 文件：`src/lib/lib9290/alcbuf.f90`；实体 3；SHA-256 `af4860dd056c27475c981257716806455317578247462488927298a11d1e1005`。
 
@@ -30339,7 +30339,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1399"></a>
 
-#### [arctan.f90](../../src/lib/lib9290/arctan.f90)
+#### [nonnegative_atan2.f90](../../src/lib/core/nonnegative_atan2.f90)
 
 文件：`src/lib/lib9290/arctan.f90`；实体 5；SHA-256 `25ced2fec4fa130f9f41ad66b9463dc8621fc0c496504984dcbf818b83aa3a2a`。
 
@@ -30369,7 +30369,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1401"></a>
 
-#### [calen.f90](../../src/lib/lib9290/calen.f90)
+#### [calendar_clock.f90](../../src/lib/core/calendar_clock.f90)
 
 文件：`src/lib/lib9290/calen.f90`；实体 2；SHA-256 `f2af2fa08adae34be934a0d69f3f9df85cc7342794ad9c301770889561cce697`。
 
@@ -30395,7 +30395,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1403"></a>
 
-#### [cgamma.f90](../../src/lib/lib9290/cgamma.f90)
+#### [complex_gamma.f90](../../src/lib/core/complex_gamma.f90)
 
 文件：`src/lib/lib9290/cgamma.f90`；实体 31；SHA-256 `4184ab710d820cdd187ea863ad5185ad193796f841332c5f709065e0e5af4a1b`。
 
@@ -30452,7 +30452,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1405"></a>
 
-#### [clrx.f90](../../src/lib/lib9290/clrx.f90)
+#### [relativistic_three_j.f90](../../src/lib/core/relativistic_three_j.f90)
 
 文件：`src/lib/lib9290/clrx.f90`；实体 11；SHA-256 `fe43884b0bcb3c95c1ac3d5c2e7880418375279bc1c9f4d33d8379e3129df0b3`。
 
@@ -30490,7 +30490,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1407"></a>
 
-#### [convrt.f90](../../src/lib/lib9290/convrt.f90)
+#### [integer_format.f90](../../src/lib/core/integer_format.f90)
 
 文件：`src/lib/lib9290/convrt.f90`；实体 6；SHA-256 `dbfdebc537e55029821d408a74ab568c6ed5bb5dcad83817b0c561fc90d7fc38`。
 
@@ -30507,7 +30507,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1408"></a>
 
-#### [convrt2.f90](../../src/lib/lib9290/convrt2.f90)
+#### [integer_format_with_context.f90](../../src/lib/core/integer_format_with_context.f90)
 
 文件：`src/lib/lib9290/convrt2.f90`；实体 7；SHA-256 `588bbcb11ffb5e652326105c78e6f811326e907951f11810ed8b235a637ef4c1`。
 
@@ -30554,7 +30554,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1411"></a>
 
-#### [convrt_double.f90](../../src/lib/lib9290/convrt_double.f90)
+#### [half_integer_format.f90](../../src/lib/core/half_integer_format.f90)
 
 文件：`src/lib/lib9290/convrt_double.f90`；实体 7；SHA-256 `87f204a0e57cfdbdff9cb52c398c3e88dbc43cac5c9cabae8bc0b8ca7006865c`。
 
@@ -30586,7 +30586,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1413"></a>
 
-#### [cord.f90](../../src/lib/lib9290/cord.f90)
+#### [closed_shell_mcp.f90](../../src/lib/core/closed_shell_mcp.f90)
 
 文件：`src/lib/lib9290/cord.f90`；实体 21；SHA-256 `994c2f5a64e57c0e0e2af18712a728301aa105e2383bb583d327f03d1239ed20`。
 
@@ -30634,7 +30634,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1415"></a>
 
-#### [count.f90](../../src/lib/lib9290/count.f90)
+#### [radial_node_count.f90](../../src/lib/core/radial_node_count.f90)
 
 文件：`src/lib/lib9290/count.f90`；实体 19；SHA-256 `7b4750b7f8fbce1f5cd3de039df3004d70dcc633a8286ffc705c9d80069deee5`。
 
@@ -30679,7 +30679,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1417"></a>
 
-#### [cre.f90](../../src/lib/lib9290/cre.f90)
+#### [reduced_angular_matrix_element.f90](../../src/lib/core/reduced_angular_matrix_element.f90)
 
 文件：`src/lib/lib9290/cre.f90`；实体 6；SHA-256 `b0fa7f843a3d02046020c9380ed39d1c83545fc72c7245eb7f2545182d8b911c`。
 
@@ -30711,7 +30711,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1419"></a>
 
-#### [csf_descriptor_input.f90](../../src/lib/lib9290/csf_descriptor_input.f90)
+#### [csf_descriptor_reader.f90](../../src/lib/core/csf_descriptor_reader.f90)
 
 文件：`src/lib/lib9290/csf_descriptor_input.f90`；实体 122；SHA-256 `c3ec2bcf73e63863382971a1891c0eb291c9408c4a4d4c81cbc27aadf15161d3`。
 
@@ -30936,7 +30936,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1422"></a>
 
-#### [dcbsrw.f90](../../src/lib/lib9290/dcbsrw.f90)
+#### [dirac_coulomb_radial_orbital.f90](../../src/lib/core/dirac_coulomb_radial_orbital.f90)
 
 文件：`src/lib/lib9290/dcbsrw.f90`；实体 46；SHA-256 `6bb9030298913c31565cd95f38c65bc054ed817ea4312e5a252a4715a3a0f9ae`。
 
@@ -31012,7 +31012,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1424"></a>
 
-#### [dinit.f90](../../src/lib/lib9290/dinit.f90)
+#### [real_vector_initialization.f90](../../src/lib/core/real_vector_initialization.f90)
 
 文件：`src/lib/lib9290/dinit.f90`；实体 6；SHA-256 `c979ee380eb350e43159bcc469e455779c3f9b48ecb87f327b22be7e157fac82`。
 
@@ -31044,7 +31044,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1426"></a>
 
-#### [dmerge.f90](../../src/lib/lib9290/dmerge.f90)
+#### [sparse_dot_and_scatter.f90](../../src/lib/core/sparse_dot_and_scatter.f90)
 
 文件：`src/lib/lib9290/dmerge.f90`；实体 9；SHA-256 `c0ec6913b91d5447108d8211ed28d06cd442649e850872112931c28aa8f6b2a8`。
 
@@ -31082,7 +31082,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1428"></a>
 
-#### [dpbdt.f90](../../src/lib/lib9290/dpbdt.f90)
+#### [radial_wavefunction_derivatives.f90](../../src/lib/core/radial_wavefunction_derivatives.f90)
 
 文件：`src/lib/lib9290/dpbdt.f90`；实体 14；SHA-256 `38f3451a55a3c8762241943428ce339d507ccf9a62e6d47a355ba41521dd3d4b`。
 
@@ -31119,7 +31119,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1430"></a>
 
-#### [draw.f90](../../src/lib/lib9290/draw.f90)
+#### [radial_ascii_plot.f90](../../src/lib/core/radial_ascii_plot.f90)
 
 文件：`src/lib/lib9290/draw.f90`；实体 28；SHA-256 `c2561519f9bccbff4d0e528bbc61d88cc6c9958ec7984a9d1e142964de73db90`。
 
@@ -31174,7 +31174,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1432"></a>
 
-#### [es.f90](../../src/lib/lib9290/es.f90)
+#### [alternating_exponential_series.f90](../../src/lib/core/alternating_exponential_series.f90)
 
 文件：`src/lib/lib9290/es.f90`；实体 11；SHA-256 `bfd83ef565eed60164c25793d910d2800596959f09bc915d857980b4997a2eb3`。
 
@@ -31210,7 +31210,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1434"></a>
 
-#### [factt.f90](../../src/lib/lib9290/factt.f90)
+#### [log_factorial_table.f90](../../src/lib/core/log_factorial_table.f90)
 
 文件：`src/lib/lib9290/factt.f90`；实体 2；SHA-256 `24a68d69b069d89bf67b9d6b7841877af2a4f3e238fec8a736044d53ffd9fa26`。
 
@@ -31231,7 +31231,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1436"></a>
 
-#### [getrsl.f90](../../src/lib/lib9290/getrsl.f90)
+#### [subshell_label_selection.f90](../../src/lib/core/subshell_label_selection.f90)
 
 文件：`src/lib/lib9290/getrsl.f90`；实体 24；SHA-256 `e95d87585fad6545646f591eefa0d88f6baff5668a426b1cdd70871325fbd4de`。
 
@@ -31279,7 +31279,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1438"></a>
 
-#### [getyn.f90](../../src/lib/lib9290/getyn.f90)
+#### [yes_no_input.f90](../../src/lib/core/yes_no_input.f90)
 
 文件：`src/lib/lib9290/getyn.f90`；实体 2；SHA-256 `275d40254702a94521725bec22e79cdeada5a4ccc2ed41985d0929e19e3b91ad`。
 
@@ -31304,7 +31304,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1440"></a>
 
-#### [ichkq1.f90](../../src/lib/lib9290/ichkq1.f90)
+#### [one_electron_csf_filter.f90](../../src/lib/core/one_electron_csf_filter.f90)
 
 文件：`src/lib/lib9290/ichkq1.f90`；实体 7；SHA-256 `3dace7b7f8416bbd3a643bdfc3027a80621ca6330ab8a22cb43c6e358e8fbb83`。
 
@@ -31336,7 +31336,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1442"></a>
 
-#### [ichkq2.f90](../../src/lib/lib9290/ichkq2.f90)
+#### [two_electron_csf_filter.f90](../../src/lib/core/two_electron_csf_filter.f90)
 
 文件：`src/lib/lib9290/ichkq2.f90`；实体 7；SHA-256 `67ec1f5a4c9079256f5ce449356ed97d2371dede000a227c77e47090d7789f00`。
 
@@ -31368,7 +31368,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1444"></a>
 
-#### [ichop.f90](../../src/lib/lib9290/ichop.f90)
+#### [subshell_occupation_class.f90](../../src/lib/core/subshell_occupation_class.f90)
 
 文件：`src/lib/lib9290/ichop.f90`；实体 5；SHA-256 `a635022b71d3cf0194b9999b0db473ede0bde485d86bd5ae392506d390351206`。
 
@@ -31398,7 +31398,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1446"></a>
 
-#### [icopy.f90](../../src/lib/lib9290/icopy.f90)
+#### [integer_vector_copy.f90](../../src/lib/core/integer_vector_copy.f90)
 
 文件：`src/lib/lib9290/icopy.f90`；实体 8；SHA-256 `f2848d8c0c036150583f72be25aac1b16dc92f4c33e86c7f2dba48a9b54e195d`。
 
@@ -31433,7 +31433,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1448"></a>
 
-#### [iniest2.f90](../../src/lib/lib9290/iniest2.f90)
+#### [sparse_eigensolver_initial_basis.f90](../../src/lib/core/sparse_eigensolver_initial_basis.f90)
 
 文件：`src/lib/lib9290/iniest2.f90`；实体 21；SHA-256 `cedc00679a431a6073e19c24427650ae53c2e4e7d82ed52d37aa5f5cd304ab1b`。
 
@@ -31483,7 +31483,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1450"></a>
 
-#### [interp.f90](../../src/lib/lib9290/interp.f90)
+#### [aitken_interpolation.f90](../../src/lib/core/aitken_interpolation.f90)
 
 文件：`src/lib/lib9290/interp.f90`；实体 35；SHA-256 `c408da494fbb390dc980a32c5820d873963f089a4a3d7e20f5eadb79d21be73f`。
 
@@ -31557,7 +31557,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1452"></a>
 
-#### [intrpq.f90](../../src/lib/lib9290/intrpq.f90)
+#### [radial_orbital_interpolation.f90](../../src/lib/core/radial_orbital_interpolation.f90)
 
 文件：`src/lib/lib9290/intrpq.f90`；实体 45；SHA-256 `221345ba5ef75bc5bb38f1aac674f5f776f60443865c8c5a61d31a5622bc9594`。
 
@@ -31690,7 +31690,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1458"></a>
 
-#### [items.f90](../../src/lib/lib9290/items.f90)
+#### [level_selection_parser.f90](../../src/lib/core/level_selection_parser.f90)
 
 文件：`src/lib/lib9290/items.f90`；实体 21；SHA-256 `8dbd4684f679b5ceb09ac4b41f1d97babb7e2413c2323f7d11b13b9c3b340351`。
 
@@ -31763,7 +31763,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1462"></a>
 
-#### [itrig.f90](../../src/lib/lib9290/itrig.f90)
+#### [angular_momentum_triangle.f90](../../src/lib/core/angular_momentum_triangle.f90)
 
 文件：`src/lib/lib9290/itrig.f90`；实体 5；SHA-256 `9f13c10d516f12451a3e58dc762464d0d4ed488bf442aa663bc49cf634179f51`。
 
@@ -31852,7 +31852,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1468"></a>
 
-#### [ldigit.f90](../../src/lib/lib9290/ldigit.f90)
+#### [decimal_digit_check.f90](../../src/lib/core/decimal_digit_check.f90)
 
 文件：`src/lib/lib9290/ldigit.f90`；实体 4；SHA-256 `203d2d347010e258799db633f1bbeafdabd26705892d55f0fb9fbd35d89c4236`。
 
@@ -32057,7 +32057,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1476"></a>
 
-#### [lodiso.f90](../../src/lib/lib9290/lodiso.f90)
+#### [isotope_data_records.f90](../../src/lib/core/isotope_data_records.f90)
 
 文件：`src/lib/lib9290/lodiso.f90`；实体 4；SHA-256 `50926d94b04434be0119a6634ed0fb1de98afd72a7dcd534c4dbf70ffc5777cd`。
 
@@ -32080,7 +32080,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1478"></a>
 
-#### [lodrwf.f90](../../src/lib/lib9290/lodrwf.f90)
+#### [radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90)
 
 文件：`src/lib/lib9290/lodrwf.f90`；实体 18；SHA-256 `413f6fc327a4311ec8ca16e504569e63d0a675fa8ae65c4c268a9c4805703069`。
 
@@ -32121,7 +32121,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1480"></a>
 
-#### [lodstate.f90](../../src/lib/lib9290/lodstate.f90)
+#### [block_level_selection.f90](../../src/lib/core/block_level_selection.f90)
 
 文件：`src/lib/lib9290/lodstate.f90`；实体 9；SHA-256 `eba0de919ed53713920115228f9de84d6cf61e3f2f86d6996a2aebe0721444b5`。
 
@@ -32153,7 +32153,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1482"></a>
 
-#### [ltab.f90](../../src/lib/lib9290/ltab.f90)
+#### [subshell_parent_table.f90](../../src/lib/core/subshell_parent_table.f90)
 
 文件：`src/lib/lib9290/ltab.f90`；实体 8；SHA-256 `2b56b5e4685f64e910a67a8b8019356e792d66b9e012cdbebe97678670a9aa33`。
 
@@ -32187,7 +32187,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1484"></a>
 
-#### [npol_init.f90](../../src/lib/lib9290/npol_init.f90)
+#### [nuclear_polarization_initialization.f90](../../src/lib/core/nuclear_polarization_initialization.f90)
 
 文件：`src/lib/lib9290/npol_init.f90`；实体 31；SHA-256 `eb55f28ac3bdde90f30de31c80ca0626d104d3c591bab5b4cd450587b4cd8609`。
 
@@ -32239,7 +32239,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1485"></a>
 
-#### [npol_input.f90](../../src/lib/lib9290/npol_input.f90)
+#### [nuclear_polarization_input.f90](../../src/lib/core/nuclear_polarization_input.f90)
 
 文件：`src/lib/lib9290/npol_input.f90`；实体 37；SHA-256 `b0b04057a0977275f45bf8e4993bd3549bade2770bc70db3bc308a8d1e933636`。
 
@@ -32297,7 +32297,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1486"></a>
 
-#### [npol_kernel.f90](../../src/lib/lib9290/npol_kernel.f90)
+#### [nuclear_polarization_potential.f90](../../src/lib/core/nuclear_polarization_potential.f90)
 
 文件：`src/lib/lib9290/npol_kernel.f90`；实体 36；SHA-256 `d034720416f736de8e14743811b88cb32cb5a3ab9daa9d35841dc5aa123ef9c9`。
 
@@ -32359,7 +32359,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1487"></a>
 
-#### [nucpot.f90](../../src/lib/lib9290/nucpot.f90)
+#### [nuclear_coulomb_potential.f90](../../src/lib/core/nuclear_coulomb_potential.f90)
 
 文件：`src/lib/lib9290/nucpot.f90`；实体 31；SHA-256 `7bfb6ee76563d432fac02157f542d101faee667bf9903304437b3b85cc82ca14`。
 
@@ -32409,7 +32409,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1489"></a>
 
-#### [openfl.f90](../../src/lib/lib9290/openfl.f90)
+#### [file_open.f90](../../src/lib/core/file_open.f90)
 
 文件：`src/lib/lib9290/openfl.f90`；实体 7；SHA-256 `b5b058d201bd8bd678871e362714cb374cdef639efea9bca3d3fb5e3ba11b128`。
 
@@ -32443,7 +32443,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1491"></a>
 
-#### [orthsc.f90](../../src/lib/lib9290/orthsc.f90)
+#### [radial_orbital_orthogonalization.f90](../../src/lib/core/radial_orbital_orthogonalization.f90)
 
 文件：`src/lib/lib9290/orthsc.f90`；实体 14；SHA-256 `8d528d69fa31fa246ad4d77ab55f83a6d7dbed0ee396e7d7883529439fb4d1dd`。
 
@@ -32476,7 +32476,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1493"></a>
 
-#### [pack.f90](../../src/lib/lib9290/pack.f90)
+#### [csf_byte_packing.f90](../../src/lib/core/csf_byte_packing.f90)
 
 文件：`src/lib/lib9290/pack.f90`；实体 3；SHA-256 `d0c176287c7aee86db88e1b84b64683c3409685a5bec4f08117060a54debeeb5`。
 
@@ -32551,7 +32551,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1497"></a>
 
-#### [posfile.f90](../../src/lib/lib9290/posfile.f90)
+#### [file_positioning.f90](../../src/lib/core/file_positioning.f90)
 
 文件：`src/lib/lib9290/posfile.f90`；实体 6；SHA-256 `7ec138bdab7954206e32050612f6297d27b79df7368826fe695988d9e9959d97`。
 
@@ -32669,7 +32669,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1503"></a>
 
-#### [quad.f90](../../src/lib/lib9290/quad.f90)
+#### [radial_quadrature.f90](../../src/lib/core/radial_quadrature.f90)
 
 文件：`src/lib/lib9290/quad.f90`；实体 14；SHA-256 `5243a659f9336f33141bc2b789b78621966aa4529ea738d6e9a81fd17cf136b7`。
 
@@ -32706,7 +32706,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1505"></a>
 
-#### [radgrd.f90](../../src/lib/lib9290/radgrd.f90)
+#### [radial_grid_setup.f90](../../src/lib/core/radial_grid_setup.f90)
 
 文件：`src/lib/lib9290/radgrd.f90`；实体 19；SHA-256 `7dbd08c626c7f81511b6e50a94b4d5e781a55f4823debd23e816291cc49df251`。
 
@@ -32744,7 +32744,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1507"></a>
 
-#### [rint.f90](../../src/lib/lib9290/rint.f90)
+#### [weighted_radial_overlap.f90](../../src/lib/core/weighted_radial_overlap.f90)
 
 文件：`src/lib/lib9290/rint.f90`；实体 6；SHA-256 `be42249e04882996999eb32a86d633397883fe16f10ce721c5000a9d20b7969b`。
 
@@ -32776,7 +32776,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1509"></a>
 
-#### [rinti.f90](../../src/lib/lib9290/rinti.f90)
+#### [one_electron_radial_integral.f90](../../src/lib/core/one_electron_radial_integral.f90)
 
 文件：`src/lib/lib9290/rinti.f90`；实体 9；SHA-256 `c114c4575661e610014b1052f05b09e01af0b4e5bbf230d90f6f3684866cc902`。
 
@@ -32811,7 +32811,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1511"></a>
 
-#### [setcon.f90](../../src/lib/lib9290/setcon.f90)
+#### [physical_constants.f90](../../src/lib/core/physical_constants.f90)
 
 文件：`src/lib/lib9290/setcon.f90`；实体 10；SHA-256 `16c5f583492efe169f06adb7cd942462d0de95daec90db301a8d172786bedcd4`。
 
@@ -32872,7 +32872,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1515"></a>
 
-#### [setcsla.f90](../../src/lib/lib9290/setcsla.f90)
+#### [csf_basis_loader.f90](../../src/lib/core/csf_basis_loader.f90)
 
 文件：`src/lib/lib9290/setcsla.f90`；实体 9；SHA-256 `d650c6797b2d50174c9ea6fb38b5e14bc44e33286936e0a35d202fa8bc69c584`。
 
@@ -32949,7 +32949,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1519"></a>
 
-#### [setiso.f90](../../src/lib/lib9290/setiso.f90)
+#### [isotope_data_input.f90](../../src/lib/core/isotope_data_input.f90)
 
 文件：`src/lib/lib9290/setiso.f90`；实体 10；SHA-256 `c4c127c962f3a6227f9940b6b46ae57afb1a965af92db3d3515e2c38e6362908`。
 
@@ -32982,7 +32982,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1521"></a>
 
-#### [setj.f90](../../src/lib/lib9290/setj.f90)
+#### [angular_recoupling_tables.f90](../../src/lib/core/angular_recoupling_tables.f90)
 
 文件：`src/lib/lib9290/setj.f90`；实体 14；SHA-256 `6a9def57a5fc3999407644c81b15e6eecd28595974013a00808c984d75a46ddf`。
 
@@ -33025,7 +33025,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1523"></a>
 
-#### [setmc.f90](../../src/lib/lib9290/setmc.f90)
+#### [machine_constants.f90](../../src/lib/core/machine_constants.f90)
 
 文件：`src/lib/lib9290/setmc.f90`；实体 1；SHA-256 `46cb67b5feaa4bca77cf8c2066993b1519dd38051f9f9180c9164ba8e3b80a52`。
 
@@ -33045,7 +33045,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1525"></a>
 
-#### [setpot.f90](../../src/lib/lib9290/setpot.f90)
+#### [radial_dirac_coefficients.f90](../../src/lib/core/radial_dirac_coefficients.f90)
 
 文件：`src/lib/lib9290/setpot.f90`；实体 9；SHA-256 `1c3ab7b79ecd7bf50bf8de45990c29b3cc8ea0a80a3477d7b33259ed101befe0`。
 
@@ -33078,7 +33078,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1527"></a>
 
-#### [setqic.f90](../../src/lib/lib9290/setqic.f90)
+#### [radial_stencil_weights.f90](../../src/lib/core/radial_stencil_weights.f90)
 
 文件：`src/lib/lib9290/setqic.f90`；实体 12；SHA-256 `67798d60c51bb7f37a3fcd2f6511f86837612b347183a02cdc1e413a1e4db797`。
 
@@ -33109,7 +33109,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1529"></a>
 
-#### [setqna.f90](../../src/lib/lib9290/setqna.f90)
+#### [csf_pair_quantum_numbers.f90](../../src/lib/core/csf_pair_quantum_numbers.f90)
 
 文件：`src/lib/lib9290/setqna.f90`；实体 9；SHA-256 `fb88233739dd17b7d08b18d95e989590da7d92c5131228ea272da34b11c6c963`。
 
@@ -33142,7 +33142,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1531"></a>
 
-#### [setrwfa.f90](../../src/lib/lib9290/setrwfa.f90)
+#### [radial_wavefunction_input.f90](../../src/lib/core/radial_wavefunction_input.f90)
 
 文件：`src/lib/lib9290/setrwfa.f90`；实体 4；SHA-256 `7642c7be7a29fc6a16097b11c899106736aeea320520ea6977554612af367dbe`。
 
@@ -33169,7 +33169,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1533"></a>
 
-#### [skrc.f90](../../src/lib/lib9290/skrc.f90)
+#### [coulomb_tensor_rank_range.f90](../../src/lib/core/coulomb_tensor_rank_range.f90)
 
 文件：`src/lib/lib9290/skrc.f90`；实体 19；SHA-256 `9cd470bff2596e455c7739cc903382f809c735974e114f79d52b0f10b334ebd2`。
 
@@ -33217,7 +33217,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1535"></a>
 
-#### [slater.f90](../../src/lib/lib9290/slater.f90)
+#### [slater_radial_integral.f90](../../src/lib/core/slater_radial_integral.f90)
 
 文件：`src/lib/lib9290/slater.f90`；实体 8；SHA-256 `0108cbbaa15eae6d924af8d0a37c52e54c71e1aeaee0f750855c72a39895b815`。
 
@@ -33253,7 +33253,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1537"></a>
 
-#### [speak.f90](../../src/lib/lib9290/speak.f90)
+#### [mcp_coefficient_output.f90](../../src/lib/core/mcp_coefficient_output.f90)
 
 文件：`src/lib/lib9290/speak.f90`；实体 8；SHA-256 `7a879d9753c559bb2a0cd94dd8c41e98dbe1c64beca0b47050ecf8139e4c8533`。
 
@@ -33291,7 +33291,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1539"></a>
 
-#### [spicmv2.f90](../../src/lib/lib9290/spicmv2.f90)
+#### [sparse_symmetric_matvec.f90](../../src/lib/core/sparse_symmetric_matvec.f90)
 
 文件：`src/lib/lib9290/spicmv2.f90`；实体 11；SHA-256 `c74138f3763118ca90c5ecbfd52981d9f29696961f6fcd6a722dde6087fe034c`。
 
@@ -33328,7 +33328,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1541"></a>
 
-#### [start.f90](../../src/lib/lib9290/start.f90)
+#### [radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90)
 
 文件：`src/lib/lib9290/start.f90`；实体 47；SHA-256 `048e39e6bdc7fdab8e4bcbcaa0fb827437c3dcc4f8c48aeba583746e320a41e6`。
 
@@ -33403,7 +33403,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1543"></a>
 
-#### [starttime.f90](../../src/lib/lib9290/starttime.f90)
+#### [run_timer_start.f90](../../src/lib/core/run_timer_start.f90)
 
 文件：`src/lib/lib9290/starttime.f90`；实体 9；SHA-256 `e317f56847f3c085d741424fa15cb4c070691388c73e5bcbf89675cbbf85ee42`。
 
@@ -33436,7 +33436,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1545"></a>
 
-#### [stoptime.f90](../../src/lib/lib9290/stoptime.f90)
+#### [run_timer_finish.f90](../../src/lib/core/run_timer_finish.f90)
 
 文件：`src/lib/lib9290/stoptime.f90`；实体 12；SHA-256 `9df2018507716bcfc47af9e9a21ba0a80c49dabe1cd1cfa199b2dc4f3c18ffc2`。
 
@@ -33472,7 +33472,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1547"></a>
 
-#### [suite_system.f90](../../src/lib/lib9290/suite_system.f90)
+#### [posix_services.f90](../../src/lib/core/posix_services.f90)
 
 文件：`src/lib/lib9290/suite_system.f90`；实体 40；SHA-256 `8138368a73035e94f0e14aa1b3fc2edb59dd6a122f4638eb95aa54977b415d50`。
 
@@ -33573,7 +33573,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1548"></a>
 
-#### [yzk.f90](../../src/lib/lib9290/yzk.f90)
+#### [hartree_yz_functions.f90](../../src/lib/core/hartree_yz_functions.f90)
 
 文件：`src/lib/lib9290/yzk.f90`；实体 24；SHA-256 `f6fcaeed1ff11c03b1ea65c2936bc0c7e106107f01bb29b0811878cb76ddedaa`。
 
@@ -36955,7 +36955,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1670"></a>
 
-#### [vast_kind_param_M.f90](../../src/lib/libmod/vast_kind_param_M.f90)
+#### vast_kind_param_M.f90（已移除）
 
 文件：`src/lib/libmod/vast_kind_param_M.f90`；实体 11；SHA-256 `b935f3f57b8e5e19c7054efb0eb67b1a9982a6c8a372869e227b266c058c0861`。
 
@@ -41531,7 +41531,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1855"></a>
 
-#### [cpath.f90](../../src/lib/mpi90/cpath.f90)
+#### [cpath.f90](../../src/lib/mpi/mpi_work_paths.f90)
 
 文件：`src/lib/mpi90/cpath.f90`；实体 25；SHA-256 `20d540785e36b4dced991b76c6c78e04680ca1d136e2cc44425a6da3b019bee9`。
 
@@ -41617,7 +41617,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1859"></a>
 
-#### [iniestmpi.f90](../../src/lib/mpi90/iniestmpi.f90)
+#### [iniestmpi.f90](../../src/lib/mpi/mpi_initial_eigenvectors.f90)
 
 文件：`src/lib/mpi90/iniestmpi.f90`；实体 21；SHA-256 `c6229c9fcdf5d50de725729767ba6e8b03fd9897ca4526001bcd89739f8d9766`。
 
@@ -41696,7 +41696,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1863"></a>
 
-#### [lodrwfmpi.f90](../../src/lib/mpi90/lodrwfmpi.f90)
+#### [lodrwfmpi.f90](../../src/lib/mpi/mpi_radial_wavefunction_reader.f90)
 
 文件：`src/lib/mpi90/lodrwfmpi.f90`；实体 17；SHA-256 `546d340f66186e35f3f178cbec83a4ffd11888b6cdde3c5d4a477ba946020895`。
 
@@ -41736,7 +41736,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1865"></a>
 
-#### [mpi_C.f90](../../src/lib/mpi90/mpi_C.f90)
+#### [mpi_C.f90](../../src/lib/mpi/mpi_state.f90)
 
 文件：`src/lib/mpi90/mpi_C.f90`；实体 7；SHA-256 `fc4ab4dd890fe962e97dbdf3d813566a1fead29dcd20f1da6d9f3f680c0ec69c`。
 
@@ -41754,7 +41754,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1866"></a>
 
-#### [mpiu.f90](../../src/lib/mpi90/mpiu.f90)
+#### [mpiu.f90](../../src/lib/mpi/mpi_utilities.f90)
 
 文件：`src/lib/mpi90/mpiu.f90`；实体 102；SHA-256 `2fbc8c25cf30b2ff5a79138e83b9340f907ff8536560dded55909ca9e68b7242`。
 
@@ -42048,7 +42048,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1868"></a>
 
-#### [npol_init_mpi.f90](../../src/lib/mpi90/npol_init_mpi.f90)
+#### [npol_init_mpi.f90](../../src/lib/mpi/mpi_nuclear_polarization.f90)
 
 文件：`src/lib/mpi90/npol_init_mpi.f90`；实体 31；SHA-256 `d02fe3cffd4973f8c0f8deb0c6aba6d2628f3fbdd8f64332acc63dd9f3dfa1dd`。
 
@@ -42105,7 +42105,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1869"></a>
 
-#### [setisompi.f90](../../src/lib/mpi90/setisompi.f90)
+#### [setisompi.f90](../../src/lib/mpi/mpi_isotope_input.f90)
 
 文件：`src/lib/mpi90/setisompi.f90`；实体 17；SHA-256 `c7d4867cdfeb15c6f1f19313eeac6326470cb87c8c085db681139603815c8d62`。
 
@@ -42145,7 +42145,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1871"></a>
 
-#### [setrwfmpi.f90](../../src/lib/mpi90/setrwfmpi.f90)
+#### [setrwfmpi.f90](../../src/lib/mpi/mpi_radial_wavefunction_file.f90)
 
 文件：`src/lib/mpi90/setrwfmpi.f90`；实体 4；SHA-256 `fef6da25784f0b5656a6a48344d9addc0243569da2121313ebc954daeff1c1ae`。
 
@@ -42172,7 +42172,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1873"></a>
 
-#### [spicmvmpi.f90](../../src/lib/mpi90/spicmvmpi.f90)
+#### [spicmvmpi.f90](../../src/lib/mpi/mpi_sparse_matrix_product.f90)
 
 文件：`src/lib/mpi90/spicmvmpi.f90`；实体 11；SHA-256 `5a5e58abf41b22b4dd8825d17f5e3210666e6404511ebd3dca6a2477cd46c69c`。
 
@@ -42209,7 +42209,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1875"></a>
 
-#### [sys_chdir.f90](../../src/lib/mpi90/sys_chdir.f90)
+#### [sys_chdir.f90](../../src/lib/mpi/mpi_change_directory.f90)
 
 文件：`src/lib/mpi90/sys_chdir.f90`；实体 3；SHA-256 `b89b9e843b89a488b49cb7030182908ef49fec8d986ae83da07393af5bdbd5eb`。
 
@@ -42237,7 +42237,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1877"></a>
 
-#### [sys_getwd.f90](../../src/lib/mpi90/sys_getwd.f90)
+#### [sys_getwd.f90](../../src/lib/mpi/mpi_current_directory.f90)
 
 文件：`src/lib/mpi90/sys_getwd.f90`；实体 3；SHA-256 `7cd546e828da2154e55b899553cc3094aa88354d108104018f86858fa7ea8704`。
 
@@ -42264,7 +42264,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 
 <a id="file-1879"></a>
 
-#### [sys_mkdir.f90](../../src/lib/mpi90/sys_mkdir.f90)
+#### [sys_mkdir.f90](../../src/lib/mpi/mpi_make_directory.f90)
 
 文件：`src/lib/mpi90/sys_mkdir.f90`；实体 4；SHA-256 `e72ac50cc1f6f8123db92e4d2247df4e1dd6efbda9ce247f7aecdf83f3f31e0b`。
 
@@ -42398,16 +42398,16 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 | [src/appl/rtransition_phase/engout1.f90](../../src/appl/rtransition_phase/engout1.f90) | `subroutine:engout1` | 24 | `USE jlabl_C, LABJ => JLBR, LABP => JLBP` |
 | [src/appl/rtransition_phase/oscl.f90](../../src/appl/rtransition_phase/oscl.f90) | `subroutine:oscl` | 18 | `USE def_C, CCMPS => CCMS` |
 | [src/appl/rtransition_phase/printa.f90](../../src/appl/rtransition_phase/printa.f90) | `subroutine:printa` | 20 | `USE JLABL_C, LABJ => JLBR, LABP => JLBP` |
-| [src/lib/lib9290/csf_descriptor_input.f90](../../src/lib/lib9290/csf_descriptor_input.f90) | `module:csf_descriptor_input` | 5 | `USE parameter_def, ONLY: orbital_capacity => NNNW` |
-| [src/lib/lib9290/csf_descriptor_input.f90](../../src/lib/lib9290/csf_descriptor_input.f90) | `module:csf_descriptor_input` | 6 | `USE terms_C, ONLY: state_counts => ITAB, state_offsets => JTAB, state_values => NTAB` |
-| [src/lib/lib9290/csf_descriptor_input.f90](../../src/lib/lib9290/csf_descriptor_input.f90) | `module:csf_descriptor_input/subroutine:install_descriptor_header` | 181 | `USE orb_C, ONLY: current_csf_count => NCF, current_orbital_count => NW, principal_numbers => NP, relativistic_kappas => NAK, orbital_momenta => NKL, single_electron_two_j => NKJ, orbital_labels => NH` |
-| [src/lib/lib9290/csf_descriptor_input.f90](../../src/lib/lib9290/csf_descriptor_input.f90) | `module:csf_descriptor_input/subroutine:install_descriptor_header` | 184 | `USE def_C, ONLY: electron_count => NELEC` |
-| [src/lib/lib9290/csf_descriptor_input.f90](../../src/lib/lib9290/csf_descriptor_input.f90) | `module:csf_descriptor_input/subroutine:install_descriptor_header` | 185 | `USE hblock_C, ONLY: block_count => NBLOCK, block_lengths => NCFBLK` |
+| [src/lib/lib9290/csf_descriptor_input.f90](../../src/lib/core/csf_descriptor_reader.f90) | `module:csf_descriptor_input` | 5 | `USE parameter_def, ONLY: orbital_capacity => NNNW` |
+| [src/lib/lib9290/csf_descriptor_input.f90](../../src/lib/core/csf_descriptor_reader.f90) | `module:csf_descriptor_input` | 6 | `USE terms_C, ONLY: state_counts => ITAB, state_offsets => JTAB, state_values => NTAB` |
+| [src/lib/lib9290/csf_descriptor_input.f90](../../src/lib/core/csf_descriptor_reader.f90) | `module:csf_descriptor_input/subroutine:install_descriptor_header` | 181 | `USE orb_C, ONLY: current_csf_count => NCF, current_orbital_count => NW, principal_numbers => NP, relativistic_kappas => NAK, orbital_momenta => NKL, single_electron_two_j => NKJ, orbital_labels => NH` |
+| [src/lib/lib9290/csf_descriptor_input.f90](../../src/lib/core/csf_descriptor_reader.f90) | `module:csf_descriptor_input/subroutine:install_descriptor_header` | 184 | `USE def_C, ONLY: electron_count => NELEC` |
+| [src/lib/lib9290/csf_descriptor_input.f90](../../src/lib/core/csf_descriptor_reader.f90) | `module:csf_descriptor_input/subroutine:install_descriptor_header` | 185 | `USE hblock_C, ONLY: block_count => NBLOCK, block_lengths => NCFBLK` |
 | [src/lib/lib9290/cslh.f90](../../src/lib/lib9290/cslh.f90) | `subroutine:cslh` | 25 | `USE ORB_C, NCFTOT => NCF` |
-| [src/lib/lib9290/dcbsrw.f90](../../src/lib/lib9290/dcbsrw.f90) | `subroutine:dcbsrw` | 39 | `USE GRID_C, ONLY: R, NTP => N` |
+| [src/lib/lib9290/dcbsrw.f90](../../src/lib/core/dirac_coulomb_radial_orbital.f90) | `subroutine:dcbsrw` | 39 | `USE GRID_C, ONLY: R, NTP => N` |
 | [src/lib/lib9290/lodcsh2.f90](../../src/lib/lib9290/lodcsh2.f90) | `subroutine:lodcsh2` | 39 | `USE ORB_C, ncfblock => ncf` |
-| [src/lib/lib9290/setqic.f90](../../src/lib/lib9290/setqic.f90) | `subroutine:setqic` | 22 | `USE LIC13_C, A13 => A` |
-| [src/lib/lib9290/yzk.f90](../../src/lib/lib9290/yzk.f90) | `subroutine:yzk` | 43 | `USE TATB_C, ONLY: ZK => TA, YK => TB, MTP` |
+| [src/lib/lib9290/setqic.f90](../../src/lib/core/radial_stencil_weights.f90) | `subroutine:setqic` | 22 | `USE LIC13_C, A13 => A` |
+| [src/lib/lib9290/yzk.f90](../../src/lib/core/hartree_yz_functions.f90) | `subroutine:yzk` | 43 | `USE TATB_C, ONLY: ZK => TA, YK => TB, MTP` |
 | [src/lib/librang90/rkco_gg.f90](../../src/lib/librang90/rkco_gg.f90) | `subroutine:rkco_gg` | 43 | `USE cord_I, ONLY: cord_callback => cord` |
 | [src/lib/librang90/rkco_gg_I.f90](../../src/lib/librang90/rkco_gg_I.f90) | `module:rkco_gg_i/interface:interface@2/subroutine:rkco_gg` | 6 | `USE cord_I, ONLY: cord_callback => cord` |
 | [src/lib/mpi90/cslhmpi.f90](../../src/lib/mpi90/cslhmpi.f90) | `subroutine:cslhmpi` | 26 | `USE ORB_C, NCFTOT => NCF` |
@@ -42756,11 +42756,11 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 | [src/lib/libmod/CMakeLists.txt](../../src/lib/libmod/CMakeLists.txt) | `CMAKE_Fortran_COMPILER_ID` | — | 115 | 外部/上级输入或自动变量，保持接口 |
 | [src/lib/librang90/CMakeLists.txt](../../src/lib/librang90/CMakeLists.txt) | — | — | — | 无本口径变量；文件已检查 |
 | [src/lib/librang90/ReadMe](../../src/lib/librang90/ReadMe) | — | — | — | 无本口径变量；文件已检查 |
-| [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi90/CMakeLists.txt) | `CMAKE_Fortran_COMPILER_ID` | — | 40 | 外部/上级输入或自动变量，保持接口 |
-| [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi90/CMakeLists.txt) | `MPI_Fortran_COMPILE_FLAGS` | — | 34 | 外部/上级输入或自动变量，保持接口 |
-| [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi90/CMakeLists.txt) | `MPI_Fortran_INCLUDE_PATH` | — | 31 | 外部/上级输入或自动变量，保持接口 |
-| [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi90/CMakeLists.txt) | `MPI_Fortran_LIBRARIES` | — | 32 | 外部/上级输入或自动变量，保持接口 |
-| [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi90/CMakeLists.txt) | `MPI_Fortran_LINK_FLAGS` | — | 35 | 外部/上级输入或自动变量，保持接口 |
+| [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi/CMakeLists.txt) | `CMAKE_Fortran_COMPILER_ID` | — | 40 | 外部/上级输入或自动变量，保持接口 |
+| [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi/CMakeLists.txt) | `MPI_Fortran_COMPILE_FLAGS` | — | 34 | 外部/上级输入或自动变量，保持接口 |
+| [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi/CMakeLists.txt) | `MPI_Fortran_INCLUDE_PATH` | — | 31 | 外部/上级输入或自动变量，保持接口 |
+| [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi/CMakeLists.txt) | `MPI_Fortran_LIBRARIES` | — | 32 | 外部/上级输入或自动变量，保持接口 |
+| [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi/CMakeLists.txt) | `MPI_Fortran_LINK_FLAGS` | — | 35 | 外部/上级输入或自动变量，保持接口 |
 
 ## 9. 排除范围核对表
 

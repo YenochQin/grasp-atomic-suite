@@ -1,10 +1,10 @@
 program cache_io
     use angdata_i, only: angdata
-    use input_io, only: fail_input_io
+    use input_error_handling, only: fail_input_io
     use iso_fortran_env, only: real64
 #ifdef CACHE_MPI
     use mpi, only: mpi_bcast, mpi_comm_rank, mpi_comm_world, mpi_finalize, mpi_init, mpi_logical
-    use input_io_mpi, only: fail_input_io_mpi
+    use mpi_io_errors, only: fail_input_io_mpi
 #endif
     implicit none (type, external)
     character(24) :: name = "cache"

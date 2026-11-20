@@ -49,7 +49,7 @@ def fixture(root: Path, layout: str = "grasp2018") -> None:
     grid_files = grid.SUITE_GRID_FILES if suite else grid.GRID_FILES
     restart_files = grid.SUITE_RESTART_FILES if suite else grid.RESTART_FILES
     if suite:
-        for relative in (grid.SUITE_CONFIG_FILE, grid.CAPACITY_FILES[0]):
+        for relative in (grid.SUITE_CONFIG_FILE, grid.SUITE_EXPORT_FILE):
             path = root / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(SCRIPT.parents[1] / relative, path)
@@ -510,7 +510,7 @@ class PatchGridTests(unittest.TestCase):
         settings = grid.Settings(nnnp=1990, n=1179, h=0.025)
         changes = grid.plan(root, settings, "atomic-suite")
         self.assertEqual(len(changes), 1 + len(grid.SUITE_GRID_FILES))
-        self.assertNotIn(grid.CAPACITY_FILES[0], {c.relative for c in changes})
+        self.assertNotIn(grid.SUITE_EXPORT_FILE, {c.relative for c in changes})
         output = {c.relative: c.after for c in changes}
         for entry in grid.SUITE_GRID_FILES:
             self.assertIn(b"N = 1179", output[entry])
@@ -538,7 +538,7 @@ class PatchGridTests(unittest.TestCase):
         repository = SCRIPT.parents[1]
         for relative in (
             grid.SUITE_CONFIG_FILE,
-            grid.CAPACITY_FILES[0],
+            grid.SUITE_EXPORT_FILE,
             *grid.SUITE_GRID_FILES,
             *grid.SUITE_RESTART_FILES,
         ):
@@ -552,7 +552,7 @@ class PatchGridTests(unittest.TestCase):
         self.assertEqual(
             len(changes), 1 + len(grid.SUITE_GRID_FILES) + len(grid.SUITE_RESTART_FILES)
         )
-        self.assertNotIn(grid.CAPACITY_FILES[0], {c.relative for c in changes})
+        self.assertNotIn(grid.SUITE_EXPORT_FILE, {c.relative for c in changes})
         for change in changes:
             if "/rmcdhf" in change.relative:
                 self.assertEqual(change.after.lower().count(b"accy = 1d-10"), 2)
@@ -573,10 +573,10 @@ class PatchGridTests(unittest.TestCase):
     def test_suite_requires_complete_reexports_and_single_definition(self) -> None:
         root = Path(self.temporary.name) / "suite"
         fixture(root, "atomic-suite")
-        wrapper = root / grid.CAPACITY_FILES[0]
+        wrapper = root / grid.SUITE_EXPORT_FILE
         original = wrapper.read_text()
         incomplete, count = re.subn(
-            r"^\s*use suite_parameters, only: nnnwm2 => max_orbitals_minus_two\n", "", original,
+            r"^\s*use compile_time_capacities, only: nnnwm2 => max_orbitals_minus_two\n", "", original,
             flags=re.IGNORECASE | re.MULTILINE,
         )
         self.assertEqual(count, 1, "fixture must remove exactly one required re-export")
@@ -596,16 +596,16 @@ class PatchGridTests(unittest.TestCase):
     def test_suite_capacity_edit_reaches_reexports_and_shared_arrays(self) -> None:
         root = Path(self.temporary.name) / "suite"
         fixture(root, "atomic-suite")
-        source = SCRIPT.parents[1] / "src/lib/libmod"
+        source = SCRIPT.parents[1] / "src/lib/grasp_shared"
         module_names = [
-            "suite_parameters_M.f90",
-            "parameter_def_M.f90",
-            "grid_C.f90",
-            "pote_C.f90",
-            "tatb_C.f90",
+            "compile_time_capacities.f90",
+            "grasp_parameters.f90",
+            "radial_grid_state.f90",
+            "scf_radial_potentials.f90",
+            "radial_quadrature_workspace.f90",
         ]
         for name in module_names:
-            destination = root / "src/lib/libmod" / name
+            destination = root / "src/lib/grasp_shared" / name
             if not destination.exists():
                 shutil.copyfile(source / name, destination)
         for capacity in (590, 1990):
@@ -622,7 +622,7 @@ class PatchGridTests(unittest.TestCase):
                         FORTRAN_COMPILER,
                         "-o",
                         str(build / "capacity"),
-                        *(str(root / "src/lib/libmod" / name) for name in module_names),
+                        *(str(root / "src/lib/grasp_shared" / name) for name in module_names),
                         str(SCRIPT.parents[1] / "test/shared_grid_capacity.f90"),
                     ],
                     cwd=build,
@@ -662,7 +662,7 @@ class PatchGridTests(unittest.TestCase):
         )
         changes = grid.plan(root, grid.Settings(h=0.025), "atomic-suite")
         self.assertEqual({c.relative for c in changes}, set(grid.SUITE_GRID_FILES))
-        local.write_text("use grid_C, only: h\nh = 0.01d0\n")
+        local.write_text("use radial_grid_state, only: h\nh = 0.01d0\n")
         with self.assertRaisesRegex(ValueError, "unrecognized grid initializer"):
             grid.plan(root, grid.Settings(h=0.025), "atomic-suite")
 

@@ -16,11 +16,11 @@ if(GRASP_BUILD_SERIAL_APPS)
         ../rhfs/setdbg.f90
         gj.f90
     )
-    target_link_libraries_Fortran(gj PUBLIC rang90 mcp90 9290 mod)
+    target_link_libraries_Fortran(gj PUBLIC spin_angular breit_angular_support core grasp_shared)
     install(TARGETS gj DESTINATION bin/)
 endif()
 
-if(TARGET mpiu90)
+if(TARGET grasp_mpi)
     add_executable(gj_mpi
         compute_gj_only_mpi_I.f90
         setout_gj_I.f90
@@ -38,7 +38,7 @@ if(TARGET mpiu90)
         ../rhfs/setdbg.f90
         gj_mpi.f90
     )
-    target_link_libraries_Fortran(gj_mpi PUBLIC mpiu90 rang90 mcp90 9290 mod)
+    target_link_libraries_Fortran(gj_mpi PUBLIC grasp_mpi spin_angular breit_angular_support core grasp_shared)
     target_include_directories(gj_mpi PRIVATE ${MPI_Fortran_INCLUDE_PATH})
     target_link_libraries(gj_mpi PRIVATE ${MPI_Fortran_LIBRARIES})
     set_target_properties(gj_mpi PROPERTIES

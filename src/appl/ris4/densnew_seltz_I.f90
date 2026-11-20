@@ -5,8 +5,8 @@
       subroutine densnew_seltz (doit,dint1,dint2,dint3,dint4,dint5,dint6,    &
                           dint7,dint1vec,dens1vec,nrnuc)
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_orbitals, max_radial_points
-      use prnt_c,          only : nvec
+      use grasp_parameters,   only: max_orbitals, max_radial_points
+      use selected_level_indices,          only : nvec
       implicit none (type, external)
       real(real64), intent(in) :: dint1(max_orbitals, max_orbitals)
       real(real64), intent(in) :: dint2(max_orbitals, max_orbitals)

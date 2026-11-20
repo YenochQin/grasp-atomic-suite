@@ -1,0 +1,85 @@
+! Orthogonalize orbitals of equal kappa with Gram-Schmidt, normalize them, and trim their tails.
+module radial_orbital_orthogonalization
+    implicit none (type, external)
+    private
+    public :: orthsc
+contains
+      subroutine orthsc
+      use, intrinsic :: iso_fortran_env, only: real64
+      use grasp_parameters,   only:  max_orbitals
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use atomic_calculation_state, only: working_tolerance => accy
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+      use orbital_csf_basis, only: max_orbitals, orbital_count, orbital_kappa, orbital_principal_n, &
+          orbital_symmetry_labels
+      use radial_wavefunctions, only: &
+          orbital_origin_parameters, orbital_last_grid_index, radial_large_components, radial_small_components
+      use weighted_radial_overlap, only: rint
+      implicit none (type, external)
+      integer :: projected_orbital_indices(max_orbitals)
+      integer :: orbital_index, orbital_kappa_value, projection_count, combined_last_grid_index, previous_orbital_index, &
+         & last_radial_index, projection_index
+      real(real64) :: projection_overlaps(max_orbitals)
+      real(real64) :: tail_cutoff, orbital_overlap, norm_squared, normalization_factor
+      logical :: projected
+      tail_cutoff = 0.01_real64*working_tolerance
+      do orbital_index = 2, orbital_count
+         orbital_kappa_value = orbital_kappa(orbital_index)
+         projection_count = 0
+
+         combined_last_grid_index = orbital_last_grid_index(orbital_index)
+         projected = .false.
+         do previous_orbital_index = 1, orbital_index - 1
+            if (orbital_kappa(previous_orbital_index) /= orbital_kappa_value) cycle
+            projected = .true.
+            orbital_overlap = rint(orbital_index,previous_orbital_index,0)
+            projection_count = projection_count + 1
+            projected_orbital_indices(projection_count) = previous_orbital_index
+            projection_overlaps(projection_count) = orbital_overlap
+            orbital_origin_parameters(orbital_index) = orbital_origin_parameters(orbital_index) - &
+               & orbital_overlap*orbital_origin_parameters(previous_orbital_index)
+            last_radial_index = max(orbital_last_grid_index(orbital_index),orbital_last_grid_index(previous_orbital_index))
+            combined_last_grid_index = max(combined_last_grid_index,orbital_last_grid_index(previous_orbital_index))
+
+            radial_large_components(:last_radial_index,orbital_index) = radial_large_components(:last_radial_index, &
+               & orbital_index) - orbital_overlap*radial_large_components(:last_radial_index,previous_orbital_index)
+            radial_small_components(:last_radial_index,orbital_index) = radial_small_components(:last_radial_index, &
+               & orbital_index) - orbital_overlap*radial_small_components(:last_radial_index,previous_orbital_index)
+         end do
+
+         if (projected) then
+            last_radial_index = combined_last_grid_index
+
+            orbital_last_grid_index(orbital_index) = last_radial_index
+            norm_squared = rint(orbital_index,orbital_index,0)
+            normalization_factor = 1.0_real64/sqrt(norm_squared)
+            orbital_origin_parameters(orbital_index) = normalization_factor*orbital_origin_parameters(orbital_index)
+            radial_large_components(2:last_radial_index, &
+               & orbital_index) = normalization_factor*radial_large_components(2:last_radial_index,orbital_index)
+            radial_small_components(2:last_radial_index, &
+               & orbital_index) = normalization_factor*radial_small_components(2:last_radial_index,orbital_index)
+            last_radial_index = last_radial_index + 1
+    7       continue
+            last_radial_index = last_radial_index - 1
+           if ( last_radial_index >= 1 ) then
+            if (abs(radial_large_components(last_radial_index,orbital_index)) < tail_cutoff) then
+               radial_large_components(last_radial_index,orbital_index) = 0.0_real64
+               radial_small_components(last_radial_index,orbital_index) = 0.0_real64
+               goto 7
+            else
+               orbital_last_grid_index(orbital_index) = last_radial_index
+            end if
+           end if
+         end if
+         if (.not.(ldbpr(3) .and. projection_count>0)) cycle
+
+         write (99, '(1p,5(2x,1d10.3," = <",1i2,1a2,"|",1i2,1a2,">"))') &
+            (projection_overlaps(projection_index),orbital_principal_n(orbital_index), &
+            & orbital_symmetry_labels(orbital_index),orbital_principal_n(projected_orbital_indices(projection_index)), &
+            & orbital_symmetry_labels(projected_orbital_indices(projection_index)),projection_index=1,projection_count)
+      end do
+      return
+      return
+      end subroutine orthsc
+end module radial_orbital_orthogonalization

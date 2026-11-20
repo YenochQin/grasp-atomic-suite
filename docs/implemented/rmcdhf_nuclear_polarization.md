@@ -57,7 +57,7 @@ SHA-256，其中 480 个为 Fortran 源码。源 `grasp/` 当前没有独立 Git
 
 公共库继续使用 suite 的单份实现。与本地 grasp 的比较显示，既有差别是集中参数
 转导、`COUNT` 的可选 `GRASP_TRACE_COUNT` 日志及其上下文变量、MPI 帮助例程扩展
-和注释；节点计数数值部分、`NUCPOT`、`RINTI` 与 `libdvd90` 相同。
+和注释；节点计数数值部分、`NUCPOT`、`RINTI` 与 Davidson 求解库相同。
 这些已有共享扩展没有在此次迁移中修改；没有复制第二套公共库。
 这一区分意味着应用求解源码来源于原版，不宣称整个 suite 可执行文件与外部 GRASP
 二进制逐字节相同，也没有进行两者的真实原子结果或耗时比较。
@@ -134,11 +134,11 @@ E2 极化率与截断参数必须来自同一约定。
 调用顺序是 `RADGRD → NUCPOT → NPOL_INIT[_MPI] → SETRWF*`。
 核电荷、Fermi 参数、`NNUC`、网格、`ACCY` 时序不改变。
 
-- [npol_C](../../src/lib/libmod/npol_C.f90) 保存受保护的配置、Coulomb 快照、E1/E2/总势和状态。
-- [npol_input](../../src/lib/lib9290/npol_input.f90) 提供 `NPOL_READ_CONFIG` 和 `NPOL_VALIDATE_CONFIG`，返回状态，不终止进程。
-- [npol_kernel](../../src/lib/lib9290/npol_kernel.f90) 提供 `NPOL_BUILD_GRID`、`NPOL_COMPOSE`；只写活动区 `1:N`，失败不提交输出数组。
-- [npol_initialization](../../src/lib/lib9290/npol_init.f90) 编排串行初始化和摘要输出。
-- [npol_mpi](../../src/lib/mpi90/npol_init_mpi.f90) 提供 MPI 初始化、显式字段广播和非零退出适配器。
+- [nuclear_polarization_state](../../src/lib/grasp_shared/nuclear_polarization_state.f90) 保存受保护的配置、Coulomb 快照、E1/E2/总势和状态。
+- [nuclear_polarization_input](../../src/lib/core/nuclear_polarization_input.f90) 提供 `NPOL_READ_CONFIG` 和 `NPOL_VALIDATE_CONFIG`，返回状态，不终止进程。
+- [nuclear_polarization_potential](../../src/lib/core/nuclear_polarization_potential.f90) 提供 `NPOL_BUILD_GRID`、`NPOL_COMPOSE`；只写活动区 `1:N`，失败不提交输出数组。
+- [nuclear_polarization_initialization](../../src/lib/core/nuclear_polarization_initialization.f90) 编排串行初始化和摘要输出。
+- [mpi_nuclear_polarization](../../src/lib/mpi/mpi_nuclear_polarization.f90) 提供 MPI 初始化、显式字段广播和非零退出适配器。
 
 初始化先 reset，再捕获调用者刚经 `NUCPOT` 生成的纯 Coulomb 势；重复合成始终
 从保存的快照开始。重新初始化前，调用者必须重新生成 Coulomb 势，不能把旧总势当基线。
@@ -199,7 +199,7 @@ ctest --test-dir build-npol-upstream-mpi -L '^npol_code$' --output-on-failure
 既有回归选择了 `lib9290_quad`、`shared_grid_capacity`、`strict_scf_logic`、
 `rmcdhf_pair_transaction_logic`、`rdensity_natural_orbitals`、
 `grasp_grid_patcher`；MPI 配置另含
-`mpi90_local_sparse`、`start_trace_parity`、`p0_trace_projection`。
+`grasp_mpi_local_sparse`、`start_trace_parity`、`p0_trace_projection`。
 未运行全量 CTest，未运行依赖原子数据的回归。
 
 本机沙箱禁止 MPI 所需的本地 socket；最终 MPI 测试在允许本地通信的执行环境中运行。

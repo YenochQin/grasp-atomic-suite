@@ -1,8 +1,7 @@
 ! Compile the unmodified production MATRIX body; only assembly/eigensolution
 ! and memory-record input are controlled seams. BLAS is the linked real library.
 module ci_fixture
-    use, intrinsic :: iso_fortran_env, only: double => real64, long => int64
-    use eigv_c, only: evec => csf_mixing_coefficients, eval => shifted_eigenvalues
+    use eigenstate_expansions, only: evec => csf_mixing_coefficients, eval => shifted_eigenvalues
     implicit none (type, external)
     integer :: solves = 0
 contains
@@ -19,27 +18,28 @@ end subroutine eigenpairs
 end module ci_fixture
 
 program ci_damping
-    use ci_fixture, only: double, eigenpairs, eval, evec, long, solves
+    use ci_fixture, only: eigenpairs, eval, evec, solves
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
-    use damp_c, only: cdamp => mixing_damping_factors
-    use def_c, only: iccmin, ncmin, ncmax
-    use debug_C, only: ldbpg
-    use hblock_c, only: nblock => symmetry_block_count, ncfblk => csf_counts_by_block, nevblk => &
+    use scf_damping_factors, only: cdamp => mixing_damping_factors
+    use atomic_calculation_state, only: iccmin, ncmin, ncmax
+    use debug_output_settings, only: ldbpg
+    use hamiltonian_symmetry_blocks, only: nblock => symmetry_block_count, ncfblk => csf_counts_by_block, nevblk => &
        & eigenvector_counts_by_block, ncmaxblk
-    use hmat_c, only: emt => hamiltonian_values, irow => matrix_partner_indices, iendc => stored_segment_end_offsets
-    use mcpa_c, only: kmaxf => max_mcp_file_multipole_rank
-    use orb_c, only: ncf => csf_count, nw => orbital_count
-    use pos_c, only: ncftot => total_csf_count, nvecsiz => mixing_coefficient_storage_size, ncfpast => &
+    use sparse_hamiltonian_storage, only: &
+        emt => hamiltonian_values, irow => matrix_partner_indices, iendc => stored_segment_end_offsets
+    use mcp_file_metadata, only: kmaxf => max_mcp_file_multipole_rank
+    use orbital_csf_basis, only: ncf => csf_count, nw => orbital_count
+    use symmetry_block_offsets, only: ncftot => total_csf_count, nvecsiz => mixing_coefficient_storage_size, ncfpast => &
        & csf_offsets_by_block, ncminpast => eigenvalue_offsets_by_block, nevecpast => mixing_offsets_by_block
-    use peav_C, only: eavblk
-    use syma_C, only: jpgg
+    use block_mean_energies, only: eavblk
+    use level_symmetry_metadata, only: jpgg
 #ifdef CI_MPI
-    use mpi_c, only: host => processor_name, ierr => mpi_error_code, istat => mpi_status_buffer, &
-       & lenhost => processor_name_length, myid => mpi_rank, nprocs => mpi_process_count, double, mpi_finalize, &
+    use mpi_state, only: host => processor_name, ierr => mpi_error_code, istat => mpi_status_buffer, &
+       & lenhost => processor_name_length, myid => mpi_rank, nprocs => mpi_process_count, mpi_finalize, &
        & startmpi
     use matrixmpi_I, only: matrixmpi
 #else
-    use mpi_s, only: myid => mpi_rank, nprocs => mpi_process_count, double
+    use mpi_s, only: myid => mpi_rank, nprocs => mpi_process_count
     use matrix_I, only: matrix
 #endif
 #ifdef CI_MEM
@@ -151,7 +151,7 @@ subroutine setham(jblock,myid,nprocs,ncontr_tot,ncontr_tot2)
 subroutine setham(jblock,myid,nprocs)
 #endif
     use, intrinsic :: iso_fortran_env, only: real64, int64
-    use hmat_c, only: emt => hamiltonian_values
+    use sparse_hamiltonian_storage, only: emt => hamiltonian_values
     implicit none (type, external)
     integer,intent(in)::jblock,myid,nprocs
 #ifdef CI_MEM
@@ -163,9 +163,9 @@ end subroutine setham
 
 #ifdef CI_MEM
 subroutine read03_mem(jblock)
-    use hmat_c, only: irow => matrix_partner_indices, iendc => stored_segment_end_offsets
+    use sparse_hamiltonian_storage, only: irow => matrix_partner_indices, iendc => stored_segment_end_offsets
 #ifdef CI_MPI
-    use mpi_c, only: myid => mpi_rank, nprocs => mpi_process_count
+    use mpi_state, only: myid => mpi_rank, nprocs => mpi_process_count
 #else
     use mpi_s, only: myid => mpi_rank, nprocs => mpi_process_count
 #endif

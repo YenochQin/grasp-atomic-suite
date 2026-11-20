@@ -1,6 +1,6 @@
 subroutine setcslmpi(name, ncore, idblk)
-   use rmcdhf_descriptor_mpi, only: load_rmcdhf_descriptors_mpi
-   use hblock_c, only: symmetry_block_count
+   use mpi_rmcdhf_csf_input, only: load_rmcdhf_descriptors_mpi
+   use hamiltonian_symmetry_blocks, only: symmetry_block_count
    implicit none (type, external)
    character(len=*), intent(in) :: name
    integer, intent(out) :: ncore

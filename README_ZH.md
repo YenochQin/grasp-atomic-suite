@@ -27,12 +27,12 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 │   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # 从 grasp 新复制，支持可选 NP
 │   │   └── ris4/             # 相对论同位素位移程序
 │   └── lib/
-│       ├── libmod/           # 全局参数、公共块和共享状态模块
-│       ├── lib9290/          # GRASP92 风格 I/O、常数、网格和通用例程
-│       ├── libdvd90/         # 对角化相关例程
-│       ├── libmcp90/         # MCP 相关支持例程
-│       ├── librang90/        # 角向代数、Racah/张量矩阵元例程
-│       └── mpi90/            # MPI 文件、路径和并行辅助例程
+│       ├── grasp_shared/     # 共享状态、容量和基础接口
+│       ├── core/             # CSF 输入、径向数值计算与通用例程（libcore.a）
+│       ├── davidson_eigensolver/ # Davidson 本征求解库（libdavidson_eigensolver.a）
+│       ├── breit_angular_support/ # Breit 角系数与外部链接入口
+│       ├── spin_angular/        # 角向代数、Racah/张量矩阵元例程
+│       └── mpi/              # MPI 文件、路径和并行辅助例程
 ├── docs/                     # 状态索引与分类文档
 │   ├── implemented/          # 已实施功能的现行说明与代码追踪
 │   ├── plans/                # 待执行的实验和验证方案
@@ -180,8 +180,8 @@ ctest --test-dir build-all --output-on-failure
 
 ## 径向网格与仓库迁移
 
-公共容量集中定义在 [`suite_parameters_M.f90`](src/lib/libmod/suite_parameters_M.f90)，
-经 [`parameter_def_M.f90`](src/lib/libmod/parameter_def_M.f90) 转导，默认值与原版一致：
+公共容量集中定义在 [`compile_time_capacities.f90`](src/lib/grasp_shared/compile_time_capacities.f90)，
+经 [`grasp_parameters.f90`](src/lib/grasp_shared/grasp_parameters.f90) 转导。库名及模块名的完整对照见[共享库命名](docs/implemented/shared_library_naming.md)。默认值与原版一致：
 `NNNP=590`、`NNN1=600`、`NNNW=127`、`NNNWM1=126`、`NNNWM2=125`、`KEYORB=215`。
 各入口保留自身的原版网格初始化：有限核默认 `N=NNNP=590`；提供点核分支的程序使用
 `N=MIN(220,NNNP)`。两个 CSFG RCI 程序沿用公共网格初始化，没有独立点核分支。

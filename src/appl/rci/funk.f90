@@ -133,15 +133,12 @@
 !   Error section
 !
    98 continue
-      write (*, 302)
+      write (*, '(/," Attempt to calculate FUNK (X,N) for N other than"," 0, 1, 3 and 5.")')
       stop
    99 continue
-      write (*, 301)
+      write (*, '(/," Attempt to calculate FUNK (0,N) for N > 0")')
       stop
 !
-  301 format(/," Attempt to calculate FUNK (0,N) for N > 0")
-  302 format(/," Attempt to calculate FUNK (X,N) for N other than",&
-         " 0, 1, 3 and 5.")
       return
 !
       end function funk

@@ -36,36 +36,36 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def,   only:  max_orbitals
+      use grasp_parameters,   only:  max_orbitals
       use iso_fortran_env, only: int64
       use rangular_input, only: angular_input_options, parse_angular_options, load_angular_header, &
                                 load_angular_block, close_angular_input
       use rangular_profile, only: stage_clock, record_stage, close_stage_profile
-      use memory_man, only: alloc, byte, double
+      use array_memory_management, only: alloc
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use default_c, only: double, inpci, ndef, ndump
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use orb_c, only: byte, csf_count, csf_subshell_occupations, double, max_orbitals
-      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
-      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals
+      use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, jcupar, jqsar
+      use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
-      use starttime_i, only: starttime
+      use yes_no_input, only: getyn
+      use run_timer_start, only: starttime
       use setdbg_i, only: setdbg
-      use setmc_i, only: setmc
+      use machine_constants, only: setmc
       use setsum_i, only: setsum
 
       use setmcp2_i, only: setmcp2
       use strsum_i, only: strsum
-      use factt_i, only: factt
+      use log_factorial_table, only: factt
 !      USE settmp_I
       use settmpgg_i, only: settmpgg
-      use stoptime_i, only: stoptime
+      use run_timer_finish, only: stoptime
 
       use mcp_i, only: mcp
       implicit none (type, external)

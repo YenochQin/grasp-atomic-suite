@@ -40,39 +40,38 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use default_c, only: double, inpci, ndef, ndump
-      use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
-      use where_c, only: double, imcdf
-      use cons_c, only: double, eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
-      use def_c, only: double
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use blk_c, only: double, ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
+      use where_c, only: imcdf
+      use numeric_constants, only: eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use transition_basis_blocks, only: ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
           nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
-      use iccu_c, only: iccut, iccutblk
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use terms_c, only: itab, jtab, nrows, ntab
-      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
+      use csf_block_cutoffs, only: iccut, iccutblk
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use subshell_term_table, only: itab, jtab, nrows, ntab
+      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
          & processor_name, processor_name_length
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
-      use csf_block_mpi_input, only: open_csf_blocks_mpi
+      use yes_no_input, only: getyn
+      use mpi_csf_block_input, only: open_csf_blocks_mpi
       use setdbg_i, only: setdbg
-      use setmc_i, only: setmc
-      use setcon_i, only: setcon
+      use machine_constants, only: setmc
+      use physical_constants, only: setcon
       use setsum_i, only: setsum
       use setres_i, only: setres
       use setmixmpi_i, only: setmixmpi
       use strsum_i, only: strsum
-      use factt_i, only: factt
+      use log_factorial_table, only: factt
       use matrix_i, only: matrix
       use genintbreit1wrap_i, only: genintbreit1wrap
       use genintbreit2wrap_i, only: genintbreit2wrap
       use genintrkwrap_i, only: genintrkwrap
-      use mpiu_i, only: startmpi2
-      use mpiu_i, only: stopmpi2
+      use mpi_utilities, only: startmpi2
+      use mpi_utilities, only: stopmpi2
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

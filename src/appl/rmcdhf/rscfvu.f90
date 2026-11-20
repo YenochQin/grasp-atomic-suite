@@ -42,27 +42,27 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-       use default_c, only: double, inpci, ndef, ndump
-       use core_c, only: closed_core_subshell_count
-       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-       use mpi_s, only: double, mpi_process_count, mpi_rank
+       use calculation_input_defaults, only: inpci, ndef, ndump
+       use closed_core_subshells, only: closed_core_subshell_count
+       use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+       use mpi_s, only: mpi_process_count, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
-      use starttime_i, only: starttime
+      use yes_no_input, only: getyn
+      use run_timer_start, only: starttime
       use setdbg_i, only: setdbg
-      use setmc_i, only: setmc
-      use setcon_i, only: setcon
+      use machine_constants, only: setmc
+      use physical_constants, only: setcon
       use setsum_i, only: setsum
       use setmcp_i, only: setmcp
       use setcsl_i, only: setcsl
       use getscd_i, only: getscd
       use strsum_i, only: strsum
       use setmix_i, only: setmix
-      use factt_i, only: factt
+      use log_factorial_table, only: factt
       use scf_i, only: scf
-      use stoptime_i, only: stoptime
+      use run_timer_finish, only: stoptime
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

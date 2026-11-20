@@ -8,13 +8,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
+      use distributed_slater_integrals, only: indteirk, valteirk, rk_local_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use genintrk_i, only: genintrk
-      use mpiu_i, only: gdsummpi
-      use mpiu_i, only: gisummpi
+      use mpi_utilities, only: gdsummpi
+      use mpi_utilities, only: gisummpi
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

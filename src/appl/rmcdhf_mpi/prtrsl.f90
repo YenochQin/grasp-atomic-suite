@@ -16,14 +16,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use orb_c, only: double, max_orbitals, orbital_count, orbital_kappa, orbital_principal_n, &
+      use orbital_csf_basis, only: max_orbitals, orbital_count, orbital_kappa, orbital_principal_n, &
           orbital_symmetry_labels
-      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use fixed_orbital_flags, only: fixed_orbital_count, is_orbital_fixed, max_orbitals
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i, only: convrt
+      use integer_format, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

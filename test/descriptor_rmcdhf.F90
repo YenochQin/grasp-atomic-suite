@@ -1,13 +1,13 @@
 program descriptor_rmcdhf
-   use core_c, only: closed_core_subshell_count
-   use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
-   use stat_c, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
-   use hblock_c, only: csf_counts_by_block, symmetry_block_count
-   use syma_c, only: jpgg, nblk0
-   use iounit_c, only: stderr_unit
+   use closed_core_subshells, only: closed_core_subshell_count
+   use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations
+   use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
+   use hamiltonian_symmetry_blocks, only: csf_counts_by_block, symmetry_block_count
+   use level_symmetry_metadata, only: jpgg, nblk0
+   use standard_io_units, only: stderr_unit
    use setmcp_i, only: setmcp
 #ifdef DESCRIPTOR_MPI
-   use mpi_c, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_rank, mpi_process_count, mpi_finalize
+   use mpi_state, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_rank, mpi_process_count, mpi_finalize
    use setcslmpi_i, only: setcslmpi
 #else
    use mpi_s, only: mpi_rank, mpi_process_count

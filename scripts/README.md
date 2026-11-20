@@ -2,7 +2,7 @@
 
 2026-11-16：网格工具同时识别原版及语义变量名，命令行/TOML 参数保持不变。
 `atomic-suite` 现覆盖十五个普通网格入口和两个 RCI 续算入口，CSFG 专用入口已移除。
-集中容量的新名称和 `parameter_def` 旧名别名见[共同参数说明](../docs/implemented/common_parameters.md)。
+集中容量的新名称和 `grasp_parameters` 旧名别名见[共同参数说明](../docs/implemented/common_parameters.md)。
 
 大规模 RMCDHF MPI 停顿采样使用 [sample_rmcdhf_mpi.py](sample_rmcdhf_mpi.py)，
 只读附着到指定 Linux PID 树，记录线程状态、等待位置、I/O、缺页和系统压力。
@@ -188,7 +188,7 @@ make -j4 install
   --rnt-scale 2e-6 --hp 0 --accy 1e-10 --diff
 ```
 
-这个布局修改 `src/lib/libmod/suite_parameters_M.f90` 及需要变更的十九个网格入口：
+这个布局修改 `src/lib/grasp_shared/compile_time_capacities.f90` 及需要变更的十九个网格入口：
 四个原版轨道程序、
 RHFS、RIS 和 RDENSITY，以及 GRASPG 的波函数估计、SCF 和两个 RCI 入口；g_J 复用 RHFS。
 普通 GRASP 另外包含 `rwfnestimate`、两个 RCI、两个双正交变换和三个跃迁程序的八个入口。
@@ -197,8 +197,8 @@ RHFS、RIS 和 RDENSITY，以及 GRASPG 的波函数估计、SCF 和两个 RCI �
 默认 `--layout grasp2018` 仍要求完整原版源码树，两种布局都会扫描整个 `src/`
 拒绝未识别的网格初始化或未同步的容量定义。
 本仓库有限核默认 `N=NNNP=590`。`--nnnp` 只修改集中配置中的 NNNP，
-保留 `NNN1=NNNP+10` 的派生关系；`parameter_def_M.f90` 继续转导六个常量，
-无需改变各程序的 `USE parameter_def`。仅改容量时，脚本只写入一个配置文件。
+保留 `NNN1=NNNP+10` 的派生关系；`grasp_parameters.f90` 继续转导六个常量，
+无需改变各程序的 `USE grasp_parameters`。仅改容量时，脚本只写入一个配置文件。
 显式 `--n` 则修改各入口的有限核实际点数。
 脚本依据公共模块的使用情况区分径向参数和局部同名变量。
 
@@ -250,7 +250,7 @@ RHFS、RIS 和 RDENSITY，以及 GRASPG 的波函数估计、SCF 和两个 RCI �
 
 原版布局覆盖 17 个径向应用入口、`rwfnrotate/rwfnrelabel` 和
 `rwfnestimate` 中重复的容量声明。默认调网格模式（未开启 `CAPACITY_ONLY`）还恢复 `rwfnrelabel` 被注释的网格
-初始化并在其 `GETHFD` 中导入 `npar_C` 的 `NPARM`，在 RMCDHF 的运行时
+初始化并在其 `GETHFD` 中导入 `nuclear_model_parameters_state` 的 `NPARM`，在 RMCDHF 的运行时
 ACCY 提示前重新计算默认 ACCY，保留用户随后显式输入 ACCY 的能力。
 指定 `--accy` 时也更新 RCI 恢复路径的数值阈值。
 不指定 `--rnt-scale` 时，`rwfnrotate` 原有未除以 Z 的 RNT 默认值仍保留。
@@ -261,7 +261,7 @@ ACCY 提示前重新计算默认 ACCY，保留用户随后显式输入 ACCY 的�
 手动修复时，在 `SUBROUTINE GETHFD(NAME)` 内的 `IMPLICIT` 语句之前添加：
 
 ```fortran
-      USE npar_C, ONLY: NPARM
+      USE nuclear_model_parameters_state, ONLY: NPARM
 ```
 
 不要改成局部 `INTEGER NPARM`：必须读取 `SETISO` 加载的共享核模型状态。

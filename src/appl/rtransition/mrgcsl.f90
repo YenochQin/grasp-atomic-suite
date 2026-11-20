@@ -8,8 +8,8 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c, only:  emn, ioncty, electron_count, nuclear_charge
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use atomic_calculation_state, only:  emn, ioncty, electron_count, nuclear_charge
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

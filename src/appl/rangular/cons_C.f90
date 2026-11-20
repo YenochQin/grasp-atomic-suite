@@ -1,10 +1,10 @@
 !
 !***********************************************************************
 !                                                                      *
-      module cons_c
+      module numeric_constants
 !                                                                      *
 !***********************************************************************
-      use, intrinsic :: iso_fortran_env, only: real64, double => real64
+      use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
       private :: real64
       real(real64) :: zero  = 0.0_real64, &
@@ -18,4 +18,4 @@
                       ten   =10.0_real64, &
                       eleven=11.0_real64, &
                       eps   = 1.0e-8_real64
-      end module cons_c
+      end module numeric_constants

@@ -24,38 +24,37 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: max_radial_points
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c, only: speed_of_light_au, nsolv
-      use grid_c, only: radial_grid_derivative
-      use int_c, only: p, q, p0, q0, mtp0
-      use invt_c, only: double, max_orbitals, noinvt
-      use node_c, only: max_orbitals, nnodep
-      use orb_c, only: double, max_orbitals, orbital_energy_parameters, orbital_kappa, orbital_l, orbital_principal_n, &
+      use grasp_parameters,    only: max_radial_points
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use atomic_calculation_state, only: speed_of_light_au, nsolv
+      use radial_grid_state, only: radial_grid_derivative
+      use radial_dirac_workspace, only: p, q, p0, q0, mtp0
+      use orbital_inversion_flags, only: max_orbitals, noinvt
+      use expected_orbital_nodes, only: max_orbitals, nnodep
+      use orbital_csf_basis, only: max_orbitals, orbital_energy_parameters, orbital_kappa, orbital_l, orbital_principal_n, &
           orbital_symmetry_labels
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use radial_quadrature_workspace, only: mtp, radial_workspace_capacity, ta, tb
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use pote_c, only: double, max_radial_points, xp, xq, yp
-      use mpi_c, only: double
+      use scf_radial_potentials, only: max_radial_points, xp, xq, yp
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use estim_i, only: estim
       use eigen_i, only: eigen
-      use dcbsrw_i, only: dcbsrw
-      use setpot_i, only: setpot
+      use dirac_coulomb_radial_orbital, only: dcbsrw
+      use radial_dirac_coefficients, only: setpot
       use setxz_i, only: setxz
-      use start_i, only: start
+      use radial_origin_solution, only: start
       use out_i, only: out
       use in_i, only: in
       use setxuv_i, only: setxuv
-      use quad_i, only: quad
+      use radial_quadrature, only: quad
       use setxv_i, only: setxv
       use prwf_i, only: prwf
-      use count_i, only: count
+      use radial_node_count, only: count
       use newe_i, only: newe
       implicit none (type, external)
 !-----------------------------------------------
@@ -90,7 +89,8 @@
 !
 !   Debug header
 !
-      if (ldbpr(22)) write (99, 300) orbital_principal_n(j), orbital_symmetry_labels(j)
+      if (ldbpr(22)) write (99, '(/,/," Debug printout active; orbital: ",1i2,1a2)') &
+         orbital_principal_n(j), orbital_symmetry_labels(j)
 !
       nloops = max(nsolv,3*orbital_principal_n(j))
 !
@@ -104,11 +104,13 @@
          if (orbital_energy_parameters(j) > 0.0_real64) then
             epsmin = orbital_energy_parameters(j)
          else
-            write (*, 301) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_energy_parameters(j)
+            write (*, '(" E(",1i2,1a2,") = ",1p,d11.4,"; adjusted to EPSMIN")') &
+               orbital_principal_n(j), orbital_symmetry_labels(j), orbital_energy_parameters(j)
             orbital_energy_parameters(j) = epsmin
             if (abs(emin - elast)<=1.0e-6_real64 .and. method(j)<=2) then
                call dcbsrw (orbital_principal_n(j), nakj, zinf, orbital_energy_parameters(j), p0, p, q, mtp0)
-               write (*, 302) orbital_principal_n(j), orbital_symmetry_labels(j), zinf
+               write (*, '(" Returned hydrogenic function for ",1i2,1a2," with"," effective charge ",f7.3)') &
+                  orbital_principal_n(j), orbital_symmetry_labels(j), zinf
                return
             end if
          end if
@@ -122,7 +124,8 @@
             epsmax = min(tenej,twocsq)
             emax = epsmax
             if (orbital_energy_parameters(j) > twocsq) then
-               write (*, 303) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_energy_parameters(j)
+               write (*, '(" E(",1i2,1a2,") = ",1p,d11.4,"; adjusted to TWOCSQ")') &
+                  orbital_principal_n(j), orbital_symmetry_labels(j), orbital_energy_parameters(j)
                orbital_energy_parameters(j) = twocsq
             end if
          end if
@@ -139,13 +142,20 @@
 !
 !   Check that bounds are ordered correctly
 !
-         if (epsmax <= epsmin) write (*, 304) epsmin, epsmax, orbital_principal_n(j), orbital_symmetry_labels(j), &
+         if (epsmax <= epsmin) write (*, '(" Warning: difficulty with node-counting procedure"/,&
+            &" lower bound on energy (",1p,d11.4,") exceeds upper"," bound (",1d11.4,"; E(",1i2,1a2,") = ",1d11.4)') &
+            epsmin, epsmax, orbital_principal_n(j), orbital_symmetry_labels(j), &
             & orbital_energy_parameters(j&
             )
 !
          if (kount>nloops .or. epsmax-epsmin<1.0_real64/dble(orbital_principal_n(j))**3) then
-            write (*, 305) method(j), orbital_principal_n(j), orbital_symmetry_labels(j)
-            write (*, 306) kount - 1, nloops, p0, orbital_energy_parameters(j), deleps, epsmin, epsmax&
+            write (*, '(" Method ",1i1," unable to solve for ",1i2,1a2," orbital")') &
+               method(j), orbital_principal_n(j), orbital_symmetry_labels(j)
+            write (*, '(" Iteration number: ",1i2,", limit: ",1i2,/," Present estimate of P0; ",1d21.14,/,&
+               &" Present estimate of E(J): ",1d21.14,", DELEPS: ",1d21.14,/," Lower bound on energy: ",1d21.14,&
+               &", upper bound: ",1d21.14,/," Join point: ",1i4,", Maximum tabulation point:",1i4,/,&
+               &" Number of nodes counted: ",1i2,", Correct number: ",1i2,/," Sign of P at first oscillation: ",&
+               &f3.0)') kount - 1, nloops, p0, orbital_energy_parameters(j), deleps, epsmin, epsmax&
                , jp, mtp, nnp, nnodep(j), sgn
             fail = .true.
             return
@@ -317,7 +327,11 @@
 !
 !   DEBUG PRINTOUT
 !
-      if (ldbpr(22)) write (99, 306) kount, nloops, p0, orbital_energy_parameters(j), deleps, epsmin, &
+      if (ldbpr(22)) write (99, '(" Iteration number: ",1i2,", limit: ",1i2,/," Present estimate of P0; ",1d21.14,/&
+         &," Present estimate of E(J): ",1d21.14,", DELEPS: ",1d21.14,/," Lower bound on energy: ",1d21.14,&
+         &", upper bound: ",1d21.14,/," Join point: ",1i4,", Maximum tabulation point:",1i4,/,&
+         &" Number of nodes counted: ",1i2,", Correct number: ",1i2,/," Sign of P at first oscillation: ",f3.0)') &
+         kount, nloops, p0, orbital_energy_parameters(j), deleps, epsmin, &
          epsmax, jp, mtp, nnp, nnodep(j), sgn
 !
 !   Proceed according to method
@@ -340,21 +354,6 @@
 !
       return
 !
-  300 format(/,/," Debug printout active; orbital: ",1i2,1a2)
-  301 format(" E(",1i2,1a2,") = ",1p,d11.4,"; adjusted to EPSMIN")
-  302 format(" Returned hydrogenic function for ",1i2,1a2," with",&
-         " effective charge ",f7.3)
-  303 format(" E(",1i2,1a2,") = ",1p,d11.4,"; adjusted to TWOCSQ")
-  304 format(" Warning: difficulty with node-counting procedure"/,&
-         " lower bound on energy (",1p,d11.4,") exceeds upper"," bound (",1d&
-         11.4,"; E(",1i2,1a2,") = ",1d11.4)
-  305 format(" Method ",1i1," unable to solve for ",1i2,1a2," orbital")
-  306 format(" Iteration number: ",1i2,", limit: ",1i2,/,&
-         " Present estimate of P0; ",1d21.14,/," Present estimate of E(J): ",1d&
-         21.14,", DELEPS: ",1d21.14,/," Lower bound on energy: ",1d21.14,&
-         ", upper bound: ",1d21.14,/," Join point: ",1i4,&
-         ", Maximum tabulation point:",1i4,/," Number of nodes counted: ",1i2,&
-         ", Correct number: ",1i2,/," Sign of P at first oscillation: ",f3.0)
       return
 !
       end subroutine solve

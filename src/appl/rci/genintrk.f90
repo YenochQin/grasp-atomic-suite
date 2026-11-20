@@ -19,15 +19,15 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: alloc, double
-      use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
-      use kkstart_c, only: double, kmax, kstart
-      use orb_c, only: double, orbital_count, orbital_l, orbital_two_j
-      use jlabl_c, only: jlbl, jlbp, jlbr
+      use array_memory_management, only: alloc
+      use distributed_slater_integrals, only: indteirk, valteirk, rk_local_count
+      use coulomb_rank_offsets, only: kmax, kstart
+      use orbital_csf_basis, only: orbital_count, orbital_l, orbital_two_j
+      use angular_symmetry_labels, only: jlbl, jlbp, jlbr
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use slater_i, only: slater
+      use slater_radial_integral, only: slater
       use triangrk_i, only: triangrk
       implicit none (type, external)
 !-----------------------------------------------

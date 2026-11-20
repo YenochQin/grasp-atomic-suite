@@ -19,7 +19,7 @@ enable_language(Fortran)
 enable_testing()
 
 # GNU Fortran also searches beside the source file for modules. Old in-source
-# .mod files can silently override a freshly built parameter_def/grid capacity.
+# .mod files can silently override a freshly built grasp_parameters/radial_grid_state capacity.
 file(GLOB_RECURSE GRASP_IN_SOURCE_MODULES "${PROJECT_SOURCE_DIR}/src/*.mod" "${PROJECT_SOURCE_DIR}/src/*.smod")
 if(GRASP_IN_SOURCE_MODULES)
     message(FATAL_ERROR
@@ -73,7 +73,7 @@ unset(_grasp_target_fortran_flags)
 #
 # Example:
 #
-#     setup_fortran_modules(9290)
+#     setup_fortran_modules(core)
 #
 #
 # Command: target_link_libraries_Fortran(target mode libraries...)
@@ -86,7 +86,7 @@ unset(_grasp_target_fortran_flags)
 #
 # Example:
 #
-#     target_link_libraries_Fortran(rcsfsplit PRIVATE mod 9290)
+#     target_link_libraries_Fortran(rcsfsplit PRIVATE grasp_shared core)
 #
 set(Fortran_MODULE_DIRECTORY_root ${CMAKE_CURRENT_BINARY_DIR}/modules)
 function(setup_fortran_modules target)
@@ -145,12 +145,12 @@ message("* LAPACK_LIBRARIES:                ${LAPACK_LIBRARIES}")
 message("* LAPACK_LINKER_FLAGS:             ${LAPACK_LINKER_FLAGS}")
 
 # GRASP libraries
-add_subdirectory("src/lib/libcsf_descriptor")
-add_subdirectory("src/lib/libmod")
-add_subdirectory("src/lib/lib9290")
-add_subdirectory("src/lib/libdvd90")
-add_subdirectory("src/lib/libmcp90")
-add_subdirectory("src/lib/librang90")
+add_subdirectory("src/lib/csf_descriptor")
+add_subdirectory("src/lib/grasp_shared")
+add_subdirectory("src/lib/core")
+add_subdirectory("src/lib/davidson_eigensolver")
+add_subdirectory("src/lib/breit_angular_support")
+add_subdirectory("src/lib/spin_angular")
 
 # MPI support is enabled by default so the standard README build flow also
 # produces the MPI-enabled programs when an MPI Fortran toolchain is available.
@@ -169,13 +169,13 @@ if(GRASP_ENABLE_MPI)
         message("* MPI_Fortran_COMPILE_FLAGS:      ${MPI_Fortran_COMPILE_FLAGS}")
         message("* MPI_Fortran_LINK_FLAGS:         ${MPI_Fortran_LINK_FLAGS}")
 
-        add_subdirectory("src/lib/mpi90")
+        add_subdirectory("src/lib/mpi")
     else()
         message(WARNING "GRASP_ENABLE_MPI=ON but MPI Fortran libraries were not found. Continuing without MPI targets.")
     endif()
 else()
     message("* GRASP_ENABLE_MPI:               OFF")
-    message("MPI support disabled. Not building src/lib/mpi90 or MPI-dependent programs.")
+    message("MPI support disabled. Not building src/lib/mpi or MPI-dependent programs.")
 endif()
 
 message("* GRASP_BUILD_SERIAL_APPS:        ${GRASP_BUILD_SERIAL_APPS}")
@@ -199,7 +199,7 @@ if(GRASP_BUILD_SERIAL_APPS)
     add_subdirectory("src/appl/rmcdhf")
     add_subdirectory("src/appl/rmcdhf_mem")
 endif()
-if(TARGET mpiu90)
+if(TARGET grasp_mpi)
     foreach(app rangular_mpi rci_mpi rbiotransform_mpi rtransition_mpi)
         add_subdirectory("src/appl/${app}")
     endforeach()

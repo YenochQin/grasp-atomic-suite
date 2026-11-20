@@ -1,5 +1,5 @@
 module rangular_input
-   use csf_descriptor_input, only: descriptor_source, open_descriptor_source, close_descriptor_source, &
+   use csf_descriptor_reader, only: descriptor_source, open_descriptor_source, close_descriptor_source, &
                                    install_descriptor_header, read_descriptor_block
    use rangular_profile, only: open_stage_profile
    use rangular_reuse, only: configure_angular_reuse
@@ -112,8 +112,8 @@ contains
    end subroutine load_angular_header
 
    subroutine load_angular_block(options, core_count, block_index)
-      use orb_c, only: occupations => csf_subshell_occupations
-      use stat_c, only: subshell_quantum_numbers => csf_subshell_quantum_codes, couplings => csf_coupling_quantum_codes
+      use orbital_csf_basis, only: occupations => csf_subshell_occupations
+      use csf_coupling_data, only: subshell_quantum_numbers => csf_subshell_quantum_codes, couplings => csf_coupling_quantum_codes
       type(angular_input_options), intent(inout) :: options
       integer, intent(in) :: core_count, block_index
       call read_descriptor_block(options%descriptors, block_index, occupations, subshell_quantum_numbers, couplings)

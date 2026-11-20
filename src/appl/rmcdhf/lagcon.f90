@@ -16,15 +16,15 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: orbital_index_radix
-      use def_c, only: accy, double, max_radial_points, speed_of_light_au
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use grasp_parameters,    only: orbital_index_radix
+      use atomic_calculation_state, only: accy, max_radial_points, speed_of_light_au
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use lagr_c, only: double, ecv, iecc, nec
-      use pote_c, only: double, max_radial_points, xp, xq, yp
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use orbital_lagrange_multipliers, only: ecv, iecc, nec
+      use scf_radial_potentials, only: max_radial_points, xp, xq, yp
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
       implicit none (type, external)
 !-----------------------------------------------

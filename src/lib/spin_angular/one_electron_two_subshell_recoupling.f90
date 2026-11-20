@@ -1,0 +1,72 @@
+! Recouple a one-electron tensor connecting two active subshells.
+module one_electron_two_subshell_recoupling
+    implicit none (type, external)
+    private
+    public :: recop2
+contains
+      subroutine recop2(active_shell_count,first_shell_position,second_shell_position,two_rank_1,two_rank_2, &
+          tensor_rank,evaluate_coefficient,coupling_allowed,recoupling_coefficient)
+      use, intrinsic :: iso_fortran_env, only: real64
+      use numeric_constants,          only: one
+      use csf_pair_angular_state,             only: peel_orbital_indices => jlist, bra_subshell_quantum_codes => jjq1, &
+          ket_subshell_quantum_codes => jjq2, peel_orbital_count => npeel
+      use first_active_shell_recoupling, only: diaga1
+      use spectator_shell_chain_recoupling, only: diaga3
+      use pair_tensor_recoupling, only: diaga4
+      use final_shell_recoupling, only: diaga5
+      implicit none (type, external)
+      integer, intent(in)       :: active_shell_count, first_shell_position, second_shell_position, two_rank_1, &
+          two_rank_2, tensor_rank, evaluate_coefficient
+      integer, intent(out)      :: coupling_allowed
+      real(real64), intent(out) :: recoupling_coefficient
+      integer :: orbital_index, coupling_step_count, coupled_shell_count
+      real(real64) :: first_bra_j_weight, bra_j_weight_product, diagram_factor
+      coupling_allowed=1
+      orbital_index=peel_orbital_indices(first_shell_position)
+      first_bra_j_weight=dble(bra_subshell_quantum_codes(3,orbital_index))
+      orbital_index=peel_orbital_indices(second_shell_position)
+      bra_j_weight_product=dble(bra_subshell_quantum_codes(3,orbital_index))
+      bra_j_weight_product=first_bra_j_weight*bra_j_weight_product
+      recoupling_coefficient=one/dsqrt(bra_j_weight_product)
+      if(peel_orbital_count == 1 .and. active_shell_count == -1)return
+      if(active_shell_count == -1) then
+         coupled_shell_count = peel_orbital_count
+      else
+         coupled_shell_count = active_shell_count
+      end if
+      coupling_allowed=0
+      coupling_step_count=coupled_shell_count-second_shell_position
+      if(coupling_step_count > 1) then
+        call diaga3(second_shell_position,coupled_shell_count,2*tensor_rank,evaluate_coefficient,coupling_allowed, &
+            diagram_factor)
+        if(coupling_allowed == 0)return
+        recoupling_coefficient=diagram_factor*recoupling_coefficient
+        coupling_allowed=0
+      end if
+      if(second_shell_position /= coupled_shell_count) then
+        call diaga5(coupled_shell_count,second_shell_position,2*tensor_rank,evaluate_coefficient,coupling_allowed, &
+            diagram_factor)
+        if(coupling_allowed == 0)return
+        recoupling_coefficient=diagram_factor*recoupling_coefficient
+        coupling_allowed=0
+      end if
+      call diaga4(first_shell_position,second_shell_position,two_rank_1,two_rank_2,2*tensor_rank, &
+          evaluate_coefficient,coupling_allowed,diagram_factor)
+      if(coupling_allowed == 0)return
+      recoupling_coefficient=diagram_factor*recoupling_coefficient
+      if(first_shell_position == 1.and.second_shell_position == 2)return
+      coupling_allowed=0
+      call diaga1(first_shell_position,two_rank_1,evaluate_coefficient,coupling_allowed,diagram_factor)
+      if(coupling_allowed == 0)return
+      recoupling_coefficient=diagram_factor*recoupling_coefficient
+      coupling_step_count=second_shell_position-first_shell_position
+      if(first_shell_position == 1)coupling_step_count=second_shell_position-1-first_shell_position
+      if(coupling_step_count <= 1)return
+      coupling_allowed=0
+      call diaga3(first_shell_position,second_shell_position,two_rank_1,evaluate_coefficient,coupling_allowed, &
+          diagram_factor)
+      if(coupling_allowed == 0)return
+      recoupling_coefficient=diagram_factor*recoupling_coefficient
+      return
+      end subroutine recop2
+end module one_electron_two_subshell_recoupling

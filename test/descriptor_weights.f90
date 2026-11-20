@@ -1,9 +1,9 @@
 program descriptor_weights
    use iso_fortran_env, only: real64
-   use hblock_c, only: symmetry_block_count, csf_counts_by_block
-   use syma_c, only: jpgg
-   use stat_c, only: csf_coupling_quantum_codes
-   use iounit_c, only: stdin_unit, stderr_unit
+   use hamiltonian_symmetry_blocks, only: symmetry_block_count, csf_counts_by_block
+   use level_symmetry_metadata, only: jpgg
+   use csf_coupling_data, only: csf_coupling_quantum_codes
+   use standard_io_units, only: stdin_unit, stderr_unit
    use getaldwt_i, only: getaldwt
    implicit none (type, external)
    real(real64) :: weights(3)

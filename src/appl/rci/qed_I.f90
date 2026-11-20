@@ -3,7 +3,7 @@
       interface
       subroutine qed (jstate, slfint, ucf)
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_orbitals
+      use grasp_parameters,   only: max_orbitals
       implicit none (type, external)
       integer, intent(in) :: jstate
       real(real64), intent(out) :: slfint(max_orbitals)

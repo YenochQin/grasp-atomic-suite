@@ -12,11 +12,11 @@ BINDIR = ${GRASP}/bin
 GRASPLIB = ${GRASP}/lib
 BINFILE = $(BINDIR)/$(EXE)
 SRCLIBDIR = ${GRASP}/src/lib
-MODDIR = ${SRCLIBDIR}/libmod
-MODL92 = ${SRCLIBDIR}/lib9290
-MODLRANG90 = ${SRCLIBDIR}/librang90
-MODLMCP90 = ${SRCLIBDIR}/libmcp90
-GRASPLIBS =-l9290 -lmod -lrang90 -lmcp90 -ldvd90
+MODDIR = ${SRCLIBDIR}/grasp_shared
+MODL92 = ${SRCLIBDIR}/core
+MODL_SPIN_ANGULAR = ${SRCLIBDIR}/spin_angular
+MODL_BREIT_ANGULAR_SUPPORT = ${SRCLIBDIR}/breit_angular_support
+GRASPLIBS =-l9290 -lgrasp_shared -lrang90 -lbreit_angular_support -ldvd90
 
 APP_LIBS = -L${GRASPLIB} ${GRASPLIBS}
 
@@ -44,7 +44,7 @@ $(EXE): $(APP_OBJ)
 		$(APP_LIBS) ${LAPACK_LIBS} 
 
 .f90.o:
-	$(FC) -c $(FC_FLAGS) $< -I $(MODDIR) -I . -I ${MODL92} -I ${MODLRANG90} -I $(MODLMCP90) -o $@
+	$(FC) -c $(FC_FLAGS) $< -I $(MODDIR) -I . -I ${MODL92} -I ${MODL_SPIN_ANGULAR} -I $(MODL_BREIT_ANGULAR_SUPPORT) -o $@
 
 .f.o:
 	$(F90) -c $(FC_FLAGS) $< -o $@

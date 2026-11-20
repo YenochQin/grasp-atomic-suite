@@ -1,6 +1,6 @@
       module rmcdhf_mem_c
 !   Written by  G. Gaigalas               Vilnius, September 2021  *
-      use, intrinsic :: iso_fortran_env, only: real64, double => real64, long => int64
+      use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
       private :: real64
       real(real64), pointer :: coeff_31(:)

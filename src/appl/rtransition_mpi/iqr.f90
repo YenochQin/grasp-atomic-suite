@@ -11,7 +11,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use orb_c,         only: csf_subshell_occupations
+      use orbital_csf_basis,         only: csf_subshell_occupations
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

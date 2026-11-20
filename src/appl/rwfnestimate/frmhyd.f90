@@ -17,20 +17,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: radial_workspace_capacity
+      use grasp_parameters, only: radial_workspace_capacity
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c, only: double, nuclear_charge
-      use left_c, only: double, max_orbitals, set
-      use orb_c, only: orbital_energy_parameters, orbital_principal_n, orbital_kappa, orbital_symmetry_labels
-      use wave_c, only: radial_large_components, radial_small_components, orbital_origin_parameters, orbital_last_grid_index
-      use whfrom_c, only: source
-      use hydpar_c, only: sigma
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use default_c, only: double, inpci, ndef, ndump
+      use atomic_calculation_state, only: nuclear_charge
+      use initial_orbital_selection, only: max_orbitals, set
+      use orbital_csf_basis, only: orbital_energy_parameters, orbital_principal_n, orbital_kappa, orbital_symmetry_labels
+      use radial_wavefunctions, only: &
+          radial_large_components, radial_small_components, orbital_origin_parameters, orbital_last_grid_index
+      use initial_orbital_source, only: source
+      use hydrogenic_screening, only: sigma
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use calculation_input_defaults, only: inpci, ndef, ndump
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dcbsrw_i, only: dcbsrw
+      use dirac_coulomb_radial_orbital, only: dcbsrw
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

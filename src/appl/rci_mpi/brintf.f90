@@ -12,8 +12,8 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def,   only: orbital_index_radix
-      use stor_c, only: double, keep
+      use grasp_parameters,   only: orbital_index_radix
+      use breit_bessel_cache_keys, only: keep
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

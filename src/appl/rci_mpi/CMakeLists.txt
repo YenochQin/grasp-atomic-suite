@@ -134,5 +134,5 @@ add_executable(rci_mpi
     matrix_I.f90
     rci_mpi.f90
 )
-target_link_libraries_Fortran(rci_mpi PUBLIC mpiu90 rang90 9290 dvd90 mod mcp90)
+target_link_libraries_Fortran(rci_mpi PUBLIC grasp_mpi spin_angular core davidson_eigensolver grasp_shared breit_angular_support)
 install(TARGETS rci_mpi DESTINATION bin/)

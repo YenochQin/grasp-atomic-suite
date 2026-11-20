@@ -7,14 +7,14 @@
 !                                                                      *
 !***********************************************************************
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: orbital_index_radix, max_orbitals
-      use debug_c,          only: cutoff
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use ris_c, only: double, dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
-      use orb_c, only: byte, csf_count, double, max_orbitals
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use grasp_parameters,    only: orbital_index_radix, max_orbitals
+      use debug_output_settings,          only: cutoff
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use ris_c, only: dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
+      use orbital_csf_basis, only: csf_count, max_orbitals
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use mpi_c,            only: mpi_rank, mpi_process_count
+      use mpi_state,            only: mpi_rank, mpi_process_count
       implicit none (type, external)
       real(real64), intent(in) :: dint1(max_orbitals, max_orbitals), dint2(max_orbitals, max_orbitals),  &
                                           dint3(max_orbitals, max_orbitals), dint4(max_orbitals, max_orbitals), &

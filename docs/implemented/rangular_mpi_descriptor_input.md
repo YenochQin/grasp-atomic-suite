@@ -10,7 +10,7 @@
 ## 输入适配
 
 [rangular_mpi_input.f90](../../src/appl/rangular_mpi/rangular_mpi_input.f90) 负责选项、路径及广播。
-描述符路径由 rank 0 调用现有 [csf_descriptor_input](../../src/lib/lib9290/csf_descriptor_input.f90) 解码，
+描述符路径由 rank 0 调用现有 [csf_descriptor_reader](../../src/lib/core/csf_descriptor_reader.f90) 解码，
 安装头部后广播 block/轨道元数据，每个 block 装配原 IQA/JQSA/JCUPA 数组并广播给其它 rank。
 其它 rank 无需打开二进制文件，也不持有描述符原文件的副本。
 byte 数组通过 `MPI_INTEGER1` 发送，按完整 CSF 列拆分消息，限制单次 MPI 默认整数 count，避免广播长度乘法溢出。

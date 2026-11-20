@@ -14,24 +14,24 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use bess_c, only: bessj, bessn, bj, double, max_radial_points, tc, td, wij
-      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+      use bessel_function_workspace, only: bessj, bessn, bj, max_radial_points, tc, td, wij
+      use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
           nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c, only: double, max_radial_points, speed_of_light_au, vacuum_speed_of_light_au
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use atomic_calculation_state, only: max_radial_points, speed_of_light_au, vacuum_speed_of_light_au
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use orb_c, only: double, max_orbitals, orbital_kappa, orbital_two_j
-      use osc_c, only: double, nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
+      use orbital_csf_basis, only: max_orbitals, orbital_kappa, orbital_two_j
+      use transition_matrix_workspace, only: nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
           xsldr, totc, totb, isldr, isldr1, nint, ninteg, nptr, lab, nkp, kp, ltc
-      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use radial_quadrature_workspace, only: mtp, radial_workspace_capacity, ta, tb
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use clrx_i, only: clrx
-      use quad_i, only: quad
+      use relativistic_three_j, only: clrx
+      use radial_quadrature, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -52,7 +52,7 @@
       eps = 1.0e-10_real64
 !
       if (ldbpr(12) .or. ldbpr(13) .or. ldbpr(14) .or. ldbpr(15)) write (99, &
-         303) i, j
+         '(/,1x,30("+"),"   SPME called for orbitals ",i4,"   and",i4,3x,30("+"))') i, j
 !
       hmag = 0.0_real64
       hcoul = 0.0_real64
@@ -135,14 +135,16 @@
 !
 !  Print gauge dependent integrand if requested
 !
-            if (ldbpr(13)) write (99, 300) i, j, (ii,ta(ii),ii=1,radial_point_count)
+            if (ldbpr(13)) write (99, '(/,1x,20x,"Local form of gauge dependent integral for"," orbitals",i3,&
+               &" and",i3,/,/,100(1x,7(i3,2x,1p,d11.3,2x),/))') i, j, (ii,ta(ii),ii=1,radial_point_count)
             call quad (value)
             hgauge = form*value
             hbab = hcoul + sqrt(flp/fl)*hgauge
 !
 !  Print Coulomb and gauge dependent integrals if requested
 !
-            if (ldbpr(12)) write (99, 301) i, j, hcoul, hgauge, hbab
+            if (ldbpr(12)) write (99, '(/,1x,"Orbital pair (",i2,",",i2,") integrals:","Coul. gauge ",1p,d13.3,3x,&
+               &"Gauge contribution",d13.3,3x,"Bab.gauge",d13.3)') i, j, hcoul, hgauge, hbab
 !
 !  Calculate the contibutions from various terms if requested
 !
@@ -150,78 +152,80 @@
 !
                ta(1) = 0.0_real64
                ta(2:mtp) = td(2:mtp)*bj(2:mtp,2)*radial_grid_derivative(2:mtp)
-               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
+               if (ldbpr(15)) write (99, '(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)') (ii,ta(ii),ii=1,radial_point_count)
                call quad (tarom)
-               if (ldbpr(14)) write (99, 305) tarom
+               if (ldbpr(14)) write (99, '(/," Integral J(L)  =  ",1p,d28.12)') tarom
                esther = -cjl
-               if (ldbpr(14)) write (99, 306) esther
+               if (ldbpr(14)) write (99, '(" Factor multiplying this ",1p,d20.12)') esther
                tekel = esther*tarom
-               if (ldbpr(14)) write (99, 307) tekel
+               if (ldbpr(14)) write (99, '(" Resultant contribution  ",1p,d20.12,/)') tekel
 !
                ta(1) = 0.0_real64
                ta(2:mtp) = -tb(2:mtp)*bj(2:mtp,3)*radial_grid_derivative(2:mtp)
-               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
+               if (ldbpr(15)) write (99, '(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)') (ii,ta(ii),ii=1,radial_point_count)
                call quad (peres)
                if (ldbpr(14)) then
-                  write (99, 308) peres
-                  write (99, 306) cip
+                  write (99, '(" I + (L+1) integral  = ",1p,d24.12)') peres
+                  write (99, '(" Factor multiplying this ",1p,d20.12)') cip
                end if
                tamar = cip*peres
-               if (ldbpr(14)) write (99, 307) tamar
+               if (ldbpr(14)) write (99, '(" Resultant contribution  ",1p,d20.12,/)') tamar
 !
                ta(1) = 0.0_real64
                ta(2:mtp) = -tb(2:mtp)*bj(2:mtp,1)*radial_grid_derivative(2:mtp)
-               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
+               if (ldbpr(15)) write (99, '(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)') (ii,ta(ii),ii=1,radial_point_count)
                call quad (enoch)
                if (ldbpr(14)) then
-                  write (99, 309) enoch
-                  write (99, 306) cip
+                  write (99, '(" I + (L-1) integral  = ",1p,d24.12)') enoch
+                  write (99, '(" Factor multiplying this ",1p,d20.12)') cip
                end if
                seth = cip*enoch
-               if (ldbpr(14)) write (99, 307) seth
+               if (ldbpr(14)) write (99, '(" Resultant contribution  ",1p,d20.12,/)') seth
 !
                ta(1) = 0.0_real64
                ta(2:mtp) = bj(2:mtp,1)*tc(2:mtp)*radial_grid_derivative(2:mtp)
-               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
+               if (ldbpr(15)) write (99, '(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)') (ii,ta(ii),ii=1,radial_point_count)
                call quad (shem)
                if (ldbpr(14)) then
-                  write (99, 310) shem
-                  write (99, 306) fl
+                  write (99, '(" I - (L-1) integral  = ",1p,d24.12)') shem
+                  write (99, '(" Factor multiplying this ",1p,d20.12)') fl
                end if
                darius = fl*shem
-               if (ldbpr(14)) write (99, 307) darius
+               if (ldbpr(14)) write (99, '(" Resultant contribution  ",1p,d20.12,/)') darius
 !
                ta(1) = 0.0_real64
                ta(2:mtp) = -bj(2:mtp,3)*tc(2:mtp)*radial_grid_derivative(2:mtp)
-               if (ldbpr(15)) write (99, 304) (ii,ta(ii),ii=1,radial_point_count)
+               if (ldbpr(15)) write (99, '(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)') (ii,ta(ii),ii=1,radial_point_count)
                call quad (cyrus)
-               if (ldbpr(14)) write (99, 311) cyrus
+               if (ldbpr(14)) write (99, '(" I - (L+1) integral  = ",1p,d24.12)') cyrus
                daniel = flp
-               if (ldbpr(14)) write (99, 306) daniel
+               if (ldbpr(14)) write (99, '(" Factor multiplying this ",1p,d20.12)') daniel
                boaz = daniel*cyrus
-               if (ldbpr(14)) write (99, 307) boaz
+               if (ldbpr(14)) write (99, '(" Resultant contribution  ",1p,d20.12,/)') boaz
 !
                esau = tamar + seth + darius + boaz
-               if (ldbpr(14)) write (99, 312) esau, tekel
+               if (ldbpr(14)) write (99, '(" These last four add up to ",1p,d20.12,&
+                  &"    compared to the first which is ",d20.12)') esau, tekel
                aaron = esau + tekel
                gimel = -value
                if (ldbpr(14)) then
-                  write (99, 313) aaron, gimel
-                  write (99, 314)
-                  write (99, 315) peres, cip, tamar
-                  write (99, 316) enoch, cip, seth
-                  write (99, 317) shem, fl, darius
-                  write (99, 318) cyrus, daniel, boaz
-                  write (99, 319) esau
-                  write (99, 320) tarom, esther, tekel
-                  write (99, 321) gimel, aaron
+                  write (99, '(" These all add up to ",1p,d20.12," which should equal ",d20.12)') aaron, gimel
+                  write (99, '(/,18x,"Integral",11x,"Coefficient",8x,"Contribution")')
+                  write (99, '(" I + (L+1)",1p,3d20.10)') peres, cip, tamar
+                  write (99, '(" I + (L-1)",1p,3d20.10)') enoch, cip, seth
+                  write (99, '(" I - (L-1)",1p,3d20.10)') shem, fl, darius
+                  write (99, '(" I - (L+1)",1p,3d20.10)') cyrus, daniel, boaz
+                  write (99, '(54x,16("-"),/,50x,1p,d20.10)') esau
+                  write (99, '(" J (L)",4x,1p,3d20.10)') tarom, esther, tekel
+                  write (99, '(54x,16("-"),/," Correct figure",1p,d20.10,15x,d20.10)') gimel, aaron
                end if
 !
             end if
 !
          end if
 !
-         if (ldbpr(12)) write (99, 301) i, j, hcoul, hgauge, hbab
+         if (ldbpr(12)) write (99, '(/,1x,"Orbital pair (",i2,",",i2,") integrals:","Coul. gauge ",1p,d13.3,3x,&
+            &"Gauge contribution",d13.3,3x,"Bab.gauge",d13.3)') i, j, hcoul, hgauge, hbab
 !
       else
 !
@@ -239,44 +243,17 @@
 !zou
             end do
             call quad (value)
-            if (ldbpr(14)) write (99, 322) value
+            if (ldbpr(14)) write (99, '(" I + (L)  integral",1p,d20.10)') value
             hmag = -value*(fl + flp)*(dfki + dfkj)*form/sqrt(fl*flp)
 !
          end if
 !
-         if (ldbpr(12)) write (99, 302) hmag
+         if (ldbpr(12)) write (99, '(/,1x,"Magnetic single particle matrix element ",1p,d13.3)') hmag
 !
       end if
 !
       return
 !
-  300 format(/,1x,20x,"Local form of gauge dependent integral for"," orbitals",&
-         i3," and",i3,/,/,100(1x,7(i3,2x,1p,d11.3,2x),/))
-  301 format(/,1x,"Orbital pair (",i2,",",i2,") integrals:","Coul. gauge ",1p,d&
-         13.3,3x,"Gauge contribution",d13.3,3x,"Bab.gauge",d13.3)
-  302 format(/,1x,"Magnetic single particle matrix element ",1p,d13.3)
-  303 format(/,1x,30("+"),"   SPME called for orbitals ",i4,"   and",i4,3x,30(&
-         "+"))
-  304 format(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)
-  305 format(/," Integral J(L)  =  ",1p,d28.12)
-  306 format(" Factor multiplying this ",1p,d20.12)
-  307 format(" Resultant contribution  ",1p,d20.12,/)
-  308 format(" I + (L+1) integral  = ",1p,d24.12)
-  309 format(" I + (L-1) integral  = ",1p,d24.12)
-  310 format(" I - (L-1) integral  = ",1p,d24.12)
-  311 format(" I - (L+1) integral  = ",1p,d24.12)
-  312 format(" These last four add up to ",1p,d20.12,&
-         "    compared to the first which is ",d20.12)
-  313 format(" These all add up to ",1p,d20.12," which should equal ",d20.12)
-  314 format(/,18x,"Integral",11x,"Coefficient",8x,"Contribution")
-  315 format(" I + (L+1)",1p,3d20.10)
-  316 format(" I + (L-1)",1p,3d20.10)
-  317 format(" I - (L-1)",1p,3d20.10)
-  318 format(" I - (L+1)",1p,3d20.10)
-  319 format(54x,16("-"),/,50x,1p,d20.10)
-  320 format(" J (L)",4x,1p,3d20.10)
-  321 format(54x,16("-"),/," Correct figure",1p,d20.10,15x,d20.10)
-  322 format(" I + (L)  integral",1p,d20.10)
       return
 !
       end subroutine spme

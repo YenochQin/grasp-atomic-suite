@@ -17,41 +17,41 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: max_orbitals
-      use coun_c, only: count_context, count_trace_rank, double, thresh
-      use damp_c, only: orbital_damping_factors, mixing_damping_factors
-      use def_c, only: accy, double, max_radial_points, ncmin, nscf, nsic, nsolv, nuclear_charge, speed_of_light_au, &
+      use grasp_parameters,    only: max_orbitals
+      use radial_node_count_settings, only: count_context, count_trace_rank, thresh
+      use scf_damping_factors, only: orbital_damping_factors, mixing_damping_factors
+      use atomic_calculation_state, only: accy, max_radial_points, ncmin, nscf, nsic, nsolv, nuclear_charge, speed_of_light_au, &
           vacuum_speed_of_light_au
-      use default_c, only: double, inpci, ndef, ndump
-      use fixd_c, only: is_orbital_fixed
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use grid_c, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale, radial_grid
-      use invt_c, only: noinvt
-      use mcpb_c, only: diag, double, lfordr
-      use mpi_s, only: double, mpi_rank
-      use node_c, only: nnodep
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use npot_c, only: negative_radius_times_potential
-      use npol_c, only: npol_message_len
-      use npol_initialization, only: npol_init
-      use orb_c , only: orbital_kappa, orbital_symmetry_labels, orbital_principal_n, orbital_count, ped
-      use orthct_c, only: orthst
-      use scf_c, only: scnsty, method
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use fixed_orbital_flags, only: is_orbital_fixed
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use radial_grid_state, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale, radial_grid
+      use orbital_inversion_flags, only: noinvt
+      use rmcdhf_mcp_options, only: diag, lfordr
+      use mpi_s, only: mpi_rank
+      use expected_orbital_nodes, only: nnodep
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use nuclear_potential_state, only: negative_radius_times_potential
+      use nuclear_polarization_state, only: npol_message_len
+      use nuclear_polarization_initialization, only: npol_init
+      use orbital_csf_basis , only: orbital_kappa, orbital_symmetry_labels, orbital_principal_n, orbital_count, ped
+      use scf_orthogonality_control, only: orthst
+      use scf_iteration_state, only: scnsty, method
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
-      use setiso_i, only: setiso
-      use setqic_i, only: setqic
-      use radgrd_i, only: radgrd
-      use nucpot_i, only: nucpot
-      use setrwfa_i, only: setrwfa
+      use yes_no_input, only: getyn
+      use isotope_data_input, only: setiso
+      use radial_stencil_weights, only: setqic
+      use radial_grid_setup, only: radgrd
+      use nuclear_coulomb_potential, only: nucpot
+      use radial_wavefunction_input, only: setrwfa
       use getald_i, only: getald
       use getold_i, only: getold
-      use convrt_i, only: convrt
-      use getrsl_i, only: getrsl
+      use integer_format, only: convrt
+      use subshell_label_selection, only: getrsl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -1,8 +1,8 @@
 program descriptor_lifecycle
    use iso_fortran_env, only: int8
    use iso_c_binding, only: c_associated
-   use parameter_def, only: max_orbitals
-   use csf_descriptor_input, only: descriptor_source, open_descriptor_source, close_descriptor_source, read_descriptor_block
+   use grasp_parameters, only: max_orbitals
+   use csf_descriptor_reader, only: descriptor_source, open_descriptor_source, close_descriptor_source, read_descriptor_block
    implicit none (type, external)
    type(descriptor_source) :: first, second
    character(len=4096) :: filename

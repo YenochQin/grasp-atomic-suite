@@ -1,26 +1,26 @@
 program npol_consumers
     use, intrinsic :: iso_fortran_env, only: real64
-    use parameter_def, only: NNNP
+    use grasp_parameters, only: NNNP
     use npol_test_support, only: near, require, write_fixture
-    use npol_C, only: npol_message_len
-    use npol_initialization, only: npol_init
-    use debug_C, only: LDBPR
-    use def_c, only: C => speed_of_light_au
-    use grid_c, only: N => radial_point_count, R => radial_grid, RP => radial_grid_derivative, RPOR => &
+    use nuclear_polarization_state, only: npol_message_len
+    use nuclear_polarization_initialization, only: npol_init
+    use debug_output_settings, only: LDBPR
+    use atomic_calculation_state, only: C => speed_of_light_au
+    use radial_grid_state, only: N => radial_point_count, R => radial_grid, RP => radial_grid_derivative, RPOR => &
        & radial_derivative_over_radius, H => transformed_grid_step
-    use npot_c, only: ZZ => negative_radius_times_potential
-    use orb_c, only: NAK => orbital_kappa
-    use pote_c, only: YP, XP, XQ
-    use scf_c, only: NYCOF, NDCOF, NDA, DA
-    use wave_c, only: MF => orbital_last_grid_index, PF => radial_large_components, QF => radial_small_components
+    use nuclear_potential_state, only: ZZ => negative_radius_times_potential
+    use orbital_csf_basis, only: NAK => orbital_kappa
+    use scf_radial_potentials, only: YP, XP, XQ
+    use scf_iteration_state, only: NYCOF, NDCOF, NDA, DA
+    use radial_wavefunctions, only: MF => orbital_last_grid_index, PF => radial_large_components, QF => radial_small_components
     use ypot_I, only: ypot
     use dacon_I, only: dacon
-    use rinti_I, only: rinti
+    use one_electron_radial_integral, only: rinti
 #ifdef NPOL_MPI
     use mpi, only: mpi_allreduce, mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_double_precision, &
        & mpi_finalize, mpi_init, mpi_sum
-    use mpi_c, only: myid => mpi_rank, nprocs => mpi_process_count
-    use npol_mpi, only: npol_init_mpi
+    use mpi_state, only: myid => mpi_rank, nprocs => mpi_process_count
+    use mpi_nuclear_polarization, only: npol_init_mpi
 #endif
     implicit none (type, external)
     real(real64) :: coul(NNNP), base_xp(NNNP), base_xq(NNNP), base_yp(NNNP), reduced(NNNP)

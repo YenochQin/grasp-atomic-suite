@@ -14,17 +14,17 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_orbitals, max_radial_points
-      use memory_man, only: alloc, dalloc, double
-      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+      use grasp_parameters,   only: max_orbitals, max_radial_points
+      use array_memory_management, only: alloc, dalloc
+      use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
           nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
-      use def_c,           only: nuclear_charge, speed_of_light_au
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use atomic_calculation_state,           only: nuclear_charge, speed_of_light_au
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use sbdat_c,         only: kamax, nshlii, nshlpii
-      use wave_c,          only: pfii, qfii, pzii, mfii
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use biorthogonal_subshell_layout,         only: kamax, nshlii, nshlpii
+      use radial_wavefunctions,          only: pfii, qfii, pzii, mfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -140,7 +140,7 @@
                nhii(jjj) = nh(kk)
                gamaii(jjj) = gama(kk)
                call intrpqi (pa, qa, my, ra, jjj, dnorm)
-               if (ntest >= 100) write (*, 301) npii(jjj), nhii(jjj), eii(jjj)&
+               if (ntest >= 100) write (*, '(2x,i2,a2,4x,1p,1d22.15,4x,1d22.15)') npii(jjj), nhii(jjj), eii(jjj)&
                   , dnorm
                if (ntest > 1000) then
                   write (*, *) "PF              QF             RA"
@@ -174,7 +174,7 @@
       if (ntest >= 100) then
          write (*, *) "Sorted order should be the same as from kapdat"
          do j = 1, nwii
-            write (*, 301) npii(j), nhii(j), eii(j), dnorm
+            write (*, '(2x,i2,a2,4x,1p,1d22.15,4x,1d22.15)') npii(j), nhii(j), eii(j), dnorm
          end do
          write (*, *)
          write (*, *) "*****************"
@@ -184,7 +184,6 @@
 
       return
 !
-  301 format(2x,i2,a2,4x,1p,1d22.15,4x,1d22.15)
       return
 !
       end subroutine lodrwfi

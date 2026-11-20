@@ -1,8 +1,8 @@
 ! Public names that coincide with intrinsics must remain usable as procedures.
 program library_modules
     use, intrinsic :: iso_fortran_env, only: int8
-    use count_i, only: count
-    use pack_i, only: pack
+    use radial_node_count, only: count
+    use csf_byte_packing, only: pack
     implicit none (type, external)
     procedure(count), pointer :: count_nodes
     procedure(pack), pointer :: pack_shell

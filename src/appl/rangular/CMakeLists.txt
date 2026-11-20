@@ -33,5 +33,5 @@ add_executable(rangular
     genmcp.f90
 )
 setup_fortran_modules(rangular)
-target_link_libraries_Fortran(rangular PUBLIC rang90 mcp90 9290 mod)
+target_link_libraries_Fortran(rangular PUBLIC spin_angular breit_angular_support core grasp_shared)
 install(TARGETS rangular DESTINATION bin/)

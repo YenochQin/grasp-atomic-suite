@@ -1,22 +1,21 @@
 ! MPI/serial migration of GRASP rdensity (upstream 488e875d).
 ! Accumulate one-body density matrices before contracting radial functions.
 module density_calculation
-    use parameter_def, only: max_orbitals
-    use orb_c, only: csf_count, csf_subshell_occupations, double, max_orbitals, orbital_count, &
+    use grasp_parameters, only: max_orbitals
+    use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count, &
         orbital_energy_parameters, orbital_kappa, orbital_principal_n
-    use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+    use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
         pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-    use grid_c, only: radial_point_count, radial_grid
-    use eigv_c, only: csf_mixing_coefficients
-    use prnt_c, only: nvec, ivec
-    use syma_c, only: iatjpo, iaspar
-    use debug_c, only: cutoff
-    use jlabl_c, only: jlbr, jlbp
+    use radial_grid_state, only: radial_point_count, radial_grid
+    use eigenstate_expansions, only: csf_mixing_coefficients
+    use selected_level_indices, only: nvec, ivec
+    use level_symmetry_metadata, only: iatjpo, iaspar
+    use debug_output_settings, only: cutoff
+    use angular_symmetry_labels, only: jlbr, jlbp
     use density_parallel, only: density_fail, rank, sum_density, workers
     use natural_orbitals, only: diagonalize_density, transform_radial_block
-    use onescalar_i, only: onescalar
-    use itjpo_i, only: itjpo
-    use ispar_i, only: ispar
+    use one_electron_scalar_coefficients, only: onescalar
+    use csf_quantum_queries, only: itjpo, ispar
     implicit none (type, external)
     private
     public :: calculate_density

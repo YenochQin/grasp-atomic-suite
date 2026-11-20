@@ -1,19 +1,19 @@
-module dpbdt_i
+module radial_wavefunction_derivatives
     implicit none (type, external)
     private
     public :: dpbdt
 contains
 subroutine DPBDT(j)
-    use grid_c, only: N => radial_point_count
-    use tatb_c, only: TA, TB
+    use radial_grid_state, only: N => radial_point_count
+    use radial_quadrature_workspace, only: TA, TB
     implicit none (type, external)
     integer :: j
     TA(:N) = 0
     TB(:N) = 0
 end subroutine DPBDT
-end module dpbdt_i
+end module radial_wavefunction_derivatives
 
-module quad_i
+module radial_quadrature
     implicit none (type, external)
     private
     public :: quad
@@ -21,7 +21,7 @@ contains
 
 subroutine QUAD(result)
     use, intrinsic :: iso_fortran_env, only: real64
-    use tatb_c, only: TA, MTP
+    use radial_quadrature_workspace, only: TA, MTP
     implicit none (type, external)
     real(real64), intent(out) :: result
     integer :: i
@@ -30,4 +30,4 @@ subroutine QUAD(result)
         result = result+real(i,real64)*TA(i)
     end do
 end subroutine QUAD
-end module quad_i
+end module radial_quadrature

@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "purpose": "Update imported RMCDHF module imports and build references for the Davidson eigensolver rename.",
+  "previous_manifest_sha256": "366dea27eb8d082d4ba6fa87751641cc7a088083263968d100a566b55d7fb926",
+  "files": {
+    "src/appl/rmcdhf/Makefile": {
+      "before_suite_sha256": "d875326ab4b7f74b8bde0cf33874af9995641168bc3ee005d7053e313864d8db",
+      "after_suite_sha256": "bda45c12b6f12525eef40ee400a4eeb0cca909977ea6a88ffa00d1ee86690600"
+    },
+    "src/appl/rmcdhf/BUILDCONF.sh": {
+      "before_suite_sha256": "25905a101c81a24ac6ee818dd7f8f4906303243983720d8d988ca6d7db77565f",
+      "after_suite_sha256": "d38895e0daed17367fd3d049c93bae7833d3fd4e55a6ce9c379455118faf4b61"
+    },
+    "src/appl/rmcdhf/maneig.f90": {
+      "before_suite_sha256": "db588e393e8cd62b982673be7a3dacea3a0be68fdf54acad040c0884718b21a1",
+      "after_suite_sha256": "9ab54f4f5d9c6cae467362086519c6f06375f99a90763daf7cc8d7d30b19983a"
+    },
+    "src/appl/rmcdhf_mem/Makefile": {
+      "before_suite_sha256": "0195f68c3b7539326a8473fa97d04bbb59005c3b49da012f05c1b23d8708e1a5",
+      "after_suite_sha256": "c5a89b16841ad0e2935096704eabaf8d838233ac87742af99ebed84f270e7ef1"
+    },
+    "src/appl/rmcdhf_mem/BUILDCONF.sh": {
+      "before_suite_sha256": "26648617c4203a0dfaffaa6ff4c9ed7d06529b1081c808bfdbba1197dc53a15a",
+      "after_suite_sha256": "ba6b14818e7703a07fbebe6256c3bd087f7ca65b8a127e287aae98d4f6abc1d3"
+    },
+    "src/appl/rmcdhf_mem/maneig.f90": {
+      "before_suite_sha256": "db588e393e8cd62b982673be7a3dacea3a0be68fdf54acad040c0884718b21a1",
+      "after_suite_sha256": "9ab54f4f5d9c6cae467362086519c6f06375f99a90763daf7cc8d7d30b19983a"
+    },
+    "src/appl/rmcdhf_mpi/Makefile": {
+      "before_suite_sha256": "8d204aca020e8403c652ab957b36966c36334087e666ba8cb77bbfbc3d6ddb0b",
+      "after_suite_sha256": "fe51c92047117960ba55d7b9a3ae22413e470ef4f81d226221e73984d09749c9"
+    },
+    "src/appl/rmcdhf_mpi/BUILDCONF.sh": {
+      "before_suite_sha256": "44f5428b491af4f5bbe9d5b2bcdb70ad29061a41ceb590bf784d9e0b4a44361d",
+      "after_suite_sha256": "4e5a9cf722ea352cffd0903184d6fb5b6565919b541a9ecd08eed7a94ddef5fa"
+    },
+    "src/appl/rmcdhf_mpi/maneigmpi.f90": {
+      "before_suite_sha256": "4d817013ea66bf3d188742589f56e23811aa231c7cc977174142b2bc4841ff19",
+      "after_suite_sha256": "06bce98492ab951fe79086430592e66e901cf7b0e58b7e57cef709cc6424aad0"
+    },
+    "src/appl/rmcdhf_mem_mpi/Makefile": {
+      "before_suite_sha256": "2f4def078f306bb777e3f0c8b498ebb88f0ae2bb56220649bbcdecf0b8beee47",
+      "after_suite_sha256": "68ae2f25b135c97d2df84ad30aec9817b0dad733c403d00f52ba305a88da1218"
+    },
+    "src/appl/rmcdhf_mem_mpi/BUILDCONF.sh": {
+      "before_suite_sha256": "b12e87fb81b072c0015da87339e878c0a90b501e923d10b1f0a3cc20fa0c768d",
+      "after_suite_sha256": "c57abd41f779a0cd54cc379b22979aed9adaf899857502e21c97303e40124a9e"
+    },
+    "src/appl/rmcdhf_mem_mpi/maneigmpi.f90": {
+      "before_suite_sha256": "4d817013ea66bf3d188742589f56e23811aa231c7cc977174142b2bc4841ff19",
+      "after_suite_sha256": "06bce98492ab951fe79086430592e66e901cf7b0e58b7e57cef709cc6424aad0"
+    },
+    "src/appl/rmcdhf/CMakeLists.txt": {
+      "before_suite_sha256": "c96d9d692d6b45c30ab59894e75fb31a0375d2158c5eb2ce4eb0b063f146896e",
+      "after_suite_sha256": "f5e31afce73711e48a8cb66ce9bfc5844e0715e6cf8c25e91ab41f4195e7424d"
+    },
+    "src/appl/rmcdhf_mem/CMakeLists.txt": {
+      "before_suite_sha256": "9e5cb039bc6ad58e700304c64a7ed7f6099624f3151f0a588ac14f5fc4bb3918",
+      "after_suite_sha256": "417c9ff30231964de7678149d46eabd63c53a3517da1dc7cfa36d4b30a73ff94"
+    },
+    "src/appl/rmcdhf_mpi/CMakeLists.txt": {
+      "before_suite_sha256": "e83df57b73c1d5cd14a7c276e16257e48ac8b467099b68219b95caa3e345d068",
+      "after_suite_sha256": "f34ea326dcf642e1644f0d5a63e7b3a63fa804bbb8246eecf92d4cce6fb43ab0"
+    },
+    "src/appl/rmcdhf_mem_mpi/CMakeLists.txt": {
+      "before_suite_sha256": "728d56228ac3f6354604b072ba52d6b9e3cb2fb545e941e860528b9be90c7ad3",
+      "after_suite_sha256": "35a3781f8fcfabe14f399182f0d66c4dd5266563dfc334dae5f983dacb1cbbc5"
+    }
+  }
+}

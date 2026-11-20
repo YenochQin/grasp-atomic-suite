@@ -41,14 +41,14 @@ Parquet 为逻辑 Int8 使用物理 INT32 编码是合法的。纯闭核有明�
 
 | 层 | 归属/实现 |
 | --- | --- |
-| V2 格式 | suite `src/lib/libcsf_descriptor/src/descriptor_transport.rs`；复制的 V2 契约与 rCSFs 生产者兼容 |
+| V2 格式 | suite `src/lib/csf_descriptor/src/descriptor_transport.rs`；复制的 V2 契约与 rCSFs 生产者兼容 |
 | Rust I/O | 同目录 `descriptor_reader.rs`：同一 header 字节快照的哈希和 TOML 解析、footer/schema/空值检查、有界批次读取、电子数/宇称/块表预扫描 |
 | C ABI 1 | 同目录 `descriptor_ffi.rs`、库内 `include/rcsfs_descriptor.h`：独立句柄、明确容量的调用方缓冲、状态码及 UTF-8 错误信息；保留原符号名 |
 | 径向初猜 | [rwfnestimate](rwfnestimate_header_input.md) 复用 Rust 的 TOML 解析，通过只读 header 的 C 接口获取轨道表和总电子数 |
-| Fortran 适配 | [csf_rust_ffi.f90](../../src/lib/lib9290/csf_rust_ffi.f90)、[csf_descriptor_input.f90](../../src/lib/lib9290/csf_descriptor_input.f90)：`ISO_C_BINDING`、物理态/J/K 校验与补全、三数组或仅占据数组 |
+| Fortran 适配 | [csf_descriptor_c_bindings.f90](../../src/lib/core/csf_descriptor_c_bindings.f90)、[csf_descriptor_reader.f90](../../src/lib/core/csf_descriptor_reader.f90)：`ISO_C_BINDING`、物理态/J/K 校验与补全、三数组或仅占据数组 |
 | 应用状态 | `csf_basis_input`、`csf_block_input`、`rmcdhf_descriptor_input`；区分性质程序、RCI、MCP 已安装状态的生命周期 |
-| 双基组 | [csf_basis_merge.f90](../../src/lib/lib9290/csf_basis_merge.f90)：保持两个轨道序列的稳定合并，直接映射数组；顺序冲突明确拒绝，不写/重读 `SLASK` |
-| MPI | `csf_descriptor_collectives`、`csf_basis_mpi`、`csf_block_mpi_input`、`rmcdhf_descriptor_mpi`；root 读取，分配/输入状态先归约，按完整 CSF 列广播，错误非零 Abort |
+| 双基组 | [csf_basis_merging.f90](../../src/lib/core/csf_basis_merging.f90)：保持两个轨道序列的稳定合并，直接映射数组；顺序冲突明确拒绝，不写/重读 `SLASK` |
+| MPI | `mpi_csf_collectives`、`mpi_csf_basis_input`、`mpi_csf_block_input`、`mpi_rmcdhf_csf_input`；root 读取，分配/输入状态先归约，按完整 CSF 列广播，错误非零 Abort |
 
 Rust 不复制 `terms_C`，不把物理 seniority 转成打印标签再交回 Fortran。
 Fortran 保留原支持态集合、`w` 限制、`2J/2K<=126` 和内核容量限制。
@@ -69,7 +69,7 @@ Rust panic 不跨 C/Fortran 边界；正常格式/I/O 错误返回状态。abort
 
 ## 构建和运行
 
-reader 的完整构建源码位于 [src/lib/libcsf_descriptor](../../src/lib/libcsf_descriptor/README.md)，
+reader 的完整构建源码位于 [src/lib/csf_descriptor](../../src/lib/csf_descriptor/README.md)，
 包含三份 Rust 实现、C 头文件、Cargo manifest/lockfile、测试及原 MIT 许可。
 CMake 将它与其他共享库一起构建，最终链接的归档为 `<build>/lib/libcsf_descriptor.a`，
 安装后位于 `<prefix>/lib/libcsf_descriptor.a`。Cargo 中间产物保存在构建目录内。
@@ -148,7 +148,7 @@ RMCDHF 的实际 SETMCP/加载链路与标准权重，MPI 1/2/4 ranks、单列�
 - GNU Fortran 15 Check，串行 + MPI + JJ2LSJ OpenMP：全量编译成功，108/108 CTest 通过。
   新增的 `csf_descriptor_rust` 包含 4 项 Rust 格式、FFI 和生命周期测试。
 - Rust fmt、Clippy 全 targets（`-D warnings`）通过；矩阵驱动 8 项测试及 Python Ruff 通过。
-- 仅复制 `libcsf_descriptor/` 到隔离源码目录，在没有 rCSFs 源码/库的配置中离线构建成功。
+- 仅复制当时的 reader 源码目录到隔离源码树，在没有 rCSFs 源码/库的配置中离线构建成功。
 - 新 archive 与普通库同在构建 `lib/`，链接命令使用该文件；独立安装前缀下的 `lib/`、
   C 头文件和 MIT 许可均已验证，重复构建不会无故重编译。
 - 旧外部 reader 库选项明确拒绝；构建不再依赖外部 reader 路径。

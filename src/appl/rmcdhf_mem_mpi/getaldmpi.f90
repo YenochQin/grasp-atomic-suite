@@ -17,21 +17,21 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: alloc, double
+      use array_memory_management, only: alloc
 
-      use def_c, only: double, ncmin, nscf, nsic, wt
-      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
-      use orb_c, only: csf_count, double, max_orbitals, orbital_count
-      use orthct_c, only: orthst
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use atomic_calculation_state, only: ncmin, nscf, nsic, wt
+      use fixed_orbital_flags, only: fixed_orbital_count, is_orbital_fixed, max_orbitals
+      use orbital_csf_basis, only: csf_count, max_orbitals, orbital_count
+      use scf_orthogonality_control, only: orthst
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_rank
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use getaldwt_i, only: getaldwt
-      use iq_i, only: iq
+      use csf_quantum_queries, only: iq
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

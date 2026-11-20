@@ -27,12 +27,12 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 │   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # fresh GRASP copies with optional NP
 │   │   └── ris4/             # relativistic isotope-shift program
 │   └── lib/
-│       ├── libmod/           # global parameters, common state, shared modules
-│       ├── lib9290/          # GRASP92-style I/O, constants, grids, utilities
-│       ├── libdvd90/         # diagonalization-related routines
-│       ├── libmcp90/         # MCP support routines
-│       ├── librang90/        # angular algebra, Racah/tensor matrix elements
-│       └── mpi90/            # MPI file, path, and parallel helper routines
+│       ├── grasp_shared/     # shared state, capacities, and interfaces
+│       ├── core/             # Shared CSF input, radial numerics, and utilities (libcore.a)
+│       ├── davidson_eigensolver/ # Davidson eigensolver (libdavidson_eigensolver.a)
+│       ├── breit_angular_support/ # Breit angular coefficients and external entry points
+│       ├── spin_angular/        # angular algebra, Racah/tensor matrix elements
+│       └── mpi/              # MPI file, path, and parallel helper routines
 ├── docs/                     # status index and classified documentation
 │   ├── implemented/          # current implementation guides and code traces
 │   ├── plans/                # experiments and validation still to run
@@ -195,8 +195,9 @@ Orbital regression runners live in [test/rmcdhf](test/rmcdhf/README.md). Large c
 
 ## Radial Grid And Migration
 
-Shared limits live in [`suite_parameters_M.f90`](src/lib/libmod/suite_parameters_M.f90)
-and are re-exported by [`parameter_def_M.f90`](src/lib/libmod/parameter_def_M.f90).
+Shared limits live in [`compile_time_capacities.f90`](src/lib/grasp_shared/compile_time_capacities.f90)
+and are re-exported by [`grasp_parameters.f90`](src/lib/grasp_shared/grasp_parameters.f90).
+See [shared library naming](docs/implemented/shared_library_naming.md) for the library and module mapping.
 The default values match upstream GRASP:
 `NNNP=590`, `NNN1=600`, `NNNW=127`, `NNNWM1=126`, `NNNWM2=125`, and `KEYORB=215`.
 Each grid entry point retains its upstream defaults: finite nuclei use `N=NNNP=590`.
@@ -216,7 +217,7 @@ full rebuild and numerical convergence checks.
 See [shared parameter guide](docs/implemented/common_parameters.md) for the parameter table,
 initialization order, and validation. The suite layout edits the central capacity configuration
 and the seventeen individual grid entry points as needed. Explicit ACCY changes also cover
-the two CSFG RCI restart paths; `parameter_def` remains a re-export interface.
+the two CSFG RCI restart paths; `grasp_parameters` remains a re-export interface.
 For candidate values, their rationale, test datasets, and convergence criteria,
 see [GRASP grid parameter tuning](docs/plans/grasp_grid_parameter_tuning.md) (Chinese).
 

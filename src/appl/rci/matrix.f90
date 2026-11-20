@@ -20,48 +20,48 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
-      use parameter_def,   only: max_orbitals
-      use memory_man, only: alloc, dalloc, byte, double, long
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c, only: double, hartree_to_ev, hartree_to_wavenumber_cm, iccmin
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use grasp_parameters,   only: max_orbitals
+      use array_memory_management, only: alloc, dalloc
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use atomic_calculation_state, only: hartree_to_ev, hartree_to_wavenumber_cm, iccmin
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
 !      USE foparm_C
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
           matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
           nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use jlabl_c, only: labj => jlbr, labp => jlbp
-      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use angular_symmetry_labels, only: labj => jlbr, labp => jlbp
+      use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, jcupar, jqsar
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use where_c, only: double, imcdf
-      use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
-      use eigvec1_c, only: double, evec1
+      use where_c, only: imcdf
+      use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
+      use scf_previous_eigenvectors, only: evec1
       !USE blk_C
-      use iccu_c, only: iccut, iccutblk
-      use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
-      use coeils_c, only: double, frstco, indoei, ncoei, ndcoea, valoei
-      use bilst_c, only: double, ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
+      use csf_block_cutoffs, only: iccut, iccutblk
+      use distributed_slater_integrals, only: indteirk, valteirk, rk_local_count
+      use coulomb_integral_table, only: frstco, indoei, ncoei, ndcoea, valoei
+      use breit_integral_tables, only: ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
           valtp1, valtp2, valtp3, valtp4, valtp5, valtp6, first
-      use vpilst_c, only: double, frstvp, indvpi, ndvpa, nvpi, valvpi
-      use keilst_c, only: double, frstki, indkei, ndkea, nkei, valkei
-      use vinlst_c, only: double, frstvi, indtei, ndvin, nvinti, valtei
-      use fposition_c, only: nposition
+      use vacuum_polarization_integral_table, only: frstvp, indvpi, ndvpa, nvpi, valvpi
+      use kinetic_energy_integral_table, only: frstki, indkei, ndkea, nkei, valkei
+      use vinti_integral_table, only: frstvi, indtei, ndvin, nvinti, valtei
+      use rci_matrix_file_position, only: nposition
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use auxblk_i, only: auxblk
-      use csf_block_input, only: load_csf_block
+      use rci_csf_block_reader, only: load_csf_block
       use qed_slfen_i, only: qed_slfen
       use genmat_i, only: genmat
       use genmat2_i, only: genmat2
       use hmout_i, only: hmout
-      use iq_i, only: iq
+      use csf_quantum_queries, only: iq
       use maneig_i, only: maneig
       use engout_i, only: engout
       use wghtd5_i, only: wghtd5
@@ -243,11 +243,8 @@
             write (24,*)
             write (24,*) " Self Energy Corrections: "
             write (24,*)
-            write (24,301)
+            write (24,'(" Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV")')
             write (24,*)
-  301 format (" Level  J Parity",7x,"Hartrees",14x,"Kaysers",          &
-               16x,"eV" )
-  302 format (1i3,2x,2a4,1p,3d22.14)
             do j = 1, nvec
                call qed (j,slfint,ucf)
                elemnt = 0.0_real64
@@ -262,7 +259,7 @@
            ecm = eau*hartree_to_wavenumber_cm
            eev = eau*hartree_to_ev
            ip = (iiaspar+3)/2
-           write (24,302) j,labj(iiatjpo),labp(ip),eau,ecm,eev
+           write (24,'(1i3,2x,2a4,1p,3d22.14)') j,labj(iiatjpo),labp(ip),eau,ecm,eev
 !
             end do
 

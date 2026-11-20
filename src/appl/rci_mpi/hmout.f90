@@ -14,14 +14,14 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+      use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
           matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
           nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
-      use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
+      use orbital_csf_basis,           only: csf_count, orbital_count, csf_subshell_occupations
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i, only: convrt
+      use integer_format, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -40,11 +40,10 @@
          do ir = 1, nelc
             call convrt (matrix_partner_indices(ir), cir, lenthr)
             call convrt (ic, cic, lenthc)
-            write (99, 300) cir(1:lenthr), cic(1:lenthc), hamiltonian_values(ir)
+            write (99, '(" H (",a,",",a,") = ",1p,1d19.12)') cir(1:lenthr), cic(1:lenthc), hamiltonian_values(ir)
          end do
       end do
 !
-  300 format(" H (",a,",",a,") = ",1p,1d19.12)
       return
 !
       end subroutine hmout

@@ -11,7 +11,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: dalloc
+      use array_memory_management, only: dalloc
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

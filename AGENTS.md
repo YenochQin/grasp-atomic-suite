@@ -20,14 +20,16 @@ The rejected `rmcdhf_orbopt*`,
 `rmcdhf_mem_strict_mpi`, and `rmcdhf_mem_diag_mpi` programs are retired; historical
 documents are not authorization to restore them. See [retirement scope](docs/implemented/rejected_rmcdhf_variants.md).
 Retained programs share
-`libmod`, `lib9290`, `libdvd90`, and `mpi90` with the property programs; do not
+`grasp_shared`, `libcore`, `libdavidson_eigensolver`, and `src/lib/mpi` with the property programs; do not
 introduce a second copy of these libraries. Preserve suite MPI helpers.
-Keep `src/lib/libmod/parameter_def_M.f90` as the legacy re-export interface.
-Define shared capacities only in `suite_parameters_M.f90` under their descriptive
-names; `parameter_def` also exports the six old names as aliases. Preserve upstream defaults:
+For shared module names and external migration, see [shared library naming](docs/implemented/shared_library_naming.md).
+In `src/lib/grasp_shared/`, use one lowercase module per matching `.f90` filename.
+Keep `grasp_parameters` as the public capacity re-export interface.
+Define shared capacities only in `compile_time_capacities.f90` under their descriptive
+names; `grasp_parameters` also exports the six old names as aliases. Preserve upstream defaults:
 `KEYORB=215`, `NNNP=590`, `NNN1=NNNP+10`, `NNNW=127`, `NNNWM1=NNNW-1`, and
 `NNNWM2=NNNW-2`. The grid patcher edits this configuration module for capacity
-changes; existing applications continue to `USE parameter_def`.
+changes; existing applications continue to `USE grasp_parameters`.
 For capacity edits, use the primary-name mapping in [common parameters](docs/implemented/common_parameters.md).
 Each grid entry point registered in the patcher keeps its upstream point/finite-nucleus
 settings and ACCY initialization order, including RDENSITY. Finite nuclei default to

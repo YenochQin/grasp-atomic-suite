@@ -14,21 +14,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def,   only: max_orbitals
-      use memory_man, only: alloc, dalloc, byte, double
-      use def_c, only: double, electron_count, nelecii, nelecr
-      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+      use grasp_parameters,   only: max_orbitals
+      use array_memory_management, only: alloc, dalloc
+      use atomic_calculation_state, only: electron_count, nelecii, nelecr
+      use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
           nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
-      use orb_c, only: byte, csf_count, csf_subshell_occupations, double, iqar, max_orbitals, nakr, ncfr, nhr, npr, &
+      use orbital_csf_basis, only: csf_count, csf_subshell_occupations, iqar, max_orbitals, nakr, ncfr, nhr, npr, &
           nwr, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, orbital_symmetry_labels, orbital_two_j
-      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
+      use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, jcupar, jqsar
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use iq_i, only: iq
-      use csf_basis_input, only: load_csf_basis
-      use blk_c, only: nblock, ncfblk, nblocki, nblockf, ncfi, ncff
-      use openfl_i, only: openfl
+      use csf_quantum_queries, only: iq
+      use csf_full_basis_reader, only: load_csf_basis
+      use transition_basis_blocks, only: nblock, ncfblk, nblocki, nblockf, ncfi, ncff
+      use file_open, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

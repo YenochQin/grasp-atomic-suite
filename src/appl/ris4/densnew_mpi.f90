@@ -8,33 +8,32 @@
 !                                                                      *
 !***********************************************************************
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: orbital_index_radix, max_orbitals, max_radial_points
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c, only: double, max_radial_points
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use grasp_parameters,    only: orbital_index_radix, max_orbitals, max_radial_points
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use atomic_calculation_state, only: max_radial_points
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use foparm_c, only: iccut
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use first_order_csf_cutoffs, only: iccut
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use jlabl_c, only: jlbl, jlbp, jlbr
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use orb_c, only: byte, csf_count, csf_subshell_occupations, double, max_orbitals, orbital_count, orbital_kappa
-      use blk_c, only: double, ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
+      use angular_symmetry_labels, only: jlbl, jlbp, jlbr
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count, orbital_kappa
+      use transition_basis_blocks, only: ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
           nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       use teilst_c, only: ndtea, ntei, pindte, pvalte, firstt
-      use buffer_c, only: double, angular_buffer_capacity, angular_coefficient_count, &
+      use angular_coefficient_buffer_state, only: angular_buffer_capacity, angular_coefficient_count, &
           angular_coefficient_labels, angular_coefficients
-      use ris_c, only: double, dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
-      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-      use mpi_c,            only: mpi_rank, mpi_process_count
-      use prnt_c,           only : nvec
-      use alcbuf_i, only: alcbuf
-      use convrt_i, only: convrt
-      use ispar_i, only: ispar
-      use itjpo_i, only: itjpo
-      use onescalar_i, only: onescalar
+      use ris_c, only: dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
+      use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+      use mpi_state,            only: mpi_rank, mpi_process_count
+      use selected_level_indices,           only : nvec
+      use angular_coefficient_buffer, only: alcbuf
+      use integer_format, only: convrt
+      use csf_quantum_queries, only: ispar, itjpo
+      use one_electron_scalar_coefficients, only: onescalar
       implicit none (type, external)
       real(real64), intent(in) :: dint1(max_orbitals, max_orbitals), dint2(max_orbitals, max_orbitals), &
                                                         dint3(max_orbitals, max_orbitals), dint4(max_orbitals, max_orbitals), &

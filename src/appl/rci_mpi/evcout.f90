@@ -12,11 +12,11 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man, only: alloc, dalloc, byte, double
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use array_memory_management, only: alloc, dalloc
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use orbital_csf_basis,           only: csf_count, orbital_count, csf_subshell_occupations
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V A R I A B L E S
@@ -27,7 +27,7 @@
 !
 !   Header
 !
-      write (24,300)
+      write (24,'(//" Eigenvectors:"/)')
 !
 !   Determine which eigenvectors are to be printed out
 !
@@ -52,24 +52,24 @@
 !
 !   Write out the column numbers; skip a line
 !
-      write (24,301) (iloc(l),l = j1,j2)
-      write (24,302)
+      write (24,'(1x,8(i8,7x))') (iloc(l),l = j1,j2)
+      write (24,'(1x)')
 !
 !   Write out the rows
 !
       do 4 m = 1,csf_count
 !
-         write (24,303) (csf_mixing_coefficients(m+(l-1)*csf_count),l = j1,j2)
+         write (24,'(1x,1p,8d15.7)') (csf_mixing_coefficients(m+(l-1)*csf_count),l = j1,j2)
 !
 !   Skip a line after every tenth row
 !
-         if (mod(m,10) == 0) write (24,302)
+         if (mod(m,10) == 0) write (24,'(1x)')
 !
     4 continue
 !
 !   Set up for the next set of columns
 !
-      write (24,303)
+      write (24,'(1x,1p,8d15.7)')
       if (j2 < nvex) then
          j1 = j1+jp
          j2 = j2+jp
@@ -82,9 +82,5 @@
 !
       return
 !
-  300 format (//" Eigenvectors:"/)
-  301 format (1x,8(i8,7x))
-  302 format (1x)
-  303 format (1x,1p,8d15.7)
 !
       end subroutine evcout

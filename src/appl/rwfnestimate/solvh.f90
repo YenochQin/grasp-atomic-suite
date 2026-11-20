@@ -23,23 +23,23 @@
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
       use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
-      use def_c, only: accy, double, nuclear_charge, speed_of_light_au
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use atomic_calculation_state, only: accy, nuclear_charge, speed_of_light_au
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use orb_c, only: double, max_orbitals, orbital_energy_parameters, orbital_kappa, orbital_principal_n
-      use pote_c, only: yp
-      use tatb_c, only: ta, mtp
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use orbital_csf_basis, only: max_orbitals, orbital_energy_parameters, orbital_kappa, orbital_principal_n
+      use scf_radial_potentials, only: yp
+      use radial_quadrature_workspace, only: ta, mtp
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setpot_i, only: setpot
-      use start_i, only: start
+      use radial_dirac_coefficients, only: setpot
+      use radial_origin_solution, only: start
       use sbstep_i, only: sbstep
       use tail_i, only: tail
-      use count_i, only: count
-      use quad_i, only: quad
+      use radial_node_count, only: count
+      use radial_quadrature, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

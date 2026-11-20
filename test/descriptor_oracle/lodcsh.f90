@@ -25,11 +25,11 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def,   only: max_orbitals
-      use def_c, only: electron_count
-      use orb_c, only: max_orbitals, orbital_count, orbital_kappa, orbital_principal_n, orbital_two_j
-      use terms_c, only: itab, jtab, nrows, ntab
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use grasp_parameters,   only: max_orbitals
+      use atomic_calculation_state, only: electron_count
+      use orbital_csf_basis, only: max_orbitals, orbital_count, orbital_kappa, orbital_principal_n, orbital_two_j
+      use subshell_term_table, only: itab, jtab, nrows, ntab
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

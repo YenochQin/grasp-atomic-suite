@@ -23,29 +23,29 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_orbitals, orbital_index_radix
-      use memory_man, only: dalloc, byte, double
+      use grasp_parameters,   only: max_orbitals, orbital_index_radix
+      use array_memory_management, only: dalloc
 !      USE def_C
 !      USE EIGV_C
-      use foparm_c, only: iccut
-      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
-      use blk_c, only: double, ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
+      use first_order_csf_cutoffs, only: iccut
+      use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+      use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, jcupar, jqsar
+      use transition_basis_blocks, only: ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
           nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
-      use orb_c,           only: csf_count, orbital_count,orbital_kappa, csf_subshell_occupations
-      use jqjc_c, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
-      use orbord_c, only: nordff, nordii
-      use mcpdata_c, only: cnn, double, intgrl, intptr, jann, jbnn, ncoeff, nintg
-      use sbdat_c,         only: kamax,nlmax,nakinvii,nakinvff
-      use mpi_c, only: double, mpi_process_count, mpi_rank
+      use orbital_csf_basis,           only: csf_count, orbital_count,orbital_kappa, csf_subshell_occupations
+      use biorthogonal_transition_selection, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
+      use biorthogonal_orbital_order, only: nordff, nordii
+      use mcp_coefficient_storage, only: cnn, intgrl, intptr, jann, jbnn, ncoeff, nintg
+      use biorthogonal_subshell_layout,         only: kamax,nlmax,nakinvii,nakinvff
+      use mpi_state, only: mpi_process_count, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use onescalar_i, only: onescalar
-      use cord_i, only: cord
-      use itjpo_i, only: itjpo
+      use one_electron_scalar_coefficients, only: onescalar
+      use closed_shell_mcp, only: cord
+      use csf_quantum_queries, only: itjpo
       use angdata_i, only: angdata
       use qqsort_i, only: qqsort
       implicit none (type, external)

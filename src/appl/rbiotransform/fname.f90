@@ -12,11 +12,11 @@
 !-----------------------------------------------
 !   C O M M O N   B l o c k s
 !-----------------------------------------------
-      use jqjc_c, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
+      use biorthogonal_transition_selection, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
+      use yes_no_input, only: getyn
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

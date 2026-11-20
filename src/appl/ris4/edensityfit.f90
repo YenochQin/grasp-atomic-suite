@@ -13,8 +13,8 @@ subroutine edensityfit(xvec,yvec,z,par,nrnuc,f,rho,res)
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c,            only: pi,femtometer_to_bohr,speed_of_light_cm_per_s,hartree_to_wavenumber_cm
-      use parameter_def,    only: max_radial_points, radial_workspace_capacity
+      use atomic_calculation_state,            only: pi,femtometer_to_bohr,speed_of_light_cm_per_s,hartree_to_wavenumber_cm
+      use grasp_parameters,    only: max_radial_points, radial_workspace_capacity
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

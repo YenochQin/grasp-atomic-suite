@@ -22,11 +22,11 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man, only: alloc, double
-      use bilst_c, only: double, ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
+      use array_memory_management, only: alloc
+      use breit_integral_tables, only: ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
           valtp1, valtp2, valtp3, valtp4, valtp5, valtp6, first
-      use orb_c, only: orbital_two_j, orbital_count
-      use kkstartbreit_c, only: kmax, kstartbreit1, kstartbreit2
+      use orbital_csf_basis, only: orbital_two_j, orbital_count
+      use breit_rank_offsets, only: kmax, kstartbreit1, kstartbreit2
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

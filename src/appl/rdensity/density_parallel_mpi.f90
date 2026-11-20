@@ -1,10 +1,10 @@
 ! MPI processes isolate the mutable angular-library module state.
 module density_parallel
-    use csf_basis_mpi, only: load_density_basis => load_csf_basis_mpi
+    use mpi_csf_basis_input, only: load_density_basis => load_csf_basis_mpi
     use, intrinsic :: iso_fortran_env, only: real64
     use mpi, only: mpi_abort, mpi_bcast, mpi_character, mpi_comm_world, mpi_integer
-    use mpiu_i, only: mpix_startup, mpix_shutdown, gdrsummpi_root
-    use mpi_c, only: rank => mpi_rank, workers => mpi_process_count, processor_name, processor_name_length
+    use mpi_utilities, only: mpix_startup, mpix_shutdown, gdrsummpi_root
+    use mpi_state, only: rank => mpi_rank, workers => mpi_process_count, processor_name, processor_name_length
     implicit none (type, external)
     private
     public :: rank, workers, parallel_start, parallel_finish

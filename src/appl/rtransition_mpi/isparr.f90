@@ -13,10 +13,10 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: max_orbitals
-      use stat_c,        only: jcupar
-      use iounit_c,      only: stderr_unit
-      use orb_c,         only: ncfr
+      use grasp_parameters, only: max_orbitals
+      use csf_coupling_data,        only: jcupar
+      use standard_io_units,      only: stderr_unit
+      use orbital_csf_basis,         only: ncfr
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

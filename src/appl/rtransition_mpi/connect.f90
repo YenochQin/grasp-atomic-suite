@@ -12,9 +12,9 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+      use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
           nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
-      use orb_c, only: double, max_orbitals, orbital_count, orbital_kappa, orbital_principal_n
+      use orbital_csf_basis, only: max_orbitals, orbital_count, orbital_kappa, orbital_principal_n
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

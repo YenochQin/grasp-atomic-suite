@@ -2,7 +2,7 @@
       implicit none (type, external)
       interface
       subroutine prtrem (all)
-      use parameter_def, only: max_orbitals
+      use grasp_parameters, only: max_orbitals
       implicit none (type, external)
       logical, intent(out) :: all
       end subroutine prtrem

@@ -13,19 +13,19 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use bcore_c, only: double, icore, max_orbitals
-      use cons_c, only: double, eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use m_c, only: double, jjc1, jjc2, jjq1, jjq2, jlist, klist, max_orbitals, ncore, npeel, nq1, nq2
-      use orb_c, only: orbital_principal_n, orbital_kappa
+      use breit_core_occupations, only: icore, max_orbitals
+      use numeric_constants, only: eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use csf_pair_angular_state, only: jjc1, jjc2, jjq1, jjq2, jlist, klist, max_orbitals, ncore, npeel, nq1, nq2
+      use orbital_csf_basis, only: orbital_principal_n, orbital_kappa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use snrc_i, only: snrc
-      use clrx_i, only: clrx
-      use talk_i, only: talk
-      use itrig_i, only: itrig
-      use cxk_i, only: cxk
+      use breit_radial_rank_ranges, only: snrc
+      use relativistic_three_j, only: clrx
+      use breit_angular_coefficient_buffer, only: talk
+      use angular_momentum_triangle, only: itrig
+      use breit_radial_integral_coefficients, only: cxk
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -78,12 +78,12 @@
          ks(i) = iabs(kaps(i))
       end do
       const = nqs1*nqs2
-      if (ibug2 /= 0) write (99, 300) ia1, ib1
+      if (ibug2 /= 0) write (99, '("BREID: orbitals ",2i3)') ia1, ib1
 !
 !   2.0  Set range of tensor indices
 !
       call snrc (js, kaps, ks, nd1, nd2, ne1, ne2, ibrd, ibre)
-      if (ibug2 /= 0) write (99, 301) nd1, nd2, ne1, ne2, ibrd, ibre
+      if (ibug2 /= 0) write (99, '(2x,"ND1 ND2 NE1 NE2 IBRD IBRE ",6i5)') nd1, nd2, ne1, ne2, ibrd, ibre
       if (ia1 == ib1) then
 !
 !   3.0 Calculate aaaa interaction
@@ -97,7 +97,7 @@
             dksks = ks(1)*ks(1)
             dnunu1 = nu*(nu + 1)
             coef = const*two*dksks*gam*gam/dnunu1
-            if (ibug2 /= 0) write (99, 302) nu, gam, coef
+            if (ibug2 /= 0) write (99, '(2x,"aaaa contribution: NU,GAM,COEF",i5,2(3x,1p,d15.8))') nu, gam, coef
             itype = isg*4
             call talk (ja, jb, nu, ia1, ia1, ia1, ia1, itype, coef)
          end do
@@ -108,7 +108,7 @@
 !
       if (ibre < 0) return
       if (ne2 > numax) then
-         write (*, 304)
+         write (*, '("BREID: Dimension error for NUMAX.")')
          stop
       end if
 !
@@ -129,7 +129,7 @@
                prod = proc
                if (mod(ip,2) /= 0) prod = -prod
                call cxk (s, js, kaps, nu, k, ibre, 2)
-               if (ibug2 /= 0) write (99, 303) prod, (s(mu),mu=1,3)
+               if (ibug2 /= 0) write (99, '(2x,"PROD = ",1p,d15.8,/," S",7d15.8)') prod, (s(mu),mu=1,3)
                cone(:3,n) = cone(:3,n) + prod*s(:3)
             end if
 !
@@ -139,7 +139,7 @@
                prod = proc
                if (mod(ipp,2) /= 0) prod = -prod
                call cxk (s, js, kaps, nu, k, ibre, 2)
-               if (ibug2 /= 0) write (99, 303) prod, (s(mu),mu=1,3)
+               if (ibug2 /= 0) write (99, '(2x,"PROD = ",1p,d15.8,/," S",7d15.8)') prod, (s(mu),mu=1,3)
                cone(:3,n) = cone(:3,n) + prod*s(:3)
 !
             end if
@@ -150,7 +150,7 @@
          prod = proc
          if (mod(ipp,2) /= 0) prod = -prod
          call cxk (s, js, kaps, nu, k, ibre, 2)
-         if (ibug2 /= 0) write (99, 303) prod, (s(mu),mu=1,7)
+         if (ibug2 /= 0) write (99, '(2x,"PROD = ",1p,d15.8,/," S",7d15.8)') prod, (s(mu),mu=1,7)
          cone(:,n) = cone(:,n) + prod*s(:7)
       end do
 !
@@ -172,11 +172,6 @@
       end do
       return
 !
-  300 format("BREID: orbitals ",2i3)
-  301 format(2x,"ND1 ND2 NE1 NE2 IBRD IBRE ",6i5)
-  302 format(2x,"aaaa contribution: NU,GAM,COEF",i5,2(3x,1p,d15.8))
-  303 format(2x,"PROD = ",1p,d15.8,/," S",7d15.8)
-  304 format("BREID: Dimension error for NUMAX.")
       return
 !
       end subroutine breid

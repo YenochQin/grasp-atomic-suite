@@ -11,9 +11,9 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
-      use osc_c, only: nkp, kp
-      use mpi_c, only: mpi_process_count, mpi_rank
+      use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations
+      use transition_matrix_workspace, only: nkp, kp
+      use mpi_state, only: mpi_process_count, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

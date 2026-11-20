@@ -9,7 +9,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use hmat_c,     only: matrix_partner_indices
+      use sparse_hamiltonian_storage,     only: matrix_partner_indices
       use rmcdhf_mem_c, only: imax2_30, imin2_30, irow_30
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

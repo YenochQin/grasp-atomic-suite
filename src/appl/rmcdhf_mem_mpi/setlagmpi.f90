@@ -17,23 +17,23 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: orbital_index_radix, max_radial_points
-      use memory_man, only: alloc, double
-      use orba_c, only: double, iorder, max_orbitals
-      use core_c, only: closed_core_subshell_count
-      use def_c, only: accy, double, max_radial_points, speed_of_light_au
-      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
-      use grid_c, only: radial_point_count, radial_derivative_over_radius
-      use lagr_c, only: double, ecv, iecc, nec
-      use orb_c, only: double, max_orbitals, orbital_count, orbital_kappa, orbital_principal_n, &
+      use grasp_parameters,    only: orbital_index_radix, max_radial_points
+      use array_memory_management, only: alloc
+      use scf_orbital_order, only: iorder, max_orbitals
+      use closed_core_subshells, only: closed_core_subshell_count
+      use atomic_calculation_state, only: accy, max_radial_points, speed_of_light_au
+      use fixed_orbital_flags, only: fixed_orbital_count, is_orbital_fixed, max_orbitals
+      use radial_grid_state, only: radial_point_count, radial_derivative_over_radius
+      use orbital_lagrange_multipliers, only: ecv, iecc, nec
+      use orbital_csf_basis, only: max_orbitals, orbital_count, orbital_kappa, orbital_principal_n, &
           orbital_symmetry_labels, orbital_two_j
-      use mpi_c, only: double, mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &
+      use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &
          & mpi_process_count, mpi_rank, mpi_sum
-      use pote_c, only: yp, xp, xq
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use scf_radial_potentials, only: yp, xp, xq
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-      use tatb_c, only: mtp, ta
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use radial_quadrature_workspace, only: mtp, ta
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -42,8 +42,8 @@
       use ypot_i, only: ypot
       use xpot_i, only: xpot
       use dacon_i, only: dacon
-      use quad_i, only: quad
-      use rinti_i, only: rinti
+      use radial_quadrature, only: quad
+      use one_electron_radial_integral, only: rinti
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -160,15 +160,16 @@
 
          if (mpi_rank == 0) then
             if (nec == 0) then
-               write (*, 302)
+               write (*, '(/,"Lagrange multipliers are not required")')
             else
-               write (*, 304)
+               write (*, '(/,"Include Lagrange multipliers between:"/)')
                do li = 1, nec
                !*** Decode index ***
                   ieccli = iecc(li)
                   l1 = ieccli/key
                   l2 = ieccli - key*l1
-                  write (*, 305) orbital_principal_n(l2), orbital_symmetry_labels(l2), orbital_principal_n(l1), &
+                  write (*, '(13x,2(2x,1i2,1a2))') &
+                     orbital_principal_n(l2), orbital_symmetry_labels(l2), orbital_principal_n(l1), &
                      & orbital_symmetry_labels(l1)
                end do
             end if
@@ -181,7 +182,7 @@
 !     RETURN
 
       if (nec == 0) return
-      if (mpi_rank == 0) write (*, 306)
+      if (mpi_rank == 0) write (*, '(/,"Lagrange multipliers:"/)')
       jlast = 0
       mlast = 0
 
@@ -323,7 +324,8 @@
                           mpi_sum, mpi_comm_world, mpi_error_code)
          ecv(li) = tmp
 
-         if(mpi_rank == 0)write (*, 307) orbital_principal_n(j), orbital_symmetry_labels(j), orbital_principal_n(m), &
+         if(mpi_rank == 0)write (*, '(13x,2(2x,1i2,1a2),2x,1p,d16.9)') &
+            orbital_principal_n(j), orbital_symmetry_labels(j), orbital_principal_n(m), &
             & orbital_symmetry_labels(m), ecv(li)
 
       end do
@@ -332,11 +334,6 @@
 !db      close(82)
 
 
-  302 format(/,"Lagrange multipliers are not required")
-  304 format(/,"Include Lagrange multipliers between:"/)
-  305 format(13x,2(2x,1i2,1a2))
-  306 format(/,"Lagrange multipliers:"/)
-  307 format(13x,2(2x,1i2,1a2),2x,1p,d16.9)
 
       return
       end subroutine setlagmpi

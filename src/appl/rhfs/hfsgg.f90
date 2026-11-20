@@ -22,33 +22,31 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_orbitals
-      use memory_man, only: alloc, dalloc, byte, double
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c,           only: electron_mass_u, vacuum_speed_of_light_au, proton_mass_u, bohr_radius_cm, &
+      use grasp_parameters,   only: max_orbitals
+      use array_memory_management, only: alloc, dalloc
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use atomic_calculation_state,           only: electron_mass_u, vacuum_speed_of_light_au, proton_mass_u, bohr_radius_cm, &
          & hartree_to_wavenumber_cm,     &
                                  speed_of_light_cm_per_s, b1=>electron_mass_u
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use foparm_c, only: iccut
-      use jlabl_c, only: labj => jlbr, labp => jlbp
-      use nsmdat_c,        only: sqn, dmomnm, qmomb,                  &
+      use first_order_csf_cutoffs, only: iccut
+      use angular_symmetry_labels, only: labj => jlbr, labp => jlbp
+      use isotope_properties,        only: sqn, dmomnm, qmomb,                  &
                                  hfsi=>sqn, hfsd=>dmomnm, hfsq=>qmomb
-      use orb_c, only: byte, csf_count, double, max_orbitals, orbital_count
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use opt6_c, only: double
-      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+      use orbital_csf_basis, only: csf_count, max_orbitals, orbital_count
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use rinthf_i, only: rinthf
-      use rint_i, only: rint
+      use weighted_radial_overlap, only: rint
       use matelt_i, only: matelt
-      use convrt_i, only: convrt
-      use ispar_i, only: ispar
-      use itjpo_i, only: itjpo
-      use oneparticlejj_i, only: oneparticlejj
-      use gracah1_i, only: gracah1
+      use integer_format, only: convrt
+      use csf_quantum_queries, only: ispar, itjpo
+      use one_electron_tensor_coefficients, only: oneparticlejj
+      use racah_coefficients_scott_fischer, only: gracah1
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -270,8 +268,10 @@
 !
 !   Output the hyperfine interaction constants
 !
-      write (24, 302)
-      write (29, 402)
+      write (24, '(/,/," Interaction constants:"/,/," Level1  J Parity  Level2  J Parity",8x,"A (MHz)",13x,&
+         &"B (MHz)"/)')
+      write (29, '(/,/," Interaction constants:"/,/," Level1  J Parity ",8x,"A (MHz)",13x,"B (MHz)",13x,"g_J",14x,&
+         &"delta g_J",11x,"total g_J"/)')
 !
       do i = 1, nvec
          do ii = 1, nvec
@@ -315,7 +315,7 @@
 !                GJ = CVAC*GJA1*GJC(NVEC*(I-1)+II)
 !                DGJ = 0.001160D0*GJA1*DGJC(NVEC*(I-1)+II)
 
-                  write (24, 303) ivec(i), labj(jj), labp((iaspar(i)+3)/2), &
+                  write (24, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)') ivec(i), labj(jj), labp((iaspar(i)+3)/2), &
                      ivec(ii), labj(jjii), labp((iaspar(ii)+3)/2), afa1*hfc(1,&
                      nvec*(i-1)+ii), bfa1*hfc(3,nvec*(i-1)+ii)
 !
@@ -324,7 +324,7 @@
                   if (i == ii) then
                      gj = vacuum_speed_of_light_au*gja1*gjc(nvec*(i-1)+ii)
                      dgj = 0.001160_real64*gja1*dgjc(nvec*(i-1)+ii)
-                     write (29, 403) ivec(i), labj(jj), labp((iaspar(i)+3)/2), &
+                     write (29, '(1x,1i3,5x,2a4,1p,5d20.10)') ivec(i), labj(jj), labp((iaspar(i)+3)/2), &
                         afa1*hfc(1,nvec*(i-1)+ii), bfa1*hfc(3,nvec*(i-1)+ii), &
                         gj, dgj, gj + dgj
                   end if
@@ -333,14 +333,16 @@
 !   Off diagonal (J,J-1) A and B factors
 !
             case (2)
-               write (24, 303) ivec(i), labj(jj), labp((iaspar(i)+3)/2), ivec(&
+               write (24, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)') &
+                  ivec(i), labj(jj), labp((iaspar(i)+3)/2), ivec(&
                   ii), labj(jjii), labp((iaspar(ii)+3)/2), afa2*hfc(2,nvec*(i-1&
                   )+ii), bfa2*hfc(4,nvec*(i-1)+ii)
 !
 !   Off diagonal (J,J-2) B factor
 !
             case (4)
-               write (24, 303) ivec(i), labj(jj), labp((iaspar(i)+3)/2), ivec(&
+               write (24, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)') &
+                  ivec(i), labj(jj), labp((iaspar(i)+3)/2), ivec(&
                   ii), labj(jjii), labp((iaspar(ii)+3)/2), 0.0_real64, bfa3*hfc(5,&
                   nvec*(i-1)+ii)
             end select
@@ -406,9 +408,11 @@
                   hfselt1 = factor2*rac1*hfc(1,nvec*(jb-1)+ja)*tilde1
                   hfselt2 = factor2*rac2*hfc(3,nvec*(jb-1)+ja)*tilde2
                   if (abs(hfselt1 + hfselt2) > cutoff*10.0e-5_real64) then
-                     if (iflag == 0) write (24, 304)
+                     if (iflag == 0) write (24, '(/,/," Matrix elements:"/,/,&
+                        &" Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"/)')
                      iflag = 1
-                     write (24, 305) ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
+                     write (24, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)') &
+                        ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
                         /2), ivec(ja), labj(jja+1), labp((iaspar(ja)+3)/2), &
                         labj(ff+1), hfselt1 + hfselt2
                   end if
@@ -419,9 +423,11 @@
                   hfselt1 = factor2*rac1*hfc(2,nvec*(jb-1)+ja)*tilde1
                   hfselt2 = factor2*rac2*hfc(4,nvec*(jb-1)+ja)*tilde2
                   if (abs(hfselt1 + hfselt2) > cutoff*10.0e-5_real64) then
-                     if (iflag == 0) write (24, 304)
+                     if (iflag == 0) write (24, '(/,/," Matrix elements:"/,/,&
+                        &" Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"/)')
                      iflag = 1
-                     write (24, 305) ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
+                     write (24, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)') &
+                        ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
                         /2), ivec(ja), labj(jja+1), labp((iaspar(ja)+3)/2), &
                         labj(ff+1), hfselt1 + hfselt2
                   end if
@@ -432,9 +438,11 @@
                   hfselt1 = 0.0_real64
                   hfselt2 = factor2*rac2*hfc(5,nvec*(jb-1)+ja)*tilde2
                   if (abs(hfselt1 + hfselt2) > cutoff*10.0e-5_real64) then
-                     if (iflag == 0) write (24, 304)
+                     if (iflag == 0) write (24, '(/,/," Matrix elements:"/,/,&
+                        &" Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"/)')
                      iflag = 1
-                     write (24, 305) ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
+                     write (24, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)') &
+                        ivec(jb), labj(jjb+1), labp((iaspar(jb)+3)&
                         /2), ivec(ja), labj(jja+1), labp((iaspar(ja)+3)/2), &
                         labj(ff+1), hfselt1 + hfselt2
                   end if
@@ -449,16 +457,6 @@
       call dalloc (hfc, "HFC", "HFS")
       return
 !
-  302 format(/,/," Interaction constants:"/,/,&
-         " Level1  J Parity  Level2  J Parity",8x,"A (MHz)",13x,"B (MHz)"/)
-  402 format(/,/," Interaction constants:"/,/," Level1  J Parity ",8x,"A (MHz)"&
-         ,13x,"B (MHz)",13x,"g_J",14x,"delta g_J",11x,"total g_J"/)
-  303 format(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)
-  403 format(1x,1i3,5x,2a4,1p,5d20.10)
-  304 format(/,/," Matrix elements:"/,/,&
-         " Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"&
-         /)
-  305 format(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)
       return
 !
       end subroutine hfsgg

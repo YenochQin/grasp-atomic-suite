@@ -10,9 +10,9 @@ import tempfile
 def main() -> None:
     compiler, modules, library = sys.argv[1:4]
     root = Path(sys.argv[4]) if len(sys.argv) > 4 else Path(__file__).resolve().parents[2]
-    support = """module dcbsrw_i
+    support = """module dirac_coulomb_radial_orbital
 use iso_fortran_env, only: real64
-use parameter_def, only: max_radial_points
+use grasp_parameters, only: max_radial_points
 implicit none
 contains
 subroutine dcbsrw(n,kappa,z,e,rg0,rg,rf,mtp)
@@ -24,9 +24,9 @@ real(real64),intent(inout)::rg(max_radial_points)
 e=0; rg0=0; rg=1; rf=0; mtp=4
 end subroutine
 end module
-module quad_i
+module radial_quadrature
 use iso_fortran_env, only: real64
-use tatb_c, only: mtp,ta
+use radial_quadrature_workspace, only: mtp,ta
 implicit none
 contains
 subroutine quad(result)
@@ -37,9 +37,9 @@ end module
 """
     driver = """program qed_boundary
 use iso_fortran_env, only: real64,real32
-use parameter_def, only: max_radial_points
-use grid_c, only: radial_grid_derivative
-use tatb_c, only: mtp
+use grasp_parameters, only: max_radial_points
+use radial_grid_state, only: radial_grid_derivative
+use radial_quadrature_workspace, only: mtp
 use ratden_probe
 implicit none
 real(real64)::p(max_radial_points),q(max_radial_points),z,value,points(5)

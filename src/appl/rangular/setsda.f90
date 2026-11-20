@@ -19,12 +19,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man, only: alloc, dalloc
+      use array_memory_management, only: alloc, dalloc
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use orb_c, only: csf_count
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use orbital_csf_basis, only: csf_count
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

@@ -29,7 +29,7 @@ def main() -> None:
             "use jj2lsj_profile\nimplicit none\ncontains\n"
             + source[start:end] + "\nend module\n")
         subprocess.run([compiler, "-std=f2018", "-fcheck=all", "-fbacktrace",
-                        str(root / "src/lib/libmod/input_io.f90"),
+                        str(root / "src/lib/grasp_shared/input_error_handling.f90"),
                         str(root / "src/appl/jj2lsj/jj2lsj_profile.f90"),
                         "unique.f90", str(root / "test/jj2lsj/unique_io.f90"),
                         "-o", "unique"], cwd=work, check=True)

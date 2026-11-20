@@ -12,22 +12,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+      use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
           nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c, only: double
-      use foparm_c, only: iccut
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use first_order_csf_cutoffs, only: iccut
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use orb_c, only: byte, double, max_orbitals
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use orbital_csf_basis, only: max_orbitals
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use jj2lsjbio_c, only: double, rlev_ener_1, rlev_ener_2, string_csf1, string_csf2, nvectoti, nvectotf, &
+      use transition_lsj_labels, only: rlev_ener_1, rlev_ener_2, string_csf1, string_csf2, nvectoti, nvectotf, &
           iopen_status1, iopen_status2, lev_pos_1, lev_j_1, lev_par_1, lev_pos_2, lev_j_2, lev_par_2
       implicit none (type, external)
 !-----------------------------------------------
@@ -170,27 +169,6 @@
 !
       return
 !
-  300 format ("The atomic number is ",1f14.10,";")
-  301 format ("  c =",1p,1d19.12," Bohr radii,"            &
-             /"  a =",   1d19.12," Bohr radii;")
-  305 format ("Speed of light = ",1pd19.12," atomic units.")
-  306 format ( "Radial grid: R(I) = RNT*(exp((I-1)*H)-1),",&
-               " I = 1, ..., N;"                           &
-             //" RNT  = ",1p,d19.12," Bohr radii;"         &
-              /" H    = ",   d19.12," Bohr radii;"         &
-              /" N    = ",1i4,";")
-  307 format ( "Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,",&
-               " I = 1, ..., N;"                           &
-             //" RNT  = ",1p,d19.12," Bohr radii;"         &
-              /" H    = ",   d19.12," Bohr radii;"         &
-              /" HP   = ",   d19.12," Bohr radii;"         &
-              /" N    = ",1i4,";")
-  308 format ( " R(1) = ",1p,1d19.12," Bohr radii;"        &
-              /" R(2) = ",   1d19.12," Bohr radii;"        &
-              /" R(N) = ",   1d19.12," Bohr radii.")
-  309 format (" Subshell",11x,"e",20x,"p0",18x,            &
-              "gamma",19x,"P(2)",18x,"Q(2)",10x,"MTP")
-  310 format (3x,1i2,1a2,1x,1p,5(3x,1d19.12),3x,1i3)
 
       return
 !

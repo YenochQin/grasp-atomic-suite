@@ -16,12 +16,12 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c, only: double, einstein_a_au_to_si, hartree_to_wavenumber_cm, vacuum_speed_of_light_au
-      use cuto_c, only: cutoff, double
-      use osc_c, only: double, nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
+      use atomic_calculation_state, only: einstein_a_au_to_si, hartree_to_wavenumber_cm, vacuum_speed_of_light_au
+      use transition_output_cutoff, only: cutoff
+      use transition_matrix_workspace, only: nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
           xsldr, totc, totb, isldr, isldr1, nint, ninteg, nptr, lab, nkp, kp, ltc
-      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-      use jj2lsjbio_c, only: double, rlev_ener_1, rlev_ener_2, string_csf1, string_csf2, nvectoti, nvectotf, &
+      use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+      use transition_lsj_labels, only: rlev_ener_1, rlev_ener_2, string_csf1, string_csf2, nvectoti, nvectotf, &
           iopen_status1, iopen_status2, lev_pos_1, lev_j_1, lev_par_1, lev_pos_2, lev_j_2, lev_par_2
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -152,10 +152,11 @@
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                end if
-               write (32,38) dd,angs,angsa,                        &
+               write (32,'(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/1x,a1,i1,2x,"S = ",1pd12.5,3x,&
+                  &"GF = ",d12.5,3x,"AKI = ",d12.5,3x,"dT = ",0pf8.5)') dd,angs,angsa,                        &
                    im,lk,-sb,-oscb,-ab,                            &
                    dabs(dabs(sb)-dabs(sa))/max(dabs(sb),dabs(sa))
-               write (32,39)  -sa,-oscc,-ac
+               write (32,'(9x,1pd12.5,8x,d12.5,9x,d12.5)')  -sa,-oscc,-ac
             else if ( 1.0e9_real64 > eng .and. eng > 1.0e-2_real64) then
                write (32,"(A1)")  ""
                write (32,"(A1)")  ""
@@ -185,10 +186,11 @@
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                end if
-               write (32,38) dd,angs,angsa,                        &
+               write (32,'(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/1x,a1,i1,2x,"S = ",1pd12.5,3x,&
+                  &"GF = ",d12.5,3x,"AKI = ",d12.5,3x,"dT = ",0pf8.5)') dd,angs,angsa,                        &
                    im,lk,sb,oscb,ab*iatjpoff(j)/iatjpoii(i),       &
                    dabs(dabs(sb)-dabs(sa))/max(dabs(sb),dabs(sa))
-               write (32,39)  sa,oscc,ac*iatjpoff(j)/iatjpoii(i)
+               write (32,'(9x,1pd12.5,8x,d12.5,9x,d12.5)')  sa,oscc,ac*iatjpoff(j)/iatjpoii(i)
             end if
          end if
       else
@@ -239,7 +241,8 @@
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                end if
-               write (32,40) dd,angs,angsa,im,lk,-sa,-oscm,-am
+               write (32,'(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/1x,a1,i1,2x,"S = ",1pd12.5,3x,&
+                  &"GF = ",d12.5,3x,"AKI = ",d12.5)') dd,angs,angsa,im,lk,-sa,-oscm,-am
             else if ( 1.0e9_real64 > eng .and. eng > 1.0e-2_real64) then
                write (32,"(A1)")  ""
                write (32,"(A1)")  ""
@@ -269,16 +272,11 @@
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                end if
-               write (32,40) dd,angs,angsa,                        &
+               write (32,'(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/1x,a1,i1,2x,"S = ",1pd12.5,3x,&
+                  &"GF = ",d12.5,3x,"AKI = ",d12.5)') dd,angs,angsa,                        &
                    im,lk,sa,oscm,am*iatjpoff(j)/iatjpoii(i)
             end if
          end if
       end if
       return
-   38 format(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/&
-         1x,a1,i1,2x,"S = ",1pd12.5,3x,"GF = ",d12.5,3x,"AKI = ",d12.5,&
-         3x,"dT = ",0pf8.5)
-   39 format(9x,1pd12.5,8x,d12.5,9x,d12.5)
-   40 format(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/&
-          1x,a1,i1,2x,"S = ",1pd12.5,3x,"GF = ",d12.5,3x,"AKI = ",d12.5)
       end subroutine printals

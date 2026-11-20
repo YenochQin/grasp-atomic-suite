@@ -19,7 +19,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use interp_i, only: interp
+      use aitken_interpolation, only: interp
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -82,8 +82,8 @@
          if (kappa == (-1)) then
             call interp (arg, val1s, numval, z, value, accy)
          else
-            write (*, 300)
-            write (*, 301) n, kappa
+            write (*, '("MOHR:")')
+            write (*, '(" Principal quantum number, ",i12,", kappa, ",1i3,".")') n, kappa
             stop
          end if
       else if (n == 2) then
@@ -95,13 +95,13 @@
          case (-2)
             call interp (arg, val2p3, numval, z, value, accy)
          case default
-            write (*, 300)
-            write (*, 301) n, kappa
+            write (*, '("MOHR:")')
+            write (*, '(" Principal quantum number, ",i12,", kappa, ",1i3,".")') n, kappa
             stop
          end select
       else
-         write (*, 300)
-         write (*, 302) n
+         write (*, '("MOHR:")')
+         write (*, '(" Principal quantum number, ",1i2,", Should be either 1 or 2.")') n
          stop
       end if
 !
@@ -109,9 +109,6 @@
 !
       return
 !
-  300 format("MOHR:")
-  301 format(" Principal quantum number, ",i12,", kappa, ",1i3,".")
-  302 format(" Principal quantum number, ",1i2,", Should be either 1 or 2.")
       return
 !
       end subroutine mohr

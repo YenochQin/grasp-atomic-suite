@@ -17,16 +17,16 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c, only: double, iccmin, ncmin
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use atomic_calculation_state, only: iccmin, ncmin
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use jlabl_c, only: labj => jlbr, labp => jlbp
-      use syma_c,          only: jpgg
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use pos_c, only: double, total_csf_count, mixing_coefficient_storage_size, &
+      use angular_symmetry_labels, only: labj => jlbr, labp => jlbp
+      use level_symmetry_metadata,          only: jpgg
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use symmetry_block_offsets, only: total_csf_count, mixing_coefficient_storage_size, &
           csf_offsets_by_block, eigenvalue_offsets_by_block, mixing_offsets_by_block
-      use blkidx_c, only: double, idxblk
+      use transition_block_indices, only: idxblk
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -48,9 +48,10 @@
 !
 
       if (lstdio) then
-         write (stdout_unit, 300)
+         write (stdout_unit, '(/,"Weights of major contributors to ASF:"/,/,&
+            &"Block Level J Parity      CSF contributions"/)')
       else
-         write (24, 300)
+         write (24, '(/,"Weights of major contributors to ASF:"/,/,"Block Level J Parity      CSF contributions"/)')
       end if
 
       do iv = 1, ncmin
@@ -111,22 +112,17 @@
            ip =  ivspar
 
          if (lstdio) then
-            write (stdout_unit, 320) jblock, icf, labj(ivtjpo), labp(ip), (coeff(i),i&
+            write (stdout_unit, '(i3,1x,i5,2x,2a4,5(3x,f8.4))') jblock, icf, labj(ivtjpo), labp(ip), (coeff(i),i&
                =1,nelt)
-            write (stdout_unit, 330) (iconf(i),i=1,nelt)
+            write (stdout_unit, '(19x,5(3x,i8))') (iconf(i),i=1,nelt)
          else
 
-            write (24, 320) jblock, icf, labj(ivtjpo), labp(ip), (coeff(i),i=1,&
+            write (24, '(i3,1x,i5,2x,2a4,5(3x,f8.4))') jblock, icf, labj(ivtjpo), labp(ip), (coeff(i),i=1,&
                nelt)
-            write (24, 330) (iconf(i),i=1,nelt)
+            write (24, '(19x,5(3x,i8))') (iconf(i),i=1,nelt)
          end if
       end do
 
-  300 format(/,"Weights of major contributors to ASF:"/,/,&
-         "Block Level J Parity      CSF contributions"/)
-  310 format(1x,a14,80a)
-  320 format(i3,1x,i5,2x,2a4,5(3x,f8.4))
-  330 format(19x,5(3x,i8))
 
       return
       end subroutine csfwgt

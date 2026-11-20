@@ -1,5 +1,5 @@
 EXE=rtransition_phase
-LIBRARIES="dvd90 rang90 mcp90 9290 mod"
+LIBRARIES="davidson_eigensolver spin_angular breit_angular_support core grasp_shared"
 LAPACK=true
 FILES="
 alclla.f90 alclla_I.f90

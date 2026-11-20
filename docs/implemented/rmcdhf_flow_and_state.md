@@ -25,7 +25,7 @@ strict/diag 独立变体已按用户决定[移除](rejected_rmcdhf_variants.md)�
 径向积分、矩阵、混合系数和势随 SCF 迭代变化。源码同时保留 EAL 路径，
 但当前普通输入链通常进入 EOL，具体条件见下一节。
 
-[构建定义](../../src/appl/rmcdhf/CMakeLists.txt)链接 `dvd90`、`9290`、`mod`。
+[构建定义](../../src/appl/rmcdhf/CMakeLists.txt)链接 `davidson_eigensolver`、`core`、`mod`。
 [入口](../../src/appl/rmcdhf/rscfvu.f90) `PROGRAM RSCFVU` 将
 [mpi_s](../../src/appl/rmcdhf/mpi_s.f90) 中 `MYID/NPROCS` 设为 `0/1`；
 这些名字和源码中的分工形式不代表此目标实际启动了 MPI。
@@ -140,11 +140,11 @@ IF (ABS((WTAEV - WTAEV0)/WTAEV) < 0.001*ACCY) CONVG = .TRUE.
 
 | 例程 | 输入 → 产物 | 隐含依赖 |
 | --- | --- | --- |
-| [RINTI](../../src/lib/lib9290/rinti.f90) | 两个轨道标签及当前径向轨道/核势 → 一电子积分。 | `DPBDT`、`QUAD`；使用共享径向临时数组，核势 `ZZ` 含已启用的 NP 修正。 |
-| [SLATER](../../src/lib/lib9290/slater.f90) | 四个轨道标签和 k → 二电子径向积分。 | `YZK → QUAD`；读取 `PF/QF` 并写积分工作区。 |
-| [YZK](../../src/lib/lib9290/yzk.f90) | 轨道对、k、径向网格 → 径向积分核。 | 使用 `TA/TB/MTP`；按需填充持久网格幂次缓存，内部含递推。 |
-| [QUAD](../../src/lib/lib9290/quad.f90) | `TA` 中被积函数、`MTP`、网格及求积系数 → 标量积分。 | 会将 `TA` 尾部补零，不是仅有一个输出形参的无状态纯函数。 |
-| [SPICMV2](../../src/lib/lib9290/spicmv2.f90) → [DMERGE](../../src/lib/lib9290/dmerge.f90) | `hmat_C` 稀疏矩阵和一组向量 B → C。 | 利用对称存储；每次 `ICOL` 迭代既写当前分量，也散加到其他分量。 |
+| [RINTI](../../src/lib/core/one_electron_radial_integral.f90) | 两个轨道标签及当前径向轨道/核势 → 一电子积分。 | `DPBDT`、`QUAD`；使用共享径向临时数组，核势 `ZZ` 含已启用的 NP 修正。 |
+| [SLATER](../../src/lib/core/slater_radial_integral.f90) | 四个轨道标签和 k → 二电子径向积分。 | `YZK → QUAD`；读取 `PF/QF` 并写积分工作区。 |
+| [YZK](../../src/lib/core/hartree_yz_functions.f90) | 轨道对、k、径向网格 → 径向积分核。 | 使用 `TA/TB/MTP`；按需填充持久网格幂次缓存，内部含递推。 |
+| [QUAD](../../src/lib/core/radial_quadrature.f90) | `TA` 中被积函数、`MTP`、网格及求积系数 → 标量积分。 | 会将 `TA` 尾部补零，不是仅有一个输出形参的无状态纯函数。 |
+| [SPICMV2](../../src/lib/core/sparse_symmetric_matvec.f90) → [DMERGE](../../src/lib/core/sparse_dot_and_scatter.f90) | `sparse_hamiltonian_storage` 稀疏矩阵和一组向量 B → C。 | 利用对称存储；每次 `ICOL` 迭代既写当前分量，也散加到其他分量。 |
 
 ## 4. 单轨道改善与径向方程求解
 
@@ -163,7 +163,7 @@ IMPROV
   CONSIS：计算 SCNSTY（普通版本在归一化前执行）
   归一化候选 P/Q/P0
   方法切换检查；必要时重试
-  DAMPCK / DAMPOR：选择阻尼并写回 wave_C
+  DAMPCK / DAMPOR：选择阻尼并写回 radial_wavefunctions
   若 ORTHST，则 ORTHY：同 kappa 轨道正交化
 ```
 
@@ -191,9 +191,9 @@ IMPROV
 | [SETCOF](../../src/appl/rmcdhf/setcof.f90) | 当前混合系数、占据和角系数 → 当前轨道的 `DA/XA/YA` 及索引列表。 | `FCO/GCO/DSUBRS`、MCP 读取和动态缓冲。 |
 | [COFPOT](../../src/appl/rmcdhf/cofpot.f90) | 汇总当前轨道方程所需势与附加项。 | `SETCOF → YPOT → XPOT → LAGCON → DACON`。 |
 | [YPOT](../../src/appl/rmcdhf/ypot.f90)、[XPOT](../../src/appl/rmcdhf/xpot.f90) | 系数与径向积分核 → 直接势 `YP`、交换项 `XP/XQ`。 | `YZK`、当前径向轨道；调试分支还有输出。 |
-| [LAGCON](../../src/appl/rmcdhf/lagcon.f90)、[DACON](../../src/appl/rmcdhf/dacon.f90)、[DEFCOR](../../src/appl/rmcdhf/defcor.f90) | 约束项、导数项与延迟修正。 | `lagr_C`、`pote_C`、`def_C` 的工作数组。 |
+| [LAGCON](../../src/appl/rmcdhf/lagcon.f90)、[DACON](../../src/appl/rmcdhf/dacon.f90)、[DEFCOR](../../src/appl/rmcdhf/defcor.f90) | 约束项、导数项与延迟修正。 | `orbital_lagrange_multipliers`、`scf_radial_potentials`、`atomic_calculation_state` 的工作数组。 |
 | [IMPROV](../../src/appl/rmcdhf/improv.f90)、[CONSIS](../../src/appl/rmcdhf/consis.f90) | 求候选轨道、计算自洽差异、阻尼与更新。 | 普通版 `CONSIS` 在归一化前执行。 |
-| [SOLVE](../../src/appl/rmcdhf/solve.f90)、[OUT](../../src/appl/rmcdhf/out.f90)、[IN](../../src/appl/rmcdhf/in.f90)、[NEWE](../../src/appl/rmcdhf/newe.f90) | 径向方程积分、边界匹配、节点控制和能量迭代。 | `int_C/pote_C/def_C/scf_C`；当前轨道能量 `E(J)`。 |
+| [SOLVE](../../src/appl/rmcdhf/solve.f90)、[OUT](../../src/appl/rmcdhf/out.f90)、[IN](../../src/appl/rmcdhf/in.f90)、[NEWE](../../src/appl/rmcdhf/newe.f90) | 径向方程积分、边界匹配、节点控制和能量迭代。 | `radial_dirac_workspace/scf_radial_potentials/atomic_calculation_state/scf_iteration_state`；当前轨道能量 `E(J)`。 |
 
 ## 5. 共享状态及生命周期
 
@@ -202,20 +202,20 @@ IMPROV
 
 | 状态及定义 | 写入者与消费者 | 生命周期与风险 |
 | --- | --- | --- |
-| [grid_C](../../src/lib/libmod/grid_C.f90)：`N/R/RP/RPOR/H` 等；[npot_C](../../src/lib/libmod/npot_C.f90)：`ZZ` | `GETSCD/RADGRD/NUCPOT/NPOL_INIT` 初始化；积分、势及方程求解读取。 | 在一次固定网格 SCF 中可只读共享；改变网格还必须考虑依赖网格的缓存。 |
-| [orb_C](../../src/lib/libmod/orb_C.f90)：量子数、`IQA/NCF`、`E/PED` | CSF 输入设置量子数/占据；`MATRIX` 切换 block；轨道求解更新能量相关量。 | 同时含输入、当前 block 和当前轨道能量，不能将整个模块视为常量。 |
-| [wave_C](../../src/lib/libmod/wave_C.f90)：`PF/QF/PZ/MF` | 初猜加载；`DAMPOR/ORTHY/ORTHSC` 改写；所有径向积分和势读取。 | 整个 SCF 生命周期；轮内有顺序依赖，轨道之间并非隔离的输出列。 |
-| [eigv_C](../../src/lib/libmod/eigv_C.f90)：`EVAL/EVEC`；[peav_C](../../src/lib/libmod/peav_C.f90)：`EAVBLK`；[def_C](../../src/lib/libmod/def_C.f90)：`WT/WEIGHT` | `MATRIX/MANEIG/NEWCO` 等更新；系数、占据数和能量构造读取。 | 随 EOL 对角化更新；block 偏移决定各结果片段，阻尼还读取上一轮结果。 |
-| [hblock_C](../../src/lib/libmod/hblock_C.f90)、[pos_C](../../src/lib/libmod/pos_C.f90)、[blkidx_C](../../src/lib/libmod/blkidx_C.f90) | 输入、根选择及 SCF 建立 block 规模、选根和偏移。 | 大部分映射在本次计算中稳定，但调用者还依赖其他模块里的“当前 block”状态。 |
-| [hmat_C](../../src/lib/libmod/hmat_C.f90)：`NELMNT/EMT/IENDC/IROW` | `MATRIX` 分配、装载和释放；`SETHAM` 写矩阵，`SPICMV2` 读取。 | 单个 block 的矩阵上下文；并发 block 不能共用这些指针。 |
-| [scf_C](../../src/lib/libmod/scf_C.f90)：`DA/XA/YA`、`NDA/NXA/NYA` 及容量/计数 | `SETCOF` 分配或改写；`YPOT/XPOT/DACON` 消费。 | 当前轨道的系数工作区，下一次构势可覆盖；存在分配与扩容状态。 |
-| 同一 `scf_C`：`UCF/METHOD/SCNSTY` 及能量界限 | `NEWCO` 更新有效占据数；轨道改善更新方法、自洽程度和求解边界。 | 有逐轨道持久结果，也有当前求解临时量；划分任务时须逐变量判断。 |
-| [pote_C](../../src/lib/libmod/pote_C.f90)：`YP/XP/XQ` | `COFPOT` 调用链生成，`SOLVE` 等使用。 | 当前轨道势工作区；不同轨道的计算会覆盖彼此。 |
-| [int_C](../../src/lib/libmod/int_C.f90)：`P/Q/P0/Q0/MTP0/TF/TG/XU/XV` | 方程初始化、积分与匹配例程写；`IMPROV` 归一化和阻尼读取。 | 当前候选轨道和方程工作区，不等同于已提交的 `wave_C`。 |
-| [tatb_C](../../src/lib/libmod/tatb_C.f90)：`TA/TB/MTP` | `RINTI/SLATER/YZK/QUAD`、势和归一化等反复读写。 | 最广泛复用的积分临时区之一；仅将顶层积分返回值私有化不能隔离它。 |
-| [def_C](../../src/lib/libmod/def_C.f90)：`DP/DQ` 与 `ACCY/NSCF/NSIC/NSOLV` 等 | `DEFCOR` 写修正；初始化设置控制参数；`IMPROV` 可能减少 `NSIC`。 | 常数、控制和临时数组混在同一模块；不能整模块按只读处理。 |
-| [lagr_C](../../src/lib/libmod/lagr_C.f90)：`NEC/IECC/ECV` | `SETLAG` 建立/更新；约束项读取；SCF 收尾释放。 | 轨道对列表及乘子跨轨道调用复用，失败重试还可能重新计算。 |
-| [orba_C](../../src/lib/libmod/orba_C.f90)、[fixd_C](../../src/lib/libmod/fixd_C.f90)、[damp_C](../../src/lib/libmod/damp_C.f90)、[orthct_C](../../src/lib/libmod/orthct_C.f90) | 输入及改善流程维护 `IORDER/LFIX/ODAMP/CDAMP/ORTHST`。 | 决定顺序、冻结、阻尼和正交化方式；需要与波函数提交时序一起保留。 |
+| [radial_grid_state](../../src/lib/grasp_shared/radial_grid_state.f90)：`N/R/RP/RPOR/H` 等；[nuclear_potential_state](../../src/lib/grasp_shared/nuclear_potential_state.f90)：`ZZ` | `GETSCD/RADGRD/NUCPOT/NPOL_INIT` 初始化；积分、势及方程求解读取。 | 在一次固定网格 SCF 中可只读共享；改变网格还必须考虑依赖网格的缓存。 |
+| [orbital_csf_basis](../../src/lib/grasp_shared/orbital_csf_basis.f90)：量子数、`IQA/NCF`、`E/PED` | CSF 输入设置量子数/占据；`MATRIX` 切换 block；轨道求解更新能量相关量。 | 同时含输入、当前 block 和当前轨道能量，不能将整个模块视为常量。 |
+| [radial_wavefunctions](../../src/lib/grasp_shared/radial_wavefunctions.f90)：`PF/QF/PZ/MF` | 初猜加载；`DAMPOR/ORTHY/ORTHSC` 改写；所有径向积分和势读取。 | 整个 SCF 生命周期；轮内有顺序依赖，轨道之间并非隔离的输出列。 |
+| [eigenstate_expansions](../../src/lib/grasp_shared/eigenstate_expansions.f90)：`EVAL/EVEC`；[block_mean_energies](../../src/lib/grasp_shared/block_mean_energies.f90)：`EAVBLK`；[atomic_calculation_state](../../src/lib/grasp_shared/atomic_calculation_state.f90)：`WT/WEIGHT` | `MATRIX/MANEIG/NEWCO` 等更新；系数、占据数和能量构造读取。 | 随 EOL 对角化更新；block 偏移决定各结果片段，阻尼还读取上一轮结果。 |
+| [hamiltonian_symmetry_blocks](../../src/lib/grasp_shared/hamiltonian_symmetry_blocks.f90)、[symmetry_block_offsets](../../src/lib/grasp_shared/symmetry_block_offsets.f90)、[transition_block_indices](../../src/lib/grasp_shared/transition_block_indices.f90) | 输入、根选择及 SCF 建立 block 规模、选根和偏移。 | 大部分映射在本次计算中稳定，但调用者还依赖其他模块里的“当前 block”状态。 |
+| [sparse_hamiltonian_storage](../../src/lib/grasp_shared/sparse_hamiltonian_storage.f90)：`NELMNT/EMT/IENDC/IROW` | `MATRIX` 分配、装载和释放；`SETHAM` 写矩阵，`SPICMV2` 读取。 | 单个 block 的矩阵上下文；并发 block 不能共用这些指针。 |
+| [scf_iteration_state](../../src/lib/grasp_shared/scf_iteration_state.f90)：`DA/XA/YA`、`NDA/NXA/NYA` 及容量/计数 | `SETCOF` 分配或改写；`YPOT/XPOT/DACON` 消费。 | 当前轨道的系数工作区，下一次构势可覆盖；存在分配与扩容状态。 |
+| 同一 `scf_iteration_state`：`UCF/METHOD/SCNSTY` 及能量界限 | `NEWCO` 更新有效占据数；轨道改善更新方法、自洽程度和求解边界。 | 有逐轨道持久结果，也有当前求解临时量；划分任务时须逐变量判断。 |
+| [scf_radial_potentials](../../src/lib/grasp_shared/scf_radial_potentials.f90)：`YP/XP/XQ` | `COFPOT` 调用链生成，`SOLVE` 等使用。 | 当前轨道势工作区；不同轨道的计算会覆盖彼此。 |
+| [radial_dirac_workspace](../../src/lib/grasp_shared/radial_dirac_workspace.f90)：`P/Q/P0/Q0/MTP0/TF/TG/XU/XV` | 方程初始化、积分与匹配例程写；`IMPROV` 归一化和阻尼读取。 | 当前候选轨道和方程工作区，不等同于已提交的 `radial_wavefunctions`。 |
+| [radial_quadrature_workspace](../../src/lib/grasp_shared/radial_quadrature_workspace.f90)：`TA/TB/MTP` | `RINTI/SLATER/YZK/QUAD`、势和归一化等反复读写。 | 最广泛复用的积分临时区之一；仅将顶层积分返回值私有化不能隔离它。 |
+| [atomic_calculation_state](../../src/lib/grasp_shared/atomic_calculation_state.f90)：`DP/DQ` 与 `ACCY/NSCF/NSIC/NSOLV` 等 | `DEFCOR` 写修正；初始化设置控制参数；`IMPROV` 可能减少 `NSIC`。 | 常数、控制和临时数组混在同一模块；不能整模块按只读处理。 |
+| [orbital_lagrange_multipliers](../../src/lib/grasp_shared/orbital_lagrange_multipliers.f90)：`NEC/IECC/ECV` | `SETLAG` 建立/更新；约束项读取；SCF 收尾释放。 | 轨道对列表及乘子跨轨道调用复用，失败重试还可能重新计算。 |
+| [scf_orbital_order](../../src/lib/grasp_shared/scf_orbital_order.f90)、[fixed_orbital_flags](../../src/lib/grasp_shared/fixed_orbital_flags.f90)、[scf_damping_factors](../../src/lib/grasp_shared/scf_damping_factors.f90)、[scf_orthogonality_control](../../src/lib/grasp_shared/scf_orthogonality_control.f90) | 输入及改善流程维护 `IORDER/LFIX/ODAMP/CDAMP/ORTHST`。 | 决定顺序、冻结、阻尼和正交化方式；需要与波函数提交时序一起保留。 |
 | MCP、混合文件和日志的连接/位置 | `MATRIX/SETHAM/SETCOF` 等读写或复位 MCP；矩阵路径更新混合结果。 | 单元 30 及系数单元 31 以上、混合单元 25 等存在顺序位置；并行调用不能独立控制同一连接。 |
 
 ### 模块之外的持久状态
@@ -225,7 +225,7 @@ IMPROV
 | `MATRIX`、`SETLAG`、`DEFCOR` | `FIRST` 等跨调用初始化标记。 | 初始化、重用和重置边界是进程/调用历史相关的，不天然属于独立求解器实例。 |
 | `IMPROV` | `DATA` 初始化的 `IPR/ED1/FIRST` 等局部数据。 | 需要检查实际读写用途；局部变量并不都具有每次调用独立的存储。 |
 | `YZK` | `SAVE` 的 `KCALC/RTTK/RTTKM/RTTK1/RTTKM1/RM`；`KCALC` 由 `DATA` 初始化。 | 首次使用某阶 k 时填充网格幂次缓存；即便之后只读，首次初始化也不能并发写同一实例。 |
-| [DVDSON 及同文件过程](../../src/lib/libdvd90/dvdson.f90) | `SAVE` 声明及驱动/向量更新过程的持久工作状态。 | 不宜直接把整个 Davidson 调用作为可重入的 block 任务；应先审计或封装独立求解器状态。 |
+| [DVDSON 求解控制模块](../../src/lib/davidson_eigensolver/davidson_solver_control.f90) | `SAVE` 声明及驱动/向量更新过程的持久工作状态。 | 不宜直接把整个 Davidson 调用作为可重入的 block 任务；应先审计或封装独立求解器状态。 |
 
 以上为主要计算路径上已确认的状态，并非所有共享库 `SAVE/DATA` 的完整清单。
 调试输出、错误恢复、内存扩容和回调同样需要纳入后续并发调用闭包。

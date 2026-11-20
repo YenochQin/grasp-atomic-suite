@@ -1,5 +1,5 @@
 subroutine setcsl(name,ncore,nblkin,idblk)
-   use csf_block_input, only: open_csf_blocks
+   use rci_csf_block_reader, only: open_csf_blocks
    implicit none (type, external)
    character(len=*), intent(in) :: name
    integer, intent(out) :: ncore

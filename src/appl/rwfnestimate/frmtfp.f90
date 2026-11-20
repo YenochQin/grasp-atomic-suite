@@ -18,13 +18,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: max_radial_points, radial_workspace_capacity
+      use grasp_parameters, only: max_radial_points, radial_workspace_capacity
       use, intrinsic :: iso_fortran_env, only: real64
-      use left_c, only: set
-      use orb_c, only: orbital_principal_n, orbital_symmetry_labels
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use initial_orbital_selection, only: set
+      use orbital_csf_basis, only: orbital_principal_n, orbital_symmetry_labels
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use whfrom_c, only: source
+      use initial_orbital_source, only: source
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -67,7 +67,8 @@
 !   Message if SOLVH did not converge; reset SET(LOC) otherwise
 !
          if (fail) then
-            write (*, 300) orbital_principal_n(loc), orbital_symmetry_labels(loc)
+            write (*, '(/,"TFWAVE: Unable to compute radial"/,/," wavefunction for ",i2,a2," subshell;")') &
+               orbital_principal_n(loc), orbital_symmetry_labels(loc)
          else
             set(loc) = .true.
                !SOURCE(LOC) = 'Thomas-Fermi estimate'
@@ -78,8 +79,6 @@
 !
       return
 !
-  300 format(/,"TFWAVE: Unable to compute radial"/,/," wavefunction for ",i2,a2&
-         ," subshell;")
       return
 !
       end subroutine frmtfp

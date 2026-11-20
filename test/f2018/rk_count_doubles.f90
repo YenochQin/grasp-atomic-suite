@@ -3,7 +3,7 @@ module rk_fixture
     integer :: calls=0
 end module rk_fixture
 
-module slater_i
+module slater_radial_integral
     implicit none (type, external)
     private
     public :: slater
@@ -19,4 +19,4 @@ function slater(ia,ib,ic,id,k) result(value)
     calls=calls+1
     value=1.0_real64
 end function slater
-end module slater_i
+end module slater_radial_integral

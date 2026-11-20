@@ -11,9 +11,9 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+      use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
           nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
-      use orb_c, only: csf_count, double, max_orbitals, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, &
+      use orbital_csf_basis, only: csf_count, max_orbitals, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, &
           orbital_symmetry_labels, orbital_two_j
       implicit none (type, external)
 !-----------------------------------------------

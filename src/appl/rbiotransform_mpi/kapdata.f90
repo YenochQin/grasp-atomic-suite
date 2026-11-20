@@ -15,12 +15,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def,   only: max_orbitals
-      use biorb_c,         only: nwii,nakii,npii,nwff,nakff,npff
-      use sbdat_c,         only: nlmax,ninii,ninff,nshlii,nshlff,      &
+      use grasp_parameters,   only: max_orbitals
+      use biorthogonal_orbital_sets,         only: nwii,nakii,npii,nwff,nakff,npff
+      use biorthogonal_subshell_layout,         only: nlmax,ninii,ninff,nshlii,nshlff,      &
                                  ikappa,nakinvii,nakinvff,nlmax,       &
                                  nshlpii,nshlpff,nshlppii,nshlppff,kamax
-      use orbord_c, only: nordff, nordii
+      use biorthogonal_orbital_order, only: nordff, nordii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

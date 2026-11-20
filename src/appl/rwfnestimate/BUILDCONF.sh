@@ -1,5 +1,5 @@
 EXE=rwfnestimate
-LIBRARIES="rang90 9290 mod"
+LIBRARIES="spin_angular core grasp_shared"
 LAPACK=true
 FILES="
 tail.f90 tail_I.f90

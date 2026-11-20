@@ -11,12 +11,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank
+      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use setdbg_i, only: setdbg
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

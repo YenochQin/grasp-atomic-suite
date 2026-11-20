@@ -75,5 +75,5 @@ add_executable(rtransition_mpi
     testmix_I.f90
     biosclmpi.f90
 )
-target_link_libraries_Fortran(rtransition_mpi PUBLIC mcp90 dvd90 rang90 mpiu90 9290 mod)
+target_link_libraries_Fortran(rtransition_mpi PUBLIC breit_angular_support davidson_eigensolver spin_angular grasp_mpi core grasp_shared)
 install(TARGETS rtransition_mpi DESTINATION bin/)

@@ -13,18 +13,18 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: orbital_index_radix
-      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+      use grasp_parameters,   only: orbital_index_radix
+      use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
           nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use jlabl_c, only: labj => jlbr, labp => jlbp
-      use orb_c, only: byte, double, max_orbitals, orbital_l, orbital_principal_n, orbital_symmetry_labels
-      use osc_c, only: double, nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
+      use angular_symmetry_labels, only: labj => jlbr, labp => jlbp
+      use orbital_csf_basis, only: max_orbitals, orbital_l, orbital_principal_n, orbital_symmetry_labels
+      use transition_matrix_workspace, only: nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
           xsldr, totc, totb, isldr, isldr1, nint, ninteg, nptr, lab, nkp, kp, ltc
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -64,9 +64,11 @@
       jparj = labp(jpar)
 
       if (ldbpr(18)) then
-          write (*,302) ivecff(lev2), jlabj, jparj, ivecii(lev1),    &
+          write (*,'("Upper level ",i3,a4,a4,10x," Lower level",i3,a4,a4)') &
+             ivecff(lev2), jlabj, jparj, ivecii(lev1),    &
        jlabi, jpari
-          write (*,301)
+          write (*,'(4x,"i",3x,"Coeff.(i)",5x,"f",2x,"Coeff.(f)",2x,"Orb(i)",1x,"Orb(f)",2x,"MCT coeff.",4x,&
+             &"Radial Factor",5x,"Contribution")')
       end if
 ! Rasa -- end
       do m = 1,ninteg
@@ -109,12 +111,13 @@
 !Rasa -- start
               if (ldbpr(18) .and. (dabs(hcoul1*coeff*couvx)          &
                 .gt. cutoff)) then
-                  write (*,300) ia, evecii(ia+(lev1-1)*ncfii),       &
+                  write (*,'(i5,2x,d12.5,i5,2x,d12.5,2(1x,1i2,1a2),1p,d15.6,1x,d15.6,1x,1a,1x,d15.6)') &
+                     ia, evecii(ia+(lev1-1)*ncfii),       &
                       ib, evecff(ib+(lev2-1)*ncfff),                 &
                       orbital_principal_n(ja),orbital_symmetry_labels(ja),orbital_principal_n(jb), &
                          & orbital_symmetry_labels(jb),coeff,hcoul1,"C",  &
                       hcoul1*coeff*couvx
-                  write(*,303) hbab1,"B",hbab1*coeff*couvx
+                  write(*,'(62x,1p,d15.6,1x,1a,1x,d15.6)') hbab1,"B",hbab1*coeff*couvx
               end if
 !Rasa -- end
             else
@@ -122,7 +125,8 @@
               asfa = asfa+hmag1*coeff*couvx
 !Rasa -- start
               if (ldbpr(18) .and. (abs(contr) > cutoff)) then
-                  write (*,300) ia, evecii(ia+(lev1-1)*ncfii),       &
+                  write (*,'(i5,2x,d12.5,i5,2x,d12.5,2(1x,1i2,1a2),1p,d15.6,1x,d15.6,1x,1a,1x,d15.6)') &
+                     ia, evecii(ia+(lev1-1)*ncfii),       &
                       ib, evecff(ib-(lev2-1)*ncfff),                 &
                       orbital_principal_n(ja),orbital_symmetry_labels(ja),orbital_principal_n(jb), &
                          & orbital_symmetry_labels(jb),coeff,hmag1," ",   &
@@ -137,15 +141,7 @@
 !
       return
 !
-  300 format (i5,2x,d12.5,i5,2x,d12.5, 2(1x,1i2,1a2),1p,d15.6,1x,d15.6, &
-      1x,1a,1x,d15.6)
-  301 format (4x,"i",3x,"Coeff.(i)",5x,"f",2x,"Coeff.(f)",2x,            &
-      "Orb(i)",1x,"Orb(f)",2x,"MCT coeff.",4x,"Radial Factor",          &
-      5x,"Contribution")
-  302 format ("Upper level ",i3,a4,a4,10x," Lower level",i3,a4,a4)
-          write (*,302) ivecff(lev2), jlabj, jparj, lev1, jlabi, jpari
-  303 format (62x,1p,d15.6,1x,1a,1x,d15.6)
-  304 format(65x,"Total:")
-  305 format (62x,1p,16x,1a,1x,d15.6)
+          write (*,'("Upper level ",i3,a4,a4,10x," Lower level",i3,a4,a4)') &
+             ivecff(lev2), jlabj, jparj, lev1, jlabi, jpari
 !
       end subroutine csfm

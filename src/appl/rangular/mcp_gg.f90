@@ -31,15 +31,15 @@
       use iso_fortran_env, only: int64
       use rangular_profile, only: stage_clock, record_stage
       use rangular_reuse, only: reuse_requested, begin_reuse_block, end_reuse_block, load_reused_pair
-      use parameter_def,   only:  max_orbitals, orbital_index_radix
-      use memory_man, only: alloc, dalloc, ralloc, double
+      use grasp_parameters,   only:  max_orbitals, orbital_index_radix
+      use array_memory_management, only: alloc, dalloc, ralloc
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use outsda_i, only: outsda
       use fndbeg_i, only: fndbeg
-      use alcbuf_i, only: alcbuf
-      use rkco_gg_i, only: rkco_gg
+      use angular_coefficient_buffer, only: alcbuf
+      use two_electron_angular_coefficients, only: rkco_gg
       use setsda_i, only: setsda
       use sort_i, only: sort
       use sortmem_i, only: sortmem
@@ -47,17 +47,18 @@
 !-----------------------------------------------
 !   C O M M O N  B L O C K S
 !-----------------------------------------------
-      use buffer_c,  only: angular_coefficient_count, angular_coefficient_labels, angular_coefficients
-      use debug_c,   only: ldbpa
-      use default_c, only: ndef
-      use iccu_c,    only: iccut
-      use mcp_c,     only: max_coulomb_multipole_rank, diagonal_only, use_first_order_restriction
-      use orb_c,     only: csf_count, csf_subshell_occupations
-      use stat_c,    only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
-      use sacoef_c, only: channel_coefficients, channel_csf_columns, channel_matrix_positions, channel_packed_orbital_labels, double
-      use onescalar_i, only: onescalar
+      use angular_coefficient_buffer_state,  only: angular_coefficient_count, angular_coefficient_labels, angular_coefficients
+      use debug_output_settings,   only: ldbpa
+      use calculation_input_defaults, only: ndef
+      use csf_block_cutoffs,    only: iccut
+      use mcp_generation_options,     only: max_coulomb_multipole_rank, diagonal_only, use_first_order_restriction
+      use orbital_csf_basis,     only: csf_count, csf_subshell_occupations
+      use csf_coupling_data,    only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
+      use angular_coefficient_channels, only: &
+          channel_coefficients, channel_csf_columns, channel_matrix_positions, channel_packed_orbital_labels
+      use one_electron_scalar_coefficients, only: onescalar
       use settmpgg_i, only: settmpgg
-      use cord_i, only: cord
+      use closed_shell_mcp, only: cord
       implicit none (type, external)
 
 !-----------------------------------------------
@@ -145,7 +146,7 @@
 !
 !   Write header to  .dbg  file if appropriate
 !
-      if (ldbpa(2) .or. ldbpa(3)) write (99,300)
+      if (ldbpa(2) .or. ldbpa(3)) write (99,'(/"From MCP:")')
 !
 !   JA and JB respectively refer to the initial and final states
 !   in the list of NCF configurations
@@ -416,6 +417,5 @@
       call dalloc (channel_matrix_positions,"TINDEX","MCP")
       call dalloc (channel_packed_orbital_labels,"TLABLE","MCP")
       call dalloc(two_electron_counts_by_rank, "LLISTV", "MCP")
-  300 format (/"From MCP:")
       return
       end subroutine mcp

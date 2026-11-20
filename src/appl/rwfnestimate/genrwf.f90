@@ -19,26 +19,26 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: alloc, double
-      use coun_c, only: count_context, count_trace_rank, double, thresh
-      use def_c, only: nuclear_charge, speed_of_light_au, max_radial_points
-      use default_c, only: double, inpci, ndef, ndump
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use array_memory_management, only: alloc
+      use radial_node_count_settings, only: count_context, count_trace_rank, thresh
+      use atomic_calculation_state, only: nuclear_charge, speed_of_light_au, max_radial_points
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use left_c, only: set
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use orb_c, only: double, max_orbitals, orbital_count, orbital_kappa, orbital_origin_exponents, &
+      use initial_orbital_selection, only: set
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use orbital_csf_basis, only: max_orbitals, orbital_count, orbital_kappa, orbital_origin_exponents, &
           orbital_principal_n, orbital_symmetry_labels
-      use wave_c, only: radial_large_components, radial_small_components
-      use whfrom_c, only: source
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use radial_wavefunctions, only: radial_large_components, radial_small_components
+      use initial_orbital_source, only: source
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
+      use yes_no_input, only: getyn
       use tfpot_i, only: tfpot
       use prtrem_i, only: prtrem
-      use getrsl_i, only: getrsl
+      use subshell_label_selection, only: getrsl
       use frmrwf_i, only: frmrwf
       use frmtfp_i, only: frmtfp
       use frmhyd_i, only: frmhyd

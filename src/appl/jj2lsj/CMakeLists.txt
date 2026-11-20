@@ -9,16 +9,18 @@ endif()
 
 # Recompile only the concurrent call closure, from the shared source files.
 # Direct objects resolve these symbols before the legacy static archives. No
-# second libmod/lib9290 library or duplicate global module state is introduced.
+# second grasp_shared/libcore library or duplicate global module state is introduced.
 set(jj2lsj_kernels)
-foreach(name nine nine0 sixj sixj1 sixj2 sixj3 sixj35 sixj4 sixj5 dracah ittk ixjtik)
-    list(APPEND jj2lsj_kernels "../../lib/librang90/${name}.f90")
+foreach(name IN ITEMS
+        wigner_9j wigner_9j_with_zero wigner_6j
+        wigner_6j_with_j_one wigner_6j_with_j_two wigner_6j_with_j_three
+        wigner_6j_with_j_three_halves wigner_6j_with_j_four wigner_6j_with_j_one_half
+        racah_coefficients angular_triangle_and_parity wigner_6j_triangle_selection)
+    list(APPEND jj2lsj_kernels "../../lib/spin_angular/${name}.f90")
 endforeach()
-foreach(name iq jqs itjpo ispar)
-    list(APPEND jj2lsj_kernels "../../lib/lib9290/${name}.f90")
-endforeach()
+list(APPEND jj2lsj_kernels "../../lib/core/csf_quantum_queries.f90")
 add_library(jj2lsj_thread_kernels OBJECT ${jj2lsj_kernels})
-target_link_libraries_Fortran(jj2lsj_thread_kernels PRIVATE rang90 9290 mod)
+target_link_libraries_Fortran(jj2lsj_thread_kernels PRIVATE spin_angular core grasp_shared)
 
 add_library(jj2lsj_conversion STATIC
     jj2lsj_profile.f90 jj2lsj_postprocess.f90
@@ -29,7 +31,7 @@ add_library(jj2lsj_conversion STATIC
 setup_fortran_modules(jj2lsj_conversion)
 target_include_directories(jj2lsj_conversion PRIVATE
     "${Fortran_MODULE_DIRECTORY_root}/jj2lsj_conversion")
-target_link_libraries_Fortran(jj2lsj_conversion PUBLIC 9290 rang90 mod)
+target_link_libraries_Fortran(jj2lsj_conversion PUBLIC core spin_angular grasp_shared)
 target_sources(jj2lsj_conversion INTERFACE $<TARGET_OBJECTS:jj2lsj_thread_kernels>)
 if(GRASP_JJ2LSJ_OPENMP AND OpenMP_Fortran_FOUND)
     set_property(TARGET jj2lsj_conversion PROPERTY JJ2LSJ_OPENMP TRUE)

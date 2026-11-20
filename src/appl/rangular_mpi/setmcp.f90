@@ -19,16 +19,16 @@
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use mcp_c,     only: max_coulomb_multipole_rank
-      use orb_c,     only: orbital_count, orbital_two_j
-      use hblock_c,  only: symmetry_block_count, csf_counts_by_block
-      use iounit_c,  only: stderr_unit
+      use mcp_generation_options,     only: max_coulomb_multipole_rank
+      use orbital_csf_basis,     only: orbital_count, orbital_two_j
+      use hamiltonian_symmetry_blocks,  only: symmetry_block_count, csf_counts_by_block
+      use standard_io_units,  only: stderr_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i, only: convrt
-      use openfl_i, only: openfl
-      use mpi_c,     only: mpi_rank, mpi_process_count, mpi_error_code
+      use integer_format, only: convrt
+      use file_open, only: openfl
+      use mpi_state,     only: mpi_rank, mpi_process_count, mpi_error_code
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

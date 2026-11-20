@@ -15,13 +15,13 @@
 !-----------------------------------------------
 !   C O M M O N    B l o c k s
 !-----------------------------------------------
-      use mpi_c, only: mpi_error_code, mpi_rank
+      use mpi_state, only: mpi_error_code, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i, only: openfl
+      use file_open, only: openfl
       use lodmixmpi_i, only: lodmixmpi
-      use mpiu_i, only: stopmpi
+      use mpi_utilities, only: stopmpi
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

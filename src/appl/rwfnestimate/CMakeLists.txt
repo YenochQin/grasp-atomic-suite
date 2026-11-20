@@ -34,7 +34,7 @@ add_executable(rwfnestimate
     getinf_I.f90
     erwf.f90
 )
-target_link_libraries_Fortran(rwfnestimate PUBLIC rang90 9290 mod)
+target_link_libraries_Fortran(rwfnestimate PUBLIC spin_angular core grasp_shared)
 
 # Keep the header parser and discard the unused Parquet code in the Rust archive.
 include(CheckLinkerFlag)

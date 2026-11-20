@@ -14,19 +14,19 @@
 !   M o d u l e s
 !-----------------------------------------------
      use, intrinsic :: iso_fortran_env, only: real64
-     use parameter_def,   only: orbital_index_radix
-     use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-     use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+     use grasp_parameters,   only: orbital_index_radix
+     use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+     use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-     use ncdist_c, only: double, max_radial_points, zdist
-     use orb_c, only: double, max_orbitals, orbital_principal_n, orbital_symmetry_labels
-     use tatb_c, only: mtp, ta, tb
-     use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+     use nuclear_charge_distribution, only: max_radial_points, zdist
+     use orbital_csf_basis, only: max_orbitals, orbital_principal_n, orbital_symmetry_labels
+     use radial_quadrature_workspace, only: mtp, ta, tb
+     use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
          pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-     use quad_i, only: quad
+     use radial_quadrature, only: quad
      implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -52,11 +52,11 @@
     1 continue
       call quad (vpintf)
 !
-      if (ldbpr(9)) write (99,300) orbital_principal_n(ia),orbital_symmetry_labels(ia),orbital_principal_n(ib), &
+      if (ldbpr(9)) write (99,'(/"VPINTF: V (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)') &
+         orbital_principal_n(ia),orbital_symmetry_labels(ia),orbital_principal_n(ib), &
          & orbital_symmetry_labels(ib),vpintf
 !
       return
 !
-  300 format (/"VPINTF: V (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)
 !
       end function vpintf

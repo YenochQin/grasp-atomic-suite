@@ -13,9 +13,9 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: max_orbitals
-      use stat_c,        only: jqsar
-      use orb_c,         only: ncfr, nwr
+      use grasp_parameters, only: max_orbitals
+      use csf_coupling_data,        only: jqsar
+      use orbital_csf_basis,         only: ncfr, nwr
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

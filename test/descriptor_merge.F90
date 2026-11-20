@@ -1,12 +1,12 @@
 program descriptor_merge
    use iso_fortran_env, only: int8
    use mrgcsl_i, only: mrgcsl
-   use orb_c, only: orbital_count, csf_count, csf_subshell_occupations, orbital_principal_n, orbital_kappa
-   use stat_c, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
-   use blk_c, only: nblocki, nblockf, ncfi, ncff
-   use parameter_def, only: max_orbitals
+   use orbital_csf_basis, only: orbital_count, csf_count, csf_subshell_occupations, orbital_principal_n, orbital_kappa
+   use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
+   use transition_basis_blocks, only: nblocki, nblockf, ncfi, ncff
+   use grasp_parameters, only: max_orbitals
 #ifdef DESCRIPTOR_MPI
-   use mpi_c, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_rank, mpi_process_count, mpi_finalize
+   use mpi_state, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_rank, mpi_process_count, mpi_finalize
 #endif
    implicit none (type, external)
 #ifdef DESCRIPTOR_MPI

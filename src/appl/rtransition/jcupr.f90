@@ -12,9 +12,9 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: max_orbitals
-      use orb_c,         only: nwr, ncfr
-      use stat_c,        only: jcupar
+      use grasp_parameters, only: max_orbitals
+      use orbital_csf_basis,         only: nwr, ncfr
+      use csf_coupling_data,        only: jcupar
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

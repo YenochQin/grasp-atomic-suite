@@ -19,21 +19,21 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use default_c, only: double, inpci, ndef, ndump
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use debug_c,         only: cutoff
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use debug_output_settings,         only: cutoff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
+      use yes_no_input, only: getyn
       use setdbg_i, only: setdbg
-      use setmc_i, only: setmc
-      use setcon_i, only: setcon
+      use machine_constants, only: setmc
+      use physical_constants, only: setcon
       use setsum_i, only: setsum
-      use setcsla_i, only: setcsla
+      use csf_basis_loader, only: setcsla
       use getmixblock_i, only: getmixblock
       use strsum_i, only: strsum
-      use factt_i, only: factt
+      use log_factorial_table, only: factt
       use ris_cal_i, only: ris_cal
       use getsmd_i, only: getsmd
       implicit none (type, external)

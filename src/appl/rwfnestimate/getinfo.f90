@@ -18,19 +18,19 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use def_c, only: accy, double, max_radial_points, nuclear_charge, speed_of_light_au, vacuum_speed_of_light_au
-      use default_c, only: double, inpci, ndef, ndump
-      use grid_c, only: radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use atomic_calculation_state, only: accy, max_radial_points, nuclear_charge, speed_of_light_au, vacuum_speed_of_light_au
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use radial_grid_state, only: radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
-      use setiso_i, only: setiso
-      use setqic_i, only: setqic
-      use radgrd_i, only: radgrd
-      use nucpot_i, only: nucpot
+      use yes_no_input, only: getyn
+      use isotope_data_input, only: setiso
+      use radial_stencil_weights, only: setqic
+      use radial_grid_setup, only: radgrd
+      use nuclear_coulomb_potential, only: nucpot
       implicit none (type, external)
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

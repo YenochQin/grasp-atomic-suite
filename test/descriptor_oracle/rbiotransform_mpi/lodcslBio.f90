@@ -18,31 +18,27 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def,   only: max_orbitals
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c, only: double, electron_count
-      use orb_c, only: byte, csf_count, csf_subshell_occupations, double, max_orbitals, orbital_count, orbital_kappa, &
+      use grasp_parameters,   only: max_orbitals
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use atomic_calculation_state, only: electron_count
+      use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count, orbital_kappa, &
           orbital_l, orbital_principal_n, orbital_symmetry_labels, orbital_two_j
-      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
-      use terms_c,          only: jtab, ntab
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use blk_c,            only: nblock,ncfblk
-      use memory_man, only: alloc, dalloc, ralloc, byte, double
+      use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, jcupar, jqsar
+      use subshell_term_table,          only: jtab, ntab
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use transition_basis_blocks,            only: nblock,ncfblk
+      use array_memory_management, only: alloc, dalloc, ralloc
       use, intrinsic :: iso_fortran_env, only: iostat_end
-      use input_io_mpi, only: fail_input_io => fail_input_io_mpi
+      use mpi_io_errors, only: fail_input_io => fail_input_io_mpi
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use prsrsl_i, only: prsrsl
-      use convrt_i, only: convrt
+      use integer_format, only: convrt
       use prsrcn_i, only: prsrcn
       use parsjl_i, only: parsjl
-      use pack_i, only: pack
-      use iq_i, only: iq
-      use jqs_i, only: jqs
-      use jcup_i, only: jcup
-      use itjpo_i, only: itjpo
-      use ispar_i, only: ispar
+      use csf_byte_packing, only: pack
+      use csf_quantum_queries, only: iq, jqs, jcup, itjpo, ispar
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

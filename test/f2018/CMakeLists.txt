@@ -1,9 +1,9 @@
 add_executable(test.f2018_library_modules library_modules.f90)
-target_link_libraries_Fortran(test.f2018_library_modules PRIVATE 9290 mod)
+target_link_libraries_Fortran(test.f2018_library_modules PRIVATE core grasp_shared)
 add_test(NAME f2018_library_modules COMMAND test.f2018_library_modules)
 
 add_executable(test.f2018_davidson davidson_contracts.F90)
-target_link_libraries_Fortran(test.f2018_davidson PRIVATE dvd90 9290 mod)
+target_link_libraries_Fortran(test.f2018_davidson PRIVATE davidson_eigensolver core grasp_shared)
 target_link_libraries(test.f2018_davidson PRIVATE ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
 add_test(NAME f2018_davidson_contracts COMMAND test.f2018_davidson)
 add_test(NAME f2018_davidson_early COMMAND test.f2018_davidson early)
@@ -13,13 +13,13 @@ foreach(variant rci rci_mpi)
     set(target test.f2018_rk_count_${variant})
     add_executable(${target} rk_count.F90 rk_count_doubles.f90 "${app}/genintrk.f90" "${app}/genintrk_I.f90"
         "${app}/triangrk.f90" "${app}/triangrk_I.f90")
-    target_link_libraries_Fortran(${target} PRIVATE 9290 mod)
+    target_link_libraries_Fortran(${target} PRIVATE core grasp_shared)
     add_test(NAME f2018_rk_count_${variant} COMMAND ${target})
     set_tests_properties(f2018_rk_count_${variant} PROPERTIES TIMEOUT 30)
 endforeach()
 add_executable(test.f2018_nmtejj nmtejj_probe.f90)
 add_executable(test.f2018_linear_algebra linear_algebra_contracts.f90)
-target_link_libraries_Fortran(test.f2018_linear_algebra PRIVATE mod)
+target_link_libraries_Fortran(test.f2018_linear_algebra PRIVATE grasp_shared)
 target_link_libraries(test.f2018_linear_algebra PRIVATE ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
 add_test(NAME f2018_linear_algebra_contracts COMMAND test.f2018_linear_algebra)
 foreach(variant rbiotransform rbiotransform_mpi)
@@ -38,13 +38,13 @@ if(Python3_Interpreter_FOUND)
         ${PROJECT_SOURCE_DIR}/test/npol/check_upstream_tamper.py)
     add_test(NAME f2018_qed_boundary COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/check_qed_boundary.py ${CMAKE_Fortran_COMPILER}
-        "${Fortran_MODULE_DIRECTORY_root}/mod" $<TARGET_FILE:mod>)
+        "${Fortran_MODULE_DIRECTORY_root}/grasp_shared" $<TARGET_FILE:grasp_shared>)
     set_tests_properties(f2018_numeric_literals f2018_qed_boundary PROPERTIES TIMEOUT 60)
 endif()
 add_executable(test.f2018_storage_bytes storage_bytes.f90)
-target_link_libraries_Fortran(test.f2018_storage_bytes PRIVATE mod)
+target_link_libraries_Fortran(test.f2018_storage_bytes PRIVATE grasp_shared)
 add_test(NAME f2018_storage_bytes COMMAND test.f2018_storage_bytes)
-target_link_libraries_Fortran(test.f2018_nmtejj PRIVATE rang90 mod)
+target_link_libraries_Fortran(test.f2018_nmtejj PRIVATE spin_angular grasp_shared)
 if(Python3_Interpreter_FOUND)
     add_test(NAME f2018_nmtejj_parity
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_nmtejj.py
@@ -53,8 +53,8 @@ endif()
 
 if(Python3_Interpreter_FOUND)
     add_executable(test.f2018_interp interp_contracts.f90
-        "${PROJECT_SOURCE_DIR}/src/lib/lib9290/interp.f90")
-    target_link_libraries_Fortran(test.f2018_interp PRIVATE mod)
+        "${PROJECT_SOURCE_DIR}/src/lib/core/aitken_interpolation.f90")
+    target_link_libraries_Fortran(test.f2018_interp PRIVATE grasp_shared)
     target_compile_options(test.f2018_interp PRIVATE -finit-integer=999999 -fcheck=all)
     add_test(NAME f2018_interp_contracts COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/check_interp.py $<TARGET_FILE:test.f2018_interp>)
@@ -63,7 +63,7 @@ if(Python3_Interpreter_FOUND)
         set(target test.f2018_weights_${variant})
         set(app "${PROJECT_SOURCE_DIR}/src/appl/${variant}")
         add_executable(${target} level_weights.f90 level_weights_doubles.f90 "${app}/getaldwt.f90" "${app}/getaldwt_I.f90")
-        target_link_libraries_Fortran(${target} PRIVATE 9290 mod)
+        target_link_libraries_Fortran(${target} PRIVATE core grasp_shared)
         # Diagnostic poison exposes the former uninitialized read extent;
         # no production target receives default-initialization options.
         target_compile_options(${target} PRIVATE -finit-integer=-999999 -fcheck=all)
@@ -80,7 +80,7 @@ endif()
 # Exercise the actual MATRIX entry points with controlled assembly/eigensolver
 # seams. Each executable has its own production modules and saved FIRST state.
 foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
-    if(variant MATCHES "_mpi$" AND NOT TARGET mpiu90)
+    if(variant MATCHES "_mpi$" AND NOT TARGET grasp_mpi)
         continue()
     endif()
     set(directory ${variant})
@@ -95,7 +95,7 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
     add_executable(${target} ci_damping.F90 "${app}/${matrix}.f90" "${app}/${matrix}_I.f90"
         "${app}/${eigen}_I.f90" "${app}/setham_I.f90")
     set_property(TARGET ${target} PROPERTY Fortran_MODULE_DIRECTORY "${Fortran_MODULE_DIRECTORY_root}/${target}")
-    target_link_libraries_Fortran(${target} PRIVATE mod)
+    target_link_libraries_Fortran(${target} PRIVATE grasp_shared)
     target_link_libraries(${target} PRIVATE ${BLAS_LIBRARIES})
     target_compile_options(${target} PRIVATE -fcheck=all -fbacktrace)
     if(variant MATCHES "mem")
@@ -104,7 +104,7 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
     endif()
     if(variant MATCHES "_mpi$")
         target_compile_definitions(${target} PRIVATE CI_MPI)
-        target_link_libraries_Fortran(${target} PRIVATE mpiu90)
+        target_link_libraries_Fortran(${target} PRIVATE grasp_mpi)
         foreach(ranks 1 2 4)
             add_test(NAME f2018_ci_damping_${variant}_${ranks}
                 COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ranks}
@@ -118,7 +118,7 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
     endif()
 endforeach()
 
-if(TARGET mpiu90 AND Python3_Interpreter_FOUND)
+if(TARGET grasp_mpi AND Python3_Interpreter_FOUND)
     add_test(NAME f2018_worker_output COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/check_worker_output.py ${CMAKE_Fortran_COMPILER}
         ${MPI_Fortran_COMPILER} ${MPIEXEC_EXECUTABLE})
@@ -126,7 +126,7 @@ if(TARGET mpiu90 AND Python3_Interpreter_FOUND)
     set(angular_app "${PROJECT_SOURCE_DIR}/src/appl/rangular_mpi")
     add_executable(test.f2018_sparse_empty_rank sparse_empty_rank.f90
         "${angular_app}/setsda.f90" "${angular_app}/setsda_I.f90" "${angular_app}/outsdampi_I.f90")
-    target_link_libraries_Fortran(test.f2018_sparse_empty_rank PRIVATE 9290 mod)
+    target_link_libraries_Fortran(test.f2018_sparse_empty_rank PRIVATE core grasp_shared)
     # Poison uninitialized local integers only in this diagnostic fixture.
     # A zero default would hide SETSDA's former empty-rank IC access.
     target_compile_options(test.f2018_sparse_empty_rank PRIVATE -finit-integer=-999999 -fcheck=all)
@@ -135,7 +135,7 @@ if(TARGET mpiu90 AND Python3_Interpreter_FOUND)
     set_tests_properties(f2018_sparse_empty_rank PROPERTIES TIMEOUT 30
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sparse-empty-rank")
     add_executable(test.f2018_mpi_contracts mpi_contracts.f90)
-    target_link_libraries_Fortran(test.f2018_mpi_contracts PRIVATE mpiu90 mod)
+    target_link_libraries_Fortran(test.f2018_mpi_contracts PRIVATE grasp_mpi grasp_shared)
     foreach(ranks 1 2 4)
         add_test(NAME f2018_mpi_contracts_${ranks}
             COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ranks}
@@ -148,10 +148,10 @@ if(TARGET mpiu90 AND Python3_Interpreter_FOUND)
     endforeach()
     add_test(NAME f2018_interface_rejections
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_interface_rejections.py
-        ${CMAKE_Fortran_COMPILER} "${Fortran_MODULE_DIRECTORY_root}/mod"
-        "${Fortran_MODULE_DIRECTORY_root}/mpiu90" ${interface_includes})
+        ${CMAKE_Fortran_COMPILER} "${Fortran_MODULE_DIRECTORY_root}/grasp_shared"
+        "${Fortran_MODULE_DIRECTORY_root}/grasp_mpi" ${interface_includes})
     add_executable(test.f2018_system_paths system_paths.f90)
-    target_link_libraries_Fortran(test.f2018_system_paths PRIVATE mpiu90 9290 mod)
+    target_link_libraries_Fortran(test.f2018_system_paths PRIVATE grasp_mpi core grasp_shared)
     add_test(NAME f2018_system_paths
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_system_paths.py
         $<TARGET_FILE:test.f2018_system_paths>)
@@ -162,7 +162,7 @@ endif()
 if(Python3_Interpreter_FOUND)
     add_test(NAME f2018_input_precision
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_input_precision.py
-        ${CMAKE_Fortran_COMPILER} "${Fortran_MODULE_DIRECTORY_root}/mod")
+        ${CMAKE_Fortran_COMPILER} "${Fortran_MODULE_DIRECTORY_root}/grasp_shared")
     set_tests_properties(f2018_input_precision PROPERTIES TIMEOUT 60)
     foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
         if(NOT TARGET ${variant})
@@ -172,12 +172,12 @@ if(Python3_Interpreter_FOUND)
         set(target test.mcp_io_${variant})
         add_executable(${target} mcp_reader_io.F90 "${app}/setmcp.f90" "${app}/setmcp_I.f90")
         setup_fortran_modules(${target})
-        target_link_libraries_Fortran(${target} PRIVATE mod 9290)
+        target_link_libraries_Fortran(${target} PRIVATE grasp_shared core)
         target_compile_options(${target} PRIVATE -fcheck=all -fbacktrace -finit-integer=0)
         set(mpi_arguments)
         if(variant MATCHES "_mpi$")
             target_compile_definitions(${target} PRIVATE MCP_MPI)
-            target_link_libraries_Fortran(${target} PRIVATE mpiu90)
+            target_link_libraries_Fortran(${target} PRIVATE grasp_mpi)
             set(mpi_arguments --mpiexec "${MPIEXEC_EXECUTABLE}")
         else()
             target_sources(${target} PRIVATE "${app}/mpi_s.f90")
@@ -202,11 +202,11 @@ if(Python3_Interpreter_FOUND)
             add_executable(${target} mcp_memory_io.F90 "${app}/setmcp_mem.f90" "${app}/setmcp_mem_I.f90"
                 "${app}/rmcdhf_mem_C.f90" "${app}/systemmem_I.f90" "${app}/systemfreemem_I.f90")
             setup_fortran_modules(${target})
-            target_link_libraries_Fortran(${target} PRIVATE mod)
+            target_link_libraries_Fortran(${target} PRIVATE grasp_shared)
             target_compile_options(${target} PRIVATE -fcheck=all -fbacktrace -finit-integer=0)
             if(variant MATCHES "_mpi$")
                 target_compile_definitions(${target} PRIVATE MCP_MPI)
-                target_link_libraries_Fortran(${target} PRIVATE mpiu90)
+                target_link_libraries_Fortran(${target} PRIVATE grasp_mpi)
             else()
                 target_sources(${target} PRIVATE "${app}/mpi_s.f90")
             endif()
@@ -229,12 +229,12 @@ if(Python3_Interpreter_FOUND)
             "${PROJECT_SOURCE_DIR}/test/descriptor_oracle/${variant}/lodcslBio.f90"
             "${PROJECT_SOURCE_DIR}/test/descriptor_oracle/${variant}/lodcslBio_I.f90")
         setup_fortran_modules(${target})
-        target_link_libraries_Fortran(${target} PRIVATE csf_text_oracle mod 9290)
+        target_link_libraries_Fortran(${target} PRIVATE csf_text_oracle grasp_shared core)
         target_compile_options(${target} PRIVATE -fcheck=all -fbacktrace)
         set(mpi_arguments)
         if(variant MATCHES "_mpi$")
             target_compile_definitions(${target} PRIVATE MCP_MPI)
-            target_link_libraries_Fortran(${target} PRIVATE mpiu90)
+            target_link_libraries_Fortran(${target} PRIVATE grasp_mpi)
             set(mpi_arguments --mpiexec "${MPIEXEC_EXECUTABLE}")
         endif()
         add_test(NAME f2018_csf_record_${variant}
@@ -245,9 +245,9 @@ if(Python3_Interpreter_FOUND)
             set_tests_properties(f2018_csf_record_${variant} PROPERTIES PROCESSORS 2)
         endif()
     endforeach()
-    if(TARGET mpiu90)
+    if(TARGET grasp_mpi)
         add_executable(test.cpath_io cpath_io.f90)
-        target_link_libraries_Fortran(test.cpath_io PRIVATE mpiu90 mod)
+        target_link_libraries_Fortran(test.cpath_io PRIVATE grasp_mpi grasp_shared)
         add_test(NAME f2018_cpath_io_mpi
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_cpath_io.py
             "${MPIEXEC_EXECUTABLE}" $<TARGET_FILE:test.cpath_io>)

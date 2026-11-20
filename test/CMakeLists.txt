@@ -8,23 +8,23 @@ set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Werror=implicit-interface -Werr
 # Check lib92 routines -- this currently acts as a simple integration test,
 # making sure that everything actually got compiled properly. The test checks
 # that the QUAD routine from lib92 actually produces reasonable numbers.
-add_executable(test.lib9290_quad
-    lib9290_quad.f90
+add_executable(test.core_quadrature
+    core_quadrature.f90
 )
-target_link_libraries_Fortran(test.lib9290_quad PUBLIC mod 9290)
-add_test(lib9290_quad test.lib9290_quad)
+target_link_libraries_Fortran(test.core_quadrature PUBLIC grasp_shared core)
+add_test(core_quadrature test.core_quadrature)
 
 add_executable(test.shared_grid_capacity shared_grid_capacity.f90)
-target_link_libraries_Fortran(test.shared_grid_capacity PUBLIC mod)
+target_link_libraries_Fortran(test.shared_grid_capacity PUBLIC grasp_shared)
 add_test(NAME shared_grid_capacity COMMAND test.shared_grid_capacity)
 
-if(TARGET mpiu90)
+if(TARGET grasp_mpi)
     # Calls the production sparse kernels with rank-local column buffers.
     # The test supplies a checked reduction seam, so no MPI job is launched.
-    add_executable(test.mpi90_local_sparse mpi90_local_sparse.f90)
-    target_link_libraries_Fortran(test.mpi90_local_sparse PUBLIC mpiu90 mod 9290)
-    add_test(mpi90_local_sparse test.mpi90_local_sparse)
-    set_tests_properties(mpi90_local_sparse PROPERTIES
+    add_executable(test.grasp_mpi_local_sparse grasp_mpi_local_sparse.f90)
+    target_link_libraries_Fortran(test.grasp_mpi_local_sparse PUBLIC grasp_mpi grasp_shared core)
+    add_test(grasp_mpi_local_sparse test.grasp_mpi_local_sparse)
+    set_tests_properties(grasp_mpi_local_sparse PROPERTIES
         ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1")
 endif()
 
@@ -32,7 +32,7 @@ add_executable(test.rdensity_natural_orbitals
     ../src/appl/rdensity/natural_orbitals.f90
     rdensity/natural_orbitals_test.f90)
 setup_fortran_modules(test.rdensity_natural_orbitals)
-target_link_libraries_Fortran(test.rdensity_natural_orbitals PUBLIC mod 9290)
+target_link_libraries_Fortran(test.rdensity_natural_orbitals PUBLIC grasp_shared core)
 add_test(NAME rdensity_natural_orbitals COMMAND test.rdensity_natural_orbitals)
 
 # Prefer the shared workspace environment; standalone installations can select
@@ -56,7 +56,7 @@ if(Python3_Interpreter_FOUND)
             $<TARGET_FILE:rlevels> "${PROJECT_SOURCE_DIR}/data")
     set_tests_properties(rlevels_file_output PROPERTIES TIMEOUT 30)
     foreach(variant serial mpi)
-        if(variant STREQUAL "mpi" AND NOT TARGET mpiu90)
+        if(variant STREQUAL "mpi" AND NOT TARGET grasp_mpi)
             continue()
         endif()
         set(target test.ris4_cache_${variant})
@@ -64,11 +64,11 @@ if(Python3_Interpreter_FOUND)
             "${PROJECT_SOURCE_DIR}/src/appl/ris4/angdata.f90"
             "${PROJECT_SOURCE_DIR}/src/appl/ris4/angdata_I.f90")
         setup_fortran_modules(${target})
-        target_link_libraries_Fortran(${target} PRIVATE mod)
+        target_link_libraries_Fortran(${target} PRIVATE grasp_shared)
         set(cache_mpi_arguments)
         if(variant STREQUAL "mpi")
             target_compile_definitions(${target} PRIVATE CACHE_MPI)
-            target_link_libraries_Fortran(${target} PRIVATE mpiu90)
+            target_link_libraries_Fortran(${target} PRIVATE grasp_mpi)
             target_link_libraries(${target} PRIVATE MPI::MPI_Fortran)
             set(cache_mpi_arguments "${MPIEXEC_EXECUTABLE}")
         endif()
@@ -168,7 +168,7 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
             "${app}/getaldwt.f90" "${app}/getaldwt_I.f90"
             "${app}/itjpo.f90" "${app}/itjpo_I.f90")
         setup_fortran_modules(test.descriptor_weights_${variant})
-        target_link_libraries_Fortran(test.descriptor_weights_${variant} PRIVATE 9290 mod)
+        target_link_libraries_Fortran(test.descriptor_weights_${variant} PRIVATE core grasp_shared)
         add_test(NAME descriptor_weights_${variant} COMMAND test.descriptor_weights_${variant})
     endif()
 endforeach()
@@ -192,10 +192,10 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
         add_executable(${target} descriptor_rmcdhf.F90 "${app}/${loader}.f90"
             "${app}/${loader}_I.f90" "${app}/setmcp.f90" "${app}/setmcp_I.f90")
         setup_fortran_modules(${target})
-        target_link_libraries_Fortran(${target} PRIVATE 9290 mod)
+        target_link_libraries_Fortran(${target} PRIVATE core grasp_shared)
         if(variant MATCHES "_mpi$")
             target_compile_definitions(${target} PRIVATE DESCRIPTOR_MPI)
-            target_link_libraries_Fortran(${target} PRIVATE mpiu90)
+            target_link_libraries_Fortran(${target} PRIVATE grasp_mpi)
             set(mpi_arguments --mpiexec "${MPIEXEC_EXECUTABLE}")
         endif()
         if(NOT variant MATCHES "_mpi$")
@@ -214,16 +214,16 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
 endforeach()
 
 add_executable(test.descriptor_lifecycle descriptor_lifecycle.f90)
-target_link_libraries_Fortran(test.descriptor_lifecycle PRIVATE 9290 mod)
+target_link_libraries_Fortran(test.descriptor_lifecycle PRIVATE core grasp_shared)
 
 if(TARGET rbiotransform AND TARGET rtransition AND TARGET rtransition_phase AND Python3_Interpreter_FOUND)
     add_test(NAME descriptor_dual_basis_pipeline COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/test_descriptor_pipeline.py --bin $<TARGET_FILE_DIR:rbiotransform>)
     set_tests_properties(descriptor_dual_basis_pipeline PROPERTIES TIMEOUT 180)
 endif()
-if(TARGET mpiu90)
+if(TARGET grasp_mpi)
     add_executable(test.descriptor_collectives descriptor_collectives.f90)
-    target_link_libraries_Fortran(test.descriptor_collectives PRIVATE mpiu90 9290 mod)
+    target_link_libraries_Fortran(test.descriptor_collectives PRIVATE grasp_mpi core grasp_shared)
     foreach(ranks 1 2 4)
         add_test(NAME descriptor_collectives_mpi_${ranks}
             COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ranks}
@@ -254,11 +254,11 @@ foreach(variant rtransition rtransition_phase rtransition_mpi)
             "${app}/ldcsl2${suffix}.f90" "${app}/ldcsl2${suffix}_I.f90"
             "${app}/merg12${suffix}.f90" "${app}/merg12${suffix}_I.f90")
         setup_fortran_modules(${target})
-        target_link_libraries_Fortran(${target} PRIVATE 9290 mod)
+        target_link_libraries_Fortran(${target} PRIVATE core grasp_shared)
         set(mpi_arguments)
         if(variant MATCHES "_mpi$")
             target_compile_definitions(${target} PRIVATE DESCRIPTOR_MPI)
-            target_link_libraries_Fortran(${target} PRIVATE mpiu90)
+            target_link_libraries_Fortran(${target} PRIVATE grasp_mpi)
             set(mpi_arguments --mpiexec "${MPIEXEC_EXECUTABLE}")
         endif()
         add_test(NAME descriptor_merge_${variant} COMMAND ${Python3_EXECUTABLE}

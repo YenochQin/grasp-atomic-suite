@@ -66,10 +66,10 @@ OMP_NUM_THREADS=8 /path/to/grasp-atomic-suite/bin/jj2lsj_omp < jj2lsj.inp > jj2l
 `jj2lsj_thread_kernels` 是一个 **object target**，从现有共享源码重编并发调用闭包：
 `nine/nine0/sixj/sixj1/2/3/35/4/5/dracah/ittk/ixjtik/iq/jqs/itjpo/ispar`。
 这些对象直接链接到调用程序，先于历史静态库解析同名符号。
-没有复制 `libmod`、`lib9290` 或它们的全局状态；其他 suite 程序继续使用原库。
+没有复制 `grasp_shared`、`libcore` 或它们的全局状态；其他 suite 程序继续使用原库。
 转换库的接口会将这些对象传递给测试驱动，避免测试误链接旧的静态内核。
 
-共享 [sixj.f90](../../src/lib/librang90/sixj.f90) 只加入 `!$OMP THREADPRIVATE(RACA)`：
+共享 [sixj.f90](../../src/lib/spin_angular/wigner_6j.f90) 只加入 `!$OMP THREADPRIVATE(RACA)`：
 OpenMP 专用对象中的惰性缓存由各线程独占，普通 suite 构建将这条指令视作注释。
 `FACTT` 在启动线程前初始化的阶乘表，以及输入数组、常量表，只读共享。
 

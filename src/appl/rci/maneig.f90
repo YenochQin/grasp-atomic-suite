@@ -44,35 +44,34 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
-      use memory_man, only: alloc, dalloc, ralloc, byte, double, long
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use array_memory_management, only: alloc, dalloc, ralloc
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use fposition_c, only: nposition
-      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+      use rci_matrix_file_position, only: nposition
+      use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
           matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
           nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
-      use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use where_c, only: double, imcdf
-      use wchblk_c, only: double, jblock
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use orbital_csf_basis,           only: csf_count, orbital_count, csf_subshell_occupations
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use where_c, only: imcdf
+      use active_symmetry_block, only: jblock
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use dnicmv_i, only: dnicmv
-      use spicmv2_i, only: spicmv2
+      use sparse_symmetric_matvec, only: spicmv2
       use spodmv_i, only: spodmv
-      use posfile_i, only: posfile
-      use dinit_i, only: dinit
+      use file_positioning, only: posfile
+      use real_vector_initialization, only: dinit
       use dspevx_i, only: dspevx
       use iniestsd_i, only: iniestsd
-      use gdvd_i, only: dvd_operator, gdvd
-      use iniest2_i, only: iniest2
+      use davidson_eigensolver, only: dvd_operator, gdvd
+      use sparse_eigensolver_initial_basis, only: iniest2
       use iniestdm_i, only: iniestdm
-      use itjpo_i, only: itjpo
-      use ispar_i, only: ispar
-      use suite_linear_algebra, only: dcopy, dspevx, dswap
-      use suite_linear_algebra, only: dlamch
+      use csf_quantum_queries, only: itjpo, ispar
+      use blas_lapack_interfaces, only: dcopy, dspevx, dswap
+      use blas_lapack_interfaces, only: dlamch
       implicit none (type, external)
 !-----------------------------------------------
 !  E x t e r n a l   F u n c t i o n s

@@ -13,14 +13,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man, only: alloc, ralloc
-      use offd_c, only: noffd1, noffd2
-      use osc_c, only: nkp, kp
-      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_rank
+      use array_memory_management, only: alloc, ralloc
+      use transition_off_diagonal_flags, only: noffd1, noffd2
+      use transition_matrix_workspace, only: nkp, kp
+      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
+      use yes_no_input, only: getyn
       use, intrinsic :: iso_fortran_env, only: real32
       implicit none (type, external)
 !-----------------------------------------------

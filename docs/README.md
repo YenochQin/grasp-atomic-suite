@@ -1,7 +1,6 @@
 # 文档索引
 
-更新：2026-11-17，整理基准 `80f6e76`。本次仅清理已完成或被替代的审查/修改记录，
-未重跑构建、工具扫描、性能基准或科学计算。
+2026-11-20 更新输出格式内联记录。
 “已实施”表示代码/接口存在，不表示所有体系的精度、收敛和性能已验收。
 
 ## 阅读入口
@@ -12,8 +11,7 @@
 - 普通计算链：[rangular 流程](implemented/rangular_flow_and_state.md) →
   [rmcdhf 流程](implemented/rmcdhf_flow_and_state.md)。
 - 后续代码工作：[变量语义重命名](plans/variable_renaming_followup_2026-11-16.md)、
-  [静态诊断剩余事项](plans/static_diagnostics_remaining_2026-11-17.md)、
-  [输出格式内联](plans/inline_output_formats_2026-11-17.md)。
+  [静态诊断剩余事项](plans/static_diagnostics_remaining_2026-11-17.md)。
 
 `implemented/` 保留功能契约，`plans/` 保留未完成工作，`reviews/` 保留独立分析和验证证据，
 `reference/` 保存理论及机器可读来源，`archive/` 保存仍有参考价值的历史背景。
@@ -23,6 +21,8 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
+| [inline_output_formats.md](implemented/inline_output_formats.md) | 数字标签 `FORMAT` 内联，覆盖共享库和应用的 903 处 `WRITE`、2 处 `PRINT`；源码、预处理和字节对照已验证。 |
+| [shared_library_naming.md](implemented/shared_library_naming.md) | 共享状态与基础接口库的命名约定、Fortran 调用方迁移和完整模块对照。 |
 | [native_csf_descriptors.md](implemented/native_csf_descriptors.md) | 现行生产 CSF 输入；reader 已内置于 suite 并构建到 lib/，无需外部 rCSFs reader；所有保留消费者直接读取 Parquet/header，含 MPI、双基组、低内存及错误传播契约。 |
 | [rangular_angular_reuse.md](implemented/rangular_angular_reuse.md) | 已实施，串行专项回归通过；默认关闭的有界 CSF 对缓存；保留顺序、占据/耦合及轨道共享关系，复用原始 T/V 系数，普通 MCP 写出不变；包含命中率、缓存容量与 RSS 测量，MPI 未接入；rangular OpenMP 已移除。 |
 | [rwfnestimate_header_input.md](implemented/rwfnestimate_header_input.md) | header 输入说明；保留 header 轨道表、电子数和初猜检查背景；当前仅 header 输入，无旧文本回退。 |
@@ -38,12 +38,21 @@
 | [rmcdhf_mpi_diagnostics.md](implemented/rmcdhf_mpi_diagnostics.md) | 外部采样首版已实现，服务器验证待进行；2026-11-15，普通 MPI 原版流程与兼容修复核查；Linux PID 树、D/R 线程、I/O、缺页、PSI 和 cgroup 只读采样。模拟回归通过；真实开销及停顿根因未验证。 |
 | [orbopt_retirement.md](implemented/orbopt_retirement.md) | 已移除旧程序；2026-11-08 删除四个 rmcdhf_orbopt 目标/源码和专用驱动，记录 2026-11-08 的 orbopt 退役；strict/diag 后续也已移除，当前网格范围以共同参数说明为准。 |
 | [f2018_compatibility.md](implemented/f2018_compatibility.md) | 现行兼容性与接口；汇总标准 kind、共享库模块 API、MPI 重导出例外、输入/数值修复、来源校验与验证限制。 |
+| [core_naming.md](implemented/core_naming.md) | 公共基础库的目录、静态库、Fortran 文件与模块命名对照。 |
+| [Core 计算公式](../src/lib/core/readme.md) | 公共基础库中的径向网格、求积、轨道、核势、角动量和矩阵运算公式。 |
+| [core_variable_migration.md](implemented/core_variable_migration.md) | `libcore` 变量与常量的逐作用域对应表，包含形参、保留名称与共享状态别名。 |
+| [breit_angular_support_migration.md](implemented/breit_angular_support_migration.md) | Breit 角系数支持库的目录、目标、模块、文件及变量命名迁移，含串行和 MPI RCI 链接接口。 |
+| [spin_angular_naming.md](implemented/spin_angular_naming.md) | 自旋–角向库的目录、库目标、89 个源文件和 Fortran 模块命名对照。 |
+| [librang90_variable_migration.md](implemented/librang90_variable_migration.md) | `spin_angular` 变量与常量的逐过程对照，涵盖子壳层位置、角动量编码、张量矩阵元和 Breit 角向系数。 |
 | [standard_grasp_integration.md](implemented/standard_grasp_integration.md) | 普通程序接入；普通角系数、初猜、RCI 和跃迁程序复用套件共享库；历史接入检查不代表完整科学验收。 |
 | [rlevels.md](implemented/rlevels.md) | 原版 `rlevels` 的 Suite 接入，含 `.m`、`.cm`、LSJ 标签匹配规则和回归入口。 |
 | [jj2lsj_postprocessing.md](implemented/jj2lsj_postprocessing.md) | 已实施；2026-11-04 分阶段计时、稳定归并排序及 ASF 排序并行；唯一标签和输出按序执行，跨 block 流水线经计时评估暂缓。 |
 | [jj2lsj_openmp.md](implemented/jj2lsj_openmp.md) | 已实施；2026-11-02 `jj2lsj_omp` 普通 CSF 的 OpenMP LS 行转换，保留默认提前停止与串行 `.lsj.T`；数值/文件回归及 Debug、无 OpenMP 构建通过；Gd I 真实输入兼容性通过，已有单次性能观测。 |
 | [rdensity_mpi.md](implemented/rdensity_mpi.md) | 已实施；2026-10-09 新增串行/MPI 自然轨道程序；CSF 分工、矩阵归约、解析小模型及 Ni 对照测试。大规模性能与物理收敛仍待验证。 |
 | [common_parameters.md](implemented/common_parameters.md) | 已实施；2026-11-16 使用语义容量名称并保留旧名别名；CSFG 移除后覆盖 15 个普通网格入口、2 个 RCI 续算入口，默认容量仍为 590/600。 |
+| [davidson_eigensolver_migration.md](implemented/davidson_eigensolver_migration.md) | Davidson 求解库的目录、静态库、Fortran 文件、模块和变量命名对照。 |
+| [grasp_mpi_naming.md](implemented/grasp_mpi_naming.md) | MPI 支持库的目录、静态库、Fortran 文件和模块命名对照。 |
+| [mpi90_variable_migration.md](implemented/mpi90_variable_migration.md) | MPI 支持库的作用域级变量与常量对应表，含通信、输入、目录管理和稀疏矩阵例程。 |
 | [RHFS_gJ_report.md](implemented/RHFS_gJ_report.md) | 已实施；串行 RHFS 的加载、矩阵元、ASF 投影及输出链仍存在。仅覆盖该路径，不是 gj/MPI 完整说明。 |
 | [rmcdhf_nuclear_polarization.md](implemented/rmcdhf_nuclear_polarization.md) | 已实施，普通 MPI 已移除 NP 入口；2026-11-15 普通 rmcdhf_mpi 恢复直接核势初始化；rmcdhf、rmcdhf_mem、rmcdhf_mem_mpi 保留可选 NP。保留 2026-10-24 历史代码验证，物理计算验证未执行。 |
 
@@ -53,7 +62,6 @@
 | --- | --- |
 | [variable_renaming_followup_2026-11-16.md](plans/variable_renaming_followup_2026-11-16.md) | 变量语义重命名；第一批 529 项已处理，原有 19,579 项需与当前源码重新对齐；旧 CSF reader 已替换，不恢复退役代码。 |
 | [static_diagnostics_remaining_2026-11-17.md](plans/static_diagnostics_remaining_2026-11-17.md) | 待核定的静态诊断；S1–S4、格式及 USE ONLY 批次已完成；保留接口、状态、I/O、工具覆盖、告警预算及数值验证待办。 |
-| [inline_output_formats_2026-11-17.md](plans/inline_output_formats_2026-11-17.md) | 输出格式内联，待实施；将数字标签 FORMAT 输出全部改为使用处显式格式字符串；当前统计 909 处 WRITE、781 个 FORMAT 定义，要求保持数值精度及输出字节不变。本轮仅记录。 |
 | [non_csfg_variable_inventory_2026-11-16.md](plans/non_csfg_variable_inventory_2026-11-16.md) | 明确候选已处理，其余待核实；原始采集基准 caaf3a5；1,880 份 Fortran 文本、20,108 个实体。529 项明确候选已逐项标记（528 改名、pi 保留），其余 19,579 项待核实；原名、原声明行及哈希作为历史快照，当前名称与位置另有 JSON 映射。 |
 | [rmcdhf_mpi_single_node_diagnostics_2026-11-09.md](plans/rmcdhf_mpi_single_node_diagnostics_2026-11-09.md) | 诊断计划，D0 首版已实现；普通/memory MPI 在大规模 CSF 下全程反复 D 状态；记录单节点条件、SETLAG 冻结侧冗余和 Davidson 候选。服务器采样、内部阶段计时及性能优化待进行。 |
 | [grasp_grid_parameter_tuning.md](plans/grasp_grid_parameter_tuning.md) | 待执行；修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |

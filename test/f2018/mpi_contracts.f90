@@ -1,5 +1,5 @@
 program mpi_contracts
-    use mpi_c, only: host => processor_name, ierr => mpi_error_code, istat => mpi_status_buffer, &
+    use mpi_state, only: host => processor_name, ierr => mpi_error_code, istat => mpi_status_buffer, &
        & lenhost => processor_name_length, myid => mpi_rank, nprocs => mpi_process_count, mpi_abort, mpi_allreduce, &
        & mpi_bcast, mpi_character, mpi_comm_world, mpi_double_precision, mpi_finalize, mpi_logical, mpi_success, &
        & mpi_sum, mpi_type_free, mpi_type_match_size, mpi_type_size, mpi_typeclass_integer, mpix_bytes, startmpi

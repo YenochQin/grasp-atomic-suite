@@ -1,0 +1,352 @@
+{
+  "schema_version": 1,
+  "purpose": "Reverse only the reviewed GRASP MPI library and module renames when comparing retained RMCDHF sources with their provenance hashes.",
+  "files": {
+    "src/appl/rmcdhf_mem_mpi/BUILDCONF.sh": [
+      {
+        "before": "LIBRARIES=\"davidson_eigensolver mpiu90 core grasp_shared\"\n",
+        "after": "LIBRARIES=\"davidson_eigensolver grasp_mpi core grasp_shared\"\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/CMakeLists.txt": [
+      {
+        "before": "target_link_libraries_Fortran(rmcdhf_mem_mpi PUBLIC davidson_eigensolver mpiu90 core grasp_shared)\n",
+        "after": "target_link_libraries_Fortran(rmcdhf_mem_mpi PUBLIC davidson_eigensolver grasp_mpi core grasp_shared)\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/Makefile": [
+      {
+        "before": "LIBS=-L ${GRASP}/lib/ -ldavidson_eigensolver -lmpiu90 -l9290 -lgrasp_shared\nFC_MODULES= -I ${GRASP}/src/lib/davidson_eigensolver -I ${GRASP}/src/lib/mpi90 -I ${GRASP}/src/lib/core -I ${GRASP}/src/lib/grasp_shared\n",
+        "after": "LIBS=-L ${GRASP}/lib/ -ldavidson_eigensolver -lgrasp_mpi -l9290 -lgrasp_shared\nFC_MODULES= -I ${GRASP}/src/lib/davidson_eigensolver -I ${GRASP}/src/lib/mpi -I ${GRASP}/src/lib/core -I ${GRASP}/src/lib/grasp_shared\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/cofpotmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "after": "      use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/getaldmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/getoldmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/getscdmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, &\n",
+        "after": "      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, &\n",
+        "count": 1
+      },
+      {
+        "before": "      use npol_mpi, only: npol_init_mpi, npol_abort_mpi\n",
+        "after": "      use mpi_nuclear_polarization, only: npol_init_mpi, npol_abort_mpi\n",
+        "count": 1
+      },
+      {
+        "before": "      use setisompi_i, only: setisompi\n",
+        "after": "      use mpi_isotope_input, only: setisompi\n",
+        "count": 1
+      },
+      {
+        "before": "      use setrwfmpi_i, only: setrwfmpi\n",
+        "after": "      use mpi_radial_wavefunction_file, only: setrwfmpi\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/improvmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_gather, &\n",
+        "after": "      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_gather, &\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/maneigmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "after": "      use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "count": 1
+      },
+      {
+        "before": "      use spicmvmpi_i, only: spicmvmpi\n      use iniestmpi_i, only: iniestmpi\n",
+        "after": "      use mpi_sparse_matrix_product, only: spicmvmpi\n      use mpi_initial_eigenvectors, only: iniestmpi\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/matrixmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_allreduce, mpi_barrier, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "after": "      use mpi_state, only: mpi_allreduce, mpi_barrier, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/newcompi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "after": "      use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/read03_mem.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_process_count, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_process_count, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/rscfmpivu.f90": [
+      {
+        "before": "       use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &\n",
+        "after": "       use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &\n",
+        "count": 1
+      },
+      {
+        "before": "      use npol_mpi, only: npol_abort_mpi\n      use mpiu_i, only: startmpi2\n      use mpiu_i, only: stopmpi2\n",
+        "after": "      use mpi_nuclear_polarization, only: npol_abort_mpi\n      use mpi_utilities, only: startmpi2\n      use mpi_utilities, only: stopmpi2\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/scfmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/setcof.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_process_count, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_process_count, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/setcslmpi.f90": [
+      {
+        "before": "   use rmcdhf_descriptor_mpi, only: load_rmcdhf_descriptors_mpi\n",
+        "after": "   use mpi_rmcdhf_csf_input, only: load_rmcdhf_descriptors_mpi\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/setdbgmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/setlagmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "after": "      use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/setmcp.f90": [
+      {
+        "before": "      use input_io_mpi, only: fail_input_io => fail_input_io_mpi\n",
+        "after": "      use mpi_io_errors, only: fail_input_io => fail_input_io_mpi\n",
+        "count": 1
+      },
+      {
+        "before": "      use mpi_c, only: mpi_process_count, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_process_count, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/setmcp_mem.f90": [
+      {
+        "before": "      use input_io_mpi, only: fail_input_io => fail_input_io_mpi\n",
+        "after": "      use mpi_io_errors, only: fail_input_io => fail_input_io_mpi\n",
+        "count": 1
+      },
+      {
+        "before": "      use mpi_c, only: mpi_process_count, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_process_count, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mem_mpi/ypot.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_process_count\n",
+        "after": "      use mpi_state, only: mpi_process_count\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/BUILDCONF.sh": [
+      {
+        "before": "LIBRARIES=\"davidson_eigensolver mpiu90 core grasp_shared\"\n",
+        "after": "LIBRARIES=\"davidson_eigensolver grasp_mpi core grasp_shared\"\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/CMakeLists.txt": [
+      {
+        "before": "target_link_libraries_Fortran(rmcdhf_mpi PUBLIC davidson_eigensolver mpiu90 core grasp_shared)\n",
+        "after": "target_link_libraries_Fortran(rmcdhf_mpi PUBLIC davidson_eigensolver grasp_mpi core grasp_shared)\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/Makefile": [
+      {
+        "before": "LIBS=-L ${GRASP}/lib/ -ldavidson_eigensolver -lmpiu90 -l9290 -lgrasp_shared\nFC_MODULES= -I ${GRASP}/src/lib/davidson_eigensolver -I ${GRASP}/src/lib/mpi90 -I ${GRASP}/src/lib/core -I ${GRASP}/src/lib/grasp_shared\n",
+        "after": "LIBS=-L ${GRASP}/lib/ -ldavidson_eigensolver -lgrasp_mpi -l9290 -lgrasp_shared\nFC_MODULES= -I ${GRASP}/src/lib/davidson_eigensolver -I ${GRASP}/src/lib/mpi -I ${GRASP}/src/lib/core -I ${GRASP}/src/lib/grasp_shared\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/cofpotmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "after": "      use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/getaldmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/getoldmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/getscdmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, &\n",
+        "after": "      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, &\n",
+        "count": 1
+      },
+      {
+        "before": "      use setisompi_i, only: setisompi\n",
+        "after": "      use mpi_isotope_input, only: setisompi\n",
+        "count": 1
+      },
+      {
+        "before": "      use setrwfmpi_i, only: setrwfmpi\n",
+        "after": "      use mpi_radial_wavefunction_file, only: setrwfmpi\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/improvmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_gather, &\n",
+        "after": "      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_gather, &\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/maneigmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "after": "      use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "count": 1
+      },
+      {
+        "before": "      use spicmvmpi_i, only: spicmvmpi\n      use iniestmpi_i, only: iniestmpi\n",
+        "after": "      use mpi_sparse_matrix_product, only: spicmvmpi\n      use mpi_initial_eigenvectors, only: iniestmpi\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/matrixmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_allreduce, mpi_barrier, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "after": "      use mpi_state, only: mpi_allreduce, mpi_barrier, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/newcompi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "after": "      use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/rscfmpivu.f90": [
+      {
+        "before": "       use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &\n",
+        "after": "       use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &\n",
+        "count": 1
+      },
+      {
+        "before": "      use mpiu_i, only: startmpi2\n      use mpiu_i, only: stopmpi2\n",
+        "after": "      use mpi_utilities, only: startmpi2\n      use mpi_utilities, only: stopmpi2\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/scfmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/setcof.f90": [
+      {
+        "before": "      use input_io_mpi, only: fail_input_io => fail_input_io_mpi\n",
+        "after": "      use mpi_io_errors, only: fail_input_io => fail_input_io_mpi\n",
+        "count": 1
+      },
+      {
+        "before": "      use mpi_c, only: mpi_process_count, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_process_count, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/setcslmpi.f90": [
+      {
+        "before": "   use rmcdhf_descriptor_mpi, only: load_rmcdhf_descriptors_mpi\n",
+        "after": "   use mpi_rmcdhf_csf_input, only: load_rmcdhf_descriptors_mpi\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/setdbgmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/setlagmpi.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "after": "      use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/setmcp.f90": [
+      {
+        "before": "      use input_io_mpi, only: fail_input_io => fail_input_io_mpi\n",
+        "after": "      use mpi_io_errors, only: fail_input_io => fail_input_io_mpi\n",
+        "count": 1
+      },
+      {
+        "before": "      use mpi_c, only: mpi_process_count, mpi_rank\n",
+        "after": "      use mpi_state, only: mpi_process_count, mpi_rank\n",
+        "count": 1
+      }
+    ],
+    "src/appl/rmcdhf_mpi/ypot.f90": [
+      {
+        "before": "      use mpi_c, only: mpi_process_count\n",
+        "after": "      use mpi_state, only: mpi_process_count\n",
+        "count": 1
+      }
+    ]
+  },
+  "previous_manifest_sha256": "a3b5505d86ab385b93242f8aef5704cd52619ebbf95109d05c1f974606eaf18b"
+}

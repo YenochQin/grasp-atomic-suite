@@ -30,22 +30,21 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: max_orbitals
-      use def_c, only: accy, double
-      use orb_c, only: orbital_kappa, orbital_energy_parameters
-      use orba_c, only: iorder
-      use corre_c, only: lcorre
-      use fixd_c, only: is_orbital_fixed
-      use invt_c, only: noinvt
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use scf_c, only: scnsty
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use grasp_parameters,    only: max_orbitals
+      use atomic_calculation_state, only: accy
+      use orbital_csf_basis, only: orbital_kappa, orbital_energy_parameters
+      use scf_orbital_order, only: iorder
+      use correlation_orbital_flags, only: lcorre
+      use fixed_orbital_flags, only: is_orbital_fixed
+      use orbital_inversion_flags, only: noinvt
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use scf_iteration_state, only: scnsty
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use mpi_c, only: double
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rint_i, only: rint
+      use weighted_radial_overlap, only: rint
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

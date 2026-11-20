@@ -1,5 +1,5 @@
 EXE=rbiotransform
-LIBRARIES="rang90 9290 mod"
+LIBRARIES="spin_angular core grasp_shared"
 LAPACK=true
 FILES="
 angdata.f90 angdata_I.f90

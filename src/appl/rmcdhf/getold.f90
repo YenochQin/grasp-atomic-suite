@@ -5,28 +5,28 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: max_orbitals
-      use memory_man, only: alloc, double
-      use blkidx_c, only: double, idxblk
-      use damp_c, only: mixing_damping_factors, orbital_damping_factors
-      use def_c, only: rwtdum => wt, double, ncmin, nscf, nsic, nsolv, weight
-      use default_c, only: double, inpci, ndef, ndump
-      use fixd_c, only: is_orbital_fixed, fixed_orbital_count
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use invt_c, only: noinvt
-      use orthct_c, only: orthst
-      use orb_c, only: double, max_orbitals, orbital_count
-      use orba_c, only: iorder
-      use corre_c, only: lcorre
-      use scf_c, only: scnsty,method
+      use grasp_parameters,    only: max_orbitals
+      use array_memory_management, only: alloc
+      use transition_block_indices, only: idxblk
+      use scf_damping_factors, only: mixing_damping_factors, orbital_damping_factors
+      use atomic_calculation_state, only: rwtdum => wt, ncmin, nscf, nsic, nsolv, weight
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use fixed_orbital_flags, only: is_orbital_fixed, fixed_orbital_count
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use orbital_inversion_flags, only: noinvt
+      use scf_orthogonality_control, only: orthst
+      use orbital_csf_basis, only: max_orbitals, orbital_count
+      use scf_orbital_order, only: iorder
+      use correlation_orbital_flags, only: lcorre
+      use scf_iteration_state, only: scnsty,method
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use lodstate_i, only: lodstate
+      use block_level_selection, only: lodstate
       use getoldwt_i, only: getoldwt
       use prtrsl_i, only: prtrsl
-      use getrsl_i, only: getrsl
+      use subshell_label_selection, only: getrsl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

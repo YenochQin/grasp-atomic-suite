@@ -2,7 +2,7 @@
       implicit none (type, external)
       interface
       subroutine tail (iorb, p, q, jp, mtp)
-      use parameter_def, only: max_radial_points, radial_workspace_capacity, max_orbitals
+      use grasp_parameters, only: max_radial_points, radial_workspace_capacity, max_orbitals
       use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
       integer, intent(in) :: iorb

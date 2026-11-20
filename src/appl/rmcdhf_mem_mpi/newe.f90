@@ -16,9 +16,9 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use int_c, only: double, max_radial_points, mtp0, p, p0, q, q0, tf, tg, xu, xv
-      use orb_c, only: double, max_orbitals, orbital_energy_parameters, orbital_principal_n
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use radial_dirac_workspace, only: max_radial_points, mtp0, p, p0, q, q0, tf, tg, xu, xv
+      use orbital_csf_basis, only: max_orbitals, orbital_energy_parameters, orbital_principal_n
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

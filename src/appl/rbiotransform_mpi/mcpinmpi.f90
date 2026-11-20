@@ -26,28 +26,28 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: orbital_index_radix, max_orbitals
-      use memory_man, only: alloc, dalloc, byte, double
-      use def_c, only: double, electron_count
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use grasp_parameters,   only: orbital_index_radix, max_orbitals
+      use array_memory_management, only: alloc, dalloc
+      use atomic_calculation_state, only: electron_count
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use foparm_c, only: iccut
-      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
-      use orb_c,           only: csf_count, orbital_count
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
-      use jqjc_c, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
-      use orbord_c, only: nordff, nordii
-      use mcpdata_c, only: cnn, double, intgrl, intptr, jann, jbnn, ncoeff, nintg
-      use sbdat_c,         only: kamax,nshlii,nshlff,nshlppii,nshlppff,&
+      use first_order_csf_cutoffs, only: iccut
+      use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
+      use orbital_csf_basis,           only: csf_count, orbital_count
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+      use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, jcupar, jqsar
+      use biorthogonal_transition_selection, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
+      use biorthogonal_orbital_order, only: nordff, nordii
+      use mcp_coefficient_storage, only: cnn, intgrl, intptr, jann, jbnn, ncoeff, nintg
+      use biorthogonal_subshell_layout,         only: kamax,nshlii,nshlff,nshlppii,nshlppff,&
                                  ninii,ninff,nshlpii,nshlpff,nakinvii, &
                                  nakinvff,nlmax
-      use sbdat1_c,        only: nshlp, nshlpp
-      use cimat_c,         only: cici, cfci
-      use blk_c, only: double, ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
+      use biorthogonal_subshell_mapping,        only: nshlp, nshlpp
+      use biorthogonal_orbital_rotations,         only: cici, cfci
+      use transition_basis_blocks, only: ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
           nvecsiztot, nblock1, nblocki, nblockf, ncfi, ncff
-      use mpi_c, only: double, mpi_rank
+      use mpi_state, only: mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

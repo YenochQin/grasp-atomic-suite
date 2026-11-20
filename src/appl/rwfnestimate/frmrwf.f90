@@ -16,20 +16,20 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: alloc, dalloc, double
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use array_memory_management, only: alloc, dalloc
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use left_c, only: double, max_orbitals, set
-      use orb_c, only: orbital_energy_parameters, orbital_principal_n, orbital_kappa, orbital_symmetry_labels
-      use wave_c, only: orbital_origin_parameters
-      use whfrom_c, only: source
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use initial_orbital_selection, only: max_orbitals, set
+      use orbital_csf_basis, only: orbital_energy_parameters, orbital_principal_n, orbital_kappa, orbital_symmetry_labels
+      use radial_wavefunctions, only: orbital_origin_parameters
+      use initial_orbital_source, only: source
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i, only: openfl
-      use intrpq_i, only: intrpq
+      use file_open, only: openfl
+      use radial_orbital_interpolation, only: intrpq
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -72,7 +72,7 @@
 !   Read orbital information from Read Orbitals File; write summary
 !   to  .dbg  file if option set
 !
-      if (ldbpr(3)) write (99, 300)
+      if (ldbpr(3)) write (99, '(/,"From SUBROUTINE FRMRWF:"/," Orbital",8x,"Eigenvalue",19x,"Norm")')
     2 continue
       found = .false.
       read (23, iostat=ios) npy, naky, ey, my
@@ -89,7 +89,8 @@
             read (23) orbital_origin_parameters(loc), (pa(i),i=1,my), (qa(i),i=1,my)
             read (23) (ra(i),i=1,my)
             call intrpq (pa, qa, my, ra, loc, dnorm)
-            if (ldbpr(3)) write (99, 301) orbital_principal_n(loc), orbital_symmetry_labels(loc), &
+            if (ldbpr(3)) write (99, '(2x,i2,a2,4x,1p,1d22.15,4x,1d22.15)') &
+               orbital_principal_n(loc), orbital_symmetry_labels(loc), &
                & orbital_energy_parameters(loc), dnorm
             call dalloc (pa, "PA", "FRMFRW")
             call dalloc (qa, "QA", "FRMFRW")
@@ -111,9 +112,6 @@
 !
       return
 !
-  300 format(/,"From SUBROUTINE FRMRWF:"/," Orbital",8x,"Eigenvalue",19x,"Norm"&
-         )
-  301 format(2x,i2,a2,4x,1p,1d22.15,4x,1d22.15)
       return
 !
       end subroutine frmrwf

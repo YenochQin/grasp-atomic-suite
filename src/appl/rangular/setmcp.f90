@@ -21,16 +21,15 @@
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
-      use orb_c, only: double, orbital_count, orbital_two_j
-      use def_c, only: double
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
+      use orbital_csf_basis, only: orbital_count, orbital_two_j
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i, only: convrt
-      use openfl_i, only: openfl
+      use integer_format, only: convrt
+      use file_open, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

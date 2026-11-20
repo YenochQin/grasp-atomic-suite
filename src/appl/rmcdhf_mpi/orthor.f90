@@ -22,26 +22,26 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: max_radial_points
-      use def_c, only: accy, double, max_radial_points
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use grasp_parameters,    only: max_radial_points
+      use atomic_calculation_state, only: accy, max_radial_points
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use ovl_c, only: double, novl
-      use orb_c, only: double, max_orbitals, orbital_count, orbital_kappa
-      use orba_c, only: double, iorder, max_orbitals
-      use invt_c, only: double, max_orbitals, noinvt
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use orbital_overlap_control, only: novl
+      use orbital_csf_basis, only: max_orbitals, orbital_count, orbital_kappa
+      use scf_orbital_order, only: iorder, max_orbitals
+      use orbital_inversion_flags, only: max_orbitals, noinvt
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use fixed_orbital_flags, only: fixed_orbital_count, is_orbital_fixed, max_orbitals
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rint_i, only: rint
+      use weighted_radial_overlap, only: rint
 !      USE count_I
-      use count_i, only: count
+      use radial_node_count, only: count
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

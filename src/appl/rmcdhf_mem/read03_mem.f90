@@ -9,7 +9,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use hmat_c,     only: matrix_partner_indices, stored_segment_end_offsets
+      use sparse_hamiltonian_storage,     only: matrix_partner_indices, stored_segment_end_offsets
       use rmcdhf_mem_c, only: iendc_30, imax1_30, imax2_30, imin1_30, imin2_30, irow_30
       use mpi_s, only: mpi_process_count, mpi_rank
 !-----------------------------------------------

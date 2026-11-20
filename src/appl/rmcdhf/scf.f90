@@ -20,27 +20,27 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: alloc, dalloc, double
-      use blkidx_c, only: double, idxblk
-      use default_c, only: double, inpci, ndef, ndump
-      use def_c, only: accy, double, iccmin, ncmin, nscf, nsic, wt
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use array_memory_management, only: alloc, dalloc
+      use transition_block_indices, only: idxblk
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use atomic_calculation_state, only: accy, iccmin, ncmin, nscf, nsic, wt
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use lagr_c, only: double, ecv, iecc, nec
-      use mcpa_c, only: double, max_mcp_file_multipole_rank
-      use mpi_s, only: double, mpi_rank
-      use pos_c, only: double, total_csf_count, mixing_coefficient_storage_size, &
+      use fixed_orbital_flags, only: fixed_orbital_count, is_orbital_fixed, max_orbitals
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use orbital_lagrange_multipliers, only: ecv, iecc, nec
+      use mcp_file_metadata, only: max_mcp_file_multipole_rank
+      use mpi_s, only: mpi_rank
+      use symmetry_block_offsets, only: total_csf_count, mixing_coefficient_storage_size, &
           csf_offsets_by_block, eigenvalue_offsets_by_block, mixing_offsets_by_block
-      use peav_c, only: double, eavblk
-      use orb_c, only: csf_count, csf_subshell_occupations, double, max_orbitals, orbital_count
-      use orba_c, only: double, iorder, max_orbitals
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use block_mean_energies, only: eavblk
+      use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count
+      use scf_orbital_order, only: iorder, max_orbitals
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-      use orthct_c, only: orthst
+      use scf_orthogonality_control, only: orthst
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -50,7 +50,7 @@
       use improv_i, only: improv
       use maxarr_i, only: maxarr
       use prwf_i, only: prwf
-      use orthsc_i, only: orthsc
+      use radial_orbital_orthogonalization, only: orthsc
       use orbout_i, only: orbout
       use endsum_i, only: endsum
       implicit none (type, external)
@@ -153,7 +153,7 @@
       wtaev0 = 0.0
       dvdfirst = .false.
       do nit = 1, nscf
-         if (mpi_rank == 0) write (*, 301) nit
+         if (mpi_rank == 0) write (*, '(/," Iteration number ",1i3,/," --------------------")') nit
 
 !   For all pairs constrained through a Lagrange multiplier, compute
 !   the Lagrange multiplier
@@ -163,7 +163,8 @@
 !   Improve all orbitals in turn
 
          dampmx = 0.0
-         if (mpi_rank == 0) write (*, 302)
+         if (mpi_rank == 0) write (*, '(41x,"Self-            Damping"/,"Subshell    Energy    Method   P0    ",&
+            &"consistency  Norm-1  factor  JP"," MTP INV NNP"/)')
          do j = 1, orbital_count
             jseq = iorder(j)
             if (is_orbital_fixed(jseq)) cycle
@@ -290,10 +291,6 @@
       call dalloc (eigenvalue_offsets_by_block, "NCMINPAST", "SCF")
       call dalloc (mixing_offsets_by_block, "NEVECPAST", "SCF")
 
-  301 format(/," Iteration number ",1i3,/," --------------------")
-  302 format(41x,"Self-            Damping"/,&
-         "Subshell    Energy    Method   P0    ",&
-         "consistency  Norm-1  factor  JP"," MTP INV NNP"/)
 
       return
       end subroutine scf

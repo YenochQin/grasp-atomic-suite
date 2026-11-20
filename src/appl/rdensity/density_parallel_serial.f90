@@ -1,7 +1,6 @@
 ! Serial implementation of the rdensity process boundary.
 module density_parallel
-    use setcsla_i, only: load_density_basis => setcsla
-    use, intrinsic :: iso_fortran_env, only: double => real64
+    use csf_basis_loader, only: load_density_basis => setcsla
     implicit none (type, external)
     integer :: rank = 0, workers = 1
 contains

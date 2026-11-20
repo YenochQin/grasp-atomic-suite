@@ -23,23 +23,23 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: orbital_index_radix, max_orbitals
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use orb_c, only: byte, csf_count, double, max_orbitals, orbital_principal_n, orbital_symmetry_labels
-      use buffer_c, only: double, angular_buffer_capacity, angular_coefficient_count, &
+      use grasp_parameters,    only: orbital_index_radix, max_orbitals
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use orbital_csf_basis, only: csf_count, max_orbitals, orbital_principal_n, orbital_symmetry_labels
+      use angular_coefficient_buffer_state, only: angular_buffer_capacity, angular_coefficient_count, &
           angular_coefficient_labels, angular_coefficients
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use ris_c, only: double, dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
+      use ris_c, only: dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use alcbuf_i, only: alcbuf
-      use itjpo_i, only: itjpo
-      use convrt_i, only: convrt
-      use rkco_gg_i, only: rkco_gg
-      use cord_i, only: cord
+      use angular_coefficient_buffer, only: alcbuf
+      use csf_quantum_queries, only: itjpo
+      use integer_format, only: convrt
+      use two_electron_angular_coefficients, only: rkco_gg
+      use closed_shell_mcp, only: cord
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -114,7 +114,8 @@
 !
                 if (angular_coefficient_labels(5,i) == 1) then
                   if (ldbpa(2)) then
-                    write (99,309) k,ic,ir,                            &
+                    write (99,'(" V^[(",1i2,")]_[",1i3,",",1i3,"]"," (",1i2,1a2,",",1i2,1a2,";",1i2,1a2,",",1i2,&
+                       &1a2,") = ",1pd19.12)') k,ic,ir,                            &
                     orbital_principal_n(iia),orbital_symmetry_labels(iia),orbital_principal_n(iib), &
                        & orbital_symmetry_labels(iib),                   &
                     orbital_principal_n(iic),orbital_symmetry_labels(iic),orbital_principal_n(iid), &
@@ -161,8 +162,5 @@
 !
       call alcbuf (3)
       return
-  309 format (" V^[(",1i2,")]_[",1i3,",",1i3,"]",                      &
-         " (",1i2,1a2,",",1i2,1a2,";",                                 &
-              1i2,1a2,",",1i2,1a2,") = ",1pd19.12)
 !
       end subroutine smsnew

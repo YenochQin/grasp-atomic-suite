@@ -14,7 +14,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c,           only: speed_of_light_au
+      use atomic_calculation_state,           only: speed_of_light_au
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -65,8 +65,8 @@
 !   Ensure that the principal quantum number is in range
 !
       if (n<1 .or. n>8) then
-         write (*, 300)
-         write (*, 301) n
+         write (*, '("KLAMAQ:")')
+         write (*, '(" Principal quantum number, ",1i2,", should be in the range  1--8.")') n
          stop
       end if
 !
@@ -75,8 +75,8 @@
       if (kappa > 0) then
          l = kappa
       else if (kappa == 0) then
-         write (*, 300)
-         write (*, 302)
+         write (*, '("KLAMAQ:")')
+         write (*, '(" Kappa is  0 .")')
          stop
       else
          l = (-kappa) - 1
@@ -85,8 +85,8 @@
 !   Ensure that the azimuthal quantum number is in range
 !
       if (l > n - 1) then
-         write (*, 300)
-         write (*, 303) kappa, n
+         write (*, '("KLAMAQ:")')
+         write (*, '(" Kappa, ",1i3,", is out of range for n, ",1i2,".")') kappa, n
          stop
       end if
 !
@@ -116,11 +116,6 @@
 !
       return
 !
-  300 format("KLAMAQ:")
-  301 format(" Principal quantum number, ",1i2,&
-         ", should be in the range  1--8.")
-  302 format(" Kappa is  0 .")
-  303 format(" Kappa, ",1i3,", is out of range for n, ",1i2,".")
       return
 !
       end subroutine klamaq

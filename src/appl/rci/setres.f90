@@ -13,17 +13,17 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man, only: alloc, double
-      use default_c, only: double, inpci, ndef, ndump
-      use where_c, only: double, imcdf
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use iccu_c, only: iccut, iccutblk
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use array_memory_management, only: alloc
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use where_c, only: imcdf
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use csf_block_cutoffs, only: iccut, iccutblk
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
-      use openfl_i, only: openfl
+      use yes_no_input, only: getyn
+      use file_open, only: openfl
       use lodres_i, only: lodres
       use getcid_i, only: getcid
       implicit none (type, external)

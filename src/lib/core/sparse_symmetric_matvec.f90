@@ -1,0 +1,43 @@
+! Multiply a symmetric Hamiltonian stored by sparse columns by a group of vectors.
+module sparse_symmetric_matvec
+    implicit none (type, external)
+    private
+    public :: spicmv2
+contains
+      subroutine spicmv2(matrix_order, vector_count, input_vectors, product_vectors)
+      use, intrinsic :: iso_fortran_env, only: real64
+      use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+          matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
+          nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
+      use real_vector_initialization, only: dinit
+      use sparse_dot_and_scatter, only: dmerge
+      implicit none (type, external)
+      integer, intent(in) :: matrix_order
+      integer, intent(in) :: vector_count
+      real(real64), intent(in) :: input_vectors(matrix_order, vector_count)
+      real(real64), intent(inout) :: product_vectors(matrix_order, vector_count)
+      integer :: column_start, column_index, column_end, column_entry_count, vector_index
+      real(real64) :: diagonal_plus_previous_terms, off_diagonal_dot_product
+      call dinit (matrix_order*vector_count, 0.0_real64, product_vectors, 1)
+
+      column_start = 1
+      do column_index = 1, matrix_order
+         ! The column's last stored entry is the diagonal. scatter the remaining entries into the other
+         ! triangle.
+         column_end = stored_segment_end_offsets(column_index)
+         column_entry_count = column_end - column_start + 1
+         do vector_index = 1, vector_count
+            diagonal_plus_previous_terms = product_vectors(column_index, &
+               & vector_index) + hamiltonian_values(column_end)*input_vectors(column_index,vector_index)
+            call dmerge (column_entry_count-1, input_vectors(:matrix_order,vector_index), product_vectors(:matrix_order, &
+               & vector_index), matrix_partner_indices(column_start:column_end-1), &
+               & hamiltonian_values(column_start:column_end-1), input_vectors(&
+               column_index,vector_index), off_diagonal_dot_product)
+            product_vectors(column_index,vector_index) = diagonal_plus_previous_terms + off_diagonal_dot_product
+         end do
+         column_start = column_end + 1
+      end do
+
+      return
+      end subroutine spicmv2
+end module sparse_symmetric_matvec

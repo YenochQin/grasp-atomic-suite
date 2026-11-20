@@ -1,5 +1,5 @@
       module ris_c
-      use, intrinsic :: iso_fortran_env, only: real64, double => real64
+      use, intrinsic :: iso_fortran_env, only: real64
       implicit none (type, external)
       private :: real64
 !...Translated by Gediminas Gaigalas 11/18/19

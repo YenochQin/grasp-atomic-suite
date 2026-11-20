@@ -17,8 +17,9 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c, only: hartree_to_wavenumber_cm, hartree_to_ev, speed_of_light_cm_per_s, einstein_a_au_to_si, einstein_b_au_to_si
-      use jlabl_c, only: labj => jlbr, labp => jlbp
+      use atomic_calculation_state, only: &
+          hartree_to_wavenumber_cm, hartree_to_ev, speed_of_light_cm_per_s, einstein_a_au_to_si, einstein_b_au_to_si
+      use angular_symmetry_labels, only: labj => jlbr, labp => jlbp
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -40,26 +41,20 @@
 !
 !   Always print the eigenenergies
 !
-      if (k == 1) write (24, 299)
-      if (k == 2) write (24, 300)
-      write (24, 301)
+      if (k == 1) write (24, '("Eigenenergies for the initial state list")')
+      if (k == 2) write (24, '("Eigenenergies for the final state list")')
+      write (24, '("Level  J Parity",10x,"Hartrees",18x,"Kaysers")')
       do j = 1, nn
          i = ilev(j)
          eau = e(j) + eav
          ecm = eau*hartree_to_wavenumber_cm
          eev = eau*hartree_to_ev
          ip = (ipar(j)+3)/2
-         write (24, 302) i, labj(jtot(j)), labp(ip), eau, ecm
+         write (24, '(1i3,4x,2a4,1p,2d25.15)') i, labj(jtot(j)), labp(ip), eau, ecm
       end do
 !
       return
 !
-  299 format("Eigenenergies for the initial state list")
-  300 format("Eigenenergies for the final state list")
-  301 format("Level  J Parity",10x,"Hartrees",18x,"Kaysers")
-  302 format(1i3,4x,2a4,1p,2d25.15)
-  303 format("Energy of each level relative to immediately lower"," level:")
-  304 format("Energy of each level relative to lowest level:")
       return
 !
       end subroutine engout1

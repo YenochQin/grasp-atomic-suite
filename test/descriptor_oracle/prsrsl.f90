@@ -21,14 +21,14 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use parameter_def, only: max_orbitals
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use orb_c, only: max_orbitals, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, &
+      use grasp_parameters, only: max_orbitals
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use orbital_csf_basis, only: max_orbitals, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, &
           orbital_symmetry_labels, orbital_two_j
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i, only: convrt
+      use integer_format, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

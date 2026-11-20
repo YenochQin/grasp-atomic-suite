@@ -29,13 +29,13 @@ strict/diag 后续也已[移除](rejected_rmcdhf_variants.md)，当前 suite 为
 
 原应用 CMake 的源文件清单与算法保留，包括其中原先未启用的来源文件。
 保留的旧 Makefile/BUILDCONF 用于来源追溯；suite 支持的构建入口仍是顶层 CMake。
-所有目标复用现有 `mod/9290/dvd90/rang90/mcp90/mpiu90` 等所需库与 suite MPI helpers。
+各目标按需复用 `mod`、`core`、`davidson_eigensolver`、`spin_angular`、`breit_angular_support`、`grasp_mpi` 等库与 suite MPI helpers。
 
 ## 参数唯一来源
 
-与 RMCDHF 相同，所有程序继续 `USE parameter_def`，由
-[`parameter_def_M.f90`](../../src/lib/libmod/parameter_def_M.f90) 转导
-[`suite_parameters_M.f90`](../../src/lib/libmod/suite_parameters_M.f90) 的六个常量：
+与 RMCDHF 相同，所有程序继续 `USE grasp_parameters`，由
+[`grasp_parameters.f90`](../../src/lib/grasp_shared/grasp_parameters.f90) 转导
+[`compile_time_capacities.f90`](../../src/lib/grasp_shared/compile_time_capacities.f90) 的六个常量：
 
 | 参数 | suite 默认值 |
 | --- | --- |
@@ -48,7 +48,7 @@ strict/diag 后续也已[移除](rejected_rmcdhf_variants.md)，当前 suite 为
 没有增加第二个配置文件，也没有更改现有 suite 默认值。导入来源的 NNNW 为 100，
 suite 统一使用已有的 127；文件内容和算法不因这个容量差异自动获得物理验证。
 
-多数来源例程已经引用 `parameter_def`。本次仅在普通 `rwfnestimate90` 的六个
+多数来源例程已经引用上游的 `parameter_def`。本次仅在普通 `rwfnestimate90` 的六个
 Fortran 文件进行容量适配：`frmtfp.f90`、`frmhyd.f90`、`solvh_I.f90`、`tail_I.f90`、
 `frmrwf_I.f90`、`summry_I.f90` 移除局部 NNNP/NNN1 定义并改为模块导入。
 其中接口的数组长度必须随中央配置变化，不能继续固定为 590/600。

@@ -21,10 +21,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: max_radial_points
-      use grid_c,           only: transformed_grid_step, radial_derivative_over_radius
-      use int_c,            only: tf ,tg ,xu, xv
-      use orb_c, only: orbital_kappa
+      use grasp_parameters,    only: max_radial_points
+      use radial_grid_state,           only: transformed_grid_step, radial_derivative_over_radius
+      use radial_dirac_workspace,            only: tf ,tg ,xu, xv
+      use orbital_csf_basis, only: orbital_kappa
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

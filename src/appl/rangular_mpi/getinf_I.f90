@@ -1,5 +1,5 @@
 module getinf_i
-   use csf_descriptor_input, only: descriptor_source
+   use csf_descriptor_reader, only: descriptor_source
    implicit none (type, external)
    interface
       subroutine getinf(source, status)

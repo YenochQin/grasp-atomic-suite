@@ -16,13 +16,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use left_c, only: double, max_orbitals, set
-      use orb_c, only: orbital_count,  orbital_principal_n, orbital_kappa, orbital_symmetry_labels
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use initial_orbital_selection, only: max_orbitals, set
+      use orbital_csf_basis, only: orbital_count,  orbital_principal_n, orbital_kappa, orbital_symmetry_labels
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i, only: convrt
+      use integer_format, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -14,14 +14,13 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: orbital_index_radix, max_orbitals
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c, only: double
-      use foparm_c, only: iccut
-      use offd_c, only: noffd1, noffd2
-      use orb_c, only: double, max_orbitals, orbital_count
-      use osc_c, only: double, nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
+      use grasp_parameters,   only: orbital_index_radix, max_orbitals
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use first_order_csf_cutoffs, only: iccut
+      use transition_off_diagonal_flags, only: noffd1, noffd2
+      use orbital_csf_basis, only: max_orbitals, orbital_count
+      use transition_matrix_workspace, only: nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
           xsldr, totc, totb, isldr, isldr1, nint, ninteg, nptr, lab, nkp, kp, ltc
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -94,8 +93,6 @@
 !
       return
 !
-  301 format(/,/,/,1x,i8," MCT coefficients generated for rank ",i2,&
-         " and parity ",i2,/,/)
       return
 !
       end subroutine mctin

@@ -13,7 +13,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-    use jj2lsj_c, only: double, long, ls_jj_me, ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, ls_jj_number_d5, &
+    use ls_jj_subshell_terms, only: ls_jj_me, ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, ls_jj_number_d5, &
        & ls_jj_number_d6, ls_jj_number_d7, ls_jj_number_d8, ls_jj_number_d9, ls_jj_number_f3, ls_jj_number_f4, &
        & ls_jj_number_f5, ls_jj_number_f6, ls_jj_number_f7, ls_jj_number_p3, ls_jj_number_p4, ls_jj_number_p5, &
        & ls_jj_number_p6, subshell_term_ls, term_ls_d, term_ls_f, term_ls_g1, term_ls_g2, term_ls_h1, term_ls_h2, &

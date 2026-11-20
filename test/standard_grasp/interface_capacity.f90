@@ -1,7 +1,7 @@
 ! The compiler must reject procedure association if an imported interface still
 ! contains a private radial/orbital extent instead of the suite configuration.
 program standard_interface_capacity
-    use parameter_def, only: NNNP, NNN1, NNNW
+    use grasp_parameters, only: NNNP, NNN1, NNNW
     use, intrinsic :: iso_fortran_env, only: real64
     use tail_I, only: tail
     use frmtfp_I, only: frmtfp

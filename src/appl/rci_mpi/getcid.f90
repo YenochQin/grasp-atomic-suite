@@ -16,39 +16,40 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use csf_block_input, only: read_csf_zero_order_counts
-      use csf_descriptor_collectives, only: check_descriptor_status
-      use parameter_def,   only: max_radial_points
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c,           only: vacuum_speed_of_light_au, speed_of_light_au, nuclear_charge, accy, electron_count, emn
-      use default_c, only: double, inpci, ndef, ndump
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use rci_csf_block_reader, only: read_csf_zero_order_counts
+      use mpi_csf_collectives, only: check_descriptor_status
+      use grasp_parameters,   only: max_radial_points
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use atomic_calculation_state,           only: &
+          vacuum_speed_of_light_au, speed_of_light_au, nuclear_charge, accy, electron_count, emn
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use iccu_c, only: iccutblk
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use npot_c,          only: negative_radius_times_potential, first_grid_index_beyond_fermi_c
-      use nsmdat_c, only: double, dmomnm, hfsd, hfsi, hfsq, qmomb, smsd, smsi, smsq, sqn
-      use orb_c, only: csf_count, double, max_orbitals, orbital_count, orbital_energy_parameters, &
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use csf_block_cutoffs, only: iccutblk
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use nuclear_potential_state,          only: negative_radius_times_potential, first_grid_index_beyond_fermi_c
+      use isotope_properties, only: dmomnm, hfsd, hfsi, hfsq, qmomb, smsd, smsi, smsq, sqn
+      use orbital_csf_basis, only: csf_count, max_orbitals, orbital_count, orbital_energy_parameters, &
           orbital_origin_exponents
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use wfac_c, only: double, wfact
-      use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
-      use where_c, only: double, imcdf
-      use qedcut_c, only: nqedcut, nqedmax
-      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, &
+      use breit_frequency_scale, only: wfact
+      use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
+      use where_c, only: imcdf
+      use qed_orbital_cutoffs, only: nqedcut, nqedmax
+      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, &
          & mpi_logical, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use setisompi_i, only: setisompi
-      use setrwfmpi_i, only: setrwfmpi
-      use getyn_i, only: getyn
-      use nucpot_i, only: nucpot
-      use radgrd_i, only: radgrd
-      use setqic_i, only: setqic
+      use mpi_isotope_input, only: setisompi
+      use mpi_radial_wavefunction_file, only: setrwfmpi
+      use yes_no_input, only: getyn
+      use nuclear_coulomb_potential, only: nucpot
+      use radial_grid_setup, only: radgrd
+      use radial_stencil_weights, only: setqic
       implicit none (type, external)
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

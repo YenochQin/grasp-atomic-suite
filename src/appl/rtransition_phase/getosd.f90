@@ -12,22 +12,22 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_orbitals, max_radial_points
-      use def_c, only: accy, double, max_radial_points, nuclear_charge, speed_of_light_au, vacuum_speed_of_light_au
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use default_c, only: double, inpci, ndef, ndump
-      use foparm_c, only: iccut
-      use grid_c, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use osc_c, only: ltc
+      use grasp_parameters,   only: max_orbitals, max_radial_points
+      use atomic_calculation_state, only: accy, max_radial_points, nuclear_charge, speed_of_light_au, vacuum_speed_of_light_au
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use first_order_csf_cutoffs, only: iccut
+      use radial_grid_state, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use transition_matrix_workspace, only: ltc
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
-      use setiso_i, only: setiso
+      use yes_no_input, only: getyn
+      use isotope_data_input, only: setiso
       use getrmp_i, only: getrmp
-      use setqic_i, only: setqic
-      use radgrd_i, only: radgrd
+      use radial_stencil_weights, only: setqic
+      use radial_grid_setup, only: radgrd
       use lodrwfi_i, only: lodrwfi
       use lodrwff_i, only: lodrwff
       use brkt_i, only: brkt

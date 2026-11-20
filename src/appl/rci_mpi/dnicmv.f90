@@ -20,15 +20,15 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use hmat_c,          only: hamiltonian_values
-      use mpi_c, only: mpi_process_count, mpi_rank
+      use sparse_hamiltonian_storage,          only: hamiltonian_values
+      use mpi_state, only: mpi_process_count, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dinit_i, only: dinit
+      use real_vector_initialization, only: dinit
 !      USE dmerge_dnicmv_I
       use dmerge_dnicmv_i, only: dmerge_dnicmv
-      use mpiu_i, only: gdsummpi
+      use mpi_utilities, only: gdsummpi
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

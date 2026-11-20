@@ -9,23 +9,23 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use default_c, only: double, inpci, ndef, ndump
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use memory_man, only: alloc, dalloc, double
-      use prnt_c,          only: nvec
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use array_memory_management, only: alloc, dalloc
+      use selected_level_indices,          only: nvec
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use compute_gj_only_i, only: compute_gj_only
       use gethfd_i, only: gethfd
       use getmixblock_i, only: getmixblock
-      use getyn_i, only: getyn
-      use setcon_i, only: setcon
-      use setcsla_i, only: setcsla
+      use yes_no_input, only: getyn
+      use physical_constants, only: setcon
+      use csf_basis_loader, only: setcsla
       use setdbg_i, only: setdbg
-      use setmc_i, only: setmc
+      use machine_constants, only: setmc
       use setout_gj_i, only: setout_gj
-      use factt_i, only: factt
+      use log_factorial_table, only: factt
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

@@ -23,16 +23,16 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: orbital_index_radix
-      use memory_man, only: alloc, dalloc
-      use orb_c,           only: orbital_principal_n, csf_count, orbital_symmetry_labels
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use sacoef_c, only: coeff => channel_coefficients, label => channel_packed_orbital_labels, &
+      use grasp_parameters,   only: orbital_index_radix
+      use array_memory_management, only: alloc, dalloc
+      use orbital_csf_basis,           only: orbital_principal_n, csf_count, orbital_symmetry_labels
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use angular_coefficient_channels, only: coeff => channel_coefficients, label => channel_packed_orbital_labels, &
          & iclmn => channel_csf_columns, index => channel_matrix_positions
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i, only: convrt
+      use integer_format, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -292,8 +292,8 @@
 !   Debug printout
 !
       if (lprint) then
-         write (99, 300)
-         write (6, 300)
+         write (99, '(/,"From SORT:")')
+         write (6, '(/,"From SORT:")')
          if (ncoeff > 0) then
 !
             last = label(1,igg)
@@ -309,10 +309,11 @@
                if (nfile == 31) then
                   ia = mod(lab,key)
                   ib = lab/key
-                  write (99, 301) orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
+                  write (99, '(" I(",1i2,1a2,",",1i2,1a2,"):")') &
+                     orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
                      & orbital_symmetry_labels(ib)
                   do j = ibeg, iend
-                     write (99, 302) iclmn(j,igg),index(j,igg),       &
+                     write (99, '("  T_[",1i2,",",1i4,"] = ",1p,d19.12)') iclmn(j,igg),index(j,igg),       &
                                                         coeff(j,igg)
                   end do
                else
@@ -323,11 +324,13 @@
                   lab = lab/key
                   ic = mod(lab,key)
                   ia = lab/key
-                  write (99, 304) k, orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
+                  write (99, '(" R^[(",1i2,")] (",1i2,1a2,",",1i2,1a2,";",1i2,1a2,",",1i2,1a2,"):")') &
+                     k, orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
                      & orbital_symmetry_labels(ib), orbital_principal_n(ic), orbital_symmetry_labels&
                      (ic), orbital_principal_n(id), orbital_symmetry_labels(id)
                   do j = ibeg, iend
-                     write (99, 305) k,iclmn(j,igg),index(j,igg),     &
+                     write (99, '("  V^[(",1i2,")]_[",1i8,",",1i8,"] = ",1p,d19.12)') &
+                        k,iclmn(j,igg),index(j,igg),     &
                                                           coeff(j,igg)
                   end do
                end if
@@ -337,7 +340,7 @@
                if (iend == ncoeff) goto 567
             end do
          end if
-         write (99, 303) ntgral
+         write (99, '("  Number of integrals is ",1i4)') ntgral
       end if
 !
 !   Deallocate storage
@@ -346,13 +349,6 @@
          if (nfile == 33) call dalloc (nswap, "NSWAP", "SORTMEM")
       end if
 
-  300 format(/,"From SORT:")
-  301 format(" I(",1i2,1a2,",",1i2,1a2,"):")
-  302 format("  T_[",1i2,",",1i4,"] = ",1p,d19.12)
-  303 format("  Number of integrals is ",1i4)
-  304 format(" R^[(",1i2,")] (",1i2,1a2,",",1i2,1a2,";",1i2,1a2,",",1i2,1a2,&
-         "):")
-  305 format("  V^[(",1i2,")]_[",1i8,",",1i8,"] = ",1p,d19.12)
 
       return
       end subroutine sortmem

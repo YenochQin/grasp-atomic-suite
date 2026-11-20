@@ -12,7 +12,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use setcslb_i, only: setcslb
-      use factt_i, only: factt
+      use log_factorial_table, only: factt
       use mcpout_i, only: mcpout
       use mcpin_i, only: mcpin
       implicit none (type, external)

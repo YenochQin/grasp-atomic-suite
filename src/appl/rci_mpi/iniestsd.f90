@@ -16,15 +16,15 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: alloc, dalloc
+      use array_memory_management, only: alloc, dalloc
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use dspevx_i, only: dspevx
-      use suite_linear_algebra, only: dcopy, dspevx
-      use dinit_i, only: dinit
-      use mpiu_i, only: gdsummpi
-      use suite_linear_algebra, only: slamch
+      use blas_lapack_interfaces, only: dcopy, dspevx
+      use real_vector_initialization, only: dinit
+      use mpi_utilities, only: gdsummpi
+      use blas_lapack_interfaces, only: slamch
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

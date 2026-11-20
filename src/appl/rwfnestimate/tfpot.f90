@@ -16,17 +16,16 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c, only: nuclear_charge, electron_count
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use atomic_calculation_state, only: nuclear_charge, electron_count
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use npot_c, only: negative_radius_times_potential
-      use orb_c, only: double
-      use pote_c, only: yp
+      use nuclear_potential_state, only: negative_radius_times_potential
+      use scf_radial_potentials, only: yp
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use draw_i, only: draw
+      use radial_ascii_plot, only: draw
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -57,7 +56,7 @@
 !   Debug printout
 !
       if (ldbpr(26)) then
-         write (99, 300)
+         write (99, '(/,/,/," Thomas-Fermi potential"/,/,3(" --------- r --------- ------ -r*V(r) ------"))')
          nb3 = radial_point_count/3
          if (3*nb3 == radial_point_count) then
             nrows = nb3
@@ -69,12 +68,13 @@
             ii2 = ii1 + nrows
             ii3 = ii2 + nrows
             if (ii3 <= radial_point_count) then
-               write (99, 301) radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2), radial_grid(ii3), yp(ii3&
+               write (99, '(1p,6(1x,1d21.14))') &
+                  radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2), radial_grid(ii3), yp(ii3&
                   )
             else if (ii2 <= radial_point_count) then
-               write (99, 301) radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2)
+               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2)
             else
-               write (99, 301) radial_grid(ii1), yp(ii1)
+               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1), yp(ii1)
             end if
          end do
          call draw (yp, 1.0_real64, yp, 1.0_real64, radial_point_count)
@@ -82,9 +82,6 @@
 !
       return
 !
-  300 format(/,/,/," Thomas-Fermi potential"/,/,3(&
-         " --------- r --------- ------ -r*V(r) ------"))
-  301 format(1p,6(1x,1d21.14))
       return
 !
       end subroutine tfpot

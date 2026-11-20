@@ -18,7 +18,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i, only: openfl
+      use file_open, only: openfl
       use lodmix_i, only: lodmix
       implicit none (type, external)
 !-----------------------------------------------

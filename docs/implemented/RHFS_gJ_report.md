@@ -55,7 +55,7 @@ GETHFD -> SETRWFA(TRIM(NAME)//'.w') -> LODRWF -> INTRPQ -> ORTHSC
 
 #### 第一步：打开并校验文件头
 
-`SETRWFA` 位于 `src/lib/lib9290/setrwfa.f90`。它做三件事：
+`SETRWFA` 位于 `src/lib/core/radial_wavefunction_input.f90`。它做三件事：
 
 1. 以非格式化二进制方式打开 `name.w`
 2. 读入文件头字符串
@@ -193,7 +193,7 @@ R(1:MF)
 
 - `RINTHF(i,j,k)` 在 `src/appl/rhfs/rinthf.f90` 中定义，积分核为
   `r^k (P_i Q_j + Q_i P_j)`
-- `RINT(i,j,k)` 在 `src/lib/lib9290/rint.f90` 中定义，积分核为  
+- `RINT(i,j,k)` 在 `src/lib/core/weighted_radial_overlap.f90` 中定义，积分核为
   `r^k (P_i P_j + Q_i Q_j)`
 
 ### 3.2 角向矩阵元
@@ -212,7 +212,7 @@ GJPART  = APART
 DGJPART = -(κ1 + κ2 -1) * CLRX * OVLFAC
 ```
 
-这里 `CLRX` 是 3-j 系数，定义在 `src/lib/lib9290/clrx.f90`。
+这里 `CLRX` 是 3-j 系数，定义在 `src/lib/core/relativistic_three_j.f90`。
 
 ## 4. CSF 基底上的矩阵元构造
 

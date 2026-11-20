@@ -3,7 +3,7 @@
       interface
       subroutine sbstep (iorb, nstrt, nend, p, q)
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def, only: max_radial_points, radial_workspace_capacity, max_orbitals
+      use grasp_parameters, only: max_radial_points, radial_workspace_capacity, max_orbitals
       implicit none (type, external)
 
       integer, intent(in) :: iorb

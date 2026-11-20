@@ -18,17 +18,16 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use cons_c, only: double, eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
-      use orb_c, only: double
-      use iccu_c, only: iccut, iccutblk
-      use default_c, only: double, inpci, ndef, ndump
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use numeric_constants, only: eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
+      use csf_block_cutoffs, only: iccut, iccutblk
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
+      use yes_no_input, only: getyn
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

@@ -1,6 +1,6 @@
 subroutine merg12(name,ncorer,ncore)
-   use csf_basis_merge, only: merge_csf_bases
-   use csf_descriptor_collectives, only: check_descriptor_status
+   use csf_basis_merging, only: merge_csf_bases
+   use mpi_csf_collectives, only: check_descriptor_status
    implicit none (type, external)
    character(len=128), intent(in) :: name(2)
    integer, intent(in) :: ncorer,ncore

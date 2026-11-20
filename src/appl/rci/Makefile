@@ -1,6 +1,6 @@
 EXE=${GRASP}/bin/rci
-LIBS=-L ${GRASP}/lib/ -lrang90 -l9290 -ldvd90 -lmod
-FC_MODULES= -I ${GRASP}/src/lib/librang90 -I ${GRASP}/src/lib/lib9290 -I ${GRASP}/src/lib/libdvd90 -I ${GRASP}/src/lib/libmod
+LIBS=-L ${GRASP}/lib/ -lrang90 -lbreit_angular_support -l9290 -ldavidson_eigensolver -lgrasp_shared
+FC_MODULES= -I ${GRASP}/src/lib/spin_angular -I ${GRASP}/src/lib/breit_angular_support -I ${GRASP}/src/lib/core -I ${GRASP}/src/lib/davidson_eigensolver -I ${GRASP}/src/lib/grasp_shared
 
 OBJS= \
 	evcout.o \
@@ -8,9 +8,7 @@ OBJS= \
 	ratden_I.o \
 	where_C.o \
 	talk.o \
-	talk_I.o \
 	cxk.o \
-	cxk_I.o \
 	bessel.o \
 	bessel_I.o \
 	dnicmv.o \

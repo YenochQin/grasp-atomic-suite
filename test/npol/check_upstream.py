@@ -14,14 +14,18 @@ from pathlib import Path
 import sys
 
 
-def original_bytes(path: Path, edits: list[dict[str, str | int]] | None = None) -> bytes:
-    text = path.read_text()
-    for edit in reversed(edits or []):
+def reverse_reviewed_edits(text: str, path: Path, edits: list[dict[str, str | int]]) -> str:
+    for edit in reversed(edits):
         before, after, count = edit["before"], edit["after"], edit["count"]
         assert isinstance(before, str) and isinstance(after, str) and isinstance(count, int)
         pattern = "(?m)^" + re.escape(after)
-        assert len(re.findall(pattern, text)) == count, f"Reviewed F2018 edit missing or ambiguous: {path}"
+        assert len(re.findall(pattern, text)) == count, f"Reviewed edit missing or ambiguous: {path}"
         text = re.sub(pattern, lambda _: before, text)
+    return text
+
+
+def original_bytes(path: Path, edits: list[dict[str, str | int]] | None = None) -> bytes:
+    text = reverse_reviewed_edits(path.read_text(), path, edits or [])
     if path.name in ("getscd.f90", "getscdmpi.f90", "getscd_I.f90", "getscdmpi_I.f90"):
         text = text.replace("ISOFILE, RWFFILE, NPFILE)", "ISOFILE, RWFFILE)")
         text = text.replace("      CHARACTER (LEN = *), INTENT(IN) :: NPFILE\n", "")
@@ -276,7 +280,8 @@ def main(root: Path) -> None:
     for name, record in use_mpi["files"].items():
         assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"], name
     reviewed_fortran |= use_mpi["files"]
-    migration = json.loads((root / "docs/reference/rmcdhf_descriptor_snapshot.json").read_text())
+    migration_path = root / "docs/reference/rmcdhf_descriptor_snapshot.json"
+    migration = json.loads(migration_path.read_text())
     assert migration["schema_version"] == 1
     assert hashlib.sha256((root / "docs/reference/rmcdhf_use_only_mpi_snapshot.json").read_bytes()).hexdigest() == migration["previous_manifest_sha256"]
     for name, record in migration["removed"].items():
@@ -288,27 +293,108 @@ def main(root: Path) -> None:
         assert name in expected
         if name in reviewed_fortran:
             assert record["before_suite_sha256"] == reviewed_fortran[name]["after_suite_sha256"]
-        assert hashlib.sha256((root / name).read_bytes()).hexdigest() == record["after_suite_sha256"], name
-        del expected[name]
+    reviewed_files = reviewed_fortran | migration["files"]
+    csf_queries_path = root / "docs/reference/rmcdhf_csf_queries_snapshot.json"
+    csf_queries = json.loads(csf_queries_path.read_text())
+    assert csf_queries["schema_version"] == 1, "Unknown CSF queries snapshot schema"
+    assert hashlib.sha256(migration_path.read_bytes()).hexdigest() == csf_queries["previous_manifest_sha256"], \
+        "Descriptor snapshot changed; review CSF queries provenance"
+    assert set(csf_queries["files"]).issubset(expected.keys() & reviewed_fortran.keys())
+    for name, record in csf_queries["files"].items():
+        assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], \
+            f"CSF queries snapshot has a different predecessor: {name}"
+    reviewed_files |= csf_queries["files"]
+    kind_cleanup_path = root / "docs/reference/rmcdhf_kind_alias_cleanup_snapshot.json"
+    kind_cleanup = json.loads(kind_cleanup_path.read_text())
+    assert kind_cleanup["schema_version"] == 1, "Unknown kind alias cleanup snapshot schema"
+    assert hashlib.sha256(csf_queries_path.read_bytes()).hexdigest() == kind_cleanup["previous_manifest_sha256"], \
+        "CSF queries snapshot changed; review kind alias cleanup provenance"
+    assert set(kind_cleanup["files"]).issubset(expected.keys() & reviewed_fortran.keys())
+    for name, record in kind_cleanup["files"].items():
+        assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], \
+            f"Kind alias cleanup snapshot has a different predecessor: {name}"
+    reviewed_files |= kind_cleanup["files"]
+    davidson_naming_path = root / "docs/reference/rmcdhf_davidson_naming_snapshot.json"
+    davidson_naming = json.loads(davidson_naming_path.read_text())
+    assert davidson_naming["schema_version"] == 1, "Unknown Davidson naming snapshot schema"
+    assert hashlib.sha256(kind_cleanup_path.read_bytes()).hexdigest() == davidson_naming["previous_manifest_sha256"], \
+        "Kind alias cleanup snapshot changed; review Davidson naming provenance"
+    assert set(davidson_naming["files"]).issubset(expected)
+    for name, record in davidson_naming["files"].items():
+        if name in reviewed_files:
+            previous_digest = reviewed_files[name]["after_suite_sha256"]
+        else:
+            # These build files matched upstream byte for byte before renaming.
+            previous_digest = expected[name]["sha256"]
+        assert record["before_suite_sha256"] == previous_digest, \
+            f"Davidson naming snapshot has a different predecessor: {name}"
+    reviewed_files |= davidson_naming["files"]
+    core_naming_path = root / "docs/reference/rmcdhf_core_names_snapshot.json"
+    core_naming = json.loads(core_naming_path.read_text())
+    assert core_naming["schema_version"] == 1, "Unknown GRASP core naming snapshot schema"
+    assert hashlib.sha256(davidson_naming_path.read_bytes()).hexdigest() == core_naming["previous_manifest_sha256"], \
+        "Davidson naming snapshot changed; review GRASP core naming provenance"
+    assert set(core_naming["files"]).issubset(expected)
+    for name, record in core_naming["files"].items():
+        if name in reviewed_files:
+            previous_digest = reviewed_files[name]["after_suite_sha256"]
+        else:
+            previous_digest = expected[name]["sha256"]
+        assert record["before_suite_sha256"] == previous_digest, \
+            f"GRASP core naming snapshot has a different predecessor: {name}"
+    reviewed_files |= core_naming["files"]
+    shared_naming_path = root / "docs/reference/rmcdhf_grasp_shared_naming_snapshot.json"
+    shared_naming = json.loads(shared_naming_path.read_text())
+    assert shared_naming["schema_version"] == 1, "Unknown GRASP shared naming snapshot schema"
+    assert hashlib.sha256(core_naming_path.read_bytes()).hexdigest() == shared_naming["previous_manifest_sha256"], \
+        "Core naming snapshot changed; review GRASP shared naming provenance"
+    assert set(shared_naming["files"]).issubset(expected.keys() & reviewed_files.keys())
+    for name, record in shared_naming["files"].items():
+        assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], \
+            f"GRASP shared naming snapshot has a different predecessor: {name}"
+    reviewed_files |= shared_naming["files"]
+    mpi_naming_path = root / "docs/reference/rmcdhf_grasp_mpi_naming_snapshot.json"
+    mpi_naming = json.loads(mpi_naming_path.read_text())
+    assert mpi_naming["schema_version"] == 1, "Unknown GRASP MPI naming snapshot schema"
+    assert hashlib.sha256(shared_naming_path.read_bytes()).hexdigest() == mpi_naming["previous_manifest_sha256"], \
+        "Shared naming snapshot changed; review GRASP MPI naming provenance"
+    assert set(mpi_naming["files"]).issubset(expected.keys() & reviewed_files.keys())
+    inline_path = root / "docs/reference/rmcdhf_inline_output_formats_snapshot.json"
+    inline_formats = json.loads(inline_path.read_text())
+    assert inline_formats["schema_version"] == 1, "Unknown inline output formats snapshot schema"
+    assert hashlib.sha256(mpi_naming_path.read_bytes()).hexdigest() == inline_formats["previous_manifest_sha256"], \
+        "GRASP MPI naming snapshot changed; review inline output format provenance"
+    assert set(inline_formats["files"]).issubset(expected.keys() & reviewed_files.keys())
+    for name, record in inline_formats["files"].items():
+        assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], \
+            f"Inline output format snapshot has a different predecessor: {name}"
+    reviewed_files |= inline_formats["files"]
     actual = {
         str(path.relative_to(root))
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")
         for path in (root / "src/appl" / name).iterdir()
         if path.suffix in (".f90", ".sh", ".txt") or path.name == "Makefile"
     }
-    assert actual == set(expected) | set(migration["files"]), (actual - set(expected), set(expected) - actual)
+    assert actual == set(expected), (actual - set(expected), set(expected) - actual)
     for relative, record in expected.items():
-        if relative in lowercase["files"]:
-            digest = hashlib.sha256((root / relative).read_bytes()).hexdigest()
-            reviewed = reviewed_fortran[relative]
-            assert digest == reviewed["after_suite_sha256"], \
+        if relative in reviewed_files:
+            path = root / relative
+            source = path.read_bytes()
+            reviewed = reviewed_files[relative]
+            digests = {hashlib.sha256(source).hexdigest()}
+            if relative in mpi_naming["files"]:
+                # Check each renamed import or build reference, then compare the
+                # original spelling with the reviewed source digest.
+                before_mpi_names = reverse_reviewed_edits(source.decode(), path, mpi_naming["files"][relative])
+                digests.add(hashlib.sha256(before_mpi_names.encode()).hexdigest())
+            assert reviewed["after_suite_sha256"] in digests, \
                 f"Unreviewed deviation from reviewed GRASP snapshot: {relative}"
             continue
         edits = compatibility.get(relative, {}).get("edits", [])
         digest = hashlib.sha256(original_bytes(root / relative, edits)).hexdigest()
         assert digest == record["sha256"], f"Unreviewed deviation from GRASP source: {relative}"
     print(f"PASS: {len(expected)} imported files match reviewed snapshots "
-          f"({len(reviewed_fortran)} exact Fortran identities)")
+          f"({len(expected.keys() & reviewed_files.keys())} exact suite file hashes)")
 
 
 if __name__ == "__main__":

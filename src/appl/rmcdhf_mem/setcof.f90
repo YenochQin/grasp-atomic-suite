@@ -20,21 +20,21 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
-      use parameter_def,    only: orbital_index_radix
-      use memory_man, only: alloc, dalloc, ralloc, double, long
-      use orb_c, only: double, max_orbitals, orbital_count, orbital_kappa, orbital_two_j
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+      use grasp_parameters,    only: orbital_index_radix
+      use array_memory_management, only: alloc, dalloc, ralloc
+      use orbital_csf_basis, only: max_orbitals, orbital_count, orbital_kappa, orbital_two_j
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
           matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
           nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use mcpa_c, only: double, max_mcp_file_multipole_rank
-      use mpi_s, only: double, mpi_process_count, mpi_rank
-      use pos_c, only: double, total_csf_count, mixing_coefficient_storage_size, &
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use mcp_file_metadata, only: max_mcp_file_multipole_rank
+      use mpi_s, only: mpi_process_count, mpi_rank
+      use symmetry_block_offsets, only: total_csf_count, mixing_coefficient_storage_size, &
           csf_offsets_by_block, eigenvalue_offsets_by_block, mixing_offsets_by_block
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-      use hmat_c,           only: stored_matrix_element_count
+      use sparse_hamiltonian_storage,           only: stored_matrix_element_count
       use rmcdhf_mem_c,     only: indx, iclmn, coeff, imin2_30, imax2_30
 !      USE cons_C,           ONLY: EPS
 !-----------------------------------------------

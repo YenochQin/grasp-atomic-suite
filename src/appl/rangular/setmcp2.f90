@@ -13,10 +13,10 @@
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use def_c, only: double, electron_count
-      use iccu_c, only: iccut, iccutblk
-      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
-      use orb_c, only: csf_count, double, orbital_count
+      use atomic_calculation_state, only: electron_count
+      use csf_block_cutoffs, only: iccut, iccutblk
+      use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
+      use orbital_csf_basis, only: csf_count, orbital_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

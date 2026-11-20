@@ -18,17 +18,17 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use def_c, only: double, electron_count, nelecff
-      use orb_c, only: csf_count, double, max_orbitals, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, &
+      use atomic_calculation_state, only: electron_count, nelecff
+      use orbital_csf_basis, only: csf_count, max_orbitals, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, &
           orbital_symmetry_labels, orbital_two_j
-      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+      use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
           nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
 
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use csf_basis_input, only: load_csf_basis
-      use blk_c, only: nblock, ncfblk, nblocki, nblockf, ncfi, ncff
+      use csf_full_basis_reader, only: load_csf_basis
+      use transition_basis_blocks, only: nblock, ncfblk, nblocki, nblockf, ncfi, ncff
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

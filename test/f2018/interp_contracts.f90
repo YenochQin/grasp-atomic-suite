@@ -1,7 +1,7 @@
 program interp_contracts
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use, intrinsic :: iso_fortran_env, only: real64, int64
-    use interp_I, only: interp
+    use aitken_interpolation, only: interp
     implicit none (type, external)
     real(real64) :: x(12),y(12),value,point,expected
     integer :: i,n

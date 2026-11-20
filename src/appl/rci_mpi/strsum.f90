@@ -14,25 +14,25 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c, only: double, electron_count, emn, max_radial_points, nuclear_charge, speed_of_light_au
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use atomic_calculation_state, only: electron_count, emn, max_radial_points, nuclear_charge, speed_of_light_au
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use npot_c, only: double, first_grid_index_beyond_fermi_c, max_radial_points, negative_radius_times_potential
-      use orb_c, only: byte, csf_count, double, max_orbitals, orbital_count, orbital_energy_parameters, &
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use nuclear_potential_state, only: first_grid_index_beyond_fermi_c, max_radial_points, negative_radius_times_potential
+      use orbital_csf_basis, only: csf_count, max_orbitals, orbital_count, orbital_energy_parameters, &
           orbital_origin_exponents, orbital_principal_n, orbital_symmetry_labels
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use wfac_c, only: double, wfact
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use iccu_c,          only: iccutblk
+      use breit_frequency_scale, only: wfact
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use csf_block_cutoffs,          only: iccutblk
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt2_i, only: convrt2
+      use integer_format_with_context, only: convrt2
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -74,15 +74,16 @@
 !   Write out the nuclear parameters
 !
       write (24, *)
-      write (24, 300) nuclear_charge
+      write (24, '("The atomic number is ",1f14.10,";")') nuclear_charge
       if (emn == 0.0_real64) then
          write (24, *) " the nucleus is stationary;"
       else
-         write (24, 301) emn
+         write (24, '(" the mass of the nucleus is ",1p,d19.12," electron masses;")') emn
       end if
       if (nuclear_model_parameter_count == 2) then
          write (24, *) " Fermi nucleus:"
-         write (24, 302) nuclear_model_parameters(1), nuclear_model_parameters(2)
+         write (24, '("  c =",1p,1d19.12," Bohr radii,"/,"  a =",1d19.12," Bohr radii;")') &
+            nuclear_model_parameters(1), nuclear_model_parameters(2)
          call convrt2 (first_grid_index_beyond_fermi_c, record, lenth, "strsum.nnuc")
          write (24, *) " there are "//record(1:lenth)//&
             " tabulation points in the nucleus."
@@ -93,12 +94,13 @@
 !   Write out the physical effects specifications
 !
       write (24, *)
-      write (24, 303) speed_of_light_au
+      write (24, '("Speed of light = ",1p,d19.12," atomic units.")') speed_of_light_au
 !
       write (24, *)
       if (ltrans .or. lvp .or. lnms .or. lsms) then
          write (24, *) "To H (Dirac Coulomb) is added"
-         if (ltrans) write (24, 304) wfact
+         if (ltrans) write (24, '("  H (Transverse) --- factor multiplying the"," photon frequency: ",1p,d15.8,&
+            &";")') wfact
          if (lvp) write (24, *) " H (Vacuum Polarisation);"
          if (lnms) write (24, *) " H (Normal Mass Shift);"
          if (lsms) write (24, *) " H (Specific Mass Shift);"
@@ -117,21 +119,27 @@
 !
       write (24, *)
       if (asymptotic_grid_step == 0.0_real64) then
-         write (24, 305) radial_grid_scale, transformed_grid_step, radial_point_count
+         write (24, '("Radial grid: R(I) = RNT*(exp((I-1)*H)-1),"," I = 1, ..., N;"/,/," RNT  = ",1p,d19.12,&
+            &" Bohr radii;"/," H    = ",d19.12," Bohr radii;"/," N    = ",1i4,";")') &
+            radial_grid_scale, transformed_grid_step, radial_point_count
       else
-         write (24, 306) radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count
+         write (24, '("Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,"," I = 1, ..., N;"/,/," RNT  = ",1p,&
+            &d19.12," Bohr radii;"/," H    = ",d19.12," Bohr radii;"/," HP   = ",d19.12," Bohr radii;"/," N    = ",&
+            &1i4,";")') radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count
       end if
-      write (24, 307) radial_grid(1), radial_grid(2), radial_grid(radial_point_count)
+      write (24, '(" R(1) = ",1p,1d19.12," Bohr radii;"/," R(2) = ",1d19.12," Bohr radii;"/," R(N) = ",1d19.12,&
+         &" Bohr radii.")') radial_grid(1), radial_grid(2), radial_grid(radial_point_count)
 !
 !   Write out the orbital properties
 !
       write (24, *)
       write (24, *) "Subshell radial wavefunction summary:"
       write (24, *)
-      write (24, 308)
+      write (24, '("Subshell",6x,"e",13x,"p0",5x,"gamma",5x,"P(2)",7x,"Q(2)",4x,"MTP")')
       write (24, *)
       do i = 1, orbital_count
-         write (24, 309) orbital_principal_n(i), orbital_symmetry_labels(i), orbital_energy_parameters(i), &
+         write (24, '(1x,i2,a2,1x,1p,d17.10,1p,d11.3,0p,f6.2,1p,2(d11.3),i5)') &
+            orbital_principal_n(i), orbital_symmetry_labels(i), orbital_energy_parameters(i), &
             & orbital_origin_parameters(i), orbital_origin_exponents(i), radial_large_components(2,i), &
             & radial_small_components(2,i), &
             orbital_last_grid_index(i)
@@ -152,24 +160,6 @@
 
       return
 !
-  300 format("The atomic number is ",1f14.10,";")
-  301 format(" the mass of the nucleus is ",1p,d19.12," electron masses;")
-  302 format("  c =",1p,1d19.12," Bohr radii,"/,"  a =",1d19.12," Bohr radii;")
-  303 format("Speed of light = ",1p,d19.12," atomic units.")
-  304 format("  H (Transverse) --- factor multiplying the",&
-         " photon frequency: ",1p,d15.8,";")
-  305 format("Radial grid: R(I) = RNT*(exp((I-1)*H)-1),"," I = 1, ..., N;"/,/,&
-         " RNT  = ",1p,d19.12," Bohr radii;"/," H    = ",d19.12," Bohr radii;"/&
-         ," N    = ",1i4,";")
-  306 format("Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,",&
-         " I = 1, ..., N;"/,/," RNT  = ",1p,d19.12," Bohr radii;"/," H    = ",d&
-         19.12," Bohr radii;"/," HP   = ",d19.12," Bohr radii;"/," N    = ",1i4&
-         ,";")
-  307 format(" R(1) = ",1p,1d19.12," Bohr radii;"/," R(2) = ",1d19.12,&
-         " Bohr radii;"/," R(N) = ",1d19.12," Bohr radii.")
-  308 format("Subshell",6x,"e",13x,"p0",5x,"gamma",5x,"P(2)",7x,"Q(2)",4x,"MTP"&
-         )
-  309 format(1x,i2,a2,1x,1p,d17.10,1p,d11.3,0p,f6.2,1p,2(d11.3),i5)
       return
 !
       end subroutine strsum

@@ -75,5 +75,5 @@ add_executable(rtransition_phase
     testmix_I.f90
     bioscl.f90
 )
-target_link_libraries_Fortran(rtransition_phase PUBLIC dvd90 rang90 mcp90 9290 mod)
+target_link_libraries_Fortran(rtransition_phase PUBLIC davidson_eigensolver spin_angular breit_angular_support core grasp_shared)
 install(TARGETS rtransition_phase DESTINATION bin/)

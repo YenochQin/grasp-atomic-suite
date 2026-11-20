@@ -34,21 +34,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use memory_man, only: alloc, double
-      use input_io, only: fail_input_io
-      use def_c, only: double, electron_count
-      use foparm_c, only: iccut
-      use mcpa_c, only: double, max_mcp_file_multipole_rank
-      use mcpb_c, only: diag, double, lfordr
-      use mpi_s, only: double, mpi_process_count, mpi_rank
-      use orb_c, only: csf_count, double, orbital_count
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use array_memory_management, only: alloc
+      use input_error_handling, only: fail_input_io
+      use atomic_calculation_state, only: electron_count
+      use first_order_csf_cutoffs, only: iccut
+      use mcp_file_metadata, only: max_mcp_file_multipole_rank
+      use rmcdhf_mcp_options, only: diag, lfordr
+      use mpi_s, only: mpi_process_count, mpi_rank
+      use orbital_csf_basis, only: csf_count, orbital_count
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i, only: convrt
-      use openfl_i, only: openfl
+      use integer_format, only: convrt
+      use file_open, only: openfl
       use setmcp_mem_i, only: setmcp_mem
       implicit none (type, external)
 !-----------------------------------------------

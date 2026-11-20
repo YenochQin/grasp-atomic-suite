@@ -16,9 +16,9 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: orbital_index_radix
-      use memory_man, only: alloc, ralloc
-      use vinlst_c, only: first => frstvi, indtei, ndvin, nvinti, valtei
+      use grasp_parameters,   only: orbital_index_radix
+      use array_memory_management, only: alloc, ralloc
+      use vinti_integral_table, only: first => frstvi, indtei, ndvin, nvinti, valtei
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

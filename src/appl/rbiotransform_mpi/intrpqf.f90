@@ -17,15 +17,15 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_radial_points
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use biorb_c, only: double, max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
+      use grasp_parameters,   only: max_radial_points
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use biorthogonal_orbital_sets, only: max_orbitals, nhff, nhii, eff, gamaff, eii, gamaii, ncfff, nwff, ncfii, nwii, npff, &
           nakff, npii, nakii, nklff, nkjff, nklii, nkjii, nnff, nnii
-      use orb_c, only: double, max_orbitals
-      use def_c,           only:accy
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use orbital_csf_basis, only: max_orbitals
+      use atomic_calculation_state,           only:accy
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -78,7 +78,8 @@
 !   Checks
 !
       if (rama > rn) then
-         write (*, 300) rn, rama
+         write (*, '(/,"INTRPQ: Grid of insufficient extent:"/," Present grid has R(N) = ",1p,1d19.12,&
+            &" Bohr radii"/,"          Require R(N) = ",1d19.12," Bohr radii")') rn, rama
          stop
       end if
 !
@@ -213,7 +214,8 @@
       pfff(mfjp1:radial_point_count,j) = 0.0_real64
       qfff(mfjp1:radial_point_count,j) = 0.0_real64
 !
-      if (ldbpr(3) .and. kount>0) write (99, 301) accy, kount, mfj
+      if (ldbpr(3) .and. kount>0) write (99, '(/,"INTRPQ: Interpolation procedure not converged to",1p,1d19.12,&
+         &" for ",1i3," of ",1i3," tabulation points")') accy, kount, mfj
 !
 !   Normalization
 !
@@ -224,11 +226,6 @@
 !
       return
 !
-  300 format(/,"INTRPQ: Grid of insufficient extent:"/,&
-         " Present grid has R(N) = ",1p,1d19.12," Bohr radii"/,&
-         "          Require R(N) = ",1d19.12," Bohr radii")
-  301 format(/,"INTRPQ: Interpolation procedure not converged to",1p,1d19.12,&
-         " for ",1i3," of ",1i3," tabulation points")
       return
       contains
 

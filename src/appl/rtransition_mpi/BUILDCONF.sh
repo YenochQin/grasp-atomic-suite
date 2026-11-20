@@ -1,5 +1,5 @@
 EXE=rtransition_mpi
-LIBRARIES="mcp90 dvd90 rang90 mpiu90 9290 mod"
+LIBRARIES="breit_angular_support davidson_eigensolver spin_angular grasp_mpi core grasp_shared"
 LAPACK=true
 ISMPI=true
 FILES="

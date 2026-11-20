@@ -40,23 +40,23 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use default_c, only: double, inpci, ndef, ndump
-      use cons_c, only: double, eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use numeric_constants, only: eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
       use rwfnestimate_input, only: radial_input_options, parse_radial_options, load_radial_header
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
+      use yes_no_input, only: getyn
       use setdbg_i, only: setdbg
-      use setmc_i, only: setmc
-      use setcon_i, only: setcon
+      use machine_constants, only: setmc
+      use physical_constants, only: setcon
       use setsum_i, only: setsum
       use screenpar_i, only: screenpar
       use getinf_i, only: getinf
       use strsum_i, only: strsum
       use genrwf_i, only: genrwf
-      use orthsc_i, only: orthsc
+      use radial_orbital_orthogonalization, only: orthsc
       use wrtrwf_i, only: wrtrwf
       implicit none (type, external)
 !-----------------------------------------------

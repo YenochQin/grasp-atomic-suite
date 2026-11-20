@@ -4,8 +4,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use pote_c, only: double, max_radial_points, xp, xq, yp
-      use mpi_c, only: double, mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &
+      use scf_radial_potentials, only: max_radial_points, xp, xq, yp
+      use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &
          & mpi_process_count, mpi_sum
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -15,8 +15,8 @@
       use xpot_i, only: xpot
       use lagcon_i, only: lagcon
       use dacon_i, only: dacon
-      use pote_c, only: double, max_radial_points, xp, xq, yp
-      use suite_linear_algebra, only: dcopy
+      use scf_radial_potentials, only: max_radial_points, xp, xq, yp
+      use blas_lapack_interfaces, only: dcopy
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

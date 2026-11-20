@@ -8,22 +8,21 @@
 !                                                                      *
 !***********************************************************************
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: orbital_index_radix, max_orbitals
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use orb_c, only: byte, csf_count, csf_subshell_occupations, double, max_orbitals, orbital_count
-      use buffer_c, only: double, angular_buffer_capacity, angular_coefficient_count, &
+      use grasp_parameters,    only: orbital_index_radix, max_orbitals
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count
+      use angular_coefficient_buffer_state, only: angular_buffer_capacity, angular_coefficient_count, &
           angular_coefficient_labels, angular_coefficients
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use ris_c, only: double, dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
-      use mpi_c,            only: mpi_rank, mpi_process_count
-      use alcbuf_i, only: alcbuf
-      use ispar_i, only: ispar
-      use itjpo_i, only: itjpo
-      use convrt_i, only: convrt
-      use rkco_gg_i, only: rkco_gg
-      use cord_i, only: cord
+      use ris_c, only: dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
+      use mpi_state,            only: mpi_rank, mpi_process_count
+      use angular_coefficient_buffer, only: alcbuf
+      use csf_quantum_queries, only: ispar, itjpo
+      use integer_format, only: convrt
+      use two_electron_angular_coefficients, only: rkco_gg
+      use closed_shell_mcp, only: cord
       implicit none (type, external)
       real(real64), intent(in) :: vint(max_orbitals, max_orbitals), vint2(max_orbitals, max_orbitals)
       integer, intent(in) :: doit

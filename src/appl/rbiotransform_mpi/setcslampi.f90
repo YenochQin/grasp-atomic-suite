@@ -1,7 +1,7 @@
 subroutine setcsla(name,ncore,igg)
-   use csf_basis_mpi, only: load_csf_basis_mpi
-   use orb_c, only: csf_subshell_occupations
-   use stat_c, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
+   use mpi_csf_basis_input, only: load_csf_basis_mpi
+   use orbital_csf_basis, only: csf_subshell_occupations
+   use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
    implicit none (type, external)
    character(len=24), intent(in) :: name
    integer :: ncore, igg

@@ -1,7 +1,7 @@
 program linear_algebra_contracts
     use, intrinsic :: iso_fortran_env, only: real32
     use, intrinsic :: iso_fortran_env, only: real64
-    use suite_linear_algebra, only: dcopy, ddot, dspevx, slamch, dlamch
+    use blas_lapack_interfaces, only: dcopy, ddot, dspevx, slamch, dlamch
     implicit none (type, external)
     real(real64), target :: backing(8)
     real(real64), pointer :: view(:)

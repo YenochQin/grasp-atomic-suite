@@ -16,12 +16,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: byte, double
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use jlabl_c, only: labj => jlbr, labp => jlbp
-      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use angular_symmetry_labels, only: labj => jlbr, labp => jlbp
+      use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -50,7 +49,7 @@
 !      CALL ALLOC (WT, NCF,'WT', 'WGHTD5')
 !      CALL ALLOC (NEXT,NCF,'NEXT', 'WGHTD5')
 !
-      write (24,300)
+      write (24,'(/"Weights of major contributors to ASF:"//"Level J Parity      CSF contributions"/)')
 !
 !CFF  Initialized NELT for NCF >5
       nelt = 5
@@ -89,9 +88,9 @@
 !
          ip = (iaspar + 3 ) / 2
 !        NELT = MIN (I,5)
-         write (24,301) icf,labj(iatjpo),labp(ip),      &
+         write (24,'(i3,2x,2a4,5(3x,f8.5))') icf,labj(iatjpo),labp(ip),      &
                (csf_mixing_coefficients(iconf(j)),j = 1,nelt)
-         write (24,302) (iconf(j)-ibegin,j = 1,nelt)
+         write (24,'(13x,5(i11))') (iconf(j)-ibegin,j = 1,nelt)
     7 continue
 !
 !   Deallocate storage for local arrays
@@ -101,9 +100,5 @@
 !
       return
 !
-  300 format (/"Weights of major contributors to ASF:"                  &
-             //"Level J Parity      CSF contributions"/)
-  301 format (i3,2x,2a4,5(3x,f8.5))
-  302 format (13x,5(i11))
 !
       end subroutine wghtd5

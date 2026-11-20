@@ -1,8 +1,8 @@
 program cpath_io
-    use mpi_c, only: mpi_finalize, mpi_process_count, mpi_rank, processor_name, processor_name_length, startmpi
-    use cpath_I, only: cpath
-    use sys_chdir_I, only: sys_chdir
-    use sys_getwd_I, only: sys_getwd
+    use mpi_state, only: mpi_finalize, mpi_process_count, mpi_rank, processor_name, processor_name_length, startmpi
+    use mpi_work_paths, only: cpath
+    use mpi_change_directory, only: sys_chdir
+    use mpi_current_directory, only: sys_getwd
     implicit none (type, external)
     character(128) :: startdir, permdir, tmpdir
     character(128) :: expected, current

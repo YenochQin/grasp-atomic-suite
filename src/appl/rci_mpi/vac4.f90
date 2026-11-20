@@ -18,18 +18,18 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_radial_points
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c, only: double, max_radial_points, nuclear_charge, pi, precis, vacuum_speed_of_light_au
-      use grid_c, only: radial_grid, radial_point_count
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use ncdist_c, only: zdist
-      use tatb_c, only: mtp, ta, tb
+      use grasp_parameters,   only: max_radial_points
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use atomic_calculation_state, only: max_radial_points, nuclear_charge, pi, precis, vacuum_speed_of_light_au
+      use radial_grid_state, only: radial_grid, radial_point_count
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use nuclear_charge_distribution, only: zdist
+      use radial_quadrature_workspace, only: mtp, ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use funl_i, only: funl
-      use quad_i, only: quad
+      use radial_quadrature, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -102,7 +102,8 @@
       end if
 !
       if (ldbpr(8)) then
-         write (99, 300)
+         write (99, '(/,/,/," ++++++++++ VAC4 ++++++++++"/,/,2(" -------- r -------- ----- VV2 (r) -----",&
+            &" ----- VV4 (r) -----"))')
          nb2 = radial_point_count/2
          if (2*nb2 == radial_point_count) then
             nrows = nb2
@@ -113,10 +114,10 @@
             ii1 = ii
             ii2 = ii1 + nrows
             if (ii2 <= radial_point_count) then
-               write (99, 301) radial_grid(ii1), tb(ii1), tc(ii1), radial_grid(ii2), tb(ii2), tc(&
+               write (99, '(1p,6(1x,1d19.12))') radial_grid(ii1), tb(ii1), tc(ii1), radial_grid(ii2), tb(ii2), tc(&
                   ii2)
             else if (ii1 <= radial_point_count) then
-               write (99, 301) radial_grid(ii1), tb(ii1), tc(ii1)
+               write (99, '(1p,6(1x,1d19.12))') radial_grid(ii1), tb(ii1), tc(ii1)
             end if
          end do
       end if
@@ -127,9 +128,6 @@
 !
       return
 !
-  300 format(/,/,/," ++++++++++ VAC4 ++++++++++"/,/,2(&
-         " -------- r -------- ----- VV2 (r) -----"," ----- VV4 (r) -----"))
-  301 format(1p,6(1x,1d19.12))
       return
 !
       end subroutine vac4

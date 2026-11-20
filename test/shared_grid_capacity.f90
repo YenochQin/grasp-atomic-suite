@@ -1,13 +1,13 @@
 ! Verify that separately compiled shared modules agree on the radial capacity.
 ! This catches legacy .mod files shadowing a newly compiled parameter_def.
 program shared_grid_capacity
-    use parameter_def, only: NNNP, NNN1, KEYORB, NNNW, NNNWM1, NNNWM2
-    use suite_parameters, only: CONFIG_NNNP => max_radial_points, CONFIG_NNN1 => radial_workspace_capacity, &
+    use grasp_parameters, only: NNNP, NNN1, KEYORB, NNNW, NNNWM1, NNNWM2
+    use compile_time_capacities, only: CONFIG_NNNP => max_radial_points, CONFIG_NNN1 => radial_workspace_capacity, &
        & CONFIG_KEYORB => orbital_index_radix, CONFIG_NNNW => max_orbitals, CONFIG_NNNWM1 => max_orbitals_minus_one, &
        & CONFIG_NNNWM2 => max_orbitals_minus_two
-    use grid_c, only: R => radial_grid, RP => radial_grid_derivative, RPOR => radial_derivative_over_radius
-    use pote_c, only: XP, XQ, YP
-    use tatb_c, only: TA, TB
+    use radial_grid_state, only: R => radial_grid, RP => radial_grid_derivative, RPOR => radial_derivative_over_radius
+    use scf_radial_potentials, only: XP, XQ, YP
+    use radial_quadrature_workspace, only: TA, TB
     implicit none (type, external)
 
     if (any([NNNP, NNN1, KEYORB, NNNW, NNNWM1, NNNWM2] /= &

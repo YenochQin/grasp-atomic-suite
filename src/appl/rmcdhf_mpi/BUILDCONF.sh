@@ -1,5 +1,5 @@
 EXE=rmcdhf_mpi
-LIBRARIES="dvd90 mpiu90 9290 mod"
+LIBRARIES="davidson_eigensolver grasp_mpi core grasp_shared"
 LAPACK=true
 ISMPI=true
 FILES="

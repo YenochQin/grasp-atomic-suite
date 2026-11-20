@@ -2,10 +2,10 @@
 module rwfnestimate_input
    use iso_fortran_env, only: error_unit
    use iso_c_binding, only: c_char, c_int32_t, c_null_char, c_size_t
-   use csf_rust_ffi, only: rust_descriptor_read_radial_header
-   use parameter_def, only: max_orbitals
-   use orb_c, only: orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, orbital_symmetry_labels
-   use def_c, only: electron_count
+   use csf_descriptor_c_bindings, only: rust_descriptor_read_radial_header
+   use grasp_parameters, only: max_orbitals
+   use orbital_csf_basis, only: orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, orbital_symmetry_labels
+   use atomic_calculation_state, only: electron_count
    implicit none (type, external)
    private
    public :: radial_input_options, parse_radial_options, load_radial_header

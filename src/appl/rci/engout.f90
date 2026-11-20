@@ -17,8 +17,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c, only: hartree_to_ev, hartree_to_wavenumber_cm
-      use jlabl_c, only: labj => jlbr, labp => jlbp
+      use atomic_calculation_state, only: hartree_to_ev, hartree_to_wavenumber_cm
+      use angular_symmetry_labels, only: labj => jlbr, labp => jlbp
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -39,15 +39,15 @@
 !
 !   Always print the eigenenergies
 !
-      write (24, 300)
-      write (24, 301)
+      write (24, '(/,"Eigenenergies:")')
+      write (24, '(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)')
       do j = 1, nn
          i = ilev(j)
          eau = e(j) + eav
          ecm = eau*hartree_to_wavenumber_cm
          eev = eau*hartree_to_ev
          ip = (ipar + 3)/2
-         write (24, 302) i, labj(jtot), labp(ip), eau, ecm, eev
+         write (24, '(1i3,2x,2a4,1p,3d22.14)') i, labj(jtot), labp(ip), eau, ecm, eev
       end do
 !
       if (nn > 1) then
@@ -55,30 +55,30 @@
 !   Energy separations
 !
          if (mode==1 .or. mode==3) then
-            write (24, 303)
-            write (24, 301)
+            write (24, '(/,"Energy of each level relative to immediately lower"," level:")')
+            write (24, '(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)')
             do j = 2, nn
                i = ilev(j)
                eau = e(j) - e(j-1)
                ecm = eau*hartree_to_wavenumber_cm
                eev = eau*hartree_to_ev
                ip = (ipar + 3)/2
-               write (24, 302) i, labj(jtot), labp(ip), eau, ecm, eev
+               write (24, '(1i3,2x,2a4,1p,3d22.14)') i, labj(jtot), labp(ip), eau, ecm, eev
             end do
          end if
 !
 !   Energies relative to level 1
 !
          if (mode==2 .or. mode==3) then
-            write (24, 304)
-            write (24, 301)
+            write (24, '(/,"Energy of each level relative to lowest level:")')
+            write (24, '(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)')
             do j = 2, nn
                i = ilev(j)
                eau = e(j) - e(1)
                ecm = eau*hartree_to_wavenumber_cm
                eev = eau*hartree_to_ev
                ip = (ipar + 3)/2
-               write (24, 302) i, labj(jtot), labp(ip), eau, ecm, eev
+               write (24, '(1i3,2x,2a4,1p,3d22.14)') i, labj(jtot), labp(ip), eau, ecm, eev
             end do
          end if
 !
@@ -86,11 +86,6 @@
 !
       return
 !
-  300 format(/,"Eigenenergies:")
-  301 format(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)
-  302 format(1i3,2x,2a4,1p,3d22.14)
-  303 format(/,"Energy of each level relative to immediately lower"," level:")
-  304 format(/,"Energy of each level relative to lowest level:")
       return
 !
       end subroutine engout

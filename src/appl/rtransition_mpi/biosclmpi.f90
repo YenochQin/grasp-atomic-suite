@@ -19,29 +19,29 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use default_c, only: double, inpci, ndef, ndump
-      use debug_c, only: ldbpr, cutoff
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use debug_output_settings, only: ldbpr, cutoff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
-      use setmc_i, only: setmc
-      use setcon_i, only: setcon
+      use yes_no_input, only: getyn
+      use machine_constants, only: setmc
+      use physical_constants, only: setcon
       use fname_i, only: fname
       use mrgcsl_i, only: mrgcsl
 
       use getosd_i, only: getosd
       use strsum_i, only: strsum
-      use factt_i, only: factt
+      use log_factorial_table, only: factt
       use oscl_i, only: oscl
-      use mpi_c, only: double, mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_integer, &
+      use mpi_state, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_integer, &
          & mpi_process_count, mpi_rank, processor_name, processor_name_length
 
-      use suite_system, only: exit => terminate_process
-      use mpiu_i, only: startmpi2
-      use mpiu_i, only: stopmpi2
-      use setiso_i, only: setiso
-      use sys_chdir_i, only: sys_chdir
+      use posix_services, only: exit => terminate_process
+      use mpi_utilities, only: startmpi2
+      use mpi_utilities, only: stopmpi2
+      use isotope_data_input, only: setiso
+      use mpi_change_directory, only: sys_chdir
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

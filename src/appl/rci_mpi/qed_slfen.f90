@@ -15,17 +15,17 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_orbitals, max_radial_points
-      use def_c, only: double, max_radial_points, nuclear_charge, pi, speed_of_light_au
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use grasp_parameters,   only: max_orbitals, max_radial_points
+      use atomic_calculation_state, only: max_radial_points, nuclear_charge, pi, speed_of_light_au
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use orb_c, only: orbital_count, orbital_principal_n, orbital_kappa
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use orbital_csf_basis, only: orbital_count, orbital_principal_n, orbital_kappa
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use qedcut_c, only: nqedcut, nqedmax
-      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_rank
+      use qed_orbital_cutoffs, only: nqedcut, nqedmax
+      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

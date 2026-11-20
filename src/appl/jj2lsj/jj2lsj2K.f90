@@ -32,11 +32,11 @@
 !-----------------------------------------------
       use jj2lsj_profile, only: profile_finish, profile_start
       use jj2lsj_code, only: jj2lsj, profile_finish, profile_start
-      use factt_i, only: factt
-      use setiso_i, only: setiso
-      use starttime_i, only: starttime
-      use stoptime_i, only: stoptime
-      use setcon_i, only: setcon
+      use log_factorial_table, only: factt
+      use isotope_data_input, only: setiso
+      use run_timer_start, only: starttime
+      use run_timer_finish, only: stoptime
+      use physical_constants, only: setcon
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

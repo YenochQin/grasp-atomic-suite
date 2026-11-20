@@ -33,11 +33,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c, only: double, wt
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use atomic_calculation_state, only: wt
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use pos_c, only: double, total_csf_count, mixing_coefficient_storage_size, &
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use symmetry_block_offsets, only: total_csf_count, mixing_coefficient_storage_size, &
           csf_offsets_by_block, eigenvalue_offsets_by_block, mixing_offsets_by_block
       implicit none (type, external)
 !-----------------------------------------------

@@ -36,28 +36,28 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: alloc, dalloc, double, long
-      use def_c, only: double, iccmin
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use array_memory_management, only: alloc, dalloc
+      use atomic_calculation_state, only: iccmin
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
           matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
           nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
-      use mpi_c, only: double, mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &
+      use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, &
          & mpi_process_count, mpi_rank, mpi_sum
-      use orb_c, only: csf_count, double
-      use syma_c,          only: jpgg
-      use wchblk_c, only: jblockk => jblock, double
+      use orbital_csf_basis, only: csf_count
+      use level_symmetry_metadata,          only: jpgg
+      use active_symmetry_block, only: jblockk => jblock
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use spicmvmpi_i, only: spicmvmpi
-      use iniestmpi_i, only: iniestmpi
-      use gdvd_i, only: dvd_operator, gdvd
+      use mpi_sparse_matrix_product, only: spicmvmpi
+      use mpi_initial_eigenvectors, only: iniestmpi
+      use davidson_eigensolver, only: dvd_operator, gdvd
       use itjpo_i, only: itjpo
       use ispar_i, only: ispar
-      use suite_linear_algebra, only: dcopy, dscal
+      use blas_lapack_interfaces, only: dcopy, dscal
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -186,9 +186,9 @@
          call dalloc (jwork, "JWORK", "MANEIGmpi")
 
          if (mpi_rank == 0) then
-            write (*,301) nloops, nmv
+            write (*,'("DVDSON: ",1i3," loops; ",1i3," matrix-vector multiplies.")') nloops, nmv
             if (mpi_error_code /= 0) then
-               write (*,302) mpi_error_code
+               write (*,'(" Returned from DVDSON with IERR = ",1i4)') mpi_error_code
             end if
          end if
       end if
@@ -239,12 +239,6 @@
 
       end do
 
-  301 format("DVDSON: ",1i3," loops; ",1i3," matrix-vector multiplies.")
-  302 format(" Returned from DVDSON with IERR = ",1i4)
-  303 format(/," ***** WARNING *****"/,/,&
-         " The angular momentum and parity of level ",1i2," have changed:"/,&
-         " Last iteration: (2J+1) = ",1i2,", parity = ",1i2,";"/,&
-         " this iteration: (2J+1) = ",1i2,", parity = ",1i2,".")
 
       return
       end subroutine maneigmpi

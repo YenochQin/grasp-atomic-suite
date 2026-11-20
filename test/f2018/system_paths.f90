@@ -1,8 +1,8 @@
 program system_paths
-    use suite_system, only: path_access, run_shell, terminate_process, working_directory
-    use sys_chdir_I, only: sys_chdir
-    use sys_getwd_I, only: sys_getwd
-    use sys_mkdir_I, only: sys_mkdir
+    use posix_services, only: path_access, run_shell, terminate_process, working_directory
+    use mpi_change_directory, only: sys_chdir
+    use mpi_current_directory, only: sys_getwd
+    use mpi_make_directory, only: sys_mkdir
     implicit none (type, external)
     character(4096) :: before, after
     character(1) :: short

@@ -20,10 +20,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: alloc, ralloc, double
-      use bilst_c, only: double, ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
+      use array_memory_management, only: alloc, ralloc
+      use breit_integral_tables, only: ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
           valtp1, valtp2, valtp3, valtp4, valtp5, valtp6, first
-      use orb_c,           only: csf_count, orbital_count, csf_subshell_occupations
+      use orbital_csf_basis,           only: csf_count, orbital_count, csf_subshell_occupations
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

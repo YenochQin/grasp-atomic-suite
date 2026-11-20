@@ -1,5 +1,5 @@
 EXE=rci_mpi
-LIBRARIES="mpiu90 rang90 9290 dvd90 mod"
+LIBRARIES="grasp_mpi spin_angular breit_angular_support core davidson_eigensolver grasp_shared"
 LAPACK=true
 ISMPI=true
 FILES="
@@ -23,8 +23,8 @@ rkint.f90 rkint_I.f90
 skint.f90 skint_I.f90
 brra.f90 brra_I.f90
 brintf.f90 brintf_I.f90
-talk.f90 talk_I.f90
-cxk.f90 cxk_I.f90
+talk.f90
+cxk.f90
 breid.f90 breid_I.f90
 brint1.f90 brint1_I.f90
 brint2.f90 brint2_I.f90

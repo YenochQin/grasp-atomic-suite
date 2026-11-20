@@ -108,5 +108,5 @@ add_executable(rmcdhf
     strsum_I.f90
     rscfvu.f90
 )
-target_link_libraries_Fortran(rmcdhf PUBLIC dvd90 9290 mod)
+target_link_libraries_Fortran(rmcdhf PUBLIC davidson_eigensolver core grasp_shared)
 install(TARGETS rmcdhf DESTINATION bin/)

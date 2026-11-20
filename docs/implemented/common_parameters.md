@@ -3,17 +3,17 @@
 > 文档状态：现行实现；2026-11-16 使用语义变量名，保留容量兼容别名及原版默认值与网格初始化。
 > 参考源码：工作区 GRASP `488e875d1a7ec631baf4ad33682798bc795b7435`。
 > 移除 CSFG 后，网格脚本覆盖十五个普通网格入口与两个 RCI 续算 ACCY 入口。
-> 容量由集中配置定义，经 parameter_def 转导；历史实验数值不代表当前默认值。
+> 容量由集中配置定义，经 grasp_parameters 转导；历史实验数值不代表当前默认值。
 
 ## 参数归属
 
-[`suite_parameters_M.f90`](../../src/lib/libmod/suite_parameters_M.f90) 是容量常量的唯一来源；
-[`parameter_def_M.f90`](../../src/lib/libmod/parameter_def_M.f90) 用 `USE suite_parameters, ONLY: ...`
-转导语义名称，并为六个原有名称提供 `USE` 别名。共享库和各串行/MPI 程序继续 `USE parameter_def`，
+[`compile_time_capacities.f90`](../../src/lib/grasp_shared/compile_time_capacities.f90) 是容量常量的唯一来源；
+[`grasp_parameters.f90`](../../src/lib/grasp_shared/grasp_parameters.f90) 用 `USE compile_time_capacities, ONLY: ...`
+转导语义名称，并为六个原有名称提供 `USE` 别名。共享库和各串行/MPI 程序继续 `USE grasp_parameters`，
 修改配置不需要逐个修改调用方。配置模块默认值与参考原版相同。
 网格的 `radial_grid_defaults` 集中初始化模块不使用，各入口保留原版初始化。
 
-| 配置模块中的名称 | parameter_def 兼容别名 | 默认值 | 含义 |
+| 配置模块中的名称 | grasp_parameters 兼容别名 | 默认值 | 含义 |
 | --- | --- | --- | --- |
 | `orbital_index_radix` | `KEYORB` | 215 | 轨道整数打包参数 |
 | `max_radial_points` | `NNNP` | 590 | 径向数组编译容量；部分旧径向路径也将它用于尾部边界 |
@@ -22,13 +22,13 @@
 | `max_orbitals_minus_one` | `NNNWM1` | 126 | 轨道容量减一 |
 | `max_orbitals_minus_two` | `NNNWM2` | 125 | 轨道容量减二 |
 
-在 `suite_parameters_M.f90` 修改表中第一列的基础常量；工作区容量和两个轨道容量派生量自动计算。
+在 `compile_time_capacities.f90` 修改表中第一列的基础常量；工作区容量和两个轨道容量派生量自动计算。
 无需修改转导模块。修改后须全量重编译。`max_radial_points` 与运行时点数 `radial_point_count` 不同。
 
 ## 各入口的原版默认值
 
 四个保留的 RMCDHF 入口及 RHFS、RIS、RDENSITY 各自初始化网格；
-g_J 继续复用 RHFS。运行时变量仍保存在原有 `grid_C`、`def_C` 和 `coun_C`。
+g_J 继续复用 RHFS。运行时变量仍保存在原有 `radial_grid_state`、`atomic_calculation_state` 和 `radial_node_count_settings`。
 
 | 核模型 | RNT | H | N | HP |
 | --- | --- | --- | --- | --- |
@@ -54,12 +54,12 @@ ACCY 初始化时序也恢复原版：
 
 CSFG 的专用源码、构建和测试已移除，其历史参数见[归档记录](../archive/graspg_integration.md)。
 
-普通 `rwfnestimate`、串行/MPI `rci`、串行/MPI `rbiotransform` 和三个 `rtransition` 变体新增八个网格入口；普通 RCI 保留原有公共网格初始化，未启用注释中的点核分支。`rangular` 不初始化径向网格，但通过同一 `parameter_def` 使用轨道容量和打包参数。普通 `rwfnestimate` 的六个实现/接口文件已移除局部 NNNP/NNN1 定义；修改中央容量无需逐个修改这些文件。
+普通 `rwfnestimate`、串行/MPI `rci`、串行/MPI `rbiotransform` 和三个 `rtransition` 变体新增八个网格入口；普通 RCI 保留原有公共网格初始化，未启用注释中的点核分支。`rangular` 不初始化径向网格，但通过同一 `grasp_parameters` 使用轨道容量和打包参数。普通 `rwfnestimate` 的六个实现/接口文件已移除局部 NNNP/NNN1 定义；修改中央容量无需逐个修改这些文件。
 
 ## 网格实验与重编译
 
 在独立源码副本上使用 [网格脚本](../../scripts/README.md)。`atomic-suite` 布局
-修改 `suite_parameters_M.f90` 和需要变更的十五个普通入口；显式 ACCY 修改也覆盖两个普通 RCI 续算入口。
+修改 `compile_time_capacities.f90` 和需要变更的十五个普通入口；显式 ACCY 修改也覆盖两个普通 RCI 续算入口。
 仅使用 `--nnnp` 时只改中央配置的 `max_radial_points`，工作区容量自动派生，转导模块及入口保持原样；
 `--n` 单独选择实际点数，其他网格参数仍修改各入口。脚本检查六项定义与完整转导接口。
 

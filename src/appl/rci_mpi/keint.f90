@@ -17,13 +17,13 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: orbital_index_radix
-      use memory_man, only: alloc, ralloc, double
-      use keilst_c, only: double, frstki, indkei, ndkea, nkei, valkei
+      use grasp_parameters,   only: orbital_index_radix
+      use array_memory_management, only: alloc, ralloc
+      use kinetic_energy_integral_table, only: frstki, indkei, ndkea, nkei, valkei
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use rinti_i, only: rinti
+      use one_electron_radial_integral, only: rinti
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

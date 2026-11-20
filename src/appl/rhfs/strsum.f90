@@ -12,12 +12,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use nsmdat_c,        only: sqn, dmomnm, qmomb,                  &
+      use isotope_properties,        only: sqn, dmomnm, qmomb,                  &
                                  hfsi=>sqn, hfsd=>dmomnm, hfsq=>qmomb
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -27,12 +27,12 @@
 !
 !    Write nuclear data
 !
-      write (24, 302) hfsi
-      write (24, 303) hfsd
-      write (24, 304) hfsq
-      write (29, 302) hfsi
-      write (29, 303) hfsd
-      write (29, 304) hfsq
+      write (24, '("Nuclear spin                        ",1p,d22.15," au")') hfsi
+      write (24, '("Nuclear magnetic dipole moment      ",1p,d22.15," n.m.")') hfsd
+      write (24, '("Nuclear electric quadrupole moment  ",1p,d22.15," barns")') hfsq
+      write (29, '("Nuclear spin                        ",1p,d22.15," au")') hfsi
+      write (29, '("Nuclear magnetic dipole moment      ",1p,d22.15," n.m.")') hfsd
+      write (29, '("Nuclear electric quadrupole moment  ",1p,d22.15," barns")') hfsq
 !
 !    Write the list of eigenpair indices
 !
@@ -40,9 +40,6 @@
 !
       return
 !
-  302 format("Nuclear spin                        ",1p,d22.15," au")
-  303 format("Nuclear magnetic dipole moment      ",1p,d22.15," n.m.")
-  304 format("Nuclear electric quadrupole moment  ",1p,d22.15," barns")
       return
 !
       end subroutine strsum

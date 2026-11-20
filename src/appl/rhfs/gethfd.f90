@@ -14,26 +14,26 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_orbitals
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c, only: accy, double, max_radial_points, nuclear_charge, speed_of_light_au, vacuum_speed_of_light_au
-      use default_c, only: double, inpci, ndef, ndump
-      use foparm_c, only: iccut
-      use grid_c,          only: radial_grid_scale, transformed_grid_step, radial_point_count, asymptotic_grid_step
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use orb_c, only: double, max_orbitals
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use grasp_parameters,   only: max_orbitals
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use atomic_calculation_state, only: accy, max_radial_points, nuclear_charge, speed_of_light_au, vacuum_speed_of_light_au
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use first_order_csf_cutoffs, only: iccut
+      use radial_grid_state,          only: radial_grid_scale, transformed_grid_step, radial_point_count, asymptotic_grid_step
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use orbital_csf_basis, only: max_orbitals
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use wfac_c, only: double, wfact
+      use breit_frequency_scale, only: wfact
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
-      use setiso_i, only: setiso
-      use setqic_i, only: setqic
-      use radgrd_i, only: radgrd
-      use nucpot_i, only: nucpot
-      use setrwfa_i, only: setrwfa
+      use yes_no_input, only: getyn
+      use isotope_data_input, only: setiso
+      use radial_stencil_weights, only: setqic
+      use radial_grid_setup, only: radgrd
+      use nuclear_coulomb_potential, only: nucpot
+      use radial_wavefunction_input, only: setrwfa
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

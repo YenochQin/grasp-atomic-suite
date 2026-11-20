@@ -30,13 +30,13 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use orb_c, only: iiqa => csf_subshell_occupations, double, orbital_kappa, orbital_two_j
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use orbital_csf_basis, only: iiqa => csf_subshell_occupations, orbital_kappa, orbital_two_j
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use clrx_i, only: clrx
-      use iq_i, only: iq
+      use relativistic_three_j, only: clrx
+      use csf_quantum_queries, only: iq
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

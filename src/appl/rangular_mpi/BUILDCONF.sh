@@ -1,5 +1,5 @@
 EXE=rangular_mpi
-LIBRARIES="rang90 mcp90 mpiu90 9290 mod"
+LIBRARIES="spin_angular breit_angular_support grasp_mpi core grasp_shared"
 LAPACK=true
 ISMPI=true
 FILES="

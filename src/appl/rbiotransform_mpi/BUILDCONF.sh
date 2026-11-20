@@ -1,5 +1,5 @@
 EXE=rbiotransform_mpi
-LIBRARIES="rang90 mpiu90 9290 mod"
+LIBRARIES="spin_angular grasp_mpi core grasp_shared"
 LAPACK=true
 ISMPI=true
 FILES="

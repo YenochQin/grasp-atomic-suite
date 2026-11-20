@@ -12,9 +12,9 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
-      use orb_c, only: double, orbital_count
-      use kkstart_c, only: double, kmax, kstart
+      use distributed_slater_integrals, only: indteirk, valteirk, rk_local_count
+      use orbital_csf_basis, only: orbital_count
+      use coulomb_rank_offsets, only: kmax, kstart
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

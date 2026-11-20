@@ -1,5 +1,5 @@
 EXE=rci
-LIBRARIES="rang90 9290 dvd90 mod"
+LIBRARIES="spin_angular breit_angular_support core davidson_eigensolver grasp_shared"
 LAPACK=true
 FILES="
 # Missing interface
@@ -23,8 +23,8 @@ ratden_I.f90
 # Common block remnants
 where_C.f90
 
-talk.f90 talk_I.f90
-cxk.f90 cxk_I.f90
+talk.f90
+cxk.f90
 bessel.f90 bessel_I.f90
 dnicmv.f90 dnicmv_I.f90
 engout.f90 engout_I.f90

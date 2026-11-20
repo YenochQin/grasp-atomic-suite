@@ -19,22 +19,22 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use memory_man, only: alloc, dalloc, ralloc, double
-      use corre_c, only: double, lcorre, max_orbitals
-      use damp_c, only: double, max_orbitals, mixing_damping_factors, orbital_damping_factors
-      use def_c, only: accy, double, max_radial_points, nsic
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use array_memory_management, only: alloc, dalloc, ralloc
+      use correlation_orbital_flags, only: lcorre, max_orbitals
+      use scf_damping_factors, only: max_orbitals, mixing_damping_factors, orbital_damping_factors
+      use atomic_calculation_state, only: accy, max_radial_points, nsic
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use int_c, only: double, max_radial_points, mtp0, p, p0, q, q0, tf, tg, xu, xv
-      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_gather, &
+      use radial_dirac_workspace, only: max_radial_points, mtp0, p, p0, q, q0, tf, tg, xu, xv
+      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_gather, &
          & mpi_integer, mpi_process_count, mpi_rank
-      use orb_c, only: double, max_orbitals, orbital_count, orbital_energy_parameters, orbital_origin_exponents, &
+      use orbital_csf_basis, only: max_orbitals, orbital_count, orbital_energy_parameters, orbital_origin_exponents, &
           orbital_principal_n, orbital_symmetry_labels
-      use orthct_c, only: orthst
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use scf_orthogonality_control, only: orthst
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use radial_quadrature_workspace, only: mtp, radial_workspace_capacity, ta, tb
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -42,11 +42,11 @@
       use cofpotmpi_i, only: cofpotmpi
       use defcor_i, only: defcor
       use solve_i, only: solve
-      use orthsc_i, only: orthsc
+      use radial_orbital_orthogonalization, only: orthsc
 !GG      USE matrixmpi_I
 !GG      USE newcompi_I
       use setlagmpi_i, only: setlagmpi
-      use quad_i, only: quad
+      use radial_quadrature, only: quad
       use consis_i, only: consis
       use dampck_i, only: dampck
       use dampor_i, only: dampor
@@ -209,7 +209,9 @@
 !   Upon failure issue message; take corrective action if possible
 !
       if (fail) then
-         if (mpi_rank == 0) write (*, 300) orbital_principal_n(j), orbital_symmetry_labels(j), method(j)
+         if (mpi_rank == 0) write (*, '(/," Failure; equation for orbital ",1i2,1a2,&
+            &" could not be solved using method ",1i1)') &
+            orbital_principal_n(j), orbital_symmetry_labels(j), method(j)
          if (method(j) /= 2) then
             method(j) = 2
 !XHH orthsc does not have any argument
@@ -223,7 +225,8 @@
             call setlagmpi (eol)
             goto 1
          else
-            if (mpi_rank == 0) write (*, 301)
+            if (mpi_rank == 0) write (*, '(/,/," ****** Error in SUBROUTINE IMPROV ******"/,&
+               &" Convergence not obtained"/)')
             !CALL TIMER (0)
             stop
          end if
@@ -286,18 +289,13 @@
 !   Print details of iteration
 !
       if (mpi_rank == 0)                                                &
-         write (*, 302) orbital_principal_n(j),orbital_symmetry_labels(j),orbital_energy_parameters(j),method(j), &
+         write (*, '(1x,1i2,1a2,1p,1d16.7,1x,1i2,d11.3,1d10.2,1d10.2,0p,f6.3,1x,1i5,1x,1i5,1x,1i2,1x,1i2)') &
+            orbital_principal_n(j),orbital_symmetry_labels(j),orbital_energy_parameters(j),method(j), &
             & orbital_origin_parameters(j),scnsty(j), &
 !cjb DNORM-1 -> SQRT(DNORM)-1
 !cjb                    DNORM - 1, ODAMPJ, JP, MF(J), INV, NNP
                         sqrt(dnorm)-1, odampj, jp, orbital_last_grid_index(j), inv, nnp
       dampmx = dmax1(dampmx,dabs(odampj))
 
-  300 format(/," Failure; equation for orbital ",1i2,1a2,&
-         " could not be solved using method ",1i1)
-  301 format(/,/," ****** Error in SUBROUTINE IMPROV ******"/,&
-         " Convergence not obtained"/)
-  302 format (1x,1i2,1a2,1p,1d16.7,1x,1i2,d11.3,1d10.2,1d10.2,&
-              0p,f6.3,1x,1i5,1x,1i5,1x,1i2,1x,1i2)
       return
       end subroutine improvmpi

@@ -1,6 +1,5 @@
 module npol_test_support
-    use, intrinsic :: iso_fortran_env, only: double => real64
-    use npol_C, only: npol_config, NPOL_MODEL
+    use nuclear_polarization_state, only: npol_config, NPOL_MODEL
     implicit none (type, external)
 contains
     subroutine require(condition, label)

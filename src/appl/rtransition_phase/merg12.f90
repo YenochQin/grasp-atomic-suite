@@ -1,5 +1,5 @@
 subroutine merg12(name,ncorer,ncore)
-   use csf_basis_merge, only: merge_csf_bases
+   use csf_basis_merging, only: merge_csf_bases
    implicit none (type, external)
    character(len=24), intent(in) :: name(2)
    integer, intent(in) :: ncorer,ncore

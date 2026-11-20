@@ -19,49 +19,49 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
-      use parameter_def,   only: max_radial_points, orbital_index_radix
-      use memory_man, only: alloc, dalloc, byte, double, long
+      use grasp_parameters,   only: max_radial_points, orbital_index_radix
+      use array_memory_management, only: alloc, dalloc
 !cjb iso_fortran_env :: output_unit, error_unit
       use, intrinsic :: iso_fortran_env, only: error_unit, output_unit
 !-----------------------------------------------
 !   C O M M O N    B l o c k s
 !-----------------------------------------------
-      use bcore_c, only: icore
-      use bilst_c, only: double, ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
+      use breit_core_occupations, only: icore
+      use breit_integral_tables, only: ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
           valtp1, valtp2, valtp3, valtp4, valtp5, valtp6, first
-      use buffer_c, only: double, angular_buffer_capacity, angular_coefficient_count, &
+      use angular_coefficient_buffer_state, only: angular_buffer_capacity, angular_coefficient_count, &
           angular_coefficient_labels, angular_coefficients
-      use coeils_c, only: double, frstco, indoei, ncoei, ndcoea, valoei
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c, only: double, emn, max_radial_points
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use coulomb_integral_table, only: frstco, indoei, ncoei, ndcoea, valoei
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use atomic_calculation_state, only: emn, max_radial_points
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use iccu_c, only: iccut, iccutblk
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use csf_block_cutoffs, only: iccut, iccutblk
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+      use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
           matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
           nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
-      use keilst_c, only: double, frstki, indkei, ndkea, nkei, valkei
-      use ncdist_c, only: double, max_radial_points, zdist
-      use orb_c, only: csf_count,  orbital_count
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use stat_c, only: byte, csf_coupling_quantum_codes, csf_subshell_quantum_codes, double, jcupar, jqsar
-      use stor_c, only: double, keep
-      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
-      use vinlst_c, only: double, frstvi, indtei, ndvin, nvinti, valtei
-      use vpilst_c, only: double, frstvp, indvpi, ndvpa, nvpi, valvpi
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use kinetic_energy_integral_table, only: frstki, indkei, ndkea, nkei, valkei
+      use nuclear_charge_distribution, only: max_radial_points, zdist
+      use orbital_csf_basis, only: csf_count,  orbital_count
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, jcupar, jqsar
+      use breit_bessel_cache_keys, only: keep
+      use radial_quadrature_workspace, only: mtp, radial_workspace_capacity, ta, tb
+      use vinti_integral_table, only: frstvi, indtei, ndvin, nvinti, valtei
+      use vacuum_polarization_integral_table, only: frstvp, indvpi, ndvpa, nvpi, valvpi
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use cteilsrk_c, only: double, indteirk, valteirk, rk_local_count
-      use blim_c, only: coeffcut1, coeffcut2, double, iprerun, ncsfpre
-      use where_c, only: double, imcdf
-      use eigvec1_c, only: double, evec1
+      use distributed_slater_integrals, only: indteirk, valteirk, rk_local_count
+      use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
+      use where_c, only: imcdf
+      use scf_previous_eigenvectors, only: evec1
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use alcbuf_i, only: alcbuf
+      use angular_coefficient_buffer, only: alcbuf
       use iabint_i, only: iabint
       use brint1_i, only: brint1
       use brint2_i, only: brint2
@@ -69,15 +69,15 @@
       use brint4_i, only: brint4
       use brint5_i, only: brint5
       use brint6_i, only: brint6
-      use convrt_i, only: convrt
-      use ichop_i, only: ichop
+      use integer_format, only: convrt
+      use subshell_occupation_class, only: ichop
       use keint_i, only: keint
       use rkintc_i, only: rkintc
       use vint_i, only: vint
       use vpint_i, only: vpint
-      use onescalar_i, only: onescalar
-      use rkco_gg_i, only: rkco_gg
-      use cord_i, only: cord
+      use one_electron_scalar_coefficients, only: onescalar
+      use two_electron_angular_coefficients, only: rkco_gg
+      use closed_shell_mcp, only: cord
       implicit none (type, external)
       external :: breid
 !----------------------------------------------

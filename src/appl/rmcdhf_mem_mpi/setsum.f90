@@ -4,11 +4,11 @@
 !-----------------------------------------------
 !    M O D U L E S
 !-----------------------------------------------
-     use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+     use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use openfl_i, only: openfl
+      use file_open, only: openfl
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

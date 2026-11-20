@@ -180,7 +180,7 @@ def entrypoints(root: Path) -> None:
         # No second matrix contribution and MODE=0 retained in both layouts.
         setham = (directory / "setham.f90").read_text().lower()
         assert "npol" not in setham and re.search(r"rinti\s*\([^\n]*,\s*0\s*\)", setham)
-    assert "npol" not in (root / "src/lib/lib9290/nucpot.f90").read_text().lower()
+    assert "npol" not in (root / "src/lib/core/nuclear_coulomb_potential.f90").read_text().lower()
     # Rejected solver variants remain absent from the supported source tree.
     for variant in ("rmcdhf90", "rmcdhf90_mem", "rmcdhf90_mpi", "rmcdhf90_mem_mpi",
                     "rmcdhf_mem_strict_mpi", "rmcdhf_mem_diag_mpi"):

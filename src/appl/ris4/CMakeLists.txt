@@ -55,11 +55,11 @@ if(GRASP_BUILD_SERIAL_APPS)
         vinti.f90
         engout.f90
     )
-    target_link_libraries_Fortran(ris4 PUBLIC mod 9290 rang90 mcp90 mod 9290)
+    target_link_libraries_Fortran(ris4 PUBLIC grasp_shared core spin_angular breit_angular_support grasp_shared core)
     install(TARGETS ris4 DESTINATION bin/)
 endif()
 
-if(TARGET mpiu90)
+if(TARGET grasp_mpi)
     add_executable(ris4_mpi
         ris_C.f90
         teilst_C.f90
@@ -123,7 +123,7 @@ if(TARGET mpiu90)
         engout.f90
         ris_mpi.f90
     )
-    target_link_libraries_Fortran(ris4_mpi PUBLIC mpiu90 mod 9290 rang90 mcp90 mod 9290)
+    target_link_libraries_Fortran(ris4_mpi PUBLIC grasp_mpi grasp_shared core spin_angular breit_angular_support grasp_shared core)
     target_include_directories(ris4_mpi PRIVATE ${MPI_Fortran_INCLUDE_PATH})
     target_link_libraries(ris4_mpi PRIVATE ${MPI_Fortran_LIBRARIES})
     set_target_properties(ris4_mpi PROPERTIES

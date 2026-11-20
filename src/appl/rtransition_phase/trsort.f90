@@ -19,11 +19,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: orbital_index_radix
-      use memory_man, only: alloc, dalloc, ralloc, double
-      use default_c, only: double, inpci, ndef, ndump
-      use orb_c, only: double, orbital_count, orbital_principal_n, orbital_symmetry_labels
-      use osc_c, only: nkp, kp
+      use grasp_parameters,   only: orbital_index_radix
+      use array_memory_management, only: alloc, dalloc, ralloc
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use orbital_csf_basis, only: orbital_count, orbital_principal_n, orbital_symmetry_labels
+      use transition_matrix_workspace, only: nkp, kp
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -313,7 +313,8 @@
       write (nfile2) iblki, iblkf, orbital_count, nkp
       write (nfile2) nint
       if (nmcp /= 0) then
-         if (lprint) write (99, 301)
+         if (lprint) write (99, '(/,/,"  k"/," d  (rs)  Coefficients:"/,"  ab"/,/,/,&
+            &"    a     b          r         s  Coefficient"/)')
          mlr = 1
          do i = 1, nint
             mup = iptcsf(i)
@@ -322,7 +323,8 @@
             if (lprint) then
                ia = lblint(i)/key
                ib = mod(lblint(i),key)
-               write (99, 302) orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
+               write (99, '(2(2x,i2,a2))') &
+                  orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
                   & orbital_symmetry_labels(ib)
             end if
             write (nfile2) (isldr(m),isldr1(m),xsldr(m),m=mlr,mup)
@@ -332,7 +334,7 @@
                   is = isldr1(m)
 !                 IR = ISLDR(M)/NCA
                   ir = isldr(m)
-                  write (99, 303) ir, is, xsldr(m)
+                  write (99, '(14x,1i6,2x,1i6,2x,1p,1d22.15)') ir, is, xsldr(m)
                end do
             end if
             mlr = mup + 1
@@ -356,10 +358,6 @@
       write (6, *) "TRSORT: Error reading CSF-based file."
       stop
 !
-  301 format(/,/,"  k"/," d  (rs)  Coefficients:"/,"  ab"/,/,/,&
-         "    a     b          r         s  Coefficient"/)
-  302 format(2(2x,i2,a2))
-  303 format(14x,1i6,2x,1i6,2x,1p,1d22.15)
       return
 !
       end subroutine trsort

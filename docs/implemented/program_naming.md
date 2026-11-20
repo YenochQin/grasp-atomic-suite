@@ -28,7 +28,10 @@
 其它表中可执行文件原本就没有 `90`，命令不变。
 
 CSFG 继续处于独立可选边界，其目录/程序名称保留。
-共享数值库 `lib9290`、`libdvd90`、`librang90`、`libmcp90`、`mpi90` 等沿用既有身份。
+自旋–角向库已更名为 [`spin_angular`](spin_angular_naming.md)。原 `libmcp90` 已更名为
+[`breit_angular_support`](breit_angular_support_migration.md)。
+Davidson 求解库已更名为 [`libdavidson_eigensolver`](davidson_eigensolver_migration.md)。
+MPI 支持库源码位于 [src/lib/mpi](grasp_mpi_naming.md)。
 网格补丁器的 `atomic-suite` 布局使用新路径，`grasp2018` 布局保留上游原路径。
 来源快照 JSON、历史报告中的原始命令和已记录身份属于当时版本；指向现行源码的文档链接已更新。
 

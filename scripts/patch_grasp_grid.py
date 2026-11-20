@@ -78,7 +78,8 @@ SUITE_RESTART_FILES = (
     "src/appl/rci/lodres.f90",
     "src/appl/rci_mpi/lodres.f90",
 )
-SUITE_CONFIG_FILE = "src/lib/libmod/suite_parameters_M.f90"
+SUITE_CONFIG_FILE = "src/lib/grasp_shared/compile_time_capacities.f90"
+SUITE_EXPORT_FILE = "src/lib/grasp_shared/grasp_parameters.f90"
 SUITE_PARAMETER_NAMES = ("KEYORB", "NNNP", "NNN1", "NNNW", "NNNWM1", "NNNWM2")
 SEMANTIC_NAMES = {
     "KEYORB": "orbital_index_radix",
@@ -378,7 +379,7 @@ def validate_suite_exports(config: str, wrapper: str) -> None:
     wrapper_code = "\n".join(line.split("!", 1)[0].strip() for line in wrapper.splitlines())
     imported: set[str] = set()
     for match in re.finditer(
-        r"^USE\s+suite_parameters\s*,\s*ONLY\s*:\s*([^\n]+)$",
+        r"^USE\s+compile_time_capacities\s*,\s*ONLY\s*:\s*([^\n]+)$",
         wrapper_code,
         re.IGNORECASE | re.MULTILINE,
     ):
@@ -390,7 +391,7 @@ def validate_suite_exports(config: str, wrapper: str) -> None:
                     raise ValueError(f"incorrect compatibility alias for {local}")
             imported.add(local)
     if not set(SUITE_PARAMETER_NAMES).issubset(imported):
-        raise ValueError("parameter_def must re-export all six suite_parameters limits")
+        raise ValueError("grasp_parameters must re-export all six compile_time_capacities limits")
     for name in SUITE_PARAMETER_NAMES:
         if len(re.findall(rf"\b{name}\s*=", config_code, re.IGNORECASE)) != 1:
             raise ValueError(f"expected one central definition of {name}")
@@ -428,7 +429,7 @@ def plan(
         raise ValueError(f"unsupported layout: {layout}")
     required = (*capacity_files, *grid_files, *restart_files)
     if layout == "atomic-suite":
-        required += (CAPACITY_FILES[0],)
+        required += (SUITE_EXPORT_FILE,)
     originals = {
         relative: source_path(root, relative).read_bytes() for relative in required
     }
@@ -438,7 +439,7 @@ def plan(
             "this patcher expects LF source files; convert line endings first"
         )
     if layout == "atomic-suite":
-        validate_suite_exports(texts[SUITE_CONFIG_FILE], texts[CAPACITY_FILES[0]])
+        validate_suite_exports(texts[SUITE_CONFIG_FILE], texts[SUITE_EXPORT_FILE])
     capacity_match = re.search(
         r"\bNNNP\s*=\s*(\d+)", "\n".join(active(line) for line in texts[capacity_files[0]].splitlines()), re.IGNORECASE
     )
@@ -504,10 +505,10 @@ def plan(
             text = source_path(root, relative).read_text(encoding="utf-8")
         code_lines = "\n".join(active(line) for line in text.splitlines())
         uses_grid = (
-            re.search(r"\bUSE\s+GRID_C\b", code_lines, re.IGNORECASE) is not None
+            re.search(r"\bUSE\s+RADIAL_GRID_STATE\b", code_lines, re.IGNORECASE) is not None
         )
         uses_accuracy = (
-            re.search(r"\bUSE\s+DEF_C\b", code_lines, re.IGNORECASE) is not None
+            re.search(r"\bUSE\s+ATOMIC_CALCULATION_STATE\b", code_lines, re.IGNORECASE) is not None
         )
         for number, line in enumerate(text.splitlines(), 1):
             code = active(line)

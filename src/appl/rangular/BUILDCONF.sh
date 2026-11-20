@@ -1,5 +1,5 @@
 EXE=rangular
-LIBRARIES="rang90 mcp90 9290 mod"
+LIBRARIES="spin_angular breit_angular_support core grasp_shared"
 LAPACK=true
 FILES="
 allocCheck.f90 allocCheck_I.f90

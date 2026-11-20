@@ -12,13 +12,13 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c, only: double, einstein_a_au_to_si, einstein_b_au_to_si, pi, vacuum_speed_of_light_au
-      use cuto_c, only: cutoff, double
-      use jlabl_c, only: labj => jlbr, labp => jlbp
-      use osc_c, only: double, nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
+      use atomic_calculation_state, only: einstein_a_au_to_si, einstein_b_au_to_si, pi, vacuum_speed_of_light_au
+      use transition_output_cutoff, only: cutoff
+      use angular_symmetry_labels, only: labj => jlbr, labp => jlbp
+      use transition_matrix_workspace, only: nsdim, hb1, hb2, hc1, hc2, hm1, hm2, jja, jjb, lk, kk, ntdim, &
           xsldr, totc, totb, isldr, isldr1, nint, ninteg, nptr, lab, nkp, kp, ltc
-      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
@@ -134,9 +134,10 @@
                   f2 = "f1"
                end if
 !
-            write (24, 300) f1,ivecff(j),jlabj,jparj,f2,ivecii(i),jlabi,jpari, &
+            write (24, '(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," C",1p,3d13.5)') &
+               f1,ivecff(j),jlabj,jparj,f2,ivecii(i),jlabi,jpari, &
                -eng, -ac, -oscc, -sa !, ASFA
-            write (24, 301) -ab, -oscb, -sb !, ASFB
+            write (24, '(42x," B",1p,3d13.5)') -ab, -oscb, -sb !, ASFB
             else if ( 1.0e9_real64 > eng .and. eng > 1.0e-2_real64) then
                if (lsame) then
                   f1 = "f "
@@ -145,10 +146,11 @@
                   f1 = "f1"
                   f2 = "f2"
                end if
-               write (24,300) f1,ivecii(i),jlabi,jpari,f2,ivecff(j), &
+               write (24,'(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," C",1p,3d13.5)') &
+                  f1,ivecii(i),jlabi,jpari,f2,ivecff(j), &
                      jlabj,jparj,eng,ac*iatjpoff(j)/iatjpoii(i),     &
                      oscc,sa
-               write (24,301) ab*iatjpoff(j)/iatjpoii(i),oscb,sb
+               write (24,'(42x," B",1p,3d13.5)') ab*iatjpoff(j)/iatjpoii(i),oscb,sb
             end if
             lines = lines + 3
          end if
@@ -194,7 +196,8 @@
                   f1 = "f2"
                   f2 = "f1"
                end if
-               write (24,302) f1,ivecff(j),jlabj,jparj,f2,ivecii(i),&
+               write (24,'(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," M",1p,3d13.5)') &
+                  f1,ivecff(j),jlabj,jparj,f2,ivecii(i),&
                      jlabi,jpari,-eng,-am,-oscm,-sa
 !     :               ,ASFA (M-value)
 !            WRITE (24,*) 'Relative sign',ISIGNA
@@ -206,7 +209,8 @@
                   f1 = "f1"
                   f2 = "f2"
                end if
-               write (24,302) f1,ivecii(i),jlabi,jpari,f2,ivecff(j),&
+               write (24,'(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," M",1p,3d13.5)') &
+                  f1,ivecii(i),jlabi,jpari,f2,ivecff(j),&
                      jlabj,jparj,eng,am*iatjpoff(j)/iatjpoii(i),    &
                      oscm,sa
 !     :              ,ASFA (M-value)
@@ -219,12 +223,7 @@
       return
 !
 !cjb  format for highly charged ions         F11.2 -> F13.2
-  300 format(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," C",1p,  &
-           3d13.5)
-  301 format(42x," B",1p,3d13.5)
 !cjb  format for highly charged ions         F11.2 -> F13.2
-  302 format(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," M",1p,  &
-           3d13.5)
       return
 !
       end subroutine printa

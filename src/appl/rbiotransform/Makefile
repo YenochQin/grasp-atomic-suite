@@ -1,6 +1,6 @@
 EXE=${GRASP}/bin/rbiotransform
-LIBS=-L ${GRASP}/lib/ -lrang90 -l9290 -lmod
-FC_MODULES= -I ${GRASP}/src/lib/librang90 -I ${GRASP}/src/lib/lib9290 -I ${GRASP}/src/lib/libmod
+LIBS=-L ${GRASP}/lib/ -lrang90 -l9290 -lgrasp_shared
+FC_MODULES= -I ${GRASP}/src/lib/spin_angular -I ${GRASP}/src/lib/core -I ${GRASP}/src/lib/grasp_shared
 
 OBJS= \
 	angdata.o \

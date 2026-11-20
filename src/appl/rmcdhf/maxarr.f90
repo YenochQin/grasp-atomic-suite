@@ -13,9 +13,9 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use fixd_c, only: double, fixed_orbital_count, is_orbital_fixed, max_orbitals
-      use orb_c, only: double, max_orbitals, orbital_count
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use fixed_orbital_flags, only: fixed_orbital_count, is_orbital_fixed, max_orbitals
+      use orbital_csf_basis, only: max_orbitals, orbital_count
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
       implicit none (type, external)
 !-----------------------------------------------

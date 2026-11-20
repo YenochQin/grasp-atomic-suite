@@ -17,9 +17,15 @@ def main() -> None:
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
 
-    def source(relative: str) -> str:
+    def source(relative: str, historical_path: str | None = None) -> str:
         if args.baseline_ref:
-            return subprocess.check_output(["git", "show", f"{args.baseline_ref}:{relative}"], cwd=root, text=True)
+            command = ["git", "show", f"{args.baseline_ref}:{relative}"]
+            if historical_path is not None:
+                result = subprocess.run(command, cwd=root, capture_output=True, text=True)
+                if result.returncode == 0:
+                    return result.stdout
+                command[-1] = f"{args.baseline_ref}:{historical_path}"
+            return subprocess.check_output(command, cwd=root, text=True)
         return (root/relative).read_text()
 
     with tempfile.TemporaryDirectory(prefix="input-contract-") as temporary:
@@ -45,7 +51,7 @@ def main() -> None:
             assert result.returncode == 0, (variant, result.stdout+result.stderr)
             print(variant + ": working-precision EPS verified")
 
-        text = source("src/lib/mpi90/cpath.f90")
+        text = source("src/lib/mpi/mpi_work_paths.f90", historical_path="src/lib/mpi90/cpath.f90")
         helper = re.search(
             r"^\s*function getenv_allocating\([^\n]+\n.*?^\s*end"
             r"(?:[ \t]+function(?:[ \t]+getenv_allocating)?)?[ \t]*$", text, re.M | re.S)

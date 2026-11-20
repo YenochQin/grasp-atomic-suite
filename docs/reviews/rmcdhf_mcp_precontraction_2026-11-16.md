@@ -56,7 +56,7 @@ H[p] = H_analytic[p] + Σq A[p,q] R[q;P,Q]
 并非固定不变的矩阵。SETHAM 当前实际执行 `EMT(INDX) += TEGRAL*COEFF`。
 RINTI/SLATER 读取当前 PF/QF；不能在 rangular 时用初始轨道算一次、以后一直沿用所有积分。
 依据：[SETHAM](../../src/appl/rmcdhf_mpi/setham.f90)、
-[RINTI](../../src/lib/lib9290/rinti.f90)、[SLATER](../../src/lib/lib9290/slater.f90)。
+[RINTI](../../src/lib/core/one_electron_radial_integral.f90)、[SLATER](../../src/lib/core/slater_radial_integral.f90)。
 
 EOL 的 CSF 密度权重由 DSUBRS 给出：
 
@@ -155,7 +155,7 @@ H_fixed 不依赖 C，因此 **EOL 继续更新混合系数并不使它失效**�
 若之后解冻轨道、换 rwfn、网格、核势或算符设置，相关 H_fixed 必须失效并重建。
 轨道相位/归一化及积分精度约定也须固定；不能只凭 `LFIX` 标记断言函数不变。
 标准 EOL 的 [ORTHY](../../src/appl/rmcdhf_mpi/orthy.f90) 按固定/可变轨道分段处理，
-而 `ORTHST=false` 时调用的 [ORTHSC](../../src/lib/lib9290/orthsc.f90) 没有 LFIX 过滤，
+而 `ORTHST=false` 时调用的 [ORTHSC](../../src/lib/core/radial_orbital_orthogonalization.f90) 没有 LFIX 过滤，
 可能通过正交化改变标为固定的函数；这种路径必须另外检查。
 重新求和可能引入舍入差异：需验证矩阵和完整 SCF 行为，不能称为已通过逐位一致验证。
 
@@ -205,7 +205,7 @@ CSF 列表都能直接套用完整族规则；缺失成员必须准确表达。
 排除 F0，消费端用占据及 FCO/GCO 计算相应部分。
 不能再次把“所有闭壳层项都改成公式”当成未利用的新容量收益。
 依据：[MCPMPI](../../src/appl/rangular_mpi/mcpmpi_gg.f90)、
-[RKCO_GG](../../src/lib/librang90/rkco_gg.f90)、
+[RKCO_GG](../../src/lib/spin_angular/two_electron_angular_coefficients.f90)、
 [FCO](../../src/appl/rmcdhf_mpi/fco.f90)、[GCO](../../src/appl/rmcdhf_mpi/gco.f90)。
 
 只冻结二电子积分中的一对轨道，可预先计算相应径向核，或在额外证明完全闭壳层条件下构造有效算符；

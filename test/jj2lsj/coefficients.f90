@@ -2,13 +2,13 @@
 ! every signed double for bitwise comparison, including the zero truncated tail.
 program coefficients
     use jj2lsj_code, only: asf2ls, asf_set_ls, blocks_number, dallocasfls, epsnew, inscreen, setls, vectors_number
-    use orb_c, only: NCF => csf_count
-    use prnt_C, only: NVEC
-    use eigv_c, only: EVEC => csf_mixing_coefficients
-    use blk_C, only: NBLOCK, NCFINBLK
-    use factt_I, only: factt
-    use setcon_I, only: setcon
-    use setiso_I, only: setiso
+    use orbital_csf_basis, only: NCF => csf_count
+    use selected_level_indices, only: NVEC
+    use eigenstate_expansions, only: EVEC => csf_mixing_coefficients
+    use transition_basis_blocks, only: NBLOCK, NCFINBLK
+    use log_factorial_table, only: factt
+    use physical_constants, only: setcon
+    use isotope_data_input, only: setiso
     use, intrinsic :: iso_fortran_env, only: real64, int64
     implicit none (type, external)
     integer :: counts(Blocks_number)

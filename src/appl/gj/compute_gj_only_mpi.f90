@@ -11,25 +11,25 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_orbitals
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use grasp_parameters,   only: max_orbitals
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use foparm_c,        only: iccut
-      use iounit_c,        only: stderr_unit
-      use mpi_c,           only: mpi_rank, mpi_process_count
-      use orb_c,           only: csf_count, orbital_count
-      use prnt_c,          only: nvec
+      use first_order_csf_cutoffs,        only: iccut
+      use standard_io_units,        only: stderr_unit
+      use mpi_state,           only: mpi_rank, mpi_process_count
+      use orbital_csf_basis,           only: csf_count, orbital_count
+      use selected_level_indices,          only: nvec
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i, only: convrt
-      use itjpo_i, only: itjpo
+      use integer_format, only: convrt
+      use csf_quantum_queries, only: itjpo
       use matelt_i, only: matelt
-      use oneparticlejj_i, only: oneparticlejj
-      use rint_i, only: rint
+      use one_electron_tensor_coefficients, only: oneparticlejj
+      use weighted_radial_overlap, only: rint
       use rinthf_i, only: rinthf
-      use mpiu_i, only: gdsummpi
+      use mpi_utilities, only: gdsummpi
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

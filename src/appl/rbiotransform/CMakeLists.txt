@@ -81,5 +81,5 @@ add_executable(rbiotransform
     biotr1_I.f90
     biotr.f90
 )
-target_link_libraries_Fortran(rbiotransform PUBLIC rang90 9290 mod)
+target_link_libraries_Fortran(rbiotransform PUBLIC spin_angular core grasp_shared)
 install(TARGETS rbiotransform DESTINATION bin/)

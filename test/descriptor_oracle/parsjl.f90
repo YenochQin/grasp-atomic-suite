@@ -19,8 +19,8 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use convrt_i, only: convrt
-      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
+      use integer_format, only: convrt
+      use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

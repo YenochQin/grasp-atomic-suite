@@ -83,15 +83,12 @@
 !   Error section
 !
    98    continue
-         write (*, 302)
+         write (*, '(/,"FUNL: Attempt to calculate function for"/," zero argument and K value of 1")')
          stop
       end if
-      write (*, 301)
+      write (*, '(/,"FUNL: K must be either 0 or 1")')
       stop
 !
-  301 format(/,"FUNL: K must be either 0 or 1")
-  302 format(/,"FUNL: Attempt to calculate function for"/,&
-         " zero argument and K value of 1")
       return
 !
       end function funl

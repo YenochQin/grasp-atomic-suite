@@ -28,22 +28,22 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_orbitals, max_radial_points
-      use default_c,       only: ndef, ndump
-      use sbdat_c,         only: nlmax, kamax, nshlii, nshlff
-      use biorb_c,         only: nwii, nwff
-      use wave_c,          only: pfii, qfii, pfff, qfff
-      use cimat_c,         only: cici, cfci
+      use grasp_parameters,   only: max_orbitals, max_radial_points
+      use calculation_input_defaults,       only: ndef, ndump
+      use biorthogonal_subshell_layout,         only: nlmax, kamax, nshlii, nshlff
+      use biorthogonal_orbital_sets,         only: nwii, nwff
+      use radial_wavefunctions,          only: pfii, qfii, pfff, qfff
+      use biorthogonal_orbital_rotations,         only: cici, cfci
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
-      use setmc_i, only: setmc
-      use setcon_i, only: setcon
-      use setiso_i, only: setiso
+      use yes_no_input, only: getyn
+      use machine_constants, only: setmc
+      use physical_constants, only: setcon
+      use isotope_data_input, only: setiso
       use radpar_i, only: radpar
-      use radgrd_i, only: radgrd
-      use setqic_i, only: setqic
+      use radial_grid_setup, only: radgrd
+      use radial_stencil_weights, only: setqic
       use fname_i, only: fname
       use setcslb_i, only: setcslb
       use tcsl_i, only: tcsl
@@ -55,8 +55,8 @@
       use biotr1_i, only: biotr1
       use radfile_i, only: radfile
       use genmcp_i, only: genmcp
-      use starttime_i, only: starttime
-      use stoptime_i, only: stoptime
+      use run_timer_start, only: starttime
+      use run_timer_finish, only: stoptime
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

@@ -10,8 +10,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
-      use memory_man, only: alloc
-      use input_io, only: fail_input_io
+      use array_memory_management, only: alloc
+      use input_error_handling, only: fail_input_io
       use rmcdhf_mem_c, only: coeff_31, coeff_32, coeff_33, coeff_34, coeff_35, coeff_36, coeff_37, coeff_38, &
          & coeff_39, coeff_40, coeff_41, coeff_42, coeff_43, coeff_44, coeff_45, coeff_46, coeff_47, coeff_48, &
          & coeff_49, coeff_50, iclmn_31, iclmn_32, iclmn_33, iclmn_34, iclmn_35, iclmn_36, iclmn_37, iclmn_38, &
@@ -23,9 +23,9 @@
          & lab_50, ncontr_31, ncontr_32, ncontr_33, ncontr_34, ncontr_35, ncontr_36, ncontr_37, ncontr_38, &
          & ncontr_39, ncontr_40, ncontr_41, ncontr_42, ncontr_43, ncontr_44, ncontr_45, ncontr_46, ncontr_47, &
          & ncontr_48, ncontr_49, ncontr_50
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
       use mpi_s, only: mpi_process_count, mpi_rank
-      use hmat_c,          only: stored_matrix_element_count
+      use sparse_hamiltonian_storage,          only: stored_matrix_element_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

@@ -15,7 +15,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use memory_man, only: alloc, dalloc, ralloc
+      use array_memory_management, only: alloc, dalloc, ralloc
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

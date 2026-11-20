@@ -14,16 +14,16 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use def_c,           only: pi,  nuclear_charge, precis
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use atomic_calculation_state,           only: pi,  nuclear_charge, precis
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use ncdist_c, only: double, max_radial_points, zdist
-      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use nuclear_charge_distribution, only: max_radial_points, zdist
+      use radial_quadrature_workspace, only: mtp, radial_workspace_capacity, ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use es_i, only: es
+      use alternating_exponential_series, only: es
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

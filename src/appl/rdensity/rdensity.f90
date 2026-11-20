@@ -1,17 +1,17 @@
 ! Shared entry point for rdensity and rdensity_mpi.
 program rdensity
-    use default_c, only: ndef
-    use debug_c, only: cutoff
+    use calculation_input_defaults, only: ndef
+    use debug_output_settings, only: cutoff
     use density_parallel, only: broadcast_options, density_fail, parallel_finish, parallel_start, rank, workers
     use density_calculation, only: calculate_density
-    use getyn_i, only: getyn
+    use yes_no_input, only: getyn
     use setdbg_i, only: setdbg
-    use setmc_i, only: setmc
-    use setcon_i, only: setcon
+    use machine_constants, only: setmc
+    use physical_constants, only: setcon
     use density_parallel, only: setcsla => load_density_basis
     use getsmd_i, only: getsmd
     use getmixblock_i, only: getmixblock
-    use factt_i, only: factt
+    use log_factorial_table, only: factt
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
     character(24) :: name

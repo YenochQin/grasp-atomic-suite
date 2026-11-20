@@ -1,5 +1,5 @@
 EXE=rmcdhf
-LIBRARIES="dvd90 9290 mod"
+LIBRARIES="davidson_eigensolver core grasp_shared"
 LAPACK=true
 FILES="
 mpi_s.f90

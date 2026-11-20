@@ -17,21 +17,21 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: orbital_index_radix
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use grasp_parameters,    only: orbital_index_radix
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use npot_c, only: double, first_grid_index_beyond_fermi_c, max_radial_points, negative_radius_times_potential
-      use orb_c, only: double, max_orbitals, orbital_principal_n, orbital_symmetry_labels
-      use pote_c, only: double, max_radial_points, xp, xq, yp
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use nuclear_potential_state, only: first_grid_index_beyond_fermi_c, max_radial_points, negative_radius_times_potential
+      use orbital_csf_basis, only: max_orbitals, orbital_principal_n, orbital_symmetry_labels
+      use scf_radial_potentials, only: max_radial_points, xp, xq, yp
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
+      use radial_quadrature_workspace, only: mtp, radial_workspace_capacity, ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use yzk_i, only: yzk
-      use draw_i, only: draw
+      use hartree_yz_functions, only: yzk
+      use radial_ascii_plot, only: draw
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -49,7 +49,8 @@
 !-----------------------------------------------
 !   Debug printout: composition
 
-      if (ldbpr(29) .or. ldbpr(30)) write (99, 300) orbital_principal_n(j), orbital_symmetry_labels(j)
+      if (ldbpr(29) .or. ldbpr(30)) write (99, '(/,/," Direct potential for ",1i2,1a2," orbital :"/,/)') &
+         orbital_principal_n(j), orbital_symmetry_labels(j)
 !
 !   Initialize array YP with the nuclear potential piece
 !
@@ -68,7 +69,8 @@
          ioy2 = label/key
          coeff = ya(index)
 
-         if (ldbpr(29)) write (99, 301) k, coeff, orbital_principal_n(ioy1), orbital_symmetry_labels(ioy1), &
+         if (ldbpr(29)) write (99, '(/,25x,"(",1i2,")"/,1x,1p,d21.14,"* Y    (",1i2,1a2,",",1i2,1a2,")")') &
+            k, coeff, orbital_principal_n(ioy1), orbital_symmetry_labels(ioy1), &
             & orbital_principal_n(ioy2)&
             , orbital_symmetry_labels(ioy2)
 
@@ -79,7 +81,7 @@
 !   Debug printout
 !
       if (ldbpr(30)) then
-         write (99, 302)
+         write (99, '(/,/,3(" --------- r --------- ------- Y (r) -------"))')
          nb3 = radial_point_count/3
          if (3*nb3 == radial_point_count) then
             nrows = nb3
@@ -91,12 +93,13 @@
             ii2 = ii1 + nrows
             ii3 = ii2 + nrows
             if (ii3 <= radial_point_count) then
-               write (99, 303) radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2), radial_grid(ii3), yp(ii3&
+               write (99, '(1p,6(1x,1d21.14))') &
+                  radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2), radial_grid(ii3), yp(ii3&
                   )
             else if (ii2 <= radial_point_count) then
-               write (99, 303) radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2)
+               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2)
             else
-               write (99, 303) radial_grid(ii1), yp(ii1)
+               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1), yp(ii1)
             end if
          end do
          call draw (yp, 1.0_real64, yp, 0.0_real64, radial_point_count)
@@ -104,11 +107,6 @@
 !
       return
 !
-  300 format(/,/," Direct potential for ",1i2,1a2," orbital :"/,/)
-  301 format(/,25x,"(",1i2,")"/,1x,1p,d21.14,"* Y    (",1i2,1a2,",",1i2,1a2,")"&
-         )
-  302 format(/,/,3(" --------- r --------- ------- Y (r) -------"))
-  303 format(1p,6(1x,1d21.14))
       return
 !
       end subroutine ypot

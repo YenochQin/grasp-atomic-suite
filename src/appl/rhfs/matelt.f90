@@ -15,12 +15,12 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_orbitals
-      use orb_c,           only: orbital_principal_n, orbital_kappa
+      use grasp_parameters,   only: max_orbitals
+      use orbital_csf_basis,           only: orbital_principal_n, orbital_kappa
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use clrx_i, only: clrx
+      use relativistic_three_j, only: clrx
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

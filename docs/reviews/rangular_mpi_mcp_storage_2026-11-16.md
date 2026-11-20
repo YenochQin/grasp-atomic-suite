@@ -63,7 +63,7 @@ MCP 保存的是构造 Dirac–Coulomb 矩阵所需的**角系数及其稀疏位
 单个超大逻辑记录可能拆为多个子记录，不能简单用“文件总长是 4 的倍数”判断有效性。
 端序、INTEGER/LOGICAL 宽度和记录标记受编译器及选项影响；本轮样本为小端、4 字节整数/逻辑量、
 4 字节标记、8 字节浮点。[GNU Fortran 官方格式](https://gcc.gnu.org/onlinedocs/gfortran/File-format-of-unformatted-sequential-files.html)
-及 [OPENFL](../../src/lib/lib9290/openfl.f90) 是依据。
+及 [OPENFL](../../src/lib/core/file_open.f90) 是依据。
 
 下列每一行表示一次逻辑记录，而非每个括号成员各一个记录。
 

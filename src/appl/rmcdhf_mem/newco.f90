@@ -19,26 +19,26 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use def_c, only: double, iccmin, ncmin, weight, wt
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use atomic_calculation_state, only: iccmin, ncmin, weight, wt
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use orb_c, only: double, max_orbitals, orbital_count
-      use scf_c, only: double, max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
+      use orbital_csf_basis, only: max_orbitals, orbital_count
+      use scf_iteration_state, only: max_orbitals, ucf, method, scnsty, epsmin, epsmax, emin, emax, zinf, ndcof, nxcof, &
           nycof, nddim, nxdim, nydim, da, xa, ya, nda, nxa, nya
-      use syma_c,          only: jpgg
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use pos_c, only: double, total_csf_count, mixing_coefficient_storage_size, &
+      use level_symmetry_metadata,          only: jpgg
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use symmetry_block_offsets, only: total_csf_count, mixing_coefficient_storage_size, &
           csf_offsets_by_block, eigenvalue_offsets_by_block, mixing_offsets_by_block
-      use peav_c, only: double, eavblk
-      use blkidx_c, only: double, idxblk
-      use mpi_s, only: double, mpi_process_count, mpi_rank
+      use block_mean_energies, only: eavblk
+      use transition_block_indices, only: idxblk
+      use mpi_s, only: mpi_process_count, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use dsubrs_i, only: dsubrs
-      use iq_i, only: iq
+      use csf_quantum_queries, only: iq
       use csfwgt_i, only: csfwgt
       implicit none (type, external)
 !-----------------------------------------------
@@ -93,17 +93,17 @@
 !
 !   Write out level energies and weights
 !
-      write (*, 300)
+      write (*, '(/,"Optimise on the following level(s):"/)')
       sum = 0.0_real64
       noff = 0
       do jall = 1, ncmin
          nb = idxblk(jall)                       ! Block number of this state
          ee = eavblk(nb) + shifted_eigenvalues(jall)
-         write (*, 301) iccmin(jall), ee, wt(jall)
+         write (*, '("Level ",1i2,4x,"Energy = ",1p,1d19.12,4x,"Weight = ",1d12.5)') iccmin(jall), ee, wt(jall)
          if (ldbpg(5)) then
             write (99, *) jall, nb, csf_counts_by_block(nb), mixing_offsets_by_block(nb)
-            write (99, 302)
-            write (99, 303) (csf_mixing_coefficients(i + noff),i=1,csf_counts_by_block(nb))
+            write (99, '(/,"Configuration mixing coefficients:")')
+            write (99, '(1x,1p,6d12.4)') (csf_mixing_coefficients(i + noff),i=1,csf_counts_by_block(nb))
             noff = noff + csf_counts_by_block(nb)
          end if
          sum = sum + wt(jall)*ee
@@ -113,19 +113,13 @@
 !
 !   Write out average energy
 !
-      if (ncmin > 1) write (*, 304) sum
+      if (ncmin > 1) write (*, '(/,"Weighted average energy of these levels = ",1p,d18.10)') sum
 !
 !   Write out generalized occupation numbers
 !
-      write (*, 305)
-      write (*, 303) (ucf(i),i=1,orbital_count)
+      write (*, '(/,"Generalised occupation numbers:"/)')
+      write (*, '(1x,1p,6d12.4)') (ucf(i),i=1,orbital_count)
 
-  300 format(/,"Optimise on the following level(s):"/)
-  301 format("Level ",1i2,4x,"Energy = ",1p,1d19.12,4x,"Weight = ",1d12.5)
-  302 format(/,"Configuration mixing coefficients:")
-  303 format(1x,1p,6d12.4)
-  304 format(/,"Weighted average energy of these levels = ",1p,d18.10)
-  305 format(/,"Generalised occupation numbers:"/)
 
       return
       end subroutine newco

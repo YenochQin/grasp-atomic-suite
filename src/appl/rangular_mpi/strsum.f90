@@ -6,16 +6,16 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use def_c, only: double, electron_count
-      use iccu_c, only: iccut, iccutblk
-      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
-      use orb_c, only: csf_count, double, orbital_count
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use atomic_calculation_state, only: electron_count
+      use csf_block_cutoffs, only: iccut, iccutblk
+      use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
+      use orbital_csf_basis, only: csf_count, orbital_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use calen_i, only: calen
-      use convrt_i, only: convrt
+      use calendar_clock, only: calen
+      use integer_format, only: convrt
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

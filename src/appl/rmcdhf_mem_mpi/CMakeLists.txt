@@ -126,5 +126,5 @@ add_executable(rmcdhf_mem_mpi
     scfmpi_I.f90
     rscfmpivu.f90
 )
-target_link_libraries_Fortran(rmcdhf_mem_mpi PUBLIC dvd90 mpiu90 9290 mod)
+target_link_libraries_Fortran(rmcdhf_mem_mpi PUBLIC davidson_eigensolver grasp_mpi core grasp_shared)
 install(TARGETS rmcdhf_mem_mpi DESTINATION bin/)

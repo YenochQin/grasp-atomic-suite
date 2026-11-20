@@ -1,6 +1,6 @@
 EXE=${GRASP}/bin/rtransition_mpi
-LIBS=-L ${GRASP}/lib/ -lmcp90 -ldvd90 -lrang90 -lmpiu90 -l9290 -lmod
-FC_MODULES= -I ${GRASP}/src/lib/libmcp90 -I ${GRASP}/src/lib/libdvd90 -I ${GRASP}/src/lib/librang90 -I ${GRASP}/src/lib/mpi90 -I ${GRASP}/src/lib/lib9290 -I ${GRASP}/src/lib/libmod
+LIBS=-L ${GRASP}/lib/ -lbreit_angular_support -ldavidson_eigensolver -lrang90 -lgrasp_mpi -l9290 -lgrasp_shared
+FC_MODULES= -I ${GRASP}/src/lib/breit_angular_support -I ${GRASP}/src/lib/davidson_eigensolver -I ${GRASP}/src/lib/spin_angular -I ${GRASP}/src/lib/mpi -I ${GRASP}/src/lib/core -I ${GRASP}/src/lib/grasp_shared
 
 OBJS= \
 	alclla.o \

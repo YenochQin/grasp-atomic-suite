@@ -1,6 +1,6 @@
 # F2018 兼容性与共享接口
 
-更新：2026-11-17，文档整理核对基准 `80f6e76`。本页汇总已实施约束；
+更新：2026-11-20，移除旧 kind 接口。文档整理核对基准为 `80f6e76`。本页汇总已实施约束；
 逐批审查、编译探查和修改报告由 Git 历史保存。当前构建以
 [构建策略](build_profiles.md)及 [Rust 原生输入构建说明](native_csf_descriptors.md)为准。
 未完成的数值、状态与平台验收见 [F2018 后续计划](../plans/f2018_migration_gfortran15_2026-11-08.md)。
@@ -10,11 +10,13 @@
 - 正式验收基线为 GNU Fortran 15.3.0。默认生产配置为 `f2018-release`。
   `f2018-check` 和 `f2018-audit` 分别用于运行时及优化后诊断。
   所有配置已移除 legacy、隐式 SAVE 和参数不匹配放行选项。
-- 声明使用 `iso_fortran_env` 的标准 kind，保留旧精度/容量别名的兼容接口。
-  默认整数未全局扩宽；先以默认整数相乘再转换为 int64 仍可能溢出，大计数需单独核查。
-- [suite_system](../../src/lib/lib9290/suite_system.f90) 使用 C 互操作连接 POSIX 服务，
+- 显式数值 kind 直接从 `iso_fortran_env` 导入，例如 `real64`、`int64` 和 `int8`。
+  套件已移除 `vast_kind_param` 和其他共享模块重导出的旧 kind 名。
+  外部 Fortran 调用方需改用标准名，再重新编译。`grasp_parameters` 继续提供原容量别名。
+- 默认整数保持原有宽度。先以默认整数相乘再转换为 `int64` 仍可能溢出，大计数需单独核查。
+- [posix_services](../../src/lib/core/posix_services.f90) 使用 C 互操作连接 POSIX 服务，
   保留目录操作、访问检查及退出状态契约；这是已验证平台范围内的实现，不代表所有系统兼容。
-- [suite_storage](../../src/lib/libmod/storage_bytes.f90) 通过 assumed-rank、
+- [array_storage_size](../../src/lib/grasp_shared/array_storage_size.f90) 通过 assumed-rank、
   `STORAGE_SIZE` 和 `SIZE` 计算有效对象的 payload 字节数。
 - CSFG、orbopt、strict/diag 变体已退役；历史修复或验收记录不授权恢复这些目标。
   现行范围见[退役说明](rejected_rmcdhf_variants.md)。
@@ -22,22 +24,24 @@
 ## 共享库过程与导入约束
 
 `3e02e0f` 将共享库原 188 份独立接口中的 200 个具体过程迁入实现模块：
-`9290` 74 个、`dvd90` 11 个、`mcp90` 2 个、`rang90` 89 个、`mpiu90` 24 个。
+`9290` 74 个、`dvd90` 11 个、当时的 `mcp90` 2 个、`rang90` 89 个、`mpiu90` 24 个。
+`mcp90` 后续更名为 [`breit_angular_support`](breit_angular_support_migration.md)。
 
 - 实现默认 private，显式公开原 `*_i` 模块 API；已删除的共享库 `*_I.f90` 不再维护副本。
   形参名保留关键字调用兼容性。原接口中 `itjj::kg1`、`cpath` 路径参数的 INTENT
   已按实际写入行为改为 OUT。
-- [count](../../src/lib/lib9290/count.f90) 和 [pack](../../src/lib/lib9290/pack.f90)
+- [count](../../src/lib/core/radial_node_count.f90) 和 [pack](../../src/lib/core/csf_byte_packing.f90)
   以 `count_impl`/`pack_impl` 实现，再重导出原公开名，避开 GNU 15 的 intrinsic 同名过程指针问题。
-- [mpi_runtime_i](../../src/lib/mpi90/mpi_runtime.f90) 提供无套件状态依赖的
-  `startmpi`、`mpix_bytes`、`stopmpi`；`mpiu_i` 保留重导出，避免模块依赖环。
-- `gdvd_i::dvd_operator` 和 `rkco_gg` 的回调接口仍是契约的一部分；
+- [mpi_runtime](../../src/lib/mpi/mpi_runtime.f90) 提供无套件状态依赖的
+  `startmpi`、`mpix_bytes`、`stopmpi`；`mpi_utilities` 保留重导出，避免模块依赖环。
+- `davidson_eigensolver::dvd_operator` 和 `rkco_gg` 的回调接口仍是契约的一部分；
   测试替身使用相同模块 API，不能通过另一个外部符号替换模块过程。
+- Davidson 求解库的现行模块和关键字形参见[命名对照](davidson_eigensolver_migration.md)。
 - 这次模块化改变 Fortran 链接符号。依赖旧静态库的外部项目需要重新编译和链接，
   不能将保留源码 API 理解为保留旧二进制 ABI。
 
 `0cb432b`、`5806884` 已完成分批显式导入。
-[mpi_c](../../src/lib/mpi90/mpi_C.f90) 的模块级 `use mpi` 保留为已复核例外：
+[mpi_state](../../src/lib/mpi/mpi_state.f90) 的模块级 `use mpi` 保留为已复核例外：
 它公开转发所用 MPI 实现的符号，不能为清零 C121 而随意收窄接口。
 后续调整 ONLY 列表仍须检查重命名、重导出、泛型、回调和条件编译分支。
 
@@ -91,4 +95,5 @@ Ni/Zn 初始轨道有浮点末位变化，不能据此宣称所有输出逐字�
 [兼容性清单](../reference/rmcdhf_f2018_compatibility.json)和后续快照链继续由
 [check_upstream.py](../../test/npol/check_upstream.py)使用。
 删除说明性报告不删除这些机器可读来源记录，也不放宽精确范围或哈希检查。
+190 份受此次 kind 清理影响的 RMCDHF 源文件登记在 [kind 清理快照](../reference/rmcdhf_kind_alias_cleanup_snapshot.json)。
 新增源码修改须按现行校验链登记，不能覆盖旧 manifest。

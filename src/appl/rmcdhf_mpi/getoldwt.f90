@@ -14,7 +14,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

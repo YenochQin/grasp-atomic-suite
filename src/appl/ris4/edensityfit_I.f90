@@ -4,7 +4,7 @@
 !...Translated by Gediminas Gaigalas 11/18/19
       subroutine edensityfit (xvec,yvec,z,par,nrnuc,f,rho,res)
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: max_radial_points, radial_workspace_capacity
+      use grasp_parameters,    only: max_radial_points, radial_workspace_capacity
       implicit none (type, external)
       real(real64) :: xvec(radial_workspace_capacity)
       real(real64) :: yvec(max_radial_points)

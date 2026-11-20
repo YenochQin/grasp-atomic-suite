@@ -42,30 +42,30 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-       use default_c, only: double, inpci, ndef, ndump
-       use core_c, only: closed_core_subshell_count
-       use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-       use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
+       use calculation_input_defaults, only: inpci, ndef, ndump
+       use closed_core_subshells, only: closed_core_subshell_count
+       use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+       use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
           & processor_name, processor_name_length
 !GG po to isimti
-       use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
+       use radial_quadrature_workspace, only: mtp, radial_workspace_capacity, ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
+      use yes_no_input, only: getyn
       use setdbgmpi_i, only: setdbgmpi
-      use setmc_i, only: setmc
-      use setcon_i, only: setcon
+      use machine_constants, only: setmc
+      use physical_constants, only: setcon
       use setsum_i, only: setsum
       use setmcp_i, only: setmcp
       use setcslmpi_i, only: setcslmpi
       use getscdmpi_i, only: getscdmpi
       use strsum_i, only: strsum
       use setmix_i, only: setmix
-      use factt_i, only: factt
+      use log_factorial_table, only: factt
       use scfmpi_i, only: scfmpi
-      use mpiu_i, only: startmpi2
-      use mpiu_i, only: stopmpi2
+      use mpi_utilities, only: startmpi2
+      use mpi_utilities, only: stopmpi2
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

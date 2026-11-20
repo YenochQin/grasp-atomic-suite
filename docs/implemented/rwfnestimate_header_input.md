@@ -85,7 +85,7 @@ cmake --build build-rwfn-header-release --target rwfnestimate -j4
 ctest --test-dir build-rwfn-header-release -R rwfnestimate --output-on-failure
 ```
 
-`rwfnestimate` 通过 `lib9290` 链接现有的 `libcsf_descriptor.a`，复用 Rust 的 TOML
+`rwfnestimate` 通过 `libcore` 链接现有的 `libcsf_descriptor.a`，复用 Rust 的 TOML
 解析。只读 header 的 C 接口把有序的 `(n, kappa)`、core 轨道数和总电子数返回给 Fortran。
 构建使用 suite 已锁定的 Cargo 依赖，运行时只需提供 header 和初猜所需的常规输入文件。
 

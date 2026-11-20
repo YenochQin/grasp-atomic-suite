@@ -16,19 +16,19 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_radial_points
-      use bess_c, only: bessj, bessn, bj, double, max_radial_points, tc, td, wij
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use grid_c, only: radial_derivative_over_radius
-      use orb_c, only: double, max_orbitals, orbital_principal_n, orbital_symmetry_labels
-      use tatb_c,  only: mtp, ta, tb
-      use wave_c, only: double, max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
+      use grasp_parameters,   only: max_radial_points
+      use bessel_function_workspace, only: bessj, bessn, bj, max_radial_points, tc, td, wij
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use radial_grid_state, only: radial_derivative_over_radius
+      use orbital_csf_basis, only: max_orbitals, orbital_principal_n, orbital_symmetry_labels
+      use radial_quadrature_workspace,  only: mtp, ta, tb
+      use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use zkf_i, only: zkf
-      use quad_i, only: quad
+      use radial_quadrature, only: quad
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -79,14 +79,13 @@
 !
 !   Debug printout if option set
 !
-      if (ldbpr(11)) write (99, 300) k, orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ic), &
+      if (ldbpr(11)) write (99, '("_ (",1i2,")"/,"R     (",1i2,1a2,",",1i2,1a2,"|",1i2,1a2,",",1i2,1a2,";",1i2,&
+         &") = ",1p,d19.12)') k, orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ic), &
          & orbital_symmetry_labels(ic), orbital_principal_n(ib)&
          , orbital_symmetry_labels(ib), orbital_principal_n(id), orbital_symmetry_labels(id), iw, result
 !
       return
 !
-  300 format("_ (",1i2,")"/,"R     (",1i2,1a2,",",1i2,1a2,"|",1i2,1a2,",",1i2,&
-         1a2,";",1i2,") = ",1p,d19.12)
       return
 !
       end function rkint

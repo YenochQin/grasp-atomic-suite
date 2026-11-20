@@ -12,7 +12,7 @@ def main() -> None:
     includes = ["-I" + moddir, "-I" + mpidir, *sys.argv[4:]]
     common = """program probe
  use, intrinsic :: iso_fortran_env, only: real64, int64
- use suite_linear_algebra
+ use blas_lapack_interfaces
  implicit none (type, external)
  real(real64), pointer :: p(:)
  real(real64) :: y(3)
@@ -30,7 +30,7 @@ end program
     }
     for kind, valid in [("integer", True), ("integer(int8)", False)]:
         cases["mpi_handle_" + str(valid)] = (
-            "program probe\n use mpi_C\n use, intrinsic :: iso_fortran_env, only: int8\n implicit none (type, external)\n"
+            "program probe\n use mpi_state\n use, intrinsic :: iso_fortran_env, only: int8\n implicit none (type, external)\n"
             + kind + " :: dtype\n call mpix_bytes(1,dtype,mpi_error_code)\n end program\n", valid
         )
     with tempfile.TemporaryDirectory(prefix="suite-interface-") as temporary:

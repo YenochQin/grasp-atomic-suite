@@ -12,19 +12,19 @@
 !   M o d u l e s
 !-----------------------------------------------
 !cjb mpi_C
-!     USE mpi_C,    ONLY: MYID, NPROCS, ierr
+!     USE mpi_state,    ONLY: MYID, NPROCS, ierr
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use csf_descriptor_input, only: descriptor_source
-      use csf_descriptor_collectives, only: check_descriptor_status
-      use iccu_c, only: iccut
-      use mcp_c, only: diagonal_only, double, max_coulomb_multipole_rank, use_first_order_restriction
-      use orb_c, only: csf_count, double, orbital_count
-      use def_c, only: double, electron_count
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use csf_descriptor_reader, only: descriptor_source
+      use mpi_csf_collectives, only: check_descriptor_status
+      use csf_block_cutoffs, only: iccut
+      use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction
+      use orbital_csf_basis, only: csf_count, orbital_count
+      use atomic_calculation_state, only: electron_count
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
 !cjb mpi_C
-      use mpi_c, only: double, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_logical, mpi_rank
+      use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_logical, mpi_rank
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

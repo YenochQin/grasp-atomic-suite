@@ -19,23 +19,23 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use default_c, only: double, inpci, ndef, ndump
-      use debug_c, only: ldbpr, cutoff
+      use calculation_input_defaults, only: inpci, ndef, ndump
+      use debug_output_settings, only: ldbpr, cutoff
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use getyn_i, only: getyn
-      use setmc_i, only: setmc
-      use setcon_i, only: setcon
+      use yes_no_input, only: getyn
+      use machine_constants, only: setmc
+      use physical_constants, only: setcon
       use fname_i, only: fname
       use mrgcsl_i, only: mrgcsl
 
       use getosd_i, only: getosd
       use strsum_i, only: strsum
-      use factt_i, only: factt
+      use log_factorial_table, only: factt
       use oscl_i, only: oscl
-      use starttime_i, only: starttime
-      use stoptime_i, only: stoptime
+      use run_timer_start, only: starttime
+      use run_timer_finish, only: stoptime
       implicit none (type, external)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s

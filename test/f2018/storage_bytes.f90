@@ -1,16 +1,14 @@
 program check_storage_bytes
     use, intrinsic :: iso_fortran_env, only: int8, int64, real32, real64
-    use memory_man, only: legacy_byte => byte, legacy_long => long, legacy_double => double
-    use suite_storage, only: storage_bytes
+    use array_storage_size, only: storage_bytes
     implicit none (type, external)
     integer(int8) :: packed(2,3,4)
     integer :: ordinary(3)
     integer(int64) :: wide(2)
     real(real64) :: real_values(2,3), empty(0)
-    if (real64 /= legacy_double .or. real64 /= selected_real_kind(13) .or. &
-        real64 /= kind(1.0d0)) error stop "working precision"
-    if (int64 /= legacy_long .or. int64 /= selected_int_kind(18)) error stop "wide integer kind"
-    if (int8 /= legacy_byte .or. int8 /= selected_int_kind(2)) error stop "packed byte kind"
+    if (real64 /= selected_real_kind(13) .or. real64 /= kind(1.0d0)) error stop "working precision"
+    if (int64 /= selected_int_kind(18)) error stop "wide integer kind"
+    if (int8 /= selected_int_kind(2)) error stop "packed byte kind"
     if (real32 /= kind(1.0)) error stop "default real kind"
     if (storage_bytes(packed) /= 24_int64) error stop "packed array size"
     if (storage_bytes(ordinary) /= 12_int64) error stop "default integer width"

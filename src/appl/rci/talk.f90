@@ -1,9 +1,10 @@
 !***********************************************************************
 !                                                                      *
-      subroutine talk(ja, jb, nu, ia, ib, ic, id, itype, coef)
+      subroutine talk(bra_csf_index, ket_csf_index, radial_integral_order, bra_orbital_1, bra_orbital_2, &
+                      ket_orbital_1, ket_orbital_2, integral_type_code, coefficient)
 !                                                                      *
-!   Print  coefficients  and  integral  parameters  if IBUG1 > 0 and   *
-!   write to disk.                                                     *
+!   Store coefficients with magnitude above EPS and their labels in *
+!   the angular buffer. Print a diagnostic row if IBUG1 is nonzero.    *
 !                                                                      *
 !                                           Last update: 14 Oct 1992   *
 !                                                                      *
@@ -12,22 +13,23 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: orbital_index_radix
-      use buffer_c, only: double, angular_buffer_capacity, angular_coefficient_count, &
+      use grasp_parameters,   only: orbital_index_radix
+      use angular_coefficient_buffer_state, only: angular_buffer_capacity, angular_coefficient_count, &
           angular_coefficient_labels, angular_coefficients
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use orb_c, only: double, orbital_principal_n, orbital_symmetry_labels
-      use cons_c, only: double, eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use orbital_csf_basis, only: orbital_principal_n, orbital_symmetry_labels
+      use numeric_constants, only: eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use alcbuf_i, only: alcbuf
+      use angular_coefficient_buffer, only: alcbuf
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer, intent(in) :: ja, jb, nu, ia, ib, ic, id, itype
-      real(real64), intent(in) :: coef
+      integer, intent(in) :: bra_csf_index, ket_csf_index, radial_integral_order
+      integer, intent(in) :: bra_orbital_1, bra_orbital_2, ket_orbital_1, ket_orbital_2, integral_type_code
+      real(real64), intent(in) :: coefficient
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -35,13 +37,17 @@
 !-----------------------------------------------
 !   Print coefficient if requested
 !
-      if (ibug1 /= 0) write (99, 300)ja,jb,orbital_principal_n(ia),orbital_symmetry_labels(ia),orbital_principal_n(ib), &
-         & orbital_symmetry_labels(ib),&
-         orbital_principal_n(ic),orbital_symmetry_labels(ic),orbital_principal_n(id),orbital_symmetry_labels(id),nu,itype,coef
+      if (ibug1 /= 0) write (99, '(2(1x,1i2),4(1x,i2,a2),1x,1i2,1x,1i2,1x,1p,d19.12)') &
+         bra_csf_index, ket_csf_index, &
+         orbital_principal_n(bra_orbital_1), orbital_symmetry_labels(bra_orbital_1), &
+         orbital_principal_n(bra_orbital_2), orbital_symmetry_labels(bra_orbital_2), &
+         orbital_principal_n(ket_orbital_1), orbital_symmetry_labels(ket_orbital_1), &
+         orbital_principal_n(ket_orbital_2), orbital_symmetry_labels(ket_orbital_2), &
+         radial_integral_order, integral_type_code, coefficient
 !
 !   Increment counter
 !
-      if(dabs(coef) > eps) then
+      if(dabs(coefficient) > eps) then
          angular_coefficient_count = angular_coefficient_count + 1
 !
 !   Ensure that arrays are of adequate size; reallocate if necessary
@@ -50,18 +56,17 @@
 !
 !   Store integral indices and coefficient in COMMON/BUFFER/
 !
-         angular_coefficient_labels(1,angular_coefficient_count) = ia
-         angular_coefficient_labels(2,angular_coefficient_count) = ib
-         angular_coefficient_labels(3,angular_coefficient_count) = ic
-         angular_coefficient_labels(4,angular_coefficient_count) = id
-         angular_coefficient_labels(5,angular_coefficient_count) = nu
-         angular_coefficient_labels(6,angular_coefficient_count) = itype
-         angular_coefficients(angular_coefficient_count)   = coef
+         angular_coefficient_labels(1,angular_coefficient_count) = bra_orbital_1
+         angular_coefficient_labels(2,angular_coefficient_count) = bra_orbital_2
+         angular_coefficient_labels(3,angular_coefficient_count) = ket_orbital_1
+         angular_coefficient_labels(4,angular_coefficient_count) = ket_orbital_2
+         angular_coefficient_labels(5,angular_coefficient_count) = radial_integral_order
+         angular_coefficient_labels(6,angular_coefficient_count) = integral_type_code
+         angular_coefficients(angular_coefficient_count)   = coefficient
       end if
 !
       return
 !
-  300 format(2(1x,1i2),4(1x,i2,a2),1x,1i2,1x,1i2,1x,1p,d19.12)
       return
 !
       end subroutine talk

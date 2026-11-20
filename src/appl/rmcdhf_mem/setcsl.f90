@@ -1,6 +1,6 @@
 subroutine setcsl(name, ncore, idblk)
-   use rmcdhf_descriptor_input, only: load_rmcdhf_descriptors
-   use hblock_c, only: symmetry_block_count
+   use rmcdhf_csf_input, only: load_rmcdhf_descriptors
+   use hamiltonian_symmetry_blocks, only: symmetry_block_count
    implicit none (type, external)
    character(len=*), intent(in) :: name
    integer, intent(out) :: ncore

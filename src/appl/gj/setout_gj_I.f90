@@ -3,7 +3,7 @@
       interface
       subroutine setout_gj (name, nci, gjc_diag, dgjc_diag)
       use, intrinsic :: iso_fortran_env, only: real64
-      use prnt_c, only: nvec
+      use selected_level_indices, only: nvec
       implicit none (type, external)
       character(len=24), intent(in) :: name
       integer, intent(in) :: nci

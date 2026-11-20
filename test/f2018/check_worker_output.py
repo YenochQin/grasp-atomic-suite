@@ -12,14 +12,14 @@ import tempfile
 def main() -> None:
     compiler, mpifort, mpiexec = sys.argv[1:4]
     root = Path(__file__).resolve().parents[2]
-    text = (root / "src/lib/mpi90/mpiu.f90").read_text()
+    text = (root / "src/lib/mpi/mpi_utilities.f90").read_text()
     start = text.index("      subroutine mpix_startup (")
     ending = re.search(r"(?im)^\s*end(?:\s+subroutine(?:\s+mpix_startup)?)?\s*$", text[start:])
     assert ending is not None, "MPI startup routine ending missing"
     body = text[start:start + ending.end()] + "\n"
     body, count = re.subn(r"file\s*=\s*(['\"])/dev/null\1", "file=output_path", body)
     assert count == 1, "Expected exactly one worker output filename"
-    source = ("module startup_probe\nuse mpi_runtime_i, only: startmpi\n"
+    source = ("module startup_probe\nuse mpi_runtime, only: startmpi\n"
               "implicit none\ncharacter(1024) :: output_path\ncontains\n" + body + "end module\n")
     driver = """program output_probe
 use startup_probe
@@ -41,7 +41,7 @@ end program
         work = Path(temporary)
         (work / "probe.f90").write_text(source + driver)
         subprocess.run([mpifort, "-std=f2018", "-fcheck=all",
-                        str(root / "src/lib/mpi90/mpi_runtime.f90"), "probe.f90", "-o", "probe"],
+                        str(root / "src/lib/mpi/mpi_runtime.f90"), "probe.f90", "-o", "probe"],
                        cwd=work, env=env, check=True, capture_output=True, text=True)
         for mode, path in (("quiet", "/dev/null"), ("failure", str(work)), ("visible", str(work))):
             result = subprocess.run([mpiexec, "-n", "2", str(work / "probe"), mode, path],

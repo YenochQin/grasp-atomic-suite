@@ -1,6 +1,6 @@
 EXE=${GRASP}/bin/rmcdhf_mem_mpi
-LIBS=-L ${GRASP}/lib/ -ldvd90 -lmpiu90 -l9290 -lmod
-FC_MODULES= -I ${GRASP}/src/lib/libdvd90 -I ${GRASP}/src/lib/mpi90 -I ${GRASP}/src/lib/lib9290 -I ${GRASP}/src/lib/libmod
+LIBS=-L ${GRASP}/lib/ -ldavidson_eigensolver -lgrasp_mpi -l9290 -lgrasp_shared
+FC_MODULES= -I ${GRASP}/src/lib/davidson_eigensolver -I ${GRASP}/src/lib/mpi -I ${GRASP}/src/lib/core -I ${GRASP}/src/lib/grasp_shared
 
 OBJS= \
 	rmcdhf_mem_C.o \

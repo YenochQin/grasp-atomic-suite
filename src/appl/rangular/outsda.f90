@@ -28,14 +28,12 @@
       if (lprint) then
          write (99, *)
          write (99, *) "From ", myname, " :"
-         write (99, 301) nnonz_a
+         write (99, '(" Number of nonzero elements in H(DC): ",1i4)') nnonz_a
 
          write (6, *) "This part not finished. See ", myname
          write (99, *) "This part not finished. See ", myname
       end if
 
-  301 format(" Number of nonzero elements in H(DC): ",1i4)
-  302 format(" Column ",1i2,", row ",1i2,", sparse matrix index ",1i4)
 
       return
       end subroutine outsda

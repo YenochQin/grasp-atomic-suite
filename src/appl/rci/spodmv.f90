@@ -19,16 +19,16 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use where_c, only: double, imcdf
-      use fposition_c, only: nposition
+      use where_c, only: imcdf
+      use rci_matrix_file_position, only: nposition
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dinit_i, only: dinit
-      use posfile_i, only: posfile
-      use dmerge_i, only: dmerge
+      use real_vector_initialization, only: dinit
+      use file_positioning, only: posfile
+      use sparse_dot_and_scatter, only: dmerge
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

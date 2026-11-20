@@ -17,7 +17,7 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use, intrinsic :: iso_fortran_env, only: real64, double => real64
+      use, intrinsic :: iso_fortran_env, only: real64
       use jj2lsj_profile, only: profile_emit, profile_file_size, profile_finish, profile_start, profile_time
       use jj2lsj_postprocess, only: ls_ranking, post_worker_count, rank_ls
       implicit none (type, external)
@@ -181,7 +181,7 @@ contains
 !     scalar backend remains the reference and handles sequential *.lsj.T I/O.
       subroutine asf2ls(iw1,ithresh,levmax,iblknum,levels,ncfmin,ncfmax,ioutt)
       use, intrinsic :: iso_fortran_env, only: real32
-      use prnt_c, only: ivec
+      use selected_level_indices, only: ivec
 !$    USE omp_lib, ONLY: omp_get_max_threads
       implicit none (type, external)
       integer, intent(in) :: iw1, levmax, iblknum, ncfmin, ncfmax, ioutt
@@ -254,10 +254,9 @@ contains
 
       recursive subroutine transform_ls_row(ls,iw1,ithresh,selected, &
                                            ncfmin,ncfmax,values,active)
-      use eigv_c, only: csf_mixing_coefficients
-      use orb_c, only: csf_count
-      use itjpo_i, only: itjpo
-      use ispar_i, only: ispar
+      use eigenstate_expansions, only: csf_mixing_coefficients
+      use orbital_csf_basis, only: csf_count
+      use csf_quantum_queries, only: itjpo, ispar
       use, intrinsic :: iso_fortran_env, only: int64
       implicit none (type, external)
       integer, intent(in) :: ls, iw1, ncfmin, ncfmax
@@ -307,16 +306,15 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: int64
-      use eigv_c,          only: csf_mixing_coefficients
-      use prnt_c,          only: ivec
-      use orb_c,           only: csf_count
-      use cons_c,          only: zero, one
+      use eigenstate_expansions,          only: csf_mixing_coefficients
+      use selected_level_indices,          only: ivec
+      use orbital_csf_basis,           only: csf_count
+      use numeric_constants,          only: zero, one
 !      USE JJ2LSJ_C
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjpo_i, only: itjpo
-      use ispar_i, only: ispar
+      use csf_quantum_queries, only: itjpo, ispar
 !      USE idigit_I
 !      USE ittk_I
 !      USE ixjtik_I
@@ -426,7 +424,7 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use cons_c,          only: zero, one
+      use numeric_constants,          only: zero, one
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -508,8 +506,8 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use cons_c,          only: zero, one
-      use nine_i, only: nine
+      use numeric_constants,          only: zero, one
+      use wigner_9j, only: nine
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -569,7 +567,7 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use jj2lsj_c, only: ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, ls_jj_number_d5, ls_jj_number_d6, &
+      use ls_jj_subshell_terms, only: ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, ls_jj_number_d5, ls_jj_number_d6, &
          & ls_jj_number_d7, ls_jj_number_d8, ls_jj_number_d9, ls_jj_number_f3, ls_jj_number_f4, ls_jj_number_f5, &
          & ls_jj_number_f6, ls_jj_number_f7, ls_jj_number_p3, ls_jj_number_p4, ls_jj_number_p5, ls_jj_number_p6
       use jj2lsj_data_1_c, only: ls_jj_d_10, ls_jj_d_3, ls_jj_d_4, ls_jj_d_5, ls_jj_d_6, ls_jj_d_7, ls_jj_d_8, &
@@ -585,7 +583,7 @@ contains
          & ls_jj_number_d6, ls_jj_number_d7, ls_jj_number_d8, ls_jj_number_d9, ls_jj_number_f3, ls_jj_number_f4, &
          & ls_jj_number_f5, ls_jj_number_f6, ls_jj_number_f7, ls_jj_number_p3, ls_jj_number_p4, ls_jj_number_p5, &
          & ls_jj_number_p6
-      use cons_c,          only: zero, one
+      use numeric_constants,          only: zero, one
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -867,11 +865,11 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use prnt_c,             only: nvec
+      use selected_level_indices,             only: nvec
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjpo_i, only: itjpo
+      use csf_quantum_queries, only: itjpo
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -913,7 +911,7 @@ contains
 !     NIST                                     last update: May 2011   *
 !                                                                      *
 !***********************************************************************
-      use convrt_double_i, only: convrt_double
+      use half_integer_format, only: convrt_double
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -967,7 +965,7 @@ contains
 !     Modified by G. Gaigalas                                   2024   *
 !                                                                      *
 !***********************************************************************
-      use convrt_double_i, only: convrt_double
+      use half_integer_format, only: convrt_double
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -1153,14 +1151,13 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use m_c,             only: ncore
-      use orb_c,           only: csf_count, orbital_count
+      use csf_pair_angular_state,             only: ncore
+      use orbital_csf_basis,           only: csf_count, orbital_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use jqs_i, only: jqs
-      use ichop_i, only: ichop
-      use jcup_i, only: jcup
+      use csf_quantum_queries, only: jqs, jcup
+      use subshell_occupation_class, only: ichop
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -1253,7 +1250,7 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use jj2lsj_c, only: subshell_term_ls, term_ls_d, term_ls_f, term_ls_g1, term_ls_g2, term_ls_h1, term_ls_h2, &
+      use ls_jj_subshell_terms, only: subshell_term_ls, term_ls_d, term_ls_f, term_ls_g1, term_ls_g2, term_ls_h1, term_ls_h2, &
          & term_ls_i1, term_ls_i2, term_ls_k1, term_ls_k2, term_ls_l1, term_ls_l2, term_ls_m1, term_ls_m2, &
          & term_ls_p, term_ls_s
       implicit none (type, external)
@@ -1475,17 +1472,17 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use orb_c,           only: csf_count, orbital_count
-      use prnt_c,          only: nvec
-      use iounit_c,        only: stdin_unit, stderr_unit
-      use cons_c,          only: eps, zero
-      use blk_c,           only: nevinblk, ncfinblk, nblock, two_j
-      use m_c,             only: ncore
-      use def_c,           only: nuclear_charge, electron_count
+      use orbital_csf_basis,           only: csf_count, orbital_count
+      use selected_level_indices,          only: nvec
+      use standard_io_units,        only: stdin_unit, stderr_unit
+      use numeric_constants,          only: eps, zero
+      use transition_basis_blocks,           only: nevinblk, ncfinblk, nblock, two_j
+      use csf_pair_angular_state,             only: ncore
+      use atomic_calculation_state,           only: nuclear_charge, electron_count
       use getmixblock_i, only: getmixblock
-      use getyn_i, only: getyn
-      use openfl_i, only: openfl
-      use setcsla_i, only: setcsla
+      use yes_no_input, only: getyn
+      use file_open, only: openfl
+      use csf_basis_loader, only: setcsla
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -1948,19 +1945,18 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: int64
-      use eigv_c,          only: hamiltonian_energy_shift, shifted_eigenvalues, csf_mixing_coefficients
-      use orb_c,           only: csf_count
-      use prnt_c,          only: ivec, nvec
-      use iounit_c,        only: stderr_unit
-      use cons_c,          only: zero, one
-      use def_c,           only: nuclear_charge, electron_count
-      use blk_c,           only: nevinblk, ncfinblk, nblock, two_j
+      use eigenstate_expansions,          only: hamiltonian_energy_shift, shifted_eigenvalues, csf_mixing_coefficients
+      use orbital_csf_basis,           only: csf_count
+      use selected_level_indices,          only: ivec, nvec
+      use standard_io_units,        only: stderr_unit
+      use numeric_constants,          only: zero, one
+      use atomic_calculation_state,           only: nuclear_charge, electron_count
+      use transition_basis_blocks,           only: nevinblk, ncfinblk, nblock, two_j
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjpo_i, only: itjpo
-      use ispar_i, only: ispar
-      use convrt_double_i, only: convrt_double
+      use csf_quantum_queries, only: itjpo, ispar
+      use half_integer_format, only: convrt_double
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -2140,7 +2136,8 @@ contains
             end if
             asf_set_ls%asf(level)%totalj = itjpo(iw(1)+ncfmin-1) - 1
             call convrt_double(asf_set_ls%asf(level)%totalj,string_cnum,string_l)
-            print 16, ivec(level),string_cnum(1:string_l),               &
+            print '(1x,i4,1x,2a4,2x,100(3x,f8.5," of",i7,3x,f8.5," of",i7,3x,f8.5," of",i7,3x,f8.5," of",i7/16x))', &
+               ivec(level),string_cnum(1:string_l),               &
               asf_set_ls%asf(level)%parity,(weights(j),iw(j),j=1,nocsf_min)
             print*, "              Total sum over  weight (in jj) is:",wb
             print *, " "
@@ -2202,7 +2199,8 @@ contains
             call profile_emit("candidate_select",phase_start,iblknum,level,nocsf_min)
             phase_start=profile_time()
             call convrt_double(asf_set_ls%csf_set_ls%csf(iw(1))%totalj,string_cnum,string_l)
-            print 16, asf_set_ls%asf(level)%level_no,string_cnum(1:string_l), &
+            print '(1x,i4,1x,2a4,2x,100(3x,f8.5," of",i7,3x,f8.5," of",i7,3x,f8.5," of",i7,3x,f8.5," of",i7/16x))', &
+               asf_set_ls%asf(level)%level_no,string_cnum(1:string_l), &
                    asf_set_ls%csf_set_ls%csf(iw(1))%parity,                   &
                    (weights2(j),iw(j),j=1,5)
             print*, "              Total sum over  weight (in LSJ) is:",wb
@@ -2291,8 +2289,6 @@ contains
       if(ioutj == 1) call profile_file_size("vector_bytes",58)
       close(58)
       deallocate(jcoup)
-   16 format(1x,i4,1x,2a4,2x,100(3x,f8.5," of",i7,3x,f8.5," of",i7,3x,f8.5,&
-             " of",i7,3x,f8.5," of",i7/16x))
       return
       end subroutine jj2lsj
 !
@@ -2400,15 +2396,13 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use orb_c,           only: orbital_count, orbital_principal_n, orbital_kappa
-      use m_c,             only: ncore
+      use orbital_csf_basis,           only: orbital_count, orbital_principal_n, orbital_kappa
+      use csf_pair_angular_state,             only: ncore
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjpo_i, only: itjpo
-      use iq_i, only: iq
-      use jqs_i, only: jqs
-      use convrt_double_i, only: convrt_double
+      use csf_quantum_queries, only: itjpo, iq, jqs
+      use half_integer_format, only: convrt_double
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -2466,18 +2460,15 @@ contains
       end do
 !
       if (stream == -1) then
-         write(*,1) csf_number_local,(string_nl(j),                   &
+         write(*,'(4x,i9,")",100(a4,"(",i2,")",2x))') csf_number_local,(string_nl(j),                   &
             iq(occupation(j),csf_number),j=1,counter)
-         write(*,2)(string_j(j),j=1,counter)
+         write(*,'(18x,a4,100(6x,a4))')(string_j(j),j=1,counter)
          call convrt_double(itjpo(csf_number)-1,string_cnum,string_lenth)
-         write(*,3)(string_x(j),j=2,counter-1),string_cnum(1:string_lenth)
+         write(*,'(31x,a4,100(6x,a5))')(string_x(j),j=2,counter-1),string_cnum(1:string_lenth)
       end if
       deallocate(occupation)
       deallocate(string_j)
       deallocate(string_x)
-    1 format(4x,i9,")",100(a4,"(",i2,")",2x))
-    2 format(18x,a4,100(6x,a4))
-    3 format(31x,a4,100(6x,a5))
       end subroutine prcsfjj
 !
 !***********************************************************************
@@ -2493,7 +2484,7 @@ contains
 !     NIST                                     last update: May 2011   *
 !                                                                      *
 !***********************************************************************
-      use convrt_double_i, only: convrt_double
+      use half_integer_format, only: convrt_double
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -2535,25 +2526,21 @@ contains
       end do
 !
       if (stream == -1) then
-         write(*,3)csf_number,(string_nl(j),                                 &
+         write(*,'(i10,")",4x,100(a3,"(",i2,")",2x))')csf_number,(string_nl(j),                                 &
             csf_set_ls%csf(csf_number)%occupation(occupation(j)),j=1,counter)
          call convrt_double(csf_set_ls%csf(csf_number)%totalj,string_cnum,string_lenth)
-         write(*,4)(string_ls(j),j=1,counter),(string_xls(j),j=2,counter),&
+         write(*,'(19x,a4,100(5x,a4))')(string_ls(j),j=1,counter),(string_xls(j),j=2,counter),&
               string_cnum(1:string_lenth)
       else
-         write(stream,1)(string_nl(j),                         &
+         write(stream,'(8(1x,a3,"(",i2,")"))')(string_nl(j),                         &
             csf_set_ls%csf(csf_number)%occupation(occupation(j)),j=1,counter)
          call convrt_double(csf_set_ls%csf(csf_number)%totalj,string_cnum,string_lenth)
-         write(stream,2)(string_ls(j),j=1,counter),(string_xls(j),j=2,counter)
+         write(stream,'(1x,15(a4))')(string_ls(j),j=1,counter),(string_xls(j),j=2,counter)
       end if
       deallocate(string_nl)
       deallocate(occupation)
       deallocate(string_ls)
       deallocate(string_xls)
-    1 format(8(1x,a3,"(",i2,")"))
-    2 format(1x,15(a4))
-    3 format(i10,")",4x,100(a3,"(",i2,")",2x))
-    4 format(19x,a4,100(5x,a4))
       end subroutine prcsfls
 !
 !***********************************************************************
@@ -2598,7 +2585,7 @@ contains
             string_nl(i)(1:2) = string(1:2)
             string_nl(i)(3:3) = l1(csf_set_ls%shell(i)%l)
          end do
-         write(stream,1)(string_nl(j),j=1,csf_set_ls%nwcore)
+         write(stream,'(18(1x,a3))')(string_nl(j),j=1,csf_set_ls%nwcore)
          deallocate(string_nl)
       end if
 !
@@ -2607,7 +2594,6 @@ contains
          call prcsfls(stream,csf_set_ls,i)
       end do
       write(stream,*) "*"
-    1 format(18(1x,a3))
       end subroutine prcsflsall
 !
 !***********************************************************************
@@ -2632,14 +2618,13 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use def_c,           only: electron_count
-      use orb_c,           only: orbital_count, orbital_principal_n, orbital_kappa, csf_count
-      use m_c,             only: ncore
+      use atomic_calculation_state,           only: electron_count
+      use orbital_csf_basis,           only: orbital_count, orbital_principal_n, orbital_kappa, csf_count
+      use csf_pair_angular_state,             only: ncore
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use itjpo_i, only: itjpo
-      use iq_i, only: iq
+      use csf_quantum_queries, only: itjpo, iq
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -2881,7 +2866,7 @@ contains
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ispar_i, only: ispar
+      use csf_quantum_queries, only: ispar
       implicit none (type, external)
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
@@ -2932,11 +2917,11 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use jj2lsj_c, only: subshell_term_ls
+      use ls_jj_subshell_terms, only: subshell_term_ls
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ittk_i, only: ittk
+      use angular_triangle_and_parity, only: ittk
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -3040,11 +3025,11 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use orb_c,           only: orbital_count
+      use orbital_csf_basis,           only: orbital_count
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ispar_i, only: ispar
+      use csf_quantum_queries, only: ispar
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -3098,13 +3083,12 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use orb_c,           only: orbital_kappa
-      use cons_c,          only: zero
+      use orbital_csf_basis,           only: orbital_kappa
+      use numeric_constants,          only: zero
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use iq_i, only: iq
-      use jqs_i, only: jqs
+      use csf_quantum_queries, only: iq, jqs
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -3199,16 +3183,15 @@ contains
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use orb_c,           only: orbital_kappa
-      use cons_c,          only: zero, one
+      use orbital_csf_basis,           only: orbital_kappa
+      use numeric_constants,          only: zero, one
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use ixjtik_i, only: ixjtik
-      use iq_i, only: iq
-      use jqs_i, only: jqs
-      use nine_i, only: nine
-      use sixj_i, only: sixj
+      use wigner_6j_triangle_selection, only: ixjtik
+      use csf_quantum_queries, only: iq, jqs
+      use wigner_9j, only: nine
+      use wigner_6j, only: sixj
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -3326,7 +3309,7 @@ contains
       subroutine uniquelsj
       use, intrinsic :: iso_fortran_env, only: iostat_end
       use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
-      use input_io, only: fail_input_io
+      use input_error_handling, only: fail_input_io
 !                                                                      *
 !     Subroutine defines a unique labels for energy levels             *
 !                                                                      *

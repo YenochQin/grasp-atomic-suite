@@ -22,41 +22,41 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,    only: max_orbitals
-      use memory_man, only: alloc, dalloc, byte, double
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c, only: double, electron_mass_u, hartree_to_wavenumber_cm, max_radial_points, nuclear_charge, &
+      use grasp_parameters,    only: max_orbitals
+      use array_memory_management, only: alloc, dalloc
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use atomic_calculation_state, only: electron_mass_u, hartree_to_wavenumber_cm, max_radial_points, nuclear_charge, &
           speed_of_light_cm_per_s
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use npar_c, only: double, nuclear_model_parameter_count, nuclear_model_parameters
-      use prnt_c, only: byte, double, ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use syma_c, only: double, iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
-      use orb_c, only: byte, double, max_orbitals, orbital_count, orbital_kappa
+      use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+      use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
+      use level_symmetry_metadata, only: iaspar, iasparff, iasparii, iatjpo, iatjpoff, iatjpoii, jpgg, nblk0
+      use orbital_csf_basis, only: max_orbitals, orbital_count, orbital_kappa
       use teilst_c, only: ndtea, ntei, pindte, pvalte, firstt
-      use buffer_c, only: double, angular_buffer_capacity, angular_coefficient_count, &
+      use angular_coefficient_buffer_state, only: angular_buffer_capacity, angular_coefficient_count, &
           angular_coefficient_labels, angular_coefficients
-      use ris_c, only: double, dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
-      use jlabl_c, only: labj => jlbr, labp => jlbp
-      use ris_c, only: double, dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use ris_c, only: dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
+      use angular_symmetry_labels, only: labj => jlbr, labp => jlbp
+      use ris_c, only: dens1, dens2, dens3, dens4, dens5, dens6, dens7, smsc1, smsc2
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use rintdens_i, only: rintdens
-      use rinti_i, only: rinti
-      use rint_i, only: rint
+      use one_electron_radial_integral, only: rinti
+      use weighted_radial_overlap, only: rint
       use rintdensvec_i, only: rintdensvec
       use rinti_nms_i, only: rinti_nms
-      use cre_i, only: cre
+      use reduced_angular_matrix_element, only: cre
       use vinti_i, only: vinti
       use rint_sms2_i, only: rint_sms2
       use rint_sms3_i, only: rint_sms3
       use angdata_i, only: angdata
-      use input_io, only: fail_input_io
-      use getyn_i, only: getyn
+      use input_error_handling, only: fail_input_io
+      use yes_no_input, only: getyn
       use densread_i, only: densread
       use densnew_i, only: densnew
       use smsread_i, only: smsread
@@ -64,8 +64,8 @@
       use edensityfit_i, only: edensityfit
       use densnew_seltz_i, only: densnew_seltz
       use densread_seltz_i, only: densread_seltz
-      use starttime_i, only: starttime
-      use stoptime_i, only: stoptime
+      use run_timer_start, only: starttime
+      use run_timer_finish, only: stoptime
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -323,15 +323,15 @@
       write (24,"(a24,i3)") "Number of eigenvalues: ",nvec
       write(24,*)
       write(24,*)
-      write (24,309)
+      write (24,'(" Level  J Parity  Energy")')
       do i = 1, nvec
-         write (24,323) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
+         write (24,'(1x,i3,5x,2a4,3x,d20.10,"  (a.u.)")') ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
               hamiltonian_energy_shift+shifted_eigenvalues(i)
       end do
-      write (24,308)
+      write (24,'(//" Level  J Parity  Normal mass shift parameter")')
       do 18 i = 1,nvec
-         write(24,314)
-         write (24,313) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
+         write(24,'(/,29x,"<K^1>",13x,"<K^2+K^3>",9x,"<K^1+K^2+K^3>")')
+         write (24,'(1x,i3,5x,2a4,3x,3d20.10,"  (a.u.)")') ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
               dens7(i),(dens2(i)-dens7(i)),dens2(i)
          hznmsu=dens7(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s
 !         if (dabs(HzNMSu) .LE. (10**8)) THEN
@@ -339,53 +339,57 @@
 !     :      (DENS2(I)-DENS7(I))*AUMAMU*AUCM*CCMS*(1.0D-06),
 !     :       DENS2(I)*AUMAMU*AUCM*CCMS*(1.0D-06)
 !         else
-         write (24,316) hznmsu*(1.0e-9_real64), &
+         write (24,'(20x,3d20.10,2x,"(GHz u)")') hznmsu*(1.0e-9_real64), &
               (dens2(i)-dens7(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-9_real64), &
               dens2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-9_real64)
 !         endif
  18   continue
 
-      write (24,302)
+      write (24,'(//" Level  J Parity  Specific mass shift parameter")')
       do 14 i = 1,nvec
-         write(24,314)
-         write (24,313) ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
+         write(24,'(/,29x,"<K^1>",13x,"<K^2+K^3>",9x,"<K^1+K^2+K^3>")')
+         write (24,'(1x,i3,5x,2a4,3x,3d20.10,"  (a.u.)")') ivec(i),labj(iatjpo(i)),labp((iaspar(i)+3)/2), &
               smsc1(i),smsc2(i)-smsc1(i),smsc2(i)
          hzsmsu=smsc1(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s
          if (dabs(hzsmsu) <= (10**8)) then
-            write (24,315) hzsmsu*(1.0e-6_real64), &
+            write (24,'(20x,3d20.10,2x,"(MHz u)")') hzsmsu*(1.0e-6_real64), &
                  (smsc2(i)-smsc1(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-6_real64), &
                  smsc2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-6_real64)
          else
-            write (24,316) hzsmsu*(1.0e-9_real64), &
+            write (24,'(20x,3d20.10,2x,"(GHz u)")') hzsmsu*(1.0e-9_real64), &
                  (smsc2(i)-smsc1(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-9_real64), &
                  smsc2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-9_real64)
          end if
  14   continue
       if(yes2) then
-         write (24,307)
+         write (24,'(//" Level  J Parity  Electron density in atomic units"//24x,"Dens. (a.u.)")')
          do 16 i = 1,nvec
             call edensityfit(radial_grid,dens1vec(i,:),nuclear_charge,nuclear_model_parameters,nrnuc,fmat(:,i),rho(i),res(i))  ! JE ADD
-            write (24,303) ivec(i),labj(iatjpo(i)), &
+            write (24,'(1x,i3,5x,2a4,3x,d20.10)') ivec(i),labj(iatjpo(i)), &
                  labp((iaspar(i)+3)/2),rho(i)
  16      continue
-         write (24,317)
+         write (24,'(//" Level  J Parity  Field shift electronic factors and average point discrepancy in fit"//&
+            &24x,"F0 (GHz/fm^2)",6x," F2 (GHz/fm^4)",6x," F4 (GHz/fm^6)",6x," F6 (GHz/fm^8)",6x,&
+            &" Disc. (per mille)")')
          do 17 i = 1,nvec
             !CALL EDENSITYFIT(R,DENS1VEC(I,:),Z,PARM,NRNUC,FMAT,RHO,RES)  ! JE ADD
-            write (24,324) ivec(i),labj(iatjpo(i)), &
+            write (24,'(1x,i3,5x,2a4,3x,4d20.10,f10.4)') ivec(i),labj(iatjpo(i)), &
                  labp((iaspar(i)+3)/2),fmat(1,i),fmat(2,i), &
                  fmat(3,i),fmat(4,i),res(i)
  17      continue
-         write (24,327)
+         write (24,'(//&
+            &" Level  J Parity  Field shift electronic factors (corrected for varying density inside nucleus)"//&
+            &24x,"F0VED0 (GHz/fm^2)   F0VED1 (GHz/fm^4)")')
          do 19 i = 1,nvec
             !CALL EDENSITYFIT(R,DENS1VEC(I,:),Z,PARM,NRNUC,FMAT,RHO,RES)  ! JE ADD
-            write (24,334) ivec(i),labj(iatjpo(i)), &
+            write (24,'(1x,i3,5x,2a4,3x,2d20.10)') ivec(i),labj(iatjpo(i)), &
                  labp((iaspar(i)+3)/2),fmat(5,i),fmat(6,i)
  19      continue
          write(24,*)
       else
-         write (24,306)
+         write (24,'(//" Electron density in atomic units"//" Level  J Parity",8x,"DENS (a.u.)"/)')
          do 36 i = 1,nvec
-            write (24,303) ivec(i),labj(iatjpo(i)), &
+            write (24,'(1x,i3,5x,2a4,3x,d20.10)') ivec(i),labj(iatjpo(i)), &
                  labp((iaspar(i)+3)/2),dens1(i)
  36      continue
       end if
@@ -429,43 +433,21 @@
       call stoptime (ncount1, "RIS_CAL")
       return
 !
-301   format (//" CUTOFF set to ",1pd22.15)
-302   format (//" Level  J Parity  Specific mass shift parameter")
 
 !     Electron density values
-303   format (1x,i3,5x,2a4,3x,d20.10)
-304   format (1x,i3,5x,2a4,3x,2d20.10)
 
 !     Electronic factor values
-324   format (1x,i3,5x,2a4,3x,4d20.10,f10.4)
 
 !     Field shift values
-334   format (1x,i3,5x,2a4,3x,2d20.10)
 
       !     Electron density header
-306   format (//" Electron density in atomic units" &
-           //" Level  J Parity",8x,"DENS (a.u.)"/)
 
-307   format (//" Level  J Parity  Electron density in atomic units" &
-           //24x,"Dens. (a.u.)")
 
 !     Electronic factors header
-317   format (//" Level  J Parity  Field shift electronic factors and av&
-           &erage point discrepancy in fit" &
-           //24x, &
-           "F0 (GHz/fm^2)",6x," F2 (GHz/fm^4)", &
-           6x," F4 (GHz/fm^6)",6x," F6 (GHz/fm^8)", &
-           6x," Disc. (per mille)")
 
 !     Electronic field shift header
-327   format (//" Level  J Parity  Field shift electronic factors (corre&
-           &cted for varying density inside nucleus)" &
-           //24x, &
-           "F0VED0 (GHz/fm^2)   F0VED1 (GHz/fm^4)")
 
-308   format (//" Level  J Parity  Normal mass shift parameter")
 
-309   format (" Level  J Parity  Energy")
 
 !     309 FORMAT (//' Radial expectationvalue'
 !     :        //' Level  J Parity',8X,'<r> (a.u.)'/)
@@ -475,12 +457,6 @@
 !     :        //' Level  J Parity',8X,'<r-1> (a.u.)'/)
 !     312 FORMAT (//' Radial expectationvalue'
 !     :        //' Level  J Parity',8X,'<r-2> (a.u.)'/)
-313   format (1x,i3,5x,2a4,3x,3d20.10,"  (a.u.)")
-333   format (1x,i3,5x,2a4,3x,3d20.10,"  (GHz u)")
-323   format (1x,i3,5x,2a4,3x,d20.10,"  (a.u.)")
-314   format (/,29x,"<K^1>",13x,"<K^2+K^3>",9x,"<K^1+K^2+K^3>")
-315   format (20x,3d20.10 ,2x,"(MHz u)")
-316   format (20x,3d20.10,2x,"(GHz u)")
       !
       return
     end subroutine ris_cal

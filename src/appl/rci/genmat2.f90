@@ -12,10 +12,10 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
-      use hmat_c, only: cutofftmp, double, ncftmp, ncoectmp, ncoeitmp, ncoretmp, nctectmp, ncteitmp, nelmnttmp, &
+      use sparse_hamiltonian_storage, only: cutofftmp, ncftmp, ncoectmp, ncoeitmp, ncoretmp, nctectmp, ncteitmp, nelmnttmp, &
          & nkeitmp, nmcbptmp, ntpitmp, nvintitmp, nvpitmp  !! rather than setham_to_genmat2
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
       implicit none (type, external)
 !-----------------------------------------------
@@ -39,19 +39,19 @@
 ! contain the correct values in restart mode. And thus is skipped.
 !-----------------------------------------------------------------------
       if (irestart /= 0) then                    ! non-restart mode
-         write (24, 301) cutofftmp
-         write (24, 302) ncoeitmp
-         write (24, 303) ncoectmp
-         write (24, 304) ncteitmp
-         write (24, 305) nctectmp
+         write (24, '("CUTOFF set to ",1p,d17.10)') cutofftmp
+         write (24, '("Dirac-Coulomb one-e radial integrals:",1i8)') ncoeitmp
+         write (24, '("One-e angular integrals that exceed CUTOFF: ",1i8)') ncoectmp
+         write (24, '("Coulomb two-e radial integrals: ",1i8)') ncteitmp
+         write (24, '("Two-e angular integrals that exceed CUTOFF: ",1i8)') nctectmp
          if (ltrans) then
-            write (24, 306) ntpitmp
-            write (24, 307) nmcbptmp
-            write (24, 308) ncoretmp
+            write (24, '("Transverse two-e radial integrals: "/,6i8)') ntpitmp
+            write (24, '("MCBP coefficients that exceed CUTOFF: ",1i8)') nmcbptmp
+            write (24, '("Core coefficients that exceed CUTOFF: ",1i8)') ncoretmp
          end if
-         if (lvp) write (24, 309) nvpitmp
-         if (lnms) write (24, 310) nkeitmp
-         if (lsms) write (24, 311) nvintitmp
+         if (lvp) write (24, '("Vacuum polarisation integrals: ",1i8)') nvpitmp
+         if (lnms) write (24, '("Kinetic energy integrals: ",1i8)') nkeitmp
+         if (lsms) write (24, '("Vinti integrals: ",1i8)') nvintitmp
       else
          write (24, *) "Restart mode --- no report on radial integrals"
       end if                                      !(irestart .NE. 0) ! non-restart mode
@@ -71,27 +71,12 @@
 
       hamiltonian_energy_shift = hamiltonian_energy_shift/dble(ncftmp) + elsto
 
-      write (24, 312) nelmnttmp
-      write (24, 313) densty
+      write (24, '("Elements that exceed CUTOFF in the lower"," triangle of the H matrix: ",1i8)') nelmnttmp
+      write (24, '("Density of the H(amiltonian) matrix: ",1p,d22.15)') densty
       write (24, *)
-      write (24, 300) hamiltonian_energy_shift
+      write (24, '("Average energy = ",1p,d19.12," Hartrees.")') hamiltonian_energy_shift
       write (24, *) hamiltonian_energy_shift, elsto, ncftmp
 
-  300 format("Average energy = ",1p,d19.12," Hartrees.")
-  301 format("CUTOFF set to ",1p,d17.10)
-  302 format("Dirac-Coulomb one-e radial integrals:",1i8)
-  303 format("One-e angular integrals that exceed CUTOFF: ",1i8)
-  304 format("Coulomb two-e radial integrals: ",1i8)
-  305 format("Two-e angular integrals that exceed CUTOFF: ",1i8)
-  306 format("Transverse two-e radial integrals: "/,6i8)
-  307 format("MCBP coefficients that exceed CUTOFF: ",1i8)
-  308 format("Core coefficients that exceed CUTOFF: ",1i8)
-  309 format("Vacuum polarisation integrals: ",1i8)
-  310 format("Kinetic energy integrals: ",1i8)
-  311 format("Vinti integrals: ",1i8)
-  312 format("Elements that exceed CUTOFF in the lower",&
-         " triangle of the H matrix: ",1i8)
-  313 format("Density of the H(amiltonian) matrix: ",1p,d22.15)
 
       return
       end subroutine genmat2

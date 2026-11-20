@@ -6,17 +6,17 @@
       "name": "common",
       "requires": [],
       "targets": [
-        "mod",
-        "9290",
-        "dvd90",
-        "mcp90",
-        "rang90",
+        "grasp_shared",
+        "core",
+        "davidson_eigensolver",
+        "breit_angular_support",
+        "spin_angular",
         "jj2lsj_omp",
         "rlevels",
         "fical"
       ],
       "tests": [
-        "lib9290_quad",
+        "core_quadrature",
         "shared_grid_capacity",
         "rdensity_natural_orbitals",
         "grasp_grid_patcher",
@@ -101,7 +101,7 @@
         "mpi"
       ],
       "targets": [
-        "mpiu90",
+        "grasp_mpi",
         "gj_mpi",
         "rhfs_mpi",
         "rdensity_mpi",
@@ -115,7 +115,7 @@
       ],
       "tests": [
         "rangular_mpi_descriptors",
-        "mpi90_local_sparse",
+        "grasp_mpi_local_sparse",
         "f2018_worker_output",
         "ris4_cache_mpi",
         "npol_code_consumers_rmcdhf_mem_mpi",

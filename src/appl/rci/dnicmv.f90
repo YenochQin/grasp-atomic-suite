@@ -20,11 +20,11 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use hmat_c,          only: hamiltonian_values
+      use sparse_hamiltonian_storage,          only: hamiltonian_values
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use dinit_i, only: dinit
+      use real_vector_initialization, only: dinit
 !      USE dmerge_dnicmv_I
       use dmerge_dnicmv_i, only: dmerge_dnicmv
       implicit none (type, external)

@@ -19,31 +19,31 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64, int64
-      use memory_man, only: alloc, dalloc, double, long
-      use damp_c, only: double, max_orbitals, mixing_damping_factors, orbital_damping_factors
-      use def_c, only: iccmin, ncmin, ncmax
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use eigv_c, only: double, hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
+      use array_memory_management, only: alloc, dalloc
+      use scf_damping_factors, only: max_orbitals, mixing_damping_factors, orbital_damping_factors
+      use atomic_calculation_state, only: iccmin, ncmin, ncmax
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use hblock_c, only: csf_counts_by_block, double, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
-      use hmat_c, only: double, long, stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
+      use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
+      use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
           matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
           nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
-      use mcpa_c, only: double, max_mcp_file_multipole_rank
-      use mpi_c, only: double, mpi_allreduce, mpi_barrier, mpi_comm_world, mpi_double_precision, mpi_error_code, &
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
+      use mcp_file_metadata, only: max_mcp_file_multipole_rank
+      use mpi_state, only: mpi_allreduce, mpi_barrier, mpi_comm_world, mpi_double_precision, mpi_error_code, &
          & mpi_process_count, mpi_rank, mpi_sum
-      use orb_c, only: csf_count, double, max_orbitals, orbital_count
-      use pos_c, only: double, total_csf_count, mixing_coefficient_storage_size, &
+      use orbital_csf_basis, only: csf_count, max_orbitals, orbital_count
+      use symmetry_block_offsets, only: total_csf_count, mixing_coefficient_storage_size, &
           csf_offsets_by_block, eigenvalue_offsets_by_block, mixing_offsets_by_block
-      use peav_c, only: double, eavblk
-      use syma_c,          only: jpgg
+      use block_mean_energies, only: eavblk
+      use level_symmetry_metadata,          only: jpgg
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       use setham_i, only: setham
       use maneigmpi_i, only: maneigmpi
-      use suite_linear_algebra, only: dcopy, ddot, dscal
+      use blas_lapack_interfaces, only: dcopy, ddot, dscal
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -190,7 +190,7 @@
       ! hmout is not general
       !call hmout (0, 1, ncf)
 
-         if (mpi_rank == 0) write (*, 302) hamiltonian_energy_shift
+         if (mpi_rank == 0) write (*, '(" Average energy = ",1p,d18.10," Hartrees")') hamiltonian_energy_shift
 
       ! Subtract the average energy from the diagonal elements
       ! to reduce the condition number of the matrix
@@ -309,7 +309,6 @@
          first = .false.
       end if
 
-  302 format(" Average energy = ",1p,d18.10," Hartrees")
 
       return
       end subroutine matrixmpi

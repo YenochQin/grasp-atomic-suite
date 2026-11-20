@@ -13,12 +13,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      use debug_c, only: cutoff, double, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
-      use orb_c, only: csf_count,orbital_count,csf_subshell_occupations
+      use debug_output_settings, only: cutoff, ibug1, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, ldbpg, ldbpr
+      use orbital_csf_basis, only: csf_count,orbital_count,csf_subshell_occupations
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use iq_i, only: iq
+      use csf_quantum_queries, only: iq
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

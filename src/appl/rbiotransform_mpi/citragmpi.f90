@@ -37,9 +37,9 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use sbdat1_c, only: double, max_orbitals, nlmax, nshlp, nshlpp
-      use orb_c, only: double, max_orbitals, orbital_kappa
-      use mpi_c, only: double, mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_sum
+      use biorthogonal_subshell_mapping, only: max_orbitals, nlmax, nshlp, nshlpp
+      use orbital_csf_basis, only: max_orbitals, orbital_kappa
+      use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_sum
 !
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s

@@ -16,11 +16,11 @@
 !   M o d u l e s
 !-----------------------------------------------
      use, intrinsic :: iso_fortran_env, only: real64
-     use parameter_def,   only: orbital_index_radix
-     use memory_man, only: alloc, ralloc, double
-     use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+     use grasp_parameters,   only: orbital_index_radix
+     use array_memory_management, only: alloc, ralloc
+     use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
          radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-     use vpilst_c, only: indoei => indvpi, valoei => valvpi, first => frstvp, double, ndvpa, nvpi
+     use vacuum_polarization_integral_table, only: indoei => indvpi, valoei => valvpi, first => frstvp, ndvpa, nvpi
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------

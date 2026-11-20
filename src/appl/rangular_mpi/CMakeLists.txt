@@ -29,5 +29,5 @@ add_executable(rangular_mpi
     mcpmpi_gg_I.f90
     genmcpmpi.f90
 )
-target_link_libraries_Fortran(rangular_mpi PUBLIC rang90 mcp90 mpiu90 9290 mod)
+target_link_libraries_Fortran(rangular_mpi PUBLIC spin_angular breit_angular_support grasp_mpi core grasp_shared)
 install(TARGETS rangular_mpi DESTINATION bin/)

@@ -5,21 +5,21 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
-      use parameter_def,   only: max_orbitals
-      use decide_c, only: double, lfordr, lnms, lse, lsms, ltrans, lvp
-      use def_c, only: double, emn, max_radial_points
-      use grid_c, only: double, radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
+      use grasp_parameters,   only: max_orbitals
+      use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
+      use atomic_calculation_state, only: emn, max_radial_points
+      use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative, &
           radial_derivative_over_radius, radial_grid_scale, transformed_grid_step, asymptotic_grid_step
-      use ncdist_c, only: double, max_radial_points, zdist
-      use tatb_c, only: double, mtp, radial_workspace_capacity, ta, tb
-      use coeils_c, only: double, frstco, indoei, ncoei, ndcoea, valoei
-      use vpilst_c, only: indoei => indvpi, valoei => valvpi, double, frstvp, nvpi
-      use bilst_c, only: double, ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
+      use nuclear_charge_distribution, only: max_radial_points, zdist
+      use radial_quadrature_workspace, only: mtp, radial_workspace_capacity, ta, tb
+      use coulomb_integral_table, only: frstco, indoei, ncoei, ndcoea, valoei
+      use vacuum_polarization_integral_table, only: indoei => indvpi, valoei => valvpi, frstvp, nvpi
+      use breit_integral_tables, only: ndtpa, ntpi, indtp1, indtp2, indtp3, indtp4, indtp5, indtp6, &
           valtp1, valtp2, valtp3, valtp4, valtp5, valtp6, first
-      use keilst_c, only: double, frstki, indkei, ndkea, nkei, valkei
-      use vinlst_c, only: double, frstvi, indtei, ndvin, nvinti, valtei
-      use orb_c, only: csf_count, orbital_count, csf_subshell_occupations
-      use iounit_c, only: stderr_unit, stdin_unit, stdout_unit
+      use kinetic_energy_integral_table, only: frstki, indkei, ndkea, nkei, valkei
+      use vinti_integral_table, only: frstvi, indtei, ndvin, nvinti, valtei
+      use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations
+      use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
