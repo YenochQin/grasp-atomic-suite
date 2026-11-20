@@ -1,5 +1,6 @@
 ! Shared entry point for rdensity and rdensity_mpi.
 program rdensity
+    use calculation_state_files, only: orbital_input_path, mixing_input_path, read_state_name, property_state_arguments
     use calculation_input_defaults, only: ndef
     use debug_output_settings, only: cutoff
     use density_parallel, only: broadcast_options, density_fail, parallel_finish, parallel_start, rank, workers
@@ -16,7 +17,7 @@ program rdensity
     implicit none (type, external)
     character(24) :: name
     character(256) :: arg, io_message
-    integer :: nci, ordering, status, i, ios, length, ncore
+    integer :: nci, ordering, status, ios, ncore
     logical :: yes, exists, interactive
 
     call parallel_start
@@ -36,51 +37,16 @@ program rdensity
                 write(*,*) "MPI runs support default settings only, as in RHFS/RIS."
                 status = 2
             else
-                write(*,*) "Name of state"
-                read(*,"(a)",iostat=ios,iomsg=io_message) arg
-                if (ios /= 0) then
-                    write(*,*) "Cannot read state name: ", trim(io_message)
-                    status = 2
-                else
-                    call accept_name(arg)
-                    if (status == 0) then
-                        write(*,*) "Mixing coefficients from a CI calc.?"
-                        yes = getyn()
-                        if (yes) nci = 0
-                    end if
+                call read_state_name(name, status=status)
+                if (status == 0) then
+                    write(*,*) "Mixing coefficients from a CI calc.?"
+                    yes = getyn()
+                    if (yes) nci = 0
                 end if
             end if
         else
-            argument_loop: do i = 1,command_argument_count()
-                call get_command_argument(i, arg, length=length, status=ios)
-                if (ios /= 0 .or. length > len(arg)) then
-                    status = 2
-                    exit argument_loop
-                end if
-                select case(trim(arg))
-                case("--ci")
-                    nci = 0
-                case("--nonci")
-                    nci = 1
-                case("--order=1")
-                    ordering = 1
-                case("--order=2")
-                    ordering = 2
-                case("--help","-h")
-                    status = 1
-                    exit argument_loop
-                case default
-                    if (i == 1 .and. arg(1:1) /= "-") then
-                        call accept_name(arg)
-                    else
-                        write(*,*) "Unknown argument: ", trim(arg)
-                        status = 2
-                    end if
-                end select
-            end do argument_loop
+            call property_state_arguments("rdensity[_mpi]", name, nci, status, ordering)
         end if
-        if (status == 0 .and. len_trim(name) == 0) status = 2
-        if (status /= 0) write(*,*) "Usage: rdensity[_mpi] name [--ci|--nonci] [--order=1|--order=2]"
     end if
     call broadcast_options(name, nci, ndef, ordering, status)
     if (status == 1) then
@@ -90,12 +56,11 @@ program rdensity
     if (status /= 0) call density_fail("Invalid command line or interactive input")
 
     call require_file("isodata")
-    call require_file(trim(name)//".w")
+    call require_file(orbital_input_path(name))
+    call require_file(mixing_input_path(name, nci == 0))
     if (nci == 0) then
-        call require_file(trim(name)//".cm")
         arg = trim(name)//".cd"
     else
-        call require_file(trim(name)//".m")
         arg = trim(name)//".d"
     end if
     if (rank == 0) then
@@ -126,18 +91,6 @@ program rdensity
     call calculate_density(name, nci, ordering)
     call parallel_finish
 contains
-    subroutine accept_name(text)
-        character(*), intent(in) :: text
-        ! Legacy readers find the trailing blank in CHARACTER(24).
-        if (len_trim(text) < 1 .or. len_trim(text) > 23) then
-            status = 2
-        else if (index(trim(text)," ") /= 0) then
-            status = 2
-        else
-            name = trim(text)
-        end if
-    end subroutine accept_name
-
     subroutine require_file(filename)
         character(*), intent(in) :: filename
         logical :: found

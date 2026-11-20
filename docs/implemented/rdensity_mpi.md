@@ -22,8 +22,8 @@ serial/MPI applications together with four jobs exposed a pre-existing RHFS/g_J
 module-file race (`gethfd_i.mod0`). The two new RDENSITY targets use separate
 module directories and were built successfully with four compilation jobs.
 
-Run in a directory containing `isodata`, `name.c`, `name.w`, and `name.m` or
-`name.cm`. All ranks must see the same read-only input files.
+Run in a directory containing `isodata`, `name_descriptors.parquet`, `name_header.toml`, `name.wfn`, and `name.mix` or
+`name.cimix`. All ranks must see the same read-only input files.
 
 ```sh
 mpiexec -n 4 /path/to/grasp-atomic-suite/bin/rdensity_mpi name --ci --order=2

@@ -1,5 +1,6 @@
 ! Rank zero owns the descriptor stream; all ranks retain the ordinary CSF arrays.
 module rangular_mpi_input
+   use calculation_state_files, only: named_angular_output
    use mpi_csf_collectives, only: broadcast_descriptor_arrays, check_input_status => check_descriptor_status
    use mpi_state, only: mpi_allreduce, mpi_max, mpi_abort
    use mpi_state, only: rank_index => mpi_rank, mpi_bcast, mpi_integer, mpi_integer1, mpi_character, mpi_comm_world
@@ -43,7 +44,7 @@ contains
       integer :: separator_position
       separator_position = scan(filename, "/\", back=.true.)
       basename = filename(separator_position+1:)
-      if (basename == "rangular.log" .or. basename == "genmcp.dbg" .or. &
+      if (named_angular_output(basename) .or. basename == "genmcp.dbg" .or. &
           index(basename,"mcp") == 1 .or. index(basename,"tmp") == 1) &
          error stop "Input/timings filename uses a reserved rangular_mpi output name"
    end subroutine reject_reserved_filename
@@ -53,7 +54,7 @@ contains
       integer :: argument_index
       logical :: input_selected, timings_selected
       character(len=:), allocatable :: option_name
-      options%input_filename = "rcsf_descriptors.parquet"
+      options%input_filename = ""
       options%timings_filename = ""
       options%header_filename = ""
       input_selected = .false.
@@ -75,7 +76,7 @@ contains
             timings_selected = .true.
          case ("--help")
             print "(A)", "rangular_mpi [--csf-descriptors FILE] [--header FILE.toml] [--timings NEW_FILE.csv]"
-            print "(A)", "Default: rcsf_descriptors.parquet in the MPI serial I/O directory."
+            print "(A)", "Enter a state to read NAME_descriptors.parquet in the MPI serial I/O directory."
             print "(A)", "Only rank zero reads CSFs. Relative input paths use the MPI serial I/O directory."
             print "(A)", "Timings: NEW_FILE.rank000.csv, etc.; relative paths use each MPI rank work directory."
             stop

@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine setmix(name, idblk)
+      use calculation_state_files, only: ci_mixing_suffix
 !                                                                      *
 !   Opens the  .mix  file on stream 25; writes a header to this file;  *
 !   calls LODMIX to interactively determine the eigenpairs required.   *
@@ -38,8 +39,8 @@
 !-----------------------------------------------
 
       k = index(name," ")
-      call openfl (25, name(1:k-1)//".cm", form, status, ierr)
-      if (ierr /= 0) stop "setmix: Error when opening .cm file"
+      call openfl (25, name(1:k-1)//ci_mixing_suffix, form, status, ierr)
+      if (ierr /= 0) stop "setmix: Error when opening .cimix file"
 
       write (25) "G92MIX"
 

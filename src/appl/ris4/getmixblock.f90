@@ -16,6 +16,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
+      use calculation_state_files, only: mixing_input_path
       use array_memory_management, only: alloc
       use atomic_calculation_state, only: electron_count
       use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
@@ -37,7 +38,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: k, ierr, ios, ncftot, nvectot, nvecsiz, nblock, i, nvecpat, &
+      integer :: ierr, ios, ncftot, nvectot, nvecsiz, nblock, i, nvecpat, &
          ncfpat, nvecsizpat, neavsum, jb, nb, ncfblk, nevblk, iatjp, iaspa, j
       real(real64) :: eavsum
       character :: filnam*256, form*11, g92mix*6, status*3
@@ -45,12 +46,7 @@
 !
 !   The  .mix  file is UNFORMATTED; it must exist
 !
-      k = index(name," ")
-      if (nci == 0) then
-         filnam = name(1:k-1)//".cm"
-      else
-         filnam = name(1:k-1)//".m"
-      end if
+      filnam = mixing_input_path(name, nci == 0)
       form = "UNFORMATTED"
       status = "OLD"
 !

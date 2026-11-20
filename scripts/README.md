@@ -23,6 +23,35 @@
 [MCP 解析与比较工具](../docs/implemented/mcp_compare.md)，入口为
 [mcp_compare.py](mcp_compare.py)。支持普通串行与 MPI 输出，不运行原子计算。
 
+## 保存 RMCDHF 计算结果
+
+使用固定文件名的 RMCDHF 计算结束后，可在启动计算的目录运行 [save_rmcdhf](save_rmcdhf)。
+按[状态名计算](../README_ZH.md#输入与输出)已直接生成后续程序的输入。以下归档示例假设 suite 的 `bin/` 在 `PATH` 中。也可直接运行源码目录中的脚本。脚本使用系统 `sh` 和 GNU coreutils。
+
+```fish
+save_rmcdhf results/Zn_odd_AS1
+```
+
+目录的最后一段是状态名，以下用 `name` 表示。脚本创建独立副本，保留工作文件。若目标已存在或复制失败，命令以非零状态退出，已有归档保留。
+
+| 计算目录中的文件 | 归档目录中的文件 | 内容 |
+| --- | --- | --- |
+| `rcsf_descriptors.parquet`、`rcsf_header.toml` | `name_descriptors.parquet`、`name_header.toml` | 原生 CSF 描述符与头文件按原字节成对复制，保留 header 哈希绑定 |
+| `rwfn.out` | `name.wfn` | 径向轨道，保留 Fortran 非格式化记录 |
+| `rmix.out` | `name.mix` | OL/EOL 的 CSF 混合系数，保留 Fortran 非格式化记录 |
+| `rmcdhf.sum` | `name.rmcdhf.summary` | 计算摘要 |
+| `rmcdhf.log` | `name.rmcdhf.log` | RMCDHF 交互记录 |
+| `rangular.log` | `name.rangular.log` | 角系数程序的交互记录，存在时复制 |
+| `isodata`、`npol.inp` | `isodata`、`npol.inp` | 存在时按原名复制的核参数和核极化输入 |
+
+脚本依据摘要中的计算模式处理混合系数。OL/EOL 缺少 `rmix.out` 会报错，(E)AL 会跳过目录中遗留的 `rmix.out`。归档内的 `name.w` 和 OL/EOL 的 `name.m` 分别是指向 `name.wfn` 和 `name.mix` 的相对符号链接。有 `isodata` 的 OL/EOL 归档可整体移到另一目录，再从归档中运行 `gj`，输入同一状态名并选择 MCDHF 混合系数。供 `gj` 等程序使用时，状态名宜用 1 至 23 个无空格的 ASCII 字符。
+
+MPI 通过 `disks` 单独配置永久 I/O 目录时，从含有 `rmcdhf.log` 的启动目录执行以下命令。脚本从 `--io-dir` 读取描述符、轨道、混合系数、摘要和核数据。
+
+```fish
+save_rmcdhf --io-dir /path/to/serial-io results/Zn_odd_AS1
+```
+
 ## 批量修改 GRASP2018 / grasp-atomic-suite 径向网格
 
 `patch_grasp_grid.py` 可以操作完整原版源码树，或修改本仓库的集中容量配置与各入口网格默认值。

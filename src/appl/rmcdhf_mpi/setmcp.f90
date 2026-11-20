@@ -61,7 +61,7 @@
       integer :: lenfh, ierror, ios, i, k, lck, myidd, nprocss
       logical :: found, found1
       character :: ck*2, mcplab*3
-      character(len=120) :: filnam
+      character(len=len(filehead)+3) :: filnam
 !-----------------------------------------------
 !
       lenfh = len_trim(filehead)

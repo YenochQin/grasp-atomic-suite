@@ -41,8 +41,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use calculation_input_defaults, only: inpci, ndef, ndump
-      use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
       use where_c, only: imcdf
+      use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
       use numeric_constants, only: eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
       use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use transition_basis_blocks, only: ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
@@ -54,6 +54,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      use calculation_state_files, only: read_state_name, orbital_input_path
       use yes_no_input, only: getyn
       use setdbg_i, only: setdbg
       use machine_constants, only: setmc
@@ -81,7 +82,7 @@
       integer, parameter :: nblk=50
       integer :: ncount1, ncount2, ncount_rate, ncount_max
       integer :: nymduhmsm(8)
-      integer :: myid, nprocs, k, lenname, ncore, ndum, j2max, nseconds
+      integer :: myid, nprocs, lenname, ncore, ndum, j2max, nseconds
       logical :: yes
       character(len=128) :: name, tmpdir, permdir, isofile
       character(len=8) :: idblk(nblk0)
@@ -97,8 +98,8 @@
       write(*,*)
       write(*,*) "RCI"
       write(*,*) "This is the configuration interaction program "
-      write(*,*) "Input file:  isodata, name_descriptors.parquet, name_header.toml, name.w"
-      write(*,*) "Outputfiles: name.cm, name.csum, name.clog "
+      write(*,*) "Input file:  isodata, name_descriptors.parquet, name_header.toml, name.wfn"
+      write(*,*) "Outputfiles: name.cimix, name.csum, name.clog "
       write(*,*) "             rci.res (can be used for restart)"
       write(*,*)
 
@@ -122,13 +123,7 @@
 !
 ! Get name of the state (used in files like <name>.c, <name>.s)
 !
-      do while(.true.)
-         write (stderr_unit, "(A)") "Name of state: "
-         read (*, "(A)") name
-         k = index(name," ")
-         if (k > 1) exit
-         write (stderr_unit, *) "Name may not start with a blank. redo..."
-      end do
+      call read_state_name(name)
 
 ! Now the name of the state is known, open the log file
 
@@ -173,7 +168,7 @@
 ! Set up the  .res  file; determine if this is a restart.
 !
 !      WRITE (6, *) 'Calling SETRES...'
-      call setres (isofile, name(1:lenname)//".w", idblk)
+      call setres (isofile, orbital_input_path(name), idblk)
 !
 !   Open the  .mix  file; determine the eigenpairs required
 !

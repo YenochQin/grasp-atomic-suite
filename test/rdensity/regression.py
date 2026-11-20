@@ -301,6 +301,8 @@ def main() -> None:
             check_analytic(output, baseline, multiblock)
             target = root / (case + "-candidate")
             fixture(target, gap, multiblock)
+            (target / "case.w").rename(target / "case.wfn")
+            (target / "case.cm").rename(target / "case.cimix")
             output = run(parallel + ["case", "--ci"], target)
             # Compare CI output to the same data in the non-CI format.
             shutil.copyfile(target / "case.cd", target / "case.d")
@@ -324,10 +326,14 @@ def main() -> None:
             compare_outputs(baseline, target, "test")
         target = root / "interactive"
         fixture(target, False, False)
-        run(parallel, target, stdin="y\ncase\nn\n1\n")
+        output = run(parallel, target, stdin="y\ncase\nn\n1\n")
+        assert output.count("Name of state:") == 1, output
         check_analytic((target / "run.log").read_text(), target, False)
         run(parallel + ["--help"], root)
         run(parallel + ["--unknown"], root, success=False)
+        for invalid in ("x" * 24, "x" * 257, "two states"):
+            output = run(parallel + [invalid], root, success=False)
+            assert "1 to 23 characters" in output, output
         run(parallel + ["missing"], root, success=False)
         # Interactive READ failures must report the runtime message and reach
         # the shared failure path without consuming invalid input or hanging MPI.

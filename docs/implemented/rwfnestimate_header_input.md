@@ -9,7 +9,7 @@
 在包含 `isodata` 的计算目录中运行；以下可执行文件路径按安装位置调整：
 
 ```fish
-# 默认读取 rcsf_header.toml
+# 在 Name of state 提示处输入状态名，读取 name_header.toml
 rwfnestimate
 
 # 显式指定 rCSFs 导出的 header
@@ -19,7 +19,9 @@ rwfnestimate --help
 ```
 
 `--header` 只能指定一次，文件路径支持空格和 Unicode。通过交互菜单选择初猜方式，
-可读取旧波函数或生成 Thomas–Fermi、屏蔽氢样、自定义 Z 初猜，正交化后写入 `rwfn.inp`。
+可读取旧波函数或生成 Thomas–Fermi、屏蔽氢样、自定义 Z 初猜，正交化后写入 `name.initial.wfn`。
+从文件导入轨道时，文件名留空将读取该状态已有的 `name.wfn`。状态名本身留空时，
+使用固定的 `rcsf_header.toml`、`rwfn.inp` 和 `rwfn.out`。
 
 ## Header 契约
 

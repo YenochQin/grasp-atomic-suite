@@ -1,0 +1,85 @@
+#!/bin/sh
+set -eu
+
+usage() {
+    echo 'Usage: save_rmcdhf [--io-dir DIR] DESTINATION'
+    echo 'Run after RMCDHF finishes, in the launch directory containing rmcdhf.log.'
+    echo 'DESTINATION is a new directory. Its final component is the saved state name.'
+    echo 'For MPI with a separate serial I/O directory, pass that directory with --io-dir.'
+}
+
+fail() {
+    printf 'save_rmcdhf: %s\n' "$*" >&2
+    exit 1
+}
+
+io_dir=.
+case ${1-} in
+    -h|--help)
+        usage
+        exit 0 ;;
+    --io-dir)
+        [ "$#" -ge 3 ] || { usage >&2; exit 2; }
+        io_dir=$2
+        shift 2 ;;
+    -*) usage >&2; exit 2 ;;
+esac
+[ "$#" -eq 1 ] && [ -n "$1" ] || { usage >&2; exit 2; }
+[ -d "$io_dir" ] || fail "missing I/O directory: $io_dir"
+
+parent=$(dirname -- "$1")
+state=$(basename -- "$1")
+case $state in .|..) fail "choose a new state directory: $1" ;; esac
+destination=$parent/$state
+if [ -e "$destination" ] || [ -L "$destination" ]; then
+    fail "destination already exists: $destination"
+fi
+
+# Build the archive on the destination filesystem, then publish it in one rename.
+mkdir -p -- "$parent"
+staging=$(mktemp -d -- "$parent/.save_rmcdhf.XXXXXXXX")
+trap 'rm -rf -- "$staging"' EXIT
+trap 'exit 1' HUP INT TERM
+
+copy_file() {
+    [ -f "$1" ] || fail "missing regular file: $1"
+    cp -- "$1" "$staging/$2"
+}
+
+copy_data() {
+    [ -s "$1" ] || fail "missing or empty file: $1"
+    copy_file "$1" "$2"
+}
+
+copy_data "$io_dir/rmcdhf.sum" "$state.rmcdhf.summary"
+copy_file rmcdhf.log "$state.rmcdhf.log"
+
+# All four RMCDHF programs write this mode line in STRSUM.
+mode=$(awk 'NF == 2 && $2 == "calculation." {print $1; exit}' < "$staging/$state.rmcdhf.summary")
+case $mode in
+    OL|EOL)
+        copy_data "$io_dir/rmix.out" "$state.mix"
+        ln -s -- "$state.mix" "$staging/$state.m" ;;
+    '(E)AL') ;;  # This run did not write rmix.out.
+    *) fail "unrecognized calculation mode in $io_dir/rmcdhf.sum" ;;
+esac
+
+copy_data "$io_dir/rcsf_header.toml" "${state}_header.toml"
+copy_data "$io_dir/rcsf_descriptors.parquet" "${state}_descriptors.parquet"
+copy_data "$io_dir/rwfn.out" "$state.wfn"
+ln -s -- "$state.wfn" "$staging/$state.w"
+
+for input in isodata npol.inp; do
+    if [ -e "$io_dir/$input" ] || [ -L "$io_dir/$input" ]; then
+        copy_file "$io_dir/$input" "$input"
+    fi
+done
+if [ -e rangular.log ] || [ -L rangular.log ]; then
+    copy_file rangular.log "$state.rangular.log"
+fi
+
+# GNU mv -n may exit successfully when another saver wins the race.
+mv -nT -- "$staging" "$destination"
+[ ! -d "$staging" ] || fail "destination already exists: $destination"
+trap - EXIT HUP INT TERM
+printf 'Saved %s calculation to %s\n' "$mode" "$destination"

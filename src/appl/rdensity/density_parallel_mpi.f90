@@ -15,7 +15,7 @@ contains
     subroutine parallel_start
         call mpix_startup(rank, workers, processor_name, processor_name_length, start_count, &
             "RDENSITY_MPI", "MPI density and natural orbitals", &
-            "isodata, descriptor Parquet/header, name.w, name.(c)m", "name.nw, name.(c)d", .true.)
+            "isodata, descriptor Parquet/header, name.wfn, name.mix/name.cimix", "name.nw, name.(c)d", .true.)
     end subroutine parallel_start
 
     subroutine parallel_finish

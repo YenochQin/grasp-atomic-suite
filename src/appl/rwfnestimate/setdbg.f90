@@ -2,7 +2,7 @@
 
 !***********************************************************************
 !                                                                      *
-      subroutine setdbg
+      subroutine setdbg(defnam)
 !                                                                      *
 !   This subroutine sets the arrays that control debug printout from   *
 !   the radial and angular modules of the GRASP92 suite.               *
@@ -24,12 +24,13 @@
       use yes_no_input, only: getyn
       use file_open, only: openfl
       implicit none (type, external)
+      character(len=*), intent(in) :: defnam
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, ierr
       logical :: yes
-      character :: filnam*256, defnam*11, form*11, status*3
+      character :: filnam*256, form*11, status*3
 !-----------------------------------------------
 !
 !
@@ -49,11 +50,10 @@
 !
 !   The  .dbg  file is formatted; open it on unit 99
 !
-         defnam = "erwf.dbg"
          form = "FORMATTED"
          status = "NEW"
 !
-         write (stderr_unit, *) "File  erwf.dbg  will be created as the ", &
+         write (stderr_unit, *) "File ", defnam, " will be created as the ", &
             "ERWF DeBuG Printout File; "
          write (stderr_unit, *) "enter another file name if this is not ", &
             "acceptable; null otherwise:"

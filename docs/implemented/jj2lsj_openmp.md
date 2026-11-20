@@ -9,7 +9,7 @@ suite 修改前基线：`a4661441492e38beb99293182cb9257326d2dcef`。
 没有可确认的独立上游提交号，因此用[来源文件 SHA-256 清单](../reference/jj2lsj/source-manifest.json)
 锁定导入前的内容。保留原作者与 MIT 许可；此清单不是集成后源码的哈希。
 
-新程序是 `jj2lsj_omp`，读取 `isodata`、`name.c`、`name.m` 或 `name.cm`。
+新程序是 `jj2lsj_omp`，读取 `isodata`、配套的 CSF 描述符和头文件、`name.mix` 或 `name.cimix`。
 交互问题、阈值默认值、`.lsj.lbl/.lsj.c/.lsj.j`、唯一标签和 `.lsj.T` 格式延续来源程序。
 已有 `jj2lsj_csfg` 仍是独立 CSFG 应用，本次没有修改它的转换算法。
 

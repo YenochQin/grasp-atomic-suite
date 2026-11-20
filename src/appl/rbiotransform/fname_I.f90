@@ -3,7 +3,7 @@
       interface
       subroutine fname (name)
       implicit none (type, external)
-      character (len = 24), intent(in) :: name(2)
+      character (len = 24), intent(out) :: name(2)
       end subroutine fname
       end interface
       end module fname_i

@@ -14,6 +14,7 @@
 !   M o d u l e s
 !-----------------------------------------------
       use, intrinsic :: iso_fortran_env, only: real64
+      use calculation_state_files, only: orbital_input_path
       use grasp_parameters,    only: max_radial_points
       use hamiltonian_correction_flags, only: lfordr, lnms, lse, lsms, ltrans, lvp
       use atomic_calculation_state, only: accy, max_radial_points, nuclear_charge, speed_of_light_au, vacuum_speed_of_light_au
@@ -144,7 +145,7 @@
 !   Load the radial wavefunctions
 !
 !      CALL SETRWFA(NAME)
-      call setrwfa (trim(name)//".w")
+      call setrwfa (orbital_input_path(name))
 !
       return
       end subroutine getsmd

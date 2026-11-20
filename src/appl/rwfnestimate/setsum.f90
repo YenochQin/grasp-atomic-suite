@@ -2,7 +2,7 @@
 
 !***********************************************************************
 !                                                                      *
-      subroutine setsum
+      subroutine setsum(defnam)
       use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !                                                                      *
 !   Open the  .sum  file on stream 24.                                 *
@@ -21,20 +21,20 @@
 !-----------------------------------------------
       use file_open, only: openfl
       implicit none (type, external)
+      character(len=*), intent(in) :: defnam
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ierr
-      character :: filnam*256, defnam*11, form*11, status*3
+      character :: filnam*256, form*11, status*3
 !-----------------------------------------------
 !
 !   File  erwf.sum  is FORMATTED
 !
-      defnam = "erwf.sum"
       form = "FORMATTED"
       status = "NEW"
 !
-      write (stderr_unit, *) "File  erwf.sum  will be created as the ", &
+      write (stderr_unit, *) "File ", defnam, " will be created as the ", &
          "ERWF SUMmary File; "
       write (stderr_unit, *) "enter another file name if this is not ", &
          "acceptable; null otherwise:"

@@ -1,4 +1,5 @@
 add_executable(fical fical.f90)
+target_link_libraries_Fortran(fical PRIVATE core)
 install(TARGETS fical DESTINATION bin/)
 
 if(GRASP_BUILD_SERIAL_APPS)

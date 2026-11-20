@@ -49,7 +49,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use yes_no_input, only: getyn
+      use calculation_state_files, only: check_orbital_output
+      use calculation_state_files, only: state_files, state_name_length, files_for_state, select_state
       use run_timer_start, only: starttime
       use setdbg_i, only: setdbg
       use machine_constants, only: setmc
@@ -72,6 +73,8 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ncore1, ncount1
+      type(state_files) :: files
+      character(state_name_length) :: state
       logical :: eol, yes
       character :: idblk(nblk0)*8
 !-----------------------------------------------
@@ -87,27 +90,28 @@
       write(*,*) "This program determines the radial orbitals   "
       write(*,*) "and the expansion coefficients of the CSFs         "
       write(*,*) "in a self-onsistent field proceedure               "
-      write(*,*) "Input file:  isodata, rcsf_descriptors.parquet + rcsf_header.toml, rwfn.inp, mcp.30, ..."
-      write(*,*)                                                       &
-               "Outputfiles: rwfn.out, rmix.out, rmcdhf.sum, rmcdhf.log"
-      write(*,*)
+      call select_state(state, "Default settings? (y/n)", yes)
+      files = files_for_state(state)
+      call check_orbital_output(files%orbitals, writing_initial=.false.)
+      write(*,*) "Input files: isodata, ", files%descriptors, ", ", files%header, ", ", files%initial_orbitals
+      write(*,*) "Output files: ", files%orbitals, ", ", files%mixing, ", ", files%scf_summary, ", ", files%scf_log
 
       call starttime (ncount1, "RMCDHF")
 
-     open(unit=734,file="rmcdhf.log",status="UNKNOWN")
+      open(unit=734,file=files%scf_log,status="UNKNOWN")
+      if (state /= "") write(734,"(A)") trim(state)
 
 !=======================================================================
 !  Get NDEF
 !=======================================================================
 
       if (mpi_rank == 0) then
-         write (stderr_unit, "(A)", advance="NO") "Default settings?  (y/n) "
-         yes = getyn()
          if (yes) then
             ndef = 0
             write(734,"(A)") "y            ! Default settings"
          else
             ndef = 1
+            if (state /= "") write(734,"(A)") "n            ! Default settings"
          end if
       end if
 
@@ -126,14 +130,14 @@
 !    FACTT - table of logarithms of factorials setup
 !=======================================================================
 
-      call setdbg ("rscf92.dbg")
+      call setdbg (files%scf_debug)
       call setmc
       call setcon
 
-      call setsum ("rmcdhf.sum")
+      call setsum (files%scf_summary)
 
-      call setmcp (closed_core_subshell_count, nblk0, idblk, "mcp")
-      call setcsl ("rcsf_descriptors.parquet", ncore1, idblk)
+      call setmcp (closed_core_subshell_count, nblk0, idblk, files%mcp)
+      call setcsl (files%descriptors, ncore1, idblk)
       if (closed_core_subshell_count /= ncore1) stop "rscfvu: ncore"
 
 !=======================================================================
@@ -141,11 +145,11 @@
 !  part (routine) asks for user-inputs.
 !=======================================================================
 
-      call getscd (eol, idblk, "isodata", "rwfn.inp", "npol.inp")
+      call getscd (eol, idblk, "isodata", files%initial_orbitals, "npol.inp")
 
       if (mpi_rank == 0) then
          call strsum
-         if (eol) call setmix ("rmix.out")
+         if (eol) call setmix (files%mixing)
       end if
 
       call factt
@@ -155,7 +159,7 @@
 !  the  .sum  file
 !=======================================================================
 
-      call scf (eol, "rwfn.out")
+      call scf (eol, files%orbitals)
       close (734)
 
 !=======================================================================

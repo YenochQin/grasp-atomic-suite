@@ -54,7 +54,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use yes_no_input, only: getyn
+      use calculation_state_files, only: state_files, state_name_length, files_for_state, select_state
       use run_timer_start, only: starttime
       use setdbg_i, only: setdbg
       use machine_constants, only: setmc
@@ -81,21 +81,27 @@
       character(len=8):: idblk(nblk0)
       integer :: myid,nprocs
       type(angular_input_options) :: input_options
+      type(state_files) :: files
+      character(state_name_length) :: state
       integer(int64) :: program_start_count, stage_start_count
       character(len=16) :: input_format_name
 !-----------------------------------------------------------------------
 !
       call parse_angular_options(input_options)
+      call select_state(state, "Full interaction? (y/n)", yes)
+      files = files_for_state(state)
+      if (input_options%input_filename == "") input_options%input_filename = files%descriptors
       input_format_name = "descriptors"
       program_start_count = stage_clock()
       write(*,*)
       write(*,*) "RANGULAR"
       write(*,*) "This program performs angular integration "
       write(*,*) "Input file: ", input_options%input_filename
-      write(*,*) "Outputfiles: mcp.30, mcp.31, ...."
-      write(*,*) "rangular.log                     "
+      write(*,*) "Output files: ", files%mcp, ".30, ", files%mcp, ".31, ..."
+      write(*,*) files%angular_log
       write(*,*)
-      open(unit=739,file="rangular.log",status="UNKNOWN")
+      open(unit=739,file=files%angular_log,status="UNKNOWN")
+      if (state /= "") write(739,"(A)") trim(state)
       myid = 0
       nprocs = 1
       call starttime (ncount1, "RANGULAR")
@@ -104,8 +110,6 @@
 !=======================================================================
       if (myid == 0) then
 !         WRITE (ISTDE, '(A)', ADVANCE='NO') 'Default settings?  (y/n) '
-         write (stderr_unit,"(A)") " Full interaction?  (y/n) "
-         yes = getyn()
          if (yes) then
             ndef = 0
             write(739,"(A)") "y            ! Full interaction"
@@ -129,7 +133,7 @@
 !=======================================================================
 !CFF  delete chkplt
 !     CALL CHKPLT ('GENMCP')
-      call setdbg (debug, "genmcp.dbg")
+      call setdbg (debug, files%angular_debug)
       call setmc
 !      IF (NDEF/=0 .AND. MYID==0) CALL SETSUM ('genmcp.sum')
       stage_start_count = stage_clock()
@@ -137,7 +141,7 @@
       call record_stage("input_header", 0, stage_start_count, int(csf_count,int64), storage=input_format_name)
       restrt = .false.
       stage_start_count = stage_clock()
-      call setmcp2 (myid, nprocs, ncore, idblk, "mcp")
+      call setmcp2 (myid, nprocs, ncore, idblk, files%mcp)
       if (ndef/=0 .and. myid==0) call strsum
       call factt
       call record_stage("setup_including_interaction_input", 0, stage_start_count)
@@ -162,9 +166,9 @@
          call record_stage("csf_load", nb, stage_start_count, int(csf_count,int64), storage=input_format_name)
          !*** Open tmp.xx files for block nb ***
 !GG         CALL SETTMP (NB, KMAX, 'tmp')
-         call settmpgg (nb, 30, "tmp")
+         call settmpgg (nb, 30, files%temporary)
          !*** Generation of MCP coefficients ***
-         call mcp (nb, restrt, myid, nprocs, "mcp")
+         call mcp (nb, restrt, myid, nprocs, files%mcp, files%temporary)
       end do
       call close_angular_input(input_options)
       call record_stage("program_total_including_interaction_input", 0, program_start_count)

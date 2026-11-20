@@ -1,4 +1,5 @@
 add_library(core STATIC
+    calculation_state_files.f90
     csf_descriptor_c_bindings.f90
     rmcdhf_csf_input.f90
     csf_full_basis_reader.f90

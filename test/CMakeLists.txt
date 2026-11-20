@@ -114,6 +114,19 @@ if(Python3_Interpreter_FOUND)
         COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/test_sample_rmcdhf_mpi.py")
     set_tests_properties(rmcdhf_mpi_sampler PROPERTIES TIMEOUT 30)
+    if(TARGET rwfnestimate AND TARGET rangular AND TARGET rmcdhf_mem AND TARGET rci)
+        add_test(NAME state_workflow_serial COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/test_state_workflow.py" $<TARGET_FILE_DIR:rwfnestimate>)
+        if(TARGET rangular_mpi AND TARGET rmcdhf_mem_mpi AND TARGET rci_mpi AND MPIEXEC_EXECUTABLE)
+            add_test(NAME state_workflow_mpi COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/test_state_workflow.py" $<TARGET_FILE_DIR:rwfnestimate>
+                --mpiexec "${MPIEXEC_EXECUTABLE}")
+            set_tests_properties(state_workflow_mpi PROPERTIES PROCESSORS 2)
+        endif()
+    endif()
+    add_test(NAME save_rmcdhf
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_save_rmcdhf.py"
+            "${PROJECT_BINARY_DIR}/bin/save_rmcdhf")
     if(TARGET rangular_mpi AND MPIEXEC_EXECUTABLE)
         add_test(NAME rangular_mpi_descriptors
             COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rangular/test_mpi_descriptors.py"

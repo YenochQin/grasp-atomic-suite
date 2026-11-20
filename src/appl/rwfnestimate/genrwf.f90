@@ -2,7 +2,7 @@
 
 !***********************************************************************
 !                                                                      *
-      subroutine genrwf
+      subroutine genrwf(default_orbitals)
 !                                                                      *
 !   Controls the computation of the subshell radial wavefunctions.     *
 !                                                                      *
@@ -44,6 +44,7 @@
       use frmhyd_i, only: frmhyd
       use summry_i, only: summry
       implicit none (type, external)
+      character(len=*), intent(in) :: default_orbitals
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -52,7 +53,7 @@
       real(real64) :: con, fkk
       logical :: all, yes, existed
       logical, save :: modify = .false.
-      character :: infile*128
+      character(len=max(128, len(default_orbitals))) :: infile
 !-----------------------------------------------
 
 !
@@ -122,9 +123,9 @@
 
          if (nradial == 1) then
   345       continue
-            write (stderr_unit, *) 'Enter the file name (Null then "rwfn.out")'
+            write (stderr_unit, *) 'Enter the file name (blank for ', default_orbitals, ')'
             read (stdin_unit, "(A)") infile
-            if (len_trim(infile) == 0) infile = "rwfn.out"
+            if (len_trim(infile) == 0) infile = default_orbitals
 
             inquire(file=infile, exist=existed)
             if (.not.existed) then
@@ -135,7 +136,7 @@
          end if
 
          write (stderr_unit, *) "Enter the list of relativistic subshells:"
-         open(unit=734, file="tmp_734", status="NEW")
+         open(unit=734, status="SCRATCH")
          call getrsl (index, nsubs)
          close(734, status="DELETE")
 
@@ -171,7 +172,7 @@
   456    continue
          write (stderr_unit, *) "Enter the list of subshells whose radial ", &
             "wavefunctions are to be revised:"
-         open(unit=734, file="tmp_734", status="NEW")
+         open(unit=734, status="SCRATCH")
          call getrsl (index, nsubs)
          close(734, status="DELETE")
          if (nsubs == 0) goto 456

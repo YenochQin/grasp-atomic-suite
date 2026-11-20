@@ -53,7 +53,7 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 | 普通 GRASP 计算链 | `src/appl/rangular*`、`rwfnestimate`、`rci*`、`rbiotransform*`、`rtransition*` | `rangular{,_mpi}`、`rwfnestimate`、`rci{,_mpi}`、`rbiotransform{,_mpi}`、`rtransition{,_phase,_mpi}` | 十个目标复用 suite 共享库与集中容量参数；见[来源、构建与验证范围](docs/implemented/standard_grasp_integration.md)。 |
 | `jj2lsj_omp` | `src/appl/jj2lsj` | `jj2lsj_omp` | 普通 CSF 的 OpenMP jj–LS 转换，按 LS 行并行并保留原截断顺序；见[构建、运行和验证说明](docs/implemented/jj2lsj_openmp.md)。与 `jj2lsj_csfg` 分开。 |
 | `rlevels` | `src/appl/rlevels` | `rlevels` | 从 RMCDHF `.m` 和 RCI `.cm` 生成能级表，可附加 `jj2lsj` 标签。见[用法和输出格式](docs/implemented/rlevels.md)。 |
-| `gj` | `src/appl/gj` | `gj`, `gj_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、`name.c`、`name.m/name.cm`、`name.w`，输出 `name.gj/name.cgj`。 |
+| `gj` | `src/appl/gj` | `gj`, `gj_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、该状态的 CSF 描述符文件对、`name.mix/name.cimix`、`name.wfn`，输出 `name.gj/name.cgj`。 |
 | `rhfs` | `src/appl/rhfs` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
 | `rdensity` | `src/appl/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/rdensity_mpi.md)。 |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，输出 `name.i/name.ci` 及中间角向数据。 |
@@ -133,15 +133,30 @@ CMake 会自动查找 BLAS/LAPACK，并要求 GNU Fortran 15 或更新版本。
 
 ## 输入与输出
 
-性质计算程序沿用 GRASP 风格的状态名输入。运行时输入 `name` 后，程序会在当前目录查找相关文件。轨道优化程序沿用 RMCDHF 的交互输入，使用 `rcsf.inp`、`rwfn.inp` 和 MCP 数据。`rwfnestimate`、`rangular` 和 `rangular_mpi` 已在本仓库构建；`rnucleus`、普通 `rcsfgenerate` 仍来自外部 GRASP，或使用已核对的输入文件。
+所有应用在交互读取状态名时都显示 `Name of state:`。双正交变换和跃迁程序分别标明初态与末态，FICAL 分别标明上态与下态。MPI 版本仅由 rank 0 询问。支持命令行状态名的程序可直接传入状态名。[公共状态输入实现](src/lib/core/calculation_state_files.f90)
+
+在计算目录依次执行 `rwfnestimate`、`rangular`、`rmcdhf`，在每步的 `Name of state:` 提示输入相同状态名，例如 `Zn_odd_AS1`。第一步直接读取 `Zn_odd_AS1_header.toml`，后续步骤沿用同一前缀，计算文件在各步间直接交接。
+
+| 步骤 | 按状态名读取 | 按状态名写出 |
+| --- | --- | --- |
+| `rwfnestimate` | `name_header.toml` | 初猜轨道 `name.initial.wfn` |
+| `rangular` | `name_descriptors.parquet` 和配套头文件 | 角系数 `mcp.NN`、`name.rangular.log` |
+| `rmcdhf`、`rmcdhf_mem` | 同一描述符文件对、初猜轨道和 MCP | 优化轨道 `name.wfn`、OL/EOL 混合系数 `name.mix`、`name.rmcdhf.summary`、`name.rmcdhf.log` |
+| `rci` | 同一描述符文件对和 `name.wfn` | CI 混合系数 `name.cimix`、`name.csum`、`name.clog` |
+
+MPI 版本由 rank 0 询问状态名。各 rank 在各自的临时目录交接 `mcp.NN`，描述符和轨道位于永久 I/O 目录，角系数与 SCF 日志位于启动目录。`isodata` 和适用的 `npol.inp` 仍按目录共用。`rci` 沿用先询问默认设置、再询问状态名的顺序。后续若要使用 `gj` 等性质程序，状态名应控制在 23 个字符以内。
+
+每个工作目录共用一套 `mcp.NN`。应先完成本基组的 RMCDHF，再在同一目录为下一基组生成角系数。并行计算不同基组时，分别使用独立的工作目录和 MPI scratch 目录。`A` 和 `A.initial` 两个状态也应分目录保存，因为两者都会写 `A.initial.wfn`。下游程序优先读取新后缀，对应新文件缺失时可读取归档中的 `.w`、`.m`、`.cm`。
+
+状态名留空会使用传统的 `rcsf_*`、`rwfn.inp`、`rwfn.out` 和 `rmix.out`。以 y/n 回答设置开头的旧输入脚本仍可使用。若状态名恰为单字母 Y 或 N（含小写），相应输入目录里的同名头文件优先。同名重算时，(E)AL 不更新该状态已有的混合系数文件。固定文件名的已有计算仍可通过 [save_rmcdhf 归档](scripts/README.md#保存-rmcdhf-计算结果)。
 
 常用输入文件：
 
 - `isodata`：核参数和同位素相关数据。
-- `name.c`：CSF 列表与耦合信息。
-- `name.w`：径向轨道波函数。
-- `name.m`：MCDHF/非 CI 混合系数文件。
-- `name.cm`：CI 混合系数文件。
+- `name_descriptors.parquet` 和 `name_header.toml`：CSF 描述符及其配套头文件。
+- `name.wfn`：径向轨道波函数。
+- `name.mix`：MCDHF/非 CI 混合系数文件。
+- `name.cimix`：CI 混合系数文件。
 
 常用输出文件：
 

@@ -70,7 +70,7 @@ def main() -> None:
                 # Alter all rank-1 channel electron counts consistently: SETMCP
                 # accepts its own shard, but cross-rank metadata must fail.
                 originals = {}
-                for file in (work / "001").glob("mcp001.*"):
+                for file in (work / "001").glob("mcp.*"):
                     original = file.read_bytes()
                     originals[file] = original
                     data = bytearray(original)

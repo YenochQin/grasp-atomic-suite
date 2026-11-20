@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine lodrwfi(name, ntestg)
+      use calculation_state_files, only: orbital_input_path
 !                                                                      *
 !   This subroutine loads  radial wavefunctions from the  .rwf  file   *
 !   and performs some related setup.                                   *
@@ -62,8 +63,7 @@
 !
 !   Open the radial wave function file
 !
-      j = index(name," ")
-      open(unit=21, file=name(1:j-1)//".w", form="UNFORMATTED", status="OLD", &
+      open(unit=21, file=orbital_input_path(name), form="UNFORMATTED", status="OLD", &
          position="asis")
 !
 !   Save NAK, NP and NH

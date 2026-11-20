@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine fname(name)
+      use calculation_state_files, only: read_state_pair
 !                                                                      *
 !   Determines the name of the initial and final states                *
 !   In addition this subroutine determines which J symmetries          *
@@ -21,35 +22,19 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      character  :: name(2)*24
+      character(len=24), intent(out) :: name(2)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: j, i
+      integer :: i
       logical :: yes
 !-----------------------------------------------
 !
 !
 !   Obtain the names of the initial and final state files
 !
-    1 continue
-      write (6, *) " Name of the Initial state"
-      read (*, "(A)") name(1)
+      call read_state_pair(name)
 
-      write (6, *) " Name of the Final state"
-      read (*, "(A)") name(2)
-!
-      j = index(name(1)," ")
-      if (j == 1) then
-         write (6, *) " Names may not start with blanks"
-         goto 1
-      end if
-!
-      j = index(name(2)," ")
-      if (j == 1) then
-         write (6, *) " Names may not start with blanks"
-         goto 1
-      end if
 ! Per april 2007
 ! Check if the initial and final states are identical.
 
@@ -57,7 +42,7 @@
          print *
          print *, " Initial and final states are identical and there is"
          print *, " no need for the biorthogonal transformation. Just  "
-         print *, " copy name.w to name.bw and name.(c)m to name.(c)bm "
+         print *, " copy name.wfn to name.bw and name.mix/name.cimix to name.(c)bm "
          print *, " and run rtransition.                               "
          print *
 

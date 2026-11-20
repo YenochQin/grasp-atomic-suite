@@ -87,6 +87,8 @@ def check_mixed_units(binary: Path) -> None:
         with tempfile.TemporaryDirectory(prefix="fical-mixed-units-") as work:
             result, report = run_fical(binary, Path(work), unit, ci=ci, relativistic=relativistic, fitted=fitted)
             assert result.returncode == 0 and "program FICAL finished" in result.stdout, result.stderr + result.stdout
+            assert result.stderr.count("Name of state:") == 2
+            assert "Upper state" in result.stderr and "Lower state" in result.stderr
             block, field_block = report.read_text().split("LINE MASS SHIFT PARAMETERS", 1)[1].split(
                 "LINE FIELD SHIFT PARAMETERS", 1,
             )

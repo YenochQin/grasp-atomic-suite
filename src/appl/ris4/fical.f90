@@ -1,7 +1,8 @@
 program fical
+  use calculation_state_files, only: read_state_name
   use, intrinsic :: iso_fortran_env, only: real64
   implicit none (type, external)
-  integer :: i,j,ii,jj,l,lsjpresent,lmax,lmax1,lmax2
+  integer :: i,j,ii,jj,lsjpresent,lmax,lmax1,lmax2
   integer :: nvec1,nvec2,nveclsj1,nveclsj2,level1(500),level2(500),levellsj1(500),levellsj2(500)
   integer :: relflag,efacflag
 
@@ -19,7 +20,8 @@ program fical
   real(real64) :: drms
   real(real64) :: z
 
-  character(len=100) :: state1, state2, file1, file2, file3, file4, file5, file6
+  character(len=101) :: state1, state2
+  character(:), allocatable :: file1, file2, file3, file5, file6
   character(len=11) :: spinpar1(500),spinpar2(500)
   character(len=4) :: typeflag,spinlsj1(500),spinlsj2(500)
   character(len=3) :: unit
@@ -123,10 +125,8 @@ program fical
      stop
   end if
 
-  write(*,*) "Give name of state 1: "
-  read(*,"(a100)") state1
-  write(*,*) "Give name of state 2: "
-  read(*,"(a100)") state2
+  call read_state_name(state1, role="Upper state")
+  call read_state_name(state2, role="Lower state")
 
   write(*,*) "Resulting isotope shifts from CI calculations (y/n)?: "
   read(*,*) ci
@@ -201,25 +201,16 @@ program fical
 
   ! NAME INPUT AND OUTPUT FILES
 
-  file4 = "isodata"
-  l = index(state1," ")
-  file5 = state1(1:l-1)//".lsj.lbl"
-  l = index(state2," ")
-  file6 = state2(1:l-1)//".lsj.lbl"
+  file5 = trim(state1)//".lsj.lbl"
+  file6 = trim(state2)//".lsj.lbl"
   if(ci=="y") then
-     l = index(state1," ")
-     file1 = state1(1:l-1)//".ci"
-     l = index(state2," ")
-     file2 = state2(1:l-1)//".ci"
+     file1 = trim(state1)//".ci"
+     file2 = trim(state2)//".ci"
      file3 = trim(state1)//"."//trim(state2)//".cfi"
-     l = index(state1," ")
   else
-     l = index(state1," ")
-     file1 = state1(1:l-1)//".i"
-     l = index(state2," ")
-     file2 = state2(1:l-1)//".i"
+     file1 = trim(state1)//".i"
+     file2 = trim(state2)//".i"
      file3 = trim(state1)//"."//trim(state2)//".fi"
-     l = index(state1," ")
   end if
 
   ! DEFINE CERTAIN FLAGS
@@ -257,7 +248,7 @@ program fical
 
   call openfile(file2,unit,efacflag,relflag,nvec2,level2,spinpar2,energy2,nms2,sms2,ms2,fs2)
 
-  call openisodata(file4,file3,z)
+  call openisodata("isodata",file3,z)
 
   ! WRITE INPUT ISOTOPE DATA TO OUPTPUT FILE
   if(typeflag/="para") then
@@ -1029,7 +1020,7 @@ subroutine openlsj(name,nvec,level,spin,par,csflabel,lmax)
   character(len=10) :: spinpar(500)
   character(len=36) :: dummy
 
-  character(len=100) :: name
+  character(*), intent(in) :: name
   character(len=200) :: string
   character(len=200) :: csflabel(500)
 

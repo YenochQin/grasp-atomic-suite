@@ -21,6 +21,7 @@
       use compute_gj_only_mpi_i, only: compute_gj_only_mpi
       use gethfd_i, only: gethfd
       use getmixblock_i, only: getmixblock
+      use calculation_state_files, only: read_state_name, property_state_arguments
       use yes_no_input, only: getyn
       use physical_constants, only: setcon
       use mpi_csf_basis_input, only: setcsla => load_csf_basis_mpi
@@ -34,16 +35,15 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: argc, iarg, k, nci, ncore_not_used, ncount1
+      integer :: input_status, nci, ncore_not_used, ncount1
       logical :: yes, use_args
       real(real64), pointer :: gjc_diag(:), dgjc_diag(:)
-      character(len=24) :: arg
       character :: name*24
 !-----------------------------------------------
 !
       call mpix_startup(mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1, &
          "GJ_MPI", "This is the MPI Lande-factor program", &
-         "isodata, descriptor Parquet/header, name.(c)m, name.w", &
+         "isodata, descriptor Parquet/header, name.mix/name.cimix, name.wfn", &
          "name.gj or name.cgj", .true.)
 !
       name = " "
@@ -52,34 +52,11 @@
       use_args = .false.
 !
       if (mpi_rank == 0) then
-         argc = command_argument_count()
-         if (argc > 0) then
-            use_args = .true.
-            do iarg = 1, argc
-               arg = " "
-               call get_command_argument(iarg, arg)
-               if (iarg == 1 .and. arg(1:2) /= "--") then
-                  name = arg
-               else if (trim(arg) == "--ci") then
-                  nci = 0
-               else if (trim(arg) == "--nonci") then
-                  nci = 1
-               else if (trim(arg) == "--help" .or. trim(arg) == "-h") then
-                  write (stderr_unit, *) "Usage: gj_mpi [name] [--ci|--nonci]"
-                  write (stderr_unit, *) "If no arguments are given, interactive mode is used."
-                  ndef = -1
-               else if (iarg /= 1 .or. arg(1:2) == "--") then
-                  write (stderr_unit, *) "Unrecognized argument: ", trim(arg)
-                  write (stderr_unit, *) "Usage: gj_mpi [name] [--ci|--nonci]"
-                  ndef = -1
-               end if
-            end do
-            if (ndef == 0 .and. len_trim(name) == 0) then
-               write (stderr_unit, *) "Usage: gj_mpi [name] [--ci|--nonci]"
-               ndef = -1
-            end if
+         use_args = command_argument_count() > 0
+         if (use_args) then
+            call property_state_arguments("gj_mpi", name, nci, input_status)
+            if (input_status /= 0) ndef = -input_status
          end if
-!
          if (.not.use_args .and. ndef == 0) then
             write (stderr_unit, *)
             write (stderr_unit, *) "Default settings?"
@@ -94,22 +71,19 @@
          end if
 !
          if (ndef == 0 .and. .not.use_args) then
-   10       continue
-            write (stderr_unit, *) "Name of state"
-            read (*, "(A)") name
-            k = index(name," ")
-            if (k == 1) then
-               write (stderr_unit, *) "Names may not start with a blank"
-               goto 10
-            end if
-!
-            write (stderr_unit, *)
-            write (stderr_unit, *) "Mixing coefficients from a CI calc.?"
-            yes = getyn()
-            if (yes) then
-               nci = 0
+            call read_state_name(name, status=input_status)
+            if (input_status /= 0) then
+               ndef = -input_status
             else
-               nci = 1
+!
+               write (stderr_unit, *)
+               write (stderr_unit, *) "Mixing coefficients from a CI calc.?"
+               yes = getyn()
+               if (yes) then
+                  nci = 0
+               else
+                  nci = 1
+               end if
             end if
          end if
       end if
@@ -117,6 +91,7 @@
       call mpi_bcast(ndef, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
       if (ndef /= 0) then
          call mpi_finalize(mpi_error_code)
+         if (ndef == -2) stop 2
          stop
       end if
 !

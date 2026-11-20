@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      subroutine mcp (symmetry_block_index, is_restart, mpi_rank, mpi_process_count, output_file_prefix)
+      subroutine mcp (symmetry_block_index, is_restart, mpi_rank, mpi_process_count, output_file_prefix, temporary_file_prefix)
 !                                                                      *
 !   This routine controls the computation  and storage of the values   *
 !   and all indices of the angular coefficients                        *
@@ -68,7 +68,7 @@
       integer  :: mpi_rank
       integer  :: mpi_process_count
       logical, intent(in) :: is_restart
-      character(len=*), intent(in) :: output_file_prefix
+      character(len=*), intent(in) :: output_file_prefix, temporary_file_prefix
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -205,7 +205,7 @@
 !GG                        print*,
 !GG     :             "The program switches to the disk version of
 !sorting"
-                        call settmpgg (symmetry_block_index, 31, "tmp")
+                        call settmpgg (symmetry_block_index, 31, temporary_file_prefix)
                         markt = 1
                         do jj = 1, one_electron_coefficient_count-1
                           write (31) channel_csf_columns(jj,1), channel_matrix_positions(jj,1),       &
@@ -302,7 +302,7 @@
 !GG                        print*,
 !GG     :             "The program switches to the disk version of
 !sorting"
-                        call settmpgg (symmetry_block_index, 32+multipole_rank, "tmp")
+                        call settmpgg (symmetry_block_index, 32+multipole_rank, temporary_file_prefix)
                         mark(multipole_rank+1) = 1
                         do jj = 1,sort_capacity_per_channel
                           write (32+multipole_rank) channel_csf_columns(jj,multipole_rank+2), &

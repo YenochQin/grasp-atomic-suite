@@ -41,7 +41,7 @@ contains
       character(len=:), allocatable :: argument, basename
       logical :: selected
       integer :: position
-      options%filename = "rcsf_header.toml"
+      options%filename = ""
       selected = .false.
       position = 1
       do while (position <= command_argument_count())
@@ -53,7 +53,7 @@ contains
             selected = .true.
          case ("--help")
             print "(A)", "rwfnestimate [--header FILE.toml]"
-            print "(A)", "Default: rcsf_header.toml. Header mode requires header_info.electron_count including core electrons."
+            print "(A)", "Enter a state to read NAME_header.toml and write NAME.initial.wfn; --header overrides the input."
             print "(A)", "isodata and the interactive initial-orbital choices are required."
             stop
          case default

@@ -47,7 +47,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use yes_no_input, only: getyn
+      use calculation_state_files, only: check_orbital_output
+      use calculation_state_files, only: state_files, state_name_length, select_state, files_for_state, orbital_input_path
       use setdbg_i, only: setdbg
       use machine_constants, only: setmc
       use physical_constants, only: setcon
@@ -62,6 +63,8 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
+      type(state_files) :: files
+      character(state_name_length) :: state
       integer :: ncore
       logical :: yes
       type(radial_input_options) :: input_options
@@ -74,13 +77,21 @@
       write (stderr_unit, *) "This program estimates radial wave functions"
       write (stderr_unit, *) "for orbitals"
       write (stderr_unit, *) "Input files: isodata, descriptor header TOML, optional rwfn file"
+      call select_state(state, "Default settings ?", yes)
+      files = files_for_state(state)
+      call check_orbital_output(files%initial_orbitals, writing_initial=.true.)
+      if (input_options%filename == "") input_options%filename = files%header
+      block
+         character(:), allocatable :: basename
+         basename = input_options%filename(scan(input_options%filename, "/"//achar(92), back=.true.)+1:)
+         if (basename == files%initial_orbitals .or. basename == files%estimate_debug .or. &
+             basename == files%estimate_summary) error stop "Header uses a reserved output name"
+      end block
       write (stderr_unit, *) "Selected input: ", input_options%filename
-      write (stderr_unit, *) "Output file: rwfn.inp"
+      write (stderr_unit, *) "Output file: ", files%initial_orbitals
 
 
 !
-      write (stderr_unit, *) "Default settings ?"
-      yes = getyn()
       if (yes) then
          ndef = 0
       else
@@ -91,7 +102,7 @@
 !   Determine if there is to be any debug printout; this will be
 !   made on the  .dbg  file
 !
-      call setdbg
+      call setdbg(files%estimate_debug)
 !
 !   Perform machine- and installation-dependent setup
 !
@@ -103,7 +114,7 @@
 !
 !   Open the  .sum  file
 !
-      if (ndef /= 0) call setsum
+      if (ndef /= 0) call setsum(files%estimate_summary)
 !
 !   Load orbital metadata from the selected rCSFs header.
 !
@@ -123,7 +134,8 @@
 !
 !   Generate the subshell radial wavefunctions
 !
-      call genrwf
+      if (state /= "") files%orbitals = orbital_input_path(state)
+      call genrwf(files%orbitals)
 !
 !   Orthogonalize the radial orbitals
 !
@@ -131,7 +143,7 @@
 !
 !   Write the subshell radial wavefunctions out
 !
-      call wrtrwf
+      call wrtrwf(files%initial_orbitals)
 !
 !   Print completion message
 !

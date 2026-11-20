@@ -93,7 +93,7 @@ def run_mode(arguments: argparse.Namespace, inputs: Path, mode: str, repetition:
         for path in sorted(directory.glob("[0-9][0-9][0-9]/mcp*.*"))
     }
     for rank_index in range(arguments.ranks):
-        if not (directory / f"{rank_index:03d}" / f"mcp{rank_index:03d}.30").is_file():
+        if not (directory / f"{rank_index:03d}" / "mcp.30").is_file():
             raise ValueError(f"Missing MCP sparse structure for rank {rank_index}")
     save_json(directory / "execution.json", execution)
     print(f"Finished {mode}: wall={execution['wall_seconds']:.6f}s, "

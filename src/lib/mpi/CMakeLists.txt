@@ -9,6 +9,7 @@ add_library(grasp_mpi STATIC
     mpi_runtime.f90
     mpi_utilities.f90
     mpi_work_paths.f90
+    mpi_calculation_state.f90
     mpi_initial_eigenvectors.f90
     mpi_radial_wavefunction_reader.f90
     mpi_isotope_input.f90

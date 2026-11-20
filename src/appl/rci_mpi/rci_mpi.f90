@@ -41,8 +41,8 @@
 !   M o d u l e s
 !-----------------------------------------------
       use calculation_input_defaults, only: inpci, ndef, ndump
-      use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
       use where_c, only: imcdf
+      use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
       use numeric_constants, only: eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
       use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use transition_basis_blocks, only: ncfblk, nevinblk, ncfinblk, two_j, nblock, idxblk, nelectot, ncftot, nwtot, nvectot, &
@@ -56,6 +56,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      use calculation_state_files, only: read_state_name, orbital_input_path
       use yes_no_input, only: getyn
       use mpi_csf_block_input, only: open_csf_blocks_mpi
       use setdbg_i, only: setdbg
@@ -81,14 +82,13 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer, parameter :: nblk=50
-      integer            :: lenperm, lentmp
       integer :: ncount1, ncount2, ncount_rate, ncount_max
       integer :: nymduhmsm(8)
-      integer :: k, lenname, ncore, ndum, j2max, nseconds
+      integer :: ncore, ndum, j2max, nseconds
       logical :: yes
-      character (len = 3) :: idstring
 !      CHARACTER(LEN=128) :: NAME, TMPDIR, PERMDIR, ISOFILE
-      character(len=128) :: startdir, name, isofile, namesave,tmpdir, permdir
+      character(len=128) :: startdir, state_name, tmpdir, permdir
+      character(:), allocatable :: name, isofile, orbital_path
       character(len=8) :: idblk(nblk0)
       character :: chdate*8, chtime*10, chzone*5, str*8, msg*128
 !-----------------------------------------------
@@ -98,10 +98,7 @@
 
       call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1,       &
                            startdir, permdir, tmpdir, "RCI_MPI")
-      write (idstring, "(I3.3)") mpi_rank
 
-      lenperm = len_trim (permdir)
-      lentmp = len_trim (tmpdir)
 
 !=======================================================================
 !  Get NDEF on node-0 and then send to all nodes
@@ -130,33 +127,17 @@
 !  info used only on node-0
 !=======================================================================
 
-      lenname = 0     ! Otherwise it might cause trouble for myid!=0
+      name = ""
+      isofile = ""
+      orbital_path = ""
       if (mpi_rank == 0) then
-         do
-            write (stderr_unit,*) "Name of state: "
-            read (*,"(A)") name
-            k = index (name," ")
-            if (k > 1) exit
-            write (stderr_unit,*) "Name may not start with a blank. redo..."
-         end do
-         namesave = name
-
-         if (mpi_rank == 0) then
-            open(unit=734,file=trim(name)//".clog",status="unknown")
-            write(734,"(a)") "y            ! Default settings"
-            write(734,"(a)") trim(name)
-         end if
-
-         !...Form the full name of the files used on node-0
-
-         lenname = len_trim (name)
-         isofile = permdir(1:lenperm) // "/isodata "
-         name    = permdir(1:lenperm) // "/" // name(1:lenname) // " "
-         lenname = lenperm + lenname + 1
-!CFF     .. already open
-!        open(unit=734,file=trim(name)//'.clog',status='unknown')
-!        write(734,'(a)') 'y            ! Default settings'
-!        write(734,'(a)') trim(namesave)
+         call read_state_name(state_name)
+         open(unit=734,file=trim(state_name)//".clog",status="unknown")
+         write(734,"(a)") "y            ! Default settings"
+         write(734,"(a)") trim(state_name)
+         isofile = trim(permdir)//"/isodata"
+         name = trim(permdir)//"/"//trim(state_name)
+         orbital_path = orbital_input_path(name)
       end if
 
 !=======================================================================
@@ -186,8 +167,8 @@
       call setmc
       call setcon
       if (mpi_rank == 0)  call setsum (name)
-      call open_csf_blocks_mpi (name(1:lenname) // "_descriptors.parquet", ncore, idblk)
-      call setres (isofile, name(1:lenname) // ".w", idblk)
+      call open_csf_blocks_mpi (name // "_descriptors.parquet", ncore, idblk)
+      call setres (isofile, orbital_path, idblk)
       call setmixmpi (name, idblk)
       if (mpi_rank == 0)  call strsum
       call factt

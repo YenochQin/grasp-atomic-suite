@@ -61,14 +61,14 @@ def check_real_fixture(binary: Path, data: Path, work: Path) -> None:
     unlabelled = work / "unlabelled.m"
     shutil.copyfile(data / "test.m", unlabelled)
     result = run(binary, stdin=f"{unlabelled}\n\n")
-    assert "Configuration" not in result.stdout and "File name ?" in result.stderr
+    assert "Configuration" not in result.stdout and "Name of state:" in result.stderr
     assert rows(result) == [row[:7] for row in real]
     assert rows(run(binary, stdin=str(unlabelled))) == [row[:7] for row in real]
 
 
 def check_multiple_files(binary: Path, work: Path) -> None:
-    mcdhf = work / ("MCDHF with spaces " + "x" * 76 + ".m")
-    rci = work / "RCI.cm"
+    mcdhf = work / ("MCDHF with spaces " + "x" * 76 + ".mix")
+    rci = work / "RCI.cimix"
     # RMCDHF omits blocks 1 and 3; RCI emits a header for its empty block.
     mcdhf.write_bytes(header(3, 4) + block(2, 4, -1, [3, 108], -2.0, [1.0, 1.0]) + block(4, 1, 1, [1], -2.0, [0.0]))
     rci.write_bytes(header(1, 2) + block(1, 999, 999, [], 0.0, []) + block(2, 4, -1, [5], -1.0, [0.0]))
@@ -109,6 +109,26 @@ def check_invalid_files(binary: Path, work: Path) -> None:
     assert result.returncode != 0 and "missing.cm" in result.stderr, result
 
 
+def check_state_selection(binary: Path, work: Path) -> None:
+    state = work / "odd.AS1"
+    scf = work / "odd.AS1.mix"
+    ci = work / "odd.AS1.cimix"
+    scf.write_bytes(header(1, 1) + block(1, 1, 1, [1], -2.0, [0.0]))
+    ci_data = header(1, 1) + block(1, 1, 1, [1], -3.0, [0.0])
+    scf_rows = rows(run(binary, scf))
+    assert rows(run(binary, state)) == scf_rows
+    ci.write_bytes(ci_data)
+    ci_rows = rows(run(binary, ci))
+    assert scf_rows != ci_rows
+    for choice, expected in (("n", scf_rows), ("y", ci_rows)):
+        result = run(binary, stdin=f"{state}\n{choice}\n\n")
+        assert rows(result) == expected and "Mixing coefficients from a CI calc.?" in result.stderr, result
+    ambiguous = run(binary, state)
+    assert ambiguous.returncode != 0 and str(scf) in ambiguous.stderr and str(ci) in ambiguous.stderr
+    scf.unlink()
+    assert rows(run(binary, stdin=str(state))) == ci_rows
+
+
 def main() -> None:
     binary, data = (Path(arg).resolve() for arg in sys.argv[1:])
     with TemporaryDirectory(prefix="rlevels-test-") as directory:
@@ -116,6 +136,7 @@ def main() -> None:
         check_real_fixture(binary, data, work)
         check_multiple_files(binary, work)
         check_invalid_files(binary, work)
+        check_state_selection(binary, work)
 
 
 if __name__ == "__main__":

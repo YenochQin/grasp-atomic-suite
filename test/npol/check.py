@@ -176,7 +176,7 @@ def entrypoints(root: Path) -> None:
         else:
             assert re.search(
                 r"call getscd \(eol, idblk, (['\"])isodata\1, "
-                r"(['\"])rwfn\.inp\2, (['\"])npol\.inp\3\)", main)
+                r"files%initial_orbitals, (['\"])npol\.inp\2\)", main)
         # No second matrix contribution and MODE=0 retained in both layouts.
         setham = (directory / "setham.f90").read_text().lower()
         assert "npol" not in setham and re.search(r"rinti\s*\([^\n]*,\s*0\s*\)", setham)

@@ -18,12 +18,11 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: k, ierr
+      integer :: ierr
 !-----------------------------------------------------------------------
 
-      k = index(name," ")
 
-      call openfl (24, name(1:k-1)//".csum", "FORMATTED", "UNKNOWN", ierr)
+      call openfl (24, trim(name)//".csum", "FORMATTED", "UNKNOWN", ierr)
 
       return
       end subroutine setsum

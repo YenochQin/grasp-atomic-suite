@@ -369,6 +369,14 @@ def main(root: Path) -> None:
         assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], \
             f"Inline output format snapshot has a different predecessor: {name}"
     reviewed_files |= inline_formats["files"]
+    state_files = json.loads((root / "docs/reference/rmcdhf_state_files_snapshot.json").read_text())
+    assert state_files["schema_version"] == 1
+    assert hashlib.sha256(inline_path.read_bytes()).hexdigest() == state_files["previous_manifest_sha256"], \
+        "Inline output formats snapshot changed; review state-name provenance"
+    assert set(state_files["files"]).issubset(expected.keys() & reviewed_files.keys())
+    for name, record in state_files["files"].items():
+        assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], name
+    reviewed_files |= state_files["files"]
     actual = {
         str(path.relative_to(root))
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")
@@ -382,7 +390,7 @@ def main(root: Path) -> None:
             source = path.read_bytes()
             reviewed = reviewed_files[relative]
             digests = {hashlib.sha256(source).hexdigest()}
-            if relative in mpi_naming["files"]:
+            if relative in mpi_naming["files"] and relative not in state_files["files"]:
                 # Check each renamed import or build reference, then compare the
                 # original spelling with the reviewed source digest.
                 before_mpi_names = reverse_reviewed_edits(source.decode(), path, mpi_naming["files"][relative])

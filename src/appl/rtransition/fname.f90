@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine fname(name)
+      use calculation_state_files, only: read_state_pair
 !                                                                      *
 !   Determines the name of the initial and final states                *
 !                                                                      *
@@ -14,33 +15,8 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      character  :: name(2)*24
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      integer :: j
-!-----------------------------------------------
-!
-!
-!   Obtain the names of the initial and final state files
-!
-    1 continue
-      write (6, *) " Name of the Initial state"
-      read (*, "(A)") name(1)
-      write (6, *) " Name of the Final state"
-      read (*, "(A)") name(2)
-!
-      j = index(name(1)," ")
-      if (j == 1) then
-         write (6, *) " Names may not start with blanks"
-         goto 1
-      end if
-!
-      j = index(name(2)," ")
-      if (j == 1) then
-         write (6, *) " Names may not start with blanks"
-         goto 1
-      end if
+      character(len=24), intent(out) :: name(2)
+      call read_state_pair(name)
 
       return
       end subroutine fname

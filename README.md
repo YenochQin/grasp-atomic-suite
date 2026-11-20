@@ -53,7 +53,7 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 | Ordinary GRASP calculation chain | `src/appl/rangular*`, `rwfnestimate`, `rci*`, `rbiotransform*`, `rtransition*` | `rangular{,_mpi}`, `rwfnestimate`, `rci{,_mpi}`, `rbiotransform{,_mpi}`, `rtransition{,_phase,_mpi}` | Ten targets reuse the suite libraries and central capacities; see [provenance, builds and validation scope](docs/implemented/standard_grasp_integration.md). |
 | `jj2lsj_omp` | `src/appl/jj2lsj` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/jj2lsj_openmp.md). CSFG support has been removed. |
 | `rlevels` | `src/appl/rlevels` | `rlevels` | Energy tables from RMCDHF `.m` and RCI `.cm` files with optional `jj2lsj` labels. [Usage and output format](docs/implemented/rlevels.md). |
-| `gj` | `src/appl/gj` | `gj`, `gj_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, `name.c`, `name.m/name.cm`, and `name.w`, then writes `name.gj/name.cgj`. |
+| `gj` | `src/appl/gj` | `gj`, `gj_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, the state's CSF descriptor pair, `name.mix/name.cimix`, and `name.wfn`, then writes `name.gj/name.cgj`. |
 | `rhfs` | `src/appl/rhfs` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
 | `rdensity` | `src/appl/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/rdensity_mpi.md). |
 | `ris4` | `src/appl/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing `name.i/name.ci` and angular intermediate data. |
@@ -147,15 +147,48 @@ Historical test counts do not certify the current source or physical accuracy.
 
 ## Inputs And Outputs
 
-The property applications use GRASP-style state-name input. After you enter `name`, the program looks for matching files in the current working directory. Orbital programs use the upstream RMCDHF interactive input and files such as `rcsf.inp`, `rwfn.inp`, and MCP data. This repository now builds `rwfnestimate`, `rangular`, and `rangular_mpi`. `rnucleus` and ordinary `rcsfgenerate` remain external preparation tools; verified input files may also be supplied directly.
+All interactive applications use the shared `Name of state:` prompt. Programs
+that need two states label them as initial/final or, for FICAL, upper/lower.
+MPI reads the answer on rank 0. Supported command-line forms continue to
+accept a state directly. [Shared state input](src/lib/core/calculation_state_files.f90)
+
+Run `rwfnestimate`, `rangular` and `rmcdhf` in the calculation directory and
+enter the same name at each `Name of state:` prompt. For example, the state
+`Zn_odd_AS1` uses `Zn_odd_AS1_descriptors.parquet` and `Zn_odd_AS1_header.toml`.
+
+| Step | State files read | State files written |
+| --- | --- | --- |
+| `rwfnestimate` | `name_header.toml` | `name.initial.wfn` (initial radial orbitals) |
+| `rangular` | `name_descriptors.parquet` and its header | `mcp.NN`, `name.rangular.log` |
+| `rmcdhf` and `rmcdhf_mem` | Same descriptor pair, `name.initial.wfn`, `mcp.NN` | `name.wfn` (optimized orbitals), `name.mix` (OL/EOL mixing), `name.rmcdhf.summary`, `name.rmcdhf.log` |
+| `rci` | Same descriptor pair and `name.wfn` | `name.cimix` (CI mixing), `name.csum`, `name.clog` |
+
+MPI uses the same state name. Each rank writes and reads its own
+`mcp.NN` channels in its scratch directory. The descriptor and radial
+files live in the permanent I/O directory. Angular and SCF logs live in the
+launch directory. `isodata` and applicable `npol.inp` are shared nuclear inputs.
+RCI keeps its settings-first prompt order. Property programs such as `gj` use
+up to 23 characters for the state name.
+
+MCP channels belong to the working directory. Finish the SCF run for a basis
+before generating another basis there, or use separate work and MPI scratch
+directories. States named `A` and `A.initial` also share the path `A.initial.wfn`
+and need separate directories. State readers prefer `.wfn`, `.mix` and `.cimix`
+and can open archived `.w`, `.m` and `.cm` files when the corresponding new file is absent.
+
+An empty state selects the traditional `rcsf_*`, `rwfn.inp`, `rwfn.out` and
+`rmix.out` filenames. Existing answer files starting with a y/n settings
+response still work. For a single-letter state `Y` or `N` (either case), the
+matching header in the input directory takes precedence. An (E)AL rerun leaves any existing mixing file for that state untouched. Fixed-name runs can
+still be archived with [save_rmcdhf](scripts/README.md#保存-rmcdhf-计算结果).
 
 Common input files:
 
 - `isodata`: nuclear and isotope data.
-- `name.c`: CSF list and coupling information.
-- `name.w`: radial orbital wavefunctions.
-- `name.m`: MCDHF/non-CI mixing-coefficient file.
-- `name.cm`: CI mixing-coefficient file.
+- `name_descriptors.parquet` and `name_header.toml`: CSF descriptors and matching header.
+- `name.wfn`: radial orbital wavefunctions.
+- `name.mix`: MCDHF/non-CI mixing-coefficient file.
+- `name.cimix`: CI mixing-coefficient file.
 
 Common output files:
 

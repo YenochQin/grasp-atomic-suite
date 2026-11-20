@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine getmix(name, inpci, iblk)
+      use calculation_state_files, only: mixing_input_path
 !                                                                      *
 !   Open, check, load data from and close the rscf.mix file.           *
 !                                                                      *
@@ -40,14 +41,8 @@
 
       ik = 30
       if (iblk == 1) then
-         j = index(name," ")
-         if (inpci == 0) then
-            open(unit=ik, file=name(1:j-1)//".cm", form="UNFORMATTED", status=&
-               "OLD")
-         else
-            open(unit=ik, file=name(1:j-1)//".m", form="UNFORMATTED", status=&
-               "OLD")
-         end if
+         open(unit=ik, file=mixing_input_path(name, inpci == 0), &
+              form="UNFORMATTED", status="OLD", position="asis")
 
          read (ik, iostat=ios) g92mix
          if (ios/=0 .or. g92mix/="G92MIX") then

@@ -41,8 +41,7 @@
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
 !-----------------------------------------------
-      use mpi_state, only: mpi_barrier, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, &
-         & mpi_process_count, mpi_rank, processor_name, processor_name_length
+      use mpi_state, only: mpi_process_count, mpi_rank, processor_name, processor_name_length
       use calculation_input_defaults, only: inpci, ndef, ndump
       use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals
@@ -52,7 +51,8 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use yes_no_input, only: getyn
+      use calculation_state_files, only: state_files, state_name_length, files_for_state
+      use mpi_calculation_state, only: select_mpi_state
       use setdbg_i, only: setdbg
       use machine_constants, only: setmc
       use setsum_i, only: setsum
@@ -77,13 +77,13 @@
       character(len=128) :: startdir, permdir, tmpdir
       character(len=8):: idblk(nblk0)
       character(len=3) :: idstring
-      integer :: lenperm, lentmp
       type(mpi_angular_input_options) :: input_options
+      type(state_files) :: files
+      character(state_name_length) :: state
       integer(int64) :: program_start_count, stage_start_count
       character(len=16) :: input_format_name
 !-----------------------------------------------
       call parse_mpi_angular_options(input_options)
-      open(unit=739,file="rangular.log",status="UNKNOWN")
       startdir = " "
       permdir = " "
       tmpdir = " "
@@ -93,23 +93,22 @@
       call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1, &
                            startdir, permdir, tmpdir, "RANGULAR_MPI")
       write (idstring, "(I3.3)") mpi_rank
-      lenperm = len_trim (permdir)
-      lentmp = len_trim (tmpdir)
+      call select_mpi_state(state, "Use zero-first partition from descriptor header? (y/n)", yes, permdir)
+      files = files_for_state(state)
+      if (input_options%input_filename == "") input_options%input_filename = files%descriptors
+      if (mpi_rank == 0) then
+         open(unit=739,file=trim(startdir)//"/"//files%angular_log,status="UNKNOWN")
+         if (state /= "") write(739,"(A)") trim(state)
+      end if
       call open_mpi_angular_profile(input_options)
       input_format_name = "descriptors"
       program_start_count = stage_clock()
 !=======================================================================
 !  Get NDEF on node-0 and then send to all nodes
 !=======================================================================
-      if (mpi_rank == 0) then
-         write (stderr_unit,*)
-         write (stderr_unit,"(A)") "Use zero-first partition from descriptor header? (y/n)"
-         yes = getyn ()
-         ndef = merge(1, 0, yes)
-         write(739,"(A)") merge("y", "n", yes)//"            ! Use zero-first partition from descriptor header"
-      end if
-      call mpi_barrier(mpi_comm_world,mpi_error_code)
-      call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+      ndef = merge(1, 0, yes)
+      if (mpi_rank == 0) write(739,"(A)") &
+         merge("y", "n", yes)//"            ! Use zero-first partition from descriptor header"
 
 !=======================================================================
 !
@@ -124,7 +123,7 @@
 !    factt - table of logarithms of factorials setup
 !=======================================================================
 
-      call setdbgmpi (debug, permdir(1:lenperm) // "/genmcp.dbg")
+      call setdbgmpi (debug, trim(permdir)//"/"//files%angular_debug)
       call setmc
       stage_start_count = stage_clock()
       call load_mpi_angular_header(input_options,permdir,ncore,nblk0,idblk)
@@ -133,7 +132,7 @@
       restrt = .false.
 !cjb  myid, nprocs = NOT args
 !cjb  CALL setmcpmpi (myid, nprocs, ncore, idblk, 'mcp' // idstring)
-      call setmcpmpi (ncore, idblk, "mcp" // idstring, input_options%descriptors)
+      call setmcpmpi (ncore, idblk, files%mcp, input_options%descriptors)
       if (ndef/=0 .and. mpi_rank==0) call strsum
       call factt
       call record_stage("mcp_setup_including_interaction_input",0,stage_start_count)
@@ -158,15 +157,15 @@
          call load_mpi_angular_block(input_options,ncore,nb)
          call record_stage("csf_load_and_broadcast",nb,stage_start_count,int(csf_count,int64),storage=input_format_name)
          !*** Open tmp.xx files for block nb ***
-         call settmp (nb, max_coulomb_multipole_rank, "tmp" // idstring)
+         call settmp (nb, max_coulomb_multipole_rank, files%temporary//idstring)
          !*** Generation of MCP coefficients ***
 !cjb  myid, nprocs = NOT args
 !cjb     CALL MCPmpi (NB, RESTRT, MYID, NPROCS, 'mcp' // idstring)
-         call mcpmpi (nb, restrt, "mcp" // idstring)
+         call mcpmpi (nb, restrt, files%mcp)
       end do
       call close_mpi_angular_input(input_options)
       close(24)                                  ! Summary file
-      close(739)                                 ! rangular.log
+      if (mpi_rank == 0) close(739)                                 ! rangular.log
       if (debug) close(99)                       ! Debug file
       call record_stage("program_before_finalize_including_interaction_input",0,program_start_count)
       call close_stage_profile()

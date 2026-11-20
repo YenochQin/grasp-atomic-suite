@@ -181,6 +181,8 @@ endif()
 message("* GRASP_BUILD_SERIAL_APPS:        ${GRASP_BUILD_SERIAL_APPS}")
 
 # GRASP application programs
+configure_file(scripts/save_rmcdhf "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/save_rmcdhf" COPYONLY)
+install(PROGRAMS scripts/save_rmcdhf DESTINATION bin)
 add_subdirectory("src/appl/gj")
 add_subdirectory("src/appl/rhfs")
 add_subdirectory("src/appl/rdensity")

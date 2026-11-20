@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "purpose": "Record the state-name input and file paths in the four RMCDHF entry points and their MCP readers.",
+  "previous_manifest_sha256": "b3f68630c61dc5af04f959b9c59acac7cd7d5a2a07fefa2153844e2f29aab8c9",
+  "files": {
+    "src/appl/rmcdhf/rscfvu.f90": {
+      "before_suite_sha256": "79c5fe3bceed5ea3729fb36108b8548f7415225a63fab5beddcec68f3ad82db9",
+      "after_suite_sha256": "e885609939a925b509f10a3a5012c52459344bb5e4d8722bab95e76b7c197b4e"
+    },
+    "src/appl/rmcdhf/setmcp.f90": {
+      "before_suite_sha256": "b9b204b81cd85ce95a009397ab180088861ef5cc1ec01ec4a5b655d05d8a900c",
+      "after_suite_sha256": "b45fec24c9094cd502ecc4c52dd3dc0e103be3872d94c61c022063fce054d3e7"
+    },
+    "src/appl/rmcdhf_mem/rscfvu.f90": {
+      "before_suite_sha256": "b4a8ab1dd8f00e855a04992f2e889f5e280338fd0a246b9104e7f49f7fe5c054",
+      "after_suite_sha256": "e8659625da8af20800a1b16d99f07bd3761dd18ed11252df4178d4beb6807fea"
+    },
+    "src/appl/rmcdhf_mem/setmcp.f90": {
+      "before_suite_sha256": "05e0fb4e15b5941d32451f75092d78ad073835ae9152e187f5ea84aad93e06a2",
+      "after_suite_sha256": "9cc66741ebf1af2e5ab6b1c3da53cbcf04cea5713ea4156756bb86cdcb43b4eb"
+    },
+    "src/appl/rmcdhf_mem_mpi/rscfmpivu.f90": {
+      "before_suite_sha256": "14bf7432b666f94ac9959276ccab01063de862e6a558955ab0f6a0abc3a314e6",
+      "after_suite_sha256": "17b2d54f48ab6e44f350815baa1dca9ef1e4e7f68f740b8e246f36040b0eeaeb"
+    },
+    "src/appl/rmcdhf_mem_mpi/setmcp.f90": {
+      "before_suite_sha256": "6c74f1581c1660b491dd08b0656a295ad2a45b01b5d1ac9edfe7c235aa7fd61c",
+      "after_suite_sha256": "3a26875c85f2a99193fe000de1a58dd561f9eec2c1be94c672c60ea5d3d2cc64"
+    },
+    "src/appl/rmcdhf_mpi/rscfmpivu.f90": {
+      "before_suite_sha256": "74f2d31df0c2088d01e2da0552f97ace9539e8d838764ec06c5bbc57160486bf",
+      "after_suite_sha256": "48544bb3a2b63724c1c3897abb30de74702c048593411bcf678efc90e36197c0"
+    },
+    "src/appl/rmcdhf_mpi/setmcp.f90": {
+      "before_suite_sha256": "59e7f6b5955284397a8280418c4db0cf1b6c639d7733b53099bdbf5848f0defb",
+      "after_suite_sha256": "f07f8819f60404d847391fcab75e4e0ebe9da3254653e8e6afc83a0874076a7e"
+    }
+  }
+}

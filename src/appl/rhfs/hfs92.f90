@@ -62,6 +62,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      use calculation_state_files, only: read_state_name
       use yes_no_input, only: getyn
       use setdbg_i, only: setdbg
       use machine_constants, only: setmc
@@ -77,7 +78,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer   :: k, nci, ncore_not_used
+      integer   :: nci, ncore_not_used
       logical   :: yes
       character :: name*24
 !-----------------------------------------------
@@ -86,7 +87,7 @@
       write (stderr_unit, *)
       write (stderr_unit, *) "RHFS"
       write (stderr_unit, *) "This is the hyperfine structure program"
-      write (stderr_unit, *) "Input files:  isodata, name_descriptors.parquet, name_header.toml, name.(c)m, name.w"
+      write (stderr_unit, *) "Input files:  isodata, name_descriptors.parquet, name_header.toml, name.mix/name.cimix, name.wfn"
       write (stderr_unit, *) "Output files: name.(c)h, name.(c)hoffd"
 
       write (stderr_unit, *)
@@ -99,14 +100,7 @@
          ndef = 1
       end if
 
-   10 continue
-      write (stderr_unit, *) "Name of state"
-      read (*, "(A)") name
-      k = index(name," ")
-      if (k == 1) then
-         write (stderr_unit, *) "Names may not start with a blank"
-         goto 10
-      end if
+      call read_state_name(name)
       write (stderr_unit, *)
       write (stderr_unit, *) "Mixing coefficients from a CI calc.?"
       yes = getyn()

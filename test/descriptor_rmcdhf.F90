@@ -25,7 +25,7 @@ program descriptor_rmcdhf
    call mpi_comm_rank(mpi_comm_world,mpi_rank,status)
    call mpi_comm_size(mpi_comm_world,mpi_process_count,status)
    write(rank_text,'(I3.3)') mpi_rank
-   mcp_prefix=rank_text//"/mcp"//rank_text
+   mcp_prefix=rank_text//"/mcp"
 #else
    mpi_rank=0
    mpi_process_count=1

@@ -2,7 +2,7 @@
 
 !***********************************************************************
 !                                                                      *
-      subroutine wrtrwf
+      subroutine wrtrwf(filnam)
 !                                                                      *
 !   Open, write a header and all subshell radial wavefunctions, and    *
 !   close the  .rwf  file.                                             *
@@ -33,12 +33,11 @@
 !-----------------------------------------------
       integer :: newunit, ierr, j, mfj, i
       logical :: imopened
-      character :: filnam*128
+      character(len=*), intent(in) :: filnam
 !-----------------------------------------------
 !
 !
 
-      filnam = "rwfn.inp"
 
       do newunit = 23, 99                        ! 23 is a historical value
          inquire(unit=newunit, opened=imopened)

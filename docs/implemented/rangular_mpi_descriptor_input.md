@@ -56,7 +56,7 @@ mpirun --bind-to none -np 8 /path/to/suite/build-mpi-descriptor/bin/rangular_mpi
 ```
 
 完整/一阶相互作用仍由原交互流程选择。MPI 原有一阶输入要求每个 block 满足 `1 < ICCUT < NCFBLK`；
-本次没有改变此约束。输出仍位于 rank 工作目录，文件名如 `mcp000.30`、`mcp001.31`。
+输出位于各 rank 工作目录，例如 `000/mcp.30`、`001/mcp.31`。
 
 ## 可重复的文本/描述符对照
 

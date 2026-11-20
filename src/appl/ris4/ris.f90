@@ -25,6 +25,7 @@
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
+      use calculation_state_files, only: read_state_name
       use yes_no_input, only: getyn
       use setdbg_i, only: setdbg
       use machine_constants, only: setmc
@@ -43,7 +44,7 @@
       real(real64) :: dr2
       logical   :: yes
       character :: name*24
-      integer :: k, nci, ncore_not_used, nopar
+      integer :: nci, ncore_not_used, nopar
 !-----------------------------------------------
 !
 !   Matrix elements smaller than CUTOFF are not accumulated
@@ -64,13 +65,7 @@
          ndef = 1
       end if
 
-    9 write (stderr_unit, *) "Name of state"
-      read(*,"(A)") name
-      k=index(name," ")
-      if (k==1) then
-         write (stderr_unit, *) "Names may not start with a blank"
-         goto 9
-      end if
+      call read_state_name(name)
       print *
 
       write (stderr_unit, *) "Mixing coefficients from a CI calc.?"

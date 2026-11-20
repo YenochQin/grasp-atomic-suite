@@ -45,14 +45,16 @@
        use calculation_input_defaults, only: inpci, ndef, ndump
        use closed_core_subshells, only: closed_core_subshell_count
        use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
-       use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
+       use mpi_state, only: mpi_process_count, mpi_rank, &
           & processor_name, processor_name_length
 !GG po to isimti
        use radial_quadrature_workspace, only: mtp, radial_workspace_capacity, ta, tb
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
-      use yes_no_input, only: getyn
+      use calculation_state_files, only: check_orbital_output
+      use calculation_state_files, only: state_files, state_name_length, files_for_state
+      use mpi_calculation_state, only: select_mpi_state
       use setdbgmpi_i, only: setdbgmpi
       use machine_constants, only: setmc
       use physical_constants, only: setcon
@@ -74,15 +76,16 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: ncore1, ncount1, lenperm, lentmp
+      integer :: ncore1, ncount1, lenperm
+      type(state_files) :: files
+      character(state_name_length) :: state
       logical :: eol, yes
       character :: idblk(nblk0)*8
 !      CHARACTER (LEN = *) :: host
-      character (len = 3) :: idstring
-      character (len = 128) :: startdir,permdir,tmpdir,file_rcsl,file1,file2
+      character (len = 128) :: startdir,permdir,tmpdir
+      character(:), allocatable :: file_rcsl, file1, file2
 !-----------------------------------------------
 !
-      open(unit=734,file="rmcdhf.log",status="UNKNOWN")
 
 !=======================================================================
 !  Start mpi --- get processor info: myid, nprocs, host name; and print
@@ -92,27 +95,23 @@
       tmpdir = "  "    ;    file2     = "  "
       call startmpi2 (mpi_rank, mpi_process_count, processor_name, processor_name_length, ncount1,       &
                       startdir, permdir, tmpdir, "RMCDHF_MPI")
-      write (idstring, "(I3.3)") mpi_rank
       lenperm = len_trim (permdir)
-      lentmp = len_trim (tmpdir)
 
 !=======================================================================
 !  Get NDEF
 !=======================================================================
 
+      call select_mpi_state(state, "Default settings? (y/n)", yes, permdir)
+      files = files_for_state(state)
+      if (mpi_rank == 0) call check_orbital_output(trim(permdir)//"/"//files%orbitals, writing_initial=.false.)
+      ndef = merge(0, 1, yes)
       if (mpi_rank == 0) then
-         write (stderr_unit,*)
-         write (stderr_unit, "(A)") "Default settings?  (y/n) "
-         yes = getyn()
-         if (yes) then
-            ndef = 0
-!cjb fort.734
-!cjb        WRITE(734,'(A)') 'y            ! Default settings'
-         else
-            ndef = 1
+         open(unit=734,file=trim(startdir)//"/"//files%scf_log,status="UNKNOWN")
+         if (state /= "") then
+            write(734,"(A)") trim(state)
+            write(734,"(A)") merge("y","n",yes)//"            ! Default settings"
          end if
       end if
-     call mpi_bcast (ndef,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
 
 !=======================================================================
 !
@@ -129,14 +128,14 @@
 !    SETMIX - mixing coefficients file setup
 !    FACTT - table of logarithms of factorials setup
 !=======================================================================
-      call setdbgmpi (permdir(1:lenperm) // "/rscf92.dbg")
+      call setdbgmpi (trim(permdir)//"/"//files%scf_debug)
       call setmc
       call setcon
 
-      if (mpi_rank == 0) call setsum (permdir(1:lenperm) // "/rmcdhf.sum")
+      if (mpi_rank == 0) call setsum (trim(permdir)//"/"//files%scf_summary)
 
-      call setmcp (closed_core_subshell_count, nblk0, idblk, "mcp" // idstring)
-      if(mpi_rank == 0) file_rcsl = permdir(1:lenperm)//"/rcsf_descriptors.parquet"
+      call setmcp (closed_core_subshell_count, nblk0, idblk, files%mcp)
+      if(mpi_rank == 0) file_rcsl = trim(permdir)//"/"//files%descriptors
       call setcslmpi (file_rcsl, ncore1, idblk)
       if (closed_core_subshell_count /= ncore1) error stop "rscfmpivu: ncore"
 
@@ -146,12 +145,10 @@
 !=======================================================================
 
       if(mpi_rank == 0) file1 = permdir(1:lenperm) // "/isodata"
-      if(mpi_rank == 0) file2 = permdir(1:lenperm) // "/rwfn.inp"
+      if(mpi_rank == 0) file2 = trim(permdir)//"/"//files%initial_orbitals
       call getscdmpi (eol, idblk, file1, file2 )
-!     &            permdir(1:lenperm) // '/isodata',
-!     &            permdir(1:lenperm) // '/rwfn.inp')
       file1 = "  "
-      if(mpi_rank == 0) file1 = permdir(1:lenperm) // "/rmix.out"
+      if(mpi_rank == 0) file1 = trim(permdir)//"/"//files%mixing
       if (mpi_rank == 0) then
          call strsum
          if (eol) call setmix (file1)
@@ -165,7 +162,7 @@
 !=======================================================================
 
       file1 = "  "
-      if(mpi_rank == 0) file1 = permdir(1:lenperm) // "/rwfn.out"
+      if(mpi_rank == 0) file1 = trim(permdir)//"/"//files%orbitals
 
       call scfmpi (eol, file1)
 

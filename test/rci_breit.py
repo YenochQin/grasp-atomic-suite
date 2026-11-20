@@ -36,7 +36,7 @@ def run_case(
     assert result.returncode == 0 and "RCI_MPI: Execution complete." in output, output
     assert ("Breit integrals of type 1" in output) == breit, output
     assert ("Breit integrals of type 2" in output) == breit, output
-    shift, shifted_energy = floats(records(work / "case.cm")[-2])
+    shift, shifted_energy = floats(records(work / "case.cimix")[-2])
     energy = shift + shifted_energy
     assert math.isfinite(energy), output
     return energy

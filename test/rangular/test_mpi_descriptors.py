@@ -71,15 +71,10 @@ class MpiDescriptorTests(unittest.TestCase):
 
     @staticmethod
     def outputs(directory: Path) -> dict[str, bytes]:
-        return {path.name: path.read_bytes() for path in directory.glob("[0-9][0-9][0-9]/mcp*.*")}
+        return {str(path.relative_to(directory)): path.read_bytes() for path in directory.glob("[0-9][0-9][0-9]/mcp.*")}
 
     def dataset(self, directory: Path) -> mcp_compare.Dataset:
-        view = directory / "view"
-        view.mkdir(exist_ok=True)
-        shutil.copyfile(self.text_path, view / "rcsf.inp")
-        for path in directory.glob("[0-9][0-9][0-9]/mcp*.*"):
-            (view / path.name).symlink_to(path)
-        return mcp_compare.Dataset(view)
+        return mcp_compare.Dataset(directory)
 
     def test_full_interaction_and_empty_ranks(self) -> None:
         reference_dataset = None
@@ -182,10 +177,10 @@ class MpiDescriptorTests(unittest.TestCase):
                     prefix + answer + "\nn\nn\nn\nn\nn\nn\n1\n",
                 )
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-                self.assertTrue((directory / "case.cm").is_file())
+                self.assertTrue((directory / "case.cimix").is_file())
                 summary = (directory / "case.csum").read_text()
                 self.assertEqual("CSFs 1--1 constitute the zero-order space" in summary, answer == "y")
-                shift, shifted_energy = floats(records(directory / "case.cm")[-2])
+                shift, shifted_energy = floats(records(directory / "case.cimix")[-2])
                 energy = shift + shifted_energy
                 self.assertTrue(math.isfinite(energy), f"{name}: nonfinite CI energy {energy}")
                 energies[name] = energy

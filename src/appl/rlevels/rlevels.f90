@@ -1,7 +1,8 @@
 ! Based on GRASP src/tool/rlevels.f90 (Xinghong He, 1998; G. Gaigalas, 2011).
 program rlevels
    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
-   use, intrinsic :: iso_fortran_env, only: error_unit, input_unit, int64, iostat_end, iostat_eor, output_unit, real64
+   use, intrinsic :: iso_fortran_env, only: error_unit, int64, iostat_end, output_unit, real64
+   use calculation_state_files, only: read_state_entry, resolve_mixing_file
    implicit none (type, external)
 
    real(real64), parameter :: rydberg_wavenumber_cm = 109737.31568508_real64
@@ -31,13 +32,16 @@ program rlevels
    allocate(levels(0))
    select case (command_argument_count())
    case (0)
-      write (error_unit, '(A)') 'Usage: rlevels file1.m file2.cm ...', &
-                               'Enter one file name per line (blank line or EOF to finish).'
+      write (error_unit, '(A)') 'Usage: rlevels file1.mix file2.cimix ...', &
+                               'Enter one state name or mixing file per line (blank line or EOF to finish).'
       do
-         write (error_unit, '(A)', advance='no') 'File name ? '
-         call read_path(path)
+         call read_state_entry(path, ios)
+         if (ios == iostat_end .and. len(path) == 0) exit
+         if (ios /= 0 .and. ios /= iostat_end) call fail('standard input', 'cannot read state name or mixing file')
+         path = trim(adjustl(path))
          if (len(path) == 0) exit
-         call read_mix(path, levels, level_count, show_configuration)
+         call read_mix(resolve_mixing_file(path, interactive=.true.), levels, level_count, show_configuration)
+         if (ios == iostat_end) exit
       end do
    case default
       do arg = 1, command_argument_count()
@@ -46,7 +50,7 @@ program rlevels
          allocate(character(len=path_length) :: path)
          call get_command_argument(arg, value=path, status=ios)
          if (ios /= 0) call fail('command line', 'cannot read mixing file name')
-         call read_mix(path, levels, level_count, show_configuration)
+         call read_mix(resolve_mixing_file(path, interactive=.false.), levels, level_count, show_configuration)
          deallocate(path)
       end do
    end select
@@ -54,21 +58,6 @@ program rlevels
    call print_levels(levels(:level_count), show_configuration)
 
 contains
-
-   subroutine read_path(name)
-      character(len=:), allocatable, intent(out) :: name
-      character(len=256) :: chunk
-      integer :: status, length_read
-
-      name = ''
-      do
-         read (input_unit, '(A)', advance='no', size=length_read, iostat=status) chunk
-         if (length_read > 0) name = name//chunk(:length_read)
-         if (status == iostat_eor .or. status == iostat_end) exit
-         if (status /= 0) call fail('standard input', 'cannot read mixing file name')
-      end do
-      name = trim(adjustl(name))
-   end subroutine read_path
 
    subroutine read_mix(name, entries, used, with_labels)
       character(len=*), intent(in) :: name
@@ -88,7 +77,7 @@ contains
 
       suffix = index(name, '.', back=.true.)
       mcdhf = .false.
-      if (suffix > 0) mcdhf = name(suffix:) == '.m'
+      if (suffix > 0) mcdhf = name(suffix:) == '.mix' .or. name(suffix:) == '.m'
       open (newunit=unit, file=name, form='unformatted', status='old', action='read', iostat=status)
       if (status /= 0) call fail(name, 'cannot open mixing file')
       read (unit, iostat=status) magic
@@ -149,7 +138,7 @@ contains
 
       if (suffix > 0 .and. file_levels > 0) then
          select case (name(suffix:))
-         case ('.m', '.cm')
+         case ('.mix', '.cimix', '.m', '.cm')
             call read_labels(name(:suffix-1)//'.lsj.lbl', entries, blocks, with_labels)
          end select
       end if

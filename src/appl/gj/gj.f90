@@ -19,6 +19,7 @@
       use compute_gj_only_i, only: compute_gj_only
       use gethfd_i, only: gethfd
       use getmixblock_i, only: getmixblock
+      use calculation_state_files, only: read_state_name
       use yes_no_input, only: getyn
       use physical_constants, only: setcon
       use csf_basis_loader, only: setcsla
@@ -30,7 +31,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: k, nci, ncore_not_used
+      integer :: nci, ncore_not_used
       logical :: yes
       real(real64), pointer :: gjc_diag(:), dgjc_diag(:)
       character :: name*24
@@ -39,7 +40,7 @@
       write (stderr_unit, *)
       write (stderr_unit, *) "GJ"
       write (stderr_unit, *) "This is the serial Lande-factor program"
-      write (stderr_unit, *) "Input files:  isodata, name_descriptors.parquet, name_header.toml, name.(c)m, name.w"
+      write (stderr_unit, *) "Input files:  isodata, name_descriptors.parquet, name_header.toml, name.mix/name.cimix, name.wfn"
       write (stderr_unit, *) "Output files: name.gj or name.cgj"
 !
       write (stderr_unit, *)
@@ -52,14 +53,7 @@
          ndef = 1
       end if
 !
-   10 continue
-      write (stderr_unit, *) "Name of state"
-      read (*, "(A)") name
-      k = index(name," ")
-      if (k == 1) then
-         write (stderr_unit, *) "Names may not start with a blank"
-         goto 10
-      end if
+      call read_state_name(name)
 !
       write (stderr_unit, *)
       write (stderr_unit, *) "Mixing coefficients from a CI calc.?"

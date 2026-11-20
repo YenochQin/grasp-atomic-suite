@@ -173,7 +173,7 @@ class SparseBlock:
 
 @dataclass
 class Shard:
-    stem: str
+    prefix: Path
     header: Header
     blocks: list[SparseBlock]
 
@@ -183,14 +183,16 @@ class Dataset:
 
     def __init__(self, directory: Path):
         self.directory = directory
-        files = sorted(
-            p
-            for p in directory.glob("mcp*.30")
-            if re.fullmatch(r"mcp(?:\d+)?\.30", p.name)
-        )
+        channels = {
+            p.relative_to(directory)
+            for pattern in ("mcp*.*", "[0-9][0-9][0-9]/mcp.*")
+            for p in directory.glob(pattern)
+            if re.fullmatch(r"mcp(?:\d+)?\.\d+", p.name)
+        }
+        files = [directory / p for p in sorted(channels) if p.suffix == ".30"]
         if not files:
             raise MCPError(f"{directory}: no mcp.30 or mcpNNN.30 files")
-        if any(p.name == "mcp.30" for p in files) and len(files) != 1:
+        if (directory / "mcp.30") in files and len(files) != 1:
             raise MCPError(
                 f"{directory}: mixed serial and MPI files; use separate directories"
             )
@@ -233,6 +235,8 @@ class Dataset:
                     r.fail("inconsistent headers between MPI ranks")
                 if path.stem != "mcp" and int(path.stem[3:]) != h.rank:
                     r.fail("filename rank does not match header")
+                if path.parent != directory and int(path.parent.name) != h.rank:
+                    r.fail("rank directory does not match header")
                 blocks = []
                 for block, ncf in enumerate(ncfs, 1):
                     if r.tagged(2) != (block, ncf):
@@ -271,23 +275,18 @@ class Dataset:
                         r.fail("duplicate sparse CSF pair")
                     blocks.append(sparse)
                 r.eof()
-                self.shards.append(Shard(path.stem, h, blocks))
+                self.shards.append(Shard(path.with_suffix(""), h, blocks))
         self.shards.sort(key=lambda s: s.header.rank)
         if [s.header.rank for s in self.shards] != list(range(self.header.nprocs)):
             raise MCPError(f"{directory}: missing or duplicate MPI ranks")
         expected = {
-            f"{s.stem}.{unit}"
+            s.prefix.with_suffix(f".{unit}").relative_to(directory)
             for s in self.shards
             for unit in range(30, self.kmax + 33)
         }
-        actual = {
-            p.name
-            for p in directory.glob("mcp*.*")
-            if re.fullmatch(r"mcp(?:\d+)?\.\d+", p.name)
-        }
-        if actual != expected:
+        if channels != expected:
             raise MCPError(
-                f"{directory}: incomplete/unexpected file set; missing={sorted(expected - actual)}, extra={sorted(actual - expected)}"
+                f"{directory}: incomplete/unexpected file set; missing={sorted(expected - channels)}, extra={sorted(channels - expected)}"
             )
         self.paths = [directory / name for name in sorted(expected)]
 
@@ -320,7 +319,7 @@ class Dataset:
         with ExitStack() as stack:
             readers = []
             for shard in self.shards:
-                path = self.directory / f"{shard.stem}.{unit}"
+                path = shard.prefix.with_suffix(f".{unit}")
                 r = Records(path, stack.enter_context(path.open("rb")), False)
                 if header(r) != shard.header:
                     r.fail("coefficient header differs from mcp.30")

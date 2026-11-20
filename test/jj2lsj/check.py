@@ -109,6 +109,7 @@ def run(executable: Path, work: Path, mode: str, threads: int,
     output = result.stdout + result.stderr
     (work / "run.log").write_text(output)
     assert result.returncode == 0, output
+    assert output.count("Name of state:") == 1, output
     assert "Execution complete" in output or "Coefficient dump complete" in output, output
     assert "program stop" not in output.lower(), output
     return output

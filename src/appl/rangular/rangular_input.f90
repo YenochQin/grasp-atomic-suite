@@ -1,4 +1,5 @@
 module rangular_input
+   use calculation_state_files, only: named_angular_output
    use csf_descriptor_reader, only: descriptor_source, open_descriptor_source, close_descriptor_source, &
                                    install_descriptor_header, read_descriptor_block
    use rangular_profile, only: open_stage_profile
@@ -17,7 +18,7 @@ contains
       integer :: separator_position
       separator_position = scan(filename, "/\", back=.true.)
       basename = filename(separator_position+1:)
-      if (basename == "rangular.log" .or. basename == "genmcp.dbg" .or. &
+      if (named_angular_output(basename) .or. basename == "genmcp.dbg" .or. &
           index(basename, "mcp.") == 1 .or. index(basename, "tmp.") == 1) &
          error stop "Input/timings filename uses a reserved rangular output name"
    end subroutine reject_output_filename
@@ -41,7 +42,7 @@ contains
       integer :: reuse_memory_mib
       logical :: input_selected, timings_selected, reuse_selected, reuse_stats_selected
       character(len=:), allocatable :: option_name, reuse_filename
-      options%input_filename = "rcsf_descriptors.parquet"
+      options%input_filename = ""
       options%timings_filename = ""
       options%header_filename = ""
       input_selected = .false.
@@ -82,7 +83,7 @@ contains
             reuse_selected = .true.
          case ("--help")
             print "(A)", "rangular [--csf-descriptors FILE] [--header FILE.toml] [--timings NEW_FILE.csv]"
-            print "(A)", "Default: rcsf_descriptors.parquet with matching rcsf_header.toml."
+            print "(A)", "Enter a state to read NAME_descriptors.parquet and write mcp.NN."
             print "(A)", "Serial only: --reuse-cache-mib N [--reuse-stats NEW_FILE.csv]; default 0 (off)."
             stop
          case default

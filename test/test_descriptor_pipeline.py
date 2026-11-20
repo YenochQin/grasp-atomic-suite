@@ -13,7 +13,7 @@ from native_fixture import descriptors
 from rdensity.regression import fixture
 
 
-def execute(binary: Path, directory: Path, stdin: str, launcher: list[str]) -> None:
+def execute(binary: Path, directory: Path, stdin: str, launcher: list[str], *, native: bool) -> None:
     result = subprocess.run(
         [*launcher, str(binary)],
         cwd=directory,
@@ -35,6 +35,12 @@ def execute(binary: Path, directory: Path, stdin: str, launcher: list[str]) -> N
     assert (
         result.returncode == 0 and "Execution complete" in result.stdout + result.stderr
     ), result.stdout + result.stderr
+    if native:
+        if binary.name.startswith(("rbiotransform", "rtransition")):
+            assert result.stderr.count("Name of state:") == 2, result.stderr
+            assert result.stderr.index("Initial state") < result.stderr.index("Final state"), result.stderr
+        else:
+            assert result.stderr.count("Name of state:") == 1, result.stderr
 
 
 def pipeline(
@@ -47,16 +53,14 @@ def pipeline(
     work.mkdir()
     shutil.copyfile(template / "isodata", work / "isodata")
     for stem in ("left", "right"):
-        for extension in ("c", "w", "m"):
-            shutil.copyfile(
-                template / f"case.{extension}", work / f"{stem}.{extension}"
-            )
+        for source, target in (("c", "c"), ("w", "wfn"), ("m", "mix")):
+            shutil.copyfile(template / f"case.{source}", work / f"{stem}.{target if native else source}")
         if native:
             descriptors(work / f"{stem}.c")
             (work / f"{stem}.c").unlink()
     suffix = "_mpi" if launcher else ""
     execute(
-        binaries / ("rbiotransform" + suffix), work, "y\nn\nleft\nright\ny\n", launcher
+        binaries / ("rbiotransform" + suffix), work, "y\nn\nleft\nright\ny\n", launcher, native=native
     )
     outputs = {
         file.name: file.read_bytes()
@@ -69,6 +73,10 @@ def pipeline(
     rci_work = root / "rci"
     fixture(rci_work, False, False)
     if native:
+        for old, new in (("case.w", "case.wfn"), ("case.m", "case.mix")):
+            (rci_work / old).rename(rci_work / new)
+            (rci_work / old).write_bytes(b"stale legacy file")
+        (rci_work / "case.cm").write_bytes(b"stale legacy file")
         descriptors(rci_work / "case.c")
         (rci_work / "case.c").unlink()
     execute(
@@ -76,25 +84,28 @@ def pipeline(
         rci_work,
         "y\ncase\n" + ("n\n" if launcher and native else "") + "n\nn\nn\nn\nn\nn\n1\n",
         launcher,
+        native=native,
     )
-    outputs["rci.cm"] = (rci_work / "case.cm").read_bytes()
+    outputs["rci.mixing"] = (rci_work / ("case.cimix" if native else "case.cm")).read_bytes()
     for program, extensions in [
         ("gj", ["gj"]),
         ("rhfs", ["h", "hoffd"]),
         ("ris4", ["i"]),
     ]:
         answers = "y\ncase\nn\n" + ("n\nn\n" if program == "ris4" else "")
-        execute(binaries / (program + suffix), rci_work, answers, launcher)
+        execute(binaries / (program + suffix), rci_work, answers, launcher, native=native)
         for extension in extensions:
             path = rci_work / f"case.{extension}"
             assert path.stat().st_size > 0
             outputs[program + "." + extension] = path.read_bytes()
+    execute(binaries / ("gj" + suffix), rci_work, "y\ncase\ny\n", launcher, native=native)
+    outputs["gj.cgj"] = (rci_work / "case.cgj").read_bytes()
     for program in (
         ("rtransition_mpi",) if launcher else ("rtransition", "rtransition_phase")
     ):
         destination = root / program
         shutil.copytree(work, destination)
-        execute(binaries / program, destination, "y\nn\nleft\nright\nE1\n", launcher)
+        execute(binaries / program, destination, "y\nn\nleft\nright\nE1\n", launcher, native=native)
         assert (destination / "left.right.t").stat().st_size > 0
         if native:
             assert not (destination / "SLASK").exists()

@@ -1478,6 +1478,7 @@ contains
       use numeric_constants,          only: eps, zero
       use transition_basis_blocks,           only: nevinblk, ncfinblk, nblock, two_j
       use csf_pair_angular_state,             only: ncore
+      use calculation_state_files, only: read_state_name
       use atomic_calculation_state,           only: nuclear_charge, electron_count
       use getmixblock_i, only: getmixblock
       use yes_no_input, only: getyn
@@ -1508,13 +1509,8 @@ contains
       integer :: levels_tmp(1:vectors_number)
 !-----------------------------------------------
       nblock = 0
-    1 write (stderr_unit,*) "Name of state"
-      read(stdin_unit,"(A)") name
-      k=index(name," ")
-      if (k==1) then
-         write (stderr_unit,*) "Names may not start with a blank"
-         goto 1
-      end if
+      call read_state_name(name)
+      k = len_trim(name) + 1
 !
 !   Open, check, load data from, and close, the  .csl  file
       phase_start=profile_time()
