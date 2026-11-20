@@ -134,7 +134,7 @@ fn rejects_corrupt_payload_and_header_semantics() -> Result<()> {
 #[test]
 fn ffi_buffers_errors_and_independent_handles() -> Result<()> {
     use crate::descriptor_ffi::*;
-    use std::ffi::{CString, c_char, c_void};
+    use std::ffi::{CStr, CString, c_char, c_void};
     let directory = tempfile::tempdir()?;
     let (path, header) = fixture(directory.path(), |_| {})?;
     let path = CString::new(path.to_str().unwrap())?;
@@ -242,17 +242,26 @@ fn ffi_buffers_errors_and_independent_handles() -> Result<()> {
             0
         );
         assert_eq!(other, rows[..10]);
-        assert_ne!(
-            rcsfs_descriptor_read(
-                handles[0],
-                other.as_mut_ptr(),
-                10,
-                1,
-                error.as_mut_ptr(),
-                512
-            ),
-            0
-        );
+        other.fill(-99);
+        for _ in 0..2 {
+            assert_ne!(
+                rcsfs_descriptor_read(
+                    handles[0],
+                    other.as_mut_ptr(),
+                    10,
+                    1,
+                    error.as_mut_ptr(),
+                    512
+                ),
+                0
+            );
+            let error_bytes = error.map(|byte| byte as u8);
+            assert_eq!(
+                CStr::from_bytes_until_nul(&error_bytes)?.to_bytes(),
+                b"unexpected EOF"
+            );
+            assert_eq!(other, [-99; 10]);
+        }
         for handle in &mut handles {
             rcsfs_descriptor_close(handle);
             rcsfs_descriptor_close(handle);

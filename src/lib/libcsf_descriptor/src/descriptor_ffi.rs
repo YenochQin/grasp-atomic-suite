@@ -1,5 +1,10 @@
-//! C ABI v1. All buffers and live handles must be valid for the stated sizes.
-//! Each handle is single-threaded; separate handles are independent.
+//! C ABI v1. Callers must provide valid, aligned buffers for the stated sizes.
+//! Output buffers are caller-owned, exclusively writable during the call, and
+//! disjoint from handle-owned storage.
+//! An error buffer must be writable for its capacity when non-null and capacity > 0.
+//! Calls using the same live handle must be serialized; separate handles are independent.
+//! The unmangled `rcsfs_descriptor_*` symbols are reserved for this ABI and must
+//! have a single definition in the linked program.
 use crate::descriptor_reader::{DescriptorReader, RadialHeader};
 use anyhow::{Result, ensure};
 use std::{
@@ -15,6 +20,9 @@ struct Handle {
     offset: usize,
 }
 
+/// # Safety
+/// When non-null and `capacity > 0`, `error` must remain writable for `capacity`
+/// bytes after `action` finishes.
 unsafe fn invoke(error: *mut c_char, capacity: usize, action: impl FnOnce() -> Result<()>) -> i32 {
     let result = catch_unwind(AssertUnwindSafe(action));
     let message = match result {
@@ -28,6 +36,8 @@ unsafe fn invoke(error: *mut c_char, capacity: usize, action: impl FnOnce() -> R
         while !message.is_char_boundary(length) {
             length -= 1;
         }
+        // SAFETY: The caller provides writable storage disjoint from the local
+        // message. The copy and trailing NUL fit because length < capacity.
         unsafe {
             ptr::copy_nonoverlapping(bytes.as_ptr(), error.cast(), length);
             *error.add(length) = 0;
@@ -44,8 +54,9 @@ pub extern "C" fn rcsfs_descriptor_abi_version() -> i32 {
 /// Read radial input metadata from TOML. No descriptor file or handle is used.
 ///
 /// # Safety
-/// The path must be NUL terminated. The caller must supply writable storage for
-/// `2 * orbital_capacity` i32 orbital entries and three i32 info entries.
+/// The path must be readable through its NUL terminator and stay unchanged while
+/// borrowed. The caller must supply writable storage for `2 * orbital_capacity`
+/// i32 orbital entries and three i32 info entries.
 /// The error buffer, if non-null, must be writable for `capacity` bytes.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rcsfs_descriptor_read_radial_header(
@@ -56,36 +67,46 @@ pub unsafe extern "C" fn rcsfs_descriptor_read_radial_header(
     error: *mut c_char,
     capacity: usize,
 ) -> i32 {
-    unsafe {
-        invoke(error, capacity, || {
-            ensure!(
-                !header.is_null() && !orbitals.is_null() && !info.is_null(),
-                "null radial header argument"
-            );
-            let header = RadialHeader::read(Path::new(CStr::from_ptr(header).to_str()?))?;
-            ensure!(
-                header.orbitals.len() <= orbital_capacity,
-                "orbital table exceeds configured NNNW capacity"
-            );
-            let values = [
-                i32::try_from(header.orbitals.len())?,
-                i32::try_from(header.core_count)?,
-                header.electron_count,
-            ];
-            for (i, (n, kappa)) in header.orbitals.into_iter().enumerate() {
+    let action = || {
+        ensure!(
+            !header.is_null() && !orbitals.is_null() && !info.is_null(),
+            "null radial header argument"
+        );
+        // SAFETY: The checked pointer refers to a caller-provided C string
+        // readable through its NUL terminator and unchanged while borrowed.
+        let header_path = unsafe { CStr::from_ptr(header) };
+        let header = RadialHeader::read(Path::new(header_path.to_str()?))?;
+        ensure!(
+            header.orbitals.len() <= orbital_capacity,
+            "orbital table exceeds configured NNNW capacity"
+        );
+        let values = [
+            i32::try_from(header.orbitals.len())?,
+            i32::try_from(header.core_count)?,
+            header.electron_count,
+        ];
+        for (i, (n, kappa)) in header.orbitals.into_iter().enumerate() {
+            // SAFETY: The caller provides room for two i32s per orbital, and
+            // the capacity check bounds both indices.
+            unsafe {
                 *orbitals.add(2 * i) = n;
                 *orbitals.add(2 * i + 1) = kappa;
             }
-            ptr::copy_nonoverlapping(values.as_ptr(), info, values.len());
-            Ok(())
-        })
-    }
+        }
+        // SAFETY: info points to three writable i32s disjoint from local values.
+        unsafe { ptr::copy_nonoverlapping(values.as_ptr(), info, values.len()) };
+        Ok(())
+    };
+    // SAFETY: The caller provides an optional error buffer valid for capacity bytes.
+    unsafe { invoke(error, capacity, action) }
 }
 
 /// # Safety
-/// Paths must be NUL terminated; output/error buffers must be writable.
-/// Output must point to an initialized NULL handle slot. A live slot is rejected
-/// unchanged; close it before opening another file.
+/// Both paths must be readable through their NUL terminators and stay unchanged
+/// while borrowed. Output must point to an initialized, writable handle slot
+/// with exclusive access for this call. Initialize it to NULL before opening.
+/// A live slot is rejected unchanged; close it before opening another file.
+/// The optional error buffer follows the module's capacity contract.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rcsfs_descriptor_open(
     path: *const c_char,
@@ -94,32 +115,37 @@ pub unsafe extern "C" fn rcsfs_descriptor_open(
     error: *mut c_char,
     capacity: usize,
 ) -> i32 {
-    unsafe {
-        invoke(error, capacity, || {
-            ensure!(!output.is_null(), "null output handle");
-            ensure!(
-                (*output).is_null(),
-                "close the existing handle before reopening"
-            );
-            ensure!(!path.is_null() && !header.is_null(), "null input path");
-            let reader = DescriptorReader::open(
-                Path::new(CStr::from_ptr(path).to_str()?),
-                Path::new(CStr::from_ptr(header).to_str()?),
-                8192,
-            )?;
-            *output = Box::into_raw(Box::new(Handle {
-                reader,
-                batch: Vec::new(),
-                offset: 0,
-            }))
-            .cast();
-            Ok(())
-        })
-    }
+    let action = || {
+        ensure!(!output.is_null(), "null output handle");
+        // SAFETY: The caller provides a valid, initialized handle slot.
+        let current = unsafe { *output };
+        ensure!(
+            current.is_null(),
+            "close the existing handle before reopening"
+        );
+        ensure!(!path.is_null() && !header.is_null(), "null input path");
+        // SAFETY: The caller's path is readable through its NUL terminator
+        // and unchanged while borrowed.
+        let path = unsafe { CStr::from_ptr(path) }.to_str()?;
+        // SAFETY: The caller's header path has the same C string guarantees.
+        let header = unsafe { CStr::from_ptr(header) }.to_str()?;
+        let reader = DescriptorReader::open(Path::new(path), Path::new(header), 8192)?;
+        let handle = Box::into_raw(Box::new(Handle {
+            reader,
+            batch: Vec::new(),
+            offset: 0,
+        }));
+        // SAFETY: The caller grants write access to the slot, which was NULL.
+        unsafe { *output = handle.cast() };
+        Ok(())
+    };
+    // SAFETY: The caller provides an optional error buffer valid for capacity bytes.
+    unsafe { invoke(error, capacity, action) }
 }
 
 /// # Safety
-/// Handle must be live; info has five writable i64 entries.
+/// Handle must be live and used serially; info has five writable i64 entries.
+/// The optional error buffer follows the module's capacity contract.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rcsfs_descriptor_info(
     handle: *mut c_void,
@@ -127,26 +153,31 @@ pub unsafe extern "C" fn rcsfs_descriptor_info(
     error: *mut c_char,
     capacity: usize,
 ) -> i32 {
-    unsafe {
-        invoke(error, capacity, || {
-            ensure!(!handle.is_null() && !info.is_null(), "null info argument");
-            let r = &(*(handle as *mut Handle)).reader;
-            let values = [
-                r.core_count as i64,
-                r.layout.subshell_count() as i64,
-                r.block_lengths.len() as i64,
-                i64::try_from(r.block_lengths.iter().sum::<u64>())?,
-                i64::from(r.electron_count),
-            ];
-            ptr::copy_nonoverlapping(values.as_ptr(), info, 5);
-            Ok(())
-        })
-    }
+    let action = || {
+        ensure!(!handle.is_null() && !info.is_null(), "null info argument");
+        // SAFETY: The handle came from open and stays live with no concurrent
+        // access for the duration of this call.
+        let r = unsafe { &(*handle.cast::<Handle>()).reader };
+        let values = [
+            r.core_count as i64,
+            r.layout.subshell_count() as i64,
+            r.block_lengths.len() as i64,
+            i64::try_from(r.block_lengths.iter().sum::<u64>())?,
+            i64::from(r.electron_count),
+        ];
+        // SAFETY: info points to five writable i64s disjoint from local values.
+        unsafe { ptr::copy_nonoverlapping(values.as_ptr(), info, 5) };
+        Ok(())
+    };
+    // SAFETY: The caller provides an optional error buffer valid for capacity bytes.
+    unsafe { invoke(error, capacity, action) }
 }
 
 /// # Safety
-/// Arrays must match orbital and block counts returned by info. Orbital and
-/// symmetry arrays are interleaved pairs, lengths has one entry per block.
+/// Handle must be live and used serially. The caller provides writable arrays
+/// for the stated capacities. Orbital and symmetry arrays are interleaved pairs,
+/// and lengths has one entry per block. The optional error buffer follows the
+/// module's capacity contract.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rcsfs_descriptor_tables(
     handle: *mut c_void,
@@ -158,38 +189,45 @@ pub unsafe extern "C" fn rcsfs_descriptor_tables(
     error: *mut c_char,
     capacity: usize,
 ) -> i32 {
-    unsafe {
-        invoke(error, capacity, || {
-            ensure!(
-                !handle.is_null()
-                    && !orbitals.is_null()
-                    && !lengths.is_null()
-                    && !symmetries.is_null(),
-                "null tables argument"
-            );
-            let r = &(*(handle as *mut Handle)).reader;
-            ensure!(
-                orbital_capacity >= r.orbitals.len() && block_capacity >= r.block_lengths.len(),
-                "table buffer too small"
-            );
-            for (i, &(n, k)) in r.orbitals.iter().enumerate() {
+    let action = || {
+        ensure!(
+            !handle.is_null() && !orbitals.is_null() && !lengths.is_null() && !symmetries.is_null(),
+            "null tables argument"
+        );
+        // SAFETY: The handle came from open and stays live with no concurrent
+        // access for the duration of this call.
+        let r = unsafe { &(*handle.cast::<Handle>()).reader };
+        ensure!(
+            orbital_capacity >= r.orbitals.len() && block_capacity >= r.block_lengths.len(),
+            "table buffer too small"
+        );
+        for (i, &(n, k)) in r.orbitals.iter().enumerate() {
+            // SAFETY: The caller provides two writable i32s per orbital, and
+            // the capacity check bounds both indices.
+            unsafe {
                 *orbitals.add(2 * i) = n;
                 *orbitals.add(2 * i + 1) = k;
             }
-            for (i, (&length, &(j, p))) in
-                r.block_lengths.iter().zip(&r.block_symmetries).enumerate()
-            {
-                *lengths.add(i) = i64::try_from(length)?;
+        }
+        for (i, (&length, &(j, p))) in r.block_lengths.iter().zip(&r.block_symmetries).enumerate() {
+            let length = i64::try_from(length)?;
+            // SAFETY: The caller provides one length and two symmetry entries
+            // per block. The loop and capacity check bound all three indices.
+            unsafe {
+                *lengths.add(i) = length;
                 *symmetries.add(2 * i) = j;
                 *symmetries.add(2 * i + 1) = p;
             }
-            Ok(())
-        })
-    }
+        }
+        Ok(())
+    };
+    // SAFETY: The caller provides an optional error buffer valid for capacity bytes.
+    unsafe { invoke(error, capacity, action) }
 }
 
 /// # Safety
-/// Handle must be live; counts has `block_capacity` writable i64 entries.
+/// Handle must be live and used serially. Counts has `block_capacity` writable
+/// i64 entries. The optional error buffer follows the module's capacity contract.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rcsfs_descriptor_zero_order_counts(
     handle: *mut c_void,
@@ -198,29 +236,36 @@ pub unsafe extern "C" fn rcsfs_descriptor_zero_order_counts(
     error: *mut c_char,
     capacity: usize,
 ) -> i32 {
-    unsafe {
-        invoke(error, capacity, || {
-            ensure!(
-                !handle.is_null() && !counts.is_null(),
-                "null zero-order counts argument"
-            );
-            let reader = &(*(handle as *mut Handle)).reader;
-            let values = reader.zero_order_counts.as_deref().ok_or_else(|| {
-                anyhow::anyhow!("missing block_info.zero_order_counts; regenerate the dataset with rcsfs zero-first")
-            })?;
-            ensure!(
-                block_capacity >= values.len(),
-                "zero-order counts buffer too small"
-            );
-            ptr::copy_nonoverlapping(values.as_ptr(), counts, values.len());
-            Ok(())
-        })
-    }
+    let action = || {
+        ensure!(
+            !handle.is_null() && !counts.is_null(),
+            "null zero-order counts argument"
+        );
+        // SAFETY: The handle came from open and stays live with no concurrent
+        // access for the duration of this call.
+        let reader = unsafe { &(*handle.cast::<Handle>()).reader };
+        let values = reader.zero_order_counts.as_deref().ok_or_else(|| {
+            anyhow::anyhow!(
+                "missing block_info.zero_order_counts; regenerate the dataset with rcsfs zero-first"
+            )
+        })?;
+        ensure!(
+            block_capacity >= values.len(),
+            "zero-order counts buffer too small"
+        );
+        // SAFETY: The capacity check ensures the copy fits in the caller's
+        // writable counts buffer, which is disjoint from the reader's values.
+        unsafe { ptr::copy_nonoverlapping(values.as_ptr(), counts, values.len()) };
+        Ok(())
+    };
+    // SAFETY: The caller provides an optional error buffer valid for capacity bytes.
+    unsafe { invoke(error, capacity, action) }
 }
 
 /// # Safety
 /// Handle must be live and exclusively borrowed. Output has `size` writable
-/// bytes. Reads exactly rows; a failure invalidates the output buffer.
+/// bytes. The optional error buffer follows the module's capacity contract.
+/// Reads exactly rows; a failure invalidates the output buffer.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rcsfs_descriptor_read(
     handle: *mut c_void,
@@ -230,38 +275,53 @@ pub unsafe extern "C" fn rcsfs_descriptor_read(
     error: *mut c_char,
     capacity: usize,
 ) -> i32 {
-    unsafe {
-        invoke(error, capacity, || {
-            ensure!(!handle.is_null() && !output.is_null(), "null read argument");
-            let h = &mut *(handle as *mut Handle);
-            let count = rows
-                .checked_mul(h.reader.layout.row_len())
-                .ok_or_else(|| anyhow::anyhow!("size overflow"))?;
-            ensure!(size >= count, "output buffer too small");
-            let mut written = 0;
-            while written < count {
-                if h.offset == h.batch.len() {
-                    ensure!(h.reader.read_batch(&mut h.batch)? > 0, "unexpected EOF");
-                    h.offset = 0;
-                }
-                let n = (count - written).min(h.batch.len() - h.offset);
-                ptr::copy_nonoverlapping(h.batch.as_ptr().add(h.offset), output.add(written), n);
-                written += n;
-                h.offset += n;
+    let action = || {
+        ensure!(!handle.is_null() && !output.is_null(), "null read argument");
+        // SAFETY: The handle came from open and the caller grants exclusive
+        // access to the live Handle for this call.
+        let h = unsafe { &mut *handle.cast::<Handle>() };
+        let count = rows
+            .checked_mul(h.reader.layout.row_len())
+            .ok_or_else(|| anyhow::anyhow!("size overflow"))?;
+        ensure!(size >= count, "output buffer too small");
+        let mut written = 0;
+        while written < count {
+            if h.offset == h.batch.len() {
+                // Keep the handle's batch empty until the reader validates the
+                // replacement. Reuse the allocation on success.
+                let mut batch = std::mem::take(&mut h.batch);
+                h.offset = 0;
+                ensure!(h.reader.read_batch(&mut batch)? > 0, "unexpected EOF");
+                h.batch = batch;
             }
-            Ok(())
-        })
-    }
+            let source = &h.batch[h.offset..];
+            let n = (count - written).min(source.len());
+            // SAFETY: n fits in the source slice and in the remaining checked
+            // output span. The caller's output is disjoint from the batch.
+            unsafe { ptr::copy_nonoverlapping(source.as_ptr(), output.add(written), n) };
+            written += n;
+            h.offset += n;
+        }
+        Ok(())
+    };
+    // SAFETY: The caller provides an optional error buffer valid for capacity bytes.
+    unsafe { invoke(error, capacity, action) }
 }
 
 /// # Safety
-/// Pointer must address a live handle or NULL. Clears the caller's handle.
+/// A non-null pointer must address an initialized, writable slot containing
+/// NULL or a live handle returned by open. The caller must have exclusive
+/// access to the slot and handle, and must not use any copies after closing.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rcsfs_descriptor_close(handle: *mut *mut c_void) {
     if !handle.is_null() {
-        unsafe {
-            if !(*handle).is_null() {
-                drop(Box::from_raw(*handle as *mut Handle));
+        // SAFETY: The caller provides an initialized handle slot.
+        let current = unsafe { *handle };
+        if !current.is_null() {
+            // SAFETY: The caller hands back ownership of the live Box from
+            // open and grants write access to the slot so it can be cleared.
+            unsafe {
+                drop(Box::from_raw(current.cast::<Handle>()));
                 *handle = ptr::null_mut();
             }
         }
