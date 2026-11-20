@@ -25,94 +25,55 @@ grid = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = grid
 SPEC.loader.exec_module(grid)
 
-POINT_AND_FINITE = """      IF (NPARM == 0) THEN
-         RNT = EXP((-65.D0/16.D0))/Z
-         H = 0.0625D0
-         N = MIN(220,NNNP)
+POINT_AND_FINITE = """      IF (nuclear_model_parameter_count == 0) THEN
+         radial_grid_scale = EXP((-65.D0/16.D0))/nuclear_charge
+         transformed_grid_step = 0.0625D0
+         radial_point_count = MIN(220,max_radial_points)
       ELSE
-         RNT = 2.D-6/Z
-         H = 0.05D0
-         N = NNNP
+         radial_grid_scale = 2.D-6/nuclear_charge
+         transformed_grid_step = 0.05D0
+         radial_point_count = max_radial_points
       ENDIF
-      HP = 0.D0
+      asymptotic_grid_step = 0.D0
 """
-FINITE = """      RNT = 2.D-6/Z
-      H = 0.05D0
-      N = NNNP
-      HP = 0.D0
+FINITE = """      radial_grid_scale = 2.D-6/nuclear_charge
+      transformed_grid_step = 0.05D0
+      radial_point_count = max_radial_points
+      asymptotic_grid_step = 0.D0
 """
 
 
-def fixture(root: Path, layout: str = "grasp2018") -> None:
-    suite = layout == "atomic-suite"
-    capacity_files = () if suite else grid.CAPACITY_FILES
-    grid_files = grid.SUITE_GRID_FILES if suite else grid.GRID_FILES
-    restart_files = grid.SUITE_RESTART_FILES if suite else grid.RESTART_FILES
-    if suite:
-        for relative in (grid.SUITE_CONFIG_FILE, grid.SUITE_EXPORT_FILE):
-            path = root / relative
-            path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(SCRIPT.parents[1] / relative, path)
-        config = root / grid.SUITE_CONFIG_FILE
-        config.write_text(grid.patch_capacity(config.read_text(), 590))
-    for relative in capacity_files:
+def fixture(root: Path) -> None:
+    for relative in (grid.SUITE_CONFIG_FILE, grid.SUITE_EXPORT_FILE):
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            "      integer, parameter :: NNNP = 590\n      integer, parameter :: NNN1 = 600\n"
-        )
-    for relative in grid_files:
+        shutil.copyfile(SCRIPT.parents[1] / relative, path)
+    for relative in grid.SUITE_GRID_FILES:
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         block = FINITE if "/rci" in relative else POINT_AND_FINITE
-        if relative.endswith("rwfnrelabel.f90"):
-            block = "\n".join("!" + line for line in block.splitlines()) + "\n"
-        text = block + "      ACCY = H**6\n"
+        text = block + "      working_tolerance = transformed_grid_step**6\n"
         if "/rmcdhf" in relative:
-            text += "      IF (NDEF /= 0) THEN\n         WRITE (*,*) 'Revise the default ACCY = ', ACCY\n         READ *, ACCY\n      ENDIF\n"
-        text += "      CALL SETQIC\n! NNNP = 590 is a historical comment\n"
-        if relative.endswith("rwfnrelabel.f90"):
-            # Match upstream's host IMPLICIT NONE and contained GETHFD scope.
-            text = (
-                "      PROGRAM RWFNRELABEL\n"
-                "      USE parameter_def\n"
-                "      IMPLICIT NONE\n"
-                "      CONTAINS\n"
-                "      SUBROUTINE GETHFD(NAME)\n"
-                "      IMPLICIT DOUBLEPRECISION (A-H,O-Z)\n"
-                "      INTEGER N\n"
-                "      CHARACTER*24 NAME\n"
-                + text
-                + "      END SUBROUTINE\n      END PROGRAM\n"
+            text += (
+                "      IF (NDEF /= 0) THEN\n"
+                "         WRITE (*,*) 'Revise the default ACCY = ', working_tolerance\n"
+                "         READ *, working_tolerance\n"
+                "      ENDIF\n"
             )
-        if suite:
-            text = grid.code_names(text, grid.SEMANTIC_NAMES)
-        path.write_text(text)
-    for relative in restart_files:
+        path.write_text(text + "! max_radial_points = 590 is a historical comment\n")
+    for relative in grid.SUITE_RESTART_FILES:
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        text = "      READ (IMCDF) RNT, H, HP\n      ACCY = H**6\n"
-        path.write_text(grid.code_names(text, grid.SEMANTIC_NAMES) if suite else text)
+        path.write_text("      working_tolerance = transformed_grid_step**6\n")
 
 
 class PatchGridTests(unittest.TestCase):
-    def test_semantic_identifier_translation_preserves_literals(self) -> None:
-        text = "radial_grid_scale = 2d-6/nuclear_charge; print *, 'radial_grid_scale', \"NNNP\""
-        self.assertEqual(
-            grid.code_names(text, grid.LEGACY_NAMES),
-            "RNT = 2d-6/Z; print *, 'radial_grid_scale', \"NNNP\"",
-        )
-        self.assertEqual(
-            grid.set_assignment("      radial_point_count = max_radial_points\n", "N", "MIN(220,NNNP)", semantic=True),
-            "      radial_point_count = min(220,max_radial_points)\n",
-        )
-
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
-        self.root = Path(self.temporary.name) / "grasp"
+        self.root = Path(self.temporary.name) / "suite"
         fixture(self.root)
-        self.script_directory = Path(self.temporary.name) / "scripts"
+        self.script_directory = self.root / "scripts"
         self.script_directory.mkdir()
         script_location = patch.object(
             grid, "__file__", str(self.script_directory / SCRIPT.name)
@@ -122,8 +83,6 @@ class PatchGridTests(unittest.TestCase):
 
     def write_config(self, directory: Path | None = None, **overrides: object) -> Path:
         config = {
-            "GRASP_SOURCE": str(self.root),
-            "SOURCE_LAYOUT": "grasp2018",
             "RUN_MODE": "preview",
             "PRINT_DIFF": False,
             "GRID_PARAMETERS": {
@@ -185,7 +144,6 @@ class PatchGridTests(unittest.TestCase):
             self.assertEqual(grid.plan(self.root, grid.Settings(**parameters)), [])
             self.write_config(
                 **config,
-                GRASP_SOURCE=None,
                 RESTORE_DIRECTORY=str(backup),
                 RUN_MODE="apply",
             )
@@ -193,18 +151,18 @@ class PatchGridTests(unittest.TestCase):
             for path, data in originals.items():
                 self.assertEqual(path.read_bytes(), data)
 
-    def test_copied_script_relative_root_without_automatic_backup(self) -> None:
+    def test_copied_script_patches_its_own_source_without_automatic_backup(self) -> None:
         root = Path(self.temporary.name) / "copied-suite"
-        fixture(root, "atomic-suite")
+        fixture(root)
+        scripts = root / "scripts"
+        scripts.mkdir()
         self.write_config(
-            root,
-            GRASP_SOURCE=".",
-            SOURCE_LAYOUT="atomic-suite",
+            scripts,
             RUN_MODE="apply",
             GRID_PARAMETERS={"nnnp": 1990, "h": 0.025, "accy": 0},
         )
         with (
-            patch.object(grid, "__file__", str(root / SCRIPT.name)),
+            patch.object(grid, "__file__", str(scripts / SCRIPT.name)),
             patch.object(grid.tempfile, "tempdir", str(self.temporary.name)),
             redirect_stdout(io.StringIO()),
         ):
@@ -212,9 +170,7 @@ class PatchGridTests(unittest.TestCase):
             self.assertEqual(grid.main([]), 0)
             self.assertEqual(set(Path(self.temporary.name).rglob("*")), files_before)
             self.assertEqual(
-                grid.plan(
-                    root, grid.Settings(nnnp=1990, h=0.025, accy=0.0), "atomic-suite"
-                ),
+                grid.plan(root, grid.Settings(nnnp=1990, h=0.025, accy=0.0)),
                 [],
             )
 
@@ -228,8 +184,6 @@ class PatchGridTests(unittest.TestCase):
                 self.assertEqual(
                     grid.main(
                         [
-                            "--grasp",
-                            str(self.root),
                             "--nnnp",
                             str(capacity),
                             "--n",
@@ -250,15 +204,14 @@ class PatchGridTests(unittest.TestCase):
                 )
 
     def test_invalid_toml_configuration_does_not_write_source(self) -> None:
-        original = (self.root / grid.CAPACITY_FILES[0]).read_bytes()
+        original = (self.root / grid.SUITE_CONFIG_FILE).read_bytes()
         with (
             redirect_stderr(io.StringIO()),
             redirect_stdout(io.StringIO()),
         ):
             invalid = (
-                {"GRASP_SOURCE": None},
                 {"RUN_MODE": "unknown"},
-                {"SOURCE_LAYOUT": "unknown"},
+                {"SOURCE_LAYOUT": "atomic-suite"},
                 {"GRID_PARAMETERS": {"nnnp": 1990, "n": 2000}},
                 {"GRID_PARAMETERS": {"nnnp": 1990.5}},
                 {"GRID_PARAMETERS": {"typo": 1990}},
@@ -269,7 +222,7 @@ class PatchGridTests(unittest.TestCase):
                 {"GRID_PARAMETERS": {"h": "0.025"}},
                 {"GRID_PARAMETERS": "not a table"},
                 {"GRID_PARAMETERS": {"point_n": 220.0}},
-                {"GRASP_SOURCE": ""},
+                {"GRASP_SOURCE": ".."},
                 {"BACKUP_DIRECTORY": False},
                 {"RESTORE_DIRECTORY": ""},
                 {"TYPO": 1},
@@ -287,7 +240,7 @@ class PatchGridTests(unittest.TestCase):
                         grid.main([])
                     self.assertEqual(error.exception.code, 2)
                     self.assertEqual(
-                        (self.root / grid.CAPACITY_FILES[0]).read_bytes(), original
+                        (self.root / grid.SUITE_CONFIG_FILE).read_bytes(), original
                     )
             self.assertFalse((self.root / "grid-backups").exists())
 
@@ -310,15 +263,20 @@ class PatchGridTests(unittest.TestCase):
                         self.assertEqual(path.read_bytes(), original)
 
     def test_copied_script_loads_config_from_another_working_directory(self) -> None:
-        copied = self.root / SCRIPT.name
+        copied = self.script_directory / SCRIPT.name
         shutil.copyfile(SCRIPT, copied)
         shutil.copyfile(
-            SCRIPT.with_name("config.example.toml"), self.root / "config.toml"
+            SCRIPT.with_name("config.example.toml"), copied.with_name("config.toml")
         )
-        original = (self.root / grid.CAPACITY_FILES[0]).read_bytes()
+        original = (self.root / grid.SUITE_CONFIG_FILE).read_bytes()
+        other_root = Path(self.temporary.name) / "other-suite"
+        fixture(other_root)
+        other_capacity = other_root / grid.SUITE_CONFIG_FILE
+        script_link = other_root / SCRIPT.name
+        script_link.symlink_to(copied)
         result = subprocess.run(
-            [sys.executable, str(copied)],
-            cwd=self.script_directory,
+            [sys.executable, str(script_link)],
+            cwd=other_root,
             capture_output=True,
             text=True,
             check=False,
@@ -326,19 +284,31 @@ class PatchGridTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(f"Source: {self.root.resolve()}", result.stdout)
         self.assertIn(
-            f"Configuration: {self.root.resolve() / 'config.toml'}", result.stdout
+            f"Configuration: {copied.resolve().with_name('config.toml')}", result.stdout
         )
-        self.assertEqual((self.root / grid.CAPACITY_FILES[0]).read_bytes(), original)
-        self.assertIn("NNNP = 3990", result.stdout)
-        self.assertIn("N = 2946", result.stdout)
-        self.assertIn("H = 1D-2", result.stdout)
-        self.assertIn("ACCY = 1D-10", result.stdout)
+        self.assertEqual((self.root / grid.SUITE_CONFIG_FILE).read_bytes(), original)
+        self.assertIn("max_radial_points = 3990", result.stdout)
+        self.assertIn("radial_point_count = 2946", result.stdout)
+        self.assertIn("transformed_grid_step = 1d-2", result.stdout)
+        self.assertIn("working_tolerance = 1d-10", result.stdout)
+        result = subprocess.run(
+            [sys.executable, str(script_link), "--nnnp", "1990", "--apply"],
+            cwd=other_root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(
+            b"max_radial_points = 1990", (self.root / grid.SUITE_CONFIG_FILE).read_bytes()
+        )
+        self.assertEqual(other_capacity.read_bytes(), original)
 
     def test_toml_defaults_and_omitted_parameters_preserve_values(self) -> None:
         (self.script_directory / "config.toml").write_text(
-            'GRASP_SOURCE = "../grasp"\n[GRID_PARAMETERS]\nh = 0.025\n'
+            "[GRID_PARAMETERS]\nh = 0.025\n"
         )
-        original = (self.root / grid.CAPACITY_FILES[0]).read_bytes()
+        original = (self.root / grid.SUITE_CONFIG_FILE).read_bytes()
         with (
             patch.object(grid, "plan", wraps=grid.plan) as planner,
             redirect_stdout(io.StringIO()),
@@ -346,9 +316,9 @@ class PatchGridTests(unittest.TestCase):
             self.assertEqual(grid.main([]), 0)
             self.assertEqual(
                 planner.call_args.args,
-                (self.root.resolve(), grid.Settings(h=0.025), "grasp2018"),
+                (self.root.resolve(), grid.Settings(h=0.025)),
             )
-        self.assertEqual((self.root / grid.CAPACITY_FILES[0]).read_bytes(), original)
+        self.assertEqual((self.root / grid.SUITE_CONFIG_FILE).read_bytes(), original)
         self.assertFalse((self.root / "grid-backups").exists())
 
     def test_explicit_cli_keeps_its_values_independent_of_toml(self) -> None:
@@ -362,72 +332,114 @@ class PatchGridTests(unittest.TestCase):
                 if content is not None:
                     config.write_text(content)
                 self.assertEqual(
-                    grid.main(["--grasp", str(self.root), "--h", "0.025"]), 0
+                    grid.main(["--h", "0.025"]), 0
                 )
                 self.assertEqual(planner.call_args.args[1], grid.Settings(h=0.025))
 
+    def test_cli_and_toml_capacity_options_change_only_max_radial_points(self) -> None:
+        originals = {p: p.read_bytes() for p in self.root.rglob("*.f90")}
+        config = self.root / grid.SUITE_CONFIG_FILE
+        self.write_config(RUN_MODE="apply", GRID_PARAMETERS={"nnnp": 2990})
+        with redirect_stdout(io.StringIO()):
+            self.assertEqual(grid.main(["--nnnp", "1990", "--apply"]), 0)
+            self.assertEqual(
+                {p: p.read_bytes() for p in originals},
+                originals | {config: originals[config].replace(b"= 590", b"= 1990")},
+            )
+            self.assertEqual(grid.main([]), 0)
+        self.assertEqual(
+            {p: p.read_bytes() for p in originals},
+            originals | {config: originals[config].replace(b"= 590", b"= 2990")},
+        )
+
+    def test_cli_rejects_removed_source_options(self) -> None:
+        for option, value in (("--grasp", str(self.root)), ("--layout", "atomic-suite")):
+            with self.subTest(option=option), redirect_stderr(io.StringIO()) as stderr:
+                with self.assertRaises(SystemExit) as error:
+                    grid.main([option, value, "--nnnp", "1990", "--apply"])
+                self.assertEqual(error.exception.code, 2)
+                self.assertIn(f"unrecognized arguments: {option}", stderr.getvalue())
+
+    def test_legacy_layout_is_rejected_for_patching_and_restoration(self) -> None:
+        root = Path(self.temporary.name) / "legacy"
+        relative = "src/lib/libmod/parameter_def_M.f90"
+        capacity_file = root / relative
+        capacity_file.parent.mkdir(parents=True)
+        before = b"      integer, parameter :: NNNP = 590\n"
+        after = before.replace(b"590", b"1990")
+        capacity_file.write_bytes(after)
+        backup = Path(self.temporary.name) / "legacy-backup"
+        saved = backup / relative
+        saved.parent.mkdir(parents=True)
+        saved.write_bytes(before)
+        (backup / "manifest.json").write_text(json.dumps({
+            "root": str(root),
+            "files": [{
+                "path": relative, "before": grid.digest(before), "after": grid.digest(after)
+            }],
+        }))
+        for arguments in (
+            ["--nnnp", "590", "--apply"],
+            ["--restore", str(backup), "--apply"],
+        ):
+            with (
+                self.subTest(arguments=arguments),
+                patch.object(grid, "__file__", str(root / "scripts" / SCRIPT.name)),
+                redirect_stderr(io.StringIO()),
+            ):
+                with self.assertRaises(SystemExit) as error:
+                    grid.main(arguments)
+                self.assertEqual(error.exception.code, 2)
+                self.assertEqual(capacity_file.read_bytes(), after)
+
+    def test_restore_rejects_backup_from_another_suite_copy(self) -> None:
+        other_root = Path(self.temporary.name) / "other-suite"
+        fixture(other_root)
+        settings = grid.Settings(nnnp=1990)
+        changes = grid.plan(other_root, settings)
+        backup = Path(self.temporary.name) / "other-backup"
+        with redirect_stdout(io.StringIO()):
+            grid.apply(other_root, changes, backup)
+        grid.write_changes(self.root, grid.plan(self.root, settings))
+        with redirect_stderr(io.StringIO()) as stderr:
+            with self.assertRaises(SystemExit) as error:
+                grid.main(["--restore", str(backup), "--apply"])
+        self.assertEqual(error.exception.code, 2)
+        self.assertIn("backup belongs to a different source tree", stderr.getvalue())
+        for root in (self.root, other_root):
+            self.assertEqual((root / grid.SUITE_CONFIG_FILE).read_bytes(), changes[0].after)
+
     def test_capacity_only_preserves_every_other_source_line(self) -> None:
-        for layout in ("grasp2018", "atomic-suite"):
-            with self.subTest(layout=layout):
-                root = Path(self.temporary.name) / layout
-                fixture(root, layout)
-                if layout == "grasp2018":
-                    rotate = root / "src/tool/rwfnrotate.f90"
-                    rotate.write_text(
-                        rotate.read_text().replace("RNT = 2.D-6/Z", "RNT = 2.D-6")
-                    )
-                originals = {
-                    p.relative_to(root).as_posix(): p.read_bytes()
-                    for p in root.rglob("*.f90")
-                }
-                settings = grid.Settings(nnnp=1990, n=590)
-                changes = grid.plan(root, settings, layout, capacity_only=True)
-                expected = {}
-                capacity_files = (
-                    grid.CAPACITY_FILES
-                    if layout == "grasp2018"
-                    else (grid.SUITE_CONFIG_FILE,)
-                )
-                grid_files = (
-                    grid.GRID_FILES if layout == "grasp2018" else grid.SUITE_GRID_FILES
-                )
-                for relative, before in originals.items():
-                    after = before
-                    if relative in capacity_files:
-                        after = re.sub(rb"\bNNNP = 590\b", b"NNNP = 1990", after, flags=re.IGNORECASE)
-                        after = re.sub(rb"\bNNN1 = 600\b", b"NNN1 = 2000", after, flags=re.IGNORECASE)
-                        after = after.replace(b"max_radial_points = 590", b"max_radial_points = 1990")
-                    elif relative in grid_files and not relative.endswith(
-                        "rwfnrelabel.f90"
-                    ):
-                        after = after.replace(
-                            b"\n         N = NNNP\n", b"\n         N = 590\n"
-                        )
-                        after = after.replace(
-                            b"\n      N = NNNP\n", b"\n      N = 590\n"
-                        )
-                        after = after.replace(
-                            b"radial_point_count = max_radial_points", b"radial_point_count = 590"
-                        )
-                    expected[relative] = after
-                self.assertEqual(
-                    {c.relative: c.after for c in changes},
-                    {p: data for p, data in expected.items() if data != originals[p]},
-                )
-                backup = grid.apply(
-                    root, changes, Path(self.temporary.name) / f"{layout}-backup"
-                )
-                self.assertEqual(
-                    grid.plan(root, settings, layout, capacity_only=True), []
-                )
-                self.assertEqual(
-                    {p: (root / p).read_bytes() for p in originals}, expected
-                )
-                restored_root, restoration = grid.restore_plan(backup, root)
-                grid.write_changes(restored_root, restoration)
-                self.assertEqual(
-                    {p: (root / p).read_bytes() for p in originals}, originals
-                )
+        originals = {
+            p.relative_to(self.root).as_posix(): p.read_bytes()
+            for p in self.root.rglob("*.f90")
+        }
+        expected = originals.copy()
+        expected[grid.SUITE_CONFIG_FILE] = expected[grid.SUITE_CONFIG_FILE].replace(
+            b"max_radial_points = 590", b"max_radial_points = 1990"
+        )
+        for relative in grid.SUITE_GRID_FILES:
+            expected[relative] = expected[relative].replace(
+                b"radial_point_count = max_radial_points", b"radial_point_count = 590"
+            )
+        settings = grid.Settings(nnnp=1990, n=590)
+        changes = grid.plan(self.root, settings, capacity_only=True)
+        self.assertEqual(
+            {c.relative: c.after for c in changes},
+            {p: data for p, data in expected.items() if data != originals[p]},
+        )
+        backup = grid.apply(
+            self.root, changes, Path(self.temporary.name) / "capacity-only-backup"
+        )
+        self.assertEqual(grid.plan(self.root, settings, capacity_only=True), [])
+        self.assertEqual(
+            {p: (self.root / p).read_bytes() for p in originals}, expected
+        )
+        restoration = grid.restore_plan(backup, self.root)
+        grid.write_changes(self.root, restoration)
+        self.assertEqual(
+            {p: (self.root / p).read_bytes() for p in originals}, originals
+        )
 
     def test_capacity_only_toml_and_cli_apply_and_check(self) -> None:
         parameters = {"nnnp": 1990, "n": 590}
@@ -452,8 +464,6 @@ class PatchGridTests(unittest.TestCase):
             self.assertEqual(
                 grid.main(
                     [
-                        "--grasp",
-                        str(self.root),
                         "--capacity-only",
                         "--nnnp",
                         "1990",
@@ -490,31 +500,24 @@ class PatchGridTests(unittest.TestCase):
                     self.assertEqual(error.exception.code, 2)
                     self.assertEqual({p: p.read_bytes() for p in originals}, originals)
 
-    def test_capacity_only_preserves_preexisting_relabel_and_accy_patches(self) -> None:
-        grid.write_changes(
-            self.root, grid.plan(self.root, grid.Settings(nnnp=1990, n=590))
-        )
+    def test_capacity_only_preserves_preexisting_accy_patch(self) -> None:
+        settings = grid.Settings(nnnp=1990, n=590, accy=1e-10)
+        grid.write_changes(self.root, grid.plan(self.root, settings))
         self.assertEqual(
             grid.plan(self.root, grid.Settings(nnnp=1990, n=590), capacity_only=True),
             [],
         )
 
-    def test_capacity_only_rejects_partial_relabel_initializer(self) -> None:
-        relabel = self.root / "src/tool/rwfnrelabel.f90"
-        relabel.write_text(relabel.read_text() + "      N = NNNP\n")
-        with self.assertRaisesRegex(ValueError, "incomplete rwfnrelabel"):
-            grid.plan(self.root, grid.Settings(nnnp=1990, n=590), capacity_only=True)
-
     def test_suite_layout_patches_all_present_programs_and_restores(self) -> None:
-        root = Path(self.temporary.name) / "suite"
-        fixture(root, "atomic-suite")
+        root = Path(self.temporary.name) / "suite-fixture"
+        fixture(root)
         originals = {p: p.read_bytes() for p in root.rglob("*.f90")}
-        capacity_only = grid.plan(root, grid.Settings(nnnp=2990), "atomic-suite")
+        capacity_only = grid.plan(root, grid.Settings(nnnp=2990))
         self.assertEqual([c.relative for c in capacity_only], [grid.SUITE_CONFIG_FILE])
         self.assertIn(b"max_radial_points = 2990", capacity_only[0].after)
         self.assertIn(b"radial_workspace_capacity = max_radial_points + 10", capacity_only[0].after)
         settings = grid.Settings(nnnp=1990, n=1179, h=0.025)
-        changes = grid.plan(root, settings, "atomic-suite")
+        changes = grid.plan(root, settings)
         self.assertEqual(len(changes), 1 + len(grid.SUITE_GRID_FILES))
         self.assertNotIn(grid.SUITE_EXPORT_FILE, {c.relative for c in changes})
         output = {c.relative: c.after for c in changes}
@@ -524,23 +527,21 @@ class PatchGridTests(unittest.TestCase):
             if "/rci" not in entry:
                 self.assertIn(b"radial_point_count = MIN(220,max_radial_points)", output[entry])
         backup = grid.apply(root, changes, Path(self.temporary.name) / "suite-backup")
-        self.assertEqual(grid.plan(root, settings, "atomic-suite"), [])
-        restored_root, restoration = grid.restore_plan(backup, root)
-        grid.write_changes(restored_root, restoration)
+        self.assertEqual(grid.plan(root, settings), [])
+        restoration = grid.restore_plan(backup, root)
+        grid.write_changes(root, restoration)
         for path, data in originals.items():
             self.assertEqual(path.read_bytes(), data)
 
     def test_partial_layout_still_requires_every_supported_program(self) -> None:
-        root = Path(self.temporary.name) / "suite"
-        fixture(root, "atomic-suite")
-        with self.assertRaisesRegex(ValueError, "missing required source"):
-            grid.plan(root, grid.Settings(nnnp=1990))
+        root = Path(self.temporary.name) / "suite-fixture"
+        fixture(root)
         (root / grid.SUITE_GRID_FILES[-1]).unlink()
         with self.assertRaisesRegex(ValueError, "missing required source"):
-            grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
+            grid.plan(root, grid.Settings(nnnp=1990))
 
     def test_suite_real_entries_patch_and_restore_preserving_wrapper(self) -> None:
-        root = Path(self.temporary.name) / "suite"
+        root = Path(self.temporary.name) / "suite-fixture"
         repository = SCRIPT.parents[1]
         for relative in (
             grid.SUITE_CONFIG_FILE,
@@ -552,9 +553,9 @@ class PatchGridTests(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(repository / relative, path)
         originals = {p: p.read_bytes() for p in root.rglob("*.f90")}
-        self.assertEqual(grid.plan(root, grid.Settings(), "atomic-suite"), [])
+        self.assertEqual(grid.plan(root, grid.Settings()), [])
         settings = grid.Settings(nnnp=1990, n=1179, h=0.025, accy=1e-10)
-        changes = grid.plan(root, settings, "atomic-suite")
+        changes = grid.plan(root, settings)
         self.assertEqual(
             len(changes), 1 + len(grid.SUITE_GRID_FILES) + len(grid.SUITE_RESTART_FILES)
         )
@@ -563,22 +564,22 @@ class PatchGridTests(unittest.TestCase):
             if "/rmcdhf" in change.relative:
                 self.assertEqual(change.after.lower().count(b"working_tolerance = 1d-10"), 2)
         backup = grid.apply(root, changes, Path(self.temporary.name) / "real-backup")
-        self.assertEqual(grid.plan(root, settings, "atomic-suite"), [])
-        restored_root, restoration = grid.restore_plan(backup, root)
-        grid.write_changes(restored_root, restoration)
+        self.assertEqual(grid.plan(root, settings), [])
+        restoration = grid.restore_plan(backup, root)
+        grid.write_changes(root, restoration)
         self.assertEqual({p: p.read_bytes() for p in originals}, originals)
 
     def test_suite_unknown_initializer_blocks_changes(self) -> None:
-        root = Path(self.temporary.name) / "suite"
-        fixture(root, "atomic-suite")
+        root = Path(self.temporary.name) / "suite-fixture"
+        fixture(root)
         unknown = root / "src/apps/new_program.f90"
         unknown.write_text("      RNT = 2.D-6/Z\n")
         with self.assertRaisesRegex(ValueError, "unrecognized grid initializer"):
-            grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
+            grid.plan(root, grid.Settings(nnnp=1990))
 
     def test_suite_requires_complete_reexports_and_single_definition(self) -> None:
-        root = Path(self.temporary.name) / "suite"
-        fixture(root, "atomic-suite")
+        root = Path(self.temporary.name) / "suite-fixture"
+        fixture(root)
         wrapper = root / grid.SUITE_EXPORT_FILE
         original = wrapper.read_text()
         incomplete, count = re.subn(
@@ -588,19 +589,24 @@ class PatchGridTests(unittest.TestCase):
         self.assertEqual(count, 1, "fixture must remove exactly one required re-export")
         wrapper.write_text(incomplete)
         with self.assertRaisesRegex(ValueError, "must re-export all six"):
-            grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
+            grid.plan(root, grid.Settings(nnnp=1990))
         wrapper.write_text(original.replace("max_radial_points,", "max_radial_points => max_orbitals,"))
         with self.assertRaisesRegex(ValueError, "must use the semantic capacity names directly"):
-            grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
+            grid.plan(root, grid.Settings(nnnp=1990))
         wrapper.write_text(original)
         config = root / grid.SUITE_CONFIG_FILE
         config.write_text(config.read_text() + "integer, parameter :: radial_workspace_capacity = 600\n")
         with self.assertRaisesRegex(ValueError, "one central definition of radial_workspace_capacity"):
-            grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
+            grid.plan(root, grid.Settings(nnnp=1990))
+        config.write_text(config.read_text().replace(
+            "    integer, parameter :: radial_workspace_capacity = max_radial_points + 10\n", ""
+        ))
+        with self.assertRaisesRegex(ValueError, "must be derived as max_radial_points"):
+            grid.plan(root, grid.Settings(nnnp=1990))
 
     def test_suite_rejects_old_capacity_exports(self) -> None:
-        root = Path(self.temporary.name) / "suite"
-        fixture(root, "atomic-suite")
+        root = Path(self.temporary.name) / "suite-fixture"
+        fixture(root)
         wrapper = root / grid.SUITE_EXPORT_FILE
         original = wrapper.read_text()
         for obsolete_export, message in (
@@ -610,26 +616,26 @@ class PatchGridTests(unittest.TestCase):
             with self.subTest(obsolete_export=obsolete_export):
                 wrapper.write_text(original.replace("end module", f"    {obsolete_export}\nend module"))
                 with self.assertRaisesRegex(ValueError, message):
-                    grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
+                    grid.plan(root, grid.Settings(nnnp=1990))
 
     def test_suite_capacity_exports_honor_explicit_visibility(self) -> None:
-        root = Path(self.temporary.name) / "suite"
-        fixture(root, "atomic-suite")
+        root = Path(self.temporary.name) / "suite-fixture"
+        fixture(root)
         wrapper = root / grid.SUITE_EXPORT_FILE
         names = ", &\n        ".join(grid.SUITE_PARAMETER_NAMES)
         source = wrapper.read_text().replace("implicit none (type, external)", "implicit none(type,external)\n    private")
         source = source.replace("end module grasp_parameters", f"    public :: {names}\nend module")
         wrapper.write_text(source)
-        changes = grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
+        changes = grid.plan(root, grid.Settings(nnnp=1990))
         self.assertEqual([change.relative for change in changes], [grid.SUITE_CONFIG_FILE])
         wrapper.write_text(source.replace(f"public :: {names}", "public :: max_radial_points"))
         with self.assertRaisesRegex(ValueError, "must re-export all six"):
-            grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")
+            grid.plan(root, grid.Settings(nnnp=1990))
 
     @unittest.skipUnless(shutil.which(FORTRAN_COMPILER), "Fortran compiler is not available")
     def test_suite_capacity_edit_reaches_reexports_and_shared_arrays(self) -> None:
-        root = Path(self.temporary.name) / "suite"
-        fixture(root, "atomic-suite")
+        root = Path(self.temporary.name) / "suite-fixture"
+        fixture(root)
         source = SCRIPT.parents[1] / "src/lib/grasp_shared"
         module_names = [
             "compile_time_capacities.f90",
@@ -644,7 +650,7 @@ class PatchGridTests(unittest.TestCase):
                 shutil.copyfile(source / name, destination)
         for capacity in (590, 1990):
             with self.subTest(capacity=capacity):
-                changes = grid.plan(root, grid.Settings(nnnp=capacity), "atomic-suite")
+                changes = grid.plan(root, grid.Settings(nnnp=capacity))
                 self.assertTrue(
                     all(c.relative == grid.SUITE_CONFIG_FILE for c in changes)
                 )
@@ -680,74 +686,73 @@ class PatchGridTests(unittest.TestCase):
     def test_suite_duplicate_capacity_is_rejected(
         self,
     ) -> None:
-        root = Path(self.temporary.name) / "suite"
-        fixture(root, "atomic-suite")
+        root = Path(self.temporary.name) / "suite-fixture"
+        fixture(root)
         duplicate = root / "src/duplicate.f90"
         duplicate.write_text("      integer, parameter :: NNNP = 590\n")
         with self.assertRaisesRegex(ValueError, "duplicate capacity"):
-            grid.plan(root, grid.Settings(h=0.025), "atomic-suite")
+            grid.plan(root, grid.Settings(h=0.025))
 
     def test_suite_local_math_step_is_not_a_radial_grid_default(self) -> None:
-        root = Path(self.temporary.name) / "suite"
-        fixture(root, "atomic-suite")
+        root = Path(self.temporary.name) / "suite-fixture"
+        fixture(root)
         local = root / "src/local_math.f90"
         local.write_text(
             "subroutine fit\nreal*8 :: h\nh = 0.01d0\nend subroutine fit\n"
         )
-        changes = grid.plan(root, grid.Settings(h=0.025), "atomic-suite")
+        changes = grid.plan(root, grid.Settings(h=0.025))
         self.assertEqual({c.relative for c in changes}, set(grid.SUITE_GRID_FILES))
-        local.write_text("use radial_grid_state, only: h\nh = 0.01d0\n")
+        local.write_text(
+            "use radial_grid_state, only: transformed_grid_step\n"
+            "transformed_grid_step = 0.01d0\n"
+        )
         with self.assertRaisesRegex(ValueError, "unrecognized grid initializer"):
-            grid.plan(root, grid.Settings(h=0.025), "atomic-suite")
+            grid.plan(root, grid.Settings(h=0.025))
 
     def test_suite_fixed_accuracy_can_return_to_adaptive(self) -> None:
-        root = Path(self.temporary.name) / "suite"
-        fixture(root, "atomic-suite")
-        fixed = grid.plan(root, grid.Settings(accy=1e-10), "atomic-suite")
+        root = Path(self.temporary.name) / "suite-fixture"
+        fixture(root)
+        fixed = grid.plan(root, grid.Settings(accy=1e-10))
         grid.write_changes(root, fixed)
         self.assertEqual(
             {c.relative for c in fixed},
             set(grid.SUITE_GRID_FILES + grid.SUITE_RESTART_FILES),
         )
         self.assertTrue(all(b"working_tolerance = 1d-10" in c.after for c in fixed))
-        reset = grid.plan(root, grid.Settings(accy=0), "atomic-suite")
+        reset = grid.plan(root, grid.Settings(accy=0))
         self.assertTrue(all(b"working_tolerance = transformed_grid_step**6" in c.after for c in reset))
         grid.write_changes(root, reset)
-        self.assertEqual(grid.plan(root, grid.Settings(accy=0), "atomic-suite"), [])
+        self.assertEqual(grid.plan(root, grid.Settings(accy=0)), [])
 
     def test_suite_capacity_reduction_rejects_existing_runtime_point_count(
         self,
     ) -> None:
-        root = Path(self.temporary.name) / "suite"
-        fixture(root, "atomic-suite")
+        root = Path(self.temporary.name) / "suite-fixture"
+        fixture(root)
         grid.write_changes(
-            root, grid.plan(root, grid.Settings(nnnp=1990, n=1179), "atomic-suite")
+            root, grid.plan(root, grid.Settings(nnnp=1990, n=1179))
         )
         with self.assertRaisesRegex(ValueError, "incompatible"):
-            grid.plan(root, grid.Settings(nnnp=590), "atomic-suite")
+            grid.plan(root, grid.Settings(nnnp=590))
 
     def test_finite_patch_preserves_point_model_and_comments(self) -> None:
         changes = grid.plan(
             self.root, grid.Settings(nnnp=1990, n=1179, h=0.025, rnt_scale=2e-6)
         )
         output = {change.relative: change.after.decode() for change in changes}
-        for relative in grid.GRID_FILES:
-            self.assertIn("N = 1179", output[relative])
-            self.assertIn("H = 2.5D-2", output[relative])
-            self.assertIn("! NNNP = 590 is a historical comment", output[relative])
+        for relative in grid.SUITE_GRID_FILES:
+            self.assertIn("radial_point_count = 1179", output[relative])
+            self.assertIn("transformed_grid_step = 2.5d-2", output[relative])
+            self.assertIn("! max_radial_points = 590 is a historical comment", output[relative])
             if "/rci" not in relative:
-                self.assertIn("N = MIN(220,NNNP)", output[relative])
-                self.assertIn("H = 0.0625D0", output[relative])
-        self.assertTrue(
-            all("NNNP = 1990" in output[path] for path in grid.CAPACITY_FILES)
-        )
-        # Planning is read-only, including on the previously broken helper.
-        self.assertIn("!      IF", (self.root / "src/tool/rwfnrelabel.f90").read_text())
+                self.assertIn("radial_point_count = MIN(220,max_radial_points)", output[relative])
+                self.assertIn("transformed_grid_step = 0.0625D0", output[relative])
+        self.assertIn("max_radial_points = 1990", output[grid.SUITE_CONFIG_FILE])
 
     def test_apply_is_idempotent_and_restore_is_byte_exact(self) -> None:
         before = {
             path: (self.root / path).read_bytes()
-            for path in (*grid.GRID_FILES, *grid.CAPACITY_FILES, *grid.RESTART_FILES)
+            for path in grid.PATCHABLE_FILES
         }
         settings = grid.Settings(nnnp=1990, n=1179, h=0.025, accy=1e-10)
         changes = grid.plan(self.root, settings)
@@ -758,91 +763,23 @@ class PatchGridTests(unittest.TestCase):
         rmcdhf_text = next(
             change.after.decode()
             for change in reconfigured
-            if change.relative == "src/appl/rmcdhf90/getscd.f90"
+            if change.relative == "src/apps/rmcdhf/read_scf_options.f90"
         )
-        self.assertEqual(rmcdhf_text.count("ACCY = 1D-10"), 2)
-        root, restoration = grid.restore_plan(backup, self.root)
-        grid.write_changes(root, restoration)
+        self.assertEqual(rmcdhf_text.count("working_tolerance = 1d-10"), 2)
+        restoration = grid.restore_plan(backup, self.root)
+        grid.write_changes(self.root, restoration)
         for relative, data in before.items():
-            self.assertEqual((root / relative).read_bytes(), data)
-
-    def test_relabel_imports_shared_nuclear_model_and_repairs_old_patch(self) -> None:
-        relative = "src/tool/rwfnrelabel.f90"
-        path = self.root / relative
-        settings = grid.Settings(
-            nnnp=2990, n=1179, h=0.025, rnt_scale=2e-6, hp=0.0, accy=1e-10
-        )
-        changes = grid.plan(self.root, settings)
-        output = next(c.after.decode() for c in changes if c.relative == relative)
-        preamble = output.split("SUBROUTINE GETHFD(NAME)", 1)[1].split("IMPLICIT", 1)[0]
-        self.assertIn("USE npar_C, ONLY: NPARM", preamble)
-        grid.write_changes(self.root, changes)
-        self.assertEqual(grid.plan(self.root, settings), [])
-        # The previous patcher already activated the block but omitted the USE.
-        path.write_text(output.replace("      USE npar_C, ONLY: NPARM\n", ""))
-        repair = grid.plan(self.root, settings)
-        self.assertEqual([c.relative for c in repair], [relative])
-        self.assertEqual(repair[0].after.decode(), output)
-
-    def test_relabel_keeps_existing_nuclear_model_import(self) -> None:
-        path = self.root / "src/tool/rwfnrelabel.f90"
-        path.write_text(
-            path.read_text().replace(
-                "      IMPLICIT DOUBLEPRECISION",
-                "      USE npar_C\n      IMPLICIT DOUBLEPRECISION",
-            )
-        )
-        changes = grid.plan(self.root, grid.Settings(h=0.025))
-        output = next(
-            c.after.decode() for c in changes if c.relative.endswith("rwfnrelabel.f90")
-        )
-        self.assertEqual(output.lower().count("use npar_c"), 1)
-
-    @unittest.skipUnless(shutil.which(FORTRAN_COMPILER), "Fortran compiler is not available")
-    def test_d1_relabel_compiles_with_implicit_none_host(self) -> None:
-        changes = grid.plan(
-            self.root,
-            grid.Settings(
-                nnnp=2990, n=1179, h=0.025, rnt_scale=2e-6, hp=0.0, accy=1e-10
-            ),
-        )
-        output = next(
-            c.after for c in changes if c.relative.endswith("rwfnrelabel.f90")
-        )
-        build = Path(self.temporary.name) / "compile"
-        build.mkdir()
-        # Real module ownership: NPARM is shared state, not a local declaration.
-        (build / "modules.f90").write_text(
-            "module parameter_def\ninteger, parameter :: NNNP = 2990\nend module\n"
-            "module npar_C\ninteger :: NPARM\nend module\n"
-        )
-        (build / "rwfnrelabel.f90").write_bytes(output)
-        result = subprocess.run(
-            [FORTRAN_COMPILER, "-c", "modules.f90", "rwfnrelabel.f90"],
-            cwd=build,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        self.assertEqual(result.returncode, 0, result.stderr)
-
-    def test_unknown_capacity_blocks_all_writes(self) -> None:
-        path = self.root / "src/lib/new_grid.f90"
-        path.write_text("      integer, parameter :: NNNP = 590\n")
-        original = (self.root / grid.CAPACITY_FILES[0]).read_bytes()
-        with self.assertRaisesRegex(ValueError, "unmatched capacity"):
-            grid.plan(self.root, grid.Settings(nnnp=1990))
-        self.assertEqual((self.root / grid.CAPACITY_FILES[0]).read_bytes(), original)
+            self.assertEqual((self.root / relative).read_bytes(), data)
 
     def test_unknown_initializer_and_malformed_branch_are_rejected(self) -> None:
         path = self.root / "src/lib/new_grid.f90"
-        path.write_text("      RNT = 2e-6/Z\n")
+        path.write_text("      radial_grid_scale = 2e-6/nuclear_charge\n")
         with self.assertRaisesRegex(ValueError, "unrecognized grid initializer"):
             grid.plan(self.root, grid.Settings(h=0.025))
         path.write_text("! no active assignments\n")
-        current = self.root / grid.GRID_FILES[0]
-        current.write_text(current.read_text().replace("H = 0.05D0", "HH = 0.05D0"))
-        with self.assertRaisesRegex(ValueError, "expected one H assignment"):
+        current = self.root / grid.SUITE_GRID_FILES[0]
+        current.write_text(current.read_text().replace("transformed_grid_step = 0.05D0", "unknown_step = 0.05D0"))
+        with self.assertRaisesRegex(ValueError, "expected one transformed_grid_step assignment"):
             grid.plan(self.root, grid.Settings(h=0.025))
 
     def test_invalid_numbers_and_runtime_capacity_conflict(self) -> None:
@@ -852,12 +789,12 @@ class PatchGridTests(unittest.TestCase):
             grid.Settings(h=float("nan")),
             grid.Settings(h=-0.01),
             grid.Settings(hp=-1),
-            grid.Settings(accy=0),
+            grid.Settings(accy=-1),
         ):
             with self.subTest(settings=settings), self.assertRaises(ValueError):
                 grid.plan(self.root, settings)
-        path = self.root / grid.GRID_FILES[0]
-        path.write_text(path.read_text().replace("N = NNNP", "N = 1990"))
+        path = self.root / grid.SUITE_GRID_FILES[0]
+        path.write_text(path.read_text().replace("radial_point_count = max_radial_points", "radial_point_count = 1990"))
         with self.assertRaisesRegex(ValueError, "incompatible"):
             grid.plan(self.root, grid.Settings(nnnp=590))
 
@@ -871,11 +808,11 @@ class PatchGridTests(unittest.TestCase):
         text = next(
             change.after.decode()
             for change in changes
-            if change.relative == grid.GRID_FILES[0]
+            if change.relative == grid.SUITE_GRID_FILES[0]
         )
-        self.assertIn("N = 400", text)
-        self.assertIn("H = 0.05D0", text)  # finite model unchanged
-        self.assertIn("HP = 1D-1", text)
+        self.assertIn("radial_point_count = 400", text)
+        self.assertIn("transformed_grid_step = 0.05D0", text)  # finite model unchanged
+        self.assertIn("asymptotic_grid_step = 1d-1", text)
 
     def test_restore_refuses_subsequent_source_edits(self) -> None:
         changes = grid.plan(self.root, grid.Settings(nnnp=1990))
@@ -895,7 +832,7 @@ class PatchGridTests(unittest.TestCase):
             grid.restore_plan(backup, self.root)
 
     def test_write_failure_rolls_back_completed_files(self) -> None:
-        changes = grid.plan(self.root, grid.Settings(nnnp=1990))
+        changes = grid.plan(self.root, grid.Settings(nnnp=1990, n=1179))
         original_write = grid.atomic_write
         calls = 0
 

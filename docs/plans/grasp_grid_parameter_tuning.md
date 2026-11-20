@@ -1,5 +1,7 @@
 # GRASP 径向网格参数调整与验证规程
 
+> 本文使用 `GRASP_SOURCE` 和 `SOURCE_LAYOUT` 的补丁配置对应 Suite 修订 `5fc161e2` 中的脚本。当前脚本从自身位置定位 Suite 的 `src/`，用法见[网格脚本说明](../../scripts/README.md)。
+
 > 2026-11-11 状态更新：文中 strict/diag 独立求解器已按用户决定[移除](../implemented/rejected_rmcdhf_variants.md)；相关目标、命令和测试数量仅作对应版本的历史记录。
 
 > 2026-11-08 范围更新：旧 orbopt 程序和专用运行器已移除；相关历史实验分支不再是现行操作流程。当前命令和共有检查指向保留的原版/strict/diag 程序，物理参数与模型收敛仍需按实验条件独立验证。

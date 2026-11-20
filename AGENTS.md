@@ -65,8 +65,8 @@ environment or run `uv sync`/`uv run` here.
 
 For grid or capacity changes, use [common parameters](docs/implemented/common_parameters.md)
 for the current contract and [scripts/README.md](scripts/README.md) for patch-tool
-configuration, preview/apply, and restore commands. This partial tree needs the
-`atomic-suite` layout; `grasp2018` requires a full upstream tree. Preserve omitted
+configuration, preview/apply, and restore commands. The patcher locates `src/`
+alongside its own `scripts/` directory. Preserve omitted
 settings and keep local config ignored. Use separate source copies per parameter
 set; compilation is a separate step from applying the patch.
 

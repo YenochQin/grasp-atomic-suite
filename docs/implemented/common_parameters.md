@@ -58,16 +58,15 @@ CSFG 的专用源码、构建和测试已移除，其历史参数见[归档记�
 
 ## 网格实验与重编译
 
-在独立源码副本上使用 [网格脚本](../../scripts/README.md)。`atomic-suite` 布局
-修改 `compile_time_capacities.f90` 和需要变更的十五个普通入口；显式 ACCY 修改也覆盖两个普通 RCI 续算入口。
-仅使用 `--nnnp` 时只改中央配置的 `max_radial_points`，工作区容量自动派生，转导模块及入口保持原样；
+在独立 Suite 源码副本上使用 [网格脚本](../../scripts/README.md)。脚本根据自己的位置定位该副本的 `src/`，
+按需修改 `compile_time_capacities.f90` 和十五个普通入口；显式 ACCY 修改也覆盖两个普通 RCI 续算入口。
+命令行 `--nnnp` 和 TOML `nnnp` 都设置中央配置的编译期容量 `max_radial_points`，工作区容量自动派生；
 `--n` 单独选择实际点数，其他网格参数仍修改各入口。脚本检查六项定义与完整转导接口。
 
 容量修改示例（只预览，不写入）：
 
 ```fish
-../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
-  --layout atomic-suite --grasp . --nnnp 1990 --diff
+../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py --nnnp 1990 --diff
 ```
 
 追加 `--apply` 才会写入；示例值用于说明接口，当前配置仍为 590。
@@ -88,7 +87,7 @@ ctest --test-dir build-upstream-parameters --output-on-failure
 
 使用 `build-upstream-parameters/bin/` 下的本次产物，或自行安装后核实可执行文件路径。
 Linux 服务器需在服务器上重新编译。`shared_grid_capacity` 检查共享数组编译容量一致；
-网格脚本回归覆盖原版布局和 suite 十五个网格入口、两个续算入口的预览、应用、重复应用、备份与恢复。
+网格脚本回归覆盖 Suite 十五个网格入口、两个续算入口的预览、应用、重复应用、备份与恢复。
 工程测试不能代替生产模型的收敛验证；候选网格仍按
 [网格实验方案](../plans/grasp_grid_parameter_tuning.md) 验收。
 

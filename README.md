@@ -243,11 +243,12 @@ Input orbitals are interpolated onto the current calculation grid. Upstream RMCD
 interactive grid changes; explicitly supply ACCY if you change H.
 Copy [scripts/config.example.toml](scripts/config.example.toml) to `scripts/config.toml`,
 edit the local settings, and run [scripts/patch_grasp_grid.py](scripts/README.md)
-without arguments. Select `SOURCE_LAYOUT="atomic-suite"` and `GRASP_SOURCE=".."` for this tree
-or `"grasp2018"` for the full upstream tree; the original CLI remains available.
+without arguments. The patcher locates `src/` alongside its own `scripts/` directory.
+Both CLI `--nnnp` and TOML `nnnp` set the
+compile-time radial-grid capacity `max_radial_points`.
 Local `config.toml` is ignored by Git; omitted grid keys preserve existing values.
 Preview is the default. Keep a separate source copy for each parameter set and
-build it manually using the upstream README CMake workflow. Changes require a
+build it manually using this repository's CMake workflow. Changes require a
 full rebuild and numerical convergence checks.
 
 See [shared parameter guide](docs/implemented/common_parameters.md) for the parameter table,

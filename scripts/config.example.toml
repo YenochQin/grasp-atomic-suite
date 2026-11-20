@@ -1,10 +1,5 @@
-# D3-C3990：D4 前的同网格容量对照
-# 仅扩大容量并保留原版初始化时，使用 config.capacity-only.example.toml。
-# 复制为与 patch_grasp_grid.py 同目录的 config.toml 后使用。
-# 将脚本和配置一起复制到目标 GRASP 根目录时，GRASP_SOURCE="."。
-# 若留在本仓库 scripts/，请填写目标源码绝对路径；本仓库源码用 ".."。
-GRASP_SOURCE = "."
-SOURCE_LAYOUT = "grasp2018"  # 本仓库源码改为 "atomic-suite"
+# 复制为脚本同目录的 config.toml。脚本修改该 Suite 副本的 src/。
+# 备份和恢复的相对路径以配置文件所在目录为准。
 RUN_MODE = "preview"  # preview / apply / check
 PRINT_DIFF = true
 
@@ -13,12 +8,12 @@ PRINT_DIFF = true
 # RESTORE_DIRECTORY = "/path/to/saved-backup"  # 省略：正常修改；设置后进入恢复
 
 [GRID_PARAMETERS]
-nnnp = 3990  # 原版 590 → 3990，NNN1 自动为 4000
-n = 2946  # 同 D3，只比较容量
-h = 0.010  # 同 D3
-rnt_scale = 2e-6  # RNT=此值/Z
+nnnp = 3990  # 编译期容量 max_radial_points，工作区容量自动派生为 4000
+n = 2946  # 有限核默认网格点数
+h = 0.010
+rnt_scale = 2e-6  # radial_grid_scale = 此值 / nuclear_charge
 hp = 0.0
-accy = 1e-10  # 按已验证阈值与 D3/D4 同步调整
+accy = 1e-10
 
 # TOML 没有 None；省略以下参数表示不修改点核默认值。
 # point_n = 220

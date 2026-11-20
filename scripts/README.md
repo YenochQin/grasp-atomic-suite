@@ -52,270 +52,101 @@ MPI 通过 `disks` 单独配置永久 I/O 目录时，从含有 `rmcdhf.log` 的
 save_rmcdhf --io-dir /path/to/serial-io results/Zn_odd_AS1
 ```
 
-## 批量修改 GRASP2018 / grasp-atomic-suite 径向网格
+## 批量修改 grasp-atomic-suite 径向网格
 
-`patch_grasp_grid.py` 可以操作完整原版源码树，或修改本仓库的集中容量配置与各入口网格默认值。
-脚本不自动运行编译或提交代码。
-脚本只使用 Python >= 3.11 标准库；本工作区仍使用 `graspkit-tools/.venv`。
+`patch_grasp_grid.py` 根据脚本文件的实际位置找到与 `scripts/` 同级的 `src/`。
+要修改某个 Suite 副本，请运行该副本 `scripts/` 中的脚本。命令行 `--nnnp` 和 TOML
+`nnnp` 都设置 [compile_time_capacities.f90](../src/lib/grasp_shared/compile_time_capacities.f90)
+中的编译期容量 `max_radial_points`。工作区容量按 `max_radial_points + 10` 自动派生。
+只传容量时，脚本只修改该中央定义。有限核默认点数引用 `max_radial_points`，因此会随容量改变。
+如需指定有限核运行时的默认点数，使用 `--n` 或 TOML `n`。
 
-参数原值、候选值、调整原因、测试数据与验收标准见
-[GRASP 径向网格参数调整与验证规程](../docs/plans/grasp_grid_parameter_tuning.md)。
+脚本使用 Python 3.11 或以上版本的标准库。本工作区使用 `graspkit-tools/.venv`。
+每组参数使用独立的 Suite 源码副本。修改完成后，按[构建说明](../README_ZH.md)全量重编译
+所有实际使用的串行和 MPI 程序。交互输入和旧 RCI `.res` 可覆盖新默认网格，
+`GRASP_COUNT_ACCY` 可覆盖工作容差。数值收敛须通过独立计算验证。
+见[容量和默认值](../docs/implemented/common_parameters.md)及[网格实验方案](../docs/plans/grasp_grid_parameter_tuning.md)。
 
-## 修改脚本旁的 config.toml（推荐）
+### TOML 配置
 
-将 [config.example.toml](config.example.toml) 复制为同目录的 `config.toml`，
-填写源码路径、网格参数和运行模式，无需修改 Python 脚本。
-`config.toml` 已加入 `.gitignore`，本地参数变化不会产生 Git 修改记录；
-示例文件保留在版本控制中，供其他副本复制。下面采用 D3-C3990 容量对照组：
-
-```toml
-GRASP_SOURCE = "/path/to/GRASP2018-D3-C3990"  # 包含 src/ 的目录
-SOURCE_LAYOUT = "grasp2018"
-RUN_MODE = "preview"  # preview / apply / check
-PRINT_DIFF = true
-# 可选路径必须放在 [GRID_PARAMETERS] 之前：
-# BACKUP_DIRECTORY = "/path/to/new-backup"
-# RESTORE_DIRECTORY = "/path/to/saved-backup"
-
-[GRID_PARAMETERS]
-nnnp = 3990
-n = 2946
-h = 0.010
-rnt_scale = 2e-6
-hp = 0.0
-accy = 1e-10
-```
-
-TOML 布尔值使用小写 `true/false`，参数写在 `[GRID_PARAMETERS]` 表中。
-TOML 没有 `None`：省略 `point_n/point_h/point_rnt_scale` 等参数表示不修改；
-省略备份和恢复路径表示不生成备份、使用正常修改模式。不能直接粘贴旧 Python 字典。
-配置不预填任何网格值；正常修改时必须填写 `GRASP_SOURCE` 和至少一个网格参数。
-未写 `SOURCE_LAYOUT/RUN_MODE/PRINT_DIFF` 时分别默认为 `grasp2018/preview/true`。
-候选组仍需验证网格收敛，不能直接作为通用生产推荐。
-相对路径以 `config.toml` 所在目录为基准，绝对路径和 `~/` 也可以使用。
-配置和脚本都留在本仓库的 `scripts/` 时，本仓库源码应填写
-`GRASP_SOURCE=".."`、`SOURCE_LAYOUT="atomic-suite"`；`"."` 代表 `scripts/` 自身。
-无参数运行时，配置缺失、TOML 语法错误、未知字段或数值类型错误都会报错，
-不会回退到脚本内的旧配置。
-
-在服务器上，不带任何参数执行（Bash/fish 均相同）：
-
-```sh
-python3 /path/to/grasp-atomic-suite/scripts/patch_grasp_grid.py
-```
-
-在 `config.toml` 中先设置 `RUN_MODE="preview"` 查看修改；再改成 `"apply"`，执行同一条命令写入；
-最后改成 `"check"`，再次执行检查。检查一致时退出 0，仍有待修改文件时退出 1，
-配置错误或源码布局不匹配时退出 2。脚本不启动编译。
-
-每组参数从原版复制独立源码时，默认不生成 `grid-backups` 或临时备份。
-如需精确撤销一次修改，显式设置 `BACKUP_DIRECTORY` 为一个尚不存在的目录，
-脚本才会保存原始文件和校验和，并打印备份位置。预览、检查及无变化的重复应用
-不会创建备份。已有备份仍可使用：把 `RESTORE_DIRECTORY` 填成对应备份目录，
-放在 `[GRID_PARAMETERS]` 之前，先用 `RUN_MODE="preview"` 查看，再改成 `"apply"` 执行。
-恢复模式自动忽略数值配置和 `BACKUP_DIRECTORY`；恢复完成后
-删除或注释 `RESTORE_DIRECTORY`。恢复后也需要重新编译。
-
-## 只扩容量，保留 590 个默认网格点
-
-2026-10-15 新增 `CAPACITY_ONLY`，基于脚本修订前版本 `7da0ce4` 的接口扩展。
-它默认关闭，原有调网格模式保持兼容。使用
-[容量专用模板](config.capacity-only.example.toml)，或将配置写成：
+将 [config.example.toml](config.example.toml) 复制为脚本同目录的 `config.toml`。
+备份和恢复的相对路径以配置所在目录为基准，也可使用绝对路径或 `~/`。
+本地配置由 Git 忽略。
 
 ```toml
-GRASP_SOURCE = "/path/to/grasp-NNNP-1990"
-SOURCE_LAYOUT = "grasp2018"
 RUN_MODE = "preview"
 PRINT_DIFF = true
-CAPACITY_ONLY = true
 
 [GRID_PARAMETERS]
 nnnp = 1990
-n = 590
 ```
 
-该模式要求同时提供 `nnnp` 和 `n`，拒绝 `h/rnt_scale/hp/accy/point_*` 等其他数值项，
-即使填写的是原版默认值也会报错。在脚本同目录保存为 `config.toml`，不带参数运行；
-预览后改为 `RUN_MODE="apply"` 写入，随后用 `"check"` 检查。命令行等价预览：
+`GRASP_SOURCE` 和 `SOURCE_LAYOUT` 已移除。使用旧配置时，删除这两个字段。
+`RUN_MODE` 默认为 `"preview"`，`PRINT_DIFF` 默认为 `true`。
+正常修改需在 `[GRID_PARAMETERS]` 中填写至少一个参数。省略的网格参数保留原赋值。
 
-```bash
-../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
-  --grasp /path/to/grasp-NNNP-1990 --layout grasp2018 \
-  --capacity-only --nnnp 1990 --n 590 --diff
+```fish
+../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py
 ```
 
-补丁只修改容量声明 `NNNP/NNN1` 和现有活动初始化中的有限核默认 `N`（包括 RCI 公共初始化）。
-因此 `NNNP=1990`、`NNN1=2000`、有限核默认 `N=590`；原版点核默认 `MIN(220,NNNP)` 仍为 220。
-`RNT/H/HP/ACCY` 原有赋值与位置保持不动，包括 `rwfnrotate` 的历史 `RNT=2e-6`；
-不激活 `rwfnrelabel` 被注释的网格初始化，不补充 NPARM 导入，不追加 RMCDHF ACCY 重算。
-该模式也支持 `atomic-suite`，容量仍通过中央配置和转导接口生效。
+先预览改动，再设置 `RUN_MODE = "apply"` 写入，最后可用 `RUN_MODE = "check"` 验证。
+检查一致时退出 0，需要修改时退出 1，配置错误或源码布局不匹配时退出 2。
 
-必须从干净原版副本开始，才能保留原版初始化。此模式保留输入源码现状，
-不会删除旧补丁已经插入的初始化或 ACCY 重算；有旧补丁时应先用其备份恢复，
-或重新准备干净副本。TOML 恢复模式忽略 `CAPACITY_ONLY`，仍按备份逐字节恢复。
+### 命令行
 
-这里保证的是补丁修改范围，并非数值结果等价：原版 IN 尾部边界和 SETPOT 回退连接点
-也使用 `NNNP`，容量从 590 改为 1990 可能影响这些路径。脚本保留这些算法源码，
-没有将它们改为按 `N` 计算。交互输入和旧 `.res` 仍能覆盖默认网格。
-完成补丁检查后仍须全量重编译；数值等价性需要另做计算对照。
+显式命令行请求独立于 `config.toml`。以下命令预览当前脚本所属 Suite 的容量修改。
 
-## 多份 GRASP 与 README 的 CMake 编译流程
-
-网格验证以未经修改的原版为基底：本工作区参考原版容量是 `NNNP=590、NNN1=600`。
-保留一份 B0 直接编译运行，不应用补丁；各修改组从同一份干净原版复制。
-suite 的参数已恢复为原版值，但其轨道算法和共享库仍含独立改动；原版算法的基线应使用原版源码。具体比较顺序见
-[验证规程第 5 节](../docs/plans/grasp_grid_parameter_tuning.md#5-实际执行的参数试验矩阵)。
-
-为每组参数准备独立的干净源码副本，例如 `grasp-C0/`、`grasp-D2/`；
-用试验编号区分相同容量下不同 N/H/ACCY 的配置。
-不要复制旧 `build/`、`build-debug/` 缓存或源码内残留的
-`.mod/.o` 文件；CMake 缓存记录原目录的绝对路径。原有计算数据单独保存。
-
-可以在每份源码根目录保存本脚本和 `config.toml`，设置 `GRASP_SOURCE="."`，
-这样每份目录自带对应参数。相对路径与当前 shell 工作目录无关。
-原版布局只需脚本和配置文件，不需要整个 suite 或第三方 Python 包。
-
-修改并检查完毕后，按原版 GRASP README 的 CMake 流程手动构建。
-先按服务器环境加载 Fortran/MPI/BLAS/LAPACK，再执行：
-
-```sh
-cd /path/to/GRASP2018-D2
-./configure.sh
-cd build
-make -j4 install
+```fish
+../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py --nnnp 1990 --diff
 ```
 
-这里的 `make` 在 CMake 生成的 `build/` 目录中执行。
-`configure.sh` 要求 `build/` 尚不存在；以后同一份源码再次改参数，可使用：
+在同一命令后加 `--apply` 写入，或加 `--check` 检查。以下选项控制各入口的默认值。
 
-```sh
-cd /path/to/GRASP2018-D2/build
-make clean
-make -j4 install
-```
+| CLI / TOML | 默认值的作用范围 |
+| --- | --- |
+| `--n` / `n`、`--h` / `h`、`--rnt-scale` / `rnt_scale` | 有限核分支和 RCI 的公共初始化。尺度系数除以核电荷后得到 `radial_grid_scale`。 |
+| `--point-n` / `point_n`、`--point-h` / `point_h`、`--point-rnt-scale` / `point_rnt_scale` | 有点核分支的入口。 |
+| `--hp` / `hp` | 两种核模型的公共渐近步长。设为 0 时选用指数网格。 |
+| `--accy` / `accy` | 工作容差，包括两个 RCI 续算入口。设为 0 时使用 `transformed_grid_step**6`。 |
 
-全量构建并安装所有实际使用的程序，包括 MPI；配置输出应确认找到 MPI。
-每份目录的程序安装到自己的 `bin/`，计算时用对应程序的绝对路径，
-例如 `/path/to/GRASP2018-D2/bin/rmcdhf_mpi`，避免混用不同配置。
+脚本检查十五个网格入口、两个 RCI 续算入口和六项共享容量的转导，并扫描整个 `src/`，
+发现未知网格初始化或重复的容量定义时退出。显式设置 H（包括点核 H）或 ACCY 时，
+脚本在 RMCDHF 的 ACCY 交互提示前同步容差。
 
-## 原有命令行用法
+### 扩容并固定有限核默认点数
 
-命令行接口仍保留。**只要提供命令行参数，就完全使用命令行请求，不读取
-脚本旁的 `config.toml`**；例如 `--apply` 仍需同时传入路径/参数。以下是兼容用法：
-
-```bash
-../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
-  --grasp ../grasp --nnnp 1990 --n 1179 --h 0.025 \
- --rnt-scale 2e-6 --hp 0 --diff
-```
-
-修改本仓库时使用显式布局 `--layout atomic-suite`，默认源码路径就是本仓库：
+使用 [config.capacity-only.example.toml](config.capacity-only.example.toml) 中的
+`CAPACITY_ONLY = true`，或传入 `--capacity-only`。该模式要求同时提供 `nnnp` 和 `n`，
+且只接受这两个网格参数。下面以扩容到 1990 并保留 590 个有限核默认点为例。
 
 ```fish
 ../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
-  --layout atomic-suite --grasp . --nnnp 2990 --n 1965 --h 0.015 \
-  --rnt-scale 2e-6 --hp 0 --accy 1e-10 --diff
+  --capacity-only --nnnp 1990 --n 590 --diff
 ```
 
-该布局修改中央容量模块 `src/lib/grasp_shared/compile_time_capacities.f90`。
-网格设置涉及 15 个入口，包含 `rwfnestimate`、四种 RMCDHF、两种 RCI、两种双正交变换、三种跃迁、RHFS、RIS4 和 RDENSITY。g_J 复用 RHFS 入口。
-显式 `--accy` 还修改串行和 MPI 的两个 RCI 续算入口，`--accy 0` 恢复 `transformed_grid_step**6`。
-所有入口都必须存在，不会因某个应用缺失而悄悄跳过。
-默认 `--layout grasp2018` 仍要求完整原版源码树，两种布局都会扫描整个 `src/`
-拒绝未识别的网格初始化或未同步的容量定义。
-本仓库有限核默认 `radial_point_count = max_radial_points = 590`。补丁器的 `--nnnp` 和
-TOML `nnnp` 在 `atomic-suite` 布局中只修改 `max_radial_points`，并保留
-`radial_workspace_capacity = max_radial_points + 10` 的派生关系。`grasp_parameters.f90` 直接转导六个语义名称，
-无需改变各程序的 `USE grasp_parameters`。仅改容量时，脚本只写入一个配置文件。
-显式 `--n` 则修改各入口的有限核实际点数。
-脚本依据公共模块的使用情况区分径向参数和局部同名变量。
+### 备份与恢复
 
-这是用法示例，不是已验证适合任何元素的推荐网格。
-`--nnnp` 设置编译容量；原版 IN 的尾部边界和 SETPOT 的回退连接点也使用该值，
-不能预设容量只影响存储。首次 C0/C1 容量对照须检查实际边界行为。
-`--n` 通常设置有限核模型实际点数，也控制原版 RCI 的公共初始化。
-`--rnt-scale 2e-6` 表示 `RNT=2e-6/Z`，不是绝对半径。
-未指定的数值保留；有限核的 `N=NNNP` 默认会跟随新的容量。
-`--h/--n/--rnt-scale` 修改有限核分支或只有一套默认值的公共初始化。
-点核分支使用 `--point-h/--point-n/--point-rnt-scale`；
-原版串行/MPI RCI 的点核分支被注释，故点核全流程须在专用源码副本中将
-这两套 N/H/RNT 系数都设成对应点核值。直接复制
-[P0/P1/P2 配置](../docs/plans/grasp_grid_parameter_tuning.md#137-点核测试)，
-并确认 isodata 选择点核；这些副本不能再用于有限核计算。
-`--hp` 位于公共赋值处，因此同时影响两种核模型。
-`--accy` 可指定独立的数值阈值，否则保留原有公式或固定值（原版为 `H**6`）。
-本仓库布局还允许 `--accy 0` 将 ACCY 赋值恢复为 `H**6`；完整原版布局仍要求正数。
-未经补丁的 suite 保留原版 ACCY 初始化时序。suite 布局显式修改 H（含点核 H）
-或 ACCY 时，脚本会在 RMCDHF 的 ACCY 提示前同步阈值，确保采用最终 H；
-仅修改容量不会增加这一步。
+应用补丁时，可通过 `--backup-dir /path/to/new-backup` 或 TOML 顶层
+`BACKUP_DIRECTORY` 指定尚不存在的备份目录。脚本保存改动文件的原始字节和校验和。
+预览、检查及无变化的重复应用不会创建备份。
 
-在相同命令后追加 `--apply` 写入；可用 `--backup-dir /path/to/new-directory`
-指定一个尚不存在的备份目录；省略时不生成备份。
-显式启用备份后，应用前保存所有被修改文件的原始字节和校验和。
-
-```bash
-../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
-  --grasp ../grasp --nnnp 1990 --n 1179 --h 0.025 \
-  --rnt-scale 2e-6 --hp 0 --apply --backup-dir /path/to/new-backup
-```
-
-把 `--apply` 换成 `--check` 可以验证补丁已完整应用：一致时退出 0，
-仍有待修改文件时退出 1，布局无法识别或参数不合法时退出 2。
-重复应用相同配置不会重复插入代码或重新创建备份。
-
-预览恢复，然后追加 `--apply` 执行恢复：
-
-```bash
+```fish
 ../graspkit-tools/.venv/bin/python scripts/patch_grasp_grid.py \
   --restore /path/to/new-backup --diff
 ```
 
-如果源码在应用后又被修改，恢复会拒绝覆盖后续改动。
-完整修改计划在写入前生成；所选布局结构不匹配、缺少文件、未处理的径向
-容量定义或未知网格初始化会使整个计划失败。
-写入使用逐文件原子替换，正常异常会回滚已完成的文件；掉电或强制终止
-时需从保留的原版副本或显式创建的备份恢复。脚本不支持并发编辑同一个源码树。
+预览后追加 `--apply` 执行恢复。使用 TOML 时，把 `RESTORE_DIRECTORY` 放在
+`[GRID_PARAMETERS]` 之前，先用 `RUN_MODE = "preview"`，再用 `RUN_MODE = "apply"`。
+恢复模式忽略网格参数和备份目录。恢复完成后删除 `RESTORE_DIRECTORY`。
 
-原版布局覆盖 17 个径向应用入口、`rwfnrotate/rwfnrelabel` 和
-`rwfnestimate` 中重复的容量声明。默认调网格模式（未开启 `CAPACITY_ONLY`）还恢复 `rwfnrelabel` 被注释的网格
-初始化并在其 `GETHFD` 中导入 `nuclear_model_parameters_state` 的 `NPARM`，在 RMCDHF 的运行时
-ACCY 提示前重新计算默认 ACCY，保留用户随后显式输入 ACCY 的能力。
-指定 `--accy` 时也更新 RCI 恢复路径的数值阈值。
-不指定 `--rnt-scale` 时，`rwfnrotate` 原有未除以 Z 的 RNT 默认值仍保留。
+请用生成备份的 Suite 副本中的脚本执行恢复。脚本核对源码路径和校验和以保护后续改动。
+完整修改计划在写入前生成，写入使用逐文件原子替换，遇到异常会回滚已完成的文件。
+强制终止后可使用备份或保留的源码副本恢复。运行脚本时避免并发编辑同一源码树。
 
-旧版脚本遗漏了上述模块导入，可能在编译 `rwfnrelabel.f90` 时出现
-`Symbol 'nparm' has no IMPLICIT type`。保留当前参数，使用更新后的脚本再次
-预览、应用和检查即可修复已经打过补丁的源码，无需先恢复原版；此修复不在 `CAPACITY_ONLY` 模式执行。
-手动修复时，在 `SUBROUTINE GETHFD(NAME)` 内的 `IMPLICIT` 语句之前添加：
+### 离线验证
 
-```fortran
-      USE nuclear_model_parameters_state, ONLY: NPARM
-```
-
-不要改成局部 `INTEGER NPARM`：必须读取 `SETISO` 加载的共享核模型状态。
-随后在现有 `build/` 中重新执行 `make -j4 install`。
-
-独立的非相对论 HF、旧 MCHF 绘图/转换工具 `wfnplot/rwfnmchfmcdf`
-不在作用范围内。旧 RCI `.res` 恢复时仍读取文件内的网格；要测试新网格应
-在新的计算目录启动新计算。交互输入也能覆盖新源码默认值。
-
-本仓库修改时将 `SOURCE_LAYOUT` 设为 `"atomic-suite"`，`GRASP_SOURCE` 指向
-本仓库根目录；编译时需开启所有实际使用的串行/MPI 目标。
-
-编译器和 MPI 初始化沿用 GRASP 的构建说明。
-确认 PATH 或绝对路径指向新安装的可执行文件，然后检查各阶段 `.sum`
-中实际使用的 `RNT/H/HP/N/ACCY`。补丁通过检查仅证明源码配置一致，
-不证明实际二进制已更新，也不证明物理量已达到网格收敛。
-原版成功退出或 CONVG 还可能仅代表能量停滞，须另检查全部变分轨道 SCNSTY、
-有限性、MTP/有效尾部以及最后两档网格的 ACCY 交叉变化。
-suite 的 `GRASP_COUNT_ACCY` 覆盖全局 ACCY，交互输入和旧 `.res` 也可能覆盖
-源代码默认值；清除这些覆盖或记录各阶段实际取值。
-
-离线验证脚本：
-
-```bash
+```fish
 ../graspkit-tools/.venv/bin/python test/test_patch_grasp_grid.py
 ```
 
-检测到 `gfortran` 时，还会编译最小 D1 `rwfnrelabel` 用例，检查模块导入；
-没有该编译器则跳过此项。测试不执行原子物理计算。
+Fortran 编译器可用时，测试会编译最小用例，验证中央容量经转导后能用于共享数组。

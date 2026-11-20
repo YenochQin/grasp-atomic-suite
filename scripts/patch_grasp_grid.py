@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Preview, apply, check, or restore radial-grid edits to a GRASP2018 tree.
+"""Preview, apply, check, or restore radial-grid edits to a grasp-atomic-suite tree.
 
 This patches known source locations, not calculation files or installed binaries.
+The script in scripts/ edits the src/ directory alongside scripts/.
 Unrecognized layouts fail before any source file is written.
 Run without arguments to read config.toml beside this script (Python >= 3.11).
 Explicit command-line requests remain independent of that configuration.
 Backups are created only when a backup directory is explicitly requested.
-Capacity-only mode edits NNNP/NNN1 and finite-nucleus N without grid repairs.
+Capacity-only mode edits max_radial_points and the finite-nucleus point count.
 """
 
 from __future__ import annotations
@@ -27,36 +28,6 @@ import tempfile
 import tomllib
 
 
-GRID_FILES = (
-    "src/appl/rwfnestimate90/getinfo.f90",
-    "src/appl/rmcdhf90/getscd.f90",
-    "src/appl/rmcdhf90_mpi/getscdmpi.f90",
-    "src/appl/rmcdhf90_mem/getscd.f90",
-    "src/appl/rmcdhf90_mem_mpi/getscdmpi.f90",
-    "src/appl/rci90/getcid.f90",
-    "src/appl/rci90_mpi/getcid.f90",
-    "src/appl/rbiotransform90/radpar.f90",
-    "src/appl/rbiotransform90_mpi/radparmpi.f90",
-    "src/appl/rtransition90/getosd.f90",
-    "src/appl/rtransition90_phase/getosd.f90",
-    "src/appl/rtransition90_mpi/getosdmpi.f90",
-    "src/appl/rhfs90/gethfd.f90",
-    "src/appl/rhfszeeman95/gethfd.f90",
-    "src/appl/sms90/getsmd.f90",
-    "src/appl/ris4/getsmd.f90",
-    "src/appl/rdensity/getsmd.f90",
-    "src/tool/rwfnrotate.f90",
-    "src/tool/rwfnrelabel.f90",
-)
-CAPACITY_FILES = (
-    "src/lib/libmod/parameter_def_M.f90",
-    "src/appl/rwfnestimate90/frmtfp.f90",
-    "src/appl/rwfnestimate90/solvh_I.f90",
-    "src/appl/rwfnestimate90/tail_I.f90",
-    "src/appl/rwfnestimate90/frmrwf_I.f90",
-    "src/appl/rwfnestimate90/summry_I.f90",
-)
-RESTART_FILES = ("src/appl/rci90/lodres.f90", "src/appl/rci90_mpi/lodres.f90")
 SUITE_GRID_FILES = (
     "src/apps/rwfnestimate/read_calculation_options.f90",
     "src/apps/rci/read_ci_options.f90",
@@ -80,6 +51,7 @@ SUITE_RESTART_FILES = (
 )
 SUITE_CONFIG_FILE = "src/lib/grasp_shared/compile_time_capacities.f90"
 SUITE_EXPORT_FILE = "src/lib/grasp_shared/grasp_parameters.f90"
+PATCHABLE_FILES = (SUITE_CONFIG_FILE, *SUITE_GRID_FILES, *SUITE_RESTART_FILES)
 SUITE_PARAMETER_NAMES = (
     "orbital_index_radix",
     "max_radial_points",
@@ -88,41 +60,15 @@ SUITE_PARAMETER_NAMES = (
     "max_orbitals_minus_one",
     "max_orbitals_minus_two",
 )
-SEMANTIC_NAMES = {
-    "KEYORB": "orbital_index_radix",
-    "NNNP": "max_radial_points",
-    "NNN1": "radial_workspace_capacity",
-    "NNNW": "max_orbitals",
-    "NNNWM1": "max_orbitals_minus_one",
-    "NNNWM2": "max_orbitals_minus_two",
-    "N": "radial_point_count",
-    "R": "radial_grid",
-    "RNT": "radial_grid_scale",
-    "H": "transformed_grid_step",
-    "HP": "asymptotic_grid_step",
-    "Z": "nuclear_charge",
-    "NPARM": "nuclear_model_parameter_count",
-    "ACCY": "working_tolerance",
-}
-LEGACY_NAMES = {value.upper(): key for key, value in SEMANTIC_NAMES.items()}
-FORTRAN_WORD_RE = re.compile(r"'(?:[^']|'')*'|\"(?:[^\"]|\"\")*\"|\b[A-Za-z_][A-Za-z_0-9]*\b")
+LEGACY_CAPACITY_RE = re.compile(r"\b(?:keyorb|nnnp|nnn1|nnnw|nnnwm1|nnnwm2)\b")
 CAPACITY_RE = re.compile(
-    r"\b(NNNP|NNN1|max_radial_points|radial_workspace_capacity)\s*=(?!>)\s*([^)!\n]+)",
+    r"\b(?:nnnp|nnn1|max_radial_points|radial_workspace_capacity)\s*=(?!>)",
     re.IGNORECASE,
 )
-
-
-def code_names(text: str, names: dict[str, str]) -> str:
-    """Translate known code identifiers while retaining quoted text exactly."""
-    return FORTRAN_WORD_RE.sub(lambda match: names.get(match[0].upper(), match[0]), text)
-
-
-def semantic_source(text: str) -> bool:
-    return any(
-        match[0].upper() in LEGACY_NAMES
-        for line in text.splitlines()
-        for match in FORTRAN_WORD_RE.finditer(line.split("!", 1)[0])
-    )
+MAX_RADIAL_POINTS_RE = re.compile(
+    r"^[^!\n]*\bmax_radial_points[ \t]*=[ \t]*(?P<value>\d+)(?=[ \t]*(?:!|$))",
+    re.IGNORECASE | re.MULTILINE,
+)
 
 
 @dataclass(frozen=True)
@@ -147,41 +93,36 @@ class Change:
 
 def active(line: str) -> str:
     """Drop Fortran comments for the known assignment/declaration locations."""
-    return code_names(line.split("!", 1)[0].strip(), LEGACY_NAMES)
+    return line.partition("!")[0].strip()
 
 
 def assignment(line: str, name: str) -> bool:
-    return re.match(rf"^{name}\s*=", active(line), re.IGNORECASE) is not None
+    return re.match(rf"^{name}\s*=(?!>)", active(line), re.IGNORECASE) is not None
 
 
-def set_assignment(line: str, name: str, expression: str, *, semantic: bool = False) -> str:
+def set_assignment(line: str, name: str, expression: str) -> str:
     code, marker, comment = line.partition("!")
     if ";" in code or "&" in code:
         raise ValueError(f"unsupported continued/multiple assignment: {line.strip()}")
     indent = code[: len(code) - len(code.lstrip())]
     suffix = f" !{comment.rstrip()}" if marker else ""
-    if semantic:
-        name = SEMANTIC_NAMES.get(name.upper(), name.lower())
-        expression = code_names(expression, SEMANTIC_NAMES).lower()
-    return f"{indent}{name} = {expression}{suffix}\n"
+    return f"{indent}{name} = {expression.lower()}{suffix}\n"
 
 
 def real_literal(value: float) -> str:
     return format(Decimal(str(value)), "E").replace("E", "D")
 
 
-def validate(
-    settings: Settings, capacity: int, *, allow_adaptive_accy: bool = False
-) -> None:
+def validate(settings: Settings, capacity: int) -> None:
     if capacity < 13:
-        raise ValueError("NNNP must be at least 13")
+        raise ValueError("max_radial_points must be at least 13")
     for name in ("n", "point_n"):
         value = getattr(settings, name)
         if value is not None and not 13 <= value <= capacity:
-            raise ValueError(f"{name} must be between 13 and NNNP={capacity}")
+            raise ValueError(f"{name} must be between 13 and max_radial_points={capacity}")
     for name in ("h", "rnt_scale", "accy", "point_h", "point_rnt_scale", "hp"):
         value = getattr(settings, name)
-        nonnegative = name == "hp" or (name == "accy" and allow_adaptive_accy)
+        nonnegative = name in ("hp", "accy")
         if value is not None and (
             not math.isfinite(value) or value < 0 or (not nonnegative and value == 0)
         ):
@@ -190,45 +131,20 @@ def validate(
             )
 
 
-def patch_capacity(text: str, capacity: int) -> str:
-    lines = text.splitlines(keepends=True)
-    hits = 0
-    for i, line in enumerate(lines):
-        if not active(line):
-            continue
-
-        def replace(match: re.Match[str]) -> str:
-            nonlocal hits
-            hits += 1
-            name = LEGACY_NAMES.get(match[1].upper(), match[1].upper())
-            if name == "NNN1" and re.sub(r"\s+", "", code_names(match[2], LEGACY_NAMES)).upper() == "NNNP+10":
-                return match[0]
-            value = capacity if name == "NNNP" else capacity + 10
-            if match[2].strip() == str(value):
-                return match[0]
-            return f"{match[1]} = {value}"
-
-        lines[i] = CAPACITY_RE.sub(replace, line)
-    if not hits:
-        raise ValueError("expected radial capacity declarations are missing")
-    return "".join(lines)
-
-
 def patch_grid(
     text: str,
     relative: str,
     settings: Settings,
     capacity: int,
     *,
-    sync_accy: bool = True,
+    sync_accy: bool,
 ) -> str:
     lines = text.splitlines(keepends=True)
-    semantic = semantic_source(text)
-    starts = [i for i, line in enumerate(lines) if assignment(line, "RNT")]
+    starts = [i for i, line in enumerate(lines) if assignment(line, "radial_grid_scale")]
     expected = 1 if "/rci" in relative else 2
     if len(starts) != expected:
         raise ValueError(
-            f"expected {expected} default RNT assignments, found {len(starts)}"
+            f"expected {expected} default radial_grid_scale assignments, found {len(starts)}"
         )
     if expected == 2:
         prefix = [active(line) for line in lines[: starts[0]] if active(line)]
@@ -240,7 +156,9 @@ def patch_grid(
         if (
             not prefix
             or not re.fullmatch(
-                r"IF\s*\(NPARM\s*(==|\.EQ\.)\s*0\)\s*THEN", prefix[-1], re.IGNORECASE
+                r"if\s*\(nuclear_model_parameter_count\s*(?:==|\.eq\.)\s*0\)\s*then",
+                prefix[-1],
+                re.IGNORECASE,
             )
             or between[-1] != "ELSE"
         ):
@@ -248,9 +166,9 @@ def patch_grid(
     for position, start in enumerate(starts):
         point = expected == 2 and position == 0
         values = {
-            "RNT": settings.point_rnt_scale if point else settings.rnt_scale,
-            "H": settings.point_h if point else settings.h,
-            "N": settings.point_n if point else settings.n,
+            "radial_grid_scale": settings.point_rnt_scale if point else settings.rnt_scale,
+            "transformed_grid_step": settings.point_h if point else settings.h,
+            "radial_point_count": settings.point_n if point else settings.n,
         }
         end = (
             starts[position + 1]
@@ -266,35 +184,38 @@ def patch_grid(
             i = matches[0]
             if value is not None:
                 expression = (
-                    str(int(value)) if name == "N" else real_literal(float(value))
+                    str(int(value))
+                    if name == "radial_point_count"
+                    else real_literal(float(value))
                 )
-                if name == "RNT":
-                    expression += "/Z"
-                lines[i] = set_assignment(lines[i], name, expression, semantic=semantic)
-            if name == "N":
+                if name == "radial_grid_scale":
+                    expression += "/nuclear_charge"
+                lines[i] = set_assignment(lines[i], name, expression)
+            if name == "radial_point_count":
                 expression = (
-                    active(lines[i]).split("=", 1)[1].strip().upper().replace(" ", "")
+                    re.sub(r"\s+", "", active(lines[i]).split("=", 1)[1]).lower()
                 )
-                if expression == "NNNP":
+                limited = re.fullmatch(r"min\((\d+),max_radial_points\)", expression)
+                if expression == "max_radial_points":
                     actual_n = capacity
-                elif re.fullmatch(r"MIN\(\d+,NNNP\)", expression):
-                    actual_n = min(int(expression[4:].split(",")[0]), capacity)
+                elif limited:
+                    actual_n = min(int(limited[1]), capacity)
                 elif expression.isdigit():
                     actual_n = int(expression)
                 else:
-                    raise ValueError(f"unsupported N expression: {expression}")
+                    raise ValueError(f"unsupported radial_point_count expression: {expression}")
                 if not 13 <= actual_n <= capacity:
                     raise ValueError(
-                        f"existing N={actual_n} is incompatible with NNNP={capacity}"
+                        f"existing radial_point_count={actual_n} is incompatible with max_radial_points={capacity}"
                     )
-    hp_lines = [i for i, line in enumerate(lines) if assignment(line, "HP")]
+    hp_lines = [i for i, line in enumerate(lines) if assignment(line, "asymptotic_grid_step")]
     if len(hp_lines) != 1:
         raise ValueError("expected exactly one common HP assignment")
     if settings.hp is not None:
         i = hp_lines[0]
-        lines[i] = set_assignment(lines[i], "HP", real_literal(settings.hp), semantic=semantic)
+        lines[i] = set_assignment(lines[i], "asymptotic_grid_step", real_literal(settings.hp))
 
-    accy_lines = [i for i, line in enumerate(lines) if assignment(line, "ACCY")]
+    accy_lines = [i for i, line in enumerate(lines) if assignment(line, "working_tolerance")]
     expected_accy = (1, 2) if "/rmcdhf" in relative else (1,)
     if len(accy_lines) not in expected_accy:
         raise ValueError("unexpected default ACCY assignments")
@@ -306,8 +227,12 @@ def patch_grid(
             raise ValueError("unrecognized additional RMCDHF ACCY assignment")
     i = accy_lines[0]
     if settings.accy is not None:
-        expression = "H**6" if settings.accy == 0 else real_literal(settings.accy)
-        lines[i] = set_assignment(lines[i], "ACCY", expression, semantic=semantic)
+        expression = (
+            "transformed_grid_step**6"
+            if settings.accy == 0
+            else real_literal(settings.accy)
+        )
+        lines[i] = set_assignment(lines[i], "working_tolerance", expression)
     # RMCDHF computes ACCY before optional grid input. Recompute before its
     # ACCY prompt, so the user can still override ACCY afterwards.
     if "/rmcdhf" in relative and sync_accy:
@@ -318,57 +243,12 @@ def patch_grid(
             raise ValueError("expected exactly one RMCDHF ACCY prompt")
         i = prompts[0]
         expression = active(lines[accy_lines[0]]).split("=", 1)[1].strip()
-        replacement = set_assignment(lines[accy_lines[0]], "ACCY", expression, semantic=semantic)
-        if assignment(lines[i - 1], "ACCY"):
+        replacement = set_assignment(lines[accy_lines[0]], "working_tolerance", expression)
+        if assignment(lines[i - 1], "working_tolerance"):
             lines[i - 1] = replacement
         else:
             lines.insert(i, replacement)
     return "".join(lines)
-
-
-def initialize_relabel(text: str, reference: str) -> str:
-    """Restore grid defaults and import the shared nuclear-model selector."""
-    if not any(assignment(line, "RNT") for line in text.splitlines()):
-        start = re.search(r"^!\s*IF\s*\(NPARM\b.*$", text, re.MULTILINE | re.IGNORECASE)
-        end = re.search(r"^!\s*HP\s*=.*$", text, re.MULTILINE | re.IGNORECASE)
-        block = re.search(
-            r"^[ \t]*IF \(NPARM == 0\) THEN\n.*?^[ \t]*HP\s*=[^\n]*",
-            reference,
-            re.MULTILINE | re.DOTALL,
-        )
-        if not start or not end or not block or end.start() < start.start():
-            raise ValueError("unrecognized rwfnrelabel initialization block")
-        text = text[: start.start()] + block[0].lstrip("\n") + text[end.end() :]
-
-    # SETISO loads NPARM in npar_C. A local INTEGER would compile but would
-    # leave the nucleus branch controlled by an uninitialized, unrelated value.
-    # Check even an already-active block to repair trees made by older patchers.
-    routine = re.search(
-        r"^[ \t]*SUBROUTINE\s+GETHFD\s*\([^\n)]*\)[^\n]*\n"
-        r"(?P<preamble>.*?)^(?P<indent>[ \t]*)IMPLICIT\b",
-        text,
-        re.MULTILINE | re.DOTALL | re.IGNORECASE,
-    )
-    if not routine:
-        raise ValueError("unrecognized rwfnrelabel GETHFD declarations")
-    for line in routine["preamble"].splitlines():
-        imported = re.fullmatch(
-            r"USE\s+npar_C\s*(?:,\s*ONLY\s*:\s*(.*))?",
-            active(line),
-            re.IGNORECASE,
-        )
-        if imported and (
-            imported[1] is None
-            or "NPARM" in [name.strip().upper() for name in imported[1].split(",")]
-        ):
-            return text
-    position = routine.start("indent")
-    return (
-        text[:position]
-        + routine["indent"]
-        + "USE npar_C, ONLY: NPARM\n"
-        + text[position:]
-    )
 
 
 def source_path(root: Path, relative: str) -> Path:
@@ -413,18 +293,23 @@ def validate_suite_exports(config: str, wrapper: str) -> None:
     if imported != names or exported != names:
         raise ValueError("grasp_parameters must re-export all six compile_time_capacities limits")
 
+    legacy_name = LEGACY_CAPACITY_RE.search(config_code)
+    if legacy_name:
+        raise ValueError(f"legacy capacity name {legacy_name[0]} in compile_time_capacities")
     for name in SUITE_PARAMETER_NAMES:
-        legacy_name = LEGACY_NAMES[name.upper()].lower()
-        if re.search(rf"\b{legacy_name}\b", config_code):
-            raise ValueError(f"legacy capacity name {legacy_name} in compile_time_capacities")
         if len(re.findall(rf"\b{name}\s*=(?!>)", config_code)) != 1:
             raise ValueError(f"expected one central definition of {name}")
+    if not re.search(
+        r"\bradial_workspace_capacity\s*=\s*max_radial_points\s*\+\s*10[ 	]*$",
+        config_code,
+        re.MULTILINE,
+    ):
+        raise ValueError("radial_workspace_capacity must be derived as max_radial_points + 10")
 
 
 def plan(
     root: Path,
     settings: Settings,
-    layout: str = "grasp2018",
     *,
     capacity_only: bool = False,
 ) -> list[Change]:
@@ -437,23 +322,8 @@ def plan(
             if name not in ("nnnp", "n")
         ):
             raise ValueError("--capacity-only permits only nnnp and n parameters")
-    if layout == "grasp2018":
-        capacity_files, grid_files, restart_files = (
-            CAPACITY_FILES,
-            GRID_FILES,
-            RESTART_FILES,
-        )
-    elif layout == "atomic-suite":
-        capacity_files, grid_files, restart_files = (
-            (SUITE_CONFIG_FILE,),
-            SUITE_GRID_FILES,
-            SUITE_RESTART_FILES,
-        )
-    else:
-        raise ValueError(f"unsupported layout: {layout}")
-    required = (*capacity_files, *grid_files, *restart_files)
-    if layout == "atomic-suite":
-        required += (SUITE_EXPORT_FILE,)
+
+    required = (*PATCHABLE_FILES, SUITE_EXPORT_FILE)
     originals = {
         relative: source_path(root, relative).read_bytes() for relative in required
     }
@@ -462,110 +332,75 @@ def plan(
         raise ValueError(
             "this patcher expects LF source files; convert line endings first"
         )
-    if layout == "atomic-suite":
-        validate_suite_exports(texts[SUITE_CONFIG_FILE], texts[SUITE_EXPORT_FILE])
-    capacity_match = re.search(
-        r"\bNNNP\s*=\s*(\d+)", "\n".join(active(line) for line in texts[capacity_files[0]].splitlines()), re.IGNORECASE
-    )
+    config = texts[SUITE_CONFIG_FILE]
+    validate_suite_exports(config, texts[SUITE_EXPORT_FILE])
+    capacity_match = MAX_RADIAL_POINTS_RE.search(config)
     if not capacity_match:
-        raise ValueError("cannot read global NNNP")
-    capacity = settings.nnnp if settings.nnnp is not None else int(capacity_match[1])
-    validate(settings, capacity, allow_adaptive_accy=layout == "atomic-suite")
-    if settings.nnnp is not None:
-        for relative in capacity_files:
-            texts[relative] = patch_capacity(texts[relative], capacity)
-    relabel = "src/tool/rwfnrelabel.f90"
-    if relabel in texts and not capacity_only:
-        texts[relabel] = initialize_relabel(texts[relabel], texts[GRID_FILES[0]])
-    for relative in grid_files:
+        raise ValueError("cannot read integer max_radial_points")
+    current_capacity = int(capacity_match["value"])
+    capacity = settings.nnnp if settings.nnnp is not None else current_capacity
+    validate(settings, capacity)
+    if capacity != current_capacity:
+        start, end = capacity_match.span("value")
+        texts[SUITE_CONFIG_FILE] = config[:start] + str(capacity) + config[end:]
+
+    sync_accy = any(
+        value is not None for value in (settings.h, settings.point_h, settings.accy)
+    )
+    for relative in SUITE_GRID_FILES:
         try:
-            if capacity_only and relative == relabel:
-                lines = texts[relative].splitlines()
-                if not any(assignment(line, "RNT") for line in lines):
-                    # Upstream leaves this initializer commented out. Keep it
-                    # byte-for-byte, including the absence of the NPARM import.
-                    if any(
-                        assignment(line, name)
-                        for line in lines
-                        for name in ("N", "H", "HP")
-                    ):
-                        raise ValueError("incomplete rwfnrelabel grid initializer")
-                    continue
-            # The restored suite retains upstream ACCY timing unless H or
-            # ACCY is explicitly patched. Capacity-only changes leave it alone.
             texts[relative] = patch_grid(
-                texts[relative],
-                relative,
-                settings,
-                capacity,
-                sync_accy=(
-                    not capacity_only
-                    and (
-                        layout == "grasp2018"
-                        or settings.h is not None
-                        or settings.point_h is not None
-                        or settings.accy is not None
-                    )
-                ),
+                texts[relative], relative, settings, capacity, sync_accy=sync_accy
             )
         except ValueError as error:
             raise ValueError(f"{relative}: {error}") from error
     if settings.accy is not None:
-        for relative in restart_files:
+        expression = (
+            "transformed_grid_step**6"
+            if settings.accy == 0
+            else real_literal(settings.accy)
+        )
+        for relative in SUITE_RESTART_FILES:
             lines = texts[relative].splitlines(keepends=True)
-            indices = [i for i, line in enumerate(lines) if assignment(line, "ACCY")]
+            indices = [
+                i for i, line in enumerate(lines) if assignment(line, "working_tolerance")
+            ]
             if len(indices) != 1:
                 raise ValueError(f"{relative}: expected one restart ACCY assignment")
             i = indices[0]
-            expression = "H**6" if settings.accy == 0 else real_literal(settings.accy)
-            lines[i] = set_assignment(lines[i], "ACCY", expression, semantic=semantic_source(texts[relative]))
+            lines[i] = set_assignment(lines[i], "working_tolerance", expression)
             texts[relative] = "".join(lines)
-    # Inspect the entire tree, not just files we intend to edit. Unknown radial
-    # capacity/default locations may be an upstream version we do not support.
+
+    # Reject unregistered grid initializers and duplicate capacity definitions.
     for path in sorted((root / "src").rglob("*.f90")):
         relative = path.relative_to(root).as_posix()
         text = texts.get(relative)
         if text is None:
             text = source_path(root, relative).read_text(encoding="utf-8")
-        code_lines = "\n".join(active(line) for line in text.splitlines())
-        uses_grid = (
-            re.search(r"\bUSE\s+RADIAL_GRID_STATE\b", code_lines, re.IGNORECASE) is not None
-        )
-        uses_accuracy = (
-            re.search(r"\bUSE\s+ATOMIC_CALCULATION_STATE\b", code_lines, re.IGNORECASE) is not None
-        )
-        for number, line in enumerate(text.splitlines(), 1):
-            code = active(line)
-            if (
-                layout == "atomic-suite"
-                and relative not in capacity_files
-                and CAPACITY_RE.search(code)
-            ):
+        code_lines = [active(line) for line in text.splitlines()]
+        code = "\n".join(code_lines)
+        uses_grid = re.search(r"\buse\s+radial_grid_state\b", code, re.IGNORECASE)
+        uses_accuracy = re.search(r"\buse\s+atomic_calculation_state\b", code, re.IGNORECASE)
+        for number, line in enumerate(code_lines, 1):
+            if relative != SUITE_CONFIG_FILE and CAPACITY_RE.search(line):
                 raise ValueError(f"duplicate capacity: {relative}:{number}")
-            for match in CAPACITY_RE.finditer(code):
-                expression = match[2].replace(" ", "").upper()
-                wanted = capacity if match[1].upper() == "NNNP" else capacity + 10
-                if expression != str(wanted) and not (
-                    match[1].upper() == "NNN1" and expression == "NNNP+10"
-                ):
-                    raise ValueError(f"unmatched capacity: {relative}:{number}: {code}")
+            if relative in SUITE_GRID_FILES:
+                continue
             if (
-                (
-                    assignment(line, "RNT")
-                    or (
-                        layout == "atomic-suite"
-                        and (
-                            (
-                                uses_grid
-                                and any(assignment(line, name) for name in ("H", "HP"))
-                            )
-                            or (uses_accuracy and assignment(line, "ACCY"))
-                        )
+                assignment(line, "radial_grid_scale")
+                or assignment(line, "rnt")
+                or (
+                    uses_grid
+                    and any(
+                        assignment(line, name)
+                        for name in ("transformed_grid_step", "asymptotic_grid_step")
                     )
                 )
-                and relative not in grid_files
-                and not (relative in restart_files and assignment(line, "ACCY"))
-                and relative != "src/tool/rwfnmchfmcdf.f90"
+                or (
+                    uses_accuracy
+                    and relative not in SUITE_RESTART_FILES
+                    and assignment(line, "working_tolerance")
+                )
             ):
                 raise ValueError(f"unrecognized grid initializer: {relative}:{number}")
     return [
@@ -642,15 +477,18 @@ def apply(root: Path, changes: list[Change], backup: Path | None) -> Path | None
     return backup
 
 
-def restore_plan(backup: Path, root: Path | None) -> tuple[Path, list[Change]]:
+def restore_plan(backup: Path, root: Path) -> list[Change]:
     manifest = json.loads((backup / "manifest.json").read_text(encoding="utf-8"))
-    recorded_root = Path(manifest["root"]).resolve()
-    if root is not None and root.resolve() != recorded_root:
-        raise ValueError("--grasp does not match backup's source tree")
+    if Path(manifest["root"]).resolve() != root.resolve():
+        raise ValueError("backup belongs to a different source tree")
+    for relative in (SUITE_CONFIG_FILE, SUITE_EXPORT_FILE):
+        source_path(root, relative)
     changes = []
     for entry in manifest["files"]:
         relative = entry["path"]
-        path = source_path(recorded_root, relative)
+        if relative not in PATCHABLE_FILES:
+            raise ValueError(f"backup contains a file outside the atomic-suite grid layout: {relative}")
+        path = source_path(root, relative)
         saved_path = source_path(backup, relative)
         current, saved = path.read_bytes(), saved_path.read_bytes()
         if digest(saved) != entry["before"]:
@@ -660,25 +498,22 @@ def restore_plan(backup: Path, root: Path | None) -> tuple[Path, list[Change]]:
                 f"source has subsequent edits; refusing to overwrite: {relative}"
             )
         changes.append(Change(relative, current, saved))
-    return recorded_root, changes
+    return changes
 
 
-def configured_arguments() -> list[str]:
+def configured_arguments(configuration: Path) -> list[str]:
     """Translate the sibling TOML file into the same validated CLI request."""
-    configuration = Path(__file__).resolve().with_name("config.toml")
     try:
         with configuration.open("rb") as source:
             config = tomllib.load(source)
     except FileNotFoundError as error:
         raise ValueError(
             f"missing configuration: {configuration}; copy config.example.toml "
-            "to config.toml beside this script and set GRASP_SOURCE"
+            "to config.toml beside this script"
         ) from error
     except tomllib.TOMLDecodeError as error:
         raise ValueError(f"invalid TOML in {configuration}: {error}") from error
     unknown = config.keys() - {
-        "GRASP_SOURCE",
-        "SOURCE_LAYOUT",
         "RUN_MODE",
         "PRINT_DIFF",
         "CAPACITY_ONLY",
@@ -689,13 +524,10 @@ def configured_arguments() -> list[str]:
     if unknown:
         raise ValueError(f"unknown config.toml keys: {', '.join(sorted(unknown))}")
     mode = config.get("RUN_MODE", "preview")
-    layout = config.get("SOURCE_LAYOUT", "grasp2018")
     print_diff = config.get("PRINT_DIFF", True)
     capacity_only = config.get("CAPACITY_ONLY", False)
     if mode not in ("preview", "apply", "check"):
         raise ValueError("RUN_MODE must be preview, apply, or check")
-    if layout not in ("grasp2018", "atomic-suite"):
-        raise ValueError("SOURCE_LAYOUT must be grasp2018 or atomic-suite")
     if not isinstance(print_diff, bool):
         raise ValueError("PRINT_DIFF must be true or false")
     if not isinstance(capacity_only, bool):
@@ -712,20 +544,13 @@ def configured_arguments() -> list[str]:
             path = configuration.parent / path
         return path.resolve()
 
-    arguments = ["--layout", layout]
-    root = config_path("GRASP_SOURCE")
+    arguments = []
     restore = config_path("RESTORE_DIRECTORY")
-    if root is not None:
-        arguments.extend(("--grasp", str(root)))
     if restore is not None:
         arguments.extend(("--restore", str(restore)))
     else:
         if capacity_only:
             arguments.append("--capacity-only")
-        if root is None:
-            raise ValueError(
-                "set GRASP_SOURCE in config.toml to your GRASP source directory"
-            )
         parameters = config.get("GRID_PARAMETERS", {})
         if not isinstance(parameters, dict):
             raise ValueError("GRID_PARAMETERS must be a TOML table: [GRID_PARAMETERS]")
@@ -754,26 +579,15 @@ def configured_arguments() -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--grasp",
-        type=Path,
-        help="GRASP2018 source root (default: workspace sibling grasp)",
-    )
-    parser.add_argument(
-        "--layout",
-        choices=("grasp2018", "atomic-suite"),
-        default="grasp2018",
-        help="required source layout; atomic-suite defaults to this repository",
-    )
-    parser.add_argument(
         "--nnnp",
         type=int,
-        help="maximum radial points (atomic-suite: max_radial_points, GRASP2018: NNNP)",
+        help="compile-time radial grid capacity (max_radial_points)",
     )
     parser.add_argument("--n", type=int, help="finite-nucleus runtime point count")
     parser.add_argument(
         "--capacity-only",
         action="store_true",
-        help="edit only capacities and finite-nucleus N; requires --nnnp and --n, "
+        help="edit only max_radial_points and the finite-nucleus point count; requires --nnnp and --n, "
         "rejects other grid parameters, and preserves existing initialization",
     )
     parser.add_argument(
@@ -790,12 +604,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--accy",
         type=float,
-        help="explicit grid-related tolerance; atomic-suite also accepts 0 for adaptive H**6",
+        help="explicit grid-related tolerance; use 0 for adaptive H**6",
     )
     parser.add_argument(
         "--point-n",
         type=int,
-        help="optional point-nucleus point count; otherwise preserve MIN(220,NNNP)",
+        help="optional point-nucleus point count; the initial default is min(220,max_radial_points)",
     )
     parser.add_argument("--point-h", type=float, help="optional point-nucleus step")
     parser.add_argument(
@@ -823,11 +637,14 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="preview backup restoration; add --apply to restore",
     )
+    script_directory = Path(__file__).resolve().parent
+    configuration = script_directory / "config.toml"
+    root = script_directory.parent
     arguments = list(sys.argv[1:] if argv is None else argv)
     file_config = not arguments
     if file_config:
         try:
-            arguments = configured_arguments()
+            arguments = configured_arguments(configuration)
         except (ValueError, TypeError, OSError) as error:
             parser.error(str(error))
     args = parser.parse_args(arguments)
@@ -848,21 +665,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.backup_dir and not args.apply:
         parser.error("--backup-dir requires --apply")
     try:
-        root = args.grasp.resolve() if args.grasp else None
         if args.restore:
-            root, changes = restore_plan(args.restore.resolve(), root)
+            changes = restore_plan(args.restore.resolve(), root)
         else:
-            root = root or (
-                Path(__file__).resolve().parents[1]
-                if args.layout == "atomic-suite"
-                else Path(__file__).resolve().parents[2] / "grasp"
-            )
-            root = root.resolve()
-            changes = plan(
-                root, settings, args.layout, capacity_only=args.capacity_only
-            )
+            changes = plan(root, settings, capacity_only=args.capacity_only)
         if file_config:
-            print(f"Configuration: {Path(__file__).resolve().with_name('config.toml')}")
+            print(f"Configuration: {configuration}")
         print(f"Source: {root}\nFiles requiring changes: {len(changes)}")
         for change in changes:
             print(f"  {change.relative}")
@@ -886,7 +694,7 @@ def main(argv: list[str] | None = None) -> int:
                 apply(root, changes, args.backup_dir)
                 print(
                     "Applied. Rebuild ALL libraries and programs, including MPI, and install them "
-                    "using the GRASP README CMake workflow."
+                    "using the grasp-atomic-suite README CMake workflow."
                 )
         elif not args.apply:
             print(
@@ -900,26 +708,18 @@ def main(argv: list[str] | None = None) -> int:
             )
         if not args.restore:
             if args.capacity_only:
-                capacities = (
-                    "max_radial_points/radial_workspace_capacity"
-                    if args.layout == "atomic-suite" else "NNNP/NNN1"
-                )
                 print(
-                    f"Capacity-only: update {capacities} and the finite-nucleus grid size; "
+                    "Capacity-only: update max_radial_points and the finite-nucleus grid size; "
                     "preserve existing grid initialization and ACCY timing. "
                     "Earlier patches are not reverted."
                 )
             print(
-                f"Scope: {args.layout} radial applications. Unspecified numerical values stay unchanged."
+                "Scope: atomic-suite radial applications. Unspecified numerical values stay unchanged."
             )
             print(
-                "Excluded: independent HF/wfnplot/rwfnmchfmcdf grids; calculation files; old RCI .res grid records; installed binaries."
+                "Excluded: independent HF grids; calculation files; old RCI .res grid records; installed binaries."
             )
             print("Runtime input can override defaults.")
-            if args.layout == "grasp2018":
-                print(
-                    "Without --rnt-scale, rwfnrotate retains its historical RNT=2e-6 difference."
-                )
         return 1 if args.check and changes else 0
     except (ValueError, OSError, KeyError) as error:
         parser.exit(2, f"error: {error}\n")
