@@ -296,6 +296,8 @@ impl DescriptorReader {
             block_index: 0,
             block_rows: 0,
         };
+        // Scan once to establish each block's symmetry and the electron count before Fortran
+        // installs the basis header. Reopen the stream for delivery with the tables in place.
         let mut values = Vec::new();
         while source.read_batch(&mut values)? != 0 {}
         ensure!(
@@ -355,6 +357,7 @@ impl DescriptorReader {
             .checked_mul(self.layout.row_len())
             .context("batch size overflow")?;
         output.try_reserve(size)?;
+        // Transpose the Arrow column layout into contiguous descriptor rows for Fortran.
         for row in 0..count {
             for column in &columns {
                 output.push(column.value(row));
@@ -381,6 +384,7 @@ impl DescriptorReader {
                 .iter()
                 .map(|(_, k)| 2 * k.abs())
                 .sum();
+            // The core is filled, so it contributes electrons and an even parity exponent.
             let mut parity_sum = 0;
             for (shell, &(_, k)) in self.orbitals[self.core_count..].iter().enumerate() {
                 let q = i32::from(row[4 * shell]);
