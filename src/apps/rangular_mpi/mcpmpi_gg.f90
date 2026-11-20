@@ -2,6 +2,9 @@
 !                                                                      *
 !cjb  myid, nprocs = NOT args
       subroutine mcpmpi (nb, is_restart, output_file_prefix)
+      use mcp_generation_options, only: mcp_temporary_units
+      use calculation_file_units, only: summary_output_unit
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This routine controls the computation  and storage of the values   *
 !   and all indices of the angular coefficients                        *
@@ -119,7 +122,10 @@
 !
 !   Write header to  .dbg  file if appropriate
 !
-      if (ldbpa(2) .or. ldbpa(3)) write (99,'(/"From MCPMPI:")')
+      if (ldbpa(2) .or. ldbpa(3)) then
+         call ensure_debug_output()
+         write (angular_debug_unit,'(/"From MCPMPI:")')
+      end if
 !
 !   JA and JB respectively refer to the initial and final states
 !   in the list of NCF configurations
@@ -151,7 +157,7 @@
                   lincr = .false.
                   llistt = llistt + 1
                   lab = min (bra_orbital_index,ket_orbital_index) * orbital_label_radix + max (bra_orbital_index,ket_orbital_index)
-                  write (31) csf_index, npos, lab, shell_coefficients(1)
+                  write (mcp_temporary_units(31)) csf_index, npos, lab, shell_coefficients(1)
                end if
             end if
 !
@@ -199,7 +205,7 @@
                      else
                         lab = lbd * keysq + lac
                      end if
-                     write (32+k) csf_index, npos, lab, vcoeff
+                     write (mcp_temporary_units(32+k)) csf_index, npos, lab, vcoeff
                   end if
                end if
     2       continue
@@ -208,7 +214,7 @@
 !   generated; update file 30
 !
             if ((ket_csf_index == csf_index) .or. (.not. lincr))   &
-               write (30) csf_index, ket_csf_index, npos
+               write (mcp_temporary_units(30)) csf_index, ket_csf_index, npos
     4    continue
          if (mod(csf_index-1,100) == 0) print "(A4,I7,A9,I10,A9,I3,A8,I3)",  &
             "Row ",csf_index," nnonz = ",npos," block = ",nb," myid = ",mpi_rank
@@ -228,10 +234,10 @@
 !   Write out a report for this run
 !
       if (ndef /= 0 .and. mpi_rank == 0) then
-         write (24,*)
-         write (24,*) llistt, " T coefficients generated;"
+         write (summary_output_unit,*)
+         write (summary_output_unit,*) llistt, " T coefficients generated;"
          do k = 0, max_coulomb_multipole_rank
-            write (24,*) llistv(k)," V(k=",k,") coefficients generated;"
+            write (summary_output_unit,*) llistv(k)," V(k=",k,") coefficients generated;"
          end do
       end if
 !
@@ -239,29 +245,31 @@
 !
 
       stage_start_count = stage_clock()
-      rewind (30)
+      rewind (mcp_temporary_units(30))
       call setsda (outsdampi, npos, ldbpa(4), nb, mpi_rank, mpi_process_count, output_file_prefix)
-      close (30, status = "DELETE")
+      close (mcp_temporary_units(30), status = "DELETE")
       call record_stage("sparse_structure_and_output",nb,stage_start_count,int(npos,int64),storage="disk")
 !
 !   Sort MCP coefficients into integral-based lists
 !
 !   1) the T coefficient
       stage_start_count = stage_clock()
-      rewind (31)
+      rewind (mcp_temporary_units(31))
       call sort (31, (llistt), ntgi, ldbpa(2), nb, output_file_prefix)
-      if (ndef /= 0 .and. mpi_rank == 0)      &
-         write (24,*) ntgi, " I(ab) integrals;"
-      close (31, status = "DELETE")
+      if (ndef /= 0 .and. mpi_rank == 0) then
+         write (summary_output_unit,*) ntgi, " I(ab) integrals;"
+      end if
+      close (mcp_temporary_units(31), status = "DELETE")
       call record_stage("sort_and_output",nb,stage_start_count,int(llistt,int64),31,"disk")
 !   2) the V coefficient
       do k = 0, max_coulomb_multipole_rank
          stage_start_count = stage_clock()
-         rewind (k+32)
+         rewind (mcp_temporary_units(k+32))
          call sort (k+32, (llistv(k)), ntgi, ldbpa(3), nb, output_file_prefix)
-         if (ndef /= 0 .and. mpi_rank == 0)       &
-            write (24,*) " k = ", k, ": ", ntgi, " Slater integrals;"
-         close (k+32, status = "DELETE")
+         if (ndef /= 0 .and. mpi_rank == 0) then
+            write (summary_output_unit,*) " k = ", k, ": ", ntgi, " Slater integrals;"
+         end if
+         close (mcp_temporary_units(k+32), status = "DELETE")
          call record_stage("sort_and_output",nb,stage_start_count,int(llistv(k),int64),k+32,"disk")
       end do
        call dalloc(llistv, "LLISTV", "MCPMPI")

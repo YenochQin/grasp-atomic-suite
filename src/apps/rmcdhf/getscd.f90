@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine getscd(extended_optimal_level, block_labels, isotope_file_path, radial_file_path, nuclear_polarization_file_path)
+      use, intrinsic :: iso_fortran_env, only: input_unit
+      use calculation_file_units, only: calculation_log_unit
 !                                                                      *
 !   Interactively determines the data governing the SCF problem.       *
 !                                                                      *
@@ -111,7 +113,7 @@
             yes = getyn()
             if (yes) then
                write (stderr_unit, *) "Enter the revised value:"
-               read (5, *) speed_of_light_au
+               read (input_unit, *) speed_of_light_au
             end if
 !
 !   Determine the parameters controlling the radial grid
@@ -126,13 +128,13 @@
             yes = getyn()
             if (yes) then
                write (stderr_unit, *) "Enter RNT:"
-               read (5, *) radial_grid_scale
+               read (input_unit, *) radial_grid_scale
                write (stderr_unit, *) "Enter H:"
-               read (5, *) transformed_grid_step
+               read (input_unit, *) transformed_grid_step
                write (stderr_unit, *) "Enter HP:"
-               read (5, *) asymptotic_grid_step
+               read (input_unit, *) asymptotic_grid_step
                write (stderr_unit, *) "Enter N:"
-               read (5, *) radial_point_count
+               read (input_unit, *) radial_point_count
 !b Revised grid
                write (stderr_unit,*) "Revised RNT = ", radial_grid_scale
                write (stderr_unit,*) "Revised H   = ", transformed_grid_step
@@ -218,7 +220,7 @@
       read (*, *) nscf
 
       if (ndef==0) then
-         write(734,*) nscf,"! Number of SCF cycles"
+         write(calculation_log_unit,*) nscf,"! Number of SCF cycles"
       end if
 !
 !   Allow the user to modify other defaults

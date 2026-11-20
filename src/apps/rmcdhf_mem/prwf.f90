@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine prwf(orbital_index)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   Makes a (debug) printout of wave functions. There are two modes:   *
 !                                                                      *
@@ -50,7 +51,8 @@
 !
 !   Mode (1)
 !
-         write (99, '("1",1i2,1a2," orbital:"/,2(" --------- r --------- ------- P (r) -------",&
+         call ensure_debug_output()
+         write (angular_debug_unit, '("1",1i2,1a2," orbital:"/,2(" --------- r --------- ------- P (r) -------",&
             &" ------- Q (r) -------"))') orbital_principal_n(orbital_index), orbital_symmetry_labels(orbital_index)
          nb2 = mtp0/2
          if (2*nb2 == mtp0) then
@@ -62,9 +64,11 @@
             ii1 = ii
             ii2 = ii1 + row_count
             if (ii2 <= mtp0) then
-               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1), p(ii1), q(ii1), radial_grid(ii2), p(ii2), q(ii2)
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1p,6(1x,1d21.14))') radial_grid(ii1), p(ii1), q(ii1), radial_grid(ii2), p(ii2), q(ii2)
             else if (ii1 <= mtp0) then
-               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1), p(ii1), q(ii1)
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1p,6(1x,1d21.14))') radial_grid(ii1), p(ii1), q(ii1)
             end if
          end do
          call draw (p, 1.0_real64, q, cbz, mtp0)
@@ -74,7 +78,8 @@
 !   Mode (2)
 !
          do k = 1, orbital_count
-            write (99, '("1",1i2,1a2," orbital:"/,2(" --------- r --------- ------- P (r) -------",&
+            call ensure_debug_output()
+            write (angular_debug_unit, '("1",1i2,1a2," orbital:"/,2(" --------- r --------- ------- P (r) -------",&
                &" ------- Q (r) -------"))') orbital_principal_n(k), orbital_symmetry_labels(k)
             mfk = orbital_last_grid_index(k)
             nb2 = mfk/2
@@ -87,12 +92,14 @@
                ii1 = ii
                ii2 = ii1 + row_count
                if (ii2 <= mfk) then
-                  write (99, '(1p,6(1x,1d21.14))') &
+                  call ensure_debug_output()
+                  write (angular_debug_unit, '(1p,6(1x,1d21.14))') &
                      radial_grid(ii1), radial_large_components(ii1,k), radial_small_components(ii1,k), &
                      & radial_grid(ii2), radial_large_components(ii2,&
                      k), radial_small_components(ii2,k)
                else if (ii1 <= mfk) then
-                  write (99, '(1p,6(1x,1d21.14))') &
+                  call ensure_debug_output()
+                  write (angular_debug_unit, '(1p,6(1x,1d21.14))') &
                      radial_grid(ii1), radial_large_components(ii1,k), radial_small_components(ii1,k)
                end if
             end do

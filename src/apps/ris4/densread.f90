@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
 subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
+    use calculation_file_units, only: one_body_cache_unit
 !      SUBROUTINE DENSREAD(DINT1,DINT2,DINT3,                           &
 !                          DINT4,DINT5,DINT6,                           &
 !                          DINT7,DINT1VEC,DENS1VEC)
@@ -65,8 +66,8 @@ subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
       icold = 0
       irold = 0
 
-      rewind (50)
-   16 read (50,iostat = io_status) ic,ir,ncount
+      rewind (one_body_cache_unit)
+   16 read (one_body_cache_unit,iostat = io_status) ic,ir,ncount
 
       if (io_status == 0) then
 !*      print*, 'ic', IC,IR,NCOUNT
@@ -92,7 +93,7 @@ subroutine densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
 !*        ENDDO
         end if
         do i= 1,ncount
-           read(50) tshell_r(i),lab
+           read(one_body_cache_unit) tshell_r(i),lab
            ia = lab/orbital_label_radix
            ib = mod(lab,orbital_label_radix)
 !*           LOC = INDEX(I)

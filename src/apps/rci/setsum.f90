@@ -1,6 +1,7 @@
 !***********************************************************************
 
       subroutine setsum(name)
+      use calculation_file_units, only: summary_output_unit
 !
 !   Open the  .csum  file on stream 24.
 !   Xinghong He                                          10 Jun 1998
@@ -23,7 +24,7 @@
 
       k = index(name," ")
 
-      call openfl (24, name(1:k-1)//".csum", "FORMATTED", "UNKNOWN", open_status)
+      call openfl (summary_output_unit, name(1:k-1)//".csum", "FORMATTED", "UNKNOWN", open_status)
 
       return
       end subroutine setsum

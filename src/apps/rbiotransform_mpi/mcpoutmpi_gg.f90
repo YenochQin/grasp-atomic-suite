@@ -1,6 +1,9 @@
 !***********************************************************************
 !                                                                      *
       subroutine mcpout(name, startup_directory, ik, ntestg, inpci)
+      use biorthogonal_subshell_layout, only: kappa_coefficient_units
+      use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   This routine controls the computation  and storage of the values   *
 !   and all indices of the angular coefficients                        *
@@ -60,7 +63,6 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      integer, parameter :: nf = 200
       integer, parameter :: nvmax = 100
       integer, parameter :: orbital_label_radix = orbital_index_radix
       integer, parameter :: keysq = orbital_label_radix*orbital_label_radix
@@ -69,6 +71,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: llistt(nlmax)
+      character(len=24) :: coefficient_filename
       integer :: nakinv(max_orbitals)
       integer :: nshl(nlmax), ninl(nlmax)
       integer :: i, ntestl, ntest, ka, iopar, j, ncf0, iblk, k, &
@@ -86,8 +89,8 @@
 !     POINTER (pciout, ciout(1))
 !
 
-      write (6, *) "NBLOCK,(NCFBLK(i),i=1,NBLOCK)"
-      write (6, *) nblock, (ncfblk(i),i=1,nblock)
+      write (output_unit, *) "NBLOCK,(NCFBLK(i),i=1,NBLOCK)"
+      write (output_unit, *) nblock, (ncfblk(i),i=1,nblock)
 
       ntestl = 0
       ntest = max(ntestg,ntestl)
@@ -103,7 +106,7 @@
 !   If not available calculate the data
 !
       call angdata (name, avail, kamax)
-      write (6, *) "AVAIL=", avail
+      write (output_unit, *) "AVAIL=", avail
       if (avail) return
 
       if (ik == 1) then
@@ -114,9 +117,9 @@
 
 
 
-      write (6, *) " open sorted ang. file .TB(NF)", nf
+      write (output_unit, *) " open sorted ang. file .TB(NF)", 200
       j = index(name," ")
-      open(unit=nf, file=name(1:j-1)//".TB", status="UNKNOWN", form=&
+      open(newunit=biorthogonal_angular_unit, file=name(1:j-1)//".TB", status="UNKNOWN", form=&
          "UNFORMATTED", position="asis")
 
       ncf0 = 1
@@ -125,8 +128,9 @@
 !   Open scratchfiles to dump the T coefficients for each kappa
 !
          do k = 1, kamax
-            open(unit=80 + k, status="UNKNOWN", form="UNFORMATTED", position=&
-               "asis")
+            write(coefficient_filename, "(A,I0)") "fort.", 80 + k
+            open(newunit=kappa_coefficient_units(k), file=coefficient_filename, &
+               status="UNKNOWN", form="UNFORMATTED", position="asis")
          end do
 !
 !   Initialize the counters for the total number of T coefficients
@@ -180,7 +184,7 @@
                      if (dabs(shell_coefficients(orbital_index)) <= cutoff) cycle
                      llistt(nakinv(orbital_index)) = llistt(nakinv(orbital_index)) + 1
                      lab = orbital_index*orbital_label_radix + orbital_index
-                     write (80 + nakinv(orbital_index)) bra_csf_index - ncf0 + 1, ket_csf_index - ncf0 + 1, lab&
+                     write (kappa_coefficient_units(nakinv(orbital_index))) bra_csf_index - ncf0 + 1, ket_csf_index - ncf0 + 1, lab&
                         , shell_coefficients(orbital_index)
                   end do
                else
@@ -204,7 +208,7 @@
                         write (*, *) "SOMETHING WRONG"
                         stop
                      end if
-                     write (80 + nakinv(orbital_index)) jan, jbn, lab, shell_coefficients(1)
+                     write (kappa_coefficient_units(nakinv(orbital_index))) jan, jbn, lab, shell_coefficients(1)
                   end if
                end if
 !
@@ -219,15 +223,15 @@
             if (llistt(l) > 0) then
                call qqsort (l, llistt(l), ik, name, kamax)
             else
-               if (l == 1) write (nf) csf_count, orbital_count, kamax
-               write (nf) llistt(l), llistt(l)
+               if (l == 1) write (biorthogonal_angular_unit) csf_count, orbital_count, kamax
+               write (biorthogonal_angular_unit) llistt(l), llistt(l)
             end if
          end do
 !
 !  Close the angular files
 !
          do l = 1, kamax
-            close(l + 80, status="DELETE")
+            close(kappa_coefficient_units(l), status="DELETE")
          end do
 !
          ncf0 = ncfblk(iblk) + 1

@@ -1,5 +1,6 @@
 program descriptor_rmcdhf
    use closed_core_subshells, only: closed_core_subshell_count
+   use, intrinsic :: iso_fortran_env, only: standard_output_unit => output_unit
    use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations
    use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
    use hamiltonian_symmetry_blocks, only: csf_counts_by_block, symmetry_block_count
@@ -19,7 +20,7 @@ program descriptor_rmcdhf
    character(len=3) :: rank_text
    character(len=64) :: mcp_prefix, output_path
    nullify(csf_subshell_quantum_codes,csf_coupling_quantum_codes)
-   stderr_unit=6
+   stderr_unit=standard_output_unit
 #ifdef DESCRIPTOR_MPI
    call mpi_init(status)
    call mpi_comm_rank(mpi_comm_world,mpi_rank,status)

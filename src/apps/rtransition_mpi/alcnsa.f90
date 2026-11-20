@@ -2,6 +2,7 @@
 !                                                                      *
       subroutine alcnsa(jja, jjb, hb1, hb2, hc1, hc2, hm1, &
           hm2, lab, nptr, nsdim, imode)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   This  subprogram allocates (IMODE = 1), reallocates (IMODE = 2),   *
 !   and deallocates (IMODE = 3) storage for  certain arrays that are   *
@@ -87,7 +88,7 @@
 !
       case default
 !
-         write (6, *) "ALCNSA: Invalid argument IMODE = ", imode
+         write (output_unit, *) "ALCNSA: Invalid argument IMODE = ", imode
          stop
 !
       end select

@@ -15,7 +15,7 @@
 !-----------------------------------------------
       use array_memory_management, only: alloc
       use calculation_input_defaults, only: inpci, ndef, ndump
-      use where_c, only: imcdf
+      use where_c, only: restart_matrix_unit
       use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use csf_block_cutoffs, only: iccut, iccutblk
       use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
@@ -83,7 +83,7 @@
 !
 ! Open the .res file
 !
-      call openfl (imcdf, file_path, form, status, mpi_error_code)
+      call openfl (restart_matrix_unit, file_path, form, status, mpi_error_code)
       if (mpi_error_code /= 0) then
          call stopmpi ("setres: Error openning .res file", mpi_rank)
       end if
@@ -96,9 +96,9 @@
 
       if (is_restart) then
 !        ...Check the signature of the file
-         read (imcdf, iostat=io_status) r92res
+         read (restart_matrix_unit, iostat=io_status) r92res
          if (io_status/=0 .or. r92res/=restitle) then
-            close(imcdf)
+            close(restart_matrix_unit)
             call stopmpi ("setres: Not RCI92 .res file", mpi_rank)
          end if
 
@@ -109,7 +109,7 @@
 
 !         ...Write the file header
 !         ...Generate the first part of the .res file
-         write (imcdf) restitle
+         write (restart_matrix_unit) restitle
          call getcid (isotope_file_path, radial_file_path, block_labels)
 
       end if

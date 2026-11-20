@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       integer function jcupr (loc, csf_index)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   JCUPR is the 2J+1 value of the LOCth nontrivial intermediate ang-  *
 !   ular momentum in CSF  ICSF.                                        *
@@ -30,11 +31,11 @@
          if (csf_index>=1 .and. csf_index<=ncfr) then
             jcupr = jcupar(loc,csf_index)
          else
-            write (6, *) "JCUPR: Argument ICSF is out of range."
+            write (output_unit, *) "JCUPR: Argument ICSF is out of range."
             stop
          end if
       else
-         write (6, *) "JCUPR: Argument LOC is out of range."
+         write (output_unit, *) "JCUPR: Argument LOC is out of range."
          stop
       end if
 !

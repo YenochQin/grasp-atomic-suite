@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
-      subroutine trsort(name, nfile, nfile2, print_details, transition_type_index, iblki, iblkf)
+      subroutine trsort(name, coefficient_scratch_unit, transition_angular_unit, print_details, transition_type_index, iblki, iblkf)
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   Routine to sort angular coefficients into list based on integral   *
 !   labels rather than CSF.  A tree sort is used. To save space, the   *
@@ -33,8 +35,8 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer, intent(in) :: nfile
-      integer, intent(in) :: nfile2
+      integer, intent(in) :: coefficient_scratch_unit
+      integer, intent(inout) :: transition_angular_unit
       integer  :: transition_type_index
       integer, intent(in) :: iblki
       integer, intent(in) :: iblkf
@@ -87,7 +89,7 @@
 !
 !   Position file at beginning of list of integrals
 !
-      rewind (nfile)
+      rewind (coefficient_scratch_unit)
 !
 !   Initialize
 !
@@ -108,13 +110,13 @@
 !   Now the rest of the elements
 !
     1 continue
-      read (nfile, end=12) ir, is, ni
+      read (coefficient_scratch_unit, end=12) ir, is, ni
       if (ni > nlabel) then
          call ralloc (jlabl, ni, "JLABL", "TRSORT")
          call ralloc (xl, ni, "XL", "TRSORT")
          nlabel = ni
       end if
-      read (nfile, end=99, err=99) (jlabl(i),xl(i),i=1,ni)
+      read (coefficient_scratch_unit, end=99, err=99) (jlabl(i),xl(i),i=1,ni)
       if (ir==0 .or. is==0 .or. ni==0) goto 1
 !
       if (first) then
@@ -278,11 +280,11 @@
 !   sorted list
 !
          imcp = 0
-         rewind (nfile)
+         rewind (coefficient_scratch_unit)
    18    continue
-         read (nfile, end=20) ir, is, ni
+         read (coefficient_scratch_unit, end=20) ir, is, ni
          if (ir==0 .or. is==0 .or. ni==0) goto 18
-         read (nfile) (jlabl(i),xl(i),i=1,ni)
+         read (coefficient_scratch_unit) (jlabl(i),xl(i),i=1,ni)
          do i = 1, ni
             if (jlabl(i) == 0) cycle
             imcp = imcp + 1
@@ -298,7 +300,7 @@
 !
       end if
    20 continue
-      rewind (nfile)
+      rewind (coefficient_scratch_unit)
 !
 !  If first set of data open the file and print
 !  some data to later be able to identify the file
@@ -306,35 +308,40 @@
       if (iblki==1 .and. iblkf==1) then
          j1 = index(name(1)," ")
          j2 = index(name(2)," ")
-         open(unit=nfile2,file=name(1)(1:j1-1)//"."//name(2)(1:j2-1)//"."//s(&
+         open(newunit=transition_angular_unit,file=name(1)(1:j1-1)//"."//name(2)(1:j2-1)//"."//s(&
             kp(transition_type_index))//"T", status="UNKNOWN", form="UNFORMATTED", position=&
             "asis")
       end if
-      write (nfile2) iblki, iblkf, orbital_count, nkp
-      write (nfile2) nint
+      write (transition_angular_unit) iblki, iblkf, orbital_count, nkp
+      write (transition_angular_unit) nint
       if (nmcp /= 0) then
-         if (print_details) write (99, '(/,/,"  k"/," d  (rs)  Coefficients:"/,"  ab"/,/,/,&
+         if (print_details) then
+            call ensure_debug_output()
+            write (angular_debug_unit, '(/,/,"  k"/," d  (rs)  Coefficients:"/,"  ab"/,/,/,&
             &"    a     b          r         s  Coefficient"/)')
+         end if
          mlr = 1
          do i = 1, nint
             mup = iptcsf(i)
             ints = mup - mlr + 1
-            write (nfile2) lblint(i), ints
+            write (transition_angular_unit) lblint(i), ints
             if (print_details) then
                ia = lblint(i)/orbital_label_radix
                ib = mod(lblint(i),orbital_label_radix)
-               write (99, '(2(2x,i2,a2))') &
+               call ensure_debug_output()
+               write (angular_debug_unit, '(2(2x,i2,a2))') &
                   orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
                   & orbital_symmetry_labels(ib)
             end if
-            write (nfile2) (isldr(m),isldr1(m),xsldr(m),m=mlr,mup)
+            write (transition_angular_unit) (isldr(m),isldr1(m),xsldr(m),m=mlr,mup)
             if (print_details) then
                do m = mlr, mup
 !                  IS = MOD (ISLDR(M),NCA)
                   is = isldr1(m)
 !                 IR = ISLDR(M)/NCA
                   ir = isldr(m)
-                  write (99, '(14x,1i6,2x,1i6,2x,1p,1d22.15)') ir, is, xsldr(m)
+                  call ensure_debug_output()
+                  write (angular_debug_unit, '(14x,1i6,2x,1i6,2x,1p,1d22.15)') ir, is, xsldr(m)
                end do
             end if
             mlr = mup + 1
@@ -355,7 +362,7 @@
 !   Error handling
 !
    99 continue
-      write (6, *) "TRSORT: Error reading CSF-based file."
+      write (output_unit, *) "TRSORT: Error reading CSF-based file."
       stop
 !
       return

@@ -28,29 +28,17 @@
 !-----------------------------------------------
       use file_open, only: openfl
       implicit none (type, external)
+      character(len=*), intent(in) :: file_path
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: newunit, open_status, orbital_index, last_radial_index, i
-      logical :: imopened
-      character(len=*), intent(in) :: file_path
+      integer :: wavefunction_output_unit, open_status, orbital_index, last_radial_index, i
 !-----------------------------------------------
 !
 !
 
 
-      do newunit = 23, 99                        ! 23 is a historical value
-         inquire(unit=newunit, opened=imopened)
-         if (imopened) cycle
-         exit                                    ! should be the normal exit point
-      end do
-
-      if (newunit == 100) then
-         write (stderr_unit, *) "All unit numbers from 23 to 99 are BUSY!"
-         stop
-      end if
-
-      call openfl (newunit, file_path, "UNFORMATTED", "NEW", open_status)
+      call openfl (wavefunction_output_unit, file_path, "UNFORMATTED", "NEW", open_status)
       if (open_status == 1) then
          write (stderr_unit, *) 'Error when opening "', file_path(1:len_trim(file_path)), &
             '"'
@@ -60,21 +48,21 @@
 !
 !   Write the file header
 !
-      write (newunit) "G92RWF"
+      write (wavefunction_output_unit) "G92RWF"
 !
 !   Write out the radial wavefunctions
 !
       do orbital_index = 1, orbital_count
          last_radial_index = orbital_last_grid_index(orbital_index)
-         write (newunit) orbital_principal_n(orbital_index), orbital_kappa(orbital_index), &
+         write (wavefunction_output_unit) orbital_principal_n(orbital_index), orbital_kappa(orbital_index), &
             & orbital_energy_parameters(orbital_index), last_radial_index
-         write (newunit) orbital_origin_parameters(orbital_index), (radial_large_components(i,orbital_index),i=1, &
-            & last_radial_index), &
+         write (wavefunction_output_unit) orbital_origin_parameters(orbital_index), (radial_large_components(i,orbital_index), &
+            & i=1,last_radial_index), &
             & (radial_small_components(i,orbital_index),i=1,last_radial_index)
-         write (newunit) (radial_grid(i),i=1,last_radial_index)
+         write (wavefunction_output_unit) (radial_grid(i),i=1,last_radial_index)
       end do
 
-      close(newunit)
+      close(wavefunction_output_unit)
 !
 !   Deallocate the storage for the radial wavefunctions
 !

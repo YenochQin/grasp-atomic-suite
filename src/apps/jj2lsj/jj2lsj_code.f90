@@ -173,6 +173,13 @@
       integer, parameter :: vectors_number = 100000
 !-----------------------------------------------
 !
+      integer, private :: ls_csf_output_unit = -1
+      integer, private :: lsj_label_unit = -1
+      integer, private :: j_vector_output_unit = -1
+      integer, private :: transformation_unit = -1
+      integer, private :: unique_summary_unit = -1
+      integer, private :: unique_label_unit = -1
+
 contains
 !
 !***********************************************************************
@@ -340,9 +347,9 @@ contains
 !-----------------------------------------------
       wb = zero
       ncf_i8 = csf_count
-      if(ioutt == 1) write(59) " *   Block Number=",symmetry_block_index
+      if(ioutt == 1) write(transformation_unit) " *   Block Number=",symmetry_block_index
       if(ioutt == 2) then
-         read(59) string, idum
+         read(transformation_unit) string, idum
          if(string(1:18) /= " *   Block Number=" .or.                  &
                                                   idum /= symmetry_block_index) then
             print*, "Error in transformation file *.lsj.T"
@@ -367,10 +374,10 @@ contains
                   itjpo(jj_number)-1)) then
                   if(ioutt <= 1)                                       &
                        wa_transformation = tralsjj(jj_number,ls_number)
-                  if(ioutt == 1) write(59)                             &
+                  if(ioutt == 1) write(transformation_unit)                             &
                          jj_number-first_csf_index+1,ls_number,wa_transformation
                   if(ioutt == 2) then
-                  read(59) ijj, ils, wa_transformation
+                  read(transformation_unit) ijj, ils, wa_transformation
                      if(ijj /= jj_number-first_csf_index+1 .or.                 &
                         ils /= ls_number ) then
                           print*, "Error in jj2lsj transformation file"
@@ -1717,7 +1724,7 @@ contains
 !
       if(ioutc == 1) then
          util_csl_file = name(1:k-1)//".lsj"//".c"
-         call openfl(56,util_csl_file,"formatted","UNKNOWN",io_status)
+         call openfl(ls_csf_output_unit,util_csl_file,"formatted","UNKNOWN",io_status)
          if (io_status == 1) then
             print *, "Error when opening",util_csl_file
             stop
@@ -1727,7 +1734,7 @@ contains
 !     opening the files  *.lsj.lbl
 !
       util_csl_file = name(1:k-1)//".lsj"//".lbl"
-      call openfl(57,util_csl_file,"formatted","UNKNOWN",io_status)
+      call openfl(lsj_label_unit,util_csl_file,"formatted","UNKNOWN",io_status)
       if (io_status == 1) then
          print *, "Error when opening",util_csl_file
          stop
@@ -1735,31 +1742,31 @@ contains
 !GG-2017
       if (unique == 1) then
          util_csl_file = name(1:k-1)//".uni.lsj"//".lbl"
-         call openfl(73,util_csl_file,"formatted","UNKNOWN",io_status)
+         call openfl(unique_label_unit,util_csl_file,"formatted","UNKNOWN",io_status)
          if (io_status == 1) then
             print *, "Error when opening",util_csl_file
             stop
          end if
          util_csl_file = name(1:k-1)//".uni.lsj"//".sum"
-         call openfl(72,util_csl_file,"formatted","UNKNOWN",io_status)
+         call openfl(unique_summary_unit,util_csl_file,"formatted","UNKNOWN",io_status)
          if (io_status == 1) then
             print *, "Error when opening",util_csl_file
             stop
          end if
       end if
 !GG-2017 end
-      write(57,"(A53)") " Pos   J   Parity      Energy Total      Comp. of ASF"
+      write(lsj_label_unit,"(A53)") " Pos   J   Parity      Energy Total      Comp. of ASF"
 !
 !     Opening the files   *.lsj.j and
 !
       if(ioutj == 1) then
          util_csl_file = name(1:k-1)//".lsj"//".j"
-         call openfl(58,util_csl_file,"formatted","UNKNOWN",io_status)
+         call openfl(j_vector_output_unit,util_csl_file,"formatted","UNKNOWN",io_status)
          if (io_status == 1) then
             print *, "Error when opening",util_csl_file
             stop
          end if
-         write (58,"(2X,A6,A,F5.1,A,I3,A,I7)" )    &
+         write (j_vector_output_unit,"(2X,A6,A,F5.1,A,I3,A,I7)" )    &
          name(1:k-1),"  Z = ",nuclear_charge ,"  NEL = ",electron_count,"   NCFG ="! ,asf_set_LS%csf_set_LS%nocsf
       end if
 !
@@ -1767,51 +1774,51 @@ contains
 !
       if(ioutt == 1) then
          util_csl_file = name(1:k-1)//".lsj"//".T"
-         open(59,file=util_csl_file,form="unformatted",status="NEW",   &
+         open(newunit=transformation_unit,file=util_csl_file,form="unformatted",status="NEW",   &
                                                            iostat=io_status)
          if (io_status /= 0) then
             print *, "Error when opening ",util_csl_file
             stop
          end if
-         write (59) "jj2lsj"
-         write (59) electron_count, csf_count, orbital_count, nblock
+         write (transformation_unit) "jj2lsj"
+         write (transformation_unit) electron_count, csf_count, orbital_count, nblock
          do jb = 1, nblock
             iatjpdum = two_j(jb) +1
-            write (59) jb, ncfinblk(jb), nevinblk(jb), iatjpdum
+            write (transformation_unit) jb, ncfinblk(jb), nevinblk(jb), iatjpdum
          end do
       else if(ioutt == 2) then
          util_csl_file = name(1:k-1)//".lsj"//".T"
-         open(59,file=util_csl_file,form="unformatted",status="OLD",   &
+         open(newunit=transformation_unit,file=util_csl_file,form="unformatted",status="OLD",   &
                                                            iostat=io_status)
          if (io_status /= 0) then
             print *, "Error when opening ",util_csl_file
             stop
          end if
-         read (59, iostat=io_status) mixing_file_signature
+         read (transformation_unit, iostat=io_status) mixing_file_signature
          if (io_status/=0 .or. mixing_file_signature/="jj2lsj") then
             write (stderr_unit, *) "Not a jj2lsj Transformation File;"
-            close(59)
+            close(transformation_unit)
             stop
          end if
-         read (59) nelecdum, ncftotdum, nwdum, nblockdum
+         read (transformation_unit) nelecdum, ncftotdum, nwdum, nblockdum
          if(nelecdum /= electron_count .or. ncftotdum /= csf_count .or. nwdum /= orbital_count   &
                                         .or. nblockdum /= nblock) then
             print*, electron_count, csf_count, orbital_count, nblock
             print*, nelecdum, ncftotdum, nwdum, nblockdum
             print*, "Wrong transformation file *.lsj.T"
-            close(59)
+            close(transformation_unit)
             stop
          end if
          do jb = 1, nblockdum
             iatjpdum = two_j(jb) +1
-           read (59) jbdum, ncfinblkdum, nevinblkdum, iatjpdum
+           read (transformation_unit) jbdum, ncfinblkdum, nevinblkdum, iatjpdum
             if(jbdum /= jb .or. ncfinblkdum /= ncfinblk(jb) .or.       &
                nevinblkdum /= nevinblk(jb) .or.                        &
                                          iatjpdum /= two_j(jb) +1) then
                print*, jb,ncfinblk(jb), nevinblk(jb), two_j(jb) +1
                print*, jbdum, ncfinblkdum, nevinblkdum, iatjpdum
                print*, "Wrong transformation file *.lsj.T"
-               close(59)
+               close(transformation_unit)
                stop
             end if
          end do
@@ -2014,7 +2021,7 @@ contains
          phase_start=profile_time()
 !
 !     output to *.lsj.c
-         if(ioutc == 1) call prcsflsall (56,asf_set_ls%csf_set_ls,before_j)
+         if(ioutc == 1) call prcsflsall (ls_csf_output_unit,asf_set_ls%csf_set_ls,before_j)
          call profile_emit("csf_write",phase_start,iblknum)
          phase_start=profile_time()
          allocate(asf_set_ls%asf(1:nvec))
@@ -2220,21 +2227,21 @@ contains
             if(before_j == 0) then
                before_j = 1
             else if(lev == 1 .and. before_j == 1) then
-               write(57,"(A1)") " "
+               write(lsj_label_unit,"(A1)") " "
             end if
             do j = 1,nocsf_min
                format_start=profile_time()
                call packlscsf(asf_set_ls%csf_set_ls,iw(j),string_csf_one)
                format_seconds=format_seconds+(profile_time()-format_start)
                if(j == 1) then
-                  write(57,"(I3,1X,A4,5X,A1,8X,F16.9,5X,F7.3,A)")        &
+                  write(lsj_label_unit,"(I3,1X,A4,5X,A1,8X,F16.9,5X,F7.3,A)")        &
                   asf_set_ls%asf(level)%level_no,string_cnum(1:string_l),&
                   asf_set_ls%csf_set_ls%csf(iw(1))%parity,               &
                   asf_set_ls%asf(level)%energy,wb*100,"%"
                   string_csf(level) = string_csf_one
                end if
                string_length = len_trim(string_csf_one)
-               write(57,"(7X,F12.8,3X,F11.8,3X,A)") weights(j),weights2(j),string_csf_one(1:string_length)
+               write(lsj_label_unit,"(7X,F12.8,3X,F11.8,3X,A)") weights(j),weights2(j),string_csf_one(1:string_length)
             end do
 !     output  *.lsj.j and
             call profile_emit("label_format",phase_start,iblknum,level,nocsf_min,elapsed=format_seconds)
@@ -2243,14 +2250,14 @@ contains
             phase_start=profile_time()
             if(ioutj == 1) then
                if(lev == 1) then
-                  write (58, "(//A8,I4,2X,A8,I4)" ) "  2*J = ",       &
+                  write (j_vector_output_unit, "(//A8,I4,2X,A8,I4)" ) "  2*J = ",       &
                   asf_set_ls%asf(level)%totalj,"NUMBER =",number_of_levels(iblknum)
                end if
                string_length = len_trim(string_csf(level))
-               write(58,"(3(A8,F15.10))") "Ssms=", ssms, "g_J=",g_j, "g_JLS=", g_jls
-               write(58,"(I6,F16.9,2X,A)")                                &
+               write(j_vector_output_unit,"(3(A8,F15.10))") "Ssms=", ssms, "g_J=",g_j, "g_JLS=", g_jls
+               write(j_vector_output_unit,"(I6,F16.9,2X,A)")                                &
                  max_comp(level),asf_set_ls%asf(level)%energy,string_csf(level)(1:string_length)
-               write(58,"(7F11.8)")                                       &
+               write(j_vector_output_unit,"(7F11.8)")                                       &
                  (asf_set_ls%asf(level)%eigenvector(i), i=1,asf_set_ls%csf_set_ls%nocsf)
             end if
             call profile_emit("vector_write",phase_start,iblknum,level)
@@ -2266,24 +2273,26 @@ contains
     1    continue
       end do
       deallocate(ithresh)
-      if(ioutc == 1) call profile_file_size("csf_bytes",56)
-      close(56)
+      if(ioutc == 1) call profile_file_size("csf_bytes",ls_csf_output_unit)
+      if (ls_csf_output_unit /= -1) close(ls_csf_output_unit)
+      ls_csf_output_unit = -1
 !GG-2017
       if (unique == 1) then
          phase_start=profile_time()
-         call uniquelsj
+         call uniquelsj(lsj_label_unit, unique_summary_unit, unique_label_unit)
          call profile_emit("unique_total",phase_start)
-         call profile_file_size("unique_summary_bytes",72)
-         call profile_file_size("unique_label_bytes",73)
-         close(72)
-         close(73)
+         call profile_file_size("unique_summary_bytes",unique_summary_unit)
+         call profile_file_size("unique_label_bytes",unique_label_unit)
+         close(unique_summary_unit)
+         close(unique_label_unit)
       end if
 !GG-2017
-      call profile_file_size("label_bytes",57)
-      close(57)
-      if(ioutj == 1) write(58,"(A)") "**"
-      if(ioutj == 1) call profile_file_size("vector_bytes",58)
-      close(58)
+      call profile_file_size("label_bytes",lsj_label_unit)
+      close(lsj_label_unit)
+      if(ioutj == 1) write(j_vector_output_unit,"(A)") "**"
+      if(ioutj == 1) call profile_file_size("vector_bytes",j_vector_output_unit)
+      if (j_vector_output_unit /= -1) close(j_vector_output_unit)
+      j_vector_output_unit = -1
       deallocate(jcoup)
       return
       end subroutine jj2lsj
@@ -3302,7 +3311,7 @@ contains
 !
 !***********************************************************************
 !                                                                      *
-      subroutine uniquelsj
+      subroutine uniquelsj(lsj_label_unit, unique_summary_unit, unique_label_unit)
       use, intrinsic :: iso_fortran_env, only: iostat_end
       use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
       use input_error_handling, only: fail_input_io
@@ -3321,6 +3330,7 @@ contains
 !-----------------------------------------------
       use iso_fortran_env, only: int32
       implicit none (type, external)
+      integer, intent(in) :: lsj_label_unit, unique_summary_unit, unique_label_unit
       save  ! Preserve the legacy serial controller workspace.
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -3368,12 +3378,12 @@ contains
       allocate(icount(lev_no))
       allocate(iprgg(lev_no))
 !
-      rewind(57,iostat=io_status)
-      if (io_status /= 0) call fail_input_io(io_status,57,"uniquelsj: rewind labels")
-      read (57, "(1A53)", iostat=io_status) record
-      if (io_status /= 0) call fail_input_io(io_status,57,"uniquelsj: label header")
-      if (len_trim(record) == 0) call fail_input_io(0,57,"uniquelsj: empty label header")
-      write(73, "(1A53)") record
+      rewind(lsj_label_unit,iostat=io_status)
+      if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: rewind labels")
+      read (lsj_label_unit, "(1A53)", iostat=io_status) record
+      if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: label header")
+      if (len_trim(record) == 0) call fail_input_io(0,lsj_label_unit,"uniquelsj: empty label header")
+      write(unique_label_unit, "(1A53)") record
 !
       new_j = 0
       do while (new_j < 1)
@@ -3385,34 +3395,34 @@ contains
           if(num_lev > lev_no) then
             print*, "Please extand the arrays. Now we have Lev_No=",   &
                                                                  lev_no
-            call fail_input_io(0,57,"uniquelsj: level capacity exceeded")
+            call fail_input_io(0,lsj_label_unit,"uniquelsj: level capacity exceeded")
           end if
-          read(57,"(A)",iostat=io_status) input_record
-          if (io_status /= 0) call fail_input_io(io_status,57,"uniquelsj: level record")
-          if (len_trim(input_record) < 50) call fail_input_io(0,57,"uniquelsj: short level record")
+          read(lsj_label_unit,"(A)",iostat=io_status) input_record
+          if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: level record")
+          if (len_trim(input_record) < 50) call fail_input_io(0,lsj_label_unit,"uniquelsj: short level record")
           read(input_record,"(A3,A5,5X,A1,8X,F16.9,5X,F7.3)",iostat=io_status)str_no(num_lev), &
               str_j(num_lev),str_p(num_lev),energy(num_lev),pro(num_lev)
-          if (io_status /= 0) call fail_input_io(io_status,57,"uniquelsj: level fields")
+          if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: level fields")
           if (.not. ieee_is_finite(energy(num_lev)) .or. .not. ieee_is_finite(pro(num_lev))) &
-              call fail_input_io(0,57,"uniquelsj: nonfinite level fields")
+              call fail_input_io(0,lsj_label_unit,"uniquelsj: nonfinite level fields")
           inum = 0
           do
             inum = inum + 1
             if(inum > vec_no) then
               print*, "Please extand the arrays. Now we have Vec_No=", &
                                                                 vec_no
-              call fail_input_io(0,57,"uniquelsj: component capacity exceeded")
+              call fail_input_io(0,lsj_label_unit,"uniquelsj: component capacity exceeded")
               end if
-            read(57,"(A)",iostat=io_status) input_record
+            read(lsj_label_unit,"(A)",iostat=io_status) input_record
             if (io_status == iostat_end) then
                mas_max(num_lev) = inum - 1
                goto 1
             end if
-            if (io_status /= 0) call fail_input_io(io_status,57,"uniquelsj: component record")
+            if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: component record")
             str = input_record(1:7)
             if(str /= "       ") then
-               backspace(57,iostat=io_status)
-               if (io_status /= 0) call fail_input_io(io_status,57,"uniquelsj: next level backspace")
+               backspace(lsj_label_unit,iostat=io_status)
+               if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: next level backspace")
                mas_max(num_lev) = inum - 1
              exit
             else if (len_trim(input_record) == 0) then
@@ -3420,19 +3430,19 @@ contains
                new_j = 0
                goto 1
             end if
-            if (len_trim(input_record) < 37) call fail_input_io(0,57,"uniquelsj: short component record")
+            if (len_trim(input_record) < 37) call fail_input_io(0,lsj_label_unit,"uniquelsj: short component record")
             read(input_record,"(A7,F12.8,3X,F11.8,3X,A)",iostat=io_status)str, &
              mix(inum,num_lev),comp(inum,num_lev),coupling(inum,num_lev)
-            if (io_status /= 0) call fail_input_io(io_status,57,"uniquelsj: component fields")
+            if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: component fields")
             if (.not. ieee_is_finite(mix(inum,num_lev)) .or. .not. ieee_is_finite(comp(inum,num_lev))) &
-                call fail_input_io(0,57,"uniquelsj: nonfinite component")
-            if (comp(inum,num_lev) < 0.0_real64) call fail_input_io(0,57,"uniquelsj: negative component weight")
+                call fail_input_io(0,lsj_label_unit,"uniquelsj: nonfinite component")
+            if (comp(inum,num_lev) < 0.0_real64) call fail_input_io(0,lsj_label_unit,"uniquelsj: negative component weight")
           end do
         end do
    1    continue
         do i1 = 1, num_lev
-          if (mas_max(i1) < 1) call fail_input_io(0,57,"uniquelsj: level without components")
-          if (comp(1,i1) <= 0.0_real64) call fail_input_io(0,57,"uniquelsj: nonpositive leading weight")
+          if (mas_max(i1) < 1) call fail_input_io(0,lsj_label_unit,"uniquelsj: level without components")
+          if (comp(1,i1) <= 0.0_real64) call fail_input_io(0,lsj_label_unit,"uniquelsj: nonpositive leading weight")
         end do
 !
         call profile_emit("unique_read",phase_start,items=num_lev)
@@ -3440,11 +3450,11 @@ contains
         num_opt = 0
         icount = 1
         iprgg = 1
-        write(72,"(A)")                                                &
+        write(unique_summary_unit,"(A)")                                                &
                     "          Composition  Serial No.         Coupling"
-        write(72,"(A)") "                       of compos."
-        write(72,"(A5,A)") " J = ",trim(str_j(num_lev))
-        write(72,"(A)")                                                &
+        write(unique_summary_unit,"(A)") "                       of compos."
+        write(unique_summary_unit,"(A5,A)") " J = ",trim(str_j(num_lev))
+        write(unique_summary_unit,"(A)")                                                &
                     "--------------------------------------------------"
         do i1 = 1, num_lev
    2      max_comp = 0.0
@@ -3456,7 +3466,7 @@ contains
                max_comp = comp(1,i2)
             end if
           end do
-          if (lev_opt == 0) call fail_input_io(0,57,"uniquelsj: no positive remaining component")
+          if (lev_opt == 0) call fail_input_io(0,lsj_label_unit,"uniquelsj: no positive remaining component")
           num_opt = num_opt + 1
           icount(lev_opt) = 0
           ipr = 1
@@ -3468,7 +3478,7 @@ contains
              if(trim(opt_coupling(i3))==trim(coupling(ipr,lev_opt)))then
                ipr = ipr + 1
                if(ipr > mas_max(lev_opt)) then
-                 call fail_input_io(0,57,"uniquelsj: no unused component label")
+                 call fail_input_io(0,lsj_label_unit,"uniquelsj: no unused component label")
                end if
                i3 = 1
              else
@@ -3482,12 +3492,12 @@ contains
              print*,                                                   &
              "The program is not able perform the identification for", &
              " level = ",lev_opt
-             call fail_input_io(0,57,"uniquelsj: no unique identification")
+             call fail_input_io(0,lsj_label_unit,"uniquelsj: no unique identification")
           end if
           if(ipr == 1) then
             opt_coupling(num_opt) = coupling(ipr,lev_opt)
             iprf = iprgg(lev_opt)
-            write(72,"(A,I4,2X,F12.9,I5,3X,A,A,I4)")"Pos",lev_opt,     &
+            write(unique_summary_unit,"(A,I4,2X,F12.9,I5,3X,A,A,I4)")"Pos",lev_opt,     &
             comp(ipr,lev_opt),iprf,trim(opt_coupling(num_opt))
             if(iprf > 1) then
               tmp_mix = 0
@@ -3532,21 +3542,21 @@ contains
             goto 2
           end if
         end do
-        write(72,"(A)")                                                &
+        write(unique_summary_unit,"(A)")                                                &
                     "--------------------------------------------------"
-        write(72,"(A)")""
+        write(unique_summary_unit,"(A)")""
 !
         call profile_emit("unique_assign_summary",phase_start,items=num_lev)
         phase_start=profile_time()
         do i1 = 1, num_lev
-          write(73,"(A3,A5,5X,A1,8X,F16.9,5X,F7.3,A)")                 &
+          write(unique_label_unit,"(A3,A5,5X,A1,8X,F16.9,5X,F7.3,A)")                 &
           str_no(i1),str_j(i1),str_p(i1),energy(i1),pro(i1),"%"
           do i2 = 1, mas_max(i1)
-            write(73,"(A7,F12.8,3X,F11.8,3X,A)")                       &
+            write(unique_label_unit,"(A7,F12.8,3X,F11.8,3X,A)")                       &
             str,mix(i2,i1),comp(i2,i1),trim(coupling(i2,i1))
           end do
         end do
-        if(new_j < 1) write(73,"(A)") " "
+        if(new_j < 1) write(unique_label_unit,"(A)") " "
         call profile_emit("unique_write",phase_start,items=num_lev)
 !
       end do

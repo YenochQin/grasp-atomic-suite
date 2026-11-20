@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine smsnew_mpi(doit,vint,vint2)
+      use calculation_file_units, only: two_body_cache_unit
 !                                                                      *
 !   MPI version of SMSNEW. Each rank handles a strided subset of the   *
 !   outer IC loop and can optionally write a per-rank angular-data      *
@@ -89,9 +90,10 @@
                             radial_sms == 0.0_real64) cycle
                         term_k1 = -vcoeff * radial_k1
                         term_sms = -vcoeff * radial_sms
-                        if(doit==1) write(51) csf_index,ir
+                        if(doit==1) write(two_body_cache_unit) csf_index,ir
                         if(doit==1) then
-                           write(51) vcoeff, ((iia*orbital_label_radix + iic)*orbital_label_radix+iib)*orbital_label_radix+iid
+                           write(two_body_cache_unit) vcoeff, ((iia*orbital_label_radix + iic)*orbital_label_radix+iib)* &
+                              & orbital_label_radix+iid
                         end if
                         do j = 1,nvec
                            contrik1 = evpair(j) * term_k1

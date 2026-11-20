@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine setsum(name, nci)
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use calculation_file_units, only: hyperfine_output_unit, summary_output_unit
 !                                                                      *
 !   Open the  .sum  files on stream 24 and 29                          *
 !                                                                      *
@@ -41,15 +43,15 @@
       form = "FORMATTED"
       status = "NEW"
 !
-      call openfl (29, file_path, form, status, open_status)
+      call openfl (hyperfine_output_unit, file_path, form, status, open_status)
       if (open_status /= 0) then
-         write (6, *) "Error when opening", file_path
+         write (output_unit, *) "Error when opening", file_path
          stop
       end if
 !
-      call openfl (24, filnam2, form, status, open_status)
+      call openfl (summary_output_unit, filnam2, form, status, open_status)
       if (open_status /= 0) then
-         write (6, *) "Error when opening", filnam2
+         write (output_unit, *) "Error when opening", filnam2
          stop
       end if
 !

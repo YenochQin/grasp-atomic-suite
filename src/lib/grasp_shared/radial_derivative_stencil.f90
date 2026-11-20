@@ -1,6 +1,12 @@
-      module radial_derivative_stencil
-      use, intrinsic :: iso_fortran_env, only: real64
-      implicit none (type, external)
-      private :: real64
-      real(real64) :: a(13, 13)
-      end module radial_derivative_stencil
+module radial_derivative_stencil
+    ! Module dependencies
+    use, intrinsic :: iso_fortran_env, only: real64
+    implicit none (type, external)
+
+    ! Module interface
+    private :: real64
+
+    ! Module state
+    ! a(i,j) weights sample j for the step-scaled derivative at node i of a 13-point stencil.
+    real(real64) :: a(13, 13)
+end module radial_derivative_stencil

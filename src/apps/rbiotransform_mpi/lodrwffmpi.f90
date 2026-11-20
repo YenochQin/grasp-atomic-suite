@@ -1,7 +1,9 @@
 !***********************************************************************
 !                                                                      *
       subroutine lodrwff(state_name, ntestg)
+      use, intrinsic :: iso_fortran_env, only: output_unit
       use calculation_state_files, only: orbital_input_path
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This subroutine loads  radial wavefunctions from the  .rwf  file   *
 !   and performs some related setup.                                   *
@@ -31,6 +33,7 @@
 !-----------------------------------------------
       use intrpqf_i, only: intrpqf
       implicit none (type, external)
+      integer :: wavefunction_input_unit
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -59,11 +62,11 @@
 !
 !   Write entry message
 !
-      write (6, *) "Loading Radial WaveFunction File for final state..."
+      write (output_unit, *) "Loading Radial WaveFunction File for final state..."
 !
 !   Open the radial wave function file
 !
-      open(unit=21,file=orbital_input_path(state_name),form="UNFORMATTED",         &
+      open(newunit=wavefunction_input_unit,file=orbital_input_path(state_name),form="UNFORMATTED",         &
                                   status="OLD",position="asis")
 !
 !   Save NAK, NP and NH
@@ -90,10 +93,10 @@
          if (fkk >= con) then
             gama(j) = sqrt(fkk - con)
          else
-            write (6, *) "LODRWF: Imaginary gamma parameter"
-            write (6, *) " for ", np(j), nh(j), " orbital; the"
-            write (6, *) " point model for the nucleus"
-            write (6, *) " is inappropriate for Z > ", speed_of_light_au, "."
+            write (output_unit, *) "LODRWF: Imaginary gamma parameter"
+            write (output_unit, *) " for ", np(j), nh(j), " orbital; the"
+            write (output_unit, *) " point model for the nucleus"
+            write (output_unit, *) " is inappropriate for Z > ", speed_of_light_au, "."
             stop
          end if
 !
@@ -102,10 +105,10 @@
 !   Read orbital information from Read Orbitals File;
 !
       nwin = 0
-      read (21, iostat=io_status) radial_file_signature
+      read (wavefunction_input_unit, iostat=io_status) radial_file_signature
       if (io_status/=0 .or. radial_file_signature/="G92RWF") then
-         write (6, *) "This is not a Radial WaveFunction File;"
-         close(21)
+         write (output_unit, *) "This is not a Radial WaveFunction File;"
+         close(wavefunction_input_unit)
       end if
 
       if (ntest >= 100) then
@@ -115,13 +118,13 @@
       end if
 
     3 continue
-      read (21, iostat=io_status) npy, naky, ey, my
+      read (wavefunction_input_unit, iostat=io_status) npy, naky, ey, my
       if (io_status == 0) then
          call alloc (pa, my, "PA", "LODRWFFF")
          call alloc (qa, my, "QA", "LODRWFFF")
          call alloc (ra, my, "RA", "LODRWFFF")
-         read (21) pzy, (pa(i),i=1,my), (qa(i),i=1,my)
-         read (21) (ra(i),i=1,my)
+         read (wavefunction_input_unit) pzy, (pa(i),i=1,my), (qa(i),i=1,my)
+         read (wavefunction_input_unit) (ra(i),i=1,my)
 !
 !    Orbital order as defined in kapdata
 !
@@ -156,21 +159,24 @@
 
          goto 3
       end if
-      if (ldbpr(3)) write (99, *) " orbitals renormalised;"
+      if (ldbpr(3)) then
+         call ensure_debug_output()
+         write (angular_debug_unit, *) " orbitals renormalised;"
+      end if
 !
 !   Stop with an error message if all orbitals are not known
 !
       if (nwin < nwff) then
-         write (6, *) "LODRWF: All required orbitals not"
-         write (6, *) " found."
+         write (output_unit, *) "LODRWF: All required orbitals not"
+         write (output_unit, *) " found."
          ierr = 1
          goto 5
       end if
 !
-      write (6, *) " ... load complete;"
+      write (output_unit, *) " ... load complete;"
 !
     5 continue
-      close(21)
+      close(wavefunction_input_unit)
       if (ntest >= 100) then
          write (*, *) "Sorted order should be the same as from kapdat"
          do j = 1, nwff

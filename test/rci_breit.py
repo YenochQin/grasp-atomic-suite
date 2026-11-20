@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import math
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -35,7 +36,10 @@ def run_case(
     output = result.stdout + result.stderr
     assert result.returncode == 0 and "RCI_MPI: Execution complete." in output, output
     assert ("Breit integrals of type 1" in output) == breit, output
-    assert ("Breit integrals of type 2" in output) == breit, output
+    # For ranks 1 through 7 the fixture admits 96, 97, 68, 34, 12, 3, 0
+    # ordered orbital pairs. Type 2 combines two such pairs of equal rank.
+    type2_counts = re.findall(r"Computing\s+(\d+)\s+Breit integrals of type 2", output)
+    assert type2_counts == (["24558"] if breit else []), output
     shift, shifted_energy = floats(records(work / "case.cimix")[-2])
     energy = shift + shifted_energy
     assert math.isfinite(energy), output

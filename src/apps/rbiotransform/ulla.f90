@@ -4,6 +4,7 @@
 !     ------------------------------------------------------------------
 !
       subroutine ulla(a, u, l, ndim, scr)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !
 ! Obtain U L decomposition of matrix A
 !   A = U L
@@ -81,7 +82,7 @@
 !
       ntest = 0
       if (ntest /= 0) then
-         write (6, *) " U and L from Ulla "
+         write (output_unit, *) " U and L from Ulla "
          call wrtmat (u, ndim, ndim, ndim, ndim)
          call wrtmat (l, ndim, ndim, ndim, ndim)
       end if

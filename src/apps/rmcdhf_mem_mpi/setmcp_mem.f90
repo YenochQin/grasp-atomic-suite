@@ -1,6 +1,7 @@
 !*******************************************************************
 !                                                                  *
       subroutine setmcp_mem(nblock,nfile)
+      use mcp_file_metadata, only: mcp_input_units
 !                                                                  *
 !   Written by  G. Gaigalas               Vilnius, September 2021  *
 !                                                                  *
@@ -53,14 +54,14 @@
       do symmetry_block_index = 1, nblock
         if(nfile == 30) then
           !*** Read in IROW from file mcp.30 ***
-          read (30, iostat=io_status) mcp_channel_label, jblockt, block_csf_count
-          if (io_status /= 0) call fail_input_io(io_status, 30, "MCP setmcp_mem block or channel header")
+          read (mcp_input_units(30), iostat=io_status) mcp_channel_label, jblockt, block_csf_count
+          if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(30), "MCP setmcp_mem block or channel header")
           if (jblockt /= symmetry_block_index) then
             write (stderr_unit, *) "setmcp_mem", "1: jblockt .NE. jblock"
-            call fail_input_io(0, nfile, "MCP setmcp_mem invalid block or channel")
+            call fail_input_io(0, mcp_input_units(nfile), "MCP setmcp_mem invalid block or channel")
           end if
-          read (30, iostat=io_status) nelmntgg
-          if (io_status /= 0) call fail_input_io(io_status, 30, "MCP setmcp_mem sparse element count")
+          read (mcp_input_units(30), iostat=io_status) nelmntgg
+          if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(30), "MCP setmcp_mem sparse element count")
           stored_matrix_element_count = int(nelmntgg,kind=int64)
           if(symmetry_block_index == 1) then
             call alloc (imin1_30,nblock,"IMIN1_30","setmcp_mem")
@@ -77,30 +78,31 @@
             imin2_30(symmetry_block_index) = imax2_30(symmetry_block_index-1) + 0
             imax2_30(symmetry_block_index) = imax2_30(symmetry_block_index-1) + stored_matrix_element_count
           end if
-          read (30, iostat=io_status) (iendcdum,i=mpi_rank + 1,block_csf_count,mpi_process_count),                  &
+          read (mcp_input_units(30), iostat=io_status) (iendcdum,i=mpi_rank + 1,block_csf_count,mpi_process_count), &
+             & &
                                                  (irow_dumm,i=1,stored_matrix_element_count)
-          if (io_status /= 0) call fail_input_io(io_status, 30, "MCP setmcp_mem sparse indices")
+          if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(30), "MCP setmcp_mem sparse indices")
         else
-          read (nfile, iostat=io_status) mcp_channel_label, jblockt, ncft, ncoeff
-          if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem block or channel header")
+          read (mcp_input_units(nfile), iostat=io_status) mcp_channel_label, jblockt, ncft, ncoeff
+          if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem block or channel header")
           if (jblockt /= symmetry_block_index) then
             write (stderr_unit, *) "setmcp_mem", ":2 jblockt .NE. jblock"
-            call fail_input_io(0, nfile, "MCP setmcp_mem invalid block or channel")
+            call fail_input_io(0, mcp_input_units(nfile), "MCP setmcp_mem invalid block or channel")
           end if
 
           total_secondary_contribution_count = total_secondary_contribution_count + 1
-          read (nfile, iostat=io_status) lab_dumm, ncontr_dumm
-          if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem count-pass label/count")
+          read (mcp_input_units(nfile), iostat=io_status) lab_dumm, ncontr_dumm
+          if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem count-pass label/count")
           do while (lab_dumm /= 0 .or. ncontr_dumm /= 0)
             !*** Read column index, sparse matrix index, and
             !*** coefficient for all contributions from this integral
-            read (nfile, iostat=io_status) (iclmn_dumm,indx_dumm,coeff_dumm,             &
+            read (mcp_input_units(nfile), iostat=io_status) (iclmn_dumm,indx_dumm,coeff_dumm,             &
                                                        i=1,ncontr_dumm)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem count-pass coefficients")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem count-pass coefficients")
             total_contribution_count = total_contribution_count + ncontr_dumm
             total_secondary_contribution_count = total_secondary_contribution_count + 1
-            read (nfile, iostat=io_status) lab_dumm, ncontr_dumm
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem count-pass label/count")
+            read (mcp_input_units(nfile), iostat=io_status) lab_dumm, ncontr_dumm
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem count-pass label/count")
           end do
         end if
       end do
@@ -266,444 +268,444 @@
          call alloc (coeff_50, total_contribution_count, "COEFF_50", "setmcp_mem")
       else
          print*, "Error in setmcp_mem"
-         call fail_input_io(0, nfile, "MCP setmcp_mem invalid block or channel")
+         call fail_input_io(0, mcp_input_units(nfile), "MCP setmcp_mem invalid block or channel")
       end if
-      rewind (nfile, iostat=io_status)
-      if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem rewind")
+      rewind (mcp_input_units(nfile), iostat=io_status)
+      if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem rewind")
       if(nfile == 30) then
-         read (nfile, iostat=io_status)
-         if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem skip header or payload")
-         read (nfile, iostat=io_status)
-         if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem skip header or payload")
-         read (nfile, iostat=io_status)
-         if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem skip header or payload")
+         read (mcp_input_units(nfile), iostat=io_status)
+         if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem skip header or payload")
+         read (mcp_input_units(nfile), iostat=io_status)
+         if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem skip header or payload")
+         read (mcp_input_units(nfile), iostat=io_status)
+         if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem skip header or payload")
       end if
-      read (nfile, iostat=io_status)
-      if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem skip header or payload")
-      read (nfile, iostat=io_status)
-      if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem skip header or payload")
-      read (nfile, iostat=io_status)
-      if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem skip header or payload")
+      read (mcp_input_units(nfile), iostat=io_status)
+      if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem skip header or payload")
+      read (mcp_input_units(nfile), iostat=io_status)
+      if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem skip header or payload")
+      read (mcp_input_units(nfile), iostat=io_status)
+      if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem skip header or payload")
 !
       total_contribution_count = 0
       total_secondary_contribution_count = 0
       do symmetry_block_index = 1, nblock
         if(nfile == 30) then
           !*** Read in IROW from file mcp.30 ***
-          read (30, iostat=io_status) mcp_channel_label, jblockt, block_csf_count
-          if (io_status /= 0) call fail_input_io(io_status, 30, "MCP setmcp_mem block or channel header")
+          read (mcp_input_units(30), iostat=io_status) mcp_channel_label, jblockt, block_csf_count
+          if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(30), "MCP setmcp_mem block or channel header")
           if (jblockt /= symmetry_block_index) then
             write (stderr_unit, *) "setmcp_mem", "3: jblockt .NE. jblock"
-            call fail_input_io(0, nfile, "MCP setmcp_mem invalid block or channel")
+            call fail_input_io(0, mcp_input_units(nfile), "MCP setmcp_mem invalid block or channel")
           end if
         else
-          read (nfile, iostat=io_status) mcp_channel_label, jblockt, ncft, ncoeff
-          if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem block or channel header")
+          read (mcp_input_units(nfile), iostat=io_status) mcp_channel_label, jblockt, ncft, ncoeff
+          if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem block or channel header")
           if (jblockt /= symmetry_block_index) then
             write (stderr_unit, *) "setmcp_mem", ":4 jblockt .NE. jblock"
-            call fail_input_io(0, nfile, "MCP setmcp_mem invalid block or channel")
+            call fail_input_io(0, mcp_input_units(nfile), "MCP setmcp_mem invalid block or channel")
           end if
           total_secondary_contribution_count = total_secondary_contribution_count + 1
         end if
 
          if(nfile == 30) then
-            read (30, iostat=io_status) nelmntgg
-            if (io_status /= 0) call fail_input_io(io_status, 30, "MCP setmcp_mem sparse element count")
+            read (mcp_input_units(30), iostat=io_status) nelmntgg
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(30), "MCP setmcp_mem sparse element count")
             stored_matrix_element_count = int(nelmntgg,kind=int64)
-            read (30, iostat=io_status) (iendc_30(i),i=                                  &
+            read (mcp_input_units(30), iostat=io_status) (iendc_30(i),i=                                  &
                      imin1_30(symmetry_block_index)+mpi_rank+1,imax1_30(symmetry_block_index),mpi_process_count), &
                      (irow_30(i),i=imin2_30(symmetry_block_index)+1,imax2_30(symmetry_block_index))
-            if (io_status /= 0) call fail_input_io(io_status, 30, "MCP setmcp_mem sparse indices")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(30), "MCP setmcp_mem sparse indices")
          else if(nfile == 31) then
-            read (nfile, iostat=io_status) lab_31(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_31(total_secondary_contribution_count),              &
                                   ncontr_31(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_31(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_31(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_31(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_31(total_contribution_count+i),                   &
                               indx_31(total_contribution_count+i),                   &
                              coeff_31(total_contribution_count+i),                   &
                         i=1,ncontr_31(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_31(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_31(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_31(total_secondary_contribution_count),           &
                                      ncontr_31(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 32) then
-            read (nfile, iostat=io_status) lab_32(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_32(total_secondary_contribution_count),              &
                                   ncontr_32(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_32(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_32(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_32(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_32(total_contribution_count+i),                   &
                               indx_32(total_contribution_count+i),                   &
                              coeff_32(total_contribution_count+i),                   &
                         i=1,ncontr_32(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_32(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_32(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_32(total_secondary_contribution_count),           &
                                      ncontr_32(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 33) then
-            read (nfile, iostat=io_status) lab_33(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_33(total_secondary_contribution_count),              &
                                   ncontr_33(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_33(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_33(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_33(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_33(total_contribution_count+i),                   &
                               indx_33(total_contribution_count+i),                   &
                              coeff_33(total_contribution_count+i),                   &
                         i=1,ncontr_33(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_33(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_33(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_33(total_secondary_contribution_count),           &
                                      ncontr_33(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 34) then
-            read (nfile, iostat=io_status) lab_34(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_34(total_secondary_contribution_count),              &
                                   ncontr_34(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_34(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_34(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_34(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_34(total_contribution_count+i),                   &
                               indx_34(total_contribution_count+i),                   &
                              coeff_34(total_contribution_count+i),                   &
                         i=1,ncontr_34(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_34(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_34(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_34(total_secondary_contribution_count),           &
                                      ncontr_34(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 35) then
-            read (nfile, iostat=io_status) lab_35(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_35(total_secondary_contribution_count),              &
                                   ncontr_35(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_35(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_35(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_35(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_35(total_contribution_count+i),                   &
                               indx_35(total_contribution_count+i),                   &
                              coeff_35(total_contribution_count+i),                   &
                         i=1,ncontr_35(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_35(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_35(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_35(total_secondary_contribution_count),           &
                                      ncontr_35(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 36) then
-            read (nfile, iostat=io_status) lab_36(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_36(total_secondary_contribution_count),              &
                                   ncontr_36(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_36(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_36(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_36(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_36(total_contribution_count+i),                   &
                               indx_36(total_contribution_count+i),                   &
                              coeff_36(total_contribution_count+i),                   &
                         i=1,ncontr_36(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_36(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_36(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_36(total_secondary_contribution_count),           &
                                      ncontr_36(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 37) then
-            read (nfile, iostat=io_status) lab_37(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_37(total_secondary_contribution_count),              &
                                   ncontr_37(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_37(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_37(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_37(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_37(total_contribution_count+i),                   &
                               indx_37(total_contribution_count+i),                   &
                              coeff_37(total_contribution_count+i),                   &
                         i=1,ncontr_37(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_37(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_37(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_37(total_secondary_contribution_count),           &
                                      ncontr_37(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 38) then
-            read (nfile, iostat=io_status) lab_38(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_38(total_secondary_contribution_count),              &
                                   ncontr_38(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_38(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_38(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_38(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_38(total_contribution_count+i),                   &
                               indx_38(total_contribution_count+i),                   &
                              coeff_38(total_contribution_count+i),                   &
                         i=1,ncontr_38(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_38(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_38(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_38(total_secondary_contribution_count),           &
                                      ncontr_38(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 39) then
-            read (nfile, iostat=io_status) lab_39(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_39(total_secondary_contribution_count),              &
                                   ncontr_39(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_39(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_39(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_39(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_39(total_contribution_count+i),                   &
                               indx_39(total_contribution_count+i),                   &
                              coeff_39(total_contribution_count+i),                   &
                         i=1,ncontr_39(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_39(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_39(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_39(total_secondary_contribution_count),           &
                                      ncontr_39(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 40) then
-            read (nfile, iostat=io_status) lab_40(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_40(total_secondary_contribution_count),              &
                                   ncontr_40(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_40(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_40(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_40(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_40(total_contribution_count+i),                   &
                               indx_40(total_contribution_count+i),                   &
                              coeff_40(total_contribution_count+i),                   &
                         i=1,ncontr_40(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_40(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_40(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_40(total_secondary_contribution_count),           &
                                      ncontr_40(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 41) then
-            read (nfile, iostat=io_status) lab_41(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_41(total_secondary_contribution_count),              &
                                   ncontr_41(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_41(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_41(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_41(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_41(total_contribution_count+i),                   &
                               indx_41(total_contribution_count+i),                   &
                              coeff_41(total_contribution_count+i),                   &
                         i=1,ncontr_41(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_41(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_41(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_41(total_secondary_contribution_count),           &
                                      ncontr_41(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 42) then
-            read (nfile, iostat=io_status) lab_42(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_42(total_secondary_contribution_count),              &
                                   ncontr_42(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_42(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_42(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_42(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_42(total_contribution_count+i),                   &
                               indx_42(total_contribution_count+i),                   &
                              coeff_42(total_contribution_count+i),                   &
                         i=1,ncontr_42(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_42(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_42(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_42(total_secondary_contribution_count),           &
                                      ncontr_42(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 43) then
-            read (nfile, iostat=io_status) lab_43(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_43(total_secondary_contribution_count),              &
                                   ncontr_43(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_43(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_43(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_43(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_43(total_contribution_count+i),                   &
                               indx_43(total_contribution_count+i),                   &
                              coeff_43(total_contribution_count+i),                   &
                         i=1,ncontr_43(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_43(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_43(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_43(total_secondary_contribution_count),           &
                                      ncontr_43(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 44) then
-            read (nfile, iostat=io_status) lab_44(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_44(total_secondary_contribution_count),              &
                                   ncontr_44(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_44(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_44(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_44(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_44(total_contribution_count+i),                   &
                               indx_44(total_contribution_count+i),                   &
                              coeff_44(total_contribution_count+i),                   &
                         i=1,ncontr_44(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_44(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_44(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_44(total_secondary_contribution_count),           &
                                      ncontr_44(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 45) then
-            read (nfile, iostat=io_status) lab_45(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_45(total_secondary_contribution_count),              &
                                   ncontr_45(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_45(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_45(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_45(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_45(total_contribution_count+i),                   &
                               indx_45(total_contribution_count+i),                   &
                              coeff_45(total_contribution_count+i),                   &
                         i=1,ncontr_45(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_45(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_45(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_45(total_secondary_contribution_count),           &
                                      ncontr_45(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 46) then
-            read (nfile, iostat=io_status) lab_46(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_46(total_secondary_contribution_count),              &
                                   ncontr_46(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_46(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_46(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_46(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_46(total_contribution_count+i),                   &
                               indx_46(total_contribution_count+i),                   &
                              coeff_46(total_contribution_count+i),                   &
                         i=1,ncontr_46(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_46(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_46(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_46(total_secondary_contribution_count),           &
                                      ncontr_46(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 47) then
-            read (nfile, iostat=io_status) lab_47(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_47(total_secondary_contribution_count),              &
                                   ncontr_47(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_47(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_47(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_47(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_47(total_contribution_count+i),                   &
                               indx_47(total_contribution_count+i),                   &
                              coeff_47(total_contribution_count+i),                   &
                         i=1,ncontr_47(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_47(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_47(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_47(total_secondary_contribution_count),           &
                                      ncontr_47(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 48) then
-            read (nfile, iostat=io_status) lab_48(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_48(total_secondary_contribution_count),              &
                                   ncontr_48(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_48(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_48(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_48(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_48(total_contribution_count+i),                   &
                               indx_48(total_contribution_count+i),                   &
                              coeff_48(total_contribution_count+i),                   &
                         i=1,ncontr_48(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_48(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_48(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_48(total_secondary_contribution_count),           &
                                      ncontr_48(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 49) then
-            read (nfile, iostat=io_status) lab_49(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_49(total_secondary_contribution_count),              &
                                   ncontr_49(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_49(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_49(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_49(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_49(total_contribution_count+i),                   &
                               indx_49(total_contribution_count+i),                   &
                              coeff_49(total_contribution_count+i),                   &
                         i=1,ncontr_49(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_49(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_49(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_49(total_secondary_contribution_count),           &
                                      ncontr_49(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else if(nfile == 50) then
-            read (nfile, iostat=io_status) lab_50(total_secondary_contribution_count),              &
+            read (mcp_input_units(nfile), iostat=io_status) lab_50(total_secondary_contribution_count),              &
                                   ncontr_50(total_secondary_contribution_count)
-            if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             do while (lab_50(total_secondary_contribution_count) /= 0 .or.                    &
                    ncontr_50(total_secondary_contribution_count) /= 0)
                !*** Read column index, sparse matrix index, and
                !*** coefficient for all contributions from this integral
-               read (nfile, iostat=io_status) (iclmn_50(total_contribution_count+i),                   &
+               read (mcp_input_units(nfile), iostat=io_status) (iclmn_50(total_contribution_count+i),                   &
                               indx_50(total_contribution_count+i),                   &
                              coeff_50(total_contribution_count+i),                   &
                         i=1,ncontr_50(total_secondary_contribution_count))
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem coefficient payload")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem coefficient payload")
                total_contribution_count  = total_contribution_count + ncontr_50(total_secondary_contribution_count)
                total_secondary_contribution_count = total_secondary_contribution_count + 1
-               read (nfile, iostat=io_status) lab_50(total_secondary_contribution_count),           &
+               read (mcp_input_units(nfile), iostat=io_status) lab_50(total_secondary_contribution_count),           &
                                      ncontr_50(total_secondary_contribution_count)
-               if (io_status /= 0) call fail_input_io(io_status, nfile, "MCP setmcp_mem load-pass label/count")
+               if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), "MCP setmcp_mem load-pass label/count")
             end do
          else
             print*, "Error in setmcp_mem"
-            call fail_input_io(0, nfile, "MCP setmcp_mem invalid block or channel")
+            call fail_input_io(0, mcp_input_units(nfile), "MCP setmcp_mem invalid block or channel")
          end if
 
       end do
       sysmemf = systemfreemem()  ! GB
       if(mpi_rank == 0)                                                    &
       write(*,"(A30,F10.2,A3)") "Free memory on computer",sysmemf," Gb"
-      close(nfile)
+      close(mcp_input_units(nfile))
 
       return
       end subroutine setmcp_mem

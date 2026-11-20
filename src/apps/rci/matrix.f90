@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine matrix (unused_core_subshell_count, max_orbital_two_j)
+      use calculation_file_units, only: mixing_output_unit, summary_output_unit
 !                                                                      *
 !   This SUBROUTINE calls routines to  form the  Hamiltonian  matrix   *
 !   and to diagonalise it.   The total angular momenta and parity of   *
@@ -39,7 +40,7 @@
       use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, jcupar, jqsar
       use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
-      use where_c, only: imcdf
+      use where_c, only: restart_matrix_unit
       use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
       use scf_previous_eigenvectors, only: evec1
       !USE blk_C
@@ -147,9 +148,9 @@
          if (lse) then
             print *, "Entering QED ..."
 
-            write (24,*)
-            write (24,*) " Self Energy Corrections: "
-            write (24,*)
+            write (summary_output_unit,*)
+            write (summary_output_unit,*) " Self Energy Corrections: "
+            write (summary_output_unit,*)
                call qed_slfen (slfint)
             do csf_index = 1, csf_count
                elemnt = 0.0_real64
@@ -161,15 +162,15 @@
                slf_en(csf_index) = elemnt
             end do
 
-            write (24,*)
-            write (24,*) "Self-energy corrections estimated"           &
+            write (summary_output_unit,*)
+            write (summary_output_unit,*) "Self-energy corrections estimated"           &
                     //" --- these will influence the data"
-            write (24,*) " in the RCI92 MIXing coefficients File."
+            write (summary_output_unit,*) " in the RCI92 MIXing coefficients File."
          end if
 
 ! zou
          if (nvec <= 0) then
-            write (25) symmetry_block_index, csf_count, nvec, 999, 999
+            write (mixing_output_unit) symmetry_block_index, csf_count, nvec, 999, 999
 !           ...Generate H matrix of the current block and write to disk
 !           ...eav, nelmnt are also obtained from genmat
             call genmat (atwinv, symmetry_block_index, mpi_rank, mpi_process_count, elsto, irestart,&
@@ -213,10 +214,10 @@
 
 !     ...Write ASF symmetries, eigenvalues, and eigenvectors to RCI92
 !     ...MIXing coefficients File; close the file; print a report
-      write (25) symmetry_block_index, csf_count, nvec, iiatjpo, iiaspar
-      write (25) (ivec(i), i = 1, nvec)
-      write (25) hamiltonian_energy_shift,(shifted_eigenvalues(i),i = 1,nvec)
-      write (25) ((csf_mixing_coefficients(i+(j-1)*csf_count),i = 1,csf_count),j = 1,nvec)
+      write (mixing_output_unit) symmetry_block_index, csf_count, nvec, iiatjpo, iiaspar
+      write (mixing_output_unit) (ivec(i), i = 1, nvec)
+      write (mixing_output_unit) hamiltonian_energy_shift,(shifted_eigenvalues(i),i = 1,nvec)
+      write (mixing_output_unit) ((csf_mixing_coefficients(i+(j-1)*csf_count),i = 1,csf_count),j = 1,nvec)
 !      print '(5i5)',jblock, ncf, nvec, iiatjpo, iiaspar
 !      print '(3I20)',(ivec(i), i = 1, nvec)
 !      print '(3f20.15)',EAV,(EVAL(I),I = 1,NVEC)
@@ -241,11 +242,11 @@
             print *, "Entering QED ..."
             call alloc (etot,nvec,"ETOT", "MATRIX")
 
-            write (24,*)
-            write (24,*) " Self Energy Corrections: "
-            write (24,*)
-            write (24,'(" Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV")')
-            write (24,*)
+            write (summary_output_unit,*)
+            write (summary_output_unit,*) " Self Energy Corrections: "
+            write (summary_output_unit,*)
+            write (summary_output_unit,'(" Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV")')
+            write (summary_output_unit,*)
             do j = 1, nvec
                call qed (j,slfint,ucf)
                elemnt = 0.0_real64
@@ -260,14 +261,14 @@
            ecm = eau*hartree_to_wavenumber_cm
            eev = eau*hartree_to_ev
            ip = (iiaspar+3)/2
-           write (24,'(1i3,2x,2a4,1p,3d22.14)') j,right_justified_j_labels(iiatjpo),parity_labels(ip),eau,ecm,eev
+           write (summary_output_unit,'(1i3,2x,2a4,1p,3d22.14)') j,right_justified_j_labels(iiatjpo),parity_labels(ip),eau,ecm,eev
 !
             end do
 
-            write (24,*)
-            write (24,*) "Self-energy corrections estimated"           &
+            write (summary_output_unit,*)
+            write (summary_output_unit,*) "Self-energy corrections estimated"           &
                     //" --- these do not influence the data"
-            write (24,*) " in the RCI92 MIXing coefficients File."
+            write (summary_output_unit,*) " in the RCI92 MIXing coefficients File."
             call engout (hamiltonian_energy_shift,etot,iiatjpo,iiaspar,ivec,nvec,mode)
 ! zou       CALL ENGOUT (EAV+elsto,ETOT,IiATJPO,iIASPAR,IVEC,NVEC,MODE)
             call dalloc (etot, "ETOT", "MATRIX")
@@ -292,7 +293,7 @@
 !
 !   Close the restart files; nothing will be added to them now
 !
-      close (imcdf)
+      close (restart_matrix_unit)
 !     ...Clean up
       call dalloc (csf_counts_by_block, "NCFBLK", "MATRIX")
       call dalloc (eigenvector_counts_by_block, "NEVBLK", "MATRIX")

@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine readmix(name, inpci, init)
+      use transition_matrix_workspace, only: final_mixing_unit, initial_mixing_unit
 !                                                                      *
 !   Open and read the mixing coefficent files                          *
 !                                                                      *
@@ -39,18 +40,18 @@
 !
 !   Read the initial state mixing file
 !
-         read (68) ib, ncfii, nvecii, iatjp, iaspa
+         read (initial_mixing_unit) ib, ncfii, nvecii, iatjp, iaspa
          call alloc (evalii, nvecii, "EVALII", "READMIX")
          call alloc (evecii, ncfii*nvecii, "EVECII", "READMIX")
          call alloc (ivecii, nvecii,"IVECII", "READMIX" )
          call alloc (iatjpoii, nvecii, "IATJPOII", "READMIX")
          call alloc (iasparii, nvecii, "ISPARII", "READMIX")
-         read (68) (ivecii(i),i=1,nvecii)
+         read (initial_mixing_unit) (ivecii(i),i=1,nvecii)
          iatjpoii(:nvecii) = iatjp
          iasparii(:nvecii) = iaspa
-         read (68) eavii, (evalii(i),i=1,nvecii)
+         read (initial_mixing_unit) eavii, (evalii(i),i=1,nvecii)
 
-         read (68) ((evecii(i + (j - 1)*ncfii),i=1,ncfii),j=1,nvecii)
+         read (initial_mixing_unit) ((evecii(i + (j - 1)*ncfii),i=1,ncfii),j=1,nvecii)
 !
 !     CLOSE(68)
 !
@@ -59,18 +60,18 @@
 !   Read the final state mixing file
 !
 
-         read (78) ib, ncfff, nvecff, iatjp, iaspa
+         read (final_mixing_unit) ib, ncfff, nvecff, iatjp, iaspa
          call alloc (evalff, nvecff, "EVALFF", "READMIX")
          call alloc (evecff, ncfff*nvecff, "EVECFF", "READMIX")
          call alloc (ivecff, nvecff,"IVECFF", "READMIX" )
          call alloc (iatjpoff, nvecff, "IATJPOFF", "READMIX")
          call alloc (iasparff, nvecff, "ISPARFF", "READMIX")
-         read (78) (ivecff(i),i=1,nvecff)
+         read (final_mixing_unit) (ivecff(i),i=1,nvecff)
          iatjpoff(:nvecff) = iatjp
          iasparff(:nvecff) = iaspa
-         read (78) eavff, (evalff(i),i=1,nvecff)
+         read (final_mixing_unit) eavff, (evalff(i),i=1,nvecff)
 
-         read (78) ((evecff(i + (j - 1)*ncfff),i=1,ncfff),j=1,nvecff)
+         read (final_mixing_unit) ((evecff(i + (j - 1)*ncfff),i=1,ncfff),j=1,nvecff)
 !
 !   Close the initial state mixing  file
 !

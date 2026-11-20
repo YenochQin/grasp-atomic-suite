@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine matrixmpi(dvdfirst)
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use calculation_file_units, only: mixing_output_unit
 !                                                                      *
 !   Calls routines to form the Hamiltonian matrix and to diagonalise   *
 !   it. The total angular momenta and parity of each  ASF  is found;   *
@@ -74,7 +76,7 @@
 !
 !-----------------------------------------------------------------------
 
-      if (mpi_rank == 0) write (6, *)
+      if (mpi_rank == 0) write (output_unit, *)
 
 !   Allocate memory for CMVL once (the maximum size)
 !   Save previous estimate of eigenvectors
@@ -87,11 +89,12 @@
       ! To put in ncmin and nvecsiz. Values read here are the same
       ! as those from elsewhere (shch as common blocks)
       if (mpi_rank == 0) then
-         rewind (25)
-         read (25)                               ! 'G92MIX'
-         read (25) nelec, total_csf_count, orbital_count, ntmp, ntmp, symmetry_block_count
-         backspace (25)
-         write (25) nelec, total_csf_count, orbital_count, ncmin, mixing_coefficient_storage_size, symmetry_block_count
+         rewind (mixing_output_unit)
+         read (mixing_output_unit)                               ! 'G92MIX'
+         read (mixing_output_unit) nelec, total_csf_count, orbital_count, ntmp, ntmp, symmetry_block_count
+         backspace (mixing_output_unit)
+         write (mixing_output_unit) nelec, total_csf_count, orbital_count, ncmin, mixing_coefficient_storage_size, &
+            symmetry_block_count
       end if
 
 !=======================================================================
@@ -271,12 +274,14 @@
          end if
 
          if (mpi_rank == 0) then
-            write (25) symmetry_block_index, csf_count, eigenvector_counts_by_block(symmetry_block_index), iattmp, iastmp
-            write (25) (iccmin(i + ncminpat),i=1,eigenvector_counts_by_block(symmetry_block_index))
-            write (25) hamiltonian_energy_shift, (shifted_eigenvalues(i + ncminpat),i=1, &
-               & eigenvector_counts_by_block(symmetry_block_index))
-            write (25) ((csf_mixing_coefficients(i+(level_index-1)*csf_count+nevecpat),i=1,csf_count),level_index=1, &
-               & eigenvector_counts_by_block(symmetry_block_index)&
+            write (mixing_output_unit) symmetry_block_index, csf_count, eigenvector_counts_by_block(symmetry_block_index), &
+               & iattmp, iastmp
+            write (mixing_output_unit) (iccmin(i + ncminpat),i=1,eigenvector_counts_by_block(symmetry_block_index))
+            write (mixing_output_unit) hamiltonian_energy_shift, (shifted_eigenvalues(i + ncminpat),i=1, &
+               eigenvector_counts_by_block(symmetry_block_index))
+            write (mixing_output_unit) ((csf_mixing_coefficients(i+(level_index-1)*csf_count+nevecpat),i=1,csf_count), &
+               & level_index=1, &
+               eigenvector_counts_by_block(symmetry_block_index)&
                )
          end if
 

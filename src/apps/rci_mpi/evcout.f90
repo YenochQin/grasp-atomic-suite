@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine evcout
+      use calculation_file_units, only: summary_output_unit
 !                                                                      *
 !   Routine for printing eigenvectors.                                 *
 !                                                                      *
@@ -27,7 +28,7 @@
 !
 !   Header
 !
-      write (24,'(//" Eigenvectors:"/)')
+      write (summary_output_unit,'(//" Eigenvectors:"/)')
 !
 !   Determine which eigenvectors are to be printed out
 !
@@ -52,24 +53,24 @@
 !
 !   Write out the column numbers; skip a line
 !
-      write (24,'(1x,8(i8,7x))') (iloc(l),l = j1,j2)
-      write (24,'(1x)')
+      write (summary_output_unit,'(1x,8(i8,7x))') (iloc(l),l = j1,j2)
+      write (summary_output_unit,'(1x)')
 !
 !   Write out the rows
 !
       do 4 csf_index = 1,csf_count
 !
-         write (24,'(1x,1p,8d15.7)') (csf_mixing_coefficients(csf_index+(l-1)*csf_count),l = j1,j2)
+         write (summary_output_unit,'(1x,1p,8d15.7)') (csf_mixing_coefficients(csf_index+(l-1)*csf_count),l = j1,j2)
 !
 !   Skip a line after every tenth row
 !
-         if (mod(csf_index,10) == 0) write (24,'(1x)')
+         if (mod(csf_index,10) == 0) write (summary_output_unit,'(1x)')
 !
     4 continue
 !
 !   Set up for the next set of columns
 !
-      write (24,'(1x,1p,8d15.7)')
+      write (summary_output_unit,'(1x,1p,8d15.7)')
       if (j2 < nvex) then
          j1 = j1+jp
          j2 = j2+jp

@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine ypot(orbital_index)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This subroutine  tabulates the  potential function Y(r) (Eq (14)   *
 !   in  I P Grant, B J McKenzie, P H Norrington, D F Mayers, and N C   *
@@ -50,8 +51,11 @@
 !-----------------------------------------------
 !   Debug printout: composition
 
-      if (ldbpr(29) .or. ldbpr(30)) write (99, '(/,/," Direct potential for ",1i2,1a2," orbital :"/,/)') &
+      if (ldbpr(29) .or. ldbpr(30)) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '(/,/," Direct potential for ",1i2,1a2," orbital :"/,/)') &
          orbital_principal_n(orbital_index), orbital_symmetry_labels(orbital_index)
+      end if
 !
 !   Initialize array YP with the nuclear potential piece
 !
@@ -70,10 +74,13 @@
          ioy2 = label/orbital_label_radix
          coeff = ya(index)
 
-         if (ldbpr(29)) write (99, '(/,25x,"(",1i2,")"/,1x,1p,d21.14,"* Y    (",1i2,1a2,",",1i2,1a2,")")') &
+         if (ldbpr(29)) then
+            call ensure_debug_output()
+            write (angular_debug_unit, '(/,25x,"(",1i2,")"/,1x,1p,d21.14,"* Y    (",1i2,1a2,",",1i2,1a2,")")') &
             k, coeff, orbital_principal_n(ioy1), orbital_symmetry_labels(ioy1), &
             & orbital_principal_n(ioy2)&
             , orbital_symmetry_labels(ioy2)
+         end if
 
          call yzk (k, ioy1, ioy2)                ! Accumulate contributions
          yp(:radial_point_count) = yp(:radial_point_count) - coeff*tb(:radial_point_count)
@@ -82,7 +89,8 @@
 !   Debug printout
 !
       if (ldbpr(30)) then
-         write (99, '(/,/,3(" --------- r --------- ------- Y (r) -------"))')
+         call ensure_debug_output()
+         write (angular_debug_unit, '(/,/,3(" --------- r --------- ------- Y (r) -------"))')
          nb3 = radial_point_count/3
          if (3*nb3 == radial_point_count) then
             row_count = nb3
@@ -94,12 +102,15 @@
             ii2 = ii1 + row_count
             ii3 = ii2 + row_count
             if (ii3 <= radial_point_count) then
-               write (99, '(1p,6(1x,1d21.14))') &
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1p,6(1x,1d21.14))') &
                   radial_grid(ii1),yp(ii1),radial_grid(ii2),yp(ii2),radial_grid(ii3),yp(ii3)
             else if (ii2 <= radial_point_count) then
-               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1),yp(ii1),radial_grid(ii2),yp(ii2)
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1p,6(1x,1d21.14))') radial_grid(ii1),yp(ii1),radial_grid(ii2),yp(ii2)
             else
-               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1),yp(ii1)
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1p,6(1x,1d21.14))') radial_grid(ii1),yp(ii1)
             end if
          end do
          call draw (yp, 1.0_real64, yp, 0.0_real64, radial_point_count)

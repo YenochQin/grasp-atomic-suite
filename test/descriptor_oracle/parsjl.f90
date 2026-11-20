@@ -6,6 +6,7 @@ contains
 !***********************************************************************
 !                                                                      *
       subroutine parsjl(mode, ncore, record, loc, jx, njx, ierr)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   READs and  parses a string that specifies angular momentum quan-   *
 !   tum numbers.                                                       *
@@ -89,7 +90,7 @@ contains
 !XHH~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                njx = njx + 1
                if (njx > njxmax) then
-                  write (6, *) "PARSJL: Too many angular momentum", &
+                  write (output_unit, *) "PARSJL: Too many angular momentum", &
                      " quantum numbers specified;"
                   ierr = 1
                   goto 3
@@ -100,7 +101,7 @@ contains
                   form = "(1I"//cteger(1:lteger)//")"
                   read (record(istart:iend), fmt=form) j
                   if (j < 0) then
-                     write (6, *) "PARSJL: Negative angular momentum", &
+                     write (output_unit, *) "PARSJL: Negative angular momentum", &
                         " quantum number found;"
                      ierr = 2
                      goto 3
@@ -111,7 +112,7 @@ contains
                   form = "(1I"//cteger(1:lteger)//")"
                   read (record(ifrac+1:iend), fmt=form) j
                   if (j /= 2) then
-                     write (6, *) "PARSJL: The denominator of a", &
+                     write (output_unit, *) "PARSJL: The denominator of a", &
                         " fractional quantum number must be 2;"
                      ierr = 3
                      goto 3
@@ -120,7 +121,7 @@ contains
                   form = "(1I"//cteger(1:lteger)//")"
                   read (record(istart:ifrac-1), fmt=form) j
                   if (j < 0) then
-                     write (6, *) "PARSJL: Negative angular momentum", &
+                     write (output_unit, *) "PARSJL: Negative angular momentum", &
                         " quantum number found;"
                      ierr = 4
                      goto 3
@@ -145,7 +146,7 @@ contains
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
          njx = njx + 1
          if (njx > njxmax) then
-            write (6, *) "PARSJL: Too many angular momentum", &
+            write (output_unit, *) "PARSJL: Too many angular momentum", &
                " quantum numbers specified;"
             ierr = 1
             goto 3
@@ -156,7 +157,7 @@ contains
             form = "(1I"//cteger(1:lteger)//")"
             read (record(istart:iend), fmt=form) j
             if (j < 0) then
-               write (6, *) "PARSJL: Negative angular momentum", &
+               write (output_unit, *) "PARSJL: Negative angular momentum", &
                   " quantum number found;"
                ierr = 2
                goto 3
@@ -167,7 +168,7 @@ contains
             form = "(1I"//cteger(1:lteger)//")"
             read (record(ifrac+1:iend), fmt=form) j
             if (j /= 2) then
-               write (6, *) "PARSJL: The denominator of a", &
+               write (output_unit, *) "PARSJL: The denominator of a", &
                   " fractional quantum number must be 2;"
                ierr = 3
                goto 3
@@ -176,7 +177,7 @@ contains
             form = "(1I"//cteger(1:lteger)//")"
             read (record(istart:ifrac-1), fmt=form) j
             if (j < 0) then
-               write (6, *) "PARSJL: Negative angular momentum", &
+               write (output_unit, *) "PARSJL: Negative angular momentum", &
                   " quantum number found;"
                ierr = 4
                goto 3

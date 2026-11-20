@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine genmat(atwinv, symmetry_block_index, mpi_rank, mpi_process_count, elsto, irestart, slf_en)
+      use calculation_file_units, only: summary_output_unit
 !
 !        Generate Hamiltonian matrix for all blocks
 !        This routine calls setham to do the computation. It makes
@@ -21,7 +22,7 @@
           csf_mixing_coefficients, evecff, evecii
       use csf_block_cutoffs, only: iccut, iccutblk
       use orbital_csf_basis, only: csf_count, orbital_count
-      use where_c, only: imcdf
+      use where_c, only: restart_matrix_unit
       use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
           matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
@@ -62,7 +63,7 @@
 
       iread = 0                       ! # of rows read, initialization necessary
 
-      read (imcdf, iostat=io_status) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
+      read (restart_matrix_unit, iostat=io_status) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
       irestart = io_status
 
       if (io_status == 0) then
@@ -75,7 +76,7 @@
          end if
 
          do i = mpi_rank + 1, csf_count, mpi_process_count
-            read (imcdf, iostat=ios2) nelc, stoel, (dum,ir=2,nelc), eav0, (&
+            read (restart_matrix_unit, iostat=ios2) nelc, stoel, (dum,ir=2,nelc), eav0, (&
                irowdum,ir=1,nelc)
                             ! Lower triangle row-mode, diagonal last
             if (ios2 == 0) then
@@ -102,7 +103,7 @@
 ! set a synchronization point.
 
       write (stderr_unit, *) iread, " (total ", row_count, ") rows read from .res"
-      if (mpi_rank == 0) write (24, *) iread, " (total ", row_count, &
+      if (mpi_rank == 0) write (summary_output_unit, *) iread, " (total ", row_count, &
          ") rows read from .res"
 
 ! Position the file for the next record from setham
@@ -112,9 +113,9 @@
          if (csf_counts_by_block(i) < mpi_process_count) j = csf_counts_by_block(i)/(mpi_rank + 1)
          ipos = ipos + j + 1
       end do
-      call posfile (0, imcdf, ipos)
+      call posfile (0, restart_matrix_unit, ipos)
 
-      if (io_status /= 0) write (imcdf) csf_count, iccut(1), mpi_rank, mpi_process_count
+      if (io_status /= 0) write (restart_matrix_unit) csf_count, iccut(1), mpi_rank, mpi_process_count
 
       if (iread < row_count) then
          icstrt = iread*mpi_process_count + mpi_rank + 1

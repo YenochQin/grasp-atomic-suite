@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine settmpgg(nb, k, filehead)
+      use mcp_generation_options, only: mcp_temporary_units
 !***********************************************************************
 !   Modified by Gediminas Gaigalas:                         Feb 2017   *
 !                               1) for new spin-angular integration,   *
@@ -33,13 +34,12 @@
 !
       lng = len_trim(filehead)
       call convrt (k, number_text, text_length)
-      call openfl (k, filehead(1:lng)//"."//number_text(1:2), "UNFORMATTED", &
+      call openfl (mcp_temporary_units(k), filehead(1:lng)//"."//number_text(1:2), "UNFORMATTED", &
             "UNKNOWN", open_status)
       if (open_status /= 0) then
-         close(k)
          write (stderr_unit, *) "Error when opening the tmp files"
          stop
       end if
-      write (k) "MCP", nb
+      write (mcp_temporary_units(k)) "MCP", nb
       return
       end subroutine settmpgg

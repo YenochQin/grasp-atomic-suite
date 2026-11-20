@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine smsnew(doit,vint,vint2)
+      use calculation_file_units, only: two_body_cache_unit
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This routine controls the main sequence of routine calls for the   *
 !   calculation  of the  sms parameter, the electron density at the    *
@@ -114,18 +116,19 @@
 !
                 if (angular_coefficient_labels(5,i) == 1) then
                   if (ldbpa(2)) then
-                    write (99,'(" V^[(",1i2,")]_[",1i3,",",1i3,"]"," (",1i2,1a2,",",1i2,1a2,";",1i2,1a2,",",1i2,&
+                    call ensure_debug_output()
+                    write (angular_debug_unit,'(" V^[(",1i2,")]_[",1i3,",",1i3,"]"," (",1i2,1a2,",",1i2,1a2,";",1i2,1a2,",",1i2,&
                        &1a2,") = ",1pd19.12)') k,csf_index,ir,                            &
                     orbital_principal_n(iia),orbital_symmetry_labels(iia),orbital_principal_n(iib), &
                        & orbital_symmetry_labels(iib),                   &
                     orbital_principal_n(iic),orbital_symmetry_labels(iic),orbital_principal_n(iid), &
                        & orbital_symmetry_labels(iid),vcoeff
                   end if
-                  if(doit==1) write(51) csf_index,ir
+                  if(doit==1) write(two_body_cache_unit) csf_index,ir
 !** Storage sequence
                   lab  = ((iia*orbital_label_radix + iic)*orbital_label_radix+iib)*orbital_label_radix+iid
                   if(doit==1) then
-                    write(51) vcoeff,lab
+                    write(two_body_cache_unit) vcoeff,lab
                   end if
 !***
                   do 10 j = 1,nvec
@@ -153,10 +156,10 @@
           end if
    12   continue
    13 continue
-      if(doit==1) write(51) -1
+      if(doit==1) write(two_body_cache_unit) -1
 !
 ! Empty the buffer and close file
-      if(doit==1) close(51)
+      if(doit==1) close(two_body_cache_unit)
 !
 !   Deallocate storage for the arrays in BUFFER
 !

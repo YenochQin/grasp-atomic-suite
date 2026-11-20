@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine hmout(mpi_rank, mpi_process_count, block_csf_count)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   Routine for printing the Hamiltonian matrix.                       *
 !                                                                      *
@@ -15,6 +16,9 @@
           matrix_partner_indices, ntpitmp, nelmnttmp, ncoeitmp, ncoectmp, ncteitmp, nctectmp, nmcbptmp, ncoretmp, &
           nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
       implicit none (type, external)
+      integer, save :: first_column_debug_unit = -1
+      integer, save :: second_column_debug_unit = -1
+      integer, save :: third_column_debug_unit = -1
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -45,7 +49,10 @@
          idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
             iro = matrix_partner_indices(list)
-            write (96, *) "H(", iro, ico, ")= ", hamiltonian_values(list)
+            if (first_column_debug_unit == -1) then
+               open(newunit=first_column_debug_unit, file="fort.96", status="unknown", form="formatted")
+            end if
+            write (first_column_debug_unit, *) "H(", iro, ico, ")= ", hamiltonian_values(list)
          end do
          !ibeg = idiag + 1
       end do
@@ -56,7 +63,10 @@
          idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
             iro = matrix_partner_indices(list)
-            write (97, *) "H(", iro, ico, ")= ", hamiltonian_values(list)
+            if (second_column_debug_unit == -1) then
+               open(newunit=second_column_debug_unit, file="fort.97", status="unknown", form="formatted")
+            end if
+            write (second_column_debug_unit, *) "H(", iro, ico, ")= ", hamiltonian_values(list)
          end do
          !ibeg = idiag + 1
       end do
@@ -67,7 +77,10 @@
          idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
             iro = matrix_partner_indices(list)
-            write (98, *) "H(", iro, ico, ")= ", hamiltonian_values(list)
+            if (third_column_debug_unit == -1) then
+               open(newunit=third_column_debug_unit, file="fort.98", status="unknown", form="formatted")
+            end if
+            write (third_column_debug_unit, *) "H(", iro, ico, ")= ", hamiltonian_values(list)
          end do
          !ibeg = idiag + 1
       end do
@@ -78,7 +91,8 @@
          idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
             iro = matrix_partner_indices(list)
-            write (99, *) "H(", iro, ico, ")= ", hamiltonian_values(list)
+            call ensure_debug_output()
+            write (angular_debug_unit, *) "H(", iro, ico, ")= ", hamiltonian_values(list)
          end do
          !ibeg = idiag + 1
       end do

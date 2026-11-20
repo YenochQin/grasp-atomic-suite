@@ -3,6 +3,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine frmhyd(matched_orbital_indices, matched_subshell_count, modify, nradial)
+      use, intrinsic :: iso_fortran_env, only: input_unit
 !                                                                      *
 !   This  subroutine  is  used  to  produce  estimates  of  the wave   *
 !   functions from the hydrogenic approximation. The screening cons-   *
@@ -55,7 +56,7 @@
       delz = 0.0_real64
       if (nradial == 4)  then
          write (stderr_unit, *) "Enter increase in Z for correlation orbitals"
-         read  (5, *) delz
+         read  (input_unit, *) delz
       end if
       write (stderr_unit, *) "Orbital Z_eff for hydrogenic orbitals"
       do j = 1, matched_subshell_count
@@ -63,7 +64,7 @@
          if (set(loc)) cycle
          if (modify) then
             write (stderr_unit, *) "Input new value >"
-            read (5, *) sigma(loc)
+            read (input_unit, *) sigma(loc)
          end if
          zeff = nuclear_charge - sigma(loc) + delz
          write (stderr_unit, "(I2,A2,F10.2)") orbital_principal_n(loc), orbital_symmetry_labels(loc), zeff

@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine qqsort(nfile, number, kstart, name, kamax)
+      use biorthogonal_subshell_layout, only: kappa_coefficient_units
+      use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
 !                                                                      *
 !     The list of unique integrals (j,i) is formed in the order of     *
 !     increasing symmetry, i.e. with j .le. i.                         *
@@ -47,7 +49,6 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       integer, parameter :: orbital_label_radix = orbital_index_radix
-      integer, parameter :: nf = 200
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -55,7 +56,7 @@
       real(real64) :: cn
 !-----------------------------------------------
 !
-      rewind (nfile + 80)
+      rewind (kappa_coefficient_units(nfile))
 
       ncoeff = number
 !
@@ -73,7 +74,7 @@
 !   Read arrays into memory from NFILE
 !
       do i = 1, ncoeff
-         read (nfile + 80) jann(i), jbnn(i), intgrl(i), cnn(i)
+         read (kappa_coefficient_units(nfile)) jann(i), jbnn(i), intgrl(i), cnn(i)
       end do
 !
 !   Sort INTGRL into ascending order using the heapsort algorithm;
@@ -165,22 +166,22 @@
 !  some data to later be able to identify the file
 !
 !        IF (NFILE.EQ.1.AND.IBLK.EQ.1) THEN
-!         print *, ' open sorted ang. file .TB(NF)', NF
+!         print *, ' open sorted ang. file .TB(biorthogonal_angular_unit)', biorthogonal_angular_unit
 !          J = INDEX(NAME,' ')
-!          OPEN (UNIT = NF,FILE=NAME(1:J-1)//'.TB',
+!          OPEN (UNIT = biorthogonal_angular_unit,FILE=NAME(1:J-1)//'.TB',
 !     :          STATUS='UNKNOWN',FORM='UNFORMATTED')
-!          REWIND (NF)
+!          REWIND (biorthogonal_angular_unit)
 !        ENDIF
-         if (nfile == 1) write (nf) csf_count,orbital_count,kamax,mpi_process_count,mpi_rank
+         if (nfile == 1) write (biorthogonal_angular_unit) csf_count,orbital_count,kamax,mpi_process_count,mpi_rank
 !
 !  Print out angular data for this kappa
 !
-         write (nf) nintg, ncoeff
+         write (biorthogonal_angular_unit) nintg, ncoeff
          do i = 1, nintg
-            write (nf) intgrl(i), intptr(i)
+            write (biorthogonal_angular_unit) intgrl(i), intptr(i)
          end do
          do i = 1, ncoeff
-            write (nf) cnn(i), jann(i), jbnn(i)
+            write (biorthogonal_angular_unit) cnn(i), jann(i), jbnn(i)
          end do
       end if
       call dalloc (jann,   "JANN",   "QQSORT")
@@ -192,7 +193,7 @@
 !  Has all data been processed? If so close
 !  the file
 !
-!     IF (NFILE.EQ.KAMAX) CLOSE (NF)
+!     IF (NFILE.EQ.KAMAX) CLOSE (biorthogonal_angular_unit)
 
 !  Debug output
 !

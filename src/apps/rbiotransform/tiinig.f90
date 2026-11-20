@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine tiinig(input_mixing_coefficients, csf_count, level_count, i, l, const, transformed_mixing_coefficients, ntestg)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Calculates the action of the operator                              *
 !   Const ** E(li,li) on a set of vectors                              *
@@ -68,7 +69,7 @@
       ntest = max(ntestl,ntestg)
 
 
-      if (ntest >= 10) write (6, *) " Entering TIINI"
+      if (ntest >= 10) write (output_unit, *) " Entering TIINI"
 
       call setvec (transformed_mixing_coefficients, 0.0_real64, csf_count*level_count)
 !
@@ -110,15 +111,15 @@
       end where
 !
       if (ntest >= 100) then
-         write (6, *)
-         write (6, *) " Input and output vectors from TIINI I,L", i, l
+         write (output_unit, *)
+         write (output_unit, *) " Input and output vectors from TIINI I,L", i, l
          call wrtmat (input_mixing_coefficients, csf_count, level_count, csf_count, level_count)
-         write (6, *)
+         write (output_unit, *)
          call wrtmat (transformed_mixing_coefficients, csf_count, level_count, csf_count, level_count)
-         write (6, *)
+         write (output_unit, *)
       end if
 !
-      if (ntest >= 10) write (6, *) " Leaving  TIINI"
+      if (ntest >= 10) write (output_unit, *) " Leaving  TIINI"
 
       return
       end subroutine tiinig

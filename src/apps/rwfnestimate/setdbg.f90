@@ -3,6 +3,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine setdbg(default_file_path)
+      use debug_output_settings, only: angular_debug_unit
 !                                                                      *
 !   This subroutine sets the arrays that control debug printout from   *
 !   the radial and angular modules of the GRASP92 suite.               *
@@ -62,7 +63,7 @@
          if (len_trim(file_path) == 0) file_path = default_file_path
 !
     4    continue
-         call openfl (99, file_path, form, status, open_status)
+         call openfl (angular_debug_unit, file_path, form, status, open_status)
          if (open_status /= 0) then
     5       continue
             write (stderr_unit, *) "Enter a name for the ERWF DeBuG Printout ", &

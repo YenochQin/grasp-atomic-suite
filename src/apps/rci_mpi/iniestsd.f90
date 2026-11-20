@@ -1,7 +1,7 @@
 !***********************************************************************
 !
       subroutine iniestsd (nmax, csf_count, mpi_rank, mpi_process_count,                   &
-          initial_vector_count, basis, imcdf, hamiltonian_energy_shift)
+          initial_vector_count, basis, restart_matrix_unit, hamiltonian_energy_shift)
 !
 !    Routine for providing initial estimates from upper left corner
 !       of the matrix. It is exact (not estimates) if ncf <= nmax which
@@ -29,7 +29,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer, intent(in) :: nmax, csf_count, mpi_rank, mpi_process_count, initial_vector_count, imcdf
+      integer, intent(in) :: nmax, csf_count, mpi_rank, mpi_process_count, initial_vector_count, restart_matrix_unit
       real(real64), intent(in) :: hamiltonian_energy_shift
       real(real64), intent(inout):: basis(*)
 !-----------------------------------------------
@@ -51,7 +51,7 @@
 
       call alloc (hmx, csf_count, "HMX", "INIESTSD")
       call alloc (irow, csf_count, "IROW", "INIESTSD")
-      read (imcdf) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
+      read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
 !      IF (myid .EQ. 0) PRINT *, 'iniestsd ...........'
       if (csf_count /= file_csf_count .or.  mpi_rank /= file_mpi_rank                      &
                     .or. file_mpi_process_count /= mpi_process_count)                        &
@@ -62,7 +62,7 @@
 
       do j = mpi_rank + 1, ns, mpi_process_count
          joff = (j*(j-1))/2
-         read (imcdf) nelc,elsto,(hmx(ir),ir=1,nelc),                  &
+         read (restart_matrix_unit) nelc,elsto,(hmx(ir),ir=1,nelc),                  &
                                 (irow(ir),ir=1,nelc)
          hmx(nelc) = hmx(nelc) - hamiltonian_energy_shift ! Shift the diagonal
          do ir = 1, nelc
@@ -84,7 +84,7 @@
 
       !mylast = j - nprocs
       !DO j = mylast, ncf, nprocs
-      !   READ (imcdf)
+      !   READ (restart_matrix_unit)
       !ENDDO
 
       call dalloc (hmx,"HMX", "INIESTSD")

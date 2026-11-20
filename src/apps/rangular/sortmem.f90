@@ -2,6 +2,8 @@
 !                                                                      *
       subroutine sortmem(mcp_channel_index,sort_capacity_per_channel,coefficient_count,distinct_integral_count,print_details, &
          & symmetry_block_index,output_file_prefix)
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This routine sorts lists                                           *
 !                                                                      *
@@ -35,6 +37,7 @@
 !-----------------------------------------------
       use integer_format, only: convrt
       implicit none (type, external)
+      integer :: mcp_append_unit
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -72,10 +75,10 @@
       call convrt (coefficient_count, number_text, text_length)
       if (mcp_channel_index > 31) then
          call convrt (mcp_channel_index - 32, ck, lck)
-         write (6, *) "Sorting "//number_text(1:text_length)//" V(k="//ck(1:lck)//&
+         write (output_unit, *) "Sorting "//number_text(1:text_length)//" V(k="//ck(1:lck)//&
             ") coefficients ...", mcp_channel_index
       else
-         write (6, *) "Sorting "//number_text(1:text_length)//" T coefficients ...", mcp_channel_index
+         write (output_unit, *) "Sorting "//number_text(1:text_length)//" T coefficients ...", mcp_channel_index
       end if
 !
       call convrt (mcp_channel_index, ck, lck)
@@ -86,7 +89,7 @@
 
       file_path = output_file_prefix//"."//ck(1:2)
 
-      open(29,file=file_path,status="OLD",form="UNFORMATTED", &
+      open(newunit=mcp_append_unit,file=file_path,status="OLD",form="UNFORMATTED", &
          iostat=io_status, position="APPEND")
       if (io_status /= 0) then
          write (stderr_unit, *) " Error when opening the file ", file_path
@@ -230,7 +233,7 @@
 !
 !
   456 continue
-      write (29) "MCP", symmetry_block_index, csf_count, coefficient_count
+      write (mcp_append_unit) "MCP", symmetry_block_index, csf_count, coefficient_count
 !GG      WRITE (9999,*) 'MCP', NB, NCF, NCOEFF, NFILE
 !
 !   Write the sorted list to mcp.xx
@@ -246,9 +249,10 @@
             if (channel_packed_orbital_labels(i,igg) == last) then
                iend = iend + 1
             else
-               write (29) last, iend - ibeg + 1
+               write (mcp_append_unit) last, iend - ibeg + 1
 !GG               WRITE (9999,*) LAST, IEND - IBEG + 1
-               write (29) (channel_csf_columns(j,igg),channel_matrix_positions(j,igg),channel_coefficients(j,igg),     &
+               write (mcp_append_unit) (channel_csf_columns(j,igg),channel_matrix_positions(j,igg),channel_coefficients(j,igg), &
+                  & &
                                                           j=ibeg,iend)
 !cjb-GG              DO J = IBEG,IEND
 !GG               WRITE (9999,'(2I12,E25.15)') ICLMN(J),INDEX(J),COEFF(J)
@@ -263,9 +267,9 @@
          end do
 !
          if (ibeg <= coefficient_count) then
-            write (29) last, coefficient_count - ibeg + 1
+            write (mcp_append_unit) last, coefficient_count - ibeg + 1
 !GG            WRITE (9999,*) LAST, NCOEFF - IBEG + 1
-            write (29) (channel_csf_columns(j,igg),channel_matrix_positions(j,igg),channel_coefficients(j,igg),       &
+            write (mcp_append_unit) (channel_csf_columns(j,igg),channel_matrix_positions(j,igg),channel_coefficients(j,igg),       &
                                                        j=ibeg,coefficient_count)
 !GG          DO J=IBEG,NCOEFF
 !GG            WRITE (9999,'(2I12,E25.15)') ICLMN(J),INDEX(J),COEFF(J)
@@ -282,9 +286,9 @@
 !
 !     write the terminator record for this block
 !
-      write (29) 0, 0
+      write (mcp_append_unit) 0, 0
 !GG      WRITE (9999,*) 0, 0
-      close(29)
+      close(mcp_append_unit)
 !
 !   Completion message
 !
@@ -293,8 +297,9 @@
 !   Debug printout
 !
       if (print_details) then
-         write (99, '(/,"From SORT:")')
-         write (6, '(/,"From SORT:")')
+         call ensure_debug_output()
+         write (angular_debug_unit, '(/,"From SORT:")')
+         write (output_unit, '(/,"From SORT:")')
          if (coefficient_count > 0) then
 !
             last = channel_packed_orbital_labels(1,igg)
@@ -310,11 +315,13 @@
                if (mcp_channel_index == 31) then
                   ia = mod(lab,orbital_label_radix)
                   ib = lab/orbital_label_radix
-                  write (99, '(" I(",1i2,1a2,",",1i2,1a2,"):")') &
+                  call ensure_debug_output()
+                  write (angular_debug_unit, '(" I(",1i2,1a2,",",1i2,1a2,"):")') &
                      orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
                      & orbital_symmetry_labels(ib)
                   do j = ibeg, iend
-                     write (99, '("  T_[",1i2,",",1i4,"] = ",1p,d19.12)') channel_csf_columns(j,igg), &
+                     call ensure_debug_output()
+                     write (angular_debug_unit, '("  T_[",1i2,",",1i4,"] = ",1p,d19.12)') channel_csf_columns(j,igg), &
                         & channel_matrix_positions(j,igg),       &
                                                         channel_coefficients(j,igg)
                   end do
@@ -326,12 +333,14 @@
                   lab = lab/orbital_label_radix
                   ic = mod(lab,orbital_label_radix)
                   ia = lab/orbital_label_radix
-                  write (99, '(" R^[(",1i2,")] (",1i2,1a2,",",1i2,1a2,";",1i2,1a2,",",1i2,1a2,"):")') &
+                  call ensure_debug_output()
+                  write (angular_debug_unit, '(" R^[(",1i2,")] (",1i2,1a2,",",1i2,1a2,";",1i2,1a2,",",1i2,1a2,"):")') &
                      k, orbital_principal_n(ia), orbital_symmetry_labels(ia), orbital_principal_n(ib), &
                      & orbital_symmetry_labels(ib), orbital_principal_n(ic), orbital_symmetry_labels&
                      (ic), orbital_principal_n(id), orbital_symmetry_labels(id)
                   do j = ibeg, iend
-                     write (99, '("  V^[(",1i2,")]_[",1i8,",",1i8,"] = ",1p,d19.12)') &
+                     call ensure_debug_output()
+                     write (angular_debug_unit, '("  V^[(",1i2,")]_[",1i8,",",1i8,"] = ",1p,d19.12)') &
                         k,channel_csf_columns(j,igg),channel_matrix_positions(j,igg),     &
                                                           channel_coefficients(j,igg)
                   end do
@@ -342,7 +351,8 @@
                if (iend == coefficient_count) goto 567
             end do
          end if
-         write (99, '("  Number of integrals is ",1i4)') distinct_integral_count
+         call ensure_debug_output()
+         write (angular_debug_unit, '("  Number of integrals is ",1i4)') distinct_integral_count
       end if
 !
 !   Deallocate storage

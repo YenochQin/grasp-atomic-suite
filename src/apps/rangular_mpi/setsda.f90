@@ -2,6 +2,8 @@
 !                                                                      *
       subroutine setsda(write_coefficient_callback,nonzero_element_count,print_details,symmetry_block_index,mpi_rank, &
          & mpi_process_count,output_file_prefix)
+      use mcp_generation_options, only: mcp_temporary_units
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   This routine examines lists                                        *
 !                               (IC,IR,npos)                           *
@@ -31,6 +33,7 @@
 !-----------------------------------------------
       use outsdampi_i, only: outsdampi
       implicit none (type, external)
+      integer :: mcp_append_unit
       procedure(outsdampi) :: write_coefficient_callback
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -50,10 +53,10 @@
       character :: mcp_channel_label*3
 !-----------------------------------------------
 
-      if (mpi_rank == 0) write (6, *) &
+      if (mpi_rank == 0) write (output_unit, *) &
          "Analysing sparse matrix array definition file ...", 30
 
-      read (30) mcp_channel_label, mb
+      read (mcp_temporary_units(30)) mcp_channel_label, mb
       if (symmetry_block_index /= mb) then
          write (stderr_unit, *) "setsda: nb = ", symmetry_block_index, ".NE. mb (=", mb, ")"
          stop
@@ -74,7 +77,7 @@
       iend = 0
       iclast = 0
       do i = 1, nonzero_element_count
-         read (30) ic, irow(i), npos
+         read (mcp_temporary_units(30)) ic, irow(i), npos
          if (ic /= iclast) then
             iendc(iclast) = iend
             iclast = ic
@@ -91,7 +94,7 @@
 !cjb           PRINT *, ' before FHEAD '
 !cjb           PRINT *, ' FHEAD = ', FHEAD
 !cjb           PRINT *, ' before OPEN '
-      open(29, file=output_file_prefix//".30", status="OLD", form="UNFORMATTED", iostat=io_status&
+      open(newunit=mcp_append_unit, file=output_file_prefix//".30", status="OLD", form="UNFORMATTED", iostat=io_status&
          , position="APPEND")
 !cjb           PRINT *, ' after OPEN '
       if (io_status /= 0) then
@@ -99,10 +102,10 @@
          stop
       end if
 
-      write (29) "MCP", symmetry_block_index, csf_count
-      write (29) nonzero_element_count
-      write (29) (iendc(i),i=mpi_rank + 1,csf_count,mpi_process_count), (irow(i),i=1,nonzero_element_count)
-      close(29)
+      write (mcp_append_unit) "MCP", symmetry_block_index, csf_count
+      write (mcp_append_unit) nonzero_element_count
+      write (mcp_append_unit) (iendc(i),i=mpi_rank + 1,csf_count,mpi_process_count), (irow(i),i=1,nonzero_element_count)
+      close(mcp_append_unit)
 !cjb
 !
 !   Deallocate storage

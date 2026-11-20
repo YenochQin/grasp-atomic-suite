@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine xpot(orbital_index)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This subroutine tabulates the exchange terms (the first terms on   *
 !   the  right-hand  sides of eqs (14), I P Grant, B J McKenzie, P H   *
@@ -52,9 +53,12 @@
 !
 !   Debug printout: header
 !
-      if (ldbpr(27) .or. ldbpr(28)) write (99, '(/,/," Exchange potential contributions (coefficients will ",&
+      if (ldbpr(27) .or. ldbpr(28)) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '(/,/," Exchange potential contributions (coefficients will ",&
          &" be divided by C) for ",1i2,1a2," orbital :"/,/)') orbital_principal_n(orbital_index), &
             & orbital_symmetry_labels(orbital_index)
+      end if
 !
 !   Clear for accumulation of sums
 !
@@ -76,10 +80,13 @@
          coeff = xa(index)
 
          ! Debug printout: composition
-         if (ldbpr(27)) write (99, '(/,25x,"(",1i2,")"/,1x,1p,d21.14,"* Y    (",1i2,1a2,",",1i2,1a2,") ","* P (",&
+         if (ldbpr(27)) then
+            call ensure_debug_output()
+            write (angular_debug_unit, '(/,25x,"(",1i2,")"/,1x,1p,d21.14,"* Y    (",1i2,1a2,",",1i2,1a2,") ","* P (",&
             &1i2,1a2,")")') k, coeff, orbital_principal_n(ioy1), orbital_symmetry_labels(ioy1), &
             & orbital_principal_n(ioy2)&
             , orbital_symmetry_labels(ioy2), orbital_principal_n(iorb), orbital_symmetry_labels(iorb)
+         end if
 
          call yzk (k, ioy1, ioy2)
 !
@@ -97,7 +104,8 @@
 !   Debug printout: potential functions
 !
       if (ldbpr(28)) then
-         write (99, '(/,/,31x,"(P)",19x,"(Q)",41x,"(P)",19x,"(Q)"/,&
+         call ensure_debug_output()
+         write (angular_debug_unit, '(/,/,31x,"(P)",19x,"(Q)",41x,"(P)",19x,"(Q)"/,&
             &2(" --------- r --------- ------ X  (r) -------"," ------ X  (r) -------"))')
          nb2 = radial_point_count/2
          if (2*nb2 == radial_point_count) then
@@ -109,10 +117,12 @@
             ii1 = ii
             ii2 = ii1 + row_count
             if (ii2 <= radial_point_count) then
-               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1), xp(ii1), xq(ii1), radial_grid(ii2), xp(ii2), xq(&
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1p,6(1x,1d21.14))') radial_grid(ii1), xp(ii1), xq(ii1), radial_grid(ii2), xp(ii2), xq(&
                   ii2)
             else if (ii1 <= radial_point_count) then
-               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1), xp(ii1), xq(ii1)
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1p,6(1x,1d21.14))') radial_grid(ii1), xp(ii1), xq(ii1)
             end if
          end do
          call draw (xp, 1.0_real64, xq, speed_of_light_au, radial_point_count)

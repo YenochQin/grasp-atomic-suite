@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine angdata(name, avail, kamax)
+      use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Checks if the angular file name.T is available and appropriate     *
 !                                                                      *
@@ -22,32 +24,31 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: j,nf,ncfd,nwd,kamaxd,nprocsd,myidd
+      integer :: j,ncfd,nwd,kamaxd,nprocsd,myidd
       logical :: found
 !-----------------------------------------------
 !
       j = index(name," ")
       inquire(file=name(1:j-1)//".TB", exist=found)
       if (.not.found) then
-         write (6, *) " Angular file not available"
+         write (output_unit, *) " Angular file not available"
          avail = .false.
          return
       else
 !
 !  Open the file and check if it is appropriate for the present case
 !
-         nf = 200
-         open(unit=nf, file=name(1:j-1)//".TB", status="OLD", form=&
+         open(newunit=biorthogonal_angular_unit, file=name(1:j-1)//".TB", status="OLD", form=&
             "UNFORMATTED", position="asis")
-         rewind (nf)
-         read (nf) ncfd,nwd,kamaxd,nprocsd,myidd
+         rewind (biorthogonal_angular_unit)
+         read (biorthogonal_angular_unit) ncfd,nwd,kamaxd,nprocsd,myidd
          if (.not.(ncfd==csf_count .and. nwd==orbital_count .and. kamaxd==kamax     &
                          .and.nprocsd==mpi_process_count.and.myidd==mpi_rank)) then
-            write (6, *) " Angular file not appropriate"
+            write (output_unit, *) " Angular file not appropriate"
             avail = .false.
             return
          else
-            write (6, *) " Angular data read from file"
+            write (output_unit, *) " Angular data read from file"
             avail = .true.
          end if
       end if

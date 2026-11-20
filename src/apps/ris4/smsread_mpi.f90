@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine smsread_mpi(vint,vint2)
+      use calculation_file_units, only: two_body_cache_unit
 !                                                                      *
 !   MPI version of SMSREAD. Each rank scans the full angular file but  *
 !   only accumulates records whose IC belongs to its strided subset.    *
@@ -28,10 +29,10 @@
       logical :: ownrec
 
       call alcbuf (1)
-      rewind(51)
-   16 read (51,iostat = io_status) ic,ir
+      rewind(two_body_cache_unit)
+   16 read (two_body_cache_unit,iostat = io_status) ic,ir
       if (io_status == 0) then
-         read(51) coeffsms,lab
+         read(two_body_cache_unit) coeffsms,lab
          ownrec = mod(ic-1, mpi_process_count) == mpi_rank
          if (ownrec) then
             iid = mod (lab, orbital_label_radix)

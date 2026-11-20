@@ -6,6 +6,7 @@ contains
 !***********************************************************************
 !                                                                      *
       subroutine lodcsh2(nfile, ncore, jb)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !
 ! IMPORTANT:
 ! ==========
@@ -79,9 +80,9 @@ contains
 !-----------------------------------------------
 !
       if (jb /= loadall) then
-         write (6, *) "Loading CSF File for block ", jb
+         write (output_unit, *) "Loading CSF File for block ", jb
       else
-         write (6, *) "Loading CSF File for ALL blocks "
+         write (output_unit, *) "Loading CSF File for ALL blocks "
       end if
 
       ncorp1 = ncore + 1
@@ -417,7 +418,7 @@ contains
             if (iq(i,j) /= 0) goto 23
          end do
          call convrt (orbital_principal_n(i), str, lenth)
-         write (6, *) "Subshell "//str(1:lenth)//orbital_symmetry_labels(i)//" is empty", &
+         write (output_unit, *) "Subshell "//str(1:lenth)//orbital_symmetry_labels(i)//" is empty", &
             " in all CSFs"
    23    continue
          i = i + 1
@@ -434,7 +435,7 @@ contains
          write (stderr_unit, *) myname//": nelec not equal to that in lodcsh"
          stop
       end if
-      write (6,*)"There are ",ncf," relativistic CSFs... load complete;"
+      write (output_unit,*)"There are ",ncf," relativistic CSFs... load complete;"
       return
 !
    26 continue

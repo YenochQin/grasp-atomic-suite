@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine mrgcsl(state_name)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Entry routine for merging two csl lists                            *
 !                                                                      *
@@ -28,8 +29,8 @@
 !-----------------------------------------------
 !
 
-      write (6, *)
-      write (6, *) "MRGCSL: Execution begins ..."
+      write (output_unit, *)
+      write (output_unit, *) "MRGCSL: Execution begins ..."
 !
 !   Load the first  .csl  file
 !

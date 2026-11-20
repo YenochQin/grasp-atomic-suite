@@ -1,6 +1,7 @@
 !***********************************************************************
 !
       subroutine getoldwt(ndef, ncmin, level_weights)
+      use calculation_file_units, only: calculation_log_unit
 !
 !   Interactively determines the weights for EOL calculation.
 !   It's modified to always ask the question for the weight
@@ -51,7 +52,7 @@
       end do
 
       if (ndef==0) then
-        write(734,*) n159,"! level weights"
+        write(calculation_log_unit,*) n159,"! level weights"
       end if
 
       if (i > 10) stop
@@ -81,7 +82,7 @@
          end do
 
          if (ndef == 0) then
-            write(734,*) (level_weights(i), i = 1, ncmin)
+            write(calculation_log_unit,*) (level_weights(i), i = 1, ncmin)
          end if
 
          sumwgt = 1.0_real64/sumwgt

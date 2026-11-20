@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine printa(asfa, asfb, i, j, omega, factor, lines, lsame)
+      use calculation_file_units, only: summary_output_unit
 !                                                                      *
 !   This  routine  prints the basic oscillator strength  information   *
 !   for transitions between level I and level J.                       *
@@ -134,10 +135,10 @@
                   f2 = "f1"
                end if
 !
-            write (24, '(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," C",1p,4d13.5)') &
+            write (summary_output_unit, '(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," C",1p,4d13.5)') &
                f1,ivecff(j),jlabj,jparj,f2,ivecii(i),jlabi,jpari, &
                -eng, -ac, -oscc, -sa, dsqrt(-sa)*dble(isigna) !, ASFA
-            write (24, '(42x," B",1p,4d13.5)') -ab, -oscb, -sb, dsqrt(-sb)*dble(isignb) !, ASFB
+            write (summary_output_unit, '(42x," B",1p,4d13.5)') -ab, -oscb, -sb, dsqrt(-sb)*dble(isignb) !, ASFB
             else if ( 1.0e9_real64 > eng .and. eng > 1.0e-2_real64) then
                if (lsame) then
                   f1 = "f "
@@ -146,11 +147,11 @@
                   f1 = "f1"
                   f2 = "f2"
                end if
-               write (24,'(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," C",1p,4d13.5)') &
+               write (summary_output_unit,'(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," C",1p,4d13.5)') &
                   f1,ivecii(i),jlabi,jpari,f2,ivecff(j), &
                      jlabj,jparj,eng,ac*iatjpoff(j)/iatjpoii(i),     &
                      oscc,sa,dsqrt(sa)*dble(isigna)
-               write (24,'(42x," B",1p,4d13.5)') ab*iatjpoff(j)/iatjpoii(i),oscb,sb,dsqrt(sb)*dble(isignb)
+               write (summary_output_unit,'(42x," B",1p,4d13.5)') ab*iatjpoff(j)/iatjpoii(i),oscb,sb,dsqrt(sb)*dble(isignb)
             end if
             lines = lines + 3
          end if
@@ -196,7 +197,7 @@
                   f1 = "f2"
                   f2 = "f1"
                end if
-               write (24,'(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," M",1p,4d13.5)') &
+               write (summary_output_unit,'(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," M",1p,4d13.5)') &
                   f1,ivecff(j),jlabj,jparj,f2,ivecii(i),&
                      jlabi,jpari,-eng,-am,-oscm,-sa,dsqrt(-sa)*dble(isigna)
 !     :               ,ASFA (M-value)
@@ -209,7 +210,7 @@
                   f1 = "f1"
                   f2 = "f2"
                end if
-               write (24,'(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," M",1p,4d13.5)') &
+               write (summary_output_unit,'(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," M",1p,4d13.5)') &
                   f1,ivecii(i),jlabi,jpari,f2,ivecff(j),&
                      jlabj,jparj,eng,am*iatjpoff(j)/iatjpoii(i),    &
                      oscm,sa,dsqrt(sa)*dble(isigna)

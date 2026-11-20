@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       real(real64) function skint (recoupling_coefficient, orbital_a, orbital_c, rbd, orbital_b, orbital_d, multipole_rank, iw)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This routine evaluates transverse interaction integrals:           *
 !                                                                      *
@@ -102,11 +103,14 @@
 !
       end if
 !
-      if (ldbpr(11)) write (99, '("  (",1i2,")"/,"S     (",1i2,1a2,",",1i2,1a2,"|",1i2,1a2,",",1i2,1a2,";",1i2,&
+      if (ldbpr(11)) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '("  (",1i2,")"/,"S     (",1i2,1a2,",",1i2,1a2,"|",1i2,1a2,",",1i2,1a2,";",1i2,&
          &") = ",1p,d19.12)') multipole_rank, orbital_principal_n(orbital_a), orbital_symmetry_labels(orbital_a), &
             & orbital_principal_n(orbital_c), &
          & orbital_symmetry_labels(orbital_c), orbital_principal_n(orbital_b)&
          , orbital_symmetry_labels(orbital_b), orbital_principal_n(orbital_d), orbital_symmetry_labels(orbital_d), iw, valu
+      end if
 !
       return
 !

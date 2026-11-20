@@ -6,6 +6,7 @@ contains
 !***********************************************************************
 !                                                                      *
       subroutine prsrcn(record, ncore, ioccs, ierr)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   READs and parses a string that specifies a configuration.          *
 !                                                                      *
@@ -66,9 +67,9 @@ contains
          form = "(1I"//cnum(lenth)//")"
          read (record(istart:iend), fmt=form, iostat=ios) npi
          if (ios /= 0) then
-            write (6, *) "PRSRCN: Principal quantum number ", record(istart:&
+            write (output_unit, *) "PRSRCN: Principal quantum number ", record(istart:&
                iend)
-            write (6, *) " could not be decoded."
+            write (output_unit, *) " could not be decoded."
             ierr = 1
             goto 6
          end if
@@ -77,7 +78,7 @@ contains
             ishell = j
             goto 5
          end do
-         write (6, *) "PRSRCL: Not a peel subshell."
+         write (output_unit, *) "PRSRCL: Not a peel subshell."
          ierr = 2
          goto 6
     5    continue
@@ -88,25 +89,25 @@ contains
          form = "(1I"//cnum(lenth)//")"
          read (record(iostrt:ioend), fmt=form, iostat=ios) iocci
          if (ios /= 0) then
-            write (6, *) "PRSRCN: Occupation number ", record(iostrt:ioend)
-            write (6, *) " could not be decoded."
+            write (output_unit, *) "PRSRCN: Occupation number ", record(iostrt:ioend)
+            write (output_unit, *) " could not be decoded."
             ierr = 3
             goto 6
          end if
          nkji = orbital_two_j(ishell)
          if (nkji <= 7) then
             if (iocci<0 .or. iocci>orbital_two_j(ishell)+1) then
-               write (6, *) "PRSRCN: Occupation specified"
-               write (6, *) " incorrectly for ", orbital_principal_n(ishell), orbital_symmetry_labels(ishell)
-               write (6, *) " subshell."
+               write (output_unit, *) "PRSRCN: Occupation specified"
+               write (output_unit, *) " incorrectly for ", orbital_principal_n(ishell), orbital_symmetry_labels(ishell)
+               write (output_unit, *) " subshell."
                ierr = 4
                goto 6
             end if
          else
             if (iocci<0 .or. iocci>2) then
-               write (6, *) "PRSRCN: Occupation specified"
-               write (6, *) " incorrectly for ", orbital_principal_n(ishell), orbital_symmetry_labels(ishell)
-               write (6, *) " subshell."
+               write (output_unit, *) "PRSRCN: Occupation specified"
+               write (output_unit, *) " incorrectly for ", orbital_principal_n(ishell), orbital_symmetry_labels(ishell)
+               write (output_unit, *) " subshell."
                ierr = 5
                goto 6
             end if

@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine setmcp(mpi_rank, mpi_process_count, core_subshell_count, block_labels, filehead)
+      use mcp_generation_options, only: mcp_output_units, mcp_temporary_units
 !                                                                      *
 !   Open and check the  .mcp  files. File 30 stores the structure of   *
 !   H(DC) ; file 31 stores the  T  coefficients;  files 32, 33, ...,   *
@@ -56,14 +57,16 @@
 
 !   All files  mcp.xx  are UNFORMATTED;
 
+      allocate(mcp_output_units(30:32 + max_coulomb_multipole_rank))
+      allocate(mcp_temporary_units(30:32 + max_coulomb_multipole_rank))
       lng = len_trim(filehead)
       do k = 30, 32 + max_coulomb_multipole_rank
          call convrt (k, number_text, text_length)
-         call openfl (k, filehead(1:lng)//"."//number_text(1:2), "UNFORMATTED", &
+         call openfl (mcp_output_units(k), filehead(1:lng)//"."//number_text(1:2), "UNFORMATTED", &
             "UNKNOWN", open_status)
          if (open_status == 0) cycle
-         do i = 30, k
-            close(i)
+         do i = 30, k - 1
+            close(mcp_output_units(i))
          end do
          write (stderr_unit, *) "Error when opening the mcp files"
          stop
@@ -72,12 +75,12 @@
 !   We want to know kmax before openning other mcp files (not mcp.30)
 !   in rscf
 !
-      write (30) core_subshell_count, symmetry_block_count, max_coulomb_multipole_rank
-      write (30) (csf_counts_by_block(i),i=1,symmetry_block_count)
-      write (30) (block_labels(i),i=1,symmetry_block_count)
+      write (mcp_output_units(30)) core_subshell_count, symmetry_block_count, max_coulomb_multipole_rank
+      write (mcp_output_units(30)) (csf_counts_by_block(i),i=1,symmetry_block_count)
+      write (mcp_output_units(30)) (block_labels(i),i=1,symmetry_block_count)
 
       do k = 30, 32 + max_coulomb_multipole_rank
-         write (k) "MCP", symmetry_block_count, mpi_rank, mpi_process_count
+         write (mcp_output_units(k)) "MCP", symmetry_block_count, mpi_rank, mpi_process_count
       end do
 
       return

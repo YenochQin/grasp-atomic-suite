@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine getsmd(name)
+      use, intrinsic :: iso_fortran_env, only: input_unit, output_unit
 !                                                                      *
 !   Interactively determines the data governing the SMS problem.       *
 !                                                                      *
@@ -57,13 +58,13 @@
 !
 
       if (ndef /= 0) then
-         write (6, *) "The physical speed of light in"
-         write (6, *) " atomic units is", vacuum_speed_of_light_au, ";"
-         write (6, *) " revise this value?"
+         write (output_unit, *) "The physical speed of light in"
+         write (output_unit, *) " atomic units is", vacuum_speed_of_light_au, ";"
+         write (output_unit, *) " revise this value?"
          yes = getyn()
          if (yes) then
-            write (6, *) "Enter the revised value:"
-            read (5, *) speed_of_light_au
+            write (output_unit, *) "Enter the revised value:"
+            read (input_unit, *) speed_of_light_au
          else
             speed_of_light_au = vacuum_speed_of_light_au
          end if
@@ -73,16 +74,16 @@
 !
       if (ndef /= 0) then
 !
-         write (6, *) "Treat contributions of some CSFs"
-         write (6, *) " as first-order perturbations?"
+         write (output_unit, *) "Treat contributions of some CSFs"
+         write (output_unit, *) " as first-order perturbations?"
          yes = getyn()
          if (yes) then
             lfordr = .true.
-            write (6, *) "The contribution of CSFs"
-            write (6, *) " 1 -- ICCUT will be treated"
-            write (6, *) " variationally; the remainder"
-            write (6, *) " perturbatively; enter ICCUT:"
-            read (5, *) iccut
+            write (output_unit, *) "The contribution of CSFs"
+            write (output_unit, *) " 1 -- ICCUT will be treated"
+            write (output_unit, *) " variationally; the remainder"
+            write (output_unit, *) " perturbatively; enter ICCUT:"
+            read (input_unit, *) iccut
          else
             lfordr = .false.
             iccut = 0
@@ -106,23 +107,23 @@
       end if
       asymptotic_grid_step = 0.0_real64
       if (ndef /= 0) then
-         write (6, *) "The default radial grid parameters"
-         write (6, *) " for this case are:"
-         write (6, *) " RNT = ", radial_grid_scale, ";"
-         write (6, *) " H = ", transformed_grid_step, ";"
-         write (6, *) " HP = ", asymptotic_grid_step, ";"
-         write (6, *) " N = ", radial_point_count, ";"
-         write (6, *) " revise these values?"
+         write (output_unit, *) "The default radial grid parameters"
+         write (output_unit, *) " for this case are:"
+         write (output_unit, *) " RNT = ", radial_grid_scale, ";"
+         write (output_unit, *) " H = ", transformed_grid_step, ";"
+         write (output_unit, *) " HP = ", asymptotic_grid_step, ";"
+         write (output_unit, *) " N = ", radial_point_count, ";"
+         write (output_unit, *) " revise these values?"
          yes = getyn()
          if (yes) then
-            write (6, *) "Enter RNT:"
-            read (5, *) radial_grid_scale
-            write (6, *) "Enter H:"
-            read (5, *) transformed_grid_step
-            write (6, *) "Enter HP:"
-            read (5, *) asymptotic_grid_step
-            write (6, *) "Enter N:"
-            read (5, *) radial_point_count
+            write (output_unit, *) "Enter RNT:"
+            read (input_unit, *) radial_grid_scale
+            write (output_unit, *) "Enter H:"
+            read (input_unit, *) transformed_grid_step
+            write (output_unit, *) "Enter HP:"
+            read (input_unit, *) asymptotic_grid_step
+            write (output_unit, *) "Enter N:"
+            read (input_unit, *) radial_point_count
          end if
       end if
 !

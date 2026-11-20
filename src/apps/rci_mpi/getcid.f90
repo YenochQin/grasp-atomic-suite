@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine getcid (isotope_file_path, radial_file_path, block_labels)
+      use calculation_file_units, only: calculation_log_unit
 !                                                                      *
 !   Interactively determines the data governing the CI problem.        *
 !   iccut is replaced by an array iccutblk(1:nblock)
@@ -37,7 +38,7 @@
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
       use breit_frequency_scale, only: wfact
       use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
-      use where_c, only: imcdf
+      use where_c, only: restart_matrix_unit
       use qed_orbital_cutoffs, only: nqedcut, nqedmax
       use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, &
          & mpi_logical, mpi_rank
@@ -97,7 +98,7 @@
       if (mpi_rank == 0) then
          write (stderr_unit,"(A)") "Use zero-first partition from descriptor header? (y/n)"
          lfordr = getyn ()
-         write (734,"(A)") merge("y", "n", lfordr)//"            ! Use zero-first partition from descriptor header"
+         write (calculation_log_unit,"(A)") merge("y", "n", lfordr)//"            ! Use zero-first partition from descriptor header"
          if (lfordr) call read_csf_zero_order_counts(iccutblk, input_status)
       end if
       call check_descriptor_status(input_status)
@@ -180,36 +181,36 @@
          end if
 
          if (ltrans) then
-          write(734,"(a)")"y            ! Contribution of H Transverse?"
+          write(calculation_log_unit,"(a)")"y            ! Contribution of H Transverse?"
          else
-          write(734,"(a)")"n            ! Contribution of H Transverse?"
+          write(calculation_log_unit,"(a)")"n            ! Contribution of H Transverse?"
          end if
          if (yes) then
-           write(734,"(a)") "y            ! Modify photon frequencies?"
-           write(734,*) wfact,"! Scale factor"
+           write(calculation_log_unit,"(a)") "y            ! Modify photon frequencies?"
+           write(calculation_log_unit,*) wfact,"! Scale factor"
          else
-           write(734,"(a)") "n            ! Modify photon frequencies?"
+           write(calculation_log_unit,"(a)") "n            ! Modify photon frequencies?"
          end if
          if (lvp) then
-           write(734,"(a)") "y            ! Vacuum polarization?"
+           write(calculation_log_unit,"(a)") "y            ! Vacuum polarization?"
          else
-           write(734,"(a)") "n            ! Vacuum polarization?"
+           write(calculation_log_unit,"(a)") "n            ! Vacuum polarization?"
          end if
          if (lnms) then
-           write(734,"(a)") "y            ! Normal mass shift?"
+           write(calculation_log_unit,"(a)") "y            ! Normal mass shift?"
          else
-           write(734,"(a)") "n            ! Normal mass shift?"
+           write(calculation_log_unit,"(a)") "n            ! Normal mass shift?"
          end if
          if (lsms) then
-           write(734,"(a)") "y            ! Specific mass shift?"
+           write(calculation_log_unit,"(a)") "y            ! Specific mass shift?"
          else
-           write(734,"(a)") "n            ! Specific mass shift?"
+           write(calculation_log_unit,"(a)") "n            ! Specific mass shift?"
          end if
          if (lse) then
-           write(734,"(a)") "y            ! Self energy?"
-           write(734,*) nqedmax, "! Max n for including self energy"
+           write(calculation_log_unit,"(a)") "y            ! Self energy?"
+           write(calculation_log_unit,*) nqedmax, "! Max n for including self energy"
          else
-           write(734,"(a)") "n            ! Self energy?"
+           write(calculation_log_unit,"(a)") "n            ! Self energy?"
          end if
       end if ! myid .EQ. 0
 
@@ -294,42 +295,42 @@
 !   .res  file; this is the second record on the file --- the
 !   first is the header (see SUBROUTINE SETRES)
 !
-      write (imcdf) electron_count, csf_count, orbital_count, symmetry_block_count ! ncf is ncftot, from setcsll
+      write (restart_matrix_unit) electron_count, csf_count, orbital_count, symmetry_block_count ! ncf is ncftot, from setcsll
 !
 !   Write the nuclear parameters and $- r \times V_ (r)$
 !   to the  .res  file; these are the third, fourth, and fifth
 !   records on the file
 !
-      write (imcdf) nuclear_charge, emn
-      write (imcdf) nuclear_model_parameter_count,(nuclear_model_parameters(i), i = 1, nuclear_model_parameter_count)
-      write (imcdf) radial_point_count, (negative_radius_times_potential(i), i = 1, radial_point_count), &
+      write (restart_matrix_unit) nuclear_charge, emn
+      write (restart_matrix_unit) nuclear_model_parameter_count,(nuclear_model_parameters(i), i = 1, nuclear_model_parameter_count)
+      write (restart_matrix_unit) radial_point_count, (negative_radius_times_potential(i), i = 1, radial_point_count), &
          & first_grid_index_beyond_fermi_c
 !
 !   Write the physical effects specification to the  .res  file.
 !   iccutblk() is now an array of length nblock.
 !   This is the sixth record on the file
 !
-      write (imcdf) speed_of_light_au, lfordr, (iccutblk(i), i = 1, symmetry_block_count),           &
+      write (restart_matrix_unit) speed_of_light_au, lfordr, (iccutblk(i), i = 1, symmetry_block_count),           &
                     ltrans, wfact, lvp, lnms, lsms
 !
 !   Write the grid data to the  .res  file; this is the seventh
 !   record on the file
 !
       np10 = radial_point_count + 10
-      write (imcdf) radial_grid_scale, transformed_grid_step, asymptotic_grid_step, (radial_grid(i), i = 1, np10), &
+      write (restart_matrix_unit) radial_grid_scale, transformed_grid_step, asymptotic_grid_step, (radial_grid(i), i = 1, np10), &
          & &
-                 (radial_grid_derivative(i), i = 1, np10), (radial_derivative_over_radius(i), i = 1, np10) ! (imcdf)
+                 (radial_grid_derivative(i), i = 1, np10), (radial_derivative_over_radius(i), i = 1, np10) ! (restart_matrix_unit)
 !
 !   Write out the interpolated radial wavefunctions; there are
 !   2*NW such records; thus the total number of records written
 !   at this point is 7+2*NW
 !
       do orbital_index = 1, orbital_count
-         write (imcdf) orbital_energy_parameters(orbital_index), orbital_origin_exponents(orbital_index), &
+         write (restart_matrix_unit) orbital_energy_parameters(orbital_index), orbital_origin_exponents(orbital_index), &
             & orbital_origin_parameters(orbital_index), &
             & orbital_last_grid_index(orbital_index)
-         write (imcdf) (radial_large_components(i,orbital_index), i = 1, orbital_last_grid_index(orbital_index)), &
-            & (radial_small_components(i,orbital_index) &
+         write (restart_matrix_unit) (radial_large_components(i,orbital_index), i = 1, orbital_last_grid_index(orbital_index)), &
+            (radial_small_components(i,orbital_index) &
             & , i = 1, orbital_last_grid_index(orbital_index))
       end do
 !

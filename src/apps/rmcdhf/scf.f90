@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine scf(extended_optimal_level, output_wavefunction_path)
+      use calculation_file_units, only: mixing_output_unit
 !                                                                      *
 !   This  subroutine  performs  the SCF iterations. The procedure is   *
 !   essentially algorithm 5.1 of C Froese Fischer, Comput Phys Rep 3   *
@@ -243,7 +244,7 @@
 
       if (mpi_rank == 0) then
          !CLOSE (23)     ! The .rwf file
-         close(25)                               ! The .mix file
+         close(mixing_output_unit)                               ! The .mix file
 !
 !   Complete the summary - moved from rscf92 for easier alloc/dalloc
 !

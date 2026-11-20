@@ -5,6 +5,7 @@
 !     ------------------------------------------------------------------
 !
       subroutine lulu(a, l, u, ndim)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !
 ! LU DECOMPOSITION OF MATRIX A
 !
@@ -79,9 +80,9 @@
 !
       ntest = 0
       if (ntest /= 0) then
-         write (6, *) " L MATRIX "
+         write (output_unit, *) " L MATRIX "
          call prsym (l, ndim)
-         write (6, *) " U MATRIX ( TRANSPOSED ) "
+         write (output_unit, *) " U MATRIX ( TRANSPOSED ) "
          call prsym (u, ndim)
       end if
 !

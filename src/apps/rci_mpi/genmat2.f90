@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine genmat2(irestart, nelmnt_a, elsto)
+      use calculation_file_units, only: summary_output_unit
 !
 !   Get eav and do writings to the summary file .csum
 !   The mpi version (genmat2mpi) also gets nelmnt_a and elsto
@@ -90,23 +91,23 @@
                                        0, mpi_comm_world, mpi_error_code)
 
       if (mpi_rank == 0) then
-         write (24,'("CUTOFF set to ",1p,d17.10)') cutofftmp
-         write (24,'("Dirac-Coulomb one-e radial integrals:",1i8)') ncoei_a
-         write (24,'("One-e angular integrals that exceed CUTOFF: ",1i8)') ncoec_a
-         write (24,'("Coulomb two-e radial integrals: ",1i8)') nctei_a
-         write (24,'("Two-e angular integrals that exceed CUTOFF: ",1i11)') nctec_a
+         write (summary_output_unit,'("CUTOFF set to ",1p,d17.10)') cutofftmp
+         write (summary_output_unit,'("Dirac-Coulomb one-e radial integrals:",1i8)') ncoei_a
+         write (summary_output_unit,'("One-e angular integrals that exceed CUTOFF: ",1i8)') ncoec_a
+         write (summary_output_unit,'("Coulomb two-e radial integrals: ",1i8)') nctei_a
+         write (summary_output_unit,'("Two-e angular integrals that exceed CUTOFF: ",1i11)') nctec_a
          if (ltrans) then
-            write (24,'("Transverse two-e radial integrals: "/,6i8)') ntpi_a
-            write (24,'("MCBP coefficients that exceed CUTOFF: ",1i16)') nmcbp_a
-            write (24,'("Core coefficients that exceed CUTOFF: ",1i8)') ncore_a
+            write (summary_output_unit,'("Transverse two-e radial integrals: "/,6i8)') ntpi_a
+            write (summary_output_unit,'("MCBP coefficients that exceed CUTOFF: ",1i16)') nmcbp_a
+            write (summary_output_unit,'("Core coefficients that exceed CUTOFF: ",1i8)') ncore_a
          end if
-         if (lvp) write (24,'("Vacuum polarisation integrals: ",1i8)') nvpi_a
-         if (lnms) write (24,'("Kinetic energy integrals: ",1i8)') nkei_a
-         if (lsms) write (24,'("Vinti integrals: ",1i8)') nvinti_a
+         if (lvp) write (summary_output_unit,'("Vacuum polarisation integrals: ",1i8)') nvpi_a
+         if (lnms) write (summary_output_unit,'("Kinetic energy integrals: ",1i8)') nkei_a
+         if (lsms) write (summary_output_unit,'("Vinti integrals: ",1i8)') nvinti_a
       end if
             else
       if (mpi_rank == 0) then
-         write (24,*) "Restart mode --- no report on radial integrals"
+         write (summary_output_unit,*) "Restart mode --- no report on radial integrals"
       end if
       end if                                      !(irestart .NE. 0) ! non-restart mode
 
@@ -134,9 +135,9 @@
       hamiltonian_energy_shift = eav_a / dble (ncftmp) + elsto
 
       if (mpi_rank == 0) then
-         write (24,'("Elements that exceed CUTOFF in the lower"," triangle of the H matrix: ",1i11)') nelmnt_a
-         write (24, *)
-         write (24, '("Average energy = ",1p,d19.12," Hartrees.")') hamiltonian_energy_shift
+         write (summary_output_unit,'("Elements that exceed CUTOFF in the lower"," triangle of the H matrix: ",1i11)') nelmnt_a
+         write (summary_output_unit, *)
+         write (summary_output_unit, '("Average energy = ",1p,d19.12," Hartrees.")') hamiltonian_energy_shift
       end if
 
 !cjb 1I8 -> 1I16

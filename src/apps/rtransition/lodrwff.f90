@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine lodrwff(state_name)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   This subroutine loads  radial wavefunctions from the  .rwf  file   *
 !   and performs some related setup.                                   *
@@ -24,6 +25,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       implicit none (type, external)
+      integer :: wavefunction_input_unit
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -42,12 +44,12 @@
 !
 !   Write entry message
 !
-      write (6, *) "Loading Radial WaveFunction File for final state..."
+      write (output_unit, *) "Loading Radial WaveFunction File for final state..."
 !
 !   Open the radial wave function file
 !
       j = index(state_name," ")
-      open(unit=69, file=state_name(1:j-1)//".bw", form="UNFORMATTED", status="OLD", &
+      open(newunit=wavefunction_input_unit, file=state_name(1:j-1)//".bw", form="UNFORMATTED", status="OLD", &
          position="asis")
 !
 !   Allocate storage to orbital arrays
@@ -76,10 +78,10 @@
             if (fkk >= con) then
                gamaff(j) = sqrt(fkk - con)
             else
-               write (6, *) "LODRWF: Imaginary gamma parameter"
-               write (6, *) " for ", npff(j), nhff(j), " orbital; the"
-               write (6, *) " point model for the nucleus"
-               write (6, *) " is inappropriate for Z > ", speed_of_light_au, "."
+               write (output_unit, *) "LODRWF: Imaginary gamma parameter"
+               write (output_unit, *) " for ", npff(j), nhff(j), " orbital; the"
+               write (output_unit, *) " point model for the nucleus"
+               write (output_unit, *) " is inappropriate for Z > ", speed_of_light_au, "."
                stop
             end if
          end if
@@ -89,20 +91,20 @@
 !   Read orbital information from Read Orbitals File;
 !
       nwin = 0
-      read (69, iostat=io_status) radial_file_signature
+      read (wavefunction_input_unit, iostat=io_status) radial_file_signature
       if (io_status/=0 .or. radial_file_signature/="G92RWF") then
-         write (6, *) "This is not a Radial WaveFunction File;"
-         close(69)
+         write (output_unit, *) "This is not a Radial WaveFunction File;"
+         close(wavefunction_input_unit)
       end if
 
     3 continue
-      read (69, iostat=io_status) npyff, nakyff, eyff, myff
+      read (wavefunction_input_unit, iostat=io_status) npyff, nakyff, eyff, myff
       if (io_status == 0) then
          call alloc (pa, myff, "PA", "LODRWFF" )
          call alloc (qa, myff, "QA", "LODRWFF" )
          call alloc (ra, myff, "RA", "LODRWFF" )
-         read (69) pzy, (pa(i),i=1,myff), (qa(i),i=1,myff)
-         read (69) (ra(i),i=1,myff)
+         read (wavefunction_input_unit) pzy, (pa(i),i=1,myff), (qa(i),i=1,myff)
+         read (wavefunction_input_unit) (ra(i),i=1,myff)
 
          do j = 1, nwff
             if (.not.(eff(j)<0.0_real64 .and. npyff==npff(j) .and. nakyff==nakff(j)&
@@ -125,14 +127,14 @@
 !   Stop with an error message if all orbitals are not known
 !
       if (nwin < nwff) then
-         write (6, *) "LODRWF: All required orbitals not"
-         write (6, *) " found."
+         write (output_unit, *) "LODRWF: All required orbitals not"
+         write (output_unit, *) " found."
          stop
       end if
 !
-      write (6, *) " ... load complete;"
+      write (output_unit, *) " ... load complete;"
 !
-      close(69)
+      close(wavefunction_input_unit)
 
       return
       end subroutine lodrwff

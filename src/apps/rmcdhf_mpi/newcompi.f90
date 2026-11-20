@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine newcompi(sum)
+      use, intrinsic :: iso_fortran_env, only: error_unit
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This routine computes the level weights, the generalized occupa-   *
 !   tion numbers,  and average energy for  EOL calculations;  this     *
@@ -101,10 +103,13 @@
          if (mpi_rank == 0) then
             write (*, '("Level ",1i2,4x,"Energy = ",1p,1d19.12,4x,"Weight = ",1d12.5)') iccmin(jall), ee, wt(jall)
             if (ldbpg(5)) then
-               write (99, *) jall, symmetry_block_index, csf_counts_by_block(symmetry_block_index), &
+               call ensure_debug_output()
+               write (angular_debug_unit, *) jall, symmetry_block_index, csf_counts_by_block(symmetry_block_index), &
                   & mixing_offsets_by_block(symmetry_block_index)
-               write (99, '(/,"Configuration mixing coefficients:")')
-               write (99, '(1x,1p,6d12.4)') (csf_mixing_coefficients(csf_index + noff),csf_index=1, &
+               call ensure_debug_output()
+               write (angular_debug_unit, '(/,"Configuration mixing coefficients:")')
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1x,1p,6d12.4)') (csf_mixing_coefficients(csf_index + noff),csf_index=1, &
                   & csf_counts_by_block(symmetry_block_index))
                noff = noff + csf_counts_by_block(symmetry_block_index)
             end if
@@ -120,7 +125,7 @@
 !   Write out average energy
 !
       if (ncmin > 1) write (*, '(/,"Weighted average energy of these levels = ",1p,d18.10)') sum
-      write (0,"(A25,1PD18.10)") "Weighted average energy: ", sum
+      write (error_unit,"(A25,1PD18.10)") "Weighted average energy: ", sum
 !
 !   Write out generalized occupation numbers
 !

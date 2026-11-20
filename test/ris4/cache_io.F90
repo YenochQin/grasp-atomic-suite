@@ -10,7 +10,7 @@ program cache_io
     character(24) :: name = "cache"
     character :: argument
     logical :: available, opened
-    integer :: status, rank, i, word, whichone, unit
+    integer :: status, rank, i, word, whichone, cache_unit
     real(real64) :: coefficient
 #ifdef CACHE_MPI
     integer :: error
@@ -18,7 +18,6 @@ program cache_io
     rank = 0
     call get_command_argument(1, argument)
     read(argument,*) whichone
-    unit = 49 + whichone
 #ifdef CACHE_MPI
     call mpi_init(error)
     call mpi_comm_rank(mpi_comm_world, rank, error)
@@ -27,29 +26,36 @@ program cache_io
         if (rank == 0) then
 #ifdef CACHE_BASELINE
             call angdata(name, available, whichone)
+            ! The external baseline reader owns the connection.
+            if (whichone == 1) then
+                inquire(file="cache.IOB", number=cache_unit)
+            else
+                inquire(file="cache.ITB", number=cache_unit)
+            end if
             status = 0
 #else
-            call angdata(name, available, whichone, status)
+            call angdata(name, available, whichone, status, cache_unit)
 #endif
             if (status /= 0) then
 #ifdef CACHE_MPI
-                call fail_input_io_mpi(status, unit, "ris4: angular cache")
+                call fail_input_io_mpi(status, cache_unit, "ris4: angular cache")
 #else
-                call fail_input_io(status, unit, "ris4: angular cache")
+                call fail_input_io(status, cache_unit, "ris4: angular cache")
 #endif
             end if
             print *, "AVAILABLE", available
-            inquire(unit=unit, opened=opened)
+            opened = .false.
+            if (cache_unit /= -1) inquire(unit=cache_unit, opened=opened)
             if (available) then
                 if (.not. opened) error stop "available cache not connected"
-                read(unit) word
+                read(cache_unit) word
                 if (word /= -1 .and. word /= 42) error stop "cache not rewound"
                 if (word == 42) then
-                    backspace(unit)
-                    read(unit) word, coefficient
+                    backspace(cache_unit)
+                    read(cache_unit) word, coefficient
                     if (coefficient /= 0.125_real64) error stop "coefficient changed"
                 end if
-                close(unit)
+                close(cache_unit)
 #ifndef CACHE_BASELINE
             else
                 if (opened) error stop "unavailable cache still connected"

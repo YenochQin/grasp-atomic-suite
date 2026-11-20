@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 
@@ -26,5 +27,8 @@ with tempfile.TemporaryDirectory(prefix="csf-record-io-") as temporary:
         if case == "valid":
             assert result.returncode == 0 and "PASS CSF record input" in output, output
         else:
-            assert result.returncode != 0 and "Input I/O failure: CSF" in output and "unit=21" in output, output
+            assert result.returncode != 0 and "Input I/O failure: CSF" in output, output
+            unit = re.search(r"unit=(-?\d+);", output)
+            assert unit and int(unit[1]) < -1, output
+            assert "Input file: truncated.c" in output, output
         print(case + (": accepted" if case == "valid" else ": rejected before using missing data"))

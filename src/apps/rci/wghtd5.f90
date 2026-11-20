@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine wghtd5(iatjpo, iaspar)
+      use calculation_file_units, only: summary_output_unit
 !                                                                      *
 !   Print  the  weights of the largest five CSF contributors to each   *
 !   ASF.                                                               *
@@ -49,7 +50,7 @@
 !      CALL ALLOC (WT, NCF,'WT', 'WGHTD5')
 !      CALL ALLOC (NEXT,NCF,'NEXT', 'WGHTD5')
 !
-      write (24,'(/"Weights of major contributors to ASF:"//"Level J Parity      CSF contributions"/)')
+      write (summary_output_unit,'(/"Weights of major contributors to ASF:"//"Level J Parity      CSF contributions"/)')
 !
 !CFF  Initialized NELT for NCF >5
       nelt = 5
@@ -88,9 +89,9 @@
 !
          ip = (iaspar + 3 ) / 2
 !        NELT = MIN (I,5)
-         write (24,'(i3,2x,2a4,5(3x,f8.5))') icf,right_justified_j_labels(iatjpo),parity_labels(ip),      &
+         write (summary_output_unit,'(i3,2x,2a4,5(3x,f8.5))') icf,right_justified_j_labels(iatjpo),parity_labels(ip),      &
                (csf_mixing_coefficients(iconf(j)),j = 1,nelt)
-         write (24,'(13x,5(i11))') (iconf(j)-ibegin,j = 1,nelt)
+         write (summary_output_unit,'(13x,5(i11))') (iconf(j)-ibegin,j = 1,nelt)
     7 continue
 !
 !   Deallocate storage for local arrays

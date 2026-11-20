@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine bessj(w)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This routine evaluates Bessel fuctions J K ( W*R/C ) at the grid   *
 !   points for K=L-1,L,L+1 and stores  them in the  arrays BJ(..,1),   *
@@ -137,7 +138,8 @@
          if (ldbpr(16)) then
             do jj = 1, 3
                jjj = l - 2 + jj
-               write (99, '(/," Bessel function of order ",i3,/(1p,7d18.10))') &
+               call ensure_debug_output()
+               write (angular_debug_unit, '(/," Bessel function of order ",i3,/(1p,7d18.10))') &
                   jjj, (bj(ii,jj),ii=1,radial_point_count)
             end do
          end if

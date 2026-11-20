@@ -3,6 +3,7 @@
 !     ------------------------------------------------------------------
 !
       subroutine prsym(a, matdim)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 ! PRINT LOWER HALF OF A SYMMETRIC MATRIX OF DIMENSION MATDIM.
 ! THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
 !-----------------------------------------------
@@ -26,7 +27,7 @@
       do i = 1, matdim
          jstart = jstart + i - 1
          jstop = jstop + i
-         write (6, '("0",2x,i3,5(1x,e14.7),/,(" ",5x,5(1x,e14.7)))') i, (a(j),j=jstart,jstop)
+         write (output_unit, '("0",2x,i3,5(1x,e14.7),/,(" ",5x,5(1x,e14.7)))') i, (a(j),j=jstart,jstop)
       end do
       return
       return

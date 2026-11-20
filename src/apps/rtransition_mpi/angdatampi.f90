@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
-      subroutine angdata(name, avail, jkp, nfile2)
+      subroutine angdata(name, avail, jkp, transition_angular_unit)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Checks if the angular file name(1).name(2).T is available          *
 !   and appropriate                                                    *
@@ -22,7 +23,7 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       integer  :: jkp
-      integer, intent(in) :: nfile2
+      integer, intent(out) :: transition_angular_unit
       logical, intent(out) :: avail
       character, intent(inout) :: name(2)*24
 !-----------------------------------------------
@@ -58,27 +59,27 @@
       inquire(file=name(1)(1:j1-1)//"."//name(2)(1:j2-1)//"."//s(kp(jkp))//"T"&
          , exist=found)
       if (.not.found) then
-         write (6, *)
-         write (6, *) " Angular file not available"
+         write (output_unit, *)
+         write (output_unit, *) " Angular file not available"
          avail = .false.
          return
       else
 !
 !  Open the file and check if it is appropriate for the present case
 !
-         open(unit=nfile2, file=name(1)(1:j1-1)//"."//name(2)(1:j2-1)//"."//s(&
+         open(newunit=transition_angular_unit, file=name(1)(1:j1-1)//"."//name(2)(1:j2-1)//"."//s(&
             kp(jkp))//"T", status="OLD", form="UNFORMATTED", position="asis")
-         rewind (nfile2)
-         read (nfile2) iblki,iblkf,nwd,nkpd,nprocsd,myidd
+         rewind (transition_angular_unit)
+         read (transition_angular_unit) iblki,iblkf,nwd,nkpd,nprocsd,myidd
          if (.not.(nwd==orbital_count .and. nkpd==nkp                          &
              .and.nprocsd==mpi_process_count.and.myidd==mpi_rank)) then
-            write (6, *) " Angular file not appropriate"
+            write (output_unit, *) " Angular file not appropriate"
             avail = .false.
-            close(nfile2, status="DELETE")
+            close(transition_angular_unit, status="DELETE")
             return
          else
-            rewind (nfile2)
-            write (6, *) " Angular data read from file"
+            rewind (transition_angular_unit)
+            write (output_unit, *) " Angular data read from file"
             avail = .true.
          end if
       end if

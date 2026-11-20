@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine maneig(iatjpo, iaspar, nelmnt_a)
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use calculation_file_units, only: summary_output_unit
 !                                                                      *
 !   This module  manages the  operation of the  eigensolvers and the   *
 !   storage of the eigenpairs.  There are two principal branches:      *
@@ -68,7 +70,7 @@
           nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
       use orbital_csf_basis,           only: csf_count, orbital_count, csf_subshell_occupations
       use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use where_c, only: imcdf
+      use where_c, only: restart_matrix_unit
       use active_symmetry_block, only: active_block_index => jblock
       use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
       use mpi_state, only: mpi_error_code, mpi_process_count, mpi_rank
@@ -138,14 +140,14 @@
 !
 !-----------------------------------------------------------------------
       abstol = 2*dlamch("S")
-      if (mpi_rank == 0) write (6, *) "Calling maneig..."
+      if (mpi_rank == 0) write (output_unit, *) "Calling maneig..."
 
 !  (nrows+1) is the number of records of the present block's .res file
 
       row_count = (csf_count - mpi_rank - 1 + mpi_process_count)/mpi_process_count
       if (csf_count < mpi_process_count) row_count = csf_count/(mpi_rank + 1)
-      !CALL posfile (1, imcdf, nrows+1)
-      call posfile (0, imcdf, nposition)
+      !CALL posfile (1, restart_matrix_unit, nrows+1)
+      call posfile (0, restart_matrix_unit, nposition)
 
       if (csf_count == 1) then
 !-----------------------------------------------------------------------
@@ -153,7 +155,7 @@
 ! (1) - Trivial    ncf = 1
 !
 !-------------------------------------------------------
-         if (mpi_rank == 0) write (24, *) "Trivial eigenvalue problem."
+         if (mpi_rank == 0) write (summary_output_unit, *) "Trivial eigenvalue problem."
 
 !   Matrix of order 1: the trivial case; we assume that the value
 !   of EAV is available
@@ -166,9 +168,9 @@
          ! Still read through the .res file
 !GG
 !GG Gediminas NIST 2005.11.03
-!GG         READ (imcdf)
+!GG         READ (restart_matrix_unit)
          do i = 1, row_count + 1
-            read (imcdf)
+            read (restart_matrix_unit)
          end do
 
       else                                       !if-2
@@ -185,9 +187,9 @@
 !
 !-------------------------------------------------------
             if (mpi_rank == 0) then
-               write (6, *) &
+               write (output_unit, *) &
                   "LAPACK routine DSPEVX selected for eigenvalue problem."
-               write (24, *) &
+               write (summary_output_unit, *) &
                   "LAPACK routine DSPEVX selected for eigenvalue problem."
             end if
 
@@ -203,13 +205,13 @@
 
             call alloc (real_workspace, csf_count,"WORK", "MANEIG" )
             call alloc (matrix_partner_indices, csf_count, "IROW", "MANEIG")
-            read (imcdf) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
+            read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
             if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) stop &
                "maneig:1"
 
             do i = mpi_rank + 1, csf_count, mpi_process_count
                iofset = (i*(i - 1))/2
-               read (imcdf) nelc, elsto, (real_workspace(ir),ir=1,nelc), (matrix_partner_indices(ir),ir=1,&
+               read (restart_matrix_unit) nelc, elsto, (real_workspace(ir),ir=1,nelc), (matrix_partner_indices(ir),ir=1,&
                   nelc)
                ! In the row-mode of the lower triangle,
                ! diagonal is the last one
@@ -276,7 +278,7 @@
 ! (2.2) - DVDSON --- preparation work
 !
 !-------------------------------------------------------
-            if (mpi_rank == 0) write (24,*)"DVDSON routine selected" &
+            if (mpi_rank == 0) write (summary_output_unit,*)"DVDSON routine selected" &
                                       //" for eigenvalue problem;"
 !--------------------------------------------------------------
             if (mpi_rank == 0) print *,"zou: nelmnt",stored_matrix_element_count
@@ -319,7 +321,7 @@
 !-------------------------------------------------------
                if (mpi_rank == 0)  then
                   write (*, *) " matrix stored on disc;"
-                  write (24, *) " matrix stored on disc;"
+                  write (summary_output_unit, *) " matrix stored on disc;"
                end if
 
 !   Disk storage; necessarily sparse; one column of the matrix in
@@ -329,13 +331,13 @@
 
 !   Load diagonal - Each node will have the same, complete copy
 !   after this if block
-               print *, mpi_rank, "Reading diagonal, unit imcdf =", imcdf
-               read (imcdf) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
+               print *, mpi_rank, "Reading diagonal, unit imcdf =", restart_matrix_unit
+               read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
                if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) stop &
                   "maneig:2"
 
                do i = mpi_rank + 1, csf_count, mpi_process_count
-                  read (imcdf) nelc, elsto, (dummy,ir=2,nelc), diatmp, &
+                  read (restart_matrix_unit) nelc, elsto, (dummy,ir=2,nelc), diatmp, &
                                             (idummy, ir=1,nelc)
                   matrix_diagonal(i) = diatmp - hamiltonian_energy_shift
                end do
@@ -357,23 +359,23 @@
 !
 !-------------------------------------------------------
                   if (mpi_rank == 0) then
-                     write (24, *) " sparse matrix stored in memory"
+                     write (summary_output_unit, *) " sparse matrix stored in memory"
                      write ( *, *) " sparse matrix stored in memory"
                   end if
 
                   imv = 2
-                  write (6, *) "nelmnt = ", stored_matrix_element_count
+                  write (output_unit, *) "nelmnt = ", stored_matrix_element_count
                   call alloc (hamiltonian_values, stored_matrix_element_count, "EMT", "MANEIG")
                   call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "MANEIG")
                   call alloc (stored_segment_end_offsets, 0, csf_count , "IENDC", "MANEIG")
                   iofset = 0
                   stored_segment_end_offsets(0) = 0
 
-                  read (imcdf) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
+                  read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
                   if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) &
                      stop "maneig:3"
                   do i = mpi_rank + 1, csf_count, mpi_process_count
-                     read (imcdf) nelc, elsto, (hamiltonian_values(ir+iofset),ir=1,nelc), (&
+                     read (restart_matrix_unit) nelc, elsto, (hamiltonian_values(ir+iofset),ir=1,nelc), (&
                         matrix_partner_indices(ir + iofset),ir=1,nelc)
                      hamiltonian_values(nelc+iofset) = hamiltonian_values(nelc+iofset) - hamiltonian_energy_shift
                      matrix_diagonal(i) = hamiltonian_values(nelc+iofset)
@@ -387,7 +389,7 @@
 !
 !-------------------------------------------------------
                   if (mpi_rank == 0) then
-                     write (24,*) " full matrix stored in in memory"
+                     write (summary_output_unit,*) " full matrix stored in in memory"
                      write ( *,*) " full matrix stored in in memory"
                   end if
 
@@ -405,13 +407,13 @@
                   call alloc (real_workspace, csf_count, "WORK", "MANEIG")
                   call alloc (matrix_partner_indices, csf_count, "IROW", "MANEIG")
 
-                  read (imcdf) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
+                  read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
                   if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) &
                      stop "maneig:4"
 
                   iofset = 0
                   do i = mpi_rank + 1, csf_count, mpi_process_count
-                     read (imcdf) nelc, elsto, (real_workspace(ir),ir=1,nelc), (matrix_partner_indices(ir),&
+                     read (restart_matrix_unit) nelc, elsto, (real_workspace(ir),ir=1,nelc), (matrix_partner_indices(ir),&
                         ir=1,nelc)
                      real_workspace(nelc) = real_workspace(nelc) - hamiltonian_energy_shift
                      matrix_diagonal(i) = real_workspace(nelc)
@@ -491,9 +493,10 @@
             case (1)
 !******************** sparse and matrix on disk **********************
               if (mpi_rank == 0) print *, " Sparse - Disk, iniestsd"
-               call posfile (0, imcdf, nposition)! was within iniestsd before
-               call iniestsd (iolpck, csf_count, mpi_rank, mpi_process_count, initial_vector_count, real_workspace, imcdf, &
-                  & hamiltonian_energy_shift)
+               call posfile (0, restart_matrix_unit, nposition)! was within iniestsd before
+               call iniestsd (iolpck, csf_count, mpi_rank, mpi_process_count, initial_vector_count, real_workspace, &
+                  & restart_matrix_unit, &
+                  hamiltonian_energy_shift)
               print *, "Returned from iniestsd "
               if (csf_count> iolpck) then
                 print *, "Calling GDVD"
@@ -542,8 +545,8 @@
             call dalloc (integer_workspace, "IWORK", "MANEIG")
             call dalloc (selected_pair_indices, "JWORK", "MANEIG")
             if (mpi_rank == 0) then
-               write (24, *) " ", iteration_count, " iterations;"
-               write (24, *) " ", matrix_vector_product_count, " matrix-vector multiplies."
+               write (summary_output_unit, *) " ", iteration_count, " iterations;"
+               write (summary_output_unit, *) " ", matrix_vector_product_count, " matrix-vector multiplies."
             end if
             if (mpi_error_code /= 0) then
                write (stderr_unit, *) "MANEIG: Returned from DVDSON with"

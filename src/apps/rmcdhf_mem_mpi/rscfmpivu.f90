@@ -24,6 +24,7 @@
 !***********************************************************************
 !                                                                      *
       program rscfmpivu
+      use calculation_file_units, only: calculation_log_unit
 !                                                                      *
 !   Entry routine for RSCFVU. Controls the entire computation.      *
 !                                                                      *
@@ -108,10 +109,10 @@
       if (mpi_rank == 0) call check_orbital_output(trim(serial_io_directory)//"/"//files%orbitals, writing_initial=.false.)
       ndef = merge(0, 1, yes)
       if (mpi_rank == 0) then
-         open(unit=734,file=trim(startup_directory)//"/"//files%scf_log,status="UNKNOWN")
+         open(newunit=calculation_log_unit,file=trim(startup_directory)//"/"//files%scf_log,status="UNKNOWN")
          if (state /= "") then
-            write(734,"(A)") trim(state)
-            write(734,"(A)") merge("y","n",yes)//"            ! Default settings"
+            write(calculation_log_unit,"(A)") trim(state)
+            write(calculation_log_unit,"(A)") merge("y","n",yes)//"            ! Default settings"
          end if
       end if
 

@@ -1,8 +1,9 @@
 !***********************************************************************
 !                                                                      *
-      subroutine hmout(imcdf)
+      subroutine hmout(restart_matrix_unit)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
-!   Routine for printing the Hamiltonian matrix.  File IMCDF must be   *
+!   Routine for printing the Hamiltonian matrix.  File restart_matrix_unit must be   *
 !   positioned correctly before a call is made to this module.         *
 !                                                                      *
 !   Call(s) to: [LIB92]: CONVRT.                                       *
@@ -26,7 +27,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer, intent(in) :: imcdf
+      integer, intent(in) :: restart_matrix_unit
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -36,11 +37,12 @@
 !-----------------------------------------------
 !
       do csf_index = 1, csf_count
-         read (imcdf) nelc, elsto, (hamiltonian_values(ir),ir=1,nelc), (matrix_partner_indices(ir),ir=1,nelc)
+         read (restart_matrix_unit) nelc, elsto, (hamiltonian_values(ir),ir=1,nelc), (matrix_partner_indices(ir),ir=1,nelc)
          do ir = 1, nelc
             call convrt (matrix_partner_indices(ir), cir, lenthr)
             call convrt (csf_index, cic, lenthc)
-            write (99, '(" H (",a,",",a,") = ",1p,1d19.12)') cir(1:lenthr), cic(1:lenthc), hamiltonian_values(ir)
+            call ensure_debug_output()
+            write (angular_debug_unit, '(" H (",a,",",a,") = ",1p,1d19.12)') cir(1:lenthr), cic(1:lenthc), hamiltonian_values(ir)
          end do
       end do
 !

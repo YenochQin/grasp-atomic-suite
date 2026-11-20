@@ -15,6 +15,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       implicit none (type, external)
+      integer :: memory_info_unit
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -25,10 +26,10 @@
       character(len=128) :: line,cmem
 !-----------------------------------------------
 !
-      open(5321,file="/proc/meminfo", status="OLD", form="FORMATTED")
-      read(5321,"(A)")line
-      read(5321,"(A)")line
-      close(5321)
+      open(newunit=memory_info_unit,file="/proc/meminfo", status="OLD", form="FORMATTED")
+      read(memory_info_unit,"(A)")line
+      read(memory_info_unit,"(A)")line
+      close(memory_info_unit)
       leng = len_trim(line)
       cmem = line(10:leng-3)
       read(cmem,*)summem  ! KB

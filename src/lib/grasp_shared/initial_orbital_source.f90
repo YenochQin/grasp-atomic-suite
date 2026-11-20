@@ -1,5 +1,8 @@
-      module initial_orbital_source
-      use grasp_parameters,   only: max_orbitals
-      implicit none (type, external)
-      character :: source(max_orbitals)*256
-      end module initial_orbital_source
+module initial_orbital_source
+    ! Module dependencies
+    use grasp_parameters,   only: max_orbitals
+    implicit none (type, external)
+
+    ! Module state
+    character :: source(max_orbitals)*256
+end module initial_orbital_source

@@ -1,33 +1,39 @@
 ! Position a Fortran unit by rewinding and advancing or by backspacing records.
 module file_positioning
     implicit none (type, external)
+
+    ! Module interface
     private
     public :: posfile
 contains
-      subroutine posfile(position_mode, file_unit, record_count)
-      implicit none (type, external)
-      integer, intent(in) :: position_mode
-      integer, intent(in) :: file_unit
-      integer, intent(in) :: record_count
-      integer, parameter :: rewind_and_advance = 0
-      integer, parameter :: backspace_records = 1
-      integer :: record_index
+    subroutine posfile(position_mode, file_unit, record_count)
+        implicit none (type, external)
 
-      select case (position_mode)
+        ! Arguments
+        integer, intent(in) :: position_mode
+        integer, intent(in) :: file_unit
+        integer, intent(in) :: record_count
 
-      case (rewind_and_advance)
-         rewind (file_unit)
-         do record_index = 1, record_count
-            read (file_unit)
-         end do
+        ! Local declarations
+        integer, parameter :: rewind_and_advance = 0
+        integer, parameter :: backspace_records = 1
+        integer :: record_index
 
-      case (backspace_records)
-         do record_index = 1, record_count
-            backspace (file_unit)
-         end do
+        select case (position_mode)
 
-      end select
+        case (rewind_and_advance)
+            rewind (file_unit)
+            do record_index = 1, record_count
+                read (file_unit)
+            end do
 
-      return
-      end subroutine posfile
+        case (backspace_records)
+            do record_index = 1, record_count
+                backspace (file_unit)
+            end do
+
+        end select
+
+        return
+    end subroutine posfile
 end module file_positioning

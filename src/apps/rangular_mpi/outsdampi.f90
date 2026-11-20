@@ -1,5 +1,7 @@
 !***********************************************************************
       subroutine outsdampi(print_details,nonzero_element_count, csf_count)
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !***********************************************************************
 !-----------------------------------------------
 !   C o m m o n   B l o c k s
@@ -25,18 +27,22 @@
       call mpi_reduce (nonzero_element_count, nnonz_a, 1, mpi_integer, mpi_sum, 0,  &
                mpi_comm_world, mpi_error_code)
       if (mpi_rank == 0) &
-      write(6, *)" ... complete; density of non-zero elements of H(DC):", &
+      write(output_unit, *)" ... complete; density of non-zero elements of H(DC):", &
          nnonz_a, "/", (csf_count*(csf_count + 1))/2
 !
 !   Debug printout
 !
       if (print_details) then
         if (mpi_rank == 0) then
-          write (99, *)
-          write (99, *) "From ", routine_name, " :"
-          write (99, '(" Number of nonzero elements in H(DC): ",1i4)') nnonz_a
-          write (6, *) "This part not finished. See ", routine_name
-          write (99, *) "This part not finished. See ", routine_name
+          call ensure_debug_output()
+          write (angular_debug_unit, *)
+          call ensure_debug_output()
+          write (angular_debug_unit, *) "From ", routine_name, " :"
+          call ensure_debug_output()
+          write (angular_debug_unit, '(" Number of nonzero elements in H(DC): ",1i4)') nnonz_a
+          write (output_unit, *) "This part not finished. See ", routine_name
+          call ensure_debug_output()
+          write (angular_debug_unit, *) "This part not finished. See ", routine_name
         end if
       end if
       return

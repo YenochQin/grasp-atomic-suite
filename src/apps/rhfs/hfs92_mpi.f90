@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       program hfs92_mpi
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Entry routine for the MPI hyperfine-structure program.             *
 !                                                                      *
@@ -139,13 +140,13 @@
       if (mpi_rank == 0) time_hfsgg = timbuf(1)
 !
       if (mpi_rank == 0) then
-         write (6, "(A, F10.3, A)") "RHFS_MPI setcsla wall time  (max rank): ", &
+         write (output_unit, "(A, F10.3, A)") "RHFS_MPI setcsla wall time  (max rank): ", &
             time_setcsla, " s"
-         write (6, "(A, F10.3, A)") "RHFS_MPI gethfd wall time   (max rank): ", &
+         write (output_unit, "(A, F10.3, A)") "RHFS_MPI gethfd wall time   (max rank): ", &
             time_gethfd, " s"
-         write (6, "(A, F10.3, A)") "RHFS_MPI getmix wall time   (max rank): ", &
+         write (output_unit, "(A, F10.3, A)") "RHFS_MPI getmix wall time   (max rank): ", &
             time_getmixblock, " s"
-         write (6, "(A, F10.3, A)") "RHFS_MPI hfsgg wall time    (max rank): ", &
+         write (output_unit, "(A, F10.3, A)") "RHFS_MPI hfsgg wall time    (max rank): ", &
             time_hfsgg, " s"
       end if
 !

@@ -3,6 +3,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine getinf
+      use, intrinsic :: iso_fortran_env, only: input_unit
 !                                                                      *
 !   Interactively determines data useful for generating estimates of   *
 !   the subshell radial wavefunctions.                                 *
@@ -78,7 +79,7 @@
             yes = getyn()
             if (yes) then
                write (stderr_unit, *) "Enter the revised value:"
-               read (5, *) speed_of_light_au
+               read (input_unit, *) speed_of_light_au
             end if
 !
 !   Modify the parameters controlling the radial grid
@@ -93,13 +94,13 @@
             yes = getyn()
             if (yes) then
                write (stderr_unit, *) "Enter RNT:"
-               read (5, *) radial_grid_scale
+               read (input_unit, *) radial_grid_scale
                write (stderr_unit, *) "Enter H:"
-               read (5, *) transformed_grid_step
+               read (input_unit, *) transformed_grid_step
                write (stderr_unit, *) "Enter HP:"
-               read (5, *) asymptotic_grid_step
+               read (input_unit, *) asymptotic_grid_step
                write (stderr_unit, *) "Enter N:"
-               read (5, *) radial_point_count
+               read (input_unit, *) radial_point_count
             end if
 !
          end if

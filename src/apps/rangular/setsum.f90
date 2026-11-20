@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine setsum(file_path)
+      use calculation_file_units, only: summary_output_unit
 !                                                                      *
 !   Open the  .sum  file on stream 24.                                 *
 !                                                                      *
@@ -46,7 +47,7 @@
       if (len_trim(filnam) == 0) filnam = file_path
 !
     1 continue
-      call openfl (24, filnam, form, status, open_status)
+      call openfl (summary_output_unit, filnam, form, status, open_status)
       if (open_status /= 0) then
     2    continue
          write (stderr_unit, *) "Enter a name for the GENMCP SUMmary", &

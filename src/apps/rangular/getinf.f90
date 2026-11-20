@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine getinf
+      use calculation_file_units, only: angular_log_unit
 !                                                                      *
 !   Interactively determines data governing the generation of MCP co-  *
 !   efficients.                                                        *
@@ -70,7 +71,7 @@
             do i = 1,symmetry_block_count
                write(stderr_unit,*) "Give ICCUT for block",i
                read *, iccut(i)
-               write(739,*) iccut(i), "! ICCUT FOR BLOCK",i
+               write(angular_log_unit,*) iccut(i), "! ICCUT FOR BLOCK",i
 !    1          READ *, ICCUT(i)
 !               IF ((ICCUT(i).LE.1).OR.(ICCUT(i).GE.ncfblk(i))) THEN
 !                  WRITE (istde,*) 'GETINF: ICCUT must be greater than 1', &

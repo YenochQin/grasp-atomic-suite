@@ -27,7 +27,8 @@ program ci_damping
        & eigenvector_counts_by_block, ncmaxblk
     use sparse_hamiltonian_storage, only: &
         emt => hamiltonian_values, irow => matrix_partner_indices, iendc => stored_segment_end_offsets
-    use mcp_file_metadata, only: kmaxf => max_mcp_file_multipole_rank
+    use mcp_file_metadata, only: kmaxf => max_mcp_file_multipole_rank, mcp_input_units
+    use calculation_file_units, only: mixing_output_unit
     use orbital_csf_basis, only: ncf => csf_count, nw => orbital_count
     use symmetry_block_offsets, only: ncftot => total_csf_count, nvecsiz => mixing_coefficient_storage_size, ncfpast => &
        & csf_offsets_by_block, ncminpast => eigenvalue_offsets_by_block, nevecpast => mixing_offsets_by_block
@@ -47,7 +48,7 @@ program ci_damping
 #endif
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
-    integer :: unit, i, records, local_size
+    integer :: channel_suffix, i, records, local_size
     real(real64), parameter :: tol = 1e-12_real64
 #ifdef CI_MPI
     call startmpi(myid,nprocs,host,lenhost)
@@ -67,24 +68,25 @@ program ci_damping
     allocate(imin1_30(1),imax1_30(1),imin2_30(1),imax2_30(1))
     imin1_30=0; imax1_30=2; imin2_30=0; imax2_30=local_size
 #else
-    do unit=30,33
-        open(unit,status="scratch",form="unformatted")
+    allocate(mcp_input_units(30:33))
+    do channel_suffix=30,33
+        open(newunit=mcp_input_units(channel_suffix),status="scratch",form="unformatted")
         records=3
-        if(unit==30) records=6
+        if(channel_suffix==30) records=6
         do i=1,records
-            write(unit) 0
+            write(mcp_input_units(channel_suffix)) 0
         end do
-        if(unit==30) then
-            write(unit) "MCP",1,2
-            write(unit) local_size
-            write(unit) [(i,i=1,local_size)], [(i,i=1,local_size)]
+        if(channel_suffix==30) then
+            write(mcp_input_units(channel_suffix)) "MCP",1,2
+            write(mcp_input_units(channel_suffix)) local_size
+            write(mcp_input_units(channel_suffix)) [(i,i=1,local_size)], [(i,i=1,local_size)]
         end if
     end do
 #endif
     if(myid==0) then
-        open(25,status="scratch",form="unformatted")
-        write(25) "G92MIX"
-        write(25) 2,2,1,2,8,1
+        open(newunit=mixing_output_unit,status="scratch",form="unformatted")
+        write(mixing_output_unit) "G92MIX"
+        write(mixing_output_unit) 2,2,1,2,8,1
     end if
     call matrix_step(.true.)
     ! With fcheck=all, the production allocation/zeroing must include IENDC(0).
@@ -104,12 +106,12 @@ program ci_damping
         error stop "zero damping control"
     if(solves/=3) error stop "fixture did not execute three production calls"
     if(myid==0) then
-        close(25)
+        close(mixing_output_unit)
         print *, "PASS: production FIRST / nonzero multi-root DDOT / zero damping"
     end if
 #ifndef CI_MEM
-    do unit=30,33
-        close(unit)
+    do channel_suffix=30,33
+        close(mcp_input_units(channel_suffix))
     end do
 #endif
 #ifdef CI_MPI

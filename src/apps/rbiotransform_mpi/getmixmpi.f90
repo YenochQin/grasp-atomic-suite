@@ -2,6 +2,8 @@
 !                                                                      *
       subroutine getmix(name, inpci, iblk)
       use calculation_state_files, only: mixing_input_path
+      use calculation_file_units, only: mixing_input_unit
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Open, check, load data from and close the rscf.mix file.           *
 !                                                                      *
@@ -35,38 +37,37 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: ik, j, io_status, nb, iatjp, iaspa, i
+      integer :: j, io_status, nb, iatjp, iaspa, i
       character :: mixing_file_signature*6
 !-----------------------------------------------
 
-      ik = 30
       if (iblk == 1) then
-         open(unit=ik, file=mixing_input_path(name, inpci == 0), &
+         open(newunit=mixing_input_unit, file=mixing_input_path(name, inpci == 0), &
               form="UNFORMATTED", status="OLD", position="asis")
 
-         read (ik, iostat=io_status) mixing_file_signature
+         read (mixing_input_unit, iostat=io_status) mixing_file_signature
          if (io_status/=0 .or. mixing_file_signature/="G92MIX") then
-            write (6, *)                                              &
-                    "File", ik, "Not a GRASP MIXing Coefficients File;"
-            close(ik)
+            write (output_unit, *)                                              &
+                    "File", mixing_input_unit, "Not a GRASP MIXing Coefficients File;"
+            close(mixing_input_unit)
             stop
          end if
 !
-         read (ik) nelectot, ncftot, nwtot, nvectot, nvecsiztot, nblock1
+         read (mixing_input_unit) nelectot, ncftot, nwtot, nvectot, nvecsiztot, nblock1
          if (electron_count/=nelectot .or. orbital_count/=nwtot) then
 !     :    (NCF .NE. NCFT) .OR.
-            write (6, *) "File", ik, "is not an"
-            write (6, *) " appropriate to Coefficients file"
-            close(ik)
+            write (output_unit, *) "File", mixing_input_unit, "is not an"
+            write (output_unit, *) " appropriate to Coefficients file"
+            close(mixing_input_unit)
             stop
          end if
       end if
 !
 !   Load data from the  rscf.mix  file
 !
-      write (6, *) "Loading MIXing Coefficients File ..."
+      write (output_unit, *) "Loading MIXing Coefficients File ..."
 !
-      read (ik) nb, csf_count, nvec, iatjp, iaspa
+      read (mixing_input_unit) nb, csf_count, nvec, iatjp, iaspa
       call alloc (shifted_eigenvalues, nvec, "EVAL", "GETMIX")
       call alloc (csf_mixing_coefficients, csf_count*nvec, "EVEC", "GETMIX")
       call alloc (ivec, nvec, "IVEC", "GETMIX")
@@ -75,18 +76,18 @@
 !
 !   These arrays are deallocated in mcp
 !
-      read (ik) (ivec(i),i=1,nvec)
-!     READ (IK) (IATJPO(I),IASPAR(I),I = 1,NVEC)
+      read (mixing_input_unit) (ivec(i),i=1,nvec)
+!     READ (mixing_input_unit) (IATJPO(I),IASPAR(I),I = 1,NVEC)
       iatjpo(:nvec) = iatjp
       iaspar(:nvec) = iaspa
-      read (ik) hamiltonian_energy_shift, (shifted_eigenvalues(i),i=1,nvec)
-      read (ik) ((csf_mixing_coefficients(i + (j - 1)*csf_count),i=1,csf_count),j=1,nvec)
+      read (mixing_input_unit) hamiltonian_energy_shift, (shifted_eigenvalues(i),i=1,nvec)
+      read (mixing_input_unit) ((csf_mixing_coefficients(i + (j - 1)*csf_count),i=1,csf_count),j=1,nvec)
 !
-      write (6, *) " ... load complete;"
+      write (output_unit, *) " ... load complete;"
 !
 !   Close the  rscf.mix  file
 !
-!     CLOSE (IK)
+!     CLOSE (mixing_input_unit)
 !
       return
       end subroutine getmix

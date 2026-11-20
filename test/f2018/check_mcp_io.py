@@ -40,10 +40,20 @@ def main() -> None:
             else:
                 assert result.returncode != 0 and "Input I/O failure: MCP" in output, (case, output)
                 if args.reader:
-                    unit = 30 if case in {"missing", "global-header", "short-global-header", "block-sizes", "block-labels", "sparse-block-id"} else 31
-                    assert f"unit={unit}" in output and any(name in output for name in ("setmcp", "setcof")), (case, output)
+                    sparse_cases = {"missing", "global-header", "short-global-header", "block-sizes",
+                                    "block-labels", "sparse-block-id"}
+                    suffix = 30 if case in sparse_cases else 31
+                    assert any(name in output for name in ("setmcp", "setcof")), (case, output)
                 else:
-                    assert "setmcp_mem" in output and "unit=32" in output, (case, output)
+                    suffix = 32
+                    assert "setmcp_mem" in output, (case, output)
+                unit = re.search(r"unit=(-?\d+);", output)
+                assert unit and int(unit[1]) < 0, (case, output)
+                if case == "missing":
+                    assert re.search(r"MCP setmcp open mcp-rank-\d+\.30", output), (case, output)
+                else:
+                    assert int(unit[1]) < -1, (case, output)
+                    assert re.search(rf"Input file: mcp-rank-\d+\.{suffix}\b", output), (case, output)
                 assert "Corrupt MCP was accepted" not in output, (case, output)
                 if "short" in case:
                     status = re.search(r"iostat=(-?\d+)", output)

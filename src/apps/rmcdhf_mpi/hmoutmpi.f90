@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine hmoutmpi(mpi_rank, mpi_process_count, block_csf_count)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   Routine for printing the Hamiltonian matrix.                       *
 !                                                                      *
@@ -33,7 +34,8 @@
          idiag = stored_segment_end_offsets(ico)
          do list = ibeg, idiag
             iro = matrix_partner_indices(list)
-            write (99,*) "H(",iro,ico,")= ", hamiltonian_values(list)
+            call ensure_debug_output()
+            write (angular_debug_unit,*) "H(",iro,ico,")= ", hamiltonian_values(list)
          end do
          ibeg = idiag + 1
       end do

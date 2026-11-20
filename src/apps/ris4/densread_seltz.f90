@@ -4,6 +4,7 @@
       subroutine densread_seltz(dint1,dint2,dint3,                     &
                           dint4,dint5,dint6,                           &
                           dint7,dint1vec,dens1vec,nrnuc)
+      use calculation_file_units, only: one_body_cache_unit
 !                                                                      *
 !   IF angular coefficients already exist                              *
 !   This routine controls combines the radial and angular parts for the*
@@ -70,8 +71,8 @@
       icold = 0
       irold = 0
 
-      rewind (50)
-   16 read (50,iostat = io_status) ic,ir,ncount
+      rewind (one_body_cache_unit)
+   16 read (one_body_cache_unit,iostat = io_status) ic,ir,ncount
 
       if (io_status == 0) then
 !*      print*, 'ic', IC,IR,NCOUNT
@@ -98,7 +99,7 @@
 !*        ENDDO
         end if
         do i= 1,ncount
-           read(50) tshell_r(i),lab
+           read(one_body_cache_unit) tshell_r(i),lab
            ia = lab/orbital_label_radix
            ib = mod(lab,orbital_label_radix)
 !*           LOC = INDEX(I)

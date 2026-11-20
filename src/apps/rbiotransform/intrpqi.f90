@@ -2,6 +2,7 @@
 !                                                                      *
       subroutine intrpqi(source_large_component, source_small_component, source_grid_size, source_radial_grid, orbital_index, &
          & original_norm_squared)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This  subprogram  interpolates  the  arrays  PA(1:MA), QA(1:MA),   *
 !   tabulated on grid RA(1:MA) into the COMMON arrays PF(1:MF(J),J),   *
@@ -209,8 +210,11 @@
       pfii(mfjp1:radial_point_count,orbital_index) = 0.0_real64
       qfii(mfjp1:radial_point_count,orbital_index) = 0.0_real64
 !
-      if (ldbpr(3) .and. kount>0) write (99, '(/,"INTRPQ: Interpolation procedure not converged to",1p,1d19.12,&
+      if (ldbpr(3) .and. kount>0) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '(/,"INTRPQ: Interpolation procedure not converged to",1p,1d19.12,&
          &" for ",1i3," of ",1i3," tabulation points")') accy, kount, last_radial_index
+      end if
 !
 !   Normalization
 !

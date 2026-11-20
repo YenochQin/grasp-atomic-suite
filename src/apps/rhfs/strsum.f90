@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine strsum
+      use calculation_file_units, only: hyperfine_output_unit, summary_output_unit
 !                                                                      *
 !   Generates the first part of  hfs92.sum  (on stream 24 and 29).     *
 !                                                                      *
@@ -27,12 +28,12 @@
 !
 !    Write nuclear data
 !
-      write (24, '("Nuclear spin                        ",1p,d22.15," au")') hfsi
-      write (24, '("Nuclear magnetic dipole moment      ",1p,d22.15," n.m.")') hfsd
-      write (24, '("Nuclear electric quadrupole moment  ",1p,d22.15," barns")') hfsq
-      write (29, '("Nuclear spin                        ",1p,d22.15," au")') hfsi
-      write (29, '("Nuclear magnetic dipole moment      ",1p,d22.15," n.m.")') hfsd
-      write (29, '("Nuclear electric quadrupole moment  ",1p,d22.15," barns")') hfsq
+      write (summary_output_unit, '("Nuclear spin                        ",1p,d22.15," au")') hfsi
+      write (summary_output_unit, '("Nuclear magnetic dipole moment      ",1p,d22.15," n.m.")') hfsd
+      write (summary_output_unit, '("Nuclear electric quadrupole moment  ",1p,d22.15," barns")') hfsq
+      write (hyperfine_output_unit, '("Nuclear spin                        ",1p,d22.15," au")') hfsi
+      write (hyperfine_output_unit, '("Nuclear magnetic dipole moment      ",1p,d22.15," n.m.")') hfsd
+      write (hyperfine_output_unit, '("Nuclear electric quadrupole moment  ",1p,d22.15," barns")') hfsq
 !
 !    Write the list of eigenpair indices
 !

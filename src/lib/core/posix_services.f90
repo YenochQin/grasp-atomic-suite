@@ -1,39 +1,58 @@
 ! Wrap POSIX process, filesystem, and directory operations for Fortran callers.
 module posix_services
+    ! Module dependencies
     use iso_c_binding, only: c_char, c_int, c_size_t, c_ptr, c_null_char, c_associated
     implicit none (type, external)
+
+    ! Module interface
     private
     public :: run_shell, change_directory, working_directory, path_access, make_directory
     public :: terminate_process
 
+    ! Procedure interfaces
     interface
         subroutine c_exit(status) bind(c, name="exit")
+            ! Module dependencies
             import c_int
             implicit none (type, external)
+
+            ! Arguments
             integer(c_int), value :: status
         end subroutine c_exit
         function c_system(command) bind(c, name="system") result(status)
+            ! Module dependencies
             import c_char, c_int
             implicit none (type, external)
+
+            ! Arguments
             character(kind=c_char), intent(in) :: command(*)
             integer(c_int) :: status
         end function c_system
         function c_chdir(path) bind(c, name="chdir") result(status)
+            ! Module dependencies
             import c_char, c_int
             implicit none (type, external)
+
+            ! Arguments
             character(kind=c_char), intent(in) :: path(*)
             integer(c_int) :: status
         end function c_chdir
         function c_getcwd(buffer, capacity) bind(c, name="getcwd") result(address)
+            ! Module dependencies
             import c_char, c_size_t, c_ptr
             implicit none (type, external)
+
+            ! Arguments
             character(kind=c_char), intent(out) :: buffer(*)
             integer(c_size_t), value :: capacity
             type(c_ptr) :: address
         end function c_getcwd
         function c_access(path, mode) bind(c, name="access") result(status)
+            ! Module dependencies
             import c_char, c_int
             implicit none (type, external)
+
+            ! Arguments
             character(kind=c_char), intent(in) :: path(*)
             integer(c_int), value :: mode
             integer(c_int) :: status
@@ -41,6 +60,7 @@ module posix_services
     end interface
 contains
     subroutine terminate_process(status)
+        ! Arguments
         integer, intent(in), optional :: status
         if (present(status)) then
             call c_exit(int(status,c_int))
@@ -51,7 +71,10 @@ contains
 
     ! Return the raw wait status from POSIX system.
     integer function run_shell(command) result(status)
+        ! Arguments
         character(*), intent(in) :: command
+
+        ! Local declarations
         character(kind=c_char) :: c_command(len_trim(command)+1)
         integer :: character_index, command_length
         command_length = len_trim(command)
@@ -63,7 +86,10 @@ contains
     end function run_shell
 
     integer function change_directory(path) result(status)
+        ! Arguments
         character(*), intent(in) :: path
+
+        ! Local declarations
         character(kind=c_char) :: c_path(len_trim(path)+1)
         integer :: character_index, path_length
         path_length = len_trim(path)
@@ -75,7 +101,10 @@ contains
     end function change_directory
 
     integer function working_directory(path) result(status)
+        ! Arguments
         character(*), intent(out) :: path
+
+        ! Local declarations
         character(kind=c_char) :: c_path(len(path)+1)
         type(c_ptr) :: buffer_address
         integer :: character_index
@@ -91,7 +120,10 @@ contains
     end function working_directory
 
     integer function path_access(path, mode) result(status)
+        ! Arguments
         character(*), intent(in) :: path, mode
+
+        ! Local declarations
         character(kind=c_char) :: c_path(len_trim(path)+1)
         integer(c_int) :: access_mask
         integer :: character_index, path_length
@@ -120,8 +152,11 @@ contains
 
     ! Quote the path as one shell argument, including any literal single quotes.
     subroutine make_directory(path, status)
+        ! Arguments
         character(*), intent(in) :: path
         integer, intent(out) :: status
+
+        ! Local declarations
         character(*), parameter :: command_prefix = "mkdir -p -m 775 -- '"
         character(5*len_trim(path)+len(command_prefix)+1) :: command
         integer :: character_index, command_length

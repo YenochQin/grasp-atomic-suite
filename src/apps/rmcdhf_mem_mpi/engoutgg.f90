@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine engoutgg(e,level_indices,level_count,mode)
+      use calculation_file_units, only: summary_output_unit
 !                                                                      *
 !   This  subroutine prints  energy levels, splittings, and energies   *
 !   relative to the lowest in  Hartrees, Kaysers, and  eV, using the   *
@@ -46,8 +47,8 @@
 !
 !   Always print the eigenenergies
 !
-      write (24, '(/,"Eigenenergies:")')
-      write (24, '(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)')
+      write (summary_output_unit, '(/,"Eigenenergies:")')
+      write (summary_output_unit, '(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)')
       do j = 1, level_count
          jblock = idxblk(j)
          hamiltonian_energy_shift = eavblk(jblock)
@@ -62,7 +63,7 @@
          else
             ip = 1
          end if
-         write (24, '(1i3,4x,2a4,1p,3d21.12)') i, right_justified_j_labels(jtot), parity_labels(ip), eau, ecm, eev
+         write (summary_output_unit, '(1i3,4x,2a4,1p,3d21.12)') i, right_justified_j_labels(jtot), parity_labels(ip), eau, ecm, eev
 !GG         WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
       end do
 !
@@ -71,8 +72,8 @@
 !   Energy separations
 !
          if (mode==1 .or. mode==3) then
-            write (24, '(/,"Energy of each level relative to immediately lower"," level:")')
-            write (24, '(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)')
+            write (summary_output_unit, '(/,"Energy of each level relative to immediately lower"," level:")')
+            write (summary_output_unit, '(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)')
             do j = 2, level_count
                i = level_indices(j)
                eau = e(j) - e(j-1)
@@ -86,7 +87,8 @@
                else
                   ip = 1
                end if
-               write (24, '(1i3,4x,2a4,1p,3d21.12)') i, right_justified_j_labels(jtot), parity_labels(ip), eau, ecm, eev
+               write (summary_output_unit, '(1i3,4x,2a4,1p,3d21.12)') i, right_justified_j_labels(jtot), parity_labels(ip), &
+                  & eau, ecm, eev
 !GG               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
             end do
          end if
@@ -94,8 +96,8 @@
 !   Energies relative to level 1
 !
          if (mode==2 .or. mode==3) then
-            write (24, '(/,"Energy of each level relative to lowest level:")')
-            write (24, '(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)')
+            write (summary_output_unit, '(/,"Energy of each level relative to lowest level:")')
+            write (summary_output_unit, '(/,"Level  J Parity",7x,"Hartrees",14x,"Kaysers",16x,"eV"/)')
             do j = 2, level_count
                i = level_indices(j)
                eau = e(j) - e(1)
@@ -109,7 +111,8 @@
                else
                   ip = 1
                end if
-               write (24, '(1i3,4x,2a4,1p,3d21.12)') i, right_justified_j_labels(jtot), parity_labels(ip), eau, ecm, eev
+               write (summary_output_unit, '(1i3,4x,2a4,1p,3d21.12)') i, right_justified_j_labels(jtot), parity_labels(ip), &
+                  & eau, ecm, eev
 !GG               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
             end do
          end if

@@ -1,5 +1,6 @@
 program descriptor_weights
    use iso_fortran_env, only: real64
+   use, intrinsic :: iso_fortran_env, only: standard_output_unit => output_unit
    use hamiltonian_symmetry_blocks, only: symmetry_block_count, csf_counts_by_block
    use level_symmetry_metadata, only: jpgg
    use csf_coupling_data, only: csf_coupling_quantum_codes
@@ -18,7 +19,7 @@ program descriptor_weights
    write(input_unit,*) 5
    rewind(input_unit)
    stdin_unit=input_unit
-   stderr_unit=6
+   stderr_unit=standard_output_unit
    call getaldwt(3,weights)
    if (maxval(abs(weights-[0.2_real64,0.2_real64,0.6_real64])) > 1.0e-15_real64) &
       error stop "Standard weights disagree with 2J+1"

@@ -3,6 +3,7 @@
 !                                                                      *
       subroutine citrag(input_mixing_coefficients, csf_count, level_count, l, subshell_count, t, nin, ntestg, &
          & transformed_mixing_coefficients, scr)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Calculate the action of the  operator                              *
 !                                                                      *
@@ -78,16 +79,16 @@
 
 !
       if (ntest >= 10) then
-         write (6, *)
-         write (6, *) " ***************"
-         write (6, *) " Entering CITRAG"
-         write (6, *) " ***************"
-         write (6, *)
+         write (output_unit, *)
+         write (output_unit, *) " ***************"
+         write (output_unit, *) " Entering CITRAG"
+         write (output_unit, *) " ***************"
+         write (output_unit, *)
       end if
       if (ntest >= 100) then
-         write (6, *) " Input CI vectors"
+         write (output_unit, *) " Input CI vectors"
          call wrtmat (input_mixing_coefficients, csf_count, level_count, csf_count, level_count)
-         write (6, *) " Transformation matrix T"
+         write (output_unit, *) " Transformation matrix T"
          call wrtmat (t, subshell_count, subshell_count, subshell_count, subshell_count)
       end if
 !
@@ -109,7 +110,7 @@
       if (nin == subshell_count) call copvec (input_mixing_coefficients, transformed_mixing_coefficients, level_count*csf_count)
 !
       do i = nin + 1, subshell_count
-         if (ntest >= 100) write (6, *) " Loop I,L = ", i, l
+         if (ntest >= 100) write (output_unit, *) " Loop I,L = ", i, l
 !
 !. The diagonal contribution
 !
@@ -125,7 +126,7 @@
 !
          xnfaci = 1.0_real64
          do n = 1, 2*iabs(orbital_kappa(nshlp(l,i)))
-            if (ntest >= 100) write (6, *) " Loop N = ", n
+            if (ntest >= 100) write (output_unit, *) " Loop N = ", n
 !
 !   T ** (N-1) is supposed to be in SCR, copy to CIIN
 !   and apply S
@@ -141,7 +142,7 @@
       end do
 !
       if (ntest >= 100) then
-         write (6, *) " Output CI vectors L = ", l
+         write (output_unit, *) " Output CI vectors L = ", l
          call wrtmat (transformed_mixing_coefficients, csf_count, level_count, csf_count, level_count)
       end if
 !

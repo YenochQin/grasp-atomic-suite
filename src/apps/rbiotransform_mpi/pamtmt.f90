@@ -4,6 +4,7 @@
 !     ------------------------------------------------------------------
 !
       subroutine pamtmt(x, t, work, norb)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !
 ! GENERATE PER AKE'S T MATRIX FROM A
 ! ORBITAL ROTATION MATRIX X
@@ -66,13 +67,13 @@
          end do
       end do
       if (ntest >= 10) then
-         write (6, *) " MATRIX TO BE INVERTED "
+         write (output_unit, *) " MATRIX TO BE INVERTED "
          call wrtmat (t, norb, norb, norb, norb)
       end if
 !.Invert U
       call invmat (t, work(klu), norb, norb)
       if (ntest >= 10) then
-         write (6, *) " INVERTED MATRIX "
+         write (output_unit, *) " INVERTED MATRIX "
          call wrtmat (t, norb, norb, norb, norb)
       end if
 !.Subtract L
@@ -81,9 +82,9 @@
       end do
 !
       if (ntest /= 0) then
-         write (6, *) " INPUT X MATRIX "
+         write (output_unit, *) " INPUT X MATRIX "
          call wrtmat (x, norb, norb, norb, norb)
-         write (6, *) " T MATRIX "
+         write (output_unit, *) " T MATRIX "
          call wrtmat (t, norb, norb, norb, norb)
       end if
 !

@@ -23,6 +23,9 @@
 !***********************************************************************
 !                                                                      *
       program genmcp
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use calculation_file_units, only: angular_log_unit, summary_output_unit
+      use debug_output_settings, only: angular_debug_unit
 !                                                                      *
 !   Written by Farid A. Parpia            Last revision: 11 Dec 1992   *
 !   MPI version by Xinghong He            Last revision: 29 Jun 1998   *
@@ -100,8 +103,8 @@
       write(*,*) "Output files: ", files%mcp, ".30, ", files%mcp, ".31, ..."
       write(*,*) files%angular_log
       write(*,*)
-      open(unit=739,file=files%angular_log,status="UNKNOWN")
-      if (state /= "") write(739,"(A)") trim(state)
+      open(newunit=angular_log_unit,file=files%angular_log,status="UNKNOWN")
+      if (state /= "") write(angular_log_unit,"(A)") trim(state)
       mpi_rank = 0
       mpi_process_count = 1
       call starttime (start_clock_count, "RANGULAR")
@@ -112,10 +115,10 @@
 !         WRITE (ISTDE, '(A)', ADVANCE='NO') 'Default settings?  (y/n) '
          if (yes) then
             ndef = 0
-            write(739,"(A)") "y            ! Full interaction"
+            write(angular_log_unit,"(A)") "y            ! Full interaction"
          else
             ndef = 1
-            write(739,"(A)") "n            ! Full interaction"
+            write(angular_log_unit,"(A)") "n            ! Full interaction"
          end if
       end if
 !=======================================================================
@@ -151,8 +154,8 @@
       do symmetry_block_index = 1, symmetry_block_count
          csf_count = csf_counts_by_block(symmetry_block_index)                        ! This ncf goes to common
          if (mpi_rank == 0) then
-            write (6, *)
-            write (6, *) "Block ", symmetry_block_index, ",  ncf = ", csf_count
+            write (output_unit, *)
+            write (output_unit, *) "Block ", symmetry_block_index, ",  ncf = ", csf_count
          end if
             !*** Load current CSL block. Memories de-allocated in mcp ***
          stage_start_count = stage_clock()
@@ -173,9 +176,9 @@
       call close_angular_input(input_options)
       call record_stage("program_total_including_interaction_input", 0, program_start_count)
       call close_stage_profile()
-      close(24)                                  ! Summary file
-      close(739)                                  ! rangular.log
-      if (debug) close(99)                       ! Debug file
+      if (summary_output_unit /= -1) close(summary_output_unit)                                  ! Summary file
+      close(angular_log_unit)                                  ! rangular.log
+      if (debug .and. angular_debug_unit /= -1) close(angular_debug_unit)                       ! Debug file
 !=======================================================================
 !  Execution finished; Statistics output
 !=======================================================================

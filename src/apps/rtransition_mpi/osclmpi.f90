@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine oscl(name,fullname,tmpdir,startup_directory,block_label_text)
+      use transition_matrix_workspace, only: final_mixing_unit, initial_mixing_unit
+      use calculation_file_units, only: lsj_transition_output_unit, summary_output_unit
       use, intrinsic :: iso_fortran_env, only: real32
 !   This routine controls the main sequence of routine calls for the   *
 !   calculation  of  data for transitions between multiconfiguration   *
@@ -71,12 +73,11 @@
       character(len=4), parameter :: ihz = " Hz "
       character(len=4), parameter :: iang = " A  "
       integer, parameter :: nca = 65536
-      integer, parameter :: nfile = 93
-      integer, parameter :: nfile1 = 237
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: kka, jkp, nfile2, io_status, my_nelec, ncftoti, nwi, &
+      integer :: copied_mixing_unit
+      integer :: kka, jkp, transition_angular_unit, io_status, my_nelec, ncftoti, nwi, &
                  nvecsizi, iopar, iblki, ncftotf, nwf,&
                  nvecsizf, iblkf, nvecpr, i, m,       &
                  ielec, levii, levff, itkpo, itest, nlp, lines, &
@@ -101,12 +102,12 @@
 !cjb fort.24
         if (mpi_rank == 0) then
       if (lsame) then
-         write(24,*) "Transition in file:"
-         write(24,*) "f = ",trim(name(1))
+         write(summary_output_unit,*) "Transition in file:"
+         write(summary_output_unit,*) "f = ",trim(name(1))
       else
-         write(24,*) "Transition between files:"
-         write(24,*) "f1 = ",trim(name(1))
-         write(24,*) "f2 = ",trim(name(2))
+         write(summary_output_unit,*) "Transition between files:"
+         write(summary_output_unit,*) "f1 = ",trim(name(1))
+         write(summary_output_unit,*) "f2 = ",trim(name(2))
       end if
         end if ! myid .EQ. 0
 !
@@ -171,25 +172,24 @@
 !
       kka = 1
       do jkp = 1, nkp
-         nfile2 = nfile1 + jkp
 !
 ! read the head of the file of mixing coef. for initial
 !
          if (lsame) fullname(1) = trim(fullname(2))//"_CP"
          if (inpci == 0) then
-            open(unit=68,file=trim(fullname(1))//".cbm",              &
+            open(newunit=initial_mixing_unit,file=trim(fullname(1))//".cbm",              &
                form="UNFORMATTED",status="OLD")
          else
-            open(unit=68, file=trim(fullname(1))//".bm",              &
+            open(newunit=initial_mixing_unit, file=trim(fullname(1))//".bm",              &
                form="UNFORMATTED",status="OLD")
          end if
          if (lsame) fullname(1) = fullname(2)
-         read (68, iostat=io_status) mixing_file_signature
+         read (initial_mixing_unit, iostat=io_status) mixing_file_signature
          if (io_status/=0 .or. mixing_file_signature/="G92MIX") then
             write (*, *) "Not a GRASP mixing file"
             stop
          end if
-         read (68) electron_count, ncftoti, nwi, nvectoti, nvecsizi, nblocki
+         read (initial_mixing_unit) electron_count, ncftoti, nwi, nvectoti, nvecsizi, nblocki
          write (*, *) "   nelec  = ", my_nelec
          write (*, *) "   ncftoti = ", ncftoti
          write (*, *) "   nwi     = ", nwi
@@ -199,7 +199,7 @@
          icount1 = 0
          call ldlbl1 (fullname(1))
 ! If not available generate angular coefficients for all pares of blocks
-         call mctout (iopar, jkp, name)
+         call mctout (iopar, jkp, name, transition_angular_unit)
          do iblki = 1, nblocki
             call readmix (name, inpci, 1)
 !   lbl
@@ -208,18 +208,18 @@
 ! read the head of the file of mixing coef. for final
 !
             if (inpci == 0) then
-               open(unit=78,file=trim(fullname(2))//".cbm",          &
+               open(newunit=final_mixing_unit,file=trim(fullname(2))//".cbm",          &
                   form="UNFORMATTED",status="OLD")
             else
-               open(unit=78, file=trim(fullname(2))//".bm",          &
+               open(newunit=final_mixing_unit, file=trim(fullname(2))//".bm",          &
                   form="UNFORMATTED",status="OLD")
             end if
-            read (78, iostat=io_status) mixing_file_signature
+            read (final_mixing_unit, iostat=io_status) mixing_file_signature
             if (io_status/=0 .or. mixing_file_signature/="G92MIX") then
                write (*, *) "Not a GRASP mixing file"
                stop
             end if
-            read (78) electron_count, ncftotf, nwf, nvectotf, nvecsizf, nblockf
+            read (final_mixing_unit) electron_count, ncftotf, nwf, nvectotf, nvecsizf, nblockf
             write (*, *) "   nelec  = ", my_nelec
             write (*, *) "   ncftotf = ", ncftotf
             write (*, *) "   nwf     = ", nwf
@@ -243,9 +243,9 @@
                      print *, "Error changing dir!"
                      call exit(1)
                   end if
-                  write(32,*) "Transition between files:"
-                  write(32,*) trim(name(1))
-                  write(32,*) trim(name(2))
+                  write(lsj_transition_output_unit,*) "Transition between files:"
+                  write(lsj_transition_output_unit,*) trim(name(1))
+                  write(lsj_transition_output_unit,*) trim(name(2))
                end if
             end if
             icount2 = 0
@@ -272,7 +272,7 @@
                totc(:nvecff) = 0.0_real64
                totb(:nvecff) = 0.0_real64
 !
-               call mctin (iopar, jkp, name)
+               call mctin (iopar, jkp, name, transition_angular_unit)
 !
                if (lk > 0) then
                   ielec = (-1)**lk
@@ -289,28 +289,30 @@
 !
                   if (mpi_rank==0.and.iblki==1.and.iblkf==1) then
                      if (kk == 0) then
-                        write (24, '(/,/," Electric 2**(",i2,")-pole transitions")') lk
+                        write (summary_output_unit, '(/,/," Electric 2**(",i2,")-pole transitions")') lk
                      else
-                        write (24, '(/,/," Magnetic 2**(",i2,")-pole transitions")') lk
+                        write (summary_output_unit, '(/,/," Magnetic 2**(",i2,")-pole transitions")') lk
                      end if
-                     write (24, '(1x,33("="))')
+                     write (summary_output_unit, '(1x,33("="))')
                      if (ltc(1)) then
-                        write (24, '(/,"   Upper state        Lower state  ",8x,"Gauge",8x,"Wavelength",13x,&
+                        write (summary_output_unit, '(/,"   Upper state        Lower state  ",8x,"Gauge",8x,"Wavelength",13x,&
                            &"Einstein coefficients",13x,"Oscillator")')
                         if (.not.ltc(7)) then
-                           write (24, '(81x,"-1",15x,"3 -2 -1",/," Level  J Parity",4x,"Level  J ","Parity",21x,&
+                           write (summary_output_unit, '(81x,"-1",15x,"3 -2 -1",/," Level  J Parity",4x,"Level  J ","Parity",21x,&
                               &"(Angstroms)",10x,"A (s  )",9x,"gB (m s  J  )",7x,"strength gf"/)')
                         else
-                           write (24, '(" Level  J Parity",4x,"Level  J Parity",21x,"(Angstroms)",10x,"A (au)",13x,&
+                           write (summary_output_unit, '(" Level  J Parity",4x,"Level  J Parity",21x,"(Angstroms)",10x,&
+                              &"A (au)",13x,&
                               &"gB (au)",10x,"strength gf"/)')
                         end if
                      else
-                        write (24, '(/," Upper       Lower ")')
+                        write (summary_output_unit, '(/," Upper       Lower ")')
                         if (.not.ltc(7)) then
-                           write (24, '(" Lev  J P",3x,"Lev  J P",7x,"E (",a4,")",9x,"A (s-1)",10x,"gf",12x,"S")') &
+                           write (summary_output_unit, &
+                              '(" Lev  J P",3x,"Lev  J P",7x,"E (",a4,")",9x,"A (s-1)",10x,"gf",12x,"S")') &
                               iunits
                         else
-                           write (24, '(" Level  J Parity",4x,"Level  J Parity",23x,"(",a4,")",13x,"A (au)",13x,&
+                           write (summary_output_unit, '(" Level  J Parity",4x,"Level  J Parity",23x,"(",a4,")",13x,"A (au)",13x,&
                               &"gB (au)",10x,"strength gf"/)') iunits
                         end if
                      end if
@@ -386,7 +388,7 @@
                call dalloc (iasparff, "IASPARFF", "OSCL")
 
             end do
-            close(78)
+            close(final_mixing_unit)
 !
 !   Deallocate storage; this is allocated in READMIX
 !
@@ -397,17 +399,17 @@
             call dalloc (iasparii, "IASPARII", "OSCL")
 
          end do
-         close(68)
-         close(nfile2)
+         close(initial_mixing_unit)
+         close(transition_angular_unit)
       end do
       call dalloc (kp, "KP", "OSCL")
 !
 ! close and delete duplicated mixing file
       if (lsame) then
          if (inpci == 0) then
-            open(68, file=trim(fullname(2))//"_CP.cbm")
+            open(newunit=copied_mixing_unit, file=trim(fullname(2))//"_CP.cbm")
          else
-            open(68, file=trim(fullname(2))//"_CP.bm")
+            open(newunit=copied_mixing_unit, file=trim(fullname(2))//"_CP.bm")
          end if
 !GG         CLOSE(68, STATUS='delete')
       end if
@@ -427,7 +429,7 @@
 !
 !   Close all files
 !
-      if (mpi_rank == 0) close(24)
+      if (mpi_rank == 0) close(summary_output_unit)
 !
       return
 !

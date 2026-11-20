@@ -1,5 +1,6 @@
 !***********************************************************************
       subroutine setmix(name)
+      use calculation_file_units, only: mixing_output_unit
 !
 !   Opens the  .mix  file on stream 25; writes a header to this file.  *
 !                                                                      *
@@ -41,7 +42,7 @@
 !     POINTER (pncfblk,ncfblk(0:*))
 !
 !-----------------------------------------------------------------------
-      call openfl (25, name, "UNFORMATTED", "NEW", open_status)
+      call openfl (mixing_output_unit, name, "UNFORMATTED", "NEW", open_status)
       if (open_status /= 0) then
          write (stderr_unit, *) "Error when opening ", name(1:len_trim(name))
          error stop
@@ -49,8 +50,8 @@
 !
 !   Write the file header
 !
-      write (25) "G92MIX"
-      write (25) electron_count, csf_count, orbital_count, 0, 0, symmetry_block_count
+      write (mixing_output_unit) "G92MIX"
+      write (mixing_output_unit) electron_count, csf_count, orbital_count, 0, 0, symmetry_block_count
 !     ...The above record will be overidden in matrix.f
 !        with the final form of
 !     WRITE (25)  NELEC, NCF, NW, nvectot, nvecsiz, nblock

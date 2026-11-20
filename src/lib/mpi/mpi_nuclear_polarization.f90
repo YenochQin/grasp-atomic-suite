@@ -1,5 +1,6 @@
 ! Build the nuclear polarization potential on rank 0 and replicate it across the communicator.
 module mpi_nuclear_polarization
+    ! Module dependencies
     use mpi, only: mpi_comm_rank, mpi_bcast, mpi_allreduce, mpi_abort, &
         mpi_integer, mpi_double_precision, mpi_logical, mpi_character, mpi_min
     use grasp_parameters, only: max_radial_points
@@ -9,18 +10,25 @@ module mpi_nuclear_polarization
     use nuclear_polarization_potential, only: npol_check_grid, npol_build_grid, npol_compose
     use nuclear_polarization_initialization, only: npol_write_summary, npol_summary_path
     implicit none (type, external)
+
+    ! Module interface
     private
     public :: npol_init_mpi, npol_abort_mpi
 contains
     subroutine npol_init_mpi(config_path, nuclear_charge, grid_point_count, radial_grid, negative_radius_times_potential, &
-                             communicator, status, message)
+        communicator, status, message)
+        ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
+
+        ! Arguments
         character(*), intent(in) :: config_path
         real(real64), intent(in) :: nuclear_charge, radial_grid(:)
         integer, intent(in) :: grid_point_count, communicator
         real(real64), intent(inout) :: negative_radius_times_potential(:)
         integer, intent(out) :: status
         character(*), intent(out) :: message
+
+        ! Local declarations
         type(npol_config) :: config
         real(real64) :: dipole_potential(max_radial_points), quadrupole_potential(max_radial_points)
         real(real64) :: polarization_potential(max_radial_points), composed_potential(max_radial_points)
@@ -62,7 +70,7 @@ contains
         message = status_message
         if (status /= 0) return
         if (rank == 0) call npol_build_grid(config, grid_point_count, radial_grid, dipole_potential, quadrupole_potential, &
-                                            polarization_potential, status, status_message)
+            polarization_potential, status, status_message)
         call sync_status(communicator, rank, status, status_message)
         message = status_message
         if (status /= 0) return
@@ -70,7 +78,7 @@ contains
         call mpi_bcast(quadrupole_potential, grid_point_count, mpi_double_precision, 0, communicator, mpi_return_code)
         call mpi_bcast(polarization_potential, grid_point_count, mpi_double_precision, 0, communicator, mpi_return_code)
         call npol_compose(grid_point_count, radial_grid, coulomb_potential_baseline, polarization_potential, &
-                          composed_potential, status, status_message)
+            composed_potential, status, status_message)
         call sync_status(communicator, rank, status, status_message)
         message = status_message
         if (status /= 0) return
@@ -82,13 +90,16 @@ contains
         ! YPOT apportions the external potential during the later COFPOT reduction.
         negative_radius_times_potential(:grid_point_count) = composed_potential(:grid_point_count)
         call npol_publish(config, grid_point_count, dipole_potential(:grid_point_count), &
-                          quadrupole_potential(:grid_point_count), polarization_potential(:grid_point_count))
+            quadrupole_potential(:grid_point_count), polarization_potential(:grid_point_count))
     end subroutine npol_init_mpi
 
     subroutine sync_status(communicator, rank, status, message)
+        ! Arguments
         integer, intent(in) :: communicator, rank
         integer, intent(inout) :: status
         character(npol_message_len), intent(inout) :: message
+
+        ! Local declarations
         integer :: failed_rank, first_failed_rank, mpi_return_code
         ! The minimum failing rank supplies the error message for the communicator.
         failed_rank = huge(0)
@@ -104,9 +115,13 @@ contains
     end subroutine sync_status
 
     subroutine broadcast_config(config, communicator)
+        ! Arguments
         type(npol_config), intent(inout) :: config
         integer, intent(in) :: communicator
+
+        ! Local declarations
         integer :: mpi_return_code
+        ! Broadcast fields with their MPI types so the transfer is independent of derived-type padding.
         call mpi_bcast(config%schema_version, 1, mpi_integer, 0, communicator, mpi_return_code)
         call mpi_bcast(config%isotope_z, 1, mpi_integer, 0, communicator, mpi_return_code)
         call mpi_bcast(config%isotope_a, 1, mpi_integer, 0, communicator, mpi_return_code)
@@ -123,8 +138,11 @@ contains
     end subroutine broadcast_config
 
     subroutine npol_abort_mpi(communicator, message)
+        ! Arguments
         integer, intent(in) :: communicator
         character(*), intent(in) :: message
+
+        ! Local declarations
         integer :: rank, mpi_return_code
         call mpi_comm_rank(communicator, rank, mpi_return_code)
         if (rank == 0) write(*,"(A)") trim(message)

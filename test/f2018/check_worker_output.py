@@ -13,7 +13,9 @@ def main() -> None:
     compiler, mpifort, mpiexec = sys.argv[1:4]
     root = Path(__file__).resolve().parents[2]
     text = (root / "src/lib/mpi/mpi_utilities.f90").read_text()
-    start = text.index("      subroutine mpix_startup (")
+    declaration = re.search(r"(?im)^[ \t]*subroutine[ \t]+mpix_startup[ \t]*\(", text)
+    assert declaration is not None, "MPI startup routine declaration missing"
+    start = declaration.start()
     ending = re.search(r"(?im)^\s*end(?:\s+subroutine(?:\s+mpix_startup)?)?\s*$", text[start:])
     assert ending is not None, "MPI startup routine ending missing"
     body = text[start:start + ending.end()] + "\n"
@@ -24,6 +26,7 @@ def main() -> None:
     driver = """program output_probe
 use startup_probe
 use mpi
+use, intrinsic :: iso_fortran_env, only: output_unit
 implicit none
 integer::rank,ranks,length,count,status
 character(MPI_MAX_PROCESSOR_NAME)::host
@@ -31,7 +34,7 @@ character(16)::mode
 call get_command_argument(1,mode)
 call get_command_argument(2,output_path)
 call mpix_startup(rank,ranks,host,length,count,'probe','probe','none','none',mode/='visible')
-write(6,'(a,i0)') 'visible rank ',rank
+write(output_unit,'(a,i0)') 'visible rank ',rank
 call mpi_barrier(MPI_COMM_WORLD,status)
 call mpi_finalize(status)
 end program

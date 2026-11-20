@@ -374,24 +374,33 @@ def main(root: Path) -> None:
         assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], \
             f"Inline output format snapshot has a different predecessor: {name}"
     reviewed_files |= inline_formats["files"]
+    io_units_path = root / "docs/reference/rmcdhf_io_units_snapshot.json"
+    io_units = json.loads(io_units_path.read_text())
+    assert io_units["schema_version"] == 1, "Unknown I/O unit snapshot schema"
+    assert hashlib.sha256(inline_path.read_bytes()).hexdigest() == io_units["previous_manifest_sha256"], \
+        "Inline output formats snapshot changed; review I/O unit provenance"
+    assert set(io_units["files"]).issubset(expected.keys() & reviewed_files.keys())
+    for name, record in io_units["files"].items():
+        assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], \
+            f"I/O unit snapshot has a different predecessor: {name}"
     state_files_path = root / "docs/reference/rmcdhf_state_files_snapshot.json"
     state_files = json.loads(state_files_path.read_text())
     assert state_files["schema_version"] == 1
-    assert hashlib.sha256(inline_path.read_bytes()).hexdigest() == state_files["previous_manifest_sha256"], \
-        "Inline output formats snapshot changed; review state-name provenance"
-    assert set(state_files["files"]).issubset(expected.keys() & reviewed_files.keys())
+    assert hashlib.sha256(io_units_path.read_bytes()).hexdigest() == state_files["previous_manifest_sha256"], \
+        "I/O unit snapshot changed; review state-name provenance"
     for name, record in state_files["files"].items():
-        assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], name
-    reviewed_files |= state_files["files"]
+        assert record["before_suite_sha256"] == io_units["files"][name]["after_suite_sha256"], name
+    reviewed_io = io_units["files"] | state_files["files"]
     app_names = json.loads((root / "docs/reference/rmcdhf_app_variable_names_snapshot.json").read_text())
     assert app_names["schema_version"] == 1, "Unknown app variable names snapshot schema"
     assert hashlib.sha256(state_files_path.read_bytes()).hexdigest() == app_names["previous_manifest_sha256"], \
         "State-name snapshot changed; review app variable naming provenance"
-    assert set(app_names["files"]).issubset(name for name in reviewed_files if name.endswith(".f90"))
+    previous = reviewed_files | reviewed_io
+    assert set(app_names["files"]).issubset(name for name in previous if name.endswith(".f90"))
     for name, record in app_names["files"].items():
-        assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], \
+        assert record["before_suite_sha256"] == previous[name]["after_suite_sha256"], \
             f"App variable names snapshot has a different predecessor: {name}"
-    reviewed_files |= app_names["files"]
+    reviewed_migration = reviewed_io | app_names["files"]
     actual = {
         path.relative_to(root).as_posix().replace("src/apps/", "src/appl/", 1)
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")
@@ -405,9 +414,11 @@ def main(root: Path) -> None:
             source = path.read_bytes()
             reviewed = reviewed_files[relative]
             digests = {hashlib.sha256(source).hexdigest()}
-            if (relative in mpi_naming["files"]
-                    and relative not in state_files["files"]
-                    and relative not in app_names["files"]):
+            if relative in reviewed_migration:
+                assert reviewed_migration[relative]["after_suite_sha256"] in digests, \
+                    f"Unreviewed deviation from app migration snapshot: {relative}"
+                continue
+            if relative in mpi_naming["files"]:
                 # Check each renamed import or build reference, then compare the
                 # original spelling with the reviewed source digest.
                 before_mpi_names = reverse_reviewed_edits(source.decode(), path, mpi_naming["files"][relative])

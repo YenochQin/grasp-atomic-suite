@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine in(orbital_index, matching_grid_index, large_component_values, small_component_values, mtp)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   This program computes the solution of an  inhomogeneous  pair of   *
 !   radial Dirac equations in the tail region. A simple extension of   *
@@ -109,10 +110,10 @@
 !
       if (j >= radial_point_count) then
          call convrt (radial_point_count, number_text, text_length)
-         write (6, *) "IN: maximum tabulation point exceeds"
-         write (6, *) " dimensional limit (currently "//number_text(1:text_length)//");"
-         write (6, *) " radial wavefunction may indicate a"
-         write (6, *) " continuum state."
+         write (output_unit, *) "IN: maximum tabulation point exceeds"
+         write (output_unit, *) " dimensional limit (currently "//number_text(1:text_length)//");"
+         write (output_unit, *) " radial wavefunction may indicate a"
+         write (output_unit, *) " continuum state."
          error stop
       end if
 !

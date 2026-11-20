@@ -55,7 +55,7 @@
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
       use distributed_slater_integrals, only: indteirk, valteirk, rk_local_count
       use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
-      use where_c, only: imcdf
+      use where_c, only: restart_matrix_unit
       use scf_previous_eigenvectors, only: evec1
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -383,7 +383,7 @@
 !
 !   This column is done; write it to disk
 !
-         write (imcdf) nelc, elsto, (hamiltonian_values(ket_csf_index), ket_csf_index = 1, nelc),            &
+         write (restart_matrix_unit) nelc, elsto, (hamiltonian_values(ket_csf_index), ket_csf_index = 1, nelc),            &
                                    (matrix_partner_indices(ket_csf_index), ket_csf_index = 1, nelc)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! This EAV (and the above EMT) does not have ELSTO.

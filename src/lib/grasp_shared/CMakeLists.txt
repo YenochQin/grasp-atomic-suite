@@ -29,6 +29,7 @@ add_library(grasp_shared STATIC
     transition_output_cutoff.f90
     scf_damping_factors.f90
     debug_output_settings.f90
+    calculation_file_units.f90
     hamiltonian_correction_flags.f90
     atomic_calculation_state.f90
     calculation_input_defaults.f90

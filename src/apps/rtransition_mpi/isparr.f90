@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       integer function isparr (csf_index)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   ISPARR is the value of P for CSF number ICSF.                      *
 !                                                                      *
@@ -36,7 +37,7 @@
          if (isparr > 127) isparr = isparr - 256
          isparr = sign(1,isparr)
       else
-         write (6, *) "ISPARR: Argument ICSF is out of range."
+         write (output_unit, *) "ISPARR: Argument ICSF is out of range."
          stop
       end if
 !

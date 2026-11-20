@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine hfsgg
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use calculation_file_units, only: hyperfine_output_unit, summary_output_unit
 !                                                                      *
 !   This routine controls the main sequence of routine calls for the   *
 !   calculation  of the  hyperfine structure parameters.               *
@@ -126,7 +128,7 @@
 !
          if (mod(csf_index,100) == 0) then
             call convrt (csf_index, number_text, text_length)
-            write (6, *) "Column "//number_text(1:text_length)//" complete;"
+            write (output_unit, *) "Column "//number_text(1:text_length)//" complete;"
          end if
 !
          do ir = 1, csf_count
@@ -268,9 +270,10 @@
 !
 !   Output the hyperfine interaction constants
 !
-      write (24, '(/,/," Interaction constants:"/,/," Level1  J Parity  Level2  J Parity",8x,"A (MHz)",13x,&
+      write (summary_output_unit, '(/,/," Interaction constants:"/,/," Level1  J Parity  Level2  J Parity",8x,"A (MHz)",13x,&
          &"B (MHz)"/)')
-      write (29, '(/,/," Interaction constants:"/,/," Level1  J Parity ",8x,"A (MHz)",13x,"B (MHz)",13x,"g_J",14x,&
+      write (hyperfine_output_unit, '(/,/," Interaction constants:"/,/," Level1  J Parity ",8x,"A (MHz)",13x,"B (MHz)",13x,&
+         &"g_J",14x,&
          &"delta g_J",11x,"total g_J"/)')
 !
       do i = 1, nvec
@@ -315,8 +318,8 @@
 !                GJ = CVAC*GJA1*GJC(NVEC*(I-1)+II)
 !                DGJ = 0.001160D0*GJA1*DGJC(NVEC*(I-1)+II)
 
-                  write (24, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)') ivec(i), right_justified_j_labels(jj), &
-                     & parity_labels((iaspar(i)+3)/2), &
+                  write (summary_output_unit, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)') ivec(i), right_justified_j_labels(jj), &
+                     parity_labels((iaspar(i)+3)/2), &
                      ivec(ii), right_justified_j_labels(jjii), parity_labels((iaspar(ii)+3)/2), afa1*hfc(1,&
                      nvec*(i-1)+ii), bfa1*hfc(3,nvec*(i-1)+ii)
 !
@@ -325,7 +328,7 @@
                   if (i == ii) then
                      gj = vacuum_speed_of_light_au*gja1*gjc(nvec*(i-1)+ii)
                      dgj = 0.001160_real64*gja1*dgjc(nvec*(i-1)+ii)
-                     write (29, '(1x,1i3,5x,2a4,1p,5d20.10)') ivec(i), right_justified_j_labels(jj), &
+                     write (hyperfine_output_unit, '(1x,1i3,5x,2a4,1p,5d20.10)') ivec(i), right_justified_j_labels(jj), &
                         & parity_labels((iaspar(i)+3)/2), &
                         afa1*hfc(1,nvec*(i-1)+ii), bfa1*hfc(3,nvec*(i-1)+ii), &
                         gj, dgj, gj + dgj
@@ -335,7 +338,7 @@
 !   Off diagonal (J,J-1) A and B factors
 !
             case (2)
-               write (24, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)') &
+               write (summary_output_unit, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)') &
                   ivec(i), right_justified_j_labels(jj), parity_labels((iaspar(i)+3)/2), ivec(&
                   ii), right_justified_j_labels(jjii), parity_labels((iaspar(ii)+3)/2), afa2*hfc(2,nvec*(i-1&
                   )+ii), bfa2*hfc(4,nvec*(i-1)+ii)
@@ -343,7 +346,7 @@
 !   Off diagonal (J,J-2) B factor
 !
             case (4)
-               write (24, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)') &
+               write (summary_output_unit, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)') &
                   ivec(i), right_justified_j_labels(jj), parity_labels((iaspar(i)+3)/2), ivec(&
                   ii), right_justified_j_labels(jjii), parity_labels((iaspar(ii)+3)/2), 0.0_real64, bfa3*hfc(5,&
                   nvec*(i-1)+ii)
@@ -410,10 +413,10 @@
                   hfselt1 = factor2*rac1*hfc(1,nvec*(jb-1)+ja)*tilde1
                   hfselt2 = factor2*rac2*hfc(3,nvec*(jb-1)+ja)*tilde2
                   if (abs(hfselt1 + hfselt2) > cutoff*10.0e-5_real64) then
-                     if (iflag == 0) write (24, '(/,/," Matrix elements:"/,/,&
+                     if (iflag == 0) write (summary_output_unit, '(/,/," Matrix elements:"/,/,&
                         &" Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"/)')
                      iflag = 1
-                     write (24, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)') &
+                     write (summary_output_unit, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)') &
                         ivec(jb), right_justified_j_labels(jjb+1), parity_labels((iaspar(jb)+3)&
                         /2), ivec(ja), right_justified_j_labels(jja+1), parity_labels((iaspar(ja)+3)/2), &
                         right_justified_j_labels(ff+1), hfselt1 + hfselt2
@@ -425,10 +428,10 @@
                   hfselt1 = factor2*rac1*hfc(2,nvec*(jb-1)+ja)*tilde1
                   hfselt2 = factor2*rac2*hfc(4,nvec*(jb-1)+ja)*tilde2
                   if (abs(hfselt1 + hfselt2) > cutoff*10.0e-5_real64) then
-                     if (iflag == 0) write (24, '(/,/," Matrix elements:"/,/,&
+                     if (iflag == 0) write (summary_output_unit, '(/,/," Matrix elements:"/,/,&
                         &" Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"/)')
                      iflag = 1
-                     write (24, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)') &
+                     write (summary_output_unit, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)') &
                         ivec(jb), right_justified_j_labels(jjb+1), parity_labels((iaspar(jb)+3)&
                         /2), ivec(ja), right_justified_j_labels(jja+1), parity_labels((iaspar(ja)+3)/2), &
                         right_justified_j_labels(ff+1), hfselt1 + hfselt2
@@ -440,10 +443,10 @@
                   hfselt1 = 0.0_real64
                   hfselt2 = factor2*rac2*hfc(5,nvec*(jb-1)+ja)*tilde2
                   if (abs(hfselt1 + hfselt2) > cutoff*10.0e-5_real64) then
-                     if (iflag == 0) write (24, '(/,/," Matrix elements:"/,/,&
+                     if (iflag == 0) write (summary_output_unit, '(/,/," Matrix elements:"/,/,&
                         &" Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"/)')
                      iflag = 1
-                     write (24, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)') &
+                     write (summary_output_unit, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)') &
                         ivec(jb), right_justified_j_labels(jjb+1), parity_labels((iaspar(jb)+3)&
                         /2), ivec(ja), right_justified_j_labels(jja+1), parity_labels((iaspar(ja)+3)/2), &
                         right_justified_j_labels(ff+1), hfselt1 + hfselt2

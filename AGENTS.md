@@ -71,7 +71,9 @@ settings and keep local config ignored. Use separate source copies per parameter
 set; compilation is a separate step from applying the patch.
 
 ## Coding Style & Naming Conventions
-Match the existing Fortran style in the file you are editing. The tree contains both older fixed-format-style indentation and newer free-form modules, so preserve local formatting instead of normalizing whole files. Keep filenames lowercase and aligned with existing suffix conventions such as `*_I.f90` for interface/helper units and `*_C.f90` for shared code modules. Ordinary program directories and targets use lowercase functional names like `rangular`, `rhfs`, and `gj`; use the build profile to identify the Fortran standard. For renamed paths and executable names, see [program naming](docs/implemented/program_naming.md).
+Under `src/lib/`, indent Fortran by four spaces per level. Use comments to group module dependencies, explicit interfaces, arguments, and important declarations. Use structured control flow with unlabeled statements and unnamed constructs.
+
+For application sources, match the existing Fortran style in the file you are editing. The tree contains both older fixed-format-style indentation and newer free-form modules, so preserve local formatting instead of normalizing whole files. Keep filenames lowercase and aligned with existing suffix conventions such as `*_I.f90` for interface/helper units and `*_C.f90` for shared code modules. Ordinary program directories and targets use lowercase functional names like `rangular`, `rhfs`, and `gj`; use the build profile to identify the Fortran standard. For renamed paths and executable names, see [program naming](docs/implemented/program_naming.md).
 
 ## Testing Guidelines
 CI uses the CMake workflow. Run tests covering the affected programs, using a

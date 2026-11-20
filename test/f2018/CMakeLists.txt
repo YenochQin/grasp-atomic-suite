@@ -30,6 +30,8 @@ foreach(variant rbiotransform rbiotransform_mpi)
     add_test(NAME f2018_bndinv_${variant} COMMAND test.bndinv_${variant})
 endforeach()
 if(Python3_Interpreter_FOUND)
+    add_test(NAME f2018_library_source_style COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/check_fortran_source_style.py lib)
     add_test(NAME f2018_numeric_literals COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/check_numeric_literals.py ${CMAKE_Fortran_COMPILER})
     add_test(NAME f2018_bndinv_interfaces COMMAND ${Python3_EXECUTABLE}

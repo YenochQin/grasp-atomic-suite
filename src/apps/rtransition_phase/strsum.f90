@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine strsum(name, inpci, ilbl)
+      use calculation_file_units, only: lsj_transition_output_unit, summary_output_unit
 !                                                                      *
 !   Generates the first part of  oscl92.sum  (on stream 24).           *
 !                                                                      *
@@ -39,6 +40,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: i, j
+      character(len=:), allocatable :: lsj_transition_filename
       character :: record*15, time_text*8, date_text*8
 !-----------------------------------------------
 
@@ -47,22 +49,25 @@
       j = index(name(2)," ")
       if(ilbl == 0) then
          if (inpci == 0) then
-            open(unit=24,file=name(1)(1:i-1)//"."//name(2)(1:j-1)//".ct",form=&
+            open(newunit=summary_output_unit,file=name(1)(1:i-1)//"."//name(2)(1:j-1)//".ct",form=&
             "FORMATTED", status="UNKNOWN",position="asis")
          else
-            open(unit=24,file=name(1)(1:i-1)//"."//name(2)(1:j-1)//".t",form=&
+            open(newunit=summary_output_unit,file=name(1)(1:i-1)//"."//name(2)(1:j-1)//".t",form=&
             "FORMATTED",status="UNKNOWN",position="asis")
          end if
       else if(ilbl == 1) then
          if(iopen_status1==0 .and. iopen_status2 ==0) then
             if (inpci == 0) then
-               open(unit=32,                                           &
-                   file=name(1)(1:i-1)//"."//name(2)(1:j-1)//".ct.lsj",&
-                   form="FORMATTED",status="UNKNOWN")
+               lsj_transition_filename = name(1)(1:i-1)//"."//name(2)(1:j-1)//".ct.lsj"
             else
-               open(unit=32,                                           &
-                   file=name(1)(1:i-1)//"."//name(2)(1:j-1)//".t.lsj", &
-                   form="FORMATTED",status="UNKNOWN")
+               lsj_transition_filename = name(1)(1:i-1)//"."//name(2)(1:j-1)//".t.lsj"
+            end if
+            if (lsj_transition_output_unit == -1) then
+               open(newunit=lsj_transition_output_unit, file=lsj_transition_filename, &
+                  form="FORMATTED", status="UNKNOWN")
+            else
+               open(unit=lsj_transition_output_unit, file=lsj_transition_filename, &
+                  form="FORMATTED", status="UNKNOWN")
             end if
          end if
       end if

@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine mcpin (name,ik,ntestg,inpci)
+      use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
+      use calculation_file_units, only: mixing_input_unit
 !                                                                      *
 !   This routine controls the computation  and storage of the values   *
 !   and all indices of the angular coefficients                        *
@@ -57,6 +59,7 @@
       use citrag_i, only: citrag
       use getmix_i, only: getmix
       implicit none (type, external)
+      integer :: biorthogonal_mixing_output_unit
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -68,7 +71,6 @@
 !   Set the encoding key and its square
       integer, parameter :: orbital_label_radix = orbital_index_radix, keysq = orbital_label_radix*orbital_label_radix, nvmax=100
       real(real64), parameter :: cutoff = 1.0e-10_real64
-      integer, parameter :: nf = 200
 
       logical ::  f0int,lincr,is_restart,comp,avail
       character(len=20) :: number_text
@@ -145,7 +147,7 @@
         end do
       end if
 
-      rewind (nf)
+      rewind (biorthogonal_angular_unit)
       do 1000 iblk = 1, nblock
 !
 !   Read the CI vectors
@@ -160,7 +162,7 @@
 !   if data available on file read the datafile. Else sort the
 !   MCP data into inegral based lists.
 !
-      read(nf) ncfd,nwd,kamaxd
+      read(biorthogonal_angular_unit) ncfd,nwd,kamaxd
       do l = 1,kamax
 
 !************
@@ -176,7 +178,7 @@
 
 !**************
 
-          read(nf) nintg,ncoeff
+          read(biorthogonal_angular_unit) nintg,ncoeff
           if(ncoeff*nintg==0) cycle
 !
 !   Allocate memory. Note that in this case we can,
@@ -190,10 +192,10 @@
           call alloc (intptr,nintg, "INTPTR", "MCPIN")
 
           do i = 1,nintg
-            read(nf) intgrl(i),intptr(i)
+            read(biorthogonal_angular_unit) intgrl(i),intptr(i)
           end do
           do i = 1,ncoeff
-            read(nf) cnn(i),jann(i),jbnn(i)
+            read(biorthogonal_angular_unit) cnn(i),jann(i),jbnn(i)
           end do
 !*
 !*. Offset for given L in shell matrices
@@ -229,22 +231,22 @@
       if(iblk==1) then
         j = index(name," ")
         if (inpci==0) then
-          open (unit = 31,file=name(1:j-1)//".cbm",form="UNFORMATTED",  &
+          open (newunit=biorthogonal_mixing_output_unit,file=name(1:j-1)//".cbm",form="UNFORMATTED",  &
      &    status="UNKNOWN")
         else
-          open (unit = 31,file=name(1:j-1)//".bm",form="UNFORMATTED",   &
+          open (newunit=biorthogonal_mixing_output_unit,file=name(1:j-1)//".bm",form="UNFORMATTED",   &
      &    status="UNKNOWN")
         end if
 
-        write(31) "G92MIX"
-        write(31) electron_count,ncftot,orbital_count,nvectot,nvecsize,nblock
+        write(biorthogonal_mixing_output_unit) "G92MIX"
+        write(biorthogonal_mixing_output_unit) electron_count,ncftot,orbital_count,nvectot,nvecsize,nblock
       end if
 
-      write(31) iblk,csf_count,nvec,iatjpo(1),iaspar(1)
-      write(31) (ivec(i),i = 1,nvec)
+      write(biorthogonal_mixing_output_unit) iblk,csf_count,nvec,iatjpo(1),iaspar(1)
+      write(biorthogonal_mixing_output_unit) (ivec(i),i = 1,nvec)
 !     WRITE(31) (IATJPO(I),IASPAR(I),I = 1,NVEC)
-      write(31) hamiltonian_energy_shift,(shifted_eigenvalues(i),i = 1,nvec)
-      write(31) ((csf_mixing_coefficients(i+(j-1)*csf_count),i = 1,csf_count),j = 1,nvec)
+      write(biorthogonal_mixing_output_unit) hamiltonian_energy_shift,(shifted_eigenvalues(i),i = 1,nvec)
+      write(biorthogonal_mixing_output_unit) ((csf_mixing_coefficients(i+(j-1)*csf_count),i = 1,csf_count),j = 1,nvec)
 
       call dalloc (shifted_eigenvalues, "EVAL", "MCPIN")
       call dalloc (csf_mixing_coefficients, "EVEC", "MCPIN")
@@ -252,12 +254,12 @@
       call dalloc (iatjpo, "IATJPO", "MCPIN")
       call dalloc (iaspar, "IASPAR", "MCPIN")
  1000 continue
-      close (nf)
+      close (biorthogonal_angular_unit)
 !
 !   Close the  mixing  file
 !
-      close (30)
-      close (31)
+      close (mixing_input_unit)
+      close (biorthogonal_mixing_output_unit)
 !
       return
       end subroutine mcpin

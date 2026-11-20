@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine setham(symmetry_block_index, mpi_rank, mpi_process_count)
+      use mcp_file_metadata, only: mcp_input_units
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !***********************************************************************
 !-----------------------------------------------
@@ -221,7 +223,7 @@
 !   Accumulate one-electron terms that require MCP coefficients
 !=======================================================================
 
-      read (31) mcp_channel_label, jblockt, ncft, ncoeff
+      read (mcp_input_units(31)) mcp_channel_label, jblockt, ncft, ncoeff
 
       if (jblockt /= symmetry_block_index) then
          write (stderr_unit, *) routine_name, ": blk1=", jblockt, " blk2=", symmetry_block_index
@@ -236,7 +238,7 @@
 !   Loop over non-zero labels which have non-zero elements
 !=======================================================================
 
-      read (31, iostat=io_status) lab, ncontr
+      read (mcp_input_units(31), iostat=io_status) lab, ncontr
       if (io_status /= 0) error stop "IOS .NE. 0 when reading LAB, NCONTR"
       do while(lab/=0 .or. ncontr/=0)
 
@@ -256,21 +258,21 @@
             call alloc (coeff, ndim, "COEFF", "SETHAM")
             call alloc (indx, ndim, "INDX", "SETHAM")
          end if
-         read (31) (iclmndum,indx(i),coeff(i),i=1,ncontr)
+         read (mcp_input_units(31)) (iclmndum,indx(i),coeff(i),i=1,ncontr)
 
          !*** Store all the contributions from this integral
          do i = 1, ncontr
             loc = indx(i)
             lod = loc
             if (lod > (stored_matrix_element_count)) then
-               write (6, *) "  Error in computing 1-e contribution"
-               write (6, *) "  LOC = ", loc, "  NELMNT = ", (stored_matrix_element_count)
+               write (output_unit, *) "  Error in computing 1-e contribution"
+               write (output_unit, *) "  LOC = ", loc, "  NELMNT = ", (stored_matrix_element_count)
                error stop
             end if
             hamiltonian_values(loc) = hamiltonian_values(loc) + tegral*coeff(i)
          end do
 
-         read (31, iostat=io_status) lab, ncontr
+         read (mcp_input_units(31), iostat=io_status) lab, ncontr
          if (io_status == 0) cycle
          error stop "IOS .NE. 0 when reading LAB, NCONTR"
       end do
@@ -282,7 +284,7 @@
       do nfile = 32, 32 + max_mcp_file_multipole_rank
          k = nfile - 32
 
-         read (nfile) mcp_channel_label, jblockt, ncft, ncoeff
+         read (mcp_input_units(nfile)) mcp_channel_label, jblockt, ncft, ncoeff
 
          if (jblockt /= symmetry_block_index) then
             write (stderr_unit, *) routine_name, ": blk3=", jblockt, " blk4=", symmetry_block_index
@@ -297,7 +299,7 @@
 !   Loop over non-zero labels which have non-zero elements
 !=======================================================================
 
-         read (nfile, iostat=io_status) lab, ncontr
+         read (mcp_input_units(nfile), iostat=io_status) lab, ncontr
          if (io_status /= 0) error stop "IOS .NE. 0 when reading LAB, NCONTR 2"
          do while(lab/=0 .or. ncontr/=0)
 
@@ -322,21 +324,21 @@
                call alloc (coeff, ndim, "COEFF", "SETHAM")
                call alloc (indx, ndim, "INDX", "SETHAM")
             end if
-            read (nfile) (iclmndum,indx(i),coeff(i),i=1,ncontr)
+            read (mcp_input_units(nfile)) (iclmndum,indx(i),coeff(i),i=1,ncontr)
 
             !*** Store all the contributions from this integral
             do i = 1, ncontr
                loc = indx(i)
                lod = loc
                if (lod > stored_matrix_element_count) then
-                  write (6, *) "  Error in computing 2-e contribution"
-                  write (6, *) "  LOC = ", loc, "  NELMNT = ", stored_matrix_element_count
+                  write (output_unit, *) "  Error in computing 2-e contribution"
+                  write (output_unit, *) "  LOC = ", loc, "  NELMNT = ", stored_matrix_element_count
                   error stop
                end if
                hamiltonian_values(loc) = hamiltonian_values(loc) + tegral*coeff(i)
             end do
 
-            read (nfile, iostat=io_status) lab, ncontr
+            read (mcp_input_units(nfile), iostat=io_status) lab, ncontr
             if (io_status == 0) cycle
             error stop "IOS .NE. 0 when reading LAB, NCONTR 2"
          end do

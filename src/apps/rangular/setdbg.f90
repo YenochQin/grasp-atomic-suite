@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine setdbg (debug, file_path)
+      use debug_output_settings, only: angular_debug_unit
 !                                                                      *
 !   This routine opens the  .dbg  file and sets the arrays that con-   *
 !   trol debug printout from the GENMCP program.                       *
@@ -74,7 +75,7 @@
 !
          if (len_trim (filnam) == 0) filnam = file_path
 !
-    4    call openfl (99, filnam, form, status, open_status)
+    4    call openfl (angular_debug_unit, filnam, form, status, open_status)
          if (open_status /= 0) then
     5       write (stderr_unit,*) "Enter a name for the GENMCP DeBuG Printout"&
      &,                    " file that is to be created:"

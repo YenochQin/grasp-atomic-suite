@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine genmcp(name, ic, ntestg, inpci)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Entry routine for GENMCP. Controls the computation of the          *
 !   one-particle coupling coefficients.                                *
@@ -29,8 +30,8 @@
       integer :: unused_core_subshell_count
 !-----------------------------------------------
 !
-      write (6, *)
-      write (6, *) "GENMCP: Execution begins for ", name
+      write (output_unit, *)
+      write (output_unit, *) "GENMCP: Execution begins for ", name
 !
 !   Open, check, load data from, and close the  csl  file
 !
@@ -48,7 +49,7 @@
 !
 !   Print completion message
 !
-      write (6, *)
+      write (output_unit, *)
 !
       return
       end subroutine genmcp

@@ -3,6 +3,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine tfpot
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   Calculation of the universal Thomas-Fermi potential.               *
 !                                                                      *
@@ -56,7 +57,8 @@
 !   Debug printout
 !
       if (ldbpr(26)) then
-         write (99, '(/,/,/," Thomas-Fermi potential"/,/,3(" --------- r --------- ------ -r*V(r) ------"))')
+         call ensure_debug_output()
+         write (angular_debug_unit, '(/,/,/," Thomas-Fermi potential"/,/,3(" --------- r --------- ------ -r*V(r) ------"))')
          nb3 = radial_point_count/3
          if (3*nb3 == radial_point_count) then
             row_count = nb3
@@ -68,13 +70,16 @@
             ii2 = ii1 + row_count
             ii3 = ii2 + row_count
             if (ii3 <= radial_point_count) then
-               write (99, '(1p,6(1x,1d21.14))') &
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1p,6(1x,1d21.14))') &
                   radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2), radial_grid(ii3), yp(ii3&
                   )
             else if (ii2 <= radial_point_count) then
-               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2)
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1p,6(1x,1d21.14))') radial_grid(ii1), yp(ii1), radial_grid(ii2), yp(ii2)
             else
-               write (99, '(1p,6(1x,1d21.14))') radial_grid(ii1), yp(ii1)
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1p,6(1x,1d21.14))') radial_grid(ii1), yp(ii1)
             end if
          end do
          call draw (yp, 1.0_real64, yp, 1.0_real64, radial_point_count)

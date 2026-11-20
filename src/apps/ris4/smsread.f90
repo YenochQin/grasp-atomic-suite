@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine smsread(vint,vint2)
+      use calculation_file_units, only: two_body_cache_unit
 !
 !   Call(s) to: [LIB92]: ALCBUF                                        *
 !                                                                      *
@@ -43,12 +44,12 @@
 !
       call alcbuf (1)
 
-      rewind(51)
-  16  read (51,iostat = io_status) ic,ir
+      rewind(two_body_cache_unit)
+  16  read (two_body_cache_unit,iostat = io_status) ic,ir
 !C      WRITE(*,*) IC,IR
       if (io_status == 0) then
 !cc        DO J = 1,NVEC
-          read(51) coeffsms,lab
+          read(two_body_cache_unit) coeffsms,lab
           iid = mod (lab, orbital_label_radix)
           lab = lab/orbital_label_radix
           iib  = mod (lab, orbital_label_radix)

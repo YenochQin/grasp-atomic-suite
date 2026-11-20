@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine spodmv(n, m, b, c)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Matrix-matrix product: C = AB.  A  sparse  representation of the   *
 !   lower triangle of the  (NxN)  matrix  A  is read from the disk     *
@@ -21,7 +22,7 @@
       use, intrinsic :: iso_fortran_env, only: real64
       use eigenstate_expansions, only: hamiltonian_energy_shift, eavff, eavii, shifted_eigenvalues, evalff, evalii, &
           csf_mixing_coefficients, evecff, evecii
-      use where_c, only: imcdf
+      use where_c, only: restart_matrix_unit
       use rci_matrix_file_position, only: nposition
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -52,7 +53,7 @@
 !     !...It is set in matrix and used in maneig, spodmv
 !
 !-----------------------------------------------------------------------
-      write (6, *) "Calling spodmv..."
+      write (output_unit, *) "Calling spodmv..."
       mpi_rank = 0
       mpi_process_count = 1
       csf_count = n
@@ -63,15 +64,15 @@
       call dinit (n*m, 0.0_real64, c, 1)
 
       !...moved from maneig before "CALL GDVD (SPODMV..."
-      call posfile (0, imcdf, nposition)
+      call posfile (0, restart_matrix_unit, nposition)
 
-      read (imcdf) file_csf_count, file_first_order_cutoff, file_mpi_rank, file_mpi_process_count
+      read (restart_matrix_unit) file_csf_count, file_first_order_cutoff, file_mpi_rank, file_mpi_process_count
       if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) stop &
          "spodmv: ncf read wrong"
 
 
       do icol = mpi_rank + 1, n, mpi_process_count
-         read (imcdf) nelc, elsto, (emt(ir),ir=1,nelc), (irow(ir),ir=1,nelc)
+         read (restart_matrix_unit) nelc, elsto, (emt(ir),ir=1,nelc), (irow(ir),ir=1,nelc)
          do iv = 1, m
             diag = c(icol,iv) + (emt(nelc)-hamiltonian_energy_shift)*b(icol,iv)
             call dmerge (nelc - 1, b(1,iv), c(1,iv), irow(1), emt(1), b(icol,iv&

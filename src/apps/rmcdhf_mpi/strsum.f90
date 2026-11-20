@@ -1,5 +1,6 @@
 !***********************************************************************
       subroutine strsum
+      use calculation_file_units, only: summary_output_unit
 
 !   Generates the first part of  rscf92.sum  (on stream 24).
 !
@@ -55,82 +56,82 @@
 !
 !   Write out the basic dimensions of the electron cloud
 !
-      write (24, *)
+      write (summary_output_unit, *)
       call convrt (electron_count, record, text_length)
-      write (24, *) "There are "//record(1:text_length)//" electrons in the cloud"
+      write (summary_output_unit, *) "There are "//record(1:text_length)//" electrons in the cloud"
       call convrt (csf_count, record, text_length)
-      write (24, *) " in "//record(1:text_length)//" relativistic CSFs"
+      write (summary_output_unit, *) " in "//record(1:text_length)//" relativistic CSFs"
       call convrt (orbital_count, record, text_length)
-      write (24, *) " based on "//record(1:text_length)//" relativistic subshells."
+      write (summary_output_unit, *) " based on "//record(1:text_length)//" relativistic subshells."
 !
 !   If the CSFs are not treated uniformly, write out an
 !   informative message
 !
       if (lfordr) then
-         write (24, *)
+         write (summary_output_unit, *)
          call convrt (iccut, record, text_length)
-         write (24, *) " CSFs 1--"//record(1:text_length)//" constitute"//&
+         write (summary_output_unit, *) " CSFs 1--"//record(1:text_length)//" constitute"//&
             " the zero-order space;"
       end if
 !
 !   Write out the nuclear parameters
 !
-      write (24, *)
-      write (24, '("The atomic number is ",1f14.10,";")') nuclear_charge
+      write (summary_output_unit, *)
+      write (summary_output_unit, '("The atomic number is ",1f14.10,";")') nuclear_charge
       if (emn == 0.0_real64) then
-         write (24, *) " the nucleus is stationary;"
+         write (summary_output_unit, *) " the nucleus is stationary;"
       else
-         write (24, '(" the mass of the nucleus is ",1p,d19.12," electron masses;")') emn
+         write (summary_output_unit, '(" the mass of the nucleus is ",1p,d19.12," electron masses;")') emn
       end if
       if (nuclear_model_parameter_count == 2) then
-         write (24, *) " Fermi nucleus:"
-         write (24, '("  c =",1p,1d19.12," Bohr radii,"/,"  a =",1d19.12," Bohr radii;")') &
+         write (summary_output_unit, *) " Fermi nucleus:"
+         write (summary_output_unit, '("  c =",1p,1d19.12," Bohr radii,"/,"  a =",1d19.12," Bohr radii;")') &
             nuclear_model_parameters(1), nuclear_model_parameters(2)
          call convrt (first_grid_index_beyond_fermi_c, record, text_length)
-         write (24, *) " there are "//record(1:text_length)//&
+         write (summary_output_unit, *) " there are "//record(1:text_length)//&
             " tabulation points in the nucleus."
       else
-         write (24, *) " point nucleus."
+         write (summary_output_unit, *) " point nucleus."
       end if
 !
 !   Write out the physical effects specifications
 !
-      write (24, *)
-      write (24, '("Speed of light = ",3p,d19.12," atomic units.")') speed_of_light_au
+      write (summary_output_unit, *)
+      write (summary_output_unit, '("Speed of light = ",3p,d19.12," atomic units.")') speed_of_light_au
 !
 !   Write out the parameters of the radial grid
 !
-      write (24, *)
+      write (summary_output_unit, *)
       if (asymptotic_grid_step == 0.0_real64) then
-         write (24, '("Radial grid: R(I) = RNT*(exp((I-1)*H)-1),"," I = 1, ..., N;"/,/," RNT  = ",1p,d19.12,&
+         write (summary_output_unit, '("Radial grid: R(I) = RNT*(exp((I-1)*H)-1),"," I = 1, ..., N;"/,/," RNT  = ",1p,d19.12,&
             &" Bohr radii;"/," H    = ",d19.12," Bohr radii;"/," N    = ",1i4,";")') &
             radial_grid_scale, transformed_grid_step, radial_point_count
       else
-         write (24, '("Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,"," I = 1, ..., N;"/,/," RNT  = ",1p,&
+         write (summary_output_unit, '("Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,"," I = 1, ..., N;"/,/," RNT  = ",1p,&
             &d19.12," Bohr radii;"/," H    = ",d19.12," Bohr radii;"/," HP   = ",d19.12," Bohr radii;"/," N    = ",&
             &1i4,";")') radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count
       end if
-      write (24, '(" R(1) = ",1p,1d19.12," Bohr radii;"/," R(2) = ",1d19.12," Bohr radii;"/," R(N) = ",1d19.12,&
+      write (summary_output_unit, '(" R(1) = ",1p,1d19.12," Bohr radii;"/," R(2) = ",1d19.12," Bohr radii;"/," R(N) = ",1d19.12,&
          &" Bohr radii.")') radial_grid(1), radial_grid(2), radial_grid(radial_point_count)
-      write (24, *)
+      write (summary_output_unit, *)
 !
 !  (E)AL calculation, returns here
 !
       if (ncmin == 0) then
-         write (24, *) "(E)AL calculation."
+         write (summary_output_unit, *) "(E)AL calculation."
          return
       end if
 !
 !  Info exclusively for EOL calculations
 !
       if (ncmin == 1) then
-         write (24, *) "OL calculation."
+         write (summary_output_unit, *) "OL calculation."
          call convrt (iccmin(1), record, text_length)
-         write (24, *) "Level "//record(1:text_length)//" will be optimised."
+         write (summary_output_unit, *) "Level "//record(1:text_length)//" will be optimised."
       else
-         write (24, *) "EOL calculation."
+         write (summary_output_unit, *) "EOL calculation."
          call convrt (ncmin, record, text_length)
-         write (24, *) record(1:text_length)//" levels will be optimised;"
+         write (summary_output_unit, *) record(1:text_length)//" levels will be optimised;"
          record(1:20) = " their indices are: "
          iend = 20
          do i = 1, ncmin
@@ -144,18 +145,18 @@
                record(ibeg:iend) = number_text(1:text_length)//"."
             end if
             if (iend < 120) cycle
-            write (24, *) record(1:iend)
+            write (summary_output_unit, *) record(1:iend)
             record(1:2) = "  "
             iend = 2
          end do
-         if (iend /= 2) write (24, *) record(1:iend)
+         if (iend /= 2) write (summary_output_unit, *) record(1:iend)
          if (weight(1) == (-1.0_real64)) then
-            write (24, *) "Each is assigned its statistical weight;"
+            write (summary_output_unit, *) "Each is assigned its statistical weight;"
          else if (weight(1) == (-2.0_real64)) then
-            write (24, *) "All levels are weighted equally;"
+            write (summary_output_unit, *) "All levels are weighted equally;"
          else
-            write (24, *) " weighted as follows:"
-            write (24, *) (weight(i),i=1,ncmin)
+            write (summary_output_unit, *) " weighted as follows:"
+            write (summary_output_unit, *) (weight(i),i=1,ncmin)
          end if
       end if
 

@@ -6,6 +6,7 @@ contains
 !***********************************************************************
 !                                                                      *
       subroutine lodcsh(nfile, ncore)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Loads the data from the  .csl  file. A number of checks are made   *
 !   to ensure correctness and consistency.                             *
@@ -51,7 +52,7 @@ contains
 !
 !   Entry message
 !
-      write (6, *) "Loading CSF file ... Header only"
+      write (output_unit, *) "Loading CSF file ... Header only"
 !
 !   Get the list of subshells
 !
@@ -84,7 +85,7 @@ contains
          end do
       end do
 
-      write (6, *) "There are/is ", orbital_count, " relativistic subshells;"
+      write (output_unit, *) "There are/is ", orbital_count, " relativistic subshells;"
 !
 !   Skip the header for the list of CSFs
 !

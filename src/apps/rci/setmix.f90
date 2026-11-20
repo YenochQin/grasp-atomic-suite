@@ -2,6 +2,7 @@
 !                                                                      *
       subroutine setmix(name, block_labels)
       use calculation_state_files, only: ci_mixing_suffix
+      use calculation_file_units, only: mixing_output_unit
 !                                                                      *
 !   Opens the  .mix  file on stream 25; writes a header to this file;  *
 !   calls LODMIX to interactively determine the eigenpairs required.   *
@@ -39,10 +40,10 @@
 !-----------------------------------------------
 
       k = index(name," ")
-      call openfl (25, name(1:k-1)//ci_mixing_suffix, form, status, open_status)
+      call openfl (mixing_output_unit, name(1:k-1)//ci_mixing_suffix, form, status, open_status)
       if (open_status /= 0) stop "setmix: Error when opening .cimix file"
 
-      write (25) "G92MIX"
+      write (mixing_output_unit) "G92MIX"
 
       call lodmix (block_labels)
 

@@ -12,6 +12,7 @@
 !     C. Froese Fischer, Phys. Rev. E, 4499 (1995)                     *
 !                                                                      *
       program biotr
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !     Program written by                                               *
 !                                                                      *
@@ -67,7 +68,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       integer :: ninshli(nlmax), ninshlf(nlmax)
-      integer :: ntestg, ntestl, ntest, inpci, ncore1, ncore2, mxl, k
+      integer :: ntestg, ntestl, ntest, inpci, ncore1, ncore2, mxl
       integer :: start_clock_count
       real(real64) :: work(lwork1)
       real(real64) :: cishl(nlmax*nlmax)
@@ -99,26 +100,26 @@
       write(*,*) "              name1.TB, name2.TB (angular files)"
       write(*,*)
 
-      write (6, *) "Default settings?"
+      write (output_unit, *) "Default settings?"
       yes = getyn()
-      write (6, *)
+      write (output_unit, *)
       if (yes) then
          ndef = 0
          ndump = 1
       else
          ndef = 1
-         write (6, *) "Dump angular data on file?"
+         write (output_unit, *) "Dump angular data on file?"
          yes = getyn()
-         write (6, *)
+         write (output_unit, *)
          if (yes) then
             ndump = 1
          else
             ndump = 0
          end if
       end if
-      write (6, *) "Input from a CI calculation?"
+      write (output_unit, *) "Input from a CI calculation?"
       yes = getyn()
-      write (6, *)
+      write (output_unit, *)
       if (yes) then
          inpci = 0
       else
@@ -227,11 +228,6 @@
 !   The interface with the transformation part is in the routine mcp
 !
       call genmcp (name(1), 1, ntestg, inpci)
-!***** added by Yu Zou, Feb.18,2000 ***********
-      do k = 1, kamax
-         close(unit=80 + k, status="DELETE")
-      end do
-!***** added by Yu Zou, Feb.18,2000 ***********
 !
 !   Obtain one-electron coupling coefficients for the final state.
 !   The coefficients are dumped on files one kappa in turn and
@@ -240,9 +236,6 @@
 !
       call genmcp (name(2), 2, ntestg, inpci)
 
-      do k = 1, kamax
-         close(unit=80 + k, status="DELETE")
-      end do
       call stoptime (start_clock_count, "BIOTRANSFORM")
 
       stop

@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine ris_cal_mpi (name)
+      use calculation_file_units, only: one_body_cache_unit, summary_output_unit, two_body_cache_unit
 !                                                                      *
 !   MPI version of RIS_CAL. Each rank accumulates a strided subset of  *
 !   configuration-pair contributions and the partial sums are reduced   *
@@ -182,17 +183,17 @@
       end do
 
       if (mpi_rank == 0) then
-         call angdata(name,avail_ob,1,cache_status)
-         if (cache_status /= 0) call fail_input_io_mpi(cache_status,50,"ris4: one-body angular cache "//trim(name))
+         call angdata(name,avail_ob,1,cache_status,one_body_cache_unit)
+         if (cache_status /= 0) call fail_input_io_mpi(cache_status,one_body_cache_unit,"ris4: one-body angular cache "//trim(name))
          if (avail_ob) then
-            close(50,iostat=cache_status)
-            if (cache_status /= 0) call fail_input_io_mpi(cache_status,50,"ris4: close one-body angular cache")
+            close(one_body_cache_unit,iostat=cache_status)
+            if (cache_status /= 0) call fail_input_io_mpi(cache_status,one_body_cache_unit,"ris4: close one-body angular cache")
          end if
-         call angdata(name,avail_tb,2,cache_status)
-         if (cache_status /= 0) call fail_input_io_mpi(cache_status,51,"ris4: two-body angular cache "//trim(name))
+         call angdata(name,avail_tb,2,cache_status,two_body_cache_unit)
+         if (cache_status /= 0) call fail_input_io_mpi(cache_status,two_body_cache_unit,"ris4: two-body angular cache "//trim(name))
          if (avail_tb) then
-            close(51,iostat=cache_status)
-            if (cache_status /= 0) call fail_input_io_mpi(cache_status,51,"ris4: close two-body angular cache")
+            close(two_body_cache_unit,iostat=cache_status)
+            if (cache_status /= 0) call fail_input_io_mpi(cache_status,two_body_cache_unit,"ris4: close two-body angular cache")
          end if
          avail_ob_mpi = merge(1, 0, avail_ob)
          avail_tb_mpi = merge(1, 0, avail_tb)
@@ -237,17 +238,17 @@
          if (mpi_rank == 0) then
             orbital_index = index(name," ")
             if (avail_ob) then
-               open(unit=50,file = name(1:orbital_index-1)//".IOB",status="OLD",form="UNFORMATTED")
+               open(newunit=one_body_cache_unit,file = name(1:orbital_index-1)//".IOB",status="OLD",form="UNFORMATTED")
                if (yes2) then
                   call densread_seltz(dint1,dint2,dint3,dint4,dint5,dint6, &
                        dint7,dint1vec,dens1vec,nrnuc)
                else
                   call densread(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
                end if
-               close(50)
+               close(one_body_cache_unit)
             else
                if (doit_ob == 1) then
-                  open(unit=50,file = name(1:orbital_index-1)//".IOB",status="UNKNOWN",form="UNFORMATTED")
+                  open(newunit=one_body_cache_unit,file = name(1:orbital_index-1)//".IOB",status="UNKNOWN",form="UNFORMATTED")
                end if
                if (yes2) then
                   call densnew_seltz(doit_ob,dint1,dint2,dint3,dint4,dint5,dint6, &
@@ -258,12 +259,12 @@
             end if
 
             if (avail_tb) then
-               open(unit=51,file = name(1:orbital_index-1)//".ITB",status="OLD",form="UNFORMATTED")
+               open(newunit=two_body_cache_unit,file = name(1:orbital_index-1)//".ITB",status="OLD",form="UNFORMATTED")
                call smsread(vint,vint2)
-               close(51)
+               close(two_body_cache_unit)
             else
                if (doit_tb == 1) then
-                  open(unit=51,file = name(1:orbital_index-1)//".ITB",status="UNKNOWN",form="UNFORMATTED")
+                  open(newunit=two_body_cache_unit,file = name(1:orbital_index-1)//".ITB",status="UNKNOWN",form="UNFORMATTED")
                end if
                call smsnew(doit_tb,vint,vint2)
             end if
@@ -274,14 +275,14 @@
 
       if (avail_ob) then
          orbital_index = index(name," ")
-         open(unit=50,file = name(1:orbital_index-1)//".IOB",status="OLD",form="UNFORMATTED")
+         open(newunit=one_body_cache_unit,file = name(1:orbital_index-1)//".IOB",status="OLD",form="UNFORMATTED")
          if (yes2) then
             call densread_seltz_mpi(dint1,dint2,dint3,dint4,dint5,dint6, &
                  dint7,dint1vec,dens1vec,nrnuc)
          else
             call densread_mpi(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
          end if
-         close(50)
+         close(one_body_cache_unit)
       else
          if(yes2) then
             call densnew_seltz_mpi(doit_ob,dint1,dint2,dint3,dint4,dint5,dint6, &
@@ -293,9 +294,9 @@
 
       if (avail_tb) then
          orbital_index = index(name," ")
-         open(unit=51,file = name(1:orbital_index-1)//".ITB",status="OLD",form="UNFORMATTED")
+         open(newunit=two_body_cache_unit,file = name(1:orbital_index-1)//".ITB",status="OLD",form="UNFORMATTED")
          call smsread_mpi(vint,vint2)
-         close(51)
+         close(two_body_cache_unit)
       else
          call smsnew_mpi(doit_tb,vint,vint2)
       end if
@@ -316,71 +317,71 @@
   800 continue
       if (mpi_rank /= 0) goto 900
 
-      write (24,"(a24,i3)") "Number of eigenvalues: ",nvec
-      write(24,*)
-      write(24,*)
-      write (24,'(" Level  J Parity  Energy")')
+      write (summary_output_unit,"(a24,i3)") "Number of eigenvalues: ",nvec
+      write(summary_output_unit,*)
+      write(summary_output_unit,*)
+      write (summary_output_unit,'(" Level  J Parity  Energy")')
       do i = 1, nvec
-         write (24,'(1x,i3,5x,2a4,3x,d20.10,"  (a.u.)")') ivec(i),right_justified_j_labels(iatjpo(i)), &
+         write (summary_output_unit,'(1x,i3,5x,2a4,3x,d20.10,"  (a.u.)")') ivec(i),right_justified_j_labels(iatjpo(i)), &
             & parity_labels((iaspar(i)+3)/2), &
               hamiltonian_energy_shift+shifted_eigenvalues(i)
       end do
-      write (24,'(//" Level  J Parity  Normal mass shift parameter")')
+      write (summary_output_unit,'(//" Level  J Parity  Normal mass shift parameter")')
       do i = 1,nvec
-         write(24,'(/,29x,"<K^1>",13x,"<K^2+K^3>",9x,"<K^1+K^2+K^3>")')
-         write (24,'(1x,i3,5x,2a4,3x,3d20.10,"  (a.u.)")') ivec(i),right_justified_j_labels(iatjpo(i)), &
+         write(summary_output_unit,'(/,29x,"<K^1>",13x,"<K^2+K^3>",9x,"<K^1+K^2+K^3>")')
+         write (summary_output_unit,'(1x,i3,5x,2a4,3x,3d20.10,"  (a.u.)")') ivec(i),right_justified_j_labels(iatjpo(i)), &
             & parity_labels((iaspar(i)+3)/2), &
               dens7(i),(dens2(i)-dens7(i)),dens2(i)
          hznmsu=dens7(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s
-         write (24,'(20x,3d20.10,2x,"(GHz u)")') hznmsu*(1.0e-9_real64), &
+         write (summary_output_unit,'(20x,3d20.10,2x,"(GHz u)")') hznmsu*(1.0e-9_real64), &
               (dens2(i)-dens7(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-9_real64), &
               dens2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-9_real64)
       end do
 
-      write (24,'(//" Level  J Parity  Specific mass shift parameter")')
+      write (summary_output_unit,'(//" Level  J Parity  Specific mass shift parameter")')
       do i = 1,nvec
-         write(24,'(/,29x,"<K^1>",13x,"<K^2+K^3>",9x,"<K^1+K^2+K^3>")')
-         write (24,'(1x,i3,5x,2a4,3x,3d20.10,"  (a.u.)")') ivec(i),right_justified_j_labels(iatjpo(i)), &
+         write(summary_output_unit,'(/,29x,"<K^1>",13x,"<K^2+K^3>",9x,"<K^1+K^2+K^3>")')
+         write (summary_output_unit,'(1x,i3,5x,2a4,3x,3d20.10,"  (a.u.)")') ivec(i),right_justified_j_labels(iatjpo(i)), &
             & parity_labels((iaspar(i)+3)/2), &
               smsc1(i),smsc2(i)-smsc1(i),smsc2(i)
          hzsmsu=smsc1(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s
          if (dabs(hzsmsu) <= (10**8)) then
-            write (24,'(20x,3d20.10,2x,"(MHz u)")') hzsmsu*(1.0e-6_real64), &
+            write (summary_output_unit,'(20x,3d20.10,2x,"(MHz u)")') hzsmsu*(1.0e-6_real64), &
                  (smsc2(i)-smsc1(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-6_real64), &
                  smsc2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-6_real64)
          else
-            write (24,'(20x,3d20.10,2x,"(GHz u)")') hzsmsu*(1.0e-9_real64), &
+            write (summary_output_unit,'(20x,3d20.10,2x,"(GHz u)")') hzsmsu*(1.0e-9_real64), &
                  (smsc2(i)-smsc1(i))*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-9_real64), &
                  smsc2(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s*(1.0e-9_real64)
          end if
       end do
       if(yes2) then
-         write (24,'(//" Level  J Parity  Electron density in atomic units"//24x,"Dens. (a.u.)")')
+         write (summary_output_unit,'(//" Level  J Parity  Electron density in atomic units"//24x,"Dens. (a.u.)")')
          do i = 1,nvec
             call edensityfit(radial_grid,dens1vec(i,:),nuclear_charge,nuclear_model_parameters,nrnuc,fmat(:,i),rho(i),res(i))
-            write (24,'(1x,i3,5x,2a4,3x,d20.10)') ivec(i),right_justified_j_labels(iatjpo(i)), &
+            write (summary_output_unit,'(1x,i3,5x,2a4,3x,d20.10)') ivec(i),right_justified_j_labels(iatjpo(i)), &
                  parity_labels((iaspar(i)+3)/2),rho(i)
          end do
-         write (24,'(//" Level  J Parity  Field shift electronic factors and average point discrepancy in fit"//&
+         write (summary_output_unit,'(//" Level  J Parity  Field shift electronic factors and average point discrepancy in fit"//&
             &24x,"F0 (GHz/fm^2)",6x," F2 (GHz/fm^4)",6x," F4 (GHz/fm^6)",6x," F6 (GHz/fm^8)",6x,&
             &" Disc. (per mille)")')
          do i = 1,nvec
-            write (24,'(1x,i3,5x,2a4,3x,4d20.10,f10.4)') ivec(i),right_justified_j_labels(iatjpo(i)), &
+            write (summary_output_unit,'(1x,i3,5x,2a4,3x,4d20.10,f10.4)') ivec(i),right_justified_j_labels(iatjpo(i)), &
                  parity_labels((iaspar(i)+3)/2),fmat(1,i),fmat(2,i), &
                  fmat(3,i),fmat(4,i),res(i)
          end do
-         write (24,'(//&
+         write (summary_output_unit,'(//&
             &" Level  J Parity  Field shift electronic factors (corrected for varying density inside nucleus)"//&
             &24x,"F0VED0 (GHz/fm^2)   F0VED1 (GHz/fm^4)")')
          do i = 1,nvec
-            write (24,'(1x,i3,5x,2a4,3x,2d20.10)') ivec(i),right_justified_j_labels(iatjpo(i)), &
+            write (summary_output_unit,'(1x,i3,5x,2a4,3x,2d20.10)') ivec(i),right_justified_j_labels(iatjpo(i)), &
                  parity_labels((iaspar(i)+3)/2),fmat(5,i),fmat(6,i)
          end do
-         write(24,*)
+         write(summary_output_unit,*)
       else
-         write (24,'(//" Electron density in atomic units"//" Level  J Parity",8x,"DENS (a.u.)"/)')
+         write (summary_output_unit,'(//" Electron density in atomic units"//" Level  J Parity",8x,"DENS (a.u.)"/)')
          do i = 1,nvec
-            write (24,'(1x,i3,5x,2a4,3x,d20.10)') ivec(i),right_justified_j_labels(iatjpo(i)), &
+            write (summary_output_unit,'(1x,i3,5x,2a4,3x,d20.10)') ivec(i),right_justified_j_labels(iatjpo(i)), &
                  parity_labels((iaspar(i)+3)/2),dens1(i)
          end do
       end if

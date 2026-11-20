@@ -1,13 +1,17 @@
-      module biorthogonal_orbital_sets
-      use, intrinsic :: iso_fortran_env, only: real64
-      use grasp_parameters,   only: max_orbitals
-      implicit none (type, external)
-      private :: real64
+module biorthogonal_orbital_sets
+    ! Module dependencies
+    use, intrinsic :: iso_fortran_env, only: real64
+    use grasp_parameters,   only: max_orbitals
+    implicit none (type, external)
 
-      character :: nhff(max_orbitals)*2, nhii(max_orbitals)*2
-      real(real64) :: eff(max_orbitals), gamaff(max_orbitals) , eii(max_orbitals), gamaii(max_orbitals)
-      integer :: ncfff, nwff, ncfii, nwii
-      integer :: npff(max_orbitals), nakff(max_orbitals), npii(max_orbitals), nakii(max_orbitals)
-      integer :: nklff(max_orbitals), nkjff(max_orbitals), nklii(max_orbitals), nkjii(max_orbitals)
-      integer :: nnff(max_orbitals), nnii(max_orbitals)
-      end module biorthogonal_orbital_sets
+    ! Module interface
+    private :: real64
+
+    ! Module state
+    character :: nhff(max_orbitals)*2, nhii(max_orbitals)*2
+    real(real64) :: eff(max_orbitals), gamaff(max_orbitals) , eii(max_orbitals), gamaii(max_orbitals)
+    integer :: ncfff, nwff, ncfii, nwii
+    integer :: npff(max_orbitals), nakff(max_orbitals), npii(max_orbitals), nakii(max_orbitals)
+    integer :: nklff(max_orbitals), nkjff(max_orbitals), nklii(max_orbitals), nkjii(max_orbitals)
+    integer :: nnff(max_orbitals), nnii(max_orbitals)
+end module biorthogonal_orbital_sets

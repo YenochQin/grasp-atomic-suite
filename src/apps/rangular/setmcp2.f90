@@ -1,5 +1,6 @@
 !***********************************************************************
       subroutine setmcp2(mpi_rank, mpi_process_count, core_subshell_count, block_labels, filehead)
+      use mcp_generation_options, only: mcp_output_units
 !
 ! A wrapper for setmcp/getinf. setmcp/getinf are then shared by serial
 ! and MPI programs.
@@ -43,12 +44,12 @@
       if (mpi_rank == 0) call getinf
 
       do k = 30, 32 + max_coulomb_multipole_rank
-         write (k) electron_count, csf_count, orbital_count
-         write (k) diagonal_only, iccut(1), use_first_order_restriction
+         write (mcp_output_units(k)) electron_count, csf_count, orbital_count
+         write (mcp_output_units(k)) diagonal_only, iccut(1), use_first_order_restriction
       end do
 
       do k = 30, 32 + max_coulomb_multipole_rank
-         close(k)
+         close(mcp_output_units(k))
       end do
 
       return

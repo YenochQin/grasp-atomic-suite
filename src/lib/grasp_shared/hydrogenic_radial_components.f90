@@ -1,7 +1,12 @@
-      module hydrogenic_radial_components
-      use, intrinsic :: iso_fortran_env, only: real64
-      use grasp_parameters,   only: max_radial_points
-      implicit none (type, external)
-      private :: real64
-      real(real64) :: ph(max_radial_points), qh(max_radial_points)
-      end module hydrogenic_radial_components
+module hydrogenic_radial_components
+    ! Module dependencies
+    use, intrinsic :: iso_fortran_env, only: real64
+    use grasp_parameters,   only: max_radial_points
+    implicit none (type, external)
+
+    ! Module interface
+    private :: real64
+
+    ! Module state
+    real(real64) :: ph(max_radial_points), qh(max_radial_points)
+end module hydrogenic_radial_components

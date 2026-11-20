@@ -2,6 +2,7 @@
 !                                                                      *
       subroutine fname(name)
       use calculation_state_files, only: read_state_pair
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Determines the name of the initial and final states                *
 !   In addition this subroutine determines which J symmetries          *
@@ -53,20 +54,20 @@
       end if
 
 ! end Per 2007
-      write (6, *) " Transformation of all J symmetries?"
+      write (output_unit, *) " Transformation of all J symmetries?"
       yes = getyn()
       if (yes) then
          ntrans = 0
       else
          ntrans = 1
-         write (6, *) " Number of initial state J symmetries to be transformed"
+         write (output_unit, *) " Number of initial state J symmetries to be transformed"
          read (*, *) jqj1
-         write (6, *) " Give the J symmetries in the form 2*J"
+         write (output_unit, *) " Give the J symmetries in the form 2*J"
          read (*, *) (itjqj1(i),i=1,jqj1)
          itjqj1(:jqj1) = itjqj1(:jqj1) + 1
-         write (6, *) " Number of final state J symmetries to be transformed"
+         write (output_unit, *) " Number of final state J symmetries to be transformed"
          read (*, *) jqj2
-         write (6, *) " Give the J symmetries in the form 2*J"
+         write (output_unit, *) " Give the J symmetries in the form 2*J"
          read (*, *) (itjqj2(i),i=1,jqj2)
          itjqj2(:jqj2) = itjqj2(:jqj2) + 1
       end if

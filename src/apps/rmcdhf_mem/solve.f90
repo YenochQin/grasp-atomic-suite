@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine solve(orbital_index, solve_failed, orbital_sign_reversal_count, matching_grid_index, nnp)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This subroutine  performs  step  2 in Algorithm 5.2 and 5.3 of C   *
 !   Froese Fischer, Comput Phys Rep 3 (1986) 295. Some minor changes   *
@@ -89,8 +90,11 @@
 !
 !   Debug header
 !
-      if (ldbpr(22)) write (99, '(/,/," Debug printout active; orbital: ",1i2,1a2)') &
+      if (ldbpr(22)) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '(/,/," Debug printout active; orbital: ",1i2,1a2)') &
          orbital_principal_n(orbital_index), orbital_symmetry_labels(orbital_index)
+      end if
 !
       nloops = max(nsolv,3*orbital_principal_n(orbital_index))
 !
@@ -329,12 +333,15 @@
 !
 !   DEBUG PRINTOUT
 !
-      if (ldbpr(22)) write (99, '(" Iteration number: ",1i2,", limit: ",1i2,/," Present estimate of P0; ",1d21.14,/&
+      if (ldbpr(22)) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '(" Iteration number: ",1i2,", limit: ",1i2,/," Present estimate of P0; ",1d21.14,/&
          &," Present estimate of E(J): ",1d21.14,", DELEPS: ",1d21.14,/," Lower bound on energy: ",1d21.14,&
          &", upper bound: ",1d21.14,/," Join point: ",1i4,", Maximum tabulation point:",1i4,/,&
          &" Number of nodes counted: ",1i2,", Correct number: ",1i2,/," Sign of P at first oscillation: ",f3.0)') &
          kount, nloops, p0, orbital_energy_parameters(orbital_index), energy_correction, epsmin, &
          epsmax, matching_grid_index, mtp, nnp, nnodep(orbital_index), first_oscillation_sign
+      end if
 !
 !   Proceed according to method
 !

@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
-      subroutine lodcslbio(ncore,igg)
+      subroutine lodcslbio(ncore,igg, csf_input_unit)
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   Loads the data from the  .csl  file. A number of checks are made   *
 !   to ensure correctness and consistency.                             *
@@ -40,6 +42,7 @@
       use csf_byte_packing, only: pack
       use csf_quantum_queries, only: iq, jqs, jcup, itjpo, ispar
       implicit none (type, external)
+      integer, intent(in) :: csf_input_unit
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -68,7 +71,7 @@
 !
 !   Entry message
 !
-      write (6, *) "Loading Configuration Symmetry List File ..."
+      write (output_unit, *) "Loading Configuration Symmetry List File ..."
 !
 !   Get the list of subshells
 !
@@ -77,7 +80,7 @@
 !   Read the list of core subshells; set up the arrays NP, NAK,
 !   NKL, NKJ, NH for these subshells
 !
-      call prsrsl (21, 1)
+      call prsrsl (csf_input_unit, 1)
       ncore = orbital_count
       ncorp1 = orbital_count + 1
 !
@@ -85,8 +88,8 @@
 !   peel subshells; set up the arrays NP, NAK, NKL, NKJ, NH for
 !   these subshells
 !
-      read (21, *)
-      call prsrsl (21, 2)
+      read (csf_input_unit, *)
+      call prsrsl (csf_input_unit, 2)
       npeel = orbital_count - ncore
       npeel2 = npeel*2
 !
@@ -107,10 +110,10 @@
 !
       if (orbital_count > 1) then
          call convrt (orbital_count, record, lenth)
-         write (6, *) "There are "//record(1:lenth)// &
+         write (output_unit, *) "There are "//record(1:lenth)// &
                       " relativistic subshells;"
       else
-         write (6, *) "There is 1 relativistic subshell;"
+         write (output_unit, *) "There is 1 relativistic subshell;"
       end if
 !
 !   Initial allocation for arrays with a dimension dependent
@@ -140,7 +143,7 @@
 !
 !   Skip the header for the list of CSFs
 !
-      read (21, *)
+      read (csf_input_unit, *)
 !
 !   NREC is the sequence number of the last record read in the
 !   Configuration Symmetry List File
@@ -182,7 +185,7 @@
     3 continue
       csf_count = csf_count + 1
 !
-      read (21, "(A)", iostat=ios) record
+      read (csf_input_unit, "(A)", iostat=ios) record
 !**********************************************************************
 !blk*
 !   To skip the border line added to mark the end of a block
@@ -191,11 +194,11 @@
          if (record(1:2) == " *") then
             nblock = nblock + 1
             ncfblk(nblock) = csf_count -1
-            read (21, "(A)", iostat=ios) record
+            read (csf_input_unit, "(A)", iostat=ios) record
          end if
       end if
       if (ios /= 0 .and. ios /= iostat_end) &
-         call fail_input_io(ios, 21, "CSF lodcslbio occupation record")
+         call fail_input_io(ios, csf_input_unit, "CSF lodcslbio occupation record")
 !**********************************************************************
 
       if (ios == 0) then
@@ -208,11 +211,11 @@
 !
 !   Read the J_sub and v quantum numbers
 !
-         read (21, "(A)", iostat=ios) record
+         read (csf_input_unit, "(A)", iostat=ios) record
          if (ios /= 0) then
             write (stderr_unit, *) "LODCSL: Expecting subshell quantum", &
                " number specification;"
-            call fail_input_io(ios, 21, "CSF lodcslbio subshell quantum numbers")
+            call fail_input_io(ios, csf_input_unit, "CSF lodcslbio subshell quantum numbers")
          end if
          loc = len_trim(record)
          call parsjl (1, ncore, record, loc, iqsub, nqs, ierr)
@@ -220,13 +223,13 @@
 !
 !   Read the X, J, and (sign of) P quantum numbers
 !
-         read (21, "(A)", iostat=ios) record
+         read (csf_input_unit, "(A)", iostat=ios) record
          if (ios /= 0) then
             write (stderr_unit, *) "LODCSL: Expecting intermediate ", &
                "and final angular momentum"
             write (stderr_unit, *) "quantum number and final parity ", &
                "specification;"
-            call fail_input_io(ios, 21, "CSF lodcslbio coupling quantum numbers")
+            call fail_input_io(ios, csf_input_unit, "CSF lodcslbio coupling quantum numbers")
          end if
 !
 !   Allocate additional storage if necessary
@@ -505,7 +508,7 @@
             if (iq(i,j) /= 0) goto 23
          end do
          call convrt (orbital_principal_n(i), record, lenth)
-         write (6, *) "Subshell "//record(1:lenth)//orbital_symmetry_labels(i)//" is empty", &
+         write (output_unit, *) "Subshell "//record(1:lenth)//orbital_symmetry_labels(i)//" is empty", &
             " in all CSFs; eliminating this", " subshell from the list;"
          orbital_count = orbital_count - 1
          do ii = i, orbital_count
@@ -539,22 +542,31 @@
 !   All done; report
 !
       call convrt (csf_count, record, lenth)
-      write (6, *) "There are "//record(1:lenth)//" relativistic CSFs;"
-      write (6, *) " ... load complete;"
+      write (output_unit, *) "There are "//record(1:lenth)//" relativistic CSFs;"
+      write (output_unit, *) " ... load complete;"
 !
 !   Debug printout
 !
       if (ldbpa(1)) then
-         write (99, *) "From LODCSL:"
+         call ensure_debug_output()
+         write (angular_debug_unit, *) "From LODCSL:"
          do i = 1, csf_count
-            write (99, *) "CSF ", i
-            write (99, *) "ITJPO: ", itjpo(i)
-            write (99, *) "ISPAR: ", ispar(i)
-            write (99, *) "IQ: ", (iq(j,i),j=1,orbital_count)
-            write (99, *) "JQS(1): ", (jqs(1,j,i),j=1,orbital_count)
-            write (99, *) "JQS(2): ", (jqs(2,j,i),j=1,orbital_count)
-            write (99, *) "JQS(3): ", (jqs(3,j,i),j=1,orbital_count)
-            write (99, *) "JCUP: ", (jcup(j,i),j=1,orbital_count - 1)
+            call ensure_debug_output()
+            write (angular_debug_unit, *) "CSF ", i
+            call ensure_debug_output()
+            write (angular_debug_unit, *) "ITJPO: ", itjpo(i)
+            call ensure_debug_output()
+            write (angular_debug_unit, *) "ISPAR: ", ispar(i)
+            call ensure_debug_output()
+            write (angular_debug_unit, *) "IQ: ", (iq(j,i),j=1,orbital_count)
+            call ensure_debug_output()
+            write (angular_debug_unit, *) "JQS(1): ", (jqs(1,j,i),j=1,orbital_count)
+            call ensure_debug_output()
+            write (angular_debug_unit, *) "JQS(2): ", (jqs(2,j,i),j=1,orbital_count)
+            call ensure_debug_output()
+            write (angular_debug_unit, *) "JQS(3): ", (jqs(3,j,i),j=1,orbital_count)
+            call ensure_debug_output()
+            write (angular_debug_unit, *) "JCUP: ", (jcup(j,i),j=1,orbital_count - 1)
          end do
       end if
 
@@ -567,16 +579,16 @@
    26 continue
       call convrt (csf_count, record, lenth)
       write (stderr_unit, *) " CSF sequence number: "//record(1:lenth)//":"
-      rewind (21)
+      rewind (csf_input_unit)
       do i = 1, nrec
-         read (21, *)
+         read (csf_input_unit, *)
       end do
       do i = 1, 3
-         read (21,"(A)",err = 29,end = 29) record
+         read (csf_input_unit,"(A)",err = 29,end = 29) record
          lenth = len_trim(record)
          write (stderr_unit, *) record(1:lenth)
       end do
-   29 close(21)
+   29 close(csf_input_unit)
       stop
 !
       end subroutine lodcslbio

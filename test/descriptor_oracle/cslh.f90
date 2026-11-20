@@ -5,7 +5,7 @@ module cslh_i
 contains
 !***********************************************************************
 !
-      subroutine cslh(name, ncore, nblkin, idblk)
+      subroutine cslh(name, ncore, nblkin, idblk, csf_input_unit)
 !  A container which calls setcsll to open, read <name> file to get
 !     nblock, ncfblk(), idblk(), ncftot.
 !  It then calls lib92/lodcsh to get
@@ -30,6 +30,7 @@ contains
       use setcsll_i, only: setcsll
       use lodcsh_i, only: lodcsh
       implicit none (type, external)
+      integer, intent(out) :: csf_input_unit
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -49,12 +50,12 @@ contains
 
       call alloc (csf_counts_by_block, nblkin + 1, "NCFBLK", "CSLH")
 
-      call setcsll (21, name, nblkin, symmetry_block_count, csf_counts_by_block, ncftot, idblk)
+      call setcsll (csf_input_unit, name, nblkin, symmetry_block_count, csf_counts_by_block, ncftot, idblk)
       call ralloc (csf_counts_by_block, symmetry_block_count + 1, "NCFBLK", "CSLH")
-      rewind (21)
-      read (21, *)
+      rewind (csf_input_unit)
+      read (csf_input_unit, *)
       !..Load header of <name> file
-      call lodcsh (21, ncore)
+      call lodcsh (csf_input_unit, ncore)
 
       return
       end subroutine cslh

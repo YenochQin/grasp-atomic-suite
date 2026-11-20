@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine maneig(iatjpo, iaspar)
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use calculation_file_units, only: summary_output_unit
 !                                                                      *
 !   This module  manages the  operation of the  eigensolvers and the   *
 !   storage of the eigenpairs.  There are two principal branches:      *
@@ -53,7 +55,7 @@
           nvpitmp, nkeitmp, nvintitmp, ncftmp, cutofftmp
       use orbital_csf_basis,           only: csf_count, orbital_count, csf_subshell_occupations
       use selected_level_indices, only: ivec, ivecff, ivecii, nvec, nvecff, nvecii, nvecmx, nvecmxff, nvecmxii, pnivecii
-      use where_c, only: imcdf
+      use where_c, only: restart_matrix_unit
       use active_symmetry_block, only: active_block_index => jblock
       use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !-----------------------------------------------
@@ -115,8 +117,8 @@
 
       row_count = (csf_count - mpi_rank - 1 + mpi_process_count)/mpi_process_count
       if (csf_count < mpi_process_count) row_count = csf_count/(mpi_rank + 1)
-      !CALL posfile (1, imcdf, nrows+1)
-      call posfile (0, imcdf, nposition)
+      !CALL posfile (1, restart_matrix_unit, nrows+1)
+      call posfile (0, restart_matrix_unit, nposition)
 
       if (csf_count == 1) then
 !-----------------------------------------------------------------------
@@ -124,7 +126,7 @@
 ! (1) - Trivial    ncf = 1
 !
 !-------------------------------------------------------
-         write (24, *) "Trivial eigenvalue problem."
+         write (summary_output_unit, *) "Trivial eigenvalue problem."
 
 !   Matrix of order 1: the trivial case; we assume that the value
 !   of EAV is available
@@ -137,9 +139,9 @@
          ! Still read through the .res file
 !GG
 !GG Gediminas NIST 2005.11.03
-!GG         READ (imcdf)
+!GG         READ (restart_matrix_unit)
          do i = 1, row_count + 1
-            read (imcdf)
+            read (restart_matrix_unit)
          end do
 
       else                                       !if-2
@@ -160,9 +162,9 @@
 !
 !-------------------------------------------------------
             if (mpi_rank == 0) then
-               write (6, *) &
+               write (output_unit, *) &
                   "LAPACK routine DSPEVX selected for eigenvalue problem."
-               write (24, *) &
+               write (summary_output_unit, *) &
                   "LAPACK routine DSPEVX selected for eigenvalue problem."
             end if
 
@@ -177,13 +179,13 @@
 
             call alloc (real_workspace, csf_count,"WORK", "MANEIG" )
             call alloc (matrix_partner_indices, csf_count, "IROW", "MANEIG")
-            read (imcdf) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
+            read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
             if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) stop &
                "maneig:1"
 
             do i = mpi_rank + 1, csf_count, mpi_process_count
                iofset = (i*(i - 1))/2
-               read (imcdf) nelc, elsto, (real_workspace(ir),ir=1,nelc), (matrix_partner_indices(ir),ir=1,&
+               read (restart_matrix_unit) nelc, elsto, (real_workspace(ir),ir=1,nelc), (matrix_partner_indices(ir),ir=1,&
                   nelc)
                ! In the row-mode of the lower triangle,
                ! diagonal is the last one
@@ -245,7 +247,7 @@
 ! (2.2) - DVDSON --- preparation work
 !
 !-------------------------------------------------------
-           write (24,*)"DVDSON routine selected for eigenvalue problem;"
+           write (summary_output_unit,*)"DVDSON routine selected for eigenvalue problem;"
 
 !   Sparse or dense matrix multiply? On disc or in core?
 
@@ -268,7 +270,7 @@
 ! (2.2.1) - DVDSON --- Disk, load diagonal
 !
 !-------------------------------------------------------
-               write (24, *) " matrix stored on disc;"
+               write (summary_output_unit, *) " matrix stored on disc;"
 
 !   Disk storage; necessarily sparse; one column of the matrix in
 !   memory
@@ -280,12 +282,12 @@
 !   Load diagonal - Each node will have the same, complete copy
 !   after this if block
 
-               read (imcdf) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
+               read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
                if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) stop &
                   "maneig:2"
 
                do i = mpi_rank + 1, csf_count, mpi_process_count
-                  read (imcdf) nelc, elsto, (dummy,ir=2,nelc), diatmp
+                  read (restart_matrix_unit) nelc, elsto, (dummy,ir=2,nelc), diatmp
                   matrix_diagonal(i) = diatmp - hamiltonian_energy_shift
                end do
 
@@ -305,22 +307,22 @@
 ! (2.2.2.1) - DVDSON --- Memory, load all, sparse
 !
 !-------------------------------------------------------
-                  if (mpi_rank == 0) write (24, *) &
+                  if (mpi_rank == 0) write (summary_output_unit, *) &
                      " matrix stored in sparse representation in core;"
 
                   imv = 2
-                  write (6, *) "nelmnt = ", stored_matrix_element_count
+                  write (output_unit, *) "nelmnt = ", stored_matrix_element_count
                   call alloc (hamiltonian_values, stored_matrix_element_count, "EMT", "MANEIG")
                   call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "MANEIG")
                   call alloc (stored_segment_end_offsets, 0, csf_count , "IENDC", "MANEIG")
                   iofset = 0
                   stored_segment_end_offsets(0) = 0
 
-                  read (imcdf) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
+                  read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
                   if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) &
                      stop "maneig:3"
                   do i = mpi_rank + 1, csf_count, mpi_process_count
-                     read (imcdf) nelc, elsto, (hamiltonian_values(ir+iofset),ir=1,nelc), (&
+                     read (restart_matrix_unit) nelc, elsto, (hamiltonian_values(ir+iofset),ir=1,nelc), (&
                         matrix_partner_indices(ir + iofset),ir=1,nelc)
                      hamiltonian_values(nelc+iofset) = hamiltonian_values(nelc+iofset) - hamiltonian_energy_shift
                      matrix_diagonal(i) = hamiltonian_values(nelc+iofset)
@@ -335,7 +337,7 @@
 ! (2.2.2.2) - DVDSON --- Memory, load all, dense
 !
 !-------------------------------------------------------
-                  write (24, *) &
+                  write (summary_output_unit, *) &
                      " matrix stored in full representation in core;"
 
                   imv = 3
@@ -352,13 +354,13 @@
                   call alloc (real_workspace, csf_count, "WORK", "MANEIG")
                   call alloc (matrix_partner_indices, csf_count, "IROW", "MANEIG")
 
-                  read (imcdf) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
+                  read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
                   if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) &
                      stop "maneig:4"
 
                   iofset = 0
                   do i = mpi_rank + 1, csf_count, mpi_process_count
-                     read (imcdf) nelc, elsto, (real_workspace(ir),ir=1,nelc), (matrix_partner_indices(ir),&
+                     read (restart_matrix_unit) nelc, elsto, (real_workspace(ir),ir=1,nelc), (matrix_partner_indices(ir),&
                         ir=1,nelc)
                      real_workspace(nelc) = real_workspace(nelc) - hamiltonian_energy_shift
                      matrix_diagonal(i) = real_workspace(nelc)
@@ -429,10 +431,10 @@
             select case (imv)
             case (1)
 !******************** sparse and matrix on disk **********************
-               write (6, *) " Sparse - Disk,  iniestsd"
-               call posfile (0, imcdf, nposition)! was within iniestsd before
-               call iniestsd (2000, csf_count, mpi_rank, mpi_process_count, initial_vector_count, real_workspace, imcdf, &
-                  & hamiltonian_energy_shift)
+               write (output_unit, *) " Sparse - Disk,  iniestsd"
+               call posfile (0, restart_matrix_unit, nposition)! was within iniestsd before
+               call iniestsd (2000, csf_count, mpi_rank, mpi_process_count, initial_vector_count, real_workspace, &
+                  & restart_matrix_unit, hamiltonian_energy_shift)
 
                !NIV = 0   ! Why equal 0 ???
                !WRITE (6, *) ' Calling gdvd(spodmv,...'
@@ -444,7 +446,7 @@
 
             case (2)
 !******************** sparse and matrix in memory ********************
-               write (6, *) " Sparse - Memory,  iniest2"
+               write (output_unit, *) " Sparse - Memory,  iniest2"
 !            CALL INIEST2 (1000, NCF,NIV,WORK,EMT,IENDC,IROW)
                call iniest2 (2000, csf_count, initial_vector_count, real_workspace, hamiltonian_values, &
                   & stored_segment_end_offsets, matrix_partner_indices)
@@ -467,7 +469,7 @@
 
             case (3)
 !*************************** dense and in memory **********************
-               write (6, *) " Dense - Memory,  iniestdm"
+               write (output_unit, *) " Dense - Memory,  iniestdm"
 !            CALL INIESTDM (1000,NCF,NIV,WORK,EMT)
                call iniestdm (2000, csf_count, initial_vector_count, real_workspace, hamiltonian_values)
                call gdvd (dnicmv, csf_count, subspace_limit, matrix_diagonal, lowest_pair_index, highest_pair_index, &
@@ -482,8 +484,8 @@
             call dalloc (integer_workspace, "IWORK", "MANEIG")
             call dalloc (selected_pair_indices, "JWORK", "MANEIG")
 
-            write (24, *) " ", iteration_count, " iterations;"
-            write (24, *) " ", matrix_vector_product_count, " matrix-vector multiplies."
+            write (summary_output_unit, *) " ", iteration_count, " iterations;"
+            write (summary_output_unit, *) " ", matrix_vector_product_count, " matrix-vector multiplies."
 
             if (ierr /= 0) then
                write (stderr_unit, *) "MANEIG: Returned from DVDSON with"

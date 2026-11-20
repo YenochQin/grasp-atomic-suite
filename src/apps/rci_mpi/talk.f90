@@ -2,6 +2,7 @@
 !                                                                      *
       subroutine talk(bra_csf_index, ket_csf_index, radial_integral_order, bra_orbital_1, bra_orbital_2, &
                       ket_orbital_1, ket_orbital_2, integral_type_code, coefficient)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   Store coefficients with magnitude above EPS and their labels in *
 !   the angular buffer. Print a diagnostic row if IBUG1 is nonzero.    *
@@ -37,13 +38,16 @@
 !-----------------------------------------------
 !   Print coefficient if requested
 !
-      if (ibug1 /= 0) write (99, '(2(1x,1i2),4(1x,i2,a2),1x,1i2,1x,1i2,1x,1p,d19.12)') &
+      if (ibug1 /= 0) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '(2(1x,1i2),4(1x,i2,a2),1x,1i2,1x,1i2,1x,1p,d19.12)') &
          bra_csf_index, ket_csf_index, &
          orbital_principal_n(bra_orbital_1), orbital_symmetry_labels(bra_orbital_1), &
          orbital_principal_n(bra_orbital_2), orbital_symmetry_labels(bra_orbital_2), &
          orbital_principal_n(ket_orbital_1), orbital_symmetry_labels(ket_orbital_1), &
          orbital_principal_n(ket_orbital_2), orbital_symmetry_labels(ket_orbital_2), &
          radial_integral_order, integral_type_code, coefficient
+      end if
 !
 !   Increment counter
 !

@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine bessel(orbital_a, orbital_b, ik, iw, k)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -93,10 +94,13 @@
 !   Function found move into position
 !
             keep(ik,iw) = icode
-            if (ldbpr(7)) write (99, '(93x,i2,a2,2x,i2,a2,2x,i2,2x,"(",i2,",",i2,")",2x,"(",i2,",",i2,")")') &
+            if (ldbpr(7)) then
+               call ensure_debug_output()
+               write (angular_debug_unit, '(93x,i2,a2,2x,i2,a2,2x,i2,2x,"(",i2,",",i2,")",2x,"(",i2,",",i2,")")') &
                orbital_principal_n(orbital_a), orbital_symmetry_labels(orbital_a), orbital_principal_n(orbital_b) &
                & , orbital_symmetry_labels(orbital_b), k, &
                ikkp, iwkp, ik, iw
+            end if
             bessj(ik,iw,:radial_point_count) = bessj(ikkp,iwkp,:radial_point_count)
             bessn(ik,iw,:radial_point_count) = bessn(ikkp,iwkp,:radial_point_count)
             return
@@ -105,9 +109,12 @@
 !
 !   Function not found; evaluate it
 !
-      if (ldbpr(7)) write (99, '(93x,i2,a2,2x,i2,a2,2x,i2,2x,"New",6x,"(",i2,",",i2,")")') &
+      if (ldbpr(7)) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '(93x,i2,a2,2x,i2,a2,2x,i2,2x,"New",6x,"(",i2,",",i2,")")') &
          orbital_principal_n(orbital_a), orbital_symmetry_labels(orbital_a), orbital_principal_n(orbital_b), &
          & orbital_symmetry_labels(orbital_b), k, ik, iw
+      end if
 !
       keep(ik,iw) = icode
 !

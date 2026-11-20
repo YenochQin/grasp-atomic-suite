@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine strsum
+      use calculation_file_units, only: summary_output_unit
 !                                                                      *
 !   Generates the first part of  grasp92.sum  (on stream 24).          *
 !                                                                      *
@@ -50,67 +51,68 @@
 !
 !   Write out the basic dimensions of the electron cloud
 !
-      write (24, *)
+      write (summary_output_unit, *)
       call convrt2 (electron_count, record, lenth, "strsum.nelec")
-      write (24, *) "There are "//record(1:lenth)//" electrons in the cloud"
+      write (summary_output_unit, *) "There are "//record(1:lenth)//" electrons in the cloud"
       call convrt2 (csf_count, record, lenth, "strsum.ncf")
-      write (24, *) " in "//record(1:lenth)//" relativistic CSFs"
+      write (summary_output_unit, *) " in "//record(1:lenth)//" relativistic CSFs"
       call convrt2 (orbital_count, record, lenth, "strsum.nw")
-      write (24, *) " based on "//record(1:lenth)//" relativistic subshells."
+      write (summary_output_unit, *) " based on "//record(1:lenth)//" relativistic subshells."
 !
 !   If the CSFs are not treated uniformly, write out an
 !   informative message
 !
       if (lfordr) then
          call convrt2 (iccut, record, lenth, "strsum.icccut")
-         write (24, *) " CSFs 1--"//record(1:lenth)//" constitute"//   &
+         write (summary_output_unit, *) " CSFs 1--"//record(1:lenth)//" constitute"//   &
               " the zero-order space;"
       end if
 !
 !   Write out the nuclear parameters
 !
-      write (24, *)
-      write (24, '("The atomic number is ",1f14.10,";")') nuclear_charge
+      write (summary_output_unit, *)
+      write (summary_output_unit, '("The atomic number is ",1f14.10,";")') nuclear_charge
       if (nuclear_model_parameter_count == 2) then
-         write (24, *) " Fermi nucleus:"
-         write (24, '("  c =",1p,1d19.12," Bohr radii,"/"  a =",1d19.12," Bohr radii;")') &
+         write (summary_output_unit, *) " Fermi nucleus:"
+         write (summary_output_unit, '("  c =",1p,1d19.12," Bohr radii,"/"  a =",1d19.12," Bohr radii;")') &
             nuclear_model_parameters(1), nuclear_model_parameters(2)
          call convrt2 (first_grid_index_beyond_fermi_c, record, lenth, "strsum.nnuc")
-         write (24, *) " there are "//record(1:lenth)//&
+         write (summary_output_unit, *) " there are "//record(1:lenth)//&
             " tabulation points in the nucleus."
       else
-         write (24, *) " point nucleus."
+         write (summary_output_unit, *) " point nucleus."
       end if
 !
 !   Write out the physical effects specifications
 !
-      write (24, *)
-      write (24, '("Speed of light = ",1pd19.12," atomic units.")') speed_of_light_au
+      write (summary_output_unit, *)
+      write (summary_output_unit, '("Speed of light = ",1pd19.12," atomic units.")') speed_of_light_au
 !
 !   Write out the parameters of the radial grid
 !
-      write (24, *)
+      write (summary_output_unit, *)
       if (asymptotic_grid_step == 0.0_real64) then
-         write (24, '("Radial grid: R(I) = RNT*(exp((I-1)*H)-1),"," I = 1, ..., N;"//" RNT  = ",1p,d19.12,&
+         write (summary_output_unit, '("Radial grid: R(I) = RNT*(exp((I-1)*H)-1),"," I = 1, ..., N;"//" RNT  = ",1p,d19.12,&
             &" Bohr radii;"/" H    = ",d19.12," Bohr radii;"/" N    = ",1i4,";")') &
             radial_grid_scale, transformed_grid_step, radial_point_count
       else
-         write (24, '("Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,"," I = 1, ..., N;"//" RNT  = ",1p,d19.12,&
+         write (summary_output_unit, '("Radial grid: ln(R(I)/RNT+1)+(H/HP)*R(I) = (I-1)*H,"," I = 1, ..., N;"//" RNT  = ",1p,&
+            &d19.12,&
             &" Bohr radii;"/" H    = ",d19.12," Bohr radii;"/" HP   = ",d19.12," Bohr radii;"/" N    = ",1i4,";")') &
             radial_grid_scale, transformed_grid_step, asymptotic_grid_step, radial_point_count
       end if
-      write (24, '(" R(1) = ",1p,1d19.12," Bohr radii;"/" R(2) = ",1d19.12," Bohr radii;"/" R(N) = ",1d19.12,&
+      write (summary_output_unit, '(" R(1) = ",1p,1d19.12," Bohr radii;"/" R(2) = ",1d19.12," Bohr radii;"/" R(N) = ",1d19.12,&
          &" Bohr radii.")') radial_grid(1), radial_grid(2), radial_grid(radial_point_count)
 !
 !   Write out the orbital properties
 !
-      write (24, *)
-      write (24, *) "Subshell radial wavefunction summary:"
-      write (24, *)
-      write (24, '(" Subshell",11x,"e",20x,"p0",18x,"gamma",19x,"P(2)",18x,"Q(2)",10x,"MTP")')
-      write (24, *)
+      write (summary_output_unit, *)
+      write (summary_output_unit, *) "Subshell radial wavefunction summary:"
+      write (summary_output_unit, *)
+      write (summary_output_unit, '(" Subshell",11x,"e",20x,"p0",18x,"gamma",19x,"P(2)",18x,"Q(2)",10x,"MTP")')
+      write (summary_output_unit, *)
       do orbital_index = 1, orbital_count
-         write (24, '(3x,1i2,1a2,1x,1p,5(3x,1d19.12),3x,1i3)') &
+         write (summary_output_unit, '(3x,1i2,1a2,1x,1p,5(3x,1d19.12),3x,1i3)') &
             orbital_principal_n(orbital_index), orbital_symmetry_labels(orbital_index), orbital_energy_parameters(orbital_index), &
             & orbital_origin_parameters(orbital_index), orbital_origin_exponents(orbital_index), radial_large_components(2, &
                & orbital_index), &
@@ -120,7 +122,7 @@
 !
 !   Write the list of eigenpair indices
 !
-      write (24,*)
+      write (summary_output_unit,*)
       call engout (hamiltonian_energy_shift,shifted_eigenvalues,iatjpo,iaspar,ivec,nvec,3)
 !
       return

@@ -1,6 +1,9 @@
 !***********************************************************************
 !                                                                      *
       subroutine mcp (symmetry_block_index, is_restart, mpi_rank, mpi_process_count, output_file_prefix, temporary_file_prefix)
+      use mcp_generation_options, only: mcp_temporary_units
+      use calculation_file_units, only: summary_output_unit
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This routine controls the computation  and storage of the values   *
 !   and all indices of the angular coefficients                        *
@@ -146,7 +149,10 @@
 !
 !   Write header to  .dbg  file if appropriate
 !
-      if (ldbpa(2) .or. ldbpa(3)) write (99,'(/"From MCP:")')
+      if (ldbpa(2) .or. ldbpa(3)) then
+         call ensure_debug_output()
+         write (angular_debug_unit,'(/"From MCP:")')
+      end if
 !
 !   JA and JB respectively refer to the initial and final states
 !   in the list of NCF configurations
@@ -208,10 +214,11 @@
                         call settmpgg (symmetry_block_index, 31, temporary_file_prefix)
                         markt = 1
                         do jj = 1, one_electron_coefficient_count-1
-                          write (31) channel_csf_columns(jj,1), channel_matrix_positions(jj,1),       &
+                          write (mcp_temporary_units(31)) channel_csf_columns(jj,1), channel_matrix_positions(jj,1),       &
                                      channel_packed_orbital_labels(jj,1), channel_coefficients(jj,1)
                         end do
-                        write (31) csf_index, matrix_element_position, lab, one_electron_shell_coefficients(1)
+                        write (mcp_temporary_units(31)) csf_index, matrix_element_position, lab, &
+                           one_electron_shell_coefficients(1)
                       end if
                     else
                       channel_csf_columns(one_electron_coefficient_count,1) = csf_index
@@ -220,7 +227,8 @@
                       channel_coefficients(one_electron_coefficient_count,1) = one_electron_shell_coefficients(1)
                     end if
                   else
-                    write (31) csf_index, matrix_element_position, lab, one_electron_shell_coefficients(1)
+                    write (mcp_temporary_units(31)) csf_index, matrix_element_position, lab, &
+                       one_electron_shell_coefficients(1)
                   end if
 ! GG end
                end if
@@ -305,11 +313,12 @@
                         call settmpgg (symmetry_block_index, 32+multipole_rank, temporary_file_prefix)
                         mark(multipole_rank+1) = 1
                         do jj = 1,sort_capacity_per_channel
-                          write (32+multipole_rank) channel_csf_columns(jj,multipole_rank+2), &
+                          write (mcp_temporary_units(32+multipole_rank)) channel_csf_columns(jj,multipole_rank+2), &
                              & channel_matrix_positions(jj,multipole_rank+2),  &
                                        channel_packed_orbital_labels(jj,multipole_rank+2),channel_coefficients(jj,multipole_rank+2)
                         end do
-                        write (32+multipole_rank) csf_index, matrix_element_position, lab, two_electron_angular_coefficient
+                        write (mcp_temporary_units(32+multipole_rank)) csf_index, matrix_element_position, lab, &
+                           two_electron_angular_coefficient
                       end if
                     else
                       channel_csf_columns(two_electron_counts_by_rank(multipole_rank),multipole_rank+2) = csf_index
@@ -320,7 +329,8 @@
                          & two_electron_angular_coefficient
                     end if
                   else
-                    write (32+multipole_rank) csf_index, matrix_element_position, lab, two_electron_angular_coefficient
+                    write (mcp_temporary_units(32+multipole_rank)) csf_index, matrix_element_position, lab, &
+                       two_electron_angular_coefficient
                   end if
 ! GG end
 
@@ -333,7 +343,7 @@
 !   generated; update file 30
 !
             if ((csf_row_index == csf_index) .or. (.not. increment_matrix_position))   &
-               write (30) csf_index, csf_row_index, matrix_element_position
+               write (mcp_temporary_units(30)) csf_index, csf_row_index, matrix_element_position
     4    continue
       if (mod(csf_index,100) == 0) then
          if (csf_index == 1 .or. csf_index == csf_count .or. mod (csf_index,100) == 0) then
@@ -358,19 +368,20 @@
 !   Write out a report for this run
 !
       if (ndef /= 0 .and. mpi_rank == 0) then
-         write (24,*)
-         write (24,*) one_electron_coefficient_count, " T coefficients generated;"
+         write (summary_output_unit,*)
+         write (summary_output_unit,*) one_electron_coefficient_count, " T coefficients generated;"
          do multipole_rank = 0, max_coulomb_multipole_rank
-            write (24,*) two_electron_counts_by_rank(multipole_rank)," V(k=",multipole_rank,") coefficients generated;"
+            write (summary_output_unit,*) two_electron_counts_by_rank(multipole_rank)," V(k=",multipole_rank, &
+               ") coefficients generated;"
          end do
       end if
 !
 !   Set up sparse structure definition arrays in file 30
 !
       stage_start_count = stage_clock()
-      rewind (30)
+      rewind (mcp_temporary_units(30))
       call setsda (outsda, matrix_element_position, ldbpa(4), symmetry_block_index, mpi_rank, mpi_process_count, output_file_prefix)
-      close (30, status = "DELETE")
+      close (mcp_temporary_units(30), status = "DELETE")
       call record_stage("sparse_structure_and_output", symmetry_block_index, stage_start_count, &
          & int(matrix_element_position,int64), storage="disk")
 !
@@ -384,14 +395,14 @@
          call record_stage("sort_and_output", symmetry_block_index, stage_start_count, &
             & int(one_electron_coefficient_count,int64), 31, "memory")
       else
-         rewind (31)
+         rewind (mcp_temporary_units(31))
          call sort (31, (one_electron_coefficient_count), ntgi, ldbpa(2), symmetry_block_index, output_file_prefix)
-         close (31, status = "DELETE")
+         close (mcp_temporary_units(31), status = "DELETE")
          call record_stage("sort_and_output", symmetry_block_index, stage_start_count, &
             & int(one_electron_coefficient_count,int64), 31, "disk")
       end if
       if (ndef /= 0 .and. mpi_rank == 0)                   &
-                       write (24,*) ntgi, " I(ab) integrals;"
+                       write (summary_output_unit,*) ntgi, " I(ab) integrals;"
 ! 2) the V coefficient
       do multipole_rank = 0, max_coulomb_multipole_rank
         stage_start_count = stage_clock()
@@ -401,15 +412,15 @@
          call record_stage("sort_and_output", symmetry_block_index, stage_start_count, &
             & int(two_electron_counts_by_rank(multipole_rank),int64), multipole_rank+32, "memory")
         else
-          rewind (multipole_rank+32)
+          rewind (mcp_temporary_units(multipole_rank+32))
           call sort (multipole_rank+32, (two_electron_counts_by_rank(multipole_rank)), ntgi, ldbpa(3), &
              & symmetry_block_index, output_file_prefix)
-          close (multipole_rank+32, status = "DELETE")
+          close (mcp_temporary_units(multipole_rank+32), status = "DELETE")
           call record_stage("sort_and_output", symmetry_block_index, stage_start_count, &
              & int(two_electron_counts_by_rank(multipole_rank),int64), multipole_rank+32, "disk")
         end if
           if (ndef /= 0 .and. mpi_rank == 0)               &
-            write (24,*) " k = ", multipole_rank, ": ", ntgi, " Slater integrals;"
+            write (summary_output_unit,*) " k = ", multipole_rank, ": ", ntgi, " Slater integrals;"
       end do
       call dalloc (mark, "MARK","MCP")
       call dalloc (channel_coefficients,"TCOEFF","MCP")

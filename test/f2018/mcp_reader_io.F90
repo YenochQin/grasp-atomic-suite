@@ -18,11 +18,12 @@ program mcp_reader_io
 #else
     use mpi_s, only: mpi_process_count, mpi_rank
 #endif
+    use mcp_file_metadata, only: mcp_input_units
     implicit none (type, external)
     character(40) :: scenario, prefix
     character(80) :: filename
     character(8) :: labels(1)
-    integer :: unit, status, ncore, rank_in_file, packed_label, block_id, coefficient_count
+    integer :: fixture_output_unit, channel_suffix, status, ncore, rank_in_file, packed_label, block_id, coefficient_count
     logical :: corrupt, omit
 #ifdef MCP_MPI
     call MPI_Init(status)
@@ -39,74 +40,74 @@ program mcp_reader_io
 #endif
     write(prefix, "(A,I0)") "mcp-rank-", mpi_rank
     packed_label = orbital_index_radix+1
-    do unit=30,32
-        write(filename, "(A,A,I0)") trim(prefix), ".", unit
-        if (corrupt .and. scenario == "missing" .and. unit == 30) cycle
-        open(unit, file=trim(filename), form="unformatted", status="replace")
+    do channel_suffix=30,32
+        write(filename, "(A,A,I0)") trim(prefix), ".", channel_suffix
+        if (corrupt .and. scenario == "missing" .and. channel_suffix == 30) cycle
+        open(newunit=fixture_output_unit, file=trim(filename), form="unformatted", status="replace")
         omit = .false.
-        if (unit == 30) then
+        if (channel_suffix == 30) then
             omit = corrupt .and. scenario == "global-header"
             if (.not.omit) then
                 if (corrupt .and. scenario=="short-global-header") then
-                    write(unit) 0
+                    write(fixture_output_unit) 0
                 else
-                    write(unit) 0, 1, 0
+                    write(fixture_output_unit) 0, 1, 0
                 end if
             end if
             omit = omit .or. (corrupt .and. scenario == "block-sizes")
-            if (.not.omit) write(unit) mpi_process_count
+            if (.not.omit) write(fixture_output_unit) mpi_process_count
             omit = omit .or. (corrupt .and. scenario == "block-labels")
-            if (.not.omit) write(unit) "  0+    "
+            if (.not.omit) write(fixture_output_unit) "  0+    "
         end if
-        omit = omit .or. (corrupt .and. unit==31 .and. scenario=="channel-header")
+        omit = omit .or. (corrupt .and. channel_suffix==31 .and. scenario=="channel-header")
         if (.not.omit) then
             rank_in_file = mpi_rank
-            if (corrupt .and. unit==31 .and. scenario=="rank") rank_in_file=mpi_rank+1
-            if (corrupt .and. unit==31 .and. scenario=="magic") then
-                write(unit) "BAD", 1, rank_in_file, mpi_process_count
+            if (corrupt .and. channel_suffix==31 .and. scenario=="rank") rank_in_file=mpi_rank+1
+            if (corrupt .and. channel_suffix==31 .and. scenario=="magic") then
+                write(fixture_output_unit) "BAD", 1, rank_in_file, mpi_process_count
             else
-                write(unit) "MCP", 1, rank_in_file, mpi_process_count
+                write(fixture_output_unit) "MCP", 1, rank_in_file, mpi_process_count
             end if
         end if
-        omit = omit .or. (corrupt .and. unit==31 .and. scenario=="basis")
-        if (.not.omit) write(unit) 2, mpi_process_count, 1
-        omit = omit .or. (corrupt .and. unit==31 .and. scenario=="flags")
-        if (.not.omit) write(unit) .false., 1, .false.
+        omit = omit .or. (corrupt .and. channel_suffix==31 .and. scenario=="basis")
+        if (.not.omit) write(fixture_output_unit) 2, mpi_process_count, 1
+        omit = omit .or. (corrupt .and. channel_suffix==31 .and. scenario=="flags")
+        if (.not.omit) write(fixture_output_unit) .false., 1, .false.
         if (.not.omit) then
             block_id = 1
-            if (corrupt .and. ((unit==30 .and. scenario=="sparse-block-id") .or. &
-                              (unit==31 .and. scenario=="block-id"))) block_id = 2
-            if (unit==30) then
-                write(unit) "MCP", block_id, mpi_process_count
-                write(unit) 1
-                write(unit) 1, mpi_rank+1
+            if (corrupt .and. ((channel_suffix==30 .and. scenario=="sparse-block-id") .or. &
+                              (channel_suffix==31 .and. scenario=="block-id"))) block_id = 2
+            if (channel_suffix==30) then
+                write(fixture_output_unit) "MCP", block_id, mpi_process_count
+                write(fixture_output_unit) 1
+                write(fixture_output_unit) 1, mpi_rank+1
             else
                 coefficient_count = 0
-                if (unit==31 .and. scenario/="empty") coefficient_count = 1
-                write(unit) "MCP", block_id, mpi_process_count, coefficient_count
-                if (unit==31 .and. scenario/="empty") then
+                if (channel_suffix==31 .and. scenario/="empty") coefficient_count = 1
+                write(fixture_output_unit) "MCP", block_id, mpi_process_count, coefficient_count
+                if (channel_suffix==31 .and. scenario/="empty") then
                     omit = corrupt .and. scenario=="label"
                     if (.not.omit) then
                         if (corrupt .and. scenario=="short-label") then
-                            write(unit) packed_label
+                            write(fixture_output_unit) packed_label
                         else
-                            write(unit) packed_label, 1
+                            write(fixture_output_unit) packed_label, 1
                         end if
                     end if
                     omit = omit .or. (corrupt .and. scenario=="payload")
                     if (.not.omit) then
                         if (corrupt .and. scenario=="short-payload") then
-                            write(unit) mpi_rank+1
+                            write(fixture_output_unit) mpi_rank+1
                         else
-                            write(unit) mpi_rank+1, 1, 0.25_real64
+                            write(fixture_output_unit) mpi_rank+1, 1, 0.25_real64
                         end if
                     end if
                     omit = omit .or. (corrupt .and. scenario=="sentinel")
                 end if
-                if (.not.omit) write(unit) 0, 0
+                if (.not.omit) write(fixture_output_unit) 0, 0
             end if
         end if
-        close(unit)
+        close(fixture_output_unit)
     end do
     call setmcp(ncore, 1, labels, trim(prefix))
 #ifndef MCP_MEM
@@ -138,8 +139,8 @@ program mcp_reader_io
         if (ndcof/=1 .or. da(1)/=0.125_real64) error stop "Contracted coefficient"
     end if
 #endif
-    do unit=30,32
-        close(unit, status="delete")
+    do channel_suffix=30,32
+        close(mcp_input_units(channel_suffix), status="delete")
     end do
 #ifdef MCP_MPI
     call MPI_Barrier(MPI_COMM_WORLD, status)

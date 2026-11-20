@@ -19,7 +19,7 @@ program csf_descriptor_verify
    type(descriptor_source) :: source
    integer(int8), allocatable :: descriptor_occupations(:,:), descriptor_quantum_numbers(:,:,:), descriptor_couplings(:,:)
    integer :: core_count, block_index, shell_index, csf_index, quantum_channel
-   integer :: argument_length
+   integer :: argument_length, csf_input_unit
    integer(int64) :: verified_values
    character(len=:), allocatable :: binary_filename, text_filename
    character(len=8) :: block_labels(maximum_blocks)
@@ -33,7 +33,7 @@ program csf_descriptor_verify
    call get_command_argument(2, value=text_filename)
    standard_error_unit = error_unit
    call open_descriptor_source(source, binary_filename, maximum_blocks)
-   call cslh(text_filename, core_count, maximum_blocks, block_labels)
+   call cslh(text_filename, core_count, maximum_blocks, block_labels, csf_input_unit)
    call require_equal(core_count == source%core_count, "core count")
    call require_equal(orbital_count == source%orbital_count, "orbital count")
    call require_equal(current_csf_count == source%total_csf_count, "total CSF count")
@@ -56,7 +56,7 @@ program csf_descriptor_verify
       allocate(descriptor_occupations(orbital_capacity,current_csf_count), &
                descriptor_quantum_numbers(orbital_capacity,3,current_csf_count), &
                descriptor_couplings(orbital_capacity,current_csf_count))
-      call lodcsh2(21, core_count, block_index)
+      call lodcsh2(csf_input_unit, core_count, block_index)
       call read_descriptor_block(source, block_index, descriptor_occupations, descriptor_quantum_numbers, &
                                  descriptor_couplings)
       do csf_index = 1, current_csf_count
@@ -78,7 +78,7 @@ program csf_descriptor_verify
       nullify(occupations, subshell_quantum_numbers, couplings)
       deallocate(descriptor_occupations, descriptor_quantum_numbers, descriptor_couplings)
    end do
-   close(21)
+   close(csf_input_unit)
    call close_descriptor_source(source)
    deallocate(block_lengths)
    nullify(block_lengths)

@@ -5,6 +5,7 @@
 !
       subroutine matml4(c, a, b, ncrow, nccol, narow, nacol, nbrow, nbcol, &
          itrnsp)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !
 ! MULTIPLY A AND B TO GIVE C
 !
@@ -49,13 +50,13 @@
 !
       ntest = 0
       if (ntest /= 0) then
-         write (6, *)
-         write (6, *) " A AND B MATRIX FROM MATML4 "
-         write (6, *)
+         write (output_unit, *)
+         write (output_unit, *) " A AND B MATRIX FROM MATML4 "
+         write (output_unit, *)
          call wrtmat (a, narow, nacol, narow, nacol)
          call wrtmat (b, nbrow, nbcol, nbrow, nbcol)
-         write (6, *) " NCROW NCCOL NAROW NACOL NBROW NBCOL "
-         write (6, "(6I6)") ncrow, nccol, narow, nacol, nbrow, nbcol
+         write (output_unit, *) " NCROW NCCOL NAROW NACOL NBROW NBCOL "
+         write (output_unit, "(6I6)") ncrow, nccol, narow, nacol, nbrow, nbcol
       end if
 !
       call setvec (c, 0.0_real64, ncrow*nccol)
@@ -92,9 +93,9 @@
 !
 !
       if (ntest /= 0) then
-         write (6, *)
-         write (6, *) " C MATRIX FROM MATML4 "
-         write (6, *)
+         write (output_unit, *)
+         write (output_unit, *) " C MATRIX FROM MATML4 "
+         write (output_unit, *)
          call wrtmat (c, ncrow, nccol, ncrow, nccol)
       end if
 !

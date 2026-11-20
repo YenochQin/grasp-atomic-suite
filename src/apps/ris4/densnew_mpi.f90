@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine densnew_mpi(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
+      use calculation_file_units, only: one_body_cache_unit
 !                                                                      *
 !   MPI version of DENSNEW. Each rank handles a strided subset of the  *
 !   outer IC loop and can optionally write a per-rank angular-data      *
@@ -113,20 +114,20 @@
                            has_contr = .true.
                         end if
                      end do
-                     if (doit==1) write(50) csf_index,ir,ncontr
+                     if (doit==1) write(one_body_cache_unit) csf_index,ir,ncontr
                      if (doit==1) then
                         do i = 1,ncontr
                            lab = ia_s(i)*(orbital_label_radix + 1)
-                           write(50) tshell_s(i),lab
+                           write(one_body_cache_unit) tshell_s(i),lab
                         end do
                      end if
                   else
                      if (abs (shell_coefficients(1)) > cutoff) then
                         if (orbital_kappa(orbital_index)==orbital_kappa(ket_orbital_index)) then
-                           if (doit==1) write(50) csf_index,ir,1
+                           if (doit==1) write(one_body_cache_unit) csf_index,ir,1
                            if (doit==1) then
                               lab = orbital_index*orbital_label_radix + ket_orbital_index
-                              write(50) shell_coefficients(1),lab
+                              write(one_body_cache_unit) shell_coefficients(1),lab
                            end if
                            elemnt1 = elemnt1 + dint1(orbital_index,ket_orbital_index)*shell_coefficients(1)
                            elemnt2 = elemnt2 + dint2(orbital_index,ket_orbital_index)*shell_coefficients(1)

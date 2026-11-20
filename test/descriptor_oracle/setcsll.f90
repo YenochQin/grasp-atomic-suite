@@ -5,6 +5,7 @@ module setcsll_i
 contains
 !***********************************************************************
       subroutine setcsll(nunit, name, nblkin, nblock, ncfblk, ncftot, idblk)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !
 !  Open, read name file to get nblock, ncfblk(), idblk(), ncftot
 !
@@ -19,7 +20,7 @@ contains
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      integer, intent(in) :: nunit
+      integer, intent(out) :: nunit
       integer, intent(in) :: nblkin
       integer, intent(out) :: nblock
       integer, intent(out) :: ncftot
@@ -39,7 +40,7 @@ contains
 
       inquire(file=name, exist=found)
       if (.not.found) then
-         write (6, *) name(1:len_trim(name)), " does not exist"
+         write (output_unit, *) name(1:len_trim(name)), " does not exist"
          stop
       end if
 
@@ -47,7 +48,7 @@ contains
 
       call openfl (nunit, name, "FORMATTED", "OLD", ierr)
       if (ierr == 1) then
-         write (6, *) "Error when opening ", name(1:len_trim(name))
+         write (output_unit, *) "Error when opening ", name(1:len_trim(name))
          stop
       end if
 
@@ -55,7 +56,7 @@ contains
 
       read (nunit, "(1A15)", iostat=ios) str
       if (ios/=0 .or. str/="Core subshells:") then
-         write (6, *) "Not a Configuration Symmetry List File;"
+         write (output_unit, *) "Not a Configuration Symmetry List File;"
          close(nunit)
          stop
       end if
@@ -77,10 +78,10 @@ contains
          if (ch==" *" .or. ios/=0) then
             !.. a new block has been found
             nblock = nblock + 1
-            write (6, *) "Block ", nblock, ",  ncf = ", ncsf
+            write (output_unit, *) "Block ", nblock, ",  ncf = ", ncsf
             if (nblock > nblkin) then
-               write (6, *) "setcsll: Too many blocks(", nblock, ")"
-               write (6, *) "Maximum allowed is ", nblkin
+               write (output_unit, *) "setcsll: Too many blocks(", nblock, ")"
+               write (output_unit, *) "Maximum allowed is ", nblkin
                stop
             end if
             i = len_trim(line3)

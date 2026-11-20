@@ -3,6 +3,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine frmrwf(matched_orbital_indices, matched_subshell_count, file_path)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This subroutine loads  radial wavefunctions from the  .rwf  file   *
 !   and performs some related setup.                                   *
@@ -31,6 +32,7 @@
       use file_open, only: openfl
       use radial_orbital_interpolation, only: intrpq
       implicit none (type, external)
+      integer :: wavefunction_input_unit
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -52,30 +54,33 @@
       !FORM = 'UNFORMATTED'
       !STATUS = 'OLD'
 
-      call openfl (23, file_path, "UNFORMATTED", "OLD", open_status)
+      call openfl (wavefunction_input_unit, file_path, "UNFORMATTED", "OLD", open_status)
       if (open_status == 1) then
          write (stderr_unit, *) 'Error openning file "', file_path(1:len_trim(file_path)), &
             '"'
-         close(23)
+         close(wavefunction_input_unit)
          stop
       end if
 !
 !   Check the file; if not as expected, try again
 !
-      read (23, iostat=io_status) radial_file_signature
+      read (wavefunction_input_unit, iostat=io_status) radial_file_signature
       if (io_status/=0 .or. radial_file_signature/="G92RWF") then
          write (stderr_unit, *) "This is not a Radial WaveFunction File;"
-         close(23)
+         close(wavefunction_input_unit)
          stop
       end if
 !
 !   Read orbital information from Read Orbitals File; write summary
 !   to  .dbg  file if option set
 !
-      if (ldbpr(3)) write (99, '(/,"From SUBROUTINE FRMRWF:"/," Orbital",8x,"Eigenvalue",19x,"Norm")')
+      if (ldbpr(3)) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '(/,"From SUBROUTINE FRMRWF:"/," Orbital",8x,"Eigenvalue",19x,"Norm")')
+      end if
     2 continue
       found = .false.
-      read (23, iostat=io_status) npy, naky, ey, my
+      read (wavefunction_input_unit, iostat=io_status) npy, naky, ey, my
       if (io_status == 0) then
          do j = 1, matched_subshell_count
             loc = matched_orbital_indices(j)
@@ -86,12 +91,15 @@
             call alloc (pa, my, "PA", "FRMFRW")
             call alloc (qa, my, "QA", "FRMFRW")
             call alloc (ra, my, "RA", "FRMFRW")
-            read (23) orbital_origin_parameters(loc), (pa(i),i=1,my), (qa(i),i=1,my)
-            read (23) (ra(i),i=1,my)
+            read (wavefunction_input_unit) orbital_origin_parameters(loc), (pa(i),i=1,my), (qa(i),i=1,my)
+            read (wavefunction_input_unit) (ra(i),i=1,my)
             call intrpq (pa, qa, my, ra, loc, dnorm)
-            if (ldbpr(3)) write (99, '(2x,i2,a2,4x,1p,1d22.15,4x,1d22.15)') &
+            if (ldbpr(3)) then
+               call ensure_debug_output()
+               write (angular_debug_unit, '(2x,i2,a2,4x,1p,1d22.15,4x,1d22.15)') &
                orbital_principal_n(loc), orbital_symmetry_labels(loc), &
                & orbital_energy_parameters(loc), dnorm
+            end if
             call dalloc (pa, "PA", "FRMFRW")
             call dalloc (qa, "QA", "FRMFRW")
             call dalloc (ra, "RA", "FRMFRW")
@@ -101,14 +109,17 @@
             goto 2
          end do
          if (.not.found) then
-            read (23)
-            read (23)
+            read (wavefunction_input_unit)
+            read (wavefunction_input_unit)
             goto 2
          end if
       end if
-      if (ldbpr(3)) write (99, *) " orbitals renormalised;"
+      if (ldbpr(3)) then
+         call ensure_debug_output()
+         write (angular_debug_unit, *) " orbitals renormalised;"
+      end if
 !
-      close(23)
+      close(wavefunction_input_unit)
 !
       return
 !

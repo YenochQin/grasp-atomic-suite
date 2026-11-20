@@ -1,6 +1,7 @@
 !***********************************************************************
 !
       subroutine getmixblock(state_name, ci_input_mode)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !
 !    Reads mixing coefficient file from block-structured format
 !
@@ -30,6 +31,7 @@
 !-----------------------------------------------
       use file_open, only: openfl
       implicit none (type, external)
+      integer :: mixing_input_unit
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -50,7 +52,7 @@
       form = "UNFORMATTED"
       status = "OLD"
 !
-      call openfl (25, file_path, form, status, open_status)
+      call openfl (mixing_input_unit, file_path, form, status, open_status)
       if (open_status == 1) then
          write (stderr_unit, *) "Error when opening", file_path
          stop
@@ -58,14 +60,14 @@
 !
 !   Check the header of the file; if not as expected, try again
 !
-      read (25, iostat=io_status) mixing_file_signature
+      read (mixing_input_unit, iostat=io_status) mixing_file_signature
       if (io_status/=0 .or. mixing_file_signature/="G92MIX") then
          write (stderr_unit, *) "Not a GRASP92 MIXing Coefficients File;"
-         close(25)
+         close(mixing_input_unit)
          stop
       end if
 
-      read (25) electron_count, total_csf_count, orbital_count, nvectot, vector_size, nblock
+      read (mixing_input_unit) electron_count, total_csf_count, orbital_count, nvectot, vector_size, nblock
       write (*, *) "   nelec  = ", electron_count
       write (*, *) "   ncftot = ", total_csf_count
       write (*, *) "   nw     = ", orbital_count
@@ -107,18 +109,18 @@
       write (*, *) "  block     ncf     nev    2j+1  parity"
       do jb = 1, nblock
 
-         read (25) nb, ncfblk, nevblk, iatjp, iaspa
+         read (mixing_input_unit) nb, ncfblk, nevblk, iatjp, iaspa
          write (*, "(5I8)") nb, ncfblk, nevblk, iatjp, iaspa
          if (jb /= nb) stop "jb .NE. nb"
 
          if (nevblk > 0) then
 
-            read (25) (ivec(nvecpat + i),i=1,nevblk)
+            read (mixing_input_unit) (ivec(nvecpat + i),i=1,nevblk)
                ! ivec(i)   = ivec(i) + ncfpat ! serial # of the state
             iatjpo(nvecpat+1:nevblk+nvecpat) = iatjp
             iaspar(nvecpat+1:nevblk+nvecpat) = iaspa
 
-            read (25) hamiltonian_energy_shift, (shifted_eigenvalues(nvecpat+i),i=1,nevblk)
+            read (mixing_input_unit) hamiltonian_energy_shift, (shifted_eigenvalues(nvecpat+i),i=1,nevblk)
 
 !           ...Construct the true energy by adding up the average
             shifted_eigenvalues(nvecpat+1:nevblk+nvecpat) = shifted_eigenvalues(nvecpat+1:nevblk+nvecpat) + &
@@ -127,7 +129,7 @@
             eavsum = eavsum + hamiltonian_energy_shift*ncfblk
             neavsum = neavsum + ncfblk
 
-            read (25) ((csf_mixing_coefficients(nvecsizpat+ncfpat+i+(j-1)*total_csf_count),i=1,ncfblk),j=1,&
+            read (mixing_input_unit) ((csf_mixing_coefficients(nvecsizpat+ncfpat+i+(j-1)*total_csf_count),i=1,ncfblk),j=1,&
                nevblk)
          end if
 
@@ -143,13 +145,13 @@
 
       hamiltonian_energy_shift = eavsum/neavsum
 
-      if (total_csf_count /= neavsum) write (6, *) &
+      if (total_csf_count /= neavsum) write (output_unit, *) &
          "Not all blocks are diagonalized --- Average E ", "not correct"
 
 !     ...Substrct the overal average energy
       shifted_eigenvalues(:nvectot) = shifted_eigenvalues(:nvectot) - hamiltonian_energy_shift
 
-      close(25)
+      close(mixing_input_unit)
 
       csf_count = total_csf_count
       nvec = nvectot

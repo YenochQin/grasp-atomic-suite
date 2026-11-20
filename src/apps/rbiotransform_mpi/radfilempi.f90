@@ -21,6 +21,7 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       implicit none (type, external)
+      integer :: wavefunction_output_unit
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -32,32 +33,32 @@
 !-----------------------------------------------
 !
       j = index(name(1)," ")
-      open(unit=30, file=name(1)(1:j-1)//".bw", form="UNFORMATTED", status=&
+      open(newunit=wavefunction_output_unit, file=name(1)(1:j-1)//".bw", form="UNFORMATTED", status=&
          "UNKNOWN", position="asis")
 
-      write (30) "G92RWF"
+      write (wavefunction_output_unit) "G92RWF"
       write (*, *) "NWII", nwii
       do k = 1, nwii
-         write (30) npii(k), nakii(k), eii(k), mfii(k)
-         write (30) pzii(k), (pfii(i,k),i=1,mfii(k)), (qfii(i,k),i=1,mfii(k))
-         write (30) (radial_grid(i),i=1,mfii(k))
+         write (wavefunction_output_unit) npii(k), nakii(k), eii(k), mfii(k)
+         write (wavefunction_output_unit) pzii(k), (pfii(i,k),i=1,mfii(k)), (qfii(i,k),i=1,mfii(k))
+         write (wavefunction_output_unit) (radial_grid(i),i=1,mfii(k))
       end do
 
-      close(30)
+      close(wavefunction_output_unit)
 
       j = index(name(2)," ")
-      open(unit=30, file=name(2)(1:j-1)//".bw", form="UNFORMATTED", status=&
+      open(newunit=wavefunction_output_unit, file=name(2)(1:j-1)//".bw", form="UNFORMATTED", status=&
          "UNKNOWN", position="asis")
 
-      write (30) "G92RWF"
+      write (wavefunction_output_unit) "G92RWF"
       write (*, *) "NWFF", nwff
       do k = 1, nwff
-         write (30) npff(k), nakff(k), eff(k), mfff(k)
-         write (30) pzff(k),(pfff(i,k),i=1,mfff(k)),(qfff(i,k),i=1,mfff(k))
-         write (30) (radial_grid(i),i=1,mfff(k))
+         write (wavefunction_output_unit) npff(k), nakff(k), eff(k), mfff(k)
+         write (wavefunction_output_unit) pzff(k),(pfff(i,k),i=1,mfff(k)),(qfff(i,k),i=1,mfff(k))
+         write (wavefunction_output_unit) (radial_grid(i),i=1,mfff(k))
       end do
 
-      close(30)
+      close(wavefunction_output_unit)
 
       return
       end subroutine radfile

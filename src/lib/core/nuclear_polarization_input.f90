@@ -1,17 +1,25 @@
 ! Read and validate the optional nuclear-polarization namelist for the selected isotope.
 module nuclear_polarization_input
+    ! Module dependencies
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use nuclear_polarization_state, only: npol_config, npol_model
     implicit none (type, external)
+
+    ! Module interface
     private
     public :: npol_read_config, npol_validate_config
 contains
     subroutine npol_read_config(config_path, config, status, message)
+        ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
+
+        ! Arguments
         character(*), intent(in) :: config_path
         type(npol_config), intent(out) :: config
         integer, intent(out) :: status
         character(*), intent(out) :: message
+
+        ! Local declarations
         integer :: schema_version, isotope_z, isotope_a, input_unit, io_status, input_size_bytes
         integer :: source_index
         logical :: enabled, use_e1, use_e2, file_exists
@@ -120,9 +128,12 @@ contains
 
     ! Require exactly one namelist group, accounting for quotes and comments.
     subroutine check_envelope(input_contents, status, message)
+        ! Arguments
         character(*), intent(in) :: input_contents
         integer, intent(out) :: status
         character(*), intent(out) :: message
+
+        ! Local declarations
         character(len(input_contents)) :: normalized_contents
         character :: open_quote, current_character
         integer :: character_index, contents_length, group_end_index, character_code
@@ -155,9 +166,9 @@ contains
             else
                 character_code = iachar(current_character)
                 if (character_code == 9 .or. character_code == 10 .or. character_code == 13) &
-                   & normalized_contents(character_index:character_index) = " "
+                    & normalized_contents(character_index:character_index) = " "
                 if (character_code >= iachar("A") .and. character_code <= iachar("Z")) &
-                   & normalized_contents(character_index:character_index) = achar(character_code+32)
+                    & normalized_contents(character_index:character_index) = achar(character_code+32)
                 if (current_character == "/" .and. group_end_index == 0) group_end_index = character_index
             end if
             character_index = character_index+1
@@ -175,7 +186,10 @@ contains
 
     ! Check active channel parameters, units, and isotope identity.
     subroutine npol_validate_config(config, nuclear_charge, status, message)
+        ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
+
+        ! Arguments
         type(npol_config), intent(in) :: config
         real(real64), intent(in) :: nuclear_charge
         integer, intent(out) :: status

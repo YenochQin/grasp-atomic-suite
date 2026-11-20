@@ -2,6 +2,7 @@
 !                                                                      *
 !cjb  myid, nprocs = NOT args
       subroutine setmcpmpi(core_subshell_count, block_labels, filehead, descriptors)
+      use mcp_generation_options, only: mcp_output_units
 !                                                                      *
 ! Set interaction options and write the MPI MCP file headers.          *
 !                                                                      *
@@ -60,12 +61,12 @@
       call mpi_bcast (use_first_order_restriction,1,mpi_logical,0,mpi_comm_world,mpi_error_code)
 
       do k = 30, 32+max_coulomb_multipole_rank
-         write (k) electron_count,csf_count,orbital_count
-         write (k) diagonal_only,iccut(1),use_first_order_restriction
+         write (mcp_output_units(k)) electron_count,csf_count,orbital_count
+         write (mcp_output_units(k)) diagonal_only,iccut(1),use_first_order_restriction
       end do
 
       do k = 30, 32+max_coulomb_multipole_rank
-         close (k)
+         close (mcp_output_units(k))
       end do
 
       return

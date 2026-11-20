@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      subroutine angdata(name,avail,whichone,status)
+      subroutine angdata(name,avail,whichone,status,cache_unit)
 !                                                                      *
 !   Checks if the angular files name.IOB (one-body) or                 *
 !   name.ITB (Two-body) are available                                  *
@@ -25,22 +25,22 @@
       logical, intent(out) :: avail
       integer, intent(in)  :: whichone
       integer, intent(out) :: status
+      integer, intent(out) :: cache_unit
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       logical :: found
-      integer :: nf, istat, iword, close_status
+      integer :: cache_probe_unit, istat, iword, close_status
       character(len=28) :: filename
       character :: probe
 !-----------------------------------------------
 !
       avail = .false.
+      cache_unit = -1
       status = 0
       if (whichone==1) then
-          nf = 50
           filename = trim(name)//".IOB"
       else if (whichone==2) then
-          nf = 51
           filename = trim(name)//".ITB"
       else
          status = 1
@@ -58,24 +58,24 @@
       ! positioning failures on an otherwise usable cache are fatal to callers.
       ! Check raw readability separately from sequential-record decoding so an
       ! OS read error is not mistaken for an incomplete record (e.g. a directory).
-      open(unit=nf,file=trim(filename),status="OLD",action="READ", &
+      open(newunit=cache_probe_unit,file=trim(filename),status="OLD",action="READ", &
            access="STREAM",form="UNFORMATTED",iostat=status)
       if (status /= 0) return
-      read(nf,iostat=status) probe
+      read(cache_probe_unit,iostat=status) probe
       if (status == iostat_end) status = 0
-      close(unit=nf,iostat=close_status)
+      close(unit=cache_probe_unit,iostat=close_status)
       if (close_status /= 0 .and. status == 0) status = close_status
       if (status /= 0) return
-      open(unit=nf,file=trim(filename),status="OLD",action="READ", &
+      open(newunit=cache_unit,file=trim(filename),status="OLD",action="READ", &
            position="APPEND",form="UNFORMATTED",iostat=status)
       if (status /= 0) return
-      backspace(unit=nf,iostat=istat)
+      backspace(unit=cache_unit,iostat=istat)
       if (istat == 0) then
-        read(nf,iostat=istat) iword
+        read(cache_unit,iostat=istat) iword
         if (istat == 0) avail = iword == -1
       end if
       if (avail) then
-        rewind(unit=nf,iostat=status)
+        rewind(unit=cache_unit,iostat=status)
         if (status == 0) then
           if (whichone==1) print *, " One-body angular file available"
           if (whichone==2) print *, " Two-body angular file available"
@@ -83,9 +83,10 @@
         end if
       end if
       avail = .false.
-      close(unit=nf,iostat=close_status)
+      close(unit=cache_unit,iostat=close_status)
       if (close_status /= 0 .and. status == 0) status = close_status
       if (status /= 0) return
+      cache_unit = -1
       print *, " Angular file incomplete: ", trim(filename), "; iostat=", istat
       return
       end subroutine angdata

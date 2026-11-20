@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       real(real64) function vinti (first_orbital, second_orbital)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   The value of this  function is the one-electron integral V (J,K)   *
 !   for  orbitals  J, K. The analytical expression for this quantity   *
@@ -73,9 +74,12 @@
 !
 !   Debug printout
 !
-      if (ldbpr(6)) write (99, '(/,"VINTI: V (",1i2,1a2,",",1i2,1a2,") = ",1p,d19.12)') &
+      if (ldbpr(6)) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '(/,"VINTI: V (",1i2,1a2,",",1i2,1a2,") = ",1p,d19.12)') &
          orbital_principal_n(first_orbital), orbital_symmetry_labels(first_orbital), orbital_principal_n(second_orbital), &
          & orbital_symmetry_labels(second_orbital), vinti
+      end if
 !
       return
 !

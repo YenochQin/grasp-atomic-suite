@@ -2,6 +2,7 @@
 !                                                                      *
       subroutine setham(symmetry_block_index, mpi_rank, mpi_process_count, total_contribution_count, &
          & total_secondary_contribution_count)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Modified by G. Gaigalas               Last revision: 07 Sep 2021   *
 !      Spin-angular coefficiants have been put on memory               *
@@ -255,8 +256,8 @@
             loc = indx(i)
             lod = loc   !  (Convert type)
             if (lod > stored_matrix_element_count) then
-               write (6, *) "  Error in computing 1-e contribution"
-               write (6, *) "  LOC = ", loc , "  NELMNT = ", stored_matrix_element_count
+               write (output_unit, *) "  Error in computing 1-e contribution"
+               write (output_unit, *) "  LOC = ", loc , "  NELMNT = ", stored_matrix_element_count
                stop
             end if
             hamiltonian_values(loc) = hamiltonian_values(loc) + tegral*coeff(i)
@@ -306,8 +307,8 @@
                loc = indx(i)
                lod = loc
                if (lod > stored_matrix_element_count) then   !! NELMENT (from Hmat_C) is INT*8
-                  write (6, *) "  Error in computing 2-e contribution"
-                  write (6, *) "  LOC= ", loc , "  NELMNT = ", stored_matrix_element_count
+                  write (output_unit, *) "  Error in computing 2-e contribution"
+                  write (output_unit, *) "  LOC= ", loc , "  NELMNT = ", stored_matrix_element_count
                   stop
                end if
                hamiltonian_values(loc) = hamiltonian_values(loc) + tegral*coeff(i)

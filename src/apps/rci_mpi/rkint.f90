@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       real(real64) function rkint (recoupling_coefficient, orbital_a, orbital_c, rbd, orbital_b, orbital_d, multipole_rank, iw)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This routine evaluates the transverse interaction integrals.  If   *
 !   IW = 0, it calulates the U(r1,r2) integral; otherwise, it calcu-   *
@@ -79,11 +80,14 @@
 !
 !   Debug printout if option set
 !
-      if (ldbpr(11)) write (99, '("_ (",1i2,")"/,"R     (",1i2,1a2,",",1i2,1a2,"|",1i2,1a2,",",1i2,1a2,";",1i2,&
+      if (ldbpr(11)) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '("_ (",1i2,")"/,"R     (",1i2,1a2,",",1i2,1a2,"|",1i2,1a2,",",1i2,1a2,";",1i2,&
          &") = ",1p,d19.12)') multipole_rank, orbital_principal_n(orbital_a), orbital_symmetry_labels(orbital_a), &
             & orbital_principal_n(orbital_c), &
          & orbital_symmetry_labels(orbital_c), orbital_principal_n(orbital_b)&
          , orbital_symmetry_labels(orbital_b), orbital_principal_n(orbital_d), orbital_symmetry_labels(orbital_d), iw, result
+      end if
 !
       return
 !

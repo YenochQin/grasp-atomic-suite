@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine printals (inum_ii,inum_ff,asfa,asfb,i,j,omega,factor)
+      use calculation_file_units, only: lsj_transition_output_unit
       use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !   This  routine  prints the basic oscillator strength  information   *
@@ -124,73 +125,75 @@
          if((abs(ac)>=cutoff) .and. (abs(ab)>=cutoff)) then
             im = "E"
             if (-1.0e9_real64 < eng .and. eng < -1.0e-2_real64) then
-               write (32,"(A1)")  ""
-               write (32,"(A1)")  ""
+               write (lsj_transition_output_unit,"(A1)")  ""
+               write (lsj_transition_output_unit,"(A1)")  ""
                if(dabs(rlev_ener_1(inum_ii)) < 9999.5_real32) then
-                  write(32,"(I4,F14.8,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.8,2X,A)")                      &
                   iatjpoii(i)-1,rlev_ener_1(inum_ii),              &
                   trim(string_csf1(inum_ii))
                else if(dabs(rlev_ener_1(inum_ii)) < 99999.5_real32) then
-                   write(32,"(I4,F14.7,2X,A)")                     &
+                   write(lsj_transition_output_unit,"(I4,F14.7,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                else
-                   write(32,"(I4,F14.6,2X,A)")                     &
+                   write(lsj_transition_output_unit,"(I4,F14.6,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                end if
                if(dabs(rlev_ener_2(inum_ff)) < 9999.5_real32) then
-                  write(32,"(I4,F14.8,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.8,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                else if(dabs(rlev_ener_2(inum_ff)) < 99999.5_real32) then
-                  write(32,"(I4,F14.7,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.7,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                else
-                  write(32,"(I4,F14.6,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.6,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                end if
-               write (32,'(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/1x,a1,i1,2x,"S = ",1pd12.5,3x,&
+               write (lsj_transition_output_unit,'(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/1x,a1,i1,2x,&
+                  &"S = ",1pd12.5,3x,&
                   &"GF = ",d12.5,3x,"AKI = ",d12.5,3x,"dT = ",0pf8.5)') dd,angs,angsa,                        &
                    im,lk,-sb,-oscb,-ab,                            &
                    dabs(dabs(sb)-dabs(sa))/max(dabs(sb),dabs(sa))
-               write (32,'(9x,1pd12.5,8x,d12.5,9x,d12.5)')  -sa,-oscc,-ac
+               write (lsj_transition_output_unit,'(9x,1pd12.5,8x,d12.5,9x,d12.5)')  -sa,-oscc,-ac
             else if ( 1.0e9_real64 > eng .and. eng > 1.0e-2_real64) then
-               write (32,"(A1)")  ""
-               write (32,"(A1)")  ""
+               write (lsj_transition_output_unit,"(A1)")  ""
+               write (lsj_transition_output_unit,"(A1)")  ""
                if(dabs(rlev_ener_2(inum_ff)) < 9999.5_real32) then
-                  write(32,"(I4,F14.8,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.8,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                else if(dabs(rlev_ener_2(inum_ff)) < 99999.5_real32) then
-                  write(32,"(I4,F14.7,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.7,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                else
-                  write(32,"(I4,F14.6,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.6,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                end if
                if(dabs(rlev_ener_1(inum_ii)) < 9999.5_real32) then
-                  write(32,"(I4,F14.8,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.8,2X,A)")                      &
                   iatjpoii(i)-1,rlev_ener_1(inum_ii),              &
                   trim(string_csf1(inum_ii))
                else if(dabs(rlev_ener_1(inum_ii)) < 99999.5_real32) then
-                   write(32,"(I4,F14.7,2X,A)")                     &
+                   write(lsj_transition_output_unit,"(I4,F14.7,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                else
-                   write(32,"(I4,F14.6,2X,A)")                     &
+                   write(lsj_transition_output_unit,"(I4,F14.6,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                end if
-               write (32,'(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/1x,a1,i1,2x,"S = ",1pd12.5,3x,&
+               write (lsj_transition_output_unit,'(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/1x,a1,i1,2x,&
+                  &"S = ",1pd12.5,3x,&
                   &"GF = ",d12.5,3x,"AKI = ",d12.5,3x,"dT = ",0pf8.5)') dd,angs,angsa,                        &
                    im,lk,sb,oscb,ab*iatjpoff(j)/iatjpoii(i),       &
                    dabs(dabs(sb)-dabs(sa))/max(dabs(sb),dabs(sa))
-               write (32,'(9x,1pd12.5,8x,d12.5,9x,d12.5)')  sa,oscc,ac*iatjpoff(j)/iatjpoii(i)
+               write (lsj_transition_output_unit,'(9x,1pd12.5,8x,d12.5,9x,d12.5)')  sa,oscc,ac*iatjpoff(j)/iatjpoii(i)
             end if
          end if
       else
@@ -213,66 +216,68 @@
          if (abs(am) >= cutoff) then
             im = "M"
             if (-1.0e9_real64 < eng .and. eng < -1.0e-2_real64) then
-               write (32,"(A1)")  ""
-               write (32,"(A1)")  ""
+               write (lsj_transition_output_unit,"(A1)")  ""
+               write (lsj_transition_output_unit,"(A1)")  ""
                if(dabs(rlev_ener_1(inum_ii)) < 9999.5_real32) then
-                  write(32,"(I4,F14.8,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.8,2X,A)")                      &
                   iatjpoii(i)-1,rlev_ener_1(inum_ii),              &
                   trim(string_csf1(inum_ii))
                else if(dabs(rlev_ener_1(inum_ii)) < 99999.5_real32) then
-                   write(32,"(I4,F14.7,2X,A)")                     &
+                   write(lsj_transition_output_unit,"(I4,F14.7,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                else
-                   write(32,"(I4,F14.6,2X,A)")                     &
+                   write(lsj_transition_output_unit,"(I4,F14.6,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                end if
                if(dabs(rlev_ener_2(inum_ff)) < 9999.5_real32) then
-                  write(32,"(I4,F14.8,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.8,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                else if(dabs(rlev_ener_2(inum_ff)) < 99999.5_real32) then
-                  write(32,"(I4,F14.7,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.7,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                else
-                  write(32,"(I4,F14.6,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.6,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                end if
-               write (32,'(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/1x,a1,i1,2x,"S = ",1pd12.5,3x,&
+               write (lsj_transition_output_unit,'(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/1x,a1,i1,2x,&
+                  &"S = ",1pd12.5,3x,&
                   &"GF = ",d12.5,3x,"AKI = ",d12.5)') dd,angs,angsa,im,lk,-sa,-oscm,-am
             else if ( 1.0e9_real64 > eng .and. eng > 1.0e-2_real64) then
-               write (32,"(A1)")  ""
-               write (32,"(A1)")  ""
+               write (lsj_transition_output_unit,"(A1)")  ""
+               write (lsj_transition_output_unit,"(A1)")  ""
                if(dabs(rlev_ener_2(inum_ff)) < 9999.5_real32) then
-                  write(32,"(I4,F14.8,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.8,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                else if(dabs(rlev_ener_2(inum_ff)) < 99999.5_real32) then
-                  write(32,"(I4,F14.7,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.7,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                else
-                  write(32,"(I4,F14.6,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.6,2X,A)")                      &
                   iatjpoff(j)-1,rlev_ener_2(inum_ff),              &
                   trim(string_csf2(inum_ff))
                end if
                if(dabs(rlev_ener_1(inum_ii)) < 9999.5_real32) then
-                  write(32,"(I4,F14.8,2X,A)")                      &
+                  write(lsj_transition_output_unit,"(I4,F14.8,2X,A)")                      &
                   iatjpoii(i)-1,rlev_ener_1(inum_ii),              &
                   trim(string_csf1(inum_ii))
                else if(dabs(rlev_ener_1(inum_ii)) < 99999.5_real32) then
-                   write(32,"(I4,F14.7,2X,A)")                     &
+                   write(lsj_transition_output_unit,"(I4,F14.7,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                else
-                   write(32,"(I4,F14.6,2X,A)")                     &
+                   write(lsj_transition_output_unit,"(I4,F14.6,2X,A)")                     &
                    iatjpoii(i)-1,rlev_ener_1(inum_ii),             &
                    trim(string_csf1(inum_ii))
                end if
-               write (32,'(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/1x,a1,i1,2x,"S = ",1pd12.5,3x,&
+               write (lsj_transition_output_unit,'(f11.2," CM-1",2x,f11.2," ANGS(VAC)",2x,f11.2," ANGS(AIR)"/1x,a1,i1,2x,&
+                  &"S = ",1pd12.5,3x,&
                   &"GF = ",d12.5,3x,"AKI = ",d12.5)') dd,angs,angsa,                        &
                    im,lk,sa,oscm,am*iatjpoff(j)/iatjpoii(i)
             end if

@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine getosd(isotope_file_path,name)
+      use, intrinsic :: iso_fortran_env, only: input_unit, output_unit
 !                                                                      *
 !   Interactively determines the data governing the transition prob-   *
 !   lem.                                                               *
@@ -53,13 +54,13 @@
 !   Determine the physical effects specifications
 !
       if (ndef /= 0) then
-         write (6, *) "The physical speed of light in"
-         write (6, *) " atomic units is", vacuum_speed_of_light_au, ";"
-         write (6, *) " revise this value?"
+         write (output_unit, *) "The physical speed of light in"
+         write (output_unit, *) " atomic units is", vacuum_speed_of_light_au, ";"
+         write (output_unit, *) " revise this value?"
          yes = getyn()
          if (yes) then
-            write (6, *) "Enter the revised value:"
-            read (5, *) speed_of_light_au
+            write (output_unit, *) "Enter the revised value:"
+            read (input_unit, *) speed_of_light_au
          else
             speed_of_light_au = vacuum_speed_of_light_au
          end if
@@ -79,13 +80,13 @@
       ltc = .false.
 !
       if (ndef /= 0) then
-         write (6, *) "Which units are to be used to"
-         write (6, *) " express the transition energies?"
-         write (6, *) "    A    : Angstrom:"
-         write (6, *) "    eV   : electron volts;"
-         write (6, *) "    Hart : Hartree atomic units;"
-         write (6, *) "    Hz   : Hertz;"
-         write (6, *) "    Kays : Kaysers [cm**(-1)];"
+         write (output_unit, *) "Which units are to be used to"
+         write (output_unit, *) " express the transition energies?"
+         write (output_unit, *) "    A    : Angstrom:"
+         write (output_unit, *) "    eV   : electron volts;"
+         write (output_unit, *) "    Hart : Hartree atomic units;"
+         write (output_unit, *) "    Hz   : Hertz;"
+         write (output_unit, *) "    Kays : Kaysers [cm**(-1)];"
     2    continue
          read (*, "(A)") cunits
          if (cunits(1:1) == "A") then
@@ -99,8 +100,8 @@
          else if (cunits(1:4) == "Kays") then
             ltc(5) = .true.
          else
-            write (6, *) "GETOSD: Unable to interpret string;"
-            write (6, *) " reenter ..."
+            write (output_unit, *) "GETOSD: Unable to interpret string;"
+            write (output_unit, *) " reenter ..."
             goto 2
          end if
       else
@@ -112,9 +113,9 @@
 !      IF (YES) LTC(6) = .TRUE.
 !
       if (ndef /= 0) then
-         write (6, *) "Einstein A and B coefficients are"
-         write (6, *) " printed in SI units; use Hartree"
-         write (6, *) " atomic units instead?"
+         write (output_unit, *) "Einstein A and B coefficients are"
+         write (output_unit, *) " printed in SI units; use Hartree"
+         write (output_unit, *) " atomic units instead?"
          yes = getyn()
          if (yes) ltc(7) = .true.
       else
@@ -135,23 +136,23 @@
       end if
       asymptotic_grid_step = 0.0_real64
       if (ndef /= 0) then
-         write (6, *) "The default radial grid parameters"
-         write (6, *) " for this case are:"
-         write (6, *) " RNT = ", radial_grid_scale, ";"
-         write (6, *) " H = ", transformed_grid_step, ";"
-         write (6, *) " HP = ", asymptotic_grid_step, ";"
-         write (6, *) " N = ", radial_point_count, ";"
-         write (6, *) " revise these values?"
+         write (output_unit, *) "The default radial grid parameters"
+         write (output_unit, *) " for this case are:"
+         write (output_unit, *) " RNT = ", radial_grid_scale, ";"
+         write (output_unit, *) " H = ", transformed_grid_step, ";"
+         write (output_unit, *) " HP = ", asymptotic_grid_step, ";"
+         write (output_unit, *) " N = ", radial_point_count, ";"
+         write (output_unit, *) " revise these values?"
          yes = getyn()
          if (yes) then
-            write (6, *) "Enter RNT:"
-            read (5, *) radial_grid_scale
-            write (6, *) "Enter H:"
-            read (5, *) transformed_grid_step
-            write (6, *) "Enter HP:"
-            read (5, *) asymptotic_grid_step
-            write (6, *) "Enter N:"
-            read (5, *) radial_point_count
+            write (output_unit, *) "Enter RNT:"
+            read (input_unit, *) radial_grid_scale
+            write (output_unit, *) "Enter H:"
+            read (input_unit, *) transformed_grid_step
+            write (output_unit, *) "Enter HP:"
+            read (input_unit, *) asymptotic_grid_step
+            write (output_unit, *) "Enter N:"
+            read (input_unit, *) radial_point_count
          end if
       end if
 !

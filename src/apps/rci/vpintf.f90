@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
     real(real64)  function vpintf (first_orbital,second_orbital)
+    use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   Computes nuclear vacuum polarization integrals.                    *
 !                                                                      *
@@ -53,9 +54,12 @@
     1 continue
       call quad (vpintf)
 !
-      if (ldbpr(9)) write (99,'(/"VPINTF: V (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)') &
+      if (ldbpr(9)) then
+         call ensure_debug_output()
+         write (angular_debug_unit,'(/"VPINTF: V (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)') &
          orbital_principal_n(first_orbital),orbital_symmetry_labels(first_orbital),orbital_principal_n(second_orbital), &
          & orbital_symmetry_labels(second_orbital),vpintf
+      end if
 !
       return
 !

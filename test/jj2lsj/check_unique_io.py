@@ -20,7 +20,7 @@ def main() -> None:
         work = Path(destination).resolve()
         work.mkdir(parents=True, exist_ok=True)
         source = (root / "src/apps/jj2lsj/jj2lsj_code.f90").read_text()
-        start = source.index("      subroutine uniquelsj\n")
+        start = source.index("      subroutine uniquelsj(")
         end = source.index("      end subroutine uniquelsj", start) + len("      end subroutine uniquelsj")
         # Only the private routine's host is reduced. The entire procedure,
         # including its production capacities and algorithm, is copied verbatim.

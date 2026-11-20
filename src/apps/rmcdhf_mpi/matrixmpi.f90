@@ -1,6 +1,9 @@
 !***********************************************************************
 !                                                                      *
       subroutine matrixmpi(dvdfirst)
+      use mcp_file_metadata, only: mcp_input_units
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use calculation_file_units, only: mixing_output_unit
 !                                                                      *
 !   Calls routines to form the Hamiltonian matrix and to diagonalise   *
 !   it. The total angular momenta and parity of each  ASF  is found;   *
@@ -68,7 +71,7 @@
 !
 !-----------------------------------------------------------------------
 
-      if (mpi_rank == 0) write (6, *)
+      if (mpi_rank == 0) write (output_unit, *)
 
 !   Allocate memory for CMVL once (the maximum size)
 !   Save previous estimate of eigenvectors
@@ -84,25 +87,26 @@
 !=======================================================================
 
       do nfile = 30, 32 + max_mcp_file_multipole_rank
-         rewind (nfile)
+         rewind (mcp_input_units(nfile))
          if (nfile == 30) then
-            read (nfile)
-            read (nfile)
-            read (nfile)
+            read (mcp_input_units(nfile))
+            read (mcp_input_units(nfile))
+            read (mcp_input_units(nfile))
          end if
-         read (nfile)
-         read (nfile)
-         read (nfile)
+         read (mcp_input_units(nfile))
+         read (mcp_input_units(nfile))
+         read (mcp_input_units(nfile))
       end do
 
       ! To put in ncmin and nvecsiz. Values read here are the same
       ! as those from elsewhere (shch as common blocks)
       if (mpi_rank == 0) then
-         rewind (25)
-         read (25)                               ! 'G92MIX'
-         read (25) nelec, total_csf_count, orbital_count, ntmp, ntmp, symmetry_block_count
-         backspace (25)
-         write (25) nelec, total_csf_count, orbital_count, ncmin, mixing_coefficient_storage_size, symmetry_block_count
+         rewind (mixing_output_unit)
+         read (mixing_output_unit)                               ! 'G92MIX'
+         read (mixing_output_unit) nelec, total_csf_count, orbital_count, ntmp, ntmp, symmetry_block_count
+         backspace (mixing_output_unit)
+         write (mixing_output_unit) nelec, total_csf_count, orbital_count, ncmin, mixing_coefficient_storage_size, &
+            symmetry_block_count
       end if
 
 !=======================================================================
@@ -119,10 +123,10 @@
 ! Length of iendc can be reduced
 !=======================================================================
 
-         read (30) mcp_channel_label, jblockt, csf_count
+         read (mcp_input_units(30)) mcp_channel_label, jblockt, csf_count
          if (jblockt/=symmetry_block_index .or. csf_count/=csf_counts_by_block(symmetry_block_index)) error stop &
             "MATRIXMPI: jblockt .NE. jblock .OR. ncf1 .NE. ncf2"
-         read (30) nelmntgg
+         read (mcp_input_units(30)) nelmntgg
          stored_matrix_element_count = int(nelmntgg,kind=int64)
          call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "MATRIXmpi")
          call alloc (hamiltonian_values, stored_matrix_element_count, "EMT", "MATRIXmpi")
@@ -135,7 +139,8 @@
       !...EMT will be accumulated in setham
          hamiltonian_values(:stored_matrix_element_count) = 0.0_real64
 
-         read (30) (stored_segment_end_offsets(i),i=mpi_rank+1,csf_count,mpi_process_count), (matrix_partner_indices(i) &
+         read (mcp_input_units(30)) (stored_segment_end_offsets(i),i=mpi_rank+1,csf_count,mpi_process_count), &
+            (matrix_partner_indices(i) &
             & ,i=1,stored_matrix_element_count)
 
          ncfpat = csf_offsets_by_block(symmetry_block_index)
@@ -148,15 +153,15 @@
 
          if (eigenvector_counts_by_block(symmetry_block_index) == 0) then
             do nfile = 31, 32 + max_mcp_file_multipole_rank
-               read (nfile) mcp_channel_label, jblockt, ncft, ncoeff
+               read (mcp_input_units(nfile)) mcp_channel_label, jblockt, ncft, ncoeff
                if (jblockt /= symmetry_block_index)                  &
                           error stop "MATRIXmpi: jblockt .NE. jblock"
                if (ncft /= csf_count) error stop "MATRIXmpi: ncft .NE. ncf"
 
-               read (nfile) lab, ncontr
+               read (mcp_input_units(nfile)) lab, ncontr
                do while(lab/=0 .or. ncontr/=0)
-                  read (nfile) (itmp,itmp,tmp,i=1,ncontr)
-                  read (nfile) lab, ncontr
+                  read (mcp_input_units(nfile)) (itmp,itmp,tmp,i=1,ncontr)
+                  read (mcp_input_units(nfile)) lab, ncontr
                end do
             end do
 
@@ -286,12 +291,14 @@
          end if
 
          if (mpi_rank == 0) then
-            write (25) symmetry_block_index, csf_count, eigenvector_counts_by_block(symmetry_block_index), iattmp, iastmp
-            write (25) (iccmin(i + ncminpat),i=1,eigenvector_counts_by_block(symmetry_block_index))
-            write (25) hamiltonian_energy_shift, (shifted_eigenvalues(i + ncminpat),i=1, &
-               & eigenvector_counts_by_block(symmetry_block_index))
-            write (25) ((csf_mixing_coefficients(i+(level_index-1)*csf_count+nevecpat),i=1,csf_count),level_index=1, &
-               & eigenvector_counts_by_block(symmetry_block_index)&
+            write (mixing_output_unit) symmetry_block_index, csf_count, eigenvector_counts_by_block(symmetry_block_index), &
+               & iattmp, iastmp
+            write (mixing_output_unit) (iccmin(i + ncminpat),i=1,eigenvector_counts_by_block(symmetry_block_index))
+            write (mixing_output_unit) hamiltonian_energy_shift, (shifted_eigenvalues(i + ncminpat),i=1, &
+               eigenvector_counts_by_block(symmetry_block_index))
+            write (mixing_output_unit) ((csf_mixing_coefficients(i+(level_index-1)*csf_count+nevecpat),i=1,csf_count), &
+               & level_index=1, &
+               eigenvector_counts_by_block(symmetry_block_index)&
                )
          end if
 

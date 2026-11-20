@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine strsum
+      use calculation_file_units, only: ensure_summary_output, summary_output_unit
 !                                                                      *
 !***********************************************************************
 !-----------------------------------------------
@@ -30,30 +31,31 @@
 !   header of the summary file
 !
       call calen (time_text, date_text)
-      write (24, *) "GENMCP run at ", time_text, " on ", date_text, "."
+      call ensure_summary_output()
+      write (summary_output_unit, *) "GENMCP run at ", time_text, " on ", date_text, "."
 !
 !   Write out the basic dimensions of the electron cloud
 !
-      write (24, *)
+      write (summary_output_unit, *)
       call convrt (electron_count, record, text_length)
-      write (24, *) "There are "//record(1:text_length)//" electrons in the cloud"
+      write (summary_output_unit, *) "There are "//record(1:text_length)//" electrons in the cloud"
       call convrt (csf_count, record, text_length)
-      write (24, *) " in "//record(1:text_length)//" relativistic CSFs"
+      write (summary_output_unit, *) " in "//record(1:text_length)//" relativistic CSFs"
       call convrt (orbital_count, record, text_length)
-      write (24, *) " based on "//record(1:text_length)//" relativistic subshells."
+      write (summary_output_unit, *) " based on "//record(1:text_length)//" relativistic subshells."
 !
 !   If the CSFs are not treated uniformly, write out an
 !   informative message
 !
       if (diagonal_only) then
-         write (24, *)
-         write (24, *) "Only diagonal matrix elements are computed."
+         write (summary_output_unit, *)
+         write (summary_output_unit, *) "Only diagonal matrix elements are computed."
       else
          if (use_first_order_restriction) then
             do symmetry_block_index = 1, symmetry_block_count
-               write (24, *)
+               write (summary_output_unit, *)
                call convrt (iccut(symmetry_block_index), record, text_length)
-               write (24, *) "CSFs 1--"//record(1:text_length)//" constitute"//&
+               write (summary_output_unit, *) "CSFs 1--"//record(1:text_length)//" constitute"//&
                   " the zero-order space."
             end do
          end if

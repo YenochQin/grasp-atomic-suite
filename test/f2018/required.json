@@ -32,6 +32,7 @@
         "jj2lsj_parallel_regression",
         "jj2lsj_stable_ranking",
         "jj2lsj_pointer_defaults",
+        "f2018_library_source_style",
         "f2018_numeric_literals",
         "f2018_bndinv_interfaces",
         "f2018_numeric_provenance",
@@ -88,6 +89,7 @@
       ],
       "tests": [
         "rdensity_serial_regression",
+        "ris4_cache_reuse_serial",
         "rwfnestimate_Ni_high_l",
         "rwfnestimate_Zn_high_l",
         "rwfnestimate_header_input",

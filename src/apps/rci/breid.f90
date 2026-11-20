@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine breid(bra_csf_index, ket_csf_index, ja1, ipca, jb1)
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   Computes closed shell contributions - aaaa and exchange only.      *
 !                                                                      *
@@ -82,14 +83,20 @@
          two_j_plus_one(i) = iabs(twice_orbital_kappa(i))
       end do
       const = bra_orbital_occupation*ket_orbital_occupation
-      if (ibug2 /= 0) write (99, '("BREID: orbitals ",2i3)') bra_orbital_index, ket_orbital_index
+      if (ibug2 /= 0) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '("BREID: orbitals ",2i3)') bra_orbital_index, ket_orbital_index
+      end if
 !
 !   2.0  Set range of tensor indices
 !
       call snrc (orbital_indices, twice_orbital_kappa, two_j_plus_one, first_direct_nu, direct_nu_count, first_exchange_nu, &
          & exchange_nu_count, direct_integral_type, exchange_integral_type)
-      if (ibug2 /= 0) write (99, '(2x,"ND1 ND2 NE1 NE2 IBRD IBRE ",6i5)') first_direct_nu, direct_nu_count, first_exchange_nu, &
-         & exchange_nu_count, direct_integral_type, exchange_integral_type
+      if (ibug2 /= 0) then
+         call ensure_debug_output()
+         write (angular_debug_unit, '(2x,"ND1 ND2 NE1 NE2 IBRD IBRE ",6i5)') first_direct_nu, direct_nu_count, &
+            & first_exchange_nu, exchange_nu_count, direct_integral_type, exchange_integral_type
+      end if
       if (bra_orbital_index == ket_orbital_index) then
 !
 !   3.0 Calculate aaaa interaction
@@ -103,7 +110,11 @@
             dksks = two_j_plus_one(1)*two_j_plus_one(1)
             dnunu1 = radial_integral_order*(radial_integral_order + 1)
             coef = const*two*dksks*gam*gam/dnunu1
-            if (ibug2 /= 0) write (99, '(2x,"aaaa contribution: NU,GAM,COEF",i5,2(3x,1p,d15.8))') radial_integral_order, gam, coef
+            if (ibug2 /= 0) then
+               call ensure_debug_output()
+               write (angular_debug_unit, '(2x,"aaaa contribution: NU,GAM,COEF",i5,2(3x,1p,d15.8))') radial_integral_order, &
+                  & gam, coef
+            end if
             itype = isg*4
             call talk (bra_csf_index, ket_csf_index, radial_integral_order, bra_orbital_index, bra_orbital_index, &
                & bra_orbital_index, bra_orbital_index, itype, coef)
@@ -137,7 +148,11 @@
                if (mod(ip,2) /= 0) prod = -prod
                call cxk (radial_integral_coefficients, orbital_indices, twice_orbital_kappa, radial_integral_order, k, &
                   & exchange_integral_type, 2)
-               if (ibug2 /= 0) write (99, '(2x,"PROD = ",1p,d15.8,/," S",7d15.8)') prod, (radial_integral_coefficients(mu),mu=1,3)
+               if (ibug2 /= 0) then
+                  call ensure_debug_output()
+                  write (angular_debug_unit, '(2x,"PROD = ",1p,d15.8,/," S",7d15.8)') prod, (radial_integral_coefficients(mu), &
+                     & mu=1,3)
+               end if
                cone(:3,n) = cone(:3,n) + prod*radial_integral_coefficients(:3)
             end if
 !
@@ -148,7 +163,11 @@
                if (mod(ipp,2) /= 0) prod = -prod
                call cxk (radial_integral_coefficients, orbital_indices, twice_orbital_kappa, radial_integral_order, k, &
                   & exchange_integral_type, 2)
-               if (ibug2 /= 0) write (99, '(2x,"PROD = ",1p,d15.8,/," S",7d15.8)') prod, (radial_integral_coefficients(mu),mu=1,3)
+               if (ibug2 /= 0) then
+                  call ensure_debug_output()
+                  write (angular_debug_unit, '(2x,"PROD = ",1p,d15.8,/," S",7d15.8)') prod, (radial_integral_coefficients(mu), &
+                     & mu=1,3)
+               end if
                cone(:3,n) = cone(:3,n) + prod*radial_integral_coefficients(:3)
 !
             end if
@@ -160,7 +179,10 @@
          if (mod(ipp,2) /= 0) prod = -prod
          call cxk (radial_integral_coefficients, orbital_indices, twice_orbital_kappa, radial_integral_order, k, &
             & exchange_integral_type, 2)
-         if (ibug2 /= 0) write (99, '(2x,"PROD = ",1p,d15.8,/," S",7d15.8)') prod, (radial_integral_coefficients(mu),mu=1,7)
+         if (ibug2 /= 0) then
+            call ensure_debug_output()
+            write (angular_debug_unit, '(2x,"PROD = ",1p,d15.8,/," S",7d15.8)') prod, (radial_integral_coefficients(mu),mu=1,7)
+         end if
          cone(:,n) = cone(:,n) + prod*radial_integral_coefficients(:7)
       end do
 !

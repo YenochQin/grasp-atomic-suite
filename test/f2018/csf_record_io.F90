@@ -6,6 +6,7 @@ program csf_record_io
     use mpi_state, only: mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize, mpi_init
 #endif
     implicit none (type, external)
+    integer :: csf_input_unit
     character(32) :: header, scenario
     integer :: ncore, rank, ranks, status
     logical :: corrupt
@@ -19,16 +20,16 @@ program csf_record_io
     call get_command_argument(1, scenario)
     corrupt = scenario /= "valid" .and. rank == ranks-1
     if (corrupt) then
-        open(21, file="truncated.c", status="old")
+        open(newunit=csf_input_unit, file="truncated.c", status="old")
     else
-        open(21, file="valid.c", status="old")
+        open(newunit=csf_input_unit, file="valid.c", status="old")
     end if
-    read(21,"(A)") header
+    read(csf_input_unit,"(A)") header
     if (trim(header) /= "Core subshells:") error stop "CSF fixture header"
-    call lodcslbio(ncore,1)
+    call lodcslbio(ncore,1,csf_input_unit)
     if (corrupt) error stop "Truncated CSF was accepted"
     if (csf_count /= 1 .or. nblock /= 1 .or. ncore /= 4) error stop "Complete CSF/normal EOF"
-    close(21)
+    close(csf_input_unit)
 #ifdef MCP_MPI
     call MPI_Barrier(MPI_COMM_WORLD, status)
     call MPI_Finalize(status)

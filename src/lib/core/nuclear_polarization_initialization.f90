@@ -1,26 +1,34 @@
 ! Load optional nuclear-polarization data and publish the combined potential after writing its summary.
 module nuclear_polarization_initialization
+    ! Module dependencies
     use grasp_parameters, only: max_radial_points
     use nuclear_polarization_state, only: npol_capture, npol_config, npol_publish, npol_reset, zz_coul
     use nuclear_polarization_input, only: npol_read_config, npol_validate_config
     use nuclear_polarization_potential, only: npol_check_grid, npol_build_grid, npol_compose
     implicit none (type, external)
+
+    ! Module interface
     private
     public :: npol_init, npol_write_summary, npol_summary_path
 contains
     ! Supply the freshly computed Coulomb grid so polarization is composed exactly once.
     subroutine npol_init(config_path, nuclear_charge, grid_point_count, radial_grid, negative_radius_times_potential, &
-       & status, message)
+        & status, message)
+        ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
+
+        ! Arguments
         character(*), intent(in) :: config_path
         real(real64), intent(in) :: nuclear_charge, radial_grid(:)
         integer, intent(in) :: grid_point_count
         real(real64), intent(inout) :: negative_radius_times_potential(:)
         integer, intent(out) :: status
         character(*), intent(out) :: message
+
+        ! Local declarations
         type(npol_config) :: config
         real(real64) :: dipole_potential(max_radial_points), quadrupole_potential(max_radial_points), &
-           & polarization_potential(max_radial_points), composed_potential(max_radial_points)
+            & polarization_potential(max_radial_points), composed_potential(max_radial_points)
         call npol_reset()
         call npol_check_grid(grid_point_count, radial_grid, status, message)
         if (status /= 0) return
@@ -33,7 +41,7 @@ contains
         call npol_validate_config(config, nuclear_charge, status, message)
         if (status /= 0) return
         call npol_build_grid(config, grid_point_count, radial_grid, dipole_potential, quadrupole_potential, &
-           & polarization_potential, status, message)
+            & polarization_potential, status, message)
         if (status /= 0) return
         call npol_compose(grid_point_count, radial_grid, zz_coul, polarization_potential, composed_potential, status, message)
         if (status /= 0) return
@@ -41,13 +49,16 @@ contains
         if (status /= 0) return
         negative_radius_times_potential(:grid_point_count) = composed_potential(:grid_point_count)
         call npol_publish(config, grid_point_count, dipole_potential(:grid_point_count), &
-           & quadrupole_potential(:grid_point_count), polarization_potential(:grid_point_count))
+            & quadrupole_potential(:grid_point_count), polarization_potential(:grid_point_count))
     end subroutine npol_init
 
     ! Place the summary beside the input file.
     function npol_summary_path(path) result(summary)
+        ! Arguments
         character(*), intent(in) :: path
         character(len=scan(path, "/"//achar(92), back=.true.)+len("npol.summary")) :: summary
+
+        ! Local declarations
         integer :: last_directory_separator
         last_directory_separator = scan(path, "/"//achar(92), back=.true.)
         summary = path(:last_directory_separator)//"npol.summary"
@@ -55,11 +66,14 @@ contains
 
     ! Verify the written stream by reading back its length and contents before reporting success.
     subroutine npol_write_summary(path, config, grid_point_count, status, message)
+        ! Arguments
         character(*), intent(in) :: path
         type(npol_config), intent(in) :: config
         integer, intent(in) :: grid_point_count
         integer, intent(out) :: status
         character(*), intent(out) :: message
+
+        ! Local declarations
         integer :: summary_unit, io_status, close_status, record_index, file_size_bytes
         character(512) :: io_message
         character(1200) :: summary_records(15)
@@ -86,7 +100,7 @@ contains
         do record_index = 1, size(summary_records)
             record_length = len_trim(summary_records(record_index))
             expected_contents(contents_length+1:contents_length+record_length+1) = &
-               & trim(summary_records(record_index))//new_line("a")
+                & trim(summary_records(record_index))//new_line("a")
             contents_length = contents_length+record_length+1
         end do
         open(newunit=summary_unit, file=path, status="unknown", position="rewind", access="stream", &

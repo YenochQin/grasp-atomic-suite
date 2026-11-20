@@ -5,6 +5,7 @@
 !     ------------------------------------------------------------------
 !
       subroutine invmat(a, b, matdim, ndim)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 ! FIND INVERSE OF MATRIX A
 ! INPUT :
 !        A : MATRIX TO BE INVERTED
@@ -54,12 +55,12 @@
       end if
 !
       if (itest /= 0) then
-         write (6, "(A,I3)") " INVERSION PROBLEM NUMBER..", itest
+         write (output_unit, "(A,I3)") " INVERSION PROBLEM NUMBER..", itest
          stop
       end if
       ntest = 0
       if (ntest /= 0) then
-         write (6, *) " INVERTED MATRIX "
+         write (output_unit, *) " INVERTED MATRIX "
          call wrtmat (a, ndim, ndim, matdim, matdim)
       end if
 !

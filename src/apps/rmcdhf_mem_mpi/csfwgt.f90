@@ -1,5 +1,6 @@
 !***********************************************************************
       subroutine csfwgt(write_standard_output)
+      use calculation_file_units, only: summary_output_unit
 !                                                                      *
 !   Print  the  weights of the largest five CSF contributors to each   *
 !   ASF.                                                               *
@@ -49,7 +50,8 @@
          write (stdout_unit, '(/,"Weights of major contributors to ASF:"/,/,&
             &"Block Level J Parity      CSF contributions"/)')
       else
-         write (24, '(/,"Weights of major contributors to ASF:"/,/,"Block Level J Parity      CSF contributions"/)')
+         write (summary_output_unit, &
+            '(/,"Weights of major contributors to ASF:"/,/,"Block Level J Parity      CSF contributions"/)')
       end if
 
       do iv = 1, ncmin
@@ -116,10 +118,10 @@
             write (stdout_unit, '(19x,5(3x,i8))') (iconf(i),i=1,reported_coefficient_count)
          else
 
-            write (24, '(i3,1x,i5,2x,2a4,5(3x,f8.4))') symmetry_block_index, icf, right_justified_j_labels(ivtjpo), &
-               & parity_labels(ip), (coeff(i),i=1,&
+            write (summary_output_unit, '(i3,1x,i5,2x,2a4,5(3x,f8.4))') symmetry_block_index, icf, &
+               & right_justified_j_labels(ivtjpo), parity_labels(ip), (coeff(i),i=1,&
                reported_coefficient_count)
-            write (24, '(19x,5(3x,i8))') (iconf(i),i=1,reported_coefficient_count)
+            write (summary_output_unit, '(19x,5(3x,i8))') (iconf(i),i=1,reported_coefficient_count)
          end if
       end do
 

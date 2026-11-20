@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine getrmp
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Interactively  determines the  list of radiation multipolarities   *
 !   and parities. This is loadad into COMMON/OSC6/.                    *
@@ -42,8 +43,8 @@
 !   Entry message
 !
     1    continue
-         write (6, *) "Enter the list of transition specifications"
-         write (6, *) " e.g.,  E1,M2  or  E1 M2  or  E1;M2 :"
+         write (output_unit, *) "Enter the list of transition specifications"
+         write (output_unit, *) " e.g.,  E1,M2  or  E1 M2  or  E1;M2 :"
 !
 !   Initialise NKP
 !
@@ -70,22 +71,22 @@
                   lelec = .false.
                   lmagn = .true.
                else
-                  write (6, *) "GETRMP: Transitions must be of type"
-                  write (6, *) " E or type M; reenter ..."
+                  write (output_unit, *) "GETRMP: Transitions must be of type"
+                  write (output_unit, *) " E or type M; reenter ..."
                   goto 2
                end if
                lenth = iend - istart
                if (lenth /= 1) then
-                  write (6, *) "GETRMP: Transition multipolarities"
-                  write (6, *) " must be integers between 1 and 9;"
-                  write (6, *) " reenter ..."
+                  write (output_unit, *) "GETRMP: Transition multipolarities"
+                  write (output_unit, *) " must be integers between 1 and 9;"
+                  write (output_unit, *) " reenter ..."
                   goto 2
                end if
                reci = record(iend:iend)
                read (reci, "(1I1)", iostat=io_status) mult
                if (io_status /= 0) then
-                  write (6, *) "GETRMP: Unable to decode multipolarity"
-                  write (6, *) " "//reci//"; reenter ..."
+                  write (output_unit, *) "GETRMP: Unable to decode multipolarity"
+                  write (output_unit, *) " "//reci//"; reenter ..."
                   goto 2
                end if
                nkp = nkp + 1

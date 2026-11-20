@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine genmat2(irestart, nelmnt_a, elsto)
+      use calculation_file_units, only: summary_output_unit
 !
 !   Get eav and do writings to the summary file .csum
 !   The mpi version (genmat2mpi) also gets nelmnt_a and elsto
@@ -39,21 +40,21 @@
 ! contain the correct values in restart mode. And thus is skipped.
 !-----------------------------------------------------------------------
       if (irestart /= 0) then                    ! non-restart mode
-         write (24, '("CUTOFF set to ",1p,d17.10)') cutofftmp
-         write (24, '("Dirac-Coulomb one-e radial integrals:",1i8)') ncoeitmp
-         write (24, '("One-e angular integrals that exceed CUTOFF: ",1i8)') ncoectmp
-         write (24, '("Coulomb two-e radial integrals: ",1i8)') ncteitmp
-         write (24, '("Two-e angular integrals that exceed CUTOFF: ",1i8)') nctectmp
+         write (summary_output_unit, '("CUTOFF set to ",1p,d17.10)') cutofftmp
+         write (summary_output_unit, '("Dirac-Coulomb one-e radial integrals:",1i8)') ncoeitmp
+         write (summary_output_unit, '("One-e angular integrals that exceed CUTOFF: ",1i8)') ncoectmp
+         write (summary_output_unit, '("Coulomb two-e radial integrals: ",1i8)') ncteitmp
+         write (summary_output_unit, '("Two-e angular integrals that exceed CUTOFF: ",1i8)') nctectmp
          if (ltrans) then
-            write (24, '("Transverse two-e radial integrals: "/,6i8)') ntpitmp
-            write (24, '("MCBP coefficients that exceed CUTOFF: ",1i8)') nmcbptmp
-            write (24, '("Core coefficients that exceed CUTOFF: ",1i8)') ncoretmp
+            write (summary_output_unit, '("Transverse two-e radial integrals: "/,6i8)') ntpitmp
+            write (summary_output_unit, '("MCBP coefficients that exceed CUTOFF: ",1i8)') nmcbptmp
+            write (summary_output_unit, '("Core coefficients that exceed CUTOFF: ",1i8)') ncoretmp
          end if
-         if (lvp) write (24, '("Vacuum polarisation integrals: ",1i8)') nvpitmp
-         if (lnms) write (24, '("Kinetic energy integrals: ",1i8)') nkeitmp
-         if (lsms) write (24, '("Vinti integrals: ",1i8)') nvintitmp
+         if (lvp) write (summary_output_unit, '("Vacuum polarisation integrals: ",1i8)') nvpitmp
+         if (lnms) write (summary_output_unit, '("Kinetic energy integrals: ",1i8)') nkeitmp
+         if (lsms) write (summary_output_unit, '("Vinti integrals: ",1i8)') nvintitmp
       else
-         write (24, *) "Restart mode --- no report on radial integrals"
+         write (summary_output_unit, *) "Restart mode --- no report on radial integrals"
       end if                                      !(irestart .NE. 0) ! non-restart mode
 
 
@@ -71,11 +72,11 @@
 
       hamiltonian_energy_shift = hamiltonian_energy_shift/dble(ncftmp) + elsto
 
-      write (24, '("Elements that exceed CUTOFF in the lower"," triangle of the H matrix: ",1i8)') nelmnttmp
-      write (24, '("Density of the H(amiltonian) matrix: ",1p,d22.15)') densty
-      write (24, *)
-      write (24, '("Average energy = ",1p,d19.12," Hartrees.")') hamiltonian_energy_shift
-      write (24, *) hamiltonian_energy_shift, elsto, ncftmp
+      write (summary_output_unit, '("Elements that exceed CUTOFF in the lower"," triangle of the H matrix: ",1i8)') nelmnttmp
+      write (summary_output_unit, '("Density of the H(amiltonian) matrix: ",1p,d22.15)') densty
+      write (summary_output_unit, *)
+      write (summary_output_unit, '("Average energy = ",1p,d19.12," Hartrees.")') hamiltonian_energy_shift
+      write (summary_output_unit, *) hamiltonian_energy_shift, elsto, ncftmp
 
 
       return

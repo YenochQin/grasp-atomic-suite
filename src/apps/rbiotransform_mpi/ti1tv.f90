@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine ti1tv(input_mixing_coefficients,csf_count,level_count,i,l,t,subshell_count,transformed_mixing_coefficients,ntestg)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Calculate the action of the  operator                              *
 !   Sum( j) T(jl) E(jl,il) on a set of vectors                         *
@@ -64,7 +65,7 @@
       ntest = max(ntestl,ntestg)
       ntest = 000
 !
-      if(ntest>=10) write(6,*) " Entering TI1TV"
+      if(ntest>=10) write(output_unit,*) " Entering TI1TV"
 
       call setvec(transformed_mixing_coefficients,0.0_real64,level_count*csf_count)
       if (ncoeff == 0) return
@@ -123,15 +124,15 @@
       end do
 !
       if(ntest>=100) then
-        write(6,*)
-        write(6,*) " Input and output vectors from TI1TV I,L",i,l
+        write(output_unit,*)
+        write(output_unit,*) " Input and output vectors from TI1TV I,L",i,l
         call wrtmat(input_mixing_coefficients,csf_count,level_count,csf_count,level_count)
-        write(6,*)
+        write(output_unit,*)
         call wrtmat(transformed_mixing_coefficients,csf_count,level_count,csf_count,level_count)
-        write(6,*)
+        write(output_unit,*)
       end if
 !
-      if(ntest>=10) write(6,*) " LEAVING TI1TV"
+      if(ntest>=10) write(output_unit,*) " LEAVING TI1TV"
 
       return
       end subroutine ti1tv

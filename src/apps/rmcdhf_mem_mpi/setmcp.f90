@@ -1,6 +1,7 @@
 !***********************************************************************
 
       subroutine setmcp(core_subshell_count, input_symmetry_block_count, block_labels, filehead)
+      use mcp_file_metadata, only: mcp_input_units
 !
 !   Open, read, check the header of all .mcp files. Info for each
 !   block is not accessed here.
@@ -61,6 +62,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
+      integer :: sparse_input_unit
       integer :: lenfh, io_status, ios, i, k, text_length, myidd, nprocss
       logical :: found, found1
       character :: number_text*2, mcp_channel_label*3
@@ -70,17 +72,18 @@
       lenfh = len_trim(filehead)
 
       file_path = filehead(1:lenfh)//".30"
-      open(30, file=file_path, form="UNFORMATTED", status="OLD", iostat=io_status, &
+      sparse_input_unit = -1
+      open(newunit=sparse_input_unit, file=file_path, form="UNFORMATTED", status="OLD", iostat=io_status, &
          position="asis")
-      if (io_status /= 0) call fail_input_io(io_status, 30, "MCP setmcp open "//trim(file_path))
+      if (io_status /= 0) call fail_input_io(io_status, sparse_input_unit, "MCP setmcp open "//trim(file_path))
 
 !  Check each record before using its contents.
 
-      read (30, iostat=ios) core_subshell_count, symmetry_block_count, max_mcp_file_multipole_rank
-      if (ios /= 0) call fail_input_io(ios, 30, "MCP setmcp global header")
+      read (sparse_input_unit, iostat=ios) core_subshell_count, symmetry_block_count, max_mcp_file_multipole_rank
+      if (ios /= 0) call fail_input_io(ios, sparse_input_unit, "MCP setmcp global header")
       if (symmetry_block_count>input_symmetry_block_count .or. symmetry_block_count<1) then
          write (stderr_unit, *) "setmcp: nblock = ", symmetry_block_count
-         call fail_input_io(0, 30, "MCP setmcp invalid block count")
+         call fail_input_io(0, sparse_input_unit, "MCP setmcp invalid block count")
       end if
 
 !cjb allocate ncfblk(0:*)
@@ -89,10 +92,10 @@
 !cjb
       csf_counts_by_block(0) = 0
 
-      read (30, iostat=ios) (csf_counts_by_block(i),i=1,symmetry_block_count)
-      if (ios /= 0) call fail_input_io(ios, 30, "MCP setmcp block sizes")
-      read (30, iostat=ios) (block_labels(i),i=1,symmetry_block_count)
-      if (ios /= 0) call fail_input_io(ios, 30, "MCP setmcp block labels")
+      read (sparse_input_unit, iostat=ios) (csf_counts_by_block(i),i=1,symmetry_block_count)
+      if (ios /= 0) call fail_input_io(ios, sparse_input_unit, "MCP setmcp block sizes")
+      read (sparse_input_unit, iostat=ios) (block_labels(i),i=1,symmetry_block_count)
+      if (ios /= 0) call fail_input_io(ios, sparse_input_unit, "MCP setmcp block labels")
 
 !  Look for other mcp files
 
@@ -106,37 +109,41 @@
 
       if (.not.found) then
          write (stderr_unit, *) "The mcp files do not exist"
-         call fail_input_io(0, 30, "MCP setmcp missing channel file")
+         call fail_input_io(0, sparse_input_unit, "MCP setmcp missing channel file")
       end if
 
 !  Open the files; check file headers
+
+      allocate(mcp_input_units(30:32 + max_mcp_file_multipole_rank))
+      mcp_input_units = -1
+      mcp_input_units(30) = sparse_input_unit
 
       do k = 30, 32 + max_mcp_file_multipole_rank
 
          if (k /= 30) then
             call convrt (k, number_text, text_length)
             file_path = filehead(1:lenfh)//"."//number_text(1:2)
-            call openfl (k, file_path, "UNFORMATTED", "OLD", io_status)
-            if (io_status /= 0) call fail_input_io(io_status, k, "MCP setmcp open "//trim(file_path))
+            call openfl (mcp_input_units(k), file_path, "UNFORMATTED", "OLD", io_status)
+            if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(k), "MCP setmcp open "//trim(file_path))
          end if
 
-         read (k, iostat=ios) mcp_channel_label, symmetry_block_count, myidd, nprocss
-         if (ios /= 0) call fail_input_io(ios, k, "MCP setmcp block or channel header")
+         read (mcp_input_units(k), iostat=ios) mcp_channel_label, symmetry_block_count, myidd, nprocss
+         if (ios /= 0) call fail_input_io(ios, mcp_input_units(k), "MCP setmcp block or channel header")
          if (mpi_rank/=myidd .or. mpi_process_count/=nprocss) then
             write (stderr_unit, *) "mcp files were generated under different", &
                " processor configuration."
-            call fail_input_io(0, k, "MCP setmcp incompatible rank layout")
+            call fail_input_io(0, mcp_input_units(k), "MCP setmcp incompatible rank layout")
          end if
 
          if (mcp_channel_label /= "MCP") then
             write (stderr_unit, *) "Not a sorted GRASP92 MCP File;"
-            call fail_input_io(0, k, "MCP setmcp invalid file tag")
+            call fail_input_io(0, mcp_input_units(k), "MCP setmcp invalid file tag")
          end if
 
-         read (k, iostat=ios) electron_count, csf_count, orbital_count
-         if (ios /= 0) call fail_input_io(ios, k, "MCP setmcp basis dimensions")
-         read (k, iostat=ios) diag, iccut, lfordr
-         if (ios /= 0) call fail_input_io(ios, k, "MCP setmcp channel flags")
+         read (mcp_input_units(k), iostat=ios) electron_count, csf_count, orbital_count
+         if (ios /= 0) call fail_input_io(ios, mcp_input_units(k), "MCP setmcp basis dimensions")
+         read (mcp_input_units(k), iostat=ios) diag, iccut, lfordr
+         if (ios /= 0) call fail_input_io(ios, mcp_input_units(k), "MCP setmcp channel flags")
          call setmcp_mem(symmetry_block_count,k)
       end do
       if(mpi_rank == 0) write(*,"(A1)") ""

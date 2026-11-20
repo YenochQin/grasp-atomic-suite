@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       integer function itjpor (csf_index)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   ITJPOR is the value of 2J+1 for CSF number ICSF.                   *
 !                                                                      *
@@ -30,7 +31,7 @@
          if (itjpor > 127) itjpor = 256 - itjpor
          itjpor = iabs (itjpor)
       else
-         write (6, *) "ITJPOR: Argument ICSF is out of range."
+         write (output_unit, *) "ITJPOR: Argument ICSF is out of range."
          stop
       end if
 !

@@ -35,6 +35,7 @@ def main() -> None:
                          "src/apps/rmcdhf_mpi/Makefile",
                          "src/apps/rmcdhf_mpi/getaldmpi.f90",
                          "src/apps/rmcdhf/strsum.f90",
+                         "docs/reference/rmcdhf_io_units_snapshot.json",
                          "docs/reference/rmcdhf_grasp_mpi_naming_snapshot.json",
                          "docs/reference/rmcdhf_grasp_shared_naming_snapshot.json",
                          "docs/reference/rmcdhf_davidson_naming_snapshot.json",

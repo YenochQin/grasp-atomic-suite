@@ -42755,7 +42755,7 @@ Fortran 内建符号不属于可自由重命名的本仓库变量。普通构建
 | [src/lib/libmcp90/CMakeLists.txt](../../src/lib/libmcp90/CMakeLists.txt) | — | — | — | 无本口径变量；文件已检查 |
 | [src/lib/libmod/CMakeLists.txt](../../src/lib/libmod/CMakeLists.txt) | `CMAKE_Fortran_COMPILER_ID` | — | 115 | 外部/上级输入或自动变量，保持接口 |
 | [src/lib/librang90/CMakeLists.txt](../../src/lib/librang90/CMakeLists.txt) | — | — | — | 无本口径变量；文件已检查 |
-| [src/lib/librang90/ReadMe](../../src/lib/librang90/ReadMe) | — | — | — | 无本口径变量；文件已检查 |
+| `src/lib/librang90/ReadMe` | — | — | — | 无本口径变量；历史修正见[现行说明](../../src/lib/spin_angular/readme.md#来源) |
 | [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi/CMakeLists.txt) | `CMAKE_Fortran_COMPILER_ID` | — | 40 | 外部/上级输入或自动变量，保持接口 |
 | [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi/CMakeLists.txt) | `MPI_Fortran_COMPILE_FLAGS` | — | 34 | 外部/上级输入或自动变量，保持接口 |
 | [src/lib/mpi90/CMakeLists.txt](../../src/lib/mpi/CMakeLists.txt) | `MPI_Fortran_INCLUDE_PATH` | — | 31 | 外部/上级输入或自动变量，保持接口 |

@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine densread_mpi(dint1,dint2,dint3,dint4,dint5,dint6,dint7)
+      use calculation_file_units, only: one_body_cache_unit
 !                                                                      *
 !   MPI version of DENSREAD. Each rank scans the full angular file but *
 !   only accumulates records whose IC belongs to its strided subset.    *
@@ -30,8 +31,8 @@
       integer :: io_status, ia, ib, ic, ir, i, j, loc, lab, ncount
       logical :: ownrec
 
-      rewind (50)
-   16 read (50,iostat = io_status) ic,ir,ncount
+      rewind (one_body_cache_unit)
+   16 read (one_body_cache_unit,iostat = io_status) ic,ir,ncount
 
       if (io_status == 0) then
          ownrec = mod(ic-1, mpi_process_count) == mpi_rank
@@ -44,7 +45,7 @@
          elemnt7 = 0.0_real64
 
          do i= 1,ncount
-            read(50) tshell_r(i),lab
+            read(one_body_cache_unit) tshell_r(i),lab
             if (.not. ownrec) cycle
             ia = lab/orbital_label_radix
             ib = mod(lab,orbital_label_radix)

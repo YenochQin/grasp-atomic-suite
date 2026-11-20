@@ -10,6 +10,8 @@
 !   I n t e r f a c e   B l o c k s
 !-----------------------------------------------
       implicit none (type, external)
+      integer :: copied_mixing_unit
+      integer :: original_mixing_unit
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -30,47 +32,47 @@
 
       name(2) = trim(name(1))//"_CP"
       if (inpci == 0) then
-         open(unit=78, file=trim(name(2))//".cbm", form="UNFORMATTED", status=&
+         open(newunit=copied_mixing_unit, file=trim(name(2))//".cbm", form="UNFORMATTED", status=&
             "UNKNOWN", position="asis")
       else
-         open(unit=78, file=trim(name(2))//".bm", form="UNFORMATTED", status=&
+         open(newunit=copied_mixing_unit, file=trim(name(2))//".bm", form="UNFORMATTED", status=&
             "UNKNOWN", position="asis")
       end if
       if (inpci == 0) then
-         open(unit=68, file=trim(name(1))//".cbm", form="UNFORMATTED", status=&
+         open(newunit=original_mixing_unit, file=trim(name(1))//".cbm", form="UNFORMATTED", status=&
             "OLD", position="asis")
       else
-         open(unit=68, file=trim(name(1))//".bm", form="UNFORMATTED", status=&
+         open(newunit=original_mixing_unit, file=trim(name(1))//".bm", form="UNFORMATTED", status=&
             "OLD", position="asis")
       end if
-      read (68, iostat=io_status) mixing_file_signature
+      read (original_mixing_unit, iostat=io_status) mixing_file_signature
       if (io_status/=0 .or. mixing_file_signature/="G92MIX") then
          write (*, *) "Not a GRASP mixing file"
          stop
       end if
-      write (78) mixing_file_signature
-      read (68) nelec, total_csf_count, nw, nvectot, vector_size, nblock
-      write (78) nelec, total_csf_count, nw, nvectot, vector_size, nblock
+      write (copied_mixing_unit) mixing_file_signature
+      read (original_mixing_unit) nelec, total_csf_count, nw, nvectot, vector_size, nblock
+      write (copied_mixing_unit) nelec, total_csf_count, nw, nvectot, vector_size, nblock
 
       do iblk = 1, nblock
-         read (68) ib, ncf, nvec, iatjp, iaspa
-         write (78) ib, ncf, nvec, iatjp, iaspa
+         read (original_mixing_unit) ib, ncf, nvec, iatjp, iaspa
+         write (copied_mixing_unit) ib, ncf, nvec, iatjp, iaspa
          call alloc (eval, nvec, "EVAL", "CPMIX")
          call alloc (evec, ncf*nvec, "EVEC", "CPMIX")
          call alloc (ivec, nvec, "IVEC", "CPMIX")
-         read (68) (ivec(i),i=1,nvec)
-         read (68) hamiltonian_energy_shift, (eval(i),i=1,nvec)
-         read (68) ((evec(i + (j - 1)*ncf),i=1,ncf),j=1,nvec)
+         read (original_mixing_unit) (ivec(i),i=1,nvec)
+         read (original_mixing_unit) hamiltonian_energy_shift, (eval(i),i=1,nvec)
+         read (original_mixing_unit) ((evec(i + (j - 1)*ncf),i=1,ncf),j=1,nvec)
 
-         write (78) (ivec(i),i=1,nvec)
-         write (78) hamiltonian_energy_shift, (eval(i),i=1,nvec)
-         write (78) ((evec(i + (j - 1)*ncf),i=1,ncf),j=1,nvec)
+         write (copied_mixing_unit) (ivec(i),i=1,nvec)
+         write (copied_mixing_unit) hamiltonian_energy_shift, (eval(i),i=1,nvec)
+         write (copied_mixing_unit) ((evec(i + (j - 1)*ncf),i=1,ncf),j=1,nvec)
          call dalloc (eval, "EVAL", "CPMIX")
          call dalloc (evec, "EVEC", "CPMIX")
          call dalloc (ivec, "IVEC", "CPMIX")
       end do
       name(2) = name(1)
-      close(68)
-      close(78)
+      close(original_mixing_unit)
+      close(copied_mixing_unit)
       return
       end subroutine cpmix

@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine settmp(nb, kmax, filehead)
+      use mcp_generation_options, only: mcp_temporary_units
 !***********************************************************************
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -30,18 +31,18 @@
       lng = len_trim(filehead)
       do k = 30, 32 + kmax
          call convrt (k, number_text, text_length)
-         call openfl (k, filehead(1:lng)//"."//number_text(1:2), "UNFORMATTED", &
+         call openfl (mcp_temporary_units(k), filehead(1:lng)//"."//number_text(1:2), "UNFORMATTED", &
             "UNKNOWN", open_status)
          if (open_status == 0) cycle
-         do i = 30, k
-            close(i)
+         do i = 30, k - 1
+            close(mcp_temporary_units(i))
          end do
          write (stderr_unit, *) "Error when opening the tmp files"
          stop
       end do
 
       do k = 30, 32 + kmax
-         write (k) "MCP", nb
+         write (mcp_temporary_units(k)) "MCP", nb
       end do
 
       return

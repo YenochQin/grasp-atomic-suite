@@ -48,7 +48,9 @@
 !
 
       key = orbital_count + 1
-      kstartbreit2(0) = 1
+!   Type 2 angular coefficients use rank nu+1 (nu >= 0).
+!   The empty rank-zero interval and rank one start at the same offset.
+      kstartbreit2(0:1) = 1
 !
 !   Find 2*JMAX; it should not be greater than PARAMETER KMAX
 !
@@ -68,7 +70,7 @@
       gen = .false.
 
   999 nb = 0
-      do k = 0, max_orbital_two_j
+      do k = 1, max_orbital_two_j
          do orbital_index = 1, orbital_count
             do ib = 1, orbital_count
                do ic = 1, orbital_count

@@ -3,6 +3,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine setsum(default_file_path)
+      use calculation_file_units, only: summary_output_unit
       use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
 !                                                                      *
 !   Open the  .sum  file on stream 24.                                 *
@@ -43,7 +44,7 @@
       if (len_trim(file_path) == 0) file_path = default_file_path
 !
     1 continue
-      call openfl (24, file_path, form, status, open_status)
+      call openfl (summary_output_unit, file_path, form, status, open_status)
       if (open_status /= 0) then
     2    continue
          write (stderr_unit, *) "Enter a name for the ERWF SUMmary File ", &

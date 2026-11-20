@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine lodmix (block_labels)
+      use calculation_file_units, only: mixing_output_unit
 !                                                                      *
 !   Determines the eigenpairs required;  this information is written   *
 !   to the head of the  .mix  file.                                    *
@@ -68,7 +69,7 @@
 !
 !   Write header data to the  .mix  file
 !
-      write (25) electron_count, total_csf_count, orbital_count, ncmin, vector_size, symmetry_block_count
+      write (mixing_output_unit) electron_count, total_csf_count, orbital_count, ncmin, vector_size, symmetry_block_count
 !
       return
       end subroutine lodmix

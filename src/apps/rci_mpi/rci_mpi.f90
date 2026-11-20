@@ -24,6 +24,8 @@
 !***********************************************************************
 !                                                                      *
       program rci_mpi
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use calculation_file_units, only: calculation_log_unit
 !                                                                      *
 !   Entry routine for RCI92. Controls the entire computation.          *
 !                                                                      *
@@ -41,7 +43,6 @@
 !   M o d u l e s
 !-----------------------------------------------
       use calculation_input_defaults, only: inpci, ndef, ndump
-      use where_c, only: imcdf
       use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
       use numeric_constants, only: eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
       use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
@@ -132,9 +133,9 @@
       orbital_path = ""
       if (mpi_rank == 0) then
          call read_state_name(state_name)
-         open(unit=734,file=trim(state_name)//".clog",status="unknown")
-         write(734,"(a)") "y            ! Default settings"
-         write(734,"(a)") trim(state_name)
+         open(newunit=calculation_log_unit,file=trim(state_name)//".clog",status="unknown")
+         write(calculation_log_unit,"(a)") "y            ! Default settings"
+         write(calculation_log_unit,"(a)") trim(state_name)
          isotope_file_path = trim(permdir)//"/isodata"
          name = trim(permdir)//"/"//trim(state_name)
          orbital_path = orbital_input_path(name)
@@ -144,7 +145,6 @@
    99 continue
 
 
-      imcdf = 26        ! Unit for rci.res file
       iprerun = 0
 !=======================================================================
 
@@ -193,7 +193,7 @@
 !=======================================================================
 !   Proceed with the CI calculation
 !=======================================================================
-      write (6, *) "Calling MATRIX..."
+      write (output_unit, *) "Calling MATRIX..."
 
       call matrix (core_subshell_count, max_orbital_two_j)
 

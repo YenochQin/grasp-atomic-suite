@@ -80,6 +80,12 @@ if(Python3_Interpreter_FOUND)
             set_tests_properties(ris4_cache_${variant} PROPERTIES PROCESSORS 2)
         endif()
     endforeach()
+    if(TARGET ris4)
+        add_test(NAME ris4_cache_reuse_serial
+            COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/ris4/cache_reuse.py"
+                $<TARGET_FILE:ris4> "${PROJECT_SOURCE_DIR}/data")
+        set_tests_properties(ris4_cache_reuse_serial PROPERTIES TIMEOUT 60)
+    endif()
     add_test(NAME fical_mixed_mass_shift_units
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/ris4/fical_units.py"
             $<TARGET_FILE:fical>)

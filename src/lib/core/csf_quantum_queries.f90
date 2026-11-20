@@ -1,16 +1,20 @@
 ! Query occupations, subshell and intermediate angular momenta, and total CSF symmetry.
 module csf_quantum_queries
+    ! Module dependencies
     use standard_io_units, only: stderr_unit
     use orbital_csf_basis, only: csf_count, csf_subshell_occupations
     use grasp_parameters, only: max_orbitals
     use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes
     implicit none (type, external)
+
+    ! Module interface
     private
     public :: iq, jqs, jcup, ispar, itjpo
 contains
 
     ! Return the stored occupation as a default-kind integer.
     integer function iq(subshell_index, csf_index)
+        ! Arguments
         integer, intent(in) :: subshell_index, csf_index
 
         iq = csf_subshell_occupations(subshell_index,csf_index)
@@ -18,6 +22,7 @@ contains
 
     ! Selectors 1, 2, and 3 return seniority, w, and subshell 2J+1, respectively.
     integer function jqs(quantum_number_selector, subshell_index, csf_index)
+        ! Arguments
         integer, intent(in) :: quantum_number_selector, subshell_index, csf_index
 
         jqs = csf_subshell_quantum_codes(subshell_index,quantum_number_selector,csf_index)
@@ -25,6 +30,7 @@ contains
 
     ! Read 2J+1 for the nontrivial intermediate coupling at coupling_index.
     integer function jcup(coupling_index, csf_index)
+        ! Arguments
         integer, intent(in) :: coupling_index, csf_index
 
         if (coupling_index>=1 .and. coupling_index<=max_orbitals-1) then
@@ -42,6 +48,7 @@ contains
 
     ! Decode parity from the sign of the packed total symmetry.
     integer function ispar(csf_index)
+        ! Arguments
         integer, intent(in) :: csf_index
 
         if (csf_index>=1 .and. csf_index<=csf_count) then
@@ -57,6 +64,7 @@ contains
 
     ! Decode 2J+1 from the magnitude of the packed total symmetry.
     integer function itjpo(csf_index)
+        ! Arguments
         integer, intent(in) :: csf_index
 
         if (csf_index>=1 .and. csf_index<=csf_count) then

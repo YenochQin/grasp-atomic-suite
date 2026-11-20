@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine lodmixmpi (block_labels)
+      use calculation_file_units, only: mixing_output_unit
 !                                                                      *
 !   Determines the eigenpairs required;  this information is written   *
 !   to the head of the  .mix  file.                                    *
@@ -94,7 +95,7 @@
          ncmin4 = ncmin
          nvecsiz4 = vector_size
          nblock4 = symmetry_block_count
-         write (25) nelec4, ncftot4, nw4, ncmin4, nvecsiz4, nblock4
+         write (mixing_output_unit) nelec4, ncftot4, nw4, ncmin4, nvecsiz4, nblock4
       end if
 !
       return

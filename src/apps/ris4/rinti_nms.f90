@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
        subroutine rinti_nms (first_orbital,second_orbital,relativistic_nms_integral,leading_nms_integral)
+       use debug_output_settings, only: angular_debug_unit, ensure_debug_output
       use, intrinsic :: iso_fortran_env, only: real32
 !                                                                      *
 !   The value of this  function is the one-electron integral I (J,K)   *
@@ -156,10 +157,12 @@
 !   Debug printout
 !
 !C*      LDBPR(5)=.TRUE.
-      if (ldbpr(5))                                                    &
-         write (99,'(/" K (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)') &
+      if (ldbpr(5)) then
+         call ensure_debug_output()
+         write (angular_debug_unit,'(/" K (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)') &
             orbital_principal_n(first_orbital),orbital_symmetry_labels(first_orbital),orbital_principal_n(second_orbital), &
             & orbital_symmetry_labels(second_orbital),relativistic_nms_integral
+      end if
 !
 !C*      RETURN
 !

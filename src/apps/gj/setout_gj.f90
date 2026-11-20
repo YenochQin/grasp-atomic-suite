@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine setout_gj(name, nci, gjc_diag, dgjc_diag)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   Writes diagonal Landé-factor data to <name>.gj or <name>.cgj.     *
 !                                                                      *
@@ -20,6 +21,7 @@
 !-----------------------------------------------
       use file_open, only: openfl
       implicit none (type, external)
+      integer :: lande_output_unit
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -43,16 +45,16 @@
 !
       form = "FORMATTED"
       status = "NEW"
-      call openfl(29, file_path, form, status, open_status)
+      call openfl(lande_output_unit, file_path, form, status, open_status)
       if (open_status /= 0) then
-         write (6, *) "Error when opening", file_path
+         write (output_unit, *) "Error when opening", file_path
          stop
       end if
 !
-      write (29, '("Nuclear spin                        ",1p,d22.15," au")') hfsi
-      write (29, '("Nuclear magnetic dipole moment      ",1p,d22.15," n.m.")') hfsd
-      write (29, '("Nuclear electric quadrupole moment  ",1p,d22.15," barns")') hfsq
-      write (29, '(/,/," Interaction constants:"/,/," Level1  J Parity ",10x,"g_J",14x,"delta g_J",11x,"total g_J"/&
+      write (lande_output_unit, '("Nuclear spin                        ",1p,d22.15," au")') hfsi
+      write (lande_output_unit, '("Nuclear magnetic dipole moment      ",1p,d22.15," n.m.")') hfsd
+      write (lande_output_unit, '("Nuclear electric quadrupole moment  ",1p,d22.15," barns")') hfsq
+      write (lande_output_unit, '(/,/," Interaction constants:"/,/," Level1  J Parity ",10x,"g_J",14x,"delta g_J",11x,"total g_J"/&
          &)')
 !
       do i = 1, nvec
@@ -63,11 +65,12 @@
          gj = vacuum_speed_of_light_au*gja1*gjc_diag(i)
          dgj = 0.001160_real64*gja1*dgjc_diag(i)
 !
-         write (29, '(1x,1i3,5x,2a4,1p,3d20.10)') ivec(i), right_justified_j_labels(jj), parity_labels((iaspar(i)+3)/2), gj, dgj, &
+         write (lande_output_unit, '(1x,1i3,5x,2a4,1p,3d20.10)') ivec(i), right_justified_j_labels(jj), &
+            & parity_labels((iaspar(i)+3)/2), gj, dgj, &
             gj + dgj
       end do
 !
-      close(29)
+      close(lande_output_unit)
       return
 !
       end subroutine setout_gj

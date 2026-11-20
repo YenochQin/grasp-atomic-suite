@@ -3,6 +3,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine genrwf(default_orbitals)
+      use calculation_file_units, only: calculation_log_unit, summary_output_unit
 !                                                                      *
 !   Controls the computation of the subshell radial wavefunctions.     *
 !                                                                      *
@@ -136,9 +137,10 @@
          end if
 
          write (stderr_unit, *) "Enter the list of relativistic subshells:"
-         open(unit=734, status="SCRATCH")
+         open(newunit=calculation_log_unit, status="SCRATCH")
          call getrsl (index, nsubs)
-         close(734, status="DELETE")
+         close(calculation_log_unit, status="DELETE")
+         calculation_log_unit = -1
 
          if (nradial == 1) then
             call frmrwf (index, nsubs, infile)
@@ -172,9 +174,10 @@
   456    continue
          write (stderr_unit, *) "Enter the list of subshells whose radial ", &
             "wavefunctions are to be revised:"
-         open(unit=734, status="SCRATCH")
+         open(newunit=calculation_log_unit, status="SCRATCH")
          call getrsl (index, nsubs)
-         close(734, status="DELETE")
+         close(calculation_log_unit, status="DELETE")
+         calculation_log_unit = -1
          if (nsubs == 0) goto 456
          do j = 1, nsubs
             loc = index(j)
@@ -187,7 +190,7 @@
          goto 123
       end if
 
-      if (ndef /= 0) call summry (24)
+      if (ndef /= 0) call summry (summary_output_unit)
 
       return
       end subroutine genrwf

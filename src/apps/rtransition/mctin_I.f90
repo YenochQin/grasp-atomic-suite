@@ -1,8 +1,9 @@
       module mctin_i
       implicit none (type, external)
       interface
-      subroutine mctin (operator_parity, transition_type_index, name)
+      subroutine mctin (operator_parity, transition_type_index, name, transition_angular_unit)
       implicit none (type, external)
+      integer, intent(in) :: transition_angular_unit
       integer :: operator_parity
       integer, intent(in) :: transition_type_index
       character (len = 24) :: name(2)

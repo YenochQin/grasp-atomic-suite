@@ -24,6 +24,7 @@
 !***********************************************************************
 !                                                                      *
       program rscfvu
+      use calculation_file_units, only: calculation_log_unit
 !                                                                      *
 !   Entry routine for RSCFVU. Controls the entire computation.         *
 !                                                                      *
@@ -98,8 +99,8 @@
 
       call starttime (start_clock_count, "RMCDHF")
 
-      open(unit=734,file=files%scf_log,status="UNKNOWN")
-      if (state /= "") write(734,"(A)") trim(state)
+      open(newunit=calculation_log_unit,file=files%scf_log,status="UNKNOWN")
+      if (state /= "") write(calculation_log_unit,"(A)") trim(state)
 
 !=======================================================================
 !  Get NDEF
@@ -108,10 +109,10 @@
       if (mpi_rank == 0) then
          if (yes) then
             ndef = 0
-            write(734,"(A)") "y            ! Default settings"
+            write(calculation_log_unit,"(A)") "y            ! Default settings"
          else
             ndef = 1
-            if (state /= "") write(734,"(A)") "n            ! Default settings"
+            if (state /= "") write(calculation_log_unit,"(A)") "n            ! Default settings"
          end if
       end if
 
@@ -160,7 +161,7 @@
 !=======================================================================
 
       call scf (extended_optimal_level, files%orbitals)
-      close (734)
+      close (calculation_log_unit)
 
 !=======================================================================
 !  Execution finished; Statistics output

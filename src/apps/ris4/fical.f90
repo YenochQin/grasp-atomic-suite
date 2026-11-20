@@ -2,6 +2,7 @@ program fical
   use calculation_state_files, only: read_state_name
   use, intrinsic :: iso_fortran_env, only: real64
   implicit none (type, external)
+  integer :: isotope_shift_output_unit
   integer :: i,j,ii,jj,lsjpresent,lmax,lmax1,lmax2
   integer :: nvec1,nvec2,nveclsj1,nveclsj2,level1(500),level2(500),levellsj1(500),levellsj2(500)
   integer :: relflag,efacflag
@@ -252,22 +253,22 @@ program fical
 
   ! WRITE INPUT ISOTOPE DATA TO OUPTPUT FILE
   if(typeflag/="para") then
-     write(7,"(a)") " INPUT ISOTOPE DATA"
+     write(isotope_shift_output_unit,"(a)") " INPUT ISOTOPE DATA"
      if(soph=="n") then
-        write(7,"(a22,f10.6,a)") " Mass of isotope 1: ",m1," amu"
-        write(7,"(a22,f10.6,a)") " Mass of isotope 2: ",m2," amu"
-        write(7,"(a22,f10.6,a)") " d<r^2>: ",dr2," fm^2"
+        write(isotope_shift_output_unit,"(a22,f10.6,a)") " Mass of isotope 1: ",m1," amu"
+        write(isotope_shift_output_unit,"(a22,f10.6,a)") " Mass of isotope 2: ",m2," amu"
+        write(isotope_shift_output_unit,"(a22,f10.6,a)") " d<r^2>: ",dr2," fm^2"
      else
-        write(7,*) "               Isotope 1    Isotope 2"
-        write(7,"(a16,f10.6,f13.6)") " Mass [amu]: ",m1,m2
-        write(7,"(a16,f10.6,f13.6)") " r_rms [fm]: ",trms_1,trms_2
-        write(7,"(a16,f10.6,f13.6)") " t [fm]: ",t_1,t_2
-        write(7,"(a16,f10.6,f13.6)") " omega: ",w_1,w_2
-        write(7,"(a16,f10.6,f13.6)") " b_20: ",b20_1,b20_2
-        write(7,"(a16,f10.6,f13.6)") " b_40: ",b40_1,b40_2
+        write(isotope_shift_output_unit,*) "               Isotope 1    Isotope 2"
+        write(isotope_shift_output_unit,"(a16,f10.6,f13.6)") " Mass [amu]: ",m1,m2
+        write(isotope_shift_output_unit,"(a16,f10.6,f13.6)") " r_rms [fm]: ",trms_1,trms_2
+        write(isotope_shift_output_unit,"(a16,f10.6,f13.6)") " t [fm]: ",t_1,t_2
+        write(isotope_shift_output_unit,"(a16,f10.6,f13.6)") " omega: ",w_1,w_2
+        write(isotope_shift_output_unit,"(a16,f10.6,f13.6)") " b_20: ",b20_1,b20_2
+        write(isotope_shift_output_unit,"(a16,f10.6,f13.6)") " b_40: ",b40_1,b40_2
      end if
   end if
-  write(7,*)
+  write(isotope_shift_output_unit,*)
 
   if(efacflag==1) then
      fshift1(:nvec1) = fs1(5,:nvec1)
@@ -312,13 +313,13 @@ program fical
 
      ! WRITE NUCLEAR RADIAL MOMENTS TO OUPTPUT FILE
      if(typeflag/="para") then
-        write(7,"(a)") " NUCLEAR RADIAL MOMENTS"
-        write(7,*) "               Isotope 1    Isotope 2     Isotope 1 - Isotope 2"
-        write(7,"(a16,1P,D11.5,D13.5,D15.5)") " <r^2> [fm^2]: ",radmom1(1),radmom2(1),radmom1(1)-radmom2(1)
-        write(7,"(a16,1P,D11.5,D13.5,D15.5)") " <r^4> [fm^4]: ",radmom1(2),radmom2(2),radmom1(2)-radmom2(2)
-        write(7,"(a16,1P,D11.5,D13.5,D15.5)") " <r^6> [fm^6]: ",radmom1(3),radmom2(3),radmom1(3)-radmom2(3)
-        write(7,"(a16,1P,D11.5,D13.5,D15.5)") " <r^8> [fm^8]: ",radmom1(4),radmom2(4),radmom1(4)-radmom2(4)
-        write(7,*)
+        write(isotope_shift_output_unit,"(a)") " NUCLEAR RADIAL MOMENTS"
+        write(isotope_shift_output_unit,*) "               Isotope 1    Isotope 2     Isotope 1 - Isotope 2"
+        write(isotope_shift_output_unit,"(a16,1P,D11.5,D13.5,D15.5)") " <r^2> [fm^2]: ",radmom1(1),radmom2(1),radmom1(1)-radmom2(1)
+        write(isotope_shift_output_unit,"(a16,1P,D11.5,D13.5,D15.5)") " <r^4> [fm^4]: ",radmom1(2),radmom2(2),radmom1(2)-radmom2(2)
+        write(isotope_shift_output_unit,"(a16,1P,D11.5,D13.5,D15.5)") " <r^6> [fm^6]: ",radmom1(3),radmom2(3),radmom1(3)-radmom2(3)
+        write(isotope_shift_output_unit,"(a16,1P,D11.5,D13.5,D15.5)") " <r^8> [fm^8]: ",radmom1(4),radmom2(4),radmom1(4)-radmom2(4)
+        write(isotope_shift_output_unit,*)
      end if
 
   end if
@@ -327,31 +328,31 @@ program fical
   ! COMPUTE AND WRITE LINE ISOTOPE SHIFT PARAMETERS TO FILE
 
   if((typeflag=="para").or.(typeflag=="both")) then
-     write(7,*) "LINE MASS SHIFT PARAMETERS"
-     write(7,*)
+     write(isotope_shift_output_unit,*) "LINE MASS SHIFT PARAMETERS"
+     write(isotope_shift_output_unit,*)
      if(unit=="GHz") then
         nmsconst = 29.9792458_real64/1822.888485_real64
         if(lsjpresent==0) then
-           write(7,headermpghz)
+           write(isotope_shift_output_unit,headermpghz)
         else
-           write(7,headermpghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(isotope_shift_output_unit,headermpghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit=="MHz") then
         nmsconst = 29979.2458_real64/1822.888485_real64
         if(lsjpresent==0) then
-           write(7,headermpmhz)
+           write(isotope_shift_output_unit,headermpmhz)
         else
-           write(7,headermpmhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(isotope_shift_output_unit,headermpmhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit=="meV") then
         nmsconst = 0.12398419739_real64/1822.888485_real64
         if(lsjpresent==0) then
-           write(7,headermpmev)
+           write(isotope_shift_output_unit,headermpmev)
         else
-           write(7,headermpmevlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(isotope_shift_output_unit,headermpmevlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      end if
-     write(7,*)
+     write(isotope_shift_output_unit,*)
      do i=1,nvec1
         do ii=1,nveclsj1
            if((level1(i)==levellsj1(ii)).and.(spinpar1(i)(6:9)==spinlsj1(ii)).and.(spinpar1(i)(11:11)==parlsj1(ii))) then
@@ -369,18 +370,22 @@ program fical
               nmslaw = -1.0_real64*tenergy*nmsconst
               if(state1==state2.and.j>i) then
                  if(lsjpresent==0) then
-                    write(7,format1a) level1(i), adjustl(trim(spinpar1(i))),level2(j),adjustl(trim(spinpar2(j))), &
+                    write(isotope_shift_output_unit,format1a) level1(i), adjustl(trim(spinpar1(i))),level2(j), &
+                       adjustl(trim(spinpar2(j))), &
                          tenergy,nmslaw,nms1(i)-nms2(j),sms1(i)-sms2(j),ms1(i)-ms2(j)
                  else
-                    write(7,format1alsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))),csflabel2scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format1alsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))), &
+                       csflabel2scal(1:lmax+3), &
                          adjustl(trim(spinpar2(j))),tenergy,nmslaw,nms1(i)-nms2(j),sms1(i)-sms2(j),ms1(i)-ms2(j)
                  end if
               else if(state1/=state2) then
                  if(lsjpresent==0) then
-                    write(7,format1a) level1(i), adjustl(trim(spinpar1(i))),level2(j),adjustl(trim(spinpar2(j))), &
+                    write(isotope_shift_output_unit,format1a) level1(i), adjustl(trim(spinpar1(i))),level2(j), &
+                       adjustl(trim(spinpar2(j))), &
                          tenergy,nmslaw,nms1(i)-nms2(j),sms1(i)-sms2(j),ms1(i)-ms2(j)
                  else
-                    write(7,format1alsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))),csflabel2scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format1alsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))), &
+                       csflabel2scal(1:lmax+3), &
                          adjustl(trim(spinpar2(j))),tenergy,nmslaw,nms1(i)-nms2(j),sms1(i)-sms2(j),ms1(i)-ms2(j)
                  end if
               end if
@@ -389,18 +394,22 @@ program fical
               nmslaw = -1.0_real64*tenergy*nmsconst
               if(state1==state2.and.j>i) then
                  if(lsjpresent==0) then
-                    write(7,format1a) level2(j), adjustl(trim(spinpar2(j))),level1(i),adjustl(trim(spinpar1(i))), &
+                    write(isotope_shift_output_unit,format1a) level2(j), adjustl(trim(spinpar2(j))),level1(i), &
+                       adjustl(trim(spinpar1(i))), &
                          tenergy,nmslaw,nms2(j)-nms1(i),sms2(j)-sms1(i),ms2(j)-ms1(i)
                  else
-                    write(7,format1alsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))),csflabel1scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format1alsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))), &
+                       csflabel1scal(1:lmax+3), &
                          adjustl(trim(spinpar1(i))),tenergy,nmslaw,nms2(j)-nms1(i),sms2(j)-sms1(i),ms2(j)-ms1(i)
                  end if
               else if(state1/=state2) then
                  if(lsjpresent==0) then
-                    write(7,format1a) level2(j), adjustl(trim(spinpar2(j))),level1(i),adjustl(trim(spinpar1(i))), &
+                    write(isotope_shift_output_unit,format1a) level2(j), adjustl(trim(spinpar2(j))),level1(i), &
+                       adjustl(trim(spinpar1(i))), &
                          tenergy,nmslaw,nms2(j)-nms1(i),sms2(j)-sms1(i),ms2(j)-ms1(i)
                  else
-                    write(7,format1alsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))),csflabel1scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format1alsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))), &
+                       csflabel1scal(1:lmax+3), &
                          adjustl(trim(spinpar1(i))),tenergy,nmslaw,nms2(j)-nms1(i),sms2(j)-sms1(i),ms2(j)-ms1(i)
                  end if
               end if
@@ -408,29 +417,29 @@ program fical
         end do
      end do
 !     if(efacflag.eq.1) then
-     write(7,*)
-     write(7,*) "LINE FIELD SHIFT PARAMETERS"
-     write(7,*)
+     write(isotope_shift_output_unit,*)
+     write(isotope_shift_output_unit,*) "LINE FIELD SHIFT PARAMETERS"
+     write(isotope_shift_output_unit,*)
      if(unit=="GHz") then
         if(lsjpresent==0) then
-           write(7,headerfpghz)
+           write(isotope_shift_output_unit,headerfpghz)
         else
-           write(7,headerfpghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(isotope_shift_output_unit,headerfpghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit=="MHz") then
         if(lsjpresent==0) then
-           write(7,headerfpmhz)
+           write(isotope_shift_output_unit,headerfpmhz)
         else
-           write(7,headerfpmhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(isotope_shift_output_unit,headerfpmhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit=="meV") then
         if(lsjpresent==0) then
-           write(7,headerfpmev)
+           write(isotope_shift_output_unit,headerfpmev)
         else
-           write(7,headerfpmevlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(isotope_shift_output_unit,headerfpmevlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      end if
-     write(7,*)
+     write(isotope_shift_output_unit,*)
      do i=1,nvec1
         do ii=1,nveclsj1
            if((level1(i)==levellsj1(ii)).and.(spinpar1(i)(6:9)==spinlsj1(ii)).and.(spinpar1(i)(11:11)==parlsj1(ii))) then
@@ -459,18 +468,22 @@ program fical
 
               if(state1==state2.and.j>i) then
                  if(lsjpresent==0) then
-                    write(7,format1b) level1(i), adjustl(trim(spinpar1(i))),level2(j),adjustl(trim(spinpar2(j))), &
+                    write(isotope_shift_output_unit,format1b) level1(i), adjustl(trim(spinpar1(i))),level2(j), &
+                       adjustl(trim(spinpar2(j))), &
                          tenergy,f0,f2,f4,f6
                  else
-                    write(7,format1blsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))),csflabel2scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format1blsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))), &
+                       csflabel2scal(1:lmax+3), &
                          adjustl(trim(spinpar2(j))),tenergy,f0,f2,f4,f6
                  end if
               else if(state1/=state2) then
                  if(lsjpresent==0) then
-                    write(7,format1b2) level1(i), adjustl(trim(spinpar1(i))),level2(j),adjustl(trim(spinpar2(j))), &
+                    write(isotope_shift_output_unit,format1b2) level1(i), adjustl(trim(spinpar1(i))),level2(j), &
+                       adjustl(trim(spinpar2(j))), &
                          tenergy,f0,f2,f4,f6,linfac
                  else
-                    write(7,format1b2lsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))),csflabel2scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format1b2lsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))), &
+                       csflabel2scal(1:lmax+3), &
                          adjustl(trim(spinpar2(j))),tenergy,f0,f2,f4,f6,linfac
                  end if
               end if
@@ -490,18 +503,22 @@ program fical
 
               if(state1==state2.and.j>i) then
                  if(lsjpresent==0) then
-                    write(7,format1b) level2(j), adjustl(trim(spinpar2(j))),level1(i),adjustl(trim(spinpar1(i))), &
+                    write(isotope_shift_output_unit,format1b) level2(j), adjustl(trim(spinpar2(j))),level1(i), &
+                       adjustl(trim(spinpar1(i))), &
                          tenergy,f0,f2,f4,f6
                  else
-                    write(7,format1blsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))),csflabel1scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format1blsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))), &
+                       csflabel1scal(1:lmax+3), &
                          adjustl(trim(spinpar1(i))),tenergy,f0,f2,f4,f6
                  end if
               else if(state1/=state2) then
                  if(lsjpresent==0) then
-                    write(7,format1b2) level2(j), adjustl(trim(spinpar2(j))),level1(i),adjustl(trim(spinpar1(i))), &
+                    write(isotope_shift_output_unit,format1b2) level2(j), adjustl(trim(spinpar2(j))),level1(i), &
+                       adjustl(trim(spinpar1(i))), &
                          tenergy,f0,f2,f4,f6,linfac
                  else
-                    write(7,format1b2lsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))),csflabel1scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format1b2lsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))), &
+                       csflabel1scal(1:lmax+3), &
                          adjustl(trim(spinpar1(i))),tenergy,f0,f2,f4,f6,linfac
                  end if
 
@@ -515,27 +532,27 @@ program fical
 
 !     write(7,*)
 !     write(7,*) 'LINE FIELD SHIFT PARAMETERS 2' ! JE
-     write(7,*)
+     write(isotope_shift_output_unit,*)
      if(unit=="GHz") then
         if(lsjpresent==0) then
-           write(7,headerfp2ghz)
+           write(isotope_shift_output_unit,headerfp2ghz)
         else
-           write(7,headerfp2ghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(isotope_shift_output_unit,headerfp2ghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit=="MHz") then
         if(lsjpresent==0) then
-           write(7,headerfp2mhz)
+           write(isotope_shift_output_unit,headerfp2mhz)
         else
-           write(7,headerfp2mhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(isotope_shift_output_unit,headerfp2mhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit=="meV") then
         if(lsjpresent==0) then
-           write(7,headerfp2mev)
+           write(isotope_shift_output_unit,headerfp2mev)
         else
-           write(7,headerfp2mevlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(isotope_shift_output_unit,headerfp2mevlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      end if
-     write(7,*)
+     write(isotope_shift_output_unit,*)
      do i=1,nvec1
         do ii=1,nveclsj1
            if((level1(i)==levellsj1(ii)).and.(spinpar1(i)(6:9)==spinlsj1(ii)).and.(spinpar1(i)(11:11)==parlsj1(ii))) then
@@ -564,18 +581,22 @@ program fical
 
               if(state1==state2.and.j>i) then
                  if(lsjpresent==0) then
-                    write(7,format1c) level1(i), adjustl(trim(spinpar1(i))),level2(j),adjustl(trim(spinpar2(j))), &
+                    write(isotope_shift_output_unit,format1c) level1(i), adjustl(trim(spinpar1(i))),level2(j), &
+                       adjustl(trim(spinpar2(j))), &
                          tenergy,fieldshift,fieldshift22
                  else
-                    write(7,format1clsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))),csflabel2scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format1clsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))), &
+                       csflabel2scal(1:lmax+3), &
                          adjustl(trim(spinpar2(j))),tenergy,fieldshift,fieldshift22
                  end if
               else if(state1/=state2) then
                  if(lsjpresent==0) then
-                    write(7,format1c2) level1(i), adjustl(trim(spinpar1(i))),level2(j),adjustl(trim(spinpar2(j))), &
+                    write(isotope_shift_output_unit,format1c2) level1(i), adjustl(trim(spinpar1(i))),level2(j), &
+                       adjustl(trim(spinpar2(j))), &
                          tenergy,fieldshift,fieldshift22,linfac2
                  else
-                    write(7,format1c2lsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))),csflabel2scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format1c2lsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))), &
+                       csflabel2scal(1:lmax+3), &
                          adjustl(trim(spinpar2(j))),tenergy,fieldshift,fieldshift22,linfac2
                  end if
               end if
@@ -595,18 +616,22 @@ program fical
 
               if(state1==state2.and.j>i) then
                  if(lsjpresent==0) then
-                    write(7,format1c) level2(j), adjustl(trim(spinpar2(j))),level1(i),adjustl(trim(spinpar1(i))), &
+                    write(isotope_shift_output_unit,format1c) level2(j), adjustl(trim(spinpar2(j))),level1(i), &
+                       adjustl(trim(spinpar1(i))), &
                          tenergy,fieldshift,fieldshift22
                  else
-                    write(7,format1clsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))),csflabel1scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format1clsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))), &
+                       csflabel1scal(1:lmax+3), &
                          adjustl(trim(spinpar1(i))),tenergy,fieldshift,fieldshift22
                  end if
               else if(state1/=state2) then
                  if(lsjpresent==0) then
-                    write(7,format1c2) level2(j), adjustl(trim(spinpar2(j))),level1(i),adjustl(trim(spinpar1(i))), &
+                    write(isotope_shift_output_unit,format1c2) level2(j), adjustl(trim(spinpar2(j))),level1(i), &
+                       adjustl(trim(spinpar1(i))), &
                          tenergy,fieldshift,fieldshift22,linfac2
                  else
-                    write(7,format1c2lsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))),csflabel1scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format1c2lsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))), &
+                       csflabel1scal(1:lmax+3), &
                          adjustl(trim(spinpar1(i))),tenergy,fieldshift,fieldshift22,linfac2
                  end if
               end if
@@ -619,31 +644,31 @@ program fical
 
   ! COMPUTE AND WRITE LINE ISOTOPE SHIFT ENERGIES TO FILE
 
-  write(7,*)
+  write(isotope_shift_output_unit,*)
   if((typeflag=="ener").or.(typeflag=="both")) then
-     write(7,*) "LINE ISOTOPE SHIFT ENERGIES"
-     write(7,*)
+     write(isotope_shift_output_unit,*) "LINE ISOTOPE SHIFT ENERGIES"
+     write(isotope_shift_output_unit,*)
      if(unit=="GHz") then
         if(lsjpresent==0) then
-           write(7,headereghz)
+           write(isotope_shift_output_unit,headereghz)
         else
-           write(7,headereghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(isotope_shift_output_unit,headereghzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit=="MHz") then
         if(lsjpresent==0) then
-           write(7,headeremhz)
+           write(isotope_shift_output_unit,headeremhz)
         else
-           write(7,headeremhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(isotope_shift_output_unit,headeremhzlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      else if(unit=="meV") then
         if(lsjpresent==0) then
-           write(7,headeremev)
+           write(isotope_shift_output_unit,headeremev)
         else
-           write(7,headeremevlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
+           write(isotope_shift_output_unit,headeremevlsj) uplevel(1:lmax+8),lowlevel(1:lmax+8)
         end if
      end if
 
-     write(7,*)
+     write(isotope_shift_output_unit,*)
      do i=1,nvec1
         do ii=1,nveclsj1
            if((level1(i)==levellsj1(ii)).and.(spinpar1(i)(6:9)==spinlsj1(ii)).and.(spinpar1(i)(11:11)==parlsj1(ii))) then
@@ -676,18 +701,22 @@ program fical
               isotopeshift = masshift + fieldshift
               if(state1==state2.and.j>i) then
                  if(lsjpresent==0) then
-                    write(7,format2) level1(i),adjustl(trim(spinpar1(i))),level2(j),adjustl(trim(spinpar2(j))),tenergy, &
+                    write(isotope_shift_output_unit,format2) level1(i),adjustl(trim(spinpar1(i))),level2(j), &
+                       adjustl(trim(spinpar2(j))),tenergy, &
                          masshift,fieldshift,isotopeshift
                  else
-                    write(7,format2lsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))),csflabel2scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format2lsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))), &
+                       csflabel2scal(1:lmax+3), &
                          adjustl(trim(spinpar2(j))),tenergy,masshift,fieldshift,isotopeshift
                  end if
               else if(state1/=state2) then
                  if(lsjpresent==0) then
-                    write(7,format2) level1(i),adjustl(trim(spinpar1(i))),level2(j),adjustl(trim(spinpar2(j))),tenergy, &
+                    write(isotope_shift_output_unit,format2) level1(i),adjustl(trim(spinpar1(i))),level2(j), &
+                       adjustl(trim(spinpar2(j))),tenergy, &
                          masshift,fieldshift,isotopeshift
                  else
-                    write(7,format2lsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))),csflabel2scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format2lsj) csflabel1scal(1:lmax+3),adjustl(trim(spinpar1(i))), &
+                       csflabel2scal(1:lmax+3), &
                          adjustl(trim(spinpar2(j))),tenergy,masshift,fieldshift,isotopeshift
                  end if
               end if
@@ -714,18 +743,22 @@ program fical
               isotopeshift = masshift + fieldshift
               if(state1==state2.and.j>i) then
                  if(lsjpresent==0) then
-                    write(7,format2) level2(j),adjustl(trim(spinpar2(j))),level1(i),adjustl(trim(spinpar1(i))),tenergy, &
+                    write(isotope_shift_output_unit,format2) level2(j),adjustl(trim(spinpar2(j))),level1(i), &
+                       adjustl(trim(spinpar1(i))),tenergy, &
                          masshift,fieldshift,isotopeshift
                  else
-                    write(7,format2lsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))),csflabel1scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format2lsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))), &
+                       csflabel1scal(1:lmax+3), &
                          adjustl(trim(spinpar1(i))),tenergy,masshift,fieldshift,isotopeshift
                  end if
               else if(state1/=state2) then
                  if(lsjpresent==0) then
-                    write(7,format2) level2(j),adjustl(trim(spinpar2(j))),level1(i),adjustl(trim(spinpar1(i))),tenergy, &
+                    write(isotope_shift_output_unit,format2) level2(j),adjustl(trim(spinpar2(j))),level1(i), &
+                       adjustl(trim(spinpar1(i))),tenergy, &
                          masshift,fieldshift,isotopeshift
                  else
-                    write(7,format2lsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))),csflabel1scal(1:lmax+3), &
+                    write(isotope_shift_output_unit,format2lsj) csflabel2scal(1:lmax+3),adjustl(trim(spinpar2(j))), &
+                       csflabel1scal(1:lmax+3), &
                          adjustl(trim(spinpar1(i))),tenergy,masshift,fieldshift,isotopeshift
                  end if
               end if
@@ -733,8 +766,8 @@ program fical
         end do
      end do
   end if
-  write(7,*)
-  close(7)
+  write(isotope_shift_output_unit,*)
+  close(isotope_shift_output_unit)
   write(*,*)
   write(*,*) "program FICAL finished ..."
   write(*,*)
@@ -758,36 +791,37 @@ end function linearity_discrepancy
 
 subroutine openisodata(name,nameout,z)
   implicit none (type, external)
+  integer :: isotope_shift_input_unit
   character(len=200) :: string
   character(*), intent(in) :: name, nameout
   real(real64), intent(out) :: z
   real(real64) :: a,c,radmom3(4)
 
-  open (7,file=nameout,status="unknown",form="formatted")
-  open (8,file=name,status="old",action="read",form="formatted")
+  open (newunit=isotope_shift_output_unit,file=nameout,status="unknown",form="formatted")
+  open (newunit=isotope_shift_input_unit,file=name,status="old",action="read",form="formatted")
 
-  read(8,"(a)") string
-  read(8,"(d18.5)") z
-  read(8,"(a)") string
-  read(8,"(a)") string
-  read(8,"(a)") string
-  read(8,"(d18.5)") a
-  read(8,"(a)") string
-  read(8,"(d18.5)") c
+  read(isotope_shift_input_unit,"(a)") string
+  read(isotope_shift_input_unit,"(d18.5)") z
+  read(isotope_shift_input_unit,"(a)") string
+  read(isotope_shift_input_unit,"(a)") string
+  read(isotope_shift_input_unit,"(a)") string
+  read(isotope_shift_input_unit,"(d18.5)") a
+  read(isotope_shift_input_unit,"(a)") string
+  read(isotope_shift_input_unit,"(d18.5)") c
 
   a = a*4.0_real64*log(3.0_real64)
   call fermidist(c,a,0.0_real64,0.0_real64,0.0_real64,1, radmom3)
 
-  write(7,*)
-  write(7,"(a)") " REFERENCE ISOTOPE DATA FROM ISODATA"
-  write(7,"(a,f10.6)") " Atomic number: ", z
-  write(7,"(a)") " Fermi nucleus: "
-  write(7,"(a16,f10.6,a)") "c: ", c, " fm"
-  write(7,"(a16,f10.6,a)") "r_rms: ", sqrt(radmom3(1)), " fm"
-  write(7,"(a16,f10.6,a)") "t: ", a, " fm"
-  write(7,*)
+  write(isotope_shift_output_unit,*)
+  write(isotope_shift_output_unit,"(a)") " REFERENCE ISOTOPE DATA FROM ISODATA"
+  write(isotope_shift_output_unit,"(a,f10.6)") " Atomic number: ", z
+  write(isotope_shift_output_unit,"(a)") " Fermi nucleus: "
+  write(isotope_shift_output_unit,"(a16,f10.6,a)") "c: ", c, " fm"
+  write(isotope_shift_output_unit,"(a16,f10.6,a)") "r_rms: ", sqrt(radmom3(1)), " fm"
+  write(isotope_shift_output_unit,"(a16,f10.6,a)") "t: ", a, " fm"
+  write(isotope_shift_output_unit,*)
 
-  close(8)
+  close(isotope_shift_input_unit)
 
 end subroutine openisodata
 
@@ -1014,6 +1048,7 @@ end subroutine fermidist
 
 subroutine openlsj(name,nvec,level,spin,par,csflabel,lmax)
   implicit none (type, external)
+  integer :: lsj_label_input_unit
   integer :: i, nvec,level(500),lmax
   character(len=4) :: spin(500)
   character(len=1) :: par(500)
@@ -1025,18 +1060,18 @@ subroutine openlsj(name,nvec,level,spin,par,csflabel,lmax)
   character(len=200) :: csflabel(500)
 
 
-  open (7,file=name,status="unknown",form="formatted")
+  open (newunit=lsj_label_input_unit,file=name,status="unknown",form="formatted")
 
   lmax = 0
-  read(7,"(a)") string
+  read(lsj_label_input_unit,"(a)") string
   i=1
   do
-     read(7,"(i4,a10)",end=99) level(i),spinpar(i)
+     read(lsj_label_input_unit,"(i4,a10)",end=99) level(i),spinpar(i)
      if(spinpar(i)(10:10)=="+".or.spinpar(i)(10:10)=="-") then
         !read(7,'(i4,a10)') level(i),spinpar(i)
         spin(i) = spinpar(i)(1:4)
         par(i) = spinpar(i)(10:10)
-        read(7,"(a36,a)") dummy,csflabel(i)
+        read(lsj_label_input_unit,"(a36,a)") dummy,csflabel(i)
         if(len(trim(csflabel(i)))>lmax) lmax = len(trim(csflabel(i)))
         !write(*,*) level(i),spin(i),' ',par(i),' ',trim(csflabel(i))
         i = i + 1
@@ -1054,7 +1089,7 @@ subroutine openlsj(name,nvec,level,spin,par,csflabel,lmax)
      !i = i + 1
   end do
 99 continue
-  close(7)
+  close(lsj_label_input_unit)
   nvec = i-1
   !write(*,*) nvec
 end subroutine openlsj

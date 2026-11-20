@@ -12,6 +12,7 @@
 !     C. Froese Fischer, Phys. Rev. E, 4499 (1995)                     *
 !                                                                      *
       program biotr
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !     Program written by                                               *
 !                                                                      *
@@ -111,26 +112,26 @@
       print *
       print *
 
-      write (6, *) "Default settings?"
+      write (output_unit, *) "Default settings?"
       yes = getyn()
-      write (6, *)
+      write (output_unit, *)
       if (yes) then
          ndef = 0
          ndump = 1
       else
          ndef = 1
-         write (6, *) "Dump angular data on file?"
+         write (output_unit, *) "Dump angular data on file?"
          yes = getyn()
-         write (6, *)
+         write (output_unit, *)
          if (yes) then
             ndump = 1
          else
             ndump = 0
          end if
       end if
-      write (6, *) "Input from a CI calculation?"
+      write (output_unit, *) "Input from a CI calculation?"
       yes = getyn()
-      write (6, *)
+      write (output_unit, *)
       if (yes) then
          inpci = 0
       else

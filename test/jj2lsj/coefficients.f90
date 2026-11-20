@@ -11,6 +11,7 @@ program coefficients
     use isotope_data_input, only: setiso
     use, intrinsic :: iso_fortran_env, only: real64, int64
     implicit none (type, external)
+    integer :: coefficient_output_unit
     integer :: counts(Blocks_number)
     integer, allocatable :: levels(:,:)
     integer :: block, first, last, lev, level, i, outc, outj, unique, outt
@@ -26,7 +27,7 @@ program coefficients
     allocate(mask(NCF))
     stride = NCF
     last = 0
-    open(80,file="coefficients.raw",status="replace",access="stream",form="unformatted")
+    open(newunit=coefficient_output_unit,file="coefficients.raw",status="replace",access="stream",form="unformatted")
     do block = 1,NBLOCK
         first = last+1
         last = first+NCFINBLK(block)-1
@@ -47,12 +48,12 @@ program coefficients
             asf_set_LS%asf(i)%eigenvector = 0.0_real64
         end do
         call asf2ls(1,mask,counts(block),block,levels,first,last,outt)
-        write(80) block, counts(block), asf_set_LS%csf_set_LS%nocsf
+        write(coefficient_output_unit) block, counts(block), asf_set_LS%csf_set_LS%nocsf
         do lev = 1,counts(block)
-            write(80) asf_set_LS%asf(levels(block,lev))%eigenvector
+            write(coefficient_output_unit) asf_set_LS%asf(levels(block,lev))%eigenvector
         end do
         call dallocASFLS(asf_set_LS)
     end do
-    close(80)
+    close(coefficient_output_unit)
     print *, "Coefficient dump complete"
 end program coefficients

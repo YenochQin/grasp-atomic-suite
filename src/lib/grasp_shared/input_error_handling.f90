@@ -1,10 +1,14 @@
 ! Reports input failures and invokes the caller's abort handler when provided.
 module input_error_handling
+    ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: error_unit
     implicit none (type, external)
+
+    ! Module interface
     private
     public :: fail_input_io
 
+    ! Procedure interfaces
     abstract interface
         subroutine abort_input()
             implicit none (type, external)
@@ -14,9 +18,12 @@ module input_error_handling
 contains
 
     subroutine fail_input_io(status, unit, context, abort_handler)
+        ! Arguments
         integer, intent(in) :: status, unit
         character(*), intent(in) :: context
         procedure(abort_input), optional :: abort_handler
+
+        ! Local declarations
         integer :: inquiry_status
         logical :: opened, named
         character(1024) :: filename

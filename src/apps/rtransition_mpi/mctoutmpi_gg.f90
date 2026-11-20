@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-      subroutine mctout(operator_parity, transition_type_index, name)
+      subroutine mctout(operator_parity, transition_type_index, name, transition_angular_unit)
 !                                                                      *
 !   This routine loads  coefficients with parity and  rank specified   *
 !   by KP(JKP) into the arrays ISLDR and XSLDR.  IOPAR is the parity   *
@@ -34,6 +34,7 @@
       use one_electron_tensor_coefficients, only: oneparticlejj
       use trsort_i, only: trsort
       implicit none (type, external)
+      integer, intent(out) :: transition_angular_unit
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
@@ -44,12 +45,11 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       real(real64), parameter :: cutoff = 1.0e-10_real64
-      integer, parameter :: nfile = 93
-      integer, parameter :: nfile1 = 237
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      integer :: nfile2, iblki, iblkf, nmct, nlabel, ncfi0, ncff0, bra_csf_index, ket_csf_index, ncr&
+      integer :: coefficient_scratch_unit
+      integer :: iblki, iblkf, nmct, nlabel, ncfi0, ncff0, bra_csf_index, ket_csf_index, ncr&
          , orbital_index, ket_orbital_index, newsiz, i
       logical :: cache_exists
       integer, pointer :: label(:)
@@ -64,8 +64,7 @@
 !
 !   Check if angular data is available on file
 !
-      nfile2 = nfile1 + transition_type_index
-      call angdata (name, cache_exists, transition_type_index, nfile2)
+      call angdata (name, cache_exists, transition_type_index, transition_angular_unit)
 
 !
 !   If angular data is not available open the scratch file to store the
@@ -82,16 +81,16 @@
 ! Start of the block loops
       do iblki = 1, nblocki
          do iblkf = 1, nblockf
-!        OPEN (NFILE,STATUS = 'new', FORM = 'UNFORMATTED')
+!        OPEN (coefficient_scratch_unit,STATUS = 'new', FORM = 'UNFORMATTED')
 !        Sometimes, when there has been an error, status need to be "unknown"
 !CFF
-            open(nfile,status="unknown",form="UNFORMATTED")
+            open(newunit=coefficient_scratch_unit, file="fort.93", status="unknown", form="UNFORMATTED")
             nmct = 0
 !
 !
 !   If angular data is not available
 !   Generate MCT coefficients for given rank/parity combination and
-!   store them by CSF on NFILE
+!   store them by CSF on coefficient_scratch_unit
 !
 !
 !   Allocate storage to buffer arrays
@@ -164,8 +163,8 @@
                   end if
                   if (ncr <= 0) cycle
 
-                  write (nfile) bra_csf_index - ncfi0 + 1, ket_csf_index - ncff0 + 1, ncr
-                  write (nfile) (label(i),coeff(i),i=1,ncr)
+                  write (coefficient_scratch_unit) bra_csf_index - ncfi0 + 1, ket_csf_index - ncff0 + 1, ncr
+                  write (coefficient_scratch_unit) (label(i),coeff(i),i=1,ncr)
                   nmct = nmct + ncr
 
 !
@@ -181,15 +180,15 @@
 !
 !   Sort the MCT coefficients by integral labels
 !
-            call trsort (name, nfile, nfile2, ldbpa(2), transition_type_index, iblki, iblkf)
-            close(nfile, status="delete")
+            call trsort (name, coefficient_scratch_unit, transition_angular_unit, ldbpa(2), transition_type_index, iblki, iblkf)
+            close(coefficient_scratch_unit, status="delete")
 ! end of the loops for blocks
          end do
       end do
 !
 !   Read the data back as required by OSCL conventions
 !
-      rewind (nfile2)
+      rewind (transition_angular_unit)
       return
 !
       return

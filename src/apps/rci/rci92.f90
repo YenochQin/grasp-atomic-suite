@@ -24,6 +24,8 @@
 !***********************************************************************
 !                                                                      *
       program rci92
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use calculation_file_units, only: calculation_log_unit
 !                                                                      *
 !   Entry routine for RCI92. Controls the entire computation.          *
 !                                                                      *
@@ -41,7 +43,6 @@
 !   M o d u l e s
 !-----------------------------------------------
       use calculation_input_defaults, only: inpci, ndef, ndump
-      use where_c, only: imcdf
       use rci_prerun_settings, only: coeffcut1, coeffcut2, iprerun, ncsfpre
       use numeric_constants, only: eleven, eps, four, half, one, seven, ten, tenth, three, two, zero
       use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
@@ -90,7 +91,6 @@
 !-----------------------------------------------
 !
 
-      imcdf = 26                                 ! Unit for rci.res file
       iprerun = 0
       mpi_rank = 0
       mpi_process_count = 1
@@ -127,9 +127,9 @@
 
 ! Now the name of the state is known, open the log file
 
-      open(unit=734, file=trim(name)//".clog",status="unknown")
-      write(734,"(a)") "y            ! Default settings"
-      write(734,"(a)") trim(name)
+      open(newunit=calculation_log_unit, file=trim(name)//".clog",status="unknown")
+      write(calculation_log_unit,"(a)") "y            ! Default settings"
+      write(calculation_log_unit,"(a)") trim(name)
 
 !         ...Form the full name of the files used on node-0
 
@@ -177,17 +177,17 @@
 !
 !   Append a summary of the inputs to the  .sum  file
 !
-      write (6, *) "Calling STRSUM..."
+      write (output_unit, *) "Calling STRSUM..."
       call strsum
 !
 !   Set up the table of logarithms of factorials
 !
-      write (6, *) "Calling FACTT..."
+      write (output_unit, *) "Calling FACTT..."
       call factt
 !
 !   Calculate all the needed Rk integrals
 !
-      write (6, *) "Calling GENINTRK..."
+      write (output_unit, *) "Calling GENINTRK..."
       call genintrk (mpi_rank, mpi_process_count, ndum, max_orbital_two_j)
 !
 !   If transverse interaction comput Breit integrals of type 1 and 2
@@ -201,7 +201,7 @@
 !
 !   Proceed with the CI calculation
 !
-      write (6, *) "Calling MATRIX..."
+      write (output_unit, *) "Calling MATRIX..."
 
       call matrix (core_subshell_count, max_orbital_two_j)
 
@@ -211,12 +211,12 @@
       end if
 
       if (mpi_rank == 0) then
-         write (6, *)
-         write (6, *)
-         write (6, *) "Finish time, Statistics"
-         write (6, *)
+         write (output_unit, *)
+         write (output_unit, *)
+         write (output_unit, *) "Finish time, Statistics"
+         write (output_unit, *)
       end if
-      close(734)
+      close(calculation_log_unit)
       call stoptime (start_clock_count, "RCI")
 !      CALL SYSTEM_CLOCK (NCOUNT2, NCOUNT_RATE, NCOUNT_MAX)
 !      NCOUNT2 = NCOUNT2 - NCOUNT1

@@ -2,6 +2,7 @@
 !                                                                      *
       subroutine setmixmpi(name, idblk)
       use calculation_state_files, only: ci_mixing_suffix
+      use calculation_file_units, only: mixing_output_unit
 !                                                                      *
 !   Opens the  .mix  file on stream 25; writes a header to this file;  *
 !   calls LODMIX to interactively determine the eigenpairs required.   *
@@ -40,12 +41,12 @@
 !-----------------------------------------------
 !
       if (mpi_rank == 0) then
-         call openfl (25, trim(name)//ci_mixing_suffix, form, status, mpi_error_code)
+         call openfl (mixing_output_unit, trim(name)//ci_mixing_suffix, form, status, mpi_error_code)
          if (mpi_error_code /= 0) then
             call stopmpi ("setmix: Error when opening .cimix file", mpi_rank)
          end if
 
-         write (25) "G92MIX"
+         write (mixing_output_unit) "G92MIX"
       end if
 
       call lodmixmpi (idblk)

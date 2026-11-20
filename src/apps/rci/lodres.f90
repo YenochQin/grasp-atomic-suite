@@ -1,6 +1,8 @@
 !***********************************************************************
 !                                                                      *
       subroutine lodres
+      use, intrinsic :: iso_fortran_env, only: output_unit
+      use calculation_file_units, only: calculation_log_unit
 !                                                                      *
 !   Loads the data from the  .res  file. A number of checks are made   *
 !   to ensure correctness and consistency.                             *
@@ -27,7 +29,7 @@
       use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, mfff, pzff, mfii, &
           pzii, radial_large_components, radial_small_components, pfff, qfff, pfii, qfii
       use breit_frequency_scale, only: wfact
-      use where_c, only: imcdf
+      use where_c, only: restart_matrix_unit
       use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, ncmaxblk, symmetry_block_count
       use csf_block_cutoffs, only: iccut, iccutblk
       use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
@@ -49,35 +51,36 @@
 !     POINTER (piccutblk, iccutblk(1))
 !
 !-----------------------------------------------------------------------
-      write (6, *) "Calling lodres ..."
+      write (output_unit, *) "Calling lodres ..."
 !
 !   Read the basic parameters of the electron cloud; check these
 !   against those deduced from the  .csl file
 !
-      read (imcdf) nelecr, ncfres, nwres, nblockres
+      read (restart_matrix_unit) nelecr, ncfres, nwres, nblockres
 
       if (nelecr/=electron_count .or. ncfres/=csf_count .or. nwres/=orbital_count .or. nblockres/=symmetry_block_count&
          ) stop "lodres: NELEC/NCF/NW does not match"
 !
 !   Read the nuclear parameters
 !
-      read (imcdf) nuclear_charge, emn
-      read (imcdf) nuclear_model_parameter_count, (nuclear_model_parameters(i),i=1,nuclear_model_parameter_count)
-      read (imcdf) radial_point_count, (negative_radius_times_potential(i),i=1,radial_point_count), first_grid_index_beyond_fermi_c
+      read (restart_matrix_unit) nuclear_charge, emn
+      read (restart_matrix_unit) nuclear_model_parameter_count, (nuclear_model_parameters(i),i=1,nuclear_model_parameter_count)
+      read (restart_matrix_unit) radial_point_count, (negative_radius_times_potential(i),i=1,radial_point_count), &
+         first_grid_index_beyond_fermi_c
 
       if (radial_point_count > max_radial_points) stop "lodres: N greater than NNNP"
 !
 !   Read the physical effects specifications
 !   iccutblk() is now an array of length nblock.
 !
-      read (imcdf) speed_of_light_au, lfordr, (iccutblk(i),i=1,symmetry_block_count), ltrans, wfact, lvp, &
+      read (restart_matrix_unit) speed_of_light_au, lfordr, (iccutblk(i),i=1,symmetry_block_count), ltrans, wfact, lvp, &
          lnms, lsms
 !
 !   Read the remaining parameters controlling the radial grid and the
 !   grid arrays
 !
       np10 = radial_point_count + 10
-      read (imcdf) radial_grid_scale, transformed_grid_step, asymptotic_grid_step, (radial_grid(i),i=1,np10), &
+      read (restart_matrix_unit) radial_grid_scale, transformed_grid_step, asymptotic_grid_step, (radial_grid(i),i=1,np10), &
          & (radial_grid_derivative(i),i=1,np10), (radial_derivative_over_radius(i),i=1,&
          np10)
 !
@@ -97,11 +100,12 @@
 !   Read the orbital wavefunctions and the associated arrays
 !
       do orbital_index = 1, orbital_count
-         read (imcdf) orbital_energy_parameters(orbital_index), orbital_origin_exponents(orbital_index), &
+         read (restart_matrix_unit) orbital_energy_parameters(orbital_index), orbital_origin_exponents(orbital_index), &
             & orbital_origin_parameters(orbital_index), &
             & orbital_last_grid_index(orbital_index)
-         read (imcdf) (radial_large_components(i,orbital_index),i=1,orbital_last_grid_index(orbital_index)), &
-            & (radial_small_components(i,orbital_index),i=1, &
+         read (restart_matrix_unit) (radial_large_components(i,orbital_index),i=1,orbital_last_grid_index(orbital_index)), &
+            & (radial_small_components(i, &
+            orbital_index),i=1, &
             & orbital_last_grid_index(orbital_index))
       end do
 !
@@ -110,9 +114,9 @@
       write (stderr_unit, *) "Estimate contributions from the self-energy?"
       lse = getyn()
       if (lse) then
-        write(734,"(a)") "y            ! Estimate contributions from the self-energy?"
+        write(calculation_log_unit,"(a)") "y            ! Estimate contributions from the self-energy?"
       else
-        write(734,"(a)") "n            ! Estimate contributions from the self-energy?"
+        write(calculation_log_unit,"(a)") "n            ! Estimate contributions from the self-energy?"
       end if
 
       return

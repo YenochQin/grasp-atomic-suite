@@ -1,5 +1,6 @@
 !***********************************************************************
       subroutine setsum(file_path)
+      use calculation_file_units, only: summary_output_unit
 !***********************************************************************
 !-----------------------------------------------
 !    M O D U L E S
@@ -25,7 +26,7 @@
       integer :: open_status
 !-----------------------------------------------
 
-      call openfl (24, file_path, form, status, open_status)
+      call openfl (summary_output_unit, file_path, form, status, open_status)
       if (open_status /= 0) then
          write (stderr_unit, *) "Error when opening ", file_path
          stop

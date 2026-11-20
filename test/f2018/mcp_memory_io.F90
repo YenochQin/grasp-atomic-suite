@@ -1,5 +1,6 @@
 ! Fault injection between the production loader's counting and loading passes.
 module memory_io_injection
+    use mcp_file_metadata, only: mcp_input_units
     implicit none (type, external)
     logical :: inject = .false.
     character(40) :: injected_case
@@ -11,32 +12,32 @@ contains
         logical :: omit
         if (.not.inject) return
         inject = .false.
-        close(32)
-        open(32, file=trim(injected_file), status="replace", form="unformatted")
-        write(32) "MCP", 1, injected_rank, injected_ranks
-        write(32) 2, 1, 1
-        write(32) .false., 1, .false.
+        close(mcp_input_units(32))
+        open(newunit=mcp_input_units(32), file=trim(injected_file), status="replace", form="unformatted")
+        write(mcp_input_units(32)) "MCP", 1, injected_rank, injected_ranks
+        write(mcp_input_units(32)) 2, 1, 1
+        write(mcp_input_units(32)) .false., 1, .false.
         omit = injected_case == "load-block-header"
-        if (.not.omit) write(32) "MCP", 1, 1, 1
+        if (.not.omit) write(mcp_input_units(32)) "MCP", 1, 1, 1
         omit = omit .or. injected_case == "load-label"
         if (.not.omit) then
             if (injected_case == "load-short-label") then
-                write(32) 42
+                write(mcp_input_units(32)) 42
             else
-                write(32) 42, 1
+                write(mcp_input_units(32)) 42, 1
             end if
         end if
         omit = omit .or. injected_case == "load-payload"
         if (.not.omit) then
             if (injected_case == "load-short-payload") then
-                write(32) 1
+                write(mcp_input_units(32)) 1
             else
-                write(32) 1, 1, 0.25_real64
+                write(mcp_input_units(32)) 1, 1, 0.25_real64
             end if
         end if
         omit = omit .or. injected_case == "load-sentinel"
-        if (.not.omit) write(32) 0, 0
-        flush(32)
+        if (.not.omit) write(mcp_input_units(32)) 0, 0
+        flush(mcp_input_units(32))
     end subroutine rewrite_input
 end module memory_io_injection
 
@@ -90,7 +91,7 @@ program mcp_memory_io
     use, intrinsic :: iso_fortran_env, only: real64
     use rmcdhf_mem_c, only: lab_32, ncontr_32, coeff_32, indx_32, iclmn_32
     use setmcp_mem_I, only: setmcp_mem
-    use memory_io_injection, only: inject, injected_case, injected_file, injected_rank, injected_ranks, &
+    use memory_io_injection, only: mcp_input_units, inject, injected_case, injected_file, injected_rank, injected_ranks, &
        & rewrite_input
 #ifdef MCP_MPI
     use mpi_state, only: mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize, mpi_init, &
@@ -123,40 +124,41 @@ program mcp_memory_io
     injected_file = filename
     injected_rank = mpi_rank
     injected_ranks = mpi_process_count
-    open(32, file=trim(filename), form="unformatted", status="replace")
-    write(32) "MCP", 1, mpi_rank, mpi_process_count
-    write(32) 2, 1, 1
-    write(32) .false., 1, .false.
+    allocate(mcp_input_units(32:32))
+    open(newunit=mcp_input_units(32), file=trim(filename), form="unformatted", status="replace")
+    write(mcp_input_units(32)) "MCP", 1, mpi_rank, mpi_process_count
+    write(mcp_input_units(32)) 2, 1, 1
+    write(mcp_input_units(32)) .false., 1, .false.
     if (.not. (corrupt .and. scenario == "block-header")) then
         if (scenario == "empty") then
-            write(32) "MCP", 1, 1, 0
+            write(mcp_input_units(32)) "MCP", 1, 1, 0
         else
-            write(32) "MCP", 1, 1, 1
+            write(mcp_input_units(32)) "MCP", 1, 1, 1
         end if
     end if
     if (.not. (corrupt .and. (scenario == "block-header" .or. scenario == "label"))) then
         if (scenario == "empty") then
-            write(32) 0, 0
+            write(mcp_input_units(32)) 0, 0
         else
             if (corrupt .and. scenario == "short-label") then
-                write(32) 42
+                write(mcp_input_units(32)) 42
             else
-                write(32) 42, 1
+                write(mcp_input_units(32)) 42, 1
             end if
             if (.not. (corrupt .and. scenario == "payload")) then
                 if (corrupt .and. scenario == "short-payload") then
-                    write(32) 1
+                    write(mcp_input_units(32)) 1
                 else
-                    write(32) 1, 1, 0.25_real64
+                    write(mcp_input_units(32)) 1, 1, 0.25_real64
                 end if
-                if (.not. (corrupt .and. scenario == "sentinel")) write(32) 0, 0
+                if (.not. (corrupt .and. scenario == "sentinel")) write(mcp_input_units(32)) 0, 0
             end if
         end if
     end if
-    rewind(32)
-    read(32)
-    read(32)
-    read(32)
+    rewind(mcp_input_units(32))
+    read(mcp_input_units(32))
+    read(mcp_input_units(32))
+    read(mcp_input_units(32))
     call setmcp_mem(1, 32)
     if (corrupt) error stop "Corrupt MCP was accepted"
     if (scenario == "empty") then
@@ -168,7 +170,7 @@ program mcp_memory_io
         if (size(coeff_32) /= 1 .or. coeff_32(1) /= 0.25_real64) error stop "MCP coefficient"
         if (indx_32(1) /= 1 .or. iclmn_32(1) /= 1) error stop "MCP indices"
     end if
-    close(32, status="delete")
+    close(mcp_input_units(32), status="delete")
 #ifdef MCP_MPI
     call MPI_Barrier(MPI_COMM_WORLD, status)
     call MPI_Finalize(status)

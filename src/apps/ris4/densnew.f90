@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
 subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
+    use calculation_file_units, only: one_body_cache_unit
 !       SUBROUTINE DENSNEW(DOIT,DINT1,DINT2,DINT3,                      &
 !                          DINT4,DINT5,DINT6,DINT7,                     &
 !                          DINT1VEC,DENS1VEC)
@@ -156,17 +157,17 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
                     elemnt7 = elemnt7 + dint7(orbital_index,orbital_index)*shell_coefficients(orbital_index)
                   end if
     8           continue
-                if (doit==1) write(50) csf_index,ir,ncontr
+                if (doit==1) write(one_body_cache_unit) csf_index,ir,ncontr
                 do i = 1,ncontr
                   lab = ia_s(i)*(orbital_label_radix + 1)
-                  if (doit==1) write(50) tshell_s(i),lab
+                  if (doit==1) write(one_body_cache_unit) tshell_s(i),lab
                 end do
               else
                 if (abs (shell_coefficients(1)) > cutoff) then
                   if (orbital_kappa(orbital_index)==orbital_kappa(ket_orbital_index)) then
-                    if (doit==1) write(50) csf_index,ir,1
+                    if (doit==1) write(one_body_cache_unit) csf_index,ir,1
                     lab = orbital_index*orbital_label_radix + ket_orbital_index
-                    if (doit==1) write(50) shell_coefficients(1),lab
+                    if (doit==1) write(one_body_cache_unit) shell_coefficients(1),lab
                     elemnt1 = elemnt1 + dint1(orbital_index,ket_orbital_index)*shell_coefficients(1)
                     elemnt2 = elemnt2 + dint2(orbital_index,ket_orbital_index)*shell_coefficients(1)
                     elemnt3 = elemnt3 + dint3(orbital_index,ket_orbital_index)*shell_coefficients(1)
@@ -208,10 +209,10 @@ subroutine densnew(doit,dint1,dint2,dint3,dint4,dint5,dint6,dint7)
    12   continue
    13 continue
 
-       if (doit==1) write(50) -1
+       if (doit==1) write(one_body_cache_unit) -1
 !
 ! Empty the buffer and close file
-      if (doit==1) close(50)
+      if (doit==1) close(one_body_cache_unit)
 !
 !   Deallocate storage for the arrays in BUFFER
       call alcbuf (3)

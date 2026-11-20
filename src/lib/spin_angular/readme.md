@@ -600,4 +600,6 @@ $$
 
 ## 来源
 
-角向实现源自 GRASP 的 Gaigalas 例程。Racah 求值实现的原始注释记录了 N. S. Scott 与 C. Froese Fischer 的贡献。GRASP 许可证见[仓库 LICENSE](../../../LICENSE)，历史实现备注见[原 ReadMe](ReadMe)。
+角向实现源自 GRASP 的 Gaigalas 例程。Racah 求值实现的原始注释记录了 N. S. Scott 与 C. Froese Fischer 的贡献。GRASP 许可证见[仓库 LICENSE](../../../LICENSE)。
+
+G. Gaigalas 于 2009-11-22 记录了 GRASP2K 中两处需要比较 CSF 编号的修正。仅 seniority 不同的两个 CSF 可以有相同的占据数，仍应按非对角元处理。现行 `onescalar` 在这种情况下将同壳层标量系数置零，`rkco_gg` 只在 CSF 对角元调用末段的闭壳层回调。 [单电子标量入口](one_electron_scalar_coefficients.f90) · [双电子角向入口](two_electron_angular_coefficients.f90)

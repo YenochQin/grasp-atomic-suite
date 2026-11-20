@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine alcnta(isldr, isldr1, xsldr, ntdim, imode)
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !   This  subprogram allocates (IMODE = 1), reallocates (IMODE = 2),   *
 !   and deallocates (IMODE = 3) storage for  certain arrays that are   *
@@ -65,7 +66,7 @@
 !
       case default
 !
-         write (6, *) "ALCNTA: Invalid argument IMODE = ", imode
+         write (output_unit, *) "ALCNTA: Invalid argument IMODE = ", imode
          stop
 !
       end select

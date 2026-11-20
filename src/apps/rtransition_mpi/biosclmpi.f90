@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       program bioscl
+      use, intrinsic :: iso_fortran_env, only: output_unit
 !                                                                      *
 !     This program calculates the transition parameters for a          *
 !     transition between an initial and a final state                  *
@@ -70,16 +71,16 @@
       ntest = 1001
 
       if (mpi_rank == 0) then
-         write (6, *)
-         write (6, *) " Default settings?"
+         write (output_unit, *)
+         write (output_unit, *) " Default settings?"
          yes = getyn()
-         write (6, *)
+         write (output_unit, *)
          if (yes) then
             ndef = 0
             ndump = 1
          else
             ndef = 1
-            write (6, *) " Dump angular data to file?"
+            write (output_unit, *) " Dump angular data to file?"
             yes = getyn()
             if (yes) then
                ndump = 1
@@ -87,10 +88,10 @@
                ndump = 0
              end if
          end if
-         write (6, *)
-         write (6, *) " Input from a CI calculation?"
+         write (output_unit, *)
+         write (output_unit, *) " Input from a CI calculation?"
          yes = getyn()
-         write (6, *)
+         write (output_unit, *)
          if (yes) then
             inpci = 0
          else

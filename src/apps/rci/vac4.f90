@@ -1,6 +1,7 @@
 !***********************************************************************
 !                                                                      *
       subroutine vac4
+      use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 !                                                                      *
 !   This routine sets up the fourth-order vacuum polarization poten-   *
 !   tial using equations (11) and (12) of L Wayne Fullerton and  G A   *
@@ -102,7 +103,8 @@
       end if
 !
       if (ldbpr(8)) then
-         write (99, '(/,/,/," ++++++++++ VAC4 ++++++++++"/,/,2(" -------- r -------- ----- VV2 (r) -----",&
+         call ensure_debug_output()
+         write (angular_debug_unit, '(/,/,/," ++++++++++ VAC4 ++++++++++"/,/,2(" -------- r -------- ----- VV2 (r) -----",&
             &" ----- VV4 (r) -----"))')
          nb2 = radial_point_count/2
          if (2*nb2 == radial_point_count) then
@@ -114,10 +116,12 @@
             ii1 = ii
             ii2 = ii1 + row_count
             if (ii2 <= radial_point_count) then
-               write (99, '(1p,6(1x,1d19.12))') radial_grid(ii1), tb(ii1), tc(ii1), radial_grid(ii2), tb(ii2), tc(&
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1p,6(1x,1d19.12))') radial_grid(ii1), tb(ii1), tc(ii1), radial_grid(ii2), tb(ii2), tc(&
                   ii2)
             else if (ii1 <= radial_point_count) then
-               write (99, '(1p,6(1x,1d19.12))') radial_grid(ii1), tb(ii1), tc(ii1)
+               call ensure_debug_output()
+               write (angular_debug_unit, '(1p,6(1x,1d19.12))') radial_grid(ii1), tb(ii1), tc(ii1)
             end if
          end do
       end if
