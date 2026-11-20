@@ -145,7 +145,7 @@ def output(binary: str, root: Path) -> None:
 
 def entrypoints(root: Path) -> None:
     for variant in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi"):
-        directory = root / "src" / "appl" / variant
+        directory = root / "src" / "apps" / variant
         mpi = variant.endswith("_mpi")
         stem = "getscdmpi" if mpi else "getscd"
         hook = "npol_init_mpi" if mpi else "npol_init"
@@ -161,21 +161,26 @@ def entrypoints(root: Path) -> None:
             assert calls[calls.index("nucpot") + 1] == "setrwfmpi"
         for filename in (f"{stem}.f90", f"{stem}_I.f90"):
             declaration = (directory / filename).read_text().lower()
-            arguments = "eol, idblk, isofile, rwffile" + (", npfile" if enabled else "")
+            declaration = re.sub(r"[ \t]*&\n[ \t]*&?[ \t]*", " ", declaration)
+            arguments = "extended_optimal_level, block_labels, isotope_file_path, radial_file_path"
+            if enabled:
+                arguments += ", nuclear_polarization_file_path"
             assert re.search(r"subroutine\s+" + stem + r"\s*\(" + arguments + r"\)", declaration)
             if not enabled:
-                assert "npol" not in declaration and "npfile" not in declaration
+                assert "npol" not in declaration and "nuclear_polarization_file_path" not in declaration
         main = (directory / ("rscfmpivu.f90" if mpi else "rscfvu.f90")).read_text().lower()
+        main = re.sub(r"[ \t]*&\n[ \t]*&?[ \t]*", " ", main)
+        call_mpi = r"call getscdmpi\s*\(extended_optimal_level, block_labels, file1, file2"
         if not enabled:
-            assert "npol" not in main and "npfile" not in main
-            assert re.search(r"call getscdmpi\s*\(eol, idblk, file1, file2\s*\)", main)
+            assert "npol" not in main and "nuclear_polarization_file_path" not in main
+            assert re.search(call_mpi + r"\s*\)", main)
         elif mpi:
-            assert re.search(r"npfile = (['\"])\1", main)
-            assert re.search(r"npfile = trim\(permdir\) // (['\"])/npol\.inp\1", main)
-            assert re.search(r"call getscdmpi\s*\(eol, idblk, file1, file2, npfile\)", main)
+            assert re.search(r"nuclear_polarization_file_path = (['\"])\1", main)
+            assert re.search(r"nuclear_polarization_file_path = trim\(serial_io_directory\) // (['\"])/npol\.inp\1", main)
+            assert re.search(call_mpi + r", nuclear_polarization_file_path\)", main)
         else:
             assert re.search(
-                r"call getscd \(eol, idblk, (['\"])isodata\1, "
+                r"call getscd \(extended_optimal_level, block_labels, (['\"])isodata\1, "
                 r"files%initial_orbitals, (['\"])npol\.inp\2\)", main)
         # No second matrix contribution and MODE=0 retained in both layouts.
         setham = (directory / "setham.f90").read_text().lower()
@@ -184,7 +189,7 @@ def entrypoints(root: Path) -> None:
     # Rejected solver variants remain absent from the supported source tree.
     for variant in ("rmcdhf90", "rmcdhf90_mem", "rmcdhf90_mpi", "rmcdhf90_mem_mpi",
                     "rmcdhf_mem_strict_mpi", "rmcdhf_mem_diag_mpi"):
-        assert not (root / "src/appl" / variant).exists(), variant
+        assert not (root / "src/apps" / variant).exists(), variant
 
 
 def mpi_cases(command: list[str], root: Path, failure: bool) -> None:

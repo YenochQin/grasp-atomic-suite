@@ -58,11 +58,11 @@ new mixing coefficients are needed.
 
 ## Parallel and numerical implementation
 
-- [rdensity.f90](../../src/appl/rdensity/rdensity.f90) is shared by both targets.
+- [rdensity.f90](../../src/apps/rdensity/rdensity.f90) is shared by both targets.
   Only rank zero reads interactive options, then broadcasts them. Each rank
   independently loads the read-only CSFs, nuclear data, wavefunctions and mixing
   coefficients using the existing suite libraries. No library was copied.
-- [natorbnew.f90](../../src/appl/rdensity/natorbnew.f90) assigns columns cyclically,
+- [natorbnew.f90](../../src/apps/rdensity/natorbnew.f90) assigns columns cyclically,
   `IC=rank+1,NCF,workers`, as in RHFS/RIS. Each process has its own mutable angular
   workspace. Exact J/parity and one-body occupation selection rules reject zero
   contributions before `ONESCALAR`; the coefficient cutoff remains `1D-10`.
@@ -80,7 +80,7 @@ new mixing coefficients are needed.
   rank**. Density-matrix storage now scales as `8*NW*NW*NVEC` bytes per rank;
   CSF and CI arrays are still replicated. The CSF pair traversal remains
   quadratic, and I/O, eigensystems and output remain serial on root.
-- [natural_orbitals.f90](../../src/appl/rdensity/natural_orbitals.f90) shares the
+- [natural_orbitals.f90](../../src/apps/rdensity/natural_orbitals.f90) shares the
   eigensolver and radial rotation between serial/MPI. Arrays use actual block
   sizes; nonconsecutive principal quantum numbers and more than 20 orbitals in
   a kappa block are supported. LAPACK status is checked. Ordering 1 requires

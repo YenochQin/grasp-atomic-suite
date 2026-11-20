@@ -1,10 +1,28 @@
 # 普通程序命名与目录迁移
 
+## 应用源码目录和变量命名
+
+自 2026-11-20 起，suite 的 20 个应用源码目录位于 `src/apps/`。CMake、测试和网格补丁器的
+`atomic-suite` 布局使用该路径。`grasp2018` 布局及历史来源快照中的 `src/appl/` 对应原目录。
+
+应用中的共享变量和形参采用 `src/lib/` 的命名约定。典型用法包括区分 CSF 数量和索引
+（`csf_count`、`bra_csf_index`、`ket_csf_index`），区分 MPI rank 和进程数
+（`mpi_rank`、`mpi_process_count`），以及区分径向网格和轨道索引
+（`radial_index`、`orbital_index`）。实现和显式接口中的同一形参使用同名。使用关键字实参的
+Fortran 调用方应以当前接口声明为准。
+
+本次迁移涉及 914 份 Fortran 文件的 3,261 项标识符。在包含当时 I/O 改动的验证副本中，GNU Fortran 15.3.0
+的 Release 和 Check 配置均启用串行目标、MPI 和 jj2lsj OpenMP，各通过 114 项 CTest。使用同一组夹具比较迁移前后的
+Release 二进制，串行和双进程 MPI 各有 16 个波函数、混合系数和 MCP 文件逐字节一致。
+RCI 的 Coulomb 和 Breit 路径各自生成的混合系数文件也逐字节一致。
+
+## 程序目录与可执行文件
+
 日期：2026-11-11。基于 `c47f4d4` 及后续 MPI 描述符输入的工作树修改。
 已改造的普通程序采用功能名称，去掉旧 `90` 标记；语言标准由 `f2018-release/check/audit` 构建配置表明。
 文件仍使用编译器识别的 `.f90` / `.F90` 扩展名。
 
-| 原 `src/appl` 目录 | 当前目录 | 当前可执行文件 |
+| 原 `src/appl` 目录 | 当前 `src/apps` 目录 | 当前可执行文件 |
 | --- | --- | --- |
 | `gj90` | `gj` | **`gj`、`gj_mpi`**，原名 `gj90`、`gj90_mpi` |
 | `rhfs90` | `rhfs` | `rhfs`、`rhfs_mpi` |

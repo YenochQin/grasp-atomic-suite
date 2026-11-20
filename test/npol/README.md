@@ -1,6 +1,6 @@
 # Nuclear-polarization code tests
 
-The application consumers come from the fresh GRASP copies in `src/appl/rmcdhf*`,
+The application consumers come from the fresh GRASP copies in `src/apps/rmcdhf*`,
 not the separate strict/diagnostic/CSFG solvers. The orbopt sources are retired.
 
 All data are synthetic software fixtures. These tests never start an atomic SCF

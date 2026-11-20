@@ -39,7 +39,7 @@
 
 ## 原版来源与保留边界
 
-原版四个应用复制到 `src/appl/rmcdhf/`、`rmcdhf_mem/`、`rmcdhf_mpi/`、
+原版四个应用复制到 `src/apps/rmcdhf/`、`rmcdhf_mem/`、`rmcdhf_mpi/`、
 `rmcdhf_mem_mpi/`；旧 `rmcdhf_orbopt*` 四个目标及其实现已于 2026-11-08 移除。
 此前误加到 orbopt 的 16 个文件改动已撤回，并逐字节核对为 suite 基准版本。
 NP 的生产消费者测试现在编译新复制的原版应用例程。

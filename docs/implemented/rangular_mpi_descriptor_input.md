@@ -9,7 +9,7 @@
 
 ## 输入适配
 
-[rangular_mpi_input.f90](../../src/appl/rangular_mpi/rangular_mpi_input.f90) 负责选项、路径及广播。
+[rangular_mpi_input.f90](../../src/apps/rangular_mpi/rangular_mpi_input.f90) 负责选项、路径及广播。
 描述符路径由 rank 0 调用现有 [csf_descriptor_reader](../../src/lib/core/csf_descriptor_reader.f90) 解码，
 安装头部后广播 block/轨道元数据，每个 block 装配原 IQA/JQSA/JCUPA 数组并广播给其它 rank。
 其它 rank 无需打开二进制文件，也不持有描述符原文件的副本。
@@ -93,7 +93,7 @@ set result_directory temp/mpi-descriptor-(date +%Y%m%d-%H%M%S)
 
 ## 计时边界与验证
 
-MPI 复用 [rangular_profile](../../src/appl/rangular/rangular_profile.f90) 的 CSV 格式，不新增逐 CSF 对计时。
+MPI 复用 [rangular_profile](../../src/apps/rangular/rangular_profile.f90) 的 CSV 格式，不新增逐 CSF 对计时。
 每个 rank 的计时相互独立，没有为了记录时间添加全局屏障或归约。
 
 | 阶段 | 内容 |

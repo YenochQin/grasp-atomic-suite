@@ -14,7 +14,7 @@
    缺失或损坏首条 CSF 时，后续计数没有可靠输入保证。应先验证读取和解析状态，再累加占据数。
 2. **P1：检查读取状态之前使用记录，可能覆盖原始错误。**
    `src/lib/lib9290/lodcsl.f90:178` 和
-   `src/appl/rtransition/lodcslm.f90:164`、`rtransition_mpi/lodcslm.f90:164`、
+   `src/apps/rtransition/lodcslm.f90:164`、`rtransition_mpi/lodcslm.f90:164`、
    `rtransition_phase/lodcslm.f90:164` 都先检查 `record(1:2)`，遇到块分隔符时再 READ 并覆盖 `ios`，
    最后才检查状态。异常/EOF 路径不应使用失败读取后的记录，也不应把原始错误交由第二次读取覆盖。
    应分别处理正常记录、允许的 EOF 和读取错误，再识别分隔符。

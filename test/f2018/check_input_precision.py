@@ -31,7 +31,8 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="input-contract-") as temporary:
         work = Path(temporary)
         for variant in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi"):
-            text = source(f"src/appl/{variant}/setcof.f90")
+            text = source(f"src/apps/{variant}/setcof.f90",
+                          historical_path=f"src/appl/{variant}/setcof.f90")
             statements = re.findall(r"^\s*real[^\n]*,\s*parameter\s*::\s*eps\s*=[^\n]+", text, re.I | re.M)
             assert len(statements) == 1
             declaration = statements[0]

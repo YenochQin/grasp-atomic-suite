@@ -59,7 +59,7 @@ enddo
 end program
 """
     for variant in ("rci", "rci_mpi"):
-        text = (root / f"src/appl/{variant}/qed.f90").read_text()
+        text = (root / f"src/apps/{variant}/qed.f90").read_text()
         start = text.index("      real(real64) function ratden")
         end = text.index("      end function ratden", start) + len("      end function ratden")
         with tempfile.TemporaryDirectory(prefix="qed-boundary-") as temporary:

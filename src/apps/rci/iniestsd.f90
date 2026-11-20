@@ -1,0 +1,120 @@
+!***********************************************************************
+!
+      subroutine iniestsd (nmax, csf_count, mpi_rank, mpi_process_count,                    &
+          initial_vector_count, basis, imcdf, hamiltonian_energy_shift)
+!
+!    Routine for providing initial estimates from upper left corner
+!       of the matrix. It is exact (not estimates) if ncf <= nmax which
+!    is currently set to be 400 in the calling routine.
+!
+!    Matrix is sparse and on the disk
+!
+!   Block version by Xinghong He            Last revision: 14 Dec 1998
+!
+!***********************************************************************
+!-----------------------------------------------
+!   M o d u l e s
+!-----------------------------------------------
+      use, intrinsic :: iso_fortran_env, only: real64
+      use array_memory_management, only: alloc, dalloc
+!-----------------------------------------------
+!   I n t e r f a c e   B l o c k s
+!-----------------------------------------------
+      use dspevx_i, only: dspevx
+      use blas_lapack_interfaces, only: dcopy, dspevx
+      use real_vector_initialization, only: dinit
+      implicit none (type, external)
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+       integer, intent(in) :: nmax, csf_count, mpi_rank, mpi_process_count, initial_vector_count, imcdf
+       real(real64), intent(in) :: hamiltonian_energy_shift
+       real(real64), intent(inout):: basis(*)
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+       real(real64), pointer :: ap(:), eigval(:), vec(:), real_workspace(:), hmx(:)
+       integer, pointer :: integer_workspace(:), ifail(:), irow(:)
+       integer :: in, ns, file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count, info, &
+            ierr, j, joff, nelc, ir, nfound
+       real(real64) :: elsto
+!-----------------------------------------------------------------------
+      ns = min (nmax, csf_count)
+
+      call alloc (ap, (ns*(ns+1))/2, "AP", "INIESTSD")
+      call dinit ((ns*(ns+1))/2, 0.0_real64, ap, 1)
+
+!**** separate upper left block of size NS*NS
+
+      call alloc (hmx, csf_count, "HMX", "INIESTSD")
+      call alloc (irow, csf_count, "IROW", "INIESTSD")
+      read (imcdf) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
+      if (mpi_rank == 0) print *, "iniestsd ..........."
+      if (csf_count /= file_csf_count .or.  mpi_rank /= file_mpi_rank                       &
+                    .or. file_mpi_process_count /= mpi_process_count)                         &
+         stop "iniestsd: ncf read wrong"
+
+!          if UPLO = 'U', AP(i + (j-1)*j/2) = A(i,j) for 1<=i<=j;
+!          if UPLO = 'L', AP(i + (j-1)*(2*n-j)/2) = A(i,j) for j<=i<=n.
+
+      do j = mpi_rank + 1, ns, mpi_process_count
+         joff = (j*(j-1))/2
+         read (imcdf) nelc,elsto,(hmx(ir),ir=1,nelc),                   &
+                                (irow(ir),ir=1,nelc)
+         hmx(nelc) = hmx(nelc) - hamiltonian_energy_shift ! Shift the diagonal
+         do ir = 1, nelc
+            ap(irow(ir) + joff) = hmx(ir)
+         end do
+      end do
+
+! Let each node have a complete copy of ap
+
+!      CALL gdsummpi (ap, (NS*(NS+1))/2)
+
+! To be in step with other cases, go through the whole block.
+!
+! This is not necessary since currently the file pointer is moved
+! to the absolute position of the .res files which is always counted
+! from the begining of the .res files of each node. Besides, the
+! following segment seems not working properly for the last block.
+! Xinghong He 98-12-14
+
+      !mylast = j - nprocs
+      !DO j = mylast, ncf, nprocs
+      !   READ (imcdf)
+      !ENDDO
+
+      call dalloc (hmx,"HMX", "INIESTSD")
+      call dalloc (irow, "HMX", "INIESTSD")
+
+      call alloc (eigval,ns,"EIGVAL","INIESTSD")
+      call alloc (vec,ns*initial_vector_count,"VEC","INIESTSD")
+      call alloc (real_workspace,8*ns,"WORK","INIESTSD")
+      call alloc (integer_workspace,5*ns,"IWORK","INIESTSD" )
+      call alloc (ifail,ns, "IFAIL","INIESTSD" )
+
+      call dspevx ("Vectors also","In a range","Upper triangular",     &
+                ns,ap,-1.0_real64,-1.0_real64,1,initial_vector_count,0.0_real64,                        &
+                nfound,eigval,vec,ns,real_workspace,integer_workspace,ifail,info)
+      ierr = -abs (info)
+
+!******************************************************************
+
+!       ..Build the Basis.
+
+      call dinit (csf_count*initial_vector_count, 0.0_real64, basis, 1)
+!       ...scatter the vectors
+      do j = 1, initial_vector_count
+         call dcopy (ns, vec(ns*(j-1)+1:ns*(j-1)+(ns)),1, basis(csf_count*(j-1)+1), 1)
+      end do
+      call dcopy (initial_vector_count, eigval,1,basis(initial_vector_count*csf_count+1),1)
+
+      call dalloc (ap, "AP", "INIESTSD")
+      call dalloc (eigval,"EIGVAL", "INIESTSD")
+      call dalloc (vec, "VEC", "INIESTSD")
+      call dalloc (real_workspace, "WORK", "INIESTSD")
+      call dalloc (integer_workspace, "IWORK", "INIESTSD")
+      call dalloc (ifail, "IFAIL", "INIESTSD")
+
+      return
+      end subroutine iniestsd

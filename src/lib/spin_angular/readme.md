@@ -22,7 +22,7 @@ H_{LR}^{\mathrm{DC}}=
 +\sum_{abcd,k}V_{LR}^{k}(abcd)\,R^k(abcd).
 $$
 
-$T$ 对应 `shell_coefficients` 输出的单电子权重，$V^k$ 对应传给 `speak` 的 Coulomb 角向贡献。$I$ 是单电子积分，$R^k$ 是 Slater 双电子径向积分。Coulomb 的 $V^k$ 已含单轨道球张量因子。Breit 路径传给 `talk` 的权重按径向积分类型累加。见 [RMCDHF 的矩阵装配](../../appl/rmcdhf/setham.f90)和 [RCI 的 Coulomb/Breit 装配](../../appl/rci/setham_gg.f90)。
+$T$ 对应 `shell_coefficients` 输出的单电子权重，$V^k$ 对应传给 `speak` 的 Coulomb 角向贡献。$I$ 是单电子积分，$R^k$ 是 Slater 双电子径向积分。Coulomb 的 $V^k$ 已含单轨道球张量因子。Breit 路径传给 `talk` 的权重按径向积分类型累加。见 [RMCDHF 的矩阵装配](../../apps/rmcdhf/setham.f90)和 [RCI 的 Coulomb/Breit 装配](../../apps/rci/setham_gg.f90)。
 
 ## 三角选择、Racah 与 Wigner 符号
 
@@ -589,7 +589,7 @@ $$
 
 若 $L_{ab}=-1$，代码取 $L_{ab}=1$。两个下界奇偶不同则拒绝该配对。令 $L$ 为两个下界的较大值，$U$ 为两个上界的较小值，则准许的 $\nu$ 为 $L,L+2,\ldots\le U$。代码返回起点 $L$ 和整数项数 $1+\operatorname{trunc}((U-L)/2)$，对应 `first_direct_nu`、`direct_nu_count` 或交换路径的两项。同侧两个轨道标签相同时跳过交换范围，其余轨道相等关系用于选择积分子类。
 
-对固定多极阶数 $k$，普通多壳层路径对允许的 $\nu\in\{k-1,k,k+1\}$ 调用 [`cxk`](../../appl/rci/cxk.f90)。设 $A_k^{D/E}$ 为对应的重耦合结果（例如四壳层表中的 $B_k$），$s_\mu^{D/E}(\nu,k)$ 是 `cxk` 返回的第 $\mu$ 个张量因子。`direct_breit_coefficients` 和 `exchange_breit_coefficients` 实现
+对固定多极阶数 $k$，普通多壳层路径对允许的 $\nu\in\{k-1,k,k+1\}$ 调用 [`cxk`](../../apps/rci/cxk.f90)。设 $A_k^{D/E}$ 为对应的重耦合结果（例如四壳层表中的 $B_k$），$s_\mu^{D/E}(\nu,k)$ 是 `cxk` 返回的第 $\mu$ 个张量因子。`direct_breit_coefficients` 和 `exchange_breit_coefficients` 实现
 
 $$
 B_{\mu,\nu}^{D/E}=\sum_{k:\,|\nu-k|\le1}

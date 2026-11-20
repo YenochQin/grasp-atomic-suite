@@ -11,7 +11,7 @@ import tempfile
 def main() -> None:
     root = Path(__file__).resolve().parents[2]
     for variant in ("rbiotransform", "rbiotransform_mpi"):
-        app = root / "src/appl" / variant
+        app = root / "src/apps" / variant
         implementation = (app / "bndinv.f90").read_text()
         interface = (app / "bndinv_I.f90").read_text()
         # GNU's procedure association check does not compare explicit bounds.

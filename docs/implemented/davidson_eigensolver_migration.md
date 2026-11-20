@@ -461,4 +461,4 @@ Davidson 迭代、收敛与重启。
   [夹具源码](../../test/f2018/davidson_contracts.F90)
 - Check 唯一失败项 `rci_mpi_breit` 在进入本征求解之前的 Breit 积分阶段触发 `SIGFPE`。
   使用同一 Check 构建产物重新链接改名前的 `libdvd90` 后，同一用例在相同位置复现。
-  [浮点异常位置](../../src/appl/rci_mpi/zkf.f90#L102)
+  [浮点异常位置](../../src/apps/rci_mpi/zkf.f90#L102)

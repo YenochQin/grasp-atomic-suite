@@ -59,7 +59,7 @@ core/peel 轨道顺序保持不变，`SCREENPAR` 继续根据原来的 core 定�
 
 这是原生 TOML 解析，支持注释、多行数组、字符串转义、字面字符串、inline table
 等合法语法。`block_info` 和 `conversion_stats` 不参与径向初猜；不扫描 CSF 数据行。
-输入入口见 [rwfnestimate_input.f90](../../src/appl/rwfnestimate/rwfnestimate_input.f90)。
+输入入口见 [rwfnestimate_input.f90](../../src/apps/rwfnestimate/rwfnestimate_input.f90)。
 
 ## 描述符和 header 的哈希关联
 

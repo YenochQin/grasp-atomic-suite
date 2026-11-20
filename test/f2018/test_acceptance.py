@@ -84,7 +84,7 @@ class AcceptanceTests(unittest.TestCase):
             check_commands([command], "f2018-audit", compiler)
         with self.assertRaises(ValueError):
             check_commands([command], "legacy", compiler)
-        leaked = {**command, "file": "/src/appl/rmcdhf90_csfg_mpi/getaldwt.f90"}
+        leaked = {**command, "file": "/src/apps/rmcdhf90_csfg_mpi/getaldwt.f90"}
         with self.assertRaisesRegex(ValueError, "CSFG source leaked"):
             check_feature_commands([leaked], {"openmp": False, "csfg": False})
 

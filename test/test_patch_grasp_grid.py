@@ -565,7 +565,7 @@ class PatchGridTests(unittest.TestCase):
     def test_suite_unknown_initializer_blocks_changes(self) -> None:
         root = Path(self.temporary.name) / "suite"
         fixture(root, "atomic-suite")
-        unknown = root / "src/appl/new_program.f90"
+        unknown = root / "src/apps/new_program.f90"
         unknown.write_text("      RNT = 2.D-6/Z\n")
         with self.assertRaisesRegex(ValueError, "unrecognized grid initializer"):
             grid.plan(root, grid.Settings(nnnp=1990), "atomic-suite")

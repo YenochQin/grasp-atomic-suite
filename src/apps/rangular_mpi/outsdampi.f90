@@ -1,0 +1,43 @@
+!***********************************************************************
+      subroutine outsdampi(print_details,nonzero_element_count, csf_count)
+!***********************************************************************
+!-----------------------------------------------
+!   C o m m o n   B l o c k s
+!-----------------------------------------------
+      use mpi_state, only: mpi_comm_world, mpi_error_code, mpi_integer, mpi_rank, mpi_reduce, mpi_sum
+      implicit none (type, external)
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      integer, intent(in) :: nonzero_element_count
+      integer, intent(in) :: csf_count
+      logical, intent(in) :: print_details
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+      character(len=9), parameter :: routine_name ="outsdampi"
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+      integer :: nnonz_a
+!-----------------------------------------------
+!
+      call mpi_reduce (nonzero_element_count, nnonz_a, 1, mpi_integer, mpi_sum, 0,  &
+               mpi_comm_world, mpi_error_code)
+      if (mpi_rank == 0) &
+      write(6, *)" ... complete; density of non-zero elements of H(DC):", &
+         nnonz_a, "/", (csf_count*(csf_count + 1))/2
+!
+!   Debug printout
+!
+      if (print_details) then
+        if (mpi_rank == 0) then
+          write (99, *)
+          write (99, *) "From ", routine_name, " :"
+          write (99, '(" Number of nonzero elements in H(DC): ",1i4)') nnonz_a
+          write (6, *) "This part not finished. See ", routine_name
+          write (99, *) "This part not finished. See ", routine_name
+        end if
+      end if
+      return
+      end subroutine outsdampi

@@ -3,7 +3,7 @@
 核查日期：2026-11-10。源码基准：`d181bf4c14c6aecf55f5549cc1faebabd75cb095`。
 
 状态：依据源码完成普通串行主路径的静态梳理；没有修改计算实现，也没有运行新的物理计算或性能测试。
-范围是 `src/appl/rmcdhf/` 的 `rmcdhf` 目标及其主要共享库依赖。
+范围是 `src/apps/rmcdhf/` 的 `rmcdhf` 目标及其主要共享库依赖。
 `rmcdhf_mem`、MPI 和 CSFG 目标各有独立实现，不能直接套用本文的控制流或停止判据。
 strict/diag 独立变体已按用户决定[移除](rejected_rmcdhf_variants.md)。
 本文是计算与状态导航，不是所有深层例程的完整线程安全证明。
@@ -25,9 +25,9 @@ strict/diag 独立变体已按用户决定[移除](rejected_rmcdhf_variants.md)�
 径向积分、矩阵、混合系数和势随 SCF 迭代变化。源码同时保留 EAL 路径，
 但当前普通输入链通常进入 EOL，具体条件见下一节。
 
-[构建定义](../../src/appl/rmcdhf/CMakeLists.txt)链接 `davidson_eigensolver`、`core`、`mod`。
-[入口](../../src/appl/rmcdhf/rscfvu.f90) `PROGRAM RSCFVU` 将
-[mpi_s](../../src/appl/rmcdhf/mpi_s.f90) 中 `MYID/NPROCS` 设为 `0/1`；
+[构建定义](../../src/apps/rmcdhf/CMakeLists.txt)链接 `davidson_eigensolver`、`core`、`mod`。
+[入口](../../src/apps/rmcdhf/rscfvu.f90) `PROGRAM RSCFVU` 将
+[mpi_s](../../src/apps/rmcdhf/mpi_s.f90) 中 `MYID/NPROCS` 设为 `0/1`；
 这些名字和源码中的分工形式不代表此目标实际启动了 MPI。
 
 | 输入或输出 | 作用与主要读写者 |
@@ -48,7 +48,7 @@ strict/diag 独立变体已按用户决定[移除](rejected_rmcdhf_variants.md)�
 然后 `GETSCD → STRSUM → SETMIX（仅 EOL）→ FACTT → SCF`。
 核心轨道数不一致时直接 `ERROR STOP`。
 
-[GETSCD](../../src/appl/rmcdhf/getscd.f90) 的物理数据初始化顺序为：
+[GETSCD](../../src/apps/rmcdhf/getscd.f90) 的物理数据初始化顺序为：
 
 ```text
 SETISO → 设置网格默认值及 ACCY → 可选交互修改
@@ -86,7 +86,7 @@ graph TD
 
 ### 停止条件与更新次序
 
-[SCF](../../src/appl/rmcdhf/scf.f90) 每轮先完成顺序轨道改善，再按
+[SCF](../../src/apps/rmcdhf/scf.f90) 每轮先完成顺序轨道改善，再按
 `NSIC` 上限追加改善当前最不自洽的轨道；`MAXARR` 返回无候选或
 `SCNSTY(K)<=ACCY` 时设置 `CONVG=.TRUE.`。随后写轨道，EOL 分支重建矩阵和权重。
 
@@ -108,7 +108,7 @@ IF (ABS((WTAEV - WTAEV0)/WTAEV) < 0.001*ACCY) CONVG = .TRUE.
 
 ### MATRIX → SETHAM → MANEIG → NEWCO
 
-[MATRIX](../../src/appl/rmcdhf/matrix.f90) 复位 MCP 文件位置并逐 block 执行：
+[MATRIX](../../src/apps/rmcdhf/matrix.f90) 复位 MCP 文件位置并逐 block 执行：
 
 1. 切换当前 `NCF/NELMNT`，分配并读入 `IROW/IENDC` 等稀疏结构，分配 `EMT`。
 2. `SETHAM` 用当前径向轨道生成矩阵元素；返回后 `MATRIX` 计算对角元素的平均值，
@@ -117,7 +117,7 @@ IF (ABS((WTAEV - WTAEV0)/WTAEV) < 0.001*ACCY) CONVG = .TRUE.
 
 若某 block 的 `NEVBLK=0`，则消费并跳过它的系数记录，不执行该 block 的矩阵构造和求本征态步骤。
 
-[SETHAM](../../src/appl/rmcdhf/setham.f90) 同时包含两类贡献：
+[SETHAM](../../src/apps/rmcdhf/setham.f90) 同时包含两类贡献：
 
 - 用 `IQ/FCO/GCO` 等计算角系数的解析对角项，配合 `RINTI/SLATER` 累加。
 - 读 `mcp.31` 的一电子标签及贡献列表，或 `mcp.(32+k)` 的二电子列表；
@@ -126,14 +126,14 @@ IF (ABS((WTAEV - WTAEV0)/WTAEV) < 0.001*ACCY) CONVG = .TRUE.
 不同积分标签的贡献可以落到相同的 `EMT` 元素，因此“积分可独立算”不意味着
 “矩阵可无同步地独立写”。文件当前位置、读取缓冲和矩阵累加也属于该阶段的数据依赖。
 
-[MANEIG](../../src/appl/rmcdhf/maneig.f90) 的路径不能一概称为 Davidson：
+[MANEIG](../../src/apps/rmcdhf/maneig.f90) 的路径不能一概称为 Davidson：
 
 - `NCF=1` 为直接处理的特殊情况。
 - 当前阈值 `N1000=4000`；`NCF<=4000` 由 `INIEST2` 得到结果，不调用大矩阵 Davidson。
 - 较大 block 在初次对角化时用 `INIEST2` 建初猜，后续可复用现有本征向量，
   再调用 `GDVD`，通过回调 `SPICMV2` 计算稀疏矩阵与向量乘积。
 
-[NEWCO](../../src/appl/rmcdhf/newco.f90) 使用新混合系数归一化权重、
+[NEWCO](../../src/apps/rmcdhf/newco.f90) 使用新混合系数归一化权重、
 计算平均能量 `WTAEV`、有效占据数 `UCF` 和 CSF 权重，供下一轮势与轨道方程使用。
 
 ### 积分内核和矩阵乘回调
@@ -167,17 +167,17 @@ IMPROV
   若 ORTHST，则 ORTHY：同 kappa 轨道正交化
 ```
 
-[IMPROV](../../src/appl/rmcdhf/improv.f90) 中，`SOLVE` 失败时若当前方法不是 2，
+[IMPROV](../../src/apps/rmcdhf/improv.f90) 中，`SOLVE` 失败时若当前方法不是 2，
 会改为方法 2，执行 `ORTHSC/SETLAG` 后重试；方法 2 仍失败则 `ERROR STOP`。
 方法切换与重试不是只影响局部数组：约束、轨道状态及控制量也可能变化。
 
-[SOLVE](../../src/appl/rmcdhf/solve.f90) 从 `ESTIM/EIGEN` 得到能量估计，
+[SOLVE](../../src/apps/rmcdhf/solve.f90) 从 `ESTIM/EIGEN` 得到能量估计，
 设置势与方程系数，经 `START/OUT/IN` 作起始、向外和向内积分，
 按方法处理齐次/非齐次解及变分项，再匹配、求范数、数节点并由 `NEWE` 更新能量，直至成功或报告失败。
 `OUT/IN` 和积分核中的网格递推有前后点依赖，不能把所有网格点当作独立任务。
 
-[DAMPOR](../../src/appl/rmcdhf/dampor.f90) 将结果写回 `PF/QF/PZ/MF`；
-[ORTHY](../../src/appl/rmcdhf/orthy.f90) 还可能改写同 kappa 的其他轨道。
+[DAMPOR](../../src/apps/rmcdhf/dampor.f90) 将结果写回 `PF/QF/PZ/MF`；
+[ORTHY](../../src/apps/rmcdhf/orthy.f90) 还可能改写同 kappa 的其他轨道。
 因此按 `IORDER` 后处理的轨道会读取此前已经更新的轨道。
 若改为所有轨道使用同一轮旧快照并同时求解，就改变了迭代算法，需要另外验证收敛行为。
 
@@ -185,15 +185,15 @@ IMPROV
 
 | 例程 | 计算职责与产物 | 主要状态或调用 |
 | --- | --- | --- |
-| [RSCFVU](../../src/appl/rmcdhf/rscfvu.f90)、[GETSCD](../../src/appl/rmcdhf/getscd.f90) | 输入检查、网格/核势/初猜、优化方式与控制参数。 | `SETMCP/SETCSL/SETISO/RADGRD/NUCPOT/NPOL_INIT/SETRWFA`。 |
-| [SCF](../../src/appl/rmcdhf/scf.f90) | 外层轮次、轨道顺序和追加改善、停止判定及输出。 | `MATRIX/NEWCO/SETLAG/IMPROV/MAXARR/ORBOUT`。 |
-| [SETLAG](../../src/appl/rmcdhf/setlag.f90) | 首次建立受约束的轨道对，之后计算正交约束乘子。 | `IECC/ECV`；势、积分及当前轨道工作区。 |
-| [SETCOF](../../src/appl/rmcdhf/setcof.f90) | 当前混合系数、占据和角系数 → 当前轨道的 `DA/XA/YA` 及索引列表。 | `FCO/GCO/DSUBRS`、MCP 读取和动态缓冲。 |
-| [COFPOT](../../src/appl/rmcdhf/cofpot.f90) | 汇总当前轨道方程所需势与附加项。 | `SETCOF → YPOT → XPOT → LAGCON → DACON`。 |
-| [YPOT](../../src/appl/rmcdhf/ypot.f90)、[XPOT](../../src/appl/rmcdhf/xpot.f90) | 系数与径向积分核 → 直接势 `YP`、交换项 `XP/XQ`。 | `YZK`、当前径向轨道；调试分支还有输出。 |
-| [LAGCON](../../src/appl/rmcdhf/lagcon.f90)、[DACON](../../src/appl/rmcdhf/dacon.f90)、[DEFCOR](../../src/appl/rmcdhf/defcor.f90) | 约束项、导数项与延迟修正。 | `orbital_lagrange_multipliers`、`scf_radial_potentials`、`atomic_calculation_state` 的工作数组。 |
-| [IMPROV](../../src/appl/rmcdhf/improv.f90)、[CONSIS](../../src/appl/rmcdhf/consis.f90) | 求候选轨道、计算自洽差异、阻尼与更新。 | 普通版 `CONSIS` 在归一化前执行。 |
-| [SOLVE](../../src/appl/rmcdhf/solve.f90)、[OUT](../../src/appl/rmcdhf/out.f90)、[IN](../../src/appl/rmcdhf/in.f90)、[NEWE](../../src/appl/rmcdhf/newe.f90) | 径向方程积分、边界匹配、节点控制和能量迭代。 | `radial_dirac_workspace/scf_radial_potentials/atomic_calculation_state/scf_iteration_state`；当前轨道能量 `E(J)`。 |
+| [RSCFVU](../../src/apps/rmcdhf/rscfvu.f90)、[GETSCD](../../src/apps/rmcdhf/getscd.f90) | 输入检查、网格/核势/初猜、优化方式与控制参数。 | `SETMCP/SETCSL/SETISO/RADGRD/NUCPOT/NPOL_INIT/SETRWFA`。 |
+| [SCF](../../src/apps/rmcdhf/scf.f90) | 外层轮次、轨道顺序和追加改善、停止判定及输出。 | `MATRIX/NEWCO/SETLAG/IMPROV/MAXARR/ORBOUT`。 |
+| [SETLAG](../../src/apps/rmcdhf/setlag.f90) | 首次建立受约束的轨道对，之后计算正交约束乘子。 | `IECC/ECV`；势、积分及当前轨道工作区。 |
+| [SETCOF](../../src/apps/rmcdhf/setcof.f90) | 当前混合系数、占据和角系数 → 当前轨道的 `DA/XA/YA` 及索引列表。 | `FCO/GCO/DSUBRS`、MCP 读取和动态缓冲。 |
+| [COFPOT](../../src/apps/rmcdhf/cofpot.f90) | 汇总当前轨道方程所需势与附加项。 | `SETCOF → YPOT → XPOT → LAGCON → DACON`。 |
+| [YPOT](../../src/apps/rmcdhf/ypot.f90)、[XPOT](../../src/apps/rmcdhf/xpot.f90) | 系数与径向积分核 → 直接势 `YP`、交换项 `XP/XQ`。 | `YZK`、当前径向轨道；调试分支还有输出。 |
+| [LAGCON](../../src/apps/rmcdhf/lagcon.f90)、[DACON](../../src/apps/rmcdhf/dacon.f90)、[DEFCOR](../../src/apps/rmcdhf/defcor.f90) | 约束项、导数项与延迟修正。 | `orbital_lagrange_multipliers`、`scf_radial_potentials`、`atomic_calculation_state` 的工作数组。 |
+| [IMPROV](../../src/apps/rmcdhf/improv.f90)、[CONSIS](../../src/apps/rmcdhf/consis.f90) | 求候选轨道、计算自洽差异、阻尼与更新。 | 普通版 `CONSIS` 在归一化前执行。 |
+| [SOLVE](../../src/apps/rmcdhf/solve.f90)、[OUT](../../src/apps/rmcdhf/out.f90)、[IN](../../src/apps/rmcdhf/in.f90)、[NEWE](../../src/apps/rmcdhf/newe.f90) | 径向方程积分、边界匹配、节点控制和能量迭代。 | `radial_dirac_workspace/scf_radial_potentials/atomic_calculation_state/scf_iteration_state`；当前轨道能量 `E(J)`。 |
 
 ## 5. 共享状态及生命周期
 

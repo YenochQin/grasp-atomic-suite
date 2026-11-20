@@ -29,7 +29,7 @@ if(TARGET grasp_mpi)
 endif()
 
 add_executable(test.rdensity_natural_orbitals
-    ../src/appl/rdensity/natural_orbitals.f90
+    ../src/apps/rdensity/natural_orbitals.f90
     rdensity/natural_orbitals_test.f90)
 setup_fortran_modules(test.rdensity_natural_orbitals)
 target_link_libraries_Fortran(test.rdensity_natural_orbitals PUBLIC grasp_shared core)
@@ -61,8 +61,8 @@ if(Python3_Interpreter_FOUND)
         endif()
         set(target test.ris4_cache_${variant})
         add_executable(${target} ris4/cache_io.F90
-            "${PROJECT_SOURCE_DIR}/src/appl/ris4/angdata.f90"
-            "${PROJECT_SOURCE_DIR}/src/appl/ris4/angdata_I.f90")
+            "${PROJECT_SOURCE_DIR}/src/apps/ris4/angdata.f90"
+            "${PROJECT_SOURCE_DIR}/src/apps/ris4/angdata_I.f90")
         setup_fortran_modules(${target})
         target_link_libraries_Fortran(${target} PRIVATE grasp_shared)
         set(cache_mpi_arguments)
@@ -176,7 +176,7 @@ add_subdirectory(f2018)
 # Analytical EAL weights exercise the former absent-JCUPA dependency.
 foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
     if(TARGET ${variant})
-        set(app "${PROJECT_SOURCE_DIR}/src/appl/${variant}")
+        set(app "${PROJECT_SOURCE_DIR}/src/apps/${variant}")
         add_executable(test.descriptor_weights_${variant} descriptor_weights.f90
             "${app}/getaldwt.f90" "${app}/getaldwt_I.f90"
             "${app}/itjpo.f90" "${app}/itjpo_I.f90")
@@ -192,7 +192,7 @@ endif()
 
 foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
     if(TARGET ${variant})
-        set(app "${PROJECT_SOURCE_DIR}/src/appl/${variant}")
+        set(app "${PROJECT_SOURCE_DIR}/src/apps/${variant}")
         set(target test.descriptor_input_${variant})
         set(mpi_arguments)
         if(variant MATCHES "_mpi$")
@@ -254,7 +254,7 @@ endif()
 
 foreach(variant rtransition rtransition_phase rtransition_mpi)
     if(TARGET ${variant})
-        set(app "${PROJECT_SOURCE_DIR}/src/appl/${variant}")
+        set(app "${PROJECT_SOURCE_DIR}/src/apps/${variant}")
         set(target test.descriptor_merge_${variant})
         if(variant MATCHES "_mpi$")
             set(suffix mpi)

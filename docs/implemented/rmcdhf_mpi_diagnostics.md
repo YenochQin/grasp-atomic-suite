@@ -32,9 +32,9 @@ MPI 启动、MCP/CSF/核与网格/初猜输入
   → 原有收敛判定或迭代上限
 ```
 
-[SCFmpi](../../src/appl/rmcdhf_mpi/scfmpi.f90)、
-[IMPROVmpi](../../src/appl/rmcdhf_mpi/improvmpi.f90)、
-[SETLAGmpi](../../src/appl/rmcdhf_mpi/setlagmpi.f90)、SETHAM、NEWCOmpi 源文件与原版一致。
+[SCFmpi](../../src/apps/rmcdhf_mpi/scfmpi.f90)、
+[IMPROVmpi](../../src/apps/rmcdhf_mpi/improvmpi.f90)、
+[SETLAGmpi](../../src/apps/rmcdhf_mpi/setlagmpi.f90)、SETHAM、NEWCOmpi 源文件与原版一致。
 普通 MPI 的停止条件包括自洽量及相对加权能量变化，不能套用串行说明或退役变体的判据。
 SETCOF 仍扫描 MCP 文件；Davidson 的 SPICMVmpi 仍按 rank 分配列并归约完整结果向量。
 共享库相关路径的显式接口修改没有把它改成 OpenMP 或另一种并行算法。

@@ -130,7 +130,7 @@ Shell      e           p0        gamma        <r>      MTP  SRC
 
 ## 修复与仓库边界
 
-[SOLVH](../../src/appl/rwfnestimate/solvh.f90) 保留 TF 势、节点目标、精度阈值和
+[SOLVH](../../src/apps/rwfnestimate/solvh.f90) 保留 TF 势、节点目标、精度阈值和
 迭代上限，修改搜索边界更新：
 
 ```fortran
@@ -199,7 +199,7 @@ ctest --test-dir build-rwfn-header-check -R rwfnestimate --output-on-failure
 
 合并本地 `1edcfd6` 与远程 `e82abc0`（含 `212bcc6` 的目录重命名和
 `db39505` 的 strict/diag 退役）。初猜程序及 TOML 读取模块迁至
-`src/appl/rwfnestimate/`，实现内容与本地提交逐字节一致；文档索引、源码链接和
+`src/apps/rwfnestimate/`，实现内容与本地提交逐字节一致；文档索引、源码链接和
 测试清单保留双方更新。前述 81 项记录对应初次迁移版本，已退役的测试不属于当前清单。
 
 使用同一 GNU Fortran 15.3.0/Open MPI 5.0.11 工具链，在全新

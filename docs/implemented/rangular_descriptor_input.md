@@ -22,10 +22,10 @@ CSFG/RMCDHF/RCI 的输入入口未改造。
 | --- | --- |
 | [prepare_csf_descriptors.py](../../scripts/archive/prepare_csf_descriptors.py) | 分批读取 Parquet 与 header TOML，校验版本/类型/绑定/分块/基本范围，输出版本化二进制。 |
 | [csf_descriptor_reader.f90](../../src/lib/core/csf_descriptor_reader.f90) | 解码交换格式；复用 `terms_C` 校验物理态；补全 J/K、组织数组；提供头部及逐 block 加载接口。 |
-| [rangular_input.f90](../../src/appl/rangular/rangular_input.f90) | 选择原 `CSLH/LODCSH2` 或描述符路径；连接现有程序状态。 |
+| [rangular_input.f90](../../src/apps/rangular/rangular_input.f90) | 选择原 `CSLH/LODCSH2` 或描述符路径；连接现有程序状态。 |
 | [csf_descriptor_verify.f90](../../test/descriptor_oracle/csf_descriptor_verify.f90) | 独立调用两条加载路径，逐项比较元数据及全部三个 byte 数组。 |
 | [verify_csf_descriptors.py](../../scripts/verify_csf_descriptors.py) | 运行原生验证器并要求成功标记，防止旧文本 reader 的 `STOP` 返回零时被误判通过。 |
-| [rangular_profile.f90](../../src/appl/rangular/rangular_profile.f90) | 可选的 SYSTEM_CLOCK 墙钟计时，按阶段写 CSV。 |
+| [rangular_profile.f90](../../src/apps/rangular/rangular_profile.f90) | 可选的 SYSTEM_CLOCK 墙钟计时，按阶段写 CSV。 |
 
 新增变量采用 `principal_numbers`、`relativistic_kappas`、`subshell_quantum_numbers`、
 `coupled_two_j`、`block_index` 等含义明确的名称。原模块名通过 `USE ... ONLY: 新名称 => 原名称`

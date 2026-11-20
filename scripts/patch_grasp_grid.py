@@ -58,25 +58,25 @@ CAPACITY_FILES = (
 )
 RESTART_FILES = ("src/appl/rci90/lodres.f90", "src/appl/rci90_mpi/lodres.f90")
 SUITE_GRID_FILES = (
-    "src/appl/rwfnestimate/getinfo.f90",
-    "src/appl/rci/getcid.f90",
-    "src/appl/rci_mpi/getcid.f90",
-    "src/appl/rbiotransform/radpar.f90",
-    "src/appl/rbiotransform_mpi/radparmpi.f90",
-    "src/appl/rtransition/getosd.f90",
-    "src/appl/rtransition_phase/getosd.f90",
-    "src/appl/rtransition_mpi/getosdmpi.f90",
-    "src/appl/rmcdhf/getscd.f90",
-    "src/appl/rmcdhf_mpi/getscdmpi.f90",
-    "src/appl/rmcdhf_mem/getscd.f90",
-    "src/appl/rmcdhf_mem_mpi/getscdmpi.f90",
-    "src/appl/rhfs/gethfd.f90",  # also compiled into gj and gj_mpi
-    "src/appl/ris4/getsmd.f90",
-    "src/appl/rdensity/getsmd.f90",
+    "src/apps/rwfnestimate/getinfo.f90",
+    "src/apps/rci/getcid.f90",
+    "src/apps/rci_mpi/getcid.f90",
+    "src/apps/rbiotransform/radpar.f90",
+    "src/apps/rbiotransform_mpi/radparmpi.f90",
+    "src/apps/rtransition/getosd.f90",
+    "src/apps/rtransition_phase/getosd.f90",
+    "src/apps/rtransition_mpi/getosdmpi.f90",
+    "src/apps/rmcdhf/getscd.f90",
+    "src/apps/rmcdhf_mpi/getscdmpi.f90",
+    "src/apps/rmcdhf_mem/getscd.f90",
+    "src/apps/rmcdhf_mem_mpi/getscdmpi.f90",
+    "src/apps/rhfs/gethfd.f90",  # also compiled into gj and gj_mpi
+    "src/apps/ris4/getsmd.f90",
+    "src/apps/rdensity/getsmd.f90",
 )
 SUITE_RESTART_FILES = (
-    "src/appl/rci/lodres.f90",
-    "src/appl/rci_mpi/lodres.f90",
+    "src/apps/rci/lodres.f90",
+    "src/apps/rci_mpi/lodres.f90",
 )
 SUITE_CONFIG_FILE = "src/lib/grasp_shared/compile_time_capacities.f90"
 SUITE_EXPORT_FILE = "src/lib/grasp_shared/grasp_parameters.f90"

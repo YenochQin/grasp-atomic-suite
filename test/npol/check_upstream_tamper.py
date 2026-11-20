@@ -9,6 +9,7 @@ import shutil
 import tempfile
 
 from check_upstream import main as verify
+from check_upstream import suite_source_path
 
 
 def main() -> None:
@@ -17,7 +18,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="upstream-tamper-") as temporary:
         work = Path(temporary)
         migration = json.loads((root / "docs/reference/rmcdhf_descriptor_snapshot.json").read_text())
-        paths = [root / name for name in manifest["files"] if name not in migration["removed"]]
+        paths = [suite_source_path(root, name) for name in manifest["files"] if name not in migration["removed"]]
         paths += list((root / "docs/reference").glob("rmcdhf_*.json"))
         for source in paths:
             target = work / source.relative_to(root)
@@ -25,15 +26,15 @@ def main() -> None:
             shutil.copyfile(source, target)
         with contextlib.redirect_stdout(io.StringIO()):
             verify(work)
-        for relative in ("src/appl/rmcdhf/itjpo.f90", "src/appl/rmcdhf/setcsl.f90", "src/appl/rmcdhf/scf.f90", "src/appl/rmcdhf/solve.f90",
-                         "src/appl/rmcdhf/fco.f90",
-                         "src/appl/rmcdhf/mpi_s.f90",
-                         "src/appl/rmcdhf/rscfvu.f90",
-                         "src/appl/rmcdhf/maneig.f90",
-                         "src/appl/rmcdhf/CMakeLists.txt",
-                         "src/appl/rmcdhf_mpi/Makefile",
-                         "src/appl/rmcdhf_mpi/getaldmpi.f90",
-                         "src/appl/rmcdhf/strsum.f90",
+        for relative in ("src/apps/rmcdhf/itjpo.f90", "src/apps/rmcdhf/setcsl.f90", "src/apps/rmcdhf/scf.f90", "src/apps/rmcdhf/solve.f90",
+                         "src/apps/rmcdhf/fco.f90",
+                         "src/apps/rmcdhf/mpi_s.f90",
+                         "src/apps/rmcdhf/rscfvu.f90",
+                         "src/apps/rmcdhf/maneig.f90",
+                         "src/apps/rmcdhf/CMakeLists.txt",
+                         "src/apps/rmcdhf_mpi/Makefile",
+                         "src/apps/rmcdhf_mpi/getaldmpi.f90",
+                         "src/apps/rmcdhf/strsum.f90",
                          "docs/reference/rmcdhf_grasp_mpi_naming_snapshot.json",
                          "docs/reference/rmcdhf_grasp_shared_naming_snapshot.json",
                          "docs/reference/rmcdhf_davidson_naming_snapshot.json",

@@ -9,7 +9,7 @@
 
 ## 1. 范围与结论
 
-本报告分析 `src/appl/rhfs` 中 `g_J` 的实现流程。结论是：`rhfs` 并不是直接套用 Landé 因子闭式公式，而是先在 CSF 基底上构造与 `g_J` 相关的单电子约化矩阵元，再用混合系数 `EVEC` 投影到原子态，最后乘上 `J` 相关归一化因子与物理常数，输出 `g_J`、`delta g_J` 和 `total g_J`。
+本报告分析 `src/apps/rhfs` 中 `g_J` 的实现流程。结论是：`rhfs` 并不是直接套用 Landé 因子闭式公式，而是先在 CSF 基底上构造与 `g_J` 相关的单电子约化矩阵元，再用混合系数 `EVEC` 投影到原子态，最后乘上 `J` 相关归一化因子与物理常数，输出 `g_J`、`delta g_J` 和 `total g_J`。
 
 主调用链为：
 
@@ -26,7 +26,7 @@ HFS92
 
 ## 2. 程序入口与数据准备
 
-入口程序是 `src/appl/rhfs/hfs92.f90`。它依次完成：
+入口程序是 `src/apps/rhfs/hfs92.f90`。它依次完成：
 
 1. 读取状态名 `NAME` 和是否采用 CI 混合系数。
 2. 调用 `SETSUM` 打开输出文件：
@@ -178,7 +178,7 @@ R(1:MF)
 
 ## 3. `HFSGG` 中的预计算
 
-`src/appl/rhfs/hfsgg.f90` 是核心例程。开始阶段它为每对轨道 `(i,j)` 预计算径向积分和角向因子：
+`src/apps/rhfs/hfsgg.f90` 是核心例程。开始阶段它为每对轨道 `(i,j)` 预计算径向积分和角向因子：
 
 ### 3.1 径向积分
 
@@ -193,14 +193,14 @@ R(1:MF)
 
 其中：
 
-- `RINTHF(i,j,k)` 在 `src/appl/rhfs/rinthf.f90` 中定义，积分核为
+- `RINTHF(i,j,k)` 在 `src/apps/rhfs/rinthf.f90` 中定义，积分核为
   `r^k (P_i Q_j + Q_i P_j)`
 - `RINT(i,j,k)` 在 `src/lib/core/weighted_radial_overlap.f90` 中定义，积分核为
   `r^k (P_i P_j + Q_i Q_j)`
 
 ### 3.2 角向矩阵元
 
-`MATELT` 位于 `src/appl/rhfs/matelt.f90`。对奇数阶 `K=1`，程序给出三组角向因子：
+`MATELT` 位于 `src/apps/rhfs/matelt.f90`。对奇数阶 `K=1`，程序给出三组角向因子：
 
 - `APART`
 - `GJPART`

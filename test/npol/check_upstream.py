@@ -14,6 +14,11 @@ from pathlib import Path
 import sys
 
 
+def suite_source_path(root: Path, upstream_path: str) -> Path:
+    # Historical snapshot keys keep the original source directory.
+    return root / upstream_path.replace("src/appl/", "src/apps/", 1)
+
+
 def reverse_reviewed_edits(text: str, path: Path, edits: list[dict[str, str | int]]) -> str:
     for edit in reversed(edits):
         before, after, count = edit["before"], edit["after"], edit["count"]
@@ -369,7 +374,8 @@ def main(root: Path) -> None:
         assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], \
             f"Inline output format snapshot has a different predecessor: {name}"
     reviewed_files |= inline_formats["files"]
-    state_files = json.loads((root / "docs/reference/rmcdhf_state_files_snapshot.json").read_text())
+    state_files_path = root / "docs/reference/rmcdhf_state_files_snapshot.json"
+    state_files = json.loads(state_files_path.read_text())
     assert state_files["schema_version"] == 1
     assert hashlib.sha256(inline_path.read_bytes()).hexdigest() == state_files["previous_manifest_sha256"], \
         "Inline output formats snapshot changed; review state-name provenance"
@@ -377,20 +383,31 @@ def main(root: Path) -> None:
     for name, record in state_files["files"].items():
         assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], name
     reviewed_files |= state_files["files"]
+    app_names = json.loads((root / "docs/reference/rmcdhf_app_variable_names_snapshot.json").read_text())
+    assert app_names["schema_version"] == 1, "Unknown app variable names snapshot schema"
+    assert hashlib.sha256(state_files_path.read_bytes()).hexdigest() == app_names["previous_manifest_sha256"], \
+        "State-name snapshot changed; review app variable naming provenance"
+    assert set(app_names["files"]).issubset(name for name in reviewed_files if name.endswith(".f90"))
+    for name, record in app_names["files"].items():
+        assert record["before_suite_sha256"] == reviewed_files[name]["after_suite_sha256"], \
+            f"App variable names snapshot has a different predecessor: {name}"
+    reviewed_files |= app_names["files"]
     actual = {
-        str(path.relative_to(root))
+        path.relative_to(root).as_posix().replace("src/apps/", "src/appl/", 1)
         for name in ("rmcdhf", "rmcdhf_mem", "rmcdhf_mpi", "rmcdhf_mem_mpi")
-        for path in (root / "src/appl" / name).iterdir()
+        for path in (root / "src/apps" / name).iterdir()
         if path.suffix in (".f90", ".sh", ".txt") or path.name == "Makefile"
     }
     assert actual == set(expected), (actual - set(expected), set(expected) - actual)
     for relative, record in expected.items():
+        path = suite_source_path(root, relative)
         if relative in reviewed_files:
-            path = root / relative
             source = path.read_bytes()
             reviewed = reviewed_files[relative]
             digests = {hashlib.sha256(source).hexdigest()}
-            if relative in mpi_naming["files"] and relative not in state_files["files"]:
+            if (relative in mpi_naming["files"]
+                    and relative not in state_files["files"]
+                    and relative not in app_names["files"]):
                 # Check each renamed import or build reference, then compare the
                 # original spelling with the reviewed source digest.
                 before_mpi_names = reverse_reviewed_edits(source.decode(), path, mpi_naming["files"][relative])
@@ -399,7 +416,7 @@ def main(root: Path) -> None:
                 f"Unreviewed deviation from reviewed GRASP snapshot: {relative}"
             continue
         edits = compatibility.get(relative, {}).get("edits", [])
-        digest = hashlib.sha256(original_bytes(root / relative, edits)).hexdigest()
+        digest = hashlib.sha256(original_bytes(path, edits)).hexdigest()
         assert digest == record["sha256"], f"Unreviewed deviation from GRASP source: {relative}"
     print(f"PASS: {len(expected)} imported files match reviewed snapshots "
           f"({len(expected.keys() & reviewed_files.keys())} exact suite file hashes)")

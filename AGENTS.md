@@ -5,7 +5,7 @@
 All shell commands shown to the user, including replies, documentation, and copyable examples, must use fish shell syntax. Label shell code blocks as `fish`; do not output Bash commands or Bash-specific syntax. Use fish-compatible variable assignments, environment variables, control flow, and virtual-environment activation.
 
 ## Project Structure & Module Organization
-Core source lives under `src/`. Application programs are in `src/appl/<program>/`, and shared libraries are in `src/lib/<library>/`. Build outputs are installed to `bin/` and `lib/`. Development notes and numerical reports live under `docs/`, and sample validation data lives under `data/`.
+Core source lives under `src/`. Application programs are in `src/apps/<program>/`, and shared libraries are in `src/lib/<library>/`. Build outputs are installed to `bin/` and `lib/`. Development notes and numerical reports live under `docs/`, and sample validation data lives under `data/`.
 
 Use [docs/README.md](docs/README.md) as the documentation status index. Current
 implementation guides belong in `docs/implemented/`, pending experiments in

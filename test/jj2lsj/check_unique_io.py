@@ -19,7 +19,7 @@ def main() -> None:
         root = Path(__file__).resolve().parents[2]
         work = Path(destination).resolve()
         work.mkdir(parents=True, exist_ok=True)
-        source = (root / "src/appl/jj2lsj/jj2lsj_code.f90").read_text()
+        source = (root / "src/apps/jj2lsj/jj2lsj_code.f90").read_text()
         start = source.index("      subroutine uniquelsj\n")
         end = source.index("      end subroutine uniquelsj", start) + len("      end subroutine uniquelsj")
         # Only the private routine's host is reduced. The entire procedure,
@@ -30,7 +30,7 @@ def main() -> None:
             + source[start:end] + "\nend module\n")
         subprocess.run([compiler, "-std=f2018", "-fcheck=all", "-fbacktrace",
                         str(root / "src/lib/grasp_shared/input_error_handling.f90"),
-                        str(root / "src/appl/jj2lsj/jj2lsj_profile.f90"),
+                        str(root / "src/apps/jj2lsj/jj2lsj_profile.f90"),
                         "unique.f90", str(root / "test/jj2lsj/unique_io.f90"),
                         "-o", "unique"], cwd=work, check=True)
         return
