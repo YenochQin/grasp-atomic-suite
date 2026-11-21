@@ -31,16 +31,17 @@ contains
         use atomic_calculation_state, only: electron_count
         use eigenstate_expansions, only: hamiltonian_energy_shift, shifted_eigenvalues, csf_mixing_coefficients
         use orbital_csf_basis, only: csf_count, orbital_count
+        use csf_quantum_queries, only: csf_total_j_code, csf_parity_code
         use selected_level_indices, only: active_level_indices, active_level_count
         use level_symmetry_metadata, only: level_parity_signs, level_two_j_plus_one
         use standard_io_units, only: stderr_unit
         use transition_basis_blocks,            only: transition_level_counts_by_block, transition_csf_counts_by_block, &
-            transition_two_j_by_block
+            transition_two_j_by_block, transition_block_count, cumulative_csf_counts
         use file_open, only: open_calculation_file
         implicit none (type, external)
 
         ! Arguments and local declarations
-        integer :: mixing_input_unit
+        integer :: mixing_input_unit, mix_electron_count, mix_orbital_count
         integer , intent(in) :: ci_input_mode
         character(len=24), intent(in) :: state_name
         integer :: open_status, io_status, total_csf_count, nvectot, vector_size, nblock, i, nvecpat, &
@@ -74,10 +75,17 @@ contains
             stop
         end if
 
-        read (mixing_input_unit) electron_count, total_csf_count, orbital_count, nvectot, vector_size, nblock
+        ! The V3 basis has already removed unused peel orbitals. Mixing columns
+        ! index CSFs, so the producer's full orbital count must stay local.
+        read (mixing_input_unit) mix_electron_count, total_csf_count, mix_orbital_count, nvectot, vector_size, nblock
+        if (mix_electron_count /= electron_count .or. total_csf_count /= csf_count .or. &
+            mix_orbital_count < orbital_count .or. nblock /= transition_block_count) then
+            error stop "JJ2LSJ mixing header does not match descriptor basis"
+        end if
+        if (nvectot < 1 .or. nvectot > csf_count) error stop "JJ2LSJ invalid mixing level count"
         write (*, *) "   nelec  = ", electron_count
         write (*, *) "   ncftot = ", total_csf_count
-        write (*, *) "   nw     = ", orbital_count
+        write (*, *) "   nw     = ", mix_orbital_count
         write (*, *) "   nblock = ", nblock
         write (*, *)
         ncftot_i8 = total_csf_count
@@ -124,10 +132,20 @@ contains
 
             read (mixing_input_unit) nb, ncfblk, nevblk, iatjp, iaspa
             write (*, "(5I8)") nb, ncfblk, nevblk, iatjp, iaspa
+            if (jb /= nb .or. ncfblk /= cumulative_csf_counts(jb) - ncfpat) then
+                error stop "JJ2LSJ mixing block does not match descriptor CSF partition"
+            end if
+            if (nevblk < 0 .or. nevblk > ncfblk .or. nevblk > nvectot - nvecpat) then
+                error stop "JJ2LSJ invalid mixing block level count"
+            end if
+            if (nevblk > 0) then
+                if (iatjp /= csf_total_j_code(ncfpat+1) .or. iaspa /= csf_parity_code(ncfpat+1)) then
+                    error stop "JJ2LSJ mixing block does not match descriptor symmetry"
+                end if
+            end if
             transition_level_counts_by_block(jb) = nevblk
             transition_csf_counts_by_block(jb) = ncfblk
             transition_two_j_by_block(jb) = iatjp - 1
-            if (jb /= nb) stop "jb .NE. nb"
 
             if (nevblk > 0) then
 
@@ -159,6 +177,7 @@ contains
         !        one eigenstate is calculated. It is not the averge of the
         !        total Hamiltonian.
 
+        if (nvecpat /= nvectot) error stop "JJ2LSJ mixing blocks disagree with total level count"
         hamiltonian_energy_shift = eavsum/neavsum
 
         if (total_csf_count /= neavsum) write (output_unit, *) &
@@ -169,7 +188,6 @@ contains
         !
         close(mixing_input_unit)
         !
-        csf_count = total_csf_count
         active_level_count = nvectot
         !
         return

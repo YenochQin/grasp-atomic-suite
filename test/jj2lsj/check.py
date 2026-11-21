@@ -24,11 +24,14 @@ import tempfile
 FIXTURES = Path(__file__).resolve().parent
 
 
-def prepare(work: Path, case: str, identity: bool = False) -> None:
+def prepare(work: Path, case: str, identity: bool = False, unused_orbitals: bool = False) -> None:
     work.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(FIXTURES / f"{case}.c", work / "test.c")
-    descriptors(work / "test.c")
     text = (work / "test.c").read_text().splitlines()
+    if unused_orbitals:
+        text[3] = "  1s " + text[3] + "   5s"
+        (work / "test.c").write_text("\n".join(text) + "\n")
+    descriptors(work / "test.c")
     groups: list[list[str]] = [[]]
     for line in text[5:]:
         if line.strip() == "*":
@@ -141,6 +144,27 @@ def main() -> None:
     truncated = False
     with tempfile.TemporaryDirectory(prefix="jj2lsj-regression-") as temporary:
         root = Path(temporary)
+        # Empty peel orbitals stay in the mixing header, but the descriptor
+        # reader compacts them before constructing and indexing LS parents.
+        reference = root / "compact"
+        padded = root / "unused-peel"
+        for work, unused in ((reference, False), (padded, True)):
+            prepare(work, "f3", unused_orbitals=unused)
+            run(executable, work, "default", 1)
+            run(coefficients, work, "default", 1)
+        for output in ("test.lsj.lbl", "coefficients.raw"):
+            assert (padded / output).read_bytes() == (reference / output).read_bytes(), output
+
+        # A same-width block with the wrong parity cannot label this basis.
+        mixing = padded / "test.m"
+        raw = mixing.read_bytes()
+        first_block = struct.pack("=7i", 20, 1, 2, 2, 2, -1, 20)
+        assert raw.count(first_block) == 1
+        mixing.write_bytes(raw.replace(first_block, struct.pack("=7i", 20, 1, 2, 2, 2, 1, 20)))
+        result = subprocess.run([executable], cwd=padded, input=input_text("default"), text=True,
+                                capture_output=True, timeout=30)
+        assert result.returncode != 0 and "does not match descriptor symmetry" in result.stderr
+
         for case in ("even", "odd", "f3"):
             for mode in ("default", "full", "omitted", "selected"):
                 scalar = root / f"{case}-{mode}-scalar"
