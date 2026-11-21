@@ -29,7 +29,7 @@
 
 ## 2. 同时测试新版描述符输入
 
-已有 rCSFs V2 Parquet 和匹配 header 时：
+已有 rCSFs V3 Parquet 和匹配 header 时：
 
 ```fish
 ../graspkit-tools/.venv/bin/python scripts/compare_rangular_versions.py \

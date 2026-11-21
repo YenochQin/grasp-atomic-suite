@@ -20,8 +20,7 @@ contains
         !   Modified by G. Gaigalas                                 May 2011   *
         !                                                                      *
         !***********************************************************************
-        use grasp_parameters, only: max_orbitals
-        use csf_coupling_data,        only: left_coupling_codes
+        use csf_coupling_data,        only: left_angular_codes, csf_parity_slot
         use orbital_csf_basis,         only: left_csf_count
         implicit none (type, external)
 
@@ -30,10 +29,8 @@ contains
         !
         !
         if (csf_index>=1 .and. csf_index<=left_csf_count) then
-            right_csf_parity = left_coupling_codes(max_orbitals,csf_index)
+            right_csf_parity = left_angular_codes(csf_parity_slot,csf_index)
 
-            if (right_csf_parity > 127) right_csf_parity = right_csf_parity - 256
-            right_csf_parity = sign(1,right_csf_parity)
         else
             write (output_unit, *) "right_csf_parity: Argument csf_index is out of range."
             stop

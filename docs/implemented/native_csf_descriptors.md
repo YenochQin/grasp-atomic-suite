@@ -1,13 +1,13 @@
 # Rust 原生 CSF 描述符输入
 
-2026-11-17。原迁移基于 suite `5806884`、rCSFs `fea061f`。
+2026-11-21。V3 实施基于 Suite `a2ce6c6`，原迁移基于 suite `5806884`、rCSFs `fea061f`。
 本地库构建调整基于 suite `80f6e76`：reader 源码复制自 rCSFs
 `f17a862d77c45164a6d31ae1e9cfeb4efbd04cf6`，现由 suite 自己保存、编译和维护。
 生产迁移已提交为 `8cf6b1d`，rdensity 输入补全为 `80f6e76`；已完成的迁移计划由 Git 历史保存。
 
 ## 生产输入契约
 
-全部保留的普通 CSF 消费程序直接读取 **V2 descriptor Parquet + 字节匹配的 header TOML**。
+全部保留的普通 CSF 消费程序直接读取 **V3 descriptor Parquet + 字节匹配的 header TOML**。
 计算进程不调用 Python、PyArrow、rCSFs CLI，不生成 GCSDESC1 或临时 CSF 文本。
 旧文本选项和自动回退已删除；GCSDESC1 不再是可接受的生产输入。
 
@@ -21,7 +21,7 @@
 
 三步使用同一状态名时，直接以各自的输出文件衔接。角系数一律为 `mcp.NN`；MPI 使用各 rank 的工作目录。
 状态名留空时使用 `rcsf_desc.parquet` 和 `rcsf_header.toml`。按状态名或固定文件名查找时，
-优先使用短后缀，缺少短名时可读取旧的 `*_descriptors.parquet`。
+优先使用短后缀，也接受 V3 文件名 `*_descriptors.parquet`。
 串行与 MPI 的 MCP 位置、日志以及旧输入脚本的选择规则见[状态名计算流程](../../README_ZH.md#输入与输出)。
 命名由 [calculation_state_files](../../src/lib/core/calculation_state_files.f90) 管理。
 [端到端回归](../../test/test_state_workflow.py) 在同一目录使用两个状态名，分别经过普通和内存版
@@ -33,42 +33,48 @@ serial I/O 目录为基准。其他应用原有状态名及 MPI CPATH 长度限�
 
 `rwfnestimate` 的 header-only 检查不证明 payload 合法。旧 header 没有电子数时，需要重新生成
 配套产物，不能修改 header 后继续搭配旧 Parquet：注释、空白及换行变化也会改变绑定哈希。
-完整 CSF reader 可在未声明电子数的旧 header 上从实际描述符行确定电子数，并核对所有行。
+完整 CSF reader 也要求声明电子数，并核对所有行。
 
 `rangular_mpi` 和新启动的 `rci_mpi` 通过标准输入询问
 `Use zero-first partition from descriptor header? (y/n)`。回答 `y` 时，rank 0 读取
 `[block_info].zero_order_counts`，按显式块顺序广播为 `ICCUT`。每个计数必须为正且
-不超过该块总数。回答 `n` 时计算完整相互作用。缺少计数的基组可用 `rcsfs zero-first`
+不超过该块总数。普通读入允许筛选后的块含零个零阶 CSF；这种基组回答 `n` 时可计算完整相互作用。缺少计数的基组可用 `rcsfs zero-first`
 重新生成。RCI 在新算例的速度选项之后询问分区，续算沿用 `.res` 中的设置。
 
-原三行字符串 CSF Parquet、旧 printed-seniority/V1/归一化描述符、Int32 逻辑列、空值列均拒绝。
-Parquet 为逻辑 Int8 使用物理 INT32 编码是合法的。纯闭核有明确的一个 `[0,+1]` CSF 行，
-不再从 EOF 推测一个 CSF。轨道、行及显式块顺序保持不变，包括相邻同 J/宇称块。
+rangular 和新组装矩阵的 RCI 在打开描述符时核查自旋角积分的项表。对于 j=9/2
+的部分占据子壳层，该项表支持 1 或 2 个电子；3 至 9 个电子会在开始组装前报错。
+
+生产 reader 仅接受 `descriptor_version=3`。V2 及更早文件须用支持 V3 的生产器从原始 CSF 重建。
+每个 peel 轨道依次存储 `occupation`、`seniority`、`two_j_plus_one` 和
+`cumulative_two_k_plus_one`，列名前缀为 `sub{i}_`，从 `i=0` 起。最后两列是
+`total_two_j_plus_one` 和 `parity`。各列为必填的逻辑 Int8，Parquet 物理类型为 INT32。
+累计码从 1 开始，空壳和满壳继承前一个轨道的累计码，最后一个轨道的累计码等于总 2J+1。
+纯闭核只有一条 `[1,+1]`。轨道、行及显式块顺序保持不变，包括相邻同 J/宇称块。
 
 ## 代码和所有权
 
 | 层 | 归属/实现 |
 | --- | --- |
-| V2 格式 | suite `src/lib/csf_descriptor/src/descriptor_transport.rs`；复制的 V2 契约与 rCSFs 生产者兼容 |
-| Rust I/O | 同目录 `descriptor_reader.rs`：同一 header 字节快照的哈希和 TOML 解析、footer/schema/空值检查、有界批次读取、电子数/宇称/块表预扫描 |
-| C ABI 1 | 同目录 `descriptor_ffi.rs`、库内 `include/rcsfs_descriptor.h`：独立句柄、明确容量的调用方缓冲、状态码及 UTF-8 错误信息；保留原符号名 |
+| V3 格式 | Suite `src/lib/csf_descriptor/src/descriptor_transport.rs` 定义本地读取布局，与 rCSFs 的 V3 磁盘契约一致 |
+| Rust I/O | 同目录 `descriptor_reader.rs`：同一 header 字节快照的哈希和 TOML 解析、footer/schema/空值检查、有界批次读取、电子数、宇称、子壳层态和累计耦合链预扫描 |
+| C ABI 2 | 同目录 `descriptor_ffi.rs`、库内 `include/rcsfs_descriptor.h`：独立句柄、明确容量的调用方缓冲、状态码及 UTF-8 错误信息。独立的 `rcsfs_descriptor_format_version()` 返回 3 |
 | 径向初猜 | [rwfnestimate](rwfnestimate_header_input.md) 复用 Rust 的 TOML 解析，通过只读 header 的 C 接口获取轨道表和总电子数 |
-| Fortran 适配 | [csf_descriptor_c_bindings.f90](../../src/lib/core/csf_descriptor_c_bindings.f90)、[csf_descriptor_reader.f90](../../src/lib/core/csf_descriptor_reader.f90)：`ISO_C_BINDING`、物理态/J/K 校验与补全、三数组或仅占据数组 |
+| Fortran 适配 | [csf_descriptor_c_bindings.f90](../../src/lib/core/csf_descriptor_c_bindings.f90)、[csf_descriptor_reader.f90](../../src/lib/core/csf_descriptor_reader.f90)：`ISO_C_BINDING`、安装 V3 占据、态、累计耦合和对称性，或仅安装占据 |
 | 应用状态 | `csf_basis_input`、`csf_block_input`、`rmcdhf_descriptor_input`；区分性质程序、RCI、MCP 已安装状态的生命周期 |
 | 双基组 | [csf_basis_merging.f90](../../src/lib/core/csf_basis_merging.f90)：保持两个轨道序列的稳定合并，直接映射数组；顺序冲突明确拒绝，不写/重读 `SLASK` |
 | MPI | `mpi_csf_collectives`、`mpi_csf_basis_input`、`mpi_csf_block_input`、`mpi_rmcdhf_csf_input`；root 读取，分配/输入状态先归约，按完整 CSF 列广播，错误非零 Abort |
 
-Rust 不复制 `terms_C`，不把物理 seniority 转成打印标签再交回 Fortran。
-Fortran 保留原支持态集合、`w` 限制、`2J/2K<=126` 和内核容量限制。
-64 位文件计数在进入默认 INTEGER 数组前检查；它不代表数值内核支持任意大基组。
+Rust 从磁量子数投影的行列式计数核对子壳层态。普通内核使用 `w=0`，格式无法唯一确定 `w` 的态会被拒绝。
+解码后的 2J、2K 范围为 0–126。64 位文件计数在进入默认 INTEGER 数组前检查。
 
-性质程序沿用剔除全空轨道的语义，按保留下来的顺序同步移动占据和子壳层量子数。
-左右态使用独立输入源和明确的参考数组；合并保持各自的相对轨道次序、CSF 次序和块前缀。
+性质程序剔除全空轨道时同步压缩占据、子壳层态和累计耦合数组。左右基组合并时，
+各侧插入的空轨道继承本侧上一轨道的累计码，并保持相对轨道次序、CSF 次序和块前缀。
+rangular 和 RCI 从两侧第二个参与轨道开始直接读取工作槽的累计码。JJ2LSJ 同样按轨道读取累计码。
 应用的 mixing/径向输入仍须与其实际基组契约一致。
 
 RMCDHF 保留 `SETMCP` 先行，核对 core、轨道数、电子数、CSF 总数、块长度、块标签及 rank 配置。
 不覆盖 `csf_counts_by_block(0:...)`，不改变 DIAG/ICCUT/LFORDR，全局 CSF 数在读入期间保持总数。
-长期只保存占据和每块有符号 J/宇称；完整 J/K 校验使用单行临时数组。
+Rust 逐行验证完整耦合链。RMCDHF 长期保存全基组占据和每块有符号 J/宇称。
 EAL 标准权重的 `itjpo`、`ispar` 改由块前缀定位，避免访问未分配的全基组耦合数组。
 
 流关闭后不再读取；重开先释放旧句柄。打开失败清空 source，块读取失败关闭流并使输出数组失效。
@@ -115,14 +121,14 @@ ctest --test-dir build-native -R '^csf_descriptor_rust$' --output-on-failure
 ```
 
 开发测试使用 Python；需要原始 CSF 的测试在测试准备阶段调用独立原生 CLI，计算程序不调用它。
-配置这些夹具测试时指定原生 `rcsfs` 3.1 CLI；该选项不影响库的来源或链接：
+配置这些夹具测试时指定支持 V3 的原生 `rcsfs` CLI。
 
 ```fish
 cmake -S . -B build-native -DRCSFS_TEST_CLI=/path/to/rcsfs
 ctest --test-dir build-native --output-on-failure
 ```
 
-旧数据可以离线转换，之后直接运行程序：
+使用支持 V3 的 rCSFs 将原始 CSF 转换为描述符，再运行程序。
 
 ```fish
 rcsfs convert original.c Zn_odd_AS1_desc.parquet
@@ -149,6 +155,13 @@ RMCDHF 的实际 SETMCP/加载链路与标准权重，MPI 1/2/4 ranks、单列�
 
 完整回归结果、基线修正、源码身份和验证边界见
 [本次迁移验收记录](../reviews/native_csf_descriptor_validation_2026-11-17.md)。
+
+### V3 数值回归（2026-11-21）
+
+以 [Ni I 输入](../../data/test.c) 的前 7 条 `J=0+` CSF 为基组，保持径向文件、核数据、
+轨道顺序和 CSF 行序一致，对照原有本地 V2 Suite 二进制。串行验证采用逐字节相等作为判据，
+10 个 MCP 文件、记录哈密顿矩阵的 `rci.res` 和 `case.cimix` 全部一致。
+同一块的最低根为 −1519.217237829888 Hartree。该比较检验描述符迁移对固定基组的影响。
 
 ### 内置 reader 构建验证（2026-11-17）
 

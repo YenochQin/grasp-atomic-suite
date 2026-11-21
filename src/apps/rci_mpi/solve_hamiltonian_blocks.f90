@@ -39,7 +39,7 @@ contains
         use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
         use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations
         use selected_level_indices, only: active_level_indices, active_level_count, highest_active_level_index
-        use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes
+        use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes
         use radial_wavefunctions, only: max_orbitals, radial_large_components, radial_small_components
         use ci_restart_units, only: restart_matrix_unit
         use rci_prerun_settings, only: prerun_stage
@@ -140,7 +140,7 @@ contains
             !        ... of this routine and in the setham. In this block version,
             !        ... both allocation and deallocation are placed here.
             call allocate_descriptor_arrays(csf_count,csf_subshell_occupations, &
-                csf_subshell_quantum_codes,csf_coupling_quantum_codes)
+                csf_subshell_quantum_codes,csf_angular_codes)
             call alloc (csf_self_energies,csf_count,"csf_self_energies", "solve_hamiltonian_blocks")
             call alloc (orbital_occupation_weights, orbital_count,"orbital_occupation_weights", "solve_hamiltonian_blocks")
             do csf_index=1,csf_count
@@ -322,7 +322,7 @@ contains
             !        ...Locals
             call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "solve_hamiltonian_blocks")
             call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "solve_hamiltonian_blocks")
-            call dalloc (csf_coupling_quantum_codes, "csf_coupling_quantum_codes", "solve_hamiltonian_blocks")
+            call dalloc (csf_angular_codes, "csf_angular_codes", "solve_hamiltonian_blocks")
             call dalloc (csf_self_energies, "csf_self_energies", "solve_hamiltonian_blocks")
             call dalloc (orbital_occupation_weights, "orbital_occupation_weights", "solve_hamiltonian_blocks")
 

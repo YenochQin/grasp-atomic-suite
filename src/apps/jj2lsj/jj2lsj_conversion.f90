@@ -1162,97 +1162,16 @@ contains
     !***********************************************************************
     !                                                                      *
     subroutine select_ls_transition_labels
-        ! Module dependencies
-        !                                                                      *
-        !                                                                      *
-        !     Calls: jcup, jqs, ichop.                                         *
-        !                                                                      *
-        !     Written by G. Gaigalas,                                          *
-        !     NIST                                     last update: Dec 2015   *
-        !                                                                      *
-        !***********************************************************************
-        use csf_pair_angular_state,             only: core_orbital_count
-        use orbital_csf_basis,           only: csf_count, orbital_count
-        use csf_quantum_queries, only: csf_subshell_quantum_code, csf_intermediate_coupling
-        use subshell_occupation_class, only: classify_subshell_occupation
+        use orbital_csf_basis, only: csf_count, orbital_count
+        use csf_quantum_queries, only: csf_cumulative_coupling
         implicit none (type, external)
+        integer :: csf_index, orbital_index
 
-        ! Local declarations
-        save  ! Preserve the legacy serial controller workspace.
-        integer :: coupling_index, jcntop, csf_index, orbital_index
-        !-----------------------------------------------
-        intermediate_two_j = 0
         do csf_index = 1, csf_count
-            coupling_index = 1
-            jcntop = 0
-            do orbital_index = core_orbital_count+1, orbital_count
-                if(orbital_index == 1) then
-                    if(classify_subshell_occupation(orbital_index,csf_index) /= 0) then
-                        if(orbital_count == 1) then
-                            intermediate_two_j(orbital_index,csf_index) = 0
-                        else
-                            if(classify_subshell_occupation(orbital_index+1,csf_index) /= 0) then
-                                intermediate_two_j(orbital_index,csf_index)   = 0
-                                intermediate_two_j(orbital_index+1,csf_index) = 0
-                            else
-                                intermediate_two_j(orbital_index,csf_index)   = 0
-                                intermediate_two_j(orbital_index+1,csf_index) = csf_subshell_quantum_code(3,orbital_index+ &
-                                    & 1,csf_index) - 1
-                                jcntop = 1
-                            end if
-                        end if
-                    else
-                        jcntop = 1
-                        if(orbital_count > 1) then
-                            if (classify_subshell_occupation(orbital_index+1,csf_index) == 0) then
-                                !GG 2015_06_21 Gediminas Gaigalas
-                                !GG                        Jcoup(JNW,JNCF)   = JCUP(JCNT,JNCF) - 1
-                                !CYC-2023
-                                ! Modifications for configurations with empty 1s subshell
-                                !                        Jcoup(JNW,JNCF)   = JQS(3,JNW,JNCF) - 1
-                                intermediate_two_j(orbital_index,csf_index)   = &
-                                    & iabs(csf_intermediate_coupling(coupling_index,csf_index) - 2)
-                                !CYC-2023 end
-                                intermediate_two_j(orbital_index+1,csf_index) = csf_intermediate_coupling(coupling_index, &
-                                    & csf_index) - 1
-                                coupling_index = coupling_index + 1
-                            else
-                                intermediate_two_j(orbital_index,csf_index)   = csf_subshell_quantum_code(3,orbital_index, &
-                                    & csf_index) - 1
-                                intermediate_two_j(orbital_index+1,csf_index) = csf_subshell_quantum_code(3,orbital_index, &
-                                    & csf_index) - 1
-                            end if
-                        else
-                            intermediate_two_j(orbital_index,csf_index) = csf_intermediate_coupling(coupling_index,csf_index) - 1
-                        end if
-                    end if
-                else if(orbital_index == 2 .and. core_orbital_count+1 == 2) then
-                    if(classify_subshell_occupation(orbital_index,csf_index) /= 0) then
-                        intermediate_two_j(orbital_index,csf_index) = 0
-                    else
-                        jcntop = 1
-                        intermediate_two_j(orbital_index,csf_index)   = csf_subshell_quantum_code(3,orbital_index,csf_index) - 1
-                    end if
-                else if(orbital_index > 2) then
-                    if (classify_subshell_occupation(orbital_index,csf_index) /= 0) then
-                        if(orbital_index == core_orbital_count+1) then
-                            intermediate_two_j(orbital_index,csf_index) = csf_subshell_quantum_code(3,orbital_index,csf_index) - 1
-                        else
-                            intermediate_two_j(orbital_index,csf_index) = intermediate_two_j(orbital_index-1,csf_index)
-                        end if
-                    else
-                        if (jcntop /= 0) then
-                            intermediate_two_j(orbital_index,csf_index) = csf_intermediate_coupling(coupling_index,csf_index)  - 1
-                            coupling_index = coupling_index + 1
-                        else
-                            intermediate_two_j(orbital_index,csf_index) = csf_subshell_quantum_code(3,orbital_index,csf_index) - 1
-                        end if
-                        jcntop = jcntop + 1
-                    end if
-                end if
+            do orbital_index = 1, orbital_count
+                intermediate_two_j(orbital_index,csf_index) = csf_cumulative_coupling(orbital_index,csf_index) - 1
             end do
         end do
-        return
     end subroutine  select_ls_transition_labels
     !
     !***********************************************************************

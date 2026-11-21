@@ -7,8 +7,8 @@ module csf_basis_merging
     use orbital_csf_basis, only: csf_count, left_csf_count, left_orbital_count, left_principal_n, left_kappa, &
         left_orbital_labels, left_occupations, orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, &
         orbital_symmetry_labels, csf_subshell_occupations
-    use csf_coupling_data, only: left_subshell_quantum_codes, left_coupling_codes, csf_subshell_quantum_codes, &
-        csf_coupling_quantum_codes
+    use csf_coupling_data, only: left_subshell_quantum_codes, left_angular_codes, csf_subshell_quantum_codes, &
+        csf_angular_codes, csf_angular_code_count, csf_total_j_slot
     implicit none (type, external)
 
     ! Module interface
@@ -22,13 +22,14 @@ contains
         character(len=*), intent(out) :: message
 
         ! Local declarations
+        integer :: left_orbital_map(max_orbitals), right_orbital_map(max_orbitals)
         integer :: merged_principal_n(max_orbitals), merged_kappa(max_orbitals)
         character(len=2) :: merged_labels(max_orbitals)
         integer :: left_orbital_index, right_orbital_index, merge_choice, merged_orbital_count, merged_orbital_index, &
             & input_orbital_index, merged_csf_count, allocation_status
         integer(int64) :: wide_merged_csf_count
         logical :: left_orbital_in_right_tail, right_orbital_in_left_tail
-        integer(int8), pointer :: occupations(:,:), subshell_quantum_codes(:,:,:), couplings(:,:)
+        integer(int8), pointer :: occupations(:,:), subshell_quantum_codes(:,:,:), angular_codes(:,:)
         status=1
         message="left and right electron counts or cores differ"
         if (electron_count /= left_electron_count .or. left_core_subshell_count /= right_core_subshell_count) return
@@ -37,9 +38,9 @@ contains
             any(left_kappa(:left_core_subshell_count) /= orbital_kappa(:right_core_subshell_count))) return
         message="input basis arrays are not loaded"
         if (.not.associated(left_occupations) .or. .not.associated(left_subshell_quantum_codes) .or. &
-            & .not.associated(left_coupling_codes)) return
+            & .not.associated(left_angular_codes)) return
         if (.not.associated(csf_subshell_occupations) .or. .not.associated(csf_subshell_quantum_codes) .or. &
-            .not.associated(csf_coupling_quantum_codes)) return
+            .not.associated(csf_angular_codes)) return
 
         left_orbital_index=1
         right_orbital_index=1
@@ -81,8 +82,16 @@ contains
                 merged_kappa(merged_orbital_count)=left_kappa(left_orbital_index)
                 merged_labels(merged_orbital_count)=left_orbital_labels(left_orbital_index)
             end if
-            if (merge_choice /= 2) left_orbital_index=left_orbital_index+1
-            if (merge_choice /= 1) right_orbital_index=right_orbital_index+1
+            left_orbital_map(merged_orbital_count)=0
+            right_orbital_map(merged_orbital_count)=0
+            if (merge_choice /= 2) then
+                left_orbital_map(merged_orbital_count)=left_orbital_index
+                left_orbital_index=left_orbital_index+1
+            end if
+            if (merge_choice /= 1) then
+                right_orbital_map(merged_orbital_count)=right_orbital_index
+                right_orbital_index=right_orbital_index+1
+            end if
         end do
         wide_merged_csf_count=int(left_csf_count,int64)+int(csf_count,int64)
         message="merged CSF count exceeds suite integer capacity"
@@ -96,37 +105,42 @@ contains
             deallocate(occupations)
             return
         end if
-        allocate(couplings(max_orbitals,merged_csf_count),stat=allocation_status)
+        allocate(angular_codes(csf_angular_code_count,merged_csf_count),stat=allocation_status)
         if (allocation_status /= 0) then
             deallocate(occupations,subshell_quantum_codes)
             return
         end if
-        ! Missing orbitals are empty J=0 shells. Insertions preserve the existing nontrivial
-        ! coupling chains, so whole coupling columns can be copied without remapping.
+        ! When a side has no orbital at this position it inherits its own preceding 2K+1.
         occupations=0_int8
         subshell_quantum_codes=0_int8
         subshell_quantum_codes(:merged_orbital_count,3,:)=1_int8
-        couplings(:,:left_csf_count)=int(left_coupling_codes(:,:left_csf_count),int8)
-        couplings(:,left_csf_count+1:)=csf_coupling_quantum_codes
+        angular_codes=0_int8
+        angular_codes(csf_total_j_slot:,:left_csf_count)=int(left_angular_codes(csf_total_j_slot:,:left_csf_count),int8)
+        angular_codes(csf_total_j_slot:,left_csf_count+1:)=csf_angular_codes(csf_total_j_slot:,:)
         do merged_orbital_index=1,merged_orbital_count
-            do input_orbital_index=1,left_orbital_count
-                if (merged_principal_n(merged_orbital_index) /= left_principal_n(input_orbital_index) .or. &
-                    & merged_kappa(merged_orbital_index) /= left_kappa(input_orbital_index)) cycle
+            if (merged_orbital_index == 1) then
+                angular_codes(merged_orbital_index,:)=1_int8
+            else
+                angular_codes(merged_orbital_index,:)=angular_codes(merged_orbital_index-1,:)
+            end if
+            input_orbital_index=left_orbital_map(merged_orbital_index)
+            if (input_orbital_index /= 0) then
                 occupations(merged_orbital_index,:left_csf_count)=int(left_occupations(input_orbital_index,:left_csf_count),int8)
                 subshell_quantum_codes(merged_orbital_index,:, &
-                    & :left_csf_count)=int(left_subshell_quantum_codes(input_orbital_index,:,:left_csf_count),int8)
-            end do
-            do input_orbital_index=1,orbital_count
-                if (merged_principal_n(merged_orbital_index) /= orbital_principal_n(input_orbital_index) .or. &
-                    & merged_kappa(merged_orbital_index) /= orbital_kappa(input_orbital_index)) cycle
+                    :left_csf_count)=int(left_subshell_quantum_codes(input_orbital_index,:,:left_csf_count),int8)
+                angular_codes(merged_orbital_index,:left_csf_count)=int(left_angular_codes(input_orbital_index,:left_csf_count),int8)
+            end if
+            input_orbital_index=right_orbital_map(merged_orbital_index)
+            if (input_orbital_index /= 0) then
                 occupations(merged_orbital_index,left_csf_count+1:)=csf_subshell_occupations(input_orbital_index,:)
                 subshell_quantum_codes(merged_orbital_index,:,left_csf_count+1:)=csf_subshell_quantum_codes(input_orbital_index,:,:)
-            end do
+                angular_codes(merged_orbital_index,left_csf_count+1:)=csf_angular_codes(input_orbital_index,:)
+            end if
         end do
-        deallocate(csf_subshell_occupations,csf_subshell_quantum_codes,csf_coupling_quantum_codes)
+        deallocate(csf_subshell_occupations,csf_subshell_quantum_codes,csf_angular_codes)
         csf_subshell_occupations=>occupations
         csf_subshell_quantum_codes=>subshell_quantum_codes
-        csf_coupling_quantum_codes=>couplings
+        csf_angular_codes=>angular_codes
         orbital_count=merged_orbital_count
         csf_count=merged_csf_count
         orbital_principal_n(:merged_orbital_count)=merged_principal_n(:merged_orbital_count)

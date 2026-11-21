@@ -1,6 +1,6 @@
 # Suite 原生读取 CSF 计算描述符 V3 计划
 
-2026-11-21 · 待实施 · 源码基线 `8398536`。目标是将 rCSFs 在生成时确定的占据、子壳层态和累计耦合直接用于普通 CSF 计算。格式主规范由 rCSFs 仓库的 `docs/CSF_DESCRIPTOR_V3_PLAN.md` 维护。[当前生产输入](../implemented/native_csf_descriptors.md)
+2026-11-21 · Suite 实施完成 · 源码基线 `a2ce6c6`。目标是将 rCSFs 在生成时确定的占据、子壳层态和累计耦合直接用于普通 CSF 计算。格式主规范由 rCSFs 仓库的 `docs/CSF_DESCRIPTOR_V3_PLAN.md` 维护。[当前生产输入](../implemented/native_csf_descriptors.md)
 
 ## 输入和内存索引
 
@@ -14,7 +14,7 @@ M 为 header 的有序 peel 子壳层数。每条 CSF 有 `4M+2` 个非空逻辑
 
 ## 实施顺序
 
-1. **Rust reader 与 C/Fortran 边界。** 在 Suite 自有的 Rust reader 中登记版本 3，核对列语义和次序、header 字节哈希、轨道顺序、行数、显式块边界和可选零阶计数。按宽整数解码物理 2J、2K（码值减一）并验证电子数、占据容量、宇称、子壳层态、每一步的三角条件/步长和终点。重用现有有界批次、顺序读块及错误处理。使 Fortran 可明确查询版本；若扩充 C 接口，同步头文件、ABI 版本策略与绑定。V2 按已发布语义读取，同宽数据按版本分派。[Rust 传输契约](../../src/lib/csf_descriptor/src/descriptor_transport.rs) · [Rust reader](../../src/lib/csf_descriptor/src/descriptor_reader.rs) · [C 接口](../../src/lib/csf_descriptor/include/rcsfs_descriptor.h) · [Fortran reader](../../src/lib/core/csf_descriptor_reader.f90)
+1. **Rust reader 与 C/Fortran 边界。** 在 Suite 自有的 Rust reader 中登记版本 3，核对列语义和次序、header 字节哈希、轨道顺序、行数、显式块边界和可选零阶计数。按宽整数解码物理 2J、2K（码值减一）并验证电子数、占据容量、宇称、子壳层态、每一步的三角条件/步长和终点。重用现有有界批次、顺序读块及错误处理。使 Fortran 可明确查询版本；若扩充 C 接口，同步头文件、ABI 版本策略与绑定。生产路径要求 `descriptor_version=3`，同宽的 V2 文件在打开时拒绝。[Rust 传输契约](../../src/lib/csf_descriptor/src/descriptor_transport.rs) · [Rust reader](../../src/lib/csf_descriptor/src/descriptor_reader.rs) · [C 接口](../../src/lib/csf_descriptor/include/rcsfs_descriptor.h) · [Fortran reader](../../src/lib/core/csf_descriptor_reader.f90)
 2. **rangular 与 RCI。** 在块读入时安装本块的占据、子壳层码、逐轨道累计码和总对称性。对每个 bra/ket，继续按占据构造双方共同满壳及其余参与轨道的有序列表。若参与轨道为 p₁…pₛ，则第 t 个中间工作槽直接取各侧在 pₜ₊₁ 处的累计码（t=1…s−1）。s≤1 时没有有效中间槽；单壳层算符例程对总 J 或临时活动壳层的单独处理仍须核对。共同轨道列表、算符选择规则、MCP 角系数和径向积分继续由相应计算例程产生。[成对准备](../../src/lib/core/csf_pair_quantum_numbers.f90) · [量子数查询](../../src/lib/core/csf_quantum_queries.f90) · [RCI 读块](../../src/lib/core/rci_csf_block_reader.f90)
 3. **RMCDHF 与 MPI。** 普通、内存及 MPI 版本均保持 MCP 先行，核对闭核数、轨道数、电子数、CSF 总数、显式块长度/标签与进程配置。逐行验证完整输入，长期保留全基组占据和块对称性；沿用 MCP 提供角系数。MPI 由 root 读取和验证，按消费程序广播占据或完整块，并传播错误状态。zero-first 作用于各块有序行的前缀。[RMCDHF 占据路径](../../src/lib/core/rmcdhf_csf_input.f90) · [MPI 块广播](../../src/lib/mpi/mpi_csf_block_input.f90) · [MPI 占据广播](../../src/lib/mpi/mpi_rmcdhf_csf_input.f90)
 4. **其他普通 CSF 消费者。** 核查 JJ2LSJ、性质程序、跃迁及双正交变换中直接按步访问、复制或输出耦合码的调用点。全基组 reader 剔除全空轨道时，逐轨道累计数组须与轨道表同步压缩。左右基组合并并插入空轨道时，要分别继承各侧在前一轨道的累计码；继续保留左右轨道的相对次序、两侧行号与块前缀。按步的遗留入口可由开壳层位置映射到对应轨道。header-only 的径向初猜只消费轨道表和电子数。[全基组读入](../../src/lib/core/csf_full_basis_reader.f90) · [双基组合并](../../src/lib/core/csf_basis_merging.f90) · [JJ2LSJ](../../src/apps/jj2lsj/jj2lsj_conversion.f90)

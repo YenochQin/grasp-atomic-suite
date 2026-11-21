@@ -14,4 +14,7 @@ module compile_time_capacities
     integer, parameter :: max_orbitals = 127
     integer, parameter :: max_orbitals_minus_one = max_orbitals - 1
     integer, parameter :: max_orbitals_minus_two = max_orbitals - 2
+    integer, parameter, public :: csf_total_j_slot = max_orbitals + 1
+    integer, parameter, public :: csf_parity_slot = max_orbitals + 2
+    integer, parameter, public :: csf_angular_code_count = csf_parity_slot
 end module compile_time_capacities

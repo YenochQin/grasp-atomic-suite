@@ -33,8 +33,9 @@ contains
             two_bra_chain_j=bra_intermediate_couplings(coupled_shell_count-1)-1
             two_ket_chain_j=ket_intermediate_couplings(coupled_shell_count-1)-1
         else if(coupled_shell_count == 1) then
-            two_bra_chain_j=bra_intermediate_couplings(coupled_shell_count)-1
-            two_ket_chain_j=ket_intermediate_couplings(coupled_shell_count)-1
+            orbital_index=peel_orbital_indices(1)
+            two_bra_chain_j=bra_subshell_quantum_codes(3,orbital_index)-1
+            two_ket_chain_j=ket_subshell_quantum_codes(3,orbital_index)-1
         else
             print*, "ERROR in select_one_electron_tensor_recoupling"
             stop

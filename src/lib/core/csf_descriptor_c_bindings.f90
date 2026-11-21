@@ -1,4 +1,4 @@
-! Declare the C ABI v1 used to call the Rust CSF descriptor reader.
+! Declare the C ABI v2 used to call the Rust CSF descriptor reader.
 module csf_descriptor_c_bindings
     ! Module dependencies
     use iso_c_binding, only: c_ptr, c_char, c_int32_t, c_int8_t, c_int64_t, c_size_t
@@ -6,19 +6,24 @@ module csf_descriptor_c_bindings
 
     ! Module interface
     private
-    public :: rust_descriptor_version, rust_descriptor_open, rust_descriptor_info
+    public :: rust_descriptor_abi_version, rust_descriptor_open, rust_descriptor_info
     public :: rust_descriptor_tables, rust_descriptor_read, rust_descriptor_close
-    public :: rust_descriptor_zero_order_counts
+    public :: rust_descriptor_zero_order_counts, rust_descriptor_format_version
     public :: rust_descriptor_read_radial_header
+    public :: rust_descriptor_check_spin_angular
 
     ! Procedure interfaces
     interface
-        function rust_descriptor_version() bind(C, name="rcsfs_descriptor_abi_version") result(status)
+        function rust_descriptor_abi_version() bind(C, name="rcsfs_descriptor_abi_version") result(status)
             ! Module dependencies
             import c_int32_t
 
             ! Arguments
             integer(c_int32_t) :: status
+        end function
+        function rust_descriptor_format_version() bind(C, name="rcsfs_descriptor_format_version") result(version)
+            import c_int32_t
+            integer(c_int32_t) :: version
         end function
         function rust_descriptor_read_radial_header(header_path, orbital_table, orbital_capacity, header_counts, &
             & error_message, message_capacity) &
@@ -41,6 +46,14 @@ module csf_descriptor_c_bindings
             ! Arguments
             character(kind=c_char), intent(in) :: descriptor_path(*), header_path(*)
             type(c_ptr), intent(inout) :: handle
+            character(kind=c_char), intent(out) :: error_message(*)
+            integer(c_size_t), value :: message_capacity
+            integer(c_int32_t) :: status
+        end function
+        function rust_descriptor_check_spin_angular(handle, error_message, message_capacity) &
+            bind(C, name="rcsfs_descriptor_check_spin_angular") result(status)
+            import c_ptr, c_char, c_size_t, c_int32_t
+            type(c_ptr), value :: handle
             character(kind=c_char), intent(out) :: error_message(*)
             integer(c_size_t), value :: message_capacity
             integer(c_int32_t) :: status

@@ -6,7 +6,7 @@ module mpi_csf_block_input
     use mpi_state, only: mpi_rank, mpi_bcast, mpi_integer, mpi_character, mpi_comm_world
     use orbital_csf_basis, only: csf_count, orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, &
         orbital_symmetry_labels, csf_subshell_occupations
-    use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
+    use csf_coupling_data, only: csf_subshell_quantum_codes, csf_angular_codes
     use atomic_calculation_state, only: electron_count
     use hamiltonian_symmetry_blocks, only: symmetry_block_count, csf_counts_by_block
     implicit none (type, external)
@@ -61,6 +61,6 @@ contains
         descriptor_status=0
         if (mpi_rank == 0) call load_csf_block(block_index,descriptor_status)
         call require_collective_success(descriptor_status)
-        call broadcast_descriptor_arrays(csf_subshell_occupations,csf_subshell_quantum_codes,csf_coupling_quantum_codes)
+        call broadcast_descriptor_arrays(csf_subshell_occupations,csf_subshell_quantum_codes,csf_angular_codes)
     end subroutine load_csf_block_mpi
 end module mpi_csf_block_input

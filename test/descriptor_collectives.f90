@@ -1,5 +1,7 @@
 program descriptor_collectives
    use iso_fortran_env, only: int8
+   use csf_coupling_data, only: csf_total_j_slot, csf_parity_slot
+   use grasp_parameters, only: max_orbitals
    use mpi_state, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_finalize
    use mpi_csf_collectives, only: allocate_descriptor_arrays, broadcast_descriptor_arrays, require_collective_success
    implicit none (type, external)
@@ -22,9 +24,11 @@ program descriptor_collectives
             occupations(i,j)=int(mod(i+j,127),int8)
          end do
       end do
-      couplings=-occupations
+      couplings(:max_orbitals,:)=-occupations
+      couplings(csf_total_j_slot,:)=[1,2,127]
+      couplings(csf_parity_slot,:)=[1,-1,-1]
       quantum(:,1,:)=occupations
-      quantum(:,2,:)=couplings
+      quantum(:,2,:)=couplings(:max_orbitals,:)
       quantum(:,3,:)=1_int8
    end if
    if (scenario == "shape" .and. rank == 1) then
@@ -37,8 +41,10 @@ program descriptor_collectives
          if (occupations(i,j) /= int(mod(i+j,127),int8)) error stop "occupation broadcast"
       end do
    end do
-   if (any(couplings /= -occupations) .or. any(quantum(:,1,:) /= occupations) .or. &
-       any(quantum(:,2,:) /= couplings) .or. any(quantum(:,3,:) /= 1)) error stop "quantum broadcast"
+   if (any(couplings(:max_orbitals,:) /= -occupations) .or. any(quantum(:,1,:) /= occupations) .or. &
+       any(quantum(:,2,:) /= couplings(:max_orbitals,:)) .or. any(quantum(:,3,:) /= 1)) error stop "quantum broadcast"
+   if (any(couplings(csf_total_j_slot,:) /= [1,2,127]) .or. any(couplings(csf_parity_slot,:) /= [1,-1,-1])) &
+       error stop "symmetry broadcast"
    deallocate(occupations,quantum,couplings)
    call mpi_finalize(status)
    print *, "PASS one-column descriptor collectives"

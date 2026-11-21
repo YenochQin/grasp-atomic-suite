@@ -18,13 +18,13 @@ def main() -> None:
     for scenario in ("single", "multi", "invalid"):
         with tempfile.TemporaryDirectory(prefix="csf-merge-") as temporary:
             work = Path(temporary)
-            right_peel = ["2s", "4s", "2p"]
+            right_peel = ["2s", "8s", "4s", "2p"]
             right_blocks = [
                 [Record((Shell("4s", 2),), 0)],
                 [Record((Shell("2s", 1, 1, 1), Shell("2p", 1, 3, 1)), 2, -1)],
             ]
             if scenario == "multi":
-                right_peel = ["2s", "4s", "5s", "2p"]
+                right_peel = ["2s", "8s", "4s", "5s", "2p"]
                 right_blocks[1].insert(
                     0, Record((Shell("5s", 1, 1, 1), Shell("2p", 1, 3, 1)), 2, -1)
                 )
@@ -36,7 +36,7 @@ def main() -> None:
             for stem, peel, blocks in [
                 (
                     "left",
-                    ["2s", "3s", "2p"],
+                    ["7s", "2s", "3s", "2p", "9s"],
                     [
                         [Record((Shell("2s", 2),), 0)],
                         [Record((Shell("3s", 1, 1, 1), Shell("2p", 1, 3, 1)), 2, -1)],

@@ -1,5 +1,5 @@
 # Historical readers are test oracles only; never linked into production applications.
-add_library(csf_text_oracle STATIC cslh.f90 lodcsh.f90 lodcsh2.f90 setcsll.f90
+add_library(csf_text_oracle STATIC csf_text_oracle_coupling_data.f90 cslh.f90 lodcsh.f90 lodcsh2.f90 setcsll.f90
     prsrsl.f90 prsrcn.f90 parsjl.f90)
 setup_fortran_modules(csf_text_oracle)
 target_link_libraries_Fortran(csf_text_oracle PRIVATE core grasp_shared)

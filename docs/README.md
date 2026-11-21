@@ -24,7 +24,7 @@
 | [inline_output_formats.md](implemented/inline_output_formats.md) | 数字标签 `FORMAT` 内联，覆盖共享库和应用的 903 处 `WRITE`、2 处 `PRINT`；源码、预处理和字节对照已验证。 |
 | [shared_library_naming.md](implemented/shared_library_naming.md) | 共享状态与基础接口库的命名约定、Fortran 调用方迁移和完整模块对照。 |
 | [shared_library_procedure_names.md](implemented/shared_library_procedure_names.md) | 共享库过程名称迁移表与现行 Fortran 调用入口。 |
-| [native_csf_descriptors.md](implemented/native_csf_descriptors.md) | 现行生产 CSF 输入；reader 已内置于 suite 并构建到 lib/，无需外部 rCSFs reader；所有保留消费者直接读取 Parquet/header，含 MPI、双基组、低内存及错误传播契约。 |
+| [native_csf_descriptors.md](implemented/native_csf_descriptors.md) | 现行 V3 生产 CSF 输入、ABI、MPI、双基组、低内存及错误传播契约。原实施计划见 [V3 计划](plans/csf_descriptor_v3_2026-11-21.md)。 |
 | [rangular_angular_reuse.md](implemented/rangular_angular_reuse.md) | 已实施，串行专项回归通过；默认关闭的有界 CSF 对缓存；保留顺序、占据/耦合及轨道共享关系，复用原始 T/V 系数，普通 MCP 写出不变；包含命中率、缓存容量与 RSS 测量，MPI 未接入；rangular OpenMP 已移除。 |
 | [rwfnestimate_header_input.md](implemented/rwfnestimate_header_input.md) | header 输入说明；保留 header 轨道表、电子数和初猜检查背景；当前仅 header 输入，无旧文本回退。 |
 | [rejected_rmcdhf_variants.md](implemented/rejected_rmcdhf_variants.md) | 已移除被否决变体；删除 strict/diag 两个独立求解器、专用测试、构建/安装入口及当前二进制；普通四种 RMCDHF 和共享库保持原流程。 |
@@ -61,7 +61,6 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
-| [CSF 计算描述符 V3](plans/csf_descriptor_v3_2026-11-21.md) | 待实施。按轨道读取完整角动量码，分别读取总 2J+1 与宇称；覆盖角积分、RCI、RMCDHF 和 MPI 消费路径。 |
 | [variable_renaming_followup_2026-11-16.md](plans/variable_renaming_followup_2026-11-16.md) | 变量语义重命名；第一批 529 项已处理，原有 19,579 项需与当前源码重新对齐；旧 CSF reader 已替换，不恢复退役代码。 |
 | [static_diagnostics_remaining_2026-11-17.md](plans/static_diagnostics_remaining_2026-11-17.md) | 待核定的静态诊断；S1–S4、格式及 USE ONLY 批次已完成；保留接口、状态、I/O、工具覆盖、告警预算及数值验证待办。 |
 | [non_csfg_variable_inventory_2026-11-16.md](plans/non_csfg_variable_inventory_2026-11-16.md) | 明确候选已处理，其余待核实；原始采集基准 caaf3a5；1,880 份 Fortran 文本、20,108 个实体。529 项明确候选已逐项标记（528 改名、pi 保留），其余 19,579 项待核实；原名、原声明行及哈希作为历史快照，当前名称与位置另有 JSON 映射。 |

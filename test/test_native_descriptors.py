@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from test_csf_descriptors import Record, basic_blocks, write_fixture
+from test_csf_descriptors import Record, Shell, basic_blocks, write_fixture
 
 
 def main() -> None:
@@ -94,6 +94,20 @@ def main() -> None:
         assert (
             result.returncode == 0 and "PASS descriptor lifecycle" in result.stdout
         ), result.stdout + result.stderr
+        pair_parquet, _, pair_text = write_fixture(
+            root / "pairs", [], ["1s", "2s", "3s", "4s"],
+            [[
+                Record((Shell("1s", 2), Shell("2s", 1, 1, 1), Shell("3s", 1, 1, 1, 0), Shell("4s", 1, 1, 1)), 1),
+                Record((Shell("1s", 2), Shell("2s", 1, 1, 1), Shell("3s", 1, 1, 1, 2), Shell("4s", 1, 1, 1)), 1),
+                Record((Shell("1s", 2), Shell("2s", 2), Shell("3s", 1, 1, 1)), 1),
+            ]],
+        )
+        pair_text.unlink()
+        result = subprocess.run(
+            [str(lifecycle), str(pair_parquet), "pairs"],
+            cwd=root, check=False, capture_output=True, text=True, timeout=30,
+        )
+        assert result.returncode == 0 and "PASS descriptor lifecycle" in result.stdout, result.stdout + result.stderr
     print("Native descriptor integration passed")
 
 

@@ -28,8 +28,8 @@ contains
         use orbital_csf_basis, only: csf_count, csf_subshell_occupations, left_occupations, max_orbitals, left_kappa, &
             left_csf_count, left_orbital_labels, left_principal_n, left_orbital_count, orbital_count, orbital_kappa, &
             orbital_l, orbital_principal_n, orbital_symmetry_labels, orbital_two_j
-        use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, left_coupling_codes, &
-            left_subshell_quantum_codes
+        use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes, left_angular_codes, &
+            left_subshell_quantum_codes, csf_angular_code_count
         use csf_quantum_queries, only: csf_occupation
         use mpi_csf_collectives, only: require_collective_success
         use mpi_csf_basis_input, only: load_csf_basis_mpi
@@ -68,7 +68,7 @@ contains
         !
         allocate(left_occupations(max_orbitals,csf_count),stat=io_status)
         if (io_status == 0) allocate(left_subshell_quantum_codes(max_orbitals,3,csf_count),stat=io_status)
-        if (io_status == 0) allocate(left_coupling_codes(max_orbitals,csf_count),stat=io_status)
+        if (io_status == 0) allocate(left_angular_codes(csf_angular_code_count,csf_count),stat=io_status)
         call require_collective_success(io_status)
         !
         do i = 1,csf_count
@@ -77,10 +77,10 @@ contains
                 left_subshell_quantum_codes(j,1,i) = csf_subshell_quantum_codes(j,1,i)
                 left_subshell_quantum_codes(j,2,i) = csf_subshell_quantum_codes(j,2,i)
                 left_subshell_quantum_codes(j,3,i) = csf_subshell_quantum_codes(j,3,i)
-                left_coupling_codes(j,i) = csf_coupling_quantum_codes(j,i)
             end do
         end do
         !
+        left_angular_codes(:,:) = csf_angular_codes
         initial_orbital_count=orbital_count
         initial_csf_count=csf_count
         do i = 1,orbital_count
@@ -98,7 +98,7 @@ contains
         !
         call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "load_initial_transition_basis")
         call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "load_initial_transition_basis")
-        call dalloc (csf_coupling_quantum_codes, "csf_coupling_quantum_codes", "load_initial_transition_basis")
+        call dalloc (csf_angular_codes, "csf_angular_codes", "load_initial_transition_basis")
         !
 
 

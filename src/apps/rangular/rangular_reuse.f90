@@ -5,8 +5,8 @@ module rangular_reuse
     use iso_fortran_env, only: int64
     use, intrinsic :: iso_fortran_env, only: real64
     use grasp_parameters, only: max_orbitals
-    use orbital_csf_basis, only: orbital_count, csf_count, csf_subshell_occupations, orbital_kappa
-    use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
+    use orbital_csf_basis, only: orbital_count, csf_subshell_occupations, orbital_kappa
+    use csf_coupling_data, only: csf_subshell_quantum_codes, csf_angular_codes, csf_total_j_slot, csf_parity_slot
     use angular_coefficient_buffer_state, only: &
         angular_coefficient_count, angular_buffer_capacity, angular_coefficient_labels, angular_coefficients
     use debug_output_settings, only: angular_coefficient_debug_flag, ibug2, ibug3, ldbpa, ldbpg
@@ -24,14 +24,14 @@ module rangular_reuse
     type :: pair_entry
         ! Components
         integer(int64) :: hash
-        integer :: key_start, key_size, term_start, term_count, first, second, bra, ket
+        integer :: key_start, key_size, term_start, term_count, first, second
         real(real64) :: scalar
     end type pair_entry
 
     ! Module state
     type(pair_entry), allocatable :: entries(:)
     integer, allocatable :: buckets(:), term_labels(:,:)
-    integer(int64), allocatable :: keys(:), coupling_hash(:)
+    integer(int64), allocatable :: keys(:)
     real(real64), allocatable :: values(:)
     integer :: entry_count, key_count, term_count, report_unit = 0
     integer(int64) :: byte_limit = 0, reserved_bytes, fixed_bytes, entry_bytes
@@ -58,8 +58,7 @@ contains
     end subroutine configure_angular_reuse
 
     ! All arithmetic stays below 2**48; no signed integer overflow is required.
-    ! Hashes select buckets only. Both the complete key and coupling arrays are
-    ! compared on every hit, including a collision in either coupling hash.
+    ! Hashes select buckets. Every hit compares the complete key.
     pure function mix_hash_word(hash, word) result(next)
         ! Arguments
         integer(int64), intent(in) :: hash, word
@@ -70,8 +69,8 @@ contains
 
     subroutine begin_reuse_block()
         ! Local declarations
-        integer :: entry_capacity, table_capacity, key_capacity, term_capacity, status, csf_index, i
-        integer(int64) :: available, remaining, hash
+        integer :: entry_capacity, table_capacity, key_capacity, term_capacity, status
+        integer(int64) :: remaining
         type(pair_entry) :: sample
         pairs = 0; hits = 0; misses = 0; bypasses = 0; not_stored = 0; probes = 0
         entry_count = 0; key_count = 0; term_count = 0
@@ -81,18 +80,16 @@ contains
         if (.not. reuse_requested) return
         ! Debug printouts require execution of the original kernels for each pair.
         if (angular_coefficient_debug_flag /= 0 .or. ibug2 /= 0 .or. ibug3 /= 0 .or. any(ldbpa) .or. any(ldbpg)) return
-        available = byte_limit - 8_int64*csf_count
-        if (available < 1024) return
-        entry_capacity = int(min(available/512, 1048576_int64))
+        entry_capacity = int(min(byte_limit/512, 1048576_int64))
         table_capacity = 2
         do while (table_capacity < 2*entry_capacity)
             table_capacity = 2*table_capacity
         end do
-        fixed_bytes = 8_int64*csf_count + 4_int64*table_capacity
+        fixed_bytes = 4_int64*table_capacity
         remaining = byte_limit - fixed_bytes - entry_bytes*entry_capacity
         key_capacity = int(remaining/2/8)
         term_capacity = int((remaining - 8_int64*key_capacity)/28)
-        allocate(coupling_hash(csf_count), buckets(table_capacity), entries(entry_capacity), &
+        allocate(buckets(table_capacity), entries(entry_capacity), &
             keys(key_capacity), term_labels(5,term_capacity), values(term_capacity), stat=status)
         if (status /= 0) then
             call release_cache()
@@ -101,13 +98,6 @@ contains
         end if
         reserved_bytes = fixed_bytes + entry_bytes*entry_capacity + 8_int64*key_capacity + 28_int64*term_capacity
         buckets = 0
-        do csf_index = 1, csf_count
-            hash = 1
-            do i = 1, max_orbitals
-                hash = mix_hash_word(hash, int(csf_coupling_quantum_codes(i,csf_index),int64))
-            end do
-            coupling_hash(csf_index) = hash
-        end do
         active = .true.
     end subroutine begin_reuse_block
 
@@ -122,6 +112,7 @@ contains
         do i = 1, 3
             word = ior(word,shiftl(iand(int(csf_subshell_quantum_codes(orbital,i,csf),int64),255_int64),8*i))
         end do
+        word = ior(word,shiftl(int(csf_angular_codes(orbital,csf),int64),32))
     end function shell_word
 
     subroutine pair_key(bra_csf_index, ket_csf_index, key, length, orbital_map, inverse_map, hash)
@@ -132,7 +123,9 @@ contains
 
         ! Local declarations
         integer :: orbital_index, slot, i
-        key(1:3) = [coupling_hash(bra_csf_index), coupling_hash(ket_csf_index), int(merge(1,0,bra_csf_index==ket_csf_index),int64)]
+        key(1:3) = [int(csf_angular_codes(csf_total_j_slot,bra_csf_index),int64)*csf_angular_codes(csf_parity_slot,bra_csf_index), &
+            int(csf_angular_codes(csf_total_j_slot,ket_csf_index),int64)*csf_angular_codes(csf_parity_slot,ket_csf_index), &
+            int(merge(1,0,bra_csf_index==ket_csf_index),int64)]
         slot = 0
         orbital_map = 0
         inverse_map = 0
@@ -145,7 +138,7 @@ contains
             slot = slot + 1
             orbital_map(slot) = orbital_index
             inverse_map(orbital_index) = slot
-            key(length+1) = ior(shiftl(int(orbital_kappa(orbital_index),int64),32),shell_word(orbital_index,bra_csf_index))
+            key(length+1) = ior(shiftl(int(orbital_kappa(orbital_index),int64),40),shell_word(orbital_index,bra_csf_index))
             key(length+2) = shell_word(orbital_index,ket_csf_index)
             length = length + 2
         end do
@@ -204,26 +197,23 @@ contains
             if (entries(entry)%hash == hash .and. entries(entry)%key_size == length) then
                 start = entries(entry)%key_start
                 if (all(keys(start:start+length-1) == key(1:length))) then
-                    if (all(csf_coupling_quantum_codes(:,bra_csf_index) == csf_coupling_quantum_codes(:,entries(entry)%bra)) .and. &
-                        all(csf_coupling_quantum_codes(:,ket_csf_index) == csf_coupling_quantum_codes(:,entries(entry)%ket))) then
-                        hits = hits + 1
-                        bra_orbital_index = orbital_map(entries(entry)%first)
-                        ket_orbital_index = orbital_map(entries(entry)%second)
-                        scalar_coefficient = entries(entry)%scalar
-                        angular_coefficient_count = entries(entry)%term_count
-                        do while (angular_buffer_capacity < angular_coefficient_count)
-                            call manage_angular_coefficient_buffer(2)
+                    hits = hits + 1
+                    bra_orbital_index = orbital_map(entries(entry)%first)
+                    ket_orbital_index = orbital_map(entries(entry)%second)
+                    scalar_coefficient = entries(entry)%scalar
+                    angular_coefficient_count = entries(entry)%term_count
+                    do while (angular_buffer_capacity < angular_coefficient_count)
+                        call manage_angular_coefficient_buffer(2)
+                    end do
+                    start = entries(entry)%term_start
+                    do i = 1, angular_coefficient_count
+                        do j = 1, 4
+                            angular_coefficient_labels(j,i) = orbital_map(term_labels(j,start+i-1))
                         end do
-                        start = entries(entry)%term_start
-                        do i = 1, angular_coefficient_count
-                            do j = 1, 4
-                                angular_coefficient_labels(j,i) = orbital_map(term_labels(j,start+i-1))
-                            end do
-                            angular_coefficient_labels(5,i) = term_labels(5,start+i-1)
-                            angular_coefficients(i) = values(start+i-1)
-                        end do
-                        return
-                    end if
+                        angular_coefficient_labels(5,i) = term_labels(5,start+i-1)
+                        angular_coefficients(i) = values(start+i-1)
+                    end do
+                    return
                 end if
             end if
             bucket = iand(bucket,size(buckets)-1) + 1
@@ -275,8 +265,6 @@ contains
         entries(entry)%key_size = length
         entries(entry)%term_start = term_count+1
         entries(entry)%term_count = count
-        entries(entry)%bra = bra_csf_index
-        entries(entry)%ket = ket_csf_index
         entries(entry)%first = 0
         entries(entry)%second = 0
         if (bra_orbital_index > 0) entries(entry)%first = inverse_map(bra_orbital_index)
@@ -298,7 +286,6 @@ contains
         if (allocated(entries)) deallocate(entries)
         if (allocated(buckets)) deallocate(buckets)
         if (allocated(keys)) deallocate(keys)
-        if (allocated(coupling_hash)) deallocate(coupling_hash)
         if (allocated(term_labels)) deallocate(term_labels)
         if (allocated(values)) deallocate(values)
         active = .false.

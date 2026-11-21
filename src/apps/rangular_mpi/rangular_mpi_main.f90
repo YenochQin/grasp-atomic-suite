@@ -44,7 +44,7 @@ program rangular_mpi_main
     use calculation_input_defaults, only: nondefault_options_flag
     use hamiltonian_symmetry_blocks, only: csf_counts_by_block, symmetry_block_count
     use orbital_csf_basis, only: csf_count, csf_subshell_occupations
-    use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes
+    use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes
     use mcp_generation_options, only: max_coulomb_multipole_rank
     use calculation_state_files, only: state_files, state_name_length, files_for_state, resolve_descriptor_input
     use mpi_calculation_state, only: select_mpi_state
@@ -158,7 +158,7 @@ program rangular_mpi_main
         !*** Load current CSL block. Memories de-allocated in mcp ***
         stage_start_count = stage_clock()
         call allocate_descriptor_arrays(csf_count,csf_subshell_occupations, &
-            csf_subshell_quantum_codes,csf_coupling_quantum_codes)
+            csf_subshell_quantum_codes,csf_angular_codes)
         call record_stage("csf_allocation",symmetry_block_index,stage_start_count,int(csf_count,int64))
         !
         stage_start_count = stage_clock()

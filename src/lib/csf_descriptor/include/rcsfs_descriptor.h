@@ -5,7 +5,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* ABI v1: status 0 is success. Errors write a NUL-terminated message if
+/* ABI v2: status 0 is success. Errors write a NUL-terminated message if
  * capacity > 0. Handles are exclusive, independent, and closed by address.
  * Initialize an open() handle slot to NULL; close before reopening. A live
  * slot is rejected unchanged. Paths are UTF-8, NUL terminated.
@@ -13,9 +13,10 @@ extern "C" {
  * Info: core, peel, blocks, rows, electrons (five int64_t entries).
  * Tables: orbital (n,kappa) pairs, block lengths, block (2J,parity) pairs.
  * Table capacities count orbital/block records, not individual scalar entries.
- * Read buffer: channel + row_width*row. On failure output is invalid.
+ * Read buffer: V3 codes at channel + row_width*row. On failure output is invalid.
  * All pointers and sizes must describe valid caller-owned storage. */
 int32_t rcsfs_descriptor_abi_version(void);
+int32_t rcsfs_descriptor_format_version(void);
 /* Header-only radial input. Orbitals are (n,kappa) pairs in core/peel order.
  * Info contains orbital count, core count, and total electrons. */
 int32_t rcsfs_descriptor_read_radial_header(
@@ -31,6 +32,8 @@ int32_t rcsfs_descriptor_open(
     void **output_handle,
     char *error_buffer,
     size_t error_buffer_capacity);
+/* Check the spin-angular kernel's occupation limits after the opening scan. */
+int32_t rcsfs_descriptor_check_spin_angular(void *handle, char *error_buffer, size_t error_buffer_capacity);
 int32_t rcsfs_descriptor_info(
     void *handle,
     int64_t *descriptor_info,

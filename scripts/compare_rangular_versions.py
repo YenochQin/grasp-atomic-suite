@@ -536,7 +536,7 @@ def main() -> int:
     descriptors = parser.add_mutually_exclusive_group()
     descriptors.add_argument("--binary", type=Path, help=argparse.SUPPRESS)
     descriptors.add_argument(
-        "--descriptors", type=Path, help="native V2 descriptor Parquet; no conversion"
+        "--descriptors", type=Path, help="native V3 descriptor Parquet; no conversion"
     )
     parser.add_argument(
         "--header", type=Path, help="matching header, required with --descriptors"

@@ -59,8 +59,7 @@ contains
                 end do
                 term_index=table_index+300
             else
-                print*, "ERROR in FUNCTION lookup_jj_subshell_term"
-                stop
+                error stop "lookup_jj_subshell_term: j=9/2 term table requires occupations below 3"
             end if
         else
             high_j_range_index=two_orbital_j-10

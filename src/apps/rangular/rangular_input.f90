@@ -125,20 +125,21 @@ contains
         integer, intent(out) :: core_count
         integer, intent(in) :: maximum_blocks
         character(len=8), intent(out) :: block_labels(:)
-        call open_descriptor_source(options%descriptors, options%input_filename, maximum_blocks,options%header_filename)
+        call open_descriptor_source(options%descriptors, options%input_filename, maximum_blocks,options%header_filename, &
+            spin_angular=.true.)
         call install_descriptor_header(options%descriptors, core_count, block_labels)
     end subroutine load_angular_header
 
     subroutine load_angular_block(options, core_count, block_index)
         ! Module dependencies
         use orbital_csf_basis, only: csf_subshell_occupations
-        use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
+        use csf_coupling_data, only: csf_subshell_quantum_codes, csf_angular_codes
 
         ! Arguments
         type(angular_input_options), intent(inout) :: options
         integer, intent(in) :: core_count, block_index
         call read_descriptor_block(options%descriptors, block_index, csf_subshell_occupations, csf_subshell_quantum_codes, &
-            & csf_coupling_quantum_codes)
+            & csf_angular_codes)
     end subroutine load_angular_block
 
     subroutine close_angular_input(options)

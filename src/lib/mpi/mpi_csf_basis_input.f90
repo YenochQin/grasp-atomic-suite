@@ -9,7 +9,7 @@ module mpi_csf_basis_input
     use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations, orbital_principal_n, orbital_kappa, &
         orbital_l, orbital_two_j, orbital_symmetry_labels
     use atomic_calculation_state, only: electron_count
-    use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
+    use csf_coupling_data, only: csf_subshell_quantum_codes, csf_angular_codes, csf_angular_code_count
     use transition_basis_blocks, only: transition_block_count, cumulative_csf_counts
     implicit none (type, external)
 
@@ -40,7 +40,7 @@ contains
         if (mpi_rank /= 0) then
             allocate(csf_subshell_occupations(max_orbitals,csf_count),stat=descriptor_status)
             if (descriptor_status == 0) allocate(csf_subshell_quantum_codes(max_orbitals,3,csf_count),stat=descriptor_status)
-            if (descriptor_status == 0) allocate(csf_coupling_quantum_codes(max_orbitals,csf_count),stat=descriptor_status)
+            if (descriptor_status == 0) allocate(csf_angular_codes(csf_angular_code_count,csf_count),stat=descriptor_status)
         end if
         call require_collective_success(descriptor_status)
         call MPI_Bcast(orbital_principal_n,orbital_count,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_return_code)
@@ -48,6 +48,6 @@ contains
         call MPI_Bcast(orbital_l,orbital_count,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_return_code)
         call MPI_Bcast(orbital_two_j,orbital_count,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_return_code)
         call MPI_Bcast(orbital_symmetry_labels,2*orbital_count,MPI_CHARACTER,0,MPI_COMM_WORLD,mpi_return_code)
-        call broadcast_descriptor_arrays(csf_subshell_occupations,csf_subshell_quantum_codes,csf_coupling_quantum_codes)
+        call broadcast_descriptor_arrays(csf_subshell_occupations,csf_subshell_quantum_codes,csf_angular_codes)
     end subroutine load_csf_basis_mpi
 end module mpi_csf_basis_input

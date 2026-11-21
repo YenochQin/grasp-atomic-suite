@@ -1,6 +1,6 @@
 """Offline test-fixture conversion; never imported by production programs.
 
-Set RCSFS_TEST_CLI to a native rcsfs executable, or put it on PATH.
+Set RCSFS_TEST_CLI to an rcsfs executable that writes descriptor format 3.
 The reader under test never invokes this helper or consumes the text fixture.
 """
 
@@ -21,7 +21,7 @@ def descriptors(text: Path, stem: str | None = None) -> None:
         return
     executable = os.environ.get("RCSFS_TEST_CLI") or shutil.which("rcsfs")
     if not executable:
-        raise RuntimeError("Set RCSFS_TEST_CLI to the native fixture producer")
+        raise RuntimeError("Set RCSFS_TEST_CLI to the V3 native fixture producer")
     executable = str(Path(executable).resolve(strict=True))
     with tempfile.TemporaryDirectory(prefix="csf-fixture-") as temporary:
         work = Path(temporary)

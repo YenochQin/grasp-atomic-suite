@@ -46,7 +46,7 @@ program rangular_main
     use calculation_input_defaults, only: nondefault_options_flag
     use hamiltonian_symmetry_blocks, only: csf_counts_by_block, symmetry_block_count
     use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals
-    use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes
+    use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes, csf_angular_code_count
     use calculation_state_files, only: state_files, state_name_length, files_for_state, select_state, resolve_descriptor_input
     use run_timer_start, only: begin_run_timer
 
@@ -158,7 +158,7 @@ program rangular_main
         stage_start_count = stage_clock()
         call alloc (csf_subshell_occupations, max_orbitals, csf_count, "csf_subshell_occupations", "rangular_main")
         call alloc (csf_subshell_quantum_codes, max_orbitals,3,csf_count, "csf_subshell_quantum_codes", "rangular_main")
-        call alloc (csf_coupling_quantum_codes, max_orbitals, csf_count, "csf_coupling_quantum_codes", "rangular_main")
+        call alloc (csf_angular_codes, csf_angular_code_count, csf_count, "csf_angular_codes", "rangular_main")
         call record_stage("csf_allocation", symmetry_block_index, stage_start_count)
         !
         stage_start_count = stage_clock()

@@ -62,7 +62,7 @@ contains
         use csf_block_cutoffs,    only: active_csf_cutoffs
         use mcp_generation_options,     only: max_coulomb_multipole_rank, diagonal_only, use_first_order_restriction
         use orbital_csf_basis,     only: csf_count, csf_subshell_occupations
-        use csf_coupling_data,    only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
+        use csf_coupling_data,    only: csf_subshell_quantum_codes, csf_angular_codes
         use one_electron_scalar_coefficients, only: calculate_one_electron_scalar_coefficients
         use closed_shell_mcp, only: calculate_closed_shell_mcp
         implicit none (type, external)
@@ -239,7 +239,7 @@ contains
         !
         call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "compute_mcp_angular_coefficients_mpi")
         call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "compute_mcp_angular_coefficients_mpi")
-        call dalloc (csf_coupling_quantum_codes, "csf_coupling_quantum_codes", "compute_mcp_angular_coefficients_mpi")
+        call dalloc (csf_angular_codes, "csf_angular_codes", "compute_mcp_angular_coefficients_mpi")
         call manage_angular_coefficient_buffer (3)
         call record_stage("csf_and_pair_buffer_release",nb,stage_start_count)
         !

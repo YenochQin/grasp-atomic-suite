@@ -5,7 +5,7 @@ module csf_descriptor_reader
     use iso_c_binding, only: c_ptr, c_null_ptr, c_null_char, c_char, c_size_t, c_int32_t, c_int64_t
     use csf_descriptor_c_bindings
     use grasp_parameters, only: max_orbitals
-    use subshell_term_table, only: state_counts, state_offsets, state_values
+    use csf_coupling_data, only: csf_angular_code_count, csf_total_j_slot, csf_parity_slot
     implicit none (type, external)
 
     ! Module interface
@@ -21,6 +21,7 @@ module csf_descriptor_reader
         type(c_ptr) :: handle = c_null_ptr
         logical :: is_open = .false., header_loaded = .false.
         integer :: core_count = 0, peel_count = 0, orbital_count = 0, block_count = 0
+        integer :: format_version = 0
         integer :: row_width = 0, total_csf_count = 0, electron_count = 0, next_block_index = 1
         integer, allocatable :: principal_numbers(:), relativistic_kappas(:)
         integer, allocatable :: orbital_momenta(:), single_electron_two_j(:)
@@ -29,13 +30,6 @@ module csf_descriptor_reader
     end type descriptor_source
 
 contains
-
-    logical function failed(status)
-        ! Arguments
-        integer, intent(in), optional :: status
-        failed = .false.
-        if (present(status)) failed = status /= 0
-    end function failed
 
     ! Return a failure status when requested. Otherwise report the error and stop.
     logical function require_descriptor(condition, message, status) result(ok)
@@ -55,17 +49,25 @@ contains
         end if
     end function require_descriptor
 
-    subroutine open_descriptor_source(source, filename, maximum_blocks, header_filename, status)
+    subroutine open_descriptor_source(source, filename, maximum_blocks, header_filename, status, spin_angular)
         ! Arguments
         type(descriptor_source), intent(inout) :: source
         character(len=*), intent(in) :: filename
         integer, intent(in) :: maximum_blocks
         character(len=*), intent(in), optional :: header_filename
         integer, intent(out), optional :: status
+        logical, intent(in), optional :: spin_angular
 
         ! Local declarations
         integer :: open_status
+        character(kind=c_char,len=1024) :: message
         call open_descriptor_source_impl(source, filename, maximum_blocks, header_filename, open_status)
+        if (open_status == 0 .and. present(spin_angular)) then
+            if (spin_angular) then
+                open_status = rust_descriptor_check_spin_angular(source%handle, message, len(message,kind=c_size_t))
+                if (open_status /= 0) write(error_unit, "(2A)") "CSF descriptor input: ", message(:index(message,c_null_char)-1)
+            end if
+        end if
         if (open_status /= 0) then
             call close_descriptor_source(source)
             source = descriptor_source()
@@ -96,7 +98,8 @@ contains
         reader_message = c_null_char
         call close_descriptor_source(source)
         source = descriptor_source()
-        if (.not. require_descriptor(rust_descriptor_version() == 1, "unsupported Rust ABI", status)) return
+        if (.not. require_descriptor(rust_descriptor_abi_version() == 2, "unsupported Rust ABI", status)) return
+        if (.not. require_descriptor(rust_descriptor_format_version() == 3, "unsupported descriptor format", status)) return
         path_length = len_trim(filename)
         if (.not. require_descriptor(path_length > 8, "expected descriptor Parquet path", status)) return
         if (.not. require_descriptor(filename(path_length-7:path_length) == ".parquet", &
@@ -121,6 +124,7 @@ contains
         if (.not. require_descriptor(read_status == 0, reader_message(:max(0,index(reader_message,c_null_char)-1)), &
             & status)) return
         source%is_open = .true.
+        source%format_version = int(rust_descriptor_format_version())
         read_status = rust_descriptor_info(source%handle, header_counts, reader_message, 1024_c_size_t)
         if (.not. require_descriptor(read_status == 0, reader_message(:max(0,index(reader_message,c_null_char)-1)), &
             & status)) return
@@ -187,6 +191,8 @@ contains
             reader_message, 1024_c_size_t)
         if (.not. require_descriptor(read_status == 0, reader_message(:max(0,index(reader_message,c_null_char)-1)), &
             & status)) return
+        if (.not. require_descriptor(all(raw_zero_order_counts > 0), &
+            "using zero-first requires positive zero_order_counts in every block", status)) return
         counts = int(raw_zero_order_counts)
     end subroutine read_descriptor_zero_order_counts
 
@@ -195,6 +201,7 @@ contains
         type(descriptor_source), intent(inout) :: source
         call rust_descriptor_close(source%handle)
         source%is_open = .false.
+        source%header_loaded = .false.
     end subroutine close_descriptor_source
 
     ! Right-align J and parity in the first five characters of the eight-character block label.
@@ -263,212 +270,51 @@ contains
         end do
     end subroutine install_descriptor_header
 
-    ! Look up the subshell state using occupation, seniority and the angular momentum available in the
-    ! descriptor.
-    function resolve_subshell_state(single_two_j, occupation, physical_seniority, printed_two_j, block_index, row_index, &
-        & status) &
-        result(subshell_two_j)
-        ! Arguments
-        integer, intent(in) :: single_two_j, occupation, physical_seniority, printed_two_j
-        integer, intent(in) :: block_index, row_index
-        integer, intent(out), optional :: status
-        integer :: subshell_two_j
-
-        ! Local declarations
-        integer :: subshell_capacity, population, table_row, table_entry, table_offset, match_count, matching_j_count
-        integer :: candidate_two_j, candidate_seniority, candidate_label
-        subshell_two_j = -1
-        subshell_capacity = single_two_j + 1
-        population = min(occupation, subshell_capacity - occupation)
-        if (population == 0) then
-            if (.not. require_state(physical_seniority == 0 .and. (printed_two_j == -1 .or. printed_two_j == 0), &
-                "empty/closed shell must have seniority zero and J=0 or omitted J")) return
-            subshell_two_j = 0
-            return
-        end if
-        if (.not. require_state(single_two_j <= 17, "unsupported open-shell state table for single-electron 2j > 17")) return
-        if (.not. require_state(single_two_j <= 9 .or. population <= 2, "unsupported high-j occupation")) return
-        table_row = (subshell_capacity-2)/2
-        table_row = table_row*(table_row+1)/2 + population + 1
-        if (.not. require_state(table_row >= 1 .and. table_row <= size(state_counts), "unsupported subshell table row")) return
-        match_count = 0
-        subshell_two_j = -1
-        do table_entry = 1, state_counts(table_row)
-            table_offset = state_offsets(table_row) + 3*(table_entry-1)
-            candidate_seniority = state_values(table_offset+1)
-            candidate_label = state_values(table_offset+2)
-            candidate_two_j = state_values(table_offset+3) - 1
-            if (candidate_seniority /= physical_seniority) cycle
-            if (printed_two_j /= -1 .and. printed_two_j /= candidate_two_j) cycle
-            match_count = match_count + 1
-            if (.not. require_state(candidate_label == 0, "unsupported state requires an additional w label")) return
-            subshell_two_j = candidate_two_j
-        end do
-        if (.not. require_state(match_count == 1, "invalid or ambiguous subshell (occupation, seniority, J)")) return
-        matching_j_count = 0
-        do table_entry = 1, state_counts(table_row)
-            table_offset = state_offsets(table_row) + 3*(table_entry-1)
-            if (state_values(table_offset+3) == subshell_two_j+1) matching_j_count = matching_j_count + 1
-        end do
-        ! For j=7/2 with four electrons, seniority distinguishes states with the same J.
-        if (.not. require_state(matching_j_count == 1 .or. (single_two_j == 7 .and. occupation == 4), &
-            "unsupported state is ambiguous in the ordinary text reader")) return
-    contains
-        logical function require_state(condition, message) result(ok)
-            ! Arguments
-            logical, intent(in) :: condition
-            character(len=*), intent(in) :: message
-            ok = condition
-            if (present(status)) status = 0
-            if (.not. condition) then
-                write(error_unit, "(A,I0,A,I0,2A)") "CSF descriptor input: block ", block_index, &
-                    ", CSF ", row_index, ": ", message
-                if (present(status)) then
-                    status = 1
-                else
-                    error stop 1
-                end if
-            end if
-        end function require_state
-    end function resolve_subshell_state
-
-    ! Insert full core shells and validate the active-shell row before packing the coupling codes.
-    subroutine decode_descriptor_row(source, block_index, row_index, packed_row, occupations, subshell_quantum_numbers, &
-        & couplings, status)
-        ! Arguments
+    ! Rust has validated each V3 row. Install the core and copy the complete peel codes.
+    subroutine install_descriptor_rows(source, rows, occupations, subshell_quantum_numbers, angular_codes)
         type(descriptor_source), intent(in) :: source
-        integer, intent(in) :: block_index, row_index
-        integer(int8), intent(in) :: packed_row(:)
-        integer(int8), intent(out) :: occupations(:), subshell_quantum_numbers(:,:), couplings(:)
-        integer, intent(out), optional :: status
+        integer(int8), intent(in) :: rows(:,:)
+        integer(int8), intent(out) :: occupations(:,:)
+        integer(int8), intent(out), optional :: subshell_quantum_numbers(:,:,:), angular_codes(:,:)
+        integer :: csf_index, core_end, orbital_end
 
-        ! Local declarations
-        integer :: shell_two_j(max_orbitals), printed_two_k(max_orbitals)
-        integer :: peel_index, orbital_index, channel_offset, occupation, seniority, printed_two_j
-        integer :: occupied_count, occupied_position, open_count, subshell_capacity, previous_two_j, coupled_two_j
-        integer :: last_nonzero_shell, parity_exponent, total_two_j, parity, electron_count
-
-        occupations = 0_int8
-        subshell_quantum_numbers = 0_int8
-        couplings = 0_int8
-        shell_two_j = 0
-        printed_two_k = -1
-        electron_count = 0
-        parity_exponent = 0
-        last_nonzero_shell = 0
-        do orbital_index = 1, source%core_count
-            subshell_capacity = source%single_electron_two_j(orbital_index) + 1
-            occupations(orbital_index) = int(subshell_capacity, int8)
-            subshell_quantum_numbers(orbital_index,3) = 1_int8
-            electron_count = electron_count + subshell_capacity
-        end do
-        ! V2 stores (occupation, printed 2J, physical seniority, printed 2K) for each peel shell.
-        do peel_index = 1, source%peel_count
-            orbital_index = source%core_count + peel_index
-            channel_offset = 4*(peel_index-1)
-            occupation = int(packed_row(channel_offset+1))
-            printed_two_j = int(packed_row(channel_offset+2))
-            seniority = int(packed_row(channel_offset+3))
-            printed_two_k(orbital_index) = int(packed_row(channel_offset+4))
-            subshell_capacity = source%single_electron_two_j(orbital_index) + 1
-            if (.not. require_row(occupation >= 0 .and. occupation <= subshell_capacity, &
-                & "occupation outside shell capacity")) return
-            if (.not. require_row(seniority >= 0, "negative physical seniority")) return
-            if (.not. require_row(printed_two_j >= -1 .and. printed_two_j <= 126, "invalid subshell 2J")) return
-            if (.not. require_row(printed_two_k(orbital_index) >= -1 .and. printed_two_k(orbital_index) <= 126, &
-                "invalid intermediate 2K")) return
-            if (occupation == 0) then
-                if (.not. require_row(printed_two_j == -1 .and. seniority == 0 .and. &
-                    printed_two_k(orbital_index) == -1, "noncanonical empty shell descriptor")) return
+        core_end = source%core_count
+        orbital_end = source%orbital_count
+        do csf_index = 1, size(rows,2)
+            occupations(:core_end,csf_index) = int(source%single_electron_two_j(:core_end)+1,int8)
+            occupations(core_end+1:orbital_end,csf_index) = rows(1:source%row_width-2:4,csf_index)
+            occupations(orbital_end+1:,csf_index) = 0_int8
+            if (present(subshell_quantum_numbers)) then
+                subshell_quantum_numbers(:,:,csf_index) = 0_int8
+                subshell_quantum_numbers(:core_end,3,csf_index) = 1_int8
+                subshell_quantum_numbers(core_end+1:orbital_end,1,csf_index) = rows(2:source%row_width-2:4,csf_index)
+                subshell_quantum_numbers(core_end+1:orbital_end,3,csf_index) = rows(3:source%row_width-2:4,csf_index)
             end if
-            shell_two_j(orbital_index) = resolve_subshell_state(source%single_electron_two_j(orbital_index), &
-                occupation, seniority, printed_two_j, block_index, row_index, &
-                & status)
-            if (failed(status)) return
-            occupations(orbital_index) = int(occupation, int8)
-            subshell_quantum_numbers(orbital_index,1) = int(seniority, int8)
-            subshell_quantum_numbers(orbital_index,3) = int(shell_two_j(orbital_index)+1, int8)
-            if (shell_two_j(orbital_index) /= 0) last_nonzero_shell = orbital_index
-            electron_count = electron_count + occupation
-            parity_exponent = parity_exponent + occupation*source%orbital_momenta(orbital_index)
-        end do
-        total_two_j = int(packed_row(source%row_width-1))
-        parity = int(packed_row(source%row_width))
-        if (.not. require_row(total_two_j == source%block_two_j(block_index) .and. &
-            parity == source%block_parities(block_index), "row/block symmetry mismatch")) return
-        if (.not. require_row(parity == (-1)**parity_exponent, "incorrect row parity")) return
-        if (.not. require_row(electron_count == source%electron_count, "incorrect row electron count")) return
-        ! Infer only trivial or final couplings. Intermediate nontrivial values must be supplied by the
-        ! descriptor.
-        occupied_count = count(occupations(source%core_count+1:source%orbital_count) > 0)
-        occupied_position = 0
-        open_count = 0
-        previous_two_j = 0
-        do orbital_index = source%core_count+1, source%orbital_count
-            occupation = int(occupations(orbital_index))
-            if (occupation == 0) cycle
-            occupied_position = occupied_position + 1
-            subshell_capacity = source%single_electron_two_j(orbital_index) + 1
-            coupled_two_j = printed_two_k(orbital_index)
-            if (coupled_two_j >= 0) then
-                if (.not. require_row(occupied_position >= 2 .and. occupied_position < occupied_count, &
-                    "intermediate coupling at invalid occupied-shell boundary")) return
-            else if (orbital_index >= last_nonzero_shell) then
-                coupled_two_j = total_two_j
-            else if (shell_two_j(orbital_index) == 0) then
-                coupled_two_j = previous_two_j
-            else if (previous_two_j == 0) then
-                coupled_two_j = shell_two_j(orbital_index)
-            else
-                if (.not. require_row(.false., "missing nontrivial intermediate coupling")) return
-            end if
-            if (.not. require_row(coupled_two_j >= abs(previous_two_j-shell_two_j(orbital_index)) .and. &
-                coupled_two_j <= previous_two_j+shell_two_j(orbital_index) .and. &
-                mod(previous_two_j+shell_two_j(orbital_index)-coupled_two_j, 2) == 0, &
-                "coupling violates angular momentum triangle/parity")) return
-            previous_two_j = coupled_two_j
-            if (occupation < subshell_capacity) then
-                open_count = open_count + 1
-                if (open_count > 1) couplings(open_count-1) = int(coupled_two_j+1, int8)
+            if (present(angular_codes)) then
+                angular_codes(:core_end,csf_index) = 1_int8
+                angular_codes(core_end+1:orbital_end,csf_index) = rows(4:source%row_width-2:4,csf_index)
+                angular_codes(orbital_end+1:max_orbitals,csf_index) = 0_int8
+                angular_codes(csf_total_j_slot,csf_index) = rows(source%row_width-1,csf_index)
+                angular_codes(csf_parity_slot,csf_index) = rows(source%row_width,csf_index)
             end if
         end do
-        if (.not. require_row(previous_two_j == total_two_j, "incorrect final angular momentum")) return
-        ! Store the total 2J+1 and parity together in the final coupling slot.
-        couplings(max_orbitals) = int((total_two_j+1)*parity, int8)
-    contains
-        logical function require_row(condition, message) result(ok)
-            ! Arguments
-            logical, intent(in) :: condition
-            character(len=*), intent(in) :: message
-            ok = condition
-            if (present(status)) status = 0
-            if (.not. condition) then
-                write(error_unit, "(A,I0,A,I0,2A)") "CSF descriptor input: block ", block_index, &
-                    ", CSF ", row_index, ": ", message
-                if (present(status)) then
-                    status = 1
-                else
-                    error stop 1
-                end if
-            end if
-        end function require_row
-    end subroutine decode_descriptor_row
+    end subroutine install_descriptor_rows
 
-    subroutine read_descriptor_block(source, block_index, occupations, subshell_quantum_numbers, couplings, status)
+    subroutine read_descriptor_block(source, block_index, occupations, subshell_quantum_numbers, angular_codes, status)
         ! Arguments
         type(descriptor_source), intent(inout) :: source
         integer, intent(in) :: block_index
         integer(int8), intent(out) :: occupations(:,:)
-        integer(int8), intent(out), optional :: subshell_quantum_numbers(:,:,:), couplings(:,:)
+        integer(int8), intent(out), optional :: subshell_quantum_numbers(:,:,:), angular_codes(:,:)
         integer, intent(out), optional :: status
 
         ! Local declarations
         integer :: block_status
-        call read_descriptor_block_impl(source,block_index,occupations,subshell_quantum_numbers,couplings,block_status)
+        call read_descriptor_block_impl(source,block_index,occupations,subshell_quantum_numbers,angular_codes,block_status)
         if (block_status /= 0) then
             occupations=0_int8
             if (present(subshell_quantum_numbers)) subshell_quantum_numbers=0_int8
-            if (present(couplings)) couplings=0_int8
+            if (present(angular_codes)) angular_codes=0_int8
             call close_descriptor_source(source)
         end if
         if (present(status)) then
@@ -478,17 +324,17 @@ contains
         end if
     end subroutine read_descriptor_block
 
-    subroutine read_descriptor_block_impl(source, block_index, occupations, subshell_quantum_numbers, couplings, status)
+    subroutine read_descriptor_block_impl(source, block_index, occupations, subshell_quantum_numbers, angular_codes, status)
         ! Arguments and local declarations
         type(descriptor_source), intent(inout) :: source
         integer, intent(in) :: block_index
         integer(int8), intent(out) :: occupations(:,:)
-        integer(int8), intent(out), optional :: subshell_quantum_numbers(:,:,:), couplings(:,:)
-        integer(int8) :: row_subshell_quantum_numbers(max_orbitals,3), row_couplings(max_orbitals)
+        integer(int8), intent(out), optional, target :: subshell_quantum_numbers(:,:,:), angular_codes(:,:)
         integer, intent(out), optional :: status
         integer(int8), allocatable :: batch_values(:,:)
+        integer(int8), pointer :: batch_quantum(:,:,:), batch_angular(:,:)
         character(kind=c_char,len=1024) :: reader_message
-        integer :: batch_capacity, batch_row_count, row_offset, batch_row_index, read_status, allocation_status
+        integer :: batch_capacity, batch_row_count, row_offset, last_row, read_status, allocation_status
         reader_message = c_null_char
         if (.not. require_descriptor(source%is_open .and. source%header_loaded, "descriptor source is not open", status)) return
         if (.not. require_descriptor(block_index == source%next_block_index .and. block_index <= source%block_count, &
@@ -496,8 +342,9 @@ contains
         if (.not. require_descriptor(size(occupations,1) == max_orbitals .and. &
             size(occupations,2) == source%block_lengths(block_index),  &
             & "occupation array shape mismatch", status)) return
-        if (present(couplings)) then
-            if (.not. require_descriptor(all(shape(couplings) == shape(occupations)), "coupling shape", status)) return
+        if (present(angular_codes)) then
+            if (.not. require_descriptor(all(shape(angular_codes) == [csf_angular_code_count,size(occupations,2)]), &
+                "angular code shape", status)) return
         end if
         if (present(subshell_quantum_numbers)) then
             if (.not. require_descriptor(size(subshell_quantum_numbers,1) == max_orbitals .and. &
@@ -517,16 +364,13 @@ contains
                 reader_message, 1024_c_size_t)
             if (.not. require_descriptor(read_status == 0, reader_message(:max(0,index(reader_message,c_null_char)-1)), &
                 & status)) return
-            do batch_row_index = 1, batch_row_count
-                call decode_descriptor_row(source, block_index, row_offset+batch_row_index, batch_values(:,batch_row_index), &
-                    occupations(:,row_offset+batch_row_index), row_subshell_quantum_numbers, &
-                    & row_couplings, status)
-                if (failed(status)) return
-                if (present(subshell_quantum_numbers)) subshell_quantum_numbers(:,:, &
-                    & row_offset+batch_row_index) = row_subshell_quantum_numbers
-                if (present(couplings)) couplings(:,row_offset+batch_row_index) = row_couplings
-            end do
-            row_offset = row_offset + batch_row_count
+            last_row = row_offset + batch_row_count
+            nullify(batch_quantum,batch_angular)
+            if (present(subshell_quantum_numbers)) batch_quantum => subshell_quantum_numbers(:,:,row_offset+1:last_row)
+            if (present(angular_codes)) batch_angular => angular_codes(:,row_offset+1:last_row)
+            call install_descriptor_rows(source,batch_values(:,:batch_row_count),occupations(:,row_offset+1:last_row), &
+                batch_quantum,batch_angular)
+            row_offset = last_row
         end do
         source%next_block_index = source%next_block_index + 1
     end subroutine read_descriptor_block_impl

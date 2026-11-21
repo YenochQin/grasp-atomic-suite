@@ -42,7 +42,7 @@ contains
       use atomic_calculation_state, only: electron_count
       use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count, orbital_l, &
           orbital_principal_n, orbital_symmetry_labels, orbital_two_j
-      use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, left_coupling_codes, &
+      use csf_text_oracle_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes, left_coupling_codes, &
           left_subshell_quantum_codes
       use subshell_term_table,         only: state_offsets, state_values
       use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
@@ -53,7 +53,8 @@ contains
       use parsjl_i, only: parsjl
       use csf_byte_packing, only: pack_csf_subshell_byte
       use integer_format, only: format_integer
-      use csf_quantum_queries, only: csf_occupation, csf_subshell_quantum_code, csf_intermediate_coupling
+      use csf_quantum_queries, only: csf_occupation
+      use csf_text_oracle_coupling_data, only: csf_subshell_quantum_code, csf_intermediate_coupling
       implicit none (type, external)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -1,7 +1,42 @@
 use super::*;
 use arrow_array::RecordBatch;
-use parquet::{arrow::ArrowWriter, file::properties::WriterProperties};
+use parquet::{
+    arrow::ArrowWriter,
+    file::{metadata::KeyValue, properties::WriterProperties},
+};
 use std::sync::Arc;
+
+fn fixture_metadata(
+    layout: DescriptorLayout,
+    peel: &[&str],
+    header: &Path,
+) -> Result<Vec<KeyValue>> {
+    Ok([
+        ("descriptor_version", "3".into()),
+        ("descriptor_dtype", "int8".into()),
+        ("max_two_j", "126".into()),
+        ("seniority_encoding", "physical".into()),
+        ("channels_per_subshell", "4".into()),
+        ("subshell_count", peel.len().to_string()),
+        ("normalized", "false".into()),
+        (
+            "source_header_sha256",
+            format!("{:x}", Sha256::digest(std::fs::read(header)?)),
+        ),
+        ("peel_subshells", serde_json::to_string(peel)?),
+        (
+            "feature_columns",
+            serde_json::to_string(&layout.feature_column_names())?,
+        ),
+        (
+            "global_columns",
+            serde_json::to_string(&layout.global_column_names())?,
+        ),
+    ]
+    .into_iter()
+    .map(|(key, value)| KeyValue::new(key.into(), Some(value)))
+    .collect())
+}
 
 fn fixture(
     root: &Path,
@@ -13,15 +48,9 @@ fn fixture(
         &header,
         "[header_info]\nheader_lines = ['Core subshells:', '1s', 'Peel subshells:', '2s 2p', 'CSF(s):']\nelectron_count=4\n[block_info]\nblock_count=2\nblock_lengths=[1,1]\n",
     )?;
-    let layout = DescriptorLayout::new(DescriptorVersion::V2, 2);
-    let schema = crate::descriptor_schema::output_schema(layout)?;
-    let hash = crate::descriptor_schema::hash_header_file(&header)?;
-    let mut metadata = crate::descriptor_schema::output_kv_metadata(
-        layout,
-        &["2s".into(), "2p".into()],
-        Some(&hash),
-        None,
-    );
+    let layout = DescriptorLayout { subshell_count: 2 };
+    let schema = Arc::new(layout.schema());
+    let mut metadata = fixture_metadata(layout, &["2s", "2p"], &header)?;
     mutate(&mut metadata);
     let properties = WriterProperties::builder()
         .set_key_value_metadata(Some(metadata))
@@ -29,8 +58,8 @@ fn fixture(
         .build();
     let mut writer = ArrowWriter::try_new(File::create(&path)?, schema.clone(), Some(properties))?;
     let rows = [
-        [2, -1, 0, -1, 0, -1, 0, -1, 0, 1],
-        [0, -1, 0, -1, 2, 0, 0, -1, 0, 1],
+        [2, 0, 1, 1, 0, 0, 1, 1, 1, 1],
+        [0, 0, 1, 1, 2, 0, 1, 1, 1, 1],
     ];
     let columns = (0..10)
         .map(|c| Arc::new(Int8Array::from(vec![rows[0][c], rows[1][c]])) as arrow_array::ArrayRef)
@@ -50,7 +79,6 @@ fn strict_footer_keys_and_ordered_batches() -> Result<()> {
         "seniority_encoding",
         "channels_per_subshell",
         "subshell_count",
-        "missing_sentinel",
         "normalized",
         "source_header_sha256",
         "peel_subshells",
@@ -142,7 +170,8 @@ fn ffi_buffers_errors_and_independent_handles() -> Result<()> {
     let mut handles = [std::ptr::null_mut::<c_void>(); 2];
     let mut error = [0 as c_char; 512];
     unsafe {
-        assert_eq!(rcsfs_descriptor_abi_version(), 1);
+        assert_eq!(rcsfs_descriptor_abi_version(), 2);
+        assert_eq!(rcsfs_descriptor_format_version(), 3);
         for handle in &mut handles {
             assert_eq!(
                 rcsfs_descriptor_open(
@@ -225,9 +254,7 @@ fn ffi_buffers_errors_and_independent_handles() -> Result<()> {
         );
         assert_eq!(
             rows,
-            [
-                2, -1, 0, -1, 0, -1, 0, -1, 0, 1, 0, -1, 0, -1, 2, 0, 0, -1, 0, 1
-            ]
+            [2, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 2, 0, 1, 1, 1, 1]
         );
         let mut other = [0i8; 10];
         assert_eq!(
@@ -280,12 +307,11 @@ fn closed_core_batches_and_header_binding() -> Result<()> {
     let dir = tempfile::tempdir()?;
     let header = dir.path().join("header.toml");
     let path = dir.path().join("descriptors.parquet");
-    let text = "[header_info]\nheader_lines = ['Core subshells:', '1s', 'Peel subshells:', '', 'CSF(s):']\n[block_info]\nblock_lengths = [1]\n";
+    let text = "[header_info]\nheader_lines = ['Core subshells:', '1s', 'Peel subshells:', '', 'CSF(s):']\nelectron_count = 2\n[block_info]\nblock_lengths = [1]\n";
     std::fs::write(&header, text)?;
-    let layout = DescriptorLayout::new(DescriptorVersion::V2, 0);
-    let schema = crate::descriptor_schema::output_schema(layout)?;
-    let hash = crate::descriptor_schema::hash_header_file(&header)?;
-    let kv = crate::descriptor_schema::output_kv_metadata(layout, &[], Some(&hash), None);
+    let layout = DescriptorLayout { subshell_count: 0 };
+    let schema = Arc::new(layout.schema());
+    let kv = fixture_metadata(layout, &[], &header)?;
     let properties = WriterProperties::builder()
         .set_key_value_metadata(Some(kv))
         .build();
@@ -293,7 +319,7 @@ fn closed_core_batches_and_header_binding() -> Result<()> {
     writer.write(&RecordBatch::try_new(
         schema,
         vec![
-            Arc::new(Int8Array::from(vec![0])),
+            Arc::new(Int8Array::from(vec![1])),
             Arc::new(Int8Array::from(vec![1])),
         ],
     )?)?;
@@ -301,7 +327,7 @@ fn closed_core_batches_and_header_binding() -> Result<()> {
     let mut reader = DescriptorReader::open(&path, &header, 1)?;
     let mut values = Vec::new();
     assert_eq!(reader.read_batch(&mut values)?, 1);
-    assert_eq!(values, [0, 1]);
+    assert_eq!(values, [1, 1]);
     assert_eq!(reader.read_batch(&mut values)?, 0);
     assert!(values.is_empty());
     std::fs::write(&header, format!("{text}\n"))?;

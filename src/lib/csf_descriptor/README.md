@@ -11,8 +11,8 @@ The initial implementation was copied from
 
 - The descriptor transport, reader, and C interface originate from that
   revision. The suite reader's tests are in `src/tests.rs`.
-- `include/rcsfs_descriptor.h` retains ABI 1 and its original symbol names.
-  The suite adds `rcsfs_descriptor_read_radial_header` for `rwfnestimate`.
+- `include/rcsfs_descriptor.h` declares ABI 2 and exposes the accepted format
+  through `rcsfs_descriptor_format_version`. The separate radial header entry point serves `rwfnestimate`.
   It shares the TOML parser and returns orbital metadata from the header alone.
 - The manifest and lockfile originate from `native-reader/`; only the local
   package/library identity, source entry point, and library kinds are changed.
@@ -20,8 +20,9 @@ The initial implementation was copied from
 
 Future reader fixes belong here and are tested with the suite. Upstream changes
 must be reviewed before being copied; building never synchronizes external
-source. The V2 format remains interoperable with rCSFs producers. The suite
-Fortran adapter continues to own physical state validation and array assembly.
+source. The reader accepts V3. Rust validates the complete subshell states and
+cumulative couplings. The Fortran adapter installs the validated rows in the
+Suite's orbital order.
 
 Rust 1.99.0 or a newer release, Cargo, and a C compiler are needed at build time.
 The lockfile pins third-party dependencies. CMake runs Cargo with `--locked`

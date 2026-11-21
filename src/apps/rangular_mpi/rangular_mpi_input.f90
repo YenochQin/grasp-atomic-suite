@@ -8,7 +8,7 @@ module rangular_mpi_input
     use grasp_parameters, only: max_orbitals
     use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations, orbital_principal_n, orbital_kappa, &
         orbital_l, orbital_two_j, orbital_symmetry_labels
-    use csf_coupling_data, only: csf_subshell_quantum_codes, csf_coupling_quantum_codes
+    use csf_coupling_data, only: csf_subshell_quantum_codes, csf_angular_codes
     use hamiltonian_symmetry_blocks, only: symmetry_block_count, csf_counts_by_block
     use atomic_calculation_state, only: electron_count
     use csf_descriptor_reader, only: descriptor_source, open_descriptor_source, install_descriptor_header, &
@@ -139,7 +139,8 @@ contains
         if (mpi_rank == 0 .and. input_path(1:1) /= "/") input_path = trim(serial_directory)//"/"//input_path
         input_status = 0
         if (mpi_rank == 0) then
-            call open_descriptor_source(options%descriptors,input_path,maximum_blocks,header_path,status=input_status)
+            call open_descriptor_source(options%descriptors,input_path,maximum_blocks,header_path,status=input_status, &
+                spin_angular=.true.)
             if (input_status == 0) call install_descriptor_header(options%descriptors,core_count,block_labels,input_status)
         end if
         call require_collective_success(input_status)
@@ -173,9 +174,9 @@ contains
         integer :: input_status
         input_status = 0
         if (mpi_rank == 0) call read_descriptor_block(options%descriptors,block_index, &
-            csf_subshell_occupations,csf_subshell_quantum_codes,csf_coupling_quantum_codes,input_status)
+            csf_subshell_occupations,csf_subshell_quantum_codes,csf_angular_codes,input_status)
         call require_collective_success(input_status)
-        call broadcast_descriptor_arrays(csf_subshell_occupations,csf_subshell_quantum_codes,csf_coupling_quantum_codes)
+        call broadcast_descriptor_arrays(csf_subshell_occupations,csf_subshell_quantum_codes,csf_angular_codes)
     end subroutine load_mpi_angular_block
 
     subroutine close_mpi_angular_input(options)

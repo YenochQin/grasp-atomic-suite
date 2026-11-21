@@ -1,12 +1,16 @@
-//! Read V2 descriptor batches without restoring text or invoking Python.
-//! Buffers contain original channels; physical validation belongs to the consumer.
+//! Validate and stream native V3 descriptor rows.
 use anyhow::{Context, Result, ensure};
 use arrow_array::{Array, Int8Array};
-use parquet::arrow::arrow_reader::{ParquetRecordBatchReader, ParquetRecordBatchReaderBuilder};
+use parquet::arrow::arrow_reader::{
+    ArrowReaderMetadata, ArrowReaderOptions, ParquetRecordBatchReader,
+    ParquetRecordBatchReaderBuilder,
+};
 use sha2::{Digest, Sha256};
-use std::{fs::File, path::Path};
+use std::{fs::File, path::Path, sync::LazyLock};
 
-use crate::descriptor_schema::{DescriptorLayout, DescriptorVersion};
+use crate::descriptor_schema::{
+    CHANNELS_PER_SUBSHELL, DESCRIPTOR_VERSION, DescriptorLayout, MAX_TWO_J,
+};
 
 pub struct DescriptorReader {
     reader: ParquetRecordBatchReader,
@@ -20,6 +24,8 @@ pub struct DescriptorReader {
     pub orbitals: Vec<(i32, i32)>,
     pub block_symmetries: Vec<(i32, i32)>,
     pub electron_count: i32,
+    // Physical states may be readable by consumers that do not use the spin-angular library.
+    pub(crate) spin_angular_error: Option<String>,
     block_index: usize,
     block_rows: u64,
 }
@@ -36,7 +42,7 @@ fn parse_orbital_label(label: &str) -> Result<(i32, i32)> {
         "invalid subshell label {label}"
     );
     ensure!(suffix.len() <= 2, "invalid subshell suffix in {label}");
-    let l = "spdfghiklmno"
+    let l = "spdfghiklm"
         .find(&suffix[..1])
         .with_context(|| format!("unsupported orbital letter in {label}"))? as i32;
     let n: i32 = n
@@ -67,18 +73,16 @@ fn header_info(document: &toml::Value) -> Result<&toml::Table> {
         .context("missing or invalid [header_info] table")
 }
 
-fn declared_electrons(info: &toml::Table) -> Result<Option<i32>> {
-    info.get("electron_count")
-        .map(|value| {
-            let number = value.as_integer().context(
-                "header_info.electron_count must be an integer including core electrons",
-            )?;
-            i32::try_from(number)
-                .ok()
-                .filter(|&n| n > 0)
-                .context("electron_count must be positive and fit a suite integer")
-        })
-        .transpose()
+fn declared_electrons(info: &toml::Table) -> Result<i32> {
+    let number = info
+        .get("electron_count")
+        .context("header_info.electron_count is required; regenerate old headers with rCSFs")?
+        .as_integer()
+        .context("header_info.electron_count must be an integer including core electrons")?;
+    i32::try_from(number)
+        .ok()
+        .filter(|&n| n > 0)
+        .context("electron_count must be positive and fit a suite integer")
 }
 
 fn header_lines(info: &toml::Table) -> Result<[&str; 5]> {
@@ -137,8 +141,7 @@ impl RadialHeader {
     pub fn read(path: &Path) -> Result<Self> {
         let (_, document) = read_header(path)?;
         let info = header_info(&document)?;
-        let electron_count = declared_electrons(info)?
-            .context("header_info.electron_count is required; regenerate old headers with rCSFs")?;
+        let electron_count = declared_electrons(info)?;
         let lines = header_lines(info)?;
         for (i, expected) in HEADER_LABELS {
             ensure!(
@@ -186,7 +189,9 @@ impl DescriptorReader {
         let core: Vec<_> = header_lines[1].split_whitespace().collect();
         let orbitals = header_orbitals(&core, &peel)?;
         let core_count = core.len();
-        let layout = DescriptorLayout::new(DescriptorVersion::V2, peel.len());
+        let layout = DescriptorLayout {
+            subshell_count: peel.len(),
+        };
         let lengths = document
             .get("block_info")
             .and_then(|v| v.get("block_lengths"))
@@ -212,8 +217,8 @@ impl DescriptorReader {
                 );
                 counts.iter().zip(&block_lengths).enumerate().map(|(i, (value, &length))| {
                     value.as_integer()
-                        .filter(|&n| n > 0 && (n as u64) <= length)
-                        .with_context(|| format!("invalid zero-order CSF count for block {} (expected 1..={length})", i + 1))
+                        .filter(|&n| n >= 0 && (n as u64) <= length)
+                        .with_context(|| format!("invalid zero-order CSF count for block {} (expected 0..={length})", i + 1))
                 }).collect::<Result<Vec<_>>>()
             })
             .transpose()?;
@@ -232,7 +237,15 @@ impl DescriptorReader {
             }
         }
         let file = File::open(path)?;
-        let builder = ParquetRecordBatchReaderBuilder::try_new(file.try_clone()?)?;
+        // Derive the logical types from the Parquet schema, not an embedded Arrow schema.
+        let arrow_metadata = ArrowReaderMetadata::load(
+            &file,
+            ArrowReaderOptions::new().with_skip_arrow_metadata(true),
+        )?;
+        let builder = ParquetRecordBatchReaderBuilder::new_with_metadata(
+            file.try_clone()?,
+            arrow_metadata.clone(),
+        );
         let metadata = builder.metadata().file_metadata();
         ensure!(
             u64::try_from(metadata.num_rows()).ok() == Some(total),
@@ -250,10 +263,20 @@ impl DescriptorReader {
             ensure!(entries.next().is_none(), "duplicate {key}");
             Ok(value)
         };
+        let version = get("descriptor_version")?;
+        ensure!(
+            version == DESCRIPTOR_VERSION.to_string(),
+            "unsupported descriptor_version={version}; regenerate V3 descriptors from the original CSF data"
+        );
+        ensure!(
+            !kv.iter().any(|entry| entry.key == "missing_sentinel"),
+            "V3 metadata must omit missing_sentinel"
+        );
         for (key, expected) in [
-            ("descriptor_version", "2"),
             ("channels_per_subshell", "4"),
-            ("missing_sentinel", "-1"),
+            ("descriptor_dtype", "int8"),
+            ("max_two_j", "126"),
+            ("seniority_encoding", "physical"),
             ("normalized", "false"),
             ("source_header_sha256", digest.as_str()),
         ] {
@@ -263,9 +286,7 @@ impl DescriptorReader {
             get("subshell_count")?.parse::<usize>()? == peel.len(),
             "peel count mismatch"
         );
-        crate::descriptor_schema::validate_seniority_encoding(kv)?;
-        crate::descriptor_schema::validate_descriptor_storage(kv)?;
-        crate::descriptor_schema::validate_output_schema(builder.schema(), layout)?;
+        layout.validate_schema(builder.schema())?;
         for (key, expected) in [
             (
                 "peel_subshells",
@@ -279,7 +300,7 @@ impl DescriptorReader {
                 "invalid {key}"
             );
         }
-        let declared_electrons = declared_electrons(info)?;
+        let electron_count = declared_electrons(info)?;
         let reader = builder.with_batch_size(batch_size).build()?;
         let mut source = Self {
             reader,
@@ -292,11 +313,12 @@ impl DescriptorReader {
             core_count,
             orbitals,
             block_symmetries: Vec::new(),
-            electron_count: declared_electrons.unwrap_or(0),
+            electron_count,
             block_index: 0,
+            spin_angular_error: None,
             block_rows: 0,
         };
-        // Scan once to establish each block's symmetry and the electron count before Fortran
+        // Scan once to validate the rows and establish each block's symmetry before Fortran
         // installs the basis header. Reopen the stream for delivery with the tables in place.
         let mut values = Vec::new();
         while source.read_batch(&mut values)? != 0 {}
@@ -307,7 +329,7 @@ impl DescriptorReader {
                 && source.block_symmetries.len() == source.block_lengths.len(),
             "incomplete descriptor block table"
         );
-        source.reader = ParquetRecordBatchReaderBuilder::try_new(file)?
+        source.reader = ParquetRecordBatchReaderBuilder::new_with_metadata(file, arrow_metadata)
             .with_batch_size(batch_size)
             .build()?;
         source.remaining = total;
@@ -368,60 +390,13 @@ impl DescriptorReader {
                 self.block_index < self.block_lengths.len(),
                 "row outside blocks"
             );
-            let symmetry = (i32::from(row[row.len() - 2]), i32::from(row[row.len() - 1]));
-            ensure!(
-                (0..=126).contains(&symmetry.0) && symmetry.1.abs() == 1,
-                "invalid symmetry"
-            );
-            if self.block_symmetries.len() == self.block_index {
-                self.block_symmetries.push(symmetry);
-            }
-            ensure!(
-                self.block_symmetries[self.block_index] == symmetry,
-                "mixed block symmetry"
-            );
-            let mut electrons: i32 = self.orbitals[..self.core_count]
-                .iter()
-                .map(|(_, k)| 2 * k.abs())
-                .sum();
-            // The core is filled, so it contributes electrons and an even parity exponent.
-            let mut parity_sum = 0;
-            for (shell, &(_, k)) in self.orbitals[self.core_count..].iter().enumerate() {
-                let q = i32::from(row[4 * shell]);
-                ensure!(
-                    (0..=2 * k.abs()).contains(&q),
-                    "occupation outside capacity"
-                );
-                ensure!(row[4 * shell + 2] >= 0, "negative seniority");
-                ensure!(
-                    (-1..=126).contains(&row[4 * shell + 1])
-                        && (-1..=126).contains(&row[4 * shell + 3]),
-                    "invalid J/K"
-                );
-                if q == 0 {
-                    ensure!(
-                        row[4 * shell..4 * shell + 4] == [0, -1, 0, -1],
-                        "noncanonical empty shell"
-                    );
-                }
-                electrons += q;
-                parity_sum += q * if k > 0 { k } else { -k - 1 };
-            }
-            ensure!(electrons > 0, "empty electron basis");
-            if self.electron_count == 0 {
-                self.electron_count = electrons;
-            }
-            ensure!(electrons == self.electron_count, "electron count mismatch");
-            ensure!(
-                symmetry.1 == if parity_sum % 2 == 0 { 1 } else { -1 },
-                "incorrect parity"
-            );
-            if self.layout.subshell_count() == 0 {
-                ensure!(
-                    self.block_lengths == [1] && symmetry == (0, 1),
-                    "invalid closed-core basis"
-                );
-            }
+            self.validate_row(row).with_context(|| {
+                format!(
+                    "block {}, CSF {}",
+                    self.block_index + 1,
+                    self.block_rows + 1
+                )
+            })?;
             self.block_rows += 1;
             if self.block_rows == self.block_lengths[self.block_index] {
                 self.block_index += 1;
@@ -431,7 +406,157 @@ impl DescriptorReader {
         self.failed = false;
         Ok(count)
     }
+
+    fn validate_row(&mut self, row: &[i8]) -> Result<()> {
+        let (peel, globals) = row.split_at(row.len() - 2);
+        let total_two_j = decode_angular(globals[0])?;
+        let parity = i32::from(globals[1]);
+        let symmetry = (total_two_j, parity);
+        ensure!(matches!(parity, 1 | -1), "invalid parity code");
+        if self.block_symmetries.len() == self.block_index {
+            self.block_symmetries.push(symmetry);
+        }
+        ensure!(
+            self.block_symmetries[self.block_index] == symmetry,
+            "mixed block symmetry"
+        );
+        if peel.is_empty() {
+            ensure!(
+                self.block_lengths == [1] && symmetry == (0, 1),
+                "invalid closed-core basis"
+            );
+        }
+        let mut electrons: i32 = self.orbitals[..self.core_count]
+            .iter()
+            .map(|(_, k)| 2 * k.abs())
+            .sum();
+        let mut parity_exponent = 0;
+        let mut previous_two_k = 0;
+        let (subshell_rows, remainder) = peel.as_chunks::<CHANNELS_PER_SUBSHELL>();
+        debug_assert!(remainder.is_empty());
+        for (channels, &(n, kappa)) in subshell_rows.iter().zip(&self.orbitals[self.core_count..]) {
+            let (occupation, seniority) = (i32::from(channels[0]), i32::from(channels[1]));
+            let validate_shell = || -> Result<_> {
+                let two_j = decode_angular(channels[2])?;
+                let two_k = decode_angular(channels[3])?;
+                validate_subshell(kappa.abs(), occupation, seniority, two_j)?;
+                let maximum = previous_two_k + two_j;
+                ensure!(
+                    ((previous_two_k - two_j).abs()..=maximum).contains(&two_k)
+                        && (maximum - two_k) % 2 == 0,
+                    "cumulative coupling violates angular triangle or step"
+                );
+                Ok(two_k)
+            };
+            previous_two_k =
+                validate_shell().with_context(|| format!("orbital n={n}, kappa={kappa}"))?;
+            if kappa.abs() == 5
+                && (3..10).contains(&occupation)
+                && self.spin_angular_error.is_none()
+            {
+                self.spin_angular_error = Some(format!(
+                    "block {}, CSF {}, orbital n={n}, kappa={kappa}: open j=9/2 shell with occupation {occupation} exceeds the spin-angular term table",
+                    self.block_index + 1,
+                    self.block_rows + 1
+                ));
+            }
+            electrons += occupation;
+            parity_exponent += occupation * if kappa > 0 { kappa } else { -kappa - 1 };
+        }
+        ensure!(
+            previous_two_k == total_two_j,
+            "final cumulative coupling differs from total J"
+        );
+        ensure!(electrons > 0, "empty electron basis");
+        ensure!(electrons == self.electron_count, "electron count mismatch");
+        ensure!(
+            parity == if parity_exponent % 2 == 0 { 1 } else { -1 },
+            "incorrect parity"
+        );
+        Ok(())
+    }
 }
+
+fn decode_angular(code: i8) -> Result<i32> {
+    let two_j = i32::from(code) - 1;
+    ensure!(
+        (0..=MAX_TWO_J).contains(&two_j),
+        "angular code must be in 1..=127"
+    );
+    Ok(two_j)
+}
+
+fn validate_subshell(
+    half_capacity: i32,
+    occupation: i32,
+    seniority: i32,
+    two_j: i32,
+) -> Result<()> {
+    let capacity = 2 * half_capacity;
+    ensure!(
+        (0..=capacity).contains(&occupation),
+        "occupation outside capacity"
+    );
+    let population = occupation.min(capacity - occupation);
+    ensure!(
+        (0..=population).contains(&seniority) && (population - seniority) % 2 == 0,
+        "invalid subshell seniority for occupation"
+    );
+    if population == 0 {
+        ensure!(two_j == 0, "empty or full shell requires J=0");
+        return Ok(());
+    }
+    ensure!(
+        half_capacity <= 9 && (half_capacity <= 5 || population <= 2),
+        "unsupported open-shell occupation"
+    );
+    let multiplicities = &SUBSHELL_TERMS[(half_capacity - 1) as usize];
+    let seniority = seniority as usize;
+    let two_j = two_j as usize;
+    let angular_multiplicity =
+        |particles: usize| multiplicities[particles][two_j] - multiplicities[particles][two_j + 2];
+    let paired_multiplicity = seniority.checked_sub(2).map_or(0, angular_multiplicity);
+    match angular_multiplicity(seniority) - paired_multiplicity {
+        1 => Ok(()),
+        0 => anyhow::bail!("invalid subshell (occupation, seniority, J)"),
+        _ => anyhow::bail!("unsupported subshell state requires an additional w label"),
+    }
+}
+
+// Count determinants at each magnetic projection for the particle/hole populations
+// supported by Suite's subshell term table. The difference at M=J and M=J+1
+// counts J terms. Subtracting the contribution of v-2 removes the paired terms.
+const PROJECTION_COUNT: usize = MAX_TWO_J as usize + 3;
+const PROJECTION_ORIGIN: usize = PROJECTION_COUNT - 1;
+type ProjectionCounts = [i32; PROJECTION_COUNT];
+static SUBSHELL_TERMS: LazyLock<Vec<Vec<ProjectionCounts>>> = LazyLock::new(|| {
+    (1..=9)
+        .map(|half_capacity| {
+            let single_two_j = 2 * half_capacity - 1;
+            let max_population = if half_capacity <= 5 { half_capacity } else { 2 };
+            let mut counts = vec![[0; 2 * PROJECTION_ORIGIN + 1]; max_population as usize + 1];
+            counts[0][PROJECTION_ORIGIN] = 1;
+            for two_m in (-single_two_j..=single_two_j).step_by(2) {
+                for particles in (1..counts.len()).rev() {
+                    for from in 0..counts[particles - 1].len() {
+                        let to = from as isize + two_m;
+                        if (0..counts[particles].len() as isize).contains(&to) {
+                            counts[particles][to as usize] += counts[particles - 1][from];
+                        }
+                    }
+                }
+            }
+            counts
+                .iter()
+                .map(|projections| {
+                    projections[PROJECTION_ORIGIN..PROJECTION_ORIGIN + PROJECTION_COUNT]
+                        .try_into()
+                        .unwrap()
+                })
+                .collect()
+        })
+        .collect()
+});
 
 #[cfg(test)]
 #[path = "tests.rs"]

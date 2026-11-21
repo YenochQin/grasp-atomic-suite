@@ -34,7 +34,7 @@ contains
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_orbitals, orbital_index_radix
         use array_memory_management, only: dalloc
-        use csf_coupling_data, only: csf_coupling_quantum_codes, csf_subshell_quantum_codes
+        use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes
         use transition_basis_blocks, only: cumulative_csf_counts, transition_block_count
         use orbital_csf_basis,           only: csf_count, orbital_count, orbital_kappa, csf_subshell_occupations
         use biorthogonal_transition_selection, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
@@ -235,7 +235,7 @@ contains
         !
         call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "write_biorthogonal_mcp")
         call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "write_biorthogonal_mcp")
-        call dalloc (csf_coupling_quantum_codes, "csf_coupling_quantum_codes", "write_biorthogonal_mcp")
+        call dalloc (csf_angular_codes, "csf_angular_codes", "write_biorthogonal_mcp")
         return
     end subroutine write_biorthogonal_mcp
 end module write_biorthogonal_mcp_interface

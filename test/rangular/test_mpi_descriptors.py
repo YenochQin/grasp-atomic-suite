@@ -129,6 +129,7 @@ class MpiDescriptorTests(unittest.TestCase):
     def test_invalid_or_missing_zero_first_counts_stop_mpi_job(self) -> None:
         for case, counts, message in (
             ("missing", None, "missing block_info.zero_order_counts"),
+            ("empty-prefix", [0, 1, 1], "positive zero_order_counts"),
             ("wrong-length", [1], "length does not match block count"),
             ("outside-block", [1, 3, 1], "invalid zero-order CSF count for block 2"),
         ):
@@ -208,7 +209,7 @@ class MpiDescriptorTests(unittest.TestCase):
                 else:
                     table = parquet.read_table(self.binary_path)
                     columns = [c.to_pylist() for c in table.columns]
-                    columns[2][0] = 1  # invalid full-shell seniority: reaches deep Fortran validation
+                    columns[1][0] = 1  # invalid full-shell seniority
                     parquet.write_table(arrow.Table.from_arrays(
                         [arrow.array(v, type=arrow.int8()) for v in columns], schema=table.schema), path)
                 result, _ = self.execute(label, 2, ["--csf-descriptors", str(path)])

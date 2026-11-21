@@ -63,7 +63,7 @@ core/peel 轨道顺序保持不变，`SCREENPAR` 继续根据原来的 core 定�
 
 ## 描述符和 header 的哈希关联
 
-读取 header 不修改文件字节，不重排字段，也不追加电子数，因而不会破坏 rCSFs V2
+读取 header 不修改文件字节，不重排字段，也不追加电子数，因而不会破坏 rCSFs
 描述符记录的 `source_header_sha256`。
 
 该程序只消费 header，未打开描述符 Parquet，所以不会自行检查“这个 header 是否属于

@@ -1,4 +1,4 @@
-//! C ABI v1. Callers must provide valid, aligned buffers for the stated sizes.
+//! C ABI v2. Callers must provide valid, aligned buffers for the stated sizes.
 //! Output buffers are caller-owned, exclusively writable during the call, and
 //! disjoint from handle-owned storage.
 //! An error buffer must be writable for its capacity when non-null and capacity > 0.
@@ -48,7 +48,13 @@ unsafe fn invoke(error: *mut c_char, capacity: usize, action: impl FnOnce() -> R
 
 #[unsafe(no_mangle)]
 pub extern "C" fn rcsfs_descriptor_abi_version() -> i32 {
-    1
+    2
+}
+
+/// The on-disk format accepted and returned by this reader.
+#[unsafe(no_mangle)]
+pub extern "C" fn rcsfs_descriptor_format_version() -> i32 {
+    i32::from(crate::descriptor_schema::DESCRIPTOR_VERSION)
 }
 
 /// Read radial input metadata from TOML. No descriptor file or handle is used.
@@ -144,6 +150,28 @@ pub unsafe extern "C" fn rcsfs_descriptor_open(
 }
 
 /// # Safety
+/// Handle must be live and used serially. The optional error buffer follows
+/// the module's capacity contract.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rcsfs_descriptor_check_spin_angular(
+    handle: *mut c_void,
+    error: *mut c_char,
+    capacity: usize,
+) -> i32 {
+    let action = || {
+        ensure!(!handle.is_null(), "null descriptor handle");
+        // SAFETY: the caller supplies a live, exclusively accessed handle from open.
+        let reader = unsafe { &(*handle.cast::<Handle>()).reader };
+        if let Some(message) = &reader.spin_angular_error {
+            anyhow::bail!("{message}");
+        }
+        Ok(())
+    };
+    // SAFETY: the caller supplies a writable error buffer for capacity bytes.
+    unsafe { invoke(error, capacity, action) }
+}
+
+/// # Safety
 /// Handle must be live and used serially; info has five writable i64 entries.
 /// The optional error buffer follows the module's capacity contract.
 #[unsafe(no_mangle)]
@@ -160,7 +188,7 @@ pub unsafe extern "C" fn rcsfs_descriptor_info(
         let r = unsafe { &(*handle.cast::<Handle>()).reader };
         let values = [
             r.core_count as i64,
-            r.layout.subshell_count() as i64,
+            r.layout.subshell_count as i64,
             r.block_lengths.len() as i64,
             i64::try_from(r.block_lengths.iter().sum::<u64>())?,
             i64::from(r.electron_count),

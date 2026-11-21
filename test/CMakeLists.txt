@@ -14,6 +14,10 @@ add_executable(test.core_quadrature
 target_link_libraries_Fortran(test.core_quadrature PUBLIC grasp_shared core)
 add_test(core_quadrature test.core_quadrature)
 
+add_executable(test.single_subshell_tensor single_subshell_tensor.f90)
+target_link_libraries_Fortran(test.single_subshell_tensor PUBLIC spin_angular core grasp_shared)
+add_test(NAME single_subshell_tensor COMMAND test.single_subshell_tensor)
+
 add_executable(test.shared_grid_capacity shared_grid_capacity.f90)
 target_link_libraries_Fortran(test.shared_grid_capacity PUBLIC grasp_shared)
 add_test(NAME shared_grid_capacity COMMAND test.shared_grid_capacity)
@@ -280,7 +284,7 @@ foreach(variant rtransition rtransition_phase rtransition_mpi)
     endif()
 endforeach()
 
-set(RCSFS_TEST_CLI "$ENV{RCSFS_TEST_CLI}" CACHE FILEPATH "Native rcsfs CLI used only to prepare test fixtures")
+set(RCSFS_TEST_CLI "$ENV{RCSFS_TEST_CLI}" CACHE FILEPATH "V3-capable rcsfs CLI used only to prepare test fixtures")
 function(set_native_fixture_environment directory)
     get_property(tests DIRECTORY "${directory}" PROPERTY TESTS)
     if(tests AND RCSFS_TEST_CLI)
