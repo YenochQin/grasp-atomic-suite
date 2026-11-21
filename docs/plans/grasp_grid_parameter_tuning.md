@@ -688,7 +688,7 @@ run_id,orbital_id,varied,scnsty,mtp_or_mf,r_mtp_a0,n_minus_mtp,norm,mean_r_a0,r_
   检查、重复应用和逐字节恢复通过；这些验证未修改参考原版源码。
 - 已有：suite 10 个应用的构建、11 项 MPI 构建 CTest、10 项串行 CTest，以及
   小型 Ni g_J 样例的历史一致性验证。历史记录见
-  [公共参数说明](../implemented/common_parameters.md)与[迁移说明](../archive/rmcdhf_migration.md)。
+  [公共参数说明](../implemented/common_parameters.md)与 [RMCDHF 流程说明](../implemented/rmcdhf_flow_and_state.md)。
 - 审查新增证据：网格几何复算、原版容量/RCI/SCF/截尾路径源码核查，
   以及第 3.1 节的原版径向例程非有限值复现；它们不属于完整原子收敛结果。
 - **尚未完成**：本文 D/L/O/ACCY 矩阵对应的 Ni/Cl/U/生产体系物理计算、
@@ -707,8 +707,7 @@ run_id,orbital_id,varied,scnsty,mtp_or_mf,r_mtp_a0,n_minus_mtp,norm,mean_r_a0,r_
 - 构建：[compas/grasp README](https://github.com/compas/grasp/blob/master/README.md#cmake-based-build)。
 - 接口与备份：[脚本操作说明](../../scripts/README.md)。
 - suite 配置：[公共参数说明](../implemented/common_parameters.md)。
-- 回归与历史限制：[轨道测试说明](../archive/orbopt/README.md)、
-  [历史测试结果](../archive/orbopt/RESULTS.md)。
+- [旧轨道优化实验结果](../archive/orbopt/RESULTS.md)记录历史回归和限制。
 
 
 ## 13. 可直接复制的 TOML 配置

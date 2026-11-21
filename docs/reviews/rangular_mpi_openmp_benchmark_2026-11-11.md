@@ -103,6 +103,5 @@ OpenMP 生成普通 `mcp.*`，MPI 生成 rank 分片；本实验比较各自原�
 - `prepare.py`、`benchmark.py`、`verify_results.py`：本次本机运行脚本；`runs/` 保存独立运行目录与输出。
 - `configure.log`、`build.log`、`binaries/`：构建记录和实际测量程序的冻结副本。
 
-输入数据、机器路径、二进制及完整运行产物不纳入提交。此目录不随克隆提供；
-可按[输入说明](../implemented/rangular_descriptor_input.md)、[OpenMP 说明](../archive/rangular_openmp.md)
-及 [MCP 比较说明](../implemented/mcp_compare.md)，结合上述设置和原输入复测。
+输入数据、机器路径、二进制及完整运行产物不纳入提交。复测需要本文所用的历史描述符输入
+和 OpenMP 实现，以及同一基组。比较输出可使用 [MCP 比较工具](../implemented/mcp_compare.md)。

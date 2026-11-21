@@ -3,8 +3,8 @@
 This directory contains shared readers and comparison utilities for the original
 RMCDHF programs. The four `rmcdhf_orbopt*` programs and their
 dedicated runners, SLURM templates, fixtures and policy tests were removed on
-2026-11-08. Historical descriptions are in
-[the archive](../../docs/archive/orbopt/README.md); they are not current run instructions.
+2026-11-08. See the [historical results](../../docs/archive/orbopt/RESULTS.md)
+for trials of the retired programs.
 
 - The rejected strict/diagnostic variants and their dedicated tests were removed
   on 2026-11-11; see [retirement scope](../../docs/implemented/rejected_rmcdhf_variants.md).

@@ -2,10 +2,8 @@
 
 核查日期：2026-11-10。源码基准：`d181bf4c14c6aecf55f5549cc1faebabd75cb095`。
 
-后续更新：普通串行入口已增加可选的描述符二进制加载和阶段计时，见
-[描述符输入与验证](rangular_descriptor_input.md)。下文原角系数计算/共享状态分析仍适用；
-`CSLH/LODCSH2` 是默认文本路径，新增路径向相同内部数组提供数据。
-2026-11-16 已移除独立 rangular OpenMP 实现；[历史说明](../archive/rangular_openmp.md)仅用于追溯。
+普通串行入口现使用 [Rust 原生 V3 输入](native_csf_descriptors.md)。历史流程中的
+`CSLH/LODCSH2` 读取文本后填充角系数计算数组。独立 rangular OpenMP 实现于 `6f96222` 移除。
 
 初次核查状态：依据源码完成串行主路径的静态梳理；当时没有修改计算实现，也没有运行新的物理计算或性能测试。
 本文覆盖普通目标 `rangular`，入口为 `src/apps/rangular/rangular_main.f90` 中的

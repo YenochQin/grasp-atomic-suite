@@ -221,9 +221,8 @@ ctest --test-dir build-all --output-on-failure
 参数调整的具体数值、原因、测试数据及验收标准见
 [径向网格参数调整与验证规程](docs/plans/grasp_grid_parameter_tuning.md)。
 
-迁移来源、公共库取舍和当时验证见[历史迁移记录](docs/archive/rmcdhf_migration.md)，
-其中早期网格默认值和测试数量已被公共参数说明替代。
-后续轨道优化开发在本仓库进行；原 `rmcdhf_test` 工作目录保留作为参考。
+迁移来源见 [RMCDHF 源码快照](docs/reference/rmcdhf_upstream_snapshot.json)，
+保留的求解器见 [RMCDHF 流程说明](docs/implemented/rmcdhf_flow_and_state.md)。
 
 ## 开发文档
 
@@ -234,7 +233,7 @@ ctest --test-dir build-all --output-on-failure
 - 待执行实验：[径向网格方案](docs/plans/grasp_grid_parameter_tuning.md)，物理收敛计算仍需运行。
 - 已完成审查：[网格方法审查](docs/reviews/grasp_grid_methodology_review.md)，保留源码和诊断证据。
 - 理论参考：[Landé 因子背景稿](docs/reference/lande_g.md)，算符规范尚需独立核对。
-- 历史归档：[逐份目录](docs/README.md#逐份文档结论)，包括 gj 蓝图、迁移快照、RHFS/RIS 阶段报告；分别标明保留代码、已删除尝试和旧测量。
+- [历史归档](docs/README.md#历史背景)，包括 gj 蓝图、轨道优化结果以及 RHFS/RIS 阶段报告。
 
 ## 开发注意事项
 
@@ -251,7 +250,7 @@ ctest --test-dir build-all --output-on-failure
 
 2026-11-16 已移除 CSFG 专用源码、目标和测试，普通程序使用的共享库保留。
 `GRASP_BUILD_CSFG=ON` 会报错；`--no-csfg` 和 `GRASP_BUILD_CSFG=OFF` 仅作为旧构建命令的兼容写法保留。
-来源与旧集成过程见[归档记录](docs/archive/graspg_integration.md)，其中的启用方式已不适用于当前源码。
+来源见 [GRASPG 源码清单](docs/reference/graspg/source-manifest.json)。
 
 ### 来源与文献引用
 

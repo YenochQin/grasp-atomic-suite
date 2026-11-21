@@ -258,7 +258,7 @@ also cover the serial and MPI RCI restart paths.
 For candidate values, their rationale, test datasets, and convergence criteria,
 see [GRASP grid parameter tuning](docs/plans/grasp_grid_parameter_tuning.md) (Chinese).
 
-See the [historical migration record](docs/archive/rmcdhf_migration.md) for provenance and shared-library decisions. Its early grid defaults and test counts have been superseded by the shared parameter guide. New orbital development belongs here; the original `rmcdhf_test` checkout is retained for reference.
+The [RMCDHF source snapshot](docs/reference/rmcdhf_upstream_snapshot.json) records the source provenance. The [RMCDHF flow guide](docs/implemented/rmcdhf_flow_and_state.md) describes the retained solver.
 
 ## Development Notes
 
@@ -269,7 +269,7 @@ its implementation evidence, superseded claims, and remaining validation work.
 - [Experiment plan](docs/plans/grasp_grid_parameter_tuning.md): grid configurations and physical convergence checks still to run.
 - [Completed grid review](docs/reviews/grasp_grid_methodology_review.md): source findings and diagnostic evidence.
 - [Theory reference](docs/reference/lande_g.md): Landé-factor background draft; operator conventions need independent verification.
-- [Historical archive](docs/README.md#逐份文档结论): gj blueprint, migration snapshot, and RHFS/RIS optimization reports. Retained code is distinguished from removed experiments and old performance measurements.
+- [Historical archive](docs/README.md#历史背景): gj blueprint, orbital-optimization results and RHFS/RIS optimization reports.
 
 ## Contributor Notes
 
@@ -288,8 +288,7 @@ The CSFG extension source, targets and dedicated tests were removed on 2026-11-1
 `GRASP_BUILD_CSFG=ON` is rejected. `--no-csfg` and `GRASP_BUILD_CSFG=OFF` remain
 accepted for compatibility with existing ordinary-suite build commands.
 The ordinary shared libraries remain in use. See the
-[historical integration record](docs/archive/graspg_integration.md) for provenance;
-it does not describe a currently available build option.
+[GRASPG source manifest](docs/reference/graspg/source-manifest.json) for provenance.
 
 ### Attribution and citation
 

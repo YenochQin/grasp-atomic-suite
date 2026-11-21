@@ -60,7 +60,7 @@
 
 上轮分析针对的是工作区 `grasp/` 的另一份快照，使用 GNU 16.2.1，获得 19 个程序构建成功及 51/1866 个严格检查失败单元。**这些数量不是本仓库、gfortran 15 的结果。** P0 必须重新盘点；计划不能以该统计宣称 suite 已完成任何阶段。
 
-当前依据：[仓库规范](../../AGENTS.md)、[主构建文件](../../CMakeLists.txt)、[参数契约](../implemented/common_parameters.md)、[GRASPG 集成](../archive/graspg_integration.md)、[NP 集成](../implemented/rmcdhf_nuclear_polarization.md)。
+当前依据包括[仓库规范](../../AGENTS.md)、[主构建文件](../../CMakeLists.txt)、[参数契约](../implemented/common_parameters.md)和 [NP 集成](../implemented/rmcdhf_nuclear_polarization.md)。
 
 ## 2. 程序族与实现位置
 

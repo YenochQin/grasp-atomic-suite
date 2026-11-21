@@ -24,15 +24,13 @@
 | [inline_output_formats.md](implemented/inline_output_formats.md) | 数字标签 `FORMAT` 内联，覆盖共享库和应用的 903 处 `WRITE`、2 处 `PRINT`；源码、预处理和字节对照已验证。 |
 | [shared_library_naming.md](implemented/shared_library_naming.md) | 共享状态与基础接口库的命名约定、Fortran 调用方迁移和完整模块对照。 |
 | [shared_library_procedure_names.md](implemented/shared_library_procedure_names.md) | 共享库过程名称迁移表与现行 Fortran 调用入口。 |
-| [native_csf_descriptors.md](implemented/native_csf_descriptors.md) | 现行 V3 生产 CSF 输入、ABI、MPI、双基组、低内存及错误传播契约。原实施计划见 [V3 计划](plans/csf_descriptor_v3_2026-11-21.md)。 |
+| [native_csf_descriptors.md](implemented/native_csf_descriptors.md) | 现行 V3 生产 CSF 输入、ABI、MPI、双基组、低内存、错误传播和数值回归。接入设计与验收用例见 [V3 计划](plans/csf_descriptor_v3_2026-11-21.md)。 |
 | [rangular_angular_reuse.md](implemented/rangular_angular_reuse.md) | 已实施，串行专项回归通过；默认关闭的有界 CSF 对缓存；保留顺序、占据/耦合及轨道共享关系，复用原始 T/V 系数，普通 MCP 写出不变；包含命中率、缓存容量与 RSS 测量，MPI 未接入；rangular OpenMP 已移除。 |
 | [rwfnestimate_header_input.md](implemented/rwfnestimate_header_input.md) | header 输入说明；保留 header 轨道表、电子数和初猜检查背景；当前仅 header 输入，无旧文本回退。 |
 | [rejected_rmcdhf_variants.md](implemented/rejected_rmcdhf_variants.md) | 已移除被否决变体；删除 strict/diag 两个独立求解器、专用测试、构建/安装入口及当前二进制；普通四种 RMCDHF 和共享库保持原流程。 |
 | [program_naming.md](implemented/program_naming.md) | 普通程序命名；保留应用目录和可执行文件去掉 90 的命名契约；CSFG 已随后移除，共享库及上游来源命名保留。 |
 | [build_profiles.md](implemented/build_profiles.md) | 现行构建策略；CSFG 已移除；生产默认 -O2，OpenMP 仅保留 jj2lsj；标准/接口/运行时诊断放 Check/Audit；serial、MPI 和 jj2lsj OpenMP 组成 24 个有效配置，16 个诊断配置沿用历史关闭 angular OpenMP 的预算 ID；历史预算范围不代表当前告警验收。 |
-| [rangular_mpi_descriptor_input.md](implemented/rangular_mpi_descriptor_input.md) | 旧 MPI 输入记录；保留 rank 0 加载、广播及旧输入计时背景；GCSDESC1 入口已由 Rust 原生输入替换。 |
-| [rangular_version_comparison.md](implemented/rangular_version_comparison.md) | 已实施，运行器回归通过；指定原版/新版可执行文件，独立目录运行文本及可选描述符路径；保存日志、墙钟、阶段计时与 MCP 对照；7 项维护测试通过，支持差异/超时/提前退出检测。 |
-| [rangular_descriptor_input.md](implemented/rangular_descriptor_input.md) | 旧输入实现记录；旧文本/GCSDESC1 契约及数组对照方法；当前生产输入统一见 native_csf_descriptors.md。 |
+| [rangular 对照工具](../scripts/README.md) | 原生描述符默认和显式输入、历史文本 oracle、阶段计时与 MCP 对照。 |
 | [mcp_compare.md](implemented/mcp_compare.md) | 已实施，解析器回归通过；2026-11-10，普通 rangular 串行/MPI MCP 解析、结构校验、按 CSF 对比较和 JSON 导出；合成回归与现有文件读回通过，不代表候选 rangular 或物理计算验收。 |
 | [rangular_flow_and_state.md](implemented/rangular_flow_and_state.md) | 现行流程，静态核查完成；2026-11-10，基准 d181bf4；普通串行 rangular 的 block/CSF 对遍历、角系数缓冲与排序、共享工作区和文件状态。未实施 OpenMP，未运行性能或物理验证。 |
 | [rmcdhf_flow_and_state.md](implemented/rmcdhf_flow_and_state.md) | 现行流程，静态核查完成；2026-11-10，基准 d181bf4；普通串行 rmcdhf 的矩阵/混合系数、径向积分、轨道改善、停止条件及共享状态；标出 EAL 定义路径待复核。未实施 OpenMP，未运行性能或物理验证。 |
@@ -101,17 +99,14 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
-| [rangular_openmp.md](archive/rangular_openmp.md) | 已移除，历史归档；2026-11-16 基于 9d6ee31 移除 rangular_omp、并行接口、专用线程状态、构建及测试入口；串行/MPI、描述符输入和串行系数复用保留，jj2lsj OpenMP 保留。历史测量不代表当前支持范围。 |
-| [graspg_integration.md](archive/graspg_integration.md) | 已移除，历史归档；记录 2026-10-30 的 GRASPG 集成与来源；2026-11-16 专用源码、构建和测试入口已移除。旧启用说明不是当前可用功能，普通共享库保留。 |
 | [gj90_blueprint.md](archive/gj90_blueprint.md) | 历史蓝图；阶段 A/C 主体已实现，B 有历史样例对比记录；阶段 D 的 OpenMP/线程重构未见实现。不再是当前开发清单。 |
 | [RHFS_MPI_hfsgg_optimization.md](archive/RHFS_MPI_hfsgg_optimization.md) | 历史阶段报告；前置筛选仍在；诊断计数、直接 ICHKQ1 调用和“当前瓶颈”描述已被后续代码覆盖。 |
 | [1.0.1-dev.1_optimization_summary.md](archive/1.0.1-dev.1_optimization_summary.md) | 历史分支总结；HFSGG 与 DIAGA3/4 保留。RECOP2 独立快速预检查未保留，已修正原文误记；旧计时未复测。 |
 | [1.1.1-dev.1_optimization_summary.md](archive/1.1.1-dev.1_optimization_summary.md) | 历史分支总结；RIS 主要优化仍存在；历史耗时、测试名称和测试覆盖不代表当前数值验收。 |
-| [rmcdhf_migration.md](archive/rmcdhf_migration.md) | 历史迁移记录；四个 orbopt 目标和共享库已落地；容量经转导层公开，默认值和网格初始化恢复原版，以现行参数说明为准。 |
 
-补充历史资料：[orbopt 驱动说明](archive/orbopt/README.md)、
-[结果](archive/orbopt/RESULTS.md)、[已退役的 stage guard](archive/orbopt_stage_guard_retired.md)、
-[GRASPG 上游说明](reference/graspg/UPSTREAM_README.md)。
+补充历史资料包括 [orbopt 实验结果](archive/orbopt/RESULTS.md)、
+[GRASPG 上游说明](reference/graspg/UPSTREAM_README.md)
+和 [GRASPG 源码清单](reference/graspg/source-manifest.json)。
 
 ## 验证边界与维护
 

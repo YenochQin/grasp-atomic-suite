@@ -28,7 +28,7 @@
 - 清理 suite 的 `bin/` 和当前接口修复 build 中同名旧可执行文件。
   历史 build 基线保留用于复现，不代表现行可构建目标。
 
-旧 [README](../archive/orbopt/README.md) 和 [实验记录](../archive/orbopt/RESULTS.md) 已归档。
+归档保留 [orbopt 实验记录](../archive/orbopt/RESULTS.md)。
 被移除的源码和运行脚本可在 Git 提交 `d1260ba` 追溯；没有将其复制到新的生产目录或提供替代命令别名。
 
 此操作先于移除参数不匹配放行选项的最终回归。后续验证应使用更新后的目标和测试清单，
