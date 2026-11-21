@@ -8,6 +8,8 @@ module compile_time_capacities
         & max_orbitals_minus_two
 
     ! Module constants
+    character(len=*), parameter, public :: csf_orbital_letters = "spdfghiklmn"
+    integer, parameter, public :: maximum_orbital_two_j = 2*len(csf_orbital_letters)-1
     integer, parameter :: orbital_index_radix = 215
     integer, parameter :: max_radial_points = 590
     integer, parameter :: radial_workspace_capacity = max_radial_points + 10

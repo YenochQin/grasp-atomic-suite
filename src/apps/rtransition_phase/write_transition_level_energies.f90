@@ -25,7 +25,7 @@ contains
         !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state, only: hartree_to_wavenumber_cm, hartree_to_ev
-        use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
+        use angular_symmetry_labels, only: format_j_label, parity_labels
         implicit none (type, external)
 
         ! Arguments
@@ -54,7 +54,7 @@ contains
             ecm = eau*hartree_to_wavenumber_cm
             eev = eau*hartree_to_ev
             ip = (ipar(j)+3)/2
-            write (summary_output_unit, '(1i3,4x,2a4,1p,2d25.15)') i, right_justified_j_labels(jtot(j)), parity_labels(ip), eau, ecm
+            write (summary_output_unit, '(1i3,4x,2a,1p,2d25.15)') i, format_j_label(jtot(j)), parity_labels(ip), eau, ecm
         end do
         !
         return

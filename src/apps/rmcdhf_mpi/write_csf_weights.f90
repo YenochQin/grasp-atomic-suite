@@ -26,7 +26,7 @@ contains
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state, only: requested_level_indices, selected_level_count
         use eigenstate_expansions, only: csf_mixing_coefficients
-        use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
+        use angular_symmetry_labels, only: format_j_label, parity_labels
         use level_symmetry_metadata,          only: packed_block_symmetries
         use standard_io_units, only: stdout_unit
         use hamiltonian_symmetry_blocks, only: csf_counts_by_block
@@ -116,15 +116,15 @@ contains
             parity_index =  parity_label_index
 
             if (write_standard_output) then
-                write (stdout_unit, '(i3,1x,i5,2x,2a4,5(3x,f8.4))') symmetry_block_index, level_number, &
-                    & right_justified_j_labels(two_j_plus_one), &
+                write (stdout_unit, '(i3,1x,i5,2x,2a,5(3x,f8.4))') symmetry_block_index, level_number, &
+                    & format_j_label(two_j_plus_one), &
                     & parity_labels(parity_index), (dominant_csf_coefficients(i),i&
                     =1,reported_coefficient_count)
                 write (stdout_unit, '(19x,5(3x,i8))') (dominant_csf_indices(i),i=1,reported_coefficient_count)
             else
 
-                write (summary_output_unit, '(i3,1x,i5,2x,2a4,5(3x,f8.4))') symmetry_block_index, level_number, &
-                    & right_justified_j_labels(two_j_plus_one), parity_labels(parity_index), (dominant_csf_coefficients(i),i=1,&
+                write (summary_output_unit, '(i3,1x,i5,2x,2a,5(3x,f8.4))') symmetry_block_index, level_number, &
+                    & format_j_label(two_j_plus_one), parity_labels(parity_index), (dominant_csf_coefficients(i),i=1,&
                     reported_coefficient_count)
                 write (summary_output_unit, '(19x,5(3x,i8))') (dominant_csf_indices(i),i=1,reported_coefficient_count)
             end if

@@ -41,8 +41,15 @@ serial I/O 目录为基准。其他应用原有状态名及 MPI CPATH 长度限�
 不超过该块总数。普通读入允许筛选后的块含零个零阶 CSF；这种基组回答 `n` 时可计算完整相互作用。缺少计数的基组可用 `rcsfs zero-first`
 重新生成。RCI 在新算例的速度选项之后询问分区，续算沿用 `.res` 中的设置。
 
-rangular 和新组装矩阵的 RCI 在打开描述符时核查自旋角积分的项表。对于 j=9/2
-的部分占据子壳层，该项表支持 1 或 2 个电子；3 至 9 个电子会在开始组装前报错。
+轨道表沿用 rCSFs 的 `spdfghiklmn`，最高为 `l=10`。rangular、新组装矩阵的 RCI、
+gj、rhfs、ris4、rdensity、rbiotransform 和 rtransition 在加载基组时核查自旋角积分项表。
+对于 `j ≥ 9/2` 的部分占据子壳层，项表支持一个或两个电子。即使单空穴与单电子有相同的 J，
+reader 也按实际电子数判断。超出项表范围时，串行和 MPI 都在计算前以非零状态退出，
+诊断给出块、CSF、轨道和占据数。闭壳层沿用闭壳层规则。
+径向初猜只读 header，RMCDHF 使用已有 MCP，JJ2LSJ 使用自己的 LS 项表。
+
+MCP 的块标签占八字节。J 保留至少四个字符的原有宽度，`115/2+` 等长标签也完整写入。
+RCI 的能级表、性质程序及 SCF 输出使用相同的 J 格式。
 
 生产 reader 仅接受 `descriptor_version=3`。V2 及更早文件须用支持 V3 的生产器从原始 CSF 重建。
 每个 peel 轨道依次存储 `occupation`、`seniority`、`two_j_plus_one` 和
@@ -152,6 +159,9 @@ rcsfs convert original.c Zn_odd_AS1_desc.parquet
 维护测试覆盖原生 reader/C ABI、显式闭核、深层错误清理、全数组/仅占据数组精确对照，
 RMCDHF 的实际 SETMCP/加载链路与标准权重，MPI 1/2/4 ranks、单列消息、worker 契约错误、root 输入错误，
 以及左右态不同轨道表的多次插入、顺序冲突和无文本的完整变换/跃迁流程。
+
+[V3 计算边界回归](../../test/test_v3_calculation_boundaries.py) 使用 rCSFs 生成测试输入，在串行和双进程 MPI
+下核对高 j 占据的退出状态、MCP 块标签、RCI 混合文件与能级表，以及 gj 的输出。
 
 完整回归结果、基线修正、源码身份和验证边界见
 [本次迁移验收记录](../reviews/native_csf_descriptor_validation_2026-11-17.md)。

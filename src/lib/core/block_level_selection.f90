@@ -27,7 +27,7 @@ contains
 
         write (stderr_unit, *) "There are ", symmetry_block_count, " blocks  ", &
             "(block   J/Parity   NCF):"
-        write (stderr_unit, "( 4(I3, 1X, A5, I8, 5X) )") (display_block_index,block_labels(display_block_index)(1:5), &
+        write (stderr_unit, "( 4(I3, 1X, A, I8, 5X) )") (display_block_index,trim(block_labels(display_block_index)), &
             & csf_counts_by_block(display_block_index),display_block_index=1&
             ,symmetry_block_count)
 
@@ -42,8 +42,8 @@ contains
             do block_index = 1, symmetry_block_count
                 block_csf_count = csf_counts_by_block(block_index)
                 do
-                    write (stderr_unit, *) "Block ", block_index, "   ncf = ", block_csf_count, " id = ", block_labels(&
-                        block_index)(1:5)
+                    write (stderr_unit, *) "Block ", block_index, "   ncf = ", block_csf_count, " id = ", trim(block_labels(&
+                        block_index))
 
                     read (*, "(A)") selection_input
                     call ensure_calculation_log()

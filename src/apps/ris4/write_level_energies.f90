@@ -25,7 +25,7 @@ contains
         !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state, only: hartree_to_wavenumber_cm, hartree_to_ev
-        use angular_symmetry_labels, only: parity_labels, right_justified_j_labels
+        use angular_symmetry_labels, only: parity_labels, format_j_label
         implicit none (type, external)
 
         ! Arguments
@@ -52,7 +52,7 @@ contains
             ecm = eau*hartree_to_wavenumber_cm
             eev = eau*hartree_to_ev
             ip = (ipar(j)+3)/2
-            write (summary_output_unit, '(1i3,2x,2a4,1p,3d22.14)') i, right_justified_j_labels(jtot(j)), parity_labels(ip), eau, &
+            write (summary_output_unit, '(1i3,2x,2a,1p,3d22.14)') i, format_j_label(jtot(j)), parity_labels(ip), eau, &
                 & ecm, eev
             !          WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
         end do
@@ -70,7 +70,7 @@ contains
                     ecm = eau*hartree_to_wavenumber_cm
                     eev = eau*hartree_to_ev
                     ip = (ipar(j)+3)/2
-                    write (summary_output_unit, '(1i3,2x,2a4,1p,3d22.14)') i, right_justified_j_labels(jtot(j)), &
+                    write (summary_output_unit, '(1i3,2x,2a,1p,3d22.14)') i, format_j_label(jtot(j)), &
                         & parity_labels(ip), &
                         & eau, ecm, eev
                     !               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
@@ -88,7 +88,7 @@ contains
                     ecm = eau*hartree_to_wavenumber_cm
                     eev = eau*hartree_to_ev
                     ip = (ipar(j)+3)/2
-                    write (summary_output_unit, '(1i3,2x,2a4,1p,3d22.14)') i, right_justified_j_labels(jtot(j)), &
+                    write (summary_output_unit, '(1i3,2x,2a,1p,3d22.14)') i, format_j_label(jtot(j)), &
                         & parity_labels(ip), &
                         & eau, ecm, eev
                     !               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV

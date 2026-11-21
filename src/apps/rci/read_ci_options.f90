@@ -108,7 +108,7 @@ contains
             write (stderr_unit,*) "There are ", symmetry_block_count, "blocks. They are:"
             write (stderr_unit,*) "  block     J Parity     No of CSFs"
             do symmetry_block_index = 1, symmetry_block_count
-                write (stderr_unit,*) symmetry_block_index, block_labels(symmetry_block_index)(1:5), &
+                write (stderr_unit,*) symmetry_block_index, trim(block_labels(symmetry_block_index)), &
                     & csf_counts_by_block(symmetry_block_index)
             end do
 
@@ -117,7 +117,7 @@ contains
             do jblock = 1, symmetry_block_count
                 write (stderr_unit,*) "Block ", jblock, "   ncf = ",           &
                     csf_counts_by_block(jblock)                            &
-                    , " id = ", block_labels(jblock)(1:5)
+                    , " id = ", trim(block_labels(jblock))
                 do
                     read (stdin_unit,*) ntmp
                     if (ntmp >= 0 .and. ntmp <= csf_counts_by_block(jblock)) exit

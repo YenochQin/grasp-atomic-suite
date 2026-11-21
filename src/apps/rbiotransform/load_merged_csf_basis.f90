@@ -24,7 +24,7 @@ contains
             if (associated(csf_subshell_quantum_codes)) deallocate(csf_subshell_quantum_codes)
             if (associated(csf_angular_codes)) deallocate(csf_angular_codes)
         end if
-        call load_csf_basis(trim(name),core_subshell_count,status)
+        call load_csf_basis(trim(name),core_subshell_count,status,spin_angular=.true.)
         if (status /= 0) error stop "Biotransform descriptor load failed"
     end subroutine load_merged_csf_basis
 end module load_merged_csf_basis_interface

@@ -8,9 +8,8 @@ module hartree_yz_functions
 contains
     subroutine evaluate_hartree_yz_functions(tensor_rank, first_orbital, second_orbital)
         ! Module dependencies
-        use, intrinsic :: iso_fortran_env, only: output_unit
         use, intrinsic :: iso_fortran_env, only: real64
-        use grasp_parameters,   only: radial_workspace_capacity
+        use grasp_parameters,   only: radial_workspace_capacity, maximum_orbital_two_j
         use radial_difference_coefficients,           only: five_point_weights
         use atomic_calculation_state,           only: working_tolerance
         use radial_grid_state, only: radial_workspace_capacity, radial_point_count, radial_grid, radial_grid_derivative
@@ -25,7 +24,7 @@ contains
         integer, intent(in) :: second_orbital
 
         ! Local declarations
-        integer, parameter :: maximum_tensor_rank = 20
+        integer, parameter :: maximum_tensor_rank = maximum_orbital_two_j
         integer, parameter :: rank_cache_size = maximum_tensor_rank + 1
         integer :: radial_index, first_padding_index, last_quadrature_index, first_asymptotic_index, stencil_or_tail_index, &
             & padded_grid_end
@@ -46,12 +45,9 @@ contains
         data rank_cached/ rank_cache_size*.false./
         ! Cache the radial powers for each tensor rank on the initialized grid.
         ! The cache key contains only the rank, so the radial grid must remain fixed across calls.
+        if (tensor_rank < 0 .or. tensor_rank > maximum_tensor_rank) error stop "Hartree tensor rank outside supported range"
         if (.not.rank_cached(tensor_rank)) then
             rank_cached(tensor_rank) = .true.
-            if (tensor_rank > maximum_tensor_rank) then
-                write (output_unit, *) " increase maximum_tensor_rank in evaluate_hartree_yz_functions "
-                stop
-            end if
             if (tensor_rank > 0) then
                 radius_to_rank(2:radial_point_count,tensor_rank) = radial_grid(2:radial_point_count)**tensor_rank
                 inverse_radius_to_rank(2:radial_point_count,tensor_rank) = 1.0_real64/radius_to_rank(2:radial_point_count, &

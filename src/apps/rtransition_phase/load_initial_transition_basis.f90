@@ -46,7 +46,7 @@ contains
         !
         !   Check the first record of the file; if not as expected, try again
         !
-        call load_csf_basis(trim(state_name),core_subshell_count,io_status)
+        call load_csf_basis(trim(state_name),core_subshell_count,io_status,spin_angular=.true.)
         if (io_status /= 0) error stop "Transition descriptor load failed"
         if (transition_block_count > size(initial_cumulative_csf_counts)) error stop "Transition block capacity exceeded"
         initial_transition_block_count=transition_block_count

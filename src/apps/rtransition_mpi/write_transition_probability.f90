@@ -22,7 +22,7 @@ contains
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state, only: einstein_a_au_to_si, einstein_b_au_to_si, pi, vacuum_speed_of_light_au
         use transition_output_cutoff, only: transition_probability_cutoff
-        use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
+        use angular_symmetry_labels, only: format_j_label, parity_labels
         use transition_matrix_workspace, only: transition_multipole_rank, transition_multipole_type, &
             total_coulomb_probabilities, total_babushkin_probabilities, transition_option_flags
         use level_symmetry_metadata, only: final_level_parity_signs, initial_level_parity_signs, final_level_two_j_plus_one, &
@@ -43,7 +43,8 @@ contains
         real(real64) :: dblfac(10)
         real(real64) :: stfac, dll1, omc, faau, fosc, fbau, eng, ggfactor, &
             acsq, absq, ac, ab, bc, bb, oscc, oscb, sa, sb, ams, am, bm, oscm
-        character(len=4) :: jlabi, jlabj, jpari, jparj
+        character(:), allocatable :: jlabi, jlabj
+        character(len=4) :: jpari, jparj
         character(len=2) :: f1,f2
 
         ! Initial values
@@ -71,8 +72,8 @@ contains
         !
         !   J/pi labels for levels
         !
-        jlabi = right_justified_j_labels(initial_level_two_j_plus_one(i))
-        jlabj = right_justified_j_labels(final_level_two_j_plus_one(j))
+        jlabi = format_j_label(initial_level_two_j_plus_one(i))
+        jlabj = format_j_label(final_level_two_j_plus_one(j))
         ipar = (initial_level_parity_signs(i) + 3)/2
         jpar = (final_level_parity_signs(j) + 3)/2
         jpari = parity_labels(ipar)
@@ -141,7 +142,7 @@ contains
                         f2 = "f1"
                     end if
                     !
-                    write (summary_output_unit, '(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," C",1p,3d13.5)') &
+                    write (summary_output_unit, '(1x,a2,i3,1x,2a,a2,i3,1x,2a,0p,f13.2," C",1p,3d13.5)') &
                         f1,final_level_indices(j),jlabj,jparj,f2,initial_level_indices(i),jlabi,jpari, &
                         -eng, -ac, -oscc, -sa !, ASFA
                     write (summary_output_unit, '(42x," B",1p,3d13.5)') -ab, -oscb, -sb !, ASFB
@@ -153,7 +154,7 @@ contains
                         f1 = "f1"
                         f2 = "f2"
                     end if
-                    write (summary_output_unit,'(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," C",1p,3d13.5)') &
+                    write (summary_output_unit,'(1x,a2,i3,1x,2a,a2,i3,1x,2a,0p,f13.2," C",1p,3d13.5)') &
                         f1,initial_level_indices(i),jlabi,jpari,f2,final_level_indices(j), &
                         jlabj,jparj,eng,ac*final_level_two_j_plus_one(j)/initial_level_two_j_plus_one(i),     &
                         oscc,sa
@@ -203,7 +204,7 @@ contains
                         f1 = "f2"
                         f2 = "f1"
                     end if
-                    write (summary_output_unit,'(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," M",1p,3d13.5)') &
+                    write (summary_output_unit,'(1x,a2,i3,1x,2a,a2,i3,1x,2a,0p,f13.2," M",1p,3d13.5)') &
                         f1,final_level_indices(j),jlabj,jparj,f2,initial_level_indices(i),&
                         jlabi,jpari,-eng,-am,-oscm,-sa
                 else if (eng > 1.0e-9_real64) then
@@ -214,7 +215,7 @@ contains
                         f1 = "f1"
                         f2 = "f2"
                     end if
-                    write (summary_output_unit,'(1x,a2,i3,1x,2a4,a2,i3,1x,2a4,0p,f13.2," M",1p,3d13.5)') &
+                    write (summary_output_unit,'(1x,a2,i3,1x,2a,a2,i3,1x,2a,0p,f13.2," M",1p,3d13.5)') &
                         f1,initial_level_indices(i),jlabi,jpari,f2,final_level_indices(j),&
                         jlabj,jparj,eng,am*final_level_two_j_plus_one(j)/initial_level_two_j_plus_one(i),    &
                         oscm,sa

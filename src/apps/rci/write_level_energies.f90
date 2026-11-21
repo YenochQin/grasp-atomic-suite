@@ -25,7 +25,7 @@ contains
         !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state, only: hartree_to_ev, hartree_to_wavenumber_cm
-        use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
+        use angular_symmetry_labels, only: format_j_label, parity_labels
         implicit none (type, external)
 
         ! Arguments
@@ -52,7 +52,7 @@ contains
             ecm = eau*hartree_to_wavenumber_cm
             eev = eau*hartree_to_ev
             ip = (ipar + 3)/2
-            write (summary_output_unit, '(1i3,2x,2a4,1p,3d22.14)') i, right_justified_j_labels(jtot), parity_labels(ip), eau, &
+            write (summary_output_unit, '(1i3,2x,2a,1p,3d22.14)') i, format_j_label(jtot), parity_labels(ip), eau, &
                 & ecm, eev
         end do
         !
@@ -69,7 +69,7 @@ contains
                     ecm = eau*hartree_to_wavenumber_cm
                     eev = eau*hartree_to_ev
                     ip = (ipar + 3)/2
-                    write (summary_output_unit, '(1i3,2x,2a4,1p,3d22.14)') i, right_justified_j_labels(jtot), parity_labels(ip), &
+                    write (summary_output_unit, '(1i3,2x,2a,1p,3d22.14)') i, format_j_label(jtot), parity_labels(ip), &
                         & eau, ecm, eev
                 end do
             end if
@@ -85,7 +85,7 @@ contains
                     ecm = eau*hartree_to_wavenumber_cm
                     eev = eau*hartree_to_ev
                     ip = (ipar + 3)/2
-                    write (summary_output_unit, '(1i3,2x,2a4,1p,3d22.14)') i, right_justified_j_labels(jtot), parity_labels(ip), &
+                    write (summary_output_unit, '(1i3,2x,2a,1p,3d22.14)') i, format_j_label(jtot), parity_labels(ip), &
                         & eau, ecm, eev
                 end do
             end if

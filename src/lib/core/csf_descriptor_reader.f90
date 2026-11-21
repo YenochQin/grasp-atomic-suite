@@ -4,7 +4,8 @@ module csf_descriptor_reader
     use iso_fortran_env, only: int8, int64, error_unit
     use iso_c_binding, only: c_ptr, c_null_ptr, c_null_char, c_char, c_size_t, c_int32_t, c_int64_t
     use csf_descriptor_c_bindings
-    use grasp_parameters, only: max_orbitals
+    use grasp_parameters, only: max_orbitals, csf_orbital_letters
+    use angular_symmetry_labels, only: format_j_label
     use csf_coupling_data, only: csf_angular_code_count, csf_total_j_slot, csf_parity_slot
     implicit none (type, external)
 
@@ -94,7 +95,6 @@ contains
         integer(c_int64_t), allocatable :: block_lengths(:)
         integer(c_int32_t), allocatable :: orbital_table(:,:), symmetry_table(:,:)
         integer :: read_status, orbital_index, kappa, orbital_l_value, path_length, allocation_status
-        character(len=*), parameter :: orbital_letters = "spdfghiklm"
         reader_message = c_null_char
         call close_descriptor_source(source)
         source = descriptor_source()
@@ -166,11 +166,11 @@ contains
             kappa = source%relativistic_kappas(orbital_index)
             orbital_l_value = kappa
             if (kappa < 0) orbital_l_value = -kappa-1
-            if (.not. require_descriptor(kappa /= 0 .and. orbital_l_value >= 0 .and. orbital_l_value < len(orbital_letters), &
+            if (.not. require_descriptor(kappa /= 0 .and. orbital_l_value >= 0 .and. orbital_l_value < len(csf_orbital_letters), &
                 & "unsupported orbital", status)) return
             source%orbital_momenta(orbital_index) = orbital_l_value
             source%single_electron_two_j(orbital_index) = 2*abs(kappa)-1
-            source%orbital_labels(orbital_index) = orbital_letters(orbital_l_value+1:orbital_l_value+1)//" "
+            source%orbital_labels(orbital_index) = csf_orbital_letters(orbital_l_value+1:orbital_l_value+1)//" "
             if (kappa > 0) source%orbital_labels(orbital_index)(2:2) = "-"
         end do
         source%header_loaded = .true.
@@ -204,26 +204,13 @@ contains
         source%header_loaded = .false.
     end subroutine close_descriptor_source
 
-    ! Right-align J and parity in the first five characters of the eight-character block label.
+    ! Keep the legacy four-column J field, expanding it for three-digit half-integers.
     function descriptor_block_label(total_two_j, parity) result(label)
         ! Arguments
         integer, intent(in) :: total_two_j, parity
         character(len=8) :: label
 
-        ! Local declarations
-        character(len=16) :: angular_text
-        character(len=20) :: padded_text
-        character(len=1) :: parity_symbol
-        if (mod(total_two_j, 2) == 0) then
-            write(angular_text, "(I0)") total_two_j/2
-        else
-            write(angular_text, "(I0,A)") total_two_j, "/2"
-        end if
-        parity_symbol = "+"
-        if (parity < 0) parity_symbol = "-"
-        padded_text = trim(angular_text)//parity_symbol
-        padded_text = adjustr(padded_text)
-        label = padded_text(16:20)
+        label = format_j_label(total_two_j+1)//merge("+","-",parity > 0)
     end function descriptor_block_label
 
     subroutine install_descriptor_header(source, core_count, block_labels, status)

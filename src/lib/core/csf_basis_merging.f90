@@ -128,7 +128,8 @@ contains
                 occupations(merged_orbital_index,:left_csf_count)=int(left_occupations(input_orbital_index,:left_csf_count),int8)
                 subshell_quantum_codes(merged_orbital_index,:, &
                     :left_csf_count)=int(left_subshell_quantum_codes(input_orbital_index,:,:left_csf_count),int8)
-                angular_codes(merged_orbital_index,:left_csf_count)=int(left_angular_codes(input_orbital_index,:left_csf_count),int8)
+                angular_codes(merged_orbital_index,:left_csf_count) = &
+                    int(left_angular_codes(input_orbital_index,:left_csf_count),int8)
             end if
             input_orbital_index=right_orbital_map(merged_orbital_index)
             if (input_orbital_index /= 0) then

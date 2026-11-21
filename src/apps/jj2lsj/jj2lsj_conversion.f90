@@ -1189,7 +1189,7 @@ contains
         !                                                                      *
         !***********************************************************************
         use ls_jj_subshell_terms, only: subshell_term_ls, term_ls_d, term_ls_f, term_ls_g1, term_ls_g2, term_ls_h1, term_ls_h2, &
-            & term_ls_i1, term_ls_i2, term_ls_k1, term_ls_k2, term_ls_l1, term_ls_l2, term_ls_m1, term_ls_m2, &
+            & term_ls_i1, term_ls_i2, term_ls_k1, term_ls_k2, term_ls_l1, term_ls_l2, &
             & term_ls_p, term_ls_s
         implicit none (type, external)
 
@@ -1359,26 +1359,20 @@ contains
             case default
                 stop  "enumerate_ls_subshell_terms(): program stop E."
             end select
-        case (9)
+        case (9,10)
+            ! Equivalent electrons give singlets at even L and triplets at odd L.
             select case (n)
             case (1)
-                i = 1;       j = 1
-                ls(j)%subshell_l  = term_ls_m1(i)%subshell_l
-                ls(j)%w        = term_ls_m1(i)%w
-                ls(j)%subshell_two_quasispin        = term_ls_m1(i)%subshell_two_quasispin
-                ls(j)%subshell_two_l       = term_ls_m1(i)%subshell_two_l
-                ls(j)%subshell_two_s        = term_ls_m1(i)%subshell_two_s
+                j = 1
+                ls(j) = subshell_term_ls(l_shell,0,2*l_shell,2*l_shell,1)
             case (2)
-                do i = 1,19
-                    j = j + 1
-                    ls(j)%subshell_l  = term_ls_m2(i)%subshell_l
-                    ls(j)%w        = term_ls_m2(i)%w
-                    ls(j)%subshell_two_quasispin        = term_ls_m2(i)%subshell_two_quasispin
-                    ls(j)%subshell_two_l       = term_ls_m2(i)%subshell_two_l
-                    ls(j)%subshell_two_s        = term_ls_m2(i)%subshell_two_s
+                j = 2*l_shell+1
+                ls(1) = subshell_term_ls(l_shell,0,2*l_shell+1,0,0)
+                do i = 1, 2*l_shell
+                    ls(i+1) = subshell_term_ls(l_shell,0,2*l_shell-1,2*i,2*mod(i,2))
                 end do
             case default
-                stop  "enumerate_ls_subshell_terms(): program stop F."
+                error stop "JJ2LSJ m and n shells require one or two electrons"
             end select
         case default
             stop  "enumerate_ls_subshell_terms(): program stop G."
@@ -1420,7 +1414,7 @@ contains
         ! Module dependencies
         use yes_no_input, only: read_yes_no
         use file_open, only: open_calculation_file
-        use csf_basis_loader, only: load_angular_csf_basis
+        use csf_full_basis_reader, only: load_csf_basis
         implicit none (type, external)
 
         ! Arguments and local declarations
@@ -1447,7 +1441,8 @@ contains
         !
         !   Open, check, load data from, and close, the  .csl  file
         phase_start=profile_time()
-        call load_angular_csf_basis(name,core_orbital_count)
+        call load_csf_basis(name,core_orbital_count,io_status)
+        if (io_status /= 0) error stop "JJ2LSJ descriptor basis load failed"
         call profile_emit("csf_read_parse",phase_start,items=csf_count)
         phase_start=profile_time()
         allocate(intermediate_two_j(1:orbital_count,1:csf_count))

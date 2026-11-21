@@ -46,7 +46,7 @@ contains
         !
         !   The  .csl  file is FORMATTED; it must exist
         !
-        call load_csf_basis(trim(state_name),ncorer,io_status)
+        call load_csf_basis(trim(state_name),ncorer,io_status,spin_angular=.true.)
         if (io_status /= 0) error stop "Transition descriptor load failed"
         if (transition_block_count > size(final_cumulative_csf_counts)) error stop "Transition block capacity exceeded"
         final_transition_block_count=transition_block_count

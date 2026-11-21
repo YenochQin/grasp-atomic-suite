@@ -24,7 +24,7 @@ contains
         !                       Gediminas Gaigalas  10/05/17
         use, intrinsic :: iso_fortran_env, only: real64
         use eigenstate_expansions, only: csf_mixing_coefficients
-        use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
+        use angular_symmetry_labels, only: format_j_label, parity_labels
         use orbital_csf_basis, only: csf_count
         use selected_level_indices, only: active_level_indices, active_level_count
         !      USE ispar_I
@@ -88,7 +88,7 @@ contains
             !
             ip = (iaspar + 3 ) / 2
             !        NELT = MIN (I,5)
-            write (summary_output_unit,'(i3,2x,2a4,5(3x,f8.5))') icf,right_justified_j_labels(iatjpo),parity_labels(ip),      &
+            write (summary_output_unit,'(i3,2x,2a,5(3x,f8.5))') icf,format_j_label(iatjpo),parity_labels(ip),      &
                 (csf_mixing_coefficients(iconf(j)),j = 1,nelt)
             write (summary_output_unit,'(13x,5(i11))') (iconf(j)-ibegin,j = 1,nelt)
         end do

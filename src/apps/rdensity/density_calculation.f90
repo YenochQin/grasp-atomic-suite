@@ -14,7 +14,7 @@ module density_calculation
     use selected_level_indices, only: active_level_count, active_level_indices
     use level_symmetry_metadata, only: level_two_j_plus_one, level_parity_signs
     use debug_output_settings, only: matrix_element_screening_cutoff
-    use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
+    use angular_symmetry_labels, only: format_j_label, parity_labels
     use density_parallel, only: density_fail, mpi_rank, sum_density, mpi_process_count
     use natural_orbitals, only: diagonalize_density, transform_radial_block
     use one_electron_scalar_coefficients, only: calculate_one_electron_scalar_coefficients
@@ -140,7 +140,7 @@ contains
                         & radial_small_components(:radial_point_count,b))
                 end do
             end do
-            write(unit,"(1x,i3,5x,2a4)") active_level_indices(state), right_justified_j_labels(level_two_j_plus_one(state)), &
+            write(unit,"(1x,i3,5x,2a)") active_level_indices(state), format_j_label(level_two_j_plus_one(state)), &
                 parity_labels((level_parity_signs(state)+3)/2)
             do radial_index = 2,radial_point_count
                 if (radial(radial_index) > 0.0_real64) write(unit,"(3es20.10e3)") radial_grid(radial_index), &

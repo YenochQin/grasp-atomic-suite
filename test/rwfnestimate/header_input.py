@@ -174,7 +174,7 @@ class HeaderInput(unittest.TestCase):
     def test_invalid_orbital_tables(self) -> None:
         for label, diagnostic in [("1s", "duplicate orbital"), ("0s", "must exceed l"),
                                   ("1p", "must exceed l"), ("4z", "unsupported orbital letter"),
-                                  ("12n", "unsupported orbital letter"), ("+12s", "invalid subshell label"),
+                                  ("12o", "unsupported orbital letter"), ("+12s", "invalid subshell label"),
                                   ("4s-", "invalid relativistic suffix"), ("6h--", "invalid subshell suffix"),
                                   ("p", "invalid subshell label"), ("12", "invalid subshell label")]:
             with self.subTest(label=label):

@@ -287,10 +287,14 @@ def validate_suite_exports(config: str, wrapper: str) -> None:
         if not match:
             raise ValueError("grasp_parameters may contain only direct capacity re-exports")
         imported.update(item.strip() for item in match[1].split(","))
-    if not (imported | explicit_public | explicit_private) <= names:
+    descriptor_constants = {
+        "csf_total_j_slot", "csf_parity_slot", "csf_angular_code_count",
+        "csf_orbital_letters", "maximum_orbital_two_j",
+    }
+    if not (imported | explicit_public | explicit_private) <= names | descriptor_constants:
         raise ValueError("grasp_parameters must use the semantic capacity names directly")
     exported = (imported if default_public else explicit_public) - explicit_private
-    if imported != names or exported != names:
+    if not names <= imported & exported:
         raise ValueError("grasp_parameters must re-export all six compile_time_capacities limits")
 
     legacy_name = LEGACY_CAPACITY_RE.search(config_code)

@@ -17,7 +17,7 @@ contains
         !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state,           only: vacuum_speed_of_light_au
-        use angular_symmetry_labels,         only: right_justified_j_labels, parity_labels
+        use angular_symmetry_labels,         only: format_j_label, parity_labels
         use isotope_properties,        only: nuclear_spin, nuclear_magnetic_dipole_moment, nuclear_electric_quadrupole_moment
         use selected_level_indices,          only: active_level_count, active_level_indices
         use level_symmetry_metadata,          only: level_two_j_plus_one, level_parity_signs
@@ -65,8 +65,8 @@ contains
             lande_g = vacuum_speed_of_light_au*inverse_j_norm*diagonal_lande_g_elements(level_index)
             lande_g_correction = 0.001160_real64*inverse_j_norm*diagonal_lande_correction_elements(level_index)
             !
-            write (lande_output_unit, '(1x,1i3,5x,2a4,1p,3d20.10)') active_level_indices(level_index), &
-                & right_justified_j_labels(two_j_plus_one), &
+            write (lande_output_unit, '(1x,1i3,5x,2a,1p,3d20.10)') active_level_indices(level_index), &
+                & format_j_label(two_j_plus_one), &
                 & parity_labels((level_parity_signs(level_index)+3)/2), lande_g, lande_g_correction, &
                 lande_g + lande_g_correction
         end do

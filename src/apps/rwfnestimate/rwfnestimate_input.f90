@@ -4,7 +4,7 @@ module rwfnestimate_input
     use iso_fortran_env, only: error_unit
     use iso_c_binding, only: c_char, c_int32_t, c_null_char, c_size_t
     use csf_descriptor_c_bindings, only: rust_descriptor_read_radial_header
-    use grasp_parameters, only: max_orbitals
+    use grasp_parameters, only: max_orbitals, csf_orbital_letters
     use orbital_csf_basis, only: orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, &
         orbital_symmetry_labels
     use atomic_calculation_state, only: electron_count
@@ -86,9 +86,6 @@ contains
         type(radial_input_options), intent(in) :: options
         integer, intent(out) :: core_count
 
-        ! Local constants
-        character(len=*), parameter :: letters = "spdfghiklm"
-
         ! Local declarations
         character(kind=c_char,len=1024) :: message
         integer(c_int32_t) :: status, info(3), orbitals(2,max_orbitals)
@@ -104,7 +101,7 @@ contains
         total_electrons = int(info(3))
         kappa(:count) = int(orbitals(2,:count))
         momentum(:count) = merge(kappa(:count), -kappa(:count)-1, kappa(:count) > 0)
-        call require_input(all(momentum(:count) < len(letters)), "unsupported orbital letter for radial estimation")
+        call require_input(all(momentum(:count) < len(csf_orbital_letters)), "unsupported orbital letter for radial estimation")
         call require_input(total_electrons >= sum(2*abs(kappa(:core_count))), &
             "electron_count is smaller than the closed-core population")
         call require_input(total_electrons <= sum(2*abs(kappa(:count))), &
@@ -118,7 +115,7 @@ contains
         orbital_two_j(:count) = 2*abs(kappa(:count))-1
         do i = 1, count
             l = momentum(i)
-            orbital_symmetry_labels(i) = letters(l+1:l+1)//merge("-", " ", kappa(i) > 0)
+            orbital_symmetry_labels(i) = csf_orbital_letters(l+1:l+1)//merge("-", " ", kappa(i) > 0)
         end do
         write(*, "(A,I0,A,I0,A,I0)") "Loaded TOML header: core subshells=", core_count, &
             ", orbitals=", orbital_count, ", total electrons=", electron_count

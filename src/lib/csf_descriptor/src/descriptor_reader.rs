@@ -12,6 +12,8 @@ use crate::descriptor_schema::{
     CHANNELS_PER_SUBSHELL, DESCRIPTOR_VERSION, DescriptorLayout, MAX_TWO_J,
 };
 
+const ORBITAL_LETTERS: &str = "spdfghiklmn";
+
 pub struct DescriptorReader {
     reader: ParquetRecordBatchReader,
     pub header_lines: [String; 5],
@@ -42,7 +44,7 @@ fn parse_orbital_label(label: &str) -> Result<(i32, i32)> {
         "invalid subshell label {label}"
     );
     ensure!(suffix.len() <= 2, "invalid subshell suffix in {label}");
-    let l = "spdfghiklm"
+    let l = ORBITAL_LETTERS
         .find(&suffix[..1])
         .with_context(|| format!("unsupported orbital letter in {label}"))? as i32;
     let n: i32 = n
@@ -450,14 +452,15 @@ impl DescriptorReader {
             };
             previous_two_k =
                 validate_shell().with_context(|| format!("orbital n={n}, kappa={kappa}"))?;
-            if kappa.abs() == 5
-                && (3..10).contains(&occupation)
+            if kappa.abs() >= 5
+                && (3..2 * kappa.abs()).contains(&occupation)
                 && self.spin_angular_error.is_none()
             {
                 self.spin_angular_error = Some(format!(
-                    "block {}, CSF {}, orbital n={n}, kappa={kappa}: open j=9/2 shell with occupation {occupation} exceeds the spin-angular term table",
+                    "block {}, CSF {}, orbital n={n}, kappa={kappa}: open j={}/2 shell with occupation {occupation} exceeds the spin-angular term table",
                     self.block_index + 1,
-                    self.block_rows + 1
+                    self.block_rows + 1,
+                    2 * kappa.abs() - 1
                 ));
             }
             electrons += occupation;
@@ -507,7 +510,7 @@ fn validate_subshell(
         return Ok(());
     }
     ensure!(
-        half_capacity <= 9 && (half_capacity <= 5 || population <= 2),
+        half_capacity <= 5 || population <= 2,
         "unsupported open-shell occupation"
     );
     let multiplicities = &SUBSHELL_TERMS[(half_capacity - 1) as usize];
@@ -530,7 +533,7 @@ const PROJECTION_COUNT: usize = MAX_TWO_J as usize + 3;
 const PROJECTION_ORIGIN: usize = PROJECTION_COUNT - 1;
 type ProjectionCounts = [i32; PROJECTION_COUNT];
 static SUBSHELL_TERMS: LazyLock<Vec<Vec<ProjectionCounts>>> = LazyLock::new(|| {
-    (1..=9)
+    (1..=ORBITAL_LETTERS.len() as isize)
         .map(|half_capacity| {
             let single_two_j = 2 * half_capacity - 1;
             let max_population = if half_capacity <= 5 { half_capacity } else { 2 };

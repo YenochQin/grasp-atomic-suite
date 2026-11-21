@@ -36,7 +36,7 @@ contains
         use eigenstate_expansions, only: hamiltonian_energy_shift, shifted_eigenvalues, csf_mixing_coefficients
         use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, &
             highest_selected_level_by_block, symmetry_block_count
-        use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
+        use angular_symmetry_labels, only: format_j_label, parity_labels
         use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations
         use selected_level_indices, only: active_level_indices, active_level_count, highest_active_level_index
         use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes
@@ -291,8 +291,8 @@ contains
                         energy_ev = energy_hartree*hartree_to_ev
                         parity_label_index = (block_parity_sign+3)/2
                         if (mpi_rank == 0)                                           &
-                            write (summary_output_unit,'(1i3,2x,2a4,1p,3d22.14)') &
-                                & level_index,right_justified_j_labels(block_two_j_plus_one), &
+                            write (summary_output_unit,'(1i3,2x,2a,1p,3d22.14)') &
+                                & level_index,format_j_label(block_two_j_plus_one), &
                             & parity_labels(parity_label_index),energy_hartree, &
                             & energy_wavenumber,energy_ev
                         !

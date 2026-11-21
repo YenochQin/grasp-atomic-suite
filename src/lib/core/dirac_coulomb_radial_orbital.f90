@@ -164,7 +164,7 @@ contains
             last_radial_index = last_radial_index - 1
         end do
         if (last_radial_index == radial_point_count) write (*, '(/,/,/, &
-            " ***** Warning in SUBROUTINE evaluate_dirac_coulomb_orbital *****"/,/&
+            &" ***** Warning in SUBROUTINE evaluate_dirac_coulomb_orbital *****"/,/&
             &," Radial grid of insufficient extent:"/," P(",1i4,") = ",1p,1d10.3,", Exceeds cutoff (",1d10.3,")")') &
             radial_point_count, large_component(radial_point_count), &
             & amplitude_cutoff

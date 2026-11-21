@@ -26,7 +26,7 @@ contains
         ! Local declarations
         integer :: descriptor_status, mpi_return_code, basis_counts(5)
         descriptor_status = 0
-        if (mpi_rank == 0) call load_csf_basis(descriptor_path,core_subshell_count,descriptor_status)
+        if (mpi_rank == 0) call load_csf_basis(descriptor_path,core_subshell_count,descriptor_status,spin_angular=.true.)
         call require_collective_success(descriptor_status)
         if (mpi_rank == 0) basis_counts=[csf_count,orbital_count,electron_count,transition_block_count,core_subshell_count]
         call MPI_Bcast(basis_counts,5,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_return_code)

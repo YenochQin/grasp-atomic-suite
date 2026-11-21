@@ -48,7 +48,7 @@ core/peel 轨道顺序保持不变，`SCREENPAR` 继续根据原来的 core 定�
 
 - 标签行分别为 `Core subshells:`、`Peel subshells:`、`CSF(s):`。
   轨道行可以很长，不按旧文本解析器的定长字符缓冲截断。
-- 轨道标签使用 `spdfghiklm`，主量子数必须大于轨道角动量，`s-` 无效。
+- 轨道标签使用 `spdfghiklmn`，最高支持 `l=10`（例如 `11n-`、`11n`）。主量子数必须大于轨道角动量，`s-` 无效。
   core/peel 内部及两者之间不得出现重复的 `(n, kappa)`。
 - 空 core、空 peel 都允许，但整个轨道表不能空；轨道总数不得超过配置中的 `NNNW`。
 - 电子数必须是正整数、可表示为 suite 整数，并满足

@@ -31,7 +31,7 @@ contains
         use isotope_shift_options, only: contact_density_by_level, total_nms_by_level, radius_by_level, &
             & radius_squared_by_level, inverse_radius_by_level, inverse_radius_squared_by_level, leading_nms_by_level, &
             & leading_sms_by_level, total_sms_by_level
-        use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
+        use angular_symmetry_labels, only: format_j_label, parity_labels
         use eigenstate_expansions, only: hamiltonian_energy_shift, shifted_eigenvalues
         use mpi_state, only: mpi_barrier, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_rank
 
@@ -377,16 +377,16 @@ contains
             write(summary_output_unit,*)
             write (summary_output_unit,'(" Level  J Parity  Energy")')
             do i = 1, active_level_count
-                write (summary_output_unit,'(1x,i3,5x,2a4,3x,d20.10,"  (a.u.)")') active_level_indices(i), &
-                    right_justified_j_labels(level_two_j_plus_one(i)), &
+                write (summary_output_unit,'(1x,i3,5x,2a,3x,d20.10,"  (a.u.)")') active_level_indices(i), &
+                    format_j_label(level_two_j_plus_one(i)), &
                     & parity_labels((level_parity_signs(i)+3)/2), &
                     hamiltonian_energy_shift+shifted_eigenvalues(i)
             end do
             write (summary_output_unit,'(//" Level  J Parity  Normal mass shift parameter")')
             do i = 1,active_level_count
                 write(summary_output_unit,'(/,29x,"<K^1>",13x,"<K^2+K^3>",9x,"<K^1+K^2+K^3>")')
-                write (summary_output_unit,'(1x,i3,5x,2a4,3x,3d20.10,"  (a.u.)")') active_level_indices(i), &
-                    right_justified_j_labels(level_two_j_plus_one(i)), &
+                write (summary_output_unit,'(1x,i3,5x,2a,3x,3d20.10,"  (a.u.)")') active_level_indices(i), &
+                    format_j_label(level_two_j_plus_one(i)), &
                     & parity_labels((level_parity_signs(i)+3)/2), &
                     leading_nms_by_level(i),(total_nms_by_level(i)-leading_nms_by_level(i)),total_nms_by_level(i)
                 normal_mass_shift_hz_u=leading_nms_by_level(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s
@@ -399,8 +399,8 @@ contains
             write (summary_output_unit,'(//" Level  J Parity  Specific mass shift parameter")')
             do i = 1,active_level_count
                 write(summary_output_unit,'(/,29x,"<K^1>",13x,"<K^2+K^3>",9x,"<K^1+K^2+K^3>")')
-                write (summary_output_unit,'(1x,i3,5x,2a4,3x,3d20.10,"  (a.u.)")') active_level_indices(i), &
-                    right_justified_j_labels(level_two_j_plus_one(i)), &
+                write (summary_output_unit,'(1x,i3,5x,2a,3x,3d20.10,"  (a.u.)")') active_level_indices(i), &
+                    format_j_label(level_two_j_plus_one(i)), &
                     & parity_labels((level_parity_signs(i)+3)/2), &
                     leading_sms_by_level(i),total_sms_by_level(i)-leading_sms_by_level(i),total_sms_by_level(i)
                 specific_mass_shift_hz_u=leading_sms_by_level(i)*electron_mass_u*hartree_to_wavenumber_cm*speed_of_light_cm_per_s
@@ -423,8 +423,8 @@ contains
                         & nuclear_model_parameters,nuclear_density_grid_point_count,density_fit_parameters(:,i), &
                         & effective_electron_density(i), &
                         & density_fit_residual(i))
-                    write (summary_output_unit,'(1x,i3,5x,2a4,3x,d20.10)') active_level_indices(i), &
-                        right_justified_j_labels(level_two_j_plus_one(i)), &
+                    write (summary_output_unit,'(1x,i3,5x,2a,3x,d20.10)') active_level_indices(i), &
+                        format_j_label(level_two_j_plus_one(i)), &
                         parity_labels((level_parity_signs(i)+3)/2),effective_electron_density(i)
                 end do
                 write (summary_output_unit, &
@@ -432,8 +432,8 @@ contains
                     &24x,"F0 (GHz/fm^2)",6x," F2 (GHz/fm^4)",6x," F4 (GHz/fm^6)",6x," F6 (GHz/fm^8)",6x,&
                     &" Disc. (per mille)")')
                 do i = 1,active_level_count
-                    write (summary_output_unit,'(1x,i3,5x,2a4,3x,4d20.10,f10.4)') active_level_indices(i), &
-                        right_justified_j_labels(level_two_j_plus_one(i)), &
+                    write (summary_output_unit,'(1x,i3,5x,2a,3x,4d20.10,f10.4)') active_level_indices(i), &
+                        format_j_label(level_two_j_plus_one(i)), &
                         parity_labels((level_parity_signs(i)+3)/2),density_fit_parameters(1,i),density_fit_parameters(2,i), &
                         density_fit_parameters(3,i),density_fit_parameters(4,i),density_fit_residual(i)
                 end do
@@ -441,16 +441,16 @@ contains
                     &" Level  J Parity  Field shift electronic factors (corrected for varying density inside nucleus)"//&
                     &24x,"F0VED0 (GHz/fm^2)   F0VED1 (GHz/fm^4)")')
                 do i = 1,active_level_count
-                    write (summary_output_unit,'(1x,i3,5x,2a4,3x,2d20.10)') active_level_indices(i), &
-                        right_justified_j_labels(level_two_j_plus_one(i)), &
+                    write (summary_output_unit,'(1x,i3,5x,2a,3x,2d20.10)') active_level_indices(i), &
+                        format_j_label(level_two_j_plus_one(i)), &
                         parity_labels((level_parity_signs(i)+3)/2),density_fit_parameters(5,i),density_fit_parameters(6,i)
                 end do
                 write(summary_output_unit,*)
             else
                 write (summary_output_unit,'(//" Electron density in atomic units"//" Level  J Parity",8x,"DENS (a.u.)"/)')
                 do i = 1,active_level_count
-                    write (summary_output_unit,'(1x,i3,5x,2a4,3x,d20.10)') active_level_indices(i), &
-                        right_justified_j_labels(level_two_j_plus_one(i)), &
+                    write (summary_output_unit,'(1x,i3,5x,2a,3x,d20.10)') active_level_indices(i), &
+                        format_j_label(level_two_j_plus_one(i)), &
                         parity_labels((level_parity_signs(i)+3)/2),contact_density_by_level(i)
                 end do
             end if

@@ -24,7 +24,7 @@ contains
         use biorthogonal_orbital_sets, only: final_csf_count, initial_csf_count
         use debug_output_settings, only: matrix_element_screening_cutoff, rmcdhf_debug_flags
         use eigenstate_expansions, only: final_csf_mixing_coefficients, initial_csf_mixing_coefficients
-        use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
+        use angular_symmetry_labels, only: format_j_label, parity_labels
         use orbital_csf_basis, only: orbital_l, orbital_principal_n, orbital_symmetry_labels
         use transition_matrix_workspace, only: transition_multipole_rank, transition_multipole_type, &
             transition_angular_coefficients, transition_bra_csf_indices, transition_ket_csf_indices, &
@@ -49,7 +49,8 @@ contains
             ia, ib, j
         real(real64) :: coulomb_single_particle_element, babushkin_single_particle_element, magnetic_single_particle_element, &
             & eps, mixing_coefficient_product, coeff, contr
-        character(len=4) :: jlabi, jlabj, jpari, jparj
+        character(:), allocatable :: jlabi, jlabj
+        character(len=4) :: jpari, jparj
         !-----------------------------------------------------------------------
         !
         eps = 1.0e-10_real64
@@ -63,15 +64,15 @@ contains
         !
         !   J/pi labels for levels
         !
-        jlabi = right_justified_j_labels(initial_level_two_j_plus_one(initial_level_index))
-        jlabj = right_justified_j_labels(final_level_two_j_plus_one(final_level_index))
+        jlabi = format_j_label(initial_level_two_j_plus_one(initial_level_index))
+        jlabj = format_j_label(final_level_two_j_plus_one(final_level_index))
         ipar = (initial_level_parity_signs(initial_level_index)+3)/2
         jpar = (final_level_parity_signs(final_level_index)+3)/2
         jpari = parity_labels(ipar)
         jparj = parity_labels(jpar)
 
         if (rmcdhf_debug_flags(18)) then
-            write (*,'("Upper level ",i3,a4,a4,10x," Lower level",i3,a4,a4)') &
+            write (*,'("Upper level ",i3,2a,10x," Lower level",i3,2a)') &
                 final_level_indices(final_level_index), jlabj, jparj, initial_level_indices(initial_level_index),    &
                 jlabi, jpari
             write (*,'(4x,"i",3x,"Coeff.(i)",5x,"f",2x,"Coeff.(f)",2x,"Orb(i)",1x,"Orb(f)",2x,"MCT coeff.",4x,&
@@ -152,7 +153,7 @@ contains
         !
         return
         !
-        write (*,'("Upper level ",i3,a4,a4,10x," Lower level",i3,a4,a4)') &
+        write (*,'("Upper level ",i3,2a,10x," Lower level",i3,2a)') &
             final_level_indices(final_level_index), jlabj, jparj, initial_level_index, jlabi, jpari
         !
     end subroutine write_transition_csf_weights

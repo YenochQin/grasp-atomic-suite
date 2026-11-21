@@ -56,6 +56,6 @@ contains
             end if
         end if
         write(output_unit,"(A)") " Contact to   G. Gediminas please ! ! ! "
-        stop
+        error stop "Unsupported subshell tensor state"
     end subroutine report_subshell_tensor_error
 end module subshell_tensor_diagnostics

@@ -25,7 +25,7 @@ contains
             bohr_radius_cm, hartree_to_wavenumber_cm, speed_of_light_cm_per_s
         use eigenstate_expansions, only: csf_mixing_coefficients
         use first_order_csf_cutoffs, only: first_order_csf_cutoff
-        use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
+        use angular_symmetry_labels, only: format_j_label, parity_labels
         use mpi_state,           only: mpi_rank, mpi_process_count, mpi_comm_world
         use isotope_properties,        only: nuclear_spin, nuclear_magnetic_dipole_moment, nuclear_electric_quadrupole_moment
         use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count
@@ -436,11 +436,11 @@ contains
                             !                GJ = CVAC*GJA1*GJC(NVEC*(I-1)+II)
                             !                DGJ = 0.001160D0*GJA1*DGJC(NVEC*(I-1)+II)
 
-                            write (summary_output_unit, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)') active_level_indices( &
+                            write (summary_output_unit, '(1x,1i3,5x,2a,2x,1i3,5x,2a,1p,2d20.10)') active_level_indices( &
                 & first_output_level), &
-                                & right_justified_j_labels(first_level_two_j_plus_one), &
+                                & format_j_label(first_level_two_j_plus_one), &
                                 parity_labels((level_parity_signs(first_output_level)+3)/2), &
-                                active_level_indices(second_output_level), right_justified_j_labels(second_level_two_j_plus_one), &
+                                active_level_indices(second_output_level), format_j_label(second_level_two_j_plus_one), &
                                     parity_labels((level_parity_signs(second_output_level)+3)/2), dipole_same_j_scale* &
                 & reduced_hyperfine_elements(1,&
                                 active_level_count*(first_output_level-1)+second_output_level), quadrupole_same_j_scale* &
@@ -453,9 +453,9 @@ contains
                 & (first_output_level-1)+second_output_level)
                                 lande_g_correction = 0.001160_real64*inverse_j_norm* &
                 & reduced_lande_correction_elements(active_level_count*(first_output_level-1)+second_output_level)
-                                write (hyperfine_output_unit, '(1x,1i3,5x,2a4,1p,5d20.10)') active_level_indices( &
+                                write (hyperfine_output_unit, '(1x,1i3,5x,2a,1p,5d20.10)') active_level_indices( &
                 & first_output_level), &
-                                    right_justified_j_labels(first_level_two_j_plus_one), &
+                                    format_j_label(first_level_two_j_plus_one), &
                                     & parity_labels((level_parity_signs(first_output_level)+3)/2), &
                                     dipole_same_j_scale*reduced_hyperfine_elements(1,active_level_count*(first_output_level-1)+ &
                 & second_output_level), quadrupole_same_j_scale*reduced_hyperfine_elements(3,active_level_count* &
@@ -467,10 +467,10 @@ contains
                     !   Off diagonal (J,J-1) A and B factors
                     !
                     case (2)
-                        write (summary_output_unit, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)') &
-                            active_level_indices(first_output_level), right_justified_j_labels(first_level_two_j_plus_one), &
+                        write (summary_output_unit, '(1x,1i3,5x,2a,2x,1i3,5x,2a,1p,2d20.10)') &
+                            active_level_indices(first_output_level), format_j_label(first_level_two_j_plus_one), &
                                 parity_labels((level_parity_signs(first_output_level)+3)/2), active_level_indices(&
-                            second_output_level), right_justified_j_labels(second_level_two_j_plus_one), &
+                            second_output_level), format_j_label(second_level_two_j_plus_one), &
                 & parity_labels((level_parity_signs(second_output_level)+3)/2), dipole_delta_j_one_scale* &
                 & reduced_hyperfine_elements(2, &
                                 active_level_count*(first_output_level-1&
@@ -480,10 +480,10 @@ contains
                     !   Off diagonal (J,J-2) B factor
                     !
                     case (4)
-                        write (summary_output_unit, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1p,2d20.10)') &
-                            active_level_indices(first_output_level), right_justified_j_labels(first_level_two_j_plus_one), &
+                        write (summary_output_unit, '(1x,1i3,5x,2a,2x,1i3,5x,2a,1p,2d20.10)') &
+                            active_level_indices(first_output_level), format_j_label(first_level_two_j_plus_one), &
                                 parity_labels((level_parity_signs(first_output_level)+3)/2), active_level_indices(&
-                            second_output_level), right_justified_j_labels(second_level_two_j_plus_one), &
+                            second_output_level), format_j_label(second_level_two_j_plus_one), &
                 & parity_labels((level_parity_signs(second_output_level)+3)/2), 0.0_real64, &
                                 quadrupole_delta_j_two_scale*reduced_hyperfine_elements(5,&
                             active_level_count*(first_output_level-1)+second_output_level)
@@ -566,13 +566,13 @@ contains
                                 if (wrote_matrix_heading == 0) write (summary_output_unit, '(/,/," Matrix elements:"/,/,&
                                     &" Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"/)')
                                 wrote_matrix_heading = 1
-                                write (summary_output_unit, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)') &
-                                    active_level_indices(first_recoupled_level), right_justified_j_labels(first_level_two_j+1), &
+                                write (summary_output_unit, '(1x,1i3,5x,2a,2x,1i3,5x,2a,1x,a,4x,1p,1d20.10)') &
+                                    active_level_indices(first_recoupled_level), format_j_label(first_level_two_j+1), &
                                         parity_labels((level_parity_signs(first_recoupled_level)+3)&
                                     /2), active_level_indices(second_recoupled_level), &
-                & right_justified_j_labels(second_level_two_j+1), &
+                & format_j_label(second_level_two_j+1), &
                                         parity_labels((level_parity_signs(second_recoupled_level)+3)/2), &
-                                    right_justified_j_labels(two_f+1), dipole_hyperfine_element + quadrupole_hyperfine_element
+                                    format_j_label(two_f+1), dipole_hyperfine_element + quadrupole_hyperfine_element
                             end if
                         !
                         !   Obtain and output matrix elements for J,J-1
@@ -589,13 +589,13 @@ contains
                                 if (wrote_matrix_heading == 0) write (summary_output_unit, '(/,/," Matrix elements:"/,/,&
                                     &" Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"/)')
                                 wrote_matrix_heading = 1
-                                write (summary_output_unit, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)') &
-                                    active_level_indices(first_recoupled_level), right_justified_j_labels(first_level_two_j+1), &
+                                write (summary_output_unit, '(1x,1i3,5x,2a,2x,1i3,5x,2a,1x,a,4x,1p,1d20.10)') &
+                                    active_level_indices(first_recoupled_level), format_j_label(first_level_two_j+1), &
                                         parity_labels((level_parity_signs(first_recoupled_level)+3)&
                                     /2), active_level_indices(second_recoupled_level), &
-                & right_justified_j_labels(second_level_two_j+1), &
+                & format_j_label(second_level_two_j+1), &
                                         parity_labels((level_parity_signs(second_recoupled_level)+3)/2), &
-                                    right_justified_j_labels(two_f+1), dipole_hyperfine_element + quadrupole_hyperfine_element
+                                    format_j_label(two_f+1), dipole_hyperfine_element + quadrupole_hyperfine_element
                             end if
                         !
                         !   Obtain and output matrix elements for J,J-2
@@ -610,13 +610,13 @@ contains
                                 if (wrote_matrix_heading == 0) write (summary_output_unit, '(/,/," Matrix elements:"/,/,&
                                     &" Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"/)')
                                 wrote_matrix_heading = 1
-                                write (summary_output_unit, '(1x,1i3,5x,2a4,2x,1i3,5x,2a4,1x,a4,4x,1p,1d20.10)') &
-                                    active_level_indices(first_recoupled_level), right_justified_j_labels(first_level_two_j+1), &
+                                write (summary_output_unit, '(1x,1i3,5x,2a,2x,1i3,5x,2a,1x,a,4x,1p,1d20.10)') &
+                                    active_level_indices(first_recoupled_level), format_j_label(first_level_two_j+1), &
                                         parity_labels((level_parity_signs(first_recoupled_level)+3)&
                                     /2), active_level_indices(second_recoupled_level), &
-                & right_justified_j_labels(second_level_two_j+1), &
+                & format_j_label(second_level_two_j+1), &
                                         parity_labels((level_parity_signs(second_recoupled_level)+3)/2), &
-                                    right_justified_j_labels(two_f+1), dipole_hyperfine_element + quadrupole_hyperfine_element
+                                    format_j_label(two_f+1), dipole_hyperfine_element + quadrupole_hyperfine_element
                             end if
                         else
                             dipole_hyperfine_element = 0.0_real64

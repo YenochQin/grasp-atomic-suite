@@ -1,0 +1,39 @@
+{
+  "description": "Format V3 J labels in RMCDHF CSF weights and SCF energies.",
+  "files": {
+    "src/appl/rmcdhf/csfwgt.f90": {
+      "after_suite_sha256": "08b464d91ee1e82ebd24b00fddf4857c776ffa00944ef754695970106f85fe83",
+      "before_suite_sha256": "f7c739991f3d81571011d11f5b0ffe9ecc0bab2461869281c8ba20277ec91b78"
+    },
+    "src/appl/rmcdhf/engoutgg.f90": {
+      "after_suite_sha256": "0ebc87fc5d779397aad199ab5832890315309ddd06887c4627b7417c9c44c9d6",
+      "before_suite_sha256": "c55f4f9487d6d0a1918afbfee01551bd8d5ea9f2c15c429c32c5097c8421b812"
+    },
+    "src/appl/rmcdhf_mem/csfwgt.f90": {
+      "after_suite_sha256": "08b464d91ee1e82ebd24b00fddf4857c776ffa00944ef754695970106f85fe83",
+      "before_suite_sha256": "f7c739991f3d81571011d11f5b0ffe9ecc0bab2461869281c8ba20277ec91b78"
+    },
+    "src/appl/rmcdhf_mem/engoutgg.f90": {
+      "after_suite_sha256": "0ebc87fc5d779397aad199ab5832890315309ddd06887c4627b7417c9c44c9d6",
+      "before_suite_sha256": "c55f4f9487d6d0a1918afbfee01551bd8d5ea9f2c15c429c32c5097c8421b812"
+    },
+    "src/appl/rmcdhf_mem_mpi/csfwgt.f90": {
+      "after_suite_sha256": "0eff8669eb9d4430e7f940a3cbdb5dfdce9fadaf7fe81383e12e963cb60da25d",
+      "before_suite_sha256": "8f0ea7154e01819023a3fa9befa6ff48342bf20feb24ba9d972524cb18c5d5be"
+    },
+    "src/appl/rmcdhf_mem_mpi/engoutgg.f90": {
+      "after_suite_sha256": "0ebc87fc5d779397aad199ab5832890315309ddd06887c4627b7417c9c44c9d6",
+      "before_suite_sha256": "c55f4f9487d6d0a1918afbfee01551bd8d5ea9f2c15c429c32c5097c8421b812"
+    },
+    "src/appl/rmcdhf_mpi/csfwgt.f90": {
+      "after_suite_sha256": "0eff8669eb9d4430e7f940a3cbdb5dfdce9fadaf7fe81383e12e963cb60da25d",
+      "before_suite_sha256": "8f0ea7154e01819023a3fa9befa6ff48342bf20feb24ba9d972524cb18c5d5be"
+    },
+    "src/appl/rmcdhf_mpi/engoutgg.f90": {
+      "after_suite_sha256": "0ebc87fc5d779397aad199ab5832890315309ddd06887c4627b7417c9c44c9d6",
+      "before_suite_sha256": "c55f4f9487d6d0a1918afbfee01551bd8d5ea9f2c15c429c32c5097c8421b812"
+    }
+  },
+  "previous_manifest_sha256": "9b1ca8b34e3f44d545cdc5f5ebfb4ea95bff3c5af96528e51dc2d63e9f282676",
+  "schema_version": 1
+}

@@ -124,6 +124,16 @@ if(Python3_Interpreter_FOUND)
         COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/test_sample_rmcdhf_mpi.py")
     set_tests_properties(rmcdhf_mpi_sampler PROPERTIES TIMEOUT 30)
+    if(TARGET rwfnestimate AND TARGET rangular AND TARGET rci AND TARGET gj)
+        add_test(NAME descriptor_v3_calculations_serial COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/test_v3_calculation_boundaries.py" $<TARGET_FILE_DIR:rangular>)
+        if(TARGET rangular_mpi AND TARGET rci_mpi AND TARGET gj_mpi AND MPIEXEC_EXECUTABLE)
+            add_test(NAME descriptor_v3_calculations_mpi COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/test_v3_calculation_boundaries.py" $<TARGET_FILE_DIR:rangular>
+                --mpiexec "${MPIEXEC_EXECUTABLE}")
+            set_tests_properties(descriptor_v3_calculations_mpi PROPERTIES PROCESSORS 2 TIMEOUT 180)
+        endif()
+    endif()
     if(TARGET rwfnestimate AND TARGET rangular AND TARGET rmcdhf_mem AND TARGET rci)
         add_test(NAME state_workflow_serial COMMAND "${Python3_EXECUTABLE}"
             "${CMAKE_CURRENT_SOURCE_DIR}/test_state_workflow.py" $<TARGET_FILE_DIR:rwfnestimate>)
@@ -238,6 +248,12 @@ endforeach()
 
 add_executable(test.descriptor_lifecycle descriptor_lifecycle.f90)
 target_link_libraries_Fortran(test.descriptor_lifecycle PRIVATE core grasp_shared)
+
+# Also check the production merge source under the F2018 line limit in Release builds.
+add_test(NAME descriptor_merge_f2018 COMMAND "${CMAKE_Fortran_COMPILER}"
+    -std=f2018 -ffree-line-length-132 -Werror=line-truncation -fsyntax-only
+    -I$<TARGET_PROPERTY:grasp_shared,Fortran_MODULE_DIRECTORY>
+    "${PROJECT_SOURCE_DIR}/src/lib/core/csf_basis_merging.f90")
 
 if(TARGET rbiotransform AND TARGET rtransition AND TARGET rtransition_phase AND Python3_Interpreter_FOUND)
     add_test(NAME descriptor_dual_basis_pipeline COMMAND ${Python3_EXECUTABLE}

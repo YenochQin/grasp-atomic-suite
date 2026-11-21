@@ -18,4 +18,25 @@ module angular_symmetry_labels
     ! Negative and positive parity labels, in that order.
     data parity_labels/ " -  ", " +  "/
 
+contains
+
+    ! GRASP output uses at least four columns for J. Larger labels grow to fit.
+    pure function format_j_label(two_j_plus_one) result(label)
+        integer, intent(in) :: two_j_plus_one
+        character(:), allocatable :: label
+        character(len=16) :: number
+        integer :: two_j
+
+        if (two_j_plus_one >= 1 .and. two_j_plus_one <= size(right_justified_j_labels)) then
+            label = right_justified_j_labels(two_j_plus_one)
+            return
+        end if
+        two_j = two_j_plus_one - 1
+        if (mod(two_j,2) == 0) then
+            write(number,"(I0)") two_j/2
+        else
+            write(number,"(I0,A)") two_j,"/2"
+        end if
+        label = repeat(" ",max(0,4-len_trim(number)))//trim(number)
+    end function format_j_label
 end module angular_symmetry_labels

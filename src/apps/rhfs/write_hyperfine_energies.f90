@@ -26,7 +26,7 @@ contains
         !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state, only: hartree_to_wavenumber_cm, hartree_to_ev
-        use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
+        use angular_symmetry_labels, only: format_j_label, parity_labels
         implicit none (type, external)
 
         ! Arguments
@@ -55,11 +55,11 @@ contains
             energy_wavenumber = energy_hartree*hartree_to_wavenumber_cm
             energy_ev = energy_hartree*hartree_to_ev
             parity_label_index = (level_parity_signs(level_index)+3)/2
-            write (summary_output_unit, '(1i3,2x,2a4,1p,3d22.14)') level_label, &
-                & right_justified_j_labels(level_two_j_plus_one(level_index)), parity_labels(parity_label_index), energy_hartree, &
+            write (summary_output_unit, '(1i3,2x,2a,1p,3d22.14)') level_label, &
+                & format_j_label(level_two_j_plus_one(level_index)), parity_labels(parity_label_index), energy_hartree, &
                 & energy_wavenumber, energy_ev
-            write (hyperfine_output_unit, '(1i3,2x,2a4,1p,3d22.14)') level_label, &
-                & right_justified_j_labels(level_two_j_plus_one(level_index)), parity_labels(parity_label_index), energy_hartree, &
+            write (hyperfine_output_unit, '(1i3,2x,2a,1p,3d22.14)') level_label, &
+                & format_j_label(level_two_j_plus_one(level_index)), parity_labels(parity_label_index), energy_hartree, &
                 & energy_wavenumber, energy_ev
         end do
         !
@@ -78,12 +78,12 @@ contains
                     energy_wavenumber = energy_hartree*hartree_to_wavenumber_cm
                     energy_ev = energy_hartree*hartree_to_ev
                     parity_label_index = (level_parity_signs(level_index)+3)/2
-                    write (summary_output_unit, '(1i3,2x,2a4,1p,3d22.14)') level_label, &
-                & right_justified_j_labels(level_two_j_plus_one(level_index)), &
+                    write (summary_output_unit, '(1i3,2x,2a,1p,3d22.14)') level_label, &
+                & format_j_label(level_two_j_plus_one(level_index)), &
                         & parity_labels(parity_label_index), &
                         & energy_hartree, energy_wavenumber, energy_ev
-                    write (hyperfine_output_unit, '(1i3,2x,2a4,1p,3d22.14)') level_label, &
-                & right_justified_j_labels(level_two_j_plus_one(level_index)), &
+                    write (hyperfine_output_unit, '(1i3,2x,2a,1p,3d22.14)') level_label, &
+                & format_j_label(level_two_j_plus_one(level_index)), &
                         & parity_labels(parity_label_index), energy_hartree, energy_wavenumber, energy_ev
                 end do
             end if
@@ -101,12 +101,12 @@ contains
                     energy_wavenumber = energy_hartree*hartree_to_wavenumber_cm
                     energy_ev = energy_hartree*hartree_to_ev
                     parity_label_index = (level_parity_signs(level_index)+3)/2
-                    write (summary_output_unit, '(1i3,2x,2a4,1p,3d22.14)') level_label, &
-                & right_justified_j_labels(level_two_j_plus_one(level_index)), &
+                    write (summary_output_unit, '(1i3,2x,2a,1p,3d22.14)') level_label, &
+                & format_j_label(level_two_j_plus_one(level_index)), &
                         & parity_labels(parity_label_index), &
                         & energy_hartree, energy_wavenumber, energy_ev
-                    write (hyperfine_output_unit, '(1i3,2x,2a4,1p,3d22.14)') level_label, &
-                & right_justified_j_labels(level_two_j_plus_one(level_index)), &
+                    write (hyperfine_output_unit, '(1i3,2x,2a,1p,3d22.14)') level_label, &
+                & format_j_label(level_two_j_plus_one(level_index)), &
                         & parity_labels(parity_label_index), energy_hartree, energy_wavenumber, energy_ev
                 end do
             end if

@@ -16,15 +16,17 @@ module csf_full_basis_reader
     private
     public :: load_csf_basis
 contains
-    subroutine load_csf_basis(state_name,core_subshell_count,status)
+    subroutine load_csf_basis(state_name,core_subshell_count,status,spin_angular)
         ! Arguments
         character(len=*), intent(in) :: state_name
+        logical, intent(in), optional :: spin_angular
         integer, intent(out) :: core_subshell_count, status
 
         ! Local declarations
         type(descriptor_source) :: basis_reader
 
-        call open_descriptor_source(basis_reader,descriptor_path(state_name),size(cumulative_csf_counts),status=status)
+        call open_descriptor_source(basis_reader,descriptor_path(state_name),size(cumulative_csf_counts), &
+            status=status,spin_angular=spin_angular)
         if (status /= 0) return
         call read_full_basis(basis_reader, core_subshell_count, status)
         call close_descriptor_source(basis_reader)

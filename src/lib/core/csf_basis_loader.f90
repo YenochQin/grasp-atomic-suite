@@ -17,7 +17,7 @@ contains
 
         ! Local declarations
         integer :: status
-        call load_csf_basis(trim(state_name),core_subshell_count,status)
+        call load_csf_basis(trim(state_name),core_subshell_count,status,spin_angular=.true.)
         if (status /= 0) error stop "Descriptor basis load failed"
     end subroutine load_angular_csf_basis
 end module csf_basis_loader

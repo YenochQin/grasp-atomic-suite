@@ -19,6 +19,7 @@ APP_MODULES_SNAPSHOT = Path("docs/reference/rmcdhf_app_modules_snapshot.json")
 SEMANTIC_NAMES_SNAPSHOT = Path("docs/reference/rmcdhf_semantic_names_snapshot.json")
 AUDITED_NAMES_SNAPSHOT = Path("docs/reference/rmcdhf_audited_names_snapshot.json")
 DIAGNOSTIC_LABELS_SNAPSHOT = Path("docs/reference/rmcdhf_diagnostic_labels_snapshot.json")
+V3_J_LABELS_SNAPSHOT = Path("docs/reference/rmcdhf_v3_j_labels_snapshot.json")
 
 
 def suite_source_path(root: Path, upstream_path: str, renamed_paths: dict[str, str]) -> Path:
@@ -484,17 +485,19 @@ def main(root: Path) -> None:
             renamed_paths[name] = record["suite_path"]
     reviewed_migration |= audited_names["files"]
 
-    diagnostic_labels = json.loads((root / DIAGNOSTIC_LABELS_SNAPSHOT).read_text())
-    assert diagnostic_labels["schema_version"] == 1, "Unknown diagnostic labels snapshot schema"
-    assert diagnostic_labels["previous_manifest_sha256"] == hashlib.sha256(
-        (root / AUDITED_NAMES_SNAPSHOT).read_bytes()
-    ).hexdigest(), "Audited names snapshot changed; review diagnostic label provenance"
-    previous = reviewed_files | reviewed_migration
-    for name, record in diagnostic_labels["files"].items():
-        assert name in expected and name.endswith(".f90") and name in previous, name
-        assert record["before_suite_sha256"] == previous[name]["after_suite_sha256"], \
-            f"Diagnostic labels snapshot has a different predecessor: {name}"
-    reviewed_migration |= diagnostic_labels["files"]
+    predecessor = AUDITED_NAMES_SNAPSHOT
+    for snapshot in (DIAGNOSTIC_LABELS_SNAPSHOT, V3_J_LABELS_SNAPSHOT):
+        labels = json.loads((root / snapshot).read_text())
+        assert labels["schema_version"] == 1, f"Unknown label snapshot schema: {snapshot}"
+        assert labels["previous_manifest_sha256"] == hashlib.sha256(
+            (root / predecessor).read_bytes()
+        ).hexdigest(), f"Previous manifest changed: {predecessor}"
+        previous = reviewed_files | reviewed_migration
+        for name, record in labels["files"].items():
+            assert name in expected and name.endswith(".f90") and name in previous, name
+            assert record["before_suite_sha256"] == previous[name]["after_suite_sha256"], name
+        reviewed_migration |= labels["files"]
+        predecessor = snapshot
 
     actual = {
         path

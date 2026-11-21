@@ -28,7 +28,7 @@ contains
         !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state, only: hartree_to_ev, hartree_to_wavenumber_cm
-        use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
+        use angular_symmetry_labels, only: format_j_label, parity_labels
         use transition_block_indices, only: level_block_indices
         use block_mean_energies, only: mean_energy_by_block
         use level_symmetry_metadata,          only: packed_block_symmetries
@@ -64,7 +64,7 @@ contains
             else
                 parity_label_index = 1
             end if
-            write (summary_output_unit, '(1i3,4x,2a4,1p,3d21.12)') level_number, right_justified_j_labels(two_j_plus_one), &
+            write (summary_output_unit, '(1i3,4x,2a,1p,3d21.12)') level_number, format_j_label(two_j_plus_one), &
                 & parity_labels(parity_label_index), energy_hartree, &
                 & energy_wavenumber, energy_ev
             !GG         WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
@@ -90,8 +90,8 @@ contains
                     else
                         parity_label_index = 1
                     end if
-                    write (summary_output_unit, '(1i3,4x,2a4,1p,3d21.12)') level_number, &
-                        & right_justified_j_labels(two_j_plus_one), parity_labels(parity_label_index), &
+                    write (summary_output_unit, '(1i3,4x,2a,1p,3d21.12)') level_number, &
+                        & format_j_label(two_j_plus_one), parity_labels(parity_label_index), &
                         & energy_hartree, energy_wavenumber, energy_ev
                     !GG               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
                 end do
@@ -115,8 +115,8 @@ contains
                     else
                         parity_label_index = 1
                     end if
-                    write (summary_output_unit, '(1i3,4x,2a4,1p,3d21.12)') level_number, &
-                        & right_justified_j_labels(two_j_plus_one), parity_labels(parity_label_index), &
+                    write (summary_output_unit, '(1i3,4x,2a,1p,3d21.12)') level_number, &
+                        & format_j_label(two_j_plus_one), parity_labels(parity_label_index), &
                         & energy_hartree, energy_wavenumber, energy_ev
                     !GG               WRITE (24, 302) I, LABJ(JTOT(J)), LABP(IP), EAU, ECM, EEV
                 end do
